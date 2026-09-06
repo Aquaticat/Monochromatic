@@ -309,6 +309,9 @@ A future change that adds a mandatory configure or setup call reopens that probl
 
 ## Open problem: import-time sink discovery pushes consumers toward dynamic imports (2026-09-06)
 
+Resolved on 2026-09-06 by the section "Platform-specific sinks live behind `./node` and `./browser`";
+ kept as the record of how the problem was understood and measured.
+
 Users of this logger have complained that using it effectively introduces dynamic imports into an otherwise clean application.
 The mechanism is the flip side of zero-config:
  importing the module runs sink auto-discovery (five verifies,
@@ -531,3 +534,72 @@ The section "`flush()` has a deadline" recorded that a startup buffer cap knob h
 When no sink survives verification the count is never written;
  the logger throws on the next call in that state,
  and a marker with nowhere to go has no consumer.
+
+## Platform-specific sinks live behind `./node` and `./browser` (2026-09-06)
+
+Both built artifacts used to carry `import('node:fs/promises')` and `import('node:path')` from the file sink's verify,
+ and every downstream bundle inherited them;
+ the node artifact also carried the browser-only IndexedDB and OPFS sinks as dead code.
+The root entry is now platform-neutral:
+ `logger`,
+ `initPromise`,
+ `createLogger`,
+ `tagged`,
+ the types,
+ and a `sinks` namespace holding only the cross-platform factories (console,
+ noop,
+ sessionStorage,
+ localStorage).
+`createFileSink` ships from the `./node` subpath with static `node:` imports;
+ `createIndexedDbSink` and `createOpfsSink` ship from `./browser`.
+The default sink list is selected at resolution time through the `#default-sinks` entry of `package.json` `imports`
+(`node` condition:
+ console,
+ sessionStorage,
+ localStorage,
+ file;
+ `default`:
+ console,
+ IndexedDB,
+ sessionStorage,
+ localStorage),
+ so zero-config keeps file logging under Node and IndexedDB in browsers with no runtime probe and no configure step.
+The mechanism is LogTape's and chalk's;
+ the packaging is msw's (`msw/node`,
+ `msw/browser`).
+
+Rejected shapes:
+
+- A stub `createFileSink` in the neutral build whose verify answers false:
+   ships code whose only job is to say no.
+- Omitting the file sink from the neutral `sinks` namespace with per-condition `types`:
+   TypeScript under `bundler` resolution matches only `types` and `import`/`require`,
+   and this repository sets no `customConditions`,
+   so every bundler-resolution consumer would have received the neutral types.
+
+Measured on 2026-09-06 on the built artifacts:
+ zero `import(` across every chunk of both builds;
+ the node root fell from 25401 to 18863 bytes plus a 2089-byte file-sink chunk,
+ the neutral root from 26590 to 18787 plus a 4437-byte IndexedDB chunk;
+ the root `index.d.mts` files of both builds are byte-identical;
+ browser consumer bundles from rolldown and esbuild carry no `import(`,
+ no `node:` module,
+ and no `createFileSink`;
+ `sinks.createFileSink()` is a `TS2339` error under `bundler` resolution with no custom conditions;
+ a Node end-user run wrote its log file through the default logger and through the `./node` factory.
+A six-case unit test reads every `.mjs` chunk of both builds,
+ with positive controls,
+ and rejects dynamic imports and cross-platform leaks in either direction.
+
+Accepted consequences:
+
+- A Node consumer whose bundler resolves the `default` condition gets no file logging and no message,
+   the same as every package in the prior-art sample.
+- Workspace libraries that ship only a neutral build and inline the logger (`css-edit`,
+   `fs-path`,
+   `jsonc-edit`,
+   `test`,
+   `toml-edit`) follow the neutral default list in their inlined copy under Node;
+   the owner decided they get a node build with a `node` condition,
+   as `kv-store` and `pipe` already have.
+- A types gate for subpaths (`attw --pack .`) in the release workflow is deferred to a separate change.

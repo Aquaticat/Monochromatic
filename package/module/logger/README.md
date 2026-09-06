@@ -60,6 +60,17 @@ The published package exposes the built artifact only.
 The `/ts` source subpath used inside this workspace is stripped at publish time,
  because Node refuses `.ts` files under `node_modules`.
 
+The root entry is platform-neutral and is built twice.
+The `node` export condition serves a build whose default logger includes the file sink,
+ with static `node:fs/promises` and `node:path` imports,
+ and which carries no browser storage code.
+Every other resolution (`default`) serves a build whose default logger includes the IndexedDB sink
+ and which references no Node module.
+Neither build contains a dynamic `import()`,
+ and a unit test reads every chunk of both builds to keep it that way.
+The root types are identical on both conditions.
+A Node consumer whose bundler resolves the `default` condition gets the neutral build and no file logging.
+
 ## Log levels
 
 Six levels,
@@ -188,15 +199,16 @@ That startup buffer holds at most `STARTUP_BUFFER_CAP` records (10000,
    discards all records;
    a stand-in that disables logging without removing log calls
 
-Each sink is a factory,
+Each sink is a factory.
+The cross-platform ones,
  `createConsoleSink()`,
- `createFileSink()`,
- `createIndexedDbSink()`,
- `createOpfsSink()`,
-`createSessionStorageSink()`,
+ `createSessionStorageSink()`,
  `createLocalStorageSink()`,
  and `createNoopSink()`,
- exported under the `sinks` namespace.
+ are exported under the `sinks` namespace of the root entry.
+`createFileSink()` is exported from `@monochromatic-dev/module-logger/node`,
+ and `createIndexedDbSink()` and `createOpfsSink()` from `@monochromatic-dev/module-logger/browser`,
+ so importing a platform-only sink is the consumer's own assertion of the platform.
 A sink instance keeps its own buffers,
  streams,
  and counters,
@@ -297,10 +309,11 @@ Raise the flush deadline for a slow but working backend,
  such as a network filesystem:
 
 ```ts
-import { createLogger, sinks, } from '@monochromatic-dev/module-logger';
+import { createLogger, } from '@monochromatic-dev/module-logger';
+import { createFileSink, } from '@monochromatic-dev/module-logger/node';
 
 const { logger, } = createLogger({
-  sinks: [sinks.createFileSink(),],
+  sinks: [createFileSink(),],
   flushDeadlineMs: 30_000,
   verifyTimeoutMs: 30_000,
 },);
@@ -351,6 +364,7 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
 - `flush()` has a deadline
 - Sinks verify concurrently under a time limit
 - The startup buffer is bounded and overflow is reported
+- Platform-specific sinks live behind `./node` and `./browser`
 - Zero-config at import,
    no configure step (the logtape migration observations)
 
@@ -369,6 +383,17 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
    flush)
 - `src/logger.ts`:
    default singleton built by applying `createLogger` to the default sinks
+- `src/node.ts`:
+   the `./node` subpath entry,
+   `createFileSink()`
+- `src/browser.ts`:
+   the `./browser` subpath entry,
+   `createIndexedDbSink()` and `createOpfsSink()`
+- `src/default-sinks.node.ts` and `src/default-sinks.neutral.ts`:
+   the two default sink lists,
+   selected at build time through the `#default-sinks` entry of `package.json` `imports`
+- `src/artifact-platform-split.unit.test.ts`:
+   guard that reads every chunk of both builds and rejects dynamic imports and cross-platform leaks
 - `src/tagged.ts`:
    `tagged()` wrapper for composable prefixes
 - `src/sink/console.ts`:

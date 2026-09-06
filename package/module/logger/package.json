@@ -1,7 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/module-logger",
-  "description": "Zero-config multi-sink logger with tagged composition. Auto-discovers console, file, IndexedDB, sessionStorage, and localStorage backends at import time.",
+  "description": "Zero-config multi-sink logger with tagged composition. Auto-discovers console, sessionStorage, and localStorage backends at import time, plus the file backend under Node and IndexedDB in browsers, with no dynamic imports in either build.",
   "type": "module",
   "module": "dist/final/neutral/index.mjs",
   "exports": {
