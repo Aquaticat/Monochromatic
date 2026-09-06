@@ -3108,7 +3108,81 @@ vertical rows.
  so
 the active Camellia screen must say `Shuffle Camellia`,
  never bare `Shuffle`.
-Prototype commit `f06971b1e` implements overflow-driven one-to-two-to-four reflow with
-real Compose `SegmentedButton` elements;
- recapture and questionnaire verification are
-in progress.
+Prototype commits `f06971b1e`,
+ `53fb648ee`,
+ `bb5dad664`,
+ and `d8b2552b6`
+implement overflow-driven one-to-two-to-four reflow with real Compose
+`SegmentedButton` elements.
+ The control first tries baseline 12dp horizontal content
+padding,
+ then 6dp and full available width before adding a row.
+
+I initially searched Android source for a platform minimum instead of changing the
+available emulator.
+ The user corrected that detour.
+ Direct device commands stored and
+read back `font_scale=0.5`,
+ so 50% is the actual requested state.
+ Rule DVP in
+`AGENTS.md` now requires a target-device probe before web research when the device can
+answer.
+
+Native evidence commit `cb02226ae` records exact accepted 3B at all five requested
+scales.
+ UI Automator measures one row at 50% and 75%,
+ connected 2×2 at 100% and
+150%,
+ and four vertical rows at 200%.
+ All mode targets are at least 117 physical
+pixels high,
+ equivalent to 48dp on this panel;
+ each group ends at y=2035,
+ 39
+physical pixels before the navigation inset at y=2074.
+ Every hierarchy exposes
+`Shuffle Camellia` and `Current track: Another Xronixle`.
+ All five captures are opaque
+2076 × 2152px images with system bars,
+ exact 3B treatment,
+ and protected picker,
+rail,
+ and center-spacer geometry.
+ Android build and lint pass.
+
+Main commit `64b64bc60` replaces the historical matrix form with a self-contained
+accepted-scale review;
+ `7636463b3` fixes its clipboard action at the browser boundary.
+At 1920 × 1080 CSS px,
+ all five cards render in one row without page overflow.
+ At
+390px width,
+ cards measure 316px and the page remains exactly 390px wide.
+ Preview
+Fit,
+ 100% reset at 907 × 937 CSS px,
+ native-pixel scale,
+ zoom,
+ scrolling,
+Escape/close,
+ focus restoration,
+ required-field focus,
+ whitespace rejection,
+ stale
+output invalidation,
+ scratch download,
+ offline reload,
+ and forced-light rendering pass.
+The page and open preview each report zero axe A/AA violations and zero incomplete
+checks.
+ Browser errors and console output are empty.
+ Disposable mutation controls reject
+wrong 3B styling,
+ center-spacer damage,
+ missing system UI,
+ wrong row counts,
+ a
+context-free Shuffle label,
+ missing current-track semantics,
+ and stale form evidence;
+all fixtures restore cleanly.

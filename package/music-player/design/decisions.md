@@ -303,6 +303,14 @@ Shuffle label.
 `components/segmented-buttons/` under the user-supplied `m3.material.io` archive;
 this multi-row arrangement is an explicit product decision rather than baseline Material
 wrapping behavior.
+**Verified.**
+ Native captures use one row at 50% and 75%,
+ 2×2 at 100% and 150%,
+and four rows at 200%.
+ The control tries 12dp horizontal content padding,
+ then
+6dp before adding rows;
+ all targets retain a 48dp minimum.
 
 ### D1 (superseded). Mode control = connected button group (candidate mode-d)
 Four options:

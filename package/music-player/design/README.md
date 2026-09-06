@@ -26,12 +26,16 @@ Read these files in order:
 
 ## Design questionnaire
 
-The latest grilling round is preserved as a self-contained HTML file under `questions/`.
-The user selected matrix option 3B;
- the form and its 1A recommendation are now
-historical evidence rather than an active request.
- The accepted image is
-`questions/render/cue-container-tonal.png`.
+The active scale review is a self-contained HTML file under `questions/`.
+ It shows
+accepted option 3B at Android font scales 0.5,
+ 0.75,
+ 1.0,
+ 1.5,
+ and 2.0.
+The earlier matrix and its 1A recommendation are historical evidence;
+ the user chose
+3B.
  Each round embeds its visual evidence,
 option assessments,
 recommendation,

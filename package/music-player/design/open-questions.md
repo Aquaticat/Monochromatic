@@ -586,20 +586,28 @@ screen,
  and every other unbuilt item remain
 outside the active form.
 
-Implementation verification must capture exact treatment 3B at 200% text;
- existing
-large-text evidence covers T3 with filled Open and the former recommended combination,
-not T3 with tonal Open.
- This is not a new design question unless the exact capture
-reveals a failure.
+Exact accepted 3B is now captured at Android font scales 0.5,
+ 0.75,
+ 1.0,
+ 1.5,
+and 2.0.
+ Measured overflow produces one mode row at 50% and 75%,
+ a connected
+2×2 at 100% and 150%,
+ and four connected vertical rows at 200%.
+ Every state
+shows `Shuffle Camellia`,
+ uses no horizontal mode scrolling,
+ and clears the navigation
+inset.
 
-Production accessibility verification must confirm the large-text vertical segmented
-stack is announced as one mutually exclusive group.
- The pinned Compose artifact has no
-vertical segmented wrapper,
- so the debug prototype composes row-scoped segment elements
-vertically and cannot settle assistive-technology grouping by raster inspection.
- UI
-Automator exposes `Current track: Another Xronixle` for every row treatment,
- but
-production assistive technology must also confirm that current-state announcement.
+Production accessibility verification must confirm every adaptive arrangement is
+announced as one mutually exclusive group.
+ The pinned Compose artifact has no multi-row
+segmented wrapper,
+ so UI Automator and raster inspection cannot settle
+assistive-technology grouping.
+ UI Automator exposes
+`Current track: Another Xronixle`,
+ but production assistive technology must also
+confirm that current-state announcement.

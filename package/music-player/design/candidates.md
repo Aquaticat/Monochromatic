@@ -433,6 +433,23 @@ single-select semantics without horizontal scrolling.
 The transport was scrolled vertically for that capture,
  placing the full control above
 the system navigation inset.
+ That fixed large-text transition is now superseded by
+prototype commits `f06971b1e`,
+ `53fb648ee`,
+ `bb5dad664`,
+ and `d8b2552b6`.
+Exact accepted 3B captures at 50%,
+ 75%,
+ 100%,
+ 150%,
+ and 200% are preserved by
+commit `cb02226ae`.
+ The visible third option is `Shuffle Camellia`.
+ Overflow-driven
+reflow uses one row at 50% and 75%,
+ connected 2×2 at 100% and 150%,
+ and
+four vertical rows at 200%.
 The user's
 settled baseline combines the `light-c` tonal structure with `dbtp-a`.
  D34 makes the

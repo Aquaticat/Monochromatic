@@ -331,23 +331,31 @@ state behavior is built in.
  Retain fixed left-to-right direction only for media time
 and transport controls,
  where the archive explicitly requires it.
- At a system font
-scale of 1.5 or greater,
- reflow the same single-select mode control into four connected
-vertical segments with full labels.
- A 200% emulator capture confirms that no mode label
-is truncated and the transport remains vertically reachable.
+ Reflow the same single-select mode control by measured label overflow:
+ one connected
+row first,
+ a connected 2×2 block second,
+ then four connected vertical rows.
+The active labels are `Repeat`,
+ `In order`,
+ `Shuffle Camellia`,
+ and `Shuffle all`.
+Native captures prove one row at 50% and 75%,
+ two rows at 100% and 150%,
+and four rows at 200%.
+ The control tries baseline 12dp horizontal content padding,
+then 6dp before adding rows;
+ every target remains at least 48dp.
  The pinned Compose
-artifact exposes horizontal segmented rows but no vertical-row wrapper,
- so the large
-state stacks real `SegmentedButton` elements in one outer selectable group and applies
-the same baseline segmented colors,
+artifact exposes horizontal segmented rows but no multi-row group wrapper,
+ so the
+prototype composes real `SegmentedButton` elements in one outer selectable group and
+applies the same colors,
  outline,
  selection fill,
  checkmark,
- and radio
-semantics.
- It does not substitute another component or add horizontal scrolling.
+ and radio semantics.
+It does not substitute another component or add horizontal scrolling.
 
 ### State cues and contrast
 
