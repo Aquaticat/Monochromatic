@@ -4,6 +4,10 @@
 /**
  * Starred description.
  *
+ * **Leading bold** remains literal content.
+ *
+ * *through* remains literal content.
+ *
  * @example
  * ```ts
  * readValue();
