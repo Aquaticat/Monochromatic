@@ -703,12 +703,10 @@ Inspect processes + logs;
  rerun via process tool or bounded execution.
 
 1CB:
- One step per Bash call;
- never chain steps with `&&`,
- `;`,
- or loops:
+ At most three `&&`-chained steps per Bash call;
+ never `;` chains or loops:
  uninspectable for user and auto mode.
-Multi-step work:
+Longer multi-step work:
  write a scratch `.ts` (`node:child_process`),
  run that file.
 
