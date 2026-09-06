@@ -1,3 +1,4 @@
+import type { LfsImageContext, } from './lfs-image-context.ts';
 import { runRules, } from './lint.ts';
 import type {
   Diagnostic,
@@ -101,6 +102,10 @@ export type FixSourceParams = {
    Whether the source is MDX.
    */
   readonly mdx: boolean;
+  /**
+   Per-file LFS facts, when available.
+   */
+  readonly lfs?: LfsImageContext;
 };
 
 /**
@@ -129,12 +134,15 @@ export type FixSourceResult = {
  
  @param mdx - whether the source is MDX
  
+ @param lfs - per-file LFS facts, when available
+ 
  @returns source after the fixpoint settles
  */
 function settle({
   rules,
   source,
   mdx,
+  lfs,
 }: FixSourceParams,): string {
   /**
    Source rewritten across passes; returned once the loop settles.
@@ -148,6 +156,7 @@ function settle({
       rules,
       source: current,
       mdx,
+      ...lfs === undefined ? {} : { lfs, },
     },);
     /**
      Source after this pass's fixes apply.
@@ -174,6 +183,8 @@ function settle({
  
  @param mdx - whether the source is MDX
  
+ @param lfs - per-file LFS facts, when available
+ 
  @returns fixed source and any remaining diagnostics
  
  @example
@@ -185,7 +196,12 @@ export function fixSource({
   rules,
   source,
   mdx,
+  lfs,
 }: FixSourceParams,): FixSourceResult {
+  /**
+   Context spread for the calls below.
+   */
+  const lfsSpread = lfs === undefined ? {} : { lfs, };
   /**
    Source after the fixpoint loop settles.
    */
@@ -193,6 +209,7 @@ export function fixSource({
     rules,
     source,
     mdx,
+    ...lfsSpread,
   },);
   return {
     source: settled,
@@ -200,6 +217,7 @@ export function fixSource({
       rules,
       source: settled,
       mdx,
+      ...lfsSpread,
     },),
   };
 }

@@ -1,3 +1,4 @@
+import type { LfsImageContext, } from './lfs-image-context.ts';
 import { parse, } from './parse.ts';
 import type {
   Diagnostic,
@@ -20,6 +21,11 @@ export type RunRulesParams = {
    Whether the source is MDX.
    */
   readonly mdx: boolean;
+  /**
+   Per-file LFS facts, when the run discovered a repository and the file is
+   not excluded.
+   */
+  readonly lfs?: LfsImageContext;
 };
 
 /**
@@ -33,6 +39,8 @@ export type RunRulesParams = {
  
  @param mdx - whether the source is MDX
  
+ @param lfs - per-file LFS facts, when available
+ 
  @returns every diagnostic from every rule
  
  @example
@@ -44,6 +52,7 @@ export function runRules({
   rules,
   source,
   mdx,
+  lfs,
 }: RunRulesParams,): readonly Diagnostic[] {
   /**
    Tree shared by every rule for this source.
@@ -57,6 +66,7 @@ export function runRules({
       tree,
       source,
       mdx,
+      ...lfs === undefined ? {} : { lfs, },
     },);
   },);
 }

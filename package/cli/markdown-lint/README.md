@@ -42,6 +42,9 @@ markdown-lint --fix
 
 # Machine-readable output for CI
 markdown-lint --format=json
+
+# Skip the lfs-image-url rule for one subtree (repeatable, gitignore syntax)
+markdown-lint --lfs-image-exclude=package/ssg/ doc/
 ```
 
 During development,
@@ -117,6 +120,16 @@ while the surrounding Markdown is linted identically to the `.md` case.
    add-only:
    inserts a newline plus the block's continuation prefix,
   converging in a single pass.
+- `lfs-image-url`:
+   a Markdown image must not point at an LFS-tracked file by relative path,
+  because GitHub renders the pointer text instead of the object.
+  Fixable:
+   rewrites the destination to `<objectBase>/<oid>/<repo-relative-path>` on the server the repository's
+  `.lfsconfig` declares,
+   refreshes a stale oid,
+   and turns an object URL back into a relative link when its target leaves LFS.
+  Inert when no ancestor of the working directory holds a `.lfsconfig`,
+   or for files matching `--lfs-image-exclude=`.
 
 ## Rule-behaviour notes
 
@@ -167,6 +180,18 @@ each rule's behaviour is defined and frozen by its own unit tests.
   It reads and writes the document's own line ending,
    and never leaves two spaces at a line's end,
    which CommonMark would render as a `<br>`.
+
+- `lfs-image-url` reads three repository facts once per run:
+  the object base from `.lfsconfig` (`lfs.url` or `remote.<name>.lfsurl`,
+   userinfo stripped),
+  the `filter=lfs` patterns of the root `.gitattributes` (a later `-filter` or `!filter` line unsets),
+  and the oid of each referenced file (the pointer's declared oid,
+   or the sha256 of smudged bytes).
+  It rewrites inline images and the reference definitions that image references use;
+  a definition used only by links keeps its target,
+   and raw HTML `<img>` is not inspected.
+  The server must answer `GET <objectBase>/<oid>/<path>` with the object and an image content type,
+   which `package/config/lfs-r2-worker` does.
 
 ## Deferred work
 

@@ -7,6 +7,12 @@ import { relative, } from 'node:path';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import { fixSource, } from './fix.ts';
+import {
+  discoverLfsImageRepo,
+  type LfsImageContext,
+  type LfsImageRepo,
+  prepareLfsImageContext,
+} from './lfs-image-context.ts';
 import { runRules, } from './lint.ts';
 import {
   report,
@@ -300,7 +306,68 @@ export type RunParams = {
    Directory the display paths are made relative to.
    */
   readonly cwd: string;
+  /**
+   gitignore-syntax patterns, relative to the repository root, for files the
+   `lfs-image-url` rule must leave alone.
+   */
+  readonly lfsImageExclude: readonly string[];
 };
+
+/**
+ Parameters for {@link lfsContextsFor}.
+ */
+type LfsContextsForParams = {
+  /**
+   Zero or one repository descriptions from discovery.
+   */
+  readonly repos: readonly LfsImageRepo[];
+  /**
+   Absolute path of the file under lint.
+   */
+  readonly filePath: string;
+  /**
+   Source of the file under lint.
+   */
+  readonly source: string;
+  /**
+   Whether the source is MDX.
+   */
+  readonly mdx: boolean;
+};
+
+/**
+ Per-file LFS context as a one-element list, or empty when the run found no
+ repository or the file is excluded.
+ 
+ @param repos - zero or one repository descriptions from discovery
+ 
+ @param filePath - absolute path of the file under lint
+ 
+ @param source - source of the file under lint
+ 
+ @param mdx - whether the source is MDX
+ 
+ @returns zero or one contexts
+ */
+async function lfsContextsFor({
+  repos,
+  filePath,
+  source,
+  mdx,
+}: LfsContextsForParams,): Promise<readonly LfsImageContext[]> {
+  return await Promise.all(repos
+    .filter(function includesFile(repo: LfsImageRepo,): boolean {
+      return !repo.isExcluded(filePath,);
+    },)
+    .map(async function contextOf(repo: LfsImageRepo,): Promise<LfsImageContext> {
+      return await prepareLfsImageContext({
+        repo,
+        filePath,
+        source,
+        mdx,
+      },);
+    },),);
+}
 
 /**
  Result of {@link run}.
@@ -334,6 +401,8 @@ export type RunResult = {
  
  @param cwd - directory the display paths are made relative to
  
+ @param lfsImageExclude - gitignore-syntax patterns for files the `lfs-image-url` rule must leave alone
+ 
  @returns rendered report, whether violations remain, and how many files were fixed
  
  @example
@@ -346,11 +415,19 @@ export async function run({
   fix,
   reporter,
   cwd,
+  lfsImageExclude,
 }: RunParams,): Promise<RunResult> {
   /**
    Files to lint or fix.
    */
   const files = await resolveFiles(paths,);
+  /**
+   Repository facts for the `lfs-image-url` rule; empty makes the rule inert.
+   */
+  const lfsRepos = await discoverLfsImageRepo({
+    cwd,
+    exclude: lfsImageExclude,
+  },);
   /**
    One processed entry per non-skipped file, built concurrently.
    */
@@ -378,6 +455,19 @@ export async function run({
           source,
           mode,
         } = readSource;
+        /**
+         Per-file LFS context, when the rule applies to this file.
+         */
+        const [lfs,] = await lfsContextsFor({
+          repos: lfsRepos,
+          filePath: file.path,
+          source,
+          mdx: file.mdx,
+        },);
+        /**
+         Context spread for the rule runs below.
+         */
+        const lfsSpread = lfs === undefined ? {} : { lfs, };
         if (!fix) {
           return [{
             report: {
@@ -386,6 +476,7 @@ export async function run({
                 rules,
                 source,
                 mdx: file.mdx,
+                ...lfsSpread,
               },),),
             },
             fixed: false,
@@ -398,6 +489,7 @@ export async function run({
           rules,
           source,
           mdx: file.mdx,
+          ...lfsSpread,
         },);
         if ((source !== '') && (fixed.source === '')) {
           return [{

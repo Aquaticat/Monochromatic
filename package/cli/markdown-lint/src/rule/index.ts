@@ -1,4 +1,5 @@
 import type { Rule, } from '../types.ts';
+import { lfsImageUrl, } from './lfs-image-url.ts';
 import { headingIncrement, } from './md001-heading-increment.ts';
 import { commandsShowOutput, } from './md014-commands-show-output.ts';
 import { noDuplicateHeading, } from './md024-no-duplicate-heading.ts';
@@ -30,6 +31,7 @@ export const rules: readonly Rule[] = [
   linkImageStyle,
   noPipeTables,
   semanticLineBreaks,
+  lfsImageUrl,
 ];
 
 /**

@@ -1,6 +1,8 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { Root, } from 'mdast';
 
+import type { LfsImageContext, } from './lfs-image-context.ts';
+
 /**
  A localized source edit expressed as half-open source offsets. The oxlint and
  markdownlint `fixInfo` model translated to offsets, which mdast positions
@@ -67,6 +69,11 @@ export type RuleContext = {
    Whether the file was parsed as MDX.
    */
   readonly mdx: boolean;
+  /**
+   Per-file LFS facts for the `lfs-image-url` rule; absent when the run found
+   no `.lfsconfig` or the file is excluded, which makes that rule inert.
+   */
+  readonly lfs?: LfsImageContext;
 };
 
 /**

@@ -10,6 +10,12 @@ import { run, } from './run.ts';
 const FORMAT_PREFIX = '--format=';
 
 /**
+ Prefix on `--lfs-image-exclude=` arguments, sliced off to read one
+ gitignore-syntax pattern the `lfs-image-url` rule must skip.
+ */
+const LFS_IMAGE_EXCLUDE_PREFIX = '--lfs-image-exclude=';
+
+/**
  Help text printed for `--help`.
  */
 const HELP = `markdown-lint - lint Markdown and MDX
@@ -24,6 +30,10 @@ Options:
   --fix            Apply fixes in place; report only what stays unfixed.
   --format=<name>  Reporter: pretty (default) or json.
   --json           Shorthand for --format=json.
+  --lfs-image-exclude=<pattern>
+                   Skip the lfs-image-url rule for files matching this
+                   gitignore-syntax pattern (relative to the repository
+                   root); repeatable.
   --help, -h       Show this help.
 
 Exit codes:
@@ -124,6 +134,10 @@ type ParsedArgs = {
    Whether help was requested.
    */
   readonly help: boolean;
+  /**
+   Exclude patterns for the `lfs-image-url` rule.
+   */
+  readonly lfsImageExclude: readonly string[];
 };
 
 /**
@@ -153,16 +167,31 @@ function parseArgs(argv: readonly string[],): ParsedArgs {
    First unrecognized flag, if any.
    */
   const unknown = flags.find(function isUnknownFlag(flag: string,): boolean {
-    return !(KNOWN_FLAGS.has(flag,) || flag.startsWith(FORMAT_PREFIX,));
+    return !(KNOWN_FLAGS.has(flag,) || flag.startsWith(FORMAT_PREFIX,)
+      || flag.startsWith(LFS_IMAGE_EXCLUDE_PREFIX,));
   },);
   if (unknown !== undefined) {
     throw new CliUsageError(`Unknown option: ${unknown}. Run markdown-lint --help.`,);
+  }
+  /**
+   Exclude patterns for the `lfs-image-url` rule, in flag order.
+   */
+  const lfsImageExclude = flags
+    .filter(function isExcludeFlag(flag: string,): boolean {
+      return flag.startsWith(LFS_IMAGE_EXCLUDE_PREFIX,);
+    },)
+    .map(function patternOf(flag: string,): string {
+      return flag.slice(LFS_IMAGE_EXCLUDE_PREFIX.length,);
+    },);
+  if (lfsImageExclude.includes('',)) {
+    throw new CliUsageError('Empty --lfs-image-exclude= pattern. Run markdown-lint --help.',);
   }
   return {
     paths,
     fix: flags.includes('--fix',),
     reporter: deriveReporter(flags,),
     help: flags.includes('--help',) || flags.includes('-h',),
+    lfsImageExclude,
   };
 }
 
@@ -190,6 +219,7 @@ async function main(): Promise<void> {
     fix: args.fix,
     reporter: args.reporter,
     cwd: process.cwd(),
+    lfsImageExclude: args.lfsImageExclude,
   },);
   if (result.output !== '') {
     // The report is the machine-readable output: stdout, kept clean for pipes.
