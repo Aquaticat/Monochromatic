@@ -135,14 +135,18 @@ TODO
      (If the index had not replicated yet,
      the run instead plans a fresh publish that no-ops against the existing version;
      the outcome is the same.)
-16.  Create the bootstrap version's tag and release by hand,
-     in the shape the publish job uses for later versions:
-     `git tag -a '@monochromatic-dev/module-logger@0.1.0' <merge commit of the version pull request> -m '@monochromatic-dev/module-logger@0.1.0'`,
-     `git push origin '@monochromatic-dev/module-logger@0.1.0'`,
-     then
-     `gh release create '@monochromatic-dev/module-logger@0.1.0' --verify-tag --title '@monochromatic-dev/module-logger@0.1.0' --notes-file <file with the 0.1.0 section of package/module/logger/CHANGELOG.md>`.
+16.  Create the bootstrap version's tag and release through the GitHub API,
+     in the shape the publish job uses for later versions
+     (a plain `git push` of the tag fails in the cli-git wrapper,
+     see `doc/troubleshooting/cli-git-tag-push-eagain.md`):
+     `gh release create '@monochromatic-dev/module-logger@0.1.0' --target "$(git rev-parse <merge commit of the version pull request>)" --title '@monochromatic-dev/module-logger@0.1.0' --notes-file <file holding the 0.1.0 section of package/module/logger/CHANGELOG.md>`.
      Expected:
-     `gh release view '@monochromatic-dev/module-logger@0.1.0' --json tagName --jq .tagName` prints the tag name.
+     the release URL is printed,
+     and `gh release view '@monochromatic-dev/module-logger@0.1.0' --json tagName --jq .tagName` prints the tag name.
+17.  Fetch the tag GitHub created:
+     `git fetch --tags origin`.
+     Expected:
+     `git tag --list '@monochromatic-dev/module-logger@*'` prints `@monochromatic-dev/module-logger@0.1.0`.
 
 ## What to check
 

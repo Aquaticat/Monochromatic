@@ -1,10 +1,10 @@
 # module-logger first npm release
 
 Status:
- executing (2026-09-06);
- steps 1 to 8 landed,
- the release workflow ran green and opened the version pull request;
- bootstrap publish is the owner's runbook step.
+ done (2026-09-06);
+ 0.1.0 is published,
+ the trusted publisher exists,
+ and the release is tagged.
 Owner decisions are recorded here as they land;
  this file is canonical for the release,
  not `package/module/logger/bulletproofing.plan.md`.
@@ -93,7 +93,8 @@ Its post-release value (toml-edit verification bar,
    then `npm trust github` for the release workflow.
    Later versions publish from CI with provenance.
    No npm token is ever stored.
-- A `doc/decision/` entry supersedes the "bundle, do not publish" direction.
+- A `doc/decision/` entry supersedes the "bundle,
+   do not publish" direction.
 - The legacy plan becomes a post-release track after a rewrite that fixes its inventory and removes the items decided against here;
    a GitHub issue tracks it.
 
@@ -211,7 +212,7 @@ Order matters:
      and manual tags,
      per the `choosing-technology` skill.
 2.   Decision doc `doc/decision/npm-publishing.md`:
-     supersedes "bundle, do not publish";
+     supersedes the bundle-rather-than-publish direction;
      records changesets,
      trusted publishing,
      the local bootstrap,
@@ -278,14 +279,34 @@ Order matters:
    changesets' auto-format runs the npm dprint this workspace removed (`format: false`);
    the stock changelog line `<hash>: summary` fails the markdown lint (custom `.changeset/changelog.ts`).
 - Tarball verified in disposable consumers:
-   Node 24 imports, logs, flushes, refuses `./ts`;
+   Node 24 imports,
+   logs,
+   flushes,
+   refuses `./ts`;
    Node 22 warns `EBADENGINE`.
 - Runbook:
    `doc/runbook/publish-npm-package-first-time.md`.
 
+## Result (2026-09-06)
+
+- `@monochromatic-dev/module-logger@0.1.0` is on the registry (shasum `f19c6f53`,
+   publisher `aquaticat`,
+   no provenance);
+   a fresh Node 24 project installed it from the registry and logged.
+- Trusted publisher registered for `npm-release.yml` (id `4315f78a-aba0-4cdb-9336-b5f6649d5635`).
+- Version pull request #478 merged as `dfa0e0d58`;
+   tag and GitHub release `@monochromatic-dev/module-logger@0.1.0` created through the GitHub API
+   (the workflow reports nothing to do for an already-published version,
+   and the cli-git wrapper rejects a manual tag push,
+   `doc/troubleshooting/cli-git-tag-push-eagain.md`).
+- Lesson recorded in the runbook:
+   wait for the npm package index to replicate before merging,
+   and create the bootstrap version's tag by hand.
+
 ## Next action
 
-Owner runs the runbook against the version pull request (#478).
+None for this release.
+The next changeset merged to `main` exercises the CI publish path with provenance for the first time.
 Agent work done:
  the post-release track is issue #479;
  issue comments (#159,
