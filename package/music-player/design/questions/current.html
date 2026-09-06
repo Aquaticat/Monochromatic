@@ -170,9 +170,9 @@ legend {
 }
 
 .options {
-  min-inline-size: 88rem;
+  min-inline-size: max-content;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, clamp(19rem, calc(100vw - 4.625rem), 24rem));
   gap: 1rem;
 }
 
