@@ -90,6 +90,16 @@ and it has since been seen to hurt.
   15520 to 322 warnings,
   so a control run of the same wrapper command without `--allow` is being taken before the 49 s is attributed.
 
+- Control sweep (same wrapper command,
+   rule on,
+   after the config rebuild):
+   154.2 s on 3080 files,
+  4273 warnings and 1327 errors.
+  Both this and the 65.3 s rule-allowed run happened while the worktree spike was installing and building on
+  the same machine,
+  so the rule's share sits somewhere between 49 s and 89 s of the warm sweep until a back-to-back pair is
+  measured on a quiet machine.
+
 ## Evidence already in the repo
 
 - `doc/planning/oxlint-warm-sweep-attribution.md` (issue #374,
