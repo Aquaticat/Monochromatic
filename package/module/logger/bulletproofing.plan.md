@@ -285,6 +285,31 @@ The round-2 shape,
    DECISIONS.md,
    the changeset.
 
+### Round 3 (2026-09-06): landing plan
+
+- The five neutral-only libraries keep the neutral default list in their inlined logger copy for now;
+   an issue records that they should ship a node build with a `node` condition,
+   as `kv-store` and `pipe` do.
+- The starless-TSDoc reformat of module-logger lands as its own `style(module-logger)` commit before the split,
+   so the package's lint gate is green and the architecture diff stays readable.
+- The Playwright harness paths (`packages/` in `playwright/serve.ts` and `playwright.browser.config.ts`) are fixed in
+   their own `fix(playwright)` commit,
+   together with exposing `browser.mjs` on the harness page for the IndexedDB and OPFS browser tests.
+- The `attw` types gate in the release workflow is deferred to a separate change.
+- Landing order on main,
+   pending the owner's go:
+   TSDoc reformat commit;
+   Playwright fix commit;
+   split commit with guard test,
+   test import updates,
+   README,
+   `package.json` description,
+   DECISIONS.md entry superseding the open problem,
+   and the minor changeset naming the `default`-condition consequence;
+   guard-failure proof by stripping the `imports` map;
+   the Q14 issue;
+   removal of both throwaway worktrees.
+
 ## Verification campaign (the toml-edit bar)
 
 `package/module/toml-edit` has a budgeted property campaign,
