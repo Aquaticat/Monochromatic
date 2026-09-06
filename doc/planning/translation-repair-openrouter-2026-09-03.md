@@ -2085,6 +2085,16 @@ no model asked.
   pipeline `30cd442b`,
     plain invocation,
     fresh runs dir `~/temp/agent/yuliannyanner4-20260906`,
+    and killed at 22:07:59 UTC,
+    26 calls in,
+    when the full suite on that build (934 `PASS`,
+    2 `FAIL`) showed the names-only message inventory did not know `CollapsedHeadingError`;
+    the inventory is a test file,
+    fixed in `e5bd6bf0f` with no rebuild,
+    and the rule was applied as written.
+- **`yulianNyanner` relaunched at 22:10:19 UTC** on `e5bd6bf0f`,
+  the same pipeline `30cd442b`,
+    fresh runs dir `~/temp/agent/yuliannyanner5-20260906`,
     log beside it.
     The reading follows,
     with the five headings first.
