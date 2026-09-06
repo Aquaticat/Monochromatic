@@ -45,6 +45,7 @@ export {
 export {
   readWriterGrace,
   resolveWriterGraceMs,
+  WRITER_GRACE_MS,
   WRITER_GRACE_VAR,
   WRITER_STAGE_LABELS,
   type WriterGrace,

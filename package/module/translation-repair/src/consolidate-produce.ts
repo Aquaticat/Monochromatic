@@ -148,7 +148,7 @@ export async function produceConsolidations(
     validate: isTranslateReportWire,
     stage: produceConsolidations.name,
     // A WRITER ROUND: every voice the window cuts is one fewer proposal, so it
-    // waits under the writer window when a launch set one
+    // waits under the writer window, built in since 2026-09-06
     // (`writer-grace-override.ts`).
     graceMs: writerRoundGraceMs(),
     l: pl,

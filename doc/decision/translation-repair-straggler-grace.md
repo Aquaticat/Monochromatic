@@ -1,6 +1,23 @@
 # The straggler grace moves from 60 to 180 seconds, on the latency distribution
 
-## Current status, 2026-08-29
+## Current status, 2026-09-06
+
+Three windows are built in,
+each the owner's:
+every round waits 120000 ms after quorum (`STRAGGLER_GRACE_MS` in `stage-round.ts`,
+decided 2026-09-03);
+the writer rounds,
+editor,
+refiner,
+translate and consolidate,
+wait 180000 ms (`WRITER_GRACE_MS` in `writer-grace-override.ts`,
+decided 2026-09-06),
+or the round window when a launch made that the longer one;
+and the editor calibration runs every round at 300000 ms (decided 2026-08-26).
+`TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` and `TRANSLATION_REPAIR_WRITER_GRACE_MS` move the first two for one
+launch.
+
+## Superseded status, 2026-08-29
 
 Built-in pass grace remains 180000 milliseconds.
 Generation 12 changes when it starts:
@@ -335,6 +352,50 @@ the noise; the withheld seats' finished answers were all usable. The owner chose
 `STRAGGLER_GRACE_MS` in `stage-round.ts` is now 120_000; the launch dial is no longer needed for the pass.
 Writer rounds follow it unless `TRANSLATION_REPAIR_WRITER_GRACE_MS` is set; today's passes set 180000 there,
 and that per-role figure stays a launch dial, as the 2026-09-02 addendum records.
+
+## Decision 2026-09-06: writer rounds wait 180 seconds built in
+
+Decided by the owner,
+asked with three options once the pass overlap fallback had moved on the same defect
+(`doc/decision/translation-repair-pass-overlap.md`):
+a production default that has never shipped a page.
+Every page that shipped since the writer dial landed ran its writers at 180000 ms through
+`TRANSLATION_REPAIR_WRITER_GRACE_MS` while the round window was 120000 ms,
+so a launch without the variable would have run a configuration no page had been read under.
+
+The evidence put beside the question,
+from the four shipped logs of 2026-09-04
+(`luxuanwen3`,
+`SS3B_0016`,
+`Uekawakuyuurei`,
+`MTF_0615`):
+writer-round cuts at 180 s were 4,
+6,
+11 and 20,
+almost all in `produceConsolidations`,
+against 28,
+35,
+26 and 135 reader-round cuts at 120 s.
+Not measured:
+writers at 120 s,
+which has no matched arm,
+and how many writer voices the extra 60 seconds bought.
+
+Options offered,
+ranked build 180000 in over keep the launch dial over writers at the round window:
+the built-in reproduces every shipped page's configuration with nothing to remember;
+the dial leaves production depending on an operator;
+the round window for writers is the one option with no page behind it.
+The owner chose the built-in.
+
+`WRITER_GRACE_MS` in `writer-grace-override.ts` is 180_000.
+Writers never wait less than every other round,
+so under the calibration's 300000 ms they follow the round window,
+and under a launch that shortens the round dial to 60000 ms they keep 180000,
+which is the 2026-09-02 launch the dial was made for.
+The dial still moves the writers for one launch in either direction.
+Every launch now prints `WRITER GRACE built in` beside the round note,
+so a log never hides which window its writers ran under.
 
 ## Addendum 2026-08-27: one same-digest hard-page pair
 

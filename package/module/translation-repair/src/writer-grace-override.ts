@@ -5,8 +5,9 @@ import {
 import { STRAGGLER_GRACE_MS, } from './stage-round.ts';
 
 //region Writer grace override
-// Lets one invocation give its WRITER rounds a different straggler window than
-// its reader rounds, without rebuilding and without moving a built-in.
+// Gives the WRITER rounds a longer straggler window than the reader rounds,
+// built in since 2026-09-06, and lets one invocation move it without a
+// rebuild.
 //
 // A WRITER ROUND LOSES A CANDIDATE; A READER ROUND LOSES A BALLOT. The editor,
 // refiner, translate and consolidate gathers ask each seat for text, and every
@@ -21,23 +22,40 @@ import { STRAGGLER_GRACE_MS, } from './stage-round.ts';
 // round. A window sized for the eight-wide rounds unseats the writers the
 // three-wide rounds were seated on.
 //
-// A SECOND DIAL RATHER THAN A SECOND BUILT-IN, for the reason `grace-override.ts`
-// gives: the built-in window and its decision record
-// (`doc/decision/translation-repair-straggler-grace.md`) are unchanged, and a
-// launch that sets nothing runs every round under one window exactly as
-// before. Set, the dial applies to the writer rounds alone; the reader rounds
-// keep whatever `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` or the built-in gives
-// them.
+// A BUILT-IN OF ITS OWN SINCE 2026-09-06. The dial landed on 2026-09-02 as a
+// launch-time setting so the round window's decision record stayed unchanged,
+// and every page that shipped afterwards ran its writers at 180000 ms through
+// it while the round window was the owner's 120000 ms of 2026-09-03. A
+// production launch that depended on an operator remembering the variable was
+// the same defect the pass overlap fallback had, so the owner made the figure
+// the built-in (`doc/decision/translation-repair-straggler-grace.md`, decision
+// of 2026-09-06). Writers never wait less than every other round: when the
+// round window is the longer one, as under the editor calibration's 300000 ms,
+// the writers follow it.
 //
-// UNSET AND BLANK BOTH MEAN "same as every other round", and anything else
-// unreadable refuses as a stated refusal, by the rule `readWindowDial` holds
-// for both dials.
+// UNSET AND BLANK BOTH MEAN "the built-in, or the round window when that is
+// longer", and anything else unreadable refuses as a stated refusal, by the
+// rule `readWindowDial` holds for both dials.
 
 /**
  * Environment variable overriding the writer rounds' straggler window, in
  * milliseconds.
  */
 export const WRITER_GRACE_VAR = 'TRANSLATION_REPAIR_WRITER_GRACE_MS';
+
+/**
+ * Milliseconds a writer round keeps waiting on stragglers after quorum when no
+ * launch dial says otherwise and the round window is shorter.
+ *
+ * THE OWNER'S DECISION OF 2026-09-06, on the four pages of 2026-09-04 that
+ * shipped with their writers at this window through the launch dial while the
+ * reader rounds waited `STRAGGLER_GRACE_MS`: writer-round cuts were 4, 6, 11
+ * and 20 against 28, 35, 26 and 135 reader-round cuts. Whether the round window
+ * would serve the writers was not measured as a matched pair, and the owner
+ * chose the configuration every shipped page ran over an unmeasured shorter
+ * one. Record: `doc/decision/translation-repair-straggler-grace.md`.
+ */
+export const WRITER_GRACE_MS = 180_000;
 
 /**
  * Stage labels of the rounds the dial governs, as their log lines spell them.
@@ -53,10 +71,9 @@ export const WRITER_STAGE_LABELS: readonly string[] = [
 ];
 
 /**
- * Reads the window the writer rounds run under.
+ * Reads the writer dial's text.
  *
- * @param fallback - window every other round runs under, used when the dial
- * is unset or blank
+ * @param fallback - window the writers run under when the text is blank
  *
  * @param raw - override text; tests pass their own, and the environment read
  * supplies `''` for an absent variable, since unset and empty are alike here
@@ -68,7 +85,7 @@ export const WRITER_STAGE_LABELS: readonly string[] = [
  *
  * @example
  * ```ts
- * const writerMs = resolveWriterGraceMs({ fallback: roundMs, },);
+ * const writerMs = resolveWriterGraceMs({ fallback: WRITER_GRACE_MS, },);
  * ```
  */
 export function resolveWriterGraceMs(
@@ -84,7 +101,7 @@ export function resolveWriterGraceMs(
     variable: WRITER_GRACE_VAR,
     fallback,
     raw,
-    unsetMeans: 'give writer rounds the same window as every other round',
+    unsetMeans: 'give writer rounds the built-in writer window, or the round window when that is longer',
   },);
 }
 
@@ -103,25 +120,27 @@ export type WriterGrace = {
   readonly writerMs: number;
 
   /**
-   * Milliseconds every other round keeps waiting, the writers' fallback.
+   * Milliseconds every other round keeps waiting.
    */
   readonly roundMs: number;
 
   /**
-   * `writer-dial` when a launch set the writer variable; `round-window` when
-   * the writers follow every other round.
+   * `writer-dial` when a launch set the writer variable; `built-in` when the
+   * writers wait `WRITER_GRACE_MS` because nothing set them and the round
+   * window is shorter; `round-window` when the writers follow every other
+   * round, because that window is at least as long as the built-in.
    *
    * CARRIED RATHER THAN INFERRED from the two numbers differing: the two are
    * read from mutable environment, and a note that blamed the writer dial
    * because two readings taken at different moments disagreed would name an
    * override nobody made.
    */
-  readonly source: 'writer-dial' | 'round-window';
+  readonly source: 'built-in' | 'round-window' | 'writer-dial';
 };
 
 /**
  * Reads both windows of this invocation, the round window first because the
- * writer window falls back to it.
+ * writer window is measured against it.
  *
  * READ AT EACH GATHER rather than once at launch, by the path every other
  * round already takes through `runGatherRound`: the calibration adopts its own
@@ -151,15 +170,22 @@ export function readWriterGrace(): WriterGrace {
   const written = process.env[WRITER_GRACE_VAR] ?? '';
 
   if (written.trim() === '') {
+    if (roundMs >= WRITER_GRACE_MS) {
+      return {
+        writerMs: roundMs,
+        roundMs,
+        source: 'round-window',
+      };
+    }
     return {
-      writerMs: roundMs,
+      writerMs: WRITER_GRACE_MS,
       roundMs,
-      source: 'round-window',
+      source: 'built-in',
     };
   }
   return {
     writerMs: resolveWriterGraceMs({
-      fallback: roundMs,
+      fallback: WRITER_GRACE_MS,
       raw: written,
     },),
     roundMs,
@@ -169,7 +195,8 @@ export function readWriterGrace(): WriterGrace {
 
 /**
  * Window a writer round runs under in this invocation: the writer dial when
- * set, otherwise whatever every other round runs under.
+ * set, otherwise the built-in writer window or the round window when that is
+ * longer.
  *
  * @returns Milliseconds a writer round keeps waiting on stragglers after quorum
  *
@@ -189,8 +216,8 @@ export function writerRoundGraceMs(): number {
 }
 
 /**
- * Explains which window the writer rounds are under when a launch gave them
- * their own.
+ * Explains which window the writer rounds are under whenever it is not the
+ * round window, whether the built-in or a launch dial put them there.
  *
  * PRINTED BY THE DRIVERS, beside the round window's own note, for the reason
  * `graceOverrideNote` gives: a run must never hide which window it ran under,
@@ -213,9 +240,17 @@ export function writerGraceOverrideNote(
   if (grace.source === 'round-window')
     return '';
 
-  return `WRITER GRACE OVERRIDDEN by ${WRITER_GRACE_VAR}: writer rounds `
-    + `(${WRITER_STAGE_LABELS.join(', ',)}) abandon stragglers ${String(grace.writerMs,)}ms after `
-    + `quorum rather than the ${String(grace.roundMs,)}ms every other round waits`;
+  /**
+   * Stages and both windows, the part every note carries.
+   */
+  const windows = `writer rounds (${WRITER_STAGE_LABELS.join(', ',)}) abandon stragglers `
+    + `${String(grace.writerMs,)}ms after quorum rather than the ${String(grace.roundMs,)}ms every other round waits`;
+
+  if (grace.source === 'built-in') {
+    return `WRITER GRACE built in: ${windows}, the owner's decision of 2026-09-06; `
+      + `${WRITER_GRACE_VAR} moves it for one launch`;
+  }
+  return `WRITER GRACE OVERRIDDEN by ${WRITER_GRACE_VAR}: ${windows}`;
 }
 
 //endregion Writer grace override

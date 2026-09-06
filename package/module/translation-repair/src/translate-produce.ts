@@ -178,7 +178,7 @@ export async function produceTranslateSlate(
     validate: isTranslateReportWire,
     stage: 'translate',
     // A WRITER ROUND: every voice the window cuts is one fewer rendering on
-    // the slate, so it waits under the writer window when a launch set one
+    // the slate, so it waits under the writer window, built in since 2026-09-06
     // (`writer-grace-override.ts`).
     graceMs: writerRoundGraceMs(),
     l: tl,

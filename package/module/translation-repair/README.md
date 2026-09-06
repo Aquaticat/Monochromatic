@@ -1326,15 +1326,19 @@ a value that is not a positive number leaves the default,
 and the retry ladder separately waits as long as a refusal's "try again in Ns" asks.
 The window starts empty at launch,
 so a launch within an hour of a heavy run is refused until that run's requests leave the window.
-`TRANSLATION_REPAIR_WRITER_GRACE_MS` (`writer-grace-override.ts`) gives the WRITER rounds alone,
+The WRITER rounds,
 editor,
 refiner,
 translate and consolidate,
-a window of their own for one launch,
+wait 180000 ms on stragglers after quorum (`WRITER_GRACE_MS` in `writer-grace-override.ts`,
+the owner's decision of 2026-09-06 in `doc/decision/translation-repair-straggler-grace.md`),
 since a cut writer voice is a whole candidate lost while a cut reader voice is one ballot of eight;
-unset,
-writers follow the round window,
-and a launch that sets it prints `WRITER GRACE OVERRIDDEN`
+they follow the round window instead when a launch made that the longer one,
+as the calibration's 300000 ms is,
+so the built-in never shortens a writer round.
+`TRANSLATION_REPAIR_WRITER_GRACE_MS` moves the writers for one launch in either direction.
+Every launch prints `WRITER GRACE built in`,
+or `WRITER GRACE OVERRIDDEN` when the dial is set,
 beside the round note in both the pass and this calibration.
 It drives the whole repair lane,
 so the claims an editor works from are claims models really raised about that passage rather than fixtures.

@@ -208,6 +208,10 @@ TODO | DONE
     `TRANSLATION_REPAIR_WRITER_GRACE_MS=<ms>` (prints `WRITER GRACE OVERRIDDEN by ...`;
     the editor, refiner, translate and consolidate rounds alone wait this long on a straggler after quorum,
     the other rounds keep the round window).
+    Unset, the writer rounds wait their built-in 180000 ms and the launch prints `WRITER GRACE built in`,
+    and the pass keeps four slices in flight (`OVERLAP <entry> value=4 source=fallback`);
+    since 2026-09-06 the plain launch is the production launch,
+    and a dial is for a measured arm.
     A value the dial cannot read refuses the launch in one line naming the variable, at zero quota,
     which `-- --plan` shows without spending anything.
 

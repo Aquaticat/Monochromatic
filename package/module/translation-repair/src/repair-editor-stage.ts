@@ -191,7 +191,7 @@ export async function runEditorStage(
     // the wait protected is already held by a quorum of two.
     //
     // A WRITER ROUND, so the third voice is a whole candidate and waits under
-    // the writer window when a launch set one (`writer-grace-override.ts`).
+    // the writer window, built in since 2026-09-06 (`writer-grace-override.ts`).
     graceMs: writerRoundGraceMs(),
     l,
   },);

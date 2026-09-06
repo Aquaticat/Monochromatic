@@ -76,8 +76,10 @@ import { resolveStragglerGraceMs, } from './grace-override.ts';
  * THE EDITOR CALIBRATION RUNS UNDER 300000 MS INSTEAD (`adoptCalibrationGrace`
  * in `grace-override.ts`, the owner's decision of 2026-08-26 on arm D), because
  * under four slices in flight the longer window costs nothing measurable and
- * cuts the fewest voices. Writer rounds follow this value unless
- * `TRANSLATION_REPAIR_WRITER_GRACE_MS` says otherwise (`writer-grace-override.ts`).
+ * cuts the fewest voices. Writer rounds wait `WRITER_GRACE_MS`
+ * (`writer-grace-override.ts`, the owner's decision of 2026-09-06) or this
+ * value when it is the longer one, unless `TRANSLATION_REPAIR_WRITER_GRACE_MS`
+ * says otherwise.
  */
 export const STRAGGLER_GRACE_MS = 120_000;
 
