@@ -2,7 +2,9 @@
 extends = "build"
 
 [tasks."build:js"]
-extends = "build:js"
+description = "Build each artifact once in one dependency graph before bundling the browser consumer"
+# Nested fan-out processes cannot deduplicate a neutral build shared with the client fixture.
+depends = ["//package/module/test:build:js:node", "//package/module/test:build:js:client"]
 
 [tasks."build:js:browser"]
 extends = "build:js:browser"

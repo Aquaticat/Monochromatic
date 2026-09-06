@@ -231,14 +231,19 @@ export function dispatchSandboxOperation({
     );
   }
   if (invocation.operation === 'ctx.sinon.inject') {
-    /** Only function properties changed by Sinon injection belong to this attempt. */
+    /**
+     Only function properties changed by Sinon injection belong to this attempt.
+     */
     const previous: PropertyDescriptorMap = isSandboxTarget(target,) ? Object.getOwnPropertyDescriptors(target,) : {};
     return guardInjectedFactories({
       value: invokeSandboxMethod(invocation,),
       previous,
       owner: policy.owner,
       invoke(next: SandboxInvocation,): unknown {
-        return dispatchSandboxOperation({ invocation: next, policy, },);
+        return dispatchSandboxOperation({
+          invocation: next,
+          policy,
+        },);
       },
     },);
   }

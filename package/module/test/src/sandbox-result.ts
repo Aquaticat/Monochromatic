@@ -149,21 +149,45 @@ export function guardMockController({
 },): unknown {
   if ((!isSandboxTarget(value,)) || (!isSandboxTarget(target,)))
     return value;
-  /** Mock verification itself calls restore on the raw controller. */
+  /**
+   Mock verification itself calls restore on the raw controller.
+   */
   const generation = { restored: false, };
-  /** Capture the real controller restorer before exposing it to callers. */
-  const restore: unknown = Reflect.get(value, 'restore',);
-  if (typeof restore === 'function') {
-    Reflect.set(value, 'restore', new Proxy(restore, {
-      apply(method: typeof restore, receiver: unknown, args: unknown[],): unknown {
-        if (generation.restored || (owner.phase === 'completed' && !restoring()))
+  /**
+   Capture the real controller restorer before exposing it to callers.
+   */
+  const restore: unknown = Reflect.get(
+    value,
+    'restore',
+  );
+  if ((typeof restore) === 'function') {
+    Reflect.set(
+      value,
+      'restore',
+      new Proxy(
+        restore,
+        {
+      apply(
+        method: typeof restore,
+        receiver: unknown,
+        args: unknown[],
+      ): unknown {
+        if (generation.restored || ((owner.phase === 'completed') && (!restoring())))
           return undefined;
-        /** A failed restoration remains eligible for subsequent cleanup. */
-        const result: unknown = Reflect.apply(method, receiver, args,);
+        /**
+         A failed restoration remains eligible for subsequent cleanup.
+         */
+        const result: unknown = Reflect.apply(
+          method,
+          receiver,
+          args,
+        );
         generation.restored = true;
         return result;
       },
-    }),);
+    }
+      ),
+    );
   }
   return guardSandboxCapability({
     target: value,
@@ -224,8 +248,14 @@ export function guardInjectedFactories({
     /**
      Sinon injection defines plain factory properties.
      */
-    const method: unknown = Object.getOwnPropertyDescriptor(value, key,)?.value;
-    if ((typeof method) === 'function' && previous[key]?.value !== method) {
+    const method: unknown = Object.getOwnPropertyDescriptor(
+      value,
+      key,
+    )
+      ?.value;
+    if (((typeof method) === 'function') && (previous[key]
+      ?.value
+      !== method)) {
       Reflect.set(
         value,
         key,

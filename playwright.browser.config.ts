@@ -4,8 +4,11 @@ import {
   type PlaywrightTestConfig,
 } from '@playwright/test';
 
+/** Whether CI was enabled through a nonempty environment value. */
+const isCi = Boolean(process.env.CI,);
+
 /**
- * Browser Playwright configuration with an explicit public export type for isolated declarations.
+ Browser Playwright configuration with an explicit public export type for isolated declarations.
  */
 const config: PlaywrightTestConfig = defineConfig({
   testDir: './package',
@@ -17,8 +20,7 @@ const config: PlaywrightTestConfig = defineConfig({
     'webapp-productivity/wc/src/**/*.browser.test.ts',
   ],
   fullyParallel: true,
-  retries: process.env
-    .CI ? 2 : 0,
+  retries: isCi ? 2 : 0,
   reporter: [
     ['dot',],
     [
@@ -35,8 +37,7 @@ const config: PlaywrightTestConfig = defineConfig({
   webServer: {
     command: 'node playwright/serve.ts',
     url: 'http://localhost:3005',
-    reuseExistingServer: !process.env
-      .CI,
+    reuseExistingServer: !isCi,
   },
 
   projects: [

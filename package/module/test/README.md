@@ -89,15 +89,12 @@ bounded,
   `concurrency` inherits the parent's effective value,
    so setting
   `concurrency: 1` once at the top sequences all descendants.
-   When child tests
-  stub shared global state (e.g. prototype methods,
-   module-level variables),
-  set `concurrency: 1` on the outermost `describe` that contains those tests;
-  the inheritance carries through.
-   Concurrent tests that stub the same target
-  fail with `"Attempted to wrap X which is already wrapped"` because sinon
-  refuses to wrap a method that another concurrent test's sandbox has already
-  wrapped.
+  Supported Node method stubs and spies are context-owned and do not require serialization.
+  Other shared state,
+  including fake timers and environment variables,
+  still needs an outer sequential suite containing every affected reader and writer.
+  Serializing sibling suites separately does not serialize the siblings against each other.
+  See [Stubs and spies](#stubs-and-spies) for the exact ownership boundary.
 - **`skip`** (`boolean | string`,
    default `false`):
    skips the entire suite without running any children;
@@ -171,7 +168,13 @@ Executes a single test case.
 `fn` receives a `TestContext` containing:
 
 - **`expect`**: scoped expect with assertion counting (`expect.assertions(n)`, `expect.hasAssertions()`)
-- **`sinon`**: sinon sandbox for stubs, spies, and fake timers; auto-restores after the test.
+- **`sinon`**: attempt-owned Sinon sandbox for stubs,
+  spies,
+  and fake timers.
+  Each body attempt,
+  including each repeat,
+  receives a fresh sandbox and context object.
+  Completion or timeout closes its mutation factories before restoration.
   The sandbox is created with default config.
   Custom `SinonSandboxConfig` is not supported;
   its only useful option (`useFakeTimers`) is already callable directly via `sinon.useFakeTimers()`.
@@ -1068,27 +1071,72 @@ await server.close();
 
 ### Stubs and spies
 
-The `sinon` sandbox from `TestContext` auto-restores after each test.
+The `sinon` sandbox from `TestContext` auto-restores after each body attempt.
 
-**Stubbing shared global state requires sequential execution.
-**
-When tests stub prototype methods or module-level variables
-(`sinon.stub(SomeClass.prototype, 'method')`),
-the stub affects all code running in the process,
- including concurrent tests.
-Sinon refuses to wrap an already-wrapped method,
- throwing
-`"Attempted to wrap X which is already wrapped"`.
-To avoid this,
- set `concurrency: 1` on the `describe` that contains those
-tests;
- children are lazy descriptors and the parent dispatches them one at a
-time:
+In Node,
+`ctx.sinon.stub(object, key)` and `ctx.sinon.spy(object, key)` isolate replacements of
+own,
+configurable,
+writable function-valued data properties.
+This includes ordinary `console` methods and methods owned by a class prototype.
+Concurrent tests keep separate fake identities,
+behaviors,
+and call histories without changing their test syntax or suite structure.
+String and symbol keys are supported;
+primitive numeric keys use their JavaScript string spelling.
+
+The property value follows the context reading it:
+
+- An active owner reads its own replacement.
+- An unstubbed test,
+  nested unstubbed test,
+  suite,
+  contextless callback,
+  or completed attempt reads the original.
+- Capturing a fake keeps that fake's identity when another context later invokes it.
+- Promise and timer continuations retain Node's async context.
+  Plain `EventEmitter` callbacks read the emitting context,
+  not necessarily the registration context.
+
+The target temporarily has an accessor descriptor.
+Assignment is rejected while it is leased.
+The final owner restores the exact original descriptor.
+External deletion or redefinition is preserved and reported during cleanup,
+not silently overwritten.
+Do not mix direct Sinon replacements with context-owned replacements on that property.
+
+Other overloads and mutation families retain ordinary Sinon behavior,
+with checks preventing them from overwriting an active contextual property:
+
+- Detached fakes,
+  whole-object operations,
+  `createStubInstance`,
+  mocks,
+  `replace`,
+  and existing accessor/nonconfigurable/inherited/proxy targets are not context-isolated.
+- Fake timers remain shared host replacements,
+  not per-test clocks.
+- Browsers retain ordinary Sinon method replacement semantics.
+  The neutral artifact is verified in Chromium,
+  Firefox,
+  and WebKit.
+- Node source and built entry points share ownership within one global realm.
+  Contextual behavior on other Node-compatible runtimes is not verified.
+
+Completed attempts cannot invoke retained sandbox factories or deferred target-changing fake methods.
+Restoring a replacement or mock controller retires that generation;
+create a new fake or controller for new mutations.
+Saved fake history and ordinary behavior configuration remain usable.
+These guards do not cancel application work or sandbox arbitrary JavaScript:
+await or stop background work before finishing a test.
+
+Shared ordinary replacements and other process-wide mutations still require serialization
+across every affected test.
+Supported Node method stubs can instead run concurrently:
 
 ```ts
 await describe({
   name: 'service with HTTP stubs',
-  concurrency: 1,
   children: [
     it({
       name: 'handles success',
@@ -1649,7 +1697,7 @@ The test files under `src/*.unit.test.ts` use the package's own primitives to va
 `buildAndTest` builds the harness,
  then runs the shared `test:unit` task,
  which executes each
-`*.unit.test.ts` file in its own `bun` process (`mise run //package/module/test:test:unit` once
+`*.unit.test.ts` file in its own `node` process (`mise run //package/module/test:test:unit` once
 the dist is built).
  Per-file process isolation keeps each suite's event loop independent;
  a single

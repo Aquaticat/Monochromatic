@@ -22,11 +22,11 @@ await describe({
         await it({ name: 'injection owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
           /** Runtime checking covers the actual injection namespace rather than inventing a narrowed facade. */
           const inject: unknown = Reflect.get(sinon, 'inject',);
-          if (typeof inject !== 'function')
+          if ((typeof inject) !== 'function')
             throw new Error('Sandbox did not provide inject',);
           expect(Reflect.apply(inject, sinon, [destination,],),).toBe(destination,);
           const stub: unknown = Reflect.get(destination, 'stub',);
-          if (typeof stub !== 'function')
+          if ((typeof stub) !== 'function')
             throw new Error('Sinon did not inject stub',);
           const fake: unknown = Reflect.apply(stub, destination, [target, 'method',],);
           expect(Reflect.get(target, 'method',),).toBe(fake,);
