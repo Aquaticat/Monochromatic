@@ -244,3 +244,55 @@ Known limits,
 
 The OPFS factory stays exported for callers who want an origin-private JSONL file
 and accept its close-to-persist semantics.
+
+## Console output neutralizes control characters (2026-09-06)
+
+The console sink renders every C0 control except newline and tab,
+ DEL,
+ and every C1 control as a `\uXXXX` escape before text reaches `console.*` or `process.stderr`
+(`src/sink/console-control-chars.ts`).
+Measured before the change:
+ the built artifact passed an OSC title-set and a CSI clear-screen straight to stdout,
+ so any log message carrying user-influenced text could drive the terminal.
+The repository's syntax-boundary rule makes this mandatory for a published sink.
+
+Alternatives considered:
+ preserving well-formed SGR color sequences (rejected:
+ no in-repo call site passes color through the logger,
+ and an allowlist needs a classifier tested against malformed sequences);
+ dropping controls silently (rejected:
+ hides an injection attempt);
+ replacing with U+FFFD (rejected:
+ loses which control was attempted).
+Newlines stay literal because multi-line messages are core,
+ and the persistent JSONL sinks already escape everything through `JSON.stringify`.
+A single-argument `console.info` call does not interpret `%s`,
+ so no format-specifier guard is needed;
+ that was verified on the built artifact.
+
+## flush() has a deadline (2026-09-06)
+
+`flush()` used to await every in-flight write with no bound,
+ so a file append on a stuck mount or an IndexedDB transaction blocked by another tab kept
+`await logger.flush()` from ever settling and the process from exiting.
+One deadline now wraps startup verification,
+ the write drain,
+ and every sink flush hook together;
+ when it elapses the logger reports one breadcrumb,
+ drops the tracked writes from its view,
+ and resolves.
+Sinks expose no cancellation,
+ so abandoned work continues in the background.
+
+The deadline is one `createLogger` option,
+ `flushDeadlineMs`,
+ with the exported default `DEFAULT_FLUSH_DEADLINE_MS` (5000).
+Measured on 2026-09-06:
+ a default logger flushing 100 records through the console and file sinks settles in about 2 ms locally
+(five runs between 2.02 and 2.69 ms),
+ so the default leaves three orders of magnitude for a slow but working backend.
+It is an option rather than a constant because a consumer on a network filesystem needs recourse other than a fork.
+The other tuning knobs proposed in `bulletproofing.plan.md` (verify timeout,
+ retire threshold,
+ startup buffer cap) stay out;
+ none has a measured trigger.

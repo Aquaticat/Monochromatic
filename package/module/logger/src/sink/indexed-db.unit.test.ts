@@ -3,7 +3,16 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createIndexedDbSink, } from './indexed-db.ts';
+import {
+  sinks,
+} from '@monochromatic-dev/module-logger';
+
+/**
+ * Sink factories under test, read from the built artifact's `sinks` namespace.
+ */
+const {
+  createIndexedDbSink,
+} = sinks;
 
 // Node, Deno, and Bun expose no `indexedDB` (probed on Node 26, Deno 2.9,
 // Bun 1.3), so this file exercises the unavailable-backend fallback that the

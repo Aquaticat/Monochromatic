@@ -1,3 +1,4 @@
+import { withTimeout, } from '@monochromatic-dev/module-async-time/ts';
 import { reportLoggerInternalError, } from './error-format.ts';
 
 import type {
@@ -6,6 +7,16 @@ import type {
   LogRecord,
   Sink,
 } from './types.ts';
+
+/**
+ * Default `flush()` deadline in milliseconds. Measured on 2026-09-06: a
+ * default logger flushing 100 records through the console and file sinks
+ * settles in about 2 ms locally, so this leaves three orders of magnitude for
+ * a slow but working backend while still bounding shutdown on a wedged one.
+ * Override per logger through the `flushDeadlineMs` option of
+ * {@link createLogger}.
+ */
+export const DEFAULT_FLUSH_DEADLINE_MS = 5_000;
 
 /**
  * Sink paired with its current availability inside one logger instance.
@@ -53,7 +64,18 @@ async function trackWrite(
  * resolves `false` or throws is dropped and receives no records. A rejected
  * `write` is the sink's own concern and does not disable the backend.
  *
+ * `flush()` always resolves: one deadline (`flushDeadlineMs`, default
+ * {@link DEFAULT_FLUSH_DEADLINE_MS}) wraps startup verification, the
+ * in-flight write drain, and every sink flush hook together. When it elapses
+ * the logger reports one breadcrumb, abandons the tracked writes from its
+ * view (the sinks expose no cancellation, so the underlying work continues),
+ * and resolves, so a wedged backend cannot hang a shutdown.
+ *
  * @param sinks - Sink adapters to fan each record out to, in priority order.
+ *
+ * @param flushDeadlineMs - Milliseconds one `flush()` may take before it
+ * resolves anyway; raise it for slow but working backends such as network
+ * filesystems.
  *
  * @returns Logger plus its eager `initPromise`; callers need not await
  * `initPromise` before logging, since startup records replay on verify.
@@ -64,9 +86,23 @@ async function trackWrite(
  * logger.info('ready');
  * await logger.flush();
  * ```
+ *
+ * @example
+ * ```ts
+ * const { logger } = createLogger({
+ *   sinks: [createFileSink()],
+ *   flushDeadlineMs: 30_000,
+ * });
+ * ```
  */
 export function createLogger(
-  { sinks, }: { readonly sinks: readonly Sink[]; },
+  {
+    sinks,
+    flushDeadlineMs = DEFAULT_FLUSH_DEADLINE_MS,
+  }: {
+    readonly sinks: readonly Sink[];
+    readonly flushDeadlineMs?: number;
+  },
 ): {
   readonly initPromise: Promise<void>;
   readonly logger: Logger;
@@ -361,15 +397,10 @@ export function createLogger(
   }
 
   /**
-   * Drains startup verification, in-flight sink writes (via
-   * {@link drainPendingWrites}), and every available sink's own `flush`
-   * hook. Resolves once all tracked writes and hooks have settled. A
-   * rejecting `flush` hook marks that sink unavailable and does not fail
-   * the aggregate.
+   * Runs every available sink's own `flush` hook. A rejecting hook marks that
+   * sink unavailable and does not fail the aggregate.
    */
-  async function flushAll(): Promise<void> {
-    await initPromise;
-    await drainPendingWrites();
+  async function runSinkFlushHooks(): Promise<void> {
     await Promise.all(
       entries.map(async function runFlush(
         entry,
@@ -394,6 +425,53 @@ export function createLogger(
         }
       },),
     );
+  }
+
+  /**
+   * Drains startup verification, in-flight sink writes (via
+   * {@link drainPendingWrites}), and every sink flush hook (via
+   * {@link runSinkFlushHooks}) in order. Never rejects on its own: every
+   * inner failure is already reported and swallowed, so the only way this
+   * stays pending is a verify, write, or hook that never settles.
+   */
+  async function drainEverything(): Promise<void> {
+    await initPromise;
+    await drainPendingWrites();
+    await runSinkFlushHooks();
+  }
+
+  /**
+   * Drops every tracked write from the logger's view after the flush deadline
+   * elapsed. The tracked wrappers keep their own rejection handling, so a
+   * late settlement can neither surface as an unhandled rejection nor stall
+   * the next `flush()`. The underlying sink work is not cancelled: sinks
+   * expose no cancellation signal.
+   */
+  function abandonPendingWrites(): void {
+    pendingWrites.clear();
+  }
+
+  /**
+   * Runs {@link drainEverything} under the flush deadline. Resolves once all
+   * tracked writes and hooks have settled, or once `flushDeadlineMs` elapses,
+   * whichever comes first; a deadline hit reports one breadcrumb and abandons
+   * the tracked writes so shutdown proceeds.
+   */
+  async function flushAll(): Promise<void> {
+    try {
+      await withTimeout({
+        label: 'logger flush',
+        ms: flushDeadlineMs,
+        promise: drainEverything(),
+      },);
+    }
+    catch (error: unknown) {
+      reportLoggerInternalError({
+        context: `flush deadline of ${flushDeadlineMs}ms elapsed; abandoning in-flight sink work`,
+        error,
+      },);
+      abandonPendingWrites();
+    }
   }
 
   /**

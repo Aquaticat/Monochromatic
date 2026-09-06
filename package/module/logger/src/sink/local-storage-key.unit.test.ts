@@ -4,10 +4,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  buildLogKey,
-  compareLogKeys,
-  parseLogKey,
-} from './local-storage-key.ts';
+  _buildLogKey as buildLogKey,
+  _compareLogKeys as compareLogKeys,
+  _parseLogKey as parseLogKey,
+} from '@monochromatic-dev/module-logger';
 
 /**
  * Keys the strict parser must reject: host application keys, the

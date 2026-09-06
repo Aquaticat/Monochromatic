@@ -3,7 +3,16 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createOpfsSink, } from './opfs.ts';
+import {
+  sinks,
+} from '@monochromatic-dev/module-logger';
+
+/**
+ * Sink factories under test, read from the built artifact's `sinks` namespace.
+ */
+const {
+  createOpfsSink,
+} = sinks;
 
 // Node/Bun has no `navigator.storage`, so this file exercises the
 // unavailable-backend fallback that the browser test (which runs where OPFS

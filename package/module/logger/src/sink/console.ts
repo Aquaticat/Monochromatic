@@ -1,4 +1,5 @@
 import { reportLoggerInternalError, } from '../error-format.ts';
+import { neutralizeControlCharacters, } from './console-control-chars.ts';
 
 import type {
   Level,
@@ -151,6 +152,8 @@ const LEVEL_TO_CONSOLE_METHOD: Record<Level,
 
 /**
  * Formats a single log record into the display string used by console output.
+ * The message passes through {@link neutralizeControlCharacters} first, so a
+ * terminal never receives a control sequence smuggled inside log text.
  *
  * @param record - Record to format.
  *
@@ -166,7 +169,7 @@ function formatRecord(record: LogRecord,): string {
   return `[${record.level}] [${
     new Date(record.timestamp,)
       .toISOString()
-  }] ${record.message}`;
+  }] ${neutralizeControlCharacters(record.message,)}`;
 }
 
 /**

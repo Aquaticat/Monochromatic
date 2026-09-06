@@ -3,11 +3,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { tagged, } from './tagged.ts';
-import type {
-  Level,
-  Logger,
-} from './types.ts';
+import {
+  tagged,
+  type Level,
+  type Logger,
+} from '@monochromatic-dev/module-logger';
 
 /**
  * Every log level paired with the message body the all-levels test sends

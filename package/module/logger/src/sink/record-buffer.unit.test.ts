@@ -4,8 +4,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
-import { createRecordBuffer, } from './record-buffer.ts';
-import type { Level, } from '../types.ts';
+import {
+  _createRecordBuffer as createRecordBuffer,
+  type Level,
+} from '@monochromatic-dev/module-logger';
 
 /**
  * Builds a capturing backend handoff so a test can assert exactly which

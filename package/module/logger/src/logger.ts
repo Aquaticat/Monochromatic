@@ -16,9 +16,12 @@ import type {
  * {@link createSessionStorageSink} wherever web storage round-trips (browsers,
  * Node 22+, Deno), {@link createLocalStorageSink} wherever `localStorage`
  * round-trips (browsers, Deno, Node launched with `--localstorage-file`),
- * {@link createFileSink} under Node. The noop sink is intentionally absent so
- * a process with no working backend surfaces the "No logging backends
- * available" error instead of silently discarding. The OPFS sink is exported
+ * {@link createFileSink} under Node. The noop sink is intentionally absent:
+ * the console sink verifies wherever `console` and `queueMicrotask` exist,
+ * so the default logger has a backend in every supported runtime, and a
+ * custom `createLogger` whose sinks all fail verification surfaces the
+ * "No logging backends available" error instead of silently discarding.
+ * The OPFS sink is exported
  * but no longer a default: its stream stages writes until a close that a
  * crash never performs, so IndexedDB holds the persistent-browser slot; see
  * `DECISIONS.md`.
@@ -49,8 +52,9 @@ export const initPromise: Promise<void> = defaultInitPromise;
 
 /**
  * Multi-sink logger that writes to all available backends.
- * Startup records replay to async sinks that verify after the log call;
- * log calls throw only after initialization proves no backend is available.
+ * Startup records replay to async sinks that verify after the log call.
+ * Log calls throw only when initialization proves no backend is available,
+ * which the console sink prevents in every supported runtime.
  *
  * @example
  * ```ts

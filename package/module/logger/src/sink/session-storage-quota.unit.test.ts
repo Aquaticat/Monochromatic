@@ -3,7 +3,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { detectSessionStorageQuotaChars, } from './session-storage-quota.ts';
+import {
+  _detectSessionStorageQuotaChars as detectSessionStorageQuotaChars,
+} from '@monochromatic-dev/module-logger';
 
 /**
  * Temporarily sets `globalThis` keys to the supplied values, restoring each to

@@ -3,7 +3,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { isQuotaExceededError, } from './web-storage-quota-error.ts';
+import {
+  _isQuotaExceededError as isQuotaExceededError,
+} from '@monochromatic-dev/module-logger';
 
 await describe({
   name: isQuotaExceededError.name,

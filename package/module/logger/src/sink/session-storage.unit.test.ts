@@ -4,9 +4,18 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
-import { createSessionStorageSink, } from './session-storage.ts';
-import { detectSessionStorageQuotaChars, } from './session-storage-quota.ts';
-import type { LogRecord, } from '../types.ts';
+import {
+  _detectSessionStorageQuotaChars as detectSessionStorageQuotaChars,
+  sinks,
+  type LogRecord,
+} from '@monochromatic-dev/module-logger';
+
+/**
+ * Sink factories under test, read from the built artifact's `sinks` namespace.
+ */
+const {
+  createSessionStorageSink,
+} = sinks;
 
 /**
  * Swaps `globalThis.sessionStorage` for `fake`, restoring the real backend when

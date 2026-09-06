@@ -3,8 +3,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createLocalStorageStore, } from './local-storage-store.ts';
-import { parseLogKey, } from './local-storage-key.ts';
+import {
+  _createLocalStorageStore as createLocalStorageStore,
+  _parseLogKey as parseLogKey,
+} from '@monochromatic-dev/module-logger';
 
 /**
  * One mebibyte of UTF-16 code units; the node cap under test is half the

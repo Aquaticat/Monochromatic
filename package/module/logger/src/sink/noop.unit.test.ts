@@ -3,7 +3,16 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createNoopSink, } from './noop.ts';
+import {
+  sinks,
+} from '@monochromatic-dev/module-logger';
+
+/**
+ * Sink factories under test, read from the built artifact's `sinks` namespace.
+ */
+const {
+  createNoopSink,
+} = sinks;
 
 await describe({
   name: 'noop sink',

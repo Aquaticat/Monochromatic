@@ -3,8 +3,17 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createLocalStorageSink, } from './local-storage.ts';
-import { parseLogKey, } from './local-storage-key.ts';
+import {
+  _parseLogKey as parseLogKey,
+  sinks,
+} from '@monochromatic-dev/module-logger';
+
+/**
+ * Sink factories under test, read from the built artifact's `sinks` namespace.
+ */
+const {
+  createLocalStorageSink,
+} = sinks;
 
 /**
  * Installs `fake` as `globalThis.localStorage` via the property descriptor,

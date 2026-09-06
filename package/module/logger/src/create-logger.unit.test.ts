@@ -4,13 +4,14 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createLogger, } from './create-logger.ts';
-import type {
-  LogRecord,
-  Sink,
-  SinkFlush,
-  Verify,
-} from './types.ts';
+import {
+  createLogger,
+  DEFAULT_FLUSH_DEADLINE_MS,
+  type LogRecord,
+  type Sink,
+  type SinkFlush,
+  type Verify,
+} from '@monochromatic-dev/module-logger';
 
 /**
  * Milliseconds a slow write parks before recording, long enough that the
@@ -18,6 +19,110 @@ import type {
  * draining `flush()` must wait for it.
  */
 const SLOW_WRITE_MS = 25;
+
+/**
+ * Flush deadline the deadline tests inject: short enough to keep the suite
+ * fast, long enough that timer granularity cannot fire it early.
+ */
+const SHORT_DEADLINE_MS = 60;
+
+/**
+ * Timer slack subtracted from the deadline when asserting a flush waited it
+ * out, covering setTimeout clamping and scheduler jitter.
+ */
+const DEADLINE_TOLERANCE_MS = 15;
+
+/**
+ * Upper bound on a flush that must not wait out the deadline again; well
+ * under `SHORT_DEADLINE_MS` so a regression that re-waits is caught.
+ */
+const FAST_FLUSH_MS = 40;
+
+/**
+ * Harness timeout for the deadline tests: a regression that hangs forever
+ * fails here instead of stalling the suite.
+ */
+const DEADLINE_TEST_TIMEOUT_MS = 2_000;
+
+/**
+ * Promise that never settles, standing in for a wedged sink operation.
+ *
+ * @returns Pending promise whose resolver is unreachable.
+ */
+function neverSettles(): Promise<never> {
+  return Promise.withResolvers<never>().promise;
+}
+
+/**
+ * Times one `flush()` call.
+ *
+ * @param flush - Flush function to time.
+ *
+ * @returns Elapsed milliseconds.
+ */
+async function timeFlush({ flush, }: { readonly flush: () => Promise<void>; },): Promise<number> {
+  /**
+   * Start timestamp.
+   */
+  const start = performance.now();
+  await flush();
+  return performance.now() - start;
+}
+
+/**
+ * Structural view of a sinon stub: only the recorded calls matter here, and
+ * naming the shape keeps the test free of a direct sinon type import.
+ */
+type RecordedCalls = {
+  readonly getCalls: () => readonly { readonly args: readonly unknown[]; }[];
+};
+
+/**
+ * Collects the console.warn messages carrying the flush-deadline breadcrumb.
+ * Sibling tests in this file run concurrently and emit their own
+ * internal-error reports through the same console, so a raw call count
+ * would be noise.
+ *
+ * @param warn - Stubbed console.warn.
+ *
+ * @returns Flush-deadline breadcrumb messages observed, in call order.
+ */
+function deadlineBreadcrumbMessages({ warn, }: { readonly warn: RecordedCalls; },): string[] {
+  return warn.getCalls()
+    .map(function toMessage(call,) {
+      return String(call.args[0],);
+    },)
+    .filter(function isDeadlineBreadcrumb(message,) {
+      return message.includes('flush deadline',);
+    },);
+}
+
+/**
+ * Counts the flush-deadline breadcrumbs, see {@link deadlineBreadcrumbMessages}.
+ *
+ * @param warn - Stubbed console.warn.
+ *
+ * @returns Number of flush-deadline breadcrumbs observed.
+ */
+function deadlineBreadcrumbs({ warn, }: { readonly warn: RecordedCalls; },): number {
+  return deadlineBreadcrumbMessages({ warn, },).length;
+}
+
+/**
+ * Builds a verified sink whose every write never settles.
+ *
+ * @returns Sink standing in for a wedged backend.
+ */
+function wedgedWriteSink(): Sink {
+  return {
+    verify: function verifyAvailable(): Promise<boolean> {
+      return Promise.resolve(true,);
+    },
+    write: function writeForever(): Promise<void> {
+      return neverSettles();
+    },
+  };
+}
 
 /**
  * Recording sink plus the array it appends every written record to, so a test
@@ -489,5 +594,159 @@ await describe({
           .toThrow('No logging backends available',);
       },
     },),
+
+    //region Flush deadline
+
+    describe({
+      name: 'flush deadline',
+      // One test at a time: each stubs the shared console.warn.
+      concurrency: 1,
+      children: [
+    it({
+      name: 'exports a positive default flush deadline',
+      fn: async () => {
+        expect(DEFAULT_FLUSH_DEADLINE_MS,)
+          .toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'flush resolves once the deadline elapses when a write never settles',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async ({ sinon, },) => {
+        const warn = sinon.stub(
+          console,
+          'warn',
+        );
+        const {
+          logger,
+          initPromise,
+        } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [wedgedWriteSink(),],
+        },);
+        await initPromise;
+        logger.info('stuck',);
+
+        const elapsed = await timeFlush({ flush: logger.flush, },);
+        expect(elapsed,)
+          .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
+        expect(deadlineBreadcrumbs({ warn, },),)
+          .toBe(1,);
+        expect(deadlineBreadcrumbMessages({ warn, },)[0],)
+          .toContain(`${SHORT_DEADLINE_MS}ms`,);
+      },
+    },),
+
+    it({
+      name: 'a second flush after an abandoned write does not wait out the deadline again',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async ({ sinon, },) => {
+        sinon.stub(
+          console,
+          'warn',
+        );
+        const {
+          logger,
+          initPromise,
+        } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [wedgedWriteSink(),],
+        },);
+        await initPromise;
+        logger.info('stuck',);
+        await logger.flush();
+
+        const elapsed = await timeFlush({ flush: logger.flush, },);
+        expect(elapsed,)
+          .toBeLessThan(FAST_FLUSH_MS,);
+      },
+    },),
+
+    it({
+      name: 'flush resolves once the deadline elapses when a flush hook never settles',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async ({ sinon, },) => {
+        const warn = sinon.stub(
+          console,
+          'warn',
+        );
+        const hookWedged = recordingSink({
+          flush: function flushForever(): Promise<void> {
+            return neverSettles();
+          },
+        },);
+        const {
+          logger,
+          initPromise,
+        } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [hookWedged.sink,],
+        },);
+        await initPromise;
+
+        const elapsed = await timeFlush({ flush: logger.flush, },);
+        expect(elapsed,)
+          .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
+        expect(deadlineBreadcrumbs({ warn, },),)
+          .toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'flush resolves once the deadline elapses when a verify never settles',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async ({ sinon, },) => {
+        const warn = sinon.stub(
+          console,
+          'warn',
+        );
+        const verifyWedged = recordingSink({
+          verify: function verifyForever(): Promise<boolean> {
+            return neverSettles();
+          },
+        },);
+        const { logger, } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [verifyWedged.sink,],
+        },);
+
+        const elapsed = await timeFlush({ flush: logger.flush, },);
+        expect(elapsed,)
+          .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
+        expect(deadlineBreadcrumbs({ warn, },),)
+          .toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'a flush that settles inside the deadline reports no breadcrumb',
+      fn: async ({ sinon, },) => {
+        const warn = sinon.stub(
+          console,
+          'warn',
+        );
+        const quick = recordingSink({ writeDelayMs: 1, },);
+        const {
+          logger,
+          initPromise,
+        } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [quick.sink,],
+        },);
+        await initPromise;
+        logger.info('fast',);
+        await logger.flush();
+
+        expect(messages({ recording: quick, },),)
+          .toEqual(['fast',],);
+        expect(deadlineBreadcrumbs({ warn, },),)
+          .toBe(0,);
+      },
+    },),
+      ],
+    },),
+
+    //endregion Flush deadline
   ],
 },);

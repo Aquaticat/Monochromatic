@@ -3,7 +3,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { detectLocalStorageQuotaChars, } from './local-storage-quota.ts';
+import {
+  _detectLocalStorageQuotaChars as detectLocalStorageQuotaChars,
+} from '@monochromatic-dev/module-logger';
 
 /**
  * Temporarily sets `globalThis` keys to the supplied values, restoring each to

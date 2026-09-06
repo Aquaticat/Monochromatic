@@ -3,8 +3,17 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createConsoleSink, } from './console.ts';
-import type { LogRecord, } from '../types.ts';
+import {
+  sinks,
+  type LogRecord,
+} from '@monochromatic-dev/module-logger';
+
+/**
+ * Sink factories under test, read from the built artifact's `sinks` namespace.
+ */
+const {
+  createConsoleSink,
+} = sinks;
 
 /**
  * Awaits two microtask hops so any pending `queueMicrotask(flushBuffer)`
@@ -289,6 +298,31 @@ await describe({
         const emitted = spy.firstCall.args[0] as string;
         expect(emitted,)
           .toBe('[info] [1970-01-01T00:00:00.000Z] hi',);
+      },
+    },),
+
+    it({
+      name: 'neutralizes terminal control characters before they reach console',
+      fn: async ({ sinon, },) => {
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
+        const sink = createConsoleSink();
+        const spy = sinon.spy(
+          console,
+          'info',
+        );
+
+        void sink.write(record({
+          level: 'info',
+          message: 'title:\u001B]0;PWNED\u0007 clear:\u001B[2J\n\tkept',
+        },),);
+        await waitForFlush();
+
+        const emitted = spy.firstCall.args[0] as string;
+        expect(emitted,)
+          .toBe('[info] [1970-01-01T00:00:00.000Z] title:\\u001B]0;PWNED\\u0007 clear:\\u001B[2J\n\tkept',);
+        expect(emitted,)
+          .not
+          .toContain('\u001B',);
       },
     },),
 

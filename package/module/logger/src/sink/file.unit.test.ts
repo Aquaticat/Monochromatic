@@ -10,11 +10,18 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  sinks,
+  type LogRecord,
+} from '@monochromatic-dev/module-logger';
+
+/**
+ * Sink factories under test, read from the built artifact's `sinks` namespace.
+ */
+const {
   createFileSink,
   findNodeModulesUp,
   NO_NODE_MODULES_FOUND,
-} from './file.ts';
-import type { LogRecord, } from '../types.ts';
+} = sinks;
 
 /**
  * Mock `stat` that always throws an ENOENT-like error, so `findNodeModulesUp`
