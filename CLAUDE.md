@@ -1161,8 +1161,10 @@ ST2:
 
 ST3:
  Cross-package workspace imports use the package's `/ts` subpath,
- which must resolve to TypeScript source,
+ which resolves to TypeScript source,
  never built output.
+Rationale + accepted costs:
+ `doc/decision/workspace-ts-source-imports.md`.
 
 ST5:
  Prefer named imports,
