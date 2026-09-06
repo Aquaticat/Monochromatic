@@ -1092,3 +1092,40 @@ composition variable only if measurement supports one. Preserve every settled co
 component, color, divider, folder, track, and device decision. Update `review-notes.md`
 standing standard 11 so the accepted screenshot, rather than old requirements, defines
 the feature boundary for an existing-screen refinement.
+
+## 9. Current correction: refine only visible existing elements
+
+The volume work is removed from both active branches. Main corrective commit
+`e2ec9bdbf` removes its captures, form, validator, compliance notes, inventory, open
+question, and handover claims. Prototype corrective commit `ae105b711` removes its
+Compose variants and capture path. The unrelated main `pnpm-lock.yaml` modification
+and pre-existing prototype capture changes remain untouched. `review-notes.md` now
+records failure 5j and strengthens standing standard 11: for existing-screen
+refinement, the accepted screenshot is the feature boundary.
+
+Measurement confirms the user's centering diagnosis. In `divider-final.png`, the
+outlined mode control spans x=112 through x=969, so its axis is x=540.5. The 414dp
+left pane spans x=0 through x=1008, whose axis is x=504. The complete transport block
+is therefore shifted 36.5 physical pixels, or 15dp, toward the fold. The Compose cause
+is a 30dp start-only system-gesture inset followed by 16dp horizontal padding; the fold
+side receives only 16dp. This also violates D18, which already settles the transport
+block on the half's axis. Centering is a correction in every candidate, not a question.
+Apply the system-gesture inset symmetrically, retain native safe space, and leave the
+full-bleed transport surface unchanged.
+
+A second existing inconsistency is factual rather than discretionary. The visible
+elapsed and duration labels are `1:06` and `4:35`, which imply 66/275 = 24%, while the
+prototype slider was set to 16%. Every refinement uses the corresponding 24% value.
+
+The in-scope 3 × 3 refinement matrix varies only existing presentation after those two
+corrections. Rows compare 8dp tight, 12dp balanced, and 16dp airy gaps between the same
+four transport groups. Columns compare standard, outlined, and tonal styling on the
+existing previous and next icon buttons while the existing pause action remains filled.
+The downloaded Material 3 guidance makes all four color styles available in baseline
+Material and orders their emphasis filled, tonal, outlined, standard. It specifically
+recommends mixing styles to clarify the primary action. Baseline Material supports only
+the default small icon-button size, so all controls retain default size and 48dp
+minimum targets. No element is added, removed, renamed, reordered, or moved between
+sections. All settled colors, spacers, rail, folder selection, track rows, icons, mode
+labels, and system bars remain unchanged. Prototype commit `2b2ac2e88` builds these
+nine candidates; native capture and visual ranking are next.
