@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: existing-screen refinement matrix</title>
+<title>Music player design: redundant-cue matrix</title>
 <style>
 :root {
   color-scheme: light;
@@ -27,9 +27,9 @@
   --color-bezel: #111111;
   --color-lens: #263542;
   --color-hinge: #5e5d58;
-  font-family: Roboto, system-ui, sans-serif;
   background-color: var(--color-page);
   color: var(--color-ink);
+  font-family: Roboto, system-ui, sans-serif;
 }
 
 * {
@@ -44,7 +44,7 @@ body {
 }
 
 main {
-  inline-size: min(100%, 108rem);
+  inline-size: min(100%, 112rem);
   margin-inline: auto;
   padding-block: 2rem 5rem;
   padding-inline: clamp(1rem, 3vw, 3rem);
@@ -89,7 +89,7 @@ h3 {
 .question-intro,
 .definition,
 .response-help {
-  max-inline-size: 76ch;
+  max-inline-size: 78ch;
   color: var(--color-ink-muted);
   line-height: 1.55;
 }
@@ -126,7 +126,7 @@ h3 {
 }
 
 .instructions ol {
-  max-inline-size: 72ch;
+  max-inline-size: 78ch;
   padding-inline-start: 1.5rem;
   line-height: 1.55;
 }
@@ -170,9 +170,9 @@ legend {
 }
 
 .options {
-  min-inline-size: 68rem;
+  min-inline-size: 88rem;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -211,46 +211,21 @@ legend {
   background-color: var(--color-paper-strong);
 }
 
-.option:has(input:checked) {
+.option[data-recommended="true"] {
   border-width: 0.1875rem;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 0.25rem var(--color-shadow);
 }
 
 .option-heading {
-  min-block-size: 5.5rem;
+  min-block-size: 6.5rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
   padding-block: 0.75rem;
   padding-inline: 0.75rem;
   border-block-end-width: 0.0625rem;
   border-block-end-style: solid;
   border-block-end-color: var(--color-line);
-  cursor: pointer;
-}
-
-.option-heading:hover {
-  background-color: var(--color-primary-container);
-}
-
-.option-heading:has(input:focus-visible),
-.preview-open:focus-visible,
-button:focus-visible,
-textarea:focus-visible {
-  outline-width: 0.1875rem;
-  outline-style: solid;
-  outline-color: var(--color-focus);
-  outline-offset: -0.1875rem;
-}
-
-.option-heading input {
-  min-inline-size: 3rem;
-  min-block-size: 3rem;
-  margin-block: 0;
-  margin-inline: 0;
-  accent-color: var(--color-primary);
-  cursor: pointer;
 }
 
 .option-title {
@@ -294,6 +269,17 @@ textarea:focus-visible {
 
 .preview-open:hover {
   background-color: var(--color-secondary-container);
+}
+
+.preview-open:focus-visible,
+button:focus-visible,
+textarea:focus-visible,
+.options-scroll:focus-visible,
+.review-choice:has(input:focus-visible) {
+  outline-width: 0.1875rem;
+  outline-style: solid;
+  outline-color: var(--color-focus);
+  outline-offset: 0.125rem;
 }
 
 .device-frame {
@@ -415,7 +401,7 @@ textarea:focus-visible {
 }
 
 .ranking-list {
-  max-inline-size: 90ch;
+  max-inline-size: 96ch;
   line-height: 1.55;
 }
 
@@ -429,7 +415,7 @@ textarea:focus-visible {
 
 .review-choices {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: 0.75rem;
   margin-block-end: 1.5rem;
 }
@@ -447,13 +433,6 @@ textarea:focus-visible {
   border-radius: 0.75rem;
   background-color: var(--color-paper-strong);
   cursor: pointer;
-}
-
-.review-choice:has(input:focus-visible) {
-  outline-width: 0.1875rem;
-  outline-style: solid;
-  outline-color: var(--color-focus);
-  outline-offset: -0.1875rem;
 }
 
 .review-choice input {
@@ -659,208 +638,112 @@ dialog::backdrop {
 <main>
   <header>
     <div>
-      <h1>Refine the existing screen</h1>
+      <h1>Choose redundant cues</h1>
       <p class="lede">
-        You were right: the accepted playback deck is not centered. I measured that defect, corrected it in every prototype, and varied only the spacing and button treatment of controls already visible on this screen.
+        Your 1B transport choice is applied. This round removes the space-consuming play column, strengthens the existing Open action, and compares every meaningful combination of the two visible treatments.
       </p>
     </div>
-    <span class="round-badge">Existing screen only · 3 × 3 refinement matrix</span>
+    <span class="round-badge">Existing screen only · 4 × 4 matrix</span>
   </header>
 
-  <section class="instructions" aria-labelledby="accepted-title">
-    <h2 id="accepted-title">Accepted screen, measured defects, and settled large text</h2>
-    <p class="question-intro">
-      This is the accepted screen before refinement. Its playback deck is shifted 15dp toward the fold: the deck axis is x=540.5 physical pixels while the 414dp left-pane axis is x=504 physical pixels. The visible 1:06 of 4:35 also implies 24% progress, but the slider is drawn at 16%.
-    </p>
+  <section class="instructions" aria-labelledby="settled-title">
+    <h2 id="settled-title">Corrections already applied</h2>
+    <ol>
+      <li><strong>Transport 1B:</strong> every cell uses tight 8dp playback spacing, outlined Previous and Next buttons, and filled Pause.</li>
+      <li><strong>Full track width:</strong> the play icon and its empty leading column are gone from every active candidate. Current and ordinary track titles both begin at x=1107 physical pixels.</li>
+      <li><strong>Redundant differentiation:</strong> every current-track option combines at least two visible channels. No option relies only on color or only on shape.</li>
+      <li><strong>Primary Open action:</strong> every Open candidate keeps both the folder icon and explicit label, then adds a visible Material button container.</li>
+      <li><strong>Matrix size:</strong> the sixteen cells come from four meaningful current-track treatments crossed with four meaningful Open treatments. Nine was never treated as a cap.</li>
+      <li><strong>Scope boundary:</strong> every candidate restyles existing visible elements only. No feature or control is added.</li>
+    </ol>
+    <div class="definition-list">
+      <p class="definition"><strong>Rows:</strong> explicit Playing label, accent title, soft row container, or outlined row. Every title is bold and every row retains full text width.</p>
+      <p class="definition"><strong>Columns:</strong> filled, tonal, elevated, or outlined Open button. Every action retains its icon, text label, and measured 48dp touch height.</p>
+      <p class="definition"><strong>Native evidence:</strong> every matrix image is an opaque 2076 × 2152px Compose capture of the 852 × 883dp unfolded Pixel 9 Pro Fold display.</p>
+    </div>
     <div class="options-scroll">
       <div class="options accepted-options">
-        <article class="option">
+        <article class="option" data-recommended="true">
           <div class="option-heading">
             <span class="option-title">
-              <span class="option-code">Accepted foundation · before correction</span>
-              <strong>Current unfolded screen</strong>
-              <span class="option-summary">Existing features only; playback content is visibly fold-shifted</span>
+              <span class="option-code">Accessibility evidence · 200% text</span>
+              <strong>Recommended 1A remains reachable</strong>
+              <span class="option-summary">Full-width tracks plus the settled vertical segmented control</span>
             </span>
           </div>
-          <button class="preview-open" type="button" data-preview-title="Accepted screen before centering correction" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-            <span class="device-frame">
-              <span class="device-screen">
-                <img data-candidate-source="Accepted native Compose capture, prototype commit 49d6568ed" src="@@IMAGE_BASELINE@@" width="852" height="883" alt="Accepted unfolded music-player screen before refinement, with the playback deck shifted toward the center fold">
-                <span class="device-camera" aria-hidden="true"></span>
-              </span>
-            </span>
-            <span class="preview-label">Open the accepted screen at measured size</span>
+          <button class="preview-open" type="button" data-preview-title="Recommended 1A at 200% text, scrolled to the vertical segmented control" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+            <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose cue-label-filled large-text capture, prototype commit 9938e8244" src="@@IMAGE_CUE_RECOMMENDED_FONT_200@@" width="852" height="883" alt="Unfolded music player at 200 percent text with a bold current title, explicit Playing label, no leading play column, and four connected vertical mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
+            <span class="preview-label">Open the 200% evidence at measured size</span>
           </button>
-        </article>
-        <article class="option">
-          <div class="option-heading">
-            <span class="option-title">
-              <span class="option-code">Settled correction · 200% text</span>
-              <strong>Purely vertical segmented mode control</strong>
-              <span class="option-summary">Transport scrolled vertically to show four connected full-label segments above the navigation inset</span>
-            </span>
+          <div class="assessment">
+            <p><strong>Verified:</strong> the current and ordinary track titles share full row width; Playing, all metadata, and all four mode labels remain readable. The deck scrolls vertically so the segmented control clears the navigation inset.</p>
+            <p><strong>Prototype boundary:</strong> production must still verify that assistive technology announces the custom vertical segmented stack as one mutually exclusive group.</p>
           </div>
-          <button class="preview-open" type="button" data-preview-title="Settled vertical segmented mode control at 200% text, scrolled into its safe position" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-            <span class="device-frame">
-              <span class="device-screen">
-                <img data-candidate-source="Native Compose large-text segmented capture, prototype commit bf6830f4f" src="@@IMAGE_LARGE_TEXT_SEGMENTED@@" width="852" height="883" alt="Unfolded music-player screen at 200 percent text, vertically scrolled to show four connected full-label mode segments clear of the navigation bar">
-                <span class="device-camera" aria-hidden="true"></span>
-              </span>
-            </span>
-            <span class="preview-label">Open the corrected 200% state at measured size</span>
-          </button>
-          <div class="assessment"><p><strong>Settled correction:</strong> the selected segment keeps its fill and checkmark; all four options remain one outlined segmented control with radio semantics. The deck scrolls vertically so the complete control clears the system navigation inset; the segmented control itself never scrolls horizontally.</p><p><strong>Prototype boundary:</strong> the pinned Compose library has no vertical group wrapper. This native study composes real segmented-button elements into the vertical stack; production must verify assistive technology announces one mutually exclusive group.</p></div>
         </article>
       </div>
     </div>
   </section>
 
-  <section class="instructions" aria-labelledby="considerations-title">
-    <h2 id="considerations-title">What I found in the existing composition</h2>
-    <ol>
-      <li><strong>Deck centering:</strong> start-only gesture padding leaves 46dp at the physical edge and 16dp at the fold, moving every playback element 15dp toward the fold.</li>
-      <li><strong>Seek consistency:</strong> 1:06 divided by 4:35 is 24%, so the existing slider position and labels disagree.</li>
-      <li><strong>Large text:</strong> the settled mode selector remains one segmented control, arranged as four connected vertical segments with full labels at 200% text.</li>
-      <li><strong>Action hierarchy:</strong> Previous and Next are separate icon buttons. Their emphasis can change without altering the settled segmented mode control beneath them.</li>
-      <li><strong>Vertical economy:</strong> gaps between the same four groups affect both deck rhythm and the folder space left above it.</li>
-      <li><strong>Hard boundary:</strong> every candidate contains exactly the accepted screen's visible elements. No feature, control, or product section is added.</li>
-    </ol>
-    <div class="definition-list">
-      <p class="definition"><strong>Corrected in every cell:</strong> the mode control spans x=73 through x=935 physical pixels, placing its axis at x=504, exactly on the left-pane axis. System-gesture safety remains symmetric.</p>
-      <p class="definition"><strong>Matrix rows:</strong> 8dp tight, 12dp balanced, or 16dp airy gaps between the existing title, seek, transport, and mode groups.</p>
-      <p class="definition"><strong>Matrix columns:</strong> standard, outlined, or tonal styling for the separate Previous and Next icon buttons. Pause remains filled. The segmented mode control is identical in every cell.</p>
-    </div>
-    <p class="response-help">
-      Every source is an opaque 2076×2152px native Jetpack Compose capture of the 852×883dp unfolded Pixel 9 Pro Fold display. Choose spacing and secondary-button emphasis separately after inspecting the matrix.
-    </p>
-  </section>
-
   <form id="design-form">
     <section class="question" aria-labelledby="matrix-title">
-      <h2 id="matrix-title">Nine refinements using only existing elements</h2>
-      <p class="question-intro">
-        All cells share the same exact centering and corrected 24% seek position. Rows change only vertical gap. Columns change only the separate Previous and Next icon-button emphasis. The settled segmented mode control remains unchanged at default text and becomes the verified vertical segmented stack at large text.
-      </p>
-
-      <section class="matrix-row" aria-labelledby="tight-row-title">
-        <p class="matrix-axis">Row 1 · tight 8dp rhythm</p>
-        <h3 id="tight-row-title">Return the most room to the folder picker</h3>
-        <p class="question-intro">The existing groups stay distinct but sit 4dp closer than the accepted 12dp rhythm.</p>
-        <div class="options-scroll" role="region" tabindex="0" aria-label="Tight deck refinements, scroll horizontally on narrow windows">
-          <div class="options">
-            <article class="option">
-              <div class="option-heading"><span class="option-title"><span class="option-code">1A · rank 3</span><strong>Tight · standard skips</strong><span class="option-summary">Compact rhythm and lowest secondary emphasis</span></span></div>
-              <button class="preview-open" type="button" data-preview-title="1A: Tight rhythm with standard skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-tight-standard capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_TIGHT_STANDARD@@" width="852" height="883" alt="Centered existing playback deck with tight gaps and uncontained previous and next icons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1A at measured size</span></button>
-              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Leaves the most vertical room for folders.</li><li>Makes filled Pause the single strong focal point.</li></ul><div><strong>Cons</strong></div><ul><li>Skip-button bounds are invisible at rest.</li><li>The stack is slightly compressed.</li></ul><p><strong>My analysis:</strong> the strongest compact treatment.</p></div>
-            </article>
-            <article class="option">
-              <div class="option-heading"><span class="option-title"><span class="option-code">1B · rank 8</span><strong>Tight · outlined skips</strong><span class="option-summary">Compact rhythm with visible medium-emphasis rings</span></span></div>
-              <button class="preview-open" type="button" data-preview-title="1B: Tight rhythm with outlined skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-tight-outlined capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_TIGHT_OUTLINED@@" width="852" height="883" alt="Centered existing playback deck with tight gaps and outlined previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1B at measured size</span></button>
-              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Keeps every skip target visibly bounded.</li><li>Returns vertical room to the picker.</li></ul><div><strong>Cons</strong></div><ul><li>Two small rings compete with the mode-control outline.</li><li>Tight spacing amplifies the extra linework.</li></ul><p><strong>My analysis:</strong> explicit, but visually fussy.</p></div>
-            </article>
-            <article class="option">
-              <div class="option-heading"><span class="option-title"><span class="option-code">1C · rank 4</span><strong>Tight · tonal skips</strong><span class="option-summary">Compact rhythm with the accepted skip-button fills</span></span></div>
-              <button class="preview-open" type="button" data-preview-title="1C: Tight rhythm with tonal skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-tight-tonal capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_TIGHT_TONAL@@" width="852" height="883" alt="Centered existing playback deck with tight gaps and tonal previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1C at measured size</span></button>
-              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Preserves clear circular skip targets.</li><li>Uses less height than the accepted rhythm.</li></ul><div><strong>Cons</strong></div><ul><li>Three filled circles form a heavier cluster.</li><li>The smaller gaps make that cluster denser.</li></ul><p><strong>My analysis:</strong> best tight option when visible button containers matter.</p></div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="matrix-row" aria-labelledby="balanced-row-title">
-        <p class="matrix-axis">Row 2 · balanced 12dp rhythm</p>
-        <h3 id="balanced-row-title">Keep the accepted vertical rhythm</h3>
-        <p class="question-intro">Only centering, seek consistency, and skip-button emphasis change.</p>
-        <div class="options-scroll" role="region" tabindex="0" aria-label="Balanced deck refinements, scroll horizontally on narrow windows">
-          <div class="options">
-            <article class="option">
-              <div class="option-heading"><span class="option-title"><span class="option-code">2A · rank 1 · recommended</span><strong>Balanced · standard skips</strong><span class="option-summary">Existing rhythm with a cleaner primary-action hierarchy</span></span></div>
-              <button class="preview-open" type="button" data-preview-title="2A: Balanced rhythm with standard skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-balanced-standard capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_BALANCED_STANDARD@@" width="852" height="883" alt="Exactly centered existing playback deck with balanced gaps, uncontained skip icons, and filled pause button"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2A at measured size</span></button>
-              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Retains the familiar 12dp rhythm.</li><li>Gives Pause unmistakable visual priority.</li></ul><div><strong>Cons</strong></div><ul><li>Skip hit areas are not drawn at rest.</li><li>Less explicit than contained icon buttons.</li></ul><p><strong>My analysis:</strong> best balance of calm hierarchy and existing spacing.</p></div>
-            </article>
-            <article class="option">
-              <div class="option-heading"><span class="option-title"><span class="option-code">2B · rank 7</span><strong>Balanced · outlined skips</strong><span class="option-summary">Existing rhythm with medium-emphasis skip rings</span></span></div>
-              <button class="preview-open" type="button" data-preview-title="2B: Balanced rhythm with outlined skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-balanced-outlined capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_BALANCED_OUTLINED@@" width="852" height="883" alt="Exactly centered existing playback deck with balanced gaps and outlined previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2B at measured size</span></button>
-              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Maintains the accepted group rhythm.</li><li>Shows clear target boundaries without fill.</li></ul><div><strong>Cons</strong></div><ul><li>Repeats the mode selector's outline language.</li><li>Competes with Pause more than standard buttons do.</li></ul><p><strong>My analysis:</strong> legible, but adds unnecessary linework.</p></div>
-            </article>
-            <article class="option">
-              <div class="option-heading"><span class="option-title"><span class="option-code">2C · rank 2 · conservative fallback</span><strong>Balanced · tonal skips</strong><span class="option-summary">Centered correction with accepted button styling</span></span></div>
-              <button class="preview-open" type="button" data-preview-title="2C: Balanced rhythm with tonal skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-balanced-tonal capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_BALANCED_TONAL@@" width="852" height="883" alt="Exactly centered existing playback deck with balanced gaps and tonal previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2C at measured size</span></button>
-              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Preserves the accepted skip-button treatment.</li><li>Keeps all three transport targets visually explicit.</li></ul><div><strong>Cons</strong></div><ul><li>The three circles carry more visual mass.</li><li>Pause hierarchy depends mainly on color.</li></ul><p><strong>My analysis:</strong> safest fallback if familiarity beats visual reduction.</p></div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="matrix-row" aria-labelledby="airy-row-title">
-        <p class="matrix-axis">Row 3 · airy 16dp rhythm</p>
-        <h3 id="airy-row-title">Give every playback group more breathing room</h3>
-        <p class="question-intro">The deck begins 12dp higher than the balanced row and leaves correspondingly less folder space.</p>
-        <div class="options-scroll" role="region" tabindex="0" aria-label="Airy deck refinements, scroll horizontally on narrow windows">
-          <div class="options">
-            <article class="option">
-              <div class="option-heading"><span class="option-title"><span class="option-code">3A · rank 5</span><strong>Airy · standard skips</strong><span class="option-summary">Open rhythm with low-emphasis secondary actions</span></span></div>
-              <button class="preview-open" type="button" data-preview-title="3A: Airy rhythm with standard skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-airy-standard capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_AIRY_STANDARD@@" width="852" height="883" alt="Centered existing playback deck with airy gaps and uncontained previous and next icons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3A at measured size</span></button>
-              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Creates calm separation between control groups.</li><li>Standard skips keep the taller stack visually light.</li></ul><div><strong>Cons</strong></div><ul><li>Consumes 12dp more picker height than balanced.</li><li>Related playback actions feel farther apart.</li></ul><p><strong>My analysis:</strong> clean but less space-efficient.</p></div>
-            </article>
-            <article class="option">
-              <div class="option-heading"><span class="option-title"><span class="option-code">3B · rank 9</span><strong>Airy · outlined skips</strong><span class="option-summary">Most separation plus repeated outlined circles</span></span></div>
-              <button class="preview-open" type="button" data-preview-title="3B: Airy rhythm with outlined skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-airy-outlined capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_AIRY_OUTLINED@@" width="852" height="883" alt="Centered existing playback deck with airy gaps and outlined previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3B at measured size</span></button>
-              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Every target remains visibly bounded.</li><li>Groups have generous separation.</li></ul><div><strong>Cons</strong></div><ul><li>Uses the most height.</li><li>Small rings float between a large slider and large mode outline.</li></ul><p><strong>My analysis:</strong> the least coherent combination.</p></div>
-            </article>
-            <article class="option">
-              <div class="option-heading"><span class="option-title"><span class="option-code">3C · rank 6</span><strong>Airy · tonal skips</strong><span class="option-summary">Generous rhythm with explicit tonal targets</span></span></div>
-              <button class="preview-open" type="button" data-preview-title="3C: Airy rhythm with tonal skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-airy-tonal capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_AIRY_TONAL@@" width="852" height="883" alt="Centered existing playback deck with airy gaps and tonal previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3C at measured size</span></button>
-              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Combines clear skip targets with open spacing.</li><li>Keeps the accepted button vocabulary.</li></ul><div><strong>Cons</strong></div><ul><li>The tallest deck also has the heaviest transport cluster.</li><li>Returns the least room to folder browsing.</li></ul><p><strong>My analysis:</strong> clear, but disproportionate to this utility screen.</p></div>
-            </article>
-          </div>
-        </div>
-      </section>
+      <h2 id="matrix-title">Sixteen native combinations</h2>
+      <p class="question-intro">Each row has its own horizontal scroller on narrow windows. Rows change only the current-track cues. Columns change only the Open button treatment. Select those decisions separately after inspecting any full-size cells you need.</p>
+      <div id="matrix-root"></div>
     </section>
 
     <section class="question" aria-labelledby="recommendation-title">
       <h2 id="recommendation-title">Recommendation and full ranking</h2>
-      <p class="ranking"><strong>Recommend 2A: balanced 12dp spacing with standard previous and next buttons.</strong> It fixes the centering and seek inconsistency, preserves the accepted rhythm, and makes the filled Pause action the one visual focal point. Use 2C if visible skip-button containers are more important than reducing visual weight.</p>
+      <p class="ranking"><strong>Recommend 1A: explicit Playing label plus bold title, with a filled Open button.</strong> It gives the current track a literal non-color cue without reducing title width, while the filled icon-and-label button gives the folder picker's primary action unmistakable prominence.</p>
+      <p class="response-help"><strong>Full order:</strong> 1A &gt; 2A &gt; 1B &gt; 2B &gt; 3A &gt; 1C &gt; 3B &gt; 2C &gt; 1D &gt; 4A &gt; 2D &gt; 3C &gt; 4B &gt; 3D &gt; 4C &gt; 4D.</p>
       <ol class="ranking-list">
-        <li><strong>2A · Balanced, standard.</strong> Best combination of familiar rhythm, exact centering, and clear primary-action hierarchy.</li>
-        <li><strong>2C · Balanced, tonal.</strong> Below 2A because the extra filled circles add weight, but it is the safest continuity choice.</li>
-        <li><strong>1A · Tight, standard.</strong> Below 2C because reclaimed picker space does not quite outweigh the compressed rhythm and invisible skip bounds.</li>
-        <li><strong>1C · Tight, tonal.</strong> Below 1A because tonal containers make the compact transport cluster heavier.</li>
-        <li><strong>3A · Airy, standard.</strong> Below 1C because it spends more picker height and weakens proximity between related controls.</li>
-        <li><strong>3C · Airy, tonal.</strong> Below 3A because the tallest stack also gains more visual mass.</li>
-        <li><strong>2B · Balanced, outlined.</strong> Below 3C because repeated rings compete with the larger mode-control outline.</li>
-        <li><strong>1B · Tight, outlined.</strong> Below 2B because compact spacing amplifies that linework.</li>
-        <li><strong>3B · Airy, outlined.</strong> Below 1B because it combines the linework problem with the largest vertical cost.</li>
+        <li><strong>1A · Explicit label, filled Open.</strong> Best literal current-state cue and strongest primary folder action.</li>
+        <li><strong>2A · Accent, filled Open.</strong> Below 1A because color plus weight is less literal than visible Playing text.</li>
+        <li><strong>1B · Explicit label, tonal Open.</strong> Below 2A because the tonal container understates a primary action despite the stronger track cue.</li>
+        <li><strong>2B · Accent, tonal Open.</strong> Below 1B because the explicit label communicates current state more directly.</li>
+        <li><strong>3A · Soft container, filled Open.</strong> Below 2B because changing the whole row is more visual intervention than accent plus weight.</li>
+        <li><strong>1C · Explicit label, elevated Open.</strong> Below 3A because elevation is subtle in the flat app bar and weakens the primary-action reading.</li>
+        <li><strong>3B · Soft container, tonal Open.</strong> Below 1C because a literal Playing label is clearer than a neutral row tint.</li>
+        <li><strong>2C · Accent, elevated Open.</strong> Below 3B because the elevated Open action is less prominent than tonal.</li>
+        <li><strong>1D · Explicit label, outlined Open.</strong> Below 2C because its Open boundary is the weakest primary-action treatment.</li>
+        <li><strong>4A · Outlined row, filled Open.</strong> Below 1D because the large row outline reads like a separate button.</li>
+        <li><strong>2D · Accent, outlined Open.</strong> Below 4A because the filled Open action outweighs the cleaner track treatment.</li>
+        <li><strong>3C · Soft container, elevated Open.</strong> Below 2D because changing the whole row costs more visual stability.</li>
+        <li><strong>4B · Outlined row, tonal Open.</strong> Below 3C because the row still looks button-like.</li>
+        <li><strong>3D · Soft container, outlined Open.</strong> Below 4B because outlined Open is weaker than tonal as a primary action.</li>
+        <li><strong>4C · Outlined row, elevated Open.</strong> Below 3D because the row outline is heavier than the soft container.</li>
+        <li><strong>4D · Outlined row, outlined Open.</strong> Last because repeated outlines weaken both hierarchy and component distinction.</li>
       </ol>
-      <p class="response-help"><strong>No additions are proposed in this round.</strong> The matrix deliberately limits itself to geometry and styling of visible existing controls.</p>
+      <p class="response-help"><strong>No addition is proposed.</strong> The fourth row and column exist because they are consequential treatments of visible elements, not to reach any target cell count.</p>
     </section>
 
     <section class="response" aria-labelledby="questions-title">
       <h2 id="questions-title">Your decisions</h2>
-      <p class="question-intro">Centering and the 24% seek position are corrections in every option. The settled segmented mode control remains horizontal at default text and purely vertical at large text. Choose spacing and the separate skip icon-button treatment, then use free text for anything my prototypes missed.</p>
+      <p class="question-intro">Choose the current-track treatment and Open treatment separately. The live result names the corresponding matrix cell and its rank.</p>
 
       <fieldset class="decision-block">
-        <legend><h3>Q1. How much space should separate the playback groups?</h3></legend>
+        <legend><h3>Q1. How should the current track be distinguished without a play column?</h3></legend>
         <div class="review-choices">
-          <label class="review-choice"><input type="radio" name="spacingDecision" value="tight" required><span>Tight · 8dp</span></label>
-          <label class="review-choice"><input type="radio" name="spacingDecision" value="balanced" required><span>Balanced · 12dp (Recommended)</span></label>
-          <label class="review-choice"><input type="radio" name="spacingDecision" value="airy" required><span>Airy · 16dp</span></label>
+          <label class="review-choice"><input type="radio" name="trackDecision" value="label" required><span>T1 · Bold title plus explicit Playing label (Recommended)</span></label>
+          <label class="review-choice"><input type="radio" name="trackDecision" value="accent" required><span>T2 · Primary-colored bold title</span></label>
+          <label class="review-choice"><input type="radio" name="trackDecision" value="container" required><span>T3 · Soft neutral row container plus bold title</span></label>
+          <label class="review-choice"><input type="radio" name="trackDecision" value="outline" required><span>T4 · Rounded row outline plus bold title</span></label>
         </div>
       </fieldset>
 
       <fieldset class="decision-block">
-        <legend><h3>Q2. How should the separate Previous and Next icon buttons be emphasized?</h3></legend>
+        <legend><h3>Q2. How prominent should the existing Open action be?</h3></legend>
         <div class="review-choices">
-          <label class="review-choice"><input type="radio" name="buttonDecision" value="standard" required><span>Standard · icons without visible containers (Recommended)</span></label>
-          <label class="review-choice"><input type="radio" name="buttonDecision" value="outlined" required><span>Outlined · visible rings</span></label>
-          <label class="review-choice"><input type="radio" name="buttonDecision" value="tonal" required><span>Tonal · soft filled circles</span></label>
+          <label class="review-choice"><input type="radio" name="openDecision" value="filled" required><span>O1 · Filled button (Recommended)</span></label>
+          <label class="review-choice"><input type="radio" name="openDecision" value="tonal" required><span>O2 · Tonal button</span></label>
+          <label class="review-choice"><input type="radio" name="openDecision" value="elevated" required><span>O3 · Elevated button</span></label>
+          <label class="review-choice"><input type="radio" name="openDecision" value="outlined" required><span>O4 · Outlined button</span></label>
         </div>
       </fieldset>
+
       <p class="ranking" id="combination-status" role="status" aria-live="polite" hidden></p>
-
       <label for="other-corrections">Anything else you want settled or changed, or “None”</label>
-      <textarea id="other-corrections" name="otherCorrections" required placeholder="Name a prototype code and visible area, or describe a correction the matrix missed."></textarea>
-      <p class="response-help">Select Q1 and Q2, complete the free-text field, then choose Prepare answers and Copy answers to paste the result into Pi.</p>
+      <textarea id="other-corrections" name="otherCorrections" required placeholder="Name a cell code and visible area, or describe a correction the matrix missed."></textarea>
+      <p class="response-help">Select Q1 and Q2, complete the required free-text field, then choose Prepare answers and Copy answers to paste the result into Pi.</p>
       <div class="actions">
         <button type="submit">Prepare answers</button>
         <button type="button" data-variant="secondary" id="clear-form">Clear</button>
@@ -889,223 +772,256 @@ dialog::backdrop {
         <span class="zoom-scale" id="zoom-scale" aria-live="polite"></span>
         <button type="button" data-variant="secondary" id="zoom-in">Zoom in</button>
         <button type="button" data-variant="secondary" id="zoom-fit">Fit</button>
-        <button type="button" data-variant="secondary" id="zoom-native">1:1 display pixels</button>
-        <button type="button" id="zoom-actual">Reset: 1dp = 1 CSS px</button>
-        <button type="button" data-variant="secondary" id="zoom-close">Close preview and answer</button>
+        <button type="button" data-variant="secondary" id="zoom-native">Native pixels</button>
+        <button type="button" data-variant="secondary" id="zoom-reset">Reset 100%</button>
+        <button type="button" id="zoom-close">Close preview</button>
       </div>
     </div>
-    <div class="zoom-stage" id="zoom-stage" role="region" tabindex="0" aria-label="Scrollable whole-device preview">
-      <span class="zoom-device" id="zoom-device">
-        <span class="device-screen">
-          <img class="zoom-image" id="zoom-image" alt="">
-          <span class="device-camera" aria-hidden="true"></span>
-        </span>
-      </span>
+    <div class="zoom-stage" id="zoom-stage">
+      <div class="zoom-device" id="zoom-device">
+        <span class="device-screen"><img class="zoom-image" id="zoom-image" alt=""><span class="device-camera" aria-hidden="true"></span></span>
+      </div>
     </div>
   </div>
 </dialog>
 
 <script>
+const rows = [
+  {
+    number: '1', key: 'label', name: 'Explicit label', summary: 'Bold title plus bold Playing text',
+    pros: ['Literal state text does not depend on color or shape.', 'Uses the existing supporting line and preserves full title width.'],
+    cons: ['Adds one word to the current row.', 'Repeats state already implied by the playback deck.'],
+    analysis: 'My pick: clearest and most robust current-state treatment.'
+  },
+  {
+    number: '2', key: 'accent', name: 'Accent', summary: 'Primary-colored bold title',
+    pros: ['Color and weight provide redundant cues.', 'Adds no text, container, or layout footprint.'],
+    cons: ['Less literal than visible Playing text.', 'Depends on users recognizing emphasis as current state.'],
+    analysis: 'My fallback: cleanest compact treatment.'
+  },
+  {
+    number: '3', key: 'container', name: 'Soft container', summary: 'Neutral row fill plus bold title',
+    pros: ['A broad region is easy to locate quickly.', 'Neutral fill plus weight avoids color-only state.'],
+    cons: ['Changes more pixels than text emphasis.', 'Can resemble hover or focus if states are not carefully specified.'],
+    analysis: 'My third choice: clear, but more intervention than needed.'
+  },
+  {
+    number: '4', key: 'outline', name: 'Outlined row', summary: 'Rounded boundary plus bold title',
+    pros: ['Boundary and weight remain visible without a leading column.', 'No title width is consumed.'],
+    cons: ['The row resembles a separate button or card.', 'Adds another large outline near outlined transport controls.'],
+    analysis: 'My last choice: explicit but component-like.'
+  }
+];
+
+const columns = [
+  {
+    letter: 'A', key: 'filled', name: 'Filled Open', summary: 'Strong primary container',
+    pros: ['Icon, label, and high-contrast fill make the primary action unmistakable.', 'Measured foreground contrast is 6.065:1.'],
+    cons: ['Becomes the strongest element in the folder app bar.'],
+    analysis: 'My pick for the primary folder action.'
+  },
+  {
+    letter: 'B', key: 'tonal', name: 'Tonal Open', summary: 'Calmer filled container',
+    pros: ['Container, icon, and label are still explicit.', 'Measured foreground contrast is 6.124:1.'],
+    cons: ['Material tonal styling conventionally reads below filled emphasis.'],
+    analysis: 'My second choice when a calmer app bar matters.'
+  },
+  {
+    letter: 'C', key: 'elevated', name: 'Elevated Open', summary: 'Light surface plus shadow',
+    pros: ['Container and elevation separate the action from the app bar.', 'Measured foreground contrast is 5.794:1.'],
+    cons: ['Shadow is subtle on this flat light surface.', 'Primary importance is less immediate than filled or tonal.'],
+    analysis: 'My third choice: valid, but visually quiet.'
+  },
+  {
+    letter: 'D', key: 'outlined', name: 'Outlined Open', summary: 'Boundary with icon and label',
+    pros: ['Adds a visible target while retaining icon and text.', 'Text contrast measures 6.359:1.'],
+    cons: ['The outline itself measures only 2.130:1 against white.', 'Reads as the weakest of the four primary-action treatments.'],
+    analysis: 'My last choice: more visible than text-only, but still under-prominent.'
+  }
+];
+
+const images = {
+  '1A': '@@IMAGE_CUE_LABEL_FILLED@@',
+  '1B': '@@IMAGE_CUE_LABEL_TONAL@@',
+  '1C': '@@IMAGE_CUE_LABEL_ELEVATED@@',
+  '1D': '@@IMAGE_CUE_LABEL_OUTLINED@@',
+  '2A': '@@IMAGE_CUE_ACCENT_FILLED@@',
+  '2B': '@@IMAGE_CUE_ACCENT_TONAL@@',
+  '2C': '@@IMAGE_CUE_ACCENT_ELEVATED@@',
+  '2D': '@@IMAGE_CUE_ACCENT_OUTLINED@@',
+  '3A': '@@IMAGE_CUE_CONTAINER_FILLED@@',
+  '3B': '@@IMAGE_CUE_CONTAINER_TONAL@@',
+  '3C': '@@IMAGE_CUE_CONTAINER_ELEVATED@@',
+  '3D': '@@IMAGE_CUE_CONTAINER_OUTLINED@@',
+  '4A': '@@IMAGE_CUE_OUTLINE_FILLED@@',
+  '4B': '@@IMAGE_CUE_OUTLINE_TONAL@@',
+  '4C': '@@IMAGE_CUE_OUTLINE_ELEVATED@@',
+  '4D': '@@IMAGE_CUE_OUTLINE_OUTLINED@@'
+};
+
+const ranks = {
+  '1A': 1, '2A': 2, '1B': 3, '2B': 4,
+  '3A': 5, '1C': 6, '3B': 7, '2C': 8,
+  '1D': 9, '4A': 10, '2D': 11, '3C': 12,
+  '4B': 13, '3D': 14, '4C': 15, '4D': 16
+};
+
+const matrixRoot = document.querySelector('#matrix-root');
+const matrixMarkup = rows.map((row) => {
+  const cards = columns.map((column) => {
+    const code = `${row.number}${column.letter}`;
+    const recommended = code === '1A';
+    const sourceName = `cue-${row.key}-${column.key}`;
+    return `
+      <article class="option" data-recommended="${String(recommended)}">
+        <div class="option-heading"><span class="option-title"><span class="option-code">${code} · rank ${ranks[code]}${recommended ? ' · recommended' : ''}</span><strong>${row.name} · ${column.name}</strong><span class="option-summary">${row.summary}; ${column.summary}</span></span></div>
+        <button class="preview-open" type="button" data-preview-title="${code}: ${row.name} with ${column.name}" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose ${sourceName} capture, prototype commit 9938e8244" src="${images[code]}" width="852" height="883" alt="Unfolded music player with no leading play column, ${row.summary.toLowerCase()}, and ${column.name.toLowerCase()}"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open ${code} at measured size</span>
+        </button>
+        <div class="assessment"><div><strong>Pros</strong></div><ul>${row.pros.map((item) => `<li>${item}</li>`).join('')}${column.pros.map((item) => `<li>${item}</li>`).join('')}</ul><div><strong>Cons</strong></div><ul>${row.cons.map((item) => `<li>${item}</li>`).join('')}${column.cons.map((item) => `<li>${item}</li>`).join('')}</ul><p><strong>My analysis:</strong> ${row.analysis} ${column.analysis}</p></div>
+      </article>`;
+  }).join('');
+  return `
+    <section class="matrix-row" aria-labelledby="row-${row.number}-title">
+      <p class="matrix-axis">Row ${row.number} · ${row.name} current-track treatment</p>
+      <h3 id="row-${row.number}-title">${row.summary}</h3>
+      <p class="question-intro">${row.analysis}</p>
+      <div class="options-scroll" role="region" tabindex="0" aria-label="${row.name} candidates, scroll horizontally on narrow windows"><div class="options">${cards}</div></div>
+    </section>`;
+}).join('');
+matrixRoot.innerHTML = matrixMarkup;
+
 const form = document.querySelector('#design-form');
-const output = document.querySelector('#output');
-const answerOutput = document.querySelector('#answer-output');
-const clearButton = document.querySelector('#clear-form');
-const copyButton = document.querySelector('#copy-answers');
-const downloadButton = document.querySelector('#download-answers');
-const spacingInputs = document.querySelectorAll('input[name="spacingDecision"]');
-const buttonInputs = document.querySelectorAll('input[name="buttonDecision"]');
-const combinationStatus = document.querySelector('#combination-status');
-const status = document.querySelector('#status');
-const previewDialog = document.querySelector('#preview-dialog');
+const dialog = document.querySelector('#preview-dialog');
 const zoomDevice = document.querySelector('#zoom-device');
-const zoomStage = document.querySelector('#zoom-stage');
 const zoomImage = document.querySelector('#zoom-image');
 const zoomTitle = document.querySelector('#zoom-title');
 const zoomDimensions = document.querySelector('#zoom-dimensions');
 const zoomScale = document.querySelector('#zoom-scale');
-const zoomOut = document.querySelector('#zoom-out');
-const zoomIn = document.querySelector('#zoom-in');
-const zoomFit = document.querySelector('#zoom-fit');
-const zoomNative = document.querySelector('#zoom-native');
-const zoomActual = document.querySelector('#zoom-actual');
-const zoomClose = document.querySelector('#zoom-close');
-const fullFrameWidth = 907;
+const zoomStage = document.querySelector('#zoom-stage');
+const combinationStatus = document.querySelector('#combination-status');
+const output = document.querySelector('#output');
+const answerOutput = document.querySelector('#answer-output');
+const status = document.querySelector('#status');
+const frameWidth = 907;
 const frameHeight = 937;
-const scaleStep = 0.25;
-const minimumScale = 0.25;
-const maximumScaleLimit = 4;
-let currentScale = 1;
-let targetWidth = 852;
-let targetHeight = 883;
-let sourceWidth = 2076;
-let sourceHeight = 2152;
+const logicalWidth = 852;
+const logicalHeight = 883;
+let previewScale = 1;
+let previewTrigger = null;
 
-const renderZoom = () => {
-  const renderedWidth = Math.round(targetWidth * currentScale);
-  const renderedHeight = Math.round(targetHeight * currentScale);
-  const renderedFrameWidth = fullFrameWidth * currentScale;
-  const renderedFrameHeight = frameHeight * currentScale;
-  zoomDevice.style.inlineSize = `${renderedFrameWidth}px`;
-  zoomDevice.style.blockSize = `${renderedFrameHeight}px`;
-  const displayWidth = Math.round(renderedWidth * devicePixelRatio);
-  const displayHeight = Math.round(renderedHeight * devicePixelRatio);
-  zoomScale.textContent = `${Math.round(currentScale * 100)}% · ${renderedWidth}×${renderedHeight} CSS px · ${displayWidth}×${displayHeight} display px`;
-  zoomDimensions.textContent = `Whole unfolded Pixel 9 Pro Fold. Screen: ${targetWidth}×${targetHeight}dp. Source: ${sourceWidth}×${sourceHeight}px. At 100%, 1dp maps to 1 CSS px.`;
+const clampScale = (value) => Math.min(3, Math.max(0.35, value));
+const renderScale = () => {
+  zoomDevice.style.inlineSize = `${frameWidth * previewScale}px`;
+  zoomDevice.style.blockSize = `${frameHeight * previewScale}px`;
+  zoomScale.textContent = `${Math.round(previewScale * 100)}% · ${Math.round(frameWidth * previewScale)} × ${Math.round(frameHeight * previewScale)} CSS px frame`;
 };
-
-const getMaximumSharpScale = () => Math.max(
-  1,
-  Math.min(
-    maximumScaleLimit,
-    sourceWidth / targetWidth / devicePixelRatio,
-    sourceHeight / targetHeight / devicePixelRatio,
-  ),
-);
-
-const setZoom = (scale) => {
-  currentScale = Math.max(minimumScale, Math.min(getMaximumSharpScale(), scale));
-  renderZoom();
+const fitPreview = () => {
+  const availableWidth = Math.max(1, zoomStage.clientWidth - 32);
+  const availableHeight = Math.max(1, zoomStage.clientHeight - 32);
+  previewScale = clampScale(Math.min(availableWidth / frameWidth, availableHeight / frameHeight));
+  renderScale();
 };
-
-const fitZoom = () => {
-  const inlineRoom = Math.max(1, zoomStage.clientWidth - 32);
-  const blockRoom = Math.max(1, zoomStage.clientHeight - 32);
-  setZoom(Math.min(1, inlineRoom / fullFrameWidth, blockRoom / frameHeight));
-};
-
 const openPreview = (button) => {
   const image = button.querySelector('img');
-  targetWidth = Number(button.dataset.previewWidth);
-  targetHeight = Number(button.dataset.previewHeight);
-  sourceWidth = Number(button.dataset.sourceWidth);
-  sourceHeight = Number(button.dataset.sourceHeight);
+  previewTrigger = button;
   zoomTitle.textContent = button.dataset.previewTitle;
+  zoomDimensions.textContent = `Source ${button.dataset.sourceWidth} × ${button.dataset.sourceHeight} physical px · design ${button.dataset.previewWidth} × ${button.dataset.previewHeight}dp · reset maps 1dp to 1 CSS px.`;
   zoomImage.src = image.src;
   zoomImage.alt = image.alt;
-  previewDialog.showModal();
-  setZoom(1);
-  zoomStage.scrollTo({ top: 0, left: 0 });
-};
-
-const getCombination = () => {
-  const spacing = document.querySelector('input[name="spacingDecision"]:checked')?.value;
-  const button = document.querySelector('input[name="buttonDecision"]:checked')?.value;
-  if (!spacing || !button) {
-    return null;
-  }
-  const row = spacing === 'tight' ? '1' : spacing === 'balanced' ? '2' : '3';
-  const column = button === 'standard' ? 'A' : button === 'outlined' ? 'B' : 'C';
-  const code = `${row}${column}`;
-  const ranks = { '1A': 3, '1B': 8, '1C': 4, '2A': 1, '2B': 7, '2C': 2, '3A': 5, '3B': 9, '3C': 6 };
-  const names = {
-    '1A': 'Tight · standard',
-    '1B': 'Tight · outlined',
-    '1C': 'Tight · tonal',
-    '2A': 'Balanced · standard',
-    '2B': 'Balanced · outlined',
-    '2C': 'Balanced · tonal',
-    '3A': 'Airy · standard',
-    '3B': 'Airy · outlined',
-    '3C': 'Airy · tonal',
-  };
-  return { code, rank: ranks[code], name: names[code] };
-};
-
-const updateCombinationStatus = () => {
-  const combination = getCombination();
-  combinationStatus.hidden = combination === null;
-  if (combination !== null) {
-    combinationStatus.textContent = `Current combination: ${combination.code} · ${combination.name} · rank ${combination.rank} of 9.`;
-  }
-};
-
-const buildAnswer = () => {
-  const data = new FormData(form);
-  const spacingLabels = {
-    tight: 'Tight · 8dp',
-    balanced: 'Balanced · 12dp',
-    airy: 'Airy · 16dp',
-  };
-  const buttonLabels = {
-    standard: 'Standard · icons without visible containers',
-    outlined: 'Outlined · visible rings',
-    tonal: 'Tonal · soft filled circles',
-  };
-  const combination = getCombination();
-  return [
-    `Combination: ${combination.code} (${combination.name}, rank ${combination.rank} of 9)`,
-    `Q1. Playback-group spacing: ${spacingLabels[data.get('spacingDecision')]}`,
-    `Q2. Previous and Next emphasis: ${buttonLabels[data.get('buttonDecision')]}`,
-    `Other corrections: ${data.get('otherCorrections').trim()}`,
-  ].join('\n');
-};
-
-const copyText = async (text) => {
-  if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-  answerOutput.focus();
-  answerOutput.select();
-  const copied = document.execCommand('copy');
-  if (!copied) {
-    throw new Error('Browser copy command was rejected. Select the prepared answer and copy it manually.');
-  }
+  zoomImage.dataset.candidateSource = image.dataset.candidateSource;
+  previewScale = 1;
+  renderScale();
+  dialog.showModal();
+  requestAnimationFrame(fitPreview);
 };
 
 document.querySelectorAll('.preview-open').forEach((button) => {
   button.addEventListener('click', () => openPreview(button));
 });
-spacingInputs.forEach((input) => input.addEventListener('change', updateCombinationStatus));
-buttonInputs.forEach((input) => input.addEventListener('change', updateCombinationStatus));
-
-zoomOut.addEventListener('click', () => setZoom(currentScale - scaleStep));
-zoomIn.addEventListener('click', () => setZoom(currentScale + scaleStep));
-zoomFit.addEventListener('click', fitZoom);
-zoomNative.addEventListener('click', () => setZoom(getMaximumSharpScale()));
-zoomActual.addEventListener('click', () => setZoom(1));
-zoomClose.addEventListener('click', () => previewDialog.close());
-previewDialog.addEventListener('click', (event) => {
-  if (event.target === previewDialog) {
-    previewDialog.close();
+document.querySelector('#zoom-out').addEventListener('click', () => {
+  previewScale = clampScale(previewScale - 0.1);
+  renderScale();
+});
+document.querySelector('#zoom-in').addEventListener('click', () => {
+  previewScale = clampScale(previewScale + 0.1);
+  renderScale();
+});
+document.querySelector('#zoom-fit').addEventListener('click', fitPreview);
+document.querySelector('#zoom-native').addEventListener('click', () => {
+  previewScale = 2076 / logicalWidth;
+  renderScale();
+});
+document.querySelector('#zoom-reset').addEventListener('click', () => {
+  previewScale = 1;
+  renderScale();
+});
+document.querySelector('#zoom-close').addEventListener('click', () => dialog.close());
+dialog.addEventListener('close', () => {
+  if (previewTrigger) {
+    previewTrigger.focus();
   }
 });
 
-form.addEventListener('submit', (event) => {
-  event.preventDefault();
-  if (!form.reportValidity()) {
+const trackNames = { label: 'T1 Explicit label', accent: 'T2 Accent', container: 'T3 Soft container', outline: 'T4 Outlined row' };
+const openNames = { filled: 'O1 Filled Open', tonal: 'O2 Tonal Open', elevated: 'O3 Elevated Open', outlined: 'O4 Outlined Open' };
+const rowCodes = { label: '1', accent: '2', container: '3', outline: '4' };
+const columnCodes = { filled: 'A', tonal: 'B', elevated: 'C', outlined: 'D' };
+const getCombination = () => {
+  const track = form.elements.trackDecision.value;
+  const open = form.elements.openDecision.value;
+  if (!track || !open) {
+    return null;
+  }
+  const code = `${rowCodes[track]}${columnCodes[open]}`;
+  return { code, rank: ranks[code], track: trackNames[track], open: openNames[open] };
+};
+const updateCombination = () => {
+  const combination = getCombination();
+  if (!combination) {
+    combinationStatus.hidden = true;
     return;
   }
-  answerOutput.value = buildAnswer();
-  output.hidden = false;
-  status.textContent = 'Answers prepared. Choose Copy answers, then paste them into Pi.';
-  output.scrollIntoView({ behavior: 'auto', block: 'center' });
-});
-
-clearButton.addEventListener('click', () => {
-  form.reset();
-  updateCombinationStatus();
-  answerOutput.value = '';
-  output.hidden = true;
-  status.textContent = 'Answers cleared.';
-  document.querySelector('input[name="spacingDecision"]').focus();
-});
-
-copyButton.addEventListener('click', async () => {
-  try {
-    await copyText(answerOutput.value);
-    status.textContent = 'Answers copied. Paste them into Pi.';
-  } catch (error) {
-    status.textContent = error instanceof Error ? error.message : String(error);
+  combinationStatus.textContent = `Current combination: ${combination.code} · ${combination.track} · ${combination.open} · rank ${combination.rank} of 16.`;
+  combinationStatus.hidden = false;
+};
+form.addEventListener('change', updateCombination);
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const combination = getCombination();
+  if (!combination) {
+    return;
   }
+  const corrections = form.elements.otherCorrections.value.trim();
+  answerOutput.value = [
+    'Music-player redundant-cue review',
+    `Q1 current track: ${combination.track}`,
+    `Q2 Open action: ${combination.open}`,
+    `Combination: ${combination.code} (rank ${combination.rank} of 16)`,
+    `Other corrections: ${corrections}`
+  ].join('\n');
+  output.hidden = false;
+  status.textContent = 'Answers prepared. Copy them into Pi.';
+  answerOutput.focus();
 });
-
-downloadButton.addEventListener('click', () => {
-  const blob = new Blob([`${answerOutput.value}\n`], { type: 'text/plain;charset=utf-8' });
+document.querySelector('#clear-form').addEventListener('click', () => {
+  form.reset();
+  combinationStatus.hidden = true;
+  output.hidden = true;
+  answerOutput.value = '';
+  status.textContent = 'Form cleared.';
+});
+document.querySelector('#copy-answers').addEventListener('click', async () => {
+  await navigator.clipboard.writeText(answerOutput.value);
+  status.textContent = 'Answers copied.';
+});
+document.querySelector('#download-answers').addEventListener('click', () => {
+  const blob = new Blob([answerOutput.value], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'music-player-existing-screen-refinement-matrix.txt';
+  link.download = 'music-player-redundant-cue-review.txt';
   link.click();
   URL.revokeObjectURL(url);
   status.textContent = 'Answers downloaded.';
