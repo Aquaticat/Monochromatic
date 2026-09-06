@@ -653,13 +653,13 @@ dialog::backdrop {
       <li><strong>Full track width:</strong> the play icon and its empty leading column are gone from every active candidate. Current and ordinary track titles both begin at x=1107 physical pixels.</li>
       <li><strong>Redundant differentiation:</strong> every current-track option combines at least two visible channels. No option relies only on color or only on shape.</li>
       <li><strong>Primary Open action:</strong> every Open candidate keeps both the folder icon and explicit label, then adds a visible Material button container.</li>
-      <li><strong>Matrix size:</strong> the sixteen cells come from four meaningful current-track treatments crossed with four meaningful Open treatments. Nine was never treated as a cap.</li>
+      <li><strong>Matrix size:</strong> matrix size is uncapped. These sixteen cells come from four meaningful current-track treatments crossed with four meaningful Open treatments.</li>
       <li><strong>Scope boundary:</strong> every candidate restyles existing visible elements only. No feature or control is added.</li>
     </ol>
     <div class="definition-list">
       <p class="definition"><strong>Rows:</strong> explicit Playing label, accent title, soft row container, or outlined row. Every title is bold and every row retains full text width.</p>
       <p class="definition"><strong>Columns:</strong> filled, tonal, elevated, or outlined Open button. Every action retains its icon, text label, and measured 48dp touch height.</p>
-      <p class="definition"><strong>Native evidence:</strong> every matrix image is an opaque 2076 × 2152px Compose capture of the 852 × 883dp unfolded Pixel 9 Pro Fold display.</p>
+      <p class="definition"><strong>Native evidence:</strong> every matrix image is an opaque 2076 × 2152px Compose capture of the 852 × 883dp unfolded Pixel 9 Pro Fold display. UI Automator exposes “Current track: Another Xronixle” in every row treatment.</p>
     </div>
     <div class="options-scroll">
       <div class="options accepted-options">
@@ -677,7 +677,7 @@ dialog::backdrop {
           </button>
           <div class="assessment">
             <p><strong>Verified:</strong> the current and ordinary track titles share full row width; Playing, all metadata, and all four mode labels remain readable. The deck scrolls vertically so the segmented control clears the navigation inset.</p>
-            <p><strong>Prototype boundary:</strong> production must still verify that assistive technology announces the custom vertical segmented stack as one mutually exclusive group.</p>
+            <p><strong>Prototype boundary:</strong> UI Automator confirms the current-track description and segmented checked state. Production assistive technology must still confirm those announcements and the custom vertical stack's single-group behavior.</p>
           </div>
         </article>
       </div>
@@ -911,7 +911,7 @@ const logicalHeight = 883;
 let previewScale = 1;
 let previewTrigger = null;
 
-const clampScale = (value) => Math.min(3, Math.max(0.35, value));
+const clampScale = (value) => Math.min(3, Math.max(0.1, value));
 const renderScale = () => {
   zoomDevice.style.inlineSize = `${frameWidth * previewScale}px`;
   zoomDevice.style.blockSize = `${frameHeight * previewScale}px`;
@@ -986,14 +986,36 @@ const updateCombination = () => {
   combinationStatus.textContent = `Current combination: ${combination.code} · ${combination.track} · ${combination.open} · rank ${combination.rank} of 16.`;
   combinationStatus.hidden = false;
 };
-form.addEventListener('change', updateCombination);
+const freeText = form.elements.otherCorrections;
+const invalidatePreparedAnswers = () => {
+  if (output.hidden) {
+    return;
+  }
+  output.hidden = true;
+  answerOutput.value = '';
+  status.textContent = 'Answers changed. Prepare them again before copying or downloading.';
+};
+form.addEventListener('change', () => {
+  invalidatePreparedAnswers();
+  updateCombination();
+});
+form.addEventListener('input', () => {
+  freeText.setCustomValidity('');
+  invalidatePreparedAnswers();
+});
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   const combination = getCombination();
   if (!combination) {
     return;
   }
-  const corrections = form.elements.otherCorrections.value.trim();
+  const corrections = freeText.value.trim();
+  if (!corrections) {
+    freeText.setCustomValidity('Enter a correction or “None”; spaces alone do not complete this field.');
+    freeText.reportValidity();
+    return;
+  }
+  freeText.setCustomValidity('');
   answerOutput.value = [
     'Music-player redundant-cue review',
     `Q1 current track: ${combination.track}`,

@@ -47,6 +47,7 @@ const matrixPaths = trackCues.flatMap((trackCue) =>
 );
 const largeTextPath = 'questions/render/cue-recommended-font-200.png';
 const transportReferencePath = 'questions/render/refine-tight-outlined.png';
+const semanticsPaths = trackCues.map((trackCue) => `questions/evidence/cue-${trackCue}-filled-semantics.xml`);
 const allRenderPaths = [largeTextPath, transportReferencePath, ...matrixPaths];
 const requiredPaths = [
   'HANDOFF.md',
@@ -56,6 +57,7 @@ const requiredPaths = [
   'material-3-compliance.md',
   'questions/current.template.html',
   'questions/current.html',
+  ...semanticsPaths,
   ...allRenderPaths,
 ];
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
@@ -166,8 +168,9 @@ for (const path of matrixPaths) {
     throw new Error(`${path} does not preserve chosen transport option 1B.`);
   }
   const currentTitleX = firstCuePixelX({ path, crop: '500x80+1090+320', cropWidth: 500, absoluteX: 1090 });
-  if (currentTitleX < 1107 || currentTitleX > 1110) {
-    throw new Error(`${path} restores a space-consuming leading current-track column.`);
+  const ordinaryTitleX = firstCuePixelX({ path, crop: '500x90+1090+490', cropWidth: 500, absoluteX: 1090 });
+  if (currentTitleX < 1107 || currentTitleX > 1110 || ordinaryTitleX < 1107 || ordinaryTitleX > 1111) {
+    throw new Error(`${path} restores a space-consuming leading track column or misaligns row titles.`);
   }
   const systemPixels = countDarkPixels({ path, crop: '300x88+1700+0' });
   if (systemPixels < 2000) {
@@ -241,6 +244,22 @@ if (filledPixels < 20000 || tonalPixels < 20000 || elevatedPixels < 20000 || out
   throw new Error('Open columns do not retain filled, tonal, elevated, and outlined treatments.');
 }
 
+for (const path of semanticsPaths) {
+  const hierarchy = readFileSync(resolve(path), 'utf8');
+  if (!hierarchy.includes('content-desc="Current track: Another Xronixle"')) {
+    throw new Error(`${path} does not expose current-track semantics.`);
+  }
+  if (!hierarchy.includes('bounds="[1068,292][2003,468]"')) {
+    throw new Error(`${path} does not expose the full-width current-track row bounds.`);
+  }
+  if (hierarchy.includes('content-desc="Playing"')) {
+    throw new Error(`${path} restores the rejected play-icon accessibility node.`);
+  }
+  if (!/text="Burning Aquamarine"[^>]+bounds="\[1107,507\]\[1483,566\]"/u.test(hierarchy)) {
+    throw new Error(`${path} does not retain full-width ordinary-track alignment.`);
+  }
+}
+
 const largeModeBounds = largestConnectedBounds({
   path: largeTextPath,
   color: '#787A84',
@@ -267,8 +286,8 @@ const template = readFileSync(resolve('questions/current.template.html'), 'utf8'
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
 const requiredFragments = [
   'Existing screen only · 4 × 4 matrix',
-  'the sixteen cells come from four meaningful current-track treatments',
-  'Nine was never treated as a cap.',
+  'matrix size is uncapped. These sixteen cells come from four meaningful current-track treatments',
+  'UI Automator exposes “Current track: Another Xronixle” in every row treatment.',
   'the play icon and its empty leading column are gone',
   'No option relies only on color or only on shape.',
   'Current and ordinary track titles both begin at x=1107 physical pixels.',
@@ -278,7 +297,10 @@ const requiredFragments = [
   '1A &gt; 2A',
   'Anything else you want settled or changed, or “None”',
   'prototype commit 9938e8244',
-  'production must still verify that assistive technology announces the custom vertical segmented stack',
+  'Production assistive technology must still confirm those announcements',
+  'Answers changed. Prepare them again before copying or downloading.',
+  'spaces alone do not complete this field.',
+  'Math.max(0.1, value)',
   'No addition is proposed.',
 ];
 for (const fragment of requiredFragments) {
@@ -291,6 +313,7 @@ const disallowedFragments = [
   'volume control',
   'radio rows',
   'Nine refinements',
+  'Nine was never treated as a cap',
   'standard skips',
   'balanced 12dp',
 ];
