@@ -1,6 +1,7 @@
 # @monochromatic-dev/oxlint-plugin-stylistic
 
-Oxlint JS plugin for TypeScript stylistic rules:
+Oxlint JS plugin for source-layout rules:
+configurable TSDoc asterisk-prefix formatting,
 one-item-per-line formatting across multi-element constructs,
 readable newline boundaries inside brace-delimited bodies,
 statement-boundary semicolon enforcement,
@@ -17,6 +18,17 @@ The expression-structure rules surface ambiguous operator precedence
 by requiring explicit parentheses at operator boundaries.
 
 ## Rules
+
+### Comment layout
+
+- **require-asterisk-prefix**:
+   requires one explicit `"always"` or `"never"` option and applies it to every body line of every TSDoc block,
+  including blank lines.
+  `always` requires canonical `*` prefixes;
+  `never` forbids them while preserving literal-leading Markdown such as `**Note**` and `*through*`.
+  Opening and closing delimiters are exempt.
+  The rule reports every offending line and auto-fixes both directions.
+  Configure star-less style as `"stylistic/require-asterisk-prefix": ["warn", "never"]`.
 
 ### Per-line rules
 
@@ -359,7 +371,8 @@ keeping those rule files minimal.
    assembles all rules into the oxlint plugin object
 - `rule/`:
    one file per rule,
-   each exporting a `CreateOnceRule`
+   each exporting a `CreateOnceRule`;
+  `require-asterisk-prefix.ts` reads configured mode during `Program`, when Oxlint has installed per-file options
 - `utility/item-per-line.ts`:
    shared detection and reporting logic for per-line rules
 - `utility/item-per-line-fix.ts`:
@@ -406,3 +419,4 @@ mise run //package/oxlint-plugin/stylistic:test:unit
 ```
 
 Test fixtures live in `package/test-fixture/oxlint-stylistic/src/` with `valid/` and `invalid/` directories.
+Dedicated configs verify `always`, `never`, missing-mode, and invalid-mode behavior.
