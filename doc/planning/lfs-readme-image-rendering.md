@@ -234,22 +234,23 @@ Measured facts that settled further points without a question:
   document the URL contract,
   add an AGENTS.md rule for authors and agents.
 
-## Open questions
+## Round 3 decisions
 
-1.  Commit-time behavior of the policy:
-    autofix into the commit,
-    block with an instruction,
-    or no policy.
-2.  Rule scope:
-    all Markdown and MDX,
-    or README and doc files only.
-3.  Worker package:
-    convert to TypeScript with tests,
-    or keep MJS and add tests for the new routes only.
-4.  Post-push verification:
-    mise task plus AGENTS.md rule,
-    a new post-push stage in git-policy-cli,
-    or both.
+Answered by the user on 2026-09-06:
+
+- The `git-policy-cli` pre-forward plugin policy autofixes staged Markdown inside the commit.
+  The policy ships inside the trusted config artifact,
+  so changed bytes need `git cli-git trust --yes` after review.
+- The rewrite rule covers every Markdown and MDX file markdown-lint walks,
+  with an exclude option.
+- The Worker moves to TypeScript with unit tests over an in-memory bucket.
+- Post-push verification is a mise check task now;
+  a post-push policy stage is tracked in issue #492.
+- No `AGENTS.md` rule for now.
+  The user fears a rule could block ordinary work;
+  the decision is tracked as undecided in issue #491.
+
+## Open questions
 
 Deferred by the user:
 the extracted repository's image store.
