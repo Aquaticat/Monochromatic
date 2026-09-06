@@ -1149,3 +1149,11 @@ self-contained form with the accepted screen first, disclose the two universal
 corrections, present all nine native refinements with per-cell analysis and this full
 ranking, then ask spacing and skip-button treatment as separate decisions. Do not ask
 whether to center the transport or correct the seek value; both are already determined.
+
+The user then reaffirmed: `"Segmented buttons" is settled.` The active matrix does not
+vary the segmented mode selector, but its wording did not distinguish that control
+clearly enough from the separate Previous and Next icon buttons. Name the distinction
+in the introduction and Q2. Add a raster fingerprint guard proving the complete
+segmented control is pixel-identical across all nine refinements. D1, its labels,
+selected state, outline, dimensions, position, and large-text radio-row adaptation stay
+unchanged and are not questions.

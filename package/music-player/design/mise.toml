@@ -217,6 +217,10 @@ if (baselineModeBounds.x !== 112 || baselineModeBounds.width !== 858 || baseline
 }
 const baselineRightFingerprint = imageFingerprint({ path: baselinePath, crop: '1008x1700+1068+200' });
 const baselinePickerFingerprint = imageFingerprint({ path: baselinePath, crop: '1009x1100+0+200' });
+const settledSegmentedFingerprint = imageFingerprint({
+  path: refinementPaths[0],
+  crop: '900x120+55+1918',
+});
 const fullFingerprints = new Set();
 for (const path of refinementPaths) {
   const modeBounds = largestConnectedBounds({
@@ -233,6 +237,9 @@ for (const path of refinementPaths) {
     || imageFingerprint({ path, crop: '1009x1100+0+200' }) !== baselinePickerFingerprint
   ) {
     throw new Error(`${path} changes accepted pixels outside the lower-left playback deck.`);
+  }
+  if (imageFingerprint({ path, crop: '900x120+55+1918' }) !== settledSegmentedFingerprint) {
+    throw new Error(`${path} changes the settled segmented mode control.`);
   }
   const progressReport = execFileSync(
     'magick',
@@ -316,6 +323,8 @@ const requiredFragments = [
   'What I found in the existing composition',
   'Nine refinements using only existing elements',
   'No control, feature, state, label, or section is added.',
+  'The segmented mode control is identical in every cell.',
+  'The settled segmented mode control is unchanged.',
   'name="spacingDecision"',
   'name="buttonDecision"',
   'name="otherCorrections"',

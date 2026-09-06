@@ -701,14 +701,14 @@ dialog::backdrop {
     <ol>
       <li><strong>Deck centering:</strong> start-only gesture padding leaves 46dp at the physical edge and 16dp at the fold, moving every playback element 15dp toward the fold.</li>
       <li><strong>Seek consistency:</strong> 1:06 divided by 4:35 is 24%, so the existing slider position and labels disagree.</li>
-      <li><strong>Action hierarchy:</strong> the filled pause action is primary; the existing previous and next actions can use standard, outlined, or tonal baseline Material emphasis.</li>
+      <li><strong>Action hierarchy:</strong> Previous and Next are separate icon buttons. Their emphasis can change without altering the settled segmented mode control beneath them.</li>
       <li><strong>Vertical economy:</strong> gaps between the same four groups affect both deck rhythm and the folder space left above it.</li>
       <li><strong>Hard boundary:</strong> every candidate contains exactly the accepted screen's visible elements. No control, feature, state, label, or section is added.</li>
     </ol>
     <div class="definition-list">
       <p class="definition"><strong>Corrected in every cell:</strong> the mode control spans x=73 through x=935 physical pixels, placing its axis at x=504, exactly on the left-pane axis. System-gesture safety remains symmetric.</p>
       <p class="definition"><strong>Matrix rows:</strong> 8dp tight, 12dp balanced, or 16dp airy gaps between the existing title, seek, transport, and mode groups.</p>
-      <p class="definition"><strong>Matrix columns:</strong> standard, outlined, or tonal styling for the existing previous and next buttons. Pause remains filled.</p>
+      <p class="definition"><strong>Matrix columns:</strong> standard, outlined, or tonal styling for the separate Previous and Next icon buttons. Pause remains filled. The segmented mode control is identical in every cell.</p>
     </div>
     <p class="response-help">
       Every source is an opaque 2076×2152px native Jetpack Compose capture of the 852×883dp unfolded Pixel 9 Pro Fold display. Choose spacing and secondary-button emphasis separately after inspecting the matrix.
@@ -719,7 +719,7 @@ dialog::backdrop {
     <section class="question" aria-labelledby="matrix-title">
       <h2 id="matrix-title">Nine refinements using only existing elements</h2>
       <p class="question-intro">
-        All cells share the same exact centering and corrected 24% seek position. Rows change only vertical gap. Columns change only previous and next button emphasis.
+        All cells share the same exact centering and corrected 24% seek position. Rows change only vertical gap. Columns change only the separate Previous and Next icon-button emphasis. The segmented mode control does not change.
       </p>
 
       <section class="matrix-row" aria-labelledby="tight-row-title">
@@ -817,7 +817,7 @@ dialog::backdrop {
 
     <section class="response" aria-labelledby="questions-title">
       <h2 id="questions-title">Your decisions</h2>
-      <p class="question-intro">Centering and the 24% seek position are corrections in every option. Choose spacing and skip-button treatment separately, then use free text for anything my prototypes missed.</p>
+      <p class="question-intro">Centering and the 24% seek position are corrections in every option. The settled segmented mode control is unchanged. Choose spacing and the separate skip icon-button treatment, then use free text for anything my prototypes missed.</p>
 
       <fieldset class="decision-block">
         <legend><h3>Q1. How much space should separate the playback groups?</h3></legend>
@@ -829,7 +829,7 @@ dialog::backdrop {
       </fieldset>
 
       <fieldset class="decision-block">
-        <legend><h3>Q2. How should Previous and Next be emphasized?</h3></legend>
+        <legend><h3>Q2. How should the separate Previous and Next icon buttons be emphasized?</h3></legend>
         <div class="review-choices">
           <label class="review-choice"><input type="radio" name="buttonDecision" value="standard" required><span>Standard · icons without visible containers (Recommended)</span></label>
           <label class="review-choice"><input type="radio" name="buttonDecision" value="outlined" required><span>Outlined · visible rings</span></label>
