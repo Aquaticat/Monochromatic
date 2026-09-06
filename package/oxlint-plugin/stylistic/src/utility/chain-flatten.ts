@@ -494,6 +494,8 @@ function operatorChainBreakOffsets({
  * // For `arr.map(f).filter(g)`: [offset of `.filter`]
  * chainBreakOffsets({ context, node, });
  * ```
+ *
+ * @internal
  */
 export function chainBreakOffsets({
   context,

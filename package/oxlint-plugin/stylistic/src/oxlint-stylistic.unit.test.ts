@@ -21,8 +21,10 @@ import {
   uniqueRuleCodes as uniqueRules,
 } from '@monochromatic-dev/oxlint-plugin-test-support/ts';
 
-import type { ChainNode, } from './utility/chain.ts';
-import { chainBreakOffsets, } from './utility/chain-flatten.ts';
+import {
+  type ChainNode,
+  chainBreakOffsets,
+} from '../dist/final/node/index.mjs';
 
 /** Minimal token stub the chain walk reads: a value to classify and a start offset. */
 type TokenStub = {

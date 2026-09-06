@@ -14,6 +14,8 @@ import type {
  * this type once, after which the walk stays cast-free. Every field beyond
  * `type` is optional because a single shape covers member, call, operator,
  * wrapper, and leaf nodes alike.
+ *
+ * @internal
  */
 export type ChainNode = Span & {
   /**

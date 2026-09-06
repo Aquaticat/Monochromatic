@@ -16,6 +16,8 @@ import { isWhitespaceChar, } from '@monochromatic-dev/oxlint-plugin-shared/ts';
  * leadingWhitespace('  foo'); // '  '
  * leadingWhitespace('bar'); // ''
  * ```
+ *
+ * @internal
  */
 export function leadingWhitespace(s: string,): string {
   /**
@@ -65,6 +67,8 @@ export type BaseIndentAtParams = {
  * ```ts
  * baseIndentAt({ sourceText: '  foo(a, b);', offset: 6 }) // -> '  '
  * ```
+ *
+ * @internal
  */
 export function baseIndentAt({
   sourceText,

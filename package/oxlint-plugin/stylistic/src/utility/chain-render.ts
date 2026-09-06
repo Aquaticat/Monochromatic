@@ -7,6 +7,8 @@
  * `.`/`?.` for a member step, or the operator token for an operator step).
  * `isBreak: false` marks an attached segment (the head leaf, a call step, or a
  * computed step) that always rides on the line of the segment before it.
+ *
+ * @internal
  */
 export type ChainSegment =
   | { readonly isBreak: false; }
@@ -38,6 +40,8 @@ export type ChainSegment =
  * // segments for `a.b.c`: [leaf, .b(break), .c(break)]
  * selectBreakOffsets(segments); // [offset of `.c`]
  * ```
+ *
+ * @internal
  */
 export function selectBreakOffsets(
   segments: readonly ChainSegment[],
@@ -102,6 +106,8 @@ export type RenderCanonicalParams = {
  * // `a.b.c` with breaks at `.c`: renders `a.b\n  .c`
  * renderCanonical({ sourceText, regionStart, regionEnd, breakOffsets, childIndent: '  ', });
  * ```
+ *
+ * @internal
  */
 export function renderCanonical({
   sourceText,

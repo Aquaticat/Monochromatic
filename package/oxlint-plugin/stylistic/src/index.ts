@@ -21,6 +21,18 @@ import { semi, } from './rule/semi.ts';
 import { tuplePerLine, } from './rule/tuple-per-line.ts';
 import { typePropertyPerLine, } from './rule/type-property-per-line.ts';
 
+export type { ChainNode, } from './utility/chain.ts';
+export { chainBreakOffsets, } from './utility/chain-flatten.ts';
+export {
+  type ChainSegment,
+  renderCanonical,
+  selectBreakOffsets,
+} from './utility/chain-render.ts';
+export {
+  baseIndentAt,
+  leadingWhitespace,
+} from './utility/indent.ts';
+
 /**
  * Oxlint JS plugin for TypeScript stylistic rules: one-item-per-line
  * formatting across multi-element constructs, readable brace-delimited bodies,

@@ -7,7 +7,7 @@ import {
   type ChainSegment,
   renderCanonical,
   selectBreakOffsets,
-} from './chain-render.ts';
+} from '../../dist/final/node/index.mjs';
 
 /** Attached segment helper for building fixture segment streams. */
 const attached: ChainSegment = { isBreak: false, };
