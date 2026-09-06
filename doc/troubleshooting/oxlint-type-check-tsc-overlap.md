@@ -1,4 +1,4 @@
-# Oxlint 1.74.0 package lint reports TypeScript diagnostics but does not cover every `tsc` input
+# Oxlint 1.74.0 and 1.81.0 package lint reports TypeScript diagnostics but does not cover every `tsc` input
 
 > Scratch-path note:
 > `/tmp/agent` paths in this document are historical.
@@ -31,23 +31,8 @@ while configuration and program-creation diagnostics follow a separate path.
 The behavior has four steps.
 
 First,
- the package task explicitly enables type-aware lint rules.
-`mise.toml:581-588` contains:
-
-```toml
-[task_templates."lint:oxlint"]
-description = "Lint with Oxlint"
-shell = "node --input-type=module-typescript -e"
-run = """
-{{vars.dispatch_workspace_node}}
-ensureOxlintConfig()
-runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--type-aware'])
-"""
-```
-
-Second,
- the shared repository config independently enables compiler diagnostics.
-`package/config/oxlint/src/config-base.ts:30-35` contains:
+ the shared repository config enables type-aware lint rules and compiler diagnostics.
+`package/config/oxlint/src/config-base.ts:28-35` contains:
 
 ```ts
 options: {
@@ -58,11 +43,27 @@ options: {
 },
 ```
 
-`--type-aware` and `typeCheck: true` are different controls.
+Second,
+ the package task delegates to Oxlint without repeating those config options on the CLI.
+`mise.toml:580-588` contains:
+
+```toml
+[task_templates."lint:oxlint"]
+description = "Lint with Oxlint"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [])
+"""
+```
+
+`typeAware: true` and `typeCheck: true` are different controls.
 The former enables rules that need type information.
 The latter asks the TypeScript Go backend to return compiler diagnostics.
 Git history shows that commit `df8948e6b0eb96a5c540ddca17dd25e36490df0a` enabled these stricter options on
 2026-05-18.
+Commit `fce6c5b81` removed the redundant CLI flag on 2026-09-06.
 
 The capability is newer than Oxlint's original syntax linting.
 Oxlint's [type-aware alpha announcement][] introduced compiler diagnostics on 2025-12-08.
@@ -209,7 +210,79 @@ Versions under test on 2026-07-16:
   `5a37e8902f65440900be1436b814919fcdb4e3d4`.
 - `typescript@7.0.2`.
 
-A disposable harness reproduced the flag distinction:
+A follow-up positive-control probe on 2026-09-06 used `oxlint@1.81.0`.
+It imported the shared config options,
+disabled `typeCheck` to isolate type-aware lint rules,
+and enabled `typescript/no-floating-promises` over this source:
+
+```typescript
+// probe.ts
+Promise.resolve(1);
+```
+
+The config-only case retained the shared `typeAware: true` value:
+
+```typescript
+// oxlint.config.ts
+import shared from '@monochromatic-dev/config-oxlint';
+
+export default {
+  options: {
+    ...shared.options,
+    typeCheck: false,
+  },
+  plugins: ['typescript'],
+  rules: {
+    'typescript/no-floating-promises': 'error',
+  },
+};
+```
+
+The negative control changed only `typeAware`:
+
+```typescript
+// oxlint.disabled.config.ts
+import shared from '@monochromatic-dev/config-oxlint';
+
+export default {
+  options: {
+    ...shared.options,
+    typeAware: false,
+    typeCheck: false,
+  },
+  plugins: ['typescript'],
+  rules: {
+    'typescript/no-floating-promises': 'error',
+  },
+};
+```
+
+A disposable directory linked the repository `node_modules` directory and used these tasks:
+
+```toml
+# mise.toml
+[tasks."probe:config"]
+run = "./node_modules/.bin/oxlint --config=oxlint.config.ts probe.ts"
+
+[tasks."probe:disabled"]
+run = "./node_modules/.bin/oxlint --config=oxlint.disabled.config.ts probe.ts"
+
+[tasks."probe:cli"]
+run = "./node_modules/.bin/oxlint --config=oxlint.disabled.config.ts --type-aware probe.ts"
+```
+
+`mise run probe:config` exited `1` without a CLI flag:
+
+```text
+probe.ts:1:1: error typescript(no-floating-promises): Promises must be awaited, add void operator to ignore.
+```
+
+`mise run probe:disabled` exited `0` without diagnostics.
+`mise run probe:cli` exited `1` with the same diagnostic as the config-only case.
+The negative control proves the fixture distinguishes disabled type-aware analysis.
+The matching config-only and CLI cases prove the shared config option replaces the manual flag.
+
+The original disposable harness reproduced the distinction between type-aware rules and type checking:
 
 ```bash
 repo=/var/home/user/Monochromatic
@@ -364,8 +437,9 @@ The present ignore mismatch already fails that gate.
   The harness shows a semantic mismatch exits cleanly with type-aware rules alone.
 - Removing `lint:types` because one representative package passes both commands.
   Passing results do not compare the commands' file sets.
-- Assuming the package task only passes `--type-aware` and therefore cannot type-check.
-  `package/config/oxlint/src/config-base.ts:34` independently enables `typeCheck`.
+- Assuming the package task must pass `--type-aware` to enable type-aware rules.
+  The Oxlint 1.81.0 positive control reports `typescript/no-floating-promises` from the config-only case,
+   while the disabled control exits cleanly and the CLI case reproduces the config-only diagnostic.
 
 ## Upstream filing decision
 
