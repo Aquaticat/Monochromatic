@@ -220,10 +220,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 // ```ts
 // import { AppBar, Button, IconButton, ListItem, SegmentedButton, Slider } from 'material3';
 // ```
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -533,6 +536,7 @@ private fun FolderAndTransportPane(
         Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
         FolderPicker(
             modifier = Modifier.weight(1f),
+            candidate = candidate,
             palette = palette,
         )
         Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
@@ -544,10 +548,49 @@ private fun FolderAndTransportPane(
     }
 }
 
+/** Draws the folder icon and explicit action label shared by every Open button style. */
+@Composable
+private fun RowScope.OpenActionContent() {
+    Icon(
+        imageVector = Icons.Filled.FolderOpen,
+        contentDescription = null,
+        modifier = Modifier.size(ButtonDefaults.IconSize),
+    )
+    Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+    Text(text = "Open")
+}
+
+/** Renders the existing folder action at one candidate-specific Material emphasis level. */
+@Composable
+private fun OpenAction(candidate: String) {
+    val style = candidate.substringAfterLast('-')
+    if (style == "filled") {
+        Button(onClick = {}) {
+            OpenActionContent()
+        }
+        return
+    }
+    if (style == "tonal") {
+        FilledTonalButton(onClick = {}) {
+            OpenActionContent()
+        }
+        return
+    }
+    if (style == "elevated") {
+        ElevatedButton(onClick = {}) {
+            OpenActionContent()
+        }
+        return
+    }
+    TextButton(onClick = {}) {
+        OpenActionContent()
+    }
+}
+
 /** Shows a Material app bar, source actions, adaptive letter rail, and wrapped folder targets. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
+private fun FolderPicker(modifier: Modifier, candidate: String, palette: CandidatePalette) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -558,15 +601,7 @@ private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
                 Text(text = "Folders")
             },
             actions = {
-                TextButton(onClick = {}) {
-                    Icon(
-                        imageVector = Icons.Filled.FolderOpen,
-                        contentDescription = null,
-                        modifier = Modifier.size(ButtonDefaults.IconSize),
-                    )
-                    Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                    Text(text = "Open")
-                }
+                OpenAction(candidate = candidate)
             },
             modifier = Modifier.windowInsetsPadding(
                 WindowInsets.systemGestures.only(WindowInsetsSides.Start),
