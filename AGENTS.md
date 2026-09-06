@@ -351,6 +351,16 @@ then names consequential concerns the user did not raise.
 Explore them with built variants;
 never substitute a vague approval question.
 
+CXD:
+ **Cross-cue distinction:**
+ Differentiate states and action prominence through two visible channels (color,
+ weight,
+ icon,
+ label,
+ boundary,
+ position).
+Never depend on color alone or shape alone.
+
 QVM:
  Design matrix includes pros,
 cons,
