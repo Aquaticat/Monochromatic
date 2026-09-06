@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Software quality scale</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --color-page: #f6f5f1;
+  --color-surface: #ffffff;
+  --color-soft: #eeede7;
+  --color-text: #252b29;
+  --color-muted: #59625e;
+  --color-line: #cbd0c8;
+  --color-accent: #256249;
+  --color-tint: #e3eee5;
+  --color-on-accent: #ffffff;
+  --color-danger: #a9322b;
+  --color-danger-tint: #faeae6;
+  --color-focus: #3860a7;
+  --color-shadow: #172b2110;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #171c1a;
+    --color-surface: #202723;
+    --color-soft: #29322c;
+    --color-text: #eef2e9;
+    --color-muted: #b4beb4;
+    --color-line: #4f5d51;
+    --color-accent: #aed4ae;
+    --color-tint: #2d4232;
+    --color-on-accent: #17251b;
+    --color-danger: #ffb6a9;
+    --color-danger-tint: #492b29;
+    --color-focus: #a3c5ff;
+    --color-shadow: #00000020;
+  }
+}
+* { box-sizing: border-box; }
+body { margin-block: 0; margin-inline: 0; background-color: var(--color-page); color: var(--color-text); font-family: system-ui, sans-serif; font-size: 1rem; line-height: 1.6; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button, select, input { min-block-size: 3rem; }
+button, summary { cursor: pointer; }
+button, .button { min-inline-size: 3rem; padding-block: .6rem; padding-inline: 1rem; border-width: .0625rem; border-style: solid; border-color: var(--color-line); border-radius: .5rem; background-color: var(--color-surface); text-decoration: none; }
+button:hover, .button:hover { background-color: var(--color-soft); }
+:is(button, input, select, textarea, summary, a):focus-visible { outline: .1875rem solid var(--color-focus); outline-offset: .1875rem; }
+button:disabled { cursor: default; opacity: .6; }
+input, select, textarea { inline-size: 100%; padding-block: .65rem; padding-inline: .8rem; border-width: .0625rem; border-style: solid; border-color: var(--color-line); border-radius: .4rem; background-color: var(--color-surface); }
+textarea { resize: vertical; min-block-size: 6rem; }
+input[type="checkbox"] { inline-size: 1.25rem; min-block-size: 1.25rem; accent-color: var(--color-accent); }
+label { display: block; font-weight: 650; }
+label > :is(input, select, textarea) { margin-block-start: .4rem; font-weight: 400; }
+a { color: var(--color-accent); }
+h1, h2, h3, p { margin-block-start: 0; }
+h1 { font-family: ui-serif, Georgia, serif; font-weight: 500; font-size: clamp(2.3rem, 5vw, 3.5rem); line-height: 1.12; letter-spacing: -.035em; margin-block-end: .8rem; }
+h2 { font-size: 1.4rem; line-height: 1.3; letter-spacing: -.02em; margin-block-end: .7rem; }
+h3 { font-size: 1.05rem; line-height: 1.4; margin-block-end: .4rem; }
+p { margin-block-end: .9rem; }
+small, .muted, .hint { color: var(--color-muted); }
+small, .hint { font-size: .875rem; }
+.wrap { inline-size: min(76rem, calc(100% - 2rem)); margin-inline: auto; }
+header { padding-block-start: 2.5rem; }
+.eyebrow { color: var(--color-accent); text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; font-weight: 750; margin-block-end: .75rem; }
+.intro { max-inline-size: 45rem; color: var(--color-muted); }
+nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1.5rem 2rem; padding-block-end: 1rem; border-block-end: .0625rem solid var(--color-line); }
+nav button { background-color: var(--color-page); border-color: var(--color-page); }
+nav button[aria-current="page"] { background-color: var(--color-tint); border-color: var(--color-tint); color: var(--color-accent); font-weight: 700; }
+[hidden] { display: none; }
+.row { display: flex; align-items: center; flex-wrap: wrap; gap: .7rem; }
+.spread { justify-content: space-between; }
+.stack { display: grid; gap: 1rem; }
+.section-intro { max-inline-size: 45rem; }
+.toolbar { display: grid; grid-template-columns: minmax(12rem, 1fr) repeat(2, minmax(8rem, .4fr)); gap: .8rem; margin-block-end: 1.5rem; }
+.scale { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: .35rem; margin-block: 1rem; }
+.scale button { padding-inline: 0; font-weight: 650; }
+.scale button[aria-pressed="true"] { color: var(--color-on-accent); background-color: var(--color-accent); border-color: var(--color-accent); }
+.scale-labels { display: flex; justify-content: space-between; gap: 1rem; color: var(--color-muted); font-size: .8rem; margin-block-end: 1.5rem; }
+.catalog { display: grid; gap: .8rem; }
+.rating { display: grid; grid-template-columns: 4rem minmax(0, 1fr) auto; align-items: start; gap: 1.25rem; padding-block: 1.3rem; padding-inline: 1.4rem; background-color: var(--color-surface); border-width: .0625rem; border-style: solid; border-color: var(--color-line); border-radius: .7rem; }
+.rating h3 { font-size: 1.2rem; }
+.rating p { margin-block: .6rem; }
+.rating .score { color: var(--color-accent); font-size: 2rem; font-weight: 600; line-height: 1.2; }
+.rating[data-score="0"] .score { color: var(--color-danger); }
+.denominator { font-size: .8rem; color: var(--color-muted); }
+.tags { display: flex; flex-wrap: wrap; gap: .35rem; }
+.tag { font-size: .75rem; padding-block: .15rem; padding-inline: .5rem; background-color: var(--color-soft); border-radius: .3rem; }
+.rater { display: grid; grid-template-columns: minmax(0, 1fr) 22rem; gap: 1.5rem; align-items: start; }
+.panel { padding-block: 1.5rem; padding-inline: 1.5rem; background-color: var(--color-surface); border-width: .0625rem; border-style: solid; border-color: var(--color-line); border-radius: .7rem; }
+.panel + .panel { margin-block-start: 1rem; }
+.step { display: inline-grid; place-items: center; inline-size: 1.8rem; block-size: 1.8rem; margin-inline-end: .5rem; color: var(--color-accent); background-color: var(--color-tint); border-radius: 50%; font-size: .85rem; vertical-align: .1rem; }
+.field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
+.gate { display: grid; grid-template-columns: minmax(0, 1fr) 9rem; gap: 1rem; align-items: center; padding-block: 1rem; border-block-end: .0625rem solid var(--color-line); }
+.gate:last-child { border-block-end-width: 0; }
+.gate label { font-size: .95rem; }
+.gate p { font-size: .85rem; color: var(--color-muted); margin-block: .25rem 0; }
+.gate[data-answer="yes"][data-kind="zero"] { color: var(--color-danger); }
+details { border-block-start: .0625rem solid var(--color-line); margin-block-start: 1rem; padding-block-start: .6rem; }
+summary { min-block-size: 3rem; padding-block: .6rem; color: var(--color-accent); font-weight: 650; }
+.criteria { display: grid; gap: .75rem; padding-inline-start: 1.2rem; }
+.criteria p { font-size: .9rem; margin-block: .2rem 0; color: var(--color-muted); }
+.check { display: flex; align-items: flex-start; gap: .7rem; font-weight: 400; }
+.check input { flex: 0 0 auto; margin-block-start: .25rem; }
+.reference { margin-block: 1rem; padding-block: 1.25rem; padding-inline: 1.25rem; background-color: var(--color-soft); border-radius: .5rem; }
+.reference .score { font-size: 2rem; font-weight: 650; color: var(--color-accent); }
+.choices { display: flex; flex-wrap: wrap; gap: .5rem; }
+.choices button { flex: 1 1 7rem; }
+.choices button[aria-pressed="true"] { background-color: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); }
+.primary { background-color: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); font-weight: 650; }
+.primary:hover { background-color: var(--color-accent); text-decoration: underline; }
+.result { position: sticky; inset-block-start: 1rem; box-shadow: 0 .6rem 2rem var(--color-shadow); }
+.result-number { font-family: ui-serif, Georgia, serif; font-size: 3.7rem; letter-spacing: -.05em; line-height: 1.05; margin-block: 1rem .4rem; }
+.result-number[data-long="true"] { font-size: 2.2rem; }
+.result-label { font-weight: 750; margin-block-end: .6rem; }
+.possibilities { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: .2rem; margin-block: 1rem; }
+.possibilities span { display: grid; place-items: center; min-block-size: 2rem; border-radius: .25rem; font-size: .8rem; color: var(--color-muted); background-color: var(--color-soft); }
+.possibilities span[data-possible="true"] { color: var(--color-on-accent); background-color: var(--color-accent); font-weight: 700; }
+.notice { padding-block: .8rem; padding-inline: 1rem; background-color: var(--color-tint); border-radius: .5rem; font-size: .9rem; }
+.notice[data-danger="true"] { background-color: var(--color-danger-tint); color: var(--color-danger); }
+.trace { padding-inline-start: 1.2rem; font-size: .875rem; }
+.trace li { margin-block-end: .7rem; }
+.comparison { padding-block: .8rem; border-block-end: .0625rem solid var(--color-line); }
+.comparison p { margin-block-end: .4rem; font-size: .9rem; }
+.comparison button { font-size: .85rem; }
+.result-actions { display: grid; gap: .6rem; margin-block-start: 1rem; }
+.method { max-inline-size: 48rem; }
+.method li { margin-block-end: .8rem; }
+.empty { padding-block: 2rem; padding-inline: 1rem; text-align: center; color: var(--color-muted); }
+footer { padding-block: 2rem; font-size: .8rem; color: var(--color-muted); }
+dialog { max-inline-size: min(30rem, calc(100% - 2rem)); color: var(--color-text); background-color: var(--color-surface); border-width: .0625rem; border-style: solid; border-color: var(--color-line); border-radius: .7rem; padding-block: 1.5rem; padding-inline: 1.5rem; }
+dialog::backdrop { background-color: var(--color-shadow); backdrop-filter: blur(.2rem); }
+.skip-link { position: absolute; inset-block-start: -5rem; }
+.skip-link:focus { inset-block-start: .5rem; background-color: var(--color-surface); }
+@media (max-width: 60rem) {
+  .rater { grid-template-columns: minmax(0, 1fr); }
+  .result { position: static; grid-row: 1; }
+  .result-number { font-size: 2.8rem; }
+  .result details { margin-block-start: .5rem; }
+}
+@media (max-width: 38rem) {
+  header { padding-block-start: 1.5rem; }
+  .toolbar { grid-template-columns: minmax(0, 1fr); }
+  .scale { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .rating { grid-template-columns: 3rem minmax(0, 1fr); gap: .8rem; padding-inline: 1rem; }
+  .rating > button { grid-column: 2; justify-self: start; }
+  .panel { padding-inline: 1rem; }
+  .gate { grid-template-columns: minmax(0, 1fr); gap: .5rem; }
+  .gate select { inline-size: 100%; }
+}
+@media print {
+  nav, .result-actions, #assessment-form, footer, .skip-link { display: none; }
+  .rater { display: block; }
+  .result { position: static; box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip-link button" href="#content">Skip to content</a>
+<header class="wrap">
+  <p class="eyebrow">A personal software-quality rubric</p>
+  <h1>Software quality scale</h1>
+  <p class="intro">The defining job comes first. Architecture, interaction, stewardship, and user control decide how well the rest holds together.</p>
+  <nav aria-label="Explorer sections">
+    <button type="button" data-view="explore" aria-current="page">Explore the scale</button>
+    <button type="button" data-view="assess">Rate new software</button>
+    <button type="button" data-view="method">How ratings work</button>
+  </nav>
+</header>
+<main class="wrap" id="content" tabindex="-1">
+  <section id="explore-view" aria-labelledby="explore-title">
+    <div class="row spread">
+      <div><h2 id="explore-title">The reference ratings</h2><p class="muted">Explore the judgments that define this scale.</p></div>
+      <button type="button" class="primary" data-view="assess">Place something new →</button>
+    </div>
+    <div class="scale" id="scale-filter" aria-label="Filter reference ratings by score"></div>
+    <div class="scale-labels"><span>0 · Defining failure</span><span>10 · No meaningful major improvement</span></div>
+    <div class="toolbar">
+      <label>Search<input id="search" type="search" placeholder="Software, reasoning, or tag"></label>
+      <label>Category<select id="category"><option value="all">Every category</option></select></label>
+      <label>Order<select id="sort"><option value="desc">Highest rating first</option><option value="asc">Lowest rating first</option><option value="name">Name</option></select></label>
+    </div>
+    <div class="row spread"><p id="catalog-count" class="hint" role="status"></p><button type="button" id="clear-filters">Clear filters</button></div>
+    <div id="catalog" class="catalog"></div>
+  </section>
+  <section id="assess-view" hidden aria-labelledby="assess-title">
+    <h2 id="assess-title">Place new software on the scale</h2>
+    <p class="section-intro muted">Describe the complete product, check its defining obligations, then compare its rating band with familiar examples.</p>
+    <div class="rater">
+      <form id="assessment-form">
+        <section class="panel" aria-labelledby="context-title">
+          <h2 id="context-title"><span class="step">1</span> Define what you are judging</h2>
+          <div class="field-grid">
+            <label>Software<input id="software-name" autocomplete="off" placeholder="Name and version, if relevant"></label>
+            <label>Its defining job<input id="software-job" placeholder="What must a user be able to trust it to do?"></label>
+          </div>
+          <p class="hint" style="margin-block-start: .8rem">Judge scope in relation to that job. A focused utility and a large creative suite can both earn 10.</p>
+        </section>
+        <section class="panel" aria-labelledby="zero-title">
+          <h2 id="zero-title"><span class="step">2</span> Check for a defining failure</h2>
+          <p class="muted">A confirmed failure here sets 0. Strengths elsewhere cannot compensate for it.</p>
+          <div id="zero-gates"></div>
+          <button type="button" id="no-failures">I have checked: none applies</button>
+          <p class="hint" style="margin-block-start: .6rem">“Not checked” keeps the assessment provisional. It never silently becomes “No.”</p>
+        </section>
+        <section class="panel" aria-labelledby="picture-title">
+          <h2 id="picture-title"><span class="step">3</span> Consider the complete picture</h2>
+          <p class="muted">Independent defects add to the overall burden. Describe each underlying problem once, including the consequences it causes elsewhere.</p>
+          <div class="stack">
+            <label>Strengths that matter<textarea id="strengths" placeholder="What does this software get right for its purpose?"></textarea></label>
+            <label>Defects and their combined consequences<textarea id="defects" placeholder="For example: a shared UI thread causes both freezes and interrupted workflows. That is one underlying defect. Hostile maintenance would be a separate problem."></textarea></label>
+          </div>
+          <details><summary>Prompts from the rubric</summary><ul id="criteria-prompts" class="criteria"></ul></details>
+          <label class="check" style="margin-block-start: 1rem"><input id="whole-reviewed" type="checkbox"><span>I considered the strengths and the combined effect of independent defects in my comparisons.</span></label>
+          <p id="review-note" class="hint" style="margin-block-start: .6rem">These notes guide your judgment. The page does not interpret or score the text.</p>
+        </section>
+        <section class="panel" aria-labelledby="comparison-title">
+          <h2 id="comparison-title"><span class="step">4</span> Compare with a familiar reference</h2>
+          <p class="muted">Which rating band fits your software relative to this example? Compare the complete judgment, including combined defects, even when the products serve different purposes.</p>
+          <label>Reference software<select id="anchor"></select></label>
+          <article id="reference" class="reference"></article>
+          <p class="hint">“Higher” means a higher integer rating. A slight improvement within the same band can still be “Same.” Skip unfamiliar references.</p>
+          <div class="choices" id="comparison-choices" aria-label="Relative rating band">
+            <button type="button" data-relation="lower" aria-pressed="false">Lower band</button>
+            <button type="button" data-relation="same" aria-pressed="false">Same band</button>
+            <button type="button" data-relation="higher" aria-pressed="false">Higher band</button>
+          </div>
+          <label style="margin-block-start: 1rem">Why this comparison fits<textarea id="comparison-reason" placeholder="What places your software above, alongside, or below this reference?"></textarea></label>
+          <div class="row" style="margin-block-start: 1rem">
+            <button type="button" id="add-comparison" class="primary" disabled>Keep comparison</button>
+            <button type="button" id="skip-reference">Try another reference</button>
+          </div>
+          <p id="comparison-feedback" class="hint" role="status" style="margin-block-start: .7rem"></p>
+        </section>
+        <section class="panel" id="ten-section" aria-labelledby="ten-title">
+          <h2 id="ten-title">If 10 remains possible</h2>
+          <p class="muted">Every condition must pass before 10 can be confirmed. These requirements are about the intended purpose, not the absence of every minor bug.</p>
+          <div id="ten-gates"></div>
+        </section>
+      </form>
+      <aside class="panel result" aria-labelledby="result-heading">
+        <p class="eyebrow" id="result-heading">Your assessment</p>
+        <div id="result-live" role="status" aria-live="polite" aria-atomic="true">
+          <div id="result-number" class="result-number">Unplaced</div>
+          <p id="result-label" class="result-label">Start with the defining job</p>
+        </div>
+        <p id="result-description" class="hint"></p>
+        <div id="possibilities" class="possibilities" aria-label="Rating bands still possible"></div>
+        <div id="result-notice" class="notice"></div>
+        <details open id="reasoning-details"><summary>Why this result</summary><ul id="trace" class="trace"></ul></details>
+        <details id="comparisons-details"><summary id="comparison-count">Your comparisons</summary><div id="kept-comparisons"></div></details>
+        <div class="result-actions">
+          <button type="button" id="export-assessment">Download assessment</button>
+          <button type="button" id="reset-assessment">Start over</button>
+        </div>
+        <p class="hint" style="margin-block-start: 1rem">Your work stays in this tab. Download it before closing or reloading. Reference ratings are never changed.</p>
+      </aside>
+    </div>
+  </section>
+  <section id="method-view" hidden class="method" aria-labelledby="method-title">
+    <p class="eyebrow">The reasoning behind the result</p>
+    <h2 id="method-title">Use the existing judgments as the scale</h2>
+    <p>This is a personal quality philosophy. The reference ratings and their reasoning are the starting point for new assessments.</p>
+    <ol>
+      <li><strong>The defining obligation comes first.</strong> A confirmed core failure, trust inversion, wrong-output failure, coercive ecosystem failure, or purpose-defeating privileged machinery forces 0.</li>
+      <li><strong>Consider defects together.</strong> Separate independent causes from repeated symptoms. Compare the software with their combined effects in view. There is no automatic deduction for the number of bullets you write.</li>
+      <li><strong>Comparisons narrow the possible bands.</strong> Higher than a 6 permits 7 through 10. Lower than an 8 permits 0 through 7. Together they identify 7, provided the endpoint checks agree.</li>
+      <li><strong>10 has additional requirements.</strong> No meaningful major redesign remains, the primary contract is exceptional, governance has no major defect, and the scope is settled. A failed condition excludes 10. An unanswered condition leaves it unconfirmed.</li>
+      <li><strong>Uncertainty stays visible.</strong> A range contains every band compatible with your answers. It is not a probability or confidence interval. Contradictions stay visible until you revise the conflicting answers.</li>
+    </ol>
+    <h3>What the page can decide</h3>
+    <p>It checks the consequences of your judgments. It does not read the notes as evidence, measure software, or infer quality from a feature count. The next suggested reference is selected to divide the remaining bands; you can always choose a familiar one instead.</p>
+    <h3>Why there is no weighted average</h3>
+    <p>A strength in one area cannot automatically cancel a decisive problem elsewhere. The new workflow uses the approved whole-product judgments directly, avoiding invented criterion weights and decimal precision.</p>
+    <button type="button" class="primary" data-view="assess">Start an assessment →</button>
+  </section>
+</main>
+<footer class="wrap">Standalone HTML · Works offline · No accounts or network requests</footer>
+<dialog id="reset-dialog" aria-labelledby="reset-title">
+  <h2 id="reset-title">Discard this assessment?</h2>
+  <p>This clears your notes, checks, and comparisons from this tab. Download the assessment first if you want to keep it.</p>
+  <form method="dialog" class="row"><button value="cancel" autofocus>Keep working</button><button value="discard">Discard and start over</button></form>
+</dialog>
+<script id="approved-catalog" type="application/json">[{"name":"Notepad","score":0,"category":"Text editor","status":"Anchor","reason":"Fails the basic text-editor contract: it cannot reliably open all text files.","tags":["contract failure","proprietary"]},{"name":"Safari","score":0,"category":"Browser","status":"Anchor","reason":"Acts as an effectively compulsory web platform on iOS in most regions; engine deficiencies cannot be fully routed around by users installing a different browser.","tags":["ecosystem lock-in","platform governance","contract failure"]},{"name":"Brave","score":0,"category":"Browser","status":"Anchor","reason":"Markets privacy as a defining value while creating trust conflicts around its own privacy behavior and product incentives; its blocking posture is not trusted as a durable user-first commitment.","tags":["trust inversion","privacy","product governance"]},{"name":"Joplin","score":0,"category":"Notes","status":"Anchor","reason":"A note system that loses entrusted notes fails its most basic data-integrity contract.","tags":["data loss","contract failure","OSS"]},{"name":"OpenClaw","score":0,"category":"Agent tooling","status":"Anchor","reason":"For the motivating remote-agent use case, it can add a large privileged orchestration layer where a narrow SSH session to an existing coding agent would suffice.","tags":["unjustified machinery","attack surface","complexity"]},{"name":"Duolingo","score":0,"category":"Education","status":"Anchor","reason":"Teaching software that actively teaches incorrect material inverts its defining educational contract.","tags":["epistemic failure","contract failure","product incentives"]},{"name":"Zed","score":1,"category":"Code editor","status":"Anchor","reason":"Severe deductions for maintenance and attitudes toward the community despite an ambitious technical product.","tags":["maintenance","community","editor"]},{"name":"Windows 11","score":4,"category":"Operating system","status":"Estimate","reason":"Enormous technical competence undermined by inconsistent system coherence, intrusive product decisions, and weak user sovereignty.","tags":["product governance","complexity","proprietary"]},{"name":"Chrome","score":4,"category":"Browser","status":"Estimate","reason":"Technically formidable, but governance, product incentives, and scope work heavily against it on this scale.","tags":["governance","privacy","complexity"]},{"name":"Sublime Text","score":5,"category":"Code editor","status":"Anchor","reason":"Fast, focused, mature editor, but non-OSS and less compelling in composable keyboard interaction and broader software values.","tags":["proprietary","editor","responsive"]},{"name":"VS Code","score":6,"category":"Code editor","status":"Discussed","reason":"A strong modular substrate with good maintenance and extension isolation, but its interaction model is shortcut-heavy rather than compositionally expressive, extensions produce an inconsistent end-state, and the Microsoft distribution has a mixed open/proprietary product story.","tags":["editor","extensions","modularity","product governance"]},{"name":"GIMP","score":6,"category":"Graphics","status":"Estimate","reason":"Powerful and free, but interaction and UI architecture still impose avoidable cost on the user.","tags":["OSS","UI","graphics"]},{"name":"IntelliJ IDEA","score":7,"category":"IDE","status":"Discussed","reason":"Deep engineering, strong modularity and maintenance, but responsiveness, keyboard-model coherence, and open/proprietary boundaries leave meaningful major improvements available.","tags":["IDE","modularity","proprietary","maintenance"]},{"name":"Emacs","score":7,"category":"Editor / environment","status":"Estimate","reason":"Near-unmatched composability and extensibility, constrained by significant architectural antiquity and accumulated complexity.","tags":["OSS","composability","editor"]},{"name":"Firefox","score":7,"category":"Browser","status":"Estimate","reason":"Serious open browser with a difficult, justified scope; still carries major product and architectural compromises.","tags":["OSS","browser","governance"]},{"name":"Neovim","score":8,"category":"Code editor","status":"Estimate","reason":"Excellent architecture and interaction model, but too much of the polished end-state is delegated to user assembly and plugin choice.","tags":["OSS","composability","editor"]},{"name":"Git","score":8,"category":"Developer tool","status":"Estimate","reason":"Brilliant underlying data model with a historically inconsistent human-facing command interface that still invites a major porcelain redesign.","tags":["OSS","CLI","developer tool"]},{"name":"VLC","score":8,"category":"Media","status":"Estimate","reason":"Excellent core media contract and openness; interface and configuration coherence lag behind the media engine.","tags":["OSS","media","reliable"]},{"name":"Helix","score":9,"category":"Code editor","status":"Anchor","reason":"Everything needed, little that is not; fast, keyboard-composable, coherent defaults, native modern language tooling, and strong scope discipline.","tags":["OSS","composability","editor","responsive"]},{"name":"Blender","score":9,"category":"3D creation","status":"Estimate","reason":"Huge justified scope executed with remarkable coherence and excellent FOSS stewardship; interaction subsystems could still be unified further.","tags":["OSS","modularity","creative"]},{"name":"OBS Studio","score":9,"category":"Media production","status":"Estimate","reason":"Powerful, extensible, OSS, and focused despite substantial internal complexity; stronger fault isolation would be a meaningful major improvement.","tags":["OSS","modularity","media"]},{"name":"tmux","score":9,"category":"Terminal","status":"Estimate","reason":"Small conceptual core, exceptional compositional power, mature maintenance, and clear scope; accumulated interface history keeps it just below perfection.","tags":["OSS","composability","terminal"]},{"name":"FFmpeg","score":9,"category":"Media infrastructure","status":"Estimate","reason":"Astonishing capability and reliability with superb composability; interface coherence and discoverability still leave room for a major cleanup.","tags":["OSS","CLI","media"]},{"name":"Linux kernel","score":9,"category":"Operating system kernel","status":"Estimate","reason":"Exceptional engineering and stewardship at enormous scale, with some architectural debts significant enough to keep a major-change path open.","tags":["OSS","kernel","maintenance"]},{"name":"OpenSnitch","score":10,"category":"Security","status":"Anchor","reason":"Reference 10/10: focused, user-controlled, OSS network monitoring/firewall software with no obvious meaningful major redesign required.","tags":["OSS","security","user control"]},{"name":"SQLite","score":10,"category":"Database","status":"Estimate","reason":"Extraordinary execution of a deliberately bounded contract: embedded, reliable, self-contained, and architecturally disciplined.","tags":["database","reliable","scope discipline"]},{"name":"ripgrep","score":10,"category":"Search / CLI","status":"Estimate","reason":"Near-perfect scope, defaults, performance, composability, licensing, and escape hatches.","tags":["OSS","CLI","composability","responsive"]},{"name":"WireGuard","score":10,"category":"Networking","status":"Estimate","reason":"A difficult problem reduced to a small, coherent model with excellent separation of concerns and very little unnecessary machinery.","tags":["OSS","networking","scope discipline"]},{"name":"jq","score":10,"category":"Data / CLI","status":"Estimate","reason":"A small compositional language that does one job—JSON transformation—extremely well without bloating into a larger platform.","tags":["OSS","CLI","composability"]},{"name":"zstd","score":10,"category":"Compression","status":"Estimate","reason":"Excellent speed/compression tradeoffs, stable format, open implementation, and no obvious major architectural deficiency.","tags":["OSS","compression","performance"]},{"name":"fzf","score":10,"category":"Terminal / picker","status":"Estimate","reason":"One powerful abstraction—interactive fuzzy selection from a stream—that composes cleanly with everything around it.","tags":["OSS","CLI","composability"]},{"name":"fd","score":10,"category":"Filesystem / CLI","status":"Estimate","reason":"Filesystem search with excellent defaults and explicit escape hatches, intentionally refusing unnecessary scope.","tags":["OSS","CLI","scope discipline"]},{"name":"age","score":10,"category":"Encryption","status":"Estimate","reason":"Modern file encryption with a deliberately small, understandable interface and very little configuration machinery.","tags":["OSS","security","scope discipline"]},{"name":"Bun","score":5,"category":"JavaScript runtime / toolkit","status":"Discussed","reason":"The runtime is distinctive, but bundling package management, testing, bundling, and adjacent tooling into one project has not produced enough practical advantage over specialist tools. Non-essential subsystems can become show-stoppers, while pnpm, Vitest/Jest/custom harnesses, Rolldown, and Oxc can each focus deeply on their own domain. The breadth consumes scarce engineering attention across too many competitive fronts.","tags":["OSS","runtime","scope overreach","labor constrained","toolchain"]},{"name":"Windows File Explorer","score":3,"category":"File manager","status":"Discussed","reason":"Usually fulfills basic file-management tasks, but a fundamental local filesystem interface carries too much shell coupling, product-layer clutter, inconsistent interaction history, and avoidable responsiveness risk.","tags":["file manager","shell coupling","responsiveness","proprietary"]},{"name":"Adobe Premiere","score":4,"category":"Video editor","status":"Discussed","reason":"Professionally capable and legitimately complex, but reliability and responsiveness problems inside import, editing, and export workflows combine with a restrictive account/subscription product model to leave several major improvements available.","tags":["video","proprietary","reliability","product governance"]}]</script>
+<script id="rubric-prompts" type="application/json">[{"name":"Primary contract","question":"How reliably does it do the thing it fundamentally exists to do?"},{"name":"Responsiveness","question":"Does interaction remain predictable and non-blocking for its intended workloads?"},{"name":"Modularity","question":"Is justified complexity separated into clear, enforced boundaries?"},{"name":"Interaction / composability","question":"Does the control model form coherent, transferable operations rather than isolated gestures?"},{"name":"Maintenance / community","question":"Can users reasonably trust the project to evolve, repair defects, and treat its community well?"},{"name":"Defaults / configurability","question":"Can a user reach an excellent end-state without fighting either the defaults or the configuration system?"},{"name":"Licensing / governance","question":"Do ownership, privacy, licensing, incentives, and user control align with the software’s stated value?"},{"name":"Scope discipline","question":"Does every major responsibility earn the maintenance and cognitive cost of being owned here?"}]</script>
+<script id="rating-model">
+//region Ordinal assessment: only explicit judgments constrain integer bands.
+/** Integer endpoints shared by rules and displayed bands. */
+const TOP_SCORE = 10;
+/** Original failure conditions plus the approved OpenClaw rationale. */
+const zeroRules = [
+  { id: 'core', title: 'Core failure', copy: 'It cannot reliably perform its defining task.', example: 'Notepad; Joplin' },
+  { id: 'trust', title: 'Trust inversion', copy: 'It violates a privacy, data-integrity, or trust promise required by its purpose.', example: 'Brave; Joplin' },
+  { id: 'wrong', title: 'Wrong-output failure', copy: 'It systematically produces materially incorrect results where correctness is the product.', example: 'Duolingo' },
+  { id: 'coercive', title: 'Coercive ecosystem failure', copy: 'Users cannot realistically route around a bad implementation because the vendor controls the platform or compatibility layer.', example: 'Safari' },
+  { id: 'machinery', title: 'Machinery defeats the purpose', copy: 'For the defining use case, an unnecessary privileged orchestration layer adds machinery and attack surface that clean composition avoids.', example: 'OpenClaw' },
+];
+/** Required conditions for confirming the highest band. */
+const tenRules = [
+  { id: 'redesign', title: 'No major redesign remains', copy: 'No meaningful major change can be named without changing the product’s purpose.' },
+  { id: 'contract', title: 'Exceptional contract', copy: 'Its primary contract is fulfilled at an exceptional level.' },
+  { id: 'governance', title: 'No major governance defect', copy: 'No major trust, ownership, licensing, or governance defect remains.' },
+  { id: 'scope', title: 'Scope is settled', copy: 'No major responsibility should be added, removed, or split into a specialist tool.' },
+];
+/** Human-readable relations also used in exported assessments. */
+const relationNames = { lower: 'Lower than', same: 'Same band as', higher: 'Higher than' };
+/** @returns Fresh assessment with every obligation explicitly unanswered. @example initialAssessment() */
+function initialAssessment() {
+  return { name: '', job: '', strengths: '', defects: '', reviewed: false,
+    zero: Object.fromEntries(zeroRules.map(rule => [rule.id, 'unknown'])),
+    ten: Object.fromEntries(tenRules.map(rule => [rule.id, 'unknown'])), comparisons: [] };
+}
+/** @param input - Band and comparison to check. @returns Whether the band satisfies the stated relation. @example acceptsComparison({ score: 7, comparison: { relation: 'higher', score: 6 } }) */
+function acceptsComparison({ score, comparison }) {
+  if (comparison.relation === 'lower') return score < comparison.score;
+  if (comparison.relation === 'same') return score === comparison.score;
+  if (comparison.relation === 'higher') return score > comparison.score;
+  throw new Error('Unknown comparison relation.');
+}
+/** @param assessment - Current explicit judgments. @returns Candidate bands, exclusions, and unmet requirements. @example evaluateAssessment(initialAssessment()) */
+function evaluateAssessment(assessment) {
+  /** Confirmed defining failures override comparisons, never average with them. */
+  const failures = zeroRules.filter(rule => assessment.zero[rule.id] === 'yes');
+  /** Unanswered checks remain visible even after a comparison suggests a band. */
+  const unansweredZero = zeroRules.filter(rule => assessment.zero[rule.id] === 'unknown');
+  /** A failed endpoint condition removes only band ten. */
+  const failedTen = tenRules.filter(rule => assessment.ten[rule.id] === 'no');
+  /** Reasons are kept per band so conflicts can be explained without guessing. */
+  const exclusions = Array.from({ length: TOP_SCORE + 1 }, (_, score) => {
+    /** Constraints rejecting this band. */
+    const reasons = assessment.comparisons.filter(comparison => !acceptsComparison({ score, comparison }))
+      .map(comparison => `${relationNames[comparison.relation]} ${comparison.name} (${comparison.score})`);
+    if (score === 0 && failures.length === 0 && unansweredZero.length === 0) reasons.push('Every defining-failure check is No');
+    if (score === TOP_SCORE) failedTen.forEach(rule => reasons.push(`${rule.title}: No`));
+    return { score, reasons };
+  });
+  /** Comparisons establish ordering; no arithmetic uses distance between scores. */
+  const possible = failures.length ? [0] : exclusions.filter(entry => entry.reasons.length === 0).map(entry => entry.score);
+  /** A ten remains possible but unconfirmed until each requirement passes. */
+  const pendingTen = failures.length === 0 && possible.includes(TOP_SCORE)
+    ? tenRules.filter(rule => assessment.ten[rule.id] === 'unknown') : [];
+  /** Confirmed zero needs context, but additional positive comparisons are immaterial. */
+  const missing = [
+    ...(!assessment.name.trim() ? ['Name the software.'] : []),
+    ...(!assessment.job.trim() ? ['Define its primary job.'] : []),
+    ...(failures.length ? [] : [
+      ...(unansweredZero.length ? ['Finish the defining-failure checks.'] : []),
+      ...(!assessment.reviewed ? ['Review the combined strengths and defects.'] : []),
+      ...(!assessment.comparisons.length ? ['Keep a comparison with a familiar reference.'] : []),
+      ...(pendingTen.length ? ['Complete the requirements for 10, or narrow the range below 10.'] : []),
+    ]),
+  ];
+  return { possible, failures, exclusions, failedTen, unansweredZero, pendingTen, missing,
+    conflict: possible.length === 0, complete: possible.length > 0 && missing.length === 0 };
+}
+/** @param possible - Contiguous bands permitted by all comparisons. @returns Display label without invented midpoint. @example bandLabel([7, 8]) */
+function bandLabel(possible) {
+  if (possible.length === 0) return 'Conflict';
+  if (possible.length === 1) return String(possible[0]);
+  return `${possible[0]}–${possible[possible.length - 1]}`;
+}
+/** @param input - References, candidate bands, and already visited names. @returns Reference splitting the remaining possibilities, or first remaining reference. @example chooseReference({ catalog: [], possible: [7], visited: [] }) */
+function chooseReference({ catalog, possible, visited }) {
+  /** A distinct same-score reference remains available for a consistency check. */
+  const remaining = catalog.filter(item => !visited.includes(item.name));
+  /** Worst surviving branch size measures usefulness without predicting the answer. */
+  const ranked = remaining.map(item => ({ item, worst: Math.max(
+    possible.filter(score => score < item.score).length,
+    possible.filter(score => score === item.score).length,
+    possible.filter(score => score > item.score).length,
+  ) }));
+  ranked.sort((left, right) => left.worst - right.worst || left.item.name.localeCompare(right.item.name));
+  return ranked[0]?.item;
+}
+//endregion
+</script>
+<script id="explorer-ui">
+//region Shared document helpers and reference browsing.
+/** Parsed reference records retain the original field values verbatim. */
+const catalog = JSON.parse(document.getElementById('approved-catalog').textContent);
+/** Criterion prompts remain qualitative; the old weights and number definitions are unused. */
+const prompts = JSON.parse(document.getElementById('rubric-prompts').textContent);
+/** Current assessment is separate from the immutable reference records. */
+let assessment = initialAssessment();
+/** Current catalogue score filter. */
+let scoreFilter = 'all';
+/** Uncommitted comparison, kept separate so skipping cannot cast a vote. */
+let draftRelation = '';
+/** References skipped during this assessment, without rating consequences. */
+let skippedReferences = [];
+/** @param selector - Required document target. @returns Existing element. @example element('#search') */
+function element(selector) {
+  /** Missing markup is an error rather than a silently dropped operation. */
+  const found = document.querySelector(selector);
+  if (!found) throw new Error(`Missing document element: ${selector}`);
+  return found;
+}
+/** @param input - Element tag, optional text, and optional styling class. @returns Safe DOM node. @example node({ tag: 'p', text: 'Notes' }) */
+function node({ tag, text = '', className = '' }) {
+  /** Text is inserted as text, including user notes and downloaded names. */
+  const created = document.createElement(tag);
+  created.textContent = text;
+  created.className = className;
+  return created;
+}
+/** @param view - Named section. @returns Nothing. @example showView('assess') */
+function showView(view) {
+  ['explore', 'assess', 'method'].forEach(name => { element(`#${name}-view`).hidden = name !== view; });
+  document.querySelectorAll('nav [data-view]').forEach(button => {
+    if (button.dataset.view === view) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+  element('#content').focus({ preventScroll: true });
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+/** @param item - Approved reference record. @returns Article preserving the original rationale. @example referenceArticle(catalog[0]) */
+function referenceArticle(item) {
+  /** Reference card structure has one numeric score and one complete rationale. */
+  const article = node({ tag: 'article', className: 'rating' });
+  article.dataset.score = String(item.score);
+  /** Score and denominator are separate for legibility. */
+  const score = node({ tag: 'div', className: 'score', text: String(item.score) });
+  score.append(node({ tag: 'div', className: 'denominator', text: 'out of 10' }));
+  /** Text content is never truncated to an unexplained summary. */
+  const body = node({ tag: 'div' });
+  body.append(node({ tag: 'h3', text: item.name }), node({ tag: 'small', text: item.category }), node({ tag: 'p', text: item.reason }));
+  /** Original tags and provenance label remain available. */
+  const tags = node({ tag: 'div', className: 'tags' });
+  item.tags.forEach(tag => tags.append(node({ tag: 'span', className: 'tag', text: tag })));
+  body.append(tags, node({ tag: 'small', text: `Original label: ${item.status}` }));
+  /** Jump directly to this reference in the custom assessment. */
+  const compare = node({ tag: 'button', text: 'Use as reference' });
+  compare.type = 'button';
+  compare.dataset.useReference = item.name;
+  compare.setAttribute('aria-label', `Use ${item.name} as a reference`);
+  article.append(score, body, compare);
+  return article;
+}
+/** @returns Nothing. @example renderCatalog() */
+function renderCatalog() {
+  /** Search includes the complete original record fields exposed in the UI. */
+  const query = element('#search').value.trim().toLowerCase();
+  /** Independent filters combine without changing reference data. */
+  const category = element('#category').value;
+  /** Stable secondary ordering avoids jumping within tied ratings. */
+  const order = element('#sort').value;
+  /** Filtering produces a new array before sorting. */
+  const filtered = catalog.filter(item => (scoreFilter === 'all' || item.score === Number(scoreFilter))
+    && (category === 'all' || item.category === category)
+    && [item.name, item.category, item.reason, item.status, ...item.tags].join(' ').toLowerCase().includes(query));
+  filtered.sort((left, right) => (order === 'name' ? 0 : order === 'asc' ? left.score - right.score : right.score - left.score) || left.name.localeCompare(right.name));
+  element('#catalog').replaceChildren(...filtered.map(referenceArticle));
+  if (!filtered.length) element('#catalog').append(node({ tag: 'p', className: 'empty', text: 'No references match. Clear the filters to see the full scale.' }));
+  element('#catalog-count').textContent = `${filtered.length} of ${catalog.length} references${scoreFilter === 'all' ? '' : ` · ${scoreFilter}/10`}`;
+  document.querySelectorAll('[data-score-filter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.scoreFilter === scoreFilter)));
+}
+/** @param input - Rules and endpoint kind. @returns Nothing. @example buildGates({ rules: zeroRules, kind: 'zero' }) */
+function buildGates({ rules, kind }) {
+  rules.forEach(rule => {
+    /** Each check has a stable label and an explicit unanswered option. */
+    const row = node({ tag: 'div', className: 'gate' });
+    row.dataset.kind = kind;
+    row.dataset.answer = 'unknown';
+    /** Explanatory text is associated with its select for assistive technology. */
+    const description = node({ tag: 'div' });
+    const label = node({ tag: 'label', text: rule.title });
+    label.htmlFor = `${kind}-${rule.id}`;
+    const copy = node({ tag: 'p', text: rule.copy + (rule.example ? ` Reference: ${rule.example}.` : '') });
+    copy.id = `${kind}-${rule.id}-description`;
+    description.append(label, copy);
+    const select = node({ tag: 'select' });
+    select.id = `${kind}-${rule.id}`;
+    select.dataset.gateKind = kind;
+    select.dataset.gateId = rule.id;
+    select.setAttribute('aria-describedby', copy.id);
+    [['unknown', 'Not checked'], ['no', 'No'], ['yes', 'Yes']].forEach(([value, text]) => {
+      const option = node({ tag: 'option', text });
+      option.value = value;
+      select.append(option);
+    });
+    row.append(description, select);
+    element(`#${kind}-gates`).append(row);
+  });
+}
+/** @returns Nothing. @example renderReference() */
+function renderReference() {
+  /** References are selected by their exact original names. */
+  const item = catalog.find(entry => entry.name === element('#anchor').value);
+  if (!item) throw new Error('Select an existing reference.');
+  element('#reference').replaceChildren(node({ tag: 'div', className: 'score', text: `${item.score}/10` }), node({ tag: 'h3', text: item.name }), node({ tag: 'small', text: item.category }), node({ tag: 'p', text: item.reason }));
+  /** Existing judgments can be revised without accumulating duplicate votes. */
+  const existing = assessment.comparisons.find(entry => entry.name === item.name);
+  draftRelation = existing?.relation ?? '';
+  element('#comparison-reason').value = existing?.reason ?? '';
+  renderDraft();
+}
+/** @returns Nothing. @example renderDraft() */
+function renderDraft() {
+  document.querySelectorAll('[data-relation]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.relation === draftRelation)));
+  element('#add-comparison').disabled = !draftRelation || !element('#comparison-reason').value.trim();
+  element('#add-comparison').textContent = assessment.comparisons.some(item => item.name === element('#anchor').value) ? 'Update comparison' : 'Keep comparison';
+}
+/** @returns Nothing. @example nextReference() */
+function nextReference() {
+  /** Skip already judged or explicitly unfamiliar examples. */
+  const result = evaluateAssessment(assessment);
+  const next = chooseReference({ catalog, possible: result.possible, visited: [...assessment.comparisons.map(item => item.name), ...skippedReferences] });
+  if (!next) {
+    element('#comparison-feedback').textContent = 'Every reference has been visited. Choose any reference from the list to revisit it.';
+    return;
+  }
+  element('#anchor').value = next.name;
+  renderReference();
+}
+//endregion
+</script>
+<script id="assessment-ui">
+//region Explanations, export, and event handling.
+/** @returns Nothing. @example renderComparisons() */
+function renderComparisons() {
+  element('#comparison-count').textContent = `Your comparisons (${assessment.comparisons.length})`;
+  element('#kept-comparisons').replaceChildren();
+  assessment.comparisons.forEach(comparison => {
+    /** Review controls refer to names rather than unstable list indexes. */
+    const row = node({ tag: 'div', className: 'comparison' });
+    row.append(node({ tag: 'strong', text: `${relationNames[comparison.relation]} ${comparison.name} · ${comparison.score}` }), node({ tag: 'p', text: comparison.reason }));
+    const edit = node({ tag: 'button', text: 'Revise' });
+    edit.type = 'button';
+    edit.dataset.editComparison = comparison.name;
+    edit.setAttribute('aria-label', `Revise comparison with ${comparison.name}`);
+    const remove = node({ tag: 'button', text: 'Remove' });
+    remove.type = 'button';
+    remove.dataset.removeComparison = comparison.name;
+    remove.setAttribute('aria-label', `Remove comparison with ${comparison.name}`);
+    const actions = node({ tag: 'div', className: 'row' });
+    actions.append(edit, remove);
+    row.append(actions);
+    element('#kept-comparisons').append(row);
+  });
+  if (!assessment.comparisons.length) element('#kept-comparisons').append(node({ tag: 'p', className: 'hint', text: 'No comparisons kept yet.' }));
+}
+/** @param result - Current evaluated constraints. @returns Trace lines suitable for UI and plain-text download. @example traceLines(evaluateAssessment(assessment)) */
+function traceLines(result) {
+  if (result.failures.length) return [
+    ...result.failures.map(rule => `${rule.title}: Yes. This defining failure sets 0.`),
+    ...(assessment.comparisons.length ? ['Comparisons cannot raise the rating above a confirmed defining failure.'] : []),
+  ];
+  return [
+    result.unansweredZero.length ? 'Defining failures have not all been ruled out. The rating remains provisional.' : 'Every defining-failure check is No: 0 is excluded.',
+    ...assessment.comparisons.map(item => `${relationNames[item.relation]} ${item.name} (${item.score}). ${item.reason}`),
+    ...result.failedTen.map(rule => `${rule.title}: No. This excludes 10.`),
+    ...(result.pendingTen.length ? ['10 is still a candidate, but its requirements are not all confirmed.'] : []),
+    ...(result.possible.includes(TOP_SCORE) && result.pendingTen.length === 0 ? ['All additional requirements for 10 pass.'] : []),
+    ...(!assessment.comparisons.length ? ['A reference comparison is needed to place the software.'] : []),
+  ];
+}
+/** @returns Nothing. @example renderResult() */
+function renderResult() {
+  /** Every displayed value is derived from the same pure result. */
+  const result = evaluateAssessment(assessment);
+  const unplaced = !assessment.comparisons.length && !result.failures.length;
+  const label = result.conflict ? 'Conflict' : unplaced ? 'Unplaced' : bandLabel(result.possible);
+  element('#result-number').textContent = label;
+  element('#result-number').dataset.long = String(result.conflict || unplaced);
+  element('#result-label').textContent = result.conflict ? 'These answers cannot all hold'
+    : unplaced ? 'Keep a reference comparison'
+    : result.complete ? result.possible.length === 1 ? 'Supported rating · out of 10' : 'Supported range · out of 10'
+    : 'Provisional · checks remain';
+  element('#result-description').textContent = result.conflict
+    ? 'No integer band satisfies your comparisons and endpoint checks. Revise the conflicting judgments; they are not averaged.'
+    : unplaced ? 'The highlighted bands are still open. Nothing has been filled in for you.'
+    : 'Every highlighted band fits the current answers. No midpoint or decimal score is inferred.';
+  element('#possibilities').replaceChildren(...Array.from({ length: TOP_SCORE + 1 }, (_, score) => {
+    const marker = node({ tag: 'span', text: String(score) });
+    marker.dataset.possible = String(result.possible.includes(score));
+    marker.setAttribute('aria-label', `${score}: ${result.possible.includes(score) ? 'possible' : 'excluded'}`);
+    return marker;
+  }));
+  element('#result-notice').dataset.danger = String(result.conflict || result.failures.length > 0);
+  element('#result-notice').textContent = result.conflict ? 'Review your comparisons and the endpoint checks. Remove or revise an answer to resolve the conflict.'
+    : result.missing.length ? `Next: ${result.missing[0]}`
+    : result.failures.length ? 'The defining failure determines 0, regardless of strengths elsewhere.'
+    : result.possible.length === 1 ? 'The answers identify one band. Download the reasoning with the rating.'
+    : 'You can keep this range or add another familiar reference to narrow it.';
+  element('#trace').replaceChildren(...traceLines(result).map(text => node({ tag: 'li', text })));
+  if (result.conflict) {
+    const explanations = result.exclusions.map(entry => `${entry.score}: excluded by ${entry.reasons.join('; ')}.`);
+    element('#trace').append(...explanations.map(text => node({ tag: 'li', text })));
+  }
+  element('#ten-section').hidden = result.failures.length > 0 || (!result.possible.includes(TOP_SCORE) && !result.conflict && result.failedTen.length === 0);
+  document.querySelectorAll('[data-gate-kind]').forEach(select => {
+    select.value = assessment[select.dataset.gateKind][select.dataset.gateId];
+    select.parentElement.dataset.answer = select.value;
+  });
+  element('#whole-reviewed').checked = assessment.reviewed;
+  renderComparisons();
+}
+/** @returns Download text containing the complete state, including unresolved checks. @example assessmentText() */
+function assessmentText() {
+  const result = evaluateAssessment(assessment);
+  return [
+    'Software quality assessment',
+    `Software: ${assessment.name || '(not named)'}`,
+    `Defining job: ${assessment.job || '(not described)'}`,
+    `Result: ${!assessment.comparisons.length && !result.failures.length ? 'Unplaced' : bandLabel(result.possible)}${result.possible.length && (assessment.comparisons.length || result.failures.length) ? ' / 10' : ''}`,
+    `Status: ${result.conflict ? 'Conflicting answers' : result.complete ? 'Supported by the recorded judgments' : 'Incomplete / provisional'}`,
+    '', 'Strengths', assessment.strengths || '(not recorded)', '', 'Independent defects and combined consequences', assessment.defects || '(not recorded)',
+    '', `Whole-product review: ${assessment.reviewed ? 'Confirmed' : 'Not confirmed'}`,
+    '', 'Defining-failure checks', ...zeroRules.map(rule => `${rule.title}: ${assessment.zero[rule.id]}`),
+    '', 'Requirements for 10', ...tenRules.map(rule => `${rule.title}: ${assessment.ten[rule.id]}`),
+    '', 'Comparisons', ...assessment.comparisons.map(item => `${relationNames[item.relation]} ${item.name} (${item.score}). ${item.reason}\nReference rationale: ${catalog.find(reference => reference.name === item.name).reason}`),
+    '', 'Reasoning', ...traceLines(result), '', 'Unresolved requirements', ...(result.missing.length ? result.missing : ['None']),
+    '', 'Method: endpoint obligations plus ordinal reference comparisons. Notes are human judgments, not automatically scored evidence. A range is not a confidence interval.',
+  ].join('\n');
+}
+/** @returns Nothing. @example keepComparison() */
+function keepComparison() {
+  const anchor = catalog.find(item => item.name === element('#anchor').value);
+  const reason = element('#comparison-reason').value.trim();
+  if (!anchor || !draftRelation || !reason) return;
+  const comparison = { name: anchor.name, score: anchor.score, relation: draftRelation, reason };
+  assessment = { ...assessment, comparisons: [...assessment.comparisons.filter(item => item.name !== anchor.name), comparison] };
+  element('#comparison-feedback').textContent = `Kept: ${relationNames[draftRelation]} ${anchor.name} (${anchor.score}).`;
+  renderResult();
+  nextReference();
+}
+/** @returns Nothing. @example resetAssessment() */
+function resetAssessment() {
+  assessment = initialAssessment();
+  skippedReferences = [];
+  draftRelation = '';
+  element('#assessment-form').reset();
+  element('#comparison-feedback').textContent = '';
+  element('#review-note').textContent = 'These notes guide your judgment. The page does not interpret or score the text.';
+  renderResult();
+  nextReference();
+}
+/** @param event - Input event from text fields. @returns Nothing. @example handleTextInput(event) */
+function handleTextInput(event) {
+  const fields = { 'software-name': 'name', 'software-job': 'job', strengths: 'strengths', defects: 'defects' };
+  const key = fields[event.target.id];
+  if (key) {
+    assessment = { ...assessment, [key]: event.target.value, reviewed: false };
+    if (assessment.comparisons.length) element('#review-note').textContent = 'The assessment changed. Review your existing comparisons against the updated description, then confirm the combined judgment again.';
+    renderResult();
+  }
+  if (event.target.id === 'comparison-reason') renderDraft();
+  if (event.target.id === 'search') renderCatalog();
+}
+/** @param event - Change event from gate selects and filters. @returns Nothing. @example handleChange(event) */
+function handleChange(event) {
+  const target = event.target;
+  if (target.dataset.gateKind) {
+    const kind = target.dataset.gateKind;
+    assessment = { ...assessment, [kind]: { ...assessment[kind], [target.dataset.gateId]: target.value } };
+    renderResult();
+  }
+  if (target.id === 'whole-reviewed') { assessment = { ...assessment, reviewed: target.checked }; renderResult(); }
+  if (target.id === 'anchor') { element('#comparison-feedback').textContent = ''; renderReference(); }
+  if (target.id === 'category' || target.id === 'sort') renderCatalog();
+}
+/** @param event - Click event delegated to stable data attributes. @returns Nothing. @example handleClick(event) */
+function handleClick(event) {
+  const button = event.target.closest('button');
+  if (!button) return;
+  if (button.dataset.view) showView(button.dataset.view);
+  if (button.dataset.scoreFilter) { scoreFilter = scoreFilter === button.dataset.scoreFilter ? 'all' : button.dataset.scoreFilter; renderCatalog(); }
+  if (button.dataset.useReference) { showView('assess'); element('#anchor').value = button.dataset.useReference; renderReference(); element('#comparison-title').scrollIntoView(); }
+  if (button.dataset.relation) { draftRelation = button.dataset.relation; renderDraft(); }
+  if (button.dataset.editComparison) { element('#anchor').value = button.dataset.editComparison; renderReference(); element('#anchor').focus(); }
+  if (button.dataset.removeComparison) { assessment = { ...assessment, comparisons: assessment.comparisons.filter(item => item.name !== button.dataset.removeComparison) }; renderResult(); renderReference(); }
+  if (button.id === 'clear-filters') { scoreFilter = 'all'; element('#search').value = ''; element('#category').value = 'all'; element('#sort').value = 'desc'; renderCatalog(); }
+  if (button.id === 'no-failures') { assessment = { ...assessment, zero: Object.fromEntries(zeroRules.map(rule => [rule.id, 'no'])) }; renderResult(); }
+  if (button.id === 'add-comparison') keepComparison();
+  if (button.id === 'skip-reference') { skippedReferences = [...skippedReferences, element('#anchor').value]; nextReference(); }
+  if (button.id === 'reset-assessment') element('#reset-dialog').showModal();
+  if (button.id === 'export-assessment') {
+    const download = node({ tag: 'a' });
+    download.href = `data:text/plain;charset=utf-8,${encodeURIComponent(assessmentText())}`;
+    download.download = 'software-quality-assessment.txt';
+    download.click();
+  }
+}
+/** @returns Nothing. @example initializeExplorer() */
+function initializeExplorer() {
+  Array.from({ length: TOP_SCORE + 1 }, (_, score) => {
+    const button = node({ tag: 'button', text: String(score) });
+    button.type = 'button';
+    button.dataset.scoreFilter = String(score);
+    button.setAttribute('aria-label', `Filter references rated ${score} out of 10`);
+    button.setAttribute('aria-pressed', 'false');
+    element('#scale-filter').append(button);
+  });
+  [...new Set(catalog.map(item => item.category))].sort().forEach(category => {
+    const option = node({ tag: 'option', text: category });
+    option.value = category;
+    element('#category').append(option);
+  });
+  [...catalog].sort((left, right) => left.score - right.score || left.name.localeCompare(right.name)).forEach(item => {
+    const option = node({ tag: 'option', text: `${item.score}/10 · ${item.name}` });
+    option.value = item.name;
+    element('#anchor').append(option);
+  });
+  prompts.forEach(prompt => {
+    const item = node({ tag: 'li' });
+    item.append(node({ tag: 'strong', text: prompt.name }), node({ tag: 'p', text: prompt.question }));
+    element('#criteria-prompts').append(item);
+  });
+  buildGates({ rules: zeroRules, kind: 'zero' });
+  buildGates({ rules: tenRules, kind: 'ten' });
+  document.addEventListener('input', handleTextInput);
+  document.addEventListener('change', handleChange);
+  document.addEventListener('click', handleClick);
+  element('#assessment-form').addEventListener('submit', event => event.preventDefault());
+  element('#reset-dialog').addEventListener('close', () => { if (element('#reset-dialog').returnValue === 'discard') resetAssessment(); });
+  renderCatalog();
+  renderResult();
+  nextReference();
+}
+initializeExplorer();
+//endregion
+</script>
+</body>
+</html>
