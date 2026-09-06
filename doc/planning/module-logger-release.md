@@ -89,6 +89,14 @@ Its post-release value (toml-edit verification bar,
    documented,
    pinned by tests,
    and consistent with rules PP4 and PP7.
+- `flush()` gets a fixed internal deadline before 0.1.0 (owner choice;
+   recourse for slow backends is under pushback).
+- Neutralized control characters render as `\uXXXX`.
+- `engines.node` declares `>=24`:
+   the dist calls `Error.isError`,
+   which arrived with V8 13.6 in Node 24.0.0.
+   Adopted by default;
+   veto invited.
 - The legacy plan becomes a post-release track after a rewrite that fixes its inventory and removes the items decided against here.
 
 ## Measured state (2026-09-06)
@@ -189,13 +197,37 @@ Its post-release value (toml-edit verification bar,
    per <https://pnpm.io/workspaces>.
    `pnpm-workspace.yaml` sets `autoInstallPeers: false` and `strictPeerDependencies: true`.
 - `.github/workflows/cargo-publish.yml` already uses a `type: choice` dispatch input to select one crate.
+- No in-repo file imports both the logger and a color library,
+   and no log call carries an escape literal or color helper,
+   so neutralizing all controls costs nothing today.
+- The dist uses `Error.isError` (twice) and `toSorted`;
+   `Error.isError` needs Node 24+.
+- `package/dev-script/task-util/src/tsc-filter.ts` already deletes `dist/**/*.tsbuildinfo` and the root tsconfig redirects its own build info to `.cache/typescript/`,
+   so redirecting `tsBuildInfoFile` in the shared config follows existing practice.
+- toml-edit exposes seams as underscore-prefixed entry exports (`_encodeKey` and others in `package/module/toml-edit/src/index.ts`);
+   the shared rolldown config builds one entry (`./src/index.ts`);
+   no `stripInternal` in the shared tsconfig.
+- npm access-token docs:
+   Bypass-2FA granular tokens are the only way a stored token can publish from CI,
+   and npm's own guidance now points CI publishing at trusted publishing instead.
+- Git tags follow `<package>-v<version>` (17 tags,
+   e.g. `forbidden-strings-v0.1.0`).
+- The changesets action supports OIDC trusted publishing and needs no npm token;
+   it adds a version PR flow (issue #159's territory).
 - Prior direction in `doc/handover/cli-git-policies-platform.md` says to bundle logger into public artifacts rather than publish it.
 
 ## Open questions
 
-- Whether the `flush()` hang is fixed before 0.1.0.
-- How neutralized control characters render in console output.
-- How the publish workflow selects packages for a run.
+Owner asked for pushback on every decision;
+ reopened items:
+
+- Bootstrap authentication (stored Bypass-2FA token versus local interactive first publish).
+- Publish workflow structure (tag-triggered,
+   dispatch input,
+   changesets,
+   per-package files).
+- Recourse for slow backends under a fixed flush deadline.
+- Whether `./ts` stays published at all.
 
 ## Next action
 
