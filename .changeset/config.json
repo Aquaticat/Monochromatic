@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
-  "changelog": "@changesets/cli/changelog",
+  "changelog": "./changelog.ts",
   "commit": false,
   "fixed": [],
   "linked": [],
@@ -41,5 +41,6 @@
     "@monochromatic-dev/shim-ungap-structured-clone",
     "@monochromatic-dev/stub-silent",
     "@monochromatic-dev/stub-throwing"
-  ]
+  ],
+  "format": false
 }
