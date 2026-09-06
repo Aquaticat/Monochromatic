@@ -1,3 +1,12 @@
+# Named `bundle:*`, not `build:*`: this sidecar ships nothing, and the browser
+# property bundle is test tooling loaded by the Playwright harness page. A
+# `build` task would mark the package as shipping an artifact, and the
+# require-eventual-artifact lint would then reject every relative helper import
+# in the test files here.
+[tasks."bundle:browser-properties"]
+description = "Bundle the browser property layer (fast-check, the neutral logger artifact, the properties) for the Playwright harness page"
+extends = "build:js:client"
+
 [tasks.lint]
 extends = "lint"
 
