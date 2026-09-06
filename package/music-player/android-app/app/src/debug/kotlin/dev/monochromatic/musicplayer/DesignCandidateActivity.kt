@@ -235,6 +235,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -579,6 +580,12 @@ private fun OpenAction(candidate: String) {
     }
     if (style == "elevated") {
         ElevatedButton(onClick = {}) {
+            OpenActionContent()
+        }
+        return
+    }
+    if (style == "outlined") {
+        OutlinedButton(onClick = {}) {
             OpenActionContent()
         }
         return
@@ -1042,6 +1049,8 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
         "label"
     } else if (candidate.contains("cue-accent-")) {
         "accent"
+    } else if (candidate.contains("cue-container-")) {
+        "container"
     } else if (candidate.contains("cue-outline-")) {
         "outline"
     } else {
@@ -1124,7 +1133,11 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             null
         },
         colors = ListItemDefaults.colors(
-            containerColor = Color.Transparent,
+            containerColor = if (playing && currentTrackCue == "container") {
+                MaterialTheme.colorScheme.surfaceContainerLow
+            } else {
+                Color.Transparent
+            },
             headlineColor = MaterialTheme.colorScheme.onSurface,
             leadingIconColor = MaterialTheme.colorScheme.primary,
             supportingColor = MaterialTheme.colorScheme.onSurfaceVariant,
