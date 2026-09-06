@@ -71,6 +71,16 @@ and it has since been seen to hurt.
 - Persistent rule cache `node_modules/.cache/prefer-readonly-parameter-type`:
    72 MB.
 
+- Rule liveness (positive control,
+   2026-09-06):
+  the warm sweep output holds 23 `prefer-readonly-parameter-type(prefer-readonly-parameter-types)` findings,
+  so the rule runs repo-wide and the repo is close to remediated.
+  `file-enforcer` and `mcp/mvm` report none.
+- `file-enforcer` warm `lint:oxlint` with the readonly rule allowed via `--allow`:
+   1.3 s,
+  against 1.4 s with it on;
+  warm per-package cost of the rule is inside the noise here.
+
 ## Evidence already in the repo
 
 - `doc/planning/oxlint-warm-sweep-attribution.md` (issue #374,
