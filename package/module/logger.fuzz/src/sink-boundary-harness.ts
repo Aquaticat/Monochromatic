@@ -17,6 +17,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
+import { setImmediate, } from 'node:timers/promises';
 
 import type {
   Level,
@@ -24,6 +25,24 @@ import type {
 } from '@monochromatic-dev/module-logger';
 
 //region Run tracking
+
+/**
+ Lets the event loop deliver I/O callbacks and timers before the next run.
+ The boundary bodies settle through microtasks alone, so a campaign would
+ otherwise hold the loop for its whole budget; the test harness's own
+ logger, still verifying its file sink when the first property starts,
+ then saw its verify timer fire before the filesystem answered and wrote a
+ breadcrumb. One `setImmediate` per run costs microseconds and keeps every
+ pending callback in the process serviced.
+
+ @example
+ ```ts
+ await yieldToEventLoop();
+ ```
+ */
+export async function yieldToEventLoop(): Promise<void> {
+  await setImmediate();
+}
 
 /**
  Runs still executing. A fast-check campaign interrupted by its time limit

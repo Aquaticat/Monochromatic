@@ -28,7 +28,6 @@ import { createFileSink, } from '@monochromatic-dev/module-logger/node';
 import {
   assert,
   asyncProperty,
-  property,
 } from 'fast-check';
 
 import {
@@ -45,6 +44,7 @@ import {
   referenceNeutralize,
   settleTrackedRuns,
   trackRun,
+  yieldToEventLoop,
 } from './sink-boundary-harness.ts';
 
 /**
@@ -114,6 +114,7 @@ function verboseConsole(): Disposable {
  ```
  */
 async function fileRoundTrip(records: readonly LogRecord[],): Promise<void> {
+  await yieldToEventLoop();
   await using pkg = await enterThrowawayPackage();
   /**
    Sink under test, resolving its log file under the throwaway package.
@@ -145,10 +146,11 @@ await describe({
       name: 'the console neutralizer agrees with an independent reference and leaves no forbidden control',
       timeout: run.timeout,
       fn: async () => {
-        assert(
-          property(
+        await assert(
+          asyncProperty(
             adversarialMessage(),
-            function agrees(message,) {
+            async function agrees(message,) {
+              await yieldToEventLoop();
               /**
                Output of the neutralizer under test.
                */
@@ -200,6 +202,7 @@ await describe({
           asyncProperty(
             logRecords(),
             async function emits(records,) {
+              await yieldToEventLoop();
               texts.length = 0;
               /**
                Sink under test.
@@ -234,6 +237,7 @@ await describe({
           asyncProperty(
             logRecords(),
             async function roundTrips(records,) {
+              await yieldToEventLoop();
               globalThis.sessionStorage.clear();
               /**
                Sink under test, writing into Node's in-memory sessionStorage.
