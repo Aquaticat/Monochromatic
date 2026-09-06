@@ -150,7 +150,7 @@ export function prepareMethodSlot({
     key,
     original,
     owners,
-    get(): unknown {
+    get(this: unknown,): unknown {
       /**
        Async descendants of completed attempts must never enter another attempt's fake.
        */
@@ -162,6 +162,7 @@ export function prepareMethodSlot({
       return replacement === undefined ? original.value : Reflect.get(
         replacement.facade,
         key,
+        this,
       );
     },
     set(): never {
