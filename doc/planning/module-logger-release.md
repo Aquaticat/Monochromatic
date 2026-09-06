@@ -285,8 +285,9 @@ Order matters:
 
 ## Next action
 
-Owner runs the runbook against the version pull request.
-Remaining agent work:
+Owner runs the runbook against the version pull request (#478).
+Agent work done:
+ the post-release track is issue #479;
  issue comments (#159,
  #306,
  #307,
