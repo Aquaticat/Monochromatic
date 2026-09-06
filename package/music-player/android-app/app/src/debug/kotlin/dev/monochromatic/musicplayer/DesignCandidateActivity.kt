@@ -1149,6 +1149,9 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             .clickable(role = Role.Button, onClick = {})
             .semantics {
                 selected = playing
+                if (playing && candidate.startsWith("cue-")) {
+                    contentDescription = "Current track: ${track.title}"
+                }
             },
     )
     if (palette.rowDividers) {
