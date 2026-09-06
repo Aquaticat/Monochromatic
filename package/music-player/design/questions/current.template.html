@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: redundant-cue matrix</title>
+<title>Music player design: accepted 3B text-scale review</title>
 <style>
 :root {
   color-scheme: light;
@@ -67,7 +67,7 @@ p {
 }
 
 h1 {
-  max-inline-size: 20ch;
+  max-inline-size: 22ch;
   margin-block-end: 0.75rem;
   font-size: clamp(2rem, 5vw, 4rem);
   line-height: 1;
@@ -81,21 +81,20 @@ h2 {
 }
 
 h3 {
-  margin-block-end: 0;
-  font-size: 1.1rem;
+  margin-block-end: 0.5rem;
+  font-size: 1.15rem;
 }
 
 .lede,
-.question-intro,
-.definition,
-.response-help {
-  max-inline-size: 78ch;
+.supporting,
+.assessment,
+.status {
   color: var(--color-ink-muted);
   line-height: 1.55;
 }
 
-.lede,
-.question-intro {
+.lede {
+  max-inline-size: 74ch;
   margin-block-end: 0;
 }
 
@@ -111,9 +110,7 @@ h3 {
   font-weight: 700;
 }
 
-.instructions,
-.question,
-.response {
+.panel {
   margin-block-end: 2rem;
   padding-block: clamp(1.25rem, 3vw, 2rem);
   padding-inline: clamp(1.25rem, 3vw, 2rem);
@@ -125,132 +122,80 @@ h3 {
   box-shadow: 0 0.75rem 2rem var(--color-shadow);
 }
 
-.instructions ol {
-  max-inline-size: 78ch;
+.instructions {
+  max-inline-size: 82ch;
   padding-inline-start: 1.5rem;
   line-height: 1.55;
 }
 
-.definition-list {
+.evidence-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   gap: 1rem;
-  margin-block: 1.5rem;
+  margin-block-start: 1.5rem;
 }
 
-.definition {
-  margin-block-end: 0;
+.summary-card,
+.priority {
   padding-block: 1rem;
   padding-inline: 1rem;
-  border-inline-start-width: 0.25rem;
-  border-inline-start-style: solid;
-  border-inline-start-color: var(--color-primary);
+  border-radius: 1rem;
   background-color: var(--color-primary-container);
   color: var(--color-on-primary-container);
 }
 
-fieldset {
-  min-inline-size: 0;
-  margin-block: 0;
-  margin-inline: 0;
-  padding-block: 0;
-  padding-inline: 0;
-  border-width: 0;
-}
-
-legend {
-  padding-inline: 0;
-}
-
-.options-scroll {
-  max-inline-size: 100%;
-  overflow-x: auto;
-  padding-block: 0.5rem 0.75rem;
-  scrollbar-gutter: stable;
-}
-
-.options {
-  min-inline-size: max-content;
-  display: grid;
-  grid-template-columns: repeat(4, clamp(19rem, calc(100vw - 4.625rem), 24rem));
-  gap: 1rem;
-}
-
-.accepted-options {
-  min-inline-size: 0;
-  inline-size: min(100%, 56rem);
-  grid-template-columns: minmax(0, 1fr);
-  margin-inline: auto;
-}
-
-.matrix-row {
-  margin-block-end: 2rem;
-}
-
-.matrix-row:last-child {
+.summary-card p,
+.priority p {
   margin-block-end: 0;
 }
 
-.matrix-axis {
-  margin-block-end: 0.5rem;
-  color: var(--color-primary);
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+.priority {
+  margin-block-start: 1.5rem;
 }
 
-.option {
+.scale-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+  gap: 1rem;
+}
+
+.scale-card {
   min-inline-size: 0;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
   border-width: 0.0625rem;
   border-style: solid;
   border-color: var(--color-line);
-  border-radius: 1.25rem;
+  border-radius: 1.5rem;
   background-color: var(--color-paper-strong);
+  box-shadow: 0 0.4rem 1rem var(--color-shadow);
 }
 
-.option[data-recommended="true"] {
-  border-width: 0.1875rem;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 0.25rem var(--color-shadow);
+.scale-heading {
+  min-block-size: 7.5rem;
+  padding-block: 1rem;
+  padding-inline: 1.25rem;
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
 }
 
-.option-heading {
-  min-block-size: 6.5rem;
-  display: flex;
-  align-items: center;
-  padding-block: 0.75rem;
-  padding-inline: 0.75rem;
-  border-block-end-width: 0.0625rem;
-  border-block-end-style: solid;
-  border-block-end-color: var(--color-line);
-}
-
-.option-title {
-  min-inline-size: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.option-code {
-  color: var(--color-primary);
+.scale-code {
+  display: block;
+  margin-block-end: 0.35rem;
   font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.option-summary {
-  color: var(--color-ink-muted);
-  font-size: 0.875rem;
+.scale-heading p {
+  margin-block-end: 0;
+  line-height: 1.4;
 }
 
 .preview-open {
   min-inline-size: 3rem;
   min-block-size: 3rem;
+  inline-size: 100%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -274,8 +219,8 @@ legend {
 .preview-open:focus-visible,
 button:focus-visible,
 textarea:focus-visible,
-.options-scroll:focus-visible,
-.review-choice:has(input:focus-visible) {
+.review-choice:has(input:focus-visible),
+.zoom-stage:focus-visible {
   outline-width: 0.1875rem;
   outline-style: solid;
   outline-color: var(--color-focus);
@@ -285,7 +230,6 @@ textarea:focus-visible,
 .device-frame {
   position: relative;
   display: block;
-  flex: 0 0 auto;
   inline-size: 100%;
   aspect-ratio: 907 / 937;
   overflow: hidden;
@@ -295,7 +239,9 @@ textarea:focus-visible,
 }
 
 .device-frame::before,
-.device-frame::after {
+.device-frame::after,
+.zoom-device::before,
+.zoom-device::after {
   position: absolute;
   z-index: 3;
   inset-inline-start: 47.575%;
@@ -307,11 +253,13 @@ textarea:focus-visible,
   box-shadow: inset 0 0 0 0.0625rem var(--color-device-rim);
 }
 
-.device-frame::before {
+.device-frame::before,
+.zoom-device::before {
   inset-block-start: 0;
 }
 
-.device-frame::after {
+.device-frame::after,
+.zoom-device::after {
   inset-block-end: 0;
 }
 
@@ -365,59 +313,37 @@ textarea:focus-visible,
 }
 
 .assessment {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
   padding-block: 1rem 1.25rem;
   padding-inline: 1.25rem;
 }
 
-.assessment strong,
-.ranking strong {
+.assessment strong {
   color: var(--color-primary);
 }
 
 .assessment ul {
-  margin-block: 0;
+  margin-block: 0 1rem;
   padding-inline-start: 1.25rem;
-  color: var(--color-ink-muted);
-  line-height: 1.45;
 }
 
-.assessment p {
-  margin-block-end: 0;
-  line-height: 1.45;
+fieldset {
+  min-inline-size: 0;
+  margin-block: 0;
+  margin-inline: 0;
+  padding-block: 0;
+  padding-inline: 0;
+  border-width: 0;
 }
 
-.ranking {
-  margin-block: 1.5rem 0;
-  padding-block: 1rem;
-  padding-inline: 1rem;
-  border-radius: 1rem;
-  background-color: var(--color-secondary-container);
-  color: var(--color-on-secondary-container);
-  line-height: 1.55;
-}
-
-.ranking-list {
-  max-inline-size: 96ch;
-  line-height: 1.55;
-}
-
-.ranking-list li {
-  margin-block-end: 0.65rem;
-}
-
-.decision-block {
-  margin-block-end: 1.75rem;
+legend {
+  padding-inline: 0;
 }
 
 .review-choices {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: 0.75rem;
-  margin-block-end: 1.5rem;
+  margin-block: 1rem 1.5rem;
 }
 
 .review-choice {
@@ -443,15 +369,11 @@ textarea:focus-visible,
   accent-color: var(--color-primary);
 }
 
-.response label {
+label[for="other-corrections"],
+label[for="answer-output"] {
   display: block;
   margin-block-end: 0.5rem;
   font-weight: 700;
-}
-
-.response .review-choice {
-  display: flex;
-  margin-block-end: 0;
 }
 
 textarea {
@@ -466,7 +388,8 @@ textarea {
   border-radius: 0.75rem;
   background-color: var(--color-paper-strong);
   color: var(--color-ink);
-  font: inherit;
+  font-family: inherit;
+  font-size: inherit;
   line-height: 1.5;
 }
 
@@ -493,7 +416,8 @@ button {
   border-radius: 999rem;
   background-color: var(--color-primary);
   color: var(--color-paper-strong);
-  font: inherit;
+  font-family: inherit;
+  font-size: inherit;
   font-weight: 700;
   cursor: pointer;
 }
@@ -524,7 +448,6 @@ button[data-variant="secondary"] {
 .status {
   min-block-size: 1.5rem;
   margin-block: 0.75rem 0;
-  color: var(--color-ink-muted);
 }
 
 dialog {
@@ -568,8 +491,6 @@ dialog::backdrop {
 
 .dialog-heading p {
   margin-block-end: 0.75rem;
-  color: var(--color-ink-muted);
-  line-height: 1.4;
 }
 
 .zoom-toolbar {
@@ -593,32 +514,10 @@ dialog::backdrop {
 .zoom-device {
   position: relative;
   display: block;
-  flex: 0 0 auto;
   overflow: hidden;
   border-radius: 7.94% / 7.68%;
   background-color: var(--color-device);
   box-shadow: inset 0 0 0 0.125rem var(--color-device-rim), 0 0.35rem 0.9rem var(--color-shadow);
-}
-
-.zoom-device::before,
-.zoom-device::after {
-  position: absolute;
-  z-index: 3;
-  inset-inline-start: 47.575%;
-  inline-size: 4.85%;
-  block-size: 0.75%;
-  content: "";
-  border-radius: 0.25rem;
-  background-color: var(--color-hinge);
-  box-shadow: inset 0 0 0 0.0625rem var(--color-device-rim);
-}
-
-.zoom-device::before {
-  inset-block-start: 0;
-}
-
-.zoom-device::after {
-  inset-block-end: 0;
 }
 
 .zoom-device .device-screen {
@@ -638,123 +537,135 @@ dialog::backdrop {
 <main>
   <header>
     <div>
-      <h1>Choose redundant cues</h1>
+      <h1>Review accepted 3B across text sizes</h1>
       <p class="lede">
-        Your 1B transport choice is applied. This round removes the space-consuming play column, strengthens the existing Open action, and compares every meaningful combination of the two visible treatments.
+        This is the accepted unfolded screen only: soft neutral current-track container, bold current title, tonal Open, and transport 1B. The mode selector now uses the fewest connected rows whose complete labels fit.
       </p>
     </div>
-    <span class="round-badge">Existing screen only · 4 × 4 matrix</span>
+    <span class="round-badge">Native Android · 50% to 200%</span>
   </header>
 
-  <section class="instructions" aria-labelledby="settled-title">
-    <h2 id="settled-title">Corrections already applied</h2>
-    <ol>
-      <li><strong>Transport 1B:</strong> every cell uses tight 8dp playback spacing, outlined Previous and Next buttons, and filled Pause.</li>
-      <li><strong>Full track width:</strong> the play icon and its empty leading column are gone from every active candidate. Current and ordinary track titles both begin at x=1107 physical pixels.</li>
-      <li><strong>Redundant differentiation:</strong> every current-track option combines at least two visible channels. No option relies only on color or only on shape.</li>
-      <li><strong>Primary Open action:</strong> every Open candidate keeps both the folder icon and explicit label, then adds a visible Material button container.</li>
-      <li><strong>Matrix size:</strong> matrix size is uncapped. These sixteen cells come from four meaningful current-track treatments crossed with four meaningful Open treatments.</li>
-      <li><strong>Scope boundary:</strong> every candidate restyles existing visible elements only. No feature or control is added.</li>
+  <section class="panel" aria-labelledby="evidence-title">
+    <h2 id="evidence-title">What changed and what stayed fixed</h2>
+    <ol class="instructions">
+      <li><strong>Direct device setting:</strong> the target emulator stored <code>font_scale=0.5</code>, so the requested 50% capture is used rather than a substitute.</li>
+      <li><strong>Dynamic mode label:</strong> the third option always names the active subdirectory. Every capture says <code>Shuffle Camellia</code>.</li>
+      <li><strong>Adaptive row count:</strong> complete labels try one connected row, then a connected 2×2 block, then four connected vertical rows. No state scrolls horizontally.</li>
+      <li><strong>Accepted 3B:</strong> every capture retains the T3 current row, O2 tonal Open, centered transport, 24% seek position, outlined Previous and Next, and filled Pause.</li>
+      <li><strong>Native evidence:</strong> every image is an opaque 2076 × 2152px Compose capture of the 852 × 883dp unfolded Pixel 9 Pro Fold with Android system bars and live insets.</li>
     </ol>
-    <div class="definition-list">
-      <p class="definition"><strong>Rows:</strong> explicit Playing label, accent title, soft row container, or outlined row. Every title is bold and every row retains full text width.</p>
-      <p class="definition"><strong>Columns:</strong> filled, tonal, elevated, or outlined Open button. Every action retains its icon, text label, and measured 48dp touch height.</p>
-      <p class="definition"><strong>Native evidence:</strong> every matrix image is an opaque 2076 × 2152px Compose capture of the 852 × 883dp unfolded Pixel 9 Pro Fold display. UI Automator exposes “Current track: Another Xronixle” in every row treatment.</p>
+    <div class="evidence-summary">
+      <article class="summary-card">
+        <h3>Observed wrapping</h3>
+        <p>50% and 75% use one row. 100% and 150% use 2×2. 200% uses four rows.</p>
+      </article>
+      <article class="summary-card">
+        <h3>Padding behavior</h3>
+        <p>The control tries Material's 12dp horizontal content padding first, then 6dp before adding rows. Targets remain at least 48dp.</p>
+      </article>
+      <article class="summary-card">
+        <h3>Assistive technology boundary</h3>
+        <p>Native semantics expose four radio options and the current-track description. Production assistive technology must still verify one mutually exclusive group announcement.</p>
+      </article>
     </div>
-    <div class="options-scroll">
-      <div class="options accepted-options">
-        <article class="option" data-recommended="true">
-          <div class="option-heading">
-            <span class="option-title">
-              <span class="option-code">Accessibility evidence · 200% text</span>
-              <strong>Recommended 1A remains reachable</strong>
-              <span class="option-summary">Full-width tracks plus the settled vertical segmented control</span>
-            </span>
-          </div>
-          <button class="preview-open" type="button" data-preview-title="Recommended 1A at 200% text, scrolled to the vertical segmented control" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-            <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose cue-label-filled large-text capture, prototype commit 9938e8244" src="@@IMAGE_CUE_RECOMMENDED_FONT_200@@" width="852" height="883" alt="Unfolded music player at 200 percent text with a bold current title, explicit Playing label, no leading play column, and four connected vertical mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
-            <span class="preview-label">Open the 200% evidence at measured size</span>
-          </button>
-          <div class="assessment">
-            <p><strong>Verified:</strong> the current and ordinary track titles share full row width; Playing, all metadata, and all four mode labels remain readable. The deck scrolls vertically so the segmented control clears the navigation inset.</p>
-            <p><strong>Prototype boundary:</strong> UI Automator confirms the current-track description and segmented checked state. Production assistive technology must still confirm those announcements and the custom vertical stack's single-group behavior.</p>
-          </div>
-        </article>
-      </div>
+    <div class="priority">
+      <p><strong>Priority:</strong> one row &gt; two rows &gt; four rows. One row preserves the most deck space; two rows ranks next because it preserves more space than four; four rows is the fallback that keeps every label complete. This is one adaptive design, not five competing visual options.</p>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="captures-title">
+    <h2 id="captures-title">Exact accepted screen at each requested scale</h2>
+    <p class="supporting">Open any capture to inspect it at Fit, 1dp per CSS pixel, or native panel pixels.</p>
+    <div class="scale-grid">
+      <article class="scale-card">
+        <div class="scale-heading">
+          <span class="scale-code">50% · one row</span>
+          <h3>Minimum requested scale</h3>
+          <p>Default Material content padding fits all four labels in one connected row.</p>
+        </div>
+        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 50% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 0.5, prototype commit cb02226ae" src="@@IMAGE_FONT_050@@" width="852" height="883" alt="Accepted unfolded music player 3B at 50 percent text with one connected row of mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open 50% at measured size</span>
+        </button>
+        <div class="assessment"><strong>Pros</strong><ul><li>One mode row preserves maximum deck space.</li><li>More folder and track content is visible.</li></ul><strong>Cons</strong><ul><li>Text is intentionally smaller than the normal setting.</li></ul></div>
+      </article>
+
+      <article class="scale-card">
+        <div class="scale-heading">
+          <span class="scale-code">75% · one row</span>
+          <h3>Compact one-row padding</h3>
+          <p>Full available width plus 6dp horizontal content padding keeps <code>Shuffle Camellia</code> complete.</p>
+        </div>
+        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 75% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 0.75, prototype commit cb02226ae" src="@@IMAGE_FONT_075@@" width="852" height="883" alt="Accepted unfolded music player 3B at 75 percent text with one connected row of mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open 75% at measured size</span>
+        </button>
+        <div class="assessment"><strong>Pros</strong><ul><li>All labels remain complete in one row.</li><li>Targets remain at least 48dp.</li></ul><strong>Cons</strong><ul><li>Inner horizontal padding falls from the Material default 12dp to 6dp.</li></ul></div>
+      </article>
+
+      <article class="scale-card">
+        <div class="scale-heading">
+          <span class="scale-code">100% · connected 2×2</span>
+          <h3>Default Android scale</h3>
+          <p>One row clips the named Shuffle option even after compact padding, so the control uses two rows.</p>
+        </div>
+        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 100% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.0, prototype commit cb02226ae" src="@@IMAGE_FONT_100@@" width="852" height="883" alt="Accepted unfolded music player 3B at 100 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open 100% at measured size</span>
+        </button>
+        <div class="assessment"><strong>Pros</strong><ul><li>The complete current-subdirectory label remains visible.</li><li>The 2×2 block uses half the rows of the vertical fallback.</li></ul><strong>Cons</strong><ul><li>The mode control now occupies two rows at the default scale.</li></ul></div>
+      </article>
+
+      <article class="scale-card">
+        <div class="scale-heading">
+          <span class="scale-code">150% · connected 2×2</span>
+          <h3>Enlarged text</h3>
+          <p>Compact content padding keeps two segments per row without clipping.</p>
+        </div>
+        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 150% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.5, prototype commit cb02226ae" src="@@IMAGE_FONT_150@@" width="852" height="883" alt="Accepted unfolded music player 3B at 150 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open 150% at measured size</span>
+        </button>
+        <div class="assessment"><strong>Pros</strong><ul><li>2×2 preserves deck height while retaining complete labels.</li><li>All four mode targets remain connected.</li></ul><strong>Cons</strong><ul><li>Less folder and track content fits in each pane.</li></ul></div>
+      </article>
+
+      <article class="scale-card">
+        <div class="scale-heading">
+          <span class="scale-code">200% · four rows</span>
+          <h3>Largest requested scale</h3>
+          <p><code>Shuffle Camellia</code> cannot share a half-width row without clipping, so every segment gets one row.</p>
+        </div>
+        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 200% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 2.0, prototype commit cb02226ae" src="@@IMAGE_FONT_200@@" width="852" height="883" alt="Accepted unfolded music player 3B at 200 percent text with four connected vertical mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open 200% at measured size</span>
+        </button>
+        <div class="assessment"><strong>Pros</strong><ul><li>Every mode label remains complete at the largest scale.</li><li>The full control clears the navigation inset.</li></ul><strong>Cons</strong><ul><li>Four rows use the most deck height.</li><li>The deck must scroll vertically to expose its complete lower state.</li></ul></div>
+      </article>
     </div>
   </section>
 
   <form id="design-form">
-    <section class="question" aria-labelledby="matrix-title">
-      <h2 id="matrix-title">Sixteen native combinations</h2>
-      <p class="question-intro">Each row has its own horizontal scroller on narrow windows. Rows change only the current-track cues. Columns change only the Open button treatment. Select those decisions separately after inspecting any full-size cells you need.</p>
-      <div id="matrix-root"></div>
-    </section>
-
-    <section class="question" aria-labelledby="recommendation-title">
-      <h2 id="recommendation-title">Recommendation and full ranking</h2>
-      <p class="ranking"><strong>Recommend 1A: explicit Playing label plus bold title, with a filled Open button.</strong> It gives the current track a literal non-color cue without reducing title width, while the filled icon-and-label button gives the folder picker's primary action unmistakable prominence.</p>
-      <p class="response-help"><strong>Full order:</strong> 1A &gt; 2A &gt; 1B &gt; 2B &gt; 3A &gt; 1C &gt; 3B &gt; 2C &gt; 1D &gt; 4A &gt; 2D &gt; 3C &gt; 4B &gt; 3D &gt; 4C &gt; 4D.</p>
-      <ol class="ranking-list">
-        <li><strong>1A · Explicit label, filled Open.</strong> Best literal current-state cue and strongest primary folder action.</li>
-        <li><strong>2A · Accent, filled Open.</strong> Below 1A because color plus weight is less literal than visible Playing text.</li>
-        <li><strong>1B · Explicit label, tonal Open.</strong> Below 2A because the tonal container understates a primary action despite the stronger track cue.</li>
-        <li><strong>2B · Accent, tonal Open.</strong> Below 1B because the explicit label communicates current state more directly.</li>
-        <li><strong>3A · Soft container, filled Open.</strong> Below 2B because changing the whole row is more visual intervention than accent plus weight.</li>
-        <li><strong>1C · Explicit label, elevated Open.</strong> Below 3A because elevation is subtle in the flat app bar and weakens the primary-action reading.</li>
-        <li><strong>3B · Soft container, tonal Open.</strong> Below 1C because a literal Playing label is clearer than a neutral row tint.</li>
-        <li><strong>2C · Accent, elevated Open.</strong> Below 3B because the elevated Open action is less prominent than tonal.</li>
-        <li><strong>1D · Explicit label, outlined Open.</strong> Below 2C because its Open boundary is the weakest primary-action treatment.</li>
-        <li><strong>4A · Outlined row, filled Open.</strong> Below 1D because the large row outline reads like a separate button.</li>
-        <li><strong>2D · Accent, outlined Open.</strong> Below 4A because the filled Open action outweighs the cleaner track treatment.</li>
-        <li><strong>3C · Soft container, elevated Open.</strong> Below 2D because changing the whole row costs more visual stability.</li>
-        <li><strong>4B · Outlined row, tonal Open.</strong> Below 3C because the row still looks button-like.</li>
-        <li><strong>3D · Soft container, outlined Open.</strong> Below 4B because outlined Open is weaker than tonal as a primary action.</li>
-        <li><strong>4C · Outlined row, elevated Open.</strong> Below 3D because the row outline is heavier than the soft container.</li>
-        <li><strong>4D · Outlined row, outlined Open.</strong> Last because repeated outlines weaken both hierarchy and component distinction.</li>
-      </ol>
-      <p class="response-help"><strong>No addition is proposed.</strong> The fourth row and column exist because they are consequential treatments of visible elements, not to reach any target cell count.</p>
-    </section>
-
-    <section class="response" aria-labelledby="questions-title">
-      <h2 id="questions-title">Your decisions</h2>
-      <p class="question-intro">Choose the current-track treatment and Open treatment separately. The live result names the corresponding matrix cell and its rank.</p>
-
-      <fieldset class="decision-block">
-        <legend><h3>Q1. How should the current track be distinguished without a play column?</h3></legend>
+    <section class="panel" aria-labelledby="response-title">
+      <h2 id="response-title">Review result</h2>
+      <fieldset>
+        <legend><strong>Does this adaptive 3B screen hold across the requested scales?</strong></legend>
         <div class="review-choices">
-          <label class="review-choice"><input type="radio" name="trackDecision" value="label" required><span>T1 · Bold title plus explicit Playing label (Recommended)</span></label>
-          <label class="review-choice"><input type="radio" name="trackDecision" value="accent" required><span>T2 · Primary-colored bold title</span></label>
-          <label class="review-choice"><input type="radio" name="trackDecision" value="container" required><span>T3 · Soft neutral row container plus bold title</span></label>
-          <label class="review-choice"><input type="radio" name="trackDecision" value="outline" required><span>T4 · Rounded row outline plus bold title</span></label>
+          <label class="review-choice"><input type="radio" name="scaleVerdict" value="accept" required><span><strong>Accept adaptive 3B (Recommended).</strong> Pros: complete labels and minimum row count at every tested scale. Cons: 100% already needs 2×2 and 200% needs four rows.</span></label>
+          <label class="review-choice"><input type="radio" name="scaleVerdict" value="revise" required><span><strong>Revise it.</strong> Pros: records that a visible scale state still fails. Cons: requires a concrete correction before another variant can be evaluated.</span></label>
         </div>
       </fieldset>
-
-      <fieldset class="decision-block">
-        <legend><h3>Q2. How prominent should the existing Open action be?</h3></legend>
-        <div class="review-choices">
-          <label class="review-choice"><input type="radio" name="openDecision" value="filled" required><span>O1 · Filled button (Recommended)</span></label>
-          <label class="review-choice"><input type="radio" name="openDecision" value="tonal" required><span>O2 · Tonal button</span></label>
-          <label class="review-choice"><input type="radio" name="openDecision" value="elevated" required><span>O3 · Elevated button</span></label>
-          <label class="review-choice"><input type="radio" name="openDecision" value="outlined" required><span>O4 · Outlined button</span></label>
-        </div>
-      </fieldset>
-
-      <p class="ranking" id="combination-status" role="status" aria-live="polite" hidden></p>
-      <label for="other-corrections">Anything else you want settled or changed, or “None”</label>
-      <textarea id="other-corrections" name="otherCorrections" required placeholder="Name a cell code and visible area, or describe a correction the matrix missed."></textarea>
-      <p class="response-help">Select Q1 and Q2, complete the required free-text field, then choose Prepare answers and Copy answers to paste the result into Pi.</p>
+      <label for="other-corrections">What should change? Enter “None” if the scale behavior is accepted.</label>
+      <textarea id="other-corrections" name="otherCorrections" required></textarea>
       <div class="actions">
-        <button type="submit">Prepare answers</button>
+        <button type="submit">Prepare answer</button>
         <button type="button" data-variant="secondary" id="clear-form">Clear</button>
       </div>
-
       <div class="output" id="output" hidden>
         <label for="answer-output">Answer to paste into Pi</label>
         <textarea id="answer-output" readonly></textarea>
         <div class="output-actions">
-          <button type="button" id="copy-answers">Copy answers</button>
-          <button type="button" data-variant="secondary" id="download-answers">Download answers</button>
+          <button type="button" id="copy-answers">Copy answer</button>
+          <button type="button" data-variant="secondary" id="download-answers">Download answer</button>
         </div>
       </div>
       <p class="status" id="status" role="status" aria-live="polite"></p>
@@ -765,7 +676,7 @@ dialog::backdrop {
 <dialog id="preview-dialog" aria-labelledby="zoom-title">
   <div class="dialog-layout">
     <div class="dialog-heading">
-      <h2 id="zoom-title">Prototype preview</h2>
+      <h2 id="zoom-title">Accepted 3B preview</h2>
       <p id="zoom-dimensions"></p>
       <div class="zoom-toolbar" role="group" aria-label="Preview zoom controls">
         <button type="button" data-variant="secondary" id="zoom-out">Zoom out</button>
@@ -786,112 +697,6 @@ dialog::backdrop {
 </dialog>
 
 <script>
-const rows = [
-  {
-    number: '1', key: 'label', name: 'Explicit label', summary: 'Bold title plus bold Playing text',
-    pros: ['Literal state text does not depend on color or shape.', 'Uses the existing supporting line and preserves full title width.'],
-    cons: ['Adds one word to the current row.', 'Repeats state already implied by the playback deck.'],
-    analysis: 'My pick: clearest and most robust current-state treatment.'
-  },
-  {
-    number: '2', key: 'accent', name: 'Accent', summary: 'Primary-colored bold title',
-    pros: ['Color and weight provide redundant cues.', 'Adds no text, container, or layout footprint.'],
-    cons: ['Less literal than visible Playing text.', 'Depends on users recognizing emphasis as current state.'],
-    analysis: 'My fallback: cleanest compact treatment.'
-  },
-  {
-    number: '3', key: 'container', name: 'Soft container', summary: 'Neutral row fill plus bold title',
-    pros: ['A broad region is easy to locate quickly.', 'Neutral fill plus weight avoids color-only state.'],
-    cons: ['Changes more pixels than text emphasis.', 'Can resemble hover or focus if states are not carefully specified.'],
-    analysis: 'My third choice: clear, but more intervention than needed.'
-  },
-  {
-    number: '4', key: 'outline', name: 'Outlined row', summary: 'Rounded boundary plus bold title',
-    pros: ['Boundary and weight remain visible without a leading column.', 'No title width is consumed.'],
-    cons: ['The row resembles a separate button or card.', 'Adds another large outline near outlined transport controls.'],
-    analysis: 'My last choice: explicit but component-like.'
-  }
-];
-
-const columns = [
-  {
-    letter: 'A', key: 'filled', name: 'Filled Open', summary: 'Strong primary container',
-    pros: ['Icon, label, and high-contrast fill make the primary action unmistakable.', 'Measured foreground contrast is 6.065:1.'],
-    cons: ['Becomes the strongest element in the folder app bar.'],
-    analysis: 'My pick for the primary folder action.'
-  },
-  {
-    letter: 'B', key: 'tonal', name: 'Tonal Open', summary: 'Calmer filled container',
-    pros: ['Container, icon, and label are still explicit.', 'Measured foreground contrast is 6.124:1.'],
-    cons: ['Material tonal styling conventionally reads below filled emphasis.'],
-    analysis: 'My second choice when a calmer app bar matters.'
-  },
-  {
-    letter: 'C', key: 'elevated', name: 'Elevated Open', summary: 'Light surface plus shadow',
-    pros: ['Container and elevation separate the action from the app bar.', 'Measured foreground contrast is 5.794:1.'],
-    cons: ['Shadow is subtle on this flat light surface.', 'Primary importance is less immediate than filled or tonal.'],
-    analysis: 'My third choice: valid, but visually quiet.'
-  },
-  {
-    letter: 'D', key: 'outlined', name: 'Outlined Open', summary: 'Boundary with icon and label',
-    pros: ['Adds a visible target while retaining icon and text.', 'Text contrast measures 6.359:1.'],
-    cons: ['The outline itself measures only 2.130:1 against white.', 'Reads as the weakest of the four primary-action treatments.'],
-    analysis: 'My last choice: more visible than text-only, but still under-prominent.'
-  }
-];
-
-const images = {
-  '1A': '@@IMAGE_CUE_LABEL_FILLED@@',
-  '1B': '@@IMAGE_CUE_LABEL_TONAL@@',
-  '1C': '@@IMAGE_CUE_LABEL_ELEVATED@@',
-  '1D': '@@IMAGE_CUE_LABEL_OUTLINED@@',
-  '2A': '@@IMAGE_CUE_ACCENT_FILLED@@',
-  '2B': '@@IMAGE_CUE_ACCENT_TONAL@@',
-  '2C': '@@IMAGE_CUE_ACCENT_ELEVATED@@',
-  '2D': '@@IMAGE_CUE_ACCENT_OUTLINED@@',
-  '3A': '@@IMAGE_CUE_CONTAINER_FILLED@@',
-  '3B': '@@IMAGE_CUE_CONTAINER_TONAL@@',
-  '3C': '@@IMAGE_CUE_CONTAINER_ELEVATED@@',
-  '3D': '@@IMAGE_CUE_CONTAINER_OUTLINED@@',
-  '4A': '@@IMAGE_CUE_OUTLINE_FILLED@@',
-  '4B': '@@IMAGE_CUE_OUTLINE_TONAL@@',
-  '4C': '@@IMAGE_CUE_OUTLINE_ELEVATED@@',
-  '4D': '@@IMAGE_CUE_OUTLINE_OUTLINED@@'
-};
-
-const ranks = {
-  '1A': 1, '2A': 2, '1B': 3, '2B': 4,
-  '3A': 5, '1C': 6, '3B': 7, '2C': 8,
-  '1D': 9, '4A': 10, '2D': 11, '3C': 12,
-  '4B': 13, '3D': 14, '4C': 15, '4D': 16
-};
-
-const matrixRoot = document.querySelector('#matrix-root');
-const matrixMarkup = rows.map((row) => {
-  const cards = columns.map((column) => {
-    const code = `${row.number}${column.letter}`;
-    const recommended = code === '1A';
-    const sourceName = `cue-${row.key}-${column.key}`;
-    return `
-      <article class="option" data-recommended="${String(recommended)}">
-        <div class="option-heading"><span class="option-title"><span class="option-code">${code} · rank ${ranks[code]}${recommended ? ' · recommended' : ''}</span><strong>${row.name} · ${column.name}</strong><span class="option-summary">${row.summary}; ${column.summary}</span></span></div>
-        <button class="preview-open" type="button" data-preview-title="${code}: ${row.name} with ${column.name}" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose ${sourceName} capture, prototype commit 9938e8244" src="${images[code]}" width="852" height="883" alt="Unfolded music player with no leading play column, ${row.summary.toLowerCase()}, and ${column.name.toLowerCase()}"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open ${code} at measured size</span>
-        </button>
-        <div class="assessment"><div><strong>Pros</strong></div><ul>${row.pros.map((item) => `<li>${item}</li>`).join('')}${column.pros.map((item) => `<li>${item}</li>`).join('')}</ul><div><strong>Cons</strong></div><ul>${row.cons.map((item) => `<li>${item}</li>`).join('')}${column.cons.map((item) => `<li>${item}</li>`).join('')}</ul><p><strong>My analysis:</strong> ${row.analysis} ${column.analysis}</p></div>
-      </article>`;
-  }).join('');
-  return `
-    <section class="matrix-row" aria-labelledby="row-${row.number}-title">
-      <p class="matrix-axis">Row ${row.number} · ${row.name} current-track treatment</p>
-      <h3 id="row-${row.number}-title">${row.summary}</h3>
-      <p class="question-intro">${row.analysis}</p>
-      <div class="options-scroll" role="region" tabindex="0" aria-label="${row.name} candidates, scroll horizontally on narrow windows"><div class="options">${cards}</div></div>
-    </section>`;
-}).join('');
-matrixRoot.innerHTML = matrixMarkup;
-
 const form = document.querySelector('#design-form');
 const dialog = document.querySelector('#preview-dialog');
 const zoomDevice = document.querySelector('#zoom-device');
@@ -900,14 +705,13 @@ const zoomTitle = document.querySelector('#zoom-title');
 const zoomDimensions = document.querySelector('#zoom-dimensions');
 const zoomScale = document.querySelector('#zoom-scale');
 const zoomStage = document.querySelector('#zoom-stage');
-const combinationStatus = document.querySelector('#combination-status');
+const freeText = document.querySelector('#other-corrections');
 const output = document.querySelector('#output');
 const answerOutput = document.querySelector('#answer-output');
 const status = document.querySelector('#status');
 const frameWidth = 907;
 const frameHeight = 937;
 const logicalWidth = 852;
-const logicalHeight = 883;
 let previewScale = 1;
 let previewTrigger = null;
 
@@ -964,51 +768,21 @@ dialog.addEventListener('close', () => {
   }
 });
 
-const trackNames = { label: 'T1 Explicit label', accent: 'T2 Accent', container: 'T3 Soft container', outline: 'T4 Outlined row' };
-const openNames = { filled: 'O1 Filled Open', tonal: 'O2 Tonal Open', elevated: 'O3 Elevated Open', outlined: 'O4 Outlined Open' };
-const rowCodes = { label: '1', accent: '2', container: '3', outline: '4' };
-const columnCodes = { filled: 'A', tonal: 'B', elevated: 'C', outlined: 'D' };
-const getCombination = () => {
-  const track = form.elements.trackDecision.value;
-  const open = form.elements.openDecision.value;
-  if (!track || !open) {
-    return null;
-  }
-  const code = `${rowCodes[track]}${columnCodes[open]}`;
-  return { code, rank: ranks[code], track: trackNames[track], open: openNames[open] };
-};
-const updateCombination = () => {
-  const combination = getCombination();
-  if (!combination) {
-    combinationStatus.hidden = true;
-    return;
-  }
-  combinationStatus.textContent = `Current combination: ${combination.code} · ${combination.track} · ${combination.open} · rank ${combination.rank} of 16.`;
-  combinationStatus.hidden = false;
-};
-const freeText = form.elements.otherCorrections;
-const invalidatePreparedAnswers = () => {
+const invalidatePreparedAnswer = () => {
   if (output.hidden) {
     return;
   }
   output.hidden = true;
   answerOutput.value = '';
-  status.textContent = 'Answers changed. Prepare them again before copying or downloading.';
+  status.textContent = 'Answer changed. Prepare it again before copying or downloading.';
 };
-form.addEventListener('change', () => {
-  invalidatePreparedAnswers();
-  updateCombination();
-});
+form.addEventListener('change', invalidatePreparedAnswer);
 form.addEventListener('input', () => {
   freeText.setCustomValidity('');
-  invalidatePreparedAnswers();
+  invalidatePreparedAnswer();
 });
 form.addEventListener('submit', (event) => {
   event.preventDefault();
-  const combination = getCombination();
-  if (!combination) {
-    return;
-  }
   const corrections = freeText.value.trim();
   if (!corrections) {
     freeText.setCustomValidity('Enter a correction or “None”; spaces alone do not complete this field.');
@@ -1016,37 +790,38 @@ form.addEventListener('submit', (event) => {
     return;
   }
   freeText.setCustomValidity('');
+  const verdict = form.elements.scaleVerdict.value === 'accept'
+    ? 'Accept adaptive 3B'
+    : 'Revise adaptive 3B';
   answerOutput.value = [
-    'Music-player redundant-cue review',
-    `Q1 current track: ${combination.track}`,
-    `Q2 Open action: ${combination.open}`,
-    `Combination: ${combination.code} (rank ${combination.rank} of 16)`,
-    `Other corrections: ${corrections}`
+    'Music-player accepted 3B scale review',
+    `Verdict: ${verdict}`,
+    `Corrections: ${corrections}`
   ].join('\n');
   output.hidden = false;
-  status.textContent = 'Answers prepared. Copy them into Pi.';
+  status.textContent = 'Answer prepared. Copy it into Pi.';
   answerOutput.focus();
 });
 document.querySelector('#clear-form').addEventListener('click', () => {
   form.reset();
-  combinationStatus.hidden = true;
+  freeText.setCustomValidity('');
   output.hidden = true;
   answerOutput.value = '';
   status.textContent = 'Form cleared.';
 });
 document.querySelector('#copy-answers').addEventListener('click', async () => {
   await navigator.clipboard.writeText(answerOutput.value);
-  status.textContent = 'Answers copied.';
+  status.textContent = 'Answer copied.';
 });
 document.querySelector('#download-answers').addEventListener('click', () => {
   const blob = new Blob([answerOutput.value], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'music-player-redundant-cue-review.txt';
+  link.download = 'music-player-accepted-3b-scale-review.txt';
   link.click();
   URL.revokeObjectURL(url);
-  status.textContent = 'Answers downloaded.';
+  status.textContent = 'Answer downloaded.';
 });
 </script>
 </body>

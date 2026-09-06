@@ -3,23 +3,11 @@ build_question = '''
 const { readFileSync, writeFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const renderPaths = {
-  IMAGE_CUE_RECOMMENDED_FONT_200: 'questions/render/cue-recommended-font-200.png',
-  IMAGE_CUE_LABEL_FILLED: 'questions/render/cue-label-filled.png',
-  IMAGE_CUE_LABEL_TONAL: 'questions/render/cue-label-tonal.png',
-  IMAGE_CUE_LABEL_ELEVATED: 'questions/render/cue-label-elevated.png',
-  IMAGE_CUE_LABEL_OUTLINED: 'questions/render/cue-label-outlined.png',
-  IMAGE_CUE_ACCENT_FILLED: 'questions/render/cue-accent-filled.png',
-  IMAGE_CUE_ACCENT_TONAL: 'questions/render/cue-accent-tonal.png',
-  IMAGE_CUE_ACCENT_ELEVATED: 'questions/render/cue-accent-elevated.png',
-  IMAGE_CUE_ACCENT_OUTLINED: 'questions/render/cue-accent-outlined.png',
-  IMAGE_CUE_CONTAINER_FILLED: 'questions/render/cue-container-filled.png',
-  IMAGE_CUE_CONTAINER_TONAL: 'questions/render/cue-container-tonal.png',
-  IMAGE_CUE_CONTAINER_ELEVATED: 'questions/render/cue-container-elevated.png',
-  IMAGE_CUE_CONTAINER_OUTLINED: 'questions/render/cue-container-outlined.png',
-  IMAGE_CUE_OUTLINE_FILLED: 'questions/render/cue-outline-filled.png',
-  IMAGE_CUE_OUTLINE_TONAL: 'questions/render/cue-outline-tonal.png',
-  IMAGE_CUE_OUTLINE_ELEVATED: 'questions/render/cue-outline-elevated.png',
-  IMAGE_CUE_OUTLINE_OUTLINED: 'questions/render/cue-outline-outlined.png',
+  IMAGE_FONT_050: 'questions/render/accepted-3b-font-050.png',
+  IMAGE_FONT_075: 'questions/render/accepted-3b-font-075.png',
+  IMAGE_FONT_100: 'questions/render/accepted-3b-font-100.png',
+  IMAGE_FONT_150: 'questions/render/accepted-3b-font-150.png',
+  IMAGE_FONT_200: 'questions/render/accepted-3b-font-200.png',
 };
 let output = readFileSync(resolve('questions/current.template.html'), 'utf8');
 for (const [name, path] of Object.entries(renderPaths)) {
@@ -32,7 +20,7 @@ for (const [name, path] of Object.entries(renderPaths)) {
   output = output.replace(marker, dataUri);
 }
 writeFileSync(resolve('questions/current.html'), output);
-console.log('Built self-contained redundant-cue matrix.');
+console.log('Built self-contained accepted-3B scale review.');
 '''
 
 validate_question = '''
@@ -40,15 +28,9 @@ const { execFileSync } = await import('node:child_process');
 const { existsSync, readFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 
-const trackCues = ['label', 'accent', 'container', 'outline'];
-const openStyles = ['filled', 'tonal', 'elevated', 'outlined'];
-const matrixPaths = trackCues.flatMap((trackCue) =>
-  openStyles.map((openStyle) => `questions/render/cue-${trackCue}-${openStyle}.png`),
-);
-const largeTextPath = 'questions/render/cue-recommended-font-200.png';
-const transportReferencePath = 'questions/render/refine-tight-outlined.png';
-const semanticsPaths = trackCues.map((trackCue) => `questions/evidence/cue-${trackCue}-filled-semantics.xml`);
-const allRenderPaths = [largeTextPath, transportReferencePath, ...matrixPaths];
+const scaleLabels = ['050', '075', '100', '150', '200'];
+const renderPaths = scaleLabels.map((label) => `questions/render/accepted-3b-font-${label}.png`);
+const semanticsPaths = scaleLabels.map((label) => `questions/evidence/accepted-3b-font-${label}.xml`);
 const requiredPaths = [
   'HANDOFF.md',
   'decisions.md',
@@ -57,28 +39,12 @@ const requiredPaths = [
   'material-3-compliance.md',
   'questions/current.template.html',
   'questions/current.html',
+  ...renderPaths,
   ...semanticsPaths,
-  ...allRenderPaths,
 ];
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
-  throw new Error(`Missing required redundant-cue files: ${missingPaths.join(', ')}`);
-}
-
-for (const path of allRenderPaths) {
-  const image = readFileSync(resolve(path));
-  if (image.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {
-    throw new Error(`${path} is not a PNG.`);
-  }
-  const width = image.readUInt32BE(16);
-  const height = image.readUInt32BE(20);
-  if (width !== 2076 || height !== 2152) {
-    throw new Error(`${path} is ${width}×${height}; expected 2076×2152.`);
-  }
-  const opaque = execFileSync('magick', [resolve(path), '-format', '%[opaque]', 'info:'], { encoding: 'utf8' });
-  if (opaque !== 'True') {
-    throw new Error(`${path} must remain an opaque native emulator capture.`);
-  }
+  throw new Error(`Missing required accepted-3B scale files: ${missingPaths.join(', ')}`);
 }
 
 const imageFingerprint = ({ path, crop }) => execFileSync(
@@ -114,79 +80,58 @@ const countDarkPixels = ({ path, crop }) => {
     if (tupleStart < 0 || tupleEnd < 0 || countEnd < 0) {
       return count;
     }
-    const [red, green, blue] = line
-      .slice(tupleStart + 1, tupleEnd)
-      .split(',')
-      .slice(0, 3)
-      .map((channel) => Number(channel));
-    if (red >= 128 || green >= 128 || blue >= 160) {
+    const channels = line.slice(tupleStart + 1, tupleEnd).split(',').slice(0, 3).map((channel) => Number(channel));
+    if (channels[0] >= 128 || channels[1] >= 128 || channels[2] >= 160) {
       return count;
     }
     return count + Number(line.slice(0, countEnd).trim());
   }, 0);
 };
-const firstCuePixelX = ({ path, crop, cropWidth, absoluteX }) => {
-  const pixels = execFileSync('magick', [resolve(path), '-crop', crop, '+repage', 'rgb:-']);
-  let firstX = cropWidth;
-  for (let offset = 0; offset < pixels.length; offset += 3) {
-    const red = pixels[offset];
-    const green = pixels[offset + 1];
-    const blue = pixels[offset + 2];
-    if (red < 110 && green < 110 && blue < 160) {
-      firstX = Math.min(firstX, (offset / 3) % cropWidth);
-    }
+const attributeValue = ({ node, name }) => {
+  const marker = `${name}="`;
+  const start = node.indexOf(marker);
+  if (start < 0) {
+    return '';
   }
-  return absoluteX + firstX;
+  const valueStart = start + marker.length;
+  const end = node.indexOf('"', valueStart);
+  return node.slice(valueStart, end);
 };
-const largestConnectedBounds = ({ path, color, crop }) => {
-  const report = execFileSync(
-    'magick',
-    [
-      resolve(path), '-crop', crop, '+repage', '-alpha', 'off',
-      '-fill', 'black', '+opaque', color,
-      '-fill', 'white', '-opaque', color,
-      '-define', 'connected-components:verbose=true',
-      '-connected-components', '8', 'null:',
-    ],
-    { encoding: 'utf8' },
-  );
-  const componentLine = report.split('\n').find((line) => line.includes('srgb(255,255,255)'));
-  if (!componentLine) {
-    throw new Error(`${path} is missing its connected segmented outline.`);
+const hierarchyNodes = (hierarchy) => hierarchy
+  .split('<node ')
+  .slice(1)
+  .map((fragment) => fragment.slice(0, fragment.indexOf('/>')));
+const parseBounds = (bounds) => {
+  const values = bounds
+    .replaceAll('[', '')
+    .replaceAll(']', ',')
+    .split(',')
+    .filter((value) => value.length > 0)
+    .map((value) => Number(value));
+  if (values.length !== 4 || values.some((value) => !Number.isFinite(value))) {
+    throw new Error(`Invalid UI Automator bounds: ${bounds}`);
   }
-  const geometry = componentLine.trim().split(' ')[1];
-  const sizeSeparator = geometry.indexOf('x');
-  const firstOffset = geometry.indexOf('+');
-  const secondOffset = geometry.indexOf('+', firstOffset + 1);
-  return {
-    width: Number(geometry.slice(0, sizeSeparator)),
-    height: Number(geometry.slice(sizeSeparator + 1, firstOffset)),
-    x: Number(geometry.slice(firstOffset + 1, secondOffset)),
-    y: Number(geometry.slice(secondOffset + 1)),
-  };
+  return { left: values[0], top: values[1], right: values[2], bottom: values[3] };
 };
 
-const transportFingerprint = imageFingerprint({ path: transportReferencePath, crop: '1009x674+0+1400' });
-const pickerFingerprint = imageFingerprint({ path: transportReferencePath, crop: '1009x1100+0+300' });
-for (const path of matrixPaths) {
-  const currentTransport = imageFingerprint({ path, crop: '1009x674+0+1400' });
-  if (currentTransport !== transportFingerprint) {
-    throw new Error(`${path} does not preserve chosen transport option 1B.`);
+for (const path of renderPaths) {
+  const image = readFileSync(resolve(path));
+  if (image.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {
+    throw new Error(`${path} is not a PNG.`);
   }
-  const currentTitleX = firstCuePixelX({ path, crop: '500x80+1090+320', cropWidth: 500, absoluteX: 1090 });
-  const ordinaryTitleX = firstCuePixelX({ path, crop: '500x90+1090+490', cropWidth: 500, absoluteX: 1090 });
-  if (currentTitleX < 1107 || currentTitleX > 1110 || ordinaryTitleX < 1107 || ordinaryTitleX > 1111) {
-    throw new Error(`${path} restores a space-consuming leading track column or misaligns row titles.`);
+  const width = image.readUInt32BE(16);
+  const height = image.readUInt32BE(20);
+  if (width !== 2076 || height !== 2152) {
+    throw new Error(`${path} is ${width}×${height}; expected 2076×2152.`);
   }
-  const systemPixels = countDarkPixels({ path, crop: '300x88+1700+0' });
+  const opaque = execFileSync('magick', [resolve(path), '-format', '%[opaque]', 'info:'], { encoding: 'utf8' });
+  if (opaque !== 'True') {
+    throw new Error(`${path} must remain an opaque native emulator capture.`);
+  }
+  const statusPixels = countDarkPixels({ path, crop: '300x88+1700+0' });
   const navigationPixels = countDarkPixels({ path, crop: '700x78+688+2074' });
-  if (systemPixels < 2000 || navigationPixels < 2000) {
+  if (statusPixels < 600 || navigationPixels < 5000) {
     throw new Error(`${path} does not retain native Android system UI.`);
-  }
-  const folderIndicatorPixels = countExactColor({ path, crop: '200x4+140+499', color: '#4C5E8B' });
-  const linkUnderlinePixels = countExactColor({ path, crop: '200x5+140+458', color: '#4C5E8B' });
-  if (folderIndicatorPixels < 700 || linkUnderlinePixels > 0) {
-    throw new Error(`${path} does not retain the separate selected-folder indicator.`);
   }
   const foldColorCount = Number(execFileSync(
     'magick',
@@ -199,138 +144,80 @@ for (const path of matrixPaths) {
   if (pixelAt({ path, x: 117, y: 1000 }) !== 'srgba(176,177,188,1)') {
     throw new Error(`${path} does not preserve the accepted letter-rail boundary.`);
   }
-  if (imageFingerprint({ path, crop: '1009x1100+0+300' }) !== pickerFingerprint) {
-    throw new Error(`${path} changes the accepted picker outside the Open app-bar action.`);
+  const currentContainerPixels = countExactColor({ path, crop: '1000x220+1050+270', color: '#F3F3FA' });
+  const tonalOpenPixels = countExactColor({ path, crop: '300x150+710+140', color: '#DCE2F9' });
+  if (currentContainerPixels < 150000 || tonalOpenPixels < 18000) {
+    throw new Error(`${path} does not retain exact accepted treatment 3B.`);
   }
 }
 
-for (const trackCue of trackCues) {
-  const paths = openStyles.map((openStyle) => `questions/render/cue-${trackCue}-${openStyle}.png`);
-  const rightFingerprint = imageFingerprint({ path: paths[0], crop: '1067x2002+1009+150' });
-  for (const path of paths.slice(1)) {
-    if (imageFingerprint({ path, crop: '1067x2002+1009+150' }) !== rightFingerprint) {
-      throw new Error(`${path} changes track treatment across Open columns.`);
-    }
-  }
+const uniqueCaptures = new Set(renderPaths.map((path) => imageFingerprint({ path, crop: '2076x2152+0+0' })));
+if (uniqueCaptures.size !== renderPaths.length) {
+  throw new Error('Requested font scales did not produce five distinct native captures.');
 }
 
-for (const openStyle of openStyles) {
-  const paths = trackCues.map((trackCue) => `questions/render/cue-${trackCue}-${openStyle}.png`);
-  const appBarFingerprint = imageFingerprint({ path: paths[0], crop: '400x180+609+120' });
-  for (const path of paths.slice(1)) {
-    if (imageFingerprint({ path, crop: '400x180+609+120' }) !== appBarFingerprint) {
-      throw new Error(`${path} changes Open treatment across current-track rows.`);
-    }
-  }
-}
-
-const rowFingerprints = trackCues.map((trackCue) => imageFingerprint({
-  path: `questions/render/cue-${trackCue}-filled.png`,
-  crop: '1067x220+1009+290',
-}));
-if (new Set(rowFingerprints).size !== trackCues.length) {
-  throw new Error('Current-track rows are not four distinct redundant-cue treatments.');
-}
-const openFingerprints = openStyles.map((openStyle) => imageFingerprint({
-  path: `questions/render/cue-label-${openStyle}.png`,
-  crop: '400x180+609+120',
-}));
-if (new Set(openFingerprints).size !== openStyles.length) {
-  throw new Error('Open columns are not four distinct Material button treatments.');
-}
-
-const currentCrop = '1000x200+1050+290';
-const supportCrop = '600x60+1090+385';
-const primary = '#4C5E8B';
-const surfaceContainerLow = '#F3F3FA';
-const onSurfaceVariant = '#5D5F68';
-const labelSupport = countExactColor({ path: 'questions/render/cue-label-filled.png', crop: supportCrop, color: onSurfaceVariant });
-if (labelSupport < 1000) {
-  throw new Error('Explicit-label row does not retain visible Playing text.');
-}
-const accentPrimary = countExactColor({ path: 'questions/render/cue-accent-filled.png', crop: currentCrop, color: primary });
-if (accentPrimary < 2000) {
-  throw new Error('Accent row does not combine primary title color with bold weight.');
-}
-const containerPixels = countExactColor({ path: 'questions/render/cue-container-filled.png', crop: currentCrop, color: surfaceContainerLow });
-if (containerPixels < 150000) {
-  throw new Error('Soft-container row does not retain its neutral current-row surface.');
-}
-const outlinePixels = countExactColor({ path: 'questions/render/cue-outline-filled.png', crop: currentCrop, color: primary });
-if (outlinePixels < 5000) {
-  throw new Error('Outlined row does not retain its primary boundary and bold title.');
-}
-
-const openCrop = '300x150+710+140';
-const filledPixels = countExactColor({ path: 'questions/render/cue-label-filled.png', crop: openCrop, color: primary });
-const tonalPixels = countExactColor({ path: 'questions/render/cue-label-tonal.png', crop: openCrop, color: '#DCE2F9' });
-const elevatedPixels = countExactColor({ path: 'questions/render/cue-label-elevated.png', crop: openCrop, color: surfaceContainerLow });
-const outlinedPixels = countExactColor({ path: 'questions/render/cue-label-outlined.png', crop: openCrop, color: '#B0B1BC' });
-if (filledPixels < 20000 || tonalPixels < 20000 || elevatedPixels < 20000 || outlinedPixels < 1500) {
-  throw new Error('Open columns do not retain filled, tonal, elevated, and outlined treatments.');
-}
-
-for (const path of semanticsPaths) {
+const expectedRowCounts = {
+  '050': 1,
+  '075': 1,
+  '100': 2,
+  '150': 2,
+  '200': 4,
+};
+const expectedDescriptions = ['Repeat track', 'Play in order', 'Shuffle Camellia', 'Shuffle all folders'];
+for (const label of scaleLabels) {
+  const path = `questions/evidence/accepted-3b-font-${label}.xml`;
   const hierarchy = readFileSync(resolve(path), 'utf8');
   if (!hierarchy.includes('content-desc="Current track: Another Xronixle"')) {
     throw new Error(`${path} does not expose current-track semantics.`);
   }
-  if (!hierarchy.includes('bounds="[1068,292][2003,468]"')) {
-    throw new Error(`${path} does not expose the full-width current-track row bounds.`);
-  }
   if (hierarchy.includes('content-desc="Playing"')) {
     throw new Error(`${path} restores the rejected play-icon accessibility node.`);
   }
-  if (/text="[0-9]+"/u.test(hierarchy)) {
-    throw new Error(`${path} restores interface-generated track ordinals.`);
+  if (!hierarchy.includes('text="Shuffle Camellia"')) {
+    throw new Error(`${path} does not visibly name the current subdirectory in Shuffle.`);
   }
-  if (!/text="Burning Aquamarine"[^>]+bounds="\[1107,507\]\[1483,566\]"/u.test(hierarchy)) {
-    throw new Error(`${path} does not retain full-width ordinary-track alignment.`);
+  if (hierarchy.includes('text="Shuffle"') || hierarchy.includes('content-desc="Shuffle current folder"')) {
+    throw new Error(`${path} restores a context-free current-folder Shuffle label.`);
   }
-}
-
-const largeModeBounds = largestConnectedBounds({
-  path: largeTextPath,
-  color: '#787A84',
-  crop: '1009x752+0+1400',
-});
-if (
-  largeModeBounds.width !== 863
-  || largeModeBounds.height !== 518
-  || largeModeBounds.x !== 73
-  || largeModeBounds.y !== 117
-) {
-  throw new Error('The 200% state does not retain one navigation-safe vertical segmented control.');
-}
-const selectedLargePixels = countExactColor({
-  path: largeTextPath,
-  crop: '900x220+55+1600',
-  color: '#DCE2F9',
-});
-if (selectedLargePixels < 100000) {
-  throw new Error('The 200% vertical segmented control loses its selected container.');
+  const nodes = hierarchyNodes(hierarchy);
+  const modeNodes = nodes.filter((node) => expectedDescriptions.includes(attributeValue({ node, name: 'content-desc' })));
+  if (modeNodes.length !== expectedDescriptions.length) {
+    throw new Error(`${path} does not expose exactly four mode options.`);
+  }
+  const descriptions = new Set(modeNodes.map((node) => attributeValue({ node, name: 'content-desc' })));
+  if (descriptions.size !== expectedDescriptions.length) {
+    throw new Error(`${path} duplicates or omits a mode option.`);
+  }
+  const bounds = modeNodes.map((node) => parseBounds(attributeValue({ node, name: 'bounds' })));
+  const rowBounds = new Set(bounds.map((bound) => `${bound.top}:${bound.bottom}`));
+  if (rowBounds.size !== expectedRowCounts[label]) {
+    throw new Error(`${path} uses ${rowBounds.size} mode rows; expected ${expectedRowCounts[label]}.`);
+  }
+  if (bounds.some((bound) => bound.right - bound.left < 117 || bound.bottom - bound.top < 117)) {
+    throw new Error(`${path} reduces a mode target below 48dp.`);
+  }
+  const groupBottom = Math.max(...bounds.map((bound) => bound.bottom));
+  if (groupBottom > 2035) {
+    throw new Error(`${path} does not clear the Android navigation inset.`);
+  }
 }
 
 const template = readFileSync(resolve('questions/current.template.html'), 'utf8');
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
 const requiredFragments = [
-  'Existing screen only · 4 × 4 matrix',
-  'matrix size is uncapped. These sixteen cells come from four meaningful current-track treatments',
-  'UI Automator exposes “Current track: Another Xronixle” in every row treatment.',
-  'the play icon and its empty leading column are gone',
-  'No option relies only on color or only on shape.',
-  'Current and ordinary track titles both begin at x=1107 physical pixels.',
-  'Q1. How should the current track be distinguished without a play column?',
-  'Q2. How prominent should the existing Open action be?',
-  '1A: explicit Playing label plus bold title, with a filled Open button.',
-  '1A &gt; 2A',
-  'Anything else you want settled or changed, or “None”',
-  'prototype commit 9938e8244',
-  'Production assistive technology must still confirm those announcements',
-  'Answers changed. Prepare them again before copying or downloading.',
+  'Review accepted 3B across text sizes',
+  'font_scale=0.5',
+  'Shuffle Camellia',
+  '50% and 75% use one row. 100% and 150% use 2×2. 200% uses four rows.',
+  'one row &gt; two rows &gt; four rows',
+  'soft neutral current-track container, bold current title, tonal Open, and transport 1B',
+  'The control tries Material\'s 12dp horizontal content padding first, then 6dp before adding rows.',
+  'Production assistive technology must still verify one mutually exclusive group announcement.',
+  'What should change? Enter “None” if the scale behavior is accepted.',
+  'Answer changed. Prepare it again before copying or downloading.',
   'spaces alone do not complete this field.',
   'Math.max(0.02, value)',
-  'No addition is proposed.',
+  'prototype commit cb02226ae',
 ];
 for (const fragment of requiredFragments) {
   if (!question.includes(fragment)) {
@@ -338,58 +225,44 @@ for (const fragment of requiredFragments) {
   }
 }
 const disallowedFragments = [
+  'Choose redundant cues',
+  '4 × 4 matrix',
+  'recommendation is 1A',
+  'Shuffle current folder',
   'command-bar',
   'volume control',
-  'radio rows',
-  'Nine refinements',
-  'Nine was never treated as a cap',
-  'standard skips',
-  'balanced 12dp',
 ];
 for (const fragment of disallowedFragments) {
   if (question.includes(fragment)) {
     throw new Error(`Questionnaire contains stale or unauthorized content: ${fragment}`);
   }
 }
-if (/https?:\/\//u.test(question)) {
+if (question.includes('http://') || question.includes('https://')) {
   throw new Error('Questionnaire must remain offline and self-contained.');
 }
 if (question.includes('@@')) {
   throw new Error('Built questionnaire still contains an unresolved image marker.');
 }
-const templateMarkers = template.match(/@@IMAGE_CUE_[A-Z0-9_]+@@/gu) ?? [];
-if (templateMarkers.length !== 17 || new Set(templateMarkers).size !== 17) {
-  throw new Error(`Expected seventeen unique native image markers; found ${templateMarkers.length}.`);
-}
+const templateMarkers = template.split('@@IMAGE_FONT_').length - 1;
 const embeddedImages = question.split('data:image/png;base64,').length - 1;
-const radioCount = question.split('type="radio" name=').length - 1;
-if (embeddedImages !== 17 || radioCount !== 8) {
-  throw new Error(`Expected seventeen embedded renders and eight decision radios; found ${embeddedImages} and ${radioCount}.`);
+const radioCount = question.split('type="radio" name="scaleVerdict"').length - 1;
+if (templateMarkers !== 5 || embeddedImages !== 5 || radioCount !== 2) {
+  throw new Error(`Expected five image markers, five renders, and two verdict radios; found ${templateMarkers}, ${embeddedImages}, and ${radioCount}.`);
 }
-for (const code of Object.keys({
-  '1A': 1, '1B': 3, '1C': 6, '1D': 9,
-  '2A': 2, '2B': 4, '2C': 8, '2D': 11,
-  '3A': 5, '3B': 7, '3C': 12, '3D': 14,
-  '4A': 10, '4B': 13, '4C': 15, '4D': 16,
-})) {
-  if (!question.includes(`'${code}'`)) {
-    throw new Error(`Questionnaire does not map matrix code ${code}.`);
-  }
-}
-console.log('Redundant-cue matrix structure is valid.');
+console.log('Accepted-3B scale review is valid.');
 '''
 
 [tasks.build]
-description = "Embed sixteen native cue combinations and the 200% state into the self-contained review"
+description = "Embed five native accepted-3B text-scale captures into the self-contained review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
 [tasks.lint]
-description = "Validate the active redundant-cue matrix"
+description = "Validate the active accepted-3B text-scale review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
 
 [tasks."test:unit"]
-description = "Exercise the redundant-cue matrix completion contract"
+description = "Exercise the accepted-3B text-scale completion contract"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
