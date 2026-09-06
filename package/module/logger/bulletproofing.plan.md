@@ -83,6 +83,38 @@ Nothing here blocks a publish;
      Still the reason `package/ssg/aquati.cat/src/build/compress.ts` defers its import on worker threads;
      separate from item 1 and unscheduled.
 
+## Grill record: file sink platform split (2026-09-06)
+
+Owner decisions so far,
+ recorded as answered;
+ the prototype lives in a throwaway worktree and nothing is implemented on main:
+
+- Selection mechanism:
+   `package.json` `imports` entry with `node` and `default` conditions (LogTape and chalk precedent).
+- Runtime guard in the node branch:
+   dropped;
+   the condition already asserts Node.
+- Conditions declared:
+   `node` and `default` only;
+   Bun and Deno resolve `node`,
+   browsers fall to `default`.
+- Guard test:
+   one unit test reads both built artifacts and fails on any `import(`,
+   on `node:` modules in the neutral artifact,
+   and (pending round 2) on browser-only sink code in the node artifact.
+- Changeset level:
+   minor.
+- Documentation:
+   README runtime-support paragraph plus a DECISIONS.md entry superseding the open problem.
+- Open after round 1:
+   whether the file sink should exist in the neutral artifact at all (the owner leans to no),
+   and the symmetric question for the browser-only IndexedDB and OPFS sinks in the node artifact,
+   which the owner raised.
+   Measured for that round:
+   no explicit sink-factory call exists outside the logger package;
+   no `customConditions` exists in the repository TypeScript configs,
+   and TypeScript under `bundler` resolution matches only `types` and `import`/`require`.
+
 ## Verification campaign (the toml-edit bar)
 
 `package/module/toml-edit` has a budgeted property campaign,
