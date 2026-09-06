@@ -18,7 +18,10 @@ No prevention design has been accepted or implemented.
 ## User requirements
 
 - Explain what can prevent Advisor from substituting an answer for independent review.
-- Investigate the Advisor interface, prompt, request path, and verification surface.
+- Investigate the Advisor interface,
+   prompt,
+   request path,
+   and verification surface.
 - Keep this handover current throughout the investigation.
 - Limit this session to `package/pi-plugin/advisor` and directly shared Advisor dependencies.
 - Do not investigate or change `package/pi-plugin/goal` because another session owns that work.
@@ -40,9 +43,15 @@ The source session is:
 The primary model was `openai-codex/gpt-5.6-luna`.
 At JSONL line 12 it called Advisor without an explicit model and with this focus question:
 
-> Review the planned answer: give exactly five valid, clearly distinct explanations that 67 is prime,
-> including trial division/factor-pair reasoning, a 6k±1 reduction, Wilson's theorem with a verifiable
-> factorial congruence, and a Lucas primality certificate. Check all modular arithmetic and theorem use.
+> Review the planned answer:
+>  give exactly five valid,
+>  clearly distinct explanations that 67 is prime,
+> including trial division/factor-pair reasoning,
+>  a 6k±1 reduction,
+>  Wilson's theorem with a verifiable
+> factorial congruence,
+>  and a Lucas primality certificate.
+>  Check all modular arithmetic and theorem use.
 
 The empty model selection chose `openai-codex/gpt-5.6-sol` by the configured highest-expected-cost policy.
 The result at JSONL line 13 mixed valid review findings with replacement content:
@@ -50,18 +59,29 @@ The result at JSONL line 13 mixed valid review findings with replacement content
 - It correctly reported that no completed five-part answer or fifth method was present.
 - It checked arithmetic and theorem use.
 - It instructed the primary model to use exactly five named methods.
-- It supplied detailed proof text, including an elliptic-curve certificate absent from the primary model's work.
+- It supplied detailed proof text,
+   including an elliptic-curve certificate absent from the primary model's work.
 
 Measured call details from the stored tool result are:
 
-- duration: `523412` milliseconds;
-- serialized context: `2201` characters of a `958088` character budget, not truncated;
-- estimated input: `772` tokens;
-- provider input: `854` tokens;
-- provider output: `18093` tokens, including `17132` reasoning tokens;
-- provider total: `18947` tokens;
-- provider-reported cost: `$0.54706`;
-- visible Advisor text: `2612` characters and `294` whitespace-delimited words.
+- duration:
+   `523412` milliseconds;
+- serialized context:
+   `2201` characters of a `958088` character budget,
+   not truncated;
+- estimated input:
+   `772` tokens;
+- provider input:
+   `854` tokens;
+- provider output:
+   `18093` tokens,
+   including `17132` reasoning tokens;
+- provider total:
+   `18947` tokens;
+- provider-reported cost:
+   `$0.54706`;
+- visible Advisor text:
+   `2612` characters and `294` whitespace-delimited words.
 
 The TUI text `772 tokens full` describes estimated request input and truncation state.
 It does not describe visible response length.
@@ -81,7 +101,8 @@ Do not perform the primary task. Do not write final user-facing prose for the pr
 
 That guard is in `package/pi-plugin/advisor/src/constants.ts`.
 The selected model failed to preserve it.
-The response is therefore not intended Advisor behavior, even though the malformed focus question made the drift more likely.
+The response is therefore not intended Advisor behavior,
+ even though the malformed focus question made the drift more likely.
 
 Current source exposes a free-form optional `question` string and returns unrestricted model text.
 The interface has no structural distinction between a review request and a request to perform the task.
@@ -491,7 +512,10 @@ These questions are superseded by the expressiveness requirement.
   Do not mutate production code until the user explicitly accepts or delegates a design.
 - Keep changes in this session to this handover and other requested planning documents.
 - Preserve Advisor as an independent reviewer rather than turning it into a general subagent.
-- Prefer a deep Advisor interface that hides prompt construction, selection, transport, and validation.
+- Prefer a deep Advisor interface that hides prompt construction,
+   selection,
+   transport,
+   and validation.
 - Do not treat prompt wording alone as deterministic enforcement.
 - Do not claim prevention from a test that only checks static prompt text.
 - Verify behavioral protections with a model or deterministic transport capable of emitting forbidden replacement content.
@@ -506,39 +530,53 @@ The prior design combined two complementary decisions.
 ### Input ranking
 
 1. **Typed focus and mechanical target**
-   - Pros: preserves focused review,
+   - Pros:
+      preserves focused review,
      closes arbitrary call instructions,
      and permits deterministic pre-dispatch validation.
-   - Cons: adds enum and target semantics that must remain stable and mechanically defined.
+   - Cons:
+      adds enum and target semantics that must remain stable and mechanically defined.
 2. **No focus input**
-   - Pros: narrowest public input and alignment with Anthropic's empty-input precedent.
-   - Cons: forces the reviewer to infer scope,
+   - Pros:
+      narrowest public input and alignment with Anthropic's empty-input precedent.
+   - Cons:
+      forces the reviewer to infer scope,
      increasing irrelevant or broad review.
 3. **Free-form focus with an intent gate**
-   - Pros: preserves arbitrary caller expression.
-   - Cons: natural-language classification cannot reliably separate review from task execution,
+   - Pros:
+      preserves arbitrary caller expression.
+   - Cons:
+      natural-language classification cannot reliably separate review from task execution,
      so the original role conflict remains representable.
 
-Ranking: typed focus > no focus > free-form gate,
+Ranking:
+ typed focus > no focus > free-form gate,
 because typed focus preserves the utility lost by no focus without reopening arbitrary prose;
 no focus ranks ahead of a gate because structural absence is stronger than heuristic intent classification.
 
 ### Output ranking
 
 1. **Symbolic evidence relations**
-   - Pros: no arbitrary provider prose reaches the primary model;
+   - Pros:
+      no arbitrary provider prose reaches the primary model;
      local rendering and strict reference validation create deterministic output confinement.
-   - Cons: a finite taxonomy cannot explain every novel defect,
+   - Cons:
+      a finite taxonomy cannot explain every novel defect,
      so the primary agent must inspect cited evidence itself.
 2. **Bounded cited prose**
-   - Pros: richer and more immediately actionable findings.
-   - Cons: an answer can still be placed inside a valid string field,
+   - Pros:
+      richer and more immediately actionable findings.
+   - Cons:
+      an answer can still be placed inside a valid string field,
      so prevention remains model-dependent.
 3. **Unrestricted provider text**
-   - Pros: maximum expressive flexibility.
-   - Cons: directly reproduces the incident's answer-substitution path.
+   - Pros:
+      maximum expressive flexibility.
+   - Cons:
+      directly reproduces the incident's answer-substitution path.
 
-Ranking: symbolic relations > bounded prose > unrestricted text,
+Ranking:
+ symbolic relations > bounded prose > unrestricted text,
 because symbolic relations are the only candidate that removes the semantic text channel;
 bounded prose ranks ahead of unrestricted text because it still constrains shape,
 volume,
@@ -787,21 +825,28 @@ Otherwise the gate has merely recreated the rejected expressiveness loss.
 ### Ownership protocol ranking
 
 1. **Persisted two-phase checkpoint**
-   - Pros: preserves arbitrary artifact,
+   - Pros:
+      preserves arbitrary artifact,
      criteria,
      and review prose;
      proves primary-assistant provenance and completed ordering;
      removes fresh text parameters from the review call.
-   - Cons: adds one tool round trip and cannot prove artifact substance or review semantics.
+   - Cons:
+      adds one tool round trip and cannot prove artifact substance or review semantics.
 2. **Inline artifact on the Advisor call**
-   - Pros: preserves natural language and needs one call.
-   - Cons: the artifact is fresh same-call text,
+   - Pros:
+      preserves natural language and needs one call.
+   - Cons:
+      the artifact is fresh same-call text,
      so it does not establish prior ownership and remains an instruction channel.
 3. **Prompt-only evaluator framing**
-   - Pros: smallest interface change and unrestricted prose.
-   - Cons: preserves the exact incident call shape and supplies no deterministic ownership invariant.
+   - Pros:
+      smallest interface change and unrestricted prose.
+   - Cons:
+      preserves the exact incident call shape and supplies no deterministic ownership invariant.
 
-Ranking: persisted checkpoint > inline artifact > prompt-only framing,
+Ranking:
+ persisted checkpoint > inline artifact > prompt-only framing,
 because persistence adds provenance and completed ordering without narrowing language;
 inline text ranks ahead of prompt-only framing because it at least requires an explicit review target.
 
@@ -811,35 +856,49 @@ inline text ranks ahead of prompt-only framing because it at least requires an e
    evidence,
    artifact,
    and criteria**
-   - Pros: preserves every current review capability.
-   - Cons: gives Advisor enough information to generate task-completion prose.
+   - Pros:
+      preserves every current review capability.
+   - Cons:
+      gives Advisor enough information to generate task-completion prose.
 2. **Dual context with selected evidence**
-   - Pros: reduces unrelated instruction pressure.
-   - Cons: selection can hide the exact requirement or evidence Advisor should catch.
+   - Pros:
+      reduces unrelated instruction pressure.
+   - Cons:
+      selection can hide the exact requirement or evidence Advisor should catch.
 3. **Blind artifact-only review**
-   - Pros: makes direct optimization for the original task harder.
-   - Cons: cannot reliably review completeness,
+   - Pros:
+      makes direct optimization for the original task harder.
+   - Cons:
+      cannot reliably review completeness,
      scope,
      or requirement compliance.
 
-Ranking: full context > dual context > blind review,
+Ranking:
+ full context > dual context > blind review,
 because the corrected requirement rejects capability loss as well as vocabulary loss;
 dual context ranks ahead of blind review because it retains some objective evidence.
 
 ### Role adjudication ranking
 
 1. **Offline or non-blocking shadow measurement**
-   - Pros: builds evidence about semantic drift without withholding Advisor output.
-   - Cons: measures behavior but does not prevent it.
+   - Pros:
+      builds evidence about semantic drift without withholding Advisor output.
+   - Cons:
+      measures behavior but does not prevent it.
 2. **No adjudication**
-   - Pros: simplest path and no false-positive suppression.
-   - Cons: supplies no behavioral signal beyond prompt and observed incidents.
+   - Pros:
+      simplest path and no false-positive suppression.
+   - Cons:
+      supplies no behavioral signal beyond prompt and observed incidents.
 3. **Blocking adjudication before measurement**
-   - Pros: can reject likely substitution while leaving the Advisor schema unrestricted.
-   - Cons: false positives withhold valid expressive reviews,
+   - Pros:
+      can reject likely substitution while leaving the Advisor schema unrestricted.
+   - Cons:
+      false positives withhold valid expressive reviews,
      reproducing the user's rejected trade through a model gate.
 
-Ranking: shadow measurement > no adjudication > unmeasured blocking,
+Ranking:
+ shadow measurement > no adjudication > unmeasured blocking,
 because shadowing buys evidence without changing output;
 no adjudication ranks ahead of blocking because preserving valid rich review is a hard requirement.
 
@@ -907,16 +966,42 @@ Do not change `package/pi-plugin/goal`.
 
 ## Commits
 
-- `d159018a8`, `docs(advisor): start answer-substitution handover`, created this live investigation record.
-- `f4ed2cb9f`, `docs(advisor): record handover checkpoint`, recorded incident measurements and constraints.
-- `645d23b63`, `docs(advisor): trace answer-substitution interface`, traced the conflicting production seams.
-- `16c7dc330`, `docs(advisor): map role-enforcement layers`, recorded layered guarantees and initial candidates.
-- `40f26273a`, `docs(advisor): record official Advisor precedent`, added current Anthropic evidence.
-- `137dac233`, `docs(advisor): define prevention verification`, defined negative cases and positive controls.
-- `bb8a9cd17`, `docs(advisor): recommend symbolic review contract`, recorded independent ranking and recommendation.
-- `fd1f3dc99`, `docs(advisor): qualify symbolic review guarantee`, incorporated final independent-review constraints.
-- `79b62b595`, `docs(advisor): close prevention design investigation`, closed the now-rejected first comparison.
-- `b298fbf49`, `docs(advisor): require expressive review output`, recorded the user's correction.
-- `8c2124313`, `docs(advisor): redesign around artifact ownership`, defined expressive candidates and tests.
-- `6e70c303c`, `docs(advisor): review expressive ownership design`, recorded independent design corrections.
-- `a78a5a825`, `docs(advisor): recommend expressive checkpoint protocol`, recorded the corrected ranking and interface.
+- `d159018a8`,
+   `docs(advisor): start answer-substitution handover`,
+   created this live investigation record.
+- `f4ed2cb9f`,
+   `docs(advisor): record handover checkpoint`,
+   recorded incident measurements and constraints.
+- `645d23b63`,
+   `docs(advisor): trace answer-substitution interface`,
+   traced the conflicting production seams.
+- `16c7dc330`,
+   `docs(advisor): map role-enforcement layers`,
+   recorded layered guarantees and initial candidates.
+- `40f26273a`,
+   `docs(advisor): record official Advisor precedent`,
+   added current Anthropic evidence.
+- `137dac233`,
+   `docs(advisor): define prevention verification`,
+   defined negative cases and positive controls.
+- `bb8a9cd17`,
+   `docs(advisor): recommend symbolic review contract`,
+   recorded independent ranking and recommendation.
+- `fd1f3dc99`,
+   `docs(advisor): qualify symbolic review guarantee`,
+   incorporated final independent-review constraints.
+- `79b62b595`,
+   `docs(advisor): close prevention design investigation`,
+   closed the now-rejected first comparison.
+- `b298fbf49`,
+   `docs(advisor): require expressive review output`,
+   recorded the user's correction.
+- `8c2124313`,
+   `docs(advisor): redesign around artifact ownership`,
+   defined expressive candidates and tests.
+- `6e70c303c`,
+   `docs(advisor): review expressive ownership design`,
+   recorded independent design corrections.
+- `a78a5a825`,
+   `docs(advisor): recommend expressive checkpoint protocol`,
+   recorded the corrected ranking and interface.

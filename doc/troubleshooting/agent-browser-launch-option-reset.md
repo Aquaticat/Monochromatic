@@ -128,7 +128,8 @@ the launch fingerprint and target identifier changed together.
 
 ## Verification
 
-Tested binary: `agent-browser 0.36.0`.
+Tested binary:
+ `agent-browser 0.36.0`.
 The release source identity is `v0.36.0` at
 `eb05921bad874cd2a1b4fa5d1149f1ed26576cae`.
 Commands require access to the host daemon socket;
@@ -150,12 +151,15 @@ agent-browser --session quality-bridge-repro --json tab list
 
 Measured output:
 
-- Opening: URL was the supplied file;
+- Opening:
+   URL was the supplied file;
   launch fingerprint was `9948502715194002109`;
   target was `260624BE45FCF182F5DA67133F6BF87F`.
-- Reading without the flag: URL was `about:blank`;
+- Reading without the flag:
+   URL was `about:blank`;
   launch fingerprint was `12139463327302527752`.
-- Listing tabs: the only page target was `BA875C6149BE5409342DCBDFD8BDF3DC`,
+- Listing tabs:
+   the only page target was `BA875C6149BE5409342DCBDFD8BDF3DC`,
   with URL `about:blank`.
 
 The page-command response reported `relaunchedBrowser: false` despite the changed launch fingerprint.
@@ -228,18 +232,23 @@ and does not establish an upstream obligation to make every launch flag sticky.
 
 ### Upstream filing decision
 
-1.  Upstream fault: not established.
+1.  Upstream fault:
+     not established.
     The invocation requested different effective launch settings.
     `README.md:1088` explicitly documents persistent defaults as an alternative to repeating command flags.
-2.  Upstream fixability: a persistence change is conceivable,
+2.  Upstream fixability:
+     a persistence change is conceivable,
     but its intended semantics were not established and no change is proposed.
-3.  Supported use case: local browser automation and configured launch options are documented.
+3.  Supported use case:
+     local browser automation and configured launch options are documented.
     Persistence of this omitted flag is not promised by the inspected README or source.
-4.  Contribution policy: inspected README and `.github/` at the release tag.
+4.  Contribution policy:
+     inspected README and `.github/` at the release tag.
     The checkout has no `CONTRIBUTING.md` or issue templates;
     no AI contribution ban was found in those inspected files.
     No contribution is proposed.
-5.  Upstream direction: tracker searches found related issue 1299,
+5.  Upstream direction:
+     tracker searches found related issue 1299,
     whose body and comments were read in full.
     Searches used `allow-file-access relaunch`,
     `launch flags about:blank`,
@@ -247,7 +256,8 @@ and does not establish an upstream obligation to make every launch flag sticky.
     `about:blank config`,
     and `launchHash` across issue and pull-request searches.
     No identical file-access incident was identified from those searches.
-6.  Prototype: not warranted for this consumer invocation correction.
+6.  Prototype:
+     not warranted for this consumer invocation correction.
     Constraint 1 did not pass,
     so the skill's automatic upstream prototype requirement does not apply.
 

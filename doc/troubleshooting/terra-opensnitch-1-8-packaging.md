@@ -13,13 +13,18 @@ The staged RPM owns both application binaries:
 It also owns the desktop entry and `opensnitchd.service`.
 The current deployment does not expose those files until reboot.
 
-The staged unit is disabled, so explicit service enablement would still be required.
-More importantly, the staged deployment has functional activation blockers:
+The staged unit is disabled,
+ so explicit service enablement would still be required.
+More importantly,
+ the staged deployment has functional activation blockers:
 
-- Its `ExecStart` names absent `/usr/local/bin/opensnitchd`, not packaged `/usr/bin/opensnitchd`.
+- Its `ExecStart` names absent `/usr/local/bin/opensnitchd`,
+   not packaged `/usr/bin/opensnitchd`.
 - `/etc/opensnitchd/default-config.json` and related daemon data are absent.
-- PyQt6 and gRPC are absent, so `opensnitch-ui` exits during its first import.
-- No OpenSnitch entry exists in `/etc/xdg/autostart`, so the UI would not launch at desktop login.
+- PyQt6 and gRPC are absent,
+   so `opensnitch-ui` exits during its first import.
+- No OpenSnitch entry exists in `/etc/xdg/autostart`,
+   so the UI would not launch at desktop login.
 
 Trying to layer upstream `opensnitch-ui-1.8.0-1.noarch.rpm` over the Terra package fails:
 
@@ -38,7 +43,8 @@ Both RPMs own `/usr/bin/opensnitch-ui`.
 ### Terra combines daemon and UI into one RPM
 
 `terrapkg/packages@462374e:anda/apps/opensnitch/opensnitch.spec:81-85` installs the daemon,
-the upstream unit, and the Python UI into one build root:
+the upstream unit,
+ and the Python UI into one build root:
 
 ```spec
 install -Dm755 opensnitchd -t %buildroot%_bindir
@@ -111,7 +117,12 @@ BuildRequires:  python3dist(pyqt5)
 ```
 
 The staged RPM's generated requirements consequently include Python 3.14 and native daemon libraries,
-but not PyQt6, gRPC, protobuf, slugify, packaging, or requests.
+but not PyQt6,
+ gRPC,
+ protobuf,
+ slugify,
+ packaging,
+ or requests.
 The staged deployment has none of PyQt6 or gRPC.
 
 ### Terra omits desktop-session autostart
@@ -148,7 +159,8 @@ ExecStart=/usr/local/bin/opensnitchd
 Restart=always
 ```
 
-Terra installs that file unchanged while placing the executable in `%_bindir`, which is `/usr/bin`.
+Terra installs that file unchanged while placing the executable in `%_bindir`,
+ which is `/usr/bin`.
 
 OpenSnitch's own v1.8.0 RPM recipe performs the missing prefix correction at
 `evilsocket/opensnitch@v1.8.0:utils/packaging/daemon/rpm/opensnitch.spec:45-47`:
@@ -166,7 +178,10 @@ Enabling Terra's unit without correcting `ExecStart` therefore cannot launch its
 
 Terra's `%install` section packages the binary and unit,
 but contains no install operation for `daemon/data/default-config.json`,
-`system-fw.json`, `network_aliases.json`, default rules, or tasks.
+`system-fw.json`,
+ `network_aliases.json`,
+ default rules,
+ or tasks.
 The staged RPM file list confirms that no `/etc/opensnitchd` path is owned.
 
 OpenSnitch defaults to the missing configuration path at
@@ -204,7 +219,8 @@ Verified on 2026-08-22 against:
 - staged `opensnitch-1.8.0-2.fc44.x86_64` from Terra;
 - staged rpm-ostree commit `8e4066c92cc77be5209f09398e4c547e0a1c42d759b5ef810250c80db5498f98`;
 - `terrapkg/packages` commit `462374e056f69facd2357797326c679d0f3b827c`;
-- OpenSnitch tag `v1.8.0`, commit `b404c4c6316760fa7bc415509d3f8d747f7dc9cc`.
+- OpenSnitch tag `v1.8.0`,
+   commit `b404c4c6316760fa7bc415509d3f8d747f7dc9cc`.
 
 Set the measured deployment root:
 
@@ -326,9 +342,15 @@ Both RPM signatures verify against release key fingerprint
 
 The two official RPM file lists do not overlap.
 The daemon RPM includes `/etc/opensnitchd` configuration,
-eBPF objects, `/usr/bin/opensnitchd`, and `opensnitch.service`.
+eBPF objects,
+ `/usr/bin/opensnitchd`,
+ and `opensnitch.service`.
 The UI RPM declares PyQt6 as a hard dependency and gRPC,
-protobuf, slugify, packaging, notifications, and Qt SQL support as recommendations.
+protobuf,
+ slugify,
+ packaging,
+ notifications,
+ and Qt SQL support as recommendations.
 
 This transaction was verified with `--dry-run` on the affected host:
 
@@ -350,8 +372,12 @@ Inspection of the staged deployment confirms:
 
 - the official RPM versions are `opensnitch-1.8.0-1.x86_64`
   and `opensnitch-ui-1.8.0-1.noarch`;
-- configuration, rules, tasks, daemon and UI executables,
-  eBPF objects, and `opensnitch.service` are present;
+- configuration,
+   rules,
+   tasks,
+   daemon and UI executables,
+  eBPF objects,
+   and `opensnitch.service` are present;
 - `opensnitch.service` executes `/usr/bin/opensnitchd`;
 - the required Python packages are installed;
 - the UI autostart link targets `/usr/share/applications/opensnitch_ui.desktop`.
@@ -386,9 +412,13 @@ It:
 
 - bumps Terra's RPM release;
 - corrects the service executable path before installation;
-- packages default configuration, rules, and tasks as `%config(noreplace)`;
+- packages default configuration,
+   rules,
+   and tasks as `%config(noreplace)`;
 - adds hard runtime requirements for modules needed by the base UI;
-- adds optional requests, monitoring, and notification integrations as recommendations;
+- adds optional requests,
+   monitoring,
+   and notification integrations as recommendations;
 - installs the desktop entry in the system XDG autostart directory.
 
 A structural positive-control harness reported the original spec as `INCOMPLETE`,
@@ -398,26 +428,34 @@ and reported the patched spec as `READY`.
 
 Tradeoff:
 the prototype has not been built into an RPM or exercised through an installed Fedora 44 package.
-It is source evidence for Terra maintainers, not a package the user should install.
+It is source evidence for Terra maintainers,
+ not a package the user should install.
 It also leaves Terra's omitted eBPF objects unchanged;
-OpenSnitch can fall back to `/proc`, but that differs from upstream's default eBPF path.
+OpenSnitch can fall back to `/proc`,
+ but that differs from upstream's default eBPF path.
 
 ## What does not work
 
 - **Reboot alone.**
-  Reboot exposes the staged files, but does not fix missing UI imports, configuration, or the unit's executable path.
+  Reboot exposes the staged files,
+   but does not fix missing UI imports,
+   configuration,
+   or the unit's executable path.
 - **Enable the unit alone.**
   `opensnitchd.service` would still execute absent `/usr/local/bin/opensnitchd`.
 - **Start `/usr/bin/opensnitchd` directly.**
   It exits because `/etc/opensnitchd/default-config.json` is absent.
 - **Retry the separate upstream UI RPM over Terra's RPM.**
-  Both packages own `/usr/bin/opensnitch-ui`, and the observed checkout abort leaves no separate UI package staged.
+  Both packages own `/usr/bin/opensnitch-ui`,
+   and the observed checkout abort leaves no separate UI package staged.
 - **Install only PyQt6.**
   This moves the UI past its first import,
   but does not supply other base UI modules and does not repair the daemon.
 - **Treat `systemctl is-enabled` as the packaging defect.**
   Disabled state can be an expected activation choice.
-  The wrong `ExecStart`, missing configuration, and missing runtime dependencies are the functional packaging defects.
+  The wrong `ExecStart`,
+   missing configuration,
+   and missing runtime dependencies are the functional packaging defects.
 
 ## Upstream filing artifact: no permissible AI-authored comment
 
@@ -436,27 +474,34 @@ Copying an agent-written draft into the issue would violate that policy.
 ### Upstream filing decision
 
 1. **Is it really upstream's fault?**
-   Yes, where upstream means Terra packaging.
+   Yes,
+    where upstream means Terra packaging.
    The OpenSnitch source contains the required data.
    Its own RPM recipe demonstrates both prefix correction and configuration installation.
 2. **Can upstream fix it?**
    Yes.
-   The package spec controls runtime requirements, installed data, and unit rewriting.
+   The package spec controls runtime requirements,
+    installed data,
+    and unit rewriting.
 3. **Are they supporting this use case?**
    Yes.
-   Terra ships the package for Fedora 44, and issue 15904 requested an out-of-box working service.
+   Terra ships the package for Fedora 44,
+    and issue 15904 requested an out-of-box working service.
 4. **Would the repo welcome our contribution?**
    Not as agent-authored external text.
    Terra accepts package fixes,
    but its AI policy explicitly prohibits LLM-written issue comments and pull request descriptions.
 5. **Will they likely fix it?**
    There is positive maintenance evidence:
-   PR 15995 was merged for the first report, and a maintainer backported it to Fedora branches.
-   This is evidence of active maintenance, not a prediction of timing.
+   PR 15995 was merged for the first report,
+    and a maintainer backported it to Fedora branches.
+   This is evidence of active maintenance,
+    not a prediction of timing.
 6. **Have we prototyped a minimal fix compatible with their architecture?**
    Partially.
    The linked spec patch covers the measured activation blockers and passes its structural positive-control harness.
-   It has not passed a Terra package build or installed-runtime test, so it does not satisfy the full prototype gate.
+   It has not passed a Terra package build or installed-runtime test,
+    so it does not satisfy the full prototype gate.
 
 Constraints 4 and 6 fail.
 Nothing should be posted or filed from this document.

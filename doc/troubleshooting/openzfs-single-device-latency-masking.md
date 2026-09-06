@@ -44,11 +44,11 @@ A miss still reaches the NVMe.
 
 Current OpenZFS documentation describes ARC as balancing recently and frequently used blocks and says it can outperform
 a simple LRU cache:
-https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Pool%20Structure/Caching.html.
+<https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Pool%20Structure/Caching.html>.
 
 Linux filesystems are not uncached by comparison.
 The Linux VFS page cache also keeps file data in RAM and writes dirty pages back later:
-https://www.kernel.org/doc/html/latest/filesystems/vfs.html.
+<https://www.kernel.org/doc/html/latest/filesystems/vfs.html>.
 ZFS’s differentiator is its ARC policy and integration with ZFS metadata and block semantics,
 not the mere existence of a RAM cache.
 This investigation did not trace current Btrfs transaction and writeback source to equal depth and ran no comparative
@@ -78,7 +78,7 @@ resilver,
 removal,
 initialization,
 and rebuild work stays at minimum concurrency until the vdev is idle:
-https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/ZIO%20Scheduler.html.
+<https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/ZIO%20Scheduler.html>.
 
 This is a real advantage over relying only on process-level I/O priority for filesystem maintenance.
 It can keep queued foreground reads and writes ahead of queued background work.
@@ -112,7 +112,7 @@ The buffer is deliberately finite.
 `module/zfs/dsl_pool.c:57-75` says new writes halt after `zfs_dirty_data_max` until dirty space falls.
 `module/zfs/dmu_tx.c:964-1008` progressively delays transactions after dirty data crosses the configured threshold.
 The current transaction-delay guide says the throttle activates when backend storage cannot accommodate incoming writes:
-https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/ZFS%20Transaction%20Delay.html.
+<https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/ZFS%20Transaction%20Delay.html>.
 
 ZFS can therefore smooth a burst,
 but sustained writes eventually run at device speed and experience backpressure.
@@ -120,7 +120,7 @@ A synchronous `fsync()` or `O_SYNC` request still needs stable storage.
 A separate SLOG helps only synchronous writes and must itself be a lower-latency,
 power-loss-protected device;
 it is not an async write cache:
-https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Pool%20Structure/Caching.html.
+<https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Pool%20Structure/Caching.html>.
 
 ### Slow-I/O detection reports rather than accelerates
 
@@ -138,7 +138,7 @@ if (zio->io_delay >= MSEC2NSEC(zio_slow_io_ms)) {
 and vdev properties can enable diagnosis thresholds.
 The source says `slow_io_n` and `slow_io_t` have no built-in defaults,
 so active slow-device fault diagnosis requires configuration.
-See https://openzfs.github.io/openzfs-docs/man/master/7/vdevprops.7.html.
+See <https://openzfs.github.io/openzfs-docs/man/master/7/vdevprops.7.html>.
 
 Counting a slow operation does not shorten it.
 On the planned single-device root,

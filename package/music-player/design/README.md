@@ -32,10 +32,13 @@ option assessments,
 recommendation,
 and answer controls in one file.
 The file is rendered and interaction-checked before it is opened in Helium.
-For Android screen comparisons, the embedded rasters come from a non-functional
-Jetpack Compose prototype installed on the target emulator, not from CSS redraws.
+For Android screen comparisons,
+ the embedded rasters come from a non-functional
+Jetpack Compose prototype installed on the target emulator,
+ not from CSS redraws.
 The active round's prototype is preserved on
-`prototype/music-player-theme-compose`; its capture task waits for Compose content,
+`prototype/music-player-theme-compose`;
+ its capture task waits for Compose content,
 then records the unfolded panel at 2076 × 2152px with native system bars.
 
 After each correction,
@@ -61,7 +64,7 @@ including rejected directions.
 Repository-authored work is licensed under the
 [GNU Lesser General Public License, version 3 or later](../../../LICENSE).
 The imported Material Design 3 recreation documents its source and attribution requirements in
-[`_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/readme.md`].
+[`_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/readme.md`][].
 
 [`_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/readme.md`]:
   _ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/readme.md

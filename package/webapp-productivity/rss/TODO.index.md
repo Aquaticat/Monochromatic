@@ -98,29 +98,38 @@ This directory contains detailed improvement plans for the RSS reader package,
 ### 3.1 Phase 1: Foundation (Weeks 1-2)
 
 1. 3.1.1 **Testing Infrastructure**:
-    Establish test framework and basic coverage
+ 
+      Establish test framework and basic coverage
 2. 3.1.2 **Documentation**:
-    Document existing code and APIs
+ 
+      Document existing code and APIs
 3. 3.1.3 **Code Organization**:
-    Restructure for maintainability
+ 
+      Restructure for maintainability
 
 ### 3.2 Phase 2: Performance & Reliability (Weeks 3-4)
 
 1. 3.2.1 **Performance Profiling**:
-    Identify bottlenecks
+ 
+      Identify bottlenecks
 2. 3.2.2 **Caching Strategy**:
-    Implement Caddy proxy caching
+ 
+      Implement Caddy proxy caching
 3. 3.2.3 **Performance Optimizations**:
-    Apply improvements
+ 
+      Apply improvements
 
 ### 3.3 Phase 3: Polish (Week 5)
 
 1. 3.3.1 **Configuration Management**:
-    Externalize settings (optional)
+ 
+      Externalize settings (optional)
 2. 3.3.2 **Final Documentation**:
-    Complete all documentation
+ 
+      Complete all documentation
 3. 3.3.3 **Test Coverage**:
-    Achieve 80% coverage target
+ 
+      Achieve 80% coverage target
 
 ## 4. 🔄 Status Tracking
 
@@ -146,10 +155,14 @@ All improvements align with the project's core principles:
 ## 6. 🚀 Getting Started
 
 1. 6.1 Start with [`TODO.testing.md`](./TODO.testing.md) to establish a solid testing foundation
-2. 6.2 Document as you go using [`TODO.documentation.md`](./TODO.documentation.md) as a guide
-3. 6.3 Refactor using [`TODO.code-organization.md`](./TODO.code-organization.md) patterns
-4. 6.4 Optimize performance based on [`TODO.performance.md`](./TODO.performance.md) findings
-5. 6.5 Consider [`TODO.caching.md`](./TODO.caching.md) for production deployments
+2.
+    6.2 Document as you go using [`TODO.documentation.md`](./TODO.documentation.md) as a guide
+3.
+    6.3 Refactor using [`TODO.code-organization.md`](./TODO.code-organization.md) patterns
+4.
+    6.4 Optimize performance based on [`TODO.performance.md`](./TODO.performance.md) findings
+5.
+    6.5 Consider [`TODO.caching.md`](./TODO.caching.md) for production deployments
 
 ## 7. 📚 Notes
 

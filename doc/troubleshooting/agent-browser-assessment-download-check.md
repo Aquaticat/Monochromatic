@@ -122,14 +122,20 @@ No reproducible upstream defect was established and no issue or comment was sent
 
 ### Upstream filing decision
 
-1.  Upstream fault: not established by the isolated timeout.
-2.  Fixability: no defect was localized,
+1.  Upstream fault:
+     not established by the isolated timeout.
+2.  Fixability:
+     no defect was localized,
     so no upstream change is proposed.
-3.  Supported use: the inspected download handler and successful controls support this click-triggered download.
-4.  Contribution policy: not material to an unlocalized event with no proposed contribution.
-5.  Upstream direction: no claim is made.
+3.  Supported use:
+     the inspected download handler and successful controls support this click-triggered download.
+4.  Contribution policy:
+     not material to an unlocalized event with no proposed contribution.
+5.  Upstream direction:
+     no claim is made.
     Duplicate investigation was not pursued after the successful controls because no bug is being filed or drafted.
-6.  Prototype: not applicable;
+6.  Prototype:
+     not applicable;
     constraint 1 did not pass and the unchanged implementation completed real downloads.
 
 The `.out-of-scope/` catalog was checked during this browser bridge investigation;

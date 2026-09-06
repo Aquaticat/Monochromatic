@@ -18,7 +18,8 @@ even though the live window is visibly rendered and MCP element inspection repor
 A music-player instance ran within the repository's isolated
 `monochromatic-nested-wayland-session` compositor at 1280 by 800.
 The embedded server at `http://127.0.0.1:9316/mcp` returned a PNG content item,
-not an MCP error, for `take_screenshot`.
+not an MCP error,
+ for `take_screenshot`.
 
 ImageMagick measured that decoded PNG as follows:
 
@@ -127,10 +128,10 @@ fn screenshot(&mut self) -> Result<ImgVec<RGBA8>, ErrorKind> {
 The current back buffer can hold no usable presented frame when this read occurs.
 On this host it yielded opaque black.
 The same mechanism can instead expose stale pixels.
-Slint issue [#9239] records that one-frame-behind manifestation;
+Slint issue [#9239][] records that one-frame-behind manifestation;
 a maintainer attributes it to `glReadPixels` from FemtoVG's back buffer.
 
-Open pull request [#13114] is the matching candidate fix.
+Open pull request [#13114][] is the matching candidate fix.
 It replaces `_render` with `render`,
 then invokes `render()?` before `canvas.screenshot()`.
 The candidate is absent from the pinned v1.17.0 source:
@@ -140,11 +141,16 @@ its parameter remains `_render` and no invocation appears between `ensure_curren
 
 Version evidence:
 
-- Slint source clone: `slint-ui/slint` tag `v1.17.0`, commit
+- Slint source clone:
+   `slint-ui/slint` tag `v1.17.0`,
+   commit
   `fdde7a535305d2ab2d4072dee637bad186a49723`.
-- Music player lockfile: FemtoVG 0.25.1, crates.io checksum
+- Music player lockfile:
+   FemtoVG 0.25.1,
+   crates.io checksum
   `f43d05da42e81724c16d34a150fb7fda53d3f786e5a94673ee526ff8602f6a`.
-- Host capture: the repository's `monochromatic-nested-wayland-session`
+- Host capture:
+   the repository's `monochromatic-nested-wayland-session`
   with a 1280 by 800 private Wayland output.
 
 The retained harness starts the isolated compositor through
@@ -205,26 +211,39 @@ The nested compositor supplies an isolated output and deterministic color scheme
 
 No new issue or comment will be posted.
 
-The upstream tracker already contains the matching issue [#9239].
+The upstream tracker already contains the matching issue [#9239][].
 The reporter later confirmed that Skia avoids the defect,
 and maintainer `tronical` called the FemtoVG OpenGL behavior a valid bug.
 The same maintainer said they did not expect to fix the OpenGL route directly,
 preferring a future FemtoVG wgpu screenshot implementation.
 
-Open pull request [#13114] contains the exact missing-render candidate fix.
+Open pull request [#13114][] contains the exact missing-render candidate fix.
 Its collaborator review asks for an offscreen follow-up because rendering during a screenshot also presents a frame.
 The issue and pull request already contain a stronger renderer differential than this capture adds,
 so a duplicate comment would add nothing.
 
 The filing constraints resolve as follows:
 
-1.  **Upstream fault:** yes. Slint's public `Window::take_snapshot()` reaches the defective FemtoVG OpenGL readback path.
-2.  **Upstream fixability:** yes. Pull request [#13114] demonstrates one minimal compatible change.
-3.  **Supported use case:** yes. Slint documents MCP screenshots and exposes `Window::take_snapshot()` publicly.
-4.  **Contribution welcome:** yes. `CONTRIBUTING.md` welcomes issues and pull requests, subject to its CLA.
-5.  **Likely fix:** no. The maintainer's comment on [#9239] explicitly leans away from fixing this OpenGL route,
-    and [#13114] remains open pending a semantics decision.
-6.  **Local prototype:** not required. Constraint 5 fails, and upstream already has the exact one-file prototype in [#13114].
+1.  **Upstream fault:**
+     yes.
+     Slint's public `Window::take_snapshot()` reaches the defective FemtoVG OpenGL readback path.
+2.  **Upstream fixability:**
+     yes.
+     Pull request [#13114][] demonstrates one minimal compatible change.
+3.  **Supported use case:**
+     yes.
+     Slint documents MCP screenshots and exposes `Window::take_snapshot()` publicly.
+4.  **Contribution welcome:**
+     yes.
+     `CONTRIBUTING.md` welcomes issues and pull requests,
+     subject to its CLA.
+5.  **Likely fix:**
+     no. The maintainer's comment on [#9239][] explicitly leans away from fixing this OpenGL route,
+    and [#13114][] remains open pending a semantics decision.
+6.  **Local prototype:**
+     not required.
+     Constraint 5 fails,
+     and upstream already has the exact one-file prototype in [#13114][].
 
 No `.out-of-scope/` entry applies to Slint.
 No separate issue draft or comment draft is retained because the existing thread has no missing actionable evidence.

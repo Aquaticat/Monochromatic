@@ -40,7 +40,8 @@ and validates it in a throwaway workspace.
 ## Scope correction
 
 The owner instructed on 2026-09-06:
-"If changeset fails then we do it the hard way. No need to research other candidates."
+"If changeset fails then we do it the hard way.
+ No need to research other candidates."
 Alternatives discovery,
 the query schedule,
 and comparative scoring are therefore waived by owner instruction and recorded as such.
@@ -260,7 +261,8 @@ Host for every command:
    a fresh `git init` pnpm workspace with `@vetfixture/leaf` (public,
    `publishConfig.exports` override,
    `./ts` in `exports`) and private `@vetfixture/app` depending on `@vetfixture/leaf` via `workspace:*`.
-- `pnpm dlx @changesets/cli@3.0.2 init` prompts interactively ("Should the GitHub integration be used for changelogs?") and exits 13 without a TTY;
+- `pnpm dlx @changesets/cli@3.0.2 init` prompts interactively ("Should the GitHub integration be used for changelogs?")
+   and exits 13 without a TTY;
    `init --help` exposes no non-interactive flag.
    `.changeset/config.json` was written by hand instead.
 - `pnpm dlx @changesets/cli@3.0.2 status --verbose`:
