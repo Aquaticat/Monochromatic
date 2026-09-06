@@ -81,6 +81,15 @@ and it has since been seen to hurt.
   against 1.4 s with it on;
   warm per-package cost of the rule is inside the noise here.
 
+- Warm sweep with the readonly rule allowed (`--allow prefer-readonly-parameter-type/prefer-readonly-parameter-types`,
+  wrapper run from the root the way the task runs it):
+   65.3 s over the same 3075 files,
+  against 114.4 s with the rule on.
+  Confound:
+  the `config-oxlint` bundle was rebuilt between the two runs and `stylistic(require-asterisk-prefix)` fell from
+  15520 to 322 warnings,
+  so a control run of the same wrapper command without `--allow` is being taken before the 49 s is attributed.
+
 ## Evidence already in the repo
 
 - `doc/planning/oxlint-warm-sweep-attribution.md` (issue #374,
