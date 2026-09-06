@@ -609,5 +609,103 @@ await describe({
         .toBe('lanes-agreed',);
     },
   },),
+
+  it({
+    name:
+      'RESTORES the archive\'s quote convention on every wording a stage wrote, since the repair lane '
+      + 'already does and the translate lane and consolidation did not: yulianNyanner shipped five '
+      + 'straight apostrophes on a curly page on 2026-09-06, and Uekawakuyuurei two on 2026-09-04',
+    fn: async () => {
+      const source = {
+        comparison: [
+          rowWith({
+            sliceIndex: 0,
+            incumbentText: 'The cat’s asleep on the ledge.',
+            translateText: 'The cat isn\'t asleep on the sill.',
+          },),
+          rowWith({
+            sliceIndex: 1,
+            incumbentText: 'The cat’s awake.',
+            repairText: 'The cat\'s awake now.',
+            translateText: 'The cat\'s awake now.',
+            laneRelation: 'both-agree',
+          },),
+        ],
+        consolidation: { kind: 'not-run', },
+        laneSelection: {
+          kind: 'contested',
+          slices: [
+            contestedWith({
+              verdict: {
+                kind: 'lane-won',
+                lane: 'translate',
+              },
+            },),
+          ],
+        },
+        preparation: {
+          archiveText: {
+            kind: 'stored',
+            text: 'The cat’s asleep on the ledge.\n\nThe cat’s awake.\n',
+          },
+        },
+      } as unknown as WouldShipSource;
+
+      const slices = wouldShipTextPerSlice({ artifact: source, },);
+
+      /**
+       * Wording the translate lane won, its apostrophe curled to the page's.
+       */
+      const contestedSlice = nonNullishOrThrow(slices[0],);
+
+      /**
+       * Wording both lanes agreed on, curled the same way.
+       */
+      const agreedSlice = nonNullishOrThrow(slices[1],);
+
+      expect(contestedSlice.reading.kind === 'wording' ? contestedSlice.reading.text : '',)
+        .toBe('The cat isn’t asleep on the sill.',);
+      expect(agreedSlice.reading.kind === 'wording' ? agreedSlice.reading.text : '',)
+        .toBe('The cat’s awake now.',);
+    },
+  },),
+
+  it({
+    name: 'LEAVES a straight-quoted page alone, since the convention is the archive\'s and not this rule\'s',
+    fn: async () => {
+      const source = {
+        comparison: [
+          rowWith({
+            sliceIndex: 0,
+            incumbentText: 'The cat\'s asleep on the ledge.',
+            translateText: 'The cat isn\'t asleep on the sill.',
+          },),
+        ],
+        consolidation: { kind: 'not-run', },
+        laneSelection: {
+          kind: 'contested',
+          slices: [
+            contestedWith({
+              verdict: {
+                kind: 'lane-won',
+                lane: 'translate',
+              },
+            },),
+          ],
+        },
+        preparation: {
+          archiveText: {
+            kind: 'stored',
+            text: 'The cat\'s asleep on the ledge.\n',
+          },
+        },
+      } as unknown as WouldShipSource;
+
+      const slice = nonNullishOrThrow(wouldShipTextPerSlice({ artifact: source, },)[0],);
+
+      expect(slice.reading.kind === 'wording' ? slice.reading.text : '',)
+        .toBe('The cat isn\'t asleep on the sill.',);
+    },
+  },),
   ],
 },);
