@@ -16,7 +16,8 @@
   "files": [
     "dist/final",
     "src",
-    "LICENSES"
+    "LICENSES",
+    "CHANGELOG.md"
   ],
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
