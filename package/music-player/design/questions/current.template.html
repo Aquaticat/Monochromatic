@@ -911,7 +911,7 @@ const logicalHeight = 883;
 let previewScale = 1;
 let previewTrigger = null;
 
-const clampScale = (value) => Math.min(3, Math.max(0.1, value));
+const clampScale = (value) => Math.min(3, Math.max(0.02, value));
 const renderScale = () => {
   zoomDevice.style.inlineSize = `${frameWidth * previewScale}px`;
   zoomDevice.style.blockSize = `${frameHeight * previewScale}px`;

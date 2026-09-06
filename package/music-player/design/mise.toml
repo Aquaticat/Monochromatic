@@ -300,7 +300,7 @@ const requiredFragments = [
   'Production assistive technology must still confirm those announcements',
   'Answers changed. Prepare them again before copying or downloading.',
   'spaces alone do not complete this field.',
-  'Math.max(0.1, value)',
+  'Math.max(0.02, value)',
   'No addition is proposed.',
 ];
 for (const fragment of requiredFragments) {
