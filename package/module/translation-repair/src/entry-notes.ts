@@ -177,6 +177,11 @@ const HEADING_MARK = '#';
 const HEADING_KIND = 'heading';
 
 /**
+ * What `findIndex` answers when no character is a word.
+ */
+const NO_WORDS = -1;
+
+/**
  * Words of a heading, its opening marks and surrounding whitespace gone, so
  * two headings compare by what a reader sees.
  *
@@ -194,15 +199,15 @@ export function headingWords(
   { text, }: { readonly text: string; },
 ): string {
   /**
-   * Position of the first character that is not an opening mark, or -1 when
-   * the line is marks alone. The marks are ASCII, so the code-point index and
-   * the string index agree up to that character.
+   * Position of the first character that is not an opening mark, or
+   * `NO_WORDS` when the line is marks alone. The marks are ASCII, so the
+   * code-point index and the string index agree up to that character.
    */
-  const firstWord = Array.from(text,)
+  const firstWord = [...text,]
     .findIndex(function isNotMark(character,): boolean {
       return character !== HEADING_MARK;
     },);
-  return foldedLine({ text: (firstWord === -1) ? '' : text.slice(firstWord,), },);
+  return foldedLine({ text: (firstWord === NO_WORDS) ? '' : text.slice(firstWord,), },);
 }
 
 /**
