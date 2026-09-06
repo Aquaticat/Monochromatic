@@ -115,6 +115,54 @@ Owner decisions so far,
    no `customConditions` exists in the repository TypeScript configs,
    and TypeScript under `bundler` resolution matches only `types` and `import`/`require`.
 
+### Round 2 (2026-09-06): platform code moves to subpaths
+
+- The root entry stays platform-neutral:
+   `logger`,
+   `initPromise`,
+   `createLogger`,
+   `tagged`,
+   the types,
+   and a `sinks` namespace holding only the cross-platform factories (console,
+   noop,
+   sessionStorage,
+   localStorage).
+- `createFileSink` moves to the `./node` subpath;
+   `createIndexedDbSink` and `createOpfsSink` move to the `./browser` subpath.
+   No stub exists anywhere:
+   the neutral artifact contains no file sink code and the node artifact contains no IndexedDB or OPFS code.
+- The default sink list is selected through `#default-sinks`:
+   `src/default-sinks.node.ts` (console,
+   sessionStorage,
+   localStorage,
+   file) under `node`,
+   `src/default-sinks.neutral.ts` (console,
+   IndexedDB,
+   sessionStorage,
+   localStorage) under `default`,
+   so zero-config keeps file logging under Node and IndexedDB in browsers.
+- Source layout (owner deferred to the agent):
+   flat siblings;
+   `src/sink/file.ts`,
+   `src/sink/indexed-db.ts`,
+   `src/sink/opfs.ts` keep their names and become platform-only modules with static imports;
+   `src/node.ts` and `src/browser.ts` are the subpath entries;
+   the node rolldown config builds `index.ts` plus `node.ts`,
+   the neutral config builds `index.ts` plus `browser.ts`.
+- Guard test asserts four directions across every chunk of each build:
+   no `import(` anywhere;
+   no `node:` module in the neutral build;
+   no `indexedDB` or `navigator.storage` reference in the node build;
+   `createFileSink` absent from the neutral build and `createIndexedDbSink`/`createOpfsSink` absent from the node build.
+- Reasoning recorded for the rejected shapes:
+   a stub ships code whose only job is to answer no;
+   per-condition `types` under `node`/`default` hands every `bundler`-resolution consumer the neutral types,
+   because TypeScript matches only `types` and `import`/`require` there and this repository sets no `customConditions`.
+- Accepted consequence:
+   a Node consumer whose bundler resolves `default` gets no file logging and no message,
+   the same as every package in the prior-art sample;
+   the minor changelog line names it.
+
 ## Verification campaign (the toml-edit bar)
 
 `package/module/toml-edit` has a budgeted property campaign,
