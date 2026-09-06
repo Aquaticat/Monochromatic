@@ -10,7 +10,7 @@ backends as soon as they verify.
 ## Usage
 
 ```ts
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger';
 
 const l = tagged({ tag: 'http', },);
 l.info('server started on port 3000',);
@@ -45,10 +45,20 @@ function handleRequest({ l, }: { l: Logger; },): void {
 Import the singleton directly when tags are not needed:
 
 ```ts
-import { logger, } from '@monochromatic-dev/module-logger/logger';
+import { logger, } from '@monochromatic-dev/module-logger';
 
 logger.error('unexpected shutdown',);
 ```
+
+## Runtime support
+
+Node 24 or newer (the build calls `Error.isError`),
+ plus current browsers,
+ Deno,
+ and Bun for the sinks whose `verify` finds a backend there.
+The published package exposes the built artifact only.
+The `/ts` source subpath used inside this workspace is stripped at publish time,
+ because Node refuses `.ts` files under `node_modules`.
 
 ## Log levels
 
@@ -195,6 +205,21 @@ A sink is dropped only when its `verify` reports the backend unavailable (resolv
 Individual `write` failures are the sink's own concern and do not disable the backend,
 so one transient I/O hiccup never silently kills a sink for the rest of the run.
 
+## Console output safety
+
+Log text can carry attacker-influenced content,
+ and a terminal treats control characters as commands (clear screen,
+ set title,
+ move the cursor,
+ write the clipboard).
+The console sink renders every C0 control except newline and tab,
+ `DEL`,
+ and every C1 control as a `\uXXXX` escape before the text reaches `console.*` or `process.stderr`,
+ so the attempted sequence stays visible but inert.
+Newlines and tabs pass through because multi-line messages are core.
+The JSONL sinks need no such step:
+ `JSON.stringify` already escapes control characters.
+
 ## Log record format
 
 Every sink receives a `LogRecord`:
@@ -219,8 +244,18 @@ File,
    consumers do not await it before logging
 - `logger.flush()` awaits startup verification,
    pending sink writes,
-   and sink-owned flush hooks
-- Throws at log time once initialization has completed with no available backend
+   and sink-owned flush hooks,
+   all under one deadline (`flushDeadlineMs`,
+   default `DEFAULT_FLUSH_DEADLINE_MS`,
+   5000 ms).
+   When the deadline elapses the logger reports one `console.warn` breadcrumb,
+   drops the in-flight writes from its view (sinks expose no cancellation,
+   so the work continues in the background),
+   and resolves,
+   so a wedged backend cannot hang a shutdown
+- Throws at log time once initialization has completed with no available backend.
+   The console sink verifies wherever `console` and `queueMicrotask` exist,
+   so this is reachable only through `createLogger` with sinks that all fail verification
 - A sink is dropped when its `verify` reports unavailable (or its flush hook rejects);
    remaining sinks continue
 - Individual `write` failures are handled per sink and do not disable the backend
@@ -240,6 +275,18 @@ import { createLogger, sinks, } from '@monochromatic-dev/module-logger';
 const { logger, initPromise, } = createLogger({ sinks: [sinks.createNoopSink()], },);
 logger.info('goes nowhere');
 await initPromise; // optional; flush() awaits it internally
+```
+
+Raise the flush deadline for a slow but working backend,
+ such as a network filesystem:
+
+```ts
+import { createLogger, sinks, } from '@monochromatic-dev/module-logger';
+
+const { logger, } = createLogger({
+  sinks: [sinks.createFileSink(),],
+  flushDeadlineMs: 30_000,
+},);
 ```
 
 A custom sink is any object satisfying the `Sink` interface,
@@ -278,6 +325,13 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
 - String-only messages;
    callers own serialization;
    no auto-stringify
+- Sinks are self-describing factories;
+   the logger owns availability
+- Write failures do not disable a sink;
+   only verify failure does
+- localStorage and IndexedDB sink designs and measurements
+- Console output neutralizes control characters
+- `flush()` has a deadline
 
 ## Source files
 
@@ -299,6 +353,8 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
 - `src/sink/console.ts`:
    `createConsoleSink()`,
    verbose-mode gating and microtask batching
+- `src/sink/console-control-chars.ts`:
+   control-character neutralization for console-bound text
 - `src/sink/file.ts`:
    `createFileSink()`,
    Node.
