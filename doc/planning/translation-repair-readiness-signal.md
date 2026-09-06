@@ -511,3 +511,53 @@ What would move the belief is unchanged:
 running since 21:03 UTC;
 `Arita`;
 one unstarved consolidation.
+
+## What the first page on the plain invocation showed (2026-09-06, 21:03 UTC)
+
+Shipped in 44.9 minutes at zero USD,
+3.9 points of the Synthetic week and 64 Hyper credits,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The third launch".
+The consolidation completed unstarved,
+which closes the third item the 2026-09-04 snapshot left open.
+The class-five fix held:
+every one of the fourteen source comments is an English comment in its place,
+and no slice was withheld.
+The page repairs the archive in four places the reading could name
+(the `desc`,
+a lyric syllable,
+a school year,
+a dropped attribution)
+and carries both `PhotoScroll` shapes intact.
+
+WHAT IT FOUND:
+the sixth class,
+in this package.
+Two different source headings ship as the same English heading because a source comment saying
+"the English word for this title is dysphoria" reached every slice as an identity-context line with no position,
+and seven of eight consolidation judges bound "this title" to the wrong heading.
+Fixed in `459b2007f` and `7a01c9048`:
+comment lines name the heading they sit under,
+the sheets say what that means,
+and the publisher refuses a page on which two distinct source headings read the same,
+a floor measured to refuse nothing on the 92 archives.
+Guards shown to fail first,
+the floor by inversion (5 `FAIL` neutralised,
+0 restored).
+
+THE READING:
+not ready,
+and closer in one respect and not in another.
+Closer:
+the plain invocation shipped a page whose only defect a deterministic floor now refuses,
+and the two remaining gates of 2026-09-04 (unstarved consolidation,
+a new source shape) are met.
+Not:
+the class-per-entry rate is still one on a new shape,
+and this entry has not yet shipped clean.
+What would move the belief:
+`yulianNyanner` on the class-six build,
+read clean;
+then `Arita`;
+then an entry whose source shape no shipped page has carried,
+which the readiness question should name from the corpus rather than meet by accident.

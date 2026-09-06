@@ -1986,6 +1986,98 @@ which prices one stopped attempt at about 0.8 percent of the week and 36 credits
     under the kill-and-relaunch rule (the 20:21 run had already exited on its own).
     The reading follows.
 
+## The third launch, 2026-09-06, 21:03 UTC: the first page on the plain invocation, and the sixth class
+
+`yulianNyanner` SETTLED at 21:48 UTC in 2,694,071 ms (44.9 minutes),
+17 slices,
+1,180 calls (Hyper 673,
+Synthetic 507,
+OpenRouter none),
+14 straggler cuts (7 at the 120 s reader window,
+7 at the 180 s writer window),
+6 schema mismatches,
+8 transport retries,
+3 recovery rounds,
+every meter wet throughout,
+and the consolidation completed unstarved,
+which no run had done since 2026-09-02.
+Weekly Synthetic went from 31.37 to 27.48 percent and Hyper from 2686 to 2622 credits,
+so one settled entry costs about 3.9 points of the week and 64 credits at zero USD.
+`verify-published`:
+matched 1,
+wordings 17,
+silent 0,
+`chars=6020=expected`.
+`DESTINATIONS source=0 page=0 dropped=0`,
+since the source links nowhere.
+Three pictures gathered,
+all three textless by the deterministic reader,
+no model asked.
+
+- **What the page got right,
+  read beside the source and the archive.**
+  The front matter `desc` is the source's sentence again,
+    where the archive had replaced it with the page's closing line;
+    the alias carries the source's 涟 beside the archive's romanizations;
+    the Japanese lyric line reads as the source writes it where the archive had altered a syllable;
+    高二 is "second year of high school" where the archive said "until high school";
+    both `PhotoScroll` lines are intact,
+    the two-line single-quoted array and the double-quoted one inside a blockquote;
+    every one of the fourteen source comments is an English comment in its place,
+    including the lyrics attribution the archive dropped;
+    no bare pronoun,
+    no corner bracket,
+    the site's name absent from this source.
+- **The defect.**
+  The page carries `## Dysphoria` twice:
+    for 烦躁,
+    whose source comment says the English word for this title is dysphoria,
+    and for 桎梏,
+    which the archive renders "Shackles".
+    Ledger contest 000031 over the 桎梏 slice:
+    six candidates,
+    three headed Shackles and three Dysphoria,
+    the judges chose Dysphoria,
+    and seven of eight ballots give the same reason,
+    that "the declared editor comment fixes the heading as Dysphoria";
+    the one dissent read 桎梏 literally.
+    Every one of the twelve prompts carrying that slice carried the note,
+    as an identity-context line with no position:
+    `- ORIGINAL editor comment: 这里标题对应的英文词是 dysphoria`.
+    The note sits under the third heading and speaks of "this title";
+    carried into every slice,
+    "this" pointed at every heading at once.
+- **Smaller readings.**
+  "My mind always drifts" in the Introduction,
+    a section whose own comment says it is objective narration,
+    where the archive has "her mind";
+    the translator-instruction comment rendered into English as a comment,
+    harmless and pointless;
+    the alias listing the name itself.
+    Wording,
+    for the judges,
+    and recorded.
+- **The class,
+  six.**
+  A positional note carried without its position.
+    Fixed in `459b2007f` and `7a01c9048`:
+    each comment line names "under heading X" or "before the first heading";
+    the critic sheet and the house policy say that a note about "this title" or "here" speaks of that heading
+    and no other;
+    and the publisher refuses a would-ship page on which two headings that differ in the source read the same
+    (`CollapsedHeadingError`,
+    `corpus-run/heading-distinctness.ts`),
+    measured at pin `a41fc607` to refuse nothing:
+    no source repeats a heading and no archive collapses two.
+    Guards `01b896ea7` shown to fail on the unfixed build (entry-notes 3 `FAIL` lines;
+    the floor did not exist),
+    0 `FAIL` on the fixed one,
+    the publisher,
+    critic and preparation suites 0 as well;
+    oxlint 0 and 0 after `7a01c9048`,
+    types clean.
+    The relaunch follows the floor's own fail-first proof.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
