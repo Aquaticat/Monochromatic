@@ -1,0 +1,359 @@
+diff --git a/package/module/test/src/issue-481-context-probe.ts b/package/module/test/src/issue-481-context-probe.ts
+new file mode 100644
+index 000000000..d9be7fdb9
+--- /dev/null
++++ b/package/module/test/src/issue-481-context-probe.ts
+@@ -0,0 +1,84 @@
++/** Disposable Node-only method-isolation prototype, not production Sinon coverage. @module */
++import { AsyncLocalStorage } from 'node:async_hooks';
++import type { SinonSandbox } from 'sinon';
++
++/** Unique per-body attempt ownership, including repeated invocations. */
++const storage = new AsyncLocalStorage<object>();
++/** Original descriptor plus active per-attempt private targets. */
++type Slot = {
++  readonly original: PropertyDescriptor;
++  readonly facades: Map<object, Record<PropertyKey, unknown>>;
++};
++/** Registry shares the actual object's property without sharing fake state. */
++const registry = new WeakMap<object, Map<PropertyKey, Slot>>();
++
++/** Runs the unchanged callback under a new attempt identity. @example runWithStubOwner(body) */
++export function runWithStubOwner<Result>(run: () => Result): Result {
++  return storage.run({}, run);
++}
++
++/** Installs method-only interception on an ordinary sandbox. @example adaptSandbox(sandbox) */
++export function adaptSandbox(sandbox: SinonSandbox): void {
++  /** Original Sinon factory still owns fake behavior, matching, and collection cleanup. */
++  const rawStub = sandbox.stub;
++  sandbox.stub = new Proxy(rawStub, {
++    apply(originalStub, receiver, args) {
++      if (args.length === 0) return Reflect.apply(originalStub, receiver, args);
++      /** This experiment deliberately refuses unimplemented API shapes. */
++      const [target, property] = args;
++      /** Active attempt, not merely test name or reusable sandbox. */
++      const owner = storage.getStore();
++      if (args.length !== 2 || owner === undefined || target === null
++        || (typeof target !== 'object' && typeof target !== 'function')
++        || (typeof property !== 'string' && typeof property !== 'symbol')) {
++        throw new Error('Prototype supports only contextual two-argument method stubs');
++      }
++      /** Per-object registry can be allocated lazily. */
++      const properties = registry.get(target) ?? new Map<PropertyKey, Slot>();
++      /** Original shape must not be confused with our temporary accessor. */
++      const previous = properties.get(property);
++      /** The prototype supports configurable own function properties only. */
++      const descriptor = previous?.original ?? Object.getOwnPropertyDescriptor(target, property);
++      if (descriptor?.configurable !== true || typeof descriptor.value !== 'function') {
++        throw new Error('Prototype requires a configurable own method');
++      }
++      /** Cell persists only while at least one owner has a fake. */
++      const slot = previous ?? { original: descriptor, facades: new Map() };
++      /** Reusing the facade retains Sinon's same-owner double-wrap rejection. */
++      const facade = slot.facades.get(owner) ?? Object.defineProperty({}, property, descriptor);
++      /** Ordinary Sinon stub mutates the private facade, never another owner's fake. */
++      const fake = Reflect.apply(originalStub, receiver, [facade, property]);
++      /** Preserve Sinon's restoration of its private target. */
++      const originalRestore = fake.restore;
++      fake.restore = new Proxy(originalRestore, {
++        apply(restore, restoreReceiver, restoreArgs) {
++          /** Keep Sinon cleanup semantics on its own target. */
++          const result = Reflect.apply(restore, restoreReceiver, restoreArgs);
++          if (slot.facades.get(owner) !== facade) return result;
++          slot.facades.delete(owner);
++          if (slot.facades.size === 0) {
++            Object.defineProperty(target, property, slot.original);
++            properties.delete(property);
++          }
++          return result;
++        },
++      });
++      slot.facades.set(owner, facade);
++      if (previous === undefined) {
++        properties.set(property, slot);
++        registry.set(target, properties);
++        Object.defineProperty(target, property, {
++          configurable: true,
++          enumerable: descriptor.enumerable,
++          get() {
++            /** Lookup happens at property read, so extracted references keep ordinary ownership. */
++            const active = storage.getStore();
++            return (active === undefined ? undefined : slot.facades.get(active)?.[property])
++              ?? slot.original.value;
++          },
++        });
++      }
++      return fake;
++    },
++  });
++}
+diff --git a/package/module/test/src/issue-481-lifecycle-probe.unit.test.ts b/package/module/test/src/issue-481-lifecycle-probe.unit.test.ts
+new file mode 100644
+index 000000000..9cb3bea5a
+--- /dev/null
++++ b/package/module/test/src/issue-481-lifecycle-probe.unit.test.ts
+@@ -0,0 +1,110 @@
++/** Disposable lifecycle and actual-console probes for context-owned method stubs. @module */
++import assert from 'node:assert/strict';
++import { setTimeout as delay } from 'node:timers/promises';
++import { EventEmitter } from 'node:events';
++import { describe } from './describe.ts';
++import { it } from './it.ts';
++
++/** Console identity must survive both owners' completion. */
++const originalWarn = Object.getOwnPropertyDescriptor(console, 'warn');
++/** Barriers prove both stubs remain installed across a timer callback. */
++const ready = [Promise.withResolvers<void>(), Promise.withResolvers<void>()];
++await describe({ name: 'actual console ownership', children: ready.map((own, index) => it({
++  name: `console owner ${index}`,
++  fn: async ({ sinon }): Promise<void> => {
++    /** Stub must retain its own call history even when sibling uses the same global. */
++    const fake = sinon.stub(console, 'warn');
++    own.resolve();
++    await Promise.all(ready.map(entry => entry.promise));
++    await delay(1);
++    console.warn(`owner ${index}`);
++    assert.equal(fake.callCount, 1);
++    assert.deepEqual(fake.firstCall.args, [`owner ${index}`]);
++  },
++})) });
++assert.deepEqual(Object.getOwnPropertyDescriptor(console, 'warn'), originalWarn);
++console.log('CONSOLE_CONFIRMED: overlapping actual console.warn stubs retain separate histories across timers');
++
++/** Repetition counter detects a reused fake leaking call history or restoration. */
++let attempt = 0;
++/** Shared object is accessed by the original method through its receiver. */
++const target = { label: 'receiver', value(input: string): string { return `${this.label}:${input}`; } };
++/** Descriptor comparison checks exact cleanup, not just return behavior. */
++const original = Object.getOwnPropertyDescriptor(target, 'value');
++await it({ name: 'repeat and ordinary fake APIs', repeats: 1, fn: async ({ sinon }): Promise<void> => {
++  attempt += 1;
++  /** A new fake starts clean on every attempt. */
++  const fake = sinon.stub(target, 'value').callThrough();
++  assert.equal(fake.callCount, 0);
++  assert.equal(target.value('input'), 'receiver:input');
++  assert.equal(fake.firstCall.thisValue, target);
++  assert.throws(() => sinon.stub(target, 'value'), { message: 'Attempted to wrap value which is already wrapped' });
++  fake.resetHistory();
++  assert.equal(fake.callCount, 0);
++  fake.restore();
++  /** Old fake cleanup must not remove the replacement registered later. */
++  const next = sinon.stub(target, 'value').returns('next');
++  fake.restore();
++  assert.equal(target.value('again'), 'next');
++  assert.equal(next.callCount, 1);
++} });
++assert.equal(attempt, 2);
++assert.deepEqual(Object.getOwnPropertyDescriptor(target, 'value'), original);
++console.log('LIFECYCLE_CONFIRMED: repeats, same-owner rejection, callThrough, this, history reset, restub, stale restore');
++
++/** Tail remains pending until another test owns the same property. */
++const releaseTail = Promise.withResolvers<void>();
++/** Detached work is explicitly awaited after its test times out. */
++const tailDone = Promise.withResolvers<void>();
++/** Observed value must be original, never the next owner's fake. */
++let tailValue: string | undefined;
++try {
++  await it({ name: 'timed-out owner', timeout: 1, fn: async ({ sinon }): Promise<void> => {
++    sinon.stub(target, 'value').returns('expired');
++    await releaseTail.promise;
++    tailValue = target.value('tail');
++    tailDone.resolve();
++  } });
++  assert.fail('Expected timeout');
++} catch (error) {
++  assert.ok(error instanceof Error && error.cause instanceof Error);
++  assert.ok(error.cause.message.includes('timed-out owner'));
++  console.log('EXPECTED_TIMEOUT:', error.cause.message);
++}
++await it({ name: 'subsequent owner', fn: async ({ sinon }): Promise<void> => {
++  /** New owner's fake must never receive work from an expired owner. */
++  const fake = sinon.stub(target, 'value').returns('new owner');
++  releaseTail.resolve();
++  await tailDone.promise;
++  assert.equal(tailValue, 'receiver:tail');
++  assert.equal(fake.callCount, 0);
++  assert.equal(target.value('current'), 'new owner');
++} });
++assert.deepEqual(Object.getOwnPropertyDescriptor(target, 'value'), original);
++console.log('TIMEOUT_CONFIRMED: expired async tail does not enter subsequent owner fake');
++
++/** Event callback ownership is invocation context, not registration context. */
++const emitter = new EventEmitter();
++/** Ready signal ensures registration precedes cross-owner emission. */
++const registered = Promise.withResolvers<void>();
++/** Completion keeps the registering test active through the event. */
++const emitted = Promise.withResolvers<void>();
++/** Records the result of a method lookup inside a cross-owner callback. */
++let eventValue: string | undefined;
++await describe({ name: 'callback ownership boundary', children: [
++  it({ name: 'registering owner', fn: async ({ sinon }): Promise<void> => {
++    sinon.stub(target, 'value').returns('registration');
++    emitter.once('probe', () => { eventValue = target.value('event'); });
++    registered.resolve();
++    await emitted.promise;
++  } }),
++  it({ name: 'emitting owner', fn: async ({ sinon }): Promise<void> => {
++    await registered.promise;
++    sinon.stub(target, 'value').returns('invocation');
++    emitter.emit('probe');
++    emitted.resolve();
++    assert.equal(eventValue, 'invocation');
++  } }),
++] });
++assert.deepEqual(Object.getOwnPropertyDescriptor(target, 'value'), original);
++console.log('BOUNDARY_CONFIRMED: unbound EventEmitter callback uses emitting context, not registering test');
+diff --git a/package/module/test/src/issue-481-probe.unit.test.ts b/package/module/test/src/issue-481-probe.unit.test.ts
+new file mode 100644
+index 000000000..876ce89c8
+--- /dev/null
++++ b/package/module/test/src/issue-481-probe.unit.test.ts
+@@ -0,0 +1,107 @@
++/** Disposable issue #481 experiment; imports the fork's harness source. @module */
++import assert from 'node:assert/strict';
++import { describe } from './describe.ts';
++import { it } from './it.ts';
++
++/** Selects expected baseline failure versus prototype success. */
++const mode = process.env.PROBE_MODE ?? 'baseline';
++/** Synthetic method target avoids modifying process-wide logging during the probe. */
++const target = {
++  label: 'original',
++  warn(input: string): string { return `${this.label}:${input}`; },
++};
++/** Descriptor must be exactly restored at the consumer boundary. */
++const original = Object.getOwnPropertyDescriptor(target, 'warn');
++/** Each barrier forces overlap without relying on elapsed time. */
++const firstReady = Promise.withResolvers<void>();
++/** The second contender releases the first even if wrapping throws. */
++const secondReady = Promise.withResolvers<void>();
++/** A reader must finish while both writers still own their replacements. */
++const readerReady = Promise.withResolvers<void>();
++/** Captured fake verifies ordinary read-time function ownership. */
++let captured: ((input: string) => string) | undefined;
++/** Consumer-visible marker list proves which bodies reached their assertions. */
++const verified: string[] = [];
++/** Collects the original harness cause chain without error formatting dependencies. */
++function messages(error: unknown): string {
++  /** Work stack covers aggregates and causes. */
++  const queue: unknown[] = [error];
++  /** Message fragments are joined once. */
++  const output: string[] = [];
++  while (queue.length > 0) {
++    /** Current throwable, possibly a primitive. */
++    const current = queue.pop();
++    if (current instanceof Error) {
++      output.push(current.message);
++      if (current.cause !== undefined) queue.push(current.cause);
++      if (current instanceof AggregateError) queue.push(...current.errors);
++    }
++  }
++  return output.join('\n');
++}
++/** Captures expected baseline errors without suppressing the diagnostic assertion. */
++let failure: unknown;
++try {
++  await describe({
++    name: 'issue 481 forced overlap',
++    children: [
++      describe({ name: 'sibling A', concurrency: 1, children: [it({
++        name: 'writer A',
++        fn: async ({ sinon }): Promise<void> => {
++          /** Each sandbox must get an independent fake. */
++          const fake = sinon.stub(target, 'warn').returns('A');
++          captured = target.warn;
++          firstReady.resolve();
++          await secondReady.promise;
++          await readerReady.promise;
++          assert.equal(target.warn('own A'), 'A');
++          assert.equal(target.warn, fake);
++          assert.equal(fake.callCount, 2);
++          assert.equal(fake.getCall(0).args[0], 'captured in B');
++          sinon.restore();
++          assert.equal(target.warn('restored A'), 'original:restored A');
++          verified.push('writer A and independent restore');
++        },
++      })] }),
++      describe({ name: 'sibling B', concurrency: 1, children: [it({
++        name: 'writer B',
++        fn: async ({ sinon }): Promise<void> => {
++          await firstReady.promise;
++          /** Always releases A, including the baseline collision path. */
++          using release = { [Symbol.dispose](): void { secondReady.resolve(); } };
++          /** Independent configuration must not replace A's behavior. */
++          const fake = sinon.stub(target, 'warn').returns('B');
++          assert.equal(target.warn('own B'), 'B');
++          assert.equal(target.warn, fake);
++          assert.equal(captured?.('captured in B'), 'A');
++          assert.equal(fake.callCount, 1);
++          secondReady.resolve();
++          await readerReady.promise;
++          fake.restore();
++          assert.equal(target.warn('restored B'), 'original:restored B');
++          verified.push('writer B, captured reference, and stub restore');
++        },
++      })] }),
++      it({ name: 'unstubbed reader', fn: async (): Promise<void> => {
++        await firstReady.promise;
++        await secondReady.promise;
++        /** Releases both writers even when baseline reader isolation fails. */
++        using release = { [Symbol.dispose](): void { readerReady.resolve(); } };
++        assert.equal(target.warn('reader'), 'original:reader');
++        verified.push('unstubbed reader');
++      } }),
++    ],
++  });
++} catch (error) {
++  failure = error;
++  console.log('observed failure:', messages(error));
++}
++assert.deepEqual(Object.getOwnPropertyDescriptor(target, 'warn'), original);
++if (mode === 'baseline') {
++  assert.ok(messages(failure).includes('Attempted to wrap warn which is already wrapped'));
++  console.log('BASELINE_CONFIRMED: collision with sequential siblings; exact descriptor restored');
++} else {
++  assert.equal(failure, undefined);
++  assert.equal(verified.length, 3);
++  console.log('CONTEXT_CONFIRMED:', verified.join('; '), '; exact descriptor restored');
++}
+diff --git a/package/module/test/src/it.ts b/package/module/test/src/it.ts
+index 1e2077503..90784e430 100644
+--- a/package/module/test/src/it.ts
++++ b/package/module/test/src/it.ts
+@@ -21,6 +21,7 @@ import {
+ } from './sinon.ts';
+ import { createVerdictLoggers, } from './verdict.ts';
+ import { runObservedExecution, } from './execution.ts';
++import { runWithStubOwner } from './issue-481-context-probe.ts';
+ 
+ /**
+  Context passed to each test function.
+@@ -109,7 +110,7 @@ async function runFnOnce({
+   /**
+    Hoists the test-fn invocation so it can be optionally wrapped with `withTimeout`.
+    */
+-  const promise = fn(ctx,);
++  const promise = runWithStubOwner(() => fn(ctx,));
+ 
+   await (timeout !== undefined
+     ? withTimeout({
+diff --git a/package/module/test/src/sinon.ts b/package/module/test/src/sinon.ts
+index 4cc2fd0b6..5de1fdf41 100644
+--- a/package/module/test/src/sinon.ts
++++ b/package/module/test/src/sinon.ts
+@@ -3,6 +3,7 @@ import {
+   type SinonSandbox,
+   type SinonSandboxConfig,
+ } from 'sinon';
++import { adaptSandbox } from './issue-481-context-probe.ts';
+ 
+ /**
+  Sinon sandbox extended with `Symbol.dispose` and `Symbol.asyncDispose`
+@@ -47,5 +48,6 @@ export function createSinon(config?: SinonSandboxConfig,): DisposableSandbox {
+     return Promise.resolve();
+   };
+ 
++  adaptSandbox(sandbox);
+   return sandbox;
+ }
