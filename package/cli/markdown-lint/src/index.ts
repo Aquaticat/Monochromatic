@@ -3,6 +3,15 @@ export {
   fixSource,
 } from './fix.ts';
 export { runRules, } from './lint.ts';
+export {
+  run,
+  type RunParams,
+  type RunResult,
+  runStdin,
+  type RunStdinParams,
+  type RunStdinResult,
+  StdinPathError,
+} from './run.ts';
 export { parse, } from './parse.ts';
 export {
   report,

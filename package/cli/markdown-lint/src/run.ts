@@ -2,25 +2,22 @@ import {
   readFile,
   stat,
 } from 'node:fs/promises';
-import { relative, } from 'node:path';
-
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-
-import { fixSource, } from './fix.ts';
 import {
-  discoverLfsImageRepo,
-  type LfsImageContext,
-  type LfsImageRepo,
-  prepareLfsImageContext,
-} from './lfs-image-context.ts';
-import { runRules, } from './lint.ts';
+  relative,
+  resolve,
+} from 'node:path';
+
+import { discoverLfsImageRepo, } from './lfs-image-context.ts';
 import {
-  report,
-  type FileReport,
-  type ReporterName,
+  processingErrorDiagnostic,
+  processSource,
+  renderReports,
+  selectRules,
+} from './process-source.ts';
+import type {
+  FileReport,
+  ReporterName,
 } from './reporters.ts';
-import { rules, } from './rule/index.ts';
-import type { Diagnostic, } from './types.ts';
 import {
   discoverFiles,
   type DiscoveredFile,
@@ -46,15 +43,18 @@ const MAX_FILE_KIB = 5_120;
 const MAX_FILE_BYTES = MAX_FILE_KIB * BYTES_PER_KIB;
 
 /**
- Synthetic rule ID for a file that could not be processed. Reporting it as a
- diagnostic lets one bad file fail the run without aborting sibling writes.
+ Thrown when a standard-input path is not a lintable Markdown or MDX path;
+ the CLI reports it as a usage error.
  */
-const PROCESSING_ERROR_RULE_ID = 'markdown-lint-error';
-
-/**
- Synthetic rule ID for safety checks that block a risky autofix write.
- */
-const SAFETY_RULE_ID = 'markdown-lint-safety';
+export class StdinPathError extends Error {
+  /**
+   @param message - reason the path was rejected
+   */
+  constructor(message: string,) {
+    super(message,);
+    this.name = 'StdinPathError';
+  }
+}
 
 /**
  One path argument classified into the directory roots and explicit files it
@@ -101,20 +101,6 @@ type ReadSource = {
    Original file mode, including permission bits.
    */
   readonly mode: number;
-};
-
-/**
- Parameters for {@link fileStartDiagnostic}.
- */
-type FileStartDiagnosticParams = {
-  /**
-   Synthetic rule identifier.
-   */
-  readonly ruleId: string;
-  /**
-   Diagnostic message.
-   */
-  readonly message: string;
 };
 
 /**
@@ -214,88 +200,11 @@ async function readBoundedSource(path: string,): Promise<readonly ReadSource[]> 
 }
 
 /**
- Order diagnostics by source position so the report reads top-to-bottom even
- though rules run in their own order.
- 
- @param diagnostics - diagnostics for one file
- 
- @returns diagnostics sorted by line then column
+ Options shared by every entry point.
  */
-function byPosition(diagnostics: readonly Diagnostic[],): readonly Diagnostic[] {
-  return diagnostics.toSorted(function compare(
-    left: Diagnostic,
-    right: Diagnostic,
-  ): number {
-    return (left.line - right.line) || (left.column - right.column);
-  },);
-}
-
-/**
- Create a synthetic diagnostic at the start of a file.
- 
- @param ruleId - synthetic rule identifier
- 
- @param message - diagnostic message
- 
- @returns diagnostic anchored at line 1, column 1
- */
-function fileStartDiagnostic({
-  ruleId,
-  message,
-}: FileStartDiagnosticParams,): Diagnostic {
-  return {
-    ruleId,
-    message,
-    line: 1,
-    column: 1,
-  };
-}
-
-/**
- Diagnostic for a file-processing failure.
- 
- @param error - value caught from file processing
- 
- @returns synthetic diagnostic for the report
- 
- @mutates error - `caughtValueText` may invoke string-conversion hooks.
- */
-function processingErrorDiagnostic(error: unknown,): Diagnostic {
+type CommonRunParams = {
   /**
-   Error text preserving empty-message class names from existing CLI output.
-   */
-  const errorText = Error.isError(error,) && (error.message === '')
-    ? error.constructor
-      .name
-    : caughtValueText(error,);
-  return fileStartDiagnostic({
-    ruleId: PROCESSING_ERROR_RULE_ID,
-    message: `Could not process file: ${errorText}`,
-  },);
-}
-
-/**
- Diagnostic for a fixpoint result that would erase a non-empty file.
- 
- @returns synthetic diagnostic for the report
- */
-function emptyRewriteDiagnostic(): Diagnostic {
-  return fileStartDiagnostic({
-    ruleId: SAFETY_RULE_ID,
-    message: 'Autofix would replace non-empty file with empty output; leaving file unchanged.',
-  },);
-}
-
-/**
- Parameters for {@link run}.
- */
-export type RunParams = {
-  /**
-   Path arguments (files or directories); empty walks the current directory.
-   */
-  readonly paths: readonly string[];
-  /**
-   Whether to apply fixes in place.
+   Whether to apply fixes.
    */
   readonly fix: boolean;
   /**
@@ -303,71 +212,47 @@ export type RunParams = {
    */
   readonly reporter: ReporterName;
   /**
-   Directory the display paths are made relative to.
+   Directory the display paths are made relative to and the `.lfsconfig`
+   search starts from.
    */
   readonly cwd: string;
   /**
    gitignore-syntax patterns, relative to the repository root, for files the
    `lfs-image-url` rule must leave alone.
    */
-  readonly lfsImageExclude: readonly string[];
+  readonly lfsImageExclude?: readonly string[];
+  /**
+   Rule ids to run; empty runs every rule. Unknown ids are the caller's
+   usage error and are validated before this point.
+   */
+  readonly ruleIds?: readonly string[];
 };
 
 /**
- Parameters for {@link lfsContextsFor}.
+ Parameters for {@link run}.
  */
-type LfsContextsForParams = {
+export type RunParams = CommonRunParams & {
   /**
-   Zero or one repository descriptions from discovery.
+   Path arguments (files or directories); empty walks the current directory.
    */
-  readonly repos: readonly LfsImageRepo[];
+  readonly paths: readonly string[];
+};
+
+/**
+ Parameters for {@link runStdin}.
+ */
+export type RunStdinParams = CommonRunParams & {
   /**
-   Absolute path of the file under lint.
+   Repository-relative (or `cwd`-relative) path the source is treated as
+   living at, so relative image targets and the MDX flag resolve as they
+   would for the real file.
    */
-  readonly filePath: string;
+  readonly stdinPath: string;
   /**
-   Source of the file under lint.
+   Source read from standard input.
    */
   readonly source: string;
-  /**
-   Whether the source is MDX.
-   */
-  readonly mdx: boolean;
 };
-
-/**
- Per-file LFS context as a one-element list, or empty when the run found no
- repository or the file is excluded.
- 
- @param repos - zero or one repository descriptions from discovery
- 
- @param filePath - absolute path of the file under lint
- 
- @param source - source of the file under lint
- 
- @param mdx - whether the source is MDX
- 
- @returns zero or one contexts
- */
-async function lfsContextsFor({
-  repos,
-  filePath,
-  source,
-  mdx,
-}: LfsContextsForParams,): Promise<readonly LfsImageContext[]> {
-  return await Promise.all(repos
-    .filter(function includesFile(repo: LfsImageRepo,): boolean {
-      return !repo.isExcluded(filePath,);
-    },)
-    .map(async function contextOf(repo: LfsImageRepo,): Promise<LfsImageContext> {
-      return await prepareLfsImageContext({
-        repo,
-        filePath,
-        source,
-        mdx,
-      },);
-    },),);
-}
 
 /**
  Result of {@link run}.
@@ -388,23 +273,44 @@ export type RunResult = {
 };
 
 /**
+ Result of {@link runStdin}.
+ */
+export type RunStdinResult = {
+  /**
+   Rendered report for the chosen reporter.
+   */
+  readonly output: string;
+  /**
+   Whether any unfixed violation remains (drives the exit code).
+   */
+  readonly hadViolations: boolean;
+  /**
+   Source after fixes; identical to the input without `fix` or when
+   nothing changed.
+   */
+  readonly fixedSource: string;
+};
+
+/**
  Lint (or fix) every resolved file and render a report. With `fix`, each file
  is run through the fixpoint loop and rewritten only when its content changed;
  the reported diagnostics are then whatever remains unfixed. Display paths are
  relativized to `cwd`.
- 
+
  @param paths - path arguments (files or directories)
- 
+
  @param fix - whether to apply fixes in place
- 
+
  @param reporter - reporter for the rendered output
- 
+
  @param cwd - directory the display paths are made relative to
- 
+
  @param lfsImageExclude - gitignore-syntax patterns for files the `lfs-image-url` rule must leave alone
- 
+
+ @param ruleIds - rule ids to run; empty runs every rule
+
  @returns rendered report, whether violations remain, and how many files were fixed
- 
+
  @example
  ```ts
  await run({ paths: ['docs'], fix: false, reporter: 'pretty', cwd: process.cwd() });
@@ -415,7 +321,8 @@ export async function run({
   fix,
   reporter,
   cwd,
-  lfsImageExclude,
+  lfsImageExclude = [],
+  ruleIds = [],
 }: RunParams,): Promise<RunResult> {
   /**
    Files to lint or fix.
@@ -428,6 +335,10 @@ export async function run({
     cwd,
     exclude: lfsImageExclude,
   },);
+  /**
+   Rules to run.
+   */
+  const selectedRules = selectRules(ruleIds,);
   /**
    One processed entry per non-skipped file, built concurrently.
    */
@@ -456,63 +367,31 @@ export async function run({
           mode,
         } = readSource;
         /**
-         Per-file LFS context, when the rule applies to this file.
+         Report and fixed source for this file.
          */
-        const [lfs,] = await lfsContextsFor({
-          repos: lfsRepos,
+        const processed = await processSource({
+          source,
           filePath: file.path,
-          source,
+          displayPath,
           mdx: file.mdx,
+          fix,
+          selectedRules,
+          lfsRepos,
         },);
         /**
-         Context spread for the rule runs below.
+         Whether the fixpoint loop changed the file.
          */
-        const lfsSpread = lfs === undefined ? {} : { lfs, };
-        if (!fix) {
-          return [{
-            report: {
-              path: displayPath,
-              diagnostics: byPosition(runRules({
-                rules,
-                source,
-                mdx: file.mdx,
-                ...lfsSpread,
-              },),),
-            },
-            fixed: false,
-          },];
-        }
-        /**
-         Source and remaining diagnostics after the fixpoint loop.
-         */
-        const fixed = fixSource({
-          rules,
-          source,
-          mdx: file.mdx,
-          ...lfsSpread,
-        },);
-        if ((source !== '') && (fixed.source === '')) {
-          return [{
-            report: {
-              path: displayPath,
-              diagnostics: [emptyRewriteDiagnostic(),],
-            },
-            fixed: false,
-          },];
-        }
-        if (fixed.source !== source) {
+        const changed = processed.fixedSource !== source;
+        if (changed) {
           await writeFileAtomically({
             path: file.path,
-            source: fixed.source,
+            source: processed.fixedSource,
             mode,
           },);
         }
         return [{
-          report: {
-            path: displayPath,
-            diagnostics: byPosition(fixed.diagnostics,),
-          },
-          fixed: fixed.source !== source,
+          report: processed.report,
+          fixed: changed,
         },];
       } catch (error) {
         return [{
@@ -526,37 +405,93 @@ export async function run({
     },
   ),)).flat();
   /**
-   Per-file reports that actually carry diagnostics, sorted by path.
+   Rendered output over every file report.
    */
-  const reports = present
-    .map(function toReport(entry: ProcessedEntry,): FileReport {
+  const rendered = renderReports({
+    reporter,
+    fileReports: present.map(function toReport(entry: ProcessedEntry,): FileReport {
       return entry.report;
-    },)
-    .filter(function hasDiagnostics(fileReport: FileReport,): boolean {
-      return fileReport.diagnostics
-        .length
-        > 0;
-    },)
-    .toSorted(function byPath(
-      left: FileReport,
-      right: FileReport,
-    ): number {
-      return left.path < right.path
-        ? -1
-        : left.path > right.path
-        ? 1
-        : 0;
-    },);
-  return {
-    output: report({
-      reporter,
-      files: reports,
     },),
-    hadViolations: reports.length > 0,
+  },);
+  return {
+    ...rendered,
     fixedFiles: present
       .filter(function wasFixed(entry: ProcessedEntry,): boolean {
         return entry.fixed;
       },)
       .length,
+  };
+}
+
+/**
+ Lint (or fix) one source read from standard input as if it lived at
+ `stdinPath`, and return the fixed source instead of writing any file. Used
+ by the cli-git policy, which owns the bytes it commits.
+
+ @param stdinPath - path the source is treated as living at, relative to `cwd`
+
+ @param source - source read from standard input
+
+ @param fix - whether to run the fixpoint loop
+
+ @param reporter - reporter for the rendered output
+
+ @param cwd - directory `stdinPath` resolves against
+
+ @param lfsImageExclude - gitignore-syntax patterns for files the `lfs-image-url` rule must leave alone
+
+ @param ruleIds - rule ids to run; empty runs every rule
+
+ @returns rendered report, whether violations remain, and the fixed source
+
+ @example
+ ```ts
+ await runStdin({ stdinPath: 'README.md', source, fix: true, reporter: 'json', cwd: process.cwd() });
+ ```
+ */
+export async function runStdin({
+  stdinPath,
+  source,
+  fix,
+  reporter,
+  cwd,
+  lfsImageExclude = [],
+  ruleIds = [],
+}: RunStdinParams,): Promise<RunStdinResult> {
+  /**
+   Lintable file the source is treated as, resolved against `cwd`.
+   */
+  const [file,] = explicitFile(resolve(
+    cwd,
+    stdinPath,
+  ),);
+  if (file === undefined) {
+    throw new StdinPathError(`Standard input path must end in .md or .mdx: ${stdinPath}`,);
+  }
+  /**
+   Repository facts for the `lfs-image-url` rule; empty makes the rule inert.
+   */
+  const lfsRepos = await discoverLfsImageRepo({
+    cwd,
+    exclude: lfsImageExclude,
+  },);
+  /**
+   Report and fixed source.
+   */
+  const processed = await processSource({
+    source,
+    filePath: file.path,
+    displayPath: stdinPath,
+    mdx: file.mdx,
+    fix,
+    selectedRules: selectRules(ruleIds,),
+    lfsRepos,
+  },);
+  return {
+    ...renderReports({
+      reporter,
+      fileReports: [processed.report,],
+    },),
+    fixedSource: processed.fixedSource,
   };
 }

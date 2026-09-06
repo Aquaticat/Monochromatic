@@ -1,6 +1,13 @@
 #!/usr/bin/env node
+import { text, } from 'node:stream/consumers';
+
 import type { ReporterName, } from './reporters.ts';
-import { run, } from './run.ts';
+import { rulesById, } from './rule/index.ts';
+import {
+  run,
+  runStdin,
+  StdinPathError,
+} from './run.ts';
 
 
 
@@ -14,6 +21,17 @@ const FORMAT_PREFIX = '--format=';
  gitignore-syntax pattern the `lfs-image-url` rule must skip.
  */
 const LFS_IMAGE_EXCLUDE_PREFIX = '--lfs-image-exclude=';
+
+/**
+ Prefix on `--stdin-path=` arguments, sliced off to read the path standard
+ input is linted as.
+ */
+const STDIN_PATH_PREFIX = '--stdin-path=';
+
+/**
+ Prefix on `--rule=` arguments, sliced off to read one rule id to run.
+ */
+const RULE_PREFIX = '--rule=';
 
 /**
  Help text printed for `--help`.
@@ -34,6 +52,12 @@ Options:
                    Skip the lfs-image-url rule for files matching this
                    gitignore-syntax pattern (relative to the repository
                    root); repeatable.
+  --rule=<id>      Run only this rule; repeatable. Default: every rule.
+  --stdin-path=<path>
+                   Lint standard input as if it were the file at <path>
+                   (relative to the working directory) instead of walking
+                   paths. With --fix, the fixed source is written to stdout
+                   and the report to stderr.
   --help, -h       Show this help.
 
 Exit codes:
@@ -51,13 +75,21 @@ class CliUsageError extends Error {
    
    @param message - description of the misuse
    
+   @param options - optional cause, carried from the runner's own error
+   
    @example
    ```ts
    throw new CliUsageError('Unknown option: --bogus');
    ```
    */
-  constructor(message: string,) {
-    super(message,);
+  constructor(
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(
+      message,
+      options,
+    );
     this.name = 'CliUsageError';
   }
 }
@@ -138,6 +170,14 @@ type ParsedArgs = {
    Exclude patterns for the `lfs-image-url` rule.
    */
   readonly lfsImageExclude: readonly string[];
+  /**
+   Rule ids to run; empty runs every rule.
+   */
+  readonly ruleIds: readonly string[];
+  /**
+   Standard-input path, at most one.
+   */
+  readonly stdinPaths: readonly string[];
 };
 
 /**
@@ -168,7 +208,9 @@ function parseArgs(argv: readonly string[],): ParsedArgs {
    */
   const unknown = flags.find(function isUnknownFlag(flag: string,): boolean {
     return !(KNOWN_FLAGS.has(flag,) || flag.startsWith(FORMAT_PREFIX,)
-      || flag.startsWith(LFS_IMAGE_EXCLUDE_PREFIX,));
+      || flag.startsWith(LFS_IMAGE_EXCLUDE_PREFIX,)
+      || flag.startsWith(STDIN_PATH_PREFIX,)
+      || flag.startsWith(RULE_PREFIX,));
   },);
   if (unknown !== undefined) {
     throw new CliUsageError(`Unknown option: ${unknown}. Run markdown-lint --help.`,);
@@ -186,13 +228,111 @@ function parseArgs(argv: readonly string[],): ParsedArgs {
   if (lfsImageExclude.includes('',)) {
     throw new CliUsageError('Empty --lfs-image-exclude= pattern. Run markdown-lint --help.',);
   }
+  /**
+   Rule ids to run, in flag order.
+   */
+  const ruleIds = flags
+    .filter(function isRuleFlag(flag: string,): boolean {
+      return flag.startsWith(RULE_PREFIX,);
+    },)
+    .map(function ruleOf(flag: string,): string {
+      return flag.slice(RULE_PREFIX.length,);
+    },);
+  /**
+   First rule id the registry does not know, if any.
+   */
+  const unknownRule = ruleIds.find(function isUnknownRule(id: string,): boolean {
+    return !rulesById.has(id,);
+  },);
+  if (unknownRule !== undefined) {
+    throw new CliUsageError(`Unknown --rule value: ${unknownRule}. Known rules: ${[...rulesById.keys(),].join(', ',)}.`,);
+  }
+  /**
+   Standard-input paths, at most one.
+   */
+  const stdinPaths = flags
+    .filter(function isStdinFlag(flag: string,): boolean {
+      return flag.startsWith(STDIN_PATH_PREFIX,);
+    },)
+    .map(function pathOf(flag: string,): string {
+      return flag.slice(STDIN_PATH_PREFIX.length,);
+    },);
+  if (stdinPaths.length > 1) {
+    throw new CliUsageError('At most one --stdin-path= is accepted. Run markdown-lint --help.',);
+  }
+  if (stdinPaths.includes('',)) {
+    throw new CliUsageError('Empty --stdin-path= value. Run markdown-lint --help.',);
+  }
+  if ((stdinPaths.length === 1) && (paths.length > 0)) {
+    throw new CliUsageError('--stdin-path= cannot be combined with path arguments. Run markdown-lint --help.',);
+  }
   return {
     paths,
     fix: flags.includes('--fix',),
     reporter: deriveReporter(flags,),
     help: flags.includes('--help',) || flags.includes('-h',),
     lfsImageExclude,
+    ruleIds,
+    stdinPaths,
   };
+}
+
+/**
+ Lint or fix standard input as one file, printing the fixed source to stdout
+ in fix mode (with the report on stderr) and the report to stdout otherwise.
+
+ @param args - parsed options, with exactly one standard-input path
+
+ @param stdinPath - path the source is linted as
+
+ @throws {@link CliUsageError} when the path is not Markdown or MDX
+ */
+async function mainStdin({
+  args,
+  stdinPath,
+}: {
+  readonly args: ParsedArgs;
+  readonly stdinPath: string;
+},): Promise<void> {
+  try {
+    /**
+     Lint or fix result for the piped source.
+     */
+    const result = await runStdin({
+      stdinPath,
+      source: await text(process.stdin,),
+      fix: args.fix,
+      reporter: args.reporter,
+      cwd: process.cwd(),
+      lfsImageExclude: args.lfsImageExclude,
+      ruleIds: args.ruleIds,
+    },);
+    if (args.fix) {
+      // The fixed source is the machine-readable output in fix mode: stdout.
+      process.stdout
+        .write(result.fixedSource,);
+      if (result.output !== '') {
+        // The report moves to stderr so stdout stays the fixed source.
+        console.error(result.output,);
+      }
+    }
+    else if (result.output !== '') {
+      // Without fix the report is the output: stdout, kept clean for pipes.
+      console.log(result.output,);
+    }
+    if (result.hadViolations) {
+      process.exitCode = 1;
+    }
+  }
+  catch (error) {
+    if (error instanceof StdinPathError) {
+      throw new CliUsageError(
+        error.message,
+        { cause: error, },
+      );
+    }
+    throw error;
+  }
 }
 
 /**
@@ -212,6 +352,17 @@ async function main(): Promise<void> {
     return;
   }
   /**
+   Standard-input path, when the caller pipes one source.
+   */
+  const [stdinPath,] = args.stdinPaths;
+  if (stdinPath !== undefined) {
+    await mainStdin({
+      args,
+      stdinPath,
+    },);
+    return;
+  }
+  /**
    Lint or fix result.
    */
   const result = await run({
@@ -220,6 +371,7 @@ async function main(): Promise<void> {
     reporter: args.reporter,
     cwd: process.cwd(),
     lfsImageExclude: args.lfsImageExclude,
+    ruleIds: args.ruleIds,
   },);
   if (result.output !== '') {
     // The report is the machine-readable output: stdout, kept clean for pipes.

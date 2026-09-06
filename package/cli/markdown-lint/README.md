@@ -45,6 +45,13 @@ markdown-lint --format=json
 
 # Skip the lfs-image-url rule for one subtree (repeatable, gitignore syntax)
 markdown-lint --lfs-image-exclude=package/ssg/ doc/
+
+# Run one rule only (repeatable)
+markdown-lint --rule=lfs-image-url doc/
+
+# Fix a source piped on stdin as if it were the named file; the fixed source
+# goes to stdout and the report to stderr (used by the cli-git commit policy)
+markdown-lint --fix --rule=lfs-image-url --stdin-path=package/x/README.md < README.md
 ```
 
 During development,
