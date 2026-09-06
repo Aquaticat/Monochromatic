@@ -53,6 +53,24 @@ and it has since been seen to hurt.
   Package tsconfigs declaring `references`: 0.
   Packages extending the non-dom base config: 8.
 
+- Whole-repo warm `mise run lint:oxlint` (2026-09-06,
+   single run,
+   one oxlint invocation):
+  114.4 s in oxlint over 3075 files,
+  115.6 s wall,
+  19477 warnings and 1340 errors.
+  Run-to-run band recorded earlier for this sweep:
+   about 4.6 s.
+- Warm single-package `lint:oxlint`:
+  `mcp/mvm` 1.1 s (11 files,
+   176 sibling sources in its program);
+  `pi-plugin/auto-mode` 4.8 s (66 files,
+   148 sibling sources).
+  Both under the 10 s package target;
+  the cost that exceeds target is the sweep.
+- Persistent rule cache `node_modules/.cache/prefer-readonly-parameter-type`:
+   72 MB.
+
 ## Evidence already in the repo
 
 - `doc/planning/oxlint-warm-sweep-attribution.md` (issue #374,
@@ -116,6 +134,9 @@ and it has since been seen to hurt.
 - Acceptance target:
   both;
   warm whole-repo `lint:oxlint` under 60 s (issue #374) and a single-package `lint:oxlint` under 10 s warm.
+
+- Issue disposition (round 3):
+  edit #486 in place once the decision doc lands.
 
 ## Open questions
 
