@@ -301,19 +301,56 @@ The other tuning knobs proposed in `bulletproofing.plan.md` (verify timeout,
 
 The default `logger` is usable at import time with no setup call,
  and `createLogger` exists only for callers who want an explicit sink list.
-Two observations from the migration off logtape,
- recorded by the maintainer so the reasoning is not lost:
+One reason for migrating off logtape,
+ recorded by the maintainer so it is not lost:
+logtape forces every test file to declare the same `createLogger` or `configure` block before logging works,
+ and that boilerplate repeated across the whole test tree was part of why it was dropped.
+A future change that adds a mandatory configure or setup call reopens that problem.
 
-- logtape forces every test file to declare the same `createLogger` or `configure` block before logging works.
-   That boilerplate,
-   repeated across the whole test tree,
-   was one reason for leaving.
-- Users have complained that a required asynchronous configure step effectively introduces dynamic imports
-   into an otherwise clean application:
-   modules that log cannot be imported until the configure call has settled,
-   so the import graph bends around the logger.
+## Open problem: import-time sink discovery pushes consumers toward dynamic imports (2026-09-06)
 
-Both are reasons this logger verifies its sinks eagerly at import,
- buffers records until a sink verifies,
- and never asks a consumer or a test file to run setup first.
-A future change that adds a mandatory configure or setup call reopens both problems.
+Users of this logger have complained that using it effectively introduces dynamic imports into an otherwise clean application.
+The mechanism is the flip side of zero-config:
+ importing the module runs sink auto-discovery (five verifies,
+ a filesystem probe,
+ storage probes) as a side effect,
+ so any module that must not pay for that in some execution context defers the import instead of importing statically.
+The repository has one such consumer of its own:
+ `package/ssg/aquati.cat/src/build/compress.ts` imports the logger with `await import(...)` on the main thread only,
+ "so worker threads never pay its import-time sink auto-discovery".
+
+Not resolved here.
+Candidate directions,
+ each to be measured before adoption:
+
+- Start sink discovery lazily on the first log or flush call instead of at import,
+   keeping zero-config for callers that log and making the import itself free for callers that never do.
+- Keep eager discovery but make it cheap enough that deferring it buys nothing;
+   the current cost is about 2.4 ms locally for the five shipped verifies,
+   so the complaint may be about the side effects (files,
+   storage probes) rather than the time.
+
+## Sinks verify concurrently under a time limit (2026-09-06)
+
+`initialize()` used to await each sink's `verify` in list order.
+One verify that never answered (a filesystem probe on a hung mount,
+ an IndexedDB open blocked by another tab's version change) starved every sink after it,
+ kept the startup buffer growing for the life of the process,
+ and never let the logger mark itself initialized.
+
+Every sink now verifies concurrently,
+ each under `withTimeout`;
+ a verify that runs past the limit counts as unavailable with one breadcrumb,
+ and an answer that arrives later is never observed.
+The limit is one `createLogger` option,
+ `verifyTimeoutMs`,
+ with the exported default `DEFAULT_VERIFY_TIMEOUT_MS` (5000),
+ the same shape as `flushDeadlineMs` and for the same reason:
+ a consumer whose probe is legitimately slow needs recourse other than losing the sink.
+Measured on 2026-09-06:
+ the five shipped verifies complete together in about 2.4 ms locally.
+
+Concurrency is safe for the exactly-once guarantee because a record's immediate-write set
+(sinks available when it was logged) and its replay set (sinks that become available later)
+are disjoint regardless of which verify settles first;
+ a unit test pins that with two sinks verifying at different speeds.

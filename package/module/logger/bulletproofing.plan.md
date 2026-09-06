@@ -61,6 +61,16 @@ Nothing here blocks a publish;
      After a deadline hit the logger clears its view of in-flight writes;
      the sinks keep working in the background.
      Worth a property that a late settlement never surfaces as an unhandled rejection.
+4.   Import-time sink discovery.
+     Consumers defer the import (`await import(...)`) to keep contexts that never log,
+     such as worker threads,
+     from paying for sink auto-discovery;
+     users have complained that this pushes dynamic imports into otherwise static import graphs.
+     Candidate:
+     discover sinks lazily on the first log or flush call.
+     See `DECISIONS.md`,
+     "Open problem:
+      import-time sink discovery".
 
 ## Verification campaign (the toml-edit bar)
 
