@@ -55,7 +55,10 @@ execFileSync('mise', ['run', 'build'], { stdio: 'inherit' })
 const runner = ['exec', 'github:toml-lang/toml-test@latest', '--', 'toml-test']
 // MONOCHROMATIC_WARN=false silences the package's CRLF-normalization warning so the decoder's
 // stderr stays clean on success (the runner treats any stderr as the result).
-const env = { ...process.env, MONOCHROMATIC_WARN: 'false' }
+// MISE_LOG_LEVEL=error does the same for mise itself: on CI `node` is a mise shim, and any
+// mise warning it prints (a deprecated config key, an available update) lands on the
+// adapter's stderr and fails every case. See doc/troubleshooting/toml-edit-fuzz-workflow.md.
+const env = { ...process.env, MISE_LOG_LEVEL: 'error', MONOCHROMATIC_WARN: 'false' }
 execFileSync('mise', [...runner, 'version'], { stdio: 'inherit', env })
 const decoder = `${process.cwd()}/src/conformance/decode.ts`
 const encoder = `${process.cwd()}/src/conformance/encode.ts`

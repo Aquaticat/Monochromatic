@@ -12,7 +12,7 @@
 # Enables monorepo task discovery: tasks in subdirectories are auto-discovered
 # and prefixed with their relative paths, creating a unified task namespace.
 # https://mise.jdx.dev/tasks/monorepo.html
-experimental_monorepo_root = true
+monorepo_root = true
 
 [monorepo]
 # Each package/*/* directory with a mise.toml becomes its own config root,

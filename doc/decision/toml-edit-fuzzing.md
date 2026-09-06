@@ -426,7 +426,15 @@ The repository-wide TSDoc reformat (`3d6c20c9f`,
 the projector counts any line with a non-whitespace character,
  comment lines included,
 and the reformat turned every blank ` *` comment line into whitespace,
-so each file's code-line total fell below its frozen covered count and `toml-edit-fuzz` had failed on its two runs since that commit.
+so each file's code-line total fell below its frozen covered count;
+ the local gate reported every file regressed.
+The two red `toml-edit-fuzz` runs since that commit never reached the gate:
+they failed one step earlier,
+ at conformance,
+ because CI's newer mise printed a deprecation warning on every `node` shim call and toml-test treats any stderr as a failed case
+(`doc/troubleshooting/toml-edit-fuzz-workflow.md`,
+ "Symptom:
+ every valid and encoder case fails with a mise warning on stderr").
 Every file's coverage percentage after the refreeze matches or exceeds what the pre-reformat run reported at 100 percent,
 so the drop was the whitespace artifact the "Coverage gate (phase 8)" section anticipates,
  not lost reach.
