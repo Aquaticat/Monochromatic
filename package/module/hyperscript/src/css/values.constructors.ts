@@ -522,15 +522,28 @@ export function cssClamp(
 }
 
 /**
- Creates a CSS `random()` expression that resolves to a fresh random value per evaluation.
+ Creates a CSS `random()` expression that resolves to a fresh random value per document load.
  
  Useful for shuffle effects (e.g. `order: cssRandom({ min: 1, max: 1000, step: 1 })`)
  and other per-render randomisation. Browsers that do not support CSS `random()` drop
- the entire declaration; pair with a JS fallback or a sensible default when graceful
- degradation matters.
+ the entire declaration; pair with a JS fallback, or register the target custom property
+ via `@property` so its `initial-value` supplies the degraded result.
+ 
+ Argument order follows the grammar in CSS Values 5 section 9.1,
+ `random(<random-key>?, <calc-sum>, <calc-sum>, <calc-sum>?)`. Step is a bare positional
+ fourth argument; the `by` keyword from the 2024 W3C snapshot was removed and is rejected
+ by every engine.
+ 
+ Omitting `key` selects `auto`, which the specification defines as
+ `element-scoped property-index-scoped`, so every matched element draws its own value.
+ Pass a dashed-ident to share one document-global value across all matched elements, which
+ also decorrelates this call from unrelated `random()` calls that would collide on an
+ implicit key.
  
  Pass `step` to align the value to a grid (use `1` for integer outputs, suitable for
- properties like `order` or `z-index`). Omit `step` for an unrounded value.
+ properties like `order` or `z-index`). Omit `step` for an unaligned value.
+ 
+ @param key - optional `<random-key>`; omit for per-element values, dashed-ident for one shared value
  
  @param min - inclusive lower bound
  
@@ -542,24 +555,35 @@ export function cssClamp(
  
  @example
  ```ts
- cssRandom({ min: 1, max: 1000, step: 1 })  // 'random(1, 1000, by 1)'
- cssRandom({ min: 0, max: 1 })               // 'random(0, 1)'
+ cssRandom({ min: 1, max: 1000, step: 1 })             // 'random(1, 1000, 1)'
+ cssRandom({ min: 0, max: 1 })                         // 'random(0, 1)'
+ cssRandom({ key: '--seed', min: 0, max: 8, step: 1 }) // 'random(--seed, 0, 8, 1)'
  ```
  */
 export function cssRandom(
   {
+    key,
     min,
     max,
     step,
   }: {
+    readonly key?: string;
     readonly min: number;
     readonly max: number;
     readonly step?: number;
   },
 ): CssValue {
-  return step === undefined
-    ? `random(${min}, ${max})` as CssValue
-    : `random(${min}, ${max}, by ${step})` as CssValue;
+  /**
+   Positional arguments in grammar order, omitting the optional key and step when absent.
+   */
+  const args = [
+    ...(key === undefined ? [] : [key,]),
+    String(min,),
+    String(max,),
+    ...(step === undefined ? [] : [String(step,),]),
+  ];
+
+  return `random(${args.join(', ',)})` as CssValue;
 }
 
 //endregion

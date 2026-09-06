@@ -453,12 +453,30 @@ await describe({
       },
     },),
     it({
-      name: 'cssRandom appends `by <step>` when step is provided',
+      name: 'cssRandom appends step as a bare positional fourth argument',
       fn: async () => {
         expect(
           cssRandom({ min: 1, max: 1_000, step: 1, },),
         )
-          .toBe('random(1, 1000, by 1)',);
+          .toBe('random(1, 1000, 1)',);
+      },
+    },),
+    it({
+      name: 'cssRandom prepends a random-key when one is supplied',
+      fn: async () => {
+        expect(
+          cssRandom({ key: '--ticker-seed', min: 0, max: 8, step: 1, },),
+        )
+          .toBe('random(--ticker-seed, 0, 8, 1)',);
+      },
+    },),
+    it({
+      name: 'cssRandom omits step when a key is supplied without one',
+      fn: async () => {
+        expect(
+          cssRandom({ key: 'element-scoped', min: 0, max: 1, },),
+        )
+          .toBe('random(element-scoped, 0, 1)',);
       },
     },),
 
