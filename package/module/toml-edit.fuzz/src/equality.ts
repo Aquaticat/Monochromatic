@@ -21,11 +21,11 @@
 import {
   getStaticTOMLValue,
   parseTOML,
-} from '../index.ts';
+} from '@monochromatic-dev/module-toml-edit/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { AST, } from 'toml-eslint-parser';
 
-import type { TomlEditOptions, } from '../types.ts';
+import type { TomlEditOptions, } from '@monochromatic-dev/module-toml-edit/ts/types.ts';
 
 /**
  Native projection of a TOML value as produced by `getStaticTOMLValue`.

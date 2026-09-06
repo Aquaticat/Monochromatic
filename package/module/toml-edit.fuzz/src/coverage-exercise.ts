@@ -35,7 +35,7 @@ import {
   tomlKeys,
   tomlSetHeaderComment,
   tomlStringify,
-} from '../index.ts';
+} from '@monochromatic-dev/module-toml-edit/ts';
 
 import {
   attempt,

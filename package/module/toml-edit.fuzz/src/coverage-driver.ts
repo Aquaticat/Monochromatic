@@ -31,7 +31,7 @@ import {
   string,
 } from 'fast-check';
 
-import { emptyTomlEdit, } from '../index.ts';
+import { emptyTomlEdit, } from '@monochromatic-dev/module-toml-edit/ts';
 import {
   DOCUMENT_EXAMPLES,
   documentArbitrary,

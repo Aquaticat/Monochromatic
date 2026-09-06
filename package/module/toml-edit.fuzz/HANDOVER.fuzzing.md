@@ -1,5 +1,12 @@
 # Implementation plan: strengthen fuzzing coverage for module-toml-edit
 
+> Sidecar note:
+> on 2026-09-06 the campaign moved from `package/module/toml-edit/src/fuzz/` into this sidecar package,
+> `package/module/toml-edit.fuzz`,
+>  following the `logger.fuzz` layout;
+> `src/fuzz/` paths below now read as this package's `src/`,
+> and the `fuzz` and `fuzz:coverage` tasks run as `//package/module/toml-edit.fuzz:fuzz` and `//package/module/toml-edit.fuzz:fuzz:coverage`.
+
 > Scratch-path note:
 > `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.

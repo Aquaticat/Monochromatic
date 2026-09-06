@@ -28,7 +28,7 @@ import {
   tomlStringify,
 } from '@monochromatic-dev/module-toml-edit';
 
-import { fuzzRunPlan, } from '../fuzz-budget.ts';
+import { fuzzRunPlan, } from './fuzz-budget.ts';
 import { datetimeSampleArbitrary, } from './arb-datetimes.ts';
 import { documentArbitrary, } from './arb-documents.ts';
 import {

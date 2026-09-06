@@ -28,7 +28,6 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@monochromatic-dev/test-fixture-toml-edit": "workspace:*",
     "@types/node": "catalog:",
-    "fast-check": "catalog:",
     "typescript": "catalog:"
   },
   "files": [

@@ -22,7 +22,7 @@ import {
   tomlKeys,
   tomlSet,
   tomlStringify,
-} from '../index.ts';
+} from '@monochromatic-dev/module-toml-edit/ts';
 
 import {
   attempt,

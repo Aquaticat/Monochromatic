@@ -21,6 +21,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { dirname, } from 'node:path';
+import { fileURLToPath, } from 'node:url';
 
 
 import { aggregateCoverage, } from './coverage-aggregate.ts';
@@ -324,12 +325,13 @@ async function main(): Promise<void> {
     throw new Error('usage: coverage-report.ts <check|write> <coverageDir> <baselinePath>',);
   }
   /**
-   Package root two directories above this file (`src/fuzz` to package), with
-   no trailing separator so relative target paths read as `src/foo.ts`.
+   Runtime package root, resolved through the `/ts` subpath of
+   `@monochromatic-dev/module-toml-edit` (its `src/index.ts`, two levels down)
+   so the gate measures the runtime package's `src`, never this sidecar.
    */
   const packageRoot = dirname(
     dirname(
-      import.meta.dirname,
+      fileURLToPath(import.meta.resolve('@monochromatic-dev/module-toml-edit/ts',),),
     ),
   );
   /**

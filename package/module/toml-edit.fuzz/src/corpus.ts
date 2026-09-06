@@ -43,16 +43,16 @@ export type CorpusEntry = {
  */
 const fixturesRootDir = fileURLToPath(
   new URL(
-    '../../../../test-fixture/toml-edit/src/',
+    '../../../test-fixture/toml-edit/src/',
     import.meta.url,
   ),
 );
 
 /**
- Absolute path to the monorepo root, four levels above this package's `src`.
+ Absolute path to the monorepo root, four levels above this sidecar's `src`.
  */
 const repoRootDir = fileURLToPath(new URL(
-  '../../../../../',
+  '../../../../',
   import.meta.url,
 ),);
 

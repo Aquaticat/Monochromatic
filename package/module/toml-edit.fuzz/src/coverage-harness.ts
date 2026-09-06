@@ -18,7 +18,7 @@ import {
   TomlEditError,
   type TomlEditMode,
   type TomlEditState,
-} from '../index.ts';
+} from '@monochromatic-dev/module-toml-edit/ts';
 
 /**
  Operation snapshot returned by {@link tallySnapshot}.

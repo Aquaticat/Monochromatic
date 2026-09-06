@@ -38,7 +38,7 @@ import {
 import {
   fuzzRunPlan,
   isCampaignMode,
-} from '../fuzz-budget.ts';
+} from './fuzz-budget.ts';
 import { documentArbitrary, } from './arb-documents.ts';
 import {
   discoverRepoToml,

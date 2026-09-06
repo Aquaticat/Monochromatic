@@ -5,8 +5,8 @@
  position preserving (type syntax is blanked to whitespace, never shifted), so
  a `NODE_V8_COVERAGE` JSON range offset indexes the on-disk `.ts` source
  one-to-one. This module turns those raw ranges into a per-file covered-line
- count for the shipped implementation files (the coverage targets), excluding
- the fuzz, conformance, and test helpers that drive them.
+ count for the runtime package's implementation files (the coverage targets),
+ excluding its conformance adapters and test files.
  
  The metric is V8 block coverage projected to lines: paint a per-character
  bitmap where the innermost range's count decides coverage (paint the longest
@@ -111,14 +111,13 @@ export type CoverageMap = Readonly<Record<string, FileCoverage>>;
 //region URL classification
 
 /**
- Path fragments that mark a `src` `.ts` file as a fuzz, conformance, or test
- helper that drives the implementation rather than a coverage target.
+ Path fragments that mark a `src` `.ts` file as a conformance adapter or a
+ test rather than a coverage target; the fuzz helpers themselves live in this
+ sidecar and never match the runtime package root.
  */
 const NON_TARGET_FRAGMENTS: readonly string[] = [
-  '/fuzz/',
   '/conformance/',
   '.test.',
-  'fuzz-budget.ts',
 ];
 
 /**
