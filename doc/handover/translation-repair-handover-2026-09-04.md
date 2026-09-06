@@ -199,6 +199,11 @@ in order:
     and the `SEAT` lines for how many calls each model threw.
 6.  Sum the `cost=` fields for what the pass spent,
     and read the last `METERS` line for what is left.
+    Added 2026-09-06 after four pages had shipped with it unmeasured:
+    count the page's straight apostrophes inside words against its curly ones
+    (`grep -c "[A-Za-z]'[a-z]"` beside `grep -c "[A-Za-z]’[a-z]"`)
+    and compare with the archive,
+    since a page mixing the two conventions is a defect no reader notices and every reader can measure.
 7.  Write the reading into
     [`translation-repair-openrouter-2026-09-03.md`](../planning/translation-repair-openrouter-2026-09-03.md)
     as its own section,
