@@ -2706,6 +2706,33 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  package/module/logger.fuzz:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.4.1
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.9.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   package/module/matrix:
     dependencies:
       '@monochromatic-dev/module-fs-path':
