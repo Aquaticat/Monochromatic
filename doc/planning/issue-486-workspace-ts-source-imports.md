@@ -264,6 +264,52 @@ Known confound:
 variant B also stops live analysis of sibling callables,
 so its saving is an upper bound on the program-size effect alone.
 
+## Spike result (2026-09-06, worktree `~/temp/agent/ts-boundary-spike-2026-09-06` at `30713b5ba`)
+
+- Install needed `pnpm install --trust-lockfile`;
+  plain and `--prefer-offline` installs failed in supply-chain verification with
+  `ERR_PNPM_META_FETCH_FAIL` fetching `@jsr/std__internal` metadata from `registry.npmjs.org` (404).
+- Positive control:
+  with a known-invalid fixture copied into `file-enforcer/src`,
+  the rule reported 13 `prefer-readonly` lines cold and warm,
+  so the rule was live in the worktree.
+  Without the fixture `file-enforcer` reports none in either variant;
+  the rule is off for test files (`package/config/oxlint/src/overrides.ts:192`).
+- Variant A (`/ts` source),
+   `OXLINT_THREADS=1`:
+  cold 8.1,
+   7.9,
+   8.1 s;
+  warm 1.3,
+   1.4,
+   1.4 s;
+  program holds 151 sibling source files;
+  rule cache after a cold run 2,519,172 bytes in 122 files.
+- Variant B (five siblings through built `index.d.mts` plus dist,
+   73 files rewritten):
+  cold 5.2,
+   5.1,
+   5.2 s;
+  warm 1.4,
+   1.4,
+   1.3 s;
+  program holds 11 sibling files (5 declarations,
+   6 source from the types-only marker and `config/rolldown`);
+  rule cache after a cold run 1,417,755 bytes in 89 files.
+- `lint:types`:
+   0.9 s in both variants,
+  with or without a prior buildinfo.
+- Findings:
+   byte-identical between variants (217 warnings,
+   101 errors,
+   none from the readonly rules).
+- Reading:
+  the `/ts` closure changes only the cold path,
+  by 2.9 s of 8.1 s for this package (spread 0.2 s and 0.1 s);
+  warm cost is unchanged.
+  Because variant B also stops live analysis of sibling callables,
+  2.9 s is an upper bound on the program-size effect.
+
 ## Next action
 
 Read the spike report,
