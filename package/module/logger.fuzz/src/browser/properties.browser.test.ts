@@ -61,6 +61,11 @@ test.describe(
           (numRuns,) => globalThis.loggerFuzz.run({ numRuns, },),
           NUM_RUNS,
         );
+        // Precise terminal output: the dot reporter shows nothing else about
+        // which backend ran, passed, or was skipped in this browser.
+        console.log(`${report.userAgent}\n${report.results
+          .map((result,) => `  ${result.status.padEnd(7,)} ${result.name}${(result.detail === undefined) ? '' : `: ${result.detail}`}`)
+          .join('\n',)}`,);
         for (const result of report.results)
           expect(
             result.status,

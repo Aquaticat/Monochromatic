@@ -19,6 +19,7 @@
  @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   type LogRecord,
   sinks,
@@ -324,18 +325,26 @@ async function opfsSkipReason(): Promise<string> {
   /**
    Storage manager, absent on pages without the Storage API.
    */
-  const {storage} = navigator;
+  const { storage, } = navigator;
   if ((typeof storage.getDirectory) !== 'function')
     return 'navigator.storage.getDirectory is unavailable';
-  /**
-   Probe handle used only to inspect the writable capability.
-   */
-  const handle = await (await storage.getDirectory())
-    .getFileHandle(
-      'monochromatic-fuzz-probe.jsonl',
-      { create: true, },
-    );
-  return ('createWritable' in handle) ? '' : 'FileSystemFileHandle.createWritable is unavailable';
+  try {
+    /**
+     Probe handle used only to inspect the writable capability.
+     */
+    const handle = await (await storage.getDirectory())
+      .getFileHandle(
+        'monochromatic-fuzz-probe.jsonl',
+        { create: true, },
+      );
+    return ('createWritable' in handle) ? '' : 'FileSystemFileHandle.createWritable is unavailable';
+  }
+  catch (error: unknown) {
+    // Headless WebKit refuses the origin-private file system outright
+    // (`UnknownError`); the property cannot run where the platform itself
+    // declines, so the refusal becomes the skip reason.
+    return `origin-private file system refused: ${caughtValueText(error,)}`;
+  }
 }
 
 //endregion Properties
