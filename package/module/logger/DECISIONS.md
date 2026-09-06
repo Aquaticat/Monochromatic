@@ -378,6 +378,82 @@ Acceptance:
  a unit test reads both built artifacts and fails on any `import(`,
  and the consumer bundle probe shows none.
 
+### Prior art (manifests fetched from the registry on 2026-09-06)
+
+- `@logtape/logtape` 2.3.3,
+   the logger this package replaced,
+   selects platform code through the `imports` field:
+   `#util` maps to `util.node.js` under `node` and `bun`,
+   `util.deno.js` under `deno`,
+   and `util.js` under `browser` and `default`;
+   the node file imports `node:util` statically and the default file uses `JSON.stringify`.
+   Its file sink is a separate package,
+   `@logtape/file`,
+   whose `#filesink` maps `bun` and `import` to `filesink.node.js` and `deno` to `filesink.deno.js`,
+   with no browser branch at all.
+- `chalk` 6.0.0:
+   `#supports-color` maps `node` to a file with static `node:process`,
+   `node:os`,
+   and `node:tty` imports,
+   and `default` to a browser file that reads `navigator`.
+- `consola` 3.4.2:
+   root export `node` to `dist/index.mjs` and `default` to `dist/browser.mjs`,
+   plus the legacy `browser` field.
+- `tslog` 5.1.0:
+   root export per runtime condition (`browser`,
+   `worker`,
+   `deno`,
+   `bun`,
+   `node`,
+   `react-native`,
+   `default`) to `index.node.js`,
+   `index.browser.js`,
+   or `index.universal.js`.
+- `uuid` 14.0.2,
+   `supports-color` 11.0.0,
+   `yaml` 2.9.0,
+   `isomorphic-git` 1.41.9:
+   `node` and `default` conditions to separate builds.
+- `nanoid` 6.0.1:
+   `browser` condition;
+   `ws` 8.21.3:
+   `browser` condition to a throwing stub;
+   `electron-log` 5.4.4:
+   `browser` condition to the renderer entry.
+- `log4js` 6.9.1:
+   the legacy `browser` field maps every file appender to `ignoreBrowser.js`,
+   a stub,
+   and maps `os` and `streamroller` to `false`;
+   `dotenv` 17.4.2 maps `fs` to `false`.
+- `pino` 10.3.1,
+   `debug` 4.4.3,
+   `winston` 3.19.0,
+   `roarr` 7.21.7,
+   `cross-fetch` 4.1.0:
+   legacy `browser` field to a separate browser entry.
+- `jose` 6.2.12:
+   one Web-API-only entry with no Node module anywhere.
+- `puppeteer-core` 25.10.0:
+   legacy `browser` field to `puppeteer-core-browser.js`.
+   Its maintainer opened vitejs/vite discussion 17661 asking to suppress the
+   "externalized for browser compatibility" warning for libraries that import Node modules conditionally at runtime;
+   the discussion is unanswered,
+   and Vite's troubleshooting page tells users to report such warnings to the library.
+
+Nothing in this sample keeps a runtime-guarded dynamic import of a Node module in an artifact that browsers also receive.
+Every package selects the platform at resolution time (export conditions,
+ `imports` conditions,
+ or the `browser` field) and,
+ where a feature cannot exist in the browser,
+ ships a stub (`log4js`,
+ `ws`,
+ `dotenv`) or omits the feature from the browser entry (`consola`,
+ LogTape).
+Node documents the `imports` field as "conditional exports for internal modules" with resolution rules
+"otherwise analogous to the exports field".
+The ranked first option therefore has the closest precedent in the logger this package replaced,
+ and the current design has precedent only in the unanswered request for warning suppression.
+
 ## Sinks verify concurrently under a time limit (2026-09-06)
 
 `initialize()` used to await each sink's `verify` in list order.
