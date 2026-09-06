@@ -297,7 +297,8 @@ try {
     if (width !== 2076 || height !== 2152) {
       throw new Error(`Accepted 3B at ${scale.value} captured at ${width}×${height}; expected 2076×2152.`);
     }
-    writeFileSync(join(evidenceDirectory, `accepted-3b-font-${scale.label}.xml`), hierarchy);
+    const hierarchyFile = hierarchy.endsWith("\n") ? hierarchy : `${hierarchy}\n`;
+    writeFileSync(join(evidenceDirectory, `accepted-3b-font-${scale.label}.xml`), hierarchyFile);
     console.log(`Captured accepted 3B at font scale ${scale.value}: ${width}×${height}px.`);
   }
 } finally {
