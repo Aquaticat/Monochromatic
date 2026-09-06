@@ -17,19 +17,28 @@ and the reason is recorded in
 
 ## Where the work stands
 
-A pass is in flight:
-`yulianNyanner` on the class-five fix,
-launched 21:03:43 UTC as pid 3042501,
-runs dir `~/temp/agent/yuliannyanner3-20260906`,
-log `~/temp/agent/yuliannyanner3-20260906.log`.
-When it exits,
-read its page by the seven steps in the 2026-09-04 snapshot,
-"How a pass is launched and read",
-and write the reading into the planning log and the readiness signal.
-If it is still running when this is read and the tree has moved past `cf1450162`,
+The first page on the plain invocation shipped and was read:
+`yulianNyanner` on the class-five build,
+21:03 to 21:48 UTC,
+44.9 minutes,
+1,180 calls,
+zero USD,
+consolidation unstarved,
+`verify-published` matched.
+The reading found the sixth class,
+recorded in this snapshot,
+the planning log ("The third launch") and the readiness signal.
+It is fixed and proven,
+and the next action is the relaunch of `yulianNyanner` on the class-six build into a fresh runs dir,
+then its reading by the seven steps in the 2026-09-04 snapshot,
+"How a pass is launched and read".
+If a pass is running when this is read and the tree has moved past its tip,
 the kill-and-relaunch rule applies.
 
-The full unit suite emitted 934 `PASS` lines and zero `FAIL` lines on the class-five build.
+The full unit suite emitted 934 `PASS` lines and zero `FAIL` lines on the class-five build;
+the class-six suites,
+the publisher,
+critic and preparation suites are 0 `FAIL` on the class-six build.
 oxlint 0 warnings and 0 errors,
 types clean,
 markdown lint clean on every line written today.
@@ -56,6 +65,14 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `7effa1b73` records the first page and the sixth class;
+    `7f0d84169` and `7a01c9048` close the oxlint findings in the new code.
+-   `459b2007f` names the heading a source comment sits under on its identity-context line,
+    says in the critic sheet and house policy what that anchor means,
+    and refuses a page that renders two distinct source headings as one
+    (`CollapsedHeadingError`),
+    with guards `01b896ea7` shown to fail first and the floor proven by inversion.
+-   `30ce3994f` writes this snapshot and points the hub and map at it.
 -   `cf1450162`,
     `3ab2d318a`:
     the fifth class recorded in the planning log,
@@ -106,6 +123,33 @@ The pattern of 2026-09-04 held:
 a class per new source shape,
 none on a repeat.
 
+## The sixth class
+
+Found by reading the first page the plain invocation shipped.
+The page carries `## Dysphoria` twice,
+for two different source headings,
+because the source comment "the English word for this title is dysphoria",
+which sits under the third heading,
+reached every slice as an identity-context line with no position,
+and seven of eight consolidation judges bound "this title" to the second heading
+(ledger contest 000031 in the run dir).
+A positional note carried without its position.
+Each comment line now names "under heading X" or "before the first heading",
+the sheets say a note about "this title" or "here" speaks of that heading and no other,
+and the publisher refuses a would-ship page on which two headings that differ in the source read the same;
+measured at pin `a41fc607`,
+no source repeats a heading and no archive collapses two,
+so the floor refuses nothing the archives would ship.
+
+The same page repaired the archive in four places the reading could name
+(the front matter `desc`,
+a lyric syllable,
+a school year,
+a dropped attribution),
+carried both `PhotoScroll` shapes and all fourteen comments,
+and completed consolidation unstarved,
+which closes the last open item of the 2026-09-04 snapshot.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -147,18 +191,19 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Read the `yulianNyanner` page when pid 3042501 exits,
-    with attention to what the page did with the fourteen source comments and the two double-quoted
-    `PhotoScroll` lines,
-    and record the reading.
+1.  Relaunch `yulianNyanner` on the class-six build into a fresh runs dir and read its page,
+    with attention to the five headings and to what the anchored notes did for the judges.
 2.  Run and read `Arita`,
     the other double-quoted-paths entry never run,
     after that reading rather than beside it,
     so a fix found in one reading does not kill two runs.
-3.  Read for an unstarved consolidation:
-    the refilled meters make one possible for the first time since 2026-09-02.
+3.  Name from the corpus,
+    rather than meet by accident,
+    the next source shape no shipped page has carried,
+    since every new shape so far has found a class on its first page.
 4.  The OpenRouter top-up is the owner's and expected within days;
     nothing waits on it while Synthetic and Hyper are wet.
+    One settled entry costs about 3.9 points of the Synthetic week and 64 Hyper credits at zero USD.
 
 ## Standing constraints
 
