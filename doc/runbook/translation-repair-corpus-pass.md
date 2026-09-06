@@ -211,7 +211,8 @@ TODO | DONE
     A value the dial cannot read refuses the launch in one line naming the variable, at zero quota,
     which `-- --plan` shows without spending anything.
 
-    ALWAYS KILL AND RELAUNCH, the owner's rule of 2026-09-06:
+    ALWAYS KILL AND RELAUNCH,
+    the owner's rule of 2026-09-06:
     if source changes after this launch,
     kill the pass by its pid,
     build,

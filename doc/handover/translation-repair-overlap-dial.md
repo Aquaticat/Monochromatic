@@ -446,7 +446,7 @@ never left to finish on the superseded one
 "A source change while a pass is in flight means kill and relaunch").
 The pass overlap fallback moved to four the same day
 (`doc/decision/translation-repair-pass-overlap.md`),
-on the four matched pairs recorded in "Measurement status, 2026-08-27" and the package README.
+on the four matched pairs recorded under the 2026-08-27 measurement status and in the package README.
 
 ## The verification chain for each landing
 

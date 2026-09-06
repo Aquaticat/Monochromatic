@@ -38,27 +38,32 @@ Every pair below ran both arms on one pipeline digest into separate run roots,
 with both subscription providers wet throughout,
 and is read as wall clock over the sum of stream time,
 since single-run wall clock moves 37 percent on provider speed alone
-(`doc/decision/translation-repair-calibration-overlap.md`, arm A against arm A2).
+(`doc/decision/translation-repair-calibration-overlap.md`,
+arm A against arm A2).
 The run-to-run band on that normalized figure is about 0.03.
 
 -   `keyword233`,
     three slices,
     the smoke pair.
-    Overlap 1: 38.50 minutes over 1.68 call-hours,
+    Overlap 1:
+    38.50 minutes over 1.68 call-hours,
     normalized 0.382,
     9 voices unheard.
-    Overlap 4: 31.12 minutes over 1.78 call-hours,
+    Overlap 4:
+    31.12 minutes over 1.78 call-hours,
     normalized 0.291,
     8 unheard.
     Wall down 19.2 percent,
     normalized down 23.9 percent.
 -   `Toka_ls`,
     fifteen slices.
-    Overlap 1: 313.24 minutes over 12.44 call-hours,
+    Overlap 1:
+    313.24 minutes over 12.44 call-hours,
     normalized 0.420,
     61 unheard,
     peak 10 calls in flight.
-    Overlap 4: 104.37 minutes over 11.82 call-hours,
+    Overlap 4:
+    104.37 minutes over 11.82 call-hours,
     normalized 0.147,
     the same 61 unheard,
     peak 37 in flight.
@@ -67,10 +72,12 @@ The run-to-run band on that normalized figure is about 0.03.
     call sum down 5.0 percent.
 -   `Zha_Ke`,
     four slices.
-    Overlap 1: 129.95 minutes over 4.862 call-hours,
+    Overlap 1:
+    129.95 minutes over 4.862 call-hours,
     normalized 0.445,
     68 unheard.
-    Overlap 4: 36.49 minutes over 2.947 call-hours,
+    Overlap 4:
+    36.49 minutes over 2.947 call-hours,
     normalized 0.206,
     6 unheard.
     Wall down 71.9 percent,
@@ -78,10 +85,12 @@ The run-to-run band on that normalized figure is about 0.03.
 -   `Weideriche_`,
     first attempts,
     both arms ending at the same `#273` pairing refusal rather than a page.
-    Overlap 1: 54.04 minutes over 2.293 call-hours,
+    Overlap 1:
+    54.04 minutes over 2.293 call-hours,
     normalized 0.393,
     15 unheard.
-    Overlap 4: 31.51 minutes over 2.502 call-hours,
+    Overlap 4:
+    31.51 minutes over 2.502 call-hours,
     normalized 0.210,
     10 unheard.
     Wall down 41.7 percent,
