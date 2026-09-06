@@ -166,10 +166,10 @@ const largestConnectedBounds = ({ path, color, crop }) => {
   };
 };
 
-const transportFingerprint = imageFingerprint({ path: transportReferencePath, crop: '1009x752+0+1400' });
+const transportFingerprint = imageFingerprint({ path: transportReferencePath, crop: '1009x674+0+1400' });
 const pickerFingerprint = imageFingerprint({ path: transportReferencePath, crop: '1009x1100+0+300' });
 for (const path of matrixPaths) {
-  const currentTransport = imageFingerprint({ path, crop: '1009x752+0+1400' });
+  const currentTransport = imageFingerprint({ path, crop: '1009x674+0+1400' });
   if (currentTransport !== transportFingerprint) {
     throw new Error(`${path} does not preserve chosen transport option 1B.`);
   }
