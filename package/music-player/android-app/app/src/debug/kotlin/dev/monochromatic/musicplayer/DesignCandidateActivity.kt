@@ -176,6 +176,15 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 
+// What:     `BoxWithConstraints` provides the current layout's available width to its content.
+// Why:      The mode control needs measured pane width to choose one, two, or four rows.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ResponsiveBox(props: { children: (width: number) => UIElement }): UIElement;
+// ```
+import androidx.compose.foundation.layout.BoxWithConstraints
+
 // What:     Layout modifier imports expose fixed size, fill, padding, inset, and weight operations.
 // Why:      The prototype maps the existing 852dp design geometry into native Compose constraints.
 //
@@ -259,6 +268,16 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 
+// What:     `mutableStateOf` and `remember` retain a value and redraw Compose when it changes.
+// Why:      A measured label overflow must reflow the connected control to its next row count.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const [hasOverflow, setHasOverflow] = useState(false);
+// ```
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+
 // What:     `Alignment` names child alignment positions and `Modifier` carries layout operations.
 // Why:      Controls need centered glyphs and explicit placement without imperative coordinates.
 //
@@ -302,6 +321,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 // import { FontWeight, TextAlign, TextOverflow } from 'compose/ui/text';
 // ```
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 
 // What:     `dp` and `sp` construct density-aware layout and font measurements.
 // Why:      Android converts the cited logical geometry to the emulator's 390dpi panel pixels.
@@ -319,9 +339,6 @@ const val DESIGN_CANDIDATE_EXTRA: String = "candidate"
 
 /** Default candidate used when screenshot automation omits its explicit selection. */
 const val DEFAULT_DESIGN_CANDIDATE: String = "light-c"
-
-/** Font-scale threshold where one-row segments change to a reflowing Material radio group. */
-const val LARGE_TEXT_MODE_THRESHOLD: Float = 1.5f
 
 /** Candidate-specific Material surface roles and decorative-divider treatment. */
 private data class CandidatePalette(
@@ -895,17 +912,127 @@ private fun TransportControls(candidate: String) {
 }
 
 /**
- * What:     `LargeTextModeControl` composes four real `SegmentedButton` elements as one
- *           connected vertical single-select group with full labels.
- * Why:      Text can grow to 200% without replacing the settled component or scrolling sideways.
+ * What:     `OneRowModeControl` composes all four Material segments in one horizontal group.
+ * Why:      This is the shortest arrangement when every label fits at current text scale.
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * function LargeTextModeControl(props: { labels: readonly string[] }): UIElement;
+ * function OneRowModeControl(props: { labels: readonly string[] }): UIElement;
  * ```
  */
 @Composable
-private fun LargeTextModeControl(labels: List<String>) {
+private fun OneRowModeControl(
+    labels: List<String>,
+    accessibleLabels: List<String>,
+    onOverflow: () -> Unit,
+) {
+    SingleChoiceSegmentedButtonRow {
+        for (index in labels.indices) {
+            SegmentedButton(
+                selected = index == 1,
+                onClick = {},
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
+                modifier = Modifier
+                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                    .semantics {
+                        contentDescription = accessibleLabels[index]
+                    },
+            ) {
+                Text(
+                    text = labels[index],
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    onTextLayout = { result ->
+                        if (result.hasVisualOverflow) {
+                            onOverflow()
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * What:     `TwoRowModeControl` composes four Material segments as one connected two-by-two group.
+ * Why:      Enlarged labels use two rows before the design falls back to four vertical rows.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function TwoRowModeControl(props: { labels: readonly string[] }): UIElement;
+ * ```
+ */
+@Composable
+private fun TwoRowModeControl(
+    labels: List<String>,
+    accessibleLabels: List<String>,
+    onOverflow: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectableGroup(),
+        verticalArrangement = Arrangement.spacedBy((-1).dp),
+    ) {
+        for (rowIndex in 0..1) {
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                for (columnIndex in 0..1) {
+                    val index = rowIndex * 2 + columnIndex
+                    // What:     Kotlin's `if` chain chooses the outside corner for one grid position.
+                    // Why:      Four segments share internal square corners and read as one connected group.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // const shape = index === 0 ? topLeft : index === 1 ? topRight : index === 2 ? bottomLeft : bottomRight;
+                    // ```
+                    val shape = if (index == 0) {
+                        RoundedCornerShape(topStart = 20.dp)
+                    } else if (index == 1) {
+                        RoundedCornerShape(topEnd = 20.dp)
+                    } else if (index == 2) {
+                        RoundedCornerShape(bottomStart = 20.dp)
+                    } else {
+                        RoundedCornerShape(bottomEnd = 20.dp)
+                    }
+                    SegmentedButton(
+                        selected = index == 1,
+                        onClick = {},
+                        shape = shape,
+                        modifier = Modifier
+                            .weight(1f)
+                            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                            .semantics {
+                                contentDescription = accessibleLabels[index]
+                            },
+                    ) {
+                        Text(
+                            text = labels[index],
+                            maxLines = 1,
+                            overflow = TextOverflow.Clip,
+                            onTextLayout = { result ->
+                                if (result.hasVisualOverflow) {
+                                    onOverflow()
+                                }
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * What:     `FourRowModeControl` composes four Material segments as one connected vertical group.
+ * Why:      This final fallback preserves full labels when even two segments cannot share one row.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function FourRowModeControl(props: { labels: readonly string[] }): UIElement;
+ * ```
+ */
+@Composable
+private fun FourRowModeControl(labels: List<String>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -914,7 +1041,7 @@ private fun LargeTextModeControl(labels: List<String>) {
     ) {
         for (index in labels.indices) {
             // What:     Kotlin's `if` expression selects a shape value for this segment's stack position.
-            // Why:      Only the outside top and bottom corners round, making four rows read as one control.
+            // Why:      Only outside top and bottom corners round, making four rows read as one control.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -946,30 +1073,47 @@ private fun LargeTextModeControl(labels: List<String>) {
     }
 }
 
-/** Keeps the settled segmented mode control horizontal at default text and vertical at large text. */
+/**
+ * What:     `ModeControl` measures fixed labels and chooses one, two, or four connected rows.
+ * Why:      The control always uses the fewest rows that fit without clipping or horizontal scrolling.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function ModeControl(): UIElement;
+ * ```
+ */
 @Composable
 private fun ModeControl() {
-    val labels = listOf("Repeat", "In order", "Shuffle", "Shuffle all")
-    val accessibleLabels = listOf("Repeat track", "Play in order", "Shuffle current folder", "Shuffle all folders")
-    if (LocalDensity.current.fontScale >= LARGE_TEXT_MODE_THRESHOLD) {
-        LargeTextModeControl(labels = accessibleLabels)
-        return
-    }
-    SingleChoiceSegmentedButtonRow {
-        for (index in labels.indices) {
-            SegmentedButton(
-                selected = index == 1,
-                onClick = {},
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
-                modifier = Modifier
-                    .defaultMinSize(minWidth = 48.dp)
-                    .semantics {
-                        contentDescription = accessibleLabels[index]
-                    },
-            ) {
-                Text(text = labels[index], maxLines = 1)
-            }
+    val labels = listOf("Repeat", "In order", "Shuffle Camellia", "Shuffle all")
+    val accessibleLabels = listOf("Repeat track", "Play in order", "Shuffle Camellia", "Shuffle all folders")
+    val density = LocalDensity.current
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center,
+    ) {
+        val oneRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
+        val twoRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
+        if (maxWidth >= 189.dp && !oneRowOverflow.value) {
+            OneRowModeControl(
+                labels = labels,
+                accessibleLabels = accessibleLabels,
+                onOverflow = {
+                    oneRowOverflow.value = true
+                },
+            )
+            return@BoxWithConstraints
         }
+        if (maxWidth >= 95.dp && !twoRowOverflow.value) {
+            TwoRowModeControl(
+                labels = labels,
+                accessibleLabels = accessibleLabels,
+                onOverflow = {
+                    twoRowOverflow.value = true
+                },
+            )
+            return@BoxWithConstraints
+        }
+        FourRowModeControl(labels = accessibleLabels)
     }
 }
 

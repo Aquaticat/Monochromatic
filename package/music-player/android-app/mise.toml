@@ -160,7 +160,153 @@ depends = ["prototype:build"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
 [tasks."prototype:capture"]
-description = "Install and capture the current redundant-cue matrix from the unfolded Pixel Fold emulator"
+description = "Install and capture accepted screen 3B at 50%, 75%, 100%, 150%, and 200% text scales"
+dir = "{{config_root}}"
+depends = ["prototype:install"]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import("node:child_process");
+const { mkdirSync, readFileSync, writeFileSync } = await import("node:fs");
+const { join, resolve } = await import("node:path");
+const sdk = process.env.ANDROID_HOME;
+if (!sdk) {
+  throw new Error("ANDROID_HOME is unset; the android-sdk mise tool exports it.");
+}
+const adb = join(sdk, "platform-tools", "adb");
+const serial = process.env.ANDROID_SERIAL ?? "emulator-5560";
+const packageName = "dev.monochromatic.musicplayer";
+const activity = `${packageName}/.DesignCandidateActivity`;
+const candidate = "cue-container-tonal";
+const renderDirectory = resolve("../design/questions/render");
+const evidenceDirectory = resolve("../design/questions/evidence");
+const scales = [
+  { value: "0.5", label: "050", scrollDeck: false },
+  { value: "0.75", label: "075", scrollDeck: false },
+  { value: "1.0", label: "100", scrollDeck: false },
+  { value: "1.5", label: "150", scrollDeck: false },
+  { value: "2.0", label: "200", scrollDeck: true },
+];
+const themeCustomization = execFileSync(
+  adb,
+  ["-s", serial, "shell", "settings", "get", "secure", "theme_customization_overlay_packages"],
+  { encoding: "utf8" },
+).trim();
+const nightMode = execFileSync(
+  adb,
+  ["-s", serial, "shell", "cmd", "uimode", "night"],
+  { encoding: "utf8" },
+).trim();
+if (themeCustomization !== "null" || nightMode !== "Night mode: no") {
+  throw new Error(`Capture requires stock AVD light theme; got customization=${themeCustomization}, ${nightMode}.`);
+}
+const originalFontScale = execFileSync(
+  adb,
+  ["-s", serial, "shell", "settings", "get", "system", "font_scale"],
+  { encoding: "utf8" },
+).trim();
+const displayListing = execFileSync(
+  adb,
+  ["-s", serial, "shell", "dumpsys", "SurfaceFlinger", "--display-id"],
+  { encoding: "utf8" },
+);
+const innerDisplayLine = displayListing
+  .split("\n")
+  .find((line) => line.startsWith("Display ") && line.includes("(HWC display 0)"));
+if (!innerDisplayLine) {
+  throw new Error("The emulator did not report its unfolded HWC display 0.");
+}
+const displayIdEnd = innerDisplayLine.indexOf(" ", "Display ".length);
+const displayId = innerDisplayLine.slice("Display ".length, displayIdEnd);
+mkdirSync(renderDirectory, { recursive: true });
+mkdirSync(evidenceDirectory, { recursive: true });
+try {
+  for (const scale of scales) {
+    execFileSync(adb, ["-s", serial, "shell", "settings", "put", "system", "font_scale", scale.value]);
+    const appliedScale = execFileSync(
+      adb,
+      ["-s", serial, "shell", "settings", "get", "system", "font_scale"],
+      { encoding: "utf8" },
+    ).trim();
+    if (appliedScale !== scale.value) {
+      throw new Error(`Android stored font scale ${appliedScale}; expected ${scale.value}.`);
+    }
+    execFileSync(adb, ["-s", serial, "shell", "am", "force-stop", packageName]);
+    execFileSync(
+      adb,
+      [
+        "-s", serial,
+        "shell", "am", "start", "-W",
+        "-n", activity,
+        "--es", "candidate", candidate,
+      ],
+      { stdio: "inherit" },
+    );
+    const deviceHierarchyPath = `/sdcard/accepted-3b-font-${scale.label}.xml`;
+    let hierarchy = "";
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      execFileSync(
+        adb,
+        ["-s", serial, "shell", "uiautomator", "dump", deviceHierarchyPath],
+        { stdio: "ignore" },
+      );
+      hierarchy = execFileSync(
+        adb,
+        ["-s", serial, "exec-out", "cat", deviceHierarchyPath],
+        { encoding: "utf8" },
+      );
+      if (
+        hierarchy.includes('text="Camellia"')
+        && hierarchy.includes('content-desc="Current track: Another Xronixle"')
+      ) {
+        break;
+      }
+    }
+    if (
+      !hierarchy.includes('text="Camellia"')
+      || !hierarchy.includes('content-desc="Current track: Another Xronixle"')
+    ) {
+      throw new Error(`Accepted 3B did not become ready at font scale ${scale.value}.`);
+    }
+    if (scale.scrollDeck) {
+      execFileSync(
+        adb,
+        ["-s", serial, "shell", "input", "touchscreen", "swipe", "500", "1850", "500", "1200", "500"],
+      );
+      execFileSync(
+        adb,
+        ["-s", serial, "shell", "uiautomator", "dump", deviceHierarchyPath],
+        { stdio: "ignore" },
+      );
+      hierarchy = execFileSync(
+        adb,
+        ["-s", serial, "exec-out", "cat", deviceHierarchyPath],
+        { encoding: "utf8" },
+      );
+    }
+    const screenshot = execFileSync(
+      adb,
+      ["-s", serial, "exec-out", "screencap", "-p", "-d", displayId],
+      { maxBuffer: 16 * 1024 * 1024 },
+    );
+    const outputPath = join(renderDirectory, `accepted-3b-font-${scale.label}.png`);
+    writeFileSync(outputPath, screenshot);
+    execFileSync("mogrify", ["-strip", outputPath]);
+    const image = readFileSync(outputPath);
+    const width = image.readUInt32BE(16);
+    const height = image.readUInt32BE(20);
+    if (width !== 2076 || height !== 2152) {
+      throw new Error(`Accepted 3B at ${scale.value} captured at ${width}×${height}; expected 2076×2152.`);
+    }
+    writeFileSync(join(evidenceDirectory, `accepted-3b-font-${scale.label}.xml`), hierarchy);
+    console.log(`Captured accepted 3B at font scale ${scale.value}: ${width}×${height}px.`);
+  }
+} finally {
+  execFileSync(adb, ["-s", serial, "shell", "settings", "put", "system", "font_scale", originalFontScale]);
+}
+'''
+
+[tasks."prototype:capture:matrix"]
+description = "Install and recapture the historical redundant-cue matrix from the unfolded Pixel Fold emulator"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 shell = "node --input-type=module-typescript -e"
