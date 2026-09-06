@@ -115,11 +115,20 @@ TODO
      a confirmation prompt,
      answer **y**,
      then a line confirming the trusted publisher for `Aquaticat/Monochromatic` and `npm-release.yml`.
-13.  Merge the version pull request:
+13.  Wait for the registry index to replicate before merging:
+     `npm view @monochromatic-dev/module-logger version` until it prints `0.1.0`.
+     Expected:
+     a brand-new package's version document appears at once,
+     but the package index (`https://registry.npmjs.org/@monochromatic-dev%2fmodule-logger`) can answer 404 for several minutes.
+     Merging before it replicates makes the release workflow plan a fresh publish,
+     which silently no-ops against the existing version and creates no tag;
+     if that happens,
+     re-run the workflow with `gh workflow run npm-release.yml` once `npm view` succeeds.
+14.  Merge the version pull request:
      `gh pr merge <number> --squash`.
      Expected:
      `✓ Squashed and merged pull request #<number>` and the branch is deleted automatically.
-14.  Watch the release run that the merge triggers:
+15.  Watch the release run that the merge triggers:
      `gh run list --workflow npm-release.yml --limit 1 --json databaseId --jq '.[0].databaseId'`
      then `gh run watch <id> --exit-status`.
      Expected:
