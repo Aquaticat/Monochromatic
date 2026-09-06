@@ -252,36 +252,6 @@ This proves the vertical rail gesture works without taking the whole rail away f
 predictive Back. UI Automator reports each rail target at `[0,...][117,...]`, exactly
 48dp wide and flush with the physical edge.
 
-## Current-screen volume matrix boundary
-
-The accepted current capture omits the volume control required by D20. The matrix adds
-that already-settled control without introducing another product feature or changing
-accepted pane, picker, track-row, or transport decisions.
-
-Every matrix cell keeps these common requirements:
-
-- A real 48dp Material `IconButton` uses the official auto-mirrored Volume icon and
-  exposes `Volume, 72 percent` as its action label.
-- A `surfaceContainerHigh` anchored menu surface contains a real Material slider
-  rotated into the settled vertical orientation. Slider semantics expose `Volume
-  level, 72 percent`. The pinned Material 3 artifact has no `VerticalSlider` class;
-  rotation is a static-prototype approximation for placement and content review, not
-  the production implementation decision.
-- The popover stays wholly inside the left 414dp pane. No trigger, slider, percentage,
-  or Mute target crosses the 24dp center spacer.
-- The percentage variants add `onSurface` text. Mute variants add a Material
-  `TextButton`; the other variants do not reserve empty space for either element.
-- Icon placement is the only row dimension. Popover content is the only column
-  dimension. All other pixels follow the accepted light screen, apart from the native
-  clock.
-- D36 remains intact: neutral current-track row, no generated ordinal, leading play
-  icon, and semantic current state.
-
-The pinned AVD palette resolves `onSurface` on `surfaceContainerHigh` at 10.407:1,
-`onSurfaceVariant` on `surfaceContainerHigh` at 5.178:1, and `primary` on
-`surfaceContainerHigh` at 5.211:1. These cover percentage text, supporting semantics,
-Mute label and slider accent. The package validator recalculates the role pairs.
-
 ## Candidate boundary
 
 Every repaired Q1 option must use valid Material surface roles:

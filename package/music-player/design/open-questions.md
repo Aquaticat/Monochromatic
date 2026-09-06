@@ -123,10 +123,8 @@ Open: whether the desktop bar should fade too, and whether the letter rail gets 
 
 ## 3c. Reviewer feedback, 2026-09-03 — decided, now needing build
 
-- **Volume icon + vertical popover** — SETTLED (D20), but missing from the accepted
-  current capture. A nine-prototype current-screen matrix now compares trigger
-  placement and popup information without changing D20's component. The cover screen
-  and the keyboard map's ↑/↓ still need updating after this verdict.
+- **Volume icon + vertical popover** — SETTLED (D20). Built into unf-i; the cover
+  screen and the keyboard map's ↑/↓ still need updating to match.
 - **Command bar** — SETTLED as a configurable global hotkey, off by default (D21).
   The surface itself has never been designed: what it searches (folders? tracks?
   commands?), and what it does once search exists (D25) are both unbuilt.

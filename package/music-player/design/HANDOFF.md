@@ -1077,87 +1077,18 @@ question claims are being removed through corrective commits. Keep the general
 question-design lesson, but keep the next round strictly inside the accepted unfolded
 screen.
 
-The next action is to inspect the accepted screen itself, identify two consequential
-three-state treatment dimensions within that screen, and build nine native Compose
-refinements. Preserve every settled decision and every correction. Do not reopen a
-discarded candidate, introduce a new feature, or infer scope from an example of
-method.
+The next action was originally stated as inspecting the accepted screen, but the agent
+still chose an absent volume control because an older decision required it. The user
+corrected this as the same scope failure: an absent control is a new feature relative
+to the accepted screenshot. The user also named the kind of work actually requested:
+the visible playback deck is not centered.
 
-The unauthorized command-bar work is now fully removed from the main and prototype
-branches through corrective commits. The package-local scope lesson lives in
-`review-notes.md` standing standard 11; the user explicitly requested removal of the
-too-narrow QSC rule from root `AGENTS.md`, and generated `CLAUDE.md` was synchronized.
-
-The first current-screen issue to explore is not a new feature: the accepted capture
-omits the volume control required by settled decision D20. D20 fixes the component as
-a 48dp icon button opening an anchored vertical Material slider popover, but it does
-not settle the button's exact position or how much explicit level information the
-popover shows. Build a 3 × 3 matrix on the accepted screen. Rows vary placement:
-trailing in the centered now-playing header, at the trailing edge of the playback
-control row, or in a dedicated row below the mode control. Columns vary popover
-content: slider only, slider plus `72%`, or slider plus `72%` and a Mute action. Keep
-the accepted layout, white spacers, rail line, folder selection, neutral unnumbered
-track rows, play cue, 24dp fold spacer, baseline Material components, Android bars,
-and dynamic palette unchanged. Recommend playback-row trailing plus percentage unless
-the native captures show a balance or clipping problem. Point out, without expanding
-scope, that keyboard focus/hover overlap and long-content states still deserve later
-state-sheet review of this same screen.
-
-Prototype commit `38b089e24` implements the nine volume cells with real Material icon
-buttons, menu surfaces, sliders, percentages, and Mute text buttons. Prototype build
-and Android lint pass without warnings. The first hierarchy capture correctly failed
-because an open popup excludes its underlying anchor from UI Automator's active-window
-view; the corrected capture contract validates the popup's volume semantics and
-column-specific text instead. The first successful contact sheet then exposed a real
-E2 violation: the 112dp popover crossed the center spacer. Commit `38b089e24` shifts
-all popovers 72dp toward the pane interior. The second successful 2076 × 2152px
-capture set shows every popup wholly inside the left pane and all volume triggers
-visible at their assigned row. Post-fix full-resolution inspection of recommended cell
-2B and a 3 × 3 contact sheet confirm all settled current-screen pixels remain: white
-spacers, gray rail line, folder indicator, neutral unnumbered tracks, play cue, mode
-control, app bars, and native system UI. The package now extracts each connected popup
-surface and asserts its exact 273px width, column-specific height, x=678 fold-safe
-position, and row-specific y position. It also checks the complete 59px center spacer
-from x=1009 through x=1067 is one color and samples its center as white. The
-dedicated-row treatment fits at default text but leaves less room for text growth.
-The prototype rotates a standard Material slider because the pinned artifact has no
-`VerticalSlider` class. This is a placement and content approximation, not a production
-implementation decision.
-
-The current HTML template now shows the accepted design first, names the omitted D20
-control and five other in-screen considerations, presents nine native current-screen
-refinements with per-cell pros, cons, analysis, and rank, gives a full adjacent-reason
-ranking plus primary and fallback recommendations, proposes complementary volume
-behaviors, and asks separate placement, popover-content, behavior, and free-correction
-questions. The package validator requires ten opaque 2076 × 2152px images, native
-system UI, full white center spacer, neutral current row, distinct cells, exact row
-placement, assigned slider/percentage/Mute content, and resolved dynamic-palette
-contrast pairs. Build, lint, and unit contracts pass.
-
-Final isolated Helium verification at DPR 2 passes. The page opens blank with ten
-2076 × 2152px native images: the accepted foundation and nine current-screen volume
-cells. No command-bar text, control, capture, or provenance remains. All ten previews
-open with correct titles and dimensions inside the measured 907 × 937 CSS px frame
-around an 852 × 883px screen. Zoom out, in, Fit, sharp 1:1 display pixels, 100% reset,
-scrolling, and Close pass. At 1280 × 800 each matrix row fits in one 1137px row with
-three 368.4px cards. At 390 × 844 each independent 316px scroller contains one 1088px
-row of three 352px cards and traverses 772px while the page stays 390px wide. Blank
-validation focuses Q1. All nine placement-plus-content combinations report their exact
-cell and rank. The recommended choices report `2B` and rank 1. Every radio, behavior
-checkbox, free text, prepare, immediate copy, download, and clear path passes. Offline
-reload decodes all ten images with no external URL; forced host dark mode stays light.
-Axe reports no WCAG A/AA violations or incomplete checks on the page or modal. Labels,
-names, alternatives, unique IDs, initial focus, and 48px targets pass; browser errors
-and console output are empty. Positive controls reject unauthorized command-bar
-content, a slider-only image substituted for a percentage cell, one altered pixel at
-the left edge of the 59px center spacer, and a playback-row popup substituted for a
-header-row popup. The isolated page was cleared and closed; its Helium process and the
-emulator are stopped. Temporary volume captures were removed from the prototype
-worktree after their committed main-worktree copies passed.
-
-The exact cleared questionnaire was launched through the normal Helium desktop entry.
-KWin reports `Music player design: current-screen volume matrix - Helium` active and
-non-minimized at 1080 × 1880 on `HDMI-A-1`, internal ID
-`{e3931e5f-3567-4ce2-bf9b-40273e192217}`. Prototype upstream is `38b089e24`; the main
-upstream must be checked after this final handover commit. Leave the matrix visible and
-wait for the user's answers. Do not advance to another surface or feature.
+The volume questionnaire has been closed. Remove its prototype code, captures,
+questionnaire, compliance notes, inventory entry, open-question changes, verification
+claims, and frontier language from both branches. Then measure the accepted screenshot
+and native layout. Build refinements using only elements visible in that screenshot.
+Start with playback-deck centering and identify another consequential visible
+composition variable only if measurement supports one. Preserve every settled content,
+component, color, divider, folder, track, and device decision. Update `review-notes.md`
+standing standard 11 so the accepted screenshot, rather than old requirements, defines
+the feature boundary for an existing-screen refinement.

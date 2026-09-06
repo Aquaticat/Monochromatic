@@ -301,6 +301,19 @@ it never substitutes for the form.
 Record every correction, answer, decision, candidate and verification result in
 HANDOFF.md when it happens. Never wait until the session ends.
 
+## 5j. An absent control was mistaken for a current-screen refinement
+
+**What happened.** After being told to stay on the current accepted screen, the agent
+chose a volume control that existed in an old decision but was absent from the accepted
+screenshot. It built nine volume variants instead of critiquing the composition already
+on screen. The user identified the missed work directly: the existing playback deck is
+not centered.
+
+**The rule.** For an existing-screen refinement, the accepted screenshot is the feature
+boundary. Measure and critique its visible composition first. Candidates may move,
+resize, align, or restyle only elements already visible there. A previously documented
+but absent control is a new feature and requires explicit approval.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field. No exceptions.** Not "usually",
@@ -360,6 +373,8 @@ HANDOFF.md when it happens. Never wait until the session ends.
 10. **Update HANDOFF.md continuously.** Record each correction, answer, decision,
     candidate and verification result when it happens. Never defer updates until the
     end of a session.
-11. **A teaching example changes the presentation method, not the design scope.** Keep
-    the round on the current subject named by the user. Moving to a new feature needs
-    explicit approval, even when that feature already appears in the open-work list.
+11. **The accepted screenshot is the feature boundary for existing-screen
+    refinement.** Measure and critique its visible composition before proposing
+    candidates. Move, resize, align, or restyle only elements visible in that
+    screenshot. A teaching example changes presentation method, not scope. A documented
+    but absent control is a new feature and requires explicit approval.

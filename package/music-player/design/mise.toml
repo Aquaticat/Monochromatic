@@ -3,16 +3,7 @@ build_question = '''
 const { readFileSync, writeFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const renderPaths = {
-  IMAGE_BASELINE: 'questions/render/divider-final.png',
-  IMAGE_VOLUME_H_S: 'questions/render/volume-h-s.png',
-  IMAGE_VOLUME_H_P: 'questions/render/volume-h-p.png',
-  IMAGE_VOLUME_H_M: 'questions/render/volume-h-m.png',
-  IMAGE_VOLUME_C_S: 'questions/render/volume-c-s.png',
-  IMAGE_VOLUME_C_P: 'questions/render/volume-c-p.png',
-  IMAGE_VOLUME_C_M: 'questions/render/volume-c-m.png',
-  IMAGE_VOLUME_R_S: 'questions/render/volume-r-s.png',
-  IMAGE_VOLUME_R_P: 'questions/render/volume-r-p.png',
-  IMAGE_VOLUME_R_M: 'questions/render/volume-r-m.png',
+  IMAGE_DIVIDER_FINAL: 'questions/render/divider-final.png',
 };
 let output = readFileSync(resolve('questions/current.template.html'), 'utf8');
 for (const [name, path] of Object.entries(renderPaths)) {
@@ -25,7 +16,7 @@ for (const [name, path] of Object.entries(renderPaths)) {
   output = output.replace(marker, dataUri);
 }
 writeFileSync(resolve('questions/current.html'), output);
-console.log('Built self-contained current-screen volume matrix.');
+console.log('Built self-contained current-design review.');
 '''
 
 validate_question = '''
@@ -41,33 +32,14 @@ const requiredPaths = [
   'questions/current.template.html',
   'questions/current.html',
   'questions/render/divider-final.png',
-  'questions/render/volume-h-s.png',
-  'questions/render/volume-h-p.png',
-  'questions/render/volume-h-m.png',
-  'questions/render/volume-c-s.png',
-  'questions/render/volume-c-p.png',
-  'questions/render/volume-c-m.png',
-  'questions/render/volume-r-s.png',
-  'questions/render/volume-r-p.png',
-  'questions/render/volume-r-m.png',
 ];
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
-  throw new Error(`Missing required current-screen volume matrix files: ${missingPaths.join(', ')}`);
+  throw new Error(`Missing required current-design review files: ${missingPaths.join(', ')}`);
 }
-const baselinePath = 'questions/render/divider-final.png';
-const volumePaths = [
-  'questions/render/volume-h-s.png',
-  'questions/render/volume-h-p.png',
-  'questions/render/volume-h-m.png',
-  'questions/render/volume-c-s.png',
-  'questions/render/volume-c-p.png',
-  'questions/render/volume-c-m.png',
-  'questions/render/volume-r-s.png',
-  'questions/render/volume-r-p.png',
-  'questions/render/volume-r-m.png',
+const renderPaths = [
+  'questions/render/divider-final.png',
 ];
-const renderPaths = [baselinePath, ...volumePaths];
 for (const path of renderPaths) {
   const image = readFileSync(resolve(path));
   const pngSignature = '89504e470d0a1a0a';
@@ -117,40 +89,9 @@ const countPixelsMatching = ({ path, crop, predicate }) => {
     return count + Number(line.slice(0, countEnd).trim());
   }, 0);
 };
-const getPopoverBounds = (path) => {
-  const components = execFileSync(
-    'magick',
-    [
-      resolve(path),
-      '-alpha', 'off',
-      '-fill', 'black', '+opaque', '#E7E7F1',
-      '-fill', 'white', '-opaque', '#E7E7F1',
-      '-define', 'connected-components:verbose=true',
-      '-connected-components', '4', 'null:',
-    ],
-    { encoding: 'utf8' },
-  );
-  const surfaceLine = components
-    .split('\n')
-    .find((line) => line.trimStart().startsWith('1:') && line.includes('srgb(255,255,255)'));
-  if (!surfaceLine) {
-    throw new Error(`${path} is missing its connected volume-popover surface.`);
-  }
-  const geometry = surfaceLine.trim().split(' ')[1];
-  const sizeSeparator = geometry.indexOf('x');
-  const firstOffset = geometry.indexOf('+');
-  const secondOffset = geometry.indexOf('+', firstOffset + 1);
-  return {
-    width: Number(geometry.slice(0, sizeSeparator)),
-    height: Number(geometry.slice(sizeSeparator + 1, firstOffset)),
-    x: Number(geometry.slice(firstOffset + 1, secondOffset)),
-    y: Number(geometry.slice(secondOffset + 1)),
-  };
-};
 const isBlack = ([red, green, blue]) => red === 0 && green === 0 && blue === 0;
 const isDark = ([red, green, blue]) => red < 128 && green < 128 && blue < 128;
 const isPrimary = ([red, green, blue]) => red === 76 && green === 94 && blue === 139;
-const isSurfaceHigh = ([red, green, blue]) => red === 231 && green === 231 && blue === 241;
 for (const path of renderPaths) {
   const statusIconPixels = countPixelsMatching({
     path,
@@ -168,106 +109,22 @@ for (const path of renderPaths) {
   if (navigationHandlePixels < 2_000) {
     throw new Error(`${path} is missing the native unfolded navigation handle.`);
   }
-}
-const selectedFolderIndicatorPixels = countPixelsMatching({
-  path: baselinePath,
-  crop: '200x4+140+499',
-  predicate: isPrimary,
-});
-if (selectedFolderIndicatorPixels < 700) {
-  throw new Error(`${baselinePath} must retain the selected folder's separate 2dp target-width indicator.`);
-}
-const linkLikeUnderlinePixels = countPixelsMatching({
-  path: baselinePath,
-  crop: '200x5+140+458',
-  predicate: isPrimary,
-});
-if (linkLikeUnderlinePixels > 0) {
-  throw new Error(`${baselinePath} must not underline selected folder text like a web link.`);
-}
-for (const path of volumePaths) {
-  const foldColors = Number(execFileSync(
-    'magick',
-    [resolve(path), '-crop', '59x1700+1009+200', '+repage', '-format', '%k', 'info:'],
-    { encoding: 'utf8' },
-  ));
-  const centerPixel = pixelAt({ path, x: 1038, y: 1000 });
-  if (foldColors !== 1 || centerPixel !== 'srgba(255,255,255,1)') {
-    throw new Error(`${path} does not keep the full protected center spacer uniformly white.`);
-  }
-  const currentRow = pixelAt({ path, x: 1100, y: 350 });
-  if (currentRow !== 'srgba(255,255,255,1)') {
-    throw new Error(`${path} must retain neutral current-track row color.`);
-  }
-  const popoverBounds = getPopoverBounds(path);
-  const rowStartY = path.includes('volume-h-') ? 806 : path.includes('volume-c-') ? 1_098 : 1_166;
-  const contentOffsetY = path.endsWith('-p.png') ? 117 : path.endsWith('-s.png') ? 166 : 0;
-  const expectedY = rowStartY + contentOffsetY;
-  const expectedHeight = path.endsWith('-p.png') ? 538 : path.endsWith('-s.png') ? 489 : 655;
-  if (
-    popoverBounds.x !== 678
-    || popoverBounds.y !== expectedY
-    || popoverBounds.width !== 273
-    || popoverBounds.height !== expectedHeight
-    || popoverBounds.x + popoverBounds.width > 1_009
-  ) {
-    throw new Error(`${path} does not keep its assigned volume trigger row and fold-safe popover geometry.`);
-  }
-  const popoverSurfacePixels = countPixelsMatching({
+  const selectedFolderIndicatorPixels = countPixelsMatching({
     path,
-    crop: '1000x1700+0+200',
-    predicate: isSurfaceHigh,
+    crop: '200x4+140+499',
+    predicate: isPrimary,
   });
-  const validSliderOnly = path.endsWith('-s.png') && popoverSurfacePixels > 110_000 && popoverSurfacePixels < 125_000;
-  const validPercentage = path.endsWith('-p.png') && popoverSurfacePixels > 125_000 && popoverSurfacePixels < 140_000;
-  const validMute = path.endsWith('-m.png') && popoverSurfacePixels > 155_000;
-  if (!validSliderOnly && !validPercentage && !validMute) {
-    throw new Error(`${path} does not show its assigned open volume-popover content.`);
+  if (selectedFolderIndicatorPixels < 700) {
+    throw new Error(`${path} must retain the selected folder's separate 2dp target-width indicator.`);
   }
-}
-const volumeFingerprints = volumePaths.map((path) => readFileSync(resolve(path)).toString('base64'));
-if (new Set(volumeFingerprints).size !== volumePaths.length) {
-  throw new Error('Every current-screen volume matrix cell must use a distinct native capture.');
-}
-const relativeLuminance = (hex) => {
-  const channels = [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
-  const linearChannels = channels.map((channel) => {
-    const encoded = channel / 255;
-    if (encoded <= 0.04045) {
-      return encoded / 12.92;
-    }
-    return ((encoded + 0.055) / 1.055) ** 2.4;
+  const linkLikeUnderlinePixels = countPixelsMatching({
+    path,
+    crop: '200x5+140+458',
+    predicate: isPrimary,
   });
-  return 0.2126 * linearChannels[0] + 0.7152 * linearChannels[1] + 0.0722 * linearChannels[2];
-};
-const contrastRatio = ({ foreground, background }) => {
-  const foregroundLuminance = relativeLuminance(foreground);
-  const backgroundLuminance = relativeLuminance(background);
-  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
-  const darker = Math.min(foregroundLuminance, backgroundLuminance);
-  return (lighter + 0.05) / (darker + 0.05);
-};
-const pinnedRoles = {
-  onSurface: '30323A',
-  onSurfaceVariant: '5D5F68',
-  surfaceContainerLow: 'F3F3FA',
-  surfaceContainerHigh: 'E7E7F1',
-  surfaceContainerLowest: 'FFFFFF',
-  secondaryContainer: 'DCE2F9',
-  onSecondaryContainer: '4B5164',
-  primary: '4C5E8B',
-};
-const volumeContrastChecks = [
-  { foreground: 'onSurface', background: 'surfaceContainerHigh' },
-  { foreground: 'onSurfaceVariant', background: 'surfaceContainerHigh' },
-  { foreground: 'primary', background: 'surfaceContainerHigh' },
-];
-const volumeContrastFailures = volumeContrastChecks.filter(({ foreground, background }) => contrastRatio({
-  foreground: pinnedRoles[foreground],
-  background: pinnedRoles[background],
-}) < 4.5);
-if (volumeContrastFailures.length > 0) {
-  throw new Error(`Volume popover dynamic role pairs fail text contrast: ${JSON.stringify(volumeContrastFailures)}.`);
+  if (linkLikeUnderlinePixels > 0) {
+    throw new Error(`${path} must not underline selected folder text like a web link.`);
+  }
 }
 const white = 'srgba(255,255,255,1)';
 const outlineVariant = 'srgba(176,177,188,1)';
@@ -309,57 +166,35 @@ const forbiddenFragments = [
   'before your marked correction',
   'Annotated starting point',
   'Rejected and superseded versions',
+  'revised D2',
   'Can we continue',
   'Continue with the current design',
-  'name="reviewResult"',
-  'name="scopeDecision"',
-  'name="categoryDecision"',
-  'command-bar',
-  'global hotkey',
-  'prototype commit 2aba2fb1d',
+  '<strong>Recommendation:</strong>',
+  'prototype commit 89a9f7033',
 ];
 const foundFragments = forbiddenFragments.filter((fragment) => question.includes(fragment));
 if (foundFragments.length > 0) {
-  throw new Error(`Current-screen volume matrix contains stale, unauthorized, or external content: ${foundFragments.join(', ')}`);
+  throw new Error(`Current-design review contains stale or external content: ${foundFragments.join(', ')}`);
 }
 const requiredFragments = [
   '<form',
-  '<fieldset',
+  '<fieldset>',
   '<textarea',
   '<dialog',
-  'The design you liked',
-  'What still deserves design work',
-  'Missing required control:',
-  'Nine refinements of the current screen',
-  'Row 1 · icon in the now-playing header',
-  'Row 2 · icon beside playback controls',
-  'Row 3 · icon in a dedicated row',
-  '1A · rank 6',
-  '1B · rank 3',
-  '1C · rank 4',
-  '2A · rank 5',
-  '2B · rank 1 · recommended',
-  '2C · rank 2',
-  '3A · rank 9',
-  '3B · rank 7',
-  '3C · rank 8',
-  'My recommendation and full ranking',
-  'Worth adding to the selected volume treatment',
-  'name="placementDecision"',
-  'name="contentDecision"',
-  'name="additions"',
+  'What changed',
+  'Current design:',
+  'active music-player screen',
+  'What should change in this screen?',
+  'name="reviewResult"',
   'name="otherCorrections"',
-  'Q1. Where should the volume button sit?',
-  'Q2. What should the open popover show?',
-  'Q3. Which complementary behaviors should be included?',
-  "Playback row's trailing edge (Recommended)",
-  'Slider plus percentage (Recommended)',
-  'Current combination:',
-  'rank ${combination.rank} of 9',
-  'Other combinations, corrections, or additions, or “None”',
+  'value="nothing-else"',
+  'value="changes-needed"',
+  'Nothing else in this screen',
+  'Changes needed in this screen',
+  'This field is required only when you choose Changes needed.',
+  'Review scope: the current screen.',
   'Copy answers',
   'prototype commit 49d6568ed',
-  'prototype commit 38b089e24',
   'data-preview-width="852"',
   'data-preview-height="883"',
   'data-source-width="2076"',
@@ -368,44 +203,38 @@ const requiredFragments = [
   'const fullFrameWidth = 907;',
   'const frameHeight = 937;',
   '--color-device: #262624;',
-  'Prototype preview',
   'Close preview and answer',
 ];
 const absentFragments = requiredFragments.filter((fragment) => !question.includes(fragment));
 if (absentFragments.length > 0) {
-  throw new Error(`Current-screen volume matrix is incomplete: ${absentFragments.join(', ')}`);
+  throw new Error(`Current-design review is incomplete: ${absentFragments.join(', ')}`);
 }
 const imageCount = question.split('data-candidate-source=').length - 1;
 const embeddedImageCount = question.split('data:image/png;base64,').length - 1;
 const frameCount = question.split('class="device-frame"').length - 1;
 const screenCount = question.split('class="device-screen"').length - 1;
 const cameraCount = question.split('class="device-camera"').length - 1;
-const radioCount = question.split('type="radio"').length - 1;
-const checkboxCount = question.split('type="checkbox"').length - 1;
-const matrixScrollerCount = question.split('class="options-scroll" role="region"').length - 1;
-if (imageCount !== 10 || embeddedImageCount !== 10) {
-  throw new Error(`Expected ten sourced and embedded renders, found ${imageCount} sources and ${embeddedImageCount} images.`);
+const radioCount = question.split('type="radio" name="reviewResult"').length - 1;
+if (imageCount !== 1 || embeddedImageCount !== 1) {
+  throw new Error(`Expected one sourced and embedded render, found ${imageCount} sources and ${embeddedImageCount} images.`);
 }
-if (frameCount !== 10 || screenCount !== 11 || cameraCount !== 11) {
-  throw new Error(`Expected ten cards plus one dialog frame; found ${frameCount} frames, ${screenCount} screens, and ${cameraCount} cameras.`);
+if (frameCount !== 1 || screenCount !== 2 || cameraCount !== 2 || radioCount !== 2) {
+  throw new Error(`Expected one card plus one dialog frame; found ${frameCount} frames, ${screenCount} screens, ${cameraCount} cameras, and ${radioCount} radios.`);
 }
-if (radioCount !== 6 || checkboxCount !== 5 || matrixScrollerCount !== 3) {
-  throw new Error(`Expected six radios, five behavior checkboxes, and three matrix scrollers; found ${radioCount}, ${checkboxCount}, and ${matrixScrollerCount}.`);
-}
-console.log('Current-screen volume matrix structure is valid.');
+console.log('Current-design review structure is valid.');
 '''
 
 [tasks.build]
-description = "Embed the accepted design and nine native current-screen volume prototypes"
+description = "Embed the native current design into the self-contained review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
 [tasks.lint]
-description = "Validate the active current-screen volume matrix questionnaire"
+description = "Validate the active current-design review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
 
 [tasks."test:unit"]
-description = "Exercise the current-screen volume matrix's static completion contract"
+description = "Exercise the current-design review's static completion contract"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
