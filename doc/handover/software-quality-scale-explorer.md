@@ -10,6 +10,8 @@ The user confirmed the explorer primarily expresses and refines their software-q
 Every existing catalogue rating and its stated reasoning is approved.
 The custom/new-software rating algorithm is disputed.
 The original request also identifies UX as needing repair.
+The user delegated decisions Q3 and Q4 to the assistant:
+how independent defects compound and whether the output may remain a range.
 Preserve the approved catalogue and use its reasoning as constraints on the replacement algorithm.
 
 The assistant initially reopened the provenance and validity of existing ratings.
@@ -50,29 +52,98 @@ Original HTML source locations:
 The independent `audit_quality_logic` agent verified the numerical counterexample from parsed source.
 Neither agent has changed the original HTML.
 
+## Implemented decisions
+
+The replacement is `doc/artifact/software-quality-scale.html`.
+It is standalone HTML with inline CSS, JavaScript, and the original catalogue records.
+The original Downloads file is retained.
+
+The custom algorithm uses explicit ordinal comparisons with approved references.
+For example, higher than VS Code at 6 and lower than Neovim at 8 permits only 7.
+It intersects integer bands, applies defining-failure obligations and requirements for 10,
+and exposes contradictory answers instead of averaging them.
+No per-criterion weights, decimal averages, or inferred midpoint remain.
+
+Compounding is handled through judgment of the complete product with all independent consequences present.
+Notes explicitly distinguish an underlying defect from its repeated symptoms.
+The software does not infer severity from text or invent a numerical penalty per defect.
+This is a deliberate limit:
+the user supplies comparative judgments;
+the algorithm checks their consequences.
+
+The OpenClaw rationale is represented by an additional defining-failure check for
+purpose-defeating privileged orchestration machinery.
+This derives from the approved example and does not assign a general zero to broad scope.
+Every other reference field is retained verbatim, including its original status label.
+
+Missing endpoint checks remain unknown.
+Name/job changes clear old endpoint checks.
+Edited notes invalidate confirmation of the whole-product review.
+Confirmed defining failures require 0 but conflicting positive comparisons stay visible and block completion.
+Removing a saved comparison preserves an unrelated current draft.
+After a decisive comparison, the UI retains it for review instead of suggesting an irrelevant next reference.
+
+The interface provides reference search, category/score filtering, ordering,
+qualitative notes and comparison reasons, reviewable constraints, explicit reset confirmation,
+and a downloadable assessment containing provisional status and all reasoning.
+The desktop result panel stays within the viewport.
+On narrow screens, a compact result link precedes the form;
+the full result follows the inputs.
+
 ## Browser verification status
 
 The dedicated `agent-browser` session is `quality-explorer`.
 Opening the file reported its expected URL and title.
 Subsequent snapshot and evaluation commands observed `about:blank`, including commands in one shell invocation.
 The captured image is blank and is not valid UX evidence.
-Do not report the supplied page as browser-verified.
-Resolve session/tab targeting or use a different browser bridge for the next verification pass.
+The browser bridge agent traced the reset to inconsistent launch flags.
+The required flag set is
+`agent-browser --session quality-explorer --allow-file-access --pin-tab` on every invocation.
+See `doc/troubleshooting/agent-browser-launch-option-reset.md` for source and positive/negative controls.
+
+Completed verification of the replacement:
+
+- Parsed catalogue deep-equals the original data, including all 36 records and every field.
+- Script syntax and pure-model probes passed for blank and complete assessments,
+  ranges, exact bracketing, missing checks, every zero/ten rule,
+  all 33 score/relation boundary combinations, and duplicate-comparison invariance.
+- Browser controls reproduced the supported 7 example,
+  an unconfirmed and confirmed 10,
+  failed-ten conflicts,
+  incompatible comparison/zero handling,
+  context invalidation,
+  and draft retention when another saved comparison is removed.
+- All score filters, category filtering, search, empty state, sort orders,
+  reference selection, skipping, and method navigation were exercised.
+- At 320 and 375 CSS pixels, both views have document scroll width equal to viewport width.
+- Axe-core 4.12.1 reported zero violations and zero incomplete findings for
+  the desktop dark assessment,
+  mobile assessment,
+  desktop light catalogue,
+  and desktop light assessment states tested.
+
+An immediate reset assertion ran before the native dialog close event completed.
+The following observation showed the cleared state.
+Final reset verification must wait for that rendered state rather than infer failure from a timing race.
+
+The download-tool invocation timed out without producing the expected saved file.
+The browser bridge agent is separately checking export code and the tool's download handling.
+Do not mark download verification complete until actual file content is read.
 
 ## Design frontier
 
 Settled: personal philosophy; approved catalogue ratings and rationale; custom algorithm and UX need fixes.
 
-Open: whether custom answers should determine one score automatically or bound a judgment;
-how nonzero defect severity constrains scores;
-how to handle incomplete or conflicting answers;
-custom-rating interaction and persistence needs.
-
-Questions whose answers depend on algorithm authority or severity rules wait for those decisions.
-No replacement model has been approved or implemented.
-Next action: ask concrete questions about algorithm authority and severity without reopening approved anchors.
+Q3/Q4 are delegated and resolved through complete-product comparisons and explicit candidate ranges.
+The replacement is implemented within the requested standalone scope.
+No request to revise existing reference judgments or research a universal ranking is open.
+Next actions: complete export and final layout verification;
+copy the finished HTML to Downloads;
+open the new-rating view in Helium and verify the visible artifact.
 
 ## Changes and commits
 
-This handover is the first task file added.
-No task commit or modified HTML has been produced yet.
+- `9f18a50eb`: approved rubric and repair scope.
+- `7916cf873`: browser launch-option reset diagnosis.
+- `0e33b6b5f`: reference-based custom assessment and revised standalone explorer.
+- `84eabfc63`: stale-state protections, accessibility, and responsive result handling.

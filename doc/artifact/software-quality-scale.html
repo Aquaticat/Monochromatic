@@ -68,6 +68,7 @@ header { padding-block-start: 2.5rem; }
 nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1.5rem 2rem; padding-block-end: 1rem; border-block-end: .0625rem solid var(--color-line); }
 nav button { background-color: var(--color-page); border-color: var(--color-page); }
 nav button[aria-current="page"] { background-color: var(--color-tint); border-color: var(--color-tint); color: var(--color-accent); font-weight: 700; }
+body[data-view="assess"] header .intro { display: none; }
 [hidden] { display: none; }
 .row { display: flex; align-items: center; flex-wrap: wrap; gap: .7rem; }
 .spread { justify-content: space-between; }
@@ -143,6 +144,8 @@ dialog::backdrop { background-color: var(--color-shadow); backdrop-filter: blur(
 }
 @media (max-width: 38rem) {
   header { padding-block-start: 1.5rem; }
+  nav { gap: .25rem; margin-block: 1rem; }
+  nav button { padding-inline: .6rem; }
   .toolbar { grid-template-columns: minmax(0, 1fr); }
   .scale { grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr)); }
   .rating { grid-template-columns: 3rem minmax(0, 1fr); gap: .8rem; padding-inline: 1rem; }
@@ -158,16 +161,16 @@ dialog::backdrop { background-color: var(--color-shadow); backdrop-filter: blur(
 }
 </style>
 </head>
-<body>
+<body data-view="explore">
 <a class="skip-link button" href="#content">Skip to content</a>
 <header class="wrap">
   <p class="eyebrow">A personal software-quality rubric</p>
   <h1>Software quality scale</h1>
   <p class="intro">The defining job comes first. Architecture, interaction, stewardship, and user control decide how well the rest holds together.</p>
   <nav aria-label="Explorer sections">
-    <button type="button" data-view="explore" aria-current="page">Explore the scale</button>
-    <button type="button" data-view="assess">Rate new software</button>
-    <button type="button" data-view="method">How ratings work</button>
+    <button type="button" data-view="explore" aria-current="page" aria-label="Explore the scale">Explore</button>
+    <button type="button" data-view="assess" aria-label="Rate new software">Rate new</button>
+    <button type="button" data-view="method" aria-label="How ratings work">How it works</button>
   </nav>
 </header>
 <main class="wrap" id="content" tabindex="-1">
@@ -414,6 +417,7 @@ function node({ tag, text = '', className = '' }) {
 }
 /** @param view - Named section. @returns Nothing. @example showView('assess') */
 function showView(view) {
+  document.body.dataset.view = view;
   ['explore', 'assess', 'method'].forEach(name => { element(`#${name}-view`).hidden = name !== view; });
   document.querySelectorAll('nav [data-view]').forEach(button => {
     if (button.dataset.view === view) button.setAttribute('aria-current', 'page');
@@ -571,7 +575,7 @@ function renderResult() {
   const unplaced = !assessment.comparisons.length && !result.failures.length;
   const label = result.failures.length ? '0' : result.conflict ? 'Conflict' : unplaced ? 'Unplaced' : bandLabel(result.possible);
   element('#result-number').textContent = label;
-  element('#mobile-result').textContent = `${label}${result.complete ? '' : ' · provisional'} · View assessment ↓`;
+  element('#mobile-result').textContent = `Assessment: ${label}${result.overriddenComparisons.length ? ' (conflict)' : !unplaced && !result.conflict && !result.complete ? ' (provisional)' : ''} ↓`;
   element('#result-number').dataset.long = String((result.conflict && !result.failures.length) || unplaced);
   element('#result-label').textContent = result.conflict ? 'These answers cannot all hold'
     : unplaced ? 'Keep a reference comparison'
