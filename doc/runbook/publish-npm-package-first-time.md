@@ -172,6 +172,11 @@ TODO
    and the `publish` job log for that run contains `+ @monochromatic-dev/module-logger@0.1.1`
    (or whatever version the changeset produced) with a provenance attestation shown by
    `npm view @monochromatic-dev/module-logger dist.attestations.url`.
+   Verified on 2026-09-06 with 0.2.0:
+   the `publish` job succeeded,
+   `npm view @monochromatic-dev/module-logger@0.2.0 dist.attestations.url` printed the attestation URL,
+   and the workflow itself created the tag and GitHub release `@monochromatic-dev/module-logger@0.2.0`,
+   so the manual tag step in the steps section is bootstrap-only.
 
 ## Restore
 
