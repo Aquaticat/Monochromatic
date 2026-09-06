@@ -809,8 +809,14 @@ document.querySelector('#clear-form').addEventListener('click', () => {
   answerOutput.value = '';
   status.textContent = 'Form cleared.';
 });
-document.querySelector('#copy-answers').addEventListener('click', async () => {
-  await navigator.clipboard.writeText(answerOutput.value);
+document.querySelector('#copy-answers').addEventListener('click', () => {
+  answerOutput.focus();
+  answerOutput.select();
+  const copied = document.execCommand('copy');
+  if (!copied) {
+    status.textContent = 'Copy was blocked. Select the prepared answer and copy it manually.';
+    return;
+  }
   status.textContent = 'Answer copied.';
 });
 document.querySelector('#download-answers').addEventListener('click', () => {
