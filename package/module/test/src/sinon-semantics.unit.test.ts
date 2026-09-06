@@ -125,6 +125,32 @@ await describe({
       },
     },),
     it({
+      name: 'existing accessor getters and setters retain ordinary Sinon behavior',
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        const data = { value: 'original', };
+        const target = {
+          get value(): string {
+            return data.value;
+          },
+          set value(value: string) {
+            data.value = value;
+          },
+        };
+        const original = Object.getOwnPropertyDescriptor(target, 'value',);
+        const fake = sinon.stub(target, 'value',);
+        fake.get(() => 'private getter',);
+        fake.set((value: string): void => {
+          data.value = value;
+        },);
+        expect(target.value,).toBe('private getter',);
+        target.value = 'changed';
+        expect(data.value,).toBe('changed',);
+        fake.restore();
+        expect(target.value,).toBe('changed',);
+        expect(Object.getOwnPropertyDescriptor(target, 'value',),).toEqual(original,);
+      },
+    },),
+    it({
       name: 'deferred contextual getters preserve receiver and setter conversion rejects before mutation',
       fn: async ({ sinon, }: TestContext,): Promise<void> => {
         const target = { label: 'receiver', method: (): string => 'original', };
@@ -152,6 +178,29 @@ await describe({
         expect(instance.getTime(),).toBe(0,);
         expect(spy.calledWithNew(),).toBe(true,);
         expect(spy.callCount,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'numeric method keys use their ordinary JavaScript property spelling',
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        const target = { 0: (): string => 'original', };
+        sinon.stub(target, 0,).returns('numeric',);
+        expect(target[0](),).toBe('numeric',);
+      },
+    },),
+    it({
+      name: 'createStubInstance returns configurable local fakes guarded after completion',
+      fn: async (): Promise<void> => {
+        const late: (() => unknown)[] = [];
+        await it({ name: 'stub-instance owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
+          const instance = sinon.createStubInstance(Date,);
+          instance.getTime.returns(1,);
+          expect(instance.getTime(),).toBe(1,);
+          const retained = instance.getTime;
+          late.push(() => retained.value(() => 2,),);
+        }, },);
+        for (const mutate of late)
+          expect(mutate,).toThrow('completed',);
       },
     },),
     it({

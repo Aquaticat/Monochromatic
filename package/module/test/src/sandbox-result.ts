@@ -31,6 +31,8 @@ import {
  @param target - actual target for noncontextual fakes, or the private contextual facade
  
  @param key - property that deferred descriptor configuration would mutate
+
+ @param contextualMethod - whether descriptor changes target a private data-method facade
  
  @example
  ```ts
@@ -43,12 +45,14 @@ export function guardFakeMutators({
   restoring,
   target,
   key,
+  contextualMethod = false,
 }: {
   readonly value: unknown;
   readonly owner: SandboxOwner;
   readonly restoring: () => boolean;
   readonly target?: object;
   readonly key?: PropertyKey;
+  readonly contextualMethod?: boolean;
 },): void {
   if (!isSandboxTarget(value,))
     return;
@@ -91,6 +95,8 @@ export function guardFakeMutators({
             owner,
             operation: `Sinon fake.${operation}`,
           },);
+          if (contextualMethod && operation === 'set')
+            throw new SandboxOwnershipError(`Sinon fake.set cannot convert context-owned data-method property "${String(key,)}" to a setter. Stub an existing accessor property, or use callsFake/value for method behavior.`,);
           if (generation.restored)
             throw new SandboxOwnershipError(`Sinon fake.${operation} belongs to a restored replacement. Create a new fake instead.`,);
           if ((target !== undefined) && (key !== undefined))

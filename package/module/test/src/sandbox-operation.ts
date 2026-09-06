@@ -198,6 +198,7 @@ export function dispatchSandboxOperation({
         restoring: policy.restoring,
         target: replacement.facade,
         key,
+        contextualMethod: true,
       },);
       return replacement.fake;
     }

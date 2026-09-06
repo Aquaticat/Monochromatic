@@ -176,8 +176,8 @@ Executes a single test case.
   receives a fresh sandbox and context object.
   Completion or timeout closes its mutation factories before restoration.
   The sandbox is created with default config.
-  Custom `SinonSandboxConfig` is not supported;
-  its only useful option (`useFakeTimers`) is already callable directly via `sinon.useFakeTimers()`.
+  Custom `SinonSandboxConfig` is not supported on `TestContext`;
+  configure fake timers through `sinon.useFakeTimers(...)`.
 
 The global `expect` still works for tests that do not destructure the context.
 Returns `{ name }` on success.
@@ -1098,6 +1098,15 @@ The property value follows the context reading it:
   Plain `EventEmitter` callbacks read the emitting context,
   not necessarily the registration context.
 
+Returned fakes keep Sinon behavior methods such as `withArgs`,
+`onCall`,
+`callsFake`,
+and promise responses.
+Deferred `.get` and `.value` configuration stays private to the owner;
+getters receive the actual property receiver.
+Converting an owned data method into a setter with `.set` is rejected before mutation.
+Existing accessor properties can use ordinary Sinon getter/setter stubbing.
+
 The target temporarily has an accessor descriptor.
 Assignment is rejected while it is leased.
 The final owner restores the exact original descriptor.
@@ -1704,6 +1713,16 @@ the dist is built).
 shared process let one suite's timers starve another's,
  making a wall-clock concurrency assertion
 flaky under load.
+
+Browser acceptance builds a consumer of the neutral artifact and runs it in disposable Playwright contexts:
+
+```bash
+# Chromium, Firefox, and WebKit in a container limited to 2 GiB RAM and 2 CPUs.
+mise run //package/module/test:test:browser
+```
+
+The Node and neutral artifacts share one declared build dependency graph.
+The browser consumer bundles only after its neutral artifact has finished building.
 
 ## Property-based testing (internal)
 
