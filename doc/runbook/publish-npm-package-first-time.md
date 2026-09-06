@@ -115,15 +115,11 @@ TODO
      a confirmation prompt,
      answer **y**,
      then a line confirming the trusted publisher for `Aquaticat/Monochromatic` and `npm-release.yml`.
-13.  Wait for the registry index to replicate before merging:
+13.  Wait for the registry index to replicate:
      `npm view @monochromatic-dev/module-logger version` until it prints `0.1.0`.
      Expected:
      a brand-new package's version document appears at once,
      but the package index (`https://registry.npmjs.org/@monochromatic-dev%2fmodule-logger`) can answer 404 for several minutes.
-     Merging before it replicates makes the release workflow plan a fresh publish,
-     which silently no-ops against the existing version and creates no tag;
-     if that happens,
-     re-run the workflow with `gh workflow run npm-release.yml` once `npm view` succeeds.
 14.  Merge the version pull request:
      `gh pr merge <number> --squash`.
      Expected:
@@ -132,11 +128,21 @@ TODO
      `gh run list --workflow npm-release.yml --limit 1 --json databaseId --jq '.[0].databaseId'`
      then `gh run watch <id> --exit-status`.
      Expected:
-     jobs `select-mode`,
-     `pack`,
-     and `publish` all `succeeded`;
-     the `publish` job log contains `already published` for `@monochromatic-dev/module-logger@0.1.0`
-     and creates the git tag `@monochromatic-dev/module-logger@0.1.0` plus a GitHub release with that name.
+     the run succeeds but does nothing for this version.
+     With the version already on the registry and no changeset pending,
+     `select-mode` reports nothing to version or publish,
+     so the pack and publish jobs are skipped and no tag is created.
+     (If the index had not replicated yet,
+     the run instead plans a fresh publish that no-ops against the existing version;
+     the outcome is the same.)
+16.  Create the bootstrap version's tag and release by hand,
+     in the shape the publish job uses for later versions:
+     `git tag -a '@monochromatic-dev/module-logger@0.1.0' <merge commit of the version pull request> -m '@monochromatic-dev/module-logger@0.1.0'`,
+     `git push origin '@monochromatic-dev/module-logger@0.1.0'`,
+     then
+     `gh release create '@monochromatic-dev/module-logger@0.1.0' --verify-tag --title '@monochromatic-dev/module-logger@0.1.0' --notes-file <file with the 0.1.0 section of package/module/logger/CHANGELOG.md>`.
+     Expected:
+     `gh release view '@monochromatic-dev/module-logger@0.1.0' --json tagName --jq .tagName` prints the tag name.
 
 ## What to check
 
