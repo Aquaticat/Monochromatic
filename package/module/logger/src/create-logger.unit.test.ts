@@ -8,6 +8,7 @@ import {
   createLogger,
   DEFAULT_FLUSH_DEADLINE_MS,
   DEFAULT_VERIFY_TIMEOUT_MS,
+  STARTUP_BUFFER_CAP,
   type LogRecord,
   type Sink,
   type SinkFlush,
@@ -943,5 +944,71 @@ await describe({
     },),
 
     //endregion Breadcrumb suites
+
+    //region Startup buffer bound
+
+    it({
+      name: 'exports a positive startup buffer cap',
+      fn: async () => {
+        expect(STARTUP_BUFFER_CAP,)
+          .toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'a startup burst beyond the cap keeps the newest records and reports the loss once',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async () => {
+        /**
+         * Records logged before the sink verifies: the cap plus a few extra
+         * that must push the oldest ones out.
+         */
+        const extra = 3;
+        /**
+         * Total records in the burst; the last one is index `burstSize - 1`.
+         */
+        const burstSize = STARTUP_BUFFER_CAP + extra;
+        const late = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
+        const {
+          logger,
+          initPromise,
+        } = createLogger({ sinks: [late.sink,], },);
+        for (let index = 0; index < burstSize; index += 1)
+          logger.info(`burst ${index}`,);
+        await initPromise;
+        await logger.flush();
+
+        const received = messages({ recording: late, },);
+        expect(received,)
+          .toHaveLength(STARTUP_BUFFER_CAP + 1,);
+        expect(received[0],)
+          .toBe(`burst ${extra}`,);
+        expect(received[STARTUP_BUFFER_CAP - 1],)
+          .toBe(`burst ${burstSize - 1}`,);
+        expect(received[STARTUP_BUFFER_CAP],)
+          .toBe(`${extra} startup records dropped before a backend verified (buffer cap ${STARTUP_BUFFER_CAP})`,);
+        expect(late.records[STARTUP_BUFFER_CAP]?.level,)
+          .toBe('warn',);
+      },
+    },),
+
+    it({
+      name: 'no marker record is written when the startup buffer never overflowed',
+      fn: async () => {
+        const late = recordingSink({ verify: verifyTrueAfter({ delayMs: 1, },), },);
+        const {
+          logger,
+          initPromise,
+        } = createLogger({ sinks: [late.sink,], },);
+        logger.info('one',);
+        await initPromise;
+        await logger.flush();
+
+        expect(messages({ recording: late, },),)
+          .toEqual(['one',],);
+      },
+    },),
+
+    //endregion Startup buffer bound
   ],
 },);

@@ -30,6 +30,16 @@ export const DEFAULT_FLUSH_DEADLINE_MS = 5_000;
 export const DEFAULT_VERIFY_TIMEOUT_MS = 5_000;
 
 /**
+ * Most records the logger buffers before its sinks have verified. Startup
+ * lasts at most {@link DEFAULT_VERIFY_TIMEOUT_MS}, so this bounds the memory a
+ * burst during that window can claim; on overflow the oldest buffered record
+ * is dropped so the newest (usually most diagnostic) context survives, and
+ * one synthetic `warn` record naming the dropped count is written to every
+ * available sink once initialization completes.
+ */
+export const STARTUP_BUFFER_CAP = 10_000;
+
+/**
  * Sink paired with its current availability inside one logger instance.
  * Availability starts `false` (not-yet-verified reads as unavailable,
  * identical to a verified failure) and flips `true` once the sink's own
@@ -156,15 +166,34 @@ export function createLogger(
   /**
    * Instance-local aggregate flags. `initialized` flips true once the eager
    * `initialize()` settles; `hasAvailableSink` reflects whether any sink
-   * survives verification and is recomputed by `recomputeAvailability`.
+   * survives verification and is recomputed by `recomputeAvailability`;
+   * `droppedStartupRecords` counts startup-buffer overflow drops for the
+   * post-initialization marker record.
    */
   const state: {
+    droppedStartupRecords: number;
     hasAvailableSink: boolean;
     initialized: boolean;
   } = {
+    droppedStartupRecords: 0,
     hasAvailableSink: false,
     initialized: false,
   };
+
+  /**
+   * Buffers a pre-initialization record under {@link STARTUP_BUFFER_CAP},
+   * dropping the oldest buffered record (and counting the drop) when the cap
+   * is reached.
+   *
+   * @param record - Record logged before every sink has verified.
+   */
+  function bufferStartupRecord({ record, }: { readonly record: LogRecord; },): void {
+    if (startupRecords.length >= STARTUP_BUFFER_CAP) {
+      startupRecords.shift();
+      state.droppedStartupRecords += 1;
+    }
+    startupRecords.push(record,);
+  }
 
   /**
    * Recomputes aggregate availability after a sink entry's flag flips.
@@ -338,6 +367,39 @@ export function createLogger(
   }
 
   /**
+   * Writes one synthetic `warn` record to every available sink when the
+   * startup buffer overflowed, so the loss is never silent. Runs once, after
+   * initialization, when the dropped count is known and final.
+   */
+  function emitDroppedStartupMarker(): void {
+    /**
+     * Records dropped from the startup buffer; zero means nothing to report.
+     */
+    const dropped = state.droppedStartupRecords;
+    if (dropped === 0)
+      return;
+    /**
+     * Marker record naming the loss; the noun agrees with the count.
+     */
+    const marker: LogRecord = {
+      level: 'warn',
+      message: `${dropped} startup record${(dropped === 1) ? '' : 's'} dropped before a backend verified (buffer cap ${STARTUP_BUFFER_CAP})`,
+      timestamp: Date.now(),
+    };
+    entries.forEach(function writeMarker(
+      entry,
+      entryIndex,
+    ) {
+      if (entry.available) {
+        writeRecordToEntry({
+          entryIndex,
+          record: marker,
+        },);
+      }
+    },);
+  }
+
+  /**
    * Initializes all sink backends by verifying their availability. Runs once
    * at construction. Every verifier runs concurrently, each under the verify
    * time limit, so one backend that never answers cannot starve the rest or
@@ -362,6 +424,7 @@ export function createLogger(
 
     state.initialized = true;
     startupRecords.length = 0;
+    emitDroppedStartupMarker();
   }
 
   /**
@@ -405,7 +468,7 @@ export function createLogger(
       };
 
       if (!state.initialized)
-        startupRecords.push(record,);
+        bufferStartupRecord({ record, },);
 
       /**
        * Indices of sinks that survived verification; recomputed per call so a sink dropped at verify time is excluded next time.

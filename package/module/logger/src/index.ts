@@ -2,6 +2,7 @@ export {
   createLogger,
   DEFAULT_FLUSH_DEADLINE_MS,
   DEFAULT_VERIFY_TIMEOUT_MS,
+  STARTUP_BUFFER_CAP,
 } from './create-logger.ts';
 export {
   initPromise,
