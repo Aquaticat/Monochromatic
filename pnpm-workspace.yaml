@@ -13,6 +13,7 @@ modulesCacheMaxAge: 0
 
 catalog:
   '@anthropic-ai/sdk': '>=0.120.0'
+  '@changesets/cli': '>=3.0.2'
   '@clack/prompts': '>=1.7.0'
   '@csstools/css-tokenizer': '>=4.0.0'
   '@deck.gl/core': '>=9.3.10'

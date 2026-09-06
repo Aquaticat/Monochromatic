@@ -47,7 +47,8 @@
     "browserslist": "catalog:",
     "nano-spawn": "catalog:",
     "execa": "catalog:",
-    "oxlint": "catalog:"
+    "oxlint": "catalog:",
+    "@changesets/cli": "catalog:"
   },
   "license": "LGPL-3.0-or-later AND CC-BY-SA-4.0",
   "private": true,

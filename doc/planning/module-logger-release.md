@@ -239,7 +239,7 @@ Order matters:
      `.changeset/config.json` (`access: public`,
      `baseBranch: main`,
      other options at defaults),
-     `.github/workflows/release.yml`,
+     `.github/workflows/npm-release.yml`,
      delete `publish.yml`,
      one changeset file for the logger.
 7.   Verification at the consumer boundary:

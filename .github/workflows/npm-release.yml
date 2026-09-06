@@ -1,0 +1,157 @@
+name: npm-release
+
+# Changesets release flow, decided in doc/decision/npm-publishing.md.
+#
+# - Pending changesets on main: the version job opens or updates the
+#   "Version Packages" pull request.
+# - No pending changesets and a package version missing from the registry:
+#   the pack job builds and packs exactly those packages, then the publish job
+#   uploads them with npm trusted publishing (OIDC). Only that job holds
+#   id-token: write. No npm token exists or is read anywhere.
+# - A package's first version cannot use trusted publishing (npm requires the
+#   package to exist before a trusted publisher can be configured), so it is
+#   published by hand: doc/runbook/publish-npm-package-first-time.md. The
+#   publish job then finds it already on the registry and only tags it.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  select-mode:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      mode: ${{ steps.select-mode.outputs.mode }}
+      publish-plan-artifact-id: ${{ steps.select-mode.outputs.publish-plan-artifact-id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up mise (skip auto-install of all tools)
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+        with:
+          install: false
+          cache: true
+
+      - name: Install pnpm and node
+        run: mise install 'npm:pnpm' node
+
+      - name: Install dependencies
+        run: mise exec -- pnpm install --frozen-lockfile
+
+      - name: Select mode
+        id: select-mode
+        uses: changesets/action/select-mode@8488615a623b1b9c987934bb89eae8af6a946ac1
+
+  version:
+    needs: select-mode
+    if: needs.select-mode.outputs.mode == 'version'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up mise (skip auto-install of all tools)
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+        with:
+          install: false
+          cache: true
+
+      - name: Install pnpm and node
+        run: mise install 'npm:pnpm' node
+
+      - name: Install dependencies
+        run: mise exec -- pnpm install --frozen-lockfile
+
+      - name: Open or update the version pull request
+        uses: changesets/action/version@8488615a623b1b9c987934bb89eae8af6a946ac1
+        with:
+          script: mise run changeset:version
+          commit-message: 'chore(*): version packages'
+          pr-title: 'chore(*): version packages'
+
+  pack:
+    needs: select-mode
+    if: needs.select-mode.outputs.mode == 'publish'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      pack-dir-artifact-id: ${{ steps.pack.outputs.pack-dir-artifact-id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up mise (skip auto-install of all tools)
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+        with:
+          install: false
+          cache: true
+
+      - name: Install pnpm and node
+        run: mise install 'npm:pnpm' node
+
+      - name: Install dependencies
+        run: mise exec -- pnpm install --frozen-lockfile
+
+      - name: Build the packages in the publish plan
+        run: mise run changeset:build
+
+      - name: Pack
+        id: pack
+        uses: changesets/action/pack@8488615a623b1b9c987934bb89eae8af6a946ac1
+        with:
+          publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
+
+  publish:
+    needs:
+      - select-mode
+      - pack
+    if: needs.select-mode.outputs.mode == 'publish'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up mise (skip auto-install of all tools)
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+        with:
+          install: false
+          cache: true
+
+      - name: Install pnpm and node
+        run: mise install 'npm:pnpm' node
+
+      - name: Install dependencies
+        run: mise exec -- pnpm install --frozen-lockfile
+
+      - name: Publish with trusted publishing
+        uses: changesets/action/publish@8488615a623b1b9c987934bb89eae8af6a946ac1
+        with:
+          pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
+          create-github-releases: true
+          push-git-tags: true

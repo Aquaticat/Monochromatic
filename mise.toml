@@ -1164,6 +1164,57 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 
 #endregion tasks
 
+#region Changesets -- versioning and npm publishing (doc/decision/npm-publishing.md)
+
+[tasks."changeset:add"]
+description = "Add a changeset describing a user-visible change (interactive)"
+run = "changeset add"
+
+[tasks."changeset:status"]
+description = "Show what the pending changesets will version"
+run = "changeset status --verbose"
+
+[tasks."changeset:version"]
+description = "Apply pending changesets to package versions and changelogs, then refresh the lockfile"
+run = ["changeset version", "pnpm install --lockfile-only"]
+
+[tasks."changeset:build"]
+description = "Build every package the changeset publish plan will publish"
+shell = "node --input-type=module-typescript -e"
+run = """
+import { execFileSync, } from 'node:child_process';
+import { mkdtempSync, readFileSync, } from 'node:fs';
+import { tmpdir, } from 'node:os';
+import { join, relative, } from 'node:path';
+
+type PlanEntry = { readonly kind: string; readonly name: string; };
+type WorkspacePackage = { readonly name: string; readonly path: string; };
+
+function buildPublishPlan(): void {
+  const planPath = join(mkdtempSync(join(tmpdir(), 'changeset-plan-',),), 'plan.json',);
+  execFileSync('changeset', ['publish-plan', '--output', planPath,], { stdio: 'inherit', },);
+  const { plan, } = JSON.parse(readFileSync(planPath, 'utf8',),) as { readonly plan: readonly (readonly PlanEntry[])[]; };
+  const names = plan.flat().filter(function isPublish(entry,) { return entry.kind === 'publish'; },).map(function toName(entry,) { return entry.name; },);
+  if (names.length === 0) {
+    console.log('changeset:build: the publish plan is empty; nothing to build',);
+    return;
+  }
+  const workspace = JSON.parse(execFileSync('pnpm', ['list', '--recursive', '--depth', '-1', '--json',], { encoding: 'utf8', },),) as readonly WorkspacePackage[];
+  for (const name of names) {
+    const entry = workspace.find(function byName(candidate,) { return candidate.name === name; },);
+    if (entry === undefined)
+      throw new Error(`changeset:build: workspace package ${name} is in the publish plan but not in the workspace`,);
+    const task = `//${relative(process.cwd(), entry.path,)}:build`;
+    console.log(`changeset:build: ${name} -> mise run ${task}`,);
+    execFileSync('mise', ['run', task,], { stdio: 'inherit', },);
+  }
+}
+
+buildPublishPlan();
+"""
+
+#endregion Changesets
+
 [env]
 # Secrets live in the age-encrypted .env.local.json (sops backend), gitignored
 # via the *.local.* pattern and decrypted at runtime by mise's built-in rops
