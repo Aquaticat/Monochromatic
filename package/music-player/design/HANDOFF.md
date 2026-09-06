@@ -1128,4 +1128,24 @@ the default small icon-button size, so all controls retain default size and 48dp
 minimum targets. No element is added, removed, renamed, reordered, or moved between
 sections. All settled colors, spacers, rail, folder selection, track rows, icons, mode
 labels, and system bars remain unchanged. Prototype commit `2b2ac2e88` builds these
-nine candidates; native capture and visual ranking are next.
+nine candidates.
+
+All nine native captures completed at 2076 × 2152px under the pinned AVD state.
+Full-screen contact-sheet inspection and full-resolution deck crops confirm every mode
+control has x=73 through x=935 bounds and x=504 axis, exactly matching the x=0 through
+x=1008 pane axis. Tight, balanced, and airy spacing make the transport surface start
+at y=1487, y=1460, and y=1430 respectively. Standard skip buttons leave only their
+icons visible, outlined adds rings, and tonal retains the accepted low-color circles.
+The right pane and all non-transport pixels remain visually unchanged.
+
+The visual ranking is `2A > 2C > 1A > 1C > 3A > 3C > 2B > 1B > 3B`, where rows are
+tight, balanced, airy and columns are standard, outlined, tonal. `2A`, balanced plus
+standard, is the recommendation: its 12dp rhythm scans cleanly and the low-emphasis
+skip actions leave the filled pause action as the single focal point. `2C`, balanced
+plus tonal, is the conservative fallback because it preserves the accepted skip-button
+containers while fixing the alignment and seek value. Every outlined treatment ranks
+last because those rings compete with the much larger outlined mode control. Build the
+self-contained form with the accepted screen first, disclose the two universal
+corrections, present all nine native refinements with per-cell analysis and this full
+ranking, then ask spacing and skip-button treatment as separate decisions. Do not ask
+whether to center the transport or correct the seek value; both are already determined.

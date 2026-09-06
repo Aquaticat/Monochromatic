@@ -239,8 +239,11 @@ pairs.
 ### Edge-flush letter rail
 
 The user requires the rail to match Nova Launcher's edge placement. The rail's 48dp
-selectable bounds now begin at x=0; app-bar, source-action, and transport controls keep
-the measured start inset. Android's current gesture-navigation guidance says an app
+selectable bounds now begin at x=0. App-bar and source actions keep the measured start
+inset. The current-screen refinement centers transport controls inside symmetric
+horizontal system-gesture insets, correcting the prior 15dp fold-side displacement
+without putting an interactive target into either edge region. Android's current
+gesture-navigation guidance says an app
 may selectively exclude an edge region only when an app gesture conflicts with Back:
 https://developer.android.com/develop/ui/views/touch-and-input/gestures/gesturenav.
 The Compose API can exclude a layout rectangle with `Modifier.systemGestureExclusion`:
@@ -251,6 +254,31 @@ back region, scrolled the rail from A-I to I-Q while the activity remained visib
 This proves the vertical rail gesture works without taking the whole rail away from
 predictive Back. UI Automator reports each rail target at `[0,...][117,...]`, exactly
 48dp wide and flush with the physical edge.
+
+## Existing-screen refinement boundary
+
+Every current refinement keeps the accepted screen's visible elements and structure.
+The 24dp center spacer, 16dp horizontal divider, surface roles, folder selection,
+track rows, current-track cue, metadata, app bars, slider, transport actions, and mode
+control remain present and in the same order.
+
+The accepted transport used 30dp start gesture padding plus 16dp horizontal content
+padding, but only 16dp at the fold side. Its mode-control axis was therefore 15dp away
+from the 414dp pane axis. Every refinement uses symmetric horizontal system-gesture
+padding and no additional horizontal padding. The measured mode outline runs from
+x=73 through x=935 in the 2076px capture, centering it at x=504 within the x=0 through
+x=1008 pane while retaining at least the native gesture-safe inset.
+
+The visible `1:06` elapsed and `4:35` duration labels imply a 66/275, or 24%, seek
+position. Every refinement uses that value instead of the prior unrelated 16% value.
+
+Rows use 8dp, 12dp, or 16dp spacing from Material's spacing system. Columns use only
+baseline Material icon-button color styles for the existing skip actions: standard,
+outlined, or tonal. The pause action stays filled and all icon-button targets remain
+at least 48dp. The downloaded Material guidance ranks filled, tonal, outlined, and
+standard from highest to lowest emphasis and recommends mixing styles to clarify a
+primary action. Baseline Material exposes only the default small size, so the matrix
+does not adopt Expressive size variants.
 
 ## Candidate boundary
 

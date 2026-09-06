@@ -292,3 +292,19 @@ reason D35 keeps the default supporting line neutral. The user's statement does 
 yet settle template scope, available fields, syntax, editing surface, preview,
 validation, fallback behavior, or whether templates apply beyond track rows. Do not
 invent those details or narrow the requirement without a dedicated design round.
+
+## 12. Existing-screen refinement, awaiting verdict
+
+The active round stays within the accepted screenshot. Centering and seek-value
+consistency are corrections, not choices: the old transport axis was 15dp toward the
+fold despite D18, and `1:06` of `4:35` requires 24% rather than 16%.
+
+The separable choices are:
+
+- 8dp, 12dp, or 16dp spacing between the existing transport groups.
+- Standard, outlined, or tonal baseline Material styles on the existing previous and
+  next buttons, with pause remaining filled.
+
+No absent control or future feature is part of this round. The command bar, cover
+screen, notification, custom display templating, and every other unbuilt item remain
+outside the active form.

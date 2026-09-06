@@ -52,6 +52,34 @@ which were left as historical style comparisons.
 - **Light studies sit on a light desk**, dark studies on a dark one, and frames fill
   the viewport height rather than floating in dead space.
 
+## Current screen refinement matrix, awaiting verdict
+
+The accepted `divider-final.png` remains the before-state evidence. Its transport
+content is 15dp toward the fold: the mode outline spans x=112 through x=969 and has
+axis x=540.5, while the 414dp pane has axis x=504. The nine native refinements correct
+that D18 violation and the seek-value mismatch in every cell. They vary only two
+existing presentation details:
+
+- Rows: tight 8dp, balanced 12dp, or airy 16dp spacing between the same transport
+  groups.
+- Columns: standard, outlined, or tonal baseline Material styling for the existing
+  previous and next buttons. Pause remains filled.
+
+Candidate names are `refine-{tight|balanced|airy}-{standard|outlined|tonal}`. All are
+opaque 2076 × 2152px Pixel 9 Pro Fold captures from prototype commit `2b2ac2e88`.
+The mode outline spans x=73 through x=935 in every capture, giving axis x=504. The
+transport surface starts at y=1487, y=1460, or y=1430 for tight, balanced, or airy
+spacing. No content, feature, state, component order, pane, color, divider, or list
+rule changes.
+
+Provisional visual ranking after full-resolution inspection:
+`2A > 2C > 1A > 1C > 3A > 3C > 2B > 1B > 3B`.
+`2A`, balanced spacing with standard skip buttons, gives the filled pause action the
+clearest focal point without compressing the stack. `2C` is the conservative fallback:
+it keeps the accepted tonal skip-button treatment while correcting the geometry.
+Outlined skip buttons rank last because their circles compete with the much larger
+outlined mode control.
+
 ## ROUND 10 — white-divider clarification
 
 Three native full-device captures keep the chosen `1c` tonal structure and `3a`
