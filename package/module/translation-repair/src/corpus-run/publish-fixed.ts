@@ -34,6 +34,7 @@ import {
   type DestinationCheck,
   droppedDestinations,
 } from './dropped-destinations.ts';
+import { assertHeadingsStayDistinct, } from './heading-distinctness.ts';
 
 /**
  * Directory under a runs dir holding the published corpus tree.
@@ -290,6 +291,14 @@ export async function publishFixedPage(
   assertDestinationsComplete({
     entryId,
     destinations,
+  },);
+
+  // TWO DIFFERENT SOURCE HEADINGS RENDERED AS ONE is a defect no slice floor
+  // can see, since a slice holds one heading (yulianNyanner, 2026-09-06).
+  assertHeadingsStayDistinct({
+    entryId,
+    sourceText,
+    pageText,
   },);
 
   /**

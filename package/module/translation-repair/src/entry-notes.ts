@@ -167,7 +167,88 @@ export function footnoteNoteLines(
 }
 
 /**
- * Editors' HTML comments of one document as labelled lines.
+ * Mark an ATX heading line opens with, repeated once per level.
+ */
+const HEADING_MARK = '#';
+
+/**
+ * Node kind the parser gives a heading.
+ */
+const HEADING_KIND = 'heading';
+
+/**
+ * Words of a heading, its opening marks and surrounding whitespace gone, so
+ * two headings compare by what a reader sees.
+ *
+ * @param text - heading node's exact source
+ *
+ * @returns Heading words on one line
+ *
+ * @example
+ * ```ts
+ * headingWords({ text: '## 简介', },);
+ * // => '简介'
+ * ```
+ */
+export function headingWords(
+  { text, }: { readonly text: string; },
+): string {
+  /**
+   * Index of the first character that is not an opening mark.
+   */
+  let index = 0;
+  while ((index < text.length) && (text[index] === HEADING_MARK))
+    index += 1;
+  return foldedLine({ text: text.slice(index,), },);
+}
+
+/**
+ * Where a comment sits, in the words the sheets are told.
+ *
+ * WHY THE ANCHOR EXISTS. A note that says "this title" or "here" points at the
+ * heading it sits under, and a line carried into every slice without saying
+ * so points at every heading at once: on 2026-09-06 yulianNyanner's source
+ * comment that "the English word for this title is dysphoria", which sits
+ * under its third heading, was read by seven of eight consolidation judges as
+ * fixing the SECOND heading, and the page shipped both as "Dysphoria".
+ *
+ * @param document - parsed document the comment sits in
+ *
+ * @param startOffset - where the comment opens, in the document's offsets
+ *
+ * @returns Phrase naming the nearest preceding heading, or the absence of one
+ *
+ * @example
+ * ```ts
+ * commentAnchor({ document, startOffset: 120, },);
+ * // => 'under heading 烦躁'
+ * ```
+ */
+function commentAnchor(
+  {
+    document,
+    startOffset,
+  }: {
+    readonly document: RepairDocument;
+    readonly startOffset: number;
+  },
+): string {
+  /**
+   * The last heading that ends before the comment opens.
+   */
+  const heading = document.nodes
+    .filter(function precedes(node,): boolean {
+      return (node.kind === HEADING_KIND) && (node.endOffset <= startOffset);
+    },)
+    .at(-1,);
+  if (heading === undefined)
+    return 'before the first heading';
+  return `under heading ${headingWords({ text: heading.text, },)}`;
+}
+
+/**
+ * Editors' HTML comments of one document as labelled lines, each naming the
+ * heading it sits under.
  *
  * The parser masks every comment before parsing and records each as a finding
  * with its offsets, which is the one place the comments survive.
@@ -181,7 +262,7 @@ export function footnoteNoteLines(
  * @example
  * ```ts
  * commentNoteLines({ document, side: 'ARCHIVE', },);
- * // => ['- ARCHIVE editor comment: 起床战争：Bed Wars']
+ * // => ['- ARCHIVE editor comment under heading 简介: 起床战争：Bed Wars']
  * ```
  */
 export function commentNoteLines(
@@ -198,7 +279,10 @@ export function commentNoteLines(
       return (finding.kind === 'html-comment-skipped')
         || (finding.kind === 'unterminated-html-comment');
     },)
-    .map(function toBody(finding,): string {
+    .map(function toPlacedBody(finding,): {
+      readonly anchor: string;
+      readonly body: string;
+    } {
       /**
        * Comment as it stands in the document, delimiters included.
        */
@@ -207,13 +291,19 @@ export function commentNoteLines(
           finding.startOffset,
           finding.endOffset,
         );
-      return foldedLine({ text: commentBody({ comment, },), },);
+      return {
+        anchor: commentAnchor({
+          document,
+          startOffset: finding.startOffset,
+        },),
+        body: foldedLine({ text: commentBody({ comment, },), },),
+      };
     },)
-    .filter(function saysSomething(body,): boolean {
-      return body.length > 0;
+    .filter(function saysSomething(placed,): boolean {
+      return placed.body.length > 0;
     },)
-    .map(function toLine(body,): string {
-      return `- ${side} editor comment: ${body}`;
+    .map(function toLine(placed,): string {
+      return `- ${side} editor comment ${placed.anchor}: ${placed.body}`;
     },);
 }
 

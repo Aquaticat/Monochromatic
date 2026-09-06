@@ -8,6 +8,10 @@ export {
   DroppedDestinationError,
 } from './corpus-run/destination-completeness.ts';
 export {
+  assertHeadingsStayDistinct,
+  CollapsedHeadingError,
+} from './corpus-run/heading-distinctness.ts';
+export {
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
 } from './archive-block-evidence.ts';
