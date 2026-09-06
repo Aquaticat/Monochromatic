@@ -354,9 +354,10 @@ The user's 2026-09-04 correction forbids color-only state communication.
 prototype uses these redundant cues:
 
 - Current track:
-   leading Material play icon plus semantic selected state,
-   without a
-  custom row fill.
+   pending a new full-width treatment after the user rejected the play
+  icon and its reserved leading column.
+  Every candidate must combine visible cues and retain
+  semantic current state.
 - Selected playback mode:
    selected segmented fill plus checkmark at default and
   enlarged type.

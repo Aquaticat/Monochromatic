@@ -766,3 +766,12 @@ segmented row;
     control when space changes.
      This mode selector is one horizontal segmented row at
     default text and one vertical full-label segmented stack at large text.
+13. **State cues preserve content space and use redundant channels.**
+     The current track
+    gets no play icon or reserved leading column.
+     Its visible treatment must combine at
+    least two of color,
+     weight,
+     boundary,
+     or container while titles retain full row
+    width.

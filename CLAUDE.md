@@ -384,13 +384,14 @@ never substitute a vague approval question.
 
 CXD:
  **Cross-cue distinction:**
- Differentiate states and action prominence through two visible channels (color,
+ Use two visible channels (color,
  weight,
  icon,
  label,
  boundary,
- position).
-Never depend on color alone or shape alone.
+ position) for states and action prominence.
+Preserve content space;
+never rely on color or shape alone.
 
 QVM:
  Design matrix includes pros,

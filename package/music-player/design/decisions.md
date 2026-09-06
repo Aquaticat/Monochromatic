@@ -969,33 +969,29 @@ hard-code true-peak emphasis.
  which creates a trailing
 true-peak column.
 
-### D36. Track rows have no invented ordinals or saturated current-row fill (reopened 2026-09-05)
+### D36. Track rows have no invented ordinals or permanent state column (reopened 2026-09-05)
 Do not prefix tracks with interface-generated numbers;
  they can be confused with real
 track-number metadata.
- Reserve a 24dp leading slot and show the Material play icon only
-for the current track.
- Keep every row on the standard list surface with `onSurface`
-titles and `onSurfaceVariant` supporting text.
- Expose the current state semantically.
+ Remove the play icon and its reserved leading slot from every row
+so titles retain the full list width.
+ Expose current state semantically.
 **Why.**
  The user rejected agent-invented numbering and the saturated blue current-row
 undertone on accuracy,
  accessibility,
  and Material grounds.
- The play icon remains a
-non-color state cue without recoloring the row.
+ They then rejected the
+play shape because its mostly empty column reduced space for every track.
 **Reopened.**
- The user rejected icon shape as the only visible distinction.
- Current-track treatment
-must combine cues rather than relying solely on color or solely on shape;
- exact cues are
-not settled.
+ Current-track treatment must preserve text width and combine visible cues rather than
+relying solely on color or solely on shape;
+ exact cues are not settled.
 **Rejected.**
  Sequential UI ordinals;
  saturated `primaryContainer` current-row fill;
- color-only or shape-only current-track
-treatment.
+ play icon or reserved state column;
+ color-only or shape-only current-track treatment.
 
 ### D37. Transport uses tight spacing and outlined skip buttons
 Use 8dp spacing between the existing playback groups and outlined styling for the
