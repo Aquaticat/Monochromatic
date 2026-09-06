@@ -1,7 +1,8 @@
-//! Verifies exact Ghostty and Steam names plus Helium and Pale Moon process-to-cgroup discovery.
+//! Verifies named application cgroups plus exact browser process-to-cgroup discovery.
 
 /// Discovery functions and injectable roots.
 use crate::application_targets::{
+    is_firefox_nightly_service_name,
     is_ghostty_cgroup_name,
     is_helium_service_name,
     scan_application_targets,
@@ -40,6 +41,20 @@ fn helium_service_name_uses_exact_application_id() {
     ));
 }
 
+/// Accepts exact Firefox Nightly service name without matching another channel or scope.
+#[test]
+fn firefox_nightly_service_name_stays_channel_specific() {
+    assert!(is_firefox_nightly_service_name(
+        "app-firefox\\x2dnightly@abc.service"
+    ));
+    assert!(!is_firefox_nightly_service_name(
+        "app-firefox\\x2desr@abc.service"
+    ));
+    assert!(!is_firefox_nightly_service_name(
+        "app-firefox\\x2dnightly@abc.scope"
+    ));
+}
+
 /// Creates one fake proc process with executable target and unified cgroup path.
 fn create_process(
     proc_root: &Path,
@@ -53,7 +68,7 @@ fn create_process(
     return std::fs::write(process.join("cgroup"), cgroup);
 }
 
-/// Finds named Ghostty and Steam groups plus Helium and Pale Moon executable groups.
+/// Finds named groups plus exact Helium, Pale Moon, and Firefox Nightly executable groups.
 #[test]
 fn scan_combines_named_and_process_targets() -> io::Result<()> {
     let scratch = std::env::temp_dir().join(format!(
@@ -76,6 +91,11 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
     let helium_scope = app_slice.join("app-org.chromium.Chromium-42.scope");
     let pale_moon_scope = app_slice.join("app-palemoon-44.scope");
     let pale_moon_bin_scope = app_slice.join("app-palemoon-bin-45.scope");
+    let firefox_nightly_service =
+        app_slice.join("app-firefox\\x2dnightly@abc.service");
+    let firefox_nightly_bin_scope = app_slice.join("app-firefox-nightly-bin-49.scope");
+    let firefox_nightly_launcher_scope =
+        app_slice.join("app-firefox-nightly-launcher-50.scope");
     let unrelated = app_slice.join("app-org.example.Other.scope");
     for path in [
         &ghostty_service,
@@ -87,6 +107,9 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
         &helium_scope,
         &pale_moon_scope,
         &pale_moon_bin_scope,
+        &firefox_nightly_service,
+        &firefox_nightly_bin_scope,
+        &firefox_nightly_launcher_scope,
         &unrelated,
     ] {
         std::fs::create_dir(path)?;
@@ -138,6 +161,41 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
         "/home/user/.local/opt/palemoon/palemoon-bin.bak",
         "0::/users/app.slice/app-org.example.Other.scope\n",
     )?;
+    // Firefox Nightly's actual process image must map back to its current cgroup.
+    create_process(
+        &proc_root,
+        "49",
+        "/home/user/.local/opt/firefox-nightly/firefox-bin",
+        "0::/users/app.slice/app-firefox-nightly-bin-49.scope\n",
+    )?;
+    // Launcher image is also accepted if procfs exposes it before it replaces itself.
+    create_process(
+        &proc_root,
+        "50",
+        "/home/user/.local/opt/firefox-nightly/firefox",
+        "0::/users/app.slice/app-firefox-nightly-launcher-50.scope\n",
+    )?;
+    // Matching Firefox ESR binary name must remain routed through the tunnel.
+    create_process(
+        &proc_root,
+        "51",
+        "/home/user/.local/opt/firefox-esr/firefox-bin",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    // Other executables inside Firefox Nightly's install directory must not widen exemption.
+    create_process(
+        &proc_root,
+        "52",
+        "/home/user/.local/opt/firefox-nightly/updater",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    // Similar parent directory must not impersonate exact Nightly installation name.
+    create_process(
+        &proc_root,
+        "53",
+        "/home/user/.local/opt/firefox-nightly-backup/firefox-bin",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
     let targets = scan_application_targets(&ScanRoots {
         app_slice: &app_slice,
         proc_root: &proc_root,
@@ -151,6 +209,9 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
         helium_scope,
         pale_moon_scope,
         pale_moon_bin_scope,
+        firefox_nightly_service,
+        firefox_nightly_bin_scope,
+        firefox_nightly_launcher_scope,
     ];
     expected.sort();
     assert_eq!(targets, expected);

@@ -8,7 +8,8 @@ Marks sockets from selected cgroups so policy routing can keep application traff
 This loader applies that mark to sockets created in Ghostty,
  Steam,
  Helium,
- and Pale Moon cgroups without enumerating their destination IPs.
+ Pale Moon,
+ and Firefox Nightly cgroups without enumerating their destination IPs.
 
 ## How it works
 
@@ -44,7 +45,8 @@ wg-quicker-exempt detach <cgroup-dir>...
 List Ghostty,
  Steam,
  Helium,
- and Pale Moon targets without attaching:
+ Pale Moon,
+ and Firefox Nightly targets without attaching:
 
 ```sh
 wg-quicker-exempt list-targets <uid>
@@ -156,9 +158,9 @@ On an affected kernel,
 - Every new cgroup needs its own attachment.
    Detached application watcher owns Ghostty and Steam enumeration,
    future-cgroup inotify coverage,
-   and Helium and Pale Moon process rescans.
+   and Helium, Pale Moon, and Firefox Nightly process rescans.
 - Process discovery attaches entire current cgroup.
-   If Helium or Pale Moon shares that cgroup with another process,
+   If Helium, Pale Moon, or Firefox Nightly shares that cgroup with another process,
    every sibling's newly created sockets receive exemption until cgroup disappears or watcher stops.
 - A newly started process-discovered application can create sockets before next periodic rescan,
    whose interval is 250 milliseconds.

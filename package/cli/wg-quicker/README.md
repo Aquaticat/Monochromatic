@@ -190,7 +190,8 @@ When `up` does not find this key,
 it warns that Ghostty,
  Steam,
  Helium,
- and Pale Moon will use the tunnel and instructs the user to add
+ Pale Moon,
+ and Firefox Nightly will use the tunnel and instructs the user to add
 `ExemptMark = 8888` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 The warning is non-fatal;
@@ -212,19 +213,22 @@ Direct root execution without an explicit or sudo identity fails instead of watc
 The Rust watcher installs inotify on user's existing `app.slice` before its first scan,
 attaches the Ghostty service,
 every `app-ghostty-surface-transient-*.scope`,
-and Steam's `app-steam@*.service`,
+Steam's `app-steam@*.service`,
+and Firefox Nightly's `app-firefox\x2dnightly@*.service`,
 drains queued events,
 and scans again to close creation race.
 It reacts to future cgroup creation and periodically maps every live Helium executable,
 including renderer,
 zygote,
 and crashpad processes,
-and both Pale Moon executable names back to their current cgroups.
+both Pale Moon executable names,
+and Firefox Nightly's `firefox` and `firefox-bin` executables under the exact `firefox-nightly` install directory
+back to their current cgroups.
 Known process-discovered cgroups remain attached until directory disappears,
 covering process restarts inside same service or scope.
 Process discovery attaches entire current cgroup,
 so sibling processes in a shared cgroup also bypass tunnel until cgroup disappears or watcher stops.
-A newly started Helium or Pale Moon process can create sockets before next 250-millisecond rescan;
+A newly started Helium, Pale Moon, or Firefox Nightly process can create sockets before next 250-millisecond rescan;
 applications already running during watcher startup are attached before readiness.
 Watcher state validates PID,
 process start time,

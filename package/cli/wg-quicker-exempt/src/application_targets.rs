@@ -1,4 +1,4 @@
-//! Discovers Ghostty and Steam cgroups by systemd names and Helium and Pale Moon cgroups by executable ownership.
+//! Discovers named Ghostty, Steam, Helium, and Firefox Nightly cgroups plus executable-owned browser cgroups.
 
 /// Filesystem and process-race failures.
 use std::io;
@@ -21,6 +21,8 @@ const STEAM_SERVICE_PREFIX: &str = "app-steam@";
 /// Helium desktop integration service prefix observed from its Chrome application ID.
 const HELIUM_SERVICE_PREFIX: &str =
     "app-chrome\\x2dcadlkienfkclaiaibeoongdcgmdikeeg\\x2dDefault@";
+/// Firefox Nightly service prefix produced by its configured remoting name.
+const FIREFOX_NIGHTLY_SERVICE_PREFIX: &str = "app-firefox\\x2dnightly@";
 
 /// Roots make process and cgroup discovery testable without real host state.
 pub struct ScanRoots<'a> {
@@ -57,6 +59,12 @@ pub fn is_helium_service_name(name: &str) -> bool {
     return name.starts_with(HELIUM_SERVICE_PREFIX) && name.ends_with(".service");
 }
 
+/// Reports Firefox Nightly desktop-integration service name.
+pub fn is_firefox_nightly_service_name(name: &str) -> bool {
+    return name.starts_with(FIREFOX_NIGHTLY_SERVICE_PREFIX)
+        && name.ends_with(".service");
+}
+
 /// Reports numeric procfs directory name without regular expression parsing.
 fn is_process_id(name: &str) -> bool {
     return !name.is_empty() && name.bytes().all(|byte| return byte.is_ascii_digit());
@@ -64,13 +72,19 @@ fn is_process_id(name: &str) -> bool {
 
 /// What:     `is_exempt_application_executable` borrows executable path as `&Path` and returns primitive `bool`.
 ///           Borrowing avoids ownership transfer; sibling `PathBuf` would require caller-owned allocation.
-/// Why:      Process scan must recognize Helium and both Pale Moon executable names without matching unrelated browsers.
+/// Why:      Process scan must recognize Helium, Pale Moon, and Firefox Nightly
+///           without matching other Firefox channels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function isExemptApplicationExecutable(path: string): boolean {
 ///   const name = basename(path);
-///   return name.toLowerCase().startsWith('helium') || name === 'palemoon' || name === 'palemoon-bin';
+///   const isFirefoxNightly = path.endsWith('/firefox-nightly/firefox')
+///     || path.endsWith('/firefox-nightly/firefox-bin');
+///   return name.toLowerCase().startsWith('helium')
+///     || name === 'palemoon'
+///     || name === 'palemoon-bin'
+///     || isFirefoxNightly;
 /// }
 /// ```
 fn is_exempt_application_executable(path: &Path) -> bool {
@@ -102,9 +116,21 @@ fn is_exempt_application_executable(path: &Path) -> bool {
     // const normalizedHeliumName = nameText.toLowerCase();
     // ```
     let normalized_helium_name = name_text.to_ascii_lowercase();
+    // What:     `Path::ends_with` compares complete path components rather than a text suffix.
+    // Why:      Exact install-directory and binary names distinguish Firefox Nightly
+    //           from Firefox ESR and stable Firefox.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const isFirefoxNightly = path.endsWith('/firefox-nightly/firefox')
+    //   || path.endsWith('/firefox-nightly/firefox-bin');
+    // ```
+    let is_firefox_nightly = path.ends_with("firefox-nightly/firefox")
+        || path.ends_with("firefox-nightly/firefox-bin");
     return normalized_helium_name.starts_with("helium")
         || name_text == "palemoon"
-        || name_text == "palemoon-bin";
+        || name_text == "palemoon-bin"
+        || is_firefox_nightly;
 }
 
 /// Extracts unified cgroup path from one procfs cgroup file.
@@ -124,7 +150,7 @@ fn push_unique(paths: &mut Vec<PathBuf>, path: PathBuf) {
     }
 }
 
-/// Scans direct app slice entries whose names identify Ghostty, Steam, or Helium service.
+/// Scans direct app slice entries identifying Ghostty, Steam, Helium, or Firefox Nightly services.
 fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::Result<()> {
     for entry_result in std::fs::read_dir(roots.app_slice)? {
         let entry = entry_result?;
@@ -138,6 +164,7 @@ fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::
         if is_ghostty_cgroup_name(name_text)
             || is_steam_service_name(name_text)
             || is_helium_service_name(name_text)
+            || is_firefox_nightly_service_name(name_text)
         {
             push_unique(targets, entry.path());
         }
@@ -175,12 +202,12 @@ fn read_process_executable(path: &Path) -> io::Result<Option<PathBuf>> {
 
 /// What:     `scan_exempt_application_processes` borrows scan roots and mutable target list,
 ///           then returns `io::Result<()>`, Rust's success-or-I/O-error wrapper with no success payload.
-/// Why:      Helium and Pale Moon lack one shared stable systemd name, so live executables identify their current cgroups.
+/// Why:      Live executables identify Helium, Pale Moon, and Firefox Nightly cgroups beyond named-service coverage.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function scanExemptApplicationProcesses(roots: ScanRoots, targets: string[]): void {
-///   // Add live Helium and Pale Moon cgroups or throw an I/O error.
+///   // Add live Helium, Pale Moon, and Firefox Nightly cgroups or throw an I/O error.
 /// }
 /// ```
 fn scan_exempt_application_processes(
