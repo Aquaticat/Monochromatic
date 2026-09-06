@@ -3054,3 +3054,21 @@ positive rule,
  `matrix size is uncapped`,
  without denying the correction history in the
 user-facing form.
+
+Final housekeeping:
+ isolated Helium is closed,
+ the emulator no longer appears in
+`adb devices`,
+ and all task-scope files in both worktrees are committed.
+ Main and
+prototype upstream checks match their local heads;
+ unrelated concurrent main changes and
+pre-existing prototype captures remain untouched.
+ The exact cleared questionnaire is open
+through the normal Helium desktop entry as `Music player design: redundant-cue matrix -
+Helium`,
+ KWin ID `{87a70d84-af89-479b-ab69-b15348238ae2}` on `DP-3` at
+1080 × 1880.
+ Unminimize and activate that exact window as the final operation,
+ then
+wait for the user's separable current-track and Open decisions.
