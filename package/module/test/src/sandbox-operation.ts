@@ -6,6 +6,8 @@ import {
   type SandboxInvocation,
 } from './sandbox-guard.ts';
 import { createMethodReplacement, } from './sandbox-lease.ts';
+import { guardFakeMutators, } from './sandbox-fake.ts';
+import { invokeCollectionFactory, } from './sandbox-install.ts';
 import {
   guardCollectionFakes,
   guardTimerController,
@@ -15,8 +17,7 @@ import type {
   SandboxRuntime,
 } from './sandbox-owner.ts';
 import {
-  guardFakeMutators,
-  guardInjectedFactories,
+  injectOwnedFactories,
   guardMockController,
 } from './sandbox-result.ts';
 import { prepareMethodSlot, } from './sandbox-slot.ts';
@@ -92,9 +93,7 @@ function preflightOrdinaryMutation(invocation: SandboxInvocation,): void {
         key,
         operation: invocation.operation,
       },);
-    else if (invocation.args
-      .length
-      === 1)
+    else if (property === undefined && (invocation.operation === 'ctx.sinon.stub' || invocation.operation === 'ctx.sinon.spy'))
       requireUnownedObject({
         target,
         operation: invocation.operation,
@@ -232,13 +231,8 @@ export function dispatchSandboxOperation({
     );
   }
   if (invocation.operation === 'ctx.sinon.inject') {
-    /**
-     Only function properties changed by Sinon injection belong to this attempt.
-     */
-    const previous: PropertyDescriptorMap = isSandboxTarget(target,) ? Object.getOwnPropertyDescriptors(target,) : {};
-    return guardInjectedFactories({
-      value: invokeSandboxMethod(invocation,),
-      previous,
+    return injectOwnedFactories({
+      invocation,
       owner: policy.owner,
       invoke(next: SandboxInvocation,): unknown {
         return dispatchSandboxOperation({
@@ -249,6 +243,10 @@ export function dispatchSandboxOperation({
     },);
   }
   preflightOrdinaryMutation(invocation,);
+  if (methodFactory && isSandboxTarget(target,) && property === undefined
+    && (invocation.operation === 'ctx.sinon.stub' || typeof target !== 'function')) {
+    return invokeCollectionFactory({ invocation, target, owner: policy.owner, restoring: policy.restoring, },);
+  }
   /**
    Factory behavior not selected for contextual isolation remains owned by Sinon.
    */
@@ -262,7 +260,7 @@ export function dispatchSandboxOperation({
       ...((typeof key) === 'symbol') && (key === SINON_VALIDATES_PROPERTY) ? {} : { key, },
     },);
   }
-  if (methodFactory || (invocation.operation === 'ctx.sinon.createStubInstance'))
+  if ((methodFactory && typeof result !== 'function') || (invocation.operation === 'ctx.sinon.createStubInstance'))
     guardCollectionFakes({
       value: result,
       owner: policy.owner,

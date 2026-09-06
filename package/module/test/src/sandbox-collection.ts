@@ -1,7 +1,8 @@
 /**
  Deferred target-changing methods on whole-object fakes and timer controllers. @module
  */
-import { guardFakeMutators, } from './sandbox-result.ts';
+import { guardFakeMutators, } from './sandbox-fake.ts';
+import { collectionFakes, } from './sandbox-member.ts';
 import { SandboxOwnershipError, } from './sandbox-error.ts';
 import {
   requireRunningOwner,
@@ -19,6 +20,8 @@ import {
  @param value - whole-object stub, spy, or stub-instance result
  
  @param owner - owning attempt
+
+ @param previous - descriptors preceding a whole-object operation
  
  @param restoring - internal raw-restoration authority
  
@@ -31,27 +34,14 @@ export function guardCollectionFakes({
   value,
   owner,
   restoring,
+  previous = {},
 }: {
   readonly value: unknown;
   readonly owner: SandboxOwner;
   readonly restoring: () => boolean;
+  readonly previous?: PropertyDescriptorMap;
 },): void {
-  if ((!isSandboxTarget(value,)) || ((typeof value) === 'function'))
-    return;
-  for (const property of Reflect.ownKeys(value,)) {
-    /**
-     Descriptor inspection must not execute application getters.
-     */
-    const member: unknown = Object.getOwnPropertyDescriptor(
-      value,
-      property,
-    )
-      ?.value;
-    if (((typeof member) !== 'function') || (Reflect.get(
-      member,
-      'isSinonProxy',
-    ) !== true))
-      continue;
+  for (const member of collectionFakes({ value, previous, },)) {
     /**
      Sinon records target metadata on descriptor-changing stubs, but not on detached spies.
      */

@@ -21,6 +21,34 @@ await describe({
         expect(target.method(),).toBe('new owner',);
       },
     },),
+    it({
+      name: 'partial injection guards factories before an application setter retains them',
+      fn: async (): Promise<void> => {
+        const late: (() => unknown)[] = [];
+        await it({ name: 'failed injection owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
+          const captured: unknown[] = [];
+          const destination = {};
+          Object.defineProperty(destination, 'spy', {
+            configurable: true,
+            set(this: unknown, factory: unknown): void {
+              expect(this,).toBe(destination,);
+              captured.push(factory,);
+            },
+          },);
+          Object.defineProperty(destination, 'stub', { value: undefined, writable: false, },);
+          expect(() => sinon.inject(destination,),).toThrow('stub',);
+          const [factory,] = captured;
+          if (typeof factory !== 'function')
+            throw new Error('Injection did not expose its first factory',);
+          const target = { method: (): string => 'original', };
+          Reflect.apply(factory, destination, [target, 'method',],);
+          expect(target.method(),).toBe('original',);
+          late.push(() => Reflect.apply(factory, destination, [target, 'method',],),);
+        }, },);
+        for (const invoke of late)
+          expect(invoke,).toThrow('completed',);
+      },
+    },),
     ...(['stub', 'spy',] as const).map(operation => it({
       name: `failed whole-object ${operation} restores only newly introduced descriptors`,
       fn: async ({ sinon, }: TestContext,): Promise<void> => {
