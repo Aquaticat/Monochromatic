@@ -184,6 +184,16 @@ and orders lint after a declaration build.
 - Issue disposition (round 3):
   edit #486 in place once the decision doc lands.
 
+- Lever (round 4):
+  measure first.
+  Swap one package's sibling `/ts` imports for built declarations and dist in a throwaway worktree,
+  run the rule warm twice both ways,
+  and compare before choosing between the compiled boundary and a rule-only boundary.
+- Coverage trade (round 4):
+  once sibling calls are not analysed live through source,
+  the rule infers their effects from the sibling's built dist,
+  not by treating them as opaque.
+
 ## Open questions
 
 - Which lever:
@@ -197,9 +207,36 @@ and orders lint after a declaration build.
 - Coverage trade if sibling calls stop being analyzed live through source:
   infer from the sibling's built dist (build before lint) or treat them as opaque.
 
+## Measurement design (round 4, in progress)
+
+Subject:
+ `package/dev-script/file-enforcer` (138 own files,
+151 sibling source files in its program;
+main-worktree warm `lint:oxlint` 1.4 s on 136 files with 84 pre-existing `test-import` errors).
+Throwaway worktree at `~/temp/agent/ts-boundary-spike-2026-09-06`.
+Variant A keeps the `/ts` specifiers.
+Variant B rewrites the five buildable sibling specifiers
+(`module-test`,
+ `module-logger`,
+ `module-toml-edit`,
+ `module-caught-value`,
+ `module-matrix`)
+to bare package names,
+so tsc and the rule read the bundled `dist/final/*/index.d.mts` declarations and the dist runtime;
+the bundled declarations were checked to import no sibling package.
+Per variant:
+ one populate run (cold,
+ cache deleted first),
+then three warm runs at `OXLINT_THREADS=1`,
+`tsc --listFiles` composition,
+three `lint:types` timings,
+and finding counts by rule.
+Known confound:
+variant B also stops live analysis of sibling callables,
+so its saving is an upper bound on the program-size effect alone.
+
 ## Next action
 
-Wait for the monorepo precedent research,
-then put the lever (convention change,
-rule boundary only,
-or measure first) to the user in round 4 with the precedent in hand.
+Read the spike report,
+record the numbers here,
+then put the lever (compiled boundary versus rule-only boundary) to the user in round 5.
