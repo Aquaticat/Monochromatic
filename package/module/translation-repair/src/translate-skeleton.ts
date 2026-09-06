@@ -3,6 +3,7 @@ import type {
   RootContent,
 } from 'mdast';
 
+import { maskHtmlComments, } from './mask-html-comments.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
 
 import {
@@ -23,6 +24,19 @@ import type {
 // hand, so this cannot disagree with the parser about what a link is. That is
 // the same reason `inspect-paragraph.ts` gives, and this is the whole-slice
 // cousin of it.
+//
+// READ UNDER THE GRAMMAR THE DOCUMENT WAS READ IN. `parse-document.ts` masks
+// HTML comments to same-length whitespace before its strict parse, because the
+// MDX grammar refuses `<!--` outright and 17 of 92 pinned sources carry one.
+// Until 2026-09-06 this reader did not, so every slice of yulianNyanner whose
+// original carried a translator note was "an original that could not be read",
+// the floor answered `unknown`, and both gates that consume the floor treat
+// `unknown` as inadmissible: the entry stopped at consolidation with nothing to
+// ship. Masking here makes a comment inter-node whitespace on both sides of the
+// comparison, and the mask keeps every offset, so atoms after a comment still
+// index the unmasked text. Whether a candidate carries the note rendered is
+// wording, and the judges are the instrument for wording; the archive itself
+// renders yulianNyanner's fourteen comment lines as twelve.
 //
 // WHAT IS DELIBERATELY NOT HERE: prose atoms. `scanTextAtoms` protects numbers
 // and foreign runs, which is right when a rewrite and its base are the same
@@ -266,9 +280,15 @@ export function readSliceSkeleton(
 ): SkeletonRead {
   try {
     /**
+     * Slice with its HTML comments blanked to same-length whitespace, which is
+     * what the document reader hands the strict grammar.
+     */
+    const { masked, } = maskHtmlComments({ text, },);
+
+    /**
      * Parsed slice under the strict grammar.
      */
-    const root: ReadonlyMdastRoot = parseMdxBody({ body: text, },);
+    const root: ReadonlyMdastRoot = parseMdxBody({ body: masked, },);
     return {
       kind: 'read',
       skeleton: {
