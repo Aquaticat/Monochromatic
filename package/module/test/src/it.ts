@@ -3,7 +3,6 @@ import {
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
 
-import { withTimeout, } from '@monochromatic-dev/module-async-time/ts';
 import { formatDuration, } from '@monochromatic-dev/module-numeric-format/ts';
 import {
   type DescriptorContext,
@@ -15,10 +14,8 @@ import {
   type ScopedExpect,
 } from './expect.ts';
 import { formatFailure, } from './format-error.ts';
-import {
-  createSinon,
-  type DisposableSandbox,
-} from './sinon.ts';
+import type { DisposableSandbox, } from './sinon.ts';
+import { runItAttempt, } from './it-attempt.ts';
 import { createVerdictLoggers, } from './verdict.ts';
 import { runObservedExecution, } from './execution.ts';
 
@@ -83,42 +80,6 @@ export type ItResult = {
    */
   readonly name: string;
 };
-
-/**
- Runs a single invocation of the test function, handling timeout if configured.
- 
- @param fn - test body to execute
- 
- @param ctx - test context with scoped expect and sinon sandbox
- 
- @param timeout - optional timeout in milliseconds
- 
- @param name - test name, used as the timeout label
- */
-async function runFnOnce({
-  fn,
-  ctx,
-  timeout,
-  name,
-}: {
-  readonly ctx: TestContext;
-  readonly fn: (ctx: TestContext,) => Promise<void>;
-  readonly name: string;
-  readonly timeout?: number;
-},): Promise<void> {
-  /**
-   Hoists the test-fn invocation so it can be optionally wrapped with `withTimeout`.
-   */
-  const promise = fn(ctx,);
-
-  await (timeout !== undefined
-    ? withTimeout({
-      promise,
-      ms: timeout,
-      label: name,
-    },)
-    : promise);
-}
 
 /**
  Executes a single test case. Internal: the public {@link it} entry
@@ -210,24 +171,12 @@ async function runIt(
    */
   const [scopedExpect, tracker,] = createScopedExpect();
   /**
-   Sinon sandbox tied to this test so stubs auto-restore when the function returns.
-   */
-  await using sandbox = createSinon();
-  /**
-   Test context handed to the user-supplied test body.
-   */
-  const ctx: TestContext = {
-    expect: scopedExpect,
-    sinon: sandbox,
-  };
-
-  /**
    Total iteration count: one base run plus any explicit repeats.
    */
   const totalRuns = 1 + repeats;
 
   /**
-   Spreads `timeout` into the runFnOnce call only when set, so exactOptional never receives an explicit `undefined`.
+   Spreads `timeout` into the attempt call only when set, so exactOptional never receives an explicit `undefined`.
    */
   const timeoutArg = timeout !== undefined ? { timeout, } : {};
 
@@ -256,14 +205,14 @@ async function runIt(
     const runStart = performance.now();
 
     tracker.count = 0;
-    sandbox.restore();
 
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential test repetitions must run one at a time
-      await runFnOnce({
+      await runItAttempt({
         fn,
-        ctx,
+        expect: scopedExpect,
         name,
+        l,
         ...timeoutArg,
       },);
     }
@@ -271,10 +220,6 @@ async function runIt(
       threw = true;
       caughtError = error;
     }
-
-    // Restore stubs between repeat runs so the next iteration sees a
-    // clean sandbox; `await using` only fires at function-scope exit.
-    sandbox.restore();
 
     /**
      Elapsed time for this iteration, formatted into the result log line.
