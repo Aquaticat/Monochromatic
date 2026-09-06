@@ -2,7 +2,7 @@
 
 Status:
 investigation complete,
-grilling round 1 open.
+grilling round 3 open.
 Tracks GitHub issue #476.
 
 Last updated:
@@ -177,29 +177,82 @@ B over C because B has no runtime dependency and C pins a `workers.dev` hostname
 C over D because C reuses existing infrastructure.
 D over E because E reintroduces the clone bandwidth bill.
 
+## Decisions so far
+
+Round 1 and round 2 answers from the user on 2026-09-06:
+
+- Option C (absolute Worker URLs in Markdown) is chosen,
+  with immutable oid URLs and automation.
+  The user asked for a bigger automation design than a link-rewriting task.
+- Rollback to GitHub LFS is not supported for now.
+  The runbook and Worker README must say so instead of promising a one-step rollback.
+- Every Markdown-embedded LFS image gets a Worker URL,
+  including the pre-cutover islands-black screenshot.
+- Regression guard is a local check task plus a one-time browser verification against github.com.
+- The image store for the extracted music-player repository stays undecided.
+
+Measured facts that settled further points without a question:
+
+- Worker analytics (Cloudflare GraphQL, 2026-08-25 to 2026-09-06):
+  865 requests over 8 active days,
+  392 on the busiest day,
+  zero errors.
+  GitHub reported 10,515 clones and 119 views over the same fortnight,
+  so bot clones do not smudge LFS through the Worker.
+  The Worker stays on the free plan (100,000 requests a day).
+- The Cloudflare account has no zones,
+  so no custom hostname is possible;
+  `workers.dev` stays.
+- Neither premise behind rejecting A and B held as stated:
+  GitHub's LFS billing page says a zero budget blocks LFS for the month instead of charging,
+  and the acceptable-use page has no CDN or binary-storage clause.
+  The user kept C.
+- This clone holds all 214 historical LFS objects and `git lfs fsck` passes.
+
+## Automation design under discussion
+
+- Authors keep writing relative image links.
+- A fixable `cli-markdown-lint` rule rewrites any Markdown image whose target is an LFS-tracked file into
+  `<origin>/<oid>/<repo-relative-path>` and corrects a drifted oid in an existing Worker URL.
+  The origin derives from `.lfsconfig` `lfs.url` with userinfo stripped;
+  the rule is inert when no `.lfsconfig` exists.
+  The oid is the sha256 of the smudged bytes or the pointer's oid field,
+  so no network access is needed.
+- `git-policy-cli` pre-forward plugin policies can return fixable patches against the private index,
+  so the rewrite can land inside the commit itself.
+- The Worker gains `GET` and `HEAD` on `/<oid>` and `/<oid>/<path>`,
+  an image content type from the extension,
+  `Cache-Control: public, max-age=31536000, immutable`,
+  and an `ETag`.
+  GitHub's camo proxy rejects non-image content types,
+  so the content type is required.
+- A mise check task fetches every Worker URL found in Markdown and asserts status 200,
+  an image content type,
+  and a length equal to the pointer size.
+- Docs:
+  correct the Worker README and runbook,
+  document the URL contract,
+  add an AGENTS.md rule for authors and agents.
+
 ## Open questions
 
-1.  Which public-asset boundary (A to E)?
-    Recommended:
-    A.
-2.  Image store for the extracted `Aquaticat/music-player` repository:
-    GitHub LFS,
-    the shared R2 Worker,
-    or plain blobs?
-    Recommended:
-    GitHub LFS,
-    recorded in the extraction plan.
-3.  Restore the documented rollback invariant by mirroring all 74 absent objects,
-    or rewrite the runbook to say rollback requires a re-push first?
-    Recommended:
-    mirror all 74.
+1.  Commit-time behavior of the policy:
+    autofix into the commit,
+    block with an instruction,
+    or no policy.
+2.  Rule scope:
+    all Markdown and MDX,
+    or README and doc files only.
+3.  Worker package:
+    convert to TypeScript with tests,
+    or keep MJS and add tests for the new routes only.
+4.  Post-push verification:
+    mise task plus AGENTS.md rule,
+    a new post-push stage in git-policy-cli,
+    or both.
 
-Pending on those answers:
-where the mirroring step lives (pre-push hook,
-`git-policy-cli`,
-or a mise task),
-the regression guard,
-and the browser-level verification the issue requires.
+Deferred by the user:
+the extracted repository's image store.
 
 ## Evidence commands
 
