@@ -34,6 +34,14 @@ type TokenStub = {
   readonly start: number;
 };
 
+/** Inputs for linting one fixture with a selected configuration. */
+type LintWithConfigParams = {
+  /** Path relative to fixture source root, or absolute temp fixture path. */
+  readonly fixturePath: string;
+  /** Absolute fixture configuration path. */
+  readonly fixtureConfig: string;
+};
+
 //endregion Types
 
 //region Helpers
@@ -69,19 +77,40 @@ const COMMA_DANGLE_CONFIGURED_FIXTURE_CONFIG = fixtureConfigPath({
   fileName: '.oxlintrc.comma-dangle-configured.fixture.json',
 },);
 
+/** Fixture config selecting always mode for TSDoc asterisk prefixes. */
+const ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-stylistic',
+  fileName: '.oxlintrc.asterisk-prefix-always.fixture.json',
+},);
+
+/** Fixture config omitting required TSDoc asterisk-prefix mode. */
+const ASTERISK_PREFIX_MISSING_FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-stylistic',
+  fileName: '.oxlintrc.asterisk-prefix-missing.fixture.json',
+},);
+
+/** Fixture config supplying unsupported TSDoc asterisk-prefix mode. */
+const ASTERISK_PREFIX_INVALID_FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-stylistic',
+  fileName: '.oxlintrc.asterisk-prefix-invalid.fixture.json',
+},);
+
 /** Maximum autofix passes needed for overlapping stylistic fixes to converge. */
 const MAX_AUTOFIX_PASSES = 8;
 
 /**
- * Runs oxlint with the fixture config against a fixture path and returns
- * parsed diagnostics.
+ * Runs oxlint against one fixture with selected config.
  *
- * @param fixturePath - path relative to fixture `src/` root, or absolute path
- *   to a temp fixture
+ * @param params - fixture path and configuration
  *
  * @returns array of diagnostics from stylistic rules only
  */
-async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
+async function lintWithConfig(params: Readonly<LintWithConfigParams>,): Promise<readonly OxlintDiagnostic[]> {
+  /** Selected fixture path and configuration. */
+  const {
+    fixturePath,
+    fixtureConfig,
+  } = params;
   /** Resolved lint target; temp fixtures already arrive as absolute paths. */
   const target = resolveFixtureTarget({
     fixtureSourceRoot: FIXTURES,
@@ -91,8 +120,22 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
   return runOxlintFixture({
     codePrefix: 'stylistic(',
     configFlag: '--config',
-    fixtureConfig: FIXTURE_CONFIG,
+    fixtureConfig,
     target,
+  },);
+}
+
+/**
+ * Runs oxlint with complete fixture config against one fixture path.
+ *
+ * @param fixturePath - path relative to fixture `src/` root, or absolute temp path
+ *
+ * @returns array of diagnostics from stylistic rules only
+ */
+async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
+  return lintWithConfig({
+    fixturePath,
+    fixtureConfig: FIXTURE_CONFIG,
   },);
 }
 
@@ -317,6 +360,23 @@ await describe({
       name: 'valid fixtures',
       children: [
         it({
+          name: 'star-less TSDoc and literal-leading asterisks pass never mode',
+          fn: async () => {
+            const diagnostics = await lint('valid/asterisk-prefix.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'starred TSDoc passes always mode',
+          fn: async () => {
+            const diagnostics = await lintWithConfig({
+              fixturePath: 'invalid/asterisk-prefix.ts',
+              fixtureConfig: ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+            },);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
           name: 'already-per-line constructs produce no violations',
           fn: async () => {
             const diagnostics = await lint('valid/already-per-line.ts',);
@@ -378,6 +438,107 @@ await describe({
     //endregion Valid fixtures
 
     //region Invalid fixtures: expect specific violations
+
+    describe({
+      name: 'require-asterisk-prefix',
+      children: [
+        it({
+          name: 'reports every canonical prefix in never mode',
+          fn: async () => {
+            const diagnostics = await lint('invalid/asterisk-prefix.ts',);
+            const prefixDiagnostics = diagnostics.filter(
+              function isPrefixDiagnostic(diagnostic,): boolean {
+                return diagnostic.code === 'stylistic(require-asterisk-prefix)';
+              },
+            );
+            expect(prefixDiagnostics,).toHaveLength(12,);
+            expect(prefixDiagnostics[0]?.message,).toBe(
+              'TSDoc body line cannot have an asterisk prefix in never mode.',
+            );
+          },
+        },),
+        it({
+          name: 'reports every unprefixed body line in always mode',
+          fn: async () => {
+            const diagnostics = await lintWithConfig({
+              fixturePath: 'valid/asterisk-prefix.ts',
+              fixtureConfig: ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+            },);
+            const prefixDiagnostics = diagnostics.filter(
+              function isPrefixDiagnostic(diagnostic,): boolean {
+                return diagnostic.code === 'stylistic(require-asterisk-prefix)';
+              },
+            );
+            expect(prefixDiagnostics,).toHaveLength(11,);
+            expect(prefixDiagnostics[0]?.message,).toBe(
+              'TSDoc body line requires an asterisk prefix in always mode.',
+            );
+          },
+        },),
+        it({
+          name: 'rejects an omitted mode',
+          fn: async () => {
+            const caught = await (async function catchMissingModeError(): Promise<unknown> {
+              try {
+                await spawn(
+                  'oxlint',
+                  [
+                    '--format',
+                    'json',
+                    '--config',
+                    ASTERISK_PREFIX_MISSING_FIXTURE_CONFIG,
+                    resolve(
+                      FIXTURES,
+                      'valid',
+                      'asterisk-prefix.ts',
+                    ),
+                  ],
+                  { cwd: ROOT, },
+                );
+                return undefined;
+              }
+              catch (error: unknown) {
+                return error;
+              }
+            })();
+            expect(caught,).toBeDefined();
+            const { stdout, } = caught as { readonly stdout: string; };
+            expect(stdout,).toContain('stylistic/require-asterisk-prefix',);
+          },
+        },),
+        it({
+          name: 'rejects an unsupported mode',
+          fn: async () => {
+            const caught = await (async function catchInvalidModeError(): Promise<unknown> {
+              try {
+                await spawn(
+                  'oxlint',
+                  [
+                    '--format',
+                    'json',
+                    '--config',
+                    ASTERISK_PREFIX_INVALID_FIXTURE_CONFIG,
+                    resolve(
+                      FIXTURES,
+                      'valid',
+                      'asterisk-prefix.ts',
+                    ),
+                  ],
+                  { cwd: ROOT, },
+                );
+                return undefined;
+              }
+              catch (error: unknown) {
+                return error;
+              }
+            })();
+            expect(caught,).toBeDefined();
+            const { stdout, } = caught as { readonly stdout: string; };
+            expect(stdout,).toContain('stylistic/require-asterisk-prefix',);
+          },
+        },),
+      ],
+    },),
 
     describe({
       name: 'param-per-line',
@@ -796,6 +957,83 @@ await describe({
     describe({
       name: 'autofix',
       children: [
+        it({
+          name: '--fix removes every canonical TSDoc prefix in never mode idempotently',
+          fn: async () => {
+            const sourcePath = resolve(
+              FIXTURES,
+              'invalid',
+              'asterisk-prefix.ts',
+            );
+            await using fixtureCopy = await createTempFixtureFile({
+              fileName: 'asterisk-prefix.ts',
+              sourcePath,
+              tempPrefix: 'oxlint-stylistic-autofix-',
+            },);
+
+            await fixUntilStable(fixtureCopy.filePath,);
+            const fixedOnce = readFileSync(fixtureCopy.filePath, 'utf8',);
+            expect(fixedOnce,).toContain(
+              '/**\n Starred description.\n \n **Leading bold** remains literal content.\n \n *through* remains literal content.',
+            );
+            expect(fixedOnce,).toContain(
+              '  /**\n   Nested property description.\n   */',
+            );
+
+            await fixUntilStable(fixtureCopy.filePath,);
+            expect(readFileSync(fixtureCopy.filePath, 'utf8',),).toBe(fixedOnce,);
+            expect(await lint(fixtureCopy.filePath,),).toEqual([],);
+          },
+        },),
+        it({
+          name: '--fix adds every canonical TSDoc prefix in always mode idempotently',
+          fn: async () => {
+            const sourcePath = resolve(
+              FIXTURES,
+              'valid',
+              'asterisk-prefix.ts',
+            );
+            await using fixtureCopy = await createTempFixtureFile({
+              fileName: 'asterisk-prefix.ts',
+              sourcePath,
+              tempPrefix: 'oxlint-stylistic-autofix-',
+            },);
+
+            await spawn(
+              'oxlint',
+              [
+                '--fix',
+                '--config',
+                ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+                fixtureCopy.filePath,
+              ],
+              { cwd: ROOT, },
+            );
+            const fixedOnce = readFileSync(fixtureCopy.filePath, 'utf8',);
+            expect(fixedOnce,).toContain(
+              '/**\n * Star-less description.\n *\n * **Leading bold** remains literal content.\n *\n * *through* remains literal content.',
+            );
+            expect(fixedOnce,).toContain(
+              '/**\n * Description whose closing delimiter shares its final line.\n */',
+            );
+
+            await spawn(
+              'oxlint',
+              [
+                '--fix',
+                '--config',
+                ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+                fixtureCopy.filePath,
+              ],
+              { cwd: ROOT, },
+            );
+            expect(readFileSync(fixtureCopy.filePath, 'utf8',),).toBe(fixedOnce,);
+            expect(await lintWithConfig({
+              fixturePath: fixtureCopy.filePath,
+              fixtureConfig: ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+            },),).toEqual([],);
+          },
+        },),
         it({
           name: '--fix inserts missing semicolons',
           fn: async () => {
