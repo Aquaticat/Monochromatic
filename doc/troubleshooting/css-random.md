@@ -298,10 +298,21 @@ console.log(JSON.stringify({
 }, null, 1));
 ```
 
-This is not yet a standing test.
-`playwright.browser.config.ts:11` sets `testDir: './packages'`, a directory that
-does not exist in this repo (the tree is `package/`, singular),
-so no browser test in that config can run until that is corrected.
+This is not yet a standing test, but nothing structural blocks it any more.
+
+An earlier revision of this document claimed the blocker was
+`playwright.browser.config.ts` pointing `testDir` at a nonexistent `./packages`.
+That was stale: the config already reads `./package`, corrected in `eac44c979`.
+The real blocker was the container mount.
+`mise.toml` mounted the repo as `:Z`, which relabels every file under the mount
+with per-container SELinux MCS categories, and this tree holds 291,243 files
+under `node_modules/.monochromatic` that the logger appends to while the relabel
+walks them. The relabel failed with `lsetxattr ... operation not permitted` and
+podman exited 126 before Playwright started, so no browser test could run in any
+engine. Fixed in `3d004e60d` by using `label=disable` and a plain bind mount.
+
+`mise run test:browser -- --list` now collects 66 tests in 5 files across
+chromium, firefox and webkit.
 
 ## Verified workarounds
 
