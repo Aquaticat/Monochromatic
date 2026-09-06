@@ -242,6 +242,14 @@ and orders lint after a declaration build.
   the `/dom`-everywhere convention stays the remedy,
   and sibling type errors keep surfacing in consumers.
 
+- Round 6:
+  prototype content-keyed,
+  cross-project sharing of sibling effect summaries in a worktree and measure the cold sweep (yes);
+  no repo-wide flip to built declarations;
+  the convention stays:
+  keep `/ts`,
+  and the decision doc must make the positive case with prior art.
+
 ## Open questions
 
 - Which lever:
