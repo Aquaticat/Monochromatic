@@ -160,7 +160,7 @@ depends = ["prototype:build"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
 [tasks."prototype:capture"]
-description = "Install and capture the current existing-screen refinement matrix from the unfolded Pixel Fold emulator"
+description = "Install and capture the current redundant-cue matrix from the unfolded Pixel Fold emulator"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 shell = "node --input-type=module-typescript -e"
@@ -208,15 +208,22 @@ const displayId = innerDisplayLine.slice("Display ".length, displayIdEnd);
 const outputDirectory = resolve("../design/questions/render");
 const scratchDirectory = mkdtempSync(join(tmpdir(), "music-player-compose-capture-"));
 const candidateNames = [
-  "refine-tight-standard",
-  "refine-tight-outlined",
-  "refine-tight-tonal",
-  "refine-balanced-standard",
-  "refine-balanced-outlined",
-  "refine-balanced-tonal",
-  "refine-airy-standard",
-  "refine-airy-outlined",
-  "refine-airy-tonal",
+  "cue-label-filled",
+  "cue-label-tonal",
+  "cue-label-elevated",
+  "cue-label-outlined",
+  "cue-accent-filled",
+  "cue-accent-tonal",
+  "cue-accent-elevated",
+  "cue-accent-outlined",
+  "cue-container-filled",
+  "cue-container-tonal",
+  "cue-container-elevated",
+  "cue-container-outlined",
+  "cue-outline-filled",
+  "cue-outline-tonal",
+  "cue-outline-elevated",
+  "cue-outline-outlined",
 ];
 for (const candidateName of candidateNames) {
   execFileSync(
@@ -258,7 +265,7 @@ for (const candidateName of candidateNames) {
     'text="Camellia"',
     'text="Another Xronixle"',
     'content-desc="Settings"',
-    ...(candidateName.startsWith("light-") || candidateName.startsWith("divider-") || candidateName.startsWith("refine-")
+    ...(candidateName.startsWith("light-") || candidateName.startsWith("divider-") || candidateName.startsWith("refine-") || candidateName.startsWith("cue-")
       ? [
           'text="Folders"',
           'text="Open"',
