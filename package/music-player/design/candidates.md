@@ -232,7 +232,11 @@ adding a button container:
 
 Prototype commits `e4f9d9484` and `4cae242a7` implement the corrected four-by-four
 matrix.
- All sixteen opaque captures are 2076 × 2152px.
+ Commit `ed04759ed` adds explicit current-track descriptions;
+ evidence commit
+`8203ecc12` preserves UI Automator hierarchies for every row treatment.
+ All sixteen
+opaque captures are 2076 × 2152px.
  At 200% text,
  every row
 treatment remains readable and the filled Open button fits beside `Folders`.

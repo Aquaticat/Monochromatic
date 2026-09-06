@@ -359,8 +359,10 @@ prototype uses these redundant cues:
   Explicit label plus bold,
   accent plus bold,
   soft container plus bold,
-  and outline plus bold each preserve full text width while combining visible cues and
-  semantic current state.
+  and outline plus bold each preserve full text width while combining visible cues.
+  Each current row exposes `Current track: Another Xronixle` in the native accessibility
+  hierarchy;
+  production assistive technology must confirm the announcement.
 - Selected playback mode:
    selected segmented fill plus checkmark at default and
   enlarged type.

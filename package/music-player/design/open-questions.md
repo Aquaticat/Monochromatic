@@ -596,3 +596,7 @@ stack is announced as one mutually exclusive group.
 vertical segmented wrapper,
  so the debug prototype composes row-scoped segment elements
 vertically and cannot settle assistive-technology grouping by raster inspection.
+ UI
+Automator exposes `Current track: Another Xronixle` for every row treatment,
+ but
+production assistive technology must also confirm that current-state announcement.

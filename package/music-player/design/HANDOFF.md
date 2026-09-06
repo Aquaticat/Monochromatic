@@ -2998,3 +2998,59 @@ contrast incompletes;
 `doc/troubleshooting/axe-modal-dialog-contrast.md`.
  Browser errors and console output
 are empty.
+
+Independent final review found four pre-handoff defects.
+ Prepared output stayed visible
+after answers changed;
+ whitespace passed the required free-text field;
+ short-window Fit
+stopped at 10%;
+ and raster-only checks did not prove native current-track semantics
+or enough settled geometry.
+ These are corrected in main commits `bc5d5eddd`,
+`fe1882295`,
+ `509094c4d`,
+ `2c596105d`,
+ and `5e66ae3a0`.
+ Changing either
+radio or free text now hides and clears prepared output.
+ Whitespace receives a named
+validation message.
+ Fit can scale to 2% and a measured 390 × 500 viewport fits the
+907 × 937 frame within its 326 × 68 content box.
+
+Prototype commit `ed04759ed` gives every current cue candidate the native description
+`Current track: Another Xronixle` without restoring a visible icon.
+ Evidence commit
+`8203ecc12` preserves four UI Automator hierarchies;
+ all expose row bounds
+x=1068 through x=2002,
+ no `Playing` icon node,
+ no generated ordinal,
+ and ordinary
+track text at the same full-width alignment.
+ The form discloses that production
+assistive technology still must confirm current-track and segmented-group announcements.
+The outlined Open boundary's measured 2.130:1 is presented as a prominence drawback,
+not mislabeled as an axe violation.
+
+Expanded absolute guards now cover ordinary-row alignment,
+ picker pixels below the app
+bar,
+ selected-folder indicator placement,
+ absence of link-like underlining,
+ white
+center spacer,
+ rail boundary,
+ status UI,
+ navigation UI,
+ ordinals,
+ and the native
+semantic descriptions.
+ Mutation controls ran only in a clean disposable worktree and
+produced each expected diagnostic before restoration.
+ The wording now states the
+positive rule,
+ `matrix size is uncapped`,
+ without denying the correction history in the
+user-facing form.
