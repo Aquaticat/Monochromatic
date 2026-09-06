@@ -41,6 +41,15 @@ Plan and grill record:
    the dropped-count marker record,
    and the breadcrumb count,
    for an operation sequence and the observed hook settlement order.
+- `src/boundary-corpus.ts`:
+   the committed message corpus behind the sink boundary properties,
+   with no fast-check import.
+- `src/adversarial-message.ts`:
+   record arbitraries interleaving that corpus with binary text and control characters.
+- `src/sink-boundary-harness.ts`:
+   a throwaway package directory for the file sink,
+   readers that reparse what the JSONL sinks persisted,
+   and an independent reference for the console sink's output.
 - `src/*.property.unit.test.ts`:
    the properties;
    every one imports the built runtime artifact through the package name,

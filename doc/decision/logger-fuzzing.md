@@ -3,11 +3,10 @@
 ## Status
 
 Campaign in progress.
-The Node orchestration layer landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz`.
-Sink boundary properties,
- the coverage-reachability gate,
+The Node orchestration layer and the Node sink boundary layer landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz`.
+The coverage-reachability gate,
  the CI workflow,
-the toml-edit sidecar migration,
+ the toml-edit sidecar migration,
  and the Playwright browser layer follow in that order.
 Plan,
  grill records,
@@ -177,6 +176,50 @@ No logger defect has been found by this layer yet.
 That is consistent with the three robustness changes having been built test-first the week before;
 the campaign's value so far is that the contract is now executable.
 
+## Landed: sink boundary properties under Node
+
+`src/sink-boundary.property.unit.test.ts` feeds adversarial records through each Node-reachable sink built from the artifact and inspects what came out.
+The corpus (`src/boundary-corpus.ts`) holds JSON delimiters and record-forging text,
+ terminal escape sequences (well-formed,
+ unterminated,
+ nested,
+ and 8-bit C1),
+ lone and paired surrogates,
+ and astral text;
+the arbitrary (`src/adversarial-message.ts`) interleaves those tokens with binary text and with control characters drawn uniformly across C0,
+ DEL,
+ and C1,
+because the default binary string arbitrary reaches DEL and C1 about once per million code units.
+Four properties:
+
+- The console neutralizer agrees with an independent code-unit-indexed reference and leaves no forbidden control in its output.
+- The console sink emits exactly the reference prediction of its grouped output:
+  one text per contiguous same-level run,
+   every message neutralized,
+   debug runs on process stderr with the trailing newline the sink adds.
+- The sessionStorage sink's persisted batches reparse to the exact records.
+- The file sink's appended lines,
+   under a throwaway package directory per run,
+   reparse to the exact records after its verify probe.
+
+Guard-failure proof on 2026-09-06:
+with the neutralizer made identity and the file sink interpolating the message raw into its JSON line,
+ and the artifact rebuilt,
+the neutralizer,
+ console sink,
+ and file sink properties fail on their first run;
+restored and rebuilt,
+ all four pass.
+
+Finding,
+ in the campaign rather than the logger:
+every boundary body settles through microtasks alone,
+ so a campaign held the event loop for its whole budget;
+the test harness's own logger,
+ still verifying its file sink when the first property started,
+saw its verify timer fire before the filesystem answered and wrote a breadcrumb.
+Each run now yields once through `setImmediate` (`yieldToEventLoop` in `src/sink-boundary-harness.ts`).
+
 ## Superseded decisions
 
 The June record fixed several contracts at design time;
@@ -216,9 +259,6 @@ Each is recorded in `package/module/logger/DECISIONS.md`.
 
 ## Pending deliverables
 
-- Sink boundary properties under Node:
-  the file and sessionStorage sinks round-trip every adversarial message through `JSON.parse`,
-  and the console neutralizer never emits a forbidden control.
 - Coverage-reachability gate in the sidecar:
   a fixed-seed driver importing the runtime package's `/ts` source,
   a committed `coverage-baseline.json`,
