@@ -928,7 +928,7 @@ private fun OneRowModeControl(
     contentPadding: PaddingValues,
     onOverflow: () -> Unit,
 ) {
-    SingleChoiceSegmentedButtonRow {
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         for (index in labels.indices) {
             SegmentedButton(
                 selected = index == 1,
