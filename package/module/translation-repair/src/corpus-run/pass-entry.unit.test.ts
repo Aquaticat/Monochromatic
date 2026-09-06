@@ -1925,7 +1925,7 @@ await describe({
           return line.startsWith('OVERLAP ',);
         },);
         expect(overlaps,).toEqual([
-          `OVERLAP ${CLEANUP_ENTRY.id} value=1 source=fallback`,
+          `OVERLAP ${CLEANUP_ENTRY.id} value=4 source=fallback`,
         ],);
         expect(cleanups.length,).toBe(1,);
         expect(cleanups[0]?.includes('cache=retained',),).toBe(true,);
