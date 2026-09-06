@@ -1,0 +1,305 @@
+diff --git a/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-project-fingerprint.ts b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-project-fingerprint.ts
+index 1f8deb4f0..999d8c264 100644
+--- a/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-project-fingerprint.ts
++++ b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-project-fingerprint.ts
+@@ -20,6 +20,7 @@ import type { SourceFile, } from 'typescript/unstable/ast';
+ 
+ import { ancestorDirectories, } from './ancestor-directories.ts';
+ import { isDeclarationFileName, } from './declaration-file-name.ts';
++import { compilerOptionsEnvironmentDigest, } from './effect-analysis-environment.ts';
+ import {
+   updateHashPlainValue,
+   updateHashString,
+@@ -244,12 +245,11 @@ export function effectProjectFingerprint({
+   },);
+   /**
+    Resolved compiler-option identity validated by incremental entries.
++
++   Configuration-directory paths are relocated so projects extending one shared configuration
++   validate against one digest; the whole-project `digest` above keeps the raw options.
+    */
+-  const optionsDigest = createHash('sha256',);
+-  updateHashPlainValue({
+-    digest: optionsDigest,
+-    value: project.compilerOptions,
+-  },);
++  const optionsDigest = compilerOptionsEnvironmentDigest(project,);
+   fileNames.forEach(function hashSource(fileName,): void {
+     /**
+      Exact source text from overlay or configured snapshot.
+@@ -333,7 +333,7 @@ export function effectProjectFingerprint({
+       fileListDigest,
+       declarationSurfaceDigest: declarationSurface.digest('hex',),
+       augmentationSurfaceDigest: augmentationSurface.digest('hex',),
+-      compilerOptionsDigest: optionsDigest.digest('hex',),
++      compilerOptionsDigest: optionsDigest,
+       lockfileDigest: lockfileState.digest,
+     },
+   };
+diff --git a/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summaries.ts b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summaries.ts
+index 7b3dd9a81..ff1d76a9f 100644
+--- a/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summaries.ts
++++ b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summaries.ts
+@@ -9,6 +9,7 @@ import type { Project, } from 'typescript/unstable/sync';
+ 
+ import { isDeclarationFileName, } from './declaration-file-name.ts';
+ import { createEffectAnalysisBudget, } from './effect-analysis-budget.ts';
++import { analysisEnvironmentKey, } from './effect-analysis-environment.ts';
+ import { createDemandDrivenEffectIndex, } from './effect-demand-index.ts';
+ import {
+   cachedFinalEffectIndex,
+@@ -318,9 +319,15 @@ export function buildEffectSummaryIndex({
+     `${projectFingerprint.digest}\0${analysisRoot ?? ''}`,
+   );
+   /**
+-   Persistent cache scope separating external analysis roots.
++   Persistent cache scope naming the analysis environment rather than the consuming project.
++
++   Sibling sources reached through `/ts` subpaths are summarized under whichever project reached
++   them first and revalidated, not recomputed, by every later project sharing this environment.
+    */
+-  const scopeKey = `${project.configFileName}\0${analysisRoot ?? ''}`;
++  const scopeKey = analysisEnvironmentKey({
++    project,
++    ...(analysisRoot === undefined) ? {} : { analysisRoot, },
++  },);
+   /**
+    Fresh mutable demand index for exact project snapshot.
+    */
+diff --git a/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-cache.ts b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-cache.ts
+index a8a5b7203..8019d9408 100644
+--- a/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-cache.ts
++++ b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-cache.ts
+@@ -264,7 +264,8 @@ export function readCachedSummariesForSource({
+    */
+   const persistent = readPersistentEffectSummaries({
+     address: {
+-      projectKey: identity.scopeKey,
++      projectKey: identity.projectKey,
++      environmentKey: identity.scopeKey,
+       fileName: identity.fileName,
+       sourceText: identity.sourceText,
+       ...(identity.cacheRootOverride === undefined)
+@@ -353,7 +354,8 @@ export function storeCreatedSummariesForSource({
+   },);
+   writePersistentEffectSummaries({
+     address: {
+-      projectKey: identity.scopeKey,
++      projectKey: identity.projectKey,
++      environmentKey: identity.scopeKey,
+       fileName: identity.fileName,
+       sourceText: identity.sourceText,
+       ...(identity.cacheRootOverride === undefined)
+diff --git a/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-persistent-cache.ts b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-persistent-cache.ts
+index 206f392a1..f91bab041 100644
+--- a/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-persistent-cache.ts
++++ b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-persistent-cache.ts
+@@ -75,13 +75,16 @@ export const PERSISTENT_EFFECT_CACHE_MISS: unique symbol = Symbol(
+ 
+ /**
+  Cache address shared by reads and writes.
+- 
+- `projectKey` carries the configured project path plus analysis-scope
+- policy; per-project content identity lives in each envelope's dependency
+- snapshot rather than the address, so one changed file relocates nothing.
++
++ `projectKey` carries the configured project path and locates the dependency-local cache root
++ only; `environmentKey` carries the analysis-scope policy plus relocated compiler options and
++ addresses the entry, so every consuming project sharing one environment reaches one entry per
++ source. Per-project content identity lives in each envelope's dependency snapshot rather than
++ the address, so one changed file relocates nothing.
+  */
+ export type PersistentEffectCacheAddress = {
+   readonly projectKey: string;
++  readonly environmentKey: string;
+   readonly fileName: string;
+   readonly sourceText: string;
+   readonly cacheRootOverride?: string;
+@@ -137,9 +140,9 @@ function cacheIdentity(
+    */
+   const source = contentDigest(address.sourceText,);
+   /**
+-   Project scope identity isolating configurations without content coupling.
++   Environment scope identity isolating configurations without naming the consuming project.
+    */
+-  const projectDirectoryName = contentDigest(address.projectKey,);
++  const projectDirectoryName = contentDigest(address.environmentKey,);
+   /**
+    Source path identity isolating files with equal contents.
+    */
+@@ -233,7 +236,7 @@ export function readPersistentEffectSummaries({
+       value: parsed,
+       identity: {
+         analyzerDigest: identity.analyzer,
+-        projectKey: address.projectKey,
++        projectKey: address.environmentKey,
+         fileName: address.fileName,
+         sourceDigest: identity.source,
+       },
+@@ -314,7 +317,7 @@ export function writePersistentEffectSummaries({
+   const envelope: PersistentEffectCacheEnvelope = {
+     schema: EFFECT_CACHE_SCHEMA,
+     analyzerDigest: identity.analyzer,
+-    projectKey: address.projectKey,
++    projectKey: address.environmentKey,
+     fileName: address.fileName,
+     sourceDigest: identity.source,
+     surfaces,
+diff --git a/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-analysis-environment.ts b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-analysis-environment.ts
+new file mode 100644
+index 000000000..bc4270af4
+--- /dev/null
++++ b/package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-analysis-environment.ts
+@@ -0,0 +1,152 @@
++/**
++ Analysis-environment identity shared by every consuming project with equal semantics.
++
++ The persistent summary cache was addressed by the configured project path, so one sibling
++ source reached from many consuming projects was summarized once per project. Summaries depend
++ on the resolved compiler options, the governing lockfile, and the source closure, none of which
++ names the consuming project, so the address names the environment instead: the analysis-scope
++ policy plus the resolved compiler options with configuration-directory paths relocated to a
++ placeholder. Two projects extending the same shared configuration then share one address,
++ while a project on another `lib` or `types` selection keeps its own.
++
++ @module
++ */
++
++import { createHash, } from 'node:crypto';
++import {
++  dirname,
++  sep,
++} from 'node:path';
++
++import type { Project, } from 'typescript/unstable/sync';
++
++import { updateHashPlainValue, } from './effect-hash-value.ts';
++
++/**
++ Placeholder replacing the configuration directory inside path-valued compiler options.
++ */
++const CONFIG_DIRECTORY_PLACEHOLDER = '${configDir}';
++
++/**
++ Tests whether compiler option value is a property-bearing record.
++
++ @param value - Compiler option value.
++
++ @returns whether string-keyed properties can be inspected.
++ */
++function isPlainRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
++  return ((typeof value) === 'object')
++    && (value !== null)
++    && (!Array.isArray(value,));
++}
++
++/**
++ Rewrites configuration-directory prefixes inside one JSON-compatible compiler option value.
++
++ Path-valued options such as `rootDirs`, `paths`, `outDir`, and `tsBuildInfoFile` are expanded
++ from `${configDir}` by TypeScript, so every project extending one shared configuration resolves
++ them to a different absolute path while meaning the same thing. Relocating the prefix back to the
++ placeholder restores that equality; a path outside the configuration directory is kept verbatim.
++
++ @param value - Resolved compiler option value.
++
++ @param configDirectory - Directory holding the configured project.
++
++ @returns equal-shaped value with configuration-directory prefixes replaced.
++
++ @example
++ ```ts
++ relocatedOptionValue({ value: '/repo/package/a/src', configDirectory: '/repo/package/a' });
++ ```
++ */
++function relocatedOptionValue({
++  value,
++  configDirectory,
++}: {
++  readonly value: unknown;
++  readonly configDirectory: string;
++},): unknown {
++  if ((typeof value) === 'string') {
++    if (value === configDirectory)
++      return CONFIG_DIRECTORY_PLACEHOLDER;
++    if (value.startsWith(`${configDirectory}${sep}`,))
++      return `${CONFIG_DIRECTORY_PLACEHOLDER}${value.slice(configDirectory.length,)}`;
++    return value;
++  }
++  if (Array.isArray(value,)) {
++    return value.map(function relocateElement(element: unknown,): unknown {
++      return relocatedOptionValue({
++        value: element,
++        configDirectory,
++      },);
++    },);
++  }
++  if (isPlainRecord(value,)) {
++    return Object.fromEntries(Object.entries(value,)
++      .map(function relocateProperty([key, property,],): readonly [string, unknown,] {
++        return [
++          key,
++          relocatedOptionValue({
++            value: property,
++            configDirectory,
++          },),
++        ];
++      },),);
++  }
++  return value;
++}
++
++/**
++ Digests resolved compiler options with configuration-directory paths relocated.
++
++ @param project - Configured TypeScript project.
++
++ @returns compiler-option identity equal across projects extending one configuration.
++
++ @example
++ ```ts
++ const digest = compilerOptionsEnvironmentDigest(project);
++ ```
++ */
++export function compilerOptionsEnvironmentDigest(project: Project,): string {
++  /**
++   Directory whose absolute prefix every `${configDir}` option expands to.
++   */
++  const configDirectory = dirname(project.configFileName,);
++  /**
++   Deterministic digest over the relocated option tree.
++   */
++  const digest = createHash('sha256',);
++  updateHashPlainValue({
++    digest,
++    value: relocatedOptionValue({
++      value: project.compilerOptions,
++      configDirectory,
++    },),
++  },);
++  return digest.digest('hex',);
++}
++
++/**
++ Builds persistent cache scope identity naming the analysis environment rather than the project.
++
++ @param project - Configured TypeScript project.
++
++ @param analysisRoot - Optional external implementation root admitted into analysis.
++
++ @returns scope key shared by every project with equal analysis policy and compiler options.
++
++ @example
++ ```ts
++ const scopeKey = analysisEnvironmentKey({ project });
++ ```
++ */
++export function analysisEnvironmentKey({
++  project,
++  analysisRoot,
++}: {
++  readonly project: Project;
++  readonly analysisRoot?: string;
++},): string {
++  return `${analysisRoot ?? ''}\0${compilerOptionsEnvironmentDigest(project,)}`;
++}

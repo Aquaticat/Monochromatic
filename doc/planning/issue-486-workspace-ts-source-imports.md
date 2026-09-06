@@ -381,22 +381,59 @@ so its saving is an upper bound on the program-size effect alone.
    mvm unchanged),
   which matches live analysis of reached sibling source rather than program size.
 
-- Mechanism:
-  `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-persistent-cache.ts:79-84`
-  documents that `projectKey` carries the configured project path,
-  and lines 140 to 160 place each entry under `<digest(projectKey)>/<digest(fileName)>`.
-  A sibling source file is therefore summarized once per consuming project,
-  so a cold sweep pays the sum of every package's `/ts` closure (median 95 sibling files,
-   148 packages),
-  not the 3086 files once.
-  That is a rule design choice,
-  not a property of `/ts`.
+- Mechanism (corrected by the prototype below):
+  `effect-summary-persistent-cache.ts:79-84,140-160` keys each entry by consuming project,
+  but the demand-driven analysis only summarizes reached callables,
+  so redundancy across projects is about a quarter of entries (2454 entries,
+   1834 distinct files,
+   620 duplicates),
+  not the sum of closures.
+  The per-package cold term that grows with sibling source (auto-mode 22 s against 5 s) is real;
+  its mechanism inside the rule is not isolated yet.
+
+## Prototype result: environment-keyed sibling summaries (2026-09-06)
+
+Worktree removed after;
+patch at `issue-486-summary-share.patch` beside this file (4 files changed plus one new module,
+ 30 insertions,
+ 18 deletions).
+
+- Change:
+  the persistent address segment `digest(projectKey)` became `digest(analysisEnvironmentKey)`,
+  a digest of the analysis root plus compiler options with the config directory relocated to `${configDir}`;
+  every envelope validation kept.
+  Project directories in the cache fell from 166 to 53.
+- Unit tests pass (including the incremental invalidation suite);
+  `lint:types` clean;
+  all 23 rule findings and every non-test finding preserved;
+  a sibling edit still re-summarized the edited file and rewrote its 30 dependents.
+- No speedup:
+  zero cross-project hits,
+  because `fileListDigest` and `compilerOptionsDigest` differed for 247 of 247 shared files
+  and `declarationSurfaceDigest` for 228,
+  while payloads were identical for 247 of 247 and dependency digests for 246.
+  Same-environment projects overwrote each other instead (188 rewrites during one warm sweep).
+- Timings were not comparable:
+  the sandbox cgroup caps memory at 8 GB,
+  cold sweeps peaked at the cap and `tsc` children were OOM-killed in baseline and prototype runs alike
+  (baseline cold 260 s and 399 s;
+   prototype 299 s).
+- Cache census (baseline):
+   2454 entries,
+  166 project directories,
+  1834 distinct files,
+  247 files reached from more than one project,
+  620 redundant entries.
+- Next step if pursued:
+  replace whole-program surface validation for sibling entries with per-file dependency-closure digests,
+  which were identical across projects,
+  and prove soundness for augmentations and declaration surfaces first.
 
 ## Next action
 
-Decision landed in `doc/decision/workspace-ts-source-imports.md` (commit `9509d2ef1`,
- closes #486);
-ST3 links it (`a5e3fb4dc`).
-Pending:
-record the cross-project summary-sharing prototype result here and under issue #374,
-and commit the oxlint `--allow` troubleshooting doc when its agent reports.
+None open in this record.
+The decision landed (`9509d2ef1`,
+ closes #486),
+ST3 links it (`a5e3fb4dc`),
+the `--allow` troubleshooting doc landed (`5a1624dcf`),
+and the cold-term follow-up is recorded under issue #374.

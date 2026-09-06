@@ -132,13 +132,25 @@ Surveyed at pinned commits in `doc/research/typescript-monorepo-cross-package-im
   8 packages on the plain base are the standing exception list.
   A sibling's type error fails every consumer's `lint:types`.
   Accepted 2026-09-06 (round 5 of the grilling).
-- **The readonly rule's cold cost scales with the sum of closures.**
-  Its persistent cache stores each sibling summary under `<digest(projectKey)>/<digest(fileName)>`
-  (`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-persistent-cache.ts:79-84,140-160`),
-  so a cold sweep re-summarizes every sibling once per consuming package.
-  This is a rule design choice,
-  remedied inside the rule by sharing content-keyed summaries across projects (prototype tracked under issue #374).
-  Warm cost does not depend on the closure.
+- **The readonly rule has a cold-only term that grows with sibling source in the program.**
+  Measured per package on 2026-09-06 (`auto-mode` 22 s against 5 s with declarations;
+  `mvm` unchanged);
+  warm cost does not depend on the closure.
+  The first hypothesis,
+  that the persistent cache re-summarizes every sibling once per consuming package,
+  overstated it:
+  a cache census after a cold sweep found 2454 entries for 1834 distinct files,
+  so about a quarter are duplicates across projects,
+  and a prototype that re-keyed entries by analysis environment produced no cross-project hits
+  because the envelope also validates whole-program surfaces
+  (file list,
+  declaration surface,
+  compiler options) that differ per program
+  (`doc/planning/issue-486-workspace-ts-source-imports.md`,
+   prototype section,
+   and `doc/planning/issue-486-summary-share.patch`).
+  The remedy stays inside the rule and is not yet identified;
+  tracked under issue #374.
 - **`./ts` is stripped at publish**;
   consumers outside the repo use built artifacts only.
 - **Declaration bundling of sibling source under TypeScript 7** needed rolldown-plugin-dts 0.27.4 with explicit Oxc
