@@ -5,10 +5,9 @@
 Campaign in progress.
 The Node orchestration layer,
  the Node sink boundary layer,
- and the coverage-reachability gate landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz`.
-The CI workflow,
- the toml-edit sidecar migration,
- and the Playwright browser layer follow in that order.
+ the coverage-reachability gate,
+ and the CI workflow landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz` and `.github/workflows/logger-fuzz.yml`.
+The toml-edit sidecar migration and the Playwright browser layer follow in that order.
 Plan,
  grill records,
  and landed commits:
@@ -271,6 +270,24 @@ The driver's adequacy was checked against the uncovered-line list,
 each scenario added after the first freeze targeted a named uncovered line,
 and one apparent gap (the store's oldest-first sort) turned out to need two prior-run entries before the comparator runs at all.
 
+## Landed: CI workflow
+
+`.github/workflows/logger-fuzz.yml` mirrors `toml-edit-fuzz.yml`:
+path-filtered to `package/module/logger/**`,
+ `package/module/logger.fuzz/**`,
+ this document,
+ and itself,
+with the merge-queue scope step,
+ `MISE_AUTO_INSTALL` off,
+ and only node and pnpm installed.
+Its steps build the runtime package,
+ type-check the sidecar,
+ run the sidecar unit suite (bounded property runs plus the fake-sink and model tests),
+run the fuzz smoke at 3000 ms per property,
+ and run the coverage gate.
+Every step was run locally in that order before the workflow was committed;
+the smoke takes about 25 seconds and the gate about 20 seconds on the development machine.
+
 ## Superseded decisions
 
 The June record fixed several contracts at design time;
@@ -310,15 +327,6 @@ Each is recorded in `package/module/logger/DECISIONS.md`.
 
 ## Pending deliverables
 
-- `.github/workflows/logger-fuzz.yml` mirroring `toml-edit-fuzz.yml`:
-  build,
-   `lint:types`,
-   `test:unit`,
-   `fuzz --budget 3000`,
-   `fuzz:coverage`,
-  path-filtered to the runtime package,
-   the sidecar,
-   and this document.
 - The toml-edit sidecar migration.
 - A Playwright browser property layer for the IndexedDB,
    OPFS,

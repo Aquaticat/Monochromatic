@@ -423,6 +423,35 @@ The round-2 shape,
    one browser bundle of fast-check plus the neutral artifact and the properties loaded by the harness page,
    is the last deliverable.
 
+### Landed on main (2026-09-06)
+
+- Sidecar `package/module/logger.fuzz`:
+   fake sinks,
+   reference model,
+   fuzz budget layers,
+   and the scheduled orchestration property
+  (guard-failure proof:
+   startup replay removed,
+   both properties fail).
+- Sink boundary properties under Node (`5cad2a9a8` and the commits before it):
+  console neutralizer against an independent reference,
+   console sink against a reference of its grouped output,
+  sessionStorage and file sinks reparsed from what they persisted;
+   guard-failure proof with the neutralizer made identity and the file sink interpolating raw.
+- Coverage-reachability gate (`587ee89c4`):
+   driver over the `/ts` source,
+   toml-edit's projector and baseline gate,
+   first baseline 3376 of 3623 lines;
+  guard-failure proof:
+   dropping the flush-hook scenario fails the check on `create-logger.ts` (530 to 523).
+- `.github/workflows/logger-fuzz.yml` mirroring `toml-edit-fuzz.yml`.
+- Decision record rewritten as the campaign record:
+   `doc/decision/logger-fuzzing.md`.
+
+Remaining:
+ the toml-edit sidecar migration,
+ then the Playwright browser property layer.
+
 ## Verification campaign (the toml-edit bar)
 
 `package/module/toml-edit` has a budgeted property campaign,
