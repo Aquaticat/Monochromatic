@@ -1,4 +1,4 @@
-// This file is a throwaway design prototype. It renders six non-functional theme candidates
+// This file is a throwaway design prototype. It renders non-functional visual candidates
 // in the real Compose and Android system-bar environment for emulator screenshot capture.
 
 // What:     `package` places this debug-only activity in the app's existing Android namespace.
@@ -227,6 +227,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -268,16 +269,20 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 
-// What:     Compose `Color` stores packed ARGB color values used by rendered components.
-// Why:      The three candidate surface systems use the verified MD3 light palette.
+// What:     `Offset` and `Size` store two-dimensional geometry, `Color` stores packed ARGB
+//           values, and `ImageVector` stores a scalable icon path.
+// Why:      The prototype needs geometry for the folder indicator, verified palette values for
+//           surfaces, and typed official Material icons for shared transport-button rendering.
 //
 // In TS you'd write (pseudocode):
 // ```ts
+// import type { ImageVector, Offset, Size } from 'compose/ui/graphics';
 // import { Color } from 'compose/ui/graphics';
 // ```
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 
 // What:     `FontWeight`, `TextAlign`, and `TextOverflow` configure native text rendering.
 // Why:      Track metadata variants must differ only in intended emphasis and availability.
@@ -460,7 +465,7 @@ private fun DesignCandidatePrototype(candidate: String) {
             if (candidate.startsWith("dbtp-")) {
                 RightHalfStudy(candidate = candidate, palette = palette)
             } else {
-                FullUnfoldedStudy(palette = palette)
+                FullUnfoldedStudy(candidate = candidate, palette = palette)
             }
         }
     }
@@ -468,7 +473,7 @@ private fun DesignCandidatePrototype(candidate: String) {
 
 /** Renders two equal 414dp panes around Material's centered 24dp expanded-layout spacer. */
 @Composable
-private fun FullUnfoldedStudy(palette: CandidatePalette) {
+private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
     Row(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
@@ -477,6 +482,7 @@ private fun FullUnfoldedStudy(palette: CandidatePalette) {
         ) {
             FolderAndTransportPane(
                 modifier = Modifier.fillMaxSize(),
+                candidate = candidate,
                 palette = palette,
             )
         }
@@ -509,7 +515,11 @@ private fun RightHalfStudy(candidate: String, palette: CandidatePalette) {
 
 /** Builds the settled picker-over-transport left pane. */
 @Composable
-private fun FolderAndTransportPane(modifier: Modifier, palette: CandidatePalette) {
+private fun FolderAndTransportPane(
+    modifier: Modifier,
+    candidate: String,
+    palette: CandidatePalette,
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -523,6 +533,7 @@ private fun FolderAndTransportPane(modifier: Modifier, palette: CandidatePalette
         Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
         TransportBlock(
             modifier = Modifier.fillMaxWidth(),
+            candidate = candidate,
             palette = palette,
         )
     }
@@ -696,17 +707,37 @@ private fun RowScope.FolderNames() {
 
 /** Draws a labeled Material slider, official transport icon buttons, and one-row mode selector. */
 @Composable
-private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
+private fun TransportBlock(
+    modifier: Modifier,
+    candidate: String,
+    palette: CandidatePalette,
+) {
+    // What:     Kotlin's `if` can return a value, unlike a TypeScript `if` statement.
+    // Why:      Every candidate keeps one immutable Material spacing value for its complete deck.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const groupSpacing = candidate.includes('refine-tight-')
+    //   ? 8
+    //   : candidate.includes('refine-airy-') ? 16 : 12;
+    // ```
+    val groupSpacing = if (candidate.contains("refine-tight-")) {
+        8.dp
+    } else if (candidate.contains("refine-airy-")) {
+        16.dp
+    } else {
+        12.dp
+    }
     Column(
         modifier = modifier
             .heightIn(max = 440.dp)
             .background(color = palette.transport)
             .verticalScroll(rememberScrollState())
-            .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Start))
+            .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Horizontal))
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(groupSpacing),
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "Another Xronixle", style = MaterialTheme.typography.titleMedium)
@@ -729,7 +760,7 @@ private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
                     style = timeStyle,
                 )
                 Slider(
-                    value = 0.16f,
+                    value = 66f / 275f,
                     onValueChange = {},
                     modifier = Modifier
                         .weight(1f)
@@ -743,29 +774,71 @@ private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
                     style = timeStyle,
                 )
             }
-            TransportControls()
+            TransportControls(candidate = candidate)
         }
         ModeControl()
     }
 }
 
-/** Draws three real Material icon buttons with color and size hierarchy for playback. */
+/**
+ * What:     `SecondaryTransportButton` is a Compose function whose `ImageVector` parameter
+ *           carries one Material icon and whose style string chooses one baseline button color style.
+ * Why:      Both skip actions must change emphasis together without duplicating rendering branches.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function SecondaryTransportButton(props: {
+ *   imageVector: ImageVector;
+ *   contentDescription: string;
+ *   style: string;
+ * }): UIElement;
+ * ```
+ */
 @Composable
-private fun TransportControls() {
+private fun SecondaryTransportButton(
+    imageVector: ImageVector,
+    contentDescription: String,
+    style: String,
+) {
+    if (style == "standard") {
+        IconButton(onClick = {}) {
+            Icon(imageVector = imageVector, contentDescription = contentDescription)
+        }
+        return
+    }
+    if (style == "outlined") {
+        OutlinedIconButton(onClick = {}) {
+            Icon(imageVector = imageVector, contentDescription = contentDescription)
+        }
+        return
+    }
+    FilledTonalIconButton(onClick = {}) {
+        Icon(imageVector = imageVector, contentDescription = contentDescription)
+    }
+}
+
+/** Draws three real Material icon buttons with color hierarchy for playback. */
+@Composable
+private fun TransportControls(candidate: String) {
+    val secondaryStyle = candidate.substringAfterLast('-')
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        FilledTonalIconButton(onClick = {}) {
-            Icon(imageVector = Icons.Filled.SkipPrevious, contentDescription = "Previous track")
-        }
+        SecondaryTransportButton(
+            imageVector = Icons.Filled.SkipPrevious,
+            contentDescription = "Previous track",
+            style = secondaryStyle,
+        )
         FilledIconButton(onClick = {}) {
             Icon(imageVector = Icons.Filled.Pause, contentDescription = "Pause")
         }
-        FilledTonalIconButton(onClick = {}) {
-            Icon(imageVector = Icons.Filled.SkipNext, contentDescription = "Next track")
-        }
+        SecondaryTransportButton(
+            imageVector = Icons.Filled.SkipNext,
+            contentDescription = "Next track",
+            style = secondaryStyle,
+        )
     }
 }
 

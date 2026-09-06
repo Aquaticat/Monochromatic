@@ -160,7 +160,7 @@ depends = ["prototype:build"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
 [tasks."prototype:capture"]
-description = "Install and capture all six Compose candidates from the unfolded Pixel Fold emulator"
+description = "Install and capture the current existing-screen refinement matrix from the unfolded Pixel Fold emulator"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 shell = "node --input-type=module-typescript -e"
@@ -208,16 +208,15 @@ const displayId = innerDisplayLine.slice("Display ".length, displayIdEnd);
 const outputDirectory = resolve("../design/questions/render");
 const scratchDirectory = mkdtempSync(join(tmpdir(), "music-player-compose-capture-"));
 const candidateNames = [
-  "light-a",
-  "light-b",
-  "light-c",
-  "dbtp-a",
-  "dbtp-b",
-  "dbtp-c",
-  "divider-a",
-  "divider-b",
-  "divider-c",
-  "divider-final",
+  "refine-tight-standard",
+  "refine-tight-outlined",
+  "refine-tight-tonal",
+  "refine-balanced-standard",
+  "refine-balanced-outlined",
+  "refine-balanced-tonal",
+  "refine-airy-standard",
+  "refine-airy-outlined",
+  "refine-airy-tonal",
 ];
 for (const candidateName of candidateNames) {
   execFileSync(
@@ -259,7 +258,7 @@ for (const candidateName of candidateNames) {
     'text="Camellia"',
     'text="Another Xronixle"',
     'content-desc="Settings"',
-    ...(candidateName.startsWith("light-") || candidateName.startsWith("divider-")
+    ...(candidateName.startsWith("light-") || candidateName.startsWith("divider-") || candidateName.startsWith("refine-")
       ? [
           'text="Folders"',
           'text="Open"',
