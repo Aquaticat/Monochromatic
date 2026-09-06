@@ -726,7 +726,7 @@ private fun TransportBlock(
     //   ? 8
     //   : candidate.includes('refine-airy-') ? 16 : 12;
     // ```
-    val groupSpacing = if (candidate.contains("refine-tight-")) {
+    val groupSpacing = if (candidate.contains("refine-tight-") || candidate.startsWith("cue-")) {
         8.dp
     } else if (candidate.contains("refine-airy-")) {
         16.dp
@@ -1039,12 +1039,12 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
         },
         leadingContent = {
             Box(
-                modifier = Modifier.size(if (playing && currentTrackCue == "badge") 32.dp else 24.dp),
+                modifier = Modifier.size(24.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 if (playing && currentTrackCue == "badge") {
                     Surface(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(24.dp),
                         shape = CircleShape,
                         color = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -1053,7 +1053,7 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
                             Icon(
                                 imageVector = Icons.Filled.PlayArrow,
                                 contentDescription = "Playing",
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(18.dp),
                             )
                         }
                     }
