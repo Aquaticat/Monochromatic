@@ -6,7 +6,7 @@ import { AsyncLocalStorage, } from 'node:async_hooks';
 import { writeSync, } from 'node:fs';
 import process from 'node:process';
 import { types, } from 'node:util';
-import type { SandboxRuntime, } from './sandbox-owner.ts';
+import { NO_SANDBOX_OWNER, type SandboxRuntime, type SandboxOwner, } from './sandbox-owner.ts';
 import { SandboxOwnershipError, } from './sandbox-error.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
@@ -320,13 +320,13 @@ export function nodeSandboxRuntime(): SandboxRuntime {
   const runtime = rejectionRuntime();
   return {
     contextual: true,
-    current() {
+    current(): SandboxOwner | typeof NO_SANDBOX_OWNER {
       /**
        Suites never implicitly inherit a parent's method replacements.
        */
       const context = runtime.storage
         .getStore();
-      return context?.kind === 'test' ? context.sandboxOwner : undefined;
+      return context?.kind === 'test' ? context.sandboxOwner ?? NO_SANDBOX_OWNER : NO_SANDBOX_OWNER;
     },
     isProxy: types.isProxy,
     async run({
@@ -352,11 +352,14 @@ export function nodeSandboxRuntime(): SandboxRuntime {
         .run(
           execution,
           async function runAttempt(): Promise<void> {
-        using completion = {
-          [Symbol.dispose](): void { execution.phase = 'completed'; },
-        };
-        await body();
-      },
+            /** Keep late rejection attribution tied to this completed attempt. */
+            using completion = {
+              [Symbol.dispose](): void {
+                execution.phase = 'completed';
+              },
+            };
+            await body();
+          },
         );
     },
   };

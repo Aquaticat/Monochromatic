@@ -8,7 +8,12 @@ await describe({
       name: `concurrent ${factory} owners keep independent histories and an original reader`,
       fn: async (): Promise<void> => {
         /** Object identity and arguments exercise the actual consumer call path. */
-        const target = { label: 'original', method(input: string,): string { return `${this.label}:${input}`; }, };
+        const target = {
+          label: 'original',
+          method(input: string,): string {
+            return `${this.label}:${input}`;
+          },
+        };
         /** Exact final descriptor comparison catches incomplete restoration. */
         const original = Object.getOwnPropertyDescriptor(target, 'method',);
         /** Every owner reaches the barrier while its fake remains installed. */
@@ -24,7 +29,11 @@ await describe({
                 name: 'method owner',
                 fn: async ({ sinon, }: TestContext,): Promise<void> => {
                   // The failure control must settle even when the second factory throws before the barrier.
-                  using releaseOnFailure = { [Symbol.dispose](): void { signal.resolve(); }, };
+                  using releaseOnFailure = {
+                    [Symbol.dispose](): void {
+                      signal.resolve();
+                    },
+                  };
                   /** Each context owns an ordinary Sinon fake with its own history. */
                   const fake = factory === 'stub'
                     ? sinon.stub(target, 'method',).returns(`fake ${String(index,)}`,)
@@ -32,7 +41,7 @@ await describe({
                   signal.resolve();
                   await Promise.all(ready.map(entry => entry.promise),);
                   await reader.promise;
-                  expect(target.method,).toBe(fake,);
+                  expect(Reflect.get(target, 'method'),).toBe(fake,);
                   expect(target.method('input',),).toBe(factory === 'stub' ? `fake ${String(index,)}` : 'original:input',);
                   expect(fake.callCount,).toBe(1,);
                   expect(fake.firstCall.thisValue,).toBe(target,);
@@ -45,7 +54,11 @@ await describe({
               name: 'unstubbed reader',
               fn: async (): Promise<void> => {
                 await Promise.all(ready.map(entry => entry.promise),);
-                using release = { [Symbol.dispose](): void { reader.resolve(); }, };
+                using release = {
+                  [Symbol.dispose](): void {
+                    reader.resolve();
+                  },
+                };
                 expect(target.method('reader',),).toBe('original:reader',);
               },
             },),

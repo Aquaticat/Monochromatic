@@ -3,6 +3,10 @@
  */
 import { SandboxOwnershipError, } from './sandbox-error.ts';
 import type { SandboxRuntime, } from './sandbox-owner.ts';
+import { isSandboxTarget, } from './sandbox-value.ts';
+
+/** No contextual lease exists or the method requires ordinary Sinon semantics. */
+export const NO_METHOD_SLOT: unique symbol = Symbol('no applicable context-owned method slot',);
 import {
   methodRegistry,
   methodSlotConflict,
@@ -30,7 +34,7 @@ export function findMethodSlot({
 }: {
   readonly target: object;
   readonly key: PropertyKey;
-},): MethodSlot | undefined {
+},): MethodSlot | typeof NO_METHOD_SLOT {
   /**
    Shared state recognizes getters even when an alias hides target identity.
    */
@@ -42,8 +46,7 @@ export function findMethodSlot({
   /**
    Prototype chains are linear, so traverse with a cursor rather than recursion.
    */
-  let cursor: object | null = target;
-  while (cursor !== null) {
+  for (let cursor: unknown = target; isSandboxTarget(cursor); cursor = Object.getPrototypeOf(cursor)) {
     if (visited.has(cursor,))
       throw new SandboxOwnershipError('The supplied mock target has a cyclic prototype chain.',);
     visited.add(cursor,);
@@ -62,12 +65,13 @@ export function findMethodSlot({
       cursor,
       key,
     );
-    if (descriptor !== undefined)
-      return descriptor.get === undefined ? undefined : registry.getters
-        .get(descriptor.get,);
-    cursor = Object.getPrototypeOf(cursor,) as object | null;
+    if (descriptor !== undefined) {
+      /** Read the getter as an identity token, never as an unbound method to invoke. */
+      const getter: unknown = Reflect.get(descriptor, 'get');
+      return typeof getter === 'function' ? registry.getters.get(getter) ?? NO_METHOD_SLOT : NO_METHOD_SLOT;
+    }
   }
-  return undefined;
+  return NO_METHOD_SLOT;
 }
 
 /**
@@ -95,7 +99,7 @@ export function prepareMethodSlot({
   readonly target: object;
   readonly key: PropertyKey;
   readonly runtime: SandboxRuntime;
-},): MethodSlot | undefined {
+},): MethodSlot | typeof NO_METHOD_SLOT {
   /**
    Reuse a slot only through the exact object identity that originally installed it.
    */
@@ -103,7 +107,7 @@ export function prepareMethodSlot({
     target,
     key,
   },);
-  if (existing !== undefined) {
+  if (typeof existing !== 'symbol') {
     if ((!runtime.contextual) || runtime.isProxy(target,)
       || (existing.target !== target)
       || (!methodSlotIntact(existing,)))
@@ -114,7 +118,7 @@ export function prepareMethodSlot({
     return existing;
   }
   if ((!runtime.contextual) || runtime.isProxy(target,))
-    return undefined;
+    return NO_METHOD_SLOT;
   /**
    Restrict the new contract to configurable own writable data-method properties.
    */
@@ -124,7 +128,7 @@ export function prepareMethodSlot({
   );
   if ((original?.configurable !== true) || (original.writable !== true)
     || ((typeof original.value) !== 'function'))
-    return undefined;
+    return NO_METHOD_SLOT;
   /**
    Values are selected from a private facade only while this exact owner is running.
    */
@@ -142,7 +146,7 @@ export function prepareMethodSlot({
       /**
        Missing registrations include suites, unrelated tests, and contextless consumers.
        */
-      const replacement = current?.phase === 'running' ? owners.get(current,) : undefined;
+      const replacement = typeof current !== 'symbol' && current.phase === 'running' ? owners.get(current,) : undefined;
       return replacement === undefined ? original.value : Reflect.get(
         replacement.facade,
         key,

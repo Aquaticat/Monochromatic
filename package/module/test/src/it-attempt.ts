@@ -56,6 +56,7 @@ export async function runItAttempt({
     l,
     phase: 'running',
   };
+  /** Runner-owned lifetime closes before raw Sinon restoration. */
   using sandbox = createOwnedSandbox({
     owner,
     runtime,

@@ -4,6 +4,9 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { SandboxOwnershipError, } from './sandbox-error.ts';
 
+/** Execution has no test-body ownership, including suites and reporting contexts. */
+export const NO_SANDBOX_OWNER: unique symbol = Symbol('execution has no sandbox owner',);
+
 /**
  Identity is the object itself, never the reusable test name or descriptor.
  */
@@ -33,7 +36,7 @@ export type SandboxRuntime = {
   /**
    Current attempt, if any; callers must also inspect its phase.
    */
-  readonly current: () => SandboxOwner | undefined;
+  readonly current: () => SandboxOwner | typeof NO_SANDBOX_OWNER;
   /**
    Excludes proxy targets whose traps cannot be rolled back by the harness.
    */

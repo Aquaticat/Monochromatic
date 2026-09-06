@@ -15,16 +15,18 @@ await describe({
         /** Fixture survives its owner so late mutation can be observed. */
         const target = { method: (): string => 'original', };
         /** Completed context deliberately retained by a consumer. */
-        let completed: TestContext | undefined;
+        const captured = Promise.withResolvers<TestContext>();
         await it({
           name: 'finished owner',
           fn: async (ctx: TestContext,): Promise<void> => {
-            completed = ctx;
+            captured.resolve(ctx);
             ctx.sinon.stub(target, 'method',).returns('fake',);
           },
         },);
+        /** Wait for the exact context supplied by the completed inner test. */
+        const completed = await captured.promise;
         expect(target.method(),).toBe('original',);
-        expect(() => completed?.sinon.stub(target, 'method',),).toThrow('completed',);
+        expect(() => completed.sinon.stub(target, 'method',),).toThrow('completed',);
         expect(target.method(),).toBe('original',);
       },
     },),
@@ -38,7 +40,7 @@ await describe({
           repeats: 1,
           fn: async (ctx: TestContext,): Promise<void> => {
             /** First attempt must not remain an authority during the next one. */
-            const previous = contexts[0];
+            const [previous,] = contexts;
             if (previous !== undefined) {
               expect(previous,).not.toBe(ctx,);
               expect(previous.sinon,).not.toBe(ctx.sinon,);

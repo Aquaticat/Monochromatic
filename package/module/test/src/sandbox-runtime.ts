@@ -1,7 +1,7 @@
 /**
  Lazy runtime adapter keeps Node built-ins outside neutral module imports. @module
  */
-import type { SandboxRuntime, } from './sandbox-owner.ts';
+import { NO_SANDBOX_OWNER, type SandboxRuntime, } from './sandbox-owner.ts';
 
 /**
  Resolves context support using the same runtime gate as descriptor observation.
@@ -25,8 +25,8 @@ export async function sandboxRuntime(): Promise<SandboxRuntime> {
   }
   return {
     contextual: false,
-    current: () => undefined,
-    isProxy: () => false,
-    run: ({ body, }) => body(),
+    current(): typeof NO_SANDBOX_OWNER { return NO_SANDBOX_OWNER; },
+    isProxy(): boolean { return false; },
+    run({ body, }): Promise<void> { return body(); },
   };
 }

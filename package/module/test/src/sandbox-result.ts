@@ -14,6 +14,7 @@ import {
   isSandboxTarget,
   requireUnownedProperty,
   sandboxPropertyKey,
+  SINON_VALIDATES_PROPERTY,
 } from './sandbox-target.ts';
 
 /**
@@ -141,7 +142,7 @@ export function guardMockController({
          Invalid property arguments remain Sinon's own validation responsibility.
          */
         const key = sandboxPropertyKey(invocation.args[0],);
-        if (key !== undefined)
+        if (typeof key === 'string' || key !== SINON_VALIDATES_PROPERTY)
           requireUnownedProperty({
             target,
             key,

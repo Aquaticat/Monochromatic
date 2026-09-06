@@ -70,16 +70,21 @@ export function createOwnedSandbox({
   /**
    Only internal restoration may invoke an ordinary fake's restore after completion.
    */
-  let restoring = false;
+  const cleanupState = { active: false, };
   /**
    Restore every lease before delegating to Sinon's own collection cleanup.
    */
   function restore(): void {
-    restoring = true;
-    using completion = { [Symbol.dispose](): void { restoring = false; }, };
+    cleanupState.active = true;
+    /** Restore internal cleanup authority even if a restorer throws. */
+    using completion = {
+      [Symbol.dispose](): void {
+        cleanupState.active = false;
+      },
+    };
     restoreSandboxSteps([
       ...leases,
-      () =>{  raw.restore(); },
+      function restoreOrdinarySandbox(): void { raw.restore(); },
     ],);
   }
   /**
@@ -90,7 +95,7 @@ export function createOwnedSandbox({
     runtime,
     leases,
     restore,
-    restoring: () => restoring,
+    restoring(): boolean { return cleanupState.active; },
   };
   l.debug(`creating attempt sandbox (contextual methods: ${String(runtime.contextual,)})`,);
   return {
