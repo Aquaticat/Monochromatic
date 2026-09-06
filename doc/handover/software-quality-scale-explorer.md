@@ -126,9 +126,25 @@ An immediate reset assertion ran before the native dialog close event completed.
 The following observation showed the cleared state.
 Final reset verification must wait for that rendered state rather than infer failure from a timing race.
 
-The download-tool invocation timed out without producing the expected saved file.
-The browser bridge agent is separately checking export code and the tool's download handling.
-Do not mark download verification complete until actual file content is read.
+The initial download-tool invocation timed out without producing the expected saved file.
+Independent unplaced and populated assessment downloads then succeeded without changing the export code.
+The populated export exactly matched `assessmentText()` bytes and preserved Unicode and literal markup-like text.
+See `doc/troubleshooting/agent-browser-assessment-download-check.md`.
+No cause is assigned to the isolated timeout.
+
+Final reset checks used the native dialog buttons and Escape,
+then waited for the cleared name input before asserting `Unplaced`.
+Escape retained the entered fixture name;
+confirmed discard cleared it.
+
+The final mobile layout has one navigation row at 375 CSS pixels,
+with the input form beginning at approximately 390 CSS pixels from the viewport top.
+This replaces the measured approximately 642-pixel form start before compacting the navigation and header.
+The method view also passed axe-core with zero violations and zero incomplete findings.
+The modal had zero violations and one unresolved automated contrast finding;
+the browser bridge agent checked the actual rendered paragraph separately.
+Its dark-theme foreground/background contrast was 13.455:1,
+with an opaque background and no element visually covering the paragraph.
 
 ## Design frontier
 
@@ -137,9 +153,19 @@ Settled: personal philosophy; approved catalogue ratings and rationale; custom a
 Q3/Q4 are delegated and resolved through complete-product comparisons and explicit candidate ranges.
 The replacement is implemented within the requested standalone scope.
 No request to revise existing reference judgments or research a universal ranking is open.
-Next actions: complete export and final layout verification;
-copy the finished HTML to Downloads;
-open the new-rating view in Helium and verify the visible artifact.
+The finished copy is `/var/home/user/Downloads/software_quality_scale_explorer_fixed.html`.
+It was compared byte-for-byte with the repository artifact.
+Both have SHA-256 `554f6516ccc33b5c7b329070566adf8e81509c54e2878e2361ee83e698e37103`.
+The supplied `(2).html` file is retained unchanged.
+Final pure-model probes passed after all edits,
+including explicit conflicts between confirmed zero and positive comparisons,
+every missing-ten condition,
+model purity,
+and delivered-copy/catalogue equality.
+
+The browser bridge agent has opened the Downloads copy in Helium.
+Next action: record its final light-theme modal check and active-window verification,
+then hand the finished file to the user.
 
 ## Changes and commits
 
@@ -147,3 +173,5 @@ open the new-rating view in Helium and verify the visible artifact.
 - `7916cf873`: browser launch-option reset diagnosis.
 - `0e33b6b5f`: reference-based custom assessment and revised standalone explorer.
 - `84eabfc63`: stale-state protections, accessibility, and responsive result handling.
+- `db9cbf49d`: compact mobile navigation and recorded verification.
+- `1ce57f623`: verified export controls and isolated-timeout record.
