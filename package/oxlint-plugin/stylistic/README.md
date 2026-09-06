@@ -157,6 +157,10 @@ All per-line rules are auto-fixable via `oxlint --fix`.
    `x && y && z`) are permitted because they are unambiguous under associativity.
   Mixed operators (`a + b * c`,
    `x || y && z`) must be disambiguated with explicit parens.
+  This includes a unary negative literal in a comparison:
+   write `index === (-1)` rather than `index === -1`.
+  Parenthesizing the literal is the accepted existence-check idiom and is compatible with
+   `unicorn/consistent-existence-index-check`.
   Not auto-fixable.
 - **chain-per-line**:
    require one chain segment per source line for binary,

@@ -38,10 +38,14 @@ const r9 = (a + b) * c;
 const r10 = a + b;
 const r11 = x && y;
 
+// Parentheses around a unary negative literal are the accepted existence-check idiom.
+const r12 = a === (-1);
+
 export {
   r1,
   r10,
   r11,
+  r12,
   r2,
   r3,
   r4,
