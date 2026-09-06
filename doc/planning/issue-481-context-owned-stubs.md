@@ -3,8 +3,10 @@
 ## Request and scope
 
 The user asks what to do about [issue #481](https://github.com/Aquaticat/Monochromatic/issues/481).
-This is investigation and recommendation,
-not authorization to implement a production fix.
+The user accepted the recommendation with "Okay, do it."
+Production implementation,
+verification,
+and issue closure are authorized.
 
 The user explicitly directs the investigation not to anchor on the issue's proposed fixes.
 Their hypothesis is that injected `ctx` enables a code-only solution.
@@ -209,7 +211,11 @@ Run package tests and lint before closing #481.
   Those unrelated files were not changed by this investigation.
 - Main-worktree changes are documentation only.
   The GitHub issue was not edited or closed.
-- No user acceptance of an implementation design has occurred.
-- Next action after implementation authorization:
-  build the production ownership lifecycle and runtime boundary,
+- Implementation is now authorized.
+- Production scope: context-selected own configurable writable method stubs and spies on the Node execution path.
+  Other operations and non-Node runtimes retain ordinary Sinon behavior,
+  with attempt-lifetime guards and rejection of operations that would overwrite active contextual properties.
+  This does not advertise complete global-state isolation.
+- Next action:
+  implement the attempt lifecycle and registry,
   beginning with the completed-owner mutation regression.
