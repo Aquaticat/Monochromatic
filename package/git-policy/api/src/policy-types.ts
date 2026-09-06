@@ -123,6 +123,10 @@ export type PolicyContext = {
    */
   readonly candidateVersion: number;
   /**
+   Whether engine can safely apply proposed policy patches in current lifecycle.
+   */
+  readonly canApplyPatches: boolean;
+  /**
    Current lifecycle trigger.
    */
   readonly trigger: PolicyTrigger;

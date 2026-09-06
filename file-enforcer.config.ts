@@ -1858,6 +1858,24 @@ ${await cat(['./AGENTS.md',],)}`,
     },);
   },),),
 
+  ...await Promise.all([
+    'errors.ts',
+    'full-content-patch.ts',
+    'index.ts',
+    'rewrite-candidates.ts',
+  ].map(async function mirrorMarkdownLintPolicy(fileName,) {
+    return overwrite({
+      dest: `./package/git-policy/cli/src/optional/markdown-lint/${fileName}`,
+      content: `// Generated from \`package/git-policy/markdown-lint/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
+        `./package/git-policy/markdown-lint/src/${fileName}`,
+      ],))
+        .replace(
+          '@monochromatic-dev/git-policy-api/ts',
+          '../../api/index.ts',
+        )}`,
+    },);
+  },),),
+
   generatePackageLicenseTexts(),
 
   generateCargoManifests(),

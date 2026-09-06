@@ -159,7 +159,11 @@ It is an in-process unique symbol and is never serialized to JSONL.
 ## Shipped optional policies
 
 Repo-owned policies ship in the same package-root MJS artifact but remain disabled until trusted config registers them.
-The current optional export is `repositoryPolicyPlugin`.
+The current optional exports are `repositoryPolicyPlugin`,
+`forbiddenStringsPlugin`,
+and `markdownLintPlugin`.
+`markdownLintPlugin` runs `cli-markdown-lint --fix` over Markdown candidates inside the commit transaction;
+its source and options live in `package/git-policy/markdown-lint/README.md`.
 
 ```ts
 import {
