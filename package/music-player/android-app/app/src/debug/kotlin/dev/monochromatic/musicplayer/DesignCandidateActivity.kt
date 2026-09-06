@@ -175,6 +175,7 @@ import androidx.compose.foundation.layout.FlowRow
 // ```
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.PaddingValues
 
 // What:     `BoxWithConstraints` provides the current layout's available width to its content.
 // Why:      The mode control needs measured pane width to choose one, two, or four rows.
@@ -924,6 +925,7 @@ private fun TransportControls(candidate: String) {
 private fun OneRowModeControl(
     labels: List<String>,
     accessibleLabels: List<String>,
+    contentPadding: PaddingValues,
     onOverflow: () -> Unit,
 ) {
     SingleChoiceSegmentedButtonRow {
@@ -937,6 +939,7 @@ private fun OneRowModeControl(
                     .semantics {
                         contentDescription = accessibleLabels[index]
                     },
+                contentPadding = contentPadding,
             ) {
                 Text(
                     text = labels[index],
@@ -1091,14 +1094,33 @@ private fun ModeControl() {
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
-        val oneRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
+        val defaultOneRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
+        val compactOneRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
         val twoRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
-        if (maxWidth >= 189.dp && !oneRowOverflow.value) {
+        if (maxWidth >= 189.dp && !defaultOneRowOverflow.value) {
             OneRowModeControl(
                 labels = labels,
                 accessibleLabels = accessibleLabels,
+                contentPadding = SegmentedButtonDefaults.ContentPadding,
                 onOverflow = {
-                    oneRowOverflow.value = true
+                    defaultOneRowOverflow.value = true
+                },
+            )
+            return@BoxWithConstraints
+        }
+        val compactOneRowPadding = PaddingValues(
+            start = 6.dp,
+            top = ButtonDefaults.ContentPadding.calculateTopPadding(),
+            end = 6.dp,
+            bottom = ButtonDefaults.ContentPadding.calculateBottomPadding(),
+        )
+        if (maxWidth >= 189.dp && !compactOneRowOverflow.value) {
+            OneRowModeControl(
+                labels = labels,
+                accessibleLabels = accessibleLabels,
+                contentPadding = compactOneRowPadding,
+                onOverflow = {
+                    compactOneRowOverflow.value = true
                 },
             )
             return@BoxWithConstraints
