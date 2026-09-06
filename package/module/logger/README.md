@@ -89,8 +89,14 @@ already provides its own log-level filtering.
 ## Sinks
 
 The default logger writes to **all** available sinks simultaneously.
-Availability is verified at module load;
- records emitted while an async sink is
+Availability is verified at module load,
+ every sink concurrently,
+ each under its own time limit (`verifyTimeoutMs`,
+ default `DEFAULT_VERIFY_TIMEOUT_MS`,
+ 5000 ms);
+ a sink that does not answer in time counts as unavailable,
+ so one hung backend probe cannot starve the others.
+Records emitted while an async sink is
 still being verified are replayed to that sink when it becomes available.
 
 - **console**:
@@ -256,8 +262,11 @@ File,
 - Throws at log time once initialization has completed with no available backend.
    The console sink verifies wherever `console` and `queueMicrotask` exist,
    so this is reachable only through `createLogger` with sinks that all fail verification
-- A sink is dropped when its `verify` reports unavailable (or its flush hook rejects);
-   remaining sinks continue
+- A sink is dropped when its `verify` reports unavailable,
+   runs past `verifyTimeoutMs`,
+   or its flush hook rejects;
+   remaining sinks continue,
+   and a late verify answer after the limit is ignored
 - Individual `write` failures are handled per sink and do not disable the backend
 
 ## Custom loggers
@@ -286,6 +295,7 @@ import { createLogger, sinks, } from '@monochromatic-dev/module-logger';
 const { logger, } = createLogger({
   sinks: [sinks.createFileSink(),],
   flushDeadlineMs: 30_000,
+  verifyTimeoutMs: 30_000,
 },);
 ```
 
@@ -332,6 +342,7 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
 - localStorage and IndexedDB sink designs and measurements
 - Console output neutralizes control characters
 - `flush()` has a deadline
+- Sinks verify concurrently under a time limit
 - Zero-config at import,
    no configure step (the logtape migration observations)
 

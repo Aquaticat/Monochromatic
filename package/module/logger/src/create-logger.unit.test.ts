@@ -7,6 +7,7 @@ import {
 import {
   createLogger,
   DEFAULT_FLUSH_DEADLINE_MS,
+  DEFAULT_VERIFY_TIMEOUT_MS,
   type LogRecord,
   type Sink,
   type SinkFlush,
@@ -78,23 +79,75 @@ type RecordedCalls = {
 };
 
 /**
- * Collects the console.warn messages carrying the flush-deadline breadcrumb.
- * Sibling tests in this file run concurrently and emit their own
- * internal-error reports through the same console, so a raw call count
- * would be noise.
+ * Collects the console.warn messages containing `needle`. Sibling tests in
+ * this file run concurrently and emit their own internal-error reports
+ * through the same console, so a raw call count would be noise.
+ *
+ * @param warn - Stubbed console.warn.
+ *
+ * @param needle - Substring identifying the breadcrumb family.
+ *
+ * @returns Matching messages, in call order.
+ */
+function breadcrumbMessages(
+  {
+    warn,
+    needle,
+  }: {
+    readonly warn: RecordedCalls;
+    readonly needle: string;
+  },
+): string[] {
+  return warn.getCalls()
+    .map(function toMessage(call,) {
+      return String(call.args[0],);
+    },)
+    .filter(function matchesNeedle(message,) {
+      return message.includes(needle,);
+    },);
+}
+
+/**
+ * Collects the flush-deadline breadcrumbs, see {@link breadcrumbMessages}.
  *
  * @param warn - Stubbed console.warn.
  *
  * @returns Flush-deadline breadcrumb messages observed, in call order.
  */
 function deadlineBreadcrumbMessages({ warn, }: { readonly warn: RecordedCalls; },): string[] {
-  return warn.getCalls()
-    .map(function toMessage(call,) {
-      return String(call.args[0],);
-    },)
-    .filter(function isDeadlineBreadcrumb(message,) {
-      return message.includes('flush deadline',);
-    },);
+  return breadcrumbMessages({
+    needle: 'flush deadline',
+    warn,
+  },);
+}
+
+/**
+ * Counts the sink-verification breadcrumbs (a verify that rejected, threw, or
+ * ran past the verify time limit).
+ *
+ * @param warn - Stubbed console.warn.
+ *
+ * @returns Number of verification breadcrumbs observed.
+ */
+function verifyBreadcrumbs({ warn, }: { readonly warn: RecordedCalls; },): number {
+  return breadcrumbMessages({
+    needle: 'sink verification failed',
+    warn,
+  },).length;
+}
+
+/**
+ * Builds a verifier that answers `true` after a delay.
+ *
+ * @param delayMs - Milliseconds before the verifier resolves.
+ *
+ * @returns Verify function resolving `true` after the delay.
+ */
+function verifyTrueAfter({ delayMs, }: { readonly delayMs: number; },): Verify {
+  return async function verifyLater(): Promise<boolean> {
+    await wait(delayMs,);
+    return true;
+  };
 }
 
 /**
@@ -595,12 +648,15 @@ await describe({
       },
     },),
 
-    //region Flush deadline
+    //region Breadcrumb suites (stub the shared console.warn, so sequential)
 
     describe({
-      name: 'flush deadline',
-      // One test at a time: each stubs the shared console.warn.
+      name: 'breadcrumb suites',
+      // One test at a time across both nested suites: each stubs console.warn.
       concurrency: 1,
+      children: [
+    describe({
+      name: 'flush deadline',
       children: [
     it({
       name: 'exports a positive default flush deadline',
@@ -747,6 +803,145 @@ await describe({
       ],
     },),
 
-    //endregion Flush deadline
+    describe({
+      name: 'verify liveness',
+      children: [
+        it({
+          name: 'exports a positive default verify timeout',
+          fn: async () => {
+            expect(DEFAULT_VERIFY_TIMEOUT_MS,)
+              .toBeGreaterThan(0,);
+          },
+        },),
+
+        it({
+          name: 'a verify that never settles no longer starves the sinks after it',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async ({ sinon, },) => {
+            const warn = sinon.stub(
+              console,
+              'warn',
+            );
+            const wedged = recordingSink({
+              verify: function verifyForever(): Promise<boolean> {
+                return neverSettles();
+              },
+            },);
+            const later = recordingSink();
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              sinks: [
+                wedged.sink,
+                later.sink,
+              ],
+              verifyTimeoutMs: SHORT_DEADLINE_MS,
+            },);
+            await initPromise;
+            logger.info('after init',);
+            await logger.flush();
+
+            expect(messages({ recording: later, },),)
+              .toEqual(['after init',],);
+            expect(messages({ recording: wedged, },),)
+              .toEqual([],);
+            expect(verifyBreadcrumbs({ warn, },),)
+              .toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'a verify that answers after the time limit stays unavailable',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async ({ sinon, },) => {
+            sinon.stub(
+              console,
+              'warn',
+            );
+            const slow = recordingSink({
+              verify: verifyTrueAfter({ delayMs: SHORT_DEADLINE_MS * 3, },),
+            },);
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              sinks: [slow.sink,],
+              verifyTimeoutMs: SHORT_DEADLINE_MS,
+            },);
+            await initPromise;
+            // Let the late answer arrive, then log and drain.
+            await wait(SHORT_DEADLINE_MS * 4,);
+            expect(function logAfterLateAnswer() {
+              logger.info('late',);
+            },)
+              .toThrow('No logging backends available',);
+            await logger.flush();
+
+            expect(messages({ recording: slow, },),)
+              .toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'sinks verify concurrently rather than one after another',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async () => {
+            const first = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
+            const second = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
+            const started = performance.now();
+            const { initPromise, } = createLogger({
+              sinks: [
+                first.sink,
+                second.sink,
+              ],
+            },);
+            await initPromise;
+            const elapsed = performance.now() - started;
+
+            // Sequential verification would take at least twice the delay.
+            expect(elapsed,)
+              .toBeLessThan(SLOW_WRITE_MS * 2,);
+          },
+        },),
+
+        it({
+          name: 'a record logged while sinks verify at different speeds reaches each exactly once',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async () => {
+            const quick = recordingSink({ verify: verifyTrueAfter({ delayMs: 1, },), },);
+            const slow = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              sinks: [
+                quick.sink,
+                slow.sink,
+              ],
+            },);
+            logger.info('early',);
+            await initPromise;
+            logger.info('late',);
+            await logger.flush();
+
+            expect(messages({ recording: quick, },),)
+              .toEqual([
+                'early',
+                'late',
+              ],);
+            expect(messages({ recording: slow, },),)
+              .toEqual([
+                'early',
+                'late',
+              ],);
+          },
+        },),
+      ],
+    },),
+      ],
+    },),
+
+    //endregion Breadcrumb suites
   ],
 },);

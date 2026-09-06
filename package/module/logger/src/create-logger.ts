@@ -19,6 +19,17 @@ import type {
 export const DEFAULT_FLUSH_DEADLINE_MS = 5_000;
 
 /**
+ * Default per-sink `verify()` time limit in milliseconds. Measured on
+ * 2026-09-06: the default logger's five shipped verifies complete together in
+ * about 2.4 ms locally, so this leaves three orders of magnitude for a slow
+ * but working backend probe (a network filesystem, a busy IndexedDB) while a
+ * verify that never answers (a hung mount, an IndexedDB open blocked by
+ * another tab) can no longer stall startup. Override per logger through the
+ * `verifyTimeoutMs` option of {@link createLogger}.
+ */
+export const DEFAULT_VERIFY_TIMEOUT_MS = 5_000;
+
+/**
  * Sink paired with its current availability inside one logger instance.
  * Availability starts `false` (not-yet-verified reads as unavailable,
  * identical to a verified failure) and flips `true` once the sink's own
@@ -60,9 +71,14 @@ async function trackWrite(
  *
  * Verification runs eagerly at construction and never blocks callers:
  * records emitted while an async sink is still verifying buffer internally
- * and replay to that sink the moment it verifies. A sink whose `verify`
- * resolves `false` or throws is dropped and receives no records. A rejected
- * `write` is the sink's own concern and does not disable the backend.
+ * and replay to that sink the moment it verifies. Every sink verifies
+ * concurrently under its own time limit (`verifyTimeoutMs`, default
+ * {@link DEFAULT_VERIFY_TIMEOUT_MS}), so one backend that never answers
+ * cannot starve the others or keep the logger from initializing. A sink
+ * whose `verify` resolves `false`, throws, or runs past the limit is dropped
+ * and receives no records; an answer that arrives after the limit is
+ * ignored. A rejected `write` is the sink's own concern and does not disable
+ * the backend.
  *
  * `flush()` always resolves: one deadline (`flushDeadlineMs`, default
  * {@link DEFAULT_FLUSH_DEADLINE_MS}) wraps startup verification, the
@@ -76,6 +92,9 @@ async function trackWrite(
  * @param flushDeadlineMs - Milliseconds one `flush()` may take before it
  * resolves anyway; raise it for slow but working backends such as network
  * filesystems.
+ *
+ * @param verifyTimeoutMs - Milliseconds one sink's `verify()` may take before
+ * the sink counts as unavailable; raise it for a slow but working probe.
  *
  * @returns Logger plus its eager `initPromise`; callers need not await
  * `initPromise` before logging, since startup records replay on verify.
@@ -99,9 +118,11 @@ export function createLogger(
   {
     sinks,
     flushDeadlineMs = DEFAULT_FLUSH_DEADLINE_MS,
+    verifyTimeoutMs = DEFAULT_VERIFY_TIMEOUT_MS,
   }: {
     readonly sinks: readonly Sink[];
     readonly flushDeadlineMs?: number;
+    readonly verifyTimeoutMs?: number;
   },
 ): {
   readonly initPromise: Promise<void>;
@@ -283,9 +304,11 @@ export function createLogger(
   }
 
   /**
-   * Runs one sink's verification and records the result, replaying buffered
-   * startup records to it on success. A rejected verification (or a
-   * synchronous throw from the verifier) drops the sink.
+   * Runs one sink's verification under the verify time limit and records the
+   * result, replaying buffered startup records to it on success. A rejected
+   * verification, a synchronous throw from the verifier, or a verify that
+   * runs past `verifyTimeoutMs` drops the sink; a late answer after the limit
+   * is never observed, so it cannot flip availability afterwards.
    *
    * @param entryIndex - Sink entry index to verify.
    */
@@ -296,8 +319,12 @@ export function createLogger(
        */
       const entry = getSinkEntry({ entryIndex, },);
       setEntryAvailability({
-        available: await entry.sink
-          .verify(),
+        available: await withTimeout({
+          label: `sink ${entryIndex} verify`,
+          ms: verifyTimeoutMs,
+          promise: entry.sink
+            .verify(),
+        },),
         entryIndex,
       },);
     }
@@ -312,18 +339,26 @@ export function createLogger(
 
   /**
    * Initializes all sink backends by verifying their availability. Runs once
-   * at construction. Verification order does not affect correctness: every
-   * sink that verifies available replays the full startup buffer, so no sink
-   * depends on another verifying first. The sequential await keeps startup in
-   * a single deterministic order rather than racing all verifiers at once.
+   * at construction. Every verifier runs concurrently, each under the verify
+   * time limit, so one backend that never answers cannot starve the rest or
+   * keep `initialized` from flipping. Completion order does not affect
+   * correctness: a record's immediate-write set (sinks already available when
+   * it was logged) and its replay set (sinks that become available later) are
+   * disjoint, so each available sink receives each record exactly once
+   * whichever verify settles first.
    */
   async function initialize(): Promise<void> {
     if (state.initialized)
       return;
 
-    for (const [entryIndex,] of entries.entries())
-      // oxlint-disable-next-line no-await-in-loop -- Verify sinks in priority order; order does not affect replay correctness.
-      await verifyAndApply({ entryIndex, },);
+    await Promise.all(
+      entries.map(function verifyEntry(
+        _entry,
+        entryIndex,
+      ) {
+        return verifyAndApply({ entryIndex, },);
+      },),
+    );
 
     state.initialized = true;
     startupRecords.length = 0;
