@@ -69,7 +69,7 @@ Upstream `src/sinon/stub.js:150` delegates function replacement to `wrapMethod`:
 return isStubbingNonFuncProperty ? s : wrapMethod(object, property, s);
 ```
 
-Upstream `src/sinon/util/core/wrap-method.js:82` rejects an existing wrapped function:
+Upstream `src/sinon/util/core/wrap-method.js:81` rejects an existing wrapped function:
 
 ```js
 // sinon/src/sinon/util/core/wrap-method.js
@@ -82,7 +82,7 @@ Upstream `src/sinon/util/core/wrap-method.js:82` rejects an existing wrapped fun
 }
 ```
 
-The same file at line 163 installs the descriptor on the supplied object:
+The same file at line 162 installs the descriptor on the supplied object:
 
 ```js
 // sinon/src/sinon/util/core/wrap-method.js
@@ -180,7 +180,9 @@ With the adapter and execution wrapper installed in the fork:
 
 ```bash
 # From the disposable repository root.
-PROBE_MODE=contextual mise run //package/module/test:test:unit -- package/module/test/src/issue-481-probe.unit.test.ts package/module/test/src/issue-481-lifecycle-probe.unit.test.ts
+PROBE_MODE=contextual mise run //package/module/test:test:unit -- \
+  package/module/test/src/issue-481-probe.unit.test.ts \
+  package/module/test/src/issue-481-lifecycle-probe.unit.test.ts
 mise run //package/module/test:lint:types
 ```
 
