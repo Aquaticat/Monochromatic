@@ -51,6 +51,7 @@ export const BOUNDARY_TOKENS: readonly string[] = [
   '\u009B2J',
   '\u001B',
   '\u001B[',
+  '\u007F',
   '\uD800',
   '\uDFFF',
   '\uD83D',
