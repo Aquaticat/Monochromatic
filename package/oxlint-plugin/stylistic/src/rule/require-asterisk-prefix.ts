@@ -284,25 +284,39 @@ function reportMissingPrefix(params: ForeignBorrowed<PrefixViolationParams>,): v
   /**
    Canonical asterisk column, one column after comment's slash.
    */
-  const canonicalIndex = Math.min(
+  const canonicalIndex = comment.loc.start.column + 1;
+  /**
+   Existing source position where insertion can begin without deleting content.
+   */
+  const insertionIndex = Math.min(
     prefixIndex,
-    comment.loc.start.column + 1,
+    canonicalIndex,
   );
+  /**
+   Separator after inserted marker, omitted for blank body line.
+   */
+  const separator = content.trim().length === 0 ? '' : ' ';
+  /**
+   Missing indentation plus marker and optional content separator.
+   */
+  const insertionText = `${' '.repeat(
+    canonicalIndex - insertionIndex,
+  )}*${separator}`;
   context.report({
     loc: {
       start: {
         line: comment.loc.start.line + line.lineOffset,
-        column: canonicalIndex,
+        column: insertionIndex,
       },
     },
     messageId: 'missing',
     fix(fixer: ForeignBorrowed<Fixer>,): Fix {
       return fixer.insertTextBeforeRange(
         [
-          line.sourceStart + canonicalIndex,
-          line.sourceStart + canonicalIndex,
+          line.sourceStart + insertionIndex,
+          line.sourceStart + insertionIndex,
         ],
-        content.trim().length === 0 ? '*' : '* ',
+        insertionText,
       );
     },
   },);
