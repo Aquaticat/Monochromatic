@@ -3064,14 +3064,11 @@ Final housekeeping:
 prototype upstream checks match their local heads;
  unrelated concurrent main changes and
 pre-existing prototype captures remain untouched.
- The exact cleared questionnaire is open
+ The exact cleared questionnaire was presented
 through the normal Helium desktop entry as `Music player design: redundant-cue matrix -
 Helium`,
  KWin ID `{87a70d84-af89-479b-ab69-b15348238ae2}` on `DP-3` at
 1080 × 1880.
- Unminimize and activate that exact window as the final operation,
- then
-wait for the user's separable current-track and Open decisions.
 
 The user selected 3B on 2026-09-06.
  D36 now settles the current row as a soft
@@ -3083,3 +3080,14 @@ or reserved leading slot.
 button retaining its folder icon and explicit label.
  This choice overrides the form's 1A
 recommendation while preserving transport 1B and every other settled screen decision.
+The matrix is now historical evidence and must not remain the active review surface.
+Post-decision review shows only `questions/render/cue-container-tonal.png`.
+
+No consequential visual decision remains on this unfolded screen.
+ Recommendation:
+move to the cover screen next rather than opening another refinement matrix.
+ Exact 3B
+behavior at 200%
+text and production assistive-technology announcements remain implementation
+verification,
+ not reasons to reopen the design without a demonstrated failure.

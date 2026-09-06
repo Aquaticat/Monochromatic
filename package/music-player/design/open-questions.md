@@ -575,6 +575,7 @@ The completed matrix was the cross-product of four consequential current-track
 treatments and four consequential Open treatments.
  Matrix size was not capped to an
 example count.
+ No consequential visual decision remains on this screen.
 
 No absent control or future feature is part of this round.
  The command bar,
@@ -584,6 +585,13 @@ screen,
  custom display templating,
  and every other unbuilt item remain
 outside the active form.
+
+Implementation verification must capture exact treatment 3B at 200% text;
+ existing
+large-text evidence covers T3 with filled Open and the former recommended combination,
+not T3 with tonal Open.
+ This is not a new design question unless the exact capture
+reveals a failure.
 
 Production accessibility verification must confirm the large-text vertical segmented
 stack is announced as one mutually exclusive group.

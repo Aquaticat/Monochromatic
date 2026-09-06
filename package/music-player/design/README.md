@@ -24,10 +24,15 @@ Read these files in order:
 7. [`device-metrics.md`](device-metrics.md)
 8. [`candidates.md`](candidates.md)
 
-## Current questionnaire
+## Design questionnaire
 
-The current grilling round is a self-contained HTML file under `questions/`.
-Each round embeds its visual evidence,
+The latest grilling round is preserved as a self-contained HTML file under `questions/`.
+The user selected matrix option 3B;
+ the form and its 1A recommendation are now
+historical evidence rather than an active request.
+ The accepted image is
+`questions/render/cue-container-tonal.png`.
+ Each round embeds its visual evidence,
 option assessments,
 recommendation,
 and answer controls in one file.

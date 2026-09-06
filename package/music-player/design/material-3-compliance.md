@@ -254,8 +254,10 @@ being lost.
 list item,
  but D36 distinguishes current playback from user selection:
  all tracks keep
-standard list colors and only the current track gains a leading play icon plus semantic
-state.
+full-width title placement and only the current track gains a neutral
+`surfaceContainerLow` container,
+ bold title,
+ and semantic current-state description.
  The baseline `ListItem` overload is deprecated only in favor of the Expressive
 list.
  A scoped compiler suppression is required because A2 rejects that migration.
@@ -354,14 +356,12 @@ The user's 2026-09-04 correction forbids color-only state communication.
 prototype uses these redundant cues:
 
 - Current track:
-   every active candidate removes the play icon and reserved leading
+   selected treatment 3B removes the play icon and reserved leading
   column.
-  Explicit label plus bold,
-  accent plus bold,
-  soft container plus bold,
-  and outline plus bold each preserve full text width while combining visible cues.
-  Each current row exposes `Current track: Another Xronixle` in the native accessibility
-  hierarchy;
+  Its neutral `surfaceContainerLow` row plus bold title preserves full text
+  width while combining visible cues.
+  The current row exposes
+  `Current track: Another Xronixle` in the native accessibility hierarchy;
   production assistive technology must confirm the announcement.
 - Selected playback mode:
    selected segmented fill plus checkmark at default and
