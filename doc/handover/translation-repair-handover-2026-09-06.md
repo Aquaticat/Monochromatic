@@ -17,21 +17,18 @@ and the reason is recorded in
 
 ## Where the work stands
 
-The first page on the plain invocation shipped and was read:
-`yulianNyanner` on the class-five build,
-21:03 to 21:48 UTC,
-44.9 minutes,
-1,180 calls,
-zero USD,
-consolidation unstarved,
-`verify-published` matched.
-The reading found the sixth class,
-recorded in this snapshot,
-the planning log ("The third launch") and the readiness signal.
-It is fixed and proven,
-and the next action is the relaunch of `yulianNyanner` on the class-six build into a fresh runs dir,
+Three pages of `yulianNyanner` shipped on the plain invocation today and each was read:
+21:03 on the class-five build (44.9 minutes,
+found the sixth class),
+22:10 on the class-six build (39.4 minutes,
+headings held,
+found the seventh),
+each at zero USD with an unstarved consolidation and `verify-published` matched.
+The seventh class is fixed and proven,
+and the next action is the relaunch of `yulianNyanner` on the class-seven build into a fresh runs dir,
 then its reading by the seven steps in the 2026-09-04 snapshot,
-"How a pass is launched and read".
+"How a pass is launched and read",
+which gained the apostrophe count today.
 If a pass is running when this is read and the tree has moved past its tip,
 the kill-and-relaunch rule applies.
 
@@ -65,6 +62,15 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `bc42fe330`,
+    `b669363b6`,
+    `ec91a14f5` ship every stage's wording in the archive's quote convention at the would-ship reading,
+    with guard `fd7701f49` shown to fail first,
+    and add the 贴贴 example to the house policy;
+    `c421c2e31` and `6b842dcdf` record the 22:10 page and add the apostrophe count to the reading steps.
+-   `e5bd6bf0f` inventories `CollapsedHeadingError` for the names-only message check,
+    after the full suite on the class-six build showed 2 `FAIL`;
+    the 22:06 launch was killed for it under the rule.
 -   `7effa1b73` records the first page and the sixth class;
     `7f0d84169` and `7a01c9048` close the oxlint findings in the new code.
 -   `459b2007f` names the heading a source comment sits under on its identity-context line,
@@ -150,6 +156,29 @@ carried both `PhotoScroll` shapes and all fourteen comments,
 and completed consolidation unstarved,
 which closes the last open item of the 2026-09-04 snapshot.
 
+## The seventh class
+
+Found on the 22:10 page,
+where the headings held.
+Five contractions carry a straight apostrophe against thirty curly ones on a page whose archive is curly
+throughout,
+and the `Uekawakuyuurei` page of 2026-09-04 carries the same mix unread.
+`restore-typography.ts` runs on every editor and refiner replacement and on nothing else,
+so a translate-lane wording,
+a consolidation proposal or a polish rewrite reached the page in whatever quote style its model wrote.
+The would-ship reading,
+which every publisher and checker derives the page from,
+now puts each non-archive wording through the restoration against the row's incumbent and the stored archive
+text;
+the artifact keeps what the stages wrote.
+The reading steps gain the apostrophe count,
+since this is a property four shipped pages carried unmeasured.
+
+Two wording findings are recorded for the judges rather than fixed:
+贴贴 kept in Chinese with a gloss where an everyday English word exists
+(the house policy now says so with this example),
+and 自慰 read by its blunt literal sense in a quoted despairing thought.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -191,8 +220,8 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Relaunch `yulianNyanner` on the class-six build into a fresh runs dir and read its page,
-    with attention to the five headings and to what the anchored notes did for the judges.
+1.  Relaunch `yulianNyanner` on the class-seven build into a fresh runs dir and read its page,
+    counting its straight apostrophes first.
 2.  Run and read `Arita`,
     the other double-quoted-paths entry never run,
     after that reading rather than beside it,
