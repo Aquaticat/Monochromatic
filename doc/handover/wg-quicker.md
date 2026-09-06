@@ -384,9 +384,14 @@ Readiness handshake succeeded without restarting WireGuard interface or changing
 No real application cgroup was marked during read-only audits.
 State-mutating watcher tests used disposable cgroups.
 
-The active `gb-lon-gb2` watcher observed during Firefox Nightly verification predates commit `18282deba`.
-Read-only verification deliberately did not restart that watcher or mutate live application cgroups.
-Firefox Nightly support takes effect after next normal `wg-quicker` watcher replacement.
+After disposable verification passed,
+active `gb-lon-gb2` watcher was replaced through rebuilt release companion with existing key,
+mark `8888`,
+and desktop UID `1000`.
+New watcher start time replaced August process,
+and `/proc/<pid>/exe` had same device and inode as rebuilt release binary.
+Watcher readiness completed without restarting WireGuard interface or changing live routes.
+Current target listing still excludes running Firefox ESR service.
 
 ## Verification evidence
 
