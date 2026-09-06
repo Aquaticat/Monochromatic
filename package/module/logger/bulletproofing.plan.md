@@ -449,8 +449,8 @@ The round-2 shape,
    `doc/decision/logger-fuzzing.md`.
 
 Remaining:
- the toml-edit sidecar migration,
- then the Playwright browser property layer.
+ the Playwright browser property layer;
+ the toml-edit sidecar migration landed on 2026-09-06.
 
 ## Verification campaign (the toml-edit bar)
 

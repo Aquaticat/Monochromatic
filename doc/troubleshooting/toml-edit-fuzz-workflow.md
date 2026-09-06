@@ -78,7 +78,7 @@ Error: Coverage regressed in 5 file(s):
   src/types.ts: 160 -> 159 covered lines
 ```
 
-Local `mise run //package/module/toml-edit:fuzz:coverage` reproduced the same seed,
+Local `mise run //package/module/toml-edit.fuzz:fuzz:coverage` reproduced the same seed,
 operation counts,
 per-file counts,
 and failure.
@@ -108,7 +108,7 @@ Commit `4e2e0e65e87949e46b7475a3802cde3cc3c2b1e2` refroze
 `package/module/toml-edit/coverage-baseline.json` with:
 
 ```text
-mise run //package/module/toml-edit:fuzz:coverage --write
+mise run //package/module/toml-edit.fuzz:fuzz:coverage --write
 ```
 
 A subsequent check-mode invocation passed locally.

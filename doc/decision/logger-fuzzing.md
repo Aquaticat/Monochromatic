@@ -7,7 +7,9 @@ The Node orchestration layer,
  the Node sink boundary layer,
  the coverage-reachability gate,
  and the CI workflow landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz` and `.github/workflows/logger-fuzz.yml`.
-The toml-edit sidecar migration and the Playwright browser layer follow in that order.
+The toml-edit campaign moved into `package/module/toml-edit.fuzz` on 2026-09-06 (`doc/decision/toml-edit-fuzzing.md`,
+ "Sidecar package").
+The Playwright browser layer follows.
 Plan,
  grill records,
  and landed commits:
@@ -327,7 +329,6 @@ Each is recorded in `package/module/logger/DECISIONS.md`.
 
 ## Pending deliverables
 
-- The toml-edit sidecar migration.
 - A Playwright browser property layer for the IndexedDB,
    OPFS,
    and localStorage sinks,

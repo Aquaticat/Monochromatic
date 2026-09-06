@@ -9,7 +9,7 @@ lands;
  and the bugs
 found so far.
  The full implementation plan and status live at
-`package/module/toml-edit/HANDOVER.fuzzing.md`.
+`package/module/toml-edit.fuzz/HANDOVER.fuzzing.md`.
 
 ## Method
 
@@ -23,7 +23,7 @@ a bounded run in the normal unit suite,
  and a time-budgeted campaign through the
 package `fuzz` task (`TOML_EDIT_FUZZ_BUDGET_MS`).
  See
-`package/module/toml-edit/src/fuzz-budget.ts`.
+`package/module/toml-edit.fuzz/src/fuzz-budget.ts`.
 
 Every property file imports the built package entry point
 (`@monochromatic-dev/module-toml-edit`),
@@ -35,18 +35,18 @@ builds before running.
 
 The oracle stack so far:
 
-- A semantic-equality oracle (`package/module/toml-edit/src/fuzz/equality.ts`)
+- A semantic-equality oracle (`package/module/toml-edit.fuzz/src/equality.ts`)
   over the parser's `getStaticTOMLValue` projection.
 - Grammar-complete generators for every value,
    key,
    and document shape
-  (`package/module/toml-edit/src/fuzz/arb-*.ts`),
+  (`package/module/toml-edit.fuzz/src/arb-*.ts`),
    with an independent string
-  escaper (`package/module/toml-edit/src/fuzz/escape.ts`) so generator encoding
+  escaper (`package/module/toml-edit.fuzz/src/escape.ts`) so generator encoding
   never reuses the emitter under test.
 - Structure-aware corruption mutators
-  (`package/module/toml-edit/src/fuzz/mutators.ts`).
-- A corpus loader (`package/module/toml-edit/src/fuzz/corpus.ts`):
+  (`package/module/toml-edit.fuzz/src/mutators.ts`).
+- A corpus loader (`package/module/toml-edit.fuzz/src/corpus.ts`):
    committed
   fixtures always,
    live repository discovery only in campaign mode,
@@ -289,8 +289,8 @@ so a future change that silently stops exercising a parser,
 branch fails the gate rather than passing green-but-weaker.
 
 A reachability driver
-(`package/module/toml-edit/src/fuzz/coverage-driver.ts`) imports the package
-implementation from source (`../index.ts`),
+(`package/module/toml-edit.fuzz/src/coverage-driver.ts`) imports the package
+implementation from source (the `/ts` subpath),
  not the built artifact,
  and replays
 the shared fuzz generators and committed corpus through every public entry point
@@ -298,7 +298,7 @@ and every `_` seam at a fixed fast-check seed and run count.
  Run under
 `NODE_V8_COVERAGE`,
  that attributes coverage to the `src` files the gate watches.
-The reader (`package/module/toml-edit/src/fuzz/coverage-v8.ts`) projects the raw
+The reader (`package/module/toml-edit.fuzz/src/coverage-v8.ts`) projects the raw
 V8 block ranges to per-file covered-line counts:
  it paints a per-character bitmap
 with the innermost range's count winning (the longest range painted first),
@@ -309,9 +309,9 @@ offset.
  so a V8 range offset
 indexes the on-disk `.ts` one-to-one.
  The gate
-(`package/module/toml-edit/src/fuzz/coverage-report.ts`) compares per-file
+(`package/module/toml-edit.fuzz/src/coverage-report.ts`) compares per-file
 covered-line counts against a committed baseline
-(`package/module/toml-edit/coverage-baseline.json`) and fails on any per-file
+(`package/module/toml-edit.fuzz/coverage-baseline.json`) and fails on any per-file
 decrease.
  The `fuzz:coverage` task runs it;
  `--write` refreezes the baseline.
@@ -379,7 +379,7 @@ node-version-bound.
  This repository deliberately tracks the latest node rather
 than pinning,
  so a node release that shifts V8 coverage is handled by refreezing
-the baseline with `mise run //package/module/toml-edit:fuzz:coverage --write`,
+the baseline with `mise run //package/module/toml-edit.fuzz:fuzz:coverage --write`,
 the same maintenance the latest-node policy already implies;
  the gate is not a
 reason to pin node.
@@ -392,6 +392,44 @@ reach,
  a freshly added `src` file is absent from the
 baseline,
  so it does not fail the gate until the baseline is refrozen.
+
+## Sidecar package (2026-09-06)
+
+The campaign moved out of the runtime package into `package/module/toml-edit.fuzz`,
+the layout `logger.fuzz`,
+ `jsonc-edit.fuzz`,
+ and `css-edit.fuzz` use:
+the runtime package's `src` holds production code and its tests only,
+ `fast-check` leaves its devDependencies,
+and the generators,
+ oracle,
+ corpus loader,
+ properties,
+ run-budget tooling,
+ coverage driver,
+ projector,
+ gate,
+ and baseline live in the sidecar.
+Property files keep importing the built artifact by package name;
+the coverage driver and the oracle helpers import the runtime source through the `/ts` subpath instead of `../index.ts`,
+the coverage report resolves the runtime package root through that subpath instead of walking up from its own file,
+and the corpus loader's fixture and repository paths shrank by one directory.
+The `fuzz` and `fuzz:coverage` tasks run as `//package/module/toml-edit.fuzz:fuzz` and `//package/module/toml-edit.fuzz:fuzz:coverage`;
+`toml-edit-fuzz.yml` type-checks and unit-tests the sidecar alongside the runtime package and calls the sidecar tasks.
+Every property file and the conformance suite passed in bounded,
+ smoke,
+ and gate modes after the move.
+
+The baseline was refrozen at the move.
+The repository-wide TSDoc reformat (`3d6c20c9f`,
+ starless comment bodies) had already left it stale:
+the projector counts any line with a non-whitespace character,
+ comment lines included,
+and the reformat turned every blank ` *` comment line into whitespace,
+so each file's code-line total fell below its frozen covered count and `toml-edit-fuzz` had failed on its two runs since that commit.
+Every file's coverage percentage after the refreeze matches or exceeds what the pre-reformat run reported at 100 percent,
+so the drop was the whitespace artifact the "Coverage gate (phase 8)" section anticipates,
+ not lost reach.
 
 ## Reusable fuzz-target checklist
 
