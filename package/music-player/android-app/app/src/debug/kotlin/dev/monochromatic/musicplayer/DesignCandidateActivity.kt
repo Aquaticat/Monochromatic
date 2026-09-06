@@ -499,7 +499,7 @@ private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
         )
         TrackPane(
             modifier = Modifier.weight(1f),
-            candidate = "dbtp-a",
+            candidate = if (candidate.startsWith("cue-")) candidate else "dbtp-a",
             palette = palette,
         )
     }
