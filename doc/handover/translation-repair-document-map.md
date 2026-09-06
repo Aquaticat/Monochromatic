@@ -6,7 +6,8 @@ Work is on the LEGACY slice pipeline,
 which is being made production ready with OpenRouter as the paid per-token fallback.
 It is not production ready:
 three entries shipped and were read on 2026-09-04,
-and the reading found four defect classes in the pipeline's own screens.
+the reading found four defect classes in the pipeline's own screens,
+and the first pass on the plain invocation on 2026-09-06 found a fifth.
 
 The finite redesign stopped after Candidate M failed on 2026-09-01.
 No Candidate A through M is production-eligible,
@@ -15,8 +16,10 @@ That closure does not bound the legacy pipeline.
 
 Start with:
 
-1.  [`translation-repair-handover-2026-09-04.md`](translation-repair-handover-2026-09-04.md)
-    for the current session state and the next passes;
+1.  [`translation-repair-handover-2026-09-06.md`](translation-repair-handover-2026-09-06.md)
+    for the current session state and the next passes,
+    with [`translation-repair-handover-2026-09-04.md`](translation-repair-handover-2026-09-04.md)
+    for the four earlier classes and the seven steps by which a page is read;
 2.  [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md)
     for what production ready would take and why the answer is still no;
 3.  [`translation-repair-openrouter-2026-09-03.md`](../planning/translation-repair-openrouter-2026-09-03.md)

@@ -1,16 +1,21 @@
 # Translation repair session handover
 
-## Current handover, 2026-09-04
+## Current handover, 2026-09-06
 
 The current session snapshot is
-[`translation-repair-handover-2026-09-04.md`](translation-repair-handover-2026-09-04.md).
+[`translation-repair-handover-2026-09-06.md`](translation-repair-handover-2026-09-06.md).
 Read it first:
 it carries the repository tip,
-what landed on 2026-09-04,
-the four defect classes the readings found,
-the three pages that shipped,
-the exhausted OpenRouter balance,
+the pass in flight,
+the fifth defect class,
+the two defaults that moved,
+the operating rule,
 and the next passes in order.
+The 2026-09-04 snapshot,
+[`translation-repair-handover-2026-09-04.md`](translation-repair-handover-2026-09-04.md),
+still carries the four earlier classes,
+the three pages that shipped,
+and the seven steps by which a page is read.
 
 The work in progress is the LEGACY slice pipeline under the owner's direction decision of 2026-09-01
 and the OpenRouter order of 2026-09-03,
