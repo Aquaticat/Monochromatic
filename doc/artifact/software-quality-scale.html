@@ -101,7 +101,7 @@ details { border-block-start: .0625rem solid var(--color-line); margin-block-sta
 summary { min-block-size: 3rem; padding-block: .6rem; color: var(--color-accent); font-weight: 650; }
 .criteria { display: grid; gap: .75rem; padding-inline-start: 1.2rem; }
 .criteria p { font-size: .9rem; margin-block: .2rem 0; color: var(--color-muted); }
-.check { display: flex; align-items: flex-start; gap: .7rem; font-weight: 400; }
+.check { display: flex; align-items: flex-start; gap: .7rem; min-block-size: 3rem; padding-block: .5rem; font-weight: 400; }
 .check input { flex: 0 0 auto; margin-block-start: .25rem; }
 .reference { margin-block: 1rem; padding-block: 1.25rem; padding-inline: 1.25rem; background-color: var(--color-soft); border-radius: .5rem; }
 .reference .score { font-size: 2rem; font-weight: 650; color: var(--color-accent); }
@@ -110,7 +110,7 @@ summary { min-block-size: 3rem; padding-block: .6rem; color: var(--color-accent)
 .choices button[aria-pressed="true"] { background-color: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); }
 .primary { background-color: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); font-weight: 650; }
 .primary:hover { background-color: var(--color-accent); text-decoration: underline; }
-.result { position: sticky; inset-block-start: 1rem; box-shadow: 0 .6rem 2rem var(--color-shadow); }
+.result { position: sticky; inset-block-start: 1rem; max-block-size: calc(100dvh - 2rem); overflow: auto; box-shadow: 0 .6rem 2rem var(--color-shadow); }
 .result-number { font-family: ui-serif, Georgia, serif; font-size: 3.7rem; letter-spacing: -.05em; line-height: 1.05; margin-block: 1rem .4rem; }
 .result-number[data-long="true"] { font-size: 2.2rem; }
 .result-label { font-weight: 750; margin-block-end: .6rem; }
@@ -125,6 +125,7 @@ summary { min-block-size: 3rem; padding-block: .6rem; color: var(--color-accent)
 .comparison p { margin-block-end: .4rem; font-size: .9rem; }
 .comparison button { font-size: .85rem; }
 .result-actions { display: grid; gap: .6rem; margin-block-start: 1rem; }
+.mobile-result { display: none; }
 .method { max-inline-size: 48rem; }
 .method li { margin-block-end: .8rem; }
 .empty { padding-block: 2rem; padding-inline: 1rem; text-align: center; color: var(--color-muted); }
@@ -135,14 +136,15 @@ dialog::backdrop { background-color: var(--color-shadow); backdrop-filter: blur(
 .skip-link:focus { inset-block-start: .5rem; background-color: var(--color-surface); }
 @media (max-width: 60rem) {
   .rater { grid-template-columns: minmax(0, 1fr); }
-  .result { position: static; grid-row: 1; }
+  .result { position: static; max-block-size: none; overflow: visible; }
   .result-number { font-size: 2.8rem; }
   .result details { margin-block-start: .5rem; }
+  .mobile-result { display: block; position: sticky; inset-block-start: .5rem; z-index: 1; margin-block-end: 1rem; padding-block: .75rem; padding-inline: 1rem; color: var(--color-on-accent); background-color: var(--color-accent); border-radius: .5rem; box-shadow: 0 .3rem 1rem var(--color-shadow); }
 }
 @media (max-width: 38rem) {
   header { padding-block-start: 1.5rem; }
   .toolbar { grid-template-columns: minmax(0, 1fr); }
-  .scale { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .scale { grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr)); }
   .rating { grid-template-columns: 3rem minmax(0, 1fr); gap: .8rem; padding-inline: 1rem; }
   .rating > button { grid-column: 2; justify-self: start; }
   .panel { padding-inline: 1rem; }
@@ -174,7 +176,7 @@ dialog::backdrop { background-color: var(--color-shadow); backdrop-filter: blur(
       <div><h2 id="explore-title">The reference ratings</h2><p class="muted">Explore the judgments that define this scale.</p></div>
       <button type="button" class="primary" data-view="assess">Place something new →</button>
     </div>
-    <div class="scale" id="scale-filter" aria-label="Filter reference ratings by score"></div>
+    <div class="scale" id="scale-filter" role="group" aria-label="Filter reference ratings by score"></div>
     <div class="scale-labels"><span>0 · Defining failure</span><span>10 · No meaningful major improvement</span></div>
     <div class="toolbar">
       <label>Search<input id="search" type="search" placeholder="Software, reasoning, or tag"></label>
@@ -187,6 +189,7 @@ dialog::backdrop { background-color: var(--color-shadow); backdrop-filter: blur(
   <section id="assess-view" hidden aria-labelledby="assess-title">
     <h2 id="assess-title">Place new software on the scale</h2>
     <p class="section-intro muted">Describe the complete product, check its defining obligations, then compare its rating band with familiar examples.</p>
+    <a class="mobile-result" href="#result-heading" id="mobile-result">Unplaced · View assessment</a>
     <div class="rater">
       <form id="assessment-form">
         <section class="panel" aria-labelledby="context-title">
@@ -221,7 +224,7 @@ dialog::backdrop { background-color: var(--color-shadow); backdrop-filter: blur(
           <label>Reference software<select id="anchor"></select></label>
           <article id="reference" class="reference"></article>
           <p class="hint">“Higher” means a higher integer rating. A slight improvement within the same band can still be “Same.” Skip unfamiliar references.</p>
-          <div class="choices" id="comparison-choices" aria-label="Relative rating band">
+          <div class="choices" id="comparison-choices" role="group" aria-label="Relative rating band">
             <button type="button" data-relation="lower" aria-pressed="false">Lower band</button>
             <button type="button" data-relation="same" aria-pressed="false">Same band</button>
             <button type="button" data-relation="higher" aria-pressed="false">Higher band</button>
@@ -246,9 +249,9 @@ dialog::backdrop { background-color: var(--color-shadow); backdrop-filter: blur(
           <p id="result-label" class="result-label">Start with the defining job</p>
         </div>
         <p id="result-description" class="hint"></p>
-        <div id="possibilities" class="possibilities" aria-label="Rating bands still possible"></div>
+        <div id="possibilities" class="possibilities" role="img" aria-label="Rating bands still possible"></div>
         <div id="result-notice" class="notice"></div>
-        <details open id="reasoning-details"><summary>Why this result</summary><ul id="trace" class="trace"></ul></details>
+        <details id="reasoning-details"><summary>Why this result</summary><ul id="trace" class="trace"></ul></details>
         <details id="comparisons-details"><summary id="comparison-count">Your comparisons</summary><div id="kept-comparisons"></div></details>
         <div class="result-actions">
           <button type="button" id="export-assessment">Download assessment</button>
@@ -337,6 +340,9 @@ function evaluateAssessment(assessment) {
   });
   /** Comparisons establish ordering; no arithmetic uses distance between scores. */
   const possible = failures.length ? [0] : exclusions.filter(entry => entry.reasons.length === 0).map(entry => entry.score);
+  /** Zero remains mandatory, but comparisons rejecting zero cannot be silently accepted. */
+  const overriddenComparisons = failures.length
+    ? assessment.comparisons.filter(comparison => !acceptsComparison({ score: 0, comparison })) : [];
   /** A ten remains possible but unconfirmed until each requirement passes. */
   const pendingTen = failures.length === 0 && possible.includes(TOP_SCORE)
     ? tenRules.filter(rule => assessment.ten[rule.id] === 'unknown') : [];
@@ -344,6 +350,7 @@ function evaluateAssessment(assessment) {
   const missing = [
     ...(!assessment.name.trim() ? ['Name the software.'] : []),
     ...(!assessment.job.trim() ? ['Define its primary job.'] : []),
+    ...(overriddenComparisons.length ? ['Revise comparisons that contradict the confirmed defining failure.'] : []),
     ...(failures.length ? [] : [
       ...(unansweredZero.length ? ['Finish the defining-failure checks.'] : []),
       ...(!assessment.reviewed ? ['Review the combined strengths and defects.'] : []),
@@ -351,8 +358,9 @@ function evaluateAssessment(assessment) {
       ...(pendingTen.length ? ['Complete the requirements for 10, or narrow the range below 10.'] : []),
     ]),
   ];
-  return { possible, failures, exclusions, failedTen, unansweredZero, pendingTen, missing,
-    conflict: possible.length === 0, complete: possible.length > 0 && missing.length === 0 };
+  return { possible, failures, exclusions, failedTen, unansweredZero, pendingTen, missing, overriddenComparisons,
+    conflict: possible.length === 0 || overriddenComparisons.length > 0,
+    complete: possible.length > 0 && missing.length === 0 };
 }
 /** @param possible - Contiguous bands permitted by all comparisons. @returns Display label without invented midpoint. @example bandLabel([7, 8]) */
 function bandLabel(possible) {
@@ -544,7 +552,8 @@ function renderComparisons() {
 function traceLines(result) {
   if (result.failures.length) return [
     ...result.failures.map(rule => `${rule.title}: Yes. This defining failure sets 0.`),
-    ...(assessment.comparisons.length ? ['Comparisons cannot raise the rating above a confirmed defining failure.'] : []),
+    ...result.overriddenComparisons.map(item => `${relationNames[item.relation]} ${item.name} (${item.score}) contradicts that 0. Revise or remove this comparison.`),
+    ...(assessment.comparisons.length && !result.overriddenComparisons.length ? ['Your comparisons are compatible with the confirmed defining failure.'] : []),
   ];
   return [
     result.unansweredZero.length ? 'Defining failures have not all been ruled out. The rating remains provisional.' : 'Every defining-failure check is No: 0 is excluded.',
@@ -560,23 +569,28 @@ function renderResult() {
   /** Every displayed value is derived from the same pure result. */
   const result = evaluateAssessment(assessment);
   const unplaced = !assessment.comparisons.length && !result.failures.length;
-  const label = result.conflict ? 'Conflict' : unplaced ? 'Unplaced' : bandLabel(result.possible);
+  const label = result.failures.length ? '0' : result.conflict ? 'Conflict' : unplaced ? 'Unplaced' : bandLabel(result.possible);
   element('#result-number').textContent = label;
-  element('#result-number').dataset.long = String(result.conflict || unplaced);
+  element('#mobile-result').textContent = `${label}${result.complete ? '' : ' · provisional'} · View assessment ↓`;
+  element('#result-number').dataset.long = String((result.conflict && !result.failures.length) || unplaced);
   element('#result-label').textContent = result.conflict ? 'These answers cannot all hold'
     : unplaced ? 'Keep a reference comparison'
     : result.complete ? result.possible.length === 1 ? 'Supported rating · out of 10' : 'Supported range · out of 10'
     : 'Provisional · checks remain';
-  element('#result-description').textContent = result.conflict
+  element('#result-description').textContent = result.overriddenComparisons.length
+    ? 'The defining failure requires 0, but a retained comparison rejects 0. The assessment is inconsistent until that comparison or failure check is revised.'
+    : result.conflict
     ? 'No integer band satisfies your comparisons and endpoint checks. Revise the conflicting judgments; they are not averaged.'
     : unplaced ? 'The highlighted bands are still open. Nothing has been filled in for you.'
     : 'Every highlighted band fits the current answers. No midpoint or decimal score is inferred.';
   element('#possibilities').replaceChildren(...Array.from({ length: TOP_SCORE + 1 }, (_, score) => {
     const marker = node({ tag: 'span', text: String(score) });
     marker.dataset.possible = String(result.possible.includes(score));
-    marker.setAttribute('aria-label', `${score}: ${result.possible.includes(score) ? 'possible' : 'excluded'}`);
+    marker.setAttribute('aria-hidden', 'true');
     return marker;
   }));
+  element('#possibilities').setAttribute('aria-label', result.possible.length
+    ? `Possible rating bands: ${result.possible.join(', ')}. Other bands are excluded.` : 'No rating band satisfies all answers.');
   element('#result-notice').dataset.danger = String(result.conflict || result.failures.length > 0);
   element('#result-notice').textContent = result.conflict ? 'Review your comparisons and the endpoint checks. Remove or revise an answer to resolve the conflict.'
     : result.missing.length ? `Next: ${result.missing[0]}`
@@ -584,7 +598,7 @@ function renderResult() {
     : result.possible.length === 1 ? 'The answers identify one band. Download the reasoning with the rating.'
     : 'You can keep this range or add another familiar reference to narrow it.';
   element('#trace').replaceChildren(...traceLines(result).map(text => node({ tag: 'li', text })));
-  if (result.conflict) {
+  if (result.conflict && !result.failures.length) {
     const explanations = result.exclusions.map(entry => `${entry.score}: excluded by ${entry.reasons.join('; ')}.`);
     element('#trace').append(...explanations.map(text => node({ tag: 'li', text })));
   }
@@ -623,7 +637,10 @@ function keepComparison() {
   assessment = { ...assessment, comparisons: [...assessment.comparisons.filter(item => item.name !== anchor.name), comparison] };
   element('#comparison-feedback').textContent = `Kept: ${relationNames[draftRelation]} ${anchor.name} (${anchor.score}).`;
   renderResult();
-  nextReference();
+  /** Keep the decisive or conflicting reference available for immediate review. */
+  const result = evaluateAssessment(assessment);
+  if (!result.conflict && result.possible.length > 1) nextReference();
+  else renderDraft();
 }
 /** @returns Nothing. @example resetAssessment() */
 function resetAssessment() {
@@ -641,8 +658,13 @@ function handleTextInput(event) {
   const fields = { 'software-name': 'name', 'software-job': 'job', strengths: 'strengths', defects: 'defects' };
   const key = fields[event.target.id];
   if (key) {
-    assessment = { ...assessment, [key]: event.target.value, reviewed: false };
-    if (assessment.comparisons.length) element('#review-note').textContent = 'The assessment changed. Review your existing comparisons against the updated description, then confirm the combined judgment again.';
+    /** Endpoint evidence belongs to the named software and its defining job. */
+    const contextChanged = key === 'name' || key === 'job';
+    assessment = { ...assessment, [key]: event.target.value, reviewed: false,
+      ...(contextChanged ? { zero: initialAssessment().zero, ten: initialAssessment().ten } : {}) };
+    if (assessment.comparisons.length) element('#review-note').textContent = contextChanged
+      ? 'The software or defining job changed. Endpoint checks have been cleared. Recheck them and review your existing comparisons for the updated context.'
+      : 'The assessment changed. Review your existing comparisons against the updated description, then confirm the combined judgment again.';
     renderResult();
   }
   if (event.target.id === 'comparison-reason') renderDraft();
@@ -669,7 +691,7 @@ function handleClick(event) {
   if (button.dataset.useReference) { showView('assess'); element('#anchor').value = button.dataset.useReference; renderReference(); element('#comparison-title').scrollIntoView(); }
   if (button.dataset.relation) { draftRelation = button.dataset.relation; renderDraft(); }
   if (button.dataset.editComparison) { element('#anchor').value = button.dataset.editComparison; renderReference(); element('#anchor').focus(); }
-  if (button.dataset.removeComparison) { assessment = { ...assessment, comparisons: assessment.comparisons.filter(item => item.name !== button.dataset.removeComparison) }; renderResult(); renderReference(); }
+  if (button.dataset.removeComparison) { assessment = { ...assessment, comparisons: assessment.comparisons.filter(item => item.name !== button.dataset.removeComparison) }; renderResult(); renderDraft(); }
   if (button.id === 'clear-filters') { scoreFilter = 'all'; element('#search').value = ''; element('#category').value = 'all'; element('#sort').value = 'desc'; renderCatalog(); }
   if (button.id === 'no-failures') { assessment = { ...assessment, zero: Object.fromEntries(zeroRules.map(rule => [rule.id, 'no'])) }; renderResult(); }
   if (button.id === 'add-comparison') keepComparison();
