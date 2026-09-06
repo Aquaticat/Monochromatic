@@ -1,7 +1,10 @@
 # module-logger first npm release
 
 Status:
- planning complete pending owner confirmation (2026-09-06).
+ executing (2026-09-06);
+ steps 1 to 8 landed,
+ the release workflow ran green and opened the version pull request;
+ bootstrap publish is the owner's runbook step.
 Owner decisions are recorded here as they land;
  this file is canonical for the release,
  not `package/module/logger/bulletproofing.plan.md`.
@@ -256,7 +259,35 @@ Order matters:
      #307,
      and #338 with what changed.
 
+## Progress log (2026-09-06)
+
+- Vet report:
+   `doc/audit/tech-changesets-release-tooling-vet-2026-09-06.md` (alternatives waived by owner).
+- Decision:
+   `doc/decision/npm-publishing.md`.
+- Logger code gates landed in commit `1e786539e` with a proven red-to-green guard run;
+   manifest and README in `1afde136e`.
+- Changesets adopted in `77ba3948a`;
+   the release workflow is `.github/workflows/npm-release.yml`.
+- Workflow shakedown findings,
+   each fixed and recorded in the commit that fixed it:
+   the repository Actions allowlist lacked `changesets/*` (repository setting updated);
+   the `npm:pnpm` mise backend cannot bootstrap pnpm on a runner (use `mise install node pnpm`);
+   tools installed in a step are not on later steps' PATH (exported explicitly);
+   `pnpm pack` fails under `dedupeDirectDeps` (pack job installs with the override);
+   changesets' auto-format runs the npm dprint this workspace removed (`format: false`);
+   the stock changelog line `<hash>: summary` fails the markdown lint (custom `.changeset/changelog.ts`).
+- Tarball verified in disposable consumers:
+   Node 24 imports, logs, flushes, refuses `./ts`;
+   Node 22 warns `EBADENGINE`.
+- Runbook:
+   `doc/runbook/publish-npm-package-first-time.md`.
+
 ## Next action
 
-Owner confirms shared understanding after a step-by-step walkthrough;
- then execute in the order listed.
+Owner runs the runbook against the version pull request.
+Remaining agent work:
+ issue comments (#159,
+ #306,
+ #307,
+ #338) and the legacy plan rewrite.
