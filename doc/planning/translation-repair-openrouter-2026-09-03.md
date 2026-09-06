@@ -1826,7 +1826,7 @@ hyperBalance=2734 openrouterUsd=0.32` at 19:51 UTC),
 OpenRouter still uncharged and expected within days,
 and the instruction not to wait on it.
 
-- **19:53 UTC, `yulianNyanner` launched** on tip `14231350f` with all three providers configured and the
+- **`yulianNyanner` launched at 19:53 UTC** on tip `14231350f` with all three providers configured and the
   2026-09-04 dials set (overlap 4,
     writer grace 180000),
     runs dir `~/temp/agent/yuliannyanner-20260906`.
@@ -1854,7 +1854,7 @@ and the instruction not to wait on it.
     fallback moved in `e50be2299`;
     record `doc/decision/translation-repair-pass-overlap.md`,
     flagged for veto.
-- **The owner's rule, always kill and relaunch.**
+- **The owner's rule is always kill and relaunch.**
   A source change while a pass runs means kill the pass by pid,
     build,
     and relaunch the same entry into a fresh runs dir on the new build;
@@ -1870,8 +1870,9 @@ and the instruction not to wait on it.
     264 calls in (148 Hyper,
     116 Synthetic),
     still in the lanes phase.
-- **The writer window was the same defect,** and the straggler-grace record reserved it for the owner.
-  Every shipped page ran its writers at 180000 ms through `TRANSLATION_REPAIR_WRITER_GRACE_MS` while the
+- **The writer window was the same defect.**
+  The straggler-grace record reserved it for the owner.
+    Every shipped page ran its writers at 180000 ms through `TRANSLATION_REPAIR_WRITER_GRACE_MS` while the
     round window was the owner's 120000 ms.
     Measured off the four shipped logs of 2026-09-04:
     writer-round cuts at 180 s were 4,
@@ -1890,7 +1891,7 @@ and the instruction not to wait on it.
     guard shown to fail neutralised (4 `FAIL`) and pass restored (0);
     oxlint 0 and 0,
     types clean.
-- **20:21 UTC, `yulianNyanner` relaunched** on `7a2bdbedf`,
+- **`yulianNyanner` relaunched at 20:21 UTC** on `7a2bdbedf`,
   pipeline `cb326421`,
     the plain invocation with no dial set,
     runs dir `~/temp/agent/yuliannyanner2-20260906`,
