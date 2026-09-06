@@ -319,16 +319,64 @@ The repository has one such consumer of its own:
  `package/ssg/aquati.cat/src/build/compress.ts` imports the logger with `await import(...)` on the main thread only,
  "so worker threads never pay its import-time sink auto-discovery".
 
-Not resolved here.
-Candidate directions,
- each to be measured before adoption:
+Corrected on 2026-09-06 after the maintainer pointed out that users object to the mere existence of `import()` in their bundles,
+ not to when discovery runs.
+Measured on the 0.2.0 artifacts:
+ both `dist/final/node/index.mjs` and `dist/final/neutral/index.mjs` contain two dynamic imports,
+ `import('node:fs/promises')` and `import('node:path')`,
+ both from the file sink's verify (`src/sink/file.ts`).
+A browser consumer that imports the logger statically and never touches the file sink,
+ bundled with rolldown for `platform: 'browser'` against the neutral artifact,
+ still carries both `import('node:...')` expressions in its output.
+So the artifact itself puts dynamic imports into every downstream bundle,
+ and starting discovery lazily would change nothing about that.
+The earlier lazy-discovery candidate is withdrawn as a fix for this complaint;
+ it remains a separate idea for callers that never log.
 
-- Start sink discovery lazily on the first log or flush call instead of at import,
-   keeping zero-config for callers that log and making the import itself free for callers that never do.
-- Keep eager discovery but make it cheap enough that deferring it buys nothing;
-   the current cost is about 2.4 ms locally for the five shipped verifies,
-   so the complaint may be about the side effects (files,
-   storage probes) rather than the time.
+Candidate fixes,
+ ranked:
+
+- Platform-split file sink through package `imports` conditions.
+   `src/sink/file.node.ts` imports `node:fs/promises` and `node:path` statically;
+   `src/sink/file.neutral.ts` is the same `createFileSink` signature whose verify answers false;
+   `package.json` maps `#file-sink` to the node file under the `node` condition and the neutral file under `default`,
+   and rolldown selects one per build from its `platform`.
+   Pros:
+   no `import()` in either artifact,
+   public API and types identical on both conditions,
+   zero-config kept,
+   no new plugin.
+   Cons:
+   two source files for one sink,
+   and TypeScript must resolve `#file-sink` (the `imports` field is honoured under `moduleResolution: bundler`).
+- Separate `./node` subpath export carrying the file sink,
+   with the root entry free of Node modules.
+   Pros:
+   the same artifact hygiene.
+   Cons:
+   the default logger under Node loses file logging unless the `node` condition of `.` re-adds it,
+   which lands back on the first option with an extra export to document.
+- Static `node:` imports in one file sink plus a browser shim for the two modules.
+   Pros:
+   one source file.
+   Cons:
+   the neutral artifact then imports a shim that exists only to fail verification,
+   which is the first option's stub with more indirection.
+- Keep the dynamic imports and instruct consumers to mark `node:` modules external.
+   Pros:
+   no code change.
+   Cons:
+   the complaint is precisely that consumers have to do this.
+
+Ranking:
+ platform split > subpath export > static imports with shim > documentation only,
+ because the platform split removes the expressions with no API change,
+ the subpath export reaches the same artifact only by re-adding the split,
+ the shim is the split with more indirection,
+ and documentation leaves the artifact as it is.
+Acceptance:
+ a unit test reads both built artifacts and fails on any `import(`,
+ and the consumer bundle probe shows none.
 
 ## Sinks verify concurrently under a time limit (2026-09-06)
 

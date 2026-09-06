@@ -68,16 +68,20 @@ Nothing here blocks a publish;
 
 ## Open robustness items, in priority order
 
-1.   Import-time sink discovery.
-     Consumers defer the import (`await import(...)`) to keep contexts that never log,
-     such as worker threads,
-     from paying for sink auto-discovery;
-     users have complained that this pushes dynamic imports into otherwise static import graphs.
+1.   Dynamic imports in the published artifacts.
+     Both built entries carry `import('node:fs/promises')` and `import('node:path')` from the file sink's verify,
+     and a browser consumer bundle inherits both,
+     which is what users complain about.
+     Lazy discovery would not remove them.
      Candidate:
-     discover sinks lazily on the first log or flush call.
+     platform-split file sink selected through package `imports` conditions,
+     guarded by a test that reads both artifacts and rejects any `import(`.
      See `DECISIONS.md`,
      "Open problem:
       import-time sink discovery".
+2.   Deferred discovery for callers that never log.
+     Still the reason `package/ssg/aquati.cat/src/build/compress.ts` defers its import on worker threads;
+     separate from item 1 and unscheduled.
 
 ## Verification campaign (the toml-edit bar)
 
