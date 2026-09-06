@@ -2174,6 +2174,17 @@ both `PhotoScroll` shapes intact,
     a polysemous word,
     the judges' call,
     and a stochastic one across two runs of the same slice.
+- **`yulianNyanner` relaunched at 23:11:16 UTC** on `c69a256bd`,
+  pipeline `7ec38326`,
+    plain invocation,
+    fresh runs dir `~/temp/agent/yuliannyanner6-20260906`,
+    log beside it,
+    after the full suite on that build read 935 `PASS` and 0 `FAIL`,
+    oxlint 0 and 0,
+    types clean.
+    Weekly Synthetic 23.53 percent at launch.
+    The reading follows,
+    with the apostrophe count first.
 
 ## Build plan, transport-independent layers first
 
