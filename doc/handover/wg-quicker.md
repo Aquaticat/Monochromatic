@@ -364,8 +364,11 @@ Firefox Nightly follow-up verification found:
 - installed launcher resolves to `/var/home/user/.local/opt/firefox-nightly/firefox`;
 - transient scope status showed launcher and child commands under same install directory as `firefox-bin`;
 - rebuilt `wg-quicker-exempt list-targets` included a disposable app-slice scope running actual Firefox Nightly;
-- same listing omitted running Firefox ESR service;
-- disposable Nightly process and profile ended without changing live tunnel or application cgroups.
+- normal KDE desktop launch created `app-firefox\x2dnightly@*.service` from `firefox-nightly.desktop`;
+- `/proc/<pid>/exe` for desktop-launched Nightly resolved to installed `firefox-bin`;
+- rebuilt target listing included exact desktop service and omitted running Firefox ESR service;
+- both Nightly verification processes ended;
+- disposable headless profile was removed without changing live tunnel or application cgroups.
 
 Process discovery attaches entire current cgroup.
 Sibling processes sharing Helium,
