@@ -563,12 +563,23 @@ Previous and Next icon buttons,
 
 Two existing-screen treatments remain open:
 
-- Current track must combine visible cues rather than rely solely on color or solely on
-  shape.
-  The play icon alone is no longer sufficient;
- exact additional cues are unsettled.
-- Existing `Open` action must be more prominent as the folder picker's primary action.
-  Exact Material treatment is unsettled.
+- Current track:
+   explicit `Playing` label plus bold title,
+   primary-colored bold
+  title,
+   soft neutral container plus bold title,
+   or rounded outline plus bold title.
+  Every option removes the play icon and reserved leading slot.
+- Existing `Open` action:
+   filled,
+   tonal,
+   elevated,
+   or outlined Material button.
+  Every option retains the folder icon and explicit label.
+
+The sixteen cells are the cross-product of four consequential current-track treatments
+and four consequential Open treatments.
+ Matrix size is not capped to an example count.
 
 No absent control or future feature is part of this round.
  The command bar,

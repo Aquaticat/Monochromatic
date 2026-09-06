@@ -2879,3 +2879,42 @@ T2,
 cues must preserve full row text width and still use at least two visible channels.
 Update D36 and the cross-cue agent standard so sparse state decoration never takes
 permanent space from unaffected items.
+
+That correction is implemented in prototype commit `e4f9d9484`.
+ Every active cue
+candidate removes `leadingContent` from every track,
+ so current and ordinary titles
+share x=1107 and the complete row width.
+ New row treatments are:
+ explicit `Playing`
+label plus bold title,
+ primary-colored bold title,
+ soft neutral container plus bold
+title,
+ and rounded outline plus bold title.
+ At 200% text,
+ all four remain readable.
+The first is recommended for literal clarity;
+ accent ranks second;
+ soft container third;
+outline fourth because it looks button-like.
+
+The user clarified that `9` was only an example and does not cap matrix size.
+ Add `MXQ`
+to `AGENTS.md` and generated `CLAUDE.md`:
+ meaningful independent dimensions determine
+cell count.
+ Prototype commit `4cae242a7` therefore adds a fourth row treatment and
+a fourth Open treatment rather than preserving a three-by-three shape.
+ The final matrix
+has sixteen native cells:
+ four current-track rows by filled,
+ tonal,
+ elevated,
+ and
+outlined Open columns.
+ Open ranking is filled > tonal > elevated > outlined.
+ All
+captures are 2076 × 2152px;
+ the full matrix retains 1B's tight centered deck and
+outlined skip buttons.

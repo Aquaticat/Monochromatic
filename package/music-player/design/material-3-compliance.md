@@ -354,9 +354,12 @@ The user's 2026-09-04 correction forbids color-only state communication.
 prototype uses these redundant cues:
 
 - Current track:
-   pending a new full-width treatment after the user rejected the play
-  icon and its reserved leading column.
-  Every candidate must combine visible cues and retain
+   every active candidate removes the play icon and reserved leading
+  column.
+  Explicit label plus bold,
+  accent plus bold,
+  soft container plus bold,
+  and outline plus bold each preserve full text width while combining visible cues and
   semantic current state.
 - Selected playback mode:
    selected segmented fill plus checkmark at default and

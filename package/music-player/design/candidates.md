@@ -182,44 +182,44 @@ pause action the clearest focal point without compressing the stack.
  This choice
 settles both matrix dimensions and supersedes the recommendation.
 
-## ROUND 13 — redundant current-track cues
+## ROUND 13 — redundant current-track and Open cues
 
-All current-track studies inherit chosen option 1B:
+All studies inherit chosen option 1B:
  centered deck,
- corrected 24% seek
-position,
- 8dp transport spacing,
+ corrected 24% seek position,
+8dp transport spacing,
  outlined Previous and Next buttons,
  filled Pause,
-and every settled picker,
+ and every
+settled picker,
  track,
  spacer,
  and mode-control rule.
- They retain the
-leading play icon and add another visible channel:
 
-- **T1, bold title:**
-   play icon plus bold current-track title.
-- **T2, accent title:**
-   play icon plus primary-colored medium-weight title.
-- **T3, tonal badge:**
-   play icon in a tonal circular badge plus medium-weight title.
+The first current-track studies retained a play icon.
+ The user rejected that entire
+approach before presentation because its reserved leading column reduced the width of
+every track.
+ Those studies are evidence of a corrected failure,
+ not active options.
 
-Prototype commits `52132c7c6`,
- `abbe743d9`,
- and `d7e028c64` implement and
-correct this dimension.
- Native 2076 × 2152px captures confirm all three cues are
-visibly distinct.
- T3 retains the accepted 24dp leading footprint;
- the title and supporting
-text remain aligned with every other row.
- Pixel comparison against
-`refine-tight-outlined` finds no change in the complete left pane or below the current
-track on the right pane.
+The active rows remove both the play icon and the leading slot from every list item.
+Current and ordinary titles share x=1107 at native resolution,
+ proving equal text width.
+Each row then combines cues without relying solely on color or shape:
 
-The separate Open-action dimension retains the folder icon and explicit `Open` label
-while adding a button container:
+- **T1, explicit label:**
+   bold title plus bold `Playing` text in the existing
+  supporting line.
+- **T2, accent:**
+   primary-colored bold title.
+- **T3, soft container:**
+   neutral `surfaceContainerLow` row plus bold title.
+- **T4, outlined row:**
+   primary rounded boundary plus bold title.
+
+The separate Open-action columns retain the folder icon and explicit `Open` label while
+adding a button container:
 
 - **O1, filled:**
    primary fill with contrasting icon and label.
@@ -227,22 +227,42 @@ while adding a button container:
    secondary-container fill with contrasting icon and label.
 - **O3, elevated:**
    elevated surface container with primary icon and label.
+- **O4, outlined:**
+   outline boundary with neutral icon and label.
 
-Prototype commit `3425440f6` implements all three.
- Every action exposes a
-263 × 117 physical-pixel touch target,
- equivalent to approximately 108 × 48dp.
-Measured foreground-to-container contrast is 6.065:1 for filled,
- 6.124:1 for tonal,
-and 5.794:1 for elevated.
- Filled is the recommendation because `Open` is the
-folder picker's primary action;
- tonal is second because it is prominent without
-competing as strongly with playback;
- elevated is third because its light surface and
-shadow read least strongly in this flat app bar.
- Final captures must be regenerated after the
-current-track cue correction.
+Prototype commits `e4f9d9484` and `4cae242a7` implement the corrected four-by-four
+matrix.
+ All sixteen opaque captures are 2076 × 2152px.
+ At 200% text,
+ every row
+treatment remains readable and the filled Open button fits beside `Folders`.
+ No current
+candidate exposes a play-icon accessibility node.
+
+Every Open action exposes a 263 × 117 physical-pixel touch target,
+ approximately
+108 × 48dp.
+ Measured foreground-to-container contrast is 6.065:1 for filled,
+6.124:1 for tonal,
+ 5.794:1 for elevated,
+ and 6.359:1 for outlined text.
+The soft current-row container resolves to 11.571:1 for its title and 5.757:1 for
+supporting text.
+
+Current-track ranking is T1 > T2 > T3 > T4:
+ explicit text is clearest;
+ accent is
+cleaner but less literal;
+ the soft container changes more pixels;
+ the outline resembles
+a separate button.
+ Open ranking is O1 > O2 > O3 > O4:
+ filled communicates primary
+action most strongly;
+ tonal is calmer;
+ elevation is subtle on the flat app bar;
+ the
+outlined boundary is weakest.
 
 ## ROUND 10 — white-divider clarification
 

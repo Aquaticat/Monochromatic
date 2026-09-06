@@ -401,6 +401,10 @@ full ranking,
 recommended additions.
 End with separable questions whose answers select among visible new variants.
 
+MXQ:
+ Matrix size follows consequential independent dimensions and meaningful variants.
+Never cap cells to a number mentioned only as an example.
+
 QCS:
  A quality-over-cost guideline makes cost a non-constraint.
 Options differing only in price aren't user questions:
