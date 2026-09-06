@@ -228,7 +228,9 @@ Known process-discovered cgroups remain attached until directory disappears,
 covering process restarts inside same service or scope.
 Process discovery attaches entire current cgroup,
 so sibling processes in a shared cgroup also bypass tunnel until cgroup disappears or watcher stops.
-A newly started Helium, Pale Moon, or Firefox Nightly process can create sockets before next 250-millisecond rescan;
+A newly started Helium,
+Pale Moon,
+or Firefox Nightly process can create sockets before next 250-millisecond rescan;
 applications already running during watcher startup are attached before readiness.
 Watcher state validates PID,
 process start time,

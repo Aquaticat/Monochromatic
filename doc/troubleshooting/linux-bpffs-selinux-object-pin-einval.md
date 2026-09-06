@@ -28,6 +28,21 @@ A separate bpffs rule rejects any path component containing a dot with `EPERM`.
 It affected the loader's first hidden staging-directory design and would affect unencoded Ghostty scope names.
 This is not the cause of the `BPF_OBJ_PIN` `EINVAL` after names are encoded without dots.
 
+Kernel `7.2.0-ogc6.1.fc44.x86_64` no longer reproduced object-pin failure.
+Same disposable attach probe completed with:
+
+```text
+attached mark=8888 to /sys/fs/cgroup/wgq-pin-recovery-probe (4 links pinned)
+```
+
+First functional-test run on recovered kernel failed for separate harness assumptions:
+
+```text
+build debug CLI before functional tests: .../target/debug/build/wg-quicker-exempt/.../wg-quicker-exempt
+active keeper absent
+keeper state absent
+```
+
 ## Root cause
 
 The source trace uses upstream Linux commit
@@ -114,9 +129,54 @@ That encoding is injective,
  contains no dots,
  and keeps each component within `NAME_MAX`.
 
+### Why the functional harness failed after kernel recovery
+
+`package/cli/wg-quicker-exempt/src/main.rs:72-82` selects real pins when attachment succeeds and enters
+keeper fallback only for typed object-pin failure:
+
+```rust
+match pin::attach_cgroup(mark, cgroup) {
+    Ok(count) => {
+        keeper::detach_keeper(cgroup)?;
+        println!("attached mark={mark} to {dir} ({count} links pinned)");
+    }
+    Err(error) if bpf_error::is_pin_object_invalid(&error) => {
+        keeper::replace_keeper(mark, cgroup)?;
+```
+
+Fallback-specific tests previously relied on host kernel producing that error.
+Successful pinning on kernel `7.2.0-ogc6.1.fc44.x86_64` therefore left no keeper state for assertions such as
+`package/cli/wg-quicker-exempt/src/pin_tests.rs:595-603`:
+
+```rust
+run_cli(&["attach", "8888", cgroup])?;
+let output = Command::new(cli_binary()?)
+    .args(["attach", "9999", cgroup])
+    .env(FORCE_PIN_INVALID_ENV, "1")
+    .env("WG_QUICKER_EXEMPT_TEST_FAIL_AFTER_ATTACH", "1")
+```
+
+An independent path assumption also failed first.
+Current Rust test executable was under `target/debug/build/.../out`,
+not directly under `target/debug/deps`.
+`package/cli/wg-quicker-exempt/src/pin_tests.rs:54-73` now walks test executable ancestors until it finds actual
+`debug/wg-quicker-exempt`:
+
+```rust
+for directory in test_binary.ancestors() {
+    if !directory.ends_with("debug") {
+        continue;
+    }
+    let binary = directory.join("wg-quicker-exempt");
+    if binary.exists() {
+        return Ok(binary);
+    }
+}
+```
+
 ## Verification
 
-Environment:
+Affected environment:
 
 ```text
 kernel: 7.1.3-ogc5.1.fc44.x86_64
@@ -124,6 +184,14 @@ SELinux: Enforcing
 bpffs: /sys/fs/bpf, rw, mode=700
 LSM order: lockdown,capability,yama,selinux,bpf,landlock,ipe,ima,evm
 selinux-policy: 44.4-1.fc44
+```
+
+Recovered comparison:
+
+```text
+kernel: 7.2.0-ogc6.1.fc44.x86_64
+wg-quicker-exempt attach: 4 links pinned
+wg-quicker-exempt detach: completed
 ```
 
 Reproduce the object-pin failure with a disposable cgroup:
@@ -159,18 +227,29 @@ Working catalog:
 - Recovery adopts a live committed candidate before performing the next replacement.
 - A removed cgroup still maps to its lexical state key and detaches cleanly.
 - A bpffs directory name without a dot can be created and removed.
+- Kernel `7.2.0-ogc6.1.fc44.x86_64` pins all four links and removes them through public CLI.
+- Debug functional suite passes all ignored root tests while forcing descriptor fallback.
 
-The protocol harness is:
+Current complete harness is:
 
 ```sh
-mise run //package/cli/wg-quicker-exempt:test:unit
-test_binary=$(find package/cli/wg-quicker-exempt/target/debug/deps \
-  -maxdepth 1 -type f -executable -name 'wg_quicker_exempt-*' \
-  -printf '%T@ %p\n' | sort --numeric-sort --reverse | head --lines=1 | cut --delimiter=' ' --fields=2-)
-sudo -- "$test_binary" --exact \
-  pin_tests::all_protocol_hooks_mark_and_drop_cleanly \
-  --ignored --test-threads=1 --nocapture
+mise run //package/cli/wg-quicker-exempt:buildAndTest
+mise run //package/cli/wg-quicker-exempt:test:functional
 ```
+
+Debug functional invocation injects typed object-pin failure at
+`package/cli/wg-quicker-exempt/src/pin.rs:302-306`:
+
+```rust
+#[cfg(debug_assertions)]
+if std::env::var_os(FORCE_PIN_INVALID_ENV).is_some() {
+    let source = io::Error::from_raw_os_error(libc::EINVAL);
+    let error = pin_object_invalid(staging_text.to_string(), source);
+    return Err(rollback_staging_error(&staging_dir, error));
+}
+```
+
+This keeps fallback coverage independent of installed kernel while release compilation omits injection.
 
 Failing `EINVAL` catalog:
 
@@ -205,6 +284,16 @@ start time,
  and recovers interrupted replacement.
 A holder crash safely detaches its links instead of leaving unowned kernel state.
 
+### Inject typed pin failure in debug functional tests
+
+Debug-only environment seam returns same typed object-pin error used by production behavior selection.
+This makes descriptor-holder tests deterministic on affected and recovered kernels.
+
+Tradeoff:
+test confirms fallback response to exact error boundary,
+not whether current kernel naturally emits that error.
+Release builds contain no injection branch.
+
 ### Encode every bpffs path component without dots
 
 The loader's hexadecimal canonical-path encoding avoids bpffs's reserved-dot rule and slash-replacement collisions.
@@ -222,6 +311,9 @@ The loader must compute them from the canonical cgroup path rather than expectin
 - Changing the pinned object from link to program or map does not avoid `EINVAL`.
 - Mounting a fresh bpffs in a private mount namespace does not avoid `EINVAL`.
 - Adding an explicit SELinux `context=` mount option does not avoid `EINVAL`.
+- Relying on current host to emit `EINVAL` makes fallback tests silently take pin path after kernel recovery.
+- Assuming test executable lives under `target/debug/deps` fails when current executable is under
+  `target/debug/build/.../out`.
 - A local VM could not be used for a fixed-kernel comparison because this host lacks `qemu-img`,
    `qemu-system-x86_64`,
    and
@@ -263,29 +355,14 @@ The filing constraints resolve as follows:
    AI-assistance ban was found in the checked process and code-of-conduct documents.
 5. **Likely resolution:**
     yes.
-    The patch is addressed to the SELinux,
-    VFS,
-    and BPF maintainers,
-    copies `stable@kernel.org`,
-    and
-   has an existing review thread.
+    The patch was merged into `selinux/stable-7.2` and mainline as commit
+    `28254722a459938d97150d3b0712b81e06d0645e`.
 6. **Compatible minimal fix:**
     yes.
     The upstream patch moves one existing guard before inode security initialization and
    includes the affected source location and regression commit.
 
 Do not open a duplicate report.
-A test-result comment could add the released-kernel evidence,
- but external posting requires the human's decision.
-
-Draft additive comment,
- not posted:
-
-~~~md
-Tested the reported failure on `7.1.3-ogc5.1.fc44.x86_64` with SELinux enforcing and `selinux-policy-44.4-1.fc44`.
-
-`BPF_MAP_CREATE`, `BPF_PROG_LOAD`, and `BPF_LINK_CREATE` succeed, then `BPF_OBJ_PIN` returns `EINVAL`. I reproduced the same
-result for maps, programs, and links, both at the bpffs root and in nested directories. A fresh bpffs in a private mount
-namespace behaves the same way. Holding an unpinned cgroup link FD works for TCP4, TCP6, UDP4, and UDP6, which narrows the
-failure to object creation in bpffs rather than loading or attaching the programs.
-~~~
+The patch is merged,
+and recovered `7.2.0-ogc6.1.fc44.x86_64` behavior matches it.
+There is nothing further to file or comment upstream.

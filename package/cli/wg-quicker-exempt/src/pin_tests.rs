@@ -42,6 +42,8 @@ use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 const CHILD_FLAG: &str = "WG_QUICKER_EXEMPT_SOCKET_CHILD";
 /// Environment value carrying expected mark into socket-check child.
 const EXPECTED_MARK: &str = "WG_QUICKER_EXEMPT_EXPECTED_MARK";
+/// Debug environment flag making public CLI exercise descriptor-keeper fallback on every kernel.
+const FORCE_PIN_INVALID_ENV: &str = "WG_QUICKER_EXEMPT_TEST_FORCE_PIN_INVALID";
 /// First mark used to verify persisted initial attachment.
 const FIRST_MARK: u32 = 8_888;
 /// Second mark used to verify atomic replacement.
@@ -49,24 +51,34 @@ const SECOND_MARK: u32 = 9_999;
 /// Third mark distinguishes recovery replacement from both recorded holders.
 const RECOVERY_MARK: u32 = 7_777;
 
-/// Locates normal debug CLI beside `deps` test-artifact directory.
+/// Locates normal debug CLI from any Cargo test-artifact subdirectory.
 fn cli_binary() -> io::Result<PathBuf> {
     let test_binary = std::env::current_exe()?;
-    let deps = test_binary.parent().ok_or_else(|| return io::Error::other("test binary lacks parent"))?;
-    let debug = deps.parent().ok_or_else(|| return io::Error::other("deps directory lacks parent"))?;
-    let binary = debug.join("wg-quicker-exempt");
-    if !binary.exists() {
-        return Err(io::Error::new(
-            io::ErrorKind::NotFound,
-            format!("build debug CLI before functional tests: {}", binary.display()),
-        ));
+    // Cargo toolchains can place test artifacts under `debug/deps` or deeper `debug/build` directories.
+    for directory in test_binary.ancestors() {
+        if !directory.ends_with("debug") {
+            continue;
+        }
+        let binary = directory.join("wg-quicker-exempt");
+        if binary.exists() {
+            return Ok(binary);
+        }
     }
-    return Ok(binary);
+    return Err(io::Error::new(
+        io::ErrorKind::NotFound,
+        format!(
+            "build debug CLI beside debug artifact tree containing {}",
+            test_binary.display()
+        ),
+    ));
 }
 
 /// Runs real CLI and includes stderr when command fails.
 fn run_cli(arguments: &[&str]) -> io::Result<()> {
-    let output = Command::new(cli_binary()?).args(arguments).output()?;
+    let output = Command::new(cli_binary()?)
+        .args(arguments)
+        .env(FORCE_PIN_INVALID_ENV, "1")
+        .output()?;
     if !output.status.success() {
         return Err(io::Error::other(format!(
             "CLI {:?} failed with {}: {}",
@@ -325,19 +337,23 @@ fn socket_child() -> io::Result<()> {
     return Ok(());
 }
 
-/// Foreground watcher covers existing and future Ghostty scopes, then drops all links on signal.
+/// Foreground watcher covers named targets and future Ghostty scopes, then drops all links on signal.
 #[test]
 #[ignore = "requires root and writable cgroup v2 mount"]
-fn application_watcher_covers_existing_and_future_ghostty() -> io::Result<()> {
+fn application_watcher_covers_named_targets_and_future_ghostty() -> io::Result<()> {
     let app_slice = Path::new("/sys/fs/cgroup").join(format!(
         "wg-quicker-exempt-watch-{}",
         std::process::id()
     ));
     let service = app_slice.join("app-com.mitchellh.ghostty@fixture.service");
     let surface = app_slice.join("app-ghostty-surface-transient-123.scope");
+    let firefox_nightly = app_slice.join("app-firefox\\x2dnightly@fixture.service");
+    let firefox_esr = app_slice.join("app-firefox\\x2desr@fixture.service");
     let unrelated = app_slice.join("app-org.example.Other.scope");
     std::fs::create_dir(&app_slice)?;
     std::fs::create_dir(&service)?;
+    std::fs::create_dir(&firefox_nightly)?;
+    std::fs::create_dir(&firefox_esr)?;
     std::fs::create_dir(&unrelated)?;
     let mut watcher = Command::new(cli_binary()?)
         .args(["__watch-test", "8888"])
@@ -358,6 +374,8 @@ fn application_watcher_covers_existing_and_future_ghostty() -> io::Result<()> {
     output.read_line(&mut committed)?;
     assert_eq!(committed.trim_end(), "COMMITTED");
     assert_marks_from_child(&service, FIRST_MARK)?;
+    assert_marks_from_child(&firefox_nightly, FIRST_MARK)?;
+    assert_marks_from_child(&firefox_esr, 0)?;
     assert_marks_from_child(&unrelated, 0)?;
     std::fs::create_dir(&surface)?;
     std::thread::sleep(std::time::Duration::from_millis(500));
@@ -370,8 +388,11 @@ fn application_watcher_covers_existing_and_future_ghostty() -> io::Result<()> {
     let status = watcher.wait()?;
     assert!(status.success());
     assert_marks_from_child(&service, 0)?;
+    assert_marks_from_child(&firefox_nightly, 0)?;
     std::fs::remove_dir(&surface)?;
     std::fs::remove_dir(&unrelated)?;
+    std::fs::remove_dir(&firefox_esr)?;
+    std::fs::remove_dir(&firefox_nightly)?;
     std::fs::remove_dir(&service)?;
     std::fs::remove_dir(&app_slice)?;
     return Ok(());
@@ -574,6 +595,7 @@ fn failed_attach_preserves_prior_attachment() -> io::Result<()> {
     run_cli(&["attach", "8888", cgroup])?;
     let output = Command::new(cli_binary()?)
         .args(["attach", "9999", cgroup])
+        .env(FORCE_PIN_INVALID_ENV, "1")
         .env("WG_QUICKER_EXEMPT_TEST_FAIL_AFTER_ATTACH", "1")
         .output()?;
     assert!(!output.status.success());
