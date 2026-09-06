@@ -118,9 +118,11 @@ export function prepareMethodSlot({
     key,
   },);
   if ((typeof existing) !== 'symbol') {
-    if ((!runtime.contextual) || runtime.isProxy(target,)
-      || (existing.target !== target)
-      || (!methodSlotIntact(existing,)))
+    if (!runtime.contextual)
+      throw new SandboxOwnershipError(`ctx.sinon.stub/spy cannot join context-owned property "${String(key,)}" without Node async context support. Finish its owning tests before using ordinary Sinon replacements.`,);
+    if (runtime.isProxy(target,) || existing.target !== target)
+      throw new SandboxOwnershipError(`ctx.sinon.stub/spy cannot replace context-owned property "${String(key,)}" through an inherited, copied, or proxy alias. Use the original object, or finish its owning tests before replacing this alias.`,);
+    if (!methodSlotIntact(existing,))
       throw methodSlotConflict({
         slot: existing,
         operation: 'ctx.sinon.stub/spy',
