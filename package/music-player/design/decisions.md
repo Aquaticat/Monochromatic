@@ -259,50 +259,50 @@ is used only for **demo annotations**,
 
 ## D. Components and behaviour
 
-### D1. Mode control = OUTLINED SEGMENTED BUTTON (revised 2026-09-04)
-The user reversed the earlier connected-button-group pick:
- "the segmented buttons
-should always remain as segmented buttons."
- Shown both side by side (desc-e connected,
-desc-f outlined),
- they chose outlined.
- The 2026-09-04 requirement that every presented
-design follow the supplied Material guidance corrects its geometry:
- all four options
-occupy one non-wrapping `SingleChoiceSegmentedButtonRow`,
- never a 2×2 arrangement.
-Use the real Compose component so it supplies the 40dp visual container,
- 48dp target,
-1dp outline,
- full outer shape,
- checkmark,
- role,
- and states.
- Visible labels are
-`Repeat`,
- `In order`,
- `Shuffle`,
- and `Shuffle all`;
- `Shuffle` means the current folder
-and carries the complete accessibility label `Shuffle current folder`.
- All labels
-remain visible at the default font scale.
- At a system font scale of 1.5 or greater,
-the same choices become one purely vertical segmented control:
- four connected,
-full-label segments stacked top to bottom.
- Retain the segmented outline,
+### D1. Mode control = adaptive outlined segmented button (revised 2026-09-06)
+Keep every option as a real Compose `SegmentedButton` with its outlined container,
+48dp minimum target,
  selected fill,
-checkmark,
- and single-select radio semantics.
- Never substitute plain radio rows,
- add
-horizontal scrolling,
- or collapse the control to a single chip.
- The connected-group
-note below is history.
- The archive source is `components/segmented-buttons/` under the
-user-supplied `m3.material.io` archive.
+ checkmark,
+ radio role,
+ and state behavior.
+ Use
+the fewest connected rows whose complete labels fit:
+ one horizontal row first,
+ a
+connected 2×2 block second,
+ then four connected vertical rows.
+ Only outside corners
+round in multi-row arrangements;
+ internal edges remain shared.
+ Never add horizontal
+scrolling or replace the control with plain radio rows or a single chip.
+
+Visible labels are `Repeat`,
+ `In order`,
+ `Shuffle <currentSubDir>`,
+ and
+`Shuffle all`.
+ Replace `<currentSubDir>` with the active subdirectory name;
+ the current
+prototype therefore says `Shuffle Camellia`.
+ Accessibility descriptions expand only
+where that adds meaning:
+ `Repeat track`,
+ `Play in order`,
+ `Shuffle Camellia`,
+ and
+`Shuffle all folders`.
+
+**Why.**
+ The user explicitly replaced the fixed one-row-to-four-row transition with
+one-to-two-to-four adaptive wrapping and required the current subdirectory in the
+Shuffle label.
+ The connected-group note below is history.
+ The archive source is
+`components/segmented-buttons/` under the user-supplied `m3.material.io` archive;
+this multi-row arrangement is an explicit product decision rather than baseline Material
+wrapping behavior.
 
 ### D1 (superseded). Mode control = connected button group (candidate mode-d)
 Four options:

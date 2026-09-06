@@ -3091,3 +3091,24 @@ behavior at 200%
 text and production assistive-technology announcements remain implementation
 verification,
  not reasons to reopen the design without a demonstrated failure.
+
+The user then reopened only mode-control reflow while requesting exact 3B captures at
+50%,
+ 75%,
+ 100%,
+ 150%,
+ and 200% Android font scale.
+ They require the
+fewest connected segment rows that fit:
+ one,
+ then a connected 2×2,
+ then four
+vertical rows.
+ They also require the current-directory label in the third option,
+ so
+the active Camellia screen must say `Shuffle Camellia`,
+ never bare `Shuffle`.
+Prototype commit `f06971b1e` implements overflow-driven one-to-two-to-four reflow with
+real Compose `SegmentedButton` elements;
+ recapture and questionnaire verification are
+in progress.
