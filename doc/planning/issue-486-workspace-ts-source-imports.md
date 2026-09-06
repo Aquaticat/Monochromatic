@@ -108,6 +108,15 @@ and it has since been seen to hurt.
   not added yet;
   tracked as issue #487.
 
+## Round 3 answers
+
+- Lever:
+  the user asked how other large TypeScript monorepos handle cross-package imports before choosing;
+  research delegated to a background agent on 2026-09-06.
+- Acceptance target:
+  both;
+  warm whole-repo `lint:oxlint` under 60 s (issue #374) and a single-package `lint:oxlint` under 10 s warm.
+
 ## Open questions
 
 - Which lever:
@@ -123,6 +132,7 @@ and it has since been seen to hurt.
 
 ## Next action
 
-Round 3 of the grilling puts the lever,
- the target,
- and the measurement decision to the user.
+Wait for the monorepo precedent research,
+then put the lever (convention change,
+rule boundary only,
+or measure first) to the user in round 4 with the precedent in hand.
