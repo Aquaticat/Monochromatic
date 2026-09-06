@@ -80,8 +80,29 @@ await describe({
         },),).toEqual([
           '- ORIGINAL note: [^1]: 意为个人「代购」境外漫画书籍',
           '- ARCHIVE note: [^1]: A personal buying service for comics from abroad.',
-          '- ORIGINAL editor comment: 起床战争：Bed Wars',
-          '- ARCHIVE editor comment: 翻译提示： 这篇文章有时候是作者视角。',
+          '- ORIGINAL editor comment before the first heading: 起床战争：Bed Wars',
+          '- ARCHIVE editor comment before the first heading: 翻译提示： 这篇文章有时候是作者视角。',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'ANCHORS a comment to the heading it sits under, naming that heading on the line, since a '
+        + 'note that says "this title" or "here" was carried into every slice of yulianNyanner without '
+        + 'its position and seven of eight judges bound it to the wrong heading (2026-09-06)',
+      fn: async () => {
+        /**
+         * Two sections, a note under the second, and one note before any heading.
+         */
+        const document = parseDocument({
+          text: '<!-- 全文为客观叙述 -->\n\n## 小猫\n\n它睡了。\n\n### 大猫\n\n<!-- 这里标题对应的英文词是 Tomcat -->\n\n它醒了。\n',
+        },);
+        expect(commentNoteLines({
+          document,
+          side: 'ORIGINAL',
+        },),).toEqual([
+          '- ORIGINAL editor comment before the first heading: 全文为客观叙述',
+          '- ORIGINAL editor comment under heading 大猫: 这里标题对应的英文词是 Tomcat',
         ],);
       },
     },),
