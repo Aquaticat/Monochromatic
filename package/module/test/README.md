@@ -469,6 +469,56 @@ Users who find the tail dump noisy can wrap their top-level `await` in
  the wrapped error is fully diagnostic and the runtime printer
 no longer activates.
 
+### Detached promise rejections in Node
+
+Awaiting `it(...)` or `describe(...)` automatically activates one shared rejection observer
+for the Node global realm.
+Importing the library or constructing a lazy descriptor installs no listener.
+There is no launcher flag or preload step to remember.
+Observation remains active until process exit so a rejection after a completed root is still reported.
+
+An escaped rejection produces a separate record such as:
+
+```text
+[settings] [saves] [async work] [FAIL] unhandled promise rejection; test file failed
+```
+
+The awaited test or suite result is unchanged,
+including any earlier PASS record.
+PASS describes the awaited body only;
+the async failure makes the file exit nonzero while unrelated siblings continue.
+`fails: true` applies to the body's returned rejection,
+not to escaped work.
+No available execution context produces `[module-test] [unattributed async work] [FAIL]`;
+the harness does not guess among concurrent tests.
+Attribution follows the rejecting async context,
+which need not be where the promise was originally created.
+
+The detailed warning explains the usual causes and remedies:
+
+- Await operations and async assertions.
+- Stop and await background work during cleanup.
+- Cancel timed-out work and wait for its termination.
+- Fix dependency-owned leaks at their owning boundary.
+- Put deliberate unhandled-rejection fault injection in a disposable child process,
+  then assert its output and exit status.
+
+This normally signals test-harness misuse;
+timeouts and dependency-owned background work can also expose inaccessible cleanup promises.
+Silencing the observer does not fix either case.
+
+The verified Node modes are `throw` (default),
+`none`,
+`warn`,
+and `warn-with-error-code`.
+Explicit `strict` mode still terminates before the rejection event:
+the harness does not take over uncaught exceptions.
+Existing listeners remain installed and can still throw or override the final status themselves.
+Reporter failures use a non-recursive emergency diagnostic;
+unfinished reporting does not keep the process alive indefinitely.
+
+See [the source trace and lifecycle verification](../../../doc/troubleshooting/module-test-unhandled-rejection.md).
+
 ## Usage
 
 ### Basic suite with matchers

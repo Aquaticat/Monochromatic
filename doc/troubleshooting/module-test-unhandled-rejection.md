@@ -2,8 +2,10 @@
 
 Investigation for [issue #483](https://github.com/Aquaticat/Monochromatic/issues/483),
 2026-09-06.
-Implementation is pending completion of the requested grilling session.
+Implementation and subprocess verification completed in an isolated worktree.
 The user rejected activation that depends on an optional launcher or preload flag.
+The accepted reporting contract preserves body verdicts and adds a detailed,
+separate async-failure warning that fails the file.
 
 ## Symptom
 
@@ -198,9 +200,11 @@ These approaches do not satisfy the complete issue contract.
 No claim is made that every alternative to a process rejection listener is impossible.
 The proposed design uses the supported rejection event at an explicit test-file boundary.
 
-## Revised proposal and pending choice
+## Accepted design and verification
 
 The user's preference is to avoid installing `unhandledRejection` handling repeatedly or intrusively.
+The user clarified that this is a preference,
+not a prohibition: broader handling may be proposed if narrower approaches fail verification.
 The initial recommendation placed activation in the file launcher.
 The user rejected that choice as prone to misuse:
 running the file directly would silently omit the requested behavior.
@@ -236,11 +240,9 @@ Waiting one event-loop turn therefore covers immediate delivery,
 but does not establish that detached work has ended.
 The revised proposal retains observation for late failures instead of treating root settlement as proof of completion.
 
-The next user-visible question is how to report a rejection whose attributed test already emitted PASS:
-supersede that test result with FAIL,
-or preserve its body verdict and add a separate attributed async failure.
-Both must fail the file.
-No implementation has been applied.
+The user selected a stable body verdict plus a separate attributed async failure.
+Both active-body and post-completion rejections fail the file,
+without changing the descriptor's returned result.
 
 ### Q2 clarification: concrete reporting examples
 
@@ -277,10 +279,156 @@ Option B preserves the test body's passing verdict and records a separate async 
 Its benefit is that the body verdict remains stable.
 Its cost is that `saves settings` stays marked passed despite causing the file failure.
 
-Ranking: A > B because the final test verdict should reflect the leaked rejection.
-Both alternatives continue unrelated siblings and fail the file.
-Neither can change an already settled promise returned by the harness.
-Q2 remains unanswered.
+The original recommendation of A is retracted.
+The user correctly challenged its fit with the existing architecture:
+printing a later FAIL cannot revise a resolved descriptor promise or a parent's collected results.
+`package/module/test/src/describe.ts:365` collects settled child results locally:
+
+```ts
+const settled = await awaitSettleWithTimeoutLogging();
+const errors: unknown[] = [];
+const passedNames: string[] = [];
+```
+
+There is no shared mutable verdict registry to update.
+Option B is accepted.
+The warning must explain that PASS covers only the awaited body,
+that detached rejection usually indicates harness misuse,
+and that timed-out work and dependency-owned background work are relevant exceptions.
+It must explain awaiting operations and async assertions,
+stopping and draining background work,
+cancelling timed-out work,
+fixing dependency leaks at their owner,
+and isolating deliberate fault injection in child processes.
+
+The first built-artifact regression run on Node 26.7.0 passed six tests:
+import/descriptor construction has no observer side effect;
+handled rejection remains successful;
+active and late detached rejection preserve sibling execution and body settlement;
+post-root rejection remains observed;
+unattributed work fails without inventing a test name.
+The same subprocess regression failed before implementation on the four escaped-work cases.
+Expanded verification passed all 27 new subprocess checks,
+then all 13 unit-test files in the package.
+The package's `lint:types` task passed,
+and `lint:oxlint` reported zero warnings and errors.
+TypeScript's emitted build-info list included every new implementation,
+fixture,
+and test file;
+this was not a stale-cache or excluded-file result.
+
+### Regression proofs and reproduction commands
+
+The guard was first committed in isolated checkpoint `e63cd0859`.
+Removing only the `process.on('unhandledRejection', ...)` registration,
+rebuilding,
+and running `unhandled-rejection.unit.test.ts` failed the four escaped-work cases;
+the import-only and handled-rejection controls passed.
+Restoring the guard recovers the passing run.
+
+A second positive control installed an inert listener during module import.
+After rebuilding,
+only the import-side-effect test failed,
+with `LISTENER_DELTA=1` instead of `LISTENER_DELTA=0`.
+Both temporary mutations were restored and the source diff was verified empty.
+
+From the repository root,
+run the package tasks in order:
+
+```bash
+mise run //package/module/test:build:js:browser
+mise run //package/module/test:test:unit
+mise run //package/module/test:lint:types
+mise run //package/module/test:lint:oxlint
+```
+
+The tests launch plain Node child processes against the built artifact,
+with no preload or alternate runner.
+They override ambient `NODE_OPTIONS` and use disposable working directories.
+During the isolated verification,
+`TMPDIR` was set to the user's requested `~/temp/agent` scratch root.
+
+### Reporter exit fallback and narrow lint exceptions
+
+The independent lifecycle probe found that the original `process.stderr.write(...)`
+fallback disappeared when stderr was corked and the reporter's flush remained pending.
+The uncorked positive control printed the fallback.
+The implementation now uses `writeSync(2, message)` only for emergency diagnostics;
+normal diagnostics still use the tagged logger and existing error formatter.
+
+Node tag `v26.8.1`,
+`doc/api/process.md:128`,
+requires synchronous exit callbacks:
+
+```text
+Listener functions **must** only perform **synchronous** operations.
+```
+
+The same document at line 4223 identifies POSIX pipe writes as asynchronous.
+`rejection-fixture-reporting.ts` reproduces the boundary with:
+
+```ts
+process.stderr.cork();
+return Promise.withResolvers<void>().promise;
+```
+
+The `reporter-unfinished` subprocess test requires the final stderr fallback and exit 1.
+It passed with the synchronous writer.
+No artificial keepalive is added for a reporter that never settles.
+
+`package/oxlint-plugin/no-restricted-syntax/src/rule/no-sync.ts:30`
+defines the rule metadata without an options schema,
+and its call visitor at line 65 reports every recognized Node synchronous call:
+
+```ts
+if ((typeof calleeName) === 'symbol')
+  return;
+context.report({ node, messageId: 'forbidden', data: { name: calleeName, }, });
+```
+
+There is no per-operation allow-list to configure.
+The single synchronous writer has a call-scoped exception,
+with this exit regression as its justification;
+changing the package-wide rule would exempt unrelated blocking I/O.
+
+The primitive-reason fixture intentionally rejects both a string and explicit `undefined`.
+The observed lint diagnostics were `eslint(prefer-promise-reject-errors)`
+and `typescript(prefer-promise-reject-errors)`.
+The inspected Oxlint source,
+`crates/oxc_linter/src/rules/eslint/prefer_promise_reject_errors.rs:28`,
+exposes only `allow_empty_reject: bool`.
+Its check at line 146 allows that option only when the argument list is empty:
+
+```rs
+if call_expr.arguments.is_empty() && allow_empty_reject {
+    return;
+}
+```
+
+Neither fixture call omits its argument.
+The type-aware companion's options at
+`crates/oxc_linter/src/rules/typescript/prefer_promise_reject_errors.rs:15`
+also include named-type allowances and any/unknown allowances;
+they do not remove the syntactic rule's rejection of these literal cases.
+Both calls therefore carry line-scoped exceptions instead of hiding the literal behind a different syntax.
+
+### Explicit runtime and competing-listener boundaries
+
+The lifecycle regression covers all five Node rejection modes.
+`throw`,
+`none`,
+`warn`,
+and `warn-with-error-code` continue siblings and fail the file with harness diagnostics.
+`warn` additionally retains Node's requested warning output.
+`strict` terminates before the rejection event and therefore does not continue siblings.
+The harness does not install an uncaught-exception recovery handler or alter runtime flags.
+
+Existing listeners remain installed.
+An independent probe confirmed that another rejection listener can still throw and terminate the process,
+and a later-registered exit listener can overwrite the status after the harness exit callback.
+The observer does not override these other owners.
+Its sticky-status guarantee covers ordinary body writes before its exit callback,
+not deliberate changes by a subsequent exit callback.
 
 ### Proposed agent-guidance update
 
@@ -314,7 +462,7 @@ The defect tracked here belongs to the repository's test reporting.
 5.  Likelihood of an upstream fix: not evaluated;
     no Node defect is asserted.
 6.  Upstream prototype: unnecessary because the upstream-fault condition fails.
-    Consumer implementation remains pending design selection.
+    Consumer implementation follows the accepted separate-failure design.
 
 Upstream filing artifact: nothing to file.
 No upstream issue or comment was drafted or sent.

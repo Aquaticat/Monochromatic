@@ -18,6 +18,7 @@ import {
 import { formatFailure, } from './format-error.ts';
 import type { ItResult, } from './it.ts';
 import { createVerdictLoggers, } from './verdict.ts';
+import { runObservedExecution, } from './execution.ts';
 
 /**
  Result returned by a completed suite, mirroring {@link ItResult}.
@@ -507,9 +508,20 @@ async function runDescribe(
  */
 export function describe(opts: DescribeOptions,): TestDescriptor<DescribeResult> {
   return makeDescriptor(function runDescribeWithCtx(ctx,) {
-    return runDescribe({
-      opts,
-      ctx,
+    /**
+     Explicit or scheduler-provided parent for rejection diagnostics.
+     */
+    const logger = opts.l ?? ctx.parentLogger;
+    return runObservedExecution({
+      kind: 'suite',
+      name: opts.name,
+      ...logger === undefined ? {} : { logger, },
+      run: function runObservedSuite(): Promise<DescribeResult> {
+        return runDescribe({
+          opts,
+          ctx,
+        },);
+      },
     },);
   },);
 }

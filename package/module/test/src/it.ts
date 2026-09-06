@@ -20,6 +20,7 @@ import {
   type DisposableSandbox,
 } from './sinon.ts';
 import { createVerdictLoggers, } from './verdict.ts';
+import { runObservedExecution, } from './execution.ts';
 
 /**
  Context passed to each test function.
@@ -404,9 +405,20 @@ async function runIt(
  */
 export function it(opts: ItOptions,): TestDescriptor<ItResult> {
   return makeDescriptor(function runItWithCtx(ctx,) {
-    return runIt({
-      opts,
-      descriptorCtx: ctx,
+    /**
+     Explicit or scheduler-provided parent for rejection diagnostics.
+     */
+    const logger = opts.l ?? ctx.parentLogger;
+    return runObservedExecution({
+      kind: 'test',
+      name: opts.name,
+      ...logger === undefined ? {} : { logger, },
+      run: function runObservedTest(): Promise<ItResult> {
+        return runIt({
+          opts,
+          descriptorCtx: ctx,
+        },);
+      },
     },);
   },);
 }
