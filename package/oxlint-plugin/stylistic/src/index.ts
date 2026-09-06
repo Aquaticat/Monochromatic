@@ -17,6 +17,7 @@ import { noMixedOperators, } from './rule/no-mixed-operators.ts';
 import { objectPropertyPerLine, } from './rule/object-property-per-line.ts';
 import { oneVarDeclarationPerLine, } from './rule/one-var-declaration-per-line.ts';
 import { paramPerLine, } from './rule/param-per-line.ts';
+import { requireAsteriskPrefix, } from './rule/require-asterisk-prefix.ts';
 import { semi, } from './rule/semi.ts';
 import { tuplePerLine, } from './rule/tuple-per-line.ts';
 import { typePropertyPerLine, } from './rule/type-property-per-line.ts';
@@ -77,6 +78,10 @@ const plugin: Plugin = eslintCompatPlugin({
     'tuple-per-line': tuplePerLine,
     'destructure-per-line': destructurePerLine,
     //endregion Per-line rules
+
+    //region Comment layout: enforce configured TSDoc body prefixes
+    'require-asterisk-prefix': requireAsteriskPrefix,
+    //endregion Comment layout
 
     //region Body boundaries: enforce readable newlines inside non-empty braces
     'block-body-newline': blockBodyNewline,
