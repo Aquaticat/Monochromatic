@@ -392,6 +392,12 @@ New watcher start time replaced August process,
 and `/proc/<pid>/exe` had same device and inode as rebuilt release binary.
 Watcher readiness completed without restarting WireGuard interface or changing live routes.
 Current target listing still excludes running Firefox ESR service.
+Disposable exact Nightly-named cgroup created under watched `app.slice` received mark `8888` on TCP4,
+TCP6,
+UDP4,
+and UDP6 socket probes from active watcher.
+Fixture cgroup and probe were removed;
+watcher remained active with empty error log.
 
 ## Verification evidence
 
