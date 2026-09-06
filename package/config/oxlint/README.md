@@ -85,7 +85,8 @@ The `--type-aware` flag is passed via the CLI in the mise task template
 - **@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type**:
    jsPlugin for semantic readonly types and mutation contracts
 - **@monochromatic-dev/oxlint-plugin-stylistic**:
-   jsPlugin for one-item-per-line,
+   jsPlugin for TSDoc asterisk-prefix,
+   one-item-per-line,
    semicolon,
    and expression-structure formatting
 - **@monochromatic-dev/oxlint-plugin-shared**:
