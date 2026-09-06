@@ -167,14 +167,14 @@ function multilineTsdocReplacement(
   const contentLines = tsdocContentLines(comment,);
 
   if (contentLines.length === 0)
-    return `/**\n${indent} *\n${indent} */`;
+    return `/**\n${indent} \n${indent} */`;
 
   /**
-   * Rendered body with each content line carrying canonical TSDoc prefix.
+   * Rendered body with each content line carrying star-less block indentation.
    */
   const body = contentLines
     .map(function renderContentLine(line,): string {
-      return `${indent} * ${line}`;
+      return `${indent} ${line}`;
     },)
     .join('\n',);
 
@@ -281,7 +281,7 @@ export const checkAlignment: CreateOnceRule = {
  * Enforces that TSDoc comments use multiline block style.
  *
  * Single-line `/** comment *\/`, detected via {@link isTsdocBlock}, is
- * reported and auto-fixed to canonical multiline format using
+ * reported and auto-fixed to canonical star-less multiline format using
  * {@link multilineTsdocReplacement}.
  */
 export const multilineBlocks: CreateOnceRule = {

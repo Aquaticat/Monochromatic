@@ -6,6 +6,7 @@
  * @module
  */
 
+import { isWhitespaceChar, } from '@monochromatic-dev/oxlint-plugin-shared/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type {
   Context,
@@ -20,15 +21,16 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Disallows multiple consecutive asterisks in TSDoc comment lines.
+ * Disallows doubled canonical asterisk prefixes in TSDoc comment lines.
  *
- * Lines like ` ** text` are not valid TSDoc.
+ * Lines like ` ** text` are invalid while literal Markdown such as
+ * ` **Note**` remains content rather than a doubled prefix.
  */
 export const noMultiAsterisks: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow extra asterisks at the start of TSDoc comment lines.',
+      description: 'Disallow doubled canonical asterisk prefixes in TSDoc comment lines.',
       recommended: true,
     },
     messages: {
@@ -72,9 +74,14 @@ export const noMultiAsterisks: CreateOnceRule = {
              * Leading-whitespace-stripped line; needed to detect a `**` that should be a single `*`.
              */
             const trimmed = line.trimStart();
-            // After the leading *, check for immediate additional *
-            if ((trimmed.startsWith('**',))
-              && (!trimmed.startsWith('*/',))) {
+            /**
+             * Character after doubled stars; whitespace distinguishes a malformed
+             * prefix from literal-leading Markdown such as `**Note**`.
+             */
+            const afterDoubledAsterisk = trimmed.charAt(2,);
+            if (trimmed.startsWith('**',)
+              && ((afterDoubledAsterisk.length === 0)
+                || isWhitespaceChar(afterDoubledAsterisk,))) {
               context.report({
                 loc: commentLineReportLoc({
                   comment,
