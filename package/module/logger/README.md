@@ -332,6 +332,8 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
 - localStorage and IndexedDB sink designs and measurements
 - Console output neutralizes control characters
 - `flush()` has a deadline
+- Zero-config at import,
+   no configure step (the logtape migration observations)
 
 ## Source files
 

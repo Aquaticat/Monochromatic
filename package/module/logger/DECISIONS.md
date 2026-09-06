@@ -296,3 +296,24 @@ The other tuning knobs proposed in `bulletproofing.plan.md` (verify timeout,
  retire threshold,
  startup buffer cap) stay out;
  none has a measured trigger.
+
+## Zero-config at import, no configure step (recorded 2026-09-06)
+
+The default `logger` is usable at import time with no setup call,
+ and `createLogger` exists only for callers who want an explicit sink list.
+Two observations from the migration off logtape,
+ recorded by the maintainer so the reasoning is not lost:
+
+- logtape forces every test file to declare the same `createLogger` or `configure` block before logging works.
+   That boilerplate,
+   repeated across the whole test tree,
+   was one reason for leaving.
+- Users have complained that a required asynchronous configure step effectively introduces dynamic imports
+   into an otherwise clean application:
+   modules that log cannot be imported until the configure call has settled,
+   so the import graph bends around the logger.
+
+Both are reasons this logger verifies its sinks eagerly at import,
+ buffers records until a sink verifies,
+ and never asks a consumer or a test file to run setup first.
+A future change that adds a mandatory configure or setup call reopens both problems.
