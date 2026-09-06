@@ -20,9 +20,14 @@ export function findMethodSlot({ target, key, }: {
 },): MethodSlot | undefined {
   /** Shared state recognizes getters even when an alias hides target identity. */
   const registry = methodRegistry();
+  /** Proxy traps can synthesize cycles even though ordinary prototype chains cannot. */
+  const visited = new Set<object>();
   /** Prototype chains are linear, so traverse with a cursor rather than recursion. */
   let cursor: object | null = target;
   while (cursor !== null) {
+    if (visited.has(cursor,))
+      throw new SandboxOwnershipError('The supplied mock target has a cyclic prototype chain.',);
+    visited.add(cursor,);
     /** Primary lookup also detects deletion or redefinition of an active slot. */
     const direct = registry.targets.get(cursor,)?.get(key,);
     if (direct !== undefined)

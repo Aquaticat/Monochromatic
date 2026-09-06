@@ -89,7 +89,7 @@ function releaseMethodReplacement({ slot, owner, replacement, }: {
  @param owner - current context's capability owner
  @param invocation - original factory, receiver, and overload arguments
  @param leases - runner-owned cleanup callbacks independent of Sinon collection internals
- @returns original Sinon fake, preserving identity and its behavior API
+ @returns private facade and original Sinon fake, preserving identity and its behavior API
  @throws SandboxOwnershipError if Sinon returns a nonrestorable method fake
  @example
  ```ts
@@ -101,7 +101,7 @@ export function createMethodReplacement({ slot, owner, invocation, leases, }: {
   readonly owner: SandboxOwner;
   readonly invocation: SandboxInvocation;
   readonly leases: Set<() => void>;
-},): object {
+},): MethodReplacement {
   /** Reusing an active facade preserves Sinon's same-owner double-wrap rejection. */
   const facade: object = slot.owners.get(owner,)?.facade ?? Object.defineProperty({}, slot.key, slot.original,);
   /** Sinon remains responsible for matching, history, call-through, and fake construction. */
@@ -128,5 +128,5 @@ export function createMethodReplacement({ slot, owner, invocation, leases, }: {
   installMethodSlot(slot,);
   slot.owners.set(owner, replacement,);
   leases.add(release,);
-  return fake;
+  return replacement;
 }

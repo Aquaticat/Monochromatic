@@ -1,0 +1,126 @@
+/** Sinon overload dispatch at the owned sandbox seam. @module */
+import { invokeSandboxMethod, type SandboxInvocation, } from './sandbox-guard.ts';
+import { createMethodReplacement, } from './sandbox-lease.ts';
+import type { SandboxOwner, SandboxRuntime, } from './sandbox-owner.ts';
+import { guardFakeMutators, guardInjectedFactories, guardMockController, } from './sandbox-result.ts';
+import { prepareMethodSlot, } from './sandbox-slot.ts';
+import { isSandboxTarget, requireUnownedObject, requireUnownedProperty, sandboxPropertyKey, } from './sandbox-target.ts';
+
+/** All operations share lifecycle state without exposing raw cleanup to test code. */
+export type SandboxPolicy = {
+  /** Fresh attempt authority. */
+  readonly owner: SandboxOwner;
+  /** Runtime-specific context selection. */
+  readonly runtime: SandboxRuntime;
+  /** Cleanup independent of overwritten fake.restore methods. */
+  readonly leases: Set<() => void>;
+  /** Restoration of leases and ordinary Sinon replacements. */
+  readonly restore: () => void;
+  /** Identifies internal cleanup when guarding a retained fake.restore reference. */
+  readonly restoring: () => boolean;
+};
+
+/**
+ Preflights ordinary replacement families against currently leased target properties.
+
+ @param invocation - unmodified Sinon call
+ @example
+ ```ts
+ preflightOrdinaryMutation(invocation);
+ ```
+ */
+function preflightOrdinaryMutation(invocation: SandboxInvocation,): void {
+  /** Only these operations interpret their first argument as a replacement target. */
+  const targetOperations = new Set([
+    'ctx.sinon.stub', 'ctx.sinon.spy', 'ctx.sinon.replace', 'ctx.sinon.replace.usingAccessor',
+    'ctx.sinon.replaceGetter', 'ctx.sinon.replaceSetter', 'ctx.sinon.define',
+  ],);
+  /** No getters or user key coercions are needed for primitive-key preflight. */
+  const [target, property,] = invocation.args;
+  if (targetOperations.has(invocation.operation,) && isSandboxTarget(target,)) {
+    /** Unsupported key overloads remain subject to ordinary Sinon validation. */
+    const key = sandboxPropertyKey(property,);
+    if (key !== undefined)
+      requireUnownedProperty({ target, key, operation: invocation.operation, },);
+    else if (invocation.args.length === 1)
+      requireUnownedObject({ target, operation: invocation.operation, },);
+  }
+  if (invocation.operation === 'ctx.sinon.useFakeTimers') {
+    /** Sinon supports a custom global in its runtime configuration. */
+    const custom: unknown = isSandboxTarget(target,) ? Reflect.get(target, 'global',) : undefined;
+    /** Fake timers are not a contextual operation: prevent overwriting active global method leases. */
+    const global = isSandboxTarget(custom,) ? custom : globalThis;
+    requireUnownedObject({ target: global, operation: invocation.operation, },);
+    for (const key of ['process', 'performance',] as const) {
+      /** Nested timer targets also carry process-wide methods. */
+      const nested: unknown = Reflect.get(global, key,);
+      if (isSandboxTarget(nested,))
+        requireUnownedObject({ target: nested, operation: invocation.operation, },);
+    }
+  }
+}
+
+/**
+ Routes supported method factories while preserving ordinary Sinon overloads elsewhere.
+
+ @param invocation - raw factory call after the attempt guard
+ @param policy - context and cleanup capabilities
+ @returns unchanged fake identity or a guarded deferred controller
+ @example
+ ```ts
+ return dispatchSandboxOperation({ invocation, policy });
+ ```
+ */
+export function dispatchSandboxOperation({ invocation, policy, }: {
+  readonly invocation: SandboxInvocation;
+  readonly policy: SandboxPolicy;
+},): unknown {
+  /** Actual input values, without inventing overload shapes from function length. */
+  const [target, property,] = invocation.args;
+  /** Root factories distinguish method overloads from detached and whole-object forms. */
+  const methodFactory = invocation.operation === 'ctx.sinon.stub' || invocation.operation === 'ctx.sinon.spy';
+  /** Normalize numeric properties using JavaScript's primitive key spelling. */
+  const key = sandboxPropertyKey(property,);
+  if (methodFactory && invocation.args.length === 2 && isSandboxTarget(target,) && key !== undefined) {
+    /** Unsupported descriptors delegate to Sinon after collision preflight. */
+    const slot = prepareMethodSlot({ target, key, runtime: policy.runtime, },);
+    if (slot !== undefined) {
+      /** Target configuration must remain private even when fake.value/get/set are used later. */
+      const replacement = createMethodReplacement({ slot, owner: policy.owner, invocation, leases: policy.leases, },);
+      guardFakeMutators({
+        value: replacement.fake, owner: policy.owner, restoring: policy.restoring, target: replacement.facade, key,
+      },);
+      return replacement.fake;
+    }
+  }
+  if (invocation.operation === 'ctx.sinon.restore') {
+    policy.restore();
+    return undefined;
+  }
+  if (invocation.operation === 'ctx.sinon.verifyAndRestore') {
+    using cleanup = { [Symbol.dispose]: policy.restore, };
+    /** Verify uses the same sandbox receiver, but cleanup remains runner-owned. */
+    const verify: unknown = isSandboxTarget(invocation.receiver,) ? Reflect.get(invocation.receiver, 'verify',) : undefined;
+    if (typeof verify !== 'function')
+      return invokeSandboxMethod(invocation,);
+    return Reflect.apply(verify, invocation.receiver, [],);
+  }
+  preflightOrdinaryMutation(invocation,);
+  /** Factory behavior not selected for contextual isolation remains owned by Sinon. */
+  const result = invokeSandboxMethod(invocation,);
+  if (methodFactory && typeof result === 'function') {
+    guardFakeMutators({
+      value: result, owner: policy.owner, restoring: policy.restoring,
+      ...isSandboxTarget(target,) ? { target, } : {}, ...key === undefined ? {} : { key, },
+    },);
+  }
+  if (invocation.operation === 'ctx.sinon.mock')
+    return guardMockController({ value: result, target, owner: policy.owner, },);
+  if (invocation.operation === 'ctx.sinon.inject') {
+    return guardInjectedFactories({
+      value: result, owner: policy.owner,
+      invoke(next: SandboxInvocation,): unknown { return dispatchSandboxOperation({ invocation: next, policy, },); },
+    },);
+  }
+  return result;
+}
