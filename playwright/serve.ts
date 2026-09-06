@@ -49,7 +49,7 @@ app.all(
         ?? 'application/octet-stream';
       return new Response(
         await readFile(
-          `packages/module/logger/dist/${pathname.slice('/dist/module-logger/'.length,)}`,
+          `package/module/logger/dist/${pathname.slice('/dist/module-logger/'.length,)}`,
         ),
         {
           headers: { 'content-type': contentType, },

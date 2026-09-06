@@ -8,7 +8,7 @@ import {
  * Browser Playwright configuration with an explicit public export type for isolated declarations.
  */
 const config: PlaywrightTestConfig = defineConfig({
-  testDir: './packages',
+  testDir: './package',
   testMatch: [
     'module/es/src/**/*.browser.test.ts',
     'module/logger/src/**/*.browser.test.ts',
