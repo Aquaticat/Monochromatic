@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: current screen review</title>
+<title>Music player design: existing-screen refinement matrix</title>
 <style>
 :root {
   color-scheme: light;
@@ -170,11 +170,33 @@ legend {
 }
 
 .options {
-  inline-size: min(100%, 56rem);
+  min-inline-size: 68rem;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.accepted-options {
+  min-inline-size: 0;
+  inline-size: min(100%, 56rem);
+  grid-template-columns: minmax(0, 1fr);
   margin-inline: auto;
+}
+
+.matrix-row {
+  margin-block-end: 2rem;
+}
+
+.matrix-row:last-child {
+  margin-block-end: 0;
+}
+
+.matrix-axis {
+  margin-block-end: 0.5rem;
+  color: var(--color-primary);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .option {
@@ -390,6 +412,19 @@ textarea:focus-visible {
   background-color: var(--color-secondary-container);
   color: var(--color-on-secondary-container);
   line-height: 1.55;
+}
+
+.ranking-list {
+  max-inline-size: 90ch;
+  line-height: 1.55;
+}
+
+.ranking-list li {
+  margin-block-end: 0.65rem;
+}
+
+.decision-block {
+  margin-block-end: 1.75rem;
 }
 
 .review-choices {
@@ -624,107 +659,188 @@ dialog::backdrop {
 <main>
   <header>
     <div>
-      <h1>Review the current screen</h1>
+      <h1>Refine the existing screen</h1>
       <p class="lede">
-        Inspect the active music-player screen and identify any remaining visible changes.
+        You were right: the accepted playback deck is not centered. I measured that defect, corrected it in every prototype, and varied only the spacing and button treatment of controls already visible on this screen.
       </p>
     </div>
-    <span class="round-badge">Current design · correction review</span>
+    <span class="round-badge">Existing screen only · 3 × 3 refinement matrix</span>
   </header>
 
-  <section class="instructions" aria-labelledby="instructions-title">
-    <h2 id="instructions-title">What changed</h2>
+  <section class="instructions" aria-labelledby="accepted-title">
+    <h2 id="accepted-title">Accepted screen and measured defect</h2>
+    <p class="question-intro">
+      This is the accepted screen before refinement. Its playback deck is shifted 15dp toward the fold: the deck axis is x=540.5px while the 414dp left-pane axis is x=504px. The visible 1:06 of 4:35 also implies 24% progress, but the slider is drawn at 16%.
+    </p>
+    <div class="options-scroll">
+      <div class="options accepted-options">
+        <article class="option">
+          <div class="option-heading">
+            <span class="option-title">
+              <span class="option-code">Accepted foundation · before correction</span>
+              <strong>Current unfolded screen</strong>
+              <span class="option-summary">Existing features only; playback content is visibly fold-shifted</span>
+            </span>
+          </div>
+          <button class="preview-open" type="button" data-preview-title="Accepted screen before centering correction" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+            <span class="device-frame">
+              <span class="device-screen">
+                <img data-candidate-source="Accepted native Compose capture, prototype commit 49d6568ed" src="@@IMAGE_BASELINE@@" width="852" height="883" alt="Accepted unfolded music-player screen before refinement, with the playback deck shifted toward the center fold">
+                <span class="device-camera" aria-hidden="true"></span>
+              </span>
+            </span>
+            <span class="preview-label">Open the accepted screen at measured size</span>
+          </button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="instructions" aria-labelledby="considerations-title">
+    <h2 id="considerations-title">What I found in the existing composition</h2>
     <ol>
-      <li>The 24dp vertical center spacer remains white, as selected for this layout.</li>
-      <li>The 16dp horizontal strip you marked between the folder picker and transport is now white.</li>
-      <li>Interface-generated track numbers are removed.</li>
-      <li>The saturated blue current-track row fill is removed; the play icon alone marks the current track.</li>
+      <li><strong>Deck centering:</strong> start-only gesture padding leaves 46dp at the physical edge and 16dp at the fold, moving every playback element 15dp toward the fold.</li>
+      <li><strong>Seek consistency:</strong> 1:06 divided by 4:35 is 24%, so the existing slider position and labels disagree.</li>
+      <li><strong>Action hierarchy:</strong> the filled pause action is primary; the existing previous and next actions can use standard, outlined, or tonal baseline Material emphasis.</li>
+      <li><strong>Vertical economy:</strong> gaps between the same four groups affect both deck rhythm and the folder space left above it.</li>
+      <li><strong>Hard boundary:</strong> every candidate contains exactly the accepted screen's visible elements. No control, feature, state, label, or section is added.</li>
     </ol>
     <div class="definition-list">
-      <p class="definition">
-        <strong>Current design:</strong> white vertical and horizontal pane spacers, a visible gray rail line, neutral track rows, and no generated ordinals.
-      </p>
+      <p class="definition"><strong>Corrected in every cell:</strong> the mode control spans x=73px through x=935px, placing its axis at x=504px, exactly on the left-pane axis. System-gesture safety remains symmetric.</p>
+      <p class="definition"><strong>Matrix rows:</strong> 8dp tight, 12dp balanced, or 16dp airy gaps between the existing title, seek, transport, and mode groups.</p>
+      <p class="definition"><strong>Matrix columns:</strong> standard, outlined, or tonal styling for the existing previous and next buttons. Pause remains filled.</p>
     </div>
     <p class="response-help">
-      Open the image for measured 100% zoom. Say whether this current design can continue, list every remaining correction or “None,”
-      then choose Prepare answers and Copy answers to paste the result into Pi.
+      Every source is an opaque 2076×2152px native Jetpack Compose capture of the 852×883dp unfolded Pixel 9 Pro Fold display. Choose spacing and secondary-button emphasis separately after inspecting the matrix.
     </p>
   </section>
 
   <form id="design-form">
-    <section class="question" aria-labelledby="divider-title">
-      <fieldset>
-        <legend><h2 id="divider-title">Current screen</h2></legend>
-        <p class="question-intro">
-          This is a native Jetpack Compose capture from the measured Pixel 9 Pro Fold emulator and dynamic light palette.
-          The source is 2076×2152px and represents the whole 852×883dp unfolded display.
-        </p>
+    <section class="question" aria-labelledby="matrix-title">
+      <h2 id="matrix-title">Nine refinements using only existing elements</h2>
+      <p class="question-intro">
+        All cells share the same exact centering and corrected 24% seek position. Rows change only vertical gap. Columns change only previous and next button emphasis.
+      </p>
 
-        <div class="options-scroll">
+      <section class="matrix-row" aria-labelledby="tight-row-title">
+        <p class="matrix-axis">Row 1 · tight 8dp rhythm</p>
+        <h3 id="tight-row-title">Return the most room to the folder picker</h3>
+        <p class="question-intro">The existing groups stay distinct but sit 4dp closer than the accepted 12dp rhythm.</p>
+        <div class="options-scroll" role="region" tabindex="0" aria-label="Tight deck refinements, scroll horizontally on narrow windows">
           <div class="options">
             <article class="option">
-              <div class="option-heading">
-                <span class="option-title">
-                  <span class="option-code">Active design</span>
-                  <strong>Current music-player screen</strong>
-                  <span class="option-summary">White center and marked horizontal spacers; neutral unnumbered track rows</span>
-                </span>
-              </div>
-              <button class="preview-open" type="button" data-preview-title="Current music-player screen" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-                <span class="device-frame">
-                  <span class="device-screen">
-                    <img data-candidate-source="Native Compose divider-final capture, prototype commit 49d6568ed" src="@@IMAGE_DIVIDER_FINAL@@" width="852" height="883" alt="Current music-player screen with white vertical and horizontal pane spacers, neutral unnumbered track rows, and a play icon on the current track">
-                    <span class="device-camera" aria-hidden="true"></span>
-                  </span>
-                </span>
-                <span class="preview-label">Open the current screen at measured size</span>
-              </button>
-              <div class="assessment">
-                <div><strong>Pros</strong></div>
-                <ul>
-                  <li>Implements the white center and marked horizontal divider.</li>
-                  <li>Removes invented ordinals and saturated row highlighting.</li>
-                  <li>Retains the play icon and semantic current-track state.</li>
-                </ul>
-                <div><strong>Cons</strong></div>
-                <ul>
-                  <li>The current track is intentionally quieter without a filled row.</li>
-                  <li>White spacers make adjacent white surfaces read as continuous.</li>
-                </ul>
-              </div>
+              <div class="option-heading"><span class="option-title"><span class="option-code">1A · rank 3</span><strong>Tight · standard skips</strong><span class="option-summary">Compact rhythm and lowest secondary emphasis</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="1A: Tight rhythm with standard skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-tight-standard capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_TIGHT_STANDARD@@" width="852" height="883" alt="Centered existing playback deck with tight gaps and uncontained previous and next icons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1A at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Leaves the most vertical room for folders.</li><li>Makes filled Pause the single strong focal point.</li></ul><div><strong>Cons</strong></div><ul><li>Skip-button bounds are invisible at rest.</li><li>The stack is slightly compressed.</li></ul><p><strong>My analysis:</strong> the strongest compact treatment.</p></div>
             </article>
-
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">1B · rank 8</span><strong>Tight · outlined skips</strong><span class="option-summary">Compact rhythm with visible medium-emphasis rings</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="1B: Tight rhythm with outlined skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-tight-outlined capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_TIGHT_OUTLINED@@" width="852" height="883" alt="Centered existing playback deck with tight gaps and outlined previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1B at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Keeps every skip target visibly bounded.</li><li>Returns vertical room to the picker.</li></ul><div><strong>Cons</strong></div><ul><li>Two small rings compete with the mode-control outline.</li><li>Tight spacing amplifies the extra linework.</li></ul><p><strong>My analysis:</strong> explicit, but visually fussy.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">1C · rank 4</span><strong>Tight · tonal skips</strong><span class="option-summary">Compact rhythm with the accepted skip-button fills</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="1C: Tight rhythm with tonal skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-tight-tonal capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_TIGHT_TONAL@@" width="852" height="883" alt="Centered existing playback deck with tight gaps and tonal previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1C at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Preserves clear circular skip targets.</li><li>Uses less height than the accepted rhythm.</li></ul><div><strong>Cons</strong></div><ul><li>Three filled circles form a heavier cluster.</li><li>The smaller gaps make that cluster denser.</li></ul><p><strong>My analysis:</strong> best tight option when visible button containers matter.</p></div>
+            </article>
           </div>
         </div>
+      </section>
 
-        <p class="ranking">
-          <strong>Review scope: the current screen.</strong>
-          This is the sole active design because it implements the marked white divider, removes invented numbers,
-          and removes the rejected saturated current-row fill.
-        </p>
-      </fieldset>
+      <section class="matrix-row" aria-labelledby="balanced-row-title">
+        <p class="matrix-axis">Row 2 · balanced 12dp rhythm</p>
+        <h3 id="balanced-row-title">Keep the accepted vertical rhythm</h3>
+        <p class="question-intro">Only centering, seek consistency, and skip-button emphasis change.</p>
+        <div class="options-scroll" role="region" tabindex="0" aria-label="Balanced deck refinements, scroll horizontally on narrow windows">
+          <div class="options">
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">2A · rank 1 · recommended</span><strong>Balanced · standard skips</strong><span class="option-summary">Existing rhythm with a cleaner primary-action hierarchy</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="2A: Balanced rhythm with standard skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-balanced-standard capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_BALANCED_STANDARD@@" width="852" height="883" alt="Exactly centered existing playback deck with balanced gaps, uncontained skip icons, and filled pause button"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2A at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Retains the familiar 12dp rhythm.</li><li>Gives Pause unmistakable visual priority.</li></ul><div><strong>Cons</strong></div><ul><li>Skip hit areas are not drawn at rest.</li><li>Less explicit than contained icon buttons.</li></ul><p><strong>My analysis:</strong> best balance of calm hierarchy and existing spacing.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">2B · rank 7</span><strong>Balanced · outlined skips</strong><span class="option-summary">Existing rhythm with medium-emphasis skip rings</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="2B: Balanced rhythm with outlined skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-balanced-outlined capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_BALANCED_OUTLINED@@" width="852" height="883" alt="Exactly centered existing playback deck with balanced gaps and outlined previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2B at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Maintains the accepted group rhythm.</li><li>Shows clear target boundaries without fill.</li></ul><div><strong>Cons</strong></div><ul><li>Repeats the mode selector's outline language.</li><li>Competes with Pause more than standard buttons do.</li></ul><p><strong>My analysis:</strong> legible, but adds unnecessary linework.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">2C · rank 2 · conservative fallback</span><strong>Balanced · tonal skips</strong><span class="option-summary">Centered correction with accepted button styling</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="2C: Balanced rhythm with tonal skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-balanced-tonal capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_BALANCED_TONAL@@" width="852" height="883" alt="Exactly centered existing playback deck with balanced gaps and tonal previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2C at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Preserves the accepted skip-button treatment.</li><li>Keeps all three transport targets visually explicit.</li></ul><div><strong>Cons</strong></div><ul><li>The three circles carry more visual mass.</li><li>Pause hierarchy depends mainly on color.</li></ul><p><strong>My analysis:</strong> safest fallback if familiarity beats visual reduction.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="matrix-row" aria-labelledby="airy-row-title">
+        <p class="matrix-axis">Row 3 · airy 16dp rhythm</p>
+        <h3 id="airy-row-title">Give every playback group more breathing room</h3>
+        <p class="question-intro">The deck begins 12dp higher than the balanced row and leaves correspondingly less folder space.</p>
+        <div class="options-scroll" role="region" tabindex="0" aria-label="Airy deck refinements, scroll horizontally on narrow windows">
+          <div class="options">
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">3A · rank 5</span><strong>Airy · standard skips</strong><span class="option-summary">Open rhythm with low-emphasis secondary actions</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="3A: Airy rhythm with standard skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-airy-standard capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_AIRY_STANDARD@@" width="852" height="883" alt="Centered existing playback deck with airy gaps and uncontained previous and next icons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3A at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Creates calm separation between control groups.</li><li>Standard skips keep the taller stack visually light.</li></ul><div><strong>Cons</strong></div><ul><li>Consumes 12dp more picker height than balanced.</li><li>Related playback actions feel farther apart.</li></ul><p><strong>My analysis:</strong> clean but less space-efficient.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">3B · rank 9</span><strong>Airy · outlined skips</strong><span class="option-summary">Most separation plus repeated outlined circles</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="3B: Airy rhythm with outlined skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-airy-outlined capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_AIRY_OUTLINED@@" width="852" height="883" alt="Centered existing playback deck with airy gaps and outlined previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3B at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Every target remains visibly bounded.</li><li>Groups have generous separation.</li></ul><div><strong>Cons</strong></div><ul><li>Uses the most height.</li><li>Small rings float between a large slider and large mode outline.</li></ul><p><strong>My analysis:</strong> the least coherent combination.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">3C · rank 6</span><strong>Airy · tonal skips</strong><span class="option-summary">Generous rhythm with explicit tonal targets</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="3C: Airy rhythm with tonal skip buttons" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose refine-airy-tonal capture, prototype commit 2b2ac2e88" src="@@IMAGE_REFINE_AIRY_TONAL@@" width="852" height="883" alt="Centered existing playback deck with airy gaps and tonal previous and next buttons"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3C at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Combines clear skip targets with open spacing.</li><li>Keeps the accepted button vocabulary.</li></ul><div><strong>Cons</strong></div><ul><li>The tallest deck also has the heaviest transport cluster.</li><li>Returns the least room to folder browsing.</li></ul><p><strong>My analysis:</strong> clear, but disproportionate to this utility screen.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
     </section>
 
-    <section class="response" aria-labelledby="corrections-title">
-      <h2 id="corrections-title">What should change in this screen?</h2>
-      <p class="question-intro">
-        Inspect the pane spacers, letter rail, folder area, track rows, current-track indicator, and transport area.
-        Choose the answer that matches what you can see.
-      </p>
-      <fieldset class="review-choices">
-        <legend>Review result</legend>
-        <label class="review-choice">
-          <input type="radio" name="reviewResult" value="changes-needed" required>
-          <span>Changes needed in this screen</span>
-        </label>
-        <label class="review-choice">
-          <input type="radio" name="reviewResult" value="nothing-else" required>
-          <span>Nothing else in this screen</span>
-        </label>
+    <section class="question" aria-labelledby="recommendation-title">
+      <h2 id="recommendation-title">Recommendation and full ranking</h2>
+      <p class="ranking"><strong>Recommend 2A: balanced 12dp spacing with standard previous and next buttons.</strong> It fixes the centering and seek inconsistency, preserves the accepted rhythm, and makes the filled Pause action the one visual focal point. Use 2C if visible skip-button containers are more important than reducing visual weight.</p>
+      <ol class="ranking-list">
+        <li><strong>2A · Balanced, standard.</strong> Best combination of familiar rhythm, exact centering, and clear primary-action hierarchy.</li>
+        <li><strong>2C · Balanced, tonal.</strong> Below 2A because the extra filled circles add weight, but it is the safest continuity choice.</li>
+        <li><strong>1A · Tight, standard.</strong> Below 2C because reclaimed picker space does not quite outweigh the compressed rhythm and invisible skip bounds.</li>
+        <li><strong>1C · Tight, tonal.</strong> Below 1A because tonal containers make the compact transport cluster heavier.</li>
+        <li><strong>3A · Airy, standard.</strong> Below 1C because it spends more picker height and weakens proximity between related controls.</li>
+        <li><strong>3C · Airy, tonal.</strong> Below 3A because the tallest stack also gains more visual mass.</li>
+        <li><strong>2B · Balanced, outlined.</strong> Below 3C because repeated rings compete with the larger mode-control outline.</li>
+        <li><strong>1B · Tight, outlined.</strong> Below 2B because compact spacing amplifies that linework.</li>
+        <li><strong>3B · Airy, outlined.</strong> Below 1B because it combines the linework problem with the largest vertical cost.</li>
+      </ol>
+      <p class="response-help"><strong>No additions are proposed in this round.</strong> The matrix deliberately limits itself to geometry and styling of visible existing controls.</p>
+    </section>
+
+    <section class="response" aria-labelledby="questions-title">
+      <h2 id="questions-title">Your decisions</h2>
+      <p class="question-intro">Centering and the 24% seek position are corrections in every option. Choose spacing and skip-button treatment separately, then use free text for anything my prototypes missed.</p>
+
+      <fieldset class="decision-block">
+        <legend><h3>Q1. How much space should separate the playback groups?</h3></legend>
+        <div class="review-choices">
+          <label class="review-choice"><input type="radio" name="spacingDecision" value="tight" required><span>Tight · 8dp</span></label>
+          <label class="review-choice"><input type="radio" name="spacingDecision" value="balanced" required><span>Balanced · 12dp (Recommended)</span></label>
+          <label class="review-choice"><input type="radio" name="spacingDecision" value="airy" required><span>Airy · 16dp</span></label>
+        </div>
       </fieldset>
-      <label for="other-corrections">If changes are needed, describe each one</label>
-      <textarea id="other-corrections" name="otherCorrections" aria-describedby="correction-help" placeholder="Name the visible area, what is wrong, and what it should look like."></textarea>
-      <p class="response-help" id="correction-help">This field is required only when you choose Changes needed.</p>
+
+      <fieldset class="decision-block">
+        <legend><h3>Q2. How should Previous and Next be emphasized?</h3></legend>
+        <div class="review-choices">
+          <label class="review-choice"><input type="radio" name="buttonDecision" value="standard" required><span>Standard · icons without visible containers (Recommended)</span></label>
+          <label class="review-choice"><input type="radio" name="buttonDecision" value="outlined" required><span>Outlined · visible rings</span></label>
+          <label class="review-choice"><input type="radio" name="buttonDecision" value="tonal" required><span>Tonal · soft filled circles</span></label>
+        </div>
+      </fieldset>
+      <p class="ranking" id="combination-status" role="status" aria-live="polite" hidden></p>
+
+      <label for="other-corrections">Anything else you want settled or changed, or “None”</label>
+      <textarea id="other-corrections" name="otherCorrections" required placeholder="Name a prototype code and visible area, or describe a correction the matrix missed."></textarea>
+      <p class="response-help">Select Q1 and Q2, complete the free-text field, then choose Prepare answers and Copy answers to paste the result into Pi.</p>
       <div class="actions">
         <button type="submit">Prepare answers</button>
         <button type="button" data-variant="secondary" id="clear-form">Clear</button>
@@ -746,7 +862,7 @@ dialog::backdrop {
 <dialog id="preview-dialog" aria-labelledby="zoom-title">
   <div class="dialog-layout">
     <div class="dialog-heading">
-      <h2 id="zoom-title">Divider preview</h2>
+      <h2 id="zoom-title">Prototype preview</h2>
       <p id="zoom-dimensions"></p>
       <div class="zoom-toolbar" role="group" aria-label="Preview zoom controls">
         <button type="button" data-variant="secondary" id="zoom-out">Zoom out</button>
@@ -776,8 +892,9 @@ const answerOutput = document.querySelector('#answer-output');
 const clearButton = document.querySelector('#clear-form');
 const copyButton = document.querySelector('#copy-answers');
 const downloadButton = document.querySelector('#download-answers');
-const correctionInput = document.querySelector('#other-corrections');
-const reviewInputs = document.querySelectorAll('input[name="reviewResult"]');
+const spacingInputs = document.querySelectorAll('input[name="spacingDecision"]');
+const buttonInputs = document.querySelectorAll('input[name="buttonDecision"]');
+const combinationStatus = document.querySelector('#combination-status');
 const status = document.querySelector('#status');
 const previewDialog = document.querySelector('#preview-dialog');
 const zoomDevice = document.querySelector('#zoom-device');
@@ -850,23 +967,56 @@ const openPreview = (button) => {
   zoomStage.scrollTo({ top: 0, left: 0 });
 };
 
-const updateCorrectionRequirement = () => {
-  const selectedResult = document.querySelector('input[name="reviewResult"]:checked')?.value;
-  correctionInput.required = selectedResult === 'changes-needed';
-  if (selectedResult === 'nothing-else' && correctionInput.value.length > 0) {
-    correctionInput.value = '';
-    status.textContent = 'Correction details cleared because Nothing else was selected.';
+const getCombination = () => {
+  const spacing = document.querySelector('input[name="spacingDecision"]:checked')?.value;
+  const button = document.querySelector('input[name="buttonDecision"]:checked')?.value;
+  if (!spacing || !button) {
+    return null;
+  }
+  const row = spacing === 'tight' ? '1' : spacing === 'balanced' ? '2' : '3';
+  const column = button === 'standard' ? 'A' : button === 'outlined' ? 'B' : 'C';
+  const code = `${row}${column}`;
+  const ranks = { '1A': 3, '1B': 8, '1C': 4, '2A': 1, '2B': 7, '2C': 2, '3A': 5, '3B': 9, '3C': 6 };
+  const names = {
+    '1A': 'Tight · standard',
+    '1B': 'Tight · outlined',
+    '1C': 'Tight · tonal',
+    '2A': 'Balanced · standard',
+    '2B': 'Balanced · outlined',
+    '2C': 'Balanced · tonal',
+    '3A': 'Airy · standard',
+    '3B': 'Airy · outlined',
+    '3C': 'Airy · tonal',
+  };
+  return { code, rank: ranks[code], name: names[code] };
+};
+
+const updateCombinationStatus = () => {
+  const combination = getCombination();
+  combinationStatus.hidden = combination === null;
+  if (combination !== null) {
+    combinationStatus.textContent = `Current combination: ${combination.code} · ${combination.name} · rank ${combination.rank} of 9.`;
   }
 };
 
 const buildAnswer = () => {
   const data = new FormData(form);
-  if (data.get('reviewResult') === 'nothing-else') {
-    return 'Current screen: Nothing else';
-  }
+  const spacingLabels = {
+    tight: 'Tight · 8dp',
+    balanced: 'Balanced · 12dp',
+    airy: 'Airy · 16dp',
+  };
+  const buttonLabels = {
+    standard: 'Standard · icons without visible containers',
+    outlined: 'Outlined · visible rings',
+    tonal: 'Tonal · soft filled circles',
+  };
+  const combination = getCombination();
   return [
-    'Current screen: Changes needed',
-    `Changes: ${data.get('otherCorrections').trim()}`,
+    `Combination: ${combination.code} (${combination.name}, rank ${combination.rank} of 9)`,
+    `Q1. Playback-group spacing: ${spacingLabels[data.get('spacingDecision')]}`,
+    `Q2. Previous and Next emphasis: ${buttonLabels[data.get('buttonDecision')]}`,
+    `Other corrections: ${data.get('otherCorrections').trim()}`,
   ].join('\n');
 };
 
@@ -886,7 +1036,8 @@ const copyText = async (text) => {
 document.querySelectorAll('.preview-open').forEach((button) => {
   button.addEventListener('click', () => openPreview(button));
 });
-reviewInputs.forEach((input) => input.addEventListener('change', updateCorrectionRequirement));
+spacingInputs.forEach((input) => input.addEventListener('change', updateCombinationStatus));
+buttonInputs.forEach((input) => input.addEventListener('change', updateCombinationStatus));
 
 zoomOut.addEventListener('click', () => setZoom(currentScale - scaleStep));
 zoomIn.addEventListener('click', () => setZoom(currentScale + scaleStep));
@@ -913,11 +1064,11 @@ form.addEventListener('submit', (event) => {
 
 clearButton.addEventListener('click', () => {
   form.reset();
-  updateCorrectionRequirement();
+  updateCombinationStatus();
   answerOutput.value = '';
   output.hidden = true;
   status.textContent = 'Answers cleared.';
-  document.querySelector('input[name="reviewResult"]').focus();
+  document.querySelector('input[name="spacingDecision"]').focus();
 });
 
 copyButton.addEventListener('click', async () => {
@@ -934,7 +1085,7 @@ downloadButton.addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'music-player-current-screen-review.txt';
+  link.download = 'music-player-existing-screen-refinement-matrix.txt';
   link.click();
   URL.revokeObjectURL(url);
   status.textContent = 'Answers downloaded.';

@@ -3,7 +3,16 @@ build_question = '''
 const { readFileSync, writeFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const renderPaths = {
-  IMAGE_DIVIDER_FINAL: 'questions/render/divider-final.png',
+  IMAGE_BASELINE: 'questions/render/divider-final.png',
+  IMAGE_REFINE_TIGHT_STANDARD: 'questions/render/refine-tight-standard.png',
+  IMAGE_REFINE_TIGHT_OUTLINED: 'questions/render/refine-tight-outlined.png',
+  IMAGE_REFINE_TIGHT_TONAL: 'questions/render/refine-tight-tonal.png',
+  IMAGE_REFINE_BALANCED_STANDARD: 'questions/render/refine-balanced-standard.png',
+  IMAGE_REFINE_BALANCED_OUTLINED: 'questions/render/refine-balanced-outlined.png',
+  IMAGE_REFINE_BALANCED_TONAL: 'questions/render/refine-balanced-tonal.png',
+  IMAGE_REFINE_AIRY_STANDARD: 'questions/render/refine-airy-standard.png',
+  IMAGE_REFINE_AIRY_OUTLINED: 'questions/render/refine-airy-outlined.png',
+  IMAGE_REFINE_AIRY_TONAL: 'questions/render/refine-airy-tonal.png',
 };
 let output = readFileSync(resolve('questions/current.template.html'), 'utf8');
 for (const [name, path] of Object.entries(renderPaths)) {
@@ -16,13 +25,26 @@ for (const [name, path] of Object.entries(renderPaths)) {
   output = output.replace(marker, dataUri);
 }
 writeFileSync(resolve('questions/current.html'), output);
-console.log('Built self-contained current-design review.');
+console.log('Built self-contained existing-screen refinement matrix.');
 '''
 
 validate_question = '''
 const { execFileSync } = await import('node:child_process');
 const { existsSync, readFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
+const baselinePath = 'questions/render/divider-final.png';
+const refinementPaths = [
+  'questions/render/refine-tight-standard.png',
+  'questions/render/refine-tight-outlined.png',
+  'questions/render/refine-tight-tonal.png',
+  'questions/render/refine-balanced-standard.png',
+  'questions/render/refine-balanced-outlined.png',
+  'questions/render/refine-balanced-tonal.png',
+  'questions/render/refine-airy-standard.png',
+  'questions/render/refine-airy-outlined.png',
+  'questions/render/refine-airy-tonal.png',
+];
+const renderPaths = [baselinePath, ...refinementPaths];
 const requiredPaths = [
   'HANDOFF.md',
   'decisions.md',
@@ -31,15 +53,12 @@ const requiredPaths = [
   'material-3-compliance.md',
   'questions/current.template.html',
   'questions/current.html',
-  'questions/render/divider-final.png',
+  ...renderPaths,
 ];
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
-  throw new Error(`Missing required current-design review files: ${missingPaths.join(', ')}`);
+  throw new Error(`Missing required existing-screen refinement files: ${missingPaths.join(', ')}`);
 }
-const renderPaths = [
-  'questions/render/divider-final.png',
-];
 for (const path of renderPaths) {
   const image = readFileSync(resolve(path));
   const pngSignature = '89504e470d0a1a0a';
@@ -89,9 +108,48 @@ const countPixelsMatching = ({ path, crop, predicate }) => {
     return count + Number(line.slice(0, countEnd).trim());
   }, 0);
 };
+const largestConnectedBounds = ({ path, color, crop }) => {
+  const report = execFileSync(
+    'magick',
+    [
+      resolve(path), '-crop', crop, '+repage', '-alpha', 'off',
+      '-fill', 'black', '+opaque', color,
+      '-fill', 'white', '-opaque', color,
+      '-define', 'connected-components:verbose=true',
+      '-connected-components', '8', 'null:',
+    ],
+    { encoding: 'utf8' },
+  );
+  const componentLine = report
+    .split('\n')
+    .find((line) => line.includes('srgb(255,255,255)'));
+  if (!componentLine) {
+    throw new Error(`${path} is missing its connected mode-control outline.`);
+  }
+  const geometry = componentLine.trim().split(' ')[1];
+  const sizeSeparator = geometry.indexOf('x');
+  const firstOffset = geometry.indexOf('+');
+  const secondOffset = geometry.indexOf('+', firstOffset + 1);
+  return {
+    width: Number(geometry.slice(0, sizeSeparator)),
+    height: Number(geometry.slice(sizeSeparator + 1, firstOffset)),
+    x: Number(geometry.slice(firstOffset + 1, secondOffset)),
+    y: Number(geometry.slice(secondOffset + 1)),
+  };
+};
+const imageFingerprint = ({ path, crop }) => execFileSync(
+  'magick',
+  [resolve(path), '-crop', crop, '+repage', '-format', '%#', 'info:'],
+  { encoding: 'utf8' },
+);
 const isBlack = ([red, green, blue]) => red === 0 && green === 0 && blue === 0;
 const isDark = ([red, green, blue]) => red < 128 && green < 128 && blue < 128;
 const isPrimary = ([red, green, blue]) => red === 76 && green === 94 && blue === 139;
+const isTonalContainer = ([red, green, blue]) => red === 220 && green === 226 && blue === 249;
+const isOnSurface = ([red, green, blue]) => red === 48 && green === 50 && blue === 58;
+const white = 'srgba(255,255,255,1)';
+const transportSurface = 'srgba(243,243,250,1)';
+const outlineVariant = 'srgba(176,177,188,1)';
 for (const path of renderPaths) {
   const statusIconPixels = countPixelsMatching({
     path,
@@ -103,98 +161,170 @@ for (const path of renderPaths) {
     crop: '700x78+688+2074',
     predicate: isDark,
   });
-  if (statusIconPixels < 1_500) {
-    throw new Error(`${path} is missing native Android status icons.`);
-  }
-  if (navigationHandlePixels < 2_000) {
-    throw new Error(`${path} is missing the native unfolded navigation handle.`);
+  if (statusIconPixels < 1_500 || navigationHandlePixels < 2_000) {
+    throw new Error(`${path} is missing native Android system UI.`);
   }
   const selectedFolderIndicatorPixels = countPixelsMatching({
     path,
     crop: '200x4+140+499',
     predicate: isPrimary,
   });
-  if (selectedFolderIndicatorPixels < 700) {
-    throw new Error(`${path} must retain the selected folder's separate 2dp target-width indicator.`);
-  }
   const linkLikeUnderlinePixels = countPixelsMatching({
     path,
     crop: '200x5+140+458',
     predicate: isPrimary,
   });
-  if (linkLikeUnderlinePixels > 0) {
-    throw new Error(`${path} must not underline selected folder text like a web link.`);
+  if (selectedFolderIndicatorPixels < 700 || linkLikeUnderlinePixels > 0) {
+    throw new Error(`${path} does not retain the separate selected-folder indicator.`);
+  }
+  const foldColors = Number(execFileSync(
+    'magick',
+    [resolve(path), '-crop', '59x1700+1009+200', '+repage', '-format', '%k', 'info:'],
+    { encoding: 'utf8' },
+  ));
+  if (foldColors !== 1 || pixelAt({ path, x: 1038, y: 1000 }) !== white) {
+    throw new Error(`${path} does not keep the full protected center spacer uniformly white.`);
+  }
+  if (
+    pixelAt({ path, x: 117, y: 1000 }) !== outlineVariant
+    || pixelAt({ path, x: 500, y: 1430 }) !== (path.includes('refine-airy-') ? transportSurface : white)
+    || pixelAt({ path, x: 1100, y: 350 }) !== white
+  ) {
+    throw new Error(`${path} does not preserve the accepted rail, divider, and neutral current row.`);
+  }
+  const ordinalPixels = countPixelsMatching({
+    path,
+    crop: '100x1200+1068+500',
+    predicate: isDark,
+  });
+  const currentTrackIconPixels = countPixelsMatching({
+    path,
+    crop: '112x170+1068+300',
+    predicate: isPrimary,
+  });
+  if (ordinalPixels !== 0 || currentTrackIconPixels < 300) {
+    throw new Error(`${path} does not preserve the unnumbered rows and Material play cue.`);
   }
 }
-const white = 'srgba(255,255,255,1)';
-const outlineVariant = 'srgba(176,177,188,1)';
-const finalRail = pixelAt({ path: 'questions/render/divider-final.png', x: 117, y: 1000 });
-const finalCenter = pixelAt({ path: 'questions/render/divider-final.png', x: 1038, y: 1000 });
-const finalHorizontal = pixelAt({ path: 'questions/render/divider-final.png', x: 500, y: 1430 });
-const finalSelectedRow = pixelAt({ path: 'questions/render/divider-final.png', x: 1100, y: 350 });
-if (finalRail !== outlineVariant || finalCenter !== white || finalHorizontal !== white || finalSelectedRow !== white) {
-  throw new Error('divider-final must apply the gray rail, white pane spacers, and neutral current row.');
-}
-const finalOrdinalPixels = countPixelsMatching({
-  path: 'questions/render/divider-final.png',
-  crop: '100x1200+1068+500',
-  predicate: isDark,
+const baselineModeBounds = largestConnectedBounds({
+  path: baselinePath,
+  color: '#787A84',
+  crop: '1009x900+0+1252',
 });
-const finalCurrentTrackIconPixels = countPixelsMatching({
-  path: 'questions/render/divider-final.png',
-  crop: '112x170+1068+300',
-  predicate: isPrimary,
-});
-if (finalOrdinalPixels !== 0) {
-  throw new Error('divider-final must contain no interface-generated track ordinals.');
+const baselineAxis = baselineModeBounds.x + (baselineModeBounds.width - 1) / 2;
+if (baselineModeBounds.x !== 112 || baselineModeBounds.width !== 858 || baselineAxis !== 540.5) {
+  throw new Error('The accepted before-state no longer demonstrates the measured 15dp deck displacement.');
 }
-if (finalCurrentTrackIconPixels < 300) {
-  throw new Error('divider-final must retain the Material play icon as the non-color current-track cue.');
+const baselineRightFingerprint = imageFingerprint({ path: baselinePath, crop: '1008x1700+1068+200' });
+const baselinePickerFingerprint = imageFingerprint({ path: baselinePath, crop: '1009x1100+0+200' });
+const fullFingerprints = new Set();
+for (const path of refinementPaths) {
+  const modeBounds = largestConnectedBounds({
+    path,
+    color: '#787A84',
+    crop: '1009x900+0+1252',
+  });
+  const modeAxis = modeBounds.x + (modeBounds.width - 1) / 2;
+  if (modeBounds.x !== 73 || modeBounds.width !== 863 || modeAxis !== 504) {
+    throw new Error(`${path} does not center the existing deck on the 414dp pane axis.`);
+  }
+  if (
+    imageFingerprint({ path, crop: '1008x1700+1068+200' }) !== baselineRightFingerprint
+    || imageFingerprint({ path, crop: '1009x1100+0+200' }) !== baselinePickerFingerprint
+  ) {
+    throw new Error(`${path} changes accepted pixels outside the lower-left playback deck.`);
+  }
+  const progressReport = execFileSync(
+    'magick',
+    [
+      resolve(path), '-crop', '1009x500+0+1450', '+repage', '-alpha', 'off',
+      '-fill', 'black', '+opaque', '#4C5E8B',
+      '-fill', 'white', '-opaque', '#4C5E8B',
+      '-define', 'connected-components:verbose=true',
+      '-connected-components', '8', 'null:',
+    ],
+    { encoding: 'utf8' },
+  );
+  if (!progressReport.includes('146x39')) {
+    throw new Error(`${path} does not show the 24% seek position implied by 1:06 of 4:35.`);
+  }
+  const expectedSurfaceStart = path.includes('refine-tight-') ? 1487 : path.includes('refine-balanced-') ? 1460 : 1430;
+  if (
+    pixelAt({ path, x: 500, y: expectedSurfaceStart - 1 }) !== white
+    || pixelAt({ path, x: 500, y: expectedSurfaceStart }) !== transportSurface
+  ) {
+    throw new Error(`${path} does not keep its assigned existing-deck spacing rhythm.`);
+  }
+  const tonalPixels = countPixelsMatching({
+    path,
+    crop: '1009x180+0+1730',
+    predicate: isTonalContainer,
+  });
+  const onSurfacePixels = countPixelsMatching({
+    path,
+    crop: '1009x180+0+1730',
+    predicate: isOnSurface,
+  });
+  if (path.endsWith('-standard.png') && (tonalPixels !== 0 || onSurfacePixels < 700 || onSurfacePixels > 900)) {
+    throw new Error(`${path} does not show standard previous and next icon buttons.`);
+  }
+  if (path.endsWith('-outlined.png') && (tonalPixels !== 0 || onSurfacePixels < 1_800)) {
+    throw new Error(`${path} does not show outlined previous and next icon buttons.`);
+  }
+  if (path.endsWith('-tonal.png') && (tonalPixels < 13_000 || onSurfacePixels !== 0)) {
+    throw new Error(`${path} does not show tonal previous and next icon buttons.`);
+  }
+  fullFingerprints.add(imageFingerprint({ path, crop: '1009x752+0+1400' }));
 }
+if (fullFingerprints.size !== refinementPaths.length) {
+  throw new Error('Existing-screen refinement captures are not nine distinct visual cells.');
+}
+const template = readFileSync(resolve('questions/current.template.html'), 'utf8');
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
-const forbiddenFragments = [
+const forbiddenExternalFragments = [
   '<link ',
   '<script src=',
   'http://',
   'https://',
   '@@IMAGE_',
-  '#chosen-baseline',
-  'Q1 1c',
-  'Q2 3a',
-  'what is your definition',
-  'd2-before',
-  'before your marked correction',
-  'Annotated starting point',
-  'Rejected and superseded versions',
-  'revised D2',
-  'Can we continue',
-  'Continue with the current design',
-  '<strong>Recommendation:</strong>',
-  'prototype commit 89a9f7033',
 ];
-const foundFragments = forbiddenFragments.filter((fragment) => question.includes(fragment));
-if (foundFragments.length > 0) {
-  throw new Error(`Current-design review contains stale or external content: ${foundFragments.join(', ')}`);
+const forbiddenScopeFragments = [
+  'command bar',
+  'command-bar',
+  'volume',
+  'popover',
+  'Mute',
+  'hardware-key',
+  'D20',
+  'placementDecision',
+  'contentDecision',
+  'reviewResult',
+  'prototype commit 38b089e24',
+];
+const foundTemplateFragments = [...forbiddenExternalFragments, ...forbiddenScopeFragments]
+  .filter((fragment) => template.includes(fragment) && fragment !== '@@IMAGE_');
+const foundQuestionFragments = forbiddenExternalFragments.filter((fragment) => question.includes(fragment));
+if (foundTemplateFragments.length > 0 || foundQuestionFragments.length > 0) {
+  throw new Error(`Existing-screen matrix contains stale, unauthorized, or external content: ${[...foundTemplateFragments, ...foundQuestionFragments].join(', ')}`);
 }
 const requiredFragments = [
   '<form',
-  '<fieldset>',
+  '<fieldset',
   '<textarea',
   '<dialog',
-  'What changed',
-  'Current design:',
-  'active music-player screen',
-  'What should change in this screen?',
-  'name="reviewResult"',
+  'Accepted screen and measured defect',
+  'What I found in the existing composition',
+  'Nine refinements using only existing elements',
+  'No control, feature, state, label, or section is added.',
+  'name="spacingDecision"',
+  'name="buttonDecision"',
   'name="otherCorrections"',
-  'value="nothing-else"',
-  'value="changes-needed"',
-  'Nothing else in this screen',
-  'Changes needed in this screen',
-  'This field is required only when you choose Changes needed.',
-  'Review scope: the current screen.',
-  'Copy answers',
+  'Recommend 2A',
+  '2C · rank 2 · conservative fallback',
+  'No additions are proposed in this round.',
+  'Anything else you want settled or changed, or “None”',
   'prototype commit 49d6568ed',
+  'prototype commit 2b2ac2e88',
   'data-preview-width="852"',
   'data-preview-height="883"',
   'data-source-width="2076"',
@@ -202,39 +332,40 @@ const requiredFragments = [
   'aspect-ratio: 907 / 937;',
   'const fullFrameWidth = 907;',
   'const frameHeight = 937;',
-  '--color-device: #262624;',
   'Close preview and answer',
+  "const ranks = { '1A': 3, '1B': 8, '1C': 4, '2A': 1, '2B': 7, '2C': 2, '3A': 5, '3B': 9, '3C': 6 };",
 ];
 const absentFragments = requiredFragments.filter((fragment) => !question.includes(fragment));
 if (absentFragments.length > 0) {
-  throw new Error(`Current-design review is incomplete: ${absentFragments.join(', ')}`);
+  throw new Error(`Existing-screen refinement matrix is incomplete: ${absentFragments.join(', ')}`);
 }
 const imageCount = question.split('data-candidate-source=').length - 1;
 const embeddedImageCount = question.split('data:image/png;base64,').length - 1;
 const frameCount = question.split('class="device-frame"').length - 1;
 const screenCount = question.split('class="device-screen"').length - 1;
 const cameraCount = question.split('class="device-camera"').length - 1;
-const radioCount = question.split('type="radio" name="reviewResult"').length - 1;
-if (imageCount !== 1 || embeddedImageCount !== 1) {
-  throw new Error(`Expected one sourced and embedded render, found ${imageCount} sources and ${embeddedImageCount} images.`);
+const matrixRowCount = question.split('class="matrix-row"').length - 1;
+const radioCount = question.split('type="radio" name=').length - 1;
+if (imageCount !== 10 || embeddedImageCount !== 10 || frameCount !== 10) {
+  throw new Error(`Expected ten sourced, embedded, framed renders; found ${imageCount}, ${embeddedImageCount}, and ${frameCount}.`);
 }
-if (frameCount !== 1 || screenCount !== 2 || cameraCount !== 2 || radioCount !== 2) {
-  throw new Error(`Expected one card plus one dialog frame; found ${frameCount} frames, ${screenCount} screens, ${cameraCount} cameras, and ${radioCount} radios.`);
+if (screenCount !== 11 || cameraCount !== 11 || matrixRowCount !== 3 || radioCount !== 6) {
+  throw new Error(`Expected complete matrix and dialog structure; found ${screenCount} screens, ${cameraCount} cameras, ${matrixRowCount} rows, and ${radioCount} radios.`);
 }
-console.log('Current-design review structure is valid.');
+console.log('Existing-screen refinement matrix structure is valid.');
 '''
 
 [tasks.build]
-description = "Embed the native current design into the self-contained review"
+description = "Embed the accepted screen and nine native existing-screen refinements into the self-contained review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
 [tasks.lint]
-description = "Validate the active current-design review"
+description = "Validate the active existing-screen refinement matrix"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
 
 [tasks."test:unit"]
-description = "Exercise the current-design review's static completion contract"
+description = "Exercise the existing-screen refinement matrix completion contract"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
