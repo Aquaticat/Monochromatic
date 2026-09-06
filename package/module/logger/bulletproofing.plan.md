@@ -214,6 +214,77 @@ The round-1 stub shape was built to validate the `imports`-field mechanism befor
 - Resolution facts read from rolldown's own type declarations:
    default `conditionNames` are `["import","node","default"]` for `platform: node` and `["import","default"]` for neutral.
 
+### Prototype 2 measurements (decided shape, worktree `logger-platform-subpaths-20260906`, 2026-09-06)
+
+The round-2 shape,
+ built at `2739432b6`:
+ root entry platform-neutral,
+ `./node` ships `createFileSink`,
+ `./browser` ships `createIndexedDbSink` and `createOpfsSink`,
+ `#default-sinks` selects the default list per platform,
+ rolldown inputs `index.ts` plus `node.ts` (node) and `index.ts` plus `browser.ts` (neutral).
+
+- Build clean.
+   Node build:
+   `index.mjs` 18863 bytes,
+   `node.mjs` 214,
+   shared chunk `file-*.mjs` 2089 (the file sink with its static `node:fs/promises` and `node:path` imports),
+   runtime chunk 260.
+   Neutral build:
+   `index.mjs` 18787,
+   `browser.mjs` 1722,
+   shared chunk `indexed-db-*.mjs` 4437,
+   runtime chunk 260.
+   Before,
+   on main:
+   node `index.mjs` 25401,
+   neutral `index.mjs` 26590.
+   The root `index.d.mts` files of both builds are byte-identical.
+- Unit tests:
+   every suite passes,
+   including the six-case artifact guard with its two positive controls.
+   `lint:types` passes.
+   `lint:oxlint` reports only the repo-wide starless-TSDoc warnings (1791,
+   against 1807 for the same files at HEAD);
+   no other finding.
+- `import(` count across all eight `.mjs` files:
+   0.
+   `node:fs` and `node:path` appear only in the node build's file chunk;
+   `indexedDB` and `navigator.storage` appear nowhere in the node build.
+- Browser consumer bundles of the neutral root:
+   rolldown 26706 bytes and esbuild 27155 bytes,
+   no warnings,
+   0 `import(`,
+   no `createFileSink`.
+- Node end-user checks on the built node artifacts:
+   the default logger wrote `node_modules/.monochromatic/2026-09-06T19-00-38.580Z.log.jsonl`;
+   a logger built from `createFileSink` imported through `node.mjs` wrote a second file.
+- Type honesty under `moduleResolution: bundler` with no custom conditions:
+   importing `sinks` from the root,
+   `createFileSink` from `./node`,
+   and `createIndexedDbSink` from `./browser` type-checks;
+   `sinks.createFileSink()` fails with `TS2339: Property 'createFileSink' does not exist`.
+- `require-eventual-artifact` classifies subpath imports as unchecked (`package/oxlint-plugin/test-import/src/import-classification.ts`),
+   so tests importing `@monochromatic-dev/module-logger/node` pass the rule without suppression.
+- Survey matches prototype 1:
+   no directly affected package;
+   the five neutral-only libraries (`css-edit`,
+   `fs-path`,
+   `jsonc-edit`,
+   `test`,
+   `toml-edit`) inline the logger and their internal copy would follow the neutral default list under Node.
+   `kv-store` and `pipe` already ship both builds with a `node` condition.
+- Found in passing:
+   `playwright/serve.ts` and `playwright.browser.config.ts` still reference `packages/`,
+   the directory name before the singular rename,
+   so the browser harness is stale at HEAD independent of this change.
+   The prototype also had to teach the harness page to expose `browser.mjs` for the IndexedDB and OPFS browser tests.
+- Not done in the prototype:
+   README sections that still document the three moved factories on the root namespace,
+   the `package.json` description,
+   DECISIONS.md,
+   the changeset.
+
 ## Verification campaign (the toml-edit bar)
 
 `package/module/toml-edit` has a budgeted property campaign,
