@@ -211,10 +211,19 @@ export function sinkScript(
 }
 
 /**
- Sink scripts whose verify answers true immediately, for properties that
- study write and flush behavior on a known-available sink.
+ Flush outcomes that never retire a sink.
+ */
+const NON_RETIRING_FLUSH_OUTCOMES: readonly WriteOutcome[] = [
+  'resolve',
+  'never',
+];
 
- @returns Arbitrary over available-sink scripts.
+/**
+ Sink scripts that stay available for the whole run: verify answers true
+ and no flush hook rejects or throws. Writes may still fail, since write
+ failures never retire a sink.
+
+ @returns Arbitrary over always-available sink scripts.
 
  @example
  ```ts
@@ -224,7 +233,7 @@ export function sinkScript(
 export function availableSinkScript(): Arbitrary<SinkScript> {
   return record({
     flushPresent: boolean(),
-    flushScript: flushScript(),
+    flushScript: hookScript({ outcomes: NON_RETIRING_FLUSH_OUTCOMES, },),
     verify: constant<HookScript<VerifyOutcome>>({
       head: [],
       tail: 'resolve-true',

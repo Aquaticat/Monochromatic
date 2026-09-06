@@ -190,10 +190,10 @@ await describe({
     },),
 
     it({
-      name: 'a rejecting flush hook retires the sink; a hanging write makes flush miss its deadline once',
+      name: 'a hanging write makes flush miss its deadline without reaching the hooks; a later rejecting hook retires the sink',
       fn: async () => {
         /**
-         Sink whose only write hangs and whose flush hook rejects on the second call.
+         Sink whose first write hangs and whose flush hook rejects on its second call.
          */
         const script: SinkScript = {
           flush: {
@@ -213,10 +213,14 @@ await describe({
           { kind: 'verify-settled', sink: 0, outcome: 'resolve-true', },
           { kind: 'init-complete', },
           { kind: 'log', record: record('stuck',), },
+          // Hangs on the drain: no hook call, deadline breadcrumb, writes abandoned.
           { kind: 'flush', },
+          // Drain empty: first hook call resolves.
+          { kind: 'flush', },
+          { kind: 'log', record: record('still available',), },
+          // Second hook call rejects: retire plus breadcrumb.
           { kind: 'flush', },
           { kind: 'log', record: record('after retire',), },
-          { kind: 'flush', },
         ];
         const state = foldTrace({
           scripts: [script,],
@@ -232,7 +236,10 @@ await describe({
         expect(state.sinks[0]?.available,)
           .toBe(false,);
         expect(texts(state.sinks[0]?.attempts ?? [],),)
-          .toEqual(['stuck',],);
+          .toEqual([
+            'stuck',
+            'still available',
+          ],);
         // One deadline breadcrumb, one flush-hook rejection breadcrumb.
         expect(state.breadcrumbs,)
           .toBe(2,);

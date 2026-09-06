@@ -209,6 +209,10 @@ export type ScriptedSink = {
    */
   readonly delivered: readonly LogRecord[];
   readonly index: number;
+  /**
+   Reasons of every scripted rejection that settled, in settlement order.
+   */
+  readonly rejections: readonly string[];
   readonly script: SinkScript;
   readonly sink: Sink;
 };
@@ -265,12 +269,32 @@ export function createScriptedSink(
   };
 
   /**
+   Reasons of every scripted rejection that settled, in settlement order.
+   */
+  const rejections: string[] = [];
+
+  /**
    Appends a trace event.
 
    @param event - Event to append.
    */
   function note(event: SinkTraceEvent,): void {
     trace.push(event,);
+  }
+
+  /**
+   Attaches a handler to a raw outcome promise so a scripted rejection is
+   never unhandled while a scheduler holds it, recording the reason.
+
+   @param promise - Raw outcome promise.
+   */
+  async function observeRejection({ promise, }: { readonly promise: Promise<unknown>; },): Promise<void> {
+    try {
+      await promise;
+    }
+    catch (error: unknown) {
+      rejections.push(caughtValueText(error,),);
+    }
   }
 
   /**
@@ -369,6 +393,10 @@ export function createScriptedSink(
     const raw: Promise<Value> = (outcome === 'reject')
       ? Promise.reject(new Error(`scripted ${hook} rejection (sink ${index}, call ${callIndex})`,),)
       : Promise.resolve(settled,);
+    // A scheduler may hold the raw promise without a handler until it decides
+    // to release it; observing it here keeps a scripted rejection from being
+    // reported as unhandled in the meantime.
+    void observeRejection({ promise: raw, },);
     /**
      Outcome as the logger sees it, released by the gate.
      */
@@ -462,6 +490,7 @@ export function createScriptedSink(
     attempts,
     delivered,
     index,
+    rejections,
     script,
     sink,
   };

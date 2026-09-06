@@ -214,8 +214,13 @@ function attempt(
  @param cap - Startup buffer cap the logger was built with.
 
  @param event - Event to fold.
+
+ @example
+ ```ts
+ foldEvent({ state, scripts, cap: STARTUP_BUFFER_CAP, event: { kind: 'flush' } });
+ ```
  */
-function fold(
+export function foldEvent(
   {
     state,
     scripts,
@@ -331,12 +336,24 @@ function foldFlush(
     readonly scripts: readonly SinkScript[];
   },
 ): void {
-  /**
-   Whether this flush must wait past its deadline.
-   */
-  const hung = { value: state.pendingNever
+  // The logger drains tracked writes before it runs any flush hook, so a
+  // write that never settles hits the deadline during the drain and no hook
+  // is called at all in that flush; the deadline hit abandons the tracked
+  // writes, so the next flush reaches the hooks.
+  if (state.pendingNever
     .length
-    > 0, };
+    > 0) {
+    state.flushesWithinDeadline
+      .push(false,);
+    state.breadcrumbs += 1;
+    state.pendingNever
+      .length = 0;
+    return;
+  }
+  /**
+   Whether a flush hook that never settles makes this flush miss its deadline.
+   */
+  const hung = { value: false, };
   for (const [sink, model,] of state.sinks
     .entries()) {
     /**
@@ -363,11 +380,8 @@ function foldFlush(
   }
   state.flushesWithinDeadline
     .push(!hung.value,);
-  if (hung.value) {
+  if (hung.value)
     state.breadcrumbs += 1;
-    state.pendingNever
-      .length = 0;
-  }
 }
 
 /**
@@ -402,7 +416,7 @@ export function foldTrace(
    */
   const state = emptyModel({ sinkCount: scripts.length, },);
   for (const event of events) {
-    fold({
+    foldEvent({
       state,
       scripts,
       cap,
