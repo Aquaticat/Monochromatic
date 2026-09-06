@@ -1228,22 +1228,41 @@ passed after `--`:
     selection and credentials for no quota.
     Measured at 1.88 seconds with no stream opened.
 
-### Do not rebuild a worktree while its pass is in flight
+### A source change while a pass is in flight means kill and relaunch
 
 Every pass and probe task declares `depends = ["build"]`,
 so invoking one rewrites `dist/final/node` underneath any pass already running from the same worktree.
-A pass computes its pipeline digest once at startup and stamps it into every artifact it writes,
-so a rebuild that changes output leaves the running pass recording a digest that no longer describes files on disk,
-and leaves its process holding a mixture of old modules and new files.
+The running process survives that
+(the bundle has no dynamic imports,
+verified rather than assumed:
+[`translation-repair-overlap-dial.md`](../../../doc/handover/translation-repair-overlap-dial.md),
+"Do not land a driver into a live pass launch"),
+but the pass is now on a superseded build:
+it computed its pipeline digest once at startup and stamps that digest into every artifact it writes,
+so its artifacts name files that are no longer on disk,
+and its page cannot say whether the change that prompted the rebuild worked.
+
+The rule is ALWAYS KILL AND RELAUNCH,
+the owner's on 2026-09-06.
+When source changes while a pass is running,
+kill the pass by pid,
+build,
+and relaunch the same entry into a fresh `TRANSLATION_REPAIR_RUNS_DIR` on the new build.
+Never let a pass finish on a build a commit has superseded,
+and never read its page as readiness evidence.
+The calls the killed run spent are the price of a fix landing while it ran;
+a relaunch into the old runs dir would republish what the old digest bought,
+which is why the runs dir is fresh.
+When the fix is already known before the launch,
+fix first and launch once:
+a launch made ahead of a change that will be built within the hour buys nothing.
 
 A rebuild with no source change is byte-identical and harmless,
 which is exactly why this is easy to get away with and worth stating anyway:
 the digest is the only thing that reveals it,
 and it reveals it after the fact.
-Wait for the pass or run the already-built entry point directly.
 Same immutable build may back concurrent passes when no rebuild follows.
 Source-distinct pass requires separate throwaway worktree built before that process launches.
-Never rebuild worktree backing active process.
 
 Concurrent passes require separate run roots,
 logs,
@@ -1287,10 +1306,13 @@ It keeps four slices in flight and waits 300000 ms on stragglers after quorum,
 both the owner's decisions of 2026-08-26 on the five calibration arms
 (`doc/decision/translation-repair-calibration-overlap.md`);
 `TRANSLATION_REPAIR_SLICE_OVERLAP` and `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` override either for one launch,
-and `1` and `120000` reproduce the pass's own settings:
+and `120000` reproduces the pass's own window:
 the pass's window moved from 180000 to 120000 on
-2026-09-03 by the owner's decision on a measured pair (`doc/decision/translation-repair-straggler-grace.md`),
-and its overlap default stays `1` until measured on the pass (`#261`).
+2026-09-03 by the owner's decision on a measured pair (`doc/decision/translation-repair-straggler-grace.md`).
+The pass keeps four slices in flight as well since 2026-09-06,
+read off the four matched pass pairs `#261` asked for
+(`doc/decision/translation-repair-pass-overlap.md`);
+`TRANSLATION_REPAIR_SLICE_OVERLAP=1` reproduces the sequential driver for one launch.
 `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR` (`request-pace.ts`) sets how many Hyper requests may start
 in any rolling hour,
 retries and credit reads included;

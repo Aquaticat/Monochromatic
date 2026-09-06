@@ -44,3 +44,9 @@ measurable and D is the arm with the fewest cut voices of the five.
 
 `doc/decision/translation-repair-straggler-grace.md` (addendum of 2026-08-26), the open-decisions register
 (questions 11 and 12, marked decided), the package README ("Deciding who fills a seat"), and the handover.
+
+## Addendum 2026-09-06: the pass followed
+
+`#261` was measured on four matched pass pairs on 2026-08-27 and 2026-08-28, and the pass fallback moved to
+four on that reading: `doc/decision/translation-repair-pass-overlap.md`. The window stayed where the owner
+put it on 2026-09-03.

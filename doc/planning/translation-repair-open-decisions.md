@@ -2106,6 +2106,10 @@ applies equally at either overlap; B over C because C delays a decided question 
 `CALIBRATION_OVERLAP = 4` in `slice-overlap.ts`; the dial's fallback is now the caller's, so the pass keeps
 1 until `#261`. Record: `doc/decision/translation-repair-calibration-overlap.md`.
 
+`#261` was measured on four matched pass pairs on 2026-08-27 and 2026-08-28, and on 2026-09-06 the pass
+fallback moved to 4 on that reading, flagged for the owner's veto. Record:
+`doc/decision/translation-repair-pass-overlap.md`.
+
 ## Question 12: whether the straggler window moves from 180000 ms
 
 `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (`grace-override.ts`, landed `4c070f729`) overrides the window for

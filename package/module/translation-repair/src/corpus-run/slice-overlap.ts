@@ -4,7 +4,8 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // How many independent units a driver may have in flight at once.
 //
 // Fallback belongs to caller. Editor calibration defaults to four by measured
-// decision; corpus pass defaults to one until its own matched arms decide.
+// decision; corpus pass defaults to four since its own matched pairs decided
+// (`doc/decision/translation-repair-pass-overlap.md`, 2026-09-06).
 // One environment dial can override either without a rebuild.
 
 /**
