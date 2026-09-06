@@ -217,7 +217,32 @@ text remain aligned with every other row.
  Pixel comparison against
 `refine-tight-outlined` finds no change in the complete left pane or below the current
 track on the right pane.
- Open-action prominence remains a separate unfinished dimension.
+
+The separate Open-action dimension retains the folder icon and explicit `Open` label
+while adding a button container:
+
+- **O1, filled:**
+   primary fill with contrasting icon and label.
+- **O2, tonal:**
+   secondary-container fill with contrasting icon and label.
+- **O3, elevated:**
+   elevated surface container with primary icon and label.
+
+Prototype commit `3425440f6` implements all three.
+ Every action exposes a
+263 × 117 physical-pixel touch target,
+ equivalent to approximately 108 × 48dp.
+Measured foreground-to-container contrast is 6.065:1 for filled,
+ 6.124:1 for tonal,
+and 5.794:1 for elevated.
+ Filled is the recommendation because `Open` is the
+folder picker's primary action;
+ tonal is second because it is prominent without
+competing as strongly with playback;
+ elevated is third because its light surface and
+shadow read least strongly in this flat app bar.
+ Final captures must be regenerated after the
+current-track cue correction.
 
 ## ROUND 10 — white-divider clarification
 

@@ -2848,3 +2848,34 @@ non-cue candidate retains `dbtp-a`.
 current row on the right.
  Proceed to the separate Open-prominence dimension before
 building the user-facing matrix.
+
+Prototype commit `3425440f6` adds three native Open treatments while retaining the
+folder icon and explicit label:
+ filled,
+ tonal,
+ and elevated.
+ All expose a measured
+263 × 117 physical-pixel touch target,
+ approximately 108 × 48dp.
+ Measured contrast is
+6.065:1,
+ 6.124:1,
+ and 5.794:1 respectively.
+ Filled is the recommendation
+because `Open` is the primary folder action;
+ tonal ranks second;
+ elevated ranks third.
+
+The user then rejected the current-track play shape because its reserved leading column
+reduces space for every track:
+ `Kill it.`
+ Remove the play icon and the complete reserved
+leading slot from all new current-track candidates.
+ Supersede the just-captured T1,
+T2,
+ and T3 studies before presentation;
+ their Open evidence remains valid.
+ New current-track
+cues must preserve full row text width and still use at least two visible channels.
+Update D36 and the cross-cue agent standard so sparse state decoration never takes
+permanent space from unaffected items.
