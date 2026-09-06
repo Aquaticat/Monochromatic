@@ -223,6 +223,15 @@ and orders lint after a declaration build.
   the rule infers their effects from the sibling's built dist,
   not by treating them as opaque.
 
+- Performance premise (round 5):
+  the user chose to extend the measurement before ruling on the `/ts` performance case:
+  two more large-closure packages,
+  and a cold whole-repo sweep with the rule on versus allowed.
+- Isolation costs (round 5):
+  accept and record;
+  the `/dom`-everywhere convention stays the remedy,
+  and sibling type errors keep surfacing in consumers.
+
 ## Open questions
 
 - Which lever:
@@ -312,6 +321,7 @@ so its saving is an upper bound on the program-size effect alone.
 
 ## Next action
 
-Read the spike report,
+Run the extended measurement (two more packages,
+cold sweep rule on versus allowed) after the warm sweep pair finishes,
 record the numbers here,
-then put the lever (compiled boundary versus rule-only boundary) to the user in round 5.
+then put the performance premise to the user again in round 6.
