@@ -513,14 +513,14 @@ inset. Move only the rail to the edge; keep other actionable picker content on i
 Material and system safety rulers. Verify the Android gesture interaction rather than
 assuming a visual move is sufficient. The accessibility re-audit found one real
 failure: at 200% system font scale, all four one-row mode labels clipped. Prototype
-commit `d1545e525` switches to four full-label Material radio rows at font scale 1.5 or
-greater and makes the transport vertically scrollable within a 440dp maximum; a second
-200% emulator capture shows `Repeat track`, `Play in order`, `Shuffle current folder`,
-and `Shuffle all folders` completely. It also restores D31's underline on selected
-`Camellia`, so that state now uses color, weight, and underline. Existing non-color
-cues remain: play icon for the current track, checkmark for the selected default-scale
-mode, circle for the selected rail letter, radio mark at enlarged type, and handle
-position for slider value.
+commit `d1545e525` initially switched to full-label radio rows, but the user later
+rejected that component substitution. Current prototype commit `67d5f9720` uses one
+purely vertical segmented control at font scale 1.5 or greater and keeps the transport
+vertically scrollable within a 440dp maximum. A 200% emulator capture shows `Repeat
+track`, `Play in order`, `Shuffle current folder`, and `Shuffle all folders` completely.
+Existing non-color cues remain: play icon for the current track, checkmark for the
+selected segmented mode, circle for the selected rail letter, selected-folder target
+indicator, and handle position for slider value.
 
 Runtime Android resource lookups and WCAG calculations are recorded in
 `material-3-compliance.md`. Every actual text-role pairing is at least 4.532:1; the
@@ -1155,8 +1155,8 @@ vary the segmented mode selector, but its wording did not distinguish that contr
 clearly enough from the separate Previous and Next icon buttons. Name the distinction
 in the introduction and Q2. Add a raster fingerprint guard proving the complete
 segmented control is pixel-identical across all nine refinements. D1, its labels,
-selected state, outline, dimensions, position, and large-text radio-row adaptation stay
-unchanged and are not questions.
+selected state, outline, dimensions, and position stay unchanged in the default-scale
+matrix and are not questions.
 
 The user supplied
 `/var/home/user/Pictures/Screenshots/Screenshot_20260905_222143.png`, circling the four

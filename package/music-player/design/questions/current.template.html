@@ -668,7 +668,7 @@ dialog::backdrop {
   </header>
 
   <section class="instructions" aria-labelledby="accepted-title">
-    <h2 id="accepted-title">Accepted screen and measured defect</h2>
+    <h2 id="accepted-title">Accepted screen, measured defects, and settled large text</h2>
     <p class="question-intro">
       This is the accepted screen before refinement. Its playback deck is shifted 15dp toward the fold: the deck axis is x=540.5 physical pixels while the 414dp left-pane axis is x=504 physical pixels. The visible 1:06 of 4:35 also implies 24% progress, but the slider is drawn at 16%.
     </p>
@@ -692,6 +692,25 @@ dialog::backdrop {
             <span class="preview-label">Open the accepted screen at measured size</span>
           </button>
         </article>
+        <article class="option">
+          <div class="option-heading">
+            <span class="option-title">
+              <span class="option-code">Settled correction · 200% text</span>
+              <strong>Purely vertical segmented mode control</strong>
+              <span class="option-summary">Four connected full-label segments; no radio-row substitution and no horizontal scroll</span>
+            </span>
+          </div>
+          <button class="preview-open" type="button" data-preview-title="Settled vertical segmented mode control at 200% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+            <span class="device-frame">
+              <span class="device-screen">
+                <img data-candidate-source="Native Compose large-text segmented capture, prototype commit 67d5f9720" src="@@IMAGE_LARGE_TEXT_SEGMENTED@@" width="852" height="883" alt="Unfolded music-player screen at 200 percent text with four connected full-label mode segments stacked vertically">
+                <span class="device-camera" aria-hidden="true"></span>
+              </span>
+            </span>
+            <span class="preview-label">Open the corrected 200% state at measured size</span>
+          </button>
+          <div class="assessment"><p><strong>Settled correction:</strong> the selected segment keeps its fill and checkmark; all four options remain one outlined segmented control with radio semantics.</p></div>
+        </article>
       </div>
     </div>
   </section>
@@ -701,9 +720,10 @@ dialog::backdrop {
     <ol>
       <li><strong>Deck centering:</strong> start-only gesture padding leaves 46dp at the physical edge and 16dp at the fold, moving every playback element 15dp toward the fold.</li>
       <li><strong>Seek consistency:</strong> 1:06 divided by 4:35 is 24%, so the existing slider position and labels disagree.</li>
+      <li><strong>Large text:</strong> the settled mode selector remains one segmented control, arranged as four connected vertical segments with full labels at 200% text.</li>
       <li><strong>Action hierarchy:</strong> Previous and Next are separate icon buttons. Their emphasis can change without altering the settled segmented mode control beneath them.</li>
       <li><strong>Vertical economy:</strong> gaps between the same four groups affect both deck rhythm and the folder space left above it.</li>
-      <li><strong>Hard boundary:</strong> every candidate contains exactly the accepted screen's visible elements. No control, feature, state, label, or section is added.</li>
+      <li><strong>Hard boundary:</strong> every candidate contains exactly the accepted screen's visible elements. No feature, control, or product section is added.</li>
     </ol>
     <div class="definition-list">
       <p class="definition"><strong>Corrected in every cell:</strong> the mode control spans x=73 through x=935 physical pixels, placing its axis at x=504, exactly on the left-pane axis. System-gesture safety remains symmetric.</p>
@@ -719,7 +739,7 @@ dialog::backdrop {
     <section class="question" aria-labelledby="matrix-title">
       <h2 id="matrix-title">Nine refinements using only existing elements</h2>
       <p class="question-intro">
-        All cells share the same exact centering and corrected 24% seek position. Rows change only vertical gap. Columns change only the separate Previous and Next icon-button emphasis. The segmented mode control does not change.
+        All cells share the same exact centering and corrected 24% seek position. Rows change only vertical gap. Columns change only the separate Previous and Next icon-button emphasis. The settled segmented mode control remains unchanged at default text and becomes the verified vertical segmented stack at large text.
       </p>
 
       <section class="matrix-row" aria-labelledby="tight-row-title">
@@ -817,7 +837,7 @@ dialog::backdrop {
 
     <section class="response" aria-labelledby="questions-title">
       <h2 id="questions-title">Your decisions</h2>
-      <p class="question-intro">Centering and the 24% seek position are corrections in every option. The settled segmented mode control is unchanged. Choose spacing and the separate skip icon-button treatment, then use free text for anything my prototypes missed.</p>
+      <p class="question-intro">Centering and the 24% seek position are corrections in every option. The settled segmented mode control remains horizontal at default text and purely vertical at large text. Choose spacing and the separate skip icon-button treatment, then use free text for anything my prototypes missed.</p>
 
       <fieldset class="decision-block">
         <legend><h3>Q1. How much space should separate the playback groups?</h3></legend>

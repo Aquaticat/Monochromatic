@@ -4,6 +4,7 @@ const { readFileSync, writeFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const renderPaths = {
   IMAGE_BASELINE: 'questions/render/divider-final.png',
+  IMAGE_LARGE_TEXT_SEGMENTED: 'questions/render/refine-large-text-segmented.png',
   IMAGE_REFINE_TIGHT_STANDARD: 'questions/render/refine-tight-standard.png',
   IMAGE_REFINE_TIGHT_OUTLINED: 'questions/render/refine-tight-outlined.png',
   IMAGE_REFINE_TIGHT_TONAL: 'questions/render/refine-tight-tonal.png',
@@ -33,6 +34,7 @@ const { execFileSync } = await import('node:child_process');
 const { existsSync, readFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const baselinePath = 'questions/render/divider-final.png';
+const largeTextPath = 'questions/render/refine-large-text-segmented.png';
 const refinementPaths = [
   'questions/render/refine-tight-standard.png',
   'questions/render/refine-tight-outlined.png',
@@ -45,6 +47,7 @@ const refinementPaths = [
   'questions/render/refine-airy-tonal.png',
 ];
 const renderPaths = [baselinePath, ...refinementPaths];
+const allRenderPaths = [baselinePath, largeTextPath, ...refinementPaths];
 const requiredPaths = [
   'HANDOFF.md',
   'decisions.md',
@@ -53,13 +56,13 @@ const requiredPaths = [
   'material-3-compliance.md',
   'questions/current.template.html',
   'questions/current.html',
-  ...renderPaths,
+  ...allRenderPaths,
 ];
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
   throw new Error(`Missing required existing-screen refinement files: ${missingPaths.join(', ')}`);
 }
-for (const path of renderPaths) {
+for (const path of allRenderPaths) {
   const image = readFileSync(resolve(path));
   const pngSignature = '89504e470d0a1a0a';
   if (image.subarray(0, 8).toString('hex') !== pngSignature) {
@@ -206,6 +209,44 @@ for (const path of renderPaths) {
     throw new Error(`${path} does not preserve the unnumbered rows and Material play cue.`);
   }
 }
+const largeStatusIconPixels = countPixelsMatching({
+  path: largeTextPath,
+  crop: '300x88+1700+0',
+  predicate: isBlack,
+});
+const largeNavigationHandlePixels = countPixelsMatching({
+  path: largeTextPath,
+  crop: '700x78+688+2074',
+  predicate: isDark,
+});
+const largeFoldColors = Number(execFileSync(
+  'magick',
+  [resolve(largeTextPath), '-crop', '59x1700+1009+200', '+repage', '-format', '%k', 'info:'],
+  { encoding: 'utf8' },
+));
+const largeModeBounds = largestConnectedBounds({
+  path: largeTextPath,
+  color: '#787A84',
+  crop: '1009x652+0+1500',
+});
+const largeSelectedPixels = countPixelsMatching({
+  path: largeTextPath,
+  crop: '900x160+55+1730',
+  predicate: isTonalContainer,
+});
+if (
+  largeStatusIconPixels < 1_500
+  || largeNavigationHandlePixels < 2_000
+  || largeFoldColors !== 1
+  || pixelAt({ path: largeTextPath, x: 1038, y: 1000 }) !== white
+  || largeModeBounds.x !== 73
+  || largeModeBounds.y !== 120
+  || largeModeBounds.width !== 863
+  || largeModeBounds.height !== 518
+  || largeSelectedPixels < 100_000
+) {
+  throw new Error('The 200% state does not retain one centered vertical segmented mode control.');
+}
 const baselineModeBounds = largestConnectedBounds({
   path: baselinePath,
   color: '#787A84',
@@ -319,12 +360,14 @@ const requiredFragments = [
   '<fieldset',
   '<textarea',
   '<dialog',
-  'Accepted screen and measured defect',
+  'Accepted screen, measured defects, and settled large text',
   'What I found in the existing composition',
   'Nine refinements using only existing elements',
-  'No control, feature, state, label, or section is added.',
+  'No feature, control, or product section is added.',
   'The segmented mode control is identical in every cell.',
-  'The settled segmented mode control is unchanged.',
+  'Purely vertical segmented mode control',
+  'no radio-row substitution and no horizontal scroll',
+  'The settled segmented mode control remains horizontal at default text and purely vertical at large text.',
   'name="spacingDecision"',
   'name="buttonDecision"',
   'name="otherCorrections"',
@@ -334,6 +377,7 @@ const requiredFragments = [
   'Anything else you want settled or changed, or “None”',
   'prototype commit 49d6568ed',
   'prototype commit 2b2ac2e88',
+  'prototype commit 67d5f9720',
   'data-preview-width="852"',
   'data-preview-height="883"',
   'data-source-width="2076"',
@@ -355,10 +399,10 @@ const screenCount = question.split('class="device-screen"').length - 1;
 const cameraCount = question.split('class="device-camera"').length - 1;
 const matrixRowCount = question.split('class="matrix-row"').length - 1;
 const radioCount = question.split('type="radio" name=').length - 1;
-if (imageCount !== 10 || embeddedImageCount !== 10 || frameCount !== 10) {
-  throw new Error(`Expected ten sourced, embedded, framed renders; found ${imageCount}, ${embeddedImageCount}, and ${frameCount}.`);
+if (imageCount !== 11 || embeddedImageCount !== 11 || frameCount !== 11) {
+  throw new Error(`Expected eleven sourced, embedded, framed renders; found ${imageCount}, ${embeddedImageCount}, and ${frameCount}.`);
 }
-if (screenCount !== 11 || cameraCount !== 11 || matrixRowCount !== 3 || radioCount !== 6) {
+if (screenCount !== 12 || cameraCount !== 12 || matrixRowCount !== 3 || radioCount !== 6) {
   throw new Error(`Expected complete matrix and dialog structure; found ${screenCount} screens, ${cameraCount} cameras, ${matrixRowCount} rows, and ${radioCount} radios.`);
 }
 console.log('Existing-screen refinement matrix structure is valid.');

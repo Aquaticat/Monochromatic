@@ -131,9 +131,11 @@ pane. The letter rail begins at the physical start edge, while the app bar, sour
 actions, and transport retain their measured system-gesture insets. Selected folder
 state uses primary text, medium weight, and a separate 2dp MD1-style indicator spanning
 the bottom of the whole target; the text itself is not underlined. At 200% font scale,
-the mode
-control changes from one non-wrapping segmented row to four full-label Material radio
-rows rather than clipping text. The latest comparison captures are integrated into the questionnaire. The user's
+the mode control becomes one purely vertical segmented stack with four connected
+full-label segments. It retains segmented outlines, selected fill, checkmark, and
+single-select semantics without horizontal scrolling. The corrected native evidence is
+`questions/render/refine-large-text-segmented.png` from prototype commit `67d5f9720`.
+The user's
 settled baseline combines the `light-c` tonal structure with `dbtp-a`. D34 makes the
 vertical center spacer and horizontal picker/transport divider white while retaining
 the visible dynamic rail line.

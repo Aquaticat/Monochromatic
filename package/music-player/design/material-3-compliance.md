@@ -194,9 +194,13 @@ Correction: use `MaterialTheme.typography` roles, logical start/end insets, flex
 minimum heights, vertical scrolling, and Material components whose RTL, focus, and
 state behavior is built in. Retain fixed left-to-right direction only for media time
 and transport controls, where the archive explicitly requires it. At a system font
-scale of 1.5 or greater, replace the non-wrapping segmented mode control with four
-full-label Material radio rows. A 200% emulator capture confirms that no mode label is
-truncated and the transport remains vertically reachable.
+scale of 1.5 or greater, reflow the same single-select mode control into four connected
+vertical segments with full labels. A 200% emulator capture confirms that no mode label
+is truncated and the transport remains vertically reachable. The pinned Compose
+artifact exposes horizontal segmented rows but no vertical-row wrapper, so the large
+state stacks real `SegmentedButton` elements in one outer selectable group and applies
+the same baseline segmented colors, outline, selection fill, checkmark, and radio
+semantics. It does not substitute another component or add horizontal scrolling.
 
 ### State cues and contrast
 
@@ -205,8 +209,8 @@ prototype uses these redundant cues:
 
 - Current track: leading Material play icon plus semantic selected state, without a
   custom row fill.
-- Selected playback mode: selected fill plus checkmark. At enlarged type, the radio
-  indicator supplies the non-color selected shape.
+- Selected playback mode: selected segmented fill plus checkmark at default and
+  enlarged type.
 - Selected letter: secondary-container color plus circular container shape.
 - Selected folder: primary color plus medium weight plus a 2dp indicator spanning the
   bottom edge of the whole target. The label itself is never underlined.
