@@ -394,7 +394,9 @@ so its saving is an upper bound on the program-size effect alone.
 
 ## Next action
 
-Run the extended measurement (two more packages,
-cold sweep rule on versus allowed) after the warm sweep pair finishes,
-record the numbers here,
-then put the performance premise to the user again in round 6.
+Decision landed in `doc/decision/workspace-ts-source-imports.md` (commit `9509d2ef1`,
+ closes #486);
+ST3 links it (`a5e3fb4dc`).
+Pending:
+record the cross-project summary-sharing prototype result here and under issue #374,
+and commit the oxlint `--allow` troubleshooting doc when its agent reports.
