@@ -242,6 +242,46 @@ or preserve its body verdict and add a separate attributed async failure.
 Both must fail the file.
 No implementation has been applied.
 
+### Q2 clarification: concrete reporting examples
+
+The user requested an example before answering Q2.
+The following output illustrates the proposed alternatives;
+it is not output from an implemented fix.
+
+Suppose `saves settings` starts an async write without awaiting it.
+Its assertions pass and the harness prints PASS.
+While `loads profile` runs,
+the background write rejects with `disk full`.
+
+Option A supersedes the originating test's passing verdict:
+
+```text
+[saves settings] PASS
+[saves settings] FAIL: unhandled rejection after completion: disk full
+[loads profile] PASS
+[file] FAIL
+```
+
+Its benefit is that the test responsible for the rejection ends marked failed.
+Its cost is that the earlier PASS line needs a later correction.
+
+Option B preserves the test body's passing verdict and records a separate async failure:
+
+```text
+[saves settings] PASS
+[async work from saves settings] FAIL: disk full
+[loads profile] PASS
+[file] FAIL
+```
+
+Its benefit is that the body verdict remains stable.
+Its cost is that `saves settings` stays marked passed despite causing the file failure.
+
+Ranking: A > B because the final test verdict should reflect the leaked rejection.
+Both alternatives continue unrelated siblings and fail the file.
+Neither can change an already settled promise returned by the harness.
+Q2 remains unanswered.
+
 ### Proposed agent-guidance update
 
 The correction exposed a design-review gap covered by `AGENTS.md` rule `GAP`.
