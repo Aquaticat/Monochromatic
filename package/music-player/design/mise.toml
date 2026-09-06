@@ -86,6 +86,11 @@ const imageFingerprint = ({ path, crop }) => execFileSync(
   [resolve(path), '-crop', crop, '+repage', '-format', '%#', 'info:'],
   { encoding: 'utf8' },
 );
+const pixelAt = ({ path, x, y }) => execFileSync(
+  'magick',
+  [resolve(path), '-format', `%[pixel:p{${x},${y}}]`, 'info:'],
+  { encoding: 'utf8' },
+);
 const countExactColor = ({ path, crop, color }) => Number(execFileSync(
   'magick',
   [
@@ -162,10 +167,14 @@ const largestConnectedBounds = ({ path, color, crop }) => {
 };
 
 const transportFingerprint = imageFingerprint({ path: transportReferencePath, crop: '1009x752+0+1400' });
+const pickerFingerprint = imageFingerprint({ path: transportReferencePath, crop: '1009x1100+0+300' });
 for (const path of matrixPaths) {
   const currentTransport = imageFingerprint({ path, crop: '1009x752+0+1400' });
   if (currentTransport !== transportFingerprint) {
     throw new Error(`${path} does not preserve chosen transport option 1B.`);
+  }
+  if (imageFingerprint({ path, crop: '1009x1100+0+300' }) !== pickerFingerprint) {
+    throw new Error(`${path} changes the accepted picker outside the Open app-bar action.`);
   }
   const currentTitleX = firstCuePixelX({ path, crop: '500x80+1090+320', cropWidth: 500, absoluteX: 1090 });
   const ordinaryTitleX = firstCuePixelX({ path, crop: '500x90+1090+490', cropWidth: 500, absoluteX: 1090 });
@@ -173,8 +182,25 @@ for (const path of matrixPaths) {
     throw new Error(`${path} restores a space-consuming leading track column or misaligns row titles.`);
   }
   const systemPixels = countDarkPixels({ path, crop: '300x88+1700+0' });
-  if (systemPixels < 2000) {
-    throw new Error(`${path} does not retain native Android system status UI.`);
+  const navigationPixels = countDarkPixels({ path, crop: '700x78+688+2074' });
+  if (systemPixels < 2000 || navigationPixels < 2000) {
+    throw new Error(`${path} does not retain native Android system UI.`);
+  }
+  const folderIndicatorPixels = countExactColor({ path, crop: '200x4+140+499', color: '#4C5E8B' });
+  const linkUnderlinePixels = countExactColor({ path, crop: '200x5+140+458', color: '#4C5E8B' });
+  if (folderIndicatorPixels < 700 || linkUnderlinePixels > 0) {
+    throw new Error(`${path} does not retain the separate selected-folder indicator.`);
+  }
+  const foldColorCount = Number(execFileSync(
+    'magick',
+    [resolve(path), '-crop', '59x1700+1009+200', '+repage', '-format', '%k', 'info:'],
+    { encoding: 'utf8' },
+  ));
+  if (foldColorCount !== 1 || pixelAt({ path, x: 1038, y: 1000 }) !== 'srgba(255,255,255,1)') {
+    throw new Error(`${path} does not keep the protected center spacer uniformly white.`);
+  }
+  if (pixelAt({ path, x: 117, y: 1000 }) !== 'srgba(176,177,188,1)') {
+    throw new Error(`${path} does not preserve the accepted letter-rail boundary.`);
   }
 }
 
@@ -254,6 +280,9 @@ for (const path of semanticsPaths) {
   }
   if (hierarchy.includes('content-desc="Playing"')) {
     throw new Error(`${path} restores the rejected play-icon accessibility node.`);
+  }
+  if (/text="[0-9]+"/u.test(hierarchy)) {
+    throw new Error(`${path} restores interface-generated track ordinals.`);
   }
   if (!/text="Burning Aquamarine"[^>]+bounds="\[1107,507\]\[1483,566\]"/u.test(hierarchy)) {
     throw new Error(`${path} does not retain full-width ordinary-track alignment.`);
