@@ -347,6 +347,81 @@ The round-2 shape,
    `3d6c20c9f` (another session) had already swept the repository.
 - Both prototype worktrees removed.
 
+## Grill record: verification campaign (2026-09-06)
+
+### Round 1
+
+- Location:
+   a sidecar package `package/module/logger.fuzz`,
+   the css-edit and jsonc-edit convention,
+   so fast-check stays out of the published package and no property file ships in the tarball.
+   The owner also asked for the toml-edit campaign to migrate into a sidecar (`package/module/toml-edit.fuzz`).
+- `doc/decision/logger-fuzzing.md` (June,
+   Phase 0) is rewritten as the campaign decision record;
+   a superseded section names each June decision the shipped code reversed
+   (kept throw,
+   5000 ms defaults,
+   no retire threshold,
+   neutralize-all console boundary) and points at `DECISIONS.md`.
+- Interleaving generator:
+   fast-check `scheduler()` over every fake-sink hook (`scheduleFunction`,
+   `waitFor`,
+   `waitIdle`);
+   never-settling work is a task the scheduler never releases.
+   The logger's own timers stay real,
+   so deadline properties use short real deadlines and small bounded run counts.
+- Fake-sink descriptor:
+   per hook,
+   a per-call behavior sequence with a repeating tail (resolve,
+   resolve-false for verify,
+   reject,
+   throw synchronously,
+   delayed,
+   never),
+   with a stable identity so a shrunk counterexample reads as `sink 2: write [reject, resolve*]`.
+- Facts measured for this round:
+   fast-check is in the catalog at `>=4.9.0`;
+   the toml-edit workflow runs build,
+   `lint:types`,
+   `test:unit`,
+   `fuzz --budget 3000`,
+   conformance,
+   and `fuzz:coverage`;
+   Node 26 exposes `sessionStorage` without flags and `localStorage` only with `--localstorage-file`;
+   each campaign copies its own coverage driver (547 differing lines between toml-edit and jsonc-edit),
+   so the gate is target-specific code,
+   not a shared library.
+
+### Round 2
+
+- Reference model scope:
+   per sink the exact records received and availability,
+   whether `flush()` settles within the deadline,
+   the dropped-count marker record,
+   and the `console.warn` breadcrumb count,
+   so the "loud signal once,
+   at a boundary" contract is a checked invariant.
+   Properties that stub `console.warn` run sequentially,
+   as the breadcrumb suites do today.
+- CI and gate:
+   `logger-fuzz.yml` mirrors `toml-edit-fuzz.yml` exactly (build,
+   `lint:types`,
+   `test:unit`,
+   `fuzz --budget 3000`,
+   `fuzz:coverage`),
+   with a covered-line baseline committed in the sidecar and the gate measuring `package/module/logger/src`.
+- The toml-edit sidecar migration lands after the logger campaign,
+   copying the logger sidecar's layout.
+- Boundary properties:
+   the owner asked whether the browser backends (IndexedDB,
+   OPFS,
+   localStorage) should be driven through Playwright as well as the Node-reachable file and sessionStorage sinks;
+   answered with the measured cost (no workflow runs the browser suite today;
+   it is a local podman run):
+   the Node campaign lands first and a Playwright property layer,
+   one browser bundle of fast-check plus the neutral artifact and the properties loaded by the harness page,
+   is the last deliverable.
+
 ## Verification campaign (the toml-edit bar)
 
 `package/module/toml-edit` has a budgeted property campaign,
