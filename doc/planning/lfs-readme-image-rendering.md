@@ -1,9 +1,11 @@
 # Render LFS-backed README images on GitHub
 
 Status:
-investigation complete,
-grilling round 3 open.
-Tracks GitHub issue #476.
+implemented and verified on github.com;
+the closing commit references GitHub issue #476.
+Remaining follow-ups are tracked as issues #491,
+#492,
+and #496.
 
 Last updated:
 2026-09-06.
@@ -36,7 +38,8 @@ meaning its own store.
   and `*.jxl` through `filter=lfs`.
 - `.lfsconfig` was added in commit `933145128` (2026-06-16),
   redirecting every clone to the Worker.
-- The gallery under `package/music-player/asset/readme/` was committed on 2026-09-03 (`862ea00bf`, `ddf896a5c`),
+- The gallery under `package/music-player/asset/readme/` was committed on 2026-09-03 (`862ea00bf`,
+   `ddf896a5c`),
   after the cutover,
   so its objects were uploaded only to R2.
 - A GET of the gallery pointer through `raw.githubusercontent.com` returns the pointer text as `text/plain`;
@@ -193,7 +196,8 @@ Round 1 and round 2 answers from the user on 2026-09-06:
 
 Measured facts that settled further points without a question:
 
-- Worker analytics (Cloudflare GraphQL, 2026-08-25 to 2026-09-06):
+- Worker analytics (Cloudflare GraphQL,
+   2026-08-25 to 2026-09-06):
   865 requests over 8 active days,
   392 on the busiest day,
   zero errors.
@@ -286,6 +290,55 @@ Answered by the user on 2026-09-06:
   the older markdown-lint rule tests import package source,
   which `test-import/require-eventual-artifact` now rejects (56 findings).
   The new tests import the built entry.
+- 2026-09-06,
+  cli-git policy:
+  `package/git-policy/markdown-lint` ships `markdownLintPlugin` with the `autofix` policy,
+  mirrored into cli-git by file-enforcer and registered as `markdown/autofix` at `warn`
+  with `rules: ['lfs-image-url']` and `exclude: ['package/ssg/']` (commit `4c815fb13`).
+  The adapter pipes each Markdown candidate through `cli-markdown-lint --fix --stdin-path`
+  and emits a full-content `git-unified` patch.
+  Its tests caught a real defect before landing:
+  `nano-spawn` strips the final newline from `stdout`,
+  so every candidate looked rewritten;
+  the adapter now uses raw `spawn` with stream consumers.
+  The neutral `git-policy-api` package had drifted from cli-git's api copy since `6e6113ba7`
+  (`canApplyPatches` and the `final-newline` id were missing);
+  both were ported.
+- 2026-09-06,
+  proof inside a commit:
+  a throwaway repository trusting only the new plugin committed a README with a relative LFS link,
+  and `git show HEAD:README.md` carried the object URL while the working tree kept the relative link.
+  cli-git applies autofix patches to the commit,
+  not to the working tree,
+  so `git status` shows the file modified until `git checkout -- <file>`;
+  the same holds for the built-in `final-newline` policy.
+- 2026-09-06,
+  READMEs:
+  `git cli-git fix --policy markdown/autofix` rewrote the 25 gallery links in `package/music-player/README.md`
+  and the screenshot link in `package/intellij-plugin/islands-black/README.md` (commit `d33447248`).
+- 2026-09-06,
+  verification:
+  `mise run //package/config/lfs-r2-worker:check:markdown-urls` performed a `HEAD` request for all 26 embedded URLs
+  and every one returned `200`,
+  an `image/png` content type,
+  the pointer's oid,
+  and the pointer's size.
+  A positive control with a byte mismatch,
+  a `.txt` suffix,
+  and a missing object failed all three,
+  so the check can fail.
+  In a logged-out headless browser,
+  github.com rendered all 25 gallery images and the islands-black screenshot with `naturalWidth > 0`.
+- Rollback to GitHub LFS is recorded as unsupported for now in the Worker README and runbook;
+  if ever needed it is a planned project (re-upload objects,
+  rewrite Markdown links,
+  drop `.lfsconfig`),
+  not a runbook step.
+- Follow-ups tracked as issues:
+  #491 (AGENTS.md rule,
+   undecided),
+  #492 (post-push policy stage),
+  #496 (`lint:types` is a no-op because the built `tsc-filter` stub re-exports nothing).
 
 ## Open questions
 

@@ -48,3 +48,68 @@ run = "wrangler deploy --dry-run"
 [tasks."secret:write-token"]
 description = "Set or rotate the LFS_WRITE_TOKEN upload secret (reads the value on stdin)."
 run = "wrangler secret put LFS_WRITE_TOKEN"
+
+[tasks."check:markdown-urls"]
+description = "HEAD every Worker object URL embedded in repository Markdown and assert 200, an image content type, and a Content-Length equal to the LFS pointer size."
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
+/** Anonymous object base declared by the committed .lfsconfig (no credential). */
+const base = (await readFile('.lfsconfig', 'utf8')).split('\n').map((line) => line.trim()).find((line) => line.startsWith('url = '))?.slice('url = '.length)
+if (!base) { throw new Error('.lfsconfig declares no lfs.url') }
+/** Length of a sha256 oid in hex. */
+const OID_LENGTH = 64
+/** Characters that end a bare URL inside Markdown. */
+const URL_TERMINATORS = ' \t\r\n)]<>"\''
+/** Whether text is exactly one lowercase hex oid. */
+const isOid = (text) => text.length === OID_LENGTH && [...text].every((char) => '0123456789abcdef'.includes(char))
+/** Every tracked Markdown and MDX file. */
+const files = execFileSync('rg', ['--files', '--glob', '*.md', '--glob', '*.mdx'], { encoding: 'utf8' }).split('\n').filter((line) => line !== '')
+/** Object URLs of the form <base>/<oid>/<path> found in Markdown, with the file embedding each. */
+const found = []
+for (const file of files) {
+  const text = await readFile(file, 'utf8')
+  for (let at = text.indexOf(`${base}/`); at !== -1; at = text.indexOf(`${base}/`, at + 1)) {
+    let end = at
+    while (end < text.length && !URL_TERMINATORS.includes(text[end])) { end += 1 }
+    const url = text.slice(at, end)
+    const [oid, ...pathParts] = url.slice(base.length + 1).split('/')
+    if (isOid(oid) && pathParts.length > 0) { found.push({ file, url, oid, path: pathParts.join('/') }) }
+  }
+}
+if (found.length === 0) { throw new Error(`no ${base}/<oid>/<path> URLs found in Markdown`) }
+/** Pointer oid and size for a repository path: parsed from an LFS pointer, or hashed from real bytes; undefined when the path is unreadable. */
+async function expected(path, problems) {
+  let bytes
+  try { bytes = await readFile(path) }
+  catch (error) { problems.push(`path ${path} unreadable: ${error.code ?? error.message}`); return undefined }
+  const head = bytes.subarray(0, 200).toString('utf8')
+  if (head.startsWith('version https://git-lfs.github.com/spec/v1')) {
+    return { oid: head.split('oid sha256:')[1]?.split('\n')[0] ?? '', size: Number(head.split('size ')[1]?.split('\n')[0]) }
+  }
+  return { oid: createHash('sha256').update(bytes).digest('hex'), size: bytes.byteLength }
+}
+/** One URL checked against the Worker and the local pointer. */
+async function verify({ file, url, oid, path }) {
+  const problems = []
+  const want = await expected(path, problems)
+  const response = await fetch(url, { method: 'HEAD' })
+  const type = response.headers.get('content-type') ?? ''
+  const length = Number(response.headers.get('content-length'))
+  if (response.status !== 200) { problems.push(`status ${response.status}`) }
+  if (!type.startsWith('image/')) { problems.push(`content-type ${JSON.stringify(type)}`) }
+  if (want !== undefined && want.oid !== oid) { problems.push(`url oid ${oid} but pointer oid ${want.oid}`) }
+  if (want !== undefined && length !== want.size) { problems.push(`content-length ${length} but pointer size ${want.size}`) }
+  return { file, url, problems }
+}
+const results = await Promise.all(found.map(verify))
+for (const { file, url, problems } of results) {
+  console.log(`${problems.length === 0 ? 'ok  ' : 'FAIL'} ${file} ${url}${problems.length === 0 ? '' : `: ${problems.join('; ')}`}`)
+}
+const failed = results.filter((result) => result.problems.length > 0)
+console.log(`${results.length - failed.length}/${results.length} Worker object URLs verified`)
+if (failed.length > 0) { throw new Error(`${failed.length} Worker object URL(s) failed verification`) }
+'''

@@ -35,6 +35,20 @@ The CLI runs as a subprocess because it carries a native parser that cannot be b
 configuration artifact.
 Candidates are processed one at a time so a large commit never starts one Node process per file at once.
 
+The fixed source is read from the subprocess byte-exact through `spawn` and a stream consumer;
+`nano-spawn` strips the final newline from `stdout`,
+which made every candidate look rewritten.
+
+## Working tree after a commit
+
+The patch lands in the commit,
+not in the working tree.
+After a commit that rewrote a link,
+`git status` shows the file as modified because the working tree still holds the relative link;
+`git checkout -- <file>` syncs it.
+This is how cli-git's commit transaction behaves for every autofix policy,
+including the built-in `final-newline`.
+
 ## Configuration
 
 Register `markdownLintPlugin` in trusted cli-git configuration,
