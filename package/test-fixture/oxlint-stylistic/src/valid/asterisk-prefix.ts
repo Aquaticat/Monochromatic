@@ -1,6 +1,10 @@
 // Fixture: star-less TSDoc for require-asterisk-prefix in never mode.
 // Expected: zero stylistic/require-asterisk-prefix violations under never mode.
 
+/*
+ * Ordinary block comments are outside TSDoc prefix policy.
+ */
+
 /**
  Star-less description.
 
