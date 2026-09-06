@@ -611,6 +611,25 @@ same control when space changes.
 segmented row;
  large text uses one vertical segmented stack with full labels.
 
+## 5l. A sparse state icon consumed width from every track
+
+The current-track treatment reserved a leading column on every list row and drew a
+play icon only on the active one.
+ The agent treated the icon as a compact non-color cue,
+but the empty slots reduced title width throughout the list.
+ The user rejected the
+shape and said to kill it.
+
+**The rule.**
+ Sparse state decoration must not reserve permanent content space on
+unaffected items.
+ Current-track cues stay within the row's existing title,
+ supporting
+line,
+ background,
+ or overlaid boundary;
+ every title keeps the full common width.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.

@@ -2918,3 +2918,83 @@ outlined Open columns.
 captures are 2076 × 2152px;
  the full matrix retains 1B's tight centered deck and
 outlined skip buttons.
+
+The active self-contained form is now
+`questions/current.html`,
+ built from `questions/current.template.html`.
+ It embeds
+sixteen default-scale matrix captures plus one 200% recommended-state capture from
+prototype evidence commit `9938e8244`.
+ Main implementation commits are `1d51cfc50`,
+`8a6e1bf72`,
+ `6974b0c5f`,
+ and `213a1468e`.
+ The recommendation is 1A:
+explicit `Playing` label plus bold current title,
+ with filled Open.
+ The questions keep
+current-track treatment and Open treatment separable,
+ and required free text remains
+last.
+
+Raster validation proves every cell retains chosen transport 1B,
+ keeps the first dark
+current-title pixel within x=1107 through x=1110 rather than restoring the leading column,
+ preserves each row
+across all Open columns,
+ preserves each Open treatment across all track rows,
+ and
+contains four distinct row and column treatments.
+ It also validates system UI,
+ native
+2076 × 2152px dimensions,
+ opacity,
+ treatment-specific role colors,
+ and the
+navigation-safe vertical segmented control at 200% text.
+ Positive controls reject the
+old play-column capture,
+ a wrong row treatment,
+ a wrong Open treatment,
+ and wording
+that treats the example count as a cap.
+ Build,
+ lint,
+ and unit tasks pass after each
+restoration.
+
+Final isolated Helium verification covers all sixteen codes and ranks,
+ all seventeen
+decoded native images,
+ empty initial answers,
+ required-field focus,
+ prepared output,
+clipboard copy,
+ scratch download,
+ clear,
+ modal reset at 907 × 937 CSS px,
+ native
+pixel scale,
+ Fit,
+ zoom controls,
+ scrolling,
+ Escape,
+ and focus restoration.
+ At
+1920 × 1080 CSS px,
+ every four-card row fits without page overflow.
+ At 390 × 844,
+each independent row scroller is 316px wide with 316px cards and a 996px traversal;
+the page remains exactly 390px wide.
+ Offline reload restores all cells with no network
+resources,
+ and forced dark host media leaves the form light.
+ The page has zero axe A/AA
+violations and zero incomplete checks.
+ The modal has zero violations and two known
+contrast incompletes;
+ manual flat-color ratios are 17.075:1 and 9.344:1,
+ recorded in
+`doc/troubleshooting/axe-modal-dialog-contrast.md`.
+ Browser errors and console output
+are empty.
