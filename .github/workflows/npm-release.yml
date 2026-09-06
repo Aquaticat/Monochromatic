@@ -21,6 +21,13 @@ on:
 
 permissions: {}
 
+env:
+  # The root mise config lists heavy dev tools (slint from a git rev, cmake, and
+  # more) with auto_install on; every mise run or mise exec would try to build
+  # them on the runner. Off, each job uses only the tools it installs below.
+  # Same pattern as toml-edit-fuzz.yml.
+  MISE_AUTO_INSTALL: 'false'
+
 concurrency:
   group: release
   cancel-in-progress: false
@@ -45,11 +52,17 @@ jobs:
           install: false
           cache: true
 
-      - name: Install pnpm and node
-        run: mise install 'npm:pnpm' node
+      - name: Install node and pnpm
+        run: mise install node pnpm
+
+      # Tools installed inside a step are not on PATH for later steps
+      # (mise-action exports PATH only at its own setup), and the changesets
+      # sub-actions spawn node and pnpm from PATH.
+      - name: Expose node and pnpm to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" >> "$GITHUB_PATH"
 
       - name: Install dependencies
-        run: mise exec -- pnpm install --frozen-lockfile
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
       - name: Select mode
         id: select-mode
@@ -74,11 +87,17 @@ jobs:
           install: false
           cache: true
 
-      - name: Install pnpm and node
-        run: mise install 'npm:pnpm' node
+      - name: Install node and pnpm
+        run: mise install node pnpm
+
+      # Tools installed inside a step are not on PATH for later steps
+      # (mise-action exports PATH only at its own setup), and the changesets
+      # sub-actions spawn node and pnpm from PATH.
+      - name: Expose node and pnpm to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" >> "$GITHUB_PATH"
 
       - name: Install dependencies
-        run: mise exec -- pnpm install --frozen-lockfile
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
       - name: Open or update the version pull request
         uses: changesets/action/version@8488615a623b1b9c987934bb89eae8af6a946ac1
@@ -107,8 +126,14 @@ jobs:
           install: false
           cache: true
 
-      - name: Install pnpm and node
-        run: mise install 'npm:pnpm' node
+      - name: Install node and pnpm
+        run: mise install node pnpm
+
+      # Tools installed inside a step are not on PATH for later steps
+      # (mise-action exports PATH only at its own setup), and the changesets
+      # sub-actions spawn node and pnpm from PATH.
+      - name: Expose node and pnpm to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" >> "$GITHUB_PATH"
 
       # dedupe-direct-deps=false: with the workspace default (true), a direct
       # workspace dependency also declared at the root is linked only at the root,
@@ -116,7 +141,7 @@ jobs:
       # (pnpm/pnpm#9566, doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md).
       # The override changes node_modules layout only, never the lockfile.
       - name: Install dependencies with every direct dependency linked per package
-        run: mise exec -- pnpm install --frozen-lockfile --config.dedupe-direct-deps=false
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile --config.dedupe-direct-deps=false
 
       - name: Build the packages in the publish plan
         run: mise run changeset:build
@@ -148,11 +173,17 @@ jobs:
           install: false
           cache: true
 
-      - name: Install pnpm and node
-        run: mise install 'npm:pnpm' node
+      - name: Install node and pnpm
+        run: mise install node pnpm
+
+      # Tools installed inside a step are not on PATH for later steps
+      # (mise-action exports PATH only at its own setup), and the changesets
+      # sub-actions spawn node and pnpm from PATH.
+      - name: Expose node and pnpm to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" >> "$GITHUB_PATH"
 
       - name: Install dependencies
-        run: mise exec -- pnpm install --frozen-lockfile
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
       - name: Publish with trusted publishing
         uses: changesets/action/publish@8488615a623b1b9c987934bb89eae8af6a946ac1
