@@ -45,7 +45,9 @@ options: {
 
 Second,
  the package task delegates to Oxlint without repeating those config options on the CLI.
-`mise.toml:580-588` contains:
+The source task template at `mise.no-env.toml:589-596`,
+`task_templates.lint:oxlint`,
+contains:
 
 ```toml
 [task_templates."lint:oxlint"]
@@ -257,7 +259,8 @@ export default {
 };
 ```
 
-A disposable directory linked the repository `node_modules` directory and used these tasks:
+A disposable directory linked the repository `node_modules` directory and used these tasks.
+The executed harness used the package-name import and relative binary paths shown in these snippets:
 
 ```toml
 # mise.toml
@@ -281,6 +284,20 @@ probe.ts:1:1: error typescript(no-floating-promises): Promises must be awaited, 
 `mise run probe:cli` exited `1` with the same diagnostic as the config-only case.
 The negative control proves the fixture distinguishes disabled type-aware analysis.
 The matching config-only and CLI cases prove the shared config option replaces the manual flag.
+
+A nested task then exercised config discovery through an upward directory walk,
+matching package-scoped production invocation:
+
+```toml
+# nested/mise.toml
+[tasks.probe]
+run = "../node_modules/.bin/oxlint probe.ts"
+```
+
+`nested/probe.ts` contained the same floating promise.
+Running `mise run probe` from `nested/` without `--config` or `--type-aware` exited `1`
+with the same `typescript(no-floating-promises)` diagnostic.
+This verifies that upward config discovery honors the shared `options.typeAware` value.
 
 The original disposable harness reproduced the distinction between type-aware rules and type checking:
 
