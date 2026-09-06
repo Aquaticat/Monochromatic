@@ -9,7 +9,8 @@ The Node orchestration layer,
  and the CI workflow landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz` and `.github/workflows/logger-fuzz.yml`.
 The toml-edit campaign moved into `package/module/toml-edit.fuzz` on 2026-09-06 (`doc/decision/toml-edit-fuzzing.md`,
  "Sidecar package").
-The Playwright browser layer follows.
+The Playwright browser layer landed the same day,
+ so every deliverable of the campaign is on main.
 Plan,
  grill records,
  and landed commits:
@@ -290,6 +291,49 @@ run the fuzz smoke at 3000 ms per property,
 Every step was run locally in that order before the workflow was committed;
 the smoke takes about 25 seconds and the gate about 20 seconds on the development machine.
 
+## Landed: Playwright browser property layer
+
+The browser-only backends are checked in real browsers rather than through stand-ins.
+`src/browser/properties.ts` is bundled by the sidecar's `bundle:browser-properties` task
+(rolldown's client flavor under the browser platform,
+ so `@monochromatic-dev/module-logger` resolves to the neutral artifact and fast-check is inlined)
+and served to the Playwright harness page from `/dist/module-logger.fuzz/client/properties.js`.
+The bundle installs a runner on the page;
+ `src/browser/properties.browser.test.ts` loads it,
+ runs every property,
+ prints each browser's outcomes,
+ and fails on any falsified property.
+Three properties over the adversarial record arbitrary:
+
+- The localStorage sink's run-scoped batches,
+   read back through the key helpers the artifact exports,
+   reparse to the exact records.
+- The IndexedDB sink's batches in the `monochromatic.log` database reparse to the exact records;
+  each run prefixes its messages with a nonce because the store outlives the run.
+- The OPFS sink accepts every record and its flush settles with no breadcrumb.
+  This oracle is weaker by construction:
+  the sink keeps its writable open for the session and the platform commits a file's bytes only on close,
+  so the page cannot read the content back.
+
+Measured on 2026-09-06 inside the `monochromatic-playwright` podman image:
+Chromium 153 and Firefox 155 run all three properties;
+WebKit 26.6 runs the two storage properties and reports OPFS skipped,
+because headless WebKit refuses the origin-private file system with `UnknownError`
+(the probe turns that refusal into the skip reason rather than letting it escape the run).
+Guard-failure proof:
+with the shared record buffer dropping the first record of every batch and both the artifact and the bundle rebuilt,
+the localStorage and IndexedDB properties fail on their first run and shrink to one debug record;
+restored and rebuilt,
+ all three pass.
+
+The task is named `bundle:browser-properties`,
+ not `build`:
+the sidecar ships nothing,
+ and the `require-eventual-artifact` lint treats a package with a build task as one whose tests must import built output,
+which would reject every relative helper import in the sidecar's test files.
+No workflow runs the browser suite today;
+the layer is a local podman run (`mise run test:browser -- package/module/logger.fuzz/src/browser/properties.browser.test.ts`) until a browser CI job exists.
+
 ## Superseded decisions
 
 The June record fixed several contracts at design time;
@@ -329,12 +373,9 @@ Each is recorded in `package/module/logger/DECISIONS.md`.
 
 ## Pending deliverables
 
-- A Playwright browser property layer for the IndexedDB,
-   OPFS,
-   and localStorage sinks,
-  one browser bundle of fast-check plus the neutral artifact loaded by the harness page.
-  No workflow runs the browser suite today (it is a local podman run),
-   so this lands last.
+None.
+ The browser layer runs locally only until a browser CI job exists;
+ see "Deferred follow-up" for the rest.
 
 ## Rejected alternatives
 

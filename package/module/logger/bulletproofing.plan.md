@@ -448,9 +448,16 @@ The round-2 shape,
 - Decision record rewritten as the campaign record:
    `doc/decision/logger-fuzzing.md`.
 
+- Playwright browser property layer (`8aacfc672`,
+   `c98454090`):
+   localStorage and IndexedDB round-trips and OPFS acceptance in Chromium,
+   Firefox,
+   and WebKit inside podman;
+  guard-failure proof with the record buffer dropping one record per batch.
+
 Remaining:
- the Playwright browser property layer;
- the toml-edit sidecar migration landed on 2026-09-06.
+ nothing on this track;
+ mutation testing is the deferred follow-up.
 
 ## Verification campaign (the toml-edit bar)
 

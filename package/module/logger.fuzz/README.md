@@ -59,6 +59,14 @@ Plan and grill record:
 - `coverage-baseline.json`:
    covered code lines per runtime source file;
    the gate fails on any per-file decrease.
+- `src/browser/`:
+   the Playwright browser property layer:
+   a page bundle of fast-check,
+   the neutral artifact,
+   and the localStorage,
+   IndexedDB,
+   and OPFS properties,
+   plus the Playwright test that loads it into the harness page and prints each browser's outcomes.
 - `src/*.property.unit.test.ts`:
    the properties;
    every one imports the built runtime artifact through the package name,
@@ -75,4 +83,8 @@ mise run //package/module/logger.fuzz:fuzz --budget 60000
 
 # Coverage-reachability gate; --write refreezes the baseline
 mise run //package/module/logger.fuzz:fuzz:coverage
+
+# Browser property layer (local podman run): bundle, then drive it through the harness page
+mise run //package/module/logger.fuzz:bundle:browser-properties
+mise run test:browser -- package/module/logger.fuzz/src/browser/properties.browser.test.ts
 ```
