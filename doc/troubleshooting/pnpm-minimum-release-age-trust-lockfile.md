@@ -374,3 +374,40 @@ then added the visible cached-verdict message reproduced here.
 There is nothing additive to post on issue 12324.
 The maintainer comment and merged pull request already contain the source-backed explanation and user-visible resolution.
 No new issue or comment should be filed.
+
+## pnpm 12.3.4: verification fetches `@jsr/*` metadata from `registry.npmjs.org` and fails with 404
+
+Observed 2026-09-06 while installing a fresh `git worktree` of this repository
+(main worktree installed under pnpm 11.21.0 per `node_modules/.modules.yaml`).
+Both of these failed identically during "Verifying lockfile against supply-chain policies (781 entries)":
+
+```bash
+pnpm --dir "$WORKTREE" install --prefer-offline
+pnpm --dir "$WORKTREE" install
+```
+
+```text
+ERR_PNPM_META_FETCH_FAIL
+ERR_PNPM_RESOLVING_NPM_RESOLVER_NETWORK_ERROR: Failed to fetch metadata from
+https://registry.npmjs.org/@jsr%2Fstd__internal: HTTP status client error (404 Not Found)
+```
+
+The effective configuration maps the `@jsr` scope to `https://npm.jsr.io/`,
+yet the verification step queried `registry.npmjs.org` for the scoped package.
+`--config.minimum-release-age=0` failed the same way on `@jsr/std__path`.
+`--prefer-offline` also failed earlier in the day with `ERR_PNPM_NO_OFFLINE_META` on `@esbuild/darwin-arm64`,
+a platform-specific optional dependency whose metadata is not cached on Linux.
+
+Install succeeded with the same skip the sections above use:
+
+```bash
+pnpm --dir "$WORKTREE" install --trust-lockfile
+```
+
+`pnpm install --help` describes `--trust-lockfile` as
+"Skip verifying the lockfile against supply-chain policies".
+
+Not investigated:
+why the verifier ignores the scope registry mapping for `@jsr` packages under pnpm 12.3.4.
+The pnpm source was not read for this section;
+treat the registry attribution as an observation from the error text only.
