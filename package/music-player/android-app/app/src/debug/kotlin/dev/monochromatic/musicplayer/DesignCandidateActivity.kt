@@ -825,7 +825,11 @@ private fun SecondaryTransportButton(
 /** Draws three real Material icon buttons with color hierarchy for playback. */
 @Composable
 private fun TransportControls(candidate: String) {
-    val secondaryStyle = candidate.substringAfterLast('-')
+    val secondaryStyle = if (candidate.startsWith("cue-")) {
+        "outlined"
+    } else {
+        candidate.substringAfterLast('-')
+    }
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -993,16 +997,38 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
     }
 }
 
-/** Renders one baseline Material two-line list item with an icon-only current-track cue. */
+/** Renders one baseline Material two-line list item with candidate-specific redundant current-track cues. */
 @Suppress("DEPRECATION")
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
     val playing = index == 0
+    val currentTrackCue = if (candidate.contains("cue-weight-")) {
+        "weight"
+    } else if (candidate.contains("cue-color-")) {
+        "color"
+    } else if (candidate.contains("cue-badge-")) {
+        "badge"
+    } else {
+        "icon"
+    }
+    val currentHeadlineStyle = if (playing && currentTrackCue == "weight") {
+        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+    } else if (playing && currentTrackCue != "icon") {
+        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
+    } else {
+        MaterialTheme.typography.bodyLarge
+    }
+    val currentHeadlineColor = if (playing && currentTrackCue == "color") {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
     ListItem(
         headlineContent = {
             Text(
                 text = track.title,
-                style = MaterialTheme.typography.bodyLarge,
+                color = currentHeadlineColor,
+                style = currentHeadlineStyle,
             )
         },
         supportingContent = {
@@ -1013,10 +1039,25 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
         },
         leadingContent = {
             Box(
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(if (playing && currentTrackCue == "badge") 32.dp else 24.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                if (playing) {
+                if (playing && currentTrackCue == "badge") {
+                    Surface(
+                        modifier = Modifier.size(32.dp),
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = "Playing",
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                    }
+                } else if (playing) {
                     Icon(
                         imageVector = Icons.Filled.PlayArrow,
                         contentDescription = "Playing",
