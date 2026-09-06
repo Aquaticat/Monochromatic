@@ -546,7 +546,7 @@ validation,
  Do not
 invent those details or narrow the requirement without a dedicated design round.
 
-## 12. Existing-screen refinement, awaiting verdict
+## 12. Existing-screen refinement, 1B settled
 
 The active round stays within the accepted screenshot.
  Centering and seek-value
@@ -556,16 +556,19 @@ consistency are corrections,
 fold despite D18,
  and `1:06` of `4:35` requires 24% rather than 16%.
 
-The separable choices are:
+The user chose matrix option 1B:
+ 8dp spacing between playback groups plus outlined
+Previous and Next icon buttons,
+ with Pause remaining filled.
 
-- 8dp,
-   12dp,
-   or 16dp spacing between the existing transport groups.
-- Standard,
-   outlined,
-   or tonal baseline Material styles on the existing previous and
-  next buttons,
-   with pause remaining filled.
+Two existing-screen treatments remain open:
+
+- Current track must combine visible cues rather than rely solely on color or solely on
+  shape.
+  The play icon alone is no longer sufficient;
+ exact additional cues are unsettled.
+- Existing `Open` action must be more prominent as the folder picker's primary action.
+  Exact Material treatment is unsettled.
 
 No absent control or future feature is part of this round.
  The command bar,

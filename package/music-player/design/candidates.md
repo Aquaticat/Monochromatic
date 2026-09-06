@@ -170,16 +170,17 @@ spacing.
  or list
 rule changes.
 
-Provisional visual ranking after full-resolution inspection:
+The designer's full-resolution ranking was
 `2A > 2C > 1A > 1C > 3A > 3C > 2B > 1B > 3B`.
 `2A`,
  balanced spacing with standard skip buttons,
- gives the filled pause action the
-clearest focal point without compressing the stack.
- `2C` is the conservative fallback:
-it keeps the accepted tonal skip-button treatment while correcting the geometry.
-Outlined skip buttons rank last because their circles compete with the much larger
-outlined mode control.
+ was recommended because it gave the filled
+pause action the clearest focal point without compressing the stack.
+ The user chose
+`1B` instead:
+ tight 8dp spacing with outlined Previous and Next buttons.
+ This choice
+settles both matrix dimensions and supersedes the recommendation.
 
 ## ROUND 10 — white-divider clarification
 

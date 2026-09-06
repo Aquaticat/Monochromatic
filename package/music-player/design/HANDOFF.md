@@ -2797,3 +2797,25 @@ closed.
 `{a3559176-9647-40f0-930f-f4f6095ff83f}`.
  Leave it visible and wait for the user's
 spacing and separate Previous/Next icon-button decisions.
+
+The user chose matrix option 1B:
+ 8dp spacing between playback groups and outlined
+Previous/Next icon buttons,
+ with Pause still filled.
+ Record that as D37 and use
+`refine-tight-outlined` as the new accepted transport baseline.
+ The user also repeated
+that visible differentiation must never rely solely on color or solely on shape.
+ This
+reopens D36 because the current track's leading play icon is now only a shape cue.
+Build native variants that retain the play cue and add another visible channel such as
+weight,
+ restrained color,
+ or a container boundary without restoring the rejected
+saturated row fill or invented ordinals.
+ The existing `Open` action is also too weak for
+the folder picker's primary action;
+ build more prominent native treatments.
+ Keep the
+current-track and Open choices separable,
+ and add no absent feature.

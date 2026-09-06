@@ -969,7 +969,7 @@ hard-code true-peak emphasis.
  which creates a trailing
 true-peak column.
 
-### D36. Track rows have no invented ordinals or saturated current-row fill
+### D36. Track rows have no invented ordinals or saturated current-row fill (reopened 2026-09-05)
 Do not prefix tracks with interface-generated numbers;
  they can be confused with real
 track-number metadata.
@@ -983,13 +983,30 @@ titles and `onSurfaceVariant` supporting text.
 undertone on accuracy,
  accessibility,
  and Material grounds.
- The play icon remains the
+ The play icon remains a
 non-color state cue without recoloring the row.
+**Reopened.**
+ The user rejected icon shape as the only visible distinction.
+ Current-track treatment
+must combine cues rather than relying solely on color or solely on shape;
+ exact cues are
+not settled.
 **Rejected.**
  Sequential UI ordinals;
- `primaryContainer` current-row fill;
- a color-only
-current-track treatment.
+ saturated `primaryContainer` current-row fill;
+ color-only or shape-only current-track
+treatment.
+
+### D37. Transport uses tight spacing and outlined skip buttons
+Use 8dp spacing between the existing playback groups and outlined styling for the
+separate Previous and Next icon buttons.
+ Pause remains filled.
+ This is matrix choice 1B.
+**Why.**
+ The user explicitly chose 1B after reviewing all nine native candidates.
+**Rejected.**
+ The other eight spacing and skip-button combinations from the existing-screen
+refinement matrix.
 
 ---
 
