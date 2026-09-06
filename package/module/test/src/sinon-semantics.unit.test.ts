@@ -119,7 +119,9 @@ await describe({
         await it({ name: 'whole-object owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
           const stubbed = sinon.stub(target,);
           expect(stubbed,).toBe(target,);
-          late.push(() => stubbed.method.value(() => 'late',));
+          /** Capture the fake now: the target method itself is restored at completion. */
+          const retained = stubbed.method;
+          late.push(() => retained.value(() => 'late',));
         }, },);
         for (const mutate of late)
           expect(mutate,).toThrow('completed',);

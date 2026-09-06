@@ -69,8 +69,14 @@ export function guardTimerController({ value, owner, restoring, }: {
     /** Reuse a wrapper when Sinon gives restoration methods identical function identities. */
     const guarded = wrappers.get(method,) ?? new Proxy(method, {
       apply(original: typeof method, receiver: unknown, args: unknown[],): unknown {
-        if (property === 'setTickMode')
-          requireRunningOwner({ owner, operation: 'Sinon clock.setTickMode', },);
+        if (property === 'setTickMode') {
+          /** Sinon uninstall stops automated ticking through this public method during cleanup. */
+          const [mode,] = args;
+          /** Cleanup may stop ticking, but must not start another host automation loop. */
+          const stopping = restoring() && isSandboxTarget(mode,) && Reflect.get(mode, 'mode',) === 'manual';
+          if (!stopping)
+            requireRunningOwner({ owner, operation: 'Sinon clock.setTickMode', },);
+        }
         else if (owner.phase === 'completed' && !restoring())
           return undefined;
         return Reflect.apply(original, receiver, args,);
