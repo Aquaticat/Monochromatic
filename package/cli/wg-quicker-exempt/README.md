@@ -150,9 +150,10 @@ candidate replacement,
  committed and uncommitted transition recovery,
  removed cgroups,
  and wrong-owner cleanup retention.
-Debug functional tests inject same typed `BPF_OBJ_PIN EINVAL` boundary,
-so every kernel exercises descriptor-keeper fallback deterministically.
-Release builds omit this test seam.
+Fallback-specific debug functional tests inject same typed `BPF_OBJ_PIN EINVAL` boundary,
+so every kernel exercises descriptor-keeper behavior deterministically.
+Separate public-CLI lifecycle coverage uses current kernel's native pin path.
+Release builds omit injection seam.
 
 ## Caveats
 

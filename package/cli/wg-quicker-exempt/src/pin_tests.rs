@@ -75,13 +75,27 @@ fn cli_binary() -> io::Result<PathBuf> {
 
 /// Runs real CLI and includes stderr when command fails.
 fn run_cli(arguments: &[&str]) -> io::Result<()> {
+    let output = Command::new(cli_binary()?).args(arguments).output()?;
+    if !output.status.success() {
+        return Err(io::Error::other(format!(
+            "CLI {:?} failed with {}: {}",
+            arguments,
+            output.status,
+            String::from_utf8_lossy(&output.stderr).trim()
+        )));
+    }
+    return Ok(());
+}
+
+/// Runs real debug CLI through deterministic descriptor-keeper fallback.
+fn run_cli_with_forced_keeper(arguments: &[&str]) -> io::Result<()> {
     let output = Command::new(cli_binary()?)
         .args(arguments)
         .env(FORCE_PIN_INVALID_ENV, "1")
         .output()?;
     if !output.status.success() {
         return Err(io::Error::other(format!(
-            "CLI {:?} failed with {}: {}",
+            "forced-keeper CLI {:?} failed with {}: {}",
             arguments,
             output.status,
             String::from_utf8_lossy(&output.stderr).trim()
@@ -445,7 +459,7 @@ fn recovery_rejects_uncommitted_candidate() -> io::Result<()> {
         .cgroup
         .to_str()
         .ok_or_else(|| return io::Error::other("non-UTF-8 cgroup fixture"))?;
-    run_cli(&["attach", "8888", cgroup])?;
+    run_cli_with_forced_keeper(&["attach", "8888", cgroup])?;
     let active = read_state(&fixture.cgroup)?
         .and_then(|state| return state.active)
         .ok_or_else(|| return io::Error::other("active keeper absent"))?;
@@ -456,7 +470,7 @@ fn recovery_rejects_uncommitted_candidate() -> io::Result<()> {
     )?;
     let mut candidate_child = candidate.child;
     let reaper = std::thread::spawn(move || return candidate_child.wait());
-    run_cli(&["attach", "7777", cgroup])?;
+    run_cli_with_forced_keeper(&["attach", "7777", cgroup])?;
     let _candidate_status = reaper
         .join()
         .map_err(|_| return io::Error::other("candidate reaper panicked"))??;
@@ -482,7 +496,7 @@ fn recovery_adopts_committed_candidate() -> io::Result<()> {
     commit_holder(&mut candidate)?;
     let mut candidate_child = candidate.child;
     let reaper = std::thread::spawn(move || return candidate_child.wait());
-    run_cli(&["attach", "9999", cgroup])?;
+    run_cli_with_forced_keeper(&["attach", "9999", cgroup])?;
     let _candidate_status = reaper
         .join()
         .map_err(|_| return io::Error::other("candidate reaper panicked"))??;
@@ -500,7 +514,7 @@ fn removed_cgroup_detaches_by_lexical_identity() -> io::Result<()> {
         .cgroup
         .to_str()
         .ok_or_else(|| return io::Error::other("non-UTF-8 cgroup fixture"))?;
-    run_cli(&["attach", "8888", cgroup])?;
+    run_cli_with_forced_keeper(&["attach", "8888", cgroup])?;
     std::fs::remove_dir(&fixture.cgroup)?;
     run_cli(&["detach", cgroup])?;
     assert!(read_state(&fixture.cgroup)?.is_none());
@@ -516,7 +530,7 @@ fn wrong_owner_state_fails_closed() -> io::Result<()> {
         .cgroup
         .to_str()
         .ok_or_else(|| return io::Error::other("non-UTF-8 cgroup fixture"))?;
-    run_cli(&["attach", "8888", cgroup])?;
+    run_cli_with_forced_keeper(&["attach", "8888", cgroup])?;
     let original_state = read_state(&fixture.cgroup)?
         .ok_or_else(|| return io::Error::other("keeper state absent"))?;
     let original = original_state
@@ -592,7 +606,7 @@ fn failed_attach_preserves_prior_attachment() -> io::Result<()> {
         .cgroup
         .to_str()
         .ok_or_else(|| return io::Error::other("non-UTF-8 cgroup fixture"))?;
-    run_cli(&["attach", "8888", cgroup])?;
+    run_cli_with_forced_keeper(&["attach", "8888", cgroup])?;
     let output = Command::new(cli_binary()?)
         .args(["attach", "9999", cgroup])
         .env(FORCE_PIN_INVALID_ENV, "1")

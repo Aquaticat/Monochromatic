@@ -265,7 +265,9 @@ reproduction,
 upstream fix,
 and recovered-kernel comparison.
 Kernel `7.2.0-ogc6.1.fc44.x86_64` pins links successfully.
-Debug functional tests inject typed object-pin failure so descriptor-keeper coverage remains deterministic.
+Fallback-specific debug functional tests inject typed object-pin failure so descriptor-keeper coverage remains
+deterministic.
+Separate public-CLI lifecycle test retains native pin-path coverage.
 
 ## Ghostty, Steam, Helium, Pale Moon, and Firefox Nightly coverage
 

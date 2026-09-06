@@ -146,7 +146,7 @@ match pin::attach_cgroup(mark, cgroup) {
 
 Fallback-specific tests previously relied on host kernel producing that error.
 Successful pinning on kernel `7.2.0-ogc6.1.fc44.x86_64` therefore left no keeper state for assertions such as
-`package/cli/wg-quicker-exempt/src/pin_tests.rs:595-603`:
+`package/cli/wg-quicker-exempt/src/pin_tests.rs:609-617`:
 
 ```rust
 run_cli(&["attach", "8888", cgroup])?;
@@ -228,7 +228,8 @@ Working catalog:
 - A removed cgroup still maps to its lexical state key and detaches cleanly.
 - A bpffs directory name without a dot can be created and removed.
 - Kernel `7.2.0-ogc6.1.fc44.x86_64` pins all four links and removes them through public CLI.
-- Debug functional suite passes all ignored root tests while forcing descriptor fallback.
+- Debug functional suite passes all ignored root tests.
+- Fallback-specific cases force descriptor fallback while public lifecycle case retains native pin coverage.
 
 Current complete harness is:
 
@@ -237,7 +238,7 @@ mise run //package/cli/wg-quicker-exempt:buildAndTest
 mise run //package/cli/wg-quicker-exempt:test:functional
 ```
 
-Debug functional invocation injects typed object-pin failure at
+Fallback-specific debug functional invocations inject typed object-pin failure at
 `package/cli/wg-quicker-exempt/src/pin.rs:302-306`:
 
 ```rust
@@ -250,6 +251,7 @@ if std::env::var_os(FORCE_PIN_INVALID_ENV).is_some() {
 ```
 
 This keeps fallback coverage independent of installed kernel while release compilation omits injection.
+Public-CLI lifecycle test runs without this flag and retains native pin-path coverage.
 
 Failing `EINVAL` catalog:
 
