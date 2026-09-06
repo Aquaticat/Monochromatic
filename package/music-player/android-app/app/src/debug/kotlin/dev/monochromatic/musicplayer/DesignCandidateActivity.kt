@@ -87,7 +87,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
 
 // What:     `background` paints a Compose layout node with one color.
 // Why:      Candidate A, B, and C differ in their surface hierarchy.
@@ -191,7 +190,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.layout.size
@@ -220,7 +218,6 @@ import androidx.compose.foundation.shape.CircleShape
 // ```
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -262,7 +259,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 // ```
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -300,7 +296,6 @@ import androidx.compose.ui.text.font.FontWeight
 // const dp = (value: number) => value;
 // const sp = (value: number) => value;
 // ```
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
@@ -465,7 +460,7 @@ private fun DesignCandidatePrototype(candidate: String) {
             if (candidate.startsWith("dbtp-")) {
                 RightHalfStudy(candidate = candidate, palette = palette)
             } else {
-                FullUnfoldedStudy(candidate = candidate, palette = palette)
+                FullUnfoldedStudy(palette = palette)
             }
         }
     }
@@ -473,7 +468,7 @@ private fun DesignCandidatePrototype(candidate: String) {
 
 /** Renders two equal 414dp panes around Material's centered 24dp expanded-layout spacer. */
 @Composable
-private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
+private fun FullUnfoldedStudy(palette: CandidatePalette) {
     Row(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
@@ -482,7 +477,6 @@ private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
         ) {
             FolderAndTransportPane(
                 modifier = Modifier.fillMaxSize(),
-                candidate = candidate,
                 palette = palette,
             )
         }
@@ -515,7 +509,7 @@ private fun RightHalfStudy(candidate: String, palette: CandidatePalette) {
 
 /** Builds the settled picker-over-transport left pane. */
 @Composable
-private fun FolderAndTransportPane(modifier: Modifier, candidate: String, palette: CandidatePalette) {
+private fun FolderAndTransportPane(modifier: Modifier, palette: CandidatePalette) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -529,7 +523,6 @@ private fun FolderAndTransportPane(modifier: Modifier, candidate: String, palett
         Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
         TransportBlock(
             modifier = Modifier.fillMaxWidth(),
-            candidate = candidate,
             palette = palette,
         )
     }
@@ -701,12 +694,9 @@ private fun RowScope.FolderNames() {
     }
 }
 
-/** Draws the accepted transport while varying only volume trigger placement and popover content. */
+/** Draws a labeled Material slider, official transport icon buttons, and one-row mode selector. */
 @Composable
-private fun TransportBlock(modifier: Modifier, candidate: String, palette: CandidatePalette) {
-    val headerVolume = candidate.startsWith("volume-h-")
-    val controlsVolume = candidate.startsWith("volume-c-")
-    val dedicatedVolume = candidate.startsWith("volume-r-")
+private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
     Column(
         modifier = modifier
             .heightIn(max = 440.dp)
@@ -718,21 +708,13 @@ private fun TransportBlock(modifier: Modifier, candidate: String, palette: Candi
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(text = "Another Xronixle", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = "1 of 16 · −1.2 dBTP",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            if (headerVolume) {
-                VolumeControl(candidate = candidate, modifier = Modifier.align(Alignment.CenterEnd))
-            }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "Another Xronixle", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = "1 of 16 · −1.2 dBTP",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(
@@ -761,19 +743,9 @@ private fun TransportBlock(modifier: Modifier, candidate: String, palette: Candi
                     style = timeStyle,
                 )
             }
-            Box(modifier = Modifier.fillMaxWidth()) {
-                TransportControls()
-                if (controlsVolume) {
-                    VolumeControl(candidate = candidate, modifier = Modifier.align(Alignment.CenterEnd))
-                }
-            }
+            TransportControls()
         }
         ModeControl()
-        if (dedicatedVolume) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                VolumeControl(candidate = candidate)
-            }
-        }
     }
 }
 
@@ -793,67 +765,6 @@ private fun TransportControls() {
         }
         FilledTonalIconButton(onClick = {}) {
             Icon(imageVector = Icons.Filled.SkipNext, contentDescription = "Next track")
-        }
-    }
-}
-
-/**
- * What:     `VolumeControl` places a real Material icon button and an open anchored menu surface.
- * Why:      The matrix must show the missing D20 control at its actual size and compare popover content.
- *
- * In TS you'd write (pseudocode):
- * ```ts
- * function VolumeControl(props: { candidate: string; className?: string }): JSX.Element {}
- * ```
- */
-@Composable
-private fun VolumeControl(candidate: String, modifier: Modifier = Modifier) {
-    val showPercentage = candidate.endsWith("-p") || candidate.endsWith("-m")
-    val showMute = candidate.endsWith("-m")
-    Box(modifier = modifier) {
-        IconButton(onClick = {}) {
-            Icon(imageVector = Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Volume, 72 percent")
-        }
-        DropdownMenu(
-            expanded = true,
-            onDismissRequest = {},
-            offset = DpOffset((-72).dp, (-8).dp),
-            modifier = Modifier.width(112.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shadowElevation = 6.dp,
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                if (showPercentage) {
-                    Text(
-                        text = "72%",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                }
-                Box(
-                    modifier = Modifier.width(64.dp).height(176.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Slider(
-                        value = 0.72f,
-                        onValueChange = {},
-                        modifier = Modifier
-                            .requiredWidth(160.dp)
-                            .rotate(-90f)
-                            .semantics {
-                                contentDescription = "Volume level, 72 percent"
-                            },
-                    )
-                }
-                if (showMute) {
-                    TextButton(onClick = {}) {
-                        Text(text = "Mute")
-                    }
-                }
-            }
         }
     }
 }
