@@ -737,9 +737,9 @@ private fun TransportBlock(
         modifier = modifier
             .heightIn(max = 440.dp)
             .background(color = palette.transport)
-            .verticalScroll(rememberScrollState())
             .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Horizontal))
             .windowInsetsPadding(WindowInsets.navigationBars)
+            .verticalScroll(rememberScrollState())
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(groupSpacing),
