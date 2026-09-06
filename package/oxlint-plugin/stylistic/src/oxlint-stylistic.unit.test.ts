@@ -498,11 +498,19 @@ await describe({
       name: 'no-mixed-operators',
       children: [
         it({
-          name: 'reports nested mixed-operator expressions without parens',
+          name: 'reports mixed operators and chained exponentiation without parens',
           fn: async () => {
             const diagnostics = await lint('invalid/no-mixed-operators.ts',);
             const rules = uniqueRules(diagnostics,);
+            /** Diagnostics carrying the dedicated chained-exponentiation message. */
+            const exponentiationDiagnostics = diagnostics.filter(
+              function isChainedExponentiation(diagnostic,): boolean {
+                return diagnostic.message
+                  === 'Chained exponentiation requires parentheses that expose its grouping.';
+              },
+            );
             expect(rules,).toContain('stylistic(no-mixed-operators)',);
+            expect(exponentiationDiagnostics,).toHaveLength(3,);
           },
         },),
       ],
@@ -1138,6 +1146,42 @@ await describe({
             expect(after.includes('// keep this note inside the call',),).toBe(true,);
             // The member axis broke `obj.a` onto the head line.
             expect(after.includes('obj.a\n',),).toBe(true,);
+          },
+        },),
+        it({
+          name: '--fix exposes every chained-exponentiation grouping',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
+            const exponentiationSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'no-mixed-operators.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            await using exponentiationCopy = await createTempFixtureFile({
+              fileName: 'no-mixed-operators.ts',
+              sourcePath: exponentiationSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
+            },);
+            /** Diagnostics before fixing, proving the fixture exercises the new branch. */
+            const beforeDiagnostics = await lint(exponentiationCopy.filePath,);
+            /** Chained-exponentiation findings before explicit grouping is inserted. */
+            const beforeExponentiationDiagnostics = beforeDiagnostics.filter(
+              function isChainedExponentiation(diagnostic,): boolean {
+                return diagnostic.message
+                  === 'Chained exponentiation requires parentheses that expose its grouping.';
+              },
+            );
+            expect(beforeExponentiationDiagnostics,).toHaveLength(3,);
+
+            await fixUntilStable(exponentiationCopy.filePath,);
+
+            /** Fixed source, inspected to prove grouping became explicit. */
+            const after = readFileSync(exponentiationCopy.filePath, 'utf8',);
+            /** Diagnostics after all overlapping fixes converge. */
+            const afterDiagnostics = await lint(exponentiationCopy.filePath,);
+            expect(after,).toContain('** (',);
+            expect(afterDiagnostics,).toEqual([],);
           },
         },),
         it({

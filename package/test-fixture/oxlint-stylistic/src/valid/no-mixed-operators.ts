@@ -41,11 +41,19 @@ const r11 = x && y;
 // Parentheses around a unary negative literal are the accepted existence-check idiom.
 const r12 = a === (-1);
 
+// Direct exponentiation is permitted; chained exponentiation exposes its grouping.
+const r13 = 2 ** 3;
+const r14 = (2 ** 3) ** 2;
+const r15 = 2 ** (3 ** 2);
+
 export {
   r1,
   r10,
   r11,
   r12,
+  r13,
+  r14,
+  r15,
   r2,
   r3,
   r4,

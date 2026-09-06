@@ -154,14 +154,17 @@ All per-line rules are auto-fixable via `oxlint --fix`.
    require parentheses around nested binary or logical expressions
   whose operator differs from the parent.
   Same-operator chains (`a + b + c`,
-   `x && y && z`) are permitted because they are unambiguous under associativity.
+   `x && y && z`) are permitted because they are unambiguous under associativity,
+  except chained exponentiation.
+  Because `**` associates from the right,
+   write `a ** (b ** c)` instead of `a ** b ** c`.
   Mixed operators (`a + b * c`,
-   `x || y && z`) must be disambiguated with explicit parens.
+   `x || y && z`) must also be disambiguated with explicit parens.
   This includes a unary negative literal in a comparison:
    write `index === (-1)` rather than `index === -1`.
   Parenthesizing the literal is the accepted existence-check idiom and is compatible with
    `unicorn/consistent-existence-index-check`.
-  Not auto-fixable.
+  The autofix wraps each offending nested operand while preserving the AST's existing grouping.
 - **chain-per-line**:
    require one chain segment per source line for binary,
    logical,

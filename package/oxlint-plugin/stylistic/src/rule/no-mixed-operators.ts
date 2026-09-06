@@ -11,26 +11,36 @@ import type {
 import { hasParens, } from '../utility/has-parens.ts';
 
 /**
- * Reports nested binary or logical expressions whose operator differs from
- * the parent's operator unless they are wrapped in parentheses.
- *
- * Same-operator chains (`a + b + c`, `x && y && z`) are permitted because
- * they are unambiguous under associativity. Mixed operators (`a + b * c`,
- * `x || y && z`) must be disambiguated with explicit parens so precedence
- * is visible at the call site.
+ * Right-associative operator that requires explicit grouping when chained.
  *
  * @example
  * ```ts
- * // Bad: precedence is implicit
+ * EXPONENTIATION_OPERATOR;
+ * ```
+ */
+const EXPONENTIATION_OPERATOR = '**';
+
+/**
+ * Reports nested binary or logical expressions whose grouping is implicit.
+ *
+ * Mixed operators (`a + b * c`, `x || y && z`) require explicit parentheses.
+ * Same-operator chains (`a + b + c`, `x && y && z`) are permitted, except
+ * chained exponentiation because `**` associates from the right.
+ *
+ * @example
+ * ```ts
+ * // Bad: grouping is implicit
  * const r1 = a + b * c;
  * const r2 = x || y && z;
+ * const r3 = 2 ** 3 ** 2;
  *
  * // Good: same-operator chain
- * const r3 = a + b + c;
+ * const r4 = a + b + c;
  *
- * // Good: explicit parens
- * const r4 = a + (b * c);
- * const r5 = (x || y) && z;
+ * // Good: explicit parentheses
+ * const r5 = a + (b * c);
+ * const r6 = (x || y) && z;
+ * const r7 = 2 ** (3 ** 2);
  * ```
  */
 export const noMixedOperators: CreateOnceRule = {
@@ -39,10 +49,12 @@ export const noMixedOperators: CreateOnceRule = {
     fixable: 'code',
     docs: {
       description:
-        'Require parentheses around nested binary or logical expressions whose operator differs from the parent.',
+        'Require parentheses around mixed operators and chained exponentiation.',
       recommended: true,
     },
     messages: {
+      chainedExponentiation:
+        'Chained exponentiation requires parentheses that expose its grouping.',
       nested: 'Nested binary expression with a different operator requires parentheses.',
     },
   },
@@ -61,8 +73,8 @@ export const noMixedOperators: CreateOnceRule = {
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
      * Checks both children of a BinaryExpression or LogicalExpression and
-     * reports the parent node once for each child that mixes operators
-     * without parens.
+     * reports the parent node once for each implicitly grouped mixed operator
+     * or chained exponentiation operand.
      *
      * Why the auto-fix is safe: it wraps each offending child in `(...)`
      * at the operand's existing AST range. Parentheses are a precedence-
@@ -99,9 +111,10 @@ export const noMixedOperators: CreateOnceRule = {
         if (child.operator
           === undefined)
           continue;
-        if (child.operator
+        if ((child.operator
           === parent
           .operator)
+          && (child.operator !== EXPONENTIATION_OPERATOR))
           continue;
         if (hasParens({
           child,
@@ -115,7 +128,11 @@ export const noMixedOperators: CreateOnceRule = {
         const offender = child;
         context.report({
           node,
-          messageId: 'nested',
+          messageId: (child.operator
+            === parent
+            .operator)
+            ? 'chainedExponentiation'
+            : 'nested',
           fix(fixer: ForeignBorrowed<Fixer>,): Fix[] {
             return [
               fixer.insertTextBeforeRange(
