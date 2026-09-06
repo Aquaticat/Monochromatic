@@ -1226,8 +1226,17 @@ temporary refinement captures were removed from the prototype worktree without t
 its pre-existing capture changes. The exact cleared questionnaire is open through the
 normal Helium desktop entry. KWin reports `Music player design: existing-screen
 refinement matrix - Helium` active and non-minimized at 1080 × 1880 on `HDMI-A-1`,
-internal ID `{63ccc0f8-3470-4305-a7fd-11e71988cbc1}`. Prototype HEAD and upstream are
+internal ID `{a3559176-9647-40f0-930f-f4f6095ff83f}`. Prototype HEAD and upstream are
 `bf6830f4f`. Check main HEAD against upstream after this final handover commit, leave
 the form visible, and wait. The vertical segmented large-text correction is settled;
 the form asks only the separable spacing and Previous/Next icon-button treatment
 questions.
+
+A final isolated Helium pass loaded the navigation-safe capture and visible prototype
+boundary. All eleven images decoded, the page and large-text modal each reported zero
+WCAG A/AA axe violations and zero incomplete checks, the preview frame remained
+907 × 937 CSS px, and the large-text image scrolled through its full 407px preview
+range. Browser errors and console output remained empty. The isolated verifier is
+closed. Normal Helium remains active on the exact cleared file at KWin ID
+`{a3559176-9647-40f0-930f-f4f6095ff83f}`. Leave it visible and wait for the user's
+spacing and separate Previous/Next icon-button decisions.
