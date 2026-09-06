@@ -1,0 +1,241 @@
+diff --git a/crates/oxc_linter/src/config/config_builder.rs b/crates/oxc_linter/src/config/config_builder.rs
+index 62a8bad..41b3515 100644
+--- a/crates/oxc_linter/src/config/config_builder.rs
++++ b/crates/oxc_linter/src/config/config_builder.rs
+@@ -38,6 +38,13 @@ pub struct ConfigStoreBuilder {
+     categories: OxlintCategories,
+     overrides: OxlintOverrides,
+ 
++    /// Filters (`-A` / `-W` / `-D`) that may target JS plugin rules.
++    ///
++    /// `with_filter` cannot resolve a JS plugin rule name because it has no `ExternalPluginStore`,
++    /// so the filters are recorded here and applied to `external_rules` in `build`, which has one.
++    /// Category filters never match JS plugin rules and are not recorded.
++    external_filters: Vec<LintFilter>,
++
+     // Collect all `extends` file paths for the language server.
+     // The server will tell the clients to watch for the extends files.
+     pub extended_paths: Vec<PathBuf>,
+@@ -60,9 +67,18 @@ impl ConfigStoreBuilder {
+         let external_rules = FxHashMap::default();
+         let categories: OxlintCategories = OxlintCategories::default();
+         let overrides = OxlintOverrides::default();
++        let external_filters = Vec::new();
+         let extended_paths = Vec::new();
+ 
+-        Self { rules, external_rules, config, categories, overrides, extended_paths }
++        Self {
++            rules,
++            external_rules,
++            config,
++            categories,
++            overrides,
++            external_filters,
++            extended_paths,
++        }
+     }
+ 
+     /// Warn on all rules in all plugins and categories, including those in `nursery`.
+@@ -75,8 +91,17 @@ impl ConfigStoreBuilder {
+         let categories: OxlintCategories = OxlintCategories::default();
+         let rules = RULES.iter().map(|rule| (rule.clone(), AllowWarnDeny::Warn)).collect();
+         let external_rules = FxHashMap::default();
++        let external_filters = Vec::new();
+         let extended_paths = Vec::new();
+-        Self { rules, external_rules, config, categories, overrides, extended_paths }
++        Self {
++            rules,
++            external_rules,
++            config,
++            categories,
++            overrides,
++            external_filters,
++            extended_paths,
++        }
+     }
+ 
+     /// Create a [`ConfigStoreBuilder`] from a loaded or manually built [`Oxlintrc`].
+@@ -308,6 +333,7 @@ impl ConfigStoreBuilder {
+             config,
+             categories,
+             overrides: oxlintrc.overrides,
++            external_filters: Vec::new(),
+             extended_paths,
+         };
+ 
+@@ -402,6 +428,11 @@ impl ConfigStoreBuilder {
+     }
+ 
+     pub fn with_filter(mut self, filter: &LintFilter) -> Self {
++        // JS plugin rules are resolved in `build`, where the `ExternalPluginStore` is available.
++        if !matches!(filter.kind(), LintFilterKind::Category(_)) {
++            self.external_filters.push(filter.clone());
++        }
++
+         let (severity, filter) = filter.into();
+ 
+         match severity {
+@@ -499,6 +530,8 @@ impl ConfigStoreBuilder {
+         let overrides = std::mem::take(&mut self.overrides);
+         let resolved_overrides = self.resolve_overrides(overrides, external_plugin_store)?;
+ 
++        self.apply_external_filters(external_plugin_store);
++
+         let mut rules: Vec<_> = self
+             .rules
+             .into_iter()
+@@ -521,6 +554,49 @@ impl ConfigStoreBuilder {
+         Ok(Config::new(rules, external_rules, self.categories, self.config, resolved_overrides))
+     }
+ 
++    /// Apply the recorded filters (`-A` / `-W` / `-D`) to JS plugin rules, mirroring what
++    /// [`with_filter`] does for builtin rules. Names are resolved through `external_plugin_store`,
++    /// the same lookup `OxlintRules::override_rules` uses for config file keys.
++    ///
++    /// `-W all` / `-D all` are not applied to JS plugin rules: they carry no category, so
++    /// "every rule except nursery" has no meaning for them.
++    ///
++    /// [`with_filter`]: ConfigStoreBuilder::with_filter
++    fn apply_external_filters(&mut self, external_plugin_store: &ExternalPluginStore) {
++        if !external_plugin_store.is_enabled() {
++            return;
++        }
++
++        for filter in std::mem::take(&mut self.external_filters) {
++            let (severity, kind): (AllowWarnDeny, &LintFilterKind) = (&filter).into();
++            let rule_ids: Vec<ExternalRuleId> = match kind {
++                LintFilterKind::Rule(plugin, rule) => {
++                    let (plugin, rule) = super::rules::unalias_plugin_name(plugin, rule);
++                    external_plugin_store.lookup_rule_id(&plugin, &rule).ok().into_iter().collect()
++                }
++                LintFilterKind::Generic(name) => {
++                    external_plugin_store.rule_ids_named(name.as_ref()).collect()
++                }
++                LintFilterKind::All if severity.is_allow() => {
++                    self.external_rules.clear();
++                    continue;
++                }
++                LintFilterKind::All | LintFilterKind::Category(_) => continue,
++            };
++
++            for rule_id in rule_ids {
++                if severity.is_allow() {
++                    self.external_rules.remove(&rule_id);
++                } else {
++                    self.external_rules
++                        .entry(rule_id)
++                        .and_modify(|(_, existing_severity)| *existing_severity = severity)
++                        .or_insert((ExternalOptionsId::NONE, severity));
++                }
++            }
++        }
++    }
++
+     fn resolve_overrides(
+         &self,
+         overrides: OxlintOverrides,
+@@ -1048,6 +1124,81 @@ mod test {
+         }
+     }
+ 
++    /// CLI filters (`-A` / `-W` / `-D`) must reach JS plugin rules the same way they reach
++    /// builtin rules. `with_filter` cannot resolve JS plugin rule names itself (it has no
++    /// `ExternalPluginStore`), so the effect is checked on the built `Config`.
++    #[test]
++    fn test_filter_external_rules() {
++        let mut store = ExternalPluginStore::new(true);
++        store.register_plugin(
++            PathBuf::from("path/to/custom-plugin"),
++            "custom".to_string(),
++            0,
++            vec!["my-rule".to_string(), "other-rule".to_string()],
++        );
++        let my_rule = store.lookup_rule_id("custom", "my-rule").unwrap();
++        let other_rule = store.lookup_rule_id("custom", "other-rule").unwrap();
++        let options = smallvec::smallvec![serde_json::json!({ "foo": true })];
++        let options_id = store.add_options(my_rule, &options);
++
++        // What `OxlintRules::override_rules` records for
++        // `"custom/my-rule": ["warn", { "foo": true }]` and `"custom/other-rule": "error"`.
++        let configured = || {
++            let mut builder = ConfigStoreBuilder::empty();
++            builder.external_rules.insert(my_rule, (options_id, AllowWarnDeny::Warn));
++            builder
++                .external_rules
++                .insert(other_rule, (ExternalOptionsId::NONE, AllowWarnDeny::Deny));
++            builder
++        };
++        let external_rules = |builder: ConfigStoreBuilder, store: &mut ExternalPluginStore| {
++            builder.build(store).unwrap().base.external_rules.to_vec()
++        };
++
++        // `-A custom/my-rule` removes the rule and leaves the other one untouched.
++        let builder = configured()
++            .with_filter(&LintFilter::new(AllowWarnDeny::Allow, "custom/my-rule").unwrap());
++        assert_eq!(
++            external_rules(builder, &mut store),
++            vec![(other_rule, ExternalOptionsId::NONE, AllowWarnDeny::Deny)],
++            "`-A plugin/rule` should remove a configured JS plugin rule"
++        );
++
++        // `-D custom/my-rule` promotes the rule and keeps its configured options.
++        let builder = configured()
++            .with_filter(&LintFilter::new(AllowWarnDeny::Deny, "custom/my-rule").unwrap());
++        assert_eq!(
++            external_rules(builder, &mut store),
++            vec![
++                (my_rule, options_id, AllowWarnDeny::Deny),
++                (other_rule, ExternalOptionsId::NONE, AllowWarnDeny::Deny)
++            ],
++            "`-D plugin/rule` should change severity and preserve options"
++        );
++
++        // `-A my-rule` (no plugin prefix) matches by rule name, as it does for builtin rules.
++        let builder =
++            configured().with_filter(&LintFilter::new(AllowWarnDeny::Allow, "my-rule").unwrap());
++        assert_eq!(
++            external_rules(builder, &mut store),
++            vec![(other_rule, ExternalOptionsId::NONE, AllowWarnDeny::Deny)],
++            "`-A rule` should remove a configured JS plugin rule by bare name"
++        );
++
++        // `-A all` clears JS plugin rules along with builtin rules.
++        let builder =
++            configured().with_filter(&LintFilter::new(AllowWarnDeny::Allow, "all").unwrap());
++        assert!(
++            external_rules(builder, &mut store).is_empty(),
++            "`-A all` should clear configured JS plugin rules"
++        );
++
++        // `-W custom/unknown-rule` names no registered rule and must not add anything.
++        let builder = configured()
++            .with_filter(&LintFilter::new(AllowWarnDeny::Warn, "custom/unknown-rule").unwrap());
++        assert_eq!(external_rules(builder, &mut store).len(), 2);
++    }
++
+     #[test]
+     fn test_rules_after_plugin_added() {
+         let builder = ConfigStoreBuilder::default();
+diff --git a/crates/oxc_linter/src/external_plugin_store.rs b/crates/oxc_linter/src/external_plugin_store.rs
+index ea38469..2d6484c 100644
+--- a/crates/oxc_linter/src/external_plugin_store.rs
++++ b/crates/oxc_linter/src/external_plugin_store.rs
+@@ -138,6 +138,18 @@ impl ExternalPluginStore {
+         })
+     }
+ 
++    /// IDs of every registered rule named `rule_name`, across all plugins.
++    /// Used for CLI filters that name a rule without its plugin (e.g. `-A my-rule`).
++    pub fn rule_ids_named<'a>(
++        &'a self,
++        rule_name: &'a str,
++    ) -> impl Iterator<Item = ExternalRuleId> + 'a {
++        self.rules
++            .iter_enumerated()
++            .filter(move |(_, rule)| rule.name == rule_name)
++            .map(|(rule_id, _)| rule_id)
++    }
++
+     pub fn resolve_plugin_rule_names(
+         &self,
+         external_rule_id: ExternalRuleId,
