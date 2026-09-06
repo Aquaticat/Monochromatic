@@ -194,12 +194,15 @@ export function headingWords(
   { text, }: { readonly text: string; },
 ): string {
   /**
-   * Index of the first character that is not an opening mark.
+   * Position of the first character that is not an opening mark, or -1 when
+   * the line is marks alone. The marks are ASCII, so the code-point index and
+   * the string index agree up to that character.
    */
-  let index = 0;
-  while ((index < text.length) && (text[index] === HEADING_MARK))
-    index += 1;
-  return foldedLine({ text: text.slice(index,), },);
+  const firstWord = Array.from(text,)
+    .findIndex(function isNotMark(character,): boolean {
+      return character !== HEADING_MARK;
+    },);
+  return foldedLine({ text: (firstWord === -1) ? '' : text.slice(firstWord,), },);
 }
 
 /**
@@ -300,7 +303,9 @@ export function commentNoteLines(
       };
     },)
     .filter(function saysSomething(placed,): boolean {
-      return placed.body.length > 0;
+      return placed.body
+        .length
+        > 0;
     },)
     .map(function toLine(placed,): string {
       return `- ${side} editor comment ${placed.anchor}: ${placed.body}`;
