@@ -3,7 +3,7 @@
  `<shuffle-children>` element in browsers that do not yet support CSS `random()`.
  
  The {@link ShuffleChildren} component sets `display: flex` on `<shuffle-children>`
- and `order: random(1, 1000, by 1)` on each direct child to shuffle visually.
+ and `order: random(1, 1000, 1)` on each direct child to shuffle visually.
  Browsers that do not support CSS `random()` drop the `order` declaration and
  every child falls back to the default `order: 0`, leaving them in source order,
  which defeats the shuffle.
@@ -28,8 +28,14 @@ export {}; // module boundary marker
 
 /**
  Probe used to detect whether the browser supports `random()` on `order`.
+
+ Must stay spelled the way `cssRandom` emits, or this probe answers a different
+ question than the one that matters. It previously read `random(1, 1000, by 1)`,
+ the grammar from the stale W3C `/TR/` snapshot, which no engine accepts, so the
+ probe reported false everywhere and this script always reordered the DOM.
+ See `doc/troubleshooting/css-random.md`.
  */
-const RANDOM_PROBE = 'random(1, 1000, by 1)';
+const RANDOM_PROBE = 'random(1, 1000, 1)';
 
 /**
  Reorders the direct children of each `<shuffle-children>` wrapper using
