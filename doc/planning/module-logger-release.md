@@ -55,6 +55,27 @@ Its post-release value (toml-edit verification bar,
 - Shipped tests and `tsconfig.tsbuildinfo` are excluded from tarballs repo-wide (issue #336),
    not for the logger alone;
    mechanism still open.
+- Scope:
+   the logger now,
+   to enable publishing more later;
+   the eight-package closure of `module-test` is not this release.
+- `./ts` stays in the published surface,
+   so `module-caught-value` publishes alongside the logger.
+   Its dependency type given `./ts` is still open.
+- Tarball:
+   `tsconfig.tsbuildinfo` leaves every tarball via the shared tsconfig;
+   test files ship (owner accepts the mixed ecosystem practice).
+- Publish mechanism:
+   fix `.github/workflows/publish.yml` (build step,
+   auth gated on live runs,
+   filter list including both packages).
+   Bootstrap authenticates with a granular npm token in `NPM_TOKEN` for one live run;
+   afterwards `npm trust github` per package and the token is deleted.
+   Trusted publishing was never set up;
+   the workflow used a token secret that does not exist in the repo.
+- First version:
+   0.1.0 for the logger;
+   caught-value also 0.1.0 unless the owner vetoes.
 - The legacy plan becomes a post-release track after a rewrite that fixes its inventory and removes the items decided against here.
 
 ## Measured state (2026-09-06)
@@ -124,19 +145,43 @@ Its post-release value (toml-edit verification bar,
 - file-enforcer reads package manifests only for license expressions;
    it does not manage manifest fields.
    Its `overwriteEach` mirror-glob can stamp one source file into many destinations.
+- Node refuses `.ts` files under `node_modules` by default (Node TypeScript docs),
+   so a published `./ts` subpath serves bundler users only.
+- npm trusted publishing cannot bootstrap:
+   `npm trust` requires the package to already exist on the registry.
+   pnpm supports OIDC trusted publishing since 10.21.0;
+   the workflow installs `pnpm = "latest"` via mise.
+- `gh secret list` shows no `NPM_TOKEN`.
+- Test files shipped by other packages (`npm pack --dry-run`):
+   rambdax 1 of 321,
+   zod 191 of 828,
+   pino 54 of 195,
+   fast-check 0 of 11,
+   picocolors 0 of 7.
+- `module-caught-value` readiness:
+   one source file,
+   no workspace runtime dependencies,
+   README present,
+   `lint:types`,
+   `lint:oxlint`,
+   `test:unit` all pass,
+   dist dated 2026-07-15 matches the last source change,
+   tarball 8 files including the tsbuildinfo.
+- The `require-eventual-artifact` rule exempts only test-only modules by name (`fixturePatterns`);
+   its README forbids allowlisting behavior modules,
+   so the 25 logger findings are fixed by exporting the internals from the entry as `@internal` and importing the built artifact,
+   not by config.
 - Prior direction in `doc/handover/cli-git-policies-platform.md` says to bundle logger into public artifacts rather than publish it.
 
 ## Open questions
 
-- Whether the release scope is the full eight-package closure (flipping `module-fs-path` public too).
-- Mechanism for the repo-wide #336 fix.
-- Whether `./ts` stays in the published surface.
-- Publish mechanism (workflow with a build step,
-   local publish without provenance,
-   or trusted publishing).
-- First version number.
+- Dependency type of `module-caught-value` in the logger manifest given `./ts` (dev,
+   runtime,
+   or optional peer).
 - Whether the 25 lint errors gate the publish.
 - Whether the "bundle, don't publish" direction is formally reversed.
+- Whether the no-backend throw stays in 0.1.0.
+- Whether the `flush()` hang is fixed before 0.1.0.
 
 ## Next action
 
