@@ -100,6 +100,30 @@ Produced by a `minor` changeset from 0.0.1.
 Caret ranges on 0.x treat every minor as breaking,
 which matches the state of the contract.
 
+### The release workflow runs only when a release input changes (2026-09-06)
+
+`npm-release.yml` used to run on every push to `main`.
+With a changeset pending,
+ every run regenerated the `changeset-release/main` branch and force-pushed one fresh `chore(*): version packages` commit onto the open Version Packages pull request,
+and GitHub mailed the owner a push notification each time:
+198 commits landed on `main` on 2026-09-06 and the workflow ran at least 40 times that day.
+The owner ruled one run per commit unsustainable.
+
+The `push` trigger is now filtered to the paths that can change what the flow does:
+`.changeset/**` (a new or consumed changeset opens,
+ updates,
+ or closes the Version Packages pull request),
+`**/package.json` and `**/CHANGELOG.md` (what a merged Version Packages pull request edits,
+ so publishing still triggers),
+and the workflow file itself.
+`workflow_dispatch` stays for a manual run.
+Accepted consequence:
+the Version Packages branch is no longer rebased on every unrelated `main` commit;
+the action rebases it on its next relevant run,
+and the branch only ever touches manifests,
+ changelogs,
+ and changeset files.
+
 ## Consequences
 
 - Public packages may depend on published workspace modules;

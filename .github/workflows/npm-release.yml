@@ -12,11 +12,23 @@ name: npm-release
 #   package to exist before a trusted publisher can be configured), so it is
 #   published by hand: doc/runbook/publish-npm-package-first-time.md. The
 #   publish job then finds it already on the registry and only tags it.
+#
+# Scoped to the files that can change what the flow does: a changeset file
+# (opens or updates the Version Packages pull request), a package manifest or
+# changelog (a merged Version Packages pull request, which is what publishes),
+# and this workflow. Every other push to main is irrelevant to releasing, and
+# running here on each one regenerated the Version Packages branch and mailed a
+# push notification per commit (198 commits on 2026-09-06 alone).
 
 on:
   push:
     branches:
       - main
+    paths:
+      - '.changeset/**'
+      - '**/package.json'
+      - '**/CHANGELOG.md'
+      - '.github/workflows/npm-release.yml'
   workflow_dispatch:
 
 permissions: {}
