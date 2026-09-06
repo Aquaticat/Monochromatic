@@ -162,6 +162,46 @@ That is the mechanism the newsticker fix relies on:
 a registered property's `initial-value` is what an unparseable or unsupported
 `random()` degrades to.
 
+## The second victim: a support probe written in the stale grammar
+
+The more instructive failure is not the emitted CSS but the feature detection.
+
+`package/ssg/aquati.cat/src/client/shuffle-children.ts` decides whether to run its
+DOM-reordering fallback by probing for support:
+
+```ts
+// before abf711ee6
+const RANDOM_PROBE = 'random(1, 1000, by 1)';
+
+if (CSS.supports('order', RANDOM_PROBE)) {
+  return;
+}
+```
+
+`CSS.supports` is a syntactic check, so it answers "is this string parseable",
+not "does this feature exist".
+A probe written in a grammar no engine accepts returns false forever,
+in engines that implement `random()` exactly as loudly as in engines that do not.
+
+The failure mode is a ratchet:
+
+-   The probe reports "unsupported" in every browser.
+-   So the scripted fallback always runs.
+-   So the shuffle always visibly works.
+-   So nothing looks broken, and the dead CSS path is never noticed.
+
+The bug hid itself.
+It only became harmful once the emitted CSS was corrected:
+from Safari 26.2 and Chrome 155 the CSS path applies while the probe still says
+"unsupported", so both the CSS shuffle and the DOM reorder run.
+The file's own documentation claimed the script "is a no-op" in supporting
+browsers, which had never been true.
+
+Fixed in `abf711ee6` by spelling the probe the way `cssRandom` emits.
+The general rule: a feature probe and the code it guards must be generated from
+one spelling, or verified against each other, because a probe in the wrong
+grammar fails safe-looking and silent.
+
 ## Verified workarounds
 
 ### Register the target custom property with `@property`
