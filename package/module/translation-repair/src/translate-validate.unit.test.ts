@@ -260,6 +260,39 @@ In the morning it dozes on the windowsill.
     },),
 
     it({
+      name: 'COMPARES an original that carries an HTML comment rather than answering unknown, whether '
+        + 'the translation carries the comment rendered or leaves it out, since the document reader '
+        + 'masks comments before its strict parse and the slice reader must read the same grammar '
+        + '(yulianNyanner, 2026-09-06: every commented slice was inadmissible on both gates)',
+      fn: async () => {
+        /**
+         * Original with a translator note between its blocks.
+         */
+        const sourceText = '## 猫猫\n\n<!-- （本段为客观叙述） -->\n\n猫猫在窗台上打盹。';
+
+        expect(
+          validateTranslatedSlice({
+            sourceText,
+            candidateText: '## The cat\n\n<!-- (This section is an objective description.) -->\n\nThe cat dozes on the windowsill.',
+          },).kind,
+        ).toBe('valid',);
+        expect(
+          validateTranslatedSlice({
+            sourceText,
+            candidateText: '## The cat\n\nThe cat dozes on the windowsill.',
+          },).kind,
+        ).toBe('valid',);
+        // The comparison still runs: a dropped heading is still reported.
+        expect(
+          validateTranslatedSlice({
+            sourceText,
+            candidateText: '<!-- (This section is an objective description.) -->\n\nThe cat dozes on the windowsill.',
+          },).kind,
+        ).toBe('invalid',);
+      },
+    },),
+
+    it({
       name: 'REFUSES contributor respelling even when ORIGINAL grammar is unknown',
       fn: async () => {
         const validation = validateTranslatedSlice({

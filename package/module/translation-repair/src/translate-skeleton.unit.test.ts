@@ -193,6 +193,42 @@ await describe({
     },),
 
     it({
+      name: 'READS a slice that carries an HTML comment under the grammar the document was read in, '
+        + 'masking the comment to whitespace so it is no block and refuses nothing, since 17 of 92 '
+        + 'sources carry one and on 2026-09-06 every such slice of yulianNyanner was an original '
+        + 'that could not be read',
+      fn: async () => {
+        expect(blocksOf({ text: '## Cats\n\n<!-- (this section is a translator note) -->\n\nThe cat naps.', },),)
+          .toEqual([
+            {
+              kind: 'heading',
+              detail: 'level 2',
+            },
+            {
+              kind: 'paragraph',
+              detail: '',
+            },
+          ],);
+        // A comment carrying markup of its own is still a comment.
+        expect(blocksOf({ text: 'The cat naps.\n\n<!-- <p style="text-align: center;"></p> -->', },),)
+          .toEqual([
+            {
+              kind: 'paragraph',
+              detail: '',
+            },
+          ],);
+        // Atoms after a comment keep their offsets, since the mask is the same length as the comment.
+        expect(atomsOf({ text: '<!-- note -->\n\nRun `catnip` now.', },),)
+          .toEqual([
+            {
+              kind: 'inline-code',
+              value: 'catnip',
+            },
+          ],);
+      },
+    },),
+
+    it({
       name: 'carries the heading level and the list ordering through to the '
         + 'block shapes, so the detail rule is reachable from real Markdown '
         + 'and not only from a hand-built node',
