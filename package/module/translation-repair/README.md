@@ -2183,6 +2183,28 @@ and no run has yet completed consolidation unstarved on the current build.
 Production readiness needs the passes named in `doc/planning/translation-repair-readiness-signal.md`,
 not another green suite.
 
+Status on 2026-09-06.
+Synthetic and Hyper are wet again and the passes run on the plain invocation:
+the pass keeps four slices in flight and the writer rounds wait 180000 ms by default,
+both moved this day from launch dials that every shipped page had needed
+(`doc/decision/translation-repair-pass-overlap.md`,
+`doc/decision/translation-repair-straggler-grace.md`).
+The owner's rule of the day is always kill and relaunch,
+written under "A source change while a pass is in flight means kill and relaunch".
+
+The first pass on that invocation,
+`yulianNyanner`,
+found the fifth class in 28.6 minutes and shipped nothing:
+the slice floor handed the strict MDX grammar the raw slice while the document reader masks HTML comments first,
+so every slice whose original carried a translator note was an original that could not be read,
+and the entry stopped at consolidation.
+17 of 92 sources carry a comment,
+14 of the 34 comment lines in that one entry;
+no page that shipped had one.
+Fixed with a guard shown to fail on the unfixed build (`translate-skeleton.ts`).
+The class-per-entry rate has not reached zero:
+the first entry read on a new shape of source found a new class.
+
 ### Superseded generation-14 operation history
 
 This section records behavior of generation 14 and is not standing guidance.
