@@ -3,6 +3,7 @@
  */
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { SandboxOwner, } from './sandbox-owner.ts';
 
 /**
  Test and suite bodies share the same observation boundary.
@@ -13,6 +14,8 @@ export type ExecutionKind = 'test' | 'suite';
  Metadata describes the awaited body without exposing a mutable verdict.
  */
 export type ObservedExecution = {
+  /** Current test-body attempt; absent for suites and legacy descriptor-only contexts. */
+  readonly sandboxOwner?: SandboxOwner;
   /**
    Body category used by diagnostic guidance.
    */

@@ -5,6 +5,9 @@
 import { AsyncLocalStorage, } from 'node:async_hooks';
 import { writeSync, } from 'node:fs';
 import process from 'node:process';
+import { types, } from 'node:util';
+import type { SandboxRuntime, } from './sandbox-owner.ts';
+import { SandboxOwnershipError, } from './sandbox-error.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
   ExecutionOptions,
@@ -297,3 +300,42 @@ export function runNodeExecution<Result,>(options: ExecutionOptions<Result>,): P
 }
 
 //endregion Descriptor execution
+
+/**
+ Supplies attempt context using the observer's existing realm-shared storage.
+ The optional owner field extends the observation protocol without changing its required shape.
+
+ @returns Node sandbox runtime, with ordinary suites and reporting contexts excluded
+ @example
+ ```ts
+ const runtime = nodeSandboxRuntime();
+ await runtime.run({ owner, body });
+ ```
+ */
+export function nodeSandboxRuntime(): SandboxRuntime {
+  /** Reuse storage across source imports and artifact copies. */
+  const runtime = rejectionRuntime();
+  return {
+    contextual: true,
+    current() {
+      /** Suites never implicitly inherit a parent's method replacements. */
+      const context = runtime.storage.getStore();
+      return context?.kind === 'test' ? context.sandboxOwner : undefined;
+    },
+    isProxy: types.isProxy,
+    async run({ owner, body, }): Promise<void> {
+      /** Attempt execution must be nested in the already observed test descriptor. */
+      const parent = runtime.storage.getStore();
+      if (parent === undefined || parent.kind !== 'test')
+        throw new SandboxOwnershipError('A sandbox attempt must run inside an observed test execution.',);
+      /** Detached descendants keep this attempt's diagnostic phase, not a later repeat's phase. */
+      const execution: ObservedExecution = { ...parent, sandboxOwner: owner, phase: 'running', };
+      await runtime.storage.run(execution, async function runAttempt(): Promise<void> {
+        using completion = {
+          [Symbol.dispose](): void { execution.phase = 'completed'; },
+        };
+        await body();
+      },);
+    },
+  };
+}
