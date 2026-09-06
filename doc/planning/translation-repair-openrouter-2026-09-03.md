@@ -2099,6 +2099,82 @@ no model asked.
     The reading follows,
     with the five headings first.
 
+## The fifth launch, 2026-09-06, 22:10 UTC: the headings hold, and the seventh class
+
+`yulianNyanner` SETTLED at 22:50 UTC in 2,362,951 ms (39.4 minutes),
+17 slices,
+1,150 calls (Hyper 651,
+Synthetic 499,
+OpenRouter none),
+6 straggler cuts,
+no refusal of any kind,
+no collapse,
+every meter wet,
+consolidation unstarved.
+Weekly Synthetic 27.41 to 23.54 percent,
+Hyper 2622 to 2559.
+`verify-published` matched,
+`chars=6068=expected`.
+`DESTINATIONS source=0 page=0 dropped=0`,
+three pictures textless,
+all fourteen comments rendered in place,
+both `PhotoScroll` shapes intact,
+"her mind" in the objective section where the 21:03 page had slipped to "my".
+
+- **The headings hold.**
+  Introduction,
+    Shackles,
+    Dysphoria,
+    Wishes,
+    Final Chapter.
+    The translate contest over the 桎梏 slice offered three candidates and all three were headed Shackles;
+    the consolidation ballots now reason from the anchor
+    ("the passage sits under the heading 烦躁,
+    which the editor comment marks as first-person"),
+    which is the line the fix added doing what it was for.
+- **By design,
+  not a defect.**
+  The alias reads `Lyna, 涟, Yulian, Nyanner` because the translate sheet's identity rule requires the
+    translated name among the alias renderings when the original declares name and alias as one identity,
+    which this source does;
+    a ballot cites the rule by number.
+- **The seventh class.**
+  Five contractions on the page carry a straight apostrophe
+    (I'd,
+    can't,
+    What's,
+    wouldn't,
+    Let's)
+    against thirty curly ones and an archive that is curly throughout;
+    the 21:03 page had none,
+    and measured on the pages that shipped on 2026-09-04,
+    `Uekawakuyuurei` carries five straight against two curly and nobody read it.
+    `restore-typography.ts` exists for exactly this and runs on every editor and refiner replacement;
+    a translate-lane wording,
+    a consolidation proposal and a polish rewrite never passed through it.
+    Fixed in `bc42fe330` and `b669363b6`:
+    the would-ship reading,
+    which every publisher and checker derives the page from,
+    puts each non-archive wording through the restoration against the row's incumbent and the stored archive
+    text,
+    so the artifact keeps what the stages wrote and the page and its checks agree.
+    Guard `fd7701f49` shown to fail on the unfixed build (2 `FAIL` lines),
+    0 on the fixed one with the page-check,
+    publish,
+    final-selection and critic suites;
+    types clean.
+- **Wording,
+  for the judges,
+  recorded.**
+  贴贴 kept in Chinese with a gloss where the archive had "get close to someone online":
+    the community-vocabulary rule was applied to a term that has an everyday English equivalent,
+    and the house policy now says so with this example (`bc42fe330`).
+    自慰 rendered by its blunt literal sense in a quoted despairing thought where the archive and the 21:03 page
+    read it as self-consolation;
+    a polysemous word,
+    the judges' call,
+    and a stochastic one across two runs of the same slice.
+
 ## Build plan, transport-independent layers first
 
 In commit order,

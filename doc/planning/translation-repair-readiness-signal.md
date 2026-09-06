@@ -561,3 +561,39 @@ read clean;
 then `Arita`;
 then an entry whose source shape no shipped page has carried,
 which the readiness question should name from the corpus rather than meet by accident.
+
+## What the page on the class-six build showed (2026-09-06, 22:10 UTC)
+
+Shipped in 39.4 minutes at zero USD,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The fifth launch".
+The class-six fix held where it was aimed:
+five distinct headings,
+and the judges reasoning from the note's anchor.
+
+WHAT IT FOUND:
+the seventh class,
+in this package,
+and one the earlier readings had missed:
+the page mixes straight and curly apostrophes because only the repair lane's replacements pass through the
+typography restoration,
+and the `Uekawakuyuurei` page of 2026-09-04 carries the same mix.
+Fixed in `bc42fe330` and `b669363b6` at the would-ship reading,
+guard shown to fail first.
+Two wording findings are recorded for the judges,
+one with a house-policy example added.
+
+THE READING:
+not ready.
+Three pages of one entry on one day,
+each finding a class the one before did not show,
+and the seventh was on a page already read once.
+The reading method is also the finding:
+a mechanical property of a page (one apostrophe convention) went unmeasured through four shipped pages,
+so the seven steps gain one,
+measuring the page's typography against the archive's,
+before the next belief is written.
+What would move the belief:
+`yulianNyanner` on the class-seven build,
+read clean including the count of straight apostrophes;
+then `Arita`.
