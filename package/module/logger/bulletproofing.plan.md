@@ -58,14 +58,17 @@ Nothing here blocks a publish;
    a full buffer holds about 1.6 MiB of heap and a burst one hundred times the cap settles in about 150 ms,
    so the drop path stays linear.
    The guard was shown to fail against the unbounded code before the fix was restored.
+- Abandoned-write accounting (2026-09-06):
+   two tests pin that a write the flush deadline abandoned may reject or resolve late without an unhandled rejection,
+   with a late rejection reported once as a breadcrumb and the sink kept available for later writes.
+   No code change was needed.
+   The guard was shown to fail (the captured `late failure` rejection) when the tracked-write catch was stripped;
+   that stripped run also exposed a harness gap,
+   the file process dying on an older test before the new suite ran (#483).
 
 ## Open robustness items, in priority order
 
-1.   Abandoned-write accounting.
-     After a deadline hit the logger clears its view of in-flight writes;
-     the sinks keep working in the background.
-     Worth a property that a late settlement never surfaces as an unhandled rejection.
-2.   Import-time sink discovery.
+1.   Import-time sink discovery.
      Consumers defer the import (`await import(...)`) to keep contexts that never log,
      such as worker threads,
      from paying for sink auto-discovery;
