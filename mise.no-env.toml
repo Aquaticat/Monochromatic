@@ -489,12 +489,21 @@ const runTestFiles = async (files, nodeArgs) => {
 # must put {{vars.parse_usage_args}} BEFORE {{vars.run_playwright}} and must not
 # re-import execFileSync). Each task body shrinks to one runPlaywright(config, flags)
 # call; the four tasks differ only in config file and --project flag.
+#
+# The mount deliberately does NOT use :Z. That flag relabels every file under the
+# mount with per-container MCS categories, and this tree carries a six-figure count
+# of files under node_modules/.monochromatic, which the logger is still appending
+# to while the relabel walks it. The relabel failed outright here with
+# "lsetxattr ... operation not permitted", so no browser test could run at all.
+# label=disable skips the walk instead. It drops SELinux confinement for a
+# container that already gets read-write access to the whole repo, so the
+# confinement was not buying much; the win is that the harness runs.
 run_playwright = """
 const { execFileSync } = await import('node:child_process')
 const runPlaywright = (config, extraFlags = []) => {
   execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
   const args = parseUsageArgs(process.env.usage_args ?? '')
-  execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', config, ...extraFlags, ...args], { stdio: 'inherit' })
+  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', '-v', `${process.cwd()}:/work`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', config, ...extraFlags, ...args], { stdio: 'inherit' })
 }
 """
 
