@@ -37,8 +37,9 @@ Its post-release value (toml-edit verification bar,
 
 - Release means npm publish under `@monochromatic-dev` with provenance,
    the scope's first publish ever.
+   The owner confirms the scope exists and they can publish to it.
 - Driver:
-   public packages blocked by issue #338 (they depend on the private logger).
+   `@monochromatic-dev/module-test` is blocked by issue #338 because it depends on the private logger.
 - README import examples change to root and `/ts` imports;
    no `/tagged` or `/logger` subpath exports are added.
 - The four tuning options from the legacy plan (flush deadline,
@@ -48,6 +49,12 @@ Its post-release value (toml-edit verification bar,
 - The retire-after-N-failures policy is dropped;
    only `verify` failure retires a sink,
    as `DECISIONS.md` 2026-06-14 records.
+- The console sink neutralizes every control character except `\n` and `\t` before 0.1.0;
+   no SGR allowlist.
+   This is a publish gate (rule `SYB`).
+- Shipped tests and `tsconfig.tsbuildinfo` are excluded from tarballs repo-wide (issue #336),
+   not for the logger alone;
+   mechanism still open.
 - The legacy plan becomes a post-release track after a rewrite that fixes its inventory and removes the items decided against here.
 
 ## Measured state (2026-09-06)
@@ -84,32 +91,52 @@ Its post-release value (toml-edit verification bar,
    288 `/ts` import sites,
    2 root import sites,
    1 `createLogger` caller outside the package (module-test's unit test).
-- The #338 consumers (`module-toml-edit`,
-   `module-test`,
-   `dev-script-watch-restart`) bundle the logger into their dists;
+- Transitive workspace runtime closure of `module-test` (all at 0.0.1):
+   `module-test` (public, no `publishConfig`),
+   `module-async-time`,
+   `module-caught-value`,
+   `module-const`,
+   `module-numeric-format`,
+   `module-or-throw` (public with provenance),
+   `module-logger` and `module-fs-path` (private).
+   Publishing `module-test` means publishing all eight.
+- The #338 consumers bundle the logger into their dists;
    their `dependencies` entries are what would break an external install.
-   `module-test` also depends on private `module-fs-path`.
+- `files` negation works under the packer:
+   `package/git-policy/cli/package.json` lists `!src/**/*.unit.test.ts`,
+   and `npm pack --dry-run` there shows 0 of its 44 unit-test files.
+- `tsconfig.tsbuildinfo` lands in `dist/final/types` because the shared
+   `package/config/typescript/tsconfig.options.json` sets `composite: true` with `outDir` there and no `tsBuildInfoFile`.
+- pnpm `publishConfig` can override `exports` (and `bin`,
+   `main`,
+   `types`,
+   `module`,
+   `browser`,
+   `typesVersions`,
+   `cpu`,
+   `os`,
+   `engines`,
+   `name`) but not `files`,
+   per <https://pnpm.io/package_json>.
+- npm `.npmignore` at a package root cannot override `files`;
+   in a subdirectory it can,
+   per <https://docs.npmjs.com/cli/v11/configuring-npm/package-json>.
+- file-enforcer reads package manifests only for license expressions;
+   it does not manage manifest fields.
+   Its `overwriteEach` mirror-glob can stamp one source file into many destinations.
 - Prior direction in `doc/handover/cli-git-policies-platform.md` says to bundle logger into public artifacts rather than publish it.
 
 ## Open questions
 
-Tracked in the grilling session;
- answers land in the settled-decisions list as they arrive.
-
-- Which #338 consumer is the actual target,
-   and therefore which dependency closure must publish.
-- Whether `./ts` stays in the published surface (forces caught-value to publish first).
+- Whether the release scope is the full eight-package closure (flipping `module-fs-path` public too).
+- Mechanism for the repo-wide #336 fix.
+- Whether `./ts` stays in the published surface.
 - Publish mechanism (workflow with a build step,
    local publish without provenance,
    or trusted publishing).
 - First version number.
 - Whether the 25 lint errors gate the publish.
-- Whether the console terminal-escape boundary gates the publish,
-   and which contract (neutralize all controls,
-   or preserve SGR).
 - Whether the "bundle, don't publish" direction is formally reversed.
-- Whether the user owns the `@monochromatic-dev` npm scope.
-- Whether shipped tests and `tsconfig.tsbuildinfo` are excluded from the tarball now.
 
 ## Next action
 
