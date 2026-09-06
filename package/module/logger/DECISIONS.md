@@ -454,6 +454,33 @@ Node documents the `imports` field as "conditional exports for internal modules"
 The ranked first option therefore has the closest precedent in the logger this package replaced,
  and the current design has precedent only in the unanswered request for warning suppression.
 
+### The split adds no configure step (verified 2026-09-06)
+
+The maintainer ruled out any return of LogTape's awkwardness,
+ where every test or executed file had to run the same `configure` block before logging worked.
+The platform split does not touch that:
+ the default `logger` is still built at import from the default sink list,
+ `initPromise`,
+ `createLogger`,
+ and the `sinks` namespace keep their shapes,
+ and the only thing that changes is which `createFileSink` implementation each build inlines.
+Selection happens in the resolver,
+ not in user code,
+ and needs no consumer configuration.
+Measured with a scratch package whose `imports` maps `#platform` to a node file (static `node:fs/promises`) under `node`
+and a neutral file under `default`,
+ consumed by one static import and no setup call:
+
+- Node 26 and Bun 1.3.14 run the node branch.
+- rolldown 1.2.7 inlines the node branch with a static `node:fs/promises` import under `platform: 'node'`
+   and the neutral branch with no Node module under `platform: 'neutral'`.
+- `tsc` under `moduleResolution: bundler` type-checks the import with no extra option.
+- oxlint's import plugin reports no unresolved import.
+- Vite resolves `#` subpath imports since 4.2 (vitejs/vite pull request 7770,
+   through the `resolve.exports` library)
+   and documents `node` in its default server conditions and `browser` in its default client conditions,
+   so an Astro or Vite consumer of the `/ts` subpath gets the node branch on the server and the neutral branch on the client.
+
 ## Sinks verify concurrently under a time limit (2026-09-06)
 
 `initialize()` used to await each sink's `verify` in list order.
