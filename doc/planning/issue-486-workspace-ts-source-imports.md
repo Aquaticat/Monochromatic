@@ -329,6 +329,61 @@ so its saving is an upper bound on the program-size effect alone.
   Because variant B also stops live analysis of sibling callables,
   2.9 s is an upper bound on the program-size effect.
 
+## Spike 2 result (2026-09-06, worktree `~/temp/agent/ts-boundary-spike-2-2026-09-06` at `c1abe05d3`, removed after)
+
+- Retraction:
+  `--allow prefer-readonly-parameter-type/prefer-readonly-parameter-types` (and `--allow=`,
+   `-A`,
+   rule-name-only)
+  does not disable this JS plugin rule.
+  A fixture probe kept its 11 findings under every spelling,
+  and a cold sweep under `--allow` still wrote the rule cache and reported 22 findings.
+  Every rule-allowed timing recorded earlier in this document
+  (file-enforcer 1.3 s,
+   sweeps 65.3 s,
+   the quiet-machine pair) measured the rule on and is void.
+  Setting the rule to `off` in the root `oxlint.config.ts` does disable it (484 rules,
+   0 findings).
+- Cold whole-repo sweeps in the worktree (16 threads,
+   3086 files):
+  rule on 261.4 s and 305.4 s (the first overlapped another session's package lint);
+  rule off by config 14.8 s and 13.2 s;
+  warm reference with the rule on 105.3 s.
+  The rule is roughly 95 percent of a cold sweep and most of a warm one;
+  the August attribution still holds.
+- `pi-plugin/auto-mode` (`OXLINT_THREADS=1`,
+   66 files,
+   333 warnings and 38 errors every run):
+  cold `/ts` 21.96 s median (spread 1.43) against built 5.43 s (spread 0.72);
+  warm 3.06 s against 3.16 s;
+  program sibling sources 147 against 6 plus 8 declarations;
+  finding sets identical;
+  positive control 11 rule findings with the fixture.
+- `mcp/mvm` (11 files,
+   zero findings):
+  cold 7.43 s against 7.36 s;
+  warm 1.21 s against 1.14 s;
+  sibling sources 175 against 5 plus 5 declarations;
+  no difference in either direction beyond spread.
+- Reading:
+  warm cost never moves with the closure.
+  Cold cost moves only where the subject reaches many sibling callables
+  (auto-mode 4 times faster,
+   file-enforcer a third faster,
+   mvm unchanged),
+  which matches live analysis of reached sibling source rather than program size.
+
+- Mechanism:
+  `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-persistent-cache.ts:79-84`
+  documents that `projectKey` carries the configured project path,
+  and lines 140 to 160 place each entry under `<digest(projectKey)>/<digest(fileName)>`.
+  A sibling source file is therefore summarized once per consuming project,
+  so a cold sweep pays the sum of every package's `/ts` closure (median 95 sibling files,
+   148 packages),
+  not the 3086 files once.
+  That is a rule design choice,
+  not a property of `/ts`.
+
 ## Next action
 
 Run the extended measurement (two more packages,
