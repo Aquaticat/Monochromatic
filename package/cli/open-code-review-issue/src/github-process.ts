@@ -1,7 +1,7 @@
 /**
- * Fixed-deadline subprocess boundary for GitHub CLI.
- *
- * @module
+ Fixed-deadline subprocess boundary for GitHub CLI.
+ 
+ @module
  */
 
 import spawn, {
@@ -10,12 +10,12 @@ import spawn, {
 } from 'nano-spawn';
 
 /**
- * Fixed child deadline in milliseconds.
+ Fixed child deadline in milliseconds.
  */
 const GITHUB_CHILD_DEADLINE_MS = 60_000;
 
 /**
- * Captured successful child result used by GitHub boundary.
+ Captured successful child result used by GitHub boundary.
  */
 export type BoundedProcessResult = Pick<
   Result,
@@ -23,30 +23,30 @@ export type BoundedProcessResult = Pick<
 >;
 
 /**
- * Reports forceful fixed-deadline termination.
+ Reports forceful fixed-deadline termination.
  */
 export class GitHubProcessTimeoutError extends Error {
   /**
-   * Partial standard output captured before termination.
+   Partial standard output captured before termination.
    */
   public readonly stdout: string;
 
   /**
-   * Partial standard error captured before termination.
+   Partial standard error captured before termination.
    */
   public readonly stderr: string;
 
   /**
-   * Creates deadline termination failure.
-   *
-   * @param stdout - Partial captured standard output.
-   *
-   * @param stderr - Partial captured standard error.
-   *
-   * @example
-   * ```ts
-   * const error = new GitHubProcessTimeoutError({ stdout: '', stderr: '' });
-   * ```
+   Creates deadline termination failure.
+   
+   @param stdout - Partial captured standard output.
+   
+   @param stderr - Partial captured standard error.
+   
+   @example
+   ```ts
+   const error = new GitHubProcessTimeoutError({ stdout: '', stderr: '' });
+   ```
    */
   public constructor({
     stdout,
@@ -63,39 +63,39 @@ export class GitHubProcessTimeoutError extends Error {
 }
 
 /**
- * Reports child launch, exit, or signal failure with captured output.
+ Reports child launch, exit, or signal failure with captured output.
  */
 export class GitHubProcessError extends Error {
   /**
-   * Captured standard output.
+   Captured standard output.
    */
   public readonly stdout: string;
 
   /**
-   * Captured standard error.
+   Captured standard error.
    */
   public readonly stderr: string;
 
   /**
-   * Numeric child exit code when available.
+   Numeric child exit code when available.
    */
   public readonly exitCode?: number;
 
   /**
-   * Creates process failure.
-   *
-   * @param message - Safe process diagnostic.
-   *
-   * @param stdout - Captured standard output.
-   *
-   * @param stderr - Captured standard error.
-   *
-   * @param exitCode - Numeric child exit code when available.
-   *
-   * @example
-   * ```ts
-   * const error = new GitHubProcessError({ message: 'gh failed', stdout: '', stderr: '' });
-   * ```
+   Creates process failure.
+   
+   @param message - Safe process diagnostic.
+   
+   @param stdout - Captured standard output.
+   
+   @param stderr - Captured standard error.
+   
+   @param exitCode - Numeric child exit code when available.
+   
+   @example
+   ```ts
+   const error = new GitHubProcessError({ message: 'gh failed', stdout: '', stderr: '' });
+   ```
    */
   public constructor({
     message,
@@ -119,20 +119,20 @@ export class GitHubProcessError extends Error {
 }
 
 /**
- * Converts nano-spawn failure to adapter-owned process error.
- *
- * @param error - Unknown rejection from process boundary.
- *
- * @param file - Executable name used only in safe diagnostic.
- *
- * @throws {@link GitHubProcessTimeoutError} for dedicated deadline abort.
- *
- * @throws {@link GitHubProcessError} for every other child failure.
- *
- * @example
- * ```ts
- * throwProcessFailure({ error, file: 'gh' });
- * ```
+ Converts nano-spawn failure to adapter-owned process error.
+ 
+ @param error - Unknown rejection from process boundary.
+ 
+ @param file - Executable name used only in safe diagnostic.
+ 
+ @throws {@link GitHubProcessTimeoutError} for dedicated deadline abort.
+ 
+ @throws {@link GitHubProcessError} for every other child failure.
+ 
+ @example
+ ```ts
+ throwProcessFailure({ error, file: 'gh' });
+ ```
  */
 function throwProcessFailure({
   error,
@@ -163,7 +163,7 @@ function throwProcessFailure({
 }
 
 /**
- * Exact subprocess request accepted by bounded runner.
+ Exact subprocess request accepted by bounded runner.
  */
 export type BoundedProcessRequest = {
   readonly file: string;
@@ -172,31 +172,31 @@ export type BoundedProcessRequest = {
 };
 
 /**
- * Injectable bounded process function for consumer-boundary tests.
+ Injectable bounded process function for consumer-boundary tests.
  */
 export type BoundedProcessRunner = (
   request: BoundedProcessRequest,
 ) => Promise<BoundedProcessResult>;
 
 /**
- * Runs one child with ignored stdin, captured output, and forceful deadline.
- *
- * @param file - Executable path or command name.
- *
- * @param arguments - Exact argument vector without shell interpolation.
- *
- * @param cwd - Explicit child working directory.
- *
- * @returns Captured successful result.
- *
- * @throws {@link GitHubProcessTimeoutError} after fixed one-minute deadline.
- *
- * @throws {@link GitHubProcessError} for launch or nonzero child failure.
- *
- * @example
- * ```ts
- * await runBoundedProcess({ file: 'gh', arguments: ['--version'], cwd: process.cwd() });
- * ```
+ Runs one child with ignored stdin, captured output, and forceful deadline.
+ 
+ @param file - Executable path or command name.
+ 
+ @param arguments - Exact argument vector without shell interpolation.
+ 
+ @param cwd - Explicit child working directory.
+ 
+ @returns Captured successful result.
+ 
+ @throws {@link GitHubProcessTimeoutError} after fixed one-minute deadline.
+ 
+ @throws {@link GitHubProcessError} for launch or nonzero child failure.
+ 
+ @example
+ ```ts
+ await runBoundedProcess({ file: 'gh', arguments: ['--version'], cwd: process.cwd() });
+ ```
  */
 export async function runBoundedProcess({
   file,

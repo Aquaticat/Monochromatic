@@ -1,5 +1,5 @@
 /**
- * Pill element builder for the `<task-detail>` web component.
+ Pill element builder for the `<task-detail>` web component.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
@@ -10,16 +10,16 @@ import {
 } from './task-detail-types.ts';
 
 /**
- * Builds pill elements from current metadata state and autofill status,
- * formatting the tracked-time pill via {@link formatRunningTrackedTime}.
- *
- * @returns Array of pill span elements
- *
- * @example
- * ```ts
- * const pills = buildPillElements({ task, metadata, autofillLoading: false, autofilled: true });
- * container.replaceChildren(...pills);
- * ```
+ Builds pill elements from current metadata state and autofill status,
+ formatting the tracked-time pill via {@link formatRunningTrackedTime}.
+ 
+ @returns Array of pill span elements
+ 
+ @example
+ ```ts
+ const pills = buildPillElements({ task, metadata, autofillLoading: false, autofilled: true });
+ container.replaceChildren(...pills);
+ ```
  */
 export function buildPillElements({
   task,
@@ -33,7 +33,7 @@ export function buildPillElements({
   readonly autofilled: ReadonlySet<string>;
 },): HTMLElement[] {
   /**
-   * Ordered pill descriptors; field names align with the autofilled set lookup below.
+   Ordered pill descriptors; field names align with the autofilled set lookup below.
    */
   const pillData = [
     {
@@ -96,7 +96,7 @@ export function buildPillElements({
 
   return pillData.map(function toPillElement(pill,) {
     /**
-     * Built once so the conditional data attributes below can be appended in place.
+     Built once so the conditional data attributes below can be appended in place.
      */
     const element = h({
       tag: 'span',

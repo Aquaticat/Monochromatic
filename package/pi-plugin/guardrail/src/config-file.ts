@@ -1,7 +1,7 @@
 /**
- * Pi guardrail config file reading and JSON parsing.
- *
- * @module
+ Pi guardrail config file reading and JSON parsing.
+ 
+ @module
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -13,32 +13,32 @@ import { FILE_NOT_FOUND_CODE, } from './constants.ts';
 //region Types
 
 /**
- * Config file read result.
+ Config file read result.
  */
 type ConfigReadResult =
   | {
     /**
-     * Whether config file existed.
+     Whether config file existed.
      */
     readonly loaded: false;
   }
   | {
     /**
-     * Whether config file existed.
+     Whether config file existed.
      */
     readonly loaded: true;
     /**
-     * Parsed JSON value.
+     Parsed JSON value.
      */
     readonly value: unknown;
   };
 
 /**
- * Error shape with optional Node filesystem code.
+ Error shape with optional Node filesystem code.
  */
 type ErrorWithCode = Error & {
   /**
-   * Node filesystem error code.
+   Node filesystem error code.
    */
   readonly code?: string;
 };
@@ -48,16 +48,16 @@ type ErrorWithCode = Error & {
 //region File parsing
 
 /**
- * Default config file reader.
- *
- * @param path - absolute file path
- *
- * @returns UTF-8 file contents as a Promise
- *
- * @example
- * ```typescript
- * await defaultReadConfigFile('/home/user/.pi/agent/extensions/pi-guardrail.json');
- * ```
+ Default config file reader.
+ 
+ @param path - absolute file path
+ 
+ @returns UTF-8 file contents as a Promise
+ 
+ @example
+ ```typescript
+ await defaultReadConfigFile('/home/user/.pi/agent/extensions/pi-guardrail.json');
+ ```
  */
 function defaultReadConfigFile(path: string,): Promise<string> {
   return readFile(
@@ -67,18 +67,18 @@ function defaultReadConfigFile(path: string,): Promise<string> {
 }
 
 /**
- * Reads optional JSON config from disk.
- *
- * @param configPath - absolute config path
- *
- * @param readConfigFile - file reader dependency
- *
- * @returns parsed config read result
- *
- * @example
- * ```typescript
- * await readOptionalConfigJson({ configPath: '/tmp/pi-guardrail.json', readConfigFile });
- * ```
+ Reads optional JSON config from disk.
+ 
+ @param configPath - absolute config path
+ 
+ @param readConfigFile - file reader dependency
+ 
+ @returns parsed config read result
+ 
+ @example
+ ```typescript
+ await readOptionalConfigJson({ configPath: '/tmp/pi-guardrail.json', readConfigFile });
+ ```
  */
 async function readOptionalConfigJson(
   {
@@ -91,7 +91,7 @@ async function readOptionalConfigJson(
 ): Promise<ConfigReadResult> {
   try {
     /**
-     * Raw config file contents.
+     Raw config file contents.
      */
     const content = await readConfigFile(configPath,);
     return {
@@ -110,18 +110,18 @@ async function readOptionalConfigJson(
 }
 
 /**
- * Parses config JSON with file-path context in errors.
- *
- * @param content - raw JSON text
- *
- * @param configPath - config file path used in diagnostics
- *
- * @returns parsed JSON value
- *
- * @example
- * ```typescript
- * parseConfigJson({ content: '{}', configPath: '/tmp/pi-guardrail.json' });
- * ```
+ Parses config JSON with file-path context in errors.
+ 
+ @param content - raw JSON text
+ 
+ @param configPath - config file path used in diagnostics
+ 
+ @returns parsed JSON value
+ 
+ @example
+ ```typescript
+ parseConfigJson({ content: '{}', configPath: '/tmp/pi-guardrail.json' });
+ ```
  */
 function parseConfigJson(
   {
@@ -137,7 +137,7 @@ function parseConfigJson(
   }
   catch (error: unknown) {
     /**
-     * Human-readable parse error detail.
+     Human-readable parse error detail.
      */
     const detail = caughtValueText(error,);
     throw new Error(
@@ -152,11 +152,11 @@ function parseConfigJson(
 //region Error helpers
 
 /**
- * Returns whether error is a missing-file error.
- *
- * @param error - caught read error
- *
- * @returns whether error code is ENOENT
+ Returns whether error is a missing-file error.
+ 
+ @param error - caught read error
+ 
+ @returns whether error code is ENOENT
  */
 function isMissingFileError(error: unknown,): boolean {
   return isErrorWithCode(error,)
@@ -164,11 +164,11 @@ function isMissingFileError(error: unknown,): boolean {
 }
 
 /**
- * Returns whether value is an Error with an optional code field.
- *
- * @param error - caught error
- *
- * @returns whether error shape can carry a Node code
+ Returns whether value is an Error with an optional code field.
+ 
+ @param error - caught error
+ 
+ @returns whether error shape can carry a Node code
  */
 function isErrorWithCode(error: unknown,): error is ErrorWithCode {
   return Error.isError(error,)

@@ -1,10 +1,10 @@
 /**
- * TSDoc structural validation rule.
- *
- * `validTypes` reports structural problems found by the in-house comment
- * scanner (missing `@param` hyphen, unclosed or empty inline tags).
- *
- * @module
+ TSDoc structural validation rule.
+ 
+ `validTypes` reports structural problems found by the in-house comment
+ scanner (missing `@param` hyphen, unclosed or empty inline tags).
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -20,10 +20,10 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Reports structural TSDoc problems from the in-house comment scanner.
- *
- * Catches a `\@param` tag missing its hyphen separator and malformed inline
- * tags (unclosed `{\@link`, empty `{\@link}`).
+ Reports structural TSDoc problems from the in-house comment scanner.
+ 
+ Catches a `\@param` tag missing its hyphen separator and malformed inline
+ tags (unclosed `{\@link`, empty `{\@link}`).
  */
 export const validTypes: CreateOnceRule = {
   meta: {
@@ -37,16 +37,16 @@ export const validTypes: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createParsedTsdocVisitor({

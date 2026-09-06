@@ -12,17 +12,17 @@ import {
 } from '../dist/final/node/testing.mjs';
 
 /**
- * Builds a normalized run result; omitted optional fields stay absent.
- *
- * @param overrides - run fields to set; `stdout`/`stderr` default to empty,
- *   `exitCode`/`signalName`/`executionError` are omitted when not given
- *
- * @returns full {@link OxlintRunResult}
- *
- * @example
- * ```ts
- * makeResult({ exitCode: 0 });
- * ```
+ Builds a normalized run result; omitted optional fields stay absent.
+ 
+ @param overrides - run fields to set; `stdout`/`stderr` default to empty,
+   `exitCode`/`signalName`/`executionError` are omitted when not given
+ 
+ @returns full {@link OxlintRunResult}
+ 
+ @example
+ ```ts
+ makeResult({ exitCode: 0 });
+ ```
  */
 function makeResult(
   {
@@ -49,21 +49,21 @@ function makeResult(
 }
 
 /**
- * Renders a diagnostics body plus a timing footer with a given duration.
- *
- * The duration is the only volatile part of real oxlint output, so two calls
- * differing only in `ms` must normalize equal.
- *
- * @param body - stable diagnostics-and-summary text
- *
- * @param ms - timing footer duration in milliseconds
- *
- * @returns combined stdout as oxlint would print it
- *
- * @example
- * ```ts
- * withTiming({ body: 'Found 0 warnings and 1 error.', ms: 5 });
- * ```
+ Renders a diagnostics body plus a timing footer with a given duration.
+ 
+ The duration is the only volatile part of real oxlint output, so two calls
+ differing only in `ms` must normalize equal.
+ 
+ @param body - stable diagnostics-and-summary text
+ 
+ @param ms - timing footer duration in milliseconds
+ 
+ @returns combined stdout as oxlint would print it
+ 
+ @example
+ ```ts
+ withTiming({ body: 'Found 0 warnings and 1 error.', ms: 5 });
+ ```
  */
 function withTiming(
   {
@@ -78,28 +78,28 @@ function withTiming(
 }
 
 /**
- * Wraps a queue of results into a runner the loop can drain one call at a time.
- *
- * The queue is mutated by `shift`, so a test asserts `queue.length` afterward to
- * pin the exact call count; a call past the queue's end throws, proving the loop
- * never over-runs.
- *
- * @param queue - results returned in order, one per call
- *
- * @returns runner suitable for {@link fixUntilStable}'s `runFix`/`runLint`
- *
- * @example
- * ```ts
- * const fixes = [makeResult({ exitCode: 0 })];
- * await fixUntilStable({ runFix: makeScriptedRun(fixes), runLint: makeScriptedRun([clean]), maxPasses: 8 });
- * ```
+ Wraps a queue of results into a runner the loop can drain one call at a time.
+ 
+ The queue is mutated by `shift`, so a test asserts `queue.length` afterward to
+ pin the exact call count; a call past the queue's end throws, proving the loop
+ never over-runs.
+ 
+ @param queue - results returned in order, one per call
+ 
+ @returns runner suitable for {@link fixUntilStable}'s `runFix`/`runLint`
+ 
+ @example
+ ```ts
+ const fixes = [makeResult({ exitCode: 0 })];
+ await fixUntilStable({ runFix: makeScriptedRun(fixes), runLint: makeScriptedRun([clean]), maxPasses: 8 });
+ ```
  */
 function makeScriptedRun(
   queue: OxlintRunResult[],
 ): () => Promise<OxlintRunResult> {
   return function scriptedRun(): Promise<OxlintRunResult> {
     /**
-     * Next scripted result, or `undefined` once the queue is drained.
+     Next scripted result, or `undefined` once the queue is drained.
      */
     const next = queue.shift();
     if (next === undefined)
@@ -121,20 +121,20 @@ const oneErrorBody = [
 ].join('\n',);
 
 /**
- * Builds a dirty oracle output carrying a real diagnostic header.
- *
- * The loop's clean stop keys off {@link hasDiagnostics}, which scans for an
- * `x rule(...)` block opener, so a stand-in for "violations remain" must include
- * one; a bare `Found N errors.` summary line is not a diagnostic header.
- *
- * @param label - distinguishes otherwise-identical bodies across passes
- *
- * @returns oracle stdout with one diagnostic block and a summary
- *
- * @example
- * ```ts
- * dirtyOracle('A');
- * ```
+ Builds a dirty oracle output carrying a real diagnostic header.
+ 
+ The loop's clean stop keys off {@link hasDiagnostics}, which scans for an
+ `x rule(...)` block opener, so a stand-in for "violations remain" must include
+ one; a bare `Found N errors.` summary line is not a diagnostic header.
+ 
+ @param label - distinguishes otherwise-identical bodies across passes
+ 
+ @returns oracle stdout with one diagnostic block and a summary
+ 
+ @example
+ ```ts
+ dirtyOracle('A');
+ ```
  */
 function dirtyOracle(label: string,): string {
   return [
@@ -159,16 +159,16 @@ const oracleC = dirtyOracle('C',);
 const oracleClean = 'Found 0 warnings and 0 errors.';
 
 /**
- * Builds a single diagnostic block (header plus source frame) for a label.
- *
- * @param label - distinguishes block content and target path
- *
- * @returns one diagnostic block, no summary or footer
- *
- * @example
- * ```ts
- * blockFor('A');
- * ```
+ Builds a single diagnostic block (header plus source frame) for a label.
+ 
+ @param label - distinguishes block content and target path
+ 
+ @returns one diagnostic block, no summary or footer
+ 
+ @example
+ ```ts
+ blockFor('A');
+ ```
  */
 function blockFor(label: string,): string {
   return [
@@ -180,23 +180,23 @@ function blockFor(label: string,): string {
 }
 
 /**
- * Assembles two diagnostic blocks, a summary, and a timing footer.
- *
- * Models oxlint's multi-file output, whose block order and footer duration both
- * vary run to run.
- *
- * @param first - first diagnostic block
- *
- * @param second - second diagnostic block
- *
- * @param ms - timing footer duration
- *
- * @returns combined stdout for two diagnostics
- *
- * @example
- * ```ts
- * twoBlockOutput({ first: blockFor('A'), second: blockFor('B'), ms: 5 });
- * ```
+ Assembles two diagnostic blocks, a summary, and a timing footer.
+ 
+ Models oxlint's multi-file output, whose block order and footer duration both
+ vary run to run.
+ 
+ @param first - first diagnostic block
+ 
+ @param second - second diagnostic block
+ 
+ @param ms - timing footer duration
+ 
+ @returns combined stdout for two diagnostics
+ 
+ @example
+ ```ts
+ twoBlockOutput({ first: blockFor('A'), second: blockFor('B'), ms: 5 });
+ ```
  */
 function twoBlockOutput(
   {

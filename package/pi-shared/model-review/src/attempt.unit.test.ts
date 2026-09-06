@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for callback-free structured reviewer transport.
- *
- * @module
+ Built-artifact tests for callback-free structured reviewer transport.
+ 
+ @module
  */
 
 import type {
@@ -66,16 +66,16 @@ const TOOL = {
 } satisfies Tool;
 
 /**
- * Build one async event stream from fixed event list.
- *
- * @param events - ordered provider events
- *
- * @returns async event stream
- *
- * @example
- * ```ts
- * eventStream([]);
- * ```
+ Build one async event stream from fixed event list.
+ 
+ @param events - ordered provider events
+ 
+ @returns async event stream
+ 
+ @example
+ ```ts
+ eventStream([]);
+ ```
  */
 async function* eventStream(
   events: readonly AssistantMessageEvent[],
@@ -85,16 +85,16 @@ async function* eventStream(
 }
 
 /**
- * Build finalized text event stream.
- *
- * @param content - finalized provider text
- *
- * @returns one-event stream
- *
- * @example
- * ```ts
- * textStream('{}');
- * ```
+ Build finalized text event stream.
+ 
+ @param content - finalized provider text
+ 
+ @returns one-event stream
+ 
+ @example
+ ```ts
+ textStream('{}');
+ ```
  */
 function textStream(content: string,): AsyncIterable<AssistantMessageEvent> {
   return eventStream([{
@@ -106,18 +106,18 @@ function textStream(content: string,): AsyncIterable<AssistantMessageEvent> {
 }
 
 /**
- * Build expected tool-call event stream.
- *
- * @param argumentsValue - unknown structured arguments
- *
- * @param toolName - emitted tool name
- *
- * @returns one-event stream
- *
- * @example
- * ```ts
- * toolStream({ approved: true });
- * ```
+ Build expected tool-call event stream.
+ 
+ @param argumentsValue - unknown structured arguments
+ 
+ @param toolName - emitted tool name
+ 
+ @returns one-event stream
+ 
+ @example
+ ```ts
+ toolStream({ approved: true });
+ ```
  */
 function toolStream(
   argumentsValue: unknown,
@@ -137,16 +137,16 @@ function toolStream(
 }
 
 /**
- * Build deterministic data transport.
- *
- * @param responses - ordered response streams
- *
- * @returns mutable script state
- *
- * @example
- * ```ts
- * scriptedTransport([textStream('{}')]);
- * ```
+ Build deterministic data transport.
+ 
+ @param responses - ordered response streams
+ 
+ @returns mutable script state
+ 
+ @example
+ ```ts
+ scriptedTransport([textStream('{}')]);
+ ```
  */
 function scriptedTransport(
   responses: readonly AsyncIterable<AssistantMessageEvent>[],
@@ -159,16 +159,16 @@ function scriptedTransport(
 }
 
 /**
- * Capture async error without promise matcher indirection.
- *
- * @param action - action expected to fail
- *
- * @returns thrown value
- *
- * @example
- * ```ts
- * await captureError(async () => { throw new Error('x'); });
- * ```
+ Capture async error without promise matcher indirection.
+ 
+ @param action - action expected to fail
+ 
+ @returns thrown value
+ 
+ @example
+ ```ts
+ await captureError(async () => { throw new Error('x'); });
+ ```
  */
 async function captureError(action: () => Promise<unknown>,): Promise<unknown> {
   try {

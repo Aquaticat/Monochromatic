@@ -15,7 +15,7 @@ import {
 import type { PidMapping, } from './paths.ts';
 
 /**
- * Parent mapping fixture used by CLI core tests.
+ Parent mapping fixture used by CLI core tests.
  */
 const IDENTITY: PidMapping = {
   sessionId: 'parent-session',

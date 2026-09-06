@@ -25,35 +25,35 @@ import {
 } from './start.ts';
 
 /**
- * Synthetic post-event wait: chokidar's default `awaitWriteFinish.stabilityThreshold`
- * is 50 ms, our debounce is `DEFAULT_DEBOUNCE_MS` (100 ms), and a safety
- * margin absorbs setImmediate / setTimeout scheduling jitter on slow CI.
- * Used by every "wait for the dust to settle" assertion.
+ Synthetic post-event wait: chokidar's default `awaitWriteFinish.stabilityThreshold`
+ is 50 ms, our debounce is `DEFAULT_DEBOUNCE_MS` (100 ms), and a safety
+ margin absorbs setImmediate / setTimeout scheduling jitter on slow CI.
+ Used by every "wait for the dust to settle" assertion.
  */
 const POST_EVENT_WAIT_MS: number = 50 + DEFAULT_DEBOUNCE_MS + 150;
 
 /**
- * Buffer used by "did NOT restart" assertions; same shape as the
- * positive wait so a slow restart cannot hide as a fast skip.
+ Buffer used by "did NOT restart" assertions; same shape as the
+ positive wait so a slow restart cannot hide as a fast skip.
  */
 const NO_EVENT_WAIT_MS: number = POST_EVENT_WAIT_MS;
 
 /* oxlint-disable no-restricted-syntax/no-class -- test double implementing the SpawnedChildHandle contract and instantiated via `new` by the recording spawn factory; it carries mutable per-instance state (exit listeners, exited guard) that a frozen-object factory cannot model for the orchestrator's lifecycle assertions. */
 /**
- * In-memory stand-in for `node:child_process.ChildProcess`.
- *
- * Implements only the slice {@link SpawnedChildHandle} declares: `once` /
- * `off` for `exit`, `kill` to flip `killed` and schedule a deferred
- * synthetic exit, and the readable fields the orchestrator inspects.
- * Auto-exit on SIGTERM is wired through {@link kill} so the orchestrator's
- * `child.stop()` resolves on the next event-loop turn without burning
- * the 5-second SIGTERM-grace window every test.
- *
- * @example
- * ```ts
- * const handle = new FakeChild();
- * handle.kill('SIGTERM',); // schedules a synchronous-ish exit
- * ```
+ In-memory stand-in for `node:child_process.ChildProcess`.
+ 
+ Implements only the slice {@link SpawnedChildHandle} declares: `once` /
+ `off` for `exit`, `kill` to flip `killed` and schedule a deferred
+ synthetic exit, and the readable fields the orchestrator inspects.
+ Auto-exit on SIGTERM is wired through {@link kill} so the orchestrator's
+ `child.stop()` resolves on the next event-loop turn without burning
+ the 5-second SIGTERM-grace window every test.
+ 
+ @example
+ ```ts
+ const handle = new FakeChild();
+ handle.kill('SIGTERM',); // schedules a synchronous-ish exit
+ ```
  */
 class FakeChild implements SpawnedChildHandle {
   /** Mutable so the orchestrator's lifecycle logging reads consistent. */
@@ -69,11 +69,11 @@ class FakeChild implements SpawnedChildHandle {
   #exited: boolean = false;
 
   /**
-   * Registers a one-shot exit listener.
-   *
-   * @param event - must be `'exit'`; other events are ignored
-   *
-   * @param listener - exit callback (code, signal)
+   Registers a one-shot exit listener.
+   
+   @param event - must be `'exit'`; other events are ignored
+   
+   @param listener - exit callback (code, signal)
    */
   once(event: 'exit', listener: ExitListener,): void {
     if (event !== 'exit')
@@ -82,11 +82,11 @@ class FakeChild implements SpawnedChildHandle {
   }
 
   /**
-   * Removes a previously-registered exit listener.
-   *
-   * @param event - must be `'exit'`; other events are ignored
-   *
-   * @param listener - the same reference passed to {@link once}
+   Removes a previously-registered exit listener.
+   
+   @param event - must be `'exit'`; other events are ignored
+   
+   @param listener - the same reference passed to {@link once}
    */
   off(event: 'exit', listener: ExitListener,): void {
     if (event !== 'exit')
@@ -97,15 +97,15 @@ class FakeChild implements SpawnedChildHandle {
   }
 
   /**
-   * Flips `killed` and schedules a synthetic exit on the next macrotask
-   * (via `setImmediate`) so the orchestrator's pre-registered exit
-   * listener observes the resolution. Mirrors real OS behavior where
-   * `kill('SIGTERM')` produces an asynchronous exit, not a synchronous
-   * one.
-   *
-   * @param signal - signal name (or numeric); defaults to `SIGTERM`
-   *
-   * @returns `true`, matching `ChildProcess.kill`'s "signal sent" return
+   Flips `killed` and schedules a synthetic exit on the next macrotask
+   (via `setImmediate`) so the orchestrator's pre-registered exit
+   listener observes the resolution. Mirrors real OS behavior where
+   `kill('SIGTERM')` produces an asynchronous exit, not a synchronous
+   one.
+   
+   @param signal - signal name (or numeric); defaults to `SIGTERM`
+   
+   @returns `true`, matching `ChildProcess.kill`'s "signal sent" return
    */
   kill(signal?: NodeJS.Signals | number,): boolean {
     this.killed = true;
@@ -121,13 +121,13 @@ class FakeChild implements SpawnedChildHandle {
   }
 
   /**
-   * Synchronously fires the synthetic exit and clears listeners.
-   * Test entry point for "exit by some non-signal cause" scenarios;
-   * tests in this file rely only on the SIGTERM path through {@link kill}.
-   *
-   * @param code - exit code (or `null` when killed by signal)
-   *
-   * @param signal - signal name (or `null` when exited normally)
+   Synchronously fires the synthetic exit and clears listeners.
+   Test entry point for "exit by some non-signal cause" scenarios;
+   tests in this file rely only on the SIGTERM path through {@link kill}.
+   
+   @param code - exit code (or `null` when killed by signal)
+   
+   @param signal - signal name (or `null` when exited normally)
    */
   #simulateExit(
     code: ExitResult['code'],
@@ -146,8 +146,8 @@ class FakeChild implements SpawnedChildHandle {
 /* oxlint-enable no-restricted-syntax/no-class */
 
 /**
- * Spawn record produced by {@link makeRecordingSpawn}; one entry per
- * spawn the orchestrator requests.
+ Spawn record produced by {@link makeRecordingSpawn}; one entry per
+ spawn the orchestrator requests.
  */
 type SpawnRecord = {
   readonly command: string;
@@ -156,14 +156,14 @@ type SpawnRecord = {
 };
 
 /**
- * Builds a {@link SpawnFn} that records every call into a shared array.
- *
- * @returns spawn factory and the live records array
- *
- * @example
- * ```ts
- * const { spawn, records, } = makeRecordingSpawn();
- * ```
+ Builds a {@link SpawnFn} that records every call into a shared array.
+ 
+ @returns spawn factory and the live records array
+ 
+ @example
+ ```ts
+ const { spawn, records, } = makeRecordingSpawn();
+ ```
  */
 function makeRecordingSpawn(): {
   spawn: SpawnFn;
@@ -191,25 +191,25 @@ function makeRecordingSpawn(): {
 }
 
 /**
- * Returns a fresh temp directory dedicated to one test run.
- *
- * @returns absolute path of a freshly-created temp directory
- *
- * @example
- * ```ts
- * const dir = await makeTmpDir();
- * ```
+ Returns a fresh temp directory dedicated to one test run.
+ 
+ @returns absolute path of a freshly-created temp directory
+ 
+ @example
+ ```ts
+ const dir = await makeTmpDir();
+ ```
  */
 async function makeTmpDir(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'watch-restart-start-',),);
 }
 
 /**
- * Stops the handle ignoring errors. Used in test teardown where the
- * orchestrator's `stop()` failing is its own bug, not the failure under
- * test.
- *
- * @param handle - handle to stop
+ Stops the handle ignoring errors. Used in test teardown where the
+ orchestrator's `stop()` failing is its own bug, not the failure under
+ test.
+ 
+ @param handle - handle to stop
  */
 async function safeStop(handle: WatchRestartHandle,): Promise<void> {
   try {

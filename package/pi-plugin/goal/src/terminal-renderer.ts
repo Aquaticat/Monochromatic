@@ -1,7 +1,7 @@
 /**
- * Pi custom-entry renderers for human-only goal outcomes.
- *
- * @module
+ Pi custom-entry renderers for human-only goal outcomes.
+ 
+ @module
  */
 
 import type {
@@ -23,16 +23,16 @@ import type {
 } from './types.ts';
 
 /**
- * Format attempted reviewer identities for human audit.
- *
- * @param identities - attempted canonical reviewer identities
- *
- * @returns comma-separated identities or explicit absence
- *
- * @example
- * ```ts
- * formatAttemptedReviewers([]);
- * ```
+ Format attempted reviewer identities for human audit.
+ 
+ @param identities - attempted canonical reviewer identities
+ 
+ @returns comma-separated identities or explicit absence
+ 
+ @example
+ ```ts
+ formatAttemptedReviewers([]);
+ ```
  */
 function formatAttemptedReviewers(identities: readonly string[],): string {
   return identities.length === 0
@@ -41,16 +41,16 @@ function formatAttemptedReviewers(identities: readonly string[],): string {
 }
 
 /**
- * Register persistent human-only outcome renderers.
- *
- * @param pi - Pi extension API receiving custom-entry renderers
- *
- * @mutates pi - pi.registerEntryRenderer stores transcript renderers
- *
- * @example
- * ```ts
- * registerGoalTerminalRenderer(pi);
- * ```
+ Register persistent human-only outcome renderers.
+ 
+ @param pi - Pi extension API receiving custom-entry renderers
+ 
+ @mutates pi - pi.registerEntryRenderer stores transcript renderers
+ 
+ @example
+ ```ts
+ registerGoalTerminalRenderer(pi);
+ ```
  */
 function registerGoalTerminalRenderer(
   pi: ForeignBorrowed<ExtensionAPI>,
@@ -63,13 +63,13 @@ function registerGoalTerminalRenderer(
       theme: ForeignBorrowed<Theme>,
     ) {
       /**
-       * Persisted completion audit payload.
+       Persisted completion audit payload.
        */
       const { data, } = entry;
       if (data === undefined)
         return undefined;
       /**
-       * Compact success row with optional expanded audit.
+       Compact success row with optional expanded audit.
        */
       const lines = [theme.fg(
         'success',
@@ -99,7 +99,7 @@ function registerGoalTerminalRenderer(
       theme: ForeignBorrowed<Theme>,
     ) {
       /**
-       * Persisted terminal diagnostic payload.
+       Persisted terminal diagnostic payload.
        */
       const { data, } = entry;
       if (data === undefined)

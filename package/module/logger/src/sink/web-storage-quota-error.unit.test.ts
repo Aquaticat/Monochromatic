@@ -14,7 +14,7 @@ await describe({
       name: 'recognizes the standard DOMException name',
       fn: async () => {
         /**
-         * Overflow shaped exactly as current engines raise it.
+         Overflow shaped exactly as current engines raise it.
          */
         const overflow = new DOMException('full', 'QuotaExceededError',);
         expect(isQuotaExceededError(overflow,),)
@@ -34,7 +34,7 @@ await describe({
       name: 'rejects a plain Error whose message merely mentions quota',
       fn: async () => {
         /**
-         * Non-quota failure that only talks about quota in prose.
+         Non-quota failure that only talks about quota in prose.
          */
         const impostor = new Error('quota exceeded',);
         expect(isQuotaExceededError(impostor,),)

@@ -1,7 +1,7 @@
 /**
- * Positional CLI input grammar.
- *
- * @module
+ Positional CLI input grammar.
+ 
+ @module
  */
 
 import {
@@ -10,7 +10,7 @@ import {
 } from './cli-invocation-error.ts';
 
 /**
- * Required positional input interpreted without consulting standard input.
+ Required positional input interpreted without consulting standard input.
  */
 export type CliInputArgument =
   | {
@@ -23,22 +23,22 @@ export type CliInputArgument =
   };
 
 /**
- * Validates exactly one positional input argument.
- *
- * @param positionals - Raw positional arguments.
- *
- * @param interactive - Whether inline structured JSON is accepted.
- *
- * @returns Named-file or shell-quoted inline JSON input.
- *
- * @throws {@link MissingCliInputError} when positional input is omitted.
- *
- * @throws {@link CliInvocationError} for multiple or unsupported positionals.
- *
- * @example
- * ```ts
- * parsePositionalInput({ positionals: ['review.json'], interactive: true });
- * ```
+ Validates exactly one positional input argument.
+ 
+ @param positionals - Raw positional arguments.
+ 
+ @param interactive - Whether inline structured JSON is accepted.
+ 
+ @returns Named-file or shell-quoted inline JSON input.
+ 
+ @throws {@link MissingCliInputError} when positional input is omitted.
+ 
+ @throws {@link CliInvocationError} for multiple or unsupported positionals.
+ 
+ @example
+ ```ts
+ parsePositionalInput({ positionals: ['review.json'], interactive: true });
+ ```
  */
 export function parsePositionalInput({
   positionals,
@@ -54,7 +54,7 @@ export function parsePositionalInput({
     throw new CliInvocationError('every mode requires exactly one positional input',);
   }
   /**
-   * Sole required positional value.
+   Sole required positional value.
    */
   const value = positionals.at(0,);
   if (value === undefined) {
@@ -64,11 +64,11 @@ export function parsePositionalInput({
     throw new CliInvocationError('`-` is not an input source; pass a named file path',);
   }
   /**
-   * Leading-whitespace-insensitive syntax discriminator preserving original JSON text.
+   Leading-whitespace-insensitive syntax discriminator preserving original JSON text.
    */
   const candidate = value.trimStart();
   /**
-   * Whether positional syntax unambiguously opens a JSON object or array.
+   Whether positional syntax unambiguously opens a JSON object or array.
    */
   const inlineJson = candidate.startsWith('{',) || candidate.startsWith('[',);
   if (inlineJson && (!interactive)) {

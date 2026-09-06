@@ -1,5 +1,5 @@
 /**
- * Windows trust-registry ACL host evidence. @module
+ Windows trust-registry ACL host evidence. @module
  */
 import {
   mkdtemp,
@@ -18,7 +18,7 @@ import {
 if (process.platform !== 'win32')
   throw new Error('Windows ACL host evidence must run on Windows.',);
 /**
- * Canonical disposable parent.
+ Canonical disposable parent.
  */
 const root = await realpath(
   await mkdtemp(join(
@@ -27,7 +27,7 @@ const root = await realpath(
   ),),
 );
 /**
- * Disposable fixture cleanup.
+ Disposable fixture cleanup.
  */
 await using fixture = {
   async [Symbol.asyncDispose](): Promise<void> {
@@ -41,7 +41,7 @@ await using fixture = {
   },
 };
 /**
- * Private registry root under disposable canonical parent.
+ Private registry root under disposable canonical parent.
  */
 const registryRoot = join(
   root,
@@ -49,7 +49,7 @@ const registryRoot = join(
 );
 await ensureRegistryRoot(registryRoot,);
 /**
- * Private snapshot fixture.
+ Private snapshot fixture.
  */
 const snapshotPath = join(
   registryRoot,
@@ -70,7 +70,7 @@ await nanoSpawn(
 ],
 );
 /**
- * Rejection after broadening fixture ACL.
+ Rejection after broadening fixture ACL.
  */
 const broadenedFailure = await (async function captureBroadenedAclFailure(): Promise<unknown> {
   try {

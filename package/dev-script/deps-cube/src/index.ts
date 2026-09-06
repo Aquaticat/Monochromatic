@@ -1,18 +1,18 @@
 /**
- * Public surface of `@monochromatic-dev/dev-script-deps-cube`.
- *
- * Re-exports the library-level entry points that tests and other
- * tooling import directly. The CLI in `./cli.ts` is run via the
- * `deps-cube` bin entry and is not re-exported here.
- *
- * @example
- * ```ts
- * import { readCatalog, createCache, probeAll, renderHtml } from '@monochromatic-dev/dev-script-deps-cube';
- * const entries = await readCatalog();
- * const cache = createCache();
- * const probes = await probeAll({ entries, cache });
- * const html = await renderHtml({ probes });
- * ```
+ Public surface of `@monochromatic-dev/dev-script-deps-cube`.
+ 
+ Re-exports the library-level entry points that tests and other
+ tooling import directly. The CLI in `./cli.ts` is run via the
+ `deps-cube` bin entry and is not re-exported here.
+ 
+ @example
+ ```ts
+ import { readCatalog, createCache, probeAll, renderHtml } from '@monochromatic-dev/dev-script-deps-cube';
+ const entries = await readCatalog();
+ const cache = createCache();
+ const probes = await probeAll({ entries, cache });
+ const html = await renderHtml({ probes });
+ ```
  */
 
 export {

@@ -3,8 +3,8 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
- * Bans inline suppression of `eslint/max-lines`, built via {@link banDisableRule}.
- * Split the file into smaller modules instead of suppressing the line limit.
+ Bans inline suppression of `eslint/max-lines`, built via {@link banDisableRule}.
+ Split the file into smaller modules instead of suppressing the line limit.
  */
 export const noDisableMaxLines: CreateOnceRule = banDisableRule({
   ruleId: 'eslint/max-lines',

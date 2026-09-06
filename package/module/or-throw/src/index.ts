@@ -1,36 +1,36 @@
 /**
- * Runtime assertions that pass the value through or throw.
- *
- * Each helper narrows the static type when the runtime check passes
- * and throws a descriptive `Error` when it fails.
- * Use these wherever the non-null assertion operator (`!`) would otherwise
- * be reached for; the runtime check turns a silent type lie into a loud,
- * debuggable failure.
- *
- * Categories:
- * - Boolean shape: {@link nonNullishOrThrow}, {@link truthyOrThrow}, {@link falsyOrThrow}
- * - Container size: {@link emptyOrThrow}, {@link nonemptyOrThrow}
- * - Iterable protocols: {@link iterableOrThrow}, {@link asyncIterableOrThrow}, {@link maybeAsyncIterableOrThrow}
- * - Container instances: {@link arrayOrThrow}, {@link setOrThrow}, {@link mapOrThrow}, {@link weakSetOrThrow}, {@link weakMapOrThrow}
- * - Standard built-ins: {@link promiseOrThrow}, {@link dateOrThrow}, {@link regExpOrThrow}, {@link errorOrThrow}
- * - typeof primitives: {@link stringOrThrow}, {@link numberOrThrow}, {@link bigintOrThrow}, {@link booleanOrThrow}, {@link symbolOrThrow}, {@link functionOrThrow}, {@link objectOrThrow}
- * - Numeric union: {@link numericOrThrow}
- * - Custom predicates: {@link satisfiesOrThrow}, {@link satisfiesOrThrowAsync}
- *
- * @example
- * ```ts
- * import {
- *   arrayOrThrow,
- *   nonNullishOrThrow,
- *   stringOrThrow,
- * } from '\@monochromatic-dev/module-or-throw';
- *
- * const el = nonNullishOrThrow(document.querySelector('.target',),);
- * const text = stringOrThrow(el.textContent,);
- * const tokens = arrayOrThrow(text.match(/\\w+/g,),);
- * ```
- *
- * @packageDocumentation
+ Runtime assertions that pass the value through or throw.
+ 
+ Each helper narrows the static type when the runtime check passes
+ and throws a descriptive `Error` when it fails.
+ Use these wherever the non-null assertion operator (`!`) would otherwise
+ be reached for; the runtime check turns a silent type lie into a loud,
+ debuggable failure.
+ 
+ Categories:
+ - Boolean shape: {@link nonNullishOrThrow}, {@link truthyOrThrow}, {@link falsyOrThrow}
+ - Container size: {@link emptyOrThrow}, {@link nonemptyOrThrow}
+ - Iterable protocols: {@link iterableOrThrow}, {@link asyncIterableOrThrow}, {@link maybeAsyncIterableOrThrow}
+ - Container instances: {@link arrayOrThrow}, {@link setOrThrow}, {@link mapOrThrow}, {@link weakSetOrThrow}, {@link weakMapOrThrow}
+ - Standard built-ins: {@link promiseOrThrow}, {@link dateOrThrow}, {@link regExpOrThrow}, {@link errorOrThrow}
+ - typeof primitives: {@link stringOrThrow}, {@link numberOrThrow}, {@link bigintOrThrow}, {@link booleanOrThrow}, {@link symbolOrThrow}, {@link functionOrThrow}, {@link objectOrThrow}
+ - Numeric union: {@link numericOrThrow}
+ - Custom predicates: {@link satisfiesOrThrow}, {@link satisfiesOrThrowAsync}
+ 
+ @example
+ ```ts
+ import {
+   arrayOrThrow,
+   nonNullishOrThrow,
+   stringOrThrow,
+ } from '\@monochromatic-dev/module-or-throw';
+ 
+ const el = nonNullishOrThrow(document.querySelector('.target',),);
+ const text = stringOrThrow(el.textContent,);
+ const tokens = arrayOrThrow(text.match(/\\w+/g,),);
+ ```
+ 
+ @packageDocumentation
  */
 
 export type { ExtractOrUnknown, } from './extract-or-unknown.ts';

@@ -1,11 +1,11 @@
 /**
- * Hard guard against caller-scoped ydotool keyboard injection.
- *
- * ydotool sends key-down and key-up as separate datagrams. A key-down that
- * cancels its own Pi Bash caller can terminate ydotool before key-up, leaving
- * the persistent virtual input device pressed until ydotoold restarts.
- *
- * @module
+ Hard guard against caller-scoped ydotool keyboard injection.
+ 
+ ydotool sends key-down and key-up as separate datagrams. A key-down that
+ cancels its own Pi Bash caller can terminate ydotool before key-up, leaving
+ the persistent virtual input device pressed until ydotoold restarts.
+ 
+ @module
  */
 
 import { basename, } from 'node:path';
@@ -22,20 +22,20 @@ import type {
 } from './types.ts';
 
 /**
- * Module logger for hard virtual-input decisions.
+ Module logger for hard virtual-input decisions.
  */
 const l = tagged({ tag: 'virtual-input-guard', },);
 
 /**
- * Executable name whose persistent virtual device can retain interrupted key presses.
+ Executable name whose persistent virtual device can retain interrupted key presses.
  */
 const YDOTOOL_COMMAND_NAME = 'ydotool';
 
 /**
- * Commands whose arguments are evidence or output text rather than executables.
- *
- * They keep source inspection such as `rg ydotool .` available while unknown
- * wrappers fail closed when an argument names ydotool.
+ Commands whose arguments are evidence or output text rather than executables.
+ 
+ They keep source inspection such as `rg ydotool .` available while unknown
+ wrappers fail closed when an argument names ydotool.
  */
 const NON_EXECUTING_ARGUMENT_COMMANDS = new Set([
   'cat',
@@ -59,7 +59,7 @@ const NON_EXECUTING_ARGUMENT_COMMANDS = new Set([
 ],);
 
 /**
- * Commands whose `-c`-family option carries inline shell source.
+ Commands whose `-c`-family option carries inline shell source.
  */
 const INLINE_SOURCE_COMMANDS = new Set([
   'bash',
@@ -70,7 +70,7 @@ const INLINE_SOURCE_COMMANDS = new Set([
 ],);
 
 /**
- * Guidance returned when direct ydotool execution is blocked.
+ Guidance returned when direct ydotool execution is blocked.
  */
 const CALLER_SCOPED_YDOTOOL_REASON: string = [
   'Direct ydotool invocation is blocked because an injected key can cancel its own Bash caller before key-up.',
@@ -78,32 +78,32 @@ const CALLER_SCOPED_YDOTOOL_REASON: string = [
 ].join(' ',);
 
 /**
- * Reduce command path to executable basename.
- *
- * @param name - Parsed shell command or forwarded executable name.
- *
- * @returns Executable basename used for exact policy matching.
- *
- * @example
- * ```typescript
- * executableName('/usr/bin/ydotool'); // 'ydotool'
- * ```
+ Reduce command path to executable basename.
+ 
+ @param name - Parsed shell command or forwarded executable name.
+ 
+ @returns Executable basename used for exact policy matching.
+ 
+ @example
+ ```typescript
+ executableName('/usr/bin/ydotool'); // 'ydotool'
+ ```
  */
 function executableName(name: string,): string {
   return basename(name,);
 }
 
 /**
- * Test whether parsed word names ydotool executable.
- *
- * @param name - Parsed command or argument value.
- *
- * @returns Whether value resolves lexically to ydotool executable name.
- *
- * @example
- * ```typescript
- * namesYdotool('/usr/bin/ydotool'); // true
- * ```
+ Test whether parsed word names ydotool executable.
+ 
+ @param name - Parsed command or argument value.
+ 
+ @returns Whether value resolves lexically to ydotool executable name.
+ 
+ @example
+ ```typescript
+ namesYdotool('/usr/bin/ydotool'); // true
+ ```
  */
 function namesYdotool(name: string,): boolean {
   return executableName(name,)
@@ -111,18 +111,18 @@ function namesYdotool(name: string,): boolean {
 }
 
 /**
- * Test whether argument is an executable-shaped ydotool word.
- *
- * Environment assignments are data even when their value points at ydotool.
- *
- * @param argument - Parsed shell argument.
- *
- * @returns Whether argument can name ydotool executable.
- *
- * @example
- * ```typescript
- * argumentNamesYdotool('/usr/bin/ydotool'); // true
- * ```
+ Test whether argument is an executable-shaped ydotool word.
+ 
+ Environment assignments are data even when their value points at ydotool.
+ 
+ @param argument - Parsed shell argument.
+ 
+ @returns Whether argument can name ydotool executable.
+ 
+ @example
+ ```typescript
+ argumentNamesYdotool('/usr/bin/ydotool'); // true
+ ```
  */
 function argumentNamesYdotool(argument: string,): boolean {
   if (argument.includes('=',))
@@ -131,20 +131,20 @@ function argumentNamesYdotool(argument: string,): boolean {
 }
 
 /**
- * Test whether command treats executable-shaped arguments only as inspection data.
- *
- * @param command - Parsed simple shell command.
- *
- * @returns Whether ydotool-shaped arguments are non-executing for this command.
- *
- * @example
- * ```typescript
- * commandTreatsArgumentsAsData({ name: 'rg', args: ['ydotool'] } as CommandInfo);
- * ```
+ Test whether command treats executable-shaped arguments only as inspection data.
+ 
+ @param command - Parsed simple shell command.
+ 
+ @returns Whether ydotool-shaped arguments are non-executing for this command.
+ 
+ @example
+ ```typescript
+ commandTreatsArgumentsAsData({ name: 'rg', args: ['ydotool'] } as CommandInfo);
+ ```
  */
 function commandTreatsArgumentsAsData(command: CommandInfo,): boolean {
   /**
-   * Executable basename used by inspection-command policy.
+   Executable basename used by inspection-command policy.
    */
   const name = executableName(command.name,);
   if (NON_EXECUTING_ARGUMENT_COMMANDS.has(name,))
@@ -159,19 +159,19 @@ function commandTreatsArgumentsAsData(command: CommandInfo,): boolean {
 }
 
 /**
- * Test whether command invokes ydotool in current caller lifecycle.
- *
- * Direct command names always block. Outside a narrow inspection allowlist,
- * executable-shaped arguments block too, covering generic process wrappers.
- *
- * @param command - Parsed simple shell command.
- *
- * @returns Whether command can start ydotool under caller lifetime.
- *
- * @example
- * ```typescript
- * commandInvokesYdotool({ name: 'ydotool', args: [] } as CommandInfo); // true
- * ```
+ Test whether command invokes ydotool in current caller lifecycle.
+ 
+ Direct command names always block. Outside a narrow inspection allowlist,
+ executable-shaped arguments block too, covering generic process wrappers.
+ 
+ @param command - Parsed simple shell command.
+ 
+ @returns Whether command can start ydotool under caller lifetime.
+ 
+ @example
+ ```typescript
+ commandInvokesYdotool({ name: 'ydotool', args: [] } as CommandInfo); // true
+ ```
  */
 function commandInvokesYdotool(command: CommandInfo,): boolean {
   if (namesYdotool(command.name,))
@@ -184,7 +184,7 @@ function commandInvokesYdotool(command: CommandInfo,): boolean {
 }
 
 /**
- * Minimal shell invocation view used while scanning wrapper argument tails.
+ Minimal shell invocation view used while scanning wrapper argument tails.
  */
 type ShellInvocation = {
   readonly name: string;
@@ -192,16 +192,16 @@ type ShellInvocation = {
 };
 
 /**
- * Extract inline program from one `sh -c`-family invocation view.
- *
- * @param invocation - Candidate shell executable and following arguments.
- *
- * @returns Inline command strings requiring another parser pass.
- *
- * @example
- * ```typescript
- * inlineSourcesForInvocation({ name: 'sh', args: ['-c', 'ydotool key 1:1'] });
- * ```
+ Extract inline program from one `sh -c`-family invocation view.
+ 
+ @param invocation - Candidate shell executable and following arguments.
+ 
+ @returns Inline command strings requiring another parser pass.
+ 
+ @example
+ ```typescript
+ inlineSourcesForInvocation({ name: 'sh', args: ['-c', 'ydotool key 1:1'] });
+ ```
  */
 function inlineSourcesForInvocation(
   invocation: ShellInvocation,
@@ -222,7 +222,7 @@ function inlineSourcesForInvocation(
         return [];
       }
       /**
-       * Inline shell program immediately following current command-string flag.
+       Inline shell program immediately following current command-string flag.
        */
       const source = invocation.args[index + 1];
       if (source === undefined)
@@ -232,22 +232,22 @@ function inlineSourcesForInvocation(
 }
 
 /**
- * Extract inline shell programs from direct or wrapper-nested shell invocations.
- *
- * @param command - Parsed simple shell command.
- *
- * @returns Inline program arguments requiring iterative shell analysis.
- *
- * @example
- * ```typescript
- * inlineShellSources({ name: 'sudo', args: ['sh', '-c', 'ydotool key 1:1'] } as CommandInfo);
- * ```
+ Extract inline shell programs from direct or wrapper-nested shell invocations.
+ 
+ @param command - Parsed simple shell command.
+ 
+ @returns Inline program arguments requiring iterative shell analysis.
+ 
+ @example
+ ```typescript
+ inlineShellSources({ name: 'sudo', args: ['sh', '-c', 'ydotool key 1:1'] } as CommandInfo);
+ ```
  */
 function inlineShellSources(command: CommandInfo,): readonly string[] {
   if (commandTreatsArgumentsAsData(command,))
     return [];
   /**
-   * Shell source concatenated by eval before execution.
+   Shell source concatenated by eval before execution.
    */
   const evalSources = executableName(command.name,) === 'eval'
     ? [command
@@ -255,7 +255,7 @@ function inlineShellSources(command: CommandInfo,): readonly string[] {
       .join(' ',),]
     : [];
   /**
-   * Direct command followed by every argument-tail candidate for wrapped shell.
+   Direct command followed by every argument-tail candidate for wrapped shell.
    */
   const invocationCandidates: readonly ShellInvocation[] = [
     {
@@ -284,28 +284,28 @@ function inlineShellSources(command: CommandInfo,): readonly string[] {
 }
 
 /**
- * Detect caller-scoped ydotool execution in shell source.
- *
- * Nested `sh -c` programs enter a bounded work queue. Each nested source is a
- * parsed argument from finite original input, so visited-source deduplication
- * terminates without recursive string traversal.
- *
- * @param command - Bash tool command text.
- *
- * @returns Whether source invokes ydotool without independent supervision.
- *
- * @example
- * ```typescript
- * hasCallerScopedYdotool('bash -c "ydotool key 1:1 1:0"'); // true
- * ```
+ Detect caller-scoped ydotool execution in shell source.
+ 
+ Nested `sh -c` programs enter a bounded work queue. Each nested source is a
+ parsed argument from finite original input, so visited-source deduplication
+ terminates without recursive string traversal.
+ 
+ @param command - Bash tool command text.
+ 
+ @returns Whether source invokes ydotool without independent supervision.
+ 
+ @example
+ ```typescript
+ hasCallerScopedYdotool('bash -c "ydotool key 1:1 1:0"'); // true
+ ```
  */
 function hasCallerScopedYdotool(command: string,): boolean {
   /**
-   * Shell sources awaiting analysis, extended by inline interpreter arguments.
+   Shell sources awaiting analysis, extended by inline interpreter arguments.
    */
   const pendingSources = [command,];
   /**
-   * Sources already analyzed, preventing duplicate nested work.
+   Sources already analyzed, preventing duplicate nested work.
    */
   const visitedSources = new Set<string>();
 
@@ -314,7 +314,7 @@ function hasCallerScopedYdotool(command: string,): boolean {
       continue;
     visitedSources.add(source,);
     /**
-     * Structured shell analysis for current source.
+     Structured shell analysis for current source.
      */
     const analysis = analyzeBashCommand(source,);
     if (!analysis.parsed) {
@@ -335,25 +335,25 @@ function hasCallerScopedYdotool(command: string,): boolean {
 }
 
 /**
- * Apply non-bypassable virtual-input safety policy to one tool call.
- *
- * Non-Bash calls and Bash commands that only mention ydotool as data are
- * allowed. Caller-scoped ydotool execution is blocked before auto-mode bypass
- * and judge paths.
- *
- * @param event - Pi tool call under preflight.
- *
- * @returns Hard block for caller-scoped ydotool, otherwise explicit allow.
- *
- * @example
- * ```typescript
- * guardVirtualInput({
- *   type: 'tool_call',
- *   toolName: 'bash',
- *   toolCallId: 'input-1',
- *   input: { command: 'ydotool key 1:1 1:0' },
- * });
- * ```
+ Apply non-bypassable virtual-input safety policy to one tool call.
+ 
+ Non-Bash calls and Bash commands that only mention ydotool as data are
+ allowed. Caller-scoped ydotool execution is blocked before auto-mode bypass
+ and judge paths.
+ 
+ @param event - Pi tool call under preflight.
+ 
+ @returns Hard block for caller-scoped ydotool, otherwise explicit allow.
+ 
+ @example
+ ```typescript
+ guardVirtualInput({
+   type: 'tool_call',
+   toolName: 'bash',
+   toolCallId: 'input-1',
+   input: { command: 'ydotool key 1:1 1:0' },
+ });
+ ```
  */
 function guardVirtualInput(
   event: ForeignBorrowed<ToolCallEvent>,
@@ -367,7 +367,7 @@ function guardVirtualInput(
     return { block: false, };
   }
   /**
-   * Function-boundary logger for non-bypassable denial.
+   Function-boundary logger for non-bypassable denial.
    */
   const innerL = tagged({
     tag: guardVirtualInput.name,

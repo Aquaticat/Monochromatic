@@ -30,42 +30,42 @@ import {
 } from './tunnel-util.ts';
 
 /**
- * Module logger for tunnel orchestration.
+ Module logger for tunnel orchestration.
  */
 const l = tagged({ tag: 'tunnel', },);
 
 /**
- * WireGuard per-packet overhead subtracted from the base MTU, matching wg-quick.
+ WireGuard per-packet overhead subtracted from the base MTU, matching wg-quick.
  */
 const WG_OVERHEAD = 80;
 
 /**
- * Fallback base MTU when the config does not specify one, matching wg-quick.
+ Fallback base MTU when the config does not specify one, matching wg-quick.
  */
 const DEFAULT_BASE_MTU = 1_500;
 
 /**
- * Pushes the reconstructed config into the interface via `wg addconf`.
- *
- * The `AllowedIPs` line travels here verbatim; the `wg` binary parses it in
- * constant time regardless of size.
- *
- * @param config - Parsed config carrying the reconstructed config text.
- *
- * @example
- * ```ts
- * await applyPeerConfig({ config });
- * ```
+ Pushes the reconstructed config into the interface via `wg addconf`.
+ 
+ The `AllowedIPs` line travels here verbatim; the `wg` binary parses it in
+ constant time regardless of size.
+ 
+ @param config - Parsed config carrying the reconstructed config text.
+ 
+ @example
+ ```ts
+ await applyPeerConfig({ config });
+ ```
  */
 async function applyPeerConfig({ config, }: { readonly config: WireguardConfig; },): Promise<void> {
   /**
-   * Self-deleting private temp directory for the `wg addconf` config file.
-   * `wg` requires a real config file it can `fopen`; a `/dev/stdin` pipe from a
-   * spawned child is not seekable as a config file and fails with `fopen`.
+   Self-deleting private temp directory for the `wg addconf` config file.
+   `wg` requires a real config file it can `fopen`; a `/dev/stdin` pipe from a
+   spawned child is not seekable as a config file and fails with `fopen`.
    */
   await using dir = await makeTempDir();
   /**
-   * Config file carrying the private key, readable only by root.
+   Config file carrying the private key, readable only by root.
    */
   const path = join(
     dir.path,
@@ -89,14 +89,14 @@ async function applyPeerConfig({ config, }: { readonly config: WireguardConfig; 
 }
 
 /**
- * Creates the WireGuard kernel link for the interface.
- *
- * @param interfaceName - Interface to create.
- *
- * @example
- * ```ts
- * await addLink({ interfaceName: 'wg0' });
- * ```
+ Creates the WireGuard kernel link for the interface.
+ 
+ @param interfaceName - Interface to create.
+ 
+ @example
+ ```ts
+ await addLink({ interfaceName: 'wg0' });
+ ```
  */
 async function addLink({ interfaceName, }: { readonly interfaceName: string; },): Promise<void> {
   await run({
@@ -113,20 +113,20 @@ async function addLink({ interfaceName, }: { readonly interfaceName: string; },)
 }
 
 /**
- * Assigns each configured address to the interface, then sets MTU and brings it up.
- *
- * @param config - Parsed config.
- *
- * @example
- * ```ts
- * await addAddressesAndUp({ config });
- * ```
+ Assigns each configured address to the interface, then sets MTU and brings it up.
+ 
+ @param config - Parsed config.
+ 
+ @example
+ ```ts
+ await addAddressesAndUp({ config });
+ ```
  */
 async function addAddressesAndUp(
   { config, }: { readonly config: WireguardConfig; },
 ): Promise<void> {
   /**
-   * Interface whose addresses are configured.
+   Interface whose addresses are configured.
    */
   const iface = config.interfaceName;
   /* oxlint-disable eslint/no-await-in-loop -- Addresses are added sequentially so a failure surfaces before dependent setup. */
@@ -145,7 +145,7 @@ async function addAddressesAndUp(
   }
   /* oxlint-enable eslint/no-await-in-loop */
   /**
-   * Effective MTU: configured value, else discovered from the path minus overhead.
+   Effective MTU: configured value, else discovered from the path minus overhead.
    */
   const mtu = config.mtu ?? await discoverMtu();
   await run({
@@ -163,22 +163,22 @@ async function addAddressesAndUp(
 }
 
 /**
- * Discovers the tunnel MTU from the current default-route path MTU.
- *
- * Mirrors wg-quick's `set_mtu`: the MTU of the device carrying the default
- * route (the endpoint path) minus the WireGuard per-packet overhead. Falls back
- * to the standard base MTU when no default route is present.
- *
- * @returns Tunnel MTU to apply.
- *
- * @example
- * ```ts
- * await discoverMtu();
- * ```
+ Discovers the tunnel MTU from the current default-route path MTU.
+ 
+ Mirrors wg-quick's `set_mtu`: the MTU of the device carrying the default
+ route (the endpoint path) minus the WireGuard per-packet overhead. Falls back
+ to the standard base MTU when no default route is present.
+ 
+ @returns Tunnel MTU to apply.
+ 
+ @example
+ ```ts
+ await discoverMtu();
+ ```
  */
 async function discoverMtu(): Promise<number> {
   /**
-   * Default-route listing used to find the egress device.
+   Default-route listing used to find the egress device.
    */
   const route = await runAllowingFailure({
     command: 'ip',
@@ -190,7 +190,7 @@ async function discoverMtu(): Promise<number> {
     ],
   },);
   /**
-   * Egress device named after `dev` in the default route, when present.
+   Egress device named after `dev` in the default route, when present.
    */
   const dev = tokenAfter({
     value: route.stdout,
@@ -200,7 +200,7 @@ async function discoverMtu(): Promise<number> {
   if (!dev.found)
     return DEFAULT_BASE_MTU - WG_OVERHEAD;
   /**
-   * Link-detail output carrying the device MTU.
+   Link-detail output carrying the device MTU.
    */
   const link = await runAllowingFailure({
     command: 'ip',
@@ -212,7 +212,7 @@ async function discoverMtu(): Promise<number> {
     ],
   },);
   /**
-   * Parsed MTU digits from the link output, when present.
+   Parsed MTU digits from the link output, when present.
    */
   const base = tokenAfter({
     value: link.stdout,
@@ -222,7 +222,7 @@ async function discoverMtu(): Promise<number> {
   if (!base.found)
     return DEFAULT_BASE_MTU - WG_OVERHEAD;
   /**
-   * Numeric path MTU before subtracting overhead.
+   Numeric path MTU before subtracting overhead.
    */
   const path = Math.trunc(Number(base.token,),);
   if ((!Number.isSafeInteger(path,)) || (path <= WG_OVERHEAD))
@@ -231,18 +231,18 @@ async function discoverMtu(): Promise<number> {
 }
 
 /**
- * Configures DNS servers and search domains through systemd-resolved.
- *
- * @param config - Parsed config carrying DNS settings.
- *
- * @example
- * ```ts
- * await setDns({ config });
- * ```
+ Configures DNS servers and search domains through systemd-resolved.
+ 
+ @param config - Parsed config carrying DNS settings.
+ 
+ @example
+ ```ts
+ await setDns({ config });
+ ```
  */
 async function setDns({ config, }: { readonly config: WireguardConfig; },): Promise<void> {
   /**
-   * Interface receiving DNS configuration.
+   Interface receiving DNS configuration.
    */
   const iface = config.interfaceName;
   if (config.dns
@@ -258,7 +258,7 @@ async function setDns({ config, }: { readonly config: WireguardConfig; },): Prom
     ],
   },);
   /**
-   * Search domains plus the `~.` routing domain so all lookups use the tunnel.
+   Search domains plus the `~.` routing domain so all lookups use the tunnel.
    */
   const domains = [
     '~.',
@@ -283,18 +283,18 @@ async function setDns({ config, }: { readonly config: WireguardConfig; },): Prom
 }
 
 /**
- * Performs the up sequence and rolls back on failure.
- *
- * @param config - Parsed config.
- *
- * @example
- * ```ts
- * await upInner({ config });
- * ```
+ Performs the up sequence and rolls back on failure.
+ 
+ @param config - Parsed config.
+ 
+ @example
+ ```ts
+ await upInner({ config });
+ ```
  */
 async function upInner({ config, }: { readonly config: WireguardConfig; },): Promise<void> {
   /**
-   * Interface brought up by this sequence.
+   Interface brought up by this sequence.
    */
   const iface = config.interfaceName;
   try {
@@ -328,29 +328,29 @@ async function upInner({ config, }: { readonly config: WireguardConfig; },): Pro
 }
 
 /**
- * Brings the interface up to match the parsed config, mirroring `wg-quick up`.
- *
- * On any failure the partially configured interface is torn back down.
- *
- * @param config - Parsed config.
- *
- * @throws {@link CommandError} when the interface already exists or a command fails.
- *
- * @example
- * ```ts
- * await up({ config });
- * ```
+ Brings the interface up to match the parsed config, mirroring `wg-quick up`.
+ 
+ On any failure the partially configured interface is torn back down.
+ 
+ @param config - Parsed config.
+ 
+ @throws {@link CommandError} when the interface already exists or a command fails.
+ 
+ @example
+ ```ts
+ await up({ config });
+ ```
  */
 export async function up({ config, }: { readonly config: WireguardConfig; },): Promise<void> {
   /**
-   * Function-scoped logger for the up lifecycle.
+   Function-scoped logger for the up lifecycle.
    */
   const fl = tagged({
     tag: up.name,
     l,
   },);
   /**
-   * Interface being brought up.
+   Interface being brought up.
    */
   const iface = config.interfaceName;
   fl.debug(`bringing ${iface} up`,);
@@ -373,16 +373,16 @@ export async function up({ config, }: { readonly config: WireguardConfig; },): P
 }
 
 /**
- * Removes interface, policy rules, firewall, and DNS, mirroring `wg-quick down`.
- *
- * @param config - Parsed config.
- *
- * @param tolerateMissing - When true, a missing interface is not an error.
- *
- * @example
- * ```ts
- * await teardown({ config });
- * ```
+ Removes interface, policy rules, firewall, and DNS, mirroring `wg-quick down`.
+ 
+ @param config - Parsed config.
+ 
+ @param tolerateMissing - When true, a missing interface is not an error.
+ 
+ @example
+ ```ts
+ await teardown({ config });
+ ```
  */
 async function teardown(
   {
@@ -394,7 +394,7 @@ async function teardown(
   },
 ): Promise<void> {
   /**
-   * Interface torn down by this sequence.
+   Interface torn down by this sequence.
    */
   const iface = config.interfaceName;
   if (!(await linkExists({ interfaceName: iface, },))) {
@@ -425,18 +425,18 @@ async function teardown(
 }
 
 /**
- * Tears the interface down, mirroring `wg-quick down`.
- *
- * @param config - Parsed config.
- *
- * @example
- * ```ts
- * await down({ config });
- * ```
+ Tears the interface down, mirroring `wg-quick down`.
+ 
+ @param config - Parsed config.
+ 
+ @example
+ ```ts
+ await down({ config });
+ ```
  */
 export async function down({ config, }: { readonly config: WireguardConfig; },): Promise<void> {
   /**
-   * Function-scoped logger for the down lifecycle.
+   Function-scoped logger for the down lifecycle.
    */
   const fl = tagged({
     tag: down.name,

@@ -18,7 +18,7 @@ await describe({
       name: 'renders the complete deterministic Issue contract',
       fn: async () => {
         /**
-         * Finding carrying every rendered section and raw Markdown prose.
+         Finding carrying every rendered section and raw Markdown prose.
          */
         const finding: NormalizedFinding = {
           position: {
@@ -36,7 +36,7 @@ await describe({
         };
 
         /**
-         * Fully rendered Issue draft without destination label.
+         Fully rendered Issue draft without destination label.
          */
         const issue = renderIssue({
           finding,
@@ -85,7 +85,7 @@ await describe({
       name: 'uses code fallback and caps complete UTF-8 title bytes',
       fn: async () => {
         /**
-         * Finding whose content is empty and existing code supplies summary.
+         Finding whose content is empty and existing code supplies summary.
          */
         const finding: NormalizedFinding = {
           position: {
@@ -105,21 +105,21 @@ await describe({
         );
 
         /**
-         * ASCII count that leaves exactly four bytes for final emoji.
+         ASCII count that leaves exactly four bytes for final emoji.
          */
         const exactPrefixLength = 252;
         /**
-         * Complete title at exact byte boundary.
+         Complete title at exact byte boundary.
          */
         const exactTitle = `${'x'.repeat(exactPrefixLength,)}😀`;
         expect(capIssueTitle(exactTitle,),).toBe(exactTitle,);
 
         /**
-         * ASCII count that forces emoji removal and ellipsis suffix.
+         ASCII count that forces emoji removal and ellipsis suffix.
          */
         const overPrefixLength = 253;
         /**
-         * Deterministically truncated overlength title.
+         Deterministically truncated overlength title.
          */
         const capped = capIssueTitle(`${'x'.repeat(overPrefixLength,)}😀`,);
         expect(new TextEncoder().encode(capped,)).toHaveLength(256,);
@@ -131,7 +131,7 @@ await describe({
       name: 'encodes commit-pinned source links at Markdown boundary',
       fn: async () => {
         /**
-         * Finding path containing Markdown and URL delimiters.
+         Finding path containing Markdown and URL delimiters.
          */
         const finding: NormalizedFinding = {
           position: {
@@ -148,7 +148,7 @@ await describe({
         };
 
         /**
-         * Rendered linked Issue.
+         Rendered linked Issue.
          */
         const issue = renderIssue({
           finding,
@@ -171,7 +171,7 @@ await describe({
       name: 'marks other and missing categories explicitly',
       fn: async () => {
         /**
-         * Shared finding fields for category marker assertions.
+         Shared finding fields for category marker assertions.
          */
         const base = {
           position: { kind: 'record' as const, value: 1, },

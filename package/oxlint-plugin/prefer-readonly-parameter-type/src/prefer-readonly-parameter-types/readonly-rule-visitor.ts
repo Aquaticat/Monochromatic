@@ -14,7 +14,7 @@ import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 import { reportReadonlyCallableEvidence, } from './verifier.ts';
 
 /**
- * Enforced TypeScript source suffixes excluding declaration variants.
+ Enforced TypeScript source suffixes excluding declaration variants.
  */
 const ENFORCED_SOURCE_SUFFIXES: readonly string[] = [
   '.ts',
@@ -24,7 +24,7 @@ const ENFORCED_SOURCE_SUFFIXES: readonly string[] = [
 ];
 
 /**
- * Exempt declaration-file suffixes.
+ Exempt declaration-file suffixes.
  */
 const DECLARATION_SOURCE_SUFFIXES: readonly string[] = [
   '.d.ts',
@@ -33,16 +33,16 @@ const DECLARATION_SOURCE_SUFFIXES: readonly string[] = [
 ];
 
 /**
- * Tests whether host file belongs to semantic enforcement inputs.
- *
- * @param fileName - Oxlint source filename.
- *
- * @returns whether source is non-declaration TypeScript.
- *
- * @example
- * ```ts
- * isEnforcedTypeScriptSource('source.ts');
- * ```
+ Tests whether host file belongs to semantic enforcement inputs.
+ 
+ @param fileName - Oxlint source filename.
+ 
+ @returns whether source is non-declaration TypeScript.
+ 
+ @example
+ ```ts
+ isEnforcedTypeScriptSource('source.ts');
+ ```
  */
 function isEnforcedTypeScriptSource(fileName: string,): boolean {
   return ENFORCED_SOURCE_SUFFIXES.some(function enforced(suffix,): boolean {
@@ -54,20 +54,20 @@ function isEnforcedTypeScriptSource(fileName: string,): boolean {
 }
 
 /**
- * Creates rule-specific reporting visitor over shared source evidence.
- *
- * @param context - Rule context receiving only selected category.
- *
- * @param category - Evidence category owned by public rule.
- *
- * @returns visitor sharing semantic computation with sibling rules.
- *
- * @mutates context - Emits selected diagnostics through foreign rule context.
- *
- * @example
- * ```ts
- * createReadonlyRuleVisitor({ context, category: 'preference' });
- * ```
+ Creates rule-specific reporting visitor over shared source evidence.
+ 
+ @param context - Rule context receiving only selected category.
+ 
+ @param category - Evidence category owned by public rule.
+ 
+ @returns visitor sharing semantic computation with sibling rules.
+ 
+ @mutates context - Emits selected diagnostics through foreign rule context.
+ 
+ @example
+ ```ts
+ createReadonlyRuleVisitor({ context, category: 'preference' });
+ ```
  */
 export function createReadonlyRuleVisitor({
   context,
@@ -81,12 +81,12 @@ export function createReadonlyRuleVisitor({
       if (!isEnforcedTypeScriptSource(context.filename,))
         return;
       /**
-       * Rule-category logger for current reporter.
+       Rule-category logger for current reporter.
        */
       const rl = tagged({ tag: category, },);
       try {
         /**
-         * Complete source evidence shared by every category visitor.
+         Complete source evidence shared by every category visitor.
          */
         const evidence = readonlySourceEvidence({ context, },);
         evidence.callables

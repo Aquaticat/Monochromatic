@@ -1,7 +1,7 @@
 /**
- * Tests for `weakSetOrThrow`.
- *
- * @module
+ Tests for `weakSetOrThrow`.
+ 
+ @module
  */
 
 import {

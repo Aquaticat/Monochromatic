@@ -1,10 +1,10 @@
 /**
- * Tests for auto-mode bypass shortcut behavior.
- *
- * Covers shortcut registration, visible toggle feedback, session restoration,
- * and tool-call short-circuiting while bypass mode is enabled.
- *
- * @module
+ Tests for auto-mode bypass shortcut behavior.
+ 
+ Covers shortcut registration, visible toggle feedback, session restoration,
+ and tool-call short-circuiting while bypass mode is enabled.
+ 
+ @module
  */
 
 import type {
@@ -83,14 +83,14 @@ type MockContextFixture = {
 };
 
 /**
- * Create mock ExtensionAPI that records registrations and custom entries.
- *
- * @returns mock API and captured registration state
- *
- * @example
- * ```typescript
- * const { api, shortcuts } = createMockApi();
- * ```
+ Create mock ExtensionAPI that records registrations and custom entries.
+ 
+ @returns mock API and captured registration state
+ 
+ @example
+ ```typescript
+ const { api, shortcuts } = createMockApi();
+ ```
  */
 function createMockApi(): {
   readonly api: ExtensionAPI;
@@ -144,16 +144,16 @@ function createMockApi(): {
 }
 
 /**
- * Create mock ExtensionContext with captured status and notification calls.
- *
- * @param branch - active session branch exposed by `sessionManager.getBranch`
- *
- * @returns mock context fixture
- *
- * @example
- * ```typescript
- * const { ctx, statuses } = createMockContext({ branch: [] });
- * ```
+ Create mock ExtensionContext with captured status and notification calls.
+ 
+ @param branch - active session branch exposed by `sessionManager.getBranch`
+ 
+ @returns mock context fixture
+ 
+ @example
+ ```typescript
+ const { ctx, statuses } = createMockContext({ branch: [] });
+ ```
  */
 function createMockContext(
   {
@@ -207,19 +207,19 @@ function createMockContext(
 }
 
 /**
- * Retrieve a registered event handler.
- *
- * @param registrations - event handler registry from {@link createMockApi}
- * @param event - event name to retrieve
- *
- * @returns registered handler
- *
- * @throws when event was not registered
- *
- * @example
- * ```typescript
- * const handler = getHandler({ registrations, event: 'tool_call' });
- * ```
+ Retrieve a registered event handler.
+ 
+ @param registrations - event handler registry from {@link createMockApi}
+ @param event - event name to retrieve
+ 
+ @returns registered handler
+ 
+ @throws when event was not registered
+ 
+ @example
+ ```typescript
+ const handler = getHandler({ registrations, event: 'tool_call' });
+ ```
  */
 function getHandler(
   {
@@ -242,18 +242,18 @@ function getHandler(
 }
 
 /**
- * Retrieve registered bypass shortcut handler.
- *
- * @param shortcuts - shortcut registry from {@link createMockApi}
- *
- * @returns Shift+Tab bypass shortcut handler
- *
- * @throws when shortcut was not registered
- *
- * @example
- * ```typescript
- * const shortcut = getBypassShortcut({ shortcuts });
- * ```
+ Retrieve registered bypass shortcut handler.
+ 
+ @param shortcuts - shortcut registry from {@link createMockApi}
+ 
+ @returns Shift+Tab bypass shortcut handler
+ 
+ @throws when shortcut was not registered
+ 
+ @example
+ ```typescript
+ const shortcut = getBypassShortcut({ shortcuts });
+ ```
  */
 function getBypassShortcut(
   {

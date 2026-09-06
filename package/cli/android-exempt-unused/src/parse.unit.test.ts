@@ -1,7 +1,7 @@
 /**
- * Tests for the pure adb-output parsers.
- *
- * @module
+ Tests for the pure adb-output parsers.
+ 
+ @module
  */
 
 import {

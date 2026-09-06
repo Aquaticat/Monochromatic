@@ -16,7 +16,7 @@ await describe({
       name: 'stops on first interrupt and forces on second',
       fn: async () => {
         /**
-         * Mutable fake signal host state.
+         Mutable fake signal host state.
          */
         const state: {
           listener?: () => void;
@@ -27,7 +27,7 @@ await describe({
           removed: 0,
         };
         /**
-         * Fake process signal host.
+         Fake process signal host.
          */
         const host: PublicationSignalHost = {
           onInterrupt(listener,) {

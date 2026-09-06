@@ -1,7 +1,7 @@
 /**
- * Convergent private-index commit autofix transaction.
- *
- * @module
+ Convergent private-index commit autofix transaction.
+ 
+ @module
  */
 import { join, } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
@@ -43,29 +43,29 @@ import type {
 } from './commit-transaction-types.ts';
 
 /**
- * Transaction does not apply to current invocation.
+ Transaction does not apply to current invocation.
  */
 export const COMMIT_TRANSACTION_NOT_APPLICABLE: unique symbol = Symbol('commit transaction not applicable',);
 /**
- * Maximum changed passes before convergence failure.
+ Maximum changed passes before convergence failure.
  */
 const MAXIMUM_CHANGED_PASSES = 8;
 
 /**
- * Runs supported commit through convergent private-index patch transaction.
- *
- * @param args - exact wrapper arguments
- *
- * @param gitPath - resolved real Git executable
- *
- * @param policyOptions - trusted registry and severity options
- *
- * @returns absence sentinel for unsupported command, otherwise transaction decision
- *
- * @example
- * ```ts
- * await runCommitTransaction({ args: ['commit', '--no-only', '-m', 'x'], gitPath: '/usr/bin/git', policyOptions: {} });
- * ```
+ Runs supported commit through convergent private-index patch transaction.
+ 
+ @param args - exact wrapper arguments
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param policyOptions - trusted registry and severity options
+ 
+ @returns absence sentinel for unsupported command, otherwise transaction decision
+ 
+ @example
+ ```ts
+ await runCommitTransaction({ args: ['commit', '--no-only', '-m', 'x'], gitPath: '/usr/bin/git', policyOptions: {} });
+ ```
  */
 export async function runCommitTransaction({
   args,
@@ -77,33 +77,33 @@ export async function runCommitTransaction({
   policyOptions: CommitTransactionPolicyOptions;
 }>,): Promise<CommitTransactionResult | typeof COMMIT_TRANSACTION_NOT_APPLICABLE> {
   /**
-   * Raw command layout and effective repository directory.
+   Raw command layout and effective repository directory.
    */
   const layout = parseGlobalOptions(args,);
   if (args[layout.subcommandIndex] !== 'commit')
     return COMMIT_TRANSACTION_NOT_APPLICABLE;
   /**
-   * Parsed commit-mode facts.
+   Parsed commit-mode facts.
    */
   const region = parseCommitRegion(args.slice(layout.subcommandIndex + 1,),);
   if (region.isDryRun
     || region.hasAllFlag)
     return COMMIT_TRANSACTION_NOT_APPLICABLE;
   /**
-   * Whether pathless commit concludes repository operation.
+   Whether pathless commit concludes repository operation.
    */
   const concludesSequencer = await hasSequencerConclusion({
     gitPath,
     cwd: layout.effectiveCwd,
   },);
   /**
-   * Whether selection UI remains read-only for automatic fixes.
+   Whether selection UI remains read-only for automatic fixes.
    */
   const readOnlySelection = region.hasIncludeFlag
     || region.hasInteractiveFlag
     || region.hasPatchFlag;
   /**
-   * Supported private-index mode.
+   Supported private-index mode.
    */
   const mode = region.hasNoOnlyFlag
       || concludesSequencer
@@ -118,14 +118,14 @@ export async function runCommitTransaction({
     return COMMIT_TRANSACTION_NOT_APPLICABLE;
 
   /**
-   * Locked disposable private-index workspace.
+   Locked disposable private-index workspace.
    */
   await using workspace = await createCommitTransactionWorkspace({
     gitPath,
     cwd: layout.effectiveCwd,
   },);
   /**
-   * Pathspec file materialized once when Git names standard input.
+   Pathspec file materialized once when Git names standard input.
    */
   const pathspecFile = await materializePathspecFile({
     workspace,
@@ -153,7 +153,7 @@ export async function runCommitTransaction({
       pathspecFileNul: region.hasPathspecFileNul,
     },);
   /**
-   * Unmerged paths unsafe for automatic candidate rewriting.
+   Unmerged paths unsafe for automatic candidate rewriting.
    */
   const unmergedPaths = await listUnmergedIndexPaths({
     gitPath,
@@ -170,7 +170,7 @@ export async function runCommitTransaction({
       committed: false,
     };
   /**
-   * Candidate paths selected by commit semantics.
+   Candidate paths selected by commit semantics.
    */
   const candidatePaths = await listChangedIndexPaths({
     gitPath,
@@ -178,7 +178,7 @@ export async function runCommitTransaction({
     indexPath: workspace.commitIndexPath,
   },);
   /**
-   * Initial private-index candidate facts.
+   Initial private-index candidate facts.
    */
   const initialFacts = createPrivateIndexFacts({
     gitPath,
@@ -187,7 +187,7 @@ export async function runCommitTransaction({
     paths: candidatePaths,
   },);
   /**
-   * Initial exact private candidate-state snapshot.
+   Initial exact private candidate-state snapshot.
    */
   const initialSnapshot = join(
     workspace.directory,
@@ -198,11 +198,11 @@ export async function runCommitTransaction({
     snapshotPath: initialSnapshot,
   },);
   /**
-   * Ordered private paths for previously visited exact states.
+   Ordered private paths for previously visited exact states.
    */
   const visited: string[] = [initialSnapshot,];
   /**
-   * Latest policy pass, initialized before convergence loop.
+   Latest policy pass, initialized before convergence loop.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Bounded sequential convergence evolves latest pass after each exact candidate change.
   let pass = await runPolicyEngine({
@@ -222,12 +222,12 @@ export async function runCommitTransaction({
       committed: false,
     };
   /**
-   * Number of passes that changed private candidate bytes.
+   Number of passes that changed private candidate bytes.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Bounded sequential convergence counts exact candidate changes.
   let changedPasses = 0;
   /**
-   * Paths changed by at least one provisional patch.
+   Paths changed by at least one provisional patch.
    */
   const changedPaths = new Set<string>();
   while (pass.patches
@@ -247,7 +247,7 @@ export async function runCommitTransaction({
         committed: false,
       };
     /**
-     * Pass-start candidates bind all proposals to one exact state.
+     Pass-start candidates bind all proposals to one exact state.
      */
     // oxlint-disable-next-line no-await-in-loop -- Each changed pass binds proposals to its exact current candidate state.
     const candidates = await createPrivateIndexFacts({
@@ -258,7 +258,7 @@ export async function runCommitTransaction({
     },)
       .candidates();
     /**
-     * Ordered private patch application for current provisional pass.
+     Ordered private patch application for current provisional pass.
      */
     // oxlint-disable-next-line no-await-in-loop -- Each changed pass applies its exact ordered proposals before restart.
     const applied = await applyPolicyPatches({
@@ -279,7 +279,7 @@ export async function runCommitTransaction({
       changedPaths.add(path,);
     },);
     /**
-     * Current private-index candidate facts after ordered patches.
+     Current private-index candidate facts after ordered patches.
      */
     const currentFacts = createPrivateIndexFacts({
       gitPath,
@@ -288,7 +288,7 @@ export async function runCommitTransaction({
       paths: candidatePaths,
     },);
     /**
-     * Private exact snapshot for current changed pass.
+     Private exact snapshot for current changed pass.
      */
     const snapshotPath = join(
       workspace.directory,
@@ -331,7 +331,7 @@ export async function runCommitTransaction({
       committed: false,
     };
   /**
-   * Exact intended tree written from stable private candidate state.
+   Exact intended tree written from stable private candidate state.
    */
   const intendedTreeOid = await writePrivateTree({
     workspace,
@@ -347,7 +347,7 @@ export async function runCommitTransaction({
     intendedTreeOid,
   },);
   /**
-   * Durable prepared metadata used to detect interrupted ref advancement.
+   Durable prepared metadata used to detect interrupted ref advancement.
    */
   const journal = await prepareTransactionJournal({
     workspace,
@@ -359,7 +359,7 @@ export async function runCommitTransaction({
     intendedTreeOid,
   },);
   /**
-   * Real Git arguments against complete private intended index.
+   Real Git arguments against complete private intended index.
    */
   const commitArgs = resolvePrivateCommitArgs({
     args: pass.args,

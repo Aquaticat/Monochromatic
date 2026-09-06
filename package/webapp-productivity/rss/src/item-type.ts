@@ -6,8 +6,8 @@ import type {
 import type { DeepReadonly, } from './types.ts';
 
 /**
- * Individual feed item with its parent feed metadata and OPML outline.
- * Deeply readonly because the pipeline only reads these parsed values.
+ Individual feed item with its parent feed metadata and OPML outline.
+ Deeply readonly because the pipeline only reads these parsed values.
  */
 export type Item = DeepReadonly<{
   feed: Omit<RssFeed.Feed<string> | AtomFeed.Feed<string>, 'entries' | 'items'>;
@@ -16,9 +16,9 @@ export type Item = DeepReadonly<{
 }>;
 
 /**
- * Feed item normalized to RSS-like structure for uniform rendering.
- * Atom entries are converted to match RSS item shape.
- * Deeply readonly because the renderers only read these values.
+ Feed item normalized to RSS-like structure for uniform rendering.
+ Atom entries are converted to match RSS item shape.
+ Deeply readonly because the renderers only read these values.
  */
 export type NormalizedItem = DeepReadonly<{
   feed: Omit<RssFeed.Feed<string>, 'items'>;
@@ -29,8 +29,8 @@ export type NormalizedItem = DeepReadonly<{
 }>;
 
 /**
- * Atom feed item narrowed to its specific types for normalization.
- * Deeply readonly because normalization only reads these fields.
+ Atom feed item narrowed to its specific types for normalization.
+ Deeply readonly because normalization only reads these fields.
  */
 export type AtomItem = DeepReadonly<{
   feed: Omit<AtomFeed.Feed<string>, 'entries'>;
@@ -39,6 +39,6 @@ export type AtomItem = DeepReadonly<{
 }>;
 
 /**
- * Normalized item with an extracted publication date for sorting.
+ Normalized item with an extracted publication date for sorting.
  */
 export type ItemWDate = NormalizedItem & { readonly pubDateDate: Date; };

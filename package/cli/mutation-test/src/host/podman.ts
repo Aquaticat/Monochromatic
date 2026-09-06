@@ -1,10 +1,10 @@
 /**
- * Podman argv construction and shard container execution.
- *
- * @example
- * ```ts
- * const args = buildShardArgs({ repoRoot, image, manifestDir, reportDir, resources, selinuxRelabel: false });
- * ```
+ Podman argv construction and shard container execution.
+ 
+ @example
+ ```ts
+ const args = buildShardArgs({ repoRoot, image, manifestDir, reportDir, resources, selinuxRelabel: false });
+ ```
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -28,17 +28,17 @@ import {
 } from '../shard-schema.ts';
 
 /**
- * Module logger for host-side container execution.
+ Module logger for host-side container execution.
  */
 const l = tagged({ tag: 'mutation-test', },);
 
 /**
- * Report file name the container writes (mirrors container/main.ts).
+ Report file name the container writes (mirrors container/main.ts).
  */
 export const REPORT_FILE_NAME = 'shard-report.json';
 
 /**
- * Resource caps applied to each shard container.
+ Resource caps applied to each shard container.
  */
 export type ShardResources = {
   readonly memory: string;
@@ -49,17 +49,17 @@ export type ShardResources = {
 };
 
 /**
- * Formats one volume mount argument.
- *
- * @param options - Host path, container path, mode, and SELinux toggle.
- *
- * @returns Volume argument value.
- *
- * @example
- * ```ts
- * volumeMount({ hostPath: '/repo', containerPath: '/src-ro', mode: 'ro', selinuxRelabel: false });
- * // '/repo:/src-ro:ro'
- * ```
+ Formats one volume mount argument.
+ 
+ @param options - Host path, container path, mode, and SELinux toggle.
+ 
+ @returns Volume argument value.
+ 
+ @example
+ ```ts
+ volumeMount({ hostPath: '/repo', containerPath: '/src-ro', mode: 'ro', selinuxRelabel: false });
+ // '/repo:/src-ro:ro'
+ ```
  */
 function volumeMount(options: {
   readonly hostPath: string;
@@ -68,26 +68,26 @@ function volumeMount(options: {
   readonly selinuxRelabel: boolean;
 },): string {
   /**
-   * Mode string with optional SELinux relabel suffix.
+   Mode string with optional SELinux relabel suffix.
    */
   const mode = options.selinuxRelabel ? `${options.mode},z` : options.mode;
   return `${options.hostPath}:${options.containerPath}:${mode}`;
 }
 
 /**
- * Builds the podman argv for one shard container.
- *
- * Hardened flags ported from the proven per-file container setup:
- * no network, read-only root, dropped capabilities, tmpfs work tree.
- *
- * @param options - Paths, image, and resource caps.
- *
- * @returns Full podman argv (starting with `run`).
- *
- * @example
- * ```ts
- * buildShardArgs({ repoRoot, image, manifestDir, reportDir, resources, selinuxRelabel: false });
- * ```
+ Builds the podman argv for one shard container.
+ 
+ Hardened flags ported from the proven per-file container setup:
+ no network, read-only root, dropped capabilities, tmpfs work tree.
+ 
+ @param options - Paths, image, and resource caps.
+ 
+ @returns Full podman argv (starting with `run`).
+ 
+ @example
+ ```ts
+ buildShardArgs({ repoRoot, image, manifestDir, reportDir, resources, selinuxRelabel: false });
+ ```
  */
 export function buildShardArgs(options: {
   readonly repoRoot: string;
@@ -159,23 +159,23 @@ export function buildShardArgs(options: {
 }
 
 /**
- * Returns whether a parsed JSON value has the shard report shape.
- *
- * @param value - Parsed JSON value.
- *
- * @returns Whether value is a usable report.
- *
- * @example
- * ```ts
- * isShardReport(JSON.parse(raw));
- * ```
+ Returns whether a parsed JSON value has the shard report shape.
+ 
+ @param value - Parsed JSON value.
+ 
+ @returns Whether value is a usable report.
+ 
+ @example
+ ```ts
+ isShardReport(JSON.parse(raw));
+ ```
  */
 function isShardReport(value: unknown,): value is ShardReport {
   if (!isRecord(value,))
     return false;
 
   /**
-   * Record view over the candidate report.
+   Record view over the candidate report.
    */
   const record = value;
   return (record.schemaVersion === SHARD_SCHEMA_VERSION)
@@ -185,25 +185,25 @@ function isShardReport(value: unknown,): value is ShardReport {
 }
 
 /**
- * Runs one shard container and reads back its report.
- *
- * @param options - Podman argv pieces and the report directory.
- *
- * @returns Parsed shard report.
- *
- * @throws Error when the container fails or the report is unreadable.
- *
- * @example
- * ```ts
- * const report = await runShardContainer({ args, reportDir });
- * ```
+ Runs one shard container and reads back its report.
+ 
+ @param options - Podman argv pieces and the report directory.
+ 
+ @returns Parsed shard report.
+ 
+ @throws Error when the container fails or the report is unreadable.
+ 
+ @example
+ ```ts
+ const report = await runShardContainer({ args, reportDir });
+ ```
  */
 export async function runShardContainer(options: {
   readonly args: readonly string[];
   readonly reportDir: string;
 },): Promise<ShardReport> {
   /**
-   * Logger scoped to this container run.
+   Logger scoped to this container run.
    */
   const rl = tagged({
     tag: runShardContainer.name,
@@ -219,7 +219,7 @@ export async function runShardContainer(options: {
   );
 
   /**
-   * Raw report text written by the container.
+   Raw report text written by the container.
    */
   const raw = await readFile(
     join(
@@ -229,7 +229,7 @@ export async function runShardContainer(options: {
     'utf8',
   );
   /**
-   * Parsed report before shape validation.
+   Parsed report before shape validation.
    */
   const parsed: unknown = JSON.parse(raw,);
 

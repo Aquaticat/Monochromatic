@@ -1,10 +1,10 @@
 /**
- * Favicon generation from SVG source.
- *
- * Generates ICO, PNG, and web manifest files per the Evil Martians favicon guide.
- * Files are written to `public/` only when any are missing, ensuring consistency.
- *
- * @see https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
+ Favicon generation from SVG source.
+ 
+ Generates ICO, PNG, and web manifest files per the Evil Martians favicon guide.
+ Files are written to `public/` only when any are missing, ensuring consistency.
+ 
+ @see https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
  */
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -24,27 +24,27 @@ import {
 } from './render.ts';
 
 /**
- * Public directory where favicon files are placed alongside other static assets.
+ Public directory where favicon files are placed alongside other static assets.
  */
 const PUBLIC = 'public';
 
 /**
- * Apple touch icon total size (px).
+ Apple touch icon total size (px).
  */
 const APPLE_SIZE = 180;
 
 /**
- * Apple touch icon content size after 20px padding per side.
+ Apple touch icon content size after 20px padding per side.
  */
 const APPLE_CONTENT = 140;
 
 /**
- * Maskable icon safe zone diameter within a 512px canvas.
+ Maskable icon safe zone diameter within a 512px canvas.
  */
 const MASKABLE_SAFE = 409;
 
 /**
- * Favicon file names that must all exist in public/.
+ Favicon file names that must all exist in public/.
  */
 const TARGETS = [
   'favicon.ico',
@@ -56,28 +56,28 @@ const TARGETS = [
 ] as const;
 
 /**
- * Generates all favicon files into `public/` when any target is missing.
- *
- * Regenerates the complete set from SVG source to ensure consistency
- * across ICO, PNG, and manifest files.
- *
- * @param l - parent logger for tagged output
- *
- *
- * @example
- * ```ts
- * await ensureFavicons({ l: rootLogger });
- * ```
+ Generates all favicon files into `public/` when any target is missing.
+ 
+ Regenerates the complete set from SVG source to ensure consistency
+ across ICO, PNG, and manifest files.
+ 
+ @param l - parent logger for tagged output
+ 
+ 
+ @example
+ ```ts
+ await ensureFavicons({ l: rootLogger });
+ ```
  */
 export async function ensureFavicons(
   { l, }: { readonly l: Logger; },
 ): Promise<void> {
   /**
-   * Parent logger retained by tagged wrapper.
+   Parent logger retained by tagged wrapper.
    */
   const parentLogger = l;
   /**
-   * Function-scoped logger tagged with the caller name for traceable log lines.
+   Function-scoped logger tagged with the caller name for traceable log lines.
    */
   const childLogger = tagged({
     tag: ensureFavicons.name,
@@ -85,7 +85,7 @@ export async function ensureFavicons(
   },);
 
   /**
-   * Existence flags collected in parallel so the early-return path stays cheap when all targets exist.
+   Existence flags collected in parallel so the early-return path stays cheap when all targets exist.
    */
   const checks = await Promise.all(
     TARGETS.map(function checkTarget(name,) {
@@ -106,7 +106,7 @@ export async function ensureFavicons(
   childLogger.info('generating favicon files from SVG source',);
 
   /**
-   * Rasterised PNG buffers prepared in parallel for the favicon family and PWA icons.
+   Rasterised PNG buffers prepared in parallel for the favicon family and PWA icons.
    */
   const [png32, png192, png512, appleTouchIcon, maskableIcon,] = await Promise.all([
     renderPng({ size: 32, },),
@@ -123,7 +123,7 @@ export async function ensureFavicons(
   ],);
 
   /**
-   * Serialised web app manifest written alongside the PNG icons.
+   Serialised web app manifest written alongside the PNG icons.
    */
   const manifest = JSON.stringify(
     {

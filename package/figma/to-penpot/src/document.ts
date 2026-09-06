@@ -1,7 +1,7 @@
 /**
- * Top-level Figma document to Penpot document conversion.
- *
- * @module figma-to-penpot-document
+ Top-level Figma document to Penpot document conversion.
+ 
+ @module figma-to-penpot-document
  */
 
 import {
@@ -47,7 +47,7 @@ import {
 } from './uuid.ts';
 
 /**
- * Page-source node: a Figma canvas or slide that becomes one Penpot page.
+ Page-source node: a Figma canvas or slide that becomes one Penpot page.
  */
 type PageSource = {
   key: string;
@@ -55,18 +55,18 @@ type PageSource = {
 };
 
 /**
- * Build a composite GUID lookup key from session and local id components.
- *
- * @param sessionId - Figma session id
- *
- * @param localId - Figma local id
- *
- * @returns `"sessionId:localId"` key
- *
- * @example
- * ```ts
- * guidKey({ sessionId: 0, localId: 1, }); // "0:1"
- * ```
+ Build a composite GUID lookup key from session and local id components.
+ 
+ @param sessionId - Figma session id
+ 
+ @param localId - Figma local id
+ 
+ @returns `"sessionId:localId"` key
+ 
+ @example
+ ```ts
+ guidKey({ sessionId: 0, localId: 1, }); // "0:1"
+ ```
  */
 function guidKey(
   {
@@ -81,17 +81,17 @@ function guidKey(
 }
 
 /**
- * Read a node's GUID components, or `SKIP` when the node carries no GUID.
- *
- * @param nc - Figma NodeChange {@link FigmaRecord}
- *
- * @returns session/local id pair, or {@link SKIP}
- *
- * @example
- * ```ts
- * const guid = nodeGuid(nc);
- * if (guid !== SKIP) { ... }
- * ```
+ Read a node's GUID components, or `SKIP` when the node carries no GUID.
+ 
+ @param nc - Figma NodeChange {@link FigmaRecord}
+ 
+ @returns session/local id pair, or {@link SKIP}
+ 
+ @example
+ ```ts
+ const guid = nodeGuid(nc);
+ if (guid !== SKIP) { ... }
+ ```
  */
 function nodeGuid(
   nc: FigmaRecord,
@@ -100,7 +100,7 @@ function nodeGuid(
   localId: number
 } | typeof SKIP {
   /**
-   * Per-node GUID struct guarded before reading id components.
+   Per-node GUID struct guarded before reading id components.
    */
   const {guid} = nc;
   if (!isRecord(guid,))
@@ -118,20 +118,20 @@ function nodeGuid(
 }
 
 /**
- * Index every node: assign stable UUIDs and build GUID and parent-to-children maps.
- *
- * @param nodeChanges - raw Figma NodeChange {@link FigmaRecord} entries
- *
- * @returns {@link ConvertContext} with populated lookup tables
- *
- * @example
- * ```ts
- * const ctx = indexNodes(nodeChanges);
- * ```
+ Index every node: assign stable UUIDs and build GUID and parent-to-children maps.
+ 
+ @param nodeChanges - raw Figma NodeChange {@link FigmaRecord} entries
+ 
+ @returns {@link ConvertContext} with populated lookup tables
+ 
+ @example
+ ```ts
+ const ctx = indexNodes(nodeChanges);
+ ```
  */
 function indexNodes(nodeChanges: readonly FigmaRecord[],): ConvertContext {
   /**
-   * Conversion context whose maps are populated by the single pass below.
+   Conversion context whose maps are populated by the single pass below.
    */
   const ctx: ConvertContext = {
     nodeByGuid: new Map<string, Record<string, unknown>>(),
@@ -141,13 +141,13 @@ function indexNodes(nodeChanges: readonly FigmaRecord[],): ConvertContext {
   };
   for (const nc of nodeChanges) {
     /**
-     * GUID components for this node; nodes without a GUID are not indexed.
+     GUID components for this node; nodes without a GUID are not indexed.
      */
     const guid = nodeGuid(nc,);
     if (guid === SKIP)
       continue;
     /**
-     * Composite key shared by all three lookup maps.
+     Composite key shared by all three lookup maps.
      */
     const key = guidKey(guid,);
     ctx.guidToUuidMap
@@ -161,16 +161,16 @@ function indexNodes(nodeChanges: readonly FigmaRecord[],): ConvertContext {
       nc,
     );
     /**
-     * Parent reference; `SKIP` means the node is unparented.
+     Parent reference; `SKIP` means the node is unparented.
      */
     const parent = parseParentIndex(nc.parentIndex,);
     if (parent !== SKIP) {
       /**
-       * Parent's composite key in `childrenByParent`.
+       Parent's composite key in `childrenByParent`.
        */
       const parentKey = guidKey(parent.parentGuid,);
       /**
-       * Existing child list for the parent, or a fresh array.
+       Existing child list for the parent, or a fresh array.
        */
       const children = ctx.childrenByParent
         .get(parentKey,)
@@ -187,24 +187,24 @@ function indexNodes(nodeChanges: readonly FigmaRecord[],): ConvertContext {
 }
 
 /**
- * Test whether a `.fig`/`.jam` canvas is Figma's hidden internal-only canvas.
- *
- * @param nc - Figma canvas NodeChange {@link FigmaRecord}
- *
- * @returns whether the canvas should be excluded from pages
- *
- * @example
- * ```ts
- * if (isInternalCanvas(nc)) continue;
- * ```
+ Test whether a `.fig`/`.jam` canvas is Figma's hidden internal-only canvas.
+ 
+ @param nc - Figma canvas NodeChange {@link FigmaRecord}
+ 
+ @returns whether the canvas should be excluded from pages
+ 
+ @example
+ ```ts
+ if (isInternalCanvas(nc)) continue;
+ ```
  */
 function isInternalCanvas(nc: FigmaRecord,): boolean {
   /**
-   * Whether the node carries either internal-only marker Figma emits.
+   Whether the node carries either internal-only marker Figma emits.
    */
   const hasEditInfo = (nc.editInfo !== null) && (nc.editInfo !== undefined);
   /**
-   * Best-effort internal-only flag combining both markers.
+   Best-effort internal-only flag combining both markers.
    */
   const internalOnly = (nc.internalOnly === true) || hasEditInfo;
   return internalOnly
@@ -214,21 +214,21 @@ function isInternalCanvas(nc: FigmaRecord,): boolean {
 }
 
 /**
- * Select the Figma nodes that each become a Penpot page.
- *
- * Deck files map slides to pages; `.fig`/`.jam` map canvases (minus the hidden
- * internal canvas).
- *
- * @param nodeChanges - raw Figma NodeChange {@link FigmaRecord} entries
- *
- * @param isDeck - whether the source is a `.deck` file
- *
- * @returns page-source nodes in document order
- *
- * @example
- * ```ts
- * const sources = selectPageSources({ nodeChanges, isDeck, });
- * ```
+ Select the Figma nodes that each become a Penpot page.
+ 
+ Deck files map slides to pages; `.fig`/`.jam` map canvases (minus the hidden
+ internal canvas).
+ 
+ @param nodeChanges - raw Figma NodeChange {@link FigmaRecord} entries
+ 
+ @param isDeck - whether the source is a `.deck` file
+ 
+ @returns page-source nodes in document order
+ 
+ @example
+ ```ts
+ const sources = selectPageSources({ nodeChanges, isDeck, });
+ ```
  */
 function selectPageSources(
   {
@@ -240,12 +240,12 @@ function selectPageSources(
   }>,
 ): PageSource[] {
   /**
-   * Accumulated page sources in document order.
+   Accumulated page sources in document order.
    */
   const sources: PageSource[] = [];
   for (const nc of nodeChanges) {
     /**
-     * Figma node type used to filter for slides or canvases.
+     Figma node type used to filter for slides or canvases.
      */
     const nodeType = asString(nc.type,);
     if (isDeck ? (nodeType !== 'NodeType.SLIDE') : (nodeType !== 'NodeType.CANVAS'))
@@ -253,7 +253,7 @@ function selectPageSources(
     if ((!isDeck) && isInternalCanvas(nc,))
       continue;
     /**
-     * GUID components; nodes without a GUID cannot anchor a page.
+     GUID components; nodes without a GUID cannot anchor a page.
      */
     const guid = nodeGuid(nc,);
     if (guid === SKIP)
@@ -267,22 +267,22 @@ function selectPageSources(
 }
 
 /**
- * Build one Penpot page: register its root frame and convert its children.
- *
- * @param source - page-source node (canvas or slide)
- *
- * @param pageIndex - 0-based page order index
- *
- * @param isDeck - whether the source is a `.deck` file
- *
- * @param ctx - conversion context whose `shapes` map is written
- *
- * @returns the {@link PenpotPage} metadata
- *
- * @example
- * ```ts
- * const page = buildPage({ source, pageIndex, isDeck, ctx, });
- * ```
+ Build one Penpot page: register its root frame and convert its children.
+ 
+ @param source - page-source node (canvas or slide)
+ 
+ @param pageIndex - 0-based page order index
+ 
+ @param isDeck - whether the source is a `.deck` file
+ 
+ @param ctx - conversion context whose `shapes` map is written
+ 
+ @returns the {@link PenpotPage} metadata
+ 
+ @example
+ ```ts
+ const page = buildPage({ source, pageIndex, isDeck, ctx, });
+ ```
  */
 function buildPage(
   {
@@ -298,22 +298,22 @@ function buildPage(
   },
 ): PenpotPage {
   /**
-   * Fresh UUID for this page.
+   Fresh UUID for this page.
    */
   const pageId = nextUuid();
   /**
-   * Optional canvas/slide background struct.
+   Optional canvas/slide background struct.
    */
   const bgColor = source.nc
     .backgroundColor;
   /**
-   * Page background hex, falling back per file type when none is set.
+   Page background hex, falling back per file type when none is set.
    */
   const background = isRecord(bgColor,)
     ? figmaColorToHex(bgColor,)
     : (isDeck ? PAGE_BACKGROUND_DECK : PAGE_BACKGROUND_FIG);
   /**
-   * Implicit root frame Penpot requires on every page.
+   Implicit root frame Penpot requires on every page.
    */
   const rootShape = makeRootFrame(pageId,);
   ctx.shapes
@@ -322,14 +322,14 @@ function buildPage(
     rootShape,
   );
   /**
-   * Penpot UUIDs of converted top-level children for this page.
+   Penpot UUIDs of converted top-level children for this page.
    */
   const childUuids: Uuid[] = [];
   for (const childKey of ctx.childrenByParent
     .get(source.key,)
     ?? []) {
     /**
-     * Converted child UUID; {@link SKIP} children are dropped.
+     Converted child UUID; {@link SKIP} children are dropped.
      */
     const childUuid = convertNode({
       nodeKey: childKey,
@@ -355,18 +355,18 @@ function buildPage(
 }
 
 /**
- * Convert a parsed Figma file to a Penpot document.
- *
- * @param figmaFile - fully decoded Figma file from {@link parseFigmaFile}
- *
- * @param options - conversion options
- *
- * @returns Penpot document ready for ZIP serialization
- *
- * @example
- * ```ts
- * const doc = convertFigmaToPenpot({ figmaFile, });
- * ```
+ Convert a parsed Figma file to a Penpot document.
+ 
+ @param figmaFile - fully decoded Figma file from {@link parseFigmaFile}
+ 
+ @param options - conversion options
+ 
+ @returns Penpot document ready for ZIP serialization
+ 
+ @example
+ ```ts
+ const doc = convertFigmaToPenpot({ figmaFile, });
+ ```
  */
 export function convertFigmaToPenpot(
   {
@@ -378,11 +378,11 @@ export function convertFigmaToPenpot(
   },
 ): PenpotDocument {
   /**
-   * File UUID assigned up front so manifest, file, and paths share it.
+   File UUID assigned up front so manifest, file, and paths share it.
    */
   const fileId = nextUuid();
   /**
-   * Display name: caller override beats Figma's `meta.fileName`.
+   Display name: caller override beats Figma's `meta.fileName`.
    */
   const fileName = options.fileName
     ?? stringOr({
@@ -391,26 +391,26 @@ export function convertFigmaToPenpot(
       fallback: 'Untitled',
     },);
   /**
-   * ISO timestamp stamped on created/modified so the file looks freshly minted.
+   ISO timestamp stamped on created/modified so the file looks freshly minted.
    */
   const now = new Date().toISOString();
   /**
-   * Raw NodeChange entries lifted from the Figma document.
+   Raw NodeChange entries lifted from the Figma document.
    */
   const nodeChanges = figmaFile.document === FIGMA_DOCUMENT_ABSENT
     ? []
     : recordArray(figmaFile.document
       .nodeChanges,);
   /**
-   * Conversion context with GUID, parent, and shape maps populated.
+   Conversion context with GUID, parent, and shape maps populated.
    */
   const ctx = indexNodes(nodeChanges,);
   /**
-   * Whether slides (deck) or canvases (fig/jam) source the pages.
+   Whether slides (deck) or canvases (fig/jam) source the pages.
    */
   const isDeck = figmaFile.fileType === 'deck';
   /**
-   * Page metadata accumulator keyed by page UUID.
+   Page metadata accumulator keyed by page UUID.
    */
   const pages = new Map<Uuid, PenpotPage>();
   for (
@@ -421,7 +421,7 @@ export function convertFigmaToPenpot(
       .entries()
   ) {
     /**
-     * Built page; registers its shapes through the shared context.
+     Built page; registers its shapes through the shared context.
      */
     const page = buildPage({
       source,
@@ -437,7 +437,7 @@ export function convertFigmaToPenpot(
 
   if (pages.size === 0) {
     /**
-     * Fallback page Penpot needs even when the Figma file produced none.
+     Fallback page Penpot needs even when the Figma file produced none.
      */
     const pageId = nextUuid();
     pages.set(

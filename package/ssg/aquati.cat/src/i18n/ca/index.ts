@@ -1,7 +1,7 @@
 import type { Label, } from '../labels-types.ts';
 
 /**
- * Catalan label table.
+ Catalan label table.
  */
 const ca = {
   siteName: 'Aquaticat',

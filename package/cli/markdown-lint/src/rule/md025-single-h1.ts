@@ -7,26 +7,26 @@ import type {
 import { walk, } from '../walk.ts';
 
 /**
- * Rule id.
+ Rule id.
  */
 const ID = 'MD025';
 
 /**
- * Flag every level-1 heading after the first: a document should have a single
- * top-level heading. Unlike markdownlint's default, a frontmatter `title` is
- * not counted as an `h1` here; the rule's behavior is defined by its own tests.
- *
- * @param tree - mdast tree under lint
- *
- * @returns one diagnostic per extra top-level heading
+ Flag every level-1 heading after the first: a document should have a single
+ top-level heading. Unlike markdownlint's default, a frontmatter `title` is
+ not counted as an `h1` here; the rule's behavior is defined by its own tests.
+ 
+ @param tree - mdast tree under lint
+ 
+ @returns one diagnostic per extra top-level heading
  */
 function checkSingleH1({ tree, }: RuleContext,): readonly Diagnostic[] {
   /**
-   * Diagnostics collected across the walk.
+   Diagnostics collected across the walk.
    */
   const diagnostics: Diagnostic[] = [];
   /**
-   * Count of level-1 headings seen so far.
+   Count of level-1 headings seen so far.
    */
   let h1Count = 0;
   for (const { node, } of walk(tree,)) {
@@ -46,7 +46,7 @@ function checkSingleH1({ tree, }: RuleContext,): readonly Diagnostic[] {
 }
 
 /**
- * MD025 single-h1: at most one level-1 heading per document. Report-only.
+ MD025 single-h1: at most one level-1 heading per document. Report-only.
  */
 export const singleH1: Rule = {
   id: ID,

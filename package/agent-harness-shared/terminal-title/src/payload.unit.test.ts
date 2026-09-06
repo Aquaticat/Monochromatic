@@ -1,5 +1,5 @@
 /**
- * Tests for terminal title payload safety.
+ Tests for terminal title payload safety.
  */
 
 import {
@@ -27,11 +27,11 @@ await describe({
       name: 'caps unsafe ASCII payload by UTF-8 bytes',
       fn: async () => {
         /**
-         * Payload one byte over the terminal budget.
+         Payload one byte over the terminal budget.
          */
         const unsafeTitle = 'a'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES + 1,);
         /**
-         * Safe payload after truncation.
+         Safe payload after truncation.
          */
         const result = safeTerminalTitlePayload({ value: unsafeTitle, },);
         expect(terminalTitleUtf8ByteLength(result,) <= MAX_TERMINAL_TITLE_UTF8_BYTES,).toBe(true,);
@@ -42,11 +42,11 @@ await describe({
       name: 'caps emoji without breaking surrogate pairs',
       fn: async () => {
         /**
-         * Emoji payload well over the terminal byte budget.
+         Emoji payload well over the terminal byte budget.
          */
         const unsafeTitle = '😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,);
         /**
-         * Safe payload after byte truncation.
+         Safe payload after byte truncation.
          */
         const result = safeTerminalTitlePayload({ value: unsafeTitle, },);
         expect(terminalTitleUtf8ByteLength(result,) <= MAX_TERMINAL_TITLE_UTF8_BYTES,).toBe(true,);
@@ -57,7 +57,7 @@ await describe({
       name: 'applies sanitizing before byte truncation',
       fn: async () => {
         /**
-         * Payload with visible replacement that exceeds tiny budget.
+         Payload with visible replacement that exceeds tiny budget.
          */
         const result = safeTerminalTitlePayload({
           value: '\u001Babcdef',

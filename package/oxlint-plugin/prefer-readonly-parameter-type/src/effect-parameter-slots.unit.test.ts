@@ -27,7 +27,7 @@ const SHAPES_SOURCE = readFileSync(
 );
 
 /**
- * Slot facts of one fixture function, flattened for comparison.
+ Slot facts of one fixture function, flattened for comparison.
  */
 type SlotFacts = {
   readonly functionName: string;
@@ -55,11 +55,11 @@ await describe({
           hasBOM: false,
         },);
         /**
-         * Reads the allocated slots of one fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns flattened slot facts for comparison.
+         Reads the allocated slots of one fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns flattened slot facts for comparison.
          */
         function factsFor(functionName: string,): SlotFacts {
           const at = SHAPES_SOURCE.indexOf(`function ${functionName}`,)

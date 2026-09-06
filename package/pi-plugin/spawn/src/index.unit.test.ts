@@ -42,49 +42,49 @@ import {
 } from './test-support.ts';
 
 /**
- * Fields tests may override on default extension spawn state fixture.
+ Fields tests may override on default extension spawn state fixture.
  */
 type SpawnStateFixtureOverrides = {
   /**
-   * Spawn identifier for fixture.
+   Spawn identifier for fixture.
    */
   readonly spawnId?: SpawnState['spawnId'];
   /**
-   * Child session identifier for fixture.
+   Child session identifier for fixture.
    */
   readonly sessionId?: SpawnState['sessionId'];
   /**
-   * Child session file for fixture.
+   Child session file for fixture.
    */
   readonly sessionFile?: SpawnState['sessionFile'];
   /**
-   * Parent session identifier for fixture.
+   Parent session identifier for fixture.
    */
   readonly parentSessionId?: SpawnState['parentSessionId'];
   /**
-   * Parent session file for fixture.
+   Parent session file for fixture.
    */
   readonly parentSessionFile?: SpawnState['parentSessionFile'];
   /**
-   * Working directory for fixture.
+   Working directory for fixture.
    */
   readonly cwd?: SpawnState['cwd'];
   /**
-   * Lifecycle status for fixture.
+   Lifecycle status for fixture.
    */
   readonly status?: SpawnState['status'];
   /**
-   * Last assistant message for fixture.
+   Last assistant message for fixture.
    */
   readonly lastMessage?: SpawnState['lastMessage'];
 };
 
 /**
- * Builds spawn state fixture for extension tests.
- *
- * @param overrides - fields to override from default state.
- *
- * @returns spawn state fixture.
+ Builds spawn state fixture for extension tests.
+ 
+ @param overrides - fields to override from default state.
+ 
+ @returns spawn state fixture.
  */
 function spawnStateFixture(overrides: SpawnStateFixtureOverrides = {},): SpawnState {
   return {
@@ -187,7 +187,7 @@ await describe({
         );
 
         /**
-         * Completed state JSON after child agent_end.
+         Completed state JSON after child agent_end.
          */
         const raw = readFileSync(spawnStatePath({ spawnId: 'spawn-1', },), 'utf8',);
         expect(raw,).toContain('"status":"stopped"',);
@@ -241,7 +241,7 @@ await describe({
         expect(String(harness.sentMessages[0]?.message.content,),).toContain('child result',);
         expect(harness.sentMessages[0]?.message.display,).toBe(true,);
         /**
-         * Reported marker path after delivery consumes state.
+         Reported marker path after delivery consumes state.
          */
         const reportedSpawnPath = reportedStatePath({ spawnId: 'spawn-1', },);
 

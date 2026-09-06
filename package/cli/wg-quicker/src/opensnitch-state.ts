@@ -19,56 +19,56 @@ import {
 } from './tunnel-bypass-path.ts';
 
 /**
- * Current persisted OpenSnitch lifecycle-state schema.
+ Current persisted OpenSnitch lifecycle-state schema.
  */
 const STATE_VERSION = 1;
 
 /**
- * Lowest valid UDP port.
+ Lowest valid UDP port.
  */
 const MIN_UDP_PORT = 1;
 
 /**
- * Highest valid UDP port.
+ Highest valid UDP port.
  */
 const MAX_UDP_PORT = 65_535;
 
 /**
- * Sentinel indicating no persisted interface lifecycle state.
+ Sentinel indicating no persisted interface lifecycle state.
  */
 export const OPENSNITCH_STATE_ABSENT: unique symbol = Symbol('OpenSnitch lifecycle state absent',);
 
 /**
- * OpenSnitch resources owned by one interface lifecycle.
+ OpenSnitch resources owned by one interface lifecycle.
  */
 export type OpenSnitchState = {
   /**
-   * Namespace-specific ownership identity.
+   Namespace-specific ownership identity.
    */
   readonly networkNamespaceKey: string;
 
   /**
-   * Exact system-firewall file containing managed rules.
+   Exact system-firewall file containing managed rules.
    */
   readonly path: string;
 
   /**
-   * Exact endpoint ports potentially owned by interface.
+   Exact endpoint ports potentially owned by interface.
    */
   readonly ports: readonly number[];
 };
 
 /**
- * Reports non-null JSON object.
- *
- * @param value - Unknown parsed value.
- *
- * @returns Whether value has object shape.
- *
- * @example
- * ```ts
- * isRecord({ Version: 1 });
- * ```
+ Reports non-null JSON object.
+ 
+ @param value - Unknown parsed value.
+ 
+ @returns Whether value has object shape.
+ 
+ @example
+ ```ts
+ isRecord({ Version: 1 });
+ ```
  */
 function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
   if ((typeof value) !== 'object')
@@ -79,34 +79,34 @@ function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
 }
 
 /**
- * Reports whether unknown failure carries Node filesystem code.
- *
- * @param error - Unknown caught value.
- *
- * @returns Whether value is Node filesystem error.
- *
- * @example
- * ```ts
- * isErrnoException({ code: 'ENOENT' });
- * ```
+ Reports whether unknown failure carries Node filesystem code.
+ 
+ @param error - Unknown caught value.
+ 
+ @returns Whether value is Node filesystem error.
+ 
+ @example
+ ```ts
+ isErrnoException({ code: 'ENOENT' });
+ ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
   return Error.isError(error,);
 }
 
 /**
- * Resolves interface-specific lifecycle-state path.
- *
- * @param interfaceName - WireGuard interface identity.
- *
- * @param networkNamespaceKey - Namespace-specific ownership identity.
- *
- * @returns State path under private runtime directory.
- *
- * @example
- * ```ts
- * openSnitchStatePath({ interfaceName: 'wg0', networkNamespaceKey: 'abc123' });
- * ```
+ Resolves interface-specific lifecycle-state path.
+ 
+ @param interfaceName - WireGuard interface identity.
+ 
+ @param networkNamespaceKey - Namespace-specific ownership identity.
+ 
+ @returns State path under private runtime directory.
+ 
+ @example
+ ```ts
+ openSnitchStatePath({ interfaceName: 'wg0', networkNamespaceKey: 'abc123' });
+ ```
  */
 function openSnitchStatePath(
   {
@@ -126,29 +126,29 @@ function openSnitchStatePath(
 }
 
 /**
- * Parses and validates persisted lifecycle state.
- *
- * @param text - Raw state JSON.
- *
- * @param path - State path for diagnostics.
- *
- * @param interfaceName - Expected WireGuard interface identity.
- *
- * @param networkNamespaceKey - Expected namespace-specific ownership identity.
- *
- * @returns Validated state.
- *
- * @throws {@link OpenSnitchConfigError} when state cannot safely drive cleanup.
- *
- * @example
- * ```ts
- * parseOpenSnitchState({
- *   text: '{"Version":1,"InterfaceName":"wg0","NetworkNamespaceKey":"abc123","Path":"/tmp/fw.json","Ports":[]}',
- *   path,
- *   interfaceName: 'wg0',
- *   networkNamespaceKey: 'abc123',
- * });
- * ```
+ Parses and validates persisted lifecycle state.
+ 
+ @param text - Raw state JSON.
+ 
+ @param path - State path for diagnostics.
+ 
+ @param interfaceName - Expected WireGuard interface identity.
+ 
+ @param networkNamespaceKey - Expected namespace-specific ownership identity.
+ 
+ @returns Validated state.
+ 
+ @throws {@link OpenSnitchConfigError} when state cannot safely drive cleanup.
+ 
+ @example
+ ```ts
+ parseOpenSnitchState({
+   text: '{"Version":1,"InterfaceName":"wg0","NetworkNamespaceKey":"abc123","Path":"/tmp/fw.json","Ports":[]}',
+   path,
+   interfaceName: 'wg0',
+   networkNamespaceKey: 'abc123',
+ });
+ ```
  */
 function parseOpenSnitchState(
   {
@@ -164,7 +164,7 @@ function parseOpenSnitchState(
   },
 ): OpenSnitchState {
   /**
-   * Parsed unknown state value.
+   Parsed unknown state value.
    */
   const parsed = (function parseUnknown(): unknown {
     try {
@@ -190,7 +190,7 @@ function parseOpenSnitchState(
   if (!Array.isArray(parsed.Ports,))
     throw new OpenSnitchConfigError(`wg-quicker OpenSnitch lifecycle state has invalid ports: ${path}`,);
   /**
-   * Valid port subset proving every persisted value before use.
+   Valid port subset proving every persisted value before use.
    */
   const ports = parsed
     .Ports
@@ -202,7 +202,7 @@ function parseOpenSnitchState(
       return (port >= MIN_UDP_PORT) && (port <= MAX_UDP_PORT);
     },);
   /**
-   * Original unvalidated port count.
+   Original unvalidated port count.
    */
   const originalPortCount = parsed
     .Ports
@@ -223,20 +223,20 @@ function parseOpenSnitchState(
 }
 
 /**
- * Reads one interface's persisted OpenSnitch lifecycle state without following links.
- *
- * @param interfaceName - WireGuard interface identity.
- *
- * @param networkNamespaceKey - Namespace-specific ownership identity.
- *
- * @returns Validated state or absence sentinel.
- *
- * @throws {@link OpenSnitchConfigError} when state path is unsafe or unreadable.
- *
- * @example
- * ```ts
- * await readOpenSnitchState({ interfaceName: 'wg0', networkNamespaceKey: 'abc123' });
- * ```
+ Reads one interface's persisted OpenSnitch lifecycle state without following links.
+ 
+ @param interfaceName - WireGuard interface identity.
+ 
+ @param networkNamespaceKey - Namespace-specific ownership identity.
+ 
+ @returns Validated state or absence sentinel.
+ 
+ @throws {@link OpenSnitchConfigError} when state path is unsafe or unreadable.
+ 
+ @example
+ ```ts
+ await readOpenSnitchState({ interfaceName: 'wg0', networkNamespaceKey: 'abc123' });
+ ```
  */
 export async function readOpenSnitchState(
   {
@@ -248,7 +248,7 @@ export async function readOpenSnitchState(
   },
 ): Promise<OpenSnitchState | typeof OPENSNITCH_STATE_ABSENT> {
   /**
-   * Interface-and-namespace-specific state path.
+   Interface-and-namespace-specific state path.
    */
   const path = openSnitchStatePath({
     interfaceName,
@@ -256,14 +256,14 @@ export async function readOpenSnitchState(
   },);
   try {
     /**
-     * Link-refusing descriptor for race-resistant state read.
+     Link-refusing descriptor for race-resistant state read.
      */
     await using handle = await open(
       path,
       constants.O_RDONLY | constants.O_NOFOLLOW,
     );
     /**
-     * Open descriptor metadata resistant to path replacement.
+     Open descriptor metadata resistant to path replacement.
      */
     const metadata = await handle.stat();
     if ((!metadata.isFile()) || (metadata.nlink !== 1))
@@ -288,21 +288,21 @@ export async function readOpenSnitchState(
 }
 
 /**
- * Persists cleanup ownership before modifying external OpenSnitch state.
- *
- * @param interfaceName - WireGuard interface identity.
- *
- * @param state - Exact config path and potential owned ports.
- *
- * @throws {@link OpenSnitchConfigError} when private state cannot be persisted.
- *
- * @example
- * ```ts
- * await writeOpenSnitchState({
- *   interfaceName: 'wg0',
- *   state: { networkNamespaceKey: 'abc123', path, ports: [51820] },
- * });
- * ```
+ Persists cleanup ownership before modifying external OpenSnitch state.
+ 
+ @param interfaceName - WireGuard interface identity.
+ 
+ @param state - Exact config path and potential owned ports.
+ 
+ @throws {@link OpenSnitchConfigError} when private state cannot be persisted.
+ 
+ @example
+ ```ts
+ await writeOpenSnitchState({
+   interfaceName: 'wg0',
+   state: { networkNamespaceKey: 'abc123', path, ports: [51820] },
+ });
+ ```
  */
 export async function writeOpenSnitchState(
   {
@@ -314,22 +314,22 @@ export async function writeOpenSnitchState(
   },
 ): Promise<void> {
   /**
-   * Private runtime root.
+   Private runtime root.
    */
   const directory = bypassRuntimeDirectory();
   /**
-   * Interface-and-namespace-specific final state path.
+   Interface-and-namespace-specific final state path.
    */
   const path = openSnitchStatePath({
     interfaceName,
     networkNamespaceKey: state.networkNamespaceKey,
   },);
   /**
-   * Unique same-directory path for atomic replacement.
+   Unique same-directory path for atomic replacement.
    */
   const temporaryPath = `${path}.${randomUUID()}.tmp`;
   /**
-   * Serializable state document.
+   Serializable state document.
    */
   const stateDocument = {
     Version: STATE_VERSION,
@@ -339,7 +339,7 @@ export async function writeOpenSnitchState(
     Ports: [...state.ports,],
   };
   /**
-   * Complete state JSON prepared before filesystem mutation.
+   Complete state JSON prepared before filesystem mutation.
    */
   const serialized = `${JSON.stringify(
     stateDocument,
@@ -387,18 +387,18 @@ export async function writeOpenSnitchState(
 }
 
 /**
- * Clears lifecycle ownership after config and live-chain cleanup succeed.
- *
- * @param interfaceName - WireGuard interface identity.
- *
- * @param networkNamespaceKey - Namespace-specific ownership identity.
- *
- * @throws {@link OpenSnitchConfigError} when state cannot be removed.
- *
- * @example
- * ```ts
- * await removeOpenSnitchState({ interfaceName: 'wg0', networkNamespaceKey: 'abc123' });
- * ```
+ Clears lifecycle ownership after config and live-chain cleanup succeed.
+ 
+ @param interfaceName - WireGuard interface identity.
+ 
+ @param networkNamespaceKey - Namespace-specific ownership identity.
+ 
+ @throws {@link OpenSnitchConfigError} when state cannot be removed.
+ 
+ @example
+ ```ts
+ await removeOpenSnitchState({ interfaceName: 'wg0', networkNamespaceKey: 'abc123' });
+ ```
  */
 export async function removeOpenSnitchState(
   {
@@ -410,7 +410,7 @@ export async function removeOpenSnitchState(
   },
 ): Promise<void> {
   /**
-   * Interface-and-namespace-specific state path.
+   Interface-and-namespace-specific state path.
    */
   const path = openSnitchStatePath({
     interfaceName,

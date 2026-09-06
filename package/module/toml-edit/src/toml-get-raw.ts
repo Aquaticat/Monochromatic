@@ -1,7 +1,7 @@
 /**
- * {@link tomlGetRaw}: read the original source slice at a path. Splice mode only.
- *
- * @module
+ {@link tomlGetRaw}: read the original source slice at a path. Splice mode only.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -21,22 +21,22 @@ import type {
 } from './types.ts';
 
 /**
- * Return the original source substring that spelled the value at `path`.
- *
- * Returns the parse-time bytes of a clean (unmutated) node, so round-trip-
- * sensitive callers can diff without canonical reformatting. A path created or
- * edited by a mutation has no source bytes and throws.
- *
- * @returns Computed string.
- *
- * @throws {@link TomlSpliceUnavailableError} when the state is in canonical mode.
- *
- * @throws {@link TomlPathNotFoundError} when `path` has no clean source slice.
- *
- * @example
- * ```ts
- * const raw = tomlGetRaw({ edit, path: ['version',], },);  // e.g. `'"1.0.0"'`
- * ```
+ Return the original source substring that spelled the value at `path`.
+ 
+ Returns the parse-time bytes of a clean (unmutated) node, so round-trip-
+ sensitive callers can diff without canonical reformatting. A path created or
+ edited by a mutation has no source bytes and throws.
+ 
+ @returns Computed string.
+ 
+ @throws {@link TomlSpliceUnavailableError} when the state is in canonical mode.
+ 
+ @throws {@link TomlPathNotFoundError} when `path` has no clean source slice.
+ 
+ @example
+ ```ts
+ const raw = tomlGetRaw({ edit, path: ['version',], },);  // e.g. `'"1.0.0"'`
+ ```
  */
 export function tomlGetRaw(
   {
@@ -54,7 +54,7 @@ export function tomlGetRaw(
     );
   }
   /**
-   * Structural location so a clean node's source range can be sliced.
+   Structural location so a clean node's source range can be sliced.
    */
   const located = locateValueNode({
     blocks: edit.blocks,
@@ -97,11 +97,11 @@ export function tomlGetRaw(
     );
   }
   /**
-   * First AoT instance header so the slice starts at the collection's top.
+   First AoT instance header so the slice starts at the collection's top.
    */
   const first = nonNullishOrThrow(located.tables[0],);
   /**
-   * Last AoT instance header so the slice spans every instance.
+   Last AoT instance header so the slice spans every instance.
    */
   const last = nonNullishOrThrow(located.tables
     .at(-1,),);
@@ -121,9 +121,9 @@ export function tomlGetRaw(
 }
 
 /**
- * Build the not-found error for `path`.
- *
- * @returns Error to throw.
+ Build the not-found error for `path`.
+ 
+ @returns Error to throw.
  */
 function notFound({ path, }: { readonly path: TomlPath; },): TomlPathNotFoundError {
   return new TomlPathNotFoundError(

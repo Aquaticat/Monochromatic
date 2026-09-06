@@ -1,7 +1,7 @@
 /**
- * Budget-model strategy and override helpers for pi plugins.
- *
- * @module
+ Budget-model strategy and override helpers for pi plugins.
+ 
+ @module
  */
 
 export * from './budget-report.ts';

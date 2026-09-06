@@ -8,9 +8,9 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Adversarial inputs at the terminal boundary paired with the exact output
- * the neutralizer must produce. Each case names the attack or the malformed
- * shape it pins.
+ Adversarial inputs at the terminal boundary paired with the exact output
+ the neutralizer must produce. Each case names the attack or the malformed
+ shape it pins.
  */
 const BOUNDARY_CASES: readonly {
   readonly name: string;
@@ -80,7 +80,7 @@ const BOUNDARY_CASES: readonly {
 ];
 
 /**
- * Inputs the neutralizer must return unchanged.
+ Inputs the neutralizer must return unchanged.
  */
 const PASSTHROUGH_CASES: readonly {
   readonly name: string;
@@ -117,17 +117,17 @@ const PASSTHROUGH_CASES: readonly {
 ];
 
 /**
- * One past the last C1 code unit; the exhaustive sweep covers every code unit
- * below it.
+ One past the last C1 code unit; the exhaustive sweep covers every code unit
+ below it.
  */
 const CONTROL_SWEEP_LENGTH = 0xA0;
 
 /**
- * Reports whether an output code unit is still a control the boundary forbids.
- *
- * @param codeUnit - UTF-16 code unit read from neutralizer output.
- *
- * @returns Whether the code unit should have been neutralized.
+ Reports whether an output code unit is still a control the boundary forbids.
+ 
+ @param codeUnit - UTF-16 code unit read from neutralizer output.
+ 
+ @returns Whether the code unit should have been neutralized.
  */
 function isForbiddenControl(codeUnit: number,): boolean {
   if (codeUnit < 0x20)
@@ -156,7 +156,7 @@ await describe({
       name: 'output never contains a neutralized control after the pass',
       fn: async () => {
         /**
-         * Every code unit from NUL through U+009F, in one string.
+         Every code unit from NUL through U+009F, in one string.
          */
         const allControls = Array.from(
           { length: CONTROL_SWEEP_LENGTH, },
@@ -169,11 +169,11 @@ await describe({
         )
           .join('',);
         /**
-         * Neutralized sweep; only newline and tab may survive as controls.
+         Neutralized sweep; only newline and tab may survive as controls.
          */
         const output = neutralizeControlCharacters(allControls,);
         /**
-         * Output code units that are still forbidden controls; must stay empty.
+         Output code units that are still forbidden controls; must stay empty.
          */
         const leaked: number[] = [];
         for (const character of output) {

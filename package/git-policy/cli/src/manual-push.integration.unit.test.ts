@@ -1,7 +1,7 @@
 /**
- * Built cli-git manual-push integration tests.
- *
- * @module
+ Built cli-git manual-push integration tests.
+ 
+ @module
  */
 import {
   chmod,
@@ -48,9 +48,9 @@ type ManualPushFixture = Readonly<{
 }>;
 
 /**
- * Creates local and bare repositories with isolated trust storage.
- *
- * @returns initialized fixture
+ Creates local and bare repositories with isolated trust storage.
+ 
+ @returns initialized fixture
  */
 async function createFixture(): Promise<ManualPushFixture> {
   /** Disposable root. */
@@ -84,13 +84,13 @@ async function createFixture(): Promise<ManualPushFixture> {
 }
 
 /**
- * Runs built wrapper with isolated environment.
- *
- * @param fixture - disposable repositories
- *
- * @param args - wrapper arguments
- *
- * @returns captured successful result
+ Runs built wrapper with isolated environment.
+ 
+ @param fixture - disposable repositories
+ 
+ @param args - wrapper arguments
+ 
+ @returns captured successful result
  */
 async function runWrapper({
   fixture,
@@ -113,11 +113,11 @@ async function runWrapper({
 }
 
 /**
- * Installs and trusts self-contained manual-push policy config.
- *
- * @param fixture - disposable repositories
- *
- * @param checkBody - policy callback body
+ Installs and trusts self-contained manual-push policy config.
+ 
+ @param fixture - disposable repositories
+ 
+ @param checkBody - policy callback body
  */
 async function installPolicy({
   fixture,
@@ -157,13 +157,13 @@ async function installPolicy({
 }
 
 /**
- * Captures expected wrapper failure.
- *
- * @param fixture - disposable repositories
- *
- * @param args - wrapper arguments
- *
- * @returns subprocess failure
+ Captures expected wrapper failure.
+ 
+ @param fixture - disposable repositories
+ 
+ @param args - wrapper arguments
+ 
+ @returns subprocess failure
  */
 async function captureFailure({
   fixture,
@@ -184,13 +184,13 @@ async function captureFailure({
 }
 
 /**
- * Reports whether destination ref is absent.
- *
- * @param fixture - disposable repositories
- *
- * @param ref - fully qualified remote ref
- *
- * @returns whether real Git reports absence
+ Reports whether destination ref is absent.
+ 
+ @param fixture - disposable repositories
+ 
+ @param ref - fully qualified remote ref
+ 
+ @returns whether real Git reports absence
  */
 async function remoteRefMissing({
   fixture,

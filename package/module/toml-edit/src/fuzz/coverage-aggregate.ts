@@ -1,11 +1,11 @@
 /**
- * Aggregates raw V8 coverage JSON into per-file toml-edit line coverage.
- *
- * Kept separate from `coverage-v8.ts` so the V8 range projection primitives and
- * the asynchronous file aggregation pipeline each stay below the line-count
- * budget.
- *
- * @module
+ Aggregates raw V8 coverage JSON into per-file toml-edit line coverage.
+ 
+ Kept separate from `coverage-v8.ts` so the V8 range projection primitives and
+ the asynchronous file aggregation pipeline each stay below the line-count
+ budget.
+ 
+ @module
  */
 
 import {
@@ -27,51 +27,51 @@ import {
 //region Aggregation shapes
 
 /**
- * Per-target accumulation across coverage files before line projection.
+ Per-target accumulation across coverage files before line projection.
  */
 type TargetAccumulator = {
   /**
-   * On-disk source text for the target file.
+   On-disk source text for the target file.
    */
   readonly source: string;
   /**
-   * Covered line numbers unioned across coverage files.
+   Covered line numbers unioned across coverage files.
    */
   readonly covered: Set<number>;
 };
 
 /**
- * Coverage target extracted from one V8 coverage JSON file.
+ Coverage target extracted from one V8 coverage JSON file.
  */
 type CoverageTarget = {
   /**
-   * Package-relative target path used as the coverage map key.
+   Package-relative target path used as the coverage map key.
    */
   readonly relPath: string;
   /**
-   * Absolute path to the target source file.
+   Absolute path to the target source file.
    */
   readonly absPath: string;
   /**
-   * V8 function coverage ranges for this target occurrence.
+   V8 function coverage ranges for this target occurrence.
    */
   readonly functions: readonly V8Function[];
 };
 
 /**
- * Target projected onto covered line numbers after source loading.
+ Target projected onto covered line numbers after source loading.
  */
 type ProjectedTarget = {
   /**
-   * Package-relative target path used as the coverage map key.
+   Package-relative target path used as the coverage map key.
    */
   readonly relPath: string;
   /**
-   * On-disk source text for the target file.
+   On-disk source text for the target file.
    */
   readonly source: string;
   /**
-   * Covered line numbers for this target occurrence.
+   Covered line numbers for this target occurrence.
    */
   readonly covered: ReadonlySet<number>;
 };
@@ -81,15 +81,15 @@ type ProjectedTarget = {
 //region Coverage file loading
 
 /**
- * Reads one V8 coverage JSON file and returns its package target scripts.
- *
- * @param coverageDir - directory holding V8 coverage JSON files
- *
- * @param file - coverage JSON filename inside `coverageDir`
- *
- * @param packageRoot - absolute package root used for target classification
- *
- * @returns coverage targets extracted from the file
+ Reads one V8 coverage JSON file and returns its package target scripts.
+ 
+ @param coverageDir - directory holding V8 coverage JSON files
+ 
+ @param file - coverage JSON filename inside `coverageDir`
+ 
+ @param packageRoot - absolute package root used for target classification
+ 
+ @returns coverage targets extracted from the file
  */
 async function readCoverageTargets(
   {
@@ -103,7 +103,7 @@ async function readCoverageTargets(
   },
 ): Promise<readonly CoverageTarget[]> {
   /**
-   * Parsed coverage file, narrowed by assertion from `unknown`.
+   Parsed coverage file, narrowed by assertion from `unknown`.
    */
   const parsed: unknown = JSON.parse(await readFile(
     join(
@@ -117,7 +117,7 @@ async function readCoverageTargets(
   return parsed.result
     .flatMap(function targetFromScript(script,): readonly CoverageTarget[] {
       /**
-       * Target classification for this script's URL.
+       Target classification for this script's URL.
        */
       const cls = classifyUrl({
         url: script.url,
@@ -137,32 +137,32 @@ async function readCoverageTargets(
 //region Source projection
 
 /**
- * Builds a cached source reader for one aggregation run.
- *
- * @returns function that reads each absolute source path at most once
- *
- * @example
- * ```ts
- * const readSource = createSourceReader();
- * await readSource('/repo/packages/module/toml-edit/src/index.ts');
- * ```
+ Builds a cached source reader for one aggregation run.
+ 
+ @returns function that reads each absolute source path at most once
+ 
+ @example
+ ```ts
+ const readSource = createSourceReader();
+ await readSource('/repo/packages/module/toml-edit/src/index.ts');
+ ```
  */
 function createSourceReader(): (absPath: string,) => Promise<string> {
   /**
-   * In-flight or fulfilled source reads keyed by absolute source path.
+   In-flight or fulfilled source reads keyed by absolute source path.
    */
   const sourceCache = new Map<string, Promise<string>>();
 
   return function readSource(absPath: string,): Promise<string> {
     /**
-     * Existing in-flight or fulfilled read for this source file.
+     Existing in-flight or fulfilled read for this source file.
      */
     const existing = sourceCache.get(absPath,);
     if (existing !== undefined)
       return existing;
 
     /**
-     * New source read stored immediately so concurrent target projections share it.
+     New source read stored immediately so concurrent target projections share it.
      */
     const sourcePromise = readFile(
       absPath,
@@ -177,15 +177,15 @@ function createSourceReader(): (absPath: string,) => Promise<string> {
 }
 
 /**
- * Projects one target's V8 ranges onto covered line numbers.
- *
- * @param target - coverage target to project
- *
- * @param readSource - cached source reader for this aggregation run
- *
- * @returns projected target with source and covered lines
- *
- * @mutates readSource - Invoking cached source reader can change its caller-owned cache and asynchronous state.
+ Projects one target's V8 ranges onto covered line numbers.
+ 
+ @param target - coverage target to project
+ 
+ @param readSource - cached source reader for this aggregation run
+ 
+ @returns projected target with source and covered lines
+ 
+ @mutates readSource - Invoking cached source reader can change its caller-owned cache and asynchronous state.
  */
 async function projectTarget(
   {
@@ -197,7 +197,7 @@ async function projectTarget(
   },
 ): Promise<ProjectedTarget> {
   /**
-   * Source text loaded through the shared cache.
+   Source text loaded through the shared cache.
    */
   const source = await readSource(target.absPath,);
   return {
@@ -215,21 +215,21 @@ async function projectTarget(
 //region Coverage merge
 
 /**
- * Unions projected target coverage by package-relative path.
- *
- * @param targets - projected target occurrences across all coverage files
- *
- * @returns accumulator map keyed by package-relative target path
+ Unions projected target coverage by package-relative path.
+ 
+ @param targets - projected target occurrences across all coverage files
+ 
+ @returns accumulator map keyed by package-relative target path
  */
 function mergeProjectedTargets(targets: readonly ProjectedTarget[],): Map<string, TargetAccumulator> {
   /**
-   * Per-file accumulation of covered lines across all projected targets.
+   Per-file accumulation of covered lines across all projected targets.
    */
   const perFile = new Map<string, TargetAccumulator>();
 
   for (const target of targets) {
     /**
-     * Existing file accumulator, when another coverage script already reached the file.
+     Existing file accumulator, when another coverage script already reached the file.
      */
     const existing = perFile.get(target.relPath,);
     if (existing === undefined) {
@@ -253,11 +253,11 @@ function mergeProjectedTargets(targets: readonly ProjectedTarget[],): Map<string
 }
 
 /**
- * Converts per-file accumulators to the public coverage map shape.
- *
- * @param perFile - accumulation keyed by package-relative target path
- *
- * @returns coverage map keyed by package-relative target path
+ Converts per-file accumulators to the public coverage map shape.
+ 
+ @param perFile - accumulation keyed by package-relative target path
+ 
+ @returns coverage map keyed by package-relative target path
  */
 function coverageMapFrom(perFile: ReadonlyMap<string, TargetAccumulator>,): CoverageMap {
   return Object.fromEntries(
@@ -278,19 +278,19 @@ function coverageMapFrom(perFile: ReadonlyMap<string, TargetAccumulator>,): Cove
 //region Public aggregation
 
 /**
- * Read every `NODE_V8_COVERAGE` JSON file in `coverageDir` and project the
- * target files' ranges onto per-file line coverage.
- *
- * @param coverageDir - V8 coverage output directory
- *
- * @param packageRoot - absolute package root used for target classification
- *
- * @returns Coverage keyed by package-relative path; only target files appear.
- *
- * @example
- * ```ts
- * const map = await aggregateCoverage({ coverageDir, packageRoot, },);
- * ```
+ Read every `NODE_V8_COVERAGE` JSON file in `coverageDir` and project the
+ target files' ranges onto per-file line coverage.
+ 
+ @param coverageDir - V8 coverage output directory
+ 
+ @param packageRoot - absolute package root used for target classification
+ 
+ @returns Coverage keyed by package-relative path; only target files appear.
+ 
+ @example
+ ```ts
+ const map = await aggregateCoverage({ coverageDir, packageRoot, },);
+ ```
  */
 export async function aggregateCoverage(
   {
@@ -302,14 +302,14 @@ export async function aggregateCoverage(
   },
 ): Promise<CoverageMap> {
   /**
-   * Coverage JSON filenames, filtered before parallel reading.
+   Coverage JSON filenames, filtered before parallel reading.
    */
   const coverageFiles = (await readdir(coverageDir,))
     .filter(function isCoverageJson(file,) {
       return file.endsWith('.json',);
     },);
   /**
-   * Target script records extracted from every coverage file.
+   Target script records extracted from every coverage file.
    */
   const targets = (await Promise.all(coverageFiles.map(function readTargets(file,) {
     return readCoverageTargets({
@@ -320,11 +320,11 @@ export async function aggregateCoverage(
   },)))
     .flat();
   /**
-   * Source reader shared across target projections.
+   Source reader shared across target projections.
    */
   const readSource = createSourceReader();
   /**
-   * Per-target covered-line projections, run concurrently once targets are known.
+   Per-target covered-line projections, run concurrently once targets are known.
    */
   const projectedTargets = await Promise.all(targets.map(function project(target,) {
     return projectTarget({

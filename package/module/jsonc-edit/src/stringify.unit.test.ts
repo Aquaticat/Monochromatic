@@ -1,8 +1,8 @@
 /**
- * Tests for the canonical serializer: empty containers, round-trip idempotency,
- * raw scalar preservation, and comment placement.
- *
- * @module
+ Tests for the canonical serializer: empty containers, round-trip idempotency,
+ raw scalar preservation, and comment placement.
+ 
+ @module
  */
 
 import {

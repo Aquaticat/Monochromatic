@@ -1,8 +1,8 @@
 /**
- * Toast notification CSS styles for the doodle widget.
- *
- * Styles the zoom instruction popover as a bottom-centered
- * toast that fades in and out.
+ Toast notification CSS styles for the doodle widget.
+ 
+ Styles the zoom instruction popover as a bottom-centered
+ toast that fades in and out.
  */
 import {
   cssCommaList,
@@ -14,17 +14,17 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Toast corner radius in rem
+ Toast corner radius in rem
  */
 const TOAST_RADIUS = 1 / 2;
 
 /**
- * Toast vertical offset from bottom in rem
+ Toast vertical offset from bottom in rem
  */
 const TOAST_BOTTOM_OFFSET = 2;
 
 /**
- * Toast font size in rem (slightly smaller than body text)
+ Toast font size in rem (slightly smaller than body text)
  */
 const TOAST_FONT_SIZE = 1 - (1 / (2 + 2
   + 2
@@ -32,20 +32,20 @@ const TOAST_FONT_SIZE = 1 - (1 / (2 + 2
   + 2));
 
 /**
- * Transition duration in seconds for fade in/out
+ Transition duration in seconds for fade in/out
  */
 const TRANSITION_DURATION = (1 / 2) - (1 / (2 + 2
   + 1));
 
 /**
- * Generates CSS rules for the zoom toast popover.
- *
- * @returns array of CSS rule strings
- *
- * @example
- * ```ts
- * const rules = renderToastStyles();
- * ```
+ Generates CSS rules for the zoom toast popover.
+ 
+ @returns array of CSS rule strings
+ 
+ @example
+ ```ts
+ const rules = renderToastStyles();
+ ```
  */
 export function renderToastStyles(): string[] {
   return [

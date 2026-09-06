@@ -1,11 +1,11 @@
 /**
- * Local QEMU/KVM backend.
- *
- * Wraps the existing standalone libvirt functions into a {@link Backend} object
- * without changing their behaviour. This is the default backend and the only
- * host-local one today.
- *
- * @module
+ Local QEMU/KVM backend.
+ 
+ Wraps the existing standalone libvirt functions into a {@link Backend} object
+ without changing their behaviour. This is the default backend and the only
+ host-local one today.
+ 
+ @module
  */
 
 import { clone, } from '../../clone.ts';
@@ -26,14 +26,14 @@ import type { Backend, } from '../types.ts';
 import { update, } from '../../update.ts';
 
 /**
- * Local libvirt/KVM backend assembled from the package's standalone functions.
- * The cloud-only `serverType`/`location` hints on {@link create} are ignored here.
- *
- * @example
- * ```ts
- * await libvirtBackend.create({ name: 'dev-01' });
- * await libvirtBackend.exec({ command: 'uname -a', name: 'dev-01' });
- * ```
+ Local libvirt/KVM backend assembled from the package's standalone functions.
+ The cloud-only `serverType`/`location` hints on {@link create} are ignored here.
+ 
+ @example
+ ```ts
+ await libvirtBackend.create({ name: 'dev-01' });
+ await libvirtBackend.exec({ command: 'uname -a', name: 'dev-01' });
+ ```
  */
 export const libvirtBackend: Backend = {
   clone,

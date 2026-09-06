@@ -14,21 +14,21 @@ import {
 } from './prefer-caught-value-text.syntax.ts';
 
 /**
- * Canonical implementation path exempt from duplicate-implementation reports.
+ Canonical implementation path exempt from duplicate-implementation reports.
  */
 const CANONICAL_FORMATTER_PATH = 'package/module/caught-value/src/index.ts';
 
 /**
- * Tests whether current file owns canonical formatter implementation.
- *
- * @param fileName - Absolute or workspace-relative lint target path.
- *
- * @returns whether target is canonical implementation module.
- *
- * @example
- * ```ts
- * isCanonicalFormatterFile('/repo/packages/module/caught-value/src/index.ts');
- * ```
+ Tests whether current file owns canonical formatter implementation.
+ 
+ @param fileName - Absolute or workspace-relative lint target path.
+ 
+ @returns whether target is canonical implementation module.
+ 
+ @example
+ ```ts
+ isCanonicalFormatterFile('/repo/packages/module/caught-value/src/index.ts');
+ ```
  */
 function isCanonicalFormatterFile(fileName: string,): boolean {
   return fileName
@@ -40,13 +40,13 @@ function isCanonicalFormatterFile(fileName: string,): boolean {
 }
 
 /**
- * Prefers shared caught-value diagnostics over package-local implementations.
- *
- * @example
- * ```ts
- * caughtValueText(error,);
- * caughtValueStack(error,);
- * ```
+ Prefers shared caught-value diagnostics over package-local implementations.
+ 
+ @example
+ ```ts
+ caughtValueText(error,);
+ caughtValueStack(error,);
+ ```
  */
 export const preferCaughtValueText: CreateOnceRule = {
   meta: {
@@ -60,22 +60,22 @@ export const preferCaughtValueText: CreateOnceRule = {
     },
   },
   /**
-   * Creates duplicate formatter visitor.
-   *
-   * @param context - Foreign rule context receiving diagnostics.
-   *
-   * @mutates context - Emits diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * preferCaughtValueText.createOnce(context);
-   * ```
+   Creates duplicate formatter visitor.
+   
+   @param context - Foreign rule context receiving diagnostics.
+   
+   @mutates context - Emits diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   preferCaughtValueText.createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
-     * Reports duplicate formatter syntax.
-     *
-     * @param node - Duplicated formatter node.
+     Reports duplicate formatter syntax.
+     
+     @param node - Duplicated formatter node.
      */
     function reportDuplicate(node: ForeignBorrowed<ESTree.Node>,): void {
       context.report({
@@ -89,7 +89,7 @@ export const preferCaughtValueText: CreateOnceRule = {
         if (isCanonicalFormatterFile(context.filename,))
           return;
         /**
-         * Identifier tested by conditional Error branch.
+         Identifier tested by conditional Error branch.
          */
         const identifier = errorDetectorIdentifier({
           context,

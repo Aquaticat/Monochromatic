@@ -1,5 +1,5 @@
 /**
- * Trusted config loading, inspection, and recursive revocation. @module
+ Trusted config loading, inspection, and recursive revocation. @module
  */
 import {
   captureTrustCandidate,
@@ -46,22 +46,22 @@ export type {
 } from './types.ts';
 
 /**
- * Explicitly trusts discovered MJS or TypeScript configuration.
- *
- * @param discovered - canonical discovered config
- *
- * @param registryRoot - injected or account-derived root
- *
- * @param yes - explicit noninteractive approval
- *
- * @param adapters - consent effects
- *
- * @returns installed trusted config
- *
- * @example
- * ```ts
- * await trustConfig({ discovered, registryRoot, yes: true, adapters });
- * ```
+ Explicitly trusts discovered MJS or TypeScript configuration.
+ 
+ @param discovered - canonical discovered config
+ 
+ @param registryRoot - injected or account-derived root
+ 
+ @param yes - explicit noninteractive approval
+ 
+ @param adapters - consent effects
+ 
+ @returns installed trusted config
+ 
+ @example
+ ```ts
+ await trustConfig({ discovered, registryRoot, yes: true, adapters });
+ ```
  */
 export async function trustConfig({
   discovered,
@@ -90,17 +90,17 @@ export async function trustConfig({
 }
 
 /**
- * Compares every tracked TypeScript source without execution.
- *
- * @param recordDirectoryPath - exact record directory
- *
- * @param candidateBytes - exact live entry bytes
- *
- * @param configPath - canonical entry path
- *
- * @param record - validated TypeScript record
- *
- * @returns whether every tracked source exactly matches
+ Compares every tracked TypeScript source without execution.
+ 
+ @param recordDirectoryPath - exact record directory
+ 
+ @param candidateBytes - exact live entry bytes
+ 
+ @param configPath - canonical entry path
+ 
+ @param record - validated TypeScript record
+ 
+ @returns whether every tracked source exactly matches
  */
 async function typeScriptSourcesUnchanged({
   recordDirectoryPath,
@@ -114,18 +114,18 @@ async function typeScriptSourcesUnchanged({
   record: TrustRecord;
 }>,): Promise<boolean> {
   /**
-   * Per-source exact comparisons.
+   Per-source exact comparisons.
    */
   const comparisons = await Promise.all(record.sources
     .map(async function compareSource(source,) {
     /**
-     * Exact live source bytes.
+     Exact live source bytes.
      */
     const liveBytes = source.canonicalPath === configPath
       ? candidateBytes
       : (await captureTrustSource(source.canonicalPath,)).bytes;
     /**
-     * Exact private source snapshot.
+     Exact private source snapshot.
      */
     const storedBytes = await readPrivateFile(`${recordDirectoryPath}/${source.snapshotFile}`,);
     return exactBytesEqual({
@@ -139,18 +139,18 @@ async function typeScriptSourcesUnchanged({
 }
 
 /**
- * Ignores optional recursive untrust disclosure.
- *
- * @param text - disclosure intentionally omitted by internal caller
+ Ignores optional recursive untrust disclosure.
+ 
+ @param text - disclosure intentionally omitted by internal caller
  */
 function omitUntrustDisclosure(text: string,): void {
   void text;
 }
 
 /**
- * Emits stable prominent relaxed-mode warning JSONL.
- *
- * @param warning - stable safe warning
+ Emits stable prominent relaxed-mode warning JSONL.
+ 
+ @param warning - stable safe warning
  */
 function emitTrustWarning(warning: TrustWarning,): void {
   console.error(JSON.stringify({
@@ -162,18 +162,18 @@ function emitTrustWarning(warning: TrustWarning,): void {
 }
 
 /**
- * Loads exact trusted record or auto-enrolls authorized descendant.
- *
- * @param discovered - canonical discovered config
- *
- * @param registryRoot - injected or account-derived root
- *
- * @returns validated config executed from stored snapshot
- *
- * @example
- * ```ts
- * await loadTrustedConfig({ discovered, registryRoot });
- * ```
+ Loads exact trusted record or auto-enrolls authorized descendant.
+ 
+ @param discovered - canonical discovered config
+ 
+ @param registryRoot - injected or account-derived root
+ 
+ @returns validated config executed from stored snapshot
+ 
+ @example
+ ```ts
+ await loadTrustedConfig({ discovered, registryRoot });
+ ```
  */
 export async function loadTrustedConfig({
   discovered,
@@ -189,11 +189,11 @@ export async function loadTrustedConfig({
 },): Promise<LoadedTrustedConfig> {
   await recoverProvenanceTransactions({ registryRoot, },);
   /**
-   * Fresh live candidate compared with exact stored bytes.
+   Fresh live candidate compared with exact stored bytes.
    */
   const candidate = await captureTrustCandidate(discovered,);
   /**
-   * Exact environment grammar match, never an initial trust grant.
+   Exact environment grammar match, never an initial trust grant.
    */
   const relaxed = relaxedPathMatches({
     ...relaxedValue === undefined ? {} : { raw: relaxedValue, },
@@ -202,14 +202,14 @@ export async function loadTrustedConfig({
   },);
   try {
     /**
-     * Validated exact-identity record.
+     Validated exact-identity record.
      */
     const record = await loadRecord({
       registryRoot,
       candidate,
     },);
     /**
-     * Exact persistent record directory.
+     Exact persistent record directory.
      */
     const directory = recordDirectory({
       registryRoot,
@@ -249,7 +249,7 @@ export async function loadTrustedConfig({
     }
   }
   /**
-   * First descendant enrollment under every current recursive root.
+   First descendant enrollment under every current recursive root.
    */
   const enrolled = await autoEnrollRecursiveConfig({
     discovered,
@@ -271,18 +271,18 @@ export async function loadTrustedConfig({
 }
 
 /**
- * Inspects exact current trust state without executing configuration.
- *
- * @param discovered - canonical discovered config
- *
- * @param registryRoot - injected or account-derived root
- *
- * @returns trust status
- *
- * @example
- * ```ts
- * await inspectTrust({ discovered, registryRoot });
- * ```
+ Inspects exact current trust state without executing configuration.
+ 
+ @param discovered - canonical discovered config
+ 
+ @param registryRoot - injected or account-derived root
+ 
+ @returns trust status
+ 
+ @example
+ ```ts
+ await inspectTrust({ discovered, registryRoot });
+ ```
  */
 export async function inspectTrust({
   discovered,
@@ -292,27 +292,27 @@ export async function inspectTrust({
   registryRoot: string;
 }>,): Promise<TrustStatus> {
   /**
-   * Fresh live candidate inspected without execution.
+   Fresh live candidate inspected without execution.
    */
   const candidate = await captureTrustCandidate(discovered,);
   try {
     await recoverProvenanceTransactions({ registryRoot, },);
     /**
-     * Existing validated record.
+     Existing validated record.
      */
     const record = await loadRecord({
       registryRoot,
       candidate,
     },);
     /**
-     * Exact existing record directory.
+     Exact existing record directory.
      */
     const directory = recordDirectory({
       registryRoot,
       identity: candidate.identity,
     },);
     /**
-     * Exact strict source equality without stored execution.
+     Exact strict source equality without stored execution.
      */
     const unchanged = record.format === 'mjs'
       ? exactBytesEqual({
@@ -349,20 +349,20 @@ export async function inspectTrust({
 }
 
 /**
- * Revokes exact explicit and inherited trust without executing configuration.
- *
- * @param discovered - canonical discovered config
- *
- * @param registryRoot - injected or account-derived root
- *
- * @param disclose - reports affected recursive roots before mutation
- *
- * @returns recursive revocation summary
- *
- * @example
- * ```ts
- * await untrustConfig({ discovered, registryRoot, disclose: console.error });
- * ```
+ Revokes exact explicit and inherited trust without executing configuration.
+ 
+ @param discovered - canonical discovered config
+ 
+ @param registryRoot - injected or account-derived root
+ 
+ @param disclose - reports affected recursive roots before mutation
+ 
+ @returns recursive revocation summary
+ 
+ @example
+ ```ts
+ await untrustConfig({ discovered, registryRoot, disclose: console.error });
+ ```
  */
 export async function untrustConfig({
   discovered,
@@ -374,7 +374,7 @@ export async function untrustConfig({
   readonly disclose?: TrustConsentAdapters['disclose'];
 },): Promise<RecursiveUntrustResult> {
   /**
-   * Fresh identity candidate used without execution.
+   Fresh identity candidate used without execution.
    */
   const candidate = await captureTrustCandidate(discovered,);
   return await revokeRecursiveTrust({
@@ -385,20 +385,20 @@ export async function untrustConfig({
 }
 
 /**
- * Revokes a repository record after its config artifact was removed.
- *
- * @param repositoryRoot - canonical repository root
- *
- * @param registryRoot - complete registry root
- *
- * @param disclose - reports affected recursive roots before mutation
- *
- * @returns recursive revocation summary
- *
- * @example
- * ```ts
- * await untrustRepository({ repositoryRoot, registryRoot, disclose: console.error });
- * ```
+ Revokes a repository record after its config artifact was removed.
+ 
+ @param repositoryRoot - canonical repository root
+ 
+ @param registryRoot - complete registry root
+ 
+ @param disclose - reports affected recursive roots before mutation
+ 
+ @returns recursive revocation summary
+ 
+ @example
+ ```ts
+ await untrustRepository({ repositoryRoot, registryRoot, disclose: console.error });
+ ```
  */
 export async function untrustRepository({
   repositoryRoot,
@@ -411,7 +411,7 @@ export async function untrustRepository({
 },): Promise<RecursiveUntrustResult> {
   await recoverProvenanceTransactions({ registryRoot, },);
   /**
-   * Exact records historically installed for repository root.
+   Exact records historically installed for repository root.
    */
   const matches = (await listTrustRecords({ registryRoot, },))
     .filter(function matchesRepository(entry,) {

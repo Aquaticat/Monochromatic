@@ -6,7 +6,7 @@ import {
 //region Constants
 
 /**
- * Supported user config keys.
+ Supported user config keys.
  */
 const CONFIG_KEYS: ReadonlySet<string> = new Set([
   'editor',
@@ -17,11 +17,11 @@ const CONFIG_KEYS: ReadonlySet<string> = new Set([
 //region Guards
 
 /**
- * Narrows decoded JSON to a non-array object record.
- *
- * @param value - decoded JSON candidate
- *
- * @returns whether string-keyed fields can be read
+ Narrows decoded JSON to a non-array object record.
+ 
+ @param value - decoded JSON candidate
+ 
+ @returns whether string-keyed fields can be read
  */
 function isUnknownRecord(
   value: unknown,
@@ -38,20 +38,20 @@ function isUnknownRecord(
 //region Validation
 
 /**
- * Validates decoded user config.
- *
- * @param value - decoded JSON candidate
- *
- * @param configPath - path included in diagnostics
- *
- * @returns supported config fields
- *
- * @throws {@link AskUserQuestionConfigError} for malformed fields or unknown keys
- *
- * @example
- * ```ts
- * validateAskUserQuestionConfig({ value: { editor: 'nano' }, configPath: '/home/user/config.json' });
- * ```
+ Validates decoded user config.
+ 
+ @param value - decoded JSON candidate
+ 
+ @param configPath - path included in diagnostics
+ 
+ @returns supported config fields
+ 
+ @throws {@link AskUserQuestionConfigError} for malformed fields or unknown keys
+ 
+ @example
+ ```ts
+ validateAskUserQuestionConfig({ value: { editor: 'nano' }, configPath: '/home/user/config.json' });
+ ```
  */
 export function validateAskUserQuestionConfig({
   value,
@@ -63,7 +63,7 @@ export function validateAskUserQuestionConfig({
   if (!isUnknownRecord(value,))
     throw new AskUserQuestionConfigError(`Ask-user-question config must be an object at ${configPath}.`,);
   /**
-   * Unsupported keys sorted for deterministic diagnostics.
+   Unsupported keys sorted for deterministic diagnostics.
    */
   const unknownKeys = Object.keys(value,)
     .filter(function isUnknownConfigKey(key,): boolean {
@@ -73,7 +73,7 @@ export function validateAskUserQuestionConfig({
   if (unknownKeys.length > 0)
     throw new AskUserQuestionConfigError(`Ask-user-question config has unknown keys at ${configPath}: ${unknownKeys.join(', ',)}`,);
   /**
-   * Optional editor command candidate.
+   Optional editor command candidate.
    */
   const { editor, } = value;
   if (editor === undefined)

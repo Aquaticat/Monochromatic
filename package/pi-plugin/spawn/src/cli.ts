@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * CLI entry that launches visible child Pi sessions with spawn result state.
- *
- * @module
+ CLI entry that launches visible child Pi sessions with spawn result state.
+ 
+ @module
  */
 
 import { spawn, } from 'node:child_process';
@@ -42,14 +42,14 @@ import { writeInitialSpawnState, } from './state.ts';
 //region Parser
 
 /**
- * TODO: deprecate Optique
- * Optique parser for spawn-pi command line.
- *
- * @example
- * ```typescript
- * spawn-pi "implement feature X"
- * spawn-pi --cwd /repo --extra-arguments "--model openai/gpt-4.1" "review code"
- * ```
+ TODO: deprecate Optique
+ Optique parser for spawn-pi command line.
+ 
+ @example
+ ```typescript
+ spawn-pi "implement feature X"
+ spawn-pi --cwd /repo --extra-arguments "--model openai/gpt-4.1" "review code"
+ ```
  */
 const parser = object({
   cwd: optional(option(
@@ -76,8 +76,8 @@ const parser = object({
 },);
 
 /**
- * TODO: deprecate Optique
- * Parsed CLI arguments from current process invocation.
+ TODO: deprecate Optique
+ Parsed CLI arguments from current process invocation.
  */
 const args = runSync(
   parser,
@@ -93,14 +93,14 @@ const args = runSync(
 //region Launch helpers
 
 /**
- * Launches terminal-exec as a detached visible child process.
- *
- * @param options - Working directory, environment, and terminal invocation.
- *
- * @example
- * ```typescript
- * launchDetachedTerminal({ cwd: '/repo', env: process.env, invocation });
- * ```
+ Launches terminal-exec as a detached visible child process.
+ 
+ @param options - Working directory, environment, and terminal invocation.
+ 
+ @example
+ ```typescript
+ launchDetachedTerminal({ cwd: '/repo', env: process.env, invocation });
+ ```
  */
 function launchDetachedTerminal(
   options: {
@@ -110,7 +110,7 @@ function launchDetachedTerminal(
   },
 ): void {
   /**
-   * Launch values extracted after naming native process boundary.
+   Launch values extracted after naming native process boundary.
    */
   const {
     cwd,
@@ -118,7 +118,7 @@ function launchDetachedTerminal(
     invocation,
   } = options;
   /**
-   * Detached terminal-exec process for visible child Pi session.
+   Detached terminal-exec process for visible child Pi session.
    */
   const proc = spawn(
     invocation.command,
@@ -135,18 +135,18 @@ function launchDetachedTerminal(
 }
 
 /**
- * Builds spawn-pi argument object without parser-produced undefined slots.
- *
- * @param extraArguments - optional extra Pi CLI arguments.
- *
- * @param prompt - initial prompt for spawned Pi.
- *
- * @returns normalized {@link SpawnPiArgs}.
- *
- * @example
- * ```typescript
- * spawnPiArgs({ prompt: 'work' });
- * ```
+ Builds spawn-pi argument object without parser-produced undefined slots.
+ 
+ @param extraArguments - optional extra Pi CLI arguments.
+ 
+ @param prompt - initial prompt for spawned Pi.
+ 
+ @returns normalized {@link SpawnPiArgs}.
+ 
+ @example
+ ```typescript
+ spawnPiArgs({ prompt: 'work' });
+ ```
  */
 function spawnPiArgs(
   {
@@ -170,13 +170,13 @@ function spawnPiArgs(
 //region Launch
 
 /**
- * Working directory for child Pi process.
+ Working directory for child Pi process.
  */
 const cwd = args.cwd
   ?? process.cwd();
 
 /**
- * Terminal invocation arguments without parser-produced undefined slots.
+ Terminal invocation arguments without parser-produced undefined slots.
  */
 const spawnArgs = args.extraArguments === undefined
   ? spawnPiArgs({ prompt: args.prompt, },)
@@ -186,7 +186,7 @@ const spawnArgs = args.extraArguments === undefined
   },);
 
 /**
- * Resolved parent Pi session identity for this CLI invocation.
+ Resolved parent Pi session identity for this CLI invocation.
  */
 const identity = await findCallingSession();
 
@@ -194,7 +194,7 @@ if (identity === SESSION_NOT_FOUND) {
   console.error(SESSION_NOT_FOUND_WARNING,);
 
   /**
-   * Terminal invocation used to open an unlinked child Pi.
+   Terminal invocation used to open an unlinked child Pi.
    */
   const invocation = terminalInvocation({ args: spawnArgs, },);
 
@@ -208,11 +208,11 @@ if (identity === SESSION_NOT_FOUND) {
 }
 else {
   /**
-   * Unique identifier for this spawned child session.
+   Unique identifier for this spawned child session.
    */
   const spawnId = randomUUID();
   /**
-   * Initial state written before launching child terminal.
+   Initial state written before launching child terminal.
    */
   const state = initialSpawnState({
     spawnId,
@@ -223,7 +223,7 @@ else {
   await writeInitialSpawnState({ state, },);
 
   /**
-   * Terminal invocation used to open child Pi.
+   Terminal invocation used to open child Pi.
    */
   const invocation = terminalInvocation({
     spawnId,

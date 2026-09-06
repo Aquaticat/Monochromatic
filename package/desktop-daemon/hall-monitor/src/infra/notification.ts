@@ -4,15 +4,15 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { log, } from './syslog.ts';
 
 /**
- * Sends a critical desktop notification via `notify-send` to alert the user
- * about sustained unproductive activity.
- *
- * @param summary - LLM-generated analysis summary shown in the notification body
- *
- * @example
- * ```ts
- * await sendNotification("User has been browsing Reddit for 25 minutes.");
- * ```
+ Sends a critical desktop notification via `notify-send` to alert the user
+ about sustained unproductive activity.
+ 
+ @param summary - LLM-generated analysis summary shown in the notification body
+ 
+ @example
+ ```ts
+ await sendNotification("User has been browsing Reddit for 25 minutes.");
+ ```
  */
 export async function sendNotification(summary: string,): Promise<void> {
   try {
@@ -29,7 +29,7 @@ export async function sendNotification(summary: string,): Promise<void> {
   }
   catch (err: unknown) {
     /**
-     * Caught error rendered as a string; preserves `err.message` for `Error` instances, otherwise coerces via `String(err)`.
+     Caught error rendered as a string; preserves `err.message` for `Error` instances, otherwise coerces via `String(err)`.
      */
     const message = caughtValueText(err,);
     console.error(`[notify] Failed to send notification: ${message}`,);

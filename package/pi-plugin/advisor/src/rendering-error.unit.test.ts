@@ -1,7 +1,7 @@
 /**
- * Runtime error-detail tests for Advisor tool rendering.
- *
- * @module
+ Runtime error-detail tests for Advisor tool rendering.
+ 
+ @module
  */
 
 import type {
@@ -51,13 +51,13 @@ const validDetails: AdvisorDetails = {
 };
 
 /**
- * Render Advisor result text with optional runtime details.
- *
- * @param details - untrusted details supplied by Pi
- *
- * @param content - result text to render
- *
- * @returns rendered text lines joined for assertion
+ Render Advisor result text with optional runtime details.
+ 
+ @param details - untrusted details supplied by Pi
+ 
+ @param content - result text to render
+ 
+ @returns rendered text lines joined for assertion
  */
 function renderText(
   {
@@ -69,7 +69,7 @@ function renderText(
   },
 ): string {
   /**
-   * Runtime text content passed to Advisor renderer.
+   Runtime text content passed to Advisor renderer.
    */
   const resultContent: AgentToolResult<unknown>['content'] = [{
     type: 'text',
@@ -113,7 +113,7 @@ await describe({
         name: `renders raw error for ${fixture.name}`,
         fn: async function testMalformedDetailsFallback() {
           /**
-           * Runtime details option, absent for missing-details fixture.
+           Runtime details option, absent for missing-details fixture.
            */
           const renderOptions = 'details' in fixture
             ? { details: fixture.details, }

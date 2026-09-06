@@ -1,7 +1,7 @@
 /**
- * Tests for evaluate verdict-to-decision helpers.
- *
- * @module
+ Tests for evaluate verdict-to-decision helpers.
+ 
+ @module
  */
 
 import type {
@@ -45,17 +45,17 @@ type MockBranchEntry = {
 const READ_ENV_APPROVAL_FINGERPRINT = 'read-env-fingerprint';
 
 /**
- * Create mock extension API that records appended entries.
- *
- * @param entries - array receiving persisted entries
- *
- * @returns mock extension API
- *
- * @example
- * ```typescript
- * const entries = [];
- * const api = createMockApi({ entries });
- * ```
+ Create mock extension API that records appended entries.
+ 
+ @param entries - array receiving persisted entries
+ 
+ @returns mock extension API
+ 
+ @example
+ ```typescript
+ const entries = [];
+ const api = createMockApi({ entries });
+ ```
  */
 function createMockApi(
   {
@@ -78,16 +78,16 @@ function createMockApi(
 }
 
 /**
- * Create mock extension context with session branch access.
- *
- * @param branch - branch entries returned from session manager
- *
- * @returns mock extension context
- *
- * @example
- * ```typescript
- * const ctx = contextFromBranch({ branch: [] });
- * ```
+ Create mock extension context with session branch access.
+ 
+ @param branch - branch entries returned from session manager
+ 
+ @returns mock extension context
+ 
+ @example
+ ```typescript
+ const ctx = contextFromBranch({ branch: [] });
+ ```
  */
 function contextFromBranch(
   {
@@ -107,20 +107,20 @@ function contextFromBranch(
 }
 
 /**
- * Build persisted verdict entry.
- *
- * @param data - verdict data stored in session history
- *
- * @returns mock verdict branch entry
- *
- * @example
- * ```typescript
- * verdictEntry({
- *   action: 'read .env',
- *   verdict: 'approve',
- *   reason: 'Allowed',
- * });
- * ```
+ Build persisted verdict entry.
+ 
+ @param data - verdict data stored in session history
+ 
+ @returns mock verdict branch entry
+ 
+ @example
+ ```typescript
+ verdictEntry({
+   action: 'read .env',
+   verdict: 'approve',
+   reason: 'Allowed',
+ });
+ ```
  */
 function verdictEntry(
   data: VerdictData,
@@ -133,16 +133,16 @@ function verdictEntry(
 }
 
 /**
- * Convert appended custom entries to mock branch entries.
- *
- * @param entries - custom entries captured from mock extension API
- *
- * @returns mock branch entries preserving custom type and payload
- *
- * @example
- * ```typescript
- * const branch = branchFromAppendedEntries({ entries });
- * ```
+ Convert appended custom entries to mock branch entries.
+ 
+ @param entries - custom entries captured from mock extension API
+ 
+ @returns mock branch entries preserving custom type and payload
+ 
+ @example
+ ```typescript
+ const branch = branchFromAppendedEntries({ entries });
+ ```
  */
 function branchFromAppendedEntries(
   {
@@ -165,14 +165,14 @@ function branchFromAppendedEntries(
 }
 
 /**
- * Create mock extension context whose UI approves the prompt.
- *
- * @returns mock extension context for {@link askUser}
- *
- * @example
- * ```typescript
- * const ctx = approvingUiContext();
- * ```
+ Create mock extension context whose UI approves the prompt.
+ 
+ @returns mock extension context for {@link askUser}
+ 
+ @example
+ ```typescript
+ const ctx = approvingUiContext();
+ ```
  */
 function approvingUiContext(): ExtensionContext {
   return {

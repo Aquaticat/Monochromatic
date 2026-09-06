@@ -1,37 +1,37 @@
 /**
- * Prompt templates for AI-powered task features.
- *
- * All prompts follow a strict pattern:
- * - System message contains instructions and schema
- * - User data is always delimited inside XML-style tags
- * - Output is constrained to JSON so we can validate with a schema
+ Prompt templates for AI-powered task features.
+ 
+ All prompts follow a strict pattern:
+ - System message contains instructions and schema
+ - User data is always delimited inside XML-style tags
+ - Output is constrained to JSON so we can validate with a schema
  */
 import type { ChatMessage, } from './client.ts';
 
 //region Autofill: infer metadata from a task title
 
 /**
- * Builds the message pair for the autofill endpoint.
- *
- * The AI infers tags, locations, priority, and complexity from the task title.
- * Existing tags and locations are provided so the model prefers consistency.
- *
- * @param title - Raw task title typed by the user
- *
- * @param existingTags - Tags already used in the database
- *
- * @param existingLocations - Locations already used in the database
- *
- * @returns Chat messages ready for {@link chatCompletion}
- *
- * @mutates existingTags - `JSON.stringify` may invoke array accessors or proxy traps.
- *
- * @mutates existingLocations - `JSON.stringify` may invoke array accessors or proxy traps.
- *
- * @example
- * ```ts
- * const messages = buildAutofillMessages({ title: 'Buy groceries', existingTags: ['shopping'], existingLocations: ['Walmart'] });
- * ```
+ Builds the message pair for the autofill endpoint.
+ 
+ The AI infers tags, locations, priority, and complexity from the task title.
+ Existing tags and locations are provided so the model prefers consistency.
+ 
+ @param title - Raw task title typed by the user
+ 
+ @param existingTags - Tags already used in the database
+ 
+ @param existingLocations - Locations already used in the database
+ 
+ @returns Chat messages ready for {@link chatCompletion}
+ 
+ @mutates existingTags - `JSON.stringify` may invoke array accessors or proxy traps.
+ 
+ @mutates existingLocations - `JSON.stringify` may invoke array accessors or proxy traps.
+ 
+ @example
+ ```ts
+ const messages = buildAutofillMessages({ title: 'Buy groceries', existingTags: ['shopping'], existingLocations: ['Walmart'] });
+ ```
  */
 export function buildAutofillMessages(
   {
@@ -45,7 +45,7 @@ export function buildAutofillMessages(
   },
 ): ChatMessage[] {
   /**
-   * Instruction prompt with schema constraints; existing tags/locations are interpolated below.
+   Instruction prompt with schema constraints; existing tags/locations are interpolated below.
    */
   const systemPrompt =
     `You are a task metadata assistant. Given a task title, infer metadata.
@@ -87,24 +87,24 @@ For consistency, prefer these existing locations when applicable: ${
 //region Suggestion ranking: rank tasks by relevance to user context
 
 /**
- * Builds the message pair for the suggestion engine.
- *
- * The AI returns an ordered array of task IDs, most relevant first.
- *
- * @param tasks - Serializable task summaries (id, title, tags, locations, priority, dueDate, complexity)
- *
- * @param currentLocation - User's current or pinned location, or null
- *
- * @param focusDirective - Free-text focus instruction, or null
- *
- * @returns Chat messages ready for {@link chatCompletion}
- *
- * @mutates tasks - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps on task summaries.
- *
- * @example
- * ```ts
- * const messages = buildSuggestionMessages({ tasks, currentLocation: 'Home', focusDirective: 'Quick wins only' });
- * ```
+ Builds the message pair for the suggestion engine.
+ 
+ The AI returns an ordered array of task IDs, most relevant first.
+ 
+ @param tasks - Serializable task summaries (id, title, tags, locations, priority, dueDate, complexity)
+ 
+ @param currentLocation - User's current or pinned location, or null
+ 
+ @param focusDirective - Free-text focus instruction, or null
+ 
+ @returns Chat messages ready for {@link chatCompletion}
+ 
+ @mutates tasks - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps on task summaries.
+ 
+ @example
+ ```ts
+ const messages = buildSuggestionMessages({ tasks, currentLocation: 'Home', focusDirective: 'Quick wins only' });
+ ```
  */
 export function buildSuggestionMessages(
   {
@@ -126,12 +126,12 @@ export function buildSuggestionMessages(
   },
 ): ChatMessage[] {
   /**
-   * ISO timestamp embedded into the user prompt so the model knows the request's wall-clock context.
+   ISO timestamp embedded into the user prompt so the model knows the request's wall-clock context.
    */
   const currentTime = new Date().toISOString();
 
   /**
-   * Instruction prompt describing ranking factors and the JSON-array output contract.
+   Instruction prompt describing ranking factors and the JSON-array output contract.
    */
   const systemPrompt =
     `You are a task prioritization assistant. Given a list of tasks and the user's current context, return the task IDs ranked by what the user should do next.
@@ -145,7 +145,7 @@ Ranking factors (in rough priority order):
 5. Complexity: prefer lower-complexity tasks when other factors are equal`;
 
   /**
-   * User-side content combining context tags and serialized task summaries.
+   User-side content combining context tags and serialized task summaries.
    */
   const userContent = `<user_context>
 Location: ${currentLocation ?? 'unknown'}

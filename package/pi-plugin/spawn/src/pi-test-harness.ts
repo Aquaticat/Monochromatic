@@ -1,7 +1,7 @@
 /**
- * Test harness helpers for spawn-pi extension tests.
- *
- * @module
+ Test harness helpers for spawn-pi extension tests.
+ 
+ @module
  */
 
 import {
@@ -18,27 +18,27 @@ import {
 //region Handler types
 
 /**
- * Captured session-start handler type.
+ Captured session-start handler type.
  */
 type SessionStartHandler = ExtensionHandler<SessionStartEvent>;
 
 /**
- * Captured session-shutdown handler type.
+ Captured session-shutdown handler type.
  */
 type SessionShutdownHandler = ExtensionHandler<SessionShutdownEvent>;
 
 /**
- * Captured agent-end handler type.
+ Captured agent-end handler type.
  */
 type AgentEndHandler = ExtensionHandler<AgentEndEvent>;
 
 
 /**
- * Message sent through fake Pi API.
+ Message sent through fake Pi API.
  */
 type SentMessageRecord = {
   /**
-   * Custom message payload passed to `sendMessage`.
+   Custom message payload passed to `sendMessage`.
    */
   readonly message: {
     readonly customType: string;
@@ -46,87 +46,87 @@ type SentMessageRecord = {
     readonly display: boolean;
   };
   /**
-   * Delivery options passed to `sendMessage`.
+   Delivery options passed to `sendMessage`.
    */
   readonly options: unknown;
 };
 
 /**
- * Notification sent through fake extension UI.
+ Notification sent through fake extension UI.
  */
 type NotificationRecord = {
   /**
-   * Notification text.
+   Notification text.
    */
   readonly message: string;
   /**
-   * Notification severity.
+   Notification severity.
    */
   readonly level: string;
 };
 
 /**
- * Captured event handlers by event name.
+ Captured event handlers by event name.
  */
 type CapturedHandlers = {
   /**
-   * Registered session-start handlers.
+   Registered session-start handlers.
    */
   readonly sessionStart: SessionStartHandler[];
   /**
-   * Registered session-shutdown handlers.
+   Registered session-shutdown handlers.
    */
   readonly sessionShutdown: SessionShutdownHandler[];
   /**
-   * Registered agent-end handlers.
+   Registered agent-end handlers.
    */
   readonly agentEnd: AgentEndHandler[];
 };
 
 /**
- * Fake API harness for spawn-pi extension tests.
+ Fake API harness for spawn-pi extension tests.
  */
 type FakePiApiHarness = {
   /**
-   * Mock Pi extension API.
+   Mock Pi extension API.
    */
   readonly api: ExtensionAPI;
   /**
-   * Registration calls observed through fake Pi API.
+   Registration calls observed through fake Pi API.
    */
   readonly registrations: string[];
   /**
-   * Captured handlers grouped by event name.
+   Captured handlers grouped by event name.
    */
   readonly handlers: CapturedHandlers;
   /**
-   * Messages queued through fake Pi API.
+   Messages queued through fake Pi API.
    */
   readonly sentMessages: SentMessageRecord[];
 };
 
 /**
- * Options for fake extension context creation.
+ Options for fake extension context creation.
  */
 type ExtensionContextOptions = {
   /**
-   * Pi session id exposed by fake SessionManager.
+   Pi session id exposed by fake SessionManager.
    */
   readonly sessionId: string;
   /**
-   * Optional Pi session file exposed by fake SessionManager.
+   Optional Pi session file exposed by fake SessionManager.
    */
   readonly sessionFile?: string;
   /**
-   * Working directory exposed through context.
+   Working directory exposed through context.
    */
   readonly cwd?: string;
   /**
-   * Whether fake context should expose interactive UI.
+   Whether fake context should expose interactive UI.
    */
   readonly hasUI?: boolean;
   /**
-   * Notifications captured from fake UI.
+   Notifications captured from fake UI.
    */
   readonly notifications?: readonly NotificationRecord[];
 };
@@ -136,26 +136,26 @@ type ExtensionContextOptions = {
 //region Fake API
 
 /**
- * Builds fake Pi API and captures extension registrations.
- *
- * @returns fake {@link FakePiApiHarness}.
- *
- * @example
- * ```typescript
- * const harness = fakePiApi();
- * ```
+ Builds fake Pi API and captures extension registrations.
+ 
+ @returns fake {@link FakePiApiHarness}.
+ 
+ @example
+ ```typescript
+ const harness = fakePiApi();
+ ```
  */
 function fakePiApi(): FakePiApiHarness {
   /**
-   * Registration calls observed through fake API.
+   Registration calls observed through fake API.
    */
   const registrations: string[] = [];
   /**
-   * Messages queued through fake API.
+   Messages queued through fake API.
    */
   const sentMessages: SentMessageRecord[] = [];
   /**
-   * Event handlers captured by fake API.
+   Event handlers captured by fake API.
    */
   const handlers: CapturedHandlers = {
     sessionStart: [],
@@ -164,7 +164,7 @@ function fakePiApi(): FakePiApiHarness {
   };
 
   /**
-   * Mock Pi API implementing surface used by spawn-pi.
+   Mock Pi API implementing surface used by spawn-pi.
    */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- fake API records extension interactions; unexercised methods are inert stand-ins.
   const api = {
@@ -178,15 +178,15 @@ function fakePiApi(): FakePiApiHarness {
           .sessionStart
           .push(
             /**
-             * Invokes captured extension callback for fake session start.
-             *
-             * @param sessionStartEvent - Caller-provided fake host event.
-             *
-             * @param ctx - Caller-provided fake extension context.
-             *
-             * @mutates sessionStartEvent - `handler` can retain or change supplied event state.
-             *
-             * @mutates ctx - `handler` can invoke or change supplied context capabilities.
+             Invokes captured extension callback for fake session start.
+             
+             @param sessionStartEvent - Caller-provided fake host event.
+             
+             @param ctx - Caller-provided fake extension context.
+             
+             @mutates sessionStartEvent - `handler` can retain or change supplied event state.
+             
+             @mutates ctx - `handler` can invoke or change supplied context capabilities.
              */
             async function callSessionStartHandler(
             sessionStartEvent,
@@ -204,15 +204,15 @@ function fakePiApi(): FakePiApiHarness {
           .sessionShutdown
           .push(
             /**
-             * Invokes captured extension callback for fake session shutdown.
-             *
-             * @param sessionShutdownEvent - Caller-provided fake host event.
-             *
-             * @param ctx - Caller-provided fake extension context.
-             *
-             * @mutates sessionShutdownEvent - `handler` can retain or change supplied event state.
-             *
-             * @mutates ctx - `handler` can invoke or change supplied context capabilities.
+             Invokes captured extension callback for fake session shutdown.
+             
+             @param sessionShutdownEvent - Caller-provided fake host event.
+             
+             @param ctx - Caller-provided fake extension context.
+             
+             @mutates sessionShutdownEvent - `handler` can retain or change supplied event state.
+             
+             @mutates ctx - `handler` can invoke or change supplied context capabilities.
              */
             async function callSessionShutdownHandler(
             sessionShutdownEvent,
@@ -230,15 +230,15 @@ function fakePiApi(): FakePiApiHarness {
           .agentEnd
           .push(
             /**
-             * Invokes captured extension callback for fake agent completion.
-             *
-             * @param agentEndEvent - Caller-provided fake host event.
-             *
-             * @param ctx - Caller-provided fake extension context.
-             *
-             * @mutates agentEndEvent - `handler` can retain or change supplied event state.
-             *
-             * @mutates ctx - `handler` can invoke or change supplied context capabilities.
+             Invokes captured extension callback for fake agent completion.
+             
+             @param agentEndEvent - Caller-provided fake host event.
+             
+             @param ctx - Caller-provided fake extension context.
+             
+             @mutates agentEndEvent - `handler` can retain or change supplied event state.
+             
+             @mutates ctx - `handler` can invoke or change supplied context capabilities.
              */
             async function callAgentEndHandler(
             agentEndEvent,
@@ -355,27 +355,27 @@ function fakePiApi(): FakePiApiHarness {
 //region Fake context and events
 
 /**
- * Creates minimal extension context for spawn-pi handler tests.
- *
- * @param options - fake {@link ExtensionContextOptions}.
- *
- * @returns fake extension context.
- *
- * @example
- * ```typescript
- * createExtensionContext({ sessionId: 'parent' });
- * ```
+ Creates minimal extension context for spawn-pi handler tests.
+ 
+ @param options - fake {@link ExtensionContextOptions}.
+ 
+ @returns fake extension context.
+ 
+ @example
+ ```typescript
+ createExtensionContext({ sessionId: 'parent' });
+ ```
  */
 function createExtensionContext(options: Readonly<ExtensionContextOptions>,): ExtensionContext {
   /**
-   * Notification records shared with fake UI.
+   Notification records shared with fake UI.
    */
   const notifications: NotificationRecord[] = [
     ...(options.notifications ?? []),
   ];
 
   /**
-   * Minimal context implementing members used by spawn-pi.
+   Minimal context implementing members used by spawn-pi.
    */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- fake context covers only members used by spawn-pi handlers.
   const ctx = {
@@ -408,14 +408,14 @@ function createExtensionContext(options: Readonly<ExtensionContextOptions>,): Ex
 }
 
 /**
- * Creates minimal session-start event.
- *
- * @returns fake session-start event.
- *
- * @example
- * ```typescript
- * createSessionStartEvent();
- * ```
+ Creates minimal session-start event.
+ 
+ @returns fake session-start event.
+ 
+ @example
+ ```typescript
+ createSessionStartEvent();
+ ```
  */
 function createSessionStartEvent(): SessionStartEvent {
   return {
@@ -425,14 +425,14 @@ function createSessionStartEvent(): SessionStartEvent {
 }
 
 /**
- * Creates minimal session-shutdown event.
- *
- * @returns fake session-shutdown event.
- *
- * @example
- * ```typescript
- * createSessionShutdownEvent();
- * ```
+ Creates minimal session-shutdown event.
+ 
+ @returns fake session-shutdown event.
+ 
+ @example
+ ```typescript
+ createSessionShutdownEvent();
+ ```
  */
 function createSessionShutdownEvent(): SessionShutdownEvent {
   return {
@@ -442,16 +442,16 @@ function createSessionShutdownEvent(): SessionShutdownEvent {
 }
 
 /**
- * Creates minimal agent-end event.
- *
- * @param message - assistant text emitted by fake event.
- *
- * @returns fake agent-end event.
- *
- * @example
- * ```typescript
- * createAgentEndEvent('done');
- * ```
+ Creates minimal agent-end event.
+ 
+ @param message - assistant text emitted by fake event.
+ 
+ @returns fake agent-end event.
+ 
+ @example
+ ```typescript
+ createAgentEndEvent('done');
+ ```
  */
 function createAgentEndEvent(message: string,): AgentEndEvent {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture matches AgentEndEvent fields consumed by spawn-pi.
@@ -476,22 +476,22 @@ function createAgentEndEvent(message: string,): AgentEndEvent {
 //region Handler accessors
 
 /**
- * Retrieves only registered handler from an array.
- *
- * @param handlers - captured handler array.
- *
- * @returns first handler.
- *
- * @throws when no handler was registered.
- *
- * @example
- * ```typescript
- * onlyHandler(harness.handlers.sessionStart);
- * ```
+ Retrieves only registered handler from an array.
+ 
+ @param handlers - captured handler array.
+ 
+ @returns first handler.
+ 
+ @throws when no handler was registered.
+ 
+ @example
+ ```typescript
+ onlyHandler(harness.handlers.sessionStart);
+ ```
  */
 function onlyHandler<const THandler>(handlers: readonly THandler[],): THandler {
   /**
-   * First captured handler.
+   First captured handler.
    */
   const [handler,] = handlers;
   if (handler === undefined)

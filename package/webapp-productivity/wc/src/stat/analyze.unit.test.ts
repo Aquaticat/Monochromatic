@@ -1,7 +1,7 @@
 /**
- * Tests for aggregate text-statistics computation.
- *
- * @module
+ Tests for aggregate text-statistics computation.
+ 
+ @module
  */
 
 import {
@@ -61,7 +61,7 @@ await describe({
       name: 'reports maxParagraphLength as the sentence count of the longest paragraph',
       fn: async function reportsMaxParagraphLength(): Promise<void> {
         /**
-         * First paragraph has 3 sentences, second paragraph has 1.
+         First paragraph has 3 sentences, second paragraph has 1.
          */
         const stats = analyzeText('One. Two. Three.\n\nJust one.',);
 
@@ -73,8 +73,8 @@ await describe({
       name: 'reports maxCharLength as the byte length of the widest grapheme cluster',
       fn: async function reportsMaxCharLength(): Promise<void> {
         /**
-         * The ZWJ family emoji encodes as 18 UTF-8 bytes, wider than every
-         * other grapheme in the sample (the accented "é" is 2 bytes).
+         The ZWJ family emoji encodes as 18 UTF-8 bytes, wider than every
+         other grapheme in the sample (the accented "é" is 2 bytes).
          */
         const stats = analyzeText('a café 👨‍👩‍👧',);
 
@@ -85,8 +85,8 @@ await describe({
       name: 'excludes blank lines from the line count and treats them as separators only',
       fn: async function excludesBlankLines(): Promise<void> {
         /**
-         * Three non-blank lines split across two paragraphs by one blank
-         * line; the blank line must not itself be counted as a line.
+         Three non-blank lines split across two paragraphs by one blank
+         line; the blank line must not itself be counted as a line.
          */
         const stats = analyzeText('one\ntwo\n\nthree',);
 

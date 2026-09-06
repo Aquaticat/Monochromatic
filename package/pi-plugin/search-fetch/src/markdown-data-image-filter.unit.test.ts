@@ -1,7 +1,7 @@
 /**
- * Unit tests for Markdown data-image post-filtering.
- *
- * @module
+ Unit tests for Markdown data-image post-filtering.
+ 
+ @module
  */
 
 import {
@@ -17,12 +17,12 @@ import {
 //region Fixtures
 
 /**
- * Single-line base64 image Markdown.
+ Single-line base64 image Markdown.
  */
 const SINGLE_LINE_IMAGE = '![Logo](data:image/png;base64,QUFBQQ==)';
 
 /**
- * Linked multiline image shaped like rendered fetch output from Microsoft pages.
+ Linked multiline image shaped like rendered fetch output from Microsoft pages.
  */
 const MULTILINE_LINKED_IMAGE = [
   ' [![Microsoft',
@@ -31,7 +31,7 @@ const MULTILINE_LINKED_IMAGE = [
 ].join('\n',);
 
 /**
- * Unsupported or malformed image cases that must survive unchanged.
+ Unsupported or malformed image cases that must survive unchanged.
  */
 const RETAINED_MARKDOWN_CASES = [
   {
@@ -76,7 +76,7 @@ await describe({
           name: 'removes complete physical line owned by base64 image',
           fn: async () => {
             /**
-             * Filtered line-isolated image.
+             Filtered line-isolated image.
              */
             const result = filterMarkdownDataImages([
               'Before',
@@ -92,7 +92,7 @@ await describe({
           name: 'removes multiline linked image without leaving wrapper lines',
           fn: async () => {
             /**
-             * Filtered Microsoft-shaped linked image.
+             Filtered Microsoft-shaped linked image.
              */
             const result = filterMarkdownDataImages([
               'Before',
@@ -111,7 +111,7 @@ await describe({
           name: 'removes tight linked image span while retaining same-line prose',
           fn: async () => {
             /**
-             * Filtered inline linked image.
+             Filtered inline linked image.
              */
             const result = filterMarkdownDataImages(
               'Before [![Logo](data:image/png;base64,QUFBQQ==)](https://example.com/a_(b)) after.',
@@ -125,7 +125,7 @@ await describe({
           name: 'removes angle-wrapped image with nested and escaped alt text',
           fn: async () => {
             /**
-             * Filtered angle-wrapped data URL.
+             Filtered angle-wrapped data URL.
              */
             const result = filterMarkdownDataImages(
               String.raw`Prefix ![nested [label\] text]](<data:image/gif;base64,R0lGODlhAQAB>) suffix`,
@@ -139,7 +139,7 @@ await describe({
           name: 'removes several inline images without discarding neighboring text',
           fn: async () => {
             /**
-             * Filtered Markdown containing independent image constructs.
+             Filtered Markdown containing independent image constructs.
              */
             const result = filterMarkdownDataImages(
               `A ${SINGLE_LINE_IMAGE} B ${SINGLE_LINE_IMAGE} C`,
@@ -153,7 +153,7 @@ await describe({
           name: 'removes line-isolated image at end of text without terminal newline',
           fn: async () => {
             /**
-             * Filtered final image line.
+             Filtered final image line.
              */
             const result = filterMarkdownDataImages(`Before\n${SINGLE_LINE_IMAGE}`,);
 
@@ -165,7 +165,7 @@ await describe({
           name: 'keeps inner-image removal bounded when outer link wrapper is malformed',
           fn: async () => {
             /**
-             * Filtered image with unclosed outer link destination.
+             Filtered image with unclosed outer link destination.
              */
             const result = filterMarkdownDataImages(
               `Before [${SINGLE_LINE_IMAGE}](https://example.com after`,
@@ -180,7 +180,7 @@ await describe({
             name: `retains ${testCase.name}`,
             fn: async () => {
               /**
-               * Filter result for unsupported or malformed Markdown.
+               Filter result for unsupported or malformed Markdown.
                */
               const result = filterMarkdownDataImages(testCase.markdown,);
 
@@ -198,11 +198,11 @@ await describe({
           name: 'preserves response identity when no Markdown is filterable',
           fn: async () => {
             /**
-             * Non-Markdown response fixture.
+             Non-Markdown response fixture.
              */
             const response = { content: SINGLE_LINE_IMAGE, };
             /**
-             * Filtered response metadata.
+             Filtered response metadata.
              */
             const result = filterFetchResponseDataImages(response,);
 
@@ -214,11 +214,11 @@ await describe({
           name: 'preserves response identity when Markdown has no matching image',
           fn: async () => {
             /**
-             * Ordinary Markdown response fixture.
+             Ordinary Markdown response fixture.
              */
             const response = { markdown: '# Heading', };
             /**
-             * Filtered response metadata.
+             Filtered response metadata.
              */
             const result = filterFetchResponseDataImages(response,);
 
@@ -230,14 +230,14 @@ await describe({
           name: 'copies response with filtered Markdown while retaining extra fields',
           fn: async () => {
             /**
-             * Metadata-bearing Markdown response fixture.
+             Metadata-bearing Markdown response fixture.
              */
             const response = {
               markdown: `Before\n${SINGLE_LINE_IMAGE}\nAfter`,
               title: 'Fetched title',
             };
             /**
-             * Filtered response metadata.
+             Filtered response metadata.
              */
             const result = filterFetchResponseDataImages(response,);
 

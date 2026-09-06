@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- * Separate library and shebang-bearing CLI bundles.
+ Separate library and shebang-bearing CLI bundles.
  */
 const config: NodeFlavorConfigs = perEntryNodeConfig({
   entries: [

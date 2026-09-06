@@ -9,13 +9,13 @@ import {
 } from './filter-patterns.ts';
 
 /**
- * Classifies a line as sandbox noise via the exported predicate array.
- * `isSandboxMiseCacheNoise` is the sole entry; it is not exported directly,
- * so the test exercises it through the array that production code consults.
- *
- * @param line - candidate output line
- *
- * @returns whether any sandbox-noise predicate matches
+ Classifies a line as sandbox noise via the exported predicate array.
+ `isSandboxMiseCacheNoise` is the sole entry; it is not exported directly,
+ so the test exercises it through the array that production code consults.
+ 
+ @param line - candidate output line
+ 
+ @returns whether any sandbox-noise predicate matches
  */
 function isNoise(line: string,): boolean {
   return SANDBOX_NOISE_PREDICATES.some(function test(predicate,) {
@@ -24,13 +24,13 @@ function isNoise(line: string,): boolean {
 }
 
 /**
- * Classifies a line as mise bootstrap/upgrade noise via the exported predicate
- * array. Its member predicates are not exported directly, so the test drives
- * them through the array that {@link shouldStripLine} consults.
- *
- * @param line - candidate output line
- *
- * @returns whether any mise-noise predicate matches
+ Classifies a line as mise bootstrap/upgrade noise via the exported predicate
+ array. Its member predicates are not exported directly, so the test drives
+ them through the array that {@link shouldStripLine} consults.
+ 
+ @param line - candidate output line
+ 
+ @returns whether any mise-noise predicate matches
  */
 function isMiseNoise(line: string,): boolean {
   return MISE_NOISE_PREDICATES.some(function test(predicate,) {

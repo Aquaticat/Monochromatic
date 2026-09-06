@@ -9,7 +9,7 @@ function singleLineTag(): number {
 }
 
 /**
- * Holds nested fixable TSDoc.
+ Holds nested fixable TSDoc.
  */
 function containsIndented(): void {
   /** Inner description. */
@@ -19,7 +19,7 @@ function containsIndented(): void {
 }
 
 /**
- * Shape with fixable property doc.
+ Shape with fixable property doc.
  */
 type PropertyFixture = {
   /** Property description. */

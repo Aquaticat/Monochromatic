@@ -13,42 +13,42 @@ import type { ToolInputSchema, } from './protocol-tool.ts';
 //region Schema vocabulary
 
 /**
- * Valibot schema a tool declares for its arguments.
- *
- * One declaration serves two purposes: it is converted to the JSON Schema advertised in
- * `tools/list`, and it validates incoming `tools/call` arguments. Declaring the two
- * separately is what lets an advertised contract drift away from the one enforced.
+ Valibot schema a tool declares for its arguments.
+ 
+ One declaration serves two purposes: it is converted to the JSON Schema advertised in
+ `tools/list`, and it validates incoming `tools/call` arguments. Declaring the two
+ separately is what lets an advertised contract drift away from the one enforced.
  */
 export type ToolArgumentsSchema = v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
 
 /**
- * Builds a strict argument object that rejects every key it does not declare.
- *
- * Prefer this over `v.strictObject` directly. Valibot decides whether a key is declared
- * with `key in entries`, and a plain entries object inherits from `Object.prototype`, so
- * `constructor`, `__proto__`, `toString`, and their siblings test as declared and pass
- * validation. Measured against `valibot@1.4.2`: `{ name, constructor }` satisfies a strict
- * schema declaring only `name`. A null-prototype entries object removes the inherited
- * names, so those keys are refused like any other undeclared one.
- *
- * That matters beyond tidiness: the advertised schema carries `additionalProperties:
- * false`, so a client validating locally would reject what this server accepted, and the
- * gate hands handlers the original object, leaving the undeclared key observable.
- *
- * @param entries - Argument schemas keyed by argument name
- *
- * @returns Strict object schema refusing undeclared keys, inherited names included
- *
- * @example
- * ```ts
- * strictArguments({ name: v.string() });
- * ```
+ Builds a strict argument object that rejects every key it does not declare.
+ 
+ Prefer this over `v.strictObject` directly. Valibot decides whether a key is declared
+ with `key in entries`, and a plain entries object inherits from `Object.prototype`, so
+ `constructor`, `__proto__`, `toString`, and their siblings test as declared and pass
+ validation. Measured against `valibot@1.4.2`: `{ name, constructor }` satisfies a strict
+ schema declaring only `name`. A null-prototype entries object removes the inherited
+ names, so those keys are refused like any other undeclared one.
+ 
+ That matters beyond tidiness: the advertised schema carries `additionalProperties:
+ false`, so a client validating locally would reject what this server accepted, and the
+ gate hands handlers the original object, leaving the undeclared key observable.
+ 
+ @param entries - Argument schemas keyed by argument name
+ 
+ @returns Strict object schema refusing undeclared keys, inherited names included
+ 
+ @example
+ ```ts
+ strictArguments({ name: v.string() });
+ ```
  */
 export function strictArguments<const TEntries extends v.ObjectEntries,>(
   entries: TEntries,
 ): v.StrictObjectSchema<TEntries, undefined> {
   /**
-   * Same entries on a prototype-free object, so `key in entries` sees only declared names.
+   Same entries on a prototype-free object, so `key in entries` sees only declared names.
    */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.assign returns any through its spread overload; the value is the entries argument with its prototype removed
   const bareEntries = Object.assign(
@@ -59,26 +59,26 @@ export function strictArguments<const TEntries extends v.ObjectEntries,>(
 }
 
 /**
- * Returned by {@link validateToolArguments} when arguments satisfy the tool's schema.
+ Returned by {@link validateToolArguments} when arguments satisfy the tool's schema.
  */
 export const TOOL_ARGUMENTS_VALID: unique symbol = Symbol('mcp-stdio tool arguments valid',);
 
 /**
- * Raised when a tool's schema cannot become a conformant JSON Schema.
- *
- * Thrown during server construction rather than on first `tools/list`, so an unusable
- * schema fails loudly at startup instead of being advertised in a degraded form.
+ Raised when a tool's schema cannot become a conformant JSON Schema.
+ 
+ Thrown during server construction rather than on first `tools/list`, so an unusable
+ schema fails loudly at startup instead of being advertised in a degraded form.
  */
 export class ToolSchemaError extends Error {
   /**
-   * Names the offending tool alongside why conversion failed.
-   *
-   * @param message - Description naming tool and cause
-   *
-   * @example
-   * ```ts
-   * throw new ToolSchemaError('Tool "ping" declares a schema that cannot be converted');
-   * ```
+   Names the offending tool alongside why conversion failed.
+   
+   @param message - Description naming tool and cause
+   
+   @example
+   ```ts
+   throw new ToolSchemaError('Tool "ping" declares a schema that cannot be converted');
+   ```
    */
   constructor(message: string,) {
     super(message,);
@@ -91,43 +91,43 @@ export class ToolSchemaError extends Error {
 //region Advertisement: converting a valibot schema to the advertised JSON Schema
 
 /**
- * Draft the MCP revision this package implements expects tools to advertise.
- *
- * The converter defaults to `draft-07`, which would advertise the wrong draft: revision
- * 2026-07-28 states `inputSchema` "Defaults to JSON Schema 2020-12 when no explicit
- * `$schema` is provided", and names 2020-12 as the vocabulary whose keywords may appear.
+ Draft the MCP revision this package implements expects tools to advertise.
+ 
+ The converter defaults to `draft-07`, which would advertise the wrong draft: revision
+ 2026-07-28 states `inputSchema` "Defaults to JSON Schema 2020-12 when no explicit
+ `$schema` is provided", and names 2020-12 as the vocabulary whose keywords may appear.
  */
 const JSON_SCHEMA_TARGET = 'draft-2020-12';
 
 /**
- * Root type every tool's argument schema must declare.
- *
- * Revision 2026-07-28 is explicit: "Tool arguments are always JSON objects, so
- * `type: "object"` is required at the root." A valibot union converts to a bare `anyOf`
- * with no root type, so the root is restored below rather than advertised non-conformant.
+ Root type every tool's argument schema must declare.
+ 
+ Revision 2026-07-28 is explicit: "Tool arguments are always JSON objects, so
+ `type: "object"` is required at the root." A valibot union converts to a bare `anyOf`
+ with no root type, so the root is restored below rather than advertised non-conformant.
  */
 const ROOT_TYPE = 'object';
 
 /**
- * Converts a tool's valibot schema into the JSON Schema advertised for it.
- *
- * Conversion runs with `errorMode: 'throw'` so a schema the converter cannot express, such
- * as one built from `v.custom`, fails loudly instead of being advertised in a form that no
- * longer matches what is enforced. That mode is the current default; passing it explicitly
- * keeps a future default change from reintroducing silent degradation.
- *
- * @param schema - Valibot schema declared by this tool
- *
- * @param toolName - Tool name, quoted into failure messages
- *
- * @returns JSON Schema carrying an object root, ready to advertise
- *
- * @throws ToolSchemaError when conversion fails, or yields a non-object root
- *
- * @example
- * ```ts
- * toolInputSchema({ schema: v.strictObject({ name: v.string() }), toolName: 'destroy_vm' });
- * ```
+ Converts a tool's valibot schema into the JSON Schema advertised for it.
+ 
+ Conversion runs with `errorMode: 'throw'` so a schema the converter cannot express, such
+ as one built from `v.custom`, fails loudly instead of being advertised in a form that no
+ longer matches what is enforced. That mode is the current default; passing it explicitly
+ keeps a future default change from reintroducing silent degradation.
+ 
+ @param schema - Valibot schema declared by this tool
+ 
+ @param toolName - Tool name, quoted into failure messages
+ 
+ @returns JSON Schema carrying an object root, ready to advertise
+ 
+ @throws ToolSchemaError when conversion fails, or yields a non-object root
+ 
+ @example
+ ```ts
+ toolInputSchema({ schema: v.strictObject({ name: v.string() }), toolName: 'destroy_vm' });
+ ```
  */
 export function toolInputSchema(
   {
@@ -139,7 +139,7 @@ export function toolInputSchema(
   },
 ): ToolInputSchema {
   /**
-   * Converted schema before its root type is checked and restored.
+   Converted schema before its root type is checked and restored.
    */
   const converted = convertSchema({
     schema,
@@ -147,7 +147,7 @@ export function toolInputSchema(
   },);
 
   /**
-   * Root type the converter produced; `undefined` for a union, which emits only `anyOf`.
+   Root type the converter produced; `undefined` for a union, which emits only `anyOf`.
    */
   const rootType = converted.type;
   if ((rootType !== undefined) && (rootType !== ROOT_TYPE)) {
@@ -160,11 +160,11 @@ export function toolInputSchema(
   // object and also a string. Rejecting here beats shipping an uncallable tool.
   if (rootType === undefined) {
     /**
-     * Union branches the converter produced, absent when the schema is not a union.
+     Union branches the converter produced, absent when the schema is not a union.
      */
     const branches = converted.anyOf ?? [];
     /**
-     * Refusal shared by both ways a union can fail to admit an object root.
+     Refusal shared by both ways a union can fail to admit an object root.
      */
     const notAllObjects = new ToolSchemaError(
       `Tool "${toolName}" declares a union whose branches are not all objects, which no object-rooted argument schema can satisfy`,
@@ -182,12 +182,12 @@ export function toolInputSchema(
   }
 
   /**
-   * Advertised schema with the object root restored.
-   *
-   * Assembled as a plain record because the converter types every optional keyword as
-   * `X | undefined`, which `exactOptionalPropertyTypes` refuses to spread onto the named
-   * optional fields of {@link ToolInputSchema}. The keys carrying `undefined` disappear at
-   * serialization, so the frame a client receives is unaffected.
+   Advertised schema with the object root restored.
+   
+   Assembled as a plain record because the converter types every optional keyword as
+   `X | undefined`, which `exactOptionalPropertyTypes` refuses to spread onto the named
+   optional fields of {@link ToolInputSchema}. The keys carrying `undefined` disappear at
+   serialization, so the frame a client receives is unaffected.
    */
   const advertised: Record<string, unknown> = {
     ...converted,
@@ -198,20 +198,20 @@ export function toolInputSchema(
 }
 
 /**
- * Runs the converter, restating failures against the tool that caused them.
- *
- * @param schema - Valibot schema declared by this tool
- *
- * @param toolName - Tool name, quoted into failure messages
- *
- * @returns Raw converted schema as the converter models it
- *
- * @throws ToolSchemaError when the converter rejects this schema
- *
- * @example
- * ```ts
- * convertSchema({ schema: v.strictObject({}), toolName: 'list_vms' });
- * ```
+ Runs the converter, restating failures against the tool that caused them.
+ 
+ @param schema - Valibot schema declared by this tool
+ 
+ @param toolName - Tool name, quoted into failure messages
+ 
+ @returns Raw converted schema as the converter models it
+ 
+ @throws ToolSchemaError when the converter rejects this schema
+ 
+ @example
+ ```ts
+ convertSchema({ schema: v.strictObject({}), toolName: 'list_vms' });
+ ```
  */
 function convertSchema(
   {
@@ -247,23 +247,23 @@ function convertSchema(
 //region Validation: gating a call on the same schema that was advertised
 
 /**
- * Checks `tools/call` arguments against the tool's declared schema.
- *
- * Acts purely as a gate: the parsed output is discarded and the caller keeps handing the
- * handler its original arguments, because valibot's object schemas strip unknown keys and
- * substituting the parsed value would quietly change what every handler receives.
- *
- * @param schema - Valibot schema declared by this tool
- *
- * @param args - Untrusted argument bag from the client
- *
- * @returns {@link TOOL_ARGUMENTS_VALID}, or one message naming every violated path
- *
- * @example
- * ```ts
- * validateToolArguments({ schema, args: { name: 'vm1' } });
- * // TOOL_ARGUMENTS_VALID
- * ```
+ Checks `tools/call` arguments against the tool's declared schema.
+ 
+ Acts purely as a gate: the parsed output is discarded and the caller keeps handing the
+ handler its original arguments, because valibot's object schemas strip unknown keys and
+ substituting the parsed value would quietly change what every handler receives.
+ 
+ @param schema - Valibot schema declared by this tool
+ 
+ @param args - Untrusted argument bag from the client
+ 
+ @returns {@link TOOL_ARGUMENTS_VALID}, or one message naming every violated path
+ 
+ @example
+ ```ts
+ validateToolArguments({ schema, args: { name: 'vm1' } });
+ // TOOL_ARGUMENTS_VALID
+ ```
  */
 export function validateToolArguments(
   {
@@ -275,7 +275,7 @@ export function validateToolArguments(
   },
 ): string | typeof TOOL_ARGUMENTS_VALID {
   /**
-   * Parse outcome; only its success flag and issues are consulted.
+   Parse outcome; only its success flag and issues are consulted.
    */
   const outcome = v.safeParse(
     schema,
@@ -287,20 +287,20 @@ export function validateToolArguments(
 }
 
 /**
- * Renders validation issues as one message a client can act on.
- *
- * Each issue is prefixed with the path it failed at, since a bare "expected string" gives
- * no way to tell which argument is wrong when several share a type.
- *
- * @param issues - Issues valibot reported for one parse
- *
- * @returns Semicolon-separated descriptions, path first
- *
- * @example
- * ```ts
- * describeIssues(outcome.issues);
- * // 'name: Invalid key: Expected "name" but received undefined'
- * ```
+ Renders validation issues as one message a client can act on.
+ 
+ Each issue is prefixed with the path it failed at, since a bare "expected string" gives
+ no way to tell which argument is wrong when several share a type.
+ 
+ @param issues - Issues valibot reported for one parse
+ 
+ @returns Semicolon-separated descriptions, path first
+ 
+ @example
+ ```ts
+ describeIssues(outcome.issues);
+ // 'name: Invalid key: Expected "name" but received undefined'
+ ```
  */
 function describeIssues(
   issues: readonly [
@@ -311,7 +311,7 @@ function describeIssues(
   return issues
     .map(function describeIssue(issue,): string {
       /**
-       * Dotted path to the failing value; absent when the whole argument bag failed.
+       Dotted path to the failing value; absent when the whole argument bag failed.
        */
       const path = v.getDotPath(issue,);
       if (path === null)

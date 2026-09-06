@@ -1,7 +1,7 @@
 /**
- * Golden render tests for the Catalan locale.
- *
- * @module
+ Golden render tests for the Catalan locale.
+ 
+ @module
  */
 
 import {

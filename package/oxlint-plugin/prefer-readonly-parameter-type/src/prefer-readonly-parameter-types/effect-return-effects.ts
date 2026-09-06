@@ -1,17 +1,17 @@
 /**
- * What one return statement records, and the policy that decides it.
- *
- * Returning parameter-reachable state is not itself an effect: the caller already holds the
- * parameter, so handing back a piece of it grants no capability the caller lacked. Recording
- * which parameters a result can carry is what lets a caller keep tracking that value, and that
- * tracking is the condition under which treating a return as benign stays sound. Until callers
- * substitute through this fact, no receiver opacity may be discharged on the strength of it.
- * `doc/decision/prefer-readonly-result-provenance.md` records the policy.
- *
- * Split out of `direct-effect-summary.ts` for its line budget, which the returned-callable
- * capture pushed over. Nothing about the behaviour moved with it.
- *
- * @module
+ What one return statement records, and the policy that decides it.
+ 
+ Returning parameter-reachable state is not itself an effect: the caller already holds the
+ parameter, so handing back a piece of it grants no capability the caller lacked. Recording
+ which parameters a result can carry is what lets a caller keep tracking that value, and that
+ tracking is the condition under which treating a return as benign stays sound. Until callers
+ substitute through this fact, no receiver opacity may be discharged on the strength of it.
+ `doc/decision/prefer-readonly-result-provenance.md` records the policy.
+ 
+ Split out of `direct-effect-summary.ts` for its line budget, which the returned-callable
+ capture pushed over. Nothing about the behaviour moved with it.
+ 
+ @module
  */
 
 import type { Node, } from 'typescript/unstable/ast';
@@ -34,26 +34,26 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Records everything one returned expression contributes.
- *
- * @param project - TypeScript project resolving origins.
- *
- * @param checker - Checker deciding whether a returned value can carry state.
- *
- * @param bindingOriginBySymbolId - Parameter and alias origins of this callable.
- *
- * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
- *
- * @param summary - Summary receiving returned origins, captures and deferred uses.
- *
- * @param returned - Expression handed back by one return statement.
- *
- * @mutates summary - Adds returned origins, captured opacity and a deferred result use.
- *
- * @example
- * ```ts
- * recordReturnEffects({ project, checker, bindingOriginBySymbolId, summary, returned });
- * ```
+ Records everything one returned expression contributes.
+ 
+ @param project - TypeScript project resolving origins.
+ 
+ @param checker - Checker deciding whether a returned value can carry state.
+ 
+ @param bindingOriginBySymbolId - Parameter and alias origins of this callable.
+ 
+ @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
+ 
+ @param summary - Summary receiving returned origins, captures and deferred uses.
+ 
+ @param returned - Expression handed back by one return statement.
+ 
+ @mutates summary - Adds returned origins, captured opacity and a deferred result use.
+ 
+ @example
+ ```ts
+ recordReturnEffects({ project, checker, bindingOriginBySymbolId, summary, returned });
+ ```
  */
 export function recordReturnEffects({
   project,
@@ -158,23 +158,23 @@ export function recordReturnEffects({
   }
 }
 /**
- * Tests whether one return statement belongs to the callable being summarised.
- *
- * A nested callable's body is scanned inline, so every return inside an active nested callable
- * reaches the same branch as the enclosing callable's own returns. Without this, a callable
- * returning nothing claimed a returned origin from a nested body, which is a positive capability
- * claim about a result that does not exist.
- *
- * @param node - Return statement found in the selected body nodes.
- *
- * @param body - Body of the callable being summarised.
- *
- * @returns whether no nested callable sits between the return and that body.
- *
- * @example
- * ```ts
- * returnBelongsToCallable({ node, body });
- * ```
+ Tests whether one return statement belongs to the callable being summarised.
+ 
+ A nested callable's body is scanned inline, so every return inside an active nested callable
+ reaches the same branch as the enclosing callable's own returns. Without this, a callable
+ returning nothing claimed a returned origin from a nested body, which is a positive capability
+ claim about a result that does not exist.
+ 
+ @param node - Return statement found in the selected body nodes.
+ 
+ @param body - Body of the callable being summarised.
+ 
+ @returns whether no nested callable sits between the return and that body.
+ 
+ @example
+ ```ts
+ returnBelongsToCallable({ node, body });
+ ```
  */
 export function returnBelongsToCallable({
   node,
@@ -184,7 +184,7 @@ export function returnBelongsToCallable({
   readonly body: Node;
 },): boolean {
   /**
-   * Cursor ascending from the return toward the body.
+   Cursor ascending from the return toward the body.
    */
   const cursor: { current: Node; } = { current: node, };
   while (cursor.current !== body) {

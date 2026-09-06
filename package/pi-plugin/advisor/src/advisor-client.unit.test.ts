@@ -1,7 +1,7 @@
 /**
- * Unit tests for Advisor provider client wiring.
- *
- * @module
+ Unit tests for Advisor provider client wiring.
+ 
+ @module
  */
 
 import {
@@ -53,11 +53,11 @@ const FOCUS_QUESTION = 'Which assumption is weakest?';
 const RETRY_PROVIDER_CALL_COUNT = 2;
 
 /**
- * Build Advisor model fixture with selected reasoning capabilities.
- *
- * @param overrides - fixture identity and reasoning overrides
- *
- * @returns complete Advisor model fixture
+ Build Advisor model fixture with selected reasoning capabilities.
+ 
+ @param overrides - fixture identity and reasoning overrides
+ 
+ @returns complete Advisor model fixture
  */
 function createFixtureModel(
   overrides: Readonly<{
@@ -235,11 +235,11 @@ const extensionContext: ExtensionContext = {
 //region Helpers
 
 /**
- * Build fake complete implementation capturing provider contexts.
- *
- * @param contexts - mutable capture sink for provider contexts
- *
- * @returns fake complete implementation
+ Build fake complete implementation capturing provider contexts.
+ 
+ @param contexts - mutable capture sink for provider contexts
+ 
+ @returns fake complete implementation
  */
 function createCapturingCompleteModel(
   {
@@ -261,13 +261,13 @@ function createCapturingCompleteModel(
 }
 
 /**
- * Build fake complete implementation returning responses in call order.
- *
- * @param contexts - mutable capture sink for provider contexts
- *
- * @param responses - provider responses returned in order
- *
- * @returns fake complete implementation
+ Build fake complete implementation returning responses in call order.
+ 
+ @param contexts - mutable capture sink for provider contexts
+ 
+ @param responses - provider responses returned in order
+ 
+ @returns fake complete implementation
  */
 function createSequencedCompleteModel(
   {
@@ -281,7 +281,7 @@ function createSequencedCompleteModel(
   },
 ): CompleteAdvisorModel {
   /**
-   * Queue of provider responses not yet returned.
+   Queue of provider responses not yet returned.
    */
   const remainingResponses = [...responses,];
   return async function completeModel(
@@ -299,7 +299,7 @@ function createSequencedCompleteModel(
       options.push(providerOptions,);
     }
     /**
-     * Response selected for this provider invocation.
+     Response selected for this provider invocation.
      */
     const response = remainingResponses.shift();
     if (response === undefined)
@@ -309,16 +309,16 @@ function createSequencedCompleteModel(
 }
 
 /**
- * Capture rejection from async test action.
- *
- * @param action - async operation expected to reject
- *
- * @returns caught rejection value
- *
- * @example
- * ```typescript
- * const error = await captureAsyncError(async function fail() { throw new Error('x'); });
- * ```
+ Capture rejection from async test action.
+ 
+ @param action - async operation expected to reject
+ 
+ @returns caught rejection value
+ 
+ @example
+ ```typescript
+ const error = await captureAsyncError(async function fail() { throw new Error('x'); });
+ ```
  */
 async function captureAsyncError(
   action: () => Promise<unknown>,

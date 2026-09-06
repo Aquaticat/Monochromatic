@@ -1,7 +1,7 @@
 /**
- * Tests for `weakMapOrThrow`.
- *
- * @module
+ Tests for `weakMapOrThrow`.
+ 
+ @module
  */
 
 import {

@@ -1,7 +1,7 @@
 /**
- * Deterministic TypeScript configuration for reached package implementation files.
- *
- * @module
+ Deterministic TypeScript configuration for reached package implementation files.
+ 
+ @module
  */
 
 import {
@@ -19,29 +19,29 @@ import {
 } from './effect-summary-cache-identity.ts';
 
 /**
- * Generated external configured-project schema.
+ Generated external configured-project schema.
  */
 const EXTERNAL_PROJECT_SCHEMA = 4;
 
 /**
- * Writes deterministic generated TypeScript config when absent.
- *
- * @param consumerProject - Caller project selecting dependency-local cache root.
- *
- * @param packageRoot - Exact package root accepted for source analysis.
- *
- * @param implementationPath - Shipped runtime entry.
- *
- * @param implementationDigest - Runtime and source-map content identity.
- *
- * @param implementationFiles - Reached runtime roots admitted to project.
- *
- * @returns generated config path.
- *
- * @example
- * ```ts
- * externalProjectConfigPath({ consumerProject, packageRoot, implementationPath, implementationDigest, implementationFiles });
- * ```
+ Writes deterministic generated TypeScript config when absent.
+ 
+ @param consumerProject - Caller project selecting dependency-local cache root.
+ 
+ @param packageRoot - Exact package root accepted for source analysis.
+ 
+ @param implementationPath - Shipped runtime entry.
+ 
+ @param implementationDigest - Runtime and source-map content identity.
+ 
+ @param implementationFiles - Reached runtime roots admitted to project.
+ 
+ @returns generated config path.
+ 
+ @example
+ ```ts
+ externalProjectConfigPath({ consumerProject, packageRoot, implementationPath, implementationDigest, implementationFiles });
+ ```
  */
 export function externalProjectConfigPath({
   consumerProject,
@@ -57,13 +57,13 @@ export function externalProjectConfigPath({
   readonly implementationFiles: readonly string[];
 }): string {
   /**
-   * Dependency-local persistent cache root.
+   Dependency-local persistent cache root.
    */
   const cacheRoot = effectCacheRoot({
     projectKey: consumerProject.configFileName,
   },);
   /**
-   * Exact generated project identity.
+   Exact generated project identity.
    */
   const projectIdentity = contentDigest(
     `${String(EXTERNAL_PROJECT_SCHEMA,)}\0${packageRoot}\0${implementationPath}\0${implementationDigest}\0${
@@ -71,7 +71,7 @@ export function externalProjectConfigPath({
     }`,
   );
   /**
-   * Generated project directory.
+   Generated project directory.
    */
   const directory = join(
     cacheRoot,
@@ -79,7 +79,7 @@ export function externalProjectConfigPath({
     projectIdentity,
   );
   /**
-   * Generated project configuration path.
+   Generated project configuration path.
    */
   const configPath = join(
     directory,
@@ -89,7 +89,7 @@ export function externalProjectConfigPath({
   if (existsSync(configPath,))
     return configPath;
   /**
-   * Deterministic JavaScript-capable TypeScript project config.
+   Deterministic JavaScript-capable TypeScript project config.
    */
   const configText = `${JSON.stringify(
     {

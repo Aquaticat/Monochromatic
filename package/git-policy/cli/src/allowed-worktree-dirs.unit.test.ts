@@ -34,15 +34,15 @@ type TempDirectory = {
 };
 
 /**
- * Creates disposable temporary directory for allowlist fixtures.
- *
- * @returns Temporary directory that removes itself when disposed.
- *
- * @example
- * ```ts
- * await using tempDirectory = await createTempDirectory();
- * console.log(tempDirectory.path);
- * ```
+ Creates disposable temporary directory for allowlist fixtures.
+ 
+ @returns Temporary directory that removes itself when disposed.
+ 
+ @example
+ ```ts
+ await using tempDirectory = await createTempDirectory();
+ console.log(tempDirectory.path);
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /** Absolute temporary directory path for one test case. */

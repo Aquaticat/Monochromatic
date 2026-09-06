@@ -20,12 +20,12 @@ import {
 import spawn, { SubprocessError, } from 'nano-spawn';
 
 /**
- * Built executable artifact under test.
+ Built executable artifact under test.
  */
 const CLI_PATH = fileURLToPath(new URL('../dist/final/node/cli.mjs', import.meta.url,),);
 
 /**
- * Fake GitHub CLI source implementing version, label, high-water, and create paths.
+ Fake GitHub CLI source implementing version, label, high-water, and create paths.
  */
 const FAKE_GH_SOURCE = `#!/usr/bin/env node
 import { readFileSync } from 'node:fs';
@@ -61,11 +61,11 @@ if (args[0] === '--version') {
 `;
 
 /**
- * Creates isolated fake `gh` and OCR input fixture.
- *
- * @param directory - Disposable test directory.
- *
- * @returns Input path and PATH value selecting fake executable.
+ Creates isolated fake `gh` and OCR input fixture.
+ 
+ @param directory - Disposable test directory.
+ 
+ @returns Input path and PATH value selecting fake executable.
  */
 async function createFixture({
   directory,
@@ -76,13 +76,13 @@ async function createFixture({
   readonly executablePath: string;
 }> {
   /**
-   * Fake GitHub CLI executable path.
+   Fake GitHub CLI executable path.
    */
   const ghPath = `${directory}/gh`;
   await writeFile(ghPath, FAKE_GH_SOURCE, 'utf8',);
   await chmod(ghPath, 0o700,);
   /**
-   * Mixed ordinary and security OCR result fixture.
+   Mixed ordinary and security OCR result fixture.
    */
   const inputPath = `${directory}/review.json`;
   await writeFile(inputPath, JSON.stringify({
@@ -105,7 +105,7 @@ async function createFixture({
     ],
   },), 'utf8',);
   /**
-   * Existing process PATH required after fake directory.
+   Existing process PATH required after fake directory.
    */
   const inheritedPath = process.env.PATH;
   if (inheritedPath === undefined) {
@@ -125,11 +125,11 @@ await describe({
       name: 'guides missing input and suggests latest OCR session JSONL',
       fn: async () => {
         /**
-         * Disposable integration directory containing isolated OCR home.
+         Disposable integration directory containing isolated OCR home.
          */
         await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-cli-',),);
         /**
-         * Synthetic persisted OCR session directory.
+         Synthetic persisted OCR session directory.
          */
         const sessionDirectory = join(
           directory.path,
@@ -140,11 +140,11 @@ await describe({
         );
         await mkdir(sessionDirectory, { recursive: true, },);
         /**
-         * Older persisted session path that must not be suggested.
+         Older persisted session path that must not be suggested.
          */
         const olderPath = join(sessionDirectory, 'older.jsonl',);
         /**
-         * Latest persisted session path expected in diagnostic.
+         Latest persisted session path expected in diagnostic.
          */
         const latestPath = join(sessionDirectory, 'latest.jsonl',);
         await Promise.all([
@@ -156,7 +156,7 @@ await describe({
           utimes(latestPath, new Date('2026-01-02T00:00:00Z'), new Date('2026-01-02T00:00:00Z'),),
         ],);
         /**
-         * Captured expected invocation-misuse process result.
+         Captured expected invocation-misuse process result.
          */
         let caught: unknown;
         try {
@@ -174,7 +174,7 @@ await describe({
         }
         expect(caught,).toBeInstanceOf(SubprocessError,);
         /**
-         * Missing-input diagnostic from expected status-two command.
+         Missing-input diagnostic from expected status-two command.
          */
         const {stderr} = (caught as SubprocessError);
         expect((caught as SubprocessError).exitCode,).toBe(2,);
@@ -187,7 +187,7 @@ await describe({
         expect(stderr,).toContain(latestPath,);
         expect(stderr,).not.toContain(olderPath,);
         /**
-         * Captured expected runtime failure for nonexistent named-file positional.
+         Captured expected runtime failure for nonexistent named-file positional.
          */
         let absentCaught: unknown;
         try {
@@ -208,7 +208,7 @@ await describe({
         }
         expect(absentCaught,).toBeInstanceOf(SubprocessError,);
         /**
-         * Existing-file remediation attached to runtime status one.
+         Existing-file remediation attached to runtime status one.
          */
         const absentResult = absentCaught as SubprocessError;
         expect(absentResult.exitCode,).toBe(1,);
@@ -223,15 +223,15 @@ await describe({
       name: 'emits one redacted preview JSON object',
       fn: async () => {
         /**
-         * Disposable integration directory.
+         Disposable integration directory.
          */
         await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-cli-',),);
         /**
-         * Fake process and OCR fixture paths.
+         Fake process and OCR fixture paths.
          */
         const fixture = await createFixture({ directory: directory.path, },);
         /**
-         * Built CLI preview result.
+         Built CLI preview result.
          */
         const result = await spawn(process.execPath, [
           CLI_PATH,
@@ -245,7 +245,7 @@ await describe({
           stdin: 'ignore',
         },);
         /**
-         * Exact preview object.
+         Exact preview object.
          */
         const preview: unknown = JSON.parse(result.stdout,);
         expect(result.stdout.trim().split('\n',)).toHaveLength(1,);
@@ -258,15 +258,15 @@ await describe({
       name: 'applies ordinary Issue and emits one final result object',
       fn: async () => {
         /**
-         * Disposable integration directory.
+         Disposable integration directory.
          */
         await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-cli-',),);
         /**
-         * Fake process and OCR fixture paths.
+         Fake process and OCR fixture paths.
          */
         const fixture = await createFixture({ directory: directory.path, },);
         /**
-         * Built CLI applied result.
+         Built CLI applied result.
          */
         const result = await spawn(process.execPath, [
           CLI_PATH,
@@ -282,7 +282,7 @@ await describe({
           stdin: 'ignore',
         },);
         /**
-         * Exact applied object.
+         Exact applied object.
          */
         const applied: unknown = JSON.parse(result.stdout,);
         expect(result.stdout.trim().split('\n',)).toHaveLength(1,);
@@ -297,15 +297,15 @@ await describe({
       name: 'emits one final JSON object for applied preflight failure',
       fn: async () => {
         /**
-         * Disposable integration directory.
+         Disposable integration directory.
          */
         await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-cli-',),);
         /**
-         * Fake process and OCR fixture paths.
+         Fake process and OCR fixture paths.
          */
         const fixture = await createFixture({ directory: directory.path, },);
         /**
-         * Captured expected nonzero built CLI result.
+         Captured expected nonzero built CLI result.
          */
         let caught: unknown;
         try {
@@ -330,7 +330,7 @@ await describe({
         }
         expect(caught,).toBeInstanceOf(SubprocessError,);
         /**
-         * Captured machine output from expected exit-one command.
+         Captured machine output from expected exit-one command.
          */
         const {stdout} = (caught as SubprocessError);
         expect(stdout.trim().split('\n',)).toHaveLength(1,);

@@ -1,19 +1,19 @@
 /**
- * Shared oxlint configuration for Monochromatic repositories (development entry).
- *
- * Spreads {@link base} and resolves `jsPlugins` to the in-repo plugin TypeScript
- * source (`/ts` subpath), so development linting tracks live plugin source with no
- * rebuild. The published default export is the prebuilt `index.node.ts`; this file
- * is the `./ts` source export.
- *
- * @example
- * ```typescript
- * // oxlint.config.ts (monorepo root)
- * import { defineConfig } from 'oxlint';
- * import base from '\@monochromatic-dev/config-oxlint';
- *
- * export default defineConfig({ ...base });
- * ```
+ Shared oxlint configuration for Monochromatic repositories (development entry).
+ 
+ Spreads {@link base} and resolves `jsPlugins` to the in-repo plugin TypeScript
+ source (`/ts` subpath), so development linting tracks live plugin source with no
+ rebuild. The published default export is the prebuilt `index.node.ts`; this file
+ is the `./ts` source export.
+ 
+ @example
+ ```typescript
+ // oxlint.config.ts (monorepo root)
+ import { defineConfig } from 'oxlint';
+ import base from '\@monochromatic-dev/config-oxlint';
+ 
+ export default defineConfig({ ...base });
+ ```
  */
 
 import {
@@ -24,11 +24,11 @@ import {
 import { base, } from './config-base.ts';
 
 /**
- * Shared oxlint configuration resolving plugins to TypeScript source.
- *
- * oxlint's Rust resolver does not understand pnpm workspace package names, so the
- * plugin `/ts` source subpaths resolve to absolute paths via `import.meta.resolve()`
- * at config evaluation time (Node.js handles workspace resolution).
+ Shared oxlint configuration resolving plugins to TypeScript source.
+ 
+ oxlint's Rust resolver does not understand pnpm workspace package names, so the
+ plugin `/ts` source subpaths resolve to absolute paths via `import.meta.resolve()`
+ at config evaluation time (Node.js handles workspace resolution).
  */
 const config: OxlintConfig = defineConfig({
   ...base,

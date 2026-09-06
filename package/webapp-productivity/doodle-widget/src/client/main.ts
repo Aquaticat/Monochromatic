@@ -1,8 +1,8 @@
 /**
- * Entry point for the doodle widget client-side application.
- *
- * Imports DOM references, configures tool mode switching,
- * and delegates handler setup to {@link import('./main-setup.ts')}.
+ Entry point for the doodle widget client-side application.
+ 
+ Imports DOM references, configures tool mode switching,
+ and delegates handler setup to {@link import('./main-setup.ts')}.
  */
 
 import {
@@ -38,15 +38,15 @@ import { showZoomToast, } from './zoom-toast.ts';
 import { refreshZoomTransform, } from './zoom.ts';
 
 /**
- * 2D rendering context for the drawing canvas
+ 2D rendering context for the drawing canvas
  */
 const ctx = requireCanvasContext(canvas,);
 
 /**
- * Current canvas size in CSS pixels.
- *
- * Stored as object properties so module-root state stays in a `const`
- * container (`no-module-root-let` would otherwise reject top-level `let`).
+ Current canvas size in CSS pixels.
+ 
+ Stored as object properties so module-root state stays in a `const`
+ container (`no-module-root-let` would otherwise reject top-level `let`).
  */
 const canvasSize: {
   width: number;
@@ -57,9 +57,9 @@ const canvasSize: {
 };
 
 /**
- * Reads the currently selected tool from the radio group.
- *
- * @returns active tool mode based on which radio is checked
+ Reads the currently selected tool from the radio group.
+ 
+ @returns active tool mode based on which radio is checked
  */
 function getToolMode(): ToolMode {
   if (drawRadio.checked)
@@ -72,9 +72,9 @@ function getToolMode(): ToolMode {
 }
 
 /**
- * Returns current canvas dimensions in CSS pixels.
- *
- * @returns width and height as `cw` and `ch`
+ Returns current canvas dimensions in CSS pixels.
+ 
+ @returns width and height as `cw` and `ch`
  */
 function getCanvasSize(): {
   cw: number;
@@ -87,11 +87,11 @@ function getCanvasSize(): {
 }
 
 /**
- * Resizes the canvas to match the page element and redraws all strokes.
- *
- * The page element maintains a fixed letter aspect ratio via CSS,
- * scaling to fit the viewport. The canvas always matches the page's
- * rendered dimensions so strokes align with the visual frame.
+ Resizes the canvas to match the page element and redraws all strokes.
+ 
+ The page element maintains a fixed letter aspect ratio via CSS,
+ scaling to fit the viewport. The canvas always matches the page's
+ rendered dimensions so strokes align with the visual frame.
  */
 function sizeCanvas(): void {
   canvasSize.width = page.clientWidth;
@@ -111,11 +111,11 @@ function sizeCanvas(): void {
 }
 
 /**
- * Updates canvas cursor based on the selected tool radio.
+ Updates canvas cursor based on the selected tool radio.
  */
 function syncCursorToTool(): void {
   /**
-   * Cached so each branch can compare without re-invoking the getter.
+   Cached so each branch can compare without re-invoking the getter.
    */
   const mode = getToolMode();
   if ((mode === 'draw') || (mode === 'erase')) {

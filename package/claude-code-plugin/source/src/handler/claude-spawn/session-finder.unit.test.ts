@@ -28,43 +28,43 @@ import {
 } from './session-finder.ts';
 
 /**
- * Older fixture modification time.
+ Older fixture modification time.
  */
 const OLDER_MTIME = new Date(1_000,);
 
 /**
- * Newer fixture modification time.
+ Newer fixture modification time.
  */
 const NEWER_MTIME = new Date(2_000,);
 
 /**
- * Temporary HOME handle that removes itself at the end of an `await using`
- * scope.
+ Temporary HOME handle that removes itself at the end of an `await using`
+ scope.
  */
 type TempHome = {
   /**
-   * Absolute path to temporary HOME root.
+   Absolute path to temporary HOME root.
    */
   readonly path: string;
   /**
-   * Removes temporary HOME root recursively.
+   Removes temporary HOME root recursively.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Creates an isolated HOME directory for spawn-claude session-finder tests.
- *
- * @returns disposable temporary HOME handle
- *
- * @example
- * ```ts
- * await using home = await makeTempHome();
- * ```
+ Creates an isolated HOME directory for spawn-claude session-finder tests.
+ 
+ @returns disposable temporary HOME handle
+ 
+ @example
+ ```ts
+ await using home = await makeTempHome();
+ ```
  */
 async function makeTempHome(): Promise<TempHome> {
   /**
-   * Temporary HOME root path.
+   Temporary HOME root path.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -86,36 +86,36 @@ async function makeTempHome(): Promise<TempHome> {
 }
 
 /**
- * Builds environment override for a temporary HOME.
- *
- * @param home - temporary HOME path
- *
- * @returns environment override used by path helpers
- *
- * @example
- * ```ts
- * testEnv('/tmp/home');
- * ```
+ Builds environment override for a temporary HOME.
+ 
+ @param home - temporary HOME path
+ 
+ @returns environment override used by path helpers
+ 
+ @example
+ ```ts
+ testEnv('/tmp/home');
+ ```
  */
 function testEnv(home: string,): Environment {
   return { HOME: home, };
 }
 
 /**
- * Writes mapping fixture directly to PID mapping directory.
- *
- * @param env - environment controlling mapping directory
- *
- * @param pid - process id filename to write
- *
- * @param sessionId - session id stored in mapping
- *
- * @param mtime - file modification time to apply
- *
- * @example
- * ```ts
- * writeMappingFixture({ env, pid: 123, sessionId: 's', mtime: NEWER_MTIME });
- * ```
+ Writes mapping fixture directly to PID mapping directory.
+ 
+ @param env - environment controlling mapping directory
+ 
+ @param pid - process id filename to write
+ 
+ @param sessionId - session id stored in mapping
+ 
+ @param mtime - file modification time to apply
+ 
+ @example
+ ```ts
+ writeMappingFixture({ env, pid: 123, sessionId: 's', mtime: NEWER_MTIME });
+ ```
  */
 function writeMappingFixture(
   {
@@ -135,7 +135,7 @@ function writeMappingFixture(
     { recursive: true, },
   );
   /**
-   * Mapping fixture path.
+   Mapping fixture path.
    */
   const path = join(
     byPidDir(env,),
@@ -167,7 +167,7 @@ await describe({
           fn: async function testNewestMapping(): Promise<void> {
             await using home = await makeTempHome();
             /**
-             * Environment override for this test.
+             Environment override for this test.
              */
             const env = testEnv(home.path,);
 
@@ -185,7 +185,7 @@ await describe({
             },);
 
             /**
-             * Mapping resolved by newest-file fallback.
+             Mapping resolved by newest-file fallback.
              */
             const mapping = await findByMostRecent(env,);
             if (mapping === SESSION_NOT_FOUND)
@@ -203,7 +203,7 @@ await describe({
           fn: async function testProcessTreeMapping(): Promise<void> {
             await using home = await makeTempHome();
             /**
-             * Environment override for this test.
+             Environment override for this test.
              */
             const env = testEnv(home.path,);
 
@@ -215,7 +215,7 @@ await describe({
             },);
 
             /**
-             * Mapping resolved by process-tree lookup.
+             Mapping resolved by process-tree lookup.
              */
             const mapping = await findByProcessTree(env,);
             if (mapping === SESSION_NOT_FOUND)
@@ -233,7 +233,7 @@ await describe({
           fn: async function testFindCallingSessionFallback(): Promise<void> {
             await using home = await makeTempHome();
             /**
-             * Environment override for this test.
+             Environment override for this test.
              */
             const env = testEnv(home.path,);
 
@@ -245,7 +245,7 @@ await describe({
             },);
 
             /**
-             * Mapping resolved by full tree-then-newest lookup.
+             Mapping resolved by full tree-then-newest lookup.
              */
             const mapping = await findCallingSession(env,);
             if (mapping === SESSION_NOT_FOUND)

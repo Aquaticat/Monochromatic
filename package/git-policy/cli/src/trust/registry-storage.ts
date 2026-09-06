@@ -1,7 +1,7 @@
 /**
- * Atomic trust record preparation, installation, and removal.
- *
- * @module
+ Atomic trust record preparation, installation, and removal.
+ 
+ @module
  */
 import type { ReadonlyDeep, } from 'type-fest';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -38,7 +38,7 @@ import type {
 } from './types.ts';
 
 /**
- * Snapshot location for MJS entry.
+ Snapshot location for MJS entry.
  */
 const MJS_SNAPSHOT_FILE = 'snapshots/config.mjs';
 
@@ -47,27 +47,27 @@ export { TrustStorageError, } from './registry-io.ts';
 export type { PreparedTrustRecord, } from './registry-prepared-record.ts';
 
 /**
- * Reads and validates private candidate metadata before installation.
- *
- * @param directory - private candidate directory
- *
- * @returns validated candidate record
+ Reads and validates private candidate metadata before installation.
+ 
+ @param directory - private candidate directory
+ 
+ @returns validated candidate record
  */
 async function validateCandidateDirectory(directory: string,): Promise<TrustRecord> {
   /**
-   * Exact candidate record bytes.
+   Exact candidate record bytes.
    */
   const bytes = await readPrivateFile(join(
     directory,
     'record.json',
   ),);
   /**
-   * Parsed unknown JSON kept behind runtime validation.
+   Parsed unknown JSON kept behind runtime validation.
    */
   const parsed: unknown = (function parseCandidateRecord() {
     try {
       /**
-       * JSON parser output held as unknown.
+       JSON parser output held as unknown.
        */
       const jsonValue: unknown = JSON.parse(new TextDecoder(
         'utf-8',
@@ -80,11 +80,11 @@ async function validateCandidateDirectory(directory: string,): Promise<TrustReco
     }
   })();
   /**
-   * Runtime-authoritative candidate record.
+   Runtime-authoritative candidate record.
    */
   const record = validateTrustRecord(parsed,);
   /**
-   * Exact executable bytes used for size agreement.
+   Exact executable bytes used for size agreement.
    */
   const executableBytes = await readPrivateFile(join(
     directory,
@@ -98,13 +98,13 @@ async function validateCandidateDirectory(directory: string,): Promise<TrustReco
 }
 
 /**
- * Builds schema-version-one record for one MJS candidate.
- *
- * @param candidate - exact source candidate
- *
- * @param recordedAt - RFC 3339 audit timestamp
- *
- * @returns immutable record metadata
+ Builds schema-version-one record for one MJS candidate.
+ 
+ @param candidate - exact source candidate
+ 
+ @param recordedAt - RFC 3339 audit timestamp
+ 
+ @returns immutable record metadata
  */
 function buildMjsRecord({
   candidate,
@@ -139,26 +139,26 @@ function buildMjsRecord({
 }
 
 /**
- * Prepares complete private MJS record without installing trust.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - exact live candidate
- *
- * @param recordedAt - RFC 3339 UTC audit timestamp
- *
- * @param recursiveChildren - persisted descendant authority
- *
- * @param authorizingRoots - explicit and inherited provenance
- *
- * @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
- *
- * @returns disposable candidate with explicit commit operation
- *
- * @example
- * ```ts
- * await using prepared = await prepareMjsRecord({ registryRoot, candidate, recordedAt });
- * ```
+ Prepares complete private MJS record without installing trust.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - exact live candidate
+ 
+ @param recordedAt - RFC 3339 UTC audit timestamp
+ 
+ @param recursiveChildren - persisted descendant authority
+ 
+ @param authorizingRoots - explicit and inherited provenance
+ 
+ @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
+ 
+ @returns disposable candidate with explicit commit operation
+ 
+ @example
+ ```ts
+ await using prepared = await prepareMjsRecord({ registryRoot, candidate, recordedAt });
+ ```
  */
 export async function prepareMjsRecord({
   registryRoot,
@@ -175,14 +175,14 @@ export async function prepareMjsRecord({
 }>,): Promise<PreparedTrustRecord> {
   await ensureRegistryRoot(registryRoot,);
   /**
-   * Permanent exact identity directory.
+   Permanent exact identity directory.
    */
   const finalDirectory = recordDirectory({
     registryRoot,
     identity: candidate.identity,
   },);
   /**
-   * Existing parent path containing writer lock and candidate sibling.
+   Existing parent path containing writer lock and candidate sibling.
    */
   const parentDirectory = dirname(finalDirectory,);
   await ensurePrivateRegistryDirectory({
@@ -191,7 +191,7 @@ export async function prepareMjsRecord({
   },);
 
   /**
-   * Exclusive sibling writer lock directory.
+   Exclusive sibling writer lock directory.
    */
   const lockDirectory = `${finalDirectory}.lock`;
   try {
@@ -207,7 +207,7 @@ export async function prepareMjsRecord({
     );
   }
   /**
-   * Private complete candidate sibling.
+   Private complete candidate sibling.
    */
   const temporaryDirectory = `${finalDirectory}.tmp-${randomUUID()}`;
   try {
@@ -238,7 +238,7 @@ export async function prepareMjsRecord({
   },);
 
   /**
-   * Exact persistent metadata.
+   Exact persistent metadata.
    */
   const record = buildMjsRecord({
     candidate,
@@ -269,7 +269,7 @@ export async function prepareMjsRecord({
   ),);
   await syncDirectory(temporaryDirectory,);
   /**
-   * Reopened and runtime-validated candidate metadata.
+   Reopened and runtime-validated candidate metadata.
    */
   const validatedRecord = await validateCandidateDirectory(temporaryDirectory,);
     return createPreparedTrustRecord({
@@ -287,7 +287,7 @@ export async function prepareMjsRecord({
   }
   catch (error: unknown) {
     /**
-     * Every pre-return private artifact cleanup result.
+     Every pre-return private artifact cleanup result.
      */
     const cleanupResults = await Promise.allSettled([
       rm(
@@ -306,7 +306,7 @@ export async function prepareMjsRecord({
       ),
     ],);
     /**
-     * Cleanup failures retained in preparation error.
+     Cleanup failures retained in preparation error.
      */
     const cleanupFailures = cleanupResults
       .filter(function isCleanupFailure(
@@ -316,13 +316,13 @@ export async function prepareMjsRecord({
       },)
       .map(
         /**
-         * Preserves one cleanup rejection reason.
-         *
-         * @param result - Rejected cleanup result.
-         *
-         * @returns diagnostic reason text.
-         *
-         * @mutates result - `caughtValueText` may invoke hooks on rejection reason.
+         Preserves one cleanup rejection reason.
+         
+         @param result - Rejected cleanup result.
+         
+         @returns diagnostic reason text.
+         
+         @mutates result - `caughtValueText` may invoke hooks on rejection reason.
          */
         function cleanupFailureReason(result,) {
           return caughtValueText(result.reason,);

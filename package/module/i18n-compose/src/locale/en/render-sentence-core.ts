@@ -1,7 +1,7 @@
 /**
- * English declarative, yes/no, and imperative sentence renderers.
- *
- * @module
+ English declarative, yes/no, and imperative sentence renderers.
+ 
+ @module
  */
 
 import {
@@ -23,19 +23,19 @@ import {
 } from './render-sentence-helpers.ts';
 
 /**
- * Renders a declarative sentence.
- *
- * @param sentence - declarative AST
- *
- * @param deps - per-locale dependencies
- *
- * @returns rendered surface with sentence-case fixup and terminator
- *
- * @example
- * ```ts
- * renderDeclarative({ sentence, deps, },);
- * // -> 'The cat sleeps.'
- * ```
+ Renders a declarative sentence.
+ 
+ @param sentence - declarative AST
+ 
+ @param deps - per-locale dependencies
+ 
+ @returns rendered surface with sentence-case fixup and terminator
+ 
+ @example
+ ```ts
+ renderDeclarative({ sentence, deps, },);
+ // -> 'The cat sleeps.'
+ ```
  */
 export function renderDeclarative<S extends string, V extends string, N extends string,>(
   {
@@ -47,7 +47,7 @@ export function renderDeclarative<S extends string, V extends string, N extends 
   }>,
 ): string {
   /**
-   * Locale dependencies captured for this render.
+   Locale dependencies captured for this render.
    */
   const {
     subjects,
@@ -57,31 +57,31 @@ export function renderDeclarative<S extends string, V extends string, N extends 
     renderAdverbials,
   } = deps;
   /**
-   * Sentence-level tense; defaults to present when omitted.
+   Sentence-level tense; defaults to present when omitted.
    */
   const tense = sentence.tense
     ?? 'present';
   /**
-   * Agreement metadata extracted from the subject reference.
+   Agreement metadata extracted from the subject reference.
    */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
   /**
-   * Subject surface used in the leading position.
+   Subject surface used in the leading position.
    */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
   /**
-   * Verb entry used for finite surface and complement attachment.
+   Verb entry used for finite surface and complement attachment.
    */
   const entry = verbs[sentence.predicate
     .verb];
   /**
-   * Finite verb surface for this subject + tense.
+   Finite verb surface for this subject + tense.
    */
   const finite = declarativeVerbSurface({
     entry,
@@ -89,18 +89,18 @@ export function renderDeclarative<S extends string, V extends string, N extends 
     agreement,
   },);
   /**
-   * Future tense wraps the base in `will`.
+   Future tense wraps the base in `will`.
    */
   const verb = tense === 'future' ? `will ${finite}` : finite;
   /**
-   * Rendered object slot.
+   Rendered object slot.
    */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
   /**
-   * Rendered infinitive complement.
+   Rendered infinitive complement.
    */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
@@ -108,12 +108,12 @@ export function renderDeclarative<S extends string, V extends string, N extends 
     form: complementFormForVerb({ entry, },),
   },);
   /**
-   * Rendered adverbial cluster.
+   Rendered adverbial cluster.
    */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
   /**
-   * Sentence body before terminator.
+   Sentence body before terminator.
    */
   const body = joinTokens([
     subj,
@@ -127,19 +127,19 @@ export function renderDeclarative<S extends string, V extends string, N extends 
 }
 
 /**
- * Renders a yes/no question with do-support.
- *
- * @param sentence - yes/no AST
- *
- * @param deps - per-locale dependencies
- *
- * @returns rendered surface with auxiliary, sentence-case fixup, and terminator
- *
- * @example
- * ```ts
- * renderYesNo({ sentence, deps, },);
- * // -> 'Does the cat sleep?'
- * ```
+ Renders a yes/no question with do-support.
+ 
+ @param sentence - yes/no AST
+ 
+ @param deps - per-locale dependencies
+ 
+ @returns rendered surface with auxiliary, sentence-case fixup, and terminator
+ 
+ @example
+ ```ts
+ renderYesNo({ sentence, deps, },);
+ // -> 'Does the cat sleep?'
+ ```
  */
 export function renderYesNo<S extends string, V extends string, N extends string,>(
   {
@@ -151,7 +151,7 @@ export function renderYesNo<S extends string, V extends string, N extends string
   }>,
 ): string {
   /**
-   * Locale dependencies captured for this render.
+   Locale dependencies captured for this render.
    */
   const {
     subjects,
@@ -161,19 +161,19 @@ export function renderYesNo<S extends string, V extends string, N extends string
     renderAdverbials,
   } = deps;
   /**
-   * Sentence-level tense; defaults to present when omitted.
+   Sentence-level tense; defaults to present when omitted.
    */
   const tense = sentence.tense
     ?? 'present';
   /**
-   * Agreement metadata.
+   Agreement metadata.
    */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
   /**
-   * Question verb parts chosen from the entry's auxiliary strategy.
+   Question verb parts chosen from the entry's auxiliary strategy.
    */
   const questionVerb = questionVerbParts({
     entry: verbs[sentence.predicate
@@ -182,21 +182,21 @@ export function renderYesNo<S extends string, V extends string, N extends string
     agreement,
   },);
   /**
-   * Subject surface placed after the auxiliary.
+   Subject surface placed after the auxiliary.
    */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
   /**
-   * Rendered object slot.
+   Rendered object slot.
    */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
   /**
-   * Rendered infinitive or bare complement.
+   Rendered infinitive or bare complement.
    */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
@@ -204,12 +204,12 @@ export function renderYesNo<S extends string, V extends string, N extends string
     form: questionVerb.complementForm,
   },);
   /**
-   * Rendered adverbial cluster.
+   Rendered adverbial cluster.
    */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
   /**
-   * Sentence body before sentence-case fixup.
+   Sentence body before sentence-case fixup.
    */
   const body = joinTokens([
     questionVerb.auxiliary,
@@ -224,19 +224,19 @@ export function renderYesNo<S extends string, V extends string, N extends string
 }
 
 /**
- * Renders an imperative sentence with sentence-case fixup.
- *
- * @param sentence - imperative AST
- *
- * @param deps - per-locale dependencies
- *
- * @returns rendered surface
- *
- * @example
- * ```ts
- * renderImperative({ sentence, deps, },);
- * // -> 'Open the door.'
- * ```
+ Renders an imperative sentence with sentence-case fixup.
+ 
+ @param sentence - imperative AST
+ 
+ @param deps - per-locale dependencies
+ 
+ @returns rendered surface
+ 
+ @example
+ ```ts
+ renderImperative({ sentence, deps, },);
+ // -> 'Open the door.'
+ ```
  */
 export function renderImperative<S extends string, V extends string, N extends string,>(
   {
@@ -248,7 +248,7 @@ export function renderImperative<S extends string, V extends string, N extends s
   }>,
 ): string {
   /**
-   * Locale dependencies captured for this render.
+   Locale dependencies captured for this render.
    */
   const {
     verbs,
@@ -257,25 +257,25 @@ export function renderImperative<S extends string, V extends string, N extends s
     renderAdverbials,
   } = deps;
   /**
-   * Imperative surface, defaulting to `base` when no dedicated form is supplied.
+   Imperative surface, defaulting to `base` when no dedicated form is supplied.
    */
   const entry = verbs[sentence.predicate
     .verb];
   /**
-   * Verb surface used in the imperative head slot.
+   Verb surface used in the imperative head slot.
    */
   const verb = entry.imperative
     ?? entry
     .base;
   /**
-   * Rendered object slot.
+   Rendered object slot.
    */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
   /**
-   * Rendered infinitive or bare complement.
+   Rendered infinitive or bare complement.
    */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
@@ -283,12 +283,12 @@ export function renderImperative<S extends string, V extends string, N extends s
     form: complementFormForVerb({ entry, },),
   },);
   /**
-   * Rendered adverbial cluster.
+   Rendered adverbial cluster.
    */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
   /**
-   * Sentence body before sentence-case fixup.
+   Sentence body before sentence-case fixup.
    */
   const body = joinTokens([
     verb,

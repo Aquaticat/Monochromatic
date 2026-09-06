@@ -1,7 +1,7 @@
 /**
- * Pi-style model scope pattern resolution.
- *
- * @module
+ Pi-style model scope pattern resolution.
+ 
+ @module
  */
 
 import zeptomatch from 'zeptomatch';
@@ -20,18 +20,18 @@ import type {
 //region Public API
 
 /**
- * Resolve pi-style model scope patterns against available models.
- *
- * @param patterns - pi model scope patterns
- *
- * @param availableModels - models with configured auth
- *
- * @returns deduplicated scoped models in pattern order
- *
- * @example
- * ```typescript
- * resolveModelPatterns({ patterns: ['anthropic/*'], availableModels });
- * ```
+ Resolve pi-style model scope patterns against available models.
+ 
+ @param patterns - pi model scope patterns
+ 
+ @param availableModels - models with configured auth
+ 
+ @returns deduplicated scoped models in pattern order
+ 
+ @example
+ ```typescript
+ resolveModelPatterns({ patterns: ['anthropic/*'], availableModels });
+ ```
  */
 export function resolveModelPatterns<TModel extends ModelIdentity,>(
   {
@@ -43,12 +43,12 @@ export function resolveModelPatterns<TModel extends ModelIdentity,>(
   },
 ): ScopedModel<TModel>[] {
   /**
-   * Accumulated unique matches across patterns.
+   Accumulated unique matches across patterns.
    */
   const accumulator: ScopedModel<TModel>[] = [];
   for (const pattern of patterns) {
     /**
-     * Models matched by current pattern.
+     Models matched by current pattern.
      */
     const matches = patternHasGlob(pattern,)
       ? resolveGlobPattern({
@@ -60,7 +60,7 @@ export function resolveModelPatterns<TModel extends ModelIdentity,>(
         availableModels,
       },);
     /**
-     * Updated accumulator with new unique matches appended.
+     Updated accumulator with new unique matches appended.
      */
     const next = appendUniqueMatches({
       accumulator,
@@ -77,22 +77,22 @@ export function resolveModelPatterns<TModel extends ModelIdentity,>(
 //region Pattern resolution
 
 /**
- * Match model glob patterns with pi's case-insensitive scope semantics.
- *
- * Zeptomatch has no `nocase` option, so both sides are normalized to
- * lowercase before matching. The scoped model surface is intentionally
- * case-insensitive for provider/model slug matching.
- *
- * @param pattern - pi model scope glob pattern
- *
- * @param candidate - canonical or bare model id candidate
- *
- * @returns whether candidate matches pattern ignoring case
- *
- * @example
- * ```typescript
- * modelGlobMatches({ pattern: 'OpenAI/*', candidate: 'openai/gpt-5' });
- * ```
+ Match model glob patterns with pi's case-insensitive scope semantics.
+ 
+ Zeptomatch has no `nocase` option, so both sides are normalized to
+ lowercase before matching. The scoped model surface is intentionally
+ case-insensitive for provider/model slug matching.
+ 
+ @param pattern - pi model scope glob pattern
+ 
+ @param candidate - canonical or bare model id candidate
+ 
+ @returns whether candidate matches pattern ignoring case
+ 
+ @example
+ ```typescript
+ modelGlobMatches({ pattern: 'OpenAI/*', candidate: 'openai/gpt-5' });
+ ```
  */
 function modelGlobMatches(
   {
@@ -110,13 +110,13 @@ function modelGlobMatches(
 }
 
 /**
- * Resolve a glob model pattern.
- *
- * @param pattern - pi glob pattern
- *
- * @param availableModels - models with configured auth
- *
- * @returns matching scoped models
+ Resolve a glob model pattern.
+ 
+ @param pattern - pi glob pattern
+ 
+ @param availableModels - models with configured auth
+ 
+ @returns matching scoped models
  */
 function resolveGlobPattern<TModel extends ModelIdentity,>(
   {
@@ -128,13 +128,13 @@ function resolveGlobPattern<TModel extends ModelIdentity,>(
   },
 ): ScopedModel<TModel>[] {
   /**
-   * Pattern split into glob body and optional thinking suffix.
+   Pattern split into glob body and optional thinking suffix.
    */
   const parsed = splitThinkingSuffix(pattern,);
   return availableModels
     .filter(function matchesModel(model,) {
       /**
-       * Canonical model reference.
+       Canonical model reference.
        */
       const fullId = canonicalSlug(model,);
       return modelGlobMatches({
@@ -158,13 +158,13 @@ function resolveGlobPattern<TModel extends ModelIdentity,>(
 }
 
 /**
- * Resolve a non-glob model pattern.
- *
- * @param pattern - pi literal or fuzzy pattern
- *
- * @param availableModels - models with configured auth
- *
- * @returns matching scoped model when found
+ Resolve a non-glob model pattern.
+ 
+ @param pattern - pi literal or fuzzy pattern
+ 
+ @param availableModels - models with configured auth
+ 
+ @returns matching scoped model when found
  */
 function resolveLiteralPattern<TModel extends ModelIdentity,>(
   {
@@ -176,7 +176,7 @@ function resolveLiteralPattern<TModel extends ModelIdentity,>(
   },
 ): ScopedModel<TModel>[] {
   /**
-   * Parsed model pattern.
+   Parsed model pattern.
    */
   const resolution = parseModelPattern({
     pattern,
@@ -195,17 +195,17 @@ function resolveLiteralPattern<TModel extends ModelIdentity,>(
 }
 
 /**
- * Append matches that have not appeared earlier in scope order.
- *
- * `@earendil-works/pi-ai` implements `modelsAreEqual` as provider and id equality.
- * Verified in `/tmp/pi-mono-pi-ai-audit/packages/ai/src/models.ts`, lines 86 to 93,
- * for pi-ai source cloned from `earendil-works/pi-mono` on 2026-05-27.
- *
- * @param accumulator - scoped model accumulator
- *
- * @param matches - matches from current pattern
- *
- * @returns same accumulator with new unique matches appended
+ Append matches that have not appeared earlier in scope order.
+ 
+ `@earendil-works/pi-ai` implements `modelsAreEqual` as provider and id equality.
+ Verified in `/tmp/pi-mono-pi-ai-audit/packages/ai/src/models.ts`, lines 86 to 93,
+ for pi-ai source cloned from `earendil-works/pi-mono` on 2026-05-27.
+ 
+ @param accumulator - scoped model accumulator
+ 
+ @param matches - matches from current pattern
+ 
+ @returns same accumulator with new unique matches appended
  */
 function appendUniqueMatches<TModel extends ModelIdentity,>(
   {
@@ -217,7 +217,7 @@ function appendUniqueMatches<TModel extends ModelIdentity,>(
   },
 ): ScopedModel<TModel>[] {
   /**
-   * Fresh accumulator seeded from input to avoid mutating caller's array.
+   Fresh accumulator seeded from input to avoid mutating caller's array.
    */
   const result: ScopedModel<TModel>[] = [...accumulator,];
   for (const match of matches) {
@@ -234,13 +234,13 @@ function appendUniqueMatches<TModel extends ModelIdentity,>(
 }
 
 /**
- * Compare models using pi-ai's documented equality semantics.
- *
- * @param left - first model identity
- *
- * @param right - second model identity
- *
- * @returns whether provider and id match exactly
+ Compare models using pi-ai's documented equality semantics.
+ 
+ @param left - first model identity
+ 
+ @param right - second model identity
+ 
+ @returns whether provider and id match exactly
  */
 function modelsHaveSameCanonicalIdentity<TModel extends ModelIdentity,>(
   {

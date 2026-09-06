@@ -55,9 +55,9 @@ type ManagementFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable real Git management fixture.
- *
- * @returns disposable fixture
+ Creates disposable real Git management fixture.
+ 
+ @returns disposable fixture
  */
 async function createFixture(): Promise<ManagementFixture> {
   /** Disposable fixture root. */
@@ -85,13 +85,13 @@ async function createFixture(): Promise<ManagementFixture> {
 }
 
 /**
- * Runs internal management process with injected complete registry root.
- *
- * @param fixture - disposable fixture
- *
- * @param args - management arguments
- *
- * @returns captured result
+ Runs internal management process with injected complete registry root.
+ 
+ @param fixture - disposable fixture
+ 
+ @param args - management arguments
+ 
+ @returns captured result
  */
 async function runManagement({
   fixture,
@@ -109,13 +109,13 @@ async function runManagement({
 }
 
 /**
- * Captures expected management subprocess failure.
- *
- * @param fixture - disposable fixture
- *
- * @param args - management arguments
- *
- * @returns subprocess error
+ Captures expected management subprocess failure.
+ 
+ @param fixture - disposable fixture
+ 
+ @param args - management arguments
+ 
+ @returns subprocess error
  */
 async function runManagementFailure({
   fixture,
@@ -136,11 +136,11 @@ async function runManagementFailure({
 }
 
 /**
- * Parses one compact management JSON object captured after nano-spawn strips its terminal LF.
- *
- * @param output - complete captured management stdout
- *
- * @returns parsed object with exact single-line framing proven
+ Parses one compact management JSON object captured after nano-spawn strips its terminal LF.
+ 
+ @param output - complete captured management stdout
+ 
+ @returns parsed object with exact single-line framing proven
  */
 function parseManagementOutput(output: string,): Record<string, unknown> {
   expect(output.includes('\n',),).toBe(false,);

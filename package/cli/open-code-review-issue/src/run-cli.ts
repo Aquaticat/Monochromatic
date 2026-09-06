@@ -1,7 +1,7 @@
 /**
- * Complete CLI orchestration without process exit side effects.
- *
- * @module
+ Complete CLI orchestration without process exit side effects.
+ 
+ @module
  */
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -41,22 +41,22 @@ import { loadCliInput, } from './input-source.ts';
 import { selectRepository, } from './repository.ts';
 
 /**
- * Successful or clean-cancellation exit status.
+ Successful or clean-cancellation exit status.
  */
 const EXIT_SUCCESS = 0;
 
 /**
- * Handled runtime or publication failure status.
+ Handled runtime or publication failure status.
  */
 const EXIT_RUNTIME_FAILURE = 1;
 
 /**
- * Tagged root logger; messages never include finding content or paths.
+ Tagged root logger; messages never include finding content or paths.
  */
 const l = tagged({ tag: 'run-cli', },);
 
 /**
- * Standard streams with optional TTY capability evidence.
+ Standard streams with optional TTY capability evidence.
  */
 export type CliStreams = {
   readonly stdin: NodeJS.ReadableStream & { readonly isTTY?: boolean; };
@@ -65,13 +65,13 @@ export type CliStreams = {
 };
 
 /**
- * Reports handled runtime input or environment failure.
+ Reports handled runtime input or environment failure.
  */
 export class CliRuntimeError extends Error {
   /**
-   * Creates runtime failure.
-   *
-   * @param message - User-facing runtime evidence and remediation.
+   Creates runtime failure.
+   
+   @param message - User-facing runtime evidence and remediation.
    */
   public constructor(message: string,) {
     super(message,);
@@ -80,11 +80,11 @@ export class CliRuntimeError extends Error {
 }
 
 /**
- * Projects process streams to Inquirer input/output names.
- *
- * @param streams - Process standard streams.
- *
- * @returns Explicit prompt streams.
+ Projects process streams to Inquirer input/output names.
+ 
+ @param streams - Process standard streams.
+ 
+ @returns Explicit prompt streams.
  */
 function promptStreams(streams: CliStreams,): PromptStreams {
   return {
@@ -94,11 +94,11 @@ function promptStreams(streams: CliStreams,): PromptStreams {
 }
 
 /**
- * Requires visible and responsive streams for every interactive flow.
- *
- * @param streams - Process standard streams.
- *
- * @throws {@link CliRuntimeError} when stdin or stdout is not a TTY.
+ Requires visible and responsive streams for every interactive flow.
+ 
+ @param streams - Process standard streams.
+ 
+ @throws {@link CliRuntimeError} when stdin or stdout is not a TTY.
  */
 function assertInteractiveTty(streams: CliStreams,): void {
   if ((streams.stdin
@@ -113,15 +113,15 @@ function assertInteractiveTty(streams: CliStreams,): void {
 }
 
 /**
- * Builds destination-aware plan after GitHub preflight.
- *
- * @param input - Atomically normalized OCR input.
- *
- * @param repository - Canonical destination identity.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @returns Complete internal publication plan.
+ Builds destination-aware plan after GitHub preflight.
+ 
+ @param input - Atomically normalized OCR input.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @returns Complete internal publication plan.
  */
 async function preparePlan({
   input,
@@ -133,7 +133,7 @@ async function preparePlan({
   readonly api: GitHubApiClient;
 },): Promise<PublicationPlan> {
   /**
-   * Existing-label and verified-source destination facts.
+   Existing-label and verified-source destination facts.
    */
   const preflight = await preflightPublication({
     repository,
@@ -149,9 +149,9 @@ async function preparePlan({
 }
 
 /**
- * Executes interactive selection, disclosure, and final confirmation.
- *
- * @returns Clean cancellation, success, or publication failure status.
+ Executes interactive selection, disclosure, and final confirmation.
+ 
+ @returns Clean cancellation, success, or publication failure status.
  */
 async function runInteractive({
   plan,
@@ -165,7 +165,7 @@ async function runInteractive({
   readonly streams: CliStreams;
 },): Promise<number> {
   /**
-   * Selected ordinary and individually confirmed security Issues.
+   Selected ordinary and individually confirmed security Issues.
    */
   const selection = await selectInteractiveIssues({
     plan,
@@ -185,7 +185,7 @@ async function runInteractive({
       .length,
   },);
   /**
-   * Explicit final batch mutation decision with no default.
+   Explicit final batch mutation decision with no default.
    */
   const confirmed = await promptForExplicitDecision({
     message: 'Create these public GitHub Issues? Type yes or no',
@@ -206,9 +206,9 @@ async function runInteractive({
 }
 
 /**
- * Executes exact preview or explicitly authorized non-interactive publication.
- *
- * @returns Preview, success, or handled publication failure status.
+ Executes exact preview or explicitly authorized non-interactive publication.
+ 
+ @returns Preview, success, or handled publication failure status.
  */
 async function runNonInteractive({
   command,
@@ -232,7 +232,7 @@ async function runNonInteractive({
   }
   try {
     /**
-     * Issues and redacted security positions authorized by invocation.
+     Issues and redacted security positions authorized by invocation.
      */
     const selection = selectApplyPlan({
       plan,
@@ -270,9 +270,9 @@ async function runNonInteractive({
 }
 
 /**
- * Executes input, GitHub preflight, planning, and selected mode for known repository.
- *
- * @returns Settled mode status.
+ Executes input, GitHub preflight, planning, and selected mode for known repository.
+ 
+ @returns Settled mode status.
  */
 async function executeRepositoryRun({
   command,
@@ -286,7 +286,7 @@ async function executeRepositoryRun({
   readonly repository: GitHubRepository;
 },): Promise<number> {
   /**
-   * Validated OCR input loaded before GitHub operations.
+   Validated OCR input loaded before GitHub operations.
    */
   const input = await loadCliInput({ input: command.input, });
   if (input.findings
@@ -296,11 +296,11 @@ async function executeRepositoryRun({
   }
   await checkGitHubCliVersion({ cwd, });
   /**
-   * Authenticated GitHub API process client.
+   Authenticated GitHub API process client.
    */
   const api = createGitHubApiClient({ cwd, });
   /**
-   * Destination-aware complete publication plan.
+   Destination-aware complete publication plan.
    */
   const plan = await preparePlan({
     input,
@@ -326,14 +326,14 @@ async function executeRepositoryRun({
 }
 
 /**
- * Executes one validated run command through input, preflight, and selected mode.
- *
- * @returns Settled mode status.
- *
- * @example
- * ```ts
- * await executeRun({ command, cwd: process.cwd(), streams });
- * ```
+ Executes one validated run command through input, preflight, and selected mode.
+ 
+ @returns Settled mode status.
+ 
+ @example
+ ```ts
+ await executeRun({ command, cwd: process.cwd(), streams });
+ ```
  */
 export async function executeRun({
   command,
@@ -348,7 +348,7 @@ export async function executeRun({
     assertInteractiveTty(streams,);
   }
   /**
-   * Canonical explicit or inferred destination.
+   Canonical explicit or inferred destination.
    */
   const repository = await selectRepository({
     ...(command.repositoryUrl === undefined ? {} : { explicitUrl: command.repositoryUrl, }),
@@ -369,7 +369,7 @@ export async function executeRun({
       throw error;
     }
     /**
-     * Safe pre-publication applied-run failure message.
+     Safe pre-publication applied-run failure message.
      */
     const message = caughtValueText(error,);
     l.error(message,);

@@ -10,11 +10,11 @@ import type { Diagnostic, } from '../types.ts';
 import { commandsShowOutput, } from './md014-commands-show-output.ts';
 
 /**
- * Run only MD014 over Markdown source.
- *
- * @param source - Markdown source
- *
- * @returns diagnostics from the rule
+ Run only MD014 over Markdown source.
+ 
+ @param source - Markdown source
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string,): readonly Diagnostic[] {
   return runRules({
@@ -25,7 +25,7 @@ function lint(source: string,): readonly Diagnostic[] {
 }
 
 /**
- * Fenced shell block of prompts with no shown output.
+ Fenced shell block of prompts with no shown output.
  */
 const PROMPTS_ONLY = [
   '```sh',
@@ -60,7 +60,7 @@ await describe({
       name: 'fix strips the prompts and is idempotent',
       fn: async function stripsPrompts() {
         /**
-         * Source after stripping the prompts.
+         Source after stripping the prompts.
          */
         const fixed = applyFixes({
           source: PROMPTS_ONLY,

@@ -1,9 +1,9 @@
 /**
- * Distro-to-package-manager mapping and prerequisite installation commands.
- *
- * Maps container image names to their package manager and provides
- * the commands needed to prepare a container for test execution:
- * prerequisite packages, user creation, and sudo setup.
+ Distro-to-package-manager mapping and prerequisite installation commands.
+ 
+ Maps container image names to their package manager and provides
+ the commands needed to prepare a container for test execution:
+ prerequisite packages, user creation, and sudo setup.
  */
 
 import type {
@@ -14,11 +14,11 @@ import type {
 //region Distro-to-package-manager mapping
 
 /**
- * Known distro prefixes and their package managers.
- * Matches the beginning of the image name (before `:` tag or end of string).
- *
- * Order matters: more specific entries should come first
- * if there were overlapping prefixes (there are not currently).
+ Known distro prefixes and their package managers.
+ Matches the beginning of the image name (before `:` tag or end of string).
+ 
+ Order matters: more specific entries should come first
+ if there were overlapping prefixes (there are not currently).
  */
 const DISTRO_MANAGER_MAP: Record<string, PackageManager> = {
   ubuntu: 'apt',
@@ -33,23 +33,23 @@ const DISTRO_MANAGER_MAP: Record<string, PackageManager> = {
 };
 
 /**
- * Resolves a distro name to its package manager.
- *
- * @param distro - Distro name from the OS specification (e.g. `'ubuntu'`, `'fedora:39'`)
- *
- * @returns package manager for the distro
- *
- * @throws Error when the distro is not recognized
- *
- * @example
- * ```ts
- * detectPackageManager('ubuntu'); // 'apt'
- * detectPackageManager('fedora:39'); // 'dnf'
- * ```
+ Resolves a distro name to its package manager.
+ 
+ @param distro - Distro name from the OS specification (e.g. `'ubuntu'`, `'fedora:39'`)
+ 
+ @returns package manager for the distro
+ 
+ @throws Error when the distro is not recognized
+ 
+ @example
+ ```ts
+ detectPackageManager('ubuntu'); // 'apt'
+ detectPackageManager('fedora:39'); // 'dnf'
+ ```
  */
 export function detectPackageManager(distro: string,): PackageManager {
   /**
-   * Strip tag suffix (e.g. `fedora:39` becomes `fedora`) for lookup.
+   Strip tag suffix (e.g. `fedora:39` becomes `fedora`) for lookup.
    */
   const baseName = distro.includes(':',)
     ? distro.slice(
@@ -75,8 +75,8 @@ export function detectPackageManager(distro: string,): PackageManager {
 //region Prerequisite installation
 
 /**
- * Package install commands for prerequisites, keyed by package manager.
- * Installs: curl (for runtime installers), unzip (for bun), sudo (for non-root users).
+ Package install commands for prerequisites, keyed by package manager.
+ Installs: curl (for runtime installers), unzip (for bun), sudo (for non-root users).
  */
 const PREREQUISITE_COMMANDS: Record<PackageManager, {
   readonly base: string;
@@ -101,22 +101,22 @@ const PREREQUISITE_COMMANDS: Record<PackageManager, {
 };
 
 /**
- * Returns the shell command to install prerequisites inside a container.
- *
- * @param manager - Package manager for the distro
- *
- * @param user - User context (non-root requires sudo)
- *
- * @returns shell command string
- *
- * @example
- * ```ts
- * prerequisiteCommand({
- *   manager: 'apt',
- *   user: 'root',
- * });
- * // 'apt-get update && apt-get install -y curl unzip'
- * ```
+ Returns the shell command to install prerequisites inside a container.
+ 
+ @param manager - Package manager for the distro
+ 
+ @param user - User context (non-root requires sudo)
+ 
+ @returns shell command string
+ 
+ @example
+ ```ts
+ prerequisiteCommand({
+   manager: 'apt',
+   user: 'root',
+ });
+ // 'apt-get update && apt-get install -y curl unzip'
+ ```
  */
 export function prerequisiteCommand({
   manager,
@@ -126,7 +126,7 @@ export function prerequisiteCommand({
   readonly user: UserContext;
 },): string {
   /**
-   * Captured to keep the ternary readable and avoid two lookups.
+   Captured to keep the ternary readable and avoid two lookups.
    */
   const commands = PREREQUISITE_COMMANDS[manager];
   return user === 'root' ? commands.base : commands.withSudo;
@@ -137,21 +137,21 @@ export function prerequisiteCommand({
 //region User creation
 
 /**
- * User creation command for non-root context.
- * Creates a user named `testuser` (uid 1000) with a home directory
- * and passwordless sudo access.
- *
- * Uses `adduser` on Alpine (BusyBox), `useradd` everywhere else.
- *
- * @param manager - Package manager, used to determine the adduser variant
- *
- * @returns shell command string that creates the user, or empty string for root
- *
- * @example
- * ```ts
- * userCreationCommand({ manager: 'apt', user: 'user' });
- * // 'useradd -m testuser && echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers'
- * ```
+ User creation command for non-root context.
+ Creates a user named `testuser` (uid 1000) with a home directory
+ and passwordless sudo access.
+ 
+ Uses `adduser` on Alpine (BusyBox), `useradd` everywhere else.
+ 
+ @param manager - Package manager, used to determine the adduser variant
+ 
+ @returns shell command string that creates the user, or empty string for root
+ 
+ @example
+ ```ts
+ userCreationCommand({ manager: 'apt', user: 'user' });
+ // 'useradd -m testuser && echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers'
+ ```
  */
 export function userCreationCommand({
   manager,
@@ -164,8 +164,8 @@ export function userCreationCommand({
     return '';
 
   /**
-   * Alpine uses BusyBox `adduser` which requires `-D` for non-interactive mode.
-   * All other distros use `useradd -m` from shadow-utils.
+   Alpine uses BusyBox `adduser` which requires `-D` for non-interactive mode.
+   All other distros use `useradd -m` from shadow-utils.
    */
   const createUser = manager === 'apk'
     ? 'adduser -D testuser'

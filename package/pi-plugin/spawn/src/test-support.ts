@@ -1,7 +1,7 @@
 /**
- * Unit-test helpers for spawn-pi.
- *
- * @module
+ Unit-test helpers for spawn-pi.
+ 
+ @module
  */
 
 import {
@@ -14,36 +14,36 @@ import { tmpdir, } from 'node:os';
 //region Disposable helpers
 
 /**
- * Sentinel value requesting environment variable removal.
- *
- * @example
- * ```typescript
- * envVar({ name: 'X', value: CLEAR_ENV });
- * ```
+ Sentinel value requesting environment variable removal.
+ 
+ @example
+ ```typescript
+ envVar({ name: 'X', value: CLEAR_ENV });
+ ```
  */
 const CLEAR_ENV: unique symbol = Symbol('spawn pi test environment variable cleared',);
 
 /**
- * Async-disposable temporary directory handle.
+ Async-disposable temporary directory handle.
  */
 type TempDirHandle = AsyncDisposable & {
   /**
-   * Temporary directory path.
+   Temporary directory path.
    */
   readonly path: string;
 };
 
 /**
- * Creates temporary directory removed on async disposal.
- *
- * @param prefix - filename prefix under OS temp directory.
- *
- * @returns async-disposable temp directory handle.
- *
- * @example
- * ```typescript
- * await using dir = await tempDir({ prefix: 'spawn-pi-' });
- * ```
+ Creates temporary directory removed on async disposal.
+ 
+ @param prefix - filename prefix under OS temp directory.
+ 
+ @returns async-disposable temp directory handle.
+ 
+ @example
+ ```typescript
+ await using dir = await tempDir({ prefix: 'spawn-pi-' });
+ ```
  */
 async function tempDir(
   {
@@ -53,7 +53,7 @@ async function tempDir(
   },
 ): Promise<TempDirHandle> {
   /**
-   * Temporary directory path created for test.
+   Temporary directory path created for test.
    */
   const dirPath = await mkdtemp(join(
     tmpdir(),
@@ -75,18 +75,18 @@ async function tempDir(
 }
 
 /**
- * Temporarily sets or clears an environment variable.
- *
- * @param name - environment variable name.
- *
- * @param value - replacement value, or {@link CLEAR_ENV} to delete.
- *
- * @returns disposable environment override.
- *
- * @example
- * ```typescript
- * using env = envVar({ name: 'PI_CODING_AGENT_DIR', value: '/tmp/pi' });
- * ```
+ Temporarily sets or clears an environment variable.
+ 
+ @param name - environment variable name.
+ 
+ @param value - replacement value, or {@link CLEAR_ENV} to delete.
+ 
+ @returns disposable environment override.
+ 
+ @example
+ ```typescript
+ using env = envVar({ name: 'PI_CODING_AGENT_DIR', value: '/tmp/pi' });
+ ```
  */
 function envVar(
   {
@@ -98,7 +98,7 @@ function envVar(
   },
 ): Disposable {
   /**
-   * Previous value restored on disposal.
+   Previous value restored on disposal.
    */
   const previous = process.env[name];
 

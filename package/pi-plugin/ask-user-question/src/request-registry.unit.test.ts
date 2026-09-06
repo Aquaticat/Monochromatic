@@ -13,15 +13,15 @@ await describe({
       name: 'aborts every active request',
       fn: async () => {
         /**
-         * Registry under test.
+         Registry under test.
          */
         const registry = createRequestRegistry();
         /**
-         * First active request scope.
+         First active request scope.
          */
         using first = registry.open();
         /**
-         * Second active request scope.
+         Second active request scope.
          */
         using second = registry.open();
         registry.abortAll();
@@ -35,11 +35,11 @@ await describe({
       name: 'manual abort affects selected request',
       fn: async () => {
         /**
-         * Registry under test.
+         Registry under test.
          */
         const registry = createRequestRegistry();
         /**
-         * Manually cancelled request scope.
+         Manually cancelled request scope.
          */
         using request = registry.open();
         request.abort();
@@ -51,11 +51,11 @@ await describe({
       name: 'disposed request leaves registry before global abort',
       fn: async () => {
         /**
-         * Registry under test.
+         Registry under test.
          */
         const registry = createRequestRegistry();
         /**
-         * Disposed request retained for signal inspection.
+         Disposed request retained for signal inspection.
          */
         const request = registry.open();
         request[Symbol.dispose]();

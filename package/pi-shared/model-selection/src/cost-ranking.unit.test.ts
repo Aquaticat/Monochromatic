@@ -1,7 +1,7 @@
 /**
- * Unit tests for cost ranking helpers.
- *
- * @module
+ Unit tests for cost ranking helpers.
+ 
+ @module
  */
 
 import {

@@ -1,10 +1,10 @@
 /**
- * Differential property against postcss as the tolerant-parser oracle:
- * every document css-edit's generator produces and css-edit accepts must
- * also be accepted by postcss, and postcss must see the same rule-level
- * content once css-edit stringifies it back.
- *
- * @module
+ Differential property against postcss as the tolerant-parser oracle:
+ every document css-edit's generator produces and css-edit accepts must
+ also be accepted by postcss, and postcss must see the same rule-level
+ content once css-edit stringifies it back.
+ 
+ @module
  */
 
 import {
@@ -35,14 +35,14 @@ await describe({
         assert(
           property(cssDocumentArb, (css,) => {
             /**
-             * css-edit output for the generated document; byte-equal to input
-             * per the round-trip property, re-checked here as the oracle input.
+             css-edit output for the generated document; byte-equal to input
+             per the round-trip property, re-checked here as the oracle input.
              */
             const echoed = stringifyCss({
               state: parseCss({ source: asCssSource(css,), },),
             },);
             /**
-             * Oracle parse; a throw fails the property.
+             Oracle parse; a throw fails the property.
              */
             const oracleRoot = postcssParse(echoed,);
             expect(oracleRoot.toString(),).toBe(css,);

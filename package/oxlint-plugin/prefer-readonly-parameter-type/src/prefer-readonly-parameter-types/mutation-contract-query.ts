@@ -1,7 +1,7 @@
 /**
- * TypeScript declaration lookup for shared `@mutates` contracts.
- *
- * @module
+ TypeScript declaration lookup for shared `@mutates` contracts.
+ 
+ @module
  */
 
 import {
@@ -20,24 +20,24 @@ import {
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 
 /**
- * Sentinel when callable has no attached TSDoc comment.
+ Sentinel when callable has no attached TSDoc comment.
  */
 export const MUTATION_CONTRACT_UNAVAILABLE: unique symbol = Symbol(
   'callable declaration lacks attached mutation contract comment',
 );
 
 /**
- * Mutation contracts attached to one callable declaration.
- *
- * @example
- * ```ts
- * const contracts: CallableMutationContracts = {
- *   commentStartOffset: 10,
- *   commentEndOffset: 80,
- *   commentBodyStartOffset: 12,
- *   blocks: [],
- * };
- * ```
+ Mutation contracts attached to one callable declaration.
+ 
+ @example
+ ```ts
+ const contracts: CallableMutationContracts = {
+   commentStartOffset: 10,
+   commentEndOffset: 80,
+   commentBodyStartOffset: 12,
+   blocks: [],
+ };
+ ```
  */
 export type CallableMutationContracts = {
   readonly commentStartOffset: number;
@@ -47,33 +47,33 @@ export type CallableMutationContracts = {
 };
 
 /**
- * Finds first doc-comment delimiter inside TypeScript JSDoc span.
+ Finds first doc-comment delimiter inside TypeScript JSDoc span.
  */
 const DOC_COMMENT_START = '/**';
 
 /**
- * Block-comment opening delimiter width.
+ Block-comment opening delimiter width.
  */
 const COMMENT_OPEN_WIDTH = 2;
 
 /**
- * Block-comment closing delimiter width.
+ Block-comment closing delimiter width.
  */
 const COMMENT_CLOSE_WIDTH = 2;
 
 /**
- * Reads shared mutation blocks from callable's final attached JSDoc comment.
- *
- * @param declaration - Callable declaration carrying optional JSDoc.
- *
- * @param sourceFile - Source text owning declaration.
- *
- * @returns contracts with exact source offsets or absent-comment sentinel.
- *
- * @example
- * ```ts
- * const contracts = mutationContractsForDeclaration({ declaration, sourceFile });
- * ```
+ Reads shared mutation blocks from callable's final attached JSDoc comment.
+ 
+ @param declaration - Callable declaration carrying optional JSDoc.
+ 
+ @param sourceFile - Source text owning declaration.
+ 
+ @returns contracts with exact source offsets or absent-comment sentinel.
+ 
+ @example
+ ```ts
+ const contracts = mutationContractsForDeclaration({ declaration, sourceFile });
+ ```
  */
 export function mutationContractsForDeclaration({
   declaration,
@@ -83,14 +83,14 @@ export function mutationContractsForDeclaration({
   readonly sourceFile: SourceFile;
 },): CallableMutationContracts | typeof MUTATION_CONTRACT_UNAVAILABLE {
   /**
-   * Final JSDoc node attached to declaration.
+   Final JSDoc node attached to declaration.
    */
   const jsDoc = declaration.jsDoc
     ?.at(-1,);
   if (jsDoc === undefined)
     return MUTATION_CONTRACT_UNAVAILABLE;
   /**
-   * Full JSDoc node text, including leading trivia retained by TypeScript.
+   Full JSDoc node text, including leading trivia retained by TypeScript.
    */
   const jsDocText = sourceFile.text
     .slice(
@@ -98,25 +98,25 @@ export function mutationContractsForDeclaration({
       jsDoc.end,
     );
   /**
-   * Relative doc-comment delimiter offset after leading trivia.
+   Relative doc-comment delimiter offset after leading trivia.
    */
   const relativeCommentStart = jsDocText.indexOf(DOC_COMMENT_START,);
   if (relativeCommentStart === (-1))
     return MUTATION_CONTRACT_UNAVAILABLE;
   /**
-   * Absolute opening delimiter offset.
+   Absolute opening delimiter offset.
    */
   const commentStartOffset = jsDoc.pos + relativeCommentStart;
   /**
-   * Absolute exclusive closing delimiter offset.
+   Absolute exclusive closing delimiter offset.
    */
   const commentEndOffset = jsDoc.end;
   /**
-   * Absolute comment-body start after `/*`.
+   Absolute comment-body start after `/*`.
    */
   const commentBodyStartOffset = commentStartOffset + COMMENT_OPEN_WIDTH;
   /**
-   * Comment body matching Oxlint Comment.value semantics.
+   Comment body matching Oxlint Comment.value semantics.
    */
   const commentValue = sourceFile.text
     .slice(
@@ -132,17 +132,17 @@ export function mutationContractsForDeclaration({
 }
 
 /**
- * Maps every identifier in parameter binding name to parameter index.
- *
- * @param name - Parameter identifier or nested destructuring pattern.
- *
- * @param parameterIndex - Owning source parameter index.
- *
- * @param sourceFile - Source file providing identifier text.
- *
- * @param targetIndexes - Map receiving target names.
- *
- * @mutates targetIndexes - Adds binding names mapped to source parameter.
+ Maps every identifier in parameter binding name to parameter index.
+ 
+ @param name - Parameter identifier or nested destructuring pattern.
+ 
+ @param parameterIndex - Owning source parameter index.
+ 
+ @param sourceFile - Source file providing identifier text.
+ 
+ @param targetIndexes - Map receiving target names.
+ 
+ @mutates targetIndexes - Adds binding names mapped to source parameter.
  */
 function collectParameterTargets({
   name,
@@ -176,18 +176,18 @@ function collectParameterTargets({
 }
 
 /**
- * Maps callable parameter and destructured binding names to parameter indexes.
- *
- * @param declaration - Callable declaration whose targets are required.
- *
- * @param sourceFile - Source file providing authored names.
- *
- * @returns target-to-parameter map.
- *
- * @example
- * ```ts
- * const targets = mutationTargetIndexes({ declaration, sourceFile });
- * ```
+ Maps callable parameter and destructured binding names to parameter indexes.
+ 
+ @param declaration - Callable declaration whose targets are required.
+ 
+ @param sourceFile - Source file providing authored names.
+ 
+ @returns target-to-parameter map.
+ 
+ @example
+ ```ts
+ const targets = mutationTargetIndexes({ declaration, sourceFile });
+ ```
  */
 export function mutationTargetIndexes({
   declaration,
@@ -197,7 +197,7 @@ export function mutationTargetIndexes({
   readonly sourceFile: SourceFile;
 },): ReadonlyMap<string, number> {
   /**
-   * Target map populated from every parameter binding.
+   Target map populated from every parameter binding.
    */
   const targetIndexes = new Map<string, number>();
   declaration.parameters

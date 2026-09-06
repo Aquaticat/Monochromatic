@@ -5,22 +5,22 @@
 //   tsdoc(require-param-description): @param without description
 
 /**
- * @param x - wrong name
+ @param x - wrong name
  */
 function mismatchedParam(value: string,): void {}
 
 /**
- * Adds numbers.
+ Adds numbers.
  */
 function missingAllParams(a: number, b: number,): void {}
 
 /**
- * @param a - first
+ @param a - first
  */
 function missingSecondParam(a: number, b: number,): void {}
 
 /**
- * @param name
+ @param name
  */
 function paramWithoutDescription(name: string,): void {}
 

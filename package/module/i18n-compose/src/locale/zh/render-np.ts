@@ -1,7 +1,7 @@
 /**
- * Chinese noun-phrase renderer factory.
- *
- * @module
+ Chinese noun-phrase renderer factory.
+ 
+ @module
  */
 
 import type {
@@ -15,19 +15,19 @@ import type {
 } from '../../entries.ts';
 
 /**
- * Renders a counted noun phrase using the noun's classifier when present,
- * otherwise just the digit and noun.
- *
- * @param entry - resolved noun entry
- *
- * @param count - count attached by the phrase
- *
- * @returns counted phrase surface, e.g. `1 只猫`
- *
- * @example
- * ```ts
- * countedNoun({ entry: { surface: '猫', classifier: '只' }, count: 1 }); // '1 只猫'
- * ```
+ Renders a counted noun phrase using the noun's classifier when present,
+ otherwise just the digit and noun.
+ 
+ @param entry - resolved noun entry
+ 
+ @param count - count attached by the phrase
+ 
+ @returns counted phrase surface, e.g. `1 只猫`
+ 
+ @example
+ ```ts
+ countedNoun({ entry: { surface: '猫', classifier: '只' }, count: 1 }); // '1 只猫'
+ ```
  */
 function countedNoun(
   {
@@ -45,19 +45,19 @@ function countedNoun(
 }
 
 /**
- * Builds a Chinese noun-phrase renderer closed over the supplied vocab tables.
- *
- * @param nouns - noun vocabulary keyed by the consumer's `Noun` union
- *
- * @param subjects - subject vocabulary keyed by the consumer's `Subject` union
- *
- * @returns render function for noun phrases
- *
- * @example
- * ```ts
- * const renderNounPhrase = makeChineseNounPhraseRenderer({ nouns, subjects });
- * renderNounPhrase({ kind: 'noun.counted', count: 1, noun: 'cat' }); // '1 只猫'
- * ```
+ Builds a Chinese noun-phrase renderer closed over the supplied vocab tables.
+ 
+ @param nouns - noun vocabulary keyed by the consumer's `Noun` union
+ 
+ @param subjects - subject vocabulary keyed by the consumer's `Subject` union
+ 
+ @returns render function for noun phrases
+ 
+ @example
+ ```ts
+ const renderNounPhrase = makeChineseNounPhraseRenderer({ nouns, subjects });
+ renderNounPhrase({ kind: 'noun.counted', count: 1, noun: 'cat' }); // '1 只猫'
+ ```
  */
 export function makeChineseNounPhraseRenderer<S extends string, N extends string,>(
   {
@@ -69,11 +69,11 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
   },
 ): (phrase: NounPhrase<S, N>,) => string {
   /**
-   * Renders a possessor surface for `noun.possessed`.
-   *
-   * @param p - possessor AST node
-   *
-   * @returns possessive surface
+   Renders a possessor surface for `noun.possessed`.
+   
+   @param p - possessor AST node
+   
+   @returns possessive surface
    */
   function renderPossessor(p: Possessor<S>,): string {
     if (p.kind
@@ -84,11 +84,11 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
   }
 
   /**
-   * Renders a noun-phrase AST in Chinese.
-   *
-   * @param phrase - noun-phrase AST
-   *
-   * @returns rendered surface
+   Renders a noun-phrase AST in Chinese.
+   
+   @param phrase - noun-phrase AST
+   
+   @returns rendered surface
    */
   function renderNounPhrase(phrase: NounPhrase<S, N>,): string {
     if (phrase.kind
@@ -98,7 +98,7 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
     if (phrase.kind
       === 'noun.counted') {
       /**
-       * Resolved noun entry validated before classifier rendering.
+       Resolved noun entry validated before classifier rendering.
        */
       const entry = nouns[phrase.noun];
       assertCountableNoun({

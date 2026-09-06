@@ -30,10 +30,10 @@ const CASE_ROOT = resolve(
 );
 
 /**
- * Absolute path to fixture config emptying `fixturePatterns`.
- *
- * Serves as positive control that rule options are read at all: with no globs
- * exempting anything, an import the default list allows must become a finding.
+ Absolute path to fixture config emptying `fixturePatterns`.
+ 
+ Serves as positive control that rule options are read at all: with no globs
+ exempting anything, an import the default list allows must become a finding.
  */
 const NO_FIXTURES_CONFIG = fixtureConfigPath({
   fixturePackageName: FIXTURE_PACKAGE_NAME,
@@ -41,20 +41,20 @@ const NO_FIXTURES_CONFIG = fixtureConfigPath({
 },);
 
 /**
- * Runs the rule over one fixture file through a real oxlint process.
- *
- * @param caseName - nested pseudo-package directory name
- *
- * @param fileName - file inside that case's `src`
- *
- * @param fixtureConfig - oxlint config driving this run; defaults to unconfigured rule
- *
- * @returns diagnostics this plugin emitted for that file
- *
- * @example
- * ```ts
- * await lintCase({ caseName: 'standard', fileName: 'rejected.test.ts' });
- * ```
+ Runs the rule over one fixture file through a real oxlint process.
+ 
+ @param caseName - nested pseudo-package directory name
+ 
+ @param fileName - file inside that case's `src`
+ 
+ @param fixtureConfig - oxlint config driving this run; defaults to unconfigured rule
+ 
+ @returns diagnostics this plugin emitted for that file
+ 
+ @example
+ ```ts
+ await lintCase({ caseName: 'standard', fileName: 'rejected.test.ts' });
+ ```
  */
 async function lintCase({
   caseName,
@@ -62,15 +62,15 @@ async function lintCase({
   fixtureConfig = FIXTURE_CONFIG,
 }: {
   /**
-   * Nested pseudo-package directory name.
+   Nested pseudo-package directory name.
    */
   readonly caseName: string;
   /**
-   * File inside that case's `src`.
+   File inside that case's `src`.
    */
   readonly fileName: string;
   /**
-   * Oxlint config driving this run.
+   Oxlint config driving this run.
    */
   readonly fixtureConfig?: string;
 },): Promise<readonly OxlintRuleDiagnostic[]> {

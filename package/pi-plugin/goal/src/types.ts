@@ -1,33 +1,33 @@
 /**
- * Goal domain state, event, message, and controller types.
- *
- * @module
+ Goal domain state, event, message, and controller types.
+ 
+ @module
  */
 
 //region Domain identifiers
 
 /**
- * Stable user-visible goal run identity.
+ Stable user-visible goal run identity.
  */
 type GoalRunId = string;
 
 /**
- * Private stale-callback generation identity.
+ Private stale-callback generation identity.
  */
 type GoalGenerationId = string;
 
 /**
- * Stable marker identifying current run start boundary.
+ Stable marker identifying current run start boundary.
  */
 type GoalStartBoundary = string;
 
 /**
- * Unique extension-authored message identity.
+ Unique extension-authored message identity.
  */
 type GoalMessageMarker = string;
 
 /**
- * Runtime-instance identity invalidating old callbacks.
+ Runtime-instance identity invalidating old callbacks.
  */
 type GoalRuntimeEpoch = string;
 
@@ -36,14 +36,14 @@ type GoalRuntimeEpoch = string;
 //region Persisted states
 
 /**
- * No current goal record on selected branch.
+ No current goal record on selected branch.
  */
 type AbsentGoalState = {
   readonly phase: 'absent';
 };
 
 /**
- * Active goal retained across continuation turns.
+ Active goal retained across continuation turns.
  */
 type ActiveGoalState = {
   readonly phase: 'active';
@@ -58,7 +58,7 @@ type ActiveGoalState = {
 };
 
 /**
- * Model-approved terminal completion.
+ Model-approved terminal completion.
  */
 type ModelCompletedGoalState = {
   readonly phase: 'completed';
@@ -75,7 +75,7 @@ type ModelCompletedGoalState = {
 };
 
 /**
- * Manually approved terminal completion.
+ Manually approved terminal completion.
  */
 type ManualCompletedGoalState = {
   readonly phase: 'completed';
@@ -90,7 +90,7 @@ type ManualCompletedGoalState = {
 };
 
 /**
- * Terminal state when every reviewer attempt fails without TUI fallback.
+ Terminal state when every reviewer attempt fails without TUI fallback.
  */
 type ReviewUnavailableGoalState = {
   readonly phase: 'review_unavailable';
@@ -104,7 +104,7 @@ type ReviewUnavailableGoalState = {
 };
 
 /**
- * Branch-reduced current goal state.
+ Branch-reduced current goal state.
  */
 type GoalState =
   | AbsentGoalState
@@ -118,7 +118,7 @@ type GoalState =
 //region Persisted events
 
 /**
- * One run start or atomic replacement event.
+ One run start or atomic replacement event.
  */
 type GoalRunStartedEvent = {
   readonly kind: 'run_started';
@@ -133,7 +133,7 @@ type GoalRunStartedEvent = {
 };
 
 /**
- * Active restoration generation rotation.
+ Active restoration generation rotation.
  */
 type GoalGenerationRotatedEvent = {
   readonly kind: 'generation_rotated';
@@ -146,7 +146,7 @@ type GoalGenerationRotatedEvent = {
 };
 
 /**
- * Valid reviewer denial retaining active state.
+ Valid reviewer denial retaining active state.
  */
 type GoalReviewDeniedEvent = {
   readonly kind: 'review_denied';
@@ -162,7 +162,7 @@ type GoalReviewDeniedEvent = {
 };
 
 /**
- * Legacy tool-era denial retained for session reconstruction.
+ Legacy tool-era denial retained for session reconstruction.
  */
 type LegacyGoalReviewDeniedEvent = {
   readonly kind: 'review_denied';
@@ -174,7 +174,7 @@ type LegacyGoalReviewDeniedEvent = {
 };
 
 /**
- * Visible continuation issuance event retaining auditable sequence.
+ Visible continuation issuance event retaining auditable sequence.
  */
 type GoalContinuationIssuedEvent = {
   readonly kind: 'continuation_issued';
@@ -185,7 +185,7 @@ type GoalContinuationIssuedEvent = {
 };
 
 /**
- * Model-approved completion event.
+ Model-approved completion event.
  */
 type GoalModelCompletedEvent = {
   readonly kind: 'run_completed_model';
@@ -201,7 +201,7 @@ type GoalModelCompletedEvent = {
 };
 
 /**
- * Manually approved completion event.
+ Manually approved completion event.
  */
 type GoalManualCompletedEvent = {
   readonly kind: 'run_completed_manual';
@@ -215,7 +215,7 @@ type GoalManualCompletedEvent = {
 };
 
 /**
- * Terminal reviewer-unavailable event.
+ Terminal reviewer-unavailable event.
  */
 type GoalReviewUnavailableEvent = {
   readonly kind: 'review_unavailable';
@@ -228,7 +228,7 @@ type GoalReviewUnavailableEvent = {
 };
 
 /**
- * Clear tombstone reducing selected branch state to absent.
+ Clear tombstone reducing selected branch state to absent.
  */
 type GoalRunClearedEvent = {
   readonly kind: 'run_cleared';
@@ -238,7 +238,7 @@ type GoalRunClearedEvent = {
 };
 
 /**
- * Immutable goal event payload persisted in Pi custom entry.
+ Immutable goal event payload persisted in Pi custom entry.
  */
 type GoalEvent =
   | GoalRunStartedEvent
@@ -256,7 +256,7 @@ type GoalEvent =
 //region Commands, messages, and effects
 
 /**
- * Parsed accepted or rejected `/goal` command.
+ Parsed accepted or rejected `/goal` command.
  */
 type ParsedGoalCommand =
   | {
@@ -270,7 +270,7 @@ type ParsedGoalCommand =
   };
 
 /**
- * Visible goal custom-message metadata.
+ Visible goal custom-message metadata.
  */
 type GoalMessageDetails = {
   readonly runId: GoalRunId;
@@ -281,7 +281,7 @@ type GoalMessageDetails = {
 };
 
 /**
- * Visible custom message sent through Pi.
+ Visible custom message sent through Pi.
  */
 type GoalMessage = {
   readonly customType: string;
@@ -291,7 +291,7 @@ type GoalMessage = {
 };
 
 /**
- * Deferred kickoff retained only while matching generation remains active.
+ Deferred kickoff retained only while matching generation remains active.
  */
 type PendingGoalKickoff = {
   readonly runId: GoalRunId;
@@ -301,7 +301,7 @@ type PendingGoalKickoff = {
 };
 
 /**
- * Renderable terminal reviewer-exhaustion diagnostic.
+ Renderable terminal reviewer-exhaustion diagnostic.
  */
 type GoalReviewUnavailableDiagnostic = {
   readonly runId: GoalRunId;
@@ -312,7 +312,7 @@ type GoalReviewUnavailableDiagnostic = {
 };
 
 /**
- * Durable human-only completion audit.
+ Durable human-only completion audit.
  */
 type GoalCompletionDiagnostic = {
   readonly runId: GoalRunId;
@@ -326,7 +326,7 @@ type GoalCompletionDiagnostic = {
 };
 
 /**
- * Immutable controller state held by Pi adapter.
+ Immutable controller state held by Pi adapter.
  */
 type GoalControllerState = {
   readonly goal: GoalState;
@@ -338,7 +338,7 @@ type GoalControllerState = {
 };
 
 /**
- * Semantic effect returned by controller transitions.
+ Semantic effect returned by controller transitions.
  */
 type GoalEffect =
   | {
@@ -375,7 +375,7 @@ type GoalEffect =
   };
 
 /**
- * Controller transition result with next immutable state and effects.
+ Controller transition result with next immutable state and effects.
  */
 type GoalControllerTransition = {
   readonly controller: GoalControllerState;

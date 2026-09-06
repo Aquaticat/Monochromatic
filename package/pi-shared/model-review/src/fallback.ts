@@ -1,22 +1,22 @@
 /**
- * Exhausted structured-review diagnostics shared by concrete callers.
- *
- * @module
+ Exhausted structured-review diagnostics shared by concrete callers.
+ 
+ @module
  */
 
 /**
- * Join primitive diagnostic text without invoking methods on caller arrays.
- *
- * @param values - primitive strings to join
- *
- * @param separator - text inserted between values
- *
- * @returns joined text
- *
- * @example
- * ```ts
- * joinText({ values: ['a', 'b'], separator: ', ' });
- * ```
+ Join primitive diagnostic text without invoking methods on caller arrays.
+ 
+ @param values - primitive strings to join
+ 
+ @param separator - text inserted between values
+ 
+ @returns joined text
+ 
+ @example
+ ```ts
+ joinText({ values: ['a', 'b'], separator: ', ' });
+ ```
  */
 function joinText(
   {
@@ -28,7 +28,7 @@ function joinText(
   },
 ): string {
   /**
-   * Joined primitive output.
+   Joined primitive output.
    */
   const output = { value: '', };
   for (const value of values) {
@@ -40,42 +40,42 @@ function joinText(
 }
 
 /**
- * Exhausted structured reviewer error with complete attempt audit.
- *
- * @example
- * ```ts
- * throw new ReviewUnavailableError({
- *   attemptedCandidateIdentities: ['a/one'],
- *   diagnostics: ['timeout'],
- * });
- * ```
+ Exhausted structured reviewer error with complete attempt audit.
+ 
+ @example
+ ```ts
+ throw new ReviewUnavailableError({
+   attemptedCandidateIdentities: ['a/one'],
+   diagnostics: ['timeout'],
+ });
+ ```
  */
 class ReviewUnavailableError extends Error {
   /**
-   * Candidate identities whose transports started.
+   Candidate identities whose transports started.
    */
   readonly attemptedCandidateIdentities: readonly string[];
   /**
-   * Normalized transport, parsing, and selection diagnostics.
+   Normalized transport, parsing, and selection diagnostics.
    */
   readonly diagnostics: readonly string[];
 
   /**
-   * Create exhausted-reviewer diagnostic.
-   *
-   * @param attemptedCandidateIdentities - candidates whose transports started
-   *
-   * @param diagnostics - normalized failure details
-   *
-   * @param cause - terminal lower-level failure
-   *
-   * @example
-   * ```ts
-   * new ReviewUnavailableError({
-   *   attemptedCandidateIdentities: ['a/one'],
-   *   diagnostics: ['timeout'],
-   * });
-   * ```
+   Create exhausted-reviewer diagnostic.
+   
+   @param attemptedCandidateIdentities - candidates whose transports started
+   
+   @param diagnostics - normalized failure details
+   
+   @param cause - terminal lower-level failure
+   
+   @example
+   ```ts
+   new ReviewUnavailableError({
+     attemptedCandidateIdentities: ['a/one'],
+     diagnostics: ['timeout'],
+   });
+   ```
    */
   constructor(
     {

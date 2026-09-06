@@ -19,7 +19,7 @@ import {
 //region Logger
 
 /**
- * Tagged logger for extension registration and shutdown.
+ Tagged logger for extension registration and shutdown.
  */
 const l = tagged({ tag: 'ask-user-question:index', },);
 
@@ -28,18 +28,18 @@ const l = tagged({ tag: 'ask-user-question:index', },);
 //region Registration
 
 /**
- * Registers ask-user tool with session-scoped external-request cleanup.
- *
- * @param pi - host extension API
- *
- * @param config - optional loaded user configuration
- *
- * @param requestAnswer - optional test requester
- *
- * @example
- * ```ts
- * registerAskUserQuestionExtension({ pi });
- * ```
+ Registers ask-user tool with session-scoped external-request cleanup.
+ 
+ @param pi - host extension API
+ 
+ @param config - optional loaded user configuration
+ 
+ @param requestAnswer - optional test requester
+ 
+ @example
+ ```ts
+ registerAskUserQuestionExtension({ pi });
+ ```
  */
 export function registerAskUserQuestionExtension(
   {
@@ -53,11 +53,11 @@ export function registerAskUserQuestionExtension(
   },
 ): void {
   /**
-   * Controllers for external helpers active in current extension session.
+   Controllers for external helpers active in current extension session.
    */
   const registry = createRequestRegistry();
   /**
-   * Production requester or test boundary override.
+   Production requester or test boundary override.
    */
   const requester: ExternalAnswerRequester = requestAnswer
     ?? (function requestThroughDefaultTerminal({
@@ -89,18 +89,18 @@ export function registerAskUserQuestionExtension(
 }
 
 /**
- * Pi extension entry point.
- *
- * @param pi - host extension API
- *
- * @example
- * ```ts
- * askUserQuestionExtension(pi);
- * ```
+ Pi extension entry point.
+ 
+ @param pi - host extension API
+ 
+ @example
+ ```ts
+ askUserQuestionExtension(pi);
+ ```
  */
 export default async function askUserQuestionExtension(pi: ExtensionAPI,): Promise<void> {
   /**
-   * User-level editor override loaded once per Pi extension session.
+   User-level editor override loaded once per Pi extension session.
    */
   const config = await loadAskUserQuestionConfig();
   registerAskUserQuestionExtension({

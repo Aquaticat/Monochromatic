@@ -18,18 +18,18 @@ await describe({
       name: 'uses square checkbox indicators in ordinary and security themes',
       fn: async () => {
         /**
-         * Non-TTY output makes native color policy return plain glyph text.
+         Non-TTY output makes native color policy return plain glyph text.
          */
         const output = new PassThrough();
         /**
-         * Ordinary square theme.
+         Ordinary square theme.
          */
         const ordinary = createSquareCheckboxTheme({
           security: false,
           output,
         },);
         /**
-         * Security square theme.
+         Security square theme.
          */
         const security = createSquareCheckboxTheme({
           security: true,
@@ -47,7 +47,7 @@ await describe({
       name: 'recognizes only documented Inquirer cancellation error',
       fn: async () => {
         /**
-         * Error carrying documented Inquirer cancellation name.
+         Error carrying documented Inquirer cancellation name.
          */
         const cancellation = new Error('User force closed the prompt');
         cancellation.name = 'ExitPromptError';

@@ -1,10 +1,10 @@
 /**
- * E2e tests for `onLoadRedirectingTo`.
- *
- * The match path navigates to `test/fixture/redirect-target.html` so
- * `page.waitForURL` can confirm `location.replace` fired with the anchor's href.
- *
- * @module
+ E2e tests for `onLoadRedirectingTo`.
+ 
+ The match path navigates to `test/fixture/redirect-target.html` so
+ `page.waitForURL` can confirm `location.replace` fired with the anchor's href.
+ 
+ @module
  */
 import { join, } from 'node:path';
 import { pathToFileURL, } from 'node:url';

@@ -1,7 +1,7 @@
 /**
- * English sentence renderer factory: declarative, yes/no, wh, imperative.
- *
- * @module
+ English sentence renderer factory: declarative, yes/no, wh, imperative.
+ 
+ @module
  */
 
 import type {
@@ -21,16 +21,16 @@ import {
 } from './render-sentence-wh.ts';
 
 /**
- * Builds an English sentence renderer.
- *
- * @param deps - per-locale dependencies (subjects, verbs, sub-renderers)
- *
- * @returns render function for sentences
- *
- * @example
- * ```ts
- * const renderSentence = makeEnglishSentenceRenderer({ subjects, verbs, renderNounPhrase, renderVerbPhrase, renderAdverbials });
- * ```
+ Builds an English sentence renderer.
+ 
+ @param deps - per-locale dependencies (subjects, verbs, sub-renderers)
+ 
+ @returns render function for sentences
+ 
+ @example
+ ```ts
+ const renderSentence = makeEnglishSentenceRenderer({ subjects, verbs, renderNounPhrase, renderVerbPhrase, renderAdverbials });
+ ```
  */
 export function makeEnglishSentenceRenderer<
   S extends string,
@@ -40,11 +40,11 @@ export function makeEnglishSentenceRenderer<
   deps: SentenceDeps<S, V, N>,
 ): (sentence: Sentence<S, V, N>,) => string {
   /**
-   * Dispatches a wh-question by slot.
-   *
-   * @param sentence - wh-question AST
-   *
-   * @returns rendered surface
+   Dispatches a wh-question by slot.
+   
+   @param sentence - wh-question AST
+   
+   @returns rendered surface
    */
   function renderWh(sentence: WhQuestion<S, V, N>,): string {
     if (sentence.kind
@@ -66,11 +66,11 @@ export function makeEnglishSentenceRenderer<
   }
 
   /**
-   * Dispatches a sentence AST to the correct sub-renderer.
-   *
-   * @param sentence - sentence AST
-   *
-   * @returns rendered surface
+   Dispatches a sentence AST to the correct sub-renderer.
+   
+   @param sentence - sentence AST
+   
+   @returns rendered surface
    */
   function renderSentence(sentence: Sentence<S, V, N>,): string {
     if (sentence.kind

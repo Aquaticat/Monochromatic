@@ -1,10 +1,10 @@
 /**
- * E2e tests for `prompt`.
- *
- * Drives the live `<dialog>` element in a real browser via Playwright,
- * since happy-dom and jsdom do not implement `<dialog>` semantics fully.
- *
- * @module
+ E2e tests for `prompt`.
+ 
+ Drives the live `<dialog>` element in a real browser via Playwright,
+ since happy-dom and jsdom do not implement `<dialog>` semantics fully.
+ 
+ @module
  */
 import {
   expect,

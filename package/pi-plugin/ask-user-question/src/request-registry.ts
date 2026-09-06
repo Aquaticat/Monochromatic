@@ -1,42 +1,42 @@
 //region Registry
 
 /**
- * Tracks active external-answer controllers for session shutdown cleanup.
- *
- * @example
- * ```ts
- * const registry = createRequestRegistry();
- * using request = registry.open();
- * ```
+ Tracks active external-answer controllers for session shutdown cleanup.
+ 
+ @example
+ ```ts
+ const registry = createRequestRegistry();
+ using request = registry.open();
+ ```
  */
 export type RequestRegistry = {
   /**
-   * Opens one active request cancellation scope.
+   Opens one active request cancellation scope.
    */
   readonly open: () => Disposable & {
     readonly signal: AbortSignal;
     readonly abort: () => void;
   };
   /**
-   * Aborts every active request and empties registry.
+   Aborts every active request and empties registry.
    */
   readonly abortAll: () => void;
 };
 
 /**
- * Creates session-scoped registry for pending answer requests.
- *
- * @returns request cancellation registry
- *
- * @example
- * ```ts
- * const registry = createRequestRegistry();
- * registry.abortAll();
- * ```
+ Creates session-scoped registry for pending answer requests.
+ 
+ @returns request cancellation registry
+ 
+ @example
+ ```ts
+ const registry = createRequestRegistry();
+ registry.abortAll();
+ ```
  */
 export function createRequestRegistry(): RequestRegistry {
   /**
-   * Mutable controller set owned by one extension instance.
+   Mutable controller set owned by one extension instance.
    */
   const controllers = new Set<AbortController>();
   return {
@@ -45,7 +45,7 @@ export function createRequestRegistry(): RequestRegistry {
       readonly abort: () => void;
     } {
       /**
-       * Controller cancelled by session shutdown.
+       Controller cancelled by session shutdown.
        */
       const controller = new AbortController();
       controllers.add(controller,);

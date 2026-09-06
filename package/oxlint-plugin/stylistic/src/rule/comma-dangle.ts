@@ -15,22 +15,22 @@ import {
 } from '../utility/comma-dangle.ts';
 
 /**
- * Requires trailing commas at every supported comma-delimited list tail.
- *
- * This mirrors `@stylistic/comma-dangle` in its plain `"always"` behavior
- * without exposing configuration. Empty lists are ignored, and final rest
- * elements are ignored because JavaScript grammar rejects a comma after them.
- *
- * @example
- * ```ts
- * // Bad
- * const value = [one];
- * function read(value: string): void {}
- *
- * // Good
- * const value = [one,];
- * function read(value: string,): void {}
- * ```
+ Requires trailing commas at every supported comma-delimited list tail.
+ 
+ This mirrors `@stylistic/comma-dangle` in its plain `"always"` behavior
+ without exposing configuration. Empty lists are ignored, and final rest
+ elements are ignored because JavaScript grammar rejects a comma after them.
+ 
+ @example
+ ```ts
+ // Bad
+ const value = [one];
+ function read(value: string): void {}
+ 
+ // Good
+ const value = [one,];
+ function read(value: string,): void {}
+ ```
  */
 export const commaDangle: CreateOnceRule = {
   meta: {
@@ -46,25 +46,25 @@ export const commaDangle: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
-     * Checks array element lists and array-pattern element lists.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last element via
-     * {@link lastFieldNode}.
-     *
-     * @param node - array-like container node
+     Checks array element lists and array-pattern element lists.
+     
+     Delegates to {@link checkTrailingComma}, locating the last element via
+     {@link lastFieldNode}.
+     
+     @param node - array-like container node
      */
     function checkElements(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -79,12 +79,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks object property lists and object-pattern property lists.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last property via
-     * {@link lastFieldNode}.
-     *
-     * @param node - object-like container node
+     Checks object property lists and object-pattern property lists.
+     
+     Delegates to {@link checkTrailingComma}, locating the last property via
+     {@link lastFieldNode}.
+     
+     @param node - object-like container node
      */
     function checkProperties(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -99,12 +99,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks call or constructor arguments.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last argument via
-     * {@link lastFieldNode}.
-     *
-     * @param node - call-like node
+     Checks call or constructor arguments.
+     
+     Delegates to {@link checkTrailingComma}, locating the last argument via
+     {@link lastFieldNode}.
+     
+     @param node - call-like node
      */
     function checkArguments(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -119,12 +119,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks function-like parameter lists.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last parameter via
-     * {@link lastFieldNode}.
-     *
-     * @param node - function-like node
+     Checks function-like parameter lists.
+     
+     Delegates to {@link checkTrailingComma}, locating the last parameter via
+     {@link lastFieldNode}.
+     
+     @param node - function-like node
      */
     function checkParams(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -138,12 +138,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks import specifiers and import attributes.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last specifier via
-     * {@link lastNamedImportSpecifier} and the last attribute via {@link lastFieldNode}.
-     *
-     * @param node - import declaration node
+     Checks import specifiers and import attributes.
+     
+     Delegates to {@link checkTrailingComma}, locating the last specifier via
+     {@link lastNamedImportSpecifier} and the last attribute via {@link lastFieldNode}.
+     
+     @param node - import declaration node
      */
     function checkImportDeclaration(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -162,12 +162,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks export specifiers and import attributes.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last specifier and
-     * the last attribute via {@link lastFieldNode}.
-     *
-     * @param node - export named declaration node
+     Checks export specifiers and import attributes.
+     
+     Delegates to {@link checkTrailingComma}, locating the last specifier and
+     the last attribute via {@link lastFieldNode}.
+     
+     @param node - export named declaration node
      */
     function checkExportNamedDeclaration(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -189,12 +189,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks export-all import attributes.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last attribute via
-     * {@link lastFieldNode}.
-     *
-     * @param node - export all declaration node
+     Checks export-all import attributes.
+     
+     Delegates to {@link checkTrailingComma}, locating the last attribute via
+     {@link lastFieldNode}.
+     
+     @param node - export all declaration node
      */
     function checkExportAllDeclaration(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -208,12 +208,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks dynamic import arguments.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last argument via
-     * {@link lastImportExpressionItem}.
-     *
-     * @param node - dynamic import expression node
+     Checks dynamic import arguments.
+     
+     Delegates to {@link checkTrailingComma}, locating the last argument via
+     {@link lastImportExpressionItem}.
+     
+     @param node - dynamic import expression node
      */
     function checkImportExpression(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -225,12 +225,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks enum body members.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last member via
-     * {@link lastEnumMember}.
-     *
-     * @param node - enum declaration node
+     Checks enum body members.
+     
+     Delegates to {@link checkTrailingComma}, locating the last member via
+     {@link lastEnumMember}.
+     
+     @param node - enum declaration node
      */
     function checkEnumDeclaration(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -241,12 +241,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks type parameter declarations.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last parameter via
-     * {@link lastFieldNode}.
-     *
-     * @param node - type parameter declaration node
+     Checks type parameter declarations.
+     
+     Delegates to {@link checkTrailingComma}, locating the last parameter via
+     {@link lastFieldNode}.
+     
+     @param node - type parameter declaration node
      */
     function checkTypeParameters(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({
@@ -260,12 +260,12 @@ export const commaDangle: CreateOnceRule = {
     }
 
     /**
-     * Checks tuple element types.
-     *
-     * Delegates to {@link checkTrailingComma}, locating the last element type via
-     * {@link lastFieldNode}.
-     *
-     * @param node - tuple type node
+     Checks tuple element types.
+     
+     Delegates to {@link checkTrailingComma}, locating the last element type via
+     {@link lastFieldNode}.
+     
+     @param node - tuple type node
      */
     function checkTupleElements(node: ForeignBorrowed<Node>,): void {
       checkTrailingComma({

@@ -28,10 +28,10 @@ import {
 //region helpers: test doubles for stdin/stdout and server handle
 
 /**
- * Creates a ReadableStream from newline-delimited messages.
- *
- * @param messages - Raw strings to send as stdin lines (newline appended automatically).
- * @returns ReadableStream simulating stdin.
+ Creates a ReadableStream from newline-delimited messages.
+ 
+ @param messages - Raw strings to send as stdin lines (newline appended automatically).
+ @returns ReadableStream simulating stdin.
  */
 function stdinFromMessages(messages: readonly string[],): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -45,9 +45,9 @@ function stdinFromMessages(messages: readonly string[],): ReadableStream<Uint8Ar
 }
 
 /**
- * Creates a StdoutWriter that collects all written output into a string array.
- *
- * @returns Object with writer and collected output lines.
+ Creates a StdoutWriter that collects all written output into a string array.
+ 
+ @returns Object with writer and collected output lines.
  */
 function collectingWriter(): { writer: StdoutWriter; lines: string[]; } {
   const decoder = new TextDecoder();
@@ -67,17 +67,17 @@ function collectingWriter(): { writer: StdoutWriter; lines: string[]; } {
 }
 
 /**
- * Milliseconds the backpressure probe waits before concluding a write is still parked.
- * Nothing consumes the stream during that window, so a writer honoring backpressure cannot
- * resolve within it no matter how long the window is; the value only bounds the test.
+ Milliseconds the backpressure probe waits before concluding a write is still parked.
+ Nothing consumes the stream during that window, so a writer honoring backpressure cannot
+ resolve within it no matter how long the window is; the value only bounds the test.
  */
 const BACKPRESSURE_PROBE_MS = 25;
 
 /**
- * Creates a mock MCP server handle that returns a fixed response for any request.
- *
- * @param response - Dispatch result to return for all requests; `NO_RESPONSE` for notifications.
- * @returns McpServerHandle that always returns the given response.
+ Creates a mock MCP server handle that returns a fixed response for any request.
+ 
+ @param response - Dispatch result to return for all requests; `NO_RESPONSE` for notifications.
+ @returns McpServerHandle that always returns the given response.
  */
 function mockServer(response: DispatchResult,): McpServerHandle {
   return {
@@ -86,22 +86,22 @@ function mockServer(response: DispatchResult,): McpServerHandle {
 }
 
 /**
- * Milliseconds a deliberately slow tool occupies the queue.
- *
- * Long enough that the read loop consumes every remaining line while it runs, which is what
- * makes a cancellation arrive mid-flight rather than after the queue has already emptied.
+ Milliseconds a deliberately slow tool occupies the queue.
+ 
+ Long enough that the read loop consumes every remaining line while it runs, which is what
+ makes a cancellation arrive mid-flight rather than after the queue has already emptied.
  */
 const SLOW_TOOL_MS = 30;
 
 /**
- * Creates a server handle recording which request ids reached dispatch, delaying chosen ones.
- *
- * `dispatched` is what separates "cancelled before it ran" from "ran and was silenced": a
- * suppressed reply looks identical from the wire, so the assertion needs the handler's own view.
- *
- * @param slowIds - Request ids whose handler waits before answering
- *
- * @returns Handle plus the mutable record of dispatched ids
+ Creates a server handle recording which request ids reached dispatch, delaying chosen ones.
+ 
+ `dispatched` is what separates "cancelled before it ran" from "ran and was silenced": a
+ suppressed reply looks identical from the wire, so the assertion needs the handler's own view.
+ 
+ @param slowIds - Request ids whose handler waits before answering
+ 
+ @returns Handle plus the mutable record of dispatched ids
  */
 function recordingServer(
   { slowIds = [], }: { readonly slowIds?: readonly JsonRpcId[]; } = {},
@@ -110,7 +110,7 @@ function recordingServer(
   readonly dispatched: JsonRpcId[];
 } {
   /**
-   * Request ids that reached the handler, in dispatch order.
+   Request ids that reached the handler, in dispatch order.
    */
   const dispatched: JsonRpcId[] = [];
   return {
@@ -133,11 +133,11 @@ function recordingServer(
 }
 
 /**
- * Reads the `id` of every response line, in the order they were written.
- *
- * @param lines - Collected output lines
- *
- * @returns Ids in write order
+ Reads the `id` of every response line, in the order they were written.
+ 
+ @param lines - Collected output lines
+ 
+ @returns Ids in write order
  */
 function writtenIds(lines: readonly string[],): readonly unknown[] {
   return lines.map(function idOf(line,): unknown {
@@ -146,11 +146,11 @@ function writtenIds(lines: readonly string[],): readonly unknown[] {
 }
 
 /**
- * Builds a cancellation notification naming one request.
- *
- * @param requestId - Request to cancel
- *
- * @returns Serialized notification line
+ Builds a cancellation notification naming one request.
+ 
+ @param requestId - Request to cancel
+ 
+ @returns Serialized notification line
  */
 function cancelLine(requestId: JsonRpcId,): string {
   return JSON.stringify({
@@ -161,11 +161,11 @@ function cancelLine(requestId: JsonRpcId,): string {
 }
 
 /**
- * Builds a request line for a method that needs no params.
- *
- * @param id - Request id
- *
- * @returns Serialized request line
+ Builds a request line for a method that needs no params.
+ 
+ @param id - Request id
+ 
+ @returns Serialized request line
  */
 function requestLine(id: JsonRpcId,): string {
   return JSON.stringify({
@@ -276,14 +276,14 @@ await describe({
         );
 
         /**
-         * Resolves once the write completes, labelling that outcome for the race below.
+         Resolves once the write completes, labelling that outcome for the race below.
          */
         const flushOutcome = async (): Promise<string> => {
           await pending;
           return 'resolved';
         };
         /**
-         * Resolves after the probe window, labelling a write still parked on backpressure.
+         Resolves after the probe window, labelling a write still parked on backpressure.
          */
         const probeOutcome = async (): Promise<string> => {
           await wait(BACKPRESSURE_PROBE_MS,);

@@ -84,9 +84,9 @@ const THROW_POLICY: RuntimePolicyDefinition = {
 };
 
 /**
- * Creates repository with one real landed commit.
- *
- * @returns disposable committed repository
+ Creates repository with one real landed commit.
+ 
+ @returns disposable committed repository
  */
 async function createRepository(): Promise<RepositoryFixture> {
   /** Disposable repository root. */

@@ -1,10 +1,10 @@
 /**
- * Built testing seam for task utility implementation helpers.
- *
- * This sub-entry exists only so package tests exercise bundled code. Every
- * re-exported declaration is internal and carries no compatibility promise.
- *
- * @module
+ Built testing seam for task utility implementation helpers.
+ 
+ This sub-entry exists only so package tests exercise bundled code. Every
+ re-exported declaration is internal and carries no compatibility promise.
+ 
+ @module
  */
 
 export {

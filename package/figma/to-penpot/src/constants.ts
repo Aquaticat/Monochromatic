@@ -1,7 +1,7 @@
 /**
- * Shared constants for the Figma-to-Penpot converter.
- *
- * @module figma-to-penpot-constants
+ Shared constants for the Figma-to-Penpot converter.
+ 
+ @module figma-to-penpot-constants
  */
 
 import { SKIP, } from './read.ts';
@@ -11,7 +11,7 @@ import type {
 } from './types.ts';
 
 /**
- * SVG-shaped identity matrix used as the default transform and as the reset value when normalising shape positions into x/y.
+ SVG-shaped identity matrix used as the default transform and as the reset value when normalising shape positions into x/y.
  */
 export const IDENTITY_TRANSFORM: PenpotTransform = {
   a: 1,
@@ -23,7 +23,7 @@ export const IDENTITY_TRANSFORM: PenpotTransform = {
 };
 
 /**
- * Penpot feature flags required for the importer to accept files produced by this converter; older clients without these are not the intended consumers.
+ Penpot feature flags required for the importer to accept files produced by this converter; older clients without these are not the intended consumers.
  */
 export const DEFAULT_FEATURES: readonly string[] = [
   'fdata/path-data',
@@ -35,37 +35,37 @@ export const DEFAULT_FEATURES: readonly string[] = [
 ];
 
 /**
- * Penpot binfile schema version stamped onto every produced {@link PenpotFile}.
+ Penpot binfile schema version stamped onto every produced {@link PenpotFile}.
  */
 export const PENPOT_FILE_VERSION = 67;
 
 /**
- * All-zero UUID Penpot uses as the implicit root-frame id on every page.
+ All-zero UUID Penpot uses as the implicit root-frame id on every page.
  */
 export const ZERO_UUID = '00000000-0000-0000-0000-000000000000';
 
 /**
- * Degenerate non-zero extent Penpot's root frame uses so its selrect is valid without occupying real space.
+ Degenerate non-zero extent Penpot's root frame uses so its selrect is valid without occupying real space.
  */
 export const ROOT_FRAME_EXTENT = 0.01;
 
 /**
- * Default font size, in px, for Figma text nodes whose size is missing.
+ Default font size, in px, for Figma text nodes whose size is missing.
  */
 export const DEFAULT_FONT_SIZE = 16;
 
 /**
- * Background colour Penpot pages fall back to for `.fig`/`.jam` canvases.
+ Background colour Penpot pages fall back to for `.fig`/`.jam` canvases.
  */
 export const PAGE_BACKGROUND_FIG = '#F5F5F5';
 
 /**
- * Background colour Penpot pages fall back to for `.deck` slides.
+ Background colour Penpot pages fall back to for `.deck` slides.
  */
 export const PAGE_BACKGROUND_DECK = '#FFFFFF';
 
 /**
- * Lookup mapping each Figma `NodeType` to its Penpot shape equivalent, or the {@link SKIP} sentinel when the node has no Penpot counterpart and should be dropped.
+ Lookup mapping each Figma `NodeType` to its Penpot shape equivalent, or the {@link SKIP} sentinel when the node has no Penpot counterpart and should be dropped.
  */
 export const FIGMA_NODE_TYPE_MAP: Record<string, PenpotShapeType | typeof SKIP> = {
   // Structural nodes (no direct Penpot shape)

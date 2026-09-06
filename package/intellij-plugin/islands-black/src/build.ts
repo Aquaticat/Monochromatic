@@ -13,22 +13,22 @@ import {
 import { ZipWriter, } from '@monochromatic-dev/module-zip-writer/ts';
 
 /**
- * Output plugin archive path relative to package root.
- *
- * @example
- * ```ts
- * await writeFile(JAR_PATH, zipWriter.build(),);
- * ```
+ Output plugin archive path relative to package root.
+ 
+ @example
+ ```ts
+ await writeFile(JAR_PATH, zipWriter.build(),);
+ ```
  */
 const JAR_PATH = 'islands-black.jar';
 
 /**
- * Plugin directories included in installable archive.
- *
- * @example
- * ```ts
- * const entries = (await Promise.all(ARCHIVE_ROOTS.map(listRoot,),)).flat();
- * ```
+ Plugin directories included in installable archive.
+ 
+ @example
+ ```ts
+ const entries = (await Promise.all(ARCHIVE_ROOTS.map(listRoot,),)).flat();
+ ```
  */
 const ARCHIVE_ROOTS = [
   'META-INF',
@@ -37,15 +37,15 @@ const ARCHIVE_ROOTS = [
 ] as const;
 
 /**
- * File queued for inclusion in plugin archive.
- *
- * @example
- * ```ts
- * const entry: ArchiveEntry = {
- *   archivePath: 'META-INF/plugin.xml',
- *   diskPath: 'META-INF/plugin.xml',
- * };
- * ```
+ File queued for inclusion in plugin archive.
+ 
+ @example
+ ```ts
+ const entry: ArchiveEntry = {
+   archivePath: 'META-INF/plugin.xml',
+   diskPath: 'META-INF/plugin.xml',
+ };
+ ```
  */
 type ArchiveEntry = Readonly<{
   archivePath: string;
@@ -53,15 +53,15 @@ type ArchiveEntry = Readonly<{
 }>;
 
 /**
- * File content ready to copy into plugin archive.
- *
- * @example
- * ```ts
- * const entryContent: ArchiveEntryContent = {
- *   archivePath: 'META-INF/plugin.xml',
- *   content: await readFile('META-INF/plugin.xml',),
- * };
- * ```
+ File content ready to copy into plugin archive.
+ 
+ @example
+ ```ts
+ const entryContent: ArchiveEntryContent = {
+   archivePath: 'META-INF/plugin.xml',
+   content: await readFile('META-INF/plugin.xml',),
+ };
+ ```
  */
 type ArchiveEntryContent = Readonly<{
   archivePath: string;
@@ -69,18 +69,18 @@ type ArchiveEntryContent = Readonly<{
 }>;
 
 /**
- * Sort directory entries by name for deterministic archive entry order.
- *
- * @param left - Directory entry compared before right entry
- *
- * @param right - Directory entry compared after left entry
- *
- * @returns Sort order for left relative to right
- *
- * @example
- * ```ts
- * compareDirentNames({ left, right, });
- * ```
+ Sort directory entries by name for deterministic archive entry order.
+ 
+ @param left - Directory entry compared before right entry
+ 
+ @param right - Directory entry compared after left entry
+ 
+ @returns Sort order for left relative to right
+ 
+ @example
+ ```ts
+ compareDirentNames({ left, right, });
+ ```
  */
 function compareDirentNames(
   {
@@ -99,16 +99,16 @@ function compareDirentNames(
 }
 
 /**
- * Convert platform-native package path to ZIP-standard forward-slash path.
- *
- * @param diskPath - Package-relative path needing archive normalization
- *
- * @returns Archive entry path using forward slash separators
- *
- * @example
- * ```ts
- * toArchivePath({ diskPath: join('META-INF', 'plugin.xml',), });
- * ```
+ Convert platform-native package path to ZIP-standard forward-slash path.
+ 
+ @param diskPath - Package-relative path needing archive normalization
+ 
+ @returns Archive entry path using forward slash separators
+ 
+ @example
+ ```ts
+ toArchivePath({ diskPath: join('META-INF', 'plugin.xml',), });
+ ```
  */
 function toArchivePath(
   { diskPath, }: Readonly<{ diskPath: string; }>,
@@ -122,31 +122,31 @@ function toArchivePath(
 }
 
 /**
- * Recursively list regular files under root directory for archive inclusion.
- *
- * @param root - Directory path whose regular files enter archive
- *
- * @returns Archive entries sorted by package-relative path
- *
- * @throws When input tree contains unsupported special files
- *
- * @example
- * ```ts
- * const entries = await listArchiveEntries({ root: 'META-INF', },);
- * ```
+ Recursively list regular files under root directory for archive inclusion.
+ 
+ @param root - Directory path whose regular files enter archive
+ 
+ @returns Archive entries sorted by package-relative path
+ 
+ @throws When input tree contains unsupported special files
+ 
+ @example
+ ```ts
+ const entries = await listArchiveEntries({ root: 'META-INF', },);
+ ```
  */
 async function listArchiveEntries(
   { root, }: Readonly<{ root: string; }>,
 ): Promise<readonly ArchiveEntry[]> {
   /**
-   * Directory entries found immediately under current root.
+   Directory entries found immediately under current root.
    */
   const directoryEntries = await readdir(
     root,
     { withFileTypes: true, },
   );
   /**
-   * Directory entries sorted before traversal to keep archive deterministic.
+   Directory entries sorted before traversal to keep archive deterministic.
    */
   const sortedDirectoryEntries = directoryEntries.toSorted(function compareDirectoryEntries(
     left: Readonly<Dirent>,
@@ -158,14 +158,14 @@ async function listArchiveEntries(
     },);
   },);
   /**
-   * Per-entry archive fragments, flattened before returning.
+   Per-entry archive fragments, flattened before returning.
    */
   const archiveEntryGroups = await Promise.all(
     sortedDirectoryEntries.map(function archiveEntriesForDirent(
       dirent: Readonly<Dirent>,
     ): Promise<readonly ArchiveEntry[]> {
       /**
-       * Package-relative disk path for current directory entry.
+       Package-relative disk path for current directory entry.
        */
       const diskPath = join(
         root,
@@ -188,7 +188,7 @@ async function listArchiveEntries(
 }
 
 /**
- * Archive entries for all plugin roots in deterministic root order.
+ Archive entries for all plugin roots in deterministic root order.
  */
 const archiveEntries = (await Promise.all(
   ARCHIVE_ROOTS.map(function archiveEntriesForRoot(root: string,): Promise<readonly ArchiveEntry[]> {
@@ -197,19 +197,19 @@ const archiveEntries = (await Promise.all(
 )).flat();
 
 /**
- * ZIP writer used to create installable JetBrains plugin JAR.
+ ZIP writer used to create installable JetBrains plugin JAR.
  */
 const zipWriter = new ZipWriter();
 
 /**
- * File contents read concurrently before insertion-order-preserving archive writes.
+ File contents read concurrently before insertion-order-preserving archive writes.
  */
 const archiveEntryContents = await Promise.all(
   archiveEntries.map(async function readArchiveEntryContent(
     archiveEntry: ArchiveEntry,
   ): Promise<ArchiveEntryContent> {
     /**
-     * File bytes copied verbatim into archive entry.
+     File bytes copied verbatim into archive entry.
      */
     const content = await readFile(archiveEntry.diskPath,);
     return {

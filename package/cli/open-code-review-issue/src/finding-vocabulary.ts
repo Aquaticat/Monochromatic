@@ -1,7 +1,7 @@
 /**
- * OCR category and severity runtime vocabulary.
- *
- * @module
+ OCR category and severity runtime vocabulary.
+ 
+ @module
  */
 
 import { InputValidationError, } from './input-validation-error.ts';
@@ -11,7 +11,7 @@ import type {
 } from './model.ts';
 
 /**
- * Accepted OCR categories for runtime narrowing.
+ Accepted OCR categories for runtime narrowing.
  */
 const FINDING_CATEGORIES: ReadonlySet<string> = new Set([
   'bug',
@@ -25,7 +25,7 @@ const FINDING_CATEGORIES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Accepted OCR severities for runtime narrowing.
+ Accepted OCR severities for runtime narrowing.
  */
 const FINDING_SEVERITIES: ReadonlySet<string> = new Set([
   'critical',
@@ -35,52 +35,52 @@ const FINDING_SEVERITIES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Narrows validated category text to OCR's declared category union.
- *
- * @param value - Category candidate from one comment.
- *
- * @returns Whether candidate belongs to supported category vocabulary.
- *
- * @example
- * ```ts
- * isFindingCategory('bug'); // true
- * ```
+ Narrows validated category text to OCR's declared category union.
+ 
+ @param value - Category candidate from one comment.
+ 
+ @returns Whether candidate belongs to supported category vocabulary.
+ 
+ @example
+ ```ts
+ isFindingCategory('bug'); // true
+ ```
  */
 function isFindingCategory(value: string,): value is FindingCategory {
   return FINDING_CATEGORIES.has(value,);
 }
 
 /**
- * Narrows validated severity text to OCR's declared severity union.
- *
- * @param value - Severity candidate from one comment.
- *
- * @returns Whether candidate belongs to supported severity vocabulary.
- *
- * @example
- * ```ts
- * isFindingSeverity('high'); // true
- * ```
+ Narrows validated severity text to OCR's declared severity union.
+ 
+ @param value - Severity candidate from one comment.
+ 
+ @returns Whether candidate belongs to supported severity vocabulary.
+ 
+ @example
+ ```ts
+ isFindingSeverity('high'); // true
+ ```
  */
 function isFindingSeverity(value: string,): value is FindingSeverity {
   return FINDING_SEVERITIES.has(value,);
 }
 
 /**
- * Normalizes optional category after case and whitespace folding.
- *
- * @param record - Comment record carrying category.
- *
- * @param positionLabel - Input position for diagnostic evidence.
- *
- * @returns Supported category or absence.
- *
- * @throws {@link InputValidationError} when supplied category is unsupported.
- *
- * @example
- * ```ts
- * normalizeCategory({ record: { category: ' BUG ' }, positionLabel: 'record 1' });
- * ```
+ Normalizes optional category after case and whitespace folding.
+ 
+ @param record - Comment record carrying category.
+ 
+ @param positionLabel - Input position for diagnostic evidence.
+ 
+ @returns Supported category or absence.
+ 
+ @throws {@link InputValidationError} when supplied category is unsupported.
+ 
+ @example
+ ```ts
+ normalizeCategory({ record: { category: ' BUG ' }, positionLabel: 'record 1' });
+ ```
  */
 export function normalizeCategoryMetadata({
   record,
@@ -90,7 +90,7 @@ export function normalizeCategoryMetadata({
   readonly positionLabel: string;
 },): { readonly category?: FindingCategory; } {
   /**
-   * Untrusted optional category value.
+   Untrusted optional category value.
    */
   const value = record.category;
   if ((value === undefined) || (value === '')) {
@@ -102,7 +102,7 @@ export function normalizeCategoryMetadata({
     );
   }
   /**
-   * Case-folded category used by policy comparisons.
+   Case-folded category used by policy comparisons.
    */
   const normalized = value.trim()
     .toLowerCase();
@@ -115,20 +115,20 @@ export function normalizeCategoryMetadata({
 }
 
 /**
- * Normalizes optional severity after case and whitespace folding.
- *
- * @param record - Comment record carrying severity.
- *
- * @param positionLabel - Input position for diagnostic evidence.
- *
- * @returns Supported severity or absence.
- *
- * @throws {@link InputValidationError} when supplied severity is unsupported.
- *
- * @example
- * ```ts
- * normalizeSeverity({ record: { severity: ' HIGH ' }, positionLabel: 'record 1' });
- * ```
+ Normalizes optional severity after case and whitespace folding.
+ 
+ @param record - Comment record carrying severity.
+ 
+ @param positionLabel - Input position for diagnostic evidence.
+ 
+ @returns Supported severity or absence.
+ 
+ @throws {@link InputValidationError} when supplied severity is unsupported.
+ 
+ @example
+ ```ts
+ normalizeSeverity({ record: { severity: ' HIGH ' }, positionLabel: 'record 1' });
+ ```
  */
 export function normalizeSeverityMetadata({
   record,
@@ -138,7 +138,7 @@ export function normalizeSeverityMetadata({
   readonly positionLabel: string;
 },): { readonly severity?: FindingSeverity; } {
   /**
-   * Untrusted optional severity value.
+   Untrusted optional severity value.
    */
   const value = record.severity;
   if ((value === undefined) || (value === '')) {
@@ -150,7 +150,7 @@ export function normalizeSeverityMetadata({
     );
   }
   /**
-   * Case-folded severity used by display and policy.
+   Case-folded severity used by display and policy.
    */
   const normalized = value.trim()
     .toLowerCase();

@@ -1,7 +1,7 @@
 /**
- * Discovered command, abort, process, clear, and branch runtime scenarios.
- *
- * @module
+ Discovered command, abort, process, clear, and branch runtime scenarios.
+ 
+ @module
  */
 
 import {
@@ -17,12 +17,12 @@ import {
 } from './pi-runtime-verifier-harness.ts';
 
 /**
- * Kickoff messages after start and immediate replacement.
+ Kickoff messages after start and immediate replacement.
  */
 const REPLACEMENT_MESSAGE_COUNT = 2;
 
 /**
- * Loaded lifecycle verification result retained for exhaustion scenario.
+ Loaded lifecycle verification result retained for exhaustion scenario.
  */
 type GoalFlowResult = {
   readonly harness: GoalRuntimeHarness;
@@ -30,16 +30,16 @@ type GoalFlowResult = {
 };
 
 /**
- * Check captured primary task content for private protocol absence.
- *
- * @param content - untrusted custom-message content
- *
- * @returns whether content is plain task text without protocol terms
- *
- * @example
- * ```ts
- * taskContentHasNoProtocol('User objective: test');
- * ```
+ Check captured primary task content for private protocol absence.
+ 
+ @param content - untrusted custom-message content
+ 
+ @returns whether content is plain task text without protocol terms
+ 
+ @example
+ ```ts
+ taskContentHasNoProtocol('User objective: test');
+ ```
  */
 function taskContentHasNoProtocol(content: unknown,): boolean {
   if ((typeof content) !== 'string')
@@ -50,22 +50,22 @@ function taskContentHasNoProtocol(content: unknown,): boolean {
 }
 
 /**
- * Exercise discovered command, lifecycle, and selected-branch reconstruction.
- *
- * @param packageDirectory - built package discovered through manifest
- *
- * @param agentDirectory - disposable Pi global directory
- *
- * @param sessionDirectory - disposable persisted sessions
- *
- * @returns runtime harness positioned on active replacement branch
- *
- * @throws when lifecycle invariant differs
- *
- * @example
- * ```ts
- * await verifyDiscoveredGoalFlow({ packageDirectory, agentDirectory, sessionDirectory });
- * ```
+ Exercise discovered command, lifecycle, and selected-branch reconstruction.
+ 
+ @param packageDirectory - built package discovered through manifest
+ 
+ @param agentDirectory - disposable Pi global directory
+ 
+ @param sessionDirectory - disposable persisted sessions
+ 
+ @returns runtime harness positioned on active replacement branch
+ 
+ @throws when lifecycle invariant differs
+ 
+ @example
+ ```ts
+ await verifyDiscoveredGoalFlow({ packageDirectory, agentDirectory, sessionDirectory });
+ ```
  */
 async function verifyDiscoveredGoalFlow(
   {
@@ -79,7 +79,7 @@ async function verifyDiscoveredGoalFlow(
   },
 ): Promise<GoalFlowResult> {
   /**
-   * Real package discovery with disposable session.
+   Real package discovery with disposable session.
    */
   const harness = await createGoalRuntimeHarness({
     packageDirectory,
@@ -100,7 +100,7 @@ async function verifyDiscoveredGoalFlow(
     message: 'discovered package registered forbidden tool_call blocker',
   },);
   /**
-   * Loaded slash command under test.
+   Loaded slash command under test.
    */
   const command = getGoalCommand(harness,);
   await command({
@@ -108,7 +108,7 @@ async function verifyDiscoveredGoalFlow(
     context: harness.context,
   },);
   /**
-   * Leaf retaining first start and kickoff.
+   Leaf retaining first start and kickoff.
    */
   const firstLeaf = harness.sessionManager
     .getLeafId();
@@ -119,7 +119,7 @@ async function verifyDiscoveredGoalFlow(
     context: harness.context,
   },);
   /**
-   * Leaf retaining replacement before review.
+   Leaf retaining replacement before review.
    */
   const replacementLeaf = harness.sessionManager
     .getLeafId();
@@ -140,7 +140,7 @@ async function verifyDiscoveredGoalFlow(
   },);
 
   /**
-   * Explicit abort leaves active state without review or continuation.
+   Explicit abort leaves active state without review or continuation.
    */
   await settleGoalRun({
     harness,
@@ -154,7 +154,7 @@ async function verifyDiscoveredGoalFlow(
   },);
 
   /**
-   * Live process suppresses settlement review.
+   Live process suppresses settlement review.
    */
   await emitGoalEvent({
     harness,
@@ -205,7 +205,7 @@ async function verifyDiscoveredGoalFlow(
   },);
 
   /**
-   * Compaction restores state without triggering task turn.
+   Compaction restores state without triggering task turn.
    */
   await emitGoalEvent({
     harness,
@@ -226,7 +226,7 @@ async function verifyDiscoveredGoalFlow(
   },);
 
   /**
-   * Clear invalidates delayed settlement review.
+   Clear invalidates delayed settlement review.
    */
   await emitGoalEvent({
     harness,
@@ -256,14 +256,14 @@ async function verifyDiscoveredGoalFlow(
   },);
 
   /**
-   * Start active run retained for exhaustion scenario.
+   Start active run retained for exhaustion scenario.
    */
   await command({
     args: 'Reloaded disposable objective',
     context: harness.context,
   },);
   /**
-   * Task message count before restoration.
+   Task message count before restoration.
    */
   const beforeRestore = harness.messages
     .length;

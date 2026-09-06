@@ -1,7 +1,7 @@
 /**
- * Startup recovery for interrupted private-index commit transactions.
- *
- * @module
+ Startup recovery for interrupted private-index commit transactions.
+ 
+ @module
  */
 import {
   access,
@@ -51,7 +51,7 @@ import {
 export { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
 
 /**
- * Strict journal and Git decoder.
+ Strict journal and Git decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
@@ -59,7 +59,7 @@ const DECODER = new TextDecoder(
 );
 
 /**
- * Recovery action taken at startup.
+ Recovery action taken at startup.
  */
 export type CommitTransactionRecoveryResult =
   | 'none'
@@ -68,11 +68,11 @@ export type CommitTransactionRecoveryResult =
   | 'already-installed';
 
 /**
- * Reports whether path currently exists without suppressing other failures.
- *
- * @param path - exact path to probe
- *
- * @returns whether path is present
+ Reports whether path currently exists without suppressing other failures.
+ 
+ @param path - exact path to probe
+ 
+ @returns whether path is present
  */
 async function pathExists(path: string,): Promise<boolean> {
   try {
@@ -87,11 +87,11 @@ async function pathExists(path: string,): Promise<boolean> {
 }
 
 /**
- * Reports whether journal owner process is still alive.
- *
- * @param pid - recorded wrapper process ID
- *
- * @returns whether signal-zero probe succeeds
+ Reports whether journal owner process is still alive.
+ 
+ @param pid - recorded wrapper process ID
+ 
+ @returns whether signal-zero probe succeeds
  */
 function processIsAlive(pid: number,): boolean {
   try {
@@ -110,22 +110,22 @@ function processIsAlive(pid: number,): boolean {
 }
 
 /**
- * Recovers interrupted transaction for invocation repository before config execution.
- *
- * @param args - exact wrapper arguments
- *
- * @param gitPath - resolved real Git executable
- *
- * @param identity - optional repository identity retained by config-free forwarding
- *
- * @returns recovery action
- *
- * @throws CommitTransactionRecoveryError when current state conflicts
- *
- * @example
- * ```ts
- * await recoverCommitTransaction({ args: ['status'], gitPath: '/usr/bin/git' });
- * ```
+ Recovers interrupted transaction for invocation repository before config execution.
+ 
+ @param args - exact wrapper arguments
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param identity - optional repository identity retained by config-free forwarding
+ 
+ @returns recovery action
+ 
+ @throws CommitTransactionRecoveryError when current state conflicts
+ 
+ @example
+ ```ts
+ await recoverCommitTransaction({ args: ['status'], gitPath: '/usr/bin/git' });
+ ```
  */
 export async function recoverCommitTransaction({
   args,
@@ -137,7 +137,7 @@ export async function recoverCommitTransaction({
   identity?: GitWorktreeIdentity;
 }>,): Promise<CommitTransactionRecoveryResult> {
   /**
-   * Absolute invocation-specific transaction directory when one can exist.
+   Absolute invocation-specific transaction directory when one can exist.
    */
   const directory = await resolveCommitTransactionDirectory({
     args,
@@ -147,13 +147,13 @@ export async function recoverCommitTransaction({
   if (directory === RECOVERY_TARGET_NOT_APPLICABLE)
     return 'none';
   /**
-   * Effective invocation cwd retained for journal verification Git requests.
+   Effective invocation cwd retained for journal verification Git requests.
    */
   const { effectiveCwd, } = parseGlobalOptions(args,);
   if (!(await pathExists(directory,)))
     return 'none';
   /**
-   * Non-followed transaction directory metadata.
+   Non-followed transaction directory metadata.
    */
   const directoryMetadata = await lstat(
     directory,
@@ -162,21 +162,21 @@ export async function recoverCommitTransaction({
   if ((!directoryMetadata.isDirectory()) || directoryMetadata.isSymbolicLink())
     throw new CommitTransactionRecoveryError(`Unsafe transaction recovery directory: ${directory}`,);
   /**
-   * Required prepared journal path.
+   Required prepared journal path.
    */
   const journalPath = join(
     directory,
     'journal.json',
   );
   /**
-   * Required exact original index snapshot.
+   Required exact original index snapshot.
    */
   const originalIndexPath = join(
     directory,
     'original.index',
   );
   /**
-   * Required exact intended index snapshot.
+   Required exact intended index snapshot.
    */
   const postIndexPath = join(
     directory,
@@ -189,7 +189,7 @@ export async function recoverCommitTransaction({
   ],)).every(Boolean,))
     throw new CommitTransactionRecoveryError(`Incomplete transaction recovery artifacts: ${directory}`,);
   /**
-   * Prepared journal read through no-follow descriptor.
+   Prepared journal read through no-follow descriptor.
    */
   const journal = parsePreparedJournal(
     await readRegularRecoveryFile(journalPath,),
@@ -198,14 +198,14 @@ export async function recoverCommitTransaction({
     || (String(directoryMetadata.ino,) !== journal.directoryInode))
     throw new CommitTransactionRecoveryError(`Transaction directory identity changed: ${directory}`,);
   /**
-   * Owner-preserving stable original-index path.
+   Owner-preserving stable original-index path.
    */
   const stableOriginalIndexPath = join(
     directory,
     'original.recovery',
   );
   /**
-   * Owner-preserving stable post-index path.
+   Owner-preserving stable post-index path.
    */
   const stablePostIndexPath = join(
     directory,
@@ -227,7 +227,7 @@ export async function recoverCommitTransaction({
   ],);
   if (processIsAlive(journal.ownerPid,)) {
     /**
-     * Current process birth identity for recorded PID.
+     Current process birth identity for recorded PID.
      */
     const currentOwnerIdentity = await resolveProcessBirthIdentity(journal.ownerPid,);
     if ((typeof currentOwnerIdentity) === 'symbol') {
@@ -239,7 +239,7 @@ export async function recoverCommitTransaction({
       throw new CommitTransactionRecoveryError(`Transaction owner process ${String(journal.ownerPid,)} is still active: ${directory}`,);
   }
   /**
-   * Canonical current repository root.
+   Canonical current repository root.
    */
   const repositoryRoot = await realpath(DECODER.decode((await runTransactionGit({
     gitPath,
@@ -253,7 +253,7 @@ export async function recoverCommitTransaction({
   if (repositoryRoot !== journal.repositoryRoot)
     throw new CommitTransactionRecoveryError('Transaction journal repository identity does not match invocation.',);
   /**
-   * Git-provided current index path.
+   Git-provided current index path.
    */
   const reportedIndex = DECODER.decode((await runTransactionGit({
     gitPath,
@@ -266,7 +266,7 @@ export async function recoverCommitTransaction({
   },)).stdout,)
     .trim();
   /**
-   * Absolute current real index path.
+   Absolute current real index path.
    */
   const realIndexPath = isAbsolute(reportedIndex,)
     ? reportedIndex
@@ -277,28 +277,28 @@ export async function recoverCommitTransaction({
   if (realIndexPath !== journal.realIndexPath)
     throw new CommitTransactionRecoveryError('Transaction journal index path does not match invocation.',);
   /**
-   * Current exact ref state.
+   Current exact ref state.
    */
   const currentHead = await resolveCurrentHead({
     gitPath,
     cwd: effectiveCwd,
   },);
   /**
-   * Whether real index remains exact original bytes.
+   Whether real index remains exact original bytes.
    */
   const realIsOriginal = await snapshotFilesEqual({
     leftPath: stableOriginalIndexPath,
     rightPath: realIndexPath,
   },);
   /**
-   * Whether real index already contains intended bytes.
+   Whether real index already contains intended bytes.
    */
   const realIsIntended = await snapshotFilesEqual({
     leftPath: stablePostIndexPath,
     rightPath: realIndexPath,
   },);
   /**
-   * Current lock path.
+   Current lock path.
    */
   const lockPath = `${realIndexPath}.lock`;
   if (headsEqual({
@@ -320,7 +320,7 @@ export async function recoverCommitTransaction({
   if (currentHead.kind === 'absent')
     throw new CommitTransactionRecoveryError(`HEAD disappeared after prepared transaction; recovery retained at ${directory}`,);
   /**
-   * Optional durable landed marker path.
+   Optional durable landed marker path.
    */
   const markerPath = join(
     directory,
@@ -328,7 +328,7 @@ export async function recoverCommitTransaction({
   );
   if (await pathExists(markerPath,)) {
     /**
-     * Validated durable landed marker.
+     Validated durable landed marker.
      */
     const marker = parseRefUpdated(
       await readRegularRecoveryFile(markerPath,),
@@ -352,7 +352,7 @@ export async function recoverCommitTransaction({
   },);
   if (realIsIntended) {
     /**
-     * Whether installation marker became durable before interruption.
+     Whether installation marker became durable before interruption.
      */
     const installationMarked = await pathExists(join(
       directory,

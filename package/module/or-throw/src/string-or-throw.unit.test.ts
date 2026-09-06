@@ -1,7 +1,7 @@
 /**
- * Tests for `stringOrThrow`.
- *
- * @module
+ Tests for `stringOrThrow`.
+ 
+ @module
  */
 
 import {
@@ -42,11 +42,11 @@ await describe({
       name: 'does not invoke caller-owned coercion hooks while formatting failures',
       fn: async () => {
         /**
-         * Number of user coercion hook calls.
+         Number of user coercion hook calls.
          */
         let coercionCount = 0;
         /**
-         * Rejected reference carrying observable coercion hook.
+         Rejected reference carrying observable coercion hook.
          */
         const value = {
           toString(): string {

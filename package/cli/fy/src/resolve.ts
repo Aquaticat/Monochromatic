@@ -8,39 +8,39 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Logger root for cli-fy after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for cli-fy after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'cli-fy', },);
 
 /**
- * Sentinel marking "not found here", returned by the resolution helpers below.
- *
- * A unique `Symbol` is the genuine-sentinel form the no-nullish-union rule allows: it lets a
- * helper signal absence without a `string | undefined` return type, and callers test identity
- * against it instead of a nullish check.
+ Sentinel marking "not found here", returned by the resolution helpers below.
+ 
+ A unique `Symbol` is the genuine-sentinel form the no-nullish-union rule allows: it lets a
+ helper signal absence without a `string | undefined` return type, and callers test identity
+ against it instead of a nullish check.
  */
 const NOT_FOUND = Symbol('module specifier resolution candidate not found',);
 
 /**
- * Attempts to resolve a bare specifier from a given base directory.
- * Returns the resolved path or {@link NOT_FOUND} if resolution fails.
- *
- * @param specifier - ESM import specifier (e.g. `lodash`, `@scope/pkg/sub`)
- *
- * @param baseDir - Directory to resolve from
- *
- * @returns Resolved file URL string, or {@link NOT_FOUND} on failure
- *
- * @example
- * ```ts
- * resolveFrom('lodash', '/home/user/project');
- * // => 'file:///home/user/project/node_modules/lodash/index.js'
- * ```
+ Attempts to resolve a bare specifier from a given base directory.
+ Returns the resolved path or {@link NOT_FOUND} if resolution fails.
+ 
+ @param specifier - ESM import specifier (e.g. `lodash`, `@scope/pkg/sub`)
+ 
+ @param baseDir - Directory to resolve from
+ 
+ @returns Resolved file URL string, or {@link NOT_FOUND} on failure
+ 
+ @example
+ ```ts
+ resolveFrom('lodash', '/home/user/project');
+ // => 'file:///home/user/project/node_modules/lodash/index.js'
+ ```
  */
 function resolveFrom(
   {
@@ -52,7 +52,7 @@ function resolveFrom(
   },
 ): string | typeof NOT_FOUND {
   /**
-   * Tagged logger scoped to this function so log lines identify the call site.
+   Tagged logger scoped to this function so log lines identify the call site.
    */
   const rl = tagged({
     tag: resolveFrom.name,
@@ -61,14 +61,14 @@ function resolveFrom(
   rl.info(`trying base ${baseDir}`,);
   try {
     /**
-     * CommonJS-style `require` anchored at a synthetic file under `baseDir` so Node resolves relative to that directory.
+     CommonJS-style `require` anchored at a synthetic file under `baseDir` so Node resolves relative to that directory.
      */
     const require = createRequire(join(
       baseDir,
       'noop.js',
     ),);
     /**
-     * Absolute path returned by Node's resolver; logged before return for traceability.
+     Absolute path returned by Node's resolver; logged before return for traceability.
      */
     const resolved = require.resolve(specifier,);
     rl.info(`resolved to ${resolved}`,);
@@ -81,27 +81,27 @@ function resolveFrom(
 }
 
 /**
- * Finds the global node_modules directory by checking common global install locations.
- * Returns the path or {@link NOT_FOUND} if none found.
- *
- * @returns Path to global node_modules, or {@link NOT_FOUND}
- *
- * @example
- * ```ts
- * findGlobalNodeModules();
- * // => '/home/user/.bun/install/global/node_modules'
- * ```
+ Finds the global node_modules directory by checking common global install locations.
+ Returns the path or {@link NOT_FOUND} if none found.
+ 
+ @returns Path to global node_modules, or {@link NOT_FOUND}
+ 
+ @example
+ ```ts
+ findGlobalNodeModules();
+ // => '/home/user/.bun/install/global/node_modules'
+ ```
  */
 async function findGlobalNodeModules(): Promise<string | typeof NOT_FOUND> {
   /**
-   * Tagged logger scoped to this function so log lines identify the call site.
+   Tagged logger scoped to this function so log lines identify the call site.
    */
   const rl = tagged({
     tag: findGlobalNodeModules.name,
     l,
   },);
   /**
-   * User's home directory; drives the per-user candidates below and is required for them to be meaningful.
+   User's home directory; drives the per-user candidates below and is required for them to be meaningful.
    */
   const home = process.env
     .HOME
@@ -113,7 +113,7 @@ async function findGlobalNodeModules(): Promise<string | typeof NOT_FOUND> {
     return NOT_FOUND;
   }
   /**
-   * Candidate global node_modules paths, ordered by priority
+   Candidate global node_modules paths, ordered by priority
    */
   const candidates = [
     join(
@@ -133,13 +133,13 @@ async function findGlobalNodeModules(): Promise<string | typeof NOT_FOUND> {
     '/usr/lib/node_modules',
   ];
   /**
-   * Candidate check results in the same order as {@link candidates}; all stats run concurrently while preserving priority for the final match.
+   Candidate check results in the same order as {@link candidates}; all stats run concurrently while preserving priority for the final match.
    */
   const candidateResults = await Promise.all(
     candidates.map(async function inspectCandidate(candidate,): Promise<string | typeof NOT_FOUND> {
       try {
         /**
-         * Size of the candidate's `.package-lock.json`; a non-zero size confirms a real global install lives at this path.
+         Size of the candidate's `.package-lock.json`; a non-zero size confirms a real global install lives at this path.
          */
         const lockFileSize = (await stat(join(
           candidate,
@@ -157,7 +157,7 @@ async function findGlobalNodeModules(): Promise<string | typeof NOT_FOUND> {
     },),
   );
   /**
-   * First candidate that had a non-empty package-lock marker.
+   First candidate that had a non-empty package-lock marker.
    */
   const globalNodeModules = candidateResults.find(function isFound(candidateResult,) {
     return candidateResult !== NOT_FOUND;
@@ -172,21 +172,21 @@ async function findGlobalNodeModules(): Promise<string | typeof NOT_FOUND> {
 }
 
 /**
- * Wraps {@link findMiseMonorepoRootCached} to swallow discovery errors and emit a single
- * diagnostic log instead. Returns the cached root or {@link NOT_FOUND} when the helper throws
- * (i.e. when no `mise.toml` with `[monorepo]` exists above CWD).
- *
- * @returns Cached monorepo root, or {@link NOT_FOUND} outside a monorepo
- *
- * @example
- * ```ts
- * const root = await tryFindMiseMonorepoRoot();
- * // => '/home/user/Monochromatic' (or NOT_FOUND outside a workspace)
- * ```
+ Wraps {@link findMiseMonorepoRootCached} to swallow discovery errors and emit a single
+ diagnostic log instead. Returns the cached root or {@link NOT_FOUND} when the helper throws
+ (i.e. when no `mise.toml` with `[monorepo]` exists above CWD).
+ 
+ @returns Cached monorepo root, or {@link NOT_FOUND} outside a monorepo
+ 
+ @example
+ ```ts
+ const root = await tryFindMiseMonorepoRoot();
+ // => '/home/user/Monochromatic' (or NOT_FOUND outside a workspace)
+ ```
  */
 async function tryFindMiseMonorepoRoot(): Promise<string | typeof NOT_FOUND> {
   /**
-   * Tagged logger scoped to this helper so the "no monorepo root" log identifies the call site.
+   Tagged logger scoped to this helper so the "no monorepo root" log identifies the call site.
    */
   const rl = tagged({
     tag: tryFindMiseMonorepoRoot.name,
@@ -202,40 +202,40 @@ async function tryFindMiseMonorepoRoot(): Promise<string | typeof NOT_FOUND> {
 }
 
 /**
- * Resolves an ESM specifier by searching CWD node_modules, monorepo root node_modules,
- * and global node_modules in that order.
- *
- * @param specifier - Bare import specifier to resolve
- *
- * @returns Resolved file path
- *
- * @throws When the specifier cannot be resolved from any location
- *
- * @example
- * ```ts
- * await resolveSpecifier({ specifier: 'lodash' });
- * // => '/home/user/project/node_modules/lodash/lodash.js'
- * ```
+ Resolves an ESM specifier by searching CWD node_modules, monorepo root node_modules,
+ and global node_modules in that order.
+ 
+ @param specifier - Bare import specifier to resolve
+ 
+ @returns Resolved file path
+ 
+ @throws When the specifier cannot be resolved from any location
+ 
+ @example
+ ```ts
+ await resolveSpecifier({ specifier: 'lodash' });
+ // => '/home/user/project/node_modules/lodash/lodash.js'
+ ```
  */
 export async function resolveSpecifier(
   { specifier, }: { readonly specifier: string; },
 ): Promise<string> {
   /**
-   * Tagged logger scoped to this function so log lines identify the call site.
+   Tagged logger scoped to this function so log lines identify the call site.
    */
   const rl = tagged({
     tag: resolveSpecifier.name,
     l,
   },);
   /**
-   * Process working directory; first resolution candidate, also reused in the not-found error message.
+   Process working directory; first resolution candidate, also reused in the not-found error message.
    */
   const cwd = process.cwd();
 
   //region CWD resolution
   rl.info(`resolving "${specifier}" from CWD: ${cwd}`,);
   /**
-   * Result of the CWD resolution attempt; returned eagerly when resolved so monorepo and global lookups are skipped.
+   Result of the CWD resolution attempt; returned eagerly when resolved so monorepo and global lookups are skipped.
    */
   const fromCwd = resolveFrom({
     specifier,
@@ -247,16 +247,16 @@ export async function resolveSpecifier(
 
   //region Monorepo root resolution
   /**
-   * Cached monorepo root populated by {@link findMiseMonorepoRootCached}.
-   *
-   * Stays {@link NOT_FOUND} outside a monorepo or when discovery throws; reused below to
-   * render the diagnostic line for the not-found error.
+   Cached monorepo root populated by {@link findMiseMonorepoRootCached}.
+   
+   Stays {@link NOT_FOUND} outside a monorepo or when discovery throws; reused below to
+   render the diagnostic line for the not-found error.
    */
   const monorepoRoot = await tryFindMiseMonorepoRoot();
   if ((monorepoRoot !== NOT_FOUND) && (monorepoRoot !== cwd)) {
     rl.info(`trying monorepo root: ${monorepoRoot}`,);
     /**
-     * Result of resolution anchored at the monorepo root; tried only when the root differs from CWD.
+     Result of resolution anchored at the monorepo root; tried only when the root differs from CWD.
      */
     const fromMonorepo = resolveFrom({
       specifier,
@@ -269,13 +269,13 @@ export async function resolveSpecifier(
 
   //region Global resolution
   /**
-   * Detected global `node_modules` path; final fallback when project-local resolution fails.
+   Detected global `node_modules` path; final fallback when project-local resolution fails.
    */
   const globalDir = await findGlobalNodeModules();
   if (globalDir !== NOT_FOUND) {
     rl.info(`trying global: ${globalDir}`,);
     /**
-     * Result of resolution anchored one level above the global `node_modules` so Node's `require` discovers packages installed there.
+     Result of resolution anchored one level above the global `node_modules` so Node's `require` discovers packages installed there.
      */
     const fromGlobal = resolveFrom({
       specifier,
@@ -290,13 +290,13 @@ export async function resolveSpecifier(
   //endregion Global resolution
 
   /**
-   * Diagnostic line included in the thrown error only when a monorepo root was discovered.
+   Diagnostic line included in the thrown error only when a monorepo root was discovered.
    */
   const monorepoLine = monorepoRoot !== NOT_FOUND
     ? `  - Monorepo root: ${monorepoRoot}\n`
     : '';
   /**
-   * Diagnostic line included in the thrown error only when a global `node_modules` was detected.
+   Diagnostic line included in the thrown error only when a global `node_modules` was detected.
    */
   const globalLine = globalDir !== NOT_FOUND ? `  - Global: ${globalDir}\n` : '';
   throw new Error(

@@ -1,7 +1,7 @@
 /**
- * Scoped, distinct, authenticated reviewer selection and shared fallback transport.
- *
- * @module
+ Scoped, distinct, authenticated reviewer selection and shared fallback transport.
+ 
+ @module
  */
 
 import type {
@@ -27,7 +27,7 @@ import {
 } from './review-contract.ts';
 
 /**
- * Prompted scoped candidate before auth resolution.
+ Prompted scoped candidate before auth resolution.
  */
 type PromptedReviewer = {
   readonly model: ForeignBorrowed<Model<Api>>;
@@ -39,7 +39,7 @@ type PromptedReviewer = {
 };
 
 /**
- * Authenticated pool in descending expected-call-cost order.
+ Authenticated pool in descending expected-call-cost order.
  */
 type GoalReviewerPool = {
   readonly candidates: readonly GoalReviewerCandidate[];
@@ -47,7 +47,7 @@ type GoalReviewerPool = {
 };
 
 /**
- * Candidate prompt construction outcome.
+ Candidate prompt construction outcome.
  */
 type PromptedReviewerOutcome =
   | {
@@ -60,7 +60,7 @@ type PromptedReviewerOutcome =
   };
 
 /**
- * Candidate authentication outcome.
+ Candidate authentication outcome.
  */
 type AuthenticatedReviewerOutcome =
   | {
@@ -73,16 +73,16 @@ type AuthenticatedReviewerOutcome =
   };
 
 /**
- * Candidate not present in finite authenticated reviewer pool.
- *
- * @example
- * ```ts
- * throw new NoEligibleGoalReviewerError();
- * ```
+ Candidate not present in finite authenticated reviewer pool.
+ 
+ @example
+ ```ts
+ throw new NoEligibleGoalReviewerError();
+ ```
  */
 class NoEligibleGoalReviewerError extends Error {
   /**
-   * Create exhausted finite-pool marker.
+   Create exhausted finite-pool marker.
    */
   constructor() {
     super('No distinct authenticated goal reviewer remains in effective model scope',);
@@ -91,20 +91,20 @@ class NoEligibleGoalReviewerError extends Error {
 }
 
 /**
- * Build model-specific prompts for context-eligible distinct scoped models.
- *
- * @param context - Pi context exposing effective model scope and active model
- *
- * @param evidence - serialized post-start evidence
- *
- * @returns prompted candidates and context diagnostics
- *
- * @mutates context - effective scope resolution invokes model registry and optional scope capabilities
- *
- * @example
- * ```ts
- * await promptedReviewers({ context, evidence });
- * ```
+ Build model-specific prompts for context-eligible distinct scoped models.
+ 
+ @param context - Pi context exposing effective model scope and active model
+ 
+ @param evidence - serialized post-start evidence
+ 
+ @returns prompted candidates and context diagnostics
+ 
+ @mutates context - effective scope resolution invokes model registry and optional scope capabilities
+ 
+ @example
+ ```ts
+ await promptedReviewers({ context, evidence });
+ ```
  */
 async function promptedReviewers(
   {
@@ -125,15 +125,15 @@ async function promptedReviewers(
     };
   }
   /**
-   * Exact primary identity excluded from every reviewer stage.
+   Exact primary identity excluded from every reviewer stage.
    */
   const activeIdentity = canonicalSlug(context.model,);
   /**
-   * Effective scoped set following live, argv, settings, and available precedence.
+   Effective scoped set following live, argv, settings, and available precedence.
    */
   const scope = await resolveEffectiveScope<Model<Api>>({ ctx: context, },);
   /**
-   * Prompt construction outcomes preserving ineligible diagnostics.
+   Prompt construction outcomes preserving ineligible diagnostics.
    */
   const outcomes = scope.entries
     .filter(function excludesPrimary(
@@ -146,7 +146,7 @@ async function promptedReviewers(
     ): PromptedReviewerOutcome {
       try {
         /**
-         * Model-specific prompt and deterministic truncation.
+         Model-specific prompt and deterministic truncation.
          */
         const prompt = buildBudgetedGoalReviewPrompt({
           evidence,
@@ -186,16 +186,16 @@ async function promptedReviewers(
 }
 
 /**
- * Sort prompted candidates by expected model-specific request cost.
- *
- * @param prompted - context-eligible scoped candidates
- *
- * @returns candidates in descending expected cost order
- *
- * @example
- * ```ts
- * rankPromptedReviewers(prompted);
- * ```
+ Sort prompted candidates by expected model-specific request cost.
+ 
+ @param prompted - context-eligible scoped candidates
+ 
+ @returns candidates in descending expected cost order
+ 
+ @example
+ ```ts
+ rankPromptedReviewers(prompted);
+ ```
  */
 function rankPromptedReviewers(
   prompted: readonly PromptedReviewer[],
@@ -203,7 +203,7 @@ function rankPromptedReviewers(
   if (prompted.length === 0)
     return [];
   /**
-   * Per-model input estimates keyed by canonical slug.
+   Per-model input estimates keyed by canonical slug.
    */
   const estimates = new Map(
     prompted.map(function estimateEntry(candidate,) {
@@ -214,7 +214,7 @@ function rankPromptedReviewers(
     },),
   );
   /**
-   * Expected-cost ranking from shared Advisor-style selection policy.
+   Expected-cost ranking from shared Advisor-style selection policy.
    */
   const ranking = buildCostRanking({
     scope: {
@@ -232,7 +232,7 @@ function rankPromptedReviewers(
   },);
   return ranking.map(function rankedCandidate(score,) {
     /**
-     * Prompted candidate matching ranked score identity.
+     Prompted candidate matching ranked score identity.
      */
     const candidate = prompted.find(function matchesScore(candidateToCheck,) {
       return candidateToCheck.canonicalSlug === score.slug;
@@ -244,20 +244,20 @@ function rankPromptedReviewers(
 }
 
 /**
- * Authenticate ranked reviewer candidates before bounded fallback orchestration.
- *
- * @param context - Pi model registry context
- *
- * @param prompted - candidates in expected-cost order
- *
- * @returns authenticated candidates and normalized auth failures
- *
- * @mutates context - model registry may execute command-backed authentication
- *
- * @example
- * ```ts
- * await authenticateReviewers({ context, prompted });
- * ```
+ Authenticate ranked reviewer candidates before bounded fallback orchestration.
+ 
+ @param context - Pi model registry context
+ 
+ @param prompted - candidates in expected-cost order
+ 
+ @returns authenticated candidates and normalized auth failures
+ 
+ @mutates context - model registry may execute command-backed authentication
+ 
+ @example
+ ```ts
+ await authenticateReviewers({ context, prompted });
+ ```
  */
 async function authenticateReviewers(
   {
@@ -269,12 +269,12 @@ async function authenticateReviewers(
   },
 ): Promise<GoalReviewerPool> {
   /**
-   * Parallel auth outcomes retain input order through Promise.all.
+   Parallel auth outcomes retain input order through Promise.all.
    */
   const outcomes: readonly AuthenticatedReviewerOutcome[] = await Promise.all(prompted.map(async function authenticate(candidate,) {
     try {
       /**
-       * Registry-resolved request credentials and headers.
+       Registry-resolved request credentials and headers.
        */
       const auth = await context.modelRegistry
         .getApiKeyAndHeaders(candidate.model,);
@@ -320,20 +320,20 @@ async function authenticateReviewers(
 }
 
 /**
- * Resolve complete authenticated reviewer pool for one completion claim.
- *
- * @param context - Pi tool execution context
- *
- * @param evidence - serialized active-run evidence
- *
- * @returns ranked authenticated candidates and selection diagnostics
- *
- * @mutates context - scope and authentication capabilities may update registry state
- *
- * @example
- * ```ts
- * await resolveGoalReviewerPool({ context, evidence });
- * ```
+ Resolve complete authenticated reviewer pool for one completion claim.
+ 
+ @param context - Pi tool execution context
+ 
+ @param evidence - serialized active-run evidence
+ 
+ @returns ranked authenticated candidates and selection diagnostics
+ 
+ @mutates context - scope and authentication capabilities may update registry state
+ 
+ @example
+ ```ts
+ await resolveGoalReviewerPool({ context, evidence });
+ ```
  */
 async function resolveGoalReviewerPool(
   {
@@ -345,14 +345,14 @@ async function resolveGoalReviewerPool(
   },
 ): Promise<GoalReviewerPool> {
   /**
-   * Context-eligible prompted candidates and diagnostics.
+   Context-eligible prompted candidates and diagnostics.
    */
   const promptResult = await promptedReviewers({
     context,
     evidence,
   },);
   /**
-   * Authenticated pool following expected-cost order.
+   Authenticated pool following expected-cost order.
    */
   const authResult = await authenticateReviewers({
     context,

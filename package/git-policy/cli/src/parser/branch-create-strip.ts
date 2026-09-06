@@ -8,28 +8,28 @@ import {
 //region Escape-hatch stripping
 
 /**
- * Removes the {@link BRANCH_WORKTREE_ESCAPE_HATCH} flag from one guarded
- * invocation. Skips the value position of options that
- * {@link consumesNextValue} reports, and stops rewriting at
- * {@link PATHSPEC_SEPARATOR}, where every later token becomes a pathspec.
- *
- * @param args - Complete git argv.
- *
- * @param subcommandIndex - Index where guarded subcommand appears.
- *
- * @param subcommand - Guarded subcommand whose option grammar applies.
- *
- * @returns Args with flag-position escape hatch removed.
- *
- * @example
- * ```ts
- * stripBranchCreationEscapeHatch({
- *   args: ['switch', '--create', 'topic', '--no-enforce-worktree-branch'],
- *   subcommandIndex: 0,
- *   subcommand: 'switch',
- * });
- * // => ['switch', '--create', 'topic']
- * ```
+ Removes the {@link BRANCH_WORKTREE_ESCAPE_HATCH} flag from one guarded
+ invocation. Skips the value position of options that
+ {@link consumesNextValue} reports, and stops rewriting at
+ {@link PATHSPEC_SEPARATOR}, where every later token becomes a pathspec.
+ 
+ @param args - Complete git argv.
+ 
+ @param subcommandIndex - Index where guarded subcommand appears.
+ 
+ @param subcommand - Guarded subcommand whose option grammar applies.
+ 
+ @returns Args with flag-position escape hatch removed.
+ 
+ @example
+ ```ts
+ stripBranchCreationEscapeHatch({
+   args: ['switch', '--create', 'topic', '--no-enforce-worktree-branch'],
+   subcommandIndex: 0,
+   subcommand: 'switch',
+ });
+ // => ['switch', '--create', 'topic']
+ ```
  */
 export function stripBranchCreationEscapeHatch({
   args,
@@ -41,24 +41,24 @@ export function stripBranchCreationEscapeHatch({
   readonly subcommand: BranchCreationSubcommand;
 },): readonly string[] {
   /**
-   * Pre-subcommand region and subcommand kept verbatim.
+   Pre-subcommand region and subcommand kept verbatim.
    */
   const preAndSubcommand = args.slice(
     0,
     subcommandIndex + 1,
   );
   /**
-   * Args after guarded subcommand where wrapper-only flag can appear.
+   Args after guarded subcommand where wrapper-only flag can appear.
    */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
   /**
-   * Filtered post-subcommand args.
+   Filtered post-subcommand args.
    */
   const filtered: string[] = [];
 
   for (let index = 0; index < postSubcommandArgs.length; index += 1) {
     /**
-     * Current argv token being copied or stripped.
+     Current argv token being copied or stripped.
      */
     const arg = postSubcommandArgs[index];
 
@@ -75,7 +75,7 @@ export function stripBranchCreationEscapeHatch({
       arg,
     },)) {
       /**
-       * Value token following a separated-value option; preserved even when it equals escape hatch text.
+       Value token following a separated-value option; preserved even when it equals escape hatch text.
        */
       const value = postSubcommandArgs[index + 1];
       filtered.push(arg,);

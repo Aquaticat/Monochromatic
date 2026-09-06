@@ -1,13 +1,13 @@
 /**
- * `\<side-drawer\>`: intrinsic sidebar navigation.
- *
- * Renders two copies of the nav: an inline sidebar visible when the
- * component is narrow (~22 rem, meaning it sits beside the main content
- * in the Every Layout sidebar pattern), and a popover panel opened by
- * the hamburger menu when the component is full-width (stacked).
- *
- * Visibility is governed entirely by a CSS container query on the
- * wrapper element; no viewport media queries, no JS resize observers.
+ `\<side-drawer\>`: intrinsic sidebar navigation.
+ 
+ Renders two copies of the nav: an inline sidebar visible when the
+ component is narrow (~22 rem, meaning it sits beside the main content
+ in the Every Layout sidebar pattern), and a popover panel opened by
+ the hamburger menu when the component is full-width (stacked).
+ 
+ Visibility is governed entirely by a CSS container query on the
+ wrapper element; no viewport media queries, no JS resize observers.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
@@ -18,32 +18,32 @@ import {
 import { SIDE_DRAWER_STYLES, } from './side-drawer-styles.ts';
 
 /**
- * `\<side-drawer\>` web component with intrinsic layout switching.
- *
- * When the component is narrow (inside the Every Layout sidebar flex container),
- * the inline sidebar is visible. When stacked (full viewport width), the inline
- * sidebar hides and the hamburger popover is used instead.
- *
- * Toggle the popover via the `open` attribute (set by the top-nav hamburger).
+ `\<side-drawer\>` web component with intrinsic layout switching.
+ 
+ When the component is narrow (inside the Every Layout sidebar flex container),
+ the inline sidebar is visible. When stacked (full viewport width), the inline
+ sidebar hides and the hamburger popover is used instead.
+ 
+ Toggle the popover via the `open` attribute (set by the top-nav hamburger).
  */
 class SideDrawer extends HTMLElement {
   /**
-   * Attributes to observe for popover toggling.
+   Attributes to observe for popover toggling.
    */
   static observedAttributes = ['open',];
 
   /**
-   * Shadow root for encapsulated rendering.
+   Shadow root for encapsulated rendering.
    */
   readonly #shadow: ShadowRoot;
 
   /**
-   * Reference to the popover panel element; absent until first render.
+   Reference to the popover panel element; absent until first render.
    */
   #panel?: HTMLDivElement;
 
   /**
-   * Initializes the shadow root.
+   Initializes the shadow root.
    */
   constructor() {
     super();
@@ -51,18 +51,18 @@ class SideDrawer extends HTMLElement {
   }
 
   /**
-   * Whether the popover panel is currently open.
-   *
-   * @returns True when the `open` attribute is present
+   Whether the popover panel is currently open.
+   
+   @returns True when the `open` attribute is present
    */
   get open(): boolean {
     return this.hasAttribute('open',);
   }
 
   /**
-   * Sets or removes the `open` attribute to control popover visibility.
-   *
-   * @param value - New open state
+   Sets or removes the `open` attribute to control popover visibility.
+   
+   @param value - New open state
    */
   set open(value: boolean,) {
     if (value) {
@@ -77,7 +77,7 @@ class SideDrawer extends HTMLElement {
   }
 
   /**
-   * Renders content and attaches event handlers for closing the drawer.
+   Renders content and attaches event handlers for closing the drawer.
    */
   connectedCallback(): void {
     this.#render();
@@ -85,7 +85,7 @@ class SideDrawer extends HTMLElement {
     this.#panel = this.#shadow
       .querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
     /**
-     * Captured so the close handlers reach this component without `this`-bound functions.
+     Captured so the close handlers reach this component without `this`-bound functions.
      */
     const self = this;
 
@@ -112,7 +112,7 @@ class SideDrawer extends HTMLElement {
   }
 
   /**
-   * Toggles popover visibility when the open attribute changes.
+   Toggles popover visibility when the open attribute changes.
    */
   attributeChangedCallback(): void {
     if (this.#panel
@@ -128,11 +128,11 @@ class SideDrawer extends HTMLElement {
   }
 
   /**
-   * Renders both the inline sidebar and popover panel into the shadow root.
+   Renders both the inline sidebar and popover panel into the shadow root.
    */
   #render(): void {
     /**
-     * Popover-only close button; tagged with `panel-close` so the click handler can find it.
+     Popover-only close button; tagged with `panel-close` so the click handler can find it.
      */
     const panelClose = buildCloseButton('Close menu',);
     panelClose.classList

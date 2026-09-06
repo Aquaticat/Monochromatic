@@ -1,7 +1,7 @@
 /**
- * Tests for `expect` matchers.
- *
- * @module
+ Tests for `expect` matchers.
+ 
+ @module
  */
 
 /* oxlint-disable no-restricted-syntax/no-regex -- this file tests `.toMatch` and `.toThrow` with regex inputs; every test that exercises the regex branch must construct a regex literal. The regex sites here ARE the test fixtures. */
@@ -13,18 +13,18 @@ import {
 } from '@monochromatic-dev/module-test';
 
 /**
- * Predicate fixture for `toSatisfyAll` tests: true only for odd numbers. Uses an
- * early return so the type guard and the modulo check never mix operators in one
- * expression.
- *
- * @param value - candidate array element of unknown type
- *
- * @returns whether value is an odd number
- *
- * @example
- * ```ts
- * expect([1, 3, 5]).toSatisfyAll(isOddNumber);
- * ```
+ Predicate fixture for `toSatisfyAll` tests: true only for odd numbers. Uses an
+ early return so the type guard and the modulo check never mix operators in one
+ expression.
+ 
+ @param value - candidate array element of unknown type
+ 
+ @returns whether value is an odd number
+ 
+ @example
+ ```ts
+ expect([1, 3, 5]).toSatisfyAll(isOddNumber);
+ ```
  */
 function isOddNumber(value: unknown,): boolean {
   if ((typeof value) !== 'number') {

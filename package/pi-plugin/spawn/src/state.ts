@@ -1,7 +1,7 @@
 /**
- * Spawn-pi coordination state reads and writes.
- *
- * @module
+ Spawn-pi coordination state reads and writes.
+ 
+ @module
  */
 
 import {
@@ -28,7 +28,7 @@ import {
 //region Module logger
 
 /**
- * Module logger tagged for spawn-pi coordination-state IO.
+ Module logger tagged for spawn-pi coordination-state IO.
  */
 const l = tagged({ tag: 'pi-spawn:state', },);
 
@@ -37,22 +37,22 @@ const l = tagged({ tag: 'pi-spawn:state', },);
 //region Sentinels
 
 /**
- * Sentinel returned when no spawn result is ready to inject.
- *
- * @example
- * ```typescript
- * if (result === NOTHING_TO_REPORT) return;
- * ```
+ Sentinel returned when no spawn result is ready to inject.
+ 
+ @example
+ ```typescript
+ if (result === NOTHING_TO_REPORT) return;
+ ```
  */
 const NOTHING_TO_REPORT: unique symbol = Symbol('spawn-pi/nothing-to-report',);
 
 /**
- * Sentinel returned by a per-candidate read for an entry that does not become a parent result.
- *
- * @example
- * ```typescript
- * if (candidate === SKIPPED_CHILD) return;
- * ```
+ Sentinel returned by a per-candidate read for an entry that does not become a parent result.
+ 
+ @example
+ ```typescript
+ if (candidate === SKIPPED_CHILD) return;
+ ```
  */
 const SKIPPED_CHILD: unique symbol = Symbol('spawn-pi/child-skipped-during-scan',);
 
@@ -61,38 +61,38 @@ const SKIPPED_CHILD: unique symbol = Symbol('spawn-pi/child-skipped-during-scan'
 //region PID mapping
 
 /**
- * Serializes state that may expose JSON hooks.
- *
- * @param value - State value to serialize.
- *
- * @returns compact JSON text.
- *
- * @mutates value - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
- *
- * @example
- * ```typescript
- * serializeStateValue({ ready: true });
- * ```
+ Serializes state that may expose JSON hooks.
+ 
+ @param value - State value to serialize.
+ 
+ @returns compact JSON text.
+ 
+ @mutates value - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ 
+ @example
+ ```typescript
+ serializeStateValue({ ready: true });
+ ```
  */
 function serializeStateValue(value: unknown,): string {
   return JSON.stringify(value,) ?? 'null';
 }
 
 /**
- * Writes parent process identity so spawn-pi CLI can find current Pi session.
- *
- * @param pid - process id to map.
- *
- * @param mapping - Pi session {@link PidMapping} identity to write.
- *
- * @param env - {@link Environment} values controlling destination directory.
- *
- * @mutates mapping - `JSON.stringify` may invoke hooks on PID mapping values.
- *
- * @example
- * ```typescript
- * writePidMapping({ pid: process.pid, mapping });
- * ```
+ Writes parent process identity so spawn-pi CLI can find current Pi session.
+ 
+ @param pid - process id to map.
+ 
+ @param mapping - Pi session {@link PidMapping} identity to write.
+ 
+ @param env - {@link Environment} values controlling destination directory.
+ 
+ @mutates mapping - `JSON.stringify` may invoke hooks on PID mapping values.
+ 
+ @example
+ ```typescript
+ writePidMapping({ pid: process.pid, mapping });
+ ```
  */
 async function writePidMapping(
   {
@@ -106,7 +106,7 @@ async function writePidMapping(
   },
 ): Promise<void> {
   /**
-   * Directory receiving PID mapping files.
+   Directory receiving PID mapping files.
    */
   const dir = byPidDir(env,);
   await mkdir(
@@ -127,18 +127,18 @@ async function writePidMapping(
 //region Spawn state writes
 
 /**
- * Writes initial spawn state before terminal process is launched.
- *
- * @param state - initial {@link SpawnState} to persist.
- *
- * @param env - {@link Environment} values controlling destination directory.
- *
- * @mutates state - `JSON.stringify` may invoke hooks on spawn state values.
- *
- * @example
- * ```typescript
- * writeInitialSpawnState({ state });
- * ```
+ Writes initial spawn state before terminal process is launched.
+ 
+ @param state - initial {@link SpawnState} to persist.
+ 
+ @param env - {@link Environment} values controlling destination directory.
+ 
+ @mutates state - `JSON.stringify` may invoke hooks on spawn state values.
+ 
+ @example
+ ```typescript
+ writeInitialSpawnState({ state });
+ ```
  */
 async function writeInitialSpawnState(
   {
@@ -163,20 +163,20 @@ async function writeInitialSpawnState(
 }
 
 /**
- * Claims a pre-created spawn state for child Pi session.
- *
- * @param spawnId - spawn identifier from environment.
- *
- * @param sessionId - child Pi session identifier.
- *
- * @param sessionFile - child Pi session file path.
- *
- * @param env - {@link Environment} values controlling source directory.
- *
- * @example
- * ```typescript
- * claimSpawn({ spawnId: 'abc', sessionId: 'child', sessionFile: '/tmp/s.jsonl' });
- * ```
+ Claims a pre-created spawn state for child Pi session.
+ 
+ @param spawnId - spawn identifier from environment.
+ 
+ @param sessionId - child Pi session identifier.
+ 
+ @param sessionFile - child Pi session file path.
+ 
+ @param env - {@link Environment} values controlling source directory.
+ 
+ @example
+ ```typescript
+ claimSpawn({ spawnId: 'abc', sessionId: 'child', sessionFile: '/tmp/s.jsonl' });
+ ```
  */
 async function claimSpawn(
   {
@@ -193,7 +193,7 @@ async function claimSpawn(
 ): Promise<void> {
   try {
     /**
-     * Raw state written by CLI before child launched.
+     Raw state written by CLI before child launched.
      */
     const raw = await readFile(
       spawnStatePath({
@@ -204,7 +204,7 @@ async function claimSpawn(
     );
     /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted JSON file written by spawn-pi CLI. */
     /**
-     * Parsed spawn state before child ownership claim.
+     Parsed spawn state before child ownership claim.
      */
     const state = JSON.parse(raw,) as SpawnState;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -213,7 +213,7 @@ async function claimSpawn(
       return;
 
     /**
-     * State after child session ownership claim.
+     State after child session ownership claim.
      */
     const updated: SpawnState = {
       ...state,
@@ -239,20 +239,20 @@ async function claimSpawn(
 }
 
 /**
- * Marks child spawn as completed after first child Pi agent loop.
- *
- * @param spawnId - spawn identifier from environment.
- *
- * @param sessionId - child Pi session identifier.
- *
- * @param lastMessage - assistant text to forward to parent.
- *
- * @param env - {@link Environment} values controlling source directory.
- *
- * @example
- * ```typescript
- * completeSpawn({ spawnId: 'abc', sessionId: 'child', lastMessage: 'done' });
- * ```
+ Marks child spawn as completed after first child Pi agent loop.
+ 
+ @param spawnId - spawn identifier from environment.
+ 
+ @param sessionId - child Pi session identifier.
+ 
+ @param lastMessage - assistant text to forward to parent.
+ 
+ @param env - {@link Environment} values controlling source directory.
+ 
+ @example
+ ```typescript
+ completeSpawn({ spawnId: 'abc', sessionId: 'child', lastMessage: 'done' });
+ ```
  */
 async function completeSpawn(
   {
@@ -269,7 +269,7 @@ async function completeSpawn(
 ): Promise<void> {
   try {
     /**
-     * Raw state claimed by child session.
+     Raw state claimed by child session.
      */
     const raw = await readFile(
       spawnStatePath({
@@ -280,7 +280,7 @@ async function completeSpawn(
     );
     /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted JSON file written by spawn-pi modules. */
     /**
-     * Parsed spawn state ready for owner check.
+     Parsed spawn state ready for owner check.
      */
     const state = JSON.parse(raw,) as SpawnState;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -289,7 +289,7 @@ async function completeSpawn(
       return;
 
     /**
-     * State after first child result is ready for parent consumption.
+     State after first child result is ready for parent consumption.
      */
     const updated: SpawnState = {
       ...state,
@@ -319,24 +319,24 @@ async function completeSpawn(
 //region Completed child consumption
 
 /**
- * Formats completed child state into parent-visible context.
- *
- * @param state - completed {@link SpawnState}.
- *
- * @returns model-visible result text for parent Pi session.
- *
- * @example
- * ```typescript
- * formatSpawnResult(state);
- * ```
+ Formats completed child state into parent-visible context.
+ 
+ @param state - completed {@link SpawnState}.
+ 
+ @returns model-visible result text for parent Pi session.
+ 
+ @example
+ ```typescript
+ formatSpawnResult(state);
+ ```
  */
 function formatSpawnResult(state: SpawnState,): string {
   /**
-   * Last assistant text captured from child Pi.
+   Last assistant text captured from child Pi.
    */
   const { lastMessage, } = state;
   /**
-   * Whether child Pi produced assistant text worth forwarding.
+   Whether child Pi produced assistant text worth forwarding.
    */
   const hasLastMessage = lastMessage.length > 0;
 
@@ -351,16 +351,16 @@ function formatSpawnResult(state: SpawnState,): string {
 }
 
 /**
- * Reads spawn state directory, handling missing directories as empty state.
- *
- * @param env - {@link Environment} values controlling source directory.
- *
- * @returns directory entries, or {@link NOTHING_TO_REPORT} when directory is absent.
- *
- * @example
- * ```typescript
- * readSpawnsDir();
- * ```
+ Reads spawn state directory, handling missing directories as empty state.
+ 
+ @param env - {@link Environment} values controlling source directory.
+ 
+ @returns directory entries, or {@link NOTHING_TO_REPORT} when directory is absent.
+ 
+ @example
+ ```typescript
+ readSpawnsDir();
+ ```
  */
 async function readSpawnsDir(
   env: Environment = process.env,
@@ -380,32 +380,32 @@ async function readSpawnsDir(
 }
 
 /**
- * Detects JSON spawn state filenames without regex.
- *
- * @param filename - directory entry name.
- *
- * @returns whether filename names active spawn JSON.
- *
- * @example
- * ```typescript
- * isSpawnJsonFilename('abc.json'); // true
- * ```
+ Detects JSON spawn state filenames without regex.
+ 
+ @param filename - directory entry name.
+ 
+ @returns whether filename names active spawn JSON.
+ 
+ @example
+ ```typescript
+ isSpawnJsonFilename('abc.json'); // true
+ ```
  */
 function isSpawnJsonFilename(filename: string,): boolean {
   return filename.endsWith('.json',);
 }
 
 /**
- * Drops `.json` suffix from spawn state filename.
- *
- * @param filename - JSON filename to trim.
- *
- * @returns spawn identifier derived from filename.
- *
- * @example
- * ```typescript
- * spawnIdFromJsonFilename('abc.json'); // 'abc'
- * ```
+ Drops `.json` suffix from spawn state filename.
+ 
+ @param filename - JSON filename to trim.
+ 
+ @returns spawn identifier derived from filename.
+ 
+ @example
+ ```typescript
+ spawnIdFromJsonFilename('abc.json'); // 'abc'
+ ```
  */
 function spawnIdFromJsonFilename(filename: string,): string {
   return filename.slice(
@@ -415,22 +415,22 @@ function spawnIdFromJsonFilename(filename: string,): string {
 }
 
 /**
- * Reads one candidate spawn file, optionally consuming it, when it belongs to the target parent.
- *
- * @param filename - directory entry under active spawn state directory.
- *
- * @param parentSessionId - parent Pi session identifier to match.
- *
- * @param consume - whether matching JSON file is renamed to reported marker.
- *
- * @param env - {@link Environment} values controlling source directory.
- *
- * @returns formatted result for matching stopped child, or {@link SKIPPED_CHILD} when skipped.
- *
- * @example
- * ```typescript
- * await consumeMatchingChild({ filename: 'abc.json', parentSessionId: 'p', consume: true });
- * ```
+ Reads one candidate spawn file, optionally consuming it, when it belongs to the target parent.
+ 
+ @param filename - directory entry under active spawn state directory.
+ 
+ @param parentSessionId - parent Pi session identifier to match.
+ 
+ @param consume - whether matching JSON file is renamed to reported marker.
+ 
+ @param env - {@link Environment} values controlling source directory.
+ 
+ @returns formatted result for matching stopped child, or {@link SKIPPED_CHILD} when skipped.
+ 
+ @example
+ ```typescript
+ await consumeMatchingChild({ filename: 'abc.json', parentSessionId: 'p', consume: true });
+ ```
  */
 async function consumeMatchingChild(
   {
@@ -449,12 +449,12 @@ async function consumeMatchingChild(
     return SKIPPED_CHILD;
 
   /**
-   * Spawn identifier derived from filename.
+   Spawn identifier derived from filename.
    */
   const spawnId = spawnIdFromJsonFilename(filename,);
   try {
     /**
-     * Raw candidate state text.
+     Raw candidate state text.
      */
     const raw = await readFile(
       spawnStatePath({
@@ -465,7 +465,7 @@ async function consumeMatchingChild(
     );
     /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted JSON file written by spawn-pi modules. */
     /**
-     * Parsed candidate state used for parent and status filtering.
+     Parsed candidate state used for parent and status filtering.
      */
     const state = JSON.parse(raw,) as SpawnState;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -511,21 +511,21 @@ async function consumeMatchingChild(
 }
 
 /**
- * Scans the spawn directory concurrently for stopped children of a parent session and optionally
- * consumes them.
- *
- * @param parentSessionId - parent Pi session identifier to match.
- *
- * @param consume - whether matching JSON files are renamed to reported markers.
- *
- * @param env - {@link Environment} values controlling source directory.
- *
- * @returns joined formatted results, or {@link NOTHING_TO_REPORT}.
- *
- * @example
- * ```typescript
- * await checkCompletedChildren({ parentSessionId: 'parent', consume: true });
- * ```
+ Scans the spawn directory concurrently for stopped children of a parent session and optionally
+ consumes them.
+ 
+ @param parentSessionId - parent Pi session identifier to match.
+ 
+ @param consume - whether matching JSON files are renamed to reported markers.
+ 
+ @param env - {@link Environment} values controlling source directory.
+ 
+ @returns joined formatted results, or {@link NOTHING_TO_REPORT}.
+ 
+ @example
+ ```typescript
+ await checkCompletedChildren({ parentSessionId: 'parent', consume: true });
+ ```
  */
 async function checkCompletedChildren(
   {
@@ -539,14 +539,14 @@ async function checkCompletedChildren(
   },
 ): Promise<string | typeof NOTHING_TO_REPORT> {
   /**
-   * Directory entries under active spawn state directory.
+   Directory entries under active spawn state directory.
    */
   const entries = await readSpawnsDir(env,);
   if (entries === NOTHING_TO_REPORT)
     return NOTHING_TO_REPORT;
 
   /**
-   * Candidate results read concurrently, one slot per directory entry.
+   Candidate results read concurrently, one slot per directory entry.
    */
   const candidates = await Promise.all(entries.map(
     function readCandidate(filename,): Promise<string | typeof SKIPPED_CHILD> {
@@ -560,7 +560,7 @@ async function checkCompletedChildren(
   ),);
 
   /**
-   * Matching formatted results with skipped candidates removed.
+   Matching formatted results with skipped candidates removed.
    */
   const results = candidates.filter(function isPresent(result,): result is string {
     return result !== SKIPPED_CHILD;

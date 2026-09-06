@@ -1,21 +1,21 @@
 /**
- * Shared Kiwi and Figma parser domain types.
- *
- * @example
- * ```ts
- * KIWI_PRIMITIVES.includes('string');
- * // true
- * ```
+ Shared Kiwi and Figma parser domain types.
+ 
+ @example
+ ```ts
+ KIWI_PRIMITIVES.includes('string');
+ // true
+ ```
  */
 
 /**
- * Kiwi primitive type names, indexed by their inverted type code.
- *
- * @example
- * ```ts
- * KIWI_PRIMITIVES[5];
- * // 'string'
- * ```
+ Kiwi primitive type names, indexed by their inverted type code.
+ 
+ @example
+ ```ts
+ KIWI_PRIMITIVES[5];
+ // 'string'
+ ```
  */
 export const KIWI_PRIMITIVES = [
   'bool',
@@ -29,54 +29,54 @@ export const KIWI_PRIMITIVES = [
 ] as const;
 
 /**
- * Sentinel returned when a decoded Kiwi value has no representable payload.
- *
- * @example
- * ```ts
- * typeof KIWI_VALUE_ABSENT;
- * // 'symbol'
- * ```
+ Sentinel returned when a decoded Kiwi value has no representable payload.
+ 
+ @example
+ ```ts
+ typeof KIWI_VALUE_ABSENT;
+ // 'symbol'
+ ```
  */
 export const KIWI_VALUE_ABSENT: unique symbol = Symbol('kiwi decoded value is absent');
 
 /**
- * Sentinel returned when a Figma export carries no decoded document payload.
- *
- * @example
- * ```ts
- * typeof FIGMA_DOCUMENT_ABSENT;
- * // 'symbol'
- * ```
+ Sentinel returned when a Figma export carries no decoded document payload.
+ 
+ @example
+ ```ts
+ typeof FIGMA_DOCUMENT_ABSENT;
+ // 'symbol'
+ ```
  */
 export const FIGMA_DOCUMENT_ABSENT: unique symbol = Symbol('figma export document payload is absent');
 
 /**
- * Kiwi primitive type name union.
- *
- * @example
- * ```ts
- * const name: KiwiPrimitiveName = 'uint';
- * ```
+ Kiwi primitive type name union.
+ 
+ @example
+ ```ts
+ const name: KiwiPrimitiveName = 'uint';
+ ```
  */
 export type KiwiPrimitiveName = (typeof KIWI_PRIMITIVES)[number];
 
 /**
- * Kind of type definition in a Kiwi schema.
- *
- * @example
- * ```ts
- * const kind: KiwiDefinitionKind = 'MESSAGE';
- * ```
+ Kind of type definition in a Kiwi schema.
+ 
+ @example
+ ```ts
+ const kind: KiwiDefinitionKind = 'MESSAGE';
+ ```
  */
 export type KiwiDefinitionKind = 'ENUM' | 'STRUCT' | 'MESSAGE';
 
 /**
- * Enum field in a Kiwi schema.
- *
- * @example
- * ```ts
- * const field: KiwiEnumField = { name: 'VALUE', isArray: false, value: 1 };
- * ```
+ Enum field in a Kiwi schema.
+ 
+ @example
+ ```ts
+ const field: KiwiEnumField = { name: 'VALUE', isArray: false, value: 1 };
+ ```
  */
 export type KiwiEnumField = {
   readonly isArray: boolean;
@@ -85,12 +85,12 @@ export type KiwiEnumField = {
 };
 
 /**
- * Field within a struct or message definition.
- *
- * @example
- * ```ts
- * const field: KiwiStructField = { name: 'id', type: -4, isArray: false, value: 1 };
- * ```
+ Field within a struct or message definition.
+ 
+ @example
+ ```ts
+ const field: KiwiStructField = { name: 'id', type: -4, isArray: false, value: 1 };
+ ```
  */
 export type KiwiStructField = {
   readonly isArray: boolean;
@@ -100,12 +100,12 @@ export type KiwiStructField = {
 };
 
 /**
- * Enum definition.
- *
- * @example
- * ```ts
- * const item: KiwiEnum = { kind: 'ENUM', name: 'Kind', fields: [] };
- * ```
+ Enum definition.
+ 
+ @example
+ ```ts
+ const item: KiwiEnum = { kind: 'ENUM', name: 'Kind', fields: [] };
+ ```
  */
 export type KiwiEnum = {
   readonly fields: readonly KiwiEnumField[];
@@ -114,12 +114,12 @@ export type KiwiEnum = {
 };
 
 /**
- * Struct or message definition.
- *
- * @example
- * ```ts
- * const item: KiwiStruct = { kind: 'STRUCT', name: 'Point', fields: [] };
- * ```
+ Struct or message definition.
+ 
+ @example
+ ```ts
+ const item: KiwiStruct = { kind: 'STRUCT', name: 'Point', fields: [] };
+ ```
  */
 export type KiwiStruct = {
   readonly fields: readonly KiwiStructField[];
@@ -128,22 +128,22 @@ export type KiwiStruct = {
 };
 
 /**
- * Type definition in a Kiwi schema.
- *
- * @example
- * ```ts
- * const item: KiwiDefinition = { kind: 'ENUM', name: 'Kind', fields: [] };
- * ```
+ Type definition in a Kiwi schema.
+ 
+ @example
+ ```ts
+ const item: KiwiDefinition = { kind: 'ENUM', name: 'Kind', fields: [] };
+ ```
  */
 export type KiwiDefinition = KiwiEnum | KiwiStruct;
 
 /**
- * Fully parsed Kiwi schema.
- *
- * @example
- * ```ts
- * const schema: KiwiSchema = { definitions: [], enumByName: new Map(), structByName: new Map() };
- * ```
+ Fully parsed Kiwi schema.
+ 
+ @example
+ ```ts
+ const schema: KiwiSchema = { definitions: [], enumByName: new Map(), structByName: new Map() };
+ ```
  */
 export type KiwiSchema = {
   readonly definitions: readonly KiwiDefinition[];
@@ -152,12 +152,12 @@ export type KiwiSchema = {
 };
 
 /**
- * Decoded Kiwi value types.
- *
- * @example
- * ```ts
- * const value: KiwiDecodedValue = 'Enum.VALUE';
- * ```
+ Decoded Kiwi value types.
+ 
+ @example
+ ```ts
+ const value: KiwiDecodedValue = 'Enum.VALUE';
+ ```
  */
 export type KiwiDecodedValue =
   | boolean
@@ -169,22 +169,22 @@ export type KiwiDecodedValue =
   | typeof KIWI_VALUE_ABSENT;
 
 /**
- * Figma file type determined by canvas magic bytes.
- *
- * @example
- * ```ts
- * const fileType: FigmaFileType = 'fig';
- * ```
+ Figma file type determined by canvas magic bytes.
+ 
+ @example
+ ```ts
+ const fileType: FigmaFileType = 'fig';
+ ```
  */
 export type FigmaFileType = 'deck' | 'fig' | 'jam';
 
 /**
- * Metadata extracted from meta.json inside the ZIP archive.
- *
- * @example
- * ```ts
- * const meta: FigmaMeta = fallbackFigmaMeta();
- * ```
+ Metadata extracted from meta.json inside the ZIP archive.
+ 
+ @example
+ ```ts
+ const meta: FigmaMeta = fallbackFigmaMeta();
+ ```
  */
 export type FigmaMeta = {
   readonly backgroundColor: {
@@ -209,13 +209,13 @@ export type FigmaMeta = {
 };
 
 /**
- * Fully decoded Figma file with all components: {@link FigmaFileType}, {@link FigmaMeta}, and
- * {@link KiwiSchema}, alongside decoded document, image, and thumbnail bytes.
- *
- * @example
- * ```ts
- * const absent = file.document === FIGMA_DOCUMENT_ABSENT;
- * ```
+ Fully decoded Figma file with all components: {@link FigmaFileType}, {@link FigmaMeta}, and
+ {@link KiwiSchema}, alongside decoded document, image, and thumbnail bytes.
+ 
+ @example
+ ```ts
+ const absent = file.document === FIGMA_DOCUMENT_ABSENT;
+ ```
  */
 export type FigmaFile = {
   readonly document: Record<string, unknown> | typeof FIGMA_DOCUMENT_ABSENT;

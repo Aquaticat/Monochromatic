@@ -1,32 +1,32 @@
 /**
- * What one node invokes, whichever syntax spells the invocation.
- *
- * The activation walk matched `CallExpression` and nothing else, so two other invoking syntaxes left
- * their callee unactivated and its body unscanned. That is the cost, and it is not about what either
- * syntax receives: a store inside an unactivated closure is attributed to nobody.
- *
- * Measured, each against the same body written as an ordinary call, which recorded `opaque=[0]`:
- *
- * ```ts
- * const storingTag = (_strings: TemplateStringsArray,): void => { holder.kept = gotten.row; };
- * storingTag``;
- *
- * class BodyStorer {
- *   constructor() {
- *     holder.kept = gotten.row;
- *   }
- * }
- * void new BodyStorer();
- * ```
- *
- * Both recorded nothing. A field initializer in the construction's position is charged already, so the
- * gap there is the constructor body rather than the class.
- *
- * Named as its own module because the question is one concept and the activation walk had reached its
- * line budget. Adding a fourth invoking syntax is a clause here rather than an edit at four call sites,
- * which is the shape the tagged-template fix was written for and the construction fix then reused.
- *
- * @module
+ What one node invokes, whichever syntax spells the invocation.
+ 
+ The activation walk matched `CallExpression` and nothing else, so two other invoking syntaxes left
+ their callee unactivated and its body unscanned. That is the cost, and it is not about what either
+ syntax receives: a store inside an unactivated closure is attributed to nobody.
+ 
+ Measured, each against the same body written as an ordinary call, which recorded `opaque=[0]`:
+ 
+ ```ts
+ const storingTag = (_strings: TemplateStringsArray,): void => { holder.kept = gotten.row; };
+ storingTag``;
+ 
+ class BodyStorer {
+   constructor() {
+     holder.kept = gotten.row;
+   }
+ }
+ void new BodyStorer();
+ ```
+ 
+ Both recorded nothing. A field initializer in the construction's position is charged already, so the
+ gap there is the constructor body rather than the class.
+ 
+ Named as its own module because the question is one concept and the activation walk had reached its
+ line budget. Adding a fourth invoking syntax is a clause here rather than an edit at four call sites,
+ which is the shape the tagged-template fix was written for and the construction fix then reused.
+ 
+ @module
  */
 
 import type { Node, } from 'typescript/unstable/ast';
@@ -39,36 +39,36 @@ import {
 } from 'typescript/unstable/ast/is';
 
 /**
- * Sentinel for a node that invokes nothing.
+ Sentinel for a node that invokes nothing.
  */
 export const INVOKES_NOTHING: unique symbol = Symbol('node invokes nothing',);
 
 /**
- * Names what one node invokes and what it hands over, whichever syntax spells the invocation.
- *
- * A tagged template and a construction are both calls, and this walk saw only `CallExpression`, so
- * neither the tag nor the constructor was activated and neither body was scanned. Measured, with the same closure written both ways:
- *
- * ```ts
- * const storingTag = (_strings: TemplateStringsArray,): void => { holder.kept = gotten.row; };
- * storingTag``;
- * ```
- *
- * recorded nothing for `gotten`, while an identical closure invoked as `storingCall()` recorded
- * `opaque=[0]`. So the defect is not about what a tag receives; it is that an unseen invocation leaves
- * the closure unactivated, and an unactivated body's store is attributed to nobody.
- *
- * Interpolated values answer as actuals, because a tag receives them exactly as a call receives
- * arguments. The strings array is not among them: it is built at the call site rather than handed in.
- *
- * @param node - Node that may invoke something.
- *
- * @returns callee and actuals, or the sentinel when nothing is invoked.
- *
- * @example
- * ```ts
- * invokedParts({ node });
- * ```
+ Names what one node invokes and what it hands over, whichever syntax spells the invocation.
+ 
+ A tagged template and a construction are both calls, and this walk saw only `CallExpression`, so
+ neither the tag nor the constructor was activated and neither body was scanned. Measured, with the same closure written both ways:
+ 
+ ```ts
+ const storingTag = (_strings: TemplateStringsArray,): void => { holder.kept = gotten.row; };
+ storingTag``;
+ ```
+ 
+ recorded nothing for `gotten`, while an identical closure invoked as `storingCall()` recorded
+ `opaque=[0]`. So the defect is not about what a tag receives; it is that an unseen invocation leaves
+ the closure unactivated, and an unactivated body's store is attributed to nobody.
+ 
+ Interpolated values answer as actuals, because a tag receives them exactly as a call receives
+ arguments. The strings array is not among them: it is built at the call site rather than handed in.
+ 
+ @param node - Node that may invoke something.
+ 
+ @returns callee and actuals, or the sentinel when nothing is invoked.
+ 
+ @example
+ ```ts
+ invokedParts({ node });
+ ```
  */
 export function invokedParts({ node, }: { readonly node: Node; },):
   | {

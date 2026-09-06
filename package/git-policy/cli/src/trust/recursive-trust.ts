@@ -1,5 +1,5 @@
 /**
- * Recursive trust authorizer discovery and descendant enrollment. @module
+ Recursive trust authorizer discovery and descendant enrollment. @module
  */
 import {
   captureTrustCandidate,
@@ -23,16 +23,16 @@ import type {
 } from './types.ts';
 
 /**
- * Deduplicates identities and sorts canonical path then filesystem ID.
- *
- * @param identities - complete identities
- *
- * @returns deterministic unique identities
- *
- * @example
- * ```ts
- * canonicalAuthorizers([identity]);
- * ```
+ Deduplicates identities and sorts canonical path then filesystem ID.
+ 
+ @param identities - complete identities
+ 
+ @returns deterministic unique identities
+ 
+ @example
+ ```ts
+ canonicalAuthorizers([identity]);
+ ```
  */
 export function canonicalAuthorizers(identities: readonly TrustIdentity[],): readonly TrustIdentity[] {
   return [...new Map(identities.map(function keyedIdentity(identity,) {
@@ -56,15 +56,15 @@ export function canonicalAuthorizers(identities: readonly TrustIdentity[],): rea
 }
 
 /**
- * Verifies one recursive root remains exactly trusted without executing it.
- *
- * @param entry - recursive root catalog entry
- *
- * @returns unchanged authorizer identity
+ Verifies one recursive root remains exactly trusted without executing it.
+ 
+ @param entry - recursive root catalog entry
+ 
+ @returns unchanged authorizer identity
  */
 async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<TrustIdentity> {
   /**
-   * Fresh exact root candidate or stable changed-root failure.
+   Fresh exact root candidate or stable changed-root failure.
    */
   const candidate = await (async function captureRootCandidate(): Promise<TrustCandidate> {
     try {
@@ -88,7 +88,7 @@ async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<T
     }
   })();
   /**
-   * Exact source agreement for each record format.
+   Exact source agreement for each record format.
    */
   const sourcesUnchanged = entry.record
     .format
@@ -102,7 +102,7 @@ async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<T
       .sources
       .map(async function sourceUnchanged(source,) {
       /**
-       * Exact live tracked source bytes.
+       Exact live tracked source bytes.
        */
       const liveBytes = source.canonicalPath
         === candidate.discovered
@@ -110,7 +110,7 @@ async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<T
         ? candidate.bytes
         : (await captureTrustSource(source.canonicalPath,)).bytes;
       /**
-       * Exact private tracked source snapshot.
+       Exact private tracked source snapshot.
        */
       const snapshot = await readPrivateFile(`${entry.directory}/${source.snapshotFile}`,);
       return exactBytesEqual({
@@ -131,18 +131,18 @@ async function validateRecursiveAuthorizer(entry: TrustCatalogEntry,): Promise<T
 }
 
 /**
- * Finds only unchanged recursive roots covering descendant.
- *
- * @param entries - installed catalog
- *
- * @param repositoryRoot - candidate descendant root
- *
- * @returns exact active authorizer identities
- *
- * @example
- * ```ts
- * await activeRecursiveAuthorizers({ entries, repositoryRoot });
- * ```
+ Finds only unchanged recursive roots covering descendant.
+ 
+ @param entries - installed catalog
+ 
+ @param repositoryRoot - candidate descendant root
+ 
+ @returns exact active authorizer identities
+ 
+ @example
+ ```ts
+ await activeRecursiveAuthorizers({ entries, repositoryRoot });
+ ```
  */
 export async function activeRecursiveAuthorizers({
   entries,
@@ -152,7 +152,7 @@ export async function activeRecursiveAuthorizers({
   repositoryRoot: string;
 }>,): Promise<readonly TrustIdentity[]> {
   /**
-   * Covering recursive roots before exact validation.
+   Covering recursive roots before exact validation.
    */
   const authorizers = entries.filter(function coversDescendant(entry,) {
     return entry.record
@@ -167,18 +167,18 @@ export async function activeRecursiveAuthorizers({
 }
 
 /**
- * Finds inherited roots plus explicit self-authorizer.
- *
- * @param registryRoot - complete private registry root
- *
- * @param candidate - exact explicit candidate
- *
- * @returns deterministic explicit and inherited provenance
- *
- * @example
- * ```ts
- * await explicitAuthorizers({ registryRoot, candidate });
- * ```
+ Finds inherited roots plus explicit self-authorizer.
+ 
+ @param registryRoot - complete private registry root
+ 
+ @param candidate - exact explicit candidate
+ 
+ @returns deterministic explicit and inherited provenance
+ 
+ @example
+ ```ts
+ await explicitAuthorizers({ registryRoot, candidate });
+ ```
  */
 export async function explicitAuthorizers({
   registryRoot,
@@ -189,7 +189,7 @@ export async function explicitAuthorizers({
 }>,): Promise<readonly TrustIdentity[]> {
   await recoverProvenanceTransactions({ registryRoot, },);
   /**
-   * Every currently installed record.
+   Every currently installed record.
    */
   const entries = await listTrustRecords({ registryRoot, },);
   return canonicalAuthorizers([

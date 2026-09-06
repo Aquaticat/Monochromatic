@@ -1,37 +1,37 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Replaces an element's parent's content with clones of that element, each
- * produced via {@link deepCloneNode}.
- * Any other sibling elements will be removed.
- *
- * @param templateElement - Reference to element
- *
- * @param targetCount - Desired number of cloned elements to become the new children of the parent. A count of 0 will remove all children.
- *
- * @mutates templateElement - `parent.replaceChildren` replaces children of reachable parent element
- *
- * @example
- * ```html
- * <!-- Initial DOM -->
- * <div id="container">
- *   <span>Some other element</span>
- *   <p class="element-to-replicate">Original</p>
- *   <span>Another element</span>
- * </div>
- * ```
- * ```ts
- * const elementToReplicate = document.querySelector<HTMLElement>('.element-to-replicate',)!;
- * replicateElementAsParentContent({ templateElement: elementToReplicate, targetCount: 3, },);
- * ```
- * ```html
- * <!-- Resulting DOM -->
- * <div id="container">
- *   <p class="element-to-replicate">Original</p>
- *   <p class="element-to-replicate">Original</p>
- *   <p class="element-to-replicate">Original</p>
- * </div>
- * ```
+ Replaces an element's parent's content with clones of that element, each
+ produced via {@link deepCloneNode}.
+ Any other sibling elements will be removed.
+ 
+ @param templateElement - Reference to element
+ 
+ @param targetCount - Desired number of cloned elements to become the new children of the parent. A count of 0 will remove all children.
+ 
+ @mutates templateElement - `parent.replaceChildren` replaces children of reachable parent element
+ 
+ @example
+ ```html
+ <!-- Initial DOM -->
+ <div id="container">
+   <span>Some other element</span>
+   <p class="element-to-replicate">Original</p>
+   <span>Another element</span>
+ </div>
+ ```
+ ```ts
+ const elementToReplicate = document.querySelector<HTMLElement>('.element-to-replicate',)!;
+ replicateElementAsParentContent({ templateElement: elementToReplicate, targetCount: 3, },);
+ ```
+ ```html
+ <!-- Resulting DOM -->
+ <div id="container">
+   <p class="element-to-replicate">Original</p>
+   <p class="element-to-replicate">Original</p>
+   <p class="element-to-replicate">Original</p>
+ </div>
+ ```
  */
 export function replicateElementAsParentContent(
   {
@@ -43,7 +43,7 @@ export function replicateElementAsParentContent(
   }>>,
 ): void {
   /**
-   * Parent of the template; required because replication targets its children.
+   Parent of the template; required because replication targets its children.
    */
   const parent = templateElement.parentElement;
 
@@ -55,7 +55,7 @@ export function replicateElementAsParentContent(
   }
 
   /**
-   * Independent deep clones of the template; one per slot in the parent.
+   Independent deep clones of the template; one per slot in the parent.
    */
   const clones = Array.from(
     { length: targetCount, },
@@ -69,20 +69,20 @@ export function replicateElementAsParentContent(
 }
 
 /**
- * Deep clones a DOM node, preserving all descendants and attributes.
- *
- * @param element - Node to clone
- *
- * @returns Deep clone of the node with the same type
- *
- * @example
- * ```ts
- * const link = document.querySelector<HTMLAnchorElement>('a.primary',)!;
- * const linkClone = deepCloneNode(link,);
- * // linkClone retains its HTMLAnchorElement type without a manual cast.
- * linkClone.href = '/secondary';
- * document.body.append(linkClone,);
- * ```
+ Deep clones a DOM node, preserving all descendants and attributes.
+ 
+ @param element - Node to clone
+ 
+ @returns Deep clone of the node with the same type
+ 
+ @example
+ ```ts
+ const link = document.querySelector<HTMLAnchorElement>('a.primary',)!;
+ const linkClone = deepCloneNode(link,);
+ // linkClone retains its HTMLAnchorElement type without a manual cast.
+ linkClone.href = '/secondary';
+ document.body.append(linkClone,);
+ ```
  */
 export function deepCloneNode<const T extends Node,>(element: T,): T {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- DOM Node.cloneNode returns Node; the whole purpose of this wrapper is to restore the concrete type T at the call site
@@ -90,30 +90,30 @@ export function deepCloneNode<const T extends Node,>(element: T,): T {
 }
 
 /**
- * Replaces a target parent element's content with clones of a template
- * element, each produced via {@link deepCloneNode}.
- *
- * @param templateElement - Element to clone
- *
- * @param parentElement - Parent element whose children will be replaced
- *
- * @param targetCount - Number of clones to insert
- *
- * @mutates parentElement - `parentElement.replaceChildren` replaces target child list
- *
- * @example
- * ```html
- * <!-- Initial DOM -->
- * <template id="row-template"><li class="row">…</li></template>
- * <ul id="list"></ul>
- * ```
- * ```ts
- * const template = (document.querySelector<HTMLTemplateElement>('#row-template',)!).content
- *   .firstElementChild as HTMLElement;
- * const list = document.querySelector<HTMLElement>('#list',)!;
- * replicateElementAsContentOf({ templateElement: template, parentElement: list, targetCount: 3, },);
- * // #list now holds three independent clones; the <template> is untouched.
- * ```
+ Replaces a target parent element's content with clones of a template
+ element, each produced via {@link deepCloneNode}.
+ 
+ @param templateElement - Element to clone
+ 
+ @param parentElement - Parent element whose children will be replaced
+ 
+ @param targetCount - Number of clones to insert
+ 
+ @mutates parentElement - `parentElement.replaceChildren` replaces target child list
+ 
+ @example
+ ```html
+ <!-- Initial DOM -->
+ <template id="row-template"><li class="row">…</li></template>
+ <ul id="list"></ul>
+ ```
+ ```ts
+ const template = (document.querySelector<HTMLTemplateElement>('#row-template',)!).content
+   .firstElementChild as HTMLElement;
+ const list = document.querySelector<HTMLElement>('#list',)!;
+ replicateElementAsContentOf({ templateElement: template, parentElement: list, targetCount: 3, },);
+ // #list now holds three independent clones; the <template> is untouched.
+ ```
  */
 export function replicateElementAsContentOf(
   {
@@ -127,7 +127,7 @@ export function replicateElementAsContentOf(
   }>>,
 ): void {
   /**
-   * Independent deep clones of the template; one per slot in the explicit parent.
+   Independent deep clones of the template; one per slot in the explicit parent.
    */
   const clones = Array.from(
     { length: targetCount, },

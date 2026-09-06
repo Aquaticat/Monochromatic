@@ -11,14 +11,14 @@ import { CommitTransactionRecoveryError, } from './commit-transaction-recovery-v
 import { TRANSACTION_DIRECTORY_NAME, } from './commit-transaction-workspace.ts';
 
 /**
- * Invocation has no worktree transaction directory to recover.
+ Invocation has no worktree transaction directory to recover.
  */
 export const RECOVERY_TARGET_NOT_APPLICABLE: unique symbol = Symbol(
   'commit transaction recovery target is not applicable',
 );
 
 /**
- * Strict Git metadata decoder.
+ Strict Git metadata decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
@@ -26,25 +26,25 @@ const DECODER = new TextDecoder(
 );
 
 /**
- * Resolves invocation-specific transaction directory from retained identity or one Git request.
- *
- * Pre-resolved identity lets known read-only commands reuse worktree classification for recovery
- * and forwarding. Other commands ask Git for membership and transaction path together.
- *
- * @param args - Exact wrapper arguments.
- *
- * @param gitPath - Absolute real-Git executable.
- *
- * @param identity - Optional identity already resolved before config-free policy execution.
- *
- * @returns Absolute transaction directory or not-applicable sentinel.
- *
- * @throws {@link CommitTransactionRecoveryError} when Git returns incomplete metadata.
- *
- * @example
- * ```ts
- * await resolveCommitTransactionDirectory({ args: ['status'], gitPath: '/usr/bin/git' });
- * ```
+ Resolves invocation-specific transaction directory from retained identity or one Git request.
+ 
+ Pre-resolved identity lets known read-only commands reuse worktree classification for recovery
+ and forwarding. Other commands ask Git for membership and transaction path together.
+ 
+ @param args - Exact wrapper arguments.
+ 
+ @param gitPath - Absolute real-Git executable.
+ 
+ @param identity - Optional identity already resolved before config-free policy execution.
+ 
+ @returns Absolute transaction directory or not-applicable sentinel.
+ 
+ @throws {@link CommitTransactionRecoveryError} when Git returns incomplete metadata.
+ 
+ @example
+ ```ts
+ await resolveCommitTransactionDirectory({ args: ['status'], gitPath: '/usr/bin/git' });
+ ```
  */
 export async function resolveCommitTransactionDirectory({
   args,
@@ -52,15 +52,15 @@ export async function resolveCommitTransactionDirectory({
   identity,
 }: Readonly<{
   /**
-   * Exact wrapper arguments.
+   Exact wrapper arguments.
    */
   args: readonly string[];
   /**
-   * Absolute real-Git executable.
+   Absolute real-Git executable.
    */
   gitPath: string;
   /**
-   * Optional retained repository identity.
+   Optional retained repository identity.
    */
   identity?: GitWorktreeIdentity;
 }>,): Promise<string | typeof RECOVERY_TARGET_NOT_APPLICABLE> {
@@ -74,11 +74,11 @@ export async function resolveCommitTransactionDirectory({
   }
 
   /**
-   * Effective invocation repository location.
+   Effective invocation repository location.
    */
   const { effectiveCwd, } = parseGlobalOptions(args,);
   /**
-   * Combined worktree-membership and transaction-path response.
+   Combined worktree-membership and transaction-path response.
    */
   const metadata = await runTransactionGit({
     gitPath,
@@ -96,7 +96,7 @@ export async function resolveCommitTransactionDirectory({
     return RECOVERY_TARGET_NOT_APPLICABLE;
 
   /**
-   * Fixed-order decoded metadata fields.
+   Fixed-order decoded metadata fields.
    */
   const [
     insideWorktree,

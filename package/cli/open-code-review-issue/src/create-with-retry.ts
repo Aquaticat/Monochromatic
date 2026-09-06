@@ -1,7 +1,7 @@
 /**
- * Retry and reconciliation loop for one GitHub Issue creation.
- *
- * @module
+ Retry and reconciliation loop for one GitHub Issue creation.
+ 
+ @module
  */
 
 import {
@@ -26,47 +26,47 @@ import {
 } from './reconcile.ts';
 
 /**
- * Successful GitHub Issue creation status.
+ Successful GitHub Issue creation status.
  */
 const HTTP_CREATED = 201;
 
 /**
- * Too-many-requests status.
+ Too-many-requests status.
  */
 const HTTP_TOO_MANY_REQUESTS = 429;
 
 /**
- * Forbidden status used by exhausted GitHub rate limit.
+ Forbidden status used by exhausted GitHub rate limit.
  */
 const HTTP_FORBIDDEN = 403;
 
 /**
- * Lowest server-error status.
+ Lowest server-error status.
  */
 const HTTP_SERVER_ERROR_MINIMUM = 500;
 
 /**
- * Highest server-error status.
+ Highest server-error status.
  */
 const HTTP_SERVER_ERROR_MAXIMUM = 599;
 
 /**
- * Maximum retries after initial create request.
+ Maximum retries after initial create request.
  */
 const MAXIMUM_RETRIES = 3;
 
 /**
- * Base network and server retry delay.
+ Base network and server retry delay.
  */
 const TRANSIENT_RETRY_BASE_MS = 1_000;
 
 /**
- * Base rate retry delay when headers are absent.
+ Base rate retry delay when headers are absent.
  */
 const RATE_RETRY_BASE_MS = 60_000;
 
 /**
- * One create attempt response or process failure.
+ One create attempt response or process failure.
  */
 type CreateAttempt =
   | {
@@ -79,15 +79,15 @@ type CreateAttempt =
   };
 
 /**
- * Creates one raw Issue request and captures retryable process failures.
- *
- * @param repository - Canonical destination identity.
- *
- * @param issue - Complete rendered Issue request.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @returns HTTP response or retryable process failure.
+ Creates one raw Issue request and captures retryable process failures.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param issue - Complete rendered Issue request.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @returns HTTP response or retryable process failure.
  */
 async function attemptCreate({
   repository,
@@ -126,13 +126,13 @@ async function attemptCreate({
 }
 
 /**
- * Parses successful Issue create response.
- *
- * @param issue - Requested Issue carrying input position.
- *
- * @param response - GitHub create response.
- *
- * @returns Confirmed created Issue identity.
+ Parses successful Issue create response.
+ 
+ @param issue - Requested Issue carrying input position.
+ 
+ @param response - GitHub create response.
+ 
+ @returns Confirmed created Issue identity.
  */
 function parseCreatedIssue({
   issue,
@@ -165,11 +165,11 @@ function parseCreatedIssue({
 }
 
 /**
- * Determines whether response represents rate-limit rejection.
- *
- * @param response - GitHub create response.
- *
- * @returns Whether response belongs to rate-limit retry class.
+ Determines whether response represents rate-limit rejection.
+ 
+ @param response - GitHub create response.
+ 
+ @returns Whether response belongs to rate-limit retry class.
  */
 function isRateLimit(response: IncludedResponse,): boolean {
   return (response.status === HTTP_TOO_MANY_REQUESTS)
@@ -179,11 +179,11 @@ function isRateLimit(response: IncludedResponse,): boolean {
 }
 
 /**
- * Determines whether response is ambiguous server failure.
- *
- * @param response - GitHub create response.
- *
- * @returns Whether response belongs to server retry class.
+ Determines whether response is ambiguous server failure.
+ 
+ @param response - GitHub create response.
+ 
+ @returns Whether response belongs to server retry class.
  */
 function isServerError(response: IncludedResponse,): boolean {
   return (response.status >= HTTP_SERVER_ERROR_MINIMUM)
@@ -191,13 +191,13 @@ function isServerError(response: IncludedResponse,): boolean {
 }
 
 /**
- * Reads positive numeric header as milliseconds.
- *
- * @param value - Header numeric text.
- *
- * @param multiplier - Unit conversion multiplier.
- *
- * @returns Positive converted value or zero for invalid header.
+ Reads positive numeric header as milliseconds.
+ 
+ @param value - Header numeric text.
+ 
+ @param multiplier - Unit conversion multiplier.
+ 
+ @returns Positive converted value or zero for invalid header.
  */
 function headerSeconds({
   value,
@@ -210,22 +210,22 @@ function headerSeconds({
     return 0;
   }
   /**
-   * Numeric header candidate.
+   Numeric header candidate.
    */
   const parsed = Number(value,);
   return Number.isFinite(parsed,) && (parsed > 0) ? parsed * multiplier : 0;
 }
 
 /**
- * Calculates header-aware rate delay for one retry index.
- *
- * @param response - Rate-limited GitHub response.
- *
- * @param retryIndex - Zero-based retry index.
- *
- * @param now - Epoch-millisecond clock.
- *
- * @returns Header delay or exponential fallback.
+ Calculates header-aware rate delay for one retry index.
+ 
+ @param response - Rate-limited GitHub response.
+ 
+ @param retryIndex - Zero-based retry index.
+ 
+ @param now - Epoch-millisecond clock.
+ 
+ @returns Header delay or exponential fallback.
  */
 function rateDelay({
   response,
@@ -237,12 +237,12 @@ function rateDelay({
   readonly now: () => number;
 },): number {
   /**
-   * Raw retry-after header when supplied.
+   Raw retry-after header when supplied.
    */
   const retryAfterHeader = response.headers['retry-after'];
   if (retryAfterHeader !== undefined) {
     /**
-     * Retry-after delay converted from seconds.
+     Retry-after delay converted from seconds.
      */
     const retryAfter = headerSeconds({
       value: retryAfterHeader,
@@ -253,12 +253,12 @@ function rateDelay({
     }
   }
   /**
-   * Raw absolute reset header when supplied.
+   Raw absolute reset header when supplied.
    */
   const resetHeader = response.headers['x-ratelimit-reset'];
   if (resetHeader !== undefined) {
     /**
-     * Absolute reset instant converted from seconds.
+     Absolute reset instant converted from seconds.
      */
     const reset = headerSeconds({
       value: resetHeader,
@@ -275,24 +275,24 @@ function rateDelay({
 }
 
 /**
- * Creates one Issue with three bounded retries and ambiguity reconciliation.
- *
- * @param repository - Canonical destination identity.
- *
- * @param issue - Complete rendered Issue request.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @param wait - Retry delay implementation.
- *
- * @param now - Epoch-millisecond clock.
- *
- * @returns Confirmed created or reconciled Issue identity.
- *
- * @example
- * ```ts
- * await createIssueWithRetry({ repository, issue, api, wait, now: Date.now });
- * ```
+ Creates one Issue with three bounded retries and ambiguity reconciliation.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param issue - Complete rendered Issue request.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @param wait - Retry delay implementation.
+ 
+ @param now - Epoch-millisecond clock.
+ 
+ @returns Confirmed created or reconciled Issue identity.
+ 
+ @example
+ ```ts
+ await createIssueWithRetry({ repository, issue, api, wait, now: Date.now });
+ ```
  */
 export async function createIssueWithRetry({
   repository,
@@ -308,7 +308,7 @@ export async function createIssueWithRetry({
   readonly now: () => number;
 },): Promise<CreatedIssue> {
   /**
-   * Shared number boundary recorded before first create attempt.
+   Shared number boundary recorded before first create attempt.
    */
   const highWater = await readHighWater({
     repository,
@@ -316,7 +316,7 @@ export async function createIssueWithRetry({
   });
   for (let attemptIndex = 0; attemptIndex <= MAXIMUM_RETRIES; attemptIndex += 1) {
     /**
-     * Current create response or process-level failure.
+     Current create response or process-level failure.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- retry attempt N+1 depends on attempt N response and reconciliation.
     const attempt = await attemptCreate({
@@ -333,13 +333,13 @@ export async function createIssueWithRetry({
       });
     }
     /**
-     * Whether current failure may have created remote Issue.
+     Whether current failure may have created remote Issue.
      */
     const ambiguous = (attempt.kind === 'process-failure')
       || isServerError(attempt.response,);
     if (ambiguous) {
       /**
-       * Exact post-failure reconciliation result.
+       Exact post-failure reconciliation result.
        */
       // oxlint-disable-next-line eslint/no-await-in-loop -- reconciliation must settle before retry decision for this attempt.
       const reconciliation = await reconcileCreate({
@@ -353,16 +353,16 @@ export async function createIssueWithRetry({
       }
     }
     /**
-     * Whether current response qualifies for rate-aware retry.
+     Whether current response qualifies for rate-aware retry.
      */
     const rateLimited = (attempt.kind === 'response') && isRateLimit(attempt.response,);
     /**
-     * Whether current failure belongs to settled retry classes.
+     Whether current failure belongs to settled retry classes.
      */
     const retryable = ambiguous || rateLimited;
     if ((!retryable) || (attemptIndex === MAXIMUM_RETRIES)) {
       /**
-       * Safe terminal status summary without Issue content.
+       Safe terminal status summary without Issue content.
        */
       const status = attempt.kind === 'response'
         ? `HTTP ${String(attempt.response
@@ -374,7 +374,7 @@ export async function createIssueWithRetry({
       );
     }
     /**
-     * Settled delay before next mutative retry.
+     Settled delay before next mutative retry.
      */
     const retryDelay = rateLimited && (attempt.kind === 'response')
       ? rateDelay({

@@ -1,20 +1,20 @@
 /**
- * Style and pedantic rule configuration.
- *
- * Rules governing code style preferences, formatting conventions,
- * and pedantic checks that improve consistency but have legitimate
- * exceptions in certain contexts.
- *
- * @example
- * ```typescript
- * import { styleRules } from './rule/style.ts';
- * ```
+ Style and pedantic rule configuration.
+ 
+ Rules governing code style preferences, formatting conventions,
+ and pedantic checks that improve consistency but have legitimate
+ exceptions in certain contexts.
+ 
+ @example
+ ```typescript
+ import { styleRules } from './rule/style.ts';
+ ```
  */
 
 import type { DummyRuleMap, } from 'oxlint';
 
 /**
- * Style and pedantic rules.
+ Style and pedantic rules.
  */
 export const styleRules: DummyRuleMap = {
   //region pedantic

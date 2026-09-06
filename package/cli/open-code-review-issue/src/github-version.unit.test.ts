@@ -30,7 +30,7 @@ await describe({
       name: 'rejects older and unparseable versions',
       fn: async () => {
         /**
-         * Version outputs outside supported contract.
+         Version outputs outside supported contract.
          */
         const values = [
           'gh version 2.96.9',
@@ -38,7 +38,7 @@ await describe({
         ];
         for (const stdout of values) {
           /**
-           * Captured version validation failure.
+           Captured version validation failure.
            */
           let caught: unknown;
           try {

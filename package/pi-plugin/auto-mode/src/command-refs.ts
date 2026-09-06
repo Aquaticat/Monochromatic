@@ -1,7 +1,7 @@
 /**
- * Backward-compatible command reference helpers for auto-mode.
- *
- * @module
+ Backward-compatible command reference helpers for auto-mode.
+ 
+ @module
  */
 
 export {

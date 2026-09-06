@@ -1,13 +1,13 @@
 /**
- * Trusted temporary allowlist helpers.
- *
- * Owns the policy for deciding whether current `~/temp/agent` and historical
- * `/tmp/agent` compatibility roots are safe for structured reads and Bash
- * helper execution. Each root must exist, be a real directory owned by current
- * process user, resolve without symlinks, and have no group or other permission
- * bits.
- *
- * @module
+ Trusted temporary allowlist helpers.
+ 
+ Owns the policy for deciding whether current `~/temp/agent` and historical
+ `/tmp/agent` compatibility roots are safe for structured reads and Bash
+ helper execution. Each root must exist, be a real directory owned by current
+ process user, resolve without symlinks, and have no group or other permission
+ bits.
+ 
+ @module
  */
 
 import {
@@ -25,17 +25,17 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { HISTORICAL_AGENT_TEMP_DIR, } from './constants.ts';
 
 /**
- * Logger root for auto-mode after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for auto-mode after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
- * Tagged logger for the temp-allowlist module.
+ Tagged logger for the temp-allowlist module.
  */
 const moduleLogger = tagged({
   tag: 'temp-allowlist',
@@ -43,34 +43,34 @@ const moduleLogger = tagged({
 },);
 
 /**
- * Permission bits that grant any access to group or other users.
- *
- * @example
- * ```typescript
- * const unsafeBits = GROUP_OR_OTHER_PERMISSION_BITS;
- * ```
+ Permission bits that grant any access to group or other users.
+ 
+ @example
+ ```typescript
+ const unsafeBits = GROUP_OR_OTHER_PERMISSION_BITS;
+ ```
  */
 const GROUP_OR_OTHER_PERMISSION_BITS = 0o077;
 
 /**
- * Check whether directory is private to current process user.
- *
- * @param dir - directory considered for agent temp trust
- *
- * @returns whether directory identity, ownership, and mode make agent temp access safe
- *
- * @example
- * ```typescript
- * const currentAgentTempDir = join(homedir(), 'temp', 'agent');
- * const trusted = isTrustedAgentTempDir(currentAgentTempDir);
- * ```
+ Check whether directory is private to current process user.
+ 
+ @param dir - directory considered for agent temp trust
+ 
+ @returns whether directory identity, ownership, and mode make agent temp access safe
+ 
+ @example
+ ```typescript
+ const currentAgentTempDir = join(homedir(), 'temp', 'agent');
+ const trusted = isTrustedAgentTempDir(currentAgentTempDir);
+ ```
  */
 async function isTrustedAgentTempDir(
   dir: string,
 ): Promise<boolean> {
   try {
     /**
-     * Filesystem metadata for candidate allowlist root.
+     Filesystem metadata for candidate allowlist root.
      */
     const stats = await lstat(dir,);
     if (!stats.isDirectory())
@@ -85,7 +85,7 @@ async function isTrustedAgentTempDir(
   }
   catch (error) {
     /**
-     * Sub-logger tagged with this function name so the handled stat failure stays traceable.
+     Sub-logger tagged with this function name so the handled stat failure stays traceable.
      */
     const innerL = tagged({
       tag: isTrustedAgentTempDir.name,
@@ -97,19 +97,19 @@ async function isTrustedAgentTempDir(
 }
 
 /**
- * Canonicalize account home before deriving trusted scratch child.
- *
- * A symlink at operating-system home mount is account identity, while symlinks
- * below canonical home remain subject to {@link isTrustedAgentTempDir}.
- *
- * @param home - runtime account home spelling
- *
- * @returns canonical home when available, otherwise lexical absolute fallback
- *
- * @example
- * ```typescript
- * await canonicalHomePath('/home/user');
- * ```
+ Canonicalize account home before deriving trusted scratch child.
+ 
+ A symlink at operating-system home mount is account identity, while symlinks
+ below canonical home remain subject to {@link isTrustedAgentTempDir}.
+ 
+ @param home - runtime account home spelling
+ 
+ @returns canonical home when available, otherwise lexical absolute fallback
+ 
+ @example
+ ```typescript
+ await canonicalHomePath('/home/user');
+ ```
  */
 async function canonicalHomePath(
   home: string,
@@ -119,7 +119,7 @@ async function canonicalHomePath(
   }
   catch (error) {
     /**
-     * Metadata failure remains visible while downstream trust check fails closed.
+     Metadata failure remains visible while downstream trust check fails closed.
      */
     const innerL = tagged({
       tag: canonicalHomePath.name,
@@ -131,21 +131,21 @@ async function canonicalHomePath(
 }
 
 /**
- * Return private roots for structured reads and Bash helper execution.
- *
- * Current `~/temp/agent` is preferred. Historical `/tmp/agent` remains trusted
- * for compatibility when it independently passes current filesystem checks.
- *
- * @param home - permits isolated callers to derive current-user boundary without mutating process env
- *
- * @param historicalAgentTempDir - permits isolated callers to replace shared compatibility root
- *
- * @returns private existing agent temp roots, otherwise an empty list
- *
- * @example
- * ```typescript
- * const dirs = agentTempAllowlistedDirs({ home: '/account-home' });
- * ```
+ Return private roots for structured reads and Bash helper execution.
+ 
+ Current `~/temp/agent` is preferred. Historical `/tmp/agent` remains trusted
+ for compatibility when it independently passes current filesystem checks.
+ 
+ @param home - permits isolated callers to derive current-user boundary without mutating process env
+ 
+ @param historicalAgentTempDir - permits isolated callers to replace shared compatibility root
+ 
+ @returns private existing agent temp roots, otherwise an empty list
+ 
+ @example
+ ```typescript
+ const dirs = agentTempAllowlistedDirs({ home: '/account-home' });
+ ```
  */
 async function agentTempAllowlistedDirs(
   {
@@ -157,11 +157,11 @@ async function agentTempAllowlistedDirs(
   } = {},
 ): Promise<readonly string[]> {
   /**
-   * Canonical account home keeps OS-level `/home` aliases outside scratch policy's symlink check.
+   Canonical account home keeps OS-level `/home` aliases outside scratch policy's symlink check.
    */
   const canonicalHome = await canonicalHomePath(home,);
   /**
-   * Candidate roots whose current metadata is checked for every relevant tool call.
+   Candidate roots whose current metadata is checked for every relevant tool call.
    */
   const candidateDirs = [
     join(
@@ -172,7 +172,7 @@ async function agentTempAllowlistedDirs(
     historicalAgentTempDir,
   ];
   /**
-   * Per-root trust decisions in the same order as {@link candidateDirs}.
+   Per-root trust decisions in the same order as {@link candidateDirs}.
    */
   const trustDecisions = await Promise.all(candidateDirs.map(
     function checkCandidateDir(candidateDir,) {

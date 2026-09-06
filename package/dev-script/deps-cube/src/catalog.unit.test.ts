@@ -1,11 +1,11 @@
 /**
- * Tests for the catalog parser.
- *
- * Each test writes a fixture `pnpm-workspace.yaml` under a fresh
- * temp directory and calls `readCatalog({ startDir })` so the
- * `findUp` search is constrained to that temp tree.
- *
- * @module
+ Tests for the catalog parser.
+ 
+ Each test writes a fixture `pnpm-workspace.yaml` under a fresh
+ temp directory and calls `readCatalog({ startDir })` so the
+ `findUp` search is constrained to that temp tree.
+ 
+ @module
  */
 
 import {
@@ -31,10 +31,10 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Allocates a fresh temp directory and returns it with an
- * async-disposable that recursively removes it on scope exit.
- *
- * @returns Tuple of root path and an async-disposable cleanup.
+ Allocates a fresh temp directory and returns it with an
+ async-disposable that recursively removes it on scope exit.
+ 
+ @returns Tuple of root path and an async-disposable cleanup.
  */
 async function tempWorkspace(): Promise<{
   dir: string;
@@ -98,7 +98,7 @@ await describe({
       name: 'decodeAlias rejects traversal-shaped alias targets',
       fn: async () => {
         /**
-         * Captured failure from an alias target that could escape node_modules.
+         Captured failure from an alias target that could escape node_modules.
          */
         let caught: unknown;
         try {

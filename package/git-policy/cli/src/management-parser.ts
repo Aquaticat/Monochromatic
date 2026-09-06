@@ -1,7 +1,7 @@
 /**
- * Management-command grammar replacing the `@optique/core` facade.
- *
- * @module
+ Management-command grammar replacing the `@optique/core` facade.
+ 
+ @module
  */
 import {
   ARGV_REFUSED,
@@ -10,14 +10,14 @@ import {
 } from './parser/argv.ts';
 
 /**
- * Management grammar rejected the invocation, and no action can be taken.
+ Management grammar rejected the invocation, and no action can be taken.
  */
 export const MANAGEMENT_REFUSED: unique symbol = Symbol(
   'wrapper subcommand matched none of trust, untrust, status, check, or fix',
 );
 
 /**
- * Complete management grammar surfaced when an invocation is rejected.
+ Complete management grammar surfaced when an invocation is rejected.
  */
 export const MANAGEMENT_USAGE: string = [
   'Usage: git cli-git trust [--yes]',
@@ -28,7 +28,7 @@ export const MANAGEMENT_USAGE: string = [
 ].join('\n',);
 
 /**
- * Successful namespace help shown without repository access.
+ Successful namespace help shown without repository access.
  */
 export const MANAGEMENT_HELP: string = [
   'Usage: git cli-git <command> [options]',
@@ -46,7 +46,7 @@ export const MANAGEMENT_HELP: string = [
 ].join('\n',);
 
 /**
- * Successful trust help shown without repository access.
+ Successful trust help shown without repository access.
  */
 export const TRUST_HELP: string = [
   'Usage: git cli-git trust [--yes]',
@@ -64,67 +64,67 @@ export const TRUST_HELP: string = [
 ].join('\n',);
 
 /**
- * One resolved management action.
- *
- * @example
- * ```ts
- * const action: ManagementAction = { command: 'help', topic: 'management' };
- * ```
+ One resolved management action.
+ 
+ @example
+ ```ts
+ const action: ManagementAction = { command: 'help', topic: 'management' };
+ ```
  */
 export type ManagementAction =
   | Readonly<{
     /**
-     * Successful help action requiring no repository access.
+     Successful help action requiring no repository access.
      */
     command: 'help';
     /**
-     * Help surface selected by invocation.
+     Help surface selected by invocation.
      */
     topic: 'management' | 'trust';
   }>
   | Readonly<{
     /**
-     * Trust command granting consent to current config bytes.
+     Trust command granting consent to current config bytes.
      */
     command: 'trust';
     /**
-     * Whether consent was given noninteractively.
+     Whether consent was given noninteractively.
      */
     yes: boolean;
   }>
   | Readonly<{
     /**
-     * Untrust command revoking stored consent.
+     Untrust command revoking stored consent.
      */
     command: 'untrust';
   }>
   | Readonly<{
     /**
-     * Status command reporting stored consent state.
+     Status command reporting stored consent state.
      */
     command: 'status';
   }>
   | Readonly<{
     /**
-     * Direct policy command over an explicit scope.
+     Direct policy command over an explicit scope.
      */
     command: 'check' | 'fix';
     /**
-     * Whether complete repository scope was selected.
+     Whether complete repository scope was selected.
      */
     all: boolean;
     /**
-     * Selected policy filter in first-occurrence order.
+     Selected policy filter in first-occurrence order.
      */
     policies: readonly string[];
     /**
-     * Positional pathspec scope, in encounter order.
+     Positional pathspec scope, in encounter order.
      */
     pathspecs: readonly string[];
   }>;
 
 /**
- * Declared surface of the `trust` command.
+ Declared surface of the `trust` command.
  */
 const TRUST_SPEC: ArgvSpec = {
   flags: {
@@ -140,7 +140,7 @@ const TRUST_SPEC: ArgvSpec = {
 };
 
 /**
- * Declared surface of the `check` and `fix` commands.
+ Declared surface of the `check` and `fix` commands.
  */
 const DIRECT_SPEC: ArgvSpec = {
   flags: { all: { names: ['--all',], }, },
@@ -148,7 +148,7 @@ const DIRECT_SPEC: ArgvSpec = {
 };
 
 /**
- * Declared surface of commands taking no option.
+ Declared surface of commands taking no option.
  */
 const BARE_SPEC: ArgvSpec = {
   flags: {},
@@ -156,29 +156,29 @@ const BARE_SPEC: ArgvSpec = {
 };
 
 /**
- * Parses management arguments into one resolved action.
- *
- * Dispatches on the leading command name rather than trying every grammar in
- * turn, so an invocation naming two commands is rejected for naming an unknown
- * option rather than for an ambiguity the caller never expressed.
- *
- * @param args - complete management arguments, command name first
- *
- * @returns resolved action, or refusal sentinel
- *
- * @example
- * ```ts
- * parseManagementArgs(['trust', '--yes']);
- * // => { command: 'trust', yes: true }
- * ```
+ Parses management arguments into one resolved action.
+ 
+ Dispatches on the leading command name rather than trying every grammar in
+ turn, so an invocation naming two commands is rejected for naming an unknown
+ option rather than for an ambiguity the caller never expressed.
+ 
+ @param args - complete management arguments, command name first
+ 
+ @returns resolved action, or refusal sentinel
+ 
+ @example
+ ```ts
+ parseManagementArgs(['trust', '--yes']);
+ // => { command: 'trust', yes: true }
+ ```
  */
 export function parseManagementArgs(args: readonly string[],): ManagementAction | typeof MANAGEMENT_REFUSED {
   /**
-   * Leading command name selecting one grammar.
+   Leading command name selecting one grammar.
    */
   const [name,] = args;
   /**
-   * Arguments after command name.
+   Arguments after command name.
    */
   const rest = args.slice(1,);
   if ((name === '--help') || (name === '-h')) {
@@ -191,7 +191,7 @@ export function parseManagementArgs(args: readonly string[],): ManagementAction 
   }
   if ((name === 'untrust') || (name === 'status')) {
     /**
-     * Parsed bare-command region, rejecting any option.
+     Parsed bare-command region, rejecting any option.
      */
     const parsed = tryParseArgv({
       args: rest,
@@ -208,7 +208,7 @@ export function parseManagementArgs(args: readonly string[],): ManagementAction 
   }
   if (name === 'trust') {
     /**
-     * Parsed trust region.
+     Parsed trust region.
      */
     const parsed = tryParseArgv({
       args: rest,
@@ -239,7 +239,7 @@ export function parseManagementArgs(args: readonly string[],): ManagementAction 
   }
   if ((name === 'check') || (name === 'fix')) {
     /**
-     * Parsed direct-command region.
+     Parsed direct-command region.
      */
     const parsed = tryParseArgv({
       args: rest,

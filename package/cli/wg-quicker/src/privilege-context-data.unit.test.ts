@@ -7,7 +7,7 @@ import {
 import { parsePrivilegeContext, } from '../dist/final/node/privilege-context-data.mjs';
 
 /**
- * Valid serialized caller context with every optional field.
+ Valid serialized caller context with every optional field.
  */
 const VALID_CONTEXT = {
   environment: {
@@ -27,7 +27,7 @@ const VALID_CONTEXT = {
 };
 
 /**
- * Invalid serialized context cases and expected diagnostics.
+ Invalid serialized context cases and expected diagnostics.
  */
 const INVALID_CONTEXTS = [
   {

@@ -1,7 +1,7 @@
 /**
- * Tests for trust directive extraction from custom session entries.
- *
- * @module
+ Tests for trust directive extraction from custom session entries.
+ 
+ @module
  */
 
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -30,16 +30,16 @@ type MockBranchEntry = {
 };
 
 /**
- * Create mock extension context with session branch access.
- *
- * @param branch - branch entries returned from session manager
- *
- * @returns mock extension context
- *
- * @example
- * ```typescript
- * const ctx = contextFromBranch({ branch: [trustEntry({ rule: FIRST_TRUST_RULE })] });
- * ```
+ Create mock extension context with session branch access.
+ 
+ @param branch - branch entries returned from session manager
+ 
+ @returns mock extension context
+ 
+ @example
+ ```typescript
+ const ctx = contextFromBranch({ branch: [trustEntry({ rule: FIRST_TRUST_RULE })] });
+ ```
  */
 function contextFromBranch(
   {
@@ -58,16 +58,16 @@ function contextFromBranch(
 }
 
 /**
- * Build trust-directive custom entry matching Pi appendEntry storage.
- *
- * @param rule - active trust directive text
- *
- * @returns mock trust-directive branch entry
- *
- * @example
- * ```typescript
- * trustEntry({ rule: FIRST_TRUST_RULE });
- * ```
+ Build trust-directive custom entry matching Pi appendEntry storage.
+ 
+ @param rule - active trust directive text
+ 
+ @returns mock trust-directive branch entry
+ 
+ @example
+ ```typescript
+ trustEntry({ rule: FIRST_TRUST_RULE });
+ ```
  */
 function trustEntry(
   {
@@ -84,14 +84,14 @@ function trustEntry(
 }
 
 /**
- * Build trust-directive reset custom entry matching Pi appendEntry storage.
- *
- * @returns mock reset branch entry
- *
- * @example
- * ```typescript
- * trustResetEntry();
- * ```
+ Build trust-directive reset custom entry matching Pi appendEntry storage.
+ 
+ @returns mock reset branch entry
+ 
+ @example
+ ```typescript
+ trustResetEntry();
+ ```
  */
 function trustResetEntry(): MockBranchEntry {
   return {

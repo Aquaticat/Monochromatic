@@ -1,14 +1,14 @@
 /**
- * Disposable action adapters for real Pi goal loader verification.
- *
- * @module
+ Disposable action adapters for real Pi goal loader verification.
+ 
+ @module
  */
 
 import type { ExtensionRuntime, } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Custom message and delivery metadata observed through real loader runtime.
+ Custom message and delivery metadata observed through real loader runtime.
  */
 type CapturedRuntimeMessage = {
   readonly customType: string;
@@ -17,17 +17,17 @@ type CapturedRuntimeMessage = {
 };
 
 /**
- * Runtime custom message accepted by Pi send action.
+ Runtime custom message accepted by Pi send action.
  */
 type RuntimeMessage = Parameters<ExtensionRuntime['sendMessage']>[0];
 
 /**
- * Runtime custom-message options accepted by Pi send action.
+ Runtime custom-message options accepted by Pi send action.
  */
 type RuntimeMessageOptions = NonNullable<Parameters<ExtensionRuntime['sendMessage']>[1]>;
 
 /**
- * Minimal persisted session mutation capability used by adapters.
+ Minimal persisted session mutation capability used by adapters.
  */
 type ExtensionRuntimeSessionManager = {
   readonly appendCustomEntry: (
@@ -43,26 +43,26 @@ type ExtensionRuntimeSessionManager = {
 };
 
 /**
- * Capture and persist one visible custom message.
- *
- * @param sessionManager - runtime session mutation capability
- *
- * @param messages - verifier capture array
- *
- * @param message - loaded-extension custom message
- *
- * @param options - Pi delivery metadata
- *
- * @mutates sessionManager - sessionManager.appendCustomMessageEntry appends visible transcript state
- *
- * @mutates messages - messages.push records custom delivery
- *
- * @mutates message - sessionManager.appendCustomMessageEntry may invoke serialization hooks reachable from message
- *
- * @example
- * ```ts
- * captureDisposableMessage({ sessionManager, messages, message, options: { triggerTurn: true } });
- * ```
+ Capture and persist one visible custom message.
+ 
+ @param sessionManager - runtime session mutation capability
+ 
+ @param messages - verifier capture array
+ 
+ @param message - loaded-extension custom message
+ 
+ @param options - Pi delivery metadata
+ 
+ @mutates sessionManager - sessionManager.appendCustomMessageEntry appends visible transcript state
+ 
+ @mutates messages - messages.push records custom delivery
+ 
+ @mutates message - sessionManager.appendCustomMessageEntry may invoke serialization hooks reachable from message
+ 
+ @example
+ ```ts
+ captureDisposableMessage({ sessionManager, messages, message, options: { triggerTurn: true } });
+ ```
  */
 function captureDisposableMessage(
   {
@@ -91,24 +91,24 @@ function captureDisposableMessage(
 }
 
 /**
- * Bind stateful actions used by built goal extension after package discovery.
- *
- * @param runtime - real Pi extension runtime returned by package loader
- *
- * @param sessionManager - disposable persisted session owner
- *
- * @param messages - custom-message capture
- *
- * @mutates runtime - replaces uninitialized action stubs with disposable fixture adapters
- *
- * @mutates sessionManager - bound actions append custom state and visible messages
- *
- * @mutates messages - bound send action records delivery metadata
- *
- * @example
- * ```ts
- * bindRuntimeActions({ runtime, sessionManager, messages: [] });
- * ```
+ Bind stateful actions used by built goal extension after package discovery.
+ 
+ @param runtime - real Pi extension runtime returned by package loader
+ 
+ @param sessionManager - disposable persisted session owner
+ 
+ @param messages - custom-message capture
+ 
+ @mutates runtime - replaces uninitialized action stubs with disposable fixture adapters
+ 
+ @mutates sessionManager - bound actions append custom state and visible messages
+ 
+ @mutates messages - bound send action records delivery metadata
+ 
+ @example
+ ```ts
+ bindRuntimeActions({ runtime, sessionManager, messages: [] });
+ ```
  */
 function bindRuntimeActions(
   {

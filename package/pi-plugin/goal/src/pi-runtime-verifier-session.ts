@@ -1,25 +1,25 @@
 /**
- * Disposable session observations for Pi goal runtime verification.
- *
- * @module
+ Disposable session observations for Pi goal runtime verification.
+ 
+ @module
  */
 
 import type { SessionManager, } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Count persisted goal events of selected kind.
- *
- * @param sessionManager - real disposable session manager
- *
- * @param kind - goal event kind under test
- *
- * @returns number of matching selected-branch events
- *
- * @example
- * ```ts
- * goalEventCount({ sessionManager, kind: 'run_cleared' });
- * ```
+ Count persisted goal events of selected kind.
+ 
+ @param sessionManager - real disposable session manager
+ 
+ @param kind - goal event kind under test
+ 
+ @returns number of matching selected-branch events
+ 
+ @example
+ ```ts
+ goalEventCount({ sessionManager, kind: 'run_cleared' });
+ ```
  */
 function goalEventCount(
   {
@@ -48,16 +48,16 @@ function goalEventCount(
 }
 
 /**
- * Collect persisted goal event kinds from supplied entries.
- *
- * @param entries - selected branch or complete session entries
- *
- * @returns ordered goal event kinds
- *
- * @example
- * ```ts
- * goalEventKinds(sessionManager.getBranch());
- * ```
+ Collect persisted goal event kinds from supplied entries.
+ 
+ @param entries - selected branch or complete session entries
+ 
+ @returns ordered goal event kinds
+ 
+ @example
+ ```ts
+ goalEventKinds(sessionManager.getBranch());
+ ```
  */
 function goalEventKinds(
   entries: ForeignBorrowed<ReturnType<SessionManager['getEntries']>>,
@@ -76,16 +76,16 @@ function goalEventKinds(
 }
 
 /**
- * Count task continuation messages in selected branch.
- *
- * @param sessionManager - real disposable session manager
- *
- * @returns persisted continuation-message count
- *
- * @example
- * ```ts
- * goalContinuationMessageCount(sessionManager);
- * ```
+ Count task continuation messages in selected branch.
+ 
+ @param sessionManager - real disposable session manager
+ 
+ @returns persisted continuation-message count
+ 
+ @example
+ ```ts
+ goalContinuationMessageCount(sessionManager);
+ ```
  */
 function goalContinuationMessageCount(sessionManager: SessionManager,): number {
   return sessionManager

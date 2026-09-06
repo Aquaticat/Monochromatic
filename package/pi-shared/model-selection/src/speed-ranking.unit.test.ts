@@ -1,7 +1,7 @@
 /**
- * Unit tests for speed-ranking helpers.
- *
- * @module
+ Unit tests for speed-ranking helpers.
+ 
+ @module
  */
 
 import {
@@ -48,42 +48,42 @@ await describe({
           name: 'scores explicit speed-name signals',
           fn: async function testScoreModelSpeed() {
             /**
-             * Model whose id carries the strongest speed signal.
+             Model whose id carries the strongest speed signal.
              */
             const highSpeedModel = fixtureModel({
               provider: 'moonshotai',
               id: 'kimi-k2.7-code-highspeed',
             },);
             /**
-             * OpenAI model whose id carries Luna speed tier.
+             OpenAI model whose id carries Luna speed tier.
              */
             const lunaModel = fixtureModel({
               provider: 'openai',
               id: 'gpt-5.6-luna',
             },);
             /**
-             * Model whose id carries a speed-metaphor signal.
+             Model whose id carries a speed-metaphor signal.
              */
             const sparkModel = fixtureModel({
               provider: 'google',
               id: 'gemini-3-spark',
             },);
             /**
-             * OpenAI model whose id carries Terra speed tier.
+             OpenAI model whose id carries Terra speed tier.
              */
             const terraModel = fixtureModel({
               provider: 'openai',
               id: 'gpt-5.6-terra',
             },);
             /**
-             * Model whose id carries a size-as-speed signal.
+             Model whose id carries a size-as-speed signal.
              */
             const miniModel = fixtureModel({
               provider: 'openai',
               id: 'gpt-4o-mini',
             },);
             /**
-             * Model with no recognized speed signal.
+             Model with no recognized speed signal.
              */
             const baseModel = fixtureModel({
               provider: 'openai',
@@ -106,7 +106,7 @@ await describe({
           name: 'ranks Luna before Terra regardless of lower Terra input cost',
           fn: async function testLunaBeforeTerra() {
             /**
-             * OpenAI tier models with cheaper Terra price to prove speed marker wins first.
+             OpenAI tier models with cheaper Terra price to prove speed marker wins first.
              */
             const models = [
               fixtureModel({ provider: 'openai', id: 'gpt-5.6-terra', inputCost: 1, },),
@@ -129,7 +129,7 @@ await describe({
           name: 'ranks speed-name signal before lower input cost',
           fn: async function testFindFastestMajorVersions() {
             /**
-             * Models include a cheaper latest major version and a faster named one.
+             Models include a cheaper latest major version and a faster named one.
              */
             const models = [
               fixtureModel({ provider: 'openai', id: 'gpt-3.5-turbo', inputCost: 1, },),

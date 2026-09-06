@@ -21,65 +21,65 @@ import {
 } from './staleness-types.ts';
 
 /**
- * Read-only manifest shape accepted by the serializer.
+ Read-only manifest shape accepted by the serializer.
  */
 type ReadonlyStalenessManifest = Readonly<{
   /**
-   * Manifest schema version.
+   Manifest schema version.
    */
   readonly version: number;
 
   /**
-   * Read-only entry map for serialization.
+   Read-only entry map for serialization.
    */
   readonly entries: Readonly<Record<string, StalenessEntry>>;
 }>;
 
 /**
- * Options for writing a manifest file.
+ Options for writing a manifest file.
  */
 type WriteManifestOptions = Readonly<{
   /**
-   * Absolute manifest path.
+   Absolute manifest path.
    */
   readonly manifestPath: string;
 
   /**
-   * Manifest object to serialize.
+   Manifest object to serialize.
    */
   readonly manifest: ReadonlyStalenessManifest;
 }>;
 
 /**
- * In-memory manifest cache keyed by absolute manifest path.
+ In-memory manifest cache keyed by absolute manifest path.
  */
 const manifestCache: Map<string, StalenessManifest> = new Map<string, StalenessManifest>();
 
 /**
- * Manifest paths staged for a current immediate flush attempt.
+ Manifest paths staged for a current immediate flush attempt.
  */
 const dirtyManifestPaths: Set<string> = new Set<string>();
 
 /**
- * Writes one cached manifest to disk via {@link writeMergedManifest}.
- *
- * @param manifestPath - Absolute manifest path to flush.
- *
- * @example
- * ```ts
- * await flushManifestPath('/repo/node_modules/.cache/file-enforcer/staleness-manifest.json');
- * ```
+ Writes one cached manifest to disk via {@link writeMergedManifest}.
+ 
+ @param manifestPath - Absolute manifest path to flush.
+ 
+ @example
+ ```ts
+ await flushManifestPath('/repo/node_modules/.cache/file-enforcer/staleness-manifest.json');
+ ```
  */
 async function flushManifestPath(manifestPath: string,): Promise<void> {
   /**
-   * Cached manifest to flush.
+   Cached manifest to flush.
    */
   const manifest = manifestCache.get(manifestPath,);
   if (manifest === undefined)
     return;
 
   /**
-   * Manifest merged with any entries other processes wrote while this process ran.
+   Manifest merged with any entries other processes wrote while this process ran.
    */
   const mergedManifest = await writeMergedManifest({
     manifestPath,
@@ -92,12 +92,12 @@ async function flushManifestPath(manifestPath: string,): Promise<void> {
 }
 
 /**
- * Flushes all dirty manifests via {@link flushManifestPath} before a normal process exit.
- *
- * @example
- * ```ts
- * await flushDirtyManifests();
- * ```
+ Flushes all dirty manifests via {@link flushManifestPath} before a normal process exit.
+ 
+ @example
+ ```ts
+ await flushDirtyManifests();
+ ```
  */
 async function flushDirtyManifests(): Promise<void> {
   await Promise.all(
@@ -109,12 +109,12 @@ async function flushDirtyManifests(): Promise<void> {
 }
 
 /**
- * Flushes dirty manifests from the beforeExit hook and reports best-effort failures.
- *
- * @example
- * ```ts
- * await flushDirtyManifestsAndWarn();
- * ```
+ Flushes dirty manifests from the beforeExit hook and reports best-effort failures.
+ 
+ @example
+ ```ts
+ await flushDirtyManifestsAndWarn();
+ ```
  */
 async function flushDirtyManifestsAndWarn(): Promise<void> {
   try {
@@ -129,12 +129,12 @@ async function flushDirtyManifestsAndWarn(): Promise<void> {
 }
 
 /**
- * Starts best-effort dirty manifest flushing when Node is otherwise ready to exit.
- *
- * @example
- * ```ts
- * flushDirtyManifestsBeforeExit();
- * ```
+ Starts best-effort dirty manifest flushing when Node is otherwise ready to exit.
+ 
+ @example
+ ```ts
+ flushDirtyManifestsBeforeExit();
+ ```
  */
 function flushDirtyManifestsBeforeExit(): void {
   if (dirtyManifestPaths.size === 0)
@@ -149,16 +149,16 @@ process.on(
 );
 
 /**
- * Resolves the manifest path for a write call.
- *
- * @param manifestPath - Optional caller-provided manifest path.
- *
- * @returns Absolute manifest file path.
- *
- * @example
- * ```ts
- * const path = await resolveManifestPath({ manifestPath: './cache.json' });
- * ```
+ Resolves the manifest path for a write call.
+ 
+ @param manifestPath - Optional caller-provided manifest path.
+ 
+ @returns Absolute manifest file path.
+ 
+ @example
+ ```ts
+ const path = await resolveManifestPath({ manifestPath: './cache.json' });
+ ```
  */
 export async function resolveManifestPath(
   {
@@ -169,7 +169,7 @@ export async function resolveManifestPath(
     return resolve(manifestPath,);
 
   /**
-   * Workspace root discovered by {@link findNodeModulesRoot} walking up until `node_modules` exists.
+   Workspace root discovered by {@link findNodeModulesRoot} walking up until `node_modules` exists.
    */
   const nodeModulesRoot = await findNodeModulesRoot(process.cwd(),);
   return join(
@@ -182,60 +182,60 @@ export async function resolveManifestPath(
 }
 
 /**
- * Builds a manifest key for a single-destination overwrite.
- *
- * @param dest - Destination path passed to {@link overwrite}.
- *
- * @returns Stable manifest entry key.
- *
- * @example
- * ```ts
- * const key = stalenessKeyForDest('./CLAUDE.md');
- * ```
+ Builds a manifest key for a single-destination overwrite.
+ 
+ @param dest - Destination path passed to {@link overwrite}.
+ 
+ @returns Stable manifest entry key.
+ 
+ @example
+ ```ts
+ const key = stalenessKeyForDest('./CLAUDE.md');
+ ```
  */
 export function stalenessKeyForDest(dest: string,): string {
   return `${SINGLE_ENTRY_PREFIX}${resolve(dest,)}`;
 }
 
 /**
- * Builds a manifest key for a glob-mirror overwrite.
- *
- * @param destGlob - Destination glob passed to {@link overwriteEach}.
- *
- * @returns Stable manifest entry key.
- *
- * @example
- * ```ts
- * const key = stalenessKeyForDestGlob('./out/*​/*.md');
- * ```
+ Builds a manifest key for a glob-mirror overwrite.
+ 
+ @param destGlob - Destination glob passed to {@link overwriteEach}.
+ 
+ @returns Stable manifest entry key.
+ 
+ @example
+ ```ts
+ const key = stalenessKeyForDestGlob('./out/*​/*.md');
+ ```
  */
 export function stalenessKeyForDestGlob(destGlob: string,): string {
   return `${EACH_ENTRY_PREFIX}${resolve(destGlob,)}`;
 }
 
 /**
- * Loads a manifest via {@link readManifestFromDisk}, reusing the per-process
- * cache after the first read.
- *
- * @param manifestPath - Absolute manifest path.
- *
- * @returns Mutable in-memory manifest object.
- *
- * @example
- * ```ts
- * const manifest = await loadManifest('/tmp/manifest.json');
- * ```
+ Loads a manifest via {@link readManifestFromDisk}, reusing the per-process
+ cache after the first read.
+ 
+ @param manifestPath - Absolute manifest path.
+ 
+ @returns Mutable in-memory manifest object.
+ 
+ @example
+ ```ts
+ const manifest = await loadManifest('/tmp/manifest.json');
+ ```
  */
 export async function loadManifest(manifestPath: string,): Promise<StalenessManifest> {
   /**
-   * Cached manifest for this path.
+   Cached manifest for this path.
    */
   const cachedManifest = manifestCache.get(manifestPath,);
   if (cachedManifest !== undefined)
     return cachedManifest;
 
   /**
-   * Manifest loaded from disk or initialized empty.
+   Manifest loaded from disk or initialized empty.
    */
   const manifest = await readManifestFromDisk(manifestPath,);
   manifestCache.set(
@@ -246,16 +246,16 @@ export async function loadManifest(manifestPath: string,): Promise<StalenessMani
 }
 
 /**
- * Persists a manifest so async builders cannot race stale writes.
- *
- * @param manifestPath - Absolute manifest path.
- *
- * @param manifest - Manifest object to serialize.
- *
- * @example
- * ```ts
- * await writeManifest({ manifestPath: '/tmp/manifest.json', manifest });
- * ```
+ Persists a manifest so async builders cannot race stale writes.
+ 
+ @param manifestPath - Absolute manifest path.
+ 
+ @param manifest - Manifest object to serialize.
+ 
+ @example
+ ```ts
+ await writeManifest({ manifestPath: '/tmp/manifest.json', manifest });
+ ```
  */
 export async function writeManifest(
   {
@@ -272,8 +272,8 @@ export async function writeManifest(
   );
   dirtyManifestPaths.add(manifestPath,);
   /**
-   * Cleanup that keeps failed immediate flushes fail-fast instead of retrying
-   * during process exit.
+   Cleanup that keeps failed immediate flushes fail-fast instead of retrying
+   during process exit.
    */
   using _dirtyManifestCleanup = {
     [Symbol.dispose](): void {

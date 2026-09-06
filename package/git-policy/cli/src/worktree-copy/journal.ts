@@ -23,47 +23,47 @@ import type {
 import { assertPrivateWorktreeCopyPath, } from './private-path.ts';
 
 /**
- * Worktree-copy journal parent beneath common Git directory.
+ Worktree-copy journal parent beneath common Git directory.
  */
 const JOURNAL_PARENT_NAME = 'cli-git-worktree-copy';
 
 /**
- * Worktree-copy journal schema directory.
+ Worktree-copy journal schema directory.
  */
 const JOURNAL_VERSION_NAME = 'v1';
 
 /**
- * Private journal directory mode.
+ Private journal directory mode.
  */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 
 /**
- * Private journal root does not exist.
+ Private journal root does not exist.
  */
 export const JOURNAL_ROOT_ABSENT: unique symbol = Symbol('worktree-copy journal root is absent',);
 
 /**
- * Private journal file mode.
+ Private journal file mode.
  */
 const PRIVATE_FILE_MODE = 0o600;
 
 /**
- * Journal filename suffix.
+ Journal filename suffix.
  */
 const JOURNAL_SUFFIX = '.json';
 
 /**
- * Resolves private journal root beneath canonical common Git directory.
- *
- * @param commonDir - canonical common Git directory
- *
- * @returns private versioned journal root
- *
- * @example
- * ```ts
- * worktreeCopyJournalRoot('/repo/.git');
- * // => '/repo/.git/cli-git-worktree-copy/v1'
- * ```
+ Resolves private journal root beneath canonical common Git directory.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @returns private versioned journal root
+ 
+ @example
+ ```ts
+ worktreeCopyJournalRoot('/repo/.git');
+ // => '/repo/.git/cli-git-worktree-copy/v1'
+ ```
  */
 export function worktreeCopyJournalRoot(commonDir: string,): string {
   return join(
@@ -74,14 +74,14 @@ export function worktreeCopyJournalRoot(commonDir: string,): string {
 }
 
 /**
- * Creates one private journal directory or validates exact existing directory.
- *
- * @param path - exact journal directory path
- *
- * @example
- * ```ts
- * await ensurePrivateJournalDirectory('/repo/.git/cli-git-worktree-copy');
- * ```
+ Creates one private journal directory or validates exact existing directory.
+ 
+ @param path - exact journal directory path
+ 
+ @example
+ ```ts
+ await ensurePrivateJournalDirectory('/repo/.git/cli-git-worktree-copy');
+ ```
  */
 async function ensurePrivateJournalDirectory(path: string,): Promise<void> {
   try {
@@ -102,22 +102,22 @@ async function ensurePrivateJournalDirectory(path: string,): Promise<void> {
 }
 
 /**
- * Creates and validates complete private journal root component by component.
- *
- * @param commonDir - canonical common Git directory
- *
- * @returns validated private journal root
- *
- * @example
- * ```ts
- * await ensureWorktreeCopyJournalRoot('/repo/.git');
- * ```
+ Creates and validates complete private journal root component by component.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @returns validated private journal root
+ 
+ @example
+ ```ts
+ await ensureWorktreeCopyJournalRoot('/repo/.git');
+ ```
  */
 export async function ensureWorktreeCopyJournalRoot(
   commonDir: string,
 ): Promise<string> {
   /**
-   * Private journal parent.
+   Private journal parent.
    */
   const parent = join(
     commonDir,
@@ -125,7 +125,7 @@ export async function ensureWorktreeCopyJournalRoot(
   );
   await ensurePrivateJournalDirectory(parent,);
   /**
-   * Versioned private journal root.
+   Versioned private journal root.
    */
   const root = worktreeCopyJournalRoot(commonDir,);
   await ensurePrivateJournalDirectory(root,);
@@ -133,29 +133,29 @@ export async function ensureWorktreeCopyJournalRoot(
 }
 
 /**
- * Validates existing private journal root without creating state.
- *
- * @param commonDir - canonical common Git directory
- *
- * @returns validated root or absence sentinel
- *
- * @example
- * ```ts
- * await existingWorktreeCopyJournalRoot('/repo/.git');
- * ```
+ Validates existing private journal root without creating state.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @returns validated root or absence sentinel
+ 
+ @example
+ ```ts
+ await existingWorktreeCopyJournalRoot('/repo/.git');
+ ```
  */
 export async function existingWorktreeCopyJournalRoot(
   commonDir: string,
 ): Promise<string | typeof JOURNAL_ROOT_ABSENT> {
   /**
-   * Expected private journal parent.
+   Expected private journal parent.
    */
   const parent = join(
     commonDir,
     JOURNAL_PARENT_NAME,
   );
   /**
-   * Expected versioned journal root.
+   Expected versioned journal root.
    */
   const root = worktreeCopyJournalRoot(commonDir,);
   try {
@@ -180,39 +180,39 @@ export async function existingWorktreeCopyJournalRoot(
 }
 
 /**
- * Durable journal file paired with validated record.
- *
- * @example
- * ```ts
- * const pending: PendingWorktreeCopyJournal = { path: '/repo/.git/cli-git-worktree-copy/v1/id.json', record };
- * ```
+ Durable journal file paired with validated record.
+ 
+ @example
+ ```ts
+ const pending: PendingWorktreeCopyJournal = { path: '/repo/.git/cli-git-worktree-copy/v1/id.json', record };
+ ```
  */
 export type PendingWorktreeCopyJournal = Readonly<{
   /**
-   * Absolute durable journal path.
+   Absolute durable journal path.
    */
   path: string;
   /**
-   * Validated journal record.
+   Validated journal record.
    */
   record: WorktreeCopyJournal;
 }>;
 
 /**
- * Flushes directory metadata where host supports directory handles.
- *
- * @param path - directory containing durable journal mutation
- *
- * @example
- * ```ts
- * await syncDirectory('/repo/.git/cli-git-worktree-copy/v1');
- * ```
+ Flushes directory metadata where host supports directory handles.
+ 
+ @param path - directory containing durable journal mutation
+ 
+ @example
+ ```ts
+ await syncDirectory('/repo/.git/cli-git-worktree-copy/v1');
+ ```
  */
 async function syncDirectory(path: string,): Promise<void> {
   if (process.platform === 'win32')
     return;
   /**
-   * Read-only directory handle used for metadata fsync.
+   Read-only directory handle used for metadata fsync.
    */
   await using handle = await open(
     path,
@@ -222,16 +222,16 @@ async function syncDirectory(path: string,): Promise<void> {
 }
 
 /**
- * Atomically writes complete private journal record.
- *
- * @param path - final journal path
- *
- * @param record - complete durable record
- *
- * @example
- * ```ts
- * await writeJournal({ path: '/journal.json', record });
- * ```
+ Atomically writes complete private journal record.
+ 
+ @param path - final journal path
+ 
+ @param record - complete durable record
+ 
+ @example
+ ```ts
+ await writeJournal({ path: '/journal.json', record });
+ ```
  */
 export async function writeJournal({
   path,
@@ -241,11 +241,11 @@ export async function writeJournal({
   record: WorktreeCopyJournal;
 }>,): Promise<void> {
   /**
-   * Unique sibling temporary journal path.
+   Unique sibling temporary journal path.
    */
   const temporaryPath = `${path}.${randomUUID()}.tmp`;
   /**
-   * Plain immutable journal value detached from caller-owned arrays.
+   Plain immutable journal value detached from caller-owned arrays.
    */
   const serializedRecord: WorktreeCopyJournal = {
     ...record,
@@ -259,7 +259,7 @@ export async function writeJournal({
   try {
     {
       /**
-       * Exclusive no-follow temporary journal handle.
+       Exclusive no-follow temporary journal handle.
        */
       await using handle = await open(
         temporaryPath,
@@ -293,20 +293,20 @@ export async function writeJournal({
 }
 
 /**
- * Creates staged transaction journal beneath common Git directory.
- *
- * @param commonDir - canonical common Git directory
- *
- * @param destinationRoot - created worktree root
- *
- * @param snapshot - validated private ignored-state snapshot
- *
- * @returns durable journal path and record
- *
- * @example
- * ```ts
- * await createWorktreeCopyJournal({ commonDir: '/repo/.git', destinationRoot: '/wt', snapshot });
- * ```
+ Creates staged transaction journal beneath common Git directory.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @param destinationRoot - created worktree root
+ 
+ @param snapshot - validated private ignored-state snapshot
+ 
+ @returns durable journal path and record
+ 
+ @example
+ ```ts
+ await createWorktreeCopyJournal({ commonDir: '/repo/.git', destinationRoot: '/wt', snapshot });
+ ```
  */
 export async function createWorktreeCopyJournal({
   commonDir,
@@ -318,18 +318,18 @@ export async function createWorktreeCopyJournal({
   snapshot: StagedWorktreeSnapshot;
 }>,): Promise<PendingWorktreeCopyJournal> {
   /**
-   * Private journal directory.
+   Private journal directory.
    */
   const root = await ensureWorktreeCopyJournalRoot(commonDir,);
   /**
-   * Unique final journal path.
+   Unique final journal path.
    */
   const path = join(
     root,
     `${randomUUID()}${JOURNAL_SUFFIX}`,
   );
   /**
-   * Initial staged journal record.
+   Initial staged journal record.
    */
   const record: WorktreeCopyJournal = {
     createdEntries: [],
@@ -353,16 +353,16 @@ export async function createWorktreeCopyJournal({
 }
 
 /**
- * Reads sorted journal filenames or journal-directory absence.
- *
- * @param root - private journal directory
- *
- * @returns sorted JSON journal filenames
- *
- * @example
- * ```ts
- * await readJournalNames('/repo/.git/cli-git-worktree-copy/v1');
- * ```
+ Reads sorted journal filenames or journal-directory absence.
+ 
+ @param root - private journal directory
+ 
+ @returns sorted JSON journal filenames
+ 
+ @example
+ ```ts
+ await readJournalNames('/repo/.git/cli-git-worktree-copy/v1');
+ ```
  */
 async function readJournalNames(root: string,): Promise<readonly string[]> {
   try {
@@ -386,33 +386,33 @@ async function readJournalNames(root: string,): Promise<readonly string[]> {
 }
 
 /**
- * Reads every incomplete durable worktree-copy journal.
- *
- * @param commonDir - canonical common Git directory
- *
- * @returns validated pending journals sorted by filename
- *
- * @example
- * ```ts
- * await readPendingWorktreeCopyJournals('/repo/.git');
- * ```
+ Reads every incomplete durable worktree-copy journal.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @returns validated pending journals sorted by filename
+ 
+ @example
+ ```ts
+ await readPendingWorktreeCopyJournals('/repo/.git');
+ ```
  */
 export async function readPendingWorktreeCopyJournals(
   commonDir: string,
 ): Promise<readonly PendingWorktreeCopyJournal[]> {
   /**
-   * Private journal directory.
+   Private journal directory.
    */
   const root = await existingWorktreeCopyJournalRoot(commonDir,);
   if ((typeof root) === 'symbol')
     return [];
   /**
-   * Existing final journal filenames.
+   Existing final journal filenames.
    */
   const names = await readJournalNames(root,);
   return Promise.all(names.map(async function readJournal(name,): Promise<PendingWorktreeCopyJournal> {
     /**
-     * Absolute final journal path.
+     Absolute final journal path.
      */
     const path = join(
       root,
@@ -424,7 +424,7 @@ export async function readPendingWorktreeCopyJournals(
         role: 'journal file',
       },);
       /**
-       * Untrusted parsed journal JSON.
+       Untrusted parsed journal JSON.
        */
       const parsed: unknown = JSON.parse(await readFile(
         path,
@@ -451,20 +451,20 @@ export async function readPendingWorktreeCopyJournals(
 }
 
 /**
- * Removes completed journal and private stage.
- *
- * @param pending - completed durable transaction
- *
- * @example
- * ```ts
- * await removeWorktreeCopyJournal(pending);
- * ```
+ Removes completed journal and private stage.
+ 
+ @param pending - completed durable transaction
+ 
+ @example
+ ```ts
+ await removeWorktreeCopyJournal(pending);
+ ```
  */
 export async function removeWorktreeCopyJournal(
   pending: PendingWorktreeCopyJournal,
 ): Promise<void> {
   /**
-   * Durable completion marker making stage cleanup resumable.
+   Durable completion marker making stage cleanup resumable.
    */
   const completeRecord: WorktreeCopyJournal = {
     ...pending.record,

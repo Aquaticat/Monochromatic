@@ -1,7 +1,7 @@
 /**
- * Unit tests for concrete judge-model fallback race orchestration.
- *
- * @module
+ Unit tests for concrete judge-model fallback race orchestration.
+ 
+ @module
  */
 
 import type {
@@ -37,18 +37,18 @@ const JUDGE_TIMEOUT_MS = 60_000;
 const NO_CONTENT_CALL_COUNT = 3;
 
 /**
- * Build selected judge fixture with complete Pi model shape.
- *
- * @param id - model id inside test provider
- *
- * @param inputCost - ranking cost used by fallback selection
- *
- * @returns judge model plus fixture auth
- *
- * @example
- * ```ts
- * judgeFixture({ id: 'first', inputCost: 1 });
- * ```
+ Build selected judge fixture with complete Pi model shape.
+ 
+ @param id - model id inside test provider
+ 
+ @param inputCost - ranking cost used by fallback selection
+ 
+ @returns judge model plus fixture auth
+ 
+ @example
+ ```ts
+ judgeFixture({ id: 'first', inputCost: 1 });
+ ```
  */
 function judgeFixture(
   {
@@ -84,18 +84,18 @@ function judgeFixture(
 }
 
 /**
- * Build fake Pi context selecting authenticated fallback models.
- *
- * @param models - scoped authenticated fallback models
- *
- * @param scopeCalls - mutable scope invocation counter
- *
- * @returns focused fake extension context
- *
- * @example
- * ```ts
- * contextFixture({ models: [judge.model], scopeCalls: { value: 0 } });
- * ```
+ Build fake Pi context selecting authenticated fallback models.
+ 
+ @param models - scoped authenticated fallback models
+ 
+ @param scopeCalls - mutable scope invocation counter
+ 
+ @returns focused fake extension context
+ 
+ @example
+ ```ts
+ contextFixture({ models: [judge.model], scopeCalls: { value: 0 } });
+ ```
  */
 function contextFixture(
   {
@@ -130,16 +130,16 @@ function contextFixture(
 }
 
 /**
- * Build async event stream from fixed events.
- *
- * @param entries - ordered provider events
- *
- * @returns async reviewer stream
- *
- * @example
- * ```ts
- * events([]);
- * ```
+ Build async event stream from fixed events.
+ 
+ @param entries - ordered provider events
+ 
+ @returns async reviewer stream
+ 
+ @example
+ ```ts
+ events([]);
+ ```
  */
 async function* events(
   entries: readonly AssistantMessageEvent[],
@@ -149,16 +149,16 @@ async function* events(
 }
 
 /**
- * Build render-verdict stream.
- *
- * @param verdict - emitted verdict
- *
- * @returns one-event reviewer stream
- *
- * @example
- * ```ts
- * verdictStream('approve');
- * ```
+ Build render-verdict stream.
+ 
+ @param verdict - emitted verdict
+ 
+ @returns one-event reviewer stream
+ 
+ @example
+ ```ts
+ verdictStream('approve');
+ ```
  */
 function verdictStream(
   verdict: 'approve' | 'deny',
@@ -181,16 +181,16 @@ function verdictStream(
 }
 
 /**
- * Build finalized text stream.
- *
- * @param content - finalized provider text
- *
- * @returns one-event reviewer stream
- *
- * @example
- * ```ts
- * textStream('');
- * ```
+ Build finalized text stream.
+ 
+ @param content - finalized provider text
+ 
+ @returns one-event reviewer stream
+ 
+ @example
+ ```ts
+ textStream('');
+ ```
  */
 function textStream(content: string,): AsyncIterable<AssistantMessageEvent> {
   return events([{
@@ -202,16 +202,16 @@ function textStream(content: string,): AsyncIterable<AssistantMessageEvent> {
 }
 
 /**
- * Build one-event stream that fails expected-tool validation.
- *
- * @param id - diagnostic event id
- *
- * @returns unexpected-tool reviewer stream
- *
- * @example
- * ```ts
- * failingStream('initial');
- * ```
+ Build one-event stream that fails expected-tool validation.
+ 
+ @param id - diagnostic event id
+ 
+ @returns unexpected-tool reviewer stream
+ 
+ @example
+ ```ts
+ failingStream('initial');
+ ```
  */
 function failingStream(id: string,): AsyncIterable<AssistantMessageEvent> {
   return events([{
@@ -228,16 +228,16 @@ function failingStream(id: string,): AsyncIterable<AssistantMessageEvent> {
 }
 
 /**
- * Build deterministic data transport.
- *
- * @param responses - ordered response streams
- *
- * @returns mutable script state
- *
- * @example
- * ```ts
- * scriptedTransport([verdictStream('approve')]);
- * ```
+ Build deterministic data transport.
+ 
+ @param responses - ordered response streams
+ 
+ @returns mutable script state
+ 
+ @example
+ ```ts
+ scriptedTransport([verdictStream('approve')]);
+ ```
  */
 function scriptedTransport(
   responses: readonly AsyncIterable<AssistantMessageEvent>[],
@@ -250,16 +250,16 @@ function scriptedTransport(
 }
 
 /**
- * Build shared judge request fixture.
- *
- * @param testTransport - deterministic provider seam
- *
- * @returns complete judge request data
- *
- * @example
- * ```ts
- * judgeRequest(scriptedTransport([verdictStream('approve')]));
- * ```
+ Build shared judge request fixture.
+ 
+ @param testTransport - deterministic provider seam
+ 
+ @returns complete judge request data
+ 
+ @example
+ ```ts
+ judgeRequest(scriptedTransport([verdictStream('approve')]));
+ ```
  */
 function judgeRequest(
   testTransport: ScriptedStructuredReviewTransport,
@@ -279,16 +279,16 @@ function judgeRequest(
 }
 
 /**
- * Capture async error without promise matcher indirection.
- *
- * @param action - async action expected to fail
- *
- * @returns thrown value
- *
- * @example
- * ```ts
- * await captureError(async () => { throw new Error('x'); });
- * ```
+ Capture async error without promise matcher indirection.
+ 
+ @param action - async action expected to fail
+ 
+ @returns thrown value
+ 
+ @example
+ ```ts
+ await captureError(async () => { throw new Error('x'); });
+ ```
  */
 async function captureError(action: () => Promise<unknown>,): Promise<unknown> {
   try {

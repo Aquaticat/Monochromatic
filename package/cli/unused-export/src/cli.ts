@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * CLI entrypoint reporting workspace exports nothing references.
- *
- * @example
- * ```bash
- * unused-export
- * unused-export --json /path/to/workspace
- * unused-export --check
- * ```
+ CLI entrypoint reporting workspace exports nothing references.
+ 
+ @example
+ ```bash
+ unused-export
+ unused-export --json /path/to/workspace
+ unused-export --check
+ ```
  */
 
 import { parseArgs, } from 'node:util';
@@ -16,7 +16,7 @@ import { parseArgs, } from 'node:util';
 import { findUnusedExports, } from './find-unused.ts';
 
 /**
- * Parsed CLI options and optional workspace root positional.
+ Parsed CLI options and optional workspace root positional.
  */
 const {
   values,
@@ -36,12 +36,12 @@ const {
 },);
 
 /**
- * Workspace root under analysis, defaulting to the working directory.
+ Workspace root under analysis, defaulting to the working directory.
  */
 const workspaceRoot = positionals[0] ?? process.cwd();
 
 /**
- * Exports with zero workspace references.
+ Exports with zero workspace references.
  */
 const findings = await findUnusedExports({ workspaceRoot, },);
 

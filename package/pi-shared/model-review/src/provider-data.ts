@@ -1,7 +1,7 @@
 /**
- * Isolated provider request data builders.
- *
- * @module
+ Isolated provider request data builders.
+ 
+ @module
  */
 
 import type {
@@ -14,43 +14,43 @@ import type {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Simple options carrying provider-specific forced selector.
- *
- * @example
- * ```ts
- * const options: ReviewSimpleStreamOptions = { toolChoice: 'required' };
- * ```
+ Simple options carrying provider-specific forced selector.
+ 
+ @example
+ ```ts
+ const options: ReviewSimpleStreamOptions = { toolChoice: 'required' };
+ ```
  */
 type ReviewSimpleStreamOptions = SimpleStreamOptions & {
   /**
-   * Provider-specific forced tool selector.
+   Provider-specific forced tool selector.
    */
   readonly toolChoice?: unknown;
 };
 
 /**
- * Clone model data into provider-owned arrays and records.
- *
- * @param model - selected caller model
- *
- * @returns isolated model snapshot
- *
- * @example
- * ```ts
- * isolateReviewModel(model);
- * ```
+ Clone model data into provider-owned arrays and records.
+ 
+ @param model - selected caller model
+ 
+ @returns isolated model snapshot
+ 
+ @example
+ ```ts
+ isolateReviewModel(model);
+ ```
  */
 function isolateReviewModel<const TApi extends Api,>(
   model: ForeignBorrowed<Model<TApi>>,
 ): Model<TApi> {
   /**
-   * Isolated input capability list.
+   Isolated input capability list.
    */
   const input: Model<TApi>['input'] = [];
   for (const capability of model.input)
     input.push(capability,);
   /**
-   * Isolated pricing tiers.
+   Isolated pricing tiers.
    */
   const tiers: NonNullable<Model<TApi>['cost']['tiers']> = [];
   for (const tier of model.cost
@@ -94,16 +94,16 @@ function isolateReviewModel<const TApi extends Api,>(
 }
 
 /**
- * Clone one structured-review tool into provider-owned outer data.
- *
- * @param tool - caller-owned tool definition
- *
- * @returns isolated outer tool snapshot
- *
- * @example
- * ```ts
- * isolateReviewTool(tool);
- * ```
+ Clone one structured-review tool into provider-owned outer data.
+ 
+ @param tool - caller-owned tool definition
+ 
+ @returns isolated outer tool snapshot
+ 
+ @example
+ ```ts
+ isolateReviewTool(tool);
+ ```
  */
 function isolateReviewTool(
   tool: ForeignBorrowed<Tool>,
@@ -119,24 +119,24 @@ function isolateReviewTool(
 }
 
 /**
- * Clone known one-message review context into provider-owned containers.
- *
- * @param context - final structured-review context
- *
- * @returns isolated provider context
- *
- * @throws when context contains unsupported message content
- *
- * @example
- * ```ts
- * isolateReviewContext(context);
- * ```
+ Clone known one-message review context into provider-owned containers.
+ 
+ @param context - final structured-review context
+ 
+ @returns isolated provider context
+ 
+ @throws when context contains unsupported message content
+ 
+ @example
+ ```ts
+ isolateReviewContext(context);
+ ```
  */
 function isolateReviewContext(
   context: ForeignBorrowed<Context>,
 ): Context {
   /**
-   * Isolated review messages.
+   Isolated review messages.
    */
   const messages: Context['messages'] = [];
   for (const message of context.messages) {
@@ -152,7 +152,7 @@ function isolateReviewContext(
     },);
   }
   /**
-   * Isolated structured tools.
+   Isolated structured tools.
    */
   const tools: Tool[] = [];
   for (const tool of context.tools ?? [])
@@ -167,16 +167,16 @@ function isolateReviewContext(
 }
 
 /**
- * Clone provider options into fresh outer records.
- *
- * @param options - final structured-review stream options
- *
- * @returns isolated provider options
- *
- * @example
- * ```ts
- * isolateReviewOptions({ signal: AbortSignal.timeout(1000) });
- * ```
+ Clone provider options into fresh outer records.
+ 
+ @param options - final structured-review stream options
+ 
+ @returns isolated provider options
+ 
+ @example
+ ```ts
+ isolateReviewOptions({ signal: AbortSignal.timeout(1000) });
+ ```
  */
 function isolateReviewOptions(
   options: ForeignBorrowed<ReviewSimpleStreamOptions>,
@@ -191,19 +191,19 @@ function isolateReviewOptions(
 }
 
 /**
- * Assert model carries exact API discriminant.
- *
- * @param input - selected model and expected API literal
- *
- * @returns nothing
- *
- * @throws when model API differs from expected literal
- *
- * @example
- * ```ts
- * const input = { model, api: 'openai-responses' } as const;
- * assertModelUsesApi(input);
- * ```
+ Assert model carries exact API discriminant.
+ 
+ @param input - selected model and expected API literal
+ 
+ @returns nothing
+ 
+ @throws when model API differs from expected literal
+ 
+ @example
+ ```ts
+ const input = { model, api: 'openai-responses' } as const;
+ assertModelUsesApi(input);
+ ```
  */
 function assertModelUsesApi<const TApi extends Api,>(
   input: {

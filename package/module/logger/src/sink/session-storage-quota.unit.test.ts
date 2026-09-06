@@ -8,14 +8,14 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Temporarily sets `globalThis` keys to the supplied values, restoring each to
- * its prior value (or deleting keys that were absent) when the returned guard
- * leaves `using` scope, so a runtime-detection test can impersonate Deno, Bun,
- * or a browser without leaking the fake globals into later tests.
- *
- * @param overrides - Global keys to install for the duration of the scope.
- *
- * @returns Disposable that restores the original globals on exit.
+ Temporarily sets `globalThis` keys to the supplied values, restoring each to
+ its prior value (or deleting keys that were absent) when the returned guard
+ leaves `using` scope, so a runtime-detection test can impersonate Deno, Bun,
+ or a browser without leaking the fake globals into later tests.
+ 
+ @param overrides - Global keys to install for the duration of the scope.
+ 
+ @returns Disposable that restores the original globals on exit.
  */
 function withGlobalOverrides(overrides: Record<string, unknown>,): Disposable {
   const host = globalThis as unknown as Record<string, unknown>;

@@ -1,7 +1,7 @@
 /**
- * Active-branch goal event reducer.
- *
- * @module
+ Active-branch goal event reducer.
+ 
+ @module
  */
 
 import type {
@@ -11,26 +11,26 @@ import type {
 } from './types.ts';
 
 /**
- * Canonical absent goal state.
+ Canonical absent goal state.
  */
 const ABSENT_GOAL_STATE: AbsentGoalState = { phase: 'absent', };
 
 /**
- * Reduce one immutable event over current branch state.
- *
- * Stale generation events are ignored.
- * A new run always supersedes current active or terminal record atomically.
- *
- * @param state - current branch state
- *
- * @param event - next ordered event
- *
- * @returns next branch state
- *
- * @example
- * ```ts
- * const next = reduceGoalEvent({ state, event });
- * ```
+ Reduce one immutable event over current branch state.
+ 
+ Stale generation events are ignored.
+ A new run always supersedes current active or terminal record atomically.
+ 
+ @param state - current branch state
+ 
+ @param event - next ordered event
+ 
+ @returns next branch state
+ 
+ @example
+ ```ts
+ const next = reduceGoalEvent({ state, event });
+ ```
  */
 function reduceGoalEvent(
   {
@@ -166,16 +166,16 @@ function reduceGoalEvent(
 }
 
 /**
- * Reduce ordered active-branch events to current state.
- *
- * @param events - validated events from selected branch
- *
- * @returns current goal state
- *
- * @example
- * ```ts
- * const state = reduceGoalEvents(events);
- * ```
+ Reduce ordered active-branch events to current state.
+ 
+ @param events - validated events from selected branch
+ 
+ @returns current goal state
+ 
+ @example
+ ```ts
+ const state = reduceGoalEvents(events);
+ ```
  */
 function reduceGoalEvents(events: readonly GoalEvent[],): GoalState {
   return events.reduce<GoalState>(

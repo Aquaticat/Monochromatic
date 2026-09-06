@@ -1,27 +1,27 @@
 /**
- * The editable document tree: one always-current model that reads, writes, and
- * emit all operate on.
- *
- * Physical structure mirrors `toml-eslint-parser`'s flat layout (a top-level
- * ordered list of key-values and table headers); logical nesting is derived on
- * demand from `keySegments` / `headerSegments`. Every node carries an
- * {@link Origin}: a clean node retains its original source range and emits
- * verbatim (so an unmutated document round-trips byte-for-byte); a dirty or
- * synthetic node renders canonically.
- *
- * The cornerstone invariant: for a fully-clean document the blocks partition
- * `source` exactly (every byte belongs to one entry range or one filler span,
- * in order), so emitting each clean entry verbatim plus each filler verbatim
- * reproduces `source`.
- *
- * @module
+ The editable document tree: one always-current model that reads, writes, and
+ emit all operate on.
+ 
+ Physical structure mirrors `toml-eslint-parser`'s flat layout (a top-level
+ ordered list of key-values and table headers); logical nesting is derived on
+ demand from `keySegments` / `headerSegments`. Every node carries an
+ {@link Origin}: a clean node retains its original source range and emits
+ verbatim (so an unmutated document round-trips byte-for-byte); a dirty or
+ synthetic node renders canonically.
+ 
+ The cornerstone invariant: for a fully-clean document the blocks partition
+ `source` exactly (every byte belongs to one entry range or one filler span,
+ in order), so emitting each clean entry verbatim plus each filler verbatim
+ reproduces `source`.
+ 
+ @module
  */
 
 import type { AST, } from 'toml-eslint-parser';
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 /**
- * Half-open `[start, end)` char-offset span into the immutable source.
+ Half-open `[start, end)` char-offset span into the immutable source.
  */
 export type Span = readonly [
   number,
@@ -29,14 +29,14 @@ export type Span = readonly [
 ];
 
 /**
- * Emission provenance of a node.
- *
- * `clean`: the node came from parse and is unmutated; emit `source.slice(range)`
- * verbatim. `astNode` is retained so {@link tomlGetNode} / {@link tomlGetRaw}
- * can return parse-time views.
- *
- * `synthetic`: the node was created or replaced by a mutation and has no
- * faithful source span; render canonically.
+ Emission provenance of a node.
+ 
+ `clean`: the node came from parse and is unmutated; emit `source.slice(range)`
+ verbatim. `astNode` is retained so {@link tomlGetNode} / {@link tomlGetRaw}
+ can return parse-time views.
+ 
+ `synthetic`: the node was created or replaced by a mutation and has no
+ faithful source span; render canonically.
  */
 export type Origin =
   | {
@@ -47,7 +47,7 @@ export type Origin =
   | { readonly kind: 'synthetic'; };
 
 /**
- * A TOML value: scalar leaf, array, or inline table.
+ A TOML value: scalar leaf, array, or inline table.
  */
 export type ValueNode =
   | ScalarNode
@@ -55,7 +55,7 @@ export type ValueNode =
   | InlineTableNode;
 
 /**
- * TOML scalar kinds, mirroring `AST.TOMLValue['kind']`.
+ TOML scalar kinds, mirroring `AST.TOMLValue['kind']`.
  */
 export type ScalarKind =
   | 'string'
@@ -68,13 +68,13 @@ export type ScalarKind =
   | 'local-time';
 
 /**
- * A primitive value leaf.
- *
- * `jsValue` is the materialized plain JS value (per `getStaticTOMLValue`
- * semantics) used by reads. A clean scalar renders through its AST node
- * (preserving raw spelling); a synthetic scalar renders from `renderText`,
- * precomputed at creation via `jsValueToTomlText` so wrapped inputs (forced
- * integer/float, datetimes) keep their intended spelling.
+ A primitive value leaf.
+ 
+ `jsValue` is the materialized plain JS value (per `getStaticTOMLValue`
+ semantics) used by reads. A clean scalar renders through its AST node
+ (preserving raw spelling); a synthetic scalar renders from `renderText`,
+ precomputed at creation via `jsValueToTomlText` so wrapped inputs (forced
+ integer/float, datetimes) keep their intended spelling.
  */
 export type ScalarNode = {
   readonly kind: 'scalar';
@@ -85,7 +85,7 @@ export type ScalarNode = {
 };
 
 /**
- * An array value. `elements` are child value nodes in order.
+ An array value. `elements` are child value nodes in order.
  */
 export type ArrayNode = {
   readonly kind: 'array';
@@ -94,7 +94,7 @@ export type ArrayNode = {
 };
 
 /**
- * An inline-table value. `entries` are its key-values in order.
+ An inline-table value. `entries` are its key-values in order.
  */
 export type InlineTableNode = {
   readonly kind: 'inline-table';
@@ -103,17 +103,17 @@ export type InlineTableNode = {
 };
 
 /**
- * A key-value entry (top-level, inside a table body, or inside an inline table).
- *
- * `keySegments` is the flattened dotted-key chain (`['a','b']` for `a.b = 1`).
- * `origin.range` (when clean) is the whole physical line span (key through the
- * trailing newline, absorbing a same-line comment). `valueRange` is the
- * original value's span, so a value-only edit re-renders as
- * `source.slice(lineStart, valueStart)` + new value +
- * `source.slice(valueEnd, lineEnd)`, keeping key spelling and the trailing
- * comment byte-exact. `commentsBefore` / `commentAfter` carry attached comment
- * text (without the leading `#`); for clean nodes the actual comment bytes live
- * in surrounding fillers, so these feed reads and synthetic rendering only.
+ A key-value entry (top-level, inside a table body, or inside an inline table).
+ 
+ `keySegments` is the flattened dotted-key chain (`['a','b']` for `a.b = 1`).
+ `origin.range` (when clean) is the whole physical line span (key through the
+ trailing newline, absorbing a same-line comment). `valueRange` is the
+ original value's span, so a value-only edit re-renders as
+ `source.slice(lineStart, valueStart)` + new value +
+ `source.slice(valueEnd, lineEnd)`, keeping key spelling and the trailing
+ comment byte-exact. `commentsBefore` / `commentAfter` carry attached comment
+ text (without the leading `#`); for clean nodes the actual comment bytes live
+ in surrounding fillers, so these feed reads and synthetic rendering only.
  */
 export type KeyValueNode = {
   readonly kind: 'keyvalue';
@@ -127,11 +127,11 @@ export type KeyValueNode = {
 };
 
 /**
- * A standard `[foo]` or array `[[foo]]` table section with its own ordered
- * body of blocks (key-values and fillers).
- *
- * `headerSegments` is the resolved header path minus any trailing array index;
- * `aotIndex` is that index for an array-of-tables instance.
+ A standard `[foo]` or array `[[foo]]` table section with its own ordered
+ body of blocks (key-values and fillers).
+ 
+ `headerSegments` is the resolved header path minus any trailing array index;
+ `aotIndex` is that index for an array-of-tables instance.
  */
 export type TableNode = {
   readonly kind: 'table';
@@ -145,8 +145,8 @@ export type TableNode = {
 };
 
 /**
- * Verbatim source span preserved between entries: blank lines, standalone
- * comment lines, indentation, and the document prologue/epilogue.
+ Verbatim source span preserved between entries: blank lines, standalone
+ comment lines, indentation, and the document prologue/epilogue.
  */
 export type FillerBlock = {
   readonly kind: 'filler';
@@ -154,7 +154,7 @@ export type FillerBlock = {
 };
 
 /**
- * One block in an ordered block list (top-level or a table body).
+ One block in an ordered block list (top-level or a table body).
  */
 export type Block =
   | FillerBlock

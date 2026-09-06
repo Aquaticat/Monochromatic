@@ -1,7 +1,7 @@
 /**
- * Two-stage publication interrupt handling.
- *
- * @module
+ Two-stage publication interrupt handling.
+ 
+ @module
  */
 
 import process from 'node:process';
@@ -13,12 +13,12 @@ import type {
 } from './publisher-model.ts';
 
 /**
- * Interrupt count that forces immediate native termination.
+ Interrupt count that forces immediate native termination.
  */
 const FORCE_INTERRUPT_COUNT = 2;
 
 /**
- * Host signal operations injectable for lifecycle tests.
+ Host signal operations injectable for lifecycle tests.
  */
 export type PublicationSignalHost = {
   readonly onInterrupt: (listener: () => void) => void;
@@ -27,7 +27,7 @@ export type PublicationSignalHost = {
 };
 
 /**
- * Active publication interrupt controls and cleanup.
+ Active publication interrupt controls and cleanup.
  */
 export type PublicationInterruptControl = {
   readonly shouldStop: PublicationStopCheck;
@@ -36,7 +36,7 @@ export type PublicationInterruptControl = {
 };
 
 /**
- * Production process signal host.
+ Production process signal host.
  */
 const PROCESS_SIGNAL_HOST: PublicationSignalHost = {
   onInterrupt(listener,) {
@@ -60,16 +60,16 @@ const PROCESS_SIGNAL_HOST: PublicationSignalHost = {
 };
 
 /**
- * Installs first-stop and second-force interrupt behavior for publication phase.
- *
- * @param host - Injectable process signal host.
- *
- * @returns Stop check, abortable wait, and listener cleanup.
- *
- * @example
- * ```ts
- * using interrupts = createPublicationInterruptControl({});
- * ```
+ Installs first-stop and second-force interrupt behavior for publication phase.
+ 
+ @param host - Injectable process signal host.
+ 
+ @returns Stop check, abortable wait, and listener cleanup.
+ 
+ @example
+ ```ts
+ using interrupts = createPublicationInterruptControl({});
+ ```
  */
 export function createPublicationInterruptControl({
   host = PROCESS_SIGNAL_HOST,
@@ -77,18 +77,18 @@ export function createPublicationInterruptControl({
   readonly host?: PublicationSignalHost;
 },): PublicationInterruptControl {
   /**
-   * Mutable signal state hidden behind one constant binding.
+   Mutable signal state hidden behind one constant binding.
    */
   const state = {
     count: 0,
     stop: false,
   };
   /**
-   * Abort source used only for pacing and retry waits.
+   Abort source used only for pacing and retry waits.
    */
   const waitAbort = new AbortController();
   /**
-   * Handles first graceful stop and second native force termination.
+   Handles first graceful stop and second native force termination.
    */
   function interrupt(): void {
     state.count += 1;

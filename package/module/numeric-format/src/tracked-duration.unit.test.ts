@@ -1,7 +1,7 @@
 /**
- * Tests for `formatTrackedDuration`.
- *
- * @module
+ Tests for `formatTrackedDuration`.
+ 
+ @module
  */
 
 import {

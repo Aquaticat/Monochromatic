@@ -1,7 +1,7 @@
 /**
- * Sequential policy-stage execution shared by built-in and plugin stages.
- *
- * @module
+ Sequential policy-stage execution shared by built-in and plugin stages.
+ 
+ @module
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
@@ -21,37 +21,37 @@ import {
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
- * One sequential policy stage outcome.
+ One sequential policy stage outcome.
  */
 export type PolicyStageResult = Readonly<{
   /**
-   * Settled ordered stage events.
+   Settled ordered stage events.
    */
   events: readonly PolicyEvent[];
   /**
-   * Whether every started policy completed.
+   Whether every started policy completed.
    */
   complete: boolean;
   /**
-   * Whether an error finding requested an early stop.
+   Whether an error finding requested an early stop.
    */
   stopped: boolean;
   /**
-   * Ordered engine-owned patches proposed by findings.
+   Ordered engine-owned patches proposed by findings.
    */
   patches: readonly PolicyPatch[];
   /**
-   * Whether current policy proposed a patch and ended provisional pass.
+   Whether current policy proposed a patch and ended provisional pass.
    */
   patchProposed: boolean;
 }>;
 
 /**
- * Confirms returned policy findings have runtime shape.
- *
- * @param findings - untrusted policy return value
- *
- * @returns whether every finding has required strings
+ Confirms returned policy findings have runtime shape.
+ 
+ @param findings - untrusted policy return value
+ 
+ @returns whether every finding has required strings
  */
 function findingsAreValid(findings: readonly PolicyFinding[],): boolean {
   return findings.every(function findingIsValid(finding,) {
@@ -67,43 +67,43 @@ function findingsAreValid(findings: readonly PolicyFinding[],): boolean {
 }
 
 /**
- * Settled plugin check result preserving whether plugin code threw.
+ Settled plugin check result preserving whether plugin code threw.
  */
 type PolicyCheckResult = Readonly<{
   /**
-   * Successful check discriminator.
+   Successful check discriminator.
    */
   status: 'complete';
   /**
-   * Unvalidated plugin findings.
+   Unvalidated plugin findings.
    */
   findings: readonly PolicyFinding[];
 }> | Readonly<{
   /**
-   * Thrown check discriminator.
+   Thrown check discriminator.
    */
   status: 'threw';
   /**
-   * Exact thrown plugin value.
+   Exact thrown plugin value.
    */
   error: unknown;
 }>;
 
 /**
- * Settles one plugin callback without conflating its exception with engine validation.
- *
- * @param policy - current runtime plugin
- *
- * @param context - trigger-specific policy facts
- *
- * @param options - validated plugin options
- *
- * @returns discriminated plugin result
- *
- * @example
- * ```ts
- * const result = await checkPolicy({ policy, context, options: undefined });
- * ```
+ Settles one plugin callback without conflating its exception with engine validation.
+ 
+ @param policy - current runtime plugin
+ 
+ @param context - trigger-specific policy facts
+ 
+ @param options - validated plugin options
+ 
+ @returns discriminated plugin result
+ 
+ @example
+ ```ts
+ const result = await checkPolicy({ policy, context, options: undefined });
+ ```
  */
 async function checkPolicy({
   policy,
@@ -132,32 +132,32 @@ async function checkPolicy({
 }
 
 /**
- * Runs one ordered policy group.
- *
- * @param policies - built-in or plugin definitions in stable order
- *
- * @param context - stage-specific raw and transformed facts
- *
- * @param trigger - active lifecycle point
- *
- * @param severities - validated effective severity map
- *
- * @param selectedPolicyIds - optional direct-check selection
- *
- * @param escapedPolicyIds - complete-invocation skipped IDs
- *
- * @param policyOptions - validated policy option outputs
- *
- * @param keepGoing - whether error findings permit later checks
- *
- * @param sequence - first stage event sequence
- *
- * @returns settled stage outcome
- *
- * @example
- * ```ts
- * await runPolicyStage({ policies: [], context, trigger: 'pre-forward', severities: {}, selectedPolicyIds: new Set(), escapedPolicyIds: new Set(), policyOptions: new Map(), keepGoing: false, sequence: 0 });
- * ```
+ Runs one ordered policy group.
+ 
+ @param policies - built-in or plugin definitions in stable order
+ 
+ @param context - stage-specific raw and transformed facts
+ 
+ @param trigger - active lifecycle point
+ 
+ @param severities - validated effective severity map
+ 
+ @param selectedPolicyIds - optional direct-check selection
+ 
+ @param escapedPolicyIds - complete-invocation skipped IDs
+ 
+ @param policyOptions - validated policy option outputs
+ 
+ @param keepGoing - whether error findings permit later checks
+ 
+ @param sequence - first stage event sequence
+ 
+ @returns settled stage outcome
+ 
+ @example
+ ```ts
+ await runPolicyStage({ policies: [], context, trigger: 'pre-forward', severities: {}, selectedPolicyIds: new Set(), escapedPolicyIds: new Set(), policyOptions: new Map(), keepGoing: false, sequence: 0 });
+ ```
  */
 export async function runPolicyStage({
   policies,
@@ -181,11 +181,11 @@ export async function runPolicyStage({
   sequence: number;
 }>,): Promise<PolicyStageResult> {
   /**
-   * Stage-local buffered events.
+   Stage-local buffered events.
    */
   const events: PolicyEvent[] = [];
   /**
-   * Stage-local ordered patch proposals.
+   Stage-local ordered patch proposals.
    */
   const patches: PolicyPatch[] = [];
   for (const policy of policies) {
@@ -197,17 +197,17 @@ export async function runPolicyStage({
     if (escapedPolicyIds.has(policy.name,))
       continue;
     /**
-     * Effective persistent severity.
+     Effective persistent severity.
      */
     const severity = severities[policy.name] ?? policy.defaultSeverity;
     if (severity === 'off')
       continue;
     /**
-     * Whether selected warning severity weakens enforcement.
+     Whether selected warning severity weakens enforcement.
      */
     const warnUnsafe = (severity === 'warn') && (!policy.warnSafe);
     /**
-     * Settled callback result preserving plugin ownership of thrown values.
+     Settled callback result preserving plugin ownership of thrown values.
      */
     // oxlint-disable-next-line no-await-in-loop -- Policy contract requires sequential checks in fixed registration order.
     const checkResult = await checkPolicy({
@@ -233,13 +233,13 @@ export async function runPolicyStage({
     }
     try {
       /**
-       * Findings produced by current sequential policy.
+       Findings produced by current sequential policy.
        */
       const { findings, } = checkResult;
       if (!findingsAreValid(findings,))
         throw new TypeError(`Policy ${policy.name} returned an invalid finding.`,);
       /**
-       * Current policy patch proposals requiring whole-sequence restart.
+       Current policy patch proposals requiring whole-sequence restart.
        */
       const proposedPatches = findings.flatMap(function extractPatch(finding,) {
         return finding.patch === undefined ? [] : [finding.patch,];

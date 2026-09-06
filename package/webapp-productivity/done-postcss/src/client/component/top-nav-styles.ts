@@ -1,10 +1,10 @@
 /**
- * Shadow DOM styles for the `\<top-nav\>` component.
+ Shadow DOM styles for the `\<top-nav\>` component.
  */
 import { css, } from '../css.ts';
 
 /**
- * Shadow DOM styles for `\<top-nav\>` -- hamburger, heading, search icon, responsive layout.
+ Shadow DOM styles for `\<top-nav\>` -- hamburger, heading, search icon, responsive layout.
  */
 export const TOP_NAV_STYLES: string = css(`
   :host {

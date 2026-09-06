@@ -13,16 +13,16 @@ const REPO_ROOT = await findMiseMonorepoRootCached();
 const BIN_PATH = 'package/module/token-count/dist/final/node/cli.mjs';
 
 /**
- * Runs the built token-count bin as a subprocess and returns stdout, stderr, and exit code.
- *
- * @param args - CLI arguments to pass after `token-count`
- * @returns Stdout text, stderr text, and numeric exit code
- *
- * @example
- * ```ts
- * const result = await runTokenCount({ args: ['--help'] });
- * // result.exitCode === 0
- * ```
+ Runs the built token-count bin as a subprocess and returns stdout, stderr, and exit code.
+ 
+ @param args - CLI arguments to pass after `token-count`
+ @returns Stdout text, stderr text, and numeric exit code
+ 
+ @example
+ ```ts
+ const result = await runTokenCount({ args: ['--help'] });
+ // result.exitCode === 0
+ ```
  */
 async function runTokenCount({ args, }: { args: readonly string[]; },): Promise<{
   stdout: string;

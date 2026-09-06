@@ -12,36 +12,36 @@ import { WorktreeCopyError, } from './errors.ts';
 import type { WorktreeCopyObservation, } from './model.ts';
 
 /**
- * Logger root for linked-worktree registration observation.
+ Logger root for linked-worktree registration observation.
  */
 const l = tagged({ tag: 'cli-git', },);
 
 /**
- * Effective target cannot participate in worktree-copy lifecycle.
+ Effective target cannot participate in worktree-copy lifecycle.
  */
 export const WORKTREE_COPY_NOT_APPLICABLE: unique symbol = Symbol(
   'worktree copy has no applicable source repository',
 );
 
 /**
- * Reads linked-worktree administrative directory identities.
- *
- * @param adminRoot - common Git worktrees directory
- *
- * @returns directory basenames present at observation time
- *
- * @throws {@link WorktreeCopyError} when administration cannot be inspected
- *
- * @example
- * ```ts
- * await readAdminIds('/repo/.git/worktrees');
- * // => Set { 'topic' }
- * ```
+ Reads linked-worktree administrative directory identities.
+ 
+ @param adminRoot - common Git worktrees directory
+ 
+ @returns directory basenames present at observation time
+ 
+ @throws {@link WorktreeCopyError} when administration cannot be inspected
+ 
+ @example
+ ```ts
+ await readAdminIds('/repo/.git/worktrees');
+ // => Set { 'topic' }
+ ```
  */
 export async function readAdminIds(adminRoot: string,): Promise<ReadonlySet<string>> {
   try {
     /**
-     * Directory entries beneath common worktree administration.
+     Directory entries beneath common worktree administration.
      */
     const entries = await readdir(
       adminRoot,
@@ -69,26 +69,26 @@ export async function readAdminIds(adminRoot: string,): Promise<ReadonlySet<stri
 }
 
 /**
- * Captures applicable linked-worktree repository and administrative identities.
- *
- * Shared identity resolution classifies effective target once for every package
- * consumer.
- * Main and outside targets return not-applicable before administrative reads.
- * Linked worktrees contribute canonical source root;
- * bare repositories retain empty-source behavior.
- *
- * @param args - forwarded Git arguments
- *
- * @param gitPath - absolute real-Git executable
- *
- * @param identity - optional repository identity retained before config-free forwarding
- *
- * @returns repository observation or not-applicable sentinel
- *
- * @example
- * ```ts
- * await observeWorktreeRepository({ args: ['status'], gitPath: '/usr/bin/git' });
- * ```
+ Captures applicable linked-worktree repository and administrative identities.
+ 
+ Shared identity resolution classifies effective target once for every package
+ consumer.
+ Main and outside targets return not-applicable before administrative reads.
+ Linked worktrees contribute canonical source root;
+ bare repositories retain empty-source behavior.
+ 
+ @param args - forwarded Git arguments
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @param identity - optional repository identity retained before config-free forwarding
+ 
+ @returns repository observation or not-applicable sentinel
+ 
+ @example
+ ```ts
+ await observeWorktreeRepository({ args: ['status'], gitPath: '/usr/bin/git' });
+ ```
  */
 export async function observeWorktreeRepository({
   args,
@@ -100,14 +100,14 @@ export async function observeWorktreeRepository({
   identity?: GitWorktreeIdentity;
 }>,): Promise<WorktreeCopyObservation | typeof WORKTREE_COPY_NOT_APPLICABLE> {
   /**
-   * Tagged observer logger.
+   Tagged observer logger.
    */
   const rl = tagged({
     tag: observeWorktreeRepository.name,
     l,
   },);
   /**
-   * Canonical repository identity shared across package consumers.
+   Canonical repository identity shared across package consumers.
    */
   const identity = retainedIdentity ?? await resolveGitWorktreeIdentity({
     args,
@@ -122,14 +122,14 @@ export async function observeWorktreeRepository({
     return WORKTREE_COPY_NOT_APPLICABLE;
   }
   /**
-   * Common linked-worktree administrative root.
+   Common linked-worktree administrative root.
    */
   const adminRoot = join(
     identity.commonDir,
     'worktrees',
   );
   /**
-   * Existing linked-worktree identities.
+   Existing linked-worktree identities.
    */
   const beforeAdminIds = await readAdminIds(adminRoot,);
   rl.debug(

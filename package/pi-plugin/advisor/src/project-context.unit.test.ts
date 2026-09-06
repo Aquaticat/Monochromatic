@@ -1,7 +1,7 @@
 /**
- * Tests for Advisor loaded project-context capture.
- *
- * @module
+ Tests for Advisor loaded project-context capture.
+ 
+ @module
  */
 
 import {

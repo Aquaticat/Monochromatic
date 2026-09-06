@@ -1,8 +1,8 @@
 /**
- * Unit tests for the error classes: each carries the right `name`, is an
- * instance of its class, and exposes its structured fields (offset, path).
- *
- * @module
+ Unit tests for the error classes: each carries the right `name`, is an
+ instance of its class, and exposes its structured fields (offset, path).
+ 
+ @module
  */
 
 import {

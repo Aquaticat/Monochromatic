@@ -1,8 +1,8 @@
 /**
- * HTML document structure for the doodle widget.
- *
- * Uses h-html to produce a self-contained page with inlined CSS,
- * JavaScript, and embedded page background data.
+ HTML document structure for the doodle widget.
+ 
+ Uses h-html to produce a self-contained page with inlined CSS,
+ JavaScript, and embedded page background data.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -10,17 +10,17 @@ import { renderAttribution, } from './page-attribution.ts';
 import { renderToolbar, } from './page-toolbar.ts';
 
 /**
- * Renders the canvas container with drawing surface and overlay layers.
- *
- * The drawing canvas renders beneath the SVG overlay. The overlay
- * uses `mix-blend-mode: multiply` so white SVG fills become
- * transparent (user strokes show through) while black outlines
- * remain opaque on top.
- *
- * The SVG overlay starts empty; the client populates it from the
- * embedded page backgrounds JSON on initialization.
- *
- * @returns canvas container HTML string
+ Renders the canvas container with drawing surface and overlay layers.
+ 
+ The drawing canvas renders beneath the SVG overlay. The overlay
+ uses `mix-blend-mode: multiply` so white SVG fills become
+ transparent (user strokes show through) while black outlines
+ remain opaque on top.
+ 
+ The SVG overlay starts empty; the client populates it from the
+ embedded page backgrounds JSON on initialization.
+ 
+ @returns canvas container HTML string
  */
 function renderCanvasContainer(): string {
   return h({
@@ -56,24 +56,24 @@ function renderCanvasContainer(): string {
 }
 
 /**
- * Renders the complete HTML document with all content inlined.
- *
- * @param css - CSS stylesheet string
- *
- * @param js - client-side JavaScript string
- *
- * @param svgBackgrounds - processed SVG background strings, one per page
- *
- * @param sourceUrl - browsable URL to the package source code on GitHub
- *
- * @returns complete HTML document string
- *
- * @mutates svgBackgrounds - `JSON.stringify` may invoke array accessors or proxy traps.
- *
- * @example
- * ```ts
- * const html = renderPage({ css: 'body {}', js: 'console.log("ok")', svgBackgrounds: [], sourceUrl: 'https://github.com/...' });
- * ```
+ Renders the complete HTML document with all content inlined.
+ 
+ @param css - CSS stylesheet string
+ 
+ @param js - client-side JavaScript string
+ 
+ @param svgBackgrounds - processed SVG background strings, one per page
+ 
+ @param sourceUrl - browsable URL to the package source code on GitHub
+ 
+ @returns complete HTML document string
+ 
+ @mutates svgBackgrounds - `JSON.stringify` may invoke array accessors or proxy traps.
+ 
+ @example
+ ```ts
+ const html = renderPage({ css: 'body {}', js: 'console.log("ok")', svgBackgrounds: [], sourceUrl: 'https://github.com/...' });
+ ```
  */
 export function renderPage(
   {
@@ -89,8 +89,8 @@ export function renderPage(
   },
 ): string {
   /**
-   * Escape `</` as `<\/` to prevent premature script tag closure.
-   * `\/` is a valid JSON escape for `/`.
+   Escape `</` as `<\/` to prevent premature script tag closure.
+   `\/` is a valid JSON escape for `/`.
    */
   const backgroundsJson = JSON.stringify(svgBackgrounds,)
     .replaceAll(

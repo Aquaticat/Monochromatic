@@ -1,7 +1,7 @@
 /**
- * Run-level context-boundary tests for Advisor.
- *
- * @module
+ Run-level context-boundary tests for Advisor.
+ 
+ @module
  */
 
 import {
@@ -70,11 +70,11 @@ const advisorConfig: AdvisorConfig = {
 };
 
 /**
- * Extract text from provider user message.
- *
- * @param context - captured provider context
- *
- * @returns joined user text blocks
+ Extract text from provider user message.
+ 
+ @param context - captured provider context
+ 
+ @returns joined user text blocks
  */
 function providerUserText(context: Readonly<Context>,): string {
   /** First provider message containing serialized Advisor request. */
@@ -94,16 +94,16 @@ function providerUserText(context: Readonly<Context>,): string {
 }
 
 /**
- * Capture rejection from async test action.
- *
- * @param action - async operation expected to reject
- *
- * @returns caught rejection value
- *
- * @example
- * ```typescript
- * const error = await captureAsyncError(async function fail() { throw new Error('x'); });
- * ```
+ Capture rejection from async test action.
+ 
+ @param action - async operation expected to reject
+ 
+ @returns caught rejection value
+ 
+ @example
+ ```typescript
+ const error = await captureAsyncError(async function fail() { throw new Error('x'); });
+ ```
  */
 async function captureAsyncError(
   action: () => Promise<unknown>,

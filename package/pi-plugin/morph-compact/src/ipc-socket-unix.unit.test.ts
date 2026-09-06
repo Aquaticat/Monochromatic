@@ -1,8 +1,8 @@
 /**
- * Tests for Unix domain socket IPC
- * ({@link createOneShotSocketServer}, {@link readFromUnixSocket}).
- *
- * @module
+ Tests for Unix domain socket IPC
+ ({@link createOneShotSocketServer}, {@link readFromUnixSocket}).
+ 
+ @module
  */
 
 import {

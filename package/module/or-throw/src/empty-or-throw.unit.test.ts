@@ -1,7 +1,7 @@
 /**
- * Tests for `emptyOrThrow`.
- *
- * @module
+ Tests for `emptyOrThrow`.
+ 
+ @module
  */
 
 import {

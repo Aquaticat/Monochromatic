@@ -11,14 +11,14 @@ import { noPipeTables, } from './rule/no-pipe-tables.ts';
 import type { Diagnostic, } from './types.ts';
 
 /**
- * Run only `no-pipe-tables` over a source, the one fixable rule wired so far,
- * used here as a probe for parse-level behavior (frontmatter and MDX-skip).
- *
- * @param source - Markdown or MDX source
- *
- * @param mdx - whether to parse as MDX
- *
- * @returns diagnostics from the rule
+ Run only `no-pipe-tables` over a source, the one fixable rule wired so far,
+ used here as a probe for parse-level behavior (frontmatter and MDX-skip).
+ 
+ @param source - Markdown or MDX source
+ 
+ @param mdx - whether to parse as MDX
+ 
+ @returns diagnostics from the rule
  */
 function lint(
   source: string,
@@ -32,9 +32,9 @@ function lint(
 }
 
 /**
- * Source whose leading YAML frontmatter must be skipped, with a pipe table
- * after it. Without frontmatter handling the `---` would parse as a thematic
- * break plus paragraph and shift every position.
+ Source whose leading YAML frontmatter must be skipped, with a pipe table
+ after it. Without frontmatter handling the `---` would parse as a thematic
+ break plus paragraph and shift every position.
  */
 const FRONTMATTER_THEN_TABLE = [
   '---',
@@ -51,7 +51,7 @@ const FRONTMATTER_THEN_TABLE = [
 ].join('\n',);
 
 /**
- * MDX source with an ESM import, a JSX element, and a top-level pipe table.
+ MDX source with an ESM import, a JSX element, and a top-level pipe table.
  */
 const MDX_WITH_TABLE = [
   "import X from './x';",
@@ -65,8 +65,8 @@ const MDX_WITH_TABLE = [
 ].join('\n',);
 
 /**
- * MDX source whose only pipe table sits inside a JSX element subtree, which the
- * MVP skips wholesale.
+ MDX source whose only pipe table sits inside a JSX element subtree, which the
+ MVP skips wholesale.
  */
 const TABLE_INSIDE_JSX = [
   '<Note>',
@@ -86,7 +86,7 @@ await describe({
       name: 'skips leading YAML frontmatter and flags the table after it',
       fn: async function frontmatterSkipped() {
         /**
-         * Diagnostics for the frontmatter-then-table source.
+         Diagnostics for the frontmatter-then-table source.
          */
         const diagnostics = lint(FRONTMATTER_THEN_TABLE, false,);
         expect(diagnostics.length,).toBe(1,);
@@ -100,7 +100,7 @@ await describe({
       fn: async function mdxTopLevelTable() {
         expect(lint(MDX_WITH_TABLE, true,).length,).toBe(1,);
         /**
-         * Fixed MDX source.
+         Fixed MDX source.
          */
         const fixed = fixSource({
           rules: [noPipeTables,],

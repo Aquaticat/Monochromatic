@@ -13,22 +13,22 @@ import {
 //region Fixtures: generated and fallback target sources
 
 /**
- * File URL used for generated JSON import tests.
- *
- * @example
- * ```ts
- * const href = GENERATED_URL.href;
- * ```
+ File URL used for generated JSON import tests.
+ 
+ @example
+ ```ts
+ const href = GENERATED_URL.href;
+ ```
  */
 const GENERATED_URL = new URL('file:///tmp/.browserslistrc.resolved.local.json',);
 
 /**
- * Targets returned by generated JSON fixture.
- *
- * @example
- * ```ts
- * expect(GENERATED_TARGETS).toContain('firefox 140');
- * ```
+ Targets returned by generated JSON fixture.
+ 
+ @example
+ ```ts
+ expect(GENERATED_TARGETS).toContain('firefox 140');
+ ```
  */
 const GENERATED_TARGETS = [
   'and_chr 148',
@@ -39,12 +39,12 @@ const GENERATED_TARGETS = [
 ] as const;
 
 /**
- * Rolldown-compatible targets expected from generated JSON fixture.
- *
- * @example
- * ```ts
- * expect(EXPECTED_GENERATED_TARGETS).toContain('chrome148');
- * ```
+ Rolldown-compatible targets expected from generated JSON fixture.
+ 
+ @example
+ ```ts
+ expect(EXPECTED_GENERATED_TARGETS).toContain('chrome148');
+ ```
  */
 const EXPECTED_GENERATED_TARGETS = [
   'chrome148',
@@ -52,12 +52,12 @@ const EXPECTED_GENERATED_TARGETS = [
 ] as const;
 
 /**
- * Targets returned by Browserslist fallback fixture.
- *
- * @example
- * ```ts
- * expect(FALLBACK_TARGETS).toContain('node 25.2.1');
- * ```
+ Targets returned by Browserslist fallback fixture.
+ 
+ @example
+ ```ts
+ expect(FALLBACK_TARGETS).toContain('node 25.2.1');
+ ```
  */
 const FALLBACK_TARGETS = [
   'node 25.2.1',
@@ -65,12 +65,12 @@ const FALLBACK_TARGETS = [
 ] as const;
 
 /**
- * Rolldown-compatible targets expected from Browserslist fallback fixture.
- *
- * @example
- * ```ts
- * expect(EXPECTED_FALLBACK_TARGETS).toContain('node25.2.1');
- * ```
+ Rolldown-compatible targets expected from Browserslist fallback fixture.
+ 
+ @example
+ ```ts
+ expect(EXPECTED_FALLBACK_TARGETS).toContain('node25.2.1');
+ ```
  */
 const EXPECTED_FALLBACK_TARGETS = [
   'node25.0.0',
@@ -81,70 +81,70 @@ const EXPECTED_FALLBACK_TARGETS = [
 //region Fixture helpers: generated-file branch
 
 /**
- * Reports generated JSON as present.
- *
- * @param _fileUrl - Generated URL ignored by deterministic fixture.
- * @returns Always true for generated-file branch tests.
- * @example
- * ```ts
- * await generatedExists(GENERATED_URL);
- * ```
+ Reports generated JSON as present.
+ 
+ @param _fileUrl - Generated URL ignored by deterministic fixture.
+ @returns Always true for generated-file branch tests.
+ @example
+ ```ts
+ await generatedExists(GENERATED_URL);
+ ```
  */
 async function generatedExists(_fileUrl: URL,): Promise<boolean> {
   return true;
 }
 
 /**
- * Reports generated JSON as absent.
- *
- * @param _fileUrl - Generated URL ignored by deterministic fixture.
- * @returns Always false for fallback branch tests.
- * @example
- * ```ts
- * await generatedMissing(GENERATED_URL);
- * ```
+ Reports generated JSON as absent.
+ 
+ @param _fileUrl - Generated URL ignored by deterministic fixture.
+ @returns Always false for fallback branch tests.
+ @example
+ ```ts
+ await generatedMissing(GENERATED_URL);
+ ```
  */
 async function generatedMissing(_fileUrl: URL,): Promise<boolean> {
   return false;
 }
 
 /**
- * Imports valid generated target JSON.
- *
- * @param _fileUrl - Generated URL ignored by deterministic fixture.
- * @returns JSON namespace containing generated target array.
- * @example
- * ```ts
- * const imported = await importGeneratedTargets(GENERATED_URL);
- * ```
+ Imports valid generated target JSON.
+ 
+ @param _fileUrl - Generated URL ignored by deterministic fixture.
+ @returns JSON namespace containing generated target array.
+ @example
+ ```ts
+ const imported = await importGeneratedTargets(GENERATED_URL);
+ ```
  */
 async function importGeneratedTargets(_fileUrl: URL,): Promise<unknown> {
   return GENERATED_TARGETS;
 }
 
 /**
- * Imports malformed generated target JSON.
- *
- * @param _fileUrl - Generated URL ignored by deterministic fixture.
- * @returns JSON namespace whose default export is not string array.
- * @example
- * ```ts
- * const imported = await importMalformedTargets(GENERATED_URL);
- * ```
+ Imports malformed generated target JSON.
+ 
+ @param _fileUrl - Generated URL ignored by deterministic fixture.
+ @returns JSON namespace whose default export is not string array.
+ @example
+ ```ts
+ const imported = await importMalformedTargets(GENERATED_URL);
+ ```
  */
 async function importMalformedTargets(_fileUrl: URL,): Promise<unknown> {
   return { firefox: 140, };
 }
 
 /**
- * Fails if Browserslist fallback is reached during generated-file tests.
- *
- * @returns Never returns because generated JSON should short-circuit fallback.
- * @throws Error when fallback path runs unexpectedly.
- * @example
- * ```ts
- * await importUnexpectedBrowserslist();
- * ```
+ Fails if Browserslist fallback is reached during generated-file tests.
+ 
+ @returns Never returns because generated JSON should short-circuit fallback.
+ @throws Error when fallback path runs unexpectedly.
+ @example
+ ```ts
+ await importUnexpectedBrowserslist();
+ ```
  */
 async function importUnexpectedBrowserslist(): Promise<BrowserslistImport> {
   throw new Error('Browserslist fallback should not run when generated JSON exists.',);
@@ -155,54 +155,54 @@ async function importUnexpectedBrowserslist(): Promise<BrowserslistImport> {
 //region Fixture helpers: fallback branch
 
 /**
- * Browserslist resolver fixture matching package call signature.
- *
- * @returns Fallback target array.
- * @example
- * ```ts
- * fallbackBrowserslistResolver();
- * ```
+ Browserslist resolver fixture matching package call signature.
+ 
+ @returns Fallback target array.
+ @example
+ ```ts
+ fallbackBrowserslistResolver();
+ ```
  */
 function fallbackBrowserslistResolver(): string[] {
   return [...FALLBACK_TARGETS,];
 }
 
 /**
- * Imports Browserslist as default-export namespace.
- *
- * @returns Namespace shape produced by Node ESM dynamic import of CommonJS.
- * @example
- * ```ts
- * const imported = await importFallbackBrowserslistDefault();
- * ```
+ Imports Browserslist as default-export namespace.
+ 
+ @returns Namespace shape produced by Node ESM dynamic import of CommonJS.
+ @example
+ ```ts
+ const imported = await importFallbackBrowserslistDefault();
+ ```
  */
 async function importFallbackBrowserslistDefault(): Promise<BrowserslistImport> {
   return { default: fallbackBrowserslistResolver, };
 }
 
 /**
- * Imports Browserslist as callable namespace.
- *
- * @returns Callable shape accepted for runtimes that expose CommonJS directly.
- * @example
- * ```ts
- * const imported = await importFallbackBrowserslistCallable();
- * ```
+ Imports Browserslist as callable namespace.
+ 
+ @returns Callable shape accepted for runtimes that expose CommonJS directly.
+ @example
+ ```ts
+ const imported = await importFallbackBrowserslistCallable();
+ ```
  */
 async function importFallbackBrowserslistCallable(): Promise<BrowserslistImport> {
   return fallbackBrowserslistResolver;
 }
 
 /**
- * Fails if generated JSON import is reached during fallback tests.
- *
- * @param _fileUrl - Generated URL ignored by deterministic fixture.
- * @returns Never returns because missing generated JSON should skip import.
- * @throws Error when generated JSON importer runs unexpectedly.
- * @example
- * ```ts
- * await importUnexpectedJson(GENERATED_URL);
- * ```
+ Fails if generated JSON import is reached during fallback tests.
+ 
+ @param _fileUrl - Generated URL ignored by deterministic fixture.
+ @returns Never returns because missing generated JSON should skip import.
+ @throws Error when generated JSON importer runs unexpectedly.
+ @example
+ ```ts
+ await importUnexpectedJson(GENERATED_URL);
+ ```
  */
 async function importUnexpectedJson(_fileUrl: URL,): Promise<unknown> {
   throw new Error('Generated JSON import should not run when file is absent.',);
@@ -213,15 +213,15 @@ async function importUnexpectedJson(_fileUrl: URL,): Promise<unknown> {
 //region Assertion helpers
 
 /**
- * Captures error thrown by Browserslist target resolution.
- *
- * @param options - Resolution options expected to throw.
- * @returns Error thrown by resolution.
- * @throws Error when resolution succeeds unexpectedly.
- * @example
- * ```ts
- * const error = await captureBrowserslistTargetsError({ exists: generatedExists });
- * ```
+ Captures error thrown by Browserslist target resolution.
+ 
+ @param options - Resolution options expected to throw.
+ @returns Error thrown by resolution.
+ @throws Error when resolution succeeds unexpectedly.
+ @example
+ ```ts
+ const error = await captureBrowserslistTargetsError({ exists: generatedExists });
+ ```
  */
 async function captureBrowserslistTargetsError(
   options: BrowserslistTargetsOptions,

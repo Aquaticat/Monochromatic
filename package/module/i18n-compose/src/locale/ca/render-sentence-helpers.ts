@@ -1,7 +1,7 @@
 /**
- * Shared dependency bundle and slot helpers for the Catalan sentence renderers.
- *
- * @module
+ Shared dependency bundle and slot helpers for the Catalan sentence renderers.
+ 
+ @module
  */
 
 import type {
@@ -17,7 +17,7 @@ import {
 } from './types.ts';
 
 /**
- * Dependency bundle for the Catalan sentence sub-renderers.
+ Dependency bundle for the Catalan sentence sub-renderers.
  */
 export type SentenceDeps<S extends string, V extends string, N extends string,> = {
   readonly subjects: Readonly<Record<S, SubjectEntry>>;
@@ -30,22 +30,22 @@ export type SentenceDeps<S extends string, V extends string, N extends string,> 
 };
 
 /**
- * Renders a predicate's optional object slot, returning empty string when absent.
- *
- * Reads `predicate.object` itself so the absent case never crosses the call
- * boundary as `undefined`; {@link joinTokens} drops the empty-string result.
- *
- * @param predicate - verb phrase whose object slot is rendered
- *
- * @param renderNounPhrase - noun-phrase render function
- *
- * @returns rendered surface, or empty string when the object slot is absent
- *
- * @example
- * ```ts
- * renderOptionalObject({ predicate: sentence.predicate, renderNounPhrase, },);
- * // -> 'la porta' when present, '' when the object slot is absent
- * ```
+ Renders a predicate's optional object slot, returning empty string when absent.
+ 
+ Reads `predicate.object` itself so the absent case never crosses the call
+ boundary as `undefined`; {@link joinTokens} drops the empty-string result.
+ 
+ @param predicate - verb phrase whose object slot is rendered
+ 
+ @param renderNounPhrase - noun-phrase render function
+ 
+ @returns rendered surface, or empty string when the object slot is absent
+ 
+ @example
+ ```ts
+ renderOptionalObject({ predicate: sentence.predicate, renderNounPhrase, },);
+ // -> 'la porta' when present, '' when the object slot is absent
+ ```
  */
 export function renderOptionalObject<S extends string, V extends string, N extends string,>(
   {
@@ -63,22 +63,22 @@ export function renderOptionalObject<S extends string, V extends string, N exten
 }
 
 /**
- * Renders a predicate's optional infinitive complement, returning empty string when absent.
- *
- * Reads `predicate.complement` itself so the absent case never crosses the
- * call boundary as `undefined`; {@link joinTokens} drops the empty-string result.
- *
- * @param predicate - verb phrase whose complement slot is rendered
- *
- * @param renderVerbPhrase - verb-phrase render function
- *
- * @returns rendered complement phrase, or empty string when absent
- *
- * @example
- * ```ts
- * renderOptionalComplement({ predicate: sentence.predicate, renderVerbPhrase, },);
- * // -> 'marxar' when present, '' when the complement slot is absent
- * ```
+ Renders a predicate's optional infinitive complement, returning empty string when absent.
+ 
+ Reads `predicate.complement` itself so the absent case never crosses the
+ call boundary as `undefined`; {@link joinTokens} drops the empty-string result.
+ 
+ @param predicate - verb phrase whose complement slot is rendered
+ 
+ @param renderVerbPhrase - verb-phrase render function
+ 
+ @returns rendered complement phrase, or empty string when absent
+ 
+ @example
+ ```ts
+ renderOptionalComplement({ predicate: sentence.predicate, renderVerbPhrase, },);
+ // -> 'marxar' when present, '' when the complement slot is absent
+ ```
  */
 export function renderOptionalComplement<S extends string, V extends string, N extends string,>(
   {
@@ -97,17 +97,17 @@ export function renderOptionalComplement<S extends string, V extends string, N e
 }
 
 /**
- * Capitalizes a sentence body using Catalan case-invariants.
- *
- * @param body - rendered body before sentence-case fixup
- *
- * @returns same body with the first character uppercased
- *
- * @example
- * ```ts
- * capitalizeBody('el gat dorm',);
- * // -> 'El gat dorm'
- * ```
+ Capitalizes a sentence body using Catalan case-invariants.
+ 
+ @param body - rendered body before sentence-case fixup
+ 
+ @returns same body with the first character uppercased
+ 
+ @example
+ ```ts
+ capitalizeBody('el gat dorm',);
+ // -> 'El gat dorm'
+ ```
  */
 export function capitalizeBody(body: string,): string {
   return applyCapitalization({
@@ -118,17 +118,17 @@ export function capitalizeBody(body: string,): string {
 }
 
 /**
- * Maps an English wh-word identifier to the Catalan surface.
- *
- * @param wh - wh-word from the AST
- *
- * @returns Catalan wh-surface
- *
- * @example
- * ```ts
- * catalanWhWord('where',);
- * // -> 'On'
- * ```
+ Maps an English wh-word identifier to the Catalan surface.
+ 
+ @param wh - wh-word from the AST
+ 
+ @returns Catalan wh-surface
+ 
+ @example
+ ```ts
+ catalanWhWord('where',);
+ // -> 'On'
+ ```
  */
 export function catalanWhWord(wh: 'where' | 'when' | 'why' | 'how',): string {
   if (wh === 'where')

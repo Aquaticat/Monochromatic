@@ -1,7 +1,7 @@
 /**
- * Runtime re-export forwarding that bypasses adjacent declaration substitution.
- *
- * @module
+ Runtime re-export forwarding that bypasses adjacent declaration substitution.
+ 
+ @module
  */
 
 import {
@@ -30,14 +30,14 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 /**
- * Sentinel when runtime source does not forward requested export through a relative module.
+ Sentinel when runtime source does not forward requested export through a relative module.
  */
 export const RUNTIME_FORWARD_UNAVAILABLE: unique symbol = Symbol(
   'runtime package export does not have a resolvable relative forward',
 );
 
 /**
- * Forwarded runtime source and binding name.
+ Forwarded runtime source and binding name.
  */
 export type RuntimeForward = {
   readonly source: SourceFile;
@@ -45,7 +45,7 @@ export type RuntimeForward = {
 };
 
 /**
- * Runtime JavaScript or TypeScript suffixes accepted for exact relative forwards.
+ Runtime JavaScript or TypeScript suffixes accepted for exact relative forwards.
  */
 const RUNTIME_FORWARD_SUFFIXES: ReadonlySet<string> = new Set([
   '.js',
@@ -59,17 +59,17 @@ const RUNTIME_FORWARD_SUFFIXES: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Resolves package-local runtime module without TypeScript declaration substitution.
- *
- * @param project - External implementation project containing shipped runtime files.
- *
- * @param source - Runtime module carrying relative import or re-export.
- *
- * @param moduleSpecifier - Authored relative runtime module specifier.
- *
- * @param packageRoot - Exact installed package boundary.
- *
- * @returns loaded runtime source or unavailable sentinel.
+ Resolves package-local runtime module without TypeScript declaration substitution.
+ 
+ @param project - External implementation project containing shipped runtime files.
+ 
+ @param source - Runtime module carrying relative import or re-export.
+ 
+ @param moduleSpecifier - Authored relative runtime module specifier.
+ 
+ @param packageRoot - Exact installed package boundary.
+ 
+ @returns loaded runtime source or unavailable sentinel.
  */
 function runtimeModule({
   project,
@@ -85,14 +85,14 @@ function runtimeModule({
   if (!moduleSpecifier.startsWith('.',))
     return RUNTIME_FORWARD_UNAVAILABLE;
   /**
-   * Exact runtime path from authored module specifier.
+   Exact runtime path from authored module specifier.
    */
   const path = resolve(
     dirname(source.fileName,),
     moduleSpecifier,
   );
   /**
-   * Package-relative identity used for separator-aware containment check.
+   Package-relative identity used for separator-aware containment check.
    */
   const packageRelativePath = relative(
     packageRoot,
@@ -104,7 +104,7 @@ function runtimeModule({
     || (!RUNTIME_FORWARD_SUFFIXES.has(extname(path,),)))
     return RUNTIME_FORWARD_UNAVAILABLE;
   /**
-   * Runtime source loaded under exact authored path.
+   Runtime source loaded under exact authored path.
    */
   const runtimeSource = project
     .program
@@ -113,13 +113,13 @@ function runtimeModule({
 }
 
 /**
- * Finds local binding imported by one runtime module.
- *
- * @param source - Runtime source containing imports.
- *
- * @param localName - Local binding re-exported by source.
- *
- * @returns import declaration and original export name or unavailable sentinel.
+ Finds local binding imported by one runtime module.
+ 
+ @param source - Runtime source containing imports.
+ 
+ @param localName - Local binding re-exported by source.
+ 
+ @returns import declaration and original export name or unavailable sentinel.
  */
 function importedBinding({
   source,
@@ -135,7 +135,7 @@ function importedBinding({
     if (!isImportDeclaration(statement,))
       continue;
     /**
-     * Named import bindings that can be matched to local export.
+     Named import bindings that can be matched to local export.
      */
     const namedBindings = statement.importClause
       ?.namedBindings;
@@ -146,7 +146,7 @@ function importedBinding({
       if (!isImportSpecifier(element,))
         continue;
       /**
-       * Local identifier introduced by named import.
+       Local identifier introduced by named import.
        */
       const elementName = element
         .name
@@ -154,11 +154,11 @@ function importedBinding({
       if (elementName !== localName)
         continue;
       /**
-       * Optional original package export before local rename.
+       Optional original package export before local rename.
        */
       const { propertyName, } = element;
       /**
-       * Original package export before optional local rename.
+       Original package export before optional local rename.
        */
       const importedName = propertyName === undefined
         ? elementName
@@ -173,25 +173,25 @@ function importedBinding({
 }
 
 /**
- * Resolves one named export through authored relative runtime forwarding.
- *
- * TypeScript normally substitutes adjacent `.d.mts` files while resolving `.mjs` imports.
- * This resolver follows only explicit runtime syntax and exact package-local paths.
- *
- * @param project - External implementation project containing shipped runtime files.
- *
- * @param sourceNode - Runtime module source.
- *
- * @param exportName - Public export requested by consumer.
- *
- * @param packageRoot - Exact installed package boundary.
- *
- * @returns forwarded runtime source and binding or unavailable sentinel.
- *
- * @example
- * ```ts
- * runtimeForwardedExport({ project, sourceNode, exportName: 'parse', packageRoot });
- * ```
+ Resolves one named export through authored relative runtime forwarding.
+ 
+ TypeScript normally substitutes adjacent `.d.mts` files while resolving `.mjs` imports.
+ This resolver follows only explicit runtime syntax and exact package-local paths.
+ 
+ @param project - External implementation project containing shipped runtime files.
+ 
+ @param sourceNode - Runtime module source.
+ 
+ @param exportName - Public export requested by consumer.
+ 
+ @param packageRoot - Exact installed package boundary.
+ 
+ @returns forwarded runtime source and binding or unavailable sentinel.
+ 
+ @example
+ ```ts
+ runtimeForwardedExport({ project, sourceNode, exportName: 'parse', packageRoot });
+ ```
  */
 export function runtimeForwardedExport({
   project,
@@ -210,7 +210,7 @@ export function runtimeForwardedExport({
     if (!isExportDeclaration(statement,))
       continue;
     /**
-     * Named exports that can identify one forwarded binding.
+     Named exports that can identify one forwarded binding.
      */
     const { exportClause, } = statement;
     if ((exportClause === undefined)
@@ -220,7 +220,7 @@ export function runtimeForwardedExport({
       if (!isIdentifier(element.name,))
         continue;
       /**
-       * Public identifier introduced by named export.
+       Public identifier introduced by named export.
        */
       const elementName = element
         .name
@@ -228,24 +228,24 @@ export function runtimeForwardedExport({
       if (elementName !== exportName)
         continue;
       /**
-       * Optional original identifier before export rename.
+       Optional original identifier before export rename.
        */
       const { propertyName, } = element;
       /**
-       * Original binding name before optional export rename.
+       Original binding name before optional export rename.
        */
       const localName = (propertyName !== undefined)
         && isIdentifier(propertyName,)
         ? propertyName.text
         : elementName;
       /**
-       * Optional authored source on direct re-export declaration.
+       Optional authored source on direct re-export declaration.
        */
       const { moduleSpecifier, } = statement;
       if ((moduleSpecifier !== undefined)
         && isStringLiteral(moduleSpecifier,)) {
         /**
-         * Runtime source selected by direct re-export.
+         Runtime source selected by direct re-export.
          */
         const forwardedSource = runtimeModule({
           project,
@@ -261,7 +261,7 @@ export function runtimeForwardedExport({
           };
       }
       /**
-       * Imported local binding selected for local export declaration.
+       Imported local binding selected for local export declaration.
        */
       const imported = importedBinding({
         source: sourceNode,
@@ -270,19 +270,19 @@ export function runtimeForwardedExport({
       if (imported === RUNTIME_FORWARD_UNAVAILABLE)
         return RUNTIME_FORWARD_UNAVAILABLE;
       /**
-       * Declaration carrying selected local import.
+       Declaration carrying selected local import.
        */
       const importedDeclaration = imported.declaration;
       if (!isImportDeclaration(importedDeclaration,))
         return RUNTIME_FORWARD_UNAVAILABLE;
       /**
-       * Authored source from selected import declaration.
+       Authored source from selected import declaration.
        */
       const importedSpecifier = importedDeclaration.moduleSpecifier;
       if (!isStringLiteral(importedSpecifier,))
         return RUNTIME_FORWARD_UNAVAILABLE;
       /**
-       * Runtime source selected through imported local binding.
+       Runtime source selected through imported local binding.
        */
       const importedSource = runtimeModule({
         project,

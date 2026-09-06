@@ -1,18 +1,18 @@
 /**
- * Smoke property proving the fuzz harness wiring end to end.
- *
- * This file imports `@monochromatic-dev/module-toml-edit` through its built
- * package entry point (not a sibling source import), so it verifies that the
- * shipped artifact, the `@monochromatic-dev/module-test/ts` harness, and
- * fast-check all run together under node in both bounded mode (normal unit
- * suite) and campaign mode (the `fuzz` task). The property itself is the
- * weakest useful one: a bare key assigned a non-negative integer round-trips
- * byte-identically through `parseTomlEdit` then `tomlStringify` in the default
- * splice mode.
- *
- * Run plan and seed policy: see `../fuzz-budget.ts`.
- *
- * @module
+ Smoke property proving the fuzz harness wiring end to end.
+ 
+ This file imports `@monochromatic-dev/module-toml-edit` through its built
+ package entry point (not a sibling source import), so it verifies that the
+ shipped artifact, the `@monochromatic-dev/module-test/ts` harness, and
+ fast-check all run together under node in both bounded mode (normal unit
+ suite) and campaign mode (the `fuzz` task). The property itself is the
+ weakest useful one: a bare key assigned a non-negative integer round-trips
+ byte-identically through `parseTomlEdit` then `tomlStringify` in the default
+ splice mode.
+ 
+ Run plan and seed policy: see `../fuzz-budget.ts`.
+ 
+ @module
  */
 
 import {
@@ -39,14 +39,14 @@ import { fuzzRunPlan, } from '../fuzz-budget.ts';
 //region Constants and arbitraries
 
 /**
- * Run plan resolved once for every property in this file.
+ Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
 
 /**
- * Arbitrary single TOML bare key (letters, digits, underscore, hyphen).
- * Constraining the unit to bare characters avoids a quoting branch in this
- * smoke layer; richer key shapes belong to the Phase 2 generators.
+ Arbitrary single TOML bare key (letters, digits, underscore, hyphen).
+ Constraining the unit to bare characters avoids a quoting branch in this
+ smoke layer; richer key shapes belong to the Phase 2 generators.
  */
 const bareKeyArbitrary = string({
   minLength: 1,
@@ -82,11 +82,11 @@ await describe({
               value,
             },) {
               /**
-               * Source document built from the generated key and integer.
+               Source document built from the generated key and integer.
                */
               const source = `${key} = ${String(value,)}\n`;
               /**
-               * Splice-mode re-emission of the parsed document.
+               Splice-mode re-emission of the parsed document.
                */
               const text = tomlStringify({ edit: parseTomlEdit({ source, },), },);
               expect(text,).toBe(source,);

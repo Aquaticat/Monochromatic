@@ -19,22 +19,22 @@ import {
 } from '../dist/final/node/testing.mjs';
 
 /**
- * Run length proving parser uses bounded-stack iteration.
- *
- * @example
- * ```ts
- * 'A'.repeat(LONG_RUN);
- * ```
+ Run length proving parser uses bounded-stack iteration.
+ 
+ @example
+ ```ts
+ 'A'.repeat(LONG_RUN);
+ ```
  */
 const LONG_RUN = 50_000;
 
 /**
- * Unsafe payload examples rejected by identity grammar.
- *
- * @example
- * ```ts
- * UNSAFE_PAYLOADS.includes('a:b');
- * ```
+ Unsafe payload examples rejected by identity grammar.
+ 
+ @example
+ ```ts
+ UNSAFE_PAYLOADS.includes('a:b');
+ ```
  */
 const UNSAFE_PAYLOADS: readonly string[] = [
   '',
@@ -48,12 +48,12 @@ const UNSAFE_PAYLOADS: readonly string[] = [
 ];
 
 /**
- * ASCII serial terminators and expected prefix.
- *
- * @example
- * ```ts
- * SERIAL_TERMINATORS[0];
- * ```
+ ASCII serial terminators and expected prefix.
+ 
+ @example
+ ```ts
+ SERIAL_TERMINATORS[0];
+ ```
  */
 const SERIAL_TERMINATORS: readonly string[] = [
   ' ',
@@ -234,7 +234,7 @@ await describe({
           name: 'handles long token and whitespace without recursion',
           fn: async () => {
             /**
-             * Long serial payload.
+             Long serial payload.
              */
             const token = 'A'.repeat(LONG_RUN,);
             expect(parseVolumeSerial(`Serial Number is ${token}`,),).toBe(token,);

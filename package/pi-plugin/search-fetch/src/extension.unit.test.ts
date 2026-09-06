@@ -1,7 +1,7 @@
 /**
- * Unit tests for Pi Search Fetch extension registration.
- *
- * @module
+ Unit tests for Pi Search Fetch extension registration.
+ 
+ @module
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
@@ -21,7 +21,7 @@ import {
 //region Fixtures
 
 /**
- * Config fixture.
+ Config fixture.
  */
 const CONFIG: LinkupConfig = {
   blocklist: [],
@@ -32,7 +32,7 @@ const CONFIG: LinkupConfig = {
 };
 
 /**
- * Client fixture unused during registration.
+ Client fixture unused during registration.
  */
 const CLIENT: LinkupToolClient = {
   async search() {
@@ -58,7 +58,7 @@ await describe({
       name: 'registers exactly search and fetch tools',
       fn: async () => {
         /**
-         * Local value for fakePi.
+         Local value for fakePi.
          */
         const fakePi = fakePiApi();
 
@@ -81,31 +81,31 @@ await describe({
 //region Helpers
 
 /**
- * Fake Pi API harness.
+ Fake Pi API harness.
  */
 type FakePi = {
   /**
-   * Fake Pi API.
+   Fake Pi API.
    */
   readonly api: ExtensionAPI;
   /**
-   * Registered tool names.
+   Registered tool names.
    */
   readonly tools: string[];
 };
 
 /**
- * Create fake Pi API that records tools.
- *
- * @returns fake Pi API harness
+ Create fake Pi API that records tools.
+ 
+ @returns fake Pi API harness
  */
 function fakePiApi(): FakePi {
   /**
-   * Local value for tools.
+   Local value for tools.
    */
   const tools: string[] = [];
   /**
-   * Local value for api.
+   Local value for api.
    */
   const api = {
     registerTool(tool: { readonly name: string; },) {

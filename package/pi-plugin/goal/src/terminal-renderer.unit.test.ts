@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for human-only goal outcome rendering.
- *
- * @module
+ Built-artifact tests for human-only goal outcome rendering.
+ 
+ @module
  */
 
 import type {
@@ -21,9 +21,9 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Capture registered entry renderers by custom type.
- *
- * @returns fake API and captured renderers
+ Capture registered entry renderers by custom type.
+ 
+ @returns fake API and captured renderers
  */
 function rendererHarness(): {
   readonly api: ExtensionAPI;
@@ -44,9 +44,9 @@ function rendererHarness(): {
 }
 
 /**
- * Build color-neutral theme fixture.
- *
- * @returns theme preserving plain text
+ Build color-neutral theme fixture.
+ 
+ @returns theme preserving plain text
  */
 function plainTheme(): Theme {
   return {

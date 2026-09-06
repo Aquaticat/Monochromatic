@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * CLI entry point for vmsync.
- * Parses argv, dispatches to the appropriate command handler.
- *
- * @module
+ CLI entry point for vmsync.
+ Parses argv, dispatches to the appropriate command handler.
+ 
+ @module
  */
 
 // TODO: deprecate Optique
@@ -19,43 +19,43 @@ import { printVmList, } from './list.ts';
 import { showStatus, } from './status.ts';
 import { syncVm, } from './sync.ts';
 
-export {};
+
 
 //region Verbose flag: stripped before parsing; logger detects it from raw process.argv at import time
 
 /**
- * Flags consumed by infrastructure (logger) rather than the argument parser.
- * Stripped from tokens before `--` so that guest commands are not affected.
- *
- * @example
- * ```ts
- * INFRA_FLAGS.has('--verbose'); // true
- * ```
+ Flags consumed by infrastructure (logger) rather than the argument parser.
+ Stripped from tokens before `--` so that guest commands are not affected.
+ 
+ @example
+ ```ts
+ INFRA_FLAGS.has('--verbose'); // true
+ ```
  */
 const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose',],);
 
 /**
- * Raw args after the script name.
+ Raw args after the script name.
  */
 const rawArgs = process.argv
   .slice(2,);
 
 /**
- * Index of the `--` separator, or end-of-args when absent.
- * Infrastructure flags are only stripped before this boundary.
+ Index of the `--` separator, or end-of-args when absent.
+ Infrastructure flags are only stripped before this boundary.
  */
 const doubleDashIndex = rawArgs.indexOf('--',);
 
 /**
- * Boundary past which tokens must not be touched.
+ Boundary past which tokens must not be touched.
  */
 const boundary = (doubleDashIndex === (-1)) ? rawArgs.length : doubleDashIndex;
 
 /**
- * TODO: deprecate Optique
- * Process argv with infrastructure flags removed only from the vmsync-owned prefix.
- * The logger caches its own `process.argv` check at module load time
- * (before this runs), so stripping here only affects the \@optique parser.
+ TODO: deprecate Optique
+ Process argv with infrastructure flags removed only from the vmsync-owned prefix.
+ The logger caches its own `process.argv` check at module load time
+ (before this runs), so stripping here only affects the \@optique parser.
  */
 const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
   arg,
@@ -69,8 +69,8 @@ const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
 //region Dispatch: parse argv and route to the appropriate handler
 
 /**
- * TODO: deprecate Optique
- * Parsed CLI result from process.argv.
+ TODO: deprecate Optique
+ Parsed CLI result from process.argv.
  */
 const args = runSync(
   parser,

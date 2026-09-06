@@ -19,7 +19,7 @@ await describe({
       name: 'redacts security content from non-interactive preview',
       fn: async () => {
         /**
-         * Mixed input containing ordinary and secret security content.
+         Mixed input containing ordinary and secret security content.
          */
         const input: NormalizedInput = {
           inputKind: 'comments',
@@ -56,7 +56,7 @@ await describe({
         };
 
         /**
-         * Internal complete publication plan.
+         Internal complete publication plan.
          */
         const plan = buildPublicationPlan({
           input,
@@ -64,7 +64,7 @@ await describe({
           needsTriageLabel: true,
         },);
         /**
-         * Machine-readable preview safe for standard output.
+         Machine-readable preview safe for standard output.
          */
         const preview = buildNonInteractivePreview(plan,);
 
@@ -115,7 +115,7 @@ await describe({
       name: 'enforces non-interactive security authority atomically',
       fn: async () => {
         /**
-         * Complete plan with one ordinary and one security Issue.
+         Complete plan with one ordinary and one security Issue.
          */
         const plan = buildPublicationPlan({
           input: {
@@ -148,7 +148,7 @@ await describe({
         },);
 
         /**
-         * Captured bare-apply authority failure.
+         Captured bare-apply authority failure.
          */
         let caught: unknown;
         try {
@@ -161,7 +161,7 @@ await describe({
         expect((caught as Error).message,).not.toContain('Private security content',);
 
         /**
-         * Non-security-only apply selection.
+         Non-security-only apply selection.
          */
         const ordinary = selectApplyPlan({
           plan,
@@ -173,7 +173,7 @@ await describe({
         ],);
 
         /**
-         * Explicit all-findings apply selection.
+         Explicit all-findings apply selection.
          */
         const all = selectApplyPlan({ plan, authority: 'all', },);
         expect(all.issues,).toHaveLength(2,);
@@ -184,7 +184,7 @@ await describe({
       name: 'retains ordinary classification markers in preview',
       fn: async () => {
         /**
-         * Other and missing-category findings requiring visible markers.
+         Other and missing-category findings requiring visible markers.
          */
         const input: NormalizedInput = {
           inputKind: 'comments',
@@ -211,7 +211,7 @@ await describe({
           ],
         };
         /**
-         * Safe preview retaining explicit ordinary markers.
+         Safe preview retaining explicit ordinary markers.
          */
         const preview = buildNonInteractivePreview(buildPublicationPlan({
           input,

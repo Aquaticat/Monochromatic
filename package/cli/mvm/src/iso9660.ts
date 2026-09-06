@@ -1,7 +1,7 @@
 /**
- * Minimal ISO9660 image generator for cloud-init NoCloud seed ISOs.
- * Produces a valid ISO containing small text files with a specified volume label.
- * Avoids any external dependency on `genisoimage` or `mkisofs`.
+ Minimal ISO9660 image generator for cloud-init NoCloud seed ISOs.
+ Produces a valid ISO containing small text files with a specified volume label.
+ Avoids any external dependency on `genisoimage` or `mkisofs`.
  */
 
 import * as L from './iso9660-layout.ts';
@@ -9,38 +9,38 @@ import * as L from './iso9660-layout.ts';
 //region Directory record writer
 
 /**
- * Writes a single ISO9660 directory entry at the given buffer offset.
- *
- * @param buf - Target byte array
- *
- * @param view - DataView for target buffer
- *
- * @param offset - Byte offset within target buffer
- *
- * @param isDir - Directory flag (sets 0x02 in flags byte)
- *
- * @param name - File identifier (or `\u0000` for self, `\u0001` for parent)
- *
- * @param sector - Starting sector (extent location) for this entry
- *
- * @param size - Data length in bytes for this entry
- *
- * @returns Number of bytes written (record length)
- *
- * @example
- * ```ts
- * const buf = new Uint8Array(L.SECTOR_SIZE);
- * const view = new DataView(buf.buffer);
- * const written = writeDirEntry({
- *   buf,
- *   view,
- *   offset: 0,
- *   isDir: true,
- *   name: '\u0000',
- *   sector: L.ROOT_DIRECTORY_SECTOR,
- *   size: L.SECTOR_SIZE,
- * });
- * ```
+ Writes a single ISO9660 directory entry at the given buffer offset.
+ 
+ @param buf - Target byte array
+ 
+ @param view - DataView for target buffer
+ 
+ @param offset - Byte offset within target buffer
+ 
+ @param isDir - Directory flag (sets 0x02 in flags byte)
+ 
+ @param name - File identifier (or `\u0000` for self, `\u0001` for parent)
+ 
+ @param sector - Starting sector (extent location) for this entry
+ 
+ @param size - Data length in bytes for this entry
+ 
+ @returns Number of bytes written (record length)
+ 
+ @example
+ ```ts
+ const buf = new Uint8Array(L.SECTOR_SIZE);
+ const view = new DataView(buf.buffer);
+ const written = writeDirEntry({
+   buf,
+   view,
+   offset: 0,
+   isDir: true,
+   name: '\u0000',
+   sector: L.ROOT_DIRECTORY_SECTOR,
+   size: L.SECTOR_SIZE,
+ });
+ ```
  */
 function writeDirEntry({
   buf,
@@ -60,11 +60,11 @@ function writeDirEntry({
   readonly view: DataView;
 },): number {
   /**
-   * ISO9660 file identifier length; the special "self" and "parent" entries collapse to a single byte.
+   ISO9660 file identifier length; the special "self" and "parent" entries collapse to a single byte.
    */
   const nameLen = ((name === '\u0000') || (name === '\u0001')) ? 1 : name.length;
   /**
-   * Record length must be even per ISO9660.
+   Record length must be even per ISO9660.
    */
   const recordLen = L.DIR_FIXED_HEADER_SIZE
     + nameLen
@@ -121,31 +121,31 @@ function writeDirEntry({
 //endregion
 
 /**
- * Creates a minimal ISO9660 image containing the given files.
- *
- * Layout: system area (sectors 0-15), PVD (16), VDST (17),
- * path table L (18), path table M (19), root directory (20), file data (21+).
- *
- * File identifiers use lowercase names with ";1" version suffix.
- * This is technically non-Level-1-compliant but the Linux kernel reads it correctly,
- * which is all cloud-init needs.
- *
- * @param files - Array of files to include, each with name and data
- *
- * @param volumeId - Volume identifier string for the ISO
- *
- * @returns Complete ISO9660 image as a byte array
- *
- * @example
- * ```ts
- * const iso = createIso({
- *   volumeId: 'cidata',
- *   files: [
- *     { name: 'user-data', data: new TextEncoder().encode('#cloud-config\n') },
- *     { name: 'meta-data', data: new TextEncoder().encode('instance-id: test\n') },
- *   ],
- * });
- * ```
+ Creates a minimal ISO9660 image containing the given files.
+ 
+ Layout: system area (sectors 0-15), PVD (16), VDST (17),
+ path table L (18), path table M (19), root directory (20), file data (21+).
+ 
+ File identifiers use lowercase names with ";1" version suffix.
+ This is technically non-Level-1-compliant but the Linux kernel reads it correctly,
+ which is all cloud-init needs.
+ 
+ @param files - Array of files to include, each with name and data
+ 
+ @param volumeId - Volume identifier string for the ISO
+ 
+ @returns Complete ISO9660 image as a byte array
+ 
+ @example
+ ```ts
+ const iso = createIso({
+   volumeId: 'cidata',
+   files: [
+     { name: 'user-data', data: new TextEncoder().encode('#cloud-config\n') },
+     { name: 'meta-data', data: new TextEncoder().encode('instance-id: test\n') },
+   ],
+ });
+ ```
  */
 export function createIso({
   files,
@@ -158,15 +158,15 @@ export function createIso({
   readonly volumeId: string;
 },): Uint8Array {
   /**
-   * Cursor advancing across file-data sectors; assigned to each entry then incremented.
+   Cursor advancing across file-data sectors; assigned to each entry then incremented.
    */
   let nextSector = L.FIRST_FILE_DATA_SECTOR;
   /**
-   * Per-file layout records carrying the assigned starting sector; iterated below to emit directory entries and payloads.
+   Per-file layout records carrying the assigned starting sector; iterated below to emit directory entries and payloads.
    */
   const entries = files.map(function mapFileEntry(f,) {
     /**
-     * Sector this file occupies; reserved before `nextSector` is bumped past the file.
+     Sector this file occupies; reserved before `nextSector` is bumped past the file.
      */
     const sector = nextSector;
     nextSector += Math.ceil(f.data
@@ -182,26 +182,26 @@ export function createIso({
   },);
 
   /**
-   * Total sectors required for system area, descriptors, root dir, and all file data; sizes the output buffer.
+   Total sectors required for system area, descriptors, root dir, and all file data; sizes the output buffer.
    */
   const totalSectors = nextSector;
   /**
-   * Output ISO image buffer; zero-filled with `totalSectors` worth of bytes.
+   Output ISO image buffer; zero-filled with `totalSectors` worth of bytes.
    */
   const iso = new Uint8Array(totalSectors * L
     .SECTOR_SIZE,);
   /**
-   * Typed DataView over `iso` for endian-aware writes of multi-byte integers.
+   Typed DataView over `iso` for endian-aware writes of multi-byte integers.
    */
   const view = new DataView(iso.buffer,);
   /**
-   * Root directory occupies exactly one sector; large enough for the entries this tool emits.
+   Root directory occupies exactly one sector; large enough for the entries this tool emits.
    */
   const rootDirSize = L.SECTOR_SIZE;
 
   //region Primary Volume Descriptor (sector 16)
   /**
-   * Byte offset of the PVD inside `iso`; PVD lives at sector 16 by spec.
+   Byte offset of the PVD inside `iso`; PVD lives at sector 16 by spec.
    */
   const pvd = L.PVD_SECTOR
     * L
@@ -307,7 +307,7 @@ export function createIso({
 
   //region Volume Descriptor Set Terminator (sector 17)
   /**
-   * Byte offset of the VDST inside `iso`; VDST follows the PVD at sector 17 by spec.
+   Byte offset of the VDST inside `iso`; VDST follows the PVD at sector 17 by spec.
    */
   const vdst = L.VDST_SECTOR
     * L
@@ -335,7 +335,7 @@ export function createIso({
     ],
   ] as const) {
     /**
-     * Byte offset of the current path table inside `iso`; emitted once in LE then once in BE.
+     Byte offset of the current path table inside `iso`; emitted once in LE then once in BE.
      */
     const pt = ptSector * L
       .SECTOR_SIZE;
@@ -356,7 +356,7 @@ export function createIso({
 
   //region Root directory (sector 20)
   /**
-   * Write cursor inside the root directory sector; bumped by each emitted dir entry.
+   Write cursor inside the root directory sector; bumped by each emitted dir entry.
    */
   let pos = L.ROOT_DIRECTORY_SECTOR
     * L

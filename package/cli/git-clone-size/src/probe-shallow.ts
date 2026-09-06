@@ -10,9 +10,9 @@ import { objectsDirSize, } from './objects-size.ts';
 import { spawnResult, } from './spawn.ts';
 
 /**
- * Outcome of the depth-1 shallow clone probe. `shallowBytes` is present only
- * when `ok`; a failed clone or an unreadable object store leaves it absent
- * rather than recording a fabricated zero.
+ Outcome of the depth-1 shallow clone probe. `shallowBytes` is present only
+ when `ok`; a failed clone or an unreadable object store leaves it absent
+ rather than recording a fabricated zero.
  */
 export type ShallowResult = {
   readonly shallowBytes?: number;
@@ -21,23 +21,23 @@ export type ShallowResult = {
 };
 
 /**
- * Performs a depth-1 bare clone of the default branch into `dest` and measures
- * its object store, yielding the compressed tip size `C1`. `--depth 1` implies
- * `--single-branch`, matching the default-metric shallow side. The clone path is
- * returned so the deepen probe can extend the same store without re-cloning.
- *
- * @param url - remote clone URL
- *
- * @param dest - temp directory the bare clone is created inside
- *
- * @param signal - abort signal enforcing the wall-clock budget
- *
- * @returns shallow object-store bytes, the clone path, and an `ok` flag
- *
- * @example
- * ```ts
- * const shallow = await cloneShallow({ url, dest: tmp.path });
- * ```
+ Performs a depth-1 bare clone of the default branch into `dest` and measures
+ its object store, yielding the compressed tip size `C1`. `--depth 1` implies
+ `--single-branch`, matching the default-metric shallow side. The clone path is
+ returned so the deepen probe can extend the same store without re-cloning.
+ 
+ @param url - remote clone URL
+ 
+ @param dest - temp directory the bare clone is created inside
+ 
+ @param signal - abort signal enforcing the wall-clock budget
+ 
+ @returns shallow object-store bytes, the clone path, and an `ok` flag
+ 
+ @example
+ ```ts
+ const shallow = await cloneShallow({ url, dest: tmp.path });
+ ```
  */
 export async function cloneShallow(
   {
@@ -51,7 +51,7 @@ export async function cloneShallow(
   },
 ): Promise<ShallowResult> {
   /**
-   * Tagged logger naming the shallow probe.
+   Tagged logger naming the shallow probe.
    */
   const rl = tagged({
     tag: cloneShallow.name,
@@ -59,7 +59,7 @@ export async function cloneShallow(
   },);
 
   /**
-   * Bare clone target inside the disposable temp directory.
+   Bare clone target inside the disposable temp directory.
    */
   const clonePath = join(
     dest,
@@ -67,7 +67,7 @@ export async function cloneShallow(
   );
 
   /**
-   * Exit code and stderr from the depth-1 bare clone.
+   Exit code and stderr from the depth-1 bare clone.
    */
   const {
     exitCode,
@@ -93,7 +93,7 @@ export async function cloneShallow(
   }
 
   /**
-   * Compressed tip object-store size after the depth-1 clone.
+   Compressed tip object-store size after the depth-1 clone.
    */
   const shallowBytes = await objectsDirSize({ repoPath: clonePath, },);
   if (!isMeasured(shallowBytes,)) {

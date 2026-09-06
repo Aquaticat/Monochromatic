@@ -1,5 +1,5 @@
 /**
- * Builds the "Suggested" section DOM for the inbox page.
+ Builds the "Suggested" section DOM for the inbox page.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
@@ -8,22 +8,22 @@ import {
 } from './inbox-builders.ts';
 
 /**
- * Creates the suggested-tasks section with location/focus controls and a
- * {@link buildTaskList} task list.
- *
- * @param pageData - Deserialized inbox page data
- *
- * @param onOpen - Callback to navigate to task detail
- *
- * @param onComplete - Callback to complete a task
- *
- * @returns Section heading element containing the suggested tasks UI
- *
- * @example
- * ```ts
- * const section = buildSuggestedSection({ pageData, onOpen: handleOpen, onComplete: handleComplete });
- * app.prepend(section);
- * ```
+ Creates the suggested-tasks section with location/focus controls and a
+ {@link buildTaskList} task list.
+ 
+ @param pageData - Deserialized inbox page data
+ 
+ @param onOpen - Callback to navigate to task detail
+ 
+ @param onComplete - Callback to complete a task
+ 
+ @returns Section heading element containing the suggested tasks UI
+ 
+ @example
+ ```ts
+ const section = buildSuggestedSection({ pageData, onOpen: handleOpen, onComplete: handleComplete });
+ app.prepend(section);
+ ```
  */
 export function buildSuggestedSection({
   pageData,
@@ -35,7 +35,7 @@ export function buildSuggestedSection({
   readonly onComplete: (taskId: string,) => Promise<void>;
 },): HTMLElement {
   /**
-   * Collapsible section heading for the suggested tasks block.
+   Collapsible section heading for the suggested tasks block.
    */
   const suggestedSection = h({
     tag: 'section-heading',
@@ -46,7 +46,7 @@ export function buildSuggestedSection({
   },);
 
   /**
-   * Content container for the suggested tasks section.
+   Content container for the suggested tasks section.
    */
   const suggestedContent = h({
     tag: 'div',

@@ -27,8 +27,8 @@ import {
 } from './session-start-housekeeping.ts';
 
 /**
- * Temporary workspace handle that removes itself at the end of an `await using`
- * scope.
+ Temporary workspace handle that removes itself at the end of an `await using`
+ scope.
  */
 type TempWorkspace = {
   /** Absolute path to the temporary workspace root. */
@@ -37,9 +37,9 @@ type TempWorkspace = {
 };
 
 /**
- * Creates an isolated temporary workspace for a housekeeping test.
- *
- * @returns disposable temporary workspace handle
+ Creates an isolated temporary workspace for a housekeeping test.
+ 
+ @returns disposable temporary workspace handle
  */
 async function makeWorkspace(): Promise<TempWorkspace> {
   const path = await mkdtemp(join(tmpdir(), 'session-start-housekeeping-',),);
@@ -59,11 +59,11 @@ async function makeWorkspace(): Promise<TempWorkspace> {
 }
 
 /**
- * Returns whether a path currently exists.
- *
- * @param path - absolute path to check
- *
- * @returns true when `access` succeeds, false when it fails
+ Returns whether a path currently exists.
+ 
+ @param path - absolute path to check
+ 
+ @returns true when `access` succeeds, false when it fails
  */
 async function pathExists(path: string,): Promise<boolean> {
   try {

@@ -1,7 +1,7 @@
 /**
- * Verified semantic type suggestions for readonly parameters.
- *
- * @module
+ Verified semantic type suggestions for readonly parameters.
+ 
+ @module
  */
 
 import type {
@@ -18,13 +18,13 @@ import type { ReadonlySuggestion, } from './readonly-suggestion.ts';
 import { typeFestResolvesFrom, } from './type-fest-reachability.ts';
 
 /**
- * Converts TypeScript offset to Oxlint offset after BOM stripping.
- *
- * @param offset - TypeScript source offset.
- *
- * @param hasBOM - Whether Oxlint stripped leading BOM.
- *
- * @returns Oxlint source offset.
+ Converts TypeScript offset to Oxlint offset after BOM stripping.
+ 
+ @param offset - TypeScript source offset.
+ 
+ @param hasBOM - Whether Oxlint stripped leading BOM.
+ 
+ @returns Oxlint source offset.
  */
 function oxlintOffset({
   offset,
@@ -40,20 +40,20 @@ function oxlintOffset({
 }
 
 /**
- * Builds verified deep-readonly array type suggestion.
- *
- * @param context - Rule context providing fix range mapping.
- *
- * @param parameter - TypeScript parameter with optional array type annotation.
- *
- * @param project - TypeScript project classifying array element type.
- *
- * @returns suggestion list, empty when exact rewrite is unavailable.
- *
- * @example
- * ```ts
- * readonlyArraySuggestions({ context, parameter, project });
- * ```
+ Builds verified deep-readonly array type suggestion.
+ 
+ @param context - Rule context providing fix range mapping.
+ 
+ @param parameter - TypeScript parameter with optional array type annotation.
+ 
+ @param project - TypeScript project classifying array element type.
+ 
+ @returns suggestion list, empty when exact rewrite is unavailable.
+ 
+ @example
+ ```ts
+ readonlyArraySuggestions({ context, parameter, project });
+ ```
  */
 function readonlyArraySuggestions({
   context,
@@ -67,7 +67,7 @@ function readonlyArraySuggestions({
   if ((parameter.type === undefined) || (!isArrayTypeNode(parameter.type,)))
     return [];
   /**
-   * Semantic element type used to prove deep readonly result.
+   Semantic element type used to prove deep readonly result.
    */
   const elementType = project.checker
     .getTypeFromTypeNode(parameter.type
@@ -75,7 +75,7 @@ function readonlyArraySuggestions({
   if (elementType === undefined)
     return [];
   /**
-   * Element classification proving readonly prefix completes deep contract.
+   Element classification proving readonly prefix completes deep contract.
    */
   const elementClassification = classifyReadonlyType({
     checker: project.checker,
@@ -85,11 +85,11 @@ function readonlyArraySuggestions({
   if (elementClassification.kind !== 'deep-readonly')
     return [];
   /**
-   * Source file owning parameter type.
+   Source file owning parameter type.
    */
   const sourceFile = parameter.getSourceFile();
   /**
-   * Oxlint replacement range spanning authored array type.
+   Oxlint replacement range spanning authored array type.
    */
   const range: [
     number,
@@ -109,12 +109,12 @@ function readonlyArraySuggestions({
     },),
   ];
   /**
-   * Exact authored type with readonly array prefix.
+   Exact authored type with readonly array prefix.
    */
   const replacement = `readonly ${parameter.type
     .getText(sourceFile,)}`;
   /**
-   * Exact one-line transformation shared by diagnostic and suggestion UI.
+   Exact one-line transformation shared by diagnostic and suggestion UI.
    */
   const diagnosticGuidance = 'Prefix the authored array type with `readonly`.';
   return [
@@ -132,15 +132,15 @@ function readonlyArraySuggestions({
 }
 
 /**
- * Builds type-fest ReadonlyDeep suggestion for mutable structural data.
- *
- * @param context - Rule context providing fix range mapping.
- *
- * @param parameter - TypeScript parameter with mutable type annotation.
- *
- * @param project - TypeScript project proving structural data classification.
- *
- * @returns suggestion list, empty when verified wrapper is unavailable.
+ Builds type-fest ReadonlyDeep suggestion for mutable structural data.
+ 
+ @param context - Rule context providing fix range mapping.
+ 
+ @param parameter - TypeScript parameter with mutable type annotation.
+ 
+ @param project - TypeScript project proving structural data classification.
+ 
+ @returns suggestion list, empty when verified wrapper is unavailable.
  */
 function readonlyDeepSuggestions({
   context,
@@ -163,14 +163,14 @@ function readonlyDeepSuggestions({
   },))
     return [];
   /**
-   * Semantic parameter type whose complete graph must be mutable data rather than capability.
+   Semantic parameter type whose complete graph must be mutable data rather than capability.
    */
   const parameterType = project.checker
     .getTypeFromTypeNode(parameter.type,);
   if (parameterType === undefined)
     return [];
   /**
-   * Mutable data classification with no opaque capability branch.
+   Mutable data classification with no opaque capability branch.
    */
   const classification = classifyReadonlyType({
     checker: project.checker,
@@ -180,31 +180,31 @@ function readonlyDeepSuggestions({
   if (classification.kind !== 'mutable')
     return [];
   /**
-   * Source file owning authored type text.
+   Source file owning authored type text.
    */
   const sourceFile = parameter.getSourceFile();
   /**
-   * Authored type retained inside ReadonlyDeep projection.
+   Authored type retained inside ReadonlyDeep projection.
    */
   const authoredType = parameter.type
     .getText(sourceFile,);
   /**
-   * Exact projection naming the helper through an inline import type.
-   *
-   * Written this way because the suggestion used to depend on an import statement it could
-   * not keep alive. It fired only for a file already importing `ReadonlyDeep` and emitted
-   * that local name, and until the suggestion is applied the import is unused, so the
-   * unused-import fix removes it in the same pass and wins. Measured end to end: a file
-   * that type-checked clean before `oxlint --fix --fix-suggestions` failed afterwards with
-   * `TS2552: Cannot find name 'ReadonlyDeep'`.
-   *
-   * An inline import type needs no statement, so nothing can delete what it depends on.
-   * The authored alias is lost with the gate, which is the sound trade: an alias exists to
-   * name an import statement, and there is no longer one to name.
+   Exact projection naming the helper through an inline import type.
+   
+   Written this way because the suggestion used to depend on an import statement it could
+   not keep alive. It fired only for a file already importing `ReadonlyDeep` and emitted
+   that local name, and until the suggestion is applied the import is unused, so the
+   unused-import fix removes it in the same pass and wins. Measured end to end: a file
+   that type-checked clean before `oxlint --fix --fix-suggestions` failed afterwards with
+   `TS2552: Cannot find name 'ReadonlyDeep'`.
+   
+   An inline import type needs no statement, so nothing can delete what it depends on.
+   The authored alias is lost with the gate, which is the sound trade: an alias exists to
+   name an import statement, and there is no longer one to name.
    */
   const replacement = `import('type-fest').ReadonlyDeep<${authoredType}>`;
   /**
-   * Oxlint replacement range spanning authored parameter type.
+   Oxlint replacement range spanning authored parameter type.
    */
   const range: [
     number,
@@ -224,7 +224,7 @@ function readonlyDeepSuggestions({
     },),
   ];
   /**
-   * Exact one-line transformation shared by diagnostic and suggestion UI.
+   Exact one-line transformation shared by diagnostic and suggestion UI.
    */
   const diagnosticGuidance = 'Wrap the complete authored parameter type with `import(\'type-fest\').ReadonlyDeep<...>`.';
   return [
@@ -242,20 +242,20 @@ function readonlyDeepSuggestions({
 }
 
 /**
- * Builds verified readonly type suggestions.
- *
- * @param context - Rule context providing fix range mapping.
- *
- * @param parameter - TypeScript parameter requiring readonly projection.
- *
- * @param project - TypeScript project proving suggested contract.
- *
- * @returns all verified suggestions for parameter type.
- *
- * @example
- * ```ts
- * readonlyParameterSuggestions({ context, parameter, project });
- * ```
+ Builds verified readonly type suggestions.
+ 
+ @param context - Rule context providing fix range mapping.
+ 
+ @param parameter - TypeScript parameter requiring readonly projection.
+ 
+ @param project - TypeScript project proving suggested contract.
+ 
+ @returns all verified suggestions for parameter type.
+ 
+ @example
+ ```ts
+ readonlyParameterSuggestions({ context, parameter, project });
+ ```
  */
 export function readonlyParameterSuggestions({
   context,
@@ -267,7 +267,7 @@ export function readonlyParameterSuggestions({
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
 }>,): ReadonlySuggestion[] {
   /**
-   * Narrow standard-library projections preferred when they prove complete deep readonly.
+   Narrow standard-library projections preferred when they prove complete deep readonly.
    */
   const collectionSuggestions = [
     ...readonlyArraySuggestions({

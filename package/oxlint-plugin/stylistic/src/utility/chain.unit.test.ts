@@ -13,11 +13,11 @@ import {
 const attached: ChainSegment = { isBreak: false, };
 
 /**
- * Builds a break segment at a byte offset for fixture segment streams.
- *
- * @param offset - byte offset where the break's continuation line begins
- *
- * @returns break segment carrying that offset
+ Builds a break segment at a byte offset for fixture segment streams.
+ 
+ @param offset - byte offset where the break's continuation line begins
+ 
+ @returns break segment carrying that offset
  */
 function breakAt(offset: number,): ChainSegment {
   return {

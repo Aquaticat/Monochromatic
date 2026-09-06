@@ -1,5 +1,5 @@
 /**
- * Wrapper policy control parsing and escape compatibility. @module
+ Wrapper policy control parsing and escape compatibility. @module
  */
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { consumesNextValue, } from '../parser/branch-create-dispatch.ts';
@@ -7,11 +7,11 @@ import type { BranchCreationSubcommand, } from '../parser/branch-create-types.ts
 import type { ParsedPolicyControls, } from './types.ts';
 
 /**
- * Wrapper-only continue flag.
+ Wrapper-only continue flag.
  */
 const KEEP_GOING_FLAG = '--cli-git-keep-going';
 /**
- * Value-taking options whose following token is never wrapper control syntax.
+ Value-taking options whose following token is never wrapper control syntax.
  */
 const VALUE_TAKING_OPTIONS: ReadonlySet<string> = new Set([
   '-c',
@@ -32,7 +32,7 @@ const VALUE_TAKING_OPTIONS: ReadonlySet<string> = new Set([
   '--pathspec-from-file',
 ]);
 /**
- * Legacy policy escape aliases preserved during migration.
+ Legacy policy escape aliases preserved during migration.
  */
 const POLICY_ESCAPE_ALIASES: ReadonlyMap<string, string> = new Map([
   [
@@ -50,32 +50,32 @@ const POLICY_ESCAPE_ALIASES: ReadonlyMap<string, string> = new Map([
 ]);
 
 /**
- * Registered policy name projected without callback-bearing declaration.
+ Registered policy name projected without callback-bearing declaration.
  */
 type RegisteredPolicyName = Readonly<{
   /**
-   * Effective policy ID.
+   Effective policy ID.
    */
   name: string;
 }>;
 
 /**
- * Returns escape flag for policy ID.
- *
- * @param policyId - policy receiving one-invocation bypass
- *
- * @returns exact wrapper-only flag
+ Returns escape flag for policy ID.
+ 
+ @param policyId - policy receiving one-invocation bypass
+ 
+ @returns exact wrapper-only flag
  */
 function escapeFlag(policyId: string,): string {
   return `--no-enforce-${policyId}`;
 }
 
 /**
- * Narrows branch-creation subcommands for value parsing.
- *
- * @param value - located subcommand
- *
- * @returns whether branch parser owns option vocabulary
+ Narrows branch-creation subcommands for value parsing.
+ 
+ @param value - located subcommand
+ 
+ @returns whether branch parser owns option vocabulary
  */
 function isBranchSubcommand(value: string,): value is BranchCreationSubcommand {
   return (value === 'branch') || (value === 'checkout')
@@ -83,15 +83,15 @@ function isBranchSubcommand(value: string,): value is BranchCreationSubcommand {
 }
 
 /**
- * Reports whether option consumes following wrapper token as value.
- *
- * @param arg - current option token
- *
- * @param subcommand - located Git subcommand
- *
- * @param afterSubcommand - whether token belongs to command region
- *
- * @returns whether next token cannot be wrapper control
+ Reports whether option consumes following wrapper token as value.
+ 
+ @param arg - current option token
+ 
+ @param subcommand - located Git subcommand
+ 
+ @param afterSubcommand - whether token belongs to command region
+ 
+ @returns whether next token cannot be wrapper control
  */
 function optionConsumesNext({
   arg,
@@ -116,18 +116,18 @@ function optionConsumesNext({
 }
 
 /**
- * Parses wrapper controls without treating option values or pathspecs as flags.
- *
- * @param args - exact wrapper arguments
- *
- * @param registeredPolicies - effective registry names
- *
- * @returns controls plus forwardable argument sequence
- *
- * @example
- * ```ts
- * parsePolicyControls({ args: ['--no-enforce-require-root', 'status'], registeredPolicies });
- * ```
+ Parses wrapper controls without treating option values or pathspecs as flags.
+ 
+ @param args - exact wrapper arguments
+ 
+ @param registeredPolicies - effective registry names
+ 
+ @returns controls plus forwardable argument sequence
+ 
+ @example
+ ```ts
+ parsePolicyControls({ args: ['--no-enforce-require-root', 'status'], registeredPolicies });
+ ```
  */
 export function parsePolicyControls({
   args,
@@ -137,7 +137,7 @@ export function parsePolicyControls({
   registeredPolicies: readonly RegisteredPolicyName[];
 }>,): ParsedPolicyControls {
   /**
-   * Escape flags recognized by effective registry.
+   Escape flags recognized by effective registry.
    */
   const knownEscapeFlags = new Map(registeredPolicies.map(function toEscapeEntry(policy,) {
     return [
@@ -158,23 +158,23 @@ export function parsePolicyControls({
       );
   },);
   /**
-   * Located subcommand index for command-specific option arity.
+   Located subcommand index for command-specific option arity.
    */
   const { subcommandIndex, } = parseGlobalOptions(args,);
   /**
-   * Located subcommand or empty non-option value.
+   Located subcommand or empty non-option value.
    */
   const subcommand = args[subcommandIndex] ?? '';
   /**
-   * Mutable scan isolated inside one synchronous pass.
+   Mutable scan isolated inside one synchronous pass.
    */
   return (function collectControls(): ParsedPolicyControls {
     /**
-     * Policy IDs bypassed before pathspec separator.
+     Policy IDs bypassed before pathspec separator.
      */
     const escapedPolicyIds = new Set<string>();
     /**
-     * Mutable scalar scan state.
+     Mutable scalar scan state.
      */
     const state = {
       keepGoing: false,
@@ -182,7 +182,7 @@ export function parsePolicyControls({
       previousTakesValue: false,
     };
     /**
-     * Arguments retained for real Git.
+     Arguments retained for real Git.
      */
     const forwardableArgs = args.filter(function retainArgument(
       arg,
@@ -208,7 +208,7 @@ export function parsePolicyControls({
         return false;
       }
       /**
-       * Policy selected by current exact escape flag.
+       Policy selected by current exact escape flag.
        */
       const escapedPolicyId = knownEscapeFlags.get(arg,);
       if (escapedPolicyId !== undefined) {

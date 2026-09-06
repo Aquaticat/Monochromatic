@@ -1,53 +1,53 @@
 //region Long-option abbreviation expansion
 
 /**
- * Long-option prefix used by git command-line conventions.
+ Long-option prefix used by git command-line conventions.
  */
 const LONG_OPTION_PREFIX = '--';
 
 /**
- * Default shortest stem accepted by git for unambiguous abbreviations.
+ Default shortest stem accepted by git for unambiguous abbreviations.
  */
 const DEFAULT_SHORTEST_STEM_LENGTH = 1;
 
 /**
- * Options for expanding a long option into its accepted abbreviations.
+ Options for expanding a long option into its accepted abbreviations.
  */
 type ExpandAbbreviationsOptions = {
   /**
-   * Full long-option spelling such as `--dry-run`.
+   Full long-option spelling such as `--dry-run`.
    */
   readonly longOption: string;
   /**
-   * Shortest stem length accepted by git for this option, excluding the `--`.
+   Shortest stem length accepted by git for this option, excluding the `--`.
    */
   readonly minStemLength?: number;
 };
 
 /**
- * Optique-compatible long-option alias literal.
+ Optique-compatible long-option alias literal.
  */
 export type LongOptionAlias = `--${string}`;
 
 /**
- * Expands a long option into the descending list of abbreviation aliases that
- * git's argument parser accepts when the abbreviation is unambiguous. Used to
- * declare option aliases for optique parsers so each declared option matches
- * every form git would accept, closing parser-mismatch bypasses.
- *
- * @param longOption - Full long-option spelling such as `--dry-run`.
- *
- * @param minStemLength - Shortest stem length accepted by git for this option.
- *
- * @returns Aliases in descending length, starting with the full option spelling.
- *
- * @throws When long option does not start with `--` or stem length is invalid.
- *
- * @example
- * ```ts
- * expandAbbreviations({ longOption: '--dry-run', minStemLength: 1 });
- * // => ['--dry-run', '--dry-ru', '--dry-r', '--dry-', '--dry', '--dr', '--d']
- * ```
+ Expands a long option into the descending list of abbreviation aliases that
+ git's argument parser accepts when the abbreviation is unambiguous. Used to
+ declare option aliases for optique parsers so each declared option matches
+ every form git would accept, closing parser-mismatch bypasses.
+ 
+ @param longOption - Full long-option spelling such as `--dry-run`.
+ 
+ @param minStemLength - Shortest stem length accepted by git for this option.
+ 
+ @returns Aliases in descending length, starting with the full option spelling.
+ 
+ @throws When long option does not start with `--` or stem length is invalid.
+ 
+ @example
+ ```ts
+ expandAbbreviations({ longOption: '--dry-run', minStemLength: 1 });
+ // => ['--dry-run', '--dry-ru', '--dry-r', '--dry-', '--dry', '--dr', '--d']
+ ```
  */
 export function expandAbbreviations({
   longOption,
@@ -63,7 +63,7 @@ export function expandAbbreviations({
   }
 
   /**
-   * Option name without leading `--`.
+   Option name without leading `--`.
    */
   const stem = longOption.slice(LONG_OPTION_PREFIX.length,);
 
@@ -81,12 +81,12 @@ export function expandAbbreviations({
   }
 
   /**
-   * Number of aliases generated; equals the stem-length range.
+   Number of aliases generated; equals the stem-length range.
    */
   const aliasCount = (stem.length
     - minStemLength) + 1;
   /**
-   * Aliases generated in descending stem length, full spelling first.
+   Aliases generated in descending stem length, full spelling first.
    */
   const aliases = Array.from(
     { length: aliasCount, },

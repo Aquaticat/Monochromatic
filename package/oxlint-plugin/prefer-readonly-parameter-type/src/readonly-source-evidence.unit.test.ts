@@ -19,7 +19,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Fixture source inputs used by cache-sharing test.
+ Fixture source inputs used by cache-sharing test.
  */
 const FIXTURE = {
   sourceRoot: resolve(
@@ -30,12 +30,12 @@ const FIXTURE = {
 } as const;
 
 /**
- * Disposable configured directory used by one evidence test.
- *
- * @example
- * ```ts
- * using directory = disposableDirectory();
- * ```
+ Disposable configured directory used by one evidence test.
+ 
+ @example
+ ```ts
+ using directory = disposableDirectory();
+ ```
  */
 type DisposableDirectory = {
   readonly path: string;
@@ -43,12 +43,12 @@ type DisposableDirectory = {
 };
 
 /**
- * Evidence-cache measurements across four rule contexts.
- *
- * @example
- * ```ts
- * const measurement = measureSharedEvidence({ filePath });
- * ```
+ Evidence-cache measurements across four rule contexts.
+ 
+ @example
+ ```ts
+ const measurement = measureSharedEvidence({ filePath });
+ ```
  */
 type SharedEvidenceMeasurement = {
   readonly computationDelta: number;
@@ -58,18 +58,18 @@ type SharedEvidenceMeasurement = {
 };
 
 /**
- * Creates disposable directory inside configured fixture source root.
- *
- * @returns directory removed when test scope ends.
- *
- * @example
- * ```ts
- * using directory = disposableDirectory();
- * ```
+ Creates disposable directory inside configured fixture source root.
+ 
+ @returns directory removed when test scope ends.
+ 
+ @example
+ ```ts
+ using directory = disposableDirectory();
+ ```
  */
 function disposableDirectory(): DisposableDirectory {
   /**
-   * Unique configured source directory.
+   Unique configured source directory.
    */
   const path = mkdtempSync(resolve(FIXTURE.sourceRoot, 'readonly-evidence-',),);
   return {
@@ -84,16 +84,16 @@ function disposableDirectory(): DisposableDirectory {
 }
 
 /**
- * Minimal rule context needed before reporting begins.
- *
- * @param filePath - Configured TypeScript source path.
- *
- * @returns distinct foreign context carrying shared source snapshot.
- *
- * @example
- * ```ts
- * evidenceContext({ filePath });
- * ```
+ Minimal rule context needed before reporting begins.
+ 
+ @param filePath - Configured TypeScript source path.
+ 
+ @returns distinct foreign context carrying shared source snapshot.
+ 
+ @example
+ ```ts
+ evidenceContext({ filePath });
+ ```
  */
 function evidenceContext({
   filePath,
@@ -112,20 +112,20 @@ function evidenceContext({
 }
 
 /**
- * Writes configured source consumed by evidence analysis.
- *
- * @param directoryPath - Disposable configured directory.
- *
- * @returns written TypeScript source path.
- *
- * @example
- * ```ts
- * writeEvidenceSource({ directoryPath });
- * ```
+ Writes configured source consumed by evidence analysis.
+ 
+ @param directoryPath - Disposable configured directory.
+ 
+ @returns written TypeScript source path.
+ 
+ @example
+ ```ts
+ writeEvidenceSource({ directoryPath });
+ ```
  */
 function writeEvidenceSource({ directoryPath, }: { readonly directoryPath: string; },): string {
   /**
-   * Source path admitted by fixture TypeScript project.
+   Source path admitted by fixture TypeScript project.
    */
   const filePath = resolve(directoryPath, 'input.ts',);
   writeFileSync(filePath, FIXTURE.sourceText,);
@@ -133,16 +133,16 @@ function writeEvidenceSource({ directoryPath, }: { readonly directoryPath: strin
 }
 
 /**
- * Requests shared evidence from four distinct contexts.
- *
- * @param filePath - Configured source path shared by contexts.
- *
- * @returns repeated source evidence results.
- *
- * @example
- * ```ts
- * analyzeFromFourContexts({ filePath });
- * ```
+ Requests shared evidence from four distinct contexts.
+ 
+ @param filePath - Configured source path shared by contexts.
+ 
+ @returns repeated source evidence results.
+ 
+ @example
+ ```ts
+ analyzeFromFourContexts({ filePath });
+ ```
  */
 function analyzeFromFourContexts({
   filePath,
@@ -165,18 +165,18 @@ function analyzeFromFourContexts({
 }
 
 /**
- * Completes cache measurement after initial counter snapshot.
- *
- * @param filePath - Configured source path shared by contexts.
- *
- * @param before - Counters before evidence requests.
- *
- * @returns cache deltas and result identity.
- *
- * @example
- * ```ts
- * measureAfterBefore({ filePath, before });
- * ```
+ Completes cache measurement after initial counter snapshot.
+ 
+ @param filePath - Configured source path shared by contexts.
+ 
+ @param before - Counters before evidence requests.
+ 
+ @returns cache deltas and result identity.
+ 
+ @example
+ ```ts
+ measureAfterBefore({ filePath, before });
+ ```
  */
 function measureAfterBefore({
   filePath,
@@ -186,7 +186,7 @@ function measureAfterBefore({
   readonly before: ReturnType<typeof readonlySourceEvidenceCacheStats>;
 }): SharedEvidenceMeasurement {
   /**
-   * Results returned to four distinct rule contexts.
+   Results returned to four distinct rule contexts.
    */
   const results = analyzeFromFourContexts({ filePath, },);
   return measureAfterResults({
@@ -196,18 +196,18 @@ function measureAfterBefore({
 }
 
 /**
- * Calculates cache deltas after all evidence requests.
- *
- * @param before - Counters before evidence requests.
- *
- * @param results - Evidence results returned to distinct contexts.
- *
- * @returns cache deltas and result identity.
- *
- * @example
- * ```ts
- * measureAfterResults({ before, results });
- * ```
+ Calculates cache deltas after all evidence requests.
+ 
+ @param before - Counters before evidence requests.
+ 
+ @param results - Evidence results returned to distinct contexts.
+ 
+ @returns cache deltas and result identity.
+ 
+ @example
+ ```ts
+ measureAfterResults({ before, results });
+ ```
  */
 function measureAfterResults({
   before,
@@ -217,7 +217,7 @@ function measureAfterResults({
   readonly results: readonly ReturnType<typeof readonlySourceEvidence>[];
 }): SharedEvidenceMeasurement {
   /**
-   * Cache counters after all reporter contexts requested evidence.
+   Cache counters after all reporter contexts requested evidence.
    */
   const after = readonlySourceEvidenceCacheStats();
   return {
@@ -231,16 +231,16 @@ function measureAfterResults({
 }
 
 /**
- * Measures shared evidence reuse for configured source.
- *
- * @param filePath - Configured source path shared by contexts.
- *
- * @returns cache deltas and result identity.
- *
- * @example
- * ```ts
- * measureSharedEvidence({ filePath });
- * ```
+ Measures shared evidence reuse for configured source.
+ 
+ @param filePath - Configured source path shared by contexts.
+ 
+ @returns cache deltas and result identity.
+ 
+ @example
+ ```ts
+ measureSharedEvidence({ filePath });
+ ```
  */
 function measureSharedEvidence({
   filePath,
@@ -248,7 +248,7 @@ function measureSharedEvidence({
   readonly filePath: string;
 }): SharedEvidenceMeasurement {
   /**
-   * Cache counters before exact source enters process.
+   Cache counters before exact source enters process.
    */
   const before = readonlySourceEvidenceCacheStats();
   return measureAfterBefore({
@@ -258,18 +258,18 @@ function measureSharedEvidence({
 }
 
 /**
- * Completes changed-source measurement after initial cache snapshot.
- *
- * @param filePath - Configured source path receiving changed overlay.
- *
- * @param before - Counters after original source analysis.
- *
- * @returns cache deltas caused by changed source text.
- *
- * @example
- * ```ts
- * measureChangedAfterBefore({ filePath, before });
- * ```
+ Completes changed-source measurement after initial cache snapshot.
+ 
+ @param filePath - Configured source path receiving changed overlay.
+ 
+ @param before - Counters after original source analysis.
+ 
+ @returns cache deltas caused by changed source text.
+ 
+ @example
+ ```ts
+ measureChangedAfterBefore({ filePath, before });
+ ```
  */
 function measureChangedAfterBefore({
   filePath,
@@ -285,7 +285,7 @@ function measureChangedAfterBefore({
     },),
   },);
   /**
-   * Cache counters after changed overlay entered semantic bridge.
+   Cache counters after changed overlay entered semantic bridge.
    */
   const after = readonlySourceEvidenceCacheStats();
   return {
@@ -295,16 +295,16 @@ function measureChangedAfterBefore({
 }
 
 /**
- * Measures invalidation when one source path receives changed text.
- *
- * @param filePath - Configured source path receiving both overlays.
- *
- * @returns cache deltas caused by changed source text.
- *
- * @example
- * ```ts
- * measureChangedSource({ filePath });
- * ```
+ Measures invalidation when one source path receives changed text.
+ 
+ @param filePath - Configured source path receiving both overlays.
+ 
+ @returns cache deltas caused by changed source text.
+ 
+ @example
+ ```ts
+ measureChangedSource({ filePath });
+ ```
  */
 function measureChangedSource({
   filePath,
@@ -318,7 +318,7 @@ function measureChangedSource({
     },),
   },);
   /**
-   * Cache counters after original source analysis.
+   Cache counters after original source analysis.
    */
   const before = readonlySourceEvidenceCacheStats();
   return measureChangedAfterBefore({
@@ -334,11 +334,11 @@ await describe({
       name: 'computes once for four distinct rule contexts over one snapshot',
       fn: async () => {
         /**
-         * Disposable directory removed after evidence assertions.
+         Disposable directory removed after evidence assertions.
          */
         using directory = disposableDirectory();
         /**
-         * Cache measurements over written configured source.
+         Cache measurements over written configured source.
          */
         const measurement = measureSharedEvidence({
           filePath: writeEvidenceSource({ directoryPath: directory.path, },),
@@ -353,11 +353,11 @@ await describe({
       name: 'recomputes when one source path receives changed text',
       fn: async () => {
         /**
-         * Disposable directory removed after invalidation assertions.
+         Disposable directory removed after invalidation assertions.
          */
         using directory = disposableDirectory();
         /**
-         * Cache measurements across original and changed overlays.
+         Cache measurements across original and changed overlays.
          */
         const measurement = measureChangedSource({
           filePath: writeEvidenceSource({ directoryPath: directory.path, },),

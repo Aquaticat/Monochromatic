@@ -1,8 +1,8 @@
 /**
- * `<task-card>` web component and its factory function `createTaskCard()`.
- *
- * Unlike other web components that live in `components/`, task-card is in `lib/`
- * because it's always created programmatically (never placed in server HTML).
+ `<task-card>` web component and its factory function `createTaskCard()`.
+ 
+ Unlike other web components that live in `components/`, task-card is in `lib/`
+ because it's always created programmatically (never placed in server HTML).
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
@@ -16,32 +16,32 @@ import {
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 
 /**
- * Sentinel returned by `getChipElement` when no chip matches the prefix.
+ Sentinel returned by `getChipElement` when no chip matches the prefix.
  */
 const CHIP_NOT_FOUND: unique symbol = Symbol('task card chip element not found',);
 
 /**
- * `<task-card>`: displays a task as a clickable card with checkbox, title, and metadata chips.
- * Created programmatically via {@link createTaskCard}, not placed in server HTML.
+ `<task-card>`: displays a task as a clickable card with checkbox, title, and metadata chips.
+ Created programmatically via {@link createTaskCard}, not placed in server HTML.
  */
 class TaskCard extends HTMLElement {
   /**
-   * Shadow root for encapsulated rendering.
+   Shadow root for encapsulated rendering.
    */
   readonly #shadow: ShadowRoot;
 
   /**
-   * Task data to display, set via `configure()`; absent before configure.
+   Task data to display, set via `configure()`; absent before configure.
    */
   #task?: Task;
 
   /**
-   * Interaction callbacks and display flags, set via `configure()`; absent before configure.
+   Interaction callbacks and display flags, set via `configure()`; absent before configure.
    */
   #options?: TaskCardOptions;
 
   /**
-   * Initializes the shadow root.
+   Initializes the shadow root.
    */
   constructor() {
     super();
@@ -49,11 +49,11 @@ class TaskCard extends HTMLElement {
   }
 
   /**
-   * Sets the task data and rendering options, then triggers a full render.
-   *
-   * @param task - Task to display
-   *
-   * @param options - Callbacks and display flags
+   Sets the task data and rendering options, then triggers a full render.
+   
+   @param task - Task to display
+   
+   @param options - Callbacks and display flags
    */
   configure(
     task: Task,
@@ -65,12 +65,12 @@ class TaskCard extends HTMLElement {
   }
 
   /**
-   * Finds a chip element whose text starts with the given prefix.
-   * Used by the in-progress timer to update the "tracked:" chip live.
-   *
-   * @param prefix - Text prefix to match (e.g. `"tracked:"`)
-   *
-   * @returns Matching chip span, or {@link CHIP_NOT_FOUND} when none matches
+   Finds a chip element whose text starts with the given prefix.
+   Used by the in-progress timer to update the "tracked:" chip live.
+   
+   @param prefix - Text prefix to match (e.g. `"tracked:"`)
+   
+   @returns Matching chip span, or {@link CHIP_NOT_FOUND} when none matches
    */
   getChipElement(prefix: string,): HTMLSpanElement | typeof CHIP_NOT_FOUND {
     for (const chip of this.#shadow
@@ -83,27 +83,27 @@ class TaskCard extends HTMLElement {
   }
 
   /**
-   * Renders the card content (checkbox, title, chips built via
-   * {@link buildChipTexts}) into the shadow root.
+   Renders the card content (checkbox, title, chips built via
+   {@link buildChipTexts}) into the shadow root.
    */
   #render(): void {
     /**
-     * Snapshot of the configured task; early-returns below if not yet set.
+     Snapshot of the configured task; early-returns below if not yet set.
      */
     const task = this.#task;
     /**
-     * Snapshot of the configured options; early-returns below if not yet set.
+     Snapshot of the configured options; early-returns below if not yet set.
      */
     const options = this.#options;
     if ((task === undefined) || (options === undefined))
       return;
 
     /**
-     * Chip label strings built from the task fields.
+     Chip label strings built from the task fields.
      */
     const chipTexts = buildChipTexts(task,);
     /**
-     * Chip DOM nodes mutated below when the blocked badge needs to be appended.
+     Chip DOM nodes mutated below when the blocked badge needs to be appended.
      */
     const chipElements: HTMLElement[] = chipTexts.map(function toChipElement(text,) {
       return h({
@@ -175,19 +175,19 @@ customElements.define(
 );
 
 /**
- * Factory: creates and configures a `<task-card>` element ready for DOM insertion.
- *
- * @param task - Task data to display
- *
- * @param options - Callbacks for open/complete interactions
- *
- * @returns Configured task-card element
- *
- * @example
- * ```ts
- * const card = createTaskCard({ task, options: { onOpen: handleOpen, onToggleComplete: handleComplete, }, });
- * list.append(card);
- * ```
+ Factory: creates and configures a `<task-card>` element ready for DOM insertion.
+ 
+ @param task - Task data to display
+ 
+ @param options - Callbacks for open/complete interactions
+ 
+ @returns Configured task-card element
+ 
+ @example
+ ```ts
+ const card = createTaskCard({ task, options: { onOpen: handleOpen, onToggleComplete: handleComplete, }, });
+ list.append(card);
+ ```
  */
 export function createTaskCard({
   task,
@@ -198,7 +198,7 @@ export function createTaskCard({
 },): TaskCard {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-card is registered as TaskCard */
   /**
-   * Live `TaskCard` instance so the imperative `configure()` API is reachable.
+   Live `TaskCard` instance so the imperative `configure()` API is reachable.
    */
   const card = document.createElement('task-card',) as TaskCard;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -210,17 +210,17 @@ export function createTaskCard({
 }
 
 /**
- * Formats tracked time including elapsed seconds from a running timer.
- * If no timer is active, returns the static `trackedTime` formatted via
- * {@link formatTrackedTime}.
- *
- * @param task - Task with optional running timer
- *
- * @returns Formatted tracked time string
- *
- * @example
- * const label = formatRunningTrackedTime(task);
- * // '2:15:00'
+ Formats tracked time including elapsed seconds from a running timer.
+ If no timer is active, returns the static `trackedTime` formatted via
+ {@link formatTrackedTime}.
+ 
+ @param task - Task with optional running timer
+ 
+ @returns Formatted tracked time string
+ 
+ @example
+ const label = formatRunningTrackedTime(task);
+ // '2:15:00'
  */
 export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt
@@ -228,7 +228,7 @@ export function formatRunningTrackedTime(task: Task,): string {
     return formatTrackedTime(task.trackedTime,);
 
   /**
-   * Live tick since the timer started; clamped so a clock skew never produces negatives.
+   Live tick since the timer started; clamped so a clock skew never produces negatives.
    */
   const elapsedSeconds = Math.max(
     0,

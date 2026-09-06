@@ -1,8 +1,8 @@
 /**
- * Design tokens for the doodle widget CSS.
- *
- * Defines shared constants (spacing, colors, font weights, border radii)
- * consumed by style rule modules.
+ Design tokens for the doodle widget CSS.
+ 
+ Defines shared constants (spacing, colors, font weights, border radii)
+ consumed by style rule modules.
  */
 import {
   type CssDeclarations,
@@ -22,27 +22,27 @@ import {
 //region Fractional building blocks
 
 /**
- * Whole unit (100 for viewport/percent)
+ Whole unit (100 for viewport/percent)
  */
 const WHOLE = 100;
 
 /**
- * Bold font weight value
+ Bold font weight value
  */
 const BOLD = 700;
 
 /**
- * 3/8
+ 3/8
  */
 const THREE_EIGHTHS: number = THREE_QUARTERS / 2;
 
 /**
- * 1/8
+ 1/8
  */
 const EIGHTH: number = QUARTER / 2;
 
 /**
- * 1/16
+ 1/16
  */
 const SIXTEENTH = EIGHTH / 2;
 
@@ -51,57 +51,57 @@ const SIXTEENTH = EIGHTH / 2;
 //region Computed CSS values
 
 /**
- * Full dynamic viewport block size
+ Full dynamic viewport block size
  */
 export const FULL_DVB: CssValue = cssDvb(WHOLE,);
 
 /**
- * Full percentage (100%)
+ Full percentage (100%)
  */
 export const FULL_PERCENT: CssValue = cssPercent(WHOLE,);
 
 /**
- * Bold font weight
+ Bold font weight
  */
 export const FONT_WEIGHT_BOLD: CssValue = cssNum(BOLD,);
 
 /**
- * Standard toolbar gap between items
+ Standard toolbar gap between items
  */
 export const TOOLBAR_GAP: CssValue = cssRem(THREE_QUARTERS,);
 
 /**
- * Vertical padding for toolbar
+ Vertical padding for toolbar
  */
 export const TOOLBAR_PADDING_BLOCK: CssValue = cssRem(HALF,);
 
 /**
- * Horizontal padding for toolbar
+ Horizontal padding for toolbar
  */
 export const TOOLBAR_PADDING_INLINE: CssValue = cssRem(1,);
 
 /**
- * Vertical padding for buttons
+ Vertical padding for buttons
  */
 export const BUTTON_PADDING_BLOCK: CssValue = cssRem(THREE_EIGHTHS,);
 
 /**
- * Horizontal padding for buttons
+ Horizontal padding for buttons
  */
 export const BUTTON_PADDING_INLINE: CssValue = cssRem(THREE_QUARTERS,);
 
 /**
- * Button corner radius
+ Button corner radius
  */
 export const BUTTON_RADIUS: CssValue = cssRem(QUARTER,);
 
 /**
- * Shared border width for toolbar controls (1/16 rem ~ 1px at default font size)
+ Shared border width for toolbar controls (1/16 rem ~ 1px at default font size)
  */
 export const BORDER_WIDTH: CssValue = cssRem(SIXTEENTH,);
 
 /**
- * Shared border color for toolbar controls
+ Shared border color for toolbar controls
  */
 export const BORDER_COLOR: CssValue = cssOklch({
   l: 0.8,
@@ -110,7 +110,7 @@ export const BORDER_COLOR: CssValue = cssOklch({
 },);
 
 /**
- * Background color for the canvas viewport area behind the page
+ Background color for the canvas viewport area behind the page
  */
 export const BG_VIEWPORT: CssValue = cssOklch({
   l: 0.93,
@@ -119,7 +119,7 @@ export const BG_VIEWPORT: CssValue = cssOklch({
 },);
 
 /**
- * Border color for the page frame
+ Border color for the page frame
  */
 export const PAGE_FRAME_COLOR: CssValue = cssOklch({
   l: 0.7,
@@ -128,24 +128,24 @@ export const PAGE_FRAME_COLOR: CssValue = cssOklch({
 },);
 
 /**
- * Eight, used for US Letter width base
+ Eight, used for US Letter width base
  */
 const EIGHT = 2 * 2
   * 2;
 
 /**
- * US Letter width in inches (8.5)
+ US Letter width in inches (8.5)
  */
 export const LETTER_WIDTH_IN: number = EIGHT + HALF;
 
 /**
- * US Letter height in inches
+ US Letter height in inches
  */
 export const LETTER_HEIGHT_IN = 11;
 
 /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- branded CssValue requires assertion from template string */
 /**
- * US Letter aspect ratio (8.5 / 11) for CSS `aspect-ratio`
+ US Letter aspect ratio (8.5 / 11) for CSS `aspect-ratio`
  */
 export const LETTER_ASPECT_RATIO: CssValue = `${String(LETTER_WIDTH_IN,)} / ${
   String(LETTER_HEIGHT_IN,)
@@ -153,7 +153,7 @@ export const LETTER_ASPECT_RATIO: CssValue = `${String(LETTER_WIDTH_IN,)} / ${
 /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
 /**
- * Padding around the page inside the viewport
+ Padding around the page inside the viewport
  */
 export const VIEWPORT_PADDING: CssValue = cssRem(1,);
 
@@ -162,7 +162,7 @@ export const VIEWPORT_PADDING: CssValue = cssRem(1,);
 //region Shared declaration fragments
 
 /**
- * Default background color for interactive controls
+ Default background color for interactive controls
  */
 export const BG_CONTROL: CssValue = cssOklch({
   l: 0.97,
@@ -171,7 +171,7 @@ export const BG_CONTROL: CssValue = cssOklch({
 },);
 
 /**
- * Hover background color for interactive controls
+ Hover background color for interactive controls
  */
 export const BG_CONTROL_HOVER: CssValue = cssOklch({
   l: 0.92,
@@ -180,7 +180,7 @@ export const BG_CONTROL_HOVER: CssValue = cssOklch({
 },);
 
 /**
- * Background color for checked toggle controls
+ Background color for checked toggle controls
  */
 export const BG_TOGGLE_CHECKED: CssValue = cssOklch({
   l: 0.82,
@@ -189,7 +189,7 @@ export const BG_TOGGLE_CHECKED: CssValue = cssOklch({
 },);
 
 /**
- * Hover background color for checked toggle controls
+ Hover background color for checked toggle controls
  */
 export const BG_TOGGLE_CHECKED_HOVER: CssValue = cssOklch({
   l: 0.78,
@@ -198,7 +198,7 @@ export const BG_TOGGLE_CHECKED_HOVER: CssValue = cssOklch({
 },);
 
 /**
- * Solid border on both block and inline axes
+ Solid border on both block and inline axes
  */
 export const BORDER_SOLID_DECLS: CssDeclarations = {
   'border-block-style': 'solid',
@@ -210,7 +210,7 @@ export const BORDER_SOLID_DECLS: CssDeclarations = {
 };
 
 /**
- * Toolbar and control font stack
+ Toolbar and control font stack
  */
 export const TOOLBAR_FONT_DECLS: CssDeclarations = {
   'font-family': 'sans-serif',
@@ -218,7 +218,7 @@ export const TOOLBAR_FONT_DECLS: CssDeclarations = {
 };
 
 /**
- * Absolute positioning filling parent via zero insets
+ Absolute positioning filling parent via zero insets
  */
 export const INSET_ZERO_DECLS: CssDeclarations = {
   position: 'absolute',

@@ -15,17 +15,17 @@ import {
 } from './privilege-context-data.ts';
 
 /**
- * Internal argument identifying private caller-context file.
+ Internal argument identifying private caller-context file.
  */
 export const PRIVILEGE_CONTEXT_ARGUMENT = '--wg-quicker-privilege-context';
 
 /**
- * Permission bits forbidden on caller-context file.
+ Permission bits forbidden on caller-context file.
  */
 const PRIVATE_FILE_MODE_MASK = 0o077;
 
 /**
- * Private context file retained until sudo child closes.
+ Private context file retained until sudo child closes.
  */
 export type PrivilegeContextFile = {
   readonly path: string;
@@ -33,24 +33,24 @@ export type PrivilegeContextFile = {
 };
 
 /**
- * Creates private bounded context file for privileged child.
- *
- * @returns Disposable file contract carrying path.
- *
- * @throws {@link PrivilegeError} when context exceeds bound.
- *
- * @example
- * ```ts
- * await using context = await createPrivilegeContextFile();
- * ```
+ Creates private bounded context file for privileged child.
+ 
+ @returns Disposable file contract carrying path.
+ 
+ @throws {@link PrivilegeError} when context exceeds bound.
+ 
+ @example
+ ```ts
+ await using context = await createPrivilegeContextFile();
+ ```
  */
 export async function createPrivilegeContextFile(): Promise<PrivilegeContextFile> {
   /**
-   * Validated context serialized without inherited object capabilities.
+   Validated context serialized without inherited object capabilities.
    */
   const serialized = JSON.stringify(capturePrivilegeContext(),);
   /**
-   * Serialized byte count checked before filesystem write.
+   Serialized byte count checked before filesystem write.
    */
   const size = Buffer.byteLength(
     serialized,
@@ -59,21 +59,21 @@ export async function createPrivilegeContextFile(): Promise<PrivilegeContextFile
   if (size > MAX_PRIVILEGE_CONTEXT_BYTES)
     throw new PrivilegeError('Caller context exceeds safe size bound.',);
   /**
-   * Configured temporary root or system default.
+   Configured temporary root or system default.
    */
   const temporaryRoot = process
     .env
     .TMPDIR
     ?? '/tmp';
   /**
-   * User-private directory retained while sudo child runs.
+   User-private directory retained while sudo child runs.
    */
   const directory = await mkdtemp(join(
     temporaryRoot,
     'wg-quicker-context-',
   ),);
   /**
-   * Fixed file name inside unpredictable private directory.
+   Fixed file name inside unpredictable private directory.
    */
   const path = join(
     directory,
@@ -91,7 +91,7 @@ export async function createPrivilegeContextFile(): Promise<PrivilegeContextFile
   return {
     path,
     /**
-     * Removes caller context even after sudo failure.
+     Removes caller context even after sudo failure.
      */
     async [Symbol.asyncDispose](): Promise<void> {
       await rm(
@@ -106,20 +106,20 @@ export async function createPrivilegeContextFile(): Promise<PrivilegeContextFile
 }
 
 /**
- * Parses decimal sudo caller UID.
- *
- * @returns Valid positive UID.
- *
- * @throws {@link PrivilegeError} when sudo identity is absent or malformed.
- *
- * @example
- * ```ts
- * sudoCallerUid();
- * ```
+ Parses decimal sudo caller UID.
+ 
+ @returns Valid positive UID.
+ 
+ @throws {@link PrivilegeError} when sudo identity is absent or malformed.
+ 
+ @example
+ ```ts
+ sudoCallerUid();
+ ```
  */
 function sudoCallerUid(): number {
   /**
-   * Original user identity assigned by sudo.
+   Original user identity assigned by sudo.
    */
   const raw = process
     .env
@@ -127,7 +127,7 @@ function sudoCallerUid(): number {
   if (raw === undefined)
     throw new PrivilegeError('Privilege context requires SUDO_UID.',);
   /**
-   * Numeric UID candidate.
+   Numeric UID candidate.
    */
   const uid = Number(raw,);
   if ((!Number.isSafeInteger(uid,)) || (uid <= 0))
@@ -136,35 +136,35 @@ function sudoCallerUid(): number {
 }
 
 /**
- * Reads validated private context and applies allowlisted environment.
- *
- * @param path - Private context file path from internal argument.
- *
- * @throws {@link PrivilegeError} when ownership,
- * mode,
- * size,
- * identity,
- * or content validation fails.
- *
- * @example
- * ```ts
- * await applyPrivilegeContextFile({ path: '/tmp/private/context.json' });
- * ```
+ Reads validated private context and applies allowlisted environment.
+ 
+ @param path - Private context file path from internal argument.
+ 
+ @throws {@link PrivilegeError} when ownership,
+ mode,
+ size,
+ identity,
+ or content validation fails.
+ 
+ @example
+ ```ts
+ await applyPrivilegeContextFile({ path: '/tmp/private/context.json' });
+ ```
  */
 async function applyPrivilegeContextFile({ path, }: { readonly path: string; },): Promise<void> {
   /**
-   * File opened without following final-component symlink.
+   File opened without following final-component symlink.
    */
   await using handle = await open(
     path,
     constants.O_RDONLY | constants.O_NOFOLLOW,
   );
   /**
-   * Metadata checked on opened descriptor to avoid final-component race.
+   Metadata checked on opened descriptor to avoid final-component race.
    */
   const stats = await handle.stat();
   /**
-   * Original sudo caller used as required file owner.
+   Original sudo caller used as required file owner.
    */
   const expectedUid = sudoCallerUid();
   if (!stats.isFile())
@@ -176,7 +176,7 @@ async function applyPrivilegeContextFile({ path, }: { readonly path: string; },)
   if (stats.size > MAX_PRIVILEGE_CONTEXT_BYTES)
     throw new PrivilegeError('Caller context file exceeds size bound.',);
   /**
-   * Parsed context tied to descriptor owner.
+   Parsed context tied to descriptor owner.
    */
   const context = parsePrivilegeContext({ text: await handle.readFile('utf8',), },);
   if (context.uid !== expectedUid)
@@ -186,18 +186,18 @@ async function applyPrivilegeContextFile({ path, }: { readonly path: string; },)
 }
 
 /**
- * Restores internal caller context and returns public CLI arguments.
- *
- * @returns Arguments after removing internal context pair.
- *
- * @example
- * ```ts
- * await restorePrivilegeContext();
- * ```
+ Restores internal caller context and returns public CLI arguments.
+ 
+ @returns Arguments after removing internal context pair.
+ 
+ @example
+ ```ts
+ await restorePrivilegeContext();
+ ```
  */
 export async function restorePrivilegeContext(): Promise<readonly string[]> {
   /**
-   * CLI arguments copied from runtime-owned process state.
+   CLI arguments copied from runtime-owned process state.
    */
   const processArguments = process
     .argv
@@ -205,7 +205,7 @@ export async function restorePrivilegeContext(): Promise<readonly string[]> {
   if ((process.geteuid?.() ?? 0) !== 0)
     return processArguments;
   /**
-   * Internal marker and path at root-child argument prefix.
+   Internal marker and path at root-child argument prefix.
    */
   const [marker, contextPath, ...publicArguments] = processArguments;
   if (marker !== PRIVILEGE_CONTEXT_ARGUMENT)

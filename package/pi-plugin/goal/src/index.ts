@@ -1,7 +1,7 @@
 /**
- * Repository-owned Pi goal extension and public modules.
- *
- * @module
+ Repository-owned Pi goal extension and public modules.
+ 
+ @module
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
@@ -12,20 +12,20 @@ import { registerGoalLifecycle, } from './lifecycle.ts';
 import { registerGoalTerminalRenderer, } from './terminal-renderer.ts';
 
 /**
- * Register repository-owned goal lifecycle, completion review, and terminal renderer.
- *
- * @param pi - Pi extension API receiving goal registrations
- *
- * @mutates pi - lifecycle, settlement review, and terminal renderer retain Pi callbacks that may update session, UI, and registration state
- *
- * @example
- * ```ts
- * pi -e ./package/pi-plugin/goal/dist/final/node/index.mjs
- * ```
+ Register repository-owned goal lifecycle, completion review, and terminal renderer.
+ 
+ @param pi - Pi extension API receiving goal registrations
+ 
+ @mutates pi - lifecycle, settlement review, and terminal renderer retain Pi callbacks that may update session, UI, and registration state
+ 
+ @example
+ ```ts
+ pi -e ./package/pi-plugin/goal/dist/final/node/index.mjs
+ ```
  */
 export default function piGoal(pi: ForeignBorrowed<ExtensionAPI>,): void {
   /**
-   * Shared runtime controller boundary for lifecycle and completion review.
+   Shared runtime controller boundary for lifecycle and completion review.
    */
   const lifecycle = registerGoalLifecycle({ pi, },);
   registerGoalSettlementReview({

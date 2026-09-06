@@ -1,7 +1,7 @@
 /**
- * Opaque-boundary recording for a call no derivation could answer.
- *
- * @module
+ Opaque-boundary recording for a call no derivation could answer.
+ 
+ @module
  */
 
 import type { CallExpression, } from 'typescript/unstable/ast';
@@ -28,33 +28,33 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Records the receiver and argument opacity an unresolved call leaves behind.
- *
- * The two sides are separate obligations, which is why they are separate parameters
- * rather than one "did it derive" answer. A verified narrow member discharges what
- * the call does to its receiver and says nothing about where its arguments end up:
- * `values.with(0, replacement)` reaches no user code and still places `replacement`
- * inside the array it returns. An earlier attempt discharged both at once with a
- * single early return, which silently stopped reporting that escape.
- *
- * @param project - TypeScript project resolving receiver and argument types.
- *
- * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
- *
- * @param call - Call expression no derivation could answer.
- *
- * @param allArgumentIndexes - Caller parameter roots per call argument.
- *
- * @param summary - Caller summary receiving opacity facts.
- *
- * @param receiverDerived - Whether the receiver claim is already answered.
- *
- * @mutates summary - Adds opaque parameter indexes and their provenance.
- *
- * @example
- * ```ts
- * recordOpaqueBoundary({ project, bindingOriginBySymbolId, call, allArgumentIndexes, summary, receiverDerived: false, });
- * ```
+ Records the receiver and argument opacity an unresolved call leaves behind.
+ 
+ The two sides are separate obligations, which is why they are separate parameters
+ rather than one "did it derive" answer. A verified narrow member discharges what
+ the call does to its receiver and says nothing about where its arguments end up:
+ `values.with(0, replacement)` reaches no user code and still places `replacement`
+ inside the array it returns. An earlier attempt discharged both at once with a
+ single early return, which silently stopped reporting that escape.
+ 
+ @param project - TypeScript project resolving receiver and argument types.
+ 
+ @param bindingOriginBySymbolId - Current callable parameter and alias origins.
+ 
+ @param call - Call expression no derivation could answer.
+ 
+ @param allArgumentIndexes - Caller parameter roots per call argument.
+ 
+ @param summary - Caller summary receiving opacity facts.
+ 
+ @param receiverDerived - Whether the receiver claim is already answered.
+ 
+ @mutates summary - Adds opaque parameter indexes and their provenance.
+ 
+ @example
+ ```ts
+ recordOpaqueBoundary({ project, bindingOriginBySymbolId, call, allArgumentIndexes, summary, receiverDerived: false, });
+ ```
  */
 export function recordOpaqueBoundary({
   project,
@@ -72,23 +72,23 @@ export function recordOpaqueBoundary({
   readonly receiverDerived: boolean;
 },): void {
   /**
-   * Checker for the project resolving this call.
+   Checker for the project resolving this call.
    */
   const { checker, } = project;
   /**
-   * Authored unresolved call target retained for adapter verification.
+   Authored unresolved call target retained for adapter verification.
    */
   const opaqueProvenance = effectCallName(call.expression,);
   /**
-   * Origin call location naming where each remediation applies.
+   Origin call location naming where each remediation applies.
    */
   const originLocation = effectOriginLocation({ node: call, },);
   /**
-   * Expression the call was made on, however the member was named.
+   Expression the call was made on, however the member was named.
    */
   const callReceiver = memberCallReceiver({ call, },);
   /**
-   * Whether an unanswered receiver claim still carries caller-reachable state.
+   Whether an unanswered receiver claim still carries caller-reachable state.
    */
   const receiverClaimOutstanding = (!receiverDerived)
     && (callReceiver !== NO_MEMBER_RECEIVER)
@@ -97,7 +97,7 @@ export function recordOpaqueBoundary({
       node: callReceiver,
     },);
   /**
-   * Caller parameters the unresolved receiver can hold.
+   Caller parameters the unresolved receiver can hold.
    */
   /* Through elements, because an unresolved call on a fresh container reaches the caller's own
    * values exactly as one on the parameter does. `tree.children.slice().filter(observer)`
@@ -124,7 +124,7 @@ export function recordOpaqueBoundary({
     argumentIndex,
   ): void {
     /**
-     * Argument expression corresponding to indexed parameter origin.
+     Argument expression corresponding to indexed parameter origin.
      */
     const argument = call.arguments[argumentIndex];
     if ((argument === undefined)

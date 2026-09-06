@@ -10,11 +10,11 @@ import type { Diagnostic, } from '../types.ts';
 import { singleH1, } from './md025-single-h1.ts';
 
 /**
- * Run only MD025 over Markdown source.
- *
- * @param source - Markdown source
- *
- * @returns diagnostics from the rule
+ Run only MD025 over Markdown source.
+ 
+ @param source - Markdown source
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string,): readonly Diagnostic[] {
   return runRules({
@@ -37,7 +37,7 @@ await describe({
       name: 'flags a second top-level heading',
       fn: async function second() {
         /**
-         * Diagnostics for two level-1 headings.
+         Diagnostics for two level-1 headings.
          */
         const diagnostics = lint('# First\n\n# Second\n',);
         expect(diagnostics.length,).toBe(1,);

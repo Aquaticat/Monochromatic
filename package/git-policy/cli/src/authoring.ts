@@ -1,7 +1,7 @@
 /**
- * Side-effect-free cli-git policy authoring source entry.
- *
- * @module
+ Side-effect-free cli-git policy authoring source entry.
+ 
+ @module
  */
 
 export {

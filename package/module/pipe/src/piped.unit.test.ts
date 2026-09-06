@@ -29,13 +29,13 @@ function lengthOf(text: string,): number {
 }
 
 /**
- * Runs `fn`, returns the `Error` it throws.
- *
- * @param fn - thunk expected to throw, so the named error can be asserted on
- *
- * @returns thrown error
- *
- * @throws Error when `fn` does not throw, or throws a non-Error
+ Runs `fn`, returns the `Error` it throws.
+ 
+ @param fn - thunk expected to throw, so the named error can be asserted on
+ 
+ @returns thrown error
+ 
+ @throws Error when `fn` does not throw, or throws a non-Error
  */
 function runAndCatch(fn: () => void,): Error {
   try {
@@ -191,10 +191,10 @@ await describe({
 },);
 
 /**
- * Compile-time assertions for {@link piped}. Exported so it is not an unused local, and never
- * invoked at runtime; `lint:types` type-checks the body, where `@ts-expect-error` lines must each
- * surface an error and `expectTypeOf` lines lock the inferred output types against the emitted
- * dist overloads.
+ Compile-time assertions for {@link piped}. Exported so it is not an unused local, and never
+ invoked at runtime; `lint:types` type-checks the body, where `@ts-expect-error` lines must each
+ surface an error and `expectTypeOf` lines lock the inferred output types against the emitted
+ dist overloads.
  */
 export function typeChecks(): void {
   //region negative: the never-tail keys reject misuse (checked against the emitted dist overloads)

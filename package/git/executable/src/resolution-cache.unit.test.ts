@@ -12,41 +12,41 @@ import { resolveCachedRealGit, } from '../dist/final/node/resolution-cache.mjs';
 //region Cache test fixtures
 
 /**
- * Successful entry count retained by real-Git cache.
+ Successful entry count retained by real-Git cache.
  */
 const CACHE_CAPACITY = 16;
 
 /**
- * One additional key that forces least-recently-used eviction.
+ One additional key that forces least-recently-used eviction.
  */
 const OVERFLOW_KEY_INDEX = CACHE_CAPACITY;
 
 /**
- * Mutable observation state scoped to one cache test.
+ Mutable observation state scoped to one cache test.
  */
 type ScanState = {
   /**
-   * Fresh scanner invocations observed through injected callback.
+   Fresh scanner invocations observed through injected callback.
    */
   count: number;
 };
 
 /**
- * Resolves test value after asynchronous filesystem operation.
- *
- * @param cacheKey - Unique cache identity and returned test value.
- *
- * @param state - Observable fresh-scan counter.
- *
- * @returns Cache key after asynchronous work keeps first resolution in flight.
- *
- * @example
- * ```ts
- * await observedResolution({
- *   cacheKey: 'case-1',
- *   state: { count: 0 },
- * });
- * ```
+ Resolves test value after asynchronous filesystem operation.
+ 
+ @param cacheKey - Unique cache identity and returned test value.
+ 
+ @param state - Observable fresh-scan counter.
+ 
+ @returns Cache key after asynchronous work keeps first resolution in flight.
+ 
+ @example
+ ```ts
+ await observedResolution({
+   cacheKey: 'case-1',
+   state: { count: 0 },
+ });
+ ```
  */
 async function observedResolution({
   cacheKey,
@@ -70,15 +70,15 @@ await describe({
       name: 'invokes one scanner for concurrent equal cache misses',
       fn: async function invokesOneConcurrentScanner(): Promise<void> {
         /**
-         * Unique key isolating this test from process-level cache entries.
+         Unique key isolating this test from process-level cache entries.
          */
         const cacheKey = `concurrent-${randomUUID()}`;
         /**
-         * Fresh-scan observation shared by equal callers.
+         Fresh-scan observation shared by equal callers.
          */
         const state: ScanState = { count: 0, };
         /**
-         * Concurrent equal results sharing one in-flight scanner.
+         Concurrent equal results sharing one in-flight scanner.
          */
         const results = await Promise.all([
           resolveCachedRealGit({
@@ -103,18 +103,18 @@ await describe({
       name: 'retains recently reused success and evicts untouched oldest success',
       fn: async function retainsRecentlyUsedSuccess(): Promise<void> {
         /**
-         * Unique prefix isolating LRU sequence from other cache tests.
+         Unique prefix isolating LRU sequence from other cache tests.
          */
         const keyPrefix = `lru-${randomUUID()}`;
         /**
-         * Fresh-scan observation across fill,
-         * refresh,
-         * overflow,
-         * and reprobe.
+         Fresh-scan observation across fill,
+         refresh,
+         overflow,
+         and reprobe.
          */
         const state: ScanState = { count: 0, };
         /**
-         * Initial keys filling cache exactly to capacity.
+         Initial keys filling cache exactly to capacity.
          */
         const initialKeys = Array.from(
           { length: CACHE_CAPACITY, },
@@ -134,7 +134,7 @@ await describe({
         }
 
         /**
-         * Oldest key refreshed to most recently used before overflow.
+         Oldest key refreshed to most recently used before overflow.
          */
         const [refreshedKey, evictedKey,] = initialKeys;
         if ((refreshedKey === undefined) || (evictedKey === undefined))
@@ -147,7 +147,7 @@ await describe({
         },);
 
         /**
-         * New key forcing one least-recently-used eviction.
+         New key forcing one least-recently-used eviction.
          */
         const overflowKey = `${keyPrefix}-${String(OVERFLOW_KEY_INDEX,)}`;
         await resolveCachedRealGit({

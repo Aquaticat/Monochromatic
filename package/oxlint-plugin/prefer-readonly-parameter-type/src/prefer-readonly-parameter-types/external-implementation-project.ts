@@ -1,7 +1,7 @@
 /**
- * Disposable TypeScript project for shipped package implementation.
- *
- * @module
+ Disposable TypeScript project for shipped package implementation.
+ 
+ @module
  */
 
 import { dirname, } from 'node:path';
@@ -21,19 +21,19 @@ import {
 } from './typescript-sync-native-shutdown.ts';
 
 /**
- * Maximum declaration-shadow discovery passes before conservative rejection.
+ Maximum declaration-shadow discovery passes before conservative rejection.
  */
 const MAX_RUNTIME_SHADOW_PASSES = 32;
 
 /**
- * Sentinel when external implementation project cannot be opened.
+ Sentinel when external implementation project cannot be opened.
  */
 export const EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE: unique symbol = Symbol(
   'external implementation configured project was unavailable',
 );
 
 /**
- * Disposable TypeScript project over one shipped package implementation.
+ Disposable TypeScript project over one shipped package implementation.
  */
 export type ExternalImplementationSession = {
   readonly project: Project;
@@ -43,42 +43,42 @@ export type ExternalImplementationSession = {
 };
 
 /**
- * Reusable external implementation sessions by generated config path.
+ Reusable external implementation sessions by generated config path.
  */
 const sessionByConfig = new Map<string, ExternalImplementationSession>();
 
 /**
- * Sentinel for the external API before it is started.
+ Sentinel for the external API before it is started.
  */
 const NO_EXTERNAL_API = undefined;
 
 /**
- * One native child shared by every external implementation project in this process.
- *
- * A child was created per generated config, mid-lint, and under oxlint's default worker count that
- * spawn fails with `ENOMEM`: the analysis then reports every external call as unresolved, which is sound
- * and silently discards the entire channel. Measured at every thread count on a 16-core host, the
- * channel works through eight workers and dies at sixteen, so the deciding quantity is the reserved size
- * at spawn time rather than merely spawning after the reservations exist.
+ One native child shared by every external implementation project in this process.
+ 
+ A child was created per generated config, mid-lint, and under oxlint's default worker count that
+ spawn fails with `ENOMEM`: the analysis then reports every external call as unresolved, which is sound
+ and silently discards the entire channel. Measured at every thread count on a 16-core host, the
+ channel works through eight workers and dies at sixteen, so the deciding quantity is the reserved size
+ at spawn time rather than merely spawning after the reservations exist.
  */
 const externalApiState: { current: API | typeof NO_EXTERNAL_API; } = { current: NO_EXTERNAL_API, };
 
 /**
- * Starts the shared external child before oxlint reserves its per-worker buffers.
- *
- * Called beside `initializeSemanticBridge` for exactly the reason that call exists, and the cost is one
- * extra native child per lint process whether or not any external call appears.
- *
- * @example
- * ```ts
- * initializeExternalImplementationApi();
- * ```
+ Starts the shared external child before oxlint reserves its per-worker buffers.
+ 
+ Called beside `initializeSemanticBridge` for exactly the reason that call exists, and the cost is one
+ extra native child per lint process whether or not any external call appears.
+ 
+ @example
+ ```ts
+ initializeExternalImplementationApi();
+ ```
  */
 export function initializeExternalImplementationApi(): void {
   if (externalApiState.current !== NO_EXTERNAL_API)
     return;
   /**
-   * Shared client whose cwd is the process cwd, since every generated project names absolute files.
+   Shared client whose cwd is the process cwd, since every generated project names absolute files.
    */
   const api = new API({ cwd: process.cwd(), },);
   configureNativeApiChildShutdown(nativeApiChild(api,),);
@@ -86,13 +86,13 @@ export function initializeExternalImplementationApi(): void {
 }
 
 /**
- * Computes stable identity from project source snapshot signatures.
- *
- * @param project - External implementation project.
- *
- * @param implementationSource - Runtime entry source.
- *
- * @returns deterministic process snapshot identity.
+ Computes stable identity from project source snapshot signatures.
+ 
+ @param project - External implementation project.
+ 
+ @param implementationSource - Runtime entry source.
+ 
+ @returns deterministic process snapshot identity.
  */
 function externalSnapshotIdentity({
   project,
@@ -109,13 +109,13 @@ function externalSnapshotIdentity({
 }
 
 /**
- * Opens one generated configured project without publishing it to process cache.
- *
- * @param configPath - Generated project configuration.
- *
- * @param implementationPath - Exact runtime source required from project.
- *
- * @returns disposable project session or unavailable sentinel.
+ Opens one generated configured project without publishing it to process cache.
+ 
+ @param configPath - Generated project configuration.
+ 
+ @param implementationPath - Exact runtime source required from project.
+ 
+ @returns disposable project session or unavailable sentinel.
  */
 function openExternalProject({
   configPath,
@@ -129,21 +129,21 @@ function openExternalProject({
   if (externalApiState.current === NO_EXTERNAL_API)
     initializeExternalImplementationApi();
   /**
-   * Client hosting this generated project, shared across every external implementation.
+   Client hosting this generated project, shared across every external implementation.
    */
   const api = externalApiState.current ?? new API({ cwd: dirname(configPath,), },);
   /**
-   * Configured project snapshot for shipped implementation.
+   Configured project snapshot for shipped implementation.
    */
   const snapshot = api.updateSnapshot({
     openProjects: [configPath,],
   },);
   /**
-   * Loaded generated project.
+   Loaded generated project.
    */
   const project = snapshot.getProject(configPath,);
   /**
-   * Shipped implementation source in generated project.
+   Shipped implementation source in generated project.
    */
   const implementationSource = project?.program
     .getSourceFile(implementationPath,);
@@ -167,27 +167,27 @@ function openExternalProject({
 }
 
 /**
- * Opens disposable TypeScript project for shipped implementation.
- *
- * @param consumerProject - Caller project selecting cache root.
- *
- * @param packageRoot - Exact package root accepted by analyzer.
- *
- * @param implementationPath - Shipped implementation entry path.
- *
- * @param implementationDigest - Runtime and source-map content identity.
- *
- * @returns disposable semantic implementation session.
- *
- * @example
- * ```ts
- * const session = openExternalImplementation({
- *   consumerProject,
- *   packageRoot,
- *   implementationPath,
- *   implementationDigest,
- * });
- * ```
+ Opens disposable TypeScript project for shipped implementation.
+ 
+ @param consumerProject - Caller project selecting cache root.
+ 
+ @param packageRoot - Exact package root accepted by analyzer.
+ 
+ @param implementationPath - Shipped implementation entry path.
+ 
+ @param implementationDigest - Runtime and source-map content identity.
+ 
+ @returns disposable semantic implementation session.
+ 
+ @example
+ ```ts
+ const session = openExternalImplementation({
+   consumerProject,
+   packageRoot,
+   implementationPath,
+   implementationDigest,
+ });
+ ```
  */
 export function openExternalImplementation({
   consumerProject,
@@ -201,12 +201,12 @@ export function openExternalImplementation({
   readonly implementationDigest: string;
 }): ExternalImplementationSession | typeof EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE {
   /**
-   * Runtime roots discovered from exact entry and declaration-shadowed imports.
+   Runtime roots discovered from exact entry and declaration-shadowed imports.
    */
   const implementationFiles = { current: [implementationPath,], };
   for (let pass = 0; pass < MAX_RUNTIME_SHADOW_PASSES; pass++) {
     /**
-     * Generated configured-project path for current reached roots.
+     Generated configured-project path for current reached roots.
      */
     const configPath = externalProjectConfigPath({
       consumerProject,
@@ -216,13 +216,13 @@ export function openExternalImplementation({
       implementationFiles: implementationFiles.current,
     },);
     /**
-     * Prior process-local final session for exact reached roots.
+     Prior process-local final session for exact reached roots.
      */
     const cached = sessionByConfig.get(configPath,);
     if (cached !== undefined)
       return cached;
     /**
-     * Current project used to discover declaration-shadowed runtime siblings.
+     Current project used to discover declaration-shadowed runtime siblings.
      */
     const session = openExternalProject({
       configPath,
@@ -231,7 +231,7 @@ export function openExternalImplementation({
     if (session === EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE)
       return session;
     /**
-     * Runtime siblings reached through declarations selected by module resolution.
+     Runtime siblings reached through declarations selected by module resolution.
      */
     const nextFiles = [...new Set([
       ...implementationFiles.current,
@@ -256,12 +256,12 @@ export function openExternalImplementation({
 }
 
 /**
- * Closes every process-local external implementation project.
- *
- * @example
- * ```ts
- * closeExternalImplementationProjects();
- * ```
+ Closes every process-local external implementation project.
+ 
+ @example
+ ```ts
+ closeExternalImplementationProjects();
+ ```
  */
 export function closeExternalImplementationProjects(): void {
   sessionByConfig.forEach(function closeSession(session,): void {

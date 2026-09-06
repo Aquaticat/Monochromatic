@@ -1,7 +1,7 @@
 /**
- * Characterization tests for thinking-default policy before shared model-id extraction.
- *
- * @module
+ Characterization tests for thinking-default policy before shared model-id extraction.
+ 
+ @module
  */
 
 import {

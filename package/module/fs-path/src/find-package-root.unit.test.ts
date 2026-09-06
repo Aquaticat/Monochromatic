@@ -1,11 +1,11 @@
 /**
- * Tests for `findPackageRoot` and `findPackageRootCached`.
- *
- * Runs from inside the `@monochromatic-dev/module-fs-path` package, so
- * the upward walk asking for this package's own name must terminate at
- * this package's directory.
- *
- * @module
+ Tests for `findPackageRoot` and `findPackageRootCached`.
+ 
+ Runs from inside the `@monochromatic-dev/module-fs-path` package, so
+ the upward walk asking for this package's own name must terminate at
+ this package's directory.
+ 
+ @module
  */
 
 import {

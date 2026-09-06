@@ -1,22 +1,22 @@
 /**
- * Fail-closed owned-edge validation for demand-driven effect analysis.
- *
- * @module
+ Fail-closed owned-edge validation for demand-driven effect analysis.
+ 
+ @module
  */
 
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
 
 /**
- * Adds exact owned source dependency or rejects inconsistent scope.
- *
- * @param dependencies - Dependency set receiving owned source.
- *
- * @param indexedFileNames - Exact source scope admitted by analyzer.
- *
- * @param fileName - Owned edge source path.
- *
- * @mutates dependencies - Adds validated source path.
+ Adds exact owned source dependency or rejects inconsistent scope.
+ 
+ @param dependencies - Dependency set receiving owned source.
+ 
+ @param indexedFileNames - Exact source scope admitted by analyzer.
+ 
+ @param fileName - Owned edge source path.
+ 
+ @mutates dependencies - Adds validated source path.
  */
 function addOwnedDependency({
   dependencies,
@@ -37,20 +37,20 @@ function addOwnedDependency({
 }
 
 /**
- * Collects owned callee and callback source paths from direct summaries.
- *
- * @param fileSummaries - Direct summaries from one reached source.
- *
- * @param indexedFileNames - Exact owned source scope.
- *
- * @returns unique reached source paths in stable order.
- *
- * @throws SemanticBridgeError when owned edge source is absent from scope.
- *
- * @example
- * ```ts
- * reachedSourceFileNames({ fileSummaries, indexedFileNames });
- * ```
+ Collects owned callee and callback source paths from direct summaries.
+ 
+ @param fileSummaries - Direct summaries from one reached source.
+ 
+ @param indexedFileNames - Exact owned source scope.
+ 
+ @returns unique reached source paths in stable order.
+ 
+ @throws SemanticBridgeError when owned edge source is absent from scope.
+ 
+ @example
+ ```ts
+ reachedSourceFileNames({ fileSummaries, indexedFileNames });
+ ```
  */
 export function reachedSourceFileNames({
   fileSummaries,
@@ -60,7 +60,7 @@ export function reachedSourceFileNames({
   readonly indexedFileNames: ReadonlySet<string>;
 }): readonly string[] {
   /**
-   * Unique semantic call dependencies discovered in current source.
+   Unique semantic call dependencies discovered in current source.
    */
   const dependencies = new Set<string>();
   fileSummaries.forEach(function collectSummaryDependencies(summary,): void {
@@ -87,18 +87,18 @@ export function reachedSourceFileNames({
 }
 
 /**
- * Verifies every loaded owned key has a completed summary.
- *
- * @param summaries - Complete reached summary map after source expansion.
- *
- * @param omittedCallableKeys - Callables deliberately left out because their summary threw.
- *
- * @throws SemanticBridgeError when an owned callee or callback key is absent.
- *
- * @example
- * ```ts
- * assertReachedCallSummaries({ summaries, omittedCallableKeys });
- * ```
+ Verifies every loaded owned key has a completed summary.
+ 
+ @param summaries - Complete reached summary map after source expansion.
+ 
+ @param omittedCallableKeys - Callables deliberately left out because their summary threw.
+ 
+ @throws SemanticBridgeError when an owned callee or callback key is absent.
+ 
+ @example
+ ```ts
+ assertReachedCallSummaries({ summaries, omittedCallableKeys });
+ ```
  */
 export function assertReachedCallSummaries({
   summaries,

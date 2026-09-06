@@ -8,7 +8,7 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Sink factories under test, read from the built artifact's `sinks` namespace.
+ Sink factories under test, read from the built artifact's `sinks` namespace.
  */
 const {
   createOpfsSink,
@@ -41,7 +41,7 @@ await describe({
         // flush trigger fires.
         const sink = createOpfsSink();
         /**
-         * Resolved write result; the sink write contract is `Promise<void>`.
+         Resolved write result; the sink write contract is `Promise<void>`.
          */
         const result = await sink.write({
           level: 'info',
@@ -70,7 +70,7 @@ await describe({
           timestamp: 1,
         },);
         /**
-         * Resolved flush result; must settle even with no stream to write to.
+         Resolved flush result; must settle even with no stream to write to.
          */
         const result = await sink.flush?.();
         expect(result,)

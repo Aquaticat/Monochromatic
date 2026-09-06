@@ -7,16 +7,16 @@ import {
 import { enumerateMutants, } from '../../dist/final/node/index.mjs';
 
 /**
- * Enumerates one snippet and returns replacement texts for one family.
- *
- * @param options - Snippet source and operator family under test.
- *
- * @returns Replacement texts emitted for the family.
- *
- * @example
- * ```ts
- * familyReplacements({ source: 'const x = 1 + 2;', operator: 'arithmetic' });
- * ```
+ Enumerates one snippet and returns replacement texts for one family.
+ 
+ @param options - Snippet source and operator family under test.
+ 
+ @returns Replacement texts emitted for the family.
+ 
+ @example
+ ```ts
+ familyReplacements({ source: 'const x = 1 + 2;', operator: 'arithmetic' });
+ ```
  */
 function familyReplacements(options: {
   readonly source: string;
@@ -75,7 +75,7 @@ await describe({
           name: 'conditional forces if tests and loop tests',
           fn: async () => {
             /**
-             * Conditional replacements for an if plus while snippet.
+             Conditional replacements for an if plus while snippet.
              */
             const texts = familyReplacements({
               source: 'if (a > 1) { b(); }\nwhile (c) { d(); }\n',
@@ -190,7 +190,7 @@ await describe({
           name: 'method swaps startsWith and removes trim',
           fn: async () => {
             /**
-             * Method replacements for swap plus removal snippet.
+             Method replacements for swap plus removal snippet.
              */
             const texts = familyReplacements({
               source: "export const a = s.startsWith('x');\nexport const b = s.trim();\n",
@@ -217,7 +217,7 @@ await describe({
           name: 'regex negates escape classes and swaps quantifiers',
           fn: async () => {
             /**
-             * Regex replacements for one pattern literal.
+             Regex replacements for one pattern literal.
              */
             const texts = familyReplacements({
               source: String.raw`export const r = /\d+/g;
@@ -237,7 +237,7 @@ await describe({
           name: 'next-line directive ignores matching families with reason',
           fn: async () => {
             /**
-             * Enumeration of a snippet with a next-line suppression.
+             Enumeration of a snippet with a next-line suppression.
              */
             const result = enumerateMutants({
               file: 'src/snippet.ts',
@@ -256,7 +256,7 @@ await describe({
           name: 'file directive ignores family everywhere',
           fn: async () => {
             /**
-             * Enumeration of a snippet with a file-wide suppression.
+             Enumeration of a snippet with a file-wide suppression.
              */
             const result = enumerateMutants({
               file: 'src/snippet.ts',
@@ -273,7 +273,7 @@ await describe({
           name: 'bare next-line directive suppresses every family',
           fn: async () => {
             /**
-             * Enumeration with an unqualified next-line suppression.
+             Enumeration with an unqualified next-line suppression.
              */
             const result = enumerateMutants({
               file: 'src/snippet.ts',
@@ -302,14 +302,14 @@ await describe({
           name: 'dedupes identical spans from overlapping families',
           fn: async () => {
             /**
-             * Enumeration where conditional forcing overlaps if-test forcing.
+             Enumeration where conditional forcing overlaps if-test forcing.
              */
             const result = enumerateMutants({
               file: 'src/snippet.ts',
               source: 'if (a > 1) { b(); }\n',
             },);
             /**
-             * Span-plus-text keys for duplicate detection.
+             Span-plus-text keys for duplicate detection.
              */
             const keys = result.mutants
               .map(function toKey(mutant,): string {
@@ -332,7 +332,7 @@ await describe({
           name: 'ids are unique across a real enumeration',
           fn: async () => {
             /**
-             * Enumeration over a mixed-feature snippet.
+             Enumeration over a mixed-feature snippet.
              */
             const result = enumerateMutants({
               file: 'src/snippet.ts',

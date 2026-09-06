@@ -1,7 +1,7 @@
 /**
- * Tests for fixed judge policy text.
- *
- * @module
+ Tests for fixed judge policy text.
+ 
+ @module
  */
 
 import {

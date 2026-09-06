@@ -34,48 +34,48 @@ import {
 } from './tunnel-bypass-path.ts';
 
 /**
- * Module logger for OpenSnitch reconciliation operations.
+ Module logger for OpenSnitch reconciliation operations.
  */
 const l = tagged({ tag: 'opensnitch-operation', },);
 
 /**
- * Existing OpenSnitch config plus managed endpoint ports.
+ Existing OpenSnitch config plus managed endpoint ports.
  */
 export type OpenSnitchReconcileResult = {
   /**
-   * System-firewall config path changed or inspected.
+   System-firewall config path changed or inspected.
    */
   readonly path: string;
 
   /**
-   * Sorted managed endpoint ports after reconciliation.
+   Sorted managed endpoint ports after reconciliation.
    */
   readonly ports: readonly number[];
 };
 
 /**
- * Creates OpenSnitch-specific error for shared lock implementation.
- *
- * @param message - Lock failure diagnostic.
- *
- * @returns OpenSnitch configuration failure.
- *
- * @example
- * ```ts
- * makeOpenSnitchConfigError('busy');
- * ```
+ Creates OpenSnitch-specific error for shared lock implementation.
+ 
+ @param message - Lock failure diagnostic.
+ 
+ @returns OpenSnitch configuration failure.
+ 
+ @example
+ ```ts
+ makeOpenSnitchConfigError('busy');
+ ```
  */
 function makeOpenSnitchConfigError(message: string,): OpenSnitchConfigError {
   return new OpenSnitchConfigError(message,);
 }
 
 /**
- * Ensures private runtime directory exists.
- *
- * @example
- * ```ts
- * await ensureOpenSnitchRuntimeDirectory();
- * ```
+ Ensures private runtime directory exists.
+ 
+ @example
+ ```ts
+ await ensureOpenSnitchRuntimeDirectory();
+ ```
  */
 async function ensureOpenSnitchRuntimeDirectory(): Promise<void> {
   await mkdir(
@@ -88,16 +88,16 @@ async function ensureOpenSnitchRuntimeDirectory(): Promise<void> {
 }
 
 /**
- * Acquires config-path lock serializing wg-quicker read-modify-write operations.
- *
- * @param path - OpenSnitch system-firewall config path.
- *
- * @returns Crash-safe advisory lock guard.
- *
- * @example
- * ```ts
- * await using lock = await claimOpenSnitchConfigOperation({ path: '/etc/opensnitchd/system-fw.json' });
- * ```
+ Acquires config-path lock serializing wg-quicker read-modify-write operations.
+ 
+ @param path - OpenSnitch system-firewall config path.
+ 
+ @returns Crash-safe advisory lock guard.
+ 
+ @example
+ ```ts
+ await using lock = await claimOpenSnitchConfigOperation({ path: '/etc/opensnitchd/system-fw.json' });
+ ```
  */
 async function claimOpenSnitchConfigOperation(
   { path, }: { readonly path: string; },
@@ -111,21 +111,21 @@ async function claimOpenSnitchConfigOperation(
 }
 
 /**
- * Acquires interface lock covering lifecycle manifest and config transition.
- *
- * @param interfaceName - WireGuard interface identity.
- *
- * @param networkNamespaceKey - Namespace-specific ownership identity.
- *
- * @returns Crash-safe advisory lock guard.
- *
- * @example
- * ```ts
- * await using lock = await claimOpenSnitchInterfaceOperation({
- *   interfaceName: 'wg0',
- *   networkNamespaceKey: 'abc123',
- * });
- * ```
+ Acquires interface lock covering lifecycle manifest and config transition.
+ 
+ @param interfaceName - WireGuard interface identity.
+ 
+ @param networkNamespaceKey - Namespace-specific ownership identity.
+ 
+ @returns Crash-safe advisory lock guard.
+ 
+ @example
+ ```ts
+ await using lock = await claimOpenSnitchInterfaceOperation({
+   interfaceName: 'wg0',
+   networkNamespaceKey: 'abc123',
+ });
+ ```
  */
 export async function claimOpenSnitchInterfaceOperation(
   {
@@ -147,22 +147,22 @@ export async function claimOpenSnitchInterfaceOperation(
 }
 
 /**
- * Resolves effective config path while mapping daemon absence to integration sentinel.
- *
- * @param requireNftables - Whether startup requires validated nftables backend.
- *
- * @returns Absolute system-firewall path or absence sentinel.
- *
- * @example
- * ```ts
- * await resolveOpenSnitchPath({ requireNftables: true });
- * ```
+ Resolves effective config path while mapping daemon absence to integration sentinel.
+ 
+ @param requireNftables - Whether startup requires validated nftables backend.
+ 
+ @returns Absolute system-firewall path or absence sentinel.
+ 
+ @example
+ ```ts
+ await resolveOpenSnitchPath({ requireNftables: true });
+ ```
  */
 export async function resolveOpenSnitchPath(
   { requireNftables, }: { readonly requireNftables: boolean; },
 ): Promise<string | typeof OPENSNITCH_CONFIG_ABSENT> {
   /**
-   * Daemon-derived path or daemon-absence sentinel.
+   Daemon-derived path or daemon-absence sentinel.
    */
   const resolved = await resolveOpenSnitchSystemFirewallPath({ requireNftables, },);
   if ((typeof resolved) !== 'symbol')
@@ -173,27 +173,27 @@ export async function resolveOpenSnitchPath(
 }
 
 /**
- * Inspects config before lifecycle ownership is persisted.
- *
- * @param path - Concrete system-firewall path.
- *
- * @param interfaceName - WireGuard interface owning rules.
- *
- * @param endpointPorts - Desired endpoint ports.
- *
- * @param networkNamespaceKey - Namespace-specific ownership identity.
- *
- * @returns Dry reconciliation metadata or absence sentinel.
- *
- * @example
- * ```ts
- * await inspectOpenSnitchConfig({
- *   path,
- *   interfaceName: 'wg0',
- *   endpointPorts: [51820],
- *   networkNamespaceKey: 'abc123',
- * });
- * ```
+ Inspects config before lifecycle ownership is persisted.
+ 
+ @param path - Concrete system-firewall path.
+ 
+ @param interfaceName - WireGuard interface owning rules.
+ 
+ @param endpointPorts - Desired endpoint ports.
+ 
+ @param networkNamespaceKey - Namespace-specific ownership identity.
+ 
+ @returns Dry reconciliation metadata or absence sentinel.
+ 
+ @example
+ ```ts
+ await inspectOpenSnitchConfig({
+   path,
+   interfaceName: 'wg0',
+   endpointPorts: [51820],
+   networkNamespaceKey: 'abc123',
+ });
+ ```
  */
 export async function inspectOpenSnitchConfig(
   {
@@ -209,7 +209,7 @@ export async function inspectOpenSnitchConfig(
   },
 ): Promise<OpenSnitchConfigMutation | typeof OPENSNITCH_CONFIG_ABSENT> {
   /**
-   * Current safe config source.
+   Current safe config source.
    */
   const source = await readOpenSnitchConfig({ path, },);
   if (isOpenSnitchConfigAbsent(source,))
@@ -228,36 +228,36 @@ export async function inspectOpenSnitchConfig(
 }
 
 /**
- * Reconciles one interface's managed rules under config-path lock.
- *
- * @param path - Concrete system-firewall path.
- *
- * @param interfaceName - WireGuard interface owning rules.
- *
- * @param endpointPorts - Desired endpoint ports; empty removes rules.
- *
- * @param networkNamespaceKey - Namespace-specific ownership identity.
- *
- * @param previousManagedPorts - Persisted ports requiring crash-recovery verification.
- *
- * @param requireEnabled - Whether disabled system firewall rejects operation.
- *
- * @param verifyLive - Whether unchanged config still requires kernel verification.
- *
- * @returns Existing config path and managed ports or file-absence sentinel.
- *
- * @example
- * ```ts
- * await reconcileOpenSnitchEndpointAllowance({
- *   path,
- *   interfaceName: 'wg0',
- *   endpointPorts: [51820],
- *   networkNamespaceKey: 'abc123',
- *   previousManagedPorts: [],
- *   requireEnabled: true,
- *   verifyLive: true,
- * });
- * ```
+ Reconciles one interface's managed rules under config-path lock.
+ 
+ @param path - Concrete system-firewall path.
+ 
+ @param interfaceName - WireGuard interface owning rules.
+ 
+ @param endpointPorts - Desired endpoint ports; empty removes rules.
+ 
+ @param networkNamespaceKey - Namespace-specific ownership identity.
+ 
+ @param previousManagedPorts - Persisted ports requiring crash-recovery verification.
+ 
+ @param requireEnabled - Whether disabled system firewall rejects operation.
+ 
+ @param verifyLive - Whether unchanged config still requires kernel verification.
+ 
+ @returns Existing config path and managed ports or file-absence sentinel.
+ 
+ @example
+ ```ts
+ await reconcileOpenSnitchEndpointAllowance({
+   path,
+   interfaceName: 'wg0',
+   endpointPorts: [51820],
+   networkNamespaceKey: 'abc123',
+   previousManagedPorts: [],
+   requireEnabled: true,
+   verifyLive: true,
+ });
+ ```
  */
 export async function reconcileOpenSnitchEndpointAllowance(
   {
@@ -279,23 +279,23 @@ export async function reconcileOpenSnitchEndpointAllowance(
   },
 ): Promise<OpenSnitchReconcileResult | typeof OPENSNITCH_CONFIG_ABSENT> {
   /**
-   * Unlocked existence probe avoiding runtime config lock when file is absent.
+   Unlocked existence probe avoiding runtime config lock when file is absent.
    */
   const initial = await readOpenSnitchConfig({ path, },);
   if (isOpenSnitchConfigAbsent(initial,))
     return OPENSNITCH_CONFIG_ABSENT;
   /**
-   * Config-path operation lock held through disk and live-kernel convergence.
+   Config-path operation lock held through disk and live-kernel convergence.
    */
   await using lock = await claimOpenSnitchConfigOperation({ path, },);
   /**
-   * Locked source re-read protecting against concurrent pre-lock changes.
+   Locked source re-read protecting against concurrent pre-lock changes.
    */
   const current = await readOpenSnitchConfig({ path, },);
   if (isOpenSnitchConfigAbsent(current,))
     return OPENSNITCH_CONFIG_ABSENT;
   /**
-   * Immutable managed-rule reconciliation result.
+   Immutable managed-rule reconciliation result.
    */
   const mutation = reconcileOpenSnitchConfig({
     document: parseOpenSnitchConfig({
@@ -331,7 +331,7 @@ export async function reconcileOpenSnitchEndpointAllowance(
         `OpenSnitch missed a watched-file convergence after ${path}; retrying one same-inode write: ${String(error,)}`,
       );
       /**
-       * Latest config preserving external edits before bounded reload retry.
+       Latest config preserving external edits before bounded reload retry.
        */
       const retryCurrent = await readOpenSnitchConfig({ path, },);
       if (isOpenSnitchConfigAbsent(retryCurrent,)) {
@@ -341,7 +341,7 @@ export async function reconcileOpenSnitchEndpointAllowance(
         );
       }
       /**
-       * Recomputed retry document retaining unknown fields and concurrent changes.
+       Recomputed retry document retaining unknown fields and concurrent changes.
        */
       const retryMutation = reconcileOpenSnitchConfig({
         document: parseOpenSnitchConfig({
@@ -374,16 +374,16 @@ export async function reconcileOpenSnitchEndpointAllowance(
 }
 
 /**
- * Produces sorted distinct port union for transitional crash recovery.
- *
- * @param groups - Port groups whose ownership must remain recoverable.
- *
- * @returns Sorted distinct ports.
- *
- * @example
- * ```ts
- * mergePorts({ groups: [[51820], [2049]] });
- * ```
+ Produces sorted distinct port union for transitional crash recovery.
+ 
+ @param groups - Port groups whose ownership must remain recoverable.
+ 
+ @returns Sorted distinct ports.
+ 
+ @example
+ ```ts
+ mergePorts({ groups: [[51820], [2049]] });
+ ```
  */
 export function mergePorts(
   { groups, }: { readonly groups: readonly (readonly number[])[]; },
@@ -398,18 +398,18 @@ export function mergePorts(
 }
 
 /**
- * Removes rules described by persisted lifecycle state and clears state after proof.
- *
- * @param interfaceName - WireGuard interface identity.
- *
- * @param state - Persisted config path and potential ports.
- *
- * @throws {@link OpenSnitchConfigError} when config disappeared before cleanup proof.
- *
- * @example
- * ```ts
- * await removePersistedOpenSnitchAllowance({ interfaceName: 'wg0', state });
- * ```
+ Removes rules described by persisted lifecycle state and clears state after proof.
+ 
+ @param interfaceName - WireGuard interface identity.
+ 
+ @param state - Persisted config path and potential ports.
+ 
+ @throws {@link OpenSnitchConfigError} when config disappeared before cleanup proof.
+ 
+ @example
+ ```ts
+ await removePersistedOpenSnitchAllowance({ interfaceName: 'wg0', state });
+ ```
  */
 export async function removePersistedOpenSnitchAllowance(
   {
@@ -421,7 +421,7 @@ export async function removePersistedOpenSnitchAllowance(
   },
 ): Promise<void> {
   /**
-   * Removal result proving config was available for reconciliation.
+   Removal result proving config was available for reconciliation.
    */
   const result = await reconcileOpenSnitchEndpointAllowance({
     path: state.path,

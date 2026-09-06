@@ -1,7 +1,7 @@
 /**
- * Pill data construction and rendering for `\<task-detail\>`.
- *
- * Extracted from task-detail.ts to keep each file under the line-count limit.
+ Pill data construction and rendering for `\<task-detail\>`.
+ 
+ Extracted from task-detail.ts to keep each file under the line-count limit.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type {
@@ -13,38 +13,38 @@ import { formatRunningTrackedTime, } from '../lib/format-tracked-time.ts';
 import { METADATA_UNSET, } from './task-detail-types.ts';
 
 /**
- * Single pill descriptor with a field identifier and display text.
+ Single pill descriptor with a field identifier and display text.
  */
 export type PillDatum = {
   /**
-   * Metadata field this pill represents.
+   Metadata field this pill represents.
    */
   readonly field: string;
   /**
-   * Display text shown inside the pill.
+   Display text shown inside the pill.
    */
   readonly text: string;
 };
 
 /**
- * Builds the pill descriptor array from current task state and metadata overrides.
- *
- * @param task - Task data for non-editable fields like tracked time and due date
- *
- * @param tags - Current tag values (may differ from task.tags during editing)
- *
- * @param locations - Current location values
- *
- * @param priority - Current priority value
- *
- * @param complexity - Current complexity value
- *
- * @returns Array of pill descriptors
- *
- * @example
- * ```ts
- * const pills = buildPillData({ task, tags, locations, priority, complexity });
- * ```
+ Builds the pill descriptor array from current task state and metadata overrides.
+ 
+ @param task - Task data for non-editable fields like tracked time and due date
+ 
+ @param tags - Current tag values (may differ from task.tags during editing)
+ 
+ @param locations - Current location values
+ 
+ @param priority - Current priority value
+ 
+ @param complexity - Current complexity value
+ 
+ @returns Array of pill descriptors
+ 
+ @example
+ ```ts
+ const pills = buildPillData({ task, tags, locations, priority, complexity });
+ ```
  */
 export function buildPillData(
   {
@@ -112,20 +112,20 @@ export function buildPillData(
 }
 
 /**
- * Renders pill elements from descriptors, applying loading/autofilled states.
- *
- * @param pills - Pill descriptors from {@link buildPillData}
- *
- * @param loading - Whether the autofill request is in progress
- *
- * @param autofilled - Set of field names that were autofilled by AI
- *
- * @returns Array of pill span elements
- *
- * @example
- * ```ts
- * const elements = buildPillElements({ pills, loading: false, autofilled: new Set() });
- * ```
+ Renders pill elements from descriptors, applying loading/autofilled states.
+ 
+ @param pills - Pill descriptors from {@link buildPillData}
+ 
+ @param loading - Whether the autofill request is in progress
+ 
+ @param autofilled - Set of field names that were autofilled by AI
+ 
+ @returns Array of pill span elements
+ 
+ @example
+ ```ts
+ const elements = buildPillElements({ pills, loading: false, autofilled: new Set() });
+ ```
  */
 export function buildPillElements(
   {
@@ -141,7 +141,7 @@ export function buildPillElements(
   return pills.map(
     function buildPill(pill,): HTMLElement {
       /**
-       * Span captured so loading and autofilled data attributes can be set conditionally.
+       Span captured so loading and autofilled data attributes can be set conditionally.
        */
       const element = h({
         tag: 'span',

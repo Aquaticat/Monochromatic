@@ -1,21 +1,21 @@
 /**
- * `\<top-nav\>`: sticky navigation bar with hamburger menu, page heading, and search link.
- * Dispatches a `menu-open` composed event when the hamburger is clicked.
+ `\<top-nav\>`: sticky navigation bar with hamburger menu, page heading, and search link.
+ Dispatches a `menu-open` composed event when the hamburger is clicked.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { TOP_NAV_STYLES, } from './top-nav-styles.ts';
 
 /**
- * `\<top-nav\>` web component with hamburger, heading, and search icon.
+ `\<top-nav\>` web component with hamburger, heading, and search icon.
  */
 class TopNav extends HTMLElement {
   /**
-   * Shadow root for encapsulated rendering.
+   Shadow root for encapsulated rendering.
    */
   readonly #shadow: ShadowRoot;
 
   /**
-   * Initializes the shadow root.
+   Initializes the shadow root.
    */
   constructor() {
     super();
@@ -23,16 +23,16 @@ class TopNav extends HTMLElement {
   }
 
   /**
-   * Renders the navigation bar with hamburger, heading, and search link.
+   Renders the navigation bar with hamburger, heading, and search link.
    */
   connectedCallback(): void {
     /**
-     * Heading text from the `heading` attribute, displayed in the page title `<h1>`.
+     Heading text from the `heading` attribute, displayed in the page title `<h1>`.
      */
     const heading = this.getAttribute('heading',)
       ?? '';
     /**
-     * Captured so the click handler reaches this component without a `this`-bound function.
+     Captured so the click handler reaches this component without a `this`-bound function.
      */
     const self = this;
     this.#shadow

@@ -1,8 +1,8 @@
 /**
- * Thin wrapper around `fetch` for calling the JSON API endpoints defined
- * in `server/api/tasks.ts` and `server/api/timer.ts`.
- *
- * Automatically sets `Content-Type: application/json` and shows a toast on error.
+ Thin wrapper around `fetch` for calling the JSON API endpoints defined
+ in `server/api/tasks.ts` and `server/api/timer.ts`.
+ 
+ Automatically sets `Content-Type: application/json` and shows a toast on error.
  */
 import { HTTP_NO_CONTENT, } from '@monochromatic-dev/module-const/ts';
 
@@ -11,38 +11,38 @@ import { showToast, } from '../component/toast-message.ts';
 export { showToast, } from '../component/toast-message.ts';
 
 /**
- * Request configuration accepted by {@link api}; a readonly subset of `RequestInit`.
+ Request configuration accepted by {@link api}; a readonly subset of `RequestInit`.
  */
 export type ApiRequestOptions = {
   /**
-   * HTTP method, e.g. `"POST"`, `"PUT"`, `"DELETE"`.
+   HTTP method, e.g. `"POST"`, `"PUT"`, `"DELETE"`.
    */
   readonly method?: string;
   /**
-   * Request body; callers serialize JSON to a string.
+   Request body; callers serialize JSON to a string.
    */
   readonly body?: string;
   /**
-   * Extra request headers merged over the default JSON content type.
+   Extra request headers merged over the default JSON content type.
    */
   readonly headers?: Readonly<Record<string, string>>;
 };
 
 /**
- * Sends a fetch request to a JSON API endpoint with standard headers and
- * error handling (shows a toast via {@link showToast} on failure).
- *
- * @param path - API endpoint path
- *
- * @param options - Optional fetch request configuration
- *
- * @returns Parsed JSON response body, or undefined for 204 responses
- *
- * @example
- * ```ts
- * const task = await api<Task>({ path: '/api/tasks/abc-123', });
- * await api({ path: '/api/tasks', options: { method: 'POST', body: JSON.stringify({ title: 'New', }), }, });
- * ```
+ Sends a fetch request to a JSON API endpoint with standard headers and
+ error handling (shows a toast via {@link showToast} on failure).
+ 
+ @param path - API endpoint path
+ 
+ @param options - Optional fetch request configuration
+ 
+ @returns Parsed JSON response body, or undefined for 204 responses
+ 
+ @example
+ ```ts
+ const task = await api<Task>({ path: '/api/tasks/abc-123', });
+ await api({ path: '/api/tasks', options: { method: 'POST', body: JSON.stringify({ title: 'New', }), }, });
+ ```
  */
 export async function api<TResponse = unknown,>({
   path,
@@ -52,7 +52,7 @@ export async function api<TResponse = unknown,>({
   readonly options?: ApiRequestOptions;
 },): Promise<TResponse> {
   /**
-   * Base headers merged with any caller-supplied overrides below.
+   Base headers merged with any caller-supplied overrides below.
    */
   const headers = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers
@@ -68,7 +68,7 @@ export async function api<TResponse = unknown,>({
     },);
   }
   /**
-   * Network response; status checked before the body is parsed.
+   Network response; status checked before the body is parsed.
    */
   const response = await fetch(
     path,
@@ -81,7 +81,7 @@ export async function api<TResponse = unknown,>({
 
   if (!response.ok) {
     /**
-     * Error payload (possibly invalid JSON, hence the catch).
+     Error payload (possibly invalid JSON, hence the catch).
      */
     let error: unknown = undefined;
     try {
@@ -96,7 +96,7 @@ export async function api<TResponse = unknown,>({
       error = { error: 'Request failed', };
     }
     /**
-     * Surface message extracted from `error.error` when present, otherwise the generic fallback.
+     Surface message extracted from `error.error` when present, otherwise the generic fallback.
      */
     const message = ((typeof error) === 'object')
         && (error !== null)

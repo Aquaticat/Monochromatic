@@ -1,13 +1,13 @@
 /**
- * Structured deep-readonly classification evidence and diagnostic rendering.
- *
- * @module
+ Structured deep-readonly classification evidence and diagnostic rendering.
+ 
+ @module
  */
 
 import { isIdentifierText, } from 'typescript/unstable/ast/scanner';
 
 /**
- * Source ownership of one writable declaration.
+ Source ownership of one writable declaration.
  */
 export type WritableDeclarationOwner =
   | 'default-library'
@@ -16,7 +16,7 @@ export type WritableDeclarationOwner =
   | 'workspace';
 
 /**
- * One access step from parameter type to writable state.
+ One access step from parameter type to writable state.
  */
 export type WritablePathSegment =
   | {
@@ -29,12 +29,12 @@ export type WritablePathSegment =
   };
 
 /**
- * Kind of writable state reached at one complete path.
+ Kind of writable state reached at one complete path.
  */
 export type WritablePathKind = 'array' | 'index' | 'property' | 'tuple';
 
 /**
- * Complete structured cause for one mutable classification.
+ Complete structured cause for one mutable classification.
  */
 export type WritablePath = {
   readonly kind: WritablePathKind;
@@ -43,19 +43,19 @@ export type WritablePath = {
 };
 
 /**
- * Semantic readonly classification used by rule diagnostics.
- *
- * @example
- * ```ts
- * const result: ReadonlyClassification = {
- *   kind: 'mutable',
- *   writablePaths: [{
- *     kind: 'property',
- *     segments: [{ kind: 'property', name: 'value' }],
- *     declarationOwners: ['workspace'],
- *   }],
- * };
- * ```
+ Semantic readonly classification used by rule diagnostics.
+ 
+ @example
+ ```ts
+ const result: ReadonlyClassification = {
+   kind: 'mutable',
+   writablePaths: [{
+     kind: 'property',
+     segments: [{ kind: 'property', name: 'value' }],
+     declarationOwners: ['workspace'],
+   }],
+ };
+ ```
  */
 export type ReadonlyClassification =
   | { readonly kind: 'deep-readonly'; }
@@ -73,25 +73,25 @@ export type ReadonlyClassification =
   };
 
 /**
- * Deep-readonly singleton result.
+ Deep-readonly singleton result.
  */
 export const DEEP_READONLY: ReadonlyClassification = { kind: 'deep-readonly', };
 
 /**
- * Builds mutable classification from one writable cause.
- *
- * @param path - Complete writable path relative to current classified type.
- *
- * @returns mutable classification retaining structured path evidence.
- *
- * @example
- * ```ts
- * mutableReadonlyClassification({
- *   kind: 'tuple',
- *   segments: [],
- *   declarationOwners: [],
- * });
- * ```
+ Builds mutable classification from one writable cause.
+ 
+ @param path - Complete writable path relative to current classified type.
+ 
+ @returns mutable classification retaining structured path evidence.
+ 
+ @example
+ ```ts
+ mutableReadonlyClassification({
+   kind: 'tuple',
+   segments: [],
+   declarationOwners: [],
+ });
+ ```
  */
 export function mutableReadonlyClassification(
   path: WritablePath,
@@ -103,21 +103,21 @@ export function mutableReadonlyClassification(
 }
 
 /**
- * Prepends one access segment to every mutable path in classification.
- *
- * @param classification - Child classification reached through segment.
- *
- * @param segment - Parent access step entering child type.
- *
- * @returns same non-mutable classification or prefixed mutable evidence.
- *
- * @example
- * ```ts
- * prefixReadonlyClassification({
- *   classification,
- *   segment: { kind: 'property', name: 'child' },
- * });
- * ```
+ Prepends one access segment to every mutable path in classification.
+ 
+ @param classification - Child classification reached through segment.
+ 
+ @param segment - Parent access step entering child type.
+ 
+ @returns same non-mutable classification or prefixed mutable evidence.
+ 
+ @example
+ ```ts
+ prefixReadonlyClassification({
+   classification,
+   segment: { kind: 'property', name: 'child' },
+ });
+ ```
  */
 export function prefixReadonlyClassification({
   classification,
@@ -144,11 +144,11 @@ export function prefixReadonlyClassification({
 }
 
 /**
- * Stable identity for de-duplicating equivalent writable paths.
- *
- * @param path - Structured writable cause.
- *
- * @returns JSON identity preserving cause kind and access segments.
+ Stable identity for de-duplicating equivalent writable paths.
+ 
+ @param path - Structured writable cause.
+ 
+ @returns JSON identity preserving cause kind and access segments.
  */
 function writablePathIdentity(path: WritablePath,): string {
   return JSON.stringify([
@@ -158,13 +158,13 @@ function writablePathIdentity(path: WritablePath,): string {
 }
 
 /**
- * Renders one property segment as JavaScript-like property access.
- *
- * @param name - Exact semantic property name.
- *
- * @param first - Whether segment begins rendered path.
- *
- * @returns dot access for identifiers or bracketed JSON string for other names.
+ Renders one property segment as JavaScript-like property access.
+ 
+ @param name - Exact semantic property name.
+ 
+ @param first - Whether segment begins rendered path.
+ 
+ @returns dot access for identifiers or bracketed JSON string for other names.
  */
 function renderPropertySegment({
   name,
@@ -179,20 +179,20 @@ function renderPropertySegment({
 }
 
 /**
- * Renders complete structured writable path.
- *
- * @param segments - Access steps from parameter to writable state.
- *
- * @returns JavaScript-like path without diagnostic delimiters.
- *
- * @example
- * ```ts
- * renderWritablePath([
- *   { kind: 'property', name: 'children' },
- *   { kind: 'index', keyType: 'number' },
- *   { kind: 'property', name: 'type' },
- * ]); // children[number].type
- * ```
+ Renders complete structured writable path.
+ 
+ @param segments - Access steps from parameter to writable state.
+ 
+ @returns JavaScript-like path without diagnostic delimiters.
+ 
+ @example
+ ```ts
+ renderWritablePath([
+   { kind: 'property', name: 'children' },
+   { kind: 'index', keyType: 'number' },
+   { kind: 'property', name: 'type' },
+ ]); // children[number].type
+ ```
  */
 export function renderWritablePath(
   segments: readonly WritablePathSegment[],
@@ -215,16 +215,16 @@ export function renderWritablePath(
 }
 
 /**
- * Renders one structured cause for diagnostic reason text.
- *
- * @param path - Complete writable cause.
- *
- * @returns quoted path and mutability statement.
+ Renders one structured cause for diagnostic reason text.
+ 
+ @param path - Complete writable cause.
+ 
+ @returns quoted path and mutability statement.
  */
 function writablePathReason(path: WritablePath,): string {
   /**
-   * Rendered access path,
-   * empty only when parameter type itself is mutable collection syntax.
+   Rendered access path,
+   empty only when parameter type itself is mutable collection syntax.
    */
   const rendered = renderWritablePath(path.segments,);
   if (path.kind === 'array') {
@@ -245,31 +245,31 @@ function writablePathReason(path: WritablePath,): string {
 }
 
 /**
- * De-duplicates and sorts writable paths without presentation truncation.
- *
- * @param paths - Structured mutable causes from every reachable branch.
- *
- * @returns deterministic complete distinct cause list.
- *
- * @example
- * ```ts
- * normalizeWritablePaths(paths);
- * ```
+ De-duplicates and sorts writable paths without presentation truncation.
+ 
+ @param paths - Structured mutable causes from every reachable branch.
+ 
+ @returns deterministic complete distinct cause list.
+ 
+ @example
+ ```ts
+ normalizeWritablePaths(paths);
+ ```
  */
 export function normalizeWritablePaths(
   paths: readonly WritablePath[],
 ): readonly WritablePath[] {
   /**
-   * First path retained for each exact structured identity.
+   First path retained for each exact structured identity.
    */
   const pathsByIdentity = new Map<string, WritablePath>();
   paths.forEach(function retainPath(path,): void {
     /**
-     * Stable identity shared by same rendered cause across type branches.
+     Stable identity shared by same rendered cause across type branches.
      */
     const identity = writablePathIdentity(path,);
     /**
-     * Earlier equivalent path whose declaration ownership must be preserved.
+     Earlier equivalent path whose declaration ownership must be preserved.
      */
     const existing = pathsByIdentity.get(identity,);
     pathsByIdentity.set(
@@ -291,11 +291,11 @@ export function normalizeWritablePaths(
       right,
     ): number {
       /**
-       * Left rendered identity compared by runtime-independent UTF-16 code units.
+       Left rendered identity compared by runtime-independent UTF-16 code units.
        */
       const leftReason = writablePathReason(left,);
       /**
-       * Right rendered identity compared by runtime-independent UTF-16 code units.
+       Right rendered identity compared by runtime-independent UTF-16 code units.
        */
       const rightReason = writablePathReason(right,);
       if (leftReason < rightReason)
@@ -307,16 +307,16 @@ export function normalizeWritablePaths(
 }
 
 /**
- * Renders every distinct writable cause on one physical diagnostic line.
- *
- * @param classification - Mutable classification carrying path evidence.
- *
- * @returns semicolon-separated complete reason list.
- *
- * @example
- * ```ts
- * readonlyMutableReason(classification);
- * ```
+ Renders every distinct writable cause on one physical diagnostic line.
+ 
+ @param classification - Mutable classification carrying path evidence.
+ 
+ @returns semicolon-separated complete reason list.
+ 
+ @example
+ ```ts
+ readonlyMutableReason(classification);
+ ```
  */
 export function readonlyMutableReason(
   classification: Extract<ReadonlyClassification, { readonly kind: 'mutable'; }>,
@@ -327,16 +327,16 @@ export function readonlyMutableReason(
 }
 
 /**
- * Tests whether mutable evidence is exclusively structural property or index data.
- *
- * @param classification - Candidate mutable classification.
- *
- * @returns whether deep structural projection applies to every cause.
- *
- * @example
- * ```ts
- * mutableClassificationIsStructural(classification);
- * ```
+ Tests whether mutable evidence is exclusively structural property or index data.
+ 
+ @param classification - Candidate mutable classification.
+ 
+ @returns whether deep structural projection applies to every cause.
+ 
+ @example
+ ```ts
+ mutableClassificationIsStructural(classification);
+ ```
  */
 export function mutableClassificationIsStructural(
   classification: ReadonlyClassification,
@@ -344,7 +344,7 @@ export function mutableClassificationIsStructural(
   if (classification.kind !== 'mutable')
     return false;
   /**
-   * Mutable paths narrowed from classification branch.
+   Mutable paths narrowed from classification branch.
    */
   const { writablePaths, } = classification;
   if (writablePaths.length === 0)
@@ -356,16 +356,16 @@ export function mutableClassificationIsStructural(
 }
 
 /**
- * Tests whether any writable declaration belongs outside workspace source.
- *
- * @param classification - Candidate mutable classification.
- *
- * @returns whether at least one external or default-library declaration is reached.
- *
- * @example
- * ```ts
- * mutableClassificationHasExternalDeclaration(classification);
- * ```
+ Tests whether any writable declaration belongs outside workspace source.
+ 
+ @param classification - Candidate mutable classification.
+ 
+ @returns whether at least one external or default-library declaration is reached.
+ 
+ @example
+ ```ts
+ mutableClassificationHasExternalDeclaration(classification);
+ ```
  */
 export function mutableClassificationHasExternalDeclaration(
   classification: ReadonlyClassification,
@@ -383,16 +383,16 @@ export function mutableClassificationHasExternalDeclaration(
 }
 
 /**
- * Tests whether any writable declaration belongs to workspace source.
- *
- * @param classification - Candidate mutable classification.
- *
- * @returns whether at least one exact workspace declaration is writable.
- *
- * @example
- * ```ts
- * mutableClassificationHasWorkspaceDeclaration(classification);
- * ```
+ Tests whether any writable declaration belongs to workspace source.
+ 
+ @param classification - Candidate mutable classification.
+ 
+ @returns whether at least one exact workspace declaration is writable.
+ 
+ @example
+ ```ts
+ mutableClassificationHasWorkspaceDeclaration(classification);
+ ```
  */
 export function mutableClassificationHasWorkspaceDeclaration(
   classification: ReadonlyClassification,
@@ -403,7 +403,7 @@ export function mutableClassificationHasWorkspaceDeclaration(
     .writablePaths
     .some(function workspacePath(path,): boolean {
       /**
-       * Ownership categories for current writable leaf.
+       Ownership categories for current writable leaf.
        */
       const { declarationOwners, } = path;
       return declarationOwners.includes('workspace',);

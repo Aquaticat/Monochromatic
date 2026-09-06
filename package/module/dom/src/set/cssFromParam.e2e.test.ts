@@ -1,11 +1,11 @@
 /**
- * E2e tests for `onLoadSetCssFromUrlParams`.
- *
- * Drives the test harness in `test/harness.html` via Playwright;
- * `loadHarness` injects the built bundle inline so `globalThis.moduleDom`
- * is available regardless of browser-specific `file://` module-script restrictions.
- *
- * @module
+ E2e tests for `onLoadSetCssFromUrlParams`.
+ 
+ Drives the test harness in `test/harness.html` via Playwright;
+ `loadHarness` injects the built bundle inline so `globalThis.moduleDom`
+ is available regardless of browser-specific `file://` module-script restrictions.
+ 
+ @module
  */
 import {
   expect,

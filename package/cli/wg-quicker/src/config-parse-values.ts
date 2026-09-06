@@ -7,42 +7,42 @@ import {
 } from './text.ts';
 
 /**
- * Highest valid UDP port number.
+ Highest valid UDP port number.
  */
 const MAX_UDP_PORT = 65_535;
 
 /**
- * Paths parsed from one peer's `AllowedIPsFromFiles` value.
+ Paths parsed from one peer's `AllowedIPsFromFiles` value.
  */
 export type AllowedFromFilesPaths = {
   /**
-   * File containing allowed address-set entries.
+   File containing allowed address-set entries.
    */
   readonly allowed: string;
 
   /**
-   * File containing disallowed address-set entries.
+   File containing disallowed address-set entries.
    */
   readonly disallowed: string;
 };
 
 /**
- * Strips inline comment and trims without regular expression.
- *
- * @param line - Raw config line.
- *
- * @returns Content before first comment introducer.
- *
- * @example
- * ```ts
- * stripComment({ line: 'Address = 10.0.0.1/32 # tunnel' });
- * ```
+ Strips inline comment and trims without regular expression.
+ 
+ @param line - Raw config line.
+ 
+ @returns Content before first comment introducer.
+ 
+ @example
+ ```ts
+ stripComment({ line: 'Address = 10.0.0.1/32 # tunnel' });
+ ```
  */
 export function stripComment(
   { line, }: { readonly line: string; },
 ): string {
   /**
-   * First comment introducer or absent index.
+   First comment introducer or absent index.
    */
   const hash = line.indexOf('#',);
   return trimLinear({ value: hash === (-1) ? line : line.slice(
@@ -52,28 +52,28 @@ export function stripComment(
 }
 
 /**
- * Parses the `AllowedIPsFromFiles` value into its two file paths.
- *
- * @param value - Raw value text, expected `allowed.txt disallowed.txt`.
- *
- * @returns The two file paths.
- *
- * @throws {@link ConfigError} when the value does not name exactly two paths.
- *
- * @example
- * ```ts
- * parseAllowedFromFiles({ value: '~/allowed.txt ~/disallowed.txt' });
- * ```
+ Parses the `AllowedIPsFromFiles` value into its two file paths.
+ 
+ @param value - Raw value text, expected `allowed.txt disallowed.txt`.
+ 
+ @returns The two file paths.
+ 
+ @throws {@link ConfigError} when the value does not name exactly two paths.
+ 
+ @example
+ ```ts
+ parseAllowedFromFiles({ value: '~/allowed.txt ~/disallowed.txt' });
+ ```
  */
 export function parseAllowedFromFiles(
   { value, }: { readonly value: string; },
 ): AllowedFromFilesPaths {
   /**
-   * Whitespace-separated path tokens.
+   Whitespace-separated path tokens.
    */
   const parts = splitWords({ line: value, },);
   /**
-   * Destructured allowed path, disallowed path, and any rejected extra tokens.
+   Destructured allowed path, disallowed path, and any rejected extra tokens.
    */
   const [allowed, disallowed, ...rest] = parts;
   if ((allowed === undefined) || (disallowed === undefined)
@@ -89,16 +89,16 @@ export function parseAllowedFromFiles(
 }
 
 /**
- * Expands a leading `~` in a file path to the current user's home directory.
- *
- * @param path - Path possibly starting with `~` or `~/`.
- *
- * @returns The absolute path with the home directory substituted.
- *
- * @example
- * ```ts
- * expandHome({ path: '~/allowed.txt' });
- * ```
+ Expands a leading `~` in a file path to the current user's home directory.
+ 
+ @param path - Path possibly starting with `~` or `~/`.
+ 
+ @returns The absolute path with the home directory substituted.
+ 
+ @example
+ ```ts
+ expandHome({ path: '~/allowed.txt' });
+ ```
  */
 export function expandHome({ path, }: { readonly path: string; },): string {
   if (path === '~')
@@ -109,16 +109,16 @@ export function expandHome({ path, }: { readonly path: string; },): string {
 }
 
 /**
- * Reports whether DNS token is IP literal rather than search domain.
- *
- * @param token - One comma-separated DNS token.
- *
- * @returns True when token is digits/dots or contains IPv6 colon.
- *
- * @example
- * ```ts
- * isIpLiteral({ token: '198.245.51.147' });
- * ```
+ Reports whether DNS token is IP literal rather than search domain.
+ 
+ @param token - One comma-separated DNS token.
+ 
+ @returns True when token is digits/dots or contains IPv6 colon.
+ 
+ @example
+ ```ts
+ isIpLiteral({ token: '198.245.51.147' });
+ ```
  */
 export function isIpLiteral(
   { token, }: { readonly token: string; },
@@ -130,20 +130,20 @@ export function isIpLiteral(
 }
 
 /**
- * Parses a positive integer interface option, rejecting non-numeric input.
- *
- * @param key - Option name used in the error message.
- *
- * @param value - Raw value text from the config file.
- *
- * @returns The parsed positive integer.
- *
- * @throws {@link ConfigError} when the value is not a positive integer.
- *
- * @example
- * ```ts
- * parsePositiveInt({ key: 'MTU', value: '1420' });
- * ```
+ Parses a positive integer interface option, rejecting non-numeric input.
+ 
+ @param key - Option name used in the error message.
+ 
+ @param value - Raw value text from the config file.
+ 
+ @returns The parsed positive integer.
+ 
+ @throws {@link ConfigError} when the value is not a positive integer.
+ 
+ @example
+ ```ts
+ parsePositiveInt({ key: 'MTU', value: '1420' });
+ ```
  */
 export function parsePositiveInt(
   {
@@ -155,7 +155,7 @@ export function parsePositiveInt(
   },
 ): number {
   /**
-   * Numeric value before the integer check.
+   Numeric value before the integer check.
    */
   const parsed = Number(value,);
   if ((!Number.isSafeInteger(parsed,)) || (parsed <= 0)) {
@@ -165,37 +165,37 @@ export function parsePositiveInt(
 }
 
 /**
- * Extracts UDP destination port from one WireGuard peer endpoint.
- *
- * Hostnames and IPv4 use `host:port`;
- * IPv6 must use WireGuard's bracketed `[address]:port` form.
- *
- * @param value - Comment-stripped peer endpoint value.
- *
- * @returns Valid UDP port from endpoint.
- *
- * @throws {@link ConfigError} when endpoint lacks valid host or port.
- *
- * @example
- * ```ts
- * parseEndpointPort({ value: '[2001:db8::1]:51820' });
- * ```
+ Extracts UDP destination port from one WireGuard peer endpoint.
+ 
+ Hostnames and IPv4 use `host:port`;
+ IPv6 must use WireGuard's bracketed `[address]:port` form.
+ 
+ @param value - Comment-stripped peer endpoint value.
+ 
+ @returns Valid UDP port from endpoint.
+ 
+ @throws {@link ConfigError} when endpoint lacks valid host or port.
+ 
+ @example
+ ```ts
+ parseEndpointPort({ value: '[2001:db8::1]:51820' });
+ ```
  */
 export function parseEndpointPort(
   { value, }: { readonly value: string; },
 ): number {
   /**
-   * Final colon separates host from port for every valid endpoint form.
+   Final colon separates host from port for every valid endpoint form.
    */
   const separator = value.lastIndexOf(':',);
   /**
-   * Final endpoint index used to reject missing port text.
+   Final endpoint index used to reject missing port text.
    */
   const finalIndex = value.length - 1;
   if ((separator <= 0) || (separator === finalIndex))
     throw new ConfigError(`Invalid \`Endpoint' value \`${value}': expected host:port`,);
   /**
-   * Host section before final separator.
+   Host section before final separator.
    */
   const host = value.slice(
     0,
@@ -207,7 +207,7 @@ export function parseEndpointPort(
     );
   }
   /**
-   * Validated positive port candidate.
+   Validated positive port candidate.
    */
   const port = parsePositiveInt({
     key: 'Endpoint port',

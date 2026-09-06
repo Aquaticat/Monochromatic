@@ -1,7 +1,7 @@
 /**
- * Recursive registry lock concurrency regression tests.
- *
- * @module
+ Recursive registry lock concurrency regression tests.
+ 
+ @module
  */
 import {
   mkdtemp,
@@ -28,9 +28,9 @@ type LockFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable registry root for concurrent lock acquisition.
- *
- * @returns disposable registry fixture
+ Creates disposable registry root for concurrent lock acquisition.
+ 
+ @returns disposable registry fixture
  */
 async function createLockFixture(): Promise<LockFixture> {
   /** Disposable registry parent. */

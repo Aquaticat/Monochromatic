@@ -1,7 +1,7 @@
 /**
- * Tests for auto-mode widget rendering.
- *
- * @module
+ Tests for auto-mode widget rendering.
+ 
+ @module
  */
 
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -36,17 +36,17 @@ type FlowVerdictFixture = {
 };
 
 /**
- * Create extension context whose widget API records calls.
- *
- * @param updates - stores widget updates for assertions
- *
- * @returns mock extension context sufficient for {@link updateWidget}
- *
- * @example
- * ```typescript
- * const updates = [];
- * const ctx = createWidgetContext({ updates });
- * ```
+ Create extension context whose widget API records calls.
+ 
+ @param updates - stores widget updates for assertions
+ 
+ @returns mock extension context sufficient for {@link updateWidget}
+ 
+ @example
+ ```typescript
+ const updates = [];
+ const ctx = createWidgetContext({ updates });
+ ```
  */
 function createWidgetContext(
   {

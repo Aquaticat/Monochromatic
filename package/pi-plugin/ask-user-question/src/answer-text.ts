@@ -1,16 +1,16 @@
 //region Answer normalization
 
 /**
- * Removes one editor-added final line ending while preserving every other character.
- *
- * @param text - raw UTF-8 editor text
- *
- * @returns text without at most one final LF or CRLF
- *
- * @example
- * ```ts
- * normalizeEditorAnswer({ text: 'first\nsecond\n' });
- * ```
+ Removes one editor-added final line ending while preserving every other character.
+ 
+ @param text - raw UTF-8 editor text
+ 
+ @returns text without at most one final LF or CRLF
+ 
+ @example
+ ```ts
+ normalizeEditorAnswer({ text: 'first\nsecond\n' });
+ ```
  */
 export function normalizeEditorAnswer(
   { text, }: { readonly text: string; },
@@ -29,16 +29,16 @@ export function normalizeEditorAnswer(
 }
 
 /**
- * Determines whether normalized editor content carries no visible answer.
- *
- * @param text - normalized editor text
- *
- * @returns whether text contains only whitespace
- *
- * @example
- * ```ts
- * isBlankAnswer({ text: '  \n' });
- * ```
+ Determines whether normalized editor content carries no visible answer.
+ 
+ @param text - normalized editor text
+ 
+ @returns whether text contains only whitespace
+ 
+ @example
+ ```ts
+ isBlankAnswer({ text: '  \n' });
+ ```
  */
 export function isBlankAnswer(
   { text, }: { readonly text: string; },

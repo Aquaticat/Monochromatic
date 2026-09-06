@@ -1,12 +1,12 @@
 /**
- * Button row styles for the `\<task-detail\>` component.
- *
- * Covers .btn-row, .btn-outline, and .btn-primary variants.
- * Interpolated into the main task-detail styles.
+ Button row styles for the `\<task-detail\>` component.
+ 
+ Covers .btn-row, .btn-outline, and .btn-primary variants.
+ Interpolated into the main task-detail styles.
  */
 
 /**
- * CSS for task-detail action buttons.
+ CSS for task-detail action buttons.
  */
 export const TASK_DETAIL_BUTTON_STYLES = `
   .btn-row {

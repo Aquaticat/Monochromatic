@@ -1,7 +1,7 @@
 /**
- * Tests for pi guardrail extension registration and tool-call dispatch.
- *
- * @module
+ Tests for pi guardrail extension registration and tool-call dispatch.
+ 
+ @module
  */
 
 import type {
@@ -25,28 +25,28 @@ import {
 } from './types.ts';
 
 /**
- * Minimal event handler signature captured by the mock API.
+ Minimal event handler signature captured by the mock API.
  */
 type HandlerFn = (event: ToolCallEvent, ctx: ExtensionContext,) => unknown;
 
 /**
- * Mock API harness with captured event handlers.
+ Mock API harness with captured event handlers.
  */
 type MockApiHarness = {
   /**
-   * Mock pi extension API.
+   Mock pi extension API.
    */
   readonly api: ExtensionAPI;
   /**
-   * Registered handlers by event name.
+   Registered handlers by event name.
    */
   readonly handlers: Map<string, HandlerFn[]>;
 };
 
 /**
- * Creates default guardrail config for tests.
- *
- * @returns test guardrail config
+ Creates default guardrail config for tests.
+ 
+ @returns test guardrail config
  */
 function testConfig(): GuardrailConfig {
   return {
@@ -63,17 +63,17 @@ function testConfig(): GuardrailConfig {
 }
 
 /**
- * Creates minimal pi ExtensionAPI mock.
- *
- * @returns mock API harness
+ Creates minimal pi ExtensionAPI mock.
+ 
+ @returns mock API harness
  */
 function createMockApi(): MockApiHarness {
   /**
-   * Registered handlers by event name.
+   Registered handlers by event name.
    */
   const handlers = new Map<string, HandlerFn[]>();
   /**
-   * Mock extension API recording event handlers.
+   Mock extension API recording event handlers.
    */
   const api = {
     on(event: string, handler: HandlerFn,) {
@@ -93,15 +93,15 @@ function createMockApi(): MockApiHarness {
 }
 
 /**
- * Retrieves first handler for an event.
- *
- * @param handlers - handler map
- *
- * @param event - event name
- *
- * @returns registered handler
- *
- * @throws when handler is missing
+ Retrieves first handler for an event.
+ 
+ @param handlers - handler map
+ 
+ @param event - event name
+ 
+ @returns registered handler
+ 
+ @throws when handler is missing
  */
 function getHandler(
   {
@@ -113,7 +113,7 @@ function getHandler(
   },
 ): HandlerFn {
   /**
-   * Event handlers recorded for requested event.
+   Event handlers recorded for requested event.
    */
   const eventHandlers = handlers.get(event,);
   if ((eventHandlers === undefined) || (eventHandlers[0] === undefined))
@@ -122,13 +122,13 @@ function getHandler(
 }
 
 /**
- * Builds a minimal tool-call event.
- *
- * @param toolName - pi tool name
- *
- * @param input - tool input
- *
- * @returns tool-call event
+ Builds a minimal tool-call event.
+ 
+ @param toolName - pi tool name
+ 
+ @param input - tool input
+ 
+ @returns tool-call event
  */
 function toolEvent(
   {
@@ -148,11 +148,11 @@ function toolEvent(
 }
 
 /**
- * Creates a minimal extension context.
- *
- * @param notifications - notification message sink
- *
- * @returns extension context
+ Creates a minimal extension context.
+ 
+ @param notifications - notification message sink
+ 
+ @returns extension context
  */
 function context(notifications: string[] = [],): ExtensionContext {
   return {

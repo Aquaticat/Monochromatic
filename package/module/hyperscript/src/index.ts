@@ -1,16 +1,16 @@
 /**
- * Type-safe hyperscript factories for declarative HTML, CSS, DOM, and XML generation.
- *
- * Each factory function builds strings (or DOM elements) from a named-parameter
- * options object, replacing manual template literals with composable, type-checked calls.
- *
- * @example HTML generation
- * ```ts
- * import { hHtml, hCss, cssRem } from '@monochromatic-dev/module-hyperscript';
- *
- * const card = hHtml({ tag: 'div', class: 'card', text: 'hello' });
- * const styles = hCss({ rule: '.card', decls: { gap: cssRem(1) } });
- * ```
+ Type-safe hyperscript factories for declarative HTML, CSS, DOM, and XML generation.
+ 
+ Each factory function builds strings (or DOM elements) from a named-parameter
+ options object, replacing manual template literals with composable, type-checked calls.
+ 
+ @example HTML generation
+ ```ts
+ import { hHtml, hCss, cssRem } from '@monochromatic-dev/module-hyperscript';
+ 
+ const card = hHtml({ tag: 'div', class: 'card', text: 'hello' });
+ const styles = hCss({ rule: '.card', decls: { gap: cssRem(1) } });
+ ```
  */
 
 //region h-css

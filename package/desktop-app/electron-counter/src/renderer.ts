@@ -1,14 +1,14 @@
 /**
- * Browser renderer for the Electron counter app.
- *
- * This file runs as a standard browser ES module. It never imports Node.js or
- * Electron APIs, so Electron can keep `sandbox`, `contextIsolation`, and
- * `nodeIntegration: false` enabled.
- *
- * @example
- * ```ts
- * renderCounterApp();
- * ```
+ Browser renderer for the Electron counter app.
+ 
+ This file runs as a standard browser ES module. It never imports Node.js or
+ Electron APIs, so Electron can keep `sandbox`, `contextIsolation`, and
+ `nodeIntegration: false` enabled.
+ 
+ @example
+ ```ts
+ renderCounterApp();
+ ```
  */
 
 import {
@@ -19,15 +19,15 @@ import {
 } from './counter.js';
 
 /**
- * DOM elements needed by the counter renderer.
- *
- * @example
- * ```ts
- * const elements: CounterElements = {
- *   countOutput: document.createElement('output'),
- *   incrementButton: document.createElement('button'),
- * };
- * ```
+ DOM elements needed by the counter renderer.
+ 
+ @example
+ ```ts
+ const elements: CounterElements = {
+   countOutput: document.createElement('output'),
+   incrementButton: document.createElement('button'),
+ };
+ ```
  */
 type CounterElements = {
   readonly countOutput: HTMLOutputElement;
@@ -35,53 +35,53 @@ type CounterElements = {
 };
 
 /**
- * Renderer-local counter state API.
- *
- * @example
- * ```ts
- * const state = createCounterState();
- * console.log(state.current());
- * ```
+ Renderer-local counter state API.
+ 
+ @example
+ ```ts
+ const state = createCounterState();
+ console.log(state.current());
+ ```
  */
 type CounterState = {
   /**
-   * Reads current renderer count.
-   *
-   * @returns Count before next increment.
-   *
-   * @example
-   * ```ts
-   * createCounterState().current();
-   * ```
+   Reads current renderer count.
+   
+   @returns Count before next increment.
+   
+   @example
+   ```ts
+   createCounterState().current();
+   ```
    */
   readonly current: () => number;
 
   /**
-   * Increments local state and returns new value.
-   *
-   * @returns Incremented count.
-   *
-   * @example
-   * ```ts
-   * createCounterState().increment();
-   * ```
+   Increments local state and returns new value.
+   
+   @returns Incremented count.
+   
+   @example
+   ```ts
+   createCounterState().increment();
+   ```
    */
   readonly increment: () => number;
 };
 
 /**
- * Creates mutable renderer state isolated behind functions.
- *
- * @returns Renderer-local counter state API.
- *
- * @example
- * ```ts
- * const state = createCounterState();
- * ```
+ Creates mutable renderer state isolated behind functions.
+ 
+ @returns Renderer-local counter state API.
+ 
+ @example
+ ```ts
+ const state = createCounterState();
+ ```
  */
 function createCounterState(): CounterState {
   /**
-   * Mutable holder scoped to this renderer session.
+   Mutable holder scoped to this renderer session.
    */
   const countState = { value: INITIAL_COUNT, };
 
@@ -97,23 +97,23 @@ function createCounterState(): CounterState {
 }
 
 /**
- * Error thrown when expected static markup is missing or has an unexpected tag.
- *
- * @example
- * ```ts
- * new MissingCounterElementError({ id: 'counter-value' });
- * ```
+ Error thrown when expected static markup is missing or has an unexpected tag.
+ 
+ @example
+ ```ts
+ new MissingCounterElementError({ id: 'counter-value' });
+ ```
  */
 class MissingCounterElementError extends Error {
   /**
-   * Builds a descriptive DOM lookup error.
-   *
-   * @param id - Missing element id.
-   *
-   * @example
-   * ```ts
-   * new MissingCounterElementError({ id: 'increment-button' });
-   * ```
+   Builds a descriptive DOM lookup error.
+   
+   @param id - Missing element id.
+   
+   @example
+   ```ts
+   new MissingCounterElementError({ id: 'increment-button' });
+   ```
    */
   public constructor({ id, }: { readonly id: string; },) {
     super(`Missing Electron counter element: ${id}`);
@@ -122,20 +122,20 @@ class MissingCounterElementError extends Error {
 }
 
 /**
- * Returns element by id after checking its runtime constructor.
- *
- * @param id - Static element id expected in `index.html`.
- *
- * @param constructor - DOM constructor the element must satisfy.
- *
- * @returns Element narrowed to expected HTML element subtype.
- *
- * @throws MissingCounterElementError when element is absent or has wrong type.
- *
- * @example
- * ```ts
- * getElementByIdAs({ id: 'increment-button', constructor: HTMLButtonElement });
- * ```
+ Returns element by id after checking its runtime constructor.
+ 
+ @param id - Static element id expected in `index.html`.
+ 
+ @param constructor - DOM constructor the element must satisfy.
+ 
+ @returns Element narrowed to expected HTML element subtype.
+ 
+ @throws MissingCounterElementError when element is absent or has wrong type.
+ 
+ @example
+ ```ts
+ getElementByIdAs({ id: 'increment-button', constructor: HTMLButtonElement });
+ ```
  */
 function getElementByIdAs<const ElementType extends HTMLElement>(
   {
@@ -147,7 +147,7 @@ function getElementByIdAs<const ElementType extends HTMLElement>(
   },
 ): ElementType {
   /**
-   * Element found in static markup before runtime type narrowing.
+   Element found in static markup before runtime type narrowing.
    */
   const element = document.querySelector<ElementType>(`#${id}`,);
 
@@ -158,14 +158,14 @@ function getElementByIdAs<const ElementType extends HTMLElement>(
 }
 
 /**
- * Reads and narrows all static DOM elements used by the renderer.
- *
- * @returns Counter DOM element collection.
- *
- * @example
- * ```ts
- * const elements = getCounterElements();
- * ```
+ Reads and narrows all static DOM elements used by the renderer.
+ 
+ @returns Counter DOM element collection.
+ 
+ @example
+ ```ts
+ const elements = getCounterElements();
+ ```
  */
 function getCounterElements(): CounterElements {
   return {
@@ -181,16 +181,16 @@ function getCounterElements(): CounterElements {
 }
 
 /**
- * Synchronises visible counter text, accessible button text, and document title.
- *
- * @param elements - DOM elements that display and mutate the count.
- *
- * @param count - Current counter value to render.
- *
- * @example
- * ```ts
- * updateRenderedCount({ elements: getCounterElements(), count: 0 });
- * ```
+ Synchronises visible counter text, accessible button text, and document title.
+ 
+ @param elements - DOM elements that display and mutate the count.
+ 
+ @param count - Current counter value to render.
+ 
+ @example
+ ```ts
+ updateRenderedCount({ elements: getCounterElements(), count: 0 });
+ ```
  */
 function updateRenderedCount(
   {
@@ -202,7 +202,7 @@ function updateRenderedCount(
   },
 ): void {
   /**
-   * Human-readable counter label shared by visible and accessible text.
+   Human-readable counter label shared by visible and accessible text.
    */
   const countText = formatCount({ count, },);
   elements.countOutput
@@ -216,21 +216,21 @@ function updateRenderedCount(
 }
 
 /**
- * Boots the counter renderer once static markup exists.
- *
- * @example
- * ```ts
- * renderCounterApp();
- * ```
+ Boots the counter renderer once static markup exists.
+ 
+ @example
+ ```ts
+ renderCounterApp();
+ ```
  */
 function renderCounterApp(): void {
   /**
-   * DOM elements controlled by the renderer.
+   DOM elements controlled by the renderer.
    */
   const elements = getCounterElements();
 
   /**
-   * Renderer-local state holder.
+   Renderer-local state holder.
    */
   const state = createCounterState();
 

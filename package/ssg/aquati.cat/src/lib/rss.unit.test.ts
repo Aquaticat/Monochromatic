@@ -1,7 +1,7 @@
 /**
- * Tests for RSS feed date output.
- *
- * @module
+ Tests for RSS feed date output.
+ 
+ @module
  */
 
 import {
@@ -14,22 +14,22 @@ import type { Post, } from './content.ts';
 import { generateLanguageRss, } from './rss.ts';
 
 /**
- * Older publication date that must not become item pubDate.
+ Older publication date that must not become item pubDate.
  */
 const PUBLISHED_DATE = new Date('2026-04-16T10:01:43.000Z',);
 
 /**
- * Git-derived update date expected in the RSS item pubDate.
+ Git-derived update date expected in the RSS item pubDate.
  */
 const UPDATED_DATE = new Date('2026-05-14T08:31:54.000Z',);
 
 /**
- * Older post update date, included so lastBuildDate must choose the newest update.
+ Older post update date, included so lastBuildDate must choose the newest update.
  */
 const OLDER_UPDATED_DATE = new Date('2026-05-10T06:04:54.000Z',);
 
 /**
- * Post fixture whose publication and update dates intentionally differ.
+ Post fixture whose publication and update dates intentionally differ.
  */
 const UPDATED_POST: Post = {
   lang: 'en',
@@ -47,7 +47,7 @@ const UPDATED_POST: Post = {
 };
 
 /**
- * Additional post fixture with an older update date.
+ Additional post fixture with an older update date.
  */
 const OLDER_POST: Post = {
   lang: 'en',
@@ -71,7 +71,7 @@ await describe({
       name: 'uses git-derived updated dates for items and channel build date',
       fn: async function usesUpdatedDates(): Promise<void> {
         /**
-         * RSS XML generated from posts whose publication and update dates differ.
+         RSS XML generated from posts whose publication and update dates differ.
          */
         const xml = generateLanguageRss({
           lang: 'en',

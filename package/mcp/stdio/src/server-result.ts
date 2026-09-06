@@ -25,17 +25,17 @@ import type {
 //region Server identity: stamped onto every result
 
 /**
- * Wraps server identity in the `_meta` shape that clients read it from.
- *
- * @param serverInfo - Identity of this server, taken from its configuration.
- *
- * @returns Metadata object carrying identity under its reserved key.
- *
- * @example
- * ```ts
- * serverInfoMeta({ serverInfo: { name: 'mvm', version: '0.1.0' } });
- * // { 'io.modelcontextprotocol/serverInfo': { name: 'mvm', version: '0.1.0' } }
- * ```
+ Wraps server identity in the `_meta` shape that clients read it from.
+ 
+ @param serverInfo - Identity of this server, taken from its configuration.
+ 
+ @returns Metadata object carrying identity under its reserved key.
+ 
+ @example
+ ```ts
+ serverInfoMeta({ serverInfo: { name: 'mvm', version: '0.1.0' } });
+ // { 'io.modelcontextprotocol/serverInfo': { name: 'mvm', version: '0.1.0' } }
+ ```
  */
 export function serverInfoMeta(
   { serverInfo, }: { readonly serverInfo: Implementation; },
@@ -48,26 +48,26 @@ export function serverInfoMeta(
 //region Discovery result: answers `server/discover`
 
 /**
- * Builds the payload for `server/discover`, the RPC every 2026-07-28 server must implement.
- *
- * @param serverInfo - Identity stamped into result metadata.
- *
- * @param capabilities - Optional features this server offers.
- *
- * @param cache - Freshness hint telling clients how long to reuse this payload.
- *
- * @param instructions - Natural-language guidance about this server for the model.
- *
- * @returns Discovery payload listing supported revisions and capabilities.
- *
- * @example
- * ```ts
- * buildDiscoverResult({
- *   serverInfo: { name: 'mvm', version: '0.1.0' },
- *   capabilities: { tools: {} },
- *   cache: { ttlMs: 0, cacheScope: 'private' },
- * });
- * ```
+ Builds the payload for `server/discover`, the RPC every 2026-07-28 server must implement.
+ 
+ @param serverInfo - Identity stamped into result metadata.
+ 
+ @param capabilities - Optional features this server offers.
+ 
+ @param cache - Freshness hint telling clients how long to reuse this payload.
+ 
+ @param instructions - Natural-language guidance about this server for the model.
+ 
+ @returns Discovery payload listing supported revisions and capabilities.
+ 
+ @example
+ ```ts
+ buildDiscoverResult({
+   serverInfo: { name: 'mvm', version: '0.1.0' },
+   capabilities: { tools: {} },
+   cache: { ttlMs: 0, cacheScope: 'private' },
+ });
+ ```
  */
 export function buildDiscoverResult(
   {
@@ -98,26 +98,26 @@ export function buildDiscoverResult(
 //region Tool listing result: answers `tools/list`
 
 /**
- * Builds the payload for `tools/list`.
- * Emits no `nextCursor`: a stdio server registers every tool at construction,
- * so one page always holds the whole registry.
- *
- * @param tools - Wire-format definitions of every registered tool.
- *
- * @param serverInfo - Identity stamped into result metadata.
- *
- * @param cache - Freshness hint telling clients how long to reuse this listing.
- *
- * @returns Listing payload carrying every registered tool.
- *
- * @example
- * ```ts
- * buildListToolsResult({
- *   tools: [],
- *   serverInfo: { name: 'mvm', version: '0.1.0' },
- *   cache: { ttlMs: 0, cacheScope: 'private' },
- * });
- * ```
+ Builds the payload for `tools/list`.
+ Emits no `nextCursor`: a stdio server registers every tool at construction,
+ so one page always holds the whole registry.
+ 
+ @param tools - Wire-format definitions of every registered tool.
+ 
+ @param serverInfo - Identity stamped into result metadata.
+ 
+ @param cache - Freshness hint telling clients how long to reuse this listing.
+ 
+ @returns Listing payload carrying every registered tool.
+ 
+ @example
+ ```ts
+ buildListToolsResult({
+   tools: [],
+   serverInfo: { name: 'mvm', version: '0.1.0' },
+   cache: { ttlMs: 0, cacheScope: 'private' },
+ });
+ ```
  */
 export function buildListToolsResult(
   {
@@ -144,22 +144,22 @@ export function buildListToolsResult(
 //region Tool call result: wraps whatever a handler returned
 
 /**
- * Stamps the protocol envelope onto the payload a tool handler produced.
- * Handlers stay unaware of envelope fields, so a handler cannot omit or misstate them.
- *
- * @param result - Payload returned by a tool handler.
- *
- * @param serverInfo - Identity stamped into result metadata.
- *
- * @returns Handler payload carrying envelope fields.
- *
- * @example
- * ```ts
- * buildToolCallResult({
- *   result: { content: [{ type: 'text', text: 'ok' }] },
- *   serverInfo: { name: 'mvm', version: '0.1.0' },
- * });
- * ```
+ Stamps the protocol envelope onto the payload a tool handler produced.
+ Handlers stay unaware of envelope fields, so a handler cannot omit or misstate them.
+ 
+ @param result - Payload returned by a tool handler.
+ 
+ @param serverInfo - Identity stamped into result metadata.
+ 
+ @returns Handler payload carrying envelope fields.
+ 
+ @example
+ ```ts
+ buildToolCallResult({
+   result: { content: [{ type: 'text', text: 'ok' }] },
+   serverInfo: { name: 'mvm', version: '0.1.0' },
+ });
+ ```
  */
 export function buildToolCallResult(
   {

@@ -1,11 +1,11 @@
 /**
- * Repository-owned tool event discriminant guards.
- *
- * Pi implements its exported `isToolCallEventType` helper as these same direct
- * comparisons. Local guards let effect analysis inspect their behavior instead
- * of stopping at package declarations that have no TypeScript body.
- *
- * @module
+ Repository-owned tool event discriminant guards.
+ 
+ Pi implements its exported `isToolCallEventType` helper as these same direct
+ comparisons. Local guards let effect analysis inspect their behavior instead
+ of stopping at package declarations that have no TypeScript body.
+ 
+ @module
  */
 
 import type {
@@ -21,16 +21,16 @@ import type {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Test for built-in Bash call.
- *
- * @param event - Tool event to narrow.
- *
- * @returns Whether event has Bash input shape.
- *
- * @example
- * ```typescript
- * if (isBashToolEvent(event)) event.input.command;
- * ```
+ Test for built-in Bash call.
+ 
+ @param event - Tool event to narrow.
+ 
+ @returns Whether event has Bash input shape.
+ 
+ @example
+ ```typescript
+ if (isBashToolEvent(event)) event.input.command;
+ ```
  */
 export function isBashToolEvent(
   event: ForeignBorrowed<ToolCallEvent>,
@@ -39,16 +39,16 @@ export function isBashToolEvent(
 }
 
 /**
- * Test for built-in edit call.
- *
- * @param event - Tool event to narrow.
- *
- * @returns Whether event has edit input shape.
- *
- * @example
- * ```typescript
- * if (isEditToolEvent(event)) event.input.edits;
- * ```
+ Test for built-in edit call.
+ 
+ @param event - Tool event to narrow.
+ 
+ @returns Whether event has edit input shape.
+ 
+ @example
+ ```typescript
+ if (isEditToolEvent(event)) event.input.edits;
+ ```
  */
 export function isEditToolEvent(
   event: ForeignBorrowed<ToolCallEvent>,
@@ -57,16 +57,16 @@ export function isEditToolEvent(
 }
 
 /**
- * Test for built-in find call.
- *
- * @param event - Tool event to narrow.
- *
- * @returns Whether event has find input shape.
- *
- * @example
- * ```typescript
- * if (isFindToolEvent(event)) event.input.path;
- * ```
+ Test for built-in find call.
+ 
+ @param event - Tool event to narrow.
+ 
+ @returns Whether event has find input shape.
+ 
+ @example
+ ```typescript
+ if (isFindToolEvent(event)) event.input.path;
+ ```
  */
 export function isFindToolEvent(
   event: ForeignBorrowed<ToolCallEvent>,
@@ -75,16 +75,16 @@ export function isFindToolEvent(
 }
 
 /**
- * Test for built-in grep call.
- *
- * @param event - Tool event to narrow.
- *
- * @returns Whether event has grep input shape.
- *
- * @example
- * ```typescript
- * if (isGrepToolEvent(event)) event.input.path;
- * ```
+ Test for built-in grep call.
+ 
+ @param event - Tool event to narrow.
+ 
+ @returns Whether event has grep input shape.
+ 
+ @example
+ ```typescript
+ if (isGrepToolEvent(event)) event.input.path;
+ ```
  */
 export function isGrepToolEvent(
   event: ForeignBorrowed<ToolCallEvent>,
@@ -93,16 +93,16 @@ export function isGrepToolEvent(
 }
 
 /**
- * Test for built-in directory listing call.
- *
- * @param event - Tool event to narrow.
- *
- * @returns Whether event has directory listing input shape.
- *
- * @example
- * ```typescript
- * if (isLsToolEvent(event)) event.input.path;
- * ```
+ Test for built-in directory listing call.
+ 
+ @param event - Tool event to narrow.
+ 
+ @returns Whether event has directory listing input shape.
+ 
+ @example
+ ```typescript
+ if (isLsToolEvent(event)) event.input.path;
+ ```
  */
 export function isLsToolEvent(
   event: ForeignBorrowed<ToolCallEvent>,
@@ -111,16 +111,16 @@ export function isLsToolEvent(
 }
 
 /**
- * Test for built-in read call.
- *
- * @param event - Tool event to narrow.
- *
- * @returns Whether event has read input shape.
- *
- * @example
- * ```typescript
- * if (isReadToolEvent(event)) event.input.path;
- * ```
+ Test for built-in read call.
+ 
+ @param event - Tool event to narrow.
+ 
+ @returns Whether event has read input shape.
+ 
+ @example
+ ```typescript
+ if (isReadToolEvent(event)) event.input.path;
+ ```
  */
 export function isReadToolEvent(
   event: ForeignBorrowed<ToolCallEvent>,
@@ -129,16 +129,16 @@ export function isReadToolEvent(
 }
 
 /**
- * Test for built-in write call.
- *
- * @param event - Tool event to narrow.
- *
- * @returns Whether event has write input shape.
- *
- * @example
- * ```typescript
- * if (isWriteToolEvent(event)) event.input.content;
- * ```
+ Test for built-in write call.
+ 
+ @param event - Tool event to narrow.
+ 
+ @returns Whether event has write input shape.
+ 
+ @example
+ ```typescript
+ if (isWriteToolEvent(event)) event.input.content;
+ ```
  */
 export function isWriteToolEvent(
   event: ForeignBorrowed<ToolCallEvent>,

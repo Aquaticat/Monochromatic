@@ -38,14 +38,14 @@ type TempDirectory = Readonly<{
 }>;
 
 /**
- * Creates isolated repository and executable fixtures.
- *
- * @returns Disposable temporary root.
- *
- * @example
- * ```ts
- * await using fixture = await createTempDirectory();
- * ```
+ Creates isolated repository and executable fixtures.
+ 
+ @returns Disposable temporary root.
+ 
+ @example
+ ```ts
+ await using fixture = await createTempDirectory();
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /** Unique fixture root. */
@@ -68,16 +68,16 @@ async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
- * Produces fake real-Git source that records every wrapper-owned invocation.
- *
- * @param repository - Main-worktree root reported by metadata requests.
- *
- * @returns Executable Node source.
- *
- * @example
- * ```ts
- * fakeGitSource('/tmp/repository');
- * ```
+ Produces fake real-Git source that records every wrapper-owned invocation.
+ 
+ @param repository - Main-worktree root reported by metadata requests.
+ 
+ @returns Executable Node source.
+ 
+ @example
+ ```ts
+ fakeGitSource('/tmp/repository');
+ ```
  */
 function fakeGitSource(repository: string,): string {
   /** Canonical fake Git directory. */

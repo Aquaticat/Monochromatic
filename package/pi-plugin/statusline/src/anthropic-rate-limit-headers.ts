@@ -1,7 +1,7 @@
 /**
- * Anthropic token rate-limit response header parsing.
- *
- * @module
+ Anthropic token rate-limit response header parsing.
+ 
+ @module
  */
 
 import {
@@ -22,10 +22,10 @@ import {
 } from './rate-limit-parse-helpers.ts';
 
 /**
- * Anthropic header groups that describe token usage capacity.
- *
- * Request-count headers are intentionally omitted because this extension ports
- * usage-capacity projection warnings, not request throughput warnings.
+ Anthropic header groups that describe token usage capacity.
+ 
+ Request-count headers are intentionally omitted because this extension ports
+ usage-capacity projection warnings, not request throughput warnings.
  */
 const ANTHROPIC_RATE_LIMIT_HEADER_FAMILIES: readonly RateLimitHeaderFamily[] = [
   {
@@ -79,20 +79,20 @@ const ANTHROPIC_RATE_LIMIT_HEADER_FAMILIES: readonly RateLimitHeaderFamily[] = [
 ];
 
 /**
- * Parses one Anthropic header family into a usage snapshot.
- *
- * @param family - {@link RateLimitHeaderFamily} metadata
- *
- * @param headers - lowercase provider response headers
- *
- * @param nowMs - wall-clock sample time in epoch milliseconds
- *
- * @returns parsed snapshot, or invalid sentinel when any required header is unusable
- *
- * @example
- * ```ts
- * parseAnthropicRateLimitSnapshot({ family, headers, nowMs: Date.now() });
- * ```
+ Parses one Anthropic header family into a usage snapshot.
+ 
+ @param family - {@link RateLimitHeaderFamily} metadata
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param nowMs - wall-clock sample time in epoch milliseconds
+ 
+ @returns parsed snapshot, or invalid sentinel when any required header is unusable
+ 
+ @example
+ ```ts
+ parseAnthropicRateLimitSnapshot({ family, headers, nowMs: Date.now() });
+ ```
  */
 function parseAnthropicRateLimitSnapshot({
   family,
@@ -104,21 +104,21 @@ function parseAnthropicRateLimitSnapshot({
   nowMs: number;
 }>,): RateLimitSnapshot | InvalidRateLimitSnapshot {
   /**
-   * Limiter capacity from `*-limit` header.
+   Limiter capacity from `*-limit` header.
    */
   const limit = parseNumberHeader({
     headers,
     headerName: family.limitHeader,
   },);
   /**
-   * Remaining capacity from `*-remaining` header.
+   Remaining capacity from `*-remaining` header.
    */
   const rawRemaining = parseNumberHeader({
     headers,
     headerName: family.remainingHeader,
   },);
   /**
-   * Reset timestamp from `*-reset` header.
+   Reset timestamp from `*-reset` header.
    */
   const resetAtMs = parseResetHeader({
     headers,
@@ -133,7 +133,7 @@ function parseAnthropicRateLimitSnapshot({
 
   /**
 
-   * Remaining capacity clamped because some headers are rounded.
+   Remaining capacity clamped because some headers are rounded.
 
    */
   const remaining = clampNumber({
@@ -142,7 +142,7 @@ function parseAnthropicRateLimitSnapshot({
     max: limit,
   },);
   /**
-   * Used capacity expressed as percentage of capacity.
+   Used capacity expressed as percentage of capacity.
    */
   const usedPercent = ((limit - remaining) / limit) * PERCENT_BASE;
 
@@ -158,18 +158,18 @@ function parseAnthropicRateLimitSnapshot({
 }
 
 /**
- * Parses supported Anthropic rate-limit header groups.
- *
- * @param headers - lowercase provider response headers
- *
- * @param nowMs - wall-clock sample time in epoch milliseconds
- *
- * @returns parsed {@link RateLimitSnapshot} entries for complete and valid header groups
- *
- * @example
- * ```ts
- * parseAnthropicRateLimitSnapshots({ headers, nowMs: Date.now() });
- * ```
+ Parses supported Anthropic rate-limit header groups.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param nowMs - wall-clock sample time in epoch milliseconds
+ 
+ @returns parsed {@link RateLimitSnapshot} entries for complete and valid header groups
+ 
+ @example
+ ```ts
+ parseAnthropicRateLimitSnapshots({ headers, nowMs: Date.now() });
+ ```
  */
 function parseAnthropicRateLimitSnapshots({
   headers,

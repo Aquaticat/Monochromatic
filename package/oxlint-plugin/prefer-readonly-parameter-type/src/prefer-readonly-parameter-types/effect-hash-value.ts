@@ -1,26 +1,26 @@
 /**
- * Deterministic hash updates for JSON-compatible semantic configuration.
- *
- * @module
+ Deterministic hash updates for JSON-compatible semantic configuration.
+ 
+ @module
  */
 
 import type { Hash, } from 'node:crypto';
 
 /**
- * Updates digest with unambiguous string field.
- *
- * @param digest - Hash receiving length-prefixed text.
- *
- * @param value - Text field to append.
- *
- * @returns same hash for nested calls.
- *
- * @mutates digest - `digest.update` appends field length and bytes.
- *
- * @example
- * ```ts
- * updateHashString({ digest, value: 'strict' });
- * ```
+ Updates digest with unambiguous string field.
+ 
+ @param digest - Hash receiving length-prefixed text.
+ 
+ @param value - Text field to append.
+ 
+ @returns same hash for nested calls.
+ 
+ @mutates digest - `digest.update` appends field length and bytes.
+ 
+ @example
+ ```ts
+ updateHashString({ digest, value: 'strict' });
+ ```
  */
 export function updateHashString({
   digest,
@@ -36,11 +36,11 @@ export function updateHashString({
 }
 
 /**
- * Tests whether compiler option value is a property-bearing record.
- *
- * @param value - Compiler option value.
- *
- * @returns whether string-keyed properties can be inspected.
+ Tests whether compiler option value is a property-bearing record.
+ 
+ @param value - Compiler option value.
+ 
+ @returns whether string-keyed properties can be inspected.
  */
 function isPlainRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
   return ((typeof value) === 'object')
@@ -49,18 +49,18 @@ function isPlainRecord(value: unknown,): value is Readonly<Record<string, unknow
 }
 
 /**
- * Updates digest with deterministic JSON-compatible value representation.
- *
- * @param digest - Hash receiving canonical fields.
- *
- * @param value - Compiler option value decoded by TypeScript API.
- *
- * @mutates digest - `digest.update` appends deterministic type and value representation.
- *
- * @example
- * ```ts
- * updateHashPlainValue({ digest, value: { strict: true } });
- * ```
+ Updates digest with deterministic JSON-compatible value representation.
+ 
+ @param digest - Hash receiving canonical fields.
+ 
+ @param value - Compiler option value decoded by TypeScript API.
+ 
+ @mutates digest - `digest.update` appends deterministic type and value representation.
+ 
+ @example
+ ```ts
+ updateHashPlainValue({ digest, value: { strict: true } });
+ ```
  */
 export function updateHashPlainValue({
   digest,

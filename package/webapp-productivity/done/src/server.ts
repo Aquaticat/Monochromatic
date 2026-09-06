@@ -1,22 +1,22 @@
 /**
- * Application entry point.
- *
- * Boot sequence:
- * 1. Side-effect import of `./lib/db.ts` opens the SQLite database and runs migrations
- * 2. Start h3 HTTP server with page routes and API routes
- *
- * Client JS bundles are built separately via `mise run build:js:client` (tsdown).
- * Global CSS and component styles are generated at runtime via h-css (inlined in JS bundles).
- *
- * Request lifecycle (page):
- *   browser GET "/" -\> `inboxPage()` -\> `renderPage()` -\> HTML shell response
- *   -\> browser loads `\<script src="/dist/client/inbox.js"\>` (served by static handler)
- *   -\> client script calls `readPageData()` to hydrate from the `\<script id="page-data"\>` JSON blob
- *   -\> client script imperatively builds DOM into `\<main id="app"\>`
- *
- * Request lifecycle (API):
- *   browser fetch POST "/api/tasks/:id/complete"
- *   -\> matched by h3 router -\> handler reads/writes DB -\> JSON response
+ Application entry point.
+ 
+ Boot sequence:
+ 1. Side-effect import of `./lib/db.ts` opens the SQLite database and runs migrations
+ 2. Start h3 HTTP server with page routes and API routes
+ 
+ Client JS bundles are built separately via `mise run build:js:client` (tsdown).
+ Global CSS and component styles are generated at runtime via h-css (inlined in JS bundles).
+ 
+ Request lifecycle (page):
+   browser GET "/" -\> `inboxPage()` -\> `renderPage()` -\> HTML shell response
+   -\> browser loads `\<script src="/dist/client/inbox.js"\>` (served by static handler)
+   -\> client script calls `readPageData()` to hydrate from the `\<script id="page-data"\>` JSON blob
+   -\> client script imperatively builds DOM into `\<main id="app"\>`
+ 
+ Request lifecycle (API):
+   browser fetch POST "/api/tasks/:id/complete"
+   -\> matched by h3 router -\> handler reads/writes DB -\> JSON response
  */
 import {
   defineHandler,
@@ -45,27 +45,27 @@ import { settingsPage, } from './server/page/settings.ts';
 import { taskDetailsPage, } from './server/page/task-details.ts';
 
 /**
- * Default HTTP port when neither `--port=` nor `PORT` env var is provided.
+ Default HTTP port when neither `--port=` nor `PORT` env var is provided.
  */
 const DEFAULT_PORT = 3_000;
 
 /**
- * Radix for decimal integer parsing.
+ Radix for decimal integer parsing.
  */
 const DECIMAL_RADIX = 10;
 
 /**
- * Resolved cache-metadata shape h3's `getMeta` contract returns; carries the
- * `undefined` "missing file" case without a literal `T | undefined` annotation.
+ Resolved cache-metadata shape h3's `getMeta` contract returns; carries the
+ `undefined` "missing file" case without a literal `T | undefined` annotation.
  */
 type StaticMeta = Awaited<ReturnType<ServeStaticOptions['getMeta']>>;
 
 /**
- * Reads a static asset's bytes from disk relative to the working directory.
- *
- * @param id - Request path resolved by h3, relative to project root
- *
- * @returns File contents
+ Reads a static asset's bytes from disk relative to the working directory.
+ 
+ @param id - Request path resolved by h3, relative to project root
+ 
+ @returns File contents
  */
 function readStaticContents(id: string,): ReturnType<ServeStaticOptions['getContents']> {
   return readFile(
@@ -77,16 +77,16 @@ function readStaticContents(id: string,): ReturnType<ServeStaticOptions['getCont
 }
 
 /**
- * Resolves size/mtime cache metadata for a static asset.
- *
- * @param id - Request path resolved by h3, relative to project root
- *
- * @returns Cache metadata, or `undefined` when the file is missing or inaccessible
+ Resolves size/mtime cache metadata for a static asset.
+ 
+ @param id - Request path resolved by h3, relative to project root
+ 
+ @returns Cache metadata, or `undefined` when the file is missing or inaccessible
  */
 async function getStaticMetadata(id: string,): Promise<StaticMeta> {
   try {
     /**
-     * Filesystem stats for the requested asset; drives both the is-file check and meta payload.
+     Filesystem stats for the requested asset; drives both the is-file check and meta payload.
      */
     const stats = await stat(
       join(
@@ -112,31 +112,31 @@ async function getStaticMetadata(id: string,): Promise<StaticMeta> {
 }
 
 /**
- * Resolves the HTTP listen port from CLI arguments, environment, or default.
- * Priority: `--port=N` \> `PORT` env var \> {@link DEFAULT_PORT}.
- *
- * @returns Resolved port number; reads the flag via {@link getArgumentValue},
- * falling back through the priority chain when it returns {@link ARGUMENT_ABSENT}
+ Resolves the HTTP listen port from CLI arguments, environment, or default.
+ Priority: `--port=N` \> `PORT` env var \> {@link DEFAULT_PORT}.
+ 
+ @returns Resolved port number; reads the flag via {@link getArgumentValue},
+ falling back through the priority chain when it returns {@link ARGUMENT_ABSENT}
  */
 function resolvePort(): number {
   /**
-   * Highest-priority source: explicit `--port=` flag.
+   Highest-priority source: explicit `--port=` flag.
    */
   const argumentPort = getArgumentValue('port',);
   /**
-   * Mid-priority source: `PORT` env var when no flag is given.
+   Mid-priority source: `PORT` env var when no flag is given.
    */
   const environmentPort = process.env
     .PORT;
   /**
-   * First-found source; absent flag falls back to the env var, then the default port.
+   First-found source; absent flag falls back to the env var, then the default port.
    */
   const rawPort = argumentPort === ARGUMENT_ABSENT ? environmentPort : argumentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
 
   /**
-   * Numeric parse with `NaN` falling back to the default.
+   Numeric parse with `NaN` falling back to the default.
    */
   const parsedPort = Number.parseInt(
     rawPort,
@@ -146,7 +146,7 @@ function resolvePort(): number {
 }
 
 /**
- * h3 application instance routing HTTP requests to handlers.
+ h3 application instance routing HTTP requests to handlers.
  */
 const app = new H3();
 
@@ -169,7 +169,7 @@ app.get(
   '/tasks/:id',
   defineHandler(function handleTaskDetails(event,) {
     /**
-     * Route slug captured from `/tasks/:id`; undefined is a router invariant violation.
+     Route slug captured from `/tasks/:id`; undefined is a router invariant violation.
      */
     const id = getRouterParam(
       event,
@@ -208,18 +208,18 @@ app.get(
   '/dist/client/**',
   defineHandler(
     /**
-     * Serves one event through h3 static-response state.
-     *
-     * @param event - Incoming h3 event.
-     *
-     * @returns static response when an asset exists.
-     *
-     * @mutates event - `h3@2.0.1-rc.24 . serveStatic` may affect event through bundled path and header operations.
-     *
-     * @example
-     * ```ts
-     * await handleStaticAsset(event);
-     * ```
+     Serves one event through h3 static-response state.
+     
+     @param event - Incoming h3 event.
+     
+     @returns static response when an asset exists.
+     
+     @mutates event - `h3@2.0.1-rc.24 . serveStatic` may affect event through bundled path and header operations.
+     
+     @example
+     ```ts
+     await handleStaticAsset(event);
+     ```
      */
     function handleStaticAsset(event,) {
       return serveStatic(
@@ -237,7 +237,7 @@ app.get(
 
 // Start server.
 /**
- * Running HTTP server instance listening on the configured port.
+ Running HTTP server instance listening on the configured port.
  */
 const _server = serve(
   app,

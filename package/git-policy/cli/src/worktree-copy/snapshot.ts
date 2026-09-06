@@ -32,34 +32,34 @@ import type {
 } from './model.ts';
 
 /**
- * Private staging directory prefix beside destination worktree.
+ Private staging directory prefix beside destination worktree.
  */
 export const STAGE_PREFIX = '.cli-git-worktree-copy-';
 
 /**
- * Private staging directory mode.
+ Private staging directory mode.
  */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 
 /**
- * Copy-on-write request with documented full-copy fallback.
+ Copy-on-write request with documented full-copy fallback.
  */
 const COPY_MODE = constants.COPYFILE_EXCL | constants.COPYFILE_FICLONE;
 
 /**
- * Reports component-aware native path containment.
- *
- * @param candidate - absolute candidate path
- *
- * @param parent - absolute possible parent path
- *
- * @returns whether candidate equals or descends from parent
- *
- * @example
- * ```ts
- * pathWithin({ candidate: '/repo/cache', parent: '/repo' });
- * // => true
- * ```
+ Reports component-aware native path containment.
+ 
+ @param candidate - absolute candidate path
+ 
+ @param parent - absolute possible parent path
+ 
+ @returns whether candidate equals or descends from parent
+ 
+ @example
+ ```ts
+ pathWithin({ candidate: '/repo/cache', parent: '/repo' });
+ // => true
+ ```
  */
 function pathWithin({
   candidate,
@@ -69,7 +69,7 @@ function pathWithin({
   parent: string;
 }>,): boolean {
   /**
-   * Native relative path from parent.
+   Native relative path from parent.
    */
   const local = relative(
     parent,
@@ -79,21 +79,21 @@ function pathWithin({
 }
 
 /**
- * Filters registered worktrees and private stage out of source traversal.
- *
- * @param sourceRoot - canonical source worktree
- *
- * @param registeredRoots - every current registered worktree root
- *
- * @param stageContainer - private stage potentially nested beneath source
- *
- * @returns absolute roots omitted from source snapshot
- *
- * @example
- * ```ts
- * sourceExclusions({ sourceRoot: '/repo', registeredRoots: ['/repo', '/repo/.agent/wt'], stageContainer: '/tmp/s' });
- * // => ['/repo/.agent/wt']
- * ```
+ Filters registered worktrees and private stage out of source traversal.
+ 
+ @param sourceRoot - canonical source worktree
+ 
+ @param registeredRoots - every current registered worktree root
+ 
+ @param stageContainer - private stage potentially nested beneath source
+ 
+ @returns absolute roots omitted from source snapshot
+ 
+ @example
+ ```ts
+ sourceExclusions({ sourceRoot: '/repo', registeredRoots: ['/repo', '/repo/.agent/wt'], stageContainer: '/tmp/s' });
+ // => ['/repo/.agent/wt']
+ ```
  */
 function sourceExclusions({
   sourceRoot,
@@ -120,21 +120,21 @@ function sourceExclusions({
 }
 
 /**
- * Copies validated manifest entries into private destination-filesystem stage.
- *
- * Entry-wise copying remains valid when private stage is nested beneath a
- * selected source directory.
- *
- * @param sourceRoot - canonical source worktree
- *
- * @param stageRoot - private payload root
- *
- * @param entries - parent-first no-follow source manifest
- *
- * @example
- * ```ts
- * await copyManifestEntries({ sourceRoot: '/repo', stageRoot: '/stage', entries });
- * ```
+ Copies validated manifest entries into private destination-filesystem stage.
+ 
+ Entry-wise copying remains valid when private stage is nested beneath a
+ selected source directory.
+ 
+ @param sourceRoot - canonical source worktree
+ 
+ @param stageRoot - private payload root
+ 
+ @param entries - parent-first no-follow source manifest
+ 
+ @example
+ ```ts
+ await copyManifestEntries({ sourceRoot: '/repo', stageRoot: '/stage', entries });
+ ```
  */
 async function copyManifestEntries({
   sourceRoot,
@@ -147,14 +147,14 @@ async function copyManifestEntries({
 }>,): Promise<void> {
   for (const entry of entries) {
     /**
-     * Source manifest entry path.
+     Source manifest entry path.
      */
     const sourcePath = filesystemPath({
       root: sourceRoot,
       repositoryPath: entry.relativePath,
     },);
     /**
-     * Staged manifest entry path.
+     Staged manifest entry path.
      */
     const stagePath = filesystemPath({
       root: stageRoot,
@@ -190,7 +190,7 @@ async function copyManifestEntries({
     }
     /* oxlint-disable no-await-in-loop -- no-follow symbolic-link target must be captured from source entry */
     /**
-     * Exact no-follow symbolic-link target text.
+     Exact no-follow symbolic-link target text.
      */
     const target = await readlink(sourcePath,);
     /* oxlint-enable no-await-in-loop */
@@ -203,24 +203,24 @@ async function copyManifestEntries({
 }
 
 /**
- * Creates exact ignored-state snapshot staged beside destination worktree.
- *
- * @param sourceRoot - canonical source worktree
- *
- * @param destinationRoot - canonical newly created worktree
- *
- * @param registeredRoots - canonical roots excluded from recursive source copy
- *
- * @param gitPath - absolute real-Git executable
- *
- * @returns validated private snapshot
- *
- * @throws {@link WorktreeCopyError} when source is unsupported or changes
- *
- * @example
- * ```ts
- * await stageIgnoredSnapshot({ sourceRoot: '/repo', destinationRoot: '/wt', registeredRoots: ['/repo', '/wt'], gitPath: '/usr/bin/git' });
- * ```
+ Creates exact ignored-state snapshot staged beside destination worktree.
+ 
+ @param sourceRoot - canonical source worktree
+ 
+ @param destinationRoot - canonical newly created worktree
+ 
+ @param registeredRoots - canonical roots excluded from recursive source copy
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @returns validated private snapshot
+ 
+ @throws {@link WorktreeCopyError} when source is unsupported or changes
+ 
+ @example
+ ```ts
+ await stageIgnoredSnapshot({ sourceRoot: '/repo', destinationRoot: '/wt', registeredRoots: ['/repo', '/wt'], gitPath: '/usr/bin/git' });
+ ```
  */
 export async function stageIgnoredSnapshot({
   sourceRoot,
@@ -234,7 +234,7 @@ export async function stageIgnoredSnapshot({
   gitPath: string;
 }>,): Promise<StagedWorktreeSnapshot> {
   /**
-   * Existing registered roots nested strictly beneath source worktree.
+   Existing registered roots nested strictly beneath source worktree.
    */
   const nestedRegisteredRoots = registeredRoots
     .map(function normalizedRegisteredRoot(root,): string {
@@ -247,7 +247,7 @@ export async function stageIgnoredSnapshot({
       },);
     },);
   /**
-   * Git-selected ignored roots before private staging begins.
+   Git-selected ignored roots before private staging begins.
    */
   const gitSelectedRoots = await readIgnoredRoots({
     sourceRoot,
@@ -255,7 +255,7 @@ export async function stageIgnoredSnapshot({
     excludedRoots: nestedRegisteredRoots,
   },);
   /**
-   * Private stage on destination filesystem for copy-on-write and local install.
+   Private stage on destination filesystem for copy-on-write and local install.
    */
   const stageContainer = await mkdtemp(join(
     dirname(destinationRoot,),
@@ -278,7 +278,7 @@ export async function stageIgnoredSnapshot({
     throw error;
   }
   /**
-   * Private payload root mirroring source repository paths.
+   Private payload root mirroring source repository paths.
    */
   const stageRoot = join(
     stageContainer,
@@ -289,7 +289,7 @@ export async function stageIgnoredSnapshot({
     { mode: PRIVATE_DIRECTORY_MODE, },
   );
   /**
-   * Source subtrees omitted from recursive ignored roots.
+   Source subtrees omitted from recursive ignored roots.
    */
   const excludedSourceRoots = sourceExclusions({
     sourceRoot,
@@ -297,7 +297,7 @@ export async function stageIgnoredSnapshot({
     stageContainer,
   },);
   /**
-   * Selected roots not themselves registered worktrees or private staging.
+   Selected roots not themselves registered worktrees or private staging.
    */
   const selectedRoots = gitSelectedRoots.filter(function retainedRoot(
     repositoryPath,
@@ -309,7 +309,7 @@ export async function stageIgnoredSnapshot({
       return false;
     }
     /**
-     * Native selected source root.
+     Native selected source root.
      */
     const sourcePath = resolve(filesystemPath({
       root: sourceRoot,
@@ -325,7 +325,7 @@ export async function stageIgnoredSnapshot({
 
   try {
     /**
-     * Initial exact source manifest before content copy.
+     Initial exact source manifest before content copy.
      */
     const entries = await collectEntryManifest({
       root: sourceRoot,

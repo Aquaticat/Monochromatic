@@ -17,7 +17,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 /**
- * Built CLI artifact exercised at process privilege boundary.
+ Built CLI artifact exercised at process privilege boundary.
  */
 const CLI_BUNDLE_PATH = new URL(
   '../dist/final/node/index.mjs',
@@ -31,7 +31,7 @@ await describe({
       name: 'relaunches exact runtime and script through sudo before reading config',
       fn: async () => {
         /**
-         * Disposable directory containing fake sudo command and invocation record.
+         Disposable directory containing fake sudo command and invocation record.
          */
         const directory = await mkdtemp(join(
           tmpdir(),
@@ -39,7 +39,7 @@ await describe({
         ),);
         await using cleanup = {
           /**
-           * Removes disposable fake command and record.
+           Removes disposable fake command and record.
            */
           async [Symbol.asyncDispose](): Promise<void> {
             await rm(
@@ -52,14 +52,14 @@ await describe({
           },
         };
         /**
-         * Path at which fake sudo records exact argument vector.
+         Path at which fake sudo records exact argument vector.
          */
         const recordPath = join(
           directory,
           'invocation.json',
         );
         /**
-         * Executable fake sudo found before system command in child PATH.
+         Executable fake sudo found before system command in child PATH.
          */
         const sudoPath = join(
           directory,
@@ -74,7 +74,7 @@ await describe({
           0o700,
         );
         /**
-         * Non-root CLI process expected to delegate before opening absent config.
+         Non-root CLI process expected to delegate before opening absent config.
          */
         const child = spawn(
           process.execPath,
@@ -107,7 +107,7 @@ await describe({
         );
         expect(child.exitCode,).toBe(0,);
         /**
-         * Parsed exact sudo invocation recorded by fake command.
+         Parsed exact sudo invocation recorded by fake command.
          */
         const invocation = JSON.parse(await readFile(
           recordPath,

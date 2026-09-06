@@ -1,7 +1,7 @@
 /**
- * Auto-mode named package exports.
- *
- * @module
+ Auto-mode named package exports.
+ 
+ @module
  */
 
 export {

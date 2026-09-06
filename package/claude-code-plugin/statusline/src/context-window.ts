@@ -1,7 +1,7 @@
 /**
- * Claude context-window counter formatting.
- *
- * @module
+ Claude context-window counter formatting.
+ 
+ @module
  */
 
 import {
@@ -15,32 +15,32 @@ import type { StatuslineInput, } from './types.ts';
 //region Context window constants
 
 /**
- * Token count at or above which the used segment renders white.
+ Token count at or above which the used segment renders white.
  */
 const CONTEXT_THRESHOLD_WHITE = 900_000;
 
 /**
- * Token count at or above which the used segment renders magenta.
+ Token count at or above which the used segment renders magenta.
  */
 const CONTEXT_THRESHOLD_MAGENTA = 200_000;
 
 /**
- * Token count at or above which the used segment renders yellow.
+ Token count at or above which the used segment renders yellow.
  */
 const CONTEXT_THRESHOLD_YELLOW = 100_000;
 
 /**
- * Base for thousands grouping.
+ Base for thousands grouping.
  */
 const THOUSANDS = 1_000;
 
 /**
- * Width of the thousands group before the comma.
+ Width of the thousands group before the comma.
  */
 const THOUSANDS_GROUP_WIDTH = 3;
 
 /**
- * Width of the full used-token field.
+ Width of the full used-token field.
  */
 const USED_TOKEN_FIELD_WIDTH = 7;
 
@@ -49,16 +49,16 @@ const USED_TOKEN_FIELD_WIDTH = 7;
 //region Usage math
 
 /**
- * Computes total used tokens from Claude's usage payload.
- *
- * @param usage - current usage payload from Claude Code
- *
- * @returns total used tokens across input, output, and cache buckets
- *
- * @example
- * ```ts
- * usedTokens({ input_tokens: 1, output_tokens: 2 });
- * ```
+ Computes total used tokens from Claude's usage payload.
+ 
+ @param usage - current usage payload from Claude Code
+ 
+ @returns total used tokens across input, output, and cache buckets
+ 
+ @example
+ ```ts
+ usedTokens({ input_tokens: 1, output_tokens: 2 });
+ ```
  */
 function usedTokens(
   usage: NonNullable<NonNullable<StatuslineInput['context_window']>['current_usage']>,
@@ -74,26 +74,26 @@ function usedTokens(
 //region Formatting
 
 /**
- * Formats used-token count with a fixed-width thousands layout.
- *
- * @param used - used token count
- *
- * @returns fixed-width used-token text
- *
- * @example
- * ```ts
- * formatUsedTokens(51045);
- * ```
+ Formats used-token count with a fixed-width thousands layout.
+ 
+ @param used - used token count
+ 
+ @returns fixed-width used-token text
+ 
+ @example
+ ```ts
+ formatUsedTokens(51045);
+ ```
  */
 function formatUsedTokens(used: number,): string {
   if (used >= THOUSANDS) {
     /**
-     * Thousands group before the comma.
+     Thousands group before the comma.
      */
     const thousandsGroup = String(Math.floor(used / THOUSANDS,),)
       .padStart(THOUSANDS_GROUP_WIDTH,);
     /**
-     * Ones group after the comma.
+     Ones group after the comma.
      */
     const onesGroup = String(used % THOUSANDS,)
       .padStart(
@@ -108,16 +108,16 @@ function formatUsedTokens(used: number,): string {
 }
 
 /**
- * Selects ANSI color for context-window usage.
- *
- * @param used - used token count
- *
- * @returns ANSI color code, or empty string when usage is below color thresholds
- *
- * @example
- * ```ts
- * contextWindowColor(200_000);
- * ```
+ Selects ANSI color for context-window usage.
+ 
+ @param used - used token count
+ 
+ @returns ANSI color code, or empty string when usage is below color thresholds
+ 
+ @example
+ ```ts
+ contextWindowColor(200_000);
+ ```
  */
 function contextWindowColor(used: number,): string {
   if (used >= CONTEXT_THRESHOLD_WHITE)
@@ -130,18 +130,18 @@ function contextWindowColor(used: number,): string {
 }
 
 /**
- * Formats used/total token counter with color based on usage level.
- *
- * @param used - used token count
- *
- * @param total - context-window token capacity
- *
- * @returns formatted context-window segment
- *
- * @example
- * ```ts
- * formatContextWindow({ used: 51_045, total: 1_000_000 });
- * ```
+ Formats used/total token counter with color based on usage level.
+ 
+ @param used - used token count
+ 
+ @param total - context-window token capacity
+ 
+ @returns formatted context-window segment
+ 
+ @example
+ ```ts
+ formatContextWindow({ used: 51_045, total: 1_000_000 });
+ ```
  */
 function formatContextWindow({
   used,
@@ -151,15 +151,15 @@ function formatContextWindow({
   total: number;
 }>,): string {
   /**
-   * Used-token count rendered in fixed-width form.
+   Used-token count rendered in fixed-width form.
    */
   const usedText = formatUsedTokens(used,);
   /**
-   * Total token count rendered with locale-aware separators.
+   Total token count rendered with locale-aware separators.
    */
   const totalText = total.toLocaleString('en-US',);
   /**
-   * Colour code picked from context usage bands.
+   Colour code picked from context usage bands.
    */
   const code = contextWindowColor(used,);
 
@@ -172,31 +172,31 @@ function formatContextWindow({
 }
 
 /**
- * Formats context window segment from Claude statusline input.
- *
- * @param input - statusline input payload
- *
- * @returns context-window segment, or empty string when usage is unavailable
- *
- * @example
- * ```ts
- * formatContextWindowSegment(input);
- * ```
+ Formats context window segment from Claude statusline input.
+ 
+ @param input - statusline input payload
+ 
+ @returns context-window segment, or empty string when usage is unavailable
+ 
+ @example
+ ```ts
+ formatContextWindowSegment(input);
+ ```
  */
 function formatContextWindowSegment(input: StatuslineInput,): string {
   /**
-   * Context-window payload from the input.
+   Context-window payload from the input.
    */
   const contextWindow = input.context_window;
   if (contextWindow === undefined)
     return '';
 
   /**
-   * Current-usage subtree from the input.
+   Current-usage subtree from the input.
    */
   const usage = contextWindow.current_usage;
   /**
-   * Total context-window size.
+   Total context-window size.
    */
   const total = contextWindow.context_window_size ?? 0;
 
@@ -204,7 +204,7 @@ function formatContextWindowSegment(input: StatuslineInput,): string {
     return '';
 
   /**
-   * Sum of every input/output/cache token bucket.
+   Sum of every input/output/cache token bucket.
    */
   const used = usedTokens(usage,);
   if ((used <= 0) || (total <= 0))

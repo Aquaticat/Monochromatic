@@ -1,7 +1,7 @@
 /**
- * Content-based parsing for pnpm workspace catalog blocks.
- *
- * @module
+ Content-based parsing for pnpm workspace catalog blocks.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -21,22 +21,22 @@ import type {
 //region Parser state
 
 /**
- * Logger used for rejected catalog entries and malformed optional blocks.
+ Logger used for rejected catalog entries and malformed optional blocks.
  */
 const logger = tagged({ tag: 'pnpm-workspace-catalog', },);
 
 /**
- * Reports whether `value` is a non-array object suitable for YAML mappings.
- *
- * @param value - parsed YAML value to inspect
- *
- * @returns whether `value` can be read as a string-keyed mapping
- *
- * @example
- * ```ts
- * isRecord({ catalog: {}, }); // true
- * isRecord([]); // false
- * ```
+ Reports whether `value` is a non-array object suitable for YAML mappings.
+ 
+ @param value - parsed YAML value to inspect
+ 
+ @returns whether `value` can be read as a string-keyed mapping
+ 
+ @example
+ ```ts
+ isRecord({ catalog: {}, }); // true
+ isRecord([]); // false
+ ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   if ((typeof value) !== 'object')
@@ -47,15 +47,15 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Creates a map with no inherited properties.
- *
- * @returns empty null-prototype string map
- *
- * @example
- * ```ts
- * const map = createCatalogMap();
- * map.oxlint = '>=1.71.0';
- * ```
+ Creates a map with no inherited properties.
+ 
+ @returns empty null-prototype string map
+ 
+ @example
+ ```ts
+ const map = createCatalogMap();
+ map.oxlint = '>=1.71.0';
+ ```
  */
 function createCatalogMap(): Record<string, string> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.create(null) is the deliberate null-prototype catalog container
@@ -63,15 +63,15 @@ function createCatalogMap(): Record<string, string> {
 }
 
 /**
- * Creates a null-prototype map for named catalog blocks.
- *
- * @returns empty null-prototype named-catalog map
- *
- * @example
- * ```ts
- * const catalogs = createNamedCatalogMap();
- * catalogs.legacy = { react: '^18.0.0', };
- * ```
+ Creates a null-prototype map for named catalog blocks.
+ 
+ @returns empty null-prototype named-catalog map
+ 
+ @example
+ ```ts
+ const catalogs = createNamedCatalogMap();
+ catalogs.legacy = { react: '^18.0.0', };
+ ```
  */
 function createNamedCatalogMap(): Record<string, CatalogMap> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.create(null) is the deliberate null-prototype named-catalog container
@@ -79,18 +79,18 @@ function createNamedCatalogMap(): Record<string, CatalogMap> {
 }
 
 /**
- * Logs why one catalog mapping was omitted from the safe result.
- *
- * @param blockName - catalog block label
- *
- * @param key - rejected catalog key
- *
- * @param reason - reason for rejection
- *
- * @example
- * ```ts
- * warnRejectedEntry({ blockName: 'catalog', key: '__proto__', reason: 'invalid package name', });
- * ```
+ Logs why one catalog mapping was omitted from the safe result.
+ 
+ @param blockName - catalog block label
+ 
+ @param key - rejected catalog key
+ 
+ @param reason - reason for rejection
+ 
+ @example
+ ```ts
+ warnRejectedEntry({ blockName: 'catalog', key: '__proto__', reason: 'invalid package name', });
+ ```
  */
 function warnRejectedEntry(
   {
@@ -109,14 +109,14 @@ function warnRejectedEntry(
 }
 
 /**
- * Logs why a catalog block could not be read as a YAML mapping.
- *
- * @param blockName - block label used in the diagnostic
- *
- * @example
- * ```ts
- * warnMalformedBlock('catalogs');
- * ```
+ Logs why a catalog block could not be read as a YAML mapping.
+ 
+ @param blockName - block label used in the diagnostic
+ 
+ @example
+ ```ts
+ warnMalformedBlock('catalogs');
+ ```
  */
 function warnMalformedBlock(blockName: string,): void {
   logger.warn(
@@ -129,21 +129,21 @@ function warnMalformedBlock(blockName: string,): void {
 //region Block parsing
 
 /**
- * Copies one YAML catalog mapping into a validated null-prototype map.
- *
- * @param blockName - YAML block label
- *
- * @param value - parsed YAML block value
- *
- * @returns validated catalog map
- *
- * @mutates value - `Object.entries` may invoke own-property getters or proxy enumeration traps
- * on parsed block
- *
- * @example
- * ```ts
- * const catalog = parseBlock({ blockName: 'catalog', value: { oxlint: '>=1.71.0', }, });
- * ```
+ Copies one YAML catalog mapping into a validated null-prototype map.
+ 
+ @param blockName - YAML block label
+ 
+ @param value - parsed YAML block value
+ 
+ @returns validated catalog map
+ 
+ @mutates value - `Object.entries` may invoke own-property getters or proxy enumeration traps
+ on parsed block
+ 
+ @example
+ ```ts
+ const catalog = parseBlock({ blockName: 'catalog', value: { oxlint: '>=1.71.0', }, });
+ ```
  */
 function parseBlock(
   {
@@ -155,7 +155,7 @@ function parseBlock(
   },
 ): CatalogMap {
   /**
-   * Safe result map populated only after key and value checks.
+   Safe result map populated only after key and value checks.
    */
   const result = createCatalogMap();
 
@@ -167,7 +167,7 @@ function parseBlock(
   }
 
   /**
-   * YAML entries copied into the validated result map.
+   YAML entries copied into the validated result map.
    */
   const entries = Object.entries(value,);
   entries.forEach(function copyEntry([key, rawValue,],): void {
@@ -194,15 +194,15 @@ function parseBlock(
 }
 
 /**
- * Creates the empty parsed document used when no catalog blocks are declared.
- *
- * @returns empty safe catalog document
- *
- * @example
- * ```ts
- * const document = createEmptyCatalogDocument();
- * expect(document.defaultCatalog).toEqual({});
- * ```
+ Creates the empty parsed document used when no catalog blocks are declared.
+ 
+ @returns empty safe catalog document
+ 
+ @example
+ ```ts
+ const document = createEmptyCatalogDocument();
+ expect(document.defaultCatalog).toEqual({});
+ ```
  */
 function createEmptyCatalogDocument(): CatalogDocument {
   return {
@@ -216,28 +216,28 @@ function createEmptyCatalogDocument(): CatalogDocument {
 //region Public parser
 
 /**
- * Parses default and named catalog blocks from raw `pnpm-workspace.yaml` text.
- *
- * YAML syntax errors are propagated by the `yaml` library. Missing or empty
- * catalog blocks produce empty safe maps. Invalid package keys and non-string
- * values are warned about and skipped without discarding valid siblings.
- *
- * @param content - raw workspace YAML text
- *
- * @returns parsed default and named catalog blocks
- *
- * @example
- * ```ts
- * const document = parseCatalogFromYaml([
- *   'catalog:',
- *   "  'oxlint': '>=1.71.0'",
- * ].join('\n',),);
- * console.info(document.defaultCatalog.oxlint);
- * ```
+ Parses default and named catalog blocks from raw `pnpm-workspace.yaml` text.
+ 
+ YAML syntax errors are propagated by the `yaml` library. Missing or empty
+ catalog blocks produce empty safe maps. Invalid package keys and non-string
+ values are warned about and skipped without discarding valid siblings.
+ 
+ @param content - raw workspace YAML text
+ 
+ @returns parsed default and named catalog blocks
+ 
+ @example
+ ```ts
+ const document = parseCatalogFromYaml([
+   'catalog:',
+   "  'oxlint': '>=1.71.0'",
+ ].join('\n',),);
+ console.info(document.defaultCatalog.oxlint);
+ ```
  */
 export function parseCatalogFromYaml(content: string,): CatalogDocument {
   /**
-   * YAML document narrowed at runtime before catalog fields are read.
+   YAML document narrowed at runtime before catalog fields are read.
    */
   const parsed: unknown = parseYaml(content,);
   if (!isRecord(parsed,)) {
@@ -247,14 +247,14 @@ export function parseCatalogFromYaml(content: string,): CatalogDocument {
   }
 
   /**
-   * Validated default catalog mapping.
+   Validated default catalog mapping.
    */
   const defaultCatalog = parseBlock({
     blockName: 'catalog',
     value: parsed.catalog,
   },);
   /**
-   * Safe outer map for named catalog mappings.
+   Safe outer map for named catalog mappings.
    */
   const namedCatalogs = createNamedCatalogMap();
 
@@ -273,7 +273,7 @@ export function parseCatalogFromYaml(content: string,): CatalogDocument {
   }
 
   /**
-   * Named YAML blocks copied into the validated outer map.
+   Named YAML blocks copied into the validated outer map.
    */
   const namedEntries = Object.entries(parsed.catalogs,);
   for (const [name, value,] of namedEntries) {
@@ -290,27 +290,27 @@ export function parseCatalogFromYaml(content: string,): CatalogDocument {
 }
 
 /**
- * Flattens parsed catalog maps into raw entries while preserving map order.
- *
- * Default entries are always returned first. Named entries are included only
- * when `includeNamedCatalogs` is true, so default-only callers opt into the
- * broader result explicitly.
- *
- * @param document - parsed catalog document
- *
- * @param includeNamedCatalogs - whether named blocks should be included
- *
- * @returns raw catalog entries in deterministic default-then-named order
- *
- * on catalog maps
- *
- * @example
- * ```ts
- * const entries = flattenCatalogEntries({
- *   document,
- *   includeNamedCatalogs: true,
- * });
- * ```
+ Flattens parsed catalog maps into raw entries while preserving map order.
+ 
+ Default entries are always returned first. Named entries are included only
+ when `includeNamedCatalogs` is true, so default-only callers opt into the
+ broader result explicitly.
+ 
+ @param document - parsed catalog document
+ 
+ @param includeNamedCatalogs - whether named blocks should be included
+ 
+ @returns raw catalog entries in deterministic default-then-named order
+ 
+ on catalog maps
+ 
+ @example
+ ```ts
+ const entries = flattenCatalogEntries({
+   document,
+   includeNamedCatalogs: true,
+ });
+ ```
  */
 export function flattenCatalogEntries(
   {
@@ -319,7 +319,7 @@ export function flattenCatalogEntries(
   }: ForeignBorrowed<FlattenCatalogEntriesOptions>,
 ): readonly CatalogEntry[] {
   /**
-   * Default catalog entries without a catalog-name marker.
+   Default catalog entries without a catalog-name marker.
    */
   const defaultEntries = Object.entries(document.defaultCatalog,)
     .map(function toDefaultEntry([catalogKey, catalogValue,],): CatalogEntry {
@@ -332,7 +332,7 @@ export function flattenCatalogEntries(
     return defaultEntries;
 
   /**
-   * Named catalog entries appended after the default block.
+   Named catalog entries appended after the default block.
    */
   const namedEntries: CatalogEntry[] = [];
   for (const [catalogName, catalog,] of Object.entries(document.namedCatalogs,)) {

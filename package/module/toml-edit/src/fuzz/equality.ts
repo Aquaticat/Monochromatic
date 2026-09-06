@@ -1,21 +1,21 @@
 /**
- * Semantic-equality oracle for TOML documents.
- *
- * The round-trip and metamorphic properties need to ask "do these two TOML
- * texts mean the same thing", not "are they the same bytes". The model here
- * is the parser's own `getStaticTOMLValue` projection: tables and dotted keys
- * collapse to nested objects, arrays-of-tables to arrays of objects, and
- * scalars to native JS values. Both sides of supported comparisons pass through
- * the same projection,
- * so datetime and large-integer lossiness remains symmetric.
- * Sources containing `__proto__` keys are classified before projection because
- * the upstream ordinary-object assignment changes prototypes instead of preserving that TOML key.
- *
- * Comparison is structural and iterative (a work stack of left/right pairs),
- * never recursive: the value tree can only be as deep as the parser already
- * built, but a degenerate array spine must not be walked with the call stack.
- *
- * @module
+ Semantic-equality oracle for TOML documents.
+ 
+ The round-trip and metamorphic properties need to ask "do these two TOML
+ texts mean the same thing", not "are they the same bytes". The model here
+ is the parser's own `getStaticTOMLValue` projection: tables and dotted keys
+ collapse to nested objects, arrays-of-tables to arrays of objects, and
+ scalars to native JS values. Both sides of supported comparisons pass through
+ the same projection,
+ so datetime and large-integer lossiness remains symmetric.
+ Sources containing `__proto__` keys are classified before projection because
+ the upstream ordinary-object assignment changes prototypes instead of preserving that TOML key.
+ 
+ Comparison is structural and iterative (a work stack of left/right pairs),
+ never recursive: the value tree can only be as deep as the parser already
+ built, but a degenerate array spine must not be walked with the call stack.
+ 
+ @module
  */
 
 import {
@@ -28,7 +28,7 @@ import type { AST, } from 'toml-eslint-parser';
 import type { TomlEditOptions, } from '../types.ts';
 
 /**
- * Native projection of a TOML value as produced by `getStaticTOMLValue`.
+ Native projection of a TOML value as produced by `getStaticTOMLValue`.
  */
 export type SemanticValue =
   | string
@@ -39,26 +39,26 @@ export type SemanticValue =
   | { readonly [key: string]: SemanticValue; };
 
 /**
- * Key whose ordinary property assignment changes a plain object's prototype.
+ Key whose ordinary property assignment changes a plain object's prototype.
  */
 const PROTOTYPE_SETTER_KEY = '__proto__';
 
 /**
- * Whether `toml-eslint-parser` can faithfully project a source through
- * `getStaticTOMLValue`.
- *
- * Version 1.0.3 assigns table keys into ordinary objects.
- * A `__proto__` segment therefore invokes the inherited prototype setter instead
- * of creating an own TOML property,
- * so semantic comparisons must discard that upstream-oracle case.
- *
- * @returns Whether every authored key avoids the upstream prototype setter.
- *
- * @example
- * ```ts
- * staticSemanticOracleSupports({ source: 'value = 1\n', }); // true
- * staticSemanticOracleSupports({ source: 'value = { "__proto__" = 1 }\n', }); // false
- * ```
+ Whether `toml-eslint-parser` can faithfully project a source through
+ `getStaticTOMLValue`.
+ 
+ Version 1.0.3 assigns table keys into ordinary objects.
+ A `__proto__` segment therefore invokes the inherited prototype setter instead
+ of creating an own TOML property,
+ so semantic comparisons must discard that upstream-oracle case.
+ 
+ @returns Whether every authored key avoids the upstream prototype setter.
+ 
+ @example
+ ```ts
+ staticSemanticOracleSupports({ source: 'value = 1\n', }); // true
+ staticSemanticOracleSupports({ source: 'value = { "__proto__" = 1 }\n', }); // false
+ ```
  */
 export function staticSemanticOracleSupports(
   {
@@ -70,21 +70,21 @@ export function staticSemanticOracleSupports(
   },
 ): boolean {
   /**
-   * Parsed document inspected before invoking the lossy projection.
+   Parsed document inspected before invoking the lossy projection.
    */
   const program: ForeignBorrowed<AST.TOMLProgram> = parseTOML(
     source,
     tomlVersion === undefined ? undefined : { tomlVersion, },
   );
   /**
-   * Structural work stack avoiding recursion over nested array and table spines.
+   Structural work stack avoiding recursion over nested array and table spines.
    */
   const pending: AST.TOMLNode[] = [program,];
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
     if (node.type === 'TOMLKey') {
       for (const segment of node.keys) {
         /**
-         * Authored key-segment text.
+         Authored key-segment text.
          */
         const key = segment.type === 'TOMLBare'
           ? segment.name
@@ -122,23 +122,23 @@ export function staticSemanticOracleSupports(
 }
 
 /**
- * Parse `source` and project it to the native semantic model.
- *
- * @param source - TOML text to project.
- *
- * @param tomlVersion - Forwarded to the parser so version-sensitive grammar
- *                      (for example TOML 1.1 newlines in inline tables) projects
- *                      under the intended dialect.
- *
- * @returns Native value tree of `source`.
- *
- * @throws Whatever the parser throws on rejected input; callers that fuzz
- *         invalid text wrap this in their own totality assertion.
- *
- * @example
- * ```ts
- * semanticModel({ source: 'a = 1\n', },); // { a: 1 }
- * ```
+ Parse `source` and project it to the native semantic model.
+ 
+ @param source - TOML text to project.
+ 
+ @param tomlVersion - Forwarded to the parser so version-sensitive grammar
+                      (for example TOML 1.1 newlines in inline tables) projects
+                      under the intended dialect.
+ 
+ @returns Native value tree of `source`.
+ 
+ @throws Whatever the parser throws on rejected input; callers that fuzz
+         invalid text wrap this in their own totality assertion.
+ 
+ @example
+ ```ts
+ semanticModel({ source: 'a = 1\n', },); // { a: 1 }
+ ```
  */
 export function semanticModel(
   {
@@ -160,13 +160,13 @@ export function semanticModel(
 }
 
 /**
- * True when `left` and `right` are the same primitive under TOML semantics.
- *
- * `NaN` equals `NaN` (TOML treats every `nan` spelling as one value); signed
- * infinities stay distinct; `-0` equals `0`; `Date`s compare by instant, which
- * is stable within one process even for the parser's zone-shifted local kinds.
- *
- * @returns Whether the two leaves are semantically equal.
+ True when `left` and `right` are the same primitive under TOML semantics.
+ 
+ `NaN` equals `NaN` (TOML treats every `nan` spelling as one value); signed
+ infinities stay distinct; `-0` equals `0`; `Date`s compare by instant, which
+ is stable within one process even for the parser's zone-shifted local kinds.
+ 
+ @returns Whether the two leaves are semantically equal.
  */
 function leafEquals(
   {
@@ -188,11 +188,11 @@ function leafEquals(
 }
 
 /**
- * Type guard for the record arm of a semantic value.
- *
- * @param value - Candidate to test for plain-record shape.
- *
- * @returns Whether `value` is a TOML table object (not an array, not a `Date`).
+ Type guard for the record arm of a semantic value.
+ 
+ @param value - Candidate to test for plain-record shape.
+ 
+ @returns Whether `value` is a TOML table object (not an array, not a `Date`).
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return ((typeof value) === 'object')
@@ -202,26 +202,26 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Compare two semantic models for TOML-meaning equality.
- *
- * Branching uses `Array.isArray` and {@link isRecord} guards rather than type
- * assertions, so each arm narrows both sides structurally. A shape mismatch at
- * any node (one array versus one record, one structure versus one leaf) is an
- * immediate inequality.
- *
- * @param left - First projected document.
- *
- * @param right - Second projected document.
- *
- * @returns Whether both documents mean the same thing.
- *
- * @example
- * ```ts
- * semanticEquals({
- *   left: semanticModel({ source: 'a = 0x10\n', },),
- *   right: semanticModel({ source: 'a = 16\n', },),
- * },); // true
- * ```
+ Compare two semantic models for TOML-meaning equality.
+ 
+ Branching uses `Array.isArray` and {@link isRecord} guards rather than type
+ assertions, so each arm narrows both sides structurally. A shape mismatch at
+ any node (one array versus one record, one structure versus one leaf) is an
+ immediate inequality.
+ 
+ @param left - First projected document.
+ 
+ @param right - Second projected document.
+ 
+ @returns Whether both documents mean the same thing.
+ 
+ @example
+ ```ts
+ semanticEquals({
+   left: semanticModel({ source: 'a = 0x10\n', },),
+   right: semanticModel({ source: 'a = 16\n', },),
+ },); // true
+ ```
  */
 export function semanticEquals(
   {
@@ -233,8 +233,8 @@ export function semanticEquals(
   },
 ): boolean {
   /**
-   * Pending left/right pairs still to compare; structural children are pushed
-   * as they are reached so no two trees are ever walked with the call stack.
+   Pending left/right pairs still to compare; structural children are pushed
+   as they are reached so no two trees are ever walked with the call stack.
    */
   const stack: {
     readonly a: unknown;
@@ -264,12 +264,12 @@ export function semanticEquals(
     if (isRecord(pair.a,) || isRecord(pair.b,)) {
       if ((!isRecord(pair.a,)) || (!isRecord(pair.b,))) return false;
       /**
-       * Both key sets sorted so key-order differences never matter.
+       Both key sets sorted so key-order differences never matter.
        */
       const keysA = Object.keys(pair.a,)
         .toSorted();
       /**
-       * Right key set, sorted to match {@link keysA} positionally.
+       Right key set, sorted to match {@link keysA} positionally.
        */
       const keysB = Object.keys(pair.b,)
         .toSorted();

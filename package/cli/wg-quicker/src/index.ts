@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * CLI entry point for bringing a WireGuard interface up or down without the
- * quadratic bash config parsing that makes `wg-quick` hang on a large
- * `AllowedIPs` value.
- *
- * @example
- * ```sh
- * wg-quicker up mx-que-mx1
- * wg-quicker down mx-que-mx1
- * ```
- *
- * @module
+ CLI entry point for bringing a WireGuard interface up or down without the
+ quadratic bash config parsing that makes `wg-quick` hang on a large
+ `AllowedIPs` value.
+ 
+ @example
+ ```sh
+ wg-quicker up mx-que-mx1
+ wg-quicker down mx-que-mx1
+ ```
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -27,17 +27,17 @@ import {
 } from './tunnel.ts';
 
 /**
- * Module logger for command lifecycle.
+ Module logger for command lifecycle.
  */
 const l = tagged({ tag: 'wg-quicker', },);
 
 /**
- * Recognized subcommands.
+ Recognized subcommands.
  */
 type Subcommand = 'up' | 'down';
 
 /**
- * Parsed command-line contract.
+ Parsed command-line contract.
  */
 type CliArgs = {
   readonly subcommand: Subcommand;
@@ -45,22 +45,22 @@ type CliArgs = {
 };
 
 /**
- * Parses the two-positional-argument contract: `<up|down> <interface|path>`.
- *
- * @param argv - Arguments after runtime and script path.
- *
- * @returns Validated subcommand and target.
- *
- * @throws {@link CliUsageError} when arguments are missing or the subcommand is unknown.
- *
- * @example
- * ```ts
- * parseCliArgs({ argv: ['up', 'mx-que-mx1'] });
- * ```
+ Parses the two-positional-argument contract: `<up|down> <interface|path>`.
+ 
+ @param argv - Arguments after runtime and script path.
+ 
+ @returns Validated subcommand and target.
+ 
+ @throws {@link CliUsageError} when arguments are missing or the subcommand is unknown.
+ 
+ @example
+ ```ts
+ parseCliArgs({ argv: ['up', 'mx-que-mx1'] });
+ ```
  */
 function parseCliArgs({ argv, }: { readonly argv: readonly string[]; },): CliArgs {
   /**
-   * Positional subcommand and config target extracted from argv.
+   Positional subcommand and config target extracted from argv.
    */
   const [subcommand, target,] = argv;
   if ((subcommand === undefined) || ((subcommand !== 'up') && (subcommand !== 'down'))) {
@@ -78,22 +78,22 @@ function parseCliArgs({ argv, }: { readonly argv: readonly string[]; },): CliArg
 }
 
 /**
- * Validates invocation,
- * crosses privilege boundary,
- * then runs requested tunnel operation.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Validates invocation,
+ crosses privilege boundary,
+ then runs requested tunnel operation.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Arguments after runtime and script path.
+   Arguments after runtime and script path.
    */
   const processArguments = await restorePrivilegeContext();
   /**
-   * Parsed subcommand and config target.
+   Parsed subcommand and config target.
    */
   const {
     subcommand,
@@ -101,13 +101,13 @@ async function main(): Promise<void> {
   } = parseCliArgs({ argv: processArguments, },);
   l.debug(`${subcommand} ${target}`,);
   /**
-   * Whether non-root process handed entire operation to sudo child.
+   Whether non-root process handed entire operation to sudo child.
    */
   const delegated = await relaunchWithRootIfNeeded();
   if (delegated)
     return;
   /**
-   * Parsed config for requested interface.
+   Parsed config for requested interface.
    */
   const config = await loadConfig({
     arg: target,
@@ -120,11 +120,11 @@ async function main(): Promise<void> {
       );
     } else {
       /**
-       * Exact companion path resolved before first network mutation.
+       Exact companion path resolved before first network mutation.
        */
       const command = await resolveApplicationExemptionCommand();
       /**
-       * Process environment updated with exact preflighted path for later watcher calls.
+       Process environment updated with exact preflighted path for later watcher calls.
        */
       const environment = process.env;
       environment.WG_QUICKER_EXEMPT_COMMAND = command;

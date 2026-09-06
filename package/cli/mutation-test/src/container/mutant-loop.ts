@@ -1,15 +1,15 @@
 /**
- * Sequential per-mutant execution loop inside one shard container.
- *
- * Applies each mutant by string-offset splice, type-checks, runs the
- * selected tests, restores the original file, and classifies the result.
- * The first anomaly (timeout, spawn failure, restore failure) aborts the
- * remainder: the container is tainted and the host reshards what's left.
- *
- * @example
- * ```ts
- * await runMutantLoop({ packageCwd, manifest, baselineTestsMs: 900 });
- * ```
+ Sequential per-mutant execution loop inside one shard container.
+ 
+ Applies each mutant by string-offset splice, type-checks, runs the
+ selected tests, restores the original file, and classifies the result.
+ The first anomaly (timeout, spawn failure, restore failure) aborts the
+ remainder: the container is tainted and the host reshards what's left.
+ 
+ @example
+ ```ts
+ await runMutantLoop({ packageCwd, manifest, baselineTestsMs: 900 });
+ ```
  */
 
 import {
@@ -31,12 +31,12 @@ import type {
 } from '../shard-schema.ts';
 
 /**
- * Module logger for the container-side mutant loop.
+ Module logger for the container-side mutant loop.
  */
 const l = tagged({ tag: 'mutation-test-container', },);
 
 /**
- * Loop output: per-mutant results plus the taint-abandoned remainder.
+ Loop output: per-mutant results plus the taint-abandoned remainder.
  */
 export type MutantLoopOutput = {
   readonly results: readonly ShardMutantResult[];
@@ -45,11 +45,11 @@ export type MutantLoopOutput = {
 };
 
 /**
- * Statuses that taint the container for every later mutant.
- *
- * A timeout means a mutant's process tree had to be killed; a runtime
- * error means infrastructure misbehaved. Either way later results in
- * this container are untrustworthy.
+ Statuses that taint the container for every later mutant.
+ 
+ A timeout means a mutant's process tree had to be killed; a runtime
+ error means infrastructure misbehaved. Either way later results in
+ this container are untrustworthy.
  */
 const TAINTING_STATUSES: ReadonlySet<MutantStatus> = new Set([
   'timeout',
@@ -57,17 +57,17 @@ const TAINTING_STATUSES: ReadonlySet<MutantStatus> = new Set([
 ],);
 
 /**
- * Computes the effective per-mutant test timeout.
- *
- * @param options - Manifest limits and measured baseline duration.
- *
- * @returns Milliseconds allowed for one mutant's test run.
- *
- * @example
- * ```ts
- * effectiveTimeoutMs({ floorMs: 5000, factor: 3, baselineMs: 900 });
- * // 5000
- * ```
+ Computes the effective per-mutant test timeout.
+ 
+ @param options - Manifest limits and measured baseline duration.
+ 
+ @returns Milliseconds allowed for one mutant's test run.
+ 
+ @example
+ ```ts
+ effectiveTimeoutMs({ floorMs: 5000, factor: 3, baselineMs: 900 });
+ // 5000
+ ```
  */
 export function effectiveTimeoutMs(options: {
   readonly floorMs: number;
@@ -81,16 +81,16 @@ export function effectiveTimeoutMs(options: {
 }
 
 /**
- * Runs every mutant in the shard sequentially.
- *
- * @param options - Package cwd, shard manifest, and baseline test time.
- *
- * @returns Results, unrun remainder, and anomaly description.
- *
- * @example
- * ```ts
- * const output = await runMutantLoop({ packageCwd, manifest, baselineTestsMs: 900 });
- * ```
+ Runs every mutant in the shard sequentially.
+ 
+ @param options - Package cwd, shard manifest, and baseline test time.
+ 
+ @returns Results, unrun remainder, and anomaly description.
+ 
+ @example
+ ```ts
+ const output = await runMutantLoop({ packageCwd, manifest, baselineTestsMs: 900 });
+ ```
  */
 export async function runMutantLoop(options: {
   readonly packageCwd: string;
@@ -98,14 +98,14 @@ export async function runMutantLoop(options: {
   readonly baselineTestsMs: number;
 },): Promise<MutantLoopOutput> {
   /**
-   * Logger scoped to this shard's loop.
+   Logger scoped to this shard's loop.
    */
   const rl = tagged({
     tag: runMutantLoop.name,
     l,
   },);
   /**
-   * Effective test timeout for every mutant in this shard.
+   Effective test timeout for every mutant in this shard.
    */
   const timeoutMs = effectiveTimeoutMs({
     floorMs: options.manifest
@@ -115,7 +115,7 @@ export async function runMutantLoop(options: {
     baselineMs: options.baselineTestsMs,
   },);
   /**
-   * Accumulated per-mutant results.
+   Accumulated per-mutant results.
    */
   const results: ShardMutantResult[] = [];
 
@@ -135,26 +135,26 @@ export async function runMutantLoop(options: {
     .mutants
     .entries()) {
     /**
-     * Absolute path of the file under mutation in the work tree.
+     Absolute path of the file under mutation in the work tree.
      */
     const filePath = join(
       options.packageCwd,
       mutant.file,
     );
     /**
-     * Pristine file text restored after the mutant's verdict.
+     Pristine file text restored after the mutant's verdict.
      */
     const original = await readFile(
       filePath,
       'utf8',
     );
     /**
-     * Start timestamp for this mutant.
+     Start timestamp for this mutant.
      */
     const startedAt = performance.now();
     /**
-     * Scope guard restoring pristine file text when this iteration
-     * exits, whatever the verdict; replaces try/finally per house style.
+     Scope guard restoring pristine file text when this iteration
+     exits, whatever the verdict; replaces try/finally per house style.
      */
     await using restoreOriginal = {
       async [Symbol.asyncDispose](): Promise<void> {
@@ -179,13 +179,13 @@ export async function runMutantLoop(options: {
       );
 
       /**
-       * Build verdict for the spliced mutant; tests exercise built
-       * output, so the build must precede them, and its declaration
-       * emit must precede the type gate.
+       Build verdict for the spliced mutant; tests exercise built
+       output, so the build must precede them, and its declaration
+       emit must precede the type gate.
        */
       const build = await runBuildStep({ packageCwd: options.packageCwd, },);
       /**
-       * Type-check verdict for the spliced mutant.
+       Type-check verdict for the spliced mutant.
        */
       const typeCheck = build.clean
         ? await tsgoCheck({ cwd: options.packageCwd, },)
@@ -195,14 +195,14 @@ export async function runMutantLoop(options: {
           detail: build.detail,
         };
       /**
-       * Final status for this mutant.
+       Final status for this mutant.
        */
       const status: MutantStatus = await (async function classify(): Promise<MutantStatus> {
         if (!typeCheck.clean)
           return 'compileError';
 
         /**
-         * Test verdict for the compiling mutant.
+         Test verdict for the compiling mutant.
          */
         const testRun = await runTests({
           cwd: options.packageCwd,

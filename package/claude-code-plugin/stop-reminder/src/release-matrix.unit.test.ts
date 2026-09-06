@@ -15,12 +15,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 /**
- * Built plugin entry this suite drives.
- *
- * Exercising the bundle rather than the handler is the point: every defect this
- * suite exists to catch was a wiring or parsing fault that the handler's own
- * unit tests passed straight through, because those tests supply the shapes the
- * parser expects instead of the shapes Claude Code actually writes.
+ Built plugin entry this suite drives.
+ 
+ Exercising the bundle rather than the handler is the point: every defect this
+ suite exists to catch was a wiring or parsing fault that the handler's own
+ unit tests passed straight through, because those tests supply the shapes the
+ parser expects instead of the shapes Claude Code actually writes.
  */
 const BUNDLE = resolve(
   import.meta.dirname,
@@ -28,17 +28,17 @@ const BUNDLE = resolve(
 );
 
 /**
- * Scratch directory holding one transcript per case.
+ Scratch directory holding one transcript per case.
  */
 const SCRATCH = mkdtempSync(join(tmpdir(), 'stop-reminder-release-',),);
 
 /**
- * Transcript line for a turn the user typed, which closes the counting window.
+ Transcript line for a turn the user typed, which closes the counting window.
  */
 const HUMAN = JSON.stringify({ type: 'user', origin: { kind: 'human', }, message: { content: 'go', }, },);
 
 /**
- * Transcript line for one forced-continuation block.
+ Transcript line for one forced-continuation block.
  */
 const BLOCK = JSON.stringify({
   type: 'user',
@@ -46,44 +46,44 @@ const BLOCK = JSON.stringify({
 },);
 
 /**
- * Transcript line for an assistant turn that issued a tool call.
+ Transcript line for an assistant turn that issued a tool call.
  */
 const TOOL = JSON.stringify({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Bash', },], }, },);
 
 /**
- * Transcript line for an assistant turn that only produced prose.
+ Transcript line for an assistant turn that only produced prose.
  */
 const TEXT = JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'blocked', },], }, },);
 
 /**
- * Builds a `TaskCreate` result line announcing a task id.
- *
- * @param id - identifier Claude Code assigned
- *
- * @returns transcript line for the creation
- *
- * @example
- * ```ts
- * created('1');
- * ```
+ Builds a `TaskCreate` result line announcing a task id.
+ 
+ @param id - identifier Claude Code assigned
+ 
+ @returns transcript line for the creation
+ 
+ @example
+ ```ts
+ created('1');
+ ```
  */
 function created(id: string,): string {
   return JSON.stringify({ type: 'user', toolUseResult: { task: { id, subject: 's', }, }, },);
 }
 
 /**
- * Builds a `TaskUpdate` call line.
- *
- * @param id - identifier being updated
- *
- * @param status - status applied
- *
- * @returns transcript line for the update
- *
- * @example
- * ```ts
- * updated('1', 'completed');
- * ```
+ Builds a `TaskUpdate` call line.
+ 
+ @param id - identifier being updated
+ 
+ @param status - status applied
+ 
+ @returns transcript line for the update
+ 
+ @example
+ ```ts
+ updated('1', 'completed');
+ ```
  */
 function updated(id: string, status: string,): string {
   return JSON.stringify({
@@ -93,20 +93,20 @@ function updated(id: string, status: string,): string {
 }
 
 /**
- * Runs the built hook against a crafted transcript and reports whether it blocked.
- *
- * @param name - case name, used for the transcript file
- *
- * @param lines - transcript lines, oldest first
- *
- * @param backgroundTasks - `background_tasks` for the synthetic `Stop` payload
- *
- * @returns whether the hook refused the stop
- *
- * @example
- * ```ts
- * blocksFor({ name: 'clean', lines: [HUMAN], backgroundTasks: [] });
- * ```
+ Runs the built hook against a crafted transcript and reports whether it blocked.
+ 
+ @param name - case name, used for the transcript file
+ 
+ @param lines - transcript lines, oldest first
+ 
+ @param backgroundTasks - `background_tasks` for the synthetic `Stop` payload
+ 
+ @returns whether the hook refused the stop
+ 
+ @example
+ ```ts
+ blocksFor({ name: 'clean', lines: [HUMAN], backgroundTasks: [] });
+ ```
  */
 function blocksFor(
   {
@@ -120,14 +120,14 @@ function blocksFor(
   },
 ): boolean {
   /**
-   * Transcript path handed to the hook through the synthetic payload.
+   Transcript path handed to the hook through the synthetic payload.
    */
   const transcript = join(SCRATCH, `${name.replaceAll(' ', '-',)}.jsonl`,);
 
   writeFileSync(transcript, `${lines.join('\n',)}\n`,);
 
   /**
-   * Hook stdout, containing a block decision or the empty pass-through.
+   Hook stdout, containing a block decision or the empty pass-through.
    */
   const raw = execFileSync('node', [BUNDLE,], {
     input: JSON.stringify({

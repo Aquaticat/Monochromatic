@@ -1,5 +1,5 @@
 /**
- * Public API for \@monochromatic-dev/mcp-stdio.
+ Public API for \@monochromatic-dev/mcp-stdio.
  */
 export {
   isJsonRpcMessage,

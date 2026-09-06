@@ -1,7 +1,7 @@
 /**
- * Type-level literal index resolution and dependent diagnostics.
- *
- * @module
+ Type-level literal index resolution and dependent diagnostics.
+ 
+ @module
  */
 
 import type { ArrayAtDiagnostic, } from './diagnostic-types.ts';
@@ -21,12 +21,12 @@ import type {
 } from './type-arithmetic-number.ts';
 
 /**
- * Resolves signed literal index or returns precise diagnostic.
- *
- * @example
- * ```ts
- * type Resolution = ResolveLiteralIndex<readonly [10, 20], -1>;
- * ```
+ Resolves signed literal index or returns precise diagnostic.
+ 
+ @example
+ ```ts
+ type Resolution = ResolveLiteralIndex<readonly [10, 20], -1>;
+ ```
  */
 export type ResolveLiteralIndex<
   ArrayValue extends readonly unknown[],
@@ -46,12 +46,12 @@ export type ResolveLiteralIndex<
   >;
 
 /**
- * Applies safe-integer and range checks after sign parsing.
- *
- * @example
- * ```ts
- * type Resolution = CheckLiteralIndex<readonly [10, 20], -1, '1', true>;
- * ```
+ Applies safe-integer and range checks after sign parsing.
+ 
+ @example
+ ```ts
+ type Resolution = CheckLiteralIndex<readonly [10, 20], -1, '1', true>;
+ ```
  */
 type CheckLiteralIndex<
   ArrayValue extends readonly unknown[],
@@ -81,12 +81,12 @@ type CheckLiteralIndex<
     : never;
 
 /**
- * Resolves negative literal index or reports before-start distance.
- *
- * @example
- * ```ts
- * type Resolution = ResolveNegativeLiteralIndex<-3, 2, 3>;
- * ```
+ Resolves negative literal index or reports before-start distance.
+ 
+ @example
+ ```ts
+ type Resolution = ResolveNegativeLiteralIndex<-3, 2, 3>;
+ ```
  */
 type ResolveNegativeLiteralIndex<
   Index extends number,
@@ -103,15 +103,15 @@ type ResolveNegativeLiteralIndex<
   : SubtractNumbers<Length, Magnitude>;
 
 /**
- * Resolves positive literal index or reports past-end distance.
- *
- * Distance is measured from last valid index, so first invalid positive index
- * is past end by one rather than zero.
- *
- * @example
- * ```ts
- * type Resolution = ResolvePositiveLiteralIndex<2, 2, 2>;
- * ```
+ Resolves positive literal index or reports past-end distance.
+ 
+ Distance is measured from last valid index, so first invalid positive index
+ is past end by one rather than zero.
+ 
+ @example
+ ```ts
+ type Resolution = ResolvePositiveLiteralIndex<2, 2, 2>;
+ ```
  */
 type ResolvePositiveLiteralIndex<
   Index extends number,
@@ -136,14 +136,14 @@ type ResolvePositiveLiteralIndex<
     : Magnitude;
 
 /**
- * Returns dependent range or slot diagnostic for one literal index.
- *
- * `never` means access is statically valid.
- *
- * @example
- * ```ts
- * type Diagnostic = LiteralIndexDiagnostic<readonly [10], 2>;
- * ```
+ Returns dependent range or slot diagnostic for one literal index.
+ 
+ `never` means access is statically valid.
+ 
+ @example
+ ```ts
+ type Diagnostic = LiteralIndexDiagnostic<readonly [10], 2>;
+ ```
  */
 export type LiteralIndexDiagnostic<
   ArrayValue extends readonly unknown[],

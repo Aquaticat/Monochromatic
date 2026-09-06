@@ -23,14 +23,14 @@ import {
 //region Atomic write fixture helpers
 
 /**
- * Creates isolated temp directory for atomic write tests.
- *
- * @returns Temp directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates isolated temp directory for atomic write tests.
+ 
+ @returns Temp directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return await mkdtemp(join(
@@ -40,14 +40,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes isolated temp directory.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes isolated temp directory.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(
@@ -60,22 +60,22 @@ async function teardown(tempDir: string,): Promise<void> {
 }
 
 /**
- * Captures error thrown by atomic write fault injection.
- *
- * @param filePath - Destination path passed to atomic writer.
- *
- * @param content - Replacement content passed to atomic writer.
- *
- * @param tempFileWriter - Temp-file writer expected to throw.
- *
- * @returns Error thrown by atomic write.
- *
- * @throws When atomic write unexpectedly succeeds.
- *
- * @example
- * ```ts
- * const error = await captureAtomicWriteError({ filePath, content: 'new', tempFileWriter });
- * ```
+ Captures error thrown by atomic write fault injection.
+ 
+ @param filePath - Destination path passed to atomic writer.
+ 
+ @param content - Replacement content passed to atomic writer.
+ 
+ @param tempFileWriter - Temp-file writer expected to throw.
+ 
+ @returns Error thrown by atomic write.
+ 
+ @throws When atomic write unexpectedly succeeds.
+ 
+ @example
+ ```ts
+ const error = await captureAtomicWriteError({ filePath, content: 'new', tempFileWriter });
+ ```
  */
 async function captureAtomicWriteError(
   {
@@ -103,20 +103,20 @@ async function captureAtomicWriteError(
 }
 
 /**
- * Returns temp files left beside destination outputs.
- *
- * @param tempDir - Directory to inspect.
- *
- * @returns Directory entries ending with atomic temp suffix.
- *
- * @example
- * ```ts
- * const leftovers = await atomicTempEntries(tempDir);
- * ```
+ Returns temp files left beside destination outputs.
+ 
+ @param tempDir - Directory to inspect.
+ 
+ @returns Directory entries ending with atomic temp suffix.
+ 
+ @example
+ ```ts
+ const leftovers = await atomicTempEntries(tempDir);
+ ```
  */
 async function atomicTempEntries(tempDir: string,): Promise<readonly string[]> {
   /**
-   * Directory entries after attempted write.
+   Directory entries after attempted write.
    */
   const entries = await readdir(tempDir,);
   return entries.filter(function isAtomicTempEntry(entry,): boolean {
@@ -148,14 +148,14 @@ await describe({
           'old content',
         );
         /**
-         * Fault-injection writer that leaves partial temp content before throwing.
-         *
-         * @param tempPath - Temp path provided by atomic writer.
-         *
-         * @example
-         * ```ts
-         * failAfterPartialTempWrite({ tempPath, content: 'new' });
-         * ```
+         Fault-injection writer that leaves partial temp content before throwing.
+         
+         @param tempPath - Temp path provided by atomic writer.
+         
+         @example
+         ```ts
+         failAfterPartialTempWrite({ tempPath, content: 'new' });
+         ```
          */
         async function failAfterPartialTempWrite(
           {

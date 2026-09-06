@@ -1,7 +1,7 @@
 /**
- * Tests for `wait`.
- *
- * @module
+ Tests for `wait`.
+ 
+ @module
  */
 
 import {

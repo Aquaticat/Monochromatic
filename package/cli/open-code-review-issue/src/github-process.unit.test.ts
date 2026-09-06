@@ -21,11 +21,11 @@ await describe({
       name: 'captures output and supplies no inherited standard input',
       fn: async () => {
         /**
-         * Disposable executable fixture directory.
+         Disposable executable fixture directory.
          */
         await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-gh-process-',),);
         /**
-         * Executable fixture path.
+         Executable fixture path.
          */
         const executable = join(directory.path, 'fake-gh',);
         await writeFile(
@@ -41,7 +41,7 @@ await describe({
         await chmod(executable, 0o700,);
 
         /**
-         * Captured bounded child result.
+         Captured bounded child result.
          */
         const result = await runBoundedProcess({
           file: executable,

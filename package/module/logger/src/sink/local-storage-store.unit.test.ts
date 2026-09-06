@@ -9,20 +9,20 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * One mebibyte of UTF-16 code units; the node cap under test is half the
- * measured 5 MiB quota, so multi-mebibyte batches drive eviction.
+ One mebibyte of UTF-16 code units; the node cap under test is half the
+ measured 5 MiB quota, so multi-mebibyte batches drive eviction.
  */
 const MIB = 1_048_576;
 
 /**
- * Installs `fake` as `globalThis.localStorage` via the property descriptor
- * (plain assignment would call Node's phantom setter-less path on some hosts),
- * restoring the original descriptor, or removing the property when none
- * existed, when the returned guard leaves `using` scope.
- *
- * @param fake - Storage stand-in to install for the duration of the scope.
- *
- * @returns Disposable that restores the original `localStorage` on exit.
+ Installs `fake` as `globalThis.localStorage` via the property descriptor
+ (plain assignment would call Node's phantom setter-less path on some hosts),
+ restoring the original descriptor, or removing the property when none
+ existed, when the returned guard leaves `using` scope.
+ 
+ @param fake - Storage stand-in to install for the duration of the scope.
+ 
+ @returns Disposable that restores the original `localStorage` on exit.
  */
 function installFakeLocalStorage(fake: Storage,): Disposable {
   const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage',);
@@ -41,16 +41,16 @@ function installFakeLocalStorage(fake: Storage,): Disposable {
 }
 
 /**
- * Builds an in-memory `Storage` stand-in with full enumeration support (the
- * engine's adoption scan walks `length`/`key`), rejecting a `setItem` once
- * stored value lengths would exceed `quotaChars`, throwing the same
- * `QuotaExceededError` a real backend raises. Records every `removeItem`
- * under `removed` so a test can assert exactly which keys were evicted.
- *
- * @param quotaChars - Total value length the store accepts before
- * overflowing; omitted means unlimited.
- *
- * @returns Storage stand-in exposing `removed` and the raw `backing` map.
+ Builds an in-memory `Storage` stand-in with full enumeration support (the
+ engine's adoption scan walks `length`/`key`), rejecting a `setItem` once
+ stored value lengths would exceed `quotaChars`, throwing the same
+ `QuotaExceededError` a real backend raises. Records every `removeItem`
+ under `removed` so a test can assert exactly which keys were evicted.
+ 
+ @param quotaChars - Total value length the store accepts before
+ overflowing; omitted means unlimited.
+ 
+ @returns Storage stand-in exposing `removed` and the raw `backing` map.
  */
 function createFakeStorage(
   { quotaChars, }: { readonly quotaChars?: number; } = {},
@@ -98,12 +98,12 @@ function createFakeStorage(
 }
 
 /**
- * Builds an in-memory `Storage` stand-in whose first `setItem` succeeds and
- * every later one throws a non-quota error, so a test can prove the engine
- * does not evict for failures other than a quota overflow. Enumeration is
- * supported for the adoption scan; `removeItem` calls land in `removed`.
- *
- * @returns Storage stand-in exposing the evicted-key log as `removed`.
+ Builds an in-memory `Storage` stand-in whose first `setItem` succeeds and
+ every later one throws a non-quota error, so a test can prove the engine
+ does not evict for failures other than a quota overflow. Enumeration is
+ supported for the adoption scan; `removeItem` calls land in `removed`.
+ 
+ @returns Storage stand-in exposing the evicted-key log as `removed`.
  */
 function createFlakyStorage(): Storage & { readonly removed: string[]; } {
   const backing = new Map<string, string>();
@@ -134,11 +134,11 @@ function createFlakyStorage(): Storage & { readonly removed: string[]; } {
 }
 
 /**
- * Captures `console.warn` output, restoring the real method when the returned
- * guard leaves `using` scope, so a test can count the engine's give-up
- * reports.
- *
- * @returns Disposable exposing captured warn lines as `calls`.
+ Captures `console.warn` output, restoring the real method when the returned
+ guard leaves `using` scope, so a test can count the engine's give-up
+ reports.
+ 
+ @returns Disposable exposing captured warn lines as `calls`.
  */
 function spyConsoleWarn(): Disposable & { readonly calls: string[]; } {
   const original = console.warn;
@@ -171,7 +171,7 @@ await describe({
         store.persist('beta',);
 
         /**
-         * Parsed identities of every landed key; both must carry one shared run identity.
+         Parsed identities of every landed key; both must carry one shared run identity.
          */
         const parsed = [...fake.backing.keys(),]
           .flatMap((key,) => {
@@ -236,13 +236,13 @@ await describe({
         expect(fake.removed,)
           .toHaveLength(1,);
         /**
-         * Identity of the evicted key; it must be this run's slot zero.
+         Identity of the evicted key; it must be this run's slot zero.
          */
         const { parsed: evicted, } = parseLogKey(fake.removed[0] ?? '',);
         expect(evicted?.index,)
           .toBe(0,);
         /**
-         * Indices still present after eviction, in insertion order.
+         Indices still present after eviction, in insertion order.
          */
         const remaining = [...fake.backing.keys(),]
           .flatMap((key,) => {
@@ -272,7 +272,7 @@ await describe({
         expect(fake.removed,)
           .toEqual(['monochromatic.log.1000.aaaa.0',],);
         /**
-         * Landed batch values after the retry; only the new batch remains.
+         Landed batch values after the retry; only the new batch remains.
          */
         const values = [...fake.backing.values(),];
         expect(values,)

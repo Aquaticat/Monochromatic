@@ -16,7 +16,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * File-enforcer source calling workspace `module-toml-edit` functions.
+ File-enforcer source calling workspace `module-toml-edit` functions.
  */
 const APPLY_PLAN_PATH = fileURLToPath(new URL(
   '../../../dev-script/file-enforcer/src/cargo/apply-plan.ts',
@@ -24,7 +24,7 @@ const APPLY_PLAN_PATH = fileURLToPath(new URL(
 ),);
 
 /**
- * Current apply-plan source text.
+ Current apply-plan source text.
  */
 const SOURCE = readFileSync(
   APPLY_PLAN_PATH,

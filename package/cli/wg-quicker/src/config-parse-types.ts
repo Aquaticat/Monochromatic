@@ -1,96 +1,96 @@
 import type { AllowedFromFiles, } from './config-types.ts';
 
 /**
- * Mutable state gathered while walking config lines.
+ Mutable state gathered while walking config lines.
  */
 export type ParseAcc = {
   /**
-   * Accumulated `Address` values.
+   Accumulated `Address` values.
    */
   addresses: string[];
 
   /**
-   * Accumulated DNS server literals.
+   Accumulated DNS server literals.
    */
   dns: string[];
 
   /**
-   * Accumulated DNS search domains.
+   Accumulated DNS search domains.
    */
   dnsSearch: string[];
 
   /**
-   * Accumulated explicit MTU.
+   Accumulated explicit MTU.
    */
   mtu?: number;
 
   /**
-   * Accumulated `Table` value.
+   Accumulated `Table` value.
    */
   table?: string;
 
   /**
-   * Accumulated `ExemptMark` value.
+   Accumulated `ExemptMark` value.
    */
   exemptMark?: number;
 
   /**
-   * Accumulated peer endpoint UDP ports.
+   Accumulated peer endpoint UDP ports.
    */
   endpointPorts: number[];
 
   /**
-   * Accumulated peer-scoped `AllowedIPsFromFiles` directives.
+   Accumulated peer-scoped `AllowedIPsFromFiles` directives.
    */
   allowedFromFiles: AllowedFromFiles[];
 
   /**
-   * Accumulated `PreUp` hooks.
+   Accumulated `PreUp` hooks.
    */
   preUp: string[];
 
   /**
-   * Accumulated `PostUp` hooks.
+   Accumulated `PostUp` hooks.
    */
   postUp: string[];
 
   /**
-   * Accumulated `PreDown` hooks.
+   Accumulated `PreDown` hooks.
    */
   preDown: string[];
 
   /**
-   * Accumulated `PostDown` hooks.
+   Accumulated `PostDown` hooks.
    */
   postDown: string[];
 
   /**
-   * Raw lines forwarded to `wg addconf`.
+   Raw lines forwarded to `wg addconf`.
    */
   wgLines: string[];
 
   /**
-   * Whether cursor is inside `[Interface]` section.
+   Whether cursor is inside `[Interface]` section.
    */
   inInterface: boolean;
 
   /**
-   * Whether cursor is inside `[Peer]` section.
+   Whether cursor is inside `[Peer]` section.
    */
   inPeer: boolean;
 
   /**
-   * Zero-based index of current or most recently opened peer.
+   Zero-based index of current or most recently opened peer.
    */
   peerIndex: number;
 
   /**
-   * Whether current peer already contains literal `AllowedIPs`.
+   Whether current peer already contains literal `AllowedIPs`.
    */
   peerHasAllowedIps: boolean;
 
   /**
-   * Whether current peer already contains `AllowedIPsFromFiles`.
+   Whether current peer already contains `AllowedIPsFromFiles`.
    */
   peerHasAllowedFromFiles: boolean;
 };

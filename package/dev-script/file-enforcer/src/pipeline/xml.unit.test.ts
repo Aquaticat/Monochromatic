@@ -20,7 +20,7 @@ import {
 } from './xml.ts';
 
 /**
- * JetBrains persistent-state map document with two entries, used across editing tests.
+ JetBrains persistent-state map document with two entries, used across editing tests.
  */
 const SAMPLE_MAP = [
   '<application>',
@@ -42,20 +42,20 @@ const SAMPLE_MAP = [
 ].join('\n',);
 
 /**
- * Narrows an entry lookup to a present entry, throwing a labelled error otherwise.
- *
- * @param entry - Entry lookup result.
- *
- * @param label - Identifier surfaced when the entry is absent.
- *
- * @returns Present entry.
- *
- * @throws Error when entry is the absent sentinel.
- *
- * @example
- * ```ts
- * requireEntry(findXmlEntryByKey({ xml, key: 'a' }), 'a');
- * ```
+ Narrows an entry lookup to a present entry, throwing a labelled error otherwise.
+ 
+ @param entry - Entry lookup result.
+ 
+ @param label - Identifier surfaced when the entry is absent.
+ 
+ @returns Present entry.
+ 
+ @throws Error when entry is the absent sentinel.
+ 
+ @example
+ ```ts
+ requireEntry(findXmlEntryByKey({ xml, key: 'a' }), 'a');
+ ```
  */
 function requireEntry(entry: XmlEntry | typeof ABSENT_XML_ENTRY, label: string,): XmlEntry {
   if (entry === ABSENT_XML_ENTRY) throw new Error(`expected entry '${label}' to be present`,);
@@ -97,7 +97,7 @@ await describe({
           name: 'round-trips every escaped delimiter',
           fn: async () => {
             /**
-             * Adversarial value containing each character the encoder rewrites.
+             Adversarial value containing each character the encoder rewrites.
              */
             const raw = '&"<>\n\r\t';
             expect(unescapeXmlAttribute({ value: escapeXmlAttribute({ value: raw, },), },),).toBe(raw,);
@@ -146,7 +146,7 @@ await describe({
           name: 'lists keyed entries with decoded keys and byte ranges',
           fn: async () => {
             /**
-             * Entries discovered in the sample document.
+             Entries discovered in the sample document.
              */
             const entries = listXmlEntries({ xml: SAMPLE_MAP, },);
             expect(entries.map(function entryKey(entry,): string {
@@ -154,7 +154,7 @@ await describe({
             },),)
               .toEqual(['alpha', 'beta',],);
             /**
-             * Present alpha entry.
+             Present alpha entry.
              */
             const alpha = requireEntry(findXmlEntryByKey({ xml: SAMPLE_MAP, key: 'alpha', },), 'alpha',);
             expect(SAMPLE_MAP.slice(alpha.start, alpha.end,),).toBe(alpha.block,);
@@ -188,7 +188,7 @@ await describe({
           name: 'reads and decodes an option value from a block',
           fn: async () => {
             /**
-             * Present alpha entry holding a single escaped option.
+             Present alpha entry holding a single escaped option.
              */
             const alpha = requireEntry(findXmlEntryByKey({ xml: SAMPLE_MAP, key: 'alpha', },), 'alpha',);
             expect(getXmlOptionValue({ block: alpha.block, optionName: 'commandLine', },),).toBe('run & go',);
@@ -198,7 +198,7 @@ await describe({
           name: 'reads options regardless of attribute order and quote style',
           fn: async () => {
             /**
-             * Option with value before name and single-quoted attributes.
+             Option with value before name and single-quoted attributes.
              */
             const block = "<value><option  value='cmd'   name='commandLine' /></value>";
             expect(getXmlOptionValue({ block, optionName: 'commandLine', },),).toBe('cmd',);
@@ -224,15 +224,15 @@ await describe({
           name: 'replaces an existing entry, dropping the old line indentation idempotently',
           fn: async () => {
             /**
-             * New beta block carrying a readable option.
+             New beta block carrying a readable option.
              */
             const block = '        <entry key="beta"><value><option name="commandLine" value="cmd" /></value></entry>';
             /**
-             * Document after swapping the beta entry block.
+             Document after swapping the beta entry block.
              */
             const updated = replaceOrInsertXmlEntry({ xml: SAMPLE_MAP, key: 'beta', block, },);
             /**
-             * Present beta entry after replacement.
+             Present beta entry after replacement.
              */
             const beta = requireEntry(findXmlEntryByKey({ xml: updated, key: 'beta', },), 'beta',);
             expect(getXmlOptionValue({ block: beta.block, optionName: 'commandLine', },),).toBe('cmd',);
@@ -244,11 +244,11 @@ await describe({
           name: 'inserts a new entry before the map close regardless of its indentation',
           fn: async () => {
             /**
-             * Map whose close tag sits at column zero.
+             Map whose close tag sits at column zero.
              */
             const weird = '<map>\n    <entry key="a"><value /></entry>\n</map>';
             /**
-             * Document after inserting a fresh entry.
+             Document after inserting a fresh entry.
              */
             const updated = replaceOrInsertXmlEntry({ xml: weird, key: 'b', block: '<entry key="b"><value /></entry>', },);
             expect(findXmlEntryByKey({ xml: updated, key: 'b', },),).not.toBe(ABSENT_XML_ENTRY,);

@@ -22,7 +22,7 @@ const MANY_SEQUENCES = 5_000;
 /** Returns configured guidance text for a rule in assertions. */
 function getRuleGuidance(ruleName: string,): string {
   /**
-   * Guidance entry configured for the requested rule.
+   Guidance entry configured for the requested rule.
    */
   const ruleGuidance = RULE_GUIDANCE[ruleName];
   if (ruleGuidance === undefined)

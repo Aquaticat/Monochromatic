@@ -1,7 +1,7 @@
 /**
- * Arithmetic and Bash test visitors for `unbash` shell command analysis.
- *
- * @module
+ Arithmetic and Bash test visitors for `unbash` shell command analysis.
+ 
+ @module
  */
 
 import type {
@@ -18,18 +18,18 @@ import type { ShellCommandContext, } from './types.ts';
 import { wordWorkItems, } from './work-items.ts';
 
 /**
- * Build child work from arithmetic expression.
- *
- * @param expression - arithmetic expression to inspect
- *
- * @param context - execution context inherited by nested expansions
- *
- * @returns nested command expansion work
- *
- * @example
- * ```ts
- * visitArithmetic({ expression, context });
- * ```
+ Build child work from arithmetic expression.
+ 
+ @param expression - arithmetic expression to inspect
+ 
+ @param context - execution context inherited by nested expansions
+ 
+ @returns nested command expansion work
+ 
+ @example
+ ```ts
+ visitArithmetic({ expression, context });
+ ```
  */
 function visitArithmetic(
   {
@@ -109,18 +109,18 @@ function visitArithmetic(
 }
 
 /**
- * Build child work from Bash test expression.
- *
- * @param expression - Bash test expression to inspect
- *
- * @param context - execution context inherited by nested expansions
- *
- * @returns word or nested test work
- *
- * @example
- * ```ts
- * visitTest({ expression, context });
- * ```
+ Build child work from Bash test expression.
+ 
+ @param expression - Bash test expression to inspect
+ 
+ @param context - execution context inherited by nested expansions
+ 
+ @returns word or nested test work
+ 
+ @example
+ ```ts
+ visitTest({ expression, context });
+ ```
  */
 function visitTest(
   {

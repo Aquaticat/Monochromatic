@@ -16,7 +16,7 @@ import {
 import { resolveApplicationExemptionCommand, } from '../dist/final/node/application-exemption-command.mjs';
 
 /**
- * Sentinel proving resolver threw before assertion.
+ Sentinel proving resolver threw before assertion.
  */
 const COMMAND_DID_NOT_FAIL: unique symbol = Symbol('companion resolver did not fail',);
 
@@ -28,11 +28,11 @@ await describe({
       name: 'uses exact configured executable',
       fn: async () => {
         /**
-         * Original explicit companion setting restored after test.
+         Original explicit companion setting restored after test.
          */
         const original = process.env.WG_QUICKER_EXEMPT_COMMAND;
         /**
-         * Disposable executable directory.
+         Disposable executable directory.
          */
         const directory = await mkdtemp(join(
           tmpdir(),
@@ -40,7 +40,7 @@ await describe({
         ),);
         await using cleanup = {
           /**
-           * Restores environment and removes executable.
+           Restores environment and removes executable.
            */
           async [Symbol.asyncDispose](): Promise<void> {
             if (original === undefined)
@@ -57,7 +57,7 @@ await describe({
           },
         };
         /**
-         * Explicit executable fixture.
+         Explicit executable fixture.
          */
         const command = join(
           directory,
@@ -79,12 +79,12 @@ await describe({
       name: 'rejects unavailable configured executable',
       fn: async () => {
         /**
-         * Original explicit companion setting restored after test.
+         Original explicit companion setting restored after test.
          */
         const original = process.env.WG_QUICKER_EXEMPT_COMMAND;
         await using cleanup = {
           /**
-           * Restores explicit companion setting.
+           Restores explicit companion setting.
            */
           async [Symbol.asyncDispose](): Promise<void> {
             if (original === undefined)
@@ -95,7 +95,7 @@ await describe({
         };
         process.env.WG_QUICKER_EXEMPT_COMMAND = '/does-not-exist/wg-quicker-exempt';
         /**
-         * Domain error captured from exact-path validation.
+         Domain error captured from exact-path validation.
          */
         let caught: unknown = COMMAND_DID_NOT_FAIL;
         try {
@@ -111,14 +111,14 @@ await describe({
       name: 'resolves configured bare name through captured caller path',
       fn: async () => {
         /**
-         * Original command and caller path restored after test.
+         Original command and caller path restored after test.
          */
         const {
           WG_QUICKER_CALLER_PATH: originalCallerPath,
           WG_QUICKER_EXEMPT_COMMAND: originalCommand,
         } = process.env;
         /**
-         * Disposable caller path directory.
+         Disposable caller path directory.
          */
         const directory = await mkdtemp(join(
           tmpdir(),
@@ -126,7 +126,7 @@ await describe({
         ),);
         await using cleanup = {
           /**
-           * Restores environment and removes executable.
+           Restores environment and removes executable.
            */
           async [Symbol.asyncDispose](): Promise<void> {
             if (originalCallerPath === undefined)
@@ -147,7 +147,7 @@ await describe({
           },
         };
         /**
-         * Bare-name executable fixture.
+         Bare-name executable fixture.
          */
         const command = join(
           directory,
@@ -170,7 +170,7 @@ await describe({
       name: 'finds repository sibling release outside secure path',
       fn: async () => {
         /**
-         * Original command and search paths restored after test.
+         Original command and search paths restored after test.
          */
         const {
           PATH: originalPath,
@@ -179,7 +179,7 @@ await describe({
         } = process.env;
         await using cleanup = {
           /**
-           * Restores environment after workspace resolution.
+           Restores environment after workspace resolution.
            */
           async [Symbol.asyncDispose](): Promise<void> {
             if (originalPath === undefined)
@@ -200,7 +200,7 @@ await describe({
         process.env.PATH = '/usr/bin:/bin';
         process.env.WG_QUICKER_CALLER_PATH = '';
         /**
-         * Workspace release companion resolved from test file package layout.
+         Workspace release companion resolved from test file package layout.
          */
         const command = await resolveApplicationExemptionCommand();
         expect(command.endsWith(

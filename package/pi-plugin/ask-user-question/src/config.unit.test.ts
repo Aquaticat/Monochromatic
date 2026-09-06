@@ -24,20 +24,20 @@ import {
 //region Fixture
 
 /**
- * Disposable home for user-level config tests.
+ Disposable home for user-level config tests.
  */
 type ConfigHome = AsyncDisposable & {
   readonly path: string;
 };
 
 /**
- * Creates isolated home directory.
- *
- * @returns disposable home fixture
+ Creates isolated home directory.
+ 
+ @returns disposable home fixture
  */
 async function configHome(): Promise<ConfigHome> {
   /**
-   * Unique home path.
+   Unique home path.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -58,11 +58,11 @@ async function configHome(): Promise<ConfigHome> {
 }
 
 /**
- * Writes user-level extension configuration.
- *
- * @param home - isolated home path
- *
- * @param text - config JSON source
+ Writes user-level extension configuration.
+ 
+ @param home - isolated home path
+ 
+ @param text - config JSON source
  */
 async function writeConfig({
   home,
@@ -72,7 +72,7 @@ async function writeConfig({
   readonly text: string;
 }): Promise<void> {
   /**
-   * Config path under isolated home.
+   Config path under isolated home.
    */
   const path = askUserQuestionConfigPath({ home, },);
   await mkdir(
@@ -153,7 +153,7 @@ await describe({
             text,
           },);
           /**
-           * Captured config failure.
+           Captured config failure.
            */
           const caught: { value?: unknown; } = {};
           try {

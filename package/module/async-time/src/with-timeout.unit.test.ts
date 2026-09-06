@@ -1,7 +1,7 @@
 /**
- * Tests for `withTimeout`.
- *
- * @module
+ Tests for `withTimeout`.
+ 
+ @module
  */
 
 import {

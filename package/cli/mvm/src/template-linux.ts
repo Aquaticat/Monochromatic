@@ -1,8 +1,8 @@
 /**
- * Linux template baking pipeline.
- * Creates a template from a cloud image by booting a temporary VM
- * with cloud-init configured to install qemu-guest-agent, then converting
- * the result to a standalone qcow2.
+ Linux template baking pipeline.
+ Creates a template from a cloud image by booting a temporary VM
+ with cloud-init configured to install qemu-guest-agent, then converting
+ the result to a standalone qcow2.
  */
 
 import { mkdir, } from 'node:fs/promises';
@@ -37,47 +37,47 @@ import {
 } from './virsh.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 /**
- * Timeout for guest agent during Linux template creation.
- * Longer than normal because cloud-init needs to install qemu-guest-agent.
+ Timeout for guest agent during Linux template creation.
+ Longer than normal because cloud-init needs to install qemu-guest-agent.
  */
 const LINUX_TEMPLATE_AGENT_TIMEOUT_MS = 120_000;
 
 /**
- * Creates a Linux template from a cloud image by booting a temporary VM
- * with cloud-init configured to install qemu-guest-agent, then converting
- * the result to a standalone qcow2.
- *
- * @param spec - Linux image specification from the registry
- *
- * @returns Absolute path to the baked template qcow2
- *
- * @throws Error when template creation fails
- *
- * @example
- * ```ts
- * const path = await ensureLinuxTemplate(IMAGES['ubuntu'] as LinuxImageSpec);
- * ```
+ Creates a Linux template from a cloud image by booting a temporary VM
+ with cloud-init configured to install qemu-guest-agent, then converting
+ the result to a standalone qcow2.
+ 
+ @param spec - Linux image specification from the registry
+ 
+ @returns Absolute path to the baked template qcow2
+ 
+ @throws Error when template creation fails
+ 
+ @example
+ ```ts
+ const path = await ensureLinuxTemplate(IMAGES['ubuntu'] as LinuxImageSpec);
+ ```
  */
 export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string> {
   /**
-   * Logger scoped to this template-bake call so log lines carry the function name.
+   Logger scoped to this template-bake call so log lines carry the function name.
    */
   const rl = tagged({
     tag: ensureLinuxTemplate.name,
     l,
   },);
   /**
-   * Final on-disk path for the baked template qcow2; written after the overlay is flattened.
+   Final on-disk path for the baked template qcow2; written after the overlay is flattened.
    */
   const templatePath = join(
     IMAGES_DIR,
@@ -89,11 +89,11 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
   );
 
   /**
-   * Cached cloud image used as the qcow2 backing file during the bake.
+   Cached cloud image used as the qcow2 backing file during the bake.
    */
   const baseImage = await ensureImage(spec,);
   /**
-   * Per-VM scratch directory for the install VM; holds the overlay disk and seed ISO.
+   Per-VM scratch directory for the install VM; holds the overlay disk and seed ISO.
    */
   const vmDir = join(
     VMS_DIR,
@@ -105,7 +105,7 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
   );
 
   /**
-   * Overlay qcow2 with `baseImage` as its backing file; the bake mutates this overlay.
+   Overlay qcow2 with `baseImage` as its backing file; the bake mutates this overlay.
    */
   const diskPath = join(
     vmDir,
@@ -113,7 +113,7 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
   );
 
   /**
-   * Disposable guard that tears down the template VM on scope exit, even on early throws.
+   Disposable guard that tears down the template VM on scope exit, even on early throws.
    */
   await using _cleanup = templateVmGuard(rl,);
 
@@ -134,7 +134,7 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
   },);
 
   /**
-   * NoCloud seed ISO carrying cloud-init user-data that installs `qemu-guest-agent`; {@link NO_SEED_ISO} for Windows.
+   NoCloud seed ISO carrying cloud-init user-data that installs `qemu-guest-agent`; {@link NO_SEED_ISO} for Windows.
    */
   const seedIso = await createSeedIso({
     guest: spec,
@@ -143,7 +143,7 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
     vmDir,
   },);
   /**
-   * Libvirt domain XML for the temporary install VM.
+   Libvirt domain XML for the temporary install VM.
    */
   const xml = domainXml({
     diskPath,

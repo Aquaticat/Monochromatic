@@ -1,43 +1,43 @@
 /**
- * Client-side fallback that reorders the direct children of every
- * `<shuffle-children>` element in browsers that do not yet support CSS `random()`.
- *
- * The {@link ShuffleChildren} component sets `display: flex` on `<shuffle-children>`
- * and `order: random(1, 1000, by 1)` on each direct child to shuffle visually.
- * Browsers that do not support CSS `random()` drop the `order` declaration and
- * every child falls back to the default `order: 0`, leaving them in source order,
- * which defeats the shuffle.
- *
- * This script detects the missing support via `CSS.supports` and reorders the
- * DOM nodes directly so the shuffle still happens. In supporting browsers the
- * script is a no-op; the CSS path takes effect and runs off the main thread
- * without layout shift.
- *
- * The DOM-reorder happens at module-load time. The bundle entry that imports
- * this file is loaded with `type="module"`, which is render-blocking but
- * executed before first paint, so the reorder applies before the user sees
- * any of the wrapped content.
- *
- * @example
- * ```ts
- * import './shuffle-children.ts';
- * ```
+ Client-side fallback that reorders the direct children of every
+ `<shuffle-children>` element in browsers that do not yet support CSS `random()`.
+ 
+ The {@link ShuffleChildren} component sets `display: flex` on `<shuffle-children>`
+ and `order: random(1, 1000, by 1)` on each direct child to shuffle visually.
+ Browsers that do not support CSS `random()` drop the `order` declaration and
+ every child falls back to the default `order: 0`, leaving them in source order,
+ which defeats the shuffle.
+ 
+ This script detects the missing support via `CSS.supports` and reorders the
+ DOM nodes directly so the shuffle still happens. In supporting browsers the
+ script is a no-op; the CSS path takes effect and runs off the main thread
+ without layout shift.
+ 
+ The DOM-reorder happens at module-load time. The bundle entry that imports
+ this file is loaded with `type="module"`, which is render-blocking but
+ executed before first paint, so the reorder applies before the user sees
+ any of the wrapped content.
+ 
+ @example
+ ```ts
+ import './shuffle-children.ts';
+ ```
  */
 
 export {}; // module boundary marker
 
 /**
- * Probe used to detect whether the browser supports `random()` on `order`.
+ Probe used to detect whether the browser supports `random()` on `order`.
  */
 const RANDOM_PROBE = 'random(1, 1000, by 1)';
 
 /**
- * Reorders the direct children of each `<shuffle-children>` wrapper using
- * `Math.random()` ranks. No-op when CSS `random()` is supported on `order`.
- *
- * Ranks attach via `map`, the array is sorted by rank, then ranks are dropped
- * and the elements are reinserted via `replaceChildren`. For small sibling
- * counts the worst-case bias of rank-then-sort is negligible.
+ Reorders the direct children of each `<shuffle-children>` wrapper using
+ `Math.random()` ranks. No-op when CSS `random()` is supported on `order`.
+ 
+ Ranks attach via `map`, the array is sorted by rank, then ranks are dropped
+ and the elements are reinserted via `replaceChildren`. For small sibling
+ counts the worst-case bias of rank-then-sort is negligible.
  */
 function shuffleChildren(): void {
   if (CSS.supports(
@@ -48,7 +48,7 @@ function shuffleChildren(): void {
   }
 
   /**
-   * Wrapper elements opting into per-render shuffling.
+   Wrapper elements opting into per-render shuffling.
    */
   const wrappers = document.querySelectorAll<HTMLElement>(
     'shuffle-children',
@@ -56,7 +56,7 @@ function shuffleChildren(): void {
 
   for (const wrapper of wrappers) {
     /**
-     * Snapshot of current child order before shuffling.
+     Snapshot of current child order before shuffling.
      */
     const children = [...wrapper.children,];
     if (children.length
@@ -64,14 +64,14 @@ function shuffleChildren(): void {
       continue;
 
     /**
-     * Child paired with immutable random rank for sorting.
+     Child paired with immutable random rank for sorting.
      */
     type RankedChild = Readonly<{
       child: Element;
       rank: number;
     }>;
     /**
-     * Permutation produced by attaching a random rank then sorting by it.
+     Permutation produced by attaching a random rank then sorting by it.
      */
     const shuffled = children
       .map(function attachRank(child,): RankedChild {

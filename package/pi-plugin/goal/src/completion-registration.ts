@@ -1,7 +1,7 @@
 /**
- * Harness-owned settlement-review registration.
- *
- * @module
+ Harness-owned settlement-review registration.
+ 
+ @module
  */
 
 import type {
@@ -31,7 +31,7 @@ import { reviewGoalSettlement, } from './review-runner.ts';
 import { createGoalReviewerUnavailableHandler, } from './review-unavailable.ts';
 
 /**
- * Registration dependencies for private settlement review.
+ Registration dependencies for private settlement review.
  */
 type GoalSettlementReviewRegistration = {
   readonly pi: ForeignBorrowed<ExtensionAPI>;
@@ -43,21 +43,21 @@ type GoalSettlementReviewRegistration = {
 };
 
 /**
- * Domain sentinel before any settlement has been reviewed.
+ Domain sentinel before any settlement has been reviewed.
  */
 const SETTLEMENT_REVIEW_KEY_ABSENT: unique symbol = Symbol('settlement review key absent',);
 
 /**
- * Build stable duplicate-review key from captured settlement.
- *
- * @param request - captured active settlement
- *
- * @returns runtime-local duplicate guard key
- *
- * @example
- * ```ts
- * settlementReviewKey(request);
- * ```
+ Build stable duplicate-review key from captured settlement.
+ 
+ @param request - captured active settlement
+ 
+ @returns runtime-local duplicate guard key
+ 
+ @example
+ ```ts
+ settlementReviewKey(request);
+ ```
  */
 function settlementReviewKey(
   request: Parameters<typeof executeGoalSettlementReview>[0]['request'],
@@ -73,26 +73,26 @@ function settlementReviewKey(
 }
 
 /**
- * Register private review at Pi's final settlement seam.
- *
- * @param pi - Pi extension API receiving lifecycle handlers
- *
- * @param lifecycle - shared goal runtime
- *
- * @param reviewer - injectable independent reviewer
- *
- * @param handleReviewerUnavailable - injectable mode-specific fallback
- *
- * @param createId - private continuation identity source
- *
- * @param now - timestamp source
- *
- * @mutates pi - registers agent lifecycle handlers
- *
- * @example
- * ```ts
- * registerGoalSettlementReview({ pi, lifecycle });
- * ```
+ Register private review at Pi's final settlement seam.
+ 
+ @param pi - Pi extension API receiving lifecycle handlers
+ 
+ @param lifecycle - shared goal runtime
+ 
+ @param reviewer - injectable independent reviewer
+ 
+ @param handleReviewerUnavailable - injectable mode-specific fallback
+ 
+ @param createId - private continuation identity source
+ 
+ @param now - timestamp source
+ 
+ @mutates pi - registers agent lifecycle handlers
+ 
+ @example
+ ```ts
+ registerGoalSettlementReview({ pi, lifecycle });
+ ```
  */
 function registerGoalSettlementReview(
   {
@@ -105,21 +105,21 @@ function registerGoalSettlementReview(
   }: GoalSettlementReviewRegistration,
 ): void {
   /**
-   * Passive runtime-local view of background work.
+   Passive runtime-local view of background work.
    */
   const backgroundProcessMonitor = registerBackgroundProcessMonitor(pi,);
   /**
-   * Explicit user abort marker consumed by final settlement.
+   Explicit user abort marker consumed by final settlement.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Separate agent_end and agent_settled callbacks share one runtime marker.
   let settledRunWasAborted = false;
   /**
-   * Most recent captured settlement protected from duplicate callbacks.
+   Most recent captured settlement protected from duplicate callbacks.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Runtime-local duplicate guard spans agent_settled callbacks.
   let lastReviewedSettlementKey: string | typeof SETTLEMENT_REVIEW_KEY_ABSENT = SETTLEMENT_REVIEW_KEY_ABSENT;
   /**
-   * Explicit fallback or production mode-specific exhaustion handler.
+   Explicit fallback or production mode-specific exhaustion handler.
    */
   const unavailableHandler = handleReviewerUnavailable
     ?? createGoalReviewerUnavailableHandler({
@@ -134,7 +134,7 @@ function registerGoalSettlementReview(
       event: ForeignBorrowed<AgentEndEvent>,
     ) {
       /**
-       * Latest assistant message determines explicit abort.
+       Latest assistant message determines explicit abort.
        */
       const finalAssistant = event.messages
         .findLast(function isAssistant(message,) {
@@ -161,14 +161,14 @@ function registerGoalSettlementReview(
       if (lifecycle.deliverPendingKickoff(context,))
         return;
       /**
-       * Finalized selected branch leaf.
+       Finalized selected branch leaf.
        */
       const branchLeafId = context.sessionManager
         .getLeafId();
       if (branchLeafId === null)
         return;
       /**
-       * Captured active settlement or absent marker.
+       Captured active settlement or absent marker.
        */
       const request = createGoalSettlementReviewRequest({
         controller: lifecycle.currentController(),
@@ -180,7 +180,7 @@ function registerGoalSettlementReview(
         return;
       }
       /**
-       * Duplicate guard for exact runtime, generation, and finalized leaf.
+       Duplicate guard for exact runtime, generation, and finalized leaf.
        */
       const reviewKey = settlementReviewKey(request,);
       if (reviewKey === lastReviewedSettlementKey)

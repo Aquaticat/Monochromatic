@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for session-local judge call history.
- *
- * @module
+ Built-artifact tests for session-local judge call history.
+ 
+ @module
  */
 
 import {

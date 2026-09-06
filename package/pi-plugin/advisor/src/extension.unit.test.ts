@@ -1,7 +1,7 @@
 /**
- * Unit tests for Advisor extension registration and public prompt helpers.
- *
- * @module
+ Unit tests for Advisor extension registration and public prompt helpers.
+ 
+ @module
  */
 
 import {
@@ -121,11 +121,11 @@ type RecordedPi = {
 };
 
 /**
- * Build a minimal model registry mock.
- *
- * @param models - available models
- *
- * @returns model registry mock
+ Build a minimal model registry mock.
+ 
+ @param models - available models
+ 
+ @returns model registry mock
  */
 function modelRegistryWith(
   models: readonly Model<'faux'>[],
@@ -141,9 +141,9 @@ function modelRegistryWith(
 }
 
 /**
- * Build a minimal extension context mock.
- *
- * @returns extension context mock
+ Build a minimal extension context mock.
+ 
+ @returns extension context mock
  */
 function extensionContext(): ExtensionContext {
   return {
@@ -154,9 +154,9 @@ function extensionContext(): ExtensionContext {
 }
 
 /**
- * Build a minimal extension context with current main model also in scope.
- *
- * @returns extension context mock
+ Build a minimal extension context with current main model also in scope.
+ 
+ @returns extension context mock
  */
 function extensionContextWithCurrentMainModel(): ExtensionContext {
   return {
@@ -174,9 +174,9 @@ function extensionContextWithCurrentMainModel(): ExtensionContext {
 }
 
 /**
- * Build a minimal extension context containing one output-ineligible model.
- *
- * @returns extension context mock
+ Build a minimal extension context containing one output-ineligible model.
+ 
+ @returns extension context mock
  */
 function extensionContextWithInsufficientOutputModel(): ExtensionContext {
   return {
@@ -193,36 +193,36 @@ function extensionContextWithInsufficientOutputModel(): ExtensionContext {
 }
 
 /**
- * Build a minimal command context mock.
- *
- * @returns command context mock
+ Build a minimal command context mock.
+ 
+ @returns command context mock
  */
 function commandContext(): ExtensionCommandContext {
   return extensionContext() as unknown as ExtensionCommandContext;
 }
 
 /**
- * Build a minimal command context with current main model also in scope.
- *
- * @returns command context mock
+ Build a minimal command context with current main model also in scope.
+ 
+ @returns command context mock
  */
 function commandContextWithCurrentMainModel(): ExtensionCommandContext {
   return extensionContextWithCurrentMainModel() as unknown as ExtensionCommandContext;
 }
 
 /**
- * Build a command context containing one output-ineligible model.
- *
- * @returns command context mock
+ Build a command context containing one output-ineligible model.
+ 
+ @returns command context mock
  */
 function commandContextWithInsufficientOutputModel(): ExtensionCommandContext {
   return extensionContextWithInsufficientOutputModel() as unknown as ExtensionCommandContext;
 }
 
 /**
- * Build a minimal extension API mock that records registration calls.
- *
- * @returns recorded API state
+ Build a minimal extension API mock that records registration calls.
+ 
+ @returns recorded API state
  */
 function recordedPi(): RecordedPi {
   const recorded: Omit<RecordedPi, 'api'> = {
@@ -270,13 +270,13 @@ function recordedPi(): RecordedPi {
 }
 
 /**
- * Get required recorded callback from registration map.
- *
- * @param handlers - callbacks keyed by registered name
- *
- * @param name - required registration name
- *
- * @returns recorded callback
+ Get required recorded callback from registration map.
+ 
+ @param handlers - callbacks keyed by registered name
+ 
+ @param name - required registration name
+ 
+ @returns recorded callback
  */
 function registeredHandler(
   {

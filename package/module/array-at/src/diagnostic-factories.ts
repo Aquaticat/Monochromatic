@@ -1,10 +1,10 @@
 /**
- * Runtime diagnostic factories whose return annotations define static wording.
- *
- * Type-level validation reads these return types, while runtime validation calls
- * the same functions. A wording change must therefore satisfy both contexts.
- *
- * @module
+ Runtime diagnostic factories whose return annotations define static wording.
+ 
+ Type-level validation reads these return types, while runtime validation calls
+ the same functions. A wording change must therefore satisfy both contexts.
+ 
+ @module
  */
 
 import type {
@@ -17,16 +17,16 @@ import type {
 //region Independent diagnostics
 
 /**
- * Creates non-safe-integer diagnostic.
- *
- * @param index - Index rejected by safe-integer predicate
- *
- * @returns Structured safe-integer diagnostic
- *
- * @example
- * ```ts
- * const diagnostic = createNonSafeIntegerDiagnostic({ index: 1.5, });
- * ```
+ Creates non-safe-integer diagnostic.
+ 
+ @param index - Index rejected by safe-integer predicate
+ 
+ @returns Structured safe-integer diagnostic
+ 
+ @example
+ ```ts
+ const diagnostic = createNonSafeIntegerDiagnostic({ index: 1.5, });
+ ```
  */
 export function createNonSafeIntegerDiagnostic<const Index extends number>({
   index,
@@ -42,14 +42,14 @@ export function createNonSafeIntegerDiagnostic<const Index extends number>({
 }
 
 /**
- * Creates empty-array diagnostic.
- *
- * @returns Structured empty-array diagnostic
- *
- * @example
- * ```ts
- * const diagnostic = createEmptyArrayDiagnostic();
- * ```
+ Creates empty-array diagnostic.
+ 
+ @returns Structured empty-array diagnostic
+ 
+ @example
+ ```ts
+ const diagnostic = createEmptyArrayDiagnostic();
+ ```
  */
 export function createEmptyArrayDiagnostic(): EmptyArrayDiagnostic {
   return {
@@ -65,18 +65,18 @@ export function createEmptyArrayDiagnostic(): EmptyArrayDiagnostic {
 //region Range diagnostics
 
 /**
- * Shared range diagnostic factory options.
- *
- * @example
- * ```ts
- * const options: RangeDiagnosticOptions<3, 1, 2, 3, -3> = {
- *   distance: 1,
- *   index: 3,
- *   lastIndex: 2,
- *   length: 3,
- *   minimumNegativeIndex: -3,
- * };
- * ```
+ Shared range diagnostic factory options.
+ 
+ @example
+ ```ts
+ const options: RangeDiagnosticOptions<3, 1, 2, 3, -3> = {
+   distance: 1,
+   index: 3,
+   lastIndex: 2,
+   length: 3,
+   minimumNegativeIndex: -3,
+ };
+ ```
  */
 type RangeDiagnosticOptions<
   Index extends number,
@@ -93,30 +93,30 @@ type RangeDiagnosticOptions<
 };
 
 /**
- * Creates diagnostic for index past array end.
- *
- * @param index - Requested index
- *
- * @param distance - Exact overshoot from last valid index
- *
- * @param lastIndex - Maximum non-negative index
- *
- * @param length - Array length defining both valid ranges
- *
- * @param minimumNegativeIndex - Inclusive negative lower bound
- *
- * @returns Structured past-end diagnostic
- *
- * @example
- * ```ts
- * const diagnostic = createPastEndDiagnostic({
- *   distance: 1,
- *   index: 3,
- *   lastIndex: 2,
- *   length: 3,
- *   minimumNegativeIndex: -3,
- * });
- * ```
+ Creates diagnostic for index past array end.
+ 
+ @param index - Requested index
+ 
+ @param distance - Exact overshoot from last valid index
+ 
+ @param lastIndex - Maximum non-negative index
+ 
+ @param length - Array length defining both valid ranges
+ 
+ @param minimumNegativeIndex - Inclusive negative lower bound
+ 
+ @returns Structured past-end diagnostic
+ 
+ @example
+ ```ts
+ const diagnostic = createPastEndDiagnostic({
+   distance: 1,
+   index: 3,
+   lastIndex: 2,
+   length: 3,
+   minimumNegativeIndex: -3,
+ });
+ ```
  */
 export function createPastEndDiagnostic<
   const Index extends number,
@@ -159,30 +159,30 @@ export function createPastEndDiagnostic<
 }
 
 /**
- * Creates diagnostic for index before array start.
- *
- * @param index - Requested index
- *
- * @param distance - Exact overshoot before first valid index
- *
- * @param lastIndex - Maximum non-negative index
- *
- * @param length - Array length defining both valid ranges
- *
- * @param minimumNegativeIndex - Inclusive negative lower bound
- *
- * @returns Structured before-start diagnostic
- *
- * @example
- * ```ts
- * const diagnostic = createBeforeStartDiagnostic({
- *   distance: 1,
- *   index: -4,
- *   lastIndex: 2,
- *   length: 3,
- *   minimumNegativeIndex: -3,
- * });
- * ```
+ Creates diagnostic for index before array start.
+ 
+ @param index - Requested index
+ 
+ @param distance - Exact overshoot before first valid index
+ 
+ @param lastIndex - Maximum non-negative index
+ 
+ @param length - Array length defining both valid ranges
+ 
+ @param minimumNegativeIndex - Inclusive negative lower bound
+ 
+ @returns Structured before-start diagnostic
+ 
+ @example
+ ```ts
+ const diagnostic = createBeforeStartDiagnostic({
+   distance: 1,
+   index: -4,
+   lastIndex: 2,
+   length: 3,
+   minimumNegativeIndex: -3,
+ });
+ ```
  */
 export function createBeforeStartDiagnostic<
   const Index extends number,
@@ -229,24 +229,24 @@ export function createBeforeStartDiagnostic<
 //region Slot diagnostics
 
 /**
- * Creates diagnostic for in-range unassigned slot.
- *
- * @param index - Requested signed index
- *
- * @param length - Array length defining valid bounds
- *
- * @param resolvedIndex - Non-negative unassigned slot
- *
- * @returns Structured unassigned-slot diagnostic
- *
- * @example
- * ```ts
- * const diagnostic = createUnassignedSlotDiagnostic({
- *   index: -1,
- *   length: 2,
- *   resolvedIndex: 1,
- * });
- * ```
+ Creates diagnostic for in-range unassigned slot.
+ 
+ @param index - Requested signed index
+ 
+ @param length - Array length defining valid bounds
+ 
+ @param resolvedIndex - Non-negative unassigned slot
+ 
+ @returns Structured unassigned-slot diagnostic
+ 
+ @example
+ ```ts
+ const diagnostic = createUnassignedSlotDiagnostic({
+   index: -1,
+   length: 2,
+   resolvedIndex: 1,
+ });
+ ```
  */
 export function createUnassignedSlotDiagnostic<
   const Index extends number,

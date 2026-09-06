@@ -16,11 +16,11 @@ import { spawnResult, } from './spawn.ts';
 import type { Confidence, } from './types.ts';
 
 /**
- * Exact (or size-pack proxy) measurement of a complete local repository. Byte
- * fields are absent when their measurement could not be obtained: the caller
- * omits the corresponding signal rather than recording a fabricated zero. A
- * missing `fullBytes` means no full-clone size could be measured at all, so no
- * local estimator is contributed and the stream degrades to its prior.
+ Exact (or size-pack proxy) measurement of a complete local repository. Byte
+ fields are absent when their measurement could not be obtained: the caller
+ omits the corresponding signal rather than recording a fabricated zero. A
+ missing `fullBytes` means no full-clone size could be measured at all, so no
+ local estimator is contributed and the stream degrades to its prior.
  */
 export type LocalExactResult = {
   readonly fullBytes?: number;
@@ -31,9 +31,9 @@ export type LocalExactResult = {
 };
 
 /**
- * Argument vector that lists every object a full clone receives: everything
- * reachable from local heads and tags, the ref classes a clone fetches. NOT
- * `--all`, which would pull local-only remote-tracking refs a clone never sends.
+ Argument vector that lists every object a full clone receives: everything
+ reachable from local heads and tags, the ref classes a clone fetches. NOT
+ `--all`, which would pull local-only remote-tracking refs a clone never sends.
  */
 const FULL_REV_LIST: readonly string[] = [
   'rev-list',
@@ -43,7 +43,7 @@ const FULL_REV_LIST: readonly string[] = [
 ];
 
 /**
- * Argument vector listing only the tip snapshot, for the depth-1 shallow side.
+ Argument vector listing only the tip snapshot, for the depth-1 shallow side.
  */
 const TIP_REV_LIST: readonly string[] = [
   'rev-list',
@@ -53,8 +53,8 @@ const TIP_REV_LIST: readonly string[] = [
 ];
 
 /**
- * Packer argument vector shared by both sides, so the ratio is apples-to-apples
- * on one well-packed pack.
+ Packer argument vector shared by both sides, so the ratio is apples-to-apples
+ on one well-packed pack.
  */
 const PACK_ARGS: readonly string[] = [
   'pack-objects',
@@ -63,22 +63,22 @@ const PACK_ARGS: readonly string[] = [
 ];
 
 /**
- * Reads the already-packed size from `git count-objects -v` (`size-pack`,
- * reported in KiB) as a cheap high-confidence proxy for huge repos.
- *
- * @param path - repository directory
- *
- * @returns packed object-store bytes (zero is a valid packed size), or
- *   {@link UNMEASURED} when `count-objects` could not report it
- *
- * @example
- * ```ts
- * const bytes = await countObjectsSizePack({ path: '/repo' });
- * ```
+ Reads the already-packed size from `git count-objects -v` (`size-pack`,
+ reported in KiB) as a cheap high-confidence proxy for huge repos.
+ 
+ @param path - repository directory
+ 
+ @returns packed object-store bytes (zero is a valid packed size), or
+   {@link UNMEASURED} when `count-objects` could not report it
+ 
+ @example
+ ```ts
+ const bytes = await countObjectsSizePack({ path: '/repo' });
+ ```
  */
 export async function countObjectsSizePack({ path, }: { readonly path: string; },): Promise<Measured> {
   /**
-   * Captured `count-objects -v` report and exit code.
+   Captured `count-objects -v` report and exit code.
    */
   const {
     stdout,
@@ -95,7 +95,7 @@ export async function countObjectsSizePack({ path, }: { readonly path: string; }
   if (exitCode !== 0)
     return UNMEASURED;
   /**
-   * `size-pack: <KiB>` line value, parsed by splitting on the colon.
+   `size-pack: <KiB>` line value, parsed by splitting on the colon.
    */
   const line = stdout
     .split('\n',)
@@ -105,7 +105,7 @@ export async function countObjectsSizePack({ path, }: { readonly path: string; }
   if (line === undefined)
     return UNMEASURED;
   /**
-   * KiB figure after the colon.
+   KiB figure after the colon.
    */
   const kib = Math.trunc(Number(
     (line.split(':',)
@@ -116,19 +116,19 @@ export async function countObjectsSizePack({ path, }: { readonly path: string; }
 }
 
 /**
- * Best-effort measure of the shallow tip pack for a local repo. Cheap even on
- * huge repos, so it runs on every path. Degrades to {@link UNMEASURED} rather
- * than throwing: an empty, unborn, or timing-stalled tip can fail the pack, and
- * the never-refuse contract needs a result the caller can fold into a snapshot,
- * not a rejection that would crash the whole stream.
- *
- * @param path - repository directory
- *
- * @returns tip pack bytes, or {@link UNMEASURED} when the tip cannot be packed
+ Best-effort measure of the shallow tip pack for a local repo. Cheap even on
+ huge repos, so it runs on every path. Degrades to {@link UNMEASURED} rather
+ than throwing: an empty, unborn, or timing-stalled tip can fail the pack, and
+ the never-refuse contract needs a result the caller can fold into a snapshot,
+ not a rejection that would crash the whole stream.
+ 
+ @param path - repository directory
+ 
+ @returns tip pack bytes, or {@link UNMEASURED} when the tip cannot be packed
  */
 async function measureTip({ path, }: { readonly path: string; },): Promise<Measured> {
   /**
-   * Tagged logger naming the best-effort tip measurement.
+   Tagged logger naming the best-effort tip measurement.
    */
   const rl = tagged({
     tag: measureTip.name,
@@ -148,24 +148,24 @@ async function measureTip({ path, }: { readonly path: string; },): Promise<Measu
 }
 
 /**
- * Exactly measures a complete local repository's full and shallow object-store
- * sizes by packing the clone-reachable object set with `pack-objects`, the same
- * packing a fresh `git clone` produces. Correct by reachability, so alternates,
- * `--shared` clones, and linked worktrees are handled without summing the
- * alternate store. Above `maxPackBytes`, falls back to the `count-objects`
- * size-pack proxy (still high confidence, wider band) to avoid repack-level cost.
- * Never runs `git gc`/`git repack`, so the user's repo is never mutated.
- *
- * @param path - complete local repository directory
- *
- * @param maxPackBytes - size above which the size-pack proxy is used
- *
- * @returns full/shallow bytes, confidence, basis label, and storage footprint
- *
- * @example
- * ```ts
- * const result = await localExact({ path: '/repo', maxPackBytes: DEFAULT_MAX_PACK_BYTES });
- * ```
+ Exactly measures a complete local repository's full and shallow object-store
+ sizes by packing the clone-reachable object set with `pack-objects`, the same
+ packing a fresh `git clone` produces. Correct by reachability, so alternates,
+ `--shared` clones, and linked worktrees are handled without summing the
+ alternate store. Above `maxPackBytes`, falls back to the `count-objects`
+ size-pack proxy (still high confidence, wider band) to avoid repack-level cost.
+ Never runs `git gc`/`git repack`, so the user's repo is never mutated.
+ 
+ @param path - complete local repository directory
+ 
+ @param maxPackBytes - size above which the size-pack proxy is used
+ 
+ @returns full/shallow bytes, confidence, basis label, and storage footprint
+ 
+ @example
+ ```ts
+ const result = await localExact({ path: '/repo', maxPackBytes: DEFAULT_MAX_PACK_BYTES });
+ ```
  */
 export async function localExact(
   {
@@ -177,7 +177,7 @@ export async function localExact(
   },
 ): Promise<LocalExactResult> {
   /**
-   * Tagged logger naming the local-exact measurement.
+   Tagged logger naming the local-exact measurement.
    */
   const rl = tagged({
     tag: localExact.name,
@@ -185,27 +185,27 @@ export async function localExact(
   },);
 
   /**
-   * Raw on-disk store footprint, a separate explicitly-labeled secondary metric
-   * (NOT the full-clone size: it can include unreachable or alternate objects);
-   * {@link UNMEASURED} when the store cannot be sized.
+   Raw on-disk store footprint, a separate explicitly-labeled secondary metric
+   (NOT the full-clone size: it can include unreachable or alternate objects);
+   {@link UNMEASURED} when the store cannot be sized.
    */
   const footprint = await objectsDirSize({ repoPath: path, },);
 
   /**
-   * Packed size proxy, used to gate the heavy exact pack; {@link UNMEASURED}
-   * when `count-objects` could not report it.
+   Packed size proxy, used to gate the heavy exact pack; {@link UNMEASURED}
+   when `count-objects` could not report it.
    */
   const sizePack = await countObjectsSizePack({ path, },);
 
   /**
-   * Shallow tip pack, measured once up front (best-effort, never throws) and
-   * reused by every return path so no fallback re-invokes a call that can fail.
+   Shallow tip pack, measured once up front (best-effort, never throws) and
+   reused by every return path so no fallback re-invokes a call that can fail.
    */
   const tip = await measureTip({ path, },);
 
   /**
-   * Secondary sizes carried only when measured, so an absent measurement is
-   * omitted from the result rather than recorded as a fabricated zero.
+   Secondary sizes carried only when measured, so an absent measurement is
+   omitted from the result rather than recorded as a fabricated zero.
    */
   const optionalSizes = {
     ...isMeasured(footprint,) ? { footprintBytes: footprint, } : {},
@@ -224,7 +224,7 @@ export async function localExact(
 
   try {
     /**
-     * Full clone-reachable pack, near-exact for a fresh clone (the heavy step).
+     Full clone-reachable pack, near-exact for a fresh clone (the heavy step).
      */
     const fullBytes = await measurePackBytes({
       cwd: path,

@@ -1,7 +1,7 @@
 /**
- * Unit tests for optional pi-coding-agent wrappers.
- *
- * @module
+ Unit tests for optional pi-coding-agent wrappers.
+ 
+ @module
  */
 
 import {

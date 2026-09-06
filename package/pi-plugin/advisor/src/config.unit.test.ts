@@ -1,7 +1,7 @@
 /**
- * Unit tests for Advisor configuration loading.
- *
- * @module
+ Unit tests for Advisor configuration loading.
+ 
+ @module
  */
 
 import {

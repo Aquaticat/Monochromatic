@@ -9,16 +9,16 @@ import {
 import { runCli, } from '../dist/final/node/index.mjs';
 
 /**
- * Writable capture stream for CLI output assertions.
+ Writable capture stream for CLI output assertions.
  */
 class CaptureStreamElement extends PassThrough {
   /**
-   * Captured output chunks.
+   Captured output chunks.
    */
   readonly #chunks: Buffer[] = [];
 
   /**
-   * Creates capture stream and data listener.
+   Creates capture stream and data listener.
    */
   public constructor() {
     super();
@@ -28,9 +28,9 @@ class CaptureStreamElement extends PassThrough {
   }
 
   /**
-   * Returns complete UTF-8 output.
-   *
-   * @returns Concatenated stream text.
+   Returns complete UTF-8 output.
+   
+   @returns Concatenated stream text.
    */
   public text(): string {
     return Buffer.concat(this.#chunks,).toString('utf8',);
@@ -44,15 +44,15 @@ await describe({
       name: 'prints help without requiring mode',
       fn: async () => {
         /**
-         * Captured standard output.
+         Captured standard output.
          */
         const stdout = new CaptureStreamElement();
         /**
-         * Captured standard error.
+         Captured standard error.
          */
         const stderr = new CaptureStreamElement();
         /**
-         * Empty standard input.
+         Empty standard input.
          */
         const stdin = new PassThrough();
 
@@ -69,15 +69,15 @@ await describe({
       name: 'maps invocation misuse to status two',
       fn: async () => {
         /**
-         * Captured standard output.
+         Captured standard output.
          */
         const stdout = new CaptureStreamElement();
         /**
-         * Captured standard error.
+         Captured standard error.
          */
         const stderr = new CaptureStreamElement();
         /**
-         * Empty standard input.
+         Empty standard input.
          */
         const stdin = new PassThrough();
 
@@ -94,15 +94,15 @@ await describe({
       name: 'accepts shell-safe inline JSON as interactive positional input',
       fn: async () => {
         /**
-         * Captured TTY standard output.
+         Captured TTY standard output.
          */
         const stdout = Object.assign(new CaptureStreamElement(), { isTTY: true, },);
         /**
-         * Captured standard error.
+         Captured standard error.
          */
         const stderr = new CaptureStreamElement();
         /**
-         * TTY standard input reserved for later interactive decisions.
+         TTY standard input reserved for later interactive decisions.
          */
         const stdin = Object.assign(new PassThrough(), { isTTY: true, },);
 
@@ -125,15 +125,15 @@ await describe({
       name: 'requires positional input before interactive TTY validation',
       fn: async () => {
         /**
-         * Captured standard output.
+         Captured standard output.
          */
         const stdout = new CaptureStreamElement();
         /**
-         * Captured standard error.
+         Captured standard error.
          */
         const stderr = new CaptureStreamElement();
         /**
-         * Non-TTY standard input that must never become an ingestion source.
+         Non-TTY standard input that must never become an ingestion source.
          */
         const stdin = new PassThrough();
 

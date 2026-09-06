@@ -1,7 +1,7 @@
 /**
- * Claude effort-level indicator formatting.
- *
- * @module
+ Claude effort-level indicator formatting.
+ 
+ @module
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -9,7 +9,7 @@ import { readFile, } from 'node:fs/promises';
 //region Constants
 
 /**
- * Effort level symbols matching Claude Code's built-in indicators.
+ Effort level symbols matching Claude Code's built-in indicators.
  */
 const EFFORT_SYMBOLS: Record<string, string> = {
   low: '\u25CB',
@@ -18,7 +18,7 @@ const EFFORT_SYMBOLS: Record<string, string> = {
 };
 
 /**
- * Default effort level, rendered as an empty indicator.
+ Default effort level, rendered as an empty indicator.
  */
 const DEFAULT_EFFORT_LEVEL = 'high';
 
@@ -27,25 +27,25 @@ const DEFAULT_EFFORT_LEVEL = 'high';
 //region Settings parser
 
 /**
- * Reads `effortLevel` from settings JSON text.
- *
- * @param raw - raw settings JSON text
- *
- * @returns effort level string, or default level when unreadable
- *
- * @example
- * ```ts
- * effortLevelFromSettings('{"effortLevel":"low"}');
- * ```
+ Reads `effortLevel` from settings JSON text.
+ 
+ @param raw - raw settings JSON text
+ 
+ @returns effort level string, or default level when unreadable
+ 
+ @example
+ ```ts
+ effortLevelFromSettings('{"effortLevel":"low"}');
+ ```
  */
 function effortLevelFromSettings(raw: string,): string {
   try {
     /**
-     * Parsed settings JSON value.
+     Parsed settings JSON value.
      */
     const parsed: unknown = JSON.parse(raw,);
     /**
-     * Whether JSON-owned settings can carry an effort-level property.
+     Whether JSON-owned settings can carry an effort-level property.
      */
     const isReadableObject = ((typeof parsed) === 'object')
       && (parsed !== null)
@@ -54,7 +54,7 @@ function effortLevelFromSettings(raw: string,): string {
       return DEFAULT_EFFORT_LEVEL;
 
     /**
-     * Optional effort level read from JSON-owned data with no caller-owned hooks.
+     Optional effort level read from JSON-owned data with no caller-owned hooks.
      */
     const level: unknown = Reflect.get(
       parsed,
@@ -74,34 +74,34 @@ function effortLevelFromSettings(raw: string,): string {
 //region Public reader
 
 /**
- * Reads `effortLevel` from `~/.claude/settings.json`.
- *
- * @returns effort indicator symbol, or empty string for high/default/unreadable settings
- *
- * @example
- * ```ts
- * await readEffortIndicator();
- * ```
+ Reads `effortLevel` from `~/.claude/settings.json`.
+ 
+ @returns effort indicator symbol, or empty string for high/default/unreadable settings
+ 
+ @example
+ ```ts
+ await readEffortIndicator();
+ ```
  */
 async function readEffortIndicator(): Promise<string> {
   try {
     /**
-     * User home directory; empty path simply fails to resolve settings.
+     User home directory; empty path simply fails to resolve settings.
      */
     const { HOME: home = '', } = process.env;
     /**
-     * Path to the global Claude Code settings file storing `effortLevel`.
+     Path to the global Claude Code settings file storing `effortLevel`.
      */
     const settingsPath = `${home}/.claude/settings.json`;
     /**
-     * Raw JSON read from disk.
+     Raw JSON read from disk.
      */
     const raw = await readFile(
       settingsPath,
       'utf8',
     );
     /**
-     * Resolved effort level.
+     Resolved effort level.
      */
     const level = effortLevelFromSettings(raw,);
     return EFFORT_SYMBOLS[level] ?? '';

@@ -1,39 +1,39 @@
 /**
- * Supported Electron Packager distribution target matrix.
- *
- * @example
- * ```ts
- * console.log(DISTRIBUTION_TARGETS.map((target) => targetKey({ target })));
- * ```
+ Supported Electron Packager distribution target matrix.
+ 
+ @example
+ ```ts
+ console.log(DISTRIBUTION_TARGETS.map((target) => targetKey({ target })));
+ ```
  */
 
 /**
- * Electron Packager platforms this repo distributes.
- *
- * @example
- * ```ts
- * const platform: DistributionPlatform = 'linux';
- * ```
+ Electron Packager platforms this repo distributes.
+ 
+ @example
+ ```ts
+ const platform: DistributionPlatform = 'linux';
+ ```
  */
 export type DistributionPlatform = 'darwin' | 'linux' | 'win32';
 
 /**
- * Electron Packager architectures this repo distributes.
- *
- * @example
- * ```ts
- * const arch: DistributionArch = 'x64';
- * ```
+ Electron Packager architectures this repo distributes.
+ 
+ @example
+ ```ts
+ const arch: DistributionArch = 'x64';
+ ```
  */
 export type DistributionArch = 'arm64' | 'x64';
 
 /**
- * One platform and architecture bundle target.
- *
- * @example
- * ```ts
- * const target: DistributionTarget = { platform: 'linux', arch: 'x64' };
- * ```
+ One platform and architecture bundle target.
+ 
+ @example
+ ```ts
+ const target: DistributionTarget = { platform: 'linux', arch: 'x64' };
+ ```
  */
 export type DistributionTarget = {
   readonly arch: DistributionArch;
@@ -41,12 +41,12 @@ export type DistributionTarget = {
 };
 
 /**
- * Platforms covered by default distribution.
- *
- * @example
- * ```ts
- * console.log(distributionPlatforms.length);
- * ```
+ Platforms covered by default distribution.
+ 
+ @example
+ ```ts
+ console.log(distributionPlatforms.length);
+ ```
  */
 const distributionPlatforms: readonly DistributionPlatform[] = [
   'linux',
@@ -55,12 +55,12 @@ const distributionPlatforms: readonly DistributionPlatform[] = [
 ];
 
 /**
- * Architectures covered by default distribution.
- *
- * @example
- * ```ts
- * console.log(distributionArchitectures.length);
- * ```
+ Architectures covered by default distribution.
+ 
+ @example
+ ```ts
+ console.log(distributionArchitectures.length);
+ ```
  */
 const distributionArchitectures: readonly DistributionArch[] = [
   'x64',
@@ -68,12 +68,12 @@ const distributionArchitectures: readonly DistributionArch[] = [
 ];
 
 /**
- * Default Linux, Windows, and macOS x64/arm64 distribution matrix.
- *
- * @example
- * ```ts
- * console.log(DISTRIBUTION_TARGETS.length);
- * ```
+ Default Linux, Windows, and macOS x64/arm64 distribution matrix.
+ 
+ @example
+ ```ts
+ console.log(DISTRIBUTION_TARGETS.length);
+ ```
  */
 export const DISTRIBUTION_TARGETS: readonly DistributionTarget[] = distributionPlatforms
   .flatMap(function targetsForPlatform(platform,): readonly DistributionTarget[] {
@@ -86,16 +86,16 @@ export const DISTRIBUTION_TARGETS: readonly DistributionTarget[] = distributionP
   },);
 
 /**
- * Stable target key used by CLI filters and manifests.
- *
- * @param target - Distribution target to format.
- *
- * @returns Platform-architecture key.
- *
- * @example
- * ```ts
- * targetKey({ target: { platform: 'linux', arch: 'x64' } });
- * ```
+ Stable target key used by CLI filters and manifests.
+ 
+ @param target - Distribution target to format.
+ 
+ @returns Platform-architecture key.
+ 
+ @example
+ ```ts
+ targetKey({ target: { platform: 'linux', arch: 'x64' } });
+ ```
  */
 export function targetKey({ target, }: { readonly target: DistributionTarget; },): string {
   return `${target.platform}-${target.arch}`;

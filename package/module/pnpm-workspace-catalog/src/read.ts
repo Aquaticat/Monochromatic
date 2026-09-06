@@ -1,7 +1,7 @@
 /**
- * Located-file convenience API for pnpm workspace catalogs.
- *
- * @module
+ Located-file convenience API for pnpm workspace catalogs.
+ 
+ @module
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -19,22 +19,22 @@ import type {
 //region Public file reader
 
 /**
- * Locates and parses the nearest `pnpm-workspace.yaml`.
- *
- * The returned `content` is the exact UTF-8 text that was parsed, allowing a
- * caller such as catalog-tighten to perform a formatting-preserving rewrite.
- *
- * @param startDir - optional starting directory for the upward search
- *
- * @returns located path, original content, and parsed catalogs
- *
- * @throws Error when no workspace YAML file exists up from the start directory
- *
- * @example
- * ```ts
- * const workspace = await readCatalogFile({ startDir: process.cwd(), });
- * console.info(workspace.path, workspace.catalogs.defaultCatalog);
- * ```
+ Locates and parses the nearest `pnpm-workspace.yaml`.
+ 
+ The returned `content` is the exact UTF-8 text that was parsed, allowing a
+ caller such as catalog-tighten to perform a formatting-preserving rewrite.
+ 
+ @param startDir - optional starting directory for the upward search
+ 
+ @returns located path, original content, and parsed catalogs
+ 
+ @throws Error when no workspace YAML file exists up from the start directory
+ 
+ @example
+ ```ts
+ const workspace = await readCatalogFile({ startDir: process.cwd(), });
+ console.info(workspace.path, workspace.catalogs.defaultCatalog);
+ ```
  */
 export async function readCatalogFile(
   {
@@ -42,7 +42,7 @@ export async function readCatalogFile(
   }: ReadCatalogFileOptions = {},
 ): Promise<CatalogFile> {
   /**
-   * Absolute path to the nearest workspace YAML file.
+   Absolute path to the nearest workspace YAML file.
    */
   const workspaceYamlPath = await findUp(
     'pnpm-workspace.yaml',
@@ -55,14 +55,14 @@ export async function readCatalogFile(
   }
 
   /**
-   * Original workspace YAML text retained for callers that need surgical edits.
+   Original workspace YAML text retained for callers that need surgical edits.
    */
   const content = await readFile(
     workspaceYamlPath,
     'utf8',
   );
   /**
-   * Parsed catalog blocks derived from the retained content.
+   Parsed catalog blocks derived from the retained content.
    */
   const catalogs = parseCatalogFromYaml(content,);
 

@@ -1,7 +1,7 @@
 /**
- * Unit tests for English morphology fallbacks.
- *
- * @module
+ Unit tests for English morphology fallbacks.
+ 
+ @module
  */
 
 import {
@@ -132,11 +132,11 @@ const THIRD_SINGULAR_CASES: readonly MorphologyCase[] = [
 ];
 
 /**
- * Builds a morphology test for one expected fallback surface.
- *
- * @param options - case and helper wrapped for named-parameter calls
- *
- * @returns test descriptor for module-test
+ Builds a morphology test for one expected fallback surface.
+ 
+ @param options - case and helper wrapped for named-parameter calls
+ 
+ @returns test descriptor for module-test
  */
 function morphologyCaseIt(
   options: {

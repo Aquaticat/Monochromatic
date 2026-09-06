@@ -28,7 +28,7 @@ await describe({
       name: 'rejects shorthand suffixes credentials and non-GitHub hosts',
       fn: async () => {
         /**
-         * Non-canonical repository selectors.
+         Non-canonical repository selectors.
          */
         const values = [
           'Aquaticat/issues-api',
@@ -40,7 +40,7 @@ await describe({
         ];
         for (const value of values) {
           /**
-           * Captured repository validation failure.
+           Captured repository validation failure.
            */
           let caught: unknown;
           try {
@@ -57,11 +57,11 @@ await describe({
       name: 'infers origin only from exact Git worktree root',
       fn: async () => {
         /**
-         * Git commands observed by fake process boundary.
+         Git commands observed by fake process boundary.
          */
         const commands: string[][] = [];
         /**
-         * Fake Git process responses for root and origin.
+         Fake Git process responses for root and origin.
          */
         const runProcess: BoundedProcessRunner = async ({ arguments: commandArguments, },) => {
           commands.push([...commandArguments,],);
@@ -85,7 +85,7 @@ await describe({
         ],);
 
         /**
-         * Captured subdirectory inference failure.
+         Captured subdirectory inference failure.
          */
         let caught: unknown;
         try {

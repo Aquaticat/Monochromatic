@@ -1,20 +1,20 @@
 /**
- * LLM wire-format message types used by the vendored pi-coding-agent helpers
- * in {@link ./pi-utils.ts}.
- *
- * Defined locally (not imported from `@earendil-works/pi-ai`) because pi-ai is
- * a transitive of `@earendil-works/pi-coding-agent` and is not exposed in
- * morph-compact's `node_modules` under pnpm's isolated linker. Every field is
- * `readonly` so the conversion helpers satisfy
- * message variants are kept index-signature-free so pi's structurally-wider
- * `AgentMessage` values (which carry no index signature) assign into them.
- *
- * @module
+ LLM wire-format message types used by the vendored pi-coding-agent helpers
+ in {@link ./pi-utils.ts}.
+ 
+ Defined locally (not imported from `@earendil-works/pi-ai`) because pi-ai is
+ a transitive of `@earendil-works/pi-coding-agent` and is not exposed in
+ morph-compact's `node_modules` under pnpm's isolated linker. Every field is
+ `readonly` so the conversion helpers satisfy
+ message variants are kept index-signature-free so pi's structurally-wider
+ `AgentMessage` values (which carry no index signature) assign into them.
+ 
+ @module
  */
 
 /**
- * Plain text content block in a message. Matches `TextContent` from `pi-ai`'s
- * public types.
+ Plain text content block in a message. Matches `TextContent` from `pi-ai`'s
+ public types.
  */
 export type TextContent = {
   readonly type: 'text';
@@ -23,8 +23,8 @@ export type TextContent = {
 };
 
 /**
- * Image content block. Matches `pi-ai`'s `ImageContent`. Image blocks are
- * dropped from the serialized text; Morph Compact runs on text only.
+ Image content block. Matches `pi-ai`'s `ImageContent`. Image blocks are
+ dropped from the serialized text; Morph Compact runs on text only.
  */
 export type ImageContent = {
   readonly type: 'image';
@@ -33,8 +33,8 @@ export type ImageContent = {
 };
 
 /**
- * Thinking content block in an assistant message. Matches `pi-ai`'s
- * `ThinkingContent`.
+ Thinking content block in an assistant message. Matches `pi-ai`'s
+ `ThinkingContent`.
  */
 export type ThinkingContent = {
   readonly type: 'thinking';
@@ -44,7 +44,7 @@ export type ThinkingContent = {
 };
 
 /**
- * Tool call block in an assistant message. Matches `pi-ai`'s `ToolCall`.
+ Tool call block in an assistant message. Matches `pi-ai`'s `ToolCall`.
  */
 export type ToolCall = {
   readonly type: 'toolCall';
@@ -55,7 +55,7 @@ export type ToolCall = {
 };
 
 /**
- * User message in LLM-compatible form. Matches `pi-ai`'s `UserMessage`.
+ User message in LLM-compatible form. Matches `pi-ai`'s `UserMessage`.
  */
 export type UserMessage = {
   readonly role: 'user';
@@ -64,10 +64,10 @@ export type UserMessage = {
 };
 
 /**
- * Assistant message in LLM-compatible form. Loosely matches `pi-ai`'s
- * `AssistantMessage`. Fields beyond `role`/`content`/`timestamp` exist at
- * runtime (pi's variant is wider) but are unused here, so the local type lists
- * only what the serializer reads.
+ Assistant message in LLM-compatible form. Loosely matches `pi-ai`'s
+ `AssistantMessage`. Fields beyond `role`/`content`/`timestamp` exist at
+ runtime (pi's variant is wider) but are unused here, so the local type lists
+ only what the serializer reads.
  */
 export type AssistantMessage = {
   readonly role: 'assistant';
@@ -76,8 +76,8 @@ export type AssistantMessage = {
 };
 
 /**
- * Tool-result message in LLM-compatible form. Matches `pi-ai`'s
- * `ToolResultMessage`.
+ Tool-result message in LLM-compatible form. Matches `pi-ai`'s
+ `ToolResultMessage`.
  */
 export type ToolResultMessage = {
   readonly role: 'toolResult';
@@ -86,17 +86,17 @@ export type ToolResultMessage = {
 };
 
 /**
- * Union of LLM-compatible message roles ({@link UserMessage}, {@link AssistantMessage},
- * {@link ToolResultMessage}), equivalent to `pi-ai`'s `Message`.
+ Union of LLM-compatible message roles ({@link UserMessage}, {@link AssistantMessage},
+ {@link ToolResultMessage}), equivalent to `pi-ai`'s `Message`.
  */
 export type Message = UserMessage | AssistantMessage | ToolResultMessage;
 
 /**
- * Discriminated shape of a `bashExecution` `AgentMessage`. pi-coding-agent's
- * `core/messages.ts` augments `CustomAgentMessages` with this role, but the
- * concrete interface is not re-exported from the package root. Defining it
- * locally keeps the runtime erased while letting the switch narrow fields like
- * `command` and `output` without `as any`.
+ Discriminated shape of a `bashExecution` `AgentMessage`. pi-coding-agent's
+ `core/messages.ts` augments `CustomAgentMessages` with this role, but the
+ concrete interface is not re-exported from the package root. Defining it
+ locally keeps the runtime erased while letting the switch narrow fields like
+ `command` and `output` without `as any`.
  */
 export type BashExecutionAgentMessage = {
   readonly role: 'bashExecution';
@@ -112,8 +112,8 @@ export type BashExecutionAgentMessage = {
 };
 
 /**
- * Discriminated shape of a `custom` `AgentMessage` augmenting role in
- * pi-coding-agent. Mirrors upstream `CustomMessage`.
+ Discriminated shape of a `custom` `AgentMessage` augmenting role in
+ pi-coding-agent. Mirrors upstream `CustomMessage`.
  */
 export type CustomAgentMessage = {
   readonly role: 'custom';
@@ -125,7 +125,7 @@ export type CustomAgentMessage = {
 };
 
 /**
- * Discriminated shape of a `branchSummary` `AgentMessage` augmenting role.
+ Discriminated shape of a `branchSummary` `AgentMessage` augmenting role.
  */
 export type BranchSummaryAgentMessage = {
   readonly role: 'branchSummary';
@@ -135,7 +135,7 @@ export type BranchSummaryAgentMessage = {
 };
 
 /**
- * Discriminated shape of a `compactionSummary` `AgentMessage` augmenting role.
+ Discriminated shape of a `compactionSummary` `AgentMessage` augmenting role.
  */
 export type CompactionSummaryAgentMessage = {
   readonly role: 'compactionSummary';
@@ -145,10 +145,10 @@ export type CompactionSummaryAgentMessage = {
 };
 
 /**
- * Discriminated union of every `AgentMessage` role this module handles. Wider
- * than `pi-ai`'s `Message`: covers the custom roles pi-coding-agent layers on
- * top via module augmentation ({@link BashExecutionAgentMessage}, {@link CustomAgentMessage},
- * {@link BranchSummaryAgentMessage}, {@link CompactionSummaryAgentMessage}).
+ Discriminated union of every `AgentMessage` role this module handles. Wider
+ than `pi-ai`'s `Message`: covers the custom roles pi-coding-agent layers on
+ top via module augmentation ({@link BashExecutionAgentMessage}, {@link CustomAgentMessage},
+ {@link BranchSummaryAgentMessage}, {@link CompactionSummaryAgentMessage}).
  */
 export type AgentMessage =
   | Message

@@ -1,7 +1,7 @@
 /**
- * Foreign ownership coverage through bindings and packaged expressions.
- *
- * @module
+ Foreign ownership coverage through bindings and packaged expressions.
+ 
+ @module
  */
 
 import type {
@@ -28,18 +28,18 @@ import type {
 import { isForeignBorrowedType, } from './foreign-borrowed-identity.ts';
 import { classifyReadonlyType, } from './readonly-classifier.ts';
 /**
- * Ownership coverage of caller-observable mutable state in one expression.
+ Ownership coverage of caller-observable mutable state in one expression.
  */
 type ForeignCoverage = 'foreign' | 'owned' | 'primitive';
 
 /**
- * Classifies semantic type by foreign, owned, or primitive state coverage.
- *
- * @param project - TypeScript project resolving marker and primitive identity.
- *
- * @param type - Semantic type to classify.
- *
- * @returns ownership coverage.
+ Classifies semantic type by foreign, owned, or primitive state coverage.
+ 
+ @param project - TypeScript project resolving marker and primitive identity.
+ 
+ @param type - Semantic type to classify.
+ 
+ @returns ownership coverage.
  */
 function typeForeignCoverage({
   project,
@@ -54,7 +54,7 @@ function typeForeignCoverage({
   },))
     return 'foreign';
   /**
-   * Readonly contract classification for unmarked value.
+   Readonly contract classification for unmarked value.
    */
   const classification = classifyReadonlyType({
     checker: project.checker,
@@ -67,11 +67,11 @@ function typeForeignCoverage({
 }
 
 /**
- * Combines nested value coverage without letting one foreign field hide owned state.
- *
- * @param coverages - Nested property or element coverage.
- *
- * @returns combined ownership coverage.
+ Combines nested value coverage without letting one foreign field hide owned state.
+ 
+ @param coverages - Nested property or element coverage.
+ 
+ @returns combined ownership coverage.
  */
 function combinedForeignCoverage(
   coverages: readonly ForeignCoverage[],
@@ -82,13 +82,13 @@ function combinedForeignCoverage(
 }
 
 /**
- * Classifies parameter binding and nested destructuring by mutable ownership.
- *
- * @param project - TypeScript project resolving binding types.
- *
- * @param name - Parameter binding identifier or destructuring pattern.
- *
- * @returns combined ownership coverage of bound values.
+ Classifies parameter binding and nested destructuring by mutable ownership.
+ 
+ @param project - TypeScript project resolving binding types.
+ 
+ @param name - Parameter binding identifier or destructuring pattern.
+ 
+ @returns combined ownership coverage of bound values.
  */
 function bindingForeignCoverage({
   project,
@@ -99,7 +99,7 @@ function bindingForeignCoverage({
 },): ForeignCoverage {
   if (isIdentifier(name,)) {
     /**
-     * Semantic type of current bound identifier.
+     Semantic type of current bound identifier.
      */
     const type = project.checker
       .getTypeAtLocation(name,);
@@ -123,18 +123,18 @@ function bindingForeignCoverage({
 }
 
 /**
- * Tests whether all mutable state in parameter binding is explicitly foreign-owned.
- *
- * @param project - TypeScript project resolving binding types.
- *
- * @param name - Parameter binding identifier or destructuring pattern.
- *
- * @returns whether every mutable bound value has exact marker provenance.
- *
- * @example
- * ```ts
- * bindingContainsForeignBorrowed({ project, name: parameter.name });
- * ```
+ Tests whether all mutable state in parameter binding is explicitly foreign-owned.
+ 
+ @param project - TypeScript project resolving binding types.
+ 
+ @param name - Parameter binding identifier or destructuring pattern.
+ 
+ @returns whether every mutable bound value has exact marker provenance.
+ 
+ @example
+ ```ts
+ bindingContainsForeignBorrowed({ project, name: parameter.name });
+ ```
  */
 export function bindingContainsForeignBorrowed({
   project,
@@ -150,13 +150,13 @@ export function bindingContainsForeignBorrowed({
 }
 
 /**
- * Classifies authored expression and packaged values by mutable ownership.
- *
- * @param project - TypeScript project resolving exact marker identity.
- *
- * @param node - Call argument or receiver expression to inspect.
- *
- * @returns ownership coverage of expression.
+ Classifies authored expression and packaged values by mutable ownership.
+ 
+ @param project - TypeScript project resolving exact marker identity.
+ 
+ @param node - Call argument or receiver expression to inspect.
+ 
+ @returns ownership coverage of expression.
  */
 function expressionForeignCoverage({
   project,
@@ -166,7 +166,7 @@ function expressionForeignCoverage({
   readonly node: Node;
 },): ForeignCoverage {
   /**
-   * Semantic type directly attached to current expression.
+   Semantic type directly attached to current expression.
    */
   const directType = project.checker
     .getTypeAtLocation(node,);
@@ -177,7 +177,7 @@ function expressionForeignCoverage({
     return 'foreign';
   if (isPropertyAccessExpression(node,) || isElementAccessExpression(node,)) {
     /**
-     * Ownership coverage retained from property or element receiver.
+     Ownership coverage retained from property or element receiver.
      */
     const rootCoverage = expressionForeignCoverage({
       project,
@@ -197,12 +197,12 @@ function expressionForeignCoverage({
         }
         if (isShorthandPropertyAssignment(property,)) {
           /**
-           * Value symbol hidden by shorthand property symbol.
+           Value symbol hidden by shorthand property symbol.
            */
           const valueSymbol = project.checker
             .getShorthandAssignmentValueSymbol(property,);
           /**
-           * Semantic type of shorthand value.
+           Semantic type of shorthand value.
            */
           const valueType = valueSymbol === undefined
             ? undefined
@@ -244,18 +244,18 @@ function expressionForeignCoverage({
 }
 
 /**
- * Tests whether all mutable state in call argument has foreign provenance.
- *
- * @param project - TypeScript project resolving exact marker identity.
- *
- * @param node - Call argument or receiver expression to inspect.
- *
- * @returns whether every mutable value is foreign-owned.
- *
- * @example
- * ```ts
- * expressionContainsForeignBorrowed({ project, node: argument });
- * ```
+ Tests whether all mutable state in call argument has foreign provenance.
+ 
+ @param project - TypeScript project resolving exact marker identity.
+ 
+ @param node - Call argument or receiver expression to inspect.
+ 
+ @returns whether every mutable value is foreign-owned.
+ 
+ @example
+ ```ts
+ expressionContainsForeignBorrowed({ project, node: argument });
+ ```
  */
 export function expressionContainsForeignBorrowed({
   project,

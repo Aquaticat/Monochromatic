@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
 /**
- * Tightens monorepo `pnpm-workspace.yaml` catalog `>=x.y.z` ranges
- * to match the versions actually installed in `node_modules`.
- *
- * Only touches entries in the default `catalog` object
- * whose range starts with `>=`. Entries using `*`, exact versions,
- * GitHub references, or named catalogs are skipped.
- *
- * @example
- * ```sh
- * node package/dev-script/catalog-tighten/src/index.ts
- * node package/dev-script/catalog-tighten/src/index.ts --dry-run
- * ```
+ Tightens monorepo `pnpm-workspace.yaml` catalog `>=x.y.z` ranges
+ to match the versions actually installed in `node_modules`.
+ 
+ Only touches entries in the default `catalog` object
+ whose range starts with `>=`. Entries using `*`, exact versions,
+ GitHub references, or named catalogs are skipped.
+ 
+ @example
+ ```sh
+ node package/dev-script/catalog-tighten/src/index.ts
+ node package/dev-script/catalog-tighten/src/index.ts --dry-run
+ ```
  */
 
 import {
@@ -52,43 +52,43 @@ import {
   rewriteCatalogRanges,
 } from './yaml-rewrite.ts';
 
-export {};
+
 
 //region Types
 
 /**
- * Result of comparing catalog range against installed version.
+ Result of comparing catalog range against installed version.
  */
 type TightenResult = {
   /**
-   * Package name as it appears in the catalog key.
+   Package name as it appears in the catalog key.
    */
   readonly name: string;
   /**
-   * Original catalog range string, e.g. `">=1.2.0"`.
+   Original catalog range string, e.g. `">=1.2.0"`.
    */
   readonly oldRange: string;
   /**
-   * New tightened range string, e.g. `">=1.3.0"`.
+   New tightened range string, e.g. `">=1.3.0"`.
    */
   readonly newRange: string;
 };
 
 /**
- * One npm-name probe paired with its resolved installed version.
- *
- * `version` is an optional field (bucket 1): the probe omits it when the name
- * did not resolve, so callers narrow with `version !== undefined` rather than a
- * sentinel. The {@link readInstalledVersion} return-sentinel is converted to this
- * optional shape at the `.map` seam below.
+ One npm-name probe paired with its resolved installed version.
+ 
+ `version` is an optional field (bucket 1): the probe omits it when the name
+ did not resolve, so callers narrow with `version !== undefined` rather than a
+ sentinel. The {@link readInstalledVersion} return-sentinel is converted to this
+ optional shape at the `.map` seam below.
  */
 type ProbedCandidate = {
   /**
-   * npm name that was looked up in node_modules.
+   npm name that was looked up in node_modules.
    */
   readonly name: string;
   /**
-   * Installed version; omitted when this name did not resolve.
+   Installed version; omitted when this name did not resolve.
    */
   readonly version?: string;
 };
@@ -98,18 +98,18 @@ type ProbedCandidate = {
 //region Main
 
 /**
- * Whether `--dry-run` was passed on the command line.
+ Whether `--dry-run` was passed on the command line.
  */
 const dryRun = process.argv
   .includes('--dry-run',);
 
 /**
- * Absolute path to the monorepo root (where this script is invoked from).
+ Absolute path to the monorepo root (where this script is invoked from).
  */
 const monorepoRoot = resolve('.',);
 
 /**
- * Absolute path to pnpm-workspace.yaml.
+ Absolute path to pnpm-workspace.yaml.
  */
 const workspaceYamlPath = join(
   monorepoRoot,
@@ -117,19 +117,19 @@ const workspaceYamlPath = join(
 );
 
 /**
- * Reads pnpm-workspace.yaml, failing with a clear message when it is absent
- * (run outside a pnpm workspace) instead of surfacing a raw `ENOENT`.
- *
- * @param path - absolute path to pnpm-workspace.yaml
- *
- * @returns file content
- *
- * @throws Error when the file cannot be read
- *
- * @example
- * ```ts
- * await readWorkspaceYaml("/repo/pnpm-workspace.yaml")
- * ```
+ Reads pnpm-workspace.yaml, failing with a clear message when it is absent
+ (run outside a pnpm workspace) instead of surfacing a raw `ENOENT`.
+ 
+ @param path - absolute path to pnpm-workspace.yaml
+ 
+ @returns file content
+ 
+ @throws Error when the file cannot be read
+ 
+ @example
+ ```ts
+ await readWorkspaceYaml("/repo/pnpm-workspace.yaml")
+ ```
  */
 async function readWorkspaceYaml(path: string,): Promise<string> {
   try {
@@ -150,30 +150,30 @@ async function readWorkspaceYaml(path: string,): Promise<string> {
 }
 
 /**
- * Raw content of pnpm-workspace.yaml, preserved for minimal-diff rewriting.
+ Raw content of pnpm-workspace.yaml, preserved for minimal-diff rewriting.
  */
 const workspaceYamlContent = await readWorkspaceYaml(workspaceYamlPath,);
 
 /**
- * Per-importer modules directory (the effective `modulesDir` setting; usually `node_modules`).
- * Queried through pnpm so env and global config apply, then used by the install guard and resolver.
+ Per-importer modules directory (the effective `modulesDir` setting; usually `node_modules`).
+ Queried through pnpm so env and global config apply, then used by the install guard and resolver.
  */
 const modulesDir = await readModulesDir(monorepoRoot,);
 
 /**
- * Returns true when every char in `s` is ASCII whitespace (space, tab,
- * newline, carriage return, form feed, vertical tab). Empty strings are
- * vacuously whitespace-only, matching `\s*$` semantics for a blank trailing
- * tail.
- *
- * @param s - candidate string
- *
- * @returns whether `s` consists solely of whitespace
+ Returns true when every char in `s` is ASCII whitespace (space, tab,
+ newline, carriage return, form feed, vertical tab). Empty strings are
+ vacuously whitespace-only, matching `\s*$` semantics for a blank trailing
+ tail.
+ 
+ @param s - candidate string
+ 
+ @returns whether `s` consists solely of whitespace
  */
 function isWhitespaceOnly(s: string,): boolean {
   for (const c of s) {
     /**
-     * Whether the current char satisfies regex `\s`.
+     Whether the current char satisfies regex `\s`.
      */
     const ok = (c === ' ')
       || (c === '\t')
@@ -188,16 +188,16 @@ function isWhitespaceOnly(s: string,): boolean {
 }
 
 /**
- * Reports whether `path` exists on disk, async (the repo bans sync fs).
- *
- * @param path - absolute filesystem path to probe
- *
- * @returns whether an entry exists at `path`
- *
- * @example
- * ```ts
- * await pathExists("/repo/node_modules") // true
- * ```
+ Reports whether `path` exists on disk, async (the repo bans sync fs).
+ 
+ @param path - absolute filesystem path to probe
+ 
+ @returns whether an entry exists at `path`
+ 
+ @example
+ ```ts
+ await pathExists("/repo/node_modules") // true
+ ```
  */
 async function pathExists(path: string,): Promise<boolean> {
   try {
@@ -213,11 +213,11 @@ async function pathExists(path: string,): Promise<boolean> {
 }
 
 /**
- * Workspace catalog mapping package names to version ranges.
+ Workspace catalog mapping package names to version ranges.
  */
 const parsedCatalog = parseCatalogFromYaml(workspaceYamlContent,);
 /**
- * Default catalog entries; named catalogs are intentionally outside tighten's scope.
+ Default catalog entries; named catalogs are intentionally outside tighten's scope.
  */
 const catalog = parsedCatalog.defaultCatalog;
 if (Object.keys(catalog,)
@@ -229,8 +229,8 @@ if (Object.keys(catalog,)
 }
 
 /**
- * Whether an install exists to resolve against: `node_modules` (node-modules linkers) or `.pnp.cjs` (PnP).
- * Without one every entry would report MISS, so failing loud here points at the real cause.
+ Whether an install exists to resolve against: `node_modules` (node-modules linkers) or `.pnp.cjs` (PnP).
+ Without one every entry would report MISS, so failing loud here points at the real cause.
  */
 const hasInstall = (await pathExists(join(
   monorepoRoot,
@@ -247,37 +247,37 @@ if (!hasInstall) {
 }
 
 /**
- * Aggregated outcome of processing every catalog entry.
- *
- * Folded by `Array.reduce` over `Object.entries(catalog)` so the per-category
- * counters and `results` accumulator live on the same object instead of as
- * module-root `let` bindings.
+ Aggregated outcome of processing every catalog entry.
+ 
+ Folded by `Array.reduce` over `Object.entries(catalog)` so the per-category
+ counters and `results` accumulator live on the same object instead of as
+ module-root `let` bindings.
  */
 type CatalogSummary = {
   /**
-   * Tightening results to write back to `pnpm-workspace.yaml`.
+   Tightening results to write back to `pnpm-workspace.yaml`.
    */
   readonly results: readonly TightenResult[];
   /**
-   * Count of entries skipped (not `>=` ranges).
+   Count of entries skipped (not `>=` ranges).
    */
   readonly skippedCount: number;
   /**
-   * Count of entries where the installed version matched the catalog range (already tight).
+   Count of entries where the installed version matched the catalog range (already tight).
    */
   readonly alreadyTightCount: number;
   /**
-   * Count of entries present in the pnpm store as a transitive dependency but declared directly by no live package.
+   Count of entries present in the pnpm store as a transitive dependency but declared directly by no live package.
    */
   readonly undeclaredCount: number;
   /**
-   * Count of entries not installed anywhere in the workspace (no importer symlink and no store copy).
+   Count of entries not installed anywhere in the workspace (no importer symlink and no store copy).
    */
   readonly notFoundCount: number;
 };
 
 /**
- * Initial summary fed into the reduce; every counter starts at zero with an empty result list.
+ Initial summary fed into the reduce; every counter starts at zero with an empty result list.
  */
 const initialSummary: CatalogSummary = {
   results: [],
@@ -288,16 +288,16 @@ const initialSummary: CatalogSummary = {
 };
 
 /**
- * Catalog as `[name, value]` entry pairs, folded into the per-category summary below.
+ Catalog as `[name, value]` entry pairs, folded into the per-category summary below.
  */
 const catalogEntries = Object.entries(catalog,);
 /**
- * Classifies and processes each catalog entry for tightening.
+ Classifies and processes each catalog entry for tightening.
  */
 const entrySummaries = await Promise.all(catalogEntries.map(
   async function processEntry([name, value,],): Promise<CatalogSummary> {
     /**
-     * Parsed range prefix and version, or `NOT_A_RANGE` if not a `>=` range.
+     Parsed range prefix and version, or `NOT_A_RANGE` if not a `>=` range.
      */
     const parsed = parseRange(value,);
     if (parsed === NOT_A_RANGE) {
@@ -309,18 +309,18 @@ const entrySummaries = await Promise.all(catalogEntries.map(
     }
 
     /**
-     * Candidate npm package names to probe in node_modules.
+     Candidate npm package names to probe in node_modules.
      */
     const npmNames = resolveNpmNames({
       catalogKey: name,
       catalogValue: value,
     },);
     /**
-     * Installed-version probes for every candidate npm name.
+     Installed-version probes for every candidate npm name.
      */
     const probes = await Promise.all(npmNames.map(async function probeCandidate(candidate,): Promise<ProbedCandidate> {
       /**
-       * Installed version for this candidate; `NO_INSTALLED_VERSION` when it did not resolve.
+       Installed version for this candidate; `NO_INSTALLED_VERSION` when it did not resolve.
        */
       const installed = await readInstalledVersion({
         npmName: candidate,
@@ -335,7 +335,7 @@ const entrySummaries = await Promise.all(catalogEntries.map(
         };
     },),);
     /**
-     * First npm name candidate whose installed version resolves.
+     First npm name candidate whose installed version resolves.
      */
     const resolved = probes.find(function hasVersion(r: Readonly<ProbedCandidate>,): boolean {
       return r.version
@@ -350,7 +350,7 @@ const entrySummaries = await Promise.all(catalogEntries.map(
       // declares it before calling it undeclared (symlinks also vanish under
       // `symlink: false` or a broken `.pnp.cjs`, where the package is declared).
       /**
-       * Store versions found for the first candidate name that has any store copy, or `NOT_IN_STORE`.
+       Store versions found for the first candidate name that has any store copy, or `NOT_IN_STORE`.
        */
       const storeVersions = await firstStoreHit({
         npmNames,
@@ -359,7 +359,7 @@ const entrySummaries = await Promise.all(catalogEntries.map(
       },);
       if (storeVersions !== NOT_IN_STORE) {
         /**
-         * Whether a live importer declares this entry directly; only an undeclared store copy is `UNDCL`.
+         Whether a live importer declares this entry directly; only an undeclared store copy is `UNDCL`.
          */
         const declared = await isDeclaredByLiveImporter({
           npmNames,
@@ -411,7 +411,7 @@ const entrySummaries = await Promise.all(catalogEntries.map(
     }
 
     /**
-     * Tightened version range using the installed version as the lower bound.
+     Tightened version range using the installed version as the lower bound.
      */
     const newRange = `${parsed.prefix}>=${resolved.version}`;
     console.info(
@@ -428,7 +428,7 @@ const entrySummaries = await Promise.all(catalogEntries.map(
   },
 ),);
 /**
- * Aggregated outcome merged from per-entry summaries.
+ Aggregated outcome merged from per-entry summaries.
  */
 const summary: CatalogSummary = entrySummaries.reduce(
   function mergeSummary(
@@ -463,8 +463,8 @@ else if (dryRun) {
 }
 else {
   /**
-   * Rewritten file with tightened ranges; surgical string replacement preserves
-   * formatting, comments, ordering, and the file's single-quote style.
+   Rewritten file with tightened ranges; surgical string replacement preserves
+   formatting, comments, ordering, and the file's single-quote style.
    */
   const rewritten = rewriteCatalogRanges({
     content: workspaceYamlContent,

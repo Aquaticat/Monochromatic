@@ -27,22 +27,22 @@ import { callableReturnsBinding, } from './readonly-returned-binding.ts';
 import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
 
 /**
- * Workspace marker used to shorten producer locations.
+ Workspace marker used to shorten producer locations.
  */
 const WORKSPACE_MARKER = 'pnpm-workspace.yaml';
 
 /**
- * Display roots already found for configured projects.
+ Display roots already found for configured projects.
  */
 const displayRootsByConfig = new Map<string, string>();
 
 /**
- * Sentinel for origin boundary carrying no stable identifier name.
+ Sentinel for origin boundary carrying no stable identifier name.
  */
 const ORIGIN_NAME_UNAVAILABLE: unique symbol = Symbol('origin boundary name unavailable');
 
 /**
- * Eager immutable description of one editable semantic type origin.
+ Eager immutable description of one editable semantic type origin.
  */
 export type ReadonlyTypeOrigin = {
   readonly identity: string;
@@ -52,35 +52,35 @@ export type ReadonlyTypeOrigin = {
 };
 
 /**
- * Finds repository display root for configured project.
- *
- * @param configFileName - Configured TypeScript project path.
- *
- * @returns nearest pnpm workspace root or configured-project directory.
- *
- * @example
- * ```ts
- * displayRoot('/repo/package/module/example/tsconfig.json');
- * ```
+ Finds repository display root for configured project.
+ 
+ @param configFileName - Configured TypeScript project path.
+ 
+ @returns nearest pnpm workspace root or configured-project directory.
+ 
+ @example
+ ```ts
+ displayRoot('/repo/package/module/example/tsconfig.json');
+ ```
  */
 function displayRoot(configFileName: string,): string {
   /**
-   * Previously resolved display root for configured project.
+   Previously resolved display root for configured project.
    */
   const cached = displayRootsByConfig.get(configFileName,);
   if (cached !== undefined)
     return cached;
   /**
-   * Package-local fallback when consumer has no pnpm workspace marker.
+   Package-local fallback when consumer has no pnpm workspace marker.
    */
   const fallback = dirname(configFileName,);
   /**
-   * Root selected from nearest workspace marker.
+   Root selected from nearest workspace marker.
    */
   const selected = { value: fallback, };
   for (const directory of ancestorDirectories(fallback,)) {
     /**
-     * Marker candidate under current ancestor.
+     Marker candidate under current ancestor.
      */
     const marker = join(
       directory,
@@ -100,20 +100,20 @@ function displayRoot(configFileName: string,): string {
 }
 
 /**
- * Normalizes declaration to reader-facing producer boundary.
- *
- * @param declaration - Semantic type declaration.
- *
- * @param project - Project proving local binding return flow.
- *
- * @returns named type owner,
- * proved returning callable,
- * or exact original declaration.
- *
- * @example
- * ```ts
- * originOwner({ declaration: objectLiteral, project });
- * ```
+ Normalizes declaration to reader-facing producer boundary.
+ 
+ @param declaration - Semantic type declaration.
+ 
+ @param project - Project proving local binding return flow.
+ 
+ @returns named type owner,
+ proved returning callable,
+ or exact original declaration.
+ 
+ @example
+ ```ts
+ originOwner({ declaration: objectLiteral, project });
+ ```
  */
 function originOwner({
   declaration,
@@ -123,7 +123,7 @@ function originOwner({
   readonly project: Project;
 }): Node {
   /**
-   * Ancestor cursor retaining nearest actionable local aggregate.
+   Ancestor cursor retaining nearest actionable local aggregate.
    */
   const cursor = {
     current: declaration,
@@ -140,13 +140,13 @@ function originOwner({
       return cursor.current;
     if (isFunctionLikeDeclaration(cursor.current,)) {
       /**
-       * Whether concise arrow body returns declaration without return statement.
+       Whether concise arrow body returns declaration without return statement.
        */
       const conciseArrow = isArrowFunction(cursor.current,)
         && (!isBlock(cursor.current
           .body,));
       /**
-       * Whether local aggregate binding reaches this callable's return.
+       Whether local aggregate binding reaches this callable's return.
        */
       const returnedBinding = cursor.hasLocalBinding
         && isIdentifier(cursor.localBinding,)
@@ -167,7 +167,7 @@ function originOwner({
       cursor.localProducer = cursor.current;
     if (isVariableDeclaration(cursor.current,)) {
       /**
-       * Binding name candidate for semantic return-flow proof.
+       Binding name candidate for semantic return-flow proof.
        */
       const { name, } = cursor.current;
       if (isIdentifier(name,)) {
@@ -178,7 +178,7 @@ function originOwner({
     if (isReturnStatement(cursor.current,))
       cursor.returned = true;
     /**
-     * Next owner candidate in semantic source tree.
+     Next owner candidate in semantic source tree.
      */
     const { parent, } = cursor.current;
     cursor.pending = parent !== undefined;
@@ -189,16 +189,16 @@ function originOwner({
 }
 
 /**
- * Reads stable local name for origin owner.
- *
- * @param owner - Normalized producer boundary.
- *
- * @returns identifier name when boundary declares one.
- *
- * @example
- * ```ts
- * originName(callback);
- * ```
+ Reads stable local name for origin owner.
+ 
+ @param owner - Normalized producer boundary.
+ 
+ @returns identifier name when boundary declares one.
+ 
+ @example
+ ```ts
+ originName(callback);
+ ```
  */
 function originName(
   owner: Node,
@@ -207,7 +207,7 @@ function originName(
     if (!('name' in owner))
       return ORIGIN_NAME_UNAVAILABLE;
     /**
-     * Optional callable name narrowed outside property access.
+     Optional callable name narrowed outside property access.
      */
     const callableName = owner.name;
     if (callableName === undefined)
@@ -222,7 +222,7 @@ function originName(
   if (!isClassDeclaration(owner,))
     return ORIGIN_NAME_UNAVAILABLE;
   /**
-   * Optional class name narrowed outside property access.
+   Optional class name narrowed outside property access.
    */
   const className = owner.name;
   if (className === undefined)
@@ -232,16 +232,16 @@ function originName(
 }
 
 /**
- * Classifies normalized origin boundary for diagnostic wording.
- *
- * @param owner - Normalized producer boundary.
- *
- * @returns reader-facing origin category.
- *
- * @example
- * ```ts
- * originKind(callback);
- * ```
+ Classifies normalized origin boundary for diagnostic wording.
+ 
+ @param owner - Normalized producer boundary.
+ 
+ @returns reader-facing origin category.
+ 
+ @example
+ ```ts
+ originKind(callback);
+ ```
  */
 function originKind(owner: Node,): ReadonlyTypeOrigin['kind'] {
   if (isFunctionLikeDeclaration(owner,))
@@ -254,18 +254,18 @@ function originKind(owner: Node,): ReadonlyTypeOrigin['kind'] {
 }
 
 /**
- * Formats eager repository-relative origin location.
- *
- * @param owner - Origin boundary resolved in active semantic snapshot.
- *
- * @param project - Project owning active semantic snapshot.
- *
- * @returns normalized path and one-based line.
- *
- * @example
- * ```ts
- * originLocation({ owner, project });
- * ```
+ Formats eager repository-relative origin location.
+ 
+ @param owner - Origin boundary resolved in active semantic snapshot.
+ 
+ @param project - Project owning active semantic snapshot.
+ 
+ @returns normalized path and one-based line.
+ 
+ @example
+ ```ts
+ originLocation({ owner, project });
+ ```
  */
 function originLocation({
   owner,
@@ -275,11 +275,11 @@ function originLocation({
   readonly project: Project;
 },): string {
   /**
-   * Source owning producer boundary.
+   Source owning producer boundary.
    */
   const sourceFile = owner.getSourceFile();
   /**
-   * Path relative to nearest workspace marker.
+   Path relative to nearest workspace marker.
    */
   const relativePath = relative(
     displayRoot(project.configFileName,),
@@ -288,12 +288,12 @@ function originLocation({
     .split(sep,)
     .join('/',);
   /**
-   * One-based line containing producer boundary.
+   One-based line containing producer boundary.
    */
   const lineAndCharacter = sourceFile
     .getLineAndCharacterOfPosition(owner.getStart(sourceFile,),);
   /**
-   * One-based source line.
+   One-based source line.
    */
   const line = lineAndCharacter
     .line + 1;
@@ -301,18 +301,18 @@ function originLocation({
 }
 
 /**
- * Tests whether declaration source is editable workspace source.
- *
- * @param node - Resolved declaration or normalized owner.
- *
- * @param project - Project classifying source ownership.
- *
- * @returns whether source belongs to inspectable workspace implementation.
- *
- * @example
- * ```ts
- * workspaceOrigin({ node, project });
- * ```
+ Tests whether declaration source is editable workspace source.
+ 
+ @param node - Resolved declaration or normalized owner.
+ 
+ @param project - Project classifying source ownership.
+ 
+ @returns whether source belongs to inspectable workspace implementation.
+ 
+ @example
+ ```ts
+ workspaceOrigin({ node, project });
+ ```
  */
 export function workspaceOrigin({
   node,
@@ -322,11 +322,11 @@ export function workspaceOrigin({
   readonly project: Project;
 },): boolean {
   /**
-   * Source file inspected through active project metadata.
+   Source file inspected through active project metadata.
    */
   const sourceFile = node.getSourceFile();
   /**
-   * Program metadata distinguishing workspace source from libraries.
+   Program metadata distinguishing workspace source from libraries.
    */
   const { program, } = project;
   return isWorkspaceSourceFileName(sourceFile.fileName,)
@@ -335,18 +335,18 @@ export function workspaceOrigin({
 }
 
 /**
- * Converts resolved declaration into eager reader-facing origin.
- *
- * @param declaration - Declaration resolved in active semantic snapshot.
- *
- * @param project - Project owning active semantic snapshot.
- *
- * @returns immutable origin metadata safe across later snapshots.
- *
- * @example
- * ```ts
- * readonlyTypeOrigin({ declaration, project });
- * ```
+ Converts resolved declaration into eager reader-facing origin.
+ 
+ @param declaration - Declaration resolved in active semantic snapshot.
+ 
+ @param project - Project owning active semantic snapshot.
+ 
+ @returns immutable origin metadata safe across later snapshots.
+ 
+ @example
+ ```ts
+ readonlyTypeOrigin({ declaration, project });
+ ```
  */
 export function readonlyTypeOrigin({
   declaration,
@@ -356,26 +356,26 @@ export function readonlyTypeOrigin({
   readonly project: Project;
 },): ReadonlyTypeOrigin {
   /**
-   * Reader-facing callable or named type boundary.
+   Reader-facing callable or named type boundary.
    */
   const owner = originOwner({
     declaration,
     project,
   },);
   /**
-   * Stable name when boundary declares an identifier.
+   Stable name when boundary declares an identifier.
    */
   const name = originName(owner,);
   /**
-   * Optional named-origin property after sentinel narrowing.
+   Optional named-origin property after sentinel narrowing.
    */
   const named = (typeof name) === 'symbol' ? {} : { name, };
   /**
-   * Source owning normalized boundary identity.
+   Source owning normalized boundary identity.
    */
   const sourceFile = owner.getSourceFile();
   /**
-   * Full source identity preserving distinct same-line boundaries.
+   Full source identity preserving distinct same-line boundaries.
    */
   const identity = `${sourceFile.fileName}:${String(owner.getStart(sourceFile,),)}`;
   return {

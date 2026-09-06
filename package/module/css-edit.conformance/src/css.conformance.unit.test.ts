@@ -1,11 +1,11 @@
 /**
- * Curated CSS conformance corpus against css-edit's strict CST semantics,
- * category-modeled on the css-parsing-tests suite (tabatkins): stylesheet
- * structure, at-rules, declarations, nesting, strings and escapes, and
- * error recovery boundaries. Valid cases parse to expected top-level shapes
- * and round-trip byte-exactly; invalid cases throw `CssParseError`.
- *
- * @module
+ Curated CSS conformance corpus against css-edit's strict CST semantics,
+ category-modeled on the css-parsing-tests suite (tabatkins): stylesheet
+ structure, at-rules, declarations, nesting, strings and escapes, and
+ error recovery boundaries. Valid cases parse to expected top-level shapes
+ and round-trip byte-exactly; invalid cases throw `CssParseError`.
+ 
+ @module
  */
 
 import {
@@ -29,8 +29,8 @@ import {
 //region Case tables
 
 /**
- * One valid conformance case: source plus the expected non-trivia top-level
- * node kinds in order.
+ One valid conformance case: source plus the expected non-trivia top-level
+ node kinds in order.
  */
 type ValidCase = {
   readonly label: string;
@@ -39,7 +39,7 @@ type ValidCase = {
 };
 
 /**
- * Valid corpus. Every case must parse and round-trip byte-exactly.
+ Valid corpus. Every case must parse and round-trip byte-exactly.
  */
 const validCases: readonly ValidCase[] = [
   //region Stylesheet structure
@@ -89,7 +89,7 @@ const validCases: readonly ValidCase[] = [
 ];
 
 /**
- * One invalid conformance case: source plus the expected error fragment.
+ One invalid conformance case: source plus the expected error fragment.
  */
 type InvalidCase = {
   readonly label: string;
@@ -98,8 +98,8 @@ type InvalidCase = {
 };
 
 /**
- * Invalid corpus. Every case must throw `CssParseError` mentioning the
- * fragment.
+ Invalid corpus. Every case must throw `CssParseError` mentioning the
+ fragment.
  */
 const invalidCases: readonly InvalidCase[] = [
   { label: 'unclosed block', input: '.a {', messageFragment: 'closing brace', },
@@ -119,28 +119,28 @@ const invalidCases: readonly InvalidCase[] = [
 //region Amplification arbitraries
 
 /**
- * Default fast-check runs for context amplification; `CSS_EDIT_FUZZ_RUNS`
- * overrides for longer campaigns.
+ Default fast-check runs for context amplification; `CSS_EDIT_FUZZ_RUNS`
+ overrides for longer campaigns.
  */
 const DEFAULT_AMPLIFICATION_RUNS = 150;
 
 /**
- * Parsed override from the environment, or `NaN` when unset or unparseable.
+ Parsed override from the environment, or `NaN` when unset or unparseable.
  */
 const runsOverride = Number(process.env
   .CSS_EDIT_FUZZ_RUNS,);
 
 /**
- * Effective amplification run count.
+ Effective amplification run count.
  */
 const amplificationRuns = Number.isFinite(runsOverride,)
   ? runsOverride
   : DEFAULT_AMPLIFICATION_RUNS;
 
 /**
- * Structural contexts every valid case must survive: identity, block
- * at-rules, and a style-rule body (css-edit's unified block contents accept
- * statement at-rules and declarations in any block).
+ Structural contexts every valid case must survive: identity, block
+ at-rules, and a style-rule body (css-edit's unified block contents accept
+ statement at-rules and declarations in any block).
  */
 const contextArb = constantFrom(
   {
@@ -162,7 +162,7 @@ const contextArb = constantFrom(
 );
 
 /**
- * Leading and trailing trivia variations.
+ Leading and trailing trivia variations.
  */
 const triviaArb = constantFrom(
   '',
@@ -174,7 +174,7 @@ const triviaArb = constantFrom(
 );
 
 /**
- * One valid case drawn from the curated corpus.
+ One valid case drawn from the curated corpus.
  */
 const validCaseArb = constantFrom(...validCases,);
 
@@ -190,12 +190,12 @@ await describe({
           name: `${validCase.label}: parses and round-trips byte-exactly`,
           fn: async () => {
             /**
-             * Parsed state of the case input.
+             Parsed state of the case input.
              */
             const state = parseCss({ source: asCssSource(validCase.input,), },);
             expect(stringifyCss({ state, },),).toBe(validCase.input,);
             /**
-             * Non-trivia top-level kinds in source order.
+             Non-trivia top-level kinds in source order.
              */
             const kinds = state.root.children
               .filter(function keepStructural(node,) {
@@ -226,11 +226,11 @@ await describe({
                 ),
                 ([validCase, context, lead, trail,],) => {
                   /**
-                   * Case embedded in a generated context with surrounding trivia.
+                   Case embedded in a generated context with surrounding trivia.
                    */
                   const amplified = `${lead}${context.prefix}${validCase.input}${context.suffix}${trail}`;
                   /**
-                   * Parsed state of the amplified document.
+                   Parsed state of the amplified document.
                    */
                   const state = parseCss({ source: asCssSource(amplified,), },);
                   expect(stringifyCss({ state, },),).toBe(amplified,);

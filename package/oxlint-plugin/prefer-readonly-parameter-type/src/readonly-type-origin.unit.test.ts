@@ -10,23 +10,23 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * One origin accepted by pure resolution classifier.
+ One origin accepted by pure resolution classifier.
  */
 type Origin = ReadonlyTypeOriginResolution['origins'][number];
 
 /**
- * Builds callable origin for branch controls.
- *
- * @param identity - Full source identity retained for deduplication.
- *
- * @param name - Reader-facing callable name.
- *
- * @returns callable origin at shared display line.
- *
- * @example
- * ```ts
- * callableOrigin({ identity: '/repo/a.ts:1', name: 'toA' });
- * ```
+ Builds callable origin for branch controls.
+ 
+ @param identity - Full source identity retained for deduplication.
+ 
+ @param name - Reader-facing callable name.
+ 
+ @returns callable origin at shared display line.
+ 
+ @example
+ ```ts
+ callableOrigin({ identity: '/repo/a.ts:1', name: 'toA' });
+ ```
  */
 function callableOrigin({
   identity,
@@ -89,7 +89,7 @@ await describe({
       name: 'returns sole completely resolved origin',
       fn: async () => {
         /**
-         * Sole origin expected by exact identity.
+         Sole origin expected by exact identity.
          */
         const origin = callableOrigin({
           identity: '/repo/src/shared.ts:1',

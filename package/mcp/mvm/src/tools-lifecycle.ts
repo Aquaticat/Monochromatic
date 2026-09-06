@@ -1,6 +1,6 @@
 /**
- * VM lifecycle tool definitions: list and update.
- * @module
+ VM lifecycle tool definitions: list and update.
+ @module
  */
 import {
   defineTool,
@@ -20,8 +20,8 @@ import {
 //region Lifecycle tools: VM listing and template updates
 
 /**
- * MCP tool: list all managed VMs and their state, on the backend resolved
- * via {@link backendFromArgs}.
+ MCP tool: list all managed VMs and their state, on the backend resolved
+ via {@link backendFromArgs}.
  */
 export const listTool: ToolEntry = defineTool({
   name: 'list_vms',
@@ -32,18 +32,18 @@ export const listTool: ToolEntry = defineTool({
     handler: async function handleListVms(args,) {
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         /**
-         * All managed VMs queried from the selected backend.
+         All managed VMs queried from the selected backend.
          */
         const vms = await backend.list();
         if (vms.length
           === 0)
           return textResponse('No VMs found.',);
         /**
-         * One `name: state` line per VM, joined with newlines into the response body below.
+         One `name: state` line per VM, joined with newlines into the response body below.
          */
         const lines = vms.map(function formatVmLine(vm: Readonly<(typeof vms)[number]>,) {
           return `${vm.name}: ${vm.state}`;
@@ -61,8 +61,8 @@ export const listTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: refresh provider-managed images or templates, on the backend
- * resolved via {@link backendFromArgs}.
+ MCP tool: refresh provider-managed images or templates, on the backend
+ resolved via {@link backendFromArgs}.
  */
 export const updateTool: ToolEntry = defineTool({
   name: 'update_templates',
@@ -73,7 +73,7 @@ export const updateTool: ToolEntry = defineTool({
     handler: async function handleUpdateTemplates(args,) {
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         await backend.update();

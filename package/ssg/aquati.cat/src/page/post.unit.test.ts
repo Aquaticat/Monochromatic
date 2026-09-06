@@ -1,7 +1,7 @@
 /**
- * Tests for full post page date rendering and metadata.
- *
- * @module
+ Tests for full post page date rendering and metadata.
+ 
+ @module
  */
 
 import {
@@ -15,17 +15,17 @@ import type { Post, } from '../lib/content.ts';
 import { postPage, } from './post.ts';
 
 /**
- * Git-derived publication date used by the post fixture.
+ Git-derived publication date used by the post fixture.
  */
 const PUBLISHED_DATE = new Date('2026-04-16T10:01:43.000Z',);
 
 /**
- * Git-derived modification date used by the post fixture.
+ Git-derived modification date used by the post fixture.
  */
 const UPDATED_DATE = new Date('2026-05-14T08:31:54.000Z',);
 
 /**
- * Minimal post fixture covering full post rendering.
+ Minimal post fixture covering full post rendering.
  */
 const FIXTURE_POST: Post = {
   lang: 'en',
@@ -49,7 +49,7 @@ await describe({
       name: 'renders git-derived dates on full post pages',
       fn: async function rendersGitDerivedDates(): Promise<void> {
         /**
-         * Complete post page rendered from the fixture post.
+         Complete post page rendered from the fixture post.
          */
         const html = postPage({
           post: FIXTURE_POST,
@@ -68,7 +68,7 @@ await describe({
       name: 'emits Open Graph article dates from git-derived dates',
       fn: async function emitsOpenGraphArticleDates(): Promise<void> {
         /**
-         * Complete post page rendered from the fixture post.
+         Complete post page rendered from the fixture post.
          */
         const html = postPage({
           post: FIXTURE_POST,

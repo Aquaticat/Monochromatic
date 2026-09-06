@@ -17,29 +17,29 @@ import { readHelperRequest, } from '../dist/final/node/index.mjs';
 //region Fixture
 
 /**
- * Disposable helper request file fixture.
+ Disposable helper request file fixture.
  */
 type RequestFixture = AsyncDisposable & {
   readonly path: string;
 };
 
 /**
- * Writes one private request payload in disposable temp directory.
- *
- * @param text - request file text
- *
- * @returns disposable fixture path
+ Writes one private request payload in disposable temp directory.
+ 
+ @param text - request file text
+ 
+ @returns disposable fixture path
  */
 async function requestFixture(text: string,): Promise<RequestFixture> {
   /**
-   * Unique fixture directory.
+   Unique fixture directory.
    */
   const directory = await mkdtemp(join(
     tmpdir(),
     'ask-user-request-test-',
   ),);
   /**
-   * Request path under fixture directory.
+   Request path under fixture directory.
    */
   const path = join(
     directory,
@@ -105,7 +105,7 @@ await describe({
         fn: async () => {
           await using fixture = await requestFixture(text,);
           /**
-           * Captured validation failure.
+           Captured validation failure.
            */
           const caught: { value?: unknown; } = {};
           try {

@@ -1,11 +1,11 @@
 /**
- * Workspace-wide unused-export detection on yuku-analyzer's cross-file
- * semantic model.
- *
- * @example
- * ```ts
- * const findings = await findUnusedExports({ workspaceRoot: '/repo' });
- * ```
+ Workspace-wide unused-export detection on yuku-analyzer's cross-file
+ semantic model.
+ 
+ @example
+ ```ts
+ const findings = await findUnusedExports({ workspaceRoot: '/repo' });
+ ```
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -21,56 +21,56 @@ import { workspaceResolver, } from './resolve.ts';
 import { discoverWorkspacePackages, } from './workspace.ts';
 
 /**
- * Module logger for unused-export analysis.
+ Module logger for unused-export analysis.
  */
 const l = tagged({ tag: 'unused-export', },);
 
 /**
- * One export with zero resolved references anywhere in the workspace.
+ One export with zero resolved references anywhere in the workspace.
  */
 export type UnusedExport = {
   /**
-   * Workspace-relative source path declaring the export.
+   Workspace-relative source path declaring the export.
    */
   readonly file: string;
   /**
-   * Exported name.
+   Exported name.
    */
   readonly name: string;
   /**
-   * One-based declaration line.
+   One-based declaration line.
    */
   readonly line: number;
   /**
-   * Zero-based declaration column.
+   Zero-based declaration column.
    */
   readonly column: number;
   /**
-   * Whether the export is type-only.
+   Whether the export is type-only.
    */
   readonly typeOnly: boolean;
 };
 
 /**
- * Finds workspace exports no other resolved reference uses.
- *
- * yuku-analyzer follows import, named re-export, and `export *` chains
- * back to defining symbols, so a consumer anywhere in the workspace
- * counts as usage of the original declaration. Exports backed by no
- * local symbol (star records, default expression exports, re-export
- * specifiers) never appear as findings; their defining symbols are
- * judged where they are declared.
- *
- * @param workspaceRoot - Absolute workspace root holding `pnpm-workspace.yaml`.
- *
- * @returns Findings sorted by file, line, then name.
- *
- * @throws Error when the workspace manifest is missing or malformed.
- *
- * @example
- * ```ts
- * const findings = await findUnusedExports({ workspaceRoot: '/repo' });
- * ```
+ Finds workspace exports no other resolved reference uses.
+ 
+ yuku-analyzer follows import, named re-export, and `export *` chains
+ back to defining symbols, so a consumer anywhere in the workspace
+ counts as usage of the original declaration. Exports backed by no
+ local symbol (star records, default expression exports, re-export
+ specifiers) never appear as findings; their defining symbols are
+ judged where they are declared.
+ 
+ @param workspaceRoot - Absolute workspace root holding `pnpm-workspace.yaml`.
+ 
+ @returns Findings sorted by file, line, then name.
+ 
+ @throws Error when the workspace manifest is missing or malformed.
+ 
+ @example
+ ```ts
+ const findings = await findUnusedExports({ workspaceRoot: '/repo' });
+ ```
  */
 export async function findUnusedExports({
   workspaceRoot,
@@ -78,24 +78,24 @@ export async function findUnusedExports({
   workspaceRoot: string;
 }>,): Promise<readonly UnusedExport[]> {
   /**
-   * Analysis logger tagged with the calling function.
+   Analysis logger tagged with the calling function.
    */
   const fl = tagged({
     tag: findUnusedExports.name,
     l,
   },);
   /**
-   * Discovered workspace packages with analyzable sources.
+   Discovered workspace packages with analyzable sources.
    */
   const packages = await discoverWorkspacePackages({ workspaceRoot, },);
   /**
-   * Every analyzable source path across the workspace.
+   Every analyzable source path across the workspace.
    */
   const fileSet: ReadonlySet<string> = new Set(packages.flatMap(function toFiles(entry,): readonly string[] {
     return entry.sourceFiles;
   },),);
   /**
-   * Package directory looked up by published package name.
+   Package directory looked up by published package name.
    */
   const packageDirsByName: ReadonlyMap<string, string> = new Map(packages.map(function toEntry(entry,): readonly [
     string,
@@ -110,7 +110,7 @@ export async function findUnusedExports({
   fl.info(`analyzing ${String(fileSet.size,)} sources across ${String(packages.length,)} packages`,);
 
   /**
-   * Cross-file analyzer over workspace sources.
+   Cross-file analyzer over workspace sources.
    */
   const analyzer = new Analyzer({
     resolve: workspaceResolver({
@@ -119,7 +119,7 @@ export async function findUnusedExports({
     },),
   },);
   /**
-   * Source texts read concurrently, order matching the file set.
+   Source texts read concurrently, order matching the file set.
    */
   const sources = await Promise.all([...fileSet,].map(async function readSource(file,): Promise<readonly [
     string,
@@ -152,20 +152,20 @@ export async function findUnusedExports({
     fl.debug(`link diagnostic: ${diagnostic.module}: ${diagnostic.message}`,);
 
   /**
-   * Findings accumulated across every module's export records.
+   Findings accumulated across every module's export records.
    */
   const findings: UnusedExport[] = [];
 
   for (const analyzedModule of analyzer.modules
     .values()) {
     /**
-     * Line-start offsets for declaration position math.
+     Line-start offsets for declaration position math.
      */
     const table = lineStarts(analyzedModule.source,);
 
     for (const moduleExport of analyzedModule.exports) {
       /**
-       * Backing local symbol, null for record kinds without one.
+       Backing local symbol, null for record kinds without one.
        */
       const { local, } = moduleExport;
 
@@ -177,7 +177,7 @@ export async function findUnusedExports({
         continue;
 
       /**
-       * First declaration node carrying the source span.
+       First declaration node carrying the source span.
        */
       const [declaration,] = local.declarations;
 
@@ -185,7 +185,7 @@ export async function findUnusedExports({
         continue;
 
       /**
-       * One-based line and zero-based column of the declaration.
+       One-based line and zero-based column of the declaration.
        */
       const position = positionAt({
         table,

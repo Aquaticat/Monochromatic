@@ -1,8 +1,8 @@
 /**
- * Toolbar HTML rendering for the doodle widget.
- *
- * Produces the top toolbar with tool selection toggle, page navigation
- * toggle, drawing settings, upload, export, and clear controls.
+ Toolbar HTML rendering for the doodle widget.
+ 
+ Produces the top toolbar with tool selection toggle, page navigation
+ toggle, drawing settings, upload, export, and clear controls.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
@@ -11,17 +11,17 @@ import {
 } from './page-toolbar-toggle.ts';
 
 /**
- * Renders the toolbar with tool selection, page navigation (via
- * {@link renderPageToggle}), upload, and clear controls.
- *
- * @param pageCount - number of pages for the page toggle group
- *
- * @returns toolbar HTML string
- *
- * @example
- * ```ts
- * const html = renderToolbar(2);
- * ```
+ Renders the toolbar with tool selection, page navigation (via
+ {@link renderPageToggle}), upload, and clear controls.
+ 
+ @param pageCount - number of pages for the page toggle group
+ 
+ @returns toolbar HTML string
+ 
+ @example
+ ```ts
+ const html = renderToolbar(2);
+ ```
  */
 export function renderToolbar(pageCount: number,): string {
   return h({

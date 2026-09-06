@@ -1,7 +1,7 @@
 /**
- * Positional OCR input loading boundary.
- *
- * @module
+ Positional OCR input loading boundary.
+ 
+ @module
  */
 
 import { readStructuredInputFile, } from './file-input.ts';
@@ -10,20 +10,20 @@ import { parseStructuredInput, } from './ingest.ts';
 import type { NormalizedInput, } from './model.ts';
 
 /**
- * Reports positional value that is neither inline JSON nor an existing file.
+ Reports positional value that is neither inline JSON nor an existing file.
  */
 export class CliInputNotFoundError extends Error {
   /**
-   * Creates unavailable-input failure without reading standard input.
-   *
-   * @param input - Positional value interpreted as named path.
-   *
-   * @param cause - Filesystem evidence proving path absence.
-   *
-   * @example
-   * ```ts
-   * new CliInputNotFoundError({ input: 'review.json', cause: new Error('missing') });
-   * ```
+   Creates unavailable-input failure without reading standard input.
+   
+   @param input - Positional value interpreted as named path.
+   
+   @param cause - Filesystem evidence proving path absence.
+   
+   @example
+   ```ts
+   new CliInputNotFoundError({ input: 'review.json', cause: new Error('missing') });
+   ```
    */
   public constructor({
     input,
@@ -41,18 +41,18 @@ export class CliInputNotFoundError extends Error {
 }
 
 /**
- * Node filesystem error shape carrying operation code.
+ Node filesystem error shape carrying operation code.
  */
 type NodeFileError = Error & {
   readonly code?: unknown;
 };
 
 /**
- * Detects absent named-file evidence.
- *
- * @param value - Caught filesystem value.
- *
- * @returns Whether Node reported `ENOENT`.
+ Detects absent named-file evidence.
+ 
+ @param value - Caught filesystem value.
+ 
+ @returns Whether Node reported `ENOENT`.
  */
 function isAbsentFileError(value: unknown,): value is NodeFileError {
   return (Error.isError(value,))
@@ -60,18 +60,18 @@ function isAbsentFileError(value: unknown,): value is NodeFileError {
 }
 
 /**
- * Loads shell-quoted inline JSON or required named file.
- *
- * @param input - Validated positional input union.
- *
- * @returns Atomically normalized OCR input.
- *
- * @throws {@link CliInputNotFoundError} when named path does not exist.
- *
- * @example
- * ```ts
- * await loadCliInput({ input: { kind: 'file', path: 'review.json' } });
- * ```
+ Loads shell-quoted inline JSON or required named file.
+ 
+ @param input - Validated positional input union.
+ 
+ @returns Atomically normalized OCR input.
+ 
+ @throws {@link CliInputNotFoundError} when named path does not exist.
+ 
+ @example
+ ```ts
+ await loadCliInput({ input: { kind: 'file', path: 'review.json' } });
+ ```
  */
 export async function loadCliInput({
   input,

@@ -1,7 +1,7 @@
 /**
- * Exact semantic identity check for opaque foreign host capability marker.
- *
- * @module
+ Exact semantic identity check for opaque foreign host capability marker.
+ 
+ @module
  */
 
 import type {
@@ -10,18 +10,18 @@ import type {
 } from 'typescript/unstable/sync';
 
 /**
- * Detects exact project-owned foreign host capability marker.
- *
- * @param project - TypeScript project resolving alias declarations.
- *
- * @param type - TypeScript semantic type.
- *
- * @returns whether type uses exact host capability marker declaration.
- *
- * @example
- * ```ts
- * isForeignHostCapabilityType({ project, type });
- * ```
+ Detects exact project-owned foreign host capability marker.
+ 
+ @param project - TypeScript project resolving alias declarations.
+ 
+ @param type - TypeScript semantic type.
+ 
+ @returns whether type uses exact host capability marker declaration.
+ 
+ @example
+ ```ts
+ isForeignHostCapabilityType({ project, type });
+ ```
  */
 export function isForeignHostCapabilityType({
   project,
@@ -31,23 +31,23 @@ export function isForeignHostCapabilityType({
   readonly type: Type;
 },): boolean {
   /**
-   * Type constituents awaiting exact alias inspection.
+   Type constituents awaiting exact alias inspection.
    */
   const pending: Type[] = [type,];
   /**
-   * Semantic type identities already inspected through unions or intersections.
+   Semantic type identities already inspected through unions or intersections.
    */
   const visited = new Set<number>();
   while (pending.length > 0) {
     /**
-     * Next semantic type constituent.
+     Next semantic type constituent.
      */
     const current = pending.pop();
     if ((current === undefined) || visited.has(current.id,))
       continue;
     visited.add(current.id,);
     /**
-     * Authored alias symbol retained by generic marker instantiation.
+     Authored alias symbol retained by generic marker instantiation.
      */
     const alias = current.getAliasSymbol();
     if ((alias !== undefined)
@@ -55,7 +55,7 @@ export function isForeignHostCapabilityType({
       && alias.declarations
       .some(function markerDeclaration(handle,): boolean {
         /**
-         * Resolved marker declaration for exact source identity.
+         Resolved marker declaration for exact source identity.
          */
         const declaration = handle.resolve(project,);
         return (declaration !== undefined)

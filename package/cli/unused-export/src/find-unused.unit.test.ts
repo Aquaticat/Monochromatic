@@ -23,32 +23,32 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Disposable fixture workspace rooted in a fresh temp directory.
+ Disposable fixture workspace rooted in a fresh temp directory.
  */
 type FixtureWorkspace = AsyncDisposable & Readonly<{
   root: string;
 }>;
 
 /**
- * Writes one disposable workspace with three scoped fixture packages.
- *
- * @returns Disposable fixture removing itself on dispose.
- *
- * @example
- * ```ts
- * await using fixture = await fixtureWorkspace();
- * ```
+ Writes one disposable workspace with three scoped fixture packages.
+ 
+ @returns Disposable fixture removing itself on dispose.
+ 
+ @example
+ ```ts
+ await using fixture = await fixtureWorkspace();
+ ```
  */
 async function fixtureWorkspace(): Promise<FixtureWorkspace> {
   /**
-   * Fresh fixture root under the platform temp directory.
+   Fresh fixture root under the platform temp directory.
    */
   const root = await mkdtemp(join(
     tmpdir(),
     'unused-export-',
   ),);
   /**
-   * Fixture files as workspace-relative path to content.
+   Fixture files as workspace-relative path to content.
    */
   const files: Readonly<Record<string, string>> = {
     'pnpm-workspace.yaml': "packages:\n- 'pkg/*'\n",
@@ -70,7 +70,7 @@ async function fixtureWorkspace(): Promise<FixtureWorkspace> {
       content,
     ],): Promise<void> {
       /**
-       * Absolute fixture file path.
+       Absolute fixture file path.
        */
       const target = join(
         root,
@@ -111,7 +111,7 @@ await describe({
           fn: async () => {
             await using fixture = await fixtureWorkspace();
             /**
-             * Discovered fixture packages in directory order.
+             Discovered fixture packages in directory order.
              */
             const packages = await discoverWorkspacePackages({ workspaceRoot: fixture.root, },);
             expect(packages.map(function toName(entry,) {
@@ -152,7 +152,7 @@ await describe({
           name: 'resolves relative, workspace, and dist specifiers',
           fn: async () => {
             /**
-             * Resolver over one synthetic package layout.
+             Resolver over one synthetic package layout.
              */
             const resolve = workspaceResolver({
               packageDirsByName: new Map([[
@@ -209,7 +209,7 @@ await describe({
           fn: async () => {
             await using fixture = await fixtureWorkspace();
             /**
-             * Findings across the fixture workspace.
+             Findings across the fixture workspace.
              */
             const findings = await findUnusedExports({ workspaceRoot: fixture.root, },);
             expect(findings.map(function toSummary(finding,) {
@@ -226,7 +226,7 @@ await describe({
           fn: async () => {
             await using fixture = await fixtureWorkspace();
             /**
-             * Names reported unused across the fixture workspace.
+             Names reported unused across the fixture workspace.
              */
             const names = (await findUnusedExports({ workspaceRoot: fixture.root, },))
               .map(function toName(finding,) {

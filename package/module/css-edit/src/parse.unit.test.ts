@@ -22,19 +22,19 @@ import {
 //region Test helpers
 
 /**
- * Parses a plain string as CSS, asserting the brand at the test boundary.
- *
- * @param source - CSS text under test.
- * @returns Parsed edit state.
+ Parses a plain string as CSS, asserting the brand at the test boundary.
+ 
+ @param source - CSS text under test.
+ @returns Parsed edit state.
  */
 function parse(source: string,): CssEditState {
   return parseCss({ source: source as StringCss, },);
 }
 
 /**
- * Full adversarial corpus: unknown at-rules with mixed bodies, relaxed and
- * `&` nesting, braces and semicolons inside strings and url(), escaped
- * selectors, custom-property block values, CDO/CDC, and comments.
+ Full adversarial corpus: unknown at-rules with mixed bodies, relaxed and
+ `&` nesting, braces and semicolons inside strings and url(), escaped
+ selectors, custom-property block values, CDO/CDC, and comments.
  */
 const ADVERSARIAL_CORPUS = `/* license comment */
 <!-- -->
@@ -53,10 +53,10 @@ const ADVERSARIAL_CORPUS = `/* license comment */
 .y[data-x="}"]::before { content: "\\"q\\""; }`;
 
 /**
- * Non-trivia children of a node list.
- *
- * @param nodes - Node list to filter.
- * @returns Structural nodes only.
+ Non-trivia children of a node list.
+ 
+ @param nodes - Node list to filter.
+ @returns Structural nodes only.
  */
 function structural(nodes: readonly CssNode[],): readonly CssNode[] {
   return nodes.filter(function keepStructural(node,) {
@@ -65,10 +65,10 @@ function structural(nodes: readonly CssNode[],): readonly CssNode[] {
 }
 
 /**
- * Kinds of the non-trivia children of a node list, in order.
- *
- * @param nodes - Node list to summarize.
- * @returns Kind strings of structural children.
+ Kinds of the non-trivia children of a node list, in order.
+ 
+ @param nodes - Node list to summarize.
+ @returns Kind strings of structural children.
  */
 function structuralKinds(nodes: readonly CssNode[],): readonly string[] {
   return structural(nodes,).map(function kindOf(node,) {
@@ -77,10 +77,10 @@ function structuralKinds(nodes: readonly CssNode[],): readonly string[] {
 }
 
 /**
- * First qualified rule in a parsed document.
- *
- * @param state - Parsed edit state.
- * @returns First rule node.
+ First qualified rule in a parsed document.
+ 
+ @param state - Parsed edit state.
+ @returns First rule node.
  */
 function firstRule(state: CssEditState,) {
   return nonNullishOrThrow(
@@ -93,11 +93,11 @@ function firstRule(state: CssEditState,) {
 }
 
 /**
- * First at-rule with a given name in a parsed document.
- *
- * @param state - Parsed edit state.
- * @param name - At-rule name to find.
- * @returns Matching at-rule node.
+ First at-rule with a given name in a parsed document.
+ 
+ @param state - Parsed edit state.
+ @param name - At-rule name to find.
+ @returns Matching at-rule node.
  */
 function atRuleNamed(
   state: CssEditState,

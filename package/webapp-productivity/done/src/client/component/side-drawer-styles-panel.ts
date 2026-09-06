@@ -1,8 +1,8 @@
 /**
- * Popover panel styles for the `<side-drawer>` web component.
- *
- * Covers the full-screen popover overlay, slide-in animation,
- * scrim fade-in, and the drawer panel itself.
+ Popover panel styles for the `<side-drawer>` web component.
+ 
+ Covers the full-screen popover overlay, slide-in animation,
+ scrim fade-in, and the drawer panel itself.
  */
 import {
   cssCubicBezier,
@@ -22,48 +22,48 @@ import {
 } from '../mixins.ts';
 
 /**
- * Full percentage value for sizing declarations.
+ Full percentage value for sizing declarations.
  */
 const FULL_PERCENT = 100;
 
 /**
- * Negative full percentage for offscreen slide-out positioning.
+ Negative full percentage for offscreen slide-out positioning.
  */
 const NEG_FULL_PERCENT = -100;
 
 /**
- * Z-index for the popover panel overlay.
+ Z-index for the popover panel overlay.
  */
 const Z_INDEX_PANEL = 100;
 
 /**
- * Scrim fade-in animation duration in seconds.
+ Scrim fade-in animation duration in seconds.
  */
 const SCRIM_FADE_S = 0.2;
 
 /**
- * Drawer slide-in animation duration in seconds.
+ Drawer slide-in animation duration in seconds.
  */
 const DRAWER_SLIDE_S = 1 / 2
   / 2;
 
 /**
- * Cubic-bezier x-coordinate for the decelerate easing control point.
+ Cubic-bezier x-coordinate for the decelerate easing control point.
  */
 const EASE_CONTROL_X = 0.2;
 
 /**
- * Fixed inline-size of the drawer panel in rem.
+ Fixed inline-size of the drawer panel in rem.
  */
 const DRAWER_WIDTH = 20;
 
 /**
- * Maximum inline-size of the drawer panel in vi units.
+ Maximum inline-size of the drawer panel in vi units.
  */
 const DRAWER_MAX_VI = 85;
 
 /**
- * Popover panel styles and animations for `<side-drawer>`.
+ Popover panel styles and animations for `<side-drawer>`.
  */
 export const SIDE_DRAWER_PANEL_STYLES: string = [
   css({

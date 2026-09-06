@@ -1,7 +1,7 @@
 /**
- * Pi Search Fetch config path helpers.
- *
- * @module
+ Pi Search Fetch config path helpers.
+ 
+ @module
  */
 
 import { join, } from 'node:path';
@@ -13,16 +13,16 @@ import {
 } from './config-constants.ts';
 
 /**
- * Resolve global Pi Search Fetch config path for a home directory.
- *
- * @param home - home directory
- *
- * @returns absolute config path
- *
- * @example
- * ```ts
- * configPathForHome({ home: '/home/user' });
- * ```
+ Resolve global Pi Search Fetch config path for a home directory.
+ 
+ @param home - home directory
+ 
+ @returns absolute config path
+ 
+ @example
+ ```ts
+ configPathForHome({ home: '/home/user' });
+ ```
  */
 function configPathForHome({ home, }: { readonly home: string; }): string {
   return join(
@@ -33,16 +33,16 @@ function configPathForHome({ home, }: { readonly home: string; }): string {
 }
 
 /**
- * Resolve legacy Pi Linkup config path for a home directory.
- *
- * @param home - home directory
- *
- * @returns absolute legacy config path
- *
- * @example
- * ```ts
- * legacyConfigPathForHome({ home: '/home/user' });
- * ```
+ Resolve legacy Pi Linkup config path for a home directory.
+ 
+ @param home - home directory
+ 
+ @returns absolute legacy config path
+ 
+ @example
+ ```ts
+ legacyConfigPathForHome({ home: '/home/user' });
+ ```
  */
 function legacyConfigPathForHome({ home, }: { readonly home: string; }): string {
   return join(

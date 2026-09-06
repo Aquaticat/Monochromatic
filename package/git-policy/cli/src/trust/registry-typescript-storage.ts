@@ -1,5 +1,5 @@
 /**
- * TypeScript bundle trust record preparation. @module
+ TypeScript bundle trust record preparation. @module
  */
 import { prepareTrustRecord, } from './registry-record-preparation.ts';
 import type { PreparedTrustRecord, } from './registry-prepared-record.ts';
@@ -9,33 +9,33 @@ import type {
 } from './types.ts';
 
 /**
- * Stored executable bundle path.
+ Stored executable bundle path.
  */
 const TYPESCRIPT_EXECUTABLE_FILE = 'snapshots/config.mjs';
 
 /**
- * Creates deterministic flat source snapshot name.
- *
- * @param index - canonical source index
- *
- * @returns record-relative private path
+ Creates deterministic flat source snapshot name.
+ 
+ @param index - canonical source index
+ 
+ @returns record-relative private path
  */
 function sourceSnapshotFile(index: number,): string {
   return `snapshots/source-${String(index,)}.bin`;
 }
 
 /**
- * Builds exact TypeScript persistent record.
- *
- * @param candidate - complete build candidate
- *
- * @param recordedAt - RFC 3339 audit timestamp
- *
- * @param recursiveChildren - persisted descendant authority
- *
- * @param authorizingRoots - explicit and inherited provenance
- *
- * @returns immutable record metadata
+ Builds exact TypeScript persistent record.
+ 
+ @param candidate - complete build candidate
+ 
+ @param recordedAt - RFC 3339 audit timestamp
+ 
+ @param recursiveChildren - persisted descendant authority
+ 
+ @param authorizingRoots - explicit and inherited provenance
+ 
+ @returns immutable record metadata
  */
 function buildTypeScriptRecord({
   candidate,
@@ -79,24 +79,24 @@ function buildTypeScriptRecord({
 }
 
 /**
- * Prepares complete private TypeScript source and bundle record.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - complete exact build candidate
- *
- * @param recordedAt - RFC 3339 audit timestamp
- *
- * @param recursiveChildren - persisted descendant authority
- *
- * @param authorizingRoots - explicit and inherited provenance
- *
- * @returns disposable candidate with explicit commit operation
- *
- * @example
- * ```ts
- * await using prepared = await prepareTypeScriptRecord({ registryRoot, candidate, recordedAt });
- * ```
+ Prepares complete private TypeScript source and bundle record.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - complete exact build candidate
+ 
+ @param recordedAt - RFC 3339 audit timestamp
+ 
+ @param recursiveChildren - persisted descendant authority
+ 
+ @param authorizingRoots - explicit and inherited provenance
+ 
+ @returns disposable candidate with explicit commit operation
+ 
+ @example
+ ```ts
+ await using prepared = await prepareTypeScriptRecord({ registryRoot, candidate, recordedAt });
+ ```
  */
 export async function prepareTypeScriptRecord({
   registryRoot,
@@ -112,7 +112,7 @@ export async function prepareTypeScriptRecord({
   authorizingRoots?: readonly TrustRecord['identity'][];
 }>,): Promise<PreparedTrustRecord> {
   /**
-   * Exact persistent metadata.
+   Exact persistent metadata.
    */
   const record = buildTypeScriptRecord({
     candidate,
@@ -121,7 +121,7 @@ export async function prepareTypeScriptRecord({
     authorizingRoots,
   },);
   /**
-   * Every record-relative exact snapshot.
+   Every record-relative exact snapshot.
    */
   const snapshots = new Map<string, Uint8Array>([
     [

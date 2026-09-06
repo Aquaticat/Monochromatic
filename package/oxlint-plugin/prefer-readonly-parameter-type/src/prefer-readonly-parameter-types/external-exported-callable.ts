@@ -1,7 +1,7 @@
 /**
- * Runtime package export callable resolution.
- *
- * @module
+ Runtime package export callable resolution.
+ 
+ @module
  */
 
 import type { Node, } from 'typescript/unstable/ast';
@@ -29,18 +29,18 @@ import {
 } from './external-runtime-forward.ts';
 
 /**
- * Sentinel when runtime export cannot resolve to callable source.
+ Sentinel when runtime export cannot resolve to callable source.
  */
 export const EXPORTED_CALLABLE_UNAVAILABLE: unique symbol = Symbol(
   'runtime package export callable source could not be resolved',
 );
 
 /**
- * Reads simple authored member name.
- *
- * @param node - Class or object member candidate.
- *
- * @returns member name or unavailable sentinel.
+ Reads simple authored member name.
+ 
+ @param node - Class or object member candidate.
+ 
+ @returns member name or unavailable sentinel.
  */
 function memberName(
   node: Node,
@@ -58,17 +58,17 @@ function memberName(
 }
 
 /**
- * Resolves callable nested under exported class or object value.
- *
- * @param project - External implementation project.
- *
- * @param declaration - Exported runtime value declaration.
- *
- * @param path - Authored member path from imported export.
- *
- * @param packageRoot - External source root accepted by callable resolver.
- *
- * @returns callable declaration or effect-unavailable sentinel.
+ Resolves callable nested under exported class or object value.
+ 
+ @param project - External implementation project.
+ 
+ @param declaration - Exported runtime value declaration.
+ 
+ @param path - Authored member path from imported export.
+ 
+ @param packageRoot - External source root accepted by callable resolver.
+ 
+ @returns callable declaration or effect-unavailable sentinel.
  */
 function exportedMemberCallable({
   project,
@@ -82,7 +82,7 @@ function exportedMemberCallable({
   readonly packageRoot: string;
 }): ReturnType<typeof callableDeclaration> | typeof EXPORTED_CALLABLE_UNAVAILABLE {
   /**
-   * Mutable syntax cursor following authored object members.
+   Mutable syntax cursor following authored object members.
    */
   const cursor: { current: Node; } = { current: declaration, };
   for (const segment of path) {
@@ -93,7 +93,7 @@ function exportedMemberCallable({
       cursor.current = cursor.current
         .initializer;
     /**
-     * Direct class or object members at current path segment.
+     Direct class or object members at current path segment.
      */
     const members = isClassLikeDeclaration(cursor.current,)
       ? cursor.current
@@ -103,7 +103,7 @@ function exportedMemberCallable({
           .properties
         : [];
     /**
-     * Exact authored member declaration.
+     Exact authored member declaration.
      */
     const member = members.find(function matchingMember(candidate,): boolean {
       return memberName(candidate,) === segment;
@@ -122,26 +122,26 @@ function exportedMemberCallable({
 }
 
 /**
- * Resolves exported callable declaration from implementation module.
- *
- * @param project - External implementation project.
- *
- * @param sourceNode - Implementation source file node.
- *
- * @param exportName - Exact package export member.
- *
- * @param memberPath - Nested class or object member path.
- *
- * @param packageRoot - External source root accepted by callable resolver.
- *
- * @returns callable declaration or effect-unavailable sentinel.
- *
- * @mutates project - `project.checker.getExportsOfModule` may populate TypeScript checker caches.
- *
- * @example
- * ```ts
- * exportedCallable({ project, sourceNode, exportName, memberPath, packageRoot });
- * ```
+ Resolves exported callable declaration from implementation module.
+ 
+ @param project - External implementation project.
+ 
+ @param sourceNode - Implementation source file node.
+ 
+ @param exportName - Exact package export member.
+ 
+ @param memberPath - Nested class or object member path.
+ 
+ @param packageRoot - External source root accepted by callable resolver.
+ 
+ @returns callable declaration or effect-unavailable sentinel.
+ 
+ @mutates project - `project.checker.getExportsOfModule` may populate TypeScript checker caches.
+ 
+ @example
+ ```ts
+ exportedCallable({ project, sourceNode, exportName, memberPath, packageRoot });
+ ```
  */
 export function exportedCallable({
   project,
@@ -159,7 +159,7 @@ export function exportedCallable({
   readonly visitedSourceNames?: ReadonlySet<string>;
 }): ReturnType<typeof callableDeclaration> | typeof EXPORTED_CALLABLE_UNAVAILABLE {
   /**
-   * Exact runtime forwarding available independently of TypeScript alias substitution.
+   Exact runtime forwarding available independently of TypeScript alias substitution.
    */
   const forwarded = runtimeForwardedExport({
     project,
@@ -168,20 +168,20 @@ export function exportedCallable({
     packageRoot,
   },);
   /**
-   * Resolves precomputed runtime forwarding with cycle protection.
-   *
-   * @returns forwarded callable or unavailable sentinel.
+   Resolves precomputed runtime forwarding with cycle protection.
+   
+   @returns forwarded callable or unavailable sentinel.
    */
   function resolveForwardedCallable(): ReturnType<typeof callableDeclaration>
     | typeof EXPORTED_CALLABLE_UNAVAILABLE {
     if (forwarded === RUNTIME_FORWARD_UNAVAILABLE)
       return EXPORTED_CALLABLE_UNAVAILABLE;
     /**
-     * Runtime source selected by authored forwarding syntax.
+     Runtime source selected by authored forwarding syntax.
      */
     const forwardedSource = forwarded.source;
     /**
-     * Canonical forwarded source identity used for cycle protection.
+     Canonical forwarded source identity used for cycle protection.
      */
     const forwardedSourceName = forwardedSource.fileName;
     if (visitedSourceNames.has(forwardedSourceName,))
@@ -199,14 +199,14 @@ export function exportedCallable({
     },);
   }
   /**
-   * Module symbol exposing runtime exports.
+   Module symbol exposing runtime exports.
    */
   const moduleSymbol = project.checker
     .getSymbolAtLocation(sourceNode,);
   if (moduleSymbol === undefined)
     return resolveForwardedCallable();
   /**
-   * Exact exported symbol by authored package binding name.
+   Exact exported symbol by authored package binding name.
    */
   const exported = project.checker
     .getExportsOfModule(moduleSymbol,)
@@ -216,26 +216,26 @@ export function exportedCallable({
   if (exported === undefined)
     return resolveForwardedCallable();
   /**
-   * Export alias followed to implementation declaration.
+   Export alias followed to implementation declaration.
    */
   const resolved = (exported.flags & SymbolFlags.Alias) !== 0
     ? project.checker
       .getAliasedSymbol(exported,)
     : exported;
   /**
-   * Preferred implementation declaration handle.
+   Preferred implementation declaration handle.
    */
   const handle = resolved.valueDeclaration
     ?? resolved.declarations
     .at(0,);
   /**
-   * Resolved implementation declaration node.
+   Resolved implementation declaration node.
    */
   const declaration = handle?.resolve(project,);
   if (declaration === undefined)
     return resolveForwardedCallable();
   /**
-   * Callable resolved through TypeScript's ordinary alias graph.
+   Callable resolved through TypeScript's ordinary alias graph.
    */
   const callable = memberPath.length === 0
     ? callableDeclaration({
@@ -252,7 +252,7 @@ export function exportedCallable({
   if ((typeof callable) !== 'symbol')
     return callable;
   /**
-   * Runtime forwarding result when declaration substitution hid implementation.
+   Runtime forwarding result when declaration substitution hid implementation.
    */
   const forwardedResult = resolveForwardedCallable();
   return forwardedResult === EXPORTED_CALLABLE_UNAVAILABLE

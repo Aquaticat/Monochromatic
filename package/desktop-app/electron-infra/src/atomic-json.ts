@@ -1,10 +1,10 @@
 /**
- * Atomic JSON file writing helpers for Electron integration tests.
- *
- * @example
- * ```ts
- * await writeJsonFileAtomically({ filePath: '/tmp/state.json', value: { count: 1 } });
- * ```
+ Atomic JSON file writing helpers for Electron integration tests.
+ 
+ @example
+ ```ts
+ await writeJsonFileAtomically({ filePath: '/tmp/state.json', value: { count: 1 } });
+ ```
  */
 
 import {
@@ -13,38 +13,38 @@ import {
 } from 'node:fs/promises';
 
 /**
- * JSON scalar supported by this infra package.
- *
- * @example
- * ```ts
- * const value: JsonScalar = 1;
- * ```
+ JSON scalar supported by this infra package.
+ 
+ @example
+ ```ts
+ const value: JsonScalar = 1;
+ ```
  */
 export type JsonScalar = boolean | number | string;
 
 /**
- * Shallow JSON object used for boundary-test state snapshots.
- *
- * @example
- * ```ts
- * const state: JsonObject = { count: 1 };
- * ```
+ Shallow JSON object used for boundary-test state snapshots.
+ 
+ @example
+ ```ts
+ const state: JsonObject = { count: 1 };
+ ```
  */
 export type JsonObject = Record<string, JsonScalar>;
 
 /**
- * Writes a JSON file through a same-directory temporary file and rename.
- *
- * @param filePath - Destination path readers observe.
- *
- * @param value - JSON object to serialize.
- *
- * @mutates value - `JSON.stringify` may invoke record accessors or proxy traps.
- *
- * @example
- * ```ts
- * await writeJsonFileAtomically({ filePath: '/tmp/state.json', value: { ready: true } });
- * ```
+ Writes a JSON file through a same-directory temporary file and rename.
+ 
+ @param filePath - Destination path readers observe.
+ 
+ @param value - JSON object to serialize.
+ 
+ @mutates value - `JSON.stringify` may invoke record accessors or proxy traps.
+ 
+ @example
+ ```ts
+ await writeJsonFileAtomically({ filePath: '/tmp/state.json', value: { ready: true } });
+ ```
  */
 export async function writeJsonFileAtomically(
   {
@@ -56,7 +56,7 @@ export async function writeJsonFileAtomically(
   },
 ): Promise<void> {
   /**
-   * Unique temporary path in destination directory.
+   Unique temporary path in destination directory.
    */
   const temporaryPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
 

@@ -1,7 +1,7 @@
 /**
- * Tests for the JS-to-TOML value coercion path used by `tomlSet`.
- *
- * @module
+ Tests for the JS-to-TOML value coercion path used by `tomlSet`.
+ 
+ @module
  */
 
 import {

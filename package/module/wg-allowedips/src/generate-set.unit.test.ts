@@ -11,7 +11,7 @@ import {
 } from './test-fixtures.ts';
 
 /**
- * Exact set-operation fixture.
+ Exact set-operation fixture.
  */
 type SetCase = {
   readonly name: string;
@@ -21,7 +21,7 @@ type SetCase = {
 };
 
 /**
- * Distinct arithmetic and formatting paths required by the command contract.
+ Distinct arithmetic and formatting paths required by the command contract.
  */
 const SET_CASES: readonly SetCase[] = [
   {
@@ -80,7 +80,7 @@ await describe({
       name,
       fn: async () => {
         /**
-         * Output from built internal seam.
+         Output from built internal seam.
          */
         const output = await generateAllowedIpsWithLookup({
           allowedText,

@@ -9,52 +9,52 @@ import { reportLoggerInternalError, } from '../error-format.ts';
 import type { Sink, } from '../types.ts';
 
 /**
- * Sentinel returned by {@link findNodeModulesUp} when no ancestor directory
- * contains a `node_modules`. A unique symbol so it never collides with a real
- * path string the walk might otherwise return, keeping the result free of a
- * banned `string | undefined` union.
- *
- * @example
- * ```ts
- * const dir = await findNodeModulesUp({ cwd, stat, dirname, join });
- * if (dir === NO_NODE_MODULES_FOUND) {
- *   // no ancestor project root
- * }
- * ```
+ Sentinel returned by {@link findNodeModulesUp} when no ancestor directory
+ contains a `node_modules`. A unique symbol so it never collides with a real
+ path string the walk might otherwise return, keeping the result free of a
+ banned `string | undefined` union.
+ 
+ @example
+ ```ts
+ const dir = await findNodeModulesUp({ cwd, stat, dirname, join });
+ if (dir === NO_NODE_MODULES_FOUND) {
+   // no ancestor project root
+ }
+ ```
  */
 export const NO_NODE_MODULES_FOUND: unique symbol = Symbol('logger:no-node-modules-found',);
 
 /**
- * Walks up from `cwd` to find the nearest ancestor directory containing a
- * `node_modules` subdirectory, returning that subdirectory's absolute path.
- *
- * Using find-up rather than cwd-relative placement keeps log directories
- * anchored to the project the caller actually belongs to. Without this,
- * scripts invoked from build output (e.g. `dist/`) or other stray cwds
- * would create `node_modules/.monochromatic/` inside those trees, polluting
- * shipped artifacts.
- *
- * Exported primarily so `index.unit.test.ts` can exercise both the hit
- * and miss paths directly with an injected `stat`.
- *
- * @param cwd - starting directory for the upward search
- *
- * @param stat - `node:fs/promises` stat (injected so the dynamic
- * import stays in one place)
- *
- * @param dirname - `node:path` dirname
- *
- * @param join - `node:path` join
- *
- * @param reportError - logger fault reporter injected for deterministic tests
- *
- * @returns absolute path to the nearest ancestor `node_modules`, or
- * {@link NO_NODE_MODULES_FOUND} when no ancestor contains one
- *
- * @example
- * ```ts
- * const dir = await findNodeModulesUp({ cwd: process.cwd(), stat, dirname, join });
- * ```
+ Walks up from `cwd` to find the nearest ancestor directory containing a
+ `node_modules` subdirectory, returning that subdirectory's absolute path.
+ 
+ Using find-up rather than cwd-relative placement keeps log directories
+ anchored to the project the caller actually belongs to. Without this,
+ scripts invoked from build output (e.g. `dist/`) or other stray cwds
+ would create `node_modules/.monochromatic/` inside those trees, polluting
+ shipped artifacts.
+ 
+ Exported primarily so `index.unit.test.ts` can exercise both the hit
+ and miss paths directly with an injected `stat`.
+ 
+ @param cwd - starting directory for the upward search
+ 
+ @param stat - `node:fs/promises` stat (injected so the dynamic
+ import stays in one place)
+ 
+ @param dirname - `node:path` dirname
+ 
+ @param join - `node:path` join
+ 
+ @param reportError - logger fault reporter injected for deterministic tests
+ 
+ @returns absolute path to the nearest ancestor `node_modules`, or
+ {@link NO_NODE_MODULES_FOUND} when no ancestor contains one
+ 
+ @example
+ ```ts
+ const dir = await findNodeModulesUp({ cwd: process.cwd(), stat, dirname, join });
+ ```
  */
 export async function findNodeModulesUp(
   {
@@ -72,7 +72,7 @@ export async function findNodeModulesUp(
   },
 ): Promise<string | typeof NO_NODE_MODULES_FOUND> {
   /**
-   * Directory being tested in this iteration; either resolves to a node_modules or triggers the walk to the parent.
+   Directory being tested in this iteration; either resolves to a node_modules or triggers the walk to the parent.
    */
   const candidate = join(
     cwd,
@@ -80,7 +80,7 @@ export async function findNodeModulesUp(
   );
   try {
     /**
-     * Stat result for `candidate`; only directories count as a hit, guarding against a sibling file also named `node_modules`.
+     Stat result for `candidate`; only directories count as a hit, guarding against a sibling file also named `node_modules`.
      */
     const entry = await stat(candidate,);
     if (entry.isDirectory())
@@ -98,7 +98,7 @@ export async function findNodeModulesUp(
     }
   }
   /**
-   * Parent directory used by the next recursive step; equal to `cwd` only at the filesystem root, which terminates the walk.
+   Parent directory used by the next recursive step; equal to `cwd` only at the filesystem root, which terminates the walk.
    */
   const parent = dirname(cwd,);
   if (parent === cwd)
@@ -113,29 +113,29 @@ export async function findNodeModulesUp(
 }
 
 /**
- * Builds a file sink that appends JSONL records to the nearest ancestor
- * `node_modules/.monochromatic/{timestamp}.log.jsonl` (resolved once during
- * verification). The resolved path, the cached `appendFile`, and the
- * verification memo live in this instance's closure (no module-global state),
- * so independent loggers and tests never share a log file or need a reset
- * hook. No `flush` hook: each `write` awaits `appendFile` directly, so there
- * is no buffered state to drain.
- *
- * @returns Sink backed by `node:fs/promises`.
- *
- * @example
- * ```ts
- * const { logger } = createLogger({ sinks: [createFileSink()] });
- * logger.error('unhandled rejection');
- * await logger.flush();
- * ```
+ Builds a file sink that appends JSONL records to the nearest ancestor
+ `node_modules/.monochromatic/{timestamp}.log.jsonl` (resolved once during
+ verification). The resolved path, the cached `appendFile`, and the
+ verification memo live in this instance's closure (no module-global state),
+ so independent loggers and tests never share a log file or need a reset
+ hook. No `flush` hook: each `write` awaits `appendFile` directly, so there
+ is no buffered state to drain.
+ 
+ @returns Sink backed by `node:fs/promises`.
+ 
+ @example
+ ```ts
+ const { logger } = createLogger({ sinks: [createFileSink()] });
+ logger.error('unhandled rejection');
+ await logger.flush();
+ ```
  */
 export function createFileSink(): Sink {
   /**
-   * Instance-local file-sink resources. `appendFile` and `filePath` are
-   * populated during verification and read by `write`; `verifyPromise`
-   * memoizes concurrent verification so a caller arriving mid-flight shares
-   * the same async work rather than starting a second probe.
+   Instance-local file-sink resources. `appendFile` and `filePath` are
+   populated during verification and read by `write`; `verifyPromise`
+   memoizes concurrent verification so a caller arriving mid-flight shares
+   the same async work rather than starting a second probe.
    */
   const state: {
     // oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
@@ -145,13 +145,13 @@ export function createFileSink(): Sink {
   } = {};
 
   /**
-   * Actual verification work, invoked exactly once via the memoized
-   * `verifyPromise`. Resolves the log path and caches `appendFile`, marking
-   * the sink unavailable when the upward search yields
-   * {@link NO_NODE_MODULES_FOUND}. The logger owns the resulting
-   * availability, so no flag is kept here.
-   *
-   * @returns Whether file system logging is available.
+   Actual verification work, invoked exactly once via the memoized
+   `verifyPromise`. Resolves the log path and caches `appendFile`, marking
+   the sink unavailable when the upward search yields
+   {@link NO_NODE_MODULES_FOUND}. The logger owns the resulting
+   availability, so no flag is kept here.
+   
+   @returns Whether file system logging is available.
    */
   async function runVerify(): Promise<boolean> {
     // Guard: skip dynamic import entirely outside Node.js to avoid
@@ -167,11 +167,11 @@ export function createFileSink(): Sink {
     try {
       // Dynamic import for Node.js modules: cache appendFile for use in write.
       /**
-       * Dynamically imported `node:fs/promises`; held in this scope so its members are reused without re-importing.
+       Dynamically imported `node:fs/promises`; held in this scope so its members are reused without re-importing.
        */
       const fs = await import('node:fs/promises');
       /**
-       * Path utilities dynamically imported alongside `fs`; needed by the upward search for the closest node_modules.
+       Path utilities dynamically imported alongside `fs`; needed by the upward search for the closest node_modules.
        */
       const {
         dirname,
@@ -181,7 +181,7 @@ export function createFileSink(): Sink {
       state.appendFile = fs.appendFile;
 
       /**
-       * Resolved absolute path of the closest ancestor `node_modules`, or the sentinel when none exists (e.g. a stray cwd).
+       Resolved absolute path of the closest ancestor `node_modules`, or the sentinel when none exists (e.g. a stray cwd).
        */
       const nodeModulesDir = await findNodeModulesUp({
         cwd: process.cwd(),
@@ -198,7 +198,7 @@ export function createFileSink(): Sink {
         return false;
 
       /**
-       * Directory under the chosen `node_modules` where every monochromatic log file lands.
+       Directory under the chosen `node_modules` where every monochromatic log file lands.
        */
       const LOG_DIR = join(
         nodeModulesDir,
@@ -210,7 +210,7 @@ export function createFileSink(): Sink {
       );
 
       /**
-       * ISO timestamp with colons replaced by dashes so it can be embedded in a cross-platform file name.
+       ISO timestamp with colons replaced by dashes so it can be embedded in a cross-platform file name.
        */
       const timestamp = new Date().toISOString()
         .replaceAll(
@@ -224,7 +224,7 @@ export function createFileSink(): Sink {
 
       // Verify by writing and reading test data.
       /**
-       * Probe record written and read back to confirm the chosen file path round-trips.
+       Probe record written and read back to confirm the chosen file path round-trips.
        */
       const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
       await state.appendFile(
@@ -232,7 +232,7 @@ export function createFileSink(): Sink {
         testData,
       );
       /**
-       * Probe contents read back; matching the literal `"test":true` proves the append + read path works end-to-end.
+       Probe contents read back; matching the literal `"test":true` proves the append + read path works end-to-end.
        */
       const content = await fs.readFile(
         state.filePath,
@@ -250,10 +250,10 @@ export function createFileSink(): Sink {
   }
 
   /**
-   * Verifies file system availability via {@link runVerify}, memoizing
-   * concurrent calls so a second caller never starts a duplicate probe.
-   *
-   * @returns Whether file system logging is available.
+   Verifies file system availability via {@link runVerify}, memoizing
+   concurrent calls so a second caller never starts a duplicate probe.
+   
+   @returns Whether file system logging is available.
    */
   function verify(): Promise<boolean> {
     if (state.verifyPromise
@@ -265,11 +265,11 @@ export function createFileSink(): Sink {
   }
 
   /**
-   * Writes a single record as a JSONL line to the resolved log file.
-   *
-   * @param record - Log record to write.
-   *
-   * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+   Writes a single record as a JSONL line to the resolved log file.
+   
+   @param record - Log record to write.
+   
+   @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
   async function write(record: object,): Promise<void> {
     // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath/appendFile are optional (unset before verification); checking presence

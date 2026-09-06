@@ -1,34 +1,34 @@
 /**
- * Reports that no PATH-exposed candidate can act as real Git.
- *
- * @example
- * ```ts
- * throw new RealGitNotFoundError({
- *   candidateCount: 4,
- *   skippedSelfShimCount: 1,
- * });
- * ```
+ Reports that no PATH-exposed candidate can act as real Git.
+ 
+ @example
+ ```ts
+ throw new RealGitNotFoundError({
+   candidateCount: 4,
+   skippedSelfShimCount: 1,
+ });
+ ```
  */
 export class RealGitNotFoundError extends Error {
   /**
-   * Stable error classification independent of minification.
+   Stable error classification independent of minification.
    */
   override readonly name = 'RealGitNotFoundError';
 
   /**
-   * Creates resolution failure with attempted-candidate evidence.
-   *
-   * @param candidateCount - PATH-derived candidates examined before failure.
-   *
-   * @param skippedSelfShimCount - Self-referential wrappers rejected during examination.
-   *
-   * @example
-   * ```ts
-   * const error = new RealGitNotFoundError({
-   *   candidateCount: 4,
-   *   skippedSelfShimCount: 1,
-   * });
-   * ```
+   Creates resolution failure with attempted-candidate evidence.
+   
+   @param candidateCount - PATH-derived candidates examined before failure.
+   
+   @param skippedSelfShimCount - Self-referential wrappers rejected during examination.
+   
+   @example
+   ```ts
+   const error = new RealGitNotFoundError({
+     candidateCount: 4,
+     skippedSelfShimCount: 1,
+   });
+   ```
    */
   constructor({
     candidateCount,

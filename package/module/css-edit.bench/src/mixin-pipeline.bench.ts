@@ -1,11 +1,11 @@
 /**
- * Pipeline-level benchmark: the css-edit-based `expandCssMixins` against a
- * faithful replica of the retired postcss mixin pipeline (clone-per-splice,
- * ten-pass fixed-point with full serialization comparison). This is the
- * number that matters for the build tool; the raw parse benchmark in
- * `parse.bench.ts` measures the parsers alone.
- *
- * @module
+ Pipeline-level benchmark: the css-edit-based `expandCssMixins` against a
+ faithful replica of the retired postcss mixin pipeline (clone-per-splice,
+ ten-pass fixed-point with full serialization comparison). This is the
+ number that matters for the build tool; the raw parse benchmark in
+ `parse.bench.ts` measures the parsers alone.
+ 
+ @module
  */
 
 import { expandCssMixins, } from '@monochromatic-dev/build-tool-css/ts/expand';
@@ -23,18 +23,18 @@ import {
 //region Inputs
 
 /**
- * Number of chained mixin definitions.
+ Number of chained mixin definitions.
  */
 const MIXIN_COUNT = 30;
 
 /**
- * Number of component rules applying mixins.
+ Number of component rules applying mixins.
  */
 const APPLY_COUNT = 200;
 
 /**
- * Mixin sheet: a chain where each definition applies its predecessor, so the
- * old pipeline needs multiple fixed-point passes.
+ Mixin sheet: a chain where each definition applies its predecessor, so the
+ old pipeline needs multiple fixed-point passes.
  */
 const MIXIN_CSS = Array
   .from(
@@ -44,7 +44,7 @@ const MIXIN_CSS = Array
       index,
     ) {
       /**
-       * Reference to the previous definition, chaining expansion depth.
+       Reference to the previous definition, chaining expansion depth.
        */
       const nested = index === 0
         ? ''
@@ -55,7 +55,7 @@ const MIXIN_CSS = Array
   .join('\n',);
 
 /**
- * Consumer sheet: many rules each applying one chained mixin.
+ Consumer sheet: many rules each applying one chained mixin.
  */
 const CONSUMER_CSS = Array
   .from(
@@ -74,19 +74,19 @@ const CONSUMER_CSS = Array
 //region Old-pipeline replica
 
 /**
- * Maximum fixed-point passes, matching the retired pipeline's guard.
+ Maximum fixed-point passes, matching the retired pipeline's guard.
  */
 const OLD_MAX_PASSES = 10;
 
 /**
- * Recursively expands apply at-rules by cloning registry bodies, matching the
- * retired `expandApplyInNodes`.
- *
- * @param nodes - Nodes to expand.
- *
- * @param registry - Mixin bodies by name.
- *
- * @returns Expanded clones.
+ Recursively expands apply at-rules by cloning registry bodies, matching the
+ retired `expandApplyInNodes`.
+ 
+ @param nodes - Nodes to expand.
+ 
+ @param registry - Mixin bodies by name.
+ 
+ @returns Expanded clones.
  */
 function oldExpandNodes(
   nodes: readonly ChildNode[],
@@ -94,13 +94,13 @@ function oldExpandNodes(
 ): ChildNode[] {
   return nodes.reduce<ChildNode[]>(
     /**
-     * Expands one node into the accumulator.
-     *
-     * @param result - Expanded nodes so far.
-     *
-     * @param node - Current node.
-     *
-     * @returns Updated accumulator.
+     Expands one node into the accumulator.
+     
+     @param result - Expanded nodes so far.
+     
+     @param node - Current node.
+     
+     @returns Updated accumulator.
      */
     function accumulate(
       result,
@@ -108,7 +108,7 @@ function oldExpandNodes(
     ) {
       if ((node.type === 'atrule') && (node.name === 'apply')) {
         /**
-         * Referenced body, cloned per splice like the retired pipeline.
+         Referenced body, cloned per splice like the retired pipeline.
          */
         const body = registry.get(node.params
           .trim(),);
@@ -126,7 +126,7 @@ function oldExpandNodes(
       }
       if (('nodes' in node) && Array.isArray(node.nodes,)) {
         /**
-         * Cloned container with expanded children.
+         Cloned container with expanded children.
          */
         const cloned = node.clone();
         cloned.nodes = oldExpandNodes(
@@ -147,15 +147,15 @@ function oldExpandNodes(
 }
 
 /**
- * Faithful replica of the retired postcss mixin pipeline: collect with
- * clones, fixed-point nested expansion compared by full serialization, then
- * clone-per-site document splicing.
- *
- * @param cssText - Consumer CSS.
- *
- * @param mixinCssText - Mixin definitions CSS.
- *
- * @returns Expanded CSS text.
+ Faithful replica of the retired postcss mixin pipeline: collect with
+ clones, fixed-point nested expansion compared by full serialization, then
+ clone-per-site document splicing.
+ 
+ @param cssText - Consumer CSS.
+ 
+ @param mixinCssText - Mixin definitions CSS.
+ 
+ @returns Expanded CSS text.
  */
 function oldPostcssPipeline({
   cssText,
@@ -165,11 +165,11 @@ function oldPostcssPipeline({
   readonly mixinCssText: string;
 },): string {
   /**
-   * Mixin registry, bodies cloned at collection like the retired pipeline.
+   Mixin registry, bodies cloned at collection like the retired pipeline.
    */
   const registry = new Map<string, readonly ChildNode[]>();
   /**
-   * Parsed definition sheet.
+   Parsed definition sheet.
    */
   const mixinRoot = postcssParse(mixinCssText,);
   mixinRoot.walkAtRules(
@@ -188,18 +188,18 @@ function oldPostcssPipeline({
 
   for (let pass = 0; pass < OLD_MAX_PASSES; pass += 1) {
     /**
-     * Whether any registry entry changed this pass, per serialization
-     * comparison like the retired pipeline.
+     Whether any registry entry changed this pass, per serialization
+     comparison like the retired pipeline.
      */
     const changed = [...registry,].reduce(
       /**
-       * Expands and compares one entry.
-       *
-       * @param changedSoFar - Whether a prior entry changed.
-       *
-       * @param entry - Name and body under expansion.
-       *
-       * @returns Whether any entry changed so far.
+       Expands and compares one entry.
+       
+       @param changedSoFar - Whether a prior entry changed.
+       
+       @param entry - Name and body under expansion.
+       
+       @returns Whether any entry changed so far.
        */
       function expandEntry(
         changedSoFar: boolean,
@@ -207,7 +207,7 @@ function oldPostcssPipeline({
       ) {
         const [name, nodes,] = entry;
         /**
-         * Freshly expanded body.
+         Freshly expanded body.
          */
         const expanded = oldExpandNodes(
           nodes,
@@ -229,14 +229,14 @@ function oldPostcssPipeline({
   }
 
   /**
-   * Parsed consumer sheet.
+   Parsed consumer sheet.
    */
   const root = postcssParse(cssText,);
   root.walkAtRules(
     'apply',
     function splice(node,) {
       /**
-       * Expanded body for this site.
+       Expanded body for this site.
        */
       const body = registry.get(node.params
         .trim(),);

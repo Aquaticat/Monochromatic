@@ -10,23 +10,23 @@ import { VERIFIED_READER_COUNT, } from '../dist/final/node/index.mjs';
 type TrapHits = string[];
 
 /**
- * Builds a fully trapped object recording every operation a reader performs on it.
- *
- * Every trap is instrumented, not only the ones expected, because the point is to catch a
- * reader reaching somewhere unlisted rather than to confirm it reaches where it should.
- *
- * @param hits - Accumulator receiving trap names in call order.
- *
- * @returns proxy standing in for a caller-owned object.
- *
- * @example
- * ```ts
- * trappedObject({ hits: [] });
- * ```
+ Builds a fully trapped object recording every operation a reader performs on it.
+ 
+ Every trap is instrumented, not only the ones expected, because the point is to catch a
+ reader reaching somewhere unlisted rather than to confirm it reaches where it should.
+ 
+ @param hits - Accumulator receiving trap names in call order.
+ 
+ @returns proxy standing in for a caller-owned object.
+ 
+ @example
+ ```ts
+ trappedObject({ hits: [] });
+ ```
  */
 function trappedObject({ hits, }: { readonly hits: TrapHits; },): Record<string, unknown> {
   /**
-   * Ordinary target holding one data property.
+   Ordinary target holding one data property.
    */
   const target: Record<string, unknown> = { first: 'value', };
   return new Proxy(target, {
@@ -72,7 +72,7 @@ function trappedObject({ hits, }: { readonly hits: TrapHits; },): Record<string,
 }
 
 /**
- * Traps that would mean a reader is not a reader.
+ Traps that would mean a reader is not a reader.
  */
 const WRITING_TRAPS: ReadonlySet<string> = new Set([
   'set',

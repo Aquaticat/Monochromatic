@@ -85,7 +85,7 @@ await describe({
       name: 'rejects unsupported shell syntax',
       fn: async () => {
         /**
-         * Captured editor configuration failure.
+         Captured editor configuration failure.
          */
         const caught: { value?: unknown; } = {};
         try {

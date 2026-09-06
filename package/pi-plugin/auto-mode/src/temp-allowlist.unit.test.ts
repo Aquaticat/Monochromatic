@@ -1,5 +1,5 @@
 /**
- * Tests for trusted temporary allowlist roots.
+ Tests for trusted temporary allowlist roots.
  */
 
 import {

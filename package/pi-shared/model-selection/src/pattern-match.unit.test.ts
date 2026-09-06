@@ -1,7 +1,7 @@
 /**
- * Unit tests for model pattern parsing helpers.
- *
- * @module
+ Unit tests for model pattern parsing helpers.
+ 
+ @module
  */
 
 import {

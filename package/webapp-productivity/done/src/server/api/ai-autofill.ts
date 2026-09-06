@@ -1,16 +1,16 @@
 /**
- * AI autofill API handler.
- *
- * POST /api/ai/autofill
- * Accepts `\{ title: string \}` and returns inferred metadata (tags, locations,
- * priority, complexity) using the configured chat completions endpoint.
- *
- * Degrades gracefully: when the AI is unavailable or returns garbage,
- * the response carries empty/null fields so the client can still function.
- *
- * Exceeds 100 lines: borderline at ~105 lines, but `parseAutofillResponse`,
- * `listAllLocations`, and `handleAutofill` share the same types and validation
- * constants; splitting would add a module for fewer than 40 lines of code.
+ AI autofill API handler.
+ 
+ POST /api/ai/autofill
+ Accepts `\{ title: string \}` and returns inferred metadata (tags, locations,
+ priority, complexity) using the configured chat completions endpoint.
+ 
+ Degrades gracefully: when the AI is unavailable or returns garbage,
+ the response carries empty/null fields so the client can still function.
+ 
+ Exceeds 100 lines: borderline at ~105 lines, but `parseAutofillResponse`,
+ `listAllLocations`, and `handleAutofill` share the same types and validation
+ constants; splitting would add a module for fewer than 40 lines of code.
  */
 import { chatCompletion, } from '../../lib/ai/client.ts';
 import { buildAutofillMessages, } from '../../lib/ai/prompts.ts';
@@ -26,45 +26,45 @@ import {
 //region Types
 
 /**
- * Result of AI-powered metadata inference for a task title.
+ Result of AI-powered metadata inference for a task title.
  */
 type AutofillResult = {
   /**
-   * Suggested tags.
+   Suggested tags.
    */
   tags: string[];
   /**
-   * Suggested locations.
+   Suggested locations.
    */
   locations: string[];
   /**
-   * Suggested priority level; absent when none was inferred.
+   Suggested priority level; absent when none was inferred.
    */
   priority?: TaskPriority;
   /**
-   * Suggested complexity level; absent when none was inferred.
+   Suggested complexity level; absent when none was inferred.
    */
   complexity?: TaskComplexity;
 };
 
 /**
- * Raw shape of the AI response before validation.
+ Raw shape of the AI response before validation.
  */
 type RawAutofillResponse = {
   /**
-   * Possibly-valid tags array.
+   Possibly-valid tags array.
    */
   tags?: unknown;
   /**
-   * Possibly-valid locations array.
+   Possibly-valid locations array.
    */
   locations?: unknown;
   /**
-   * Possibly-valid priority string.
+   Possibly-valid priority string.
    */
   priority?: unknown;
   /**
-   * Possibly-valid complexity string.
+   Possibly-valid complexity string.
    */
   complexity?: unknown;
 };
@@ -74,30 +74,30 @@ type RawAutofillResponse = {
 //region Validation
 
 /**
- * Set of valid priority values for input validation.
+ Set of valid priority values for input validation.
  */
 const VALID_PRIORITIES = new Set<string>(TASK_PRIORITIES,);
 
 /**
- * Set of valid complexity values for input validation.
+ Set of valid complexity values for input validation.
  */
 const VALID_COMPLEXITIES = new Set<string>(TASK_COMPLEXITIES,);
 
 /**
- * Maximum tokens for AI autofill response.
+ Maximum tokens for AI autofill response.
  */
 const MAX_TOKENS = 256;
 
 /**
- * Best-effort extraction of an autofill result from possibly malformed AI output.
- *
- * @param raw - Raw JSON string from the AI completion
- *
- * @returns Validated autofill result with safe defaults
+ Best-effort extraction of an autofill result from possibly malformed AI output.
+ 
+ @param raw - Raw JSON string from the AI completion
+ 
+ @returns Validated autofill result with safe defaults
  */
 function parseAutofillResponse(raw: string,): AutofillResult {
   /**
-   * Safe default returned whenever parsing or validation fails.
+   Safe default returned whenever parsing or validation fails.
    */
   const empty: AutofillResult = {
     tags: [],
@@ -107,7 +107,7 @@ function parseAutofillResponse(raw: string,): AutofillResult {
   try {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated below */
     /**
-     * Raw object asserted to the loose shape; every field is rechecked individually.
+     Raw object asserted to the loose shape; every field is rechecked individually.
      */
     const parsed = JSON.parse(raw,) as RawAutofillResponse;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -115,7 +115,7 @@ function parseAutofillResponse(raw: string,): AutofillResult {
       return empty;
 
     /**
-     * String-only tag list filtered defensively against malformed AI output.
+     String-only tag list filtered defensively against malformed AI output.
      */
     const tags = Array.isArray(parsed.tags,)
       ? parsed.tags
@@ -125,7 +125,7 @@ function parseAutofillResponse(raw: string,): AutofillResult {
       : [];
 
     /**
-     * String-only location list filtered defensively against malformed AI output.
+     String-only location list filtered defensively against malformed AI output.
      */
     const locations = Array.isArray(parsed.locations,)
       ? parsed.locations
@@ -136,7 +136,7 @@ function parseAutofillResponse(raw: string,): AutofillResult {
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
     /**
-     * Priority field, included only when the response carries a recognised value.
+     Priority field, included only when the response carries a recognised value.
      */
     const priorityField: { priority?: TaskPriority; } = ((typeof parsed
         .priority) === 'string') && VALID_PRIORITIES
@@ -145,7 +145,7 @@ function parseAutofillResponse(raw: string,): AutofillResult {
       : {};
 
     /**
-     * Complexity field, included only when the response carries a recognised value.
+     Complexity field, included only when the response carries a recognised value.
      */
     const complexityField: { complexity?: TaskComplexity; } = ((typeof parsed
         .complexity) === 'string') && VALID_COMPLEXITIES
@@ -176,14 +176,14 @@ function parseAutofillResponse(raw: string,): AutofillResult {
 //region Existing metadata for consistency hints
 
 /**
- * Collects unique locations across all tasks via a full scan.
- *
- * @returns Sorted array of unique location strings
+ Collects unique locations across all tasks via a full scan.
+ 
+ @returns Sorted array of unique location strings
  */
 async function listAllLocations(): Promise<string[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns rows with loc column */
   /**
-   * Single-column projection; the location string is unwrapped from each row below.
+   Single-column projection; the location string is unwrapped from each row below.
    */
   const rows = (await (await db
     .prepare(
@@ -201,31 +201,31 @@ async function listAllLocations(): Promise<string[]> {
 //region Handler
 
 /**
- * POST /api/ai/autofill; infers task metadata from a title using AI.
- * Gathers existing tags via {@link listAllTags} and locations via
- * {@link listAllLocations}, composes the prompt with {@link buildAutofillMessages},
- * sends it through {@link chatCompletion}, and validates the result with
- * {@link parseAutofillResponse}.
- *
- * @param req - Incoming request with JSON body containing `title`
- *
- * @returns JSON response with inferred tags, locations, priority, and complexity
- *
- * @example
- * ```ts
- * const response = await handleAutofill(request);
- * ```
+ POST /api/ai/autofill; infers task metadata from a title using AI.
+ Gathers existing tags via {@link listAllTags} and locations via
+ {@link listAllLocations}, composes the prompt with {@link buildAutofillMessages},
+ sends it through {@link chatCompletion}, and validates the result with
+ {@link parseAutofillResponse}.
+ 
+ @param req - Incoming request with JSON body containing `title`
+ 
+ @returns JSON response with inferred tags, locations, priority, and complexity
+ 
+ @example
+ ```ts
+ const response = await handleAutofill(request);
+ ```
  */
 export async function handleAutofill(req: Request,): Promise<Response> {
   try {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- request body is expected to be a JSON object */
     /**
-     * Loose object so each field can be validated individually before use.
+     Loose object so each field can be validated individually before use.
      */
     const body = (await req.json()) as Record<string, unknown>;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     /**
-     * Trimmed title; empty string short-circuits to the empty-response branch below.
+     Trimmed title; empty string short-circuits to the empty-response branch below.
      */
     const title = (typeof body.title) === 'string' ? body.title
       .trim() : '';
@@ -239,15 +239,15 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     }
 
     /**
-     * Tags already in use, forwarded so the model prefers consistency.
+     Tags already in use, forwarded so the model prefers consistency.
      */
     const existingTags = await listAllTags();
     /**
-     * Locations already in use, forwarded so the model prefers consistency.
+     Locations already in use, forwarded so the model prefers consistency.
      */
     const existingLocations = await listAllLocations();
     /**
-     * Composed chat messages ready for the completion endpoint.
+     Composed chat messages ready for the completion endpoint.
      */
     const messages = buildAutofillMessages({
       title,
@@ -256,7 +256,7 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     },);
 
     /**
-     * Discriminated result wrapping the model output or a transport error.
+     Discriminated result wrapping the model output or a transport error.
      */
     const result = await chatCompletion({
       messages,
@@ -277,7 +277,7 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     }
 
     /**
-     * Validated metadata; serialised straight to the response body below.
+     Validated metadata; serialised straight to the response body below.
      */
     const autofill = parseAutofillResponse(result.content,);
     return Response.json(autofill,);

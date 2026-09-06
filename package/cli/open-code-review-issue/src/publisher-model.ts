@@ -1,13 +1,13 @@
 /**
- * Issue publication result and scheduler contracts.
- *
- * @module
+ Issue publication result and scheduler contracts.
+ 
+ @module
  */
 
 import type { InputPosition, } from './model.ts';
 
 /**
- * Injectable asynchronous delay for deterministic retry tests.
+ Injectable asynchronous delay for deterministic retry tests.
  */
 export type PublicationWait = (
   milliseconds: number,
@@ -15,12 +15,12 @@ export type PublicationWait = (
 
 
 /**
- * Reads publication interrupt state without mutating it.
+ Reads publication interrupt state without mutating it.
  */
 export type PublicationStopCheck = () => boolean;
 
 /**
- * Confirmed created GitHub Issue identity.
+ Confirmed created GitHub Issue identity.
  */
 export type CreatedIssue = {
   readonly position: InputPosition;
@@ -29,7 +29,7 @@ export type CreatedIssue = {
 };
 
 /**
- * Complete successful publication result.
+ Complete successful publication result.
  */
 export type PublicationResult = {
   readonly created: readonly CreatedIssue[];

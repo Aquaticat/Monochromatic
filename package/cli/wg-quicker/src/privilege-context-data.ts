@@ -3,17 +3,17 @@ import { homedir, } from 'node:os';
 import { PrivilegeError, } from './errors.ts';
 
 /**
- * Current caller-context schema version.
+ Current caller-context schema version.
  */
 export const PRIVILEGE_CONTEXT_VERSION = 1;
 
 /**
- * Maximum caller-context JSON size accepted from private file.
+ Maximum caller-context JSON size accepted from private file.
  */
 export const MAX_PRIVILEGE_CONTEXT_BYTES = 65_536;
 
 /**
- * Environment crossing sudo through private caller-context file.
+ Environment crossing sudo through private caller-context file.
  */
 export type PrivilegeEnvironment = {
   readonly HOME: string;
@@ -29,7 +29,7 @@ export type PrivilegeEnvironment = {
 };
 
 /**
- * Serialized caller identity and environment.
+ Serialized caller identity and environment.
  */
 export type PrivilegeContext = {
   readonly environment: PrivilegeEnvironment;
@@ -38,7 +38,7 @@ export type PrivilegeContext = {
 };
 
 /**
- * Allowed keys in serialized environment object.
+ Allowed keys in serialized environment object.
  */
 const ALLOWED_ENVIRONMENT_KEYS = new Set([
   'HOME',
@@ -54,16 +54,16 @@ const ALLOWED_ENVIRONMENT_KEYS = new Set([
 ],);
 
 /**
- * Reports non-null object suitable for property validation.
- *
- * @param value - Unknown JSON value.
- *
- * @returns Whether value is record-like.
- *
- * @example
- * ```ts
- * isRecord({ version: 1 });
- * ```
+ Reports non-null object suitable for property validation.
+ 
+ @param value - Unknown JSON value.
+ 
+ @returns Whether value is record-like.
+ 
+ @example
+ ```ts
+ isRecord({ version: 1 });
+ ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   if ((typeof value) !== 'object')
@@ -74,16 +74,16 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Reports positive safe integer UID.
- *
- * @param value - Unknown UID candidate.
- *
- * @returns Whether value is valid caller UID.
- *
- * @example
- * ```ts
- * isPositiveUid(1000);
- * ```
+ Reports positive safe integer UID.
+ 
+ @param value - Unknown UID candidate.
+ 
+ @returns Whether value is valid caller UID.
+ 
+ @example
+ ```ts
+ isPositiveUid(1000);
+ ```
  */
 function isPositiveUid(value: unknown,): value is number {
   if ((typeof value) !== 'number')
@@ -94,18 +94,18 @@ function isPositiveUid(value: unknown,): value is number {
 }
 
 /**
- * Parses JSON with domain-specific error.
- *
- * @param text - Bounded context text.
- *
- * @returns Parsed unknown JSON value.
- *
- * @throws {@link PrivilegeError} when JSON syntax is invalid.
- *
- * @example
- * ```ts
- * parseContextJson('{"version":1}');
- * ```
+ Parses JSON with domain-specific error.
+ 
+ @param text - Bounded context text.
+ 
+ @returns Parsed unknown JSON value.
+ 
+ @throws {@link PrivilegeError} when JSON syntax is invalid.
+ 
+ @example
+ ```ts
+ parseContextJson('{"version":1}');
+ ```
  */
 function parseContextJson(text: string,): unknown {
   try {
@@ -120,16 +120,16 @@ function parseContextJson(text: string,): unknown {
 }
 
 /**
- * Reports whether environment record contains only known string entries.
- *
- * @param environment - Untrusted environment record.
- *
- * @returns Whether every key and value is allowed.
- *
- * @example
- * ```ts
- * hasValidEnvironmentEntries({ environment: { HOME: '/home/me' } });
- * ```
+ Reports whether environment record contains only known string entries.
+ 
+ @param environment - Untrusted environment record.
+ 
+ @returns Whether every key and value is allowed.
+ 
+ @example
+ ```ts
+ hasValidEnvironmentEntries({ environment: { HOME: '/home/me' } });
+ ```
  */
 function hasValidEnvironmentEntries(
   { environment, }: { readonly environment: Readonly<Record<string, unknown>>; },
@@ -144,18 +144,18 @@ function hasValidEnvironmentEntries(
 }
 
 /**
- * Captures allowlisted caller environment before sudo resets it.
- *
- * @returns Caller home and configured wg-quicker values.
- *
- * @example
- * ```ts
- * capturePrivilegeEnvironment();
- * ```
+ Captures allowlisted caller environment before sudo resets it.
+ 
+ @returns Caller home and configured wg-quicker values.
+ 
+ @example
+ ```ts
+ capturePrivilegeEnvironment();
+ ```
  */
 function capturePrivilegeEnvironment(): PrivilegeEnvironment {
   /**
-   * Allowlisted source values read at privilege boundary.
+   Allowlisted source values read at privilege boundary.
    */
   const {
     HOME: home,
@@ -202,20 +202,20 @@ function capturePrivilegeEnvironment(): PrivilegeEnvironment {
 }
 
 /**
- * Captures caller context for serialization.
- *
- * @returns Caller UID and allowlisted environment.
- *
- * @throws {@link PrivilegeError} when runtime lacks non-root UID.
- *
- * @example
- * ```ts
- * capturePrivilegeContext();
- * ```
+ Captures caller context for serialization.
+ 
+ @returns Caller UID and allowlisted environment.
+ 
+ @throws {@link PrivilegeError} when runtime lacks non-root UID.
+ 
+ @example
+ ```ts
+ capturePrivilegeContext();
+ ```
  */
 export function capturePrivilegeContext(): PrivilegeContext {
   /**
-   * Effective UID captured before privilege transition.
+   Effective UID captured before privilege transition.
    */
   const uid = process.getuid?.();
   if ((uid === undefined) || (uid === 0))
@@ -228,30 +228,30 @@ export function capturePrivilegeContext(): PrivilegeContext {
 }
 
 /**
- * Parses exact caller-context JSON shape.
- *
- * @param text - Bounded private-file contents.
- *
- * @returns Validated caller context.
- *
- * @throws {@link PrivilegeError} when JSON or shape is invalid.
- *
- * @example
- * ```ts
- * parsePrivilegeContext({ text: '{"version":1,"uid":1000,"environment":{"HOME":"/home/me"}}' });
- * ```
+ Parses exact caller-context JSON shape.
+ 
+ @param text - Bounded private-file contents.
+ 
+ @returns Validated caller context.
+ 
+ @throws {@link PrivilegeError} when JSON or shape is invalid.
+ 
+ @example
+ ```ts
+ parsePrivilegeContext({ text: '{"version":1,"uid":1000,"environment":{"HOME":"/home/me"}}' });
+ ```
  */
 export function parsePrivilegeContext(
   { text, }: { readonly text: string; },
 ): PrivilegeContext {
   /**
-   * Parsed untrusted JSON value.
+   Parsed untrusted JSON value.
    */
   const value = parseContextJson(text,);
   if (!isRecord(value,))
     throw new PrivilegeError('Caller context has invalid shape.',);
   /**
-   * Outer schema fields narrowed independently.
+   Outer schema fields narrowed independently.
    */
   const {
     environment,
@@ -267,7 +267,7 @@ export function parsePrivilegeContext(
   if (!hasValidEnvironmentEntries({ environment, },))
     throw new PrivilegeError('Caller context environment is invalid.',);
   /**
-   * Allowlisted environment fields reconstructed without unsafe assertion.
+   Allowlisted environment fields reconstructed without unsafe assertion.
    */
   const {
     HOME: home,

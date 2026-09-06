@@ -1,7 +1,7 @@
 /**
- * Pi lifecycle registration for command, restoration, prompting, and continuation.
- *
- * @module
+ Pi lifecycle registration for command, restoration, prompting, and continuation.
+ 
+ @module
  */
 
 import type {
@@ -46,20 +46,20 @@ import type {
 } from './types.ts';
 
 /**
- * Register goal state lifecycle without model-completion review tool.
- *
- * @param pi - Pi extension API receiving command and lifecycle registrations
- *
- * @param services - injectable identity and clock boundaries
- *
- * @returns shared runtime boundary for completion-review registration
- *
- * @mutates pi - registers handlers and writes effects when handlers execute
- *
- * @example
- * ```ts
- * const lifecycle = registerGoalLifecycle({ pi });
- * ```
+ Register goal state lifecycle without model-completion review tool.
+ 
+ @param pi - Pi extension API receiving command and lifecycle registrations
+ 
+ @param services - injectable identity and clock boundaries
+ 
+ @returns shared runtime boundary for completion-review registration
+ 
+ @mutates pi - registers handlers and writes effects when handlers execute
+ 
+ @example
+ ```ts
+ const lifecycle = registerGoalLifecycle({ pi });
+ ```
  */
 function registerGoalLifecycle(
   {
@@ -74,22 +74,22 @@ function registerGoalLifecycle(
   },
 ): GoalLifecycleHandle {
   /**
-   * Runtime identity invalidating callbacks from prior extension instances.
+   Runtime identity invalidating callbacks from prior extension instances.
    */
   const runtimeEpoch = services.createId();
   /**
-   * Controller ownership belongs to this single extension runtime closure.
+   Controller ownership belongs to this single extension runtime closure.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Pi lifecycle handlers share one runtime-owned immutable-state cursor.
   let controller = createGoalController(runtimeEpoch,);
   /**
-   * Store next immutable controller and execute its ordered effects.
-   *
-   * @param transition - pure controller transition
-   *
-   * @param context - current Pi lifecycle context
-   *
-   * @mutates context - delegates footer and notification effects through Pi UI
+   Store next immutable controller and execute its ordered effects.
+   
+   @param transition - pure controller transition
+   
+   @param context - current Pi lifecycle context
+   
+   @mutates context - delegates footer and notification effects through Pi UI
    */
   function applyTransition(
     {
@@ -101,7 +101,7 @@ function registerGoalLifecycle(
     },
   ): void {
     /**
-     * Next immutable controller cursor and ordered effects.
+     Next immutable controller cursor and ordered effects.
      */
     const {
       controller: nextController,
@@ -116,33 +116,33 @@ function registerGoalLifecycle(
   }
 
   /**
-   * Read current immutable controller snapshot.
-   *
-   * @returns current controller
+   Read current immutable controller snapshot.
+   
+   @returns current controller
    */
   function currentController(): GoalControllerState {
     return controller;
   }
 
   /**
-   * Restore only current branch's persisted goal events.
-   *
-   * @param context - lifecycle context exposing selected session branch
-   *
-   * @mutates context - restores footer state without starting model turn
+   Restore only current branch's persisted goal events.
+   
+   @param context - lifecycle context exposing selected session branch
+   
+   @mutates context - restores footer state without starting model turn
    */
   function restoreBranch(context: ForeignBorrowed<ExtensionContext>,): void {
     /**
-     * Selected-branch entries from Pi session manager.
+     Selected-branch entries from Pi session manager.
      */
     const branch = context.sessionManager
       .getBranch();
     /**
-     * Valid goal events from current active branch only.
+     Valid goal events from current active branch only.
      */
     const events = goalEventsFromBranch(branch,);
     /**
-     * Branch-reduced goal state.
+     Branch-reduced goal state.
      */
     const goal = reduceGoalEvents(events,);
     applyTransition({
@@ -155,13 +155,13 @@ function registerGoalLifecycle(
   }
 
   /**
-   * Rotate restored active generation without triggering model turn.
-   *
-   * @param context - lifecycle context receiving persistence and footer effects
-   *
-   * @param cause - lifecycle boundary invalidating delayed callbacks
-   *
-   * @mutates context - refreshes active footer
+   Rotate restored active generation without triggering model turn.
+   
+   @param context - lifecycle context receiving persistence and footer effects
+   
+   @param cause - lifecycle boundary invalidating delayed callbacks
+   
+   @mutates context - refreshes active footer
    */
   function rotateRestoredGeneration(
     {
@@ -184,13 +184,13 @@ function registerGoalLifecycle(
   }
 
   /**
-   * Handle strict public goal command.
-   *
-   * @param args - command text after `/goal`
-   *
-   * @param context - command context owning UI and session state
-   *
-   * @mutates context - context.ui.notify, context.sessionManager.getLeafId, context.isIdle, and context.hasPendingMessages may change context-owned Pi state
+   Handle strict public goal command.
+   
+   @param args - command text after `/goal`
+   
+   @param context - command context owning UI and session state
+   
+   @mutates context - context.ui.notify, context.sessionManager.getLeafId, context.isIdle, and context.hasPendingMessages may change context-owned Pi state
    */
   function handleGoalCommand(
     {
@@ -202,7 +202,7 @@ function registerGoalLifecycle(
     },
   ): Promise<void> {
     /**
-     * Parsed strict public command.
+     Parsed strict public command.
      */
     const command = parseGoalCommand(args,);
     if (command.kind === 'rejected') {
@@ -224,16 +224,16 @@ function registerGoalLifecycle(
       return Promise.resolve();
     }
     /**
-     * Fresh public run identity.
+     Fresh public run identity.
      */
     const runId = services.createId();
     /**
-     * Current leaf identifying reviewer transcript start.
+     Current leaf identifying reviewer transcript start.
      */
     const leafId = context.sessionManager
       .getLeafId();
     /**
-     * Stable start boundary, including new empty sessions.
+     Stable start boundary, including new empty sessions.
      */
     const startBoundary = leafId ?? `new-session:${runId}`;
     applyTransition({
@@ -254,23 +254,23 @@ function registerGoalLifecycle(
   }
 
   /**
-   * Deliver deferred kickoff before settlement review.
-   *
-   * @param context - active session context
-   *
-   * @returns whether matching deferred kickoff owned this settlement
-   *
-   * @mutates context - emitted effects may append task context and update Pi UI
+   Deliver deferred kickoff before settlement review.
+   
+   @param context - active session context
+   
+   @returns whether matching deferred kickoff owned this settlement
+   
+   @mutates context - emitted effects may append task context and update Pi UI
    */
   function deliverPendingKickoff(context: ForeignBorrowed<ExtensionContext>,): boolean {
     if (controller.pendingKickoff === undefined)
       return false;
     /**
-     * Pending-kickoff transition and delivery evidence.
+     Pending-kickoff transition and delivery evidence.
      */
     const transition = deliverPendingGoalKickoff(controller,);
     /**
-     * Whether transition emitted task kickoff.
+     Whether transition emitted task kickoff.
      */
     const delivered = transition.effects
       .some(function sendsKickoff(effect,) {
@@ -351,7 +351,7 @@ function registerGoalLifecycle(
       event: ForeignBorrowed<BeforeAgentStartEvent>,
     ): BeforeAgentStartEventResult {
       /**
-       * Goal state captured for this exact prompt turn.
+       Goal state captured for this exact prompt turn.
        */
       const { goal, } = controller;
       if (goal.phase !== 'active')

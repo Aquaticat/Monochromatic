@@ -1,9 +1,9 @@
 /**
- * SVG export for the doodle widget.
- *
- * Builds a self-contained SVG document with vector paths for strokes,
- * real `<text>` elements for annotations, and the background SVG
- * embedded as a nested `<svg>`.
+ SVG export for the doodle widget.
+ 
+ Builds a self-contained SVG document with vector paths for strokes,
+ real `<text>` elements for annotations, and the background SVG
+ embedded as a nested `<svg>`.
  */
 
 import {
@@ -24,27 +24,27 @@ import {
 } from './svg-overlay-measure.ts';
 
 /**
- * SVG XML namespace
+ SVG XML namespace
  */
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
- * Exports the doodle as an SVG file.
- *
- * Produces a self-contained SVG with vector `<path>` elements for
- * strokes, `<text>` elements for annotations (selectable and
- * searchable), and the background SVG embedded as a nested `<svg>`.
- *
- * @param container - canvas container for sizing
- *
- * @param overlay - SVG overlay div
- *
- * @param textLayer - div containing text input elements
- *
- * @example
- * ```ts
- * exportAsSvg({ container, overlay, drawCanvas, textLayer });
- * ```
+ Exports the doodle as an SVG file.
+ 
+ Produces a self-contained SVG with vector `<path>` elements for
+ strokes, `<text>` elements for annotations (selectable and
+ searchable), and the background SVG embedded as a nested `<svg>`.
+ 
+ @param container - canvas container for sizing
+ 
+ @param overlay - SVG overlay div
+ 
+ @param textLayer - div containing text input elements
+ 
+ @example
+ ```ts
+ exportAsSvg({ container, overlay, drawCanvas, textLayer });
+ ```
  */
 export function exportAsSvg(
   {
@@ -54,7 +54,7 @@ export function exportAsSvg(
   }: ExportDeps,
 ): void {
   /**
-   * Export dimensions resolved once so both root SVG and child paths share the same coordinate space.
+   Export dimensions resolved once so both root SVG and child paths share the same coordinate space.
    */
   const {
     cw,
@@ -62,18 +62,18 @@ export function exportAsSvg(
   } = getExportSize();
 
   /**
-   * Scale from rendered page size to letter export size
+   Scale from rendered page size to letter export size
    */
   const {
     cw: renderedCw,
   } = getRenderedSize(container,);
   /**
-   * Ratio applied to overlay positions so the embedded SVG lines up with the rasterized geometry.
+   Ratio applied to overlay positions so the embedded SVG lines up with the rasterized geometry.
    */
   const exportScale = cw / renderedCw;
 
   /**
-   * Root SVG element accumulating every layer before serialization.
+   Root SVG element accumulating every layer before serialization.
    */
   const svg = document.createElementNS(
     SVG_NS,
@@ -98,7 +98,7 @@ export function exportAsSvg(
 
   //region White background
   /**
-   * Opaque rectangle so the export renders against a fixed colour rather than the host page background.
+   Opaque rectangle so the export renders against a fixed colour rather than the host page background.
    */
   const bgRect = document.createElementNS(
     SVG_NS,
@@ -121,7 +121,7 @@ export function exportAsSvg(
 
   //region Strokes (behind SVG overlay)
   /**
-   * Snapshot pulled before the loop so concurrent edits cannot reshape the array mid-render.
+   Snapshot pulled before the loop so concurrent edits cannot reshape the array mid-render.
    */
   const strokes = getStrokes();
   for (const stroke of strokes) {
@@ -130,14 +130,14 @@ export function exportAsSvg(
       < MIN_STROKE_POINTS)
       continue;
     /**
-     * One path per stroke so the colour and width attributes do not leak between strokes.
+     One path per stroke so the colour and width attributes do not leak between strokes.
      */
     const path = document.createElementNS(
       SVG_NS,
       'path',
     );
     /**
-     * SVG path data built from normalized stroke coordinates
+     SVG path data built from normalized stroke coordinates
      */
     const d = stroke
       .points
@@ -147,7 +147,7 @@ export function exportAsSvg(
           index: number,
         ): string {
           /**
-           * First point opens the path with a move, later points draw lines.
+           First point opens the path with a move, later points draw lines.
            */
           const cmd = index === 0 ? 'M' : 'L';
           return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
@@ -184,7 +184,7 @@ export function exportAsSvg(
 
   //region Background SVG with multiply blending (on top of strokes)
   /**
-   * Position metadata so the cloned overlay lines up with the rasterized geometry.
+   Position metadata so the cloned overlay lines up with the rasterized geometry.
    */
   const overlayInfo = measureSvgOverlay({
     container,
@@ -226,12 +226,12 @@ export function exportAsSvg(
 
   //region Text annotations
   /**
-   * Snapshot of the live text inputs so DOM order, not iteration order, drives the SVG output.
+   Snapshot of the live text inputs so DOM order, not iteration order, drives the SVG output.
    */
   const textEntries = readTextEntries({ textLayer, },);
   for (const entry of textEntries) {
     /**
-     * One `<text>` node per entry so each annotation can carry its own colour and size.
+     One `<text>` node per entry so each annotation can carry its own colour and size.
      */
     const text = document.createElementNS(
       SVG_NS,
@@ -269,11 +269,11 @@ export function exportAsSvg(
   //endregion Text annotations
 
   /**
-   * Serialized SVG markup for download
+   Serialized SVG markup for download
    */
   const markup = new XMLSerializer().serializeToString(svg,);
   /**
-   * Wrapped in a blob so the download helper can stream it through an object URL.
+   Wrapped in a blob so the download helper can stream it through an object URL.
    */
   const blob = new Blob(
     [markup,],

@@ -21,37 +21,37 @@ import type { ResolveRealGitOptions, } from './types.ts';
 //region Resolver state and candidate types
 
 /**
- * Logger root for real-Git executable resolution.
+ Logger root for real-Git executable resolution.
  */
 const moduleLogger = tagged({ tag: 'git-executable', },);
 
 /**
- * Default Windows executable extensions in shell lookup order.
+ Default Windows executable extensions in shell lookup order.
  */
 const DEFAULT_WINDOWS_PATH_EXTENSIONS = '.COM;.EXE;.BAT;.CMD';
 
 /**
- * Inputs for constructing ordered executable candidate sequence.
+ Inputs for constructing ordered executable candidate sequence.
  */
 type BuildCandidateSequenceOptions = {
   /**
-   * PATH-like directory sequence.
+   PATH-like directory sequence.
    */
   readonly pathEnv: string;
   /**
-   * Runtime platform controlling executable names and path identity.
+   Runtime platform controlling executable names and path identity.
    */
   readonly platform: NodeJS.Platform;
   /**
-   * Windows executable extensions in shell lookup order.
+   Windows executable extensions in shell lookup order.
    */
   readonly pathExtensions: string;
   /**
-   * Working directory used for relative PATH entries.
+   Working directory used for relative PATH entries.
    */
   readonly cwd: string;
   /**
-   * Common paths promoted when PATH exposes them.
+   Common paths promoted when PATH exposes them.
    */
   readonly commonGitPaths: readonly string[];
 };
@@ -61,19 +61,19 @@ type BuildCandidateSequenceOptions = {
 //region Candidate construction
 
 /**
- * Produces platform-specific Git executable names in shell lookup order.
- *
- * @param platform - Runtime platform selecting bare name or PATHEXT variants.
- *
- * @param pathExtensions - Windows executable extensions in lookup order.
- *
- * @returns Candidate basenames in lookup order.
- *
- * @example
- * ```ts
- * executableNamesForPlatform({ platform: 'linux', pathExtensions: '' });
- * // => ['git']
- * ```
+ Produces platform-specific Git executable names in shell lookup order.
+ 
+ @param platform - Runtime platform selecting bare name or PATHEXT variants.
+ 
+ @param pathExtensions - Windows executable extensions in lookup order.
+ 
+ @returns Candidate basenames in lookup order.
+ 
+ @example
+ ```ts
+ executableNamesForPlatform({ platform: 'linux', pathExtensions: '' });
+ // => ['git']
+ ```
  */
 function executableNamesForPlatform({
   platform,
@@ -96,19 +96,19 @@ function executableNamesForPlatform({
 }
 
 /**
- * Produces platform-comparable path identity.
- *
- * @param candidatePath - Absolute candidate path.
- *
- * @param platform - Runtime platform controlling path case sensitivity.
- *
- * @returns Identity suitable for candidate lookup and deduplication.
- *
- * @example
- * ```ts
- * candidateIdentity({ candidatePath: 'C:\\Git\\git.EXE', platform: 'win32' });
- * // => 'c:\\git\\git.exe'
- * ```
+ Produces platform-comparable path identity.
+ 
+ @param candidatePath - Absolute candidate path.
+ 
+ @param platform - Runtime platform controlling path case sensitivity.
+ 
+ @returns Identity suitable for candidate lookup and deduplication.
+ 
+ @example
+ ```ts
+ candidateIdentity({ candidatePath: 'C:\\Git\\git.EXE', platform: 'win32' });
+ // => 'c:\\git\\git.exe'
+ ```
  */
 function candidateIdentity({
   candidatePath,
@@ -123,34 +123,34 @@ function candidateIdentity({
 }
 
 /**
- * Constructs canonical common-path-first executable candidate sequence.
- *
- * Every PATH entry becomes an absolute candidate before cache identity is built.
- * Preferred common paths are promoted only when PATH exposes matching candidates.
- *
- * @param pathEnv - PATH-like directory sequence.
- *
- * @param platform - Runtime platform controlling executable names and path identity.
- *
- * @param pathExtensions - Windows executable extensions in lookup order.
- *
- * @param cwd - Working directory used for relative PATH entries.
- *
- * @param commonGitPaths - Common paths promoted when PATH exposes them.
- *
- * @returns Deduplicated absolute candidates in resolution order.
- *
- * @example
- * ```ts
- * buildCandidateSequence({
- *   pathEnv: '/custom/bin:/usr/bin',
- *   platform: 'linux',
- *   pathExtensions: '',
- *   cwd: '/workspace',
- *   commonGitPaths: ['/usr/bin/git'],
- * });
- * // => ['/usr/bin/git', '/custom/bin/git']
- * ```
+ Constructs canonical common-path-first executable candidate sequence.
+ 
+ Every PATH entry becomes an absolute candidate before cache identity is built.
+ Preferred common paths are promoted only when PATH exposes matching candidates.
+ 
+ @param pathEnv - PATH-like directory sequence.
+ 
+ @param platform - Runtime platform controlling executable names and path identity.
+ 
+ @param pathExtensions - Windows executable extensions in lookup order.
+ 
+ @param cwd - Working directory used for relative PATH entries.
+ 
+ @param commonGitPaths - Common paths promoted when PATH exposes them.
+ 
+ @returns Deduplicated absolute candidates in resolution order.
+ 
+ @example
+ ```ts
+ buildCandidateSequence({
+   pathEnv: '/custom/bin:/usr/bin',
+   platform: 'linux',
+   pathExtensions: '',
+   cwd: '/workspace',
+   commonGitPaths: ['/usr/bin/git'],
+ });
+ // => ['/usr/bin/git', '/custom/bin/git']
+ ```
  */
 function buildCandidateSequence({
   pathEnv,
@@ -160,21 +160,21 @@ function buildCandidateSequence({
   commonGitPaths,
 }: BuildCandidateSequenceOptions,): readonly string[] {
   /**
-   * Platform-specific executable basenames in shell lookup order.
+   Platform-specific executable basenames in shell lookup order.
    */
   const executableNames = executableNamesForPlatform({
     platform,
     pathExtensions,
   },);
   /**
-   * Platform PATH delimiter,
-   * injectable through platform while filesystem resolution remains host-native.
+   Platform PATH delimiter,
+   injectable through platform while filesystem resolution remains host-native.
    */
   const pathDelimiter = platform === 'win32'
     ? win32.delimiter
     : delimiter;
   /**
-   * Absolute executable candidates derived from PATH directory order.
+   Absolute executable candidates derived from PATH directory order.
    */
   const pathCandidates = pathEnv
     .split(pathDelimiter,)
@@ -188,7 +188,7 @@ function buildCandidateSequence({
       },);
     },);
   /**
-   * Exact PATH candidate spelling indexed by platform-comparable identity.
+   Exact PATH candidate spelling indexed by platform-comparable identity.
    */
   const pathCandidateByIdentity = new Map(pathCandidates.map(function indexPathCandidate(
     pathCandidate,
@@ -202,13 +202,13 @@ function buildCandidateSequence({
     ];
   },),);
   /**
-   * Common candidates represented by exact spelling exposed through PATH.
+   Common candidates represented by exact spelling exposed through PATH.
    */
   const exposedCommonGitPaths = commonGitPaths.flatMap(function findExposedCommonPath(
     commonGitPath,
   ) {
     /**
-     * PATH candidate corresponding to current common path.
+     PATH candidate corresponding to current common path.
      */
     const exposedPath = pathCandidateByIdentity.get(candidateIdentity({
       candidatePath: commonGitPath,
@@ -230,17 +230,17 @@ function buildCandidateSequence({
 //region Candidate scanning and cache
 
 /**
- * Narrows caught value to Node filesystem error shape.
- *
- * @param error - Caught value from candidate access or inspection.
- *
- * @returns Whether value carries Node error code.
- *
- * @example
- * ```ts
- * isErrnoException({ code: 'ENOENT' });
- * // => true
- * ```
+ Narrows caught value to Node filesystem error shape.
+ 
+ @param error - Caught value from candidate access or inspection.
+ 
+ @returns Whether value carries Node error code.
+ 
+ @example
+ ```ts
+ isErrnoException({ code: 'ENOENT' });
+ // => true
+ ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
   return ((typeof error) === 'object')
@@ -249,19 +249,19 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
 }
 
 /**
- * Reports expected candidate-unavailable filesystem outcomes.
- *
- * @param error - Caught candidate failure.
- *
- * @returns Whether failure means candidate is absent,
- * unreachable through a non-directory,
- * or unreachable because parent path is not a directory.
- *
- * @example
- * ```ts
- * isExpectedCandidateMiss({ code: 'ENOENT' });
- * // => true
- * ```
+ Reports expected candidate-unavailable filesystem outcomes.
+ 
+ @param error - Caught candidate failure.
+ 
+ @returns Whether failure means candidate is absent,
+ unreachable through a non-directory,
+ or unreachable because parent path is not a directory.
+ 
+ @example
+ ```ts
+ isExpectedCandidateMiss({ code: 'ENOENT' });
+ // => true
+ ```
  */
 function isExpectedCandidateMiss(error: unknown,): boolean {
   if ((error instanceof GitCandidateFileTypeError)
@@ -274,29 +274,29 @@ function isExpectedCandidateMiss(error: unknown,): boolean {
 }
 
 /**
- * Scans ordered candidates and returns first executable outside Git policy wrapper.
- *
- * @param candidates - Absolute candidates in common-path-first order.
- *
- * @returns First usable real-Git executable path.
- *
- * @throws {@link RealGitNotFoundError} when every candidate is unavailable or self-referential.
- *
- * @example
- * ```ts
- * await scanCandidateSequence(['/usr/bin/git']);
- * ```
+ Scans ordered candidates and returns first executable outside Git policy wrapper.
+ 
+ @param candidates - Absolute candidates in common-path-first order.
+ 
+ @returns First usable real-Git executable path.
+ 
+ @throws {@link RealGitNotFoundError} when every candidate is unavailable or self-referential.
+ 
+ @example
+ ```ts
+ await scanCandidateSequence(['/usr/bin/git']);
+ ```
  */
 async function scanCandidateSequence(candidates: readonly string[],): Promise<string> {
   /**
-   * Function-tagged logger for candidate scan decisions.
+   Function-tagged logger for candidate scan decisions.
    */
   const rl = tagged({
     tag: scanCandidateSequence.name,
     l: moduleLogger,
   },);
   /**
-   * Self-referential wrappers rejected before selected executable.
+   Self-referential wrappers rejected before selected executable.
    */
   const skippedSelfShimPaths: string[] = [];
 
@@ -338,36 +338,36 @@ async function scanCandidateSequence(candidates: readonly string[],): Promise<st
 }
 
 /**
- * Resolves native Git executable without re-entering workspace Git policy wrapper.
- *
- * Common platform locations win only when PATH exposes them.
- * Remaining candidates preserve PATH and Windows PATHEXT order.
- * Successful equal calls share process-lifetime result;
- * rejected lookups are removed so later calls retry.
- *
- * @param options - Optional environment and disposable-fixture lookup inputs.
- *
- * @returns Absolute path to selected real-Git executable.
- *
- * @throws {@link RealGitNotFoundError} when no usable candidate is exposed.
- *
- * @example
- * ```ts
- * const gitPath = await resolveRealGit();
- * // => '/usr/bin/git'
- * ```
+ Resolves native Git executable without re-entering workspace Git policy wrapper.
+ 
+ Common platform locations win only when PATH exposes them.
+ Remaining candidates preserve PATH and Windows PATHEXT order.
+ Successful equal calls share process-lifetime result;
+ rejected lookups are removed so later calls retry.
+ 
+ @param options - Optional environment and disposable-fixture lookup inputs.
+ 
+ @returns Absolute path to selected real-Git executable.
+ 
+ @throws {@link RealGitNotFoundError} when no usable candidate is exposed.
+ 
+ @example
+ ```ts
+ const gitPath = await resolveRealGit();
+ // => '/usr/bin/git'
+ ```
  */
 export async function resolveRealGit(options: ResolveRealGitOptions = {},): Promise<string> {
   /**
-   * Runtime platform controlling executable and path semantics.
+   Runtime platform controlling executable and path semantics.
    */
   const platform = options.platform ?? process.platform;
   /**
-   * Environment supplying process defaults and platform installation roots.
+   Environment supplying process defaults and platform installation roots.
    */
   const environment = options.environment ?? process.env;
   /**
-   * Effective PATH-like directory sequence.
+   Effective PATH-like directory sequence.
    */
   const pathEnv = options
     .pathEnv
@@ -375,24 +375,24 @@ export async function resolveRealGit(options: ResolveRealGitOptions = {},): Prom
       .PATH
     ?? '';
   /**
-   * Effective Windows executable extension order.
+   Effective Windows executable extension order.
    */
   const pathExtensions = options.pathExtensions
     ?? environment.PATHEXT
     ?? DEFAULT_WINDOWS_PATH_EXTENSIONS;
   /**
-   * Working directory used to absolutize PATH entries.
+   Working directory used to absolutize PATH entries.
    */
   const cwd = options.cwd ?? process.cwd();
   /**
-   * Preferred common paths for canonical common-platform-path priority.
+   Preferred common paths for canonical common-platform-path priority.
    */
   const commonGitPaths = options.commonGitPaths ?? commonGitPathsForPlatform({
     platform,
     environment,
   },);
   /**
-   * Effective absolute candidate sequence and memoization identity source.
+   Effective absolute candidate sequence and memoization identity source.
    */
   const candidates = buildCandidateSequence({
     pathEnv,
@@ -402,7 +402,7 @@ export async function resolveRealGit(options: ResolveRealGitOptions = {},): Prom
     commonGitPaths,
   },);
   /**
-   * Stable identity preserving effective candidate order and spelling.
+   Stable identity preserving effective candidate order and spelling.
    */
   const cacheKey = JSON.stringify(candidates,);
   return await resolveCachedRealGit({

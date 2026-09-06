@@ -1,7 +1,7 @@
 /**
- * External callable effect mapping to caller parameter origins.
- *
- * @module
+ External callable effect mapping to caller parameter origins.
+ 
+ @module
  */
 
 import type {
@@ -20,26 +20,26 @@ import {
 import type { ExternalCallableEffect, } from './external-callable-effect.ts';
 
 /**
- * Applies inferred external callable effects to caller summary.
- *
- * @param externalEffect - Proven external implementation effect.
- *
- * @param declaration - Declaration the consumer resolved, whose formals order the arguments.
- *
- * @param call - Call whose arguments feed those formals.
- *
- * @param allArgumentIndexes - Caller parameter origins by call **argument** position.
- *
- * @param summary - Caller summary receiving mapped effects.
- *
- * @mutates summary - Adds proven mutation,
- * invocation,
- * and unresolved transitive effects.
- *
- * @example
- * ```ts
- * applyExternalEffect({ externalEffect, declaration, call, allArgumentIndexes, summary });
- * ```
+ Applies inferred external callable effects to caller summary.
+ 
+ @param externalEffect - Proven external implementation effect.
+ 
+ @param declaration - Declaration the consumer resolved, whose formals order the arguments.
+ 
+ @param call - Call whose arguments feed those formals.
+ 
+ @param allArgumentIndexes - Caller parameter origins by call **argument** position.
+ 
+ @param summary - Caller summary receiving mapped effects.
+ 
+ @mutates summary - Adds proven mutation,
+ invocation,
+ and unresolved transitive effects.
+ 
+ @example
+ ```ts
+ applyExternalEffect({ externalEffect, declaration, call, allArgumentIndexes, summary });
+ ```
  */
 export function applyExternalEffect({
   externalEffect,
@@ -65,7 +65,7 @@ export function applyExternalEffect({
    * analyzer inspected. That is exactly why the mapping is built from the declaration the consumer
    * resolved, since that declaration is what ordered the arguments at this call. */
   /**
-   * Caller parameter origins by external formal position, empty when no formal list could be read.
+   Caller parameter origins by external formal position, empty when no formal list could be read.
    */
   const argumentIndexes = formalArgumentIndexes({
     declaration,
@@ -73,7 +73,7 @@ export function applyExternalEffect({
     allArgumentIndexes,
   },);
   /**
-   * Origins charged for a formal this mapping could not place, which is every argument's.
+   Origins charged for a formal this mapping could not place, which is every argument's.
    */
   const unplacedOrigins = distinctSlots(allArgumentIndexes.flat(),);
   externalEffect.summary
@@ -125,38 +125,38 @@ export function applyExternalEffect({
 }
 
 /**
- * Maps caller origins from argument positions onto external formal positions.
- *
- * The owned call edge has had this since rest and spread were mapped for it, and the external path
- * never did. `formalActualPositions` answers it for a readable formal list, covering a `this`
- * parameter, a rest formal collecting everything from its own position onward, and every formal at or
- * past a spread, where positional correspondence is gone.
- *
- * Answers empty when the declaration has no readable formals, and leaves a formal past the end of
- * its answer for the caller to charge with every argument's origins. Both cases arise for real: the
- * analysed implementation need not be the declaration the consumer resolved, so a summary can name a
- * formal this declaration does not declare.
- *
- * Over-approximating is the safe direction. Charging an argument that was not affected costs an
- * offer; failing to charge one that was affected keeps an offer that is false.
- *
- * Exported for its own test. No shape in the fixture corpus reaches this through a diagnostic,
- * because doing so needs an installed package with a locked version whose shipped implementation
- * provably mutates a formal, invoked with a spread. A mutant restoring the actual-position indexing
- * survived the whole suite, which is what exporting this answers.
- *
- * @param declaration - Declaration the consumer resolved.
- *
- * @param call - Call whose arguments feed the formals.
- *
- * @param allArgumentIndexes - Caller parameter origins by argument position.
- *
- * @returns caller origins by formal position.
- *
- * @example
- * ```ts
- * formalArgumentIndexes({ declaration, call, allArgumentIndexes });
- * ```
+ Maps caller origins from argument positions onto external formal positions.
+ 
+ The owned call edge has had this since rest and spread were mapped for it, and the external path
+ never did. `formalActualPositions` answers it for a readable formal list, covering a `this`
+ parameter, a rest formal collecting everything from its own position onward, and every formal at or
+ past a spread, where positional correspondence is gone.
+ 
+ Answers empty when the declaration has no readable formals, and leaves a formal past the end of
+ its answer for the caller to charge with every argument's origins. Both cases arise for real: the
+ analysed implementation need not be the declaration the consumer resolved, so a summary can name a
+ formal this declaration does not declare.
+ 
+ Over-approximating is the safe direction. Charging an argument that was not affected costs an
+ offer; failing to charge one that was affected keeps an offer that is false.
+ 
+ Exported for its own test. No shape in the fixture corpus reaches this through a diagnostic,
+ because doing so needs an installed package with a locked version whose shipped implementation
+ provably mutates a formal, invoked with a spread. A mutant restoring the actual-position indexing
+ survived the whole suite, which is what exporting this answers.
+ 
+ @param declaration - Declaration the consumer resolved.
+ 
+ @param call - Call whose arguments feed the formals.
+ 
+ @param allArgumentIndexes - Caller parameter origins by argument position.
+ 
+ @returns caller origins by formal position.
+ 
+ @example
+ ```ts
+ formalArgumentIndexes({ declaration, call, allArgumentIndexes });
+ ```
  */
 export function formalArgumentIndexes({
   declaration,
@@ -183,16 +183,16 @@ export function formalArgumentIndexes({
 }
 
 /**
- * Removes repeated slots while keeping first-seen order.
- *
- * @param slots - Slots that may repeat, since one formal can receive several actuals.
- *
- * @returns slots without repeats.
- *
- * @example
- * ```ts
- * distinctSlots(slots);
- * ```
+ Removes repeated slots while keeping first-seen order.
+ 
+ @param slots - Slots that may repeat, since one formal can receive several actuals.
+ 
+ @returns slots without repeats.
+ 
+ @example
+ ```ts
+ distinctSlots(slots);
+ ```
  */
 function distinctSlots(slots: readonly EffectSlot[],): readonly EffectSlot[] {
   return [...new Set(slots,),];

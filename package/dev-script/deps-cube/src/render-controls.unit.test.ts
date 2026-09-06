@@ -1,12 +1,12 @@
 /**
- * Tests for the HTML control-panel renderer.
- *
- * Asserts structural properties (counts of repeated elements,
- * presence of required IDs, attribute pass-through, search-input
- * escape semantics) rather than a full-string snapshot, so trivial
- * formatting tweaks don't break the test.
- *
- * @module
+ Tests for the HTML control-panel renderer.
+ 
+ Asserts structural properties (counts of repeated elements,
+ presence of required IDs, attribute pass-through, search-input
+ escape semantics) rather than a full-string snapshot, so trivial
+ formatting tweaks don't break the test.
+ 
+ @module
  */
 
 import {
@@ -20,7 +20,7 @@ import { renderControls, } from './render-controls.ts';
 import { defaultState, } from './script/state.ts';
 
 /**
- * Minimal two-probe fixture; richness isn't required for structural tests.
+ Minimal two-probe fixture; richness isn't required for structural tests.
  */
 const PROBES: readonly PackageProbe[] = [
   {
@@ -58,12 +58,12 @@ const PROBES: readonly PackageProbe[] = [
 ];
 
 /**
- * Counts non-overlapping occurrences of a substring inside a string.
- *
- * @param haystack - String to scan.
- * @param needle - Substring to count; must be non-empty.
- *
- * @returns Number of times `needle` appears in `haystack`.
+ Counts non-overlapping occurrences of a substring inside a string.
+ 
+ @param haystack - String to scan.
+ @param needle - Substring to count; must be non-empty.
+ 
+ @returns Number of times `needle` appears in `haystack`.
  */
 function countOccurrences(
   { haystack, needle, }: { haystack: string; needle: string; },

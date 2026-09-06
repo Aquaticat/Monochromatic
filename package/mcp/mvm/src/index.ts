@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * MCP server entry point for mvm; exposes VM operations as MCP tools.
- * @module
+ MCP server entry point for mvm; exposes VM operations as MCP tools.
+ @module
  */
 import {
   createMcpServer,
@@ -25,13 +25,13 @@ import {
   pushTool,
 } from './tools-transfer.ts';
 
-export {};
+
 
 //region Server setup: create and serve the MCP server
 
 /**
- * MCP server instance exposing mvm operations as tools, built via
- * {@link createMcpServer}.
+ MCP server instance exposing mvm operations as tools, built via
+ {@link createMcpServer}.
  */
 const server = createMcpServer({
   config: {

@@ -1,10 +1,10 @@
 /**
- * Bypass mode state, audit entries, and UI feedback.
- *
- * Keeps the shortcut implementation in the entry point small while preserving
- * visible and session-auditable bypass transitions.
- *
- * @module
+ Bypass mode state, audit entries, and UI feedback.
+ 
+ Keeps the shortcut implementation in the entry point small while preserving
+ visible and session-auditable bypass transitions.
+ 
+ @module
  */
 
 import type {
@@ -16,42 +16,42 @@ import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker
 //region Constants
 
 /**
- * Discriminator for bypass toggle and bypass-allow session audit entries.
+ Discriminator for bypass toggle and bypass-allow session audit entries.
  */
 const BYPASS_ENTRY_TYPE = 'auto-mode:bypass';
 
 /**
- * Keyboard shortcut used by auto-mode to toggle bypass mode.
+ Keyboard shortcut used by auto-mode to toggle bypass mode.
  */
 const BYPASS_SHORTCUT = 'shift+tab';
 
 /**
- * Footer status key used for the bypass indicator.
+ Footer status key used for the bypass indicator.
  */
 const BYPASS_STATUS_KEY = 'auto-mode:bypass';
 
 /**
- * Footer status text displayed while bypass mode is active.
+ Footer status text displayed while bypass mode is active.
  */
 const BYPASS_STATUS_TEXT = 'auto-mode: bypass';
 
 /**
- * Session-entry kind for toggling bypass mode.
+ Session-entry kind for toggling bypass mode.
  */
 const BYPASS_TOGGLE_KIND = 'toggle';
 
 /**
- * Session-entry kind for tool calls allowed while bypass mode is active.
+ Session-entry kind for tool calls allowed while bypass mode is active.
  */
 const BYPASS_ALLOW_KIND = 'allow';
 
 /**
- * Source label for shortcut-driven bypass toggles.
+ Source label for shortcut-driven bypass toggles.
  */
 const BYPASS_SOURCE_SHORTCUT = 'shortcut';
 
 /**
- * Audit reason stored on tool calls allowed by bypass mode.
+ Audit reason stored on tool calls allowed by bypass mode.
  */
 const BYPASS_ALLOW_REASON = 'auto-mode bypass enabled';
 
@@ -60,61 +60,61 @@ const BYPASS_ALLOW_REASON = 'auto-mode bypass enabled';
 //region Types
 
 /**
- * Minimal custom session entry shape needed for bypass state restoration.
+ Minimal custom session entry shape needed for bypass state restoration.
  */
 type SessionCustomEntry = {
   /**
-   * Session entry discriminator.
+   Session entry discriminator.
    */
   readonly type: string;
   /**
-   * Custom entry type emitted through `pi.appendEntry`.
+   Custom entry type emitted through `pi.appendEntry`.
    */
   readonly customType?: unknown;
   /**
-   * Custom entry payload.
+   Custom entry payload.
    */
   readonly data?: unknown;
 };
 
 /**
- * Session payload recorded when bypass mode is toggled.
+ Session payload recorded when bypass mode is toggled.
  */
 type BypassToggleData = {
   /**
-   * Entry kind so future bypass audit payloads can share the same custom type.
+   Entry kind so future bypass audit payloads can share the same custom type.
    */
   readonly kind: typeof BYPASS_TOGGLE_KIND;
   /**
-   * New bypass state after the toggle.
+   New bypass state after the toggle.
    */
   readonly enabled: boolean;
   /**
-   * UI action that produced this toggle.
+   UI action that produced this toggle.
    */
   readonly source: typeof BYPASS_SOURCE_SHORTCUT;
 };
 
 /**
- * Session payload recorded when a tool call is allowed under bypass mode.
+ Session payload recorded when a tool call is allowed under bypass mode.
  */
 type BypassAllowData = {
   /**
-   * Entry kind for per-tool bypass audit rows.
+   Entry kind for per-tool bypass audit rows.
    */
   readonly kind: typeof BYPASS_ALLOW_KIND;
   /**
-   * Human-readable tool action that bypass mode allowed.
+   Human-readable tool action that bypass mode allowed.
    */
   readonly action: string;
   /**
-   * Reason explaining why the guardrail did not evaluate the action.
+   Reason explaining why the guardrail did not evaluate the action.
    */
   readonly reason: typeof BYPASS_ALLOW_REASON;
 };
 
 /**
- * Union of payloads recorded under {@link BYPASS_ENTRY_TYPE}.
+ Union of payloads recorded under {@link BYPASS_ENTRY_TYPE}.
  */
 type BypassEntryData = BypassToggleData | BypassAllowData;
 
@@ -123,16 +123,16 @@ type BypassEntryData = BypassToggleData | BypassAllowData;
 //region Guards
 
 /**
- * Check whether a value is a non-null object with string keys.
- *
- * @param value - candidate value read from session history
- *
- * @returns whether `value` can be inspected as a record
- *
- * @example
- * ```typescript
- * isRecord({ kind: 'toggle' });
- * ```
+ Check whether a value is a non-null object with string keys.
+ 
+ @param value - candidate value read from session history
+ 
+ @returns whether `value` can be inspected as a record
+ 
+ @example
+ ```typescript
+ isRecord({ kind: 'toggle' });
+ ```
  */
 function isRecord(
   value: unknown,
@@ -145,16 +145,16 @@ function isRecord(
 }
 
 /**
- * Check whether unknown session payload is a bypass-toggle entry.
- *
- * @param data - custom entry data read from session history
- *
- * @returns whether `data` can restore bypass state
- *
- * @example
- * ```typescript
- * isBypassToggleData({ kind: 'toggle', enabled: true, source: 'shortcut' });
- * ```
+ Check whether unknown session payload is a bypass-toggle entry.
+ 
+ @param data - custom entry data read from session history
+ 
+ @returns whether `data` can restore bypass state
+ 
+ @example
+ ```typescript
+ isBypassToggleData({ kind: 'toggle', enabled: true, source: 'shortcut' });
+ ```
  */
 function isBypassToggleData(
   data: unknown,
@@ -171,16 +171,16 @@ function isBypassToggleData(
 }
 
 /**
- * Check whether a session entry carries bypass-toggle data.
- *
- * @param entry - session branch entry
- *
- * @returns whether `entry` is a bypass-toggle custom entry
- *
- * @example
- * ```typescript
- * isBypassToggleEntry({ type: 'custom', customType: 'auto-mode:bypass', data: { kind: 'toggle', enabled: true, source: 'shortcut' } });
- * ```
+ Check whether a session entry carries bypass-toggle data.
+ 
+ @param entry - session branch entry
+ 
+ @returns whether `entry` is a bypass-toggle custom entry
+ 
+ @example
+ ```typescript
+ isBypassToggleEntry({ type: 'custom', customType: 'auto-mode:bypass', data: { kind: 'toggle', enabled: true, source: 'shortcut' } });
+ ```
  */
 function isBypassToggleEntry(
   entry: SessionCustomEntry,
@@ -197,18 +197,18 @@ function isBypassToggleEntry(
 //region Public helpers
 
 /**
- * Read latest bypass toggle from the active session branch.
- *
- * @param ctx - extension context exposing session history
- *
- * @returns latest bypass state, or disabled when no toggle exists
- *
- * @mutates ctx - `getBranch` may update host-owned session caches while producing branch snapshot
- *
- * @example
- * ```typescript
- * const enabled = findLatestBypassEnabled({ ctx });
- * ```
+ Read latest bypass toggle from the active session branch.
+ 
+ @param ctx - extension context exposing session history
+ 
+ @returns latest bypass state, or disabled when no toggle exists
+ 
+ @mutates ctx - `getBranch` may update host-owned session caches while producing branch snapshot
+ 
+ @example
+ ```typescript
+ const enabled = findLatestBypassEnabled({ ctx });
+ ```
  */
 function findLatestBypassEnabled(
   {
@@ -218,7 +218,7 @@ function findLatestBypassEnabled(
   },
 ): boolean {
   /**
-   * Session branch entries normalized to the custom-entry subset used by bypass restoration.
+   Session branch entries normalized to the custom-entry subset used by bypass restoration.
    */
   const branchEntries: SessionCustomEntry[] = ctx.sessionManager
     .getBranch()
@@ -232,7 +232,7 @@ function findLatestBypassEnabled(
       },
     );
   /**
-   * Latest bypass-toggle entry on the active branch, if any.
+   Latest bypass-toggle entry on the active branch, if any.
    */
   const latestEntry = branchEntries
     .toReversed()
@@ -244,25 +244,25 @@ function findLatestBypassEnabled(
   if (latestEntry === undefined)
     return false;
   /**
-   * Payload from the latest bypass-toggle entry.
+   Payload from the latest bypass-toggle entry.
    */
   const latestData = latestEntry.data;
   return latestData.enabled;
 }
 
 /**
- * Update footer status to reflect current bypass state.
- *
- * @param ctx - extension context whose UI receives the status update
- *
- * @param enabled - current bypass state
- *
- * @mutates ctx - `ctx.ui.setStatus` changes displayed Pi status state
- *
- * @example
- * ```typescript
- * updateBypassStatus({ ctx, enabled: true });
- * ```
+ Update footer status to reflect current bypass state.
+ 
+ @param ctx - extension context whose UI receives the status update
+ 
+ @param enabled - current bypass state
+ 
+ @mutates ctx - `ctx.ui.setStatus` changes displayed Pi status state
+ 
+ @example
+ ```typescript
+ updateBypassStatus({ ctx, enabled: true });
+ ```
  */
 function updateBypassStatus(
   {
@@ -281,18 +281,18 @@ function updateBypassStatus(
 }
 
 /**
- * Append an audit entry for a bypass toggle.
- *
- * @param pi - extension API used to persist custom entries
- *
- * @param enabled - new bypass state
- *
- * @mutates pi - `pi.appendEntry` appends bypass-toggle Pi session state
- *
- * @example
- * ```typescript
- * appendBypassToggleEntry({ pi, enabled: true });
- * ```
+ Append an audit entry for a bypass toggle.
+ 
+ @param pi - extension API used to persist custom entries
+ 
+ @param enabled - new bypass state
+ 
+ @mutates pi - `pi.appendEntry` appends bypass-toggle Pi session state
+ 
+ @example
+ ```typescript
+ appendBypassToggleEntry({ pi, enabled: true });
+ ```
  */
 function appendBypassToggleEntry(
   {
@@ -314,18 +314,18 @@ function appendBypassToggleEntry(
 }
 
 /**
- * Append an audit entry for a tool call allowed by bypass mode.
- *
- * @param pi - extension API used to persist custom entries
- *
- * @param action - human-readable action bypass mode allowed
- *
- * @mutates pi - `pi.appendEntry` appends bypass-allow Pi session state
- *
- * @example
- * ```typescript
- * appendBypassAllowEntry({ pi, action: 'read /repo/.env' });
- * ```
+ Append an audit entry for a tool call allowed by bypass mode.
+ 
+ @param pi - extension API used to persist custom entries
+ 
+ @param action - human-readable action bypass mode allowed
+ 
+ @mutates pi - `pi.appendEntry` appends bypass-allow Pi session state
+ 
+ @example
+ ```typescript
+ appendBypassAllowEntry({ pi, action: 'read /repo/.env' });
+ ```
  */
 function appendBypassAllowEntry(
   {
@@ -347,18 +347,18 @@ function appendBypassAllowEntry(
 }
 
 /**
- * Notify user that bypass state changed and keep footer status in sync.
- *
- * @param ctx - extension context whose UI receives feedback
- *
- * @param enabled - new bypass state
- *
- * @mutates ctx - `updateBypassStatus` and `ctx.ui.notify` change displayed Pi state
- *
- * @example
- * ```typescript
- * announceBypassToggle({ ctx, enabled: false });
- * ```
+ Notify user that bypass state changed and keep footer status in sync.
+ 
+ @param ctx - extension context whose UI receives feedback
+ 
+ @param enabled - new bypass state
+ 
+ @mutates ctx - `updateBypassStatus` and `ctx.ui.notify` change displayed Pi state
+ 
+ @example
+ ```typescript
+ announceBypassToggle({ ctx, enabled: false });
+ ```
  */
 function announceBypassToggle(
   {

@@ -1,7 +1,7 @@
 /**
- * Unit tests for safe catalog alias candidate resolution.
- *
- * @module
+ Unit tests for safe catalog alias candidate resolution.
+ 
+ @module
  */
 
 import {

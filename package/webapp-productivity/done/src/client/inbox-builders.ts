@@ -1,5 +1,5 @@
 /**
- * DOM building helpers for the Inbox page.
+ DOM building helpers for the Inbox page.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type {
@@ -9,45 +9,45 @@ import type {
 import { createTaskCard, } from './lib/task-card.ts';
 
 /**
- * Map of blocker task ID to the tasks it blocks.
- *
- * Deeply readonly; under `noUncheckedIndexedAccess` an index lookup already
- * yields `... | undefined` for blocker IDs with no blocked tasks, so no
- * explicit `| undefined` value union (banned by `no-nullish-union`) is needed.
+ Map of blocker task ID to the tasks it blocks.
+ 
+ Deeply readonly; under `noUncheckedIndexedAccess` an index lookup already
+ yields `... | undefined` for blocker IDs with no blocked tasks, so no
+ explicit `| undefined` value union (banned by `no-nullish-union`) is needed.
  */
 export type BlockedTasksByBlocker = Readonly<
   Record<string, readonly BlockedTaskLink[]>
 >;
 
 /**
- * Shape of the JSON blob embedded in the inbox page by the server.
+ Shape of the JSON blob embedded in the inbox page by the server.
  */
 export type InboxPageData = {
   /**
-   * AI-prioritized suggested tasks for the current context.
+   AI-prioritized suggested tasks for the current context.
    */
   readonly suggestedTasks: readonly Task[];
   /**
-   * All inbox tasks.
+   All inbox tasks.
    */
   readonly allTasks: readonly Task[];
   /**
-   * Map of blocker task ID to the tasks it blocks.
+   Map of blocker task ID to the tasks it blocks.
    */
   readonly blockedTasksByBlocker: BlockedTasksByBlocker;
 };
 
 /**
- * Builds a task list with optional blocked-child nesting, rendering each
- * task with {@link createTaskCard}.
- *
- * @returns UL element containing task cards with nested blocker children
- *
- * @example
- * ```ts
- * const list = buildTaskList({ tasks, blockedTasksByBlocker, onOpen, onToggleComplete });
- * app.append(list);
- * ```
+ Builds a task list with optional blocked-child nesting, rendering each
+ task with {@link createTaskCard}.
+ 
+ @returns UL element containing task cards with nested blocker children
+ 
+ @example
+ ```ts
+ const list = buildTaskList({ tasks, blockedTasksByBlocker, onOpen, onToggleComplete });
+ app.append(list);
+ ```
  */
 export function buildTaskList(
   {
@@ -63,7 +63,7 @@ export function buildTaskList(
   },
 ): HTMLUListElement {
   /**
-   * Top-level list mutated in-place as the loop appends cards and child branches.
+   Top-level list mutated in-place as the loop appends cards and child branches.
    */
   const list = h({
     tag: 'ul',
@@ -80,7 +80,7 @@ export function buildTaskList(
     },),);
 
     /**
-     * Tasks blocked by `task`; empty when nothing depends on it.
+     Tasks blocked by `task`; empty when nothing depends on it.
      */
     const childLinks = blockedTasksByBlocker[task.id]
       ?? [];

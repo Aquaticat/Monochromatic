@@ -1,7 +1,7 @@
 /**
- * Direct worktree policy-fix integration tests.
- *
- * @module
+ Direct worktree policy-fix integration tests.
+ 
+ @module
  */
 import {
   mkdtemp,
@@ -42,11 +42,11 @@ type DirectFixFixture = Readonly<{
 }>;
 
 /**
- * Runs real Git in fixture repository.
- *
- * @param repository - fixture repository root
- *
- * @param args - exact Git arguments
+ Runs real Git in fixture repository.
+ 
+ @param repository - fixture repository root
+ 
+ @param args - exact Git arguments
  */
 async function git({
   repository,
@@ -63,9 +63,9 @@ async function git({
 }
 
 /**
- * Creates committed two-file direct-fix fixture.
- *
- * @returns disposable fixture
+ Creates committed two-file direct-fix fixture.
+ 
+ @returns disposable fixture
  */
 async function createFixture(): Promise<DirectFixFixture> {
   /** Disposable repository root. */
@@ -86,17 +86,17 @@ async function createFixture(): Promise<DirectFixFixture> {
 }
 
 /**
- * Creates policy replacing one exact text state with another.
- *
- * @param name - fixture policy identity
- *
- * @param from - exact source text eligible for replacement
- *
- * @param to - exact replacement text
- *
- * @param targetId - optional intentionally overridden patch target
- *
- * @returns synthetic fixable policy
+ Creates policy replacing one exact text state with another.
+ 
+ @param name - fixture policy identity
+ 
+ @param from - exact source text eligible for replacement
+ 
+ @param to - exact replacement text
+ 
+ @param targetId - optional intentionally overridden patch target
+ 
+ @returns synthetic fixable policy
  */
 function createReplacementPolicy({
   name,
@@ -144,13 +144,13 @@ function createReplacementPolicy({
 }
 
 /**
- * Creates numeric policy requiring specified changed candidate passes.
- *
- * @param name - fixture policy identity
- *
- * @param stableAt - first stable numeric state
- *
- * @returns synthetic bounded-convergence policy
+ Creates numeric policy requiring specified changed candidate passes.
+ 
+ @param name - fixture policy identity
+ 
+ @param stableAt - first stable numeric state
+ 
+ @returns synthetic bounded-convergence policy
  */
 function createIncrementPolicy({
   name,

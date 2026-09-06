@@ -17,14 +17,14 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Checks whether a TSDoc comment documents yielded values.
- *
- * TSDoc standard doesn't define a yields tag natively, so this checks
- * the raw comment text for the tag pattern.
- *
- * @param result - parsed TSDoc result
- *
- * @returns true when yielded values are documented
+ Checks whether a TSDoc comment documents yielded values.
+ 
+ TSDoc standard doesn't define a yields tag natively, so this checks
+ the raw comment text for the tag pattern.
+ 
+ @param result - parsed TSDoc result
+ 
+ @returns true when yielded values are documented
  */
 function hasYieldsTag(result: ReadonlyDeep<TsdocParseResult>,): boolean {
   return result.comment
@@ -33,22 +33,23 @@ function hasYieldsTag(result: ReadonlyDeep<TsdocParseResult>,): boolean {
 }
 
 /**
- * Requires yield documentation (per {@link hasYieldsTag}) for generator
- * functions (per {@link isGeneratorFunction}).
- *
- * @example
- * ```ts
- * // Bad; missing yield documentation for generator
- * /\** Generates numbers. *\/
- * function* count(): Generator<number> { yield 1; }
- *
- * // Good
- * /\**
- *  * Generates numbers.
- *  * @yields sequential integers
- *  *\/
- * function* count(): Generator<number> { yield 1; }
- * ```
+ Requires yield documentation (per {@link hasYieldsTag}) for generator
+ functions (per {@link isGeneratorFunction}).
+ 
+ @example
+ ```ts
+ // Bad; missing yield documentation for generator
+ /\** Generates numbers. *\/
+ function* count(): Generator<number> { yield 1; }
+ 
+ // Good
+ /\**
+  Generates numbers.
+ 
+  @yields sequential integers
+  *\/
+ function* count(): Generator<number> { yield 1; }
+ ```
  */
 export const requireYields: CreateOnceRule = {
   meta: {
@@ -62,16 +63,16 @@ export const requireYields: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createFunctionTsdocVisitor({
@@ -95,11 +96,11 @@ export const requireYields: CreateOnceRule = {
 };
 
 /**
- * Validates yield tag consistency with generator functions, per
- * {@link isGeneratorFunction}.
- *
- * Reports yield documentation (per {@link hasYieldsTag}) on non-generator
- * functions.
+ Validates yield tag consistency with generator functions, per
+ {@link isGeneratorFunction}.
+ 
+ Reports yield documentation (per {@link hasYieldsTag}) on non-generator
+ functions.
  */
 export const requireYieldsCheck: CreateOnceRule = {
   meta: {
@@ -113,16 +114,16 @@ export const requireYieldsCheck: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createFunctionTsdocVisitor({

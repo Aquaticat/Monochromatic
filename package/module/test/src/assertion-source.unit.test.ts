@@ -1,13 +1,13 @@
 /**
- * Tests for `./assertion-source.ts`: the total string helpers
- * (`extractLocationSubstring`, `isIntegerString`), the backward
- * source-window extraction, and the node-only error-tree reader that
- * splices an assertion's source line into failure output. Frame parsing
- * has no standalone optional-returning function (absence is a `continue`
- * guard inside the reader), so its edge cases (`file://` URL, missing
- * column, native frame) are exercised through `readAssertionSites`.
- *
- * @module
+ Tests for `./assertion-source.ts`: the total string helpers
+ (`extractLocationSubstring`, `isIntegerString`), the backward
+ source-window extraction, and the node-only error-tree reader that
+ splices an assertion's source line into failure output. Frame parsing
+ has no standalone optional-returning function (absence is a `continue`
+ guard inside the reader), so its edge cases (`file://` URL, missing
+ column, native frame) are exercised through `readAssertionSites`.
+ 
+ @module
  */
 
 import {
@@ -21,24 +21,24 @@ import {
 } from '@monochromatic-dev/module-test';
 
 /**
- * Writes `lines` to a unique temp `.ts` file and returns its absolute
- * path, so a synthetic stack frame can point at a real readable file.
- * The name is keyed by pid and `index` to avoid collisions across the
- * suite without relying on randomness.
- *
- * @param lines - file contents, one element per line
- *
- * @param index - per-test discriminator folded into the filename
- *
- * @returns absolute path of the written fixture
- *
- * @example
- * ```ts
- * const path = await writeTempSource({
- *   lines: ['expect(x,)', '  .toBe(2,);'],
- *   index: 0,
- * });
- * ```
+ Writes `lines` to a unique temp `.ts` file and returns its absolute
+ path, so a synthetic stack frame can point at a real readable file.
+ The name is keyed by pid and `index` to avoid collisions across the
+ suite without relying on randomness.
+ 
+ @param lines - file contents, one element per line
+ 
+ @param index - per-test discriminator folded into the filename
+ 
+ @returns absolute path of the written fixture
+ 
+ @example
+ ```ts
+ const path = await writeTempSource({
+   lines: ['expect(x,)', '  .toBe(2,);'],
+   index: 0,
+ });
+ ```
  */
 async function writeTempSource({
   lines,
@@ -48,15 +48,15 @@ async function writeTempSource({
   readonly index: number;
 },): Promise<string> {
   /**
-   * Node fs imported here (not at module top) so this module stays loadable where filesystem access is absent.
+   Node fs imported here (not at module top) so this module stays loadable where filesystem access is absent.
    */
   const { writeFile, } = await import('node:fs/promises');
   /**
-   * System temp directory, the disposable home for fixture files this test reads back.
+   System temp directory, the disposable home for fixture files this test reads back.
    */
   const { tmpdir, } = await import('node:os');
   /**
-   * Absolute fixture path, unique per process and test index.
+   Absolute fixture path, unique per process and test index.
    */
   const path = `${tmpdir()}/assertion-source-${String(process.pid,)}-${String(index,)}.ts`;
   await writeFile(
@@ -68,14 +68,14 @@ async function writeTempSource({
 }
 
 /**
- * Removes a temp fixture, ignoring errors so cleanup never masks a real
- * assertion failure.
- *
- * @param path - absolute fixture path to delete
+ Removes a temp fixture, ignoring errors so cleanup never masks a real
+ assertion failure.
+ 
+ @param path - absolute fixture path to delete
  */
 async function removeTempSource(path: string,): Promise<void> {
   /**
-   * Node fs imported lazily, matching {@link writeTempSource}.
+   Node fs imported lazily, matching {@link writeTempSource}.
    */
   const { rm, } = await import('node:fs/promises');
   try {
@@ -179,9 +179,9 @@ await describe({
       name: 'does not reach an expect( beyond the lookback window',
       fn: async () => {
         /**
-         * 14 lines: an `expect(` opener on line 1, then 12 filler lines,
-         * then the matcher on line 14, so the opener sits one line past
-         * the 12-line lookback and must not be folded in.
+         14 lines: an `expect(` opener on line 1, then 12 filler lines,
+         then the matcher on line 14, so the opener sits one line past
+         the 12-line lookback and must not be folded in.
          */
         const sourceLines = [
           'expect(farAway,)',
@@ -234,7 +234,7 @@ await describe({
           .join('\n',);
         const sites = await readAssertionSites(error,);
         /**
-         * Site recovered for the root error, asserted present before reading its fields.
+         Site recovered for the root error, asserted present before reading its fields.
          */
         const site = sites.get(error,);
         expect(site,).toBeDefined();
@@ -255,7 +255,7 @@ await describe({
           index: 1,
         },);
         /**
-         * file:// frame carrying only `path:line` (no column), exercising both parse branches at once.
+         file:// frame carrying only `path:line` (no column), exercising both parse branches at once.
          */
         const error = new Error('boom',);
         error.stack = [

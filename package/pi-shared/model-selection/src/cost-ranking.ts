@@ -1,7 +1,7 @@
 /**
- * Cost ranking for default model selection.
- *
- * @module
+ Cost ranking for default model selection.
+ 
+ @module
  */
 
 import type {
@@ -15,116 +15,116 @@ import type {
 //region Public API
 
 /**
- * Options for default model selection.
+ Options for default model selection.
  */
 export type SelectDefaultModelOptions<TModel extends ModelPricing = ModelPricing,> = {
   /**
-   * Effective scoped model set.
+   Effective scoped model set.
    */
   readonly scope: EffectiveModelScope<TModel>;
   /**
-   * Estimated input tokens for this request.
+   Estimated input tokens for this request.
    */
   readonly estimatedInputTokens: number;
   /**
-   * Maximum output tokens requested.
+   Maximum output tokens requested.
    */
   readonly maxOutputTokens: number;
 };
 
 /**
- * Options for default model selection with per-model context estimates.
+ Options for default model selection with per-model context estimates.
  */
 export type SelectDefaultModelFromContextEstimatesOptions<
   TModel extends ModelPricing = ModelPricing,
 > = {
   /**
-   * Effective scoped model set.
+   Effective scoped model set.
    */
   readonly scope: EffectiveModelScope<TModel>;
   /**
-   * Estimated input tokens keyed by canonical scoped model slug.
+   Estimated input tokens keyed by canonical scoped model slug.
    */
   readonly estimatedInputTokensBySlug: ReadonlyMap<string, number>;
   /**
-   * Maximum output tokens requested.
+   Maximum output tokens requested.
    */
   readonly maxOutputTokens: number;
 };
 
 /**
- * Options for scoring one scoped model.
+ Options for scoring one scoped model.
  */
 export type ScoreModelOptions<TModel extends ModelPricing = ModelPricing,> = {
   /**
-   * Scoped model entry.
+   Scoped model entry.
    */
   readonly entry: ScopedModel<TModel>;
   /**
-   * Estimated request input tokens.
+   Estimated request input tokens.
    */
   readonly estimatedInputTokens: number;
   /**
-   * Requested output token budget.
+   Requested output token budget.
    */
   readonly maxOutputTokens: number;
 };
 
 /**
- * Options for comparing cost scores.
+ Options for comparing cost scores.
  */
 export type CompareCostScoresOptions = {
   /**
-   * First score.
+   First score.
    */
   readonly left: ModelCostScore;
   /**
-   * Second score.
+   Second score.
    */
   readonly right: ModelCostScore;
 };
 
 /**
- * Options for building a cost ranking.
+ Options for building a cost ranking.
  */
 export type BuildCostRankingOptions<TModel extends ModelPricing = ModelPricing,> = {
   /**
-   * Effective scoped model set.
+   Effective scoped model set.
    */
   readonly scope: EffectiveModelScope<TModel>;
   /**
-   * Estimated input tokens keyed by canonical scoped model slug.
+   Estimated input tokens keyed by canonical scoped model slug.
    */
   readonly estimatedInputTokensBySlug: ReadonlyMap<string, number>;
   /**
-   * Requested output token budget.
+   Requested output token budget.
    */
   readonly maxOutputTokens: number;
   /**
-   * Error prefix used by thrown messages.
+   Error prefix used by thrown messages.
    */
   readonly errorPrefix?: string;
 };
 
 /**
- * Select the most expensive scoped model by expected call cost.
- *
- * @param options - scope and request-size inputs
- *
- * @returns selected model and sorted cost ranking
- *
- * @throws when scope is empty
- *
- * @example
- * ```typescript
- * selectDefaultModel({ scope, estimatedInputTokens: 1000, maxOutputTokens: 4096 });
- * ```
+ Select the most expensive scoped model by expected call cost.
+ 
+ @param options - scope and request-size inputs
+ 
+ @returns selected model and sorted cost ranking
+ 
+ @throws when scope is empty
+ 
+ @example
+ ```typescript
+ selectDefaultModel({ scope, estimatedInputTokens: 1000, maxOutputTokens: 4096 });
+ ```
  */
 export function selectDefaultModel<TModel extends ModelPricing,>(
   options: SelectDefaultModelOptions<TModel>,
 ): DefaultModelSelection<TModel> {
   /**
-   * Shared token estimate applied to every scoped model.
+   Shared token estimate applied to every scoped model.
    */
   const estimatedInputTokensBySlug = new Map(
     options
@@ -145,24 +145,24 @@ export function selectDefaultModel<TModel extends ModelPricing,>(
 }
 
 /**
- * Select most expensive scoped model using each candidate's context estimate.
- *
- * @param options - scope and per-candidate request-size inputs
- *
- * @returns selected model and sorted cost ranking
- *
- * @throws when scope is empty or a candidate has no estimate
- *
- * @example
- * ```typescript
- * selectDefaultModelFromContextEstimates({ scope, estimatedInputTokensBySlug, maxOutputTokens });
- * ```
+ Select most expensive scoped model using each candidate's context estimate.
+ 
+ @param options - scope and per-candidate request-size inputs
+ 
+ @returns selected model and sorted cost ranking
+ 
+ @throws when scope is empty or a candidate has no estimate
+ 
+ @example
+ ```typescript
+ selectDefaultModelFromContextEstimates({ scope, estimatedInputTokensBySlug, maxOutputTokens });
+ ```
  */
 export function selectDefaultModelFromContextEstimates<TModel extends ModelPricing,>(
   options: SelectDefaultModelFromContextEstimatesOptions<TModel>,
 ): DefaultModelSelection<TModel> {
   /**
-   * Sorted scores, highest expected cost first.
+   Sorted scores, highest expected cost first.
    */
   const ranking = buildCostRanking({
     scope: options.scope,
@@ -171,14 +171,14 @@ export function selectDefaultModelFromContextEstimates<TModel extends ModelPrici
   },);
 
   /**
-   * Top-ranked score.
+   Top-ranked score.
    */
   const [topScore,] = ranking;
   if (topScore === undefined)
     throw new Error('model selection: default selection failed for empty ranking',);
 
   /**
-   * Matching scoped entry for top score.
+   Matching scoped entry for top score.
    */
   const selected = options
     .scope
@@ -199,24 +199,24 @@ export function selectDefaultModelFromContextEstimates<TModel extends ModelPrici
 }
 
 /**
- * Score a single scoped model for expected request cost.
- *
- * This is a new decomposition extracted during shared package migration.
- *
- * @param options - scoped entry and request-size inputs
- *
- * @returns cost score for ranking
- *
- * @example
- * ```typescript
- * scoreModel({ entry, estimatedInputTokens: 100, maxOutputTokens: 200 });
- * ```
+ Score a single scoped model for expected request cost.
+ 
+ This is a new decomposition extracted during shared package migration.
+ 
+ @param options - scoped entry and request-size inputs
+ 
+ @returns cost score for ranking
+ 
+ @example
+ ```typescript
+ scoreModel({ entry, estimatedInputTokens: 100, maxOutputTokens: 200 });
+ ```
  */
 export function scoreModel<TModel extends ModelPricing,>(
   options: ScoreModelOptions<TModel>,
 ): ModelCostScore {
   /**
-   * Scoped model entry and request-size inputs to score.
+   Scoped model entry and request-size inputs to score.
    */
   const {
     entry,
@@ -224,26 +224,26 @@ export function scoreModel<TModel extends ModelPricing,>(
     maxOutputTokens,
   } = options;
   /**
-   * Model metadata to score.
+   Model metadata to score.
    */
   const { model, } = entry;
   /**
-   * Pricing and context metadata from model.
+   Pricing and context metadata from model.
    */
   const {
     cost,
     contextWindow,
   } = model;
   /**
-   * Input-token price from model metadata.
+   Input-token price from model metadata.
    */
   const { input: inputCost, } = cost;
   /**
-   * Output-token price from model metadata.
+   Output-token price from model metadata.
    */
   const { output: outputCost, } = cost;
   /**
-   * Expected request cost ignoring cache pricing.
+   Expected request cost ignoring cache pricing.
    */
   const expectedCost = (estimatedInputTokens * inputCost)
     + (maxOutputTokens * outputCost);
@@ -260,24 +260,24 @@ export function scoreModel<TModel extends ModelPricing,>(
 }
 
 /**
- * Compare scores using deterministic tie-break order.
- *
- * This is a new decomposition extracted during shared package migration.
- *
- * @param options - score pair
- *
- * @returns negative when left ranks before right
- *
- * @example
- * ```typescript
- * compareCostScores({ left, right });
- * ```
+ Compare scores using deterministic tie-break order.
+ 
+ This is a new decomposition extracted during shared package migration.
+ 
+ @param options - score pair
+ 
+ @returns negative when left ranks before right
+ 
+ @example
+ ```typescript
+ compareCostScores({ left, right });
+ ```
  */
 export function compareCostScores(
   options: CompareCostScoresOptions,
 ): number {
   /**
-   * Scores in comparison order.
+   Scores in comparison order.
    */
   const {
     left,
@@ -296,26 +296,26 @@ export function compareCostScores(
 }
 
 /**
- * Build sorted cost scores for a scoped model set.
- *
- * This is a new decomposition extracted during shared package migration.
- *
- * @param options - scope and per-candidate request-size inputs
- *
- * @returns sorted scores, highest expected cost first
- *
- * @throws when scope is empty or a candidate has no estimate
- *
- * @example
- * ```typescript
- * buildCostRanking({ scope, estimatedInputTokensBySlug, maxOutputTokens });
- * ```
+ Build sorted cost scores for a scoped model set.
+ 
+ This is a new decomposition extracted during shared package migration.
+ 
+ @param options - scope and per-candidate request-size inputs
+ 
+ @returns sorted scores, highest expected cost first
+ 
+ @throws when scope is empty or a candidate has no estimate
+ 
+ @example
+ ```typescript
+ buildCostRanking({ scope, estimatedInputTokensBySlug, maxOutputTokens });
+ ```
  */
 export function buildCostRanking<TModel extends ModelPricing,>(
   options: BuildCostRankingOptions<TModel>,
 ): ModelCostScore[] {
   /**
-   * Error prefix for thrown messages.
+   Error prefix for thrown messages.
    */
   const errorPrefix = options.errorPrefix
     ?? 'model selection';
@@ -331,7 +331,7 @@ export function buildCostRanking<TModel extends ModelPricing,>(
     .entries
     .map(function scoreEntry(entry,) {
       /**
-       * Input-token estimate for this scoped model.
+       Input-token estimate for this scoped model.
        */
       const estimatedInputTokens = options.estimatedInputTokensBySlug
         .get(
@@ -364,11 +364,11 @@ export function buildCostRanking<TModel extends ModelPricing,>(
 //region Internal helpers
 
 /**
- * Build a concise human-readable default selection reason.
- *
- * @param score - winning cost score
- *
- * @returns human-readable selection reason
+ Build a concise human-readable default selection reason.
+ 
+ @param score - winning cost score
+ 
+ @returns human-readable selection reason
  */
 function buildSelectionReason(
   {

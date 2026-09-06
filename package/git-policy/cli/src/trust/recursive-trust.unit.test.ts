@@ -62,10 +62,10 @@ type RecursiveFixture = Readonly<{
 }>;
 
 /**
- * Initializes one real repository with config.
- *
- * @param path - repository path
- * @param source - config source
+ Initializes one real repository with config.
+ 
+ @param path - repository path
+ @param source - config source
  */
 async function initializeRepository({
   path,
@@ -80,9 +80,9 @@ async function initializeRepository({
 }
 
 /**
- * Creates nested disposable repositories.
- *
- * @returns recursive trust fixture
+ Creates nested disposable repositories.
+ 
+ @returns recursive trust fixture
  */
 async function createFixture(): Promise<RecursiveFixture> {
   /** Canonical disposable root. */
@@ -111,10 +111,10 @@ async function createFixture(): Promise<RecursiveFixture> {
 }
 
 /**
- * Discovers required fixture config.
- *
- * @param repository - repository root
- * @returns discovered MJS config
+ Discovers required fixture config.
+ 
+ @param repository - repository root
+ @returns discovered MJS config
  */
 async function discoverFixture(repository: string,): Promise<DiscoveredConfig> {
   /** Required discovered config. */
@@ -125,11 +125,11 @@ async function discoverFixture(repository: string,): Promise<DiscoveredConfig> {
 }
 
 /**
- * Creates deterministic queued consent adapters.
- *
- * @param answers - interactive answers in prompt order
- * @param disclosures - captured disclosure text
- * @returns deterministic consent adapters
+ Creates deterministic queued consent adapters.
+ 
+ @param answers - interactive answers in prompt order
+ @param disclosures - captured disclosure text
+ @returns deterministic consent adapters
  */
 function consentAdapters({
   answers,

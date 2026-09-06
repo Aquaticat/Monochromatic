@@ -1,16 +1,16 @@
 /**
- * Read-only queries over the pane strip.
- *
- * Lookups that can miss return the exported sentinels from `strip-types.ts`
- * (`PANE_NOT_FOUND`, `NO_CANONICAL_PANE`); consumers narrow with
- * `typeof value === 'symbol'` first, then identity.
- *
- * @example
- * ```ts
- * const count = columnCount({ strip: createStrip() });
- * ```
- *
- * @packageDocumentation
+ Read-only queries over the pane strip.
+ 
+ Lookups that can miss return the exported sentinels from `strip-types.ts`
+ (`PANE_NOT_FOUND`, `NO_CANONICAL_PANE`); consumers narrow with
+ `typeof value === 'symbol'` first, then identity.
+ 
+ @example
+ ```ts
+ const count = columnCount({ strip: createStrip() });
+ ```
+ 
+ @packageDocumentation
  */
 
 import {
@@ -23,18 +23,18 @@ import {
 } from './strip-types.js';
 
 /**
- * Checks whether two locations are the same dedup key.
- *
- * @param left - First location.
- *
- * @param right - Second location.
- *
- * @returns Whether kind and path both match.
- *
- * @example
- * ```ts
- * sameLocation({ left: { kind: 'directory', path: '/a' }, right: { kind: 'preview', path: '/a' } });
- * ```
+ Checks whether two locations are the same dedup key.
+ 
+ @param left - First location.
+ 
+ @param right - Second location.
+ 
+ @returns Whether kind and path both match.
+ 
+ @example
+ ```ts
+ sameLocation({ left: { kind: 'directory', path: '/a' }, right: { kind: 'preview', path: '/a' } });
+ ```
  */
 function sameLocation(
   {
@@ -49,18 +49,18 @@ function sameLocation(
 }
 
 /**
- * Finds the canonical dedup pane for a location, if one is registered.
- *
- * @param location - Location to look up.
- *
- * @param strip - Strip to search.
- *
- * @returns Canonical pane id, or {@link NO_CANONICAL_PANE} when no registered pane shows this location.
- *
- * @example
- * ```ts
- * canonicalPaneFor({ strip: createStrip(), location: directoryLocation({ path: '/home' }) });
- * ```
+ Finds the canonical dedup pane for a location, if one is registered.
+ 
+ @param location - Location to look up.
+ 
+ @param strip - Strip to search.
+ 
+ @returns Canonical pane id, or {@link NO_CANONICAL_PANE} when no registered pane shows this location.
+ 
+ @example
+ ```ts
+ canonicalPaneFor({ strip: createStrip(), location: directoryLocation({ path: '/home' }) });
+ ```
  */
 export function canonicalPaneFor(
   {
@@ -72,7 +72,7 @@ export function canonicalPaneFor(
   },
 ): PaneId | typeof NO_CANONICAL_PANE {
   /**
-   * Registered pane whose location equals the lookup key, when present.
+   Registered pane whose location equals the lookup key, when present.
    */
   const canonical = strip.panes
     .find(function isCanonicalHolder(pane,): boolean {
@@ -89,18 +89,18 @@ export function canonicalPaneFor(
 }
 
 /**
- * Looks up a pane by id.
- *
- * @param id - Pane identity to find.
- *
- * @param strip - Strip to search.
- *
- * @returns Matching pane, or {@link PANE_NOT_FOUND} when the id is not live.
- *
- * @example
- * ```ts
- * paneById({ strip: createStrip(), id: 0 });
- * ```
+ Looks up a pane by id.
+ 
+ @param id - Pane identity to find.
+ 
+ @param strip - Strip to search.
+ 
+ @returns Matching pane, or {@link PANE_NOT_FOUND} when the id is not live.
+ 
+ @example
+ ```ts
+ paneById({ strip: createStrip(), id: 0 });
+ ```
  */
 export function paneById(
   {
@@ -112,7 +112,7 @@ export function paneById(
   },
 ): Pane | typeof PANE_NOT_FOUND {
   /**
-   * Live pane carrying the requested id, when present.
+   Live pane carrying the requested id, when present.
    */
   const pane = strip.panes
     .find(function matchesId(candidate,): boolean {
@@ -126,16 +126,16 @@ export function paneById(
 }
 
 /**
- * Number of columns spanned (one past the highest column index), or zero when empty.
- *
- * @param strip - Strip to measure.
- *
- * @returns Column count.
- *
- * @example
- * ```ts
- * columnCount({ strip: createStrip() });
- * ```
+ Number of columns spanned (one past the highest column index), or zero when empty.
+ 
+ @param strip - Strip to measure.
+ 
+ @returns Column count.
+ 
+ @example
+ ```ts
+ columnCount({ strip: createStrip() });
+ ```
  */
 export function columnCount({ strip, }: { readonly strip: Strip; },): number {
   return strip.panes
@@ -154,19 +154,19 @@ export function columnCount({ strip, }: { readonly strip: Strip; },): number {
 }
 
 /**
- * The top-most (lowest-row) pane in a column; keyboard Left/Right navigation
- * lands on it.
- *
- * @param column - Column index to search.
- *
- * @param strip - Strip to search.
- *
- * @returns Top pane of the column, or {@link PANE_NOT_FOUND} for an empty column.
- *
- * @example
- * ```ts
- * firstPaneInColumn({ strip: createStrip(), column: 0 });
- * ```
+ The top-most (lowest-row) pane in a column; keyboard Left/Right navigation
+ lands on it.
+ 
+ @param column - Column index to search.
+ 
+ @param strip - Strip to search.
+ 
+ @returns Top pane of the column, or {@link PANE_NOT_FOUND} for an empty column.
+ 
+ @example
+ ```ts
+ firstPaneInColumn({ strip: createStrip(), column: 0 });
+ ```
  */
 export function firstPaneInColumn(
   {
@@ -178,7 +178,7 @@ export function firstPaneInColumn(
   },
 ): Pane | typeof PANE_NOT_FOUND {
   /**
-   * Column members ordered top to bottom.
+   Column members ordered top to bottom.
    */
   const [top,] = strip.panes
     .filter(function inColumn(pane,): boolean {

@@ -1,7 +1,7 @@
 /**
- * Runtime tests for built `arrayAt` artifact.
- *
- * @module
+ Runtime tests for built `arrayAt` artifact.
+ 
+ @module
  */
 
 import {
@@ -17,12 +17,12 @@ import {
 } from '../dist/final/neutral/index.mjs';
 
 /**
- * Runtime diagnostic code exposed by `ArrayAtError`.
- *
- * @example
- * ```ts
- * const code: RuntimeDiagnosticCode = 'empty-array';
- * ```
+ Runtime diagnostic code exposed by `ArrayAtError`.
+ 
+ @example
+ ```ts
+ const code: RuntimeDiagnosticCode = 'empty-array';
+ ```
  */
 type RuntimeDiagnosticCode = Exclude<
   ArrayAtDiagnostic['code'],
@@ -30,12 +30,12 @@ type RuntimeDiagnosticCode = Exclude<
 >;
 
 /**
- * Runtime-only view bypassing static validation for negative tests.
- *
- * @example
- * ```ts
- * uncheckedArrayAt({ array: [10], index: 2, });
- * ```
+ Runtime-only view bypassing static validation for negative tests.
+ 
+ @example
+ ```ts
+ uncheckedArrayAt({ array: [10], index: 2, });
+ ```
  */
 const uncheckedArrayAt = arrayAt as unknown as ({
   array,
@@ -46,21 +46,21 @@ const uncheckedArrayAt = arrayAt as unknown as ({
 }) => unknown;
 
 /**
- * Runs operation and returns expected aggregated error.
- *
- * @param operation - Failing operation to invoke
- *
- * @returns Captured `ArrayAtError`
- *
- * @throws Unexpected caught value or missing throw
- *
- * @example
- * ```ts
- * const error = captureArrayAtError(() => uncheckedArrayAt({
- *   array: [],
- *   index: 0,
- * }));
- * ```
+ Runs operation and returns expected aggregated error.
+ 
+ @param operation - Failing operation to invoke
+ 
+ @returns Captured `ArrayAtError`
+ 
+ @throws Unexpected caught value or missing throw
+ 
+ @example
+ ```ts
+ const error = captureArrayAtError(() => uncheckedArrayAt({
+   array: [],
+   index: 0,
+ }));
+ ```
  */
 function captureArrayAtError(operation: () => unknown,): ArrayAtError {
   try {
@@ -76,18 +76,18 @@ function captureArrayAtError(operation: () => unknown,): ArrayAtError {
 }
 
 /**
- * Finds runtime diagnostic by discriminating code.
- *
- * @param options - Captured error and requested diagnostic code
- *
- * @returns Matching diagnostic narrowed by code
- *
- * @throws Error when diagnostic is absent
- *
- * @example
- * ```ts
- * const diagnostic = diagnosticByCode({ error, code: 'empty-array', });
- * ```
+ Finds runtime diagnostic by discriminating code.
+ 
+ @param options - Captured error and requested diagnostic code
+ 
+ @returns Matching diagnostic narrowed by code
+ 
+ @throws Error when diagnostic is absent
+ 
+ @example
+ ```ts
+ const diagnostic = diagnosticByCode({ error, code: 'empty-array', });
+ ```
  */
 function diagnosticByCode<const Code extends RuntimeDiagnosticCode>({
   error,

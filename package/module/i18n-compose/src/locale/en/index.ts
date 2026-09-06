@@ -1,11 +1,11 @@
 /**
- * English locale builder.
- *
- * Implements the English-specific grammar strategy: do-support for yes/no
- * and wh questions, base verb after auxiliaries, future via `will + base`,
- * infinitive complements via `to + base`, explicit article rendering.
- *
- * @module
+ English locale builder.
+ 
+ Implements the English-specific grammar strategy: do-support for yes/no
+ and wh questions, base verb after auxiliaries, future via `will + base`,
+ infinitive complements via `to + base`, explicit article rendering.
+ 
+ @module
  */
 
 import type { LocaleSpec, } from '../../locale-spec.ts';
@@ -17,16 +17,16 @@ import { makeEnglishVerbPhraseRenderer, } from './render-vp.ts';
 import type { DefineEnglishLocaleInput, } from './types.ts';
 
 /**
- * Builds an English {@link LocaleSpec} from a vocabulary bundle.
- *
- * @param input - labels, subjects, nouns, verbs keyed by the consumer's unions
- *
- * @returns spec ready to plug into {@link createI18n}
- *
- * @example
- * ```ts
- * const en = defineEnglishLocale({ labels, subjects, nouns, verbs });
- * ```
+ Builds an English {@link LocaleSpec} from a vocabulary bundle.
+ 
+ @param input - labels, subjects, nouns, verbs keyed by the consumer's unions
+ 
+ @returns spec ready to plug into {@link createI18n}
+ 
+ @example
+ ```ts
+ const en = defineEnglishLocale({ labels, subjects, nouns, verbs });
+ ```
  */
 export function defineEnglishLocale<
   Label extends string,
@@ -37,18 +37,18 @@ export function defineEnglishLocale<
   input: DefineEnglishLocaleInput<Label, Subject, Verb, Noun>,
 ): LocaleSpec<Label, Subject, Verb, Noun> {
   /**
-   * Noun-phrase renderer closed over the noun + subject tables.
+   Noun-phrase renderer closed over the noun + subject tables.
    */
   const renderNounPhrase = makeEnglishNounPhraseRenderer({
     nouns: input.nouns,
     subjects: input.subjects,
   },);
   /**
-   * Adverbial cluster renderer that depends on noun-phrase rendering.
+   Adverbial cluster renderer that depends on noun-phrase rendering.
    */
   const renderAdverbials = makeEnglishAdverbialRenderer({ renderNounPhrase, },);
   /**
-   * Verb-phrase renderer with closure over verbs + sub-renderers.
+   Verb-phrase renderer with closure over verbs + sub-renderers.
    */
   const renderVerbPhrase = makeEnglishVerbPhraseRenderer({
     verbs: input.verbs,
@@ -56,7 +56,7 @@ export function defineEnglishLocale<
     renderAdverbials,
   },);
   /**
-   * Sentence renderer dispatching on AST kind.
+   Sentence renderer dispatching on AST kind.
    */
   const renderSentence = makeEnglishSentenceRenderer({
     subjects: input.subjects,
@@ -66,7 +66,7 @@ export function defineEnglishLocale<
     renderAdverbials,
   },);
   /**
-   * Fragment renderer dispatching on AST kind.
+   Fragment renderer dispatching on AST kind.
    */
   const renderFragment = makeEnglishFragmentRenderer({
     labels: input.labels,
@@ -77,22 +77,22 @@ export function defineEnglishLocale<
   },);
 
   /**
-   * Resolves a static label key against the supplied label table.
-   *
-   * @param key - consumer label key
-   *
-   * @returns rendered surface
+   Resolves a static label key against the supplied label table.
+   
+   @param key - consumer label key
+   
+   @returns rendered surface
    */
   function renderLabel(key: Label,): string {
     return input.labels[key];
   }
 
   /**
-   * Resolves a bare noun key to its surface form.
-   *
-   * @param key - consumer noun key
-   *
-   * @returns rendered surface
+   Resolves a bare noun key to its surface form.
+   
+   @param key - consumer noun key
+   
+   @returns rendered surface
    */
   function renderNoun(key: Noun,): string {
     return input.nouns[key]

@@ -1,8 +1,8 @@
 /**
- * Incremental sync; applies changed blocks from the last boot session
- * to the other disk format via NBD block-level patching.
- *
- * @module
+ Incremental sync; applies changed blocks from the last boot session
+ to the other disk format via NBD block-level patching.
+ 
+ @module
  */
 
 import { unlink, } from 'node:fs/promises';
@@ -34,37 +34,37 @@ import {
 } from './types.ts';
 
 /**
- * Logger root for vmsync after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for vmsync after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'vmsync', },);
 
 /**
- * Syncs changes from a KVM boot session (qcow2 overlay) to the vhdx base image.
- *
- * 1. Reads the overlay's block map to find changed regions
- * 2. Connects both overlay (read-only) and vhdx (read-write) via NBD
- * 3. Copies only changed blocks from overlay to vhdx
- * 4. Commits the overlay into the qcow2 base via {@link commitOverlay}
- * 5. Removes the overlay file
- * 6. Updates checksums in the config
- *
- * @param name - VM name
- *
- * @throws Error when no overlay exists (VM was not booted via KVM)
- *
- * @example
- * ```ts
- * await syncFromKvm('alpine');
- * ```
+ Syncs changes from a KVM boot session (qcow2 overlay) to the vhdx base image.
+ 
+ 1. Reads the overlay's block map to find changed regions
+ 2. Connects both overlay (read-only) and vhdx (read-write) via NBD
+ 3. Copies only changed blocks from overlay to vhdx
+ 4. Commits the overlay into the qcow2 base via {@link commitOverlay}
+ 5. Removes the overlay file
+ 6. Updates checksums in the config
+ 
+ @param name - VM name
+ 
+ @throws Error when no overlay exists (VM was not booted via KVM)
+ 
+ @example
+ ```ts
+ await syncFromKvm('alpine');
+ ```
  */
 export async function syncFromKvm(name: string,): Promise<void> {
   /**
-   * Function-tagged logger so post-boot sync steps are traceable per VM.
+   Function-tagged logger so post-boot sync steps are traceable per VM.
    */
   const rl = tagged({
     tag: syncFromKvm.name,
@@ -72,25 +72,25 @@ export async function syncFromKvm(name: string,): Promise<void> {
   },);
 
   /**
-   * VM directory containing all managed images.
+   VM directory containing all managed images.
    */
   const dir = vmDir(name,);
   /**
-   * Path to the transient overlay created before boot.
+   Path to the transient overlay created before boot.
    */
   const overlayPath = join(
     dir,
     OVERLAY_FILENAME,
   );
   /**
-   * Path to the qcow2 base image.
+   Path to the qcow2 base image.
    */
   const qcow2Path = join(
     dir,
     QCOW2_FILENAME,
   );
   /**
-   * Path to the vhdx image to patch.
+   Path to the vhdx image to patch.
    */
   const vhdxPath = join(
     dir,
@@ -99,12 +99,12 @@ export async function syncFromKvm(name: string,): Promise<void> {
 
   rl.info('reading overlay block map',);
   /**
-   * Full block map of the overlay with backing chain depth info.
+   Full block map of the overlay with backing chain depth info.
    */
   const regions = await blockMap(overlayPath,);
 
   /**
-   * Regions at depth 0 with actual data: these were written during the boot session.
+   Regions at depth 0 with actual data: these were written during the boot session.
    */
   const changedRegions: readonly QemuMapRegion[] = regions.filter(
     function isOverlayData(r,) {
@@ -136,7 +136,7 @@ export async function syncFromKvm(name: string,): Promise<void> {
 
   rl.info('computing new checksums',);
   /**
-   * Updated checksums after sync.
+   Updated checksums after sync.
    */
   const [qcow2Hash, vhdxHash,] = await Promise.all([
     checksum(qcow2Path,),
@@ -144,7 +144,7 @@ export async function syncFromKvm(name: string,): Promise<void> {
   ],);
 
   /**
-   * Current config to update with new state.
+   Current config to update with new state.
    */
   const config = await readConfig(name,);
   config.state
@@ -170,14 +170,14 @@ export async function syncFromKvm(name: string,): Promise<void> {
 }
 
 /**
- * Patches the vhdx image with changed blocks from the qcow2 overlay via NBD, using
- * {@link patchBlocks} for the block-level copy.
- *
- * @param overlayPath - Path to the qcow2 overlay
- *
- * @param vhdxPath - Path to the vhdx to patch
- *
- * @param changedRegions - Block map regions that were written in the overlay
+ Patches the vhdx image with changed blocks from the qcow2 overlay via NBD, using
+ {@link patchBlocks} for the block-level copy.
+ 
+ @param overlayPath - Path to the qcow2 overlay
+ 
+ @param vhdxPath - Path to the vhdx to patch
+ 
+ @param changedRegions - Block map regions that were written in the overlay
  */
 async function patchVhdxFromOverlay(
   {
@@ -193,14 +193,14 @@ async function patchVhdxFromOverlay(
   await ensureNbdModule();
 
   /**
-   * NBD device for the overlay (source, read-only).
+   NBD device for the overlay (source, read-only).
    */
   const sourceDevicePath = await findFreeNbdDevice();
   /**
-   * Disposable NBD connection for the source overlay.
-   *
-   * Bound to `_sourceConn` so `await using` triggers automatic disconnect when
-   * this scope exits; the binding is intentionally unused beyond lifetime control.
+   Disposable NBD connection for the source overlay.
+   
+   Bound to `_sourceConn` so `await using` triggers automatic disconnect when
+   this scope exits; the binding is intentionally unused beyond lifetime control.
    */
   await using _sourceConn = await connectDisposable({
     imagePath: overlayPath,
@@ -210,14 +210,14 @@ async function patchVhdxFromOverlay(
   },);
 
   /**
-   * NBD device for the vhdx (target, read-write).
+   NBD device for the vhdx (target, read-write).
    */
   const targetDevicePath = await findFreeNbdDevice();
   /**
-   * Disposable NBD connection for the target vhdx.
-   *
-   * Bound to `_targetConn` so `await using` triggers automatic disconnect when
-   * this scope exits; the binding is intentionally unused beyond lifetime control.
+   Disposable NBD connection for the target vhdx.
+   
+   Bound to `_targetConn` so `await using` triggers automatic disconnect when
+   this scope exits; the binding is intentionally unused beyond lifetime control.
    */
   await using _targetConn = await connectDisposable({
     imagePath: vhdxPath,
@@ -234,25 +234,25 @@ async function patchVhdxFromOverlay(
 }
 
 /**
- * Syncs changes from a Hyper-V boot session to the qcow2 base image.
- *
- * Hyper-V writes directly to the vhdx (no overlay mechanism in MVP).
- * This performs a full checksum comparison to detect changes,
- * then reconverts the entire vhdx to qcow2.
- *
- * For future optimization: use Hyper-V checkpoints to create differencing
- * disks (.avhdx) that enable the same overlay-based incremental sync as KVM.
- *
- * @param name - VM name
- *
- * @example
- * ```ts
- * await syncFromHyperv('alpine');
- * ```
+ Syncs changes from a Hyper-V boot session to the qcow2 base image.
+ 
+ Hyper-V writes directly to the vhdx (no overlay mechanism in MVP).
+ This performs a full checksum comparison to detect changes,
+ then reconverts the entire vhdx to qcow2.
+ 
+ For future optimization: use Hyper-V checkpoints to create differencing
+ disks (.avhdx) that enable the same overlay-based incremental sync as KVM.
+ 
+ @param name - VM name
+ 
+ @example
+ ```ts
+ await syncFromHyperv('alpine');
+ ```
  */
 export async function syncFromHyperv(name: string,): Promise<void> {
   /**
-   * Function-tagged logger so post-boot sync steps are traceable per VM.
+   Function-tagged logger so post-boot sync steps are traceable per VM.
    */
   const rl = tagged({
     tag: syncFromHyperv.name,
@@ -260,18 +260,18 @@ export async function syncFromHyperv(name: string,): Promise<void> {
   },);
 
   /**
-   * VM directory.
+   VM directory.
    */
   const dir = vmDir(name,);
   /**
-   * Path to the qcow2 image to patch.
+   Path to the qcow2 image to patch.
    */
   const qcow2Path = join(
     dir,
     QCOW2_FILENAME,
   );
   /**
-   * Path to the vhdx that was just booted.
+   Path to the vhdx that was just booted.
    */
   const vhdxPath = join(
     dir,
@@ -279,13 +279,13 @@ export async function syncFromHyperv(name: string,): Promise<void> {
   );
 
   /**
-   * Current config with pre-boot checksums.
+   Current config with pre-boot checksums.
    */
   const config = await readConfig(name,);
 
   rl.info('computing post-boot vhdx checksum',);
   /**
-   * Post-boot checksum to compare against stored value.
+   Post-boot checksum to compare against stored value.
    */
   const newVhdxHash = await checksum(vhdxPath,);
 
@@ -307,10 +307,10 @@ export async function syncFromHyperv(name: string,): Promise<void> {
   rl.info('vhdx changed, performing full conversion to qcow2',);
 
   /**
-   * Full vhdx-to-qcow2 conversion.
-   * Hyper-V does not produce an overlay, so block-level incremental sync
-   * requires checkpoint-based differencing disks; a future optimization.
-   * For MVP, full conversion of a 100GB vhdx takes ~5 minutes.
+   Full vhdx-to-qcow2 conversion.
+   Hyper-V does not produce an overlay, so block-level incremental sync
+   requires checkpoint-based differencing disks; a future optimization.
+   For MVP, full conversion of a 100GB vhdx takes ~5 minutes.
    */
   await convert({
     sourcePath: vhdxPath,
@@ -320,7 +320,7 @@ export async function syncFromHyperv(name: string,): Promise<void> {
   },);
 
   /**
-   * Updated qcow2 checksum after conversion.
+   Updated qcow2 checksum after conversion.
    */
   const newQcow2Hash = await checksum(qcow2Path,);
 
@@ -341,20 +341,20 @@ export async function syncFromHyperv(name: string,): Promise<void> {
 }
 
 /**
- * Syncs a VM after boot, auto-detecting which hypervisor was used.
- *
- * @param name - VM name
- *
- * @throws Error when the VM is already synced or config is missing
- *
- * @example
- * ```ts
- * await syncVm('alpine');
- * ```
+ Syncs a VM after boot, auto-detecting which hypervisor was used.
+ 
+ @param name - VM name
+ 
+ @throws Error when the VM is already synced or config is missing
+ 
+ @example
+ ```ts
+ await syncVm('alpine');
+ ```
  */
 export async function syncVm(name: string,): Promise<void> {
   /**
-   * Function-tagged logger so dispatch and per-hypervisor sync share traces.
+   Function-tagged logger so dispatch and per-hypervisor sync share traces.
    */
   const rl = tagged({
     tag: syncVm.name,
@@ -362,7 +362,7 @@ export async function syncVm(name: string,): Promise<void> {
   },);
 
   /**
-   * Current config to determine last boot hypervisor.
+   Current config to determine last boot hypervisor.
    */
   const config = await readConfig(name,);
 

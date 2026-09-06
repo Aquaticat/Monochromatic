@@ -1,6 +1,6 @@
 /**
- * VM mutation tool definitions: create and destroy.
- * @module
+ VM mutation tool definitions: create and destroy.
+ @module
  */
 import {
   defineTool,
@@ -28,8 +28,8 @@ import { requiredStringArgument, } from './required-string-argument.ts';
 //region Mutation tools: VM creation and destruction
 
 /**
- * MCP tool: create a new VM, optionally cloned from an existing one, on the
- * backend resolved via {@link backendFromArgs}.
+ MCP tool: create a new VM, optionally cloned from an existing one, on the
+ backend resolved via {@link backendFromArgs}.
  */
 export const createTool: ToolEntry = defineTool({
   name: 'create_vm',
@@ -54,28 +54,28 @@ export const createTool: ToolEntry = defineTool({
     },),
     handler: async function handleCreateVm(args,) {
       /**
-       * New VM name validated as string so the backend receives a stable type regardless of MCP client encoding.
+       New VM name validated as string so the backend receives a stable type regardless of MCP client encoding.
        */
       const name = requiredStringArgument(args.name,);
       /**
-       * Optional source VM to clone from; `undefined` selects the create-fresh path below.
+       Optional source VM to clone from; `undefined` selects the create-fresh path below.
        */
       const from = ((typeof args.from) === 'string') ? args.from : undefined;
       /**
-       * Optional image template; absence falls back to the backend default.
+       Optional image template; absence falls back to the backend default.
        */
       const image = ((typeof args.image) === 'string') ? args.image : undefined;
       /**
-       * Optional Hetzner server type; ignored by the libvirt backend.
+       Optional Hetzner server type; ignored by the libvirt backend.
        */
       const serverType = ((typeof args.server_type) === 'string') ? args.server_type : undefined;
       /**
-       * Optional Hetzner location series; ignored by the libvirt backend.
+       Optional Hetzner location series; ignored by the libvirt backend.
        */
       const location = ((typeof args.location) === 'string') ? args.location : undefined;
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         await (from !== undefined
@@ -90,7 +90,7 @@ export const createTool: ToolEntry = defineTool({
             ...(location !== undefined ? { location, } : {}),
           },));
         /**
-         * Trailing fragment appended to the success message to disclose clone provenance when applicable.
+         Trailing fragment appended to the success message to disclose clone provenance when applicable.
          */
         const suffix = from !== undefined ? ` (cloned from ${from})` : '';
         return textResponse(
@@ -108,8 +108,8 @@ export const createTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: destroy VMs by name or all at once, on the backend resolved via
- * {@link backendFromArgs}.
+ MCP tool: destroy VMs by name or all at once, on the backend resolved via
+ {@link backendFromArgs}.
  */
 export const destroyTool: ToolEntry = defineTool({
   name: 'destroy_vm',
@@ -139,11 +139,11 @@ export const destroyTool: ToolEntry = defineTool({
     ),
     handler: async function handleDestroyVm(args,) {
       /**
-       * Optional single-VM target; mutually exclusive with `all` and validated below.
+       Optional single-VM target; mutually exclusive with `all` and validated below.
        */
       const name = ((typeof args.name) === 'string') ? args.name : undefined;
       /**
-       * Optional destroy-everything flag; mutually exclusive with `name` and validated below.
+       Optional destroy-everything flag; mutually exclusive with `name` and validated below.
        */
       const all = ((typeof args.all) === 'boolean') ? args.all : undefined;
 
@@ -169,7 +169,7 @@ export const destroyTool: ToolEntry = defineTool({
 
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         if (all === true) {

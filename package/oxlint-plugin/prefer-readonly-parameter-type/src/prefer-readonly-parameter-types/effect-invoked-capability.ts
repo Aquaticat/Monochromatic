@@ -1,7 +1,7 @@
 /**
- * Invoked callback-capability propagation across owned call edges.
- *
- * @module
+ Invoked callback-capability propagation across owned call edges.
+ 
+ @module
  */
 
 import { calleeSlotOrigins, } from './effect-slot-projection.ts';
@@ -13,27 +13,27 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Propagates invocation when caller forwards unknown callback capability.
- *
- * Owned callback bodies are summarized independently, so invoking pure local
- * callback does not claim mutation of callback object or captured values.
- *
- * @param summaries - Owned callback summaries by declaration key.
- *
- * @param summary - Caller receiving forwarded invocation effect.
- *
- * @param calleeSummary - Callee declaring invoked capability parameters.
- *
- * @param edge - Caller arguments and owned callback identities.
- *
- * @returns whether caller invocation or mutation effects changed.
- *
- * @mutates summary - Adds invocation inherited through forwarded callbacks.
- *
- * @example
- * ```ts
- * propagateInvokedCapabilities({ summaries, summary, calleeSummary, edge });
- * ```
+ Propagates invocation when caller forwards unknown callback capability.
+ 
+ Owned callback bodies are summarized independently, so invoking pure local
+ callback does not claim mutation of callback object or captured values.
+ 
+ @param summaries - Owned callback summaries by declaration key.
+ 
+ @param summary - Caller receiving forwarded invocation effect.
+ 
+ @param calleeSummary - Callee declaring invoked capability parameters.
+ 
+ @param edge - Caller arguments and owned callback identities.
+ 
+ @returns whether caller invocation or mutation effects changed.
+ 
+ @mutates summary - Adds invocation inherited through forwarded callbacks.
+ 
+ @example
+ ```ts
+ propagateInvokedCapabilities({ summaries, summary, calleeSummary, edge });
+ ```
  */
 export function propagateInvokedCapabilities({
   summaries,
@@ -47,12 +47,12 @@ export function propagateInvokedCapabilities({
   readonly edge: CallEdge;
 },): boolean {
   /**
-   * Whether any caller invocation effect was added.
+   Whether any caller invocation effect was added.
    */
   let changed = false;
   for (const calleeIndex of calleeSummary.invoked) {
     /**
-     * Owned callback declaration passed to invoked parameter.
+     Owned callback declaration passed to invoked parameter.
      */
     const callbackKey = edge.callbackKeysByCalleeSlot[calleeIndex];
     if ((callbackKey !== undefined)

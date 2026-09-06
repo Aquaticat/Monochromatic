@@ -1,9 +1,9 @@
 /**
- * Export group and draw settings CSS overrides for the doodle widget toolbar.
- *
- * Base control styling (padding, cursor, bg, border, radius, font) is
- * handled by the shared control selector in {@link renderToolbarStyles}.
- * This module only provides layout and element-specific overrides.
+ Export group and draw settings CSS overrides for the doodle widget toolbar.
+ 
+ Base control styling (padding, cursor, bg, border, radius, font) is
+ handled by the shared control selector in {@link renderToolbarStyles}.
+ This module only provides layout and element-specific overrides.
  */
 import {
   cssNum,
@@ -12,25 +12,25 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Color picker square size
+ Color picker square size
  */
 const COLOR_PICKER_SIZE = 2;
 
 /**
- * Stroke width slider track length
+ Stroke width slider track length
  */
 const SLIDER_INLINE_SIZE = 2 + 2
   + 2;
 
 /**
- * Generates CSS rules for the export group and draw settings controls.
- *
- * @returns array of minified CSS rule strings
- *
- * @example
- * ```ts
- * const css = renderToolbarControlStyles().join('');
- * ```
+ Generates CSS rules for the export group and draw settings controls.
+ 
+ @returns array of minified CSS rule strings
+ 
+ @example
+ ```ts
+ const css = renderToolbarControlStyles().join('');
+ ```
  */
 export function renderToolbarControlStyles(): string[] {
   return [
@@ -42,7 +42,7 @@ export function renderToolbarControlStyles(): string[] {
     },),
 
     /**
-     * Remove right border and radius to connect with adjacent select
+     Remove right border and radius to connect with adjacent select
      */
     $({
       rule: '.export-group > button',
@@ -54,7 +54,7 @@ export function renderToolbarControlStyles(): string[] {
     },),
 
     /**
-     * Remove left radius to connect with adjacent button
+     Remove left radius to connect with adjacent button
      */
     $({
       rule: '.export-group > select',
@@ -78,7 +78,7 @@ export function renderToolbarControlStyles(): string[] {
     },),
 
     /**
-     * Color picker size override (base border/radius from shared control rule)
+     Color picker size override (base border/radius from shared control rule)
      */
     $({
       rule: '#color-picker',

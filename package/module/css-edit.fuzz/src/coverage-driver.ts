@@ -1,10 +1,10 @@
 /**
- * Deterministic coverage driver: exercises every exported function and its error
- * paths with fixed inputs, so the V8 coverage it produces is reproducible. Run
- * under `NODE_V8_COVERAGE` by the `fuzz:coverage` task, then summarized by
- * `coverage-report.ts`.
- *
- * @module
+ Deterministic coverage driver: exercises every exported function and its error
+ paths with fixed inputs, so the V8 coverage it produces is reproducible. Run
+ under `NODE_V8_COVERAGE` by the `fuzz:coverage` task, then summarized by
+ `coverage-report.ts`.
+ 
+ @module
  */
 
 import {
@@ -34,15 +34,15 @@ import {
 //region Helpers
 
 /**
- * Runs a thunk that is expected to throw, swallowing the error so the driver
- * keeps exercising remaining paths. Re-throws anything that is not an `Error`.
- *
- * @param thunk - Operation expected to throw.
- *
- * @example
- * ```ts
- * swallow(function bad() { parseCss({ source: asCssSource('}') }); });
- * ```
+ Runs a thunk that is expected to throw, swallowing the error so the driver
+ keeps exercising remaining paths. Re-throws anything that is not an `Error`.
+ 
+ @param thunk - Operation expected to throw.
+ 
+ @example
+ ```ts
+ swallow(function bad() { parseCss({ source: asCssSource('}') }); });
+ ```
  */
 function swallow(thunk: () => void,): void {
   try {
@@ -59,34 +59,34 @@ function swallow(thunk: () => void,): void {
 //region Visitors
 
 /**
- * Keeps every node, proving the identity transform preserves reference
- * identity.
- *
- * @param node - Visited node.
- *
- * @returns Same node.
- *
- * @example
- * ```ts
- * transformStylesheet({ root, visit: keep }) === root; // => true
- * ```
+ Keeps every node, proving the identity transform preserves reference
+ identity.
+ 
+ @param node - Visited node.
+ 
+ @returns Same node.
+ 
+ @example
+ ```ts
+ transformStylesheet({ root, visit: keep }) === root; // => true
+ ```
  */
 function keep(node: CssNode,): CssVisitResult {
   return node;
 }
 
 /**
- * Replaces each declaration with a fresh equal node, driving the changed
- * single-node path.
- *
- * @param node - Visited node.
- *
- * @returns Fresh declaration, or the node untouched.
- *
- * @example
- * ```ts
- * transformStylesheet({ root, visit: replaceDeclarations });
- * ```
+ Replaces each declaration with a fresh equal node, driving the changed
+ single-node path.
+ 
+ @param node - Visited node.
+ 
+ @returns Fresh declaration, or the node untouched.
+ 
+ @example
+ ```ts
+ transformStylesheet({ root, visit: replaceDeclarations });
+ ```
  */
 function replaceDeclarations(node: CssNode,): CssVisitResult {
   return isCssDeclaration(node,)
@@ -98,16 +98,16 @@ function replaceDeclarations(node: CssNode,): CssVisitResult {
 }
 
 /**
- * Doubles each declaration, driving the non-empty splice path.
- *
- * @param node - Visited node.
- *
- * @returns Two-node splice, or the node untouched.
- *
- * @example
- * ```ts
- * transformNodes({ nodes, visit: spliceDeclarations });
- * ```
+ Doubles each declaration, driving the non-empty splice path.
+ 
+ @param node - Visited node.
+ 
+ @returns Two-node splice, or the node untouched.
+ 
+ @example
+ ```ts
+ transformNodes({ nodes, visit: spliceDeclarations });
+ ```
  */
 function spliceDeclarations(node: CssNode,): CssVisitResult {
   return isCssDeclaration(node,)
@@ -119,55 +119,55 @@ function spliceDeclarations(node: CssNode,): CssVisitResult {
 }
 
 /**
- * Removes every declaration, driving prune-removal over the leading trivia.
- *
- * @param node - Visited node.
- *
- * @returns Empty splice for declarations; the node untouched otherwise.
- *
- * @example
- * ```ts
- * transformStylesheet({ root, visit: dropDeclarations, pruneTriviaBeforeRemoved: true });
- * ```
+ Removes every declaration, driving prune-removal over the leading trivia.
+ 
+ @param node - Visited node.
+ 
+ @returns Empty splice for declarations; the node untouched otherwise.
+ 
+ @example
+ ```ts
+ transformStylesheet({ root, visit: dropDeclarations, pruneTriviaBeforeRemoved: true });
+ ```
  */
 function dropDeclarations(node: CssNode,): CssVisitResult {
   return isCssDeclaration(node,) ? [] : node;
 }
 
 /**
- * Removes declarations whose raw text starts with `b`, driving removal where
- * the previously emitted node is a declaration rather than trivia.
- *
- * @param node - Visited node.
- *
- * @returns Empty splice for matching declarations; the node untouched otherwise.
- *
- * @example
- * ```ts
- * transformStylesheet({ root, visit: dropSecondDeclaration, pruneTriviaBeforeRemoved: true });
- * ```
+ Removes declarations whose raw text starts with `b`, driving removal where
+ the previously emitted node is a declaration rather than trivia.
+ 
+ @param node - Visited node.
+ 
+ @returns Empty splice for matching declarations; the node untouched otherwise.
+ 
+ @example
+ ```ts
+ transformStylesheet({ root, visit: dropSecondDeclaration, pruneTriviaBeforeRemoved: true });
+ ```
  */
 function dropSecondDeclaration(node: CssNode,): CssVisitResult {
   if (!isCssDeclaration(node,))
     return node;
   /**
-   * Raw source text of the declaration run.
+   Raw source text of the declaration run.
    */
   const raw = rawTextOfTokens({ tokens: node.tokens, },);
   return raw.startsWith('b',) ? [] : node;
 }
 
 /**
- * Removes every qualified rule, driving removal without pruning.
- *
- * @param node - Visited node.
- *
- * @returns Empty splice for rules; the node untouched otherwise.
- *
- * @example
- * ```ts
- * transformNodes({ nodes, visit: dropRules });
- * ```
+ Removes every qualified rule, driving removal without pruning.
+ 
+ @param node - Visited node.
+ 
+ @returns Empty splice for rules; the node untouched otherwise.
+ 
+ @example
+ ```ts
+ transformNodes({ nodes, visit: dropRules });
+ ```
  */
 function dropRules(node: CssNode,): CssVisitResult {
   return isCssRule(node,) ? [] : node;
@@ -178,10 +178,10 @@ function dropRules(node: CssNode,): CssVisitResult {
 //region Exercise
 
 /**
- * Document exercising every structural shape: trivia (comments, CDO/CDC),
- * statement and block at-rules, an unknown at-rule, relaxed nesting with the
- * restart-as-rule reclassification, a custom property keeping a `{}` value,
- * function and url tokens, and a statement at-rule ended by its block.
+ Document exercising every structural shape: trivia (comments, CDO/CDC),
+ statement and block at-rules, an unknown at-rule, relaxed nesting with the
+ restart-as-rule reclassification, a custom property keeping a `{}` value,
+ function and url tokens, and a statement at-rule ended by its block.
  */
 const MAIN_SOURCE = asCssSource([
   '<!-- --> /* head */',
@@ -194,26 +194,26 @@ const MAIN_SOURCE = asCssSource([
 ].join('\n',),);
 
 /**
- * Exercises parsing, stringification, token and node helpers, and the
- * transform layer across keep, replace, splice, and prune-removal paths.
- *
- * @throws Error when the untouched round-trip is not byte-identical, which
- * would make every downstream coverage number meaningless.
- *
- * @example
- * ```ts
- * exercise();
- * ```
+ Exercises parsing, stringification, token and node helpers, and the
+ transform layer across keep, replace, splice, and prune-removal paths.
+ 
+ @throws Error when the untouched round-trip is not byte-identical, which
+ would make every downstream coverage number meaningless.
+ 
+ @example
+ ```ts
+ exercise();
+ ```
  */
 function exercise(): void {
   /**
-   * Parsed main document.
+   Parsed main document.
    */
   const state = parseCss({ source: MAIN_SOURCE, },);
   if (stringifyCss({ state, },) !== MAIN_SOURCE)
     throw new Error('coverage driver round-trip diverged; driver inputs are stale',);
   /**
-   * Top-level children of the main document.
+   Top-level children of the main document.
    */
   const topChildren = state.root
     .children;
@@ -229,7 +229,7 @@ function exercise(): void {
 
   // Token helpers over the leading trivia run and the import prelude.
   /**
-   * Leading trivia run: CDO, CDC, whitespace, and the head comment.
+   Leading trivia run: CDO, CDC, whitespace, and the head comment.
    */
   const [lead,] = topChildren;
   if ((lead !== undefined) && isCssTrivia(lead,)) {
@@ -241,7 +241,7 @@ function exercise(): void {
     }
   }
   /**
-   * Import at-rule, first structural child.
+   Import at-rule, first structural child.
    */
   const importRule = topChildren.find(function firstAtRule(child: CssNode,): child is CssAtRule {
     return isCssAtRule(child,);
@@ -257,7 +257,7 @@ function exercise(): void {
 
   // Transform layer: keep (reference identity), replace, splice, and removals.
   /**
-   * Identity-transformed root, expected reference-equal to the input.
+   Identity-transformed root, expected reference-equal to the input.
    */
   const kept = transformStylesheet({
     root: state.root,
@@ -277,8 +277,8 @@ function exercise(): void {
   },);
 
   /**
-   * Pruning fixture: whitespace-only, comment-then-whitespace, and
-   * comment-only runs before removed declarations.
+   Pruning fixture: whitespace-only, comment-then-whitespace, and
+   comment-only runs before removed declarations.
    */
   const pruneState = parseCss({
     source: asCssSource(
@@ -291,8 +291,8 @@ function exercise(): void {
     pruneTriviaBeforeRemoved: true,
   },);
   /**
-   * Adjacent-declaration fixture: removal where the preceding emitted node is
-   * a declaration, not trivia.
+   Adjacent-declaration fixture: removal where the preceding emitted node is
+   a declaration, not trivia.
    */
   const adjacentState = parseCss({ source: asCssSource('.d { a:1;b:2 }',), },);
   transformStylesheet({

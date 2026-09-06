@@ -1,6 +1,6 @@
 /**
- * File transfer tool definitions: push and pull.
- * @module
+ File transfer tool definitions: push and pull.
+ @module
  */
 import {
   defineTool,
@@ -22,8 +22,8 @@ import { requiredStringArgument, } from './required-string-argument.ts';
 //region Transfer tools: move files between host and guest VMs
 
 /**
- * MCP tool: push a file from the host into a running VM, on the backend
- * resolved via {@link backendFromArgs}.
+ MCP tool: push a file from the host into a running VM, on the backend
+ resolved via {@link backendFromArgs}.
  */
 export const pushTool: ToolEntry = defineTool({
   name: 'push_to_vm',
@@ -38,20 +38,20 @@ export const pushTool: ToolEntry = defineTool({
     },),
     handler: async function handlePushToVm(args,) {
       /**
-       * Target VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
+       Target VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
        */
       const name = requiredStringArgument(args.name,);
       /**
-       * Host source path validated as string for the same reason as `name`.
+       Host source path validated as string for the same reason as `name`.
        */
       const hostPath = requiredStringArgument(args.hostPath,);
       /**
-       * Guest destination path validated as string for the same reason as `name`.
+       Guest destination path validated as string for the same reason as `name`.
        */
       const guestPath = requiredStringArgument(args.guestPath,);
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         await backend.pushFile({
@@ -72,8 +72,8 @@ export const pushTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: pull a file from a running VM to the host, on the backend
- * resolved via {@link backendFromArgs}.
+ MCP tool: pull a file from a running VM to the host, on the backend
+ resolved via {@link backendFromArgs}.
  */
 export const pullTool: ToolEntry = defineTool({
   name: 'pull_from_vm',
@@ -88,31 +88,31 @@ export const pullTool: ToolEntry = defineTool({
     },),
     handler: async function handlePullFromVm(args,) {
       /**
-       * Source VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
+       Source VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
        */
       const name = requiredStringArgument(args.name,);
       /**
-       * Guest source path validated as string for the same reason as `name`.
+       Guest source path validated as string for the same reason as `name`.
        */
       const guestPath = requiredStringArgument(args.guestPath,);
       /**
-       * Host destination path validated as string for the same reason as `name`.
+       Host destination path validated as string for the same reason as `name`.
        */
       const hostPath = requiredStringArgument(args.hostPath,);
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         /**
-         * Raw file bytes pulled from the guest, written to the host below.
+         Raw file bytes pulled from the guest, written to the host below.
          */
         const content = await backend.pullFile({
           name,
           guestPath,
         },);
         /**
-         * Lazy-imported `writeFile` so the heavy fs/promises module loads only on the pull path.
+         Lazy-imported `writeFile` so the heavy fs/promises module loads only on the pull path.
          */
         const { writeFile, } = await import('node:fs/promises');
         await writeFile(

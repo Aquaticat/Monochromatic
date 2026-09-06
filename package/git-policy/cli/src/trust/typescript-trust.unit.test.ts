@@ -37,10 +37,10 @@ type TypeScriptTrustFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable TypeScript trust fixture.
- *
- * @param source - config entry source
- * @returns initialized fixture
+ Creates disposable TypeScript trust fixture.
+ 
+ @param source - config entry source
+ @returns initialized fixture
  */
 async function createFixture(source: string,): Promise<TypeScriptTrustFixture> {
   /** Canonical disposable repository. */
@@ -62,10 +62,10 @@ async function createFixture(source: string,): Promise<TypeScriptTrustFixture> {
 }
 
 /**
- * Creates deterministic consent adapters.
- *
- * @param disclosures - captured disclosure text
- * @returns noninteractive fixed-clock adapters
+ Creates deterministic consent adapters.
+ 
+ @param disclosures - captured disclosure text
+ @returns noninteractive fixed-clock adapters
  */
 function adapters(disclosures: string[],): TrustConsentAdapters {
   return {
@@ -76,10 +76,10 @@ function adapters(disclosures: string[],): TrustConsentAdapters {
 }
 
 /**
- * Captures expected strict loading failure.
- *
- * @param fixture - trust fixture
- * @returns thrown value
+ Captures expected strict loading failure.
+ 
+ @param fixture - trust fixture
+ @returns thrown value
  */
 async function captureLoadFailure(fixture: TypeScriptTrustFixture,): Promise<unknown> {
   try {

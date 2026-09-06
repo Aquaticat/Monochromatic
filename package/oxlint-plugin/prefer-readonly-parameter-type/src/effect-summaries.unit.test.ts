@@ -136,9 +136,9 @@ type DisposableCacheDirectory = {
 };
 
 /**
- * Creates disposable persistent cache root.
- *
- * @returns cache directory removed after test scope.
+ Creates disposable persistent cache root.
+ 
+ @returns cache directory removed after test scope.
  */
 function disposableCacheDirectory(): DisposableCacheDirectory {
   const path = mkdtempSync(join(tmpdir(), 'readonly-effect-cache-',),);
@@ -215,18 +215,18 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the written parameter indexes of one fixture function.
-         *
-         * Reads `referentMutatedParameterIndexes`, the set the readonly offer is gated
-         * on, rather than `mutatedParameterIndexes`, which is its union with the invoked
-         * set. Measured: the two agree for every function this case names, so the switch
-         * changed no expectation here. It matters because they do not always agree, and
-         * a case reading `referentMutated=[]` while the union reads `[0]` is a parameter
-         * that will be offered readonly the moment its opacity is discharged.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns written parameter indexes in ascending order.
+         Reads the written parameter indexes of one fixture function.
+         
+         Reads `referentMutatedParameterIndexes`, the set the readonly offer is gated
+         on, rather than `mutatedParameterIndexes`, which is its union with the invoked
+         set. Measured: the two agree for every function this case names, so the switch
+         changed no expectation here. It matters because they do not always agree, and
+         a case reading `referentMutated=[]` while the union reads `[0]` is a parameter
+         that will be offered readonly the moment its opacity is discharged.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns written parameter indexes in ascending order.
          */
         function mutatedIndexes(functionName: string,): readonly number[] {
           const nameNode = session.nodeAtOffset(
@@ -247,11 +247,11 @@ await describe({
             },);
         }
         /**
-         * Reads the returned parameter origins of one fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns returned parameter indexes in ascending order.
+         Reads the returned parameter origins of one fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns returned parameter indexes in ascending order.
          */
         function returnedIndexes(functionName: string,): readonly number[] {
           const nameNode = session.nodeAtOffset(
@@ -471,28 +471,28 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the opaque parameter indexes of one fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns opaque parameter indexes in ascending order.
+         Reads the opaque parameter indexes of one fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns opaque parameter indexes in ascending order.
          */
         function opaqueIndexes(functionName: string,): readonly number[] {
           /**
-           * Name node of the requested fixture declaration.
+           Name node of the requested fixture declaration.
            */
           const nameNode = session.nodeAtOffset(
             ASSIGNMENT_STORE_SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -608,13 +608,13 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads one index set of one structural-store fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @param read - Which index set to take off the summary.
-         *
-         * @returns those parameter indexes in ascending order.
+         Reads one index set of one structural-store fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @param read - Which index set to take off the summary.
+         
+         @returns those parameter indexes in ascending order.
          */
         function structuralIndexes({
           functionName,
@@ -624,20 +624,20 @@ await describe({
           readonly read: (summary: CallableEffectSummary,) => Iterable<number>;
         },): readonly number[] {
           /**
-           * Name node of the requested fixture declaration.
+           Name node of the requested fixture declaration.
            */
           const nameNode = session.nodeAtOffset(
             STRUCTURAL_STORE_SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -648,11 +648,11 @@ await describe({
             },);
         }
         /**
-         * Reads the opaque parameter indexes of one structural-store fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns opaque parameter indexes in ascending order.
+         Reads the opaque parameter indexes of one structural-store fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns opaque parameter indexes in ascending order.
          */
         function structuralOpaque(functionName: string,): readonly number[] {
           return structuralIndexes({
@@ -663,11 +663,11 @@ await describe({
           },);
         }
         /**
-         * Reads the mutated parameter indexes of one structural-store fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns mutated parameter indexes in ascending order.
+         Reads the mutated parameter indexes of one structural-store fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns mutated parameter indexes in ascending order.
          */
         function structuralMutated(functionName: string,): readonly number[] {
           return structuralIndexes({
@@ -678,11 +678,11 @@ await describe({
           },);
         }
         /**
-         * Reads the returned parameter indexes of one structural-store fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns returned parameter indexes in ascending order.
+         Reads the returned parameter indexes of one structural-store fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns returned parameter indexes in ascending order.
          */
         function structuralReturned(functionName: string,): readonly number[] {
           return structuralIndexes({
@@ -1133,28 +1133,28 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads one fixture function's summary.
-         *
-         * @param functionName - Exported or local fixture function to inspect.
-         *
-         * @returns effect summary for that declaration.
+         Reads one fixture function's summary.
+         
+         @param functionName - Exported or local fixture function to inspect.
+         
+         @returns effect summary for that declaration.
          */
         function summaryOf(functionName: string,) {
           /**
-           * Name node of the requested fixture declaration.
+           Name node of the requested fixture declaration.
            */
           const nameNode = session.nodeAtOffset(
             RETURN_SUBSTITUTION_SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -1162,14 +1162,14 @@ await describe({
           return summary;
         }
         /**
-         * Reads the written parameter indexes of one fixture function.
-         *
-         * Reads `referentMutatedParameterIndexes` rather than the union with the invoked
-         * set, because the readonly offer is gated on that set alone.
-         *
-         * @param functionName - Fixture function to inspect.
-         *
-         * @returns written parameter indexes in ascending order.
+         Reads the written parameter indexes of one fixture function.
+         
+         Reads `referentMutatedParameterIndexes` rather than the union with the invoked
+         set, because the readonly offer is gated on that set alone.
+         
+         @param functionName - Fixture function to inspect.
+         
+         @returns written parameter indexes in ascending order.
          */
         function writtenIndexes(functionName: string,): readonly number[] {
           return [...summaryOf(functionName,)
@@ -1315,28 +1315,28 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the opaque parameter indexes of one fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns opaque parameter indexes in ascending order.
+         Reads the opaque parameter indexes of one fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns opaque parameter indexes in ascending order.
          */
         function opaqueIndexes(functionName: string,): readonly number[] {
           /**
-           * Name node of the requested fixture declaration.
+           Name node of the requested fixture declaration.
            */
           const nameNode = session.nodeAtOffset(
             ALIAS_HOP_SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -1361,31 +1361,31 @@ await describe({
         /** Alias established by assignment, then read in place. */
         const assignedAlias = opaqueIndexes('assignAliasReadInPlace',);
         /**
-         * Reads the boundary names recorded against one fixture function's first parameter.
-         *
-         * Names only, with the source location dropped, because the location is an absolute
-         * path and what this asks about is which boundaries appear rather than where.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns boundary names in ascending order.
+         Reads the boundary names recorded against one fixture function's first parameter.
+         
+         Names only, with the source location dropped, because the location is an absolute
+         path and what this asks about is which boundaries appear rather than where.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns boundary names in ascending order.
          */
         function boundaryNames(functionName: string,): readonly string[] {
           /**
-           * Name node of the requested fixture declaration.
+           Name node of the requested fixture declaration.
            */
           const nameNode = session.nodeAtOffset(
             ALIAS_HOP_SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -1453,17 +1453,17 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the written parameter indexes of one fixture function.
-         *
-         * Reads `referentMutatedParameterIndexes` rather than
-         * `mutatedParameterIndexes`, because the second is the union with the invoked
-         * set while the readonly offer is gated on the first alone. Measuring the union
-         * here would have reported a write for `methodReturnPackagedEffect`, which is
-         * offered readonly.
-         *
-         * @param functionName - Fixture function to inspect.
-         *
-         * @returns written parameter indexes in ascending order.
+         Reads the written parameter indexes of one fixture function.
+         
+         Reads `referentMutatedParameterIndexes` rather than
+         `mutatedParameterIndexes`, because the second is the union with the invoked
+         set while the readonly offer is gated on the first alone. Measuring the union
+         here would have reported a write for `methodReturnPackagedEffect`, which is
+         offered readonly.
+         
+         @param functionName - Fixture function to inspect.
+         
+         @returns written parameter indexes in ascending order.
          */
         function writtenIndexes(functionName: string,): readonly number[] {
           const nameNode = session.nodeAtOffset(
@@ -2572,17 +2572,17 @@ await describe({
         );
 
         /**
-         * Proves both callables in one order, from a cold index each time.
-         *
-         * The helper's backwards closure walks through the boundary and reaches every callable
-         * the boundary's own closure would, so asking the helper first is what leaves an answer
-         * for the boundary behind. Retaining that answer instead of proving the boundary in its
-         * own right is what attempt two did, and the closure's caller summaries carry only the
-         * edges the helper's walk discovered, so the retained answer is not the same answer.
-         *
-         * @param helperFirst - Whether to demand the shared helper before the marked boundary.
-         *
-         * @returns proven parameter positions for the boundary and for the helper.
+         Proves both callables in one order, from a cold index each time.
+         
+         The helper's backwards closure walks through the boundary and reaches every callable
+         the boundary's own closure would, so asking the helper first is what leaves an answer
+         for the boundary behind. Retaining that answer instead of proving the boundary in its
+         own right is what attempt two did, and the closure's caller summaries carry only the
+         edges the helper's walk discovered, so the retained answer is not the same answer.
+         
+         @param helperFirst - Whether to demand the shared helper before the marked boundary.
+         
+         @returns proven parameter positions for the boundary and for the helper.
          */
         const proveInOrder = (helperFirst: boolean,): {
           readonly foreign: readonly number[];
@@ -2727,28 +2727,28 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the opaque parameter indexes of one fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns opaque parameter indexes in ascending order.
+         Reads the opaque parameter indexes of one fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns opaque parameter indexes in ascending order.
          */
         function opaqueIndexes(functionName: string,): readonly number[] {
           /**
-           * Name node of the requested fixture declaration.
+           Name node of the requested fixture declaration.
            */
           const nameNode = session.nodeAtOffset(
             SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -2783,31 +2783,31 @@ await describe({
         expect(opaqueIndexes('opaqueSemanticEffect',),).toEqual([0,],);
         expect(opaqueIndexes('hookedArrayDefaultSortOpaqueEffect',),).toEqual([0,],);
         /**
-         * Reads the written parameter indexes of one fixture function.
-         *
-         * Reads `referentMutatedParameterIndexes`, the set the read-only offer is gated
-         * on, rather than its union with the invoked set.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns written parameter indexes in ascending order.
+         Reads the written parameter indexes of one fixture function.
+         
+         Reads `referentMutatedParameterIndexes`, the set the read-only offer is gated
+         on, rather than its union with the invoked set.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns written parameter indexes in ascending order.
          */
         function writtenIndexes(functionName: string,): readonly number[] {
           /**
-           * Name node of the requested fixture declaration.
+           Name node of the requested fixture declaration.
            */
           const nameNode = session.nodeAtOffset(
             SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -2856,28 +2856,28 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the written parameter indexes of one fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns written parameter indexes.
+         Reads the written parameter indexes of one fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns written parameter indexes.
          */
         function writtenIndexes(functionName: string,): readonly number[] {
           /**
-           * Name node of the requested fixture declaration.
+           Name node of the requested fixture declaration.
            */
           const nameNode = session.nodeAtOffset(
             tupleSource.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -2930,28 +2930,28 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the opaque parameter indexes of one fixture function.
-         *
-         * @param functionName - Exported fixture function to inspect.
-         *
-         * @returns parameter indexes left opaque.
+         Reads the opaque parameter indexes of one fixture function.
+         
+         @param functionName - Exported fixture function to inspect.
+         
+         @returns parameter indexes left opaque.
          */
         function opaqueIndexes(functionName: string,): readonly number[] {
           /**
-           * Name node of the requested fixture declaration.
+           Name node of the requested fixture declaration.
            */
           const nameNode = session.nodeAtOffset(
             drainSource.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -3605,11 +3605,11 @@ closeSemanticBridge();
         /** Shared helper reached through the marked boundary. */
         const helperPath = join(projectRoot.path, 'helper.ts',);
         /**
-         * Active source whose boundary is itself invoked at module top level.
-         *
-         * The inbound walk for `readForeign` starts at that trailing call and
-         * passes no callable before the source file, which is the shape that
-         * previously stepped off the root.
+         Active source whose boundary is itself invoked at module top level.
+         
+         The inbound walk for `readForeign` starts at that trailing call and
+         passes no callable before the source file, which is the shape that
+         previously stepped off the root.
          */
         const foreignSource = "import type { ForeignBorrowed, } from './ownership-marker/foreign-borrowed/src/index.js';\nimport { read, } from './helper.js';\nexport function readForeign(value: ForeignBorrowed<{ text: string; }>,): string { return read(value); }\nexport const eager: string = readForeign({ text: 'top level', },);\n";
         mkdirSync(markerRoot, { recursive: true, },);

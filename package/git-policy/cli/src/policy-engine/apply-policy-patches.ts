@@ -1,7 +1,7 @@
 /**
- * Ordered private-index policy patch application.
- *
- * @module
+ Ordered private-index policy patch application.
+ 
+ @module
  */
 import type {
   CandidateFile,
@@ -18,59 +18,59 @@ import {
 import type { PolicyEngineResult, } from './types.ts';
 
 /**
- * Successful ordered patch application.
+ Successful ordered patch application.
  */
 type AppliedPolicyPatches = Readonly<{
   /**
-   * Stable result discriminator.
+   Stable result discriminator.
    */
   kind: 'applied';
   /**
-   * Patch paths in proposal order.
+   Patch paths in proposal order.
    */
   paths: readonly string[];
 }>;
 
 /**
- * Failed ordered patch application.
+ Failed ordered patch application.
  */
 type FailedPolicyPatches = Readonly<{
   /**
-   * Stable result discriminator.
+   Stable result discriminator.
    */
   kind: 'failed';
   /**
-   * Classified policy-engine failure.
+   Classified policy-engine failure.
    */
   result: PolicyEngineResult;
 }>;
 
 /**
- * Ordered private patch application outcome.
+ Ordered private patch application outcome.
  */
 export type ApplyPolicyPatchesResult = AppliedPolicyPatches | FailedPolicyPatches;
 
 /**
- * Applies one provisional pass of ordered patches to private index.
- *
- * @param workspace - private patch workspace
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - repository directory
- *
- * @param pass - provisional policy-engine pass
- *
- * @param candidates - exact pass-start candidates
- *
- * @param trigger - fixable lifecycle point
- *
- * @returns applied paths or classified failure
- *
- * @example
- * ```ts
- * await applyPolicyPatches({ workspace, gitPath, cwd, pass, candidates, trigger: 'direct-fix' });
- * ```
+ Applies one provisional pass of ordered patches to private index.
+ 
+ @param workspace - private patch workspace
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - repository directory
+ 
+ @param pass - provisional policy-engine pass
+ 
+ @param candidates - exact pass-start candidates
+ 
+ @param trigger - fixable lifecycle point
+ 
+ @returns applied paths or classified failure
+ 
+ @example
+ ```ts
+ await applyPolicyPatches({ workspace, gitPath, cwd, pass, candidates, trigger: 'direct-fix' });
+ ```
  */
 export async function applyPolicyPatches({
   workspace,
@@ -88,13 +88,13 @@ export async function applyPolicyPatches({
   trigger: Extract<PolicyTrigger, 'pre-forward' | 'direct-fix'>;
 }>,): Promise<ApplyPolicyPatchesResult> {
   /**
-   * Successfully applied patch paths in proposal order.
+   Successfully applied patch paths in proposal order.
    */
   const paths: string[] = [];
   for (const [ordinal, patch,] of pass.patches
     .entries()) {
     /**
-     * Exact candidate selected by opaque target and path.
+     Exact candidate selected by opaque target and path.
      */
     const target = candidates.find(function matchingTarget(candidate,) {
       return (candidate.targetId === patch.targetId) && (candidate.path === patch.path);

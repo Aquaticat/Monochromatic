@@ -15,27 +15,27 @@ import {
 import { latestJetbrainsOptionsDirectory, } from '../../dist/final/node/index.mjs';
 
 /**
- * Product prefixes recognized by IntelliJ IDEA discovery in these tests.
+ Product prefixes recognized by IntelliJ IDEA discovery in these tests.
  */
 const IDEA_PREFIXES = ['IntelliJIdea', 'IdeaIC',] as const;
 
 //region Environment and fixture helpers
 
 /**
- * Sets `XDG_CONFIG_HOME` for scoped JetBrains discovery tests.
- *
- * @param configRoot - Directory exposed as XDG config root.
- *
- * @returns Disposable that restores prior environment state.
- *
- * @example
- * ```ts
- * using xdg = withXdgConfigHome('/tmp/config');
- * ```
+ Sets `XDG_CONFIG_HOME` for scoped JetBrains discovery tests.
+ 
+ @param configRoot - Directory exposed as XDG config root.
+ 
+ @returns Disposable that restores prior environment state.
+ 
+ @example
+ ```ts
+ using xdg = withXdgConfigHome('/tmp/config');
+ ```
  */
 function withXdgConfigHome(configRoot: string,): Disposable {
   /**
-   * Prior XDG config root, restored on disposal.
+   Prior XDG config root, restored on disposal.
    */
   const previous = process.env.XDG_CONFIG_HOME;
   process.env.XDG_CONFIG_HOME = configRoot;
@@ -50,16 +50,16 @@ function withXdgConfigHome(configRoot: string,): Disposable {
 }
 
 /**
- * Owns temporary directory cleanup for JetBrains discovery tests.
- *
- * @param directory - Directory to remove on disposal.
- *
- * @returns Async disposable that removes directory recursively.
- *
- * @example
- * ```ts
- * await using owned = throwawayDir('/tmp/config');
- * ```
+ Owns temporary directory cleanup for JetBrains discovery tests.
+ 
+ @param directory - Directory to remove on disposal.
+ 
+ @returns Async disposable that removes directory recursively.
+ 
+ @example
+ ```ts
+ await using owned = throwawayDir('/tmp/config');
+ ```
  */
 function throwawayDir(directory: string,): AsyncDisposable {
   return {
@@ -80,14 +80,14 @@ function throwawayDir(directory: string,): AsyncDisposable {
 //region Error capture helpers
 
 /**
- * Captures latest JetBrains options discovery failure for assertion.
- *
- * @returns Caught discovery error, or undefined when discovery resolves.
- *
- * @example
- * ```ts
- * const error = await latestJetbrainsOptionsDirectoryError();
- * ```
+ Captures latest JetBrains options discovery failure for assertion.
+ 
+ @returns Caught discovery error, or undefined when discovery resolves.
+ 
+ @example
+ ```ts
+ const error = await latestJetbrainsOptionsDirectoryError();
+ ```
  */
 async function latestJetbrainsOptionsDirectoryError(): Promise<unknown> {
   try {
@@ -111,7 +111,7 @@ await describe({
       name: 'propagates corrupt JetBrains config root read errors',
       fn: async function rejectsRegularFileConfigRoot(): Promise<void> {
         /**
-         * Throwaway XDG root whose JetBrains entry is a file, not directory.
+         Throwaway XDG root whose JetBrains entry is a file, not directory.
          */
         const configRoot = await mkdtemp(join(
           tmpdir(),

@@ -1,46 +1,46 @@
 /**
- * Persisted goal event validation and active-branch extraction.
- *
- * @module
+ Persisted goal event validation and active-branch extraction.
+ 
+ @module
  */
 
 import { GOAL_STATE_ENTRY_TYPE, } from './constants.ts';
 import type { GoalEvent, } from './types.ts';
 
 /**
- * Minimal Pi custom-entry shape accepted by branch extractor.
- *
- * @example
- * ```ts
- * const entry: GoalBranchEntry = { type: 'custom', customType: 'goal:state', data: event };
- * ```
+ Minimal Pi custom-entry shape accepted by branch extractor.
+ 
+ @example
+ ```ts
+ const entry: GoalBranchEntry = { type: 'custom', customType: 'goal:state', data: event };
+ ```
  */
 type GoalBranchEntry = {
   /**
-   * Pi session entry discriminator.
+   Pi session entry discriminator.
    */
   readonly type: string;
   /**
-   * Extension custom type when entry is custom.
+   Extension custom type when entry is custom.
    */
   readonly customType?: unknown;
   /**
-   * Persisted custom payload.
+   Persisted custom payload.
    */
   readonly data?: unknown;
 };
 
 /**
- * Narrow unknown value to property record.
- *
- * @param value - candidate event payload
- *
- * @returns whether string property lookup is safe
- *
- * @example
- * ```ts
- * isRecord({ kind: 'run_started' });
- * ```
+ Narrow unknown value to property record.
+ 
+ @param value - candidate event payload
+ 
+ @returns whether string property lookup is safe
+ 
+ @example
+ ```ts
+ isRecord({ kind: 'run_started' });
+ ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return (value !== null)
@@ -48,18 +48,18 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Require named string properties on record.
- *
- * @param record - candidate event record
- *
- * @param names - required string property names
- *
- * @returns whether every named property is string
- *
- * @example
- * ```ts
- * hasStringProperties({ runId: 'r' }, ['runId']);
- * ```
+ Require named string properties on record.
+ 
+ @param record - candidate event record
+ 
+ @param names - required string property names
+ 
+ @returns whether every named property is string
+ 
+ @example
+ ```ts
+ hasStringProperties({ runId: 'r' }, ['runId']);
+ ```
  */
 function hasStringProperties(
   {
@@ -76,16 +76,16 @@ function hasStringProperties(
 }
 
 /**
- * Validate unknown value as string array.
- *
- * @param value - candidate array
- *
- * @returns whether every entry is string
- *
- * @example
- * ```ts
- * isStringArray(['review/model']);
- * ```
+ Validate unknown value as string array.
+ 
+ @param value - candidate array
+ 
+ @returns whether every entry is string
+ 
+ @example
+ ```ts
+ isStringArray(['review/model']);
+ ```
  */
 function isStringArray(value: unknown,): value is string[] {
   return Array.isArray(value,)
@@ -95,22 +95,22 @@ function isStringArray(value: unknown,): value is string[] {
 }
 
 /**
- * Validate persisted unknown payload as one supported goal event.
- *
- * @param value - custom-entry payload
- *
- * @returns whether payload is goal event
- *
- * @example
- * ```ts
- * isGoalEvent({ kind: 'run_cleared', runId: 'r', generationId: 'g', clearedAt: 'now' });
- * ```
+ Validate persisted unknown payload as one supported goal event.
+ 
+ @param value - custom-entry payload
+ 
+ @returns whether payload is goal event
+ 
+ @example
+ ```ts
+ isGoalEvent({ kind: 'run_cleared', runId: 'r', generationId: 'g', clearedAt: 'now' });
+ ```
  */
 function isGoalEvent(value: unknown,): value is GoalEvent {
   if (!isRecord(value,))
     return false;
   /**
-   * Event kind inspected by guarded branches.
+   Event kind inspected by guarded branches.
    */
   const { kind, } = value;
   if ((typeof kind) !== 'string')
@@ -147,7 +147,7 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
   }
   if (kind === 'review_denied') {
     /**
-     * Shared identity and sequence validity for legacy and current denials.
+     Shared identity and sequence validity for legacy and current denials.
      */
     const baseValid = hasStringProperties({
       record: value,
@@ -186,7 +186,7 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
   }
   if (kind === 'run_completed_model') {
     /**
-     * Shared model-completion identity validity.
+     Shared model-completion identity validity.
      */
     const baseValid = hasStringProperties({
       record: value,
@@ -213,7 +213,7 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
   }
   if (kind === 'run_completed_manual') {
     /**
-     * Shared manual-completion identity validity.
+     Shared manual-completion identity validity.
      */
     const baseValid = hasStringProperties({
       record: value,
@@ -262,16 +262,16 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
 }
 
 /**
- * Extract validated goal events from ordered active branch entries.
- *
- * @param entries - `SessionManager.getBranch()` result or compatible fixture
- *
- * @returns ordered validated goal events
- *
- * @example
- * ```ts
- * const events = goalEventsFromBranch(entries);
- * ```
+ Extract validated goal events from ordered active branch entries.
+ 
+ @param entries - `SessionManager.getBranch()` result or compatible fixture
+ 
+ @returns ordered validated goal events
+ 
+ @example
+ ```ts
+ const events = goalEventsFromBranch(entries);
+ ```
  */
 function goalEventsFromBranch(entries: readonly GoalBranchEntry[],): GoalEvent[] {
   return entries

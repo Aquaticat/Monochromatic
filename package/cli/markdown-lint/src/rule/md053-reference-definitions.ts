@@ -13,53 +13,53 @@ import { walk, } from '../walk.ts';
 import type { Definition, } from 'mdast';
 
 /**
- * Rule id.
+ Rule id.
  */
 const ID = 'MD053';
 
 /**
- * Definition labels never reported, matching markdownlint's default
- * `ignored_definitions: ["//"]` (the `[//]: # (comment)` trick).
+ Definition labels never reported, matching markdownlint's default
+ `ignored_definitions: ["//"]` (the `[//]: # (comment)` trick).
  */
 const IGNORED_DEFINITIONS: ReadonlySet<string> = new Set(['//',],);
 
 /**
- * Parameters for {@link removalFix}.
+ Parameters for {@link removalFix}.
  */
 type RemovalFixParams = {
   /**
-   * Definition to remove.
+   Definition to remove.
    */
   readonly definition: Definition;
   /**
-   * Original source.
+   Original source.
    */
   readonly source: string;
 };
 
 /**
- * A fix that deletes a definition's line, including its trailing newline when
- * present so no blank line is left where the definition stood.
- *
- * @param definition - definition to remove
- *
- * @param source - original source
- *
- * @returns deletion fix for the definition line
+ A fix that deletes a definition's line, including its trailing newline when
+ present so no blank line is left where the definition stood.
+ 
+ @param definition - definition to remove
+ 
+ @param source - original source
+ 
+ @returns deletion fix for the definition line
  */
 function removalFix({
   definition,
   source,
 }: ReadonlyDeep<RemovalFixParams>,): Fix {
   /**
-   * Definition's source offsets.
+   Definition's source offsets.
    */
   const {
     start,
     end,
   } = offsetsOf(definition,);
   /**
-   * End of the deletion, extended past a trailing newline when there is one.
+   End of the deletion, extended past a trailing newline when there is one.
    */
   const deleteEnd = source[end] === '\n'
     ? end + 1
@@ -72,29 +72,29 @@ function removalFix({
 }
 
 /**
- * Flag link/image reference definitions that are unused (no reference resolves
- * to them) or duplicated (a later definition of an already-kept label), and
- * attach a fix removing each. Used definitions are exactly those a
- * `linkReference`/`imageReference` resolves to, since mdast only creates those
- * nodes when a definition exists. Two passes: collect uses and definitions,
- * then judge each definition.
- *
- * @param tree - mdast tree under lint
- *
- * @param source - original source, for the removal offsets
- *
- * @returns one diagnostic per unused or duplicate definition
+ Flag link/image reference definitions that are unused (no reference resolves
+ to them) or duplicated (a later definition of an already-kept label), and
+ attach a fix removing each. Used definitions are exactly those a
+ `linkReference`/`imageReference` resolves to, since mdast only creates those
+ nodes when a definition exists. Two passes: collect uses and definitions,
+ then judge each definition.
+ 
+ @param tree - mdast tree under lint
+ 
+ @param source - original source, for the removal offsets
+ 
+ @returns one diagnostic per unused or duplicate definition
  */
 function checkReferenceDefinitions({
   tree,
   source,
 }: RuleContext,): readonly Diagnostic[] {
   /**
-   * Identifiers that a reference resolves to.
+   Identifiers that a reference resolves to.
    */
   const usedIds = new Set<string>();
   /**
-   * Every definition, in document order.
+   Every definition, in document order.
    */
   const definitions: Definition[] = [];
   for (const { node, } of walk(tree,)) {
@@ -107,11 +107,11 @@ function checkReferenceDefinitions({
     }
   }
   /**
-   * Identifiers whose first used definition has been kept.
+   Identifiers whose first used definition has been kept.
    */
   const keptIds = new Set<string>();
   /**
-   * Diagnostics collected across the definitions.
+   Diagnostics collected across the definitions.
    */
   const diagnostics: Diagnostic[] = [];
   for (const definition of definitions) {
@@ -148,8 +148,8 @@ function checkReferenceDefinitions({
 }
 
 /**
- * MD053 link-image-reference-definitions: every reference definition must be
- * used and unique. Fixable: removes unused and duplicate definitions.
+ MD053 link-image-reference-definitions: every reference definition must be
+ used and unique. Fixable: removes unused and duplicate definitions.
  */
 export const referenceDefinitions: Rule = {
   id: ID,

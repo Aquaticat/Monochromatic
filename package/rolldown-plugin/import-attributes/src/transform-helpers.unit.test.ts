@@ -1,20 +1,20 @@
 /**
- * Equivalence tests for `skipWithClauseWhitespace`.
- *
- * Capture the pre-refactor behavior of the with-clause whitespace skipper
- * so the linear-pass rewrite stays behavior-identical: empty input, an
- * all-whitespace run, an immediate non-whitespace char (no match), a
- * cursor at or past `s.length`, each of the four permitted whitespace
- * chars, a char outside that set (form feed, which `\s` would match but
- * this scanner must not), a mid-string scan after a quoted path, trailing
- * whitespace with no following token, and a long repeated run that would
- * overflow the prior recursive scan's stack.
- *
- * The generic delimiter edge cases (unmatched delimiter, both path
- * separators) do not apply: this function scans a whitespace prefix and
- * has no delimiter or path concept.
- *
- * @module
+ Equivalence tests for `skipWithClauseWhitespace`.
+ 
+ Capture the pre-refactor behavior of the with-clause whitespace skipper
+ so the linear-pass rewrite stays behavior-identical: empty input, an
+ all-whitespace run, an immediate non-whitespace char (no match), a
+ cursor at or past `s.length`, each of the four permitted whitespace
+ chars, a char outside that set (form feed, which `\s` would match but
+ this scanner must not), a mid-string scan after a quoted path, trailing
+ whitespace with no following token, and a long repeated run that would
+ overflow the prior recursive scan's stack.
+ 
+ The generic delimiter edge cases (unmatched delimiter, both path
+ separators) do not apply: this function scans a whitespace prefix and
+ has no delimiter or path concept.
+ 
+ @module
  */
 
 import {

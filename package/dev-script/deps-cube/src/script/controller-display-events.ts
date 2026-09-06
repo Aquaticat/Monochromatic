@@ -1,11 +1,11 @@
 /**
- * Display-option and reset event wiring for the deck.gl scene controller.
- *
- * @example
- * ```ts
- * wireDisplay({ session, commit });
- * wireReset({ session, probes, commit });
- * ```
+ Display-option and reset event wiring for the deck.gl scene controller.
+ 
+ @example
+ ```ts
+ wireDisplay({ session, commit });
+ wireReset({ session, probes, commit });
+ ```
  */
 
 import { computeSceneBounds, } from '../deck-config.ts';
@@ -26,7 +26,7 @@ import { defaultState, } from './state.ts';
 //region Types
 
 /**
- * Display-toggle boolean keys controlled by checkboxes.
+ Display-toggle boolean keys controlled by checkboxes.
  */
 type CheckboxDisplayKey = 'showWireframe' | 'showThresholdPlanes' | 'showAxisLabels'
   | 'showUnknownCluster';
@@ -36,20 +36,20 @@ type CheckboxDisplayKey = 'showWireframe' | 'showThresholdPlanes' | 'showAxisLab
 //region Helpers
 
 /**
- * Binds one checkbox to its display-toggles key.
- *
- * @param id - Element id of checkbox.
- *
- * @param key - Display-toggles boolean controlled by checkbox.
- *
- * @param session - Mutable session.
- *
- * @param commit - Callback that re-renders and syncs hash.
- *
- * @example
- * ```ts
- * bindCheckbox({ id: 'display-wireframe', key: 'showWireframe', session, commit });
- * ```
+ Binds one checkbox to its display-toggles key.
+ 
+ @param id - Element id of checkbox.
+ 
+ @param key - Display-toggles boolean controlled by checkbox.
+ 
+ @param session - Mutable session.
+ 
+ @param commit - Callback that re-renders and syncs hash.
+ 
+ @example
+ ```ts
+ bindCheckbox({ id: 'display-wireframe', key: 'showWireframe', session, commit });
+ ```
  */
 function bindCheckbox(
   {
@@ -65,7 +65,7 @@ function bindCheckbox(
   },
 ): void {
   /**
-   * Checkbox `<input>` resolved by id; `change` event drives bound display toggle.
+   Checkbox `<input>` resolved by id; `change` event drives bound display toggle.
    */
   const input = elInput(id,);
   input.addEventListener(
@@ -90,18 +90,18 @@ function bindCheckbox(
 
 
 /**
- * Wires four display checkboxes plus `name-labels` select.
- *
- * Each change triggers a full layer rebuild via `commit`.
- *
- * @param session - Mutable session.
- *
- * @param commit - Callback that re-renders and syncs hash.
- *
- * @example
- * ```ts
- * wireDisplay({ session, commit });
- * ```
+ Wires four display checkboxes plus `name-labels` select.
+ 
+ Each change triggers a full layer rebuild via `commit`.
+ 
+ @param session - Mutable session.
+ 
+ @param commit - Callback that re-renders and syncs hash.
+ 
+ @example
+ ```ts
+ wireDisplay({ session, commit });
+ ```
  */
 export function wireDisplay(
   {
@@ -137,14 +137,14 @@ export function wireDisplay(
     commit,
   },);
   /**
-   * Name-labels `<select>`; controls how many probe names are rendered as text.
+   Name-labels `<select>`; controls how many probe names are rendered as text.
    */
   const nameLabels = elSelect('name-labels',);
   nameLabels.addEventListener(
     'change',
     function onChange() {
       /**
-       * Raw `value` from select; narrowed against allowed name-label modes below.
+       Raw `value` from select; narrowed against allowed name-label modes below.
        */
       const raw = nameLabels.value;
       if ((raw !== 'none') && (raw !== 'topN')
@@ -164,20 +164,20 @@ export function wireDisplay(
 }
 
 /**
- * Wires reset button to restore `defaultState({ probes })`.
- *
- * After state swap, every control's DOM value is re-synced.
- *
- * @param session - Mutable session.
- *
- * @param probes - Source probes.
- *
- * @param commit - Callback that re-renders and syncs hash.
- *
- * @example
- * ```ts
- * wireReset({ session, probes, commit });
- * ```
+ Wires reset button to restore `defaultState({ probes })`.
+ 
+ After state swap, every control's DOM value is re-synced.
+ 
+ @param session - Mutable session.
+ 
+ @param probes - Source probes.
+ 
+ @param commit - Callback that re-renders and syncs hash.
+ 
+ @example
+ ```ts
+ wireReset({ session, probes, commit });
+ ```
  */
 export function wireReset(
   {
@@ -191,14 +191,14 @@ export function wireReset(
   },
 ): void {
   /**
-   * Reset button; click handler swaps state back to {@link defaultState}.
+   Reset button; click handler swaps state back to {@link defaultState}.
    */
   const button = el('reset',);
   button.addEventListener(
     'click',
     function onClick() {
       /**
-       * Pristine state derived from source probes; replaces entire session state below.
+       Pristine state derived from source probes; replaces entire session state below.
        */
       const next = defaultState({
         probes,

@@ -26,9 +26,9 @@ import type { ShallowResult, } from './probe-shallow.ts';
 import type { RemoteSource, } from './source.ts';
 
 /**
- * One settled probe signal, discriminated by `kind`. `none` marks a probe that
- * yielded nothing (unsupported, failed, or budget-aborted), so the snapshot
- * still advances without recording a value.
+ One settled probe signal, discriminated by `kind`. `none` marks a probe that
+ yielded nothing (unsupported, failed, or budget-aborted), so the snapshot
+ still advances without recording a value.
  */
 export type Signal =
   | {
@@ -65,22 +65,22 @@ export type Signal =
   };
 
 /**
- * Resolves the shared shallow-clone promise into a shallow signal.
- *
- * @param shallowPromise - the single in-flight shallow clone
- *
- * @returns a `shallow` signal, or `none` when the clone failed
- *
- * @example
- * ```ts
- * const sig = await shallowSignal({ shallowPromise });
- * ```
+ Resolves the shared shallow-clone promise into a shallow signal.
+ 
+ @param shallowPromise - the single in-flight shallow clone
+ 
+ @returns a `shallow` signal, or `none` when the clone failed
+ 
+ @example
+ ```ts
+ const sig = await shallowSignal({ shallowPromise });
+ ```
  */
 export async function shallowSignal(
   { shallowPromise, }: { readonly shallowPromise: Promise<ShallowResult>; },
 ): Promise<Signal> {
   /**
-   * Resolved shallow clone result.
+   Resolved shallow clone result.
    */
   const shallow = await shallowPromise;
   if ((!shallow.ok) || (shallow.shallowBytes === undefined)
@@ -96,20 +96,20 @@ export async function shallowSignal(
 }
 
 /**
- * Runs the deepen probe on the shared shallow clone once it exists.
- *
- * @param shallowPromise - the single in-flight shallow clone
- *
- * @param maxDeepenCommits - cap on commits walked
- *
- * @param signal - wall-clock budget signal
- *
- * @returns a `deepen` signal, or `none` when no usable delta was observed
- *
- * @example
- * ```ts
- * const sig = await deepenSignal({ shallowPromise, maxDeepenCommits: 256 });
- * ```
+ Runs the deepen probe on the shared shallow clone once it exists.
+ 
+ @param shallowPromise - the single in-flight shallow clone
+ 
+ @param maxDeepenCommits - cap on commits walked
+ 
+ @param signal - wall-clock budget signal
+ 
+ @returns a `deepen` signal, or `none` when no usable delta was observed
+ 
+ @example
+ ```ts
+ const sig = await deepenSignal({ shallowPromise, maxDeepenCommits: 256 });
+ ```
  */
 export async function deepenSignal(
   {
@@ -123,7 +123,7 @@ export async function deepenSignal(
   },
 ): Promise<Signal> {
   /**
-   * Resolved shallow clone result, reused as the deepen base.
+   Resolved shallow clone result, reused as the deepen base.
    */
   const shallow = await shallowPromise;
   if (!shallow.ok)
@@ -132,7 +132,7 @@ export async function deepenSignal(
       which: 'deepen',
     };
   /**
-   * Deepen probe outcome.
+   Deepen probe outcome.
    */
   const deepen = await probeDeepen({
     clonePath: shallow.clonePath,
@@ -151,20 +151,20 @@ export async function deepenSignal(
 }
 
 /**
- * Counts refs via `git ls-remote`.
- *
- * @param url - remote clone URL
- *
- * @returns a `refs` signal, or `none` on failure
- *
- * @example
- * ```ts
- * const sig = await refsSignal({ url });
- * ```
+ Counts refs via `git ls-remote`.
+ 
+ @param url - remote clone URL
+ 
+ @returns a `refs` signal, or `none` on failure
+ 
+ @example
+ ```ts
+ const sig = await refsSignal({ url });
+ ```
  */
 export async function refsSignal({ url, }: { readonly url: string; },): Promise<Signal> {
   /**
-   * Ref inventory, or absent on failure.
+   Ref inventory, or absent on failure.
    */
   const refs = await lsRemote({ url, },);
   if (refs === NO_REFS)
@@ -179,20 +179,20 @@ export async function refsSignal({ url, }: { readonly url: string; },): Promise<
 }
 
 /**
- * Reads the host storage proxy.
- *
- * @param source - parsed remote with host/owner/repo
- *
- * @returns a `storage` signal, or `none` when unavailable
- *
- * @example
- * ```ts
- * const sig = await storageSignal({ source });
- * ```
+ Reads the host storage proxy.
+ 
+ @param source - parsed remote with host/owner/repo
+ 
+ @returns a `storage` signal, or `none` when unavailable
+ 
+ @example
+ ```ts
+ const sig = await storageSignal({ source });
+ ```
  */
 export async function storageSignal({ source, }: { readonly source: RemoteSource; },): Promise<Signal> {
   /**
-   * Host storage proxy, or absent.
+   Host storage proxy, or absent.
    */
   const storage = await hostStorageBytes({ source, },);
   if (storage === NO_STORAGE)
@@ -207,20 +207,20 @@ export async function storageSignal({ source, }: { readonly source: RemoteSource
 }
 
 /**
- * Reads the host commit count.
- *
- * @param source - parsed remote with host/owner/repo
- *
- * @returns a `commit` signal, or `none` when unavailable
- *
- * @example
- * ```ts
- * const sig = await commitSignal({ source });
- * ```
+ Reads the host commit count.
+ 
+ @param source - parsed remote with host/owner/repo
+ 
+ @returns a `commit` signal, or `none` when unavailable
+ 
+ @example
+ ```ts
+ const sig = await commitSignal({ source });
+ ```
  */
 export async function commitSignal({ source, }: { readonly source: RemoteSource; },): Promise<Signal> {
   /**
-   * Host commit count, or absent.
+   Host commit count, or absent.
    */
   const commit = await hostCommitCount({ source, },);
   if (commit === NO_HOST_COMMITS)
@@ -235,20 +235,20 @@ export async function commitSignal({ source, }: { readonly source: RemoteSource;
 }
 
 /**
- * Counts commits via a tree:0 partial clone.
- *
- * @param url - remote clone URL
- *
- * @param dest - temp directory for the clone
- *
- * @param signal - wall-clock budget signal
- *
- * @returns a `tree0` signal, or `none` when unsupported
- *
- * @example
- * ```ts
- * const sig = await tree0Signal({ url, dest });
- * ```
+ Counts commits via a tree:0 partial clone.
+ 
+ @param url - remote clone URL
+ 
+ @param dest - temp directory for the clone
+ 
+ @param signal - wall-clock budget signal
+ 
+ @returns a `tree0` signal, or `none` when unsupported
+ 
+ @example
+ ```ts
+ const sig = await tree0Signal({ url, dest });
+ ```
  */
 export async function tree0Signal(
   {
@@ -262,7 +262,7 @@ export async function tree0Signal(
   },
 ): Promise<Signal> {
   /**
-   * Commit count from the commits-only clone, or absent.
+   Commit count from the commits-only clone, or absent.
    */
   const tree0 = await partialCommitCount({
     url,
@@ -281,20 +281,20 @@ export async function tree0Signal(
 }
 
 /**
- * Measures churn via a blobless partial clone.
- *
- * @param url - remote clone URL
- *
- * @param dest - temp directory for the clone
- *
- * @param signal - wall-clock budget signal
- *
- * @returns a `churn` signal, or `none` when unsupported
- *
- * @example
- * ```ts
- * const sig = await churnSignal({ url, dest });
- * ```
+ Measures churn via a blobless partial clone.
+ 
+ @param url - remote clone URL
+ 
+ @param dest - temp directory for the clone
+ 
+ @param signal - wall-clock budget signal
+ 
+ @returns a `churn` signal, or `none` when unsupported
+ 
+ @example
+ ```ts
+ const sig = await churnSignal({ url, dest });
+ ```
  */
 export async function churnSignal(
   {
@@ -308,7 +308,7 @@ export async function churnSignal(
   },
 ): Promise<Signal> {
   /**
-   * Churn counts from the blobless clone, or absent.
+   Churn counts from the blobless clone, or absent.
    */
   const churn = await partialChurn({
     url,
@@ -327,20 +327,20 @@ export async function churnSignal(
 }
 
 /**
- * Folds a settled signal into the accumulator, returning a new {@link Signals}.
- * A `none` signal yields the input unchanged, advancing the stream without a
- * value.
- *
- * @param signals - current accumulator
- *
- * @param signal - the settled probe signal
- *
- * @returns a new accumulator including the signal, or the input for `none`
- *
- * @example
- * ```ts
- * const next = applySignal({ signals, signal: { kind: 'shallow', shallowBytes: 4_000_000 } });
- * ```
+ Folds a settled signal into the accumulator, returning a new {@link Signals}.
+ A `none` signal yields the input unchanged, advancing the stream without a
+ value.
+ 
+ @param signals - current accumulator
+ 
+ @param signal - the settled probe signal
+ 
+ @returns a new accumulator including the signal, or the input for `none`
+ 
+ @example
+ ```ts
+ const next = applySignal({ signals, signal: { kind: 'shallow', shallowBytes: 4_000_000 } });
+ ```
  */
 export function applySignal(
   {

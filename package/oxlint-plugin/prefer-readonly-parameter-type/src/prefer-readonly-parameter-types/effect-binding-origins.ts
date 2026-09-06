@@ -1,14 +1,14 @@
 /**
- * Parameter and local-alias binding origin analysis.
- *
- * Seeding a parameter and registering a local alias are separate operations here, and the
- * separation is load-bearing. Seeding allocates: a parameter's destructuring pattern is where
- * property slots come from, so each binding it introduces registers against its own slot.
- * Aliasing never allocates: a local destructured from something else takes whatever slots its
- * source already carries, because no caller writes a property of a local. Letting one
- * operation do both would invent property slots for patterns no caller can address.
- *
- * @module
+ Parameter and local-alias binding origin analysis.
+ 
+ Seeding a parameter and registering a local alias are separate operations here, and the
+ separation is load-bearing. Seeding allocates: a parameter's destructuring pattern is where
+ property slots come from, so each binding it introduces registers against its own slot.
+ Aliasing never allocates: a local destructured from something else takes whatever slots its
+ source already carries, because no caller writes a property of a local. Letting one
+ operation do both would invent property slots for patterns no caller can address.
+ 
+ @module
  */
 
 import type {
@@ -38,40 +38,40 @@ import type { EffectSlot, } from './effect-slot-identity.ts';
 import type { SlotOrigins, } from './effect-summary-model.ts';
 
 /**
- * Registers every identifier bound by one name or destructuring pattern against one slot.
- *
- * Origins accumulate rather than replace. A local reassigned across branches holds
- * state from every slot assigned into it, and an earlier revision overwrote, so
- * one branch erased the other and the erased parameter was offered `readonly` while
- * the body mutated it through the alias. Applying that suggestion failed to compile;
- * `doc/decision/prefer-readonly-binding-origin-accumulation.md` records the measurement.
- *
- * Accumulation also fixes convergence. Under overwrite, an alias with two origins
- * flipped between them on every pass and reported progress each time, so
- * `discoverAliasOrigins` only stopped at its pass bound. Monotone growth makes
- * progress mean "the set grew", which settles on its own.
- *
- * A pattern handed here spreads one slot over every name it binds, which is what an alias
- * needs: `const { a, b } = source` gives both locals the source's slots, because a write
- * through either reaches the source. Only a parameter's own pattern allocates finer slots,
- * and `seedParameterSlots` is what does that.
- *
- * @param project - TypeScript project resolving binding symbols.
- *
- * @param name - Binding name or nested pattern.
- *
- * @param slot - Slot the bound state belongs to.
- *
- * @param bindingOriginBySymbolId - Origin map receiving bindings.
- *
- * @returns whether map changed.
- *
- * @mutates bindingOriginBySymbolId - Adds slot origin for binding symbols.
- *
- * @example
- * ```ts
- * registerBindingOrigin({ project, name, slot, bindingOriginBySymbolId });
- * ```
+ Registers every identifier bound by one name or destructuring pattern against one slot.
+ 
+ Origins accumulate rather than replace. A local reassigned across branches holds
+ state from every slot assigned into it, and an earlier revision overwrote, so
+ one branch erased the other and the erased parameter was offered `readonly` while
+ the body mutated it through the alias. Applying that suggestion failed to compile;
+ `doc/decision/prefer-readonly-binding-origin-accumulation.md` records the measurement.
+ 
+ Accumulation also fixes convergence. Under overwrite, an alias with two origins
+ flipped between them on every pass and reported progress each time, so
+ `discoverAliasOrigins` only stopped at its pass bound. Monotone growth makes
+ progress mean "the set grew", which settles on its own.
+ 
+ A pattern handed here spreads one slot over every name it binds, which is what an alias
+ needs: `const { a, b } = source` gives both locals the source's slots, because a write
+ through either reaches the source. Only a parameter's own pattern allocates finer slots,
+ and `seedParameterSlots` is what does that.
+ 
+ @param project - TypeScript project resolving binding symbols.
+ 
+ @param name - Binding name or nested pattern.
+ 
+ @param slot - Slot the bound state belongs to.
+ 
+ @param bindingOriginBySymbolId - Origin map receiving bindings.
+ 
+ @returns whether map changed.
+ 
+ @mutates bindingOriginBySymbolId - Adds slot origin for binding symbols.
+ 
+ @example
+ ```ts
+ registerBindingOrigin({ project, name, slot, bindingOriginBySymbolId });
+ ```
  */
 export function registerBindingOrigin({
   project,
@@ -86,18 +86,18 @@ export function registerBindingOrigin({
 },): boolean {
   if (isIdentifier(name,)) {
     /**
-     * Symbol declared by binding identifier.
+     Symbol declared by binding identifier.
      */
     const symbol = project.checker
       .getSymbolAtLocation(name,);
     if (symbol === undefined)
       return false;
     /**
-     * Origins already known for binding, or new accumulator.
+     Origins already known for binding, or new accumulator.
      */
     const origins = bindingOriginBySymbolId.get(symbol.id,) ?? new Set<EffectSlot>();
     /**
-     * Size before insertion detects fixed-point progress.
+     Size before insertion detects fixed-point progress.
      */
     const priorSize = origins.size;
     origins.add(slot,);
@@ -110,7 +110,7 @@ export function registerBindingOrigin({
   if ((!isObjectBindingPattern(name,)) && (!isArrayBindingPattern(name,)))
     return false;
   /**
-   * Whether any nested binding origin changed.
+   Whether any nested binding origin changed.
    */
   let changed = false;
   for (const element of name.elements) {
@@ -127,28 +127,28 @@ export function registerBindingOrigin({
 }
 
 /**
- * Seeds one parameter's bindings, each against the slot its own property owns.
- *
- * This is the only place property slots enter a summary. A binding under a rest element, an
- * array pattern or a computed key takes the whole-parameter slot, because no caller property
- * key names it.
- *
- * @param project - TypeScript project resolving binding symbols.
- *
- * @param parameter - Parameter whose bindings are seeded.
- *
- * @param parameterIndex - Declared position of that parameter.
- *
- * @param table - Slot table allocated for the owning declaration.
- *
- * @param bindingOriginBySymbolId - Origin map receiving bindings.
- *
- * @mutates bindingOriginBySymbolId - Adds one slot origin per bound name.
- *
- * @example
- * ```ts
- * seedParameterSlots({ project, parameter, parameterIndex, table, bindingOriginBySymbolId });
- * ```
+ Seeds one parameter's bindings, each against the slot its own property owns.
+ 
+ This is the only place property slots enter a summary. A binding under a rest element, an
+ array pattern or a computed key takes the whole-parameter slot, because no caller property
+ key names it.
+ 
+ @param project - TypeScript project resolving binding symbols.
+ 
+ @param parameter - Parameter whose bindings are seeded.
+ 
+ @param parameterIndex - Declared position of that parameter.
+ 
+ @param table - Slot table allocated for the owning declaration.
+ 
+ @param bindingOriginBySymbolId - Origin map receiving bindings.
+ 
+ @mutates bindingOriginBySymbolId - Adds one slot origin per bound name.
+ 
+ @example
+ ```ts
+ seedParameterSlots({ project, parameter, parameterIndex, table, bindingOriginBySymbolId });
+ ```
  */
 export function seedParameterSlots({
   project,
@@ -179,22 +179,22 @@ export function seedParameterSlots({
 }
 
 /**
- * Resolves every parameter origin represented by expression root.
- *
- * {@inheritDoc expressionValueOrigins}
- *
- * @param project - TypeScript project resolving root symbol.
- *
- * @param bindingOriginBySymbolId - Known parameter and alias origins.
- *
- * @param node - Expression whose root may represent parameter state.
- *
- * @returns source parameter origins, empty when root is not parameter-derived.
- *
- * @example
- * ```ts
- * expressionOrigins({ project, bindingOriginBySymbolId, node });
- * ```
+ Resolves every parameter origin represented by expression root.
+ 
+ {@inheritDoc expressionValueOrigins}
+ 
+ @param project - TypeScript project resolving root symbol.
+ 
+ @param bindingOriginBySymbolId - Known parameter and alias origins.
+ 
+ @param node - Expression whose root may represent parameter state.
+ 
+ @returns source parameter origins, empty when root is not parameter-derived.
+ 
+ @example
+ ```ts
+ expressionOrigins({ project, bindingOriginBySymbolId, node });
+ ```
  */
 export function expressionOrigins({
   project,
@@ -213,24 +213,24 @@ export function expressionOrigins({
 }
 
 /**
- * Registers one binding as holding every origin its source can hold.
- *
- * @param project - TypeScript project resolving binding symbols.
- *
- * @param name - Binding name or nested pattern receiving origins.
- *
- * @param parameterOrigins - Origins resolved for aliased source expression.
- *
- * @param bindingOriginBySymbolId - Origin map receiving bindings.
- *
- * @returns whether map changed.
- *
- * @mutates bindingOriginBySymbolId - Adds every source origin for binding symbols.
- *
- * @example
- * ```ts
- * registerBindingOrigins({ project, name, parameterOrigins, bindingOriginBySymbolId });
- * ```
+ Registers one binding as holding every origin its source can hold.
+ 
+ @param project - TypeScript project resolving binding symbols.
+ 
+ @param name - Binding name or nested pattern receiving origins.
+ 
+ @param parameterOrigins - Origins resolved for aliased source expression.
+ 
+ @param bindingOriginBySymbolId - Origin map receiving bindings.
+ 
+ @returns whether map changed.
+ 
+ @mutates bindingOriginBySymbolId - Adds every source origin for binding symbols.
+ 
+ @example
+ ```ts
+ registerBindingOrigins({ project, name, parameterOrigins, bindingOriginBySymbolId });
+ ```
  */
 function registerBindingOrigins({
   project,
@@ -268,20 +268,20 @@ function registerBindingOrigins({
 }
 
 /**
- * Tests whether an expression root is reachable from any callable parameter.
- *
- * @param project - TypeScript project resolving root symbol.
- *
- * @param bindingOriginBySymbolId - Known parameter and alias origins.
- *
- * @param node - Expression whose root may represent parameter state.
- *
- * @returns whether root carries at least one parameter origin.
- *
- * @example
- * ```ts
- * expressionHasParameterOrigin({ project, bindingOriginBySymbolId, node });
- * ```
+ Tests whether an expression root is reachable from any callable parameter.
+ 
+ @param project - TypeScript project resolving root symbol.
+ 
+ @param bindingOriginBySymbolId - Known parameter and alias origins.
+ 
+ @param node - Expression whose root may represent parameter state.
+ 
+ @returns whether root carries at least one parameter origin.
+ 
+ @example
+ ```ts
+ expressionHasParameterOrigin({ project, bindingOriginBySymbolId, node });
+ ```
  */
 export function expressionHasParameterOrigin({
   project,
@@ -293,7 +293,7 @@ export function expressionHasParameterOrigin({
   readonly node: Node;
 },): boolean {
   /**
-   * Origins resolved for expression root.
+   Origins resolved for expression root.
    */
   const origins = expressionOrigins({
     project,
@@ -304,24 +304,24 @@ export function expressionHasParameterOrigin({
 }
 
 /**
- * Discovers local aliases and destructured bindings to fixed point.
- *
- * @param project - TypeScript project resolving symbols.
- *
- * @param variableDeclarations - Body declarations eligible for aliasing.
- *
- * @param aliasAssignments - Simple assignments eligible for aliasing.
- *
- * @param forOfStatements - Iterations binding elements from parameter-owned iterables.
- *
- * @param bindingOriginBySymbolId - Origin map receiving aliases.
- *
- * @mutates bindingOriginBySymbolId - Adds aliases rooted in parameter state.
- *
- * @example
- * ```ts
- * discoverAliasOrigins({ project, variableDeclarations, aliasAssignments, forOfStatements, bindingOriginBySymbolId });
- * ```
+ Discovers local aliases and destructured bindings to fixed point.
+ 
+ @param project - TypeScript project resolving symbols.
+ 
+ @param variableDeclarations - Body declarations eligible for aliasing.
+ 
+ @param aliasAssignments - Simple assignments eligible for aliasing.
+ 
+ @param forOfStatements - Iterations binding elements from parameter-owned iterables.
+ 
+ @param bindingOriginBySymbolId - Origin map receiving aliases.
+ 
+ @mutates bindingOriginBySymbolId - Adds aliases rooted in parameter state.
+ 
+ @example
+ ```ts
+ discoverAliasOrigins({ project, variableDeclarations, aliasAssignments, forOfStatements, bindingOriginBySymbolId });
+ ```
  */
 export function discoverAliasOrigins({
   project,
@@ -337,11 +337,11 @@ export function discoverAliasOrigins({
   readonly bindingOriginBySymbolId: Map<number, Set<EffectSlot>>;
 },): void {
   /**
-   * Convergence state, settling on its own now that origins only grow.
-   *
-   * The pass bound is a backstop rather than the actual terminator it was while
-   * origins could overwrite each other: an alias with two origins used to flip
-   * between them every pass and report progress each time.
+   Convergence state, settling on its own now that origins only grow.
+   
+   The pass bound is a backstop rather than the actual terminator it was while
+   origins could overwrite each other: an alias with two origins used to flip
+   between them every pass and report progress each time.
    */
   const state = {
     changed: true,
@@ -364,7 +364,7 @@ export function discoverAliasOrigins({
           if (element.initializer === undefined)
             return;
           /**
-           * Name this element binds, absent for an elision in an array pattern.
+           Name this element binds, absent for an elision in an array pattern.
            */
           const bound = element.name;
           if (bound === undefined)
@@ -388,7 +388,7 @@ export function discoverAliasOrigins({
        * pattern keeps asking the value question: it binds properties, and a container's
        * properties are its own rather than its elements. */
       /**
-       * Parameter origins of initializer root, through elements for an array pattern.
+       Parameter origins of initializer root, through elements for an array pattern.
        */
       const parameterOrigins = isArrayBindingPattern(declaration.name,)
         ? expressionElementOrigins({
@@ -413,7 +413,7 @@ export function discoverAliasOrigins({
        * question. Over a parameter the value origins already answer it, and over a fresh
        * container only the container relation does. */
       /**
-       * Parameter origins reached through the iterated expression's elements.
+       Parameter origins reached through the iterated expression's elements.
        */
       const parameterOrigins = expressionElementOrigins({
         project,
@@ -424,7 +424,7 @@ export function discoverAliasOrigins({
         return;
       if (isVariableDeclarationList(statement.initializer,)) {
         /**
-         * Declarations receiving iterated elements.
+         Declarations receiving iterated elements.
          */
         const { declarations, } = statement.initializer;
         declarations.forEach(function registerIterationDeclaration(declaration,): void {
@@ -448,7 +448,7 @@ export function discoverAliasOrigins({
     },);
     aliasAssignments.forEach(function discoverAssignment(assignment,): void {
       /**
-       * Parameter origins of assignment right-hand side.
+       Parameter origins of assignment right-hand side.
        */
       const parameterOrigins = expressionOrigins({
         project,
@@ -468,25 +468,25 @@ export function discoverAliasOrigins({
 }
 
 /**
- * Returns the mutable origin set of one binding name, creating it when absent.
- *
- * Used where a binding's origins have to grow after its own index is registered, such as a
- * parameter whose default initializer names an earlier parameter.
- *
- * @param project - TypeScript project resolving binding symbol.
- *
- * @param name - Binding name whose origin set is wanted.
- *
- * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
- *
- * @returns mutable origin set for that binding, empty and unattached when unresolved.
- *
- * @mutates bindingOriginBySymbolId - Attaches an origin set for a newly seen binding.
- *
- * @example
- * ```ts
- * bindingOriginsFor({ project, name, bindingOriginBySymbolId });
- * ```
+ Returns the mutable origin set of one binding name, creating it when absent.
+ 
+ Used where a binding's origins have to grow after its own index is registered, such as a
+ parameter whose default initializer names an earlier parameter.
+ 
+ @param project - TypeScript project resolving binding symbol.
+ 
+ @param name - Binding name whose origin set is wanted.
+ 
+ @param bindingOriginBySymbolId - Local binding origins by symbol identity.
+ 
+ @returns mutable origin set for that binding, empty and unattached when unresolved.
+ 
+ @mutates bindingOriginBySymbolId - Attaches an origin set for a newly seen binding.
+ 
+ @example
+ ```ts
+ bindingOriginsFor({ project, name, bindingOriginBySymbolId });
+ ```
  */
 export function bindingOriginsFor({
   project,
@@ -502,20 +502,20 @@ export function bindingOriginsFor({
      * Defaults inside patterns are not represented here. */
     return new Set<EffectSlot>();
   /**
-   * Symbol declared by this binding name.
+   Symbol declared by this binding name.
    */
   const symbol = project.checker
     .getSymbolAtLocation(name,);
   if (symbol === undefined)
     return new Set<EffectSlot>();
   /**
-   * Existing origin set for the symbol, created when this is its first mention.
+   Existing origin set for the symbol, created when this is its first mention.
    */
   const existing = bindingOriginBySymbolId.get(symbol.id,);
   if (existing !== undefined)
     return existing;
   /**
-   * Fresh set attached for the symbol.
+   Fresh set attached for the symbol.
    */
   const created = new Set<EffectSlot>();
   bindingOriginBySymbolId.set(
@@ -526,16 +526,16 @@ export function bindingOriginsFor({
 }
 
 /**
- * Names every binding element a pattern introduces, at any depth.
- *
- * @param name - Binding name, which may be a pattern.
- *
- * @returns binding elements the pattern contains.
- *
- * @example
- * ```ts
- * bindingElementDefaults({ name });
- * ```
+ Names every binding element a pattern introduces, at any depth.
+ 
+ @param name - Binding name, which may be a pattern.
+ 
+ @returns binding elements the pattern contains.
+ 
+ @example
+ ```ts
+ bindingElementDefaults({ name });
+ ```
  */
 function bindingElementDefaults({ name, }: { readonly name: Node; },): readonly BindingElement[] {
   if ((!isObjectBindingPattern(name,)) && (!isArrayBindingPattern(name,)))
@@ -545,7 +545,7 @@ function bindingElementDefaults({ name, }: { readonly name: Node; },): readonly 
       if (!isBindingElement(element,))
         return [];
       /**
-       * Name this element binds, absent for an elision in an array pattern.
+       Name this element binds, absent for an elision in an array pattern.
        */
       const bound = element.name;
       return bound === undefined

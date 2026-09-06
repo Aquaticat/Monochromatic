@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
 /**
- * Integration check: run the built CLI against the fixture package and
- * assert the report matches its documented expectations.
- *
- * Needs podman and (on first run) an image build, so it lives behind the
- * dedicated `test:integration` mise task instead of `test:unit`.
- *
- * @example
- * ```bash
- * mise run '//package/cli/mutation-test:test:integration'
- * ```
+ Integration check: run the built CLI against the fixture package and
+ assert the report matches its documented expectations.
+ 
+ Needs podman and (on first run) an image build, so it lives behind the
+ dedicated `test:integration` mise task instead of `test:unit`.
+ 
+ @example
+ ```bash
+ mise run '//package/cli/mutation-test:test:integration'
+ ```
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -26,26 +26,26 @@ import { isRecord, } from './is-record.ts';
 import type { RunReport, } from './host/report.ts';
 
 /**
- * Module logger for the integration check.
+ Module logger for the integration check.
  */
 const l = tagged({ tag: 'mutation-test-integration', },);
 
 /**
- * Fixture package path relative to the repo root.
+ Fixture package path relative to the repo root.
  */
 const FIXTURE_PACKAGE = 'package/cli/mutation-test.fixture';
 
 /**
- * Asserts one condition, throwing with context when it fails.
- *
- * @param options - Condition and failure message.
- *
- * @throws Error when the condition is false.
- *
- * @example
- * ```ts
- * check({ that: totals.killed > 0, message: 'expected kills' });
- * ```
+ Asserts one condition, throwing with context when it fails.
+ 
+ @param options - Condition and failure message.
+ 
+ @throws Error when the condition is false.
+ 
+ @example
+ ```ts
+ check({ that: totals.killed > 0, message: 'expected kills' });
+ ```
  */
 function check(options: {
   readonly that: boolean;
@@ -56,23 +56,23 @@ function check(options: {
 }
 
 /**
- * Runs the CLI against the fixture and asserts report expectations.
- *
- * @example
- * ```ts
- * await runIntegrationCheck();
- * ```
+ Runs the CLI against the fixture and asserts report expectations.
+ 
+ @example
+ ```ts
+ await runIntegrationCheck();
+ ```
  */
 export async function runIntegrationCheck(): Promise<void> {
   /**
-   * Logger scoped to this check run.
+   Logger scoped to this check run.
    */
   const rl = tagged({
     tag: runIntegrationCheck.name,
     l,
   },);
   /**
-   * Report destination for this run.
+   Report destination for this run.
    */
   const reportFile = join(
     tmpdir(),
@@ -98,7 +98,7 @@ export async function runIntegrationCheck(): Promise<void> {
   );
 
   /**
-   * Parsed report before shape validation.
+   Parsed report before shape validation.
    */
   const parsed: unknown = JSON.parse(await readFile(
     reportFile,
@@ -113,8 +113,8 @@ export async function runIntegrationCheck(): Promise<void> {
   },);
 
   /**
-   * Parsed run report from the fixture run; shape checked above, and the
-   * writer is this same package, so deeper validation adds no safety.
+   Parsed run report from the fixture run; shape checked above, and the
+   writer is this same package, so deeper validation adds no safety.
    */
   // oxlint-disable-next-line no-unsafe-type-assertion -- shape checked at runtime above; writer is this package's own report builder
   const report = parsed as RunReport;
@@ -144,7 +144,7 @@ export async function runIntegrationCheck(): Promise<void> {
   },);
 
   /**
-   * Survivors from the file no test selects.
+   Survivors from the file no test selects.
    */
   const untestedSurvivors = report.mutants
     .filter(function fromUntested(record,): boolean {

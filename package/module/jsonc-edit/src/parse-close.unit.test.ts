@@ -1,9 +1,9 @@
 /**
- * Unit tests for closing containers: folding a comment found before the closing
- * bracket onto the last element or entry, or onto the empty container node, and
- * leaving elements and entries otherwise untouched.
- *
- * @module
+ Unit tests for closing containers: folding a comment found before the closing
+ bracket onto the last element or entry, or onto the empty container node, and
+ leaving elements and entries otherwise untouched.
+ 
+ @module
  */
 
 import {

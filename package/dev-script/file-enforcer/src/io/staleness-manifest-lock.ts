@@ -16,17 +16,17 @@ import {
 //region Locking constants
 
 /**
- * Suffix appended to manifest path for directory locks.
+ Suffix appended to manifest path for directory locks.
  */
 const LOCK_DIRECTORY_SUFFIX = '.lock';
 
 /**
- * Poll delay while waiting for another process to release manifest lock.
+ Poll delay while waiting for another process to release manifest lock.
  */
 const LOCK_RETRY_MS = 10;
 
 /**
- * Maximum time to wait for another process to release manifest lock.
+ Maximum time to wait for another process to release manifest lock.
  */
 const LOCK_TIMEOUT_MS = 5_000;
 
@@ -35,18 +35,18 @@ const LOCK_TIMEOUT_MS = 5_000;
 //region Lock acquisition helpers
 
 /**
- * Removes lock directory if owner metadata cannot be written.
- *
- * @param lockPath - Lock directory path.
- *
- * @param ownerError - Error thrown while writing owner metadata.
- *
- * @throws Always rethrows `ownerError` after cleanup.
- *
- * @example
- * ```ts
- * await cleanupFailedOwnerWrite({ lockPath, ownerError });
- * ```
+ Removes lock directory if owner metadata cannot be written.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @param ownerError - Error thrown while writing owner metadata.
+ 
+ @throws Always rethrows `ownerError` after cleanup.
+ 
+ @example
+ ```ts
+ await cleanupFailedOwnerWrite({ lockPath, ownerError });
+ ```
  */
 async function cleanupFailedOwnerWrite(
   {
@@ -68,14 +68,14 @@ async function cleanupFailedOwnerWrite(
 }
 
 /**
- * Records lock owner metadata after directory acquisition.
- *
- * @param lockPath - Lock directory path.
- *
- * @example
- * ```ts
- * await recordLockOwner('/tmp/manifest.json.lock');
- * ```
+ Records lock owner metadata after directory acquisition.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @example
+ ```ts
+ await recordLockOwner('/tmp/manifest.json.lock');
+ ```
  */
 async function recordLockOwner(lockPath: string,): Promise<void> {
   try {
@@ -90,16 +90,16 @@ async function recordLockOwner(lockPath: string,): Promise<void> {
 }
 
 /**
- * Returns async disposable handle that releases lock directory.
- *
- * @param lockPath - Lock directory path.
- *
- * @returns Async disposable release handle.
- *
- * @example
- * ```ts
- * await using lock = lockReleaseHandle('/tmp/manifest.json.lock');
- * ```
+ Returns async disposable handle that releases lock directory.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @returns Async disposable release handle.
+ 
+ @example
+ ```ts
+ await using lock = lockReleaseHandle('/tmp/manifest.json.lock');
+ ```
  */
 function lockReleaseHandle(lockPath: string,): AsyncDisposable {
   return {
@@ -114,20 +114,20 @@ function lockReleaseHandle(lockPath: string,): AsyncDisposable {
 //region Lock acquisition
 
 /**
- * Acquires manifest directory lock, retrying contended locks via
- * {@link recoverStaleManifestLock}, and returns a {@link lockReleaseHandle}
- * async disposable release handle.
- *
- * @param manifestPath - Absolute manifest path whose lock should be held.
- *
- * @returns Async disposable lock release handle.
- *
- * @throws {@link StalenessManifestPersistenceError} When lock cannot be acquired before timeout.
- *
- * @example
- * ```ts
- * await using lock = await acquireManifestLock('/tmp/manifest.json');
- * ```
+ Acquires manifest directory lock, retrying contended locks via
+ {@link recoverStaleManifestLock}, and returns a {@link lockReleaseHandle}
+ async disposable release handle.
+ 
+ @param manifestPath - Absolute manifest path whose lock should be held.
+ 
+ @returns Async disposable lock release handle.
+ 
+ @throws {@link StalenessManifestPersistenceError} When lock cannot be acquired before timeout.
+ 
+ @example
+ ```ts
+ await using lock = await acquireManifestLock('/tmp/manifest.json');
+ ```
  */
 export async function acquireManifestLock(manifestPath: string,): Promise<AsyncDisposable> {
   await mkdir(
@@ -135,16 +135,16 @@ export async function acquireManifestLock(manifestPath: string,): Promise<AsyncD
     { recursive: true, },
   );
   /**
-   * Directory path used as inter-process lock.
+   Directory path used as inter-process lock.
    */
   const lockPath = `${manifestPath}${LOCK_DIRECTORY_SUFFIX}`;
   /**
-   * Last timestamp at which lock acquisition may keep retrying.
+   Last timestamp at which lock acquisition may keep retrying.
    */
   const deadline = Date.now() + LOCK_TIMEOUT_MS;
 
   /**
-   * Acquired release handle; absence explicitly keeps lock acquisition polling.
+   Acquired release handle; absence explicitly keeps lock acquisition polling.
    */
   const acquisition: { release?: AsyncDisposable; } = {};
   while (acquisition.release === undefined) {

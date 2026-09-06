@@ -1,7 +1,7 @@
 /**
- * Tests for `formatDuration`.
- *
- * @module
+ Tests for `formatDuration`.
+ 
+ @module
  */
 
 import {

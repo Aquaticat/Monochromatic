@@ -1,7 +1,7 @@
 /**
- * Goal-specific reviewer rubric, prompt budgeting, and structured verdict contract.
- *
- * @module
+ Goal-specific reviewer rubric, prompt budgeting, and structured verdict contract.
+ 
+ @module
  */
 
 import type {
@@ -21,27 +21,27 @@ import type {
 } from './completion-types.ts';
 
 /**
- * Forced private reviewer tool name.
+ Forced private reviewer tool name.
  */
 const GOAL_REVIEW_TOOL_NAME = 'submit_goal_review';
 
 /**
- * Separator between finalized evidence chunks.
+ Separator between finalized evidence chunks.
  */
 const EVIDENCE_SEPARATOR = '\n\n---\n\n';
 
 /**
- * Explicit marker prepended when older post-start evidence is omitted.
+ Explicit marker prepended when older post-start evidence is omitted.
  */
 const TRUNCATION_MARKER = '[Older post-start evidence omitted to fit reviewer context.]';
 
 /**
- * Marker preceding tail-clipped newest evidence entry.
+ Marker preceding tail-clipped newest evidence entry.
  */
 const PARTIAL_NEWEST_ENTRY_MARKER = '[Beginning of newest evidence entry omitted.]';
 
 /**
- * Private settlement-review system rubric.
+ Private settlement-review system rubric.
  */
 const GOAL_REVIEW_SYSTEM_PROMPT: string = `You are an independent completion reviewer.
 You have no work or investigation tools. Judge only the supplied user objective and finalized post-start active-branch evidence.
@@ -54,7 +54,7 @@ remaining_work must not mention this review, a reviewer, a verdict, evidence sco
 Submit exactly the required structured verdict.`;
 
 /**
- * Reviewer tool returning strict private verdict fields.
+ Reviewer tool returning strict private verdict fields.
  */
 const GOAL_REVIEW_TOOL: Tool = {
   name: GOAL_REVIEW_TOOL_NAME,
@@ -85,7 +85,7 @@ const GOAL_REVIEW_TOOL: Tool = {
 };
 
 /**
- * Meta-assessment phrases forbidden from primary task guidance.
+ Meta-assessment phrases forbidden from primary task guidance.
  */
 const FORBIDDEN_REMAINING_WORK_PHRASES = [
   'as the reviewer',
@@ -107,23 +107,23 @@ const FORBIDDEN_REMAINING_WORK_PHRASES = [
 ] as const;
 
 /**
- * Exact private verdict property count.
+ Exact private verdict property count.
  */
 const GOAL_REVIEW_VERDICT_PROPERTY_COUNT = 3;
 
 /**
- * Candidate reviewer lacks enough context for fixed framing and completion claim.
- *
- * @example
- * ```ts
- * throw new ReviewerContextTooLargeError('model context too small');
- * ```
+ Candidate reviewer lacks enough context for fixed framing and completion claim.
+ 
+ @example
+ ```ts
+ throw new ReviewerContextTooLargeError('model context too small');
+ ```
  */
 class ReviewerContextTooLargeError extends Error {
   /**
-   * Create candidate-specific context-budget failure.
-   *
-   * @param message - context budget diagnostic
+   Create candidate-specific context-budget failure.
+   
+   @param message - context budget diagnostic
    */
   constructor(message: string,) {
     super(message,);
@@ -132,7 +132,7 @@ class ReviewerContextTooLargeError extends Error {
 }
 
 /**
- * Candidate-specific reviewer prompt and budget metadata.
+ Candidate-specific reviewer prompt and budget metadata.
  */
 type BudgetedGoalReviewPrompt = StructuredReviewPrompt & {
   readonly transcriptTruncated: boolean;
@@ -140,20 +140,20 @@ type BudgetedGoalReviewPrompt = StructuredReviewPrompt & {
 };
 
 /**
- * Detect meta-assessment language unsafe for primary task context.
- *
- * @param remainingWork - normalized denial guidance
- *
- * @returns whether guidance describes private enforcement instead of task work
- *
- * @example
- * ```ts
- * remainingWorkDescribesReview('This review cannot approve the work.');
- * ```
+ Detect meta-assessment language unsafe for primary task context.
+ 
+ @param remainingWork - normalized denial guidance
+ 
+ @returns whether guidance describes private enforcement instead of task work
+ 
+ @example
+ ```ts
+ remainingWorkDescribesReview('This review cannot approve the work.');
+ ```
  */
 function remainingWorkDescribesReview(remainingWork: string,): boolean {
   /**
-   * Case-folded denial guidance scanned by bounded phrase list.
+   Case-folded denial guidance scanned by bounded phrase list.
    */
   const normalized = remainingWork.toLocaleLowerCase('en-US',);
   return FORBIDDEN_REMAINING_WORK_PHRASES.some(function includesForbiddenPhrase(phrase,) {
@@ -162,24 +162,24 @@ function remainingWorkDescribesReview(remainingWork: string,): boolean {
 }
 
 /**
- * Strictly parse unknown reviewer value.
- *
- * @param value - structured tool arguments or direct JSON retry object
- *
- * @returns valid private settlement verdict
- *
- * @throws when fields, shape, or task-only guidance are invalid
- *
- * @example
- * ```ts
- * parseGoalReviewVerdict({ approved: false, rationale: 'Tests absent.', remaining_work: 'Run tests.' });
- * ```
+ Strictly parse unknown reviewer value.
+ 
+ @param value - structured tool arguments or direct JSON retry object
+ 
+ @returns valid private settlement verdict
+ 
+ @throws when fields, shape, or task-only guidance are invalid
+ 
+ @example
+ ```ts
+ parseGoalReviewVerdict({ approved: false, rationale: 'Tests absent.', remaining_work: 'Run tests.' });
+ ```
  */
 function parseGoalReviewVerdict(value: unknown,): GoalReviewVerdict {
   if ((value === null) || ((typeof value) !== 'object'))
     throw new Error('Goal reviewer verdict must be an object',);
   /**
-   * Exact verdict property names.
+   Exact verdict property names.
    */
   const keys = Object.keys(value,);
   if ((keys.length !== GOAL_REVIEW_VERDICT_PROPERTY_COUNT)
@@ -189,7 +189,7 @@ function parseGoalReviewVerdict(value: unknown,): GoalReviewVerdict {
     throw new Error('Goal reviewer verdict must contain only approved, rationale, and remaining_work',);
   }
   /**
-   * Unknown fields after presence validation.
+   Unknown fields after presence validation.
    */
   const {
     approved,
@@ -203,11 +203,11 @@ function parseGoalReviewVerdict(value: unknown,): GoalReviewVerdict {
   if ((typeof rawRemainingWork) !== 'string')
     throw new Error('Goal reviewer remaining_work must be string',);
   /**
-   * Normalized private rationale and task-only denial guidance.
+   Normalized private rationale and task-only denial guidance.
    */
   const rationale = rawRationale.trim();
   /**
-   * Normalized task-only denial guidance.
+   Normalized task-only denial guidance.
    */
   const remainingWork = rawRemainingWork.trim();
   if (rationale === '')
@@ -227,18 +227,18 @@ function parseGoalReviewVerdict(value: unknown,): GoalReviewVerdict {
 }
 
 /**
- * Tail-clip newest entry with explicit structural omission marker.
- *
- * @param chunks - ordered evidence chunks
- *
- * @param maximumCharacters - remaining transcript characters
- *
- * @returns marked partial newest evidence or empty text
- *
- * @example
- * ```ts
- * partialNewestEvidence({ chunks: ['long evidence'], maximumCharacters: 32 });
- * ```
+ Tail-clip newest entry with explicit structural omission marker.
+ 
+ @param chunks - ordered evidence chunks
+ 
+ @param maximumCharacters - remaining transcript characters
+ 
+ @returns marked partial newest evidence or empty text
+ 
+ @example
+ ```ts
+ partialNewestEvidence({ chunks: ['long evidence'], maximumCharacters: 32 });
+ ```
  */
 function partialNewestEvidence(
   {
@@ -252,13 +252,13 @@ function partialNewestEvidence(
   if (maximumCharacters <= PARTIAL_NEWEST_ENTRY_MARKER.length)
     return '';
   /**
-   * Newest finalized evidence chunk.
+   Newest finalized evidence chunk.
    */
   const newest = chunks.at(-1,);
   if (newest === undefined)
     return '';
   /**
-   * Tail characters available after explicit partial-entry marker.
+   Tail characters available after explicit partial-entry marker.
    */
   const tailCharacters = maximumCharacters
     - PARTIAL_NEWEST_ENTRY_MARKER.length
@@ -267,20 +267,20 @@ function partialNewestEvidence(
 }
 
 /**
- * Retain newest transcript chunks within character budget.
- *
- * @param chunks - ordered post-start evidence chunks
- *
- * @param maximumCharacters - model-specific transcript budget
- *
- * @returns transcript and truncation marker status
- *
- * @throws when omission marker itself cannot fit
- *
- * @example
- * ```ts
- * truncateTranscript({ chunks: ['old', 'new'], maximumCharacters: 64 });
- * ```
+ Retain newest transcript chunks within character budget.
+ 
+ @param chunks - ordered post-start evidence chunks
+ 
+ @param maximumCharacters - model-specific transcript budget
+ 
+ @returns transcript and truncation marker status
+ 
+ @throws when omission marker itself cannot fit
+ 
+ @example
+ ```ts
+ truncateTranscript({ chunks: ['old', 'new'], maximumCharacters: 64 });
+ ```
  */
 function truncateTranscript(
   {
@@ -295,7 +295,7 @@ function truncateTranscript(
   readonly truncated: boolean
 } {
   /**
-   * Complete transcript before model-specific truncation.
+   Complete transcript before model-specific truncation.
    */
   const complete = chunks.join(EVIDENCE_SEPARATOR,);
   if (complete.length <= maximumCharacters) {
@@ -310,13 +310,13 @@ function truncateTranscript(
     );
   }
   /**
-   * Characters available after mandatory omission marker and separator.
+   Characters available after mandatory omission marker and separator.
    */
   const retainedBudget = maximumCharacters
     - TRUNCATION_MARKER.length
     - EVIDENCE_SEPARATOR.length;
   /**
-   * Newest complete chunks retained immutably from right to left.
+   Newest complete chunks retained immutably from right to left.
    */
   const retained = chunks
     .toReversed()
@@ -329,20 +329,20 @@ function truncateTranscript(
         chunk,
       ) {
         /**
-         * Separator needed before already-retained newer chunks.
+         Separator needed before already-retained newer chunks.
          */
         /**
-         * Newer chunks already retained by reduction.
+         Newer chunks already retained by reduction.
          */
         const { chunks: retainedChunks, } = state;
         /**
-         * Separator characters needed before retained newer chunks.
+         Separator characters needed before retained newer chunks.
          */
         const separatorCharacters = retainedChunks.length === 0
           ? 0
           : EVIDENCE_SEPARATOR.length;
         /**
-         * Characters required for this complete older chunk.
+         Characters required for this complete older chunk.
          */
         const required = chunk.length + separatorCharacters;
         if ((state.characters + required) > retainedBudget)
@@ -361,11 +361,11 @@ function truncateTranscript(
       },
     );
   /**
-   * Retained newest complete chunks.
+   Retained newest complete chunks.
    */
   const { chunks: retainedChunks, } = retained;
   /**
-   * Retained newest evidence, with marked partial newest chunk fallback.
+   Retained newest evidence, with marked partial newest chunk fallback.
    */
   const retainedText = retainedChunks.length === 0
     ? partialNewestEvidence({
@@ -382,20 +382,20 @@ function truncateTranscript(
 }
 
 /**
- * Build model-specific prompt within context and output reserves.
- *
- * @param evidence - objective and ordered transcript chunks
- *
- * @param contextWindow - candidate context window tokens
- *
- * @returns budgeted prompt and estimated token count
- *
- * @throws when fixed claim cannot fit candidate context
- *
- * @example
- * ```ts
- * buildBudgetedGoalReviewPrompt({ evidence, contextWindow: 128000 });
- * ```
+ Build model-specific prompt within context and output reserves.
+ 
+ @param evidence - objective and ordered transcript chunks
+ 
+ @param contextWindow - candidate context window tokens
+ 
+ @returns budgeted prompt and estimated token count
+ 
+ @throws when fixed claim cannot fit candidate context
+ 
+ @example
+ ```ts
+ buildBudgetedGoalReviewPrompt({ evidence, contextWindow: 128000 });
+ ```
  */
 function buildBudgetedGoalReviewPrompt(
   {
@@ -407,7 +407,7 @@ function buildBudgetedGoalReviewPrompt(
   },
 ): BudgetedGoalReviewPrompt {
   /**
-   * Candidate input tokens after fixed output and framing reserves.
+   Candidate input tokens after fixed output and framing reserves.
    */
   const inputTokens = contextWindow
     - REVIEW_OUTPUT_TOKENS
@@ -415,15 +415,15 @@ function buildBudgetedGoalReviewPrompt(
   if (inputTokens <= 0)
     throw new ReviewerContextTooLargeError('Reviewer context is smaller than fixed output and framing reserves',);
   /**
-   * Maximum serialized request characters after fixed reserves.
+   Maximum serialized request characters after fixed reserves.
    */
   const maximumCharacters = inputTokens * ESTIMATED_CHARACTERS_PER_TOKEN;
   /**
-   * Non-truncatable objective framing.
+   Non-truncatable objective framing.
    */
   const claim = `User objective (exact JSON string): ${JSON.stringify(evidence.objective,)}\nFinalized post-start active-branch evidence:\n`;
   /**
-   * Transcript characters remaining after system rubric and fixed claim.
+   Transcript characters remaining after system rubric and fixed claim.
    */
   const transcriptCharacters = maximumCharacters
     - GOAL_REVIEW_SYSTEM_PROMPT.length
@@ -431,7 +431,7 @@ function buildBudgetedGoalReviewPrompt(
   if (transcriptCharacters < 0)
     throw new ReviewerContextTooLargeError('Reviewer context cannot fit user objective',);
   /**
-   * Model-specific newest-evidence retention.
+   Model-specific newest-evidence retention.
    */
   const {
     transcript,
@@ -441,7 +441,7 @@ function buildBudgetedGoalReviewPrompt(
     maximumCharacters: transcriptCharacters,
   },);
   /**
-   * Complete reviewer user content.
+   Complete reviewer user content.
    */
   const userContent = `${claim}${transcript}`;
   return {
@@ -456,18 +456,18 @@ function buildBudgetedGoalReviewPrompt(
 }
 
 /**
- * Build caller-specific direct-JSON retry prompt after omitted reviewer tool.
- *
- * @param initialPrompt - original goal review request
- *
- * @param firstAttemptTextContent - non-tool text from initial response
- *
- * @returns prompt preserving original rubric and evidence
- *
- * @example
- * ```ts
- * buildGoalJsonRetryPrompt({ initialPrompt, firstAttemptTextContent: '' });
- * ```
+ Build caller-specific direct-JSON retry prompt after omitted reviewer tool.
+ 
+ @param initialPrompt - original goal review request
+ 
+ @param firstAttemptTextContent - non-tool text from initial response
+ 
+ @returns prompt preserving original rubric and evidence
+ 
+ @example
+ ```ts
+ buildGoalJsonRetryPrompt({ initialPrompt, firstAttemptTextContent: '' });
+ ```
  */
 function buildGoalJsonRetryPrompt(
   {

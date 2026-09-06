@@ -1,7 +1,7 @@
 /**
- * Exa HTTP request helpers.
- *
- * @module
+ Exa HTTP request helpers.
+ 
+ @module
  */
 
 import { caughtValueText as errorMessage, } from '@monochromatic-dev/module-caught-value/ts';
@@ -21,22 +21,22 @@ import type {
 } from './search-fetch-types.ts';
 
 /**
- * Logger root for pi-search-fetch after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: exaLogger, },);
- * ```
+ Logger root for pi-search-fetch after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: exaLogger, },);
+ ```
  */
 const exaLogger = tagged({ tag: 'pi-search-fetch', },);
 
 /**
- * Header used by Exa API keys.
+ Header used by Exa API keys.
  */
 const EXA_API_KEY_HEADER = 'x-api-key' as const;
 
 /**
- * Module logger.
+ Module logger.
  */
 const l = tagged({
   tag: 'exa-http',
@@ -44,28 +44,28 @@ const l = tagged({
 },);
 
 /**
- * POST JSON to Exa and parse JSON response.
- *
- * @param runtime - client runtime dependencies
- *
- * @param endpoint - endpoint path
- *
- * @param body - JSON request body
- *
- * @param signal - optional cancellation signal
- *
- * @returns parsed JSON response
- *
- * @mutates runtime - `sendExaRequest` invokes configured fetch provider capability.
- *
- * @mutates body - `JSON.stringify` may invoke conversion hooks on request data.
- *
- * @mutates signal - Configured fetch provider may retain signal and register abort listeners.
- *
- * @example
- * ```ts
- * await postExaJson({ runtime, endpoint: '/search', body: { query: 'docs' } });
- * ```
+ POST JSON to Exa and parse JSON response.
+ 
+ @param runtime - client runtime dependencies
+ 
+ @param endpoint - endpoint path
+ 
+ @param body - JSON request body
+ 
+ @param signal - optional cancellation signal
+ 
+ @returns parsed JSON response
+ 
+ @mutates runtime - `sendExaRequest` invokes configured fetch provider capability.
+ 
+ @mutates body - `JSON.stringify` may invoke conversion hooks on request data.
+ 
+ @mutates signal - Configured fetch provider may retain signal and register abort listeners.
+ 
+ @example
+ ```ts
+ await postExaJson({ runtime, endpoint: '/search', body: { query: 'docs' } });
+ ```
  */
 async function postExaJson(
   {
@@ -78,18 +78,18 @@ async function postExaJson(
   },
 ): Promise<unknown> {
   /**
-   * API key validated for this endpoint.
+   API key validated for this endpoint.
    */
   const apiKey = exaApiKeyForEndpoint({
     ...(runtime.apiKey === undefined ? {} : { apiKey: runtime.apiKey, }),
     endpoint,
   },);
   /**
-   * Full Exa request URL.
+   Full Exa request URL.
    */
   const requestUrl = `${runtime.baseUrl}${endpoint}`;
   /**
-   * Fetch response from Exa.
+   Fetch response from Exa.
    */
   const response = await sendExaRequest({
     runtime,
@@ -100,7 +100,7 @@ async function postExaJson(
     ...(signal === undefined ? {} : { signal, }),
   },);
   /**
-   * Raw response text.
+   Raw response text.
    */
   const responseText = await response.text();
 
@@ -118,14 +118,14 @@ async function postExaJson(
 }
 
 /**
- * Send Exa fetch request and normalize abort or network failures.
- *
- * @param request - Runtime capability and Exa request values.
- *
- * @returns fetch response
- *
- * @mutates request - `runtime.fetchImpl` may invoke provider behavior and retain request state;
- *   `JSON.stringify` may invoke hooks on `request.body`.
+ Send Exa fetch request and normalize abort or network failures.
+ 
+ @param request - Runtime capability and Exa request values.
+ 
+ @returns fetch response
+ 
+ @mutates request - `runtime.fetchImpl` may invoke provider behavior and retain request state;
+   `JSON.stringify` may invoke hooks on `request.body`.
  */
 async function sendExaRequest(
   request: {
@@ -138,7 +138,7 @@ async function sendExaRequest(
   },
 ): Promise<Response> {
   /**
-   * Request values extracted after naming provider effect boundary.
+   Request values extracted after naming provider effect boundary.
    */
   const {
     runtime,
@@ -150,7 +150,7 @@ async function sendExaRequest(
   } = request;
   try {
     /**
-     * Fetch request init without undefined optional properties.
+     Fetch request init without undefined optional properties.
      */
     const requestInit: RequestInit = {
       method: HTTP_POST,
@@ -184,13 +184,13 @@ async function sendExaRequest(
 }
 
 /**
- * Return API key or throw endpoint-specific missing-key error.
- *
- * @param apiKey - optional configured API key
- *
- * @param endpoint - endpoint path for diagnostics
- *
- * @returns configured API key
+ Return API key or throw endpoint-specific missing-key error.
+ 
+ @param apiKey - optional configured API key
+ 
+ @param endpoint - endpoint path for diagnostics
+ 
+ @returns configured API key
  */
 function exaApiKeyForEndpoint(
   {
@@ -209,13 +209,13 @@ function exaApiKeyForEndpoint(
 }
 
 /**
- * Parse successful Exa JSON response text.
- *
- * @param endpoint - endpoint path for diagnostics
- *
- * @param responseText - raw response text
- *
- * @returns parsed JSON response
+ Parse successful Exa JSON response text.
+ 
+ @param endpoint - endpoint path for diagnostics
+ 
+ @param responseText - raw response text
+ 
+ @returns parsed JSON response
  */
 function parseExaJsonResponse(
   {
@@ -238,15 +238,15 @@ function parseExaJsonResponse(
 }
 
 /**
- * Format non-2xx Exa failures without exposing request secrets.
- *
- * @param endpoint - endpoint path for diagnostics
- *
- * @param response - Exa response metadata
- *
- * @param responseText - raw response text
- *
- * @returns safe error message
+ Format non-2xx Exa failures without exposing request secrets.
+ 
+ @param endpoint - endpoint path for diagnostics
+ 
+ @param response - Exa response metadata
+ 
+ @param responseText - raw response text
+ 
+ @returns safe error message
  */
 function formatExaHttpError(
   {
@@ -260,7 +260,7 @@ function formatExaHttpError(
   },
 ): string {
   /**
-   * Status text with leading space, when present.
+   Status text with leading space, when present.
    */
   const statusText = response.statusText
     .trim()
@@ -268,23 +268,23 @@ function formatExaHttpError(
     ? ''
     : ` ${response.statusText}`;
   /**
-   * Exa message suffix.
+   Exa message suffix.
    */
   const messageSuffix = exaErrorMessage(responseText,);
   return `Exa ${endpoint} failed with HTTP ${String(response.status,)}${statusText}${messageSuffix}`;
 }
 
 /**
- * Extract Exa error message suffix from JSON response body.
- *
- * @param responseText - raw error response text
- *
- * @returns safe suffix beginning with colon when present
+ Extract Exa error message suffix from JSON response body.
+ 
+ @param responseText - raw error response text
+ 
+ @returns safe suffix beginning with colon when present
  */
 function exaErrorMessage(responseText: string,): string {
   try {
     /**
-     * Parsed error response.
+     Parsed error response.
      */
     const parsed = JSON.parse(responseText,) as unknown;
     if (!isRecord(parsed,))
@@ -296,7 +296,7 @@ function exaErrorMessage(responseText: string,): string {
     if (!isRecord(parsed.error,))
       return '';
     /**
-     * Parsed Exa nested error.
+     Parsed Exa nested error.
      */
     const nestedError = parsed.error;
     if ((typeof nestedError.message) !== 'string')
@@ -310,13 +310,13 @@ function exaErrorMessage(responseText: string,): string {
 }
 
 /**
- * Return whether fetch failed because request was aborted.
- *
- * @param error - thrown fetch error
- *
- * @param signal - optional abort signal
- *
- * @returns whether failure is an abort
+ Return whether fetch failed because request was aborted.
+ 
+ @param error - thrown fetch error
+ 
+ @param signal - optional abort signal
+ 
+ @returns whether failure is an abort
  */
 function isAbortError(
   {
@@ -334,11 +334,11 @@ function isAbortError(
 }
 
 /**
- * Return whether value is a non-null object record.
- *
- * @param value - unknown value
- *
- * @returns whether value can be read by string keys
+ Return whether value is a non-null object record.
+ 
+ @param value - unknown value
+ 
+ @returns whether value can be read by string keys
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return (value !== null)

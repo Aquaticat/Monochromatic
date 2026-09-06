@@ -7,7 +7,7 @@ import {
 import { processArgumentsMatch, } from '../dist/final/node/tunnel-bypass.mjs';
 
 /**
- * Stable watcher arguments expected independently from Node installation path.
+ Stable watcher arguments expected independently from Node installation path.
  */
 const expected = [
   '/package/bypass-watch.mjs',
@@ -15,7 +15,7 @@ const expected = [
 ] as const;
 
 /**
- * Live process identity carrying prior Node installation argument.
+ Live process identity carrying prior Node installation argument.
  */
 const identity = {
   commandLine: [

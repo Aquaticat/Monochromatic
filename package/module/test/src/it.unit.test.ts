@@ -1,7 +1,7 @@
 /**
- * Tests for the `it` test runner.
- *
- * @module
+ Tests for the `it` test runner.
+ 
+ @module
  */
 
 import {

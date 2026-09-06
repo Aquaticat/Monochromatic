@@ -10,7 +10,7 @@ import * as v from 'valibot';
 //region Scroll event observer: Tracks element visibility and dispatches custom scroll lifecycle events
 
 /**
- * Default visibility thresholds: both edges, quarters, half, and full coverage.
+ Default visibility thresholds: both edges, quarters, half, and full coverage.
  */
 const DEFAULT_THRESHOLD: readonly number[] = [
   0,
@@ -21,17 +21,17 @@ const DEFAULT_THRESHOLD: readonly number[] = [
 ];
 
 /**
- * Resolves a caller threshold into the writable shape `IntersectionObserverInit` requires.
- * Copies array thresholds into a fresh mutable array and falls back to {@link DEFAULT_THRESHOLD}.
- *
- * @param threshold - Caller-supplied threshold, absent when the caller wants defaults
- *
- * @returns Writable threshold value accepted by the observer constructor
- *
- * @example
- * ```ts
- * const t = resolveThreshold(HALF);
- * ```
+ Resolves a caller threshold into the writable shape `IntersectionObserverInit` requires.
+ Copies array thresholds into a fresh mutable array and falls back to {@link DEFAULT_THRESHOLD}.
+ 
+ @param threshold - Caller-supplied threshold, absent when the caller wants defaults
+ 
+ @returns Writable threshold value accepted by the observer constructor
+ 
+ @example
+ ```ts
+ const t = resolveThreshold(HALF);
+ ```
  */
 function resolveThreshold(
   threshold?: number | readonly number[],
@@ -44,20 +44,20 @@ function resolveThreshold(
 }
 
 /**
- * Attaches an IntersectionObserver to an element, dispatching custom events
- * for scroll lifecycle transitions (enter, leave, half-visible, fully visible, scrolled out).
- * Threshold configuration is resolved via {@link resolveThreshold}.
- *
- * @param scrollOptions - Element to observe and optional IntersectionObserver configuration
- *
- * @returns IntersectionObserver instance controlling the observation
- *
- * @mutates scrollOptions - `DOM commit 5796f716 dispatchEvent invokes listeners with event` through `scrollOptions.element`; `observer.observe` retains element observation.
- *
- * @example
- * ```ts
- * const observer = addScrollEvents({ element: myDiv });
- * ```
+ Attaches an IntersectionObserver to an element, dispatching custom events
+ for scroll lifecycle transitions (enter, leave, half-visible, fully visible, scrolled out).
+ Threshold configuration is resolved via {@link resolveThreshold}.
+ 
+ @param scrollOptions - Element to observe and optional IntersectionObserver configuration
+ 
+ @returns IntersectionObserver instance controlling the observation
+ 
+ @mutates scrollOptions - `DOM commit 5796f716 dispatchEvent invokes listeners with event` through `scrollOptions.element`; `observer.observe` retains element observation.
+ 
+ @example
+ ```ts
+ const observer = addScrollEvents({ element: myDiv });
+ ```
  */
 function addScrollEvents(scrollOptions: {
   readonly element: HTMLElement;
@@ -68,14 +68,14 @@ function addScrollEvents(scrollOptions: {
   };
 },): IntersectionObserver {
   /**
-   * Destructured inputs so the body reads without `scrollOptions.` prefix.
+   Destructured inputs so the body reads without `scrollOptions.` prefix.
    */
   const {
     element,
     options,
   } = scrollOptions;
   /**
-   * Defaults merged with caller overrides so the observer sees a complete config.
+   Defaults merged with caller overrides so the observer sees a complete config.
    */
   const config: IntersectionObserverInit = {
     threshold: resolveThreshold(options?.threshold,),
@@ -85,21 +85,21 @@ function addScrollEvents(scrollOptions: {
   };
 
   /**
-   * Closure latch so `scrolledIn` fires exactly once per visibility cycle.
+   Closure latch so `scrolledIn` fires exactly once per visibility cycle.
    */
   let wasFullyVisible = false;
   /**
-   * Closure cursor for ratio crossings so enter/leave events trigger on transition, not state.
+   Closure cursor for ratio crossings so enter/leave events trigger on transition, not state.
    */
   let lastRatio = 0;
 
   /**
-   * IntersectionObserver bound to the closure state above so callbacks share lifecycle.
+   IntersectionObserver bound to the closure state above so callbacks share lifecycle.
    */
   const observer = new IntersectionObserver(
     function onIntersect(entries: readonly IntersectionObserverEntry[],) {
       /**
-       * First entry per spec, used as the source of the ratio reading.
+       First entry per spec, used as the source of the ratio reading.
        */
       const [entry,] = entries;
       if (!entry) {
@@ -107,7 +107,7 @@ function addScrollEvents(scrollOptions: {
         return;
       }
       /**
-       * Current intersection ratio used by every transition check below.
+       Current intersection ratio used by every transition check below.
        */
       const ratio = entry.intersectionRatio;
 
@@ -144,19 +144,19 @@ function addScrollEvents(scrollOptions: {
 //region Feed element binding: Connects scroll events to the ignore API for auto-dismissal
 
 /**
- * All feed elements on the page, bound to scroll-based ignore behavior.
- *
- * @see {@link addScrollEvents} for the scroll lifecycle that triggers ignore calls
+ All feed elements on the page, bound to scroll-based ignore behavior.
+ 
+ @see {@link addScrollEvents} for the scroll lifecycle that triggers ignore calls
  */
 const elements: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>(
   '.feed',
 );
 /**
- * Binds one host-created feed element to observer and event-listener state.
- *
- * @param element - Feed element supplied by browser NodeList iteration.
- *
- * @mutates element - `DOM commit 5796f716 dispatchEvent invokes listeners with event`; `element.addEventListener` and `observer.observe` retain event or observation state.
+ Binds one host-created feed element to observer and event-listener state.
+ 
+ @param element - Feed element supplied by browser NodeList iteration.
+ 
+ @mutates element - `DOM commit 5796f716 dispatchEvent invokes listeners with event`; `element.addEventListener` and `observer.observe` retain event or observation state.
  */
 function bindScrollIgnore(element: HTMLElement,): void {
   addScrollEvents({ element, },);
@@ -167,20 +167,20 @@ function bindScrollIgnore(element: HTMLElement,): void {
         try {
           console.error('scrolledOut',);
           /**
-           * Required metadata wrapper so a missing element fails loud, not silent.
+           Required metadata wrapper so a missing element fails loud, not silent.
            */
           const metadata = nonNullishOrThrow(
             element.querySelector<HTMLElement>('.feed__metadata',),
           );
           /**
-           * Required link anchor inside metadata so the href is guaranteed present.
+           Required link anchor inside metadata so the href is guaranteed present.
            */
           const anchor: HTMLAnchorElement = nonNullishOrThrow(
             metadata.querySelector<HTMLAnchorElement>('.feed__link',),
           );
 
           /**
-           * Request body shape varies by whether the href is a valid URL.
+           Request body shape varies by whether the href is a valid URL.
            */
           const body: Record<string, string> = v
               .safeParse(
@@ -195,7 +195,7 @@ function bindScrollIgnore(element: HTMLElement,): void {
             : { metadataOuterHtml: metadata.outerHTML, };
 
           /**
-           * Ignore-API response held so the ok check and text read share one Response.
+           Ignore-API response held so the ok check and text read share one Response.
            */
           const response = await fetch(
             `/api/ignore/new`,
@@ -212,7 +212,7 @@ function bindScrollIgnore(element: HTMLElement,): void {
             return;
           }
           /**
-           * Response text persisted for the success log line.
+           Response text persisted for the success log line.
            */
           const text = await response.text();
           console.error(`ignored: ${text}`,);
@@ -233,5 +233,3 @@ function bindScrollIgnore(element: HTMLElement,): void {
 elements.forEach(bindScrollIgnore,);
 
 //endregion Feed element binding
-
-export {};

@@ -1,7 +1,7 @@
 /**
- * Unit tests for scope pattern resolution.
- *
- * @module
+ Unit tests for scope pattern resolution.
+ 
+ @module
  */
 
 import {
@@ -81,7 +81,7 @@ await describe({
       name: 'matches glob patterns case-insensitively against slugs and ids',
       fn: async function testCaseInsensitiveGlobMatching() {
         /**
-         * Result matched through canonical provider/model slug.
+         Result matched through canonical provider/model slug.
          */
         const canonicalResult = resolveModelPatterns({
           patterns: ['EXPENSIVE/REVIEW*',],
@@ -93,7 +93,7 @@ await describe({
           .toEqual(['expensive/reviewer',],);
 
         /**
-         * Result matched through bare model id fallback.
+         Result matched through bare model id fallback.
          */
         const bareIdResult = resolveModelPatterns({
           patterns: ['REVIEW*',],
@@ -112,7 +112,7 @@ await describe({
       name: 'keeps expected glob syntax for model scope patterns',
       fn: async function testExpectedGlobSyntax() {
         /**
-         * Result matched through brace alternation on provider segment.
+         Result matched through brace alternation on provider segment.
          */
         const braceResult = resolveModelPatterns({
           patterns: ['{cheap,expensive}/*',],
@@ -127,7 +127,7 @@ await describe({
           ],);
 
         /**
-         * Result matched through character class syntax.
+         Result matched through character class syntax.
          */
         const characterClassResult = resolveModelPatterns({
           patterns: ['cheap/reviewe[!x]',],
@@ -139,7 +139,7 @@ await describe({
           .toEqual(['cheap/reviewer',],);
 
         /**
-         * Result matched through globstar across provider/id separator.
+         Result matched through globstar across provider/id separator.
          */
         const globstarResult = resolveModelPatterns({
           patterns: ['cheap/**',],
@@ -151,7 +151,7 @@ await describe({
           .toEqual(['cheap/reviewer',],);
 
         /**
-         * Result proving single-star globs do not cross provider/id separator.
+         Result proving single-star globs do not cross provider/id separator.
          */
         const slashBoundaryResult = resolveModelPatterns({
           patterns: ['cheap*',],
@@ -160,7 +160,7 @@ await describe({
         expect(slashBoundaryResult,).toEqual([],);
 
         /**
-         * Result proving escaped glob tokens are treated literally.
+         Result proving escaped glob tokens are treated literally.
          */
         const escapedStarResult = resolveModelPatterns({
           patterns: [String.raw`cheap/review\*`,],

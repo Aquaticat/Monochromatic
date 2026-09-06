@@ -16,12 +16,12 @@ import nanoSpawn, {
 } from 'nano-spawn';
 
 /**
- * Absolute real-Git executable used only for disposable fixture setup.
+ Absolute real-Git executable used only for disposable fixture setup.
  */
 const REAL_GIT_PATH = '/usr/bin/git';
 
 /**
- * Built cli-git artifact exercised at consumer boundary.
+ Built cli-git artifact exercised at consumer boundary.
  */
 export const WRAPPER_PATH: string = join(
   import.meta.dirname,
@@ -33,80 +33,80 @@ export const WRAPPER_PATH: string = join(
 );
 
 /**
- * Executable fixture mode.
+ Executable fixture mode.
  */
 const EXECUTABLE_MODE = 0o755;
 
 /**
- * Portable permission-bit mask.
+ Portable permission-bit mask.
  */
 const PERMISSION_BITS = 0o7777;
 
 /**
- * Fixture author identity.
+ Fixture author identity.
  */
 const TEST_USER_NAME = 'cli-git worktree copy test';
 
 /**
- * Fixture author address.
+ Fixture author address.
  */
 const TEST_USER_EMAIL = 'worktree-copy@example.invalid';
 
 /**
- * Disposable test directory with automatic recursive cleanup.
+ Disposable test directory with automatic recursive cleanup.
  */
 type TempDirectory = Readonly<{
   /**
-   * Absolute temporary root.
+   Absolute temporary root.
    */
   path: string;
   /**
-   * Removes complete fixture after test settles.
+   Removes complete fixture after test settles.
    */
   [Symbol.asyncDispose]: () => Promise<void>;
 }>;
 
 /**
- * Captured wrapper success or subprocess failure.
+ Captured wrapper success or subprocess failure.
  */
 type WrapperOutcome = Readonly<{
   /**
-   * Outcome discriminant.
+   Outcome discriminant.
    */
   kind: 'success';
   /**
-   * Successful captured process result.
+   Successful captured process result.
    */
   result: Result;
 }> | Readonly<{
   /**
-   * Outcome discriminant.
+   Outcome discriminant.
    */
   kind: 'failure';
   /**
-   * Failed captured process result.
+   Failed captured process result.
    */
   error: SubprocessError;
 }>;
 
 /**
- * Restores owner access on fixture directories before recursive cleanup.
- *
- * @param root - disposable fixture root
- *
- * @example
- * ```ts
- * await prepareFixtureCleanup('/tmp/fixture');
- * ```
+ Restores owner access on fixture directories before recursive cleanup.
+ 
+ @param root - disposable fixture root
+ 
+ @example
+ ```ts
+ await prepareFixtureCleanup('/tmp/fixture');
+ ```
  */
 async function prepareFixtureCleanup(root: string,): Promise<void> {
   /**
-   * Pending fixture directories.
+   Pending fixture directories.
    */
   const pending: string[] = [root,];
   while (pending.length > 0) {
     /**
-     * Current fixture directory.
+     Current fixture directory.
      */
     const directory = pending.pop();
     if (directory === undefined)
@@ -134,18 +134,18 @@ async function prepareFixtureCleanup(root: string,): Promise<void> {
 }
 
 /**
- * Creates one disposable filesystem root.
- *
- * @returns asynchronously disposable temporary directory
- *
- * @example
- * ```ts
- * await using fixture = await createTempDirectory();
- * ```
+ Creates one disposable filesystem root.
+ 
+ @returns asynchronously disposable temporary directory
+ 
+ @example
+ ```ts
+ await using fixture = await createTempDirectory();
+ ```
  */
 export async function createTempDirectory(): Promise<TempDirectory> {
   /**
-   * Unique fixture root.
+   Unique fixture root.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -164,18 +164,18 @@ export async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
- * Runs real Git without wrapper behavior.
- *
- * @param cwd - subprocess working directory
- *
- * @param args - exact real-Git arguments
- *
- * @returns captured successful result
- *
- * @example
- * ```ts
- * await runRealGit({ cwd: '/repo', args: ['status', '--short'] });
- * ```
+ Runs real Git without wrapper behavior.
+ 
+ @param cwd - subprocess working directory
+ 
+ @param args - exact real-Git arguments
+ 
+ @returns captured successful result
+ 
+ @example
+ ```ts
+ await runRealGit({ cwd: '/repo', args: ['status', '--short'] });
+ ```
  */
 export function runRealGit({
   cwd,
@@ -192,20 +192,20 @@ export function runRealGit({
 }
 
 /**
- * Resolves common Git directory for fixture worktree.
- *
- * @param repositoryRoot - fixture worktree root
- *
- * @returns Git-reported absolute common directory
- *
- * @example
- * ```ts
- * await resolveFixtureCommonDir('/tmp/repo');
- * ```
+ Resolves common Git directory for fixture worktree.
+ 
+ @param repositoryRoot - fixture worktree root
+ 
+ @returns Git-reported absolute common directory
+ 
+ @example
+ ```ts
+ await resolveFixtureCommonDir('/tmp/repo');
+ ```
  */
 export async function resolveFixtureCommonDir(repositoryRoot: string,): Promise<string> {
   /**
-   * Git metadata containing absolute common directory and terminal line break.
+   Git metadata containing absolute common directory and terminal line break.
    */
   const result = await runRealGit({
     cwd: repositoryRoot,
@@ -220,18 +220,18 @@ export async function resolveFixtureCommonDir(repositoryRoot: string,): Promise<
 }
 
 /**
- * Runs built shadow Git entry through Node.
- *
- * @param cwd - subprocess working directory
- *
- * @param args - exact wrapper arguments
- *
- * @returns captured successful result
- *
- * @example
- * ```ts
- * await runWrapper({ cwd: '/repo', args: ['status', '--short'] });
- * ```
+ Runs built shadow Git entry through Node.
+ 
+ @param cwd - subprocess working directory
+ 
+ @param args - exact wrapper arguments
+ 
+ @returns captured successful result
+ 
+ @example
+ ```ts
+ await runWrapper({ cwd: '/repo', args: ['status', '--short'] });
+ ```
  */
 function runWrapper({
   cwd,
@@ -251,18 +251,18 @@ function runWrapper({
 }
 
 /**
- * Captures built wrapper success or subprocess failure without mutable catch state.
- *
- * @param cwd - subprocess working directory
- *
- * @param args - exact wrapper arguments
- *
- * @returns discriminated captured outcome
- *
- * @example
- * ```ts
- * await captureWrapper({ cwd: '/repo', args: ['status'] });
- * ```
+ Captures built wrapper success or subprocess failure without mutable catch state.
+ 
+ @param cwd - subprocess working directory
+ 
+ @param args - exact wrapper arguments
+ 
+ @returns discriminated captured outcome
+ 
+ @example
+ ```ts
+ await captureWrapper({ cwd: '/repo', args: ['status'] });
+ ```
  */
 export async function captureWrapper({
   cwd,
@@ -292,18 +292,18 @@ export async function captureWrapper({
 }
 
 /**
- * Requires successful captured wrapper result.
- *
- * @param outcome - captured wrapper outcome
- *
- * @returns successful process result
- *
- * @throws when wrapper failed
- *
- * @example
- * ```ts
- * requireSuccess(await captureWrapper(options));
- * ```
+ Requires successful captured wrapper result.
+ 
+ @param outcome - captured wrapper outcome
+ 
+ @returns successful process result
+ 
+ @throws when wrapper failed
+ 
+ @example
+ ```ts
+ requireSuccess(await captureWrapper(options));
+ ```
  */
 export function requireSuccess(outcome: WrapperOutcome,): Result {
   if (outcome.kind === 'failure')
@@ -312,18 +312,18 @@ export function requireSuccess(outcome: WrapperOutcome,): Result {
 }
 
 /**
- * Requires failed captured wrapper result.
- *
- * @param outcome - captured wrapper outcome
- *
- * @returns subprocess failure
- *
- * @throws when wrapper succeeded
- *
- * @example
- * ```ts
- * requireFailure(await captureWrapper(options));
- * ```
+ Requires failed captured wrapper result.
+ 
+ @param outcome - captured wrapper outcome
+ 
+ @returns subprocess failure
+ 
+ @throws when wrapper succeeded
+ 
+ @example
+ ```ts
+ requireFailure(await captureWrapper(options));
+ ```
  */
 export function requireFailure(outcome: WrapperOutcome,): SubprocessError {
   if (outcome.kind === 'success')
@@ -332,14 +332,14 @@ export function requireFailure(outcome: WrapperOutcome,): SubprocessError {
 }
 
 /**
- * Initializes disposable main worktree with one committed tracked file.
- *
- * @param repositoryRoot - empty main-worktree target directory
- *
- * @example
- * ```ts
- * await initializeMainRepository('/tmp/repo-main');
- * ```
+ Initializes disposable main worktree with one committed tracked file.
+ 
+ @param repositoryRoot - empty main-worktree target directory
+ 
+ @example
+ ```ts
+ await initializeMainRepository('/tmp/repo-main');
+ ```
  */
 export async function initializeMainRepository(repositoryRoot: string,): Promise<void> {
   await mkdir(
@@ -395,18 +395,18 @@ export async function initializeMainRepository(repositoryRoot: string,): Promise
 }
 
 /**
- * Initializes disposable linked source worktree with committed main repository.
- *
- * @param repositoryRoot - empty linked-worktree target directory
- *
- * @example
- * ```ts
- * await initializeRepository('/tmp/repo-linked');
- * ```
+ Initializes disposable linked source worktree with committed main repository.
+ 
+ @param repositoryRoot - empty linked-worktree target directory
+ 
+ @example
+ ```ts
+ await initializeRepository('/tmp/repo-linked');
+ ```
  */
 export async function initializeRepository(repositoryRoot: string,): Promise<void> {
   /**
-   * Main worktree retained beside linked source for shared administration.
+   Main worktree retained beside linked source for shared administration.
    */
   const mainRoot = `${repositoryRoot}-main`;
   await initializeMainRepository(mainRoot,);
@@ -423,18 +423,18 @@ export async function initializeRepository(repositoryRoot: string,): Promise<voi
 }
 
 /**
- * Commits exact fixture paths with real Git.
- *
- * @param repositoryRoot - fixture repository root
- *
- * @param message - commit subject
- *
- * @param paths - exact repository paths
- *
- * @example
- * ```ts
- * await commitPaths({ repositoryRoot: '/repo', message: 'fixture', paths: ['file'] });
- * ```
+ Commits exact fixture paths with real Git.
+ 
+ @param repositoryRoot - fixture repository root
+ 
+ @param message - commit subject
+ 
+ @param paths - exact repository paths
+ 
+ @example
+ ```ts
+ await commitPaths({ repositoryRoot: '/repo', message: 'fixture', paths: ['file'] });
+ ```
  */
 export async function commitPaths({
   repositoryRoot,
@@ -467,32 +467,32 @@ export async function commitPaths({
 }
 
 /**
- * Returns portable permission bits for no-follow path.
- *
- * @param path - exact filesystem path
- *
- * @returns portable permission bits
- *
- * @example
- * ```ts
- * await permissionMode('/repo/file');
- * ```
+ Returns portable permission bits for no-follow path.
+ 
+ @param path - exact filesystem path
+ 
+ @returns portable permission bits
+ 
+ @example
+ ```ts
+ await permissionMode('/repo/file');
+ ```
  */
 export async function permissionMode(path: string,): Promise<number> {
   return (await lstat(path,)).mode & PERMISSION_BITS;
 }
 
 /**
- * Writes executable Node post-checkout hook fixture.
- *
- * @param repositoryRoot - fixture repository root
- *
- * @param body - CommonJS hook statements
- *
- * @example
- * ```ts
- * await writePostCheckoutHook({ repositoryRoot: '/repo', body: "process.exitCode = 1;" });
- * ```
+ Writes executable Node post-checkout hook fixture.
+ 
+ @param repositoryRoot - fixture repository root
+ 
+ @param body - CommonJS hook statements
+ 
+ @example
+ ```ts
+ await writePostCheckoutHook({ repositoryRoot: '/repo', body: "process.exitCode = 1;" });
+ ```
  */
 export async function writePostCheckoutHook({
   repositoryRoot,
@@ -502,11 +502,11 @@ export async function writePostCheckoutHook({
   body: string;
 }>,): Promise<void> {
   /**
-   * Shared common Git directory containing hook storage.
+   Shared common Git directory containing hook storage.
    */
   const commonDir = await resolveFixtureCommonDir(repositoryRoot,);
   /**
-   * Shared linked-worktree hook path.
+   Shared linked-worktree hook path.
    */
   const hookPath = join(
     commonDir,
@@ -525,16 +525,16 @@ export async function writePostCheckoutHook({
 }
 
 /**
- * Returns cli-git ignored-state success summary lines.
- *
- * @param stderr - complete wrapper stderr
- *
- * @returns matching summary lines
- *
- * @example
- * ```ts
- * copySummaryLines(result.stderr);
- * ```
+ Returns cli-git ignored-state success summary lines.
+ 
+ @param stderr - complete wrapper stderr
+ 
+ @returns matching summary lines
+ 
+ @example
+ ```ts
+ copySummaryLines(result.stderr);
+ ```
  */
 export function copySummaryLines(stderr: string,): readonly string[] {
   return stderr.split('\n',)

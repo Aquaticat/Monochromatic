@@ -1,7 +1,7 @@
 /**
- * {@link tomlHas}: presence check for a path.
- *
- * @module
+ {@link tomlHas}: presence check for a path.
+ 
+ @module
  */
 
 import {
@@ -15,15 +15,15 @@ import type {
 } from './types.ts';
 
 /**
- * True when `path` resolves to an existing key, value, table, or
- * array-of-tables in the current document.
- *
- * @returns Resulting boolean.
- *
- * @example
- * ```ts
- * tomlHas({ edit, path: ['tools', 'bun',], },);  // true / false
- * ```
+ True when `path` resolves to an existing key, value, table, or
+ array-of-tables in the current document.
+ 
+ @returns Resulting boolean.
+ 
+ @example
+ ```ts
+ tomlHas({ edit, path: ['tools', 'bun',], },);  // true / false
+ ```
  */
 export function tomlHas(
   {

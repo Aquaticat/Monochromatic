@@ -3,7 +3,7 @@ import { join, } from 'node:path';
 //region Constants
 
 /**
- * User-level Pi extension configuration directory below home.
+ User-level Pi extension configuration directory below home.
  */
 const PI_EXTENSION_CONFIG_DIRECTORY = join(
   '.pi',
@@ -12,7 +12,7 @@ const PI_EXTENSION_CONFIG_DIRECTORY = join(
 );
 
 /**
- * Ask-user extension config filename.
+ Ask-user extension config filename.
  */
 const ASK_USER_QUESTION_CONFIG_FILENAME = 'pi-ask-user-question.json';
 
@@ -21,16 +21,16 @@ const ASK_USER_QUESTION_CONFIG_FILENAME = 'pi-ask-user-question.json';
 //region Path
 
 /**
- * Resolves user-level ask-user extension config path.
- *
- * @param home - user home directory
- *
- * @returns absolute JSON config path
- *
- * @example
- * ```ts
- * askUserQuestionConfigPath({ home: '/home/user' });
- * ```
+ Resolves user-level ask-user extension config path.
+ 
+ @param home - user home directory
+ 
+ @returns absolute JSON config path
+ 
+ @example
+ ```ts
+ askUserQuestionConfigPath({ home: '/home/user' });
+ ```
  */
 export function askUserQuestionConfigPath(
   { home, }: { readonly home: string; },

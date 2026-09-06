@@ -1,10 +1,10 @@
 /**
- * Unit tests for the structural edit branches: setting an existing array element
- * versus appending, missing-segment and out-of-range errors, duplicate-key
- * last-wins, nested descent, comment preservation, deletion, and the read-side
- * navigation guards.
- *
- * @module
+ Unit tests for the structural edit branches: setting an existing array element
+ versus appending, missing-segment and out-of-range errors, duplicate-key
+ last-wins, nested descent, comment preservation, deletion, and the read-side
+ navigation guards.
+ 
+ @module
  */
 
 import {
@@ -38,7 +38,7 @@ const dup = (): ReturnType<typeof parseJsoncEdit> =>
   parseJsoncEdit({ source: asJsonc('{ "a": 1, "a": 2 } // c',), },);
 
 /**
- * Fractional segment used to verify array indexes must be integers.
+ Fractional segment used to verify array indexes must be integers.
  */
 const HALF_INDEX = 1 / 2;
 

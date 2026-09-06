@@ -1,10 +1,10 @@
 /**
- * Function-shaped mutations: block emptying and arrow body forcing.
- *
- * @example
- * ```ts
- * functionReplacements({ node, parent, source });
- * ```
+ Function-shaped mutations: block emptying and arrow body forcing.
+ 
+ @example
+ ```ts
+ functionReplacements({ node, parent, source });
+ ```
  */
 
 import { childNode, } from '../node-access.ts';
@@ -14,20 +14,20 @@ import type {
 } from '../types.ts';
 
 /**
- * Emits block and arrow replacements for one node.
- *
- * Non-empty blocks empty out (Stryker's BlockStatement); expression-bodied
- * arrows return `undefined` instead (Stryker's ArrowFunction). Block-bodied
- * arrows are covered by the block family, so the arrow variant skips them.
- *
- * @param options - Node under inspection with parent and source.
- *
- * @returns Replacements, possibly empty.
- *
- * @example
- * ```ts
- * functionReplacements({ node: blockStatement, parent, source });
- * ```
+ Emits block and arrow replacements for one node.
+ 
+ Non-empty blocks empty out (Stryker's BlockStatement); expression-bodied
+ arrows return `undefined` instead (Stryker's ArrowFunction). Block-bodied
+ arrows are covered by the block family, so the arrow variant skips them.
+ 
+ @param options - Node under inspection with parent and source.
+ 
+ @returns Replacements, possibly empty.
+ 
+ @example
+ ```ts
+ functionReplacements({ node: blockStatement, parent, source });
+ ```
  */
 export function functionReplacements(options: {
   readonly node: EstreeNode;
@@ -38,7 +38,7 @@ export function functionReplacements(options: {
     .type
     === 'BlockStatement') {
     /**
-     * Whether the block holds any statements.
+     Whether the block holds any statements.
      */
     const hasBody = Array.isArray(options.node
       .body,)
@@ -68,7 +68,7 @@ export function functionReplacements(options: {
       .expression
       === true)) {
     /**
-     * Expression body of the arrow function.
+     Expression body of the arrow function.
      */
     const body = childNode({
       node: options.node,

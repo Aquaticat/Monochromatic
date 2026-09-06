@@ -27,51 +27,51 @@ import {
 } from './tunnel-bypass-types.ts';
 
 /**
- * Module logger for bypass route ownership synchronization.
+ Module logger for bypass route ownership synchronization.
  */
 const l = tagged({ tag: 'tunnel-bypass-route-owned', },);
 
 /**
- * Synchronizes claimed bypass table to current physical defaults.
- *
- * Transition state persists previous and intended fingerprints before mutation.
- * This makes interrupted setup and watcher retries exactly cleanable.
- * Missing family receives unreachable default so marked traffic cannot fall through to VPN policy.
- *
- * @param state - Persisted table ownership identity.
- *
- * @returns Number of physical defaults observed.
- *
- * @example
- * ```ts
- * await synchronizeBypassRoutes({ state });
- * ```
+ Synchronizes claimed bypass table to current physical defaults.
+ 
+ Transition state persists previous and intended fingerprints before mutation.
+ This makes interrupted setup and watcher retries exactly cleanable.
+ Missing family receives unreachable default so marked traffic cannot fall through to VPN policy.
+ 
+ @param state - Persisted table ownership identity.
+ 
+ @returns Number of physical defaults observed.
+ 
+ @example
+ ```ts
+ await synchronizeBypassRoutes({ state });
+ ```
  */
 export async function synchronizeBypassRoutes(
   { state, }: { readonly state: BypassState; },
 ): Promise<number> {
   /**
-   * Function-scoped logger for one synchronization.
+   Function-scoped logger for one synchronization.
    */
   const fl = tagged({
     tag: synchronizeBypassRoutes.name,
     l,
   },);
   /**
-   * Latest fingerprints from previous complete or interrupted synchronization.
+   Latest fingerprints from previous complete or interrupted synchronization.
    */
   const current = await currentOwnedState({ requested: state, },);
   await assertRecordedDefaults({ state: current, },);
   /**
-   * Current physical defaults before owned table mutation.
+   Current physical defaults before owned table mutation.
    */
   const physical = await readPhysicalDefaults();
   /**
-   * Desired routes for both families.
+   Desired routes for both families.
    */
   const desired = desiredFamilyRoutes({ physical, },);
   /**
-   * Intended command forms included in transition cleanup coverage.
+   Intended command forms included in transition cleanup coverage.
    */
   const intended = desired.map(function intendedOwnedRoute(route,): FamilyRoute {
     return {
@@ -83,7 +83,7 @@ export async function synchronizeBypassRoutes(
     };
   },);
   /**
-   * Transition ownership covering old and new forms before first mutation.
+   Transition ownership covering old and new forms before first mutation.
    */
   const transition = stateWithRoutes({
     state: current,
@@ -109,11 +109,11 @@ export async function synchronizeBypassRoutes(
     },);
   }
   /**
-   * Desired normalized identities used to identify stale prior routes.
+   Desired normalized identities used to identify stale prior routes.
    */
   const desiredKeys = new Set(desired.map(function desiredIdentity(route,): string {
     /**
-     * Fresh token copy before joining through default-library boundary.
+     Fresh token copy before joining through default-library boundary.
      */
     const tokens = [...route.tokens,];
     return routeKey({
@@ -123,7 +123,7 @@ export async function synchronizeBypassRoutes(
   },),);
   for (const route of current.routes) {
     /**
-     * Fresh token copy before joining through default-library boundary.
+     Fresh token copy before joining through default-library boundary.
      */
     const tokens = [...route.tokens,];
     if (desiredKeys.has(routeKey({
@@ -142,19 +142,19 @@ export async function synchronizeBypassRoutes(
     },);
   }
   /**
-   * Kernel-rendered owned routes become final exact fingerprints.
+   Kernel-rendered owned routes become final exact fingerprints.
    */
   const installed = await readOwnedRoutes({ table: current.table, },);
   /**
-   * All defaults checked against protocol-filtered owned rendering after mutation.
+   All defaults checked against protocol-filtered owned rendering after mutation.
    */
   const allDefaults = await readAllDefaultRoutes({ table: current.table, },);
   /**
-   * Exact canonical routes carrying owner protocol after synchronization.
+   Exact canonical routes carrying owner protocol after synchronization.
    */
   const installedKeys = new Set(installed.map(function installedIdentity(route,): string {
     /**
-     * Fresh token copy before semantic identity rendering.
+     Fresh token copy before semantic identity rendering.
      */
     const tokens = [...route.tokens,];
     return routeKey({
@@ -166,7 +166,7 @@ export async function synchronizeBypassRoutes(
     if (!hasBypassProtocol({ route, }))
       return true;
     /**
-     * Fresh token copy before semantic identity rendering.
+     Fresh token copy before semantic identity rendering.
      */
     const tokens = [...route.tokens,];
     return !installedKeys.has(routeKey({
@@ -196,23 +196,23 @@ export async function synchronizeBypassRoutes(
 }
 
 /**
- * Deletes only exact route fingerprints persisted by owner.
- *
- * Unrelated routes and table contents are never flushed,
- * including routes that independently use protocol `201`.
- *
- * @param state - Persisted table ownership.
- *
- * @example
- * ```ts
- * await removeOwnedBypassRoutes({ state });
- * ```
+ Deletes only exact route fingerprints persisted by owner.
+ 
+ Unrelated routes and table contents are never flushed,
+ including routes that independently use protocol `201`.
+ 
+ @param state - Persisted table ownership.
+ 
+ @example
+ ```ts
+ await removeOwnedBypassRoutes({ state });
+ ```
  */
 export async function removeOwnedBypassRoutes(
   { state, }: { readonly state: BypassState; },
 ): Promise<void> {
   /**
-   * Pending exact route deletions.
+   Pending exact route deletions.
    */
   const removals: Promise<void>[] = [];
   for (const route of state.routes) {

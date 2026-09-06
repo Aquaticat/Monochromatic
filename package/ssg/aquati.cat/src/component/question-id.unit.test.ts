@@ -1,7 +1,7 @@
 /**
- * Tests for quiz question component ID derivation.
- *
- * @module
+ Tests for quiz question component ID derivation.
+ 
+ @module
  */
 
 import {
@@ -27,57 +27,57 @@ import {
 //region Hash fixtures
 
 /**
- * Hex digit count for a padded 32-bit FarmHash fingerprint.
+ Hex digit count for a padded 32-bit FarmHash fingerprint.
  */
 const HEX_DIGITS_32 = 8;
 
 /**
- * Hex radix for Number.prototype.toString.
+ Hex radix for Number.prototype.toString.
  */
 const HEX_RADIX = 16;
 
 /**
- * Field boundary separator used by the question ID hash input.
+ Field boundary separator used by the question ID hash input.
  */
 const HASH_FIELD_SEPARATOR = '\u0000';
 
 /**
- * Minimal option shape included in question ID hashing.
+ Minimal option shape included in question ID hashing.
  */
 type HashableQuestionOption = {
   /**
-   * Rendered option label included in the hash input.
+   Rendered option label included in the hash input.
    */
   readonly label: SafeHtml | string;
 
   /**
-   * Correctness flag included in the hash input.
+   Correctness flag included in the hash input.
    */
   readonly correct?: boolean;
 };
 
 /**
- * Minimal question shape included in question ID hashing.
+ Minimal question shape included in question ID hashing.
  */
 type HashableQuestion = {
   /**
-   * Rendered scenario included in the hash input.
+   Rendered scenario included in the hash input.
    */
   readonly scenario: SafeHtml | string;
 
   /**
-   * Options whose labels and correctness flags are included in the hash input.
+   Options whose labels and correctness flags are included in the hash input.
    */
   readonly options: readonly HashableQuestionOption[];
 };
 
 /**
- * Radio question scenario fixture.
+ Radio question scenario fixture.
  */
 const RADIO_SCENARIO = 'Pick the accessible control.';
 
 /**
- * Radio question option fixture.
+ Radio question option fixture.
  */
 const RADIO_OPTIONS = [
   {
@@ -92,14 +92,14 @@ const RADIO_OPTIONS = [
 ] as const satisfies readonly RadioOption[];
 
 /**
- * Checkbox question scenario fixture using already-rendered HTML.
+ Checkbox question scenario fixture using already-rendered HTML.
  */
 const CHECKBOX_SCENARIO = {
   html: '<em>Pick every semantic control.</em>',
 } as const satisfies SafeHtml;
 
 /**
- * Checkbox question option fixture using a rendered label.
+ Checkbox question option fixture using a rendered label.
  */
 const CHECKBOX_OPTIONS = [
   {
@@ -121,7 +121,7 @@ const CHECKBOX_OPTIONS = [
 ] as const satisfies readonly CheckboxOption[];
 
 /**
- * Same checkbox question answers with rewritten explanations.
+ Same checkbox question answers with rewritten explanations.
  */
 const CHECKBOX_OPTIONS_WITH_REWRITTEN_EXPLANATIONS = [
   {
@@ -147,7 +147,7 @@ const CHECKBOX_OPTIONS_WITH_REWRITTEN_EXPLANATIONS = [
 //region Invalid fixtures
 
 /**
- * Invalid radio question with too few options.
+ Invalid radio question with too few options.
  */
 const TOO_FEW_RADIO_OPTIONS = [
   {
@@ -158,7 +158,7 @@ const TOO_FEW_RADIO_OPTIONS = [
 ] as const satisfies readonly RadioOption[];
 
 /**
- * Invalid radio question with no correct option.
+ Invalid radio question with no correct option.
  */
 const NO_CORRECT_RADIO_OPTIONS = [
   {
@@ -172,7 +172,7 @@ const NO_CORRECT_RADIO_OPTIONS = [
 ] as const satisfies readonly RadioOption[];
 
 /**
- * Invalid checkbox question with too few options.
+ Invalid checkbox question with too few options.
  */
 const TOO_FEW_CHECKBOX_OPTIONS = [
   {
@@ -183,7 +183,7 @@ const TOO_FEW_CHECKBOX_OPTIONS = [
 ] as const satisfies readonly CheckboxOption[];
 
 /**
- * Invalid checkbox question with no correct option.
+ Invalid checkbox question with no correct option.
  */
 const NO_CORRECT_CHECKBOX_OPTIONS = [
   {
@@ -201,36 +201,36 @@ const NO_CORRECT_CHECKBOX_OPTIONS = [
 //region Helpers
 
 /**
- * Extracts rendered HTML string from a SafeHtml wrapper, or returns plain text unchanged.
- *
- * @param value - rendered fixture or plain text.
- *
- * @returns String used as hash input.
- *
- * @example
- * ```ts
- * toHtmlString('plain');
- * ```
+ Extracts rendered HTML string from a SafeHtml wrapper, or returns plain text unchanged.
+ 
+ @param value - rendered fixture or plain text.
+ 
+ @returns String used as hash input.
+ 
+ @example
+ ```ts
+ toHtmlString('plain');
+ ```
  */
 function toHtmlString(value: SafeHtml | string,): string {
   return (typeof value) === 'string' ? value : value.html;
 }
 
 /**
- * Computes expected FarmHash-backed question ID for a fixture.
- *
- * @param question - question fixture to hash.
- *
- * @returns Padded hexadecimal question ID.
- *
- * @example
- * ```ts
- * expectedQuestionId({ scenario: 'Pick one', options: RADIO_OPTIONS });
- * ```
+ Computes expected FarmHash-backed question ID for a fixture.
+ 
+ @param question - question fixture to hash.
+ 
+ @returns Padded hexadecimal question ID.
+ 
+ @example
+ ```ts
+ expectedQuestionId({ scenario: 'Pick one', options: RADIO_OPTIONS });
+ ```
  */
 function expectedQuestionId(question: HashableQuestion,): string {
   /**
-   * Hash input fragments in the same order as production code.
+   Hash input fragments in the same order as production code.
    */
   const parts = [
     toHtmlString(question.scenario,),
@@ -251,22 +251,22 @@ function expectedQuestionId(question: HashableQuestion,): string {
 }
 
 /**
- * Captures a synchronous component validation error.
- *
- * @param render - render call expected to throw.
- *
- * @returns Captured error.
- *
- * @throws If the render call does not throw an Error instance.
- *
- * @example
- * ```ts
- * captureRenderError(() => QuestionRadio({ scenario: 'x', options: [] }));
- * ```
+ Captures a synchronous component validation error.
+ 
+ @param render - render call expected to throw.
+ 
+ @returns Captured error.
+ 
+ @throws If the render call does not throw an Error instance.
+ 
+ @example
+ ```ts
+ captureRenderError(() => QuestionRadio({ scenario: 'x', options: [] }));
+ ```
  */
 function captureRenderError(render: () => SafeHtml,): Error {
   /**
-   * Value thrown by the render call, or the returned HTML if no error occurred.
+   Value thrown by the render call, or the returned HTML if no error occurred.
    */
   const caught = (function catchRenderError(): unknown {
     try {
@@ -292,14 +292,14 @@ await describe({
       name: 'formats radio input group IDs from FarmHash32',
       fn: async function formatsRadioInputGroupIdsFromFarmHash32(): Promise<void> {
         /**
-         * Expected padded hex ID derived from farmhashjs fingerprint32.
+         Expected padded hex ID derived from farmhashjs fingerprint32.
          */
         const expectedId = expectedQuestionId({
           scenario: RADIO_SCENARIO,
           options: RADIO_OPTIONS,
         },);
         /**
-         * Rendered radio question HTML.
+         Rendered radio question HTML.
          */
         const { html, } = QuestionRadio({
           scenario: RADIO_SCENARIO,
@@ -314,14 +314,14 @@ await describe({
       name: 'formats checkbox input group IDs from FarmHash32',
       fn: async function formatsCheckboxInputGroupIdsFromFarmHash32(): Promise<void> {
         /**
-         * Expected padded hex ID derived from farmhashjs fingerprint32.
+         Expected padded hex ID derived from farmhashjs fingerprint32.
          */
         const expectedId = expectedQuestionId({
           scenario: CHECKBOX_SCENARIO,
           options: CHECKBOX_OPTIONS,
         },);
         /**
-         * Rendered checkbox question HTML.
+         Rendered checkbox question HTML.
          */
         const { html, } = QuestionCheckbox({
           scenario: CHECKBOX_SCENARIO,
@@ -336,21 +336,21 @@ await describe({
       name: 'keeps checkbox IDs stable when explanations change',
       fn: async function keepsCheckboxIdsStableWhenExplanationsChange(): Promise<void> {
         /**
-         * Expected ID from fields that should affect grouping.
+         Expected ID from fields that should affect grouping.
          */
         const expectedId = expectedQuestionId({
           scenario: CHECKBOX_SCENARIO,
           options: CHECKBOX_OPTIONS,
         },);
         /**
-         * Original checkbox question HTML.
+         Original checkbox question HTML.
          */
         const { html: originalHtml, } = QuestionCheckbox({
           scenario: CHECKBOX_SCENARIO,
           options: CHECKBOX_OPTIONS,
         },);
         /**
-         * Checkbox question HTML after explanation-only edits.
+         Checkbox question HTML after explanation-only edits.
          */
         const { html: rewrittenHtml, } = QuestionCheckbox({
           scenario: CHECKBOX_SCENARIO,
@@ -365,7 +365,7 @@ await describe({
       name: 'rejects invalid radio questions',
       fn: async function rejectsInvalidRadioQuestions(): Promise<void> {
         /**
-         * Error for a radio question with too few options.
+         Error for a radio question with too few options.
          */
         const tooFewError = captureRenderError(function renderTooFewRadioOptions(): SafeHtml {
           return QuestionRadio({
@@ -374,7 +374,7 @@ await describe({
           },);
         },);
         /**
-         * Error for a radio question without exactly one correct option.
+         Error for a radio question without exactly one correct option.
          */
         const noCorrectError = captureRenderError(function renderNoCorrectRadioOptions(): SafeHtml {
           return QuestionRadio({
@@ -391,7 +391,7 @@ await describe({
       name: 'rejects invalid checkbox questions',
       fn: async function rejectsInvalidCheckboxQuestions(): Promise<void> {
         /**
-         * Error for a checkbox question with too few options.
+         Error for a checkbox question with too few options.
          */
         const tooFewError = captureRenderError(function renderTooFewCheckboxOptions(): SafeHtml {
           return QuestionCheckbox({
@@ -400,7 +400,7 @@ await describe({
           },);
         },);
         /**
-         * Error for a checkbox question without any correct options.
+         Error for a checkbox question without any correct options.
          */
         const noCorrectError = captureRenderError(function renderNoCorrectCheckboxOptions(): SafeHtml {
           return QuestionCheckbox({
@@ -417,11 +417,11 @@ await describe({
       name: 'keeps component CSS scoped to each custom element',
       fn: async function keepsComponentCssScopedToEachCustomElement(): Promise<void> {
         /**
-         * Radio component CSS.
+         Radio component CSS.
          */
         const radioStyles = radioCss();
         /**
-         * Checkbox component CSS.
+         Checkbox component CSS.
          */
         const checkboxStyles = checkboxCss();
 

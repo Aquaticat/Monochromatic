@@ -9,23 +9,23 @@ import {
 } from './tunnel-table-diagnostic.ts';
 
 /**
- * First table tried for WireGuard default policy,
- * matching wg-quick.
+ First table tried for WireGuard default policy,
+ matching wg-quick.
  */
 const BASE_TUNNEL_TABLE = 51_820;
 
 /**
- * First table tried for application bypass routes.
+ First table tried for application bypass routes.
  */
 const BASE_BYPASS_TABLE = 52_000;
 
 /**
- * First preference tried for application bypass rules.
+ First preference tried for application bypass rules.
  */
 const BASE_BYPASS_PREFERENCE = 50;
 
 /**
- * Address families probed for route and rule ownership.
+ Address families probed for route and rule ownership.
  */
 const PROTOS: readonly TableProto[] = [
   '-4',
@@ -33,22 +33,22 @@ const PROTOS: readonly TableProto[] = [
 ];
 
 /**
- * Probes one family for routes and rule references to table.
- *
- * `ip -6 route show table <n>` exits 2 when only IPv4 has created table.
- * Exact `FIB table does not exist` diagnostic represents empty IPv6 table,
- * while every other command failure remains fatal.
- *
- * @param proto - Address family.
- *
- * @param table - Candidate routing table.
- *
- * @returns Route and rule output for occupancy decision.
- *
- * @example
- * ```ts
- * await probeTable({ proto: '-6', table: 52000 });
- * ```
+ Probes one family for routes and rule references to table.
+ 
+ `ip -6 route show table <n>` exits 2 when only IPv4 has created table.
+ Exact `FIB table does not exist` diagnostic represents empty IPv6 table,
+ while every other command failure remains fatal.
+ 
+ @param proto - Address family.
+ 
+ @param table - Candidate routing table.
+ 
+ @returns Route and rule output for occupancy decision.
+ 
+ @example
+ ```ts
+ await probeTable({ proto: '-6', table: 52000 });
+ ```
  */
 async function probeTable(
   {
@@ -60,7 +60,7 @@ async function probeTable(
   },
 ): Promise<readonly string[]> {
   /**
-   * Exact route-show arguments retained for error translation.
+   Exact route-show arguments retained for error translation.
    */
   const routeArgs = [
     proto,
@@ -70,14 +70,14 @@ async function probeTable(
     String(table,),
   ] as const;
   /**
-   * Route listing that may report absent family table.
+   Route listing that may report absent family table.
    */
   const routes = await runAllowingFailure({
     command: 'ip',
     args: routeArgs,
   },);
   /**
-   * Whether result is exact absent-family-table response from `ip`.
+   Whether result is exact absent-family-table response from `ip`.
    */
   const familyTableAbsent = isAbsentTableDiagnostic({
     proto,
@@ -93,7 +93,7 @@ async function probeTable(
     },);
   }
   /**
-   * Rules referencing candidate table.
+   Rules referencing candidate table.
    */
   const rules = await run({
     command: 'ip',
@@ -112,22 +112,22 @@ async function probeTable(
 }
 
 /**
- * Reports whether table has no routes or policy-rule references in either family.
- *
- * @param table - Candidate routing table.
- *
- * @returns Whether table is unused.
- *
- * @example
- * ```ts
- * await tableIsFree({ table: 52000 });
- * ```
+ Reports whether table has no routes or policy-rule references in either family.
+ 
+ @param table - Candidate routing table.
+ 
+ @returns Whether table is unused.
+ 
+ @example
+ ```ts
+ await tableIsFree({ table: 52000 });
+ ```
  */
 export async function tableIsFree(
   { table, }: { readonly table: number; },
 ): Promise<boolean> {
   /**
-   * Route and rule outputs for both families.
+   Route and rule outputs for both families.
    */
   const probes = await Promise.all(PROTOS.map(function familyProbe(
     proto: TableProto,
@@ -144,22 +144,22 @@ export async function tableIsFree(
 }
 
 /**
- * Scans upward for unused table without recursive promise chain.
- *
- * @param minimum - First candidate.
- *
- * @returns First table free in both families.
- *
- * @example
- * ```ts
- * await findFreeTableAtOrAbove({ minimum: 52000 });
- * ```
+ Scans upward for unused table without recursive promise chain.
+ 
+ @param minimum - First candidate.
+ 
+ @returns First table free in both families.
+ 
+ @example
+ ```ts
+ await findFreeTableAtOrAbove({ minimum: 52000 });
+ ```
  */
 async function findFreeTableAtOrAbove(
   { minimum, }: { readonly minimum: number; },
 ): Promise<number> {
   /**
-   * Scan cursor over numeric table namespace.
+   Scan cursor over numeric table namespace.
    */
   let table = minimum;
   // oxlint-disable-next-line eslint/no-await-in-loop -- Candidate probes are sequential because each result decides whether next table is needed.
@@ -169,30 +169,30 @@ async function findFreeTableAtOrAbove(
 }
 
 /**
- * Finds free WireGuard policy table.
- *
- * @returns First free table from wg-quick base.
- *
- * @example
- * ```ts
- * await findFreeTable();
- * ```
+ Finds free WireGuard policy table.
+ 
+ @returns First free table from wg-quick base.
+ 
+ @example
+ ```ts
+ await findFreeTable();
+ ```
  */
 export async function findFreeTable(): Promise<number> {
   return await findFreeTableAtOrAbove({ minimum: BASE_TUNNEL_TABLE, },);
 }
 
 /**
- * Finds free application-bypass table at or above requested floor.
- *
- * @param minimum - Optional retry floor after cooperative lock collision.
- *
- * @returns Free table in both families.
- *
- * @example
- * ```ts
- * await findFreeBypassTable({ minimum: 52000 });
- * ```
+ Finds free application-bypass table at or above requested floor.
+ 
+ @param minimum - Optional retry floor after cooperative lock collision.
+ 
+ @returns Free table in both families.
+ 
+ @example
+ ```ts
+ await findFreeBypassTable({ minimum: 52000 });
+ ```
  */
 export async function findFreeBypassTable(
   { minimum, }: { readonly minimum: number; },
@@ -206,28 +206,28 @@ export async function findFreeBypassTable(
 }
 
 /**
- * Extracts numeric preference from one `ip rule show` line.
- *
- * @param line - Rule line beginning with `<preference>:`.
- *
- * @returns Positive preference or zero for unrecognized line.
- *
- * @example
- * ```ts
- * rulePreference({ line: '50: from all lookup main' });
- * ```
+ Extracts numeric preference from one `ip rule show` line.
+ 
+ @param line - Rule line beginning with `<preference>:`.
+ 
+ @returns Positive preference or zero for unrecognized line.
+ 
+ @example
+ ```ts
+ rulePreference({ line: '50: from all lookup main' });
+ ```
  */
 function rulePreference(
   { line, }: { readonly line: string; },
 ): number {
   /**
-   * Delimiter after numeric preference.
+   Delimiter after numeric preference.
    */
   const colon = line.indexOf(':',);
   if (colon <= 0)
     return 0;
   /**
-   * Parsed leading preference.
+   Parsed leading preference.
    */
   const preference = Math.trunc(
     Number(line.slice(
@@ -241,18 +241,18 @@ function rulePreference(
 }
 
 /**
- * Reads preferences currently occupied in either address family.
- *
- * @returns Fresh set of positive rule preferences.
- *
- * @example
- * ```ts
- * await readUsedPreferences();
- * ```
+ Reads preferences currently occupied in either address family.
+ 
+ @returns Fresh set of positive rule preferences.
+ 
+ @example
+ ```ts
+ await readUsedPreferences();
+ ```
  */
 async function readUsedPreferences(): Promise<ReadonlySet<number>> {
   /**
-   * Complete rule listings for both families.
+   Complete rule listings for both families.
    */
   const listings = await Promise.all(PROTOS.map(function readRules(
     proto: TableProto,
@@ -267,13 +267,13 @@ async function readUsedPreferences(): Promise<ReadonlySet<number>> {
     },);
   },),);
   /**
-   * Preferences occupied in either family.
+   Preferences occupied in either family.
    */
   const used = new Set<number>();
   for (const { stdout, } of listings) {
     for (const line of stdout.split('\n',)) {
       /**
-       * Numeric preference parsed from current line.
+       Numeric preference parsed from current line.
        */
       const preference = rulePreference({ line, },);
       if (preference > 0)
@@ -284,16 +284,16 @@ async function readUsedPreferences(): Promise<ReadonlySet<number>> {
 }
 
 /**
- * Reports whether preference has no rule in either address family.
- *
- * @param preference - Candidate preference.
- *
- * @returns Whether candidate remains unused at probe time.
- *
- * @example
- * ```ts
- * await preferenceIsFree({ preference: 50 });
- * ```
+ Reports whether preference has no rule in either address family.
+ 
+ @param preference - Candidate preference.
+ 
+ @returns Whether candidate remains unused at probe time.
+ 
+ @example
+ ```ts
+ await preferenceIsFree({ preference: 50 });
+ ```
  */
 export async function preferenceIsFree(
   { preference, }: { readonly preference: number; },
@@ -302,31 +302,31 @@ export async function preferenceIsFree(
 }
 
 /**
- * Finds preference unused by either address family.
- *
- * @param maximum - Highest preferred priority number before existing catch-all rules.
- *
- * @returns Free positive preference ordered before occupied candidate.
- *
- * @throws When no safe preference remains.
- *
- * @example
- * ```ts
- * await findFreeBypassPreference({ maximum: 50 });
- * ```
+ Finds preference unused by either address family.
+ 
+ @param maximum - Highest preferred priority number before existing catch-all rules.
+ 
+ @returns Free positive preference ordered before occupied candidate.
+ 
+ @throws When no safe preference remains.
+ 
+ @example
+ ```ts
+ await findFreeBypassPreference({ maximum: 50 });
+ ```
  */
 export async function findFreeBypassPreference(
   { maximum, }: { readonly maximum: number; },
 ): Promise<number> {
   /**
-   * Preferences occupied at allocation probe.
+   Preferences occupied at allocation probe.
    */
   const used = await readUsedPreferences();
   /**
-   * Mutable scan cursor over safe preference range.
+   Mutable scan cursor over safe preference range.
    */
   /**
-   * Earliest existing positive rule priority that bypass must precede.
+   Earliest existing positive rule priority that bypass must precede.
    */
   const earliestUsed = [...used,].reduce(
     function lowerPreference(
@@ -341,13 +341,13 @@ export async function findFreeBypassPreference(
     Number.MAX_SAFE_INTEGER,
   );
   /**
-   * Highest candidate guaranteed to run before every existing positive rule.
+   Highest candidate guaranteed to run before every existing positive rule.
    */
   const existingRuleBound = earliestUsed === Number.MAX_SAFE_INTEGER
     ? BASE_BYPASS_PREFERENCE
     : earliestUsed - 1;
   /**
-   * Mutable descending cursor toward highest-priority free slot.
+   Mutable descending cursor toward highest-priority free slot.
    */
   const cursor = {
     preference: maximum > 0

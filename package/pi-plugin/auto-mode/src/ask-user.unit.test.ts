@@ -1,7 +1,7 @@
 /**
- * Tests for user approval prompt handling.
- *
- * @module
+ Tests for user approval prompt handling.
+ 
+ @module
  */
 
 import type {
@@ -32,17 +32,17 @@ type AppendedEntry = {
 };
 
 /**
- * Create a minimal extension API that records appended entries.
- *
- * @param entries - captures persisted verdict entries for assertions
- *
- * @returns mock extension API sufficient for {@link askUser}
- *
- * @example
- * ```typescript
- * const entries = [];
- * const pi = createMockApi({ entries });
- * ```
+ Create a minimal extension API that records appended entries.
+ 
+ @param entries - captures persisted verdict entries for assertions
+ 
+ @returns mock extension API sufficient for {@link askUser}
+ 
+ @example
+ ```typescript
+ const entries = [];
+ const pi = createMockApi({ entries });
+ ```
  */
 function createMockApi(
   {
@@ -65,16 +65,16 @@ function createMockApi(
 }
 
 /**
- * Create an interactive context whose approval dialog returns a fixed choice.
- *
- * @param choice - drives user approval branch under test
- *
- * @returns mock extension context sufficient for {@link askUser}
- *
- * @example
- * ```typescript
- * const ctx = createInteractiveContext({ choice: 'Deny' });
- * ```
+ Create an interactive context whose approval dialog returns a fixed choice.
+ 
+ @param choice - drives user approval branch under test
+ 
+ @returns mock extension context sufficient for {@link askUser}
+ 
+ @example
+ ```typescript
+ const ctx = createInteractiveContext({ choice: 'Deny' });
+ ```
  */
 function createInteractiveContext(
   {
@@ -97,14 +97,14 @@ function createInteractiveContext(
 }
 
 /**
- * Create a non-interactive context that exercises fail-closed behavior.
- *
- * @returns mock extension context without UI
- *
- * @example
- * ```typescript
- * const ctx = createHeadlessContext();
- * ```
+ Create a non-interactive context that exercises fail-closed behavior.
+ 
+ @returns mock extension context without UI
+ 
+ @example
+ ```typescript
+ const ctx = createHeadlessContext();
+ ```
  */
 function createHeadlessContext(): ExtensionContext {
   return {
@@ -113,16 +113,16 @@ function createHeadlessContext(): ExtensionContext {
 }
 
 /**
- * Ignore external notification execution in approval-flow tests.
- *
- * @param _invocation - terminal command that production would execute
- *
- * @returns resolved promise after intentionally skipping the command
- *
- * @example
- * ```typescript
- * await ignoreNotification({ command: 'notify-send', args: [] });
- * ```
+ Ignore external notification execution in approval-flow tests.
+ 
+ @param _invocation - terminal command that production would execute
+ 
+ @returns resolved promise after intentionally skipping the command
+ 
+ @example
+ ```typescript
+ await ignoreNotification({ command: 'notify-send', args: [] });
+ ```
  */
 async function ignoreNotification(
   _invocation: {

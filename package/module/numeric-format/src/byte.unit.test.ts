@@ -1,7 +1,7 @@
 /**
- * Tests for `formatBytes`.
- *
- * @module
+ Tests for `formatBytes`.
+ 
+ @module
  */
 
 import {

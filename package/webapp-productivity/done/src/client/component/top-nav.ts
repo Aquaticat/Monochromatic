@@ -1,24 +1,24 @@
 /**
- * `<top-nav>`: sticky navigation bar with hamburger menu, page heading, and search link.
- * Dispatches a `menu-open` composed event when the hamburger is clicked.
+ `<top-nav>`: sticky navigation bar with hamburger menu, page heading, and search link.
+ Dispatches a `menu-open` composed event when the hamburger is clicked.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { TOP_NAV_STYLES, } from './top-nav-styles.ts';
 
 /**
- * `<top-nav>` web component.
- *
- * Renders a sticky top bar with a hamburger toggle (for mobile), a heading,
- * and a search link.
+ `<top-nav>` web component.
+ 
+ Renders a sticky top bar with a hamburger toggle (for mobile), a heading,
+ and a search link.
  */
 class TopNav extends HTMLElement {
   /**
-   * Shadow root for encapsulated rendering.
+   Shadow root for encapsulated rendering.
    */
   readonly #shadow: ShadowRoot;
 
   /**
-   * Initializes the shadow root.
+   Initializes the shadow root.
    */
   constructor() {
     super();
@@ -26,16 +26,16 @@ class TopNav extends HTMLElement {
   }
 
   /**
-   * Renders the hamburger, heading, and search link into the shadow root.
+   Renders the hamburger, heading, and search link into the shadow root.
    */
   connectedCallback(): void {
     /**
-     * Resolved at attach time so a missing attribute still renders an empty title slot.
+     Resolved at attach time so a missing attribute still renders an empty title slot.
      */
     const heading = this.getAttribute('heading',)
       ?? '';
     /**
-     * Pre-bound dispatcher so the inner click handler keeps `this` after handoff.
+     Pre-bound dispatcher so the inner click handler keeps `this` after handoff.
      */
     const dispatchFn = this.dispatchEvent
       .bind(this,);

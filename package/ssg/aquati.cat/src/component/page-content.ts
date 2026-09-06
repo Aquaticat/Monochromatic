@@ -1,9 +1,9 @@
 /**
- * Content area between header and footer.
- *
- * Wraps page-specific content in a `<page-content>` custom element
- * with max-width, centering, and padding. Optionally marks the
- * content for Pagefind indexing via `data-pagefind-body`.
+ Content area between header and footer.
+ 
+ Wraps page-specific content in a `<page-content>` custom element
+ with max-width, centering, and padding. Optionally marks the
+ content for Pagefind indexing via `data-pagefind-body`.
  */
 import {
   cssRem,
@@ -19,14 +19,14 @@ import {
 //region CSS
 
 /**
- * Layout styles for the `<page-content>` custom element.
- *
- * @returns CSS string for the content area
- *
- * @example
- * ```ts
- * const styles = css();
- * ```
+ Layout styles for the `<page-content>` custom element.
+ 
+ @returns CSS string for the content area
+ 
+ @example
+ ```ts
+ const styles = css();
+ ```
  */
 export function css(): string {
   return $({
@@ -50,18 +50,18 @@ export function css(): string {
 //region HTML
 
 /**
- * Renders the content wrapper as a `<page-content>` custom element.
- *
- * @param content - inner HTML to place inside the element
- *
- * @param searchable - whether Pagefind should index this page's content
- *
- * @returns HTML string for the `<page-content>` element
- *
- * @example
- * ```ts
- * const markup = html({ content: '<p>Hello</p>', searchable: true });
- * ```
+ Renders the content wrapper as a `<page-content>` custom element.
+ 
+ @param content - inner HTML to place inside the element
+ 
+ @param searchable - whether Pagefind should index this page's content
+ 
+ @returns HTML string for the `<page-content>` element
+ 
+ @example
+ ```ts
+ const markup = html({ content: '<p>Hello</p>', searchable: true });
+ ```
  */
 export function html(
   {

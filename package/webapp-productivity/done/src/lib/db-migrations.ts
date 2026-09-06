@@ -1,7 +1,7 @@
 /**
- * Database migration SQL and runner for the Done app.
- *
- * Executed once at startup to ensure the schema is up to date.
+ Database migration SQL and runner for the Done app.
+ 
+ Executed once at startup to ensure the schema is up to date.
  */
 import type { Database, } from '@tursodatabase/database';
 import {
@@ -13,7 +13,7 @@ import {
 await initPromise;
 
 /**
- * Tagged logger for the migration runner.
+ Tagged logger for the migration runner.
  */
 const l = tagged({
   tag: 'db-migrations',
@@ -23,7 +23,7 @@ const l = tagged({
 //region Migration SQL: separated for readability; executed once at startup
 
 /**
- * Core tables, indexes, and CHECK constraints.
+ Core tables, indexes, and CHECK constraints.
  */
 const MIGRATION_TABLES_AND_INDEXES = `
   CREATE TABLE IF NOT EXISTS tasks (
@@ -69,12 +69,12 @@ const MIGRATION_TABLES_AND_INDEXES = `
 `;
 
 /**
- * Native Turso full-text index over the searchable task columns.
- *
- * Unlike a SQLite FTS5 virtual table, Turso's `USING fts` index method attaches
- * directly to the base table: it indexes existing rows at creation time and stays
- * in sync on every write, so no sync triggers or backfill statement are needed.
- * Requires the connection to be opened with `experimental: ['index_method']`.
+ Native Turso full-text index over the searchable task columns.
+ 
+ Unlike a SQLite FTS5 virtual table, Turso's `USING fts` index method attaches
+ directly to the base table: it indexes existing rows at creation time and stays
+ in sync on every write, so no sync triggers or backfill statement are needed.
+ Requires the connection to be opened with `experimental: ['index_method']`.
  */
 const MIGRATION_FTS = `
   CREATE INDEX IF NOT EXISTS tasks_fts ON tasks USING fts (title, description, tags);
@@ -83,21 +83,21 @@ const MIGRATION_FTS = `
 //endregion Migration SQL
 
 /**
- * Attempts to create the native full-text index, reporting whether FTS is available.
- *
- * Turso ships full-text search as an experimental index method; a build lacking it
- * rejects the `USING fts` statement. Rather than crash startup, this logs the cause
- * and reports failure so callers (and {@link runMigrations}) let search degrade to
- * LIKE matching.
- *
- * @param database - Connected Turso database instance
- *
- * @returns `true` when index creation succeeds, `false` when FTS is unavailable
- *
- * @example
- * ```ts
- * const ftsEnabled = await tryEnableFts(database);
- * ```
+ Attempts to create the native full-text index, reporting whether FTS is available.
+ 
+ Turso ships full-text search as an experimental index method; a build lacking it
+ rejects the `USING fts` statement. Rather than crash startup, this logs the cause
+ and reports failure so callers (and {@link runMigrations}) let search degrade to
+ LIKE matching.
+ 
+ @param database - Connected Turso database instance
+ 
+ @returns `true` when index creation succeeds, `false` when FTS is unavailable
+ 
+ @example
+ ```ts
+ const ftsEnabled = await tryEnableFts(database);
+ ```
  */
 export async function tryEnableFts(database: Database,): Promise<boolean> {
   try {
@@ -113,18 +113,18 @@ export async function tryEnableFts(database: Database,): Promise<boolean> {
 }
 
 /**
- * Executes all schema migrations (tables, indexes, and the guarded FTS index).
- *
- * Table and index creation must succeed; FTS creation is guarded by
- * {@link tryEnableFts} so a build without the experimental FTS index method still
- * boots, with search falling back to LIKE matching.
- *
- * @param database - Connected Turso database instance
- *
- * @example
- * ```ts
- * await runMigrations(database);
- * ```
+ Executes all schema migrations (tables, indexes, and the guarded FTS index).
+ 
+ Table and index creation must succeed; FTS creation is guarded by
+ {@link tryEnableFts} so a build without the experimental FTS index method still
+ boots, with search falling back to LIKE matching.
+ 
+ @param database - Connected Turso database instance
+ 
+ @example
+ ```ts
+ await runMigrations(database);
+ ```
  */
 export async function runMigrations(database: Database,): Promise<void> {
   await database.exec(MIGRATION_TABLES_AND_INDEXES,);

@@ -21,25 +21,25 @@ import {
 //region Mutation classification
 
 /**
- * Reports diagnostic for matching immediate method mutation. Bails when the
- * arguments reference the target via {@link referencesIdentifier}, then
- * reads the method name via {@link staticMemberName} (against the
- * {@link NO_STATIC_MEMBER_NAME} sentinel).
- *
- * @param context - Oxlint rule context.
- *
- * @param call - Call expression to inspect.
- *
- * @param info - Previous initializer info.
- *
- * @returns Whether call was classified, even when allowlisted.
- *
- * @example
- * ```ts
- * reportMethodMutation({ context, call, info });
- * ```
- *
- * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+ Reports diagnostic for matching immediate method mutation. Bails when the
+ arguments reference the target via {@link referencesIdentifier}, then
+ reads the method name via {@link staticMemberName} (against the
+ {@link NO_STATIC_MEMBER_NAME} sentinel).
+ 
+ @param context - Oxlint rule context.
+ 
+ @param call - Call expression to inspect.
+ 
+ @param info - Previous initializer info.
+ 
+ @returns Whether call was classified, even when allowlisted.
+ 
+ @example
+ ```ts
+ reportMethodMutation({ context, call, info });
+ ```
+ 
+ @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportMethodMutation(
   {
@@ -59,7 +59,7 @@ function reportMethodMutation(
     !== 'MemberExpression')
     return false;
   /**
-   * Member expression callee after narrowing.
+   Member expression callee after narrowing.
    */
   const { callee, } = call;
   if (callee.optional)
@@ -69,7 +69,7 @@ function reportMethodMutation(
     !== 'Identifier')
     return false;
   /**
-   * Method receiver after Identifier narrowing.
+   Method receiver after Identifier narrowing.
    */
   const { object, } = callee;
   if (object.name !== info.name)
@@ -82,7 +82,7 @@ function reportMethodMutation(
   },))
     return true;
   /**
-   * Static method name being called on initialized target.
+   Static method name being called on initialized target.
    */
   const methodName = staticMemberName({ member: callee, },);
   if (methodName === NO_STATIC_MEMBER_NAME)
@@ -102,22 +102,22 @@ function reportMethodMutation(
 }
 
 /**
- * Reports diagnostic for matching `Object.assign(target, ...)` mutation:
- * confirms the member via {@link staticMemberName} and bails when the
- * source arguments reference the target via {@link referencesIdentifier}.
- *
- * @param context - Oxlint rule context.
- *
- * @param call - Call expression to inspect.
- *
- * @param info - Previous initializer info.
- *
- * @example
- * ```ts
- * reportObjectAssignMutation({ context, call, info });
- * ```
- *
- * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+ Reports diagnostic for matching `Object.assign(target, ...)` mutation:
+ confirms the member via {@link staticMemberName} and bails when the
+ source arguments reference the target via {@link referencesIdentifier}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param call - Call expression to inspect.
+ 
+ @param info - Previous initializer info.
+ 
+ @example
+ ```ts
+ reportObjectAssignMutation({ context, call, info });
+ ```
+ 
+ @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportObjectAssignMutation(
   {
@@ -139,7 +139,7 @@ function reportObjectAssignMutation(
     !== 'MemberExpression')
     return;
   /**
-   * Member expression callee after narrowing.
+   Member expression callee after narrowing.
    */
   const { callee, } = call;
   if (callee.optional)
@@ -149,7 +149,7 @@ function reportObjectAssignMutation(
     !== 'Identifier')
     return;
   /**
-   * Object.assign receiver after Identifier narrowing.
+   Object.assign receiver after Identifier narrowing.
    */
   const { object, } = callee;
   if (object.name !== 'Object')
@@ -157,13 +157,13 @@ function reportObjectAssignMutation(
   if (staticMemberName({ member: callee, }) !== 'assign')
     return;
   /**
-   * Arguments supplied to Object.assign.
+   Arguments supplied to Object.assign.
    */
   const assignArguments = call.arguments;
   if (assignArguments.length < 2)
     return;
   /**
-   * Target and first source argument passed to Object.assign.
+   Target and first source argument passed to Object.assign.
    */
   const [target, firstSource,] = assignArguments;
   if ((target === undefined) || (target.type === 'SpreadElement'))
@@ -175,7 +175,7 @@ function reportObjectAssignMutation(
   if ((firstSource !== undefined) && (firstSource.type === 'SpreadElement'))
     return;
   /**
-   * Source arguments that would move into object initializer.
+   Source arguments that would move into object initializer.
    */
   const sourceArguments = assignArguments.slice(1,);
   if (referencesIdentifier({
@@ -192,22 +192,22 @@ function reportObjectAssignMutation(
 }
 
 /**
- * Reports diagnostic for matching object property assignment mutation,
- * bailing when the property or right-hand side reference the target via
- * {@link referencesIdentifier}.
- *
- * @param context - Oxlint rule context.
- *
- * @param assignment - Assignment expression to inspect.
- *
- * @param info - Previous initializer info.
- *
- * @example
- * ```ts
- * reportPropertyAssignmentMutation({ context, assignment, info });
- * ```
- *
- * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+ Reports diagnostic for matching object property assignment mutation,
+ bailing when the property or right-hand side reference the target via
+ {@link referencesIdentifier}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param assignment - Assignment expression to inspect.
+ 
+ @param info - Previous initializer info.
+ 
+ @example
+ ```ts
+ reportPropertyAssignmentMutation({ context, assignment, info });
+ ```
+ 
+ @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportPropertyAssignmentMutation(
   {
@@ -229,7 +229,7 @@ function reportPropertyAssignmentMutation(
     !== 'MemberExpression')
     return;
   /**
-   * Assignment target after member-expression narrowing.
+   Assignment target after member-expression narrowing.
    */
   const { left, } = assignment;
   if (left.object
@@ -237,7 +237,7 @@ function reportPropertyAssignmentMutation(
     !== 'Identifier')
     return;
   /**
-   * Assigned object after Identifier narrowing.
+   Assigned object after Identifier narrowing.
    */
   const { object, } = left;
   if (object.name !== info.name)
@@ -266,24 +266,24 @@ function reportPropertyAssignmentMutation(
 }
 
 /**
- * Checks one expression statement for immediate mutation: locates the
- * previous statement via {@link previousSiblingStatement} (against
- * {@link NO_PREVIOUS_STATEMENT}), classifies it via {@link previousInitInfo}
- * (against {@link NO_INIT_INFO}), unwraps the current expression via
- * {@link unwrapExpression}, and delegates to {@link reportMethodMutation},
- * {@link reportObjectAssignMutation}, or
- * {@link reportPropertyAssignmentMutation}.
- *
- * @param context - Oxlint rule context.
- *
- * @param node - Expression statement being visited.
- *
- * @mutates context - Emits immediate-mutation diagnostics through foreign context.
- *
- * @example
- * ```ts
- * checkExpressionStatement({ context, node });
- * ```
+ Checks one expression statement for immediate mutation: locates the
+ previous statement via {@link previousSiblingStatement} (against
+ {@link NO_PREVIOUS_STATEMENT}), classifies it via {@link previousInitInfo}
+ (against {@link NO_INIT_INFO}), unwraps the current expression via
+ {@link unwrapExpression}, and delegates to {@link reportMethodMutation},
+ {@link reportObjectAssignMutation}, or
+ {@link reportPropertyAssignmentMutation}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param node - Expression statement being visited.
+ 
+ @mutates context - Emits immediate-mutation diagnostics through foreign context.
+ 
+ @example
+ ```ts
+ checkExpressionStatement({ context, node });
+ ```
  */
 function checkExpressionStatement(
   {
@@ -295,13 +295,13 @@ function checkExpressionStatement(
   }>,
 ): void {
   /**
-   * Previous sibling statement that may initialize this mutation target.
+   Previous sibling statement that may initialize this mutation target.
    */
   const previous = previousSiblingStatement({ node, },);
   if (previous === NO_PREVIOUS_STATEMENT)
     return;
   /**
-   * Initializer information from previous statement.
+   Initializer information from previous statement.
    */
   const info = previousInitInfo({
     context,
@@ -310,7 +310,7 @@ function checkExpressionStatement(
   if (info === NO_INIT_INFO)
     return;
   /**
-   * Expression being checked for immediate mutation.
+   Expression being checked for immediate mutation.
    */
   const expression = unwrapExpression({ expression: node.expression, },);
   if (expression.type === 'CallExpression') {
@@ -338,24 +338,24 @@ function checkExpressionStatement(
 //endregion Mutation classification
 
 /**
- * Bans immediate mutation after initialization, with Set/Map clone
- * exceptions. Each expression statement is checked via
- * {@link checkExpressionStatement}.
- *
- * This mirrors `unicorn/no-immediate-mutation` for arrays, objects, Set/Map
- * constructors backed by array literals, and `Object.assign`. Unlike upstream
- * oxlint 1.71.0, it allowlists `new Set(existing); set.add(value)` and
- * `new Map(existing); map.set(key, value)` because folding those mutations into
- * the initializer requires materializing a temporary spread array.
- *
- * @example
- * ```ts
- * const set = new Set([a]);
- * set.add(b); // reported
- *
- * const cloned = new Set(existingSet);
- * cloned.add(b); // allowed
- * ```
+ Bans immediate mutation after initialization, with Set/Map clone
+ exceptions. Each expression statement is checked via
+ {@link checkExpressionStatement}.
+ 
+ This mirrors `unicorn/no-immediate-mutation` for arrays, objects, Set/Map
+ constructors backed by array literals, and `Object.assign`. Unlike upstream
+ oxlint 1.71.0, it allowlists `new Set(existing); set.add(value)` and
+ `new Map(existing); map.set(key, value)` because folding those mutations into
+ the initializer requires materializing a temporary spread array.
+ 
+ @example
+ ```ts
+ const set = new Set([a]);
+ set.add(b); // reported
+ 
+ const cloned = new Set(existingSet);
+ cloned.add(b); // allowed
+ ```
  */
 export const noImmediateMutation: CreateOnceRule = {
   meta: {
@@ -370,16 +370,16 @@ export const noImmediateMutation: CreateOnceRule = {
     },
   },
   /**
-   * Creates immediate-mutation visitor.
-   *
-   * @param context - Foreign rule context receiving diagnostics.
-   *
-   * @mutates context - Emits immediate-mutation diagnostics through foreign context.
-   *
-   * @example
-   * ```ts
-   * noImmediateMutation.createOnce(context);
-   * ```
+   Creates immediate-mutation visitor.
+   
+   @param context - Foreign rule context receiving diagnostics.
+   
+   @mutates context - Emits immediate-mutation diagnostics through foreign context.
+   
+   @example
+   ```ts
+   noImmediateMutation.createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {

@@ -1,7 +1,7 @@
 /**
- * Interactive ordinary and security finding selection flow.
- *
- * @module
+ Interactive ordinary and security finding selection flow.
+ 
+ @module
  */
 
 import type {
@@ -16,13 +16,13 @@ import type { RenderedIssue, } from './issue-model.ts';
 import type { PublicationPlan, } from './plan-model.ts';
 
 /**
- * Writes complete selected security preview before disclosure decision.
- *
- * @param title - Generated public Issue title.
- *
- * @param body - Generated public Issue Markdown body.
- *
- * @param output - Interactive TTY standard output.
+ Writes complete selected security preview before disclosure decision.
+ 
+ @param title - Generated public Issue title.
+ 
+ @param body - Generated public Issue Markdown body.
+ 
+ @param output - Interactive TTY standard output.
  */
 function writeSecurityPreview({
   title,
@@ -37,18 +37,18 @@ function writeSecurityPreview({
 }
 
 /**
- * Runs separate picker stages and per-security disclosure confirmations.
- *
- * @param plan - Complete internal publication plan.
- *
- * @param streams - Explicit TTY streams.
- *
- * @returns Confirmed issues and every withheld security position.
- *
- * @example
- * ```ts
- * await selectInteractiveIssues({ plan, streams });
- * ```
+ Runs separate picker stages and per-security disclosure confirmations.
+ 
+ @param plan - Complete internal publication plan.
+ 
+ @param streams - Explicit TTY streams.
+ 
+ @returns Confirmed issues and every withheld security position.
+ 
+ @example
+ ```ts
+ await selectInteractiveIssues({ plan, streams });
+ ```
  */
 export async function selectInteractiveIssues({
   plan,
@@ -58,21 +58,21 @@ export async function selectInteractiveIssues({
   readonly streams: PromptStreams;
 },): Promise<InteractiveSelection> {
   /**
-   * Ordinary candidates shown selected by default.
+   Ordinary candidates shown selected by default.
    */
   const ordinaryCandidates = plan.issues
     .filter(function ordinary(issue,): boolean {
     return !issue.security;
   },);
   /**
-   * Security candidates shown unselected in separate red picker.
+   Security candidates shown unselected in separate red picker.
    */
   const securityCandidates = plan.issues
     .filter(function security(issue,): boolean {
     return issue.security;
   },);
   /**
-   * Ordinary picker result.
+   Ordinary picker result.
    */
   const ordinary = await promptForIssues({
     issues: ordinaryCandidates,
@@ -81,7 +81,7 @@ export async function selectInteractiveIssues({
     streams,
   },);
   /**
-   * Security picker result.
+   Security picker result.
    */
   const selectedSecurity = await promptForIssues({
     issues: securityCandidates,
@@ -90,7 +90,7 @@ export async function selectInteractiveIssues({
     streams,
   },);
   /**
-   * Security confirmations retained for creation.
+   Security confirmations retained for creation.
    */
   const confirmedSecurity: RenderedIssue[] = [];
   for (const issue of selectedSecurity) {
@@ -108,7 +108,7 @@ export async function selectInteractiveIssues({
     }
   }
   /**
-   * Confirmed security positions used to derive complete withheld set.
+   Confirmed security positions used to derive complete withheld set.
    */
   const confirmedPositions = new Set(confirmedSecurity.map(function positionKey(issue,) {
     return `${issue.position

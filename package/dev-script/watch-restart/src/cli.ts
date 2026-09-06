@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 
 /**
- * `watch-restart` CLI entrypoint.
- *
- * TODO: deprecate Optique
- * Parses command-line flags via optique, maps them onto
- * {@link StartWatchRestartOptions}, then hands control to
- * {@link startWatchRestart}. On SIGINT or SIGTERM the orchestrator's
- * `stop()` runs and the process exits.
- *
- * Importing this module is side-effect-free; the program body only
- * runs when this file is executed as the entrypoint (gated by
- * `import.meta.main`), so unit tests can import {@link parseArgs} /
- * {@link argsToOptions} without launching a real watch loop.
- *
- * @example
- * ```bash
- * watch-restart -w src/server -- node src/server/index.ts
- * watch-restart -w src --ext .ts --exclude '*.test.ts' -- npm run dev
- * watch-restart -w src --no-initial; npm test
- * ```
+ `watch-restart` CLI entrypoint.
+ 
+ TODO: deprecate Optique
+ Parses command-line flags via optique, maps them onto
+ {@link StartWatchRestartOptions}, then hands control to
+ {@link startWatchRestart}. On SIGINT or SIGTERM the orchestrator's
+ `stop()` runs and the process exits.
+ 
+ Importing this module is side-effect-free; the program body only
+ runs when this file is executed as the entrypoint (gated by
+ `import.meta.main`), so unit tests can import {@link parseArgs} /
+ {@link argsToOptions} without launching a real watch loop.
+ 
+ @example
+ ```bash
+ watch-restart -w src/server -- node src/server/index.ts
+ watch-restart -w src --ext .ts --exclude '*.test.ts' -- npm run dev
+ watch-restart -w src --no-initial; npm test
+ ```
  */
 
 // TODO: deprecate Optique
@@ -62,11 +62,11 @@ import type {
 } from './types.ts';
 
 /**
- * TODO: deprecate Optique
- * Module-internal optique parser. Built once at module load. Not
- * exported because spelling its inferred type without leaking
- * optique-internal generics is impractical; consumers go through
- * {@link parseArgs} which exposes the {@link ParsedArgs} shape.
+ TODO: deprecate Optique
+ Module-internal optique parser. Built once at module load. Not
+ exported because spelling its inferred type without leaking
+ optique-internal generics is impractical; consumers go through
+ {@link parseArgs} which exposes the {@link ParsedArgs} shape.
  */
 const parser = object({
   watch: multiple(option(
@@ -150,24 +150,24 @@ const parser = object({
 },);
 
 /**
- * TODO: deprecate Optique
- * Runs the optique parser against a synthetic argv and returns the
- * {@link ParsedArgs} shape.
- *
- * `onExit` / `stdout` / `stderr` are overridable so tests can capture
- * help text and trap parse-error exits; production callers omit them
- * to inherit the optique defaults (`process.exit`, `process.stdout`).
- *
- * @param options - argv to parse plus optional output / exit hooks
- *
- * @returns parsed args matching {@link ParsedArgs}
- *
- * @mutates options through https://github.com/dahlia/optique/blob/b8d39082fdeb37bb16c68b2dc2396d4c9c45b1d5/packages/run/src/run.ts runSync output and exit callback capabilities
- *
- * @example
- * ```ts
- * const args = parseArgs({ argv: process.argv.slice(2,), },);
- * ```
+ TODO: deprecate Optique
+ Runs the optique parser against a synthetic argv and returns the
+ {@link ParsedArgs} shape.
+ 
+ `onExit` / `stdout` / `stderr` are overridable so tests can capture
+ help text and trap parse-error exits; production callers omit them
+ to inherit the optique defaults (`process.exit`, `process.stdout`).
+ 
+ @param options - argv to parse plus optional output / exit hooks
+ 
+ @returns parsed args matching {@link ParsedArgs}
+ 
+ @mutates options through https://github.com/dahlia/optique/blob/b8d39082fdeb37bb16c68b2dc2396d4c9c45b1d5/packages/run/src/run.ts runSync output and exit callback capabilities
+ 
+ @example
+ ```ts
+ const args = parseArgs({ argv: process.argv.slice(2,), },);
+ ```
  */
 export function parseArgs(
   options: {
@@ -194,36 +194,36 @@ export function parseArgs(
 }
 
 /**
- * Maps the parsed CLI args onto a {@link StartWatchRestartOptions}.
- *
- * Pure transformation: no I/O, no global state, no defaults beyond what
- * the orchestrator itself applies. `--no-content-changed` becomes
- * `contentChanged: false`; absence stays absent (the orchestrator's
- * default-true kicks in). Same for `--no-initial`. Pair flags
- * (`--hidden`/`--no-hidden`, etc.) collapse to a tri-state via
- * {@link resolveBoolPair}; both-passed is a usage error.
- *
- * The first positional after `--` becomes `command`; the remainder
- * becomes `args`. An empty `rest` is a CLI usage error and throws so
- * the user sees the cause instead of an opaque "spawn EINVAL" later.
- *
- * `--ext`, `--events`, and `--type` accept comma-lists; each is split
- * and trimmed before mapping. `--include-regex` / `--exclude-regex`
- * compile to {@link RegExp} (invalid patterns throw a `SyntaxError`).
- * `--signal` validates against {@link parseKillSignal}'s allowed set.
- *
- * @param args - shape returned by {@link parseArgs}
- *
- * @returns options object handed straight to {@link startWatchRestart}
- *
- * @throws Error when no positional command is given after `--`, or when
- * any token / regex / signal name fails its respective validator
- *
- * @example
- * ```ts
- * const args = parseArgs({ argv: ['-w', 'src', '--', 'node',], },);
- * const options = argsToOptions(args,);
- * ```
+ Maps the parsed CLI args onto a {@link StartWatchRestartOptions}.
+ 
+ Pure transformation: no I/O, no global state, no defaults beyond what
+ the orchestrator itself applies. `--no-content-changed` becomes
+ `contentChanged: false`; absence stays absent (the orchestrator's
+ default-true kicks in). Same for `--no-initial`. Pair flags
+ (`--hidden`/`--no-hidden`, etc.) collapse to a tri-state via
+ {@link resolveBoolPair}; both-passed is a usage error.
+ 
+ The first positional after `--` becomes `command`; the remainder
+ becomes `args`. An empty `rest` is a CLI usage error and throws so
+ the user sees the cause instead of an opaque "spawn EINVAL" later.
+ 
+ `--ext`, `--events`, and `--type` accept comma-lists; each is split
+ and trimmed before mapping. `--include-regex` / `--exclude-regex`
+ compile to {@link RegExp} (invalid patterns throw a `SyntaxError`).
+ `--signal` validates against {@link parseKillSignal}'s allowed set.
+ 
+ @param args - shape returned by {@link parseArgs}
+ 
+ @returns options object handed straight to {@link startWatchRestart}
+ 
+ @throws Error when no positional command is given after `--`, or when
+ any token / regex / signal name fails its respective validator
+ 
+ @example
+ ```ts
+ const args = parseArgs({ argv: ['-w', 'src', '--', 'node',], },);
+ const options = argsToOptions(args,);
+ ```
  */
 export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
   if (args.rest
@@ -234,7 +234,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     );
   }
   /**
-   * Positional split: first non-option after `--` is the command; the rest is its argv.
+   Positional split: first non-option after `--` is the command; the rest is its argv.
    */
   const [command, ...commandArgs] = args.rest;
   if ((command === undefined) || (command === '')) {
@@ -244,7 +244,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
   }
 
   /**
-   * Flattened, comma-split extension list.
+   Flattened, comma-split extension list.
    */
   const extensions: readonly string[] = args.ext
     .flatMap(
@@ -253,7 +253,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     },
   );
   /**
-   * Flattened, comma-split type list mapped to internal entity types.
+   Flattened, comma-split type list mapped to internal entity types.
    */
   const types: readonly WatchEntityType[] = args
     .type
@@ -266,10 +266,10 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
       return parseTypeToken(token,);
     },);
   /**
-   * Flattened, comma-split event kind list; translated from
-   * CLI-facing `create`/`delete` to internal `add`/`unlink`.
-   * Inferred `readonly WatchEventKind[] | undefined` (no annotation, so no
-   * nullish-union type node); `undefined` when `--events` was not passed.
+   Flattened, comma-split event kind list; translated from
+   CLI-facing `create`/`delete` to internal `add`/`unlink`.
+   Inferred `readonly WatchEventKind[] | undefined` (no annotation, so no
+   nullish-union type node); `undefined` when `--events` was not passed.
    */
   const events = args.events
     === undefined
@@ -279,7 +279,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
       return cliEventToInternal(token,);
     },);
   /**
-   * Compiled include regex list; throws here if any pattern is invalid.
+   Compiled include regex list; throws here if any pattern is invalid.
    */
   const includeRegex: readonly RegExp[] = args.includeRegex
     .map(
@@ -288,7 +288,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     },
   );
   /**
-   * Compiled exclude regex list; throws here if any pattern is invalid.
+   Compiled exclude regex list; throws here if any pattern is invalid.
    */
   const excludeRegex: readonly RegExp[] = args.excludeRegex
     .map(
@@ -297,7 +297,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     },
   );
   /**
-   * Tri-state hidden toggle; both-passed throws inside resolveBoolPair.
+   Tri-state hidden toggle; both-passed throws inside resolveBoolPair.
    */
   const hidden = resolveBoolPair({
     positive: args.hidden,
@@ -305,7 +305,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     flag: 'hidden',
   },);
   /**
-   * Tri-state symlink-follow toggle.
+   Tri-state symlink-follow toggle.
    */
   const followSymlinks = resolveBoolPair({
     positive: args.followSymlinks,
@@ -313,7 +313,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     flag: 'follow-symlinks',
   },);
   /**
-   * Tri-state gitignore toggle.
+   Tri-state gitignore toggle.
    */
   const gitignore = resolveBoolPair({
     positive: args.gitignore,
@@ -321,7 +321,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     flag: 'gitignore',
   },);
   /**
-   * Tri-state terminal-clear toggle.
+   Tri-state terminal-clear toggle.
    */
   const clear = resolveBoolPair({
     positive: args.clear,
@@ -329,7 +329,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     flag: 'clear',
   },);
   /**
-   * Tri-state process-group toggle.
+   Tri-state process-group toggle.
    */
   const processGroup = resolveBoolPair({
     positive: args.processGroup,
@@ -337,7 +337,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     flag: 'process-group',
   },);
   /**
-   * Validated kill signal (or `undefined` when --signal was not passed).
+   Validated kill signal (or `undefined` when --signal was not passed).
    */
   const killSignal = args.signal
     === undefined
@@ -392,16 +392,16 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
 
 if (import.meta.main) {
   /**
-   * Parsed argv from `process.argv.slice(2)`.
+   Parsed argv from `process.argv.slice(2)`.
    */
   const args = parseArgs({ argv: process.argv
     .slice(2,), },);
   /**
-   * Mapped options handed to the orchestrator.
+   Mapped options handed to the orchestrator.
    */
   const options = argsToOptions(args,);
   /**
-   * Live handle; both signals route through it during shutdown.
+   Live handle; both signals route through it during shutdown.
    */
   const handle = await startWatchRestart(options,);
   installShutdownHandler({

@@ -1,8 +1,8 @@
 /**
- * Tests for the edit API: reading, setting (including creating keys and
- * appending), deleting, key listing, immutability, and type errors.
- *
- * @module
+ Tests for the edit API: reading, setting (including creating keys and
+ appending), deleting, key listing, immutability, and type errors.
+ 
+ @module
  */
 
 import {

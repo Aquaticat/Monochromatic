@@ -1,7 +1,7 @@
 /**
- * Unit tests for pi settings scope loading.
- *
- * @module
+ Unit tests for pi settings scope loading.
+ 
+ @module
  */
 
 import {

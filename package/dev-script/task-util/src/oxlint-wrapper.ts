@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 
 /**
- * CLI wrapper for `oxlint` that augments diagnostic output.
- *
- * Runs `oxlint` with all provided arguments, captures the output, augments
- * diagnostics with enhanced guidance via {@link augmentOxlintOutput}, and
- * preserves the original exit code.
- *
- * When the caller passes a fix-applying flag (`--fix`, `--fix-suggestions`, or
- * `--fix-dangerously`), the wrapper loops oxlint until the codebase reaches a
- * fixpoint (see {@link fixUntilStable}) instead of running a single pass, so
- * overlapping autofixes that oxlint defers to a later pass fully converge in
- * one `task-oxlint` invocation.
- *
- * @example
- * ```bash
- * task-oxlint --type-aware
- * task-oxlint --fix
- * ```
+ CLI wrapper for `oxlint` that augments diagnostic output.
+ 
+ Runs `oxlint` with all provided arguments, captures the output, augments
+ diagnostics with enhanced guidance via {@link augmentOxlintOutput}, and
+ preserves the original exit code.
+ 
+ When the caller passes a fix-applying flag (`--fix`, `--fix-suggestions`, or
+ `--fix-dangerously`), the wrapper loops oxlint until the codebase reaches a
+ fixpoint (see {@link fixUntilStable}) instead of running a single pass, so
+ overlapping autofixes that oxlint defers to a later pass fully converge in
+ one `task-oxlint` invocation.
+ 
+ @example
+ ```bash
+ task-oxlint --type-aware
+ task-oxlint --fix
+ ```
  */
 
 import spawn from 'nano-spawn';
@@ -33,29 +33,29 @@ import {
 //region Argument construction
 
 /**
- * Thread count override from environment.
- *
- * When set, injects `--threads <value>` into the oxlint arguments.
- * oxlint ignores `RAYON_NUM_THREADS` because it always passes an explicit
- * count to rayon's `ThreadPoolBuilder`, so this env var is the only way
- * to control threads without modifying every call site.
- *
- * @example Set in a mise task env block:
- * ```toml
- * [tasks.lint.env]
- * OXLINT_THREADS = "1"
- * ```
+ Thread count override from environment.
+ 
+ When set, injects `--threads <value>` into the oxlint arguments.
+ oxlint ignores `RAYON_NUM_THREADS` because it always passes an explicit
+ count to rayon's `ThreadPoolBuilder`, so this env var is the only way
+ to control threads without modifying every call site.
+ 
+ @example Set in a mise task env block:
+ ```toml
+ [tasks.lint.env]
+ OXLINT_THREADS = "1"
+ ```
  */
 const threadOverride = process.env
   .OXLINT_THREADS;
 
 /**
- * Whether the caller already passed an explicit output format flag.
- *
- * The wrapper pins `--format=default` so diagnostic augmentation always receives
- * Oxlint's graphical block reporter. Oxlint's piped default reporter varies by
- * version and can emit a compact one-line format that has no source-context
- * boundary for guidance injection. An explicit caller `--format`/`-f` wins.
+ Whether the caller already passed an explicit output format flag.
+ 
+ The wrapper pins `--format=default` so diagnostic augmentation always receives
+ Oxlint's graphical block reporter. Oxlint's piped default reporter varies by
+ version and can emit a compact one-line format that has no source-context
+ boundary for guidance injection. An explicit caller `--format`/`-f` wins.
  */
 const hasExplicitFormat = process.argv
   .slice(2,)
@@ -67,7 +67,7 @@ const hasExplicitFormat = process.argv
   },);
 
 /**
- * Arguments forwarded to oxlint, identical on every pass of the fix loop.
+ Arguments forwarded to oxlint, identical on every pass of the fix loop.
  */
 const oxlintArgs = [
   ...(((threadOverride !== undefined) && (threadOverride !== ''))
@@ -82,7 +82,7 @@ const oxlintArgs = [
 ];
 
 /**
- * oxlint's fix-applying flags, stripped to build the oracle lint arguments.
+ oxlint's fix-applying flags, stripped to build the oracle lint arguments.
  */
 const FIX_FLAGS = new Set([
   '--fix',
@@ -91,23 +91,23 @@ const FIX_FLAGS = new Set([
 ],);
 
 /**
- * Whether the caller passed `--fix`, the documented multi-pass convergence case.
- *
- * `--fix` alone is the loop trigger. `--fix-suggestions` or `--fix-dangerously`
- * passed without `--fix` stay single-pass: the oracle lint is not verified to
- * track suggestion-applied changes, and "may change program behavior" fixes
- * should not be iterated on their own. A plain lint run produces identical
- * output every pass, so it never loops.
+ Whether the caller passed `--fix`, the documented multi-pass convergence case.
+ 
+ `--fix` alone is the loop trigger. `--fix-suggestions` or `--fix-dangerously`
+ passed without `--fix` stay single-pass: the oracle lint is not verified to
+ track suggestion-applied changes, and "may change program behavior" fixes
+ should not be iterated on their own. A plain lint run produces identical
+ output every pass, so it never loops.
  */
 const hasFixFlag = process.argv
   .slice(2,)
   .includes('--fix',);
 
 /**
- * Plain lint arguments: the forwarded arguments with every fix flag removed.
- *
- * Used as the convergence oracle, so it reports the post-fix file's remaining
- * violations (fixable and unfixable) rather than applying anything.
+ Plain lint arguments: the forwarded arguments with every fix flag removed.
+ 
+ Used as the convergence oracle, so it reports the post-fix file's remaining
+ violations (fixable and unfixable) rather than applying anything.
  */
 const oracleArgs = oxlintArgs
   .filter(function isNotFixFlag(arg,) {
@@ -119,22 +119,22 @@ const oracleArgs = oxlintArgs
 //region Execution
 
 /**
- * Runs `oxlint` once and normalizes nano-spawn's success and failure shapes.
- *
- * nano-spawn resolves on a zero exit and throws a `SubprocessError` (carrying
- * captured stdout/stderr plus `exitCode`/`signalName`) on a non-zero exit or
- * signal; a missing binary throws a plain error. This collapses all three into
- * one {@link OxlintRunResult} so the fix loop and {@link finalizeResult} read
- * them uniformly.
- *
- * @param args - fully constructed oxlint arguments
- *
- * @returns normalized run result
+ Runs `oxlint` once and normalizes nano-spawn's success and failure shapes.
+ 
+ nano-spawn resolves on a zero exit and throws a `SubprocessError` (carrying
+ captured stdout/stderr plus `exitCode`/`signalName`) on a non-zero exit or
+ signal; a missing binary throws a plain error. This collapses all three into
+ one {@link OxlintRunResult} so the fix loop and {@link finalizeResult} read
+ them uniformly.
+ 
+ @param args - fully constructed oxlint arguments
+ 
+ @returns normalized run result
  */
 async function runOxlint(args: readonly string[],): Promise<OxlintRunResult> {
   try {
     /**
-     * Successful (exit 0) oxlint result; stdout still carries the `Found 0 ...` summary.
+     Successful (exit 0) oxlint result; stdout still carries the `Found 0 ...` summary.
      */
     const result = await spawn(
       'oxlint',
@@ -151,7 +151,7 @@ async function runOxlint(args: readonly string[],): Promise<OxlintRunResult> {
       && ('exitCode' in error)) {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows error to the captured-subprocess shape */
       /**
-       * Re-typed thrown error so its captured stdout, stderr, and exit fields can be normalized.
+       Re-typed thrown error so its captured stdout, stderr, and exit fields can be normalized.
        */
       const subprocessError = error as {
         stdout?: string;
@@ -182,13 +182,13 @@ async function runOxlint(args: readonly string[],): Promise<OxlintRunResult> {
 }
 
 /**
- * Writes a normalized oxlint result to the parent streams and sets the exit code.
- *
- * Mirrors Oxlint's result exactly: standard output receives diagnostic guidance,
- * standard error passes through, and every nonzero exit remains nonzero.
- * An execution failure reports and exits with status one.
- *
- * @param result - final run result from the loop or a single pass
+ Writes a normalized oxlint result to the parent streams and sets the exit code.
+ 
+ Mirrors Oxlint's result exactly: standard output receives diagnostic guidance,
+ standard error passes through, and every nonzero exit remains nonzero.
+ An execution failure reports and exits with status one.
+ 
+ @param result - final run result from the loop or a single pass
  */
 function finalizeResult(result: OxlintRunResult,): void {
   if (result.executionError !== undefined) {
@@ -212,7 +212,7 @@ function finalizeResult(result: OxlintRunResult,): void {
   }
 
   /**
-   * Oxlint diagnostics with wrapper guidance appended.
+   Oxlint diagnostics with wrapper guidance appended.
    */
   const augmentedStdout = augmentOxlintOutput(result.stdout,);
   if (augmentedStdout.length > 0) {
@@ -253,7 +253,7 @@ function finalizeResult(result: OxlintRunResult,): void {
 
 if (hasFixFlag) {
   /**
-   * Fix-loop outcome; the `--fix` passes only apply fixes, the final oracle lint is forwarded.
+   Fix-loop outcome; the `--fix` passes only apply fixes, the final oracle lint is forwarded.
    */
   const outcome = await fixUntilStable({
     runFix: function runFixPass() {

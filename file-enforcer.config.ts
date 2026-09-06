@@ -32,58 +32,58 @@ import {
 import type browserslist from 'browserslist';
 
 /**
- * Root-level context summary path that must remain absent. The repo relies on
- * source reads plus doc/agent/domain.md instead of cached context files.
- *
- * @example
- * ```ts
- * console.log(FORBIDDEN_ROOT_CONTEXT_PATH);
- * ```
+ Root-level context summary path that must remain absent. The repo relies on
+ source reads plus doc/agent/domain.md instead of cached context files.
+ 
+ @example
+ ```ts
+ console.log(FORBIDDEN_ROOT_CONTEXT_PATH);
+ ```
  */
 const FORBIDDEN_ROOT_CONTEXT_PATH = './CONTEXT.md';
 
 /**
- * Checked-in Browserslist policy file read directly by file-enforcer.
- *
- * @example
- * ```ts
- * console.log(BROWSERSLIST_CONFIG_PATH);
- * ```
+ Checked-in Browserslist policy file read directly by file-enforcer.
+ 
+ @example
+ ```ts
+ console.log(BROWSERSLIST_CONFIG_PATH);
+ ```
  */
 const BROWSERSLIST_CONFIG_PATH = './.browserslistrc';
 
 /**
- * Deterministic Browserslist environment section used when the config declares
- * environment-specific blocks. Keeping this fixed prevents ambient shell env
- * from changing generated files.
- *
- * @example
- * ```ts
- * console.log(BROWSERSLIST_CONFIG_ENVIRONMENT);
- * ```
+ Deterministic Browserslist environment section used when the config declares
+ environment-specific blocks. Keeping this fixed prevents ambient shell env
+ from changing generated files.
+ 
+ @example
+ ```ts
+ console.log(BROWSERSLIST_CONFIG_ENVIRONMENT);
+ ```
  */
 const BROWSERSLIST_CONFIG_ENVIRONMENT = 'production';
 
 /**
- * Explicit empty custom-usage statistics passed to Browserslist so it never
- * searches ancestor directories for `browserslist-stats.json`.
- *
- * @example
- * ```ts
- * console.log(Object.keys(EMPTY_BROWSERSLIST_STATS));
- * ```
+ Explicit empty custom-usage statistics passed to Browserslist so it never
+ searches ancestor directories for `browserslist-stats.json`.
+ 
+ @example
+ ```ts
+ console.log(Object.keys(EMPTY_BROWSERSLIST_STATS));
+ ```
  */
 const EMPTY_BROWSERSLIST_STATS: browserslist.Stats = {};
 
 /**
- * Source license texts keyed by SPDX license identifier, copied verbatim into
- * package-local `LICENSES/` directories so package artifacts carry the texts
- * without maintaining hand-edited duplicates.
- *
- * @example
- * ```ts
- * console.log(PACKAGE_LICENSE_TEXT_SOURCES['LGPL-3.0-or-later']);
- * ```
+ Source license texts keyed by SPDX license identifier, copied verbatim into
+ package-local `LICENSES/` directories so package artifacts carry the texts
+ without maintaining hand-edited duplicates.
+ 
+ @example
+ ```ts
+ console.log(PACKAGE_LICENSE_TEXT_SOURCES['LGPL-3.0-or-later']);
+ ```
  */
 const PACKAGE_LICENSE_TEXT_SOURCES = {
   'CC-BY-SA-4.0': './LICENSES/CC-BY-SA-4.0.txt',
@@ -92,22 +92,22 @@ const PACKAGE_LICENSE_TEXT_SOURCES = {
 } as const;
 
 /**
- * License identifiers whose canonical texts file-enforcer knows how to copy.
- *
- * @example
- * ```ts
- * const id: PackageLicenseTextId = 'GPL-3.0-or-later';
- * ```
+ License identifiers whose canonical texts file-enforcer knows how to copy.
+ 
+ @example
+ ```ts
+ const id: PackageLicenseTextId = 'GPL-3.0-or-later';
+ ```
  */
 type PackageLicenseTextId = keyof typeof PACKAGE_LICENSE_TEXT_SOURCES;
 
 /**
- * Package manifest globs whose license expressions drive package-local license texts.
- *
- * @example
- * ```ts
- * console.log(PACKAGE_LICENSE_MANIFEST_GLOBS.length);
- * ```
+ Package manifest globs whose license expressions drive package-local license texts.
+ 
+ @example
+ ```ts
+ console.log(PACKAGE_LICENSE_MANIFEST_GLOBS.length);
+ ```
  */
 const PACKAGE_LICENSE_MANIFEST_GLOBS = [
   './package/*/*/package.json',
@@ -115,13 +115,13 @@ const PACKAGE_LICENSE_MANIFEST_GLOBS = [
 ] as const;
 
 /**
- * License text identifiers needed when a package uses LGPLv3.
- * LGPLv3 incorporates GPLv3 by reference, so package artifacts need both texts.
- *
- * @example
- * ```ts
- * console.log(LGPL_3_OR_LATER_TEXT_IDS);
- * ```
+ License text identifiers needed when a package uses LGPLv3.
+ LGPLv3 incorporates GPLv3 by reference, so package artifacts need both texts.
+ 
+ @example
+ ```ts
+ console.log(LGPL_3_OR_LATER_TEXT_IDS);
+ ```
  */
 const LGPL_3_OR_LATER_TEXT_IDS = [
   'GPL-3.0-or-later',
@@ -129,76 +129,76 @@ const LGPL_3_OR_LATER_TEXT_IDS = [
 ] as const satisfies readonly PackageLicenseTextId[];
 
 /**
- * Node filesystem error code for an absent path.
- *
- * @example
- * ```ts
- * console.log(ABSENT_PATH_ERROR_CODE);
- * ```
+ Node filesystem error code for an absent path.
+ 
+ @example
+ ```ts
+ console.log(ABSENT_PATH_ERROR_CODE);
+ ```
  */
 const ABSENT_PATH_ERROR_CODE = 'ENOENT';
 
 /**
- * Owner-only Unix mode for sensitive rule source and generated runtime text.
- *
- * @example
- * ```ts
- * console.log(SENSITIVE_RULE_FILE_MODE);
- * ```
+ Owner-only Unix mode for sensitive rule source and generated runtime text.
+ 
+ @example
+ ```ts
+ console.log(SENSITIVE_RULE_FILE_MODE);
+ ```
  */
 const SENSITIVE_RULE_FILE_MODE = 0o600;
 
 /**
- * Gitignored sensitive appendix edited by repository user.
- *
- * @example
- * ```ts
- * console.log(FORBIDDEN_STRINGS_LOCAL_APPENDIX_PATH);
- * ```
+ Gitignored sensitive appendix edited by repository user.
+ 
+ @example
+ ```ts
+ console.log(FORBIDDEN_STRINGS_LOCAL_APPENDIX_PATH);
+ ```
  */
 const FORBIDDEN_STRINGS_LOCAL_APPENDIX_PATH = './forbidden-strings.append.local.txt';
 
 /**
- * Authoritative file-enforcer runtime rules output consumed by scanner.
- *
- * @example
- * ```ts
- * console.log(FORBIDDEN_STRINGS_RUNTIME_RULES_PATH);
- * ```
+ Authoritative file-enforcer runtime rules output consumed by scanner.
+ 
+ @example
+ ```ts
+ console.log(FORBIDDEN_STRINGS_RUNTIME_RULES_PATH);
+ ```
  */
 const FORBIDDEN_STRINGS_RUNTIME_RULES_PATH = './.cache/forbidden-strings.rules.txt';
 
 /**
- * Repository-built release scanner used by cli-git and eager cache compilation.
- *
- * Windows release binaries carry executable suffix while other targets do not.
- *
- * @example
- * ```ts
- * console.log(FORBIDDEN_STRINGS_SCANNER_PATH);
- * ```
+ Repository-built release scanner used by cli-git and eager cache compilation.
+ 
+ Windows release binaries carry executable suffix while other targets do not.
+ 
+ @example
+ ```ts
+ console.log(FORBIDDEN_STRINGS_SCANNER_PATH);
+ ```
  */
 const FORBIDDEN_STRINGS_SCANNER_PATH = process.platform === 'win32'
   ? './package/cli/forbidden-strings/target/release/forbidden-strings.exe'
   : './package/cli/forbidden-strings/target/release/forbidden-strings';
 
 /**
- * Canonical repo-relative prefix owned by the agent-skill mirror generator.
- *
- * @example
- * ```ts
- * console.log(SKILL_MIRROR_CANONICAL_PREFIX);
- * ```
+ Canonical repo-relative prefix owned by the agent-skill mirror generator.
+ 
+ @example
+ ```ts
+ console.log(SKILL_MIRROR_CANONICAL_PREFIX);
+ ```
  */
 const SKILL_MIRROR_CANONICAL_PREFIX = '.agents/skills/';
 
 /**
- * Legacy skill roots receiving byte-identical canonical Markdown files.
- *
- * @example
- * ```ts
- * console.log(SKILL_MIRROR_DESTINATION_ROOTS);
- * ```
+ Legacy skill roots receiving byte-identical canonical Markdown files.
+ 
+ @example
+ ```ts
+ console.log(SKILL_MIRROR_DESTINATION_ROOTS);
+ ```
  */
 const SKILL_MIRROR_DESTINATION_ROOTS = [
   './.claude/skills',
@@ -206,57 +206,57 @@ const SKILL_MIRROR_DESTINATION_ROOTS = [
 ] as const;
 
 /**
- * Ownership manifest filename stored in each legacy skill root.
- *
- * @example
- * ```ts
- * console.log(SKILL_MIRROR_MANIFEST_FILENAME);
- * ```
+ Ownership manifest filename stored in each legacy skill root.
+ 
+ @example
+ ```ts
+ console.log(SKILL_MIRROR_MANIFEST_FILENAME);
+ ```
  */
 const SKILL_MIRROR_MANIFEST_FILENAME = '.agents-mirror-manifest.json';
 
 /**
- * Canonical skill path to SHA-256 mapping owned by one mirror destination.
- *
- * @example
- * ```ts
- * const manifest: SkillMirrorManifest = {
- *   '.agents/skills/example/SKILL.md': 'hash',
- * };
- * ```
+ Canonical skill path to SHA-256 mapping owned by one mirror destination.
+ 
+ @example
+ ```ts
+ const manifest: SkillMirrorManifest = {
+   '.agents/skills/example/SKILL.md': 'hash',
+ };
+ ```
  */
 type SkillMirrorManifest = Readonly<Record<string, string>>;
 
 /**
- * Error object shape used by Node filesystem APIs when a system code is present.
- *
- * @example
- * ```ts
- * const codedError = error as NodeErrorCodeCarrier;
- * ```
+ Error object shape used by Node filesystem APIs when a system code is present.
+ 
+ @example
+ ```ts
+ const codedError = error as NodeErrorCodeCarrier;
+ ```
  */
 type NodeErrorCodeCarrier = Error & {
   readonly code?: unknown;
 };
 
 /**
- * Signals that root CONTEXT.md exists even though cached context files are forbidden.
- *
- * @example
- * ```ts
- * throw new ForbiddenRootContextFileError({ filePath: './CONTEXT.md' });
- * ```
+ Signals that root CONTEXT.md exists even though cached context files are forbidden.
+ 
+ @example
+ ```ts
+ throw new ForbiddenRootContextFileError({ filePath: './CONTEXT.md' });
+ ```
  */
 class ForbiddenRootContextFileError extends Error {
   /**
-   * Builds a failure with guidance toward source-driven context.
-   *
-   * @param filePath - forbidden root context path that was present.
-   *
-   * @example
-   * ```ts
-   * new ForbiddenRootContextFileError({ filePath: './CONTEXT.md' });
-   * ```
+   Builds a failure with guidance toward source-driven context.
+   
+   @param filePath - forbidden root context path that was present.
+   
+   @example
+   ```ts
+   new ForbiddenRootContextFileError({ filePath: './CONTEXT.md' });
+   ```
    */
   public constructor({ filePath, }: { readonly filePath: string; }) {
     super([
@@ -269,19 +269,19 @@ class ForbiddenRootContextFileError extends Error {
 }
 
 /**
- * Returns whether an unknown filesystem error carries the expected Node error code,
- * narrowing through {@link NodeErrorCodeCarrier}.
- *
- * @param error - unknown error from a filesystem operation.
- *
- * @param code - Node error code that should be treated as expected.
- *
- * @returns Whether error carries code.
- *
- * @example
- * ```ts
- * const absent = errorHasCode({ error, code: ABSENT_PATH_ERROR_CODE });
- * ```
+ Returns whether an unknown filesystem error carries the expected Node error code,
+ narrowing through {@link NodeErrorCodeCarrier}.
+ 
+ @param error - unknown error from a filesystem operation.
+ 
+ @param code - Node error code that should be treated as expected.
+ 
+ @returns Whether error carries code.
+ 
+ @example
+ ```ts
+ const absent = errorHasCode({ error, code: ABSENT_PATH_ERROR_CODE });
+ ```
  */
 function errorHasCode(
   {
@@ -298,24 +298,24 @@ function errorHasCode(
 }
 
 /**
- * Converts an SPDX license expression to license texts that must accompany the
- * package artifact. The mapping is intentionally conservative: LGPLv3 yields
- * both LGPLv3 and GPLv3 because LGPLv3 is an additional-permissions layer over GPLv3.
- *
- * @param expression - SPDX license expression from a package manifest.
- *
- * @returns Known license text identifiers required by expression.
- *
- * @example
- * ```ts
- * licenseTextIdsForExpression({ expression: 'LGPL-3.0-or-later AND CC-BY-SA-4.0' });
- * ```
+ Converts an SPDX license expression to license texts that must accompany the
+ package artifact. The mapping is intentionally conservative: LGPLv3 yields
+ both LGPLv3 and GPLv3 because LGPLv3 is an additional-permissions layer over GPLv3.
+ 
+ @param expression - SPDX license expression from a package manifest.
+ 
+ @returns Known license text identifiers required by expression.
+ 
+ @example
+ ```ts
+ licenseTextIdsForExpression({ expression: 'LGPL-3.0-or-later AND CC-BY-SA-4.0' });
+ ```
  */
 function licenseTextIdsForExpression(
   { expression, }: { readonly expression: string; },
 ): readonly PackageLicenseTextId[] {
   /**
-   * Ordered de-duplicated text identifiers produced from the expression.
+   Ordered de-duplicated text identifiers produced from the expression.
    */
   const textIds = new Set<PackageLicenseTextId>();
 
@@ -332,22 +332,22 @@ function licenseTextIdsForExpression(
 }
 
 /**
- * Reads license expression from a package.json manifest.
- *
- * @param manifestPath - package.json path.
- *
- * @returns SPDX expression when manifest carries a string `license` field.
- *
- * @example
- * ```ts
- * await packageJsonLicenseExpression({ manifestPath: './package/module/test/package.json' });
- * ```
+ Reads license expression from a package.json manifest.
+ 
+ @param manifestPath - package.json path.
+ 
+ @returns SPDX expression when manifest carries a string `license` field.
+ 
+ @example
+ ```ts
+ await packageJsonLicenseExpression({ manifestPath: './package/module/test/package.json' });
+ ```
  */
 async function packageJsonLicenseExpression(
   { manifestPath, }: { readonly manifestPath: string; },
 ): Promise<string | undefined> {
   /**
-   * Parsed package.json object; only the license field matters here.
+   Parsed package.json object; only the license field matters here.
    */
   const packageJson = JSON.parse(await cat([manifestPath,],),) as {
     readonly license?: unknown;
@@ -359,23 +359,23 @@ async function packageJsonLicenseExpression(
 }
 
 /**
- * Reads license expression from a Cargo manifest.
- *
- * @param manifestPath - Cargo.toml path.
- *
- * @returns SPDX expression when manifest carries a string package.license field.
- *
- * @example
- * ```ts
- * await cargoTomlLicenseExpression({ manifestPath: './package/cli/forbidden-strings/Cargo.toml' });
- * ```
+ Reads license expression from a Cargo manifest.
+ 
+ @param manifestPath - Cargo.toml path.
+ 
+ @returns SPDX expression when manifest carries a string package.license field.
+ 
+ @example
+ ```ts
+ await cargoTomlLicenseExpression({ manifestPath: './package/cli/forbidden-strings/Cargo.toml' });
+ ```
  */
 async function cargoTomlLicenseExpression(
   { manifestPath, }: { readonly manifestPath: string; },
 ): Promise<string | undefined> {
   /**
-   * License value from Cargo's package metadata. Workspace-inherited or missing
-   * values are ignored unless they resolve to a direct string in this manifest.
+   License value from Cargo's package metadata. Workspace-inherited or missing
+   values are ignored unless they resolve to a direct string in this manifest.
    */
   const license = getTomlProperty({
     path: ['package', 'license',],
@@ -388,16 +388,16 @@ async function cargoTomlLicenseExpression(
 }
 
 /**
- * Returns package directory path for a two-level package manifest.
- *
- * @param manifestPath - package.json or Cargo.toml path.
- *
- * @returns Package root path containing manifest.
- *
- * @example
- * ```ts
- * packageDirFromManifest({ manifestPath: './package/cli/forbidden-strings/Cargo.toml' });
- * ```
+ Returns package directory path for a two-level package manifest.
+ 
+ @param manifestPath - package.json or Cargo.toml path.
+ 
+ @returns Package root path containing manifest.
+ 
+ @example
+ ```ts
+ packageDirFromManifest({ manifestPath: './package/cli/forbidden-strings/Cargo.toml' });
+ ```
  */
 function packageDirFromManifest(
   { manifestPath, }: { readonly manifestPath: string; },
@@ -409,14 +409,14 @@ function packageDirFromManifest(
 }
 
 /**
- * Removes file path when present, ignoring absent-path races.
- *
- * @param filePath - generated file path that may need deletion.
- *
- * @example
- * ```ts
- * await unlinkIfExists({ filePath: './package/example/name/LICENSES/GPL-3.0-or-later.txt' });
- * ```
+ Removes file path when present, ignoring absent-path races.
+ 
+ @param filePath - generated file path that may need deletion.
+ 
+ @example
+ ```ts
+ await unlinkIfExists({ filePath: './package/example/name/LICENSES/GPL-3.0-or-later.txt' });
+ ```
  */
 async function unlinkIfExists(
   { filePath, }: { readonly filePath: string; },
@@ -433,18 +433,18 @@ async function unlinkIfExists(
 }
 
 /**
- * Adds one license expression to the per-package accumulator.
- *
- * @param packageLicenseExpressions - Accumulator keyed by package directory.
- *
- * @param packageDir - Package directory receiving expression.
- *
- * @param expression - SPDX expression from manifest.
- *
- * @example
- * ```ts
- * addPackageLicenseExpression({ packageLicenseExpressions: new Map(), packageDir: './package/x/y', expression: 'LGPL-3.0-or-later' });
- * ```
+ Adds one license expression to the per-package accumulator.
+ 
+ @param packageLicenseExpressions - Accumulator keyed by package directory.
+ 
+ @param packageDir - Package directory receiving expression.
+ 
+ @param expression - SPDX expression from manifest.
+ 
+ @example
+ ```ts
+ addPackageLicenseExpression({ packageLicenseExpressions: new Map(), packageDir: './package/x/y', expression: 'LGPL-3.0-or-later' });
+ ```
  */
 function addPackageLicenseExpression(
   {
@@ -458,7 +458,7 @@ function addPackageLicenseExpression(
   },
 ): void {
   /**
-   * Existing expression set for this package, created lazily.
+   Existing expression set for this package, created lazily.
    */
   const expressions = packageLicenseExpressions.get(packageDir,) ?? new Set<string>();
   expressions.add(expression,);
@@ -469,25 +469,25 @@ function addPackageLicenseExpression(
 }
 
 /**
- * Reads every two-level package manifest and records package-local license text needs.
- *
- * @returns Map from package directory to known license text identifiers.
- *
- * @example
- * ```ts
- * await collectPackageLicenseTextIds();
- * ```
+ Reads every two-level package manifest and records package-local license text needs.
+ 
+ @returns Map from package directory to known license text identifiers.
+ 
+ @example
+ ```ts
+ await collectPackageLicenseTextIds();
+ ```
  */
 async function collectPackageLicenseTextIds(): Promise<Map<string, Set<PackageLicenseTextId>>> {
   /**
-   * SPDX expressions grouped by package directory before mapping to text files.
+   SPDX expressions grouped by package directory before mapping to text files.
    */
   const packageLicenseExpressions = new Map<string, Set<string>>();
 
   for (const manifestGlob of PACKAGE_LICENSE_MANIFEST_GLOBS) {
     for await (const manifestPath of glob(manifestGlob,)) {
       /**
-       * SPDX expression read by the parser matching the manifest type.
+       SPDX expression read by the parser matching the manifest type.
        */
       const expression = manifestPath.endsWith('/package.json',)
         ? await packageJsonLicenseExpression({ manifestPath, },)
@@ -508,7 +508,7 @@ async function collectPackageLicenseTextIds(): Promise<Map<string, Set<PackageLi
     packageLicenseExpressions,
     function toPackageTextIds([packageDir, expressions,]): readonly [string, Set<PackageLicenseTextId>] {
       /**
-       * Known license text identifiers required by all expressions in this package.
+       Known license text identifiers required by all expressions in this package.
        */
       const textIds = new Set<PackageLicenseTextId>();
       for (const expression of expressions)
@@ -521,23 +521,23 @@ async function collectPackageLicenseTextIds(): Promise<Map<string, Set<PackageLi
 }
 
 /**
- * Generates package-local license texts under each package's `LICENSES/` directory from
- * canonical root `LICENSES/` sources, based on each package manifest's license
- * expression.
- *
- * @example
- * ```ts
- * await generatePackageLicenseTexts();
- * ```
+ Generates package-local license texts under each package's `LICENSES/` directory from
+ canonical root `LICENSES/` sources, based on each package manifest's license
+ expression.
+ 
+ @example
+ ```ts
+ await generatePackageLicenseTexts();
+ ```
  */
 async function generatePackageLicenseTexts(): Promise<void> {
   /**
-   * Required license text identifiers keyed by package directory.
+   Required license text identifiers keyed by package directory.
    */
   const packageLicenseTextIds = await collectPackageLicenseTextIds();
 
   /**
-   * Every generated license text identifier this config owns.
+   Every generated license text identifier this config owns.
    */
   const knownLicenseTextIds = Object.keys(PACKAGE_LICENSE_TEXT_SOURCES,) as readonly PackageLicenseTextId[];
 
@@ -565,14 +565,14 @@ async function generatePackageLicenseTexts(): Promise<void> {
 }
 
 /**
- * Registers root CONTEXT.md with watch mode and rejects it before generated writes,
- * using {@link errorHasCode} to tell an absent path from a real stat failure and
- * throwing {@link ForbiddenRootContextFileError} when the file is present.
- *
- * @example
- * ```ts
- * await assertForbiddenRootContextAbsent();
- * ```
+ Registers root CONTEXT.md with watch mode and rejects it before generated writes,
+ using {@link errorHasCode} to tell an absent path from a real stat failure and
+ throwing {@link ForbiddenRootContextFileError} when the file is present.
+ 
+ @example
+ ```ts
+ await assertForbiddenRootContextAbsent();
+ ```
  */
 async function assertForbiddenRootContextAbsent(): Promise<void> {
   addWatchedPaths([FORBIDDEN_ROOT_CONTEXT_PATH,],);
@@ -595,28 +595,28 @@ async function assertForbiddenRootContextAbsent(): Promise<void> {
 }
 
 /**
- * Resolver function exported by the `browserslist` package.
- *
- * @example
- * ```ts
- * const resolveBrowserslist = await importBrowserslist();
- * ```
+ Resolver function exported by the `browserslist` package.
+ 
+ @example
+ ```ts
+ const resolveBrowserslist = await importBrowserslist();
+ ```
  */
 type BrowserslistResolver = typeof browserslist;
 
 /**
- * Imports Browserslist at runtime so generators use the installed package data.
- *
- * @returns {@link BrowserslistResolver} from dynamic package import.
- *
- * @example
- * ```ts
- * const resolveBrowserslist = await importBrowserslist();
- * ```
+ Imports Browserslist at runtime so generators use the installed package data.
+ 
+ @returns {@link BrowserslistResolver} from dynamic package import.
+ 
+ @example
+ ```ts
+ const resolveBrowserslist = await importBrowserslist();
+ ```
  */
 async function importBrowserslist(): Promise<BrowserslistResolver> {
   /**
-   * CommonJS package namespace exposed through ESM dynamic import.
+   CommonJS package namespace exposed through ESM dynamic import.
    */
   const browserslistModule = await import('browserslist') as {
     readonly default: BrowserslistResolver;
@@ -626,19 +626,19 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
 }
 
 /**
- * Selects query lines from parsed Browserslist config without letting
- * Browserslist search the filesystem for config files.
- *
- * @param config - parsed checked-in Browserslist config.
- *
- * @returns Production section when present, otherwise default query lines.
- *
- * @example
- * ```ts
- * const queries = selectBrowserslistQueries({
- *   config: { defaults: ['last 1 Chrome version'] },
- * });
- * ```
+ Selects query lines from parsed Browserslist config without letting
+ Browserslist search the filesystem for config files.
+ 
+ @param config - parsed checked-in Browserslist config.
+ 
+ @returns Production section when present, otherwise default query lines.
+ 
+ @example
+ ```ts
+ const queries = selectBrowserslistQueries({
+   config: { defaults: ['last 1 Chrome version'] },
+ });
+ ```
  */
 function selectBrowserslistQueries(
   { config, }: { readonly config: Readonly<Record<string, readonly string[]>>; },
@@ -649,12 +649,12 @@ function selectBrowserslistQueries(
 }
 
 /**
- * Generates mise.toml from mise.no-env.toml with a dynamic [env] section
- * containing _.path entries for all workspace package bin directories.
+ Generates mise.toml from mise.no-env.toml with a dynamic [env] section
+ containing _.path entries for all workspace package bin directories.
  */
 async function generateMiseToml(): Promise<void> {
   /**
-   * Dynamic [env] block appended after the static mise.no-env.toml content; wires PATH to every workspace bin dir.
+   Dynamic [env] block appended after the static mise.no-env.toml content; wires PATH to every workspace bin dir.
    */
   const envSection = `[env]
 # Secrets live in the age-encrypted .env.local.json (sops backend), gitignored
@@ -723,14 +723,14 @@ ${envSection}`,
 }
 
 /**
- * Returns whether repository-built scanner exists as regular file.
- *
- * @returns Whether eager compiler can be started.
- *
- * @example
- * ```ts
- * await forbiddenStringsScannerExists();
- * ```
+ Returns whether repository-built scanner exists as regular file.
+ 
+ @returns Whether eager compiler can be started.
+ 
+ @example
+ ```ts
+ await forbiddenStringsScannerExists();
+ ```
  */
 async function forbiddenStringsScannerExists(): Promise<boolean> {
   try {
@@ -747,20 +747,20 @@ async function forbiddenStringsScannerExists(): Promise<boolean> {
 }
 
 /**
- * Eagerly compiles generated runtime rules when release scanner is available.
- *
- * Missing scanner is expected during fresh preparation before Rust package builds.
- * Any started-command failure propagates so invalid rules or cache publication
- * failures stop file-enforcer rather than deferring them to commit scanning.
- *
- * @example
- * ```ts
- * await compileForbiddenStringsRuntimeCache();
- * ```
+ Eagerly compiles generated runtime rules when release scanner is available.
+ 
+ Missing scanner is expected during fresh preparation before Rust package builds.
+ Any started-command failure propagates so invalid rules or cache publication
+ failures stop file-enforcer rather than deferring them to commit scanning.
+ 
+ @example
+ ```ts
+ await compileForbiddenStringsRuntimeCache();
+ ```
  */
 async function compileForbiddenStringsRuntimeCache(): Promise<void> {
   /**
-   * Function-scoped logger carrying eager compilation operation tag.
+   Function-scoped logger carrying eager compilation operation tag.
    */
   const rl = tagged({
     tag: compileForbiddenStringsRuntimeCache.name,
@@ -781,26 +781,26 @@ async function compileForbiddenStringsRuntimeCache(): Promise<void> {
 }
 
 /**
- * Generates the forbidden-strings rules file under the gitignored `.cache/`
- * scratch directory by concatenating the committed shared appendix with a
- * gitignored sensitive appendix. The sensitive appendix is seeded with a
- * comment-only header on first run; the developer adds private deny-list
- * literals into it directly so those literals never enter version control.
- *
- * Why two files? `forbidden-strings.append.txt` is checked in and holds
- * non-sensitive repo-wide rules (e.g. AGENTS.md shortcode collisions) so
- * every clone and CI share them. `forbidden-strings.append.local.txt` is
- * gitignored and holds sensitive rules (codenames, partner identifiers,
- * politically-charged literals) that must not leak into git history.
- *
- * The betterleaks baseline no longer materializes here: it ships inside the
- * scanner binary and repo invocations activate it with `--builtin-rules`
- * (see `doc/decision/gitignore-negations.md`). The generated root
- * `mise.toml` points `FORBIDDEN_STRINGS_RULES` at the scratch file, so no
- * rules file exists at the repository root at all. The retired root outputs
- * (`forbidden-strings.local.txt`, previously generated here) are removed
- * when present so a stale copy can never shadow the scratch file through
- * the scanner's cwd-default fallback.
+ Generates the forbidden-strings rules file under the gitignored `.cache/`
+ scratch directory by concatenating the committed shared appendix with a
+ gitignored sensitive appendix. The sensitive appendix is seeded with a
+ comment-only header on first run; the developer adds private deny-list
+ literals into it directly so those literals never enter version control.
+ 
+ Why two files? `forbidden-strings.append.txt` is checked in and holds
+ non-sensitive repo-wide rules (e.g. AGENTS.md shortcode collisions) so
+ every clone and CI share them. `forbidden-strings.append.local.txt` is
+ gitignored and holds sensitive rules (codenames, partner identifiers,
+ politically-charged literals) that must not leak into git history.
+ 
+ The betterleaks baseline no longer materializes here: it ships inside the
+ scanner binary and repo invocations activate it with `--builtin-rules`
+ (see `doc/decision/gitignore-negations.md`). The generated root
+ `mise.toml` points `FORBIDDEN_STRINGS_RULES` at the scratch file, so no
+ rules file exists at the repository root at all. The retired root outputs
+ (`forbidden-strings.local.txt`, previously generated here) are removed
+ when present so a stale copy can never shadow the scratch file through
+ the scanner's cwd-default fallback.
  */
 async function generateForbiddenStringsRules(): Promise<void> {
   // Seed the gitignored sensitive appendix with a comment header only;
@@ -866,29 +866,29 @@ ${await cat([
 }
 
 /**
- * Generates resolved Browserslist targets for build tools that cannot resolve
- * `.browserslistrc` directly, loading the resolver via {@link importBrowserslist}
- * and picking query lines with {@link selectBrowserslistQueries}.
- *
- * @example
- * ```ts
- * await generateResolvedBrowserslistTargets();
- * ```
+ Generates resolved Browserslist targets for build tools that cannot resolve
+ `.browserslistrc` directly, loading the resolver via {@link importBrowserslist}
+ and picking query lines with {@link selectBrowserslistQueries}.
+ 
+ @example
+ ```ts
+ await generateResolvedBrowserslistTargets();
+ ```
  */
 async function generateResolvedBrowserslistTargets(): Promise<void> {
   /**
-   * Browserslist resolver loaded lazily so file-enforcer uses real package data.
+   Browserslist resolver loaded lazily so file-enforcer uses real package data.
    */
   const resolveBrowserslist = await importBrowserslist();
   /**
-   * Parsed query groups from the checked-in Browserslist file.
+   Parsed query groups from the checked-in Browserslist file.
    */
   const browserslistConfig = resolveBrowserslist.parseConfig(
     await cat([BROWSERSLIST_CONFIG_PATH,],),
   );
   /**
-   * Target strings selected from explicit query lines, with both config and stats
-   * discovery disabled at the Browserslist API boundary.
+   Target strings selected from explicit query lines, with both config and stats
+   discovery disabled at the Browserslist API boundary.
    */
   const targets = resolveBrowserslist(
     selectBrowserslistQueries({ config: browserslistConfig, },),
@@ -909,28 +909,28 @@ async function generateResolvedBrowserslistTargets(): Promise<void> {
 }
 
 /**
- * Signals malformed mirror ownership data before any owned destination can be removed.
- *
- * @example
- * ```ts
- * throw new SkillMirrorManifestError({
- *   manifestPath: './.claude/skills/.agents-mirror-manifest.json',
- *   reason: 'unexpected path',
- * });
- * ```
+ Signals malformed mirror ownership data before any owned destination can be removed.
+ 
+ @example
+ ```ts
+ throw new SkillMirrorManifestError({
+   manifestPath: './.claude/skills/.agents-mirror-manifest.json',
+   reason: 'unexpected path',
+ });
+ ```
  */
 class SkillMirrorManifestError extends Error {
   /**
-   * Builds a mirror-manifest failure naming the unsafe source.
-   *
-   * @param manifestPath - manifest whose ownership data failed validation.
-   *
-   * @param reason - evidence explaining why synchronization cannot continue.
-   *
-   * @example
-   * ```ts
-   * new SkillMirrorManifestError({ manifestPath: 'manifest.json', reason: 'invalid JSON', });
-   * ```
+   Builds a mirror-manifest failure naming the unsafe source.
+   
+   @param manifestPath - manifest whose ownership data failed validation.
+   
+   @param reason - evidence explaining why synchronization cannot continue.
+   
+   @example
+   ```ts
+   new SkillMirrorManifestError({ manifestPath: 'manifest.json', reason: 'invalid JSON', });
+   ```
    */
   public constructor(
     {
@@ -947,16 +947,16 @@ class SkillMirrorManifestError extends Error {
 }
 
 /**
- * Removes file-enforcer's optional leading current-directory marker.
- *
- * @param filePath - path emitted by canonical skill glob.
- *
- * @returns Repo-relative path without leading `./`.
- *
- * @example
- * ```ts
- * canonicalSkillPath({ filePath: './.agents/skills/example/SKILL.md' });
- * ```
+ Removes file-enforcer's optional leading current-directory marker.
+ 
+ @param filePath - path emitted by canonical skill glob.
+ 
+ @returns Repo-relative path without leading `./`.
+ 
+ @example
+ ```ts
+ canonicalSkillPath({ filePath: './.agents/skills/example/SKILL.md' });
+ ```
  */
 function canonicalSkillPath({ filePath, }: { readonly filePath: string; }): string {
   return filePath.startsWith('./',)
@@ -965,20 +965,20 @@ function canonicalSkillPath({ filePath, }: { readonly filePath: string; }): stri
 }
 
 /**
- * Returns whether a manifest key names exactly one canonical skill Markdown file.
- *
- * @param filePath - repo-relative manifest key.
- *
- * @returns Whether path is safe to map under a mirror destination.
- *
- * @example
- * ```ts
- * isCanonicalSkillPath({ filePath: '.agents/skills/example/SKILL.md' });
- * ```
+ Returns whether a manifest key names exactly one canonical skill Markdown file.
+ 
+ @param filePath - repo-relative manifest key.
+ 
+ @returns Whether path is safe to map under a mirror destination.
+ 
+ @example
+ ```ts
+ isCanonicalSkillPath({ filePath: '.agents/skills/example/SKILL.md' });
+ ```
  */
 function isCanonicalSkillPath({ filePath, }: { readonly filePath: string; }): boolean {
   /**
-   * Path segments checked without filesystem resolution so traversal cannot escape destination root.
+   Path segments checked without filesystem resolution so traversal cannot escape destination root.
    */
   const segments = filePath.split('/',);
   return segments.length === 4
@@ -992,24 +992,24 @@ function isCanonicalSkillPath({ filePath, }: { readonly filePath: string; }): bo
 }
 
 /**
- * Validates parsed JSON and returns it as a safe canonical skill ownership
- * manifest. A returning validator, not an `asserts` predicate, because an
- * assertion signature cannot reference a destructured parameter element (TS1230).
- *
- * @param value - parsed JSON value.
- *
- * @param manifestPath - source path used in validation errors.
- *
- * @returns value narrowed to a validated {@link SkillMirrorManifest}.
- *
- * @throws {@link SkillMirrorManifestError} when value is not a flat string map of canonical skill paths.
- *
- * @mutates value through `Reflect.ownKeys` and `Reflect.get` proxy or accessor hooks
- *
- * @example
- * ```ts
- * const manifest = toSkillMirrorManifest({ value: {}, manifestPath: 'manifest.json', });
- * ```
+ Validates parsed JSON and returns it as a safe canonical skill ownership
+ manifest. A returning validator, not an `asserts` predicate, because an
+ assertion signature cannot reference a destructured parameter element (TS1230).
+ 
+ @param value - parsed JSON value.
+ 
+ @param manifestPath - source path used in validation errors.
+ 
+ @returns value narrowed to a validated {@link SkillMirrorManifest}.
+ 
+ @throws {@link SkillMirrorManifestError} when value is not a flat string map of canonical skill paths.
+ 
+ @mutates value through `Reflect.ownKeys` and `Reflect.get` proxy or accessor hooks
+ 
+ @example
+ ```ts
+ const manifest = toSkillMirrorManifest({ value: {}, manifestPath: 'manifest.json', });
+ ```
  */
 function toSkillMirrorManifest(
   {
@@ -1039,25 +1039,25 @@ function toSkillMirrorManifest(
 }
 
 /**
- * Reads and validates a prior mirror manifest,
- * returning no owned paths when destination has never been synchronized.
- *
- * @param manifestPath - destination ownership-manifest path.
- *
- * @returns Valid prior canonical-path mapping.
- *
- * @throws {@link SkillMirrorManifestError} when existing manifest is malformed.
- *
- * @example
- * ```ts
- * await readSkillMirrorManifest({ manifestPath: './.claude/skills/.agents-mirror-manifest.json', });
- * ```
+ Reads and validates a prior mirror manifest,
+ returning no owned paths when destination has never been synchronized.
+ 
+ @param manifestPath - destination ownership-manifest path.
+ 
+ @returns Valid prior canonical-path mapping.
+ 
+ @throws {@link SkillMirrorManifestError} when existing manifest is malformed.
+ 
+ @example
+ ```ts
+ await readSkillMirrorManifest({ manifestPath: './.claude/skills/.agents-mirror-manifest.json', });
+ ```
  */
 async function readSkillMirrorManifest(
   { manifestPath, }: { readonly manifestPath: string; },
 ): Promise<SkillMirrorManifest> {
   /**
-   * Existing manifest text read before any stale destination is removed.
+   Existing manifest text read before any stale destination is removed.
    */
   let content: string;
   try {
@@ -1071,7 +1071,7 @@ async function readSkillMirrorManifest(
   }
 
   /**
-   * Parsed ownership value validated before use as deletion authority.
+   Parsed ownership value validated before use as deletion authority.
    */
   let parsed: unknown;
   try {
@@ -1087,16 +1087,16 @@ async function readSkillMirrorManifest(
 }
 
 /**
- * Hashes canonical Markdown content for deterministic mirror ownership.
- *
- * @param content - exact canonical UTF-8 text.
- *
- * @returns Lowercase SHA-256 digest.
- *
- * @example
- * ```ts
- * hashSkillContent({ content: '# Skill\n', });
- * ```
+ Hashes canonical Markdown content for deterministic mirror ownership.
+ 
+ @param content - exact canonical UTF-8 text.
+ 
+ @returns Lowercase SHA-256 digest.
+ 
+ @example
+ ```ts
+ hashSkillContent({ content: '# Skill\n', });
+ ```
  */
 function hashSkillContent({ content, }: { readonly content: string; }): string {
   return createHash('sha256',)
@@ -1105,23 +1105,23 @@ function hashSkillContent({ content, }: { readonly content: string; }): string {
 }
 
 /**
- * Maps one canonical path beneath a legacy mirror root after path validation.
- *
- * @param canonicalPath - validated canonical repo-relative path.
- *
- * @param destinationRoot - mirror root receiving canonical suffix.
- *
- * @returns Destination counterpart path.
- *
- * @throws {@link SkillMirrorManifestError} when canonical path is unsafe.
- *
- * @example
- * ```ts
- * mirrorDestinationPath({
- *   canonicalPath: '.agents/skills/example/SKILL.md',
- *   destinationRoot: './.claude/skills',
- * });
- * ```
+ Maps one canonical path beneath a legacy mirror root after path validation.
+ 
+ @param canonicalPath - validated canonical repo-relative path.
+ 
+ @param destinationRoot - mirror root receiving canonical suffix.
+ 
+ @returns Destination counterpart path.
+ 
+ @throws {@link SkillMirrorManifestError} when canonical path is unsafe.
+ 
+ @example
+ ```ts
+ mirrorDestinationPath({
+   canonicalPath: '.agents/skills/example/SKILL.md',
+   destinationRoot: './.claude/skills',
+ });
+ ```
  */
 function mirrorDestinationPath(
   {
@@ -1142,23 +1142,23 @@ function mirrorDestinationPath(
 }
 
 /**
- * Synchronizes one mirror root,
- * pruning only paths owned by its valid prior manifest.
- *
- * @param destinationRoot - legacy root receiving canonical files and ownership manifest.
- *
- * @param skills - canonical file-enforcer glob results.
- *
- * @param canonicalPaths - current canonical paths used to identify removed mirrors.
- *
- * @param manifestText - serialized current ownership manifest.
- *
- * @mutates skills - mirror writes run inside the file-enforcer capture boundary (sourceCaptureStorage.run), which may invoke lazy glob builders reachable from these results.
- *
- * @example
- * ```ts
- * await mirrorSkillsToDestination({ canonicalPaths, destinationRoot, manifestText, skills, });
- * ```
+ Synchronizes one mirror root,
+ pruning only paths owned by its valid prior manifest.
+ 
+ @param destinationRoot - legacy root receiving canonical files and ownership manifest.
+ 
+ @param skills - canonical file-enforcer glob results.
+ 
+ @param canonicalPaths - current canonical paths used to identify removed mirrors.
+ 
+ @param manifestText - serialized current ownership manifest.
+ 
+ @mutates skills - mirror writes run inside the file-enforcer capture boundary (sourceCaptureStorage.run), which may invoke lazy glob builders reachable from these results.
+ 
+ @example
+ ```ts
+ await mirrorSkillsToDestination({ canonicalPaths, destinationRoot, manifestText, skills, });
+ ```
  */
 async function mirrorSkillsToDestination(
   {
@@ -1174,11 +1174,11 @@ async function mirrorSkillsToDestination(
   },
 ): Promise<void> {
   /**
-   * Ownership manifest colocated with mirrored skills.
+   Ownership manifest colocated with mirrored skills.
    */
   const manifestPath = `${destinationRoot}/${SKILL_MIRROR_MANIFEST_FILENAME}`;
   /**
-   * Prior ownership controls the only destination paths eligible for pruning.
+   Prior ownership controls the only destination paths eligible for pruning.
    */
   const priorManifest = await readSkillMirrorManifest({ manifestPath, },);
 
@@ -1203,29 +1203,29 @@ async function mirrorSkillsToDestination(
 }
 
 /**
- * Mirrors canonical skills from .agents/skills/ to .factory/skills/ and .claude/skills/,
- * with manifests limiting stale deletion to paths the prior synchronization owned.
- *
- * @example
- * ```ts
- * await mirrorSkills();
- * ```
+ Mirrors canonical skills from .agents/skills/ to .factory/skills/ and .claude/skills/,
+ with manifests limiting stale deletion to paths the prior synchronization owned.
+ 
+ @example
+ ```ts
+ await mirrorSkills();
+ ```
  */
 async function mirrorSkills(): Promise<void> {
   /**
-   * Canonical Markdown contents mirrored verbatim to each legacy consumer root.
+   Canonical Markdown contents mirrored verbatim to each legacy consumer root.
    */
   const skills = await cat('./.agents/skills/*/*.md',);
   /**
-   * Canonical files ordered by raw path before JSON construction.
+   Canonical files ordered by raw path before JSON construction.
    */
   const orderedSkills = [...skills,].sort(function compareSkillPaths(left, right,): number {
     /**
-     * Normalized left path used for deterministic code-unit ordering.
+     Normalized left path used for deterministic code-unit ordering.
      */
     const leftPath = canonicalSkillPath({ filePath: left.path, },);
     /**
-     * Normalized right path used for deterministic code-unit ordering.
+     Normalized right path used for deterministic code-unit ordering.
      */
     const rightPath = canonicalSkillPath({ filePath: right.path, },);
     if (leftPath < rightPath)
@@ -1235,7 +1235,7 @@ async function mirrorSkills(): Promise<void> {
     return 0;
   },);
   /**
-   * Current ownership mapping excludes every destination-only skill by construction.
+   Current ownership mapping excludes every destination-only skill by construction.
    */
   const manifest: SkillMirrorManifest = Object.fromEntries(orderedSkills.map(
     function toManifestEntry(skill,): readonly [string, string] {
@@ -1246,11 +1246,11 @@ async function mirrorSkills(): Promise<void> {
     },
   ),);
   /**
-   * Current canonical path set shared by every destination pruning pass.
+   Current canonical path set shared by every destination pruning pass.
    */
   const canonicalPaths = new Set(Object.keys(manifest,),);
   /**
-   * Serialized ownership manifest produced once at local ownership boundary.
+   Serialized ownership manifest produced once at local ownership boundary.
    */
   const manifestText = `${JSON.stringify(manifest, null, 2,)}\n`;
 
@@ -1267,16 +1267,16 @@ async function mirrorSkills(): Promise<void> {
 }
 
 /**
- * Builds a flat patch disabling the given Harper linter rules.
- *
- * @param rules - Harper rule names to disable.
- *
- * @returns Patch mapping each `harper-ls.linters.<rule>` key to false.
- *
- * @example
- * ```ts
- * harperLintersDisabled(['SplitWords']);
- * ```
+ Builds a flat patch disabling the given Harper linter rules.
+ 
+ @param rules - Harper rule names to disable.
+ 
+ @returns Patch mapping each `harper-ls.linters.<rule>` key to false.
+ 
+ @example
+ ```ts
+ harperLintersDisabled(['SplitWords']);
+ ```
  */
 function harperLintersDisabled(rules: readonly string[],): Record<string, false> {
   return Object.fromEntries(rules.map(function toDisabledEntry(rule,): readonly [
@@ -1291,16 +1291,16 @@ function harperLintersDisabled(rules: readonly string[],): Record<string, false>
 }
 
 /**
- * Syncs this repo's Harper LSP4IJ writing-style policy into the latest IntelliJ
- * IDEA config via {@link manageLsp4ijServerSettings}: disables prose rules
- * globally with {@link harperLintersDisabled}, excludes the caveman-style agent
- * docs from the main server, and registers a second Harper server scoped to
- * AGENTS.md and CLAUDE.md with extra rules disabled.
- *
- * @example
- * ```ts
- * await manageHarperLsp4ij();
- * ```
+ Syncs this repo's Harper LSP4IJ writing-style policy into the latest IntelliJ
+ IDEA config via {@link manageLsp4ijServerSettings}: disables prose rules
+ globally with {@link harperLintersDisabled}, excludes the caveman-style agent
+ docs from the main server, and registers a second Harper server scoped to
+ AGENTS.md and CLAUDE.md with extra rules disabled.
+ 
+ @example
+ ```ts
+ await manageHarperLsp4ij();
+ ```
  */
 async function manageHarperLsp4ij(): Promise<void> {
   await manageLsp4ijServerSettings({
@@ -1371,64 +1371,64 @@ async function manageHarperLsp4ij(): Promise<void> {
 }
 
 /**
- * Canonical Rust edition enforced on every crate (`AGENTS.md`: fleet is 2024).
- *
- * @example
- * ```ts
- * console.log(CARGO_CANONICAL_EDITION);
- * ```
+ Canonical Rust edition enforced on every crate (`AGENTS.md`: fleet is 2024).
+ 
+ @example
+ ```ts
+ console.log(CARGO_CANONICAL_EDITION);
+ ```
  */
 const CARGO_CANONICAL_EDITION = '2024';
 
 /**
- * Canonical SPDX license for crates that declare one (present-seeded).
- *
- * @example
- * ```ts
- * console.log(CARGO_CANONICAL_LICENSE);
- * ```
+ Canonical SPDX license for crates that declare one (present-seeded).
+ 
+ @example
+ ```ts
+ console.log(CARGO_CANONICAL_LICENSE);
+ ```
  */
 const CARGO_CANONICAL_LICENSE = 'LGPL-3.0-or-later';
 
 /**
- * Git repository URL shared by every published crate manifest.
- *
- * @example
- * ```ts
- * console.log(CARGO_REPOSITORY_URL);
- * ```
+ Git repository URL shared by every published crate manifest.
+ 
+ @example
+ ```ts
+ console.log(CARGO_REPOSITORY_URL);
+ ```
  */
 const CARGO_REPOSITORY_URL = 'https://github.com/Aquaticat/Monochromatic.git';
 
 /**
- * GitHub tree base used to derive each published crate's homepage from its path.
- *
- * @example
- * ```ts
- * console.log(CARGO_HOMEPAGE_TREE_BASE);
- * ```
+ GitHub tree base used to derive each published crate's homepage from its path.
+ 
+ @example
+ ```ts
+ console.log(CARGO_HOMEPAGE_TREE_BASE);
+ ```
  */
 const CARGO_HOMEPAGE_TREE_BASE = 'https://github.com/Aquaticat/Monochromatic/tree/main';
 
 /**
- * Canonical readme filename for published crates.
- *
- * @example
- * ```ts
- * console.log(CARGO_README_FILENAME);
- * ```
+ Canonical readme filename for published crates.
+ 
+ @example
+ ```ts
+ console.log(CARGO_README_FILENAME);
+ ```
  */
 const CARGO_README_FILENAME = 'README.md';
 
 /**
- * Canonical `[lints.clippy]` block appended to crates lacking it. Denies
- * `Result::unwrap` (the root `clippy.toml` supplies the disallowed-methods
- * list), denies implicit returns, and allows explicit returns.
- *
- * @example
- * ```ts
- * console.log(CARGO_LINTS_BLOCK);
- * ```
+ Canonical `[lints.clippy]` block appended to crates lacking it. Denies
+ `Result::unwrap` (the root `clippy.toml` supplies the disallowed-methods
+ list), denies implicit returns, and allows explicit returns.
+ 
+ @example
+ ```ts
+ console.log(CARGO_LINTS_BLOCK);
+ ```
  */
 const CARGO_LINTS_BLOCK = `# Canonical lint policy, enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
 [lints.clippy]
@@ -1438,13 +1438,13 @@ needless_return = "allow"
 `;
 
 /**
- * Canonical empty `[workspace]` block appended to crates lacking one, pinning
- * each crate as its own workspace root so no ancestor `Cargo.toml` absorbs it.
- *
- * @example
- * ```ts
- * console.log(CARGO_WORKSPACE_BLOCK);
- * ```
+ Canonical empty `[workspace]` block appended to crates lacking one, pinning
+ each crate as its own workspace root so no ancestor `Cargo.toml` absorbs it.
+ 
+ @example
+ ```ts
+ console.log(CARGO_WORKSPACE_BLOCK);
+ ```
  */
 const CARGO_WORKSPACE_BLOCK = `# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
 # Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
@@ -1452,12 +1452,12 @@ const CARGO_WORKSPACE_BLOCK = `# Standalone crate: its own workspace root, so no
 `;
 
 /**
- * Clippy lint keys the canonical policy sets inside an existing `[lints.clippy]`.
- *
- * @example
- * ```ts
- * console.log(CARGO_LINTS_CLIPPY_KEYS.implicit_return);
- * ```
+ Clippy lint keys the canonical policy sets inside an existing `[lints.clippy]`.
+ 
+ @example
+ ```ts
+ console.log(CARGO_LINTS_CLIPPY_KEYS.implicit_return);
+ ```
  */
 const CARGO_LINTS_CLIPPY_KEYS = {
   disallowed_methods: 'deny',
@@ -1466,12 +1466,12 @@ const CARGO_LINTS_CLIPPY_KEYS = {
 } as const satisfies Record<string, CanonicalTomlValue>;
 
 /**
- * One owned shared dependency: its table, name, and single fleet-wide requirement.
- *
- * @example
- * ```ts
- * const dep: CargoSharedDependency = { table: 'dependencies', name: 'anyhow', value: '1' };
- * ```
+ One owned shared dependency: its table, name, and single fleet-wide requirement.
+ 
+ @example
+ ```ts
+ const dep: CargoSharedDependency = { table: 'dependencies', name: 'anyhow', value: '1' };
+ ```
  */
 type CargoSharedDependency = {
   readonly table: 'dependencies' | 'build-dependencies';
@@ -1480,15 +1480,15 @@ type CargoSharedDependency = {
 };
 
 /**
- * Shared dependency requirements owned across crates: every dependency whose
- * exact requirement is identical wherever it appears (single fleet-wide form).
- * `tokio` is excluded because `truepeak-core` declares an `optional` variant;
- * `image`, `gtk4`, and `windows` carry genuinely divergent per-crate forms.
- *
- * @example
- * ```ts
- * console.log(CARGO_SHARED_DEPENDENCIES.length);
- * ```
+ Shared dependency requirements owned across crates: every dependency whose
+ exact requirement is identical wherever it appears (single fleet-wide form).
+ `tokio` is excluded because `truepeak-core` declares an `optional` variant;
+ `image`, `gtk4`, and `windows` carry genuinely divergent per-crate forms.
+ 
+ @example
+ ```ts
+ console.log(CARGO_SHARED_DEPENDENCIES.length);
+ ```
  */
 const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
   { table: 'dependencies', name: 'aho-corasick', value: '1', },
@@ -1523,84 +1523,84 @@ const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
 ];
 
 /**
- * Release/dev profile tables mapped to their canonical key/value settings.
- *
- * @example
- * ```ts
- * const preset: CargoProfileSpec = { release: { lto: true } };
- * ```
+ Release/dev profile tables mapped to their canonical key/value settings.
+ 
+ @example
+ ```ts
+ const preset: CargoProfileSpec = { release: { lto: true } };
+ ```
  */
 type CargoProfileSpec = {
   readonly [profileName: string]: { readonly [key: string]: CanonicalTomlValue; };
 };
 
 /**
- * Scanner profile: full optimization plus fail-closed panic/overflow behavior.
- *
- * @example
- * ```ts
- * console.log(CARGO_PROFILE_SCANNER.release);
- * ```
+ Scanner profile: full optimization plus fail-closed panic/overflow behavior.
+ 
+ @example
+ ```ts
+ console.log(CARGO_PROFILE_SCANNER.release);
+ ```
  */
 const CARGO_PROFILE_SCANNER: CargoProfileSpec = {
   release: { lto: true, 'codegen-units': 1, 'opt-level': 3, panic: 'unwind', 'overflow-checks': true, strip: true, },
 };
 
 /**
- * Overflow-checked profile: full optimization with overflow checks but default panic.
- *
- * @example
- * ```ts
- * console.log(CARGO_PROFILE_OVERFLOW.release);
- * ```
+ Overflow-checked profile: full optimization with overflow checks but default panic.
+ 
+ @example
+ ```ts
+ console.log(CARGO_PROFILE_OVERFLOW.release);
+ ```
  */
 const CARGO_PROFILE_OVERFLOW: CargoProfileSpec = {
   release: { lto: true, 'codegen-units': 1, 'opt-level': 3, 'overflow-checks': true, strip: true, },
 };
 
 /**
- * Linter profile: full optimization, stripped, without panic/overflow overrides.
- *
- * @example
- * ```ts
- * console.log(CARGO_PROFILE_LINTER.release);
- * ```
+ Linter profile: full optimization, stripped, without panic/overflow overrides.
+ 
+ @example
+ ```ts
+ console.log(CARGO_PROFILE_LINTER.release);
+ ```
  */
 const CARGO_PROFILE_LINTER: CargoProfileSpec = {
   release: { lto: true, 'codegen-units': 1, 'opt-level': 3, strip: true, },
 };
 
 /**
- * Bench profile: full optimization, unstripped so symbolized profiles stay usable.
- *
- * @example
- * ```ts
- * console.log(CARGO_PROFILE_BENCH.release);
- * ```
+ Bench profile: full optimization, unstripped so symbolized profiles stay usable.
+ 
+ @example
+ ```ts
+ console.log(CARGO_PROFILE_BENCH.release);
+ ```
  */
 const CARGO_PROFILE_BENCH: CargoProfileSpec = {
   release: { lto: true, 'codegen-units': 1, 'opt-level': 3, },
 };
 
 /**
- * Music-player profile: symbol strip plus fat LTO, tuned in that crate's manifest.
- *
- * @example
- * ```ts
- * console.log(CARGO_PROFILE_MUSIC.release);
- * ```
+ Music-player profile: symbol strip plus fat LTO, tuned in that crate's manifest.
+ 
+ @example
+ ```ts
+ console.log(CARGO_PROFILE_MUSIC.release);
+ ```
  */
 const CARGO_PROFILE_MUSIC: CargoProfileSpec = {
   release: { strip: 'symbols', lto: true, },
 };
 
 /**
- * Fuzz profile: unwinding panics in release and dev so libFuzzer captures crashes.
- *
- * @example
- * ```ts
- * console.log(CARGO_PROFILE_FUZZ.dev);
- * ```
+ Fuzz profile: unwinding panics in release and dev so libFuzzer captures crashes.
+ 
+ @example
+ ```ts
+ console.log(CARGO_PROFILE_FUZZ.dev);
+ ```
  */
 const CARGO_PROFILE_FUZZ: CargoProfileSpec = {
   release: { panic: 'unwind', },
@@ -1608,13 +1608,13 @@ const CARGO_PROFILE_FUZZ: CargoProfileSpec = {
 };
 
 /**
- * Crate directory to profile preset (present-seeded: only crates that already
- * declare a `[profile.*]` table appear here).
- *
- * @example
- * ```ts
- * console.log(CARGO_PROFILE_BY_DIR['package/linter/rust']);
- * ```
+ Crate directory to profile preset (present-seeded: only crates that already
+ declare a `[profile.*]` table appear here).
+ 
+ @example
+ ```ts
+ console.log(CARGO_PROFILE_BY_DIR['package/linter/rust']);
+ ```
  */
 const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
   'package/cli/forbidden-strings': CARGO_PROFILE_SCANNER,
@@ -1629,14 +1629,14 @@ const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
 };
 
 /**
- * Guarded enforcements identical for every crate: edition, license, publish,
- * the three lint keys, the shared dependency requirements, and the
- * published-crate repository and readme.
- *
- * @example
- * ```ts
- * console.log(CARGO_STATIC_ENFORCEMENTS.length);
- * ```
+ Guarded enforcements identical for every crate: edition, license, publish,
+ the three lint keys, the shared dependency requirements, and the
+ published-crate repository and readme.
+ 
+ @example
+ ```ts
+ console.log(CARGO_STATIC_ENFORCEMENTS.length);
+ ```
  */
 const CARGO_STATIC_ENFORCEMENTS: readonly CargoEnforcement[] = [
   { guardPath: ['package',], path: ['package', 'edition',], value: CARGO_CANONICAL_EDITION, },
@@ -1656,16 +1656,16 @@ const CARGO_STATIC_ENFORCEMENTS: readonly CargoEnforcement[] = [
 ];
 
 /**
- * Directory of a crate manifest (path without the trailing `/Cargo.toml`).
- *
- * @param manifestPath - Repo-relative manifest path from discovery
- *
- * @returns Crate directory path
- *
- * @example
- * ```ts
- * cargoPackageDir({ manifestPath: 'package/linter/rust/Cargo.toml' }); // 'package/linter/rust'
- * ```
+ Directory of a crate manifest (path without the trailing `/Cargo.toml`).
+ 
+ @param manifestPath - Repo-relative manifest path from discovery
+ 
+ @returns Crate directory path
+ 
+ @example
+ ```ts
+ cargoPackageDir({ manifestPath: 'package/linter/rust/Cargo.toml' }); // 'package/linter/rust'
+ ```
  */
 function cargoPackageDir({ manifestPath, }: { readonly manifestPath: string; },): string {
   return manifestPath.slice(
@@ -1675,38 +1675,38 @@ function cargoPackageDir({ manifestPath, }: { readonly manifestPath: string; },)
 }
 
 /**
- * Derives a published crate's homepage from its directory.
- *
- * @param manifestPath - Repo-relative manifest path from discovery
- *
- * @returns GitHub tree URL for that crate's directory
- *
- * @example
- * ```ts
- * cargoHomepage({ manifestPath: 'package/linter/rust/Cargo.toml' });
- * ```
+ Derives a published crate's homepage from its directory.
+ 
+ @param manifestPath - Repo-relative manifest path from discovery
+ 
+ @returns GitHub tree URL for that crate's directory
+ 
+ @example
+ ```ts
+ cargoHomepage({ manifestPath: 'package/linter/rust/Cargo.toml' });
+ ```
  */
 function cargoHomepage({ manifestPath, }: { readonly manifestPath: string; },): string {
   return `${CARGO_HOMEPAGE_TREE_BASE}/${cargoPackageDir({ manifestPath, },)}`;
 }
 
 /**
- * Profile enforcements for one crate, empty when it declares no profile.
- *
- * @param manifestPath - Repo-relative manifest path from discovery
- *
- * @returns Guarded enforcements for the crate's mapped profile preset
- *
- * @example
- * ```ts
- * cargoProfileEnforcements({ manifestPath: 'package/linter/rust/Cargo.toml' });
- * ```
+ Profile enforcements for one crate, empty when it declares no profile.
+ 
+ @param manifestPath - Repo-relative manifest path from discovery
+ 
+ @returns Guarded enforcements for the crate's mapped profile preset
+ 
+ @example
+ ```ts
+ cargoProfileEnforcements({ manifestPath: 'package/linter/rust/Cargo.toml' });
+ ```
  */
 function cargoProfileEnforcements(
   { manifestPath, }: { readonly manifestPath: string; },
 ): readonly CargoEnforcement[] {
   /**
-   * Mapped preset for this crate directory, absent when the crate owns no profile.
+   Mapped preset for this crate directory, absent when the crate owns no profile.
    */
   const preset = CARGO_PROFILE_BY_DIR[cargoPackageDir({ manifestPath, },)];
   if (preset === undefined)
@@ -1726,16 +1726,16 @@ function cargoProfileEnforcements(
 }
 
 /**
- * Builds the canonical enforcement plan for one crate manifest.
- *
- * @param manifestPath - Repo-relative manifest path from discovery
- *
- * @returns Plan of guarded enforcements plus absent-block insertions
- *
- * @example
- * ```ts
- * buildCargoManifestPlan({ manifestPath: 'package/linter/rust/Cargo.toml' });
- * ```
+ Builds the canonical enforcement plan for one crate manifest.
+ 
+ @param manifestPath - Repo-relative manifest path from discovery
+ 
+ @returns Plan of guarded enforcements plus absent-block insertions
+ 
+ @example
+ ```ts
+ buildCargoManifestPlan({ manifestPath: 'package/linter/rust/Cargo.toml' });
+ ```
  */
 function buildCargoManifestPlan(
   { manifestPath, }: { readonly manifestPath: string; },
@@ -1758,14 +1758,14 @@ function buildCargoManifestPlan(
 }
 
 /**
- * Enforces the canonical Cargo manifest spec across every first-party crate.
- * Bounded-depth globs cover the two-level crates and the three-level Android
- * crate without descending into gitignored `target/` trees.
- *
- * @example
- * ```ts
- * await generateCargoManifests();
- * ```
+ Enforces the canonical Cargo manifest spec across every first-party crate.
+ Bounded-depth globs cover the two-level crates and the three-level Android
+ crate without descending into gitignored `target/` trees.
+ 
+ @example
+ ```ts
+ await generateCargoManifests();
+ ```
  */
 async function generateCargoManifests(): Promise<void> {
   await manageCargoManifests({

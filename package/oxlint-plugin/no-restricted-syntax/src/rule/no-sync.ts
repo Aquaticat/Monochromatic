@@ -11,21 +11,21 @@ import { getNodeSyncCalleeName, } from './no-sync.provenance.ts';
 //region Rule definition
 
 /**
- * Bans Node synchronous APIs while allowing non-Node libraries whose API names
- * merely end in `Sync`. Classifies each call callee via
- * {@link getNodeSyncCalleeName}.
- *
- * @example
- * ```ts
- * // Bad
- * import { readFileSync } from 'node:fs';
- * readFileSync(path);
- *
- * // Good
- * // TODO: deprecate Optique
- * import { parseSync } from '\@optique/core/parser';
- * parseSync(parser, args);
- * ```
+ Bans Node synchronous APIs while allowing non-Node libraries whose API names
+ merely end in `Sync`. Classifies each call callee via
+ {@link getNodeSyncCalleeName}.
+ 
+ @example
+ ```ts
+ // Bad
+ import { readFileSync } from 'node:fs';
+ readFileSync(path);
+ 
+ // Good
+ // TODO: deprecate Optique
+ import { parseSync } from '\@optique/core/parser';
+ parseSync(parser, args);
+ ```
  */
 export const noSync: CreateOnceRule = {
   meta: {
@@ -41,22 +41,22 @@ export const noSync: CreateOnceRule = {
     },
   },
   /**
-   * Handles foreign Oxlint callback.
-   *
-   * @param context - Foreign rule context receiving diagnostics.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles foreign Oxlint callback.
+   
+   @param context - Foreign rule context receiving diagnostics.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
       CallExpression(node: ForeignBorrowed<ESTree.CallExpression>,): void {
         /**
-         * Node sync API name represented by this callee.
+         Node sync API name represented by this callee.
          */
         const calleeName = getNodeSyncCalleeName({
           context,

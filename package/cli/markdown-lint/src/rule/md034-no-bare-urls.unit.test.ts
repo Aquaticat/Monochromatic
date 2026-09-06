@@ -10,13 +10,13 @@ import type { Diagnostic, } from '../types.ts';
 import { noBareUrls, } from './md034-no-bare-urls.ts';
 
 /**
- * Run only MD034 over Markdown or MDX source.
- *
- * @param source - Markdown source
- *
- * @param mdx - whether to parse as MDX
- *
- * @returns diagnostics from the rule
+ Run only MD034 over Markdown or MDX source.
+ 
+ @param source - Markdown source
+ 
+ @param mdx - whether to parse as MDX
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string, mdx = false,): readonly Diagnostic[] {
   return runRules({
@@ -51,7 +51,7 @@ await describe({
       name: 'fix wraps the bare URL in angle brackets and is idempotent',
       fn: async function wraps() {
         /**
-         * Source after wrapping the bare URL.
+         Source after wrapping the bare URL.
          */
         const fixed = applyFixes({
           source: 'Go to https://example.com now.\n',
@@ -65,11 +65,11 @@ await describe({
       name: 'fix uses an inline link in MDX and is idempotent',
       fn: async function wrapsMdx() {
         /**
-         * Bare MDX URL source.
+         Bare MDX URL source.
          */
         const source = 'Go to https://example.com now.\n';
         /**
-         * Source after converting the bare URL to an MDX-safe inline link.
+         Source after converting the bare URL to an MDX-safe inline link.
          */
         const fixed = applyFixes({
           source,

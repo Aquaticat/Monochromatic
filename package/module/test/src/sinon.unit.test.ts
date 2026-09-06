@@ -1,7 +1,7 @@
 /**
- * Tests for sinon sandbox via TestContext and asymmetric matchers.
- *
- * @module
+ Tests for sinon sandbox via TestContext and asymmetric matchers.
+ 
+ @module
  */
 
 import {
@@ -14,10 +14,10 @@ import {
 
 /* oxlint-disable no-restricted-syntax/no-class -- sinon prototype-stub isolation tests need a real `Greeter.prototype.greet` as the stub target; a factory returning a frozen object has no shared prototype to stub, so a class is the required fixture. */
 /**
- * Toy class whose prototype methods serve as safe stub targets
- * for concurrent-isolation tests. Using a synthetic class avoids
- * stubbing real third-party prototypes, which can leak into other
- * test suites if a sandbox restore is missed.
+ Toy class whose prototype methods serve as safe stub targets
+ for concurrent-isolation tests. Using a synthetic class avoids
+ stubbing real third-party prototypes, which can leak into other
+ test suites if a sandbox restore is missed.
  */
 class Greeter {
   greet(_name: string,): string {

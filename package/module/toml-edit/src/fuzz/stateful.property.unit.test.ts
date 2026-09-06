@@ -1,20 +1,20 @@
 /**
- * Stateful edit-model property: random `tomlSet` / `tomlDelete` sequences over
- * `emptyTomlEdit`, applied directly to the accumulating state (no reparse
- * between operations), checked against an in-memory nested model.
- *
- * A rejected operation must throw a `TomlEditError` and leave both the state
- * and the model unchanged. A successful scalar set must make the effective read
- * at its path equal the written value; a delete must make it `undefined`. After
- * the whole sequence, `tomlStringify` output must reparse to a document
- * semantically equal to the model.
- *
- * Paths are one to three segments over a tiny alphabet, so implicit dotted-key
- * parents, overwrites, and type changes arise often. Because the document tree
- * is the single source of truth, deltas no longer need to be flushed by a
- * reparse between operations (issue #252).
- *
- * @module
+ Stateful edit-model property: random `tomlSet` / `tomlDelete` sequences over
+ `emptyTomlEdit`, applied directly to the accumulating state (no reparse
+ between operations), checked against an in-memory nested model.
+ 
+ A rejected operation must throw a `TomlEditError` and leave both the state
+ and the model unchanged. A successful scalar set must make the effective read
+ at its path equal the written value; a delete must make it `undefined`. After
+ the whole sequence, `tomlStringify` output must reparse to a document
+ semantically equal to the model.
+ 
+ Paths are one to three segments over a tiny alphabet, so implicit dotted-key
+ parents, overwrites, and type changes arise often. Because the document tree
+ is the single source of truth, deltas no longer need to be flushed by a
+ reparse between operations (issue #252).
+ 
+ @module
  */
 
 import {
@@ -56,23 +56,23 @@ import {
 //region Arbitraries
 
 /**
- * Run plan resolved once for every property in this file.
+ Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
 
 /**
- * Maximum operations in one generated sequence.
+ Maximum operations in one generated sequence.
  */
 const MAX_OPS = 14;
 
 /**
- * Maximum path depth so implicit dotted-key parents arise without exploding.
+ Maximum path depth so implicit dotted-key parents arise without exploding.
  */
 const MAX_DEPTH = 3;
 
 /**
- * Scalar value arbitrary over the TOML-representable JS scalars (finite floats
- * only; the special float and datetime spellings are covered elsewhere).
+ Scalar value arbitrary over the TOML-representable JS scalars (finite floats
+ only; the special float and datetime spellings are covered elsewhere).
  */
 const scalarValueArbitrary = oneof(
   string(),
@@ -85,14 +85,14 @@ const scalarValueArbitrary = oneof(
 );
 
 /**
- * Value arbitrary: scalars and arrays of scalars.
- *
- * Object values are intentionally excluded here. They would create inline
- * tables, whose empty-after-delete behavior (`c = {}` persists) differs from an
- * implicit dotted-key parent (which vanishes when its last child is deleted) in
- * a way the plain nested oracle cannot distinguish without tracking physical
- * representation. Inline-table set/delete and whole-table replace are covered by
- * the deterministic `issue-252` and `tomlSet`/`tomlDelete` unit tests instead.
+ Value arbitrary: scalars and arrays of scalars.
+ 
+ Object values are intentionally excluded here. They would create inline
+ tables, whose empty-after-delete behavior (`c = {}` persists) differs from an
+ implicit dotted-key parent (which vanishes when its last child is deleted) in
+ a way the plain nested oracle cannot distinguish without tracking physical
+ representation. Inline-table set/delete and whole-table replace are covered by
+ the deterministic `issue-252` and `tomlSet`/`tomlDelete` unit tests instead.
  */
 const valueArbitrary: Arbitrary<unknown> = oneof(
   scalarValueArbitrary,
@@ -100,8 +100,8 @@ const valueArbitrary: Arbitrary<unknown> = oneof(
 );
 
 /**
- * Path arbitrary: one to three bare segments over a tiny alphabet, exercising
- * implicit dotted-key parents and deep edits.
+ Path arbitrary: one to three bare segments over a tiny alphabet, exercising
+ implicit dotted-key parents and deep edits.
  */
 const pathArbitrary: Arbitrary<readonly string[]> = array(
   constantFrom('a', 'b', 'c',),
@@ -112,14 +112,14 @@ const pathArbitrary: Arbitrary<readonly string[]> = array(
 );
 
 /**
- * One edit operation: a set with a value, or a delete.
+ One edit operation: a set with a value, or a delete.
  */
 type EditOp =
   | { readonly kind: 'set'; readonly path: readonly string[]; readonly value: unknown; }
   | { readonly kind: 'delete'; readonly path: readonly string[]; };
 
 /**
- * Operation arbitrary.
+ Operation arbitrary.
  */
 const opArbitrary: Arbitrary<EditOp> = oneof(
   tuple(pathArbitrary, valueArbitrary,).map(function set([path, value,],) {
@@ -138,7 +138,7 @@ const opArbitrary: Arbitrary<EditOp> = oneof(
 );
 
 /**
- * Sequence arbitrary.
+ Sequence arbitrary.
  */
 const opsArbitrary: Arbitrary<readonly EditOp[]> = array(opArbitrary, { maxLength: MAX_OPS, },);
 
@@ -147,15 +147,15 @@ const opsArbitrary: Arbitrary<readonly EditOp[]> = array(opArbitrary, { maxLengt
 //region Model helpers
 
 /**
- * Mutable nested model node.
+ Mutable nested model node.
  */
 type ModelTree = Record<string, unknown>;
 
 /**
- * Descend (creating) the intermediate tables named by `segments`, returning the
- * container the final segment should be written into.
- *
- * @returns Deepest intermediate table.
+ Descend (creating) the intermediate tables named by `segments`, returning the
+ container the final segment should be written into.
+ 
+ @returns Deepest intermediate table.
  */
 function descendModel(
   {
@@ -167,17 +167,17 @@ function descendModel(
   },
 ): ModelTree {
   /**
-   * Cursor descending into (and creating) each intermediate table.
+   Cursor descending into (and creating) each intermediate table.
    */
   let cursor = tree;
   for (const seg of segments) {
     /**
-     * Existing child; replaced with a fresh object when not a plain object.
+     Existing child; replaced with a fresh object when not a plain object.
      */
     const existing = cursor[seg];
     if ((existing === null) || ((typeof existing) !== 'object') || Array.isArray(existing,)) {
       /**
-       * Fresh intermediate table so the descent can continue.
+       Fresh intermediate table so the descent can continue.
        */
       const fresh: ModelTree = {};
       cursor[seg] = fresh;
@@ -190,11 +190,11 @@ function descendModel(
 }
 
 /**
- * Set `value` at the nested `path` within `tree`, creating intermediate
- * objects. Mirrors a successful `tomlSet` (the API rejects the cases that would
- * make this diverge, leaving the model untouched).
- *
- * @returns Nothing; mutates `tree` in place.
+ Set `value` at the nested `path` within `tree`, creating intermediate
+ objects. Mirrors a successful `tomlSet` (the API rejects the cases that would
+ make this diverge, leaving the model untouched).
+ 
+ @returns Nothing; mutates `tree` in place.
  */
 function modelSet(
   {
@@ -208,7 +208,7 @@ function modelSet(
   },
 ): void {
   /**
-   * Container the final segment is written into.
+   Container the final segment is written into.
    */
   const parent = descendModel({
     tree,
@@ -221,11 +221,11 @@ function modelSet(
 }
 
 /**
- * Delete the nested `path` from `tree`, then prune ancestors that became empty
- * (an implicit dotted-key parent with no remaining children has no TOML
- * representation and vanishes). A no-op when a segment is absent.
- *
- * @returns Nothing; mutates `tree` in place.
+ Delete the nested `path` from `tree`, then prune ancestors that became empty
+ (an implicit dotted-key parent with no remaining children has no TOML
+ representation and vanishes). A no-op when a segment is absent.
+ 
+ @returns Nothing; mutates `tree` in place.
  */
 function modelDelete(
   {
@@ -237,8 +237,8 @@ function modelDelete(
   },
 ): void {
   /**
-   * Objects along the path, root first; `cursors[k]` is the object at
-   * `path[0..k-1]`, so `cursors.at(-1)` is the deleted leaf's parent.
+   Objects along the path, root first; `cursors[k]` is the object at
+   `path[0..k-1]`, so `cursors.at(-1)` is the deleted leaf's parent.
    */
   const cursors: ModelTree[] = [tree,];
   for (const seg of path.slice(
@@ -246,7 +246,7 @@ function modelDelete(
     -1,
   )) {
     /**
-     * Next object down the path, or a bail-out when the segment is absent.
+     Next object down the path, or a bail-out when the segment is absent.
      */
     const next = cursors.at(-1)?.[seg];
     if ((next === null) || ((typeof next) !== 'object') || Array.isArray(next,))
@@ -273,9 +273,9 @@ function modelDelete(
 //region Operation application
 
 /**
- * Apply one operation to the live state and the model, asserting invariants.
- *
- * @returns Next state (unchanged when the operation was rejected).
+ Apply one operation to the live state and the model, asserting invariants.
+ 
+ @returns Next state (unchanged when the operation was rejected).
  */
 function applyOp(
   {
@@ -291,7 +291,7 @@ function applyOp(
   try {
     if (op.kind === 'set') {
       /**
-       * State after the set, computed before the model is updated to match.
+       State after the set, computed before the model is updated to match.
        */
       const next = tomlSet({
         edit,
@@ -319,7 +319,7 @@ function applyOp(
       return next;
     }
     /**
-     * State after the delete.
+     State after the delete.
      */
     const next = tomlDelete({
       edit,
@@ -353,11 +353,11 @@ await describe({
         await assert(
           asyncProperty(opsArbitrary, async function sequence(ops,) {
             /**
-             * Predicted effective document.
+             Predicted effective document.
              */
             const tree: ModelTree = {};
             /**
-             * Live state, mutated directly across operations with no reparse.
+             Live state, mutated directly across operations with no reparse.
              */
             const edit = ops.reduce(
               function step(current, op,) {
@@ -370,7 +370,7 @@ await describe({
               emptyTomlEdit(),
             );
             /**
-             * Final serialization, which must reparse to the model.
+             Final serialization, which must reparse to the model.
              */
             const text = tomlStringify({ edit, },);
             expect(
@@ -395,7 +395,7 @@ await describe({
             valueArbitrary,
             async function idempotent(path, value,) {
               /**
-               * Document after the first set of an empty base.
+               Document after the first set of an empty base.
                */
               const once = tomlStringify({
                 edit: tomlSet({
@@ -405,7 +405,7 @@ await describe({
                 },),
               },);
               /**
-               * Document after reparsing and repeating the identical set.
+               Document after reparsing and repeating the identical set.
                */
               const twice = tomlStringify({
                 edit: tomlSet({

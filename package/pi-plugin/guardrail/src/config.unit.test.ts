@@ -1,7 +1,7 @@
 /**
- * Tests for pi guardrail config loading and normalization.
- *
- * @module
+ Tests for pi guardrail config loading and normalization.
+ 
+ @module
  */
 
 import {
@@ -16,21 +16,21 @@ import { normalizeConfigFile, } from './config-normalize.ts';
 import { parseConfigJson, } from './config-file.ts';
 
 /**
- * Config path used by normalization tests.
+ Config path used by normalization tests.
  */
 const CONFIG_PATH = '/home/user/.pi/agent/extensions/pi-guardrail.json';
 
 /**
- * Builds a config reader that returns fixed content.
- *
- * @param content - JSON text to return
- *
- * @returns config reader function
- *
- * @example
- * ```typescript
- * const reader = fixedReader('{"a":"b"}');
- * ```
+ Builds a config reader that returns fixed content.
+ 
+ @param content - JSON text to return
+ 
+ @returns config reader function
+ 
+ @example
+ ```typescript
+ const reader = fixedReader('{"a":"b"}');
+ ```
  */
 function fixedReader(content: string,): (path: string) => Promise<string> {
   return async function readConfig(_path: string,): Promise<string> {
@@ -39,16 +39,16 @@ function fixedReader(content: string,): (path: string) => Promise<string> {
 }
 
 /**
- * Config reader that behaves like a missing file.
- *
- * @param path - ignored requested path
- *
- * @throws missing-file error
+ Config reader that behaves like a missing file.
+ 
+ @param path - ignored requested path
+ 
+ @throws missing-file error
  */
 async function missingReader(path: string,): Promise<string> {
   void path;
   /**
-   * Missing-file error carrying ENOENT code.
+   Missing-file error carrying ENOENT code.
    */
   const error = new Error('missing',) as Error & { code: string; };
   error.code = FILE_NOT_FOUND_CODE;

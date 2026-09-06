@@ -9,38 +9,38 @@ import type {
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
 /**
- * Type body node shape carrying members under oxlint's type-literal variants.
+ Type body node shape carrying members under oxlint's type-literal variants.
  */
 type TypeMemberListNode = Span & {
   /**
-   * Interface body members in source order.
+   Interface body members in source order.
    */
   readonly body?: readonly Span[];
   /**
-   * Type literal members in source order.
+   Type literal members in source order.
    */
   readonly members?: readonly Span[];
 };
 
 /**
- * Enforces one member per line in type literals and interface bodies
- * with 2 or more members.
- *
- * Covers both `type Foo = { a: string; b: number }` and
- * `interface Foo { a: string; b: number }` (though interfaces are
- * discouraged, they appear in `.d.ts` files).
- *
- * @example
- * ```ts
- * // Bad
- * type Config = { host: string; port: number };
- *
- * // Good
- * type Config = {
- *   host: string;
- *   port: number;
- * };
- * ```
+ Enforces one member per line in type literals and interface bodies
+ with 2 or more members.
+ 
+ Covers both `type Foo = { a: string; b: number }` and
+ `interface Foo { a: string; b: number }` (though interfaces are
+ discouraged, they appear in `.d.ts` files).
+ 
+ @example
+ ```ts
+ // Bad
+ type Config = { host: string; port: number };
+ 
+ // Good
+ type Config = {
+   host: string;
+   port: number;
+ };
+ ```
  */
 export const typePropertyPerLine: CreateOnceRule = {
   meta: {
@@ -56,37 +56,37 @@ export const typePropertyPerLine: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
-     * Checks a type literal or interface body for per-line compliance.
-     *
-     * @param node - TSTypeLiteral or TSInterfaceBody AST node
+     Checks a type literal or interface body for per-line compliance.
+     
+     @param node - TSTypeLiteral or TSInterfaceBody AST node
      */
     function checkBody(node: ForeignBorrowed<Span>,): void {
       /**
-       * Narrowed type-body visitor node used for member access.
+       Narrowed type-body visitor node used for member access.
        */
       const bodyNode = node as TypeMemberListNode;
       /**
-       * Members under either key; AST differs between `TSTypeLiteral` and `TSInterfaceBody`.
+       Members under either key; AST differs between `TSTypeLiteral` and `TSInterfaceBody`.
        */
       const {
         body,
         members: literalMembers,
       } = bodyNode;
       /**
-       * Combined member list regardless of oxlint's node-shape variant.
+       Combined member list regardless of oxlint's node-shape variant.
        */
       const members = body ?? literalMembers;
       if (members === undefined)

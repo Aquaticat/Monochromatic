@@ -29,16 +29,16 @@ const OWNER: OwningPackage = {
 };
 
 /**
- * Classifies one specifier against the sample owner.
- *
- * @param specifier - literal specifier text to classify
- *
- * @returns verdict for that specifier
- *
- * @example
- * ```ts
- * verdictFor('./parse.ts');
- * ```
+ Classifies one specifier against the sample owner.
+ 
+ @param specifier - literal specifier text to classify
+ 
+ @returns verdict for that specifier
+ 
+ @example
+ ```ts
+ verdictFor('./parse.ts');
+ ```
  */
 function verdictFor(specifier: string,): ImportOutcome {
   return classifyImport({

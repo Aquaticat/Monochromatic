@@ -1,19 +1,19 @@
 /**
- * Document-level arbitraries: whole valid TOML texts for the fuzz properties.
- *
- * Validity is structural, not a filter. Every block in a document owns a unique
- * first-segment name drawn from one global unique pool, so no two blocks can
- * collide (a top-level key and a `[table]` of the same name, a redefined table,
- * and so on). Within a block, keys are likewise unique. Blocks are key-values
- * (optionally dotted, optionally with a trailing comment), standard tables, and
- * arrays-of-tables, interleaved with header comments and blank lines.
- *
- * Order is load-bearing: TOML binds every bare key-value to the most recently
- * opened table header, so a bare top-level key emitted after a `[table]` would
- * silently land inside that table and could collide there. All key-value blocks
- * are therefore emitted before any sectioned (`[table]` / `[[aot]]`) block.
- *
- * @module
+ Document-level arbitraries: whole valid TOML texts for the fuzz properties.
+ 
+ Validity is structural, not a filter. Every block in a document owns a unique
+ first-segment name drawn from one global unique pool, so no two blocks can
+ collide (a top-level key and a `[table]` of the same name, a redefined table,
+ and so on). Within a block, keys are likewise unique. Blocks are key-values
+ (optionally dotted, optionally with a trailing comment), standard tables, and
+ arrays-of-tables, interleaved with header comments and blank lines.
+ 
+ Order is load-bearing: TOML binds every bare key-value to the most recently
+ opened table header, so a bare top-level key emitted after a `[table]` would
+ silently land inside that table and could collide there. All key-value blocks
+ are therefore emitted before any sectioned (`[table]` / `[[aot]]`) block.
+ 
+ @module
  */
 
 import {
@@ -32,22 +32,22 @@ import {
 import { valueTextArbitrary, } from './arb-values.ts';
 
 /**
- * Resolved key name of a segment, used as a uniqueness selector.
- *
- * @param segment - Key segment whose decoded name to return.
- *
- * @returns Segment's decoded key name.
+ Resolved key name of a segment, used as a uniqueness selector.
+ 
+ @param segment - Key segment whose decoded name to return.
+ 
+ @returns Segment's decoded key name.
  */
 function segmentName(segment: KeySegment,): string {
   return segment.name;
 }
 
 /**
- * Build a `key = value` line arbitrary for a body entry.
- *
- * @param key - Key segment used as the left side of the entry.
- *
- * @returns Arbitrary single line with no trailing newline.
+ Build a `key = value` line arbitrary for a body entry.
+ 
+ @param key - Key segment used as the left side of the entry.
+ 
+ @returns Arbitrary single line with no trailing newline.
  */
 function tableEntryLine(key: KeySegment,): Arbitrary<string> {
   return valueTextArbitrary.map(function line(valueText,) {
@@ -56,24 +56,24 @@ function tableEntryLine(key: KeySegment,): Arbitrary<string> {
 }
 
 /**
- * Maximum number of blocks in one generated document.
+ Maximum number of blocks in one generated document.
  */
 const MAX_BLOCKS = 6;
 
 /**
- * Maximum number of entries inside one table or array-of-tables instance.
+ Maximum number of entries inside one table or array-of-tables instance.
  */
 const MAX_BODY_ENTRIES = 4;
 
 /**
- * Maximum number of instances generated for one array-of-tables block.
+ Maximum number of instances generated for one array-of-tables block.
  */
 const MAX_AOT_INSTANCES = 3;
 
 /**
- * Optional decoration placed before a block: nothing, a blank line, a comment,
- * or a comment after a blank line. Comments and blanks are valid between any
- * two statements, so this never threatens document validity.
+ Optional decoration placed before a block: nothing, a blank line, a comment,
+ or a comment after a blank line. Comments and blanks are valid between any
+ two statements, so this never threatens document validity.
  */
 const blockPrefixArbitrary: Arbitrary<string> = constantFrom(
   '',
@@ -83,7 +83,7 @@ const blockPrefixArbitrary: Arbitrary<string> = constantFrom(
 );
 
 /**
- * Optional trailing same-line comment for a key-value block.
+ Optional trailing same-line comment for a key-value block.
  */
 const trailingCommentArbitrary: Arbitrary<string> = constantFrom(
   '',
@@ -92,9 +92,9 @@ const trailingCommentArbitrary: Arbitrary<string> = constantFrom(
 );
 
 /**
- * One table body: unique single-segment keys mapped to generated value texts.
- *
- * @returns Arbitrary of joined `key = value` lines (no trailing newline).
+ One table body: unique single-segment keys mapped to generated value texts.
+ 
+ @returns Arbitrary of joined `key = value` lines (no trailing newline).
  */
 const tableBodyArbitrary: Arbitrary<string> = uniqueArray(
   keySegmentArbitrary,
@@ -112,9 +112,9 @@ const tableBodyArbitrary: Arbitrary<string> = uniqueArray(
 },);
 
 /**
- * Build a key-value block under `owner`, optionally dotted, optionally commented.
- *
- * @returns Arbitrary block text ending in a newline.
+ Build a key-value block under `owner`, optionally dotted, optionally commented.
+ 
+ @returns Arbitrary block text ending in a newline.
  */
 function keyValueBlockArbitrary({ owner, }: { readonly owner: string; },): Arbitrary<string> {
   return oneof(
@@ -146,9 +146,9 @@ function keyValueBlockArbitrary({ owner, }: { readonly owner: string; },): Arbit
 }
 
 /**
- * Build a standard-table block headed `[owner]`.
- *
- * @returns Arbitrary block text ending in a newline.
+ Build a standard-table block headed `[owner]`.
+ 
+ @returns Arbitrary block text ending in a newline.
  */
 function standardTableBlockArbitrary({ owner, }: { readonly owner: string; },): Arbitrary<string> {
   return tableBodyArbitrary.map(function render(body,) {
@@ -157,9 +157,9 @@ function standardTableBlockArbitrary({ owner, }: { readonly owner: string; },): 
 }
 
 /**
- * Build an array-of-tables block of one to three `[[owner]]` instances.
- *
- * @returns Arbitrary block text ending in a newline.
+ Build an array-of-tables block of one to three `[[owner]]` instances.
+ 
+ @returns Arbitrary block text ending in a newline.
  */
 function arrayOfTablesBlockArbitrary({ owner, }: { readonly owner: string; },): Arbitrary<string> {
   return uniqueArray(
@@ -184,25 +184,25 @@ function arrayOfTablesBlockArbitrary({ owner, }: { readonly owner: string; },): 
 }
 
 /**
- * A generated block tagged by category so the document can order key-values
- * ahead of every sectioned block.
+ A generated block tagged by category so the document can order key-values
+ ahead of every sectioned block.
  */
 type Block = {
   /**
-   * `'keyvalue'` for bare top-level entries; `'section'` for table headers.
+   `'keyvalue'` for bare top-level entries; `'section'` for table headers.
    */
   readonly category: 'keyvalue' | 'section';
   /**
-   * Rendered block text including its optional prefix decoration.
+   Rendered block text including its optional prefix decoration.
    */
   readonly text: string;
 };
 
 /**
- * Build one decorated, category-tagged block for `owner`, choosing its kind
- * uniformly.
- *
- * @returns Arbitrary block including its category and optional prefix decoration.
+ Build one decorated, category-tagged block for `owner`, choosing its kind
+ uniformly.
+ 
+ @returns Arbitrary block including its category and optional prefix decoration.
  */
 function blockArbitrary({ owner, }: { readonly owner: string; },): Arbitrary<Block> {
   return oneof(
@@ -239,7 +239,7 @@ function blockArbitrary({ owner, }: { readonly owner: string; },): Arbitrary<Blo
 }
 
 /**
- * Deterministic document examples spanning the major structural shapes.
+ Deterministic document examples spanning the major structural shapes.
  */
 export const DOCUMENT_EXAMPLES: readonly string[] = [
   '',
@@ -251,8 +251,8 @@ export const DOCUMENT_EXAMPLES: readonly string[] = [
 ];
 
 /**
- * Whole-document arbitrary producing valid TOML text. Key-value blocks are
- * emitted before any sectioned block so no bare entry is captured by a table.
+ Whole-document arbitrary producing valid TOML text. Key-value blocks are
+ emitted before any sectioned block so no bare entry is captured by a table.
  */
 export const documentArbitrary: Arbitrary<string> = uniqueArray(
   bareName,
@@ -267,13 +267,13 @@ export const documentArbitrary: Arbitrary<string> = uniqueArray(
   },)
     .map(function join(blocks,) {
     /**
-     * Bare key-value blocks, kept in generation order ahead of the sections.
+     Bare key-value blocks, kept in generation order ahead of the sections.
      */
     const keyValues = blocks.filter(function isKeyValue(block,) {
       return block.category === 'keyvalue';
     },);
     /**
-     * Table and array-of-tables blocks, each opening its own header.
+     Table and array-of-tables blocks, each opening its own header.
      */
     const sections = blocks.filter(function isSection(block,) {
       return block.category === 'section';

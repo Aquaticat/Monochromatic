@@ -1,7 +1,7 @@
 /**
- * `tomlGet`: alias for `tomlGetValue`.
- *
- * @module
+ `tomlGet`: alias for `tomlGetValue`.
+ 
+ @module
  */
 
 import { tomlGetValue, } from './toml-get-value.ts';
@@ -11,15 +11,15 @@ import type {
 } from './types.ts';
 
 /**
- * Alias for {@link tomlGetValue}. Provided for ergonomic call sites where
- * the explicit `Value` suffix is verbose.
- *
- * @returns Computed result (`unknown`).
- *
- * @example
- * ```ts
- * tomlGet({ edit, path: ['title',], },);  // 'Demo'
- * ```
+ Alias for {@link tomlGetValue}. Provided for ergonomic call sites where
+ the explicit `Value` suffix is verbose.
+ 
+ @returns Computed result (`unknown`).
+ 
+ @example
+ ```ts
+ tomlGet({ edit, path: ['title',], },);  // 'Demo'
+ ```
  */
 export function tomlGet(
   {

@@ -1,7 +1,7 @@
 import type { Label, } from '../labels-types.ts';
 
 /**
- * Chinese label table.
+ Chinese label table.
  */
 const zh = {
   siteName: 'Aquaticat',

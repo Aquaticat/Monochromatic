@@ -1,14 +1,14 @@
 /**
- * Build a synthetic {@link ValueNode} from a JS input passed to {@link tomlSet}.
- *
- * Scalar leaves precompute their render text via `jsValueToTomlText` (so wrapped
- * inputs keep their intended spelling) and store the plain JS value for reads.
- * When an `existing` parse-time node is supplied and the new value equals it,
- * `jsValueToTomlText` preserves the original style/raw spelling, matching the
- * pre-rewrite re-set behavior. Arrays and objects recurse into structured nodes
- * so later edits touch only the changed leaf.
- *
- * @module
+ Build a synthetic {@link ValueNode} from a JS input passed to {@link tomlSet}.
+ 
+ Scalar leaves precompute their render text via `jsValueToTomlText` (so wrapped
+ inputs keep their intended spelling) and store the plain JS value for reads.
+ When an `existing` parse-time node is supplied and the new value equals it,
+ `jsValueToTomlText` preserves the original style/raw spelling, matching the
+ pre-rewrite re-set behavior. Arrays and objects recurse into structured nodes
+ so later edits touch only the changed leaf.
+ 
+ @module
  */
 
 import type {
@@ -28,18 +28,18 @@ import {
 } from './values.ts';
 
 /**
- * Build a synthetic value node for `input`.
- *
- * @returns Computed {@link ValueNode}.
- *
- * @throws {@link TomlTypeError} for `null`, `undefined`, or an unencodable value.
- *
- * @mutates input - Recursive build can invoke caller-owned proxy, getter, and prototype hooks.
- *
- * @example
- * ```ts
- * buildValueFromInput({ input: { x: 1, }, options, },);
- * ```
+ Build a synthetic value node for `input`.
+ 
+ @returns Computed {@link ValueNode}.
+ 
+ @throws {@link TomlTypeError} for `null`, `undefined`, or an unencodable value.
+ 
+ @mutates input - Recursive build can invoke caller-owned proxy, getter, and prototype hooks.
+ 
+ @example
+ ```ts
+ buildValueFromInput({ input: { x: 1, }, options, },);
+ ```
  */
 export function buildValueFromInput(
   {
@@ -59,7 +59,7 @@ export function buildValueFromInput(
   }
   if (Array.isArray(input,)) {
     /**
-     * Parse-time element nodes so per-element raw spelling survives an equal re-set.
+     Parse-time element nodes so per-element raw spelling survives an equal re-set.
      */
     const elementExistings = (existing !== undefined) && (existing.node
       .type
@@ -117,9 +117,9 @@ export function buildValueFromInput(
 }
 
 /**
- * Describe the TOML scalar kind for a leaf input.
- *
- * @returns Computed {@link ScalarKind}.
+ Describe the TOML scalar kind for a leaf input.
+ 
+ @returns Computed {@link ScalarKind}.
  */
 function scalarKindOf({ input, }: { readonly input: unknown; },): ScalarKind {
   if (isWrappedInput(input,))
@@ -138,9 +138,9 @@ function scalarKindOf({ input, }: { readonly input: unknown; },): ScalarKind {
 }
 
 /**
- * Plain JS value a read should return for a synthetic leaf.
- *
- * @returns Computed value.
+ Plain JS value a read should return for a synthetic leaf.
+ 
+ @returns Computed value.
  */
 function plainOf({ input, }: { readonly input: unknown; },): unknown {
   if (isWrappedInput(input,)) {

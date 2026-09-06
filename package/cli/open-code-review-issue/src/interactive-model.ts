@@ -1,14 +1,14 @@
 /**
- * Interactive prompt and selection contracts.
- *
- * @module
+ Interactive prompt and selection contracts.
+ 
+ @module
  */
 
 import type { InputPosition, } from './model.ts';
 import type { RenderedIssue, } from './issue-model.ts';
 
 /**
- * TTY streams passed explicitly to Inquirer.
+ TTY streams passed explicitly to Inquirer.
  */
 export type PromptStreams = {
   readonly input: NodeJS.ReadableStream;
@@ -16,7 +16,7 @@ export type PromptStreams = {
 };
 
 /**
- * Square checkbox theme subset used by Inquirer checkbox.
+ Square checkbox theme subset used by Inquirer checkbox.
  */
 export type SquareCheckboxTheme = {
   readonly icon: {
@@ -32,7 +32,7 @@ export type SquareCheckboxTheme = {
 };
 
 /**
- * Interactive selection approved after per-security confirmation.
+ Interactive selection approved after per-security confirmation.
  */
 export type InteractiveSelection = {
   readonly issues: readonly RenderedIssue[];

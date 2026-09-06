@@ -1,5 +1,5 @@
 /**
- * Pill, button, and interactive element styles for `<task-detail>`.
+ Pill, button, and interactive element styles for `<task-detail>`.
  */
 import {
   cssCalc,
@@ -19,23 +19,23 @@ import {
 } from '../mixins.ts';
 
 /**
- * Pill padding in rem (1/2).
+ Pill padding in rem (1/2).
  */
 const PILL_PADDING = 1 / 2;
 
 /**
- * Pill gap in rem (1/4).
+ Pill gap in rem (1/4).
  */
 const PILL_GAP = 1 / 2
   / 2;
 
 /**
- * Button row gap in rem (1/2).
+ Button row gap in rem (1/2).
  */
 const BTN_ROW_GAP = 1 / 2;
 
 /**
- * Pill, button row, and shadow DOM global styles for `<task-detail>`.
+ Pill, button row, and shadow DOM global styles for `<task-detail>`.
  */
 export const TASK_DETAIL_INTERACTIVE_STYLES: string = [
   css({

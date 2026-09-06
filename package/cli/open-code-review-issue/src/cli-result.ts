@@ -1,14 +1,14 @@
 /**
- * Machine-readable applied-run result contracts.
- *
- * @module
+ Machine-readable applied-run result contracts.
+ 
+ @module
  */
 
 import type { InputPosition, } from './model.ts';
 import type { CreatedIssue, } from './publisher-model.ts';
 
 /**
- * Positioned or preflight failure safe for machine output.
+ Positioned or preflight failure safe for machine output.
  */
 export type AppliedFailure = {
   readonly message: string;
@@ -17,7 +17,7 @@ export type AppliedFailure = {
 };
 
 /**
- * Final standard-output object for non-interactive applied run.
+ Final standard-output object for non-interactive applied run.
  */
 export type AppliedResult = {
   readonly outcome: 'success' | 'failed' | 'interrupted';

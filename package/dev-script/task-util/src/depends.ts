@@ -1,35 +1,35 @@
 #!/usr/bin/env node
 
 /**
- * Make-style dependency checker for mise tasks.
- *
- * Checks staleness via file modification times and/or shell command probes,
- * then runs the given command only when dependencies are stale.
- * Output from the command is collapsed (hidden on success, shown on failure).
- *
- * Both `-s` and `-o` accept file globs or `sh:` prefixed shell commands.
- * Shell commands must output a parseable timestamp on stdout:
- * unix epoch (seconds or ms), ISO 8601, `Infinity`, or `-Infinity`.
- * Non-zero exit codes are treated as errors (not silent staleness signals).
- *
- * Timestamps are aggregated per-side using configurable strategies
- * (`--source-time-strategy`, `--output-time-strategy`), then compared:
- * `sourceTime > outputTime` → stale.
- *
- * @example
- * ```bash
- * # File-based
- * task-depends -s "src/*.ts" -o "dist/*.js"; mise run build
- *
- * # Command-based output check (gate pattern)
- * task-depends -o "sh:podman image exists img && echo Infinity || echo -Infinity"; podman build .
- *
- * # Timestamp from command
- * task-depends -s "sh:git log -1 --format=%ct" -o "dist/*.js"; mise run build
- *
- * # Catch missing outputs in mixed lists with oldest strategy
- * task-depends --output-time-strategy oldest -s "src/**" -o "dist/**" -o "sh:..."; mise run build
- * ```
+ Make-style dependency checker for mise tasks.
+ 
+ Checks staleness via file modification times and/or shell command probes,
+ then runs the given command only when dependencies are stale.
+ Output from the command is collapsed (hidden on success, shown on failure).
+ 
+ Both `-s` and `-o` accept file globs or `sh:` prefixed shell commands.
+ Shell commands must output a parseable timestamp on stdout:
+ unix epoch (seconds or ms), ISO 8601, `Infinity`, or `-Infinity`.
+ Non-zero exit codes are treated as errors (not silent staleness signals).
+ 
+ Timestamps are aggregated per-side using configurable strategies
+ (`--source-time-strategy`, `--output-time-strategy`), then compared:
+ `sourceTime > outputTime` → stale.
+ 
+ @example
+ ```bash
+ # File-based
+ task-depends -s "src/*.ts" -o "dist/*.js"; mise run build
+ 
+ # Command-based output check (gate pattern)
+ task-depends -o "sh:podman image exists img && echo Infinity || echo -Infinity"; podman build .
+ 
+ # Timestamp from command
+ task-depends -s "sh:git log -1 --format=%ct" -o "dist/*.js"; mise run build
+ 
+ # Catch missing outputs in mixed lists with oldest strategy
+ task-depends --output-time-strategy oldest -s "src/**" -o "dist/**" -o "sh:..."; mise run build
+ ```
  */
 
 // TODO: deprecate Optique
@@ -57,13 +57,13 @@ import {
   type TimeStrategy,
 } from './depends-staleness.ts';
 
-export {};
+
 
 //region Parser definition
 
 /**
- * TODO: deprecate Optique
- * Optique parser for the task-depends CLI
+ TODO: deprecate Optique
+ Optique parser for the task-depends CLI
  */
 const parser = object({
   sources: multiple(
@@ -106,8 +106,8 @@ const parser = object({
 //region Argument validation
 
 /**
- * TODO: deprecate Optique
- * Parsed CLI arguments from process.argv
+ TODO: deprecate Optique
+ Parsed CLI arguments from process.argv
  */
 const rawArgs = runSync(
   parser,
@@ -120,18 +120,18 @@ const rawArgs = runSync(
 // TODO: deprecate Optique
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- external boundary: @optique/core `optional()` is typed `Parser<…, TValue | undefined, …>`, so `multiple(optional(...))` yields `(string | undefined)[]` for omitted options; this helper mirrors that upstream type to strip the absent entries */
 /**
- * Filters absent values produced by `multiple(optional(...))` when an option is omitted.
- *
- * optique returns `undefined` for omitted optional options inside `multiple`.
- *
- * @param values - Array that may contain `undefined` from optique parsing
- *
- * @returns Array with absent values removed
- *
- * @example
- * ```ts
- * filterNullish([undefined, 'a', undefined, 'b']) // ['a', 'b']
- * ```
+ Filters absent values produced by `multiple(optional(...))` when an option is omitted.
+ 
+ optique returns `undefined` for omitted optional options inside `multiple`.
+ 
+ @param values - Array that may contain `undefined` from optique parsing
+ 
+ @returns Array with absent values removed
+ 
+ @example
+ ```ts
+ filterNullish([undefined, 'a', undefined, 'b']) // ['a', 'b']
+ ```
  */
 function filterNullish(values: readonly (string | undefined)[],): string[] {
   return values.filter(function isString(value,): value is string {
@@ -141,7 +141,7 @@ function filterNullish(values: readonly (string | undefined)[],): string[] {
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /**
- * Valid builtin time strategy names
+ Valid builtin time strategy names
  */
 const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
   'newest',
@@ -151,49 +151,49 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
 ],);
 
 /**
- * Options for {@link validateTimeStrategy}.
- *
- * @example
- * ```ts
- * const options: ValidateTimeStrategyOptions = {
- *   value: 'oldest',
- *   flagName: '--source-time-strategy',
- * };
- * ```
+ Options for {@link validateTimeStrategy}.
+ 
+ @example
+ ```ts
+ const options: ValidateTimeStrategyOptions = {
+   value: 'oldest',
+   flagName: '--source-time-strategy',
+ };
+ ```
  */
 type ValidateTimeStrategyOptions = {
   // TODO: deprecate Optique
   /* oxlint-disable no-restricted-syntax/no-nullish-union -- external boundary: @optique/core `optional()` is typed `Parser<…, TValue | undefined, …>`, so an omitted `--*-time-strategy` arrives here as `undefined`; this field mirrors that upstream type */
   /**
-   * Raw value from optique (`undefined` when option is omitted)
+   Raw value from optique (`undefined` when option is omitted)
    */
   readonly value: string | undefined;
   /* oxlint-enable no-restricted-syntax/no-nullish-union */
   /**
-   * Flag name for error messages
+   Flag name for error messages
    */
   readonly flagName: string;
 };
 
 /**
- * Validates and defaults a time strategy option.
- *
- * Accepts builtin strategy names from {@link BUILTIN_STRATEGIES} or `sh:` prefixed shell commands.
- *
- * @param value - Raw value from optique (possibly nullish when option is omitted)
- *
- * @param flagName - Flag name for error messages
- *
- * @returns Validated strategy, defaulting to `'newest'`
- *
- * @throws When value is not a valid builtin and does not start with `sh:`
- *
- * @example
- * ```ts
- * validateTimeStrategy({ value: undefined, flagName: '--source-time-strategy' }) // 'newest'
- * validateTimeStrategy({ value: 'oldest', flagName: '--output-time-strategy' }) // 'oldest'
- * validateTimeStrategy({ value: 'sh:my-script', flagName: '--source-time-strategy' }) // 'sh:my-script'
- * ```
+ Validates and defaults a time strategy option.
+ 
+ Accepts builtin strategy names from {@link BUILTIN_STRATEGIES} or `sh:` prefixed shell commands.
+ 
+ @param value - Raw value from optique (possibly nullish when option is omitted)
+ 
+ @param flagName - Flag name for error messages
+ 
+ @returns Validated strategy, defaulting to `'newest'`
+ 
+ @throws When value is not a valid builtin and does not start with `sh:`
+ 
+ @example
+ ```ts
+ validateTimeStrategy({ value: undefined, flagName: '--source-time-strategy' }) // 'newest'
+ validateTimeStrategy({ value: 'oldest', flagName: '--output-time-strategy' }) // 'oldest'
+ validateTimeStrategy({ value: 'sh:my-script', flagName: '--source-time-strategy' }) // 'sh:my-script'
+ ```
  */
 function validateTimeStrategy({
   value,
@@ -213,7 +213,7 @@ function validateTimeStrategy({
 }
 
 /**
- * Cleaned CLI arguments with nullish values filtered out
+ Cleaned CLI arguments with nullish values filtered out
  */
 const args = {
   sources: filterNullish(rawArgs.sources,),
@@ -232,7 +232,7 @@ const args = {
 };
 
 /**
- * Destructured command and its arguments from the rest args after `--`
+ Destructured command and its arguments from the rest args after `--`
  */
 const [command, ...commandArgs] = args.rest;
 
@@ -259,7 +259,7 @@ if (args.outputs
 //region Staleness check and execution
 
 /**
- * Whether sources are newer than outputs, indicating the command needs to run
+ Whether sources are newer than outputs, indicating the command needs to run
  */
 const stale = await checkStaleness({
   sources: args.sources,

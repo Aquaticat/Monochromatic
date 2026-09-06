@@ -1,7 +1,7 @@
 /**
- * Active-branch post-start evidence serialization for settlement reviewers.
- *
- * @module
+ Active-branch post-start evidence serialization for settlement reviewers.
+ 
+ @module
  */
 
 import type {
@@ -24,21 +24,21 @@ import type {
 import { isGoalEvent, } from './events.ts';
 
 /**
- * Sentinel for branch entries intentionally excluded from reviewer evidence.
+ Sentinel for branch entries intentionally excluded from reviewer evidence.
  */
 const EVIDENCE_ENTRY_OMITTED: unique symbol = Symbol('goal/evidence-entry-omitted',);
 
 /**
- * Convert finalized content block to reviewer-visible text.
- *
- * @param content - finalized message content block
- *
- * @returns reviewer-visible text
- *
- * @example
- * ```ts
- * contentBlockText({ type: 'text', text: 'done' });
- * ```
+ Convert finalized content block to reviewer-visible text.
+ 
+ @param content - finalized message content block
+ 
+ @returns reviewer-visible text
+ 
+ @example
+ ```ts
+ contentBlockText({ type: 'text', text: 'done' });
+ ```
  */
 function contentBlockText(
   content: ForeignBorrowed<TextContent | ImageContent | ToolCall | ThinkingContent>,
@@ -53,16 +53,16 @@ function contentBlockText(
 }
 
 /**
- * Convert string or block-array message content to reviewer text.
- *
- * @param content - finalized message content
- *
- * @returns joined textual evidence
- *
- * @example
- * ```ts
- * messageContentText('done');
- * ```
+ Convert string or block-array message content to reviewer text.
+ 
+ @param content - finalized message content
+ 
+ @returns joined textual evidence
+ 
+ @example
+ ```ts
+ messageContentText('done');
+ ```
  */
 function messageContentText(
   content: ForeignBorrowed<
@@ -77,20 +77,20 @@ function messageContentText(
 }
 
 /**
- * Validate current-generation task-message provenance.
- *
- * @param details - unknown custom-message details
- *
- * @param runId - active run identity
- *
- * @param generationId - active generation identity
- *
- * @returns whether details identify current kickoff or continuation
- *
- * @example
- * ```ts
- * isCurrentGoalMessageDetails({ details, runId: 'run-1', generationId: 'generation-1' });
- * ```
+ Validate current-generation task-message provenance.
+ 
+ @param details - unknown custom-message details
+ 
+ @param runId - active run identity
+ 
+ @param generationId - active generation identity
+ 
+ @returns whether details identify current kickoff or continuation
+ 
+ @example
+ ```ts
+ isCurrentGoalMessageDetails({ details, runId: 'run-1', generationId: 'generation-1' });
+ ```
  */
 function isCurrentGoalMessageDetails(
   {
@@ -120,20 +120,20 @@ function isCurrentGoalMessageDetails(
 }
 
 /**
- * Serialize one eligible branch entry or return omission sentinel.
- *
- * @param entry - active-branch session entry
- *
- * @param runId - current active run identity
- *
- * @param generationId - current active generation identity
- *
- * @returns labeled evidence chunk or omission sentinel
- *
- * @example
- * ```ts
- * serializeEvidenceEntry({ entry, runId: 'run-1', generationId: 'generation-1' });
- * ```
+ Serialize one eligible branch entry or return omission sentinel.
+ 
+ @param entry - active-branch session entry
+ 
+ @param runId - current active run identity
+ 
+ @param generationId - current active generation identity
+ 
+ @returns labeled evidence chunk or omission sentinel
+ 
+ @example
+ ```ts
+ serializeEvidenceEntry({ entry, runId: 'run-1', generationId: 'generation-1' });
+ ```
  */
 function serializeEvidenceEntry(
   {
@@ -161,7 +161,7 @@ function serializeEvidenceEntry(
   if (entry.type !== 'message')
     return EVIDENCE_ENTRY_OMITTED;
   /**
-   * Finalized agent message stored by selected branch.
+   Finalized agent message stored by selected branch.
    */
   const { message, } = entry;
   if (message.role === 'user')
@@ -179,20 +179,20 @@ function serializeEvidenceEntry(
 }
 
 /**
- * Find matching run-start index on selected branch.
- *
- * @param branch - selected active branch
- *
- * @param runId - active run identity
- *
- * @returns matching entry index
- *
- * @throws when active run start is missing from branch
- *
- * @example
- * ```ts
- * findRunStartIndex({ branch, runId: 'run-1' });
- * ```
+ Find matching run-start index on selected branch.
+ 
+ @param branch - selected active branch
+ 
+ @param runId - active run identity
+ 
+ @returns matching entry index
+ 
+ @throws when active run start is missing from branch
+ 
+ @example
+ ```ts
+ findRunStartIndex({ branch, runId: 'run-1' });
+ ```
  */
 function findRunStartIndex(
   {
@@ -204,7 +204,7 @@ function findRunStartIndex(
   },
 ): number {
   /**
-   * Matching run-start entry position.
+   Matching run-start entry position.
    */
   const index = branch.findIndex(function isMatchingRunStart(entry,) {
     if ((entry.type !== 'custom') || (entry.customType !== GOAL_STATE_ENTRY_TYPE))
@@ -224,18 +224,18 @@ function findRunStartIndex(
 }
 
 /**
- * Build reviewer evidence from selected branch after active run start.
- *
- * @param branch - `SessionManager.getBranch()` result
- *
- * @param request - captured settlement identity
- *
- * @returns objective and finalized post-start chunks
- *
- * @example
- * ```ts
- * buildGoalReviewEvidence({ branch, request });
- * ```
+ Build reviewer evidence from selected branch after active run start.
+ 
+ @param branch - `SessionManager.getBranch()` result
+ 
+ @param request - captured settlement identity
+ 
+ @returns objective and finalized post-start chunks
+ 
+ @example
+ ```ts
+ buildGoalReviewEvidence({ branch, request });
+ ```
  */
 function buildGoalReviewEvidence(
   {
@@ -247,7 +247,7 @@ function buildGoalReviewEvidence(
   },
 ): GoalReviewEvidence {
   /**
-   * Matching run-start position defining transcript seam.
+   Matching run-start position defining transcript seam.
    */
   const startIndex = findRunStartIndex({
     branch,
@@ -255,14 +255,14 @@ function buildGoalReviewEvidence(
       .runId,
   },);
   /**
-   * Active run identities filtering task messages.
+   Active run identities filtering task messages.
    */
   const {
     runId,
     generationId,
   } = request.goal;
   /**
-   * Eligible serialized chunks after current run started.
+   Eligible serialized chunks after current run started.
    */
   const transcriptChunks = branch
     .slice(startIndex + 1,)

@@ -1,7 +1,7 @@
 /**
- * Complete persistent effect-summary payload validation.
- *
- * @module
+ Complete persistent effect-summary payload validation.
+ 
+ @module
  */
 
 import { isRetentionProvenance, } from './effect-retention-provenance.ts';
@@ -20,17 +20,17 @@ import type {
 } from './effect-summary-serialization.ts';
 
 /**
- * Tests caller-side roots recorded per callee position.
- *
- * The outer length is a count of the callee's positions, which this validator cannot know,
- * so it is bounded by arity alone. The inner values belong to the caller and are bounded by
- * whatever the caller has: slots for effect origins, parameters for foreign ownership.
- *
- * @param value - Parsed JSON value.
- *
- * @param upperBound - Exclusive caller index limit.
- *
- * @returns whether nested argument roots are bounded and valid.
+ Tests caller-side roots recorded per callee position.
+ 
+ The outer length is a count of the callee's positions, which this validator cannot know,
+ so it is bounded by arity alone. The inner values belong to the caller and are bounded by
+ whatever the caller has: slots for effect origins, parameters for foreign ownership.
+ 
+ @param value - Parsed JSON value.
+ 
+ @param upperBound - Exclusive caller index limit.
+ 
+ @returns whether nested argument roots are bounded and valid.
  */
 function isArgumentRoots({
   value,
@@ -50,11 +50,11 @@ function isArgumentRoots({
 }
 
 /**
- * Tests serialized callback identity.
- *
- * @param value - Parsed JSON value.
- *
- * @returns whether callback identity is unavailable or exact owned key.
+ Tests serialized callback identity.
+ 
+ @param value - Parsed JSON value.
+ 
+ @returns whether callback identity is unavailable or exact owned key.
  */
 function isCallbackKey(value: unknown,): value is SerializedCallbackKey {
   return isRecord(value,)
@@ -63,15 +63,15 @@ function isCallbackKey(value: unknown,): value is SerializedCallbackKey {
 }
 
 /**
- * Tests one serialized owned call edge.
- *
- * @param value - Parsed JSON value.
- *
- * @param parameterCount - Exclusive caller parameter-index limit.
- *
- * @param slotCount - Exclusive caller slot limit.
- *
- * @returns whether every edge field and relation is valid.
+ Tests one serialized owned call edge.
+ 
+ @param value - Parsed JSON value.
+ 
+ @param parameterCount - Exclusive caller parameter-index limit.
+ 
+ @param slotCount - Exclusive caller slot limit.
+ 
+ @returns whether every edge field and relation is valid.
  */
 function isCallEdge({
   value,
@@ -122,12 +122,12 @@ function isCallEdge({
    * with a destructured parameter has strictly more of the first. The counts belong to the
    * callee, which this validator cannot see, so only their agreement is checked. */
   /**
-   * Callee slot count shared by every slot-indexed edge field.
+   Callee slot count shared by every slot-indexed edge field.
    */
   const slotArity = value.originsByCalleeSlot
     .length;
   /**
-   * Callee formal count shared by every formal-indexed edge field.
+   Callee formal count shared by every formal-indexed edge field.
    */
   const formalArity = value.foreignOriginsByFormal
     .length;
@@ -155,13 +155,13 @@ function isCallEdge({
 }
 
 /**
- * Tests one callback relation.
- *
- * @param value - Parsed JSON value.
- *
- * @param slotCount - Exclusive callable slot limit.
- *
- * @returns whether relation indexes are valid.
+ Tests one callback relation.
+ 
+ @param value - Parsed JSON value.
+ 
+ @param slotCount - Exclusive callable slot limit.
+ 
+ @returns whether relation indexes are valid.
  */
 function isCallbackRelation({
   value,
@@ -186,13 +186,13 @@ function isCallbackRelation({
 }
 
 /**
- * Tests one serialized element-flow relation.
- *
- * @param value - Parsed JSON value.
- *
- * @param slotCount - Exclusive callable slot limit.
- *
- * @returns whether relation identity and indexes are valid.
+ Tests one serialized element-flow relation.
+ 
+ @param value - Parsed JSON value.
+ 
+ @param slotCount - Exclusive callable slot limit.
+ 
+ @returns whether relation identity and indexes are valid.
  */
 function isElementApplication({
   value,
@@ -214,12 +214,12 @@ function isElementApplication({
 }
 
 /**
- * Kinds a persisted deferred result use may name.
- *
- * Held here rather than imported from the model so the validator states the payload
- * shape it accepts in its own terms. A kind added to the model and not to this set is
- * rejected as corrupt, which is the safe direction: a summary missing one deferred use
- * withholds offers, while one carrying an uninterpretable use would reach propagation.
+ Kinds a persisted deferred result use may name.
+ 
+ Held here rather than imported from the model so the validator states the payload
+ shape it accepts in its own terms. A kind added to the model and not to this set is
+ rejected as corrupt, which is the safe direction: a summary missing one deferred use
+ withholds offers, while one carrying an uninterpretable use would reach propagation.
  */
 const SERIALIZED_RESULT_APPLICATION_KINDS: ReadonlySet<string> = new Set([
   'mutated',
@@ -228,18 +228,18 @@ const SERIALIZED_RESULT_APPLICATION_KINDS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Tests one serialized deferred result use.
- *
- * This field went unvalidated while every sibling was checked, and the gap was harmless
- * only by accident: an unrecognised payload contributed a call-site key that matched no
- * edge and was skipped. The retaining kind ended that, because it carries provenance the
- * propagation requires, and a payload naming that kind without it now reaches a throw
- * rather than a skip. Validating here is what keeps `rejects corrupt nested persistent
- * payloads` the behaviour for corrupt input instead of a crash inside the fixed point.
- *
- * @param value - Parsed JSON value.
- *
- * @returns whether the deferred use names a known kind and carries what that kind needs.
+ Tests one serialized deferred result use.
+ 
+ This field went unvalidated while every sibling was checked, and the gap was harmless
+ only by accident: an unrecognised payload contributed a call-site key that matched no
+ edge and was skipped. The retaining kind ended that, because it carries provenance the
+ propagation requires, and a payload naming that kind without it now reaches a throw
+ rather than a skip. Validating here is what keeps `rejects corrupt nested persistent
+ payloads` the behaviour for corrupt input instead of a crash inside the fixed point.
+ 
+ @param value - Parsed JSON value.
+ 
+ @returns whether the deferred use names a known kind and carries what that kind needs.
  */
 function isResultApplication(value: unknown,): boolean {
   if ((!isRecord(value,))
@@ -261,13 +261,13 @@ function isResultApplication(value: unknown,): boolean {
 }
 
 /**
- * Tests opaque provenance entries.
- *
- * @param value - Parsed JSON value.
- *
- * @param slotCount - Exclusive callable slot limit.
- *
- * @returns whether provenance keys and facts are bounded.
+ Tests opaque provenance entries.
+ 
+ @param value - Parsed JSON value.
+ 
+ @param slotCount - Exclusive callable slot limit.
+ 
+ @returns whether provenance keys and facts are bounded.
  */
 function isOpaqueProvenance({
   value,
@@ -279,7 +279,7 @@ function isOpaqueProvenance({
   if (!Array.isArray(value,))
     return false;
   /**
-   * Parsed provenance entries narrowed from JSON array.
+   Parsed provenance entries narrowed from JSON array.
    */
   const entries: readonly unknown[] = value;
   /* Rehydration builds a `Map` from these pairs, so a repeated slot keeps only the last
@@ -296,11 +296,11 @@ function isOpaqueProvenance({
     if ((!Array.isArray(entry,)) || (entry.length !== 2))
       return false;
     /**
-     * Parsed tuple fields retained as unknown until individual validation.
+     Parsed tuple fields retained as unknown until individual validation.
      */
     const fields: readonly unknown[] = entry;
     /**
-     * Parsed provenance parameter index and fact list.
+     Parsed provenance parameter index and fact list.
      */
     const [index, facts,] = fields;
     if ((!isIndex({
@@ -311,7 +311,7 @@ function isOpaqueProvenance({
       || (facts.length > MAX_CALLABLE_ARITY))
       return false;
     /**
-     * Parsed provenance facts narrowed from JSON array.
+     Parsed provenance facts narrowed from JSON array.
      */
     const factValues: readonly unknown[] = facts;
     return factValues.every(function validFact(fact,): boolean {
@@ -321,11 +321,11 @@ function isOpaqueProvenance({
 }
 
 /**
- * Tests complete serialized direct summary.
- *
- * @param value - Parsed JSON value.
- *
- * @returns whether all summary fields satisfy runtime schema.
+ Tests complete serialized direct summary.
+ 
+ @param value - Parsed JSON value.
+ 
+ @returns whether all summary fields satisfy runtime schema.
  */
 function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
   if ((!isRecord(value,))
@@ -336,7 +336,7 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
     })))
     return false;
   /**
-   * Callable parameter count reused by every parameter-relative field.
+   Callable parameter count reused by every parameter-relative field.
    */
   const { parameterCount, } = value;
   /* Ownership is what makes the rest of the payload meaningful, so it is checked before
@@ -344,13 +344,13 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
    * whole parameters must come first and in order, because that is the numbering the
    * allocator produces and a caller's cached edge indexes into. */
   /**
-   * Persisted slot ownership, still unvalidated.
+   Persisted slot ownership, still unvalidated.
    */
   const { parameterOfSlot, } = value;
   if (!Array.isArray(parameterOfSlot,))
     return false;
   /**
-   * Distinct owners named by the persisted ownership.
+   Distinct owners named by the persisted ownership.
    */
   const distinctOwners = [...new Set(parameterOfSlot,),];
   if ((parameterOfSlot.length < parameterCount)
@@ -372,11 +372,11 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
       },))
     return false;
   /**
-   * Slot count bounding every slot-relative field.
+   Slot count bounding every slot-relative field.
    */
   const slotCount = parameterOfSlot.length;
   /**
-   * Set-backed effect arrays requiring bounded unique slots.
+   Set-backed effect arrays requiring bounded unique slots.
    */
   const slotArrays = [
     value.directMutated,
@@ -456,16 +456,16 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
 }
 
 /**
- * Tests full persistent effect-summary payload schema.
- *
- * @param value - Parsed JSON payload.
- *
- * @returns whether value can be safely rehydrated.
- *
- * @example
- * ```ts
- * if (isSerializedEffectSummaries(value)) deserializeEffectSummaries(value);
- * ```
+ Tests full persistent effect-summary payload schema.
+ 
+ @param value - Parsed JSON payload.
+ 
+ @returns whether value can be safely rehydrated.
+ 
+ @example
+ ```ts
+ if (isSerializedEffectSummaries(value)) deserializeEffectSummaries(value);
+ ```
  */
 export function isSerializedEffectSummaries(
   value: unknown,
@@ -473,22 +473,22 @@ export function isSerializedEffectSummaries(
   if ((!Array.isArray(value,)) || (value.length > MAX_CALLABLE_ARITY))
     return false;
   /**
-   * Parsed summary entries narrowed from JSON array.
+   Parsed summary entries narrowed from JSON array.
    */
   const entries: readonly unknown[] = value;
   /**
-   * Callable keys rejecting duplicate cache entries.
+   Callable keys rejecting duplicate cache entries.
    */
   const keys = new Set<string>();
   for (const entry of entries) {
     if ((!Array.isArray(entry,)) || (entry.length !== 2))
       return false;
     /**
-     * Parsed tuple fields retained as unknown until individual validation.
+     Parsed tuple fields retained as unknown until individual validation.
      */
     const fields: readonly unknown[] = entry;
     /**
-     * Parsed callable key and direct summary.
+     Parsed callable key and direct summary.
      */
     const [key, summary,] = fields;
     if ((!isCacheString(key,)) || keys.has(key,)

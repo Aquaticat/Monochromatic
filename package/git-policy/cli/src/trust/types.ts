@@ -1,192 +1,192 @@
 /**
- * Trust registry schema and service contracts.
- *
- * @module
+ Trust registry schema and service contracts.
+ 
+ @module
  */
 import type { ValidatedConfig, } from './config-validation.ts';
 import type { DiscoveredConfig, } from './config-discovery.ts';
 
 /**
- * Complete unhashed trust identity.
+ Complete unhashed trust identity.
  */
 export type TrustIdentity = Readonly<{
   /**
-   * Source-qualified filesystem identity.
+   Source-qualified filesystem identity.
    */
   filesystemId: string;
   /**
-   * Canonical configuration path.
+   Canonical configuration path.
    */
   canonicalConfigPath: string;
 }>;
 /**
- * Exact source snapshot metadata.
+ Exact source snapshot metadata.
  */
 export type TrustSourceRecord = Readonly<{
   /**
-   * Canonical live source path.
+   Canonical live source path.
    */
   canonicalPath: string;
   /**
-   * Record-relative source snapshot path.
+   Record-relative source snapshot path.
    */
   snapshotFile: string;
   /**
-   * Exact byte length as decimal string.
+   Exact byte length as decimal string.
    */
   size: string;
   /**
-   * Source modification time in nanoseconds as decimal string.
+   Source modification time in nanoseconds as decimal string.
    */
   mtimeNanoseconds: string;
 }>;
 /**
- * Persistent trust record schema version one.
+ Persistent trust record schema version one.
  */
 export type TrustRecord = Readonly<{
   /**
-   * Registry schema version.
+   Registry schema version.
    */
   schemaVersion: 1;
   /**
-   * Complete identity encoded by record path.
+   Complete identity encoded by record path.
    */
   identity: TrustIdentity;
   /**
-   * Canonical repository root.
+   Canonical repository root.
    */
   repositoryRoot: string;
   /**
-   * Stored executable format.
+   Stored executable format.
    */
   format: 'mjs' | 'typescript';
   /**
-   * Canonically ordered exact sources.
+   Canonically ordered exact sources.
    */
   sources: readonly TrustSourceRecord[];
   /**
-   * Record-relative executable snapshot path.
+   Record-relative executable snapshot path.
    */
   executableSnapshotFile: string;
   /**
-   * Exact executable byte length as decimal string.
+   Exact executable byte length as decimal string.
    */
   executableSize: string;
   /**
-   * Whether descendant repositories inherit authority.
+   Whether descendant repositories inherit authority.
    */
   recursiveChildren: boolean;
   /**
-   * Recursive provenance identities.
+   Recursive provenance identities.
    */
   authorizingRoots: readonly TrustIdentity[];
   /**
-   * RFC 3339 UTC audit timestamp.
+   RFC 3339 UTC audit timestamp.
    */
   recordedAt: string;
 }>;
 /**
- * Live source bytes and metadata collected without execution.
+ Live source bytes and metadata collected without execution.
  */
 export type TrustCandidate = Readonly<{
   /**
-   * Discovered canonical config.
+   Discovered canonical config.
    */
   discovered: DiscoveredConfig;
   /**
-   * Complete trust identity.
+   Complete trust identity.
    */
   identity: TrustIdentity;
   /**
-   * Exact source bytes.
+   Exact source bytes.
    */
   bytes: Uint8Array;
   /**
-   * Decimal source byte length.
+   Decimal source byte length.
    */
   size: string;
   /**
-   * Decimal nanosecond modification time.
+   Decimal nanosecond modification time.
    */
   mtimeNanoseconds: string;
   /**
-   * Whether filesystem identity survives host reboot.
+   Whether filesystem identity survives host reboot.
    */
   filesystemStable: boolean;
   /**
-   * Why only runtime-lifetime identity was available.
+   Why only runtime-lifetime identity was available.
    */
   filesystemStabilityReason?: string;
 }>;
 /**
- * Exact captured TypeScript source.
+ Exact captured TypeScript source.
  */
 export type CapturedTrustSource = Readonly<{
   /**
-   * Canonical live source path.
+   Canonical live source path.
    */
   canonicalPath: string;
   /**
-   * Exact bytes supplied to builder.
+   Exact bytes supplied to builder.
    */
   bytes: Uint8Array;
   /**
-   * Decimal byte length.
+   Decimal byte length.
    */
   size: string;
   /**
-   * Decimal nanosecond modification time.
+   Decimal nanosecond modification time.
    */
   mtimeNanoseconds: string;
 }>;
 /**
- * Complete TypeScript bundle candidate before persistence.
+ Complete TypeScript bundle candidate before persistence.
  */
 export type TypeScriptTrustCandidate = Readonly<{
   /**
-   * Entry candidate carrying filesystem identity.
+   Entry candidate carrying filesystem identity.
    */
   entry: TrustCandidate;
   /**
-   * Canonically ordered exact local source graph.
+   Canonically ordered exact local source graph.
    */
   sources: readonly CapturedTrustSource[];
   /**
-   * One immutable Node ESM bundle.
+   One immutable Node ESM bundle.
    */
   executableBytes: Uint8Array;
   /**
-   * Bare package specifiers excluded from invalidation.
+   Bare package specifiers excluded from invalidation.
    */
   barePackageImports: readonly string[];
 }>;
 /**
- * Stable trust warning code.
+ Stable trust warning code.
  */
 export type TrustWarningCode =
   | 'relaxed-entry-malformed'
   | 'relaxed-entry-filesystem-mismatch'
   | 'typescript-package-import-not-invalidated';
 /**
- * Prominent trust warning event.
+ Prominent trust warning event.
  */
 export type TrustWarning = Readonly<{
   /**
-   * Stable warning code.
+   Stable warning code.
    */
   code: TrustWarningCode;
   /**
-   * Safe human-readable warning.
+   Safe human-readable warning.
    */
   message: string;
 }>;
 /**
- * Result of one explicit interactive trust prompt.
- *
- * @example
- * ```ts
- * const outcome: TrustConsentOutcome = 'approved';
- * ```
+ Result of one explicit interactive trust prompt.
+ 
+ @example
+ ```ts
+ const outcome: TrustConsentOutcome = 'approved';
+ ```
  */
 export type TrustConsentOutcome =
   | 'approved'
@@ -194,66 +194,66 @@ export type TrustConsentOutcome =
   | 'unavailable';
 
 /**
- * Trust consent and output adapters.
- *
- * @example
- * ```ts
- * const adapters: TrustConsentAdapters = { disclose, prompt, now };
- * ```
+ Trust consent and output adapters.
+ 
+ @example
+ ```ts
+ const adapters: TrustConsentAdapters = { disclose, prompt, now };
+ ```
  */
 export type TrustConsentAdapters = {
   /**
-   * Writes human-readable disclosure to stderr boundary.
+   Writes human-readable disclosure to stderr boundary.
    */
   readonly disclose: (text: string,) => void;
   /**
-   * Requests explicit interactive affirmative response.
+   Requests explicit interactive affirmative response.
    */
   readonly prompt: () => Promise<TrustConsentOutcome>;
   /**
-   * Supplies audit timestamp.
+   Supplies audit timestamp.
    */
   readonly now: () => Date;
 };
 /**
- * Loaded trusted configuration ready for policy execution.
+ Loaded trusted configuration ready for policy execution.
  */
 export type LoadedTrustedConfig = Readonly<{
   /**
-   * Runtime-authoritative validated config.
+   Runtime-authoritative validated config.
    */
   validated: ValidatedConfig;
   /**
-   * Persistent record used for execution.
+   Persistent record used for execution.
    */
   record: TrustRecord;
 }>;
 /**
- * Trust inspection state.
+ Trust inspection state.
  */
 export type TrustStatus = Readonly<{
   /**
-   * Whether repository has a supported config.
+   Whether repository has a supported config.
    */
   configPresent: boolean;
   /**
-   * Whether exact identity has a valid record.
+   Whether exact identity has a valid record.
    */
   trusted: boolean;
   /**
-   * Whether live bytes equal stored executable snapshot.
+   Whether live bytes equal stored executable snapshot.
    */
   unchanged: boolean;
   /**
-   * Canonical config path when present.
+   Canonical config path when present.
    */
   configPath?: string;
   /**
-   * Complete filesystem identity when present.
+   Complete filesystem identity when present.
    */
   filesystemId?: string;
   /**
-   * Stable status reason.
+   Stable status reason.
    */
   reason: 'no-config' | 'untrusted' | 'trusted' | 'changed' | 'corrupt';
 }>;

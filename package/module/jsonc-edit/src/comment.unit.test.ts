@@ -1,8 +1,8 @@
 /**
- * Tests for the comment-as-data API: reading and setting value and key comments,
- * the absence sentinel, comment preservation across edits, and mergeComments.
- *
- * @module
+ Tests for the comment-as-data API: reading and setting value and key comments,
+ the absence sentinel, comment preservation across edits, and mergeComments.
+ 
+ @module
  */
 
 import {

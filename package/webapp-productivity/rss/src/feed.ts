@@ -14,17 +14,17 @@ import type { InnerOutlineWUrl, } from './outline.ts';
 import type { DeepReadonly, } from './types.ts';
 
 /**
- * Logger root for rss after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for rss after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'rss', },);
 
 /**
- * Tagged logger for the feed module.
+ Tagged logger for the feed module.
  */
 const l = tagged({
   tag: 'feed',
@@ -32,9 +32,9 @@ const l = tagged({
 },);
 
 /**
- * Parsed feed data paired with its OPML outline metadata.
- * Combines the feed content with source information for display.
- * Deeply readonly because the sort and extract steps only read these values.
+ Parsed feed data paired with its OPML outline metadata.
+ Combines the feed content with source information for display.
+ Deeply readonly because the sort and extract steps only read these values.
  */
 export type FeedWOutline = DeepReadonly<{
   feed: RssFeed.Feed<string> | AtomFeed.Feed<string>;
@@ -44,38 +44,38 @@ export type FeedWOutline = DeepReadonly<{
 //region Feed fetching and sorting: Retrieves feeds from URLs, parses them, and sorts by date
 
 /**
- * Fetches, parses, and date-sorts feeds from OPML outlines.
- * Handles both RSS and Atom formats, discarding feeds that fail to fetch or parse.
- * Delegates fetching and parsing to {@link fetchAndParseFeeds}, then sorts by
- * the date {@link extractDate} reads from each feed.
- *
- * @param outlines - Outlines with validated xmlUrl properties
- *
- * @returns Feeds sorted by publication date (newest first)
- *
- * @mutates outlines - `fetchAndParseFeeds(outlines)` delegates to `mapIterableAsync`, which may invoke caller-owned iterator capabilities and passes reachable outline values to `fetchFeed`.
- *
- * @example
- * ```ts
- * const feeds = await getSortedFeeds(outlines);
- * ```
+ Fetches, parses, and date-sorts feeds from OPML outlines.
+ Handles both RSS and Atom formats, discarding feeds that fail to fetch or parse.
+ Delegates fetching and parsing to {@link fetchAndParseFeeds}, then sorts by
+ the date {@link extractDate} reads from each feed.
+ 
+ @param outlines - Outlines with validated xmlUrl properties
+ 
+ @returns Feeds sorted by publication date (newest first)
+ 
+ @mutates outlines - `fetchAndParseFeeds(outlines)` delegates to `mapIterableAsync`, which may invoke caller-owned iterator capabilities and passes reachable outline values to `fetchFeed`.
+ 
+ @example
+ ```ts
+ const feeds = await getSortedFeeds(outlines);
+ ```
  */
 export async function getSortedFeeds(
   outlines: readonly DeepReadonly<InnerOutlineWUrl>[],
 ): Promise<FeedWOutline[]> {
   /**
-   * Inner logger tagged with this function name for traceable log lines.
+   Inner logger tagged with this function name for traceable log lines.
    */
   const innerL = tagged({
     tag: getSortedFeeds.name,
     l,
   },);
   /**
-   * Fetched and parsed feeds held so the sort step works on a stable array.
+   Fetched and parsed feeds held so the sort step works on a stable array.
    */
   const feeds = await fetchAndParseFeeds(outlines,);
   /**
-   * Date-sorted copy returned, preserving the input array's identity for callers.
+   Date-sorted copy returned, preserving the input array's identity for callers.
    */
   const result = feeds.toSorted(function byDate(
     feedA,
@@ -91,46 +91,46 @@ export async function getSortedFeeds(
 }
 
 /**
- * Fetches and parses feeds from outlines, discarding failures. Parses each
- * feed text with {@link parseAtomFeed} or {@link parseRssFeed} depending on
- * the outline's type.
- *
- * @param outlines - Outlines with xmlUrl properties
- *
- * @returns Successfully fetched and parsed feeds
- *
- * @mutates outlines - `mapIterableAsync` may invoke caller-owned iterator capabilities and passes reachable outline values to `fetchFeed`.
+ Fetches and parses feeds from outlines, discarding failures. Parses each
+ feed text with {@link parseAtomFeed} or {@link parseRssFeed} depending on
+ the outline's type.
+ 
+ @param outlines - Outlines with xmlUrl properties
+ 
+ @returns Successfully fetched and parsed feeds
+ 
+ @mutates outlines - `mapIterableAsync` may invoke caller-owned iterator capabilities and passes reachable outline values to `fetchFeed`.
  */
 async function fetchAndParseFeeds(
   outlines: readonly DeepReadonly<InnerOutlineWUrl>[],
 ): Promise<FeedWOutline[]> {
   /**
-   * Inner logger tagged with this function name for traceable log lines.
+   Inner logger tagged with this function name for traceable log lines.
    */
   const innerL = tagged({
     tag: fetchAndParseFeeds.name,
     l,
   },);
   /**
-   * Unique sentinel returned for fetch/text failures so the filter step can drop them.
+   Unique sentinel returned for fetch/text failures so the filter step can drop them.
    */
   const DISCARD = Symbol('feed fetch or parse failed',);
   /**
-   * Fetched OPML text paired with its source outline for later parsing.
+   Fetched OPML text paired with its source outline for later parsing.
    */
   type TextWOutline = {
     readonly text: string;
     readonly outline: DeepReadonly<InnerOutlineWUrl>;
   };
   /**
-   * Fetched feed texts paired with outlines, filtered down to the successful subset.
+   Fetched feed texts paired with outlines, filtered down to the successful subset.
    */
   const textsWOutline: TextWOutline[] = (await mapIterableAsync({
     fn: async function fetchFeed(
       outline: DeepReadonly<InnerOutlineWUrl>,
     ): Promise<TextWOutline | typeof DISCARD> {
       /**
-       * Single Response held so status check and text read share one network round trip.
+       Single Response held so status check and text read share one network round trip.
        */
       const response = await fetch(outline.xmlUrl,);
       if (!response.ok) {
@@ -161,7 +161,7 @@ async function fetchAndParseFeeds(
     outline,
   },) {
     /**
-     * Parser picked by outline type so each feed runs through the matching parser.
+     Parser picked by outline type so each feed runs through the matching parser.
      */
     const parser = outline.type
       === 'atom' ? parseAtomFeed : parseRssFeed;
@@ -179,7 +179,7 @@ async function fetchAndParseFeeds(
 }
 
 /**
- * Coerces string, number, or Date inputs into a Date instance.
+ Coerces string, number, or Date inputs into a Date instance.
  */
 const coerceDateSchema = v.pipe(
   v.union([
@@ -194,17 +194,17 @@ const coerceDateSchema = v.pipe(
 );
 
 /**
- * Extracts the publication date from a feed, falling back to epoch. The raw
- * value runs through {@link coerceDateSchema} to normalize string, number,
- * or `Date` inputs.
- *
- * @param feedWOutline - Feed with outline metadata
- *
- * @returns Parsed publication date
+ Extracts the publication date from a feed, falling back to epoch. The raw
+ value runs through {@link coerceDateSchema} to normalize string, number,
+ or `Date` inputs.
+ 
+ @param feedWOutline - Feed with outline metadata
+ 
+ @returns Parsed publication date
  */
 function extractDate(feedWOutline: FeedWOutline,): Date {
   /**
-   * Destructured fields so the branch reads `outline.type` and `feed` directly.
+   Destructured fields so the branch reads `outline.type` and `feed` directly.
    */
   const {
     feed,
@@ -214,7 +214,7 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
     === 'atom') {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type */
     /**
-     * Narrowed feed view used to read the Atom-specific `updated` field.
+     Narrowed feed view used to read the Atom-specific `updated` field.
      */
     const atomFeed = feed as AtomFeed.Feed<string>;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -226,7 +226,7 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
   }
   /* oxlint-disable typescript/no-unsafe-type-assertion -- non-atom feeds are RSS */
   /**
-   * Narrowed feed view used to read the RSS-specific `pubDate` field.
+   Narrowed feed view used to read the RSS-specific `pubDate` field.
    */
   const rssFeed = feed as RssFeed.Feed<string>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */

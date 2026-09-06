@@ -49,7 +49,7 @@ await describe({
         );
         await mkdir(lockPath,);
         /**
-         * Complete owner metadata staged before publication.
+         Complete owner metadata staged before publication.
          */
         const ownerText = `${JSON.stringify(
           {
@@ -66,11 +66,11 @@ await describe({
         },);
 
         /**
-         * Parsed complete owner expected at each publication stage.
+         Parsed complete owner expected at each publication stage.
          */
         const expectedOwner: unknown = JSON.parse(ownerText,);
         /**
-         * Private staged owner visible only by its private path.
+         Private staged owner visible only by its private path.
          */
         const stagedOwner: unknown = JSON.parse(await readFile(
           join(lockPath, 'owner.pending.json',),
@@ -82,7 +82,7 @@ await describe({
         await publishLockOwnerPublication(lockPath,);
 
         /**
-         * Owner visible to contenders only after atomic rename.
+         Owner visible to contenders only after atomic rename.
          */
         const publishedOwner: unknown = JSON.parse(await readFile(
           join(lockPath, 'owner.json',),

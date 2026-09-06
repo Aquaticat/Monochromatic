@@ -1,10 +1,10 @@
 /**
- * Compile-time behavior tests for built `arrayAt` declarations.
- *
- * Invalid-call helpers are exported only so TypeScript checks their bodies;
- * unit runner never invokes them.
- *
- * @module
+ Compile-time behavior tests for built `arrayAt` declarations.
+ 
+ Invalid-call helpers are exported only so TypeScript checks their bodies;
+ unit runner never invokes them.
+ 
+ @module
  */
 
 import {
@@ -24,49 +24,49 @@ import {
 } from '../dist/final/neutral/index.mjs';
 
 /**
- * Sentinel returned by guard example when integer proof fails.
- *
- * @example
- * ```ts
- * const rejected = NOT_SAFE_INTEGER;
- * ```
+ Sentinel returned by guard example when integer proof fails.
+ 
+ @example
+ ```ts
+ const rejected = NOT_SAFE_INTEGER;
+ ```
  */
 const NOT_SAFE_INTEGER = Symbol('index does not have safe-integer proof',);
 
 /**
- * Empty tuple value used to test empty-array diagnostics without fake optionality.
- *
- * @example
- * ```ts
- * type EmptyArray = typeof EMPTY_ARRAY;
- * ```
+ Empty tuple value used to test empty-array diagnostics without fake optionality.
+ 
+ @example
+ ```ts
+ type EmptyArray = typeof EMPTY_ARRAY;
+ ```
  */
 const EMPTY_ARRAY = [] as const;
 
 /**
- * Diagnostic code union carried by unordered computed collection.
- *
- * @example
- * ```ts
- * type Codes = DiagnosticCodes<ArrayAtDiagnostics<readonly [], 1.5>>;
- * ```
+ Diagnostic code union carried by unordered computed collection.
+ 
+ @example
+ ```ts
+ type Codes = DiagnosticCodes<ArrayAtDiagnostics<readonly [], 1.5>>;
+ ```
  */
 type DiagnosticCodes<Diagnostics extends readonly ArrayAtDiagnostic[]> =
   Diagnostics[number]['code'];
 
 /**
- * Narrows plain index with assertion before array access.
- *
- * @param index - Unproven numeric index
- *
- * @returns Selected tuple element union
- *
- * @throws Array access or proof error
- *
- * @example
- * ```ts
- * const value = accessAfterAssertion(0);
- * ```
+ Narrows plain index with assertion before array access.
+ 
+ @param index - Unproven numeric index
+ 
+ @returns Selected tuple element union
+ 
+ @throws Array access or proof error
+ 
+ @example
+ ```ts
+ const value = accessAfterAssertion(0);
+ ```
  */
 function accessAfterAssertion(index: number,): 10 | 20 | 30 {
   assertSafeInteger(index,);
@@ -74,18 +74,18 @@ function accessAfterAssertion(index: number,): 10 | 20 | 30 {
 }
 
 /**
- * Narrows plain index with predicate before array access.
- *
- * @param index - Unproven numeric index
- *
- * @returns Selected tuple element union or `null` for rejected integer proof
- *
- * @throws Array access error after successful proof
- *
- * @example
- * ```ts
- * const value = accessAfterGuard(0);
- * ```
+ Narrows plain index with predicate before array access.
+ 
+ @param index - Unproven numeric index
+ 
+ @returns Selected tuple element union or `null` for rejected integer proof
+ 
+ @throws Array access error after successful proof
+ 
+ @example
+ ```ts
+ const value = accessAfterGuard(0);
+ ```
  */
 function accessAfterGuard(
   index: number,
@@ -217,12 +217,12 @@ await describe({
 //region Invalid literal calls
 
 /**
- * Verifies empty tuple calls are rejected.
- *
- * @example
- * ```ts
- * rejectsEmptyArray();
- * ```
+ Verifies empty tuple calls are rejected.
+ 
+ @example
+ ```ts
+ rejectsEmptyArray();
+ ```
  */
 export function rejectsEmptyArray(): void {
   // @ts-expect-error -- empty tuple has no valid index.
@@ -230,14 +230,14 @@ export function rejectsEmptyArray(): void {
 }
 
 /**
- * Verifies plain numbers require safe-integer proof.
- *
- * @param index - Unproven numeric index
- *
- * @example
- * ```ts
- * rejectsPlainNumber(0);
- * ```
+ Verifies plain numbers require safe-integer proof.
+ 
+ @param index - Unproven numeric index
+ 
+ @example
+ ```ts
+ rejectsPlainNumber(0);
+ ```
  */
 export function rejectsPlainNumber(index: number,): void {
   // @ts-expect-error -- plain number lacks safe-integer proof.
@@ -245,12 +245,12 @@ export function rejectsPlainNumber(index: number,): void {
 }
 
 /**
- * Verifies positive out-of-range literal is rejected.
- *
- * @example
- * ```ts
- * rejectsPastEnd();
- * ```
+ Verifies positive out-of-range literal is rejected.
+ 
+ @example
+ ```ts
+ rejectsPastEnd();
+ ```
  */
 export function rejectsPastEnd(): void {
   // @ts-expect-error -- index is one position past array end.
@@ -258,12 +258,12 @@ export function rejectsPastEnd(): void {
 }
 
 /**
- * Verifies negative out-of-range literal is rejected.
- *
- * @example
- * ```ts
- * rejectsBeforeStart();
- * ```
+ Verifies negative out-of-range literal is rejected.
+ 
+ @example
+ ```ts
+ rejectsBeforeStart();
+ ```
  */
 export function rejectsBeforeStart(): void {
   // @ts-expect-error -- index is one position before array start.
@@ -271,12 +271,12 @@ export function rejectsBeforeStart(): void {
 }
 
 /**
- * Verifies fractional literal is rejected.
- *
- * @example
- * ```ts
- * rejectsFraction();
- * ```
+ Verifies fractional literal is rejected.
+ 
+ @example
+ ```ts
+ rejectsFraction();
+ ```
  */
 export function rejectsFraction(): void {
   // @ts-expect-error -- fractional index is not safe integer.
@@ -284,12 +284,12 @@ export function rejectsFraction(): void {
 }
 
 /**
- * Verifies exact `undefined` tuple element is conservatively rejected.
- *
- * @example
- * ```ts
- * rejectsStaticUndefined();
- * ```
+ Verifies exact `undefined` tuple element is conservatively rejected.
+ 
+ @example
+ ```ts
+ rejectsStaticUndefined();
+ ```
  */
 export function rejectsStaticUndefined(): void {
   // @ts-expect-error -- static type cannot distinguish stored undefined from hole.
@@ -297,12 +297,12 @@ export function rejectsStaticUndefined(): void {
 }
 
 /**
- * Verifies large positive safe integer reports range without compiler overflow.
- *
- * @example
- * ```ts
- * rejectsLargePositiveIndex();
- * ```
+ Verifies large positive safe integer reports range without compiler overflow.
+ 
+ @example
+ ```ts
+ rejectsLargePositiveIndex();
+ ```
  */
 export function rejectsLargePositiveIndex(): void {
   // @ts-expect-error -- large safe integer is outside tuple bounds.
@@ -310,12 +310,12 @@ export function rejectsLargePositiveIndex(): void {
 }
 
 /**
- * Verifies large negative safe integer reports range without compiler overflow.
- *
- * @example
- * ```ts
- * rejectsLargeNegativeIndex();
- * ```
+ Verifies large negative safe integer reports range without compiler overflow.
+ 
+ @example
+ ```ts
+ rejectsLargeNegativeIndex();
+ ```
  */
 export function rejectsLargeNegativeIndex(): void {
   // @ts-expect-error -- large negative safe integer is outside tuple bounds.
@@ -327,30 +327,30 @@ export function rejectsLargeNegativeIndex(): void {
 //region Union correlation
 
 /**
- * Verifies every member of valid index union contributes result type.
- *
- * @param index - Union containing only valid tuple indices
- *
- * @returns Elements selected by possible index members
- *
- * @example
- * ```ts
- * const result = accessValidUnionIndex(0);
- * ```
+ Verifies every member of valid index union contributes result type.
+ 
+ @param index - Union containing only valid tuple indices
+ 
+ @returns Elements selected by possible index members
+ 
+ @example
+ ```ts
+ const result = accessValidUnionIndex(0);
+ ```
  */
 export function accessValidUnionIndex(index: 0 | 2,): 10 | 30 {
   return arrayAt({ array: [10, 20, 30], index, });
 }
 
 /**
- * Verifies one invalid index union member rejects whole call.
- *
- * @param index - Union containing valid and invalid tuple indices
- *
- * @example
- * ```ts
- * rejectsInvalidUnionIndex(2);
- * ```
+ Verifies one invalid index union member rejects whole call.
+ 
+ @param index - Union containing valid and invalid tuple indices
+ 
+ @example
+ ```ts
+ rejectsInvalidUnionIndex(2);
+ ```
  */
 export function rejectsInvalidUnionIndex(index: 0 | 2,): void {
   // @ts-expect-error -- index union contains out-of-range member.
@@ -358,56 +358,56 @@ export function rejectsInvalidUnionIndex(index: 0 | 2,): void {
 }
 
 /**
- * Correlated valid input alternatives.
- *
- * @example
- * ```ts
- * declare const input: ValidCorrelatedInput;
- * ```
+ Correlated valid input alternatives.
+ 
+ @example
+ ```ts
+ declare const input: ValidCorrelatedInput;
+ ```
  */
 type ValidCorrelatedInput =
   | { readonly array: readonly [10]; readonly index: 0; }
   | { readonly array: readonly [10, 20]; readonly index: 1; };
 
 /**
- * Invalid input alternatives containing one impossible member.
- *
- * @example
- * ```ts
- * declare const input: InvalidCorrelatedInput;
- * ```
+ Invalid input alternatives containing one impossible member.
+ 
+ @example
+ ```ts
+ declare const input: InvalidCorrelatedInput;
+ ```
  */
 type InvalidCorrelatedInput =
   | { readonly array: readonly [10]; readonly index: 1; }
   | { readonly array: readonly [10, 20]; readonly index: 1; };
 
 /**
- * Verifies valid correlated input preserves result union.
- *
- * @param input - Correlated valid alternatives
- *
- * @returns Selected element union
- *
- * @example
- * ```ts
- * declare const input: ValidCorrelatedInput;
- * const result = accessCorrelated(input);
- * ```
+ Verifies valid correlated input preserves result union.
+ 
+ @param input - Correlated valid alternatives
+ 
+ @returns Selected element union
+ 
+ @example
+ ```ts
+ declare const input: ValidCorrelatedInput;
+ const result = accessCorrelated(input);
+ ```
  */
 export function accessCorrelated(input: ValidCorrelatedInput,): 10 | 20 {
   return arrayAt(input,);
 }
 
 /**
- * Verifies invalid correlated alternative rejects entire call.
- *
- * @param input - Alternatives including impossible access
- *
- * @example
- * ```ts
- * declare const input: InvalidCorrelatedInput;
- * rejectsInvalidCorrelation(input);
- * ```
+ Verifies invalid correlated alternative rejects entire call.
+ 
+ @param input - Alternatives including impossible access
+ 
+ @example
+ ```ts
+ declare const input: InvalidCorrelatedInput;
+ rejectsInvalidCorrelation(input);
+ ```
  */
 export function rejectsInvalidCorrelation(input: InvalidCorrelatedInput,): void {
   // @ts-expect-error -- one correlated member has out-of-range index.

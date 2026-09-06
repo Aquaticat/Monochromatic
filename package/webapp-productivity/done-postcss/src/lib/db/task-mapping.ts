@@ -1,42 +1,42 @@
 /**
- * Row mapping and utility functions for the task data-access layer.
- *
- * Shared by both query and mutation modules.
+ Row mapping and utility functions for the task data-access layer.
+ 
+ Shared by both query and mutation modules.
  */
 import type { Task, } from '../types.ts';
 import type { TaskRow, } from './task-sql.ts';
 
 /**
- * Returns the current timestamp in ISO 8601 format for database writes.
- *
- * @returns Current ISO timestamp string
- *
- * @example
- * ```ts
- * const timestamp = nowIso(); // '2026-04-05T12:00:00.000Z'
- * ```
+ Returns the current timestamp in ISO 8601 format for database writes.
+ 
+ @returns Current ISO timestamp string
+ 
+ @example
+ ```ts
+ const timestamp = nowIso(); // '2026-04-05T12:00:00.000Z'
+ ```
  */
 export function nowIso(): string {
   return new Date().toISOString();
 }
 
 /**
- * Safely parses a JSON string expected to contain a string array.
- * Returns an empty array on parse failure or unexpected shape.
- *
- * @param value - Raw JSON text from a SQLite TEXT column
- *
- * @returns Parsed string array, or empty array on failure
- *
- * @example
- * ```ts
- * parseStringArray('["a","b"]'); // ['a', 'b']
- * ```
+ Safely parses a JSON string expected to contain a string array.
+ Returns an empty array on parse failure or unexpected shape.
+ 
+ @param value - Raw JSON text from a SQLite TEXT column
+ 
+ @returns Parsed string array, or empty array on failure
+ 
+ @example
+ ```ts
+ parseStringArray('["a","b"]'); // ['a', 'b']
+ ```
  */
 export function parseStringArray(value: string,): string[] {
   try {
     /**
-     * Raw JSON.parse output typed as `unknown` until the array shape check runs.
+     Raw JSON.parse output typed as `unknown` until the array shape check runs.
      */
     const parsed = JSON.parse(value,) as unknown;
     if (!Array.isArray(parsed,))
@@ -56,16 +56,16 @@ export function parseStringArray(value: string,): string[] {
 }
 
 /**
- * Deduplicates, trims, and filters empty strings from an optional array.
- *
- * @param values - Raw string array, or `undefined` to produce an empty result
- *
- * @returns Normalized deduplicated array
- *
- * @example
- * ```ts
- * normalizeStringArray([' a ', 'b', 'a']); // ['a', 'b']
- * ```
+ Deduplicates, trims, and filters empty strings from an optional array.
+ 
+ @param values - Raw string array, or `undefined` to produce an empty result
+ 
+ @returns Normalized deduplicated array
+ 
+ @example
+ ```ts
+ normalizeStringArray([' a ', 'b', 'a']); // ['a', 'b']
+ ```
  */
 export function normalizeStringArray(values?: readonly string[],): string[] {
   if (values === undefined)
@@ -82,20 +82,20 @@ export function normalizeStringArray(values?: readonly string[],): string[] {
 }
 
 /**
- * Converts a raw SQLite {@link TaskRow} to the application-level {@link Task} shape.
- *
- * @param row - Raw database row
- *
- * @returns Mapped task object
- *
- * @example
- * ```ts
- * const task = mapTask(row);
- * ```
+ Converts a raw SQLite {@link TaskRow} to the application-level {@link Task} shape.
+ 
+ @param row - Raw database row
+ 
+ @returns Mapped task object
+ 
+ @example
+ ```ts
+ const task = mapTask(row);
+ ```
  */
 export function mapTask(row: Readonly<TaskRow>,): Task {
   /**
-   * Mutable accumulator; nullable SQLite columns are added only when present, so null maps to an absent (`?:`) field.
+   Mutable accumulator; nullable SQLite columns are added only when present, so null maps to an absent (`?:`) field.
    */
   const task: { -readonly [K in keyof Task]: Task[K]; } = {
     id: row.id,

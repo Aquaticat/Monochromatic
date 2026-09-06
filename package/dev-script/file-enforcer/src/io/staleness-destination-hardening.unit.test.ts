@@ -21,14 +21,14 @@ import { freshStalenessManifest, } from '../../dist/final/node/index.mjs';
 //region Temporary fixture helpers
 
 /**
- * Creates isolated temporary directory for destination hardening tests.
- *
- * @returns Absolute temporary directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates isolated temporary directory for destination hardening tests.
+ 
+ @returns Absolute temporary directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return mkdtemp(join(
@@ -38,14 +38,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes isolated temporary directory after destination hardening tests.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown({ tempDir });
- * ```
+ Removes isolated temporary directory after destination hardening tests.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown({ tempDir });
+ ```
  */
 async function teardown({ tempDir, }: { readonly tempDir: string; },): Promise<void> {
   await rm(
@@ -62,16 +62,16 @@ async function teardown({ tempDir, }: { readonly tempDir: string; },): Promise<v
 //region Manifest fixture helpers
 
 /**
- * Writes manifest whose destination stamp points at directory path.
- *
- * @param manifestPath - Manifest path to create.
- *
- * @param destinationPath - Directory path recorded as destination stamp.
- *
- * @example
- * ```ts
- * await writeManifestWithDirectoryDestination({ manifestPath, destinationPath });
- * ```
+ Writes manifest whose destination stamp points at directory path.
+ 
+ @param manifestPath - Manifest path to create.
+ 
+ @param destinationPath - Directory path recorded as destination stamp.
+ 
+ @example
+ ```ts
+ await writeManifestWithDirectoryDestination({ manifestPath, destinationPath });
+ ```
  */
 async function writeManifestWithDirectoryDestination(
   {
@@ -87,15 +87,15 @@ async function writeManifestWithDirectoryDestination(
     throw new Error('Missing test entry point for destination hardening fixture',);
 
   /**
-   * Test file path used as active config dependency by direct unit execution.
+   Test file path used as active config dependency by direct unit execution.
    */
   const activeConfigPath = resolve(testEntryPoint,);
   /**
-   * Active config metadata needed for manifest freshness filtering.
+   Active config metadata needed for manifest freshness filtering.
    */
   const activeConfigStat = await stat(activeConfigPath,);
   /**
-   * Directory metadata crafted to match recorded destination stamps.
+   Directory metadata crafted to match recorded destination stamps.
    */
   const destinationStat = await stat(destinationPath,);
   await writeFile(

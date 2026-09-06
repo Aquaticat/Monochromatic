@@ -1,10 +1,10 @@
 /**
- * Parse benchmark: jsonc-edit against microsoft `jsonc-parser` and
- * `jsonc-eslint-parser`, on a clean document (where jsonc-edit takes the native
- * `JSON.parse` fast-path) and a commented document (where it uses the structured
- * parser). Run with the `bench` task.
- *
- * @module
+ Parse benchmark: jsonc-edit against microsoft `jsonc-parser` and
+ `jsonc-eslint-parser`, on a clean document (where jsonc-edit takes the native
+ `JSON.parse` fast-path) and a commented document (where it uses the structured
+ parser). Run with the `bench` task.
+ 
+ @module
  */
 
 import type { StringJsonc, } from '@monochromatic-dev/module-jsonc-edit/ts/brand.ts';
@@ -15,22 +15,22 @@ import { parseTree, } from 'jsonc-parser';
 //region Constants
 
 /**
- * Number of record entries in each benchmark input.
+ Number of record entries in each benchmark input.
  */
 const ENTRY_COUNT = 300;
 
 /**
- * Timed iterations per parser.
+ Timed iterations per parser.
  */
 const ITERATIONS = 3_000;
 
 /**
- * Untimed warm-up iterations to let the JIT settle.
+ Untimed warm-up iterations to let the JIT settle.
  */
 const WARMUP = 200;
 
 /**
- * Milliseconds per second, for the ops/second figure.
+ Milliseconds per second, for the ops/second figure.
  */
 const MS_PER_SECOND = 1_000;
 
@@ -39,16 +39,16 @@ const MS_PER_SECOND = 1_000;
 //region Inputs
 
 /**
- * Builds a clean (comment-free, valid JSON) document of `count` entries.
- *
- * @param count - Number of record entries.
- *
- * @returns Pretty-printed JSON string.
- *
- * @example
- * ```ts
- * buildCleanInput({ count: 2 });
- * ```
+ Builds a clean (comment-free, valid JSON) document of `count` entries.
+ 
+ @param count - Number of record entries.
+ 
+ @returns Pretty-printed JSON string.
+ 
+ @example
+ ```ts
+ buildCleanInput({ count: 2 });
+ ```
  */
 function buildCleanInput({
   count,
@@ -56,7 +56,7 @@ function buildCleanInput({
   readonly count: number;
 },): string {
   /**
-   * Accumulated entry lines.
+   Accumulated entry lines.
    */
   const lines: string[] = [];
   for (let index = 0; index < count; index += 1)
@@ -65,16 +65,16 @@ function buildCleanInput({
 }
 
 /**
- * Builds a commented document of `count` entries, forcing the structured parser.
- *
- * @param count - Number of record entries.
- *
- * @returns JSONC string with a trailing comment on each entry.
- *
- * @example
- * ```ts
- * buildCommentedInput({ count: 2 });
- * ```
+ Builds a commented document of `count` entries, forcing the structured parser.
+ 
+ @param count - Number of record entries.
+ 
+ @returns JSONC string with a trailing comment on each entry.
+ 
+ @example
+ ```ts
+ buildCommentedInput({ count: 2 });
+ ```
  */
 function buildCommentedInput({
   count,
@@ -82,7 +82,7 @@ function buildCommentedInput({
   readonly count: number;
 },): string {
   /**
-   * Accumulated entry lines, each carrying a trailing comment.
+   Accumulated entry lines, each carrying a trailing comment.
    */
   const lines: string[] = [];
   for (let index = 0; index < count; index += 1)
@@ -95,42 +95,42 @@ function buildCommentedInput({
 //region Parser adapters
 
 /**
- * Parses with jsonc-edit.
- *
- * @param source - Document to parse.
- *
- * @example
- * ```ts
- * runJsoncEdit('{}');
- * ```
+ Parses with jsonc-edit.
+ 
+ @param source - Document to parse.
+ 
+ @example
+ ```ts
+ runJsoncEdit('{}');
+ ```
  */
 function runJsoncEdit(source: string,): void {
   parseJsonc({ source: source as StringJsonc, },);
 }
 
 /**
- * Parses with microsoft `jsonc-parser` into an offset tree.
- *
- * @param source - Document to parse.
- *
- * @example
- * ```ts
- * runMicrosoft('{}');
- * ```
+ Parses with microsoft `jsonc-parser` into an offset tree.
+ 
+ @param source - Document to parse.
+ 
+ @example
+ ```ts
+ runMicrosoft('{}');
+ ```
  */
 function runMicrosoft(source: string,): void {
   parseTree(source,);
 }
 
 /**
- * Parses with `jsonc-eslint-parser` into an ESTree-style AST.
- *
- * @param source - Document to parse.
- *
- * @example
- * ```ts
- * runEslint('{}');
- * ```
+ Parses with `jsonc-eslint-parser` into an ESTree-style AST.
+ 
+ @param source - Document to parse.
+ 
+ @example
+ ```ts
+ runEslint('{}');
+ ```
  */
 function runEslint(source: string,): void {
   parseForESLint(source, { jsonSyntax: 'JSONC', },);
@@ -141,18 +141,18 @@ function runEslint(source: string,): void {
 //region Harness
 
 /**
- * Times a parser over an input and prints its throughput.
- *
- * @param label - Parser label.
- *
- * @param parse - Parser adapter.
- *
- * @param input - Document to parse repeatedly.
- *
- * @example
- * ```ts
- * measure({ label: 'x', parse: runJsoncEdit, input: '{}' });
- * ```
+ Times a parser over an input and prints its throughput.
+ 
+ @param label - Parser label.
+ 
+ @param parse - Parser adapter.
+ 
+ @param input - Document to parse repeatedly.
+ 
+ @example
+ ```ts
+ measure({ label: 'x', parse: runJsoncEdit, input: '{}' });
+ ```
  */
 function measure({
   label,
@@ -166,17 +166,17 @@ function measure({
   for (let index = 0; index < WARMUP; index += 1)
     parse(input,);
   /**
-   * High-resolution start timestamp.
+   High-resolution start timestamp.
    */
   const start = performance.now();
   for (let index = 0; index < ITERATIONS; index += 1)
     parse(input,);
   /**
-   * Elapsed milliseconds across all timed iterations.
+   Elapsed milliseconds across all timed iterations.
    */
   const elapsed = performance.now() - start;
   /**
-   * Parses per second.
+   Parses per second.
    */
   const opsPerSecond = Math.round(ITERATIONS / (elapsed / MS_PER_SECOND),);
   console.log(`  ${label.padEnd(36,)} ${`${elapsed.toFixed(1,)}ms`.padStart(9,)}  ${String(opsPerSecond,).padStart(9,)} ops/s`,);
@@ -187,12 +187,12 @@ function measure({
 //region Run
 
 /**
- * Clean benchmark document.
+ Clean benchmark document.
  */
 const clean = buildCleanInput({ count: ENTRY_COUNT, },);
 
 /**
- * Commented benchmark document.
+ Commented benchmark document.
  */
 const commented = buildCommentedInput({ count: ENTRY_COUNT, },);
 

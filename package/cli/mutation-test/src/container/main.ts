@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
 /**
- * Container-side entrypoint for one shard.
- *
- * Reads the shard manifest, prepares the work tree, establishes a green
- * baseline (tests pass, types clean, tsbuildinfo warmed), runs the
- * mutant loop, and writes the shard report. A red baseline reports every
- * mutant as unrun so the host treats the shard as an infra failure
- * rather than blaming mutants.
- *
- * @example
- * ```bash
- * node /baked/packages/cli/mutation-test/src/container/main.ts
- * ```
+ Container-side entrypoint for one shard.
+ 
+ Reads the shard manifest, prepares the work tree, establishes a green
+ baseline (tests pass, types clean, tsbuildinfo warmed), runs the
+ mutant loop, and writes the shard report. A red baseline reports every
+ mutant as unrun so the host treats the shard as an infra failure
+ rather than blaming mutants.
+ 
+ @example
+ ```bash
+ node /baked/packages/cli/mutation-test/src/container/main.ts
+ ```
  */
 
 import {
@@ -52,47 +52,47 @@ import {
 } from '../shard-schema.ts';
 
 /**
- * Module logger for the container entrypoint.
+ Module logger for the container entrypoint.
  */
 const l = tagged({ tag: 'mutation-test-container', },);
 
 /**
- * Manifest file name inside the manifest mount.
+ Manifest file name inside the manifest mount.
  */
 export const MANIFEST_FILE_NAME = 'shard-manifest.json';
 
 /**
- * Report file name inside the report mount.
+ Report file name inside the report mount.
  */
 export const REPORT_FILE_NAME = 'shard-report.json';
 
 /**
- * Generous baseline timeout: the first unmutated run compiles caches and
- * warms tsbuildinfo, so per-mutant limits do not apply to it.
+ Generous baseline timeout: the first unmutated run compiles caches and
+ warms tsbuildinfo, so per-mutant limits do not apply to it.
  */
 const BASELINE_TIMEOUT_MS = 600_000;
 
 /**
- * Returns whether a parsed JSON value has the shard manifest shape.
- *
- * Checks the discriminating fields (version, id, package, arrays); the
- * host is the only writer, so field-level validation stays shallow.
- *
- * @param value - Parsed JSON value.
- *
- * @returns Whether value is a usable manifest.
- *
- * @example
- * ```ts
- * isShardManifest(JSON.parse(raw));
- * ```
+ Returns whether a parsed JSON value has the shard manifest shape.
+ 
+ Checks the discriminating fields (version, id, package, arrays); the
+ host is the only writer, so field-level validation stays shallow.
+ 
+ @param value - Parsed JSON value.
+ 
+ @returns Whether value is a usable manifest.
+ 
+ @example
+ ```ts
+ isShardManifest(JSON.parse(raw));
+ ```
  */
 function isShardManifest(value: unknown,): value is ShardManifest {
   if (!isRecord(value,))
     return false;
 
   /**
-   * Record view over the candidate manifest.
+   Record view over the candidate manifest.
    */
   const record = value;
   return (record.schemaVersion === SHARD_SCHEMA_VERSION)
@@ -105,20 +105,20 @@ function isShardManifest(value: unknown,): value is ShardManifest {
 }
 
 /**
- * Reads and validates the mounted shard manifest.
- *
- * @returns Parsed manifest.
- *
- * @throws Error when the manifest is missing or has a wrong shape.
- *
- * @example
- * ```ts
- * const manifest = await readManifest();
- * ```
+ Reads and validates the mounted shard manifest.
+ 
+ @returns Parsed manifest.
+ 
+ @throws Error when the manifest is missing or has a wrong shape.
+ 
+ @example
+ ```ts
+ const manifest = await readManifest();
+ ```
  */
 export async function readManifest(): Promise<ShardManifest> {
   /**
-   * Raw manifest JSON text from the mount.
+   Raw manifest JSON text from the mount.
    */
   const raw = await readFile(
     join(
@@ -128,7 +128,7 @@ export async function readManifest(): Promise<ShardManifest> {
     'utf8',
   );
   /**
-   * Parsed manifest before shape validation.
+   Parsed manifest before shape validation.
    */
   const parsed: unknown = JSON.parse(raw,);
 
@@ -141,20 +141,20 @@ export async function readManifest(): Promise<ShardManifest> {
 }
 
 /**
- * Writes the shard report to the report mount.
- *
- * @param report - Completed shard report.
- *
- * @mutates report - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
- *
- * @example
- * ```ts
- * await writeReport(report);
- * ```
+ Writes the shard report to the report mount.
+ 
+ @param report - Completed shard report.
+ 
+ @mutates report - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ 
+ @example
+ ```ts
+ await writeReport(report);
+ ```
  */
 async function writeReport(report: ShardReport,): Promise<void> {
   /**
-   * Report destination path on the report mount.
+   Report destination path on the report mount.
    */
   const reportPath = join(
     REPORT_MOUNT,
@@ -176,23 +176,23 @@ async function writeReport(report: ShardReport,): Promise<void> {
 }
 
 /**
- * Executes the full container-side shard flow.
- *
- * @example
- * ```ts
- * await runShard();
- * ```
+ Executes the full container-side shard flow.
+ 
+ @example
+ ```ts
+ await runShard();
+ ```
  */
 export async function runShard(): Promise<void> {
   /**
-   * Logger scoped to the shard run.
+   Logger scoped to the shard run.
    */
   const rl = tagged({
     tag: runShard.name,
     l,
   },);
   /**
-   * Mounted shard manifest.
+   Mounted shard manifest.
    */
   const manifest = await readManifest();
   rl.info(`shard ${manifest.shardId}: ${String(manifest.mutants
@@ -201,19 +201,19 @@ export async function runShard(): Promise<void> {
   await prepareWorkTree();
 
   /**
-   * Target package working directory inside the work tree.
+   Target package working directory inside the work tree.
    */
   const packageCwd = join(
     WORK_MOUNT,
     manifest.packagePath,
   );
   /**
-   * Baseline build materialising dist output and declarations before
-   * the type gate and the output-importing tests.
+   Baseline build materialising dist output and declarations before
+   the type gate and the output-importing tests.
    */
   const baselineBuild = await runBuildStep({ packageCwd, },);
   /**
-   * Baseline type check, also warming the incremental build info.
+   Baseline type check, also warming the incremental build info.
    */
   const baselineTsgo: TsgoOutcome = baselineBuild.clean
     ? await tsgoCheck({ cwd: packageCwd, },)
@@ -223,7 +223,7 @@ export async function runShard(): Promise<void> {
       detail: baselineBuild.detail,
     };
   /**
-   * Baseline test run over the selected tests.
+   Baseline test run over the selected tests.
    */
   const baselineTests: TestRunOutcome = await runTests({
     cwd: packageCwd,
@@ -231,7 +231,7 @@ export async function runShard(): Promise<void> {
     timeoutMs: BASELINE_TIMEOUT_MS,
   },);
   /**
-   * Whether the unmutated package passes its own gates.
+   Whether the unmutated package passes its own gates.
    */
   const green = baselineBuild.clean
     && baselineTsgo.clean
@@ -261,7 +261,7 @@ export async function runShard(): Promise<void> {
   }
 
   /**
-   * Mutant loop output for this shard.
+   Mutant loop output for this shard.
    */
   const loop = await runMutantLoop({
     packageCwd,
@@ -290,7 +290,7 @@ export async function runShard(): Promise<void> {
 }
 
 /**
- * Whether this module is running as the process entrypoint.
+ Whether this module is running as the process entrypoint.
  */
 const isDirectEntrypoint = (process.argv[1] !== undefined)
   && (import.meta.url

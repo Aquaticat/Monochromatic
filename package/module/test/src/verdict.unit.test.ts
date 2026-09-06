@@ -1,7 +1,7 @@
 /**
- * Tests outcome tags emitted by test and suite runners.
- *
- * @module
+ Tests outcome tags emitted by test and suite runners.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -18,23 +18,23 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Runner outcomes encoded by dedicated logger tags.
- *
- * @example
- * ```ts
- * const verdict: Verdict = 'PASS';
- * ```
+ Runner outcomes encoded by dedicated logger tags.
+ 
+ @example
+ ```ts
+ const verdict: Verdict = 'PASS';
+ ```
  */
 type Verdict = 'FAIL' | 'PASS' | 'SKIP';
 
 /**
- * Capturing logger plus records received by its only sink.
- *
- * @example
- * ```ts
- * const capture = await createCapture();
- * capture.logger.info('message');
- * ```
+ Capturing logger plus records received by its only sink.
+ 
+ @example
+ ```ts
+ const capture = await createCapture();
+ capture.logger.info('message');
+ ```
  */
 type Capture = {
   readonly logger: Logger;
@@ -42,15 +42,15 @@ type Capture = {
 };
 
 /**
- * Builds logger whose sink retains every record for assertions.
- *
- * @returns initialized logger and mutable record collection owned by sink
- *
- * @example
- * ```ts
- * const capture = await createCapture();
- * await capture.logger.flush();
- * ```
+ Builds logger whose sink retains every record for assertions.
+ 
+ @returns initialized logger and mutable record collection owned by sink
+ 
+ @example
+ ```ts
+ const capture = await createCapture();
+ await capture.logger.flush();
+ ```
  */
 async function createCapture(): Promise<Capture> {
   /** Records retained in sink arrival order. */
@@ -78,18 +78,18 @@ async function createCapture(): Promise<Capture> {
 }
 
 /**
- * Selects records carrying exact bracketed outcome token.
- *
- * @param records - captured logger records to inspect
- *
- * @param verdict - outcome token required in message
- *
- * @returns records containing dedicated verdict tag
- *
- * @example
- * ```ts
- * const failed = recordsForVerdict({ records, verdict: 'FAIL', });
- * ```
+ Selects records carrying exact bracketed outcome token.
+ 
+ @param records - captured logger records to inspect
+ 
+ @param verdict - outcome token required in message
+ 
+ @returns records containing dedicated verdict tag
+ 
+ @example
+ ```ts
+ const failed = recordsForVerdict({ records, verdict: 'FAIL', });
+ ```
  */
 function recordsForVerdict({
   records,
@@ -106,20 +106,20 @@ function recordsForVerdict({
 }
 
 /**
- * Finds first captured record whose message includes fragment.
- *
- * @param records - captured records to search
- *
- * @param fragment - exact message fragment required
- *
- * @returns first matching record
- *
- * @throws Error when no record contains fragment
- *
- * @example
- * ```ts
- * const record = recordContaining({ records, fragment: '[FAIL]', });
- * ```
+ Finds first captured record whose message includes fragment.
+ 
+ @param records - captured records to search
+ 
+ @param fragment - exact message fragment required
+ 
+ @returns first matching record
+ 
+ @throws Error when no record contains fragment
+ 
+ @example
+ ```ts
+ const record = recordContaining({ records, fragment: '[FAIL]', });
+ ```
  */
 function recordContaining({
   records,

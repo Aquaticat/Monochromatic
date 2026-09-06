@@ -1,7 +1,7 @@
 /**
- * Runtime and narrowing tests for safe-integer proof helpers.
- *
- * @module
+ Runtime and narrowing tests for safe-integer proof helpers.
+ 
+ @module
  */
 
 import {
@@ -20,18 +20,18 @@ import {
 } from '../dist/final/neutral/index.mjs';
 
 /**
- * Doubles value after assertion narrows it to `SafeInteger`.
- *
- * @param value - Number requiring proof before arithmetic
- *
- * @returns Doubled safe integer
- *
- * @throws {@link ArrayAtError} when value is not safe integer
- *
- * @example
- * ```ts
- * const answer = doubleSafeInteger(21);
- * ```
+ Doubles value after assertion narrows it to `SafeInteger`.
+ 
+ @param value - Number requiring proof before arithmetic
+ 
+ @returns Doubled safe integer
+ 
+ @throws {@link ArrayAtError} when value is not safe integer
+ 
+ @example
+ ```ts
+ const answer = doubleSafeInteger(21);
+ ```
  */
 function doubleSafeInteger(value: number,): number {
   assertSafeInteger(value,);
@@ -40,18 +40,18 @@ function doubleSafeInteger(value: number,): number {
 }
 
 /**
- * Captures expected proof-helper error.
- *
- * @param operation - Failing proof operation
- *
- * @returns Captured `ArrayAtError`
- *
- * @throws Unexpected value or absent error
- *
- * @example
- * ```ts
- * const error = captureProofError(() => asSafeInteger(1.5));
- * ```
+ Captures expected proof-helper error.
+ 
+ @param operation - Failing proof operation
+ 
+ @returns Captured `ArrayAtError`
+ 
+ @throws Unexpected value or absent error
+ 
+ @example
+ ```ts
+ const error = captureProofError(() => asSafeInteger(1.5));
+ ```
  */
 function captureProofError(operation: () => unknown,): ArrayAtError {
   try {

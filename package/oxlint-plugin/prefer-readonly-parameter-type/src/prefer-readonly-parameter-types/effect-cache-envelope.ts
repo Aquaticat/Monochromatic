@@ -1,7 +1,7 @@
 /**
- * Incremental persistent-cache envelope identity and validation.
- *
- * @module
+ Incremental persistent-cache envelope identity and validation.
+ 
+ @module
  */
 
 import type { EffectProjectSurfaces, } from './effect-project-fingerprint.ts';
@@ -14,41 +14,41 @@ import { isSerializedEffectSummaries, } from './effect-summary-cache-validation.
 import type { SerializedEffectSummaries, } from './effect-summary-serialization.ts';
 
 /**
- * Sentinel returned when envelope validation cannot prove an exact hit.
+ Sentinel returned when envelope validation cannot prove an exact hit.
  */
 export const ENVELOPE_INVALID: unique symbol = Symbol(
   'persistent cache envelope failed validation',
 );
 
 /**
- * Reason category for an unclassified direct-summary construction failure.
+ Reason category for an unclassified direct-summary construction failure.
  */
 export const DIRECT_SUMMARY_FAILURE_REASON = 'direct-summary-construction-failed';
 
 /**
- * Reason category for known TypeScript instantiated-tuple serialization panic.
+ Reason category for known TypeScript instantiated-tuple serialization panic.
  */
 export const TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON = 'typescript-tuple-serialization-failed';
 
 /**
- * Bounded persisted reason for source-local summary coverage.
+ Bounded persisted reason for source-local summary coverage.
  */
 export type EffectSummaryOmissionReason =
   | typeof DIRECT_SUMMARY_FAILURE_REASON
   | typeof TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON;
 
 /**
- * Validated incremental JSON cache envelope.
- *
- * `dependencyDigests` snapshots the content identity of every non-declaration
- * workspace file in the entry's transitive module-dependency closure at
- * creation time; an entry revalidates only while each snapshot digest matches
- * the current program and every whole-scope surface digest is unchanged.
- * `directDependencies` retains the closure's first edges so later builds can
- * recompute closures without re-resolving unchanged files.
- * `dependenciesResolved` marks whether module references resolved completely;
- * an unresolved entry snapshots the whole indexed scope instead and must
- * never seed another file's closure walk.
+ Validated incremental JSON cache envelope.
+ 
+ `dependencyDigests` snapshots the content identity of every non-declaration
+ workspace file in the entry's transitive module-dependency closure at
+ creation time; an entry revalidates only while each snapshot digest matches
+ the current program and every whole-scope surface digest is unchanged.
+ `directDependencies` retains the closure's first edges so later builds can
+ recompute closures without re-resolving unchanged files.
+ `dependenciesResolved` marks whether module references resolved completely;
+ an unresolved entry snapshots the whole indexed scope instead and must
+ never seed another file's closure walk.
  */
 export type PersistentEffectCacheEnvelope = {
   readonly schema: number;
@@ -66,7 +66,7 @@ export type PersistentEffectCacheEnvelope = {
 };
 
 /**
- * Current program state one envelope validates against.
+ Current program state one envelope validates against.
  */
 export type PersistentEffectDependencyState = {
   readonly surfaces: EffectProjectSurfaces;
@@ -74,11 +74,11 @@ export type PersistentEffectDependencyState = {
 };
 
 /**
- * Tests whether unknown JSON value is property-bearing record.
- *
- * @param value - Parsed JSON value.
- *
- * @returns whether value can be inspected by string key.
+ Tests whether unknown JSON value is property-bearing record.
+ 
+ @param value - Parsed JSON value.
+ 
+ @returns whether value can be inspected by string key.
  */
 function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
   return ((typeof value) === 'object')
@@ -87,11 +87,11 @@ function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
 }
 
 /**
- * Tests whether unknown JSON value is string-to-string record.
- *
- * @param value - Parsed JSON value.
- *
- * @returns whether every property value is a string.
+ Tests whether unknown JSON value is string-to-string record.
+ 
+ @param value - Parsed JSON value.
+ 
+ @returns whether every property value is a string.
  */
 function isStringRecord(value: unknown,): value is Readonly<Record<string, string>> {
   if (!isRecord(value,))
@@ -103,26 +103,26 @@ function isStringRecord(value: unknown,): value is Readonly<Record<string, strin
 }
 
 /**
- * Tests whether parsed omission identities are bounded unique cache strings.
- *
- * @param value - Parsed omission list.
- *
- * @param fileName - Source identity every omitted callable must belong to.
- *
- * @param payload - Validated summaries that omissions must not duplicate.
- *
- * @returns whether every identity belongs to source,
- * is absent from payload,
- * and appears once.
- *
- * @example
- * ```ts
- * isOmittedCallableKeys({
- *   value: ['source.ts:1:2:3'],
- *   fileName: 'source.ts',
- *   payload: [],
- * });
- * ```
+ Tests whether parsed omission identities are bounded unique cache strings.
+ 
+ @param value - Parsed omission list.
+ 
+ @param fileName - Source identity every omitted callable must belong to.
+ 
+ @param payload - Validated summaries that omissions must not duplicate.
+ 
+ @returns whether every identity belongs to source,
+ is absent from payload,
+ and appears once.
+ 
+ @example
+ ```ts
+ isOmittedCallableKeys({
+   value: ['source.ts:1:2:3'],
+   fileName: 'source.ts',
+   payload: [],
+ });
+ ```
  */
 function isOmittedCallableKeys({
   value,
@@ -136,13 +136,13 @@ function isOmittedCallableKeys({
   if (value.length > MAX_CALLABLE_ARITY)
     return false;
   /**
-   * Validated string identities rejecting cache amplification through duplicates.
+   Validated string identities rejecting cache amplification through duplicates.
    */
   const keys = value.filter(function cacheString(entry,): entry is string {
     return isCacheString(entry,);
   },);
   /**
-   * Persisted summary identities that cannot also be deliberate omissions.
+   Persisted summary identities that cannot also be deliberate omissions.
    */
   const summaryKeys = new Set(payload.map(function summaryKey([key,],): string {
     return key;
@@ -155,11 +155,11 @@ function isOmittedCallableKeys({
 }
 
 /**
- * Tests whether unknown value is one bounded omission reason category.
- *
- * @param value - Parsed reason candidate.
- *
- * @returns whether candidate names supported category.
+ Tests whether unknown value is one bounded omission reason category.
+ 
+ @param value - Parsed reason candidate.
+ 
+ @returns whether candidate names supported category.
  */
 function isOmissionReason(value: unknown,): value is EffectSummaryOmissionReason {
   return (value === DIRECT_SUMMARY_FAILURE_REASON)
@@ -167,15 +167,15 @@ function isOmissionReason(value: unknown,): value is EffectSummaryOmissionReason
 }
 
 /**
- * Tests whether omission reason categories agree with omission list presence.
- *
- * @param keys - Parsed omission identities.
- *
- * @param reasons - Parsed bounded reason categories.
- *
- * @returns whether categories are unique,
- * known,
- * and match empty state.
+ Tests whether omission reason categories agree with omission list presence.
+ 
+ @param keys - Parsed omission identities.
+ 
+ @param reasons - Parsed bounded reason categories.
+ 
+ @returns whether categories are unique,
+ known,
+ and match empty state.
  */
 function omissionReasonsMatch({
   keys,
@@ -194,13 +194,13 @@ function omissionReasonsMatch({
 }
 
 /**
- * Tests whether parsed surfaces match current whole-scope surfaces exactly.
- *
- * @param value - Parsed JSON surfaces value.
- *
- * @param surfaces - Current whole-scope surface digests.
- *
- * @returns whether every surface digest matches.
+ Tests whether parsed surfaces match current whole-scope surfaces exactly.
+ 
+ @param value - Parsed JSON surfaces value.
+ 
+ @param surfaces - Current whole-scope surface digests.
+ 
+ @returns whether every surface digest matches.
  */
 function surfacesMatch({
   value,
@@ -218,13 +218,13 @@ function surfacesMatch({
 }
 
 /**
- * Tests whether every snapshot dependency digest matches current program.
- *
- * @param dependencyDigests - Parsed snapshot digests keyed by file path.
- *
- * @param sourceDigests - Current per-source content digests.
- *
- * @returns whether each dependency file is present and unchanged.
+ Tests whether every snapshot dependency digest matches current program.
+ 
+ @param dependencyDigests - Parsed snapshot digests keyed by file path.
+ 
+ @param sourceDigests - Current per-source content digests.
+ 
+ @returns whether each dependency file is present and unchanged.
  */
 function dependenciesMatch({
   dependencyDigests,
@@ -240,20 +240,20 @@ function dependenciesMatch({
 }
 
 /**
- * Validates parsed cache envelope against requested identity and program state.
- *
- * @param value - Parsed JSON value.
- *
- * @param identity - Requested analyzer, project, file, and source identity.
- *
- * @param state - Current whole-scope surfaces and per-source digests.
- *
- * @returns validated envelope or invalid sentinel.
- *
- * @example
- * ```ts
- * validatePersistentEnvelope({ value, identity, state });
- * ```
+ Validates parsed cache envelope against requested identity and program state.
+ 
+ @param value - Parsed JSON value.
+ 
+ @param identity - Requested analyzer, project, file, and source identity.
+ 
+ @param state - Current whole-scope surfaces and per-source digests.
+ 
+ @returns validated envelope or invalid sentinel.
+ 
+ @example
+ ```ts
+ validatePersistentEnvelope({ value, identity, state });
+ ```
  */
 export function validatePersistentEnvelope({
   value,

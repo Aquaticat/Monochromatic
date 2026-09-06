@@ -1,10 +1,10 @@
 /**
- * Parse plus stringify benchmark: css-edit against postcss and css-tree on a
- * synthetic stylesheet shaped like this repository's real CSS (custom
- * properties, nesting, media queries, unknown at-rules). Run with the `bench`
- * task; mitata reports timings.
- *
- * @module
+ Parse plus stringify benchmark: css-edit against postcss and css-tree on a
+ synthetic stylesheet shaped like this repository's real CSS (custom
+ properties, nesting, media queries, unknown at-rules). Run with the `bench`
+ task; mitata reports timings.
+ 
+ @module
  */
 
 import {
@@ -27,32 +27,32 @@ import { parse as postcssParse, } from 'postcss';
 //region Input
 
 /**
- * Number of component blocks in the benchmark input.
+ Number of component blocks in the benchmark input.
  */
 const BLOCK_COUNT = 300;
 
 /**
- * Modulo spreading padding values across blocks.
+ Modulo spreading padding values across blocks.
  */
 const PADDING_STEPS = 5;
 
 /**
- * Base rem width for generated media queries.
+ Base rem width for generated media queries.
  */
 const MEDIA_BASE_REM = 20;
 
 /**
- * Modulo spreading media-query widths across blocks.
+ Modulo spreading media-query widths across blocks.
  */
 const MEDIA_SPREAD = 40;
 
 /**
- * Builds one component-shaped block: custom properties, declarations,
- * `&` nesting, a nested media query, and an adversarial string.
- *
- * @param index - Block discriminator.
- *
- * @returns CSS text of one block.
+ Builds one component-shaped block: custom properties, declarations,
+ `&` nesting, a nested media query, and an adversarial string.
+ 
+ @param index - Block discriminator.
+ 
+ @returns CSS text of one block.
  */
 function buildBlock({
   index,
@@ -76,7 +76,7 @@ function buildBlock({
 }
 
 /**
- * Full benchmark stylesheet.
+ Full benchmark stylesheet.
  */
 const INPUT = Array
   .from(

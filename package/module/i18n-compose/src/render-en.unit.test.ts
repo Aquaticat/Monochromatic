@@ -1,7 +1,7 @@
 /**
- * Golden render tests for the English locale.
- *
- * @module
+ Golden render tests for the English locale.
+ 
+ @module
  */
 
 import {
@@ -172,9 +172,9 @@ await describe({
             /** Synthetic third-singular subject derived from the existing `they` entry shape. */
             const subject = { kind: 'subject.key', subject: 'they', } as const;
             /**
-             * Deliberate surface/agreement mismatch: `they` still renders while 3s metadata
-             * isolates present3s agreement, because shared test vocabulary intentionally has
-             * no he/she/it subject.
+             Deliberate surface/agreement mismatch: `they` still renders while 3s metadata
+             isolates present3s agreement, because shared test vocabulary intentionally has
+             no he/she/it subject.
              */
             const localSpec = defineEnglishLocale({
               labels: enLabels,
@@ -261,9 +261,9 @@ await describe({
           name: 'do-support: 3s present uses Does',
           fn: async () => {
             /**
-             * Deliberate surface/agreement mismatch: `they` still renders while 3s metadata
-             * isolates do-support agreement, because shared test vocabulary intentionally has
-             * no he/she/it subject.
+             Deliberate surface/agreement mismatch: `they` still renders while 3s metadata
+             isolates do-support agreement, because shared test vocabulary intentionally has
+             no he/she/it subject.
              */
             const localSpec = defineEnglishLocale({
               labels: enLabels,
@@ -490,8 +490,8 @@ await describe({
           name: 'verb-phrase fragment in gerund form prefers explicit gerund',
           fn: async () => {
             /**
-             * Spec whose `save` key uses an `open` base to prove explicit gerund overrides
-             * derived `openning`.
+             Spec whose `save` key uses an `open` base to prove explicit gerund overrides
+             derived `openning`.
              */
             const localSpec = defineEnglishLocale({
               labels: enLabels,

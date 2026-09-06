@@ -1,17 +1,17 @@
 /**
- * Popover panel styles for the `\<side-drawer\>` component.
- *
- * Covers the fixed overlay, slide-in animation, scrim fade-in,
- * and the drawer container. Interpolated into the main styles.
+ Popover panel styles for the `\<side-drawer\>` component.
+ 
+ Covers the fixed overlay, slide-in animation, scrim fade-in,
+ and the drawer container. Interpolated into the main styles.
  */
 
 /**
- * Z-index for the popover panel overlay.
+ Z-index for the popover panel overlay.
  */
 const PANEL_Z_INDEX = 100;
 
 /**
- * CSS for the popover panel portion of `\<side-drawer\>`, layered at {@link PANEL_Z_INDEX}.
+ CSS for the popover panel portion of `\<side-drawer\>`, layered at {@link PANEL_Z_INDEX}.
  */
 export const SIDE_DRAWER_PANEL_STYLES: string = `
   .panel {

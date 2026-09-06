@@ -1,7 +1,7 @@
 /**
- * Pi extension that injects hidden current local wall-clock time context.
- *
- * @module
+ Pi extension that injects hidden current local wall-clock time context.
+ 
+ @module
  */
 
 import type {
@@ -14,7 +14,7 @@ import { formatTimeContext, } from './format-time-context.ts';
 //region Constants
 
 /**
- * Custom message type used for hidden current-time context entries.
+ Custom message type used for hidden current-time context entries.
  */
 const CURRENT_TIME_CONTEXT_TYPE = 'current-time-context';
 
@@ -23,20 +23,20 @@ const CURRENT_TIME_CONTEXT_TYPE = 'current-time-context';
 //region Extension entry point
 
 /**
- * Current Time Context pi extension.
- *
- * Subscribes to `before_agent_start` and returns one hidden custom message
- * containing local 24-hour wall-clock time at minute precision.
- *
- * @param pi - pi extension API
- *
- * @mutates pi - `pi.on` stores the `before_agent_start` event registration in the Pi host
- *
- * @example
- * ```typescript
- * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi-plugin/current-time-context"] }
- * ```
+ Current Time Context pi extension.
+ 
+ Subscribes to `before_agent_start` and returns one hidden custom message
+ containing local 24-hour wall-clock time at minute precision.
+ 
+ @param pi - pi extension API
+ 
+ @mutates pi - `pi.on` stores the `before_agent_start` event registration in the Pi host
+ 
+ @example
+ ```typescript
+ // In ~/.pi/agent/settings.json:
+ { "packages": ["./packages/pi-plugin/current-time-context"] }
+ ```
  */
 export default function currentTimeContext(pi: ForeignBorrowed<ExtensionAPI>,): void {
   pi.on(

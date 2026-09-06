@@ -1,26 +1,26 @@
 /**
- * `<toggle-switch>`: boolean toggle with animated thumb.
- * Reflects state via the `on` attribute and dispatches a `change` event on toggle.
+ `<toggle-switch>`: boolean toggle with animated thumb.
+ Reflects state via the `on` attribute and dispatches a `change` event on toggle.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { TOGGLE_SWITCH_STYLES, } from './toggle-switch-styles.ts';
 
 /**
- * `<toggle-switch>` web component.
+ `<toggle-switch>` web component.
  */
 class ToggleSwitch extends HTMLElement {
   /**
-   * Attributes that trigger `attributeChangedCallback`.
+   Attributes that trigger `attributeChangedCallback`.
    */
   static observedAttributes = ['on',];
 
   /**
-   * Shadow root for encapsulated rendering.
+   Shadow root for encapsulated rendering.
    */
   readonly #shadow: ShadowRoot;
 
   /**
-   * Initializes the shadow root.
+   Initializes the shadow root.
    */
   constructor() {
     super();
@@ -28,18 +28,18 @@ class ToggleSwitch extends HTMLElement {
   }
 
   /**
-   * Whether the toggle is currently in the "on" position.
-   *
-   * @returns Current toggle state
+   Whether the toggle is currently in the "on" position.
+   
+   @returns Current toggle state
    */
   get on(): boolean {
     return this.hasAttribute('on',);
   }
 
   /**
-   * Sets the toggle state by adding or removing the `on` attribute.
-   *
-   * @param value - Whether the toggle should be on
+   Sets the toggle state by adding or removing the `on` attribute.
+   
+   @param value - Whether the toggle should be on
    */
   set on(value: boolean,) {
     if (value) {
@@ -54,7 +54,7 @@ class ToggleSwitch extends HTMLElement {
   }
 
   /**
-   * Renders initial content and wires up the click listener.
+   Renders initial content and wires up the click listener.
    */
   connectedCallback(): void {
     this.#render();
@@ -65,7 +65,7 @@ class ToggleSwitch extends HTMLElement {
   }
 
   /**
-   * Removes the click listener when the element is disconnected.
+   Removes the click listener when the element is disconnected.
    */
   disconnectedCallback(): void {
     this.removeEventListener(
@@ -75,20 +75,20 @@ class ToggleSwitch extends HTMLElement {
   }
 
   /**
-   * Re-renders when the `on` attribute changes.
+   Re-renders when the `on` attribute changes.
    */
   attributeChangedCallback(): void {
     this.#render();
   }
 
   /**
-   * Bound click handler that toggles state and dispatches a `change` event.
+   Bound click handler that toggles state and dispatches a `change` event.
    */
   readonly #handleClick = this.#onHandleClick
     .bind(this,);
 
   /**
-   * Toggles state and dispatches a change event.
+   Toggles state and dispatches a change event.
    */
   #onHandleClick(): void {
     this.on = !this.on;
@@ -104,11 +104,11 @@ class ToggleSwitch extends HTMLElement {
   }
 
   /**
-   * Renders the track and thumb elements into the shadow root.
+   Renders the track and thumb elements into the shadow root.
    */
   #render(): void {
     /**
-     * Captured once so the value stays stable across both child branches below.
+     Captured once so the value stays stable across both child branches below.
      */
     const isOn = this.on;
     this.#shadow

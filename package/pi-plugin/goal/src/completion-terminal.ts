@@ -1,7 +1,7 @@
 /**
- * Manual approval and reviewer-unavailable terminal transitions.
- *
- * @module
+ Manual approval and reviewer-unavailable terminal transitions.
+ 
+ @module
  */
 
 import type { GoalSettlementReviewRequest, } from './completion-types.ts';
@@ -12,24 +12,24 @@ import type {
 } from './types.ts';
 
 /**
- * Persist manual approval after every model reviewer attempt failed.
- *
- * @param controller - current revalidated controller
- *
- * @param request - captured settlement identity
- *
- * @param attemptedReviewerIdentities - exhausted model transports
- *
- * @param diagnostic - normalized model failure diagnostic
- *
- * @param timestamp - ISO completion timestamp
- *
- * @returns terminal manually approved transition
- *
- * @example
- * ```ts
- * manuallyApproveGoalCompletion({ controller, request, attemptedReviewerIdentities: [], diagnostic, timestamp });
- * ```
+ Persist manual approval after every model reviewer attempt failed.
+ 
+ @param controller - current revalidated controller
+ 
+ @param request - captured settlement identity
+ 
+ @param attemptedReviewerIdentities - exhausted model transports
+ 
+ @param diagnostic - normalized model failure diagnostic
+ 
+ @param timestamp - ISO completion timestamp
+ 
+ @returns terminal manually approved transition
+ 
+ @example
+ ```ts
+ manuallyApproveGoalCompletion({ controller, request, attemptedReviewerIdentities: [], diagnostic, timestamp });
+ ```
  */
 function manuallyApproveGoalCompletion(
   {
@@ -51,7 +51,7 @@ function manuallyApproveGoalCompletion(
     !== 'active')
     throw new Error('Cannot manually approve completion for non-active goal',);
   /**
-   * Persisted manually approved terminal event.
+   Persisted manually approved terminal event.
    */
   const event = {
     kind: 'run_completed_manual',
@@ -64,7 +64,7 @@ function manuallyApproveGoalCompletion(
     completedAt: timestamp,
   } as const;
   /**
-   * Terminal state derived through branch reducer.
+   Terminal state derived through branch reducer.
    */
   const goal = reduceGoalEvent({
     state: controller.goal,
@@ -109,24 +109,24 @@ function manuallyApproveGoalCompletion(
 }
 
 /**
- * Persist non-interactive reviewer exhaustion as terminal goal state.
- *
- * @param controller - current revalidated controller
- *
- * @param request - captured settlement identity
- *
- * @param attemptedReviewerIdentities - model transports that started
- *
- * @param diagnostic - normalized model failure diagnostic
- *
- * @param timestamp - ISO terminal timestamp
- *
- * @returns terminal reviewer-unavailable transition and renderable diagnostic
- *
- * @example
- * ```ts
- * markGoalReviewUnavailable({ controller, request, attemptedReviewerIdentities, diagnostic, timestamp });
- * ```
+ Persist non-interactive reviewer exhaustion as terminal goal state.
+ 
+ @param controller - current revalidated controller
+ 
+ @param request - captured settlement identity
+ 
+ @param attemptedReviewerIdentities - model transports that started
+ 
+ @param diagnostic - normalized model failure diagnostic
+ 
+ @param timestamp - ISO terminal timestamp
+ 
+ @returns terminal reviewer-unavailable transition and renderable diagnostic
+ 
+ @example
+ ```ts
+ markGoalReviewUnavailable({ controller, request, attemptedReviewerIdentities, diagnostic, timestamp });
+ ```
  */
 function markGoalReviewUnavailable(
   {
@@ -148,7 +148,7 @@ function markGoalReviewUnavailable(
     !== 'active')
     throw new Error('Cannot mark reviewer unavailable for non-active goal',);
   /**
-   * Persisted non-interactive terminal event.
+   Persisted non-interactive terminal event.
    */
   const event = {
     kind: 'review_unavailable',
@@ -161,7 +161,7 @@ function markGoalReviewUnavailable(
     terminalAt: timestamp,
   } as const;
   /**
-   * Terminal state derived through branch reducer.
+   Terminal state derived through branch reducer.
    */
   const goal = reduceGoalEvent({
     state: controller.goal,

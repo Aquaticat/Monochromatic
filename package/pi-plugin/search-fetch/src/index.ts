@@ -1,10 +1,10 @@
 /**
- * Pi Search Fetch extension entry point.
- *
- * Registers provider-neutral search and fetch tools with global host blocklist enforcement
- * and no web-answer or account-management surfaces.
- *
- * @module
+ Pi Search Fetch extension entry point.
+ 
+ Registers provider-neutral search and fetch tools with global host blocklist enforcement
+ and no web-answer or account-management surfaces.
+ 
+ @module
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
@@ -23,17 +23,17 @@ import {
 } from './tools.ts';
 
 /**
- * Logger root for pi-search-fetch after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: searchFetchLogger, },);
- * ```
+ Logger root for pi-search-fetch after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: searchFetchLogger, },);
+ ```
  */
 const searchFetchLogger = tagged({ tag: 'pi-search-fetch', },);
 
 /**
- * Module logger.
+ Module logger.
  */
 const l = tagged({
   tag: 'index',
@@ -43,19 +43,19 @@ const l = tagged({
 //region Types
 
 /**
- * Options for registering Pi Search Fetch with injected dependencies.
+ Options for registering Pi Search Fetch with injected dependencies.
  */
 type RegisterPiLinkupOptions = {
   /**
-   * Pi extension API.
+   Pi extension API.
    */
   readonly pi: ExtensionAPI;
   /**
-   * Loaded Search Fetch config.
+   Loaded Search Fetch config.
    */
   readonly config: LinkupConfig;
   /**
-   * Provider-routing client used by tools.
+   Provider-routing client used by tools.
    */
   readonly client: LinkupToolClient;
 };
@@ -65,30 +65,30 @@ type RegisterPiLinkupOptions = {
 //region Extension entry point
 
 /**
- * Pi Search Fetch extension factory.
- *
- * @param pi - Pi extension API
- *
- * @example
- * ```ts
- * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi-plugin/search-fetch"] }
- * ```
+ Pi Search Fetch extension factory.
+ 
+ @param pi - Pi extension API
+ 
+ @example
+ ```ts
+ // In ~/.pi/agent/settings.json:
+ { "packages": ["./packages/pi-plugin/search-fetch"] }
+ ```
  */
 export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
   /**
-   * Logger tagged for extension startup.
+   Logger tagged for extension startup.
    */
   const innerL = tagged({
     tag: piLinkup.name,
     l,
   },);
   /**
-   * Runtime config loaded from the global Pi extension config file.
+   Runtime config loaded from the global Pi extension config file.
    */
   const config = await loadLinkupConfig();
   /**
-   * Provider-routing client shared by registered tools.
+   Provider-routing client shared by registered tools.
    */
   const client = createSearchFetchClient({
     ...(config.exaApiKey === undefined ? {} : { exaApiKey: config.exaApiKey, }),
@@ -109,25 +109,25 @@ export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
 }
 
 /**
- * Register Pi Search Fetch tools using already-created dependencies.
- *
- * @param options - Pi API, config, and client
- *
- * @example
- * ```ts
- * registerPiLinkup({ pi, config, client });
- * ```
+ Register Pi Search Fetch tools using already-created dependencies.
+ 
+ @param options - Pi API, config, and client
+ 
+ @example
+ ```ts
+ registerPiLinkup({ pi, config, client });
+ ```
  */
 function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
   /**
-   * Logger tagged for registration.
+   Logger tagged for registration.
    */
   const innerL = tagged({
     tag: registerPiLinkup.name,
     l,
   },);
   /**
-   * Public Search Fetch tools.
+   Public Search Fetch tools.
    */
   const tools = createLinkupTools({
     config: options.config,

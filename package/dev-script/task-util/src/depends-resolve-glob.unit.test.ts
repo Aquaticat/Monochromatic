@@ -1,13 +1,13 @@
 /**
- * Equivalence tests for `firstGlobMetaIndex`.
- *
- * Capture the pre-refactor behavior of the glob metacharacter scanner so
- * the linear-pass rewrite stays behavior-identical: empty input, a literal
- * path with no metacharacter, each metacharacter in `*?{[`, the first of
- * several metacharacters winning, path separators (`/` and `\`) treated as
- * ordinary characters rather than metacharacters, and a long no-match run.
- *
- * @module
+ Equivalence tests for `firstGlobMetaIndex`.
+ 
+ Capture the pre-refactor behavior of the glob metacharacter scanner so
+ the linear-pass rewrite stays behavior-identical: empty input, a literal
+ path with no metacharacter, each metacharacter in `*?{[`, the first of
+ several metacharacters winning, path separators (`/` and `\`) treated as
+ ordinary characters rather than metacharacters, and a long no-match run.
+ 
+ @module
  */
 
 import {

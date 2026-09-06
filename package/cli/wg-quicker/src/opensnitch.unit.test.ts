@@ -29,7 +29,7 @@ import {
 } from '../dist/final/node/opensnitch.mjs';
 
 /**
- * Current namespace key matching production ownership derivation.
+ Current namespace key matching production ownership derivation.
  */
 const NETWORK_NAMESPACE_KEY = createHash('sha256',)
   .update(await readlink('/proc/self/ns/net',),)
@@ -40,18 +40,18 @@ const NETWORK_NAMESPACE_KEY = createHash('sha256',)
   );
 
 /**
- * Creates scoped managed-rule description for current test namespace.
- *
- * @param interfaceName - WireGuard interface owner.
- *
- * @param port - Exact endpoint destination port.
- *
- * @returns Production-format ownership description.
- *
- * @example
- * ```ts
- * managedDescription({ interfaceName: 'wg0', port: 51820 });
- * ```
+ Creates scoped managed-rule description for current test namespace.
+ 
+ @param interfaceName - WireGuard interface owner.
+ 
+ @param port - Exact endpoint destination port.
+ 
+ @returns Production-format ownership description.
+ 
+ @example
+ ```ts
+ managedDescription({ interfaceName: 'wg0', port: 51820 });
+ ```
  */
 function managedDescription(
   {
@@ -66,43 +66,43 @@ function managedDescription(
 }
 
 /**
- * Disposable OpenSnitch config fixture and environment restoration.
+ Disposable OpenSnitch config fixture and environment restoration.
  */
 type OpenSnitchFixture = {
   /**
-   * System-firewall path selected by environment override.
+   System-firewall path selected by environment override.
    */
   readonly configPath: string;
 
   /**
-   * Daemon config path selected by environment override.
+   Daemon config path selected by environment override.
    */
   readonly daemonConfigPath: string;
 
   /**
-   * Fixture-private wg-quicker runtime path.
+   Fixture-private wg-quicker runtime path.
    */
   readonly runtimePath: string;
 
   /**
-   * Removes fixture and restores process environment.
+   Removes fixture and restores process environment.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Creates minimal OpenSnitch nftables configuration.
- *
- * @param rules - Existing mangle-output rules.
- *
- * @param enabled - Top-level system-firewall state.
- *
- * @returns OpenSnitch version 1 document.
- *
- * @example
- * ```ts
- * systemFirewall({ rules: [], enabled: true });
- * ```
+ Creates minimal OpenSnitch nftables configuration.
+ 
+ @param rules - Existing mangle-output rules.
+ 
+ @param enabled - Top-level system-firewall state.
+ 
+ @returns OpenSnitch version 1 document.
+ 
+ @example
+ ```ts
+ systemFirewall({ rules: [], enabled: true });
+ ```
  */
 function systemFirewall(
   {
@@ -133,19 +133,19 @@ function systemFirewall(
 }
 
 /**
- * Sets isolated config and runtime environment for one test.
- *
- * @param content - Exact initial config text,
- * or undefined to leave path absent.
- *
- * @param firewall - Daemon firewall backend.
- *
- * @returns Disposable fixture.
- *
- * @example
- * ```ts
- * await using fixture = await createFixture({ content: '{}' });
- * ```
+ Sets isolated config and runtime environment for one test.
+ 
+ @param content - Exact initial config text,
+ or undefined to leave path absent.
+ 
+ @param firewall - Daemon firewall backend.
+ 
+ @returns Disposable fixture.
+ 
+ @example
+ ```ts
+ await using fixture = await createFixture({ content: '{}' });
+ ```
  */
 async function createFixture(
   {
@@ -165,7 +165,7 @@ async function createFixture(
     'system-fw.json',
   );
   /**
-   * Fixture-local daemon config proving selected backend.
+   Fixture-local daemon config proving selected backend.
    */
   const daemonConfigPath = join(
     directory,
@@ -186,23 +186,23 @@ async function createFixture(
   }
   const originalConfig = process.env[OPENSNITCH_CONFIG_ENVIRONMENT];
   /**
-   * Original daemon-config override restored on disposal.
+   Original daemon-config override restored on disposal.
    */
   const originalDaemonConfig = process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT];
   const originalRuntime = process.env.WG_QUICKER_RUNTIME_DIRECTORY;
   /**
-   * Original executable search path restored on disposal.
+   Original executable search path restored on disposal.
    */
   const originalPath = process.env.PATH;
   /**
-   * Fixture-private runtime directory.
+   Fixture-private runtime directory.
    */
   const runtimePath = join(
     directory,
     'run',
   );
   /**
-   * Fixture command directory proving no stale nftables table exists.
+   Fixture command directory proving no stale nftables table exists.
    */
   const commandDirectory = join(
     directory,
@@ -210,7 +210,7 @@ async function createFixture(
   );
   await mkdir(commandDirectory,);
   /**
-   * Minimal nft fixture executable used only after daemon absence is confirmed.
+   Minimal nft fixture executable used only after daemon absence is confirmed.
    */
   const nftPath = join(
     commandDirectory,
@@ -261,16 +261,16 @@ async function createFixture(
 }
 
 /**
- * Reads target chain rules from persisted fixture.
- *
- * @param path - System-firewall config path.
- *
- * @returns Parsed target rules.
- *
- * @example
- * ```ts
- * await readRules({ path });
- * ```
+ Reads target chain rules from persisted fixture.
+ 
+ @param path - System-firewall config path.
+ 
+ @returns Parsed target rules.
+ 
+ @example
+ ```ts
+ await readRules({ path });
+ ```
  */
 async function readRules(
   { path, }: { readonly path: string; },
@@ -596,7 +596,7 @@ await describe({
               content: `${JSON.stringify(systemFirewall({ rules, },), null, 2,)}\n`,
             },);
             /**
-             * Watched inode size before shorter JSON replacement.
+             Watched inode size before shorter JSON replacement.
              */
             const sizeBefore = (await stat(fixture.configPath,)).size;
             await removeOpenSnitchEndpointAllowance({ interfaceName: 'wg0', },);

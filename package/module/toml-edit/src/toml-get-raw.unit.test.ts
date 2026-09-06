@@ -1,7 +1,7 @@
 /**
- * Tests for `tomlGetRaw`.
- *
- * @module
+ Tests for `tomlGetRaw`.
+ 
+ @module
  */
 
 import {

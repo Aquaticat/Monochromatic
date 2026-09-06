@@ -1,7 +1,7 @@
 /**
- * Unit tests for version helpers.
- *
- * @module
+ Unit tests for version helpers.
+ 
+ @module
  */
 
 import {

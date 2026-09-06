@@ -1,7 +1,7 @@
 /**
- * Unit tests for argv scope parsing.
- *
- * @module
+ Unit tests for argv scope parsing.
+ 
+ @module
  */
 
 import {

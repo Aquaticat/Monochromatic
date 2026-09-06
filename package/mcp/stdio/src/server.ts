@@ -41,36 +41,36 @@ import {
 //region createMcpServer: builds an immutable server from config and tool entries
 
 /**
- * Creates an immutable MCP server that dispatches JSON-RPC messages.
- * Tools are registered at creation time; no mutation after construction.
- *
- * @param config - Server identity and discovery payload.
- *
- * @param tools - Tool entries to register, typically created via {@link defineTool}.
- *
- * @returns Server handle with a `handleMessage` function for the transport layer.
- *
- * @example
- * ```ts
- * import { createMcpServer, defineTool, serve } from '\@monochromatic-dev/mcp-stdio';
- *
- * const server = createMcpServer({
- *   config: { name: 'demo', version: '0.1.0' },
- *   tools: [
- *     defineTool({
- *       name: 'greet',
- *       entry: {
- *         description: 'Greets by name.',
- *         schema: v.strictObject({ name: v.string() }),
- *         handler: async (args) => ({
- *           content: [{ type: 'text', text: `Hello, ${args.name}!` }],
- *         }),
- *       },
- *     }),
- *   ],
- * });
- * await serve({ server });
- * ```
+ Creates an immutable MCP server that dispatches JSON-RPC messages.
+ Tools are registered at creation time; no mutation after construction.
+ 
+ @param config - Server identity and discovery payload.
+ 
+ @param tools - Tool entries to register, typically created via {@link defineTool}.
+ 
+ @returns Server handle with a `handleMessage` function for the transport layer.
+ 
+ @example
+ ```ts
+ import { createMcpServer, defineTool, serve } from '\@monochromatic-dev/mcp-stdio';
+ 
+ const server = createMcpServer({
+   config: { name: 'demo', version: '0.1.0' },
+   tools: [
+     defineTool({
+       name: 'greet',
+       entry: {
+         description: 'Greets by name.',
+         schema: v.strictObject({ name: v.string() }),
+         handler: async (args) => ({
+           content: [{ type: 'text', text: `Hello, ${args.name}!` }],
+         }),
+       },
+     }),
+   ],
+ });
+ await serve({ server });
+ ```
  */
 export function createMcpServer(
   {
@@ -82,13 +82,13 @@ export function createMcpServer(
   },
 ): McpServerHandle {
   /**
-   * Immutable lookup of registered tools keyed by name; built once at construction so
-   * later dispatch is O(1) without exposing a mutation surface.
+   Immutable lookup of registered tools keyed by name; built once at construction so
+   later dispatch is O(1) without exposing a mutation surface.
    */
   const toolMap = registerTools({ tools, },);
 
   /**
-   * Identity stamped into the `_meta` of every result this server sends.
+   Identity stamped into the `_meta` of every result this server sends.
    */
   const serverInfo: Implementation = {
     name: config.name,
@@ -99,15 +99,15 @@ export function createMcpServer(
   //region Request dispatch: routes JSON-RPC methods to handlers
 
   /**
-   * Routes a version-checked request to the matching method handler.
-   *
-   * @param request - Inbound request whose declared revision this server implements.
-   *
-   * @returns JSON-RPC success or error response.
+   Routes a version-checked request to the matching method handler.
+   
+   @param request - Inbound request whose declared revision this server implements.
+   
+   @returns JSON-RPC success or error response.
    */
   function routeRequest(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
     /**
-     * Request `id` is echoed in the response; `method` selects the branch below.
+     Request `id` is echoed in the response; `method` selects the branch below.
      */
     const {
       id,
@@ -154,13 +154,13 @@ export function createMcpServer(
   }
 
   /**
-   * Validates the request's declared protocol revision, then routes it.
-   * `initialize` short-circuits ahead of validation: a handshake-era client never sends
-   * the `_meta` this revision requires, and its error message is its only diagnostic.
-   *
-   * @param request - Inbound request with an `id` that must be echoed in the response.
-   *
-   * @returns JSON-RPC success or error response.
+   Validates the request's declared protocol revision, then routes it.
+   `initialize` short-circuits ahead of validation: a handshake-era client never sends
+   the `_meta` this revision requires, and its error message is its only diagnostic.
+   
+   @param request - Inbound request with an `id` that must be echoed in the response.
+   
+   @returns JSON-RPC success or error response.
    */
   function handleRequest(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
     if (request.method === 'initialize')
@@ -202,12 +202,12 @@ export function createMcpServer(
   //region Public handle: single dispatch function exposed to the transport
 
   /**
-   * Dispatches a parsed JSON-RPC message to the appropriate handler.
-   * Returns a response for requests, or delegates to {@link handleNotification} for notifications.
-   *
-   * @param message - Parsed inbound JSON-RPC request or notification.
-   *
-   * @returns JSON-RPC response for requests; the {@link NO_RESPONSE} sentinel for notifications.
+   Dispatches a parsed JSON-RPC message to the appropriate handler.
+   Returns a response for requests, or delegates to {@link handleNotification} for notifications.
+   
+   @param message - Parsed inbound JSON-RPC request or notification.
+   
+   @returns JSON-RPC response for requests; the {@link NO_RESPONSE} sentinel for notifications.
    */
   function handleMessage(message: JsonRpcInbound,): Promise<DispatchResult> {
     if (!('id' in message)) {

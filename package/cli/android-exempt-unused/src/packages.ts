@@ -1,8 +1,8 @@
 /**
- * Package-level adb operations: list third-party apps, read which are currently
- * exempt from auto-revoke, and write a single app's appops mode.
- *
- * @module
+ Package-level adb operations: list third-party apps, read which are currently
+ exempt from auto-revoke, and write a single app's appops mode.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -20,19 +20,19 @@ import {
 } from './parse.ts';
 
 /**
- * Module-level tagged logger; each function wraps it with its own name.
+ Module-level tagged logger; each function wraps it with its own name.
  */
 const l = tagged({ tag: 'packages', },);
 
 /**
- * Number of concurrent `appops get` calls in the fallback path. adb multiplexes
- * over one transport, so a modest cap keeps the device responsive without
- * issuing hundreds of simultaneous shells.
+ Number of concurrent `appops get` calls in the fallback path. adb multiplexes
+ over one transport, so a modest cap keeps the device responsive without
+ issuing hundreds of simultaneous shells.
  */
 const GET_CONCURRENCY = 12;
 
 /**
- * One app's exempt verdict from the per-app fallback path.
+ One app's exempt verdict from the per-app fallback path.
  */
 type Verdict = {
   readonly packageName: string;
@@ -40,22 +40,22 @@ type Verdict = {
 };
 
 /**
- * List third-party (user-installed) application ids on the device, by
- * running `pm list packages -3` via {@link runAdb} and parsing the output
- * with {@link parsePackageList}.
- *
- * @param serial - Device to query.
- *
- * @returns Validated third-party application ids.
- *
- * @example
- * ```ts
- * const apps = await listThirdPartyPackages({ serial: 'ABC123', },);
- * ```
+ List third-party (user-installed) application ids on the device, by
+ running `pm list packages -3` via {@link runAdb} and parsing the output
+ with {@link parsePackageList}.
+ 
+ @param serial - Device to query.
+ 
+ @returns Validated third-party application ids.
+ 
+ @example
+ ```ts
+ const apps = await listThirdPartyPackages({ serial: 'ABC123', },);
+ ```
  */
 export async function listThirdPartyPackages({ serial, }: { readonly serial: string; },): Promise<readonly string[]> {
   /**
-   * Captured stdout from `pm list packages -3`.
+   Captured stdout from `pm list packages -3`.
    */
   const stdout = await runAdb({
     serial,
@@ -71,19 +71,19 @@ export async function listThirdPartyPackages({ serial, }: { readonly serial: str
 }
 
 /**
- * Set one app's {@link ./constants.ts AUTO_REVOKE_OP} appops mode by
- * invoking `cmd appops set` via {@link runAdb}.
- *
- * @param serial - Device to mutate.
- *
- * @param packageName - Application id to change; must already be validated.
- *
- * @param mode - Target mode: exempt or revert-to-default.
- *
- * @example
- * ```ts
- * await setAutoRevoke({ serial, packageName: 'com.example.app', mode: 'ignore', },);
- * ```
+ Set one app's {@link ./constants.ts AUTO_REVOKE_OP} appops mode by
+ invoking `cmd appops set` via {@link runAdb}.
+ 
+ @param serial - Device to mutate.
+ 
+ @param packageName - Application id to change; must already be validated.
+ 
+ @param mode - Target mode: exempt or revert-to-default.
+ 
+ @example
+ ```ts
+ await setAutoRevoke({ serial, packageName: 'com.example.app', mode: 'ignore', },);
+ ```
  */
 export async function setAutoRevoke({
   serial,
@@ -109,16 +109,16 @@ export async function setAutoRevoke({
 }
 
 /**
- * Read whether one app is exempt by running `cmd appops get` via
- * {@link runAdb} and parsing the output for the op. Used only by the
- * fallback path when bulk `query-op` is unavailable; a failing invocation
- * surfaces as an {@link AdbCommandError}, treated here as not exempted.
- *
- * @param serial - Device to query.
- *
- * @param packageName - Application id to inspect.
- *
- * @returns `true` when the op reads back as {@link ./constants.ts MODE_IGNORE}.
+ Read whether one app is exempt by running `cmd appops get` via
+ {@link runAdb} and parsing the output for the op. Used only by the
+ fallback path when bulk `query-op` is unavailable; a failing invocation
+ surfaces as an {@link AdbCommandError}, treated here as not exempted.
+ 
+ @param serial - Device to query.
+ 
+ @param packageName - Application id to inspect.
+ 
+ @returns `true` when the op reads back as {@link ./constants.ts MODE_IGNORE}.
  */
 async function isExemptedViaGet({
   serial,
@@ -128,7 +128,7 @@ async function isExemptedViaGet({
   readonly packageName: string;
 },): Promise<boolean> {
   /**
-   * Tagged logger for this call.
+   Tagged logger for this call.
    */
   const fl = tagged({
     tag: isExemptedViaGet.name,
@@ -136,7 +136,7 @@ async function isExemptedViaGet({
   },);
   try {
     /**
-     * Captured stdout from `cmd appops get <pkg> <op>`.
+     Captured stdout from `cmd appops get <pkg> <op>`.
      */
     const stdout = await runAdb({
       serial,
@@ -160,15 +160,15 @@ async function isExemptedViaGet({
 }
 
 /**
- * Determine the exempt set by querying each app individually via
- * {@link isExemptedViaGet}, in bounded concurrent batches. Fallback for
- * devices whose appops lacks `query-op`.
- *
- * @param serial - Device to query.
- *
- * @param packages - Application ids to check.
- *
- * @returns Subset of `packages` that read back as exempt.
+ Determine the exempt set by querying each app individually via
+ {@link isExemptedViaGet}, in bounded concurrent batches. Fallback for
+ devices whose appops lacks `query-op`.
+ 
+ @param serial - Device to query.
+ 
+ @param packages - Application ids to check.
+ 
+ @returns Subset of `packages` that read back as exempt.
  */
 async function getExemptedViaGet({
   serial,
@@ -178,7 +178,7 @@ async function getExemptedViaGet({
   readonly packages: readonly string[];
 },): Promise<readonly string[]> {
   /**
-   * Start index of each concurrency-capped batch.
+   Start index of each concurrency-capped batch.
    */
   const batchStarts = Array.from(
     { length: Math.ceil(packages.length / GET_CONCURRENCY,), },
@@ -190,19 +190,19 @@ async function getExemptedViaGet({
     },
   );
   /**
-   * Accumulated exempt application ids across batches.
+   Accumulated exempt application ids across batches.
    */
   const exempted: string[] = [];
   for (const start of batchStarts) {
     /**
-     * Application ids in this batch.
+     Application ids in this batch.
      */
     const batch = packages.slice(
       start,
       start + GET_CONCURRENCY,
     );
     /**
-     * Per-app exempt verdicts for this batch.
+     Per-app exempt verdicts for this batch.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- batches run sequentially on purpose: each Promise.all caps concurrency at GET_CONCURRENCY so the device is not flooded with simultaneous shells.
     const verdicts = await Promise.all(
@@ -230,24 +230,24 @@ async function getExemptedViaGet({
 }
 
 /**
- * List which of `packages` are currently exempt from auto-revoke.
- *
- * Primary path is a single bulk `query-op` via {@link runAdb}; if that
- * raises an {@link AdbCommandError} (older Android without the subcommand),
- * it falls back to per-app `get` via {@link getExemptedViaGet}. Either way
- * the result is intersected with `packages` so only in-scope third-party
- * apps remain.
- *
- * @param serial - Device to query.
- *
- * @param packages - Third-party application ids to consider in scope.
- *
- * @returns Subset of `packages` currently exempt.
- *
- * @example
- * ```ts
- * const exempt = await listExempted({ serial, packages: apps, },);
- * ```
+ List which of `packages` are currently exempt from auto-revoke.
+ 
+ Primary path is a single bulk `query-op` via {@link runAdb}; if that
+ raises an {@link AdbCommandError} (older Android without the subcommand),
+ it falls back to per-app `get` via {@link getExemptedViaGet}. Either way
+ the result is intersected with `packages` so only in-scope third-party
+ apps remain.
+ 
+ @param serial - Device to query.
+ 
+ @param packages - Third-party application ids to consider in scope.
+ 
+ @returns Subset of `packages` currently exempt.
+ 
+ @example
+ ```ts
+ const exempt = await listExempted({ serial, packages: apps, },);
+ ```
  */
 export async function listExempted({
   serial,
@@ -257,19 +257,19 @@ export async function listExempted({
   readonly packages: readonly string[];
 },): Promise<readonly string[]> {
   /**
-   * Tagged logger for this call.
+   Tagged logger for this call.
    */
   const fl = tagged({
     tag: listExempted.name,
     l,
   },);
   /**
-   * In-scope application ids, used to filter the query result.
+   In-scope application ids, used to filter the query result.
    */
   const inScope: ReadonlySet<string> = new Set(packages,);
   try {
     /**
-     * Captured stdout from the bulk `query-op` invocation.
+     Captured stdout from the bulk `query-op` invocation.
      */
     const stdout = await runAdb({
       serial,

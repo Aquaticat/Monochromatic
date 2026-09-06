@@ -10,9 +10,9 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Keys the strict parser must reject: host application keys, the
- * sessionStorage sink's flat shape, and malformed run identities. Eviction
- * safety rests on every one of these staying foreign.
+ Keys the strict parser must reject: host application keys, the
+ sessionStorage sink's flat shape, and malformed run identities. Eviction
+ safety rests on every one of these staying foreign.
  */
 const FOREIGN_KEYS: readonly string[] = [
   'other.key',
@@ -33,7 +33,7 @@ await describe({
       name: 'round-trips a built key back to its identity',
       fn: async () => {
         /**
-         * Identity pushed through build-then-parse; equality proves the pair inverse.
+         Identity pushed through build-then-parse; equality proves the pair inverse.
          */
         const identity = {
           stamp: 1_753_000_000_000,
@@ -41,11 +41,11 @@ await describe({
           index: 7,
         };
         /**
-         * Key the builder produced for the identity.
+         Key the builder produced for the identity.
          */
         const built = buildLogKey(identity,);
         /**
-         * Identity parsed back out of the built key.
+         Identity parsed back out of the built key.
          */
         const { parsed, } = parseLogKey(built,);
         expect(parsed,)
@@ -70,7 +70,7 @@ await describe({
       name: 'compareLogKeys orders by stamp, then nonce, then index',
       fn: async () => {
         /**
-         * Keys deliberately shuffled across all three ordering dimensions.
+         Keys deliberately shuffled across all three ordering dimensions.
          */
         const shuffled = [
           'monochromatic.log.2000.aaaa.0',
@@ -83,7 +83,7 @@ await describe({
             return (parsed === undefined) ? [] : [parsed,];
           },);
         /**
-         * Oldest-first ordering the eviction queue relies on.
+         Oldest-first ordering the eviction queue relies on.
          */
         const sorted = shuffled.toSorted(function byOldestFirst(first, second,) {
           return compareLogKeys({

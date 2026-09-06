@@ -1,8 +1,8 @@
 /**
- * Tests for distro-to-package-manager mapping, prerequisite commands,
- * and user creation commands.
- *
- * @module
+ Tests for distro-to-package-manager mapping, prerequisite commands,
+ and user creation commands.
+ 
+ @module
  */
 
 import {

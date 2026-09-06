@@ -1,7 +1,7 @@
 /**
- * Content identities and paths for persistent effect-summary cache.
- *
- * @module
+ Content identities and paths for persistent effect-summary cache.
+ 
+ @module
  */
 
 import { createHash, } from 'node:crypto';
@@ -24,42 +24,42 @@ import { version as typescriptVersion, } from 'typescript';
 import { ancestorDirectories, } from './ancestor-directories.ts';
 
 /**
- * Persistent cache schema identity.
- *
- * Schema 4 removes documented-uncertainty state because authored contracts
- * cannot discharge unresolved implementation effects.
- *
- * Schema 5 keys every effect by slot rather than by parameter and persists the slot
- * ownership beside them, because the numbers mean nothing without it.
- *
- * Schema 6 persists callable identities deliberately omitted after direct-summary failures.
- * Without them a warm process rejects caller edges that the cold process accepted as
- * fail-closed omissions.
- *
- * Schema 7 adds bounded omission reason category,
- * so restored-cache warnings retain why coverage was narrowed.
- *
- * Schema 8 retains every distinct bounded reason category for a source,
- * including the known TypeScript tuple serializer panic.
+ Persistent cache schema identity.
+ 
+ Schema 4 removes documented-uncertainty state because authored contracts
+ cannot discharge unresolved implementation effects.
+ 
+ Schema 5 keys every effect by slot rather than by parameter and persists the slot
+ ownership beside them, because the numbers mean nothing without it.
+ 
+ Schema 6 persists callable identities deliberately omitted after direct-summary failures.
+ Without them a warm process rejects caller edges that the cold process accepted as
+ fail-closed omissions.
+ 
+ Schema 7 adds bounded omission reason category,
+ so restored-cache warnings retain why coverage was narrowed.
+ 
+ Schema 8 retains every distinct bounded reason category for a source,
+ including the known TypeScript tuple serializer panic.
  */
 export const EFFECT_CACHE_SCHEMA = 8;
 
 /**
- * Process memo for analyzer implementation digest.
+ Process memo for analyzer implementation digest.
  */
 const analyzerDigestMemo = new Map<'digest', string>();
 
 /**
- * Hashes exact UTF-8 text through SHA-256.
- *
- * @param text - Text whose content identity is required.
- *
- * @returns lowercase hexadecimal digest.
- *
- * @example
- * ```ts
- * contentDigest('source');
- * ```
+ Hashes exact UTF-8 text through SHA-256.
+ 
+ @param text - Text whose content identity is required.
+ 
+ @returns lowercase hexadecimal digest.
+ 
+ @example
+ ```ts
+ contentDigest('source');
+ ```
  */
 export function contentDigest(text: string,): string {
   return createHash('sha256',)
@@ -68,13 +68,13 @@ export function contentDigest(text: string,): string {
 }
 
 /**
- * Finds package root containing current analyzer module.
- *
- * @param modulePath - Analyzer source or bundled module path.
- *
- * @returns nearest ancestor carrying package manifest.
- *
- * @throws Error when package root cannot be found.
+ Finds package root containing current analyzer module.
+ 
+ @param modulePath - Analyzer source or bundled module path.
+ 
+ @returns nearest ancestor carrying package manifest.
+ 
+ @throws Error when package root cannot be found.
  */
 function analyzerPackageRoot(modulePath: string,): string {
   for (const directory of ancestorDirectories(dirname(modulePath,),)) {
@@ -89,16 +89,16 @@ function analyzerPackageRoot(modulePath: string,): string {
 }
 
 /**
- * Collects analyzer TypeScript source paths in deterministic order.
- *
- * @param directory - Directory whose source descendants are required.
- *
- * @returns sorted TypeScript source paths.
+ Collects analyzer TypeScript source paths in deterministic order.
+ 
+ @param directory - Directory whose source descendants are required.
+ 
+ @returns sorted TypeScript source paths.
  */
 function analyzerSourcePaths(directory: string,): readonly string[] {
   /* oxlint-disable no-restricted-syntax/no-sync -- Oxlint rule construction is synchronous and scans package source once per process. */
   /**
-   * Foreign directory entries returned by Node filesystem boundary.
+   Foreign directory entries returned by Node filesystem boundary.
    */
   const entries: ForeignBorrowed<Dirent[]> = readdirSync(
     directory,
@@ -106,12 +106,12 @@ function analyzerSourcePaths(directory: string,): readonly string[] {
   );
   /* oxlint-enable no-restricted-syntax/no-sync */
   /**
-   * Collected source paths for current structural subtree.
+   Collected source paths for current structural subtree.
    */
   const paths: string[] = [];
   for (const entry of entries) {
     /**
-     * Absolute child path.
+     Absolute child path.
      */
     const path = join(
       directory,
@@ -128,39 +128,39 @@ function analyzerSourcePaths(directory: string,): readonly string[] {
 }
 
 /**
- * Computes digest for analyzer implementation and TypeScript runtime.
- *
- * Source execution hashes every package source file.
- * Published bundled execution hashes the current bundle.
- *
- * @returns process-stable analyzer identity.
- *
- * @example
- * ```ts
- * const identity = analyzerDigest();
- * ```
+ Computes digest for analyzer implementation and TypeScript runtime.
+ 
+ Source execution hashes every package source file.
+ Published bundled execution hashes the current bundle.
+ 
+ @returns process-stable analyzer identity.
+ 
+ @example
+ ```ts
+ const identity = analyzerDigest();
+ ```
  */
 export function analyzerDigest(): string {
   /**
-   * Prior implementation digest computed in this process.
+   Prior implementation digest computed in this process.
    */
   const memoized = analyzerDigestMemo.get('digest',);
   if (memoized !== undefined)
     return memoized;
   /**
-   * Current source module or published bundle path.
+   Current source module or published bundle path.
    */
   const modulePath = import.meta.filename;
   /**
-   * Analyzer package root found from current module.
+   Analyzer package root found from current module.
    */
   const packageRoot = analyzerPackageRoot(modulePath,);
   /**
-   * Whether workspace `/ts` execution loads unbundled analyzer modules.
+   Whether workspace `/ts` execution loads unbundled analyzer modules.
    */
   const isSourceExecution = extname(modulePath,) === '.ts';
   /**
-   * Source roots contributing semantic behavior during `/ts` execution.
+   Source roots contributing semantic behavior during `/ts` execution.
    */
   const sourceRoots = isSourceExecution
     ? [
@@ -179,16 +179,16 @@ export function analyzerDigest(): string {
     ]
     : [];
   /**
-   * Source modules or published bundle contributing analyzer behavior.
+   Source modules or published bundle contributing analyzer behavior.
    */
   const implementationPaths = isSourceExecution
     ? sourceRoots.flatMap(analyzerSourcePaths,)
     : [modulePath,];
   /**
-   * Streaming digest over schema,
-   * compiler version,
-   * paths,
-   * and exact implementation bytes.
+   Streaming digest over schema,
+   compiler version,
+   paths,
+   and exact implementation bytes.
    */
   const digest = createHash('sha256',)
     .update(String(EFFECT_CACHE_SCHEMA,),)
@@ -203,7 +203,7 @@ export function analyzerDigest(): string {
     digest.update(readFileSync(path,),);
   },);
   /**
-   * Final implementation digest retained by process memo.
+   Final implementation digest retained by process memo.
    */
   const result = digest.digest('hex',);
   analyzerDigestMemo.set(
@@ -214,15 +214,15 @@ export function analyzerDigest(): string {
 }
 
 /**
- * Finds dependency-root ancestor for configured project.
- *
- * @param projectKey - Configured TypeScript project path.
- *
- * @returns nearest lockfile ancestor or project directory.
+ Finds dependency-root ancestor for configured project.
+ 
+ @param projectKey - Configured TypeScript project path.
+ 
+ @returns nearest lockfile ancestor or project directory.
  */
 function dependencyRoot(projectKey: string,): string {
   /**
-   * Original project directory used when no lockfile exists.
+   Original project directory used when no lockfile exists.
    */
   const projectDirectory = dirname(projectKey,);
   for (const directory of ancestorDirectories(projectDirectory,)) {
@@ -237,18 +237,18 @@ function dependencyRoot(projectKey: string,): string {
 }
 
 /**
- * Resolves persistent cache root for one configured project.
- *
- * @param projectKey - Configured TypeScript project path.
- *
- * @param override - Explicit disposable root used by tests.
- *
- * @returns cache directory containing project entries.
- *
- * @example
- * ```ts
- * effectCacheRoot({ projectKey: '/repo/tsconfig.json' });
- * ```
+ Resolves persistent cache root for one configured project.
+ 
+ @param projectKey - Configured TypeScript project path.
+ 
+ @param override - Explicit disposable root used by tests.
+ 
+ @returns cache directory containing project entries.
+ 
+ @example
+ ```ts
+ effectCacheRoot({ projectKey: '/repo/tsconfig.json' });
+ ```
  */
 export function effectCacheRoot({
   projectKey,

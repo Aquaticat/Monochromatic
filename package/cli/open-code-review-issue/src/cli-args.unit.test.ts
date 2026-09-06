@@ -66,7 +66,7 @@ await describe({
       name: 'rejects missing or contradictory modes and stdin path',
       fn: async () => {
         /**
-         * Invalid invocation argument vectors.
+         Invalid invocation argument vectors.
          */
         const cases = [
           ['review.json',],
@@ -79,7 +79,7 @@ await describe({
         ];
         for (const arguments_ of cases) {
           /**
-           * Captured invocation misuse.
+           Captured invocation misuse.
            */
           let caught: unknown;
           try {

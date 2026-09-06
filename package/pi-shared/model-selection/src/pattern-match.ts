@@ -1,7 +1,7 @@
 /**
- * Pi-style model pattern parsing and fuzzy matching helpers.
- *
- * @module
+ Pi-style model pattern parsing and fuzzy matching helpers.
+ 
+ @module
  */
 
 import { canonicalSlug, } from './model-id.ts';
@@ -16,39 +16,39 @@ import type {
 } from './types.ts';
 
 /**
- * Sentinel returned by internal {@link tryMatchModel} when no exact or fuzzy model
- * matches a pattern body. A `unique symbol`; narrowed with
- * `=== NO_PATTERN_MATCH`.
+ Sentinel returned by internal {@link tryMatchModel} when no exact or fuzzy model
+ matches a pattern body. A `unique symbol`; narrowed with
+ `=== NO_PATTERN_MATCH`.
  */
 const NO_PATTERN_MATCH: unique symbol = Symbol('model-selection/no-pattern-match',);
 
 /**
- * Sentinel seeding the thinking-level accumulator in {@link parseModelPattern}
- * before a valid thinking suffix is seen. A `unique symbol` rather than
- * `undefined` because the loop-init binding would otherwise need a banned
- * `ScopedThinkingLevel | undefined` annotation; narrowed with
- * `=== NO_THINKING_LEVEL`.
+ Sentinel seeding the thinking-level accumulator in {@link parseModelPattern}
+ before a valid thinking suffix is seen. A `unique symbol` rather than
+ `undefined` because the loop-init binding would otherwise need a banned
+ `ScopedThinkingLevel | undefined` annotation; narrowed with
+ `=== NO_THINKING_LEVEL`.
  */
 const NO_THINKING_LEVEL: unique symbol = Symbol('model-selection/no-thinking-level',);
 
 //region Types and constants
 
 /**
- * Result of parsing a single model scope pattern.
+ Result of parsing a single model scope pattern.
  */
 export type PatternResolution<TModel extends ModelIdentity = ModelIdentity,> = {
   /**
-   * Matched model, omitted when no model matched.
+   Matched model, omitted when no model matched.
    */
   readonly model?: TModel;
   /**
-   * Thinking level suffix, when present.
+   Thinking level suffix, when present.
    */
   readonly thinkingLevel?: ScopedThinkingLevel;
 };
 
 /**
- * Valid pi thinking-level suffixes.
+ Valid pi thinking-level suffixes.
  */
 const THINKING_LEVELS = [
   'off',
@@ -60,22 +60,22 @@ const THINKING_LEVELS = [
 ] as const satisfies readonly ScopedThinkingLevel[];
 
 /**
- * Valid pi thinking-level suffixes as strings for runtime checks.
+ Valid pi thinking-level suffixes as strings for runtime checks.
  */
 const THINKING_LEVEL_SET: ReadonlySet<string> = new Set(THINKING_LEVELS,);
 
 /**
- * Digits in pi model date suffixes.
+ Digits in pi model date suffixes.
  */
 const DATE_SUFFIX_DIGITS = 8;
 
 /**
- * Total characters in pi model date suffix including leading hyphen.
+ Total characters in pi model date suffix including leading hyphen.
  */
 const DATE_SUFFIX_TOTAL_LENGTH = DATE_SUFFIX_DIGITS + 1;
 
 /**
- * ASCII digit characters accepted in pi model date suffixes.
+ ASCII digit characters accepted in pi model date suffixes.
  */
 const ASCII_DIGITS: ReadonlySet<string> = new Set([
   '0',
@@ -95,22 +95,22 @@ const ASCII_DIGITS: ReadonlySet<string> = new Set([
 //region Public helpers
 
 /**
- * Parse exact or fuzzy pi model pattern.
- *
- * The parser strips colon suffixes iteratively to avoid recursion over flat
- * strings. A valid thinking suffix is carried while earlier suffixes are
- * stripped until a model body matches or no body remains.
- *
- * @param pattern - pi model pattern
- *
- * @param availableModels - models with configured auth
- *
- * @returns matched model and optional thinking level
- *
- * @example
- * ```typescript
- * parseModelPattern({ pattern: 'sonnet:high', availableModels });
- * ```
+ Parse exact or fuzzy pi model pattern.
+ 
+ The parser strips colon suffixes iteratively to avoid recursion over flat
+ strings. A valid thinking suffix is carried while earlier suffixes are
+ stripped until a model body matches or no body remains.
+ 
+ @param pattern - pi model pattern
+ 
+ @param availableModels - models with configured auth
+ 
+ @returns matched model and optional thinking level
+ 
+ @example
+ ```typescript
+ parseModelPattern({ pattern: 'sonnet:high', availableModels });
+ ```
  */
 export function parseModelPattern<TModel extends ModelIdentity,>(
   {
@@ -126,7 +126,7 @@ export function parseModelPattern<TModel extends ModelIdentity,>(
     ;
   ) {
     /**
-     * Exact or fuzzy match for current pattern body.
+     Exact or fuzzy match for current pattern body.
      */
     const exactMatch = tryMatchModel({
       pattern: currentPattern,
@@ -140,14 +140,14 @@ export function parseModelPattern<TModel extends ModelIdentity,>(
     }
 
     /**
-     * Last colon, used for optional thinking suffix parsing.
+     Last colon, used for optional thinking suffix parsing.
      */
     const lastColonIndex = currentPattern.lastIndexOf(':',);
     if (lastColonIndex === (-1))
       return {};
 
     /**
-     * Candidate suffix after last colon.
+     Candidate suffix after last colon.
      */
     const suffix = currentPattern.slice(lastColonIndex + 1,);
     if ((thinkingLevel === NO_THINKING_LEVEL) && isThinkingLevel(suffix,))
@@ -160,16 +160,16 @@ export function parseModelPattern<TModel extends ModelIdentity,>(
 }
 
 /**
- * Split a glob pattern from optional thinking suffix.
- *
- * @param pattern - glob pattern
- *
- * @returns pattern body and optional thinking level
- *
- * @example
- * ```typescript
- * splitThinkingSuffix('anthropic/*:high');
- * ```
+ Split a glob pattern from optional thinking suffix.
+ 
+ @param pattern - glob pattern
+ 
+ @returns pattern body and optional thinking level
+ 
+ @example
+ ```typescript
+ splitThinkingSuffix('anthropic/*:high');
+ ```
  */
 export function splitThinkingSuffix(
   pattern: string,
@@ -178,14 +178,14 @@ export function splitThinkingSuffix(
   readonly thinkingLevel?: ScopedThinkingLevel;
 } {
   /**
-   * Last colon, used for optional suffix parsing.
+   Last colon, used for optional suffix parsing.
    */
   const colonIndex = pattern.lastIndexOf(':',);
   if (colonIndex === (-1))
     return { pattern, };
 
   /**
-   * Candidate suffix after last colon.
+   Candidate suffix after last colon.
    */
   const suffix = pattern.slice(colonIndex + 1,);
   return isThinkingLevel(suffix,)
@@ -200,16 +200,16 @@ export function splitThinkingSuffix(
 }
 
 /**
- * Check whether a string contains glob syntax.
- *
- * @param pattern - model pattern
- *
- * @returns whether pattern contains glob syntax
- *
- * @example
- * ```typescript
- * patternHasGlob('anthropic/*');
- * ```
+ Check whether a string contains glob syntax.
+ 
+ @param pattern - model pattern
+ 
+ @returns whether pattern contains glob syntax
+ 
+ @example
+ ```typescript
+ patternHasGlob('anthropic/*');
+ ```
  */
 export function patternHasGlob(
   pattern: string,
@@ -225,18 +225,18 @@ export function patternHasGlob(
 }
 
 /**
- * Convert model to scoped model entry.
- *
- * @param model - pi model object
- *
- * @param thinkingLevel - optional thinking level from scope pattern
- *
- * @returns scoped model
- *
- * @example
- * ```typescript
- * scopedModelFromModel({ model });
- * ```
+ Convert model to scoped model entry.
+ 
+ @param model - pi model object
+ 
+ @param thinkingLevel - optional thinking level from scope pattern
+ 
+ @returns scoped model
+ 
+ @example
+ ```typescript
+ scopedModelFromModel({ model });
+ ```
  */
 export function scopedModelFromModel<TModel extends ModelIdentity,>(
   {
@@ -255,16 +255,16 @@ export function scopedModelFromModel<TModel extends ModelIdentity,>(
 }
 
 /**
- * Check whether a suffix is a valid thinking level.
- *
- * @param value - candidate suffix
- *
- * @returns whether suffix is a valid thinking level
- *
- * @example
- * ```typescript
- * isThinkingLevel('high');
- * ```
+ Check whether a suffix is a valid thinking level.
+ 
+ @param value - candidate suffix
+ 
+ @returns whether suffix is a valid thinking level
+ 
+ @example
+ ```typescript
+ isThinkingLevel('high');
+ ```
  */
 export function isThinkingLevel(
   value: string,
@@ -273,16 +273,16 @@ export function isThinkingLevel(
 }
 
 /**
- * Check whether a model id is treated as an alias by pi.
- *
- * @param id - model id
- *
- * @returns whether model id is an alias
- *
- * @example
- * ```typescript
- * isAlias('claude-sonnet-latest');
- * ```
+ Check whether a model id is treated as an alias by pi.
+ 
+ @param id - model id
+ 
+ @returns whether model id is an alias
+ 
+ @example
+ ```typescript
+ isAlias('claude-sonnet-latest');
+ ```
  */
 export function isAlias(
   id: string,
@@ -292,16 +292,16 @@ export function isAlias(
 }
 
 /**
- * Check whether a model id ends with pi's date suffix shape.
- *
- * @param id - model id
- *
- * @returns whether id ends with hyphen followed by eight ASCII digits
- *
- * @example
- * ```typescript
- * hasDateSuffix('claude-sonnet-20251001');
- * ```
+ Check whether a model id ends with pi's date suffix shape.
+ 
+ @param id - model id
+ 
+ @returns whether id ends with hyphen followed by eight ASCII digits
+ 
+ @example
+ ```typescript
+ hasDateSuffix('claude-sonnet-20251001');
+ ```
  */
 export function hasDateSuffix(
   id: string,
@@ -311,7 +311,7 @@ export function hasDateSuffix(
     return false;
 
   /**
-   * Index of leading hyphen for suffix candidate.
+   Index of leading hyphen for suffix candidate.
    */
   const suffixHyphenIndex = id.length
     - DATE_SUFFIX_TOTAL_LENGTH;
@@ -320,7 +320,7 @@ export function hasDateSuffix(
     return false;
 
   /**
-   * Candidate date suffix without leading hyphen.
+   Candidate date suffix without leading hyphen.
    */
   const dateSuffix = id.slice(suffixHyphenIndex + 1,);
   return isAsciiDigitString(dateSuffix,);
@@ -331,13 +331,13 @@ export function hasDateSuffix(
 //region Internal helpers
 
 /**
- * Try exact and fuzzy model matching.
- *
- * @param pattern - pi model pattern
- *
- * @param availableModels - models with configured auth
- *
- * @returns matched model, if any
+ Try exact and fuzzy model matching.
+ 
+ @param pattern - pi model pattern
+ 
+ @param availableModels - models with configured auth
+ 
+ @returns matched model, if any
  */
 function tryMatchModel<TModel extends ModelIdentity,>(
   {
@@ -349,7 +349,7 @@ function tryMatchModel<TModel extends ModelIdentity,>(
   },
 ): TModel | typeof NO_PATTERN_MATCH {
   /**
-   * Exact match by canonical slug or bare id.
+   Exact match by canonical slug or bare id.
    */
   const exact = findExactModelReferenceMatch({
     modelReference: pattern,
@@ -359,11 +359,11 @@ function tryMatchModel<TModel extends ModelIdentity,>(
     return exact;
 
   /**
-   * Lowercase pattern for fuzzy id and name matching.
+   Lowercase pattern for fuzzy id and name matching.
    */
   const normalizedPattern = pattern.toLowerCase();
   /**
-   * Fuzzy matches by model id or display name.
+   Fuzzy matches by model id or display name.
    */
   const matches = availableModels.filter(function fuzzyMatches(model,) {
     return model
@@ -380,18 +380,18 @@ function tryMatchModel<TModel extends ModelIdentity,>(
     return NO_PATTERN_MATCH;
 
   /**
-   * Alias matches, preferred over dated versions.
+   Alias matches, preferred over dated versions.
    */
   const aliases = matches.filter(function keepAlias(model,) {
     return isAlias(model.id,);
   },);
   /**
-   * Candidate list before sorting.
+   Candidate list before sorting.
    */
   const candidates = aliases.length
     > 0 ? aliases : matches;
   /**
-   * Candidate list sorted by pi's descending id tie-break.
+   Candidate list sorted by pi's descending id tie-break.
    */
   const sortedCandidates = candidates.toSorted(function compareByIdDesc(
     left,
@@ -401,18 +401,18 @@ function tryMatchModel<TModel extends ModelIdentity,>(
       .localeCompare(left.id,);
   },);
   /**
-   * First candidate after sorting.
+   First candidate after sorting.
    */
   const [firstCandidate,] = sortedCandidates;
   return firstCandidate ?? NO_PATTERN_MATCH;
 }
 
 /**
- * Check whether bounded string contains only ASCII digits.
- *
- * @param value - candidate digit string
- *
- * @returns whether every character is an ASCII digit
+ Check whether bounded string contains only ASCII digits.
+ 
+ @param value - candidate digit string
+ 
+ @returns whether every character is an ASCII digit
  */
 function isAsciiDigitString(
   value: string,
@@ -425,11 +425,11 @@ function isAsciiDigitString(
 }
 
 /**
- * Check whether one character is an ASCII digit.
- *
- * @param character - single-character string
- *
- * @returns whether character is between zero and nine inclusive
+ Check whether one character is an ASCII digit.
+ 
+ @param character - single-character string
+ 
+ @returns whether character is between zero and nine inclusive
  */
 function isAsciiDigit(
   character: string,

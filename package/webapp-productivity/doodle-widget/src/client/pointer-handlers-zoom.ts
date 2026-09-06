@@ -1,8 +1,8 @@
 /**
- * Zoom tool pointer event handlers for the doodle widget.
- *
- * Handles click-to-zoom, drag-to-pan, shift-to-zoom-out, and
- * long-press-to-zoom-out gestures when the zoom tool is active.
+ Zoom tool pointer event handlers for the doodle widget.
+ 
+ Handles click-to-zoom, drag-to-pan, shift-to-zoom-out, and
+ long-press-to-zoom-out gestures when the zoom tool is active.
  */
 
 import type { PointerHandlerDeps, } from './pointer-handler-deps.ts';
@@ -18,15 +18,15 @@ import {
 } from './zoom.ts';
 
 /**
- * Hold duration in milliseconds to trigger long-press zoom-out
+ Hold duration in milliseconds to trigger long-press zoom-out
  */
 const LONG_PRESS_MS = 500;
 
 /**
- * Long-press countdown timer slot.
- *
- * `idle` when no countdown is armed; `pending` while the timeout runs, carrying
- * its handle so a drag or release can cancel it.
+ Long-press countdown timer slot.
+ 
+ `idle` when no countdown is armed; `pending` while the timeout runs, carrying
+ its handle so a drag or release can cancel it.
  */
 type LongPressTimer =
   | { readonly kind: 'idle'; }
@@ -36,10 +36,10 @@ type LongPressTimer =
   };
 
 /**
- * Captured pointer-down for the active gesture.
- *
- * `none` between gestures; `down` from press to release, carrying the event so
- * the deferred long-press handler can read its screen coordinates.
+ Captured pointer-down for the active gesture.
+ 
+ `none` between gestures; `down` from press to release, carrying the event so
+ the deferred long-press handler can read its screen coordinates.
  */
 type DownEvent =
   | { readonly kind: 'none'; }
@@ -49,20 +49,20 @@ type DownEvent =
   };
 
 /**
- * Attaches zoom-specific pointer and keyboard handlers to the canvas.
- *
- * @param deps - shared state and element references, see {@link PointerHandlerDeps}
- *
- * @mutates deps - `canvas.addEventListener` changes the event target and retains handlers; `canvas.setPointerCapture` changes pointer capture state.
- *
- * @example
- * ```ts
- * setupZoomPointerHandlers(deps);
- * ```
+ Attaches zoom-specific pointer and keyboard handlers to the canvas.
+ 
+ @param deps - shared state and element references, see {@link PointerHandlerDeps}
+ 
+ @mutates deps - `canvas.addEventListener` changes the event target and retains handlers; `canvas.setPointerCapture` changes pointer capture state.
+ 
+ @example
+ ```ts
+ setupZoomPointerHandlers(deps);
+ ```
  */
 export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   /**
-   * Destructured up front so each handler closure captures the same handles.
+   Destructured up front so each handler closure captures the same handles.
    */
   const {
     canvas,
@@ -73,10 +73,10 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   } = deps;
 
   /**
-   * Per-gesture mutable state container.
-   *
-   * Stored as object properties so function-root state stays in a `const`
-   * container (`no-function-root-let` would otherwise reject top-level `let`).
+   Per-gesture mutable state container.
+   
+   Stored as object properties so function-root state stays in a `const`
+   container (`no-function-root-let` would otherwise reject top-level `let`).
    */
   const gestureState: {
     longPressTimer: LongPressTimer;
@@ -89,9 +89,9 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   };
 
   /**
-   * Sets the canvas cursor based on current zoom tool state.
-   *
-   * @param style - CSS cursor keyword to apply
+   Sets the canvas cursor based on current zoom tool state.
+   
+   @param style - CSS cursor keyword to apply
    */
   function setZoomCursor(style: string,): void {
     canvas.style
@@ -99,11 +99,11 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   }
 
   /**
-   * Cancels any pending long-press timer
+   Cancels any pending long-press timer
    */
   function clearLongPress(): void {
     /**
-     * Captured so the discriminant check and clear act on one timer.
+     Captured so the discriminant check and clear act on one timer.
      */
     const timer = gestureState.longPressTimer;
     if (timer.kind === 'pending') {
@@ -119,7 +119,7 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
         !== 'zoom')
         return;
       /**
-       * Prevent iOS Safari from cancelling the pointer sequence via native gesture recognition
+       Prevent iOS Safari from cancelling the pointer sequence via native gesture recognition
        */
       event.preventDefault();
       canvas.setPointerCapture(event.pointerId,);
@@ -135,24 +135,24 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       gestureState.longPressFired = false;
       clearLongPress();
       /**
-       * Timer handle wrapped into the pending state after scheduling.
+       Timer handle wrapped into the pending state after scheduling.
        */
       const longPressId = setTimeout(
         function fireLongPress(): void {
           gestureState.longPressFired = true;
           gestureState.longPressTimer = { kind: 'idle', };
           /**
-           * Captured so the discriminant check and coordinate reads use one event.
+           Captured so the discriminant check and coordinate reads use one event.
            */
           const down = gestureState.downEvent;
           if (down.kind === 'none')
             return;
           /**
-           * Container layout captured per gesture so panning offsets stay consistent across reflows.
+           Container layout captured per gesture so panning offsets stay consistent across reflows.
            */
           const containerRect = page.getBoundingClientRect();
           /**
-           * Canvas dimensions resolved here so the zoom math uses fresh sizing.
+           Canvas dimensions resolved here so the zoom math uses fresh sizing.
            */
           const {
             cw,
@@ -189,14 +189,14 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
         !== 'zoom')
         return;
       /**
-       * Canvas dimensions resolved each move so pan math stays in sync with the live layout.
+       Canvas dimensions resolved each move so pan math stays in sync with the live layout.
        */
       const {
         cw,
         ch,
       } = getCanvasSize();
       /**
-       * True only when the pointer has crossed the drag threshold, so the cursor flip is conditional.
+       True only when the pointer has crossed the drag threshold, so the cursor flip is conditional.
        */
       const dragging = continuePan({
         event,
@@ -219,16 +219,16 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
         return;
       clearLongPress();
       /**
-       * True when the gesture moved past the drag threshold; suppresses the tap-to-zoom action.
+       True when the gesture moved past the drag threshold; suppresses the tap-to-zoom action.
        */
       const wasDrag = endPan();
       if ((!wasDrag) && (!gestureState.longPressFired)) {
         /**
-         * Container layout captured at release so the zoom origin matches the screen tap.
+         Container layout captured at release so the zoom origin matches the screen tap.
          */
         const containerRect = page.getBoundingClientRect();
         /**
-         * Canvas dimensions resolved at release so the zoom math uses fresh sizing.
+         Canvas dimensions resolved at release so the zoom math uses fresh sizing.
          */
         const {
           cw,
@@ -263,11 +263,11 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
 
   //region iOS touch fallback
   /**
-   * iOS Safari may not fully honor `touch-action: none` in CSS and can
-   * fire `pointercancel` to take over touch handling for native gestures
-   * (scroll, page zoom, context menu). Explicitly preventing default on
-   * `touchstart` and `touchmove` stops this at the touch-event level,
-   * before pointer events are generated.
+   iOS Safari may not fully honor `touch-action: none` in CSS and can
+   fire `pointercancel` to take over touch handling for native gestures
+   (scroll, page zoom, context menu). Explicitly preventing default on
+   `touchstart` and `touchmove` stops this at the touch-event level,
+   before pointer events are generated.
    */
 
   canvas.addEventListener(

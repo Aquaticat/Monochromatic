@@ -1,7 +1,7 @@
 /**
- * Explicit opaque host capability coverage through parameter bindings.
- *
- * @module
+ Explicit opaque host capability coverage through parameter bindings.
+ 
+ @module
  */
 
 import type { BindingName, } from 'typescript/unstable/ast';
@@ -14,22 +14,22 @@ import type { Project, } from 'typescript/unstable/sync';
 import { isForeignHostCapabilityType, } from './foreign-host-capability-identity.ts';
 
 /**
- * Tests whether parameter binding contains exact foreign host capability marker.
- *
- * Destructured parameters retain explicit capability authority when one bound
- * field carries marker. Ordinary foreign ownership markers and same-named local
- * aliases do not qualify.
- *
- * @param project - TypeScript project resolving exact marker identity.
- *
- * @param name - Parameter binding identifier or destructuring pattern.
- *
- * @returns whether explicit host capability marker reaches binding.
- *
- * @example
- * ```ts
- * bindingContainsForeignHostCapability({ project, name: parameter.name });
- * ```
+ Tests whether parameter binding contains exact foreign host capability marker.
+ 
+ Destructured parameters retain explicit capability authority when one bound
+ field carries marker. Ordinary foreign ownership markers and same-named local
+ aliases do not qualify.
+ 
+ @param project - TypeScript project resolving exact marker identity.
+ 
+ @param name - Parameter binding identifier or destructuring pattern.
+ 
+ @returns whether explicit host capability marker reaches binding.
+ 
+ @example
+ ```ts
+ bindingContainsForeignHostCapability({ project, name: parameter.name });
+ ```
  */
 export function bindingContainsForeignHostCapability({
   project,
@@ -40,7 +40,7 @@ export function bindingContainsForeignHostCapability({
 },): boolean {
   if (isIdentifier(name,)) {
     /**
-     * Semantic type of current bound identifier.
+     Semantic type of current bound identifier.
      */
     const type = project.checker
       .getTypeAtLocation(name,);

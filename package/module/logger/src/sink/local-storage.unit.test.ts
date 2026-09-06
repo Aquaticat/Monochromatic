@@ -9,20 +9,20 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Sink factories under test, read from the built artifact's `sinks` namespace.
+ Sink factories under test, read from the built artifact's `sinks` namespace.
  */
 const {
   createLocalStorageSink,
 } = sinks;
 
 /**
- * Installs `fake` as `globalThis.localStorage` via the property descriptor,
- * restoring the original descriptor, or removing the property when none
- * existed, when the returned guard leaves `using` scope.
- *
- * @param fake - Storage stand-in to install for the duration of the scope.
- *
- * @returns Disposable that restores the original `localStorage` on exit.
+ Installs `fake` as `globalThis.localStorage` via the property descriptor,
+ restoring the original descriptor, or removing the property when none
+ existed, when the returned guard leaves `using` scope.
+ 
+ @param fake - Storage stand-in to install for the duration of the scope.
+ 
+ @returns Disposable that restores the original `localStorage` on exit.
  */
 function installFakeLocalStorage(fake: Storage,): Disposable {
   const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage',);
@@ -41,12 +41,12 @@ function installFakeLocalStorage(fake: Storage,): Disposable {
 }
 
 /**
- * Installs a minimal fake `globalThis.document` (absent under Node) so the
- * sink under test takes the DOM-host verify path instead of the flagless-Node
- * short-circuit, restoring or removing the global when the returned guard
- * leaves `using` scope.
- *
- * @returns Disposable that restores the original `document` on exit.
+ Installs a minimal fake `globalThis.document` (absent under Node) so the
+ sink under test takes the DOM-host verify path instead of the flagless-Node
+ short-circuit, restoring or removing the global when the returned guard
+ leaves `using` scope.
+ 
+ @returns Disposable that restores the original `document` on exit.
  */
 function installFakeDocument(): Disposable {
   const had = 'document' in globalThis;
@@ -66,11 +66,11 @@ function installFakeDocument(): Disposable {
 }
 
 /**
- * Builds an in-memory `Storage` stand-in with enumeration support, exposing
- * the raw `backing` map so a test can assert exactly which keys and values
- * landed.
- *
- * @returns Storage stand-in exposing the raw `backing` map.
+ Builds an in-memory `Storage` stand-in with enumeration support, exposing
+ the raw `backing` map so a test can assert exactly which keys and values
+ landed.
+ 
+ @returns Storage stand-in exposing the raw `backing` map.
  */
 function createFakeStorage(): Storage & { readonly backing: Map<string, string>; } {
   const backing = new Map<string, string>();
@@ -98,11 +98,11 @@ function createFakeStorage(): Storage & { readonly backing: Map<string, string>;
 }
 
 /**
- * Captures `console.warn` output, restoring the real method when the returned
- * guard leaves `using` scope, so a test can prove the flagless-Node
- * short-circuit stays silent.
- *
- * @returns Disposable exposing captured warn lines as `calls`.
+ Captures `console.warn` output, restoring the real method when the returned
+ guard leaves `using` scope, so a test can prove the flagless-Node
+ short-circuit stays silent.
+ 
+ @returns Disposable exposing captured warn lines as `calls`.
  */
 function spyConsoleWarn(): Disposable & { readonly calls: string[]; } {
   const original = console.warn;
@@ -163,7 +163,7 @@ await describe({
         const sink = createLocalStorageSink();
 
         /**
-         * Routine record that must stay buffered on its own.
+         Routine record that must stay buffered on its own.
          */
         const first = {
           level: 'info' as const,
@@ -171,7 +171,7 @@ await describe({
           timestamp: 1,
         };
         /**
-         * Urgent record whose severity flushes itself and `first` together.
+         Urgent record whose severity flushes itself and `first` together.
          */
         const second = {
           level: 'warn' as const,
@@ -187,7 +187,7 @@ await describe({
         expect([...fake.backing.values(),],)
           .toEqual([`${JSON.stringify(first,)}\n${JSON.stringify(second,)}`,],);
         /**
-         * Identity of the landed key; the first batch of a run takes index zero.
+         Identity of the landed key; the first batch of a run takes index zero.
          */
         const { parsed: landed, } = parseLogKey([...fake.backing.keys(),][0] ?? '',);
         expect(landed?.index,)

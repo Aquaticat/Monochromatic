@@ -1,5 +1,5 @@
 /**
- * Renders a single RSS feed item as an HTML list-item element.
+ Renders a single RSS feed item as an HTML list-item element.
  */
 
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
@@ -7,16 +7,16 @@ import { css, } from './asset.ts';
 import type { ItemWDate, } from './item-type.ts';
 
 /**
- * Renders a single feed item as an HTML list item.
- *
- * @param options - Feed item with its position in the rendered list
- *
- * @returns HTML string for the feed item
- *
- * @example
- * ```ts
- * const html = itemToFeed({ itemWDate: item, index: 0 });
- * ```
+ Renders a single feed item as an HTML list item.
+ 
+ @param options - Feed item with its position in the rendered list
+ 
+ @returns HTML string for the feed item
+ 
+ @example
+ ```ts
+ const html = itemToFeed({ itemWDate: item, index: 0 });
+ ```
  */
 export function itemToFeed(
   options: {
@@ -25,14 +25,14 @@ export function itemToFeed(
   },
 ): string {
   /**
-   * Destructured top-level inputs so the body reads without `options.` prefix.
+   Destructured top-level inputs so the body reads without `options.` prefix.
    */
   const {
     itemWDate,
     index,
   } = options;
   /**
-   * Destructured nested fields so the JSX-like tree reads directly.
+   Destructured nested fields so the JSX-like tree reads directly.
    */
   const {
     item,
@@ -40,7 +40,7 @@ export function itemToFeed(
     feed,
   } = itemWDate;
   /**
-   * Optional iframe markup omitted when description is absent so empty content stays unrendered.
+   Optional iframe markup omitted when description is absent so empty content stays unrendered.
    */
   const descriptionIframe = (item.description
     !== undefined) && (item.description

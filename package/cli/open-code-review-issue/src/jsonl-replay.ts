@@ -1,7 +1,7 @@
 /**
- * OCR JSONL event replay state transitions.
- *
- * @module
+ OCR JSONL event replay state transitions.
+ 
+ @module
  */
 
 import {
@@ -15,15 +15,15 @@ import type {
 } from './model.ts';
 
 /**
- * Parsed JSONL event with physical source line.
- *
- * @example
- * ```ts
- * const event: PositionedJsonlRecord = {
- *   line: 1,
- *   record: { type: 'session_start' },
- * };
- * ```
+ Parsed JSONL event with physical source line.
+ 
+ @example
+ ```ts
+ const event: PositionedJsonlRecord = {
+   line: 1,
+   record: { type: 'session_start' },
+ };
+ ```
  */
 export type PositionedJsonlRecord = {
   readonly line: number;
@@ -31,14 +31,14 @@ export type PositionedJsonlRecord = {
 };
 
 /**
- * Replay group preserving first checkpoint order across supersession.
+ Replay group preserving first checkpoint order across supersession.
  */
 type ReplayGroup = {
   readonly findings: readonly NormalizedFinding[];
 };
 
 /**
- * Mutable replay accumulator hidden inside one ownership boundary.
+ Mutable replay accumulator hidden inside one ownership boundary.
  */
 type ReplayState = {
   readonly groups: ReplayGroup[];
@@ -47,18 +47,18 @@ type ReplayState = {
 };
 
 /**
- * Applies completed or reused checkpoint to replay state.
- *
- * @param state - Replay accumulator owned by one input parse.
- *
- * @param record - Completed or reused item event.
- *
- * @param line - One-based event line.
- *
- * @example
- * ```ts
- * applyCheckpoint({ state, record: { type: 'review_item_done', comments: [] }, line: 1 });
- * ```
+ Applies completed or reused checkpoint to replay state.
+ 
+ @param state - Replay accumulator owned by one input parse.
+ 
+ @param record - Completed or reused item event.
+ 
+ @param line - One-based event line.
+ 
+ @example
+ ```ts
+ applyCheckpoint({ state, record: { type: 'review_item_done', comments: [] }, line: 1 });
+ ```
  */
 function applyCheckpoint({
   state,
@@ -70,7 +70,7 @@ function applyCheckpoint({
   readonly line: number;
 },): void {
   /**
-   * Raw diff fingerprint identifying superseded group.
+   Raw diff fingerprint identifying superseded group.
    */
   const fingerprint = eventString({
     record,
@@ -78,7 +78,7 @@ function applyCheckpoint({
     line,
   });
   /**
-   * Replacement group normalized from latest checkpoint.
+   Replacement group normalized from latest checkpoint.
    */
   const group: ReplayGroup = {
     findings: checkpointFindings({
@@ -87,7 +87,7 @@ function applyCheckpoint({
     }),
   };
   /**
-   * Existing ordered slot for non-empty fingerprint.
+   Existing ordered slot for non-empty fingerprint.
    */
   const existingIndex = fingerprint === ''
     ? undefined
@@ -111,18 +111,18 @@ function applyCheckpoint({
 }
 
 /**
- * Applies failed checkpoint by clearing matching ordered group.
- *
- * @param state - Replay accumulator owned by one input parse.
- *
- * @param record - Failed item event.
- *
- * @param line - One-based event line.
- *
- * @example
- * ```ts
- * applyFailure({ state, record: { fingerprint: 'x' }, line: 2 });
- * ```
+ Applies failed checkpoint by clearing matching ordered group.
+ 
+ @param state - Replay accumulator owned by one input parse.
+ 
+ @param record - Failed item event.
+ 
+ @param line - One-based event line.
+ 
+ @example
+ ```ts
+ applyFailure({ state, record: { fingerprint: 'x' }, line: 2 });
+ ```
  */
 function applyFailure({
   state,
@@ -134,7 +134,7 @@ function applyFailure({
   readonly line: number;
 },): void {
   /**
-   * Failed item fingerprint used to find existing group.
+   Failed item fingerprint used to find existing group.
    */
   const fingerprint = eventString({
     record,
@@ -142,7 +142,7 @@ function applyFailure({
     line,
   });
   /**
-   * Existing group slot when fingerprint was previously completed.
+   Existing group slot when fingerprint was previously completed.
    */
   const existingIndex = fingerprint === ''
     ? undefined
@@ -154,16 +154,16 @@ function applyFailure({
 }
 
 /**
- * Replays parsed OCR events into normalized input.
- *
- * @param records - Validated JSONL event objects with physical lines.
- *
- * @returns Replayed findings and available head provenance.
- *
- * @example
- * ```ts
- * replayJsonlRecords({ records: [] });
- * ```
+ Replays parsed OCR events into normalized input.
+ 
+ @param records - Validated JSONL event objects with physical lines.
+ 
+ @returns Replayed findings and available head provenance.
+ 
+ @example
+ ```ts
+ replayJsonlRecords({ records: [] });
+ ```
  */
 export function replayJsonlRecords({
   records,
@@ -171,7 +171,7 @@ export function replayJsonlRecords({
   readonly records: readonly PositionedJsonlRecord[];
 },): NormalizedInput {
   /**
-   * Single replay state whose mutation stays inside this ownership boundary.
+   Single replay state whose mutation stays inside this ownership boundary.
    */
   const state: ReplayState = {
     groups: [],
@@ -200,7 +200,7 @@ export function replayJsonlRecords({
     }
     if (record.type === 'session_end') {
       /**
-       * Head metadata from latest session-end event carrying one.
+       Head metadata from latest session-end event carrying one.
        */
       const metadata = jsonlResolvedHeadMetadata({
         record,

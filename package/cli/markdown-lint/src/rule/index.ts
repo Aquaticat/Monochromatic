@@ -13,9 +13,9 @@ import { noPipeTables, } from './no-pipe-tables.ts';
 import { semanticLineBreaks, } from './semantic-line-breaks.ts';
 
 /**
- * Every rule the linter runs, in execution order. New rules are appended here
- * as they are implemented; the order only affects diagnostic grouping, never
- * correctness, because each rule reads the shared tree independently.
+ Every rule the linter runs, in execution order. New rules are appended here
+ as they are implemented; the order only affects diagnostic grouping, never
+ correctness, because each rule reads the shared tree independently.
  */
 export const rules: readonly Rule[] = [
   headingIncrement,
@@ -33,7 +33,7 @@ export const rules: readonly Rule[] = [
 ];
 
 /**
- * Rules keyed by id, for lookups and configuration.
+ Rules keyed by id, for lookups and configuration.
  */
 export const rulesById: ReadonlyMap<string, Rule> = new Map(
   rules.map(function entry(rule: Rule,): readonly [

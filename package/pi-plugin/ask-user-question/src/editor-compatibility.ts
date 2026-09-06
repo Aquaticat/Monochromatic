@@ -3,12 +3,12 @@ import { basename, } from 'node:path';
 //region Constants
 
 /**
- * Terminal identity fragment emitted by terminal-exec for Ghostty.
+ Terminal identity fragment emitted by terminal-exec for Ghostty.
  */
 const GHOSTTY_ID_FRAGMENT = 'ghostty';
 
 /**
- * Helix executable names commonly configured by users.
+ Helix executable names commonly configured by users.
  */
 const HELIX_EXECUTABLE_NAMES: ReadonlySet<string> = new Set([
   'helix',
@@ -16,7 +16,7 @@ const HELIX_EXECUTABLE_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Warning logged when known terminal and editor pairing is selected.
+ Warning logged when known terminal and editor pairing is selected.
  */
 export const GHOSTTY_HELIX_WARNING = 'Detected Ghostty with Helix. Escape may intermittently fail in this pairing; set editor to another command in the user-level pi-ask-user-question.json config.';
 
@@ -25,18 +25,18 @@ export const GHOSTTY_HELIX_WARNING = 'Detected Ghostty with Helix. Escape may in
 //region Detection
 
 /**
- * Detects Ghostty terminal paired with Helix editor.
- *
- * @param terminalEntryId - terminal-exec resolved desktop entry identity
- *
- * @param editorCommand - effective editor executable and arguments
- *
- * @returns whether compatibility warning should be emitted
- *
- * @example
- * ```ts
- * isGhosttyHelixCombination({ terminalEntryId: 'com.mitchellh.ghostty.desktop', editorCommand: ['hx'] });
- * ```
+ Detects Ghostty terminal paired with Helix editor.
+ 
+ @param terminalEntryId - terminal-exec resolved desktop entry identity
+ 
+ @param editorCommand - effective editor executable and arguments
+ 
+ @returns whether compatibility warning should be emitted
+ 
+ @example
+ ```ts
+ isGhosttyHelixCombination({ terminalEntryId: 'com.mitchellh.ghostty.desktop', editorCommand: ['hx'] });
+ ```
  */
 export function isGhosttyHelixCombination({
   terminalEntryId,
@@ -49,7 +49,7 @@ export function isGhosttyHelixCombination({
     .includes(GHOSTTY_ID_FRAGMENT,))
     return false;
   /**
-   * Effective editor executable before configured arguments.
+   Effective editor executable before configured arguments.
    */
   const [executable,] = editorCommand;
   if (executable === undefined)

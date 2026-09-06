@@ -1,7 +1,7 @@
 /**
- * Fixed-point propagation over direct effect summaries.
- *
- * @module
+ Fixed-point propagation over direct effect summaries.
+ 
+ @module
  */
 
 import { addOpaqueEffect, } from './effect-call-resolution.ts';
@@ -25,26 +25,26 @@ import {
 import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
 
 /**
- * Mutable effect dimensions propagated per parameter.
- *
- * Four rather than three since result substitution landed: the propagated `returned` set
- * grows per slot exactly as `mutated`, `invoked` and `opaque` do. The count bounds the
- * loop and the loop THROWS at the bound, so adding a dimension without raising this turns
- * a slow convergence into a thrown `EffectPropagationError`.
+ Mutable effect dimensions propagated per parameter.
+ 
+ Four rather than three since result substitution landed: the propagated `returned` set
+ grows per slot exactly as `mutated`, `invoked` and `opaque` do. The count bounds the
+ loop and the loop THROWS at the bound, so adding a dimension without raising this turns
+ a slow convergence into a thrown `EffectPropagationError`.
  */
 const EFFECT_DIMENSION_COUNT = 4;
 
 /**
- * Propagates direct, transitive, recursive, and higher-order effects to fixed point.
- *
- * @param summaries - Mutable summaries keyed by declaration.
- *
- * @mutates summaries - Propagates call effects to fixed point.
- *
- * @example
- * ```ts
- * propagateEffects(summaries);
- * ```
+ Propagates direct, transitive, recursive, and higher-order effects to fixed point.
+ 
+ @param summaries - Mutable summaries keyed by declaration.
+ 
+ @mutates summaries - Propagates call effects to fixed point.
+ 
+ @example
+ ```ts
+ propagateEffects(summaries);
+ ```
  */
 export function propagateEffects(
   summaries: ReadonlyMap<string, MutableEffectSummary>,
@@ -57,7 +57,7 @@ export function propagateEffects(
    * the direction that produces an offer for written state, so it is thrown rather than
    * returned. */
   /**
-   * Total effect bits that can change before fixed point.
+   Total effect bits that can change before fixed point.
    */
   const effectBitCount = [...summaries.values(),].reduce(
     function total(
@@ -71,7 +71,7 @@ export function propagateEffects(
     0,
   );
   /**
-   * Mutable convergence state shared across each propagation pass.
+   Mutable convergence state shared across each propagation pass.
    */
   const state = {
     changed: true,
@@ -82,11 +82,11 @@ export function propagateEffects(
     state.pass++;
     summaries.forEach(
       /**
-       * Propagates every owned call edge from one caller summary.
-       *
-       * @param summary - Caller summary receiving transitive effects.
-       *
-       * @mutates summary - Adds callee and callback effects.
+       Propagates every owned call edge from one caller summary.
+       
+       @param summary - Caller summary receiving transitive effects.
+       
+       @mutates summary - Adds callee and callback effects.
        */
       function propagateSummary(summary,): void {
         // Read-only view members carry no summary, so their element flow
@@ -108,7 +108,7 @@ export function propagateEffects(
         summary.calls
           .forEach(function propagateCall(edge,): void {
             /**
-             * Summary for owned callee edge.
+             Summary for owned callee edge.
              */
             const calleeSummary = summaries.get(edge.calleeKey,);
             if (calleeSummary === undefined) {

@@ -15,12 +15,12 @@ import {
 import './toggle-switch.ts';
 
 /**
- * Font size numerator for description text (15/16 rem).
+ Font size numerator for description text (15/16 rem).
  */
 const DESC_FONT_SIZE_PX = 15;
 
 /**
- * Compiled CSS string for `<setting-group>` Shadow DOM.
+ Compiled CSS string for `<setting-group>` Shadow DOM.
  */
 const STYLES = [
   css({
@@ -66,17 +66,17 @@ const STYLES = [
   .join('',);
 
 /**
- * `<setting-group>`: a single settings row with a label, description,
- * and an action control (toggle switch or button) determined by the `mode` attribute.
+ `<setting-group>`: a single settings row with a label, description,
+ and an action control (toggle switch or button) determined by the `mode` attribute.
  */
 class SettingGroup extends HTMLElement {
   /**
-   * Shadow root for encapsulated rendering.
+   Shadow root for encapsulated rendering.
    */
   readonly #shadow: ShadowRoot;
 
   /**
-   * Initializes the shadow root.
+   Initializes the shadow root.
    */
   constructor() {
     super();
@@ -84,31 +84,31 @@ class SettingGroup extends HTMLElement {
   }
 
   /**
-   * Renders the setting label, optional description, and action control.
+   Renders the setting label, optional description, and action control.
    */
   connectedCallback(): void {
     /**
-     * Resolved at attach time so the header still renders if the attribute is absent.
+     Resolved at attach time so the header still renders if the attribute is absent.
      */
     const label = this.getAttribute('label',)
       ?? '';
     /**
-     * Empty string sentinels an absent description so the optional paragraph stays unrendered.
+     Empty string sentinels an absent description so the optional paragraph stays unrendered.
      */
     const description = this.getAttribute('description',)
       ?? '';
     /**
-     * Default `toggle` mode preserves backwards compatibility with existing usages.
+     Default `toggle` mode preserves backwards compatibility with existing usages.
      */
     const mode = this.getAttribute('mode',)
       ?? 'toggle';
     /**
-     * Boolean-attribute presence flag forwarded to the embedded toggle.
+     Boolean-attribute presence flag forwarded to the embedded toggle.
      */
     const on = this.hasAttribute('on',);
 
     /**
-     * Right-hand control whose tag depends on `mode`; captured once for inclusion below.
+     Right-hand control whose tag depends on `mode`; captured once for inclusion below.
      */
     const actionElement = mode === 'button'
       ? h({
@@ -128,7 +128,7 @@ class SettingGroup extends HTMLElement {
       },);
 
     /**
-     * Accumulator so the optional description paragraph can be appended conditionally.
+     Accumulator so the optional description paragraph can be appended conditionally.
      */
     const children: (HTMLElement)[] = [
       h({

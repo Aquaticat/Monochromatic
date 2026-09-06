@@ -1,7 +1,7 @@
 /**
- * Path utilities.
- *
- * @module
+ Path utilities.
+ 
+ @module
  */
 
 import type { AST, } from 'toml-eslint-parser';
@@ -9,18 +9,18 @@ import type { AST, } from 'toml-eslint-parser';
 import type { TomlPath, } from './types.ts';
 
 /**
- * Surface the string form of a key fragment.
- *
- * `TOMLBare` carries the identifier as `name`; `TOMLQuoted` carries the
- * decoded string as `value`. Both are surfaced as the same string here so
- * path comparisons treat `key = 1` and `"key" = 1` identically.
- *
- * @returns Computed string.
- *
- * @example
- * ```ts
- * keyNameOf({ key: { type: 'TOMLBare', name: 'foo' } as never, },); // 'foo'
- * ```
+ Surface the string form of a key fragment.
+ 
+ `TOMLBare` carries the identifier as `name`; `TOMLQuoted` carries the
+ decoded string as `value`. Both are surfaced as the same string here so
+ path comparisons treat `key = 1` and `"key" = 1` identically.
+ 
+ @returns Computed string.
+ 
+ @example
+ ```ts
+ keyNameOf({ key: { type: 'TOMLBare', name: 'foo' } as never, },); // 'foo'
+ ```
  */
 export function keyNameOf({ key, }: { readonly key: AST.TOMLBare | AST.TOMLQuoted; },): string {
   return key.type
@@ -28,16 +28,16 @@ export function keyNameOf({ key, }: { readonly key: AST.TOMLBare | AST.TOMLQuote
 }
 
 /**
- * The full list of segments that a `TOMLKey` spells.
- *
- * Dotted-key forms like `a.b.c = 1` produce three segments.
- *
- * @returns Computed result (`readonly string[]`).
- *
- * @example
- * ```ts
- * keysOf({ key: tomlKeyForABC, },); // ['a', 'b', 'c']
- * ```
+ The full list of segments that a `TOMLKey` spells.
+ 
+ Dotted-key forms like `a.b.c = 1` produce three segments.
+ 
+ @returns Computed result (`readonly string[]`).
+ 
+ @example
+ ```ts
+ keysOf({ key: tomlKeyForABC, },); // ['a', 'b', 'c']
+ ```
  */
 export function keysOf({ key, }: { readonly key: AST.TOMLKey; },): readonly string[] {
   return key.keys
@@ -47,14 +47,14 @@ export function keysOf({ key, }: { readonly key: AST.TOMLKey; },): readonly stri
 }
 
 /**
- * Render a `TomlPath` as a human-readable string for error messages.
- *
- * @returns Computed string.
- *
- * @example
- * ```ts
- * formatPath({ path: ['fruits', 0, 'name'] as const, },); // 'fruits[0].name'
- * ```
+ Render a `TomlPath` as a human-readable string for error messages.
+ 
+ @returns Computed string.
+ 
+ @example
+ ```ts
+ formatPath({ path: ['fruits', 0, 'name'] as const, },); // 'fruits[0].name'
+ ```
  */
 export function formatPath({ path, }: { readonly path: TomlPath; },): string {
   return path
@@ -72,15 +72,15 @@ export function formatPath({ path, }: { readonly path: TomlPath; },): string {
 }
 
 /**
- * True when a path segment matches a TOML key string (bare or quoted).
- *
- * @returns Resulting boolean.
- *
- * @example
- * ```ts
- * keyMatchesSegment({ keyName: 'foo', segment: 'foo', },); // true
- * keyMatchesSegment({ keyName: 'foo', segment: 0, },);     // false
- * ```
+ True when a path segment matches a TOML key string (bare or quoted).
+ 
+ @returns Resulting boolean.
+ 
+ @example
+ ```ts
+ keyMatchesSegment({ keyName: 'foo', segment: 'foo', },); // true
+ keyMatchesSegment({ keyName: 'foo', segment: 0, },);     // false
+ ```
  */
 export function keyMatchesSegment(
   {

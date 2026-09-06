@@ -1,7 +1,7 @@
 /**
- * Shared parser helpers for provider usage headers.
- *
- * @module
+ Shared parser helpers for provider usage headers.
+ 
+ @module
  */
 
 import {
@@ -11,53 +11,53 @@ import {
 } from './rate-limit-types.ts';
 
 /**
- * Sentinel returned when a header or object property is missing or invalid.
+ Sentinel returned when a header or object property is missing or invalid.
  */
 const INVALID_VALUE: unique symbol = Symbol('usage header value missing or invalid',);
 
 /**
- * Sentinel returned when a provider value cannot produce a snapshot.
+ Sentinel returned when a provider value cannot produce a snapshot.
  */
 const INVALID_RATE_LIMIT_SNAPSHOT: unique symbol = Symbol('usage rate limit snapshot missing or invalid',);
 
 /**
- * Invalid value sentinel type.
+ Invalid value sentinel type.
  */
 type InvalidValue = typeof INVALID_VALUE;
 
 /**
- * Invalid snapshot sentinel type.
+ Invalid snapshot sentinel type.
  */
 type InvalidRateLimitSnapshot = typeof INVALID_RATE_LIMIT_SNAPSHOT;
 
 /**
- * Unknown object record used while parsing provider JSON.
+ Unknown object record used while parsing provider JSON.
  */
 type UnknownRecord = Readonly<Record<string, unknown>>;
 
 /**
- * Normalizes provider headers to lowercase names.
- *
- * @param headers - provider response headers from Pi
- *
- * @returns header record keyed by lowercase header names
- *
- * @example
- * ```ts
- * normalizeHeaders({ 'X-Codex-Primary-Used-Percent': '50' });
- * ```
+ Normalizes provider headers to lowercase names.
+ 
+ @param headers - provider response headers from Pi
+ 
+ @returns header record keyed by lowercase header names
+ 
+ @example
+ ```ts
+ normalizeHeaders({ 'X-Codex-Primary-Used-Percent': '50' });
+ ```
  */
 function normalizeHeaders(
   headers: Readonly<Record<string, string>>,
 ): Record<string, string> {
   /**
-   * Mutable accumulator filled with lowercase header names.
+   Mutable accumulator filled with lowercase header names.
    */
   const normalizedHeaders: Record<string, string> = {};
 
   for (const entry of Object.entries(headers,)) {
     /**
-     * Header name and value before case normalization.
+     Header name and value before case normalization.
      */
     const [name, value,] = entry;
     normalizedHeaders[name.toLowerCase()] = value;
@@ -67,18 +67,18 @@ function normalizeHeaders(
 }
 
 /**
- * Parses a non-negative numeric header.
- *
- * @param headers - lowercase provider response headers
- *
- * @param headerName - lowercase header name to parse
- *
- * @returns numeric value, or {@link INVALID_VALUE} when missing or invalid
- *
- * @example
- * ```ts
- * parseNumberHeader({ headers: { count: '10' }, headerName: 'count' });
- * ```
+ Parses a non-negative numeric header.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param headerName - lowercase header name to parse
+ 
+ @returns numeric value, or {@link INVALID_VALUE} when missing or invalid
+ 
+ @example
+ ```ts
+ parseNumberHeader({ headers: { count: '10' }, headerName: 'count' });
+ ```
  */
 function parseNumberHeader({
   headers,
@@ -88,7 +88,7 @@ function parseNumberHeader({
   headerName: string;
 }>,): number | InvalidValue {
   /**
-   * Raw header value, if the provider supplied it.
+   Raw header value, if the provider supplied it.
    */
   const rawValue = headers[headerName];
   if (rawValue === undefined)
@@ -96,7 +96,7 @@ function parseNumberHeader({
 
   /**
 
-   * Numeric header value parsed from the raw string.
+   Numeric header value parsed from the raw string.
 
    */
   const value = Number(rawValue,);
@@ -107,18 +107,18 @@ function parseNumberHeader({
 }
 
 /**
- * Parses a string header and trims whitespace.
- *
- * @param headers - lowercase provider response headers
- *
- * @param headerName - lowercase header name to parse
- *
- * @returns trimmed string value, or {@link INVALID_VALUE} when missing or empty
- *
- * @example
- * ```ts
- * parseStringHeader({ headers: { name: ' codex ' }, headerName: 'name' });
- * ```
+ Parses a string header and trims whitespace.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param headerName - lowercase header name to parse
+ 
+ @returns trimmed string value, or {@link INVALID_VALUE} when missing or empty
+ 
+ @example
+ ```ts
+ parseStringHeader({ headers: { name: ' codex ' }, headerName: 'name' });
+ ```
  */
 function parseStringHeader({
   headers,
@@ -128,7 +128,7 @@ function parseStringHeader({
   headerName: string;
 }>,): string | InvalidValue {
   /**
-   * Raw header value, if the provider supplied it.
+   Raw header value, if the provider supplied it.
    */
   const rawValue = headers[headerName];
   if (rawValue === undefined)
@@ -136,7 +136,7 @@ function parseStringHeader({
 
   /**
 
-   * Trimmed header value.
+   Trimmed header value.
 
    */
   const value = rawValue.trim();
@@ -147,18 +147,18 @@ function parseStringHeader({
 }
 
 /**
- * Parses an RFC 3339 reset header into epoch milliseconds.
- *
- * @param headers - lowercase provider response headers
- *
- * @param headerName - lowercase reset header name to parse
- *
- * @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
- *
- * @example
- * ```ts
- * parseResetHeader({ headers: { reset: '2026-06-01T12:00:00Z' }, headerName: 'reset' });
- * ```
+ Parses an RFC 3339 reset header into epoch milliseconds.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param headerName - lowercase reset header name to parse
+ 
+ @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
+ 
+ @example
+ ```ts
+ parseResetHeader({ headers: { reset: '2026-06-01T12:00:00Z' }, headerName: 'reset' });
+ ```
  */
 function parseResetHeader({
   headers,
@@ -168,7 +168,7 @@ function parseResetHeader({
   headerName: string;
 }>,): number | InvalidValue {
   /**
-   * Raw reset timestamp supplied by the provider.
+   Raw reset timestamp supplied by the provider.
    */
   const rawValue = headers[headerName];
   if (rawValue === undefined)
@@ -176,7 +176,7 @@ function parseResetHeader({
 
   /**
 
-   * Parsed epoch timestamp in milliseconds.
+   Parsed epoch timestamp in milliseconds.
 
    */
   const resetAtMs = Date.parse(rawValue,);
@@ -187,18 +187,18 @@ function parseResetHeader({
 }
 
 /**
- * Parses an epoch-seconds reset header into epoch milliseconds.
- *
- * @param headers - lowercase provider response headers
- *
- * @param headerName - lowercase reset header name to parse
- *
- * @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
- *
- * @example
- * ```ts
- * parseEpochSecondsHeader({ headers: { reset: '1704069000' }, headerName: 'reset' });
- * ```
+ Parses an epoch-seconds reset header into epoch milliseconds.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param headerName - lowercase reset header name to parse
+ 
+ @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
+ 
+ @example
+ ```ts
+ parseEpochSecondsHeader({ headers: { reset: '1704069000' }, headerName: 'reset' });
+ ```
  */
 function parseEpochSecondsHeader({
   headers,
@@ -208,7 +208,7 @@ function parseEpochSecondsHeader({
   headerName: string;
 }>,): number | InvalidValue {
   /**
-   * Parsed reset value in seconds.
+   Parsed reset value in seconds.
    */
   const seconds = parseNumberHeader({
     headers,
@@ -221,20 +221,20 @@ function parseEpochSecondsHeader({
 }
 
 /**
- * Clamps numeric value into inclusive range.
- *
- * @param value - number to clamp
- *
- * @param min - lower bound
- *
- * @param max - upper bound
- *
- * @returns value inside `[min, max]`
- *
- * @example
- * ```ts
- * clampNumber({ value: 12, min: 0, max: 10 });
- * ```
+ Clamps numeric value into inclusive range.
+ 
+ @param value - number to clamp
+ 
+ @param min - lower bound
+ 
+ @param max - upper bound
+ 
+ @returns value inside `[min, max]`
+ 
+ @example
+ ```ts
+ clampNumber({ value: 12, min: 0, max: 10 });
+ ```
  */
 function clampNumber({
   value,
@@ -255,16 +255,16 @@ function clampNumber({
 }
 
 /**
- * Detects object records while parsing JSON.
- *
- * @param value - unknown value to inspect
- *
- * @returns whether value is a non-array object
- *
- * @example
- * ```ts
- * isUnknownRecord({});
- * ```
+ Detects object records while parsing JSON.
+ 
+ @param value - unknown value to inspect
+ 
+ @returns whether value is a non-array object
+ 
+ @example
+ ```ts
+ isUnknownRecord({});
+ ```
  */
 function isUnknownRecord(value: unknown,): value is UnknownRecord {
   return ((typeof value) === 'object')
@@ -273,18 +273,18 @@ function isUnknownRecord(value: unknown,): value is UnknownRecord {
 }
 
 /**
- * Reads nested object property from an unknown record.
- *
- * @param record - source record
- *
- * @param key - property key to read
- *
- * @returns nested object, or {@link INVALID_VALUE} when missing or not an object
- *
- * @example
- * ```ts
- * readRecordProperty({ record: { nested: {} }, key: 'nested' });
- * ```
+ Reads nested object property from an unknown record.
+ 
+ @param record - source record
+ 
+ @param key - property key to read
+ 
+ @returns nested object, or {@link INVALID_VALUE} when missing or not an object
+ 
+ @example
+ ```ts
+ readRecordProperty({ record: { nested: {} }, key: 'nested' });
+ ```
  */
 function readRecordProperty({
   record,
@@ -294,7 +294,7 @@ function readRecordProperty({
   key: string;
 }>,): UnknownRecord | InvalidValue {
   /**
-   * Property value before type narrowing.
+   Property value before type narrowing.
    */
   const value = record[key];
   if (!isUnknownRecord(value,))
@@ -304,18 +304,18 @@ function readRecordProperty({
 }
 
 /**
- * Reads numeric property from an unknown record.
- *
- * @param record - source record
- *
- * @param key - property key to read
- *
- * @returns finite number, or {@link INVALID_VALUE} when missing or invalid
- *
- * @example
- * ```ts
- * readNumberProperty({ record: { used: 42 }, key: 'used' });
- * ```
+ Reads numeric property from an unknown record.
+ 
+ @param record - source record
+ 
+ @param key - property key to read
+ 
+ @returns finite number, or {@link INVALID_VALUE} when missing or invalid
+ 
+ @example
+ ```ts
+ readNumberProperty({ record: { used: 42 }, key: 'used' });
+ ```
  */
 function readNumberProperty({
   record,
@@ -325,7 +325,7 @@ function readNumberProperty({
   key: string;
 }>,): number | InvalidValue {
   /**
-   * Property value before numeric narrowing.
+   Property value before numeric narrowing.
    */
   const value = record[key];
   if (((typeof value) !== 'number') || (!Number.isFinite(value,)))
@@ -335,18 +335,18 @@ function readNumberProperty({
 }
 
 /**
- * Reads string property from an unknown record.
- *
- * @param record - source record
- *
- * @param key - property key to read
- *
- * @returns non-empty string, or {@link INVALID_VALUE} when missing or invalid
- *
- * @example
- * ```ts
- * readStringProperty({ record: { reset: '2026-06-01T12:00:00Z' }, key: 'reset' });
- * ```
+ Reads string property from an unknown record.
+ 
+ @param record - source record
+ 
+ @param key - property key to read
+ 
+ @returns non-empty string, or {@link INVALID_VALUE} when missing or invalid
+ 
+ @example
+ ```ts
+ readStringProperty({ record: { reset: '2026-06-01T12:00:00Z' }, key: 'reset' });
+ ```
  */
 function readStringProperty({
   record,
@@ -356,7 +356,7 @@ function readStringProperty({
   key: string;
 }>,): string | InvalidValue {
   /**
-   * Property value before string narrowing.
+   Property value before string narrowing.
    */
   const value = record[key];
   if ((typeof value) !== 'string')
@@ -364,7 +364,7 @@ function readStringProperty({
 
   /**
 
-   * Trimmed property value.
+   Trimmed property value.
 
    */
   const trimmedValue = value.trim();
@@ -375,18 +375,18 @@ function readStringProperty({
 }
 
 /**
- * Parses reset property from an unknown record.
- *
- * @param record - source record
- *
- * @param key - property key to read
- *
- * @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
- *
- * @example
- * ```ts
- * readResetProperty({ record: { reset: '2026-06-01T12:00:00Z' }, key: 'reset' });
- * ```
+ Parses reset property from an unknown record.
+ 
+ @param record - source record
+ 
+ @param key - property key to read
+ 
+ @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
+ 
+ @example
+ ```ts
+ readResetProperty({ record: { reset: '2026-06-01T12:00:00Z' }, key: 'reset' });
+ ```
  */
 function readResetProperty({
   record,
@@ -396,7 +396,7 @@ function readResetProperty({
   key: string;
 }>,): number | InvalidValue {
   /**
-   * Reset string before timestamp parsing.
+   Reset string before timestamp parsing.
    */
   const value = readStringProperty({
     record,
@@ -407,7 +407,7 @@ function readResetProperty({
 
   /**
 
-   * Parsed reset timestamp in milliseconds.
+   Parsed reset timestamp in milliseconds.
 
    */
   const resetAtMs = Date.parse(value,);
@@ -418,18 +418,18 @@ function readResetProperty({
 }
 
 /**
- * Computes bounded percentage from used and limit values.
- *
- * @param used - used quota value
- *
- * @param limit - total quota value
- *
- * @returns used percentage clamped to non-negative values
- *
- * @example
- * ```ts
- * usedPercentFromLimit({ used: 5, limit: 10 });
- * ```
+ Computes bounded percentage from used and limit values.
+ 
+ @param used - used quota value
+ 
+ @param limit - total quota value
+ 
+ @returns used percentage clamped to non-negative values
+ 
+ @example
+ ```ts
+ usedPercentFromLimit({ used: 5, limit: 10 });
+ ```
  */
 function usedPercentFromLimit({
   used,
@@ -450,28 +450,28 @@ function usedPercentFromLimit({
 }
 
 /**
- * Creates a generic {@link RateLimitSnapshot} from provider-specific values.
- *
- * @param key - stable snapshot key
- *
- * @param label - footer label
- *
- * @param resetAtMs - reset timestamp in epoch milliseconds
- *
- * @param windowSeconds - fixed window duration in seconds
- *
- * @param paceScale - optional elapsed-pace multiplier
- *
- * @param sampledAtMs - sample timestamp in epoch milliseconds
- *
- * @param usedPercent - used capacity percentage
- *
- * @returns generic {@link RateLimitSnapshot}, or {@link INVALID_RATE_LIMIT_SNAPSHOT} when a field is invalid
- *
- * @example
- * ```ts
- * createRateLimitSnapshot({ key: 'demo', label: 'demo', resetAtMs, windowSeconds: 60, paceScale: 1, sampledAtMs, usedPercent: 50 });
- * ```
+ Creates a generic {@link RateLimitSnapshot} from provider-specific values.
+ 
+ @param key - stable snapshot key
+ 
+ @param label - footer label
+ 
+ @param resetAtMs - reset timestamp in epoch milliseconds
+ 
+ @param windowSeconds - fixed window duration in seconds
+ 
+ @param paceScale - optional elapsed-pace multiplier
+ 
+ @param sampledAtMs - sample timestamp in epoch milliseconds
+ 
+ @param usedPercent - used capacity percentage
+ 
+ @returns generic {@link RateLimitSnapshot}, or {@link INVALID_RATE_LIMIT_SNAPSHOT} when a field is invalid
+ 
+ @example
+ ```ts
+ createRateLimitSnapshot({ key: 'demo', label: 'demo', resetAtMs, windowSeconds: 60, paceScale: 1, sampledAtMs, usedPercent: 50 });
+ ```
  */
 function createRateLimitSnapshot({
   key,
@@ -511,16 +511,16 @@ function createRateLimitSnapshot({
 }
 
 /**
- * Detects valid parsed rate-limit snapshots.
- *
- * @param snapshot - optional snapshot from one parser
- *
- * @returns whether snapshot exists
- *
- * @example
- * ```ts
- * isRateLimitSnapshot(INVALID_RATE_LIMIT_SNAPSHOT);
- * ```
+ Detects valid parsed rate-limit snapshots.
+ 
+ @param snapshot - optional snapshot from one parser
+ 
+ @returns whether snapshot exists
+ 
+ @example
+ ```ts
+ isRateLimitSnapshot(INVALID_RATE_LIMIT_SNAPSHOT);
+ ```
  */
 function isRateLimitSnapshot(
   snapshot: RateLimitSnapshot | InvalidRateLimitSnapshot,

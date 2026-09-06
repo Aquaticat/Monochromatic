@@ -1,7 +1,7 @@
 /**
- * Penpot document to `.penpot` ZIP (binfile-v3) serialization.
- *
- * @module figma-to-penpot-zip
+ Penpot document to `.penpot` ZIP (binfile-v3) serialization.
+ 
+ @module figma-to-penpot-zip
  */
 
 import { ZipWriter, } from '@monochromatic-dev/module-zip-writer/ts';
@@ -10,12 +10,12 @@ import { ZERO_UUID, } from './constants.ts';
 import type { PenpotDocument, } from './types.ts';
 
 /**
- * JSON indentation width for every emitted entry.
+ JSON indentation width for every emitted entry.
  */
 const JSON_INDENT = 2;
 
 /**
- * Static MIME-type to file-extension lookup for objects Penpot stores.
+ Static MIME-type to file-extension lookup for objects Penpot stores.
  */
 const MTYPE_EXTENSIONS: Record<string, string> = {
   'image/png': '.png',
@@ -30,16 +30,16 @@ const MTYPE_EXTENSIONS: Record<string, string> = {
 };
 
 /**
- * Map a MIME type to its storage-object file extension.
- *
- * @param mtype - MIME type string
- *
- * @returns matching extension, or `.bin` when unknown
- *
- * @example
- * ```ts
- * mtypeToExtension('image/png'); // ".png"
- * ```
+ Map a MIME type to its storage-object file extension.
+ 
+ @param mtype - MIME type string
+ 
+ @returns matching extension, or `.bin` when unknown
+ 
+ @example
+ ```ts
+ mtypeToExtension('image/png'); // ".png"
+ ```
  */
 export function mtypeToExtension(mtype: string,): string {
   return MTYPE_EXTENSIONS[mtype]
@@ -47,20 +47,20 @@ export function mtypeToExtension(mtype: string,): string {
 }
 
 /**
- * Serialize a JSON value into the archive at a given path.
- *
- * @param zip - archive writer to append to
- *
- * @param path - entry path inside the archive
- *
- * @param value - JSON-serializable value
- *
- * @mutates value through JSON.stringify serialization hooks
- *
- * @example
- * ```ts
- * addJson({ zip, path: 'manifest.json', value: doc.manifest, });
- * ```
+ Serialize a JSON value into the archive at a given path.
+ 
+ @param zip - archive writer to append to
+ 
+ @param path - entry path inside the archive
+ 
+ @param value - JSON-serializable value
+ 
+ @mutates value through JSON.stringify serialization hooks
+ 
+ @example
+ ```ts
+ addJson({ zip, path: 'manifest.json', value: doc.manifest, });
+ ```
  */
 function addJson(
   {
@@ -74,7 +74,7 @@ function addJson(
   },
 ): void {
   /**
-   * Serialized primitive separated from caller-owned value provenance before archive storage.
+   Serialized primitive separated from caller-owned value provenance before archive storage.
    */
   const content: string = JSON.stringify(
     value,
@@ -88,22 +88,22 @@ function addJson(
 }
 
 /**
- * Write every shape for one page (root frame first) into the archive.
- *
- * @param zip - {@link ZipWriter} archive writer
- *
- * @param doc - converted {@link PenpotDocument}
- *
- * @param pageId - page whose shapes are written
- *
- * @param pageDir - archive directory prefix for the page
- *
- * @mutates doc through JSON.stringify hooks
- *
- * @example
- * ```ts
- * addPageShapes({ zip, doc, pageId: page.id, pageDir, });
- * ```
+ Write every shape for one page (root frame first) into the archive.
+ 
+ @param zip - {@link ZipWriter} archive writer
+ 
+ @param doc - converted {@link PenpotDocument}
+ 
+ @param pageId - page whose shapes are written
+ 
+ @param pageDir - archive directory prefix for the page
+ 
+ @mutates doc through JSON.stringify hooks
+ 
+ @example
+ ```ts
+ addPageShapes({ zip, doc, pageId: page.id, pageDir, });
+ ```
  */
 function addPageShapes(
   {
@@ -119,7 +119,7 @@ function addPageShapes(
   },
 ): void {
   /**
-   * Root-frame shape; written first when it belongs to this page.
+   Root-frame shape; written first when it belongs to this page.
    */
   const rootShape = doc.shapes
     .get(ZERO_UUID,);
@@ -142,28 +142,28 @@ function addPageShapes(
 }
 
 /**
- * Serialize a Penpot document to a `.penpot` ZIP buffer.
- *
- * Produces a binfile-v3 archive importable into Penpot.
- *
- * @param doc - converted {@link PenpotDocument}
- *
- * @returns ZIP archive bytes
- *
- * @mutates doc through JSON.stringify hooks and module-zip-writer 0.0.1 index.ts sha256 8f8368a6425fa203195cc48ec66396d1a47684f3fdd1ef4103583febfa2e1dff mutates receiver entries, owns encoded string bytes, and retains supplied Uint8Array content
- *
- * @example
- * ```ts
- * const bytes = await serializePenpotZip(doc);
- * ```
+ Serialize a Penpot document to a `.penpot` ZIP buffer.
+ 
+ Produces a binfile-v3 archive importable into Penpot.
+ 
+ @param doc - converted {@link PenpotDocument}
+ 
+ @returns ZIP archive bytes
+ 
+ @mutates doc through JSON.stringify hooks and module-zip-writer 0.0.1 index.ts sha256 8f8368a6425fa203195cc48ec66396d1a47684f3fdd1ef4103583febfa2e1dff mutates receiver entries, owns encoded string bytes, and retains supplied Uint8Array content
+ 
+ @example
+ ```ts
+ const bytes = await serializePenpotZip(doc);
+ ```
  */
 export function serializePenpotZip(doc: PenpotDocument,): Uint8Array {
   /**
-   * Writer accumulating every JSON and binary entry; `build()` emits the archive.
+   Writer accumulating every JSON and binary entry; `build()` emits the archive.
    */
   const zip = new ZipWriter();
   /**
-   * File UUID spliced into every file-scoped entry path.
+   File UUID spliced into every file-scoped entry path.
    */
   const fileId = doc.file
     .id;
@@ -181,7 +181,7 @@ export function serializePenpotZip(doc: PenpotDocument,): Uint8Array {
 
   for (const [, page,] of doc.pages) {
     /**
-     * Directory prefix for this page's JSON and its shape entries.
+     Directory prefix for this page's JSON and its shape entries.
      */
     const pageDir = `files/${fileId}/pages/${page.id}`;
     addJson({

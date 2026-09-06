@@ -1,29 +1,29 @@
 /**
- * Balanced JSON extraction for direct reviewer retries.
- *
- * @module
+ Balanced JSON extraction for direct reviewer retries.
+ 
+ @module
  */
 
 /**
- * Maximum reviewer text copied into malformed-output diagnostics.
+ Maximum reviewer text copied into malformed-output diagnostics.
  */
 const REVIEW_TEXT_DIAGNOSTIC_LIMIT = 200;
 
 /**
- * Locate first balanced JSON object while ignoring braces inside strings.
- *
- * @param text - reviewer output to scan
- *
- * @returns complete object text or empty string
- *
- * @example
- * ```ts
- * findBalancedJsonObject('prefix {"approved":true} suffix');
- * ```
+ Locate first balanced JSON object while ignoring braces inside strings.
+ 
+ @param text - reviewer output to scan
+ 
+ @returns complete object text or empty string
+ 
+ @example
+ ```ts
+ findBalancedJsonObject('prefix {"approved":true} suffix');
+ ```
  */
 function findBalancedJsonObject(text: string,): string {
   /**
-   * Opening object delimiter.
+   Opening object delimiter.
    */
   const start = text.indexOf('{',);
   if (start === (-1))
@@ -31,22 +31,22 @@ function findBalancedJsonObject(text: string,): string {
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- Linear JSON boundary scanner updates constant-space cursor state. */
   /**
-   * Object nesting depth.
+   Object nesting depth.
    */
   let depth = 0;
   /**
-   * Whether cursor is inside JSON string.
+   Whether cursor is inside JSON string.
    */
   let inString = false;
   /**
-   * Whether current string character is escaped.
+   Whether current string character is escaped.
    */
   let escaped = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for (let cursor = start; cursor < text.length; cursor++) {
     /**
-     * Character at current scanner cursor.
+     Character at current scanner cursor.
      */
     const character = text[cursor];
     if (escaped) {
@@ -81,18 +81,18 @@ function findBalancedJsonObject(text: string,): string {
 }
 
 /**
- * Parse whole reviewer output or first balanced JSON object.
- *
- * @param text - direct-JSON reviewer output
- *
- * @returns parsed unknown JSON value
- *
- * @throws when output contains no parseable object
- *
- * @example
- * ```ts
- * extractStructuredJson('{"approved":false,"feedback":"missing test"}');
- * ```
+ Parse whole reviewer output or first balanced JSON object.
+ 
+ @param text - direct-JSON reviewer output
+ 
+ @returns parsed unknown JSON value
+ 
+ @throws when output contains no parseable object
+ 
+ @example
+ ```ts
+ extractStructuredJson('{"approved":false,"feedback":"missing test"}');
+ ```
  */
 function extractStructuredJson(text: string,): unknown {
   try {
@@ -102,7 +102,7 @@ function extractStructuredJson(text: string,): unknown {
     void error;
   }
   /**
-   * First balanced object candidate.
+   First balanced object candidate.
    */
   const block = findBalancedJsonObject(text,);
   if (block === '') {

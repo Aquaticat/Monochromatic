@@ -1,13 +1,13 @@
 /**
- * Shell wrapper option helpers for terminal title command summaries.
- *
- * @module
+ Shell wrapper option helpers for terminal title command summaries.
+ 
+ @module
  */
 
 //region Option constants
 
 /**
- * `env` options that consume one following argument.
+ `env` options that consume one following argument.
  */
 const ENV_OPTIONS_WITH_ARGUMENT: ReadonlySet<string> = new Set([
   '-u',
@@ -19,7 +19,7 @@ const ENV_OPTIONS_WITH_ARGUMENT: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * `nice` options that consume one following argument.
+ `nice` options that consume one following argument.
  */
 const NICE_OPTIONS_WITH_ARGUMENT: ReadonlySet<string> = new Set([
   '-n',
@@ -27,7 +27,7 @@ const NICE_OPTIONS_WITH_ARGUMENT: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * `timeout` options that consume one following argument.
+ `timeout` options that consume one following argument.
  */
 const TIMEOUT_OPTIONS_WITH_ARGUMENT: ReadonlySet<string> = new Set([
   '-s',
@@ -37,7 +37,7 @@ const TIMEOUT_OPTIONS_WITH_ARGUMENT: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Generic long-option assignment delimiter.
+ Generic long-option assignment delimiter.
  */
 const LONG_OPTION_VALUE_DELIMITER: string = '=';
 
@@ -46,17 +46,17 @@ const LONG_OPTION_VALUE_DELIMITER: string = '=';
 //region Option helpers
 
 /**
- * Checks whether token is a shell environment assignment.
- *
- * @param token - because `env FOO=bar cmd` should title as `cmd`
- *
- * @returns whether token looks like `NAME=value`
- *
- * @example
- * ```ts
- * isAssignmentToken('NODE_ENV=production');
- * // true
- * ```
+ Checks whether token is a shell environment assignment.
+ 
+ @param token - because `env FOO=bar cmd` should title as `cmd`
+ 
+ @returns whether token looks like `NAME=value`
+ 
+ @example
+ ```ts
+ isAssignmentToken('NODE_ENV=production');
+ // true
+ ```
  */
 function isAssignmentToken(token: string,): boolean {
   return (!token.startsWith('-',))
@@ -64,38 +64,38 @@ function isAssignmentToken(token: string,): boolean {
 }
 
 /**
- * Checks whether long option token already carries its value.
- *
- * @param token - because `--signal=TERM` should not consume next token
- *
- * @returns whether token includes `=`
- *
- * @example
- * ```ts
- * hasInlineOptionValue('--signal=TERM');
- * // true
- * ```
+ Checks whether long option token already carries its value.
+ 
+ @param token - because `--signal=TERM` should not consume next token
+ 
+ @returns whether token includes `=`
+ 
+ @example
+ ```ts
+ hasInlineOptionValue('--signal=TERM');
+ // true
+ ```
  */
 function hasInlineOptionValue(token: string,): boolean {
   return token.includes(LONG_OPTION_VALUE_DELIMITER,);
 }
 
 /**
- * Advances cursor past option argument when current option requires one.
- *
- * @param args - because wrapper option values should not be treated as commands
- *
- * @param cursor - because caller owns current token position
- *
- * @param optionsWithArgument - because each wrapper has distinct option grammar
- *
- * @returns next cursor after option and any separate option value
- *
- * @example
- * ```ts
- * skipWrapperOption({ args: ['-n', '5', 'npm'], cursor: 0, optionsWithArgument: new Set(['-n']) });
- * // 2
- * ```
+ Advances cursor past option argument when current option requires one.
+ 
+ @param args - because wrapper option values should not be treated as commands
+ 
+ @param cursor - because caller owns current token position
+ 
+ @param optionsWithArgument - because each wrapper has distinct option grammar
+ 
+ @returns next cursor after option and any separate option value
+ 
+ @example
+ ```ts
+ skipWrapperOption({ args: ['-n', '5', 'npm'], cursor: 0, optionsWithArgument: new Set(['-n']) });
+ // 2
+ ```
  */
 function skipWrapperOption(
   {
@@ -109,13 +109,13 @@ function skipWrapperOption(
   }>,
 ): number {
   /**
-   * Option token being skipped.
+   Option token being skipped.
    */
   const option = args[cursor];
   if (option === undefined)
     return cursor;
   /**
-   * Cursor after option token itself.
+   Cursor after option token itself.
    */
   const afterOption = cursor + 1;
   if (hasInlineOptionValue(option,))

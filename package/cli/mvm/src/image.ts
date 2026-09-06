@@ -1,7 +1,7 @@
 /**
- * Image download and caching for cloud images and ISOs.
- *
- * @module
+ Image download and caching for cloud images and ISOs.
+ 
+ @module
  */
 
 import {
@@ -23,37 +23,37 @@ import {
 import { spawn, } from './spawn.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 /**
- * Downloads a file from a URL to a destination path if not already cached.
- * Shows download progress on stderr when fetching.
- *
- * @param destPath - Destination file path
- *
- * @param tag - Logger tag for status messages
- *
- * @param url - URL to download from
- *
- * @returns Absolute path to the downloaded file
- *
- * @throws Error when the download fails
- *
- * @example
- * ```ts
- * const path = await downloadIfMissing({
- *   url: 'https://example.com/image.qcow2',
- *   destPath: '/home/user/.local/share/mvm/images/image.qcow2',
- *   tag: 'ensureImage',
- * });
- * ```
+ Downloads a file from a URL to a destination path if not already cached.
+ Shows download progress on stderr when fetching.
+ 
+ @param destPath - Destination file path
+ 
+ @param tag - Logger tag for status messages
+ 
+ @param url - URL to download from
+ 
+ @returns Absolute path to the downloaded file
+ 
+ @throws Error when the download fails
+ 
+ @example
+ ```ts
+ const path = await downloadIfMissing({
+   url: 'https://example.com/image.qcow2',
+   destPath: '/home/user/.local/share/mvm/images/image.qcow2',
+   tag: 'ensureImage',
+ });
+ ```
  */
 async function downloadIfMissing({
   destPath,
@@ -65,7 +65,7 @@ async function downloadIfMissing({
   readonly url: string;
 },): Promise<string> {
   /**
-   * Logger scoped to the caller's tag so download progress is attributed to the right caller.
+   Logger scoped to the caller's tag so download progress is attributed to the right caller.
    */
   const rl = tagged({
     tag,
@@ -84,7 +84,7 @@ async function downloadIfMissing({
   );
 
   /**
-   * HTTP response for the source URL; consumed by {@link writeWithProgress} to stream the body to disk.
+   HTTP response for the source URL; consumed by {@link writeWithProgress} to stream the body to disk.
    */
   const response = await fetch(url,);
   if (!response.ok) {
@@ -102,23 +102,23 @@ async function downloadIfMissing({
 }
 
 /**
- * Ensures a cloud image or evaluation ISO is cached locally, downloading it if missing.
- * Shows download progress on stderr when fetching.
- *
- * @param spec - Image specification from the registry
- *
- * @returns Absolute path to the cached image file
- *
- * @throws Error when the download fails
- *
- * @example
- * ```ts
- * const imagePath = await ensureImage(IMAGES['ubuntu']);
- * // => /home/user/.local/share/mvm/images/noble-server-cloudimg-amd64.img
- *
- * const isoPath = await ensureImage(IMAGES['windows']);
- * // => /home/user/.local/share/mvm/images/windows-server-2025-eval.iso
- * ```
+ Ensures a cloud image or evaluation ISO is cached locally, downloading it if missing.
+ Shows download progress on stderr when fetching.
+ 
+ @param spec - Image specification from the registry
+ 
+ @returns Absolute path to the cached image file
+ 
+ @throws Error when the download fails
+ 
+ @example
+ ```ts
+ const imagePath = await ensureImage(IMAGES['ubuntu']);
+ // => /home/user/.local/share/mvm/images/noble-server-cloudimg-amd64.img
+ 
+ const isoPath = await ensureImage(IMAGES['windows']);
+ // => /home/user/.local/share/mvm/images/windows-server-2025-eval.iso
+ ```
  */
 export function ensureImage(spec: ImageSpec,): Promise<string> {
   return downloadIfMissing({
@@ -132,19 +132,19 @@ export function ensureImage(spec: ImageSpec,): Promise<string> {
 }
 
 /**
- * Ensures the virtio-win ISO is cached locally, downloading it if missing.
- * The virtio-win ISO contains VirtIO storage/network drivers and the QEMU
- * guest agent installer, required for Windows template creation.
- *
- * @returns Absolute path to the cached virtio-win ISO
- *
- * @throws Error when the download fails
- *
- * @example
- * ```ts
- * const virtioPath = await ensureVirtioWin();
- * // => /home/user/.local/share/mvm/images/virtio-win.iso
- * ```
+ Ensures the virtio-win ISO is cached locally, downloading it if missing.
+ The virtio-win ISO contains VirtIO storage/network drivers and the QEMU
+ guest agent installer, required for Windows template creation.
+ 
+ @returns Absolute path to the cached virtio-win ISO
+ 
+ @throws Error when the download fails
+ 
+ @example
+ ```ts
+ const virtioPath = await ensureVirtioWin();
+ // => /home/user/.local/share/mvm/images/virtio-win.iso
+ ```
  */
 export function ensureVirtioWin(): Promise<string> {
   return downloadIfMissing({
@@ -158,28 +158,28 @@ export function ensureVirtioWin(): Promise<string> {
 }
 
 /**
- * Cached filename for the WinFsp MSI under `~/.local/share/mvm/images/`.
+ Cached filename for the WinFsp MSI under `~/.local/share/mvm/images/`.
  */
 const WINFSP_FILENAME = 'winfsp.msi';
 
 /**
- * Ensures the WinFsp MSI is cached locally, downloading it if missing.
- * WinFsp (Windows File System Proxy) is required by VirtioFsSvc to mount
- * virtiofs shares as drive letters on Windows guests.
- *
- * @returns Absolute path to the cached WinFsp MSI
- *
- * @throws Error when the download fails or the latest version cannot be resolved
- *
- * @example
- * ```ts
- * const winfspPath = await ensureWinFsp();
- * // => /home/user/.local/share/mvm/images/winfsp.msi
- * ```
+ Ensures the WinFsp MSI is cached locally, downloading it if missing.
+ WinFsp (Windows File System Proxy) is required by VirtioFsSvc to mount
+ virtiofs shares as drive letters on Windows guests.
+ 
+ @returns Absolute path to the cached WinFsp MSI
+ 
+ @throws Error when the download fails or the latest version cannot be resolved
+ 
+ @example
+ ```ts
+ const winfspPath = await ensureWinFsp();
+ // => /home/user/.local/share/mvm/images/winfsp.msi
+ ```
  */
 export async function ensureWinFsp(): Promise<string> {
   /**
-   * Logger scoped to this call so the multi-step WinFsp fetch is namespaced.
+   Logger scoped to this call so the multi-step WinFsp fetch is namespaced.
    */
   const rl = tagged({
     tag: ensureWinFsp.name,
@@ -187,7 +187,7 @@ export async function ensureWinFsp(): Promise<string> {
   },);
 
   /**
-   * Cached MSI location; the early-exit short-circuit uses it before any network IO.
+   Cached MSI location; the early-exit short-circuit uses it before any network IO.
    */
   const destPath = join(
     IMAGES_DIR,
@@ -207,28 +207,28 @@ export async function ensureWinFsp(): Promise<string> {
   rl.info('resolving latest WinFsp release...',);
 
   /**
-   * Resolve the latest version tag via GitHub redirect.
+   Resolve the latest version tag via GitHub redirect.
    */
   const redirectResponse = await fetch(
     'https://github.com/winfsp/winfsp/releases/latest',
     { redirect: 'manual', },
   );
   /**
-   * Redirect target carrying the resolved version in its `/tag/<version>` suffix.
+   Redirect target carrying the resolved version in its `/tag/<version>` suffix.
    */
   const location = redirectResponse.headers
     .get('location',);
   if (location === null)
     throw new Error('failed to resolve latest WinFsp release',);
   /**
-   * Version tag from the redirect URL (e.g. "v2.1").
+   Version tag from the redirect URL (e.g. "v2.1").
    */
   const [, version,] = location.split('/tag/',);
   if (version === undefined)
     throw new Error(`unexpected redirect URL: ${location}`,);
 
   /**
-   * Fetch release metadata to find the actual MSI asset name (includes build number).
+   Fetch release metadata to find the actual MSI asset name (includes build number).
    */
   const releaseResponse = await fetch(
     `https://api.github.com/repos/winfsp/winfsp/releases/tags/${version}`,
@@ -240,7 +240,7 @@ export async function ensureWinFsp(): Promise<string> {
     );
   }
   /**
-   * Parsed release payload narrowed to the asset list; only `assets` is read.
+   Parsed release payload narrowed to the asset list; only `assets` is read.
    */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- GitHub API response
   const release = await releaseResponse.json() as {
@@ -250,7 +250,7 @@ export async function ensureWinFsp(): Promise<string> {
     }[];
   };
   /**
-   * Matching MSI asset; the released zip carries a per-build filename so it cannot be hard-coded.
+   Matching MSI asset; the released zip carries a per-build filename so it cannot be hard-coded.
    */
   const msiAsset = release.assets
     .find(function findMsi(a,) {
@@ -265,7 +265,7 @@ export async function ensureWinFsp(): Promise<string> {
   rl.info(`downloading ${msiAsset.browser_download_url}`,);
 
   /**
-   * HTTP response for the MSI asset; body is buffered into memory then written to disk.
+   HTTP response for the MSI asset; body is buffered into memory then written to disk.
    */
   const msiResponse = await fetch(msiAsset.browser_download_url,);
   if (!msiResponse.ok) {
@@ -283,26 +283,26 @@ export async function ensureWinFsp(): Promise<string> {
 }
 
 /**
- * Ensures the mise Windows exe is cached locally.
- * Downloads the zip from the latest GitHub release, extracts mise.exe,
- * and caches it in the images directory.
- *
- * Current template creation does not embed this file in Autounattend;
- * Windows lifecycle tests install mise at runtime instead.
- *
- * @returns Absolute path to the cached mise.exe
- *
- * @throws Error when the download or extraction fails
- *
- * @example
- * ```ts
- * const misePath = await ensureMiseWindows();
- * // => /home/user/.local/share/mvm/images/mise.exe
- * ```
+ Ensures the mise Windows exe is cached locally.
+ Downloads the zip from the latest GitHub release, extracts mise.exe,
+ and caches it in the images directory.
+ 
+ Current template creation does not embed this file in Autounattend;
+ Windows lifecycle tests install mise at runtime instead.
+ 
+ @returns Absolute path to the cached mise.exe
+ 
+ @throws Error when the download or extraction fails
+ 
+ @example
+ ```ts
+ const misePath = await ensureMiseWindows();
+ // => /home/user/.local/share/mvm/images/mise.exe
+ ```
  */
 export async function ensureMiseWindows(): Promise<string> {
   /**
-   * Logger scoped to this call so the multi-step mise fetch is namespaced.
+   Logger scoped to this call so the multi-step mise fetch is namespaced.
    */
   const rl = tagged({
     tag: ensureMiseWindows.name,
@@ -310,7 +310,7 @@ export async function ensureMiseWindows(): Promise<string> {
   },);
 
   /**
-   * Cached mise.exe location; the early-exit short-circuit uses it before any network IO.
+   Cached mise.exe location; the early-exit short-circuit uses it before any network IO.
    */
   const destPath = join(
     IMAGES_DIR,
@@ -330,35 +330,35 @@ export async function ensureMiseWindows(): Promise<string> {
   rl.info('resolving latest mise release...',);
 
   /**
-   * Resolve the latest version tag via GitHub redirect.
+   Resolve the latest version tag via GitHub redirect.
    */
   const redirectResponse = await fetch(
     'https://github.com/jdx/mise/releases/latest',
     { redirect: 'manual', },
   );
   /**
-   * Redirect target carrying the resolved version in its `/tag/<version>` suffix.
+   Redirect target carrying the resolved version in its `/tag/<version>` suffix.
    */
   const location = redirectResponse.headers
     .get('location',);
   if (location === null)
     throw new Error('failed to resolve latest mise release',);
   /**
-   * Version tag from the redirect URL (e.g. "v2026.3.17").
+   Version tag from the redirect URL (e.g. "v2026.3.17").
    */
   const [, version,] = location.split('/tag/',);
   if (version === undefined)
     throw new Error(`unexpected redirect URL: ${location}`,);
 
   /**
-   * Download URL for the Windows x64 zip.
+   Download URL for the Windows x64 zip.
    */
   const zipUrl =
     `https://github.com/jdx/mise/releases/download/${version}/mise-${version}-windows-x64.zip`;
   rl.info(`downloading ${zipUrl}`,);
 
   /**
-   * HTTP response for the mise zip; body is buffered into memory then written to disk for unzip.
+   HTTP response for the mise zip; body is buffered into memory then written to disk for unzip.
    */
   const zipResponse = await fetch(zipUrl,);
   if (!zipResponse.ok) {
@@ -368,7 +368,7 @@ export async function ensureMiseWindows(): Promise<string> {
   }
 
   /**
-   * Write zip to disk, extract mise.exe, clean up the zip.
+   Write zip to disk, extract mise.exe, clean up the zip.
    */
   const zipPath = join(
     IMAGES_DIR,

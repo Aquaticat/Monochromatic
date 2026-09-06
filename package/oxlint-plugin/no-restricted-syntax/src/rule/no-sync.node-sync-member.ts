@@ -16,24 +16,24 @@ import { getMemberName, } from './no-sync.syntax.ts';
 //region Sync API from member expressions
 
 /**
- * Finds sync API name from a Node builtin source member expression: reads
- * the property via {@link getMemberName}, keeps it only when it ends in
- * {@link SYNC_SUFFIX}, and confirms the receiver via
- * {@link isNodeBuiltinSourceExpression}.
- *
- * @param context - Oxlint rule context.
- *
- * @param expression - Initializer or call-callee expression.
- *
- * @param seen - Variables already inspected, preventing alias cycles.
- *
- * @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when
- * expression is not a sync member.
- *
- * @example
- * ```ts
- * getNodeSyncMemberName({ context, expression: init, seen: new Set() });
- * ```
+ Finds sync API name from a Node builtin source member expression: reads
+ the property via {@link getMemberName}, keeps it only when it ends in
+ {@link SYNC_SUFFIX}, and confirms the receiver via
+ {@link isNodeBuiltinSourceExpression}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param expression - Initializer or call-callee expression.
+ 
+ @param seen - Variables already inspected, preventing alias cycles.
+ 
+ @returns Node sync API name, or {@link NOT_NODE_SYNC_CALLEE} when
+ expression is not a sync member.
+ 
+ @example
+ ```ts
+ getNodeSyncMemberName({ context, expression: init, seen: new Set() });
+ ```
  */
 export function getNodeSyncMemberName(
   {
@@ -49,7 +49,7 @@ export function getNodeSyncMemberName(
   if (expression.type !== 'MemberExpression')
     return NOT_NODE_SYNC_CALLEE;
   /**
-   * Member property name being called or aliased.
+   Member property name being called or aliased.
    */
   const propertyName = getMemberName({ member: expression, },);
   if ((typeof propertyName) === 'symbol')

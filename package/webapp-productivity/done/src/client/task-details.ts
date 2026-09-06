@@ -1,9 +1,9 @@
 /**
- * Client entry script for the Task Detail page.
- *
- * Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
- * The server renders its own HTML shell (not via renderPage) without `<top-nav>`,
- * because the `<task-detail>` component provides its own back-button header.
+ Client entry script for the Task Detail page.
+ 
+ Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
+ The server renders its own HTML shell (not via renderPage) without `<top-nav>`,
+ because the `<task-detail>` component provides its own back-button header.
  */
 import type { Task, } from '../lib/types.ts';
 import { api, } from './lib/api.ts';
@@ -18,7 +18,7 @@ import type { TaskDetail, } from './component/task-detail.ts';
 import './component/task-detail.ts';
 
 /**
- * Minimal task info shown in the blocker picker dropdown.
+ Minimal task info shown in the blocker picker dropdown.
  */
 type BlockerCandidate = {
   id: string;
@@ -26,7 +26,7 @@ type BlockerCandidate = {
 };
 
 /**
- * Summary of a task that blocks the current task (shown as a chip/badge).
+ Summary of a task that blocks the current task (shown as a chip/badge).
  */
 type BlockerSummary = {
   id: string;
@@ -35,7 +35,7 @@ type BlockerSummary = {
 };
 
 /**
- * Shape of the JSON blob embedded in the task detail page by the server.
+ Shape of the JSON blob embedded in the task detail page by the server.
  */
 type TaskDetailsPageData = {
   task: Task;
@@ -46,29 +46,29 @@ type TaskDetailsPageData = {
 injectCSS(globalStyles,);
 
 /**
- * Deserialized page data containing task, blocker candidates, and summaries.
+ Deserialized page data containing task, blocker candidates, and summaries.
  */
 const pageData = readPageData<TaskDetailsPageData>();
 
 /**
- * Task record from the deserialized page data.
+ Task record from the deserialized page data.
  */
 const { task, } = pageData;
 
 /**
- * Raw DOM element for the `#app` container.
+ Raw DOM element for the `#app` container.
  */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
 /**
- * Validated `#app` container element.
+ Validated `#app` container element.
  */
 const app = appElement;
 
 /**
- * Task detail web component configured with server-provided data.
+ Task detail web component configured with server-provided data.
  */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail
 const detail = document.createElement('task-detail',) as TaskDetail;
@@ -84,7 +84,7 @@ detail.addEventListener(
       throw new TypeError("Expected CustomEvent for 'action' listener",);
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component */
     /**
-     * Destructured action payload dispatched by the embedded `<task-detail>`.
+     Destructured action payload dispatched by the embedded `<task-detail>`.
      */
     const {
       action,
@@ -102,11 +102,11 @@ detail.addEventListener(
         .href = '/';
     else if (action === 'save') {
       /**
-       * Snapshot of the autofill/manual metadata fields captured before the request body is built.
+       Snapshot of the autofill/manual metadata fields captured before the request body is built.
        */
       const metadata = detail.getMetadata();
       /**
-       * Body forwarded to the PUT endpoint; merges metadata with the unchanged base task fields.
+       Body forwarded to the PUT endpoint; merges metadata with the unchanged base task fields.
        */
       const payload = {
         title,

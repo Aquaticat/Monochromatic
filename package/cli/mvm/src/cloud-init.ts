@@ -13,44 +13,44 @@ import type {
 } from './registry.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 /**
- * Sentinel returned by {@link createSeedIso} for Windows guests, which
- * provision via the guest agent instead of a cloud-init seed ISO.
- * A unique symbol models "no seed ISO" without a nullish union.
- *
- * @example
- * ```ts
- * const seed = await createSeedIso({ guest, name, vmDir });
- * if (seed !== NO_SEED_ISO) attachSeedIso(seed);
- * ```
+ Sentinel returned by {@link createSeedIso} for Windows guests, which
+ provision via the guest agent instead of a cloud-init seed ISO.
+ A unique symbol models "no seed ISO" without a nullish union.
+ 
+ @example
+ ```ts
+ const seed = await createSeedIso({ guest, name, vmDir });
+ if (seed !== NO_SEED_ISO) attachSeedIso(seed);
+ ```
  */
 export const NO_SEED_ISO: unique symbol = Symbol(
   'returned when a guest needs no cloud-init seed ISO',
 );
 
 /**
- * Narrows a {@link GuestConfig} to {@link LinuxGuestConfig} after the caller
- * has already ruled out Windows guests via an early return.
- *
- * @param guest - Guest config known to be Linux at this call site
- *
- * @returns The same config narrowed to LinuxGuestConfig
- *
- * @example
- * ```ts
- * if (guest.osFamily === 'windows') return;
- * const linux = asLinux(guest);
- * linux.initSystem; // safe
- * ```
+ Narrows a {@link GuestConfig} to {@link LinuxGuestConfig} after the caller
+ has already ruled out Windows guests via an early return.
+ 
+ @param guest - Guest config known to be Linux at this call site
+ 
+ @returns The same config narrowed to LinuxGuestConfig
+ 
+ @example
+ ```ts
+ if (guest.osFamily === 'windows') return;
+ const linux = asLinux(guest);
+ linux.initSystem; // safe
+ ```
  */
 function asLinux(guest: GuestConfig,): LinuxGuestConfig {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- caller has already ruled out Windows via early return
@@ -60,19 +60,19 @@ function asLinux(guest: GuestConfig,): LinuxGuestConfig {
 //region User-data generators
 
 /**
- * Generates cloud-init user-data for VM instances.
- * Sets up the default user with passwordless sudo and serial console autologin.
- *
- * @param guest - Guest config for distro-specific cloud-init settings
- *
- * @param name - VM hostname
- *
- * @returns Cloud-init user-data string
- *
- * @example
- * ```ts
- * vmUserData({ name: 'my-vm', guest: IMAGES['ubuntu'] });
- * ```
+ Generates cloud-init user-data for VM instances.
+ Sets up the default user with passwordless sudo and serial console autologin.
+ 
+ @param guest - Guest config for distro-specific cloud-init settings
+ 
+ @param name - VM hostname
+ 
+ @returns Cloud-init user-data string
+ 
+ @example
+ ```ts
+ vmUserData({ name: 'my-vm', guest: IMAGES['ubuntu'] });
+ ```
  */
 function vmUserData({
   guest,
@@ -82,7 +82,7 @@ function vmUserData({
   readonly name: string;
 },): string {
   /**
-   * Guest config narrowed to Linux; lets us read `initSystem`, `shell`, and `defaultUser`.
+   Guest config narrowed to Linux; lets us read `initSystem`, `shell`, and `defaultUser`.
    */
   const linux = asLinux(guest,);
   return `#cloud-config
@@ -105,20 +105,20 @@ ${
 }
 
 /**
- * Generates cloud-init user-data for template creation.
- * Installs qemu-guest-agent so the template image has it pre-baked,
- * avoiding package downloads on every VM boot.
- *
- * @param guest - Guest config for distro-specific cloud-init settings
- *
- * @param name - Template VM hostname
- *
- * @returns Cloud-init user-data string with qemu-guest-agent installation
- *
- * @example
- * ```ts
- * templateUserData({ name: 'template-setup', guest: IMAGES['ubuntu'] });
- * ```
+ Generates cloud-init user-data for template creation.
+ Installs qemu-guest-agent so the template image has it pre-baked,
+ avoiding package downloads on every VM boot.
+ 
+ @param guest - Guest config for distro-specific cloud-init settings
+ 
+ @param name - Template VM hostname
+ 
+ @returns Cloud-init user-data string with qemu-guest-agent installation
+ 
+ @example
+ ```ts
+ templateUserData({ name: 'template-setup', guest: IMAGES['ubuntu'] });
+ ```
  */
 function templateUserData(
   {
@@ -130,7 +130,7 @@ function templateUserData(
   },
 ): string {
   /**
-   * Guest config narrowed to Linux; lets us read `initSystem`, `shell`, and `defaultUser`.
+   Guest config narrowed to Linux; lets us read `initSystem`, `shell`, and `defaultUser`.
    */
   const linux = asLinux(guest,);
   return `#cloud-config
@@ -149,35 +149,35 @@ ${templateRuncmd(linux.initSystem,)}`;
 //region Seed ISO generation
 
 /**
- * Generates a cloud-init NoCloud seed ISO with user-data and meta-data.
- * Uses the built-in ISO9660 generator instead of external tools like genisoimage.
- *
- * Configures auto-login on the serial console (ttyS0) so `virsh console`
- * drops directly into a shell without SSH or passwords.
- *
- * Windows guests return `undefined` because they do not use cloud-init.
- * Hostname is set via the QEMU guest agent after boot instead.
- *
- *   guest config for distro-specific cloud-init, and whether this is for template creation
- *
- * @param guest - Guest config for distro-specific cloud-init settings
- *
- * @param name - VM name used as hostname
- *
- * @param template - Whether this is a template creation (installs qemu-guest-agent)
- *
- * @param vmDir - Directory to write the seed ISO into
- *
- * @returns Absolute path to the generated seed ISO, or `undefined` for Windows guests
- *
- * @example
- * ```ts
- * const seedPath = await createSeedIso({ name: 'my-vm', guest: IMAGES['ubuntu'], vmDir: '/path/to/vm' });
- * // seedPath => '/path/to/vm/seed.iso'
- *
- * const winSeed = await createSeedIso({ name: 'win-vm', guest: IMAGES['windows'], vmDir: '/path/to/vm' });
- * // winSeed => NO_SEED_ISO
- * ```
+ Generates a cloud-init NoCloud seed ISO with user-data and meta-data.
+ Uses the built-in ISO9660 generator instead of external tools like genisoimage.
+ 
+ Configures auto-login on the serial console (ttyS0) so `virsh console`
+ drops directly into a shell without SSH or passwords.
+ 
+ Windows guests return `undefined` because they do not use cloud-init.
+ Hostname is set via the QEMU guest agent after boot instead.
+ 
+   guest config for distro-specific cloud-init, and whether this is for template creation
+ 
+ @param guest - Guest config for distro-specific cloud-init settings
+ 
+ @param name - VM name used as hostname
+ 
+ @param template - Whether this is a template creation (installs qemu-guest-agent)
+ 
+ @param vmDir - Directory to write the seed ISO into
+ 
+ @returns Absolute path to the generated seed ISO, or `undefined` for Windows guests
+ 
+ @example
+ ```ts
+ const seedPath = await createSeedIso({ name: 'my-vm', guest: IMAGES['ubuntu'], vmDir: '/path/to/vm' });
+ // seedPath => '/path/to/vm/seed.iso'
+ 
+ const winSeed = await createSeedIso({ name: 'win-vm', guest: IMAGES['windows'], vmDir: '/path/to/vm' });
+ // winSeed => NO_SEED_ISO
+ ```
  */
 export async function createSeedIso({
   guest,
@@ -193,7 +193,7 @@ export async function createSeedIso({
   if (guest.osFamily
     === 'windows') {
     /**
-     * Logger for the Windows skip-path; namespaced so the info line is attributable.
+     Logger for the Windows skip-path; namespaced so the info line is attributable.
      */
     const rl = tagged({
       tag: createSeedIso.name,
@@ -204,7 +204,7 @@ export async function createSeedIso({
   }
 
   /**
-   * Logger scoped to this function so the "created seed ISO" message is attributable.
+   Logger scoped to this function so the "created seed ISO" message is attributable.
    */
   const rl = tagged({
     tag: createSeedIso.name,
@@ -212,11 +212,11 @@ export async function createSeedIso({
   },);
 
   /**
-   * Shared text encoder used for both user-data and meta-data byte payloads.
+   Shared text encoder used for both user-data and meta-data byte payloads.
    */
   const encoder = new TextEncoder();
   /**
-   * UTF-8 user-data payload picked from template or VM variant depending on `template`.
+   UTF-8 user-data payload picked from template or VM variant depending on `template`.
    */
   const userData = encoder.encode(
     template
@@ -231,7 +231,7 @@ export async function createSeedIso({
   );
 
   /**
-   * UTF-8 meta-data payload; carries `instance-id` so cloud-init reruns when the id changes.
+   UTF-8 meta-data payload; carries `instance-id` so cloud-init reruns when the id changes.
    */
   const metaData = encoder.encode(
     `instance-id: ${name}
@@ -240,7 +240,7 @@ local-hostname: ${name}
   );
 
   /**
-   * Generated ISO9660 image carrying `user-data` and `meta-data` under the `cidata` volume.
+   Generated ISO9660 image carrying `user-data` and `meta-data` under the `cidata` volume.
    */
   const iso = createIso({
     files: [
@@ -257,7 +257,7 @@ local-hostname: ${name}
   },);
 
   /**
-   * Output path of the seed ISO; attached as a CDROM by the domain XML.
+   Output path of the seed ISO; attached as a CDROM by the domain XML.
    */
   const seedPath = join(
     vmDir,

@@ -1,16 +1,16 @@
 /**
- * Static site build script.
- *
- * Orchestrates the full SSG pipeline:
- * 1. Load and validate MDX content
- * 2. Process changed files through the unified pipeline (with caching)
- * 3. Generate all HTML pages via h-html templates
- * 4. Generate CSS via h-css
- * 5. Generate RSS feeds per language
- * 6. Copy static assets from public/
- * 7. Post-process: zstd compression
- *
- * Run via `mise run build:site` or `node src/build.ts`.
+ Static site build script.
+ 
+ Orchestrates the full SSG pipeline:
+ 1. Load and validate MDX content
+ 2. Process changed files through the unified pipeline (with caching)
+ 3. Generate all HTML pages via h-html templates
+ 4. Generate CSS via h-css
+ 5. Generate RSS feeds per language
+ 6. Copy static assets from public/
+ 7. Post-process: zstd compression
+ 
+ Run via `mise run build:site` or `node src/build.ts`.
  */
 import type { ReadonlyDeep, } from 'type-fest';
 import { relative, } from 'node:path';
@@ -50,12 +50,12 @@ import { renderMdx, } from './lib/markdown.ts';
 
 // File justification: 120 lines: linear pipeline script; splitting the
 // orchestration across multiple files would scatter the build sequence.
-export {}; // module boundary marker
+ // module boundary marker
 
 await initPromise;
 
 /**
- * Tagged logger for the build pipeline.
+ Tagged logger for the build pipeline.
  */
 const l = tagged({
   tag: 'build',
@@ -63,18 +63,18 @@ const l = tagged({
 },);
 
 /**
- * Site base URL for RSS feed links.
+ Site base URL for RSS feed links.
  */
 const SITE_URL = 'https://aquati.cat';
 
 /**
- * Content source directory.
+ Content source directory.
  */
 const CONTENT_DIR = 'src/content';
 
 /**
- * Glob matching all pipeline source files for cache invalidation.
- * Changes to any matched file invalidate all cached content entries.
+ Glob matching all pipeline source files for cache invalidation.
+ Changes to any matched file invalidate all cached content entries.
  */
 const PIPELINE_GLOB = 'src/{lib,components,client,i18n}/**/*.ts';
 
@@ -83,7 +83,7 @@ const PIPELINE_GLOB = 'src/{lib,components,client,i18n}/**/*.ts';
 l.info('starting',);
 
 /**
- * Loaded posts, cached-manifest result, pipeline hash, and git-dates context fetched concurrently.
+ Loaded posts, cached-manifest result, pipeline hash, and git-dates context fetched concurrently.
  */
 const [loadedPosts, cacheResult, pipelineHash, gitCtx,] = await Promise.all([
   loadContent(CONTENT_DIR,),
@@ -95,12 +95,12 @@ const [loadedPosts, cacheResult, pipelineHash, gitCtx,] = await Promise.all([
 l.info(`loaded ${loadedPosts.length} posts`,);
 
 /**
- * Manifest when one was read, or `undefined` (inferred local, never a written nullish union) when absent.
+ Manifest when one was read, or `undefined` (inferred local, never a written nullish union) when absent.
  */
 const cache = cacheResult === NO_CACHE ? undefined : cacheResult;
 
 /**
- * Whether the processing pipeline source has changed since last build.
+ Whether the processing pipeline source has changed since last build.
  */
 const pipelineChanged = cache?.pipelineHash
   !== pipelineHash;
@@ -108,27 +108,27 @@ if (pipelineChanged)
   l.info('pipeline changed, invalidating all cache entries',);
 
 /**
- * Cache to use for lookups; `undefined` forces full reprocessing on pipeline change.
+ Cache to use for lookups; `undefined` forces full reprocessing on pipeline change.
  */
 const effectiveCache = pipelineChanged ? undefined : cache;
 
 /**
- * Whether cached git-derived dates can be reused without re-probing.
- * Safe when HEAD is unchanged since the cache was written and the pipeline
- * has not changed (pipeline change already invalidates all cache entries).
+ Whether cached git-derived dates can be reused without re-probing.
+ Safe when HEAD is unchanged since the cache was written and the pipeline
+ has not changed (pipeline change already invalidates all cache entries).
  */
 const gitDatesReusable = (!pipelineChanged) && (cache?.headSha
   === gitCtx
   .headSha);
 
 /**
- * Map from absolute file path to resolved publication/update dates.
+ Map from absolute file path to resolved publication/update dates.
  */
 const datesByFilePath = new Map<string, ResolvedDates>();
 
 await Promise.all(loadedPosts.map(async function resolveDates(post,) {
   /**
-   * Repo-relative path used as the manifest key for this post.
+   Repo-relative path used as the manifest key for this post.
    */
   const cacheKey = relative(
     '.',
@@ -136,7 +136,7 @@ await Promise.all(loadedPosts.map(async function resolveDates(post,) {
   );
   if (gitDatesReusable) {
     /**
-     * Prior manifest entry reused only when both pipeline and git head are unchanged.
+     Prior manifest entry reused only when both pipeline and git head are unchanged.
      */
     const cached = effectiveCache === undefined
       ? CACHE_MISS
@@ -147,7 +147,7 @@ await Promise.all(loadedPosts.map(async function resolveDates(post,) {
       },);
     if (cached !== CACHE_MISS) {
       /**
-       * Cached dates reused when the git HEAD still matches the manifest.
+       Cached dates reused when the git HEAD still matches the manifest.
        */
       const dates = {
         published: cached.frontmatter
@@ -170,7 +170,7 @@ await Promise.all(loadedPosts.map(async function resolveDates(post,) {
   }
 
   /**
-   * Freshly resolved publication and update timestamps when no cache hit applies.
+   Freshly resolved publication and update timestamps when no cache hit applies.
    */
   const dates = await getPostDates({
     filePath: post.filePath,
@@ -191,7 +191,7 @@ await Promise.all(loadedPosts.map(async function resolveDates(post,) {
 },),);
 
 /**
- * Fully-resolved posts with `published`/`updated` attached, sorted by updated desc.
+ Fully-resolved posts with `published`/`updated` attached, sorted by updated desc.
  */
 const posts = attachDates({
   loadedPosts,
@@ -199,7 +199,7 @@ const posts = attachDates({
 },);
 
 /**
- * Results from processing each post: rendered HTML and cache entry.
+ Results from processing each post: rendered HTML and cache entry.
  */
 const processResults = await Promise.all(posts.map(async function processPost(
   post,
@@ -210,14 +210,14 @@ const processResults = await Promise.all(posts.map(async function processPost(
   fromCache: boolean;
 }>> {
   /**
-   * Repo-relative path used as the manifest key for this post.
+   Repo-relative path used as the manifest key for this post.
    */
   const cacheKey = relative(
     '.',
     post.filePath,
   );
   /**
-   * Prior manifest entry reused when the post content hash is unchanged.
+   Prior manifest entry reused when the post content hash is unchanged.
    */
   const cached = effectiveCache === undefined
     ? CACHE_MISS
@@ -232,7 +232,7 @@ const processResults = await Promise.all(posts.map(async function processPost(
      * so downstream consumers see dates consistent with the current HEAD even
      * when `gitDatesReusable` was false. */
     /**
-     * Cached manifest entry with overlaid current-HEAD dates.
+     Cached manifest entry with overlaid current-HEAD dates.
      */
     const entry = {
       contentHash: cached.contentHash,
@@ -254,11 +254,11 @@ const processResults = await Promise.all(posts.map(async function processPost(
   }
 
   /**
-   * Freshly rendered post body when no cache hit applies.
+   Freshly rendered post body when no cache hit applies.
    */
   const html = await renderMdx(post.body,);
   /**
-   * New manifest entry persisted for future builds.
+   New manifest entry persisted for future builds.
    */
   const entry = createCacheEntry({
     contentHash: post.contentHash,
@@ -274,7 +274,7 @@ const processResults = await Promise.all(posts.map(async function processPost(
 },),);
 
 /**
- * Map of `lang/name` content keys to rendered HTML strings.
+ Map of `lang/name` content keys to rendered HTML strings.
  */
 const renderedContent = new Map(
   processResults.map(function toContentEntry({
@@ -289,7 +289,7 @@ const renderedContent = new Map(
 );
 
 /**
- * Cache entries keyed by relative file path for manifest persistence.
+ Cache entries keyed by relative file path for manifest persistence.
  */
 const cacheEntries = Object.fromEntries(
   processResults.map(function toCacheEntry({
@@ -304,7 +304,7 @@ const cacheEntries = Object.fromEntries(
 );
 
 /**
- * Number of posts served from cache without reprocessing.
+ Number of posts served from cache without reprocessing.
  */
 const cacheHits = processResults
   .filter(function wasFromCache({ fromCache, },) {
@@ -316,12 +316,12 @@ l.info(`processed ${posts.length
   - cacheHits} files, ${cacheHits} from cache`,);
 
 /**
- * Posts grouped by locale, computed once for both page and asset generation.
+ Posts grouped by locale, computed once for both page and asset generation.
  */
 const byLang = groupByLang(posts,);
 
 /**
- * Valid locale codes present in the loaded content; map keys are already `Locale`.
+ Valid locale codes present in the loaded content; map keys are already `Locale`.
  */
 const validLangs = [...byLang.keys(),];
 

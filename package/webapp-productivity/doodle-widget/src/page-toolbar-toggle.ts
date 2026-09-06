@@ -1,30 +1,30 @@
 /**
- * Toggle group rendering utilities for the doodle widget toolbar.
- *
- * Produces radio-based toggle groups used for tool selection
- * and page navigation.
+ Toggle group rendering utilities for the doodle widget toolbar.
+ 
+ Produces radio-based toggle groups used for tool selection
+ and page navigation.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Renders a single radio toggle option inside a toggle group.
- *
- * @param id - unique element id for the radio input
- *
- * @param name - shared radio group name
- *
- * @param label - visible label text
- *
- * @param checked - whether this option is initially selected
- *
- * @param value - radio value attribute, defaults to id
- *
- * @returns label-wrapped radio input HTML string
- *
- * @example
- * ```ts
- * renderToggleOption({ id: 'tool-draw', name: 'tool', label: 'Draw', checked: true });
- * ```
+ Renders a single radio toggle option inside a toggle group.
+ 
+ @param id - unique element id for the radio input
+ 
+ @param name - shared radio group name
+ 
+ @param label - visible label text
+ 
+ @param checked - whether this option is initially selected
+ 
+ @param value - radio value attribute, defaults to id
+ 
+ @returns label-wrapped radio input HTML string
+ 
+ @example
+ ```ts
+ renderToggleOption({ id: 'tool-draw', name: 'tool', label: 'Draw', checked: true });
+ ```
  */
 export function renderToggleOption({
   id,
@@ -62,16 +62,16 @@ export function renderToggleOption({
 }
 
 /**
- * Renders the page selector toggle group.
- *
- * @param pageCount - number of pages to generate radio buttons for
- *
- * @returns page toggle group HTML string
- *
- * @example
- * ```ts
- * const html = renderPageToggle(3);
- * ```
+ Renders the page selector toggle group.
+ 
+ @param pageCount - number of pages to generate radio buttons for
+ 
+ @returns page toggle group HTML string
+ 
+ @example
+ ```ts
+ const html = renderPageToggle(3);
+ ```
  */
 export function renderPageToggle(pageCount: number,): string {
   return h({

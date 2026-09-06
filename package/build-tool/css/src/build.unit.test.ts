@@ -21,9 +21,9 @@ import { buildCss, } from '@monochromatic-dev/build-tool-css';
 const fixtureRoot = join(import.meta.dirname, '..', '..', '..', 'test-fixture',);
 
 /**
- * Each entry exercises a different CSS import resolution strategy.
- * - exports field: resolved via package.json `exports` mappings
- * - direct file path: resolved by reaching into the package's file tree (no `exports` field)
+ Each entry exercises a different CSS import resolution strategy.
+ - exports field: resolved via package.json `exports` mappings
+ - direct file path: resolved by reaching into the package's file tree (no `exports` field)
  */
 const integrationFixtures = [
   { label: 'exports field', dir: join(fixtureRoot, 'css-importing',), },
@@ -31,11 +31,11 @@ const integrationFixtures = [
 ] as const;
 
 /**
- * Runs one buildCss invocation inside a disposable temp directory seeded with
- * the given files, so error-path and dedup tests never touch shared state.
- *
- * @param files - Relative path to file content map seeded into the temp dir.
- * @returns Built CSS text.
+ Runs one buildCss invocation inside a disposable temp directory seeded with
+ the given files, so error-path and dedup tests never touch shared state.
+ 
+ @param files - Relative path to file content map seeded into the temp dir.
+ @returns Built CSS text.
  */
 async function buildInTempDir({
   files,
@@ -43,14 +43,14 @@ async function buildInTempDir({
   readonly files: Readonly<Record<string, string>>;
 },): Promise<string> {
   /**
-   * Disposable directory owning all inputs and the output.
+   Disposable directory owning all inputs and the output.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
     'build-css-test-',
   ),);
   /**
-   * Removes the temp directory when the scope exits, error paths included.
+   Removes the temp directory when the scope exits, error paths included.
    */
   await using tempDirGuard = {
     [Symbol.asyncDispose]: async function removeTempDir(): Promise<void> {
@@ -98,12 +98,12 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
   const fixtureMainCss = join(dir, 'src', 'main.css',);
 
   /**
-   * Builds a distinct output path per (fixture, test). module-test runs the it-blocks within a
-   * describe concurrently, so a path shared across tests lets one test's cleanup rm the file
-   * another test is mid-read on (the ENOENT this guards against).
-   *
-   * @param testSlug - Short discriminator unique to the calling test
-   * @returns Absolute output path under dist/ owned solely by that test
+   Builds a distinct output path per (fixture, test). module-test runs the it-blocks within a
+   describe concurrently, so a path shared across tests lets one test's cleanup rm the file
+   another test is mid-read on (the ENOENT this guards against).
+   
+   @param testSlug - Short discriminator unique to the calling test
+   @returns Absolute output path under dist/ owned solely by that test
    */
   function outputFor(testSlug: string,): string {
     return join(

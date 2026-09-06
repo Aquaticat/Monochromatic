@@ -1,25 +1,25 @@
 /**
- * Universal constants for the Monochromatic monorepo.
- *
- * This package is the canonical home for values that express mathematical or
- * physical relationships (time ratios, byte units, fractions), code sets
- * defined by external specifications (HTTP status codes from RFC 9110), and
- * context-free character sets (ASCII letters and digits). App-specific
- * defaults (timeouts, ports, z-index tiers) are deliberately excluded so
- * unrelated apps stay decoupled.
- *
- * @example
- * ```ts
- * import {
- *   ASCII_LOWERCASE_ALPHANUMERIC_CHARS,
- *   BYTES_PER_KIB,
- *   HALF,
- *   HTTP_NOT_FOUND,
- *   MS_PER_SECOND,
- * } from '@monochromatic-dev/module-const';
- * ```
- *
- * @packageDocumentation
+ Universal constants for the Monochromatic monorepo.
+ 
+ This package is the canonical home for values that express mathematical or
+ physical relationships (time ratios, byte units, fractions), code sets
+ defined by external specifications (HTTP status codes from RFC 9110), and
+ context-free character sets (ASCII letters and digits). App-specific
+ defaults (timeouts, ports, z-index tiers) are deliberately excluded so
+ unrelated apps stay decoupled.
+ 
+ @example
+ ```ts
+ import {
+   ASCII_LOWERCASE_ALPHANUMERIC_CHARS,
+   BYTES_PER_KIB,
+   HALF,
+   HTTP_NOT_FOUND,
+   MS_PER_SECOND,
+ } from '@monochromatic-dev/module-const';
+ ```
+ 
+ @packageDocumentation
  */
 
 //region ascii

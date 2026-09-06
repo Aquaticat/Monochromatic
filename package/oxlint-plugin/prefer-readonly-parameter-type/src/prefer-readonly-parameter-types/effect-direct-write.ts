@@ -1,12 +1,12 @@
 /**
- * Attribution for a write whose target is rooted at a parameter or one of its aliases.
- *
- * Split from `direct-effect-summary.ts` for the line budget, and the split falls on a
- * seam rather than an arbitrary cut. This answers which parameter a write lands on, while
- * `effect-assignment-store.ts` answers where an assigned value went, and the two run over
- * the same assignment nodes without sharing anything else.
- *
- * @module
+ Attribution for a write whose target is rooted at a parameter or one of its aliases.
+ 
+ Split from `direct-effect-summary.ts` for the line budget, and the split falls on a
+ seam rather than an arbitrary cut. This answers which parameter a write lands on, while
+ `effect-assignment-store.ts` answers where an assigned value went, and the two run over
+ the same assignment nodes without sharing anything else.
+ 
+ @module
  */
 
 import type { Node, } from 'typescript/unstable/ast';
@@ -23,24 +23,24 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Records direct write rooted at callable parameter or alias.
- *
- * @param project - TypeScript project resolving root symbol.
- *
- * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
- *
- * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
- *
- * @param summary - Summary receiving direct mutation.
- *
- * @param node - Write target expression.
- *
- * @mutates summary - Adds direct caller-observable write target.
- *
- * @example
- * ```ts
- * inspectDirectWrite({ project, bindingOriginBySymbolId, resultSitesBySymbolId, summary, node: assignment.left });
- * ```
+ Records direct write rooted at callable parameter or alias.
+ 
+ @param project - TypeScript project resolving root symbol.
+ 
+ @param bindingOriginBySymbolId - Local binding origins by symbol identity.
+ 
+ @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
+ 
+ @param summary - Summary receiving direct mutation.
+ 
+ @param node - Write target expression.
+ 
+ @mutates summary - Adds direct caller-observable write target.
+ 
+ @example
+ ```ts
+ inspectDirectWrite({ project, bindingOriginBySymbolId, resultSitesBySymbolId, summary, node: assignment.left });
+ ```
  */
 export function inspectDirectWrite({
   project,

@@ -9,7 +9,7 @@ import {
 } from './networks.ts';
 
 /**
- * Input required to generate an `AllowedIPs` value with an injected resolver.
+ Input required to generate an `AllowedIPs` value with an injected resolver.
  */
 export type GenerateAllowedIpsWithLookupOptions = {
   readonly allowedText: string;
@@ -19,12 +19,12 @@ export type GenerateAllowedIpsWithLookupOptions = {
 };
 
 /**
- * Module logger for address-set generation.
+ Module logger for address-set generation.
  */
 const l = tagged({ tag: 'generate-with-lookup', },);
 
 /**
- * Complete IANA-designated IPv4 and IPv6 loopback address space.
+ Complete IANA-designated IPv4 and IPv6 loopback address space.
  */
 const LOOPBACK_NETWORKS = [
   '127.0.0.0/8',
@@ -32,32 +32,32 @@ const LOOPBACK_NETWORKS = [
 ] as const;
 
 /**
- * Generates exact `union(allowed) - union(disallowed)` output with an injected resolver.
- *
- * This is a built-artifact test seam and is not exported through the package export map.
- *
- * @param allowedText - Complete allowed-file text.
- *
- * @param disallowedText - Complete disallowed-file text.
- *
- * @param lookupAddresses - Deterministic test or operating-system resolver adapter.
- *
- * @param lookupAsnNetworks - Deterministic test or IPinfo Lite ASN adapter.
- *
- * @returns Empty string for complete subtraction, otherwise minimized sorted CIDRs joined by `, ` and one newline.
- *
- * @throws {@link InputValidationError} when allowed input contributes no addresses.
- *
- * @example
- * ```ts
- * await generateAllowedIpsWithLookup({
- *   allowedText: '10.0.0.0/8',
- *   disallowedText: '10.0.0.0/9',
- *   lookupAddresses: async () => [],
- *   lookupAsnNetworks: async () => [],
- * });
- * // => '10.128.0.0/9\n'
- * ```
+ Generates exact `union(allowed) - union(disallowed)` output with an injected resolver.
+ 
+ This is a built-artifact test seam and is not exported through the package export map.
+ 
+ @param allowedText - Complete allowed-file text.
+ 
+ @param disallowedText - Complete disallowed-file text.
+ 
+ @param lookupAddresses - Deterministic test or operating-system resolver adapter.
+ 
+ @param lookupAsnNetworks - Deterministic test or IPinfo Lite ASN adapter.
+ 
+ @returns Empty string for complete subtraction, otherwise minimized sorted CIDRs joined by `, ` and one newline.
+ 
+ @throws {@link InputValidationError} when allowed input contributes no addresses.
+ 
+ @example
+ ```ts
+ await generateAllowedIpsWithLookup({
+   allowedText: '10.0.0.0/8',
+   disallowedText: '10.0.0.0/9',
+   lookupAddresses: async () => [],
+   lookupAsnNetworks: async () => [],
+ });
+ // => '10.128.0.0/9\n'
+ ```
  */
 export async function generateAllowedIpsWithLookup(
   {
@@ -68,7 +68,7 @@ export async function generateAllowedIpsWithLookup(
   }: GenerateAllowedIpsWithLookupOptions,
 ): Promise<string> {
   /**
-   * Function-scoped logger for set-generation lifecycle.
+   Function-scoped logger for set-generation lifecycle.
    */
   const fl = tagged({
     tag: generateAllowedIpsWithLookup.name,
@@ -76,7 +76,7 @@ export async function generateAllowedIpsWithLookup(
   },);
   fl.debug('parsing allowed and disallowed input',);
   /**
-   * Parsed allowed and disallowed networks, resolved concurrently.
+   Parsed allowed and disallowed networks, resolved concurrently.
    */
   const [allowedNetworks, disallowedNetworks,] = await Promise.all([
     textNetworks({
@@ -91,7 +91,7 @@ export async function generateAllowedIpsWithLookup(
     },),
   ],);
   /**
-   * Loopback remainder not semantically covered by resolved disallowed networks.
+   Loopback remainder not semantically covered by resolved disallowed networks.
    */
   const uncoveredLoopbackNetworks = excludeCidr(
     LOOPBACK_NETWORKS,
@@ -110,7 +110,7 @@ export async function generateAllowedIpsWithLookup(
     `subtracting ${String(disallowedNetworks.length,)} network(s) from ${String(allowedNetworks.length,)} network(s)`,
   );
   /**
-   * Minimized, sorted exact set difference produced by adopted dependency.
+   Minimized, sorted exact set difference produced by adopted dependency.
    */
   const result = excludeCidr(
     allowedNetworks,

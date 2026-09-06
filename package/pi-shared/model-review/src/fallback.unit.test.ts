@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for exhausted reviewer diagnostics.
- *
- * @module
+ Built-artifact tests for exhausted reviewer diagnostics.
+ 
+ @module
  */
 
 import {

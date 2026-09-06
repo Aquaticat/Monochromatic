@@ -4,15 +4,15 @@ import {
 } from 'rolldown';
 
 /**
- * Preload bundle config: Electron's sandboxed preload runtime loads CommonJS
- * only, so this is the one CJS island in the package. `main.ts` and
- * `build-stage.ts` reference the output as `preload.cjs`, so the entry
- * filename template pins that exact name.
- *
- * @example
- * ```ts
- * console.log(preloadConfig.output);
- * ```
+ Preload bundle config: Electron's sandboxed preload runtime loads CommonJS
+ only, so this is the one CJS island in the package. `main.ts` and
+ `build-stage.ts` reference the output as `preload.cjs`, so the entry
+ filename template pins that exact name.
+ 
+ @example
+ ```ts
+ console.log(preloadConfig.output);
+ ```
  */
 const preloadConfig: RolldownOptions = defineConfig({
   input: ['./src/preload.ts',],

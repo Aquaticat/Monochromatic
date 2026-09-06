@@ -20,68 +20,68 @@ import {
 } from './statusline.ts';
 
 /**
- * Stable render timestamp used by rate-limit tests.
+ Stable render timestamp used by rate-limit tests.
  */
 const RENDERED_AT_MS = Date.parse('2026-06-01T12:00:00Z',);
 
 /**
- * Milliseconds in one hour for fixture reset timestamps.
+ Milliseconds in one hour for fixture reset timestamps.
  */
 const HOUR_MS = 3_600_000;
 
 /**
- * ANSI reset sequence.
+ ANSI reset sequence.
  */
 const RESET = '\u001B[0m';
 
 /**
- * ANSI red sequence.
+ ANSI red sequence.
  */
 const RED = '\u001B[31m';
 
 /**
- * ANSI yellow sequence.
+ ANSI yellow sequence.
  */
 const YELLOW = '\u001B[33m';
 
 /**
- * Temporary workspace handle that removes itself at the end of an `await using`
- * scope.
+ Temporary workspace handle that removes itself at the end of an `await using`
+ scope.
  */
 type TempWorkspace = {
   /**
-   * Absolute path to temporary workspace root.
+   Absolute path to temporary workspace root.
    */
   readonly path: string;
   /**
-   * Removes temporary workspace root recursively.
+   Removes temporary workspace root recursively.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Environment variable restore handle.
+ Environment variable restore handle.
  */
 type EnvRestore = {
   /**
-   * Restores original environment variable value.
+   Restores original environment variable value.
    */
   readonly [Symbol.dispose]: () => void;
 };
 
 /**
- * Creates isolated temporary workspace.
- *
- * @returns disposable temporary workspace handle
- *
- * @example
- * ```ts
- * await using workspace = await makeWorkspace();
- * ```
+ Creates isolated temporary workspace.
+ 
+ @returns disposable temporary workspace handle
+ 
+ @example
+ ```ts
+ await using workspace = await makeWorkspace();
+ ```
  */
 async function makeWorkspace(): Promise<TempWorkspace> {
   /**
-   * Temporary root path.
+   Temporary root path.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -103,20 +103,20 @@ async function makeWorkspace(): Promise<TempWorkspace> {
 }
 
 /**
- * Temporarily sets HOME.
- *
- * @param value - HOME value
- *
- * @returns disposable restore handle
- *
- * @example
- * ```ts
- * using restore = homeEnv('/tmp/home');
- * ```
+ Temporarily sets HOME.
+ 
+ @param value - HOME value
+ 
+ @returns disposable restore handle
+ 
+ @example
+ ```ts
+ using restore = homeEnv('/tmp/home');
+ ```
  */
 function homeEnv(value: string,): EnvRestore {
   /**
-   * Original HOME value.
+   Original HOME value.
    */
   const original = process.env.HOME;
   process.env.HOME = value;
@@ -134,16 +134,16 @@ function homeEnv(value: string,): EnvRestore {
 }
 
 /**
- * Writes Claude settings fixture under temporary HOME.
- *
- * @param home - temporary HOME path
- *
- * @param effortLevel - effort level setting value
- *
- * @example
- * ```ts
- * await writeSettings({ home: '/tmp/home', effortLevel: 'low' });
- * ```
+ Writes Claude settings fixture under temporary HOME.
+ 
+ @param home - temporary HOME path
+ 
+ @param effortLevel - effort level setting value
+ 
+ @example
+ ```ts
+ await writeSettings({ home: '/tmp/home', effortLevel: 'low' });
+ ```
  */
 async function writeSettings({
   home,
@@ -170,16 +170,16 @@ async function writeSettings({
 }
 
 /**
- * Converts epoch milliseconds to epoch seconds.
- *
- * @param epochMs - epoch timestamp in milliseconds
- *
- * @returns epoch timestamp in seconds
- *
- * @example
- * ```ts
- * epochSeconds(Date.now());
- * ```
+ Converts epoch milliseconds to epoch seconds.
+ 
+ @param epochMs - epoch timestamp in milliseconds
+ 
+ @returns epoch timestamp in seconds
+ 
+ @example
+ ```ts
+ epochSeconds(Date.now());
+ ```
  */
 function epochSeconds(epochMs: number,): number {
   return epochMs / 1_000;
@@ -214,7 +214,7 @@ await describe({
               effortLevel: 'low',
             },);
             /**
-             * Transcript path fixture.
+             Transcript path fixture.
              */
             const transcriptPath = join(
               workspace.path,

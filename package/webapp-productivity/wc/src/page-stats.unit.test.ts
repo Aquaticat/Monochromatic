@@ -1,7 +1,7 @@
 /**
- * Tests for the stat-tile markup and mappings.
- *
- * @module
+ Tests for the stat-tile markup and mappings.
+ 
+ @module
  */
 
 import {
@@ -22,7 +22,7 @@ await describe({
       name: 'renders a heading and a tiles definition list',
       fn: async function rendersHeadingAndTiles(): Promise<void> {
         /**
-         * Full markup produced for the Stats section.
+         Full markup produced for the Stats section.
          */
         const html = renderStatsSection();
 
@@ -34,7 +34,7 @@ await describe({
       name: 'renders every STAT_TILES entry as a zero-valued labeled tile',
       fn: async function rendersEveryTile(): Promise<void> {
         /**
-         * Full markup produced for the Stats section.
+         Full markup produced for the Stats section.
          */
         const html = renderStatsSection();
 
@@ -55,7 +55,7 @@ await describe({
       name: 'renders a longest sub-line with unit and title for every paired tile',
       fn: async function rendersSubLines(): Promise<void> {
         /**
-         * Full markup produced for the Stats section.
+         Full markup produced for the Stats section.
          */
         const html = renderStatsSection();
 
@@ -75,7 +75,7 @@ await describe({
       name: 'pairs chars/lines/words/sentences/paragraphs and leaves bytes bare',
       fn: async function pairsExpectedTiles(): Promise<void> {
         /**
-         * Labels of tiles carrying a "longest" sub-stat.
+         Labels of tiles carrying a "longest" sub-stat.
          */
         const paired = STAT_TILES
           .filter(function hasSub(tile,): boolean {
@@ -120,7 +120,7 @@ await describe({
       name: 'never emits an id attribute',
       fn: async function omitsIds(): Promise<void> {
         /**
-         * Full markup produced for the Stats section.
+         Full markup produced for the Stats section.
          */
         const html = renderStatsSection();
 

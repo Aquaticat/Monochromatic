@@ -52,12 +52,12 @@ type ProbeResult = {
 };
 
 /**
- * Builds a throwaway project root with `node_modules` so the file sink chooses
- * an isolated `node_modules/.monochromatic` log directory.
- *
- * @param logLine - Logger call that the generated probe should execute.
- *
- * @returns Temporary project handle removed by `await using`.
+ Builds a throwaway project root with `node_modules` so the file sink chooses
+ an isolated `node_modules/.monochromatic` log directory.
+ 
+ @param logLine - Logger call that the generated probe should execute.
+ 
+ @returns Temporary project handle removed by `await using`.
  */
 async function createTempProject(
   { logLine, }: { readonly logLine: string; },
@@ -99,13 +99,13 @@ async function createTempProject(
 }
 
 /**
- * Runs a probe script in its temporary project root.
- *
- * @param cwd - Project root used as `process.cwd()` by the file sink.
- * @param env - Environment overrides applied to the probe process.
- * @param scriptPath - Absolute path to the probe script.
- *
- * @returns Captured stdout, stderr, and exit code.
+ Runs a probe script in its temporary project root.
+ 
+ @param cwd - Project root used as `process.cwd()` by the file sink.
+ @param env - Environment overrides applied to the probe process.
+ @param scriptPath - Absolute path to the probe script.
+ 
+ @returns Captured stdout, stderr, and exit code.
  */
 async function runProbe(
   {
@@ -151,11 +151,11 @@ async function runProbe(
 }
 
 /**
- * Reads the single JSONL file created by the probe's file sink.
- *
- * @param projectPath - Temporary project root containing `node_modules`.
- *
- * @returns Log file contents.
+ Reads the single JSONL file created by the probe's file sink.
+ 
+ @param projectPath - Temporary project root containing `node_modules`.
+ 
+ @returns Log file contents.
  */
 async function readOnlyLogContent({ projectPath, }: { readonly projectPath: string; },): Promise<string> {
   const logDir = join(

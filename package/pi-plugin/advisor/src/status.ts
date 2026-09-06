@@ -1,7 +1,7 @@
 /**
- * Advisor status rendering for slash-command inspection.
- *
- * @module
+ Advisor status rendering for slash-command inspection.
+ 
+ @module
  */
 
 import type { ExtensionCommandContext, } from '@earendil-works/pi-coding-agent';
@@ -15,22 +15,22 @@ import { selectAdvisorModel, } from './advisor-selection.ts';
 import type { AdvisorConfig, } from './types.ts';
 
 /**
- * Build `/advisor status` text.
- *
- * @param ctx - command-capable extension context
- *
- * @param config - runtime Advisor config
- *
- * @param enabled - session enablement state
- *
- * @returns status text
- *
- * @mutates ctx - `resolveEffectiveScope` invokes context live-scope and model-registry callbacks
- *
- * @example
- * ```typescript
- * const text = buildAdvisorStatus({ ctx, config, enabled: true });
- * ```
+ Build `/advisor status` text.
+ 
+ @param ctx - command-capable extension context
+ 
+ @param config - runtime Advisor config
+ 
+ @param enabled - session enablement state
+ 
+ @returns status text
+ 
+ @mutates ctx - `resolveEffectiveScope` invokes context live-scope and model-registry callbacks
+ 
+ @example
+ ```typescript
+ const text = buildAdvisorStatus({ ctx, config, enabled: true });
+ ```
  */
 export async function buildAdvisorStatus(
   {
@@ -44,21 +44,21 @@ export async function buildAdvisorStatus(
   },
 ): Promise<string> {
   /**
-   * Effective model scope for status.
+   Effective model scope for status.
    */
   const scope = await resolveEffectiveScope({
     ctx,
     errorPrefix: 'advisor',
   },);
   /**
-   * Scoped models whose endpoints advertise configured output capacity.
+   Scoped models whose endpoints advertise configured output capacity.
    */
   const eligibleScope = filterAdvisorScopeByOutputCapacity({
     scope,
     maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
   },);
   /**
-   * Empty-context default ranking for status display.
+   Empty-context default ranking for status display.
    */
   const defaultSelection = eligibleScope.entries
     .length
@@ -74,11 +74,11 @@ export async function buildAdvisorStatus(
     },)
       .defaultSelection;
   /**
-   * Advisor model system prompt used for budget reserve estimate.
+   Advisor model system prompt used for budget reserve estimate.
    */
   const advisorSystemPrompt = buildAdvisorSystemPrompt(config,);
   /**
-   * Effective context budget for status default model.
+   Effective context budget for status default model.
    */
   const defaultContextBudget = defaultSelection === undefined
     ? undefined
@@ -89,13 +89,13 @@ export async function buildAdvisorStatus(
       advisorSystemPrompt,
     },);
   /**
-   * Effective context budget shown when present.
+   Effective context budget shown when present.
    */
   const defaultContextBudgetText = defaultContextBudget === undefined
     ? 'none'
     : `${defaultContextBudget} chars`;
   /**
-   * Configured context cap shown when present.
+   Configured context cap shown when present.
    */
   const configuredContextCap = config.maxContextChars
     === undefined

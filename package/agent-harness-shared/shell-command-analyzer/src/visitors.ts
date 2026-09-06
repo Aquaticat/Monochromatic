@@ -1,7 +1,7 @@
 /**
- * Compatibility exports for analyzer visitors.
- *
- * @module
+ Compatibility exports for analyzer visitors.
+ 
+ @module
  */
 
 export {

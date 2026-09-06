@@ -32,9 +32,9 @@ type ExternalConsumer = {
 };
 
 /**
- * Creates disposable workspace outside monorepo dependency ancestry.
- *
- * @returns disposable external-consumer workspace.
+ Creates disposable workspace outside monorepo dependency ancestry.
+ 
+ @returns disposable external-consumer workspace.
  */
 function createExternalConsumer(): ExternalConsumer {
   /** Unique consumer directory under operating-system temporary root. */

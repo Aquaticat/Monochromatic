@@ -1,8 +1,8 @@
 /**
- * Tests for the extension entry point.
- *
- * Covers event handler registration, /guard command behavior,
- * and propose_trust tool execution.
+ Tests for the extension entry point.
+ 
+ Covers event handler registration, /guard command behavior,
+ and propose_trust tool execution.
  */
 
 import {
@@ -65,9 +65,9 @@ type AppendedEntry = {
 };
 
 /**
- * Creates a mock ExtensionAPI that records all registrations.
- *
- * @returns mock API and tracking structures for assertions
+ Creates a mock ExtensionAPI that records all registrations.
+ 
+ @returns mock API and tracking structures for assertions
  */
 function createMockApi() {
   const registrations: RegistrationMap = new Map();
@@ -131,15 +131,15 @@ function createMockApi() {
 }
 
 /**
- * Retrieves the registered handler for a given event.
- * Throws if no handler is registered.
- *
- * @returns the handler function
- *
- * @example
- * ```typescript
- * const handler = getHandler({ registrations, event: 'tool_call' });
- * ```
+ Retrieves the registered handler for a given event.
+ Throws if no handler is registered.
+ 
+ @returns the handler function
+ 
+ @example
+ ```typescript
+ const handler = getHandler({ registrations, event: 'tool_call' });
+ ```
  */
 function getHandler(
   {
@@ -160,18 +160,18 @@ function getHandler(
 }
 
 /**
- * Describe read or Bash probe exactly as auto-mode does before approval lookup.
- *
- * @param event - read or Bash tool event used by integration probe
- *
- * @returns action text used by approval fingerprint lookup
- *
- * @throws when event is outside probe's read and Bash surface
- *
- * @example
- * ```typescript
- * probeAction({ type: 'tool_call', toolName: 'read', toolCallId: 'r', input: { path: '/tmp/a' } });
- * ```
+ Describe read or Bash probe exactly as auto-mode does before approval lookup.
+ 
+ @param event - read or Bash tool event used by integration probe
+ 
+ @returns action text used by approval fingerprint lookup
+ 
+ @throws when event is outside probe's read and Bash surface
+ 
+ @example
+ ```typescript
+ probeAction({ type: 'tool_call', toolName: 'read', toolCallId: 'r', input: { path: '/tmp/a' } });
+ ```
  */
 function probeAction(
   event: ToolCallEvent,
@@ -186,24 +186,24 @@ function probeAction(
 }
 
 /**
- * Invoke tool-call handler with prior approval that records only when call was flagged.
- *
- * @param handler - registered auto-mode tool-call handler
- *
- * @param event - tool event whose flagging decision is observed
- *
- * @param cwd - Pi working directory used by path policy and fingerprint
- *
- * @param entries - append-only mock entries inspected before and after handler
- *
- * @returns whether auto-mode reached flagged approval-reuse path
- *
- * @mutates entries - flagged calls append reused approval verdict
- *
- * @example
- * ```typescript
- * await probeFlaggedToolCall({ handler, event, cwd: '/project', entries: [] });
- * ```
+ Invoke tool-call handler with prior approval that records only when call was flagged.
+ 
+ @param handler - registered auto-mode tool-call handler
+ 
+ @param event - tool event whose flagging decision is observed
+ 
+ @param cwd - Pi working directory used by path policy and fingerprint
+ 
+ @param entries - append-only mock entries inspected before and after handler
+ 
+ @returns whether auto-mode reached flagged approval-reuse path
+ 
+ @mutates entries - flagged calls append reused approval verdict
+ 
+ @example
+ ```typescript
+ await probeFlaggedToolCall({ handler, event, cwd: '/project', entries: [] });
+ ```
  */
 async function probeFlaggedToolCall(
   {
@@ -690,7 +690,7 @@ await describe({
         },);
 
         /**
-         * Concurrent decisions paired with source commands for actionable failure diffs.
+         Concurrent decisions paired with source commands for actionable failure diffs.
          */
         const decisions = await Promise.all(commands.map(
           async function classifyReadOnlyCommand(command, commandIndex,): Promise<{
@@ -830,7 +830,7 @@ await describe({
         },);
 
         /**
-         * Concurrent decisions paired with unsafe commands for actionable failure diffs.
+         Concurrent decisions paired with unsafe commands for actionable failure diffs.
          */
         const decisions = await Promise.all(commands.map(
           async function classifyMutatingCommand(command, commandIndex,): Promise<{

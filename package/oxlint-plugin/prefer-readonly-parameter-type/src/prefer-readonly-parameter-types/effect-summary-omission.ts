@@ -1,7 +1,7 @@
 /**
- * Direct effect-summary omission recording and visible lifecycle logging.
- *
- * @module
+ Direct effect-summary omission recording and visible lifecycle logging.
+ 
+ @module
  */
 
 import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
@@ -14,21 +14,21 @@ import {
 } from './effect-cache-envelope.ts';
 
 /**
- * Omission lifecycle logger.
+ Omission lifecycle logger.
  */
 const l = tagged({ tag: 'effect-summary-omission', },);
 
 /**
- * Stable fragment identifying known TypeScript instantiated-tuple serializer panic.
+ Stable fragment identifying known TypeScript instantiated-tuple serializer panic.
  */
 const TYPESCRIPT_TUPLE_PANIC_FRAGMENT = 'checker.TypeData is *checker.TypeReference, not *checker.TupleType';
 
 /**
- * Classifies caught summary failure into bounded persisted category.
- *
- * @param detail - Caught failure stack retained at debug level.
- *
- * @returns known tuple panic or general direct-summary failure category.
+ Classifies caught summary failure into bounded persisted category.
+ 
+ @param detail - Caught failure stack retained at debug level.
+ 
+ @returns known tuple panic or general direct-summary failure category.
  */
 function omissionReason(detail: string,): EffectSummaryOmissionReason {
   return detail.includes(TYPESCRIPT_TUPLE_PANIC_FRAGMENT,)
@@ -37,34 +37,34 @@ function omissionReason(detail: string,): EffectSummaryOmissionReason {
 }
 
 /**
- * Records one fresh direct-summary omission without exposing stack noise at warning level.
- *
- * @param allOmittedKeys - Build-wide identities accepted by completeness checks.
- *
- * @param sourceOmittedKeys - Source-local identities persisted with direct summaries.
- *
- * @param sourceOmissionReasons - Source-local bounded failure categories.
- *
- * @param key - Stable callable identity whose summary failed.
- *
- * @param error - Caught summary construction failure retained at debug level.
- *
- * @mutates allOmittedKeys - Adds omitted callable identity.
- *
- * @mutates sourceOmittedKeys - Adds omitted callable identity.
- *
- * @mutates sourceOmissionReasons - Adds bounded caught failure category.
- *
- * @example
- * ```ts
- * recordDirectSummaryOmission({
- *   allOmittedKeys,
- *   sourceOmittedKeys,
- *   sourceOmissionReasons,
- *   key,
- *   error,
- * });
- * ```
+ Records one fresh direct-summary omission without exposing stack noise at warning level.
+ 
+ @param allOmittedKeys - Build-wide identities accepted by completeness checks.
+ 
+ @param sourceOmittedKeys - Source-local identities persisted with direct summaries.
+ 
+ @param sourceOmissionReasons - Source-local bounded failure categories.
+ 
+ @param key - Stable callable identity whose summary failed.
+ 
+ @param error - Caught summary construction failure retained at debug level.
+ 
+ @mutates allOmittedKeys - Adds omitted callable identity.
+ 
+ @mutates sourceOmittedKeys - Adds omitted callable identity.
+ 
+ @mutates sourceOmissionReasons - Adds bounded caught failure category.
+ 
+ @example
+ ```ts
+ recordDirectSummaryOmission({
+   allOmittedKeys,
+   sourceOmittedKeys,
+   sourceOmissionReasons,
+   key,
+   error,
+ });
+ ```
  */
 export function recordDirectSummaryOmission({
   allOmittedKeys,
@@ -80,7 +80,7 @@ export function recordDirectSummaryOmission({
   readonly error: unknown;
 }): void {
   /**
-   * Complete caught detail used for debug log and bounded category.
+   Complete caught detail used for debug log and bounded category.
    */
   const detail = caughtValueStack(error,);
   allOmittedKeys.add(key,);
@@ -90,18 +90,18 @@ export function recordDirectSummaryOmission({
 }
 
 /**
- * Emits one concise warning for fresh source-local omissions.
- *
- * @param omittedKeys - Source-local identities omitted during scan.
- *
- * @param sourceFileName - Exact source whose scan was incomplete.
- *
- * @param reasons - Bounded failure categories encountered during scan.
- *
- * @example
- * ```ts
- * reportDirectSummaryOmissions({ omittedKeys, sourceFileName, reasons });
- * ```
+ Emits one concise warning for fresh source-local omissions.
+ 
+ @param omittedKeys - Source-local identities omitted during scan.
+ 
+ @param sourceFileName - Exact source whose scan was incomplete.
+ 
+ @param reasons - Bounded failure categories encountered during scan.
+ 
+ @example
+ ```ts
+ reportDirectSummaryOmissions({ omittedKeys, sourceFileName, reasons });
+ ```
  */
 export function reportDirectSummaryOmissions({
   omittedKeys,
@@ -115,7 +115,7 @@ export function reportDirectSummaryOmissions({
   if (omittedKeys.size === 0)
     return;
   /**
-   * Deterministic comma-separated reason categories for one-line warning.
+   Deterministic comma-separated reason categories for one-line warning.
    */
   const renderedReasons = [...reasons,]
     .toSorted()
@@ -126,27 +126,27 @@ export function reportDirectSummaryOmissions({
 }
 
 /**
- * Restores cached omission identities and emits one concise warning.
- *
- * @param allOmittedKeys - Build-wide identities accepted by completeness checks.
- *
- * @param restoredKeys - Validated source-local identities restored from cache.
- *
- * @param sourceFileName - Exact source whose cached scan was incomplete.
- *
- * @param reasons - Validated bounded reason categories restored from cache.
- *
- * @mutates allOmittedKeys - Adds every restored callable identity.
- *
- * @example
- * ```ts
- * restoreCachedSummaryOmissions({
- *   allOmittedKeys,
- *   restoredKeys,
- *   sourceFileName,
- *   reasons,
- * });
- * ```
+ Restores cached omission identities and emits one concise warning.
+ 
+ @param allOmittedKeys - Build-wide identities accepted by completeness checks.
+ 
+ @param restoredKeys - Validated source-local identities restored from cache.
+ 
+ @param sourceFileName - Exact source whose cached scan was incomplete.
+ 
+ @param reasons - Validated bounded reason categories restored from cache.
+ 
+ @mutates allOmittedKeys - Adds every restored callable identity.
+ 
+ @example
+ ```ts
+ restoreCachedSummaryOmissions({
+   allOmittedKeys,
+   restoredKeys,
+   sourceFileName,
+   reasons,
+ });
+ ```
  */
 export function restoreCachedSummaryOmissions({
   allOmittedKeys,

@@ -1,7 +1,7 @@
 /**
- * GitHub repository and API client contracts.
- *
- * @module
+ GitHub repository and API client contracts.
+ 
+ @module
  */
 
 import type { GitHubApiRequest, } from './github-api.ts';
@@ -9,7 +9,7 @@ import type { IncludedResponse, } from './github-response.ts';
 import type { SourceLink, } from './issue-model.ts';
 
 /**
- * Canonical GitHub repository identity.
+ Canonical GitHub repository identity.
  */
 export type GitHubRepository = {
   readonly owner: string;
@@ -18,14 +18,14 @@ export type GitHubRepository = {
 };
 
 /**
- * Injectable authenticated GitHub REST boundary.
+ Injectable authenticated GitHub REST boundary.
  */
 export type GitHubApiClient = (
   request: GitHubApiRequest,
 ) => Promise<IncludedResponse>;
 
 /**
- * Destination facts needed by deterministic publication planning.
+ Destination facts needed by deterministic publication planning.
  */
 export type PublicationPreflight = {
   readonly needsTriageLabel: boolean;

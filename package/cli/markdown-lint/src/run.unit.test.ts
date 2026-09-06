@@ -16,28 +16,28 @@ import {
 import { run, } from './run.ts';
 
 /**
- * A throwaway directory that removes itself on disposal, so the CLI's real
- * filesystem operations run against a disposable fixture, never shared state.
+ A throwaway directory that removes itself on disposal, so the CLI's real
+ filesystem operations run against a disposable fixture, never shared state.
  */
 type TempDir = {
   /**
-   * Absolute path to the directory.
+   Absolute path to the directory.
    */
   readonly path: string;
   /**
-   * Remove the directory and its contents.
+   Remove the directory and its contents.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Create a throwaway directory under the OS temp dir.
- *
- * @returns a disposable temp directory
+ Create a throwaway directory under the OS temp dir.
+ 
+ @returns a disposable temp directory
  */
 async function makeTempDir(): Promise<TempDir> {
   /**
-   * Freshly created temp directory path.
+   Freshly created temp directory path.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -58,7 +58,7 @@ async function makeTempDir(): Promise<TempDir> {
 }
 
 /**
- * A pipe table, which `no-pipe-tables` flags and fixes.
+ A pipe table, which `no-pipe-tables` flags and fixes.
  */
 const PIPE_TABLE = [
   '# Title',
@@ -70,14 +70,14 @@ const PIPE_TABLE = [
 ].join('\n',);
 
 /**
- * MDX that fails during parsing, representative of a future rule producing
- * invalid MDX during a fixpoint pass.
+ MDX that fails during parsing, representative of a future rule producing
+ invalid MDX during a fixpoint pass.
  */
 const INVALID_MDX = '<https://example.com>\n';
 
 /**
- * A file whose only lint finding is an unused reference definition. The raw
- * rule fix would remove every byte, so the CLI boundary must refuse the write.
+ A file whose only lint finding is an unused reference definition. The raw
+ rule fix would remove every byte, so the CLI boundary must refuse the write.
  */
 const UNUSED_REFERENCE_ONLY = '[unused]: https://example.com\n';
 
@@ -96,7 +96,7 @@ await describe({
           PIPE_TABLE,
         );
         /**
-         * Lint result over the directory.
+         Lint result over the directory.
          */
         const result = await run({
           paths: [dir.path,],
@@ -128,7 +128,7 @@ await describe({
           PIPE_TABLE,
         );
         /**
-         * Lint result; the only file is gitignored.
+         Lint result; the only file is gitignored.
          */
         const result = await run({
           paths: [dir.path,],
@@ -144,7 +144,7 @@ await describe({
       fn: async function fixRewrites() {
         await using dir = await makeTempDir();
         /**
-         * Path of the file under fix.
+         Path of the file under fix.
          */
         const file = join(
           dir.path,
@@ -155,7 +155,7 @@ await describe({
           PIPE_TABLE,
         );
         /**
-         * Fix result over the directory.
+         Fix result over the directory.
          */
         const result = await run({
           paths: [dir.path,],
@@ -166,7 +166,7 @@ await describe({
         expect(result.fixedFiles,).toBe(1,);
         expect(result.hadViolations,).toBe(false,);
         /**
-         * File contents after the fix.
+         File contents after the fix.
          */
         const fixed = await readFile(
           file,
@@ -181,14 +181,14 @@ await describe({
       fn: async function reportsBadFile() {
         await using dir = await makeTempDir();
         /**
-         * Fixable Markdown file that should still be rewritten.
+         Fixable Markdown file that should still be rewritten.
          */
         const goodFile = join(
           dir.path,
           'good.md',
         );
         /**
-         * Invalid MDX file that should be reported, not thrown past the run.
+         Invalid MDX file that should be reported, not thrown past the run.
          */
         const badFile = join(
           dir.path,
@@ -203,7 +203,7 @@ await describe({
           INVALID_MDX,
         );
         /**
-         * Fix result over a mixed-validity directory.
+         Fix result over a mixed-validity directory.
          */
         const result = await run({
           paths: [dir.path,],
@@ -215,7 +215,7 @@ await describe({
         expect(result.hadViolations,).toBe(true,);
         expect(result.output.includes('markdown-lint-error',),).toBe(true,);
         /**
-         * The sibling file was fixed despite the bad file.
+         The sibling file was fixed despite the bad file.
          */
         const fixed = await readFile(
           goodFile,
@@ -234,7 +234,7 @@ await describe({
       fn: async function refusesEmptyRewrite() {
         await using dir = await makeTempDir();
         /**
-         * Path of the file whose raw rule fixes would remove all content.
+         Path of the file whose raw rule fixes would remove all content.
          */
         const file = join(
           dir.path,
@@ -245,7 +245,7 @@ await describe({
           UNUSED_REFERENCE_ONLY,
         );
         /**
-         * Fix result for the risky file.
+         Fix result for the risky file.
          */
         const result = await run({
           paths: [file,],

@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for goal evidence and reviewer contract.
- *
- * @module
+ Built-artifact tests for goal evidence and reviewer contract.
+ 
+ @module
  */
 
 import type {
@@ -36,9 +36,9 @@ const COMPLETED_AT = '2026-08-26T00:01:00.000Z';
 const INCIDENT_ANSWER = '67 is prime in these five ways:';
 
 /**
- * Build active evidence-test goal.
- *
- * @returns active goal state
+ Build active evidence-test goal.
+ 
+ @returns active goal state
  */
 function evidenceGoal(): ActiveGoalState {
   /** Reduced active fixture. */
@@ -58,9 +58,9 @@ function evidenceGoal(): ActiveGoalState {
 }
 
 /**
- * Build captured settlement request.
- *
- * @returns request bound to active goal
+ Build captured settlement request.
+ 
+ @returns request bound to active goal
  */
 function evidenceRequest(): GoalSettlementReviewRequest {
   return {
@@ -72,11 +72,11 @@ function evidenceRequest(): GoalSettlementReviewRequest {
 }
 
 /**
- * Build finalized assistant text fixture.
- *
- * @param text - visible assistant output
- *
- * @returns finalized session message
+ Build finalized assistant text fixture.
+ 
+ @param text - visible assistant output
+ 
+ @returns finalized session message
  */
 function assistantTextMessage(text: string,): SessionMessageEntry['message'] {
   return {

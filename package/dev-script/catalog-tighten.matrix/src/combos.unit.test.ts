@@ -1,12 +1,12 @@
 /**
- * Unit tests for the matrix fixture builder and scenario set.
- *
- * Pure host tests (no containers): pin that `buildWorkspaceYaml` encodes the
- * catalog floor, override, and per-scenario linker, hoist, and extra settings,
- * that the `hoist:` line is omitted under the pnp linker, and that the scenario
- * set covers the expected behaviours.
- *
- * @module
+ Unit tests for the matrix fixture builder and scenario set.
+ 
+ Pure host tests (no containers): pin that `buildWorkspaceYaml` encodes the
+ catalog floor, override, and per-scenario linker, hoist, and extra settings,
+ that the `hoist:` line is omitted under the pnp linker, and that the scenario
+ set covers the expected behaviours.
+ 
+ @module
  */
 
 import {

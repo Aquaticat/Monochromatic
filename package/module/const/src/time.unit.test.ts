@@ -1,7 +1,7 @@
 /**
- * Tests for time and duration ratio constants.
- *
- * @module
+ Tests for time and duration ratio constants.
+ 
+ @module
  */
 
 import {

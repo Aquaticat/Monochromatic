@@ -1,7 +1,7 @@
 /**
- * Mutable browser-controller session shape.
- *
- * @module
+ Mutable browser-controller session shape.
+ 
+ @module
  */
 
 import type {
@@ -14,7 +14,7 @@ import type { ChromeColors, } from './scheme.ts';
 import type { AppState, } from './state.ts';
 
 /**
- * Mutable working state of the controller. The owning binding remains constant.
+ Mutable working state of the controller. The owning binding remains constant.
  */
 export type Session = {
   state: AppState;

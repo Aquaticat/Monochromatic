@@ -1,7 +1,7 @@
 /**
- * Default filesystem IO for shared session discovery.
- *
- * @module
+ Default filesystem IO for shared session discovery.
+ 
+ @module
  */
 
 import {
@@ -18,18 +18,18 @@ import type {
 //region Default readers
 
 /**
- * Reads a UTF-8 file through test override when supplied.
- *
- * @param path - file path to read
- *
- * @param io - optional test IO seam
- *
- * @returns UTF-8 file text
- *
- * @example
- * ```ts
- * await readTextFile({ path: '/tmp/session', io: {} });
- * ```
+ Reads a UTF-8 file through test override when supplied.
+ 
+ @param path - file path to read
+ 
+ @param io - optional test IO seam
+ 
+ @returns UTF-8 file text
+ 
+ @example
+ ```ts
+ await readTextFile({ path: '/tmp/session', io: {} });
+ ```
  */
 async function readTextFile(
   {
@@ -50,18 +50,18 @@ async function readTextFile(
 }
 
 /**
- * Reads directory entries through test override when supplied.
- *
- * @param path - directory path to read
- *
- * @param io - optional test IO seam
- *
- * @returns directory entry names
- *
- * @example
- * ```ts
- * await readDirectoryEntries({ path: '/tmp/.by-pid', io: {} });
- * ```
+ Reads directory entries through test override when supplied.
+ 
+ @param path - directory path to read
+ 
+ @param io - optional test IO seam
+ 
+ @returns directory entry names
+ 
+ @example
+ ```ts
+ await readDirectoryEntries({ path: '/tmp/.by-pid', io: {} });
+ ```
  */
 async function readDirectoryEntries(
   {
@@ -79,18 +79,18 @@ async function readDirectoryEntries(
 }
 
 /**
- * Reads file modification time through test override when supplied.
- *
- * @param path - file path to stat
- *
- * @param io - optional test IO seam
- *
- * @returns stat fields used by session discovery
- *
- * @example
- * ```ts
- * await readFileStat({ path: '/tmp/.by-pid/123', io: {} });
- * ```
+ Reads file modification time through test override when supplied.
+ 
+ @param path - file path to stat
+ 
+ @param io - optional test IO seam
+ 
+ @returns stat fields used by session discovery
+ 
+ @example
+ ```ts
+ await readFileStat({ path: '/tmp/.by-pid/123', io: {} });
+ ```
  */
 async function readFileStat(
   {
@@ -105,7 +105,7 @@ async function readFileStat(
     return await io.statFile(path,);
 
   /**
-   * Node stat object carrying `mtimeMs`.
+   Node stat object carrying `mtimeMs`.
    */
   const stats = await stat(path,);
   return { mtimeMs: stats.mtimeMs, };

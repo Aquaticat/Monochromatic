@@ -1,7 +1,7 @@
 /**
- * Tests for function arity wrappers.
- *
- * @module
+ Tests for function arity wrappers.
+ 
+ @module
  */
 
 import {

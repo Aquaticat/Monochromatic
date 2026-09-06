@@ -22,19 +22,19 @@ import {
 } from './worktree-copy-fixture.unit.test.ts';
 
 /**
- * One worktree-add form and destination used by built wrapper catalog.
+ One worktree-add form and destination used by built wrapper catalog.
  */
 type WorktreeForm = Readonly<{
   /**
-   * Human-readable form name.
+   Human-readable form name.
    */
   name: string;
   /**
-   * Complete arguments passed to built wrapper.
+   Complete arguments passed to built wrapper.
    */
   args: readonly string[];
   /**
-   * Created worktree destination.
+   Created worktree destination.
    */
   destinationRoot: string;
 }>;
@@ -48,11 +48,11 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Invoking source repository.
+         Invoking source repository.
          */
         const repositoryRoot = join(fixture.path, 'repository',);
         /**
-         * Local bare remote used by unique remote-guess form.
+         Local bare remote used by unique remote-guess form.
          */
         const remoteRoot = join(fixture.path, 'remote.git',);
         await initializeRepository(repositoryRoot,);
@@ -112,7 +112,7 @@ await describe({
           ],
         },);
         /**
-         * Destination roots for every accepted Git 2.55 creation family.
+         Destination roots for every accepted Git 2.55 creation family.
          */
         const destination = {
           branch: join(fixture.path, 'branch-form',),
@@ -124,7 +124,7 @@ await describe({
           remoteGuess: join(fixture.path, 'remote-guess',),
         } as const;
         /**
-         * Complete creation-form catalog.
+         Complete creation-form catalog.
          */
         const forms: readonly WorktreeForm[] = [
           {
@@ -181,7 +181,7 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Invoking source repository.
+         Invoking source repository.
          */
         const repositoryRoot = join(fixture.path, 'repository',);
         await initializeRepository(repositoryRoot,);
@@ -193,11 +193,11 @@ await describe({
         },);
         await writeFile(join(repositoryRoot, 'state.txt',), 'opt out\n',);
         /**
-         * Destination created with synchronization opted out.
+         Destination created with synchronization opted out.
          */
         const optedOutRoot = join(fixture.path, 'opted-out',);
         /**
-         * Built-wrapper creation with the wrapper-only opt-out in flag position.
+         Built-wrapper creation with the wrapper-only opt-out in flag position.
          */
         const optedOut = requireSuccess(await captureWrapper({
           cwd: repositoryRoot,
@@ -214,11 +214,11 @@ await describe({
         expect(await readdir(optedOutRoot,),).not.toContain('state.txt',);
         expect(copySummaryLines(optedOut.stderr,),).toHaveLength(0,);
         /**
-         * Destination whose lock reason carries the opt-out bytes in value position.
+         Destination whose lock reason carries the opt-out bytes in value position.
          */
         const valuePositionRoot = join(fixture.path, 'value-position',);
         /**
-         * Built-wrapper creation where the opt-out bytes sit in a value position.
+         Built-wrapper creation where the opt-out bytes sit in a value position.
          */
         const valuePosition = requireSuccess(await captureWrapper({
           cwd: repositoryRoot,
@@ -236,7 +236,7 @@ await describe({
         expect(await readFile(join(valuePositionRoot, 'state.txt',), 'utf8',),).toBe('opt out\n',);
         expect(copySummaryLines(valuePosition.stderr,),).toHaveLength(1,);
         /**
-         * Porcelain listing proving the lock reason retained the opt-out bytes.
+         Porcelain listing proving the lock reason retained the opt-out bytes.
          */
         const listing = await runRealGit({
           cwd: repositoryRoot,

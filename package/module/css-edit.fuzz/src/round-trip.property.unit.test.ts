@@ -1,8 +1,8 @@
 /**
- * Property tests proving the css-edit CST is byte-lossless on valid input and
- * total (throws only `CssParseError`) on arbitrary input.
- *
- * @module
+ Property tests proving the css-edit CST is byte-lossless on valid input and
+ total (throws only `CssParseError`) on arbitrary input.
+ 
+ @module
  */
 
 import {
@@ -35,7 +35,7 @@ await describe({
         assert(
           property(cssDocumentArb, (css,) => {
             /**
-             * Parsed state of the generated document.
+             Parsed state of the generated document.
              */
             const state = parseCss({ source: asCssSource(css,), },);
             expect(stringifyCss({ state, },),).toBe(css,);
@@ -52,7 +52,7 @@ await describe({
           property(string({ unit: 'binary', },), (candidate,) => {
             try {
               /**
-               * Parsed state when the candidate happens to be valid CSS.
+               Parsed state when the candidate happens to be valid CSS.
                */
               const state = parseCss({ source: asCssSource(candidate,), },);
               expect(stringifyCss({ state, },),).toBe(candidate,);
@@ -72,7 +72,7 @@ await describe({
         assert(
           property(cssDocumentArb, (css,) => {
             /**
-             * Root of the generated document.
+             Root of the generated document.
              */
             const { root, } = parseCss({ source: asCssSource(css,), },);
             expect(transformStylesheet({

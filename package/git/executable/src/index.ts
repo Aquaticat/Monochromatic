@@ -1,5 +1,5 @@
 /**
- * Real-Git executable resolution for infrastructure that must bypass workspace policy wrapper.
+ Real-Git executable resolution for infrastructure that must bypass workspace policy wrapper.
  */
 
 export { RealGitNotFoundError, } from './error.ts';

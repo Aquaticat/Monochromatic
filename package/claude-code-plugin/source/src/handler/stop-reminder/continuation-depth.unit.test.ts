@@ -15,25 +15,25 @@ import {
 } from './continuation-depth.ts';
 
 /**
- * Transcript line standing for one forced-continuation feedback record.
+ Transcript line standing for one forced-continuation feedback record.
  */
 const BLOCK_LINE = `{"type":"user","message":{"content":"${FEEDBACK_PREFIX}:\\n${CONTINUATION_MARKER}."}}`;
 
 /**
- * Attachment record Claude Code writes alongside every block.
- *
- * Carries the reason but not the feedback prefix, so it must not be counted.
+ Attachment record Claude Code writes alongside every block.
+ 
+ Carries the reason but not the feedback prefix, so it must not be counted.
  */
 const ATTACHMENT_LINE =
   `{"type":"attachment","attachment":{"type":"hook_blocking_error","blockingError":{"blockingError":"${CONTINUATION_MARKER}."}}}`;
 
 /**
- * Transcript line standing for a genuine human turn, which closes the counting window.
+ Transcript line standing for a genuine human turn, which closes the counting window.
  */
 const HUMAN_LINE = '{"type":"user","origin":{"kind":"human"},"message":{"content":"do the thing"}}';
 
 /**
- * Transcript line standing for an assistant turn, which neither counts nor closes.
+ Transcript line standing for an assistant turn, which neither counts nor closes.
  */
 const ASSISTANT_LINE = '{"type":"assistant","message":{"content":[{"type":"text","text":"working"}]}}';
 

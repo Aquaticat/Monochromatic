@@ -11,16 +11,16 @@ import {
 } from '../dist/final/node/opensnitch-config-tree.mjs';
 
 /**
- * Creates minimal OpenSnitch 1.8 nftables system-firewall document.
- *
- * @param rules - Initial mangle-output rules.
- *
- * @returns Document carrying unrelated legacy and future fields.
- *
- * @example
- * ```ts
- * fixtureDocument({ rules: [] });
- * ```
+ Creates minimal OpenSnitch 1.8 nftables system-firewall document.
+ 
+ @param rules - Initial mangle-output rules.
+ 
+ @returns Document carrying unrelated legacy and future fields.
+ 
+ @example
+ ```ts
+ fixtureDocument({ rules: [] });
+ ```
  */
 function fixtureDocument(
   { rules, }: { readonly rules: readonly unknown[]; },
@@ -61,16 +61,16 @@ function fixtureDocument(
 }
 
 /**
- * Finds target-chain rules in reconciled fixture document.
- *
- * @param document - OpenSnitch document.
- *
- * @returns Target rules.
- *
- * @example
- * ```ts
- * targetRules({ document });
- * ```
+ Finds target-chain rules in reconciled fixture document.
+ 
+ @param document - OpenSnitch document.
+ 
+ @returns Target rules.
+ 
+ @example
+ ```ts
+ targetRules({ document });
+ ```
  */
 function targetRules(
   { document, }: { readonly document: Readonly<Record<string, unknown>>; },
@@ -192,7 +192,7 @@ await describe({
               requireEnabled: true,
             },);
             /**
-             * Serialized document proving both namespace owners coexist.
+             Serialized document proving both namespace owners coexist.
              */
             const serialized = JSON.stringify(second.document,);
             expect(serialized,).toContain('[netns:namespace-a]',);

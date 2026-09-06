@@ -1,7 +1,7 @@
 /**
- * Effective scoped-model resolution for pi plugins.
- *
- * @module
+ Effective scoped-model resolution for pi plugins.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -21,78 +21,78 @@ import type {
 } from './types.ts';
 
 /**
- * Sentinel returned by internal {@link readLiveScope} when the runtime exposes no
- * usable live model scope. A `unique symbol`; narrowed with
- * `=== NO_LIVE_SCOPE`.
+ Sentinel returned by internal {@link readLiveScope} when the runtime exposes no
+ usable live model scope. A `unique symbol`; narrowed with
+ `=== NO_LIVE_SCOPE`.
  */
 const NO_LIVE_SCOPE: unique symbol = Symbol('model-selection/no-live-scope',);
 
 //region Types
 
 /**
- * Model registry surface needed for effective scope resolution.
+ Model registry surface needed for effective scope resolution.
  */
 export type ModelScopeRegistry<TModel extends ReadonlyModel = ReadonlyModel,> = {
   /**
-   * Return models with configured auth.
+   Return models with configured auth.
    */
   getAvailable: () => readonly TModel[];
 };
 
 /**
- * Narrow context surface needed for effective scope resolution.
+ Narrow context surface needed for effective scope resolution.
  */
 export type ResolveEffectiveScopeContext<TModel extends ReadonlyModel = ReadonlyModel,> = {
   /**
-   * Current working directory.
+   Current working directory.
    */
   readonly cwd: string;
   /**
-   * Registry exposing available models.
+   Registry exposing available models.
    */
   readonly modelRegistry: ModelScopeRegistry<TModel>;
   /**
-   * Optional live-scope getter from pi runtime.
+   Optional live-scope getter from pi runtime.
    */
   readonly getScopedModels?: () => unknown;
   /**
-   * Optional live-scope property from pi runtime.
+   Optional live-scope property from pi runtime.
    */
   readonly scopedModels?: unknown;
 };
 
 /**
- * Options for resolving effective model scope.
+ Options for resolving effective model scope.
  */
 export type ResolveEffectiveScopeOptions<TModel extends ReadonlyModel = ReadonlyModel,> = ForeignBorrowed<{
   /**
-   * Narrow pi extension context.
+   Narrow pi extension context.
    */
   readonly ctx: ResolveEffectiveScopeContext<TModel>;
   /**
-   * Process argv override for tests.
+   Process argv override for tests.
    */
   readonly argv?: readonly string[];
   /**
-   * Home directory override for tests.
+   Home directory override for tests.
    */
   readonly home?: string;
   /**
-   * Error prefix used by settings validation.
+   Error prefix used by settings validation.
    */
   readonly errorPrefix?: string;
 }>;
 
 /**
- * Raw live scope item shapes accepted by the detector.
+ Raw live scope item shapes accepted by the detector.
  */
 type RawLiveScopeItem<TModel extends ReadonlyModel = ReadonlyModel,> = TModel | {
   /**
-   * Pi model object.
+   Pi model object.
    */
   readonly model: TModel;
   /**
-   * Optional thinking level carried by pi.
+   Optional thinking level carried by pi.
    */
   readonly thinkingLevel?: ScopedThinkingLevel;
 };
@@ -102,27 +102,27 @@ type RawLiveScopeItem<TModel extends ReadonlyModel = ReadonlyModel,> = TModel | 
 //region Public API
 
 /**
- * Resolve the effective scoped model set.
- *
- * Resolution order matches pi behavior reconstructed for consumers: live scope,
- * argv `--models`, pi settings, then available models.
- *
- * @param ctx - narrow pi extension context
- *
- * @param argv - optional argv override for tests
- *
- * @param home - optional home directory override for tests
- *
- * @param errorPrefix - optional settings-validation error prefix
- *
- * @returns scoped models and source metadata
- *
- * @mutates ctx - invokes optional `getScopedModels` and model-registry `getAvailable` callbacks supplied by context
- *
- * @example
- * ```typescript
- * const scope = await resolveEffectiveScope({ ctx });
- * ```
+ Resolve the effective scoped model set.
+ 
+ Resolution order matches pi behavior reconstructed for consumers: live scope,
+ argv `--models`, pi settings, then available models.
+ 
+ @param ctx - narrow pi extension context
+ 
+ @param argv - optional argv override for tests
+ 
+ @param home - optional home directory override for tests
+ 
+ @param errorPrefix - optional settings-validation error prefix
+ 
+ @returns scoped models and source metadata
+ 
+ @mutates ctx - invokes optional `getScopedModels` and model-registry `getAvailable` callbacks supplied by context
+ 
+ @example
+ ```typescript
+ const scope = await resolveEffectiveScope({ ctx });
+ ```
  */
 export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
   {
@@ -133,7 +133,7 @@ export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
   }: ResolveEffectiveScopeOptions<TModel>,
 ): Promise<EffectiveModelScope<TModel>> {
   /**
-   * Live model scope exposed by current or future pi APIs.
+   Live model scope exposed by current or future pi APIs.
    */
   const liveScope = readLiveScope<TModel>(ctx,);
   if (liveScope !== NO_LIVE_SCOPE) {
@@ -144,7 +144,7 @@ export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
   }
 
   /**
-   * Patterns from pi's startup `--models` flag.
+   Patterns from pi's startup `--models` flag.
    */
   const argvPatterns = parseArgvModelPatterns({
     argv: argv
@@ -165,7 +165,7 @@ export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
   }
 
   /**
-   * Patterns from merged pi settings.
+   Patterns from merged pi settings.
    */
   const settingsScope = await loadSettingsScopePatterns({
     cwd: ctx.cwd,
@@ -202,15 +202,15 @@ export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
 //region Live scope detection
 
 /**
- * Read live scoped models from a runtime context when pi exposes them.
- *
- * @param getScopedModels - optional live-scope getter
- *
- * @param scopedModels - optional live-scope property
- *
- * @returns live scoped models, or {@link NO_LIVE_SCOPE} when unavailable
- *
- * @mutates getScopedModels - invokes supplied live-scope callback when present
+ Read live scoped models from a runtime context when pi exposes them.
+ 
+ @param getScopedModels - optional live-scope getter
+ 
+ @param scopedModels - optional live-scope property
+ 
+ @returns live scoped models, or {@link NO_LIVE_SCOPE} when unavailable
+ 
+ @mutates getScopedModels - invokes supplied live-scope callback when present
  */
 function readLiveScope<TModel extends ReadonlyModel,>(
   {
@@ -219,7 +219,7 @@ function readLiveScope<TModel extends ReadonlyModel,>(
   }: ForeignBorrowed<Pick<ResolveEffectiveScopeContext<TModel>, 'getScopedModels' | 'scopedModels'>>,
 ): ScopedModel<TModel>[] | typeof NO_LIVE_SCOPE {
   /**
-   * Raw live scope value from method or property.
+   Raw live scope value from method or property.
    */
   const rawScope = getScopedModels === undefined
     ? scopedModels
@@ -245,11 +245,11 @@ function readLiveScope<TModel extends ReadonlyModel,>(
 }
 
 /**
- * Detect raw live-scope item shapes.
- *
- * @param value - value to inspect
- *
- * @returns whether value is usable as a live scope item
+ Detect raw live-scope item shapes.
+ 
+ @param value - value to inspect
+ 
+ @returns whether value is usable as a live scope item
  */
 function isRawLiveScopeItem<TModel extends ReadonlyModel,>(
   value: unknown,
@@ -265,11 +265,11 @@ function isRawLiveScopeItem<TModel extends ReadonlyModel,>(
 
 /* oxlint-disable typescript/no-unnecessary-type-parameters -- predicate preserves generic caller model shape after structural validation. */
 /**
- * Detect pi model objects structurally.
- *
- * @param value - value to inspect
- *
- * @returns whether value looks like a pi model
+ Detect pi model objects structurally.
+ 
+ @param value - value to inspect
+ 
+ @returns whether value looks like a pi model
  */
 function isModel<TModel extends ReadonlyModel,>(
   value: unknown,

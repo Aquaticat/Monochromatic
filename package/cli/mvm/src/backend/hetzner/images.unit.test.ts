@@ -1,9 +1,9 @@
 /**
- * Unit tests for the image resolver against a stubbed `fetch`: newest
- * non-deprecated system image per OS flavor, exclusion of deprecated and
- * snapshot images, literal passthrough, and unsupported-flavor errors.
- *
- * @module
+ Unit tests for the image resolver against a stubbed `fetch`: newest
+ non-deprecated system image per OS flavor, exclusion of deprecated and
+ snapshot images, literal passthrough, and unsupported-flavor errors.
+ 
+ @module
  */
 
 import {
@@ -15,7 +15,7 @@ import {
 import { resolveHetznerImage, } from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/images.ts';
 
 /**
- * Sets HCLOUD_TOKEN for a `using` scope so requireToken passes, restoring after.
+ Sets HCLOUD_TOKEN for a `using` scope so requireToken passes, restoring after.
  */
 function withToken(): Disposable {
   const prior = process.env.HCLOUD_TOKEN;
@@ -33,7 +33,7 @@ function withToken(): Disposable {
 }
 
 /**
- * Replaces global fetch with a fixed JSON body; restores on dispose.
+ Replaces global fetch with a fixed JSON body; restores on dispose.
  */
 function installImages(images: readonly unknown[],): Disposable {
   const original = globalThis.fetch;
@@ -51,7 +51,7 @@ function installImages(images: readonly unknown[],): Disposable {
 }
 
 /**
- * System and snapshot images with mixed flavors, deprecation, and null names.
+ System and snapshot images with mixed flavors, deprecation, and null names.
  */
 const IMAGES = [
   { id: 1, name: 'ubuntu-22.04', os_flavor: 'ubuntu', type: 'system', deprecated: null, created: '2024-04-01T00:00:00Z', description: '', },

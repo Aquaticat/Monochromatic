@@ -1,6 +1,6 @@
 /**
- * Command execution tool definitions: exec and run.
- * @module
+ Command execution tool definitions: exec and run.
+ @module
  */
 import {
   defineTool,
@@ -26,8 +26,8 @@ import { requiredStringArgument, } from './required-string-argument.ts';
 //region Execution tools: run commands inside VMs
 
 /**
- * MCP tool: execute a command inside a named running VM, resolved via
- * {@link backendFromArgs}.
+ MCP tool: execute a command inside a named running VM, resolved via
+ {@link backendFromArgs}.
  */
 export const execTool: ToolEntry = defineTool({
   name: 'exec_in_vm',
@@ -43,20 +43,20 @@ export const execTool: ToolEntry = defineTool({
     },),
     handler: async function handleExecInVm(args,) {
       /**
-       * Target VM name validated as string so the backend receives a stable type regardless of MCP client encoding.
+       Target VM name validated as string so the backend receives a stable type regardless of MCP client encoding.
        */
       const name = requiredStringArgument(args.name,);
       /**
-       * Shell command validated as string for the same reason as `name`.
+       Shell command validated as string for the same reason as `name`.
        */
       const command = requiredStringArgument(args.command,);
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         /**
-         * Execution result holding stdout, stderr, and exit code; formatted into the response below.
+         Execution result holding stdout, stderr, and exit code; formatted into the response below.
          */
         const result = await backend.exec({
           command,
@@ -75,8 +75,8 @@ export const execTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: create an ephemeral VM, run a command, then destroy it, on the
- * backend resolved via {@link backendFromArgs}.
+ MCP tool: create an ephemeral VM, run a command, then destroy it, on the
+ backend resolved via {@link backendFromArgs}.
  */
 export const runTool: ToolEntry = defineTool({
   name: 'run_in_vm',
@@ -94,20 +94,20 @@ export const runTool: ToolEntry = defineTool({
     },),
     handler: async function handleRunInVm(args,) {
       /**
-       * Shell command validated as string so the ephemeral VM receives a stable type regardless of MCP client encoding.
+       Shell command validated as string so the ephemeral VM receives a stable type regardless of MCP client encoding.
        */
       const command = requiredStringArgument(args.command,);
       /**
-       * Optional source VM to clone from; absence selects the create-fresh path inside the backend run.
+       Optional source VM to clone from; absence selects the create-fresh path inside the backend run.
        */
       const from = ((typeof args.from) === 'string') ? args.from : undefined;
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         /**
-         * Execution result holding stdout, stderr, and exit code; formatted into the response below.
+         Execution result holding stdout, stderr, and exit code; formatted into the response below.
          */
         const result = await backend.run({
           command,

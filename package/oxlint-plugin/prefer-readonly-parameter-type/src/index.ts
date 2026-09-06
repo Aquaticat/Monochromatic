@@ -86,9 +86,9 @@ initializeSemanticBridge();
 initializeExternalImplementationApi();
 
 /**
- * Pure origin-resolution classifier, exported for built-artifact branch tests.
- *
- * @internal
+ Pure origin-resolution classifier, exported for built-artifact branch tests.
+ 
+ @internal
  */
 export {
   readonlyTypeOriginEvidenceFromResolution,
@@ -97,16 +97,16 @@ export {
 } from './prefer-readonly-parameter-types/readonly-type-origin.ts';
 
 /**
- * Oxlint plugin separating readonly preference, mutation, opacity, and contract policies.
- *
- * @example
- * ```typescript
- * // oxlint.config.ts
- * import { defineConfig } from 'oxlint';
- * export default defineConfig({
- *   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type'],
- * });
- * ```
+ Oxlint plugin separating readonly preference, mutation, opacity, and contract policies.
+ 
+ @example
+ ```typescript
+ // oxlint.config.ts
+ import { defineConfig } from 'oxlint';
+ export default defineConfig({
+   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type'],
+ });
+ ```
  */
 const plugin: Plugin = eslintCompatPlugin({
   meta: {
@@ -123,9 +123,9 @@ const plugin: Plugin = eslintCompatPlugin({
 export default plugin;
 
 /**
- * Verified inert collection members, exported for the built-artifact probe test.
- *
- * @internal
+ Verified inert collection members, exported for the built-artifact probe test.
+ 
+ @internal
  */
 export {
   ITERATOR_MEMBER_NAMES,
@@ -140,28 +140,28 @@ export {
 } from './prefer-readonly-parameter-types/effect-member-channel-authority.ts';
 
 /**
- * External formal-to-actual mapping, exported for its own test.
- *
- * No shape in the fixture corpus reaches it through a diagnostic, because that needs an installed
- * package with a locked version whose shipped implementation provably mutates a formal, invoked with
- * a spread. A mutant restoring the previous actual-position indexing survived the whole suite, which
- * is what this export answers.
- *
- * @internal
+ External formal-to-actual mapping, exported for its own test.
+ 
+ No shape in the fixture corpus reaches it through a diagnostic, because that needs an installed
+ package with a locked version whose shipped implementation provably mutates a formal, invoked with
+ a spread. A mutant restoring the previous actual-position indexing survived the whole suite, which
+ is what this export answers.
+ 
+ @internal
  */
 export { formalArgumentIndexes, } from './prefer-readonly-parameter-types/effect-external-application.ts';
 
 /**
- * Ancestor directory walk, exported so its test can exercise built output.
- *
- * @internal
+ Ancestor directory walk, exported so its test can exercise built output.
+ 
+ @internal
  */
 export { ancestorDirectories, } from './prefer-readonly-parameter-types/ancestor-directories.ts';
 
 /**
- * Reachability of the structural projection helper, exported for its built-artifact test.
- *
- * @internal
+ Reachability of the structural projection helper, exported for its built-artifact test.
+ 
+ @internal
  */
 export {
   clearTypeFestReachabilityCache,
@@ -169,9 +169,9 @@ export {
 } from './prefer-readonly-parameter-types/type-fest-reachability.ts';
 
 /**
- * Verified member result relations, exported for the built-artifact probe test.
- *
- * @internal
+ Verified member result relations, exported for the built-artifact probe test.
+ 
+ @internal
  */
 export {
   UNPAIRED_VIEW_INTERFACES,

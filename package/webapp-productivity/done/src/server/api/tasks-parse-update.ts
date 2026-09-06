@@ -1,9 +1,9 @@
 /**
- * Task update input parsing and validation.
- *
- * Separated from `tasks-parse.ts` because `parseTaskUpdateInput` is the
- * largest single validation function and exceeds the line budget when
- * combined with the primitive helpers.
+ Task update input parsing and validation.
+ 
+ Separated from `tasks-parse.ts` because `parseTaskUpdateInput` is the
+ largest single validation function and exceeds the line budget when
+ combined with the primitive helpers.
  */
 import {
   TASK_PRIORITIES,
@@ -21,21 +21,21 @@ import {
 } from './tasks-parse.ts';
 
 /**
- * Recognized priority/complexity values for input validation.
+ Recognized priority/complexity values for input validation.
  */
 const priorities = new Set<string>(TASK_PRIORITIES,);
 
 /**
- * Recognized status values for input validation.
+ Recognized status values for input validation.
  */
 const statuses = new Set<string>(TASK_STATUSES,);
 
 /**
- * Validates a task status value from untrusted input.
- *
- * @param value - Raw input value
- *
- * @returns Validated status, or {@link INVALID} when absent or unrecognized
+ Validates a task status value from untrusted input.
+ 
+ @param value - Raw input value
+ 
+ @returns Validated status, or {@link INVALID} when absent or unrecognized
  */
 function parseStatus(value: unknown,): TaskStatus | typeof INVALID {
   if ((typeof value) !== 'string')
@@ -45,30 +45,30 @@ function parseStatus(value: unknown,): TaskStatus | typeof INVALID {
 }
 
 /**
- * Validates and extracts a {@link TaskUpdateInput} from an untrusted request
- * body, using {@link isRecord}, {@link parseStringArray}, {@link parseEnumValue},
- * and {@link parseStatus} for field-level validation.
- *
- * A field explicitly set to `null` is treated as "not provided" and skipped
- * (the merge in {@link updateTask} then keeps the existing value); a non-string,
- * non-null value for a string/enum field aborts the whole parse.
- *
- * @param value - Raw parsed JSON body
- *
- * @returns Parsed update payload, or {@link INVALID} when any field fails validation
- *
- * @example
- * ```ts
- * const input = parseTaskUpdateInput(await req.json());
- * if (input === INVALID) return badRequest();
- * ```
+ Validates and extracts a {@link TaskUpdateInput} from an untrusted request
+ body, using {@link isRecord}, {@link parseStringArray}, {@link parseEnumValue},
+ and {@link parseStatus} for field-level validation.
+ 
+ A field explicitly set to `null` is treated as "not provided" and skipped
+ (the merge in {@link updateTask} then keeps the existing value); a non-string,
+ non-null value for a string/enum field aborts the whole parse.
+ 
+ @param value - Raw parsed JSON body
+ 
+ @returns Parsed update payload, or {@link INVALID} when any field fails validation
+ 
+ @example
+ ```ts
+ const input = parseTaskUpdateInput(await req.json());
+ if (input === INVALID) return badRequest();
+ ```
  */
 export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof INVALID {
   if (!isRecord(value,))
     return INVALID;
 
   /**
-   * Accumulator: each field block validates the input and adds the parsed value here. Mutable mirror of the readonly `TaskUpdateInput`, restored to readonly on return.
+   Accumulator: each field block validates the input and adds the parsed value here. Mutable mirror of the readonly `TaskUpdateInput`, restored to readonly on return.
    */
   const taskUpdateInput: { -readonly [K in keyof TaskUpdateInput]: TaskUpdateInput[K]; } = {};
 
@@ -88,7 +88,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
 
   if ('tags' in value) {
     /**
-     * Parsed `tags` array; `INVALID` aborts the parse.
+     Parsed `tags` array; `INVALID` aborts the parse.
      */
     const tags = parseStringArray(value.tags,);
     if (tags === INVALID)
@@ -98,7 +98,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
 
   if ('locations' in value) {
     /**
-     * Parsed `locations` array; `INVALID` aborts the parse.
+     Parsed `locations` array; `INVALID` aborts the parse.
      */
     const locations = parseStringArray(value.locations,);
     if (locations === INVALID)
@@ -108,7 +108,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
 
   if ('blockedBy' in value) {
     /**
-     * Parsed `blockedBy` array; `INVALID` aborts the parse.
+     Parsed `blockedBy` array; `INVALID` aborts the parse.
      */
     const blockedBy = parseStringArray(value.blockedBy,);
     if (blockedBy === INVALID)
@@ -118,7 +118,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
 
   if ('reminders' in value) {
     /**
-     * Parsed `reminders` array; `INVALID` aborts the parse.
+     Parsed `reminders` array; `INVALID` aborts the parse.
      */
     const reminders = parseStringArray(value.reminders,);
     if (reminders === INVALID)
@@ -129,7 +129,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
   if (('priority' in value) && (value.priority
     !== null)) {
     /**
-     * Enum-validated priority; `INVALID` signals an unrecognised value and aborts the parse.
+     Enum-validated priority; `INVALID` signals an unrecognised value and aborts the parse.
      */
     const priority = parseEnumValue({
       value: value.priority,
@@ -144,7 +144,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
   if (('complexity' in value) && (value.complexity
     !== null)) {
     /**
-     * Enum-validated complexity; `INVALID` signals an unrecognised value and aborts the parse.
+     Enum-validated complexity; `INVALID` signals an unrecognised value and aborts the parse.
      */
     const complexity = parseEnumValue({
       value: value.complexity,
@@ -166,7 +166,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
 
   if ('status' in value) {
     /**
-     * Validated status string; `INVALID` aborts the parse.
+     Validated status string; `INVALID` aborts the parse.
      */
     const status = parseStatus(value.status,);
     if (status === INVALID)

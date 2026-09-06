@@ -1,7 +1,7 @@
 /**
- * Structured OpenCodeReview input parsing and normalization.
- *
- * @module
+ Structured OpenCodeReview input parsing and normalization.
+ 
+ @module
  */
 
 import { normalizeComment, } from './comment-normalize.ts';
@@ -14,16 +14,16 @@ import type {
 } from './model.ts';
 
 /**
- * Reads optional resolved head from complete OCR result manifest.
- *
- * @param result - Validated top-level result record.
- *
- * @returns Resolved head string when available.
- *
- * @example
- * ```ts
- * readResolvedHead({ manifest: { input: { resolved_head: 'abc' } } }); // 'abc'
- * ```
+ Reads optional resolved head from complete OCR result manifest.
+ 
+ @param result - Validated top-level result record.
+ 
+ @returns Resolved head string when available.
+ 
+ @example
+ ```ts
+ readResolvedHead({ manifest: { input: { resolved_head: 'abc' } } }); // 'abc'
+ ```
  */
 function readResolvedHeadMetadata(
   result: Readonly<Record<string, unknown>>,
@@ -49,16 +49,16 @@ function readResolvedHeadMetadata(
 }
 
 /**
- * Normalizes one top-level comment array.
- *
- * @param comments - Untrusted OCR comment values.
- *
- * @returns Findings with one-based record positions.
- *
- * @example
- * ```ts
- * normalizeComments([]); // []
- * ```
+ Normalizes one top-level comment array.
+ 
+ @param comments - Untrusted OCR comment values.
+ 
+ @returns Findings with one-based record positions.
+ 
+ @example
+ ```ts
+ normalizeComments([]); // []
+ ```
  */
 function normalizeComments(comments: readonly unknown[],): readonly NormalizedFinding[] {
   return comments.map(function normalizeEnvelopeComment(
@@ -76,18 +76,18 @@ function normalizeComments(comments: readonly unknown[],): readonly NormalizedFi
 }
 
 /**
- * Converts a parsed JSON document into supported result or comment envelope.
- *
- * @param parsed - Complete parsed JSON document.
- *
- * @returns Normalized adapter input.
- *
- * @throws {@link InputValidationError} when document is unsupported.
- *
- * @example
- * ```ts
- * parseJsonDocument([]); // comments envelope
- * ```
+ Converts a parsed JSON document into supported result or comment envelope.
+ 
+ @param parsed - Complete parsed JSON document.
+ 
+ @returns Normalized adapter input.
+ 
+ @throws {@link InputValidationError} when document is unsupported.
+ 
+ @example
+ ```ts
+ parseJsonDocument([]); // comments envelope
+ ```
  */
 function parseJsonDocument(parsed: unknown,): NormalizedInput {
   if (Array.isArray(parsed,)) {
@@ -103,7 +103,7 @@ function parseJsonDocument(parsed: unknown,): NormalizedInput {
     throw new InputValidationError('input is not a complete OCR result or comment array',);
   }
   /**
-   * Optional head provenance copied only from recognized manifest path.
+   Optional head provenance copied only from recognized manifest path.
    */
   const resolvedHeadMetadata = readResolvedHeadMetadata(parsed,);
   return {
@@ -114,23 +114,23 @@ function parseJsonDocument(parsed: unknown,): NormalizedInput {
 }
 
 /**
- * Parses one supported OCR structured input envelope atomically.
- *
- * @param text - Complete JSON or JSONL text supplied by trusted transport boundary.
- *
- * @returns Normalized findings and available head provenance.
- *
- * @throws {@link InputValidationError} when JSON or recognized schema is invalid.
- *
- * @example
- * ```ts
- * parseStructuredInput({ text: '{"status":"complete","comments":[]}' });
- * ```
+ Parses one supported OCR structured input envelope atomically.
+ 
+ @param text - Complete JSON or JSONL text supplied by trusted transport boundary.
+ 
+ @returns Normalized findings and available head provenance.
+ 
+ @throws {@link InputValidationError} when JSON or recognized schema is invalid.
+ 
+ @example
+ ```ts
+ parseStructuredInput({ text: '{"status":"complete","comments":[]}' });
+ ```
  */
 export function parseStructuredInput({ text, }: { readonly text: string; },): NormalizedInput {
   try {
     /**
-     * Complete JSON document before envelope narrowing.
+     Complete JSON document before envelope narrowing.
      */
     const parsed: unknown = JSON.parse(text,);
     if (isRecord(parsed,) && ((typeof parsed.type) === 'string')) {

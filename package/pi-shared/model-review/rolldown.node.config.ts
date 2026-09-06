@@ -4,12 +4,12 @@ import {
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- * Node bundle for shared structured model-review infrastructure.
- *
- * @example
- * ```ts
- * export default config;
- * ```
+ Node bundle for shared structured model-review infrastructure.
+ 
+ @example
+ ```ts
+ export default config;
+ ```
  */
 const config: NodeFlavorConfig = nodeConfig({
   input: [

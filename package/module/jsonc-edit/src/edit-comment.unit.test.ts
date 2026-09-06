@@ -1,9 +1,9 @@
 /**
- * Unit tests for the comment-transform branches: descending into array elements
- * and the right record entry, missing-path and type errors, duplicate-key
- * last-wins for both value and key comments, and targeting one key among many.
- *
- * @module
+ Unit tests for the comment-transform branches: descending into array elements
+ and the right record entry, missing-path and type errors, duplicate-key
+ last-wins for both value and key comments, and targeting one key among many.
+ 
+ @module
  */
 
 import {
@@ -33,7 +33,7 @@ const dup = (): ReturnType<typeof parseJsoncEdit> =>
 const block = { type: 'block', text: ' e ', } as const;
 
 /**
- * Fractional segment used to verify array indexes must be integers.
+ Fractional segment used to verify array indexes must be integers.
  */
 const HALF_INDEX = 1 / 2;
 

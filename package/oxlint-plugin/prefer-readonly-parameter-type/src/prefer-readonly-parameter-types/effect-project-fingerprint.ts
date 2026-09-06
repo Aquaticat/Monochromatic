@@ -1,7 +1,7 @@
 /**
- * Exact configured-project fingerprint for semantic cache invalidation.
- *
- * @module
+ Exact configured-project fingerprint for semantic cache invalidation.
+ 
+ @module
  */
 
 import { createHash, } from 'node:crypto';
@@ -27,18 +27,18 @@ import {
 import { contentDigest, } from './effect-summary-cache-identity.ts';
 
 /**
- * Project fingerprint logger.
+ Project fingerprint logger.
  */
 const l = tagged({ tag: 'effect-project-fingerprint', },);
 
 /**
- * Whole-scope invalidation surfaces validating incremental cache entries.
- *
- * Each digest binds one channel through which a file's semantics can change
- * without any of its resolved module dependencies changing: project
- * membership, ambient and external declaration files, global or module
- * augmentations authored in non-declaration sources, resolved compiler
- * options, and governing lockfile content.
+ Whole-scope invalidation surfaces validating incremental cache entries.
+ 
+ Each digest binds one channel through which a file's semantics can change
+ without any of its resolved module dependencies changing: project
+ membership, ambient and external declaration files, global or module
+ augmentations authored in non-declaration sources, resolved compiler
+ options, and governing lockfile content.
  */
 export type EffectProjectSurfaces = {
   readonly fileListDigest: string;
@@ -49,7 +49,7 @@ export type EffectProjectSurfaces = {
 };
 
 /**
- * Fingerprint and per-source identities for one project snapshot.
+ Fingerprint and per-source identities for one project snapshot.
  */
 export type EffectProjectFingerprint = {
   readonly digest: string;
@@ -59,14 +59,14 @@ export type EffectProjectFingerprint = {
 };
 
 /**
- * Tests whether source text can carry global or module augmentation.
- *
- * Token containment over-approximates: comment or string occurrences also
- * bind, which only widens invalidation and never misses a real augmentation.
- *
- * @param sourceText - Non-declaration source text.
- *
- * @returns whether text contains an augmentation token.
+ Tests whether source text can carry global or module augmentation.
+ 
+ Token containment over-approximates: comment or string occurrences also
+ bind, which only widens invalidation and never misses a real augmentation.
+ 
+ @param sourceText - Non-declaration source text.
+ 
+ @returns whether text contains an augmentation token.
  */
 function containsAugmentationToken(sourceText: string,): boolean {
   return sourceText.includes('declare global',)
@@ -74,23 +74,23 @@ function containsAugmentationToken(sourceText: string,): boolean {
 }
 
 /**
- * Sentinel when no governing pnpm lockfile exists.
+ Sentinel when no governing pnpm lockfile exists.
  */
 const LOCKFILE_NOT_FOUND: unique symbol = Symbol('governing pnpm lockfile not found',);
 
 /**
- * Finds nearest pnpm lockfile governing configured project.
- *
- * @param configFileName - TypeScript configuration path.
- *
- * @returns lockfile path or domain-specific absent sentinel.
+ Finds nearest pnpm lockfile governing configured project.
+ 
+ @param configFileName - TypeScript configuration path.
+ 
+ @returns lockfile path or domain-specific absent sentinel.
  */
 function nearestLockfile(
   configFileName: string,
 ): string | typeof LOCKFILE_NOT_FOUND {
   for (const directory of ancestorDirectories(dirname(configFileName,),)) {
     /**
-     * Candidate pnpm lockfile at current ancestor.
+     Candidate pnpm lockfile at current ancestor.
      */
     const candidate = join(
       directory,
@@ -104,39 +104,39 @@ function nearestLockfile(
 }
 
 /**
- * Reads exact source text from active overlay, analysed snapshot, or disk.
- *
- * The fingerprint names the state the summaries beneath it were derived from, and that state is
- * the snapshot. Reading disk instead pairs an unchanged syntax tree with a digest of whatever a
- * concurrent write left behind, and stores summaries under a key describing text nothing
- * analysed. That entry then persists, and a later ordinary run can reuse it.
- *
- * So the snapshot answers for every source, declarations included. A declaration file decides
- * types, so a stale one is as capable of poisoning a cache entry as a stale implementation.
- *
- * Declarations were briefly excluded here on the belief that including them cost 6.2 warm
- * seconds. That figure came from one run against one run inside a band wider than itself. Five
- * warm sweeps of each, run back to back:
- *
- * ```text
- * declarations from snapshot   61.2  61.5  62.4  60.5  61.0     mean 61.32s
- * declarations from disk       60.4  61.5  62.8  61.5  60.5     mean 61.34s
- * ```
- *
- * Two hundredths of a second apart, in favour of asking the snapshot. Asking it for all 574
- * sources of one project does cost 136.9ms the first time against 13.0ms for a disk pass, because
- * nothing else decodes declarations, but entries are keyed by path and shared across projects, so
- * that per-project figure never multiplied by projects the way the single-run comparison implied.
- *
- * @param project - TypeScript project providing analysed source.
- *
- * @param activeSourceFile - Active Oxlint overlay source.
- *
- * @param fileName - Program source path to fingerprint.
- *
- * @returns exact source text.
- *
- * @throws {@link Error} when neither snapshot nor filesystem can produce source.
+ Reads exact source text from active overlay, analysed snapshot, or disk.
+ 
+ The fingerprint names the state the summaries beneath it were derived from, and that state is
+ the snapshot. Reading disk instead pairs an unchanged syntax tree with a digest of whatever a
+ concurrent write left behind, and stores summaries under a key describing text nothing
+ analysed. That entry then persists, and a later ordinary run can reuse it.
+ 
+ So the snapshot answers for every source, declarations included. A declaration file decides
+ types, so a stale one is as capable of poisoning a cache entry as a stale implementation.
+ 
+ Declarations were briefly excluded here on the belief that including them cost 6.2 warm
+ seconds. That figure came from one run against one run inside a band wider than itself. Five
+ warm sweeps of each, run back to back:
+ 
+ ```text
+ declarations from snapshot   61.2  61.5  62.4  60.5  61.0     mean 61.32s
+ declarations from disk       60.4  61.5  62.8  61.5  60.5     mean 61.34s
+ ```
+ 
+ Two hundredths of a second apart, in favour of asking the snapshot. Asking it for all 574
+ sources of one project does cost 136.9ms the first time against 13.0ms for a disk pass, because
+ nothing else decodes declarations, but entries are keyed by path and shared across projects, so
+ that per-project figure never multiplied by projects the way the single-run comparison implied.
+ 
+ @param project - TypeScript project providing analysed source.
+ 
+ @param activeSourceFile - Active Oxlint overlay source.
+ 
+ @param fileName - Program source path to fingerprint.
+ 
+ @returns exact source text.
+ 
+ @throws {@link Error} when neither snapshot nor filesystem can produce source.
  */
 function projectSourceText({
   project,
@@ -150,7 +150,7 @@ function projectSourceText({
   if (fileName === activeSourceFile.fileName)
     return activeSourceFile.text;
   /**
-   * Source text as the analysed snapshot holds it.
+   Source text as the analysed snapshot holds it.
    */
   const snapshotText = project.program
     .getSourceFile(fileName,)
@@ -160,7 +160,7 @@ function projectSourceText({
   try {
     /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor reads a source its own snapshot could not produce. */
     /**
-     * Disk source text for a path the snapshot omits.
+     Disk source text for a path the snapshot omits.
      */
     const text = readFileSync(
       fileName,
@@ -171,7 +171,7 @@ function projectSourceText({
   }
   catch (error) {
     /**
-     * Decoded virtual or bundled source unavailable through ordinary filesystem.
+     Decoded virtual or bundled source unavailable through ordinary filesystem.
      */
     const fallback = project.program
       .getSourceFile(fileName,)
@@ -186,20 +186,20 @@ function projectSourceText({
 }
 
 /**
- * Computes exact semantic project fingerprint and source digest map.
- *
- * @param project - Configured TypeScript project.
- *
- * @param activeSourceFile - Current overlay source.
- *
- * @returns project digest,
- * file-list digest,
- * and per-source digests.
- *
- * @example
- * ```ts
- * const fingerprint = effectProjectFingerprint({ project, activeSourceFile });
- * ```
+ Computes exact semantic project fingerprint and source digest map.
+ 
+ @param project - Configured TypeScript project.
+ 
+ @param activeSourceFile - Current overlay source.
+ 
+ @returns project digest,
+ file-list digest,
+ and per-source digests.
+ 
+ @example
+ ```ts
+ const fingerprint = effectProjectFingerprint({ project, activeSourceFile });
+ ```
  */
 export function effectProjectFingerprint({
   project,
@@ -209,29 +209,29 @@ export function effectProjectFingerprint({
   readonly activeSourceFile: SourceFile;
 },): EffectProjectFingerprint {
   /**
-   * Stable program file order independent from TypeScript insertion order.
+   Stable program file order independent from TypeScript insertion order.
    */
   const fileNames = project.program
     .getSourceFileNames()
     .toSorted();
   /**
-   * Digest detecting project graph membership changes.
+   Digest detecting project graph membership changes.
    */
   const fileListDigest = contentDigest(fileNames.join('\0',),);
   /**
-   * Per-source content identities retained for process-local active-file hits.
+   Per-source content identities retained for process-local active-file hits.
    */
   const sourceDigests = new Map<string, string>();
   /**
-   * Complete semantic identity digest.
+   Complete semantic identity digest.
    */
   const digest = createHash('sha256',);
   /**
-   * Declaration-file surface digest covering ambient and external types.
+   Declaration-file surface digest covering ambient and external types.
    */
   const declarationSurface = createHash('sha256',);
   /**
-   * Augmentation surface digest covering non-declaration ambient authorship.
+   Augmentation surface digest covering non-declaration ambient authorship.
    */
   const augmentationSurface = createHash('sha256',);
   updateHashString({
@@ -243,7 +243,7 @@ export function effectProjectFingerprint({
     value: project.compilerOptions,
   },);
   /**
-   * Resolved compiler-option identity validated by incremental entries.
+   Resolved compiler-option identity validated by incremental entries.
    */
   const optionsDigest = createHash('sha256',);
   updateHashPlainValue({
@@ -252,7 +252,7 @@ export function effectProjectFingerprint({
   },);
   fileNames.forEach(function hashSource(fileName,): void {
     /**
-     * Exact source text from overlay or configured snapshot.
+     Exact source text from overlay or configured snapshot.
      */
     const sourceText = projectSourceText({
       project,
@@ -260,7 +260,7 @@ export function effectProjectFingerprint({
       fileName,
     },);
     /**
-     * Source content identity.
+     Source content identity.
      */
     const sourceDigest = contentDigest(sourceText,);
     sourceDigests.set(
@@ -298,17 +298,17 @@ export function effectProjectFingerprint({
     }
   },);
   /**
-   * Governing lockfile whose package identities affect resolution.
+   Governing lockfile whose package identities affect resolution.
    */
   const lockfile = nearestLockfile(project.configFileName,);
   /**
-   * Lockfile content identity, or absence marker when no lockfile governs.
+   Lockfile content identity, or absence marker when no lockfile governs.
    */
   const lockfileState = { digest: 'lockfile-absent', };
   if ((typeof lockfile) !== 'symbol') {
     /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor includes exact lockfile identity once per project cache miss. */
     /**
-     * Lockfile text for package-resolution invalidation.
+     Lockfile text for package-resolution invalidation.
      */
     const lockfileText = readFileSync(
       lockfile,

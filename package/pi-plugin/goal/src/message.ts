@@ -1,7 +1,7 @@
 /**
- * Task-only extension messages for goal kickoff and continuation.
- *
- * @module
+ Task-only extension messages for goal kickoff and continuation.
+ 
+ @module
  */
 
 import { GOAL_MESSAGE_TYPE, } from './constants.ts';
@@ -12,20 +12,20 @@ import type {
 } from './types.ts';
 
 /**
- * Build model-visible task content without harness protocol.
- *
- * @param goal - exact active goal state
- *
- * @param kind - kickoff or continuation
- *
- * @param remainingWork - actionable task-only denial guidance
- *
- * @returns task context safe for primary-model input
- *
- * @example
- * ```ts
- * goalMessageContent({ goal, kind: 'kickoff' });
- * ```
+ Build model-visible task content without harness protocol.
+ 
+ @param goal - exact active goal state
+ 
+ @param kind - kickoff or continuation
+ 
+ @param remainingWork - actionable task-only denial guidance
+ 
+ @returns task context safe for primary-model input
+ 
+ @example
+ ```ts
+ goalMessageContent({ goal, kind: 'kickoff' });
+ ```
  */
 function goalMessageContent(
   {
@@ -46,24 +46,24 @@ function goalMessageContent(
 }
 
 /**
- * Build task-only custom message with private lifecycle details.
- *
- * @param goal - exact active goal state
- *
- * @param kind - kickoff or continuation
- *
- * @param continuationSequence - private message sequence
- *
- * @param marker - unique generation-scoped marker
- *
- * @param remainingWork - actionable task-only denial guidance
- *
- * @returns Pi custom message
- *
- * @example
- * ```ts
- * buildGoalMessage({ goal, kind: 'continuation', continuationSequence: 1, marker, remainingWork: 'Run tests.' });
- * ```
+ Build task-only custom message with private lifecycle details.
+ 
+ @param goal - exact active goal state
+ 
+ @param kind - kickoff or continuation
+ 
+ @param continuationSequence - private message sequence
+ 
+ @param marker - unique generation-scoped marker
+ 
+ @param remainingWork - actionable task-only denial guidance
+ 
+ @returns Pi custom message
+ 
+ @example
+ ```ts
+ buildGoalMessage({ goal, kind: 'continuation', continuationSequence: 1, marker, remainingWork: 'Run tests.' });
+ ```
  */
 function buildGoalMessage(
   {

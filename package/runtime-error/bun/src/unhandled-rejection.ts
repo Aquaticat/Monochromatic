@@ -1,14 +1,14 @@
 /**
- * Intentionally triggers an unhandled promise rejection by creating a rejected
- * promise with no handler. The runtime detects the unhandled rejection on the
- * next event-loop tick and exits with code 1.
- * `wait` keeps the event loop alive long enough for the detection to fire.
+ Intentionally triggers an unhandled promise rejection by creating a rejected
+ promise with no handler. The runtime detects the unhandled rejection on the
+ next event-loop tick and exits with code 1.
+ `wait` keeps the event loop alive long enough for the detection to fire.
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 
 /**
- * Milliseconds to keep the event loop alive for unhandled rejection detection.
+ Milliseconds to keep the event loop alive for unhandled rejection detection.
  */
 const KEEP_ALIVE_MS = 100;
 

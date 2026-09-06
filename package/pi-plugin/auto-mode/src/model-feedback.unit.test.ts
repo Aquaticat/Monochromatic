@@ -1,7 +1,7 @@
 /**
- * Tests for model-facing block feedback formatting.
- *
- * @module
+ Tests for model-facing block feedback formatting.
+ 
+ @module
  */
 
 import {

@@ -8,17 +8,17 @@ import { BRANCH_WORKTREE_ESCAPE_HATCH, } from '../parser/branch-create.ts';
 import { checkBranchWorktree as branchWorktreeOnly, } from './branch-worktree-check.ts';
 
 /**
- * Captures asynchronous error from branch-worktree-only invocation.
- *
- * @param args - Git argv to pass through branch-worktree-only rule.
- *
- * @returns Error thrown by rule, or `undefined` when rule passes.
- *
- * @example
- * ```ts
- * const caught = await catchBranchWorktreeOnlyError(['switch', '-c', 'topic']);
- * expect(caught).toBeInstanceOf(Error);
- * ```
+ Captures asynchronous error from branch-worktree-only invocation.
+ 
+ @param args - Git argv to pass through branch-worktree-only rule.
+ 
+ @returns Error thrown by rule, or `undefined` when rule passes.
+ 
+ @example
+ ```ts
+ const caught = await catchBranchWorktreeOnlyError(['switch', '-c', 'topic']);
+ expect(caught).toBeInstanceOf(Error);
+ ```
  */
 async function catchBranchWorktreeOnlyError(args: readonly string[],): Promise<unknown> {
   try {
@@ -31,20 +31,20 @@ async function catchBranchWorktreeOnlyError(args: readonly string[],): Promise<u
 }
 
 /**
- * Asserts that argv is rejected as current-worktree branch creation.
- *
- * @param args - Git argv to pass through branch-worktree-only rule.
- *
- * @returns Nothing after rejection is asserted.
- *
- * @example
- * ```ts
- * await expectBranchCreationRejected(['branch', 'topic']);
- * ```
+ Asserts that argv is rejected as current-worktree branch creation.
+ 
+ @param args - Git argv to pass through branch-worktree-only rule.
+ 
+ @returns Nothing after rejection is asserted.
+ 
+ @example
+ ```ts
+ await expectBranchCreationRejected(['branch', 'topic']);
+ ```
  */
 async function expectBranchCreationRejected(args: readonly string[],): Promise<void> {
   /**
-   * Error thrown for rejected branch creation.
+   Error thrown for rejected branch creation.
    */
   const caught = await catchBranchWorktreeOnlyError(args,);
 

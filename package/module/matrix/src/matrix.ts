@@ -1,10 +1,10 @@
 /**
- * Main entry point for the test matrix runner.
- *
- * Generates the cartesian product of `files x os x user x runtime`,
- * filters out excluded combinations, and executes each combination
- * via the appropriate backend (container, host, or vm).
- * Results are reported through `describe`/`it` from `\@monochromatic-dev/module-test`.
+ Main entry point for the test matrix runner.
+ 
+ Generates the cartesian product of `files x os x user x runtime`,
+ filters out excluded combinations, and executes each combination
+ via the appropriate backend (container, host, or vm).
+ Results are reported through `describe`/`it` from `\@monochromatic-dev/module-test`.
  */
 
 import {
@@ -37,18 +37,18 @@ import type {
 //region Cartesian product
 
 /**
- * Generates the cartesian product of all axes, producing one {@link Combination}
- * per unique `file x os x user x runtime` tuple.
- *
- * @param files - Absolute paths to test files
- *
- * @param os - OS specifications with protocol prefixes
- *
- * @param user - User contexts
- *
- * @param runtime - JS runtimes
- *
- * @returns all combinations before exclusion
+ Generates the cartesian product of all axes, producing one {@link Combination}
+ per unique `file x os x user x runtime` tuple.
+ 
+ @param files - Absolute paths to test files
+ 
+ @param os - OS specifications with protocol prefixes
+ 
+ @param user - User contexts
+ 
+ @param runtime - JS runtimes
+ 
+ @returns all combinations before exclusion
  */
 function generateCombinations({
   files,
@@ -62,7 +62,7 @@ function generateCombinations({
   readonly runtime: readonly Runtime[];
 },): readonly Combination[] {
   /**
-   * Accumulator; four nested loops would be unwieldy as a single `.flatMap` chain.
+   Accumulator; four nested loops would be unwieldy as a single `.flatMap` chain.
    */
   const combinations: Combination[] = [];
 
@@ -85,14 +85,14 @@ function generateCombinations({
 }
 
 /**
- * Tests whether a single exclude matcher matches a value.
- * String matchers use exact equality; function matchers are called as predicates.
- *
- * @param matcher - String or predicate function
- *
- * @param value - Combination field value to test
- *
- * @returns whether the matcher matches the value
+ Tests whether a single exclude matcher matches a value.
+ String matchers use exact equality; function matchers are called as predicates.
+ 
+ @param matcher - String or predicate function
+ 
+ @param value - Combination field value to test
+ 
+ @returns whether the matcher matches the value
  */
 function testMatcher<T,>({
   matcher,
@@ -109,15 +109,15 @@ function testMatcher<T,>({
 }
 
 /**
- * Checks whether a combination matches an exclude entry.
- * All specified fields in the exclude entry must match.
- * Each field can be an exact value or a predicate function.
- *
- * @param combination - Combination to check
- *
- * @param exclude - Exclude entry with partial match fields or predicates
- *
- * @returns whether the combination should be excluded
+ Checks whether a combination matches an exclude entry.
+ All specified fields in the exclude entry must match.
+ Each field can be an exact value or a predicate function.
+ 
+ @param combination - Combination to check
+ 
+ @param exclude - Exclude entry with partial match fields or predicates
+ 
+ @returns whether the combination should be excluded
  */
 function matchesExclude({
   combination,
@@ -158,13 +158,13 @@ function matchesExclude({
 }
 
 /**
- * Filters out combinations that match any exclude entry.
- *
- * @param combinations - All combinations from the cartesian product
- *
- * @param excludes - Exclude entries to match against
- *
- * @returns combinations that do not match any exclude entry
+ Filters out combinations that match any exclude entry.
+ 
+ @param combinations - All combinations from the cartesian product
+ 
+ @param excludes - Exclude entries to match against
+ 
+ @returns combinations that do not match any exclude entry
  */
 function applyExcludes({
   combinations,
@@ -192,27 +192,27 @@ function applyExcludes({
 //region Label formatting
 
 /**
- * Formats a human-readable label for a combination.
- * Used in test names and log output.
- *
- * @param combination - Combination to format
- *
- * @returns label like `'container:ubuntu / root / bun'`
+ Formats a human-readable label for a combination.
+ Used in test names and log output.
+ 
+ @param combination - Combination to format
+ 
+ @returns label like `'container:ubuntu / root / bun'`
  */
 function formatLabel(combination: Combination,): string {
   return `${combination.os} / ${combination.user} / ${combination.runtime}`;
 }
 
 /**
- * Extracts a short filename from an absolute path for display.
- *
- * @param filePath - Absolute path
- *
- * @returns filename without directory
+ Extracts a short filename from an absolute path for display.
+ 
+ @param filePath - Absolute path
+ 
+ @returns filename without directory
  */
 function shortFileName(filePath: string,): string {
   /**
-   * Captured to reuse in both the absent-separator guard and the slice offset.
+   Captured to reuse in both the absent-separator guard and the slice offset.
    */
   const lastSlash = filePath.lastIndexOf('/',);
   if (lastSlash === (-1))
@@ -225,16 +225,16 @@ function shortFileName(filePath: string,): string {
 //region Execution dispatch
 
 /**
- * Executes a single combination using the appropriate backend.
- * Routes to {@link runContainer} or {@link runHost} based on the OS protocol.
- *
- * @param combination - Fully resolved combination to execute
- *
- * @param monorepoRoot - Absolute path to the monorepo root on the host
- *
- * @returns stdout from the execution
- *
- * @throws Error when the combination fails or uses an unimplemented protocol
+ Executes a single combination using the appropriate backend.
+ Routes to {@link runContainer} or {@link runHost} based on the OS protocol.
+ 
+ @param combination - Fully resolved combination to execute
+ 
+ @param monorepoRoot - Absolute path to the monorepo root on the host
+ 
+ @returns stdout from the execution
+ 
+ @throws Error when the combination fails or uses an unimplemented protocol
  */
 function executeCombination({
   combination,
@@ -244,7 +244,7 @@ function executeCombination({
   readonly monorepoRoot: string;
 },): Promise<string> {
   /**
-   * Protocol drives the backend choice; parsed once and inspected by each branch.
+   Protocol drives the backend choice; parsed once and inspected by each branch.
    */
   const parsed = parseOs(combination.os,);
 
@@ -268,39 +268,39 @@ function executeCombination({
 //endregion Execution dispatch
 
 /**
- * Default maximum number of concurrent combination executions.
+ Default maximum number of concurrent combination executions.
  */
 const DEFAULT_CONCURRENCY = 4;
 
 /**
- * Runs test files across a cartesian product of environments.
- *
- * Generates all combinations of `files x os x user x runtime`,
- * filters out excluded entries, and executes each combination via
- * {@link executeCombination}. Results are reported through
- * {@link describe}/{@link it} from `\@monochromatic-dev/module-test`.
- *
- * @param files - Files to execute inside each environment (defaults to auto-discovery)
- *
- * @param os - OS specifications with protocol prefix
- *
- * @param user - User contexts (defaults to `['root']`)
- *
- * @param runtime - JS runtimes (defaults to `['bun']`)
- *
- * @param exclude - Combinations to exclude from the cartesian product
- *
- * @param concurrency - Maximum concurrent combination executions (defaults to 4)
- *
- * @throws Error (via describe/it) when any combination fails
- *
- * @example
- * ```ts
- * await matrix({
- *   os: ['container:ubuntu', 'container:fedora'],
- *   user: ['root', 'user'],
- * });
- * ```
+ Runs test files across a cartesian product of environments.
+ 
+ Generates all combinations of `files x os x user x runtime`,
+ filters out excluded entries, and executes each combination via
+ {@link executeCombination}. Results are reported through
+ {@link describe}/{@link it} from `\@monochromatic-dev/module-test`.
+ 
+ @param files - Files to execute inside each environment (defaults to auto-discovery)
+ 
+ @param os - OS specifications with protocol prefix
+ 
+ @param user - User contexts (defaults to `['root']`)
+ 
+ @param runtime - JS runtimes (defaults to `['bun']`)
+ 
+ @param exclude - Combinations to exclude from the cartesian product
+ 
+ @param concurrency - Maximum concurrent combination executions (defaults to 4)
+ 
+ @throws Error (via describe/it) when any combination fails
+ 
+ @example
+ ```ts
+ await matrix({
+   os: ['container:ubuntu', 'container:fedora'],
+   user: ['root', 'user'],
+ });
+ ```
  */
 export async function matrix({
   files: filesOption,
@@ -311,7 +311,7 @@ export async function matrix({
   concurrency = DEFAULT_CONCURRENCY,
 }: MatrixOptions,): Promise<void> {
   /**
-   * Tagged logger so each line in this function carries the `matrix` scope.
+   Tagged logger so each line in this function carries the `matrix` scope.
    */
   const l: Logger = tagged({
     tag: matrix.name,
@@ -321,7 +321,7 @@ export async function matrix({
   //region Validate OS specifications
   for (const osSpec of os) {
     /**
-     * Pre-validates the protocol up-front; failing here surfaces config errors before any work.
+     Pre-validates the protocol up-front; failing here surfaces config errors before any work.
      */
     const parsed = parseOs(osSpec,);
     if (parsed.protocol
@@ -335,7 +335,7 @@ export async function matrix({
 
   //region Discover monorepo root
   /**
-   * Resolved once and threaded into every container invocation as the bind-mount source.
+   Resolved once and threaded into every container invocation as the bind-mount source.
    */
   const monorepoRoot = await findMiseMonorepoRootCached();
   l.debug(`monorepo root: ${monorepoRoot}`,);
@@ -343,7 +343,7 @@ export async function matrix({
 
   //region Resolve files
   /**
-   * Either the consumer's explicit list (resolved against cwd) or auto-discovered tests.
+   Either the consumer's explicit list (resolved against cwd) or auto-discovered tests.
    */
   const files = filesOption !== undefined
     ? filesOption.map(function resolveFile(filePath,) {
@@ -361,7 +361,7 @@ export async function matrix({
 
   //region Generate and filter combinations
   /**
-   * Raw cartesian product before exclusion; retained so the log line below can report the delta.
+   Raw cartesian product before exclusion; retained so the log line below can report the delta.
    */
   const allCombinations = generateCombinations({
     files,
@@ -370,7 +370,7 @@ export async function matrix({
     runtime,
   },);
   /**
-   * Survivors after applying the user-supplied exclude entries; what actually executes.
+   Survivors after applying the user-supplied exclude entries; what actually executes.
    */
   const combinations = applyExcludes({
     combinations: allCombinations,
@@ -392,12 +392,12 @@ export async function matrix({
   l.info(`concurrency limit: ${String(concurrency,)}`,);
 
   /**
-   * Group combinations by file so each file gets its own describe block.
+   Group combinations by file so each file gets its own describe block.
    */
   const fileGroups = new Map<string, Combination[]>();
   for (const combination of combinations) {
     /**
-     * Existing per-file bucket, if any; absent first iteration per file.
+     Existing per-file bucket, if any; absent first iteration per file.
      */
     const existing = fileGroups.get(combination.file,);
     if (existing !== undefined)
@@ -411,12 +411,12 @@ export async function matrix({
   }
 
   /**
-   * One describe-tree per file, each containing one `it` per combination for that file.
+   One describe-tree per file, each containing one `it` per combination for that file.
    */
   const children = [...fileGroups.entries(),].map(
     function createFileDescribe([filePath, fileCombinations,],) {
       /**
-       * Trimmed-path display label; full path is too long for nested describe output.
+       Trimmed-path display label; full path is too long for nested describe output.
        */
       const fileName = shortFileName(filePath,);
 
@@ -427,7 +427,7 @@ export async function matrix({
         children: fileCombinations.map(
           function createCombinationIt(combination,) {
             /**
-             * Human-readable axis tuple used as the `it` name.
+             Human-readable axis tuple used as the `it` name.
              */
             const label = formatLabel(combination,);
 
@@ -436,7 +436,7 @@ export async function matrix({
               l,
               fn: async function runCombination() {
                 /**
-                 * Captured so the empty-output check below does not log a blank line.
+                 Captured so the empty-output check below does not log a blank line.
                  */
                 const output = await executeCombination({
                   combination,

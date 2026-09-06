@@ -1,10 +1,10 @@
 /**
- * fast-check arbitraries generating structurally valid CSS documents:
- * declarations (custom properties included), nested rules (`&` and relaxed),
- * statement and block at-rules, comments, adversarial strings, and varied
- * whitespace. Used by every property file in this package.
- *
- * @module
+ fast-check arbitraries generating structurally valid CSS documents:
+ declarations (custom properties included), nested rules (`&` and relaxed),
+ statement and block at-rules, comments, adversarial strings, and varied
+ whitespace. Used by every property file in this package.
+ 
+ @module
  */
 
 import { ASCII_LOWERCASE_LETTER_CHARS, } from '@monochromatic-dev/module-const/ts';
@@ -19,12 +19,12 @@ import {
 //region Atoms
 
 /**
- * Lowercase identifier-safe characters for generated names.
+ Lowercase identifier-safe characters for generated names.
  */
 const IDENT_CHARS = ASCII_LOWERCASE_LETTER_CHARS;
 
 /**
- * Generated CSS identifier: a guaranteed leading letter plus a short tail.
+ Generated CSS identifier: a guaranteed leading letter plus a short tail.
  */
 const identArb: Arbitrary<string> = tuple(
   constantFrom(...IDENT_CHARS,),
@@ -43,7 +43,7 @@ const identArb: Arbitrary<string> = tuple(
   },);
 
 /**
- * Property name: an ordinary ident or a custom property.
+ Property name: an ordinary ident or a custom property.
  */
 const propertyNameArb: Arbitrary<string> = oneof(
   identArb,
@@ -53,8 +53,8 @@ const propertyNameArb: Arbitrary<string> = oneof(
 );
 
 /**
- * Declaration value: keywords, dimensions, var() references, url() targets,
- * and strings carrying structural characters that must stay inert.
+ Declaration value: keywords, dimensions, var() references, url() targets,
+ and strings carrying structural characters that must stay inert.
  */
 const valueArb: Arbitrary<string> = oneof(
   identArb,
@@ -74,7 +74,7 @@ const valueArb: Arbitrary<string> = oneof(
 );
 
 /**
- * Inter-node whitespace and comment trivia.
+ Inter-node whitespace and comment trivia.
  */
 const triviaArb: Arbitrary<string> = constantFrom(
   ' ',
@@ -86,8 +86,8 @@ const triviaArb: Arbitrary<string> = constantFrom(
 );
 
 /**
- * Selector prelude: simple, compound, nesting (`&` and relaxed), and
- * attribute selectors carrying structural characters in strings.
+ Selector prelude: simple, compound, nesting (`&` and relaxed), and
+ attribute selectors carrying structural characters in strings.
  */
 const selectorArb: Arbitrary<string> = oneof(
   identArb.map(function toClassSelector(name,) {
@@ -116,7 +116,7 @@ const selectorArb: Arbitrary<string> = oneof(
 //region Composites
 
 /**
- * One declaration, optionally missing its semicolon when generated last.
+ One declaration, optionally missing its semicolon when generated last.
  */
 const declarationArb: Arbitrary<string> = tuple(
   propertyNameArb,
@@ -127,12 +127,12 @@ const declarationArb: Arbitrary<string> = tuple(
   },);
 
 /**
- * Block items at a given remaining depth: declarations always; nested rules
- * and at-rules while depth remains.
- *
- * @param depth - Remaining nesting depth.
- *
- * @returns Arbitrary for one block item.
+ Block items at a given remaining depth: declarations always; nested rules
+ and at-rules while depth remains.
+ 
+ @param depth - Remaining nesting depth.
+ 
+ @returns Arbitrary for one block item.
  */
 function blockItemArb(depth: number,): Arbitrary<string> {
   if (depth <= 0)
@@ -154,11 +154,11 @@ function blockItemArb(depth: number,): Arbitrary<string> {
 }
 
 /**
- * Braced block of items joined by trivia.
- *
- * @param depth - Remaining nesting depth.
- *
- * @returns Arbitrary for one braced block including braces.
+ Braced block of items joined by trivia.
+ 
+ @param depth - Remaining nesting depth.
+ 
+ @returns Arbitrary for one braced block including braces.
  */
 function blockArb(depth: number,): Arbitrary<string> {
   return tuple(
@@ -174,11 +174,11 @@ function blockArb(depth: number,): Arbitrary<string> {
 }
 
 /**
- * Qualified rule: selector prelude plus block.
- *
- * @param depth - Remaining nesting depth.
- *
- * @returns Arbitrary for one rule.
+ Qualified rule: selector prelude plus block.
+ 
+ @param depth - Remaining nesting depth.
+ 
+ @returns Arbitrary for one rule.
  */
 function ruleArb(depth: number,): Arbitrary<string> {
   return tuple(
@@ -191,15 +191,15 @@ function ruleArb(depth: number,): Arbitrary<string> {
 }
 
 /**
- * At-rule: statement form or block form, known and unknown names mixed.
- *
- * @param depth - Remaining nesting depth.
- *
- * @returns Arbitrary for one at-rule.
+ At-rule: statement form or block form, known and unknown names mixed.
+ 
+ @param depth - Remaining nesting depth.
+ 
+ @returns Arbitrary for one at-rule.
  */
 function atRuleArb(depth: number,): Arbitrary<string> {
   /**
-   * Statement at-rules with structural characters confined to strings.
+   Statement at-rules with structural characters confined to strings.
    */
   const statementArb = constantFrom(
     '@layer base;',
@@ -208,7 +208,7 @@ function atRuleArb(depth: number,): Arbitrary<string> {
     '@charset "utf-8";',
   );
   /**
-   * Block at-rule names covering known and custom cases.
+   Block at-rule names covering known and custom cases.
    */
   const blockNameArb = constantFrom(
     '@media (width > 40rem)',
@@ -233,19 +233,19 @@ function atRuleArb(depth: number,): Arbitrary<string> {
 //region Document
 
 /**
- * Maximum nesting depth for generated documents.
+ Maximum nesting depth for generated documents.
  */
 const MAX_DEPTH = 2;
 
 /**
- * Whole CSS document: top-level rules, at-rules, and trivia runs, joined by
- * varied whitespace. Structurally valid by construction, so parsing must
- * succeed and stringification must reproduce it byte-exactly.
- *
- * @example
- * ```ts
- * assert(property(cssDocumentArb, (css) => { ... }), { numRuns: fuzzRuns });
- * ```
+ Whole CSS document: top-level rules, at-rules, and trivia runs, joined by
+ varied whitespace. Structurally valid by construction, so parsing must
+ succeed and stringification must reproduce it byte-exactly.
+ 
+ @example
+ ```ts
+ assert(property(cssDocumentArb, (css) => { ... }), { numRuns: fuzzRuns });
+ ```
  */
 export const cssDocumentArb: Arbitrary<string> = tuple(
   array(

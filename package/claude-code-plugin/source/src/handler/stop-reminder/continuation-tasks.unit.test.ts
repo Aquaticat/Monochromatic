@@ -11,33 +11,33 @@ import {
 } from './continuation-tasks.ts';
 
 /**
- * Builds a `TaskCreate` result record announcing a task id.
- *
- * @param id - task identifier Claude Code assigned
- *
- * @returns transcript line for a successful creation
- *
- * @example
- * ```ts
- * created('1');
- * ```
+ Builds a `TaskCreate` result record announcing a task id.
+ 
+ @param id - task identifier Claude Code assigned
+ 
+ @returns transcript line for a successful creation
+ 
+ @example
+ ```ts
+ created('1');
+ ```
  */
 function created(id: string,): string {
   return JSON.stringify({ type: 'user', toolUseResult: { task: { id, subject: 'x', }, }, },);
 }
 
 /**
- * Builds an assistant record issuing a `TaskUpdate` call.
- *
- * @param id - task identifier being updated
- * @param status - status applied by the call
- *
- * @returns transcript line for the update
- *
- * @example
- * ```ts
- * updated('1', 'completed');
- * ```
+ Builds an assistant record issuing a `TaskUpdate` call.
+ 
+ @param id - task identifier being updated
+ @param status - status applied by the call
+ 
+ @returns transcript line for the update
+ 
+ @example
+ ```ts
+ updated('1', 'completed');
+ ```
  */
 function updated(id: string, status: string,): string {
   return JSON.stringify({

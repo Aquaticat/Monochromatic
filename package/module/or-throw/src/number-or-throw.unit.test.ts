@@ -1,7 +1,7 @@
 /**
- * Tests for `numberOrThrow`.
- *
- * @module
+ Tests for `numberOrThrow`.
+ 
+ @module
  */
 
 import {

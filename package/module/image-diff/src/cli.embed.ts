@@ -9,31 +9,31 @@ import type {
 } from './types.ts';
 
 /**
- * Logger root for image-diff after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for image-diff after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'image-diff', },);
 
 /**
- * Handle the `embed` subcommand.
- *
- * @param image - image argument (path or URL)
- *
- * @param provider - provider name; omit to use all providers
- *
- * @param model - model override; omit for the provider's default
- *
- * @example
- * ```ts
- * await handleEmbed({
- *   image: 'photo.png',
- *   provider: 'voyage',
- * });
- * ```
+ Handle the `embed` subcommand.
+ 
+ @param image - image argument (path or URL)
+ 
+ @param provider - provider name; omit to use all providers
+ 
+ @param model - model override; omit for the provider's default
+ 
+ @example
+ ```ts
+ await handleEmbed({
+   image: 'photo.png',
+   provider: 'voyage',
+ });
+ ```
  */
 export async function handleEmbed({
   image,
@@ -45,28 +45,28 @@ export async function handleEmbed({
   readonly model?: EmbeddingModel;
 },): Promise<void> {
   /**
-   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
    */
   const rl = tagged({
     tag: handleEmbed.name,
     l,
   },);
   /**
-   * Parsed image input; converts the CLI path-or-URL string into the structured {@link ImageInput}.
+   Parsed image input; converts the CLI path-or-URL string into the structured {@link ImageInput}.
    */
   const input = parseImageArg(image,);
 
   if (provider !== undefined) {
     rl.debug(`embedding via ${provider}`,);
     /**
-     * Single-provider config; only includes `model` when the caller passed an override.
+     Single-provider config; only includes `model` when the caller passed an override.
      */
     const config = {
       provider,
       ...(model !== undefined ? { model, } : {}),
     };
     /**
-     * Single-provider embedding result; printed as JSON below.
+     Single-provider embedding result; printed as JSON below.
      */
     const result = await embed({
       input,
@@ -88,7 +88,7 @@ export async function handleEmbed({
   else {
     rl.debug('embedding via all providers',);
     /**
-     * Per-provider embedding entries from the multi-provider dispatch; printed as JSON below.
+     Per-provider embedding entries from the multi-provider dispatch; printed as JSON below.
      */
     const results = await embedAll(input,);
 

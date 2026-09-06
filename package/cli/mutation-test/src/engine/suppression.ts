@@ -1,39 +1,39 @@
 /**
- * Comment-driven mutation suppression.
- *
- * Syntax, mirroring the repo's oxlint disable-comment shape:
- *
- * ```ts
- * // mutation-test-disable-next-line string, boolean -- reason
- * // mutation-test-disable-file regex -- reason
- * ```
- *
- * Family lists are optional (bare directives suppress every family);
- * reasons after `--` are optional but land in the report so ignored
- * mutants stay auditable.
- *
- * @example
- * ```ts
- * const rules = suppressionRules({ comments, table });
- * suppressionReason({ rules, line: 4, operator: 'string' });
- * ```
+ Comment-driven mutation suppression.
+ 
+ Syntax, mirroring the repo's oxlint disable-comment shape:
+ 
+ ```ts
+ // mutation-test-disable-next-line string, boolean -- reason
+ // mutation-test-disable-file regex -- reason
+ ```
+ 
+ Family lists are optional (bare directives suppress every family);
+ reasons after `--` are optional but land in the report so ignored
+ mutants stay auditable.
+ 
+ @example
+ ```ts
+ const rules = suppressionRules({ comments, table });
+ suppressionReason({ rules, line: 4, operator: 'string' });
+ ```
  */
 
 import { positionAt, } from './lines.ts';
 import type { OperatorName, } from './types.ts';
 
 /**
- * Next-line directive prefix inside a comment's text.
+ Next-line directive prefix inside a comment's text.
  */
 const NEXT_LINE_DIRECTIVE = 'mutation-test-disable-next-line';
 
 /**
- * File-level directive prefix inside a comment's text.
+ File-level directive prefix inside a comment's text.
  */
 const FILE_DIRECTIVE = 'mutation-test-disable-file';
 
 /**
- * Every valid operator family name, for directive validation.
+ Every valid operator family name, for directive validation.
  */
 const FAMILY_NAMES: ReadonlySet<string> = new Set([
   'arithmetic',
@@ -54,27 +54,27 @@ const FAMILY_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Returns whether a directive token names a known operator family.
- *
- * @param name - Candidate family name from a directive.
- *
- * @returns Whether name is an operator family.
- *
- * @example
- * ```ts
- * isFamilyName('string');
- * // true
- * ```
+ Returns whether a directive token names a known operator family.
+ 
+ @param name - Candidate family name from a directive.
+ 
+ @returns Whether name is an operator family.
+ 
+ @example
+ ```ts
+ isFamilyName('string');
+ // true
+ ```
  */
 function isFamilyName(name: string,): name is OperatorName {
   return FAMILY_NAMES.has(name,);
 }
 
 /**
- * One parsed suppression rule.
- *
- * `line` is the source line the rule suppresses (absent for file-wide
- * rules); an empty `families` set means every family.
+ One parsed suppression rule.
+ 
+ `line` is the source line the rule suppresses (absent for file-wide
+ rules); an empty `families` set means every family.
  */
 export type SuppressionRule = {
   readonly line?: number;
@@ -83,7 +83,7 @@ export type SuppressionRule = {
 };
 
 /**
- * Structural comment shape consumed from yuku-parser output.
+ Structural comment shape consumed from yuku-parser output.
  */
 export type ParsedComment = {
   readonly value: string;
@@ -92,41 +92,41 @@ export type ParsedComment = {
 };
 
 /**
- * Parses one directive tail into families and reason.
- *
- * @param tail - Directive text after the directive keyword.
- *
- * @returns Families (empty for all) and reason.
- *
- * @throws Error when a family name is not a known operator family.
- *
- * @example
- * ```ts
- * parseDirectiveTail('string, boolean -- flaky filler');
- * ```
+ Parses one directive tail into families and reason.
+ 
+ @param tail - Directive text after the directive keyword.
+ 
+ @returns Families (empty for all) and reason.
+ 
+ @throws Error when a family name is not a known operator family.
+ 
+ @example
+ ```ts
+ parseDirectiveTail('string, boolean -- flaky filler');
+ ```
  */
 function parseDirectiveTail(tail: string,): {
   readonly families: ReadonlySet<OperatorName>;
   readonly reason: string;
 } {
   /**
-   * Reason separator position in the directive tail.
+   Reason separator position in the directive tail.
    */
   const separatorAt = tail.indexOf('--',);
   /**
-   * Family list text before the reason separator.
+   Family list text before the reason separator.
    */
   const familiesText = (separatorAt === (-1) ? tail : tail.slice(
     0,
     separatorAt,
   )).trim();
   /**
-   * Reason text after the separator.
+   Reason text after the separator.
    */
   const reason = separatorAt === (-1) ? '' : tail.slice(separatorAt + 2,)
     .trim();
   /**
-   * Declared family names, empty when the directive suppresses all.
+   Declared family names, empty when the directive suppresses all.
    */
   const families = familiesText === ''
     ? []
@@ -136,7 +136,7 @@ function parseDirectiveTail(tail: string,): {
       },);
 
   /**
-   * Family names validated against the known operator families.
+   Family names validated against the known operator families.
    */
   const validated = families.map(function toFamily(family,): OperatorName {
     if (!isFamilyName(family,))
@@ -154,18 +154,18 @@ function parseDirectiveTail(tail: string,): {
 }
 
 /**
- * Parses suppression rules out of a file's comments.
- *
- * @param options - Parsed comments and the file's line-start table.
- *
- * @returns Parsed rules, possibly empty.
- *
- * @throws Error when a directive names an unknown family.
- *
- * @example
- * ```ts
- * suppressionRules({ comments: result.comments, table: lineStarts(source) });
- * ```
+ Parses suppression rules out of a file's comments.
+ 
+ @param options - Parsed comments and the file's line-start table.
+ 
+ @returns Parsed rules, possibly empty.
+ 
+ @throws Error when a directive names an unknown family.
+ 
+ @example
+ ```ts
+ suppressionRules({ comments: result.comments, table: lineStarts(source) });
+ ```
  */
 export function suppressionRules(options: {
   readonly comments: readonly ParsedComment[];
@@ -174,14 +174,14 @@ export function suppressionRules(options: {
   return options.comments
     .flatMap(function toRules(comment,): readonly SuppressionRule[] {
     /**
-     * Comment text without leading whitespace.
+     Comment text without leading whitespace.
      */
     const text = comment.value
       .trim();
 
     if (text.startsWith(NEXT_LINE_DIRECTIVE,)) {
       /**
-       * Families and reason after the next-line keyword.
+       Families and reason after the next-line keyword.
        */
       const tail = parseDirectiveTail(text.slice(NEXT_LINE_DIRECTIVE.length,),);
       return [{
@@ -198,7 +198,7 @@ export function suppressionRules(options: {
 
     if (text.startsWith(FILE_DIRECTIVE,)) {
       /**
-       * Families and reason after the file-level keyword.
+       Families and reason after the file-level keyword.
        */
       const tail = parseDirectiveTail(text.slice(FILE_DIRECTIVE.length,),);
       return [{
@@ -212,19 +212,19 @@ export function suppressionRules(options: {
 }
 
 /**
- * Finds every suppression rule covering one mutant.
- *
- * Returns matches instead of a nullable reason so absence stays a plain
- * empty array at call sites.
- *
- * @param options - Parsed rules plus the mutant's line and family.
- *
- * @returns Matching rules, empty when the mutant is not suppressed.
- *
- * @example
- * ```ts
- * matchingSuppressions({ rules, line: 4, operator: 'string' });
- * ```
+ Finds every suppression rule covering one mutant.
+ 
+ Returns matches instead of a nullable reason so absence stays a plain
+ empty array at call sites.
+ 
+ @param options - Parsed rules plus the mutant's line and family.
+ 
+ @returns Matching rules, empty when the mutant is not suppressed.
+ 
+ @example
+ ```ts
+ matchingSuppressions({ rules, line: 4, operator: 'string' });
+ ```
  */
 export function matchingSuppressions(options: {
   readonly rules: readonly SuppressionRule[];

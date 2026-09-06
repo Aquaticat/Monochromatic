@@ -1,10 +1,10 @@
 /**
- * Subcommand parser definitions for the vmsync CLI.
- *
- * Defines individual subcommand parsers that are combined into
- * the top-level parser in `index-parsers.ts`.
- *
- * @module
+ Subcommand parser definitions for the vmsync CLI.
+ 
+ Defines individual subcommand parsers that are combined into
+ the top-level parser in `index-parsers.ts`.
+ 
+ @module
  */
 
 // TODO: deprecate Optique
@@ -33,10 +33,10 @@ import {
 import type { VmsyncArgs, } from './index-parsers.ts';
 
 /**
- * TODO: deprecate Optique
- * Subcommand parser producing VmsyncArgs.
- * Uses `any` for TState because Parser is invariant in TState
- * and the deeply-nested state types are opaque implementation details.
+ TODO: deprecate Optique
+ Subcommand parser producing VmsyncArgs.
+ Uses `any` for TState because Parser is invariant in TState
+ and the deeply-nested state types are opaque implementation details.
  */
 // oxlint-disable-next-line typescript/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown
 type SubcommandParser = Parser<'sync', VmsyncArgs, any>;
@@ -44,32 +44,32 @@ type SubcommandParser = Parser<'sync', VmsyncArgs, any>;
 //region Shared value parsers
 
 /**
- * TODO: deprecate Optique
- * Value parser for VM name arguments, displayed as NAME in help.
+ TODO: deprecate Optique
+ Value parser for VM name arguments, displayed as NAME in help.
  */
 const name = string({
   metavar: 'NAME',
 },);
 
 /**
- * TODO: deprecate Optique
- * Value parser for file path arguments, displayed as PATH in help.
+ TODO: deprecate Optique
+ Value parser for file path arguments, displayed as PATH in help.
  */
 const path = string({
   metavar: 'PATH',
 },);
 
 /**
- * TODO: deprecate Optique
- * Value parser for memory strings, displayed as MEMORY in help.
+ TODO: deprecate Optique
+ Value parser for memory strings, displayed as MEMORY in help.
  */
 const memoryValue = string({
   metavar: 'MEMORY',
 },);
 
 /**
- * TODO: deprecate Optique
- * Value parser for CPU count, displayed as CPUS in help.
+ TODO: deprecate Optique
+ Value parser for CPU count, displayed as CPUS in help.
  */
 const cpusValue = integer({
   metavar: 'CPUS',
@@ -81,8 +81,8 @@ const cpusValue = integer({
 //region Subcommand parsers
 
 /**
- * TODO: deprecate Optique
- * Parser for `import <path> [--name NAME]`, producing an `import` {@link VmsyncArgs}.
+ TODO: deprecate Optique
+ Parser for `import <path> [--name NAME]`, producing an `import` {@link VmsyncArgs}.
  */
 export const importCmd: SubcommandParser = command(
   'import',
@@ -125,8 +125,8 @@ export const importCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `boot <name>`, producing a `boot` {@link VmsyncArgs}.
+ TODO: deprecate Optique
+ Parser for `boot <name>`, producing a `boot` {@link VmsyncArgs}.
  */
 export const bootCmd: SubcommandParser = command(
   'boot',
@@ -147,8 +147,8 @@ export const bootCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `sync <name>`, producing a `sync` {@link VmsyncArgs}.
+ TODO: deprecate Optique
+ Parser for `sync <name>`, producing a `sync` {@link VmsyncArgs}.
  */
 export const syncCmd: SubcommandParser = command(
   'sync',
@@ -169,8 +169,8 @@ export const syncCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `status <name>`, producing a `status` {@link VmsyncArgs}.
+ TODO: deprecate Optique
+ Parser for `status <name>`, producing a `status` {@link VmsyncArgs}.
  */
 export const statusCmd: SubcommandParser = command(
   'status',
@@ -191,8 +191,8 @@ export const statusCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `list`, producing a `list` {@link VmsyncArgs}.
+ TODO: deprecate Optique
+ Parser for `list`, producing a `list` {@link VmsyncArgs}.
  */
 export const listCmd: SubcommandParser = command(
   'list',
@@ -210,8 +210,8 @@ export const listCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `config <name> [--memory MEMORY] [--cpus CPUS]`, producing a `config` {@link VmsyncArgs}.
+ TODO: deprecate Optique
+ Parser for `config <name> [--memory MEMORY] [--cpus CPUS]`, producing a `config` {@link VmsyncArgs}.
  */
 export const configCmd: SubcommandParser = command(
   'config',

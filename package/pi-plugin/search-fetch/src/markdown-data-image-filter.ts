@@ -1,7 +1,7 @@
 /**
- * Markdown data-image filtering for fetched page responses.
- *
- * @module
+ Markdown data-image filtering for fetched page responses.
+ 
+ @module
  */
 
 import {
@@ -14,7 +14,7 @@ import {
 //region Constants
 
 /**
- * Markdown inline-image opening token.
+ Markdown inline-image opening token.
  */
 const IMAGE_OPEN = '![';
 
@@ -23,29 +23,29 @@ const IMAGE_OPEN = '![';
 //region Types
 
 /**
- * Filtered Markdown and removal count.
+ Filtered Markdown and removal count.
  */
 type MarkdownDataImageFilterResult = {
   /**
-   * Markdown after base64-backed inline images are removed.
+   Markdown after base64-backed inline images are removed.
    */
   readonly markdown: string;
   /**
-   * Number of removed image constructs.
+   Number of removed image constructs.
    */
   readonly removedImageCount: number;
 };
 
 /**
- * Fetch response after Markdown filtering.
+ Fetch response after Markdown filtering.
  */
 type FetchResponseDataImageFilterResult = {
   /**
-   * Original response or shallow copy carrying filtered Markdown.
+   Original response or shallow copy carrying filtered Markdown.
    */
   readonly linkupResponse: unknown;
   /**
-   * Number of removed image constructs.
+   Number of removed image constructs.
    */
   readonly removedImageCount: number;
 };
@@ -55,20 +55,20 @@ type FetchResponseDataImageFilterResult = {
 //region Public API
 
 /**
- * Remove inline base64 image constructs from Markdown in a fetched response.
- *
- * A construct that owns its physical lines removes those complete lines.
- * Inline constructs remove only their Markdown span so surrounding prose survives.
- * Non-Markdown response shapes and responses without matching images retain identity.
- *
- * @param response - parsed provider response
- *
- * @returns response for model-visible output and removal count
- *
- * @example
- * ```ts
- * filterFetchResponseDataImages({ markdown: 'Before\n![logo](data:image/png;base64,AAAA)\nAfter' });
- * ```
+ Remove inline base64 image constructs from Markdown in a fetched response.
+ 
+ A construct that owns its physical lines removes those complete lines.
+ Inline constructs remove only their Markdown span so surrounding prose survives.
+ Non-Markdown response shapes and responses without matching images retain identity.
+ 
+ @param response - parsed provider response
+ 
+ @returns response for model-visible output and removal count
+ 
+ @example
+ ```ts
+ filterFetchResponseDataImages({ markdown: 'Before\n![logo](data:image/png;base64,AAAA)\nAfter' });
+ ```
  */
 function filterFetchResponseDataImages(response: unknown,): FetchResponseDataImageFilterResult {
   if (!hasMarkdownString(response,))
@@ -78,7 +78,7 @@ function filterFetchResponseDataImages(response: unknown,): FetchResponseDataIma
     };
 
   /**
-   * Markdown-specific filter result.
+   Markdown-specific filter result.
    */
   const filtered = filterMarkdownDataImages(response.markdown,);
   if (filtered.removedImageCount === 0)
@@ -97,37 +97,37 @@ function filterFetchResponseDataImages(response: unknown,): FetchResponseDataIma
 }
 
 /**
- * Remove Markdown inline images whose destinations are base64 image data URLs.
- *
- * @param markdown - fetched page Markdown
- *
- * @returns filtered Markdown and removed image count
- *
- * @example
- * ```ts
- * filterMarkdownDataImages('Text ![logo](data:image/png;base64,AAAA) remains.');
- * ```
+ Remove Markdown inline images whose destinations are base64 image data URLs.
+ 
+ @param markdown - fetched page Markdown
+ 
+ @returns filtered Markdown and removed image count
+ 
+ @example
+ ```ts
+ filterMarkdownDataImages('Text ![logo](data:image/png;base64,AAAA) remains.');
+ ```
  */
 function filterMarkdownDataImages(markdown: string,): MarkdownDataImageFilterResult {
   return (function scanMarkdownDataImages(): MarkdownDataImageFilterResult {
     /**
-     * Retained text chunks joined once after scanning.
+     Retained text chunks joined once after scanning.
      */
     const retainedChunks: string[] = [];
     /**
-     * Start of text not yet copied into retained chunks.
+     Start of text not yet copied into retained chunks.
      */
     let retainedStart = 0;
     /**
-     * Search start for next inline-image opener.
+     Search start for next inline-image opener.
      */
     let searchStart = 0;
     /**
-     * Number of accepted image constructs removed so far.
+     Number of accepted image constructs removed so far.
      */
     let removedImageCount = 0;
     /**
-     * Next possible inline-image opener.
+     Next possible inline-image opener.
      */
     let imageStart = markdown.indexOf(
       IMAGE_OPEN,
@@ -136,7 +136,7 @@ function filterMarkdownDataImages(markdown: string,): MarkdownDataImageFilterRes
 
     while (imageStart !== (-1)) {
       /**
-       * Parsed base64 image token, or rejection sentinel.
+       Parsed base64 image token, or rejection sentinel.
        */
       const imageRange = findBase64ImageRange({
         markdown,
@@ -147,14 +147,14 @@ function filterMarkdownDataImages(markdown: string,): MarkdownDataImageFilterRes
       }
       else {
         /**
-         * Full linked-image wrapper when image is tightly wrapped by one.
+         Full linked-image wrapper when image is tightly wrapped by one.
          */
         const constructRange = findLinkedImageRange({
           markdown,
           imageRange,
         },);
         /**
-         * Smallest safe range, widened to physical lines only when construct owns them.
+         Smallest safe range, widened to physical lines only when construct owns them.
          */
         const removalRange = lineOwnedRemovalRange({
           markdown,
@@ -187,11 +187,11 @@ function filterMarkdownDataImages(markdown: string,): MarkdownDataImageFilterRes
 //region Value helpers
 
 /**
- * Return whether value is a response record carrying Markdown text.
- *
- * @param value - candidate provider response
- *
- * @returns whether Markdown can be filtered and copied
+ Return whether value is a response record carrying Markdown text.
+ 
+ @param value - candidate provider response
+ 
+ @returns whether Markdown can be filtered and copied
  */
 function hasMarkdownString(value: unknown,): value is Readonly<Record<string, unknown>> & {
   readonly markdown: string;

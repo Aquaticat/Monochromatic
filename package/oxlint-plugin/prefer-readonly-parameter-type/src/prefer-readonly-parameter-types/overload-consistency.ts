@@ -1,7 +1,7 @@
 /**
- * Cross-signature mutation contract consistency checks.
- *
- * @module
+ Cross-signature mutation contract consistency checks.
+ 
+ @module
  */
 
 import type {
@@ -23,13 +23,13 @@ import {
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 
 /**
- * Converts TypeScript offset to Oxlint offset after BOM stripping.
- *
- * @param offset - TypeScript source offset.
- *
- * @param hasBOM - Whether Oxlint stripped leading BOM.
- *
- * @returns Oxlint source offset.
+ Converts TypeScript offset to Oxlint offset after BOM stripping.
+ 
+ @param offset - TypeScript source offset.
+ 
+ @param hasBOM - Whether Oxlint stripped leading BOM.
+ 
+ @returns Oxlint source offset.
  */
 function oxlintOffset({
   offset,
@@ -45,13 +45,13 @@ function oxlintOffset({
 }
 
 /**
- * Compares finite parameter-index sets.
- *
- * @param left - First index set.
- *
- * @param right - Second index set.
- *
- * @returns whether sets contain same indexes.
+ Compares finite parameter-index sets.
+ 
+ @param left - First index set.
+ 
+ @param right - Second index set.
+ 
+ @returns whether sets contain same indexes.
  */
 function equalIndexes({
   left,
@@ -67,13 +67,13 @@ function equalIndexes({
 }
 
 /**
- * Builds report location for callable name or declaration span.
- *
- * @param context - Rule context mapping offsets.
- *
- * @param declaration - Callable declaration to locate.
- *
- * @returns copied Oxlint location.
+ Builds report location for callable name or declaration span.
+ 
+ @param context - Rule context mapping offsets.
+ 
+ @param declaration - Callable declaration to locate.
+ 
+ @returns copied Oxlint location.
  */
 function declarationLocation({
   context,
@@ -86,17 +86,17 @@ function declarationLocation({
   end: LineColumn
 } {
   /**
-   * Source file owning declaration.
+   Source file owning declaration.
    */
   const sourceFile = declaration.getSourceFile();
   /**
-   * Named declaration node when callable exposes one.
+   Named declaration node when callable exposes one.
    */
   const locationNode = ('name' in declaration) && (declaration.name !== undefined)
     ? declaration.name
     : declaration;
   /**
-   * Oxlint start offset after BOM normalization.
+   Oxlint start offset after BOM normalization.
    */
   const start = oxlintOffset({
     offset: locationNode.getStart(sourceFile,),
@@ -104,7 +104,7 @@ function declarationLocation({
       .hasBOM,
   },);
   /**
-   * Oxlint end offset after BOM normalization.
+   Oxlint end offset after BOM normalization.
    */
   const end = oxlintOffset({
     offset: locationNode.end,
@@ -120,22 +120,22 @@ function declarationLocation({
 }
 
 /**
- * Reports implementation whose actual effects differ from union of overload contracts.
- *
- * @param context - Rule context receiving diagnostics.
- *
- * @param project - TypeScript project resolving overload symbols.
- *
- * @param sourceFile - Current source file whose overloads are checked.
- *
- * @param effectIndex - Whole-project callable summaries.
- *
- * @example
- * ```ts
- * verifyOverloadConsistency({ context, project, sourceFile, effectIndex });
- * ```
- *
- * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+ Reports implementation whose actual effects differ from union of overload contracts.
+ 
+ @param context - Rule context receiving diagnostics.
+ 
+ @param project - TypeScript project resolving overload symbols.
+ 
+ @param sourceFile - Current source file whose overloads are checked.
+ 
+ @param effectIndex - Whole-project callable summaries.
+ 
+ @example
+ ```ts
+ verifyOverloadConsistency({ context, project, sourceFile, effectIndex });
+ ```
+ 
+ @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 export function verifyOverloadConsistency({
   context,
@@ -149,7 +149,7 @@ export function verifyOverloadConsistency({
   readonly effectIndex: EffectSummaryIndex;
 }>,): void {
   /**
-   * Callable declarations grouped by resolved name symbol.
+   Callable declarations grouped by resolved name symbol.
    */
   const declarationsBySymbol = new Map<number, EffectCallableDeclaration[]>();
   collectAstNodes(sourceFile,)
@@ -159,7 +159,7 @@ export function verifyOverloadConsistency({
       || (node.name === undefined))
       return;
     /**
-     * Resolved callable symbol shared by overload declarations.
+     Resolved callable symbol shared by overload declarations.
      */
     const symbol = project.checker
       .getSymbolAtLocation(node.name,);
@@ -177,13 +177,13 @@ export function verifyOverloadConsistency({
     declarations: readonly EffectCallableDeclaration[],
   ): void {
     /**
-     * Implementation declarations carrying bodies.
+     Implementation declarations carrying bodies.
      */
     const implementations = declarations.filter(function hasBody(declaration,): boolean {
       return ('body' in declaration) && (declaration.body !== undefined);
     },);
     /**
-     * Bodyless overload declarations carrying authored contracts.
+     Bodyless overload declarations carrying authored contracts.
      */
     const overloads = declarations.filter(function lacksBody(declaration,): boolean {
       return (!('body' in declaration)) || (declaration.body === undefined);
@@ -191,13 +191,13 @@ export function verifyOverloadConsistency({
     if ((implementations.length !== 1) || (overloads.length === 0))
       return;
     /**
-     * Sole implementation declaration after cardinality guard.
+     Sole implementation declaration after cardinality guard.
      */
     const [implementation,] = implementations;
     if (implementation === undefined)
       return;
     /**
-     * Actual implementation effect summary.
+     Actual implementation effect summary.
      */
     const implementationSummary = effectIndex.get(implementation,);
     if (implementationSummary === NO_EFFECT_SUMMARY)
@@ -206,26 +206,26 @@ export function verifyOverloadConsistency({
         message: 'Effect summary index omitted overload implementation.',
       },);
     /**
-     * Union of bodyless overload mutation contracts by parameter position.
+     Union of bodyless overload mutation contracts by parameter position.
      */
     const overloadEffects = overloads.reduce(
       /**
-       * Unions one overload contract into accumulated parameter positions.
-       *
-       * @param effects - Mutable accumulator of affected positions.
-       *
-       * @param overload - Current bodyless overload declaration.
-       *
-       * @returns same accumulator after adding current overload effects.
-       *
-       * @mutates effects - Adds mutation contract positions from current overload.
+       Unions one overload contract into accumulated parameter positions.
+       
+       @param effects - Mutable accumulator of affected positions.
+       
+       @param overload - Current bodyless overload declaration.
+       
+       @returns same accumulator after adding current overload effects.
+       
+       @mutates effects - Adds mutation contract positions from current overload.
        */
       function union(
         effects,
         overload,
       ): Set<number> {
       /**
-       * Bodyless overload summary seeded from authored contracts.
+       Bodyless overload summary seeded from authored contracts.
        */
       const summary = effectIndex.get(overload,);
       if (summary === NO_EFFECT_SUMMARY)

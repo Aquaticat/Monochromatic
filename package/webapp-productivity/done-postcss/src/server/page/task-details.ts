@@ -1,11 +1,11 @@
 /**
- * Task detail page handler.
- *
- * Renders its own HTML inline (not via `renderPage()`) because the task detail
- * page omits the `<top-nav>` entirely; the `<task-detail>` web component
- * provides its own back-button header.
- *
- * Client entry: `/dist/client/task-details.js` (src/client/task-details.ts)
+ Task detail page handler.
+ 
+ Renders its own HTML inline (not via `renderPage()`) because the task detail
+ page omits the `<top-nav>` entirely; the `<task-detail>` web component
+ provides its own back-button header.
+ 
+ Client entry: `/dist/client/task-details.js` (src/client/task-details.ts)
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
@@ -16,20 +16,20 @@ import { TASK_NOT_FOUND, } from '../../lib/types.ts';
 import { serializePageData, } from './layout.ts';
 
 /**
- * Renders the task detail page for a single task with its blocker summaries.
- *
- * @param taskId - Task UUID from the route parameter
- *
- * @returns HTML response, or 404 when the task does not exist
- *
- * @example
- * ```ts
- * const response = await taskDetailsPage('uuid-123');
- * ```
+ Renders the task detail page for a single task with its blocker summaries.
+ 
+ @param taskId - Task UUID from the route parameter
+ 
+ @returns HTML response, or 404 when the task does not exist
+ 
+ @example
+ ```ts
+ const response = await taskDetailsPage('uuid-123');
+ ```
  */
 export async function taskDetailsPage(taskId: string,): Promise<Response> {
   /**
-   * Existing task; a missing ID short-circuits with a 404 response.
+   Existing task; a missing ID short-circuits with a 404 response.
    */
   const task = await getTaskById(taskId,);
   if (task === TASK_NOT_FOUND) {
@@ -40,11 +40,11 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
   }
 
   /**
-   * All tasks eligible to be picked as new blockers (excludes the current task).
+   All tasks eligible to be picked as new blockers (excludes the current task).
    */
   const blockerCandidates = await listTasksForBlockerPicker(taskId,);
   /**
-   * Lookup table for resolving `blockedBy` IDs to candidate records.
+   Lookup table for resolving `blockedBy` IDs to candidate records.
    */
   const blockerCandidatesById = Object.fromEntries(
     blockerCandidates.map(function toEntry(candidate,) {
@@ -55,7 +55,7 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
     },),
   );
   /**
-   * Existing blockers, resolved to candidate records and projected to the summary shape.
+   Existing blockers, resolved to candidate records and projected to the summary shape.
    */
   const blockerSummaries = task
     .blockedBy
@@ -74,7 +74,7 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
     },);
 
   /**
-   * Serialized into the embedded JSON `<script>` for client-side hydration.
+   Serialized into the embedded JSON `<script>` for client-side hydration.
    */
   const pageData = {
     task,
@@ -88,7 +88,7 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
   };
 
   /**
-   * Rendered HTML response body; built via `hHtml` and wrapped with `<!DOCTYPE html>`.
+   Rendered HTML response body; built via `hHtml` and wrapped with `<!DOCTYPE html>`.
    */
   const html = `<!DOCTYPE html>
 ${

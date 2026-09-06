@@ -1,7 +1,7 @@
 /**
- * Syntax recognition for duplicated caught-value formatters.
- *
- * @module
+ Syntax recognition for duplicated caught-value formatters.
+ 
+ @module
  */
 
 import type {
@@ -13,21 +13,21 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { findVariable, } from './no-sync.syntax.ts';
 
 /**
- * Sentinel returned when an expression is not a supported identifier.
+ Sentinel returned when an expression is not a supported identifier.
  */
 export const NO_IDENTIFIER: unique symbol = Symbol('prefer-caught-value-text identifier not found',);
 
 /**
- * Reads an identifier name from an expression.
- *
- * @param expression - Expression candidate.
- *
- * @returns identifier name or sentinel.
- *
- * @example
- * ```ts
- * identifierName({ expression });
- * ```
+ Reads an identifier name from an expression.
+ 
+ @param expression - Expression candidate.
+ 
+ @returns identifier name or sentinel.
+ 
+ @example
+ ```ts
+ identifierName({ expression });
+ ```
  */
 function identifierName(
   { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
@@ -38,18 +38,18 @@ function identifierName(
 }
 
 /**
- * Tests whether identifier resolves to global binding rather than local shadow.
- *
- * @param context - Oxlint context providing lexical scope metadata.
- *
- * @param identifier - Identifier reference to resolve.
- *
- * @returns whether identifier is unresolved or global without local definitions.
- *
- * @example
- * ```ts
- * isUnshadowedGlobalIdentifier({ context, identifier });
- * ```
+ Tests whether identifier resolves to global binding rather than local shadow.
+ 
+ @param context - Oxlint context providing lexical scope metadata.
+ 
+ @param identifier - Identifier reference to resolve.
+ 
+ @returns whether identifier is unresolved or global without local definitions.
+ 
+ @example
+ ```ts
+ isUnshadowedGlobalIdentifier({ context, identifier });
+ ```
  */
 function isUnshadowedGlobalIdentifier(
   {
@@ -61,7 +61,7 @@ function isUnshadowedGlobalIdentifier(
   }>,
 ): boolean {
   /**
-   * Scope variable behind identifier when metadata includes one.
+   Scope variable behind identifier when metadata includes one.
    */
   const variable = findVariable({
     context,
@@ -71,25 +71,25 @@ function isUnshadowedGlobalIdentifier(
   if ((typeof variable) === 'symbol')
     return true;
   /**
-   * Local definitions proving identifier does not resolve to unshadowed global.
+   Local definitions proving identifier does not resolve to unshadowed global.
    */
   const { defs, } = variable;
   return defs.length === 0;
 }
 
 /**
- * Reads identifier tested by direct `Error.isError` call.
- *
- * @param context - Oxlint context resolving global Error binding.
- *
- * @param expression - Potential detector call.
- *
- * @returns tested identifier name or sentinel.
- *
- * @example
- * ```ts
- * errorDetectorIdentifier({ context, expression });
- * ```
+ Reads identifier tested by direct `Error.isError` call.
+ 
+ @param context - Oxlint context resolving global Error binding.
+ 
+ @param expression - Potential detector call.
+ 
+ @returns tested identifier name or sentinel.
+ 
+ @example
+ ```ts
+ errorDetectorIdentifier({ context, expression });
+ ```
  */
 export function errorDetectorIdentifier(
   {
@@ -103,7 +103,7 @@ export function errorDetectorIdentifier(
   if (expression.type !== 'CallExpression')
     return NO_IDENTIFIER;
   /**
-   * Potential Error.isError member call target.
+   Potential Error.isError member call target.
    */
   const { callee, } = expression;
   if (callee.type !== 'MemberExpression')
@@ -111,7 +111,7 @@ export function errorDetectorIdentifier(
   if (callee.computed)
     return NO_IDENTIFIER;
   /**
-   * Potential Error constructor and isError property.
+   Potential Error constructor and isError property.
    */
   const {
     object,
@@ -131,7 +131,7 @@ export function errorDetectorIdentifier(
   if (property.name !== 'isError')
     return NO_IDENTIFIER;
   /**
-   * Value tested by Error.isError.
+   Value tested by Error.isError.
    */
   const [argument,] = expression.arguments;
   if ((argument === undefined) || (argument.type === 'SpreadElement'))
@@ -140,20 +140,20 @@ export function errorDetectorIdentifier(
 }
 
 /**
- * Tests whether expression reads named Error field from detector input.
- *
- * @param expression - Potential member read.
- *
- * @param identifier - Detector input name.
- *
- * @param property - Error field name.
- *
- * @returns whether expression is exact field read.
- *
- * @example
- * ```ts
- * readsErrorField({ expression, identifier: 'error', property: 'message' });
- * ```
+ Tests whether expression reads named Error field from detector input.
+ 
+ @param expression - Potential member read.
+ 
+ @param identifier - Detector input name.
+ 
+ @param property - Error field name.
+ 
+ @returns whether expression is exact field read.
+ 
+ @example
+ ```ts
+ readsErrorField({ expression, identifier: 'error', property: 'message' });
+ ```
  */
 function readsErrorField(
   {
@@ -171,7 +171,7 @@ function readsErrorField(
   if (expression.computed)
     return false;
   /**
-   * Potential Error value and field name.
+   Potential Error value and field name.
    */
   const {
     object,
@@ -186,18 +186,18 @@ function readsErrorField(
 }
 
 /**
- * Tests whether expression yields Error message or stack diagnostics.
- *
- * @param expression - Branch result expression.
- *
- * @param identifier - Detector input name.
- *
- * @returns whether branch reproduces shared caught-value formatting.
- *
- * @example
- * ```ts
- * readsErrorDiagnostic({ expression, identifier: 'error' });
- * ```
+ Tests whether expression yields Error message or stack diagnostics.
+ 
+ @param expression - Branch result expression.
+ 
+ @param identifier - Detector input name.
+ 
+ @returns whether branch reproduces shared caught-value formatting.
+ 
+ @example
+ ```ts
+ readsErrorDiagnostic({ expression, identifier: 'error' });
+ ```
  */
 export function readsErrorDiagnostic(
   {
@@ -230,20 +230,20 @@ export function readsErrorDiagnostic(
 }
 
 /**
- * Tests whether expression is duplicated non-Error diagnostic fallback.
- *
- * @param context - Oxlint context resolving global String binding.
- *
- * @param expression - Alternate branch expression.
- *
- * @param identifier - Detector input name.
- *
- * @returns whether branch stringifies or categorizes detector input.
- *
- * @example
- * ```ts
- * isDuplicateFallback({ context, expression, identifier: 'error' });
- * ```
+ Tests whether expression is duplicated non-Error diagnostic fallback.
+ 
+ @param context - Oxlint context resolving global String binding.
+ 
+ @param expression - Alternate branch expression.
+ 
+ @param identifier - Detector input name.
+ 
+ @returns whether branch stringifies or categorizes detector input.
+ 
+ @example
+ ```ts
+ isDuplicateFallback({ context, expression, identifier: 'error' });
+ ```
  */
 export function isDuplicateFallback(
   {
@@ -266,7 +266,7 @@ export function isDuplicateFallback(
   }
   if (expression.type === 'TemplateLiteral') {
     /**
-     * Dynamic template expressions inspected for typeof categorization.
+     Dynamic template expressions inspected for typeof categorization.
      */
     const { expressions, } = expression;
     // Element binding rather than a callback parameter: provenance from the
@@ -288,7 +288,7 @@ export function isDuplicateFallback(
   if (expression.type !== 'CallExpression')
     return false;
   /**
-   * Potential direct global String call target.
+   Potential direct global String call target.
    */
   const { callee, } = expression;
   if (callee.type !== 'Identifier')
@@ -301,7 +301,7 @@ export function isDuplicateFallback(
   },))
     return false;
   /**
-   * Value passed to direct String conversion.
+   Value passed to direct String conversion.
    */
   const [argument, ...remainingArguments] = expression.arguments;
   return (remainingArguments.length === 0)
@@ -311,20 +311,20 @@ export function isDuplicateFallback(
 }
 
 /**
- * Tests whether statement returns duplicated fallback.
- *
- * @param context - Oxlint context resolving fallback globals.
- *
- * @param statement - Potential fallback statement.
- *
- * @param identifier - Detector input name.
- *
- * @returns whether statement returns categorized detector input.
- *
- * @example
- * ```ts
- * returnsDuplicateFallback({ context, statement, identifier: 'error' });
- * ```
+ Tests whether statement returns duplicated fallback.
+ 
+ @param context - Oxlint context resolving fallback globals.
+ 
+ @param statement - Potential fallback statement.
+ 
+ @param identifier - Detector input name.
+ 
+ @returns whether statement returns categorized detector input.
+ 
+ @example
+ ```ts
+ returnsDuplicateFallback({ context, statement, identifier: 'error' });
+ ```
  */
 function returnsDuplicateFallback(
   {
@@ -360,7 +360,7 @@ function returnsDuplicateFallback(
   if (statement.type !== 'BlockStatement')
     return false;
   /**
-   * Nested block statements searched for fallback returns.
+   Nested block statements searched for fallback returns.
    */
   const { body, } = statement;
   return body.some(function hasDuplicateFallback(childStatement,): boolean {
@@ -373,18 +373,18 @@ function returnsDuplicateFallback(
 }
 
 /**
- * Tests whether statement returns Error diagnostic field.
- *
- * @param statement - Consequent statement.
- *
- * @param identifier - Detector input name.
- *
- * @returns whether statement returns matching diagnostic.
- *
- * @example
- * ```ts
- * returnsErrorDiagnostic({ statement, identifier: 'error' });
- * ```
+ Tests whether statement returns Error diagnostic field.
+ 
+ @param statement - Consequent statement.
+ 
+ @param identifier - Detector input name.
+ 
+ @returns whether statement returns matching diagnostic.
+ 
+ @example
+ ```ts
+ returnsErrorDiagnostic({ statement, identifier: 'error' });
+ ```
  */
 function returnsErrorDiagnostic(
   {
@@ -405,7 +405,7 @@ function returnsErrorDiagnostic(
   if (statement.type !== 'BlockStatement')
     return false;
   /**
-   * First branch statement, sufficient only when branch contains one return.
+   First branch statement, sufficient only when branch contains one return.
    */
   const [onlyStatement, ...remainingStatements] = statement.body;
   return (remainingStatements.length === 0)
@@ -417,18 +417,18 @@ function returnsErrorDiagnostic(
 }
 
 /**
- * Tests whether function starts local caught-value formatter implementation.
- *
- * @param context - Oxlint context resolving detector and fallback globals.
- *
- * @param node - Function declaration or expression.
- *
- * @returns whether body duplicates shared formatter behavior.
- *
- * @example
- * ```ts
- * duplicatesCaughtValueFormatter({ context, node });
- * ```
+ Tests whether function starts local caught-value formatter implementation.
+ 
+ @param context - Oxlint context resolving detector and fallback globals.
+ 
+ @param node - Function declaration or expression.
+ 
+ @returns whether body duplicates shared formatter behavior.
+ 
+ @example
+ ```ts
+ duplicatesCaughtValueFormatter({ context, node });
+ ```
  */
 export function duplicatesCaughtValueFormatter(
   {
@@ -440,7 +440,7 @@ export function duplicatesCaughtValueFormatter(
   }>,
 ): boolean {
   /**
-   * Function body before block-only formatter recognition.
+   Function body before block-only formatter recognition.
    */
   const { body: nodeBody, } = node;
   if (nodeBody === null)
@@ -448,17 +448,17 @@ export function duplicatesCaughtValueFormatter(
   if (nodeBody.type !== 'BlockStatement')
     return false;
   /**
-   * Body statements where compact formatter starts with Error branch.
+   Body statements where compact formatter starts with Error branch.
    */
   const { body, } = nodeBody;
   /**
-   * Leading function statement.
+   Leading function statement.
    */
   const [firstStatement,] = body;
   if ((firstStatement === undefined) || (firstStatement.type !== 'IfStatement'))
     return false;
   /**
-   * Identifier tested by leading Error branch.
+   Identifier tested by leading Error branch.
    */
   const identifier = errorDetectorIdentifier({
     context,

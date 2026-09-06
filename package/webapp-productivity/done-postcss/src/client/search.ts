@@ -1,9 +1,9 @@
 /**
- * Client entry script for the Search page.
- *
- * Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
- * The search page's HTML shell (rendered inline by the server, not via renderPage)
- * places a `\<search-bar\>` above `\<main id="app"\>` instead of a `\<top-nav\>`.
+ Client entry script for the Search page.
+ 
+ Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
+ The search page's HTML shell (rendered inline by the server, not via renderPage)
+ places a `\<search-bar\>` above `\<main id="app"\>` instead of a `\<top-nav\>`.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import styles from '../../dist/css/styles.css' with { type: 'text', };
@@ -19,27 +19,27 @@ import './component/side-drawer.ts';
 import './component/search-bar.ts';
 
 /**
- * Shape of the JSON blob embedded in the search page by the server.
+ Shape of the JSON blob embedded in the search page by the server.
  */
 type SearchPageData = {
   /**
-   * Current search query string.
+   Current search query string.
    */
   query: string;
   /**
-   * Matching tasks from search.
+   Matching tasks from search.
    */
   results: SearchTask[];
   /**
-   * All unique tags for category browsing.
+   All unique tags for category browsing.
    */
   availableTags: string[];
 };
 
 /**
- * Navigates to the task detail page.
- *
- * @param taskId - UUID of the task to open
+ Navigates to the task detail page.
+ 
+ @param taskId - UUID of the task to open
  */
 function openTask(taskId: string,): void {
   globalThis.location
@@ -47,9 +47,9 @@ function openTask(taskId: string,): void {
 }
 
 /**
- * Completes a task, then reloads to drop it from the results.
- *
- * @param taskId - UUID of the task to complete
+ Completes a task, then reloads to drop it from the results.
+ 
+ @param taskId - UUID of the task to complete
  */
 async function completeTask(taskId: string,): Promise<void> {
   await api({
@@ -64,19 +64,19 @@ injectCSS(styles,);
 injectCSS(searchStyles,);
 
 /**
- * Deserialized page data from the server-rendered JSON blob.
+ Deserialized page data from the server-rendered JSON blob.
  */
 const pageData = readPageData<SearchPageData>();
 
 /**
- * Root app container element.
+ Root app container element.
  */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
 /**
- * Typed reference to the app container.
+ Typed reference to the app container.
  */
 const app = appElement;
 
@@ -88,7 +88,7 @@ document
   function onSearch(event,) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- CustomEvent detail contains query string */
     /**
-     * Search query lifted from the custom event detail.
+     Search query lifted from the custom event detail.
      */
     const { query, } = (event as CustomEvent<{ query: string; }>).detail;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -112,7 +112,7 @@ if (pageData.query
   );
 
   /**
-   * Tag chip list extracted from `pageData`; rendered only when non-empty.
+   Tag chip list extracted from `pageData`; rendered only when non-empty.
    */
   const { availableTags, } = pageData;
   if (availableTags.length
@@ -140,7 +140,7 @@ if (pageData.query
 }
 else {
   /**
-   * List element for search results.
+   List element for search results.
    */
   const resultList = h({
     tag: 'ul',

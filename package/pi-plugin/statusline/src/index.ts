@@ -1,9 +1,9 @@
 /**
- * Pi statusline extension entry point.
- *
- * Adds one footer status segment for projected provider usage overflow warnings.
- *
- * @module
+ Pi statusline extension entry point.
+ 
+ Adds one footer status segment for projected provider usage overflow warnings.
+ 
+ @module
  */
 
 import type {
@@ -26,19 +26,19 @@ import {
 import { formatUsageWarningStatus, } from './usage-warning.ts';
 
 /**
- * Logger root for pi-statusline after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: statuslineLogger, },);
- * ```
+ Logger root for pi-statusline after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: statuslineLogger, },);
+ ```
  */
 const statuslineLogger = tagged({ tag: 'pi-statusline', },);
 
 //region Constants
 
 /**
- * Footer status key owned by this extension.
+ Footer status key owned by this extension.
  */
 const STATUS_KEY = 'pi-statusline.usage';
 
@@ -47,20 +47,20 @@ const STATUS_KEY = 'pi-statusline.usage';
 //region UI helpers
 
 /**
- * Builds theme-backed style hooks for warning segments.
- *
- * @param ctx - {@link ExtensionContext} with UI theme access
- *
- * @returns style hooks using current Pi theme colors
- *
- * @example
- * ```ts
- * const style = styleFromContext(ctx);
- * ```
+ Builds theme-backed style hooks for warning segments.
+ 
+ @param ctx - {@link ExtensionContext} with UI theme access
+ 
+ @returns style hooks using current Pi theme colors
+ 
+ @example
+ ```ts
+ const style = styleFromContext(ctx);
+ ```
  */
 function styleFromContext(ctx: ExtensionContext,): UsageWarningStyle {
   /**
-   * Current Pi theme used to color footer status text.
+   Current Pi theme used to color footer status text.
    */
   const { theme, } = ctx.ui;
 
@@ -87,16 +87,16 @@ function styleFromContext(ctx: ExtensionContext,): UsageWarningStyle {
 }
 
 /**
- * Applies or clears footer status when UI is available.
- *
- * @param ctx - {@link ExtensionContext}
- *
- * @param statusText - rendered status text, empty when clearing
- *
- * @example
- * ```ts
- * setUsageStatus({ ctx, statusText: 'codex 5h →180%' });
- * ```
+ Applies or clears footer status when UI is available.
+ 
+ @param ctx - {@link ExtensionContext}
+ 
+ @param statusText - rendered status text, empty when clearing
+ 
+ @example
+ ```ts
+ setUsageStatus({ ctx, statusText: 'codex 5h →180%' });
+ ```
  */
 function setUsageStatus({
   ctx,
@@ -109,13 +109,13 @@ function setUsageStatus({
     return;
 
   /**
-   * Whether a non-empty status should be shown.
+   Whether a non-empty status should be shown.
    */
   const hasStatusText = statusText
     .length
     > 0;
   /**
-   * Next footer status value; `undefined` tells Pi to clear this key.
+   Next footer status value; `undefined` tells Pi to clear this key.
    */
   const nextStatus = hasStatusText ? statusText : undefined;
 
@@ -128,16 +128,16 @@ function setUsageStatus({
 }
 
 /**
- * Clears footer status.
- *
- * @param ctx - {@link ExtensionContext}
- *
- * @param log - tagged logger for lifecycle notes
- *
- * @example
- * ```ts
- * clearStatus({ ctx, log });
- * ```
+ Clears footer status.
+ 
+ @param ctx - {@link ExtensionContext}
+ 
+ @param log - tagged logger for lifecycle notes
+ 
+ @example
+ ```ts
+ clearStatus({ ctx, log });
+ ```
  */
 function clearStatus({
   ctx,
@@ -158,22 +158,22 @@ function clearStatus({
 //region Extension entry point
 
 /**
- * Pi statusline extension.
- *
- * Subscribes to provider responses, samples supported provider usage headers, and
- * renders only the projected-overflow warning portion ported from the Claude Code statusline.
- *
- * @param pi - {@link ExtensionAPI}
- *
- * @example
- * ```typescript
- * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi-plugin/statusline"] }
- * ```
+ Pi statusline extension.
+ 
+ Subscribes to provider responses, samples supported provider usage headers, and
+ renders only the projected-overflow warning portion ported from the Claude Code statusline.
+ 
+ @param pi - {@link ExtensionAPI}
+ 
+ @example
+ ```typescript
+ // In ~/.pi/agent/settings.json:
+ { "packages": ["./packages/pi-plugin/statusline"] }
+ ```
  */
 export default function statusline(pi: ForeignBorrowed<ExtensionAPI>,): void {
   /**
-   * Entry-point logger tagged by function name.
+   Entry-point logger tagged by function name.
    */
   const log = tagged({
     tag: statusline.name,
@@ -213,13 +213,13 @@ export default function statusline(pi: ForeignBorrowed<ExtensionAPI>,): void {
       ctx,
     ) {
       /**
-       * Warning style hooks. Plain style keeps non-UI modes from touching theme state.
+       Warning style hooks. Plain style keeps non-UI modes from touching theme state.
        */
       const style = ctx.hasUI
         ? styleFromContext(ctx,)
         : PLAIN_USAGE_WARNING_STYLE;
       /**
-       * Formatted status from current provider response headers.
+       Formatted status from current provider response headers.
        */
       const result = formatUsageWarningStatus({
         headers: event.headers,
@@ -232,7 +232,7 @@ export default function statusline(pi: ForeignBorrowed<ExtensionAPI>,): void {
         statusText: result.statusText,
       },);
       /**
-       * Whether formatted status contains at least one visible warning.
+       Whether formatted status contains at least one visible warning.
        */
       const hasWarningStatus = result.statusText
         .length

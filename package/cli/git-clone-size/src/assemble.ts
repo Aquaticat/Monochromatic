@@ -29,10 +29,10 @@ import type {
 } from './types.ts';
 
 /**
- * Immutable accumulator of every probe/metadata signal seen so far. Fields are
- * optional and filled as signals land; the estimate is rebuilt from this on
- * each refinement, and a landed signal produces a new value rather than mutating
- * in place.
+ Immutable accumulator of every probe/metadata signal seen so far. Fields are
+ optional and filled as signals land; the estimate is rebuilt from this on
+ each refinement, and a landed signal produces a new value rather than mutating
+ in place.
  */
 export type Signals = {
   readonly shallowBytes?: number;
@@ -50,16 +50,16 @@ export type Signals = {
 };
 
 /**
- * Builds the deepen estimate from the current signals, resolving the commit
- * count from the best available source and flagging uncertainty.
- *
- * @param signals - current accumulated signals
- *
- * @param c1Bytes - shallow tip bytes
- *
- * @param defaultBranchOnly - whether to skip branch correction
- *
- * @returns the deepen estimate
+ Builds the deepen estimate from the current signals, resolving the commit
+ count from the best available source and flagging uncertainty.
+ 
+ @param signals - current accumulated signals
+ 
+ @param c1Bytes - shallow tip bytes
+ 
+ @param defaultBranchOnly - whether to skip branch correction
+ 
+ @returns the deepen estimate
  */
 function deepenFromSignals(
   {
@@ -75,7 +75,7 @@ function deepenFromSignals(
   },
 ): Estimate {
   /**
-   * Commit count: host API, else tree:0 count, else the deepen walk count.
+   Commit count: host API, else tree:0 count, else the deepen walk count.
    */
   const commitCount = signals.commit
     ?.count
@@ -83,8 +83,8 @@ function deepenFromSignals(
     ?.count
     ?? deepen.observedCommits;
   /**
-   * Whether the count is only a lower bound (host lower bound or capped walk
-   * with no exact source).
+   Whether the count is only a lower bound (host lower bound or capped walk
+   with no exact source).
    */
   const commitUncertain = (signals.commit
     ?.lowerBound
@@ -108,24 +108,24 @@ function deepenFromSignals(
 }
 
 /**
- * Rebuilds the estimator set from the current signals. A local exact value
- * ({@link localExactEstimate}) or host proxy ({@link hostProxyEstimate})
- * contributes directly; with a shallow tip known, the deepen
- * ({@link deepenEstimate}), churn ({@link churnEstimate}), and prior
- * ({@link priorEstimate}) estimators are added. Always returns at least one
- * estimator so the fusion never sees an empty set, falling back to
- * {@link priorAbsentEstimate} when no signal has landed.
- *
- * @param signals - current accumulated signals
- *
- * @param defaultBranchOnly - whether to skip branch correction
- *
- * @returns estimators reflecting all signals seen so far
- *
- * @example
- * ```ts
- * const estimates = buildEstimates({ signals: { shallowBytes: 4_000_000 }, defaultBranchOnly: false });
- * ```
+ Rebuilds the estimator set from the current signals. A local exact value
+ ({@link localExactEstimate}) or host proxy ({@link hostProxyEstimate})
+ contributes directly; with a shallow tip known, the deepen
+ ({@link deepenEstimate}), churn ({@link churnEstimate}), and prior
+ ({@link priorEstimate}) estimators are added. Always returns at least one
+ estimator so the fusion never sees an empty set, falling back to
+ {@link priorAbsentEstimate} when no signal has landed.
+ 
+ @param signals - current accumulated signals
+ 
+ @param defaultBranchOnly - whether to skip branch correction
+ 
+ @returns estimators reflecting all signals seen so far
+ 
+ @example
+ ```ts
+ const estimates = buildEstimates({ signals: { shallowBytes: 4_000_000 }, defaultBranchOnly: false });
+ ```
  */
 export function buildEstimates(
   {
@@ -137,7 +137,7 @@ export function buildEstimates(
   },
 ): readonly Estimate[] {
   /**
-   * Estimators accumulated from the present signals.
+   Estimators accumulated from the present signals.
    */
   const estimates: Estimate[] = [];
   if (signals.local !== undefined)
@@ -145,7 +145,7 @@ export function buildEstimates(
   if (signals.storageBytes !== undefined)
     estimates.push(hostProxyEstimate({ storageBytes: signals.storageBytes, },),);
   /**
-   * Shallow tip bytes, the basis for the extrapolation and prior estimators.
+   Shallow tip bytes, the basis for the extrapolation and prior estimators.
    */
   const c1Bytes = signals.shallowBytes;
   if ((c1Bytes !== undefined) && (c1Bytes > 0)) {
@@ -172,18 +172,18 @@ export function buildEstimates(
 }
 
 /**
- * Computes which signals are still in flight, for the snapshot's `pending` list.
- *
- * @param signals - current accumulated signals
- *
- * @param source - the source being estimated
- *
- * @returns names of signals not yet landed
- *
- * @example
- * ```ts
- * computePending({ signals: {}, source: { kind: 'local', path: '/repo' } }); // ['local-exact']
- * ```
+ Computes which signals are still in flight, for the snapshot's `pending` list.
+ 
+ @param signals - current accumulated signals
+ 
+ @param source - the source being estimated
+ 
+ @returns names of signals not yet landed
+ 
+ @example
+ ```ts
+ computePending({ signals: {}, source: { kind: 'local', path: '/repo' } }); // ['local-exact']
+ ```
  */
 export function computePending(
   {
@@ -197,7 +197,7 @@ export function computePending(
   if (source.kind === 'local')
     return signals.local === undefined ? ['local-exact',] : [];
   /**
-   * Each expected remote signal paired with whether it has landed.
+   Each expected remote signal paired with whether it has landed.
    */
   const labels: readonly (readonly [
     string,
@@ -238,27 +238,27 @@ export function computePending(
 }
 
 /**
- * Assembles one JSONL snapshot from the fused belief and the shallow size.
- * `ratio` and `savings` appear only once a shallow measurement exists.
- *
- * @param fused - combined full-size belief
- *
- * @param shallowBytes - measured shallow bytes, when available
- *
- * @param metric - metric contract line
- *
- * @param scope - scope line
- *
- * @param pending - signals still in flight
- *
- * @param done - whether this is the final snapshot
- *
- * @returns one snapshot object ready to serialize
- *
- * @example
- * ```ts
- * buildSnapshot({ fused, metric, scope, pending: [], done: true });
- * ```
+ Assembles one JSONL snapshot from the fused belief and the shallow size.
+ `ratio` and `savings` appear only once a shallow measurement exists.
+ 
+ @param fused - combined full-size belief
+ 
+ @param shallowBytes - measured shallow bytes, when available
+ 
+ @param metric - metric contract line
+ 
+ @param scope - scope line
+ 
+ @param pending - signals still in flight
+ 
+ @param done - whether this is the final snapshot
+ 
+ @returns one snapshot object ready to serialize
+ 
+ @example
+ ```ts
+ buildSnapshot({ fused, metric, scope, pending: [], done: true });
+ ```
  */
 export function buildSnapshot(
   {
@@ -278,7 +278,7 @@ export function buildSnapshot(
   },
 ): EstimateSnapshot {
   /**
-   * Full-size range with confidence, always present.
+   Full-size range with confidence, always present.
    */
   const full = {
     confidence: fused.confidence,
@@ -296,7 +296,7 @@ export function buildSnapshot(
       scope,
     };
   /**
-   * Shallow/full ratio derived from the exact shallow bytes.
+   Shallow/full ratio derived from the exact shallow bytes.
    */
   const ratio = computeRatio({
     full: {

@@ -1,13 +1,13 @@
 /**
- * Convert a toml-test tagged tree into a {@link tomlSet} value input.
- *
- * The encoder adapter receives the same tagged JSON dialect the decoder emits
- * and must rebuild a JS value that {@link tomlSet} serializes back to TOML. Integers
- * become `bigint` wrappers so 64-bit values survive, offset datetimes become a
- * JS `Date` (emitted as an RFC 3339 instant), and the three local datetime
- * kinds become tagged wrappers since a `Date` cannot distinguish them.
- *
- * @module
+ Convert a toml-test tagged tree into a {@link tomlSet} value input.
+ 
+ The encoder adapter receives the same tagged JSON dialect the decoder emits
+ and must rebuild a JS value that {@link tomlSet} serializes back to TOML. Integers
+ become `bigint` wrappers so 64-bit values survive, offset datetimes become a
+ JS `Date` (emitted as an RFC 3339 instant), and the three local datetime
+ kinds become tagged wrappers since a `Date` cannot distinguish them.
+ 
+ @module
  */
 
 import type { TomlWrappedInput, } from '../index.ts';
@@ -15,7 +15,7 @@ import type { TomlWrappedInput, } from '../index.ts';
 import type { TaggedType, } from './tagged-types.ts';
 
 /**
- * Recognized tagged-scalar type names, for distinguishing scalars from tables.
+ Recognized tagged-scalar type names, for distinguishing scalars from tables.
  */
 const TAG_NAMES: ReadonlySet<string> = new Set<TaggedType>([
   'string',
@@ -29,16 +29,16 @@ const TAG_NAMES: ReadonlySet<string> = new Set<TaggedType>([
 ],);
 
 /**
- * Test whether `value` is a plain object record (not an array, not null).
- *
- * @param value - Arbitrary parsed JSON node.
- *
- * @returns True when `value` is a non-array object.
- *
- * @example
- * ```ts
- * isRecord({ a: 1, }); // true
- * ```
+ Test whether `value` is a plain object record (not an array, not null).
+ 
+ @param value - Arbitrary parsed JSON node.
+ 
+ @returns True when `value` is a non-array object.
+ 
+ @example
+ ```ts
+ isRecord({ a: 1, }); // true
+ ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return ((typeof value) === 'object') && (value !== null)
@@ -46,20 +46,20 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Test whether a record is a tagged scalar rather than a table.
- *
- * A tagged scalar carries a string `type` drawn from the toml-test vocabulary;
- * a table whose source had a `type` key holds a nested node there instead, so
- * the string check is decisive.
- *
- * @param value - Record to classify.
- *
- * @returns True when `value` is a tagged scalar.
- *
- * @example
- * ```ts
- * isTaggedScalar({ type: 'bool', value: 'true', }); // true
- * ```
+ Test whether a record is a tagged scalar rather than a table.
+ 
+ A tagged scalar carries a string `type` drawn from the toml-test vocabulary;
+ a table whose source had a `type` key holds a nested node there instead, so
+ the string check is decisive.
+ 
+ @param value - Record to classify.
+ 
+ @returns True when `value` is a tagged scalar.
+ 
+ @example
+ ```ts
+ isTaggedScalar({ type: 'bool', value: 'true', }); // true
+ ```
  */
 function isTaggedScalar(
   value: Readonly<Record<string, unknown>>,
@@ -73,20 +73,20 @@ function isTaggedScalar(
 }
 
 /**
- * Parse a tagged float payload, including the special spellings.
- *
- * @param value - Float payload from the tagged scalar.
- *
- * @returns Numeric value, with `inf` / `-inf` / `nan` mapped to JS specials.
- *
- * @example
- * ```ts
- * floatFromTag('-inf'); // Number.NEGATIVE_INFINITY
- * ```
+ Parse a tagged float payload, including the special spellings.
+ 
+ @param value - Float payload from the tagged scalar.
+ 
+ @returns Numeric value, with `inf` / `-inf` / `nan` mapped to JS specials.
+ 
+ @example
+ ```ts
+ floatFromTag('-inf'); // Number.NEGATIVE_INFINITY
+ ```
  */
 function floatFromTag(value: string,): number {
   /**
-   * Lower-cased payload so the sign-and-word spellings collapse to a few cases.
+   Lower-cased payload so the sign-and-word spellings collapse to a few cases.
    */
   const lower = value.toLowerCase();
   if ((lower === 'nan') || (lower === '+nan')
@@ -100,21 +100,21 @@ function floatFromTag(value: string,): number {
 }
 
 /**
- * Convert one tagged scalar into its {@link tomlSet} value input.
- *
- * @param type - Tagged scalar type name.
- *
- * @param value - Tagged scalar payload string.
- *
- * @returns Value input: a primitive, a `Date`, or a tagged wrapper object.
- *
- * @throws SyntaxError when an integer payload is not a valid `bigint` literal,
- *         so malformed encoder input rejects rather than corrupting output.
- *
- * @example
- * ```ts
- * scalarToInput({ type: 'integer', value: '255', }); // { tomlKind: 'integer', value: 255n }
- * ```
+ Convert one tagged scalar into its {@link tomlSet} value input.
+ 
+ @param type - Tagged scalar type name.
+ 
+ @param value - Tagged scalar payload string.
+ 
+ @returns Value input: a primitive, a `Date`, or a tagged wrapper object.
+ 
+ @throws SyntaxError when an integer payload is not a valid `bigint` literal,
+         so malformed encoder input rejects rather than corrupting output.
+ 
+ @example
+ ```ts
+ scalarToInput({ type: 'integer', value: '255', }); // { tomlKind: 'integer', value: 255n }
+ ```
  */
 function scalarToInput(
   {
@@ -158,32 +158,32 @@ function scalarToInput(
 }
 
 /**
- * Convert a tagged tree (scalar, array, or table) into a {@link tomlSet} value input.
- *
- * @param tree - Parsed tagged JSON node.
- *
- * @returns Value input understood by {@link tomlSet}.
- *
- * @throws Error when a node is neither a tagged scalar, an array, nor a table.
- *
- * @mutates tree - Traversal can invoke caller-owned array, proxy, and property-access hooks recursively.
- *
- * @example
- * ```ts
- * taggedToInput({ tree: { a: { type: 'bool', value: 'true', } }, }); // { a: true }
- * ```
+ Convert a tagged tree (scalar, array, or table) into a {@link tomlSet} value input.
+ 
+ @param tree - Parsed tagged JSON node.
+ 
+ @returns Value input understood by {@link tomlSet}.
+ 
+ @throws Error when a node is neither a tagged scalar, an array, nor a table.
+ 
+ @mutates tree - Traversal can invoke caller-owned array, proxy, and property-access hooks recursively.
+ 
+ @example
+ ```ts
+ taggedToInput({ tree: { a: { type: 'bool', value: 'true', } }, }); // { a: true }
+ ```
  */
 export function taggedToInput({ tree, }: { readonly tree: unknown; },): unknown {
   if (Array.isArray(tree,))
     return tree.map(
       /**
-       * Converts one tagged array child recursively.
-       *
-       * @param child - Tagged child value.
-       *
-       * @returns converted TOML input.
-       *
-       * @mutates child - Recursive traversal can invoke caller-owned array, proxy, and accessor hooks.
+       Converts one tagged array child recursively.
+       
+       @param child - Tagged child value.
+       
+       @returns converted TOML input.
+       
+       @mutates child - Recursive traversal can invoke caller-owned array, proxy, and accessor hooks.
        */
       function element(child,) {
         return taggedToInput({ tree: child, },);
@@ -199,17 +199,17 @@ export function taggedToInput({ tree, }: { readonly tree: unknown; },): unknown 
       Object.entries(tree,)
         .map(
           /**
-           * Converts one tagged table entry recursively.
-           *
-           * @param taggedEntry - Tagged table key and child pair.
-           *
-           * @returns converted key and TOML input pair.
-           *
-           * @mutates taggedEntry - Recursive child traversal can invoke caller-owned array, proxy, and accessor hooks.
+           Converts one tagged table entry recursively.
+           
+           @param taggedEntry - Tagged table key and child pair.
+           
+           @returns converted key and TOML input pair.
+           
+           @mutates taggedEntry - Recursive child traversal can invoke caller-owned array, proxy, and accessor hooks.
            */
           function entry(taggedEntry,) {
           /**
-           * Tagged key and child selected by current entry.
+           Tagged key and child selected by current entry.
            */
           const [key, child,] = taggedEntry;
           return [

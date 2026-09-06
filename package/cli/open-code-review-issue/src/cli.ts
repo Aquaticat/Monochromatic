@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Executable entry point for OpenCodeReview Issue adapter.
- *
- * @module
+ Executable entry point for OpenCodeReview Issue adapter.
+ 
+ @module
  */
 
 import process from 'node:process';
@@ -10,7 +10,7 @@ import process from 'node:process';
 import { runCli, } from './cli-entry.ts';
 
 /**
- * Settled command exit status.
+ Settled command exit status.
  */
 const status = await runCli({
   arguments: process.argv

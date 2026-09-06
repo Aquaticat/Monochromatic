@@ -1,9 +1,9 @@
 /**
- * Desktop entry key application logic.
- *
- * Applies parsed key-value pairs from a `.desktop` file to a mutable result object.
- *
- * @module
+ Desktop entry key application logic.
+ 
+ Applies parsed key-value pairs from a `.desktop` file to a mutable result object.
+ 
+ @module
  */
 
 import {
@@ -12,27 +12,27 @@ import {
 } from './desktop-entry-types.ts';
 
 /**
- * Returns a copy of `entry` with the field(s) the parsed key sets updated.
- * Unrecognized keys yield `entry` unchanged. Returning a fully-shaped
- * {@link DesktopEntry} (rather than a `Partial` to merge) keeps the slot exactly
- * entry-shaped, avoiding the `Partial` that would reopen
- * exactOptionalPropertyTypes holes; the immutable update keeps the param
- * deeply readonly. Escape-bearing keys (TryExec and the X-TerminalArg* family)
- * run their value through {@link expandEscapes} before storing it.
- *
- * @param entry - Current parse accumulator; never mutated.
- *
- * @param key - Desktop entry key name.
- *
- * @param value - Raw value string.
- *
- * @returns Updated entry for a recognized key; the same `entry` otherwise.
- *
- * @example
- * ```ts
- * const next = applyKey({ entry: createEmptyEntry(), key: 'Exec', value: '/usr/bin/xterm' });
- * // next.exec === '/usr/bin/xterm'
- * ```
+ Returns a copy of `entry` with the field(s) the parsed key sets updated.
+ Unrecognized keys yield `entry` unchanged. Returning a fully-shaped
+ {@link DesktopEntry} (rather than a `Partial` to merge) keeps the slot exactly
+ entry-shaped, avoiding the `Partial` that would reopen
+ exactOptionalPropertyTypes holes; the immutable update keeps the param
+ deeply readonly. Escape-bearing keys (TryExec and the X-TerminalArg* family)
+ run their value through {@link expandEscapes} before storing it.
+ 
+ @param entry - Current parse accumulator; never mutated.
+ 
+ @param key - Desktop entry key name.
+ 
+ @param value - Raw value string.
+ 
+ @returns Updated entry for a recognized key; the same `entry` otherwise.
+ 
+ @example
+ ```ts
+ const next = applyKey({ entry: createEmptyEntry(), key: 'Exec', value: '/usr/bin/xterm' });
+ // next.exec === '/usr/bin/xterm'
+ ```
  */
 export function applyKey({
   entry,

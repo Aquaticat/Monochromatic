@@ -38,28 +38,28 @@ export { synchronizeBypassRoutes, } from './tunnel-bypass-route.ts';
 export { readBypassStatePath, } from './tunnel-bypass-state.ts';
 
 /**
- * Module logger for bypass ownership lifecycle.
+ Module logger for bypass ownership lifecycle.
  */
 const l = tagged({ tag: 'tunnel-bypass', },);
 
 /**
- * Adds exact owned mark rule for each address family.
- *
- * @param state - Persisted mark,
- * table,
- * preference,
- * and protocol ownership.
- *
- * @example
- * ```ts
- * await addBypassRules({ state });
- * ```
+ Adds exact owned mark rule for each address family.
+ 
+ @param state - Persisted mark,
+ table,
+ preference,
+ and protocol ownership.
+ 
+ @example
+ ```ts
+ await addBypassRules({ state });
+ ```
  */
 async function addBypassRules(
   { state, }: { readonly state: BypassState; },
 ): Promise<void> {
   /**
-   * Primitive rule fields copied from caller state.
+   Primitive rule fields copied from caller state.
    */
   const {
     mark,
@@ -87,20 +87,20 @@ async function addBypassRules(
 }
 
 /**
- * Removes exact owned mark rules idempotently.
- *
- * @param state - Persisted rule identity.
- *
- * @example
- * ```ts
- * await removeBypassRules({ state });
- * ```
+ Removes exact owned mark rules idempotently.
+ 
+ @param state - Persisted rule identity.
+ 
+ @example
+ ```ts
+ await removeBypassRules({ state });
+ ```
  */
 async function removeBypassRules(
   { state, }: { readonly state: BypassState; },
 ): Promise<void> {
   /**
-   * Primitive rule fields copied from caller state.
+   Primitive rule fields copied from caller state.
    */
   const {
     mark,
@@ -127,37 +127,37 @@ async function removeBypassRules(
 }
 
 /**
- * Removes watcher,
- * exact rules,
- * protocol-tagged defaults,
- * state,
- * and cooperative locks.
- *
- * @param state - Persisted ownership state.
- *
- * @example
- * ```ts
- * await cleanupBypassState({ state });
- * ```
+ Removes watcher,
+ exact rules,
+ protocol-tagged defaults,
+ state,
+ and cooperative locks.
+ 
+ @param state - Persisted ownership state.
+ 
+ @example
+ ```ts
+ await cleanupBypassState({ state });
+ ```
  */
 async function cleanupBypassState(
   { state, }: { readonly state: BypassState; },
 ): Promise<void> {
   /**
-   * Watcher stop attempted before route removal to avoid resynchronization race.
+   Watcher stop attempted before route removal to avoid resynchronization race.
    */
   const watcherResults = await Promise.allSettled([
     stopBypassWatcher({ state, },),
   ],);
   /**
-   * Network cleanup attempted even when sidecar validation blocks watcher signaling.
+   Network cleanup attempted even when sidecar validation blocks watcher signaling.
    */
   const networkResults = await Promise.allSettled([
     removeBypassRules({ state, },),
     removeOwnedBypassRoutes({ state, },),
   ],);
   /**
-   * All rejected cleanup operations whose ownership must remain persisted.
+   All rejected cleanup operations whose ownership must remain persisted.
    */
   const failures = [
     ...watcherResults,
@@ -179,26 +179,26 @@ async function cleanupBypassState(
 }
 
 /**
- * Installs collision-safe policy route for exempt-marked traffic.
- *
- * Physical defaults are copied into dynamically claimed table.
- * Missing family gets unreachable default,
- * preventing marked traffic from falling through to VPN policy.
- * Supervised watcher resynchronizes after DHCP,
- * router advertisement,
- * and roaming changes.
- *
- * @param interfaceName - Tunnel interface owning bypass state.
- *
- * @param mark - Socket mark identifying exempt traffic.
- *
- * @param watchRouteChanges - Whether to start detached watcher
- * in caller's privilege and network namespace.
- *
- * @example
- * ```ts
- * await addExemptRule({ interfaceName: 'wg0', mark: 8888, watchRouteChanges: true });
- * ```
+ Installs collision-safe policy route for exempt-marked traffic.
+ 
+ Physical defaults are copied into dynamically claimed table.
+ Missing family gets unreachable default,
+ preventing marked traffic from falling through to VPN policy.
+ Supervised watcher resynchronizes after DHCP,
+ router advertisement,
+ and roaming changes.
+ 
+ @param interfaceName - Tunnel interface owning bypass state.
+ 
+ @param mark - Socket mark identifying exempt traffic.
+ 
+ @param watchRouteChanges - Whether to start detached watcher
+ in caller's privilege and network namespace.
+ 
+ @example
+ ```ts
+ await addExemptRule({ interfaceName: 'wg0', mark: 8888, watchRouteChanges: true });
+ ```
  */
 export async function addExemptRule(
   {
@@ -212,21 +212,21 @@ export async function addExemptRule(
   },
 ): Promise<void> {
   /**
-   * Function-scoped logger for setup lifecycle.
+   Function-scoped logger for setup lifecycle.
    */
   const fl = tagged({
     tag: addExemptRule.name,
     l,
   },);
   /**
-   * Kernel lock serializing same-interface up,
-   * down,
-   * stale cleanup,
-   * and persistence.
+   Kernel lock serializing same-interface up,
+   down,
+   stale cleanup,
+   and persistence.
    */
   await using interfaceOperation = await claimBypassInterfaceOperationInternal({ interfaceName, },);
   /**
-   * Physical defaults confirmed before replacing any working prior lifecycle.
+   Physical defaults confirmed before replacing any working prior lifecycle.
    */
   const physical = await readPhysicalDefaults();
   if (physical.length === 0) {
@@ -235,7 +235,7 @@ export async function addExemptRule(
     );
   }
   /**
-   * Existing state from interrupted prior lifecycle.
+   Existing state from interrupted prior lifecycle.
    */
   const existing = await readBypassState({ interfaceName, },);
   if (existing !== BYPASS_STATE_ABSENT) {
@@ -243,11 +243,11 @@ export async function addExemptRule(
     await cleanupBypassState({ state: existing, },);
   }
   /**
-   * Global kernel lock spans resource scan through kernel-visible installation.
+   Global kernel lock spans resource scan through kernel-visible installation.
    */
   await using allocationOperation = await claimBypassAllocationOperationInternal();
   /**
-   * Collision-safe resources covered by rollback before persistence.
+   Collision-safe resources covered by rollback before persistence.
    */
   const state = await claimBypassState({
     interfaceName,
@@ -256,7 +256,7 @@ export async function addExemptRule(
   try {
     await persistBypassState({ state, },);
     /**
-     * Physical defaults observed during initial synchronization.
+     Physical defaults observed during initial synchronization.
      */
     const synchronized = await synchronizeBypassRoutesInternal({ state, },);
     if (synchronized === 0) {
@@ -274,7 +274,7 @@ export async function addExemptRule(
   catch (error) {
     fl.error(`failed to install bypass state for ${interfaceName}: ${String(error,)}`,);
     /**
-     * Latest transition fingerprints ensure rollback removes every installed route form.
+     Latest transition fingerprints ensure rollback removes every installed route form.
      */
     const persisted = await readBypassState({ interfaceName, },);
     await cleanupBypassState({
@@ -287,29 +287,29 @@ export async function addExemptRule(
 }
 
 /**
- * Removes persisted application-bypass state for interface.
- *
- * Teardown discovers mark,
- * table,
- * and preference from root-owned state rather than current config values.
- * Absence is idempotent.
- *
- * @param interfaceName - Tunnel interface whose state is removed.
- *
- * @example
- * ```ts
- * await removeExemptRule({ interfaceName: 'wg0' });
- * ```
+ Removes persisted application-bypass state for interface.
+ 
+ Teardown discovers mark,
+ table,
+ and preference from root-owned state rather than current config values.
+ Absence is idempotent.
+ 
+ @param interfaceName - Tunnel interface whose state is removed.
+ 
+ @example
+ ```ts
+ await removeExemptRule({ interfaceName: 'wg0' });
+ ```
  */
 export async function removeExemptRule(
   { interfaceName, }: { readonly interfaceName: string; },
 ): Promise<void> {
   /**
-   * Kernel lock preventing concurrent replacement or duplicate teardown.
+   Kernel lock preventing concurrent replacement or duplicate teardown.
    */
   await using interfaceOperation = await claimBypassInterfaceOperationInternal({ interfaceName, },);
   /**
-   * Persisted state when bypass setup completed or partially completed.
+   Persisted state when bypass setup completed or partially completed.
    */
   const state = await readBypassState({ interfaceName, },);
   if (state === BYPASS_STATE_ABSENT) {

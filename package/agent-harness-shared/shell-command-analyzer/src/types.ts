@@ -1,7 +1,7 @@
 /**
- * Public shell-command analyzer types.
- *
- * @module
+ Public shell-command analyzer types.
+ 
+ @module
  */
 
 import type { RedirectOperator as UnbashRedirectOperator, } from 'unbash';
@@ -9,45 +9,45 @@ import type { RedirectOperator as UnbashRedirectOperator, } from 'unbash';
 //region Command context
 
 /**
- * Literal values assigned by one enclosing shell `for` loop.
+ Literal values assigned by one enclosing shell `for` loop.
  */
 type ShellLoopBinding = {
   /**
-   * Loop variable name referenced by body commands.
+   Loop variable name referenced by body commands.
    */
   readonly name: string;
   /**
-   * Parsed source words assigned across loop iterations.
+   Parsed source words assigned across loop iterations.
    */
   readonly values: readonly string[];
   /**
-   * Original shell spellings paired with parsed values.
+   Original shell spellings paired with parsed values.
    */
   readonly sourceTexts: readonly string[];
 };
 
 /**
- * Context describing when a parsed command can execute.
+ Context describing when a parsed command can execute.
  */
 type ShellCommandContext = {
   /**
-   * Lexically enclosing `for` bindings from outermost to innermost loop.
+   Lexically enclosing `for` bindings from outermost to innermost loop.
    */
   readonly loopBindings: readonly ShellLoopBinding[];
 } & (
   | {
     /**
-     * Command is evaluated as part of script's immediate control flow.
+     Command is evaluated as part of script's immediate control flow.
      */
     readonly kind: 'executed';
   }
   | {
     /**
-     * Command is stored in a function body and runs only if that function is called.
+     Command is stored in a function body and runs only if that function is called.
      */
     readonly kind: 'functionDefinition';
     /**
-     * Function name whose body contains the command.
+     Function name whose body contains the command.
      */
     readonly functionName: string;
   }
@@ -58,35 +58,35 @@ type ShellCommandContext = {
 //region Command records
 
 /**
- * Parsed shell word paired with original source spelling.
+ Parsed shell word paired with original source spelling.
  */
 type ShellWordSource = {
   /**
-   * Value after quote removal but before shell runtime expansion.
+   Value after quote removal but before shell runtime expansion.
    */
   readonly value: string;
   /**
-   * Original shell source spelling including quotes and escapes.
+   Original shell source spelling including quotes and escapes.
    */
   readonly sourceText: string;
 };
 
 /**
- * Environment assignment prefix parsed before shell command name.
+ Environment assignment prefix parsed before shell command name.
  */
 type ShellEnvAssignment = {
   /**
-   * Variable name receiving assignment.
+   Variable name receiving assignment.
    */
   readonly name: string;
   /**
-   * Assignment value after shell word parsing.
+   Assignment value after shell word parsing.
    */
   readonly value: string;
 };
 
 /**
- * Redirect target classification derived from operator and target shape.
+ Redirect target classification derived from operator and target shape.
  */
 type ShellRedirectKind =
   | 'file'
@@ -95,77 +95,77 @@ type ShellRedirectKind =
   | 'hereString';
 
 /**
- * Parsed redirect attached to a command or compound command.
+ Parsed redirect attached to a command or compound command.
  */
 type ShellRedirect = {
   /**
-   * Bash redirect operator reported by `unbash`.
+   Bash redirect operator reported by `unbash`.
    */
   readonly operator: UnbashRedirectOperator;
   /**
-   * Parsed target word value, when present.
+   Parsed target word value, when present.
    */
   readonly target?: string;
   /**
-   * Original source spelling for target word, when present.
+   Original source spelling for target word, when present.
    */
   readonly targetSourceText?: string;
   /**
-   * Explicit file descriptor before redirect operator, when present.
+   Explicit file descriptor before redirect operator, when present.
    */
   readonly fileDescriptor?: number;
   /**
-   * Destination category useful for callers deciding whether redirects touch files.
+   Destination category useful for callers deciding whether redirects touch files.
    */
   readonly kind: ShellRedirectKind;
   /**
-   * Whether redirect writes output to a file-like target.
+   Whether redirect writes output to a file-like target.
    */
   readonly writesFile: boolean;
   /**
-   * Whether redirect reads input from a file-like target.
+   Whether redirect reads input from a file-like target.
    */
   readonly readsFile: boolean;
 };
 
 /**
- * Parsed simple shell command.
+ Parsed simple shell command.
  */
 type ShellCommandInfo = {
   /**
-   * Command name, for example `rm` or `sudo`.
+   Command name, for example `rm` or `sudo`.
    */
   readonly name: string;
   /**
-   * Environment assignments that prefix command invocation.
+   Environment assignments that prefix command invocation.
    */
   readonly envAssignments: readonly ShellEnvAssignment[];
   /**
-   * Positional arguments and flags after command name.
+   Positional arguments and flags after command name.
    */
   readonly args: readonly string[];
   /**
-   * Argument values paired with original shell source spellings.
+   Argument values paired with original shell source spellings.
    */
   readonly argSources: readonly ShellWordSource[];
   /**
-   * Redirects attached to command.
+   Redirects attached to command.
    */
   readonly redirects: readonly ShellRedirect[];
   /**
-   * File-like redirect targets in source order.
+   File-like redirect targets in source order.
    */
   readonly redirectTargets: readonly string[];
   /**
-   * File-like redirect values paired with original shell source spellings.
+   File-like redirect values paired with original shell source spellings.
    */
   readonly redirectTargetSources: readonly ShellWordSource[];
   /**
-   * Pre-scanned shell parameter references from raw source.
+   Pre-scanned shell parameter references from raw source.
    */
   readonly paramRefs: readonly string[];
   /**
-   * Execution context for this command.
+   Execution context for this command.
    */
   readonly context: ShellCommandContext;
 };
@@ -175,69 +175,69 @@ type ShellCommandInfo = {
 //region Analysis results
 
 /**
- * Parser diagnostic surfaced by `unbash` or parser wrapper.
+ Parser diagnostic surfaced by `unbash` or parser wrapper.
  */
 type ShellParseError = {
   /**
-   * Human-readable parse diagnostic.
+   Human-readable parse diagnostic.
    */
   readonly message: string;
   /**
-   * Source offset reported by parser.
+   Source offset reported by parser.
    */
   readonly pos: number;
 };
 
 /**
- * Result of analyzing a shell command string.
+ Result of analyzing a shell command string.
  */
 type ShellCommandAnalysis = {
   /**
-   * Whether complete command parsed without diagnostics.
+   Whether complete command parsed without diagnostics.
    */
   readonly parsed: boolean;
   /**
-   * Parser diagnostics when `parsed` is false.
+   Parser diagnostics when `parsed` is false.
    */
   readonly parseErrors: readonly ShellParseError[];
   /**
-   * Commands in traversal order, including commands stored in function bodies.
+   Commands in traversal order, including commands stored in function bodies.
    */
   readonly commands: readonly ShellCommandInfo[];
   /**
-   * Commands evaluated outside function definitions.
+   Commands evaluated outside function definitions.
    */
   readonly executedCommands: readonly ShellCommandInfo[];
   /**
-   * Commands stored inside function bodies.
+   Commands stored inside function bodies.
    */
   readonly functionDefinitionCommands: readonly ShellCommandInfo[];
   /**
-   * Whether parsed syntax contains pipeline operator.
+   Whether parsed syntax contains pipeline operator.
    */
   readonly isPipeline: boolean;
   /**
-   * Whether parsed syntax backgrounds any statement.
+   Whether parsed syntax backgrounds any statement.
    */
   readonly hasBackground: boolean;
   /**
-   * Whether parsed syntax contains actual command substitution.
+   Whether parsed syntax contains actual command substitution.
    */
   readonly hasCommandSubstitution: boolean;
   /**
-   * Whether parsed syntax contains actual process substitution.
+   Whether parsed syntax contains actual process substitution.
    */
   readonly hasProcessSubstitution: boolean;
   /**
-   * Whether parsed syntax contains heredoc or here-string redirect.
+   Whether parsed syntax contains heredoc or here-string redirect.
    */
   readonly hasHeredoc: boolean;
   /**
-   * Parameter references across complete command source.
+   Parameter references across complete command source.
    */
   readonly allParamRefs: readonly string[];
   /**
-   * File-like command arguments and redirect targets across commands.
+   File-like command arguments and redirect targets across commands.
    */
   readonly allFiles: readonly string[];
 };

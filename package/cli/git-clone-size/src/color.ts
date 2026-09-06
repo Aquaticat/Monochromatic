@@ -4,32 +4,32 @@ import {
 } from 'node:util';
 
 /**
- * Color mode: `auto` decides from the stream and environment, `always`/`never`
- * force the choice.
+ Color mode: `auto` decides from the stream and environment, `always`/`never`
+ force the choice.
  */
 export type ColorMode = 'auto' | 'always' | 'never';
 
 /**
- * Characters that may appear inside a JSON number token.
+ Characters that may appear inside a JSON number token.
  */
 const NUMBER_CHARS = '-+.eE0123456789';
 
 /**
- * Decides whether to emit ANSI color. `styleText` under Bun does not reliably
- * honor a non-TTY stream or `NO_COLOR`, so the decision is made explicitly here
- * and `styleText` is invoked only when color is wanted. Honors `--color`,
- * `NO_COLOR`, `FORCE_COLOR`, and the stream's TTY status, in that order.
- *
- * @param mode - requested color mode
- *
- * @param stream - destination stream, checked for `isTTY` under `auto`
- *
- * @returns true when ANSI color should be emitted
- *
- * @example
- * ```ts
- * const on = shouldColor({ mode: 'auto', stream: process.stdout });
- * ```
+ Decides whether to emit ANSI color. `styleText` under Bun does not reliably
+ honor a non-TTY stream or `NO_COLOR`, so the decision is made explicitly here
+ and `styleText` is invoked only when color is wanted. Honors `--color`,
+ `NO_COLOR`, `FORCE_COLOR`, and the stream's TTY status, in that order.
+ 
+ @param mode - requested color mode
+ 
+ @param stream - destination stream, checked for `isTTY` under `auto`
+ 
+ @returns true when ANSI color should be emitted
+ 
+ @example
+ ```ts
+ const on = shouldColor({ mode: 'auto', stream: process.stdout });
+ ```
  */
 export function shouldColor(
   {
@@ -45,14 +45,14 @@ export function shouldColor(
   if (mode === 'always')
     return true;
   /**
-   * `NO_COLOR` disables color when present and non-empty.
+   `NO_COLOR` disables color when present and non-empty.
    */
   const noColor = process.env
     .NO_COLOR;
   if ((noColor !== undefined) && (noColor !== ''))
     return false;
   /**
-   * `FORCE_COLOR` enables color unless explicitly `0`/`false`/empty.
+   `FORCE_COLOR` enables color unless explicitly `0`/`false`/empty.
    */
   const forceColor = process.env
     .FORCE_COLOR;
@@ -63,25 +63,25 @@ export function shouldColor(
 }
 
 /**
- * Whether a character can start a JSON number token.
- *
- * @param ch - single character
- *
- * @returns true for a digit or leading minus sign
+ Whether a character can start a JSON number token.
+ 
+ @param ch - single character
+ 
+ @returns true for a digit or leading minus sign
  */
 function isNumberStart(ch: string,): boolean {
   return ((ch >= '0') && (ch <= '9')) || (ch === '-');
 }
 
 /**
- * Reads a complete JSON string token (including quotes), honoring backslash
- * escapes.
- *
- * @param json - serialized JSON
- *
- * @param start - index of the opening quote
- *
- * @returns the quoted token and the index just past the closing quote
+ Reads a complete JSON string token (including quotes), honoring backslash
+ escapes.
+ 
+ @param json - serialized JSON
+ 
+ @param start - index of the opening quote
+ 
+ @returns the quoted token and the index just past the closing quote
  */
 function readString(
   {
@@ -96,12 +96,12 @@ function readString(
   readonly next: number
 } {
   /**
-   * Scan cursor starting just inside the opening quote.
+   Scan cursor starting just inside the opening quote.
    */
   const cursor = { i: start + 1, };
   while (cursor.i < json.length) {
     /**
-     * Current character, undefined past the end.
+     Current character, undefined past the end.
      */
     const ch = json[cursor.i];
     if (ch === undefined)
@@ -126,13 +126,13 @@ function readString(
 }
 
 /**
- * Reads a complete JSON number token.
- *
- * @param json - serialized JSON
- *
- * @param start - index of the first number character
- *
- * @returns the number token and the index just past it
+ Reads a complete JSON number token.
+ 
+ @param json - serialized JSON
+ 
+ @param start - index of the first number character
+ 
+ @returns the number token and the index just past it
  */
 function readNumber(
   {
@@ -147,12 +147,12 @@ function readNumber(
   readonly next: number
 } {
   /**
-   * Scan cursor over the number characters.
+   Scan cursor over the number characters.
    */
   const cursor = { i: start, };
   while (cursor.i < json.length) {
     /**
-     * Current character, undefined past the end.
+     Current character, undefined past the end.
      */
     const ch = json[cursor.i];
     if ((ch === undefined) || (!NUMBER_CHARS.includes(ch,)))
@@ -169,13 +169,13 @@ function readNumber(
 }
 
 /**
- * First non-space character at or after an index, or empty string at the end.
- *
- * @param json - serialized JSON
- *
- * @param from - starting index
- *
- * @returns the next non-space character, or `''`
+ First non-space character at or after an index, or empty string at the end.
+ 
+ @param json - serialized JSON
+ 
+ @param from - starting index
+ 
+ @returns the next non-space character, or `''`
  */
 function peekNonSpace({
   json,
@@ -185,7 +185,7 @@ function peekNonSpace({
   readonly from: number
 },): string {
   /**
-   * Scan cursor skipping spaces.
+   Scan cursor skipping spaces.
    */
   const cursor = { i: from, };
   while ((cursor.i < json.length) && (json[cursor.i] === ' '))
@@ -194,23 +194,23 @@ function peekNonSpace({
 }
 
 /**
- * Applies ANSI styling after {@link shouldColor} already decided color is allowed.
- *
- * `node:util`'s {@link styleText} checks `NO_COLOR` by default. That is right for
- * direct calls, but this module already centralizes that policy in
- * {@link shouldColor}. Disabling the second check keeps explicit color-on output
- * deterministic during tests that temporarily mutate color environment variables.
- *
- * @param format - ANSI style names accepted by {@link styleText}
- *
- * @param text - JSON token text to wrap
- *
- * @returns ANSI-styled text without another environment-variable check
- *
- * @example
- * ```ts
- * forceStyleText({ format: 'cyan', text: '"key"' });
- * ```
+ Applies ANSI styling after {@link shouldColor} already decided color is allowed.
+ 
+ `node:util`'s {@link styleText} checks `NO_COLOR` by default. That is right for
+ direct calls, but this module already centralizes that policy in
+ {@link shouldColor}. Disabling the second check keeps explicit color-on output
+ deterministic during tests that temporarily mutate color environment variables.
+ 
+ @param format - ANSI style names accepted by {@link styleText}
+ 
+ @param text - JSON token text to wrap
+ 
+ @returns ANSI-styled text without another environment-variable check
+ 
+ @example
+ ```ts
+ forceStyleText({ format: 'cyan', text: '"key"' });
+ ```
  */
 function forceStyleText({
   format,
@@ -227,45 +227,45 @@ function forceStyleText({
 }
 
 /**
- * ANSI-highlights the tokens of a serialized JSON string via a single linear
- * scan (no regex): keys cyan, string values green, numbers yellow, booleans
- * magenta, null dim. Stripping the ANSI escapes restores the exact JSON.
- *
- * @param json - serialized JSON line
- *
- * @returns the same JSON with ANSI color applied to its tokens
- *
- * @example
- * ```ts
- * colorizeJson({ json: '{"a":1}' });
- * ```
+ ANSI-highlights the tokens of a serialized JSON string via a single linear
+ scan (no regex): keys cyan, string values green, numbers yellow, booleans
+ magenta, null dim. Stripping the ANSI escapes restores the exact JSON.
+ 
+ @param json - serialized JSON line
+ 
+ @returns the same JSON with ANSI color applied to its tokens
+ 
+ @example
+ ```ts
+ colorizeJson({ json: '{"a":1}' });
+ ```
  */
 export function colorizeJson({ json, }: { readonly json: string; },): string {
   /**
-   * Output fragments accumulated in scan order.
+   Output fragments accumulated in scan order.
    */
   const out: string[] = [];
   /**
-   * Scan cursor over the JSON text.
+   Scan cursor over the JSON text.
    */
   const cursor = { i: 0, };
   while (cursor.i < json.length) {
     /**
-     * Current character, undefined past the end.
+     Current character, undefined past the end.
      */
     const ch = json[cursor.i];
     if (ch === undefined)
       break;
     if (ch === '"') {
       /**
-       * String token (with quotes) and the index past it.
+       String token (with quotes) and the index past it.
        */
       const read = readString({
         json,
         start: cursor.i,
       },);
       /**
-       * A string is a key when the next non-space character is a colon.
+       A string is a key when the next non-space character is a colon.
        */
       const isKey = peekNonSpace({
         json,
@@ -280,7 +280,7 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
     }
     if (isNumberStart(ch,)) {
       /**
-       * Number token and the index past it.
+       Number token and the index past it.
        */
       const read = readNumber({
         json,
@@ -301,7 +301,7 @@ export function colorizeJson({ json, }: { readonly json: string; },): string {
       cursor.i,
     )) {
       /**
-       * Boolean literal length at this position.
+       Boolean literal length at this position.
        */
       const length = json.startsWith(
         'true',

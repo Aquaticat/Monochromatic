@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for settlement-review exhaustion behavior.
- *
- * @module
+ Built-artifact tests for settlement-review exhaustion behavior.
+ 
+ @module
  */
 
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -38,9 +38,9 @@ const REVIEW_ERROR = new ReviewUnavailableError({
 },);
 
 /**
- * Build captured active settlement.
- *
- * @returns active settlement request
+ Build captured active settlement.
+ 
+ @returns active settlement request
  */
 function fallbackRequest(): GoalSettlementReviewRequest {
   /** Reduced active goal fixture. */
@@ -65,11 +65,11 @@ function fallbackRequest(): GoalSettlementReviewRequest {
 }
 
 /**
- * Build fallback lifecycle harness.
- *
- * @param mode - Pi mode under test
- *
- * @returns mutable state, context, lifecycle, and effects
+ Build fallback lifecycle harness.
+ 
+ @param mode - Pi mode under test
+ 
+ @returns mutable state, context, lifecycle, and effects
  */
 function fallbackHarness(mode: GoalTestMode,): {
   readonly state: { value: GoalControllerState; };

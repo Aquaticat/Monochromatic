@@ -1,10 +1,10 @@
 /**
- * Operator registry: every mutation family the engine applies.
- *
- * @example
- * ```ts
- * import { allOperators } from './index.ts';
- * ```
+ Operator registry: every mutation family the engine applies.
+ 
+ @example
+ ```ts
+ import { allOperators } from './index.ts';
+ ```
  */
 
 import { binaryOperatorReplacements, } from './binary.ts';
@@ -21,7 +21,7 @@ import type {
 } from '../types.ts';
 
 /**
- * Operator callback signature shared by every family.
+ Operator callback signature shared by every family.
  */
 export type OperatorFn = (options: {
   readonly node: EstreeNode;
@@ -30,7 +30,7 @@ export type OperatorFn = (options: {
 },) => readonly Replacement[];
 
 /**
- * Every operator family, applied to every visited node.
+ Every operator family, applied to every visited node.
  */
 export const allOperators: readonly OperatorFn[] = [
   binaryOperatorReplacements,

@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for Pi goal lifecycle adapter.
- *
- * @module
+ Built-artifact tests for Pi goal lifecycle adapter.
+ 
+ @module
  */
 
 import type {
@@ -21,7 +21,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Broad lifecycle callback shape captured by fake Pi registration seam.
+ Broad lifecycle callback shape captured by fake Pi registration seam.
  */
 type CapturedHandler = (
   event: unknown,
@@ -29,7 +29,7 @@ type CapturedHandler = (
 ) => unknown;
 
 /**
- * Captured command callback shape.
+ Captured command callback shape.
  */
 type CapturedCommandHandler = (
   args: string,
@@ -37,7 +37,7 @@ type CapturedCommandHandler = (
 ) => Promise<void>;
 
 /**
- * Fake Pi lifecycle harness state.
+ Fake Pi lifecycle harness state.
  */
 type LifecycleHarness = {
   readonly handlers: Readonly<Record<string, CapturedHandler>>;
@@ -51,18 +51,18 @@ type LifecycleHarness = {
 };
 
 /**
- * Build focused fake Pi API and context.
- *
- * @param branch - selected-branch entries returned by session manager
- *
- * @param idle - whether command can send kickoff immediately
- *
- * @returns captured registrations and observable effects
- *
- * @example
- * ```ts
- * const harness = lifecycleHarness({ branch: [] });
- * ```
+ Build focused fake Pi API and context.
+ 
+ @param branch - selected-branch entries returned by session manager
+ 
+ @param idle - whether command can send kickoff immediately
+ 
+ @returns captured registrations and observable effects
+ 
+ @example
+ ```ts
+ const harness = lifecycleHarness({ branch: [] });
+ ```
  */
 function lifecycleHarness(
   {
@@ -160,20 +160,20 @@ function lifecycleHarness(
 }
 
 /**
- * Retrieve required captured lifecycle handler.
- *
- * @param harness - fake lifecycle harness
- *
- * @param eventName - registered lifecycle event name
- *
- * @returns captured event callback
- *
- * @throws when lifecycle registration is absent
- *
- * @example
- * ```ts
- * requiredHandler(harness, 'session_start');
- * ```
+ Retrieve required captured lifecycle handler.
+ 
+ @param harness - fake lifecycle harness
+ 
+ @param eventName - registered lifecycle event name
+ 
+ @returns captured event callback
+ 
+ @throws when lifecycle registration is absent
+ 
+ @example
+ ```ts
+ requiredHandler(harness, 'session_start');
+ ```
  */
 function requiredHandler(
   harness: LifecycleHarness,

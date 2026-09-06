@@ -1,7 +1,7 @@
 /**
- * Golden render tests for the Chinese locale.
- *
- * @module
+ Golden render tests for the Chinese locale.
+ 
+ @module
  */
 
 import {

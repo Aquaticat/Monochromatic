@@ -1,5 +1,5 @@
 /**
- * Morph Compact API client and compression ratio logic.
+ Morph Compact API client and compression ratio logic.
  */
 
 import type {
@@ -29,47 +29,47 @@ import type {
 //region Compression ratio constants
 
 /**
- * Maximum query length sent to Morph (avoids oversized prompts).
+ Maximum query length sent to Morph (avoids oversized prompts).
  */
 const MAX_QUERY_LENGTH = 500;
 
 /**
- * Default compaction timeout in milliseconds.
+ Default compaction timeout in milliseconds.
  */
 const COMPACTION_TIMEOUT_MS = 120_000;
 
 /**
- * Compression ratio when context pressure is critical (\>80% window).
- *
- * Ratios are higher than traditional summarization because Morph Compact
- * is deletion-based at 33K tok/s; re-triggering compaction is fast enough
- * that aggressive pruning is unnecessary. Preserving more context per cycle
- * reduces drift between compaction rounds, keeping the model's working
- * memory closer to the full conversation.
+ Compression ratio when context pressure is critical (\>80% window).
+ 
+ Ratios are higher than traditional summarization because Morph Compact
+ is deletion-based at 33K tok/s; re-triggering compaction is fast enough
+ that aggressive pruning is unnecessary. Preserving more context per cycle
+ reduces drift between compaction rounds, keeping the model's working
+ memory closer to the full conversation.
  */
 const RATIO_CRITICAL = 0.3;
 
 /**
- * Compression ratio when context pressure is high (\>60% window).
- *
- * See {@link RATIO_CRITICAL} for rationale on higher ratios.
+ Compression ratio when context pressure is high (\>60% window).
+ 
+ See {@link RATIO_CRITICAL} for rationale on higher ratios.
  */
 const RATIO_HIGH = 0.4;
 
 /**
- * Compression ratio when context pressure is moderate.
- *
- * See {@link RATIO_CRITICAL} for rationale on higher ratios.
+ Compression ratio when context pressure is moderate.
+ 
+ See {@link RATIO_CRITICAL} for rationale on higher ratios.
  */
 const RATIO_MODERATE = 0.5;
 
 /**
- * Context usage threshold for critical compression.
+ Context usage threshold for critical compression.
  */
 const THRESHOLD_CRITICAL = 0.8;
 
 /**
- * Context usage threshold for high compression.
+ Context usage threshold for high compression.
  */
 const THRESHOLD_HIGH = 0.6;
 
@@ -78,18 +78,18 @@ const THRESHOLD_HIGH = 0.6;
 //region Compression ratio selection
 
 /**
- * Choose compression ratio based on context pressure.
- * Higher pressure means more aggressive deletion.
- *
- * @param contextUsage - current context token usage and window size
- *
- * @returns compression ratio between 0.3 and 0.5
- *
- * @example
- * ```typescript
- * chooseCompressionRatio({ tokens: 90000, contextWindow: 100000 })
- * // Returns 0.3 (critical pressure)
- * ```
+ Choose compression ratio based on context pressure.
+ Higher pressure means more aggressive deletion.
+ 
+ @param contextUsage - current context token usage and window size
+ 
+ @returns compression ratio between 0.3 and 0.5
+ 
+ @example
+ ```typescript
+ chooseCompressionRatio({ tokens: 90000, contextWindow: 100000 })
+ // Returns 0.3 (critical pressure)
+ ```
  */
 export function chooseCompressionRatio(
   contextUsage?: Readonly<Pick<ContextUsage, 'tokens' | 'contextWindow'>>,
@@ -98,7 +98,7 @@ export function chooseCompressionRatio(
     === null))
     return RATIO_HIGH;
   /**
-   * Pressure proxy chosen for adaptive ratio selection.
+   Pressure proxy chosen for adaptive ratio selection.
    */
   const fraction = contextUsage.tokens
     / contextUsage
@@ -115,29 +115,29 @@ export function chooseCompressionRatio(
 //region Compaction attempt
 
 /**
- * Attempt Morph Compact compaction.
- * Returns `{ kind: "success", result }` on success, or `{ kind: "fallback" }`
- * when pi's default compaction should be used instead.
- *
- * @param options - Compaction event, usage snapshot, and Morph credential.
- *
- * @returns compaction attempt result
- *
- * @throws {@link MorphApiError} when the Morph Compact API call fails
- *
- * @mutates options - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain `options.event.signal`.
- *
- * @example
- * ```typescript
- * const attempt = await attemptMorphCompaction({
- *   event,
- *   contextUsage: ctx.getContextUsage(),
- *   apiKey,
- * });
- * if (attempt.kind === "success") {
- *   return { compaction: attempt.result };
- * }
- * ```
+ Attempt Morph Compact compaction.
+ Returns `{ kind: "success", result }` on success, or `{ kind: "fallback" }`
+ when pi's default compaction should be used instead.
+ 
+ @param options - Compaction event, usage snapshot, and Morph credential.
+ 
+ @returns compaction attempt result
+ 
+ @throws {@link MorphApiError} when the Morph Compact API call fails
+ 
+ @mutates options - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain `options.event.signal`.
+ 
+ @example
+ ```typescript
+ const attempt = await attemptMorphCompaction({
+   event,
+   contextUsage: ctx.getContextUsage(),
+   apiKey,
+ });
+ if (attempt.kind === "success") {
+   return { compaction: attempt.result };
+ }
+ ```
  */
 export async function attemptMorphCompaction(
   options: {
@@ -147,7 +147,7 @@ export async function attemptMorphCompaction(
   },
 ): Promise<MorphCompactionAttempt> {
   /**
-   * Compaction inputs named after the effect-bearing options boundary.
+   Compaction inputs named after the effect-bearing options boundary.
    */
   const {
     event,
@@ -155,7 +155,7 @@ export async function attemptMorphCompaction(
     apiKey,
   } = options;
   /**
-   * Destructured event surface used throughout the attempt body.
+   Destructured event surface used throughout the attempt body.
    */
   const {
     preparation,
@@ -164,7 +164,7 @@ export async function attemptMorphCompaction(
     signal,
   } = event;
   /**
-   * Preparation slice carries the message ranges and prior summary.
+   Preparation slice carries the message ranges and prior summary.
    */
   const {
     messagesToSummarize,
@@ -176,7 +176,7 @@ export async function attemptMorphCompaction(
   } = preparation;
 
   /**
-   * Combined message list fed to Morph; order reflects branch order.
+   Combined message list fed to Morph; order reflects branch order.
    */
   const allMessages = [
     ...messagesToSummarize,
@@ -191,14 +191,14 @@ export async function attemptMorphCompaction(
     return { kind: 'fallback', };
 
   /**
-   * Serialized conversation used as Morph input; empty when re-compressing summary alone.
+   Serialized conversation used as Morph input; empty when re-compressing summary alone.
    */
   const conversationText = allMessages.length
     > 0
     ? serializeConversation(convertToLlm(allMessages,),)
     : '';
   /**
-   * Final prompt body sent to Morph; merges prior summary with new content.
+   Final prompt body sent to Morph; merges prior summary with new content.
    */
   const input = buildMorphInput({
     serializedConversation: conversationText,
@@ -209,7 +209,7 @@ export async function attemptMorphCompaction(
     return { kind: 'fallback', };
 
   /**
-   * Latest user intent forwarded to Morph for relevance ranking.
+   Latest user intent forwarded to Morph for relevance ranking.
    */
   const query = extractLatestQuery({
     branchEntries,
@@ -220,7 +220,7 @@ export async function attemptMorphCompaction(
       MAX_QUERY_LENGTH,
     );
   /**
-   * Adaptive compression ratio derived from current context pressure.
+   Adaptive compression ratio derived from current context pressure.
    */
   const ratio = chooseCompressionRatio(contextUsage,);
 
@@ -229,7 +229,7 @@ export async function attemptMorphCompaction(
 
   // Combined signal: respects user cancel + hard timeout
   /**
-   * Cancellation signal merging user abort with hard timeout.
+   Cancellation signal merging user abort with hard timeout.
    */
   const combinedSignal = AbortSignal.any([
     signal,
@@ -237,13 +237,13 @@ export async function attemptMorphCompaction(
   ],);
 
   /**
-   * Per-call client constructed with the resolved API key.
+   Per-call client constructed with the resolved API key.
    */
   const client = createMorphCompactClient({
     morphApiKey: apiKey,
   },);
   /**
-   * Network response payload from Morph Compact.
+   Network response payload from Morph Compact.
    */
   const result = await client.compact({
     input,
@@ -256,7 +256,7 @@ export async function attemptMorphCompaction(
   },);
 
   /**
-   * Trimmed compacted body; empty payload triggers fallback.
+   Trimmed compacted body; empty payload triggers fallback.
    */
   const output = result.output
     ?.trim();
@@ -264,14 +264,14 @@ export async function attemptMorphCompaction(
     return { kind: 'fallback', };
 
   /**
-   * Read vs modified split appended after Morph's summary.
+   Read vs modified split appended after Morph's summary.
    */
   const {
     readFiles,
     modifiedFiles,
   } = computeFileLists(fileOps,);
   /**
-   * Final summary string surfaced to pi as compaction output.
+   Final summary string surfaced to pi as compaction output.
    */
   const summary = `${wrapMorphOutput(output,)}${
     formatFileOperations({
@@ -281,7 +281,7 @@ export async function attemptMorphCompaction(
   }`;
 
   /**
-   * Optional Morph telemetry rolled into details for the UI panel.
+   Optional Morph telemetry rolled into details for the UI panel.
    */
   const morphUsage = result.usage
     !== undefined
@@ -298,7 +298,7 @@ export async function attemptMorphCompaction(
     : undefined;
 
   /**
-   * Backend-specific payload pi stores alongside the summary.
+   Backend-specific payload pi stores alongside the summary.
    */
   const details: MorphCompactionDetails = {
     backend: 'morph',
@@ -314,7 +314,7 @@ export async function attemptMorphCompaction(
   };
 
   /**
-   * Final pi-shaped compaction record returned to the caller.
+   Final pi-shaped compaction record returned to the caller.
    */
   const compactionResult: CompactionResult<MorphCompactionDetails> = {
     summary,

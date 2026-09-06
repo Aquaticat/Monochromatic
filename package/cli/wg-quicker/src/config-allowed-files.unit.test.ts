@@ -18,7 +18,7 @@ import {
 } from '../dist/final/node/config.mjs';
 
 /**
- * Disposable config fixture directory.
+ Disposable config fixture directory.
  */
 type TempDir = {
   readonly path: string;
@@ -26,18 +26,18 @@ type TempDir = {
 };
 
 /**
- * Creates disposable config fixture directory.
- *
- * @returns Directory removed recursively on disposal.
- *
- * @example
- * ```ts
- * await using directory = await makeTempDir();
- * ```
+ Creates disposable config fixture directory.
+ 
+ @returns Directory removed recursively on disposal.
+ 
+ @example
+ ```ts
+ await using directory = await makeTempDir();
+ ```
  */
 async function makeTempDir(): Promise<TempDir> {
   /**
-   * Fresh operating-system temporary path.
+   Fresh operating-system temporary path.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -58,16 +58,16 @@ async function makeTempDir(): Promise<TempDir> {
 }
 
 /**
- * Captures synchronous failure.
- *
- * @param operation - Operation expected to throw.
- *
- * @returns Thrown value.
- *
- * @example
- * ```ts
- * captureThrown({ operation: () => { throw new Error('fixture'); } });
- * ```
+ Captures synchronous failure.
+ 
+ @param operation - Operation expected to throw.
+ 
+ @returns Thrown value.
+ 
+ @example
+ ```ts
+ captureThrown({ operation: () => { throw new Error('fixture'); } });
+ ```
  */
 function captureThrown(
   { operation, }: { readonly operation: () => unknown; },
@@ -82,16 +82,16 @@ function captureThrown(
 }
 
 /**
- * Captures asynchronous failure.
- *
- * @param operation - Operation expected to reject.
- *
- * @returns Rejection value.
- *
- * @example
- * ```ts
- * await captureRejected({ operation: async () => { throw new Error('fixture'); } });
- * ```
+ Captures asynchronous failure.
+ 
+ @param operation - Operation expected to reject.
+ 
+ @returns Rejection value.
+ 
+ @example
+ ```ts
+ await captureRejected({ operation: async () => { throw new Error('fixture'); } });
+ ```
  */
 async function captureRejected(
   { operation, }: { readonly operation: () => Promise<unknown>; },
@@ -115,7 +115,7 @@ await describe({
           name: 'associates source paths with containing peer insertion point',
           fn: async () => {
             /**
-             * Parsed config with source directive in first of two peers.
+             Parsed config with source directive in first of two peers.
              */
             const config = parseConfigText({
               interfaceName: 'wg0',
@@ -185,7 +185,7 @@ await describe({
             name,
             fn: async () => {
               /**
-               * Config semantic failure for invalid fixture.
+               Config semantic failure for invalid fixture.
                */
               const error = captureThrown({
                 operation: function parseInvalidConfig(): unknown {
@@ -209,19 +209,19 @@ await describe({
           fn: async () => {
             await using directory = await makeTempDir();
             /**
-             * First peer allowed input.
+             First peer allowed input.
              */
             const firstAllowed = join(directory.path, 'first-allowed.txt',);
             /**
-             * First peer disallowed input.
+             First peer disallowed input.
              */
             const firstDisallowed = join(directory.path, 'first-disallowed.txt',);
             /**
-             * Second peer allowed input.
+             Second peer allowed input.
              */
             const secondAllowed = join(directory.path, 'second-allowed.txt',);
             /**
-             * Second peer disallowed input.
+             Second peer disallowed input.
              */
             const secondDisallowed = join(directory.path, 'second-disallowed.txt',);
             await Promise.all([
@@ -231,7 +231,7 @@ await describe({
               writeFile(secondDisallowed, '127.0.0.0/8\n::1/128\n',),
             ],);
             /**
-             * Config path containing independent source directives.
+             Config path containing independent source directives.
              */
             const configPath = join(directory.path, 'wg-test.conf',);
             await writeFile(
@@ -250,7 +250,7 @@ await describe({
               ].join('\n',),
             );
             /**
-             * Fully expanded config used by up lifecycle.
+             Fully expanded config used by up lifecycle.
              */
             const config = await loadConfig({
               arg: configPath,
@@ -269,7 +269,7 @@ await describe({
           fn: async () => {
             await using directory = await makeTempDir();
             /**
-             * Config path pointing source directive at absent files.
+             Config path pointing source directive at absent files.
              */
             const configPath = join(directory.path, 'wg-down.conf',);
             await writeFile(
@@ -283,7 +283,7 @@ await describe({
               ].join('\n',),
             );
             /**
-             * Parsed down config that retains paths without reading them.
+             Parsed down config that retains paths without reading them.
              */
             const config = await loadConfig({
               arg: configPath,
@@ -298,7 +298,7 @@ await describe({
           fn: async () => {
             await using directory = await makeTempDir();
             /**
-             * Config path pointing source directive at absent files.
+             Config path pointing source directive at absent files.
              */
             const configPath = join(directory.path, 'wg-up.conf',);
             await writeFile(
@@ -312,7 +312,7 @@ await describe({
               ].join('\n',),
             );
             /**
-             * File-read failure from required up expansion.
+             File-read failure from required up expansion.
              */
             const error = await captureRejected({
               operation: async function loadUpConfig(): Promise<unknown> {

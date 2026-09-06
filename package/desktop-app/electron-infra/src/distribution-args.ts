@@ -1,19 +1,19 @@
 /**
- * CLI argument parsing for Electron distribution wrappers.
- *
- * @example
- * ```ts
- * parseElectronDistributionArgs({ argv: ['--dry-run'] });
- * ```
+ CLI argument parsing for Electron distribution wrappers.
+ 
+ @example
+ ```ts
+ parseElectronDistributionArgs({ argv: ['--dry-run'] });
+ ```
  */
 
 /**
- * Parsed distribution CLI arguments.
- *
- * @example
- * ```ts
- * const options: DistributionCliOptions = { dryRun: true, selectedTargetKeys: [] };
- * ```
+ Parsed distribution CLI arguments.
+ 
+ @example
+ ```ts
+ const options: DistributionCliOptions = { dryRun: true, selectedTargetKeys: [] };
+ ```
  */
 export type DistributionCliOptions = {
   readonly dryRun: boolean;
@@ -21,12 +21,12 @@ export type DistributionCliOptions = {
 };
 
 /**
- * Internal mutable accumulator for CLI argument parsing.
- *
- * @example
- * ```ts
- * const state: DistributionArgState = { dryRun: false, expectTargetValue: false, selectedTargetKeys: [] };
- * ```
+ Internal mutable accumulator for CLI argument parsing.
+ 
+ @example
+ ```ts
+ const state: DistributionArgState = { dryRun: false, expectTargetValue: false, selectedTargetKeys: [] };
+ ```
  */
 type DistributionArgState = {
   dryRun: boolean;
@@ -35,24 +35,24 @@ type DistributionArgState = {
 };
 
 /**
- * Parses `--dry-run` and repeated `--target KEY` distribution arguments.
- *
- * @param argv - Argument vector after node and script path.
- *
- * @returns Dry-run flag plus optional target-key filters.
- *
- * @throws Error when an unknown option or incomplete `--target` is present.
- *
- * @example
- * ```ts
- * parseElectronDistributionArgs({ argv: ['--dry-run', '--target', 'linux-x64'] });
- * ```
+ Parses `--dry-run` and repeated `--target KEY` distribution arguments.
+ 
+ @param argv - Argument vector after node and script path.
+ 
+ @returns Dry-run flag plus optional target-key filters.
+ 
+ @throws Error when an unknown option or incomplete `--target` is present.
+ 
+ @example
+ ```ts
+ parseElectronDistributionArgs({ argv: ['--dry-run', '--target', 'linux-x64'] });
+ ```
  */
 export function parseElectronDistributionArgs(
   { argv, }: { readonly argv: readonly string[]; },
 ): DistributionCliOptions {
   /**
-   * Parsed argument state mutated by the single CLI scan.
+   Parsed argument state mutated by the single CLI scan.
    */
   const state: DistributionArgState = {
     dryRun: false,

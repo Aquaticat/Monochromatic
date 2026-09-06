@@ -1,7 +1,7 @@
 /**
- * Settlement-review domain contracts.
- *
- * @module
+ Settlement-review domain contracts.
+ 
+ @module
  */
 
 import type {
@@ -18,7 +18,7 @@ import type {
 } from './types.ts';
 
 /**
- * Strict private secondary-review decision.
+ Strict private secondary-review decision.
  */
 type GoalReviewVerdict = {
   readonly approved: boolean;
@@ -27,7 +27,7 @@ type GoalReviewVerdict = {
 };
 
 /**
- * Settlement identity captured before asynchronous review.
+ Settlement identity captured before asynchronous review.
  */
 type GoalSettlementReviewRequest = {
   readonly goal: ActiveGoalState;
@@ -37,7 +37,7 @@ type GoalSettlementReviewRequest = {
 };
 
 /**
- * Serialized post-start evidence independent of reviewer model budget.
+ Serialized post-start evidence independent of reviewer model budget.
  */
 type GoalReviewEvidence = {
   readonly objective: string;
@@ -45,7 +45,7 @@ type GoalReviewEvidence = {
 };
 
 /**
- * Authenticated distinct reviewer and candidate-specific prompt.
+ Authenticated distinct reviewer and candidate-specific prompt.
  */
 type GoalReviewerCandidate = {
   readonly model: ForeignBorrowed<Model<Api>>;
@@ -56,7 +56,7 @@ type GoalReviewerCandidate = {
 };
 
 /**
- * Successful independent review with transport audit.
+ Successful independent review with transport audit.
  */
 type GoalSettlementReview = {
   readonly verdict: GoalReviewVerdict;
@@ -66,7 +66,7 @@ type GoalSettlementReview = {
 };
 
 /**
- * Production settlement reviewer capability.
+ Production settlement reviewer capability.
  */
 type GoalSettlementReviewer = (
   input: {
@@ -77,7 +77,7 @@ type GoalSettlementReviewer = (
 ) => Promise<GoalSettlementReview>;
 
 /**
- * Harness-internal outcome of one settlement review.
+ Harness-internal outcome of one settlement review.
  */
 type GoalSettlementDisposition =
   | 'approved'

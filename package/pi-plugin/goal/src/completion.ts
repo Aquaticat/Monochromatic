@@ -1,7 +1,7 @@
 /**
- * Harness-owned settlement review and stale-result handling.
- *
- * @module
+ Harness-owned settlement review and stale-result handling.
+ 
+ @module
  */
 
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -22,12 +22,12 @@ import type { GoalLifecycleHandle, } from './lifecycle-services.ts';
 import type { GoalControllerState, } from './types.ts';
 
 /**
- * Domain sentinel for settlement without active reviewable goal.
+ Domain sentinel for settlement without active reviewable goal.
  */
 const GOAL_SETTLEMENT_NOT_REVIEWABLE: unique symbol = Symbol('goal settlement is not reviewable',);
 
 /**
- * Mode-specific reviewer-exhaustion capability.
+ Mode-specific reviewer-exhaustion capability.
  */
 type GoalReviewerUnavailableHandler = (
   input: {
@@ -38,18 +38,18 @@ type GoalReviewerUnavailableHandler = (
 ) => Promise<GoalSettlementDisposition>;
 
 /**
- * Capture active settlement identity before reviewer spending.
- *
- * @param controller - current immutable runtime controller
- *
- * @param branchLeafId - selected finalized session leaf
- *
- * @returns review request or absent marker
- *
- * @example
- * ```ts
- * createGoalSettlementReviewRequest({ controller, branchLeafId: 'leaf-1' });
- * ```
+ Capture active settlement identity before reviewer spending.
+ 
+ @param controller - current immutable runtime controller
+ 
+ @param branchLeafId - selected finalized session leaf
+ 
+ @returns review request or absent marker
+ 
+ @example
+ ```ts
+ createGoalSettlementReviewRequest({ controller, branchLeafId: 'leaf-1' });
+ ```
  */
 function createGoalSettlementReviewRequest(
   {
@@ -73,22 +73,22 @@ function createGoalSettlementReviewRequest(
 }
 
 /**
- * Revalidate async review without touching replaced session context first.
- *
- * @param lifecycle - current runtime controller seam
- *
- * @param request - captured settlement identity
- *
- * @param context - original context used only after controller match
- *
- * @returns current controller or stale marker
- *
- * @mutates context - context.sessionManager.getLeafId may change Pi-owned state
- *
- * @example
- * ```ts
- * revalidateSettlementReview({ lifecycle, request, context });
- * ```
+ Revalidate async review without touching replaced session context first.
+ 
+ @param lifecycle - current runtime controller seam
+ 
+ @param request - captured settlement identity
+ 
+ @param context - original context used only after controller match
+ 
+ @returns current controller or stale marker
+ 
+ @mutates context - context.sessionManager.getLeafId may change Pi-owned state
+ 
+ @example
+ ```ts
+ revalidateSettlementReview({ lifecycle, request, context });
+ ```
  */
 function revalidateSettlementReview(
   {
@@ -106,7 +106,7 @@ function revalidateSettlementReview(
   }
   | { readonly current: false; } {
   /**
-   * Current controller read before captured session-handle use.
+   Current controller read before captured session-handle use.
    */
   const controller = lifecycle.currentController();
   if (!settlementReviewControllerStillCurrent({
@@ -117,7 +117,7 @@ function revalidateSettlementReview(
   if ((!context.isIdle()) || context.hasPendingMessages())
     return { current: false, };
   /**
-   * Current branch leaf read only while runtime and generation match.
+   Current branch leaf read only while runtime and generation match.
    */
   const branchLeafId = context.sessionManager
     .getLeafId();
@@ -137,32 +137,32 @@ function revalidateSettlementReview(
 }
 
 /**
- * Acquire reviewer result or mode-specific fallback disposition.
- *
- * @param request - captured active settlement
- *
- * @param context - current Pi context
- *
- * @param reviewer - independent model reviewer
- *
- * @param handleReviewerUnavailable - mode-specific exhaustion behavior
- *
- * @param signal - optional cancellation signal
- *
- * @returns available review or settled fallback disposition
- *
- * @mutates context - reviewer or fallback may update Pi state and UI
- *
- * @mutates reviewer - reviewer may update transport state
- *
- * @mutates handleReviewerUnavailable - fallback may update UI state
- *
- * @mutates signal - reviewer transport may retain cancellation signal
- *
- * @example
- * ```ts
- * await acquireGoalSettlementReview({ request, context, reviewer, handleReviewerUnavailable });
- * ```
+ Acquire reviewer result or mode-specific fallback disposition.
+ 
+ @param request - captured active settlement
+ 
+ @param context - current Pi context
+ 
+ @param reviewer - independent model reviewer
+ 
+ @param handleReviewerUnavailable - mode-specific exhaustion behavior
+ 
+ @param signal - optional cancellation signal
+ 
+ @returns available review or settled fallback disposition
+ 
+ @mutates context - reviewer or fallback may update Pi state and UI
+ 
+ @mutates reviewer - reviewer may update transport state
+ 
+ @mutates handleReviewerUnavailable - fallback may update UI state
+ 
+ @mutates signal - reviewer transport may retain cancellation signal
+ 
+ @example
+ ```ts
+ await acquireGoalSettlementReview({ request, context, reviewer, handleReviewerUnavailable });
+ ```
  */
 async function acquireGoalSettlementReview(
   {
@@ -217,38 +217,38 @@ async function acquireGoalSettlementReview(
 }
 
 /**
- * Execute one finalized settlement review.
- *
- * @param request - captured active settlement
- *
- * @param context - current Pi extension context
- *
- * @param lifecycle - shared controller seam
- *
- * @param reviewer - independent model reviewer
- *
- * @param handleReviewerUnavailable - mode-specific exhaustion behavior
- *
- * @param createId - private continuation identity source
- *
- * @param now - ISO timestamp source
- *
- * @param signal - optional cancellation signal
- *
- * @returns harness-internal settlement disposition
- *
- * @mutates context - reviewer and lifecycle transitions can update Pi state and UI
- *
- * @mutates reviewer - reviewer may update transport state
- *
- * @mutates handleReviewerUnavailable - fallback may update UI state
- *
- * @mutates signal - reviewer transport may retain cancellation signal
- *
- * @example
- * ```ts
- * await executeGoalSettlementReview({ request, context, lifecycle, reviewer, handleReviewerUnavailable, createId, now });
- * ```
+ Execute one finalized settlement review.
+ 
+ @param request - captured active settlement
+ 
+ @param context - current Pi extension context
+ 
+ @param lifecycle - shared controller seam
+ 
+ @param reviewer - independent model reviewer
+ 
+ @param handleReviewerUnavailable - mode-specific exhaustion behavior
+ 
+ @param createId - private continuation identity source
+ 
+ @param now - ISO timestamp source
+ 
+ @param signal - optional cancellation signal
+ 
+ @returns harness-internal settlement disposition
+ 
+ @mutates context - reviewer and lifecycle transitions can update Pi state and UI
+ 
+ @mutates reviewer - reviewer may update transport state
+ 
+ @mutates handleReviewerUnavailable - fallback may update UI state
+ 
+ @mutates signal - reviewer transport may retain cancellation signal
+ 
+ @example
+ ```ts
+ await executeGoalSettlementReview({ request, context, lifecycle, reviewer, handleReviewerUnavailable, createId, now });
+ ```
  */
 async function executeGoalSettlementReview(
   {
@@ -272,7 +272,7 @@ async function executeGoalSettlementReview(
   },
 ): Promise<GoalSettlementDisposition> {
   /**
-   * Independent review or mode-specific exhaustion result.
+   Independent review or mode-specific exhaustion result.
    */
   const acquisition = await acquireGoalSettlementReview({
     request,
@@ -284,11 +284,11 @@ async function executeGoalSettlementReview(
   if (!acquisition.available)
     return acquisition.disposition;
   /**
-   * Available independent review.
+   Available independent review.
    */
   const { review, } = acquisition;
   /**
-   * Post-review stale-result validation.
+   Post-review stale-result validation.
    */
   const revalidation = revalidateSettlementReview({
     lifecycle,

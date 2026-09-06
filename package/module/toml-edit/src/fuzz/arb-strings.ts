@@ -1,13 +1,13 @@
 /**
- * String value arbitraries for the fuzz generators.
- *
- * Basic and multiline-basic strings carry arbitrary content (including quotes,
- * backslashes, control scalars, and astral characters) encoded through the
- * independent escaper in `./escape.ts`. Literal and multiline-literal strings
- * carry content drawn from a literal-safe alphabet so no escaping is needed and
- * the projected value equals the raw content exactly.
- *
- * @module
+ String value arbitraries for the fuzz generators.
+ 
+ Basic and multiline-basic strings carry arbitrary content (including quotes,
+ backslashes, control scalars, and astral characters) encoded through the
+ independent escaper in `./escape.ts`. Literal and multiline-literal strings
+ carry content drawn from a literal-safe alphabet so no escaping is needed and
+ the projected value equals the raw content exactly.
+ 
+ @module
  */
 
 import {
@@ -24,9 +24,9 @@ import {
 } from './escape.ts';
 
 /**
- * Alphabet whose every scalar is safe inside a single-quoted literal string:
- * no single quote, no control scalars, a spread of letters, digits, spacing,
- * punctuation, and non-ASCII letters.
+ Alphabet whose every scalar is safe inside a single-quoted literal string:
+ no single quote, no control scalars, a spread of letters, digits, spacing,
+ punctuation, and non-ASCII letters.
  */
 const LITERAL_SAFE_UNIT = constantFrom(
   'a',
@@ -47,7 +47,7 @@ const LITERAL_SAFE_UNIT = constantFrom(
 );
 
 /**
- * Arbitrary content safe for literal-string encoding.
+ Arbitrary content safe for literal-string encoding.
  */
 const literalSafeContent: Arbitrary<string> = string({
   unit: LITERAL_SAFE_UNIT,
@@ -55,10 +55,10 @@ const literalSafeContent: Arbitrary<string> = string({
 },);
 
 /**
- * Adversarial-but-valid unit for basic-string content: every scalar that
- * stresses the escaper (quote, backslash, the named control escapes, a low
- * control, delete, BMP and astral letters) without lone surrogates, which are
- * not valid Unicode scalars and would not round-trip.
+ Adversarial-but-valid unit for basic-string content: every scalar that
+ stresses the escaper (quote, backslash, the named control escapes, a low
+ control, delete, BMP and astral letters) without lone surrogates, which are
+ not valid Unicode scalars and would not round-trip.
  */
 const BASIC_CONTENT_UNIT = constantFrom(
   'a',
@@ -79,8 +79,8 @@ const BASIC_CONTENT_UNIT = constantFrom(
 );
 
 /**
- * Arbitrary content for basic strings over the adversarial unit so quotes,
- * backslashes, and control scalars all reach the escaper.
+ Arbitrary content for basic strings over the adversarial unit so quotes,
+ backslashes, and control scalars all reach the escaper.
  */
 const basicContent: Arbitrary<string> = string({
   unit: BASIC_CONTENT_UNIT,
@@ -88,7 +88,7 @@ const basicContent: Arbitrary<string> = string({
 },);
 
 /**
- * Basic single-line strings over arbitrary content.
+ Basic single-line strings over arbitrary content.
  */
 const basicStringArbitrary: Arbitrary<ValueSample> = basicContent.map(function build(content,) {
   return {
@@ -98,13 +98,13 @@ const basicStringArbitrary: Arbitrary<ValueSample> = basicContent.map(function b
 },);
 
 /**
- * Multiline basic strings; the escaper leaves no raw newline after the opening
- * delimiter, so TOML's first-newline trimming never alters the value.
+ Multiline basic strings; the escaper leaves no raw newline after the opening
+ delimiter, so TOML's first-newline trimming never alters the value.
  */
 const multilineBasicStringArbitrary: Arbitrary<ValueSample> = basicContent.map(function build(content,) {
   /**
-   * Single-line escaped body wrapped in triple quotes; the inner escapes keep
-   * the body free of raw `"""` runs.
+   Single-line escaped body wrapped in triple quotes; the inner escapes keep
+   the body free of raw `"""` runs.
    */
   const inner = basicStringLiteral({ content, },)
     .slice(
@@ -118,7 +118,7 @@ const multilineBasicStringArbitrary: Arbitrary<ValueSample> = basicContent.map(f
 },);
 
 /**
- * Literal single-quoted strings over literal-safe content.
+ Literal single-quoted strings over literal-safe content.
  */
 const literalStringArbitrary: Arbitrary<ValueSample> = literalSafeContent.map(function build(content,) {
   return {
@@ -128,8 +128,8 @@ const literalStringArbitrary: Arbitrary<ValueSample> = literalSafeContent.map(fu
 },);
 
 /**
- * Multiline literal strings; literal-safe content has no quote or newline, so
- * no `'''` run or first-newline trim can occur.
+ Multiline literal strings; literal-safe content has no quote or newline, so
+ no `'''` run or first-newline trim can occur.
  */
 const multilineLiteralStringArbitrary: Arbitrary<ValueSample> = literalSafeContent.map(function build(content,) {
   return {
@@ -139,7 +139,7 @@ const multilineLiteralStringArbitrary: Arbitrary<ValueSample> = literalSafeConte
 },);
 
 /**
- * Deterministic string examples spanning every string family.
+ Deterministic string examples spanning every string family.
  */
 export const STRING_EXAMPLES: readonly ValueSample[] = [
   {
@@ -173,7 +173,7 @@ export const STRING_EXAMPLES: readonly ValueSample[] = [
 ];
 
 /**
- * String value arbitrary across basic, literal, and both multiline families.
+ String value arbitrary across basic, literal, and both multiline families.
  */
 export const stringSampleArbitrary: Arbitrary<ValueSample> = oneof(
   basicStringArbitrary,

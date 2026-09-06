@@ -1,7 +1,7 @@
 /**
- * Disposable real-loader harness for Pi goal runtime verification.
- *
- * @module
+ Disposable real-loader harness for Pi goal runtime verification.
+ 
+ @module
  */
 
 import {
@@ -23,7 +23,7 @@ import {
 //region Types
 
 /**
- * Generic loaded lifecycle callback driven by verifier.
+ Generic loaded lifecycle callback driven by verifier.
  */
 type RuntimeHandler = (
   input: ForeignBorrowed<{
@@ -33,7 +33,7 @@ type RuntimeHandler = (
 ) => unknown;
 
 /**
- * Generic loaded slash-command callback driven by verifier.
+ Generic loaded slash-command callback driven by verifier.
  */
 type RuntimeCommand = (
   input: ForeignBorrowed<{
@@ -43,7 +43,7 @@ type RuntimeCommand = (
 ) => Promise<void>;
 
 /**
- * Disposable package discovery result and stateful Pi boundaries.
+ Disposable package discovery result and stateful Pi boundaries.
  */
 type GoalRuntimeHarness = {
   readonly extension: Extension;
@@ -60,22 +60,22 @@ type GoalRuntimeHarness = {
 //region Loader
 
 /**
- * Discover package manifest through real Pi loader with disposable global state.
- *
- * @param packageDirectory - repository package directory containing manifest
- *
- * @param agentDirectory - empty disposable Pi agent directory
- *
- * @param sessionDirectory - disposable session-file directory
- *
- * @returns loaded extension and bound runtime harness
- *
- * @throws when Pi reports discovery errors or package count differs
- *
- * @example
- * ```ts
- * await createGoalRuntimeHarness({ packageDirectory: '.', agentDirectory, sessionDirectory });
- * ```
+ Discover package manifest through real Pi loader with disposable global state.
+ 
+ @param packageDirectory - repository package directory containing manifest
+ 
+ @param agentDirectory - empty disposable Pi agent directory
+ 
+ @param sessionDirectory - disposable session-file directory
+ 
+ @returns loaded extension and bound runtime harness
+ 
+ @throws when Pi reports discovery errors or package count differs
+ 
+ @example
+ ```ts
+ await createGoalRuntimeHarness({ packageDirectory: '.', agentDirectory, sessionDirectory });
+ ```
  */
 async function createGoalRuntimeHarness(
   {
@@ -89,7 +89,7 @@ async function createGoalRuntimeHarness(
   },
 ): Promise<GoalRuntimeHarness> {
   /**
-   * Pi package discovery result using exact package directory.
+   Pi package discovery result using exact package directory.
    */
   const result = await discoverAndLoadExtensions(
     [packageDirectory,],
@@ -114,28 +114,28 @@ async function createGoalRuntimeHarness(
     throw new Error(`expected one discovered goal extension, received ${result.extensions
       .length}`,);
   /**
-   * Sole package extension discovered from manifest.
+   Sole package extension discovered from manifest.
    */
   const [extension,] = result.extensions;
   if (extension === undefined)
     throw new Error('Pi discovery returned no goal extension',);
   /**
-   * Real persisted session confined to disposable directory.
+   Real persisted session confined to disposable directory.
    */
   const sessionManager = SessionManager.create(
     packageDirectory,
     sessionDirectory,
   );
   /**
-   * Runtime-visible custom messages.
+   Runtime-visible custom messages.
    */
   const messages: CapturedRuntimeMessage[] = [];
   /**
-   * Footer values in update order.
+   Footer values in update order.
    */
   const statuses: string[] = [];
   /**
-   * UI notifications in update order.
+   UI notifications in update order.
    */
   const notifications: string[] = [];
   bindRuntimeActions({
@@ -144,7 +144,7 @@ async function createGoalRuntimeHarness(
     messages,
   },);
   /**
-   * Focused context for loaded command, lifecycle, and tool callbacks.
+   Focused context for loaded command, lifecycle, and tool callbacks.
    */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Disposable verifier implements only context members exercised by loaded goal callbacks.
   const context = {

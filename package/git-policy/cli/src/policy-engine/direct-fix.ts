@@ -1,7 +1,7 @@
 /**
- * Direct worktree policy-fix lifecycle.
- *
- * @module
+ Direct worktree policy-fix lifecycle.
+ 
+ @module
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
@@ -24,43 +24,43 @@ import {
 import type { PolicyEngineResult, } from './types.ts';
 
 /**
- * Settled direct-fix operation.
+ Settled direct-fix operation.
  */
 export type DirectFixResult = Readonly<{
   /**
-   * Final policy decision.
+   Final policy decision.
    */
   policyResult: PolicyEngineResult;
   /**
-   * Worktree paths changed after stable convergence.
+   Worktree paths changed after stable convergence.
    */
   changedPaths: readonly string[];
 }>;
 
 /**
- * Prepared private direct-fix state.
+ Prepared private direct-fix state.
  */
 type PreparedDirectFix = Readonly<{
   /**
-   * Real Git executable resolved beyond wrapper shadow.
+   Real Git executable resolved beyond wrapper shadow.
    */
   gitPath: string;
   /**
-   * Exact private worktree projection.
+   Exact private worktree projection.
    */
   scope: AddPolicyFactsScope;
 }>;
 
 /**
- * Creates private worktree projection for direct-fix convergence.
- *
- * @param gitGlobalArgs - global Git location options
- *
- * @param pathspecs - exact direct-fix scope
- *
- * @returns resolved Git and disposable private facts
- *
- * @throws Error when direct fix lacks a Git worktree or setup fails
+ Creates private worktree projection for direct-fix convergence.
+ 
+ @param gitGlobalArgs - global Git location options
+ 
+ @param pathspecs - exact direct-fix scope
+ 
+ @returns resolved Git and disposable private facts
+ 
+ @throws Error when direct fix lacks a Git worktree or setup fails
  */
 async function prepareDirectFix({
   gitGlobalArgs,
@@ -70,11 +70,11 @@ async function prepareDirectFix({
   pathspecs: readonly string[];
 }>,): Promise<PreparedDirectFix> {
   /**
-   * Real Git executable resolved beyond wrapper shadow.
+   Real Git executable resolved beyond wrapper shadow.
    */
   const gitPath = await resolveGit();
   /**
-   * Exact private worktree projection.
+   Exact private worktree projection.
    */
   const facts = await createAddPolicyFacts({
     args: [
@@ -99,15 +99,15 @@ async function prepareDirectFix({
 }
 
 /**
- * Runs convergence and installation against prepared private state.
- *
- * @param gitGlobalArgs - global Git location options
- *
- * @param policyOptions - trusted policy settings and registry
- *
- * @param prepared - resolved Git and disposable private facts
- *
- * @returns final policy decision and installed paths
+ Runs convergence and installation against prepared private state.
+ 
+ @param gitGlobalArgs - global Git location options
+ 
+ @param policyOptions - trusted policy settings and registry
+ 
+ @param prepared - resolved Git and disposable private facts
+ 
+ @returns final policy decision and installed paths
  */
 async function runPreparedDirectFix({
   gitGlobalArgs,
@@ -119,20 +119,20 @@ async function runPreparedDirectFix({
   prepared: PreparedDirectFix;
 }>,): Promise<DirectFixResult> {
   /**
-   * Disposable private direct-fix scope.
+   Disposable private direct-fix scope.
    */
   await using scope = prepared.scope;
   /**
-   * Exact initial candidates before private policy changes.
+   Exact initial candidates before private policy changes.
    */
   const initialCandidates = await scope.gitFacts
     .candidates();
   /**
-   * Exact initial worktree bytes used for concurrency checks.
+   Exact initial worktree bytes used for concurrency checks.
    */
   const originals = await captureDirectFixOriginalBytes(initialCandidates,);
   /**
-   * Stable or failed private convergence result.
+   Stable or failed private convergence result.
    */
   const convergence = await convergeDirectFix({
     args: gitGlobalArgs,
@@ -169,20 +169,20 @@ async function runPreparedDirectFix({
 }
 
 /**
- * Runs convergent policy fixes against selected worktree paths.
- *
- * @param gitGlobalArgs - global Git location options
- *
- * @param pathspecs - exact direct-fix scope
- *
- * @param policyOptions - trusted policy settings and registry
- *
- * @returns final policy decision and installed paths
- *
- * @example
- * ```ts
- * await runDirectFix({ gitGlobalArgs: [], pathspecs: [':/'], policyOptions: {} });
- * ```
+ Runs convergent policy fixes against selected worktree paths.
+ 
+ @param gitGlobalArgs - global Git location options
+ 
+ @param pathspecs - exact direct-fix scope
+ 
+ @param policyOptions - trusted policy settings and registry
+ 
+ @returns final policy decision and installed paths
+ 
+ @example
+ ```ts
+ await runDirectFix({ gitGlobalArgs: [], pathspecs: [':/'], policyOptions: {} });
+ ```
  */
 export async function runDirectFix({
   gitGlobalArgs,
@@ -195,7 +195,7 @@ export async function runDirectFix({
 }>,): Promise<DirectFixResult> {
   try {
     /**
-     * Private direct-fix state prepared before policy execution.
+     Private direct-fix state prepared before policy execution.
      */
     const prepared = await prepareDirectFix({
       gitGlobalArgs,

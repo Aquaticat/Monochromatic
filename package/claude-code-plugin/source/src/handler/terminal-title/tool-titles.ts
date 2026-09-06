@@ -1,9 +1,9 @@
 /**
- * Claude Code tool title registry.
- *
- * Maps Claude Code tool names to shared terminal-title entries.
- *
- * @module
+ Claude Code tool title registry.
+ 
+ Maps Claude Code tool names to shared terminal-title entries.
+ 
+ @module
  */
 
 import {
@@ -17,12 +17,12 @@ import { EXTENDED_TOOL_TITLES, } from './tool-titles-extended.ts';
 import { SEARCH_TOOL_TITLES, } from './tool-titles-search.ts';
 
 /**
- * Built-in tool names held in the core registry segment.
+ Built-in tool names held in the core registry segment.
  */
 type CoreToolTitleName = 'Bash' | 'Read' | 'Edit' | 'Write' | 'Grep' | 'Glob' | 'Agent';
 
 /**
- * Core Claude Code tool title entries for file, search, and agent tools.
+ Core Claude Code tool title entries for file, search, and agent tools.
  */
 const CORE_TOOL_TITLES: Record<CoreToolTitleName, ToolTitleEntry> = {
   Bash: shellCommandTitleEntry({ field: 'command', },),
@@ -86,7 +86,7 @@ const CORE_TOOL_TITLES: Record<CoreToolTitleName, ToolTitleEntry> = {
 };
 
 /**
- * Complete built-in Claude Code tool title registry.
+ Complete built-in Claude Code tool title registry.
  */
 const TOOL_TITLES: Record<BuiltInToolName, ToolTitleEntry> = {
   ...CORE_TOOL_TITLES,

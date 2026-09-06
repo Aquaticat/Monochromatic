@@ -1,17 +1,17 @@
 /**
- * End-to-end lifecycle tests for the vmsync CLI on Linux and Windows guests.
- *
- * Named `*.unit.test.ts` (not `*.e2e.test.ts`) because `*.e2e.test.ts`
- * is reserved for Playwright browser tests in this monorepo, and expensive
- * unit tests are included only when the package task opts into them.
- *
- * Uses mvm to create ephemeral VMs, pushes the tsdown-bundled vmsync
- * entry point via virtiofs, installs mise and Node inside each guest,
- * and exercises subcommands against real disk images.
- *
- * Run via: `mise run //package/cli/vmsync:test:e2e`
- *
- * @module
+ End-to-end lifecycle tests for the vmsync CLI on Linux and Windows guests.
+ 
+ Named `*.unit.test.ts` (not `*.e2e.test.ts`) because `*.e2e.test.ts`
+ is reserved for Playwright browser tests in this monorepo, and expensive
+ unit tests are included only when the package task opts into them.
+ 
+ Uses mvm to create ephemeral VMs, pushes the tsdown-bundled vmsync
+ entry point via virtiofs, installs mise and Node inside each guest,
+ and exercises subcommands against real disk images.
+ 
+ Run via: `mise run //package/cli/vmsync:test:e2e`
+ 
+ @module
  */
 
 import {
@@ -60,13 +60,13 @@ const BUNDLE_PATH = join(PKG_ROOT, 'dist', 'final', 'node', 'index.mjs',);
 //region Helpers
 
 /**
- * Runs an mvm CLI command and returns stdout.
- *
- * @param args - Arguments after `mvm`
- *
- * @param timeout - Optional timeout in ms
- *
- * @returns Trimmed stdout
+ Runs an mvm CLI command and returns stdout.
+ 
+ @param args - Arguments after `mvm`
+ 
+ @param timeout - Optional timeout in ms
+ 
+ @returns Trimmed stdout
  */
 async function mvm(
   {
@@ -86,15 +86,15 @@ async function mvm(
 }
 
 /**
- * Runs a command inside a VM and returns stdout.
- *
- * @param vmName - VM name
- *
- * @param command - Shell command to execute inside the VM
- *
- * @param timeout - Optional timeout in ms
- *
- * @returns Trimmed stdout
+ Runs a command inside a VM and returns stdout.
+ 
+ @param vmName - VM name
+ 
+ @param command - Shell command to execute inside the VM
+ 
+ @param timeout - Optional timeout in ms
+ 
+ @returns Trimmed stdout
  */
 async function execInVm(
   {
@@ -114,9 +114,9 @@ async function execInVm(
 }
 
 /**
- * Destroys a VM, ignoring errors if it does not exist.
- *
- * @param vmName - VM name to destroy
+ Destroys a VM, ignoring errors if it does not exist.
+ 
+ @param vmName - VM name to destroy
  */
 async function safeDestroy(vmName: string,): Promise<void> {
   try {
@@ -146,9 +146,9 @@ async function safeDestroy(vmName: string,): Promise<void> {
     'export HOME=/home/ubuntu && eval "$(/home/ubuntu/.local/bin/mise activate bash)"';
 
   /**
-   * Guest command to run vmsync with sudo.
-   * All commands use sudo for consistent HOME since import requires
-   * root for qemu-nbd, and non-root commands must read data from the same location.
+   Guest command to run vmsync with sudo.
+   All commands use sudo for consistent HOME since import requires
+   root for qemu-nbd, and non-root commands must read data from the same location.
    */
   const VMSYNC = `${MISE} && sudo -E "$(which node)" ${BUNDLE}`;
 
@@ -301,8 +301,8 @@ async function safeDestroy(vmName: string,): Promise<void> {
   const VM = 'vmsync-e2e-win';
 
   /**
-   * Guest path to vmsync bundle on the virtiofs mount.
-   * VirtioFsSvc maps the `mvm-shared` virtiofs tag to `Z:` by default.
+   Guest path to vmsync bundle on the virtiofs mount.
+   VirtioFsSvc maps the `mvm-shared` virtiofs tag to `Z:` by default.
    */
   const BUNDLE = String.raw`Z:\index.mjs`;
 
@@ -310,10 +310,10 @@ async function safeDestroy(vmName: string,): Promise<void> {
   const MISE_BIN = String.raw`C:\Users\Administrator\.local\bin\mise.exe`;
 
   /**
-   * PowerShell preamble to activate mise-managed Node.
-   * Uses `mise which node | Split-Path` to get the bin directory because
-   * `mise where` returns the install root (missing the `bin` subdirectory).
-   * Guest agent runs as SYSTEM so mise installs to systemprofile, which is fine.
+   PowerShell preamble to activate mise-managed Node.
+   Uses `mise which node | Split-Path` to get the bin directory because
+   `mise where` returns the install root (missing the `bin` subdirectory).
+   Guest agent runs as SYSTEM so mise installs to systemprofile, which is fine.
    */
   const MISE =
     `$env:PATH = ((& "${MISE_BIN}" which node 2>$null) | Split-Path) + ";" + $env:PATH`;

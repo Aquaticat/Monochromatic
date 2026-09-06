@@ -1,7 +1,7 @@
 /**
- * Tests for `regExpOrThrow`.
- *
- * @module
+ Tests for `regExpOrThrow`.
+ 
+ @module
  */
 
 import {

@@ -1,10 +1,10 @@
 /**
- * Top-level Figma export parser.
- *
- * @example
- * ```ts
- * await parseFigmaFile(new Uint8Array());
- * ```
+ Top-level Figma export parser.
+ 
+ @example
+ ```ts
+ await parseFigmaFile(new Uint8Array());
+ ```
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -17,62 +17,62 @@ import type { FigmaFile, } from './types.ts';
 import { extractZipEntries, } from './zip.ts';
 
 /**
- * ZIP entry name for main Figma payload.
+ ZIP entry name for main Figma payload.
  */
 const CANVAS_ENTRY_NAME = 'canvas.fig';
 
 /**
- * ZIP entry name for metadata payload.
+ ZIP entry name for metadata payload.
  */
 const META_ENTRY_NAME = 'meta.json';
 
 /**
- * ZIP entry name for thumbnail payload.
+ ZIP entry name for thumbnail payload.
  */
 const THUMBNAIL_ENTRY_NAME = 'thumbnail.png';
 
 /**
- * Prefix for image asset entries.
+ Prefix for image asset entries.
  */
 const IMAGE_ENTRY_PREFIX = 'images/';
 
 /**
- * Parses a Figma export file (.fig, .deck, or .jam).
- *
- * @param filePathOrBuffer - Path to file or raw ZIP content.
- *
- * @returns Fully parsed {@link FigmaFile} with decoded schema and document.
- *
- * @example
- * ```ts
- * await parseFigmaFile(new Uint8Array());
- * ```
+ Parses a Figma export file (.fig, .deck, or .jam).
+ 
+ @param filePathOrBuffer - Path to file or raw ZIP content.
+ 
+ @returns Fully parsed {@link FigmaFile} with decoded schema and document.
+ 
+ @example
+ ```ts
+ await parseFigmaFile(new Uint8Array());
+ ```
  */
 export async function parseFigmaFile(filePathOrBuffer: string | Uint8Array,): Promise<FigmaFile> {
   /**
-   * Whole-file ZIP bytes.
+   Whole-file ZIP bytes.
    */
   const rawBuffer = await readFigmaBytes({ filePathOrBuffer, },);
   /**
-   * ZIP entries from export archive.
+   ZIP entries from export archive.
    */
   const zipEntries = await extractZipEntries(rawBuffer,);
   /**
-   * canvas.fig bytes.
+   canvas.fig bytes.
    */
   const canvasFig = requiredEntry({
     zipEntries,
     entryName: CANVAS_ENTRY_NAME,
   },);
   /**
-   * meta.json bytes.
+   meta.json bytes.
    */
   const metaJson = requiredEntry({
     zipEntries,
     entryName: META_ENTRY_NAME,
   },);
   /**
-   * Parsed canvas sections.
+   Parsed canvas sections.
    */
   const {
     fileType,
@@ -80,7 +80,7 @@ export async function parseFigmaFile(filePathOrBuffer: string | Uint8Array,): Pr
     documentBytes,
   } = await parseCanvasFig(canvasFig,);
   /**
-   * Parsed Kiwi schema.
+   Parsed Kiwi schema.
    */
   const schema = parseKiwiSchema(schemaBytes,);
 
@@ -98,17 +98,17 @@ export async function parseFigmaFile(filePathOrBuffer: string | Uint8Array,): Pr
 }
 
 /**
- * Reads parser input into bytes.
- *
- * @param filePathOrBuffer - File path or raw bytes.
- *
- * @returns Raw ZIP bytes.
- *
- * @example
- * ```ts
- * await readFigmaBytes({ filePathOrBuffer: new Uint8Array() });
- * // Uint8Array []
- * ```
+ Reads parser input into bytes.
+ 
+ @param filePathOrBuffer - File path or raw bytes.
+ 
+ @returns Raw ZIP bytes.
+ 
+ @example
+ ```ts
+ await readFigmaBytes({ filePathOrBuffer: new Uint8Array() });
+ // Uint8Array []
+ ```
  */
 async function readFigmaBytes(
   { filePathOrBuffer, }: { readonly filePathOrBuffer: string | Uint8Array; },
@@ -119,19 +119,19 @@ async function readFigmaBytes(
 }
 
 /**
- * Reads required ZIP entry or throws.
- *
- * @param zipEntries - ZIP entries.
- *
- * @param entryName - Required entry name.
- *
- * @returns Entry bytes.
- *
- * @example
- * ```ts
- * requiredEntry({ zipEntries: new Map([['a', new Uint8Array()]]), entryName: 'a' });
- * // Uint8Array []
- * ```
+ Reads required ZIP entry or throws.
+ 
+ @param zipEntries - ZIP entries.
+ 
+ @param entryName - Required entry name.
+ 
+ @returns Entry bytes.
+ 
+ @example
+ ```ts
+ requiredEntry({ zipEntries: new Map([['a', new Uint8Array()]]), entryName: 'a' });
+ // Uint8Array []
+ ```
  */
 function requiredEntry(
   {
@@ -143,7 +143,7 @@ function requiredEntry(
   },
 ): Uint8Array {
   /**
-   * Requested entry bytes.
+   Requested entry bytes.
    */
   const entry = zipEntries.get(entryName,);
   if (entry === undefined)
@@ -152,17 +152,17 @@ function requiredEntry(
 }
 
 /**
- * Extracts image entries from ZIP entries.
- *
- * @param zipEntries - ZIP entries.
- *
- * @returns Map keyed by image filename without prefix.
- *
- * @example
- * ```ts
- * imageEntries({ zipEntries: new Map([['images/a.png', new Uint8Array()]]) }).has('a.png');
- * // true
- * ```
+ Extracts image entries from ZIP entries.
+ 
+ @param zipEntries - ZIP entries.
+ 
+ @returns Map keyed by image filename without prefix.
+ 
+ @example
+ ```ts
+ imageEntries({ zipEntries: new Map([['images/a.png', new Uint8Array()]]) }).has('a.png');
+ // true
+ ```
  */
 function imageEntries(
   { zipEntries, }: { readonly zipEntries: ReadonlyMap<string, Uint8Array>; },

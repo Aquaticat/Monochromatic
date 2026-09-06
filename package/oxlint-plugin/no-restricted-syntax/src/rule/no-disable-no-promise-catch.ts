@@ -3,9 +3,9 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
- * Bans inline suppression of `no-restricted-syntax/no-promise-catch`, built
- * via {@link banDisableRule}.
- * Use `async`/`await` with `try`/`catch` instead of `.catch()`.
+ Bans inline suppression of `no-restricted-syntax/no-promise-catch`, built
+ via {@link banDisableRule}.
+ Use `async`/`await` with `try`/`catch` instead of `.catch()`.
  */
 export const noDisableNoPromiseCatch: CreateOnceRule = banDisableRule({
   ruleId: 'no-restricted-syntax/no-promise-catch',

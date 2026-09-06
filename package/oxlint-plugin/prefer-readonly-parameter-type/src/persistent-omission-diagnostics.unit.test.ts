@@ -43,13 +43,13 @@ type OxlintCapture = {
 };
 
 /**
- * Creates standalone project removed after test scope.
- *
- * @returns disposable cache-isolated project.
+ Creates standalone project removed after test scope.
+ 
+ @returns disposable cache-isolated project.
  */
 function disposableProject(): DisposableProject {
   /**
-   * Temporary project root outside repository lockfile ancestry.
+   Temporary project root outside repository lockfile ancestry.
    */
   const path = mkdtempSync(join(tmpdir(), 'readonly-omission-diagnostics-',),);
   return {
@@ -61,13 +61,13 @@ function disposableProject(): DisposableProject {
 }
 
 /**
- * Captures Oxlint JSON and logger stderr for one worker selection.
- *
- * @param projectPath - Standalone project root.
- *
- * @param workers - Fixed or host-default worker policy.
- *
- * @returns captured stdout and stderr on success or diagnostic exit.
+ Captures Oxlint JSON and logger stderr for one worker selection.
+ 
+ @param projectPath - Standalone project root.
+ 
+ @param workers - Fixed or host-default worker policy.
+ 
+ @returns captured stdout and stderr on success or diagnostic exit.
  */
 async function runOxlint({
   projectPath,
@@ -77,7 +77,7 @@ async function runOxlint({
   readonly workers: WorkerSelection;
 }): Promise<OxlintCapture> {
   /**
-   * Optional explicit worker arguments.
+   Optional explicit worker arguments.
    */
   const workerArguments = workers.kind === 'fixed'
     ? [
@@ -115,15 +115,15 @@ async function runOxlint({
 }
 
 /**
- * Reads exact diagnostic records from Oxlint JSON output.
- *
- * @param capture - Captured Oxlint process output.
- *
- * @returns parsed diagnostics without timing or process metadata.
+ Reads exact diagnostic records from Oxlint JSON output.
+ 
+ @param capture - Captured Oxlint process output.
+ 
+ @returns parsed diagnostics without timing or process metadata.
  */
 function diagnosticRecords(capture: OxlintCapture,): readonly unknown[] {
   /**
-   * Parsed output narrowed only to consumed diagnostic array.
+   Parsed output narrowed only to consumed diagnostic array.
    */
   const parsed = JSON.parse(capture.stdout,) as { readonly diagnostics?: readonly unknown[]; };
   return parsed.diagnostics ?? [];
@@ -187,7 +187,7 @@ export function inspect(state: { nested: { value: string; }; },): number {
           workers: { kind: 'default', },
         },);
         /**
-         * Positive-control diagnostics proving comparison can observe rule output.
+         Positive-control diagnostics proving comparison can observe rule output.
          */
         const coldDiagnostics = diagnosticRecords(cold,);
         expect(coldDiagnostics.length,).toBeGreaterThan(0,);

@@ -10,33 +10,33 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { CloneSizeError, } from './errors.ts';
 
 /**
- * Streams `git rev-list ... | git pack-objects --stdout` and counts the exact
- * bytes of the resulting single pack, without decoding the binary stream or
- * buffering it in memory.
- *
- * `node:child_process` is used directly (not nano-spawn) because the byte count
- * must come from raw `Buffer` chunk lengths on a real OS pipe; nano-spawn
- * decodes stdout to a string (lossy for binary) and cannot attach an in-memory
- * Writable as stdio (no backing file descriptor).
- *
- * @param cwd - repository directory passed to git via `-C`
- *
- * @param revListArgs - argument vector for the producing `git rev-list`
- *
- * @param packArgs - argument vector for the consuming `git pack-objects`
- *
- * @returns exact byte length of the produced pack
- *
- * @throws {@link CloneSizeError} when either git process exits non-zero
- *
- * @example
- * ```ts
- * const bytes = await measurePackBytes({
- *   cwd: '/repo',
- *   revListArgs: ['rev-list', '--objects', '--branches', '--tags'],
- *   packArgs: ['pack-objects', '--stdout', '--delta-base-offset'],
- * });
- * ```
+ Streams `git rev-list ... | git pack-objects --stdout` and counts the exact
+ bytes of the resulting single pack, without decoding the binary stream or
+ buffering it in memory.
+ 
+ `node:child_process` is used directly (not nano-spawn) because the byte count
+ must come from raw `Buffer` chunk lengths on a real OS pipe; nano-spawn
+ decodes stdout to a string (lossy for binary) and cannot attach an in-memory
+ Writable as stdio (no backing file descriptor).
+ 
+ @param cwd - repository directory passed to git via `-C`
+ 
+ @param revListArgs - argument vector for the producing `git rev-list`
+ 
+ @param packArgs - argument vector for the consuming `git pack-objects`
+ 
+ @returns exact byte length of the produced pack
+ 
+ @throws {@link CloneSizeError} when either git process exits non-zero
+ 
+ @example
+ ```ts
+ const bytes = await measurePackBytes({
+   cwd: '/repo',
+   revListArgs: ['rev-list', '--objects', '--branches', '--tags'],
+   packArgs: ['pack-objects', '--stdout', '--delta-base-offset'],
+ });
+ ```
  */
 export async function measurePackBytes(
   {
@@ -50,7 +50,7 @@ export async function measurePackBytes(
   },
 ): Promise<number> {
   /**
-   * Tagged logger naming the pack measurement.
+   Tagged logger naming the pack measurement.
    */
   const rl = tagged({
     tag: measurePackBytes.name,
@@ -58,7 +58,7 @@ export async function measurePackBytes(
   },);
 
   /**
-   * Producer: emits the object id list on stdout, no stdin, stderr discarded.
+   Producer: emits the object id list on stdout, no stdin, stderr discarded.
    */
   const producer = spawnChild(
     'git',
@@ -74,7 +74,7 @@ export async function measurePackBytes(
     ], },
   );
   /**
-   * Consumer: reads object ids on stdin, writes the pack to stdout.
+   Consumer: reads object ids on stdin, writes the pack to stdout.
    */
   const consumer = spawnChild(
     'git',
@@ -91,15 +91,15 @@ export async function measurePackBytes(
   );
 
   /**
-   * Producer stdout stream feeding the consumer.
+   Producer stdout stream feeding the consumer.
    */
   const producerOut = nonNullishOrThrow(producer.stdout,);
   /**
-   * Consumer stdin stream receiving the object id list.
+   Consumer stdin stream receiving the object id list.
    */
   const consumerIn = nonNullishOrThrow(consumer.stdin,);
   /**
-   * Consumer stdout stream carrying the pack bytes.
+   Consumer stdout stream carrying the pack bytes.
    */
   const consumerOut = nonNullishOrThrow(consumer.stdout,);
 
@@ -118,7 +118,7 @@ export async function measurePackBytes(
   producerOut.pipe(consumerIn,);
 
   /**
-   * Byte accumulator; const binding with a mutated field for the lint.
+   Byte accumulator; const binding with a mutated field for the lint.
    */
   const acc = { bytes: 0, };
   consumerOut.on(

@@ -1,7 +1,7 @@
 /**
- * OpenCodeReview finding to GitHub Issue adapter.
- *
- * @module
+ OpenCodeReview finding to GitHub Issue adapter.
+ 
+ @module
  */
 
 export { readStructuredInputFile, } from './file-input.ts';

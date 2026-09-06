@@ -1,16 +1,16 @@
 /**
- * key-helper daemon entry point.
- *
- * Claims the {@link DBUS_SERVICE} bus name, exports {@link keyHelperInterface}
- * for the KWin script to drive, and monitors every Shift-capable input device
- * for double-shift. Double-shift trips F20 in Neovim only while Neovide is
- * focused, so the tap stays passive everywhere else (e.g. VSCodium keeps its own
- * double-shift).
- *
- * This half does the actuation KWin scripts cannot: spawning processes, injecting
- * keys via ydotool, and talking to Neovim over RPC.
- *
- * @module
+ key-helper daemon entry point.
+ 
+ Claims the {@link DBUS_SERVICE} bus name, exports {@link keyHelperInterface}
+ for the KWin script to drive, and monitors every Shift-capable input device
+ for double-shift. Double-shift trips F20 in Neovim only while Neovide is
+ focused, so the tap stays passive everywhere else (e.g. VSCodium keeps its own
+ double-shift).
+ 
+ This half does the actuation KWin scripts cannot: spawning processes, injecting
+ keys via ydotool, and talking to Neovim over RPC.
+ 
+ @module
  */
 
 import { promisify } from 'node:util';
@@ -35,23 +35,23 @@ import { sendNvimInput } from './nvim.ts';
 import { getActiveWindowClass } from './state.ts';
 
 /**
- * `RequestName` reply code meaning this connection became primary owner of the
- * requested well-known name.
+ `RequestName` reply code meaning this connection became primary owner of the
+ requested well-known name.
  */
 const DBUS_NAME_PRIMARY_OWNER = 1;
 
 /**
- * `RequestName` flags value requesting the name with no special queueing.
+ `RequestName` flags value requesting the name with no special queueing.
  */
 const DBUS_NAME_NO_FLAGS = 0;
 
 /**
- * Fire F20 on double-shift, but only while Neovide is focused.
- *
- * @example
- * ```ts
- * await startEvdevMonitor({ devicePath, onDoubleShift });
- * ```
+ Fire F20 on double-shift, but only while Neovide is focused.
+ 
+ @example
+ ```ts
+ await startEvdevMonitor({ devicePath, onDoubleShift });
+ ```
  */
 function onDoubleShift(): void {
   if (getActiveWindowClass() === NEOVIDE_CLASS) {
@@ -61,16 +61,16 @@ function onDoubleShift(): void {
 }
 
 /**
- * Start the D-Bus service and every evdev monitor.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Start the D-Bus service and every evdev monitor.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Session bus connection.
+   Session bus connection.
    */
   const bus = sessionBus();
   bus.exportInterface(
@@ -79,7 +79,7 @@ async function main(): Promise<void> {
     keyHelperInterfaceDescriptor
   );
   /**
-   * Promise-returning `RequestName`, resolving to its numeric reply code.
+   Promise-returning `RequestName`, resolving to its numeric reply code.
    */
   const requestName: (
     name: string,
@@ -87,7 +87,7 @@ async function main(): Promise<void> {
   ) => Promise<number> = promisify(bus.requestName
     .bind(bus));
   /**
-   * `RequestName` reply code for {@link DBUS_SERVICE}.
+   `RequestName` reply code for {@link DBUS_SERVICE}.
    */
   const retCode = await requestName(
     DBUS_SERVICE,
@@ -99,7 +99,7 @@ async function main(): Promise<void> {
   console.log(`[key-helper] D-Bus service registered: ${DBUS_SERVICE}`);
 
   /**
-   * Every readable Shift-capable input device.
+   Every readable Shift-capable input device.
    */
   const devices = await findShiftDevices();
   if (devices.length === 0) {
@@ -118,7 +118,7 @@ try {
   await main();
 } catch (error) {
   /**
-   * Stack or message for a fatal startup failure.
+   Stack or message for a fatal startup failure.
    */
   const message = caughtValueStack(error,);
   console.error(`[key-helper] fatal: ${message}`);

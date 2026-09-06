@@ -3,10 +3,10 @@ import type { CreateOnceRule, } from '@oxlint/plugins';
 import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
- * Bans inline suppression of semantic readonly-effect replacement rule.
- *
- * Parameters require supported readonly types, verified effects, local adapters, or
- * file-class exemption rather than comment bypass.
+ Bans inline suppression of semantic readonly-effect replacement rule.
+ 
+ Parameters require supported readonly types, verified effects, local adapters, or
+ file-class exemption rather than comment bypass.
  */
 export const noDisablePreferReadonlyParameterTypes: CreateOnceRule = banDisableRule({
   ruleId: 'prefer-readonly-parameter-type/prefer-readonly-parameter-types',

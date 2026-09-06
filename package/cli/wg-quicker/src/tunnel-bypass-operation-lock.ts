@@ -8,12 +8,12 @@ import {
 } from './tunnel-bypass-path.ts';
 
 /**
- * Ensures private runtime directory for advisory lock paths.
- *
- * @example
- * ```ts
- * await ensureRuntimeDirectory();
- * ```
+ Ensures private runtime directory for advisory lock paths.
+ 
+ @example
+ ```ts
+ await ensureRuntimeDirectory();
+ ```
  */
 async function ensureRuntimeDirectory(): Promise<void> {
   await mkdir(
@@ -26,32 +26,32 @@ async function ensureRuntimeDirectory(): Promise<void> {
 }
 
 /**
- * Creates bypass-state error for shared lock implementation.
- *
- * @param message - Lock failure diagnostic.
- *
- * @returns Bypass-specific failure.
- *
- * @example
- * ```ts
- * makeBypassStateError('busy');
- * ```
+ Creates bypass-state error for shared lock implementation.
+ 
+ @param message - Lock failure diagnostic.
+ 
+ @returns Bypass-specific failure.
+ 
+ @example
+ ```ts
+ makeBypassStateError('busy');
+ ```
  */
 function makeBypassStateError(message: string,): BypassStateError {
   return new BypassStateError(message,);
 }
 
 /**
- * Acquires lock serializing one interface lifecycle.
- *
- * @param interfaceName - Interface lifecycle identity.
- *
- * @returns Crash-safe kernel-lock guard.
- *
- * @example
- * ```ts
- * await using lock = await claimBypassInterfaceOperation({ interfaceName: 'wg0' });
- * ```
+ Acquires lock serializing one interface lifecycle.
+ 
+ @param interfaceName - Interface lifecycle identity.
+ 
+ @returns Crash-safe kernel-lock guard.
+ 
+ @example
+ ```ts
+ await using lock = await claimBypassInterfaceOperation({ interfaceName: 'wg0' });
+ ```
  */
 export async function claimBypassInterfaceOperation(
   { interfaceName, }: { readonly interfaceName: string; },
@@ -65,17 +65,17 @@ export async function claimBypassInterfaceOperation(
 }
 
 /**
- * Acquires global lock spanning bypass allocation and installation.
- *
- * Routes and rules become kernel-visible before guard releases,
- * so later allocators observe occupancy without persistent lock files.
- *
- * @returns Crash-safe kernel-lock guard.
- *
- * @example
- * ```ts
- * await using lock = await claimBypassAllocationOperation();
- * ```
+ Acquires global lock spanning bypass allocation and installation.
+ 
+ Routes and rules become kernel-visible before guard releases,
+ so later allocators observe occupancy without persistent lock files.
+ 
+ @returns Crash-safe kernel-lock guard.
+ 
+ @example
+ ```ts
+ await using lock = await claimBypassAllocationOperation();
+ ```
  */
 export async function claimBypassAllocationOperation(): Promise<AsyncDisposable> {
   await ensureRuntimeDirectory();

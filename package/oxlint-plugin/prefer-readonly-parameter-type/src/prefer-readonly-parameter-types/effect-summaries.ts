@@ -1,7 +1,7 @@
 /**
- * Demand-driven parameter mutation summaries over TypeScript 7 semantic AST.
- *
- * @module
+ Demand-driven parameter mutation summaries over TypeScript 7 semantic AST.
+ 
+ @module
  */
 
 import type { SourceFile, } from 'typescript/unstable/ast';
@@ -35,7 +35,7 @@ export {
 } from './effect-summary-index.ts';
 
 /**
- * One derived inclusion scope: which files it covers and the digest naming them.
+ One derived inclusion scope: which files it covers and the digest naming them.
  */
 type InclusionScope = {
   readonly names: ReadonlySet<string>;
@@ -43,24 +43,24 @@ type InclusionScope = {
 };
 
 /**
- * Inclusion-scope identity per project, so the digest is derived once rather than per file.
- *
- * `buildEffectSummaryIndex` runs for every linted file and computes its cache key before it can
- * consult `cachedFinalEffectIndex`, and that key costs more than the lookup saves: measured at
- * 30.7ms per call across 2080 calls, roughly 64 of the rule's 171 warm seconds, in
- * `doc/planning/oxlint-warm-sweep-attribution.md`.
- *
- * Safe to share because `indexedSourceFileMap` treats every file except the active one
- * identically whichever file is active: `activeSourceFile` decides only its own entry, once to
- * substitute the Oxlint overlay and once to include it ahead of every other test. So the key set
- * is a property of the project, unioned with the active file.
- *
- * Only the key set and its digest are kept, never the map. The map's values hold the overlay
- * `SourceFile` of whichever run built it, which must not be handed to a later run, and the
- * early-return path needs the digest alone.
- *
- * Keyed on the project object as `effect-final-index-cache.ts` keys its own store, so a new
- * semantic snapshot reaches none of these entries.
+ Inclusion-scope identity per project, so the digest is derived once rather than per file.
+ 
+ `buildEffectSummaryIndex` runs for every linted file and computes its cache key before it can
+ consult `cachedFinalEffectIndex`, and that key costs more than the lookup saves: measured at
+ 30.7ms per call across 2080 calls, roughly 64 of the rule's 171 warm seconds, in
+ `doc/planning/oxlint-warm-sweep-attribution.md`.
+ 
+ Safe to share because `indexedSourceFileMap` treats every file except the active one
+ identically whichever file is active: `activeSourceFile` decides only its own entry, once to
+ substitute the Oxlint overlay and once to include it ahead of every other test. So the key set
+ is a property of the project, unioned with the active file.
+ 
+ Only the key set and its digest are kept, never the map. The map's values hold the overlay
+ `SourceFile` of whichever run built it, which must not be handed to a later run, and the
+ early-return path needs the digest alone.
+ 
+ Keyed on the project object as `effect-final-index-cache.ts` keys its own store, so a new
+ semantic snapshot reaches none of these entries.
  */
 const inclusionScopeByProject = new WeakMap<
   Project,
@@ -68,17 +68,17 @@ const inclusionScopeByProject = new WeakMap<
 >();
 
 /**
- * Selects exact non-declaration source scope admitted by ownership policy.
- *
- * @param project - TypeScript project providing configured sources.
- *
- * @param activeSourceFile - Current Oxlint overlay source.
- *
- * @param fileNames - Stable configured project membership.
- *
- * @param analysisRoot - Optional external implementation root.
- *
- * @returns source wrappers keyed by exact path.
+ Selects exact non-declaration source scope admitted by ownership policy.
+ 
+ @param project - TypeScript project providing configured sources.
+ 
+ @param activeSourceFile - Current Oxlint overlay source.
+ 
+ @param fileNames - Stable configured project membership.
+ 
+ @param analysisRoot - Optional external implementation root.
+ 
+ @returns source wrappers keyed by exact path.
  */
 function indexedSourceFileMap({
   project,
@@ -101,7 +101,7 @@ function indexedSourceFileMap({
     if (isDeclarationFileName(fileName,))
       return [];
     /**
-     * Program source matching configured path or exact active wrapper.
+     Program source matching configured path or exact active wrapper.
      */
     const sourceFile = fileName === activeSourceFile.fileName
       ? activeSourceFile
@@ -138,11 +138,11 @@ function indexedSourceFileMap({
 }
 
 /**
- * Seeds requested active source into a mutable demand index.
- *
- * @param index - Exact-snapshot index to expand.
- *
- * @param activeSourceFile - Current Oxlint source whose callables are linted.
+ Seeds requested active source into a mutable demand index.
+ 
+ @param index - Exact-snapshot index to expand.
+ 
+ @param activeSourceFile - Current Oxlint source whose callables are linted.
  */
 function includeActiveSource({
   index,
@@ -159,27 +159,27 @@ function includeActiveSource({
 }
 
 /**
- * Builds effect summaries from active source and reached owned callables.
- *
- * The mutable process index expands when later Oxlint visitors request another
- * active source from the same exact project snapshot.
- *
- * @param project - TypeScript project snapshot to analyze.
- *
- * @param activeSourceFile - Current overlay source wrapper used by verifier.
- *
- * @param cacheRootOverride - Optional disposable persistent cache root used by tests.
- *
- * @param analysisRoot - Optional external implementation root included despite library classification.
- *
- * @param analysisBudgetMilliseconds - Optional disposable fail-closed budget used by tests.
- *
- * @returns exact declaration summary lookup.
- *
- * @example
- * ```ts
- * const effects = buildEffectSummaryIndex({ project, activeSourceFile });
- * ```
+ Builds effect summaries from active source and reached owned callables.
+ 
+ The mutable process index expands when later Oxlint visitors request another
+ active source from the same exact project snapshot.
+ 
+ @param project - TypeScript project snapshot to analyze.
+ 
+ @param activeSourceFile - Current overlay source wrapper used by verifier.
+ 
+ @param cacheRootOverride - Optional disposable persistent cache root used by tests.
+ 
+ @param analysisRoot - Optional external implementation root included despite library classification.
+ 
+ @param analysisBudgetMilliseconds - Optional disposable fail-closed budget used by tests.
+ 
+ @returns exact declaration summary lookup.
+ 
+ @example
+ ```ts
+ const effects = buildEffectSummaryIndex({ project, activeSourceFile });
+ ```
  */
 export function buildEffectSummaryIndex({
   project,
@@ -195,15 +195,15 @@ export function buildEffectSummaryIndex({
   readonly analysisBudgetMilliseconds?: number;
 }): EffectSummaryIndex {
   /**
-   * Cumulative fail-closed budget for project identity and reached analysis.
+   Cumulative fail-closed budget for project identity and reached analysis.
    */
   const analysisBudget = createEffectAnalysisBudget(analysisBudgetMilliseconds,);
   /**
-   * Process cache identity including optional external analysis scope.
+   Process cache identity including optional external analysis scope.
    */
   const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}\0${String(analysisBudgetMilliseconds,)}`;
   /**
-   * Inclusion scopes already derived for this project, by cache partition.
+   Inclusion scopes already derived for this project, by cache partition.
    */
   const scopesForProject = inclusionScopeByProject.get(project,)
     ?? new Map<string, InclusionScope>();
@@ -212,21 +212,21 @@ export function buildEffectSummaryIndex({
     scopesForProject,
   );
   /**
-   * Inclusion scope from an earlier file of this project, when one applies to this file.
-   *
-   * Applies only when the active file is already in that scope. When it is not, the union adds
-   * a name and the digest differs, so the scope is rebuilt rather than adjusted.
+   Inclusion scope from an earlier file of this project, when one applies to this file.
+   
+   Applies only when the active file is already in that scope. When it is not, the union adds
+   a name and the digest differs, so the scope is rebuilt rather than adjusted.
    */
   const reusableScope = scopesForProject.get(cacheProjectKey,);
   /**
-   * Files that scope covers, absent when this project has derived none yet.
+   Files that scope covers, absent when this project has derived none yet.
    */
   const reusableNames = reusableScope?.names;
   if ((reusableScope !== undefined)
     && (reusableNames !== undefined)
     && reusableNames.has(activeSourceFile.fileName,)) {
     /**
-     * Index reusable for this exact inclusion scope, without deriving the scope again.
+     Index reusable for this exact inclusion scope, without deriving the scope again.
      */
     const scopedIndex = cachedFinalEffectIndex({
       project,
@@ -245,7 +245,7 @@ export function buildEffectSummaryIndex({
    * returns before reaching it. Above, every reused scope still paid for a program membership
    * call, a set, a spread and a sort of some hundreds of names. */
   /**
-   * Stable configured project membership including active external overlay.
+   Stable configured project membership including active external overlay.
    */
   const fileNames = [...new Set([
     ...project
@@ -254,7 +254,7 @@ export function buildEffectSummaryIndex({
     activeSourceFile.fileName,
   ],),].toSorted();
   /**
-   * Exact source scope admitted by current ownership policy.
+   Exact source scope admitted by current ownership policy.
    */
   const indexedSourceFiles = indexedSourceFileMap({
     project,
@@ -263,7 +263,7 @@ export function buildEffectSummaryIndex({
     ...(analysisRoot === undefined) ? {} : { analysisRoot, },
   },);
   /**
-   * Complete inclusion-scope identity for process-local index reuse.
+   Complete inclusion-scope identity for process-local index reuse.
    */
   const indexedFileListDigest = contentDigest(
     [...indexedSourceFiles.keys(),]
@@ -271,7 +271,7 @@ export function buildEffectSummaryIndex({
       .join('\0',),
   );
   /**
-   * Inclusion scope recorded for the next file of this project, so it derives none of this.
+   Inclusion scope recorded for the next file of this project, so it derives none of this.
    */
   const derivedScope: InclusionScope = {
     names: new Set(indexedSourceFiles.keys(),),
@@ -282,7 +282,7 @@ export function buildEffectSummaryIndex({
     derivedScope,
   );
   /**
-   * Mutable demand index reusable for exact TypeScript semantic snapshot.
+   Mutable demand index reusable for exact TypeScript semantic snapshot.
    */
   const cachedIndex = cachedFinalEffectIndex({
     project,
@@ -297,11 +297,11 @@ export function buildEffectSummaryIndex({
     return cachedIndex;
   }
   /**
-   * Exact project surfaces and per-source content identities.
+   Exact project surfaces and per-source content identities.
    */
   const fingerprintStartedAt = analysisBudget.start();
   /**
-   * Exact project surfaces and per-source content identities.
+   Exact project surfaces and per-source content identities.
    */
   const projectFingerprint = effectProjectFingerprint({
     project,
@@ -312,17 +312,17 @@ export function buildEffectSummaryIndex({
     phase: 'project fingerprint',
   },);
   /**
-   * Persistent and process direct-summary identity including scope policy.
+   Persistent and process direct-summary identity including scope policy.
    */
   const projectDigest = contentDigest(
     `${projectFingerprint.digest}\0${analysisRoot ?? ''}`,
   );
   /**
-   * Persistent cache scope separating external analysis roots.
+   Persistent cache scope separating external analysis roots.
    */
   const scopeKey = `${project.configFileName}\0${analysisRoot ?? ''}`;
   /**
-   * Fresh mutable demand index for exact project snapshot.
+   Fresh mutable demand index for exact project snapshot.
    */
   const index = createDemandDrivenEffectIndex({
     project,

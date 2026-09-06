@@ -1,7 +1,7 @@
 /**
- * Fixed non-configurable command-transform stage.
- *
- * @module
+ Fixed non-configurable command-transform stage.
+ 
+ @module
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
@@ -19,29 +19,29 @@ import {
 } from './events.ts';
 
 /**
- * Fixed-transform dependencies exposed for deterministic failure tests.
+ Fixed-transform dependencies exposed for deterministic failure tests.
  */
 export type FixedTransformDependencies = {
   /**
-   * Atomic-push transform.
+   Atomic-push transform.
    */
   readonly atomicPush: typeof atomicPush;
   /**
-   * Commit-only transform.
+   Commit-only transform.
    */
   readonly commitOnly: typeof commitOnly;
   /**
-   * Commit escape detector.
+   Commit escape detector.
    */
   readonly hasCommitOnlyEscapeHatch: typeof hasCommitOnlyEscapeHatch;
   /**
-   * Status-hints transform.
+   Status-hints transform.
    */
   readonly statusHintsOff: typeof statusHintsOff;
 };
 
 /**
- * Canonical production fixed-transform dependencies.
+ Canonical production fixed-transform dependencies.
  */
 export const FIXED_TRANSFORM_DEPENDENCIES: FixedTransformDependencies = {
   atomicPush,
@@ -51,40 +51,40 @@ export const FIXED_TRANSFORM_DEPENDENCIES: FixedTransformDependencies = {
 };
 
 /**
- * Result from one fixed-transform stage.
+ Result from one fixed-transform stage.
  */
 export type FixedTransformResult = Readonly<{
   /**
-   * Final transformed arguments or last safe intermediate arguments.
+   Final transformed arguments or last safe intermediate arguments.
    */
   args: readonly string[];
   /**
-   * Empty success events or one structured rejection/failure.
+   Empty success events or one structured rejection/failure.
    */
   events: readonly PolicyEvent[];
   /**
-   * Whether plugin policy stage may continue.
+   Whether plugin policy stage may continue.
    */
   complete: boolean;
 }>;
 
 /**
- * Applies fixed transforms in canonical order.
- *
- * @param args - wrapper-control-clean command arguments
- *
- * @param rawArgs - exact invocation arguments retained across passes
- *
- * @param sequence - sequence for any emitted event
- *
- * @param dependencies - injectable fixed transforms for deterministic tests
- *
- * @returns transformed arguments and structured fixed-core outcome
- *
- * @example
- * ```ts
- * await applyFixedTransforms({ args: ['push', 'origin', 'main'], rawArgs: ['push', 'origin', 'main'], sequence: 0 });
- * ```
+ Applies fixed transforms in canonical order.
+ 
+ @param args - wrapper-control-clean command arguments
+ 
+ @param rawArgs - exact invocation arguments retained across passes
+ 
+ @param sequence - sequence for any emitted event
+ 
+ @param dependencies - injectable fixed transforms for deterministic tests
+ 
+ @returns transformed arguments and structured fixed-core outcome
+ 
+ @example
+ ```ts
+ await applyFixedTransforms({ args: ['push', 'origin', 'main'], rawArgs: ['push', 'origin', 'main'], sequence: 0 });
+ ```
  */
 export async function applyFixedTransforms({
   args,
@@ -99,16 +99,16 @@ export async function applyFixedTransforms({
 }>,): Promise<FixedTransformResult> {
   try {
     /**
-     * Atomic-push output passed to commit-only.
+     Atomic-push output passed to commit-only.
      */
     const atomicArgs = dependencies.atomicPush(args,);
     /**
-     * Whether prior pass already stripped invocation-wide commit escape.
+     Whether prior pass already stripped invocation-wide commit escape.
      */
     const retainedCommitEscape = dependencies.hasCommitOnlyEscapeHatch(rawArgs,)
       && (!dependencies.hasCommitOnlyEscapeHatch(atomicArgs,));
     /**
-     * Commit-only output passed to status-hints-off.
+     Commit-only output passed to status-hints-off.
      */
     const commitArgs = retainedCommitEscape
       ? atomicArgs

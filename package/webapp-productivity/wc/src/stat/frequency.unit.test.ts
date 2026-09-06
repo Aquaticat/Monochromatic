@@ -1,7 +1,7 @@
 /**
- * Tests for case-insensitive word-frequency computation.
- *
- * @module
+ Tests for case-insensitive word-frequency computation.
+ 
+ @module
  */
 
 import {
@@ -55,8 +55,8 @@ await describe({
       name: 'computes percentage against every word, not only the words shown',
       fn: async function computesPercentageAgainstAllWords(): Promise<void> {
         /**
-         * Nine total words: "the" appears 3 times, "cat" 2 times, five
-         * other words appear once each and are excluded from the result.
+         Nine total words: "the" appears 3 times, "cat" 2 times, five
+         other words appear once each and are excluded from the result.
          */
         const words = [
           'the',

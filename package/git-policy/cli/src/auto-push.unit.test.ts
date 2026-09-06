@@ -46,15 +46,15 @@ type TempDirectory = {
 };
 
 /**
- * Creates disposable temporary directory for fixtures.
- *
- * @returns Temporary directory that removes itself when disposed.
- *
- * @example
- * ```ts
- * await using tempDirectory = await createTempDirectory();
- * console.log(tempDirectory.path);
- * ```
+ Creates disposable temporary directory for fixtures.
+ 
+ @returns Temporary directory that removes itself when disposed.
+ 
+ @example
+ ```ts
+ await using tempDirectory = await createTempDirectory();
+ console.log(tempDirectory.path);
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /** Absolute temporary directory path for one test case. */
@@ -78,16 +78,16 @@ async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
- * Runs the real git binary in a fixture directory, bypassing the wrapper.
- *
- * @param options - Working directory and git argv.
- *
- * @returns Nothing once git exits zero.
- *
- * @example
- * ```ts
- * await runGit({ cwd: '/repo', args: ['init', '--quiet'] });
- * ```
+ Runs the real git binary in a fixture directory, bypassing the wrapper.
+ 
+ @param options - Working directory and git argv.
+ 
+ @returns Nothing once git exits zero.
+ 
+ @example
+ ```ts
+ await runGit({ cwd: '/repo', args: ['init', '--quiet'] });
+ ```
  */
 async function runGit({
   cwd,
@@ -106,16 +106,16 @@ async function runGit({
 }
 
 /**
- * Initializes a working repository with a commit identity and one commit.
- *
- * @param options - Repository path to create and seed.
- *
- * @returns Nothing once the repository holds an initial commit.
- *
- * @example
- * ```ts
- * await initRepoWithCommit({ repoPath: '/repo' });
- * ```
+ Initializes a working repository with a commit identity and one commit.
+ 
+ @param options - Repository path to create and seed.
+ 
+ @returns Nothing once the repository holds an initial commit.
+ 
+ @example
+ ```ts
+ await initRepoWithCommit({ repoPath: '/repo' });
+ ```
  */
 async function initRepoWithCommit({
   repoPath,
@@ -177,17 +177,17 @@ async function initRepoWithCommit({
 }
 
 /**
- * Creates a bare remote whose `post-receive` hook echoes a marker, which git
- * relays back to the client as a `remote: <marker>` line on a successful push.
- *
- * @param options - Path the bare remote is created at.
- *
- * @returns Nothing once the bare remote and its hook exist.
- *
- * @example
- * ```ts
- * await initBareRemoteWithHook({ remotePath: '/remote.git' });
- * ```
+ Creates a bare remote whose `post-receive` hook echoes a marker, which git
+ relays back to the client as a `remote: <marker>` line on a successful push.
+ 
+ @param options - Path the bare remote is created at.
+ 
+ @returns Nothing once the bare remote and its hook exist.
+ 
+ @example
+ ```ts
+ await initBareRemoteWithHook({ remotePath: '/remote.git' });
+ ```
  */
 async function initBareRemoteWithHook({
   remotePath,

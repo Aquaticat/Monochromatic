@@ -20,25 +20,25 @@ import type {
 import { gitignoreFilter, } from './gitignore.ts';
 
 /**
- * Logger root for watch-restart after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
- * ```
+ Logger root for watch-restart after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
+ ```
  */
 const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
- * Builds a minimal {@link WatchCtx}; gitignoreFilter ignores everything
- * but `event.relativePath`.
- *
- * @returns context object suitable for handing to gitignoreFilter
- *
- * @example
- * ```ts
- * const ctx = makeCtx();
- * ```
+ Builds a minimal {@link WatchCtx}; gitignoreFilter ignores everything
+ but `event.relativePath`.
+ 
+ @returns context object suitable for handing to gitignoreFilter
+ 
+ @example
+ ```ts
+ const ctx = makeCtx();
+ ```
  */
 function makeCtx(): WatchCtx {
   return {
@@ -49,17 +49,17 @@ function makeCtx(): WatchCtx {
 }
 
 /**
- * Builds a {@link WatchEvent} from overrides; defaults match a `change`
- * to `file.ts`.
- *
- * @param overrides - partial event fields to merge over the default
- *
- * @returns fully-populated event
- *
- * @example
- * ```ts
- * const event = makeEvent({ relativePath: 'dist/build.js', },);
- * ```
+ Builds a {@link WatchEvent} from overrides; defaults match a `change`
+ to `file.ts`.
+ 
+ @param overrides - partial event fields to merge over the default
+ 
+ @returns fully-populated event
+ 
+ @example
+ ```ts
+ const event = makeEvent({ relativePath: 'dist/build.js', },);
+ ```
  */
 function makeEvent(
   overrides: {
@@ -80,14 +80,14 @@ function makeEvent(
 }
 
 /**
- * Creates a fresh temp directory for a single test.
- *
- * @returns absolute path to the new directory
- *
- * @example
- * ```ts
- * const dir = await makeTmpDir();
- * ```
+ Creates a fresh temp directory for a single test.
+ 
+ @returns absolute path to the new directory
+ 
+ @example
+ ```ts
+ const dir = await makeTmpDir();
+ ```
  */
 async function makeTmpDir(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'watch-restart-gitignore-',),);

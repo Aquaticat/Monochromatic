@@ -60,11 +60,11 @@ await describe({
           name: 'retains complete answer when visible result truncates',
           fn: async () => {
             /**
-             * Text one byte beyond Pi visible tool-output cap.
+             Text one byte beyond Pi visible tool-output cap.
              */
             const answer = 'a'.repeat(DEFAULT_MAX_BYTES + 1,);
             /**
-             * Truncated model result with retained path.
+             Truncated model result with retained path.
              */
             const result = await buildAnsweredResult({ answer, },);
             if (result.details.status !== 'answered')
@@ -72,7 +72,7 @@ await describe({
             if (result.details.fullAnswerPath === undefined)
               throw new Error('Expected complete-answer path for truncated result.',);
             /**
-             * Retained full-answer path for cleanup.
+             Retained full-answer path for cleanup.
              */
             const { fullAnswerPath, } = result.details;
             expect(await readFile(

@@ -1,7 +1,7 @@
 /**
- * Command-line argument parsing and invocation validation.
- *
- * @module
+ Command-line argument parsing and invocation validation.
+ 
+ @module
  */
 
 import { parseArgs, } from 'node:util';
@@ -14,14 +14,14 @@ import { CliInvocationError, } from './cli-invocation-error.ts';
 import type { ApplyAuthority, } from './plan-model.ts';
 
 /**
- * Help-only command that bypasses mode requirement.
+ Help-only command that bypasses mode requirement.
  */
 export type HelpCliArguments = {
   readonly kind: 'help';
 };
 
 /**
- * Validated adapter run command.
+ Validated adapter run command.
  */
 export type RunCliArguments = {
   readonly kind: 'run';
@@ -32,23 +32,23 @@ export type RunCliArguments = {
 };
 
 /**
- * Complete validated command-line union.
+ Complete validated command-line union.
  */
 export type CliArguments = HelpCliArguments | RunCliArguments;
 
 /**
- * Raw parse result from Node argument parser.
+ Raw parse result from Node argument parser.
  */
 type RawArguments = ReturnType<typeof parseArgs>;
 
 /**
- * Parses tokens through strict Node argument grammar.
- *
- * @param arguments_ - CLI tokens excluding executable and script paths.
- *
- * @returns Raw values and positionals.
- *
- * @throws {@link CliInvocationError} when Node parser rejects syntax.
+ Parses tokens through strict Node argument grammar.
+ 
+ @param arguments_ - CLI tokens excluding executable and script paths.
+ 
+ @returns Raw values and positionals.
+ 
+ @throws {@link CliInvocationError} when Node parser rejects syntax.
  */
 function parseRaw(arguments_: readonly string[],): RawArguments {
   try {
@@ -88,17 +88,17 @@ function parseRaw(arguments_: readonly string[],): RawArguments {
 }
 
 /**
- * Validates non-interactive apply authority flags.
- *
- * @param apply - Whether mutation boundary is requested.
- *
- * @param nonSecurityOnly - Whether security findings must be withheld.
- *
- * @param all - Whether all security findings are asserted safe to disclose.
- *
- * @returns Optional authority property for preview or applied run.
- *
- * @throws {@link CliInvocationError} for contradictory authority.
+ Validates non-interactive apply authority flags.
+ 
+ @param apply - Whether mutation boundary is requested.
+ 
+ @param nonSecurityOnly - Whether security findings must be withheld.
+ 
+ @param all - Whether all security findings are asserted safe to disclose.
+ 
+ @returns Optional authority property for preview or applied run.
+ 
+ @throws {@link CliInvocationError} for contradictory authority.
  */
 function applyAuthorityMetadata({
   apply,
@@ -128,18 +128,18 @@ function applyAuthorityMetadata({
 }
 
 /**
- * Parses and validates complete command invocation.
- *
- * @param arguments - CLI tokens excluding executable and script paths.
- *
- * @returns Help or runnable explicit-mode command.
- *
- * @throws {@link CliInvocationError} for invocation misuse.
- *
- * @example
- * ```ts
- * parseCliArguments({ arguments: ['--non-interactive', 'review.json'] });
- * ```
+ Parses and validates complete command invocation.
+ 
+ @param arguments - CLI tokens excluding executable and script paths.
+ 
+ @returns Help or runnable explicit-mode command.
+ 
+ @throws {@link CliInvocationError} for invocation misuse.
+ 
+ @example
+ ```ts
+ parseCliArguments({ arguments: ['--non-interactive', 'review.json'] });
+ ```
  */
 export function parseCliArguments({
   arguments: arguments_,
@@ -147,7 +147,7 @@ export function parseCliArguments({
   readonly arguments: readonly string[];
 },): CliArguments {
   /**
-   * Strict raw option and positional parse.
+   Strict raw option and positional parse.
    */
   const raw = parseRaw(arguments_,);
   if (raw.values
@@ -156,20 +156,20 @@ export function parseCliArguments({
     return { kind: 'help', };
   }
   /**
-   * Explicit interactive mode selection.
+   Explicit interactive mode selection.
    */
   const interactive = raw.values
     .interactive
     === true;
   /**
-   * Explicit non-interactive mode selection.
+   Explicit non-interactive mode selection.
    */
   const nonInteractive = raw.values['non-interactive'] === true;
   if (interactive === nonInteractive) {
     throw new CliInvocationError('exactly one of `--interactive` or `--non-interactive` is required',);
   }
   /**
-   * Optional canonical repository URL string for later validation.
+   Optional canonical repository URL string for later validation.
    */
   const repositoryMetadata = (typeof raw.values
     .repo) === 'string'
@@ -177,17 +177,17 @@ export function parseCliArguments({
       .repo, }
     : {};
   /**
-   * Mutation flag state.
+   Mutation flag state.
    */
   const apply = raw.values
     .apply
     === true;
   /**
-   * Non-security-only authority state.
+   Non-security-only authority state.
    */
   const nonSecurityOnly = raw.values['non-security-only'] === true;
   /**
-   * All-findings disclosure authority state.
+   All-findings disclosure authority state.
    */
   const all = raw.values
     .all

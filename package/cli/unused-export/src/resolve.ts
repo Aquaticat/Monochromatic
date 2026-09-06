@@ -1,40 +1,40 @@
 /**
- * Import-specifier resolution over discovered workspace sources.
- *
- * @example
- * ```ts
- * const resolve = workspaceResolver({ packageDirsByName, fileSet });
- * resolve('./util.ts', 'package/cli/unused-export/src/cli.ts');
- * ```
+ Import-specifier resolution over discovered workspace sources.
+ 
+ @example
+ ```ts
+ const resolve = workspaceResolver({ packageDirsByName, fileSet });
+ resolve('./util.ts', 'package/cli/unused-export/src/cli.ts');
+ ```
  */
 
 import { posix, } from 'node:path';
 
 /**
- * Workspace package scope every internal import starts with.
+ Workspace package scope every internal import starts with.
  */
 const WORKSPACE_SCOPE = '@monochromatic-dev/';
 
 /**
- * Built-artifact path marker; test files import package behavior from
- * built dist, and mapping those imports back to source keeps test usage
- * visible to reference counting.
+ Built-artifact path marker; test files import package behavior from
+ built dist, and mapping those imports back to source keeps test usage
+ visible to reference counting.
  */
 const DIST_MARKER = '/dist/final/';
 
 /**
- * Returns the first candidate present among analyzable sources.
- *
- * @param candidates - Workspace-relative candidate paths in priority order.
- *
- * @param fileSet - Every analyzable source path.
- *
- * @returns First present candidate, or null for none.
- *
- * @example
- * ```ts
- * firstPresent({ candidates: ['a.ts', 'a/index.ts'], fileSet });
- * ```
+ Returns the first candidate present among analyzable sources.
+ 
+ @param candidates - Workspace-relative candidate paths in priority order.
+ 
+ @param fileSet - Every analyzable source path.
+ 
+ @returns First present candidate, or null for none.
+ 
+ @example
+ ```ts
+ firstPresent({ candidates: ['a.ts', 'a/index.ts'], fileSet });
+ ```
  */
 function firstPresent({
   candidates,
@@ -52,24 +52,24 @@ function firstPresent({
 }
 
 /**
- * Creates the yuku-analyzer resolver for one discovered workspace.
- *
- * Relative specifiers resolve against the importer with extension and
- * index probing. Built-dist specifiers map back to the owning package's
- * source entry. Workspace `@monochromatic-dev/<name>/ts` specifiers
- * resolve through the shared `./ts` exports convention. Everything else
- * is external.
- *
- * @param packageDirsByName - Package directory looked up by package name.
- *
- * @param fileSet - Every analyzable source path.
- *
- * @returns Resolver mapping specifiers to added file paths or null.
- *
- * @example
- * ```ts
- * const resolve = workspaceResolver({ packageDirsByName, fileSet });
- * ```
+ Creates the yuku-analyzer resolver for one discovered workspace.
+ 
+ Relative specifiers resolve against the importer with extension and
+ index probing. Built-dist specifiers map back to the owning package's
+ source entry. Workspace `@monochromatic-dev/<name>/ts` specifiers
+ resolve through the shared `./ts` exports convention. Everything else
+ is external.
+ 
+ @param packageDirsByName - Package directory looked up by package name.
+ 
+ @param fileSet - Every analyzable source path.
+ 
+ @returns Resolver mapping specifiers to added file paths or null.
+ 
+ @example
+ ```ts
+ const resolve = workspaceResolver({ packageDirsByName, fileSet });
+ ```
  */
 export function workspaceResolver({
   packageDirsByName,
@@ -89,7 +89,7 @@ export function workspaceResolver({
   ): string | null {
     if (specifier.startsWith('.',)) {
       /**
-       * Importer-relative target normalized to workspace-relative form.
+       Importer-relative target normalized to workspace-relative form.
        */
       const joined = posix.normalize(posix.join(
         posix.dirname(importerPath,),
@@ -98,7 +98,7 @@ export function workspaceResolver({
 
       if (joined.includes(DIST_MARKER,)) {
         /**
-         * Owning package directory ahead of the dist marker.
+         Owning package directory ahead of the dist marker.
          */
         const packageDir = joined.slice(
           0,
@@ -131,13 +131,13 @@ export function workspaceResolver({
       return null;
 
     /**
-     * Specifier segments after the workspace scope.
+     Specifier segments after the workspace scope.
      */
     const segments = specifier
       .slice(WORKSPACE_SCOPE.length,)
       .split('/',);
     /**
-     * Package directory for the named workspace package.
+     Package directory for the named workspace package.
      */
     const packageDir = packageDirsByName.get(`${WORKSPACE_SCOPE}${segments[0] ?? ''}`,);
 
@@ -145,7 +145,7 @@ export function workspaceResolver({
       return null;
 
     /**
-     * Subpath below the `./ts` exports entry, empty for the entry itself.
+     Subpath below the `./ts` exports entry, empty for the entry itself.
      */
     const subpath = segments
       .slice(2,)

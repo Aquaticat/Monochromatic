@@ -1,7 +1,7 @@
 /**
- * Durable private-index transaction journal.
- *
- * @module
+ Durable private-index transaction journal.
+ 
+ @module
  */
 import {
   lstat,
@@ -21,27 +21,27 @@ import {
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
- * Journal format version.
+ Journal format version.
  */
 const JOURNAL_VERSION = 1;
 /**
- * Strict Git output decoder.
+ Strict Git output decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
 /**
- * Stable ref-updated marker filename.
+ Stable ref-updated marker filename.
  */
 export const REF_UPDATED_FILENAME = 'ref-updated.json';
 /**
- * Stable index-installed marker filename.
+ Stable index-installed marker filename.
  */
 export const INDEX_INSTALLED_FILENAME = 'index-installed';
 
 /**
- * Original ref state before real Git invocation.
+ Original ref state before real Git invocation.
  */
 export type OriginalHead =
   | Readonly<{ kind: 'absent'; }>
@@ -51,134 +51,134 @@ export type OriginalHead =
   }>;
 
 /**
- * Durable prepared transaction metadata.
+ Durable prepared transaction metadata.
  */
 export type PreparedTransactionJournal = Readonly<{
   /**
-   * Journal schema version.
+   Journal schema version.
    */
   version: 1;
   /**
-   * Wrapper process owning active real-index lock.
+   Wrapper process owning active real-index lock.
    */
   ownerPid: number;
   /**
-   * Exact process-birth identity paired with owner PID.
+   Exact process-birth identity paired with owner PID.
    */
   ownerIdentity: string;
   /**
-   * Prepared phase discriminator.
+   Prepared phase discriminator.
    */
   state: 'prepared';
   /**
-   * Canonical repository root.
+   Canonical repository root.
    */
   repositoryRoot: string;
   /**
-   * Exact real index path.
+   Exact real index path.
    */
   realIndexPath: string;
   /**
-   * Private nonce-bearing reflog action identifying real Git ref update.
+   Private nonce-bearing reflog action identifying real Git ref update.
    */
   reflogAction: string;
   /**
-   * Exact original HEAD state.
+   Exact original HEAD state.
    */
   originalHead: OriginalHead;
   /**
-   * Exact ordered parents expected on landed commit.
+   Exact ordered parents expected on landed commit.
    */
   expectedParentOids: readonly string[];
   /**
-   * Commit selection mode.
+   Commit selection mode.
    */
   mode: 'explicit-path' | 'index';
   /**
-   * Concrete selected repository paths.
+   Concrete selected repository paths.
    */
   selectedPaths: readonly string[];
   /**
-   * Exact intended Git tree OID.
+   Exact intended Git tree OID.
    */
   intendedTreeOid: string;
   /**
-   * Transaction directory device identity.
+   Transaction directory device identity.
    */
   directoryDevice: string;
   /**
-   * Transaction directory inode identity.
+   Transaction directory inode identity.
    */
   directoryInode: string;
   /**
-   * Exact original-index artifact device identity.
+   Exact original-index artifact device identity.
    */
   originalIndexDevice: string;
   /**
-   * Exact original-index artifact inode identity.
+   Exact original-index artifact inode identity.
    */
   originalIndexInode: string;
   /**
-   * Exact post-index artifact device identity.
+   Exact post-index artifact device identity.
    */
   postIndexDevice: string;
   /**
-   * Exact post-index artifact inode identity.
+   Exact post-index artifact inode identity.
    */
   postIndexInode: string;
   /**
-   * Filesystem identity containing owned lock.
+   Filesystem identity containing owned lock.
    */
   lockFsId: string;
   /**
-   * Device identity of owned lock object.
+   Device identity of owned lock object.
    */
   lockDevice: string;
   /**
-   * Inode identity of owned lock object.
+   Inode identity of owned lock object.
    */
   lockInode: string;
 }>;
 
 /**
- * Durable ref-updated phase metadata.
+ Durable ref-updated phase metadata.
  */
 export type RefUpdatedMarker = Readonly<{
   /**
-   * Journal schema version.
+   Journal schema version.
    */
   version: 1;
   /**
-   * Ref-updated phase discriminator.
+   Ref-updated phase discriminator.
    */
   state: 'ref-updated';
   /**
-   * Exact landed commit OID.
+   Exact landed commit OID.
    */
   landedOid: string;
 }>;
 
 /**
- * Encodes compact LF-terminated journal JSON.
- *
- * @param value - journal-safe object
- *
- * @returns exact UTF-8 bytes
- *
- * @mutates value - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ Encodes compact LF-terminated journal JSON.
+ 
+ @param value - journal-safe object
+ 
+ @returns exact UTF-8 bytes
+ 
+ @mutates value - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
  */
 function encodeJournal(value: object,): Uint8Array {
   return new TextEncoder().encode(`${JSON.stringify(value,)}\n`,);
 }
 
 /**
- * Flushes existing private file contents.
- *
- * @param path - exact private snapshot path
+ Flushes existing private file contents.
+ 
+ @param path - exact private snapshot path
  */
 async function syncFile(path: string,): Promise<void> {
   /**
-   * Read-only file handle used for fsync.
+   Read-only file handle used for fsync.
    */
   await using handle = await open(
     path,
@@ -188,18 +188,18 @@ async function syncFile(path: string,): Promise<void> {
 }
 
 /**
- * Resolves exact current commit or absence.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @returns original HEAD state
- *
- * @example
- * ```ts
- * await resolveCurrentHead({ gitPath: '/usr/bin/git', cwd: '/repo' });
- * ```
+ Resolves exact current commit or absence.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @returns original HEAD state
+ 
+ @example
+ ```ts
+ await resolveCurrentHead({ gitPath: '/usr/bin/git', cwd: '/repo' });
+ ```
  */
 export async function resolveCurrentHead({
   gitPath,
@@ -209,7 +209,7 @@ export async function resolveCurrentHead({
   cwd: string;
 }>,): Promise<OriginalHead> {
   /**
-   * Optional exact current commit.
+   Optional exact current commit.
    */
   const result = await runTransactionGit({
     gitPath,
@@ -224,7 +224,7 @@ export async function resolveCurrentHead({
   if (result.exitCode !== 0)
     return { kind: 'absent', };
   /**
-   * Decoded exact commit OID.
+   Decoded exact commit OID.
    */
   const oid = DECODER.decode(result.stdout,)
     .trim();
@@ -237,28 +237,28 @@ export async function resolveCurrentHead({
 }
 
 /**
- * Writes prepared journal only after original and intended indexes are durable.
- *
- * @param workspace - owned persistent transaction workspace
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param mode - commit transaction mode
- *
- * @param amend - whether commit replaces current HEAD
- *
- * @param selectedPaths - concrete selected paths
- *
- * @param intendedTreeOid - exact intended tree
- *
- * @returns durable journal value
- *
- * @example
- * ```ts
- * await prepareTransactionJournal({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', selectedPaths: [], intendedTreeOid });
- * ```
+ Writes prepared journal only after original and intended indexes are durable.
+ 
+ @param workspace - owned persistent transaction workspace
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param mode - commit transaction mode
+ 
+ @param amend - whether commit replaces current HEAD
+ 
+ @param selectedPaths - concrete selected paths
+ 
+ @param intendedTreeOid - exact intended tree
+ 
+ @returns durable journal value
+ 
+ @example
+ ```ts
+ await prepareTransactionJournal({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', selectedPaths: [], intendedTreeOid });
+ ```
  */
 export async function prepareTransactionJournal({
   workspace,
@@ -278,7 +278,7 @@ export async function prepareTransactionJournal({
   intendedTreeOid: string;
 }>,): Promise<PreparedTransactionJournal> {
   /**
-   * Canonical repository root.
+   Canonical repository root.
    */
   const repositoryRoot = await realpath(DECODER.decode((await runTransactionGit({
     gitPath,
@@ -290,14 +290,14 @@ export async function prepareTransactionJournal({
   },)).stdout,)
     .trim(),);
   /**
-   * Exact original HEAD state.
+   Exact original HEAD state.
    */
   const originalHead = await resolveCurrentHead({
     gitPath,
     cwd,
   },);
   /**
-   * Existing current commit parent identities.
+   Existing current commit parent identities.
    */
   const currentParents = originalHead.kind === 'absent'
     ? []
@@ -315,7 +315,7 @@ export async function prepareTransactionJournal({
       .split(' ',)
       .slice(1,);
   /**
-   * Optional merge parent identity.
+   Optional merge parent identity.
    */
   const mergeResult = await runTransactionGit({
     gitPath,
@@ -328,7 +328,7 @@ export async function prepareTransactionJournal({
     allowFailure: true,
   },);
   /**
-   * Existing merge parent identities when concluding merge.
+   Existing merge parent identities when concluding merge.
    */
   const mergeHeads = mergeResult.exitCode === 0
     ? DECODER.decode(mergeResult.stdout,)
@@ -339,7 +339,7 @@ export async function prepareTransactionJournal({
     },)
     : [];
   /**
-   * Exact parents expected from selected commit mode.
+   Exact parents expected from selected commit mode.
    */
   const expectedParentOids = amend
     ? currentParents
@@ -348,7 +348,7 @@ export async function prepareTransactionJournal({
       ...mergeHeads,
     ];
   /**
-   * Exact prepared artifact identities.
+   Exact prepared artifact identities.
    */
   const [directoryMetadata, originalIndexMetadata, postIndexMetadata,] = await Promise.all([
     lstat(
@@ -365,7 +365,7 @@ export async function prepareTransactionJournal({
     ),
   ],);
   /**
-   * Current wrapper process-birth identity.
+   Current wrapper process-birth identity.
    */
   const ownerIdentity = await resolveProcessBirthIdentity(process.pid,);
   if ((typeof ownerIdentity) === 'symbol') {
@@ -374,7 +374,7 @@ export async function prepareTransactionJournal({
     throw new TypeError('Current transaction owner process identity is unavailable.',);
   }
   /**
-   * Durable prepared metadata.
+   Durable prepared metadata.
    */
   const journal: PreparedTransactionJournal = {
     version: JOURNAL_VERSION,
@@ -413,16 +413,16 @@ export async function prepareTransactionJournal({
 }
 
 /**
- * Records exact landed commit after real Git advances ref.
- *
- * @param workspace - preserved transaction workspace
- *
- * @param landedOid - exact landed commit
- *
- * @example
- * ```ts
- * await recordRefUpdated({ workspace, landedOid: 'abc' });
- * ```
+ Records exact landed commit after real Git advances ref.
+ 
+ @param workspace - preserved transaction workspace
+ 
+ @param landedOid - exact landed commit
+ 
+ @example
+ ```ts
+ await recordRefUpdated({ workspace, landedOid: 'abc' });
+ ```
  */
 export async function recordRefUpdated({
   workspace,
@@ -432,7 +432,7 @@ export async function recordRefUpdated({
   landedOid: string;
 }>,): Promise<void> {
   /**
-   * Durable ref-updated marker path.
+   Durable ref-updated marker path.
    */
   const path = join(
     workspace.directory,
@@ -450,14 +450,14 @@ export async function recordRefUpdated({
 }
 
 /**
- * Records completed index installation before transaction cleanup.
- *
- * @param workspace - installed transaction workspace
- *
- * @example
- * ```ts
- * await recordIndexInstalled({ workspace });
- * ```
+ Records completed index installation before transaction cleanup.
+ 
+ @param workspace - installed transaction workspace
+ 
+ @example
+ ```ts
+ await recordIndexInstalled({ workspace });
+ ```
  */
 export async function recordIndexInstalled({ workspace, }: Readonly<{
   workspace: CommitTransactionWorkspace;

@@ -45,9 +45,9 @@ type SemanticFixtureDirectory = {
 };
 
 /**
- * Creates non-hidden disposable directory included by fixture project.
- *
- * @returns disposable configured-project directory.
+ Creates non-hidden disposable directory included by fixture project.
+ 
+ @returns disposable configured-project directory.
  */
 function createSemanticFixtureDirectory(): SemanticFixtureDirectory {
   /** Unique directory path under configured fixture package. */

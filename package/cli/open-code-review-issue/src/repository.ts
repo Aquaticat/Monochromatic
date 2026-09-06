@@ -1,7 +1,7 @@
 /**
- * Canonical GitHub repository selection.
- *
- * @module
+ Canonical GitHub repository selection.
+ 
+ @module
  */
 
 import { resolve, } from 'node:path';
@@ -13,23 +13,23 @@ import {
 } from './github-process.ts';
 
 /**
- * Required repository URL prefix.
+ Required repository URL prefix.
  */
 const GITHUB_URL_PREFIX = 'https://github.com/';
 
 /**
- * Reports explicit or inferred repository selection failure.
+ Reports explicit or inferred repository selection failure.
  */
 export class RepositorySelectionError extends Error {
   /**
-   * Creates repository selection failure.
-   *
-   * @param message - User-facing repository evidence and remediation.
-   *
-   * @example
-   * ```ts
-   * const error = new RepositorySelectionError('repository URL is invalid');
-   * ```
+   Creates repository selection failure.
+   
+   @param message - User-facing repository evidence and remediation.
+   
+   @example
+   ```ts
+   const error = new RepositorySelectionError('repository URL is invalid');
+   ```
    */
   public constructor(message: string,) {
     super(message,);
@@ -38,11 +38,11 @@ export class RepositorySelectionError extends Error {
 }
 
 /**
- * Checks ASCII alphanumeric character.
- *
- * @param character - One UTF-16 code unit.
- *
- * @returns Whether character belongs to ASCII alphanumeric set.
+ Checks ASCII alphanumeric character.
+ 
+ @param character - One UTF-16 code unit.
+ 
+ @returns Whether character belongs to ASCII alphanumeric set.
  */
 function isAsciiAlphanumeric(character: string,): boolean {
   return ((character >= 'a') && (character <= 'z'))
@@ -51,22 +51,22 @@ function isAsciiAlphanumeric(character: string,): boolean {
 }
 
 /**
- * Checks GitHub owner character grammar.
- *
- * @param character - One owner code unit.
- *
- * @returns Whether owner accepts character.
+ Checks GitHub owner character grammar.
+ 
+ @param character - One owner code unit.
+ 
+ @returns Whether owner accepts character.
  */
 function isOwnerCharacter(character: string,): boolean {
   return isAsciiAlphanumeric(character,) || (character === '-');
 }
 
 /**
- * Checks GitHub repository-name character grammar.
- *
- * @param character - One repository-name code unit.
- *
- * @returns Whether repository name accepts character.
+ Checks GitHub repository-name character grammar.
+ 
+ @param character - One repository-name code unit.
+ 
+ @returns Whether repository name accepts character.
  */
 function isRepositoryCharacter(character: string,): boolean {
   return isAsciiAlphanumeric(character,)
@@ -76,13 +76,13 @@ function isRepositoryCharacter(character: string,): boolean {
 }
 
 /**
- * Checks every code unit against supplied character grammar.
- *
- * @param value - Owner or repository segment.
- *
- * @param accepts - Character predicate for segment grammar.
- *
- * @returns Whether non-empty segment contains only accepted characters.
+ Checks every code unit against supplied character grammar.
+ 
+ @param value - Owner or repository segment.
+ 
+ @param accepts - Character predicate for segment grammar.
+ 
+ @returns Whether non-empty segment contains only accepted characters.
  */
 function everyCharacter({
   value,
@@ -103,18 +103,18 @@ function everyCharacter({
 }
 
 /**
- * Parses exact canonical GitHub repository HTTPS URL.
- *
- * @param value - User-supplied `--repo` value.
- *
- * @returns Canonical owner, name, and unchanged URL.
- *
- * @throws {@link RepositorySelectionError} when value differs from required shape.
- *
- * @example
- * ```ts
- * parseRepositoryUrl('https://github.com/owner/repository');
- * ```
+ Parses exact canonical GitHub repository HTTPS URL.
+ 
+ @param value - User-supplied `--repo` value.
+ 
+ @returns Canonical owner, name, and unchanged URL.
+ 
+ @throws {@link RepositorySelectionError} when value differs from required shape.
+ 
+ @example
+ ```ts
+ parseRepositoryUrl('https://github.com/owner/repository');
+ ```
  */
 export function parseRepositoryUrl(value: string,): GitHubRepository {
   if (!value.startsWith(GITHUB_URL_PREFIX,)) {
@@ -123,11 +123,11 @@ export function parseRepositoryUrl(value: string,): GitHubRepository {
     );
   }
   /**
-   * Owner/name portion after fixed host prefix.
+   Owner/name portion after fixed host prefix.
    */
   const suffix = value.slice(GITHUB_URL_PREFIX.length,);
   /**
-   * Exact path segments without URL parser normalization.
+   Exact path segments without URL parser normalization.
    */
   const segments = suffix.split('/',);
   if (segments.length !== 2) {
@@ -136,7 +136,7 @@ export function parseRepositoryUrl(value: string,): GitHubRepository {
     );
   }
   /**
-   * Candidate owner segment.
+   Candidate owner segment.
    */
   const [owner, name,] = segments;
   if ((owner === undefined)
@@ -166,21 +166,21 @@ export function parseRepositoryUrl(value: string,): GitHubRepository {
 
 
 /**
- * Converts supported Git remote URL to canonical repository URL.
- *
- * @param remote - Origin URL read from Git configuration.
- *
- * @returns Canonical repository identity.
- *
- * @throws {@link RepositorySelectionError} when origin is not unambiguous GitHub remote.
+ Converts supported Git remote URL to canonical repository URL.
+ 
+ @param remote - Origin URL read from Git configuration.
+ 
+ @returns Canonical repository identity.
+ 
+ @throws {@link RepositorySelectionError} when origin is not unambiguous GitHub remote.
  */
 function parseOriginRemote(remote: string,): GitHubRepository {
   /**
-   * Trimmed configured origin URL.
+   Trimmed configured origin URL.
    */
   const value = remote.trim();
   /**
-   * Owner/name suffix extracted from supported remote grammar.
+   Owner/name suffix extracted from supported remote grammar.
    */
   const suffix = value.startsWith(GITHUB_URL_PREFIX,)
     ? value.slice(GITHUB_URL_PREFIX.length,)
@@ -195,7 +195,7 @@ function parseOriginRemote(remote: string,): GitHubRepository {
     );
   }
   /**
-   * Owner/name without clone-only `.git` suffix.
+   Owner/name without clone-only `.git` suffix.
    */
   const canonicalSuffix = suffix.endsWith('.git',)
     ? suffix.slice(
@@ -207,17 +207,17 @@ function parseOriginRemote(remote: string,): GitHubRepository {
 }
 
 /**
- * Runs one Git inspection command and converts process failures to selection errors.
- *
- * @param cwd - Current working directory.
- *
- * @param arguments - Exact Git argument vector.
- *
- * @param runProcess - Bounded process implementation.
- *
- * @returns Captured Git standard output.
- *
- * @throws {@link RepositorySelectionError} when Git command fails.
+ Runs one Git inspection command and converts process failures to selection errors.
+ 
+ @param cwd - Current working directory.
+ 
+ @param arguments - Exact Git argument vector.
+ 
+ @param runProcess - Bounded process implementation.
+ 
+ @returns Captured Git standard output.
+ 
+ @throws {@link RepositorySelectionError} when Git command fails.
  */
 async function runGit({
   cwd,
@@ -230,7 +230,7 @@ async function runGit({
 },): Promise<string> {
   try {
     /**
-     * Captured Git inspection result.
+     Captured Git inspection result.
      */
     const result = await runProcess({
       file: 'git',
@@ -247,22 +247,22 @@ async function runGit({
 }
 
 /**
- * Selects explicit repository or infers origin only from exact worktree root.
- *
- * @param explicitUrl - Optional canonical URL from `--repo`.
- *
- * @param cwd - Process working directory.
- *
- * @param runProcess - Bounded process implementation.
- *
- * @returns Canonical destination repository.
- *
- * @throws {@link RepositorySelectionError} when inference is unavailable or cwd is subdirectory.
- *
- * @example
- * ```ts
- * await selectRepository({ cwd: process.cwd() });
- * ```
+ Selects explicit repository or infers origin only from exact worktree root.
+ 
+ @param explicitUrl - Optional canonical URL from `--repo`.
+ 
+ @param cwd - Process working directory.
+ 
+ @param runProcess - Bounded process implementation.
+ 
+ @returns Canonical destination repository.
+ 
+ @throws {@link RepositorySelectionError} when inference is unavailable or cwd is subdirectory.
+ 
+ @example
+ ```ts
+ await selectRepository({ cwd: process.cwd() });
+ ```
  */
 export async function selectRepository({
   explicitUrl,
@@ -277,7 +277,7 @@ export async function selectRepository({
     return parseRepositoryUrl(explicitUrl,);
   }
   /**
-   * Git-reported worktree top-level path.
+   Git-reported worktree top-level path.
    */
   const root = (await runGit({
     cwd,
@@ -293,7 +293,7 @@ export async function selectRepository({
     );
   }
   /**
-   * Configured origin remote URL.
+   Configured origin remote URL.
    */
   const origin = await runGit({
     cwd,

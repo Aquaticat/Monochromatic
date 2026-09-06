@@ -1,8 +1,8 @@
 /**
- * Integration test: runs the built bin against a throwaway repo and asserts the
- * stdout is pure JSONL (one EstimateSnapshot per line) with diagnostics on stderr.
- *
- * @module
+ Integration test: runs the built bin against a throwaway repo and asserts the
+ stdout is pure JSONL (one EstimateSnapshot per line) with diagnostics on stderr.
+ 
+ @module
  */
 
 import { execFileSync, } from 'node:child_process';
@@ -24,27 +24,27 @@ import spawn, { type SubprocessError, } from 'nano-spawn';
 import type { EstimateSnapshot, } from './types.ts';
 
 /**
- * Monorepo root so the built bin path is invariant to the launch directory.
+ Monorepo root so the built bin path is invariant to the launch directory.
  */
 const REPO_ROOT = await findMiseMonorepoRootCached();
 
 /**
- * Path to the built node bin.
+ Path to the built node bin.
  */
 const BIN = 'package/cli/git-clone-size/dist/final/node/index.mjs';
 
 /**
- * A scratch directory that removes itself at the end of a `using` scope.
+ A scratch directory that removes itself at the end of a `using` scope.
  */
 type DisposableDir = { readonly path: string; readonly [Symbol.dispose]: () => void; };
 
 /**
- * Creates a self-cleaning throwaway git repo with real files and
- * explicit-pathspec commits.
- *
- * @param commits - number of commits to create
- *
- * @returns disposable repository handle
+ Creates a self-cleaning throwaway git repo with real files and
+ explicit-pathspec commits.
+ 
+ @param commits - number of commits to create
+ 
+ @returns disposable repository handle
  */
 function makeRepo(commits: number): DisposableDir {
   const path = mkdtempSync(join(tmpdir(), 'gcs-cli-'));
@@ -66,13 +66,13 @@ function makeRepo(commits: number): DisposableDir {
 }
 
 /**
- * Runs the bin against a path and returns captured streams plus exit code.
- *
- * @param path - source path argument
- *
- * @param env - extra environment variables
- *
- * @returns stdout, stderr, and exit code
+ Runs the bin against a path and returns captured streams plus exit code.
+ 
+ @param path - source path argument
+ 
+ @param env - extra environment variables
+ 
+ @returns stdout, stderr, and exit code
  */
 async function runBin(
   path: string,

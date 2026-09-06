@@ -44,13 +44,13 @@ import {
   type EstimateOptions,
 } from './stream.ts';
 
-export {};
+
 
 //region Arg parsing
 
 /**
- * TODO: deprecate Optique
- * Top-level argument parser: an optional SOURCE positional plus tuning flags.
+ TODO: deprecate Optique
+ Top-level argument parser: an optional SOURCE positional plus tuning flags.
  */
 const parser = object({
   source: optional(
@@ -95,8 +95,8 @@ const parser = object({
 },);
 
 /**
- * TODO: deprecate Optique
- * Parsed CLI arguments.
+ TODO: deprecate Optique
+ Parsed CLI arguments.
  */
 const args = runSync(
   parser,
@@ -117,7 +117,7 @@ const args = runSync(
 //region Main execution
 
 /**
- * Tagged logger for the CLI driver (stderr only; stdout stays JSONL-pure).
+ Tagged logger for the CLI driver (stderr only; stdout stays JSONL-pure).
  */
 const rl = tagged({
   tag: 'main',
@@ -125,12 +125,12 @@ const rl = tagged({
 },);
 
 /**
- * Process working directory, used when no SOURCE is given.
+ Process working directory, used when no SOURCE is given.
  */
 const cwd = process.cwd();
 
 /**
- * Resolved source: a remote URL, or a local path defaulting to cwd.
+ Resolved source: a remote URL, or a local path defaulting to cwd.
  */
 const source = await detectSource({
   cwd,
@@ -138,7 +138,7 @@ const source = await detectSource({
 },);
 
 /**
- * Whether to ANSI-highlight the JSONL (auto by TTY, overridable by `--color`).
+ Whether to ANSI-highlight the JSONL (auto by TTY, overridable by `--color`).
  */
 const colorOn = shouldColor({
   mode: args.color satisfies ColorMode,
@@ -146,8 +146,8 @@ const colorOn = shouldColor({
 },);
 
 /**
- * SIGINT abort controller: a first Ctrl-C aborts the probes so the stream
- * finalizes with the current best snapshot rather than dying mid-clone.
+ SIGINT abort controller: a first Ctrl-C aborts the probes so the stream
+ finalizes with the current best snapshot rather than dying mid-clone.
  */
 const abortController = new AbortController();
 process.once(
@@ -159,7 +159,7 @@ process.once(
 );
 
 /**
- * Runtime options derived from the parsed arguments.
+ Runtime options derived from the parsed arguments.
  */
 const options: EstimateOptions = {
   defaultBranchOnly: args.defaultBranchOnly,

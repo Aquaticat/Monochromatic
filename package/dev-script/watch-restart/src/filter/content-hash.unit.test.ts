@@ -24,50 +24,50 @@ import type {
 import { contentHashFilter, } from './content-hash.ts';
 
 /**
- * Logger root for watch-restart after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
- * ```
+ Logger root for watch-restart after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
+ ```
  */
 const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
- * Tiny size cap exercised by the "file too large" case; 4 bytes is below
- * any realistic file, so a 5-byte write trivially exceeds the cap and
- * forces `hashFile` to return `null`.
+ Tiny size cap exercised by the "file too large" case; 4 bytes is below
+ any realistic file, so a 5-byte write trivially exceeds the cap and
+ forces `hashFile` to return `null`.
  */
 const TINY_HASH_CAP_BYTES = 4;
 
 /**
- * Helper that returns a fresh temp directory dedicated to one test run.
- *
- * @returns absolute path of a freshly-created temp directory
- *
- * @example
- * ```ts
- * const dir = await makeTmpDir();
- * ```
+ Helper that returns a fresh temp directory dedicated to one test run.
+ 
+ @returns absolute path of a freshly-created temp directory
+ 
+ @example
+ ```ts
+ const dir = await makeTmpDir();
+ ```
  */
 async function makeTmpDir(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'watch-restart-content-hash-',),);
 }
 
 /**
- * Builds a minimal {@link WatchCtx} with a real {@link HashCache} and a
- * disposable AbortController; tests that need to share a cache pass one
- * in explicitly so the cache reads / writes from the filter become
- * inspectable across multiple invocations.
- *
- * @param hashCache - cache instance to reuse; defaults to a fresh empty cache
- *
- * @returns context object suitable for handing to a filter
- *
- * @example
- * ```ts
- * const ctx = makeCtx({ hashCache: cache, },);
- * ```
+ Builds a minimal {@link WatchCtx} with a real {@link HashCache} and a
+ disposable AbortController; tests that need to share a cache pass one
+ in explicitly so the cache reads / writes from the filter become
+ inspectable across multiple invocations.
+ 
+ @param hashCache - cache instance to reuse; defaults to a fresh empty cache
+ 
+ @returns context object suitable for handing to a filter
+ 
+ @example
+ ```ts
+ const ctx = makeCtx({ hashCache: cache, },);
+ ```
  */
 function makeCtx(
   {
@@ -84,17 +84,17 @@ function makeCtx(
 }
 
 /**
- * Builds a {@link WatchEvent} from overrides; defaults match a `change`
- * to `/abs/file.ts`.
- *
- * @param overrides - partial event fields to override on the default
- *
- * @returns a fully-populated {@link WatchEvent}
- *
- * @example
- * ```ts
- * const event = makeEvent({ kind: 'unlink', },);
- * ```
+ Builds a {@link WatchEvent} from overrides; defaults match a `change`
+ to `/abs/file.ts`.
+ 
+ @param overrides - partial event fields to override on the default
+ 
+ @returns a fully-populated {@link WatchEvent}
+ 
+ @example
+ ```ts
+ const event = makeEvent({ kind: 'unlink', },);
+ ```
  */
 function makeEvent(
   overrides: {
@@ -115,19 +115,19 @@ function makeEvent(
 }
 
 /**
- * Narrows a {@link HashCache.hashFile} result to a hex digest, throwing if
- * the test fixture unexpectedly exceeded the size cap.
- *
- * @param value - hashFile result (digest or the OVERSIZED sentinel)
- *
- * @returns hex digest string
- *
- * @throws Error when the fixture file is unexpectedly oversized
- *
- * @example
- * ```ts
- * const hash = requireHash(await cache.hashFile(file,),);
- * ```
+ Narrows a {@link HashCache.hashFile} result to a hex digest, throwing if
+ the test fixture unexpectedly exceeded the size cap.
+ 
+ @param value - hashFile result (digest or the OVERSIZED sentinel)
+ 
+ @returns hex digest string
+ 
+ @throws Error when the fixture file is unexpectedly oversized
+ 
+ @example
+ ```ts
+ const hash = requireHash(await cache.hashFile(file,),);
+ ```
  */
 function requireHash(value: string | typeof OVERSIZED,): string {
   if (value === OVERSIZED) {

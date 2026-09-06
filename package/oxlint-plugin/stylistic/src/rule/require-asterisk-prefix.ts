@@ -87,7 +87,9 @@ class AsteriskPrefixConfigurationError extends Error {
  ```
  */
 function isTsdocBlock(comment: ForeignBorrowed<Comment>,): boolean {
-  return (comment.type === 'Block') && comment.value.startsWith('*',);
+  return (comment.type === 'Block')
+    && comment.value
+    .startsWith('*',);
 }
 
 /**
@@ -104,7 +106,10 @@ function isTsdocBlock(comment: ForeignBorrowed<Comment>,): boolean {
  */
 function lineContent(line: string,): string {
   return line.endsWith('\r',)
-    ? line.slice(0, -1,)
+    ? line.slice(
+      0,
+      -1,
+    )
     : line;
 }
 
@@ -127,7 +132,10 @@ function commentBodyLines(comment: ForeignBorrowed<Comment>,): readonly CommentB
   let sourceStart = comment.range[0] + 2;
   return comment.value
     .split('\n',)
-    .map(function mapCommentBodyLine(text, lineOffset,): CommentBodyLine {
+    .map(function mapCommentBodyLine(
+      text,
+      lineOffset,
+    ): CommentBodyLine {
       /**
        Source-backed line emitted before cursor advances past line feed.
        */
@@ -241,7 +249,10 @@ function reportUnexpectedPrefix(params: ForeignBorrowed<PrefixViolationParams>,)
   context.report({
     loc: {
       start: {
-        line: comment.loc.start.line + line.lineOffset,
+        line: comment.loc
+          .start
+          .line
+          + line.lineOffset,
         column: prefixIndex,
       },
     },
@@ -284,7 +295,10 @@ function reportMissingPrefix(params: ForeignBorrowed<PrefixViolationParams>,): v
   /**
    Canonical asterisk column, one column after comment's slash.
    */
-  const canonicalIndex = comment.loc.start.column + 1;
+  const canonicalIndex = comment.loc
+    .start
+    .column
+    + 1;
   /**
    Existing source position where insertion can begin without deleting content.
    */
@@ -295,7 +309,9 @@ function reportMissingPrefix(params: ForeignBorrowed<PrefixViolationParams>,): v
   /**
    Separator after inserted marker, omitted for blank body line.
    */
-  const separator = content.trim().length === 0 ? '' : ' ';
+  const separator = content.trim()
+    .length
+    === 0 ? '' : ' ';
   /**
    Missing indentation plus marker and optional content separator.
    */
@@ -305,7 +321,10 @@ function reportMissingPrefix(params: ForeignBorrowed<PrefixViolationParams>,): v
   context.report({
     loc: {
       start: {
-        line: comment.loc.start.line + line.lineOffset,
+        line: comment.loc
+          .start
+          .line
+          + line.lineOffset,
         column: insertionIndex,
       },
     },
@@ -373,13 +392,17 @@ function checkComment({
      Whether final value line is only indentation before closing delimiter.
      */
     const isClosingLine = (line.lineOffset === (lines.length - 1))
-      && (content.trim().length === 0);
+      && (content.trim()
+        .length
+        === 0);
     if (isClosingLine)
       return;
     /**
      First non-whitespace character, where canonical marker may appear.
      */
-    const prefixIndex = content.length - content.trimStart().length;
+    const prefixIndex = content.length
+      - content.trimStart()
+      .length;
     /**
      Whether line carries canonical marker rather than literal leading asterisk content.
      */

@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for goal command, state, controller, footer, and prompt core.
- *
- * @module
+ Built-artifact tests for goal command, state, controller, footer, and prompt core.
+ 
+ @module
  */
 
 import {
@@ -44,14 +44,14 @@ const STARTED_AT = '2026-07-16T00:00:00.000Z';
 const LATER_AT = '2026-07-16T00:01:00.000Z';
 
 /**
- * Build deterministic active goal through public reducer.
- *
- * @returns active goal fixture
- *
- * @example
- * ```ts
- * const goal = activeGoal();
- * ```
+ Build deterministic active goal through public reducer.
+ 
+ @returns active goal fixture
+ 
+ @example
+ ```ts
+ const goal = activeGoal();
+ ```
  */
 function activeGoal(): ActiveGoalState {
   /** Reduced fixture state. */

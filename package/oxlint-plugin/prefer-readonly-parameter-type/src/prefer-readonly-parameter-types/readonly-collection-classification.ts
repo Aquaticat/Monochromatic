@@ -1,7 +1,7 @@
 /**
- * Deep readonly classification for standard collection and tuple shapes.
- *
- * @module
+ Deep readonly classification for standard collection and tuple shapes.
+ 
+ @module
  */
 
 import type {
@@ -18,14 +18,14 @@ import {
 } from './readonly-classification-model.ts';
 
 /**
- * Sentinel when type is not a collection shape handled by this module.
+ Sentinel when type is not a collection shape handled by this module.
  */
 export const READONLY_COLLECTION_CLASSIFICATION_UNAVAILABLE: unique symbol = Symbol(
   'readonly collection classification unavailable',
 );
 
 /**
- * Standard readonly generic collections classified through reachable type arguments.
+ Standard readonly generic collections classified through reachable type arguments.
  */
 const READONLY_GENERIC_COLLECTION_OWNERS: ReadonlySet<string> = new Set([
   'ReadonlyMap',
@@ -33,20 +33,20 @@ const READONLY_GENERIC_COLLECTION_OWNERS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Classifier callback for recursively reached collection values.
+ Classifier callback for recursively reached collection values.
  */
 type NestedReadonlyClassifier = (type: Type) => ReadonlyClassification;
 
 /**
- * Classifies mutable array container and nested indexed values.
- *
- * @param checker - Semantic checker exposing index types.
- *
- * @param type - Standard mutable array type.
- *
- * @param classify - Recursive classifier for element values.
- *
- * @returns combined container and element classification.
+ Classifies mutable array container and nested indexed values.
+ 
+ @param checker - Semantic checker exposing index types.
+ 
+ @param type - Standard mutable array type.
+ 
+ @param classify - Recursive classifier for element values.
+ 
+ @returns combined container and element classification.
  */
 function classifyMutableArray({
   checker,
@@ -78,15 +78,15 @@ function classifyMutableArray({
 }
 
 /**
- * Classifies readonly array indexed values.
- *
- * @param checker - Semantic checker exposing index types.
- *
- * @param type - Standard readonly array type.
- *
- * @param classify - Recursive classifier for element values.
- *
- * @returns combined nested element classification.
+ Classifies readonly array indexed values.
+ 
+ @param checker - Semantic checker exposing index types.
+ 
+ @param type - Standard readonly array type.
+ 
+ @param classify - Recursive classifier for element values.
+ 
+ @returns combined nested element classification.
  */
 function classifyReadonlyArray({
   checker,
@@ -111,17 +111,17 @@ function classifyReadonlyArray({
 }
 
 /**
- * Classifies readonly generic collection key and value arguments.
- *
- * @param checker - Semantic checker exposing type arguments.
- *
- * @param type - Readonly map or set reference.
- *
- * @param owner - Standard collection owner name.
- *
- * @param classify - Recursive classifier for reachable values.
- *
- * @returns combined key and value classification.
+ Classifies readonly generic collection key and value arguments.
+ 
+ @param checker - Semantic checker exposing type arguments.
+ 
+ @param type - Readonly map or set reference.
+ 
+ @param owner - Standard collection owner name.
+ 
+ @param classify - Recursive classifier for reachable values.
+ 
+ @returns combined key and value classification.
  */
 function classifyReadonlyGeneric({
   checker,
@@ -153,15 +153,15 @@ function classifyReadonlyGeneric({
 }
 
 /**
- * Classifies tuple mutability and every indexed element.
- *
- * @param checker - Semantic checker exposing tuple arguments.
- *
- * @param type - Semantic tuple type.
- *
- * @param classify - Recursive classifier for tuple elements.
- *
- * @returns combined tuple and element classification.
+ Classifies tuple mutability and every indexed element.
+ 
+ @param checker - Semantic checker exposing tuple arguments.
+ 
+ @param type - Semantic tuple type.
+ 
+ @param classify - Recursive classifier for tuple elements.
+ 
+ @returns combined tuple and element classification.
  */
 function classifyTuple({
   checker,
@@ -175,7 +175,7 @@ function classifyTuple({
   if (!type.isTupleType())
     return { kind: 'deep-readonly', };
   /**
-   * Element causes addressed by tuple position.
+   Element causes addressed by tuple position.
    */
   const tupleElementResults = checker
     .getTypeArguments(type,)
@@ -204,22 +204,22 @@ function classifyTuple({
 }
 
 /**
- * Classifies collection shape or returns unavailable sentinel for ordinary objects.
- *
- * @param checker - Semantic checker owning collection type.
- *
- * @param type - Current type candidate.
- *
- * @param owner - Declared type owner name.
- *
- * @param classify - Recursive classifier for reachable values.
- *
- * @returns complete collection classification or unavailable sentinel.
- *
- * @example
- * ```ts
- * classifyReadonlyCollection({ checker, type, owner, classify });
- * ```
+ Classifies collection shape or returns unavailable sentinel for ordinary objects.
+ 
+ @param checker - Semantic checker owning collection type.
+ 
+ @param type - Current type candidate.
+ 
+ @param owner - Declared type owner name.
+ 
+ @param classify - Recursive classifier for reachable values.
+ 
+ @returns complete collection classification or unavailable sentinel.
+ 
+ @example
+ ```ts
+ classifyReadonlyCollection({ checker, type, owner, classify });
+ ```
  */
 export function classifyReadonlyCollection({
   checker,

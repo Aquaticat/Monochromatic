@@ -1,5 +1,5 @@
 /**
- * Tests for Claude Code terminal title handler helpers.
+ Tests for Claude Code terminal title handler helpers.
  */
 
 import type { HookInput, } from '@monochromatic-dev/claude-code-plugin-hook-type/ts';
@@ -15,7 +15,7 @@ import {
 import { terminalTitleForEvent, } from './index.ts';
 
 /**
- * Shared event fields required by every Claude Code hook payload.
+ Shared event fields required by every Claude Code hook payload.
  */
 const BASE_HOOK_INPUT = {
   session_id: 'session-1',
@@ -25,11 +25,11 @@ const BASE_HOOK_INPUT = {
 } as const;
 
 /**
- * Builds a typed user-prompt hook input for title tests.
- *
- * @param prompt - because prompt payload is display text under test
- *
- * @returns complete Claude Code hook input
+ Builds a typed user-prompt hook input for title tests.
+ 
+ @param prompt - because prompt payload is display text under test
+ 
+ @returns complete Claude Code hook input
  */
 function userPromptSubmitEvent(prompt: string,): HookInput {
   return {
@@ -40,11 +40,11 @@ function userPromptSubmitEvent(prompt: string,): HookInput {
 }
 
 /**
- * Builds a typed pre-tool hook input for title tests.
- *
- * @param filePath - because Read tool path text is display text under test
- *
- * @returns complete Claude Code hook input
+ Builds a typed pre-tool hook input for title tests.
+ 
+ @param filePath - because Read tool path text is display text under test
+ 
+ @returns complete Claude Code hook input
  */
 function readPreToolUseEvent(filePath: string,): HookInput {
   return {
@@ -57,11 +57,11 @@ function readPreToolUseEvent(filePath: string,): HookInput {
 }
 
 /**
- * Builds a typed pre-tool hook input for bash title tests.
- *
- * @param command - because command payload is display text under test
- *
- * @returns complete Claude Code hook input
+ Builds a typed pre-tool hook input for bash title tests.
+ 
+ @param command - because command payload is display text under test
+ 
+ @returns complete Claude Code hook input
  */
 function bashPreToolUseEvent(command: string,): HookInput {
   return {
@@ -120,7 +120,7 @@ await describe({
       name: 'byte-caps emitted prompt titles',
       fn: async () => {
         /**
-         * Prompt exceeding Ghostty byte-safe title payload length.
+         Prompt exceeding Ghostty byte-safe title payload length.
          */
         const title = terminalTitleForEvent(
           userPromptSubmitEvent('😀'.repeat(MAX_TERMINAL_TITLE_UTF8_BYTES,),),

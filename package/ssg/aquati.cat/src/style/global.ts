@@ -1,8 +1,8 @@
 /**
- * Global reset, typography, and interaction styles.
- *
- * Base rules that apply site-wide before any component styles.
- * All colors reference CSS custom properties defined in `tokens.ts`.
+ Global reset, typography, and interaction styles.
+ 
+ Base rules that apply site-wide before any component styles.
+ All colors reference CSS custom properties defined in `tokens.ts`.
  */
 import {
   cssCalc,
@@ -22,18 +22,18 @@ import {
 } from './constants.ts';
 
 /**
- * `@font-face` declarations for self-hosted text and code fonts.
- *
- * Inter (normal + italic) is the body typeface; Monaspace Neon is
- * the monospace typeface for `<code>` and `<pre>` blocks.
- * All three are variable-weight woff2 files served from the site root.
- *
- * @returns CSS string with three `@font-face` rules
- *
- * @example
- * ```ts
- * const css = fontFaceStyles();
- * ```
+ `@font-face` declarations for self-hosted text and code fonts.
+ 
+ Inter (normal + italic) is the body typeface; Monaspace Neon is
+ the monospace typeface for `<code>` and `<pre>` blocks.
+ All three are variable-weight woff2 files served from the site root.
+ 
+ @returns CSS string with three `@font-face` rules
+ 
+ @example
+ ```ts
+ const css = fontFaceStyles();
+ ```
  */
 export function fontFaceStyles(): string {
   return [
@@ -72,14 +72,14 @@ export function fontFaceStyles(): string {
 }
 
 /**
- * Box-sizing reset and base body styles.
- *
- * @returns CSS string for reset rules
- *
- * @example
- * ```ts
- * const css = resetStyles();
- * ```
+ Box-sizing reset and base body styles.
+ 
+ @returns CSS string for reset rules
+ 
+ @example
+ ```ts
+ const css = resetStyles();
+ ```
  */
 export function resetStyles(): string {
   return [
@@ -121,14 +121,14 @@ export function resetStyles(): string {
 }
 
 /**
- * Base typography for headings, links, and code blocks.
- *
- * @returns CSS string for typography rules
- *
- * @example
- * ```ts
- * const css = typographyStyles();
- * ```
+ Base typography for headings, links, and code blocks.
+ 
+ @returns CSS string for typography rules
+ 
+ @example
+ ```ts
+ const css = typographyStyles();
+ ```
  */
 export function typographyStyles(): string {
   return [
@@ -175,18 +175,18 @@ export function typographyStyles(): string {
 }
 
 /**
- * Global interactive element styles.
- *
- * Minimum touch targets for links and `:focus-visible` outlines
- * for all focusable elements. Applies site-wide, not scoped
- * to any single component.
- *
- * @returns CSS string for interaction rules
- *
- * @example
- * ```ts
- * const css = interactionStyles();
- * ```
+ Global interactive element styles.
+ 
+ Minimum touch targets for links and `:focus-visible` outlines
+ for all focusable elements. Applies site-wide, not scoped
+ to any single component.
+ 
+ @returns CSS string for interaction rules
+ 
+ @example
+ ```ts
+ const css = interactionStyles();
+ ```
  */
 export function interactionStyles(): string {
   return [

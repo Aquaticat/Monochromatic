@@ -1,7 +1,7 @@
 /**
- * Protected-path guard powered by the `ignore` package's gitignore semantics.
- *
- * @module
+ Protected-path guard powered by the `ignore` package's gitignore semantics.
+ 
+ @module
  */
 
 import ignore, { type Ignore, } from 'ignore';
@@ -21,12 +21,12 @@ import {
 //region Sentinels
 
 /**
- * Sentinel returned when no path rule provides a refusal message.
- *
- * @example
- * ```typescript
- * if (rule === PATH_RULE_NOT_FOUND) return GUARDRAIL_NOT_BLOCKED;
- * ```
+ Sentinel returned when no path rule provides a refusal message.
+ 
+ @example
+ ```typescript
+ if (rule === PATH_RULE_NOT_FOUND) return GUARDRAIL_NOT_BLOCKED;
+ ```
  */
 const PATH_RULE_NOT_FOUND: unique symbol = Symbol('pi-guardrail/path-rule-not-found',);
 
@@ -35,47 +35,47 @@ const PATH_RULE_NOT_FOUND: unique symbol = Symbol('pi-guardrail/path-rule-not-fo
 //region Types
 
 /**
- * Compiled protected-path matcher.
+ Compiled protected-path matcher.
  */
 type PathGuardMatcher = {
   /**
-   * Ignore package matcher for final gitignore state.
+   Ignore package matcher for final gitignore state.
    */
   readonly ignore: Ignore;
   /**
-   * Per-rule matchers used to select custom refusal message without rebuilding matchers per call.
+   Per-rule matchers used to select custom refusal message without rebuilding matchers per call.
    */
   readonly ruleMatchers: readonly PathRuleMatcher[];
 };
 
 /**
- * One path rule paired with its prebuilt matcher.
+ One path rule paired with its prebuilt matcher.
  */
 type PathRuleMatcher = {
   /**
-   * Path rule carrying refusal message.
+   Path rule carrying refusal message.
    */
   readonly rule: PathRule;
   /**
-   * Matcher containing only this rule's pattern.
+   Matcher containing only this rule's pattern.
    */
   readonly ignore: Ignore;
 };
 
 /**
- * Options for path guard evaluation.
+ Options for path guard evaluation.
  */
 type EvaluatePathGuardOptions = {
   /**
-   * External tool input from pi edit/write calls.
+   External tool input from pi edit/write calls.
    */
   readonly input: unknown;
   /**
-   * Pi session current working directory.
+   Pi session current working directory.
    */
   readonly cwd: string;
   /**
-   * Compiled matcher.
+   Compiled matcher.
    */
   readonly matcher: PathGuardMatcher;
 };
@@ -85,23 +85,23 @@ type EvaluatePathGuardOptions = {
 //region Matcher construction
 
 /**
- * Builds an `ignore` matcher from ordered path rules.
- *
- * Builds one matcher for final gitignore state and one matcher per rule for
- * refusal-message selection.
- *
- * @param rules - ordered protected-path rules
- *
- * @returns compiled path guard matcher
- *
- * @example
- * ```typescript
- * const matcher = createPathGuardMatcher([{ pattern: 'pnpm-lock.yaml', message: 'run pnpm install' }]);
- * ```
+ Builds an `ignore` matcher from ordered path rules.
+ 
+ Builds one matcher for final gitignore state and one matcher per rule for
+ refusal-message selection.
+ 
+ @param rules - ordered protected-path rules
+ 
+ @returns compiled path guard matcher
+ 
+ @example
+ ```typescript
+ const matcher = createPathGuardMatcher([{ pattern: 'pnpm-lock.yaml', message: 'run pnpm install' }]);
+ ```
  */
 function createPathGuardMatcher(rules: readonly PathRule[],): PathGuardMatcher {
   /**
-   * Ignore matcher with all patterns installed in order.
+   Ignore matcher with all patterns installed in order.
    */
   const ig = rules.reduce(
     function addRule(
@@ -114,7 +114,7 @@ function createPathGuardMatcher(rules: readonly PathRule[],): PathGuardMatcher {
     ignore({ ignorecase: false, }),
   );
   /**
-   * Per-rule matchers built once so blocked tool calls do not allocate matchers per rule.
+   Per-rule matchers built once so blocked tool calls do not allocate matchers per rule.
    */
   const ruleMatchers = rules.map(function buildRuleMatcher(rule,): PathRuleMatcher {
     return {
@@ -135,20 +135,20 @@ function createPathGuardMatcher(rules: readonly PathRule[],): PathGuardMatcher {
 //region Guard evaluation
 
 /**
- * Applies protected-path rules to a pi edit/write tool input.
- *
- * @param input - pi tool input
- *
- * @param cwd - pi current working directory
- *
- * @param matcher - compiled gitignore-style matcher
- *
- * @returns block decision for matching protected paths, otherwise {@link GUARDRAIL_NOT_BLOCKED}
- *
- * @example
- * ```typescript
- * evaluatePathGuard({ input: { path: 'pnpm-lock.yaml' }, cwd, matcher });
- * ```
+ Applies protected-path rules to a pi edit/write tool input.
+ 
+ @param input - pi tool input
+ 
+ @param cwd - pi current working directory
+ 
+ @param matcher - compiled gitignore-style matcher
+ 
+ @returns block decision for matching protected paths, otherwise {@link GUARDRAIL_NOT_BLOCKED}
+ 
+ @example
+ ```typescript
+ evaluatePathGuard({ input: { path: 'pnpm-lock.yaml' }, cwd, matcher });
+ ```
  */
 function evaluatePathGuard(
   {
@@ -158,14 +158,14 @@ function evaluatePathGuard(
   }: EvaluatePathGuardOptions,
 ): GuardrailDecision {
   /**
-   * Tool target path extracted from external input.
+   Tool target path extracted from external input.
    */
   const rawPath = extractToolPath(input,);
   if (rawPath === TOOL_PATH_NOT_FOUND)
     return GUARDRAIL_NOT_BLOCKED;
 
   /**
-   * Path normalized for gitignore-style matching.
+   Path normalized for gitignore-style matching.
    */
   const relativePath = normalizeToolPath({
     cwd,
@@ -175,7 +175,7 @@ function evaluatePathGuard(
     return GUARDRAIL_NOT_BLOCKED;
 
   /**
-   * Ignore package match result for final gitignore state.
+   Ignore package match result for final gitignore state.
    */
   const testResult = matcher.ignore
     .test(relativePath,);
@@ -183,7 +183,7 @@ function evaluatePathGuard(
     return GUARDRAIL_NOT_BLOCKED;
 
   /**
-   * Last positive rule matching this path, used only for refusal message selection.
+   Last positive rule matching this path, used only for refusal message selection.
    */
   const rule = findLastMatchingMessageRule({
     ruleMatchers: matcher.ruleMatchers,
@@ -199,23 +199,23 @@ function evaluatePathGuard(
 }
 
 /**
- * Finds the last path rule whose own gitignore pattern matches a relative path.
- *
- * The full matcher decides whether the final state is ignored. This helper is
- * only for selecting the message after a positive final state, so duplicate
- * user rules can override built-in messages without reimplementing gitignore
- * matching.
- *
- * @param ruleMatchers - ordered path rule matchers
- *
- * @param relativePath - normalized project-relative path
- *
- * @returns matching rule that should provide refusal message
- *
- * @example
- * ```typescript
- * findLastMatchingMessageRule({ ruleMatchers, relativePath: 'pnpm-lock.yaml' });
- * ```
+ Finds the last path rule whose own gitignore pattern matches a relative path.
+ 
+ The full matcher decides whether the final state is ignored. This helper is
+ only for selecting the message after a positive final state, so duplicate
+ user rules can override built-in messages without reimplementing gitignore
+ matching.
+ 
+ @param ruleMatchers - ordered path rule matchers
+ 
+ @param relativePath - normalized project-relative path
+ 
+ @returns matching rule that should provide refusal message
+ 
+ @example
+ ```typescript
+ findLastMatchingMessageRule({ ruleMatchers, relativePath: 'pnpm-lock.yaml' });
+ ```
  */
 function findLastMatchingMessageRule(
   {
@@ -227,7 +227,7 @@ function findLastMatchingMessageRule(
   },
 ): PathRule | typeof PATH_RULE_NOT_FOUND {
   /**
-   * Last per-rule matcher whose pattern ignores the target path.
+   Last per-rule matcher whose pattern ignores the target path.
    */
   const match = ruleMatchers
     .toReversed()

@@ -1,7 +1,7 @@
 /**
- * Shared rate-limit segment and status formatting.
- *
- * @module
+ Shared rate-limit segment and status formatting.
+ 
+ @module
  */
 
 import {
@@ -27,20 +27,20 @@ import type {
 //region Segment formatting
 
 /**
- * Formats one rate-limit status segment.
- *
- * @param snapshot - current limiter sample
- *
- * @param renderedAtMs - render timestamp in epoch milliseconds
- *
- * @param style - host style callbacks
- *
- * @returns status segment, or empty string when policy says to hide it
- *
- * @example
- * ```ts
- * formatRateLimitSegment({ snapshot, renderedAtMs: Date.now(), style });
- * ```
+ Formats one rate-limit status segment.
+ 
+ @param snapshot - current limiter sample
+ 
+ @param renderedAtMs - render timestamp in epoch milliseconds
+ 
+ @param style - host style callbacks
+ 
+ @returns status segment, or empty string when policy says to hide it
+ 
+ @example
+ ```ts
+ formatRateLimitSegment({ snapshot, renderedAtMs: Date.now(), style });
+ ```
  */
 function formatRateLimitSegment({
   snapshot,
@@ -52,15 +52,15 @@ function formatRateLimitSegment({
   style: RateLimitStyle;
 }>,): string {
   /**
-   * Projected used percentage at fixed window end.
+   Projected used percentage at fixed window end.
    */
   const projectedPercent = projectUsagePercent({ snapshot, },);
   /**
-   * Remaining capacity percentage.
+   Remaining capacity percentage.
    */
   const remaining = remainingPercent(snapshot,);
   /**
-   * Whether projection alone forces this segment to render.
+   Whether projection alone forces this segment to render.
    */
   const isProjectedOverrun = projectedPercent > PROJECTED_OVERRUN_THRESHOLD;
 
@@ -68,20 +68,20 @@ function formatRateLimitSegment({
     return '';
 
   /**
-   * Inline annotation showing projected end-of-window usage.
+   Inline annotation showing projected end-of-window usage.
    */
   const overrunMarker = isProjectedOverrun
     ? ` ${formatProjectionMarker(projectedPercent,)}`
     : '';
   /**
-   * Selected shared severity.
+   Selected shared severity.
    */
   const severity = rateLimitSeverity({
     remaining,
     projectedPercent,
   },);
   /**
-   * Styled remaining-capacity text and optional projection marker.
+   Styled remaining-capacity text and optional projection marker.
    */
   const remainingText = styleBySeverity({
     text: `${remaining}% left${overrunMarker}`,
@@ -89,21 +89,21 @@ function formatRateLimitSegment({
     style,
   },);
   /**
-   * Host label for this rate-limit segment.
+   Host label for this rate-limit segment.
    */
   const { label, } = snapshot;
   /**
-   * Whether host supplied a label prefix.
+   Whether host supplied a label prefix.
    */
   const hasLabel = label.length > 0;
   /**
-   * Optional host label prefix.
+   Optional host label prefix.
    */
   const labelPrefix = hasLabel
     ? `${label} `
     : '';
   /**
-   * Human-readable duration until this usage window resets or replenishes.
+   Human-readable duration until this usage window resets or replenishes.
    */
   const timeLeft = formatRelativeTime({
     resetAtMs: snapshot.resetAtMs,
@@ -114,16 +114,16 @@ function formatRateLimitSegment({
 }
 
 /**
- * Detects non-empty formatted status segments.
- *
- * @param segment - formatted segment candidate
- *
- * @returns whether segment should be displayed
- *
- * @example
- * ```ts
- * isNonEmptySegment('50% left');
- * ```
+ Detects non-empty formatted status segments.
+ 
+ @param segment - formatted segment candidate
+ 
+ @returns whether segment should be displayed
+ 
+ @example
+ ```ts
+ isNonEmptySegment('50% left');
+ ```
  */
 function isNonEmptySegment(segment: string,): boolean {
   return segment.length > 0;
@@ -134,20 +134,20 @@ function isNonEmptySegment(segment: string,): boolean {
 //region Public formatter
 
 /**
- * Formats status text from rate-limit snapshots.
- *
- * @param snapshots - parsed rate-limit samples
- *
- * @param renderedAtMs - render timestamp in epoch milliseconds
- *
- * @param style - host style callbacks
- *
- * @returns {@link RateLimitStatus} for rate-limit warnings
- *
- * @example
- * ```ts
- * formatRateLimitStatus({ snapshots, renderedAtMs: Date.now(), style });
- * ```
+ Formats status text from rate-limit snapshots.
+ 
+ @param snapshots - parsed rate-limit samples
+ 
+ @param renderedAtMs - render timestamp in epoch milliseconds
+ 
+ @param style - host style callbacks
+ 
+ @returns {@link RateLimitStatus} for rate-limit warnings
+ 
+ @example
+ ```ts
+ formatRateLimitStatus({ snapshots, renderedAtMs: Date.now(), style });
+ ```
  */
 function formatRateLimitStatus({
   snapshots,
@@ -159,7 +159,7 @@ function formatRateLimitStatus({
   style: RateLimitStyle;
 }>,): RateLimitStatus {
   /**
-   * Formatted segments that should appear in the statusline.
+   Formatted segments that should appear in the statusline.
    */
   const segments = snapshots
     .map(function formatSnapshot(snapshot,): string {

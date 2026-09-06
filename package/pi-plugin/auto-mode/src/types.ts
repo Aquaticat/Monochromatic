@@ -1,11 +1,11 @@
 /**
- * Shared types for the auto-mode extension.
- *
- * All types use `type` (not `interface`) per oxlint rules.
- * Branded types for custom session entries ensure type-safe
- * data retrieval.
- *
- * @module
+ Shared types for the auto-mode extension.
+ 
+ All types use `type` (not `interface`) per oxlint rules.
+ Branded types for custom session entries ensure type-safe
+ data retrieval.
+ 
+ @module
  */
 
 import type {
@@ -22,12 +22,12 @@ import type {
 //region Custom entry types
 
 /**
- * Discriminator for trust-directive session entries.
+ Discriminator for trust-directive session entries.
  */
 const TRUST_ENTRY_TYPE = 'auto-mode:trust';
 
 /**
- * Discriminator for verdict session entries.
+ Discriminator for verdict session entries.
  */
 const VERDICT_ENTRY_TYPE = 'auto-mode:verdict';
 
@@ -36,26 +36,26 @@ const VERDICT_ENTRY_TYPE = 'auto-mode:verdict';
 //region Verdict types
 
 /**
- * Structured verdict data written to the session log.
- *
- * Written by the judge pipeline for audit/replay and by
- * propose_trust for user-initiated overrides.
+ Structured verdict data written to the session log.
+ 
+ Written by the judge pipeline for audit/replay and by
+ propose_trust for user-initiated overrides.
  */
 type VerdictData = {
   /**
-   * Human-readable description of the action.
+   Human-readable description of the action.
    */
   readonly action: string;
   /**
-   * Stable fingerprint of the exact tool call approved or denied.
+   Stable fingerprint of the exact tool call approved or denied.
    */
   readonly approvalFingerprint?: string;
   /**
-   * Original approval verdict when this entry was produced by reuse.
+   Original approval verdict when this entry was produced by reuse.
    */
   readonly reusedFromVerdict?: 'approve' | 'user-approve';
   /**
-   * Judge or user decision.
+   Judge or user decision.
    */
   readonly verdict:
     | 'approve'
@@ -64,22 +64,22 @@ type VerdictData = {
     | 'user-approve'
     | 'user-deny';
   /**
-   * Reasoning or context.
+   Reasoning or context.
    */
   readonly reason: string;
 };
 
 /**
- * Verdict returned by the judge.
- *
- * Only the judge produces this shape; user decisions
- * produce `VerdictData` directly.
+ Verdict returned by the judge.
+ 
+ Only the judge produces this shape; user decisions
+ produce `VerdictData` directly.
  */
 type Verdict = {
   readonly verdict: 'approve' | 'deny' | 'ask';
   readonly reason: string;
   /**
-   * Guidance sent to the agent on deny.
+   Guidance sent to the agent on deny.
    */
   readonly guidance: string;
 };
@@ -89,22 +89,22 @@ type Verdict = {
 //region Custom entry helpers
 
 /**
- * Type-guard for trust-directive session entries.
- *
- * Type predicates must use a single positional parameter so call-site
- * narrowing works; the two custom entry types each get their own guard
- * rather than a parameterised helper.
- *
- * @param entry - a session branch entry
- *
- * @returns `true` if the entry is a trust-directive entry
- *
- * @example
- * ```typescript
- * if (isTrustEntry(entry)) {
- *   console.log(entry.data); // string | null
- * }
- * ```
+ Type-guard for trust-directive session entries.
+ 
+ Type predicates must use a single positional parameter so call-site
+ narrowing works; the two custom entry types each get their own guard
+ rather than a parameterised helper.
+ 
+ @param entry - a session branch entry
+ 
+ @returns `true` if the entry is a trust-directive entry
+ 
+ @example
+ ```typescript
+ if (isTrustEntry(entry)) {
+   console.log(entry.data); // string | null
+ }
+ ```
  */
 function isTrustEntry(
   entry: {
@@ -119,7 +119,7 @@ function isTrustEntry(
   data: string | null;
 } {
   /**
-   * Whether entry carries Pi's custom-entry discriminator for trust directives.
+   Whether entry carries Pi's custom-entry discriminator for trust directives.
    */
   const hasTrustCustomType = (entry.type === 'custom')
     && (entry.customType === TRUST_ENTRY_TYPE);
@@ -134,18 +134,18 @@ function isTrustEntry(
 }
 
 /**
- * Type-guard for verdict session entries, validated with {@link isVerdictData}.
- *
- * @param entry - a session branch entry
- *
- * @returns `true` if the entry is a verdict entry
- *
- * @example
- * ```typescript
- * if (isVerdictEntry(entry)) {
- *   console.log(entry.data.verdict);
- * }
- * ```
+ Type-guard for verdict session entries, validated with {@link isVerdictData}.
+ 
+ @param entry - a session branch entry
+ 
+ @returns `true` if the entry is a verdict entry
+ 
+ @example
+ ```typescript
+ if (isVerdictEntry(entry)) {
+   console.log(entry.data.verdict);
+ }
+ ```
  */
 function isVerdictEntry(
   entry: {
@@ -159,7 +159,7 @@ function isVerdictEntry(
   data: VerdictData;
 } {
   /**
-   * Whether entry carries Pi's custom-entry discriminator for verdict data.
+   Whether entry carries Pi's custom-entry discriminator for verdict data.
    */
   const hasVerdictCustomType = (entry.type === 'custom')
     && (entry.customType === VERDICT_ENTRY_TYPE);
@@ -169,20 +169,20 @@ function isVerdictEntry(
 }
 
 /**
- * Check whether unknown custom-entry payload has verdict-data shape.
- *
- * Validates the record with {@link isRecord}, the verdict discriminant with
- * {@link isVerdictValue}, and the optional fields with
- * {@link isUndefinedOrString} and {@link isUndefinedOrReusableVerdictSource}.
- *
- * @param data - custom entry payload read from session history
- *
- * @returns whether payload can be safely consumed as verdict data
- *
- * @example
- * ```typescript
- * isVerdictData({ action: 'read .env', verdict: 'approve', reason: 'Allowed' });
- * ```
+ Check whether unknown custom-entry payload has verdict-data shape.
+ 
+ Validates the record with {@link isRecord}, the verdict discriminant with
+ {@link isVerdictValue}, and the optional fields with
+ {@link isUndefinedOrString} and {@link isUndefinedOrReusableVerdictSource}.
+ 
+ @param data - custom entry payload read from session history
+ 
+ @returns whether payload can be safely consumed as verdict data
+ 
+ @example
+ ```typescript
+ isVerdictData({ action: 'read .env', verdict: 'approve', reason: 'Allowed' });
+ ```
  */
 function isVerdictData(
   data: unknown,
@@ -205,16 +205,16 @@ function isVerdictData(
 }
 
 /**
- * Check whether unknown value is undefined or string.
- *
- * @param value - candidate optional string value
- *
- * @returns whether value can populate optional string fields
- *
- * @example
- * ```typescript
- * isUndefinedOrString('fingerprint');
- * ```
+ Check whether unknown value is undefined or string.
+ 
+ @param value - candidate optional string value
+ 
+ @returns whether value can populate optional string fields
+ 
+ @example
+ ```typescript
+ isUndefinedOrString('fingerprint');
+ ```
  */
 function isUndefinedOrString(
   value: unknown,
@@ -226,16 +226,16 @@ function isUndefinedOrString(
 }
 
 /**
- * Check whether unknown value is undefined or reusable source discriminator.
- *
- * @param value - candidate optional reusable source value
- *
- * @returns whether value can populate reusedFromVerdict
- *
- * @example
- * ```typescript
- * isUndefinedOrReusableVerdictSource('user-approve');
- * ```
+ Check whether unknown value is undefined or reusable source discriminator.
+ 
+ @param value - candidate optional reusable source value
+ 
+ @returns whether value can populate reusedFromVerdict
+ 
+ @example
+ ```typescript
+ isUndefinedOrReusableVerdictSource('user-approve');
+ ```
  */
 function isUndefinedOrReusableVerdictSource(
   value: unknown,
@@ -248,16 +248,16 @@ function isUndefinedOrReusableVerdictSource(
 }
 
 /**
- * Check whether unknown value is one of allowed verdict strings.
- *
- * @param value - candidate verdict value
- *
- * @returns whether value is a verdict discriminator
- *
- * @example
- * ```typescript
- * isVerdictValue('user-approve');
- * ```
+ Check whether unknown value is one of allowed verdict strings.
+ 
+ @param value - candidate verdict value
+ 
+ @returns whether value is a verdict discriminator
+ 
+ @example
+ ```typescript
+ isVerdictValue('user-approve');
+ ```
  */
 function isVerdictValue(
   value: unknown,
@@ -274,16 +274,16 @@ function isVerdictValue(
 }
 
 /**
- * Check whether unknown value is a non-null object record.
- *
- * @param value - candidate object value
- *
- * @returns whether value can be accessed by string keys
- *
- * @example
- * ```typescript
- * isRecord({ ok: true });
- * ```
+ Check whether unknown value is a non-null object record.
+ 
+ @param value - candidate object value
+ 
+ @returns whether value can be accessed by string keys
+ 
+ @example
+ ```typescript
+ isRecord({ ok: true });
+ ```
  */
 function isRecord(
   value: unknown,
@@ -300,15 +300,15 @@ function isRecord(
 //region Signal types
 
 /**
- * Context needed by signal functions.
+ Context needed by signal functions.
  */
 type SignalContext = {
   /**
-   * Working directory of the agent session.
+   Working directory of the agent session.
    */
   readonly cwd: string;
   /**
-   * Home directory of the current user.
+   Home directory of the current user.
    */
   readonly home: string;
 };
@@ -318,19 +318,19 @@ type SignalContext = {
 //region Command types
 
 /**
- * Environment assignment prefix parsed before shell command name.
+ Environment assignment prefix parsed before shell command name.
  */
 type EnvAssignment = ShellEnvAssignment;
 
 /**
- * Parsed shell command used by bash signal checks.
+ Parsed shell command used by bash signal checks.
  */
 type CommandInfo = ShellCommandInfo;
 
 /**
- * Result of analyzing a bash command string.
- *
- * Produced by {@link analyzeBashCommand} in command-parser.ts.
+ Result of analyzing a bash command string.
+ 
+ Produced by {@link analyzeBashCommand} in command-parser.ts.
  */
 type BashAnalysis = ShellCommandAnalysis;
 
@@ -339,7 +339,7 @@ type BashAnalysis = ShellCommandAnalysis;
 //region Budget model types
 
 /**
- * A selected budget model with pi-ai model shape.
+ A selected budget model with pi-ai model shape.
  */
 type BudgetModel = SharedBudgetModel<Model<Api>>;
 
@@ -348,18 +348,18 @@ type BudgetModel = SharedBudgetModel<Model<Api>>;
 //region Batch types
 
 /**
- * Entry in a tool-call batch.
- *
- * Tracks the action description and its verdict
- * for circumvention detection across a single turn.
+ Entry in a tool-call batch.
+ 
+ Tracks the action description and its verdict
+ for circumvention detection across a single turn.
  */
 type BatchEntry = {
   /**
-   * Human-readable action description.
+   Human-readable action description.
    */
   readonly action: string;
   /**
-   * Verdict: "approve" or "deny".
+   Verdict: "approve" or "deny".
    */
   readonly verdict: string;
 };
@@ -369,60 +369,60 @@ type BatchEntry = {
 //region Evaluation types
 
 /**
- * Outcome of guarding a flagged action: block the tool call with guidance,
- * or allow it.
- *
- * A discriminated union on `block` rather than an optional/absent result, so
- * "allow" is a distinct, meaningful value rather than a missing one. Both
- * {@link evaluate} and {@link askUser} resolve to this shape; the entry-point
- * handler maps it onto the host SDK's {@link ToolCallEventResult} (block) or
- * no result (allow).
+ Outcome of guarding a flagged action: block the tool call with guidance,
+ or allow it.
+ 
+ A discriminated union on `block` rather than an optional/absent result, so
+ "allow" is a distinct, meaningful value rather than a missing one. Both
+ {@link evaluate} and {@link askUser} resolve to this shape; the entry-point
+ handler maps it onto the host SDK's {@link ToolCallEventResult} (block) or
+ no result (allow).
  */
 type GuardDecision =
   | {
     readonly block: true;
     /**
-     * Guidance returned to the agent explaining the block.
+     Guidance returned to the agent explaining the block.
      */
     readonly reason: string;
   }
   | { readonly block: false };
 
 /**
- * One entry in the per-flow verdict log surfaced in the auto-mode widget.
- *
- * Recorded only for judge `approve`/`deny` outcomes; user-driven `ask`
- * resolutions are logged via `pi.appendEntry` instead of the flow widget.
+ One entry in the per-flow verdict log surfaced in the auto-mode widget.
+ 
+ Recorded only for judge `approve`/`deny` outcomes; user-driven `ask`
+ resolutions are logged via `pi.appendEntry` instead of the flow widget.
  */
 type FlowVerdict = {
   /**
-   * Human-readable description of the guarded action.
+   Human-readable description of the guarded action.
    */
   readonly action: string;
   /**
-   * Widget verdict label: `approved` or `denied`.
+   Widget verdict label: `approved` or `denied`.
    */
   readonly verdict: string;
   /**
-   * Judge reasoning for the verdict.
+   Judge reasoning for the verdict.
    */
   readonly reason: string;
 };
 
 /**
- * Result of {@link evaluate}: the block/allow decision plus the flow verdict to
- * record, when the judge produced one.
- *
- * `flowVerdict` is absent for the user-prompt (`ask`) path, which records its
- * own session entry and does not contribute to the flow widget.
+ Result of {@link evaluate}: the block/allow decision plus the flow verdict to
+ record, when the judge produced one.
+ 
+ `flowVerdict` is absent for the user-prompt (`ask`) path, which records its
+ own session entry and does not contribute to the flow widget.
  */
 type EvaluateResult = {
   /**
-   * Block-or-allow decision handed back to the host SDK.
+   Block-or-allow decision handed back to the host SDK.
    */
   readonly decision: GuardDecision;
   /**
-   * Verdict to append to the flow log, when the judge approved or denied.
+   Verdict to append to the flow log, when the judge approved or denied.
    */
   readonly flowVerdict?: FlowVerdict;
 };

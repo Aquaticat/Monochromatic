@@ -1,7 +1,7 @@
 /**
- * Destination label and source-link preflight.
- *
- * @module
+ Destination label and source-link preflight.
+ 
+ @module
  */
 
 import type {
@@ -12,28 +12,28 @@ import type {
 import { isRecord, } from './json-record.ts';
 
 /**
- * Successful GitHub read status.
+ Successful GitHub read status.
  */
 const HTTP_OK = 200;
 
 /**
- * Confirmed missing resource status.
+ Confirmed missing resource status.
  */
 const HTTP_NOT_FOUND = 404;
 
 /**
- * Reports terminal destination preflight failure.
+ Reports terminal destination preflight failure.
  */
 export class PublicationPreflightError extends Error {
   /**
-   * Creates preflight failure.
-   *
-   * @param message - Safe destination operation diagnostic.
-   *
-   * @example
-   * ```ts
-   * const error = new PublicationPreflightError('label lookup failed');
-   * ```
+   Creates preflight failure.
+   
+   @param message - Safe destination operation diagnostic.
+   
+   @example
+   ```ts
+   const error = new PublicationPreflightError('label lookup failed');
+   ```
    */
   public constructor(message: string,) {
     super(message,);
@@ -42,36 +42,36 @@ export class PublicationPreflightError extends Error {
 }
 
 /**
- * Builds shared repository REST endpoint prefix.
- *
- * @param repository - Canonical destination identity.
- *
- * @returns Owner/name endpoint prefix.
- *
- * @example
- * ```ts
- * repositoryEndpoint(repository); // 'repos/owner/name'
- * ```
+ Builds shared repository REST endpoint prefix.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @returns Owner/name endpoint prefix.
+ 
+ @example
+ ```ts
+ repositoryEndpoint(repository); // 'repos/owner/name'
+ ```
  */
 function repositoryEndpoint(repository: GitHubRepository,): string {
   return `repos/${repository.owner}/${repository.name}`;
 }
 
 /**
- * Looks up existing needs-triage label without creating one.
- *
- * @param repository - Canonical destination identity.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @returns True for existing label and false only for confirmed 404.
- *
- * @throws {@link PublicationPreflightError} for every other status.
- *
- * @example
- * ```ts
- * await lookupNeedsTriageLabel({ repository, api });
- * ```
+ Looks up existing needs-triage label without creating one.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @returns True for existing label and false only for confirmed 404.
+ 
+ @throws {@link PublicationPreflightError} for every other status.
+ 
+ @example
+ ```ts
+ await lookupNeedsTriageLabel({ repository, api });
+ ```
  */
 async function lookupNeedsTriageLabel({
   repository,
@@ -81,7 +81,7 @@ async function lookupNeedsTriageLabel({
   readonly api: GitHubApiClient;
 },): Promise<boolean> {
   /**
-   * Existing-label lookup response.
+   Existing-label lookup response.
    */
   const response = await api({
     method: 'GET',
@@ -99,22 +99,22 @@ async function lookupNeedsTriageLabel({
 }
 
 /**
- * Verifies input head exists as exact destination commit.
- *
- * @param repository - Canonical destination identity.
- *
- * @param resolvedHead - OCR resolved head commit.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @returns Optional commit-pinned source-link property.
- *
- * @throws {@link PublicationPreflightError} for statuses other than 200 or 404.
- *
- * @example
- * ```ts
- * await verifySourceLink({ repository, resolvedHead: 'abc', api });
- * ```
+ Verifies input head exists as exact destination commit.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param resolvedHead - OCR resolved head commit.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @returns Optional commit-pinned source-link property.
+ 
+ @throws {@link PublicationPreflightError} for statuses other than 200 or 404.
+ 
+ @example
+ ```ts
+ await verifySourceLink({ repository, resolvedHead: 'abc', api });
+ ```
  */
 async function verifySourceLink({
   repository,
@@ -126,7 +126,7 @@ async function verifySourceLink({
   readonly api: GitHubApiClient;
 },): Promise<Pick<PublicationPreflight, 'sourceLink'>> {
   /**
-   * Destination commit lookup response.
+   Destination commit lookup response.
    */
   const response = await api({
     method: 'GET',
@@ -156,20 +156,20 @@ async function verifySourceLink({
 }
 
 /**
- * Resolves destination facts before rendering or mutation.
- *
- * @param repository - Canonical destination identity.
- *
- * @param resolvedHead - Optional OCR resolved head commit.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @returns Existing-label and verified-source behavior.
- *
- * @example
- * ```ts
- * await preflightPublication({ repository, api });
- * ```
+ Resolves destination facts before rendering or mutation.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param resolvedHead - Optional OCR resolved head commit.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @returns Existing-label and verified-source behavior.
+ 
+ @example
+ ```ts
+ await preflightPublication({ repository, api });
+ ```
  */
 export async function preflightPublication({
   repository,
@@ -181,7 +181,7 @@ export async function preflightPublication({
   readonly api: GitHubApiClient;
 },): Promise<PublicationPreflight> {
   /**
-   * Confirmed existing-label state.
+   Confirmed existing-label state.
    */
   const needsTriageLabel = await lookupNeedsTriageLabel({
     repository,

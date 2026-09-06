@@ -1,10 +1,10 @@
 /**
- * Integration tests for the import attributes rolldown plugin.
- *
- * Builds real fixtures with rolldown and verifies the output modules
- * correctly export file contents as strings.
- *
- * @module
+ Integration tests for the import attributes rolldown plugin.
+ 
+ Builds real fixtures with rolldown and verifies the output modules
+ correctly export file contents as strings.
+ 
+ @module
  */
 
 import {
@@ -20,11 +20,11 @@ import { importAttributesPlugin, } from './index.ts';
 const FIXTURES_DIR = join(import.meta.dirname, 'fixtures',);
 
 /**
- * Builds a fixture entry file with the import attributes plugin
- * and returns the generated bundle code as a string.
- *
- * @param entryName - Fixture entry file name (without directory)
- * @returns Concatenated output chunk code
+ Builds a fixture entry file with the import attributes plugin
+ and returns the generated bundle code as a string.
+ 
+ @param entryName - Fixture entry file name (without directory)
+ @returns Concatenated output chunk code
  */
 async function buildFixture(entryName: string,): Promise<string> {
   const build = await rolldown({

@@ -1,7 +1,7 @@
 /**
- * Publication-plan construction and safe preview projection.
- *
- * @module
+ Publication-plan construction and safe preview projection.
+ 
+ @module
  */
 
 import { renderIssue, } from './issue-render.ts';
@@ -14,22 +14,22 @@ import type {
 } from './plan-model.ts';
 
 /**
- * Builds complete internal plan after destination preflight.
- *
- * @param input - Atomically validated normalized OCR input.
- *
- * @param repository - Canonical destination repository URL.
- *
- * @param needsTriageLabel - Whether destination contains existing label.
- *
- * @param sourceLink - Verified source repository and commit coordinates.
- *
- * @returns Complete deterministic Issue plan including security content.
- *
- * @example
- * ```ts
- * buildPublicationPlan({ input, repository, needsTriageLabel: true });
- * ```
+ Builds complete internal plan after destination preflight.
+ 
+ @param input - Atomically validated normalized OCR input.
+ 
+ @param repository - Canonical destination repository URL.
+ 
+ @param needsTriageLabel - Whether destination contains existing label.
+ 
+ @param sourceLink - Verified source repository and commit coordinates.
+ 
+ @returns Complete deterministic Issue plan including security content.
+ 
+ @example
+ ```ts
+ buildPublicationPlan({ input, repository, needsTriageLabel: true });
+ ```
  */
 export function buildPublicationPlan({
   input,
@@ -60,16 +60,16 @@ export function buildPublicationPlan({
 }
 
 /**
- * Removes internal security marker from safe ordinary preview issue.
- *
- * @param issue - Rendered non-security Issue.
- *
- * @returns Exact preview issue shape.
- *
- * @example
- * ```ts
- * toPreviewIssue(issue);
- * ```
+ Removes internal security marker from safe ordinary preview issue.
+ 
+ @param issue - Rendered non-security Issue.
+ 
+ @returns Exact preview issue shape.
+ 
+ @example
+ ```ts
+ toPreviewIssue(issue);
+ ```
  */
 function toPreviewIssue(issue: PublicationPlan['issues'][number],): PreviewIssue {
   return {
@@ -84,20 +84,20 @@ function toPreviewIssue(issue: PublicationPlan['issues'][number],): PreviewIssue
 }
 
 /**
- * Projects complete plan to security-redacted preview JSON.
- *
- * @param plan - Complete internal publication plan.
- *
- * @returns Safe preview with ordinary Issue content and security positions only.
- *
- * @example
- * ```ts
- * buildNonInteractivePreview(plan);
- * ```
+ Projects complete plan to security-redacted preview JSON.
+ 
+ @param plan - Complete internal publication plan.
+ 
+ @returns Safe preview with ordinary Issue content and security positions only.
+ 
+ @example
+ ```ts
+ buildNonInteractivePreview(plan);
+ ```
  */
 export function buildNonInteractivePreview(plan: PublicationPlan,): NonInteractivePreview {
   /**
-   * Complete ordinary issues safe for exact preview.
+   Complete ordinary issues safe for exact preview.
    */
   const issues = plan.issues
     .filter(function isOrdinary(issue,): boolean {
@@ -105,7 +105,7 @@ export function buildNonInteractivePreview(plan: PublicationPlan,): NonInteracti
     },)
     .map(toPreviewIssue,);
   /**
-   * Security positions retained without title, body, path, or code.
+   Security positions retained without title, body, path, or code.
    */
   const positions = plan.issues
     .filter(function isSecurity(issue,): boolean {

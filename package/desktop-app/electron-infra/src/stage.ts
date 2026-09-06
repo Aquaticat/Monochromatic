@@ -1,10 +1,10 @@
 /**
- * Stages no-Vite Electron app assets and runtime package metadata.
- *
- * @example
- * ```ts
- * await stageElectronApp({ packageRoot: process.cwd(), staticAssets: ['index.html'] });
- * ```
+ Stages no-Vite Electron app assets and runtime package metadata.
+ 
+ @example
+ ```ts
+ await stageElectronApp({ packageRoot: process.cwd(), staticAssets: ['index.html'] });
+ ```
  */
 
 import {
@@ -21,12 +21,12 @@ import {
 } from './package-metadata.js';
 
 /**
- * Static file copy mapping from source tree into staged app.
- *
- * @example
- * ```ts
- * const asset: StaticAssetMapping = { source: 'index.html', destination: 'index.html' };
- * ```
+ Static file copy mapping from source tree into staged app.
+ 
+ @example
+ ```ts
+ const asset: StaticAssetMapping = { source: 'index.html', destination: 'index.html' };
+ ```
  */
 export type StaticAssetMapping = {
   readonly destination: string;
@@ -34,12 +34,12 @@ export type StaticAssetMapping = {
 };
 
 /**
- * Options for staging a no-Vite Electron app.
- *
- * @example
- * ```ts
- * const options: ElectronAppStageOptions = { packageRoot: process.cwd(), staticAssets: ['index.html'] };
- * ```
+ Options for staging a no-Vite Electron app.
+ 
+ @example
+ ```ts
+ const options: ElectronAppStageOptions = { packageRoot: process.cwd(), staticAssets: ['index.html'] };
+ ```
  */
 export type ElectronAppStageOptions = {
   readonly appOutDir?: string;
@@ -51,16 +51,16 @@ export type ElectronAppStageOptions = {
 };
 
 /**
- * Returns copy mapping for a static asset shorthand or explicit mapping.
- *
- * @param asset - Asset shorthand or mapping.
- *
- * @returns Source and destination relative paths.
- *
- * @example
- * ```ts
- * normalizeStaticAsset({ asset: 'index.html' });
- * ```
+ Returns copy mapping for a static asset shorthand or explicit mapping.
+ 
+ @param asset - Asset shorthand or mapping.
+ 
+ @returns Source and destination relative paths.
+ 
+ @example
+ ```ts
+ normalizeStaticAsset({ asset: 'index.html' });
+ ```
  */
 function normalizeStaticAsset(
   { asset, }: { readonly asset: string | StaticAssetMapping; },
@@ -75,16 +75,16 @@ function normalizeStaticAsset(
 }
 
 /**
- * Checks whether an unknown error is an `ENOENT` filesystem error.
- *
- * @param error - Caught value from a filesystem operation.
- *
- * @returns Whether the error reports an absent path.
- *
- * @example
- * ```ts
- * isMissingPathError({ error: new Error('x') });
- * ```
+ Checks whether an unknown error is an `ENOENT` filesystem error.
+ 
+ @param error - Caught value from a filesystem operation.
+ 
+ @returns Whether the error reports an absent path.
+ 
+ @example
+ ```ts
+ isMissingPathError({ error: new Error('x') });
+ ```
  */
 function isMissingPathError({ error, }: { readonly error: unknown; },): boolean {
   return Error.isError(error,)
@@ -93,16 +93,16 @@ function isMissingPathError({ error, }: { readonly error: unknown; },): boolean 
 }
 
 /**
- * Copies optional package license texts into the staged app.
- *
- * @param appOutDir - Staged app output directory.
- *
- * @param licenseDir - Source LICENSES directory.
- *
- * @example
- * ```ts
- * await copyLicenseTexts({ appOutDir: '/tmp/app', licenseDir: '/tmp/LICENSES' });
- * ```
+ Copies optional package license texts into the staged app.
+ 
+ @param appOutDir - Staged app output directory.
+ 
+ @param licenseDir - Source LICENSES directory.
+ 
+ @example
+ ```ts
+ await copyLicenseTexts({ appOutDir: '/tmp/app', licenseDir: '/tmp/LICENSES' });
+ ```
  */
 async function copyLicenseTexts(
   {
@@ -137,24 +137,24 @@ async function copyLicenseTexts(
 }
 
 /**
- * Writes static assets and runtime manifest into a staged Electron app directory.
- *
- * @param appOutDir - Optional staged app output directory, defaulting to `dist/app`.
- *
- * @param licenseDir - Optional source license directory, defaulting to `LICENSES`.
- *
- * @param main - Staged Electron entry file, defaulting to `main.mjs`.
- *
- * @param packageRoot - Directory containing package manifest.
- *
- * @param sourceRoot - Optional source asset directory, defaulting to `src`.
- *
- * @param staticAssets - Static files copied from source root into staged app.
- *
- * @example
- * ```ts
- * await stageElectronApp({ packageRoot: process.cwd(), staticAssets: ['index.html', 'styles.css'] });
- * ```
+ Writes static assets and runtime manifest into a staged Electron app directory.
+ 
+ @param appOutDir - Optional staged app output directory, defaulting to `dist/app`.
+ 
+ @param licenseDir - Optional source license directory, defaulting to `LICENSES`.
+ 
+ @param main - Staged Electron entry file, defaulting to `main.mjs`.
+ 
+ @param packageRoot - Directory containing package manifest.
+ 
+ @param sourceRoot - Optional source asset directory, defaulting to `src`.
+ 
+ @param staticAssets - Static files copied from source root into staged app.
+ 
+ @example
+ ```ts
+ await stageElectronApp({ packageRoot: process.cwd(), staticAssets: ['index.html', 'styles.css'] });
+ ```
  */
 export async function stageElectronApp(
   {
@@ -167,7 +167,7 @@ export async function stageElectronApp(
   }: ElectronAppStageOptions,
 ): Promise<void> {
   /**
-   * Staged Electron app directory consumed by Electron and Packager.
+   Staged Electron app directory consumed by Electron and Packager.
    */
   const resolvedAppOutDir = appOutDir ?? join(
     packageRoot,
@@ -176,7 +176,7 @@ export async function stageElectronApp(
   );
 
   /**
-   * Source directory containing renderer assets.
+   Source directory containing renderer assets.
    */
   const resolvedSourceRoot = sourceRoot ?? join(
     packageRoot,
@@ -189,7 +189,7 @@ export async function stageElectronApp(
   );
   await Promise.all(staticAssets.map(async function copyStaticAsset(asset,): Promise<void> {
     /**
-     * Normalized source and destination relative paths.
+     Normalized source and destination relative paths.
      */
     const mapping = normalizeStaticAsset({ asset, },);
 
@@ -213,7 +213,7 @@ export async function stageElectronApp(
   },);
 
   /**
-   * Runtime manifest consumed by Electron inside the staged app directory.
+   Runtime manifest consumed by Electron inside the staged app directory.
    */
   const stagedMetadata: StagedPackageMetadata = {
     ...await readRootPackageMetadata({ packageRoot, },),

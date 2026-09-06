@@ -1,5 +1,5 @@
 /**
- * Explicit two-stage MJS trust consent and persistence. @module
+ Explicit two-stage MJS trust consent and persistence. @module
  */
 import { captureTrustCandidate, } from './candidate.ts';
 import {
@@ -29,13 +29,13 @@ import type {
 } from './types.ts';
 
 /**
- * Determines prior exact snapshot state without execution.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - exact live candidate
- *
- * @returns disclosure snapshot state
+ Determines prior exact snapshot state without execution.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - exact live candidate
+ 
+ @returns disclosure snapshot state
  */
 async function snapshotState({
   registryRoot,
@@ -46,14 +46,14 @@ async function snapshotState({
 }>,): Promise<'new' | 'unchanged' | 'changed' | 'corrupt'> {
   try {
     /**
-     * Existing validated record.
+     Existing validated record.
      */
     const record = await loadRecord({
       registryRoot,
       candidate,
     },);
     /**
-     * Exact existing snapshot bytes.
+     Exact existing snapshot bytes.
      */
     const storedBytes = await readPrivateFile(`${recordDirectory({
       registryRoot,
@@ -72,15 +72,15 @@ async function snapshotState({
 }
 
 /**
- * Creates complete root consent disclosure.
- *
- * @param candidate - exact candidate
- *
- * @param state - prior snapshot state
- *
- * @param nodeBuiltins - retained built-in imports
- *
- * @returns human-readable disclosure
+ Creates complete root consent disclosure.
+ 
+ @param candidate - exact candidate
+ 
+ @param state - prior snapshot state
+ 
+ @param nodeBuiltins - retained built-in imports
+ 
+ @returns human-readable disclosure
  */
 function rootDisclosure({
   candidate,
@@ -92,7 +92,7 @@ function rootDisclosure({
   nodeBuiltins: readonly string[];
 }>,): string {
   /**
-   * Disclosure-friendly retained built-ins.
+   Disclosure-friendly retained built-ins.
    */
   const builtins = nodeBuiltins.length === 0 ? '(none)' : nodeBuiltins.join(', ',);
   return [
@@ -115,11 +115,11 @@ function rootDisclosure({
 }
 
 /**
- * Creates second-stage recursive authority disclosure.
- *
- * @param repositoryRoot - exact canonical recursive root
- *
- * @returns human-readable cross-filesystem warning
+ Creates second-stage recursive authority disclosure.
+ 
+ @param repositoryRoot - exact canonical recursive root
+ 
+ @returns human-readable cross-filesystem warning
  */
 function recursiveDisclosure(repositoryRoot: string,): string {
   return [
@@ -132,17 +132,17 @@ function recursiveDisclosure(repositoryRoot: string,): string {
 }
 
 /**
- * Executes candidate from private temporary record without persistence.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - exact source candidate
- *
- * @param recordedAt - audit timestamp
- *
- * @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
- *
- * @returns runtime-validated config
+ Executes candidate from private temporary record without persistence.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - exact source candidate
+ 
+ @param recordedAt - audit timestamp
+ 
+ @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
+ 
+ @returns runtime-validated config
  */
 async function validatePrivateCandidate({
   registryRoot,
@@ -154,7 +154,7 @@ async function validatePrivateCandidate({
   recordedAt: string;
 }>,): Promise<ValidatedConfig> {
   /**
-   * Disposable private validation record.
+   Disposable private validation record.
    */
   await using prepared = await prepareMjsRecord({
     registryRoot,
@@ -165,22 +165,22 @@ async function validatePrivateCandidate({
 }
 
 /**
- * Explicitly trusts one self-contained MJS snapshot with two-stage consent.
- *
- * @param discovered - canonical discovered config
- *
- * @param registryRoot - injected or account-derived root
- *
- * @param yes - explicit noninteractive approval
- *
- * @param adapters - disclosure, prompt, and clock effects
- *
- * @returns loaded validated config installed by trust
- *
- * @example
- * ```ts
- * await trustMjs({ discovered, registryRoot, yes: true, adapters });
- * ```
+ Explicitly trusts one self-contained MJS snapshot with two-stage consent.
+ 
+ @param discovered - canonical discovered config
+ 
+ @param registryRoot - injected or account-derived root
+ 
+ @param yes - explicit noninteractive approval
+ 
+ @param adapters - disclosure, prompt, and clock effects
+ 
+ @returns loaded validated config installed by trust
+ 
+ @example
+ ```ts
+ await trustMjs({ discovered, registryRoot, yes: true, adapters });
+ ```
  */
 export async function trustMjs({
   discovered,
@@ -194,11 +194,11 @@ export async function trustMjs({
   adapters: TrustConsentAdapters;
 }>,): Promise<LoadedTrustedConfig> {
   /**
-   * Exact pre-consent source candidate.
+   Exact pre-consent source candidate.
    */
   const candidate = await captureTrustCandidate(discovered,);
   /**
-   * Syntax and module-edge validation before consent.
+   Syntax and module-edge validation before consent.
    */
   const validation = validateMjs({
     bytes: candidate.bytes,
@@ -206,7 +206,7 @@ export async function trustMjs({
   },);
   await ensureRegistryRoot(registryRoot,);
   /**
-   * Exact prior snapshot state.
+   Exact prior snapshot state.
    */
   const state = await snapshotState({
     registryRoot,
@@ -218,7 +218,7 @@ export async function trustMjs({
     nodeBuiltins: validation.nodeBuiltins,
   },),);
   /**
-   * Root trust decision preserving unavailable terminal state.
+   Root trust decision preserving unavailable terminal state.
    */
   const rootConsent = yes ? 'approved' : await adapters.prompt();
   if (rootConsent === 'unavailable')
@@ -236,12 +236,12 @@ export async function trustMjs({
       'Trust declined; no persistent record was installed.',
     );
   /**
-   * Stable audit timestamp shared by validation and final record.
+   Stable audit timestamp shared by validation and final record.
    */
   const recordedAt = adapters.now()
     .toISOString();
   /**
-   * Root config executed and validated only after first consent.
+   Root config executed and validated only after first consent.
    */
   const validated = await validatePrivateCandidate({
     registryRoot,
@@ -249,14 +249,14 @@ export async function trustMjs({
     recordedAt,
   },);
   /**
-   * Whether second-stage recursive authority was accepted.
+   Whether second-stage recursive authority was accepted.
    */
   const recursiveChildren = await (async function resolveRecursiveConsent(): Promise<boolean> {
     if (!validated.recursiveChildren)
       return false;
     adapters.disclose(recursiveDisclosure(discovered.repositoryRoot,),);
     /**
-     * Recursive trust decision preserving unavailable terminal state.
+     Recursive trust decision preserving unavailable terminal state.
      */
     const recursiveConsent = yes ? 'approved' : await adapters.prompt();
     if (recursiveConsent === 'unavailable')
@@ -271,18 +271,18 @@ export async function trustMjs({
     return recursiveConsent === 'approved';
   })();
   /**
-   * Registry-wide lock serializes enrollment and revocation planning.
+   Registry-wide lock serializes enrollment and revocation planning.
    */
   await using recursiveLock = await acquireRecursiveRegistryLock({ registryRoot, },);
   /**
-   * Explicit self-authorizer plus every current recursive outer root.
+   Explicit self-authorizer plus every current recursive outer root.
    */
   const authorizingRoots = await explicitAuthorizers({
     registryRoot,
     candidate,
   },);
   /**
-   * Final record is written only after validation and both applicable decisions.
+   Final record is written only after validation and both applicable decisions.
    */
   await using prepared = await prepareMjsRecord({
     registryRoot,

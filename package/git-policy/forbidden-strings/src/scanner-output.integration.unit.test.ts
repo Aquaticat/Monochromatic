@@ -1,7 +1,7 @@
 /**
- * Redacted parser coverage over the real forbidden-strings scanner binary.
- *
- * @module
+ Redacted parser coverage over the real forbidden-strings scanner binary.
+ 
+ @module
  */
 import {
   mkdtemp,
@@ -25,9 +25,9 @@ import {
 type CandidateFile = ReturnType<Parameters<typeof parseScannerOutput>[0]['candidateForPath']>;
 
 /**
- * Release scanner built by the sibling `package/cli/forbidden-strings` crate;
- * the same binary the repository commit gate executes, so its stderr is the
- * exact contract this parser consumes.
+ Release scanner built by the sibling `package/cli/forbidden-strings` crate;
+ the same binary the repository commit gate executes, so its stderr is the
+ exact contract this parser consumes.
  */
 const SCANNER_BINARY = join(
   import.meta.dirname,
@@ -41,55 +41,55 @@ const SCANNER_BINARY = join(
   'forbidden-strings',
 );
 /**
- * Repository-relative path the parser echoes back for the reported candidate.
+ Repository-relative path the parser echoes back for the reported candidate.
  */
 const CANDIDATE_PATH = 'src/secret.ts';
 /**
- * Secret-shaped scanner input: an AWS-shaped access key spelled with `\u00XX`
- * escapes for its recognizable prefix and its final byte, so the committed
- * source never holds a complete access-key literal while the decoded runtime
- * bytes still trip the scanner's embedded baseline.
+ Secret-shaped scanner input: an AWS-shaped access key spelled with `\u00XX`
+ escapes for its recognizable prefix and its final byte, so the committed
+ source never holds a complete access-key literal while the decoded runtime
+ bytes still trip the scanner's embedded baseline.
  */
 const SECRET_SHAPED_TOKEN = '\u0041\u004B\u0049\u0041IOSFODNN7EXAM\u0050LE';
 /**
- * Fixed redacted-message prefix preceding the one-based line number.
+ Fixed redacted-message prefix preceding the one-based line number.
  */
 const MESSAGE_PREFIX = 'Forbidden string matched at line ';
 /**
- * Fixed redacted-message infix introducing the opaque rule index.
+ Fixed redacted-message infix introducing the opaque rule index.
  */
 const MESSAGE_RULE_INFIX = ' (rule ';
 /**
- * Fixed redacted-message suffix closing the rule index.
+ Fixed redacted-message suffix closing the rule index.
  */
 const MESSAGE_SUFFIX = ').';
 /**
- * Scanner match exit status; a nonzero status carries findings on stderr.
+ Scanner match exit status; a nonzero status carries findings on stderr.
  */
 const MATCH_EXIT_CODE = 1;
 
 /**
- * Disposable scan-input directory.
+ Disposable scan-input directory.
  */
 type TestDirectory = Readonly<{
   /**
-   * Absolute directory path.
+   Absolute directory path.
    */
   path: string;
   /**
-   * Removes directory.
+   Removes directory.
    */
   [Symbol.asyncDispose]: () => Promise<void>;
 }>;
 
 /**
- * Creates a disposable directory for one real scan.
- *
- * @returns disposable directory
+ Creates a disposable directory for one real scan.
+ 
+ @returns disposable directory
  */
 async function createTestDirectory(): Promise<TestDirectory> {
   /**
-   * Temporary root.
+   Temporary root.
    */
   const path = await mkdtemp(join(tmpdir(), 'forbidden-strings-real-',),);
   return {
@@ -101,15 +101,15 @@ async function createTestDirectory(): Promise<TestDirectory> {
 }
 
 /**
- * Runs the real scanner over one materialized candidate and returns its stderr.
- *
- * @param candidatePath - materialized scanner input path
- *
- * @param cwd - scanner working directory
- *
- * @returns captured redacted scanner stderr
- *
- * @throws When the scanner reports no match or an infrastructure status.
+ Runs the real scanner over one materialized candidate and returns its stderr.
+ 
+ @param candidatePath - materialized scanner input path
+ 
+ @param cwd - scanner working directory
+ 
+ @returns captured redacted scanner stderr
+ 
+ @throws When the scanner reports no match or an infrastructure status.
  */
 async function captureRealScannerStderr({
   candidatePath,
@@ -119,8 +119,8 @@ async function captureRealScannerStderr({
   cwd: string;
 }>): Promise<string> {
   /**
-   * Environment without the repository rules override so the scan stays
-   * hermetic under the crate's embedded baseline only.
+   Environment without the repository rules override so the scan stays
+   hermetic under the crate's embedded baseline only.
    */
   const environment = { ...process.env, };
   delete environment.FORBIDDEN_STRINGS_RULES;
@@ -151,17 +151,17 @@ async function captureRealScannerStderr({
 }
 
 /**
- * Runs real scanner through runtime cache miss and returns warning plus finding stderr.
- *
- * @param candidatePath - Materialized scanner input path.
- *
- * @param rulesPath - Authoritative runtime rules path.
- *
- * @param cacheRoot - Disposable cache root forced empty by test directory.
- *
- * @param cwd - Scanner working directory.
- *
- * @returns Captured mixed-protocol stderr from match exit.
+ Runs real scanner through runtime cache miss and returns warning plus finding stderr.
+ 
+ @param candidatePath - Materialized scanner input path.
+ 
+ @param rulesPath - Authoritative runtime rules path.
+ 
+ @param cacheRoot - Disposable cache root forced empty by test directory.
+ 
+ @param cwd - Scanner working directory.
+ 
+ @returns Captured mixed-protocol stderr from match exit.
  */
 async function captureRuntimeCacheMissStderr({
   candidatePath,
@@ -175,7 +175,7 @@ async function captureRuntimeCacheMissStderr({
   cwd: string;
 }>,): Promise<string> {
   /**
-   * Environment isolating runtime cache and repository-level rules override.
+   Environment isolating runtime cache and repository-level rules override.
    */
   const environment: NodeJS.ProcessEnv = {
     ...process.env,
@@ -217,7 +217,7 @@ await describe({
       fn: async function testRealScannerOutput() {
         await using directory = await createTestDirectory();
         /**
-         * Materialized scanner input holding the runtime secret.
+         Materialized scanner input holding the runtime secret.
          */
         const candidatePath = join(directory.path, 'candidate-0',);
         await writeFile(
@@ -225,7 +225,7 @@ await describe({
           `alpha\nkey ${SECRET_SHAPED_TOKEN} tail\n`,
         );
         /**
-         * Findings parsed from the real binary's own stderr.
+         Findings parsed from the real binary's own stderr.
          */
         const findings = parseScannerOutput({
           stderr: await captureRealScannerStderr({
@@ -264,15 +264,15 @@ await describe({
       fn: async function testRealRuntimeCacheWarning() {
         await using directory = await createTestDirectory();
         /**
-         * Authoritative one-rule runtime source.
+         Authoritative one-rule runtime source.
          */
         const rulesPath = join(directory.path, 'rules.txt',);
         /**
-         * Candidate containing exact runtime rule literal.
+         Candidate containing exact runtime rule literal.
          */
         const candidatePath = join(directory.path, 'candidate-runtime',);
         /**
-         * Empty disposable cache root forcing missing warning.
+         Empty disposable cache root forcing missing warning.
          */
         const cacheRoot = join(directory.path, 'cache',);
         await writeFile(rulesPath, 'RUNTIME_CACHE_RULE_LONG\n',);
@@ -312,11 +312,11 @@ await describe({
       fn: async function testCleanRuntimeCacheWarning() {
         await using directory = await createTestDirectory();
         /**
-         * Authoritative runtime rule absent from candidate bytes.
+         Authoritative runtime rule absent from candidate bytes.
          */
         const rulesPath = join(directory.path, 'rules-clean.txt',);
         /**
-         * Empty disposable cache root forcing warning on clean scan.
+         Empty disposable cache root forcing warning on clean scan.
          */
         const cacheRoot = join(directory.path, 'cache-clean',);
         await writeFile(rulesPath, 'RUNTIME_CACHE_RULE_LONG\n',);

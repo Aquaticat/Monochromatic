@@ -21,28 +21,28 @@ await describe({
       name: 'passes JSON through a private named input file',
       fn: async () => {
         /**
-         * Request body observed by fake process boundary.
+         Request body observed by fake process boundary.
          */
         let observedBody = '';
         /**
-         * Request file mode observed while file exists.
+         Request file mode observed while file exists.
          */
         let observedMode = 0;
         /**
-         * Captured process arguments.
+         Captured process arguments.
          */
         let observedArguments: readonly string[] = [];
         /**
-         * Fake process boundary that inspects private request file.
+         Fake process boundary that inspects private request file.
          */
         const runProcess: BoundedProcessRunner = async ({ arguments: commandArguments, },) => {
           observedArguments = commandArguments;
           /**
-           * Input flag position in exact GitHub CLI argument vector.
+           Input flag position in exact GitHub CLI argument vector.
            */
           const inputIndex = commandArguments.indexOf('--input',);
           /**
-           * Named request file following input flag.
+           Named request file following input flag.
            */
           const inputPath = commandArguments[inputIndex + 1];
           if (inputPath === undefined) {
@@ -58,7 +58,7 @@ await describe({
         };
 
         /**
-         * Parsed fake GitHub response.
+         Parsed fake GitHub response.
          */
         const response = await runGitHubApi({
           request: {

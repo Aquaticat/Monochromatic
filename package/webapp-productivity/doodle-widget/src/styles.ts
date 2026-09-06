@@ -1,7 +1,7 @@
 /**
- * CSS styles for the doodle widget.
- *
- * Uses h-css for type-safe CSS generation with strict property validation.
+ CSS styles for the doodle widget.
+ 
+ Uses h-css for type-safe CSS generation with strict property validation.
  */
 import {
   cssCalc,
@@ -30,14 +30,14 @@ import { renderToastStyles, } from './styles-toast.ts';
 import { renderToolbarStyles, } from './styles-toolbar.ts';
 
 /**
- * Generates the complete CSS stylesheet for the doodle widget.
- *
- * @returns minified CSS string
- *
- * @example
- * ```ts
- * const css = renderStyles();
- * ```
+ Generates the complete CSS stylesheet for the doodle widget.
+ 
+ @returns minified CSS string
+ 
+ @example
+ ```ts
+ const css = renderStyles();
+ ```
  */
 export function renderStyles(): string {
   return [

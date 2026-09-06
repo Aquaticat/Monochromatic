@@ -1,16 +1,16 @@
 /**
- * Penpot binfile-v3 data model produced by the Figma converter.
- *
- * @module figma-to-penpot-types
+ Penpot binfile-v3 data model produced by the Figma converter.
+ 
+ @module figma-to-penpot-types
  */
 
 /**
- * UUID v4 string.
+ UUID v4 string.
  */
 export type Uuid = string;
 
 /**
- * Penpot shape type discriminant.
+ Penpot shape type discriminant.
  */
 export type PenpotShapeType =
   | 'frame'
@@ -24,7 +24,7 @@ export type PenpotShapeType =
   | 'svg-raw';
 
 /**
- * Penpot fill object.
+ Penpot fill object.
  */
 export type PenpotFill = {
   fillColor?: string;
@@ -40,7 +40,7 @@ export type PenpotFill = {
 };
 
 /**
- * Penpot stroke object.
+ Penpot stroke object.
  */
 export type PenpotStroke = {
   strokeStyle: 'solid' | 'dotted' | 'dashed' | 'mixed';
@@ -54,7 +54,7 @@ export type PenpotStroke = {
 };
 
 /**
- * Penpot 2D transform matrix.
+ Penpot 2D transform matrix.
  */
 export type PenpotTransform = {
   a: number;
@@ -66,7 +66,7 @@ export type PenpotTransform = {
 };
 
 /**
- * Penpot rect (selection rectangle).
+ Penpot rect (selection rectangle).
  */
 export type PenpotSelRect = {
   x: number;
@@ -80,7 +80,7 @@ export type PenpotSelRect = {
 };
 
 /**
- * Penpot point.
+ Penpot point.
  */
 export type PenpotPoint = {
   x: number;
@@ -88,7 +88,7 @@ export type PenpotPoint = {
 };
 
 /**
- * Four corner points of a shape's bounding rect, in Penpot order.
+ Four corner points of a shape's bounding rect, in Penpot order.
  */
 export type PenpotPoints = [
   PenpotPoint,
@@ -99,9 +99,9 @@ export type PenpotPoints = [
 
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- Penpot binfile-v3 stores explicit JSON null for x/y/width/height on shapes without computed geometry, and always for flipX/flipY; the importer treats a null value differently from an absent key, so these cannot collapse to optional `?:` properties */
 /**
- * A Penpot shape object (core data model), composed of a {@link PenpotShapeType} discriminant,
- * {@link PenpotSelRect}, {@link PenpotPoints}, {@link PenpotTransform}, and lists of
- * {@link PenpotFill} and {@link PenpotStroke} entries.
+ A Penpot shape object (core data model), composed of a {@link PenpotShapeType} discriminant,
+ {@link PenpotSelRect}, {@link PenpotPoints}, {@link PenpotTransform}, and lists of
+ {@link PenpotFill} and {@link PenpotStroke} entries.
  */
 export type PenpotShape = {
   id: Uuid;
@@ -189,7 +189,7 @@ export type PenpotShape = {
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /**
- * A Penpot page.
+ A Penpot page.
  */
 export type PenpotPage = {
   id: Uuid;
@@ -199,7 +199,7 @@ export type PenpotPage = {
 };
 
 /**
- * A Penpot media object.
+ A Penpot media object.
  */
 export type PenpotMedia = {
   id: Uuid;
@@ -214,7 +214,7 @@ export type PenpotMedia = {
 };
 
 /**
- * Penpot manifest entry for a file.
+ Penpot manifest entry for a file.
  */
 export type PenpotManifestFile = {
   id: Uuid;
@@ -223,7 +223,7 @@ export type PenpotManifestFile = {
 };
 
 /**
- * The full Penpot export manifest.
+ The full Penpot export manifest.
  */
 export type PenpotManifest = {
   type: 'penpot/export-files';
@@ -238,7 +238,7 @@ export type PenpotManifest = {
 };
 
 /**
- * A Penpot storage object metadata entry.
+ A Penpot storage object metadata entry.
  */
 export type PenpotStorageObject = {
   id: Uuid;
@@ -249,7 +249,7 @@ export type PenpotStorageObject = {
 };
 
 /**
- * A Penpot file-level metadata object.
+ A Penpot file-level metadata object.
  */
 export type PenpotFile = {
   id: Uuid;
@@ -267,7 +267,7 @@ export type PenpotFile = {
 };
 
 /**
- * A converted Penpot document ready for ZIP serialization.
+ A converted Penpot document ready for ZIP serialization.
  */
 export type PenpotDocument = {
   manifest: PenpotManifest;
@@ -290,15 +290,15 @@ export type PenpotDocument = {
 };
 
 /**
- * Options for the converter.
+ Options for the converter.
  */
 export type ConvertOptions = {
   /**
-   * File name override (defaults to Figma meta.fileName).
+   File name override (defaults to Figma meta.fileName).
    */
   fileName?: string;
   /**
-   * Generator string for manifest.
+   Generator string for manifest.
    */
   generatedBy?: string;
 };

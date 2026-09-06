@@ -40,11 +40,11 @@ type GeneratedSource = {
 };
 
 /**
- * Runs semantic readonly-effect rule against dedicated fixture source.
- *
- * @param fixturePath - Relative fixture path under source root.
- *
- * @returns readonly-rule diagnostics.
+ Runs semantic readonly-effect rule against dedicated fixture source.
+ 
+ @param fixturePath - Relative fixture path under source root.
+ 
+ @returns readonly-rule diagnostics.
  */
 async function lintReadonly(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
   return runOxlintFixture({
@@ -60,37 +60,37 @@ async function lintReadonly(fixturePath: string,): Promise<readonly OxlintDiagno
 }
 
 /**
- * Removes action guidance when a legacy assertion isolates diagnostic claim.
- *
- * @param message - Complete public diagnostic message.
- *
- * @returns preference claim through classification reason, or unchanged non-preference message.
- *
- * @example
- * ```ts
- * preferenceClaim('Parameter "x" can be deeply readonly: `x` is writable. Guidance.');
- * ```
+ Removes action guidance when a legacy assertion isolates diagnostic claim.
+ 
+ @param message - Complete public diagnostic message.
+ 
+ @returns preference claim through classification reason, or unchanged non-preference message.
+ 
+ @example
+ ```ts
+ preferenceClaim('Parameter "x" can be deeply readonly: `x` is writable. Guidance.');
+ ```
  */
 function preferenceClaim(message: string,): string {
   /**
-   * Start of preference predicate in diagnostic message.
+   Start of preference predicate in diagnostic message.
    */
   const preferenceAt = message.indexOf(' can be deeply readonly:',);
   if (preferenceAt === (-1))
     return message;
   /**
-   * Separator after classification reason and before action guidance.
+   Separator after classification reason and before action guidance.
    */
   const guidanceAt = message.indexOf('. ', preferenceAt,);
   return guidanceAt === (-1) ? message : message.slice(0, guidanceAt + 1,);
 }
 
 /**
- * Runs semantic rule after Oxlint creates high-count fixed allocator pool.
- *
- * @param fixturePath - Relative fixture path under source root.
- *
- * @returns readonly-rule diagnostics.
+ Runs semantic rule after Oxlint creates high-count fixed allocator pool.
+ 
+ @param fixturePath - Relative fixture path under source root.
+ 
+ @returns readonly-rule diagnostics.
  */
 async function lintReadonlyWithHighWorkerCount(
   fixturePath: string,
@@ -108,13 +108,13 @@ async function lintReadonlyWithHighWorkerCount(
 }
 
 /**
- * Applies readonly semantic fixes to disposable source inside fixture project.
- *
- * @param source - Source text to lint and optionally suggest-fix.
- *
- * @param fixSuggestions - Whether suggestion channel is enabled.
- *
- * @returns resulting source text.
+ Applies readonly semantic fixes to disposable source inside fixture project.
+ 
+ @param source - Source text to lint and optionally suggest-fix.
+ 
+ @param fixSuggestions - Whether suggestion channel is enabled.
+ 
+ @returns resulting source text.
  */
 async function fixReadonlyGeneratedSource({
   source,
@@ -230,7 +230,7 @@ children: [
           return preferenceClaim(diagnostic.message,);
         },);
       /**
-       * Findings routed to the collection message.
+       Findings routed to the collection message.
        */
       const collectionMessages = messages.filter(function isCollection(message,): boolean {
         return message.includes('is exposed through these unresolved collection calls',);
@@ -385,14 +385,14 @@ children: [
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-foreign-observer-invalid.ts',);
       /**
-       * Preference findings isolated from separately tested effect categories.
+       Preference findings isolated from separately tested effect categories.
        */
       const preferences = diagnostics.filter(function preference(diagnostic,): boolean {
         return diagnostic.code
           === 'prefer-readonly-parameter-type(prefer-readonly-parameter-types)';
       },);
       /**
-       * Preference messages for ordinary fold seed and mixed-inbound observer controls.
+       Preference messages for ordinary fold seed and mixed-inbound observer controls.
        */
       const messages = preferences.map(function diagnosticMessage(diagnostic,): string {
         return preferenceClaim(diagnostic.message,);
@@ -835,11 +835,11 @@ children: [
         return message.includes(`facts['set']`,);
       },).length,).toBe(1,);
       /**
-       * Counts messages naming one call as the unresolved receiver operation.
-       *
-       * @param call - Authored member call text.
-       *
-       * @returns how many diagnostics name it.
+       Counts messages naming one call as the unresolved receiver operation.
+       
+       @param call - Authored member call text.
+       
+       @returns how many diagnostics name it.
        */
       function namingCall(call: string,): number {
         return messages.filter(function namesCall(message,): boolean {
@@ -1050,11 +1050,11 @@ children: [
         return preferenceClaim(diagnostic.message,);
       },);
       /**
-       * Counts offers naming one parameter.
-       *
-       * @param parameterName - Authored parameter name.
-       *
-       * @returns how many offers name it.
+       Counts offers naming one parameter.
+       
+       @param parameterName - Authored parameter name.
+       
+       @returns how many offers name it.
        */
       function offersFor(parameterName: string,): number {
         return messages.filter(function offersParameter(message,): boolean {
@@ -1929,7 +1929,7 @@ children: [
       const diagnostics = await lintReadonly('readonly-split-invalid.ts',);
       expect(diagnostics.length,).toBe(4,);
       /**
-       * Diagnostics indexed by exact public rule ID.
+       Diagnostics indexed by exact public rule ID.
        */
       const diagnosticsByCode = new Map(
         diagnostics.map(function indexDiagnostic(diagnostic,): [string, OxlintDiagnostic] {
@@ -1969,7 +1969,7 @@ children: [
       const diagnostics = await lintReadonly('readonly-subject-split-invalid.ts',);
       expect(diagnostics.length,).toBe(4,);
       /**
-       * Messages indexed by public rule owning each subject.
+       Messages indexed by public rule owning each subject.
        */
       const messagesByCode = new Map(diagnostics.map(function indexMessage(
         diagnostic,
@@ -2008,11 +2008,11 @@ children: [
       const diagnostics = await lintReadonly('readonly-subject-patterns-invalid.ts',);
       expect(diagnostics.length,).toBe(9,);
       /**
-       * Stable subjects rendered by preference findings.
+       Stable subjects rendered by preference findings.
        */
       const subjects = diagnostics.map(function diagnosticSubject(diagnostic,): string {
         /**
-         * Rule-specific suffix following shared parameter subject.
+         Rule-specific suffix following shared parameter subject.
          */
         const suffix = diagnostic.message.includes(' can be deeply readonly:',)
           ? ' can be deeply readonly:'
@@ -2046,7 +2046,7 @@ children: [
       const diagnostics = await lintReadonly('readonly-inferred-origin-invalid.ts',);
       expect(diagnostics.length,).toBe(11,);
       /**
-       * Preference messages emitted by origin decision controls.
+       Preference messages emitted by origin decision controls.
        */
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
@@ -2065,7 +2065,7 @@ children: [
           && message.includes('`Readonly<T>` is shallow');
       },),).toBe(true,);
       /**
-       * Multi-origin guidance preserving uncertainty without location dump.
+       Multi-origin guidance preserving uncertainty without location dump.
        */
       const multipleOrigins = messages.filter(function multiple(message,): boolean {
         return message.includes('has multiple workspace-owned origins',);
@@ -2085,7 +2085,7 @@ children: [
           && message.includes('No exact type syntax was proved for that producer');
       },),).toBe(true,);
       /**
-       * Every consumer of judged rows converges on sole mapping callback.
+       Every consumer of judged rows converges on sole mapping callback.
        */
       const callableOrigins = messages.filter(function callableOrigin(message,): boolean {
         return message.includes(
@@ -2116,7 +2116,7 @@ children: [
       const diagnostics = await lintReadonly('readonly-writable-paths-invalid.ts',);
       expect(diagnostics.length,).toBe(1,);
       /**
-       * Sole complete preference diagnostic for multi-branch type.
+       Sole complete preference diagnostic for multi-branch type.
        */
       const message = diagnostics[0]?.message ?? '';
       [
@@ -2142,7 +2142,7 @@ children: [
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-local-origin-invalid.ts',);
       /**
-       * Preference messages emitted by local producer matrix.
+       Preference messages emitted by local producer matrix.
        */
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
@@ -2153,7 +2153,7 @@ children: [
         'localSeedRow',
       ].forEach(function localExpressionParameter(parameterName,): void {
         /**
-         * Finding for exact local-expression control.
+         Finding for exact local-expression control.
          */
         const message = messages.find(function matchingParameter(candidate,): boolean {
           return candidate.startsWith(`Parameter "${parameterName}" can be deeply readonly:`,);
@@ -2212,7 +2212,7 @@ children: [
         return message.includes('but lacks its own @mutates contract',);
       },),).toBe(false,);
       /**
-       * Resolved nonmutating parameter owns sole stale-contract diagnostic.
+       Resolved nonmutating parameter owns sole stale-contract diagnostic.
        */
       const contractDiagnostics = diagnostics.filter(function contractRule(diagnostic,): boolean {
         return diagnostic.code

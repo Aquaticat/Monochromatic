@@ -1,7 +1,7 @@
 /**
- * Tests for attached / trailing comment resolution.
- *
- * @module
+ Tests for attached / trailing comment resolution.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';

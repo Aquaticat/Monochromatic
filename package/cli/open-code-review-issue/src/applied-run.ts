@@ -1,7 +1,7 @@
 /**
- * Applied publication execution and final output projection.
- *
- * @module
+ Applied publication execution and final output projection.
+ 
+ @module
  */
 
 import type { AppliedResult, } from './cli-result.ts';
@@ -24,7 +24,7 @@ import {
 import { publishIssues, } from './publisher.ts';
 
 /**
- * Standard streams used after publication is authorized.
+ Standard streams used after publication is authorized.
  */
 export type AppliedStreams = {
   readonly stdout: NodeJS.WritableStream;
@@ -32,11 +32,11 @@ export type AppliedStreams = {
 };
 
 /**
- * Extracts multiple reconciliation URLs from nested stopping failure.
- *
- * @param cause - Underlying positioned stopping cause.
- *
- * @returns Optional matching URL property for machine result.
+ Extracts multiple reconciliation URLs from nested stopping failure.
+ 
+ @param cause - Underlying positioned stopping cause.
+ 
+ @returns Optional matching URL property for machine result.
  */
 function matchingUrlMetadata(
   cause: unknown,
@@ -47,26 +47,26 @@ function matchingUrlMetadata(
 }
 
 /**
- * Executes authorized publication and writes mode-specific final result.
- *
- * @param mode - Interactive human or non-interactive machine mode.
- *
- * @param repository - Canonical destination identity.
- *
- * @param issues - Fully authorized rendered Issues.
- *
- * @param withheldSecurityPositions - Security findings excluded from creation.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @param streams - Standard output and diagnostic streams.
- *
- * @returns Zero for complete success or one for handled failure/interruption.
- *
- * @example
- * ```ts
- * await runAppliedPublication({ mode: 'non-interactive', repository, issues, api, streams });
- * ```
+ Executes authorized publication and writes mode-specific final result.
+ 
+ @param mode - Interactive human or non-interactive machine mode.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param issues - Fully authorized rendered Issues.
+ 
+ @param withheldSecurityPositions - Security findings excluded from creation.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @param streams - Standard output and diagnostic streams.
+ 
+ @returns Zero for complete success or one for handled failure/interruption.
+ 
+ @example
+ ```ts
+ await runAppliedPublication({ mode: 'non-interactive', repository, issues, api, streams });
+ ```
  */
 export async function runAppliedPublication({
   mode,
@@ -84,12 +84,12 @@ export async function runAppliedPublication({
   readonly streams: AppliedStreams;
 },): Promise<number> {
   /**
-   * Two-stage signal control scoped to publication lifecycle.
+   Two-stage signal control scoped to publication lifecycle.
    */
   using interrupts = createPublicationInterruptControl({});
   try {
     /**
-     * Complete successful serial publication result.
+     Complete successful serial publication result.
      */
     const result = await publishIssues({
       repository,

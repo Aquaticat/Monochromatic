@@ -1,5 +1,5 @@
 /**
- * Installed trust-record catalog and ancestry queries. @module
+ Installed trust-record catalog and ancestry queries. @module
  */
 import type { Dirent, } from 'node:fs';
 import {
@@ -24,30 +24,30 @@ import type {
 } from './types.ts';
 
 /**
- * One validated installed catalog entry.
+ One validated installed catalog entry.
  */
 export type TrustCatalogEntry = Readonly<{
   /**
-   * Exact record directory.
+   Exact record directory.
    */
   directory: string;
   /**
-   * Runtime-validated record.
+   Runtime-validated record.
    */
   record: TrustRecord;
 }>;
 
 /**
- * Creates exact identity comparison key.
- *
- * @param identity - complete trust identity
- *
- * @returns collision-free in-memory comparison key
- *
- * @example
- * ```ts
- * trustIdentityKey(identity);
- * ```
+ Creates exact identity comparison key.
+ 
+ @param identity - complete trust identity
+ 
+ @returns collision-free in-memory comparison key
+ 
+ @example
+ ```ts
+ trustIdentityKey(identity);
+ ```
  */
 export function trustIdentityKey(identity: TrustIdentity,): string {
   return `${identity.filesystemId
@@ -55,18 +55,18 @@ export function trustIdentityKey(identity: TrustIdentity,): string {
 }
 
 /**
- * Reports strict component-aware repository ancestry.
- *
- * @param ancestor - candidate canonical ancestor root
- *
- * @param descendant - candidate canonical descendant root
- *
- * @returns whether descendant is strictly beneath ancestor
- *
- * @example
- * ```ts
- * isStrictRepositoryDescendant({ ancestor: '/repo', descendant: '/repo/child' });
- * ```
+ Reports strict component-aware repository ancestry.
+ 
+ @param ancestor - candidate canonical ancestor root
+ 
+ @param descendant - candidate canonical descendant root
+ 
+ @returns whether descendant is strictly beneath ancestor
+ 
+ @example
+ ```ts
+ isStrictRepositoryDescendant({ ancestor: '/repo', descendant: '/repo/child' });
+ ```
  */
 export function isStrictRepositoryDescendant({
   ancestor,
@@ -76,7 +76,7 @@ export function isStrictRepositoryDescendant({
   descendant: string;
 }>,): boolean {
   /**
-   * Native relative path from candidate root.
+   Native relative path from candidate root.
    */
   const relation = relative(
     ancestor,
@@ -89,13 +89,13 @@ export function isStrictRepositoryDescendant({
 }
 
 /**
- * Walks registry-owned directories until installed record boundary.
- *
- * @param registryRoot - complete private registry root
- *
- * @param directory - current catalog directory
- *
- * @returns validated installed records
+ Walks registry-owned directories until installed record boundary.
+ 
+ @param registryRoot - complete private registry root
+ 
+ @param directory - current catalog directory
+ 
+ @returns validated installed records
  */
 async function walkCatalog({
   registryRoot,
@@ -109,7 +109,7 @@ async function walkCatalog({
     targetDirectory: directory,
   },);
   /**
-   * Current directory children without following links.
+   Current directory children without following links.
    */
   const entries = await readdir(
     directory,
@@ -140,14 +140,14 @@ async function walkCatalog({
     },)
     .map(async function walkChild(entry: ForeignBorrowed<Dirent>,) {
       /**
-       * Child path validated before recursive traversal.
+       Child path validated before recursive traversal.
        */
       const child = join(
         directory,
         entry.name,
       );
       /**
-       * Final child metadata rejects reparse substitution after readdir.
+       Final child metadata rejects reparse substitution after readdir.
        */
       const metadata = await lstat(child,);
       if ((!metadata.isDirectory()) || metadata.isSymbolicLink())
@@ -161,16 +161,16 @@ async function walkCatalog({
 }
 
 /**
- * Lists every validated installed trust record.
- *
- * @param registryRoot - complete private registry root
- *
- * @returns catalog entries in deterministic identity order
- *
- * @example
- * ```ts
- * await listTrustRecords({ registryRoot: '/private/trust/v1' });
- * ```
+ Lists every validated installed trust record.
+ 
+ @param registryRoot - complete private registry root
+ 
+ @returns catalog entries in deterministic identity order
+ 
+ @example
+ ```ts
+ await listTrustRecords({ registryRoot: '/private/trust/v1' });
+ ```
  */
 export async function listTrustRecords({
   registryRoot,
@@ -178,7 +178,7 @@ export async function listTrustRecords({
   registryRoot: string;
 }>,): Promise<readonly TrustCatalogEntry[]> {
   /**
-   * Registry record hierarchy root.
+   Registry record hierarchy root.
    */
   const recordsRoot = join(
     registryRoot,
@@ -210,18 +210,18 @@ export async function listTrustRecords({
 }
 
 /**
- * Finds recursive roots authorizing one strict descendant repository.
- *
- * @param entries - validated installed records
- *
- * @param repositoryRoot - descendant canonical repository root
- *
- * @returns authorizer identities in canonical path order
- *
- * @example
- * ```ts
- * recursiveAuthorizers({ entries, repositoryRoot: '/repo/child' });
- * ```
+ Finds recursive roots authorizing one strict descendant repository.
+ 
+ @param entries - validated installed records
+ 
+ @param repositoryRoot - descendant canonical repository root
+ 
+ @returns authorizer identities in canonical path order
+ 
+ @example
+ ```ts
+ recursiveAuthorizers({ entries, repositoryRoot: '/repo/child' });
+ ```
  */
 export function recursiveAuthorizers({
   entries,

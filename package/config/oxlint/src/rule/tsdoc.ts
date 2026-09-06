@@ -1,21 +1,21 @@
 /**
- * TSDoc jsPlugin rule configuration.
- *
- * Configures severity for rules provided by the `tsdoc` JS plugin
- * (`\@monochromatic-dev/oxlint-plugin-tsdoc`). The plugin itself defines
- * the rule implementations; this module only sets their severity levels.
- *
- * @example
- * ```typescript
- * import { tsdocRules } from './rule/tsdoc.ts';
- * // spread into the main config's `rules` field
- * ```
+ TSDoc jsPlugin rule configuration.
+ 
+ Configures severity for rules provided by the `tsdoc` JS plugin
+ (`\@monochromatic-dev/oxlint-plugin-tsdoc`). The plugin itself defines
+ the rule implementations; this module only sets their severity levels.
+ 
+ @example
+ ```typescript
+ import { tsdocRules } from './rule/tsdoc.ts';
+ // spread into the main config's `rules` field
+ ```
  */
 
 import type { DummyRuleMap, } from 'oxlint';
 
 /**
- * Rule severity for the tsdoc JS plugin.
+ Rule severity for the tsdoc JS plugin.
  */
 export const tsdocRules: DummyRuleMap = {
   // Every documentable declaration (function, type, const, class, enum) needs a /** *\/ comment,

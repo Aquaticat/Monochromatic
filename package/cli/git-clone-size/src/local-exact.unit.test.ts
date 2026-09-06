@@ -1,8 +1,8 @@
 /**
- * Tests the exact local pack-objects path against real throwaway repositories,
- * validating the full size against a reference bare clone.
- *
- * @module
+ Tests the exact local pack-objects path against real throwaway repositories,
+ validating the full size against a reference bare clone.
+ 
+ @module
  */
 
 import { execFileSync, } from 'node:child_process';
@@ -29,12 +29,12 @@ import {
 import { isMeasured, } from './measure.ts';
 
 /**
- * Sums the byte size of every `*.pack` file under a repo's pack directory,
- * the transfer-pack basis (excludes the client-generated `.idx`).
- *
- * @param gitDir - bare git directory
- *
- * @returns total pack-file bytes
+ Sums the byte size of every `*.pack` file under a repo's pack directory,
+ the transfer-pack basis (excludes the client-generated `.idx`).
+ 
+ @param gitDir - bare git directory
+ 
+ @returns total pack-file bytes
  */
 function packBytes(gitDir: string): number {
   const packDir = join(gitDir, 'objects', 'pack');
@@ -44,16 +44,16 @@ function packBytes(gitDir: string): number {
 }
 
 /**
- * A scratch directory that removes itself at the end of a `using` scope.
+ A scratch directory that removes itself at the end of a `using` scope.
  */
 type DisposableDir = { readonly path: string; readonly [Symbol.dispose]: () => void; };
 
 /**
- * Creates a self-cleaning temp directory.
- *
- * @param prefix - leading name fragment
- *
- * @returns disposable directory handle
+ Creates a self-cleaning temp directory.
+ 
+ @param prefix - leading name fragment
+ 
+ @returns disposable directory handle
  */
 function disposableDir(prefix: string): DisposableDir {
   const path = mkdtempSync(join(tmpdir(), prefix));
@@ -66,12 +66,12 @@ function disposableDir(prefix: string): DisposableDir {
 }
 
 /**
- * Creates a self-cleaning throwaway git repo with `commits` explicit-pathspec
- * commits (satisfying the repo's commit-only enforcement guard).
- *
- * @param commits - number of commits to create
- *
- * @returns disposable repository handle
+ Creates a self-cleaning throwaway git repo with `commits` explicit-pathspec
+ commits (satisfying the repo's commit-only enforcement guard).
+ 
+ @param commits - number of commits to create
+ 
+ @returns disposable repository handle
  */
 function makeRepo(commits: number): DisposableDir {
   const dir = disposableDir('gcs-fixture-');

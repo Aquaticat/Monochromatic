@@ -1,13 +1,13 @@
 /**
- * `<focus-dropdown>`: popover-based dropdown for selecting a focus preset.
- * Reads initial value from the `value` attribute and dispatches `change`
- * events with `{ value }` when a preset is selected.
+ `<focus-dropdown>`: popover-based dropdown for selecting a focus preset.
+ Reads initial value from the `value` attribute and dispatches `change`
+ events with `{ value }` when a preset is selected.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { FOCUS_DROPDOWN_STYLES, } from './focus-dropdown-styles.ts';
 
 /**
- * Available focus preset labels.
+ Available focus preset labels.
  */
 const DEFAULT_PRESETS = [
   'Adulting tasks first',
@@ -16,23 +16,23 @@ const DEFAULT_PRESETS = [
 ];
 
 /**
- * `<focus-dropdown>` web component.
- *
- * Popover-based dropdown that lets users select a focus preset.
+ `<focus-dropdown>` web component.
+ 
+ Popover-based dropdown that lets users select a focus preset.
  */
 class FocusDropdown extends HTMLElement {
   /**
-   * Shadow root for encapsulated rendering.
+   Shadow root for encapsulated rendering.
    */
   readonly #shadow: ShadowRoot;
 
   /**
-   * Currently selected preset value.
+   Currently selected preset value.
    */
   #value: string;
 
   /**
-   * Initializes the shadow root with empty value.
+   Initializes the shadow root with empty value.
    */
   constructor() {
     super();
@@ -41,7 +41,7 @@ class FocusDropdown extends HTMLElement {
   }
 
   /**
-   * Reads the `value` attribute and renders the dropdown.
+   Reads the `value` attribute and renders the dropdown.
    */
   connectedCallback(): void {
     this.#value = this.getAttribute('value',)
@@ -50,13 +50,13 @@ class FocusDropdown extends HTMLElement {
   }
 
   /**
-   * Selects a preset, updates the display, and dispatches a change event.
-   *
-   * @param preset - Preset label
-   *
-   * @param textSpan - Text element to update
-   *
-   * @param menu - Popover menu to hide
+   Selects a preset, updates the display, and dispatches a change event.
+   
+   @param preset - Preset label
+   
+   @param textSpan - Text element to update
+   
+   @param menu - Popover menu to hide
    */
   #selectPreset(
     preset: string,
@@ -78,11 +78,11 @@ class FocusDropdown extends HTMLElement {
   }
 
   /**
-   * Renders the trigger button, divider, and popover menu into the shadow root.
+   Renders the trigger button, divider, and popover menu into the shadow root.
    */
   #render(): void {
     /**
-     * Trigger label captured so the option callback can update it in place.
+     Trigger label captured so the option callback can update it in place.
      */
     const textSpan = h({
       tag: 'span',
@@ -90,13 +90,13 @@ class FocusDropdown extends HTMLElement {
       text: this.#value,
     },);
     /**
-     * Pre-bound selector so each option click fires with the correct `this`.
+     Pre-bound selector so each option click fires with the correct `this`.
      */
     const selectFn = this.#selectPreset
       .bind(this,);
 
     /**
-     * Popover menu captured so the option callback can close it after selection.
+     Popover menu captured so the option callback can close it after selection.
      */
     const menu = h({
       tag: 'ul',

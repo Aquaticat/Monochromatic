@@ -1,9 +1,9 @@
 /**
- * Unit tests for trivia handling: skipping leading whitespace and comments,
- * capturing trailing same-line comments and the separating comma, and merging
- * leading and trailing comments onto a node.
- *
- * @module
+ Unit tests for trivia handling: skipping leading whitespace and comments,
+ capturing trailing same-line comments and the separating comma, and merging
+ leading and trailing comments onto a node.
+ 
+ @module
  */
 
 import {

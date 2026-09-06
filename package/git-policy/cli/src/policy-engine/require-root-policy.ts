@@ -1,7 +1,7 @@
 /**
- * Unified built-in require-root policy.
- *
- * @module
+ Unified built-in require-root policy.
+ 
+ @module
  */
 
 import type { PolicyFinding, } from '../api/policy-types.ts';
@@ -12,12 +12,12 @@ import {
 } from '../rule/require-root.ts';
 
 /**
- * Configurable require-root built-in.
- *
- * @example
- * ```ts
- * requireRootPolicy.name;
- * ```
+ Configurable require-root built-in.
+ 
+ @example
+ ```ts
+ requireRootPolicy.name;
+ ```
  */
 export const requireRootPolicy: RuntimePolicyDefinition = {
   name: 'require-root',
@@ -29,7 +29,7 @@ export const requireRootPolicy: RuntimePolicyDefinition = {
   ],
   check: async function checkRequireRoot({ context, }): Promise<readonly PolicyFinding[]> {
     /**
-     * Legacy adapter args with synthetic nonexempt command for direct checks.
+     Legacy adapter args with synthetic nonexempt command for direct checks.
      */
     const args = context.trigger === 'direct-check'
       ? [

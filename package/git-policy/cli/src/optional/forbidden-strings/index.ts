@@ -1,8 +1,8 @@
 // Generated from `package/git-policy/forbidden-strings/src/index.ts` by file-enforcer; edit canonical source owner.
 /**
- * Forbidden-strings cli-git policy plugin.
- *
- * @module
+ Forbidden-strings cli-git policy plugin.
+ 
+ @module
  */
 import {
   definePlugin,
@@ -16,25 +16,25 @@ import * as v from 'valibot';
 import { scanCandidates, } from './scan-candidates.ts';
 
 /**
- * Runtime-validated forbidden-strings policy options.
+ Runtime-validated forbidden-strings policy options.
  */
 export type ForbiddenStringsPolicyOptions = Readonly<{
   /**
-   * PATH-resolved command or explicit scanner executable path.
+   PATH-resolved command or explicit scanner executable path.
    */
   executable: string;
   /**
-   * Whether scans also load the scanner's embedded betterleaks-ported
-   * baseline via its `--builtin-rules` flag. Defaults to `true`: the
-   * standalone CLI keeps the baseline pure opt-in, but a git policy exists
-   * to catch leaked credentials, so the policy is baseline-on unless a
-   * repository explicitly opts out.
+   Whether scans also load the scanner's embedded betterleaks-ported
+   baseline via its `--builtin-rules` flag. Defaults to `true`: the
+   standalone CLI keeps the baseline pure opt-in, but a git policy exists
+   to catch leaked credentials, so the policy is baseline-on unless a
+   repository explicitly opts out.
    */
   builtinRules: boolean;
 }>;
 
 /**
- * Forbidden-strings policy option schema.
+ Forbidden-strings policy option schema.
  */
 const forbiddenStringsOptions = definePolicyOptions(v.object({
   executable: v.optional(
@@ -48,13 +48,13 @@ const forbiddenStringsOptions = definePolicyOptions(v.object({
 },),);
 
 /**
- * Scans exact candidate content through separately built forbidden-strings binary.
- *
- * @example
- * ```ts
- * forbiddenStringsPolicy.name;
- * // => 'forbidden-strings'
- * ```
+ Scans exact candidate content through separately built forbidden-strings binary.
+ 
+ @example
+ ```ts
+ forbiddenStringsPolicy.name;
+ // => 'forbidden-strings'
+ ```
  */
 export const forbiddenStringsPolicy: PolicyDefinition<
   ForbiddenStringsPolicyOptions,
@@ -71,22 +71,22 @@ export const forbiddenStringsPolicy: PolicyDefinition<
   ],
   options: forbiddenStringsOptions,
   /**
-   * Scans lifecycle-selected candidate bytes.
-   *
-   * @param context - Policy context exposing lazy Git candidates.
-   *
-   * @param options - Scanner command and built-in-rule options.
-   *
-   * @returns Scanner findings for selected candidates.
-   *
+   Scans lifecycle-selected candidate bytes.
+   
+   @param context - Policy context exposing lazy Git candidates.
+   
+   @param options - Scanner command and built-in-rule options.
+   
+   @returns Scanner findings for selected candidates.
+   
    */
   async check({
     context,
     options,
   }): Promise<readonly PolicyFinding[]> {
     /**
-     * Exact lifecycle-selected candidates; every lifecycle now supplies only
-     * the operation's own delta, so no post-commit narrowing happens here.
+     Exact lifecycle-selected candidates; every lifecycle now supplies only
+     the operation's own delta, so no post-commit narrowing happens here.
      */
     const candidates = await context.git
       .candidates();
@@ -102,13 +102,13 @@ export const forbiddenStringsPolicy: PolicyDefinition<
 },);
 
 /**
- * Optional forbidden-strings policy plugin shipped inert inside cli-git.
- *
- * @example
- * ```ts
- * forbiddenStringsPlugin.name;
- * // => 'forbidden-strings'
- * ```
+ Optional forbidden-strings policy plugin shipped inert inside cli-git.
+ 
+ @example
+ ```ts
+ forbiddenStringsPlugin.name;
+ // => 'forbidden-strings'
+ ```
  */
 export const forbiddenStringsPlugin: PluginDefinition<
   readonly [typeof forbiddenStringsPolicy],

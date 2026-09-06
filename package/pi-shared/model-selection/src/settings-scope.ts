@@ -1,7 +1,7 @@
 /**
- * Reads pi settings needed to reconstruct effective model scope.
- *
- * @module
+ Reads pi settings needed to reconstruct effective model scope.
+ 
+ @module
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -10,57 +10,57 @@ import * as v from 'valibot';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 /**
- * Sentinel returned by internal {@link loadSettingsFile} when a settings file is
- * absent. A `unique symbol`; narrowed with `=== NO_SETTINGS_FILE`.
+ Sentinel returned by internal {@link loadSettingsFile} when a settings file is
+ absent. A `unique symbol`; narrowed with `=== NO_SETTINGS_FILE`.
  */
 const NO_SETTINGS_FILE: unique symbol = Symbol('model-selection/no-settings-file',);
 
 //region Types and schemas
 
 /**
- * Pi settings subset needed for model-scope reconstruction.
+ Pi settings subset needed for model-scope reconstruction.
  */
 export type PiSettingsFile = {
   /**
-   * Pi model-cycle patterns.
+   Pi model-cycle patterns.
    */
   readonly enabledModels?: readonly string[];
 };
 
 /**
- * Options for reading pi settings files.
+ Options for reading pi settings files.
  */
 export type LoadSettingsScopeOptions = {
   /**
-   * Current working directory for project settings lookup.
+   Current working directory for project settings lookup.
    */
   readonly cwd: string;
   /**
-   * Home directory override for tests.
+   Home directory override for tests.
    */
   readonly home?: string;
   /**
-   * Error prefix used by the consuming extension.
+   Error prefix used by the consuming extension.
    */
   readonly errorPrefix?: string;
 };
 
 /**
- * Reconstructed enabled-model patterns from pi settings.
+ Reconstructed enabled-model patterns from pi settings.
  */
 export type SettingsScopePatterns = {
   /**
-   * Effective enabled-model patterns, omitted when unrestricted.
+   Effective enabled-model patterns, omitted when unrestricted.
    */
   readonly patterns?: readonly string[];
   /**
-   * Settings file path that supplied effective patterns.
+   Settings file path that supplied effective patterns.
    */
   readonly sourcePath?: string;
 };
 
 /**
- * Pi settings subset schema.
+ Pi settings subset schema.
  */
 export const PiSettingsFileSchema: v.GenericSchema<PiSettingsFile> = v.object({
   enabledModels: v.exactOptional(
@@ -73,33 +73,33 @@ export const PiSettingsFileSchema: v.GenericSchema<PiSettingsFile> = v.object({
 //region Public API
 
 /**
- * Load effective `enabledModels` from global and project pi settings.
- *
- * Project settings override global settings when `enabledModels` is present.
- *
- * @param options - lookup directories and optional error prefix
- *
- * @returns effective patterns and source path
- *
- * @example
- * ```typescript
- * await loadSettingsScopePatterns({ cwd: process.cwd() });
- * ```
+ Load effective `enabledModels` from global and project pi settings.
+ 
+ Project settings override global settings when `enabledModels` is present.
+ 
+ @param options - lookup directories and optional error prefix
+ 
+ @returns effective patterns and source path
+ 
+ @example
+ ```typescript
+ await loadSettingsScopePatterns({ cwd: process.cwd() });
+ ```
  */
 export async function loadSettingsScopePatterns(
   options: LoadSettingsScopeOptions,
 ): Promise<SettingsScopePatterns> {
   /**
-   * Paths checked for pi settings.
+   Paths checked for pi settings.
    */
   const paths = getSettingsPaths(options,);
   /**
-   * Error prefix for thrown messages.
+   Error prefix for thrown messages.
    */
   const errorPrefix = options.errorPrefix
     ?? 'model selection';
   /**
-   * Global and project settings subsets read concurrently.
+   Global and project settings subsets read concurrently.
    */
   const [global, project,] = await Promise.all([
     loadSettingsFile({
@@ -134,16 +134,16 @@ export async function loadSettingsScopePatterns(
 }
 
 /**
- * Build absolute global and project pi settings paths.
- *
- * @param options - lookup directories
- *
- * @returns settings paths
- *
- * @example
- * ```typescript
- * getSettingsPaths({ cwd: '/repo', home: '/home/me' });
- * ```
+ Build absolute global and project pi settings paths.
+ 
+ @param options - lookup directories
+ 
+ @returns settings paths
+ 
+ @example
+ ```typescript
+ getSettingsPaths({ cwd: '/repo', home: '/home/me' });
+ ```
  */
 export function getSettingsPaths(
   options: LoadSettingsScopeOptions,
@@ -152,15 +152,15 @@ export function getSettingsPaths(
   readonly projectPath: string;
 } {
   /**
-   * Process environment variables.
+   Process environment variables.
    */
   const { env, } = process;
   /**
-   * HOME environment variable value, when present.
+   HOME environment variable value, when present.
    */
   const { HOME: envHome, } = env;
   /**
-   * Home directory used by pi for global settings.
+   Home directory used by pi for global settings.
    */
   const home = options.home
     ?? envHome
@@ -185,15 +185,15 @@ export function getSettingsPaths(
 //region Internal helpers
 
 /**
- * Load one optional pi settings file.
- *
- * @param path - settings file path
- *
- * @param label - settings scope label
- *
- * @param errorPrefix - message prefix
- *
- * @returns parsed settings subset, or {@link NO_SETTINGS_FILE} when absent
+ Load one optional pi settings file.
+ 
+ @param path - settings file path
+ 
+ @param label - settings scope label
+ 
+ @param errorPrefix - message prefix
+ 
+ @returns parsed settings subset, or {@link NO_SETTINGS_FILE} when absent
  */
 async function loadSettingsFile(
   {
@@ -207,7 +207,7 @@ async function loadSettingsFile(
   },
 ): Promise<PiSettingsFile | typeof NO_SETTINGS_FILE> {
   /**
-   * Raw parsed JSON object, or `undefined` when absent.
+   Raw parsed JSON object, or `undefined` when absent.
    */
   const raw = await readJsonFile({
     path,
@@ -218,7 +218,7 @@ async function loadSettingsFile(
     return NO_SETTINGS_FILE;
 
   /**
-   * Valibot validation result for settings subset.
+   Valibot validation result for settings subset.
    */
   const result = v.safeParse(
     PiSettingsFileSchema,
@@ -232,15 +232,15 @@ async function loadSettingsFile(
 }
 
 /**
- * Read one JSON settings file.
- *
- * @param path - settings file path
- *
- * @param label - settings scope label
- *
- * @param errorPrefix - message prefix
- *
- * @returns parsed JSON data, or `undefined` when absent
+ Read one JSON settings file.
+ 
+ @param path - settings file path
+ 
+ @param label - settings scope label
+ 
+ @param errorPrefix - message prefix
+ 
+ @returns parsed JSON data, or `undefined` when absent
  */
 async function readJsonFile(
   {
@@ -272,11 +272,11 @@ async function readJsonFile(
 }
 
 /**
- * Remove empty pattern strings.
- *
- * @param patterns - raw model patterns
- *
- * @returns cleaned model patterns
+ Remove empty pattern strings.
+ 
+ @param patterns - raw model patterns
+ 
+ @returns cleaned model patterns
  */
 function cleanPatterns(
   patterns: readonly string[],
@@ -291,11 +291,11 @@ function cleanPatterns(
 }
 
 /**
- * Detect Node ENOENT missing-file errors without unsafe assertion.
- *
- * @param error - caught error value
- *
- * @returns whether error reports a missing settings file
+ Detect Node ENOENT missing-file errors without unsafe assertion.
+ 
+ @param error - caught error value
+ 
+ @returns whether error reports a missing settings file
  */
 function isFileMissingError(
   error: unknown,

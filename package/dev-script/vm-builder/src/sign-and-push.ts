@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Signs the container image with cosign and pushes it to GHCR.
- * Separate from `build-and-import.ts` because cosign signatures are OCI artifacts
- * that must be pushed to a registry; they cannot exist in local podman storage alone.
- *
- * Run: mise run //package/dev-script/vm-builder:push
- *
- * Prerequisites:
- * - Image already built via `mise run //package/dev-script/vm-builder:run`
- * - `cosign` installed
- * - `podman login ghcr.io` completed
- * - Cosign key pair at `package/config/cosign/`
+ Signs the container image with cosign and pushes it to GHCR.
+ Separate from `build-and-import.ts` because cosign signatures are OCI artifacts
+ that must be pushed to a registry; they cannot exist in local podman storage alone.
+ 
+ Run: mise run //package/dev-script/vm-builder:push
+ 
+ Prerequisites:
+ - Image already built via `mise run //package/dev-script/vm-builder:run`
+ - `cosign` installed
+ - `podman login ghcr.io` completed
+ - Cosign key pair at `package/config/cosign/`
  */
 import {
   findMiseMonorepoRootCached,
@@ -20,22 +20,22 @@ import { once, } from 'node:events';
 import { join, } from 'node:path';
 
 /**
- * Local image tag to push.
+ Local image tag to push.
  */
 const IMAGE_TAG = 'localhost/monochromatic-dev:latest';
 
 /**
- * GHCR image reference. Change this to match your GitHub username/org.
+ GHCR image reference. Change this to match your GitHub username/org.
  */
 const GHCR_TAG = 'ghcr.io/aquaticat/monochromatic-dev:latest';
 
 /**
- * Absolute path to the monorepo root.
+ Absolute path to the monorepo root.
  */
 const MONOREPO_ROOT = await findMiseMonorepoRootCached();
 
 /**
- * Path to the cosign private key for image signing.
+ Path to the cosign private key for image signing.
  */
 const COSIGN_KEY = join(
   MONOREPO_ROOT,
@@ -46,18 +46,18 @@ const COSIGN_KEY = join(
 );
 
 /**
- * Spawns a command with inherited stdio so output streams to the terminal in real time.
- *
- * @param cmd - Executable name
- *
- * @param args - Arguments passed to the command
- *
- * @throws When the command exits with a non-zero code
- *
- * @example
- * ```ts
- * await run({ cmd: 'podman', args: ['push', 'ghcr.io/...'] });
- * ```
+ Spawns a command with inherited stdio so output streams to the terminal in real time.
+ 
+ @param cmd - Executable name
+ 
+ @param args - Arguments passed to the command
+ 
+ @throws When the command exits with a non-zero code
+ 
+ @example
+ ```ts
+ await run({ cmd: 'podman', args: ['push', 'ghcr.io/...'] });
+ ```
  */
 async function run(
   {
@@ -69,7 +69,7 @@ async function run(
   },
 ): Promise<void> {
   /**
-   * Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code.
+   Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code.
    */
   const child = nodeSpawn(
     cmd,
@@ -85,7 +85,7 @@ async function run(
 }
 
 /**
- * Tags the local {@link IMAGE_TAG} image as {@link GHCR_TAG} and pushes it.
+ Tags the local {@link IMAGE_TAG} image as {@link GHCR_TAG} and pushes it.
  */
 async function pushImage(): Promise<void> {
   console.log(`[vm-builder] tagging ${IMAGE_TAG} as ${GHCR_TAG}...`,);
@@ -111,8 +111,8 @@ async function pushImage(): Promise<void> {
 }
 
 /**
- * Signs the pushed image with cosign using {@link COSIGN_KEY}.
- * The signature is stored as an OCI artifact in the same {@link GHCR_TAG} repository.
+ Signs the pushed image with cosign using {@link COSIGN_KEY}.
+ The signature is stored as an OCI artifact in the same {@link GHCR_TAG} repository.
  */
 async function signImage(): Promise<void> {
   console.log('[vm-builder] signing image with cosign...',);

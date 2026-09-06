@@ -1,27 +1,27 @@
 /**
- * Path validation rules for ZIP entry names.
- *
- * @module
+ Path validation rules for ZIP entry names.
+ 
+ @module
  */
 
 /**
- * Reject paths that produce malformed or ambiguous ZIP entries.
- *
- * Allowed: forward-slash delimited, non-empty, UTF-8 representable,
- * no NUL byte, no `..` segment, no leading `/`, no backslash. These
- * constraints reflect what every well-behaved ZIP reader accepts.
- *
- * @param path - File path inside the archive
- *
- * @throws When the path is invalid
- *
- * @example
- * ```ts
- * validatePath('manifest.json',);    // ok
- * validatePath('data/blob.bin',);    // ok
- * validatePath('../escape.txt',);    // throws
- * validatePath('/absolute',);        // throws
- * ```
+ Reject paths that produce malformed or ambiguous ZIP entries.
+ 
+ Allowed: forward-slash delimited, non-empty, UTF-8 representable,
+ no NUL byte, no `..` segment, no leading `/`, no backslash. These
+ constraints reflect what every well-behaved ZIP reader accepts.
+ 
+ @param path - File path inside the archive
+ 
+ @throws When the path is invalid
+ 
+ @example
+ ```ts
+ validatePath('manifest.json',);    // ok
+ validatePath('data/blob.bin',);    // ok
+ validatePath('../escape.txt',);    // throws
+ validatePath('/absolute',);        // throws
+ ```
  */
 export function validatePath(path: string,): void {
   if (path.length

@@ -19,17 +19,17 @@ import { resolveRealGit, } from '../dist/final/node/index.mjs';
 //region Native executable fixtures
 
 /**
- * File mode making native-format fixtures executable by owner.
+ File mode making native-format fixtures executable by owner.
  */
 const EXECUTABLE_MODE = 0o755;
 
 /**
- * Marker-like payload proving native executables bypass text self-shim inspection.
+ Marker-like payload proving native executables bypass text self-shim inspection.
  */
 const MARKER_PAYLOAD = Buffer.from('@monochromatic-dev/git-policy-cli',);
 
 /**
- * Supported native executable signatures.
+ Supported native executable signatures.
  */
 const NATIVE_HEADER_CASES: readonly {
   readonly name: string;
@@ -48,7 +48,7 @@ const NATIVE_HEADER_CASES: readonly {
 ];
 
 /**
- * Disposable temporary directory used by native-header tests.
+ Disposable temporary directory used by native-header tests.
  */
 type TempDirectory = {
   readonly path: string;
@@ -56,18 +56,18 @@ type TempDirectory = {
 };
 
 /**
- * Creates disposable temporary directory for native executable fixture.
- *
- * @returns Directory removed when async disposal completes.
- *
- * @example
- * ```ts
- * await using tempDirectory = await createTempDirectory();
- * ```
+ Creates disposable temporary directory for native executable fixture.
+ 
+ @returns Directory removed when async disposal completes.
+ 
+ @example
+ ```ts
+ await using tempDirectory = await createTempDirectory();
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /**
-   * Absolute fixture root unique to current test.
+   Absolute fixture root unique to current test.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -98,12 +98,12 @@ await describe({
       fn: async function acceptsNativeHeader(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * PATH directory containing native-format candidate.
+         PATH directory containing native-format candidate.
          */
         const nativeBin = join(tempDirectory.path, 'native-bin',);
         await mkdir(nativeBin,);
         /**
-         * Native-format candidate containing wrapper marker after recognized header.
+         Native-format candidate containing wrapper marker after recognized header.
          */
         const nativeGit = join(nativeBin, 'git',);
         await writeFile(

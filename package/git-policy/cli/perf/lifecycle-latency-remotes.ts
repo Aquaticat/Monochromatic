@@ -1,7 +1,7 @@
 /**
- * Local post-commit remote fixtures for lifecycle latency measurements.
- *
- * @module
+ Local post-commit remote fixtures for lifecycle latency measurements.
+ 
+ @module
  */
 
 import { execute, } from './lifecycle-latency-command.ts';
@@ -14,12 +14,12 @@ import {
 } from './lifecycle-latency-contracts.ts';
 
 /**
- * Creates equivalent local remotes and direct commit counterpart.
- *
- * @example
- * ```ts
- * await prepareCommitRemotes();
- * ```
+ Creates equivalent local remotes and direct commit counterpart.
+ 
+ @example
+ ```ts
+ await prepareCommitRemotes();
+ ```
  */
 export async function prepareCommitRemotes(): Promise<void> {
   await execute({

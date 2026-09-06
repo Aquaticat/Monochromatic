@@ -1,24 +1,24 @@
 /**
- * Shared terminal title engine for agent harness integrations.
- *
- * Host-specific packages keep event mapping and side effects.
- * This package owns title entry semantics,
- * command and path display,
- * registry lookup,
- * prefix construction,
- * control sanitizing,
- * and terminal byte safety.
- *
- * @example
- * ```ts
- * import {
- *   buildToolTerminalTitle,
- *   pathTitleEntry,
- *   safeTerminalTitlePayload,
- * } from '@monochromatic-dev/agent-harness-shared-terminal-title';
- * ```
- *
- * @packageDocumentation
+ Shared terminal title engine for agent harness integrations.
+ 
+ Host-specific packages keep event mapping and side effects.
+ This package owns title entry semantics,
+ command and path display,
+ registry lookup,
+ prefix construction,
+ control sanitizing,
+ and terminal byte safety.
+ 
+ @example
+ ```ts
+ import {
+   buildToolTerminalTitle,
+   pathTitleEntry,
+   safeTerminalTitlePayload,
+ } from '@monochromatic-dev/agent-harness-shared-terminal-title';
+ ```
+ 
+ @packageDocumentation
  */
 
 //region Types

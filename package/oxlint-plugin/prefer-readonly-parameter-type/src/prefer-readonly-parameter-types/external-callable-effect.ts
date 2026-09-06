@@ -1,7 +1,7 @@
 /**
- * Demand-driven package implementation effect inference.
- *
- * @module
+ Demand-driven package implementation effect inference.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -38,19 +38,19 @@ import {
 } from './package-implementation-resolution.ts';
 
 /**
- * External implementation inference logger.
+ External implementation inference logger.
  */
 const l = tagged({ tag: 'external-callable-effect', },);
 
 /**
- * Sentinel when external callable cannot be proved from implementation.
+ Sentinel when external callable cannot be proved from implementation.
  */
 export const EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE: unique symbol = Symbol(
   'external package callable effect could not be inferred',
 );
 
 /**
- * Proven external callable effect and exact package provenance.
+ Proven external callable effect and exact package provenance.
  */
 export type ExternalCallableEffect = {
   readonly summary: CallableEffectSummary;
@@ -58,7 +58,7 @@ export type ExternalCallableEffect = {
 };
 
 /**
- * Builder callback reusing effect engine without a module cycle.
+ Builder callback reusing effect engine without a module cycle.
  */
 export type ExternalEffectIndexBuilder = (options: {
   readonly project: Project;
@@ -67,7 +67,7 @@ export type ExternalEffectIndexBuilder = (options: {
 }) => EffectSummaryIndex;
 
 /**
- * Demand-driven external effect resolver passed through direct scans.
+ Demand-driven external effect resolver passed through direct scans.
  */
 export type ExternalCallableEffectResolver = (options: {
   readonly consumerProject: Project;
@@ -76,7 +76,7 @@ export type ExternalCallableEffectResolver = (options: {
 }) => ExternalCallableEffect | typeof EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
 
 /**
- * Process cache by exact package implementation and export identity.
+ Process cache by exact package implementation and export identity.
  */
 const effectByImplementation = new Map<
   string,
@@ -84,17 +84,17 @@ const effectByImplementation = new Map<
 >();
 
 /**
- * Recursive package inference keys currently being analyzed.
+ Recursive package inference keys currently being analyzed.
  */
 const activeInferenceKeys = new Set<string>();
 
 /**
- * Clears process-local external callable results at semantic lifecycle boundary.
- *
- * @example
- * ```ts
- * clearExternalCallableEffectCache();
- * ```
+ Clears process-local external callable results at semantic lifecycle boundary.
+ 
+ @example
+ ```ts
+ clearExternalCallableEffectCache();
+ ```
  */
 export function clearExternalCallableEffectCache(): void {
   effectByImplementation.clear();
@@ -102,22 +102,22 @@ export function clearExternalCallableEffectCache(): void {
 }
 
 /**
- * Infers external package callable effects from shipped implementation.
- *
- * @param consumerProject - Caller project resolving declaration and import identity.
- *
- * @param call - Invoked package call.
- *
- * @param declaration - Resolved external declaration selected by call signature.
- *
- * @param buildIndex - Effect engine callback for external configured project.
- *
- * @returns proven callable effect or unavailable sentinel.
- *
- * @example
- * ```ts
- * externalCallableEffect({ consumerProject: project, call, declaration });
- * ```
+ Infers external package callable effects from shipped implementation.
+ 
+ @param consumerProject - Caller project resolving declaration and import identity.
+ 
+ @param call - Invoked package call.
+ 
+ @param declaration - Resolved external declaration selected by call signature.
+ 
+ @param buildIndex - Effect engine callback for external configured project.
+ 
+ @returns proven callable effect or unavailable sentinel.
+ 
+ @example
+ ```ts
+ externalCallableEffect({ consumerProject: project, call, declaration });
+ ```
  */
 export function externalCallableEffect({
   consumerProject,
@@ -131,7 +131,7 @@ export function externalCallableEffect({
   readonly buildIndex: ExternalEffectIndexBuilder;
 }): ExternalCallableEffect | typeof EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE {
   /**
-   * Exact package identity from selected declaration source.
+   Exact package identity from selected declaration source.
    */
   const packageIdentity = installedPackageForFile(
     declaration.getSourceFile()
@@ -140,7 +140,7 @@ export function externalCallableEffect({
   if (packageIdentity === INSTALLED_PACKAGE_UNAVAILABLE)
     return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
   /**
-   * Exact authored import identity or declaration-owner fallback.
+   Exact authored import identity or declaration-owner fallback.
    */
   const importedCallIdentity = packageCallIdentity({
     project: consumerProject,
@@ -148,7 +148,7 @@ export function externalCallableEffect({
     call,
   },);
   /**
-   * Final package export identity for direct or retained receiver call.
+   Final package export identity for direct or retained receiver call.
    */
   const callIdentity = importedCallIdentity === PACKAGE_CALL_IDENTITY_UNAVAILABLE
     ? packageDeclarationCallIdentity({
@@ -165,7 +165,7 @@ export function externalCallableEffect({
   },))
     return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
   /**
-   * Shipped runtime implementation selected through package exports.
+   Shipped runtime implementation selected through package exports.
    */
   const implementation = resolvePackageImplementation({
     identity: packageIdentity,
@@ -174,7 +174,7 @@ export function externalCallableEffect({
   if (implementation === PACKAGE_IMPLEMENTATION_UNAVAILABLE)
     return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
   /**
-   * Stable recursive-inference identity before project snapshot validation.
+   Stable recursive-inference identity before project snapshot validation.
    */
   const baseCacheKey = [
     implementation.packageName,
@@ -191,7 +191,7 @@ export function externalCallableEffect({
     return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
   activeInferenceKeys.add(baseCacheKey,);
   /**
-   * Disposable recursive-inference guard for every return and throw path.
+   Disposable recursive-inference guard for every return and throw path.
    */
   using inferenceGuard = {
     [Symbol.dispose](): void {
@@ -200,7 +200,7 @@ export function externalCallableEffect({
   };
   try {
     /**
-     * External implementation session or fail-closed sentinel.
+     External implementation session or fail-closed sentinel.
      */
     const opened = openExternalImplementation({
       consumerProject,
@@ -211,21 +211,21 @@ export function externalCallableEffect({
     if (opened === EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE)
       return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
     /**
-     * Reusable external implementation project session.
+     Reusable external implementation project session.
      */
     const session = opened;
     /**
-     * Exact callable cache identity including transitive project snapshot.
+     Exact callable cache identity including transitive project snapshot.
      */
     const cacheKey = `${baseCacheKey}\0${session.snapshotIdentity}`;
     /**
-     * Prior exact implementation inference.
+     Prior exact implementation inference.
      */
     const cached = effectByImplementation.get(cacheKey,);
     if (cached !== undefined)
       return cached;
     /**
-     * Runtime callable declaration selected from exact module export.
+     Runtime callable declaration selected from exact module export.
      */
     const callable = exportedCallable({
       project: session.project,
@@ -242,7 +242,7 @@ export function externalCallableEffect({
       return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
     }
     /**
-     * Complete fixed-point effects over demanded external package implementation.
+     Complete fixed-point effects over demanded external package implementation.
      */
     const index = buildIndex({
       project: session.project,
@@ -250,7 +250,7 @@ export function externalCallableEffect({
       analysisRoot: implementation.packageRoot,
     },);
     /**
-     * Effect summary for exact runtime export declaration.
+     Effect summary for exact runtime export declaration.
      */
     const summary = index.get(callable,);
     if (summary === NO_EFFECT_SUMMARY) {
@@ -261,7 +261,7 @@ export function externalCallableEffect({
       return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
     }
     /**
-     * Proven package effect with exact version and export provenance.
+     Proven package effect with exact version and export provenance.
      */
     const result: ExternalCallableEffect = {
       summary,

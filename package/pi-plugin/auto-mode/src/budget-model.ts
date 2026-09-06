@@ -1,7 +1,7 @@
 /**
- * Budget model: auto-select the fastest available judge model.
- *
- * @module
+ Budget model: auto-select the fastest available judge model.
+ 
+ @module
  */
 
 import type {
@@ -26,11 +26,11 @@ import type { BudgetModel, } from './types.ts';
 //region Model shape guards
 
 /**
- * Detect the structural pi model fields used by budget selection and auth callbacks.
- *
- * @param value - value to inspect
- *
- * @returns whether value has the needed pi model fields
+ Detect the structural pi model fields used by budget selection and auth callbacks.
+ 
+ @param value - value to inspect
+ 
+ @returns whether value has the needed pi model fields
  */
 function isModelApi(
   value: unknown,
@@ -40,7 +40,7 @@ function isModelApi(
   if (!('cost' in value))
     return false;
   /**
-   * Cost object inspected separately so nested price fields stay type-safe.
+   Cost object inspected separately so nested price fields stay type-safe.
    */
   const { cost, } = value;
   if ((cost === null) || ((typeof cost) !== 'object'))
@@ -74,13 +74,13 @@ function isModelApi(
 }
 
 /**
- * Assert that a value has the pi model shape auto-mode budget selection needs.
- *
- * @param value - value to inspect
- *
- * @throws {@link NoBudgetModelError} when value is not a pi model
- *
- * @returns nothing when value has the required shape
+ Assert that a value has the pi model shape auto-mode budget selection needs.
+ 
+ @param value - value to inspect
+ 
+ @throws {@link NoBudgetModelError} when value is not a pi model
+ 
+ @returns nothing when value has the required shape
  */
 function assertModelApi(
   value: unknown,
@@ -93,13 +93,13 @@ function assertModelApi(
 }
 
 /**
- * Assert that a value is a list of pi models auto-mode budget selection can inspect.
- *
- * @param value - value to inspect
- *
- * @throws {@link NoBudgetModelError} when value is not a pi model list
- *
- * @returns nothing when value has the required shape
+ Assert that a value is a list of pi models auto-mode budget selection can inspect.
+ 
+ @param value - value to inspect
+ 
+ @throws {@link NoBudgetModelError} when value is not a pi model list
+ 
+ @returns nothing when value has the required shape
  */
 function assertModelApiList(
   value: unknown,
@@ -123,31 +123,31 @@ function assertModelApiList(
 //region Public API
 
 /**
- * Find the fastest available model for the judge.
- *
- * Validates the active model and registry with {@link assertModelApi} and
- * {@link assertModelApiList}, then {@link resolveEffectiveScope} narrows
- * automatic candidates to Pi's effective scoped models.
- * The fixed cross-provider policy walks those candidates fastest-first using
- * {@link resolveBudgetAuth} and returns the first candidate the registry can
- * authenticate.
- *
- * @param ctx - pi extension context
- *
- * @param excludedModelSlugs - models whose completed attempts must not be selected again
- *
- * @throws {@link NoBudgetModelError} if no suitable model is found
- *
- * @returns budget model with auth credentials
- *
- * @mutates ctx - scope resolution and registry selection can invoke model accessors and command-backed auth capabilities
- *
- * @mutates excludedModelSlugs - iteration can invoke caller-owned iterator hooks
- *
- * @example
- * ```typescript
- * const budget = await findBudgetModel({ ctx });
- * ```
+ Find the fastest available model for the judge.
+ 
+ Validates the active model and registry with {@link assertModelApi} and
+ {@link assertModelApiList}, then {@link resolveEffectiveScope} narrows
+ automatic candidates to Pi's effective scoped models.
+ The fixed cross-provider policy walks those candidates fastest-first using
+ {@link resolveBudgetAuth} and returns the first candidate the registry can
+ authenticate.
+ 
+ @param ctx - pi extension context
+ 
+ @param excludedModelSlugs - models whose completed attempts must not be selected again
+ 
+ @throws {@link NoBudgetModelError} if no suitable model is found
+ 
+ @returns budget model with auth credentials
+ 
+ @mutates ctx - scope resolution and registry selection can invoke model accessors and command-backed auth capabilities
+ 
+ @mutates excludedModelSlugs - iteration can invoke caller-owned iterator hooks
+ 
+ @example
+ ```typescript
+ const budget = await findBudgetModel({ ctx });
+ ```
  */
 async function findBudgetModel(
   {
@@ -159,7 +159,7 @@ async function findBudgetModel(
   },
 ): Promise<BudgetModel> {
   /**
-   * Canonical slugs excluded after earlier judge attempts exhausted their retries.
+   Canonical slugs excluded after earlier judge attempts exhausted their retries.
    */
   const excludedSlugs = new Set(excludedModelSlugs,);
 
@@ -169,29 +169,29 @@ async function findBudgetModel(
     throw new NoBudgetModelError('no active model set',);
 
   /**
-   * Active model handed in by host for shared selection context.
+   Active model handed in by host for shared selection context.
    */
   const rawActiveModel: unknown = ctx.model;
   assertModelApi(rawActiveModel,);
   /**
-   * Effective Pi scope that constrains automatic judge selection.
+   Effective Pi scope that constrains automatic judge selection.
    */
   const judgeModelScope = await resolveEffectiveScope<Model<Api>>({
     ctx,
     errorPrefix: 'auto-mode',
   },);
   /**
-   * Models selected by Pi's scope, narrowed to auto-mode's pi model shape.
+   Models selected by Pi's scope, narrowed to auto-mode's pi model shape.
    */
   const rawScopedJudgeModels: unknown = judgeModelScope
     .entries
     .map(
       /**
-       * Extract model record from one effective-scope entry.
-       *
-       * @param entry - scoped Pi model entry
-       *
-       * @returns Pi model selected by scope
+       Extract model record from one effective-scope entry.
+       
+       @param entry - scoped Pi model entry
+       
+       @returns Pi model selected by scope
        */
       function mapScopedJudgeModel(
         entry: ForeignBorrowed<(typeof judgeModelScope.entries)[number]>,
@@ -201,17 +201,17 @@ async function findBudgetModel(
     );
   assertModelApiList(rawScopedJudgeModels,);
   /**
-   * Scoped models after runtime shape validation, excluding models whose
-   * completed judge attempts already failed.
+   Scoped models after runtime shape validation, excluding models whose
+   completed judge attempts already failed.
    */
   const allModels = rawScopedJudgeModels.filter(
     /**
-     * Excludes models whose previous judge attempts failed.
-     *
-     * @param model - Registry model whose identity is inspected.
-     *
-     * @returns Whether model remains eligible.
-     *
+     Excludes models whose previous judge attempts failed.
+     
+     @param model - Registry model whose identity is inspected.
+     
+     @returns Whether model remains eligible.
+     
      */
     function modelHasNotFailed(model: ForeignBorrowed<Model<Api>>,) {
       return !excludedSlugs.has(budgetModelSlug(model,),);
@@ -219,24 +219,24 @@ async function findBudgetModel(
   );
 
   /**
-   * Every scoped candidate globally ranked by speed, then input cost.
+   Every scoped candidate globally ranked by speed, then input cost.
    */
   const sortedCandidates = allModels.toSorted(
     /**
-     * Rank cross-provider candidates by fixed speed policy.
-     *
-     * @param left - candidate on left side of comparison
-     *
-     * @param right - candidate on right side of comparison
-     *
-     * @returns sort order
+     Rank cross-provider candidates by fixed speed policy.
+     
+     @param left - candidate on left side of comparison
+     
+     @param right - candidate on right side of comparison
+     
+     @returns sort order
      */
     function candidatesBySpeed(
       left: ForeignBorrowed<Model<Api>>,
       right: ForeignBorrowed<Model<Api>>,
     ): number {
       /**
-       * Higher speed-name score sorts first.
+       Higher speed-name score sorts first.
        */
       const speedDifference = scoreModelSpeed(right,)
         - scoreModelSpeed(left,);
@@ -252,7 +252,7 @@ async function findBudgetModel(
   for (const model of sortedCandidates) {
     /* oxlint-disable no-await-in-loop -- sequential auth walk stops at first authenticated candidate. */
     /**
-     * Host registry credentials for current candidate.
+     Host registry credentials for current candidate.
      */
     const auth = await resolveBudgetAuth({
       ctx,

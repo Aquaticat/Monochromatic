@@ -1,5 +1,5 @@
 /**
- * Tests for smart terminal title paths.
+ Tests for smart terminal title paths.
  */
 
 import {

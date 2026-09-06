@@ -34,10 +34,10 @@ type BuilderFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable TypeScript repository fixture.
- *
- * @param source - entry source
- * @returns initialized fixture
+ Creates disposable TypeScript repository fixture.
+ 
+ @param source - entry source
+ @returns initialized fixture
  */
 async function createFixture(source: string,): Promise<BuilderFixture> {
   /** Canonical disposable repository. */
@@ -62,10 +62,10 @@ async function createFixture(source: string,): Promise<BuilderFixture> {
 }
 
 /**
- * Captures expected build failure.
- *
- * @param fixture - TypeScript builder fixture
- * @returns thrown failure
+ Captures expected build failure.
+ 
+ @param fixture - TypeScript builder fixture
+ @returns thrown failure
  */
 async function captureBuildFailure(fixture: BuilderFixture,): Promise<unknown> {
   try {

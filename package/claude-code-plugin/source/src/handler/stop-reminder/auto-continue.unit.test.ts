@@ -18,7 +18,7 @@ import {
 } from './index.ts';
 
 /**
- * Fields a test varies on the built stop event; anything omitted keeps its default.
+ Fields a test varies on the built stop event; anything omitted keeps its default.
  */
 type StopEventOverrides = {
   readonly stop_hook_active?: boolean;
@@ -26,16 +26,16 @@ type StopEventOverrides = {
 };
 
 /**
- * Stop event with every field the handler reads, so each test varies one thing.
- *
- * @param overrides - fields replacing defaults on built event
- *
- * @returns event shaped like Claude Code's `Stop` payload
- *
- * @example
- * ```ts
- * stopEvent({ stop_hook_active: true });
- * ```
+ Stop event with every field the handler reads, so each test varies one thing.
+ 
+ @param overrides - fields replacing defaults on built event
+ 
+ @returns event shaped like Claude Code's `Stop` payload
+ 
+ @example
+ ```ts
+ stopEvent({ stop_hook_active: true });
+ ```
  */
 function stopEvent(overrides: StopEventOverrides = {},): StopInput {
   return {

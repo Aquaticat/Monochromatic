@@ -26,17 +26,17 @@ import {
 //region Node util source classification
 
 /**
- * Checks whether import source names Node util.
- *
- * @param source - Import source text.
- *
- * @returns Whether source is {@link NODE_UTIL_SOURCE} or
- * {@link NODE_PROTOCOL_UTIL_SOURCE}.
- *
- * @example
- * ```ts
- * isNodeUtilSource({ source: 'node:util' });
- * ```
+ Checks whether import source names Node util.
+ 
+ @param source - Import source text.
+ 
+ @returns Whether source is {@link NODE_UTIL_SOURCE} or
+ {@link NODE_PROTOCOL_UTIL_SOURCE}.
+ 
+ @example
+ ```ts
+ isNodeUtilSource({ source: 'node:util' });
+ ```
  */
 function isNodeUtilSource(
   { source, }: { readonly source: string; },
@@ -45,17 +45,17 @@ function isNodeUtilSource(
 }
 
 /**
- * Checks whether import source names Node util/types.
- *
- * @param source - Import source text.
- *
- * @returns Whether source is {@link NODE_UTIL_TYPES_SOURCE} or
- * {@link NODE_PROTOCOL_UTIL_TYPES_SOURCE}.
- *
- * @example
- * ```ts
- * isNodeUtilTypesSource({ source: 'node:util/types' });
- * ```
+ Checks whether import source names Node util/types.
+ 
+ @param source - Import source text.
+ 
+ @returns Whether source is {@link NODE_UTIL_TYPES_SOURCE} or
+ {@link NODE_PROTOCOL_UTIL_TYPES_SOURCE}.
+ 
+ @example
+ ```ts
+ isNodeUtilTypesSource({ source: 'node:util/types' });
+ ```
  */
 function isNodeUtilTypesSource(
   { source, }: { readonly source: string; },
@@ -69,20 +69,20 @@ function isNodeUtilTypesSource(
 //region Node util import classification
 
 /**
- * Checks whether identifier resolves to Node util module object: resolves
- * the binding via {@link getImportDefinition}, reads its source via
- * {@link getImportSource}, and tests it via {@link isNodeUtilSource}.
- *
- * @param context - Oxlint rule context.
- *
- * @param identifier - Identifier to resolve.
- *
- * @returns Whether identifier is a default or namespace import from Node util.
- *
- * @example
- * ```ts
- * isNodeUtilImportIdentifier({ context, identifier: utilIdentifier });
- * ```
+ Checks whether identifier resolves to Node util module object: resolves
+ the binding via {@link getImportDefinition}, reads its source via
+ {@link getImportSource}, and tests it via {@link isNodeUtilSource}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param identifier - Identifier to resolve.
+ 
+ @returns Whether identifier is a default or namespace import from Node util.
+ 
+ @example
+ ```ts
+ isNodeUtilImportIdentifier({ context, identifier: utilIdentifier });
+ ```
  */
 function isNodeUtilImportIdentifier(
   {
@@ -94,7 +94,7 @@ function isNodeUtilImportIdentifier(
   }>,
 ): boolean {
   /**
-   * Import definition behind the identifier.
+   Import definition behind the identifier.
    */
   const definition = getImportDefinition({
     context,
@@ -110,29 +110,29 @@ function isNodeUtilImportIdentifier(
       !== 'ImportNamespaceSpecifier'))
     return false;
   /**
-   * Source string for the import declaration.
+   Source string for the import declaration.
    */
   const source = getImportSource({ definition, },);
   return ((typeof source) !== 'symbol') && isNodeUtilSource({ source, });
 }
 
 /**
- * Checks whether identifier resolves to Node util/types module object:
- * resolves the binding via {@link getImportDefinition} and its source via
- * {@link getImportSource}, then matches either {@link isNodeUtilTypesSource}
- * directly or {@link isNodeUtilSource} plus a named
- * {@link TYPES_PROPERTY_NAME} import (via {@link isNamedImport}).
- *
- * @param context - Oxlint rule context.
- *
- * @param identifier - Identifier to resolve.
- *
- * @returns Whether identifier is a util/types object or `types` from util.
- *
- * @example
- * ```ts
- * isNodeUtilTypesImportIdentifier({ context, identifier: typesIdentifier });
- * ```
+ Checks whether identifier resolves to Node util/types module object:
+ resolves the binding via {@link getImportDefinition} and its source via
+ {@link getImportSource}, then matches either {@link isNodeUtilTypesSource}
+ directly or {@link isNodeUtilSource} plus a named
+ {@link TYPES_PROPERTY_NAME} import (via {@link isNamedImport}).
+ 
+ @param context - Oxlint rule context.
+ 
+ @param identifier - Identifier to resolve.
+ 
+ @returns Whether identifier is a util/types object or `types` from util.
+ 
+ @example
+ ```ts
+ isNodeUtilTypesImportIdentifier({ context, identifier: typesIdentifier });
+ ```
  */
 function isNodeUtilTypesImportIdentifier(
   {
@@ -144,7 +144,7 @@ function isNodeUtilTypesImportIdentifier(
   }>,
 ): boolean {
   /**
-   * Import definition behind the identifier.
+   Import definition behind the identifier.
    */
   const definition = getImportDefinition({
     context,
@@ -153,7 +153,7 @@ function isNodeUtilTypesImportIdentifier(
   if ((typeof definition) === 'symbol')
     return false;
   /**
-   * Source string for the import declaration.
+   Source string for the import declaration.
    */
   const source = getImportSource({ definition, },);
   if ((typeof source) === 'symbol')
@@ -173,22 +173,22 @@ function isNodeUtilTypesImportIdentifier(
 }
 
 /**
- * Checks whether expression is a Node util/types object, after unwrapping
- * via {@link unwrapParentheses}: a bare identifier via
- * {@link isNodeUtilTypesImportIdentifier}, or a {@link TYPES_PROPERTY_NAME}
- * member (via {@link isStaticMemberNamed}) on a util import (via
- * {@link isNodeUtilImportIdentifier}).
- *
- * @param context - Oxlint rule context.
- *
- * @param expression - Expression to inspect.
- *
- * @returns Whether expression resolves to Node util/types.
- *
- * @example
- * ```ts
- * isNodeUtilTypesExpression({ context, expression: node.callee.object });
- * ```
+ Checks whether expression is a Node util/types object, after unwrapping
+ via {@link unwrapParentheses}: a bare identifier via
+ {@link isNodeUtilTypesImportIdentifier}, or a {@link TYPES_PROPERTY_NAME}
+ member (via {@link isStaticMemberNamed}) on a util import (via
+ {@link isNodeUtilImportIdentifier}).
+ 
+ @param context - Oxlint rule context.
+ 
+ @param expression - Expression to inspect.
+ 
+ @returns Whether expression resolves to Node util/types.
+ 
+ @example
+ ```ts
+ isNodeUtilTypesExpression({ context, expression: node.callee.object });
+ ```
  */
 function isNodeUtilTypesExpression(
   {
@@ -200,7 +200,7 @@ function isNodeUtilTypesExpression(
   }>,
 ): boolean {
   /**
-   * Expression without redundant parentheses.
+   Expression without redundant parentheses.
    */
   const unwrapped = unwrapParentheses({ expression, },);
   if (unwrapped.type === 'Identifier')
@@ -216,7 +216,7 @@ function isNodeUtilTypesExpression(
   }))
     return false;
   /**
-   * Member object without redundant parentheses.
+   Member object without redundant parentheses.
    */
   const object = unwrapParentheses({ expression: unwrapped.object, },);
   if (object.type !== 'Identifier')
@@ -228,22 +228,22 @@ function isNodeUtilTypesExpression(
 }
 
 /**
- * Checks whether direct callee is `isNativeError` imported from util/types:
- * resolves the binding via {@link getImportDefinition} and its source via
- * {@link getImportSource}, then confirms it via
- * {@link isNodeUtilTypesSource} and a named
- * {@link IS_NATIVE_ERROR_PROPERTY_NAME} import (via {@link isNamedImport}).
- *
- * @param context - Oxlint rule context.
- *
- * @param identifier - Callee identifier to inspect.
- *
- * @returns Whether identifier is the deprecated Node helper.
- *
- * @example
- * ```ts
- * isDirectIsNativeErrorImport({ context, identifier: node.callee });
- * ```
+ Checks whether direct callee is `isNativeError` imported from util/types:
+ resolves the binding via {@link getImportDefinition} and its source via
+ {@link getImportSource}, then confirms it via
+ {@link isNodeUtilTypesSource} and a named
+ {@link IS_NATIVE_ERROR_PROPERTY_NAME} import (via {@link isNamedImport}).
+ 
+ @param context - Oxlint rule context.
+ 
+ @param identifier - Callee identifier to inspect.
+ 
+ @returns Whether identifier is the deprecated Node helper.
+ 
+ @example
+ ```ts
+ isDirectIsNativeErrorImport({ context, identifier: node.callee });
+ ```
  */
 function isDirectIsNativeErrorImport(
   {
@@ -255,7 +255,7 @@ function isDirectIsNativeErrorImport(
   }>,
 ): boolean {
   /**
-   * Import definition behind the direct callee.
+   Import definition behind the direct callee.
    */
   const definition = getImportDefinition({
     context,
@@ -264,7 +264,7 @@ function isDirectIsNativeErrorImport(
   if ((typeof definition) === 'symbol')
     return false;
   /**
-   * Source string for the direct import.
+   Source string for the direct import.
    */
   const source = getImportSource({ definition, },);
   return ((typeof source) !== 'symbol')
@@ -280,23 +280,23 @@ function isDirectIsNativeErrorImport(
 //region isNativeError call detection
 
 /**
- * Extracts Error detector argument text from Node `isNativeError()` calls:
- * reads the argument via {@link getSingleArgumentText} and confirms the
- * callee via {@link isDirectIsNativeErrorImport} (direct import) or
- * {@link isStaticMemberNamed} plus {@link isNodeUtilTypesExpression}
- * (member call).
- *
- * @param context - Oxlint rule context.
- *
- * @param call - Call expression to inspect.
- *
- * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
- * expression does not match.
- *
- * @example
- * ```ts
- * getIsNativeErrorArgumentText({ context, call: node });
- * ```
+ Extracts Error detector argument text from Node `isNativeError()` calls:
+ reads the argument via {@link getSingleArgumentText} and confirms the
+ callee via {@link isDirectIsNativeErrorImport} (direct import) or
+ {@link isStaticMemberNamed} plus {@link isNodeUtilTypesExpression}
+ (member call).
+ 
+ @param context - Oxlint rule context.
+ 
+ @param call - Call expression to inspect.
+ 
+ @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
+ expression does not match.
+ 
+ @example
+ ```ts
+ getIsNativeErrorArgumentText({ context, call: node });
+ ```
  */
 export function getIsNativeErrorArgumentText(
   {
@@ -310,7 +310,7 @@ export function getIsNativeErrorArgumentText(
   if (call.optional)
     return NOT_ERROR_DETECTION;
   /**
-   * Source text of value passed to isNativeError.
+   Source text of value passed to isNativeError.
    */
   const argumentText = getSingleArgumentText({
     context,
@@ -319,7 +319,7 @@ export function getIsNativeErrorArgumentText(
   if ((typeof argumentText) === 'symbol')
     return NOT_ERROR_DETECTION;
   /**
-   * Call target without redundant parentheses.
+   Call target without redundant parentheses.
    */
   const callee = unwrapParentheses({ expression: call.callee, },);
   if (callee.type === 'Identifier') {

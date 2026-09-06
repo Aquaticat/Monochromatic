@@ -16,11 +16,11 @@ await describe({
       name: 'selects title prefix and verified commit source link',
       fn: async () => {
         /**
-         * Endpoints observed by fake GitHub API.
+         Endpoints observed by fake GitHub API.
          */
         const endpoints: string[] = [];
         /**
-         * Fake API returning absent label and verified commit.
+         Fake API returning absent label and verified commit.
          */
         const api: GitHubApiClient = async (request,) => {
           endpoints.push(request.endpoint,);

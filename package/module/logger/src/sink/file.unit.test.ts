@@ -15,7 +15,7 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Sink factories under test, read from the built artifact's `sinks` namespace.
+ Sink factories under test, read from the built artifact's `sinks` namespace.
  */
 const {
   createFileSink,
@@ -24,10 +24,10 @@ const {
 } = sinks;
 
 /**
- * Mock `stat` that always throws an ENOENT-like error, so `findNodeModulesUp`
- * walks the whole tree and exhausts without matching.
- *
- * @returns Never; always throws.
+ Mock `stat` that always throws an ENOENT-like error, so `findNodeModulesUp`
+ walks the whole tree and exhausts without matching.
+ 
+ @returns Never; always throws.
  */
 function statAlwaysMissing(): never {
   const error: NodeJS.ErrnoException = Object.assign(
@@ -38,9 +38,9 @@ function statAlwaysMissing(): never {
 }
 
 /**
- * Mock `stat` that always throws an unexpected permission error.
- *
- * @returns Never; always throws.
+ Mock `stat` that always throws an unexpected permission error.
+ 
+ @returns Never; always throws.
  */
 function statAlwaysDenied(): never {
   const error: NodeJS.ErrnoException = Object.assign(
@@ -51,11 +51,11 @@ function statAlwaysDenied(): never {
 }
 
 /**
- * Builds a LogRecord for write-path tests.
- *
- * @param message - Message body.
- *
- * @returns Record at a fixed timestamp.
+ Builds a LogRecord for write-path tests.
+ 
+ @param message - Message body.
+ 
+ @returns Record at a fixed timestamp.
  */
 function record({ message, }: { readonly message: string; },): LogRecord {
   return {

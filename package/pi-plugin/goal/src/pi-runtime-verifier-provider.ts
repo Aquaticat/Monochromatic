@@ -1,7 +1,7 @@
 /**
- * Scripted local provider for real AgentSession interruption verification.
- *
- * @module
+ Scripted local provider for real AgentSession interruption verification.
+ 
+ @module
  */
 
 import {
@@ -24,63 +24,63 @@ import {
 } from './pi-runtime-verifier-provider-tools.ts';
 
 /**
- * Scripted provider identity.
+ Scripted provider identity.
  */
 const PROVIDER_ID = 'pi-goal-runtime-verifier';
 
 /**
- * Scripted model identity.
+ Scripted model identity.
  */
 const MODEL_ID = 'interruption-sequence';
 
 /**
- * First provider call waits for explicit user abort.
+ First provider call waits for explicit user abort.
  */
 const ABORT_CALL = 1;
 
 /**
- * Second provider call executes ordinary tools after abort.
+ Second provider call executes ordinary tools after abort.
  */
 const AFTER_ABORT_TOOL_CALL = ABORT_CALL + 1;
 
 /**
- * Third provider call ends in model error.
+ Third provider call ends in model error.
  */
 const ERROR_CALL = AFTER_ABORT_TOOL_CALL + 1;
 
 /**
- * Fourth provider call executes ordinary tools after error.
+ Fourth provider call executes ordinary tools after error.
  */
 const AFTER_ERROR_TOOL_CALL = ERROR_CALL + 1;
 
 /**
- * Fifth provider call waits so verifier can end active goal without continuation.
+ Fifth provider call waits so verifier can end active goal without continuation.
  */
 const FINAL_ABORT_CALL = AFTER_ERROR_TOOL_CALL + 1;
 
 /**
- * Sixth provider call executes ordinary tools after clear.
+ Sixth provider call executes ordinary tools after clear.
  */
 const AFTER_CLEAR_TOOL_CALL = FINAL_ABORT_CALL + 1;
 
 /**
- * Seventh provider call waits so verifier can end cleared-goal turn.
+ Seventh provider call waits so verifier can end cleared-goal turn.
  */
 const CLEAR_FINAL_ABORT_CALL = AFTER_CLEAR_TOOL_CALL + 1;
 
 /**
- * Create empty assistant message for one scripted provider result.
- *
- * @param model - registered local model
- *
- * @param stopReason - terminal reason assigned before streaming
- *
- * @returns mutable provider-owned assistant message
- *
- * @example
- * ```ts
- * createAssistantOutput({ model, stopReason: 'toolUse' });
- * ```
+ Create empty assistant message for one scripted provider result.
+ 
+ @param model - registered local model
+ 
+ @param stopReason - terminal reason assigned before streaming
+ 
+ @returns mutable provider-owned assistant message
+ 
+ @example
+ ```ts
+ createAssistantOutput({ model, stopReason: 'toolUse' });
+ ```
  */
 function createAssistantOutput(
   {
@@ -117,18 +117,18 @@ function createAssistantOutput(
 }
 
 /**
- * Resolve when supplied abort signal fires.
- *
- * @param signal - AgentSession provider cancellation signal
- *
- * @throws when AgentSession omits provider signal
- *
- * @mutates signal - signal.addEventListener registers one abort listener
- *
- * @example
- * ```ts
- * await waitForAbort(signal);
- * ```
+ Resolve when supplied abort signal fires.
+ 
+ @param signal - AgentSession provider cancellation signal
+ 
+ @throws when AgentSession omits provider signal
+ 
+ @mutates signal - signal.addEventListener registers one abort listener
+ 
+ @example
+ ```ts
+ await waitForAbort(signal);
+ ```
  */
 async function waitForAbort(
   { signal, }: { readonly signal?: ForeignBorrowed<AbortSignal>; },
@@ -138,7 +138,7 @@ async function waitForAbort(
   if (signal.aborted)
     return;
   /**
-   * Resolver completed by one abort event.
+   Resolver completed by one abort event.
    */
   const {
     promise,
@@ -155,20 +155,20 @@ async function waitForAbort(
 }
 
 /**
- * Emit complete scripted tool-use response.
- *
- * @param model - registered local model
- *
- * @param calls - ordered tool calls
- *
- * @param invocation - provider invocation identity
- *
- * @returns closed assistant event stream
- *
- * @example
- * ```ts
- * toolCallStream({ model, calls: interruptionToolCalls('abort'), invocation: 2 });
- * ```
+ Emit complete scripted tool-use response.
+ 
+ @param model - registered local model
+ 
+ @param calls - ordered tool calls
+ 
+ @param invocation - provider invocation identity
+ 
+ @returns closed assistant event stream
+ 
+ @example
+ ```ts
+ toolCallStream({ model, calls: interruptionToolCalls('abort'), invocation: 2 });
+ ```
  */
 function toolCallStream(
   {
@@ -182,11 +182,11 @@ function toolCallStream(
   },
 ): AssistantMessageEventStream {
   /**
-   * Provider event stream consumed by real AgentSession loop.
+   Provider event stream consumed by real AgentSession loop.
    */
   const stream = createAssistantMessageEventStream();
   /**
-   * Provider-owned result populated before terminal event.
+   Provider-owned result populated before terminal event.
    */
   const output = createAssistantOutput({
     model,
@@ -198,7 +198,7 @@ function toolCallStream(
   },);
   for (const [index, call,] of calls.entries()) {
     /**
-     * Complete tool call inserted into assistant message.
+     Complete tool call inserted into assistant message.
      */
     const toolCall: ToolCall = {
       type: 'toolCall',
@@ -230,24 +230,24 @@ function toolCallStream(
 }
 
 /**
- * Emit immediate scripted model error.
- *
- * @param model - registered local model
- *
- * @returns closed error event stream
- *
- * @example
- * ```ts
- * errorStream(model);
- * ```
+ Emit immediate scripted model error.
+ 
+ @param model - registered local model
+ 
+ @returns closed error event stream
+ 
+ @example
+ ```ts
+ errorStream(model);
+ ```
  */
 function errorStream(model: Model<Api>,): AssistantMessageEventStream {
   /**
-   * Provider event stream consumed by real AgentSession loop.
+   Provider event stream consumed by real AgentSession loop.
    */
   const stream = createAssistantMessageEventStream();
   /**
-   * Error result driving goal error-settlement continuation.
+   Error result driving goal error-settlement continuation.
    */
   const output = createAssistantOutput({
     model,
@@ -268,22 +268,22 @@ function errorStream(model: Model<Api>,): AssistantMessageEventStream {
 }
 
 /**
- * Emit provider turn that remains active until AgentSession aborts it.
- *
- * @param model - registered local model
- *
- * @param signal - AgentSession provider cancellation signal
- *
- * @param started - stage resolver called after stream start
- *
- * @returns event stream closed after abort
- *
- * @mutates signal - waitForAbort registers one abort listener
- *
- * @example
- * ```ts
- * abortStream({ model, signal, started: resolve });
- * ```
+ Emit provider turn that remains active until AgentSession aborts it.
+ 
+ @param model - registered local model
+ 
+ @param signal - AgentSession provider cancellation signal
+ 
+ @param started - stage resolver called after stream start
+ 
+ @returns event stream closed after abort
+ 
+ @mutates signal - waitForAbort registers one abort listener
+ 
+ @example
+ ```ts
+ abortStream({ model, signal, started: resolve });
+ ```
  */
 function abortStream(
   {
@@ -297,11 +297,11 @@ function abortStream(
   },
 ): AssistantMessageEventStream {
   /**
-   * Provider event stream consumed by real AgentSession loop.
+   Provider event stream consumed by real AgentSession loop.
    */
   const stream = createAssistantMessageEventStream();
   /**
-   * Pending assistant result finalized only after cancellation.
+   Pending assistant result finalized only after cancellation.
    */
   const output = createAssistantOutput({
     model,
@@ -313,12 +313,12 @@ function abortStream(
   },);
   started();
   /**
-   * Finish provider stream after real AgentSession cancellation.
-   *
-   * @example
-   * ```ts
-   * await finishAfterAbort();
-   * ```
+   Finish provider stream after real AgentSession cancellation.
+   
+   @example
+   ```ts
+   await finishAfterAbort();
+   ```
    */
   async function finishAfterAbort(): Promise<void> {
     await waitForAbort(signal === undefined ? {} : { signal, },);
@@ -335,55 +335,55 @@ function abortStream(
 }
 
 /**
- * Register scripted local provider and return its model plus stage latches.
- *
- * @param modelRuntime - disposable model registry
- *
- * @returns scripted model and observable stage boundaries
- *
- * @mutates modelRuntime - modelRuntime.registerProvider installs provider and modelRuntime.getModel reads its mutable registry
- *
- * @example
- * ```ts
- * const provider = registerInterruptionProvider(modelRuntime);
- * ```
+ Register scripted local provider and return its model plus stage latches.
+ 
+ @param modelRuntime - disposable model registry
+ 
+ @returns scripted model and observable stage boundaries
+ 
+ @mutates modelRuntime - modelRuntime.registerProvider installs provider and modelRuntime.getModel reads its mutable registry
+ 
+ @example
+ ```ts
+ const provider = registerInterruptionProvider(modelRuntime);
+ ```
  */
 function registerInterruptionProvider(
   modelRuntime: ForeignBorrowed<ModelRuntime>,
 ): ScriptedProvider {
   /**
-   * Call count retained for exact sequence validation.
+   Call count retained for exact sequence validation.
    */
   const invocations: true[] = [];
   /**
-   * First call latch controlled by scripted stream.
+   First call latch controlled by scripted stream.
    */
   const firstStage = Promise.withResolvers<void>();
   /**
-   * Error-call latch controlled by scripted stream.
+   Error-call latch controlled by scripted stream.
    */
   const errorStage = Promise.withResolvers<void>();
   /**
-   * Final call latch controlled by scripted stream.
+   Final call latch controlled by scripted stream.
    */
   const finalStage = Promise.withResolvers<void>();
   /**
-   * Post-clear final call latch controlled by scripted stream.
+   Post-clear final call latch controlled by scripted stream.
    */
   const clearFinalStage = Promise.withResolvers<void>();
   /**
-   * Produce next deterministic provider response.
-   *
-   * @param model - selected scripted model
-   *
-   * @param options - stream cancellation options
-   *
-   * @returns response for current script position
-   *
-   * @example
-   * ```ts
-   * scriptedResponse({ model, options });
-   * ```
+   Produce next deterministic provider response.
+   
+   @param model - selected scripted model
+   
+   @param options - stream cancellation options
+   
+   @returns response for current script position
+   
+   @example
+   ```ts
+   scriptedResponse({ model, options });
+   ```
    */
   function scriptedResponse(
     {
@@ -396,7 +396,7 @@ function registerInterruptionProvider(
   ): AssistantMessageEventStream {
     invocations.push(true,);
     /**
-     * Current provider call identity after recording invocation.
+     Current provider call identity after recording invocation.
      */
     const invocation = invocations.length;
     if (invocation === ABORT_CALL) {
@@ -481,7 +481,7 @@ function registerInterruptionProvider(
   },
   );
   /**
-   * Registered scripted model selected without credential discovery.
+   Registered scripted model selected without credential discovery.
    */
   const model = modelRuntime.getModel(
     PROVIDER_ID,

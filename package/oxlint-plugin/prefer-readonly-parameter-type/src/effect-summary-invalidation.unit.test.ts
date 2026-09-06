@@ -63,9 +63,9 @@ type DisposableFixtureRoot = {
 };
 
 /**
- * Creates disposable fixture project root.
- *
- * @returns project directory removed after test scope.
+ Creates disposable fixture project root.
+ 
+ @returns project directory removed after test scope.
  */
 function disposableFixtureRoot(): DisposableFixtureRoot {
   const path = mkdtempSync(join(tmpdir(), 'readonly-incremental-',),);
@@ -88,17 +88,17 @@ type IncrementalFixturePaths = {
 };
 
 /**
- * Writes the shared three-source fixture project.
- *
- * The caller imports the helper,
- * the standalone source imports nothing,
- * and the ambient declaration reaches analysis only through the
- * declaration surface digest,
- * so each case can edit exactly one invalidation channel.
- *
- * @param projectRoot - Disposable project directory.
- *
- * @returns fixture paths keyed by role.
+ Writes the shared three-source fixture project.
+ 
+ The caller imports the helper,
+ the standalone source imports nothing,
+ and the ambient declaration reaches analysis only through the
+ declaration surface digest,
+ so each case can edit exactly one invalidation channel.
+ 
+ @param projectRoot - Disposable project directory.
+ 
+ @returns fixture paths keyed by role.
  */
 function writeIncrementalFixture(projectRoot: string,): IncrementalFixturePaths {
   const paths: IncrementalFixturePaths = {
@@ -124,11 +124,11 @@ type FixtureBuildCycle = {
 };
 
 /**
- * Opens the caller source and builds one effect index.
- *
- * @param paths - Fixture paths naming input and persistent cache root.
- *
- * @returns open session and built index for summary lookups.
+ Opens the caller source and builds one effect index.
+ 
+ @param paths - Fixture paths naming input and persistent cache root.
+ 
+ @returns open session and built index for summary lookups.
  */
 function buildFixtureIndex(paths: IncrementalFixturePaths,): FixtureBuildCycle {
   const session = openSemanticFile({
@@ -148,9 +148,9 @@ function buildFixtureIndex(paths: IncrementalFixturePaths,): FixtureBuildCycle {
 }
 
 /**
- * Runs the cold build cycle and proves every reached source persisted.
- *
- * @param paths - Fixture paths naming input and persistent cache root.
+ Runs the cold build cycle and proves every reached source persisted.
+ 
+ @param paths - Fixture paths naming input and persistent cache root.
  */
 function runColdCycle(paths: IncrementalFixturePaths,): void {
   clearEffectSummaryCache();
@@ -165,11 +165,11 @@ function runColdCycle(paths: IncrementalFixturePaths,): void {
 }
 
 /**
- * Runs one warm build cycle against the persisted cache.
- *
- * @param paths - Fixture paths naming input and persistent cache root.
- *
- * @returns warm cycle handles and counters observed after the build.
+ Runs one warm build cycle against the persisted cache.
+ 
+ @param paths - Fixture paths naming input and persistent cache root.
+ 
+ @returns warm cycle handles and counters observed after the build.
  */
 function runWarmCycle(paths: IncrementalFixturePaths,): FixtureBuildCycle & {
   readonly stats: ReturnType<typeof effectSummaryCacheStats>;
@@ -184,7 +184,7 @@ function runWarmCycle(paths: IncrementalFixturePaths,): FixtureBuildCycle & {
 }
 
 /**
- * Releases bridge and process caches after one case.
+ Releases bridge and process caches after one case.
  */
 function releaseCycle(): void {
   closeSemanticBridge();

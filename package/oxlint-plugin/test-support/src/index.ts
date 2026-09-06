@@ -14,176 +14,176 @@ import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/ts';
 import spawn from 'nano-spawn';
 
 /**
- * Shared dev-only fixtures for the oxlint plugin unit tests.
- *
- * This file intentionally lives outside the published plugin packages. It is
- * imported only by colocated unit tests, so shared test process setup stays in
- * one place without adding runtime code to any shipped plugin.
- *
- * @module
+ Shared dev-only fixtures for the oxlint plugin unit tests.
+ 
+ This file intentionally lives outside the published plugin packages. It is
+ imported only by colocated unit tests, so shared test process setup stays in
+ one place without adding runtime code to any shipped plugin.
+ 
+ @module
  */
 
 /**
- * Workspace root resolved from this shared test-support directory.
- *
- * @example
- * ```ts
- * OXLINT_PLUGIN_TEST_ROOT;
- * ```
+ Workspace root resolved from this shared test-support directory.
+ 
+ @example
+ ```ts
+ OXLINT_PLUGIN_TEST_ROOT;
+ ```
  */
 export const OXLINT_PLUGIN_TEST_ROOT: string = await findMiseMonorepoRoot({
   cwd: import.meta.dirname,
 },);
 
 /**
- * Single diagnostic from oxlint JSON output after plugin filtering.
+ Single diagnostic from oxlint JSON output after plugin filtering.
  */
 export type OxlintRuleDiagnostic = {
   /**
-   * Human-readable diagnostic message.
+   Human-readable diagnostic message.
    */
   readonly message: string;
   /**
-   * Rule identifier in `plugin(rule-name)` format.
+   Rule identifier in `plugin(rule-name)` format.
    */
   readonly code: string;
   /**
-   * Diagnostic severity reported by oxlint.
+   Diagnostic severity reported by oxlint.
    */
   readonly severity: string;
   /**
-   * Source file path reported by oxlint.
+   Source file path reported by oxlint.
    */
   readonly filename: string;
 };
 
 /**
- * Raw diagnostic shape emitted by oxlint before runner-level diagnostics are filtered out.
+ Raw diagnostic shape emitted by oxlint before runner-level diagnostics are filtered out.
  */
 type OxlintDiagnostic = Omit<OxlintRuleDiagnostic, 'code'> & {
   /**
-   * Rule identifier, absent for runner-level diagnostics.
+   Rule identifier, absent for runner-level diagnostics.
    */
   readonly code?: string;
 };
 
 /**
- * Top-level oxlint `--format json` output.
+ Top-level oxlint `--format json` output.
  */
 type OxlintOutput = {
   /**
-   * Diagnostics emitted for the target file.
+   Diagnostics emitted for the target file.
    */
   readonly diagnostics: readonly OxlintDiagnostic[];
 };
 
 /**
- * Disposable temp copy of a fixture file.
+ Disposable temp copy of a fixture file.
  */
 export type TempFixtureFile = {
   /**
-   * Absolute path to copied fixture file.
+   Absolute path to copied fixture file.
    */
   readonly filePath: string;
   /**
-   * Removes temp directory that contains fixture copy.
+   Removes temp directory that contains fixture copy.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Options for locating one test-fixture package.
+ Options for locating one test-fixture package.
  */
 export type FixturePackageRootParams = {
   /**
-   * Directory name under `package/test-fixture`.
+   Directory name under `package/test-fixture`.
    */
   readonly fixturePackageName: string;
 };
 
 /**
- * Options for locating a fixture config file.
+ Options for locating a fixture config file.
  */
 export type FixtureConfigPathParams = FixturePackageRootParams & {
   /**
-   * Config filename inside the fixture package.
+   Config filename inside the fixture package.
    */
   readonly fileName: string;
 };
 
 /**
- * Options for resolving a lint target.
+ Options for resolving a lint target.
  */
 export type ResolveFixtureTargetParams = {
   /**
-   * Source fixture root used for relative fixture paths.
+   Source fixture root used for relative fixture paths.
    */
   readonly fixtureSourceRoot: string;
   /**
-   * Relative fixture path or absolute temp fixture path.
+   Relative fixture path or absolute temp fixture path.
    */
   readonly fixturePath: string;
 };
 
 /**
- * Options for running oxlint against a fixture target.
+ Options for running oxlint against a fixture target.
  */
 export type RunOxlintFixtureParams = {
   /**
-   * Diagnostic code prefix to keep, including opening parenthesis.
+   Diagnostic code prefix to keep, including opening parenthesis.
    */
   readonly codePrefix: `${string}(`;
   /**
-   * Config flag spelling accepted by the plugin's fixture setup.
+   Config flag spelling accepted by the plugin's fixture setup.
    */
   readonly configFlag: '-c' | '--config';
   /**
-   * Absolute path to fixture oxlint config.
+   Absolute path to fixture oxlint config.
    */
   readonly fixtureConfig: string;
   /**
-   * Absolute path to target source file.
+   Absolute path to target source file.
    */
   readonly target: string;
   /**
-   * Optional Oxlint worker count for resource-sensitive plugin tests.
+   Optional Oxlint worker count for resource-sensitive plugin tests.
    */
   readonly threads?: number;
 };
 
 /**
- * Options for copying a source fixture into a disposable temp directory.
+ Options for copying a source fixture into a disposable temp directory.
  */
 export type CreateTempFixtureFileParams = {
   /**
-   * Basename for copied temp file.
+   Basename for copied temp file.
    */
   readonly fileName: string;
   /**
-   * Source fixture path to copy into temp directory.
+   Source fixture path to copy into temp directory.
    */
   readonly sourcePath: string;
   /**
-   * Temp directory prefix passed to `mkdtempSync`.
+   Temp directory prefix passed to `mkdtempSync`.
    */
   readonly tempPrefix: string;
 };
 
 /**
- * Returns absolute package root for one oxlint test fixture package.
- *
- * @param params - fixture package name to resolve
- *
- * @returns absolute path under `package/test-fixture`
- *
- * @example
- * ```ts
- * fixturePackageRoot({ fixturePackageName: 'oxlint-tsdoc' });
- * ```
+ Returns absolute package root for one oxlint test fixture package.
+ 
+ @param params - fixture package name to resolve
+ 
+ @returns absolute path under `package/test-fixture`
+ 
+ @example
+ ```ts
+ fixturePackageRoot({ fixturePackageName: 'oxlint-tsdoc' });
+ ```
  */
 export function fixturePackageRoot(params: FixturePackageRootParams,): string {
   /**
-   * Fixture package name to resolve under `package/test-fixture`.
+   Fixture package name to resolve under `package/test-fixture`.
    */
   const { fixturePackageName, } = params;
   return resolve(
@@ -195,16 +195,16 @@ export function fixturePackageRoot(params: FixturePackageRootParams,): string {
 }
 
 /**
- * Returns absolute `src` root for one oxlint test fixture package.
- *
- * @param params - fixture package name to resolve
- *
- * @returns absolute path to fixture source directory
- *
- * @example
- * ```ts
- * fixtureSourceRoot({ fixturePackageName: 'oxlint-stylistic' });
- * ```
+ Returns absolute `src` root for one oxlint test fixture package.
+ 
+ @param params - fixture package name to resolve
+ 
+ @returns absolute path to fixture source directory
+ 
+ @example
+ ```ts
+ fixtureSourceRoot({ fixturePackageName: 'oxlint-stylistic' });
+ ```
  */
 export function fixtureSourceRoot(params: FixturePackageRootParams,): string {
   return resolve(
@@ -214,20 +214,20 @@ export function fixtureSourceRoot(params: FixturePackageRootParams,): string {
 }
 
 /**
- * Returns absolute path to a fixture oxlint config file.
- *
- * @param params - fixture package and config filename
- *
- * @returns absolute config path
- *
- * @example
- * ```ts
- * fixtureConfigPath({ fixturePackageName: 'oxlint-tsdoc', fileName: '.oxlintrc.fixture.json' });
- * ```
+ Returns absolute path to a fixture oxlint config file.
+ 
+ @param params - fixture package and config filename
+ 
+ @returns absolute config path
+ 
+ @example
+ ```ts
+ fixtureConfigPath({ fixturePackageName: 'oxlint-tsdoc', fileName: '.oxlintrc.fixture.json' });
+ ```
  */
 export function fixtureConfigPath(params: FixtureConfigPathParams,): string {
   /**
-   * Fixture package name and config filename to resolve.
+   Fixture package name and config filename to resolve.
    */
   const {
     fixturePackageName,
@@ -240,20 +240,20 @@ export function fixtureConfigPath(params: FixtureConfigPathParams,): string {
 }
 
 /**
- * Resolves relative fixture names while preserving absolute temp paths.
- *
- * @param params - fixture source root and user-supplied path
- *
- * @returns absolute lint target path
- *
- * @example
- * ```ts
- * resolveFixtureTarget({ fixtureSourceRoot: FIXTURES, fixturePath: 'invalid/file.ts' });
- * ```
+ Resolves relative fixture names while preserving absolute temp paths.
+ 
+ @param params - fixture source root and user-supplied path
+ 
+ @returns absolute lint target path
+ 
+ @example
+ ```ts
+ resolveFixtureTarget({ fixtureSourceRoot: FIXTURES, fixturePath: 'invalid/file.ts' });
+ ```
  */
 export function resolveFixtureTarget(params: ResolveFixtureTargetParams,): string {
   /**
-   * Fixture source root and target path to resolve.
+   Fixture source root and target path to resolve.
    */
   const {
     fixtureSourceRoot: sourceRoot,
@@ -268,18 +268,18 @@ export function resolveFixtureTarget(params: ResolveFixtureTargetParams,): strin
 }
 
 /**
- * Returns stdout stored on nano-spawn errors when oxlint exits non-zero.
- *
- * @param error - thrown value from `spawn`
- *
- * @returns captured stdout
- *
- * @throws original thrown value when stdout is not available
- *
- * @example
- * ```ts
- * const stdout = stdoutFromSpawnError({ error });
- * ```
+ Returns stdout stored on nano-spawn errors when oxlint exits non-zero.
+ 
+ @param error - thrown value from `spawn`
+ 
+ @returns captured stdout
+ 
+ @throws original thrown value when stdout is not available
+ 
+ @example
+ ```ts
+ const stdout = stdoutFromSpawnError({ error });
+ ```
  */
 function stdoutFromSpawnError({ error, }: { readonly error: unknown; },): string {
   if (((typeof error) !== 'object') || (error === null)) {
@@ -295,7 +295,7 @@ function stdoutFromSpawnError({ error, }: { readonly error: unknown; },): string
     );
   }
   /**
-   * Captured process stdout attached by nano-spawn.
+   Captured process stdout attached by nano-spawn.
    */
   const { stdout, } = error;
   if ((typeof stdout) !== 'string') {
@@ -308,21 +308,21 @@ function stdoutFromSpawnError({ error, }: { readonly error: unknown; },): string
 }
 
 /**
- * Parses oxlint JSON output into typed diagnostics.
- *
- * @param stdout - raw `--format json` stdout
- *
- * @returns parsed oxlint output
- *
- * @example
- * ```ts
- * const output = parseOxlintOutput('{"diagnostics":[]}');
- * ```
+ Parses oxlint JSON output into typed diagnostics.
+ 
+ @param stdout - raw `--format json` stdout
+ 
+ @returns parsed oxlint output
+ 
+ @example
+ ```ts
+ const output = parseOxlintOutput('{"diagnostics":[]}');
+ ```
  */
 function parseOxlintOutput(stdout: string,): OxlintOutput {
   /* oxlint-disable typescript/no-unsafe-assignment -- JSON.parse returns unknown JSON; OxlintOutput validates the consumed shape for tests. */
   /**
-   * Parsed oxlint output trusted by fixture tests.
+   Parsed oxlint output trusted by fixture tests.
    */
   const output: OxlintOutput = JSON.parse(stdout,);
   /* oxlint-enable typescript/no-unsafe-assignment */
@@ -330,22 +330,22 @@ function parseOxlintOutput(stdout: string,): OxlintOutput {
 }
 
 /**
- * Runs oxlint with a fixture config and filters diagnostics to one plugin.
- *
- * @param params - oxlint fixture invocation details
- *
- * @returns plugin diagnostics sorted exactly as oxlint emitted them
- *
- * @example
- * ```ts
- * await runOxlintFixture({ codePrefix: 'tsdoc(', configFlag: '--config', fixtureConfig, target });
- * ```
+ Runs oxlint with a fixture config and filters diagnostics to one plugin.
+ 
+ @param params - oxlint fixture invocation details
+ 
+ @returns plugin diagnostics sorted exactly as oxlint emitted them
+ 
+ @example
+ ```ts
+ await runOxlintFixture({ codePrefix: 'tsdoc(', configFlag: '--config', fixtureConfig, target });
+ ```
  */
 export async function runOxlintFixture(
   params: RunOxlintFixtureParams,
 ): Promise<readonly OxlintRuleDiagnostic[]> {
   /**
-   * Oxlint invocation details for this fixture run.
+   Oxlint invocation details for this fixture run.
    */
   const {
     codePrefix,
@@ -355,14 +355,14 @@ export async function runOxlintFixture(
     threads,
   } = params;
   /**
-   * Captures stdout from oxlint whether diagnostics make the process exit non-zero or not.
-   *
-   * @returns captured oxlint stdout
+   Captures stdout from oxlint whether diagnostics make the process exit non-zero or not.
+   
+   @returns captured oxlint stdout
    */
   async function captureStdout(): Promise<string> {
     try {
       /**
-       * Successful oxlint process output.
+       Successful oxlint process output.
        */
       const { stdout, } = await spawn(
         'oxlint',
@@ -387,15 +387,15 @@ export async function runOxlintFixture(
   }
 
   /**
-   * Parsed oxlint JSON output for the fixture run.
+   Parsed oxlint JSON output for the fixture run.
    */
   const output = parseOxlintOutput(await captureStdout(),);
   /**
-   * Diagnostics emitted by oxlint before plugin filtering.
+   Diagnostics emitted by oxlint before plugin filtering.
    */
   const { diagnostics, } = output;
   /**
-   * Diagnostics belonging to the requested plugin only.
+   Diagnostics belonging to the requested plugin only.
    */
   const pluginDiagnostics = diagnostics
     .filter(
@@ -412,22 +412,22 @@ export async function runOxlintFixture(
 }
 
 /**
- * Creates a temp fixture copy with disposal-backed directory cleanup.
- *
- * @param params - fixture source, temp basename, and directory prefix
- *
- * @returns copied temp fixture file handle
- *
- * @example
- * ```ts
- * using fixture = createTempFixtureFile({ fileName: 'case.ts', sourcePath, tempPrefix: 'oxlint-case-' });
- * ```
+ Creates a temp fixture copy with disposal-backed directory cleanup.
+ 
+ @param params - fixture source, temp basename, and directory prefix
+ 
+ @returns copied temp fixture file handle
+ 
+ @example
+ ```ts
+ using fixture = createTempFixtureFile({ fileName: 'case.ts', sourcePath, tempPrefix: 'oxlint-case-' });
+ ```
  */
 export async function createTempFixtureFile(
   params: CreateTempFixtureFileParams,
 ): Promise<TempFixtureFile> {
   /**
-   * Temp fixture source, basename, and directory prefix.
+   Temp fixture source, basename, and directory prefix.
    */
   const {
     fileName,
@@ -435,14 +435,14 @@ export async function createTempFixtureFile(
     tempPrefix,
   } = params;
   /**
-   * Unique temp directory owning this fixture copy.
+   Unique temp directory owning this fixture copy.
    */
   const dirPath = await mkdtemp(join(
     tmpdir(),
     tempPrefix,
   ),);
   /**
-   * Absolute path to temp fixture copy.
+   Absolute path to temp fixture copy.
    */
   const filePath = resolve(
     dirPath,
@@ -468,16 +468,16 @@ export async function createTempFixtureFile(
 }
 
 /**
- * Extracts sorted unique rule codes from diagnostics.
- *
- * @param diagnostics - plugin diagnostics
- *
- * @returns sorted unique diagnostic codes
- *
- * @example
- * ```ts
- * uniqueRuleCodes(diagnostics);
- * ```
+ Extracts sorted unique rule codes from diagnostics.
+ 
+ @param diagnostics - plugin diagnostics
+ 
+ @returns sorted unique diagnostic codes
+ 
+ @example
+ ```ts
+ uniqueRuleCodes(diagnostics);
+ ```
  */
 export function uniqueRuleCodes(
   diagnostics: readonly OxlintRuleDiagnostic[],

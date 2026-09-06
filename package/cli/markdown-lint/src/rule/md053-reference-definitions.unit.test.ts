@@ -10,11 +10,11 @@ import type { Diagnostic, } from '../types.ts';
 import { referenceDefinitions, } from './md053-reference-definitions.ts';
 
 /**
- * Run only MD053 over Markdown source.
- *
- * @param source - Markdown source
- *
- * @returns diagnostics from the rule
+ Run only MD053 over Markdown source.
+ 
+ @param source - Markdown source
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string,): readonly Diagnostic[] {
   return runRules({
@@ -25,7 +25,7 @@ function lint(source: string,): readonly Diagnostic[] {
 }
 
 /**
- * A used definition, an unused definition, and a duplicate of the used one.
+ A used definition, an unused definition, and a duplicate of the used one.
  */
 const SOURCE = [
   'See [the docs][ref].',
@@ -55,7 +55,7 @@ await describe({
       name: 'fix removes the unused and duplicate definitions, keeping the first used one',
       fn: async function fixRemoves() {
         /**
-         * Source after removing flagged definitions.
+         Source after removing flagged definitions.
          */
         const fixed = applyFixes({
           source: SOURCE,

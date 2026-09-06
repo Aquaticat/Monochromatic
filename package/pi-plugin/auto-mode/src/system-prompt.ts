@@ -1,23 +1,23 @@
 /**
- * Fixed judge system prompt and deny guidance.
- *
- * @module
+ Fixed judge system prompt and deny guidance.
+ 
+ @module
  */
 
 /**
- * Default guidance sent to the agent on deny.
- *
- * Guides the agent toward safer alternatives rather than
- * just blocking with no suggestion.
+ Default guidance sent to the agent on deny.
+ 
+ Guides the agent toward safer alternatives rather than
+ just blocking with no suggestion.
  */
 const DEFAULT_DENY_GUIDANCE =
   'This action was blocked by the security guardrail. Consider a different approach, ask the user to run the command directly, or use the propose_trust tool to request permission for this session.';
 
 /**
- * System prompt for the judge.
- *
- * Defines the judge's role, verdict semantics, and circumvention
- * detection strategy.
+ System prompt for the judge.
+ 
+ Defines the judge's role, verdict semantics, and circumvention
+ detection strategy.
  */
 const JUDGE_SYSTEM_PROMPT =
   `You are a security guardrail for an AI coding agent. You evaluate actions before they execute.

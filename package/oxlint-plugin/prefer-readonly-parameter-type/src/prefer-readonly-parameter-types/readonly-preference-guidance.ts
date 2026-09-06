@@ -8,26 +8,26 @@ import type { ReadonlyTypeOrigin, } from './readonly-type-origin-location.ts';
 import type { ReadonlyTypeOriginEvidence, } from './readonly-type-origin.ts';
 
 /**
- * Sentinel for verified suggestion guidance being unavailable.
+ Sentinel for verified suggestion guidance being unavailable.
  */
 const VERIFIED_GUIDANCE_UNAVAILABLE: unique symbol = Symbol('verified suggestion guidance unavailable');
 
 /**
- * Describes unique origin boundary for reader.
- *
- * @param origin - Eager workspace-owned origin metadata.
- *
- * @returns named or anonymous origin subject.
- *
- * @example
- * ```ts
- * originSubject({
- *   identity: '/repo/src/a.ts:10',
- *   kind: 'callable',
- *   name: 'toRow',
- *   location: 'src/a.ts:4',
- * });
- * ```
+ Describes unique origin boundary for reader.
+ 
+ @param origin - Eager workspace-owned origin metadata.
+ 
+ @returns named or anonymous origin subject.
+ 
+ @example
+ ```ts
+ originSubject({
+   identity: '/repo/src/a.ts:10',
+   kind: 'callable',
+   name: 'toRow',
+   location: 'src/a.ts:4',
+ });
+ ```
  */
 function originSubject(origin: ReadonlyTypeOrigin,): string {
   if (origin.kind === 'callable') {
@@ -44,25 +44,25 @@ function originSubject(origin: ReadonlyTypeOrigin,): string {
 }
 
 /**
- * Gives cautious edit path for one unique semantic origin.
- *
- * @param origin - Eager workspace-owned origin metadata.
- *
- * @returns likely edit with explicit proof limit.
- *
- * @example
- * ```ts
- * uniqueOriginGuidance({
- *   identity: '/repo/src/a.ts:10',
- *   kind: 'callable',
- *   name: 'toRow',
- *   location: 'src/a.ts:4',
- * });
- * ```
+ Gives cautious edit path for one unique semantic origin.
+ 
+ @param origin - Eager workspace-owned origin metadata.
+ 
+ @returns likely edit with explicit proof limit.
+ 
+ @example
+ ```ts
+ uniqueOriginGuidance({
+   identity: '/repo/src/a.ts:10',
+   kind: 'callable',
+   name: 'toRow',
+   location: 'src/a.ts:4',
+ });
+ ```
  */
 function uniqueOriginGuidance(origin: ReadonlyTypeOrigin,): string {
   /**
-   * Shared origin sentence preceding category-specific edit path.
+   Shared origin sentence preceding category-specific edit path.
    */
   const introduction = `Its inferred parameter type originates in ${originSubject(origin,)} at ${origin.location}.`;
   if (origin.kind === 'callable') {
@@ -75,26 +75,26 @@ function uniqueOriginGuidance(origin: ReadonlyTypeOrigin,): string {
 }
 
 /**
- * Formats exact suggestion descriptions into diagnostic guidance.
- *
- * @param suggestions - Semantically verified replacement suggestions.
- *
- * @returns exact edit guidance when descriptions are available.
- *
- * @example
- * ```ts
- * verifiedSuggestionGuidance([{
- *   diagnosticGuidance: 'Replace A with B.',
- *   desc: 'Replace A with B.',
- *   fix,
- * }]);
- * ```
+ Formats exact suggestion descriptions into diagnostic guidance.
+ 
+ @param suggestions - Semantically verified replacement suggestions.
+ 
+ @returns exact edit guidance when descriptions are available.
+ 
+ @example
+ ```ts
+ verifiedSuggestionGuidance([{
+   diagnosticGuidance: 'Replace A with B.',
+   desc: 'Replace A with B.',
+   fix,
+ }]);
+ ```
  */
 function verifiedSuggestionGuidance(
   suggestions: readonly ReadonlySuggestion[],
 ): string | typeof VERIFIED_GUIDANCE_UNAVAILABLE {
   /**
-   * Human-readable one-line transformations from verified suggestion channel.
+   Human-readable one-line transformations from verified suggestion channel.
    */
   const descriptions = suggestions.map(function describedSuggestion(suggestion,): string {
     return suggestion.diagnosticGuidance;
@@ -104,7 +104,7 @@ function verifiedSuggestionGuidance(
   if (descriptions.length === 1)
     return `Verified edit: ${descriptions[0]}`;
   /**
-   * Numbered verified alternatives joined without line breaks.
+   Numbered verified alternatives joined without line breaks.
    */
   const alternatives = descriptions
     .map(function numbered(
@@ -118,23 +118,23 @@ function verifiedSuggestionGuidance(
 }
 
 /**
- * Builds complete action path for readonly preference diagnostic.
- *
- * @param suggestions - Semantically verified local replacement suggestions.
- *
- * @param originEvidence - Authored or inferred semantic type origin evidence.
- *
- * @param classification - Structured mutable paths and declaration ownership.
- *
- * @returns exact,
- * likely,
- * multi-origin,
- * or boundary guidance.
- *
- * @example
- * ```ts
- * readonlyPreferenceGuidance({ suggestions, originEvidence, classification });
- * ```
+ Builds complete action path for readonly preference diagnostic.
+ 
+ @param suggestions - Semantically verified local replacement suggestions.
+ 
+ @param originEvidence - Authored or inferred semantic type origin evidence.
+ 
+ @param classification - Structured mutable paths and declaration ownership.
+ 
+ @returns exact,
+ likely,
+ multi-origin,
+ or boundary guidance.
+ 
+ @example
+ ```ts
+ readonlyPreferenceGuidance({ suggestions, originEvidence, classification });
+ ```
  */
 export function readonlyPreferenceGuidance({
   suggestions,
@@ -146,17 +146,17 @@ export function readonlyPreferenceGuidance({
   readonly classification: Extract<ReadonlyClassification, { readonly kind: 'mutable'; }>;
 },): string {
   /**
-   * Exact local transformation when suggestion builder proved one.
+   Exact local transformation when suggestion builder proved one.
    */
   const verified = verifiedSuggestionGuidance(suggestions,);
   if ((typeof verified) !== 'symbol')
     return verified;
   /**
-   * Whether writable leaf declarations include external library source.
+   Whether writable leaf declarations include external library source.
    */
   const hasExternalDeclaration = mutableClassificationHasExternalDeclaration(classification,);
   /**
-   * Whether writable leaf declarations include editable workspace source.
+   Whether writable leaf declarations include editable workspace source.
    */
   const hasWorkspaceDeclaration = mutableClassificationHasWorkspaceDeclaration(classification,);
   if (hasExternalDeclaration && hasWorkspaceDeclaration) {

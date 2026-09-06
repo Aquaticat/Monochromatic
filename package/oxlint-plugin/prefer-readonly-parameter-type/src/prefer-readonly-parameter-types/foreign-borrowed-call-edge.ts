@@ -1,7 +1,7 @@
 /**
- * Exact ownership edge for one TypeScript call usage.
- *
- * @module
+ Exact ownership edge for one TypeScript call usage.
+ 
+ @module
  */
 
 import type { CallExpression, } from 'typescript/unstable/ast';
@@ -22,24 +22,24 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Adds exact owned edge represented by one call expression.
- *
- * @param project - TypeScript project resolving call signature.
- *
- * @param declaration - Callable expected to own call directly.
- *
- * @param call - Exact usage call requiring ownership edge.
- *
- * @param summary - Caller ownership summary receiving edge.
- *
- * @param analysisRoot - Optional external package root admitted as owned.
- *
- * @returns whether call resolved to owned callable edge.
- *
- * @example
- * ```ts
- * addForeignBorrowedCallEdge({ project, declaration, call, summary });
- * ```
+ Adds exact owned edge represented by one call expression.
+ 
+ @param project - TypeScript project resolving call signature.
+ 
+ @param declaration - Callable expected to own call directly.
+ 
+ @param call - Exact usage call requiring ownership edge.
+ 
+ @param summary - Caller ownership summary receiving edge.
+ 
+ @param analysisRoot - Optional external package root admitted as owned.
+ 
+ @returns whether call resolved to owned callable edge.
+ 
+ @example
+ ```ts
+ addForeignBorrowedCallEdge({ project, declaration, call, summary });
+ ```
  */
 export function addForeignBorrowedCallEdge({
   project,
@@ -55,14 +55,14 @@ export function addForeignBorrowedCallEdge({
   readonly analysisRoot?: string;
 }): boolean {
   /**
-   * Resolved source declaration selected by overload when available.
+   Resolved source declaration selected by overload when available.
    */
   const resolvedDeclaration = project.checker
     .getResolvedSignature(call,)
     ?.declaration
     ?.resolve(project,);
   /**
-   * Owned callee selected from signature before expression fallback.
+   Owned callee selected from signature before expression fallback.
    */
   const signatureCallee = (resolvedDeclaration !== undefined)
     && isEffectCallableDeclaration(resolvedDeclaration,)
@@ -73,7 +73,7 @@ export function addForeignBorrowedCallEdge({
     },)
     : OWNED_CALLABLE_UNAVAILABLE;
   /**
-   * Final owned callee declaration.
+   Final owned callee declaration.
    */
   const callee = signatureCallee === OWNED_CALLABLE_UNAVAILABLE
     ? callableDeclaration({
@@ -85,7 +85,7 @@ export function addForeignBorrowedCallEdge({
   if (callee === OWNED_CALLABLE_UNAVAILABLE)
     return false;
   /**
-   * Caller parameter roots corresponding to exact call arguments.
+   Caller parameter roots corresponding to exact call arguments.
    */
   const allArgumentIndexes = call.arguments
     .map(function argumentIndexes(argument,): readonly EffectSlot[] {

@@ -1,7 +1,7 @@
 /**
- * Tests for the individual estimators (deepen math, branch correction, priors).
- *
- * @module
+ Tests for the individual estimators (deepen math, branch correction, priors).
+ 
+ @module
  */
 
 import {

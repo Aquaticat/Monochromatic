@@ -145,8 +145,8 @@ await describe({
 },);
 
 /**
- * Compile-time assertions for {@link pipedAsync}. Exported so it is not an unused local, and never
- * invoked at runtime; `lint:types` type-checks the body.
+ Compile-time assertions for {@link pipedAsync}. Exported so it is not an unused local, and never
+ invoked at runtime; `lint:types` type-checks the body.
  */
 export function typeChecks(): void {
   //region negative: the never tails apply to the async overloads too

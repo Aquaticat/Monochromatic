@@ -1,18 +1,18 @@
 /**
- * Structure-aware mutators that corrupt valid TOML into near-miss inputs.
- *
- * Pure random bytes rarely reach the parser's interesting error paths; they are
- * rejected in the first few tokens. Starting from a valid document and applying
- * one local corruption (truncation, a deleted scalar, an injected delimiter, a
- * duplicated line, a swapped pair) produces inputs that look almost-valid and
- * exercise the recovery and rejection logic far deeper. The result is fed to the
- * totality property, which asserts every such input either parses to a state or
- * throws `TomlEditError`, never an unwrapped error.
- *
- * Every transform is a single linear pass over the string; none rescans or
- * rebuilds the text quadratically.
- *
- * @module
+ Structure-aware mutators that corrupt valid TOML into near-miss inputs.
+ 
+ Pure random bytes rarely reach the parser's interesting error paths; they are
+ rejected in the first few tokens. Starting from a valid document and applying
+ one local corruption (truncation, a deleted scalar, an injected delimiter, a
+ duplicated line, a swapped pair) produces inputs that look almost-valid and
+ exercise the recovery and rejection logic far deeper. The result is fed to the
+ totality property, which asserts every such input either parses to a state or
+ throws `TomlEditError`, never an unwrapped error.
+ 
+ Every transform is a single linear pass over the string; none rescans or
+ rebuilds the text quadratically.
+ 
+ @module
  */
 
 import {
@@ -25,7 +25,7 @@ import {
 import { documentArbitrary, } from './arb-documents.ts';
 
 /**
- * Disruptive tokens injected mid-document to unbalance structure or strings.
+ Disruptive tokens injected mid-document to unbalance structure or strings.
  */
 const DISRUPTIVE_TOKENS: readonly string[] = [
   '[',
@@ -43,9 +43,9 @@ const DISRUPTIVE_TOKENS: readonly string[] = [
 ];
 
 /**
- * Map a `[0, 1)` fraction to an index into a string of `length`.
- *
- * @returns Clamped integer index in `[0, length]`.
+ Map a `[0, 1)` fraction to an index into a string of `length`.
+ 
+ @returns Clamped integer index in `[0, length]`.
  */
 function indexFor({
   fraction,
@@ -64,14 +64,14 @@ function indexFor({
 }
 
 /**
- * Truncate `source` at a fraction of its length.
- *
- * @returns Prefix of `source`, often leaving an unterminated construct.
- *
- * @example
- * ```ts
- * truncate({ source: 'a = 1\n', fraction: 0.5, },); // 'a =' (approximately)
- * ```
+ Truncate `source` at a fraction of its length.
+ 
+ @returns Prefix of `source`, often leaving an unterminated construct.
+ 
+ @example
+ ```ts
+ truncate({ source: 'a = 1\n', fraction: 0.5, },); // 'a =' (approximately)
+ ```
  */
 export function truncate({
   source,
@@ -90,14 +90,14 @@ export function truncate({
 }
 
 /**
- * Delete the scalar at a fraction of `source`.
- *
- * @returns `source` with one character removed (empty input unchanged).
- *
- * @example
- * ```ts
- * deleteAt({ source: 'a = 1\n', fraction: 0.5, },); // 'a  1\n' (approximately)
- * ```
+ Delete the scalar at a fraction of `source`.
+ 
+ @returns `source` with one character removed (empty input unchanged).
+ 
+ @example
+ ```ts
+ deleteAt({ source: 'a = 1\n', fraction: 0.5, },); // 'a  1\n' (approximately)
+ ```
  */
 export function deleteAt({
   source,
@@ -108,7 +108,7 @@ export function deleteAt({
 },): string {
   if (source.length === 0) return source;
   /**
-   * Index of the character to drop, kept inside bounds.
+   Index of the character to drop, kept inside bounds.
    */
   const at = Math.min(
     source.length - 1,
@@ -124,14 +124,14 @@ export function deleteAt({
 }
 
 /**
- * Insert `token` at a fraction of `source`.
- *
- * @returns `source` with `token` spliced in.
- *
- * @example
- * ```ts
- * insertToken({ source: 'a = 1\n', fraction: 1, token: '[', },); // 'a = 1\n['
- * ```
+ Insert `token` at a fraction of `source`.
+ 
+ @returns `source` with `token` spliced in.
+ 
+ @example
+ ```ts
+ insertToken({ source: 'a = 1\n', fraction: 1, token: '[', },); // 'a = 1\n['
+ ```
  */
 export function insertToken(
   {
@@ -145,7 +145,7 @@ export function insertToken(
   },
 ): string {
   /**
-   * Splice index for the token.
+   Splice index for the token.
    */
   const at = indexFor({
     fraction,
@@ -158,14 +158,14 @@ export function insertToken(
 }
 
 /**
- * Duplicate the line at a fraction of `source`, a common duplicate-key source.
- *
- * @returns `source` with one line repeated.
- *
- * @example
- * ```ts
- * duplicateLine({ source: 'a = 1\nb = 2\n', fraction: 0, },); // 'a = 1\na = 1\nb = 2\n'
- * ```
+ Duplicate the line at a fraction of `source`, a common duplicate-key source.
+ 
+ @returns `source` with one line repeated.
+ 
+ @example
+ ```ts
+ duplicateLine({ source: 'a = 1\nb = 2\n', fraction: 0, },); // 'a = 1\na = 1\nb = 2\n'
+ ```
  */
 export function duplicateLine({
   source,
@@ -175,12 +175,12 @@ export function duplicateLine({
   readonly fraction: number
 },): string {
   /**
-   * Source split into lines so one can be repeated in place.
+   Source split into lines so one can be repeated in place.
    */
   const lines = source.split('\n',);
   if (lines.length === 0) return source;
   /**
-   * Index of the line to duplicate.
+   Index of the line to duplicate.
    */
   const at = Math.min(
     lines.length - 1,
@@ -200,14 +200,14 @@ export function duplicateLine({
 }
 
 /**
- * Corruption strategy discriminant.
+ Corruption strategy discriminant.
  */
 type CorruptionKind = 'truncate' | 'delete' | 'insert' | 'duplicate';
 
 /**
- * Apply one corruption strategy to a base document.
- *
- * @returns The corrupted source text.
+ Apply one corruption strategy to a base document.
+ 
+ @returns The corrupted source text.
  */
 function applyCorruption(
   {
@@ -223,7 +223,7 @@ function applyCorruption(
   },
 ): string {
   /**
-   * Corruption strategy dispatch table keyed by kind.
+   Corruption strategy dispatch table keyed by kind.
    */
   const strategies: Record<CorruptionKind, () => string> = {
     truncate: function run() { return truncate({
@@ -248,7 +248,7 @@ function applyCorruption(
 }
 
 /**
- * Arbitrary of near-miss documents: a valid base with one local corruption.
+ Arbitrary of near-miss documents: a valid base with one local corruption.
  */
 export const corruptedDocumentArbitrary: Arbitrary<string> = record({
   source: documentArbitrary,

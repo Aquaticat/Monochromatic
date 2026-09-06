@@ -1,11 +1,11 @@
 /**
- * VirtIO disk bus verification phase for Windows template creation.
- *
- * After the initial SATA-based Windows installation, switches the VM
- * to VirtIO disk bus and verifies Windows boots correctly with the
- * VirtIO storage driver.
- *
- * @module
+ VirtIO disk bus verification phase for Windows template creation.
+ 
+ After the initial SATA-based Windows installation, switches the VM
+ to VirtIO disk bus and verifies Windows boots correctly with the
+ VirtIO storage driver.
+ 
+ @module
  */
 
 import { VIRTIO_VERIFY_AGENT_TIMEOUT_MS, } from './config.ts';
@@ -23,18 +23,18 @@ import {
 } from './virsh.ts';
 
 /**
- * Switches the template VM from SATA to VirtIO disk and verifies it boots.
- *
- * @param vmDir - VM directory for the domain XML
- *
- * @param diskPath - Path to the disk image
- *
- * @param rl - Logger for status messages
- *
- * @example
- * ```ts
- * await verifyVirtioBoot({ vmDir: '/vms/win11', diskPath: '/vms/win11/disk.qcow2', rl: console });
- * ```
+ Switches the template VM from SATA to VirtIO disk and verifies it boots.
+ 
+ @param vmDir - VM directory for the domain XML
+ 
+ @param diskPath - Path to the disk image
+ 
+ @param rl - Logger for status messages
+ 
+ @example
+ ```ts
+ await verifyVirtioBoot({ vmDir: '/vms/win11', diskPath: '/vms/win11/disk.qcow2', rl: console });
+ ```
  */
 export async function verifyVirtioBoot({
   vmDir,
@@ -52,7 +52,7 @@ export async function verifyVirtioBoot({
   // Redefine VM with VirtIO disk (no CDROMs needed, boot from hard disk)
   await undefineVm({ name: TEMPLATE_VM_NAME, },);
   /**
-   * Domain XML rebuilt with VirtIO disk for the post-install verify pass.
+   Domain XML rebuilt with VirtIO disk for the post-install verify pass.
    */
   const virtioXml = domainXml({
     diskPath,

@@ -14,7 +14,7 @@ import {
 } from './tunnel-bypass-command-fixture.ts';
 
 /**
- * Built CLI bundle exercised at user boundary.
+ Built CLI bundle exercised at user boundary.
  */
 const CLI_BUNDLE_PATH = new URL(
   '../dist/final/node/index.mjs',
@@ -22,58 +22,58 @@ const CLI_BUNDLE_PATH = new URL(
 ).pathname;
 
 /**
- * UDP port isolated inside server namespace.
+ UDP port isolated inside server namespace.
  */
 const SERVER_PORT = 51_888;
 
 /**
- * Disposable endpoint-routing integration resources.
+ Disposable endpoint-routing integration resources.
  */
 type RouteFixture = {
   /**
-   * Client network namespace.
+   Client network namespace.
    */
   readonly clientNamespace: string;
 
   /**
-   * Client physical interface.
+   Client physical interface.
    */
   readonly clientPhysical: string;
 
   /**
-   * Root-private config and runtime directory.
+   Root-private config and runtime directory.
    */
   readonly directory: string;
 
   /**
-   * Server network namespace.
+   Server network namespace.
    */
   readonly serverNamespace: string;
 
   /**
-   * Server physical interface.
+   Server physical interface.
    */
   readonly serverPhysical: string;
 
   /**
-   * Removes all fixture resources.
+   Removes all fixture resources.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Runs command inside selected fixture namespace.
- *
- * @param namespace - Network namespace name.
- *
- * @param command - Executable and arguments.
- *
- * @returns Captured standard output.
- *
- * @example
- * ```ts
- * await runInNamespace({ namespace: 'client', command: ['ip', 'route'] });
- * ```
+ Runs command inside selected fixture namespace.
+ 
+ @param namespace - Network namespace name.
+ 
+ @param command - Executable and arguments.
+ 
+ @returns Captured standard output.
+ 
+ @example
+ ```ts
+ await runInNamespace({ namespace: 'client', command: ['ip', 'route'] });
+ ```
  */
 async function runInNamespace(
   {
@@ -96,20 +96,20 @@ async function runInNamespace(
 }
 
 /**
- * Runs built CLI inside client namespace while preserving failure result.
- *
- * @param fixture - Disposable network fixture.
- *
- * @param operation - Tunnel lifecycle operation.
- *
- * @param configPath - Root-readable config path.
- *
- * @returns Command exit and captured output.
- *
- * @example
- * ```ts
- * await runFixtureCli({ fixture, operation: 'up', configPath: '/tmp/wg.conf' });
- * ```
+ Runs built CLI inside client namespace while preserving failure result.
+ 
+ @param fixture - Disposable network fixture.
+ 
+ @param operation - Tunnel lifecycle operation.
+ 
+ @param configPath - Root-readable config path.
+ 
+ @returns Command exit and captured output.
+ 
+ @example
+ ```ts
+ await runFixtureCli({ fixture, operation: 'up', configPath: '/tmp/wg.conf' });
+ ```
  */
 async function runFixtureCli(
   {
@@ -139,43 +139,43 @@ async function runFixtureCli(
 }
 
 /**
- * Builds two isolated physical peers and returns cleanup ownership.
- *
- * @returns Configured namespace fixture.
- *
- * @example
- * ```ts
- * await using fixture = await createRouteFixture();
- * ```
+ Builds two isolated physical peers and returns cleanup ownership.
+ 
+ @returns Configured namespace fixture.
+ 
+ @example
+ ```ts
+ await using fixture = await createRouteFixture();
+ ```
  */
 async function createRouteFixture(): Promise<RouteFixture> {
   /**
-   * Short suffix keeping Linux names under interface limit.
+   Short suffix keeping Linux names under interface limit.
    */
   const suffix = String(process.pid,).slice(-5,);
   /**
-   * Client namespace name.
+   Client namespace name.
    */
   const clientNamespace = `wgrc${suffix}`;
   /**
-   * Server namespace name.
+   Server namespace name.
    */
   const serverNamespace = `wgrs${suffix}`;
   /**
-   * Client veth name.
+   Client veth name.
    */
   const clientPhysical = `wgc${suffix}`;
   /**
-   * Server veth name.
+   Server veth name.
    */
   const serverPhysical = `wgs${suffix}`;
   /**
-   * Private fixture directory.
+   Private fixture directory.
    */
   const directory = await mkdtemp(join(tmpdir(), 'wgq-route-integration-',),);
   await chmod(directory, 0o700,);
   /**
-   * Resource owner available before setup for rollback.
+   Resource owner available before setup for rollback.
    */
   const fixture: RouteFixture = {
     clientNamespace,
@@ -219,21 +219,21 @@ async function createRouteFixture(): Promise<RouteFixture> {
 
 await using fixture = await createRouteFixture();
 /**
- * Client private key generated inside isolated namespace.
+ Client private key generated inside isolated namespace.
  */
 const clientPrivate = (await runInNamespace({
   namespace: fixture.clientNamespace,
   command: ['wg', 'genkey',],
 },)).trim();
 /**
- * Server private key generated inside isolated namespace.
+ Server private key generated inside isolated namespace.
  */
 const serverPrivate = (await runInNamespace({
   namespace: fixture.serverNamespace,
   command: ['wg', 'genkey',],
 },)).trim();
 /**
- * Private-key files consumed by `wg set` without shell input plumbing.
+ Private-key files consumed by `wg set` without shell input plumbing.
  */
 const clientKeyPath = join(fixture.directory, 'client.key',);
 const serverKeyPath = join(fixture.directory, 'server.key',);
@@ -244,21 +244,21 @@ await Promise.all([
 await runInNamespace({ namespace: fixture.clientNamespace, command: ['ip', 'link', 'add', 'keyprobe', 'type', 'wireguard',], },);
 await runInNamespace({ namespace: fixture.clientNamespace, command: ['wg', 'set', 'keyprobe', 'private-key', clientKeyPath,], },);
 /**
- * Client public key admitted by server peer.
+ Client public key admitted by server peer.
  */
 const clientPublic = (await runInNamespace({ namespace: fixture.clientNamespace, command: ['wg', 'show', 'keyprobe', 'public-key',], },)).trim();
 await runInNamespace({ namespace: fixture.clientNamespace, command: ['ip', 'link', 'delete', 'keyprobe',], },);
 await runInNamespace({ namespace: fixture.serverNamespace, command: ['ip', 'link', 'add', 'wgpeer', 'type', 'wireguard',], },);
 await runInNamespace({ namespace: fixture.serverNamespace, command: ['wg', 'set', 'wgpeer', 'private-key', serverKeyPath, 'listen-port', String(SERVER_PORT,), 'peer', clientPublic, 'allowed-ips', '10.200.0.1/32',], },);
 /**
- * Server public key used by client config.
+ Server public key used by client config.
  */
 const serverPublic = (await runInNamespace({ namespace: fixture.serverNamespace, command: ['wg', 'show', 'wgpeer', 'public-key',], },)).trim();
 await runInNamespace({ namespace: fixture.serverNamespace, command: ['ip', 'address', 'add', '10.200.0.2/32', 'dev', 'wgpeer',], },);
 await runInNamespace({ namespace: fixture.serverNamespace, command: ['ip', 'link', 'set', 'wgpeer', 'up',], },);
 await runInNamespace({ namespace: fixture.serverNamespace, command: ['ip', 'route', 'add', '10.200.0.1/32', 'dev', 'wgpeer',], },);
 /**
- * Client config whose non-default prefix contains public peer endpoint.
+ Client config whose non-default prefix contains public peer endpoint.
  */
 const configPath = join(fixture.directory, 'wgtest.conf',);
 await writeFile(configPath, [
@@ -276,7 +276,7 @@ await writeFile(configPath, [
 
 await runInNamespace({ namespace: fixture.clientNamespace, command: ['ip', '-4', 'rule', 'add', 'fwmark', '0xca6c', 'table', '17',], },);
 /**
- * Rejected up result before any interface creation.
+ Rejected up result before any interface creation.
  */
 const conflict = await runFixtureCli({
   fixture,
@@ -289,7 +289,7 @@ assert.notEqual((await runSudoAllowingFailure({ args: ['ip', 'netns', 'exec', fi
 await runInNamespace({ namespace: fixture.clientNamespace, command: ['ip', '-4', 'rule', 'delete', 'fwmark', '0xca6c', 'table', '17',], },);
 await runInNamespace({ namespace: fixture.clientNamespace, command: ['ip', '-6', 'rule', 'add', 'fwmark', '0xca6c', 'table', '17',], },);
 /**
- * Rejected up result for IPv6 conflict before interface creation.
+ Rejected up result for IPv6 conflict before interface creation.
  */
 const conflictV6 = await runFixtureCli({
   fixture,
@@ -306,7 +306,7 @@ await runInNamespace({ namespace: fixture.clientNamespace, command: ['ip', '-6',
 //region Endpoint recursion prevention and transfer
 
 /**
- * Successful built CLI activation after conflict removal.
+ Successful built CLI activation after conflict removal.
  */
 const activated = await runFixtureCli({
   fixture,
@@ -317,12 +317,12 @@ assert.equal(activated.exitCode, 0, activated.stderr,);
 assert.ok(activated.stderr.includes(`Config for ${configPath} has no ExemptMark; Ghostty, Steam, Helium, and Pale Moon will use the tunnel.`,),);
 assert.ok(activated.stderr.includes('Add `ExemptMark = 8888` under `[Interface]`',),);
 /**
- * Positive interface fwmark naming policy table.
+ Positive interface fwmark naming policy table.
  */
 const table = Number((await runInNamespace({ namespace: fixture.clientNamespace, command: ['wg', 'show', 'wgtest', 'fwmark',], },)).trim(),);
 assert.ok(Number.isSafeInteger(table,) && (table > 0),);
 /**
- * Marked outer endpoint route which must remain on physical path.
+ Marked outer endpoint route which must remain on physical path.
  */
 const endpointRoute = await runInNamespace({
   namespace: fixture.clientNamespace,
@@ -331,7 +331,7 @@ const endpointRoute = await runInNamespace({
 assert.ok(endpointRoute.includes(`dev ${fixture.clientPhysical}`,),);
 assert.ok(endpointRoute.includes('via 198.51.100.1',),);
 /**
- * Unmarked physical gateway route proving main suppress rule runs first.
+ Unmarked physical gateway route proving main suppress rule runs first.
  */
 const gatewayRoute = await runInNamespace({
   namespace: fixture.clientNamespace,
@@ -340,7 +340,7 @@ const gatewayRoute = await runInNamespace({
 assert.ok(gatewayRoute.includes(`dev ${fixture.clientPhysical}`,),);
 assert.equal(gatewayRoute.includes('dev wgtest',), false,);
 /**
- * Inner peer route selected from WireGuard policy table.
+ Inner peer route selected from WireGuard policy table.
  */
 const innerRoute = await runInNamespace({
   namespace: fixture.clientNamespace,
@@ -349,7 +349,7 @@ const innerRoute = await runInNamespace({
 assert.ok(innerRoute.includes('dev wgtest',),);
 assert.ok(innerRoute.includes(`table ${String(table,)}`,),);
 /**
- * IPv6 connected route preserved before broad WireGuard policy prefix.
+ IPv6 connected route preserved before broad WireGuard policy prefix.
  */
 const gatewayRouteV6 = await runInNamespace({
   namespace: fixture.clientNamespace,
@@ -358,7 +358,7 @@ const gatewayRouteV6 = await runInNamespace({
 assert.ok(gatewayRouteV6.includes(`dev ${fixture.clientPhysical}`,),);
 assert.equal(gatewayRouteV6.includes('dev wgtest',), false,);
 /**
- * IPv6 public route selected from shared WireGuard policy table.
+ IPv6 public route selected from shared WireGuard policy table.
  */
 const innerRouteV6 = await runInNamespace({
   namespace: fixture.clientNamespace,
@@ -368,13 +368,13 @@ assert.ok(innerRouteV6.includes('dev wgtest',),);
 assert.ok(innerRouteV6.includes(`table ${String(table,)}`,),);
 await runInNamespace({ namespace: fixture.clientNamespace, command: ['ping', '-c', '1', '-W', '3', '10.200.0.2',], },);
 /**
- * Client transfer counters after bidirectional ping.
+ Client transfer counters after bidirectional ping.
  */
 const transferFields = (await runInNamespace({ namespace: fixture.clientNamespace, command: ['wg', 'show', 'wgtest', 'transfer',], },)).trim().split('\t',);
 assert.ok(Number(transferFields.at(-2,),) > 0,);
 assert.ok(Number(transferFields.at(-1,),) > 0,);
 /**
- * Successful teardown result.
+ Successful teardown result.
  */
 const deactivated = await runFixtureCli({
   fixture,

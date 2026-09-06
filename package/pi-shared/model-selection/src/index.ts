@@ -1,7 +1,7 @@
 /**
- * Dependency-free shared model-selection helpers for pi plugins.
- *
- * @module
+ Dependency-free shared model-selection helpers for pi plugins.
+ 
+ @module
  */
 
 export * from './core.ts';

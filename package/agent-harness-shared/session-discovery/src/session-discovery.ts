@@ -1,7 +1,7 @@
 /**
- * Full calling-session discovery composition.
- *
- * @module
+ Full calling-session discovery composition.
+ 
+ @module
  */
 
 import { findByMostRecent, } from './newest.ts';
@@ -13,22 +13,22 @@ import type { FindCallingSessionOptions, } from './types.ts';
 //region Full discovery
 
 /**
- * Finds parent agent session by process ancestry, then newest mapping fallback.
- *
- * @param startPid - process identifier where discovery starts
- *
- * @param byPidDir - directory containing PID mapping files
- *
- * @param io - optional test IO seam
- *
- * @param parseMapping - host-owned parser for mapping file contents
- *
- * @returns parsed mapping, or {@link SESSION_NOT_FOUND}
- *
- * @example
- * ```ts
- * await findCallingSession({ startPid: process.ppid, byPidDir, parseMapping });
- * ```
+ Finds parent agent session by process ancestry, then newest mapping fallback.
+ 
+ @param startPid - process identifier where discovery starts
+ 
+ @param byPidDir - directory containing PID mapping files
+ 
+ @param io - optional test IO seam
+ 
+ @param parseMapping - host-owned parser for mapping file contents
+ 
+ @returns parsed mapping, or {@link SESSION_NOT_FOUND}
+ 
+ @example
+ ```ts
+ await findCallingSession({ startPid: process.ppid, byPidDir, parseMapping });
+ ```
  */
 async function findCallingSession<TMapping>(
   {
@@ -39,7 +39,7 @@ async function findCallingSession<TMapping>(
   }: FindCallingSessionOptions<TMapping>,
 ): Promise<TMapping | typeof SESSION_NOT_FOUND> {
   /**
-   * Precise process-tree result.
+   Precise process-tree result.
    */
   const fromTree = await walkProcessTreeFrom({
     pid: startPid,

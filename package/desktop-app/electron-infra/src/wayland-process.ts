@@ -1,10 +1,10 @@
 /**
- * Process helpers for pure-Wayland Electron boundary tests.
- *
- * @example
- * ```ts
- * const fixture = await createWaylandFixture();
- * ```
+ Process helpers for pure-Wayland Electron boundary tests.
+ 
+ @example
+ ```ts
+ const fixture = await createWaylandFixture();
+ ```
  */
 
 import { once, } from 'node:events';
@@ -27,22 +27,22 @@ import {
 } from './wayland-constants.js';
 
 /**
- * CommonJS require rooted at this tool so the Electron binary path can be read.
- *
- * @example
- * ```ts
- * console.log(typeof require);
- * ```
+ CommonJS require rooted at this tool so the Electron binary path can be read.
+ 
+ @example
+ ```ts
+ console.log(typeof require);
+ ```
  */
 const require = createRequire(import.meta.url,);
 
 /**
- * Options required to spawn nested Wayland hosting Electron.
- *
- * @example
- * ```ts
- * const options: SpawnNestedWaylandElectronOptions = { appDir: '/tmp/app', fixture, nestedWaylandBinary: '/bin/nws', statePathEnvironmentVariable: 'STATE' };
- * ```
+ Options required to spawn nested Wayland hosting Electron.
+ 
+ @example
+ ```ts
+ const options: SpawnNestedWaylandElectronOptions = { appDir: '/tmp/app', fixture, nestedWaylandBinary: '/bin/nws', statePathEnvironmentVariable: 'STATE' };
+ ```
  */
 export type SpawnNestedWaylandElectronOptions = {
   readonly appDir: string;
@@ -52,18 +52,18 @@ export type SpawnNestedWaylandElectronOptions = {
 };
 
 /**
- * Parses value exported by the `electron` launcher package.
- *
- * @param value - Unknown value returned by `require('electron')`.
- *
- * @returns Absolute Electron executable path.
- *
- * @throws Error when package did not return a string path.
- *
- * @example
- * ```ts
- * parseElectronBinaryPath({ value: '/path/to/electron' });
- * ```
+ Parses value exported by the `electron` launcher package.
+ 
+ @param value - Unknown value returned by `require('electron')`.
+ 
+ @returns Absolute Electron executable path.
+ 
+ @throws Error when package did not return a string path.
+ 
+ @example
+ ```ts
+ parseElectronBinaryPath({ value: '/path/to/electron' });
+ ```
  */
 function parseElectronBinaryPath({ value, }: { readonly value: unknown; },): string {
   if ((typeof value) !== 'string')
@@ -73,32 +73,32 @@ function parseElectronBinaryPath({ value, }: { readonly value: unknown; },): str
 }
 
 /**
- * Returns installed Electron binary path.
- *
- * @returns Electron executable path from launcher package.
- *
- * @example
- * ```ts
- * const electron = electronBinaryPath();
- * ```
+ Returns installed Electron binary path.
+ 
+ @returns Electron executable path from launcher package.
+ 
+ @example
+ ```ts
+ const electron = electronBinaryPath();
+ ```
  */
 function electronBinaryPath(): string {
   return parseElectronBinaryPath({ value: require('electron',) as unknown, },);
 }
 
 /**
- * Creates temp paths for socket, state file, and screenshot output.
- *
- * @returns Boundary-test temp fixture paths.
- *
- * @example
- * ```ts
- * const fixture = await createWaylandFixture();
- * ```
+ Creates temp paths for socket, state file, and screenshot output.
+ 
+ @returns Boundary-test temp fixture paths.
+ 
+ @example
+ ```ts
+ const fixture = await createWaylandFixture();
+ ```
  */
 export async function createWaylandFixture(): Promise<WaylandBoundaryFixture> {
   /**
-   * Temporary root directory for this test run.
+   Temporary root directory for this test run.
    */
   const root = await mkdtemp(
     join(
@@ -130,22 +130,22 @@ export async function createWaylandFixture(): Promise<WaylandBoundaryFixture> {
 }
 
 /**
- * Spawns nested Wayland session hosting an Electron app.
- *
- * @param appDir - Staged Electron app directory.
- *
- * @param fixture - Temp paths shared with control client.
- *
- * @param nestedWaylandBinary - Nested compositor binary path.
- *
- * @param statePathEnvironmentVariable - Environment variable receiving state path.
- *
- * @returns Spawned nested compositor process.
- *
- * @example
- * ```ts
- * const child = spawnNestedWaylandElectron({ appDir: '/tmp/app', fixture, nestedWaylandBinary: '/bin/nws', statePathEnvironmentVariable: 'STATE' });
- * ```
+ Spawns nested Wayland session hosting an Electron app.
+ 
+ @param appDir - Staged Electron app directory.
+ 
+ @param fixture - Temp paths shared with control client.
+ 
+ @param nestedWaylandBinary - Nested compositor binary path.
+ 
+ @param statePathEnvironmentVariable - Environment variable receiving state path.
+ 
+ @returns Spawned nested compositor process.
+ 
+ @example
+ ```ts
+ const child = spawnNestedWaylandElectron({ appDir: '/tmp/app', fixture, nestedWaylandBinary: '/bin/nws', statePathEnvironmentVariable: 'STATE' });
+ ```
  */
 export function spawnNestedWaylandElectron(
   {
@@ -156,7 +156,7 @@ export function spawnNestedWaylandElectron(
   }: SpawnNestedWaylandElectronOptions,
 ): ChildProcess {
   /**
-   * Electron executable provided by the installed Electron package.
+   Electron executable provided by the installed Electron package.
    */
   const electron = electronBinaryPath();
 
@@ -186,18 +186,18 @@ export function spawnNestedWaylandElectron(
 }
 
 /**
- * Formats a Node child-process exit event payload for diagnostics.
- *
- * @param code - Raw exit code payload.
- *
- * @param signal - Raw exit signal payload.
- *
- * @returns Human-readable exit status.
- *
- * @example
- * ```ts
- * formatExitStatus({ code: 0, signal: 'SIGTERM' });
- * ```
+ Formats a Node child-process exit event payload for diagnostics.
+ 
+ @param code - Raw exit code payload.
+ 
+ @param signal - Raw exit signal payload.
+ 
+ @returns Human-readable exit status.
+ 
+ @example
+ ```ts
+ formatExitStatus({ code: 0, signal: 'SIGTERM' });
+ ```
  */
 function formatExitStatus(
   {
@@ -212,34 +212,34 @@ function formatExitStatus(
 }
 
 /**
- * Checks whether a value is an indexable unknown array.
- *
- * @param value - Value to check.
- *
- * @returns Whether value is an array of unknown entries.
- *
- * @example
- * ```ts
- * isReadonlyUnknownArray([0]);
- * ```
+ Checks whether a value is an indexable unknown array.
+ 
+ @param value - Value to check.
+ 
+ @returns Whether value is an array of unknown entries.
+ 
+ @example
+ ```ts
+ isReadonlyUnknownArray([0]);
+ ```
  */
 function isReadonlyUnknownArray(value: unknown,): value is readonly unknown[] {
   return Array.isArray(value,);
 }
 
 /**
- * Parses Node's child-process `exit` event payload.
- *
- * @param value - Raw payload returned by `events.once`.
- *
- * @returns Raw exit status values.
- *
- * @throws Error when event payload is unexpectedly shaped.
- *
- * @example
- * ```ts
- * parseExitEvent({ value: [0, null] });
- * ```
+ Parses Node's child-process `exit` event payload.
+ 
+ @param value - Raw payload returned by `events.once`.
+ 
+ @returns Raw exit status values.
+ 
+ @throws Error when event payload is unexpectedly shaped.
+ 
+ @example
+ ```ts
+ parseExitEvent({ value: [0, null] });
+ ```
  */
 function parseExitEvent(
   { value, }: { readonly value: unknown; },
@@ -251,7 +251,7 @@ function parseExitEvent(
     throw new Error('Child-process exit event payload was not an array.',);
 
   /**
-   * Raw exit code and signal payloads from Node's `exit` event.
+   Raw exit code and signal payloads from Node's `exit` event.
    */
   const [code, signal,] = value;
   if ((code !== null) && ((typeof code) !== 'number'))
@@ -266,22 +266,22 @@ function parseExitEvent(
 }
 
 /**
- * Waits for a child process to exit successfully.
- *
- * @param child - Process to observe.
- *
- * @mutates child through child.kill timeout termination and once exit-listener registration
- *
- * @example
- * ```ts
- * await waitForSuccessfulExit({ child });
- * ```
+ Waits for a child process to exit successfully.
+ 
+ @param child - Process to observe.
+ 
+ @mutates child through child.kill timeout termination and once exit-listener registration
+ 
+ @example
+ ```ts
+ await waitForSuccessfulExit({ child });
+ ```
  */
 export async function waitForSuccessfulExit(
   { child, }: { readonly child: ChildProcess; },
 ): Promise<void> {
   /**
-   * Timeout that terminates the child if quit does not complete.
+   Timeout that terminates the child if quit does not complete.
    */
   const timeout = setTimeout(
     function killHungChild(): void {
@@ -291,7 +291,7 @@ export async function waitForSuccessfulExit(
   );
 
   /**
-   * Raw exit event payload from child process.
+   Raw exit event payload from child process.
    */
   const exit = await once(
     child,
@@ -300,7 +300,7 @@ export async function waitForSuccessfulExit(
   clearTimeout(timeout,);
 
   /**
-   * Parsed exit status values.
+   Parsed exit status values.
    */
   const {
     code,

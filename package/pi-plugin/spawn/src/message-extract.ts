@@ -1,35 +1,35 @@
 /**
- * Message extraction helpers for child Pi result forwarding.
- *
- * @module
+ Message extraction helpers for child Pi result forwarding.
+ 
+ @module
  */
 
 //region Types
 
 /**
- * Minimal text block shape used by Pi assistant messages.
+ Minimal text block shape used by Pi assistant messages.
  */
 type TextBlockLike = {
   /**
-   * Content block discriminator.
+   Content block discriminator.
    */
   readonly type: 'text';
   /**
-   * Text emitted by assistant.
+   Text emitted by assistant.
    */
   readonly text: string;
 };
 
 /**
- * Minimal assistant message shape needed by spawn-pi.
+ Minimal assistant message shape needed by spawn-pi.
  */
 type AssistantMessageLike = {
   /**
-   * Message role discriminator.
+   Message role discriminator.
    */
   readonly role: 'assistant';
   /**
-   * Assistant content blocks or legacy plain text.
+   Assistant content blocks or legacy plain text.
    */
   readonly content: string | readonly unknown[];
 };
@@ -39,16 +39,16 @@ type AssistantMessageLike = {
 //region Type guards
 
 /**
- * Detects text content blocks in unknown Pi message content.
- *
- * @param value - content block candidate.
- *
- * @returns whether value is text block.
- *
- * @example
- * ```typescript
- * isTextBlock({ type: 'text', text: 'done' });
- * ```
+ Detects text content blocks in unknown Pi message content.
+ 
+ @param value - content block candidate.
+ 
+ @returns whether value is text block.
+ 
+ @example
+ ```typescript
+ isTextBlock({ type: 'text', text: 'done' });
+ ```
  */
 function isTextBlock(value: unknown,): value is TextBlockLike {
   if ((value === null) || ((typeof value) !== 'object'))
@@ -60,16 +60,16 @@ function isTextBlock(value: unknown,): value is TextBlockLike {
 }
 
 /**
- * Detects assistant messages in unknown Pi message arrays.
- *
- * @param value - message candidate.
- *
- * @returns whether value is assistant message.
- *
- * @example
- * ```typescript
- * isAssistantMessage({ role: 'assistant', content: [] });
- * ```
+ Detects assistant messages in unknown Pi message arrays.
+ 
+ @param value - message candidate.
+ 
+ @returns whether value is assistant message.
+ 
+ @example
+ ```typescript
+ isAssistantMessage({ role: 'assistant', content: [] });
+ ```
  */
 function isAssistantMessage(value: unknown,): value is AssistantMessageLike {
   if ((value === null) || ((typeof value) !== 'object'))
@@ -85,16 +85,16 @@ function isAssistantMessage(value: unknown,): value is AssistantMessageLike {
 //region Extraction
 
 /**
- * Extracts text from assistant message content.
- *
- * @param content - {@link AssistantMessageLike} content.
- *
- * @returns joined text blocks, or content itself for legacy string content.
- *
- * @example
- * ```typescript
- * assistantContentText([{ type: 'text', text: 'done' }]);
- * ```
+ Extracts text from assistant message content.
+ 
+ @param content - {@link AssistantMessageLike} content.
+ 
+ @returns joined text blocks, or content itself for legacy string content.
+ 
+ @example
+ ```typescript
+ assistantContentText([{ type: 'text', text: 'done' }]);
+ ```
  */
 function assistantContentText(content: AssistantMessageLike['content'],): string {
   if ((typeof content) === 'string')
@@ -111,29 +111,29 @@ function assistantContentText(content: AssistantMessageLike['content'],): string
 }
 
 /**
- * Extracts last assistant text from Pi agent-end messages, using {@link isAssistantMessage} to
- * filter candidates.
- *
- * @param messages - messages emitted by agent loop.
- *
- * @returns last assistant text, or empty string when no text exists.
- *
- * @example
- * ```typescript
- * extractLastAssistantText([{ role: 'assistant', content: [{ type: 'text', text: 'done' }] }]);
- * ```
+ Extracts last assistant text from Pi agent-end messages, using {@link isAssistantMessage} to
+ filter candidates.
+ 
+ @param messages - messages emitted by agent loop.
+ 
+ @returns last assistant text, or empty string when no text exists.
+ 
+ @example
+ ```typescript
+ extractLastAssistantText([{ role: 'assistant', content: [{ type: 'text', text: 'done' }] }]);
+ ```
  */
 function extractLastAssistantText(messages: readonly unknown[],): string {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     /**
-     * Candidate message inspected from newest to oldest.
+     Candidate message inspected from newest to oldest.
      */
     const message = messages[index];
     if (!isAssistantMessage(message,))
       continue;
 
     /**
-     * Text content emitted by candidate assistant message.
+     Text content emitted by candidate assistant message.
      */
     const text = assistantContentText(message.content,);
     if (text.length > 0)

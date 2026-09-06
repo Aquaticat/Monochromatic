@@ -1,23 +1,23 @@
 /**
- * Emitter and seam properties, exercised through the package's unstable `_`
- * exports on the built artifact.
- *
- * - `_encodeKey`: any key name round-trips to a single key segment, never an
- *   accidental dotted path.
- * - `_jsValueToTomlText`: any JSON value either rejects (null) with
- *   `TomlTypeError` or re-emits to a semantically equal value.
- * - `_emitContentNode`: re-emitting an unchanged value node reparses equal, and
- *   for non-string scalars the parse-time spelling is byte-preserved. This is
- *   the load-bearing datetime-spelling check: the `getStaticTOMLValue` round-trip
- *   oracle is blind to a datetime kind or spelling change, so this property
- *   asserts the raw spelling directly.
- * - `_emitStringValue`: re-emitting a parsed string node preserves its value
- *   across the escaping boundary.
- * - `_emitDocument`: with no edits, output is byte-identical to the source.
- *
- * Run plan and seed policy: see `../fuzz-budget.ts`.
- *
- * @module
+ Emitter and seam properties, exercised through the package's unstable `_`
+ exports on the built artifact.
+ 
+ - `_encodeKey`: any key name round-trips to a single key segment, never an
+   accidental dotted path.
+ - `_jsValueToTomlText`: any JSON value either rejects (null) with
+   `TomlTypeError` or re-emits to a semantically equal value.
+ - `_emitContentNode`: re-emitting an unchanged value node reparses equal, and
+   for non-string scalars the parse-time spelling is byte-preserved. This is
+   the load-bearing datetime-spelling check: the `getStaticTOMLValue` round-trip
+   oracle is blind to a datetime kind or spelling change, so this property
+   asserts the raw spelling directly.
+ - `_emitStringValue`: re-emitting a parsed string node preserves its value
+   across the escaping boundary.
+ - `_emitDocument`: with no edits, output is byte-identical to the source.
+ 
+ Run plan and seed policy: see `../fuzz-budget.ts`.
+ 
+ @module
  */
 
 import {
@@ -61,19 +61,19 @@ import { basicStringLiteral, } from './escape.ts';
 //region Setup
 
 /**
- * Run plan resolved once for every property in this file.
+ Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
 
 /**
- * Canonical options drawn from a fresh empty state, used by the emitters.
+ Canonical options drawn from a fresh empty state, used by the emitters.
  */
 const CANONICAL = emptyTomlEdit().canonical;
 
 /**
- * Pinned control-character examples for the emitContentNode property: re-emitting
- * these once produced raw control bytes that the parser then rejected (the
- * emitter escaped only the named control escapes). Kept as permanent regressions.
+ Pinned control-character examples for the emitContentNode property: re-emitting
+ these once produced raw control bytes that the parser then rejected (the
+ emitter escaped only the named control escapes). Kept as permanent regressions.
  */
 const CONTROL_EXAMPLES: readonly (readonly [ValueSample])[] = [
   [{
@@ -91,8 +91,8 @@ const CONTROL_EXAMPLES: readonly (readonly [ValueSample])[] = [
 ];
 
 /**
- * Adversarial key-name arbitrary spanning bare, empty, dotted-looking,
- * numeric-looking, quote-bearing, and unicode names (no lone surrogates).
+ Adversarial key-name arbitrary spanning bare, empty, dotted-looking,
+ numeric-looking, quote-bearing, and unicode names (no lone surrogates).
  */
 const keyNameArbitrary = oneof(
   string({
@@ -124,14 +124,14 @@ const keyNameArbitrary = oneof(
 );
 
 /**
- * Prototype-shadowing key names that cannot faithfully round-trip through the
- * external `getStaticTOMLValue` oracle used by {@link projectProbe}: it decodes
- * tables into plain objects by assignment, so a `__proto__` key sets the
- * prototype instead of an own property (and `constructor` / `prototype` shadow
- * inherited members). The package's own reader handles these correctly (see
- * value-materialize.ts prototype safety, exercised by the unit tests); they are
- * excluded from the round-trip arbitrary only so the oracle comparison stays
- * fair, without weakening the assertion.
+ Prototype-shadowing key names that cannot faithfully round-trip through the
+ external `getStaticTOMLValue` oracle used by {@link projectProbe}: it decodes
+ tables into plain objects by assignment, so a `__proto__` key sets the
+ prototype instead of an own property (and `constructor` / `prototype` shadow
+ inherited members). The package's own reader handles these correctly (see
+ value-materialize.ts prototype safety, exercised by the unit tests); they are
+ excluded from the round-trip arbitrary only so the oracle comparison stays
+ fair, without weakening the assertion.
  */
 const PROTOTYPE_KEYS: ReadonlySet<string> = new Set([
   '__proto__',
@@ -140,10 +140,10 @@ const PROTOTYPE_KEYS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Recursively drop prototype-shadowing keys from a generated JSON value.
- * Structural walk over the JSON tree (objects and arrays).
- *
- * @returns Same value with any prototype-shadowing keys removed.
+ Recursively drop prototype-shadowing keys from a generated JSON value.
+ Structural walk over the JSON tree (objects and arrays).
+ 
+ @returns Same value with any prototype-shadowing keys removed.
  */
 function stripPrototypeKeys(value: JsonValue,): JsonValue {
   if (Array.isArray(value,)) {
@@ -169,15 +169,15 @@ function stripPrototypeKeys(value: JsonValue,): JsonValue {
 }
 
 /**
- * JSON arbitrary with prototype-shadowing keys removed, feeding the
- * `_jsValueToTomlText` round-trip property.
+ JSON arbitrary with prototype-shadowing keys removed, feeding the
+ `_jsValueToTomlText` round-trip property.
  */
 const protoSafeJsonValue = jsonValue().map(function sanitize(value,) {
   return stripPrototypeKeys(value,);
 },);
 
 /**
- * Basic-string content arbitrary stressing the escaping boundary.
+ Basic-string content arbitrary stressing the escaping boundary.
  */
 const stringContentArbitrary = string({
   unit: constantFrom(
@@ -194,33 +194,33 @@ const stringContentArbitrary = string({
 },);
 
 /**
- * Project the `probe` value out of a single-key document.
- *
- * @returns Native projection of the value bound to `probe`.
+ Project the `probe` value out of a single-key document.
+ 
+ @returns Native projection of the value bound to `probe`.
  */
 function projectProbe(source: string,): unknown {
   /**
-   * Whole-document projection; `probe` is the only key these properties set.
+   Whole-document projection; `probe` is the only key these properties set.
    */
   const model = semanticModel({ source, },) as Record<string, unknown>;
   return model.probe;
 }
 
 /**
- * Outcome of {@link encodeOrSkip}: encoded text, or a skip for a rejected input.
+ Outcome of {@link encodeOrSkip}: encoded text, or a skip for a rejected input.
  */
 type EncodeResult =
   | { readonly skipped: true; }
   | { readonly text: string; };
 
 /**
- * Encode `input`, or skip when a null member makes the encoder reject.
- *
- * Skips only for a `TomlTypeError` (the documented rejection of null and
- * similar). Any other throw propagates and fails the property, so an unexpected
- * error class still surfaces rather than being treated as a skip.
- *
- * @returns Encoded text, or a skip marker for a legitimately rejected input.
+ Encode `input`, or skip when a null member makes the encoder reject.
+ 
+ Skips only for a `TomlTypeError` (the documented rejection of null and
+ similar). Any other throw propagates and fails the property, so an unexpected
+ error class still surfaces rather than being treated as a skip.
+ 
+ @returns Encoded text, or a skip marker for a legitimately rejected input.
  */
 function encodeOrSkip(input: unknown,): EncodeResult {
   try {
@@ -249,11 +249,11 @@ await describe({
         await assert(
           asyncProperty(keyNameArbitrary, async function roundTrip(name,) {
             /**
-             * Encoded key spelling, bare or quoted.
+             Encoded key spelling, bare or quoted.
              */
             const spelling = _encodeKey({ key: name, },);
             /**
-             * Top-level keys of a document using the encoded spelling.
+             Top-level keys of a document using the encoded spelling.
              */
             const keys = tomlKeys({ edit: parseTomlEdit({ source: `${spelling} = 1\n`, },), },);
             expect(keys.length,).toBe(1,);
@@ -274,18 +274,18 @@ await describe({
       fn: async () => {
         for (const [sample,] of CONTROL_EXAMPLES) {
           /**
-           * Control scalar drawn from a pinned example.
+           Control scalar drawn from a pinned example.
            */
           const control = sample.value;
           if ((typeof control) !== 'string') continue;
           /**
-           * Quoted-key round-trip: the encoded key must reparse to the same name.
+           Quoted-key round-trip: the encoded key must reparse to the same name.
            */
           const keyName = `a${control}b`;
           const keys = tomlKeys({ edit: parseTomlEdit({ source: `${_encodeKey({ key: keyName, },)} = 1\n`, },), },);
           expect(keys.includes(keyName,),).toBe(true,);
           /**
-           * Value round-trip: the encoded string must reparse to the same value.
+           Value round-trip: the encoded string must reparse to the same value.
            */
           const result = encodeOrSkip(`x${control}y`,);
           expect('text' in result,).toBe(true,);
@@ -307,7 +307,7 @@ await describe({
         await assert(
           asyncProperty(protoSafeJsonValue, async function roundTrip(input,) {
             /**
-             * Encoded text, or a skip marker when a null member is rejected.
+             Encoded text, or a skip marker when a null member is rejected.
              */
             const result = encodeOrSkip(input,);
             if ('skipped' in result) return;
@@ -330,7 +330,7 @@ await describe({
         await assert(
           asyncProperty(scalarSampleArbitrary, async function preserve(sample,) {
             /**
-             * Parse-time value node for the generated scalar.
+             Parse-time value node for the generated scalar.
              */
             const node = tomlGetNode({
               edit: parseTomlEdit({ source: `probe = ${sample.text}\n`, },),
@@ -338,16 +338,16 @@ await describe({
             },);
             if ((!('type' in node)) || (node.type !== 'TOMLValue')) return;
             /**
-             * Canonical re-emission of the unchanged node.
+             Canonical re-emission of the unchanged node.
              */
             const emitted = _emitContentNode({
               node,
               options: CANONICAL,
             },);
             /**
-             * Re-parsed node, whose kind must match the original; a structure or
-             * kind change (local-date to offset-datetime, integer to float) is a
-             * silent corruption the value oracle alone would not catch.
+             Re-parsed node, whose kind must match the original; a structure or
+             kind change (local-date to offset-datetime, integer to float) is a
+             silent corruption the value oracle alone would not catch.
              */
             const reNode = tomlGetNode({
               edit: parseTomlEdit({ source: `probe = ${emitted}\n`, },),
@@ -382,7 +382,7 @@ await describe({
         await assert(
           asyncProperty(stringContentArbitrary, async function reemit(content,) {
             /**
-             * Parse-time string node for a basic-string literal of `content`.
+             Parse-time string node for a basic-string literal of `content`.
              */
             const node = tomlGetNode({
               edit: parseTomlEdit({ source: `probe = ${basicStringLiteral({ content, },)}\n`, },),

@@ -1,11 +1,11 @@
 /**
- * Typed Hetzner Cloud resource helpers for servers, SSH keys, and images.
- *
- * Thin wrappers over the {@link hcloud} request core and {@link fetchAllPages}
- * pagination helper. Listing and bulk operations filter by the mvm ownership
- * label so they can never touch unrelated resources.
- *
- * @module
+ Typed Hetzner Cloud resource helpers for servers, SSH keys, and images.
+ 
+ Thin wrappers over the {@link hcloud} request core and {@link fetchAllPages}
+ pagination helper. Listing and bulk operations filter by the mvm ownership
+ label so they can never touch unrelated resources.
+ 
+ @module
  */
 
 import { VM_PREFIX, } from '../../config.ts';
@@ -25,28 +25,28 @@ import type {
 //region Servers
 
 /**
- * Creates a server in a single location.
- *
- * @param image - image slug or id to boot from
- *
- * @param labels - labels to attach (must include the mvm ownership label)
- *
- * @param location - location code to provision in
- *
- * @param name - full server name including the mvm- prefix
- *
- * @param serverType - server type slug
- *
- * @param sshKeyId - numeric id of the SSH key to inject
- *
- * @returns created server and the boot action to poll
- *
- * @throws {@link HetznerApiError} with code `resource_unavailable` when out of stock
- *
- * @example
- * ```ts
- * const { server, action } = await createServer({ name: 'mvm-dev', serverType: 'cx22', location: 'fsn1', image: 'ubuntu-24.04', sshKeyId: 42, labels: { mvm: 'true' } });
- * ```
+ Creates a server in a single location.
+ 
+ @param image - image slug or id to boot from
+ 
+ @param labels - labels to attach (must include the mvm ownership label)
+ 
+ @param location - location code to provision in
+ 
+ @param name - full server name including the mvm- prefix
+ 
+ @param serverType - server type slug
+ 
+ @param sshKeyId - numeric id of the SSH key to inject
+ 
+ @returns created server and the boot action to poll
+ 
+ @throws {@link HetznerApiError} with code `resource_unavailable` when out of stock
+ 
+ @example
+ ```ts
+ const { server, action } = await createServer({ name: 'mvm-dev', serverType: 'cx22', location: 'fsn1', image: 'ubuntu-24.04', sshKeyId: 42, labels: { mvm: 'true' } });
+ ```
  */
 export function createServer(
   {
@@ -87,14 +87,14 @@ export function createServer(
 }
 
 /**
- * Lists every mvm-managed server (filtered by the ownership label selector).
- *
- * @returns all mvm-labelled servers
- *
- * @example
- * ```ts
- * const servers = await listMvmServers();
- * ```
+ Lists every mvm-managed server (filtered by the ownership label selector).
+ 
+ @returns all mvm-labelled servers
+ 
+ @example
+ ```ts
+ const servers = await listMvmServers();
+ ```
  */
 export function listMvmServers(): Promise<readonly HetznerServer[]> {
   return fetchAllPages<HetznerServer>({
@@ -104,31 +104,31 @@ export function listMvmServers(): Promise<readonly HetznerServer[]> {
 }
 
 /**
- * Resolves a single mvm-managed server by its unprefixed name.
- * Filters by the ownership label and exact full name, so it can never operate
- * on an unrelated server that merely shares the `mvm-<name>` name.
- *
- * @param name - VM name without the mvm- prefix
- *
- * @returns the matching server
- *
- * @throws Error when zero or more than one mvm-labelled server matches
- *
- * @example
- * ```ts
- * const server = await getMvmServerByName({ name: 'dev-01' });
- * ```
+ Resolves a single mvm-managed server by its unprefixed name.
+ Filters by the ownership label and exact full name, so it can never operate
+ on an unrelated server that merely shares the `mvm-<name>` name.
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @returns the matching server
+ 
+ @throws Error when zero or more than one mvm-labelled server matches
+ 
+ @example
+ ```ts
+ const server = await getMvmServerByName({ name: 'dev-01' });
+ ```
  */
 export async function getMvmServerByName(
   { name, }: { readonly name: string; },
 ): Promise<HetznerServer> {
   /**
-   * Full server name including the mvm- prefix; the exact match target.
+   Full server name including the mvm- prefix; the exact match target.
    */
   const fullName = `${VM_PREFIX}${name}`;
   /**
-   * mvm-labelled servers whose name exactly matches; the API name filter plus a
-   * defensive exact compare guard against substring or unrelated matches.
+   mvm-labelled servers whose name exactly matches; the API name filter plus a
+   defensive exact compare guard against substring or unrelated matches.
    */
   const matches = (await fetchAllPages<HetznerServer>({
     key: 'servers',
@@ -139,8 +139,8 @@ export async function getMvmServerByName(
     return server.name === fullName;
   },);
   /**
-   * Destructured head plus tail so the single-match guarantee is enforced
-   * without a non-null assertion.
+   Destructured head plus tail so the single-match guarantee is enforced
+   without a non-null assertion.
    */
   const [match, ...rest] = matches;
   if (match === undefined) {
@@ -155,14 +155,14 @@ export async function getMvmServerByName(
 }
 
 /**
- * Deletes a server by id.
- *
- * @param id - numeric server id
- *
- * @example
- * ```ts
- * await deleteServer({ id: 576675 });
- * ```
+ Deletes a server by id.
+ 
+ @param id - numeric server id
+ 
+ @example
+ ```ts
+ await deleteServer({ id: 576675 });
+ ```
  */
 export async function deleteServer({ id, }: { readonly id: number; },): Promise<void> {
   await hcloud<unknown>({
@@ -172,14 +172,14 @@ export async function deleteServer({ id, }: { readonly id: number; },): Promise<
 }
 
 /**
- * Lists every server type (plan), including deprecated ones.
- *
- * @returns all server types
- *
- * @example
- * ```ts
- * const types = await listServerTypes();
- * ```
+ Lists every server type (plan), including deprecated ones.
+ 
+ @returns all server types
+ 
+ @example
+ ```ts
+ const types = await listServerTypes();
+ ```
  */
 export function listServerTypes(): Promise<readonly HetznerServerType[]> {
   return fetchAllPages<HetznerServerType>({
@@ -193,14 +193,14 @@ export function listServerTypes(): Promise<readonly HetznerServerType[]> {
 //region SSH keys
 
 /**
- * Lists every SSH key in the project.
- *
- * @returns all SSH keys
- *
- * @example
- * ```ts
- * const keys = await listSshKeys();
- * ```
+ Lists every SSH key in the project.
+ 
+ @returns all SSH keys
+ 
+ @example
+ ```ts
+ const keys = await listSshKeys();
+ ```
  */
 export function listSshKeys(): Promise<readonly HetznerSshKey[]> {
   return fetchAllPages<HetznerSshKey>({
@@ -210,18 +210,18 @@ export function listSshKeys(): Promise<readonly HetznerSshKey[]> {
 }
 
 /**
- * Uploads an SSH public key.
- *
- * @param name - key name within the project
- *
- * @param publicKey - full public key line
- *
- * @returns the created key
- *
- * @example
- * ```ts
- * const key = await createSshKey({ name: 'mvm-abc', publicKey: 'ssh-ed25519 AAAA...' });
- * ```
+ Uploads an SSH public key.
+ 
+ @param name - key name within the project
+ 
+ @param publicKey - full public key line
+ 
+ @returns the created key
+ 
+ @example
+ ```ts
+ const key = await createSshKey({ name: 'mvm-abc', publicKey: 'ssh-ed25519 AAAA...' });
+ ```
  */
 export async function createSshKey(
   {
@@ -247,18 +247,18 @@ export async function createSshKey(
 //region Images
 
 /**
- * Lists images, optionally filtered by type and ownership label.
- *
- * @param labelSelector - optional label selector
- *
- * @param type - optional image type (e.g. `system`, `snapshot`)
- *
- * @returns matching images
- *
- * @example
- * ```ts
- * const systemImages = await listImages({ type: 'system' });
- * ```
+ Lists images, optionally filtered by type and ownership label.
+ 
+ @param labelSelector - optional label selector
+ 
+ @param type - optional image type (e.g. `system`, `snapshot`)
+ 
+ @returns matching images
+ 
+ @example
+ ```ts
+ const systemImages = await listImages({ type: 'system' });
+ ```
  */
 export function listImages(
   {
@@ -270,7 +270,7 @@ export function listImages(
   } = {},
 ): Promise<readonly HetznerImage[]> {
   /**
-   * Query parameters assembled from the optional filters.
+   Query parameters assembled from the optional filters.
    */
   const params = new URLSearchParams();
   if (type !== undefined) {
@@ -286,7 +286,7 @@ export function listImages(
     );
   }
   /**
-   * Query string with a leading `?` only when filters are present.
+   Query string with a leading `?` only when filters are present.
    */
   const query = (params.toString() === '') ? '' : `?${params.toString()}`;
   return fetchAllPages<HetznerImage>({
@@ -296,20 +296,20 @@ export function listImages(
 }
 
 /**
- * Snapshots a server into an independent image.
- *
- * @param description - human-readable snapshot description
- *
- * @param labels - labels to attach (must include the mvm ownership label)
- *
- * @param serverId - source server id
- *
- * @returns the snapshot action to poll and the created image
- *
- * @example
- * ```ts
- * const { action, image } = await createImage({ serverId: 1, description: 'clone of dev-01', labels: { mvm: 'true' } });
- * ```
+ Snapshots a server into an independent image.
+ 
+ @param description - human-readable snapshot description
+ 
+ @param labels - labels to attach (must include the mvm ownership label)
+ 
+ @param serverId - source server id
+ 
+ @returns the snapshot action to poll and the created image
+ 
+ @example
+ ```ts
+ const { action, image } = await createImage({ serverId: 1, description: 'clone of dev-01', labels: { mvm: 'true' } });
+ ```
  */
 export function createImage(
   {
@@ -340,14 +340,14 @@ export function createImage(
 }
 
 /**
- * Deletes an image (snapshot) by id.
- *
- * @param id - numeric image id
- *
- * @example
- * ```ts
- * await deleteImage({ id: 12345 });
- * ```
+ Deletes an image (snapshot) by id.
+ 
+ @param id - numeric image id
+ 
+ @example
+ ```ts
+ await deleteImage({ id: 12345 });
+ ```
  */
 export async function deleteImage({ id, }: { readonly id: number; },): Promise<void> {
   await hcloud<unknown>({

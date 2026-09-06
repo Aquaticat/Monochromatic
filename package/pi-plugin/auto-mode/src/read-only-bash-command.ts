@@ -1,10 +1,10 @@
 /**
- * Command-shape proof for read-only Bash inspection.
- *
- * Keeps command semantics separate from path provenance. Only command families
- * needed by source inspection are accepted; every unknown form fails closed.
- *
- * @module
+ Command-shape proof for read-only Bash inspection.
+ 
+ Keeps command semantics separate from path provenance. Only command families
+ needed by source inspection are accepted; every unknown form fails closed.
+ 
+ @module
  */
 
 import { gitIsReadOnly, } from './read-only-git-command.ts';
@@ -13,7 +13,7 @@ import type { CommandInfo, } from './types.ts';
 //region Command policy
 
 /**
- * Commands with an implemented read-only proof.
+ Commands with an implemented read-only proof.
  */
 const PROVABLE_READ_ONLY_COMMANDS: ReadonlySet<string> = new Set([
   'find',
@@ -25,7 +25,7 @@ const PROVABLE_READ_ONLY_COMMANDS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * ripgrep options that execute an external helper.
+ ripgrep options that execute an external helper.
  */
 const RIPGREP_EXECUTION_OPTIONS: ReadonlySet<string> = new Set([
   '--hostname-bin',
@@ -36,7 +36,7 @@ const RIPGREP_EXECUTION_OPTIONS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * GNU find actions that mutate state, execute commands, or write named files.
+ GNU find actions that mutate state, execute commands, or write named files.
  */
 const FIND_NON_READ_ACTIONS: ReadonlySet<string> = new Set([
   '-delete',
@@ -51,7 +51,7 @@ const FIND_NON_READ_ACTIONS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * GNU find traversal modes that can follow descendants outside proved roots.
+ GNU find traversal modes that can follow descendants outside proved roots.
  */
 const FIND_UNBOUNDED_LINK_OPTIONS: ReadonlySet<string> = new Set([
   '-H',
@@ -60,7 +60,7 @@ const FIND_UNBOUNDED_LINK_OPTIONS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * GNU sort options that select explicit output or helper program.
+ GNU sort options that select explicit output or helper program.
  */
 const SORT_NON_READ_OPTIONS: ReadonlySet<string> = new Set([
   '--compress-program',
@@ -71,7 +71,7 @@ const SORT_NON_READ_OPTIONS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Shell printf option that assigns variable instead of writing standard output.
+ Shell printf option that assigns variable instead of writing standard output.
  */
 const PRINTF_NON_READ_OPTIONS: ReadonlySet<string> = new Set(['-v',]);
 
@@ -80,18 +80,18 @@ const PRINTF_NON_READ_OPTIONS: ReadonlySet<string> = new Set(['-v',]);
 //region Option scanning
 
 /**
- * Check whether argument selects option, including attached option values.
- *
- * @param argument - current command argument
- *
- * @param option - exact short or long option name
- *
- * @returns whether argument uses option
- *
- * @example
- * ```typescript
- * optionMatches({ argument: '--pre=cat', option: '--pre' });
- * ```
+ Check whether argument selects option, including attached option values.
+ 
+ @param argument - current command argument
+ 
+ @param option - exact short or long option name
+ 
+ @returns whether argument uses option
+ 
+ @example
+ ```typescript
+ optionMatches({ argument: '--pre=cat', option: '--pre' });
+ ```
  */
 function optionMatches(
   {
@@ -112,18 +112,18 @@ function optionMatches(
 }
 
 /**
- * Check arguments against blocked option names.
- *
- * @param args - command arguments
- *
- * @param blockedOptions - options that invalidate read-only proof
- *
- * @returns whether blocked option appears
- *
- * @example
- * ```typescript
- * hasBlockedOption({ args: ['--output=file'], blockedOptions: SORT_NON_READ_OPTIONS });
- * ```
+ Check arguments against blocked option names.
+ 
+ @param args - command arguments
+ 
+ @param blockedOptions - options that invalidate read-only proof
+ 
+ @returns whether blocked option appears
+ 
+ @example
+ ```typescript
+ hasBlockedOption({ args: ['--output=file'], blockedOptions: SORT_NON_READ_OPTIONS });
+ ```
  */
 function hasBlockedOption(
   {
@@ -151,22 +151,22 @@ function hasBlockedOption(
 //region Family proofs
 
 /**
- * Prove ripgrep form cannot execute configured helper commands.
- *
- * @param args - ripgrep arguments
- *
- * @returns whether command shape is read-only
- *
- * @example
- * ```typescript
- * ripgrepIsReadOnly(['--line-number', 'needle', '.']);
- * ```
+ Prove ripgrep form cannot execute configured helper commands.
+ 
+ @param args - ripgrep arguments
+ 
+ @returns whether command shape is read-only
+ 
+ @example
+ ```typescript
+ ripgrepIsReadOnly(['--line-number', 'needle', '.']);
+ ```
  */
 function ripgrepIsReadOnly(
   args: readonly string[],
 ): boolean {
   /**
-   * Runtime environment containing optional implicit ripgrep configuration.
+   Runtime environment containing optional implicit ripgrep configuration.
    */
   const { env, } = process;
   if (env.RIPGREP_CONFIG_PATH !== undefined)
@@ -178,16 +178,16 @@ function ripgrepIsReadOnly(
 }
 
 /**
- * Prove GNU find expression has no mutation, subprocess, named-output, or link-following action.
- *
- * @param args - find arguments
- *
- * @returns whether command shape is read-only
- *
- * @example
- * ```typescript
- * findIsReadOnly(['/repo', '-type', 'f', '-print']);
- * ```
+ Prove GNU find expression has no mutation, subprocess, named-output, or link-following action.
+ 
+ @param args - find arguments
+ 
+ @returns whether command shape is read-only
+ 
+ @example
+ ```typescript
+ findIsReadOnly(['/repo', '-type', 'f', '-print']);
+ ```
  */
 function findIsReadOnly(
   args: readonly string[],
@@ -205,16 +205,16 @@ function findIsReadOnly(
 }
 
 /**
- * Prove GNU sort writes only standard output and invokes no compression helper.
- *
- * @param args - sort arguments
- *
- * @returns whether command shape is read-only
- *
- * @example
- * ```typescript
- * sortIsReadOnly([]);
- * ```
+ Prove GNU sort writes only standard output and invokes no compression helper.
+ 
+ @param args - sort arguments
+ 
+ @returns whether command shape is read-only
+ 
+ @example
+ ```typescript
+ sortIsReadOnly([]);
+ ```
  */
 function sortIsReadOnly(
   args: readonly string[],
@@ -230,16 +230,16 @@ function sortIsReadOnly(
 //region Public proof
 
 /**
- * Check whether command family has implemented positive read-only proof.
- *
- * @param name - parsed command name
- *
- * @returns whether command should enter read-proof policy
- *
- * @example
- * ```typescript
- * supportsReadOnlyProof('rg');
- * ```
+ Check whether command family has implemented positive read-only proof.
+ 
+ @param name - parsed command name
+ 
+ @returns whether command should enter read-proof policy
+ 
+ @example
+ ```typescript
+ supportsReadOnlyProof('rg');
+ ```
  */
 function supportsReadOnlyProof(
   name: string,
@@ -248,24 +248,24 @@ function supportsReadOnlyProof(
 }
 
 /**
- * Prove parsed command shape cannot mutate files or execute nested helpers.
- *
- * Path scope and expansion provenance are checked by caller.
- *
- * @param command - parsed command record
- *
- * @returns whether command shape is read-only
- *
- * @example
- * ```typescript
- * commandIsReadOnly(command);
- * ```
+ Prove parsed command shape cannot mutate files or execute nested helpers.
+ 
+ Path scope and expansion provenance are checked by caller.
+ 
+ @param command - parsed command record
+ 
+ @returns whether command shape is read-only
+ 
+ @example
+ ```typescript
+ commandIsReadOnly(command);
+ ```
  */
 function commandIsReadOnly(
   command: CommandInfo,
 ): boolean {
   /**
-   * Command shape fields used by positive proof.
+   Command shape fields used by positive proof.
    */
   const {
     args,

@@ -10,9 +10,9 @@ import {
 import { p, } from './p.ts';
 
 /**
- * Install-path tests run in containers via the container test matrix.
- * See `ensure-package.unit.matrix.test.ts` for the actual install verification.
- * Running `ensurePackage` for a missing binary locally would modify the host system.
+ Install-path tests run in containers via the container test matrix.
+ See `ensure-package.unit.matrix.test.ts` for the actual install verification.
+ Running `ensurePackage` for a missing binary locally would modify the host system.
  */
 
 await describe({

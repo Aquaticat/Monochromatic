@@ -8,26 +8,26 @@ import {
 //region Linked worktree diagnostics
 
 /**
- * Options for message construction for rejected guarded invocations.
+ Options for message construction for rejected guarded invocations.
  */
 type CommandMessageOptions = {
   /**
-   * Guarded git subcommand.
+   Guarded git subcommand.
    */
   readonly command: GuardedCommand;
 };
 
 /**
- * Throws for an exhaustively impossible guarded command.
- *
- * @param command - Command value narrowed to `never` by callers.
- *
- * @throws Error unconditionally for impossible runtime input.
- *
- * @example
- * ```ts
- * if (false) unhandledGuardedCommand('stash' as never);
- * ```
+ Throws for an exhaustively impossible guarded command.
+ 
+ @param command - Command value narrowed to `never` by callers.
+ 
+ @throws Error unconditionally for impossible runtime input.
+ 
+ @example
+ ```ts
+ if (false) unhandledGuardedCommand('stash' as never);
+ ```
  */
 function unhandledGuardedCommand(command: never,): never {
   throw new Error(
@@ -37,17 +37,17 @@ function unhandledGuardedCommand(command: never,): never {
 }
 
 /**
- * Builds outside-worktree diagnostic for guarded command.
- *
- * @param command - Guarded git subcommand.
- *
- * @returns Error message for outside-worktree rejection.
- *
- * @example
- * ```ts
- * outsideWorktreeMessage({ command: 'stash' });
- * // => 'cli-git: git stash requires ...'
- * ```
+ Builds outside-worktree diagnostic for guarded command.
+ 
+ @param command - Guarded git subcommand.
+ 
+ @returns Error message for outside-worktree rejection.
+ 
+ @example
+ ```ts
+ outsideWorktreeMessage({ command: 'stash' });
+ // => 'cli-git: git stash requires ...'
+ ```
  */
 export function outsideWorktreeMessage({ command, }: CommandMessageOptions,): string {
   if (command === STASH_SUBCOMMAND) {
@@ -72,17 +72,17 @@ export function outsideWorktreeMessage({ command, }: CommandMessageOptions,): st
 }
 
 /**
- * Builds main-worktree diagnostic for guarded command.
- *
- * @param command - Guarded git subcommand.
- *
- * @returns Error message for main-worktree rejection.
- *
- * @example
- * ```ts
- * mainWorktreeMessage({ command: 'stash' });
- * // => 'cli-git: git stash is rejected ...'
- * ```
+ Builds main-worktree diagnostic for guarded command.
+ 
+ @param command - Guarded git subcommand.
+ 
+ @returns Error message for main-worktree rejection.
+ 
+ @example
+ ```ts
+ mainWorktreeMessage({ command: 'stash' });
+ // => 'cli-git: git stash is rejected ...'
+ ```
  */
 export function mainWorktreeMessage({ command, }: CommandMessageOptions,): string {
   if (command === STASH_SUBCOMMAND) {

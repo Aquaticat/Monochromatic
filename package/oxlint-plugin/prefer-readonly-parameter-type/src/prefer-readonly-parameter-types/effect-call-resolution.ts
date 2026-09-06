@@ -1,7 +1,7 @@
 /**
- * Owned-call resolution and parameter-origin helpers.
- *
- * @module
+ Owned-call resolution and parameter-origin helpers.
+ 
+ @module
  */
 
 import {
@@ -48,22 +48,22 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Maps an expression to every callable parameter its value can be reached from.
- *
- * {@inheritDoc expressionValueOrigins}
- *
- * @param project - TypeScript project resolving symbols and signatures.
- *
- * @param bindingOriginBySymbolId - Local binding symbols mapped to source parameters.
- *
- * @param node - Expression whose value may carry parameter state.
- *
- * @returns parameter origins, empty when value is not parameter-derived.
- *
- * @example
- * ```ts
- * rootParameterOrigins({ project, bindingOriginBySymbolId, node });
- * ```
+ Maps an expression to every callable parameter its value can be reached from.
+ 
+ {@inheritDoc expressionValueOrigins}
+ 
+ @param project - TypeScript project resolving symbols and signatures.
+ 
+ @param bindingOriginBySymbolId - Local binding symbols mapped to source parameters.
+ 
+ @param node - Expression whose value may carry parameter state.
+ 
+ @returns parameter origins, empty when value is not parameter-derived.
+ 
+ @example
+ ```ts
+ rootParameterOrigins({ project, bindingOriginBySymbolId, node });
+ ```
  */
 export function rootParameterOrigins({
   project,
@@ -82,24 +82,24 @@ export function rootParameterOrigins({
 }
 
 /**
- * Collects every caller parameter origin packaged inside one call argument.
- *
- * @param project - TypeScript project resolving root symbols and signatures.
- *
- * @param bindingOriginBySymbolId - Local binding symbols mapped to source parameters.
- *
- * @param node - Call argument whose object or array may package parameter values.
- *
- * @returns unique caller parameter indexes in authored order.
- *
- * @example
- * ```ts
- * parameterIndexes({
- *   project,
- *   bindingOriginBySymbolId,
- *   node,
- * });
- * ```
+ Collects every caller parameter origin packaged inside one call argument.
+ 
+ @param project - TypeScript project resolving root symbols and signatures.
+ 
+ @param bindingOriginBySymbolId - Local binding symbols mapped to source parameters.
+ 
+ @param node - Call argument whose object or array may package parameter values.
+ 
+ @returns unique caller parameter indexes in authored order.
+ 
+ @example
+ ```ts
+ parameterIndexes({
+   project,
+   bindingOriginBySymbolId,
+   node,
+ });
+ ```
  */
 export function parameterIndexes({
   project,
@@ -111,18 +111,18 @@ export function parameterIndexes({
   readonly node: Node;
 },): readonly EffectSlot[] {
   /**
-   * Checker for the project resolving this argument structure.
+   Checker for the project resolving this argument structure.
    */
   const { checker, } = project;
   /**
-   * Unique origins discovered through bounded argument structure.
+   Unique origins discovered through bounded argument structure.
    */
   const origins = new Set<EffectSlot>();
   /**
-   * Adds every origin a callable packaged inside this argument can hand over.
-   *
-   * @param packaged - Callable, accessor or method found inside the packaging structure.
-   *
+   Adds every origin a callable packaged inside this argument can hand over.
+   
+   @param packaged - Callable, accessor or method found inside the packaging structure.
+   
    */
   function collectPackagedCallable(packaged: Node,): void {
     packagedCallableOrigins({
@@ -135,10 +135,10 @@ export function parameterIndexes({
       },);
   }
   /**
-   * Visits only authored object and array packaging structure.
-   *
-   * @param current - Current packaged expression or direct parameter root.
-   *
+   Visits only authored object and array packaging structure.
+   
+   @param current - Current packaged expression or direct parameter root.
+   
    */
   function collect(current: Node,): void {
     /* A spread argument, and any wrapper that changes nothing about the value it holds.
@@ -180,7 +180,7 @@ export function parameterIndexes({
         .forEach(function collectProperty(property,): void {
         if (isPropertyAssignment(property,)) {
           /**
-           * Authored property name used to select callee-mutated target.
+           Authored property name used to select callee-mutated target.
            */
           const propertyName = property.name
             .getText();
@@ -195,12 +195,12 @@ export function parameterIndexes({
         }
         if (isShorthandPropertyAssignment(property,)) {
           /**
-           * Value symbol hidden behind object shorthand property symbol.
+           Value symbol hidden behind object shorthand property symbol.
            */
           const valueSymbol = checker.getShorthandAssignmentValueSymbol(property,);
           if (valueSymbol !== undefined) {
             /**
-             * Caller parameter origins represented by shorthand value.
+             Caller parameter origins represented by shorthand value.
              */
             const shorthandOrigins = bindingOriginBySymbolId.get(valueSymbol.id,)
               ?? NO_SLOT_ORIGIN;
@@ -227,7 +227,7 @@ export function parameterIndexes({
       return;
     }
     /**
-     * Direct parameter origins at current expression root.
+     Direct parameter origins at current expression root.
      */
     const direct = rootParameterOrigins({
       project,
@@ -252,7 +252,7 @@ export function parameterIndexes({
      * before the discharge. A report traded for silence rather than for an attribution is the
      * one outcome the discharge may not produce. */
     /**
-     * Origins this argument hands over through its elements, for a verified container.
+     Origins this argument hands over through its elements, for a verified container.
      */
     const throughElements = expressionElementOrigins({
       project,
@@ -277,8 +277,8 @@ export function parameterIndexes({
           return;
         }
         /**
-         * Spread source type used to prove newly allocated arrays retain no
-         * caller-reachable object when every copied element is primitive.
+         Spread source type used to prove newly allocated arrays retain no
+         caller-reachable object when every copied element is primitive.
          */
         const spreadType = checker.getTypeAtLocation(element.expression,);
         if ((spreadType !== undefined)
@@ -296,20 +296,20 @@ export function parameterIndexes({
 }
 
 /**
- * Resolves call target or callback expression to owned function-like declaration.
- *
- * @param project - TypeScript project resolving declaration handles.
- *
- * @param node - Callee or callback expression.
- *
- * @param analysisRoot - Optional external implementation root accepted as inspectable source.
- *
- * @returns owned function-like declaration or sentinel.
- *
- * @example
- * ```ts
- * callableDeclaration({ project, node });
- * ```
+ Resolves call target or callback expression to owned function-like declaration.
+ 
+ @param project - TypeScript project resolving declaration handles.
+ 
+ @param node - Callee or callback expression.
+ 
+ @param analysisRoot - Optional external implementation root accepted as inspectable source.
+ 
+ @returns owned function-like declaration or sentinel.
+ 
+ @example
+ ```ts
+ callableDeclaration({ project, node });
+ ```
  */
 export function callableDeclaration({
   project,
@@ -321,16 +321,16 @@ export function callableDeclaration({
   readonly analysisRoot?: string;
 },): EffectCallableDeclaration | typeof OWNED_CALLABLE_UNAVAILABLE {
   /**
-   * Cursor follows callable variable aliases iteratively.
+   Cursor follows callable variable aliases iteratively.
    */
   const cursor: { current: Node; } = { current: node, };
   /**
-   * Stable node keys prevent cyclic callable alias traversal.
+   Stable node keys prevent cyclic callable alias traversal.
    */
   const visited = new Set<string>();
   while (!isEffectCallableDeclaration(cursor.current,)) {
     /**
-     * Stable source span for alias-cycle detection.
+     Stable source span for alias-cycle detection.
      */
     const cursorKey = `${cursor.current
       .getSourceFile()
@@ -341,7 +341,7 @@ export function callableDeclaration({
       return OWNED_CALLABLE_UNAVAILABLE;
     visited.add(cursorKey,);
     /**
-     * Resolved symbol for identifier or expression.
+     Resolved symbol for identifier or expression.
      */
     const symbol = isIdentifier(cursor.current,)
       ? project.checker
@@ -349,7 +349,7 @@ export function callableDeclaration({
       : project.checker
         .getSymbolAtLocation(cursor.current,);
     /**
-     * Import and re-export aliases followed to exact value declaration.
+     Import and re-export aliases followed to exact value declaration.
      */
     const aliasedSymbol = (symbol !== undefined)
       && ((symbol.flags & SymbolFlags.Alias) !== 0)
@@ -358,17 +358,17 @@ export function callableDeclaration({
         .getAliasedSymbol(symbol,)
       : symbol;
     /**
-     * Resolved symbol or absent source symbol.
+     Resolved symbol or absent source symbol.
      */
     const declarationSymbol = aliasedSymbol ?? symbol;
     /**
-     * Preferred value declaration handle, with first declaration fallback.
+     Preferred value declaration handle, with first declaration fallback.
      */
     const handle = declarationSymbol?.valueDeclaration
       ?? declarationSymbol?.declarations
       .at(0,);
     /**
-     * Resolved declaration in current project.
+     Resolved declaration in current project.
      */
     const declaration = handle?.resolve(project,);
     if (declaration === undefined)
@@ -381,11 +381,11 @@ export function callableDeclaration({
     cursor.current = declaration;
   }
   /**
-   * Owned callable declaration reached after alias traversal.
+   Owned callable declaration reached after alias traversal.
    */
   const declaration = cursor.current;
   /**
-   * Source file used to reject declaration and external-library boundaries.
+   Source file used to reject declaration and external-library boundaries.
    */
   const sourceFile = declaration.getSourceFile();
   if (sourceFile.isDeclarationFile)
@@ -403,20 +403,20 @@ export function callableDeclaration({
 }
 
 /**
- * Records unresolved external effect and callable provenance.
- *
- * @param summary - Callable summary receiving opaque effect.
- *
- * @param affectedSlot - Affected source parameter index.
- *
- * @param provenance - Authored external call expression text.
- *
- * @mutates summary - Adds opaque index and provenance evidence.
- *
- * @example
- * ```ts
- * addOpaqueEffect({ summary, affectedSlot, provenance });
- * ```
+ Records unresolved external effect and callable provenance.
+ 
+ @param summary - Callable summary receiving opaque effect.
+ 
+ @param affectedSlot - Affected source parameter index.
+ 
+ @param provenance - Authored external call expression text.
+ 
+ @mutates summary - Adds opaque index and provenance evidence.
+ 
+ @example
+ ```ts
+ addOpaqueEffect({ summary, affectedSlot, provenance });
+ ```
  */
 export function addOpaqueEffect({
   summary,
@@ -432,7 +432,7 @@ export function addOpaqueEffect({
   summary.directOpaque
     .add(affectedSlot,);
   /**
-   * Existing provenance facts for parameter, or new accumulator.
+   Existing provenance facts for parameter, or new accumulator.
    */
   const provenanceFacts = summary.opaqueProvenanceBySlot
     .get(affectedSlot,)

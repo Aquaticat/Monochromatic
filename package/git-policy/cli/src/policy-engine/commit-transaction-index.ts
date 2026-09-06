@@ -1,7 +1,7 @@
 /**
- * Private commit-index initialization and prepared installation state.
- *
- * @module
+ Private commit-index initialization and prepared installation state.
+ 
+ @module
  */
 import { copyFile, } from 'node:fs/promises';
 import type { GitObjectId, } from '../api/policy-types.ts';
@@ -9,7 +9,7 @@ import { runTransactionGit, } from './commit-transaction-git.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
- * Strict Git object decoder.
+ Strict Git object decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
@@ -17,15 +17,15 @@ const DECODER = new TextDecoder(
 );
 
 /**
- * Builds Git-native path selection arguments.
- *
- * @param pathspecs - direct pathspec tokens
- *
- * @param pathspecFile - optional file source
- *
- * @param pathspecFileNul - whether source uses NUL delimiters
- *
- * @returns exact git add selection arguments
+ Builds Git-native path selection arguments.
+ 
+ @param pathspecs - direct pathspec tokens
+ 
+ @param pathspecFile - optional file source
+ 
+ @param pathspecFileNul - whether source uses NUL delimiters
+ 
+ @returns exact git add selection arguments
  */
 function selectionArguments({
   pathspecs,
@@ -48,28 +48,28 @@ function selectionArguments({
 }
 
 /**
- * Copies or builds private commit index and snapshots original index.
- *
- * @param workspace - owned transaction workspace
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param mode - commit selection semantics
- *
- * @param pathspecs - engine-selected explicit paths
- *
- * @param pathspecFile - optional pathspec source file
- *
- * @param pathspecFileNul - whether source uses NUL delimiters
- *
- * @param stageIntoIndex - whether copied index receives selected worktree state
- *
- * @example
- * ```ts
- * await initializeCommitIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', pathspecs: [], pathspecFileNul: false });
- * ```
+ Copies or builds private commit index and snapshots original index.
+ 
+ @param workspace - owned transaction workspace
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param mode - commit selection semantics
+ 
+ @param pathspecs - engine-selected explicit paths
+ 
+ @param pathspecFile - optional pathspec source file
+ 
+ @param pathspecFileNul - whether source uses NUL delimiters
+ 
+ @param stageIntoIndex - whether copied index receives selected worktree state
+ 
+ @example
+ ```ts
+ await initializeCommitIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', pathspecs: [], pathspecFileNul: false });
+ ```
  */
 export async function initializeCommitIndex({
   workspace,
@@ -104,7 +104,7 @@ export async function initializeCommitIndex({
   }
   else {
     /**
-     * Optional parent tree for unborn-repository compatibility.
+     Optional parent tree for unborn-repository compatibility.
      */
     const head = await runTransactionGit({
       gitPath,
@@ -149,20 +149,20 @@ export async function initializeCommitIndex({
 }
 
 /**
- * Writes exact intended tree from private commit index.
- *
- * @param workspace - transaction workspace
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - repository directory
- *
- * @returns intended Git tree OID
- *
- * @example
- * ```ts
- * await writePrivateTree({ workspace, gitPath: '/usr/bin/git', cwd: '/repo' });
- * ```
+ Writes exact intended tree from private commit index.
+ 
+ @param workspace - transaction workspace
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - repository directory
+ 
+ @returns intended Git tree OID
+ 
+ @example
+ ```ts
+ await writePrivateTree({ workspace, gitPath: '/usr/bin/git', cwd: '/repo' });
+ ```
  */
 export async function writePrivateTree({
   workspace,
@@ -174,7 +174,7 @@ export async function writePrivateTree({
   cwd: string;
 }>,): Promise<GitObjectId> {
   /**
-   * Git tree object written from private index.
+   Git tree object written from private index.
    */
   const output = await runTransactionGit({
     gitPath,
@@ -183,7 +183,7 @@ export async function writePrivateTree({
     args: ['write-tree',],
   },);
   /**
-   * Exact intended tree OID.
+   Exact intended tree OID.
    */
   const oid = DECODER.decode(output.stdout,)
     .trim();
@@ -193,24 +193,24 @@ export async function writePrivateTree({
 }
 
 /**
- * Prepares exact post-commit index before real Git may advance ref.
- *
- * @param workspace - transaction workspace
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - repository directory
- *
- * @param mode - transaction commit semantics
- *
- * @param selectedPaths - concrete selected paths
- *
- * @param intendedTreeOid - exact prepared commit tree
- *
- * @example
- * ```ts
- * await preparePostIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', selectedPaths: [], intendedTreeOid });
- * ```
+ Prepares exact post-commit index before real Git may advance ref.
+ 
+ @param workspace - transaction workspace
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - repository directory
+ 
+ @param mode - transaction commit semantics
+ 
+ @param selectedPaths - concrete selected paths
+ 
+ @param intendedTreeOid - exact prepared commit tree
+ 
+ @example
+ ```ts
+ await preparePostIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', selectedPaths: [], intendedTreeOid });
+ ```
  */
 export async function preparePostIndex({
   workspace,

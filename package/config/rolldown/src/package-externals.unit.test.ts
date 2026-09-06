@@ -19,7 +19,7 @@ import {
 } from './package-externals.ts';
 
 /**
- * Disposable manifest fixture directory.
+ Disposable manifest fixture directory.
  */
 type ManifestFixture = {
   readonly path: string;
@@ -27,20 +27,20 @@ type ManifestFixture = {
 };
 
 /**
- * Creates a disposable directory holding one package.json fixture.
- *
- * @param manifestText - Raw package.json content to write.
- *
- * @returns Disposable fixture outside repository state.
- *
- * @example
- * ```ts
- * using fixture = createManifestFixture('{}');
- * ```
+ Creates a disposable directory holding one package.json fixture.
+ 
+ @param manifestText - Raw package.json content to write.
+ 
+ @returns Disposable fixture outside repository state.
+ 
+ @example
+ ```ts
+ using fixture = createManifestFixture('{}');
+ ```
  */
 function createManifestFixture(manifestText: string,): ManifestFixture {
   /**
-   * Fresh fixture directory under the system temp root.
+   Fresh fixture directory under the system temp root.
    */
   const path = mkdtempSync(join(tmpdir(), 'package-externals-',),);
   writeFileSync(join(path, 'package.json',), manifestText,);
@@ -98,7 +98,7 @@ await describe({
       name: 'matches the bare name and subpaths only',
       fn: async function anchoring(): Promise<void> {
         /**
-         * Matcher for one scoped package name.
+         Matcher for one scoped package name.
          */
         const matcher = anchoredExternal('@earendil-works/pi-ai',);
         expect(matcher.test('@earendil-works/pi-ai',),).toBe(true,);
@@ -130,23 +130,23 @@ await describe({
           peerDependencies: { oxlint: '>=1.0.0', },
         },),);
         /**
-         * Matchers produced for the fixture manifest.
+         Matchers produced for the fixture manifest.
          */
         const external = await packageExternals({
           packageDir: fixture.path,
           alwaysBundle: ['@monochromatic-dev/**',],
         },);
         /**
-         * Convenience probe deciding whether any matcher hits a specifier.
-         *
-         * @param specifier - Import specifier to test against every matcher.
-         *
-         * @returns Whether any matcher treats specifier as external.
-         *
-         * @example
-         * ```ts
-         * hits('node:path');
-         * ```
+         Convenience probe deciding whether any matcher hits a specifier.
+         
+         @param specifier - Import specifier to test against every matcher.
+         
+         @returns Whether any matcher treats specifier as external.
+         
+         @example
+         ```ts
+         hits('node:path');
+         ```
          */
         function hits(specifier: string,): boolean {
           return external.some(function matches(matcher: RegExp,): boolean {

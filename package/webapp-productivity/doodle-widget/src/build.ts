@@ -1,14 +1,14 @@
 /**
- * Build script: generates a single self-contained HTML doodle widget.
- *
- * Reads default SVG backgrounds for each page, reads the pre-bundled
- * client JS from tsdown output, then assembles HTML/CSS/JS into a
- * single file. SVG backgrounds are embedded unmodified; white fill
- * removal for user-uploaded SVGs happens at runtime via size-based
- * detection in the client background module.
- *
- * Requires `mise run build:js:client` to have run first so
- * `dist/client/main.js` exists.
+ Build script: generates a single self-contained HTML doodle widget.
+ 
+ Reads default SVG backgrounds for each page, reads the pre-bundled
+ client JS from tsdown output, then assembles HTML/CSS/JS into a
+ single file. SVG backgrounds are embedded unmodified; white fill
+ removal for user-uploaded SVGs happens at runtime via size-based
+ detection in the client background module.
+ 
+ Requires `mise run build:js:client` to have run first so
+ `dist/client/main.js` exists.
  */
 import {
   mkdir,
@@ -21,10 +21,10 @@ import { renderPage, } from './page.ts';
 import { resolveSourceUrl, } from './source-url.ts';
 import { renderStyles, } from './styles.ts';
 
-export {};
+
 
 /**
- * Absolute path to this package's root directory
+ Absolute path to this package's root directory
  */
 const PACKAGE_DIR: string = new URL(
   '..',
@@ -33,7 +33,7 @@ const PACKAGE_DIR: string = new URL(
   .pathname;
 
 /**
- * Output directory for the generated site
+ Output directory for the generated site
  */
 const DIST_DIR = join(
   PACKAGE_DIR,
@@ -44,10 +44,10 @@ const DIST_DIR = join(
 console.error('[doodle-widget] building...',);
 
 /**
- * SVG backgrounds passed through unmodified; the bundled SVGs already
- * have transparent backgrounds (`fill:none`). White fill removal only
- * applies to user-uploaded SVGs at runtime via {@link setSvgBackground},
- * which uses size-based detection to target actual backgrounds.
+ SVG backgrounds passed through unmodified; the bundled SVGs already
+ have transparent backgrounds (`fill:none`). White fill removal only
+ applies to user-uploaded SVGs at runtime via {@link setSvgBackground},
+ which uses size-based detection to target actual backgrounds.
  */
 const svgBackgrounds = [
   await readFile(
@@ -71,12 +71,12 @@ const svgBackgrounds = [
 ];
 
 /**
- * Minified CSS stylesheet, rendered by {@link renderStyles}
+ Minified CSS stylesheet, rendered by {@link renderStyles}
  */
 const css = renderStyles();
 
 /**
- * Client-side canvas drawing and background management script, pre-bundled by tsdown
+ Client-side canvas drawing and background management script, pre-bundled by tsdown
  */
 const js = await readFile(
   join(
@@ -89,12 +89,12 @@ const js = await readFile(
 );
 
 /**
- * Source code URL resolved from git remote and package.json by {@link resolveSourceUrl}
+ Source code URL resolved from git remote and package.json by {@link resolveSourceUrl}
  */
 const sourceUrl = await resolveSourceUrl(PACKAGE_DIR,);
 
 /**
- * Complete self-contained HTML document, assembled by {@link renderPage}
+ Complete self-contained HTML document, assembled by {@link renderPage}
  */
 const html = renderPage({
   css,

@@ -24,7 +24,7 @@ await describe({
       name: 'accepts a complete OCR JSON result',
       fn: async () => {
         /**
-         * Complete result fixture carrying repository-head provenance.
+         Complete result fixture carrying repository-head provenance.
          */
         const text = JSON.stringify({
           status: 'complete',
@@ -49,7 +49,7 @@ await describe({
         },);
 
         /**
-         * Normalized adapter input.
+         Normalized adapter input.
          */
         const result = parseStructuredInput({ text, },);
 
@@ -79,7 +79,7 @@ await describe({
       name: 'accepts a bare OCR comment array',
       fn: async () => {
         /**
-         * Bare comments fixture with optional metadata absent.
+         Bare comments fixture with optional metadata absent.
          */
         const text = JSON.stringify([
           {
@@ -91,7 +91,7 @@ await describe({
         ],);
 
         /**
-         * Normalized adapter input.
+         Normalized adapter input.
          */
         const result = parseStructuredInput({ text, },);
 
@@ -118,7 +118,7 @@ await describe({
       name: 'replays JSONL supersession and failure records',
       fn: async () => {
         /**
-         * Session transcript whose later records replace and remove checkpoints.
+         Session transcript whose later records replace and remove checkpoints.
          */
         const text = [
           JSON.stringify({ type: 'session_start', sessionId: 'run-1', }),
@@ -177,7 +177,7 @@ await describe({
         ].join('\n',);
 
         /**
-         * Replayed adapter input.
+         Replayed adapter input.
          */
         const result = parseStructuredInput({ text, },);
 
@@ -206,7 +206,7 @@ await describe({
       name: 'rejects findings without a meaningful title source',
       fn: async () => {
         /**
-         * Sparse finding forbidden by atomic input validation.
+         Sparse finding forbidden by atomic input validation.
          */
         const text = JSON.stringify([
           {
@@ -219,7 +219,7 @@ await describe({
           },
         ],);
         /**
-         * Captured validation failure.
+         Captured validation failure.
          */
         let caught: unknown;
         try {
@@ -238,11 +238,11 @@ await describe({
       name: 'rejects a UTF-8 byte-order mark in a named file',
       fn: async () => {
         /**
-         * Disposable input directory.
+         Disposable input directory.
          */
         await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-input-',),);
         /**
-         * Named file carrying forbidden UTF-8 BOM before valid JSON.
+         Named file carrying forbidden UTF-8 BOM before valid JSON.
          */
         const path = join(directory.path, 'review.json',);
         await writeFile(path, Buffer.concat([
@@ -251,7 +251,7 @@ await describe({
         ],),);
 
         /**
-         * Captured transport validation failure.
+         Captured transport validation failure.
          */
         let caught: unknown;
         try {
@@ -269,17 +269,17 @@ await describe({
       name: 'reads a strict UTF-8 named file',
       fn: async () => {
         /**
-         * Disposable input directory.
+         Disposable input directory.
          */
         await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-input-',),);
         /**
-         * Valid named comment-array file.
+         Valid named comment-array file.
          */
         const path = join(directory.path, 'review.json',);
         await writeFile(path, '[]', 'utf8',);
 
         /**
-         * Parsed named-file input.
+         Parsed named-file input.
          */
         const result = await readStructuredInputFile({ path, },);
 
@@ -293,17 +293,17 @@ await describe({
       name: 'rejects malformed UTF-8 bytes in a named file',
       fn: async () => {
         /**
-         * Disposable input directory.
+         Disposable input directory.
          */
         await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-input-',),);
         /**
-         * Invalid two-byte UTF-8 sequence fixture.
+         Invalid two-byte UTF-8 sequence fixture.
          */
         const path = join(directory.path, 'review.json',);
         await writeFile(path, Buffer.from('c328', 'hex',),);
 
         /**
-         * Captured strict-decoding failure.
+         Captured strict-decoding failure.
          */
         let caught: unknown;
         try {
@@ -321,7 +321,7 @@ await describe({
       name: 'rejects malformed records atomically',
       fn: async () => {
         /**
-         * Inputs whose recognized envelopes contain one malformed record.
+         Inputs whose recognized envelopes contain one malformed record.
          */
         const cases: readonly {
           readonly text: string;
@@ -361,7 +361,7 @@ await describe({
 
         for (const invalidCase of cases) {
           /**
-           * Captured validation failure for current malformed fixture.
+           Captured validation failure for current malformed fixture.
            */
           let caught: unknown;
           try {
@@ -379,7 +379,7 @@ await describe({
       name: 'accepts completed JSONL checkpoints without comments field',
       fn: async () => {
         /**
-         * OCR omits comments property when completed item has zero findings.
+         OCR omits comments property when completed item has zero findings.
          */
         const text = JSON.stringify({
           type: 'review_item_done',

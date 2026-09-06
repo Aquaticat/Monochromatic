@@ -1,7 +1,7 @@
 /**
- * Pre-execution self-containment validation for trusted MJS artifacts.
- *
- * @module
+ Pre-execution self-containment validation for trusted MJS artifacts.
+ 
+ @module
  */
 import { isBuiltin, } from 'node:module';
 import {
@@ -17,13 +17,13 @@ import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Rejected MJS artifact.
+ Rejected MJS artifact.
  */
 export class MjsValidationError extends Error {
   /**
-   * Creates MJS validation failure.
-   *
-   * @param message - safe failure explanation
+   Creates MJS validation failure.
+   
+   @param message - safe failure explanation
    */
   public constructor(message: string,) {
     super(message,);
@@ -32,28 +32,28 @@ export class MjsValidationError extends Error {
 }
 
 /**
- * Validated static dependency summary.
+ Validated static dependency summary.
  */
 export type MjsValidation = Readonly<{
   /**
-   * Node built-ins retained by artifact.
+   Node built-ins retained by artifact.
    */
   nodeBuiltins: readonly string[];
 }>;
 
 /**
- * Validates syntax and dependency self-containment without execution.
- *
- * @param bytes - exact candidate MJS bytes
- *
- * @param sourceName - diagnostic-only source name
- *
- * @returns retained Node built-in imports
- *
- * @example
- * ```ts
- * validateMjs({ bytes: new TextEncoder().encode('export default {}'), sourceName: 'config.mjs' });
- * ```
+ Validates syntax and dependency self-containment without execution.
+ 
+ @param bytes - exact candidate MJS bytes
+ 
+ @param sourceName - diagnostic-only source name
+ 
+ @returns retained Node built-in imports
+ 
+ @example
+ ```ts
+ validateMjs({ bytes: new TextEncoder().encode('export default {}'), sourceName: 'config.mjs' });
+ ```
  */
 export function validateMjs({
   bytes,
@@ -63,7 +63,7 @@ export function validateMjs({
   sourceName: string;
 }>,): MjsValidation {
   /**
-   * UTF-8 source decoded without replacement characters.
+   UTF-8 source decoded without replacement characters.
    */
   const sourceText = (function decodeSource(): string {
     try {
@@ -77,12 +77,12 @@ export function validateMjs({
     }
   })();
   /**
-   * Complete parse result; yuku-parser recovers from syntax errors, so
-   * error-severity diagnostics decide rejection.
+   Complete parse result; yuku-parser recovers from syntax errors, so
+   error-severity diagnostics decide rejection.
    */
   const parsed = parse(sourceText,);
   /**
-   * Error-severity syntax diagnostics.
+   Error-severity syntax diagnostics.
    */
   const parseErrors = parsed.diagnostics
     .filter(function isError(diagnostic: ForeignBorrowed<Diagnostic>,): boolean {
@@ -99,24 +99,24 @@ export function validateMjs({
     );
 
   /**
-   * Node built-ins retained by artifact.
+   Node built-ins retained by artifact.
    */
   const nodeBuiltins = new Set<string>();
 
   /**
-   * Admits one dependency specifier, rejecting everything except Node
-   * built-ins.
-   *
-   * @param specifier - Module specifier under self-containment judgement.
-   *
-   * @param form - Import form naming for diagnostics.
-   *
-   * @throws MjsValidationError when the specifier is not a Node built-in.
-   *
-   * @example
-   * ```ts
-   * admitBuiltin({ specifier: 'node:fs', form: 'static import' });
-   * ```
+   Admits one dependency specifier, rejecting everything except Node
+   built-ins.
+   
+   @param specifier - Module specifier under self-containment judgement.
+   
+   @param form - Import form naming for diagnostics.
+   
+   @throws MjsValidationError when the specifier is not a Node built-in.
+   
+   @example
+   ```ts
+   admitBuiltin({ specifier: 'node:fs', form: 'static import' });
+   ```
    */
   function admitBuiltin({
     specifier,
@@ -134,20 +134,20 @@ export function validateMjs({
   }
 
   /**
-   * Admits one static module declaration source.
-   *
-   * @param source - Declaration source literal.
-   *
-   * @throws MjsValidationError when the source is not a Node built-in.
-   *
-   * @example
-   * ```ts
-   * admitStaticSource(importDeclaration.source);
-   * ```
+   Admits one static module declaration source.
+   
+   @param source - Declaration source literal.
+   
+   @throws MjsValidationError when the source is not a Node built-in.
+   
+   @example
+   ```ts
+   admitStaticSource(importDeclaration.source);
+   ```
    */
   function admitStaticSource(source: ReadonlyDeep<ImportDeclaration['source']>,): void {
     /**
-     * Literal specifier value before the string-shape check.
+     Literal specifier value before the string-shape check.
      */
     const { value, } = source;
     if ((typeof value) !== 'string')
@@ -166,7 +166,7 @@ export function validateMjs({
       },
       ExportNamedDeclaration: function visitNamedExport(node: ReadonlyDeep<ExportNamedDeclaration>,): void {
         /**
-         * Re-export source literal, null for local exports.
+         Re-export source literal, null for local exports.
          */
         const { source, } = node;
         if (source === null)
@@ -178,7 +178,7 @@ export function validateMjs({
       },
       ImportExpression: function visitDynamicImport(node: ReadonlyDeep<ImportExpression>,): void {
         /**
-         * Dynamic import argument before the literal-shape check.
+         Dynamic import argument before the literal-shape check.
          */
         const { source, } = node;
         if ((source.type !== 'Literal') || ((typeof source.value) !== 'string'))

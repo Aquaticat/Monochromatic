@@ -1,10 +1,10 @@
 /**
- * Shared constants for browser-side controller event wiring modules.
- *
- * @example
- * ```ts
- * import { CHANNEL_KEYS } from './controller-event-constants.ts';
- * ```
+ Shared constants for browser-side controller event wiring modules.
+ 
+ @example
+ ```ts
+ import { CHANNEL_KEYS } from './controller-event-constants.ts';
+ ```
  */
 
 import type {
@@ -16,7 +16,7 @@ import type {
 //region Constants
 
 /**
- * Channel keys, fixed order.
+ Channel keys, fixed order.
  */
 export const CHANNEL_KEYS: readonly ChannelKey[] = [
   'x',
@@ -28,7 +28,7 @@ export const CHANNEL_KEYS: readonly ChannelKey[] = [
 ];
 
 /**
- * Valid data-dim keys for dropdown-value validation.
+ Valid data-dim keys for dropdown-value validation.
  */
 export const DIM_KEYS: readonly DataDimKey[] = [
   'logSourceBytes',
@@ -44,7 +44,7 @@ export const DIM_KEYS: readonly DataDimKey[] = [
 ];
 
 /**
- * Valid toggle values for radio-input validation.
+ Valid toggle values for radio-input validation.
  */
 export const TOGGLE_VALUES: readonly ToggleValue[] = [
   'any',

@@ -8,10 +8,10 @@ import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable
 //region Effective target classification
 
 /**
- * Worktree location classification used by linked-worktree-only rules.
- *
- * `allowlisted` marks repository under baked-in tool-cache directory whose
- * destructive worktree commands are intentionally exempt from enforcement.
+ Worktree location classification used by linked-worktree-only rules.
+ 
+ `allowlisted` marks repository under baked-in tool-cache directory whose
+ destructive worktree commands are intentionally exempt from enforcement.
  */
 export type EffectiveTarget =
   | 'outside-worktree'
@@ -20,55 +20,55 @@ export type EffectiveTarget =
   | 'allowlisted';
 
 /**
- * Options for classifying effective target Git would operate on.
+ Options for classifying effective target Git would operate on.
  */
 type ClassifyEffectiveTargetOptions = Readonly<{
   /**
-   * Complete forwarded Git arguments.
+   Complete forwarded Git arguments.
    */
   args: readonly string[];
   /**
-   * Tool-cache roots whose repositories bypass enforcement.
+   Tool-cache roots whose repositories bypass enforcement.
    */
   allowedWorktreeDirs?: readonly string[];
 }>;
 
 /**
- * Classifies policy target while delegating repository identity to shared module.
- *
- * Shared identity resolution replays caller repository selection,
- * including `--git-dir`,
- * `--work-tree`,
- * `GIT_DIR`,
- * and `GIT_WORK_TREE`,
- * against real Git.
- * This policy adapter adds only tool-cache allowlisting and maps bare repositories
- * to outside-worktree because linked-worktree safeguards require filesystem worktree.
- *
- * @param args - complete forwarded Git arguments
- *
- * @param allowedWorktreeDirs - tool-cache roots yielding `allowlisted`
- *
- * @returns linked-worktree policy target classification
- *
- * @example
- * ```ts
- * await classifyEffectiveTarget({
- *   args: ['--git-dir', '/main/.git', '--work-tree', '/main', 'status'],
- * });
- * // => 'main-worktree'
- * ```
+ Classifies policy target while delegating repository identity to shared module.
+ 
+ Shared identity resolution replays caller repository selection,
+ including `--git-dir`,
+ `--work-tree`,
+ `GIT_DIR`,
+ and `GIT_WORK_TREE`,
+ against real Git.
+ This policy adapter adds only tool-cache allowlisting and maps bare repositories
+ to outside-worktree because linked-worktree safeguards require filesystem worktree.
+ 
+ @param args - complete forwarded Git arguments
+ 
+ @param allowedWorktreeDirs - tool-cache roots yielding `allowlisted`
+ 
+ @returns linked-worktree policy target classification
+ 
+ @example
+ ```ts
+ await classifyEffectiveTarget({
+   args: ['--git-dir', '/main/.git', '--work-tree', '/main', 'status'],
+ });
+ // => 'main-worktree'
+ ```
  */
 export async function classifyEffectiveTarget({
   args,
   allowedWorktreeDirs = DEFAULT_ALLOWED_WORKTREE_DIRS,
 }: ClassifyEffectiveTargetOptions,): Promise<EffectiveTarget> {
   /**
-   * Absolute real-Git executable used by shared identity resolver.
+   Absolute real-Git executable used by shared identity resolver.
    */
   const gitPath = await resolveGit();
   /**
-   * Canonical repository identity before policy-specific allowlisting.
+   Canonical repository identity before policy-specific allowlisting.
    */
   const identity = await resolveGitWorktreeIdentity({
     args,

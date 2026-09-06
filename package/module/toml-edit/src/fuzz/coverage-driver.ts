@@ -1,20 +1,20 @@
 /**
- * Deterministic reachability driver for the toml-edit fuzz coverage gate.
- *
- * Samples the shared fuzz generators and loads the committed corpus at a fixed
- * seed and run count, then replays them through the {@link coverage-exercise}
- * operation spread, which imports the package implementation from source. Run
- * under `NODE_V8_COVERAGE`, this attributes coverage to the `src` files the gate
- * measures, and the fixed seed keeps the covered-line set reproducible so the
- * committed baseline is stable.
- *
- * This is the reachability counterpart to the property suite (which tests the
- * built artifact for correctness with random seeds); it asserts nothing.
- *
- * CLI: `node coverage-driver.ts [seed] [numRuns]`. The optional arguments let the
- * saturation check rerun the sweep under a second seed.
- *
- * @module
+ Deterministic reachability driver for the toml-edit fuzz coverage gate.
+ 
+ Samples the shared fuzz generators and loads the committed corpus at a fixed
+ seed and run count, then replays them through the {@link coverage-exercise}
+ operation spread, which imports the package implementation from source. Run
+ under `NODE_V8_COVERAGE`, this attributes coverage to the `src` files the gate
+ measures, and the fixed seed keeps the covered-line set reproducible so the
+ committed baseline is stable.
+ 
+ This is the reachability counterpart to the property suite (which tests the
+ built artifact for correctness with random seeds); it asserts nothing.
+ 
+ CLI: `node coverage-driver.ts [seed] [numRuns]`. The optional arguments let the
+ saturation check rerun the sweep under a second seed.
+ 
+ @module
  */
 
 import {
@@ -62,35 +62,35 @@ import {
 //region Configuration
 
 /**
- * Default fast-check seed. The saturation check overrides it via argv to confirm
- * the covered-line set does not depend on the seed.
+ Default fast-check seed. The saturation check overrides it via argv to confirm
+ the covered-line set does not depend on the seed.
  */
 const DEFAULT_SEED = 0xC0_FF_EE;
 
 /**
- * Default sampled cases per arbitrary, high enough to saturate the reachable
- * branches the gate watches.
+ Default sampled cases per arbitrary, high enough to saturate the reachable
+ branches the gate watches.
  */
 const DEFAULT_NUM_RUNS = 600;
 
 /**
- * Bound on sources fed through the base-independent edit and comment machinery,
- * so the expensive deep sweep stays fast without losing reachability.
+ Bound on sources fed through the base-independent edit and comment machinery,
+ so the expensive deep sweep stays fast without losing reachability.
  */
 const DEEP_SUBSET_LIMIT = 30;
 
 /**
- * Maximum generated array length for the edit-value arbitrary.
+ Maximum generated array length for the edit-value arbitrary.
  */
 const MAX_VALUE_ARRAY_LENGTH = 3;
 
 /**
- * Maximum generated key-name length for the seam arbitrary.
+ Maximum generated key-name length for the seam arbitrary.
  */
 const MAX_KEY_NAME_LENGTH = 12;
 
 /**
- * Optional seed and run-count CLI arguments (positions two and three).
+ Optional seed and run-count CLI arguments (positions two and three).
  */
 const [
   seedArg,
@@ -99,17 +99,17 @@ const [
   .slice(2,);
 
 /**
- * Resolved fast-check seed for this run.
+ Resolved fast-check seed for this run.
  */
 const seed = Number.isInteger(Number(seedArg,),) ? Number(seedArg,) : DEFAULT_SEED;
 
 /**
- * Resolved sampled-cases-per-arbitrary count for this run.
+ Resolved sampled-cases-per-arbitrary count for this run.
  */
 const numRuns = (Number.isInteger(Number(runsArg,),) && (Number(runsArg,) > 0)) ? Number(runsArg,) : DEFAULT_NUM_RUNS;
 
 /**
- * Shared deterministic sampling parameters.
+ Shared deterministic sampling parameters.
  */
 const sampleParams = {
   numRuns,
@@ -121,7 +121,7 @@ const sampleParams = {
 //region Local arbitraries
 
 /**
- * TOML-representable scalar values for the edit sweeps.
+ TOML-representable scalar values for the edit sweeps.
  */
 const scalarValueArbitrary: Arbitrary<unknown> = oneof(
   string(),
@@ -134,7 +134,7 @@ const scalarValueArbitrary: Arbitrary<unknown> = oneof(
 );
 
 /**
- * Flat object emitted as a table or inline table.
+ Flat object emitted as a table or inline table.
  */
 const flatObjectArbitrary = dictionary(
   constantFrom(
@@ -145,7 +145,7 @@ const flatObjectArbitrary = dictionary(
 );
 
 /**
- * Edit value arbitrary: scalars, flat tables, scalar arrays, arrays-of-tables.
+ Edit value arbitrary: scalars, flat tables, scalar arrays, arrays-of-tables.
  */
 const editValueArbitrary: Arbitrary<unknown> = oneof(
   scalarValueArbitrary,
@@ -164,8 +164,8 @@ const editValueArbitrary: Arbitrary<unknown> = oneof(
 );
 
 /**
- * Adversarial key-name arbitrary spanning bare, empty, dotted-looking,
- * numeric-looking, quote-bearing, and unicode names.
+ Adversarial key-name arbitrary spanning bare, empty, dotted-looking,
+ numeric-looking, quote-bearing, and unicode names.
  */
 const keyNameArbitrary: Arbitrary<string> = oneof(
   string({
@@ -201,7 +201,7 @@ const keyNameArbitrary: Arbitrary<string> = oneof(
 //region Sampling
 
 /**
- * Generated documents, pinned examples first so they always run.
+ Generated documents, pinned examples first so they always run.
  */
 const documents: readonly string[] = [
   ...DOCUMENT_EXAMPLES,
@@ -212,7 +212,7 @@ const documents: readonly string[] = [
 ];
 
 /**
- * Mutator-corrupted documents for the parser error paths.
+ Mutator-corrupted documents for the parser error paths.
  */
 const corrupted: readonly string[] = sample(
   corruptedDocumentArbitrary,
@@ -220,7 +220,7 @@ const corrupted: readonly string[] = sample(
 );
 
 /**
- * Edit values for the from-scratch value-encoder sweep.
+ Edit values for the from-scratch value-encoder sweep.
  */
 const editValues: readonly unknown[] = sample(
   editValueArbitrary,
@@ -228,7 +228,7 @@ const editValues: readonly unknown[] = sample(
 );
 
 /**
- * Key names for the `_encodeKey` seam.
+ Key names for the `_encodeKey` seam.
  */
 const keyNames: readonly string[] = sample(
   keyNameArbitrary,
@@ -236,7 +236,7 @@ const keyNames: readonly string[] = sample(
 );
 
 /**
- * Scalar value spellings for the node re-emission seams.
+ Scalar value spellings for the node re-emission seams.
  */
 const scalarTexts: readonly string[] = sample(
   scalarSampleArbitrary,
@@ -245,7 +245,7 @@ const scalarTexts: readonly string[] = sample(
   .map(function text(value: ValueSample,) { return value.text; },);
 
 /**
- * Arbitrary JSON values for the `_jsValueToTomlText` seam.
+ Arbitrary JSON values for the `_jsValueToTomlText` seam.
  */
 const jsonValues: readonly unknown[] = sample(
   jsonValue(),
@@ -253,17 +253,17 @@ const jsonValues: readonly unknown[] = sample(
 );
 
 /**
- * Committed valid fixtures, loaded deterministically (bounded mode).
+ Committed valid fixtures, loaded deterministically (bounded mode).
  */
 const validCorpus = await loadValidFixtures();
 
 /**
- * Committed invalid fixtures for the parser rejection paths.
+ Committed invalid fixtures for the parser rejection paths.
  */
 const invalidCorpus = await loadInvalidFixtures();
 
 /**
- * Canonical options drawn once from a fresh empty state, fed to the seams.
+ Canonical options drawn once from a fresh empty state, fed to the seams.
  */
 const canonicalOptions = emptyTomlEdit()
   .canonical;
@@ -298,7 +298,7 @@ for (const entry of validCorpus) {
 }
 
 /**
- * Bounded, diverse subset for the base-independent edit and comment machinery.
+ Bounded, diverse subset for the base-independent edit and comment machinery.
  */
 const deepSources: readonly string[] = [
   ...documents.slice(
@@ -326,7 +326,7 @@ for (const entry of invalidCorpus) {
 }
 
 /**
- * Accepted and rejected operation counts after the sweep.
+ Accepted and rejected operation counts after the sweep.
  */
 const snapshot = tallySnapshot();
 

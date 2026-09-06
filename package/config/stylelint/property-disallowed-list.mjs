@@ -1,16 +1,16 @@
 /**
- * Properties banned from use in stylesheets.
- *
- * Grouped by rationale: pointless legacy properties, deprecated/non-standard,
- * shorthand properties (always use longhand), and physical (non-logical) properties.
- *
- * @type {ReadonlyArray<string | RegExp>}
- * @example
- * ```js
- * // stylelint.config.mjs
- * import { propertyDisallowedList } from './property-disallowed-list.mjs';
- * export default { rules: { 'property-disallowed-list': propertyDisallowedList } };
- * ```
+ Properties banned from use in stylesheets.
+ 
+ Grouped by rationale: pointless legacy properties, deprecated/non-standard,
+ shorthand properties (always use longhand), and physical (non-logical) properties.
+ 
+ @type {ReadonlyArray<string | RegExp>}
+ @example
+ ```js
+ // stylelint.config.mjs
+ import { propertyDisallowedList } from './property-disallowed-list.mjs';
+ export default { rules: { 'property-disallowed-list': propertyDisallowedList } };
+ ```
  */
 export const propertyDisallowedList = [
   //region Pointless

@@ -1,16 +1,16 @@
 /**
- * Whether external formal positions are mapped from argument positions, or indexed as if identical.
- *
- * Its own test because no shape in the fixture corpus reaches this through a diagnostic. Doing so needs
- * an installed package with a locked version whose shipped implementation provably mutates a formal,
- * invoked with a spread. A mutant restoring the previous actual-position indexing survived the whole
- * suite, so the mapping had to be exercised directly or it would have landed untested.
- *
- * What the mapping being wrong costs is a dropped fact rather than an invented one. A proven mutation of
- * a later formal read an index that did not exist and recorded nothing, so an offer stood where the
- * external analyzer had already disproved it.
- *
- * @module
+ Whether external formal positions are mapped from argument positions, or indexed as if identical.
+ 
+ Its own test because no shape in the fixture corpus reaches this through a diagnostic. Doing so needs
+ an installed package with a locked version whose shipped implementation provably mutates a formal,
+ invoked with a spread. A mutant restoring the previous actual-position indexing survived the whole
+ suite, so the mapping had to be exercised directly or it would have landed untested.
+ 
+ What the mapping being wrong costs is a dropped fact rather than an invented one. A proven mutation of
+ a later formal read an index that did not exist and recorded nothing, so an offer stood where the
+ external analyzer had already disproved it.
+ 
+ @module
  */
 
 import { fileURLToPath, } from 'node:url';
@@ -34,7 +34,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Repository path the overlay stands in for, so project discovery succeeds.
+ Repository path the overlay stands in for, so project discovery succeeds.
  */
 const OVERLAY_PATH = fileURLToPath(new URL(
   '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-structural-store-invalid.ts',
@@ -42,10 +42,10 @@ const OVERLAY_PATH = fileURLToPath(new URL(
 ),);
 
 /**
- * Source declaring one plain callee and one rest callee, called four ways.
- *
- * Each call initializes a distinctly named local, so a case can find its call by that name rather than
- * by counting call expressions.
+ Source declaring one plain callee and one rest callee, called four ways.
+ 
+ Each call initializes a distinctly named local, so a case can find its call by that name rather than
+ by counting call expressions.
  */
 const SOURCE = `
 export function plainCallee(first: string, second: string, third: string,): string {
@@ -66,10 +66,10 @@ export function driver(alpha: string, beta: string, gamma: string,): readonly st
 `;
 
 /**
- * Origins standing in for what each argument position carries, one distinct slot per position.
- *
- * Distinct values on purpose, so a mapping that reads the wrong position produces a visibly wrong
- * answer rather than a coincidentally right one.
+ Origins standing in for what each argument position carries, one distinct slot per position.
+ 
+ Distinct values on purpose, so a mapping that reads the wrong position produces a visibly wrong
+ answer rather than a coincidentally right one.
  */
 const ARGUMENT_ORIGINS = [
   [asEffectSlot(10,),],
@@ -78,7 +78,7 @@ const ARGUMENT_ORIGINS = [
 ];
 
 /**
- * Semantic session over the overlay, shared by every case.
+ Semantic session over the overlay, shared by every case.
  */
 const session = openSemanticFile({
   fileName: OVERLAY_PATH,
@@ -87,26 +87,26 @@ const session = openSemanticFile({
 },);
 
 /**
- * Names the call expression initializing one named local.
- *
- * @param callName - Local the call initializes.
- *
- * @returns call expression that local is initialized with.
- *
- * @throws when the name does not resolve to a call.
- *
- * @example
- * ```ts
- * callNamed('positional');
- * ```
+ Names the call expression initializing one named local.
+ 
+ @param callName - Local the call initializes.
+ 
+ @returns call expression that local is initialized with.
+ 
+ @throws when the name does not resolve to a call.
+ 
+ @example
+ ```ts
+ callNamed('positional');
+ ```
  */
 function callNamed(callName: string,): CallExpression {
   /**
-   * Offset of the callee name written just after the local's assignment.
+   Offset of the callee name written just after the local's assignment.
    */
   const at = SOURCE.indexOf('Callee(', SOURCE.indexOf(`const ${callName} =`,),);
   /**
-   * Call expression the node at that offset belongs to.
+   Call expression the node at that offset belongs to.
    */
   const call = session.nodeAtOffset(at,)
     .parent;
@@ -116,20 +116,20 @@ function callNamed(callName: string,): CallExpression {
 }
 
 /**
- * Maps one named call against one named callee's formals.
- *
- * @param calleeName - Declaration whose formals order the arguments.
- *
- * @param callName - Local the call initializes.
- *
- * @returns caller origins by formal position.
- *
- * @throws when the callee name does not resolve to a function declaration.
- *
- * @example
- * ```ts
- * mapCall({ calleeName: 'plainCallee', callName: 'positional' });
- * ```
+ Maps one named call against one named callee's formals.
+ 
+ @param calleeName - Declaration whose formals order the arguments.
+ 
+ @param callName - Local the call initializes.
+ 
+ @returns caller origins by formal position.
+ 
+ @throws when the callee name does not resolve to a function declaration.
+ 
+ @example
+ ```ts
+ mapCall({ calleeName: 'plainCallee', callName: 'positional' });
+ ```
  */
 function mapCall({
   calleeName,
@@ -139,7 +139,7 @@ function mapCall({
   readonly callName: string;
 },): readonly (readonly number[])[] {
   /**
-   * Declaration owning the requested callee name.
+   Declaration owning the requested callee name.
    */
   const declaration = session.nodeAtOffset(
     SOURCE.indexOf(`function ${calleeName}`,) + 'function '.length,

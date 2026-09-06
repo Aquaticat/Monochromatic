@@ -1,7 +1,7 @@
 /**
- * Provider usage response header parser fan-in.
- *
- * @module
+ Provider usage response header parser fan-in.
+ 
+ @module
  */
 
 import { parseAnthropicRateLimitSnapshots, } from './anthropic-rate-limit-headers.ts';
@@ -11,23 +11,23 @@ import { parseSyntheticRateLimitSnapshots, } from './synthetic-quota-headers.ts'
 import type { RateLimitSnapshot, } from './rate-limit-types.ts';
 
 /**
- * Parses all supported provider usage header groups.
- *
- * Sources:
- * - Anthropic token limit headers from Pi's Anthropic provider responses.
- * - Codex subscription headers matching OpenAI Codex CLI `codex-api/src/rate_limits.rs`.
- * - Synthetic quotas JSON from `@aliou/pi-synthetic`'s `x-synthetic-quotas` header.
- *
- * @param headers - provider response headers from Pi
- *
- * @param nowMs - wall-clock sample time in epoch milliseconds
- *
- * @returns parsed {@link RateLimitSnapshot} entries for complete and valid projectable usage windows
- *
- * @example
- * ```ts
- * parseRateLimitSnapshots({ headers, nowMs: Date.now() });
- * ```
+ Parses all supported provider usage header groups.
+ 
+ Sources:
+ - Anthropic token limit headers from Pi's Anthropic provider responses.
+ - Codex subscription headers matching OpenAI Codex CLI `codex-api/src/rate_limits.rs`.
+ - Synthetic quotas JSON from `@aliou/pi-synthetic`'s `x-synthetic-quotas` header.
+ 
+ @param headers - provider response headers from Pi
+ 
+ @param nowMs - wall-clock sample time in epoch milliseconds
+ 
+ @returns parsed {@link RateLimitSnapshot} entries for complete and valid projectable usage windows
+ 
+ @example
+ ```ts
+ parseRateLimitSnapshots({ headers, nowMs: Date.now() });
+ ```
  */
 function parseRateLimitSnapshots({
   headers,
@@ -37,7 +37,7 @@ function parseRateLimitSnapshots({
   readonly nowMs: number;
 },): readonly RateLimitSnapshot[] {
   /**
-   * Headers keyed by lowercase name so providers may vary casing.
+   Headers keyed by lowercase name so providers may vary casing.
    */
   const normalizedHeaders = normalizeHeaders(headers,);
 

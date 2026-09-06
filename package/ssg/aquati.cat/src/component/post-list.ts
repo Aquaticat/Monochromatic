@@ -1,8 +1,8 @@
 /**
- * Post list grid component.
- *
- * Renders a grid of post cards as a `<post-list>` custom element
- * wrapping a semantic `<ul>`.
+ Post list grid component.
+ 
+ Renders a grid of post cards as a `<post-list>` custom element
+ wrapping a semantic `<ul>`.
  */
 import {
   cssCompounded,
@@ -21,14 +21,14 @@ import { html as postCardHtml, } from './post-card.ts';
 //region CSS
 
 /**
- * Grid layout styles for the `<post-list>` element.
- *
- * @returns CSS string for the post grid
- *
- * @example
- * ```ts
- * const styles = css();
- * ```
+ Grid layout styles for the `<post-list>` element.
+ 
+ @returns CSS string for the post grid
+ 
+ @example
+ ```ts
+ const styles = css();
+ ```
  */
 export function css(): string {
   return [
@@ -53,16 +53,16 @@ export function css(): string {
 //region HTML
 
 /**
- * Renders a grid of post cards inside a `<post-list>` custom element.
- *
- * @param posts - posts to display
- *
- * @returns HTML string for the post list
- *
- * @example
- * ```ts
- * const markup = html(posts);
- * ```
+ Renders a grid of post cards inside a `<post-list>` custom element.
+ 
+ @param posts - posts to display
+ 
+ @returns HTML string for the post list
+ 
+ @example
+ ```ts
+ const markup = html(posts);
+ ```
  */
 export function html(posts: readonly Post[],): string {
   return h({

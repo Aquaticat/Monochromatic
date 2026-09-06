@@ -1,7 +1,7 @@
 /**
- * Unit tests for budget report helpers.
- *
- * @module
+ Unit tests for budget report helpers.
+ 
+ @module
  */
 
 import {

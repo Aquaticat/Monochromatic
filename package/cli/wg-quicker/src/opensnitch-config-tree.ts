@@ -7,51 +7,51 @@ import {
 } from './opensnitch-rule.ts';
 
 /**
- * OpenSnitch system-firewall schema version supported by this integration.
+ OpenSnitch system-firewall schema version supported by this integration.
  */
 const SUPPORTED_VERSION = 1;
 
 /**
- * JSON object with unknown fields retained during round-trip.
+ JSON object with unknown fields retained during round-trip.
  */
 export type JsonRecord = Readonly<Record<string, unknown>>;
 
 /**
- * Reconciled OpenSnitch document and whether disk write is necessary.
+ Reconciled OpenSnitch document and whether disk write is necessary.
  */
 export type OpenSnitchConfigMutation = {
   /**
-   * Document preserving unknown and legacy fields.
+   Document preserving unknown and legacy fields.
    */
   readonly document: JsonRecord;
 
   /**
-   * Whether managed rule set differs from requested ports.
+   Whether managed rule set differs from requested ports.
    */
   readonly changed: boolean;
 
   /**
-   * Sorted distinct destination ports represented by managed rules.
+   Sorted distinct destination ports represented by managed rules.
    */
   readonly managedPorts: readonly number[];
 
   /**
-   * Formerly managed exact ports with no remaining accepting rule.
+   Formerly managed exact ports with no remaining accepting rule.
    */
   readonly forbiddenPorts: readonly number[];
 };
 
 /**
- * Reports non-null JSON object.
- *
- * @param value - Unknown JSON value.
- *
- * @returns Whether value is object record.
- *
- * @example
- * ```ts
- * isRecord({ Version: 1 });
- * ```
+ Reports non-null JSON object.
+ 
+ @param value - Unknown JSON value.
+ 
+ @returns Whether value is object record.
+ 
+ @example
+ ```ts
+ isRecord({ Version: 1 });
+ ```
  */
 function isRecord(value: unknown,): value is JsonRecord {
   if ((typeof value) !== 'object')
@@ -62,20 +62,20 @@ function isRecord(value: unknown,): value is JsonRecord {
 }
 
 /**
- * Parses untrusted JSON with OpenSnitch-specific syntax diagnostic.
- *
- * @param text - Full JSON document.
- *
- * @param path - Source path used in diagnostics.
- *
- * @returns Parsed unknown JSON value.
- *
- * @throws {@link OpenSnitchConfigError} when JSON syntax is invalid.
- *
- * @example
- * ```ts
- * parseJson({ text: '{"Enabled":true}', path: '/etc/opensnitchd/system-fw.json' });
- * ```
+ Parses untrusted JSON with OpenSnitch-specific syntax diagnostic.
+ 
+ @param text - Full JSON document.
+ 
+ @param path - Source path used in diagnostics.
+ 
+ @returns Parsed unknown JSON value.
+ 
+ @throws {@link OpenSnitchConfigError} when JSON syntax is invalid.
+ 
+ @example
+ ```ts
+ parseJson({ text: '{"Enabled":true}', path: '/etc/opensnitchd/system-fw.json' });
+ ```
  */
 function parseJson(
   {
@@ -98,20 +98,20 @@ function parseJson(
 }
 
 /**
- * Parses OpenSnitch system-firewall JSON without discarding unknown fields.
- *
- * @param text - Full JSON document.
- *
- * @param path - Source path used in diagnostics.
- *
- * @returns Parsed object document.
- *
- * @throws {@link OpenSnitchConfigError} when JSON or root shape is invalid.
- *
- * @example
- * ```ts
- * parseOpenSnitchConfig({ text: '{"Enabled":true}', path: '/etc/opensnitchd/system-fw.json' });
- * ```
+ Parses OpenSnitch system-firewall JSON without discarding unknown fields.
+ 
+ @param text - Full JSON document.
+ 
+ @param path - Source path used in diagnostics.
+ 
+ @returns Parsed object document.
+ 
+ @throws {@link OpenSnitchConfigError} when JSON or root shape is invalid.
+ 
+ @example
+ ```ts
+ parseOpenSnitchConfig({ text: '{"Enabled":true}', path: '/etc/opensnitchd/system-fw.json' });
+ ```
  */
 export function parseOpenSnitchConfig(
   {
@@ -123,7 +123,7 @@ export function parseOpenSnitchConfig(
   },
 ): JsonRecord {
   /**
-   * Untrusted parsed JSON root.
+   Untrusted parsed JSON root.
    */
   const parsed = parseJson({
     text,
@@ -135,22 +135,22 @@ export function parseOpenSnitchConfig(
 }
 
 /**
- * Finds exactly one nftables output-mangle chain in version 1 document.
- *
- * @param document - Parsed OpenSnitch system-firewall document.
- *
- * @param path - Source path used in diagnostics.
- *
- * @param requireEnabled - Whether disabled system firewall must reject installation.
- *
- * @returns Target chain object and its parent entry.
- *
- * @throws {@link OpenSnitchConfigError} when schema is unsupported or ambiguous.
- *
- * @example
- * ```ts
- * findTargetChain({ document, path: '/tmp/system-fw.json', requireEnabled: true });
- * ```
+ Finds exactly one nftables output-mangle chain in version 1 document.
+ 
+ @param document - Parsed OpenSnitch system-firewall document.
+ 
+ @param path - Source path used in diagnostics.
+ 
+ @param requireEnabled - Whether disabled system firewall must reject installation.
+ 
+ @returns Target chain object and its parent entry.
+ 
+ @throws {@link OpenSnitchConfigError} when schema is unsupported or ambiguous.
+ 
+ @example
+ ```ts
+ findTargetChain({ document, path: '/tmp/system-fw.json', requireEnabled: true });
+ ```
  */
 function findTargetChain(
   {
@@ -182,11 +182,11 @@ function findTargetChain(
   if (!Array.isArray(document.SystemRules,))
     throw new OpenSnitchConfigError(`OpenSnitch SystemRules is missing at ${path}.`,);
   /**
-   * Validated top-level system-rule entries.
+   Validated top-level system-rule entries.
    */
   const systemRules = document.SystemRules;
   /**
-   * Matching chain-parent pairs across system-rule entries.
+   Matching chain-parent pairs across system-rule entries.
    */
   const matches = systemRules
     .flatMap(function matchingChains(entry,): readonly {
@@ -197,7 +197,7 @@ function findTargetChain(
       if ((!isRecord(entry,)) || (!Array.isArray(entry.Chains,)))
         return [];
       /**
-       * Validated chains array from current parent entry.
+       Validated chains array from current parent entry.
        */
       const parentChains = entry.Chains;
       return parentChains
@@ -221,13 +221,13 @@ function findTargetChain(
     );
   }
   /**
-   * Sole validated target-chain match.
+   Sole validated target-chain match.
    */
   const [match,] = matches;
   if (match === undefined)
     throw new OpenSnitchConfigError(`OpenSnitch mangle_output chain is missing at ${path}.`,);
   /**
-   * Rules candidate from sole matched chain.
+   Rules candidate from sole matched chain.
    */
   const rules = match
     .chain
@@ -242,40 +242,40 @@ function findTargetChain(
 }
 
 /**
- * Reconciles interface-owned endpoint allowances in OpenSnitch version 1 tree.
- *
- * Empty `endpointPorts` removes every managed rule for interface.
- * Unknown fields and unrelated rules retain identity and content.
- *
- * @param document - Parsed OpenSnitch system-firewall document.
- *
- * @param interfaceName - WireGuard interface owning managed rules.
- *
- * @param endpointPorts - Desired endpoint UDP ports.
- *
- * @param networkNamespaceKey - Namespace-specific ownership identity.
- *
- * @param path - Source path used in diagnostics.
- *
- * @param requireEnabled - Whether disabled firewall rejects operation.
- *
- * @param previousManagedPorts - Persisted ports needing negative recovery verification.
- *
- * @returns Reconciled document and change metadata.
- *
- * @throws {@link OpenSnitchConfigError} when schema cannot be changed safely.
- *
- * @example
- * ```ts
- * reconcileOpenSnitchConfig({
- *   document,
- *   interfaceName: 'wg0',
- *   endpointPorts: [51820],
- *   networkNamespaceKey: 'abc123',
- *   path: '/etc/opensnitchd/system-fw.json',
- *   requireEnabled: true,
- * });
- * ```
+ Reconciles interface-owned endpoint allowances in OpenSnitch version 1 tree.
+ 
+ Empty `endpointPorts` removes every managed rule for interface.
+ Unknown fields and unrelated rules retain identity and content.
+ 
+ @param document - Parsed OpenSnitch system-firewall document.
+ 
+ @param interfaceName - WireGuard interface owning managed rules.
+ 
+ @param endpointPorts - Desired endpoint UDP ports.
+ 
+ @param networkNamespaceKey - Namespace-specific ownership identity.
+ 
+ @param path - Source path used in diagnostics.
+ 
+ @param requireEnabled - Whether disabled firewall rejects operation.
+ 
+ @param previousManagedPorts - Persisted ports needing negative recovery verification.
+ 
+ @returns Reconciled document and change metadata.
+ 
+ @throws {@link OpenSnitchConfigError} when schema cannot be changed safely.
+ 
+ @example
+ ```ts
+ reconcileOpenSnitchConfig({
+   document,
+   interfaceName: 'wg0',
+   endpointPorts: [51820],
+   networkNamespaceKey: 'abc123',
+   path: '/etc/opensnitchd/system-fw.json',
+   requireEnabled: true,
+ });
+ ```
  */
 export function reconcileOpenSnitchConfig(
   {
@@ -297,7 +297,7 @@ export function reconcileOpenSnitchConfig(
   },
 ): OpenSnitchConfigMutation {
   /**
-   * Validated target path and arrays used for immutable replacement.
+   Validated target path and arrays used for immutable replacement.
    */
   const {
     chain: targetChain,
@@ -311,7 +311,7 @@ export function reconcileOpenSnitchConfig(
     requireEnabled,
   },);
   /**
-   * Desired sorted unique ports for deterministic config rendering.
+   Desired sorted unique ports for deterministic config rendering.
    */
   const managedPorts = [...new Set(endpointPorts,),]
     .toSorted(function ascending(
@@ -321,14 +321,14 @@ export function reconcileOpenSnitchConfig(
       return a - b;
     },);
   /**
-   * Interface-owned description prefix.
+   Interface-owned description prefix.
    */
   const prefix = managedPrefix({
     interfaceName,
     networkNamespaceKey,
   },);
   /**
-   * Unrelated and other-interface rules retained in order.
+   Unrelated and other-interface rules retained in order.
    */
   const retainedRules = existingRules.filter(function retainRule(rule,): boolean {
     return !isManagedRule({
@@ -337,7 +337,7 @@ export function reconcileOpenSnitchConfig(
     },);
   },);
   /**
-   * Exact ports accepted by removed interface-owned rules.
+   Exact ports accepted by removed interface-owned rules.
    */
   const removedManagedPorts = [
     ...previousManagedPorts,
@@ -353,7 +353,7 @@ export function reconcileOpenSnitchConfig(
       },),
   ];
   /**
-   * Exact ports still accepted by unrelated or other-interface rules.
+   Exact ports still accepted by unrelated or other-interface rules.
    */
   const retainedAcceptedPorts = new Set(retainedRules.flatMap(function retainedPorts(
     rule,
@@ -361,7 +361,7 @@ export function reconcileOpenSnitchConfig(
     return acceptedUdpPorts({ value: rule, },);
   },),);
   /**
-   * Fresh managed rules matching current endpoint ports.
+   Fresh managed rules matching current endpoint ports.
    */
   const managedRules = managedPorts.map(function toRule(port,): JsonRecord {
     return createManagedRule({
@@ -371,7 +371,7 @@ export function reconcileOpenSnitchConfig(
     },);
   },);
   /**
-   * Removed ports expected to disappear from live chain.
+   Removed ports expected to disappear from live chain.
    */
   const forbiddenPorts = [...new Set(removedManagedPorts,),]
     .filter(function noRemainingAllowance(port,): boolean {
@@ -384,7 +384,7 @@ export function reconcileOpenSnitchConfig(
       return a - b;
     },);
   /**
-   * Existing managed descriptions used to avoid unnecessary write when removing none.
+   Existing managed descriptions used to avoid unnecessary write when removing none.
    */
   const existingManagedCount = existingRules.length - retainedRules.length;
   if ((existingManagedCount === 0) && (managedRules.length === 0)) {
@@ -396,7 +396,7 @@ export function reconcileOpenSnitchConfig(
     };
   }
   /**
-   * Replacement target chain preserving unknown chain fields.
+   Replacement target chain preserving unknown chain fields.
    */
   const replacementChain: JsonRecord = {
     ...targetChain,
@@ -406,7 +406,7 @@ export function reconcileOpenSnitchConfig(
     ],
   };
   /**
-   * Replacement parent retaining every non-target chain.
+   Replacement parent retaining every non-target chain.
    */
   const replacementParent: JsonRecord = {
     ...targetParent,
@@ -428,22 +428,22 @@ export function reconcileOpenSnitchConfig(
 }
 
 /**
- * Renders validated OpenSnitch document with stable trailing newline.
- *
- * @param document - Reconciled JSON object.
- *
- * @returns Pretty-printed JSON suitable for OpenSnitch file watcher.
- *
- * @example
- * ```ts
- * renderOpenSnitchConfig({ document });
- * ```
+ Renders validated OpenSnitch document with stable trailing newline.
+ 
+ @param document - Reconciled JSON object.
+ 
+ @returns Pretty-printed JSON suitable for OpenSnitch file watcher.
+ 
+ @example
+ ```ts
+ renderOpenSnitchConfig({ document });
+ ```
  */
 export function renderOpenSnitchConfig(
   { document, }: { readonly document: Readonly<JsonRecord>; },
 ): string {
   /**
-   * Pretty-printed body before required trailing newline.
+   Pretty-printed body before required trailing newline.
    */
   const serialized = JSON.stringify(
     document,

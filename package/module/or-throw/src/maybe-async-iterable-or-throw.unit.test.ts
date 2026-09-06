@@ -1,7 +1,7 @@
 /**
- * Tests for `maybeAsyncIterableOrThrow`.
- *
- * @module
+ Tests for `maybeAsyncIterableOrThrow`.
+ 
+ @module
  */
 
 import {

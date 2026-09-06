@@ -1,15 +1,15 @@
 /**
- * Equivalence tests for `firstNonWhitespaceToken`.
- *
- * Lock in the pre-refactor behavior of the leading-token scanner so the
- * recursion-to-linear-pass rewrite stays behavior-identical: empty and
- * all-whitespace input, the no-whitespace whole-string case, leading-
- * whitespace skipping, trailing-whitespace trimming, each ASCII whitespace
- * character acting as a boundary, the ASCII-only set (a non-breaking space is
- * not a boundary), and long repeated runs that a per-character recursion would
- * overflow on a V8 target.
- *
- * @module
+ Equivalence tests for `firstNonWhitespaceToken`.
+ 
+ Lock in the pre-refactor behavior of the leading-token scanner so the
+ recursion-to-linear-pass rewrite stays behavior-identical: empty and
+ all-whitespace input, the no-whitespace whole-string case, leading-
+ whitespace skipping, trailing-whitespace trimming, each ASCII whitespace
+ character acting as a boundary, the ASCII-only set (a non-breaking space is
+ not a boundary), and long repeated runs that a per-character recursion would
+ overflow on a V8 target.
+ 
+ @module
  */
 
 import {

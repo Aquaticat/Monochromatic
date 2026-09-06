@@ -1,7 +1,7 @@
 /**
- * Private-index Git operations for commit autofix transactions.
- *
- * @module
+ Private-index Git operations for commit autofix transactions.
+ 
+ @module
  */
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
@@ -19,7 +19,7 @@ import { validatePolicyPatch, } from './commit-transaction-patch.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
- * Private workspace fields required for patch application.
+ Private workspace fields required for patch application.
  */
 export type PrivatePatchWorkspace = Readonly<Pick<
   CommitTransactionWorkspace,
@@ -27,17 +27,17 @@ export type PrivatePatchWorkspace = Readonly<Pick<
 >>;
 
 /**
- * Private patch file mode.
+ Private patch file mode.
  */
 const PRIVATE_FILE_MODE = 0o600;
 /**
- * Private Git operation failure.
+ Private Git operation failure.
  */
 export class CommitTransactionGitError extends Error {
   /**
-   * Creates transaction failure.
-   *
-   * @param message - exact safe failure description
+   Creates transaction failure.
+   
+   @param message - exact safe failure description
    */
   public constructor(message: string,) {
     super(message,);
@@ -46,48 +46,48 @@ export class CommitTransactionGitError extends Error {
 }
 
 /**
- * Exact Git command output.
+ Exact Git command output.
  */
 export type GitOutput = Readonly<{
   /**
-   * Standard output bytes.
+   Standard output bytes.
    */
   stdout: Uint8Array;
   /**
-   * Standard error text.
+   Standard error text.
    */
   stderr: string;
   /**
-   * Exact process exit code.
+   Exact process exit code.
    */
   exitCode: number;
 }>;
 
 /**
- * Runs real Git against optional private index.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param args - exact Git arguments
- *
- * @param indexPath - private index override
- *
- * @param stdio - whether user-facing output inherits
- *
- * @param allowFailure - whether caller handles nonzero status
- *
- * @param environment - transaction-owned environment additions
- *
- * @returns exact captured output
- *
- * @throws CommitTransactionGitError when Git exits nonzero
- *
- * @example
- * ```ts
- * await runTransactionGit({ gitPath: '/usr/bin/git', cwd: '/repo', args: ['status'] });
- * ```
+ Runs real Git against optional private index.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param args - exact Git arguments
+ 
+ @param indexPath - private index override
+ 
+ @param stdio - whether user-facing output inherits
+ 
+ @param allowFailure - whether caller handles nonzero status
+ 
+ @param environment - transaction-owned environment additions
+ 
+ @returns exact captured output
+ 
+ @throws CommitTransactionGitError when Git exits nonzero
+ 
+ @example
+ ```ts
+ await runTransactionGit({ gitPath: '/usr/bin/git', cwd: '/repo', args: ['status'] });
+ ```
  */
 export async function runTransactionGit({
   gitPath,
@@ -107,7 +107,7 @@ export async function runTransactionGit({
   environment?: Readonly<Record<string, string>>;
 }>,): Promise<GitOutput> {
   /**
-   * Environment containing only engine-selected index override.
+   Environment containing only engine-selected index override.
    */
   const env = {
     ...process.env,
@@ -116,7 +116,7 @@ export async function runTransactionGit({
   };
   if (stdio === 'inherit') {
     /**
-     * User-facing Git child.
+     User-facing Git child.
      */
     const child = spawn(
       gitPath,
@@ -140,7 +140,7 @@ export async function runTransactionGit({
     };
   }
   /**
-   * Captured Git child.
+   Captured Git child.
    */
   const child = spawn(
     gitPath,
@@ -156,7 +156,7 @@ export async function runTransactionGit({
   },
   );
   /**
-   * Concurrent stream consumers.
+   Concurrent stream consumers.
    */
   const output = Promise.all([
     arrayBuffer(child.stdout,),
@@ -167,7 +167,7 @@ export async function runTransactionGit({
     'close',
   );
   /**
-   * Captured binary output and diagnostic.
+   Captured binary output and diagnostic.
    */
   const [stdout, stderr,] = await output;
   if ((child.exitCode !== 0) && (!allowFailure))
@@ -180,28 +180,28 @@ export async function runTransactionGit({
 }
 
 /**
- * Applies one validated patch to private index.
- *
- * @param workspace - transaction workspace
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - repository directory
- *
- * @param patch - engine-owned patch
- *
- * @param candidateRevision - exact candidate blob revision
- *
- * @param ordinal - stable patch ordinal
- *
- * @mutates patch through writeFile configured VFS handler or native-boundary access to patch.bytes
- *
- * @throws CommitTransactionGitError for invalid or conflicting patch
- *
- * @example
- * ```ts
- * await applyPrivatePatch({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', patch, ordinal: 0 });
- * ```
+ Applies one validated patch to private index.
+ 
+ @param workspace - transaction workspace
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - repository directory
+ 
+ @param patch - engine-owned patch
+ 
+ @param candidateRevision - exact candidate blob revision
+ 
+ @param ordinal - stable patch ordinal
+ 
+ @mutates patch through writeFile configured VFS handler or native-boundary access to patch.bytes
+ 
+ @throws CommitTransactionGitError for invalid or conflicting patch
+ 
+ @example
+ ```ts
+ await applyPrivatePatch({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', patch, ordinal: 0 });
+ ```
  */
 export async function applyPrivatePatch({
   workspace,
@@ -223,7 +223,7 @@ export async function applyPrivatePatch({
     expectedRevision: candidateRevision,
   },);
   /**
-   * Private patch file.
+   Private patch file.
    */
   const patchPath = join(
     workspace.directory,

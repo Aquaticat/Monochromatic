@@ -1,11 +1,11 @@
 /**
- * Direct effects of a callable that declares a signature and no body.
- *
- * Split out of `direct-effect-summary.ts` for the code-line budget. It is a self-contained
- * branch: a bodyless declaration has nothing to walk, so everything it can say comes from its
- * parameter types and its authored contracts.
- *
- * @module
+ Direct effects of a callable that declares a signature and no body.
+ 
+ Split out of `direct-effect-summary.ts` for the code-line budget. It is a self-contained
+ branch: a bodyless declaration has nothing to walk, so everything it can say comes from its
+ parameter types and its authored contracts.
+ 
+ @module
  */
 
 import type { Checker, } from 'typescript/unstable/sync';
@@ -27,24 +27,24 @@ import {
 } from './mutation-contract-query.ts';
 
 /**
- * Records everything a bodyless callable can be held to.
- *
- * Every parameter that can carry mutable state takes opacity, because no body proves what the
- * implementation does with it. Authored contracts add known effects on top and never remove
- * that opacity, which is the policy `direct-effect-summary.ts` states for contracts generally.
- *
- * @param checker - TypeScript checker classifying parameter types.
- *
- * @param declaration - Bodyless callable being summarized.
- *
- * @param summary - Summary receiving opacity and contract effects.
- *
- * @mutates summary - Adds bodyless opacity and authored contract mutations.
- *
- * @example
- * ```ts
- * recordBodylessEffects({ checker, declaration, summary });
- * ```
+ Records everything a bodyless callable can be held to.
+ 
+ Every parameter that can carry mutable state takes opacity, because no body proves what the
+ implementation does with it. Authored contracts add known effects on top and never remove
+ that opacity, which is the policy `direct-effect-summary.ts` states for contracts generally.
+ 
+ @param checker - TypeScript checker classifying parameter types.
+ 
+ @param declaration - Bodyless callable being summarized.
+ 
+ @param summary - Summary receiving opacity and contract effects.
+ 
+ @mutates summary - Adds bodyless opacity and authored contract mutations.
+ 
+ @example
+ ```ts
+ recordBodylessEffects({ checker, declaration, summary });
+ ```
  */
 export function recordBodylessEffects({
   checker,
@@ -72,8 +72,8 @@ export function recordBodylessEffects({
       },);
     },);
   /**
-   * Authored bodyless mutation contracts remain documentation of known effects.
-   * They never remove unresolved implementation opacity.
+   Authored bodyless mutation contracts remain documentation of known effects.
+   They never remove unresolved implementation opacity.
    */
   const contracts = mutationContractsForDeclaration({
     declaration,
@@ -81,7 +81,7 @@ export function recordBodylessEffects({
   },);
   if (contracts !== MUTATION_CONTRACT_UNAVAILABLE) {
     /**
-     * Contract target names mapped to source parameter indexes.
+     Contract target names mapped to source parameter indexes.
      */
     const targetIndexes = mutationTargetIndexes({
       declaration,
@@ -96,7 +96,7 @@ export function recordBodylessEffects({
     contracts.blocks
       .forEach(function seedContract(block,): void {
         /**
-         * Parameter this contract names, absent when the name matches none.
+         Parameter this contract names, absent when the name matches none.
          */
         const named = targetIndexes.get(block.parameterName,);
         addEffectSlot({

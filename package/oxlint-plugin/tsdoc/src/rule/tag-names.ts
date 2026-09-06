@@ -1,9 +1,9 @@
 /**
- * TSDoc tag name validation rule.
- *
- * Extracted from `tag-validation.ts` to keep files under 100 countable lines.
- *
- * @module
+ TSDoc tag name validation rule.
+ 
+ Extracted from `tag-validation.ts` to keep files under 100 countable lines.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -30,9 +30,9 @@ export {
 } from '../comment-text.ts';
 
 /**
- * Standard TSDoc tag names taken from `@microsoft/tsdoc@0.16.0`
- * `StandardTags.allDefinitions`, hardcoded so the plugin carries no runtime
- * dependency on the library. Update alongside a TSDoc spec change.
+ Standard TSDoc tag names taken from `@microsoft/tsdoc@0.16.0`
+ `StandardTags.allDefinitions`, hardcoded so the plugin carries no runtime
+ dependency on the library. Update alongside a TSDoc spec change.
  */
 const STANDARD_TSDOC_TAGS: readonly string[] = [
   '@alpha',
@@ -67,7 +67,7 @@ const STANDARD_TSDOC_TAGS: readonly string[] = [
 ];
 
 /**
- * Valid TSDoc tag names: standard set plus project `@mutates` and compatibility `@yields`.
+ Valid TSDoc tag names: standard set plus project `@mutates` and compatibility `@yields`.
  */
 const VALID_TSDOC_TAGS: ReadonlySet<string> = new Set([
   ...STANDARD_TSDOC_TAGS,
@@ -76,14 +76,14 @@ const VALID_TSDOC_TAGS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Validates that all tags in a TSDoc comment are recognized TSDoc standard tags.
- *
- * Reports JSDoc-only tags (per {@link JSDOC_TO_TSDOC_MAP}) and any other
- * unrecognized tags.
- *
- * Skips tag scanning inside fenced code blocks (via {@link isFenceLine}) and
- * backtick-wrapped inline code (via {@link stripInlineCodeAndEscapes}) to
- * avoid false positives on package names or escaped tag references.
+ Validates that all tags in a TSDoc comment are recognized TSDoc standard tags.
+ 
+ Reports JSDoc-only tags (per {@link JSDOC_TO_TSDOC_MAP}) and any other
+ unrecognized tags.
+ 
+ Skips tag scanning inside fenced code blocks (via {@link isFenceLine}) and
+ backtick-wrapped inline code (via {@link stripInlineCodeAndEscapes}) to
+ avoid false positives on package names or escaped tag references.
  */
 export const checkTagNames: CreateOnceRule = {
   meta: {
@@ -99,16 +99,16 @@ export const checkTagNames: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createTsdocVisitor({
@@ -118,14 +118,14 @@ export const checkTagNames: CreateOnceRule = {
         comment,
       ): void {
         /**
-         * Raw comment body split into per-line slices; iterated to find tag occurrences.
+         Raw comment body split into per-line slices; iterated to find tag occurrences.
          */
         const lines = comment.value
           .split('\n',);
         /**
-         * Mutable code-fence state, kept in a `const` object so AGENTS.md's
-         * function-root `let` ban is satisfied while the forEach callback
-         * still toggles the flag across iterations.
+         Mutable code-fence state, kept in a `const` object so AGENTS.md's
+         function-root `let` ban is satisfied while the forEach callback
+         still toggles the flag across iterations.
          */
         const fenceState = { inside: false, };
 
@@ -144,20 +144,20 @@ export const checkTagNames: CreateOnceRule = {
           // Strip inline code and escaped @ to avoid false positives on
           // package names like `@microsoft/tsdoc` or escaped tag references
           /**
-           * Line with inline code spans and escaped `\@` sequences removed before scanning.
+           Line with inline code spans and escaped `\@` sequences removed before scanning.
            */
           const stripped = stripInlineCodeAndEscapes(line,);
           /**
-           * Ordered list of `\@word` tag captures in the stripped line.
+           Ordered list of `\@word` tag captures in the stripped line.
            */
           const tagWords = collectTags(stripped,);
           for (const word of tagWords) {
             /**
-             * Recovered tag string with the leading `\@` for lookup and message data.
+             Recovered tag string with the leading `\@` for lookup and message data.
              */
             const tag = `@${word}`;
             /**
-             * TSDoc-equivalent suggestion when the tag is JSDoc-only; undefined for unknowns.
+             TSDoc-equivalent suggestion when the tag is JSDoc-only; undefined for unknowns.
              */
             const suggestion = JSDOC_TO_TSDOC_MAP.get(tag,);
             if (suggestion !== undefined) {

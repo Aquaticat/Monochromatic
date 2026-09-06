@@ -1,8 +1,8 @@
 
 /**
- * Provider-neutral Search Fetch client types.
- *
- * @module
+ Provider-neutral Search Fetch client types.
+ 
+ @module
  */
 
 import type {
@@ -12,240 +12,240 @@ import type {
 } from './client.ts';
 
 /**
- * Search Fetch provider identifier.
+ Search Fetch provider identifier.
  */
 type SearchFetchProvider = 'exa' | 'linkup';
 
 /**
- * Fallback metadata for provider routing.
+ Fallback metadata for provider routing.
  */
 type ProviderFallback = {
   /**
-   * Provider that failed or was unavailable.
+   Provider that failed or was unavailable.
    */
   readonly from: SearchFetchProvider;
   /**
-   * Provider attempted after fallback.
+   Provider attempted after fallback.
    */
   readonly to: SearchFetchProvider;
   /**
-   * Safe fallback reason.
+   Safe fallback reason.
    */
   readonly reason: string;
 };
 
 /**
- * Provider-tagged response returned by Search Fetch clients.
+ Provider-tagged response returned by Search Fetch clients.
  */
 type ProviderResponse = {
   /**
-   * Provider that produced response.
+   Provider that produced response.
    */
   readonly provider: SearchFetchProvider;
   /**
-   * Provider response payload.
+   Provider response payload.
    */
   readonly response: unknown;
   /**
-   * Fallback metadata when response came from fallback provider.
+   Fallback metadata when response came from fallback provider.
    */
   readonly fallback?: ProviderFallback;
 };
 
 /**
- * Search Fetch client constructor options.
+ Search Fetch client constructor options.
  */
 type SearchFetchClientOptions = {
   /**
-   * Optional Exa API key.
+   Optional Exa API key.
    */
   readonly exaApiKey?: string;
   /**
-   * Optional Linkup API key.
+   Optional Linkup API key.
    */
   readonly linkupApiKey?: string;
   /**
-   * Normalized global blocklist.
+   Normalized global blocklist.
    */
   readonly blocklist: readonly string[];
   /**
-   * Optional Exa base URL override for tests.
+   Optional Exa base URL override for tests.
    */
   readonly exaBaseUrl?: string;
   /**
-   * Optional Linkup base URL override for tests.
+   Optional Linkup base URL override for tests.
    */
   readonly linkupBaseUrl?: string;
   /**
-   * Optional fetch implementation override for tests.
+   Optional fetch implementation override for tests.
    */
   readonly fetchImpl?: FetchLike;
 };
 
 /**
- * Search Fetch client runtime dependencies.
+ Search Fetch client runtime dependencies.
  */
 type SearchFetchClientRuntime = {
   /**
-   * Optional Exa API key.
+   Optional Exa API key.
    */
   readonly exaApiKey?: string;
   /**
-   * Optional Linkup API key.
+   Optional Linkup API key.
    */
   readonly linkupApiKey?: string;
   /**
-   * Normalized global blocklist.
+   Normalized global blocklist.
    */
   readonly blocklist: readonly string[];
   /**
-   * Exa base URL.
+   Exa base URL.
    */
   readonly exaBaseUrl: string;
   /**
-   * Linkup base URL.
+   Linkup base URL.
    */
   readonly linkupBaseUrl: string;
   /**
-   * Fetch implementation.
+   Fetch implementation.
    */
   readonly fetchImpl: FetchLike;
 };
 
 /**
- * Provider-neutral client surface used by tools.
+ Provider-neutral client surface used by tools.
  */
 type SearchFetchClient = {
   /**
-   * Execute provider-routed web search.
+   Execute provider-routed web search.
    */
   readonly search: (options: SearchOptions,) => Promise<ProviderResponse>;
   /**
-   * Execute provider-routed page fetch.
+   Execute provider-routed page fetch.
    */
   readonly fetch: (options: FetchOptions,) => Promise<ProviderResponse>;
 };
 
 /**
- * Exa request body for `/search`.
+ Exa request body for `/search`.
  */
 type ExaSearchRequestBody = {
   /**
-   * Query string.
+   Query string.
    */
   readonly query: string;
   /**
-   * Fixed Exa search mode.
+   Fixed Exa search mode.
    */
   readonly type: 'fast';
   /**
-   * Fixed result count.
+   Fixed result count.
    */
   readonly numResults: 10;
   /**
-   * Provider-compatible domain blocklist.
+   Provider-compatible domain blocklist.
    */
   readonly excludeDomains: readonly string[];
   /**
-   * Optional include-domain filter.
+   Optional include-domain filter.
    */
   readonly includeDomains?: readonly string[];
   /**
-   * Optional earliest published date.
+   Optional earliest published date.
    */
   readonly startPublishedDate?: string;
   /**
-   * Optional latest published date.
+   Optional latest published date.
    */
   readonly endPublishedDate?: string;
 };
 
 /**
- * Exa request body for `/contents`.
+ Exa request body for `/contents`.
  */
 type ExaContentsRequestBody = {
   /**
-   * URLs fetched by Exa contents.
+   URLs fetched by Exa contents.
    */
   readonly urls: readonly string[];
   /**
-   * Request extracted page text.
+   Request extracted page text.
    */
   readonly text: true;
 };
 
 /**
- * Low-level Exa client constructor options.
+ Low-level Exa client constructor options.
  */
 type ExaClientOptions = {
   /**
-   * Optional Exa API key.
+   Optional Exa API key.
    */
   readonly apiKey?: string;
   /**
-   * Normalized global blocklist.
+   Normalized global blocklist.
    */
   readonly blocklist: readonly string[];
   /**
-   * Optional base URL override for tests.
+   Optional base URL override for tests.
    */
   readonly baseUrl?: string;
   /**
-   * Optional fetch implementation override for tests.
+   Optional fetch implementation override for tests.
    */
   readonly fetchImpl?: FetchLike;
 };
 
 /**
- * Low-level Exa client surface.
+ Low-level Exa client surface.
  */
 type ExaClient = {
   /**
-   * Execute fixed-policy Exa search.
+   Execute fixed-policy Exa search.
    */
   readonly search: (options: SearchOptions,) => Promise<unknown>;
   /**
-   * Execute fixed-policy Exa contents fetch.
+   Execute fixed-policy Exa contents fetch.
    */
   readonly fetch: (options: FetchOptions,) => Promise<unknown>;
 };
 
 /**
- * Exa client runtime dependencies.
+ Exa client runtime dependencies.
  */
 type ExaClientRuntime = {
   /**
-   * Optional Exa API key.
+   Optional Exa API key.
    */
   readonly apiKey?: string;
   /**
-   * Normalized global blocklist.
+   Normalized global blocklist.
    */
   readonly blocklist: readonly string[];
   /**
-   * Exa API base URL.
+   Exa API base URL.
    */
   readonly baseUrl: string;
   /**
-   * Fetch implementation.
+   Fetch implementation.
    */
   readonly fetchImpl: FetchLike;
 };
 
 /**
- * Exa POST JSON options.
+ Exa POST JSON options.
  */
 type ExaPostJsonOptions = {
   /**
-   * Endpoint path beginning with slash.
+   Endpoint path beginning with slash.
    */
   readonly endpoint: string;
   /**
-   * JSON request body.
+   JSON request body.
    */
   readonly body: unknown;
   /**
-   * Abort signal from Pi tool execution.
+   Abort signal from Pi tool execution.
    */
   readonly signal?: AbortSignal;
 };

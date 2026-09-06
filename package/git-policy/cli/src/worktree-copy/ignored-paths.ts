@@ -12,24 +12,24 @@ import { runMetadataGit, } from '../git-metadata.ts';
 import { WorktreeCopyError, } from './errors.ts';
 
 /**
- * Git directory marker appended by `ls-files --directory`.
+ Git directory marker appended by `ls-files --directory`.
  */
 const DIRECTORY_SUFFIX = '/';
 
 /**
- * Reports component-aware repository-path containment.
- *
- * @param candidate - candidate repository path
- *
- * @param parent - possible ancestor repository path
- *
- * @returns whether candidate equals or descends from parent
- *
- * @example
- * ```ts
- * isRepositoryPathWithin({ candidate: 'a/b', parent: 'a' });
- * // => true
- * ```
+ Reports component-aware repository-path containment.
+ 
+ @param candidate - candidate repository path
+ 
+ @param parent - possible ancestor repository path
+ 
+ @returns whether candidate equals or descends from parent
+ 
+ @example
+ ```ts
+ isRepositoryPathWithin({ candidate: 'a/b', parent: 'a' });
+ // => true
+ ```
  */
 export function isRepositoryPathWithin({
   candidate,
@@ -42,20 +42,20 @@ export function isRepositoryPathWithin({
 }
 
 /**
- * Validates Git-produced repository path before filesystem interpolation.
- *
- * @param repositoryPath - slash-separated Git path
- *
- * @throws {@link WorktreeCopyError} when path could escape worktree root
- *
- * @example
- * ```ts
- * assertSafeRepositoryPath('node_modules/pkg');
- * ```
+ Validates Git-produced repository path before filesystem interpolation.
+ 
+ @param repositoryPath - slash-separated Git path
+ 
+ @throws {@link WorktreeCopyError} when path could escape worktree root
+ 
+ @example
+ ```ts
+ assertSafeRepositoryPath('node_modules/pkg');
+ ```
  */
 export function assertSafeRepositoryPath(repositoryPath: string,): void {
   /**
-   * Slash-delimited path components.
+   Slash-delimited path components.
    */
   const components = repositoryPath.split('/',);
   if ((repositoryPath === '')
@@ -71,19 +71,19 @@ export function assertSafeRepositoryPath(repositoryPath: string,): void {
 }
 
 /**
- * Resolves safe repository path beneath filesystem root.
- *
- * @param root - absolute worktree or staging root
- *
- * @param repositoryPath - validated slash-separated repository path
- *
- * @returns native filesystem path
- *
- * @example
- * ```ts
- * filesystemPath({ root: '/repo', repositoryPath: 'a/b' });
- * // => '/repo/a/b'
- * ```
+ Resolves safe repository path beneath filesystem root.
+ 
+ @param root - absolute worktree or staging root
+ 
+ @param repositoryPath - validated slash-separated repository path
+ 
+ @returns native filesystem path
+ 
+ @example
+ ```ts
+ filesystemPath({ root: '/repo', repositoryPath: 'a/b' });
+ // => '/repo/a/b'
+ ```
  */
 export function filesystemPath({
   root,
@@ -100,26 +100,26 @@ export function filesystemPath({
 }
 
 /**
- * Removes nested duplicate roots after Git ignore enumeration.
- *
- * @param paths - safe ignored repository paths
- *
- * @returns sorted roots without descendants of another selected root
- *
- * @example
- * ```ts
- * collapseIgnoredRoots(['cache/a', 'cache']);
- * // => ['cache']
- * ```
+ Removes nested duplicate roots after Git ignore enumeration.
+ 
+ @param paths - safe ignored repository paths
+ 
+ @returns sorted roots without descendants of another selected root
+ 
+ @example
+ ```ts
+ collapseIgnoredRoots(['cache/a', 'cache']);
+ // => ['cache']
+ ```
  */
 function collapseIgnoredRoots(paths: readonly string[],): readonly string[] {
   /**
-   * Sorted unique candidate paths.
+   Sorted unique candidate paths.
    */
   const candidates = [...new Set(paths,),]
     .toSorted();
   /**
-   * Retained roots without descendants.
+   Retained roots without descendants.
    */
   const roots: string[] = [];
   for (const candidate of candidates) {
@@ -136,19 +136,19 @@ function collapseIgnoredRoots(paths: readonly string[],): readonly string[] {
 }
 
 /**
- * Reports native path containment without following filesystem entries.
- *
- * @param candidate - absolute candidate path
- *
- * @param parent - absolute possible ancestor path
- *
- * @returns whether candidate equals or descends from parent
- *
- * @example
- * ```ts
- * isFilesystemPathWithin({ candidate: '/repo/cache', parent: '/repo' });
- * // => true
- * ```
+ Reports native path containment without following filesystem entries.
+ 
+ @param candidate - absolute candidate path
+ 
+ @param parent - absolute possible ancestor path
+ 
+ @returns whether candidate equals or descends from parent
+ 
+ @example
+ ```ts
+ isFilesystemPathWithin({ candidate: '/repo/cache', parent: '/repo' });
+ // => true
+ ```
  */
 function isFilesystemPathWithin({
   candidate,
@@ -158,7 +158,7 @@ function isFilesystemPathWithin({
   parent: string;
 }>,): boolean {
   /**
-   * Native path from parent to candidate.
+   Native path from parent to candidate.
    */
   const local = relative(
     parent,
@@ -168,20 +168,20 @@ function isFilesystemPathWithin({
 }
 
 /**
- * Reports whether one special source path is ignored by standard Git stack.
- *
- * @param sourceRoot - canonical source worktree root
- *
- * @param repositoryPath - safe special filesystem path
- *
- * @param gitPath - absolute real-Git executable
- *
- * @returns whether Git classifies path as ignored
- *
- * @example
- * ```ts
- * await isIgnoredSpecialPath({ sourceRoot: '/repo', repositoryPath: 'pipe', gitPath: '/usr/bin/git' });
- * ```
+ Reports whether one special source path is ignored by standard Git stack.
+ 
+ @param sourceRoot - canonical source worktree root
+ 
+ @param repositoryPath - safe special filesystem path
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @returns whether Git classifies path as ignored
+ 
+ @example
+ ```ts
+ await isIgnoredSpecialPath({ sourceRoot: '/repo', repositoryPath: 'pipe', gitPath: '/usr/bin/git' });
+ ```
  */
 async function isIgnoredSpecialPath({
   sourceRoot,
@@ -216,22 +216,22 @@ async function isIgnoredSpecialPath({
 }
 
 /**
- * Discovers special entries omitted by Git's index-oriented ls-files walk.
- *
- * @param sourceRoot - canonical source worktree root
- *
- * @param selectedRoots - ignored roots already returned by Git
- *
- * @param excludedRoots - registered nested worktree roots
- *
- * @param gitPath - absolute real-Git executable
- *
- * @returns ignored socket, FIFO, and device repository paths
- *
- * @example
- * ```ts
- * await readIgnoredSpecialPaths({ sourceRoot: '/repo', selectedRoots: [], excludedRoots: [], gitPath: '/usr/bin/git' });
- * ```
+ Discovers special entries omitted by Git's index-oriented ls-files walk.
+ 
+ @param sourceRoot - canonical source worktree root
+ 
+ @param selectedRoots - ignored roots already returned by Git
+ 
+ @param excludedRoots - registered nested worktree roots
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @returns ignored socket, FIFO, and device repository paths
+ 
+ @example
+ ```ts
+ await readIgnoredSpecialPaths({ sourceRoot: '/repo', selectedRoots: [], excludedRoots: [], gitPath: '/usr/bin/git' });
+ ```
  */
 async function readIgnoredSpecialPaths({
   sourceRoot,
@@ -245,22 +245,22 @@ async function readIgnoredSpecialPaths({
   gitPath: string;
 }>,): Promise<readonly string[]> {
   /**
-   * Pending repository directories outside already-selected ignored trees.
+   Pending repository directories outside already-selected ignored trees.
    */
   const pending: string[] = ['.',];
   /**
-   * Special repository paths requiring direct Git ignore classification.
+   Special repository paths requiring direct Git ignore classification.
    */
   const specialPaths: string[] = [];
   while (pending.length > 0) {
     /**
-     * Current repository directory marker.
+     Current repository directory marker.
      */
     const current = pending.pop();
     if (current === undefined)
       throw new WorktreeCopyError('cli-git: special-entry walk lost pending directory.',);
     /**
-     * Current native source directory.
+     Current native source directory.
      */
     const directoryPath = current === '.'
       ? sourceRoot
@@ -270,7 +270,7 @@ async function readIgnoredSpecialPaths({
       },);
     /* oxlint-disable no-await-in-loop -- structural filesystem walk remains sequential and no-follow */
     /**
-     * Immediate no-follow directory entries.
+     Immediate no-follow directory entries.
      */
     const entries = await readdir(
       directoryPath,
@@ -279,7 +279,7 @@ async function readIgnoredSpecialPaths({
     /* oxlint-enable no-await-in-loop */
     for (const entry of entries) {
       /**
-       * Child repository path.
+       Child repository path.
        */
       const repositoryPath = current === '.'
         ? entry.name
@@ -287,7 +287,7 @@ async function readIgnoredSpecialPaths({
       if (repositoryPath === '.git')
         continue;
       /**
-       * Child native source path.
+       Child native source path.
        */
       const sourcePath = resolve(filesystemPath({
         root: sourceRoot,
@@ -318,7 +318,7 @@ async function readIgnoredSpecialPaths({
     }
   }
   /**
-   * Special paths Git confirms as ignored without unbounded subprocess fan-out.
+   Special paths Git confirms as ignored without unbounded subprocess fan-out.
    */
   const ignoredSpecialPaths: string[] = [];
   for (const repositoryPath of specialPaths) {
@@ -335,21 +335,21 @@ async function readIgnoredSpecialPaths({
 }
 
 /**
- * Reads every existing source path ignored by Git's standard exclusion stack.
- *
- * @param sourceRoot - canonical source worktree root
- *
- * @param gitPath - absolute real-Git executable
- *
- * @param excludedRoots - registered roots excluded from special-entry walk
- *
- * @returns collapsed ignored roots in repository path form
- *
- * @example
- * ```ts
- * await readIgnoredRoots({ sourceRoot: '/repo', gitPath: '/usr/bin/git' });
- * // => ['node_modules']
- * ```
+ Reads every existing source path ignored by Git's standard exclusion stack.
+ 
+ @param sourceRoot - canonical source worktree root
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @param excludedRoots - registered roots excluded from special-entry walk
+ 
+ @returns collapsed ignored roots in repository path form
+ 
+ @example
+ ```ts
+ await readIgnoredRoots({ sourceRoot: '/repo', gitPath: '/usr/bin/git' });
+ // => ['node_modules']
+ ```
  */
 export async function readIgnoredRoots({
   sourceRoot,
@@ -361,7 +361,7 @@ export async function readIgnoredRoots({
   excludedRoots?: readonly string[];
 }>,): Promise<readonly string[]> {
   /**
-   * NUL-delimited ignored untracked path output.
+   NUL-delimited ignored untracked path output.
    */
   const output = await runMetadataGit({
     gitPath,
@@ -378,7 +378,7 @@ export async function readIgnoredRoots({
     cwd: sourceRoot,
   },);
   /**
-   * Safe ignored roots with Git directory markers removed.
+   Safe ignored roots with Git directory markers removed.
    */
   const paths = output
     .split('\0',)
@@ -395,7 +395,7 @@ export async function readIgnoredRoots({
     },);
   paths.forEach(assertSafeRepositoryPath,);
   /**
-   * Ignored special paths omitted by Git's index-oriented listing.
+   Ignored special paths omitted by Git's index-oriented listing.
    */
   const specialPaths = await readIgnoredSpecialPaths({
     sourceRoot,

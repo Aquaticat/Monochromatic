@@ -1,17 +1,17 @@
 /**
- * Property-based fuzz tests for the JetBrains version helpers in
- * `./options-dir.ts`.
- *
- * Properties: `compareVersionParts` is a consistent total preorder
- * (reflexive, sign-antisymmetric, transitive) under its zero-padding rule;
- * `parseVersionParts` is total over arbitrary product names and prefixes,
- * yielding either a tuple of non-negative integers or the
- * not-a-product sentinel; and a product name built from a prefix and a
- * dotted numeric version parses back to that exact tuple.
- *
- * Run plan and seed policy: see `../fuzz-budget.ts`.
- *
- * @module
+ Property-based fuzz tests for the JetBrains version helpers in
+ `./options-dir.ts`.
+ 
+ Properties: `compareVersionParts` is a consistent total preorder
+ (reflexive, sign-antisymmetric, transitive) under its zero-padding rule;
+ `parseVersionParts` is total over arbitrary product names and prefixes,
+ yielding either a tuple of non-negative integers or the
+ not-a-product sentinel; and a product name built from a prefix and a
+ dotted numeric version parses back to that exact tuple.
+ 
+ Run plan and seed policy: see `../fuzz-budget.ts`.
+ 
+ @module
  */
 
 import {
@@ -40,12 +40,12 @@ import {
 //region Constants and arbitraries
 
 /**
- * Run plan resolved once for every property in this file.
+ Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
 
 /**
- * Arbitrary version tuple of non-negative integers.
+ Arbitrary version tuple of non-negative integers.
  */
 const versionTupleArbitrary = array(
   nat({ max: 100_000, },),
@@ -53,7 +53,7 @@ const versionTupleArbitrary = array(
 );
 
 /**
- * Arbitrary product-name prefix of letters.
+ Arbitrary product-name prefix of letters.
  */
 const prefixArbitrary = string({
   minLength: 1,
@@ -69,7 +69,7 @@ const prefixArbitrary = string({
 },);
 
 /**
- * Arbitrary non-empty dotted numeric version, paired as numbers and text.
+ Arbitrary non-empty dotted numeric version, paired as numbers and text.
  */
 const numericVersionArbitrary = array(
   nat({ max: 9_999, },),
@@ -142,14 +142,14 @@ await describe({
                   c,
                 },) {
                   /**
-                   * Sign of comparing a with b.
+                   Sign of comparing a with b.
                    */
                   const ab = Math.sign(compareVersionParts({
                     left: a,
                     right: b,
                   },),);
                   /**
-                   * Sign of comparing b with c.
+                   Sign of comparing b with c.
                    */
                   const bc = Math.sign(compareVersionParts({
                     left: b,
@@ -202,7 +202,7 @@ await describe({
                   prefixes,
                 },) {
                   /**
-                   * Parsed version tuple, or the not-a-product sentinel.
+                   Parsed version tuple, or the not-a-product sentinel.
                    */
                   const parsed = parseVersionParts({
                     productName,
@@ -236,7 +236,7 @@ await describe({
                   parts,
                 },) {
                   /**
-                   * Product directory name built from the prefix and version.
+                   Product directory name built from the prefix and version.
                    */
                   const productName = `${prefix}${parts.map(String,).join('.',)}`;
                   expect(

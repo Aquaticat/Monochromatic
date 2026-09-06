@@ -1,7 +1,7 @@
 /**
- * Tests for pi guardrail protected-path matching.
- *
- * @module
+ Tests for pi guardrail protected-path matching.
+ 
+ @module
  */
 
 import { join, } from 'node:path';
@@ -27,12 +27,12 @@ import {
 } from './types.ts';
 
 /**
- * Project root used by path normalization tests.
+ Project root used by path normalization tests.
  */
 const CWD = '/repo';
 
 /**
- * Built-in-like path rule used by path guard tests.
+ Built-in-like path rule used by path guard tests.
  */
 const PNPM_RULE: PathRule = {
   pattern: 'pnpm-lock.yaml',
@@ -40,18 +40,18 @@ const PNPM_RULE: PathRule = {
 };
 
 /**
- * Evaluates a single path against rules for concise tests.
- *
- * @param path - tool input path
- *
- * @param rules - gitignore-style path rules
- *
- * @returns guard decision
- *
- * @example
- * ```typescript
- * decisionForPath({ path: 'pnpm-lock.yaml', rules: [PNPM_RULE] });
- * ```
+ Evaluates a single path against rules for concise tests.
+ 
+ @param path - tool input path
+ 
+ @param rules - gitignore-style path rules
+ 
+ @returns guard decision
+ 
+ @example
+ ```typescript
+ decisionForPath({ path: 'pnpm-lock.yaml', rules: [PNPM_RULE] });
+ ```
  */
 function decisionForPath(
   {

@@ -5,32 +5,32 @@
 //   tsdoc(require-returns-description): @returns without description
 
 /**
- * Gets a name.
+ Gets a name.
  */
 function missingReturns(): string {
   return 'name';
 }
 
 /**
- * Logs output.
- *
- * @returns nothing
+ Logs output.
+ 
+ @returns nothing
  */
 function returnsOnVoid(): void {}
 
 /**
- * Throws unconditionally.
- *
- * @returns never
+ Throws unconditionally.
+ 
+ @returns never
  */
 function returnsOnNever(): never {
   throw new Error('fail',);
 }
 
 /**
- * Gets count.
- *
- * @returns
+ Gets count.
+ 
+ @returns
  */
 function returnsWithoutDescription(): number {
   return 42;

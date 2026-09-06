@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for private settlement review.
- *
- * @module
+ Built-artifact tests for private settlement review.
+ 
+ @module
  */
 
 import type {
@@ -33,9 +33,9 @@ const STARTED_AT = '2026-08-26T00:00:00.000Z';
 const COMPLETED_AT = '2026-08-26T00:01:00.000Z';
 
 /**
- * Build active settlement-test goal.
- *
- * @returns active goal state
+ Build active settlement-test goal.
+ 
+ @returns active goal state
  */
 function completionGoal(): ActiveGoalState {
   /** Reduced active fixture. */
@@ -55,9 +55,9 @@ function completionGoal(): ActiveGoalState {
 }
 
 /**
- * Build active controller fixture.
- *
- * @returns active controller
+ Build active controller fixture.
+ 
+ @returns active controller
  */
 function completionController(): GoalControllerState {
   return {
@@ -69,9 +69,9 @@ function completionController(): GoalControllerState {
 }
 
 /**
- * Build captured settlement request.
- *
- * @returns request bound to active controller identities
+ Build captured settlement request.
+ 
+ @returns request bound to active controller identities
  */
 function settlementRequest(): GoalSettlementReviewRequest {
   return {
@@ -83,9 +83,9 @@ function settlementRequest(): GoalSettlementReviewRequest {
 }
 
 /**
- * Build mutable fake lifecycle and context.
- *
- * @returns lifecycle, context, and transition observations
+ Build mutable fake lifecycle and context.
+ 
+ @returns lifecycle, context, and transition observations
  */
 function executionHarness(): {
   readonly lifecycle: GoalLifecycleHandle;

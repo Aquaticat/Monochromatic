@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * Cross-platform terminal emulator launcher.
- *
- * On Linux/FreeBSD, resolves via XDG Desktop Entry Specification
- * with a KDE `kdeglobals` fallback when no `xdg-terminals.list` is configured.
- * On Windows, checks for Windows Terminal (`wt.exe`) then falls back to `cmd.exe`.
- *
- * @example
- * ```sh
- * terminal-exec bash -l
- * terminal-exec --title="My Shell" --dir=/tmp; bash
- * ```
- *
- * @module
+ Cross-platform terminal emulator launcher.
+ 
+ On Linux/FreeBSD, resolves via XDG Desktop Entry Specification
+ with a KDE `kdeglobals` fallback when no `xdg-terminals.list` is configured.
+ On Windows, checks for Windows Terminal (`wt.exe`) then falls back to `cmd.exe`.
+ 
+ @example
+ ```sh
+ terminal-exec bash -l
+ terminal-exec --title="My Shell" --dir=/tmp; bash
+ ```
+ 
+ @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -24,22 +24,22 @@ import { resolveTerminal, } from './resolve.ts';
 import { NO_TERMINAL, } from './validate.ts';
 
 /**
- * Logger root for terminal-exec after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for terminal-exec after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'terminal-exec', },);
 
 /**
- * Parsed CLI options from process arguments.
+ Parsed CLI options from process arguments.
  */
 const options = parseArgs({ argv: process.argv
   .slice(2,), },);
 /**
- * Resolved terminal emulator entry, or NO_TERMINAL if none found.
+ Resolved terminal emulator entry, or NO_TERMINAL if none found.
  */
 const terminal = await resolveTerminal();
 
@@ -56,7 +56,7 @@ if (terminal === NO_TERMINAL) {
 l.info(`resolved terminal: ${terminal.entryId}`,);
 
 /**
- * Final command array built from resolved terminal and user options.
+ Final command array built from resolved terminal and user options.
  */
 const command = buildCommand({
   terminal,
@@ -64,8 +64,8 @@ const command = buildCommand({
 },);
 
 /**
- * If `--dir` was provided but the terminal has no dir argument support,
- * change the working directory before exec.
+ If `--dir` was provided but the terminal has no dir argument support,
+ change the working directory before exec.
  */
 if ((options.dir
   .length

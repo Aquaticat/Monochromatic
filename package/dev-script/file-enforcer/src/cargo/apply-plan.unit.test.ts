@@ -10,7 +10,7 @@ import { applyCargoPlan, } from './apply-plan.ts';
 import type { CargoManifestPlan, } from './types.ts';
 
 /**
- * Canonical lint block text used by the insertion tests.
+ Canonical lint block text used by the insertion tests.
  */
 const LINTS_BLOCK = `[lints.clippy]
 disallowed_methods = "deny"
@@ -19,7 +19,7 @@ needless_return = "allow"
 `;
 
 /**
- * Canonical empty-workspace block text used by the insertion tests.
+ Canonical empty-workspace block text used by the insertion tests.
  */
 const WORKSPACE_BLOCK = `[workspace]
 `;

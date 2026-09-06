@@ -1,8 +1,8 @@
 /**
- * Property tests proving values and canonical formatting survive a full
- * parse-edit-stringify-reparse round-trip.
- *
- * @module
+ Property tests proving values and canonical formatting survive a full
+ parse-edit-stringify-reparse round-trip.
+ 
+ @module
  */
 
 import {

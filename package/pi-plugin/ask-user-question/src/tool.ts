@@ -26,12 +26,12 @@ import {
 //region Constants
 
 /**
- * Stable model-facing tool name.
+ Stable model-facing tool name.
  */
 export const ASK_USER_QUESTION_TOOL_NAME = 'ask_user_question';
 
 /**
- * One unrestricted model-authored question.
+ One unrestricted model-authored question.
  */
 const AskUserQuestionParameters: TObject<{ question: TString; }> = Type.Object({
   question: Type.String({
@@ -44,7 +44,7 @@ const AskUserQuestionParameters: TObject<{ question: TString; }> = Type.Object({
 //region Logger
 
 /**
- * Tagged logger for ask-user tool boundary.
+ Tagged logger for ask-user tool boundary.
  */
 const l = tagged({ tag: 'ask-user-question:tool', },);
 
@@ -53,12 +53,12 @@ const l = tagged({ tag: 'ask-user-question:tool', },);
 //region Types
 
 /**
- * Model input validated by ask-user tool schema.
+ Model input validated by ask-user tool schema.
  */
 export type AskUserQuestionParameters = Static<typeof AskUserQuestionParameters>;
 
 /**
- * Injected external-answer boundary.
+ Injected external-answer boundary.
  */
 export type ExternalAnswerRequester = (
   options: {
@@ -68,7 +68,7 @@ export type ExternalAnswerRequester = (
 ) => Promise<ExternalAnswerOutcome>;
 
 /**
- * Concrete tool definition returned to Pi host.
+ Concrete tool definition returned to Pi host.
  */
 type AskUserQuestionToolDefinition = ToolDefinition<
   typeof AskUserQuestionParameters,
@@ -80,16 +80,16 @@ type AskUserQuestionToolDefinition = ToolDefinition<
 //region Error
 
 /**
- * Reports ask-user invocation outside interactive TUI.
- *
- * @example
- * ```ts
- * new AskUserQuestionUnavailableError();
- * ```
+ Reports ask-user invocation outside interactive TUI.
+ 
+ @example
+ ```ts
+ new AskUserQuestionUnavailableError();
+ ```
  */
 export class AskUserQuestionUnavailableError extends Error {
   /**
-   * Creates noninteractive-mode diagnostic.
+   Creates noninteractive-mode diagnostic.
    */
   constructor() {
     super('ask_user_question requires interactive TUI mode.',);
@@ -102,11 +102,11 @@ export class AskUserQuestionUnavailableError extends Error {
 //region Registration
 
 /**
- * Creates free-form blocking question tool.
- *
- * @param requestAnswer - external editor interaction boundary
- *
- * @returns concrete Pi tool definition
+ Creates free-form blocking question tool.
+ 
+ @param requestAnswer - external editor interaction boundary
+ 
+ @returns concrete Pi tool definition
  */
 function createAskUserQuestionTool(
   { requestAnswer, }: { readonly requestAnswer: ExternalAnswerRequester; },
@@ -125,21 +125,21 @@ function createAskUserQuestionTool(
     executionMode: 'sequential',
     execute:
     /**
-     * Waits for external editor answer while Pi host remains interactive.
-     *
-     * @param _toolCallId - unused host tool-call identifier
-     *
-     * @param params - readonly model-authored question
-     *
-     * @param signal - host cancellation signal
-     *
-     * @param _onUpdate - unused progress callback
-     *
-     * @param ctx - host mode and working directory
-     *
-     * @returns answered or cancelled tool result
-     *
-     * @mutates ctx - external requester uses host cancellation and working directory capabilities
+     Waits for external editor answer while Pi host remains interactive.
+     
+     @param _toolCallId - unused host tool-call identifier
+     
+     @param params - readonly model-authored question
+     
+     @param signal - host cancellation signal
+     
+     @param _onUpdate - unused progress callback
+     
+     @param ctx - host mode and working directory
+     
+     @returns answered or cancelled tool result
+     
+     @mutates ctx - external requester uses host cancellation and working directory capabilities
      */
       async function executeAskUserQuestion(
       _toolCallId: string,
@@ -150,7 +150,7 @@ function createAskUserQuestionTool(
       ctx: ForeignHostCapability<ExtensionContext>,
     ): Promise<AgentToolResult<AskUserQuestionDetails>> {
       /**
-       * UTF-8 question size logged without exposing model-authored content.
+       UTF-8 question size logged without exposing model-authored content.
        */
       const questionBytes = Buffer.byteLength(
         params.question,
@@ -160,7 +160,7 @@ function createAskUserQuestionTool(
       if (ctx.mode !== 'tui')
         throw new AskUserQuestionUnavailableError();
       /**
-       * External editor interaction while model remains blocked.
+       External editor interaction while model remains blocked.
        */
       const outcome = await requestAnswer({
         cwd: ctx.cwd,
@@ -173,17 +173,17 @@ function createAskUserQuestionTool(
     /* oxlint-disable unicorn/consistent-function-scoping -- ToolDefinition.renderCall expects positional host arguments. */
     renderCall:
     /**
-     * Renders complete question in transcript independently from expansion state.
-     *
-     * @param args - readonly model-authored question
-     *
-     * @param theme - Pi transcript theme capability
-     *
-     * @param _context - unused host render context
-     *
-     * @returns wrapped full-question component
-     *
-     * @mutates theme - theme methods can update Pi host styling caches
+     Renders complete question in transcript independently from expansion state.
+     
+     @param args - readonly model-authored question
+     
+     @param theme - Pi transcript theme capability
+     
+     @param _context - unused host render context
+     
+     @returns wrapped full-question component
+     
+     @mutates theme - theme methods can update Pi host styling caches
      */
       function renderAskUserQuestionCall(
       args: { readonly question: string; },
@@ -191,7 +191,7 @@ function createAskUserQuestionTool(
       _context: unknown,
     ) {
       /**
-       * Complete question with terminal controls made visible instead of executable.
+       Complete question with terminal controls made visible instead of executable.
        */
       const question = visibleTerminalText({ text: args.question, },);
       return new Text(
@@ -211,16 +211,16 @@ function createAskUserQuestionTool(
 }
 
 /**
- * Registers free-form blocking question tool.
- *
- * @param pi - Pi extension API
- *
- * @param requestAnswer - external-answer requester
- *
- * @example
- * ```ts
- * registerAskUserQuestionTool({ pi, requestAnswer });
- * ```
+ Registers free-form blocking question tool.
+ 
+ @param pi - Pi extension API
+ 
+ @param requestAnswer - external-answer requester
+ 
+ @example
+ ```ts
+ registerAskUserQuestionTool({ pi, requestAnswer });
+ ```
  */
 export function registerAskUserQuestionTool(
   {

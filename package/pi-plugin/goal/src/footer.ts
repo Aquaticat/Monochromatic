@@ -1,7 +1,7 @@
 /**
- * Goal footer preview formatting with grapheme safety.
- *
- * @module
+ Goal footer preview formatting with grapheme safety.
+ 
+ @module
  */
 
 import {
@@ -10,7 +10,7 @@ import {
 } from './constants.ts';
 
 /**
- * Locale-neutral grapheme segmenter reused for bounded footer previews.
+ Locale-neutral grapheme segmenter reused for bounded footer previews.
  */
 const GRAPHEME_SEGMENTER = new Intl.Segmenter(
   undefined,
@@ -20,20 +20,20 @@ const GRAPHEME_SEGMENTER = new Intl.Segmenter(
 );
 
 /**
- * Format objective preview with at most ten displayed graphemes.
- *
- * @param objective - exact normalized objective
- *
- * @returns full objective or first nine graphemes plus ellipsis
- *
- * @example
- * ```ts
- * objectivePreview('abcdefghijk');
- * ```
+ Format objective preview with at most ten displayed graphemes.
+ 
+ @param objective - exact normalized objective
+ 
+ @returns full objective or first nine graphemes plus ellipsis
+ 
+ @example
+ ```ts
+ objectivePreview('abcdefghijk');
+ ```
  */
 function objectivePreview(objective: string,): string {
   /**
-   * Display graphemes preserving emoji and combining sequences.
+   Display graphemes preserving emoji and combining sequences.
    */
   const graphemes = Array.from(
     GRAPHEME_SEGMENTER.segment(objective,),
@@ -51,16 +51,16 @@ function objectivePreview(objective: string,): string {
 }
 
 /**
- * Build live active-goal footer text.
- *
- * @param objective - exact normalized objective
- *
- * @returns footer status text
- *
- * @example
- * ```ts
- * formatGoalFooter('ship feature');
- * ```
+ Build live active-goal footer text.
+ 
+ @param objective - exact normalized objective
+ 
+ @returns footer status text
+ 
+ @example
+ ```ts
+ formatGoalFooter('ship feature');
+ ```
  */
 function formatGoalFooter(objective: string,): string {
   return `goal ${objectivePreview(objective,)}`;

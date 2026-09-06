@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- * Self-contained production CLI and public tunnel-orchestration bundles.
+ Self-contained production CLI and public tunnel-orchestration bundles.
  */
 const config: NodeFlavorConfigs = perEntryNodeConfig({
   entries: [

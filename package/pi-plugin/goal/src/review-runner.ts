@@ -1,7 +1,7 @@
 /**
- * Goal reviewer transport orchestration over ranked authenticated pool.
- *
- * @module
+ Goal reviewer transport orchestration over ranked authenticated pool.
+ 
+ @module
  */
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -39,31 +39,31 @@ import {
 } from './review-selection.ts';
 
 /**
- * Reviewer orchestration logger.
+ Reviewer orchestration logger.
  */
 const reviewRunnerLogger = tagged({ tag: 'pi-goal-review-runner', },);
 
 /**
- * Run one production structured reviewer attempt.
- *
- * @param candidate - authenticated reviewer and model-specific prompt
- *
- * @param signal - optional tool cancellation signal
- *
- * @param testTransport - optional deterministic data-only provider seam
- *
- * @returns strict reviewer verdict
- *
- * @mutates candidate - provider consumes model and auth data
- *
- * @mutates signal - composed cancellation can retain caller signal
- *
- * @mutates testTransport - deterministic seam advances script and records snapshots
- *
- * @example
- * ```ts
- * await runGoalReviewerAttempt({ candidate });
- * ```
+ Run one production structured reviewer attempt.
+ 
+ @param candidate - authenticated reviewer and model-specific prompt
+ 
+ @param signal - optional tool cancellation signal
+ 
+ @param testTransport - optional deterministic data-only provider seam
+ 
+ @returns strict reviewer verdict
+ 
+ @mutates candidate - provider consumes model and auth data
+ 
+ @mutates signal - composed cancellation can retain caller signal
+ 
+ @mutates testTransport - deterministic seam advances script and records snapshots
+ 
+ @example
+ ```ts
+ await runGoalReviewerAttempt({ candidate });
+ ```
  */
 async function runGoalReviewerAttempt(
   {
@@ -77,21 +77,21 @@ async function runGoalReviewerAttempt(
   },
 ): Promise<GoalReviewVerdict> {
   /**
-   * Candidate prompt reused by initial request and retry builder.
+   Candidate prompt reused by initial request and retry builder.
    */
   const prompt = {
     systemPrompt: candidate.systemPrompt,
     userContent: candidate.userContent,
   };
   /**
-   * Complete candidate deadline shared across all requests.
+   Complete candidate deadline shared across all requests.
    */
   const signal = structuredReviewSignal({
     timeoutMs: REVIEW_TIMEOUT_MS,
     ...(callerSignal === undefined ? {} : { signal: callerSignal, }),
   },);
   /**
-   * Initial forced-tool provider result.
+   Initial forced-tool provider result.
    */
   const initial = await runStructuredToolRequest({
     model: candidate.model,
@@ -106,14 +106,14 @@ async function runGoalReviewerAttempt(
   if (initial.kind === 'toolCall')
     return parseGoalReviewVerdict(initial.arguments,);
   /**
-   * Goal-specific direct-JSON retry prompt.
+   Goal-specific direct-JSON retry prompt.
    */
   const retryPrompt = buildGoalJsonRetryPrompt({
     initialPrompt: prompt,
     firstAttemptTextContent: initial.textContent,
   },);
   /**
-   * Unknown direct-JSON value retained only until strict parsing.
+   Unknown direct-JSON value retained only until strict parsing.
    */
   const value = await runStructuredJsonRetries({
     model: candidate.model,
@@ -128,53 +128,53 @@ async function runGoalReviewerAttempt(
 }
 
 /**
- * Successful fallback paired with candidate audit metadata.
- *
- * @example
- * ```ts
- * const result: GoalFallbackSuccess = { candidate, identity: 'provider/model', verdict };
- * ```
+ Successful fallback paired with candidate audit metadata.
+ 
+ @example
+ ```ts
+ const result: GoalFallbackSuccess = { candidate, identity: 'provider/model', verdict };
+ ```
  */
 type GoalFallbackSuccess = {
   /**
-   * Candidate returning valid verdict.
+   Candidate returning valid verdict.
    */
   readonly candidate: GoalReviewerCandidate;
   /**
-   * Canonical reviewer identity.
+   Canonical reviewer identity.
    */
   readonly identity: string;
   /**
-   * Strict reviewer verdict.
+   Strict reviewer verdict.
    */
   readonly verdict: GoalReviewVerdict;
 };
 
 /**
- * Run one concrete goal fallback attempt and record candidate-labeled failure.
- *
- * @param candidate - authenticated prompted reviewer
- *
- * @param signal - optional caller cancellation
- *
- * @param testTransport - optional deterministic provider script
- *
- * @param diagnostics - local complete failure audit
- *
- * @returns valid labeled verdict
- *
- * @mutates candidate - provider consumes model and auth data
- *
- * @mutates signal - composed cancellation can retain caller signal
- *
- * @mutates testTransport - deterministic seam advances script and records snapshots
- *
- * @mutates diagnostics - records normalized contender failure
- *
- * @example
- * ```ts
- * await runGoalFallbackAttempt({ candidate, diagnostics });
- * ```
+ Run one concrete goal fallback attempt and record candidate-labeled failure.
+ 
+ @param candidate - authenticated prompted reviewer
+ 
+ @param signal - optional caller cancellation
+ 
+ @param testTransport - optional deterministic provider script
+ 
+ @param diagnostics - local complete failure audit
+ 
+ @returns valid labeled verdict
+ 
+ @mutates candidate - provider consumes model and auth data
+ 
+ @mutates signal - composed cancellation can retain caller signal
+ 
+ @mutates testTransport - deterministic seam advances script and records snapshots
+ 
+ @mutates diagnostics - records normalized contender failure
+ 
+ @example
+ ```ts
+ await runGoalFallbackAttempt({ candidate, diagnostics });
+ ```
  */
 async function runGoalFallbackAttempt(
   {
@@ -190,7 +190,7 @@ async function runGoalFallbackAttempt(
   },
 ): Promise<GoalFallbackSuccess> {
   /**
-   * Canonical reviewer identity.
+   Canonical reviewer identity.
    */
   const identity = canonicalSlug(candidate.model,);
   reviewRunnerLogger.debug(`starting fallback goal reviewer ${identity}`,);
@@ -207,7 +207,7 @@ async function runGoalFallbackAttempt(
   }
   catch (error) {
     /**
-     * Candidate-labeled normalized failure.
+     Candidate-labeled normalized failure.
      */
     const diagnostic = `${identity}: ${caughtValueText(error,)}`;
     diagnostics.push(diagnostic,);
@@ -220,28 +220,28 @@ async function runGoalFallbackAttempt(
 }
 
 /**
- * Run initial reviewer and distinct bounded concurrent fallbacks from one pool.
- *
- * @param pool - expected-cost-ranked authenticated candidates
- *
- * @param signal - optional tool cancellation signal
- *
- * @param testTransport - optional deterministic data-only provider seam
- *
- * @returns first valid verdict with winning reviewer audit
- *
- * @mutates pool - provider attempts consume candidate model and auth data
- *
- * @mutates signal - candidate attempt can retain caller cancellation signal
- *
- * @mutates testTransport - deterministic seam advances script and records snapshots
- *
- * @throws {@link ReviewUnavailableError} when pool is empty or every attempt fails
- *
- * @example
- * ```ts
- * await runGoalReviewerPool({ pool });
- * ```
+ Run initial reviewer and distinct bounded concurrent fallbacks from one pool.
+ 
+ @param pool - expected-cost-ranked authenticated candidates
+ 
+ @param signal - optional tool cancellation signal
+ 
+ @param testTransport - optional deterministic data-only provider seam
+ 
+ @returns first valid verdict with winning reviewer audit
+ 
+ @mutates pool - provider attempts consume candidate model and auth data
+ 
+ @mutates signal - candidate attempt can retain caller cancellation signal
+ 
+ @mutates testTransport - deterministic seam advances script and records snapshots
+ 
+ @throws {@link ReviewUnavailableError} when pool is empty or every attempt fails
+ 
+ @example
+ ```ts
+ await runGoalReviewerPool({ pool });
+ ```
  */
 async function runGoalReviewerPool(
   {
@@ -255,14 +255,14 @@ async function runGoalReviewerPool(
   },
 ): Promise<GoalSettlementReview> {
   /**
-   * Ranked candidates and selection diagnostics.
+   Ranked candidates and selection diagnostics.
    */
   const {
     candidates,
     diagnostics: selectionDiagnostics,
   } = pool;
   /**
-   * Initial and bounded fallback candidates in expected-cost order.
+   Initial and bounded fallback candidates in expected-cost order.
    */
   const [
     firstCandidate,
@@ -278,15 +278,15 @@ async function runGoalReviewerPool(
     },);
   }
   /**
-   * Initial reviewer identity.
+   Initial reviewer identity.
    */
   const firstIdentity = canonicalSlug(firstCandidate.model,);
   /**
-   * Candidate identities whose transports started.
+   Candidate identities whose transports started.
    */
   const attemptedReviewerIdentities: string[] = [firstIdentity,];
   /**
-   * Complete selection and transport failure audit.
+   Complete selection and transport failure audit.
    */
   const diagnostics = [...selectionDiagnostics,];
   reviewRunnerLogger.debug(
@@ -320,7 +320,7 @@ async function runGoalReviewerPool(
   }
   attemptedReviewerIdentities.push(canonicalSlug(firstFallback.model,),);
   /**
-   * Concurrent fallback attempts started before first await.
+   Concurrent fallback attempts started before first await.
    */
   const fallbackAttempts: Promise<GoalFallbackSuccess>[] = [
     runGoalFallbackAttempt({
@@ -341,7 +341,7 @@ async function runGoalReviewerPool(
   }
   try {
     /**
-     * First fulfilled strict verdict; rejected transports do not settle race.
+     First fulfilled strict verdict; rejected transports do not settle race.
      */
     const winner = await Promise.any(fallbackAttempts,);
     return {
@@ -362,26 +362,26 @@ async function runGoalReviewerPool(
 }
 
 /**
- * Production settlement reviewer building active-branch evidence and scoped pool.
- *
- * @param request - captured active settlement
- *
- * @param context - current Pi extension context
- *
- * @param signal - optional review cancellation signal
- *
- * @returns first valid verdict and reviewer audit
- *
- * @mutates context - branch, scope resolution, and auth can change Pi-owned state
- *
- * @mutates signal - shared attempt cancellation can retain caller signal
- *
- * @throws {@link ReviewUnavailableError} when every eligible attempt fails
- *
- * @example
- * ```ts
- * await reviewGoalSettlement({ request, context });
- * ```
+ Production settlement reviewer building active-branch evidence and scoped pool.
+ 
+ @param request - captured active settlement
+ 
+ @param context - current Pi extension context
+ 
+ @param signal - optional review cancellation signal
+ 
+ @returns first valid verdict and reviewer audit
+ 
+ @mutates context - branch, scope resolution, and auth can change Pi-owned state
+ 
+ @mutates signal - shared attempt cancellation can retain caller signal
+ 
+ @throws {@link ReviewUnavailableError} when every eligible attempt fails
+ 
+ @example
+ ```ts
+ await reviewGoalSettlement({ request, context });
+ ```
  */
 async function reviewGoalSettlement(
   {
@@ -391,19 +391,19 @@ async function reviewGoalSettlement(
   }: Parameters<GoalSettlementReviewer>[0],
 ): Promise<GoalSettlementReview> {
   /**
-   * Selected active branch captured before reviewer awaits.
+   Selected active branch captured before reviewer awaits.
    */
   const branch = context.sessionManager
     .getBranch();
   /**
-   * Finalized post-start evidence including settled assistant output.
+   Finalized post-start evidence including settled assistant output.
    */
   const evidence = buildGoalReviewEvidence({
     branch,
     request,
   },);
   /**
-   * Ranked authenticated reviewer pool.
+   Ranked authenticated reviewer pool.
    */
   const pool = await resolveGoalReviewerPool({
     context,

@@ -1,7 +1,7 @@
 /**
- * Tests for `mapIterableAsync`.
- *
- * @module
+ Tests for `mapIterableAsync`.
+ 
+ @module
  */
 
 import {

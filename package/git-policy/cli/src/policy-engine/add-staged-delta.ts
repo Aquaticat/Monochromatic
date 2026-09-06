@@ -1,7 +1,7 @@
 /**
- * Exact staged-entry delta between one private index state and its successor.
- *
- * @module
+ Exact staged-entry delta between one private index state and its successor.
+ 
+ @module
  */
 import {
   CommitTransactionGitError,
@@ -9,7 +9,7 @@ import {
 } from './commit-transaction-git.ts';
 
 /**
- * Strict Git metadata decoder.
+ Strict Git metadata decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
@@ -17,23 +17,23 @@ const DECODER = new TextDecoder(
 );
 
 /**
- * Captures complete per-path index records for exact state comparison.
- *
- * Unmerged paths contribute one record per conflict stage, so conflict
- * resolution surfaces as a record change like any other staging operation.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param indexPath - private index
- *
- * @returns per-path joined stage records
- *
- * @example
- * ```ts
- * await captureIndexRecords({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index' });
- * ```
+ Captures complete per-path index records for exact state comparison.
+ 
+ Unmerged paths contribute one record per conflict stage, so conflict
+ resolution surfaces as a record change like any other staging operation.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param indexPath - private index
+ 
+ @returns per-path joined stage records
+ 
+ @example
+ ```ts
+ await captureIndexRecords({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index' });
+ ```
  */
 export async function captureIndexRecords({
   gitPath,
@@ -45,7 +45,7 @@ export async function captureIndexRecords({
   indexPath: string;
 }>,): Promise<ReadonlyMap<string, string>> {
   /**
-   * NUL-delimited complete stage records.
+   NUL-delimited complete stage records.
    */
   const output = await runTransactionGit({
     gitPath,
@@ -58,7 +58,7 @@ export async function captureIndexRecords({
     ],
   },);
   /**
-   * Per-path record accumulator across conflict stages.
+   Per-path record accumulator across conflict stages.
    */
   const byPath = new Map<string, string>();
   for (const record of DECODER.decode(output.stdout,)
@@ -67,24 +67,24 @@ export async function captureIndexRecords({
       return stageRecord.length > 0;
     },)) {
     /**
-     * Metadata/path separator.
+     Metadata/path separator.
      */
     const tab = record.indexOf('\t',);
     if (tab === (-1))
       throw new CommitTransactionGitError('Private index stage record lacks path separator.',);
     /**
-     * Mode, object ID, and stage metadata.
+     Mode, object ID, and stage metadata.
      */
     const metadata = record.slice(
       0,
       tab,
     );
     /**
-     * Repository-relative staged path.
+     Repository-relative staged path.
      */
     const path = record.slice(tab + 1,);
     /**
-     * Previously accumulated records for the same path.
+     Previously accumulated records for the same path.
      */
     const existing = byPath.get(path,);
     byPath.set(
@@ -96,15 +96,15 @@ export async function captureIndexRecords({
 }
 
 /**
- * Returns HEAD-present subset of candidate paths.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param paths - literal repository paths
- *
- * @returns paths present in HEAD tree, empty on unborn HEAD
+ Returns HEAD-present subset of candidate paths.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param paths - literal repository paths
+ 
+ @returns paths present in HEAD tree, empty on unborn HEAD
  */
 async function headPresentPaths({
   gitPath,
@@ -116,7 +116,7 @@ async function headPresentPaths({
   paths: readonly string[];
 }>,): Promise<ReadonlySet<string>> {
   /**
-   * Recursive HEAD listing scoped to literal candidate paths.
+   Recursive HEAD listing scoped to literal candidate paths.
    */
   const output = await runTransactionGit({
     gitPath,
@@ -145,26 +145,26 @@ async function headPresentPaths({
 }
 
 /**
- * Returns exactly the paths whose staged records this operation changed.
- *
- * Paths absent from both the successor index and HEAD carry no scannable
- * state (the operation merely unstaged a never-committed file) and are
- * dropped.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param indexPath - private index after the staging operation
- *
- * @param before - complete records captured before the staging operation
- *
- * @returns repository paths staged, restaged, or deletion-staged by the operation
- *
- * @example
- * ```ts
- * await stagedDeltaPaths({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index', before: new Map() });
- * ```
+ Returns exactly the paths whose staged records this operation changed.
+ 
+ Paths absent from both the successor index and HEAD carry no scannable
+ state (the operation merely unstaged a never-committed file) and are
+ dropped.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param indexPath - private index after the staging operation
+ 
+ @param before - complete records captured before the staging operation
+ 
+ @returns repository paths staged, restaged, or deletion-staged by the operation
+ 
+ @example
+ ```ts
+ await stagedDeltaPaths({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index', before: new Map() });
+ ```
  */
 export async function stagedDeltaPaths({
   gitPath,
@@ -178,7 +178,7 @@ export async function stagedDeltaPaths({
   before: ReadonlyMap<string, string>;
 }>,): Promise<readonly string[]> {
   /**
-   * Complete records after the staging operation.
+   Complete records after the staging operation.
    */
   const after = await captureIndexRecords({
     gitPath,
@@ -186,7 +186,7 @@ export async function stagedDeltaPaths({
     indexPath,
   },);
   /**
-   * Paths whose complete stage records differ across the operation.
+   Paths whose complete stage records differ across the operation.
    */
   const changed = [...new Set([
     ...before.keys(),
@@ -195,7 +195,7 @@ export async function stagedDeltaPaths({
     return before.get(path,) !== after.get(path,);
   },);
   /**
-   * Changed paths the operation removed from the index entirely.
+   Changed paths the operation removed from the index entirely.
    */
   const removed = changed.filter(function isRemoved(path,) {
     return !after.has(path,);
@@ -203,7 +203,7 @@ export async function stagedDeltaPaths({
   if (removed.length === 0)
     return changed;
   /**
-   * Removed paths that still exist in HEAD as staged deletions.
+   Removed paths that still exist in HEAD as staged deletions.
    */
   const headPaths = await headPresentPaths({
     gitPath,

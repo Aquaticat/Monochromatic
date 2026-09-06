@@ -1,9 +1,9 @@
 /**
- * Unit tests for scalar parsing: keyword, string, and number productions, and
- * the error raised when no scalar value starts at the offset (including the
- * end-of-input marker).
- *
- * @module
+ Unit tests for scalar parsing: keyword, string, and number productions, and
+ the error raised when no scalar value starts at the offset (including the
+ end-of-input marker).
+ 
+ @module
  */
 
 import {

@@ -9,17 +9,17 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Sink factories under test, read from the built artifact's `sinks` namespace.
+ Sink factories under test, read from the built artifact's `sinks` namespace.
  */
 const {
   createConsoleSink,
 } = sinks;
 
 /**
- * Awaits two microtask hops so any pending `queueMicrotask(flushBuffer)`
- * has definitely fired and the buffer is drained before the next assertion.
- * One hop would often be enough, but two is cheap insurance against timing
- * skew from the harness itself.
+ Awaits two microtask hops so any pending `queueMicrotask(flushBuffer)`
+ has definitely fired and the buffer is drained before the next assertion.
+ One hop would often be enough, but two is cheap insurance against timing
+ skew from the harness itself.
  */
 async function waitForFlush(): Promise<void> {
   await Promise.resolve();
@@ -27,14 +27,14 @@ async function waitForFlush(): Promise<void> {
 }
 
 /**
- * Builds a `LogRecord` with a fixed timestamp so the formatted output
- * is stable across test runs.
- *
- * @param level - Severity level.
- *
- * @param message - Message body.
- *
- * @returns A complete `LogRecord`.
+ Builds a `LogRecord` with a fixed timestamp so the formatted output
+ is stable across test runs.
+ 
+ @param level - Severity level.
+ 
+ @param message - Message body.
+ 
+ @returns A complete `LogRecord`.
  */
 function record(
   {
@@ -53,11 +53,11 @@ function record(
 }
 
 /**
- * Appends `--verbose` to `process.argv` and removes it again when the returned
- * value goes out of `using` scope, so a verbose-detection test cannot leak the
- * flag into the sibling test that asserts the silenced default.
- *
- * @returns Disposable that restores `process.argv` on scope exit.
+ Appends `--verbose` to `process.argv` and removes it again when the returned
+ value goes out of `using` scope, so a verbose-detection test cannot leak the
+ flag into the sibling test that asserts the silenced default.
+ 
+ @returns Disposable that restores `process.argv` on scope exit.
  */
 function withVerboseArgv(): Disposable {
   process.argv

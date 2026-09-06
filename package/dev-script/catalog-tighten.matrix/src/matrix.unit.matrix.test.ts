@@ -1,15 +1,15 @@
 /**
- * Containerised matrix verifying catalog-tighten across pnpm install layouts.
- *
- * For every {@link LayoutCombo}, runs one podman container (monorepo mounted
- * read-only, fixture installed in a tmpfs) that installs a fixture under that
- * layout and asserts catalog-tighten tightens the catalog floor to the active
- * version. Results report through `describe`/`it` from `@monochromatic-dev/module-test`.
- *
- * Needs podman and network (the fixture install pulls from the registry), so it
- * lives behind the `test:matrix` task rather than the standard `test:unit` run.
- *
- * @module
+ Containerised matrix verifying catalog-tighten across pnpm install layouts.
+ 
+ For every {@link LayoutCombo}, runs one podman container (monorepo mounted
+ read-only, fixture installed in a tmpfs) that installs a fixture under that
+ layout and asserts catalog-tighten tightens the catalog floor to the active
+ version. Results report through `describe`/`it` from `@monochromatic-dev/module-test`.
+ 
+ Needs podman and network (the fixture install pulls from the registry), so it
+ lives behind the `test:matrix` task rather than the standard `test:unit` run.
+ 
+ @module
  */
 
 import {
@@ -31,13 +31,13 @@ import {
 //region Container configuration
 
 /**
- * Directory of this file; the repo root is four levels up
- * (`src` -> package -> `dev-script` -> `packages` -> repo).
+ Directory of this file; the repo root is four levels up
+ (`src` -> package -> `dev-script` -> `packages` -> repo).
  */
 const HERE = import.meta.dirname;
 
 /**
- * Absolute monorepo root on the host, bind-mounted read-only into each container.
+ Absolute monorepo root on the host, bind-mounted read-only into each container.
  */
 const REPO_ROOT = join(
   HERE,
@@ -48,62 +48,62 @@ const REPO_ROOT = join(
 );
 
 /**
- * In-container entrypoint path, resolved against the read-only `/repo` mount.
+ In-container entrypoint path, resolved against the read-only `/repo` mount.
  */
 const IN_CONTAINER_ENTRY = '/repo/packages/dev-script/catalog-tighten.matrix/src/in-container.ts';
 
 /**
- * Base image: node with corepack and unflagged TypeScript stripping; pnpm is provisioned at runtime.
+ Base image: node with corepack and unflagged TypeScript stripping; pnpm is provisioned at runtime.
  */
 const NODE_IMAGE = 'docker.io/library/node:24-slim';
 
 /**
- * Per-container memory cap.
+ Per-container memory cap.
  */
 const MEMORY_LIMIT = '2g';
 
 /**
- * Per-container CPU cap.
+ Per-container CPU cap.
  */
 const CPU_LIMIT = '2';
 
 /**
- * Per-container process cap.
+ Per-container process cap.
  */
 const PIDS_LIMIT = 512;
 
 /**
- * Writable tmpfs size for the fixture work tree.
+ Writable tmpfs size for the fixture work tree.
  */
 const WORK_TMPFS_SIZE = '512m';
 
 /**
- * Writable tmpfs size for `/tmp` (corepack cache, pnpm store, downloaded binaries).
+ Writable tmpfs size for `/tmp` (corepack cache, pnpm store, downloaded binaries).
  */
 const TMP_TMPFS_SIZE = '1g';
 
 /**
- * Maximum containers to run at once; each install is memory- and network-heavy.
+ Maximum containers to run at once; each install is memory- and network-heavy.
  */
 const MATRIX_CONCURRENCY = 2;
 
 /**
- * Resolves the monorepo's pnpm spec (`pnpm@<version>`) from the pnpm on PATH, so
- * every fixture installs with the exact pnpm the repo runs (mise's floating
- * `pnpm = "latest"`) instead of a version hardcoded here that would drift.
- *
- * @returns `pnpm@<version>` spec for the container's `packageManager` and corepack
- *
- * @throws Error when `pnpm --version` yields no version
- *
- * @example
- * ```ts
- * await resolvePnpmSpec() // "pnpm\@11.11.0"
- * ```
+ Resolves the monorepo's pnpm spec (`pnpm@<version>`) from the pnpm on PATH, so
+ every fixture installs with the exact pnpm the repo runs (mise's floating
+ `pnpm = "latest"`) instead of a version hardcoded here that would drift.
+ 
+ @returns `pnpm@<version>` spec for the container's `packageManager` and corepack
+ 
+ @throws Error when `pnpm --version` yields no version
+ 
+ @example
+ ```ts
+ await resolvePnpmSpec() // "pnpm\@11.11.0"
+ ```
  */
 async function resolvePnpmSpec(): Promise<string> {
   /**
-   * Monorepo pnpm version reported by the pnpm on PATH (mise-managed).
+   Monorepo pnpm version reported by the pnpm on PATH (mise-managed).
    */
   const version = (await spawn(
     'pnpm',
@@ -117,19 +117,19 @@ async function resolvePnpmSpec(): Promise<string> {
 }
 
 /**
- * Builds the `podman run` argv for one combination, passing the resolved
- * monorepo pnpm spec into the container through {@link FIXTURE_PNPM_ENV}.
- *
- * @param scenario - scenario to execute; serialised as the entrypoint argument
- *
- * @param pnpmSpec - monorepo `pnpm@<version>` spec the fixture installs with
- *
- * @returns argument vector excluding the `podman` executable
- *
- * @example
- * ```ts
- * buildPodmanArgs({ scenario: SCENARIOS[0], pnpmSpec: "pnpm\@11.11.0" }).at(0) // 'run'
- * ```
+ Builds the `podman run` argv for one combination, passing the resolved
+ monorepo pnpm spec into the container through {@link FIXTURE_PNPM_ENV}.
+ 
+ @param scenario - scenario to execute; serialised as the entrypoint argument
+ 
+ @param pnpmSpec - monorepo `pnpm@<version>` spec the fixture installs with
+ 
+ @returns argument vector excluding the `podman` executable
+ 
+ @example
+ ```ts
+ buildPodmanArgs({ scenario: SCENARIOS[0], pnpmSpec: "pnpm\@11.11.0" }).at(0) // 'run'
+ ```
  */
 function buildPodmanArgs(
   {
@@ -175,19 +175,19 @@ function buildPodmanArgs(
 //region Run
 
 /**
- * Runs one combination in a container and fails the test on a non-zero exit or
- * a missing PASS marker.
- *
- * @param scenario - scenario to run
- *
- * @param pnpmSpec - monorepo `pnpm@<version>` spec passed into the container
- *
- * @throws Error when the container exits non-zero or does not report PASS
- *
- * @example
- * ```ts
- * await runScenario({ scenario: SCENARIOS[0], pnpmSpec: "pnpm\@11.11.0" });
- * ```
+ Runs one combination in a container and fails the test on a non-zero exit or
+ a missing PASS marker.
+ 
+ @param scenario - scenario to run
+ 
+ @param pnpmSpec - monorepo `pnpm@<version>` spec passed into the container
+ 
+ @throws Error when the container exits non-zero or does not report PASS
+ 
+ @example
+ ```ts
+ await runScenario({ scenario: SCENARIOS[0], pnpmSpec: "pnpm\@11.11.0" });
+ ```
  */
 async function runScenario(
   {
@@ -199,7 +199,7 @@ async function runScenario(
   },
 ): Promise<void> {
   /**
-   * Container result; nano-spawn rejects on a non-zero exit, surfacing a failed assertion.
+   Container result; nano-spawn rejects on a non-zero exit, surfacing a failed assertion.
    */
   const result = await spawn(
     'podman',
@@ -217,8 +217,8 @@ async function runScenario(
 }
 
 /**
- * Monorepo pnpm spec resolved once, passed into every container so fixtures
- * install with the pnpm the repo actually runs.
+ Monorepo pnpm spec resolved once, passed into every container so fixtures
+ install with the pnpm the repo actually runs.
  */
 const pnpmSpec = await resolvePnpmSpec();
 
@@ -238,6 +238,6 @@ await describe({
   },),
 },);
 
-export {};
+
 
 //endregion Run

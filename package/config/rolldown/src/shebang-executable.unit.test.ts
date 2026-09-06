@@ -16,12 +16,12 @@ import {
 import { shebangExecutablePlugin, } from './shebang-executable.ts';
 
 /**
- * Owner-executable permission probe mask.
+ Owner-executable permission probe mask.
  */
 const OWNER_EXECUTE = 0o100;
 
 /**
- * Disposable output-directory fixture.
+ Disposable output-directory fixture.
  */
 type OutputFixture = {
   readonly path: string;
@@ -29,18 +29,18 @@ type OutputFixture = {
 };
 
 /**
- * Creates a disposable output directory holding pre-written chunk files.
- *
- * @returns Disposable fixture outside repository state.
- *
- * @example
- * ```ts
- * using fixture = createOutputFixture();
- * ```
+ Creates a disposable output directory holding pre-written chunk files.
+ 
+ @returns Disposable fixture outside repository state.
+ 
+ @example
+ ```ts
+ using fixture = createOutputFixture();
+ ```
  */
 function createOutputFixture(): OutputFixture {
   /**
-   * Fresh fixture directory under the system temp root.
+   Fresh fixture directory under the system temp root.
    */
   const path = mkdtempSync(join(tmpdir(), 'shebang-executable-',),);
   return {
@@ -72,11 +72,11 @@ await describe({
           { mode: 0o644, },
         );
         /**
-         * Plugin under test.
+         Plugin under test.
          */
         const plugin = shebangExecutablePlugin();
         /**
-         * writeBundle hook extracted for direct invocation.
+         writeBundle hook extracted for direct invocation.
          */
         const writeBundle = plugin.writeBundle as (
           options: { readonly dir?: string; },

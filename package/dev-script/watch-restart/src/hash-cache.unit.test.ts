@@ -18,30 +18,30 @@ import {
 } from './hash-cache.ts';
 
 /**
- * Known sha256 hex of the literal bytes "hello".
- * Round-trip assertions use this so "outputs something" is not the only check.
- *
- * @example
- * ```ts
- * expect(await cache.hashFile(fileWithHello,),).toBe(SHA256_HEX_OF_HELLO,);
- * ```
+ Known sha256 hex of the literal bytes "hello".
+ Round-trip assertions use this so "outputs something" is not the only check.
+ 
+ @example
+ ```ts
+ expect(await cache.hashFile(fileWithHello,),).toBe(SHA256_HEX_OF_HELLO,);
+ ```
  */
 const SHA256_HEX_OF_HELLO =
   '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824';
 
 /**
- * Creates a fresh temp directory per test so file fixtures cannot leak between cases.
- * Returned path is absolute.
- *
- * @example
- * ```ts
- * const dir = await makeTmpDir();
- * const file = join(dir, 'a.txt',);
- * await writeFile(file, 'hello',);
- * await rm(dir, { recursive: true, },);
- * ```
- *
- * @returns absolute path of a freshly-created temp directory
+ Creates a fresh temp directory per test so file fixtures cannot leak between cases.
+ Returned path is absolute.
+ 
+ @example
+ ```ts
+ const dir = await makeTmpDir();
+ const file = join(dir, 'a.txt',);
+ await writeFile(file, 'hello',);
+ await rm(dir, { recursive: true, },);
+ ```
+ 
+ @returns absolute path of a freshly-created temp directory
  */
 async function makeTmpDir(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'watch-restart-hash-cache-',),);

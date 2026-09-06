@@ -1,8 +1,8 @@
 /**
- * Task mutation operations against the SQLite database.
- *
- * Read-only query functions are in `tasks-queries.ts`.
- * Timer and completion operations are in `tasks-timer.ts`.
+ Task mutation operations against the SQLite database.
+ 
+ Read-only query functions are in `tasks-queries.ts`.
+ Timer and completion operations are in `tasks-timer.ts`.
  */
 import db from '../db.ts';
 import {
@@ -34,27 +34,27 @@ export {
 } from './tasks-timer.ts';
 
 /**
- * Inserts a new task with a generated UUID and a {@link nowIso} timestamp,
- * normalizing array fields with {@link normalizeStringArray}.
- *
- * @param input - Task creation payload (only `title` is required)
- *
- * @returns Freshly created task read back from the database
- *
- * @throws When {@link getTaskById} returns {@link TASK_NOT_FOUND} for the read-back (should never happen)
- *
- * @example
- * ```ts
- * const task = await createTask({ title: 'Buy groceries' });
- * ```
+ Inserts a new task with a generated UUID and a {@link nowIso} timestamp,
+ normalizing array fields with {@link normalizeStringArray}.
+ 
+ @param input - Task creation payload (only `title` is required)
+ 
+ @returns Freshly created task read back from the database
+ 
+ @throws When {@link getTaskById} returns {@link TASK_NOT_FOUND} for the read-back (should never happen)
+ 
+ @example
+ ```ts
+ const task = await createTask({ title: 'Buy groceries' });
+ ```
  */
 export async function createTask(input: TaskCreateInput,): Promise<Task> {
   /**
-   * Fresh UUID used as both the primary key and the read-back lookup key.
+   Fresh UUID used as both the primary key and the read-back lookup key.
    */
   const id = crypto.randomUUID();
   /**
-   * Captured once so `created_at` and `updated_at` start at the same value.
+   Captured once so `created_at` and `updated_at` start at the same value.
    */
   const timestamp = nowIso();
 
@@ -86,7 +86,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
   );
 
   /**
-   * Read-back so callers receive the canonical row including server-applied defaults.
+   Read-back so callers receive the canonical row including server-applied defaults.
    */
   const createdTask = await getTaskById(id,);
   if (createdTask === TASK_NOT_FOUND)
@@ -96,19 +96,19 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
 }
 
 /**
- * Applies a partial update to an existing task, normalizing array fields via
- * {@link normalizeStringArray} and stamping a fresh {@link nowIso} timestamp.
- *
- * @param id - Task UUID
- *
- * @param input - Fields to update (omitted fields keep their current value)
- *
- * @returns Updated task, or {@link TASK_NOT_FOUND} when the ID does not exist
- *
- * @example
- * ```ts
- * const task = await updateTask({ id: 'abc-123', input: { title: 'Updated title', }, });
- * ```
+ Applies a partial update to an existing task, normalizing array fields via
+ {@link normalizeStringArray} and stamping a fresh {@link nowIso} timestamp.
+ 
+ @param id - Task UUID
+ 
+ @param input - Fields to update (omitted fields keep their current value)
+ 
+ @returns Updated task, or {@link TASK_NOT_FOUND} when the ID does not exist
+ 
+ @example
+ ```ts
+ const task = await updateTask({ id: 'abc-123', input: { title: 'Updated title', }, });
+ ```
  */
 export async function updateTask({
   id,
@@ -118,7 +118,7 @@ export async function updateTask({
   readonly input: TaskUpdateInput;
 },): Promise<Task | typeof TASK_NOT_FOUND> {
   /**
-   * Existing row used as the merge baseline; the sentinel short-circuits not-found.
+   Existing row used as the merge baseline; the sentinel short-circuits not-found.
    */
   const currentTask = await getTaskById(id,);
   if (currentTask === TASK_NOT_FOUND)
@@ -126,7 +126,7 @@ export async function updateTask({
 
   // Spread-merge: present `input` keys override; absent optional keys inherit from `currentTask`
   /**
-   * Merged shape: input wins, falling back to the current row, with a fresh updated-at.
+   Merged shape: input wins, falling back to the current row, with a fresh updated-at.
    */
   const updatedTask: Task = {
     ...currentTask,
@@ -162,20 +162,20 @@ export async function updateTask({
 }
 
 /**
- * Permanently removes a task by UUID.
- *
- * @param id - Task UUID
- *
- * @returns `true` when the task existed and was deleted
- *
- * @example
- * ```ts
- * const deleted = await deleteTask('abc-123');
- * ```
+ Permanently removes a task by UUID.
+ 
+ @param id - Task UUID
+ 
+ @returns `true` when the task existed and was deleted
+ 
+ @example
+ ```ts
+ const deleted = await deleteTask('abc-123');
+ ```
  */
 export async function deleteTask(id: string,): Promise<boolean> {
   /**
-   * Run result; `changes` distinguishes a real delete from a missing row.
+   Run result; `changes` distinguishes a real delete from a missing row.
    */
   const result = await (await db.prepare(SQL_DELETE_TASK,))
     .run(id,);

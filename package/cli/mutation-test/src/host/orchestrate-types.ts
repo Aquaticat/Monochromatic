@@ -1,10 +1,10 @@
 /**
- * Types shared by the orchestrator, report writer, and CLI.
- *
- * @example
- * ```ts
- * import type { RunOutcome } from './orchestrate-types.ts';
- * ```
+ Types shared by the orchestrator, report writer, and CLI.
+ 
+ @example
+ ```ts
+ import type { RunOutcome } from './orchestrate-types.ts';
+ ```
  */
 
 import type { IgnoredMutant, } from '../engine/enumerate.ts';
@@ -16,7 +16,7 @@ import type { EnumerationInputs, } from './enumerate-package.ts';
 import type { ShardResources, } from './podman.ts';
 
 /**
- * Final per-mutant outcome with provenance.
+ Final per-mutant outcome with provenance.
  */
 export type FinalMutantResult = {
   readonly mutant: Mutant;
@@ -28,7 +28,7 @@ export type FinalMutantResult = {
 };
 
 /**
- * Full run outcome consumed by the report writer.
+ Full run outcome consumed by the report writer.
  */
 export type RunOutcome = {
   readonly results: readonly FinalMutantResult[];
@@ -38,7 +38,7 @@ export type RunOutcome = {
 };
 
 /**
- * Options controlling one orchestrated run.
+ Options controlling one orchestrated run.
  */
 export type OrchestrateOptions = EnumerationInputs & {
   shardSize: number;
@@ -51,7 +51,7 @@ export type OrchestrateOptions = EnumerationInputs & {
 };
 
 /**
- * Mutant lookup entry pairing a mutant with its selected tests.
+ Mutant lookup entry pairing a mutant with its selected tests.
  */
 export type MutantEntry = {
   readonly mutant: Mutant;

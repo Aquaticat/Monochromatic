@@ -1,14 +1,14 @@
 /**
- * Strip-wide keyboard model: Up/Down move the in-pane selection, Enter opens
- * it, Left/Right move column focus, Backspace closes the focused pane,
- * matching the GTK original's column navigation.
- *
- * @example
- * ```ts
- * installKeyboard({ session });
- * ```
- *
- * @packageDocumentation
+ Strip-wide keyboard model: Up/Down move the in-pane selection, Enter opens
+ it, Left/Right move column focus, Backspace closes the focused pane,
+ matching the GTK original's column navigation.
+ 
+ @example
+ ```ts
+ installKeyboard({ session });
+ ```
+ 
+ @packageDocumentation
  */
 
 import {
@@ -25,16 +25,16 @@ import {
 } from './strip.js';
 
 /**
- * Moves the in-pane selection of the focused pane and reveals it.
- *
- * @param delta - Selection movement: -1 up, +1 down.
- *
- * @param session - Renderer session to mutate.
- *
- * @example
- * ```ts
- * moveSelection({ session, delta: 1 });
- * ```
+ Moves the in-pane selection of the focused pane and reveals it.
+ 
+ @param delta - Selection movement: -1 up, +1 down.
+ 
+ @param session - Renderer session to mutate.
+ 
+ @example
+ ```ts
+ moveSelection({ session, delta: 1 });
+ ```
  */
 function moveSelection(
   {
@@ -46,7 +46,7 @@ function moveSelection(
   },
 ): void {
   /**
-   * Focused pane id captured before lookups.
+   Focused pane id captured before lookups.
    */
   const {active} = session.strip;
 
@@ -54,7 +54,7 @@ function moveSelection(
     return;
 
   /**
-   * Listing of the focused pane, absent for previews.
+   Listing of the focused pane, absent for previews.
    */
   const listing = session.stores
     .listings
@@ -64,7 +64,7 @@ function moveSelection(
     return;
 
   /**
-   * Current selection index of the focused pane.
+   Current selection index of the focused pane.
    */
   const current = session.stores
     .selections
@@ -72,7 +72,7 @@ function moveSelection(
     ?? 0;
 
   /**
-   * New selection clamped to the listing bounds.
+   New selection clamped to the listing bounds.
    */
   const next = Math.min(
     listing.length - 1,
@@ -97,21 +97,21 @@ function moveSelection(
 }
 
 /**
- * Column of the focused pane, defaulting to the leftmost when nothing is
- * focused or the focus is stale.
- *
- * @param session - Renderer session to observe.
- *
- * @returns Focused column index.
- *
- * @example
- * ```ts
- * currentFocusColumn({ session });
- * ```
+ Column of the focused pane, defaulting to the leftmost when nothing is
+ focused or the focus is stale.
+ 
+ @param session - Renderer session to observe.
+ 
+ @returns Focused column index.
+ 
+ @example
+ ```ts
+ currentFocusColumn({ session });
+ ```
  */
 function currentFocusColumn({ session, }: { readonly session: RendererSession; },): number {
   /**
-   * Focused pane id captured before lookups.
+   Focused pane id captured before lookups.
    */
   const {active} = session.strip;
 
@@ -119,7 +119,7 @@ function currentFocusColumn({ session, }: { readonly session: RendererSession; }
     return 0;
 
   /**
-   * Focused pane, or the not-found sentinel for a stale focus.
+   Focused pane, or the not-found sentinel for a stale focus.
    */
   const pane = paneById({
     id: active,
@@ -133,17 +133,17 @@ function currentFocusColumn({ session, }: { readonly session: RendererSession; }
 }
 
 /**
- * Moves focus to the top pane of an adjacent column, matching the GTK
- * original's Left/Right column navigation.
- *
- * @param delta - Column movement: -1 left, +1 right.
- *
- * @param session - Renderer session to mutate.
- *
- * @example
- * ```ts
- * moveColumnFocus({ session, delta: 1 });
- * ```
+ Moves focus to the top pane of an adjacent column, matching the GTK
+ original's Left/Right column navigation.
+ 
+ @param delta - Column movement: -1 left, +1 right.
+ 
+ @param session - Renderer session to mutate.
+ 
+ @example
+ ```ts
+ moveColumnFocus({ session, delta: 1 });
+ ```
  */
 function moveColumnFocus(
   {
@@ -155,12 +155,12 @@ function moveColumnFocus(
   },
 ): void {
   /**
-   * Column of the focused pane, defaulting to the leftmost.
+   Column of the focused pane, defaulting to the leftmost.
    */
   const currentColumn = currentFocusColumn({ session, },);
 
   /**
-   * Target column clamped to the existing columns.
+   Target column clamped to the existing columns.
    */
   const targetColumn = Math.min(
     columnCount({ strip: session.strip, },) - 1,
@@ -171,7 +171,7 @@ function moveColumnFocus(
   );
 
   /**
-   * Top pane of the target column, or the not-found sentinel.
+   Top pane of the target column, or the not-found sentinel.
    */
   const target = firstPaneInColumn({
     column: targetColumn,
@@ -189,18 +189,18 @@ function moveColumnFocus(
 }
 
 /**
- * Opens the focused pane's selected entry.
- *
- * @param session - Renderer session to mutate.
- *
- * @example
- * ```ts
- * openSelectedEntry({ session });
- * ```
+ Opens the focused pane's selected entry.
+ 
+ @param session - Renderer session to mutate.
+ 
+ @example
+ ```ts
+ openSelectedEntry({ session });
+ ```
  */
 function openSelectedEntry({ session, }: { readonly session: RendererSession; },): void {
   /**
-   * Focused pane id captured before lookups.
+   Focused pane id captured before lookups.
    */
   const {active} = session.strip;
 
@@ -208,14 +208,14 @@ function openSelectedEntry({ session, }: { readonly session: RendererSession; },
     return;
 
   /**
-   * Listing of the focused pane, absent for previews.
+   Listing of the focused pane, absent for previews.
    */
   const listing = session.stores
     .listings
     .get(active,);
 
   /**
-   * Selected entry of the focused pane.
+   Selected entry of the focused pane.
    */
   const entry = listing?.[session.stores
     .selections
@@ -234,18 +234,18 @@ function openSelectedEntry({ session, }: { readonly session: RendererSession; },
 }
 
 /**
- * Closes the focused pane.
- *
- * @param session - Renderer session to mutate.
- *
- * @example
- * ```ts
- * closeActivePane({ session });
- * ```
+ Closes the focused pane.
+ 
+ @param session - Renderer session to mutate.
+ 
+ @example
+ ```ts
+ closeActivePane({ session });
+ ```
  */
 function closeActivePane({ session, }: { readonly session: RendererSession; },): void {
   /**
-   * Focused pane id captured before the close.
+   Focused pane id captured before the close.
    */
   const {active} = session.strip;
 
@@ -260,18 +260,18 @@ function closeActivePane({ session, }: { readonly session: RendererSession; },):
 }
 
 /**
- * Installs the strip-wide keyboard model on the global scope.
- *
- * @param session - Renderer session the keys mutate.
- *
- * @example
- * ```ts
- * installKeyboard({ session });
- * ```
+ Installs the strip-wide keyboard model on the global scope.
+ 
+ @param session - Renderer session the keys mutate.
+ 
+ @example
+ ```ts
+ installKeyboard({ session });
+ ```
  */
 export function installKeyboard({ session, }: { readonly session: RendererSession; },): void {
   /**
-   * Key-name to action lookup for the strip.
+   Key-name to action lookup for the strip.
    */
   const actions: Readonly<Record<string, () => void>> = {
     ArrowDown: function selectionDown(): void {
@@ -313,7 +313,7 @@ export function installKeyboard({ session, }: { readonly session: RendererSessio
         return;
 
       /**
-       * Action bound to the pressed key, when one exists.
+       Action bound to the pressed key, when one exists.
        */
       const action = actions[event.key];
 

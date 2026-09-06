@@ -1,7 +1,7 @@
 /**
- * Tests for the `describe` suite runner.
- *
- * @module
+ Tests for the `describe` suite runner.
+ 
+ @module
  */
 
 import {

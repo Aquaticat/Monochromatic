@@ -12,30 +12,30 @@ import { join, } from 'node:path';
 import { readExisting, } from '../../dist/final/node/index.mjs';
 
 /**
- * Creates an isolated temporary directory for read-existing hardening tests.
- *
- * @param prefix - Temp directory prefix identifying the test family.
- *
- * @returns Absolute temporary directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup('file-enforcer-read-existing-');
- * ```
+ Creates an isolated temporary directory for read-existing hardening tests.
+ 
+ @param prefix - Temp directory prefix identifying the test family.
+ 
+ @returns Absolute temporary directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup('file-enforcer-read-existing-');
+ ```
  */
 async function setup(prefix: string,): Promise<string> {
   return mkdtemp(join(tmpdir(), prefix,),);
 }
 
 /**
- * Removes a temporary directory after a read-existing hardening test.
- *
- * @param tempDir - Absolute temporary directory path to remove.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes a temporary directory after a read-existing hardening test.
+ 
+ @param tempDir - Absolute temporary directory path to remove.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(tempDir, { recursive: true, force: true, },);

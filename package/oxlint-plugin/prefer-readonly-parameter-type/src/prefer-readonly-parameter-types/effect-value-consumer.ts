@@ -1,15 +1,15 @@
 /**
- * Where a tracked value ends up, following the expressions that hand it onward.
- *
- * Split from `effect-result-escape.ts` because that file needed two answers from one walk
- * and could only express one. Ascending to the expression that finally consumes a value
- * is the right question for classifying that consumer, and it is the wrong question for
- * an assignment: `sink.value = selected` forwards its own value outward to whatever reads
- * the assignment expression, while separately storing into `sink`. A single terminal node
- * cannot represent both, so the store is classified during the ascent and the consumer is
- * returned from it.
- *
- * @module
+ Where a tracked value ends up, following the expressions that hand it onward.
+ 
+ Split from `effect-result-escape.ts` because that file needed two answers from one walk
+ and could only express one. Ascending to the expression that finally consumes a value
+ is the right question for classifying that consumer, and it is the wrong question for
+ an assignment: `sink.value = selected` forwards its own value outward to whatever reads
+ the assignment expression, while separately storing into `sink`. A single terminal node
+ cannot represent both, so the store is classified during the ascent and the consumer is
+ returned from it.
+ 
+ @module
  */
 
 import {
@@ -33,11 +33,11 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 /**
- * Operators whose value may be either operand's.
- *
- * Exported so `effect-result-holders.ts` descends by the same policy this file ascends
- * by. Two copies of the operand rules would let the holder closure disagree with the
- * consumer walk about which operand carries a value.
+ Operators whose value may be either operand's.
+ 
+ Exported so `effect-result-holders.ts` descends by the same policy this file ascends
+ by. Two copies of the operand rules would let the holder closure disagree with the
+ consumer walk about which operand carries a value.
  */
 export const EITHER_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.QuestionQuestionToken,
@@ -45,9 +45,9 @@ export const EITHER_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
 ],);
 
 /**
- * Operators whose value is always the right operand's.
- *
- * {@inheritDoc EITHER_OPERAND_PASSES}
+ Operators whose value is always the right operand's.
+ 
+ {@inheritDoc EITHER_OPERAND_PASSES}
  */
 export const RIGHT_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.AmpersandAmpersandToken,
@@ -56,20 +56,20 @@ export const RIGHT_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
 ],);
 
 /**
- * Tests whether a node's parent yields this node's own value.
- *
- * @param node - Candidate contributing operand.
- *
- * @returns whether parent's value can be this node's value.
- *
- * @example
- * ```ts
- * passesValueOutward({ node, });
- * ```
+ Tests whether a node's parent yields this node's own value.
+ 
+ @param node - Candidate contributing operand.
+ 
+ @returns whether parent's value can be this node's value.
+ 
+ @example
+ ```ts
+ passesValueOutward({ node, });
+ ```
  */
 export function passesValueOutward({ node, }: { readonly node: Node; },): boolean {
   /**
-   * Syntactic context possibly forwarding this value.
+   Syntactic context possibly forwarding this value.
    */
   const { parent, } = node;
   if (isParenthesizedExpression(parent,)
@@ -112,7 +112,7 @@ export function passesValueOutward({ node, }: { readonly node: Node; },): boolea
   if (!isBinaryExpression(parent,))
     return false;
   /**
-   * Operator deciding which operands can be the expression's value.
+   Operator deciding which operands can be the expression's value.
    */
   const operator = parent.operatorToken
     .kind;
@@ -124,27 +124,27 @@ export function passesValueOutward({ node, }: { readonly node: Node; },): boolea
 }
 
 /**
- * Ascends to the expression that actually consumes this value.
- *
- * The mirror of the descent in `effect-expression-provenance.ts`, and needed for the
- * same reason. `facts.get(key) ?? new Set()` makes the call's parent the `??`
- * expression rather than the declaration, so classifying the call's immediate parent
- * called every such lookup an escape and no discharge ever fired. Parentheses,
- * assertions and the value-selecting operators all hand the value onward, so the
- * position that decides escape is the first parent that does something else with it.
- *
- * @param node - Expression whose consuming position is wanted.
- *
- * @returns outermost expression carrying this same value.
- *
- * @example
- * ```ts
- * valueConsumer({ node: call, });
- * ```
+ Ascends to the expression that actually consumes this value.
+ 
+ The mirror of the descent in `effect-expression-provenance.ts`, and needed for the
+ same reason. `facts.get(key) ?? new Set()` makes the call's parent the `??`
+ expression rather than the declaration, so classifying the call's immediate parent
+ called every such lookup an escape and no discharge ever fired. Parentheses,
+ assertions and the value-selecting operators all hand the value onward, so the
+ position that decides escape is the first parent that does something else with it.
+ 
+ @param node - Expression whose consuming position is wanted.
+ 
+ @returns outermost expression carrying this same value.
+ 
+ @example
+ ```ts
+ valueConsumer({ node: call, });
+ ```
  */
 export function valueConsumer({ node, }: { readonly node: Node; },): Node {
   /**
-   * Cursor ascending while each parent passes the value through unchanged.
+   Cursor ascending while each parent passes the value through unchanged.
    */
   const cursor: { current: Node; } = { current: node, };
   while (passesValueOutward({ node: cursor.current, },))
@@ -154,21 +154,21 @@ export function valueConsumer({ node, }: { readonly node: Node; },): Node {
 }
 
 /**
- * Tests whether a walk step produced a node at all.
- *
- * `Node.parent` is declared present and is absent at a source file, measured by ascending
- * from a declaration and reading what comes back rather than inferred from the type. Every
- * root walk in this package needs the same guard, so it is written once and named for what
- * it answers rather than repeated as a comparison whose point a reader has to reconstruct.
- *
- * @param candidate - Value a parent step produced.
- *
- * @returns whether the step reached a node.
- *
- * @example
- * ```ts
- * isPresentNode({ candidate: node.parent });
- * ```
+ Tests whether a walk step produced a node at all.
+ 
+ `Node.parent` is declared present and is absent at a source file, measured by ascending
+ from a declaration and reading what comes back rather than inferred from the type. Every
+ root walk in this package needs the same guard, so it is written once and named for what
+ it answers rather than repeated as a comparison whose point a reader has to reconstruct.
+ 
+ @param candidate - Value a parent step produced.
+ 
+ @returns whether the step reached a node.
+ 
+ @example
+ ```ts
+ isPresentNode({ candidate: node.parent });
+ ```
  */
 export function isPresentNode(
   { candidate, }: { readonly candidate: Node; },
@@ -185,27 +185,27 @@ export function isPresentNode(
 }
 
 /**
- * Tests whether a node sits inside a container node.
- *
- * The ascent stops on both root conventions, which is not defensive coding. A source
- * file's `parent` is `undefined` in this AST, measured by walking one up rather than
- * assumed, while `Node` types it as non-optional. Guarding only against a self-referential
- * root therefore stepped onto `undefined` and threw for any node outside the container,
- * which is exactly what this is asked about a module-level binding. The demand index
- * caught the throw and omitted the whole callable from the effect index, so a callable
- * storing a member result into a module binding was silently unanalysed rather than
- * reported. Recorded in `doc/troubleshooting/prefer-readonly-root-parent-walk.md`.
- *
- * @param node - Node whose containment is tested.
- *
- * @param container - Boundary the node may sit within.
- *
- * @returns whether container encloses node, or is it.
- *
- * @example
- * ```ts
- * nodeWithin({ node: declaration, container: body, });
- * ```
+ Tests whether a node sits inside a container node.
+ 
+ The ascent stops on both root conventions, which is not defensive coding. A source
+ file's `parent` is `undefined` in this AST, measured by walking one up rather than
+ assumed, while `Node` types it as non-optional. Guarding only against a self-referential
+ root therefore stepped onto `undefined` and threw for any node outside the container,
+ which is exactly what this is asked about a module-level binding. The demand index
+ caught the throw and omitted the whole callable from the effect index, so a callable
+ storing a member result into a module binding was silently unanalysed rather than
+ reported. Recorded in `doc/troubleshooting/prefer-readonly-root-parent-walk.md`.
+ 
+ @param node - Node whose containment is tested.
+ 
+ @param container - Boundary the node may sit within.
+ 
+ @returns whether container encloses node, or is it.
+ 
+ @example
+ ```ts
+ nodeWithin({ node: declaration, container: body, });
+ ```
  */
 function nodeWithin({
   node,
@@ -215,12 +215,12 @@ function nodeWithin({
   readonly container: Node;
 },): boolean {
   /**
-   * Cursor ascending toward the container.
+   Cursor ascending toward the container.
    */
   const cursor: { current: Node; } = { current: node, };
   while (cursor.current !== container) {
     /**
-     * Enclosing node, absent at the root whatever the declared type says.
+     Enclosing node, absent at the root whatever the declared type says.
      */
     const { parent, } = cursor.current;
     if (!isPresentNode({ candidate: parent, },))
@@ -233,27 +233,27 @@ function nodeWithin({
 }
 
 /**
- * Tests whether a declaration is a parameter of the callable owning this body.
- *
- * Rebinding a parameter changes only the callee's own binding. The caller passed a value
- * and holds no reference to the slot it was passed in, so nothing the caller can observe
- * follows from the assignment, which makes the parameter as local as any `let` in the
- * body despite sitting beside it in the tree.
- *
- * Restricted to the immediate callable on purpose. A parameter of an enclosing callable
- * reached through lexical capture is a different question: sibling closures and later
- * invocations can observe what a nested body stores there, so that stays an escape.
- *
- * @param declaration - Resolved declaration of the assigned binding.
- *
- * @param body - Body of callable containing the assignment.
- *
- * @returns whether declaration is a parameter of that same callable.
- *
- * @example
- * ```ts
- * declaresOwnParameter({ declaration, body, });
- * ```
+ Tests whether a declaration is a parameter of the callable owning this body.
+ 
+ Rebinding a parameter changes only the callee's own binding. The caller passed a value
+ and holds no reference to the slot it was passed in, so nothing the caller can observe
+ follows from the assignment, which makes the parameter as local as any `let` in the
+ body despite sitting beside it in the tree.
+ 
+ Restricted to the immediate callable on purpose. A parameter of an enclosing callable
+ reached through lexical capture is a different question: sibling closures and later
+ invocations can observe what a nested body stores there, so that stays an escape.
+ 
+ @param declaration - Resolved declaration of the assigned binding.
+ 
+ @param body - Body of callable containing the assignment.
+ 
+ @returns whether declaration is a parameter of that same callable.
+ 
+ @example
+ ```ts
+ declaresOwnParameter({ declaration, body, });
+ ```
  */
 function declaresOwnParameter({
   declaration,
@@ -265,7 +265,7 @@ function declaresOwnParameter({
   if (!isParameterDeclaration(declaration,))
     return false;
   /**
-   * Callable owning this body, absent when the body is itself a root.
+   Callable owning this body, absent when the body is itself a root.
    */
   const { parent: owner, } = body;
   return isPresentNode({ candidate: owner, },)
@@ -273,32 +273,32 @@ function declaresOwnParameter({
 }
 
 /**
- * Tests whether an assignment target is a binding declared inside this callable.
- *
- * An identifier alone does not establish it, which is why the symbol is resolved rather
- * than the syntax trusted. A module-level `let escaped` assigned from inside a callable
- * is an identifier target and is nonetheless a store this analysis cannot follow, so
- * treating every identifier as local would launder exactly the case the check exists for.
- *
- * A parameter of the same callable counts as local, through `declaresOwnParameter` rather
- * than through containment, because a parameter's declaration sits beside the body rather
- * than inside it. Without that branch `temporary = rows.at(0,)` on a parameter named
- * `temporary` was classified as an escaping store and kept receiver opacity on `rows`,
- * measured as `opaque=[0]` on `storeIntoParameter` in
- * `readonly-assignment-store-invalid.ts`.
- *
- * @param project - TypeScript project resolving the target symbol.
- *
- * @param target - Left-hand side of one assignment.
- *
- * @param body - Body of callable containing the assignment.
- *
- * @returns whether target names a binding local to this callable.
- *
- * @example
- * ```ts
- * targetIsCallableLocal({ project, target: assignment.left, body, });
- * ```
+ Tests whether an assignment target is a binding declared inside this callable.
+ 
+ An identifier alone does not establish it, which is why the symbol is resolved rather
+ than the syntax trusted. A module-level `let escaped` assigned from inside a callable
+ is an identifier target and is nonetheless a store this analysis cannot follow, so
+ treating every identifier as local would launder exactly the case the check exists for.
+ 
+ A parameter of the same callable counts as local, through `declaresOwnParameter` rather
+ than through containment, because a parameter's declaration sits beside the body rather
+ than inside it. Without that branch `temporary = rows.at(0,)` on a parameter named
+ `temporary` was classified as an escaping store and kept receiver opacity on `rows`,
+ measured as `opaque=[0]` on `storeIntoParameter` in
+ `readonly-assignment-store-invalid.ts`.
+ 
+ @param project - TypeScript project resolving the target symbol.
+ 
+ @param target - Left-hand side of one assignment.
+ 
+ @param body - Body of callable containing the assignment.
+ 
+ @returns whether target names a binding local to this callable.
+ 
+ @example
+ ```ts
+ targetIsCallableLocal({ project, target: assignment.left, body, });
+ ```
  */
 export function targetIsCallableLocal({
   project,
@@ -312,7 +312,7 @@ export function targetIsCallableLocal({
   if (!isIdentifier(target,))
     return false;
   /**
-   * Symbol the target identifier resolves to.
+   Symbol the target identifier resolves to.
    */
   const symbol = project.checker
     .getSymbolAtLocation(target,);
@@ -321,7 +321,7 @@ export function targetIsCallableLocal({
   return symbol.declarations
     .some(function declaredInside(handle,): boolean {
       /**
-       * Resolved declaration of the assigned binding.
+       Resolved declaration of the assigned binding.
        */
       const declaration = handle.resolve(project,);
       if (declaration === undefined)
@@ -338,34 +338,34 @@ export function targetIsCallableLocal({
 }
 
 /**
- * Tests whether any assignment on a value's outward path stores it beyond tracking.
- *
- * This is the classification `useEscapes` was written to perform and could never reach.
- * Both of its call sites hand it `valueConsumer` of the node, `RIGHT_OPERAND_PASSES`
- * contains `EqualsToken`, and `passesValueOutward` ascends the right operand of an
- * assignment, so a node whose parent is an assignment it contributes to never arrives
- * there. `sink.value = selected` reached `useEscapes` as the assignment expression, whose
- * parent is an `ExpressionStatement`, and was discarded as consumed in place.
- *
- * Property and element targets are named among the sinks requiring coverage in
- * `doc/decision/prefer-readonly-result-provenance.md`, so this closes the gap between
- * that constraint and the code.
- *
- * A callable-local identifier target is a transfer rather than an escape: the value stays
- * inside the body, and following it there is the holder set's job rather than this walk's.
- *
- * @param project - TypeScript project resolving target symbols.
- *
- * @param node - Expression whose outward path is classified.
- *
- * @param body - Body of callable containing the expression.
- *
- * @returns whether some assignment stores this value where nothing follows it.
- *
- * @example
- * ```ts
- * assignmentStoreEscapes({ project, node: call, body, });
- * ```
+ Tests whether any assignment on a value's outward path stores it beyond tracking.
+ 
+ This is the classification `useEscapes` was written to perform and could never reach.
+ Both of its call sites hand it `valueConsumer` of the node, `RIGHT_OPERAND_PASSES`
+ contains `EqualsToken`, and `passesValueOutward` ascends the right operand of an
+ assignment, so a node whose parent is an assignment it contributes to never arrives
+ there. `sink.value = selected` reached `useEscapes` as the assignment expression, whose
+ parent is an `ExpressionStatement`, and was discarded as consumed in place.
+ 
+ Property and element targets are named among the sinks requiring coverage in
+ `doc/decision/prefer-readonly-result-provenance.md`, so this closes the gap between
+ that constraint and the code.
+ 
+ A callable-local identifier target is a transfer rather than an escape: the value stays
+ inside the body, and following it there is the holder set's job rather than this walk's.
+ 
+ @param project - TypeScript project resolving target symbols.
+ 
+ @param node - Expression whose outward path is classified.
+ 
+ @param body - Body of callable containing the expression.
+ 
+ @returns whether some assignment stores this value where nothing follows it.
+ 
+ @example
+ ```ts
+ assignmentStoreEscapes({ project, node: call, body, });
+ ```
  */
 export function assignmentStoreEscapes({
   project,
@@ -377,12 +377,12 @@ export function assignmentStoreEscapes({
   readonly body: Node;
 },): boolean {
   /**
-   * Cursor ascending the same path `valueConsumer` takes.
+   Cursor ascending the same path `valueConsumer` takes.
    */
   const cursor: { current: Node; } = { current: node, };
   while (passesValueOutward({ node: cursor.current, },)) {
     /**
-     * Expression forwarding the value one step outward.
+     Expression forwarding the value one step outward.
      */
     const { parent, } = cursor.current;
     if (isBinaryExpression(parent,)

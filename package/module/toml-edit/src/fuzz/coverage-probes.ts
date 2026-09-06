@@ -1,14 +1,14 @@
 /**
- * Targeted reachability probes for the toml-edit fuzz coverage gate.
- *
- * Imports the package implementation from source (`../index.ts`) so a run under
- * `NODE_V8_COVERAGE` attributes coverage to the `src` files the gate measures.
- * These probes reach branches random documents rarely produce: parser edge cases
- * (CRLF, bare carriage return, overflow), pending-insertion and pending-edit
- * projection arms read before reparse, the existing-node-aware encoders, the
- * from-scratch edit machinery, and the root-delete arm.
- *
- * @module
+ Targeted reachability probes for the toml-edit fuzz coverage gate.
+ 
+ Imports the package implementation from source (`../index.ts`) so a run under
+ `NODE_V8_COVERAGE` attributes coverage to the `src` files the gate measures.
+ These probes reach branches random documents rarely produce: parser edge cases
+ (CRLF, bare carriage return, overflow), pending-insertion and pending-edit
+ projection arms read before reparse, the existing-node-aware encoders, the
+ from-scratch edit machinery, and the root-delete arm.
+ 
+ @module
  */
 
 import {
@@ -34,21 +34,21 @@ import { exerciseValidSource, } from './coverage-exercise.ts';
 //region Capture-free operation bodies
 
 /**
- * Inline-table depth that overflows the parser recursion (matches the parser
- * property's pinned regression so the RangeError-wrapping branch is reached).
+ Inline-table depth that overflows the parser recursion (matches the parser
+ property's pinned regression so the RangeError-wrapping branch is reached).
  */
 const DEEP_INLINE_DEPTH = 3_000;
 
 /**
- * Array depth that overflows the parser recursion.
+ Array depth that overflows the parser recursion.
  */
 const DEEP_ARRAY_DEPTH = 20_000;
 
 /**
- * Parser edge-case sources random documents rarely produce: CRLF (the
- * normalization branch), a bare carriage return (the rejection branch), and
- * pathologically deep array and inline-table nesting (the RangeError-wrapping
- * branch). Numbers larger than the exempt range live in source text, not code.
+ Parser edge-case sources random documents rarely produce: CRLF (the
+ normalization branch), a bare carriage return (the rejection branch), and
+ pathologically deep array and inline-table nesting (the RangeError-wrapping
+ branch). Numbers larger than the exempt range live in source text, not code.
  */
 const PARSER_EDGE_SOURCES: readonly string[] = [
   'title = "crlf"\r\na = 1\r\n',
@@ -58,7 +58,7 @@ const PARSER_EDGE_SOURCES: readonly string[] = [
 ];
 
 /**
- * Delete the root path, reaching the top-level early-return arm of delete.
+ Delete the root path, reaching the top-level early-return arm of delete.
  */
 function deleteRootOp(): void {
   tomlDelete({
@@ -68,14 +68,14 @@ function deleteRootOp(): void {
 }
 
 /**
- * Set two sibling pending insertions under an implicit parent, then read
- * sub-paths on the same non-materialized state, reaching the pending-insertion
- * projection arms of the effective resolver.
+ Set two sibling pending insertions under an implicit parent, then read
+ sub-paths on the same non-materialized state, reaching the pending-insertion
+ projection arms of the effective resolver.
  */
 function pendingReadOps(): void {
   /**
-   * Two sibling pending insertions under `p`, left unreparsed so reads resolve
-   * against the pending insertion list.
+   Two sibling pending insertions under `p`, left unreparsed so reads resolve
+   against the pending insertion list.
    */
   const edit = tomlSet({
     edit: tomlSet({
@@ -132,17 +132,17 @@ function pendingReadOps(): void {
 }
 
 /**
- * Read sub-paths under pending edits and deletions on existing parsed nodes (no
- * reparse), reaching the prefix-projection arms that navigate a pending
- * `jsValue` through objects, arrays, and missing or deleted shapes.
+ Read sub-paths under pending edits and deletions on existing parsed nodes (no
+ reparse), reaching the prefix-projection arms that navigate a pending
+ `jsValue` through objects, arrays, and missing or deleted shapes.
  */
 function pendingProjectionOps(): void {
   /**
-   * Parsed base with an existing inline table and array to edit and delete.
+   Parsed base with an existing inline table and array to edit and delete.
    */
   const base = parseTomlEdit({ source: 't = { a = 1, b = 2 }\narr = [ 1, 2 ]\nx = 0\n', },);
   /**
-   * Pending edit replacing the existing table node with a nested object.
+   Pending edit replacing the existing table node with a nested object.
    */
   const editedTable = tomlSet({
     edit: base,
@@ -186,8 +186,8 @@ function pendingProjectionOps(): void {
     path: ['t',],
   },);
   /**
-   * Pending edit replacing the existing array node, read by numeric and
-   * non-numeric sub-paths to reach the array and missing navigation arms.
+   Pending edit replacing the existing array node, read by numeric and
+   non-numeric sub-paths to reach the array and missing navigation arms.
    */
   const editedArray = tomlSet({
     edit: base,
@@ -219,8 +219,8 @@ function pendingProjectionOps(): void {
     ],
   },);
   /**
-   * Pending deletion on the existing table node, read by sub-path to reach the
-   * deleted-prefix arm.
+   Pending deletion on the existing table node, read by sub-path to reach the
+   deleted-prefix arm.
    */
   const deletedTable = tomlDelete({
     edit: base,
@@ -247,13 +247,13 @@ function pendingProjectionOps(): void {
 //region Probe sweeps
 
 /**
- * Run the empty-document edit sequence and root delete, covering `emptyTomlEdit`
- * and the from-scratch edit machinery independent of any parsed corpus.
- *
- * @example
- * ```ts
- * exerciseEmptyBase();
- * ```
+ Run the empty-document edit sequence and root delete, covering `emptyTomlEdit`
+ and the from-scratch edit machinery independent of any parsed corpus.
+ 
+ @example
+ ```ts
+ exerciseEmptyBase();
+ ```
  */
 export function exerciseEmptyBase(): void {
   exerciseEditSequence({ base: emptyTomlEdit(), },);
@@ -261,13 +261,13 @@ export function exerciseEmptyBase(): void {
 }
 
 /**
- * Drive the parser edge-case sources through the valid-source spread, reaching
- * the CRLF normalization, bare-CR rejection, and overflow branches.
- *
- * @example
- * ```ts
- * exerciseParserEdges();
- * ```
+ Drive the parser edge-case sources through the valid-source spread, reaching
+ the CRLF normalization, bare-CR rejection, and overflow branches.
+ 
+ @example
+ ```ts
+ exerciseParserEdges();
+ ```
  */
 export function exerciseParserEdges(): void {
   for (const source of PARSER_EDGE_SOURCES) {
@@ -276,44 +276,44 @@ export function exerciseParserEdges(): void {
 }
 
 /**
- * Read sub-paths on a non-materialized state with pending insertions, reaching
- * the pending-insertion projection arms of the effective resolver.
- *
- * @example
- * ```ts
- * exercisePendingReads();
- * ```
+ Read sub-paths on a non-materialized state with pending insertions, reaching
+ the pending-insertion projection arms of the effective resolver.
+ 
+ @example
+ ```ts
+ exercisePendingReads();
+ ```
  */
 export function exercisePendingReads(): void {
   attempt({ thunk: pendingReadOps, },);
 }
 
 /**
- * Read sub-paths under pending edits and deletions on existing parsed nodes,
- * reaching the prefix-projection navigation arms.
- *
- * @example
- * ```ts
- * exercisePendingProjections();
- * ```
+ Read sub-paths under pending edits and deletions on existing parsed nodes,
+ reaching the prefix-projection navigation arms.
+ 
+ @example
+ ```ts
+ exercisePendingProjections();
+ ```
  */
 export function exercisePendingProjections(): void {
   attempt({ thunk: pendingProjectionOps, },);
 }
 
 /**
- * Re-set each existing top-level value back to itself on a parsed document,
- * reaching the existing-node-aware string and number encoders that preserve the
- * parse-time spelling.
- *
- * @example
- * ```ts
- * exerciseExistingResets({ source: 'a = "x"\n', },);
- * ```
+ Re-set each existing top-level value back to itself on a parsed document,
+ reaching the existing-node-aware string and number encoders that preserve the
+ parse-time spelling.
+ 
+ @example
+ ```ts
+ exerciseExistingResets({ source: 'a = "x"\n', },);
+ ```
  */
 export function exerciseExistingResets({ source, }: { readonly source: string; },): void {
   /**
-   * Splice-mode parse whose existing nodes drive the encoders.
+   Splice-mode parse whose existing nodes drive the encoders.
    */
   const parsed = tryParse({
     source,
@@ -324,11 +324,11 @@ export function exerciseExistingResets({ source, }: { readonly source: string; }
     thunk: function resets() {
       for (const key of tomlKeys({ edit: parsed.edit, },)) {
         /**
-         * Single-segment path for the current top-level key.
+         Single-segment path for the current top-level key.
          */
         const path: TomlPath = [key,];
         /**
-         * Current value, re-set unchanged so the encoder takes the existing arm.
+         Current value, re-set unchanged so the encoder takes the existing arm.
          */
         const value = tomlGetValue({
           edit: parsed.edit,

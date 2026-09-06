@@ -16,55 +16,55 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Milliseconds a slow write parks before recording, long enough that the
- * record is provably still pending when a synchronous assertion runs but the
- * draining `flush()` must wait for it.
+ Milliseconds a slow write parks before recording, long enough that the
+ record is provably still pending when a synchronous assertion runs but the
+ draining `flush()` must wait for it.
  */
 const SLOW_WRITE_MS = 25;
 
 /**
- * Flush deadline the deadline tests inject: short enough to keep the suite
- * fast, long enough that timer granularity cannot fire it early.
+ Flush deadline the deadline tests inject: short enough to keep the suite
+ fast, long enough that timer granularity cannot fire it early.
  */
 const SHORT_DEADLINE_MS = 60;
 
 /**
- * Timer slack subtracted from the deadline when asserting a flush waited it
- * out, covering setTimeout clamping and scheduler jitter.
+ Timer slack subtracted from the deadline when asserting a flush waited it
+ out, covering setTimeout clamping and scheduler jitter.
  */
 const DEADLINE_TOLERANCE_MS = 15;
 
 /**
- * Upper bound on a flush that must not wait out the deadline again; well
- * under `SHORT_DEADLINE_MS` so a regression that re-waits is caught.
+ Upper bound on a flush that must not wait out the deadline again; well
+ under `SHORT_DEADLINE_MS` so a regression that re-waits is caught.
  */
 const FAST_FLUSH_MS = 40;
 
 /**
- * Harness timeout for the deadline tests: a regression that hangs forever
- * fails here instead of stalling the suite.
+ Harness timeout for the deadline tests: a regression that hangs forever
+ fails here instead of stalling the suite.
  */
 const DEADLINE_TEST_TIMEOUT_MS = 2_000;
 
 /**
- * Promise that never settles, standing in for a wedged sink operation.
- *
- * @returns Pending promise whose resolver is unreachable.
+ Promise that never settles, standing in for a wedged sink operation.
+ 
+ @returns Pending promise whose resolver is unreachable.
  */
 function neverSettles(): Promise<never> {
   return Promise.withResolvers<never>().promise;
 }
 
 /**
- * Times one `flush()` call.
- *
- * @param flush - Flush function to time.
- *
- * @returns Elapsed milliseconds.
+ Times one `flush()` call.
+ 
+ @param flush - Flush function to time.
+ 
+ @returns Elapsed milliseconds.
  */
 async function timeFlush({ flush, }: { readonly flush: () => Promise<void>; },): Promise<number> {
   /**
-   * Start timestamp.
+   Start timestamp.
    */
   const start = performance.now();
   await flush();
@@ -72,23 +72,23 @@ async function timeFlush({ flush, }: { readonly flush: () => Promise<void>; },):
 }
 
 /**
- * Structural view of a sinon stub: only the recorded calls matter here, and
- * naming the shape keeps the test free of a direct sinon type import.
+ Structural view of a sinon stub: only the recorded calls matter here, and
+ naming the shape keeps the test free of a direct sinon type import.
  */
 type RecordedCalls = {
   readonly getCalls: () => readonly { readonly args: readonly unknown[]; }[];
 };
 
 /**
- * Collects the console.warn messages containing `needle`. Sibling tests in
- * this file run concurrently and emit their own internal-error reports
- * through the same console, so a raw call count would be noise.
- *
- * @param warn - Stubbed console.warn.
- *
- * @param needle - Substring identifying the breadcrumb family.
- *
- * @returns Matching messages, in call order.
+ Collects the console.warn messages containing `needle`. Sibling tests in
+ this file run concurrently and emit their own internal-error reports
+ through the same console, so a raw call count would be noise.
+ 
+ @param warn - Stubbed console.warn.
+ 
+ @param needle - Substring identifying the breadcrumb family.
+ 
+ @returns Matching messages, in call order.
  */
 function breadcrumbMessages(
   {
@@ -109,11 +109,11 @@ function breadcrumbMessages(
 }
 
 /**
- * Collects the flush-deadline breadcrumbs, see {@link breadcrumbMessages}.
- *
- * @param warn - Stubbed console.warn.
- *
- * @returns Flush-deadline breadcrumb messages observed, in call order.
+ Collects the flush-deadline breadcrumbs, see {@link breadcrumbMessages}.
+ 
+ @param warn - Stubbed console.warn.
+ 
+ @returns Flush-deadline breadcrumb messages observed, in call order.
  */
 function deadlineBreadcrumbMessages({ warn, }: { readonly warn: RecordedCalls; },): string[] {
   return breadcrumbMessages({
@@ -123,12 +123,12 @@ function deadlineBreadcrumbMessages({ warn, }: { readonly warn: RecordedCalls; }
 }
 
 /**
- * Counts the sink-verification breadcrumbs (a verify that rejected, threw, or
- * ran past the verify time limit).
- *
- * @param warn - Stubbed console.warn.
- *
- * @returns Number of verification breadcrumbs observed.
+ Counts the sink-verification breadcrumbs (a verify that rejected, threw, or
+ ran past the verify time limit).
+ 
+ @param warn - Stubbed console.warn.
+ 
+ @returns Number of verification breadcrumbs observed.
  */
 function verifyBreadcrumbs({ warn, }: { readonly warn: RecordedCalls; },): number {
   return breadcrumbMessages({
@@ -138,11 +138,11 @@ function verifyBreadcrumbs({ warn, }: { readonly warn: RecordedCalls; },): numbe
 }
 
 /**
- * Builds a verifier that answers `true` after a delay.
- *
- * @param delayMs - Milliseconds before the verifier resolves.
- *
- * @returns Verify function resolving `true` after the delay.
+ Builds a verifier that answers `true` after a delay.
+ 
+ @param delayMs - Milliseconds before the verifier resolves.
+ 
+ @returns Verify function resolving `true` after the delay.
  */
 function verifyTrueAfter({ delayMs, }: { readonly delayMs: number; },): Verify {
   return async function verifyLater(): Promise<boolean> {
@@ -152,20 +152,20 @@ function verifyTrueAfter({ delayMs, }: { readonly delayMs: number; },): Verify {
 }
 
 /**
- * Counts the flush-deadline breadcrumbs, see {@link deadlineBreadcrumbMessages}.
- *
- * @param warn - Stubbed console.warn.
- *
- * @returns Number of flush-deadline breadcrumbs observed.
+ Counts the flush-deadline breadcrumbs, see {@link deadlineBreadcrumbMessages}.
+ 
+ @param warn - Stubbed console.warn.
+ 
+ @returns Number of flush-deadline breadcrumbs observed.
  */
 function deadlineBreadcrumbs({ warn, }: { readonly warn: RecordedCalls; },): number {
   return deadlineBreadcrumbMessages({ warn, },).length;
 }
 
 /**
- * Builds a verified sink whose every write never settles.
- *
- * @returns Sink standing in for a wedged backend.
+ Builds a verified sink whose every write never settles.
+ 
+ @returns Sink standing in for a wedged backend.
  */
 function wedgedWriteSink(): Sink {
   return {
@@ -179,8 +179,8 @@ function wedgedWriteSink(): Sink {
 }
 
 /**
- * Recording sink plus the array it appends every written record to, so a test
- * can assert exactly which records crossed the seam.
+ Recording sink plus the array it appends every written record to, so a test
+ can assert exactly which records crossed the seam.
  */
 type RecordingSink = {
   readonly records: LogRecord[];
@@ -188,18 +188,18 @@ type RecordingSink = {
 };
 
 /**
- * Builds a fake sink that records every record it receives. The seam under
- * test is `Sink`, so the whole orchestration (verify, replay, fan-out, flush)
- * is exercised through one self-contained adapter with no globals to reset.
- *
- * @param verify - Backend availability check; defaults to synchronously available.
- *
- * @param flush - Optional flush hook the logger should drain.
- *
- * @param writeDelayMs - Milliseconds each write parks before recording, to
- * keep a record pending across a `flush()`.
- *
- * @returns Sink adapter paired with its recorded-record array.
+ Builds a fake sink that records every record it receives. The seam under
+ test is `Sink`, so the whole orchestration (verify, replay, fan-out, flush)
+ is exercised through one self-contained adapter with no globals to reset.
+ 
+ @param verify - Backend availability check; defaults to synchronously available.
+ 
+ @param flush - Optional flush hook the logger should drain.
+ 
+ @param writeDelayMs - Milliseconds each write parks before recording, to
+ keep a record pending across a `flush()`.
+ 
+ @returns Sink adapter paired with its recorded-record array.
  */
 function recordingSink(
   {
@@ -215,14 +215,14 @@ function recordingSink(
   } = {},
 ): RecordingSink {
   /**
-   * Records this sink has received, in arrival order.
+   Records this sink has received, in arrival order.
    */
   const records: LogRecord[] = [];
 
   /**
-   * Records every received record after the optional delay.
-   *
-   * @param record - Record handed to the sink.
+   Records every received record after the optional delay.
+   
+   @param record - Record handed to the sink.
    */
   async function write(record: LogRecord,): Promise<void> {
     if (writeDelayMs > 0)
@@ -244,11 +244,11 @@ function recordingSink(
 }
 
 /**
- * Maps recorded records down to their messages for concise assertions.
- *
- * @param recording - Recording sink whose messages to read.
- *
- * @returns Messages in arrival order.
+ Maps recorded records down to their messages for concise assertions.
+ 
+ @param recording - Recording sink whose messages to read.
+ 
+ @returns Messages in arrival order.
  */
 function messages({ recording, }: { readonly recording: RecordingSink; },): string[] {
   return recording.records
@@ -258,38 +258,38 @@ function messages({ recording, }: { readonly recording: RecordingSink; },): stri
 }
 
 /**
- * Recording sink whose first write parks on a promise the test settles, so a
- * `flush()` can abandon that write at the deadline and the test can then
- * settle it late, after the logger has stopped tracking it.
+ Recording sink whose first write parks on a promise the test settles, so a
+ `flush()` can abandon that write at the deadline and the test can then
+ settle it late, after the logger has stopped tracking it.
  */
 type ParkedWriteSink = RecordingSink & {
   readonly settleParked: PromiseWithResolvers<void>;
 };
 
 /**
- * Builds a verified sink whose first write waits on `settleParked` and whose
- * later writes record immediately.
- *
- * @returns Sink, its record array, and the resolvers for the parked write.
+ Builds a verified sink whose first write waits on `settleParked` and whose
+ later writes record immediately.
+ 
+ @returns Sink, its record array, and the resolvers for the parked write.
  */
 function parkedFirstWriteSink(): ParkedWriteSink {
   /**
-   * Records this sink has received, in arrival order.
+   Records this sink has received, in arrival order.
    */
   const records: LogRecord[] = [];
   /**
-   * Resolvers the test uses to settle the parked write.
+   Resolvers the test uses to settle the parked write.
    */
   const settleParked = Promise.withResolvers<void>();
   /**
-   * Whether the parked write has been handed out; only the first write parks.
+   Whether the parked write has been handed out; only the first write parks.
    */
   const handedOut = { parked: false, };
 
   /**
-   * Parks the first write on `settleParked`, records every later one.
-   *
-   * @param record - Record handed to the sink.
+   Parks the first write on `settleParked`, records every later one.
+   
+   @param record - Record handed to the sink.
    */
   async function write(record: LogRecord,): Promise<void> {
     if (!handedOut.parked) {
@@ -312,8 +312,8 @@ function parkedFirstWriteSink(): ParkedWriteSink {
 }
 
 /**
- * Unhandled-rejection reasons observed while the capture is alive, plus the
- * disposer that detaches the listener.
+ Unhandled-rejection reasons observed while the capture is alive, plus the
+ disposer that detaches the listener.
  */
 type UnhandledCapture = {
   readonly reasons: readonly unknown[];
@@ -321,22 +321,22 @@ type UnhandledCapture = {
 };
 
 /**
- * Listens for `unhandledRejection` on the process until disposed. A listener
- * also stops Node from treating the rejection as fatal, so the assertion on
- * `reasons` is what enforces the property.
- *
- * @returns Capture whose `reasons` grows with every unhandled rejection.
+ Listens for `unhandledRejection` on the process until disposed. A listener
+ also stops Node from treating the rejection as fatal, so the assertion on
+ `reasons` is what enforces the property.
+ 
+ @returns Capture whose `reasons` grows with every unhandled rejection.
  */
 function captureUnhandledRejections(): UnhandledCapture {
   /**
-   * Reasons observed so far.
+   Reasons observed so far.
    */
   const reasons: unknown[] = [];
 
   /**
-   * Listener appended to the process.
-   *
-   * @param reason - Rejection reason Node reports.
+   Listener appended to the process.
+   
+   @param reason - Rejection reason Node reports.
    */
   function record(reason: unknown,): void {
     reasons.push(reason,);
@@ -517,8 +517,8 @@ await describe({
       name: 'a rejecting write does not retire the sink',
       fn: async () => {
         /**
-         * Write-attempt counter; a retired sink would stop receiving writes,
-         * so a second attempt proves the rejection left the backend available.
+         Write-attempt counter; a retired sink would stop receiving writes,
+         so a second attempt proves the rejection left the backend available.
          */
         const counters: { attempts: number; } = { attempts: 0, };
         const flaky: Sink = {
@@ -572,7 +572,7 @@ await describe({
       name: 'flush runs every available sink flush hook',
       fn: async () => {
         /**
-         * Hook-invocation counter proving `flush()` reached the sink's own hook.
+         Hook-invocation counter proving `flush()` reached the sink's own hook.
          */
         const counters: { flushes: number; } = { flushes: 0, };
         const hooked = recordingSink({
@@ -661,8 +661,8 @@ await describe({
       name: 'a synchronously-throwing write does not retire the sink',
       fn: async () => {
         /**
-         * Write-attempt counter; a retired sink would stop receiving writes, so
-         * a second attempt proves the synchronous throw left it available.
+         Write-attempt counter; a retired sink would stop receiving writes, so
+         a second attempt proves the synchronous throw left it available.
          */
         const counters: { attempts: number; } = { attempts: 0, };
         const flaky: Sink = {
@@ -702,8 +702,8 @@ await describe({
       name: 'does not run the flush hook of a sink that failed verification',
       fn: async () => {
         /**
-         * Flush-hook counter; stays zero because an unavailable sink's hook
-         * must be skipped by `flushAll`.
+         Flush-hook counter; stays zero because an unavailable sink's hook
+         must be skipped by `flushAll`.
          */
         const counters: { flushes: number; } = { flushes: 0, };
         const off = recordingSink({
@@ -1150,12 +1150,12 @@ await describe({
       timeout: DEADLINE_TEST_TIMEOUT_MS,
       fn: async () => {
         /**
-         * Records logged before the sink verifies: the cap plus a few extra
-         * that must push the oldest ones out.
+         Records logged before the sink verifies: the cap plus a few extra
+         that must push the oldest ones out.
          */
         const extra = 3;
         /**
-         * Total records in the burst; the last one is index `burstSize - 1`.
+         Total records in the burst; the last one is index `burstSize - 1`.
          */
         const burstSize = STARTUP_BUFFER_CAP + extra;
         const late = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);

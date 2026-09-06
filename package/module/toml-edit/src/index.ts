@@ -1,31 +1,31 @@
 /**
- * Comment-preserving TOML read, edit, and write utility.
- *
- * Wraps `toml-eslint-parser` and adds a serializer plus a free-function edit API
- * over an immutable `TomlEditState`.
- *
- * Two fidelity modes:
- * - `'splice'` preserves the original bytes for unmutated regions (default).
- * - `'canonical'` rebuilds text from the AST with consistent formatting.
- *
- * The state is one editable document tree; every mutating function returns a
- * fresh tree sharing unchanged nodes by reference. Reads, writes, and emit all
- * operate on that single always-current tree, so a value queried after a
- * `tomlSet` reflects the change and serialization stays consistent with reads.
- *
- * @example
- * Round-trip a file unchanged (splice mode, byte-identical):
- * ```ts
- * import { parseTomlEdit, tomlStringify } from '\@monochromatic-dev/module-toml-edit';
- * import { readFile } from 'node:fs/promises';
- *
- * const source = await readFile('mise.toml', 'utf8',);
- * const edit = parseTomlEdit({ source, },);
- * const text = tomlStringify({ edit, },);
- * // text === source
- * ```
- *
- * @packageDocumentation
+ Comment-preserving TOML read, edit, and write utility.
+ 
+ Wraps `toml-eslint-parser` and adds a serializer plus a free-function edit API
+ over an immutable `TomlEditState`.
+ 
+ Two fidelity modes:
+ - `'splice'` preserves the original bytes for unmutated regions (default).
+ - `'canonical'` rebuilds text from the AST with consistent formatting.
+ 
+ The state is one editable document tree; every mutating function returns a
+ fresh tree sharing unchanged nodes by reference. Reads, writes, and emit all
+ operate on that single always-current tree, so a value queried after a
+ `tomlSet` reflects the change and serialization stays consistent with reads.
+ 
+ @example
+ Round-trip a file unchanged (splice mode, byte-identical):
+ ```ts
+ import { parseTomlEdit, tomlStringify } from '\@monochromatic-dev/module-toml-edit';
+ import { readFile } from 'node:fs/promises';
+ 
+ const source = await readFile('mise.toml', 'utf8',);
+ const edit = parseTomlEdit({ source, },);
+ const text = tomlStringify({ edit, },);
+ // text === source
+ ```
+ 
+ @packageDocumentation
  */
 
 export type {
@@ -91,33 +91,33 @@ export {
 //region Unstable fuzzing seams
 
 /**
- * Unstable internal seam exported for observability and fuzzing only.
- *
- * The `_`-prefixed exports below carry no compatibility promise: they exist so
- * the property-based fuzz suite can exercise internal encoders and emitters
- * through the built package artifact rather than sibling source imports. Their
- * signatures may change without a major version bump. Do not depend on them
- * from application code. See `doc/decision/toml-edit-fuzzing.md`.
+ Unstable internal seam exported for observability and fuzzing only.
+ 
+ The `_`-prefixed exports below carry no compatibility promise: they exist so
+ the property-based fuzz suite can exercise internal encoders and emitters
+ through the built package artifact rather than sibling source imports. Their
+ signatures may change without a major version bump. Do not depend on them
+ from application code. See `doc/decision/toml-edit-fuzzing.md`.
  */
 export { encodeKey as _encodeKey, } from './keys.ts';
 
 /**
- * {@inheritDoc _encodeKey}
+ {@inheritDoc _encodeKey}
  */
 export { jsValueToTomlText as _jsValueToTomlText, } from './values.ts';
 
 /**
- * {@inheritDoc _encodeKey}
+ {@inheritDoc _encodeKey}
  */
 export { emitContentNode as _emitContentNode, } from './emit-value.ts';
 
 /**
- * {@inheritDoc _encodeKey}
+ {@inheritDoc _encodeKey}
  */
 export { emitStringValue as _emitStringValue, } from './emit-value-string.ts';
 
 /**
- * {@inheritDoc _encodeKey}
+ {@inheritDoc _encodeKey}
  */
 export { emitDocument as _emitDocument, } from './emit-document.ts';
 

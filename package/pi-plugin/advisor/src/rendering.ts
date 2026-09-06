@@ -1,7 +1,7 @@
 /**
- * TUI component renderers for Advisor tool and custom messages.
- *
- * @module
+ TUI component renderers for Advisor tool and custom messages.
+ 
+ @module
  */
 
 import type {
@@ -27,15 +27,15 @@ import type {
 //region Types
 
 /**
- * Runtime Advisor result shape accepted from successful or thrown tool execution.
+ Runtime Advisor result shape accepted from successful or thrown tool execution.
  */
 type AdvisorRenderableResult = {
   /**
-   * Tool content returned or synthesized by Pi.
+   Tool content returned or synthesized by Pi.
    */
   readonly content: AgentToolResult<unknown>['content'];
   /**
-   * Structured success details, absent or malformed after thrown errors.
+   Structured success details, absent or malformed after thrown errors.
    */
   readonly details?: unknown;
 };
@@ -45,20 +45,20 @@ type AdvisorRenderableResult = {
 //region Public renderers
 
 /**
- * Render an Advisor tool call row.
- *
- * @param args - tool parameters
- *
- * @param theme - current pi theme
- *
- * @returns TUI component
- *
- * @mutates theme - theme methods can update Pi host styling caches
- *
- * @example
- * ```typescript
- * renderAdvisorCall({ args: {}, theme });
- * ```
+ Render an Advisor tool call row.
+ 
+ @param args - tool parameters
+ 
+ @param theme - current pi theme
+ 
+ @returns TUI component
+ 
+ @mutates theme - theme methods can update Pi host styling caches
+ 
+ @example
+ ```typescript
+ renderAdvisorCall({ args: {}, theme });
+ ```
  */
 export function renderAdvisorCall(
   {
@@ -70,33 +70,33 @@ export function renderAdvisorCall(
   },
 ): Component {
   /**
-   * Requested target displayed before execution resolves.
+   Requested target displayed before execution resolves.
    */
   const target = args.model
     ?? 'default scoped model';
   /**
-   * Styled tool title.
+   Styled tool title.
    */
   const title = theme.fg(
     'toolTitle',
     theme.bold('advisor',),
   );
   /**
-   * Styled action label.
+   Styled action label.
    */
   const action = theme.fg(
     'accent',
     'Consulting advisor',
   );
   /**
-   * Styled target model label.
+   Styled target model label.
    */
   const targetText = theme.fg(
     'dim',
     target,
   );
   /**
-   * Styled focused-question indicator.
+   Styled focused-question indicator.
    */
   const questionText = args.question === undefined
     ? ''
@@ -112,22 +112,22 @@ export function renderAdvisorCall(
 }
 
 /**
- * Render an Advisor tool result.
- *
- * @param result - Advisor tool result
- *
- * @param expanded - whether result is expanded
- *
- * @param theme - current pi theme
- *
- * @returns TUI component
- *
- * @mutates theme - theme methods can update Pi host styling caches
- *
- * @example
- * ```typescript
- * renderAdvisorResult({ result, expanded: false, theme });
- * ```
+ Render an Advisor tool result.
+ 
+ @param result - Advisor tool result
+ 
+ @param expanded - whether result is expanded
+ 
+ @param theme - current pi theme
+ 
+ @returns TUI component
+ 
+ @mutates theme - theme methods can update Pi host styling caches
+ 
+ @example
+ ```typescript
+ renderAdvisorResult({ result, expanded: false, theme });
+ ```
  */
 export function renderAdvisorResult(
   {
@@ -141,7 +141,7 @@ export function renderAdvisorResult(
   },
 ): Component {
   /**
-   * Text block returned to primary model.
+   Text block returned to primary model.
    */
   const text = result.content[0]
     ?.type
@@ -172,22 +172,22 @@ export function renderAdvisorResult(
 }
 
 /**
- * Render a manual `/advisor` custom message.
- *
- * @param message - custom message payload
- *
- * @param expanded - whether message is expanded
- *
- * @param theme - current pi theme
- *
- * @returns TUI component
- *
- * @mutates theme - theme methods can update Pi host styling caches
- *
- * @example
- * ```typescript
- * renderAdvisorMessage({ message, expanded: true, theme });
- * ```
+ Render a manual `/advisor` custom message.
+ 
+ @param message - custom message payload
+ 
+ @param expanded - whether message is expanded
+ 
+ @param theme - current pi theme
+ 
+ @returns TUI component
+ 
+ @mutates theme - theme methods can update Pi host styling caches
+ 
+ @example
+ ```typescript
+ renderAdvisorMessage({ message, expanded: true, theme });
+ ```
  */
 export function renderAdvisorMessage(
   {
@@ -204,13 +204,13 @@ export function renderAdvisorMessage(
   },
 ): Component {
   /**
-   * Message text from custom message content.
+   Message text from custom message content.
    */
   const text = (typeof message.content) === 'string'
     ? message.content
     : '(advisor returned no text)';
   /**
-   * Structured details when present.
+   Structured details when present.
    */
   const details = isAdvisorDetails(message.details,)
     ? message.details

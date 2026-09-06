@@ -1,7 +1,7 @@
 /**
- * Built-artifact tests for goal reviewer selection and fallback transport.
- *
- * @module
+ Built-artifact tests for goal reviewer selection and fallback transport.
+ 
+ @module
  */
 
 import type {
@@ -27,17 +27,17 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Build fully shaped reviewer model.
- *
- * @param provider - provider identity
- *
- * @param id - model identity
- *
- * @param inputCost - input price score
- *
- * @param outputCost - output price score
- *
- * @returns Pi model fixture
+ Build fully shaped reviewer model.
+ 
+ @param provider - provider identity
+ 
+ @param id - model identity
+ 
+ @param inputCost - input price score
+ 
+ @param outputCost - output price score
+ 
+ @returns Pi model fixture
  */
 function reviewerModel(
   {
@@ -72,11 +72,11 @@ function reviewerModel(
 }
 
 /**
- * Build authenticated reviewer candidate fixture.
- *
- * @param model - reviewer model
- *
- * @returns candidate with deterministic prompt and auth
+ Build authenticated reviewer candidate fixture.
+ 
+ @param model - reviewer model
+ 
+ @returns candidate with deterministic prompt and auth
  */
 function reviewerCandidate(model: Model<Api>,): GoalReviewerCandidate {
   return {
@@ -89,11 +89,11 @@ function reviewerCandidate(model: Model<Api>,): GoalReviewerCandidate {
 }
 
 /**
- * Build async event stream from fixed reviewer events.
- *
- * @param entries - ordered reviewer events
- *
- * @returns async event stream
+ Build async event stream from fixed reviewer events.
+ 
+ @param entries - ordered reviewer events
+ 
+ @returns async event stream
  */
 async function* reviewerEvents(
   entries: readonly AssistantMessageEvent[],
@@ -103,15 +103,15 @@ async function* reviewerEvents(
 }
 
 /**
- * Build private goal verdict stream.
- *
- * @param approved - strict approval value
- *
- * @param rationale - private rationale
- *
- * @param remainingWork - task-only denial guidance
- *
- * @returns one-event reviewer stream
+ Build private goal verdict stream.
+ 
+ @param approved - strict approval value
+ 
+ @param rationale - private rationale
+ 
+ @param remainingWork - task-only denial guidance
+ 
+ @returns one-event reviewer stream
  */
 function goalVerdictStream(
   {
@@ -142,11 +142,11 @@ function goalVerdictStream(
 }
 
 /**
- * Build unexpected-tool reviewer failure.
- *
- * @param id - failure identity
- *
- * @returns one-event reviewer stream
+ Build unexpected-tool reviewer failure.
+ 
+ @param id - failure identity
+ 
+ @returns one-event reviewer stream
  */
 function goalFailureStream(id: string,): AsyncIterable<AssistantMessageEvent> {
   return reviewerEvents([{
@@ -163,11 +163,11 @@ function goalFailureStream(id: string,): AsyncIterable<AssistantMessageEvent> {
 }
 
 /**
- * Build deterministic reviewer transport data.
- *
- * @param responses - ordered response streams
- *
- * @returns mutable script state
+ Build deterministic reviewer transport data.
+ 
+ @param responses - ordered response streams
+ 
+ @returns mutable script state
  */
 function goalReviewTransport(
   responses: readonly AsyncIterable<AssistantMessageEvent>[],

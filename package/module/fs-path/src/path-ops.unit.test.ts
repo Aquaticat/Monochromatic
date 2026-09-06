@@ -1,11 +1,11 @@
 /**
- * Tests for the pure path-manipulation helpers.
- *
- * These exercise both the Node-delegating and pure-JS fallback paths.
- * On Node and Bun, the exported functions delegate to `node:path/posix`;
- * the fallbacks are tested directly to keep the browser path honest.
- *
- * @module
+ Tests for the pure path-manipulation helpers.
+ 
+ These exercise both the Node-delegating and pure-JS fallback paths.
+ On Node and Bun, the exported functions delegate to `node:path/posix`;
+ the fallbacks are tested directly to keep the browser path honest.
+ 
+ @module
  */
 
 import {

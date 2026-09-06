@@ -18,15 +18,15 @@ const REPO_ROOT = await findMiseMonorepoRootCached();
 const BIN_PATH = 'package/mcp/mvm/dist/final/node/index.mjs';
 
 /**
- * Spawns the built bin with stdin closed (EOF) and returns its exit code.
- *
- * @returns Numeric exit code; 0 when the server constructs and the transport loop ends cleanly
- *
- * @example
- * ```ts
- * const code = await runWithClosedStdin();
- * // code === 0
- * ```
+ Spawns the built bin with stdin closed (EOF) and returns its exit code.
+ 
+ @returns Numeric exit code; 0 when the server constructs and the transport loop ends cleanly
+ 
+ @example
+ ```ts
+ const code = await runWithClosedStdin();
+ // code === 0
+ ```
  */
 async function runWithClosedStdin(): Promise<number> {
   try {
@@ -39,23 +39,23 @@ async function runWithClosedStdin(): Promise<number> {
 }
 
 /**
- * Drives the built bin over stdio with newline-delimited JSON-RPC and returns its replies.
- * Exercises the real artifact across the transport boundary, the way a client reaches it.
- *
- * @param requests - Messages written to the subprocess stdin, in order.
- *
- * @returns Parsed replies read from subprocess stdout.
- *
- * @example
- * ```ts
- * const replies = await exchange({ requests: [{ jsonrpc: '2.0', id: 1, method: 'server/discover' }] });
- * ```
+ Drives the built bin over stdio with newline-delimited JSON-RPC and returns its replies.
+ Exercises the real artifact across the transport boundary, the way a client reaches it.
+ 
+ @param requests - Messages written to the subprocess stdin, in order.
+ 
+ @returns Parsed replies read from subprocess stdout.
+ 
+ @example
+ ```ts
+ const replies = await exchange({ requests: [{ jsonrpc: '2.0', id: 1, method: 'server/discover' }] });
+ ```
  */
 async function exchange(
   { requests, }: { readonly requests: readonly Readonly<Record<string, unknown>>[]; },
 ): Promise<readonly Record<string, unknown>[]> {
   /**
-   * Subprocess output, collected after stdin closes and the transport loop drains.
+   Subprocess output, collected after stdin closes and the transport loop drains.
    */
   const { stdout, } = await spawn(
     'node',
@@ -84,15 +84,15 @@ async function exchange(
 }
 
 /**
- * Backend name no registered kind answers to.
- *
- * Keeps every destroy_vm case inert: a call that got past argument validation still cannot
- * resolve a backend, so no VM is ever destroyed by this suite.
+ Backend name no registered kind answers to.
+ 
+ Keeps every destroy_vm case inert: a call that got past argument validation still cannot
+ resolve a backend, so no VM is ever destroyed by this suite.
  */
 const UNRESOLVABLE_BACKEND = 'no-such-backend-kind';
 
 /**
- * Request `_meta` declaring the protocol revision the built server implements.
+ Request `_meta` declaring the protocol revision the built server implements.
  */
 const REQUEST_META = {
   _meta: {

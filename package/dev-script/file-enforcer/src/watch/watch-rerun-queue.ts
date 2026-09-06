@@ -7,51 +7,51 @@ import {
 import { l, } from '../logger.ts';
 
 /**
- * Batch of debounced watch events ready for one config rerun.
+ Batch of debounced watch events ready for one config rerun.
  */
 export type WatchRerunBatch = Readonly<{
   /**
-   * Changed paths whose cached reads should be invalidated before rerun.
+   Changed paths whose cached reads should be invalidated before rerun.
    */
   paths: readonly string[];
 
   /**
-   * Managed destinations requiring write-protection notification before rerun.
+   Managed destinations requiring write-protection notification before rerun.
    */
   protectedPaths: readonly string[];
 }>;
 
 /**
- * Runs one queued watch rerun batch.
+ Runs one queued watch rerun batch.
  */
 export type WatchRerunHandler = (batch: WatchRerunBatch) => Promise<void>;
 
 /**
- * Handles errors thrown by watch rerun handlers without stopping later batches.
+ Handles errors thrown by watch rerun handlers without stopping later batches.
  */
 export type WatchRerunErrorHandler = (runError: unknown) => void;
 
 /**
- * Minimal logger surface used for queue error-reporter failures.
+ Minimal logger surface used for queue error-reporter failures.
  */
 export type WatchRerunReporterLogger = Pick<Logger, 'error'>;
 
 /**
- * Serial queue for watch reruns.
+ Serial queue for watch reruns.
  */
 export type WatchRerunQueue = {
   /**
-   * Adds one rerun batch and resolves when that batch has been processed.
+   Adds one rerun batch and resolves when that batch has been processed.
    */
   readonly enqueue: (batch: WatchRerunBatch) => Promise<void>;
 
   /**
-   * Returns number of batches waiting behind any active rerun.
+   Returns number of batches waiting behind any active rerun.
    */
   readonly pendingCount: () => number;
 
   /**
-   * Returns whether a rerun is currently active.
+   Returns whether a rerun is currently active.
    */
   readonly running: () => boolean;
 };
@@ -59,51 +59,51 @@ export type WatchRerunQueue = {
 //region Watch rerun queue internals
 
 /**
- * Options used to create a serial watch rerun queue.
+ Options used to create a serial watch rerun queue.
  */
 type WatchRerunQueueOptions = {
   /**
-   * Handler invoked for each batch in queue order.
+   Handler invoked for each batch in queue order.
    */
   readonly run: WatchRerunHandler;
 
   /**
-   * Error reporter used when one handler throws.
+   Error reporter used when one handler throws.
    */
   readonly onError: WatchRerunErrorHandler;
 
   /**
-   * Logger used when error reporter itself throws.
+   Logger used when error reporter itself throws.
    */
   readonly logger?: WatchRerunReporterLogger;
 };
 
 /**
- * Internal queue entry paired with its completion resolver.
+ Internal queue entry paired with its completion resolver.
  */
 type QueuedWatchRerun = {
   /**
-   * Event batch to pass to the rerun handler.
+   Event batch to pass to the rerun handler.
    */
   readonly batch: WatchRerunBatch;
 
   /**
-   * Completion resolver for callers waiting on this queued batch.
+   Completion resolver for callers waiting on this queued batch.
    */
   readonly resolve: () => void;
 };
 
 /**
- * Returns whether queue drain is currently active.
- *
- * @param runningState - Single-key state holder for active reruns.
- *
- * @returns Whether a rerun is currently active.
- *
- * @example
- * ```ts
- * const active = watchRerunQueueIsActive({ runningState });
- * ```
+ Returns whether queue drain is currently active.
+ 
+ @param runningState - Single-key state holder for active reruns.
+ 
+ @returns Whether a rerun is currently active.
+ 
+ @example
+ ```ts
+ const active = watchRerunQueueIsActive({ runningState });
+ ```
  */
 function watchRerunQueueIsActive(
   { runningState, }: {
@@ -114,18 +114,18 @@ function watchRerunQueueIsActive(
 }
 
 /**
- * Reports rerun handler error without allowing reporter failures to wedge queue draining.
- *
- * @param onError - Configured rerun error reporter.
- *
- * @param runError - Error thrown by rerun handler.
- *
- * @param logger - Logger used when error reporter itself fails.
- *
- * @example
- * ```ts
- * reportWatchRerunError({ onError, runError, logger });
- * ```
+ Reports rerun handler error without allowing reporter failures to wedge queue draining.
+ 
+ @param onError - Configured rerun error reporter.
+ 
+ @param runError - Error thrown by rerun handler.
+ 
+ @param logger - Logger used when error reporter itself fails.
+ 
+ @example
+ ```ts
+ reportWatchRerunError({ onError, runError, logger });
+ ```
  */
 function reportWatchRerunError(
   {
@@ -143,7 +143,7 @@ function reportWatchRerunError(
   }
   catch (reportError: unknown) {
     /**
-     * Last-chance message for a failing error reporter.
+     Last-chance message for a failing error reporter.
      */
     const message = `watch rerun error reporter failed after rerun failure: rerun=${caughtValueText(runError,)} reporter=${caughtValueText(reportError,)}`;
     try {
@@ -162,32 +162,32 @@ function reportWatchRerunError(
 //region Watch rerun queue public API
 
 /**
- * Creates a serial queue for watch-mode config reruns.
- *
- * Debounced filesystem event batches may arrive while an earlier config rerun is
- * still importing, resetting trackers, or rebuilding watchers. This queue keeps
- * those batches in FIFO order so reruns never overlap and later events are not
- * discarded while the active rerun is in progress; queued batches drain via
- * {@link drainWatchRerunQueue}.
- *
- * @param run - Handler invoked once for each queued rerun batch.
- *
- * @param onError - Error reporter invoked when a handler throws.
- *
- * @returns Queue that serializes watch rerun batches.
- *
- * @example
- * ```ts
- * const queue = createWatchRerunQueue({
- *   run: async function rerunBatch(batch) {
- *     await rerun(batch.paths);
- *   },
- *   onError: function logError(error) {
- *     logger.error(caughtValueText(error,));
- *   },
- * });
- * await queue.enqueue({ paths: ['/repo/src.ts'], protectedPaths: [] });
- * ```
+ Creates a serial queue for watch-mode config reruns.
+ 
+ Debounced filesystem event batches may arrive while an earlier config rerun is
+ still importing, resetting trackers, or rebuilding watchers. This queue keeps
+ those batches in FIFO order so reruns never overlap and later events are not
+ discarded while the active rerun is in progress; queued batches drain via
+ {@link drainWatchRerunQueue}.
+ 
+ @param run - Handler invoked once for each queued rerun batch.
+ 
+ @param onError - Error reporter invoked when a handler throws.
+ 
+ @returns Queue that serializes watch rerun batches.
+ 
+ @example
+ ```ts
+ const queue = createWatchRerunQueue({
+   run: async function rerunBatch(batch) {
+     await rerun(batch.paths);
+   },
+   onError: function logError(error) {
+     logger.error(caughtValueText(error,));
+   },
+ });
+ await queue.enqueue({ paths: ['/repo/src.ts'], protectedPaths: [] });
+ ```
  */
 export function createWatchRerunQueue(
   {
@@ -197,7 +197,7 @@ export function createWatchRerunQueue(
   }: WatchRerunQueueOptions,
 ): WatchRerunQueue {
   /**
-   * Function-scoped logger for queue-level error paths.
+   Function-scoped logger for queue-level error paths.
    */
   const rl = logger
     ?? tagged({
@@ -205,22 +205,22 @@ export function createWatchRerunQueue(
       l,
     },);
   /**
-   * FIFO rerun batches waiting behind any active rerun.
+   FIFO rerun batches waiting behind any active rerun.
    */
   const pendingReruns: QueuedWatchRerun[] = [];
   /**
-   * Single-key holder indicating a drain loop is active.
+   Single-key holder indicating a drain loop is active.
    */
   const runningState = new Map<'running', true>();
 
   /**
-   * Drains queued reruns serially until no queued batches remain, reporting
-   * handler failures via {@link reportWatchRerunError}.
-   *
-   * @example
-   * ```ts
-   * await drainWatchRerunQueue();
-   * ```
+   Drains queued reruns serially until no queued batches remain, reporting
+   handler failures via {@link reportWatchRerunError}.
+   
+   @example
+   ```ts
+   await drainWatchRerunQueue();
+   ```
    */
   async function drainWatchRerunQueue(): Promise<void> {
     if (watchRerunQueueIsActive({ runningState, },))
@@ -232,7 +232,7 @@ export function createWatchRerunQueue(
         true,
       );
     /**
-     * Cleanup that clears active state even when rerun or reporter code throws unexpectedly.
+     Cleanup that clears active state even when rerun or reporter code throws unexpectedly.
      */
     using _runningCleanup = {
       [Symbol.dispose](): void {
@@ -242,13 +242,13 @@ export function createWatchRerunQueue(
     };
     while (pendingReruns.length > 0) {
       /**
-       * Next rerun to process after all earlier batches finished.
+       Next rerun to process after all earlier batches finished.
        */
       const queuedRerun = pendingReruns.shift();
       if (queuedRerun === undefined)
         throw new Error('Watch rerun queue was empty during dequeue',);
       /**
-       * Event batch and completion resolver for current queued rerun.
+       Event batch and completion resolver for current queued rerun.
        */
       const {
         batch,
@@ -272,7 +272,7 @@ export function createWatchRerunQueue(
   return {
     enqueue(batch: WatchRerunBatch,): Promise<void> {
       /**
-       * Completion promise and resolver for this queued batch.
+       Completion promise and resolver for this queued batch.
        */
       const {
         promise,

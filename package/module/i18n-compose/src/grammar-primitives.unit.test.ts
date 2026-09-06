@@ -1,7 +1,7 @@
 /**
- * Tests for grammatical primitives.
- *
- * @module
+ Tests for grammatical primitives.
+ 
+ @module
  */
 
 import {

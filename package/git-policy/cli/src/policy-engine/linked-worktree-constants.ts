@@ -6,22 +6,22 @@ export {
 //region Linked worktree rule constants
 
 /**
- * Git stash subcommand guarded by linked-worktree policy.
+ Git stash subcommand guarded by linked-worktree policy.
  */
 export const STASH_SUBCOMMAND = 'stash';
 
 /**
- * Git clean subcommand guarded by linked-worktree policy when it can delete files.
+ Git clean subcommand guarded by linked-worktree policy when it can delete files.
  */
 export const CLEAN_SUBCOMMAND = 'clean';
 
 /**
- * Git reset subcommand guarded by linked-worktree policy for worktree-updating modes.
+ Git reset subcommand guarded by linked-worktree policy for worktree-updating modes.
  */
 export const RESET_SUBCOMMAND = 'reset';
 
 /**
- * Commands with linked-worktree-only policy.
+ Commands with linked-worktree-only policy.
  */
 export type GuardedCommand =
   | typeof STASH_SUBCOMMAND

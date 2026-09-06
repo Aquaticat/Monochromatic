@@ -1,7 +1,7 @@
 /**
- * {@link tomlInsertCommentBefore}: add a comment block immediately before a path.
- *
- * @module
+ {@link tomlInsertCommentBefore}: add a comment block immediately before a path.
+ 
+ @module
  */
 
 import type { Block, } from './document.ts';
@@ -17,22 +17,22 @@ import type {
 } from './types.ts';
 
 /**
- * Sentinel for "the target block was not found".
+ Sentinel for "the target block was not found".
  */
 const NOT_FOUND: unique symbol = Symbol('toml-edit/insert-before-not-found',);
 
 /**
- * Insert `#`-prefixed comment lines as a filler block just before the entry
- * at `path`.
- *
- * @returns A fresh {@link TomlEditState} reflecting the change.
- *
- * @throws {@link TomlPathNotFoundError} when `path` does not exist.
- *
- * @example
- * ```ts
- * tomlInsertCommentBefore({ edit, path: ['version'], comment: ' bumped', },);
- * ```
+ Insert `#`-prefixed comment lines as a filler block just before the entry
+ at `path`.
+ 
+ @returns A fresh {@link TomlEditState} reflecting the change.
+ 
+ @throws {@link TomlPathNotFoundError} when `path` does not exist.
+ 
+ @example
+ ```ts
+ tomlInsertCommentBefore({ edit, path: ['version'], comment: ' bumped', },);
+ ```
  */
 export function tomlInsertCommentBefore(
   {
@@ -46,7 +46,7 @@ export function tomlInsertCommentBefore(
   },
 ): TomlEditState {
   /**
-   * Comment lines rendered as their own physical lines.
+   Comment lines rendered as their own physical lines.
    */
   const text = ((typeof comment) === 'string' ? [comment,] : comment)
     .map(function withHash(line,) {
@@ -54,7 +54,7 @@ export function tomlInsertCommentBefore(
     },)
     .join('',);
   /**
-   * Blocks with a filler spliced before the target, or the not-found sentinel.
+   Blocks with a filler spliced before the target, or the not-found sentinel.
    */
   const inserted = insertFillerBefore({
     blocks: edit.blocks,
@@ -73,9 +73,9 @@ export function tomlInsertCommentBefore(
 }
 
 /**
- * Splice a filler block before the entry named by `path`.
- *
- * @returns Fresh blocks, or {@link NOT_FOUND}.
+ Splice a filler block before the entry named by `path`.
+ 
+ @returns Fresh blocks, or {@link NOT_FOUND}.
  */
 function insertFillerBefore(
   {
@@ -113,7 +113,7 @@ function insertFillerBefore(
         path,
       },)) {
       /**
-       * Body after recursing with the header-relative path.
+       Body after recursing with the header-relative path.
        */
       const newBody = insertFillerBefore({
         blocks: block.body,
@@ -135,9 +135,9 @@ function insertFillerBefore(
 }
 
 /**
- * True when a block's key/header exactly names `path`.
- *
- * @returns Resulting boolean.
+ True when a block's key/header exactly names `path`.
+ 
+ @returns Resulting boolean.
  */
 function matchesExact(
   {
@@ -149,7 +149,7 @@ function matchesExact(
   },
 ): boolean {
   /**
-   * The block's own key segments, or `null` for a filler.
+   The block's own key segments, or `null` for a filler.
    */
   const segs = block.kind
     === 'keyvalue'

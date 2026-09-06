@@ -35,32 +35,32 @@ export {
 } from './utility/indent.ts';
 
 /**
- * Oxlint JS plugin for TypeScript stylistic rules: one-item-per-line
- * formatting across multi-element constructs, readable brace-delimited bodies,
- * semicolon enforcement, trailing comma enforcement, and explicit operator
- * structure in nested expressions.
- *
- * The per-line rules fire when 2 or more items share a source line and
- * auto-fix by placing every item on its own line with consistent
- * indentation. They are this repository's TypeScript layout authority
- * because dprint's TypeScript formatter is disabled; dprint still formats
- * non-TypeScript files.
- *
- * Statement-boundary rules enforce explicit semicolons and one statement
- * or declarator per line. Body-boundary rules enforce readable newlines
- * inside brace-delimited bodies.
- *
- * The expression-structure rules surface ambiguous operator precedence
- * by requiring explicit parentheses at operator boundaries.
- *
- * @example
- * ```typescript
- * // oxlint.config.ts
- * import { defineConfig } from 'oxlint';
- * export default defineConfig({
- *   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-stylistic'],
- * });
- * ```
+ Oxlint JS plugin for TypeScript stylistic rules: one-item-per-line
+ formatting across multi-element constructs, readable brace-delimited bodies,
+ semicolon enforcement, trailing comma enforcement, and explicit operator
+ structure in nested expressions.
+ 
+ The per-line rules fire when 2 or more items share a source line and
+ auto-fix by placing every item on its own line with consistent
+ indentation. They are this repository's TypeScript layout authority
+ because dprint's TypeScript formatter is disabled; dprint still formats
+ non-TypeScript files.
+ 
+ Statement-boundary rules enforce explicit semicolons and one statement
+ or declarator per line. Body-boundary rules enforce readable newlines
+ inside brace-delimited bodies.
+ 
+ The expression-structure rules surface ambiguous operator precedence
+ by requiring explicit parentheses at operator boundaries.
+ 
+ @example
+ ```typescript
+ // oxlint.config.ts
+ import { defineConfig } from 'oxlint';
+ export default defineConfig({
+   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-stylistic'],
+ });
+ ```
  */
 const plugin: Plugin = eslintCompatPlugin({
   meta: {

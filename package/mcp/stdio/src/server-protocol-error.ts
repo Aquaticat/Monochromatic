@@ -8,18 +8,18 @@ import { META_PROTOCOL_VERSION, } from './protocol-meta.ts';
 //region Missing version: request omitted the mandatory `_meta` revision key
 
 /**
- * Thrown when an inbound request carries no protocol revision in its `_meta`.
- * Revision 2026-07-28 requires the key on every request, so its absence is malformed params
- * rather than a version this server declined.
- *
- * @example
- * ```ts
- * throw new MissingProtocolVersionError();
- * ```
+ Thrown when an inbound request carries no protocol revision in its `_meta`.
+ Revision 2026-07-28 requires the key on every request, so its absence is malformed params
+ rather than a version this server declined.
+ 
+ @example
+ ```ts
+ throw new MissingProtocolVersionError();
+ ```
  */
 export class MissingProtocolVersionError extends Error {
   /**
-   * Builds the error with a message naming both the missing key and the revisions on offer.
+   Builds the error with a message naming both the missing key and the revisions on offer.
    */
   constructor() {
     super(
@@ -35,30 +35,30 @@ export class MissingProtocolVersionError extends Error {
 //region Unsupported version: request named a revision this server does not implement
 
 /**
- * Thrown when an inbound request names a protocol revision outside {@link SUPPORTED_PROTOCOL_VERSIONS}.
- * Carries both sides of the mismatch so the dispatcher can build the `data` payload
- * that lets a client retry on a mutually supported revision.
- *
- * @example
- * ```ts
- * throw new UnsupportedProtocolVersionError({ requested: '2025-06-18' });
- * ```
+ Thrown when an inbound request names a protocol revision outside {@link SUPPORTED_PROTOCOL_VERSIONS}.
+ Carries both sides of the mismatch so the dispatcher can build the `data` payload
+ that lets a client retry on a mutually supported revision.
+ 
+ @example
+ ```ts
+ throw new UnsupportedProtocolVersionError({ requested: '2025-06-18' });
+ ```
  */
 export class UnsupportedProtocolVersionError extends Error {
   /**
-   * Revision the client asked for, echoed back in the error `data`.
+   Revision the client asked for, echoed back in the error `data`.
    */
   readonly requested: string;
 
   /**
-   * Revisions this server implements, listed in the error `data` for the client to choose from.
+   Revisions this server implements, listed in the error `data` for the client to choose from.
    */
   readonly supported: readonly string[];
 
   /**
-   * Builds the error from the revision that was refused.
-   *
-   * @param requested - Revision string the client sent in request metadata.
+   Builds the error from the revision that was refused.
+   
+   @param requested - Revision string the client sent in request metadata.
    */
   constructor({ requested, }: { readonly requested: string; },) {
     super(

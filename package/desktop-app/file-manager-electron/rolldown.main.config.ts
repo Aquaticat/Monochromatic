@@ -4,12 +4,12 @@ import {
 } from 'rolldown';
 
 /**
- * Main-process bundle config for Electron's Node-flavoured ESM runtime.
- *
- * @example
- * ```ts
- * console.log(mainProcessConfig.output);
- * ```
+ Main-process bundle config for Electron's Node-flavoured ESM runtime.
+ 
+ @example
+ ```ts
+ console.log(mainProcessConfig.output);
+ ```
  */
 const mainProcessConfig: RolldownOptions = defineConfig({
   input: ['./src/main.ts',],

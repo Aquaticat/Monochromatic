@@ -1,7 +1,7 @@
 /**
- * Eager source ownership for writable semantic declarations.
- *
- * @module
+ Eager source ownership for writable semantic declarations.
+ 
+ @module
  */
 
 import type { Node, } from 'typescript/unstable/ast';
@@ -11,20 +11,20 @@ import type { WritableDeclarationOwner, } from './readonly-classification-model.
 import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
 
 /**
- * Classifies one resolved declaration by source ownership.
- *
- * @param declaration - Semantic declaration resolved in current snapshot.
- *
- * @param project - Project owning declaration source metadata.
- *
- * @returns workspace,
- * external-library,
- * or default-library ownership.
- *
- * @example
- * ```ts
- * writableDeclarationOwner({ declaration, project });
- * ```
+ Classifies one resolved declaration by source ownership.
+ 
+ @param declaration - Semantic declaration resolved in current snapshot.
+ 
+ @param project - Project owning declaration source metadata.
+ 
+ @returns workspace,
+ external-library,
+ or default-library ownership.
+ 
+ @example
+ ```ts
+ writableDeclarationOwner({ declaration, project });
+ ```
  */
 function writableDeclarationOwner({
   declaration,
@@ -34,11 +34,11 @@ function writableDeclarationOwner({
   readonly project: Project;
 }): Exclude<WritableDeclarationOwner, 'unresolved'> {
   /**
-   * Source containing exact writable declaration.
+   Source containing exact writable declaration.
    */
   const sourceFile = declaration.getSourceFile();
   /**
-   * Program classifying library membership for current source.
+   Program classifying library membership for current source.
    */
   const { program, } = project;
   if (program
@@ -52,20 +52,20 @@ function writableDeclarationOwner({
 }
 
 /**
- * Collects deterministic ownership categories for writable declarations.
- *
- * @param declarations - Resolved writable declarations.
- *
- * @param unresolved - Whether at least one writable declaration did not resolve.
- *
- * @param project - Project owning source classification.
- *
- * @returns sorted distinct ownership categories.
- *
- * @example
- * ```ts
- * writableDeclarationOwners({ declarations, unresolved: false, project });
- * ```
+ Collects deterministic ownership categories for writable declarations.
+ 
+ @param declarations - Resolved writable declarations.
+ 
+ @param unresolved - Whether at least one writable declaration did not resolve.
+ 
+ @param project - Project owning source classification.
+ 
+ @returns sorted distinct ownership categories.
+ 
+ @example
+ ```ts
+ writableDeclarationOwners({ declarations, unresolved: false, project });
+ ```
  */
 export function writableDeclarationOwners({
   declarations,
@@ -77,7 +77,7 @@ export function writableDeclarationOwners({
   readonly project: Project;
 }): readonly WritableDeclarationOwner[] {
   /**
-   * Ownership categories accumulated without declaration duplication.
+   Ownership categories accumulated without declaration duplication.
    */
   const owners = new Set<WritableDeclarationOwner>(
     declarations.map(function declarationOwner(declaration,): WritableDeclarationOwner {

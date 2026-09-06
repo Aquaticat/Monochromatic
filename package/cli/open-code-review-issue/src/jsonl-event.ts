@@ -1,7 +1,7 @@
 /**
- * OCR JSONL event field validation.
- *
- * @module
+ OCR JSONL event field validation.
+ 
+ @module
  */
 
 import { normalizeComment, } from './comment-normalize.ts';
@@ -10,22 +10,22 @@ import { isRecord, } from './json-record.ts';
 import type { NormalizedFinding, } from './model.ts';
 
 /**
- * Reads optional string field from JSONL event.
- *
- * @param record - Event carrying candidate field.
- *
- * @param key - Event property to inspect.
- *
- * @param line - One-based JSONL line number.
- *
- * @returns Empty string when absent or supplied string.
- *
- * @throws {@link InputValidationError} when supplied field is not string.
- *
- * @example
- * ```ts
- * eventString({ record: {}, key: 'filePath', line: 1 }); // ''
- * ```
+ Reads optional string field from JSONL event.
+ 
+ @param record - Event carrying candidate field.
+ 
+ @param key - Event property to inspect.
+ 
+ @param line - One-based JSONL line number.
+ 
+ @returns Empty string when absent or supplied string.
+ 
+ @throws {@link InputValidationError} when supplied field is not string.
+ 
+ @example
+ ```ts
+ eventString({ record: {}, key: 'filePath', line: 1 }); // ''
+ ```
  */
 export function eventString({
   record,
@@ -37,7 +37,7 @@ export function eventString({
   readonly line: number;
 },): string {
   /**
-   * Untrusted optional event property.
+   Untrusted optional event property.
    */
   const value = record[key];
   if (value === undefined) {
@@ -50,20 +50,20 @@ export function eventString({
 }
 
 /**
- * Extracts resolved head metadata from session-end manifest when present.
- *
- * @param record - Session event carrying optional run manifest.
- *
- * @param line - One-based JSONL line number.
- *
- * @returns Optional resolved-head property.
- *
- * @throws {@link InputValidationError} when manifest shape is malformed.
- *
- * @example
- * ```ts
- * jsonlResolvedHeadMetadata({ record: {}, line: 1 }); // {}
- * ```
+ Extracts resolved head metadata from session-end manifest when present.
+ 
+ @param record - Session event carrying optional run manifest.
+ 
+ @param line - One-based JSONL line number.
+ 
+ @returns Optional resolved-head property.
+ 
+ @throws {@link InputValidationError} when manifest shape is malformed.
+ 
+ @example
+ ```ts
+ jsonlResolvedHeadMetadata({ record: {}, line: 1 }); // {}
+ ```
  */
 export function jsonlResolvedHeadMetadata({
   record,
@@ -82,7 +82,7 @@ export function jsonlResolvedHeadMetadata({
     throw new InputValidationError(`line ${String(line,)} run_manifest.input must be an object`,);
   }
   /**
-   * Candidate resolved head from frozen run manifest.
+   Candidate resolved head from frozen run manifest.
    */
   const value = record.run_manifest
     .input
@@ -99,20 +99,20 @@ export function jsonlResolvedHeadMetadata({
 }
 
 /**
- * Normalizes comments carried by completed or reused checkpoint.
- *
- * @param record - Checkpoint event.
- *
- * @param line - One-based JSONL line number.
- *
- * @returns Findings inheriting event path when comment path is empty.
- *
- * @throws {@link InputValidationError} when comments or path fields are malformed.
- *
- * @example
- * ```ts
- * checkpointFindings({ record: { comments: [] }, line: 2 }); // []
- * ```
+ Normalizes comments carried by completed or reused checkpoint.
+ 
+ @param record - Checkpoint event.
+ 
+ @param line - One-based JSONL line number.
+ 
+ @returns Findings inheriting event path when comment path is empty.
+ 
+ @throws {@link InputValidationError} when comments or path fields are malformed.
+ 
+ @example
+ ```ts
+ checkpointFindings({ record: { comments: [] }, line: 2 }); // []
+ ```
  */
 export function checkpointFindings({
   record,
@@ -128,7 +128,7 @@ export function checkpointFindings({
     throw new InputValidationError(`line ${String(line,)} property comments must be an array`,);
   }
   /**
-   * Primary item path used by modern session records.
+   Primary item path used by modern session records.
    */
   const filePath = eventString({
     record,
@@ -136,7 +136,7 @@ export function checkpointFindings({
     line,
   });
   /**
-   * New path fallback used by renamed-file session records.
+   New path fallback used by renamed-file session records.
    */
   const newPath = eventString({
     record,
@@ -144,7 +144,7 @@ export function checkpointFindings({
     line,
   });
   /**
-   * Effective inherited path for pathless comments.
+   Effective inherited path for pathless comments.
    */
   const fallbackPath = filePath === '' ? newPath : filePath;
   return record.comments

@@ -1,7 +1,7 @@
 /**
- * TypeScript 7 synchronous semantic bridge for Oxlint JavaScript rules.
- *
- * @module
+ TypeScript 7 synchronous semantic bridge for Oxlint JavaScript rules.
+ 
+ @module
  */
 
 import { existsSync, } from 'node:fs';
@@ -37,32 +37,32 @@ import {
 } from './typescript-sync-native-shutdown.ts';
 
 /**
- * Package logger for semantic bridge lifecycle.
+ Package logger for semantic bridge lifecycle.
  */
 const l = tagged({ tag: 'prefer-readonly-parameter-types', },);
 
 /**
- * Sentinel before native API client starts.
+ Sentinel before native API client starts.
  */
 const NO_API: unique symbol = Symbol('TypeScript synchronous API not started',);
 
 /**
- * Sentinel before first semantic snapshot exists.
+ Sentinel before first semantic snapshot exists.
  */
 const NO_SNAPSHOT: unique symbol = Symbol('TypeScript semantic snapshot not created',);
 
 /**
- * Sentinel before bridge tracks current source for rename invalidation.
+ Sentinel before bridge tracks current source for rename invalidation.
  */
 const NO_ACTIVE_FILE: unique symbol = Symbol('TypeScript semantic bridge has no active source',);
 
 /**
- * TypeScript project-service identity for source outside configured projects.
+ TypeScript project-service identity for source outside configured projects.
  */
 const INFERRED_PROJECT_CONFIG = '/dev/null/inferred';
 
 /**
- * Mutable process-local bridge state hidden behind exported lifecycle functions.
+ Mutable process-local bridge state hidden behind exported lifecycle functions.
  */
 const bridgeState: {
   api: API | typeof NO_API;
@@ -83,18 +83,18 @@ const bridgeState: {
 };
 
 /**
- * Starts native synchronous API once and registers process cleanup.
- *
- * @returns reusable TypeScript API client.
- *
- * @throws {@link SemanticBridgeError} when API startup fails.
+ Starts native synchronous API once and registers process cleanup.
+ 
+ @returns reusable TypeScript API client.
+ 
+ @throws {@link SemanticBridgeError} when API startup fails.
  */
 function getApi(): API {
   if (bridgeState.api !== NO_API)
     return bridgeState.api;
 
   /**
-   * Function-tagged semantic lifecycle logger.
+   Function-tagged semantic lifecycle logger.
    */
   const rl = tagged({
     tag: getApi.name,
@@ -103,14 +103,14 @@ function getApi(): API {
   assertTypeScriptSeven();
   try {
     /**
-     * Newly created API configured before process lifecycle hooks observe it.
+     Newly created API configured before process lifecycle hooks observe it.
      */
     const api = new API({
       cwd: process.cwd(),
       fs: overlayFileSystem({ overlays: bridgeState.overlays, },),
     },);
     /**
-     * Native child whose TypeScript-owned cleanup signal must remain quiet.
+     Native child whose TypeScript-owned cleanup signal must remain quiet.
      */
     const child = nativeApiChild(api,);
     configureNativeApiChildShutdown(child,);
@@ -136,38 +136,38 @@ function getApi(): API {
 }
 
 /**
- * Starts semantic child before Oxlint allocates one fixed AST buffer per worker.
- *
- * Oxlint reserves a multi-gigabyte virtual buffer for every Rust worker when a
- * JavaScript plugin is active. Starting TypeScript after those reservations can
- * make `child_process.spawn` fail with `ENOMEM` on high-core hosts.
- *
- * @example
- * ```ts
- * initializeSemanticBridge();
- * ```
+ Starts semantic child before Oxlint allocates one fixed AST buffer per worker.
+ 
+ Oxlint reserves a multi-gigabyte virtual buffer for every Rust worker when a
+ JavaScript plugin is active. Starting TypeScript after those reservations can
+ make `child_process.spawn` fail with `ENOMEM` on high-core hosts.
+ 
+ @example
+ ```ts
+ initializeSemanticBridge();
+ ```
  */
 export function initializeSemanticBridge(): void {
   getApi();
 }
 
 /**
- * Opens current Oxlint source in reusable TypeScript project snapshot.
- *
- * @param fileName - Source path reported by Oxlint.
- *
- * @param sourceText - Current in-memory source text.
- *
- * @param hasBOM - Whether Oxlint stripped leading byte-order mark.
- *
- * @returns semantic project, checker, source tree, and offset mapper.
- *
- * @throws {@link SemanticBridgeError} when project or source cannot be resolved.
- *
- * @example
- * ```ts
- * const session = openSemanticFile({ fileName, sourceText, hasBOM: false });
- * ```
+ Opens current Oxlint source in reusable TypeScript project snapshot.
+ 
+ @param fileName - Source path reported by Oxlint.
+ 
+ @param sourceText - Current in-memory source text.
+ 
+ @param hasBOM - Whether Oxlint stripped leading byte-order mark.
+ 
+ @returns semantic project, checker, source tree, and offset mapper.
+ 
+ @throws {@link SemanticBridgeError} when project or source cannot be resolved.
+ 
+ @example
+ ```ts
+ const session = openSemanticFile({ fileName, sourceText, hasBOM: false });
+ ```
  */
 export function openSemanticFile({
   fileName,
@@ -179,19 +179,19 @@ export function openSemanticFile({
   readonly hasBOM: boolean;
 },): SemanticFileSession {
   /**
-   * Function-tagged snapshot lifecycle logger.
+   Function-tagged snapshot lifecycle logger.
    */
   const rl = tagged({
     tag: openSemanticFile.name,
     l,
   },);
   /**
-   * Canonical source key shared by overlay and project service.
+   Canonical source key shared by overlay and project service.
    */
   const normalizedFileName = normalizeSemanticFileName(fileName,);
   /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous Oxlint visitor must classify prior-path deletion before synchronous snapshot update. */
   /**
-   * Previously active source removed from disk by rename or deletion.
+   Previously active source removed from disk by rename or deletion.
    */
   const deletedFiles = (bridgeState.activeFileName !== NO_ACTIVE_FILE)
     && (bridgeState.activeFileName !== normalizedFileName)
@@ -229,14 +229,14 @@ export function openSemanticFile({
     );
 
   /**
-   * Previously discovered configured project path for source.
+   Previously discovered configured project path for source.
    */
   const knownProject = cachedProjectForFile({
     fileName: normalizedFileName,
     projectByRoot: bridgeState.projectByRoot,
   },);
   /**
-   * Project already materialized in current immutable snapshot.
+   Project already materialized in current immutable snapshot.
    */
   const snapshotProject = (knownProject === undefined)
     || (bridgeState.snapshot === NO_SNAPSHOT)
@@ -245,7 +245,7 @@ export function openSemanticFile({
       .snapshot
       .getProject(knownProject,);
   /**
-   * Source already materialized in current immutable snapshot.
+   Source already materialized in current immutable snapshot.
    */
   const snapshotSourceFile = snapshotProject
     ?.program
@@ -266,7 +266,7 @@ export function openSemanticFile({
     },);
   }
   /**
-   * Native API client reused across all linted files in process.
+   Native API client reused across all linted files in process.
    */
   const api = getApi();
   /* No `clearSourceFileCache()` here. It is `sourceFileCache.clear()`, which drops every decoded
@@ -283,11 +283,11 @@ export function openSemanticFile({
    * Every text this bridge hands over is kept, so the server's view of a source is always the text
    * it was given, and the file it is about to reread is named through `fileChanges`. */
   /**
-   * Whether current source is reusable from project this bridge selected for it.
+   Whether current source is reusable from project this bridge selected for it.
    */
   const sourcePreviouslyKnown = snapshotSourceFile !== undefined;
   /**
-   * Snapshot the native service is currently answering from, absent before first update.
+   Snapshot the native service is currently answering from, absent before first update.
    */
   const currentSnapshot = bridgeState.snapshot;
   /* Announcing a source is a different question from reusing one, and deriving the first from the
@@ -300,7 +300,7 @@ export function openSemanticFile({
    * an importer under another project, or, before the root key joined one identity, every single
    * lookup on Windows. A cache miss then cost correctness rather than one discovery. */
   /**
-   * Whether native service already holds this source under any materialized project.
+   Whether native service already holds this source under any materialized project.
    */
   const serviceHoldsSource = sourcePreviouslyKnown
     || ((currentSnapshot !== NO_SNAPSHOT)
@@ -309,11 +309,11 @@ export function openSemanticFile({
         fileName: normalizedFileName,
       },));
   /**
-   * Whether current source requires open-file project association.
+   Whether current source requires open-file project association.
    */
   const needsDiscovery = (knownProject === undefined) || (!sourcePreviouslyKnown);
   /**
-   * Snapshot used for configured-project discovery on first encounter or created file.
+   Snapshot used for configured-project discovery on first encounter or created file.
    */
   const discoverySnapshot = needsDiscovery
     ? api.updateSnapshot({
@@ -326,7 +326,7 @@ export function openSemanticFile({
     },)
     : NO_SNAPSHOT;
   /**
-   * Config path discovered from temporary open-file association or prior cache.
+   Config path discovered from temporary open-file association or prior cache.
    */
   const discoveredProject = {
     configFileName: sourcePreviouslyKnown ? knownProject : undefined,
@@ -339,7 +339,7 @@ export function openSemanticFile({
       ?.configFileName;
   }
   /**
-   * Configured project identity after discovery narrowing.
+   Configured project identity after discovery narrowing.
    */
   const { configFileName, } = discoveredProject;
   if ((configFileName === undefined)
@@ -352,7 +352,7 @@ export function openSemanticFile({
     bridgeState.overlays
       .delete(normalizedFileName,);
     /**
-     * Snapshot closing temporary open-file association after failed discovery.
+     Snapshot closing temporary open-file association after failed discovery.
      */
     const releaseSnapshot = api.updateSnapshot({
       closeFiles: [normalizedFileName,],
@@ -394,7 +394,7 @@ export function openSemanticFile({
    * carried are not replayed. Sampling the announcement once and sending it twice would describe
    * the service as it was before the first update rather than as it is before this one. */
   /**
-   * New immutable project view reading current overlay outside LSP open-file cache.
+   New immutable project view reading current overlay outside LSP open-file cache.
    */
   const nextSnapshot = api.updateSnapshot({
     ...needsDiscovery
@@ -418,7 +418,7 @@ export function openSemanticFile({
   bridgeState.snapshot = nextSnapshot;
 
   /**
-   * Configured project selected through cached project identity.
+   Configured project selected through cached project identity.
    */
   const project = nextSnapshot.getProject(configFileName,);
   if (project === undefined) {
@@ -428,7 +428,7 @@ export function openSemanticFile({
     },);
   }
   /**
-   * Source tree loaded from current snapshot overlay.
+   Source tree loaded from current snapshot overlay.
    */
   const sourceFile = project
     .program
@@ -453,14 +453,14 @@ export type { SemanticBridgeCacheStats, } from './semantic-bridge-cache.ts';
 export type { SemanticFileSession, } from './semantic-file-session.ts';
 
 /**
- * Reads cache evidence without exposing mutable bridge storage.
- *
- * @returns current overlay and configured-project root counts, plus project discoveries so far.
- *
- * @example
- * ```ts
- * semanticBridgeCacheStats();
- * ```
+ Reads cache evidence without exposing mutable bridge storage.
+ 
+ @returns current overlay and configured-project root counts, plus project discoveries so far.
+ 
+ @example
+ ```ts
+ semanticBridgeCacheStats();
+ ```
  */
 export function semanticBridgeCacheStats(): SemanticBridgeCacheStats {
   return {
@@ -473,19 +473,19 @@ export function semanticBridgeCacheStats(): SemanticBridgeCacheStats {
 }
 
 /**
- * Disposes active snapshot and native TypeScript API process.
- *
- * Idempotent so tests and natural process shutdown may both invoke cleanup.
- *
- * @example
- * ```ts
- * closeSemanticBridge();
- * ```
+ Disposes active snapshot and native TypeScript API process.
+ 
+ Idempotent so tests and natural process shutdown may both invoke cleanup.
+ 
+ @example
+ ```ts
+ closeSemanticBridge();
+ ```
  */
 export function closeSemanticBridge(): void {
   resetSemanticEffectCaches();
   /**
-   * Function-tagged cleanup lifecycle logger.
+   Function-tagged cleanup lifecycle logger.
    */
   const rl = tagged({
     tag: closeSemanticBridge.name,

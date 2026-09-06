@@ -1,13 +1,13 @@
 /**
- * Evaluate pipeline: judge call, verdict handling, user interaction.
- *
- * Sits between the flagger (`signals.ts`/`tool-helpers.ts`) and the
- * UI (`ask-user.ts`). Resolves a budget judge model, calls the judge,
- * and translates the structured verdict into either an allow, a
- * block, or a user prompt. Records each verdict as a session entry
- * and updates the auto-mode widget.
- *
- * @module
+ Evaluate pipeline: judge call, verdict handling, user interaction.
+ 
+ Sits between the flagger (`signals.ts`/`tool-helpers.ts`) and the
+ UI (`ask-user.ts`). Resolves a budget judge model, calls the judge,
+ and translates the structured verdict into either an allow, a
+ block, or a user prompt. Records each verdict as a session entry
+ and updates the auto-mode widget.
+ 
+ @module
  */
 
 import type {
@@ -43,17 +43,17 @@ import {
 } from './types.ts';
 
 /**
- * Logger root for auto-mode after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for auto-mode after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
- * Tagged logger for the evaluate module.
+ Tagged logger for the evaluate module.
  */
 const l = tagged({
   tag: 'evaluate',
@@ -61,20 +61,20 @@ const l = tagged({
 },);
 
 /**
- * Build model-facing block {@link GuardDecision} for a judge deny verdict.
- *
- * Formats the reason with {@link formatModelBlockReason}.
- *
- * @param verdict - preserves judge rationale and guidance for agent self-correction
- *
- * @returns blocked decision carrying both rationale and safer next step
- *
- * @example
- * ```typescript
- * decisionForDenyVerdict({
- *   verdict: { verdict: 'deny', reason: 'Risky command.', guidance: 'Use dry-run.' },
- * });
- * ```
+ Build model-facing block {@link GuardDecision} for a judge deny verdict.
+ 
+ Formats the reason with {@link formatModelBlockReason}.
+ 
+ @param verdict - preserves judge rationale and guidance for agent self-correction
+ 
+ @returns blocked decision carrying both rationale and safer next step
+ 
+ @example
+ ```typescript
+ decisionForDenyVerdict({
+   verdict: { verdict: 'deny', reason: 'Risky command.', guidance: 'Use dry-run.' },
+ });
+ ```
  */
 function decisionForDenyVerdict(
   {
@@ -93,40 +93,40 @@ function decisionForDenyVerdict(
 }
 
 /**
- * Evaluate a flagged action through the judge pipeline.
- *
- * Reuses a latest same-session approval found by {@link getReusableApproval}
- * for the exact action when present. Otherwise resolves a judge model with
- * {@link resolveJudgeModel}, builds judge context with {@link buildContext}
- * and {@link getTrustDirectives}, calls the judge with {@link callJudge}, and
- * processes the verdict. On approve, allows and reports an `approved`
- * flow verdict. On deny, blocks via {@link decisionForDenyVerdict} and
- * reports a `denied` flow verdict. On ask, prompts the user with
- * {@link askUser} (no flow verdict; the prompt path records its own session
- * entry).
- *
- * @returns block-or-allow decision plus the flow verdict to record, if any
- *
- * @mutates pi - verdict and approval paths append Pi session entries
- *
- * @mutates ctx - context, auth, and user-prompt paths can change controlled Pi state
- *
- * @mutates batchContext - judge context construction can read caller-owned entry hooks
- *
- * @mutates judgeCallHistory - records model outcomes and supplies temporary selection exclusions
- *
- * @example
- * ```typescript
- * const result = await evaluate({
- *   pi,
- *   ctx,
- *   systemPrompt: prompt,
- *   action: "bash: sudo rm -rf /",
- *   actionInput: '{"command":"sudo rm -rf /"}',
- *   approvalFingerprint: "abc123",
- *   batchContext: [],
- * });
- * ```
+ Evaluate a flagged action through the judge pipeline.
+ 
+ Reuses a latest same-session approval found by {@link getReusableApproval}
+ for the exact action when present. Otherwise resolves a judge model with
+ {@link resolveJudgeModel}, builds judge context with {@link buildContext}
+ and {@link getTrustDirectives}, calls the judge with {@link callJudge}, and
+ processes the verdict. On approve, allows and reports an `approved`
+ flow verdict. On deny, blocks via {@link decisionForDenyVerdict} and
+ reports a `denied` flow verdict. On ask, prompts the user with
+ {@link askUser} (no flow verdict; the prompt path records its own session
+ entry).
+ 
+ @returns block-or-allow decision plus the flow verdict to record, if any
+ 
+ @mutates pi - verdict and approval paths append Pi session entries
+ 
+ @mutates ctx - context, auth, and user-prompt paths can change controlled Pi state
+ 
+ @mutates batchContext - judge context construction can read caller-owned entry hooks
+ 
+ @mutates judgeCallHistory - records model outcomes and supplies temporary selection exclusions
+ 
+ @example
+ ```typescript
+ const result = await evaluate({
+   pi,
+   ctx,
+   systemPrompt: prompt,
+   action: "bash: sudo rm -rf /",
+   actionInput: '{"command":"sudo rm -rf /"}',
+   approvalFingerprint: "abc123",
+   batchContext: [],
+ });
+ ```
  */
 async function evaluate(
   {
@@ -152,7 +152,7 @@ async function evaluate(
   },
 ): Promise<EvaluateResult> {
   /**
-   * Per-call sub-logger so log lines from this entry point carry the function name as a tag.
+   Per-call sub-logger so log lines from this entry point carry the function name as a tag.
    */
   const innerL = tagged({
     tag: evaluate.name,
@@ -161,7 +161,7 @@ async function evaluate(
   innerL.debug(`evaluating action: ${action}`,);
 
   /**
-   * Prior approval for the exact action, if the latest matching session verdict still allows reuse.
+   Prior approval for the exact action, if the latest matching session verdict still allows reuse.
    */
   const reusableApproval = getReusableApproval({
     ctx,
@@ -170,7 +170,7 @@ async function evaluate(
   },);
   if (reusableApproval.reusable) {
     /**
-     * Audit reason recorded for this reuse decision and surfaced in the flow widget.
+     Audit reason recorded for this reuse decision and surfaced in the flow widget.
      */
     const reuseReason = `Previously approved in this session (${reusableApproval.source}): ${reusableApproval.reason}`;
     innerL.debug(`reuse ${reusableApproval.source}: ${action}`,);
@@ -195,7 +195,7 @@ async function evaluate(
   }
 
   /**
-   * Resolved judge model handed to {@link callJudge}, or a recoverable failure marker.
+   Resolved judge model handed to {@link callJudge}, or a recoverable failure marker.
    */
   const judgeResult = await (
     async function tryResolveJudge(): Promise<
@@ -244,22 +244,22 @@ async function evaluate(
   }
 
   /**
-   * Resolved judge after the `ok` discriminant narrowed the union.
+   Resolved judge after the `ok` discriminant narrowed the union.
    */
   const { judge, } = judgeResult;
 
   /**
-   * Complete selected user-visible messages encoded as canonical JSON.
+   Complete selected user-visible messages encoded as canonical JSON.
    */
   const recentContext = buildContext(ctx,);
   /**
-   * Active trust directives for this session, listed in the prompt as guardrail relaxations.
+   Active trust directives for this session, listed in the prompt as guardrail relaxations.
    */
   const trustDirectives = getTrustDirectives(ctx,);
 
   try {
     /**
-     * Structured verdict from the judge: `approve`/`deny`/`ask` plus rationale and guidance.
+     Structured verdict from the judge: `approve`/`deny`/`ask` plus rationale and guidance.
      */
     const verdict = await callJudgeWithFallback({
       firstJudge: judge,
@@ -336,7 +336,7 @@ async function evaluate(
   }
   catch (err) {
     /**
-     * Normalised error message so both `Error` instances and non-`Error` throws produce a string.
+     Normalised error message so both `Error` instances and non-`Error` throws produce a string.
      */
     const msg = caughtValueText(err,);
     innerL.error(`judge error: ${msg}`,);
@@ -353,17 +353,17 @@ async function evaluate(
 }
 
 /**
- * Resolve a judge model with {@link findBudgetModel}.
- *
- * @param ctx - extension context
- *
- * @param excludedModelSlugs - judge models whose completed attempts already failed
- *
- * @returns a budget model with auth credentials
- *
- * @mutates ctx - `findBudgetModel` can invoke registry and command-backed auth capabilities
- *
- * @mutates excludedModelSlugs - model exclusion iteration can invoke caller-owned hooks
+ Resolve a judge model with {@link findBudgetModel}.
+ 
+ @param ctx - extension context
+ 
+ @param excludedModelSlugs - judge models whose completed attempts already failed
+ 
+ @returns a budget model with auth credentials
+ 
+ @mutates ctx - `findBudgetModel` can invoke registry and command-backed auth capabilities
+ 
+ @mutates excludedModelSlugs - model exclusion iteration can invoke caller-owned hooks
  */
 function resolveJudgeModel(
   {

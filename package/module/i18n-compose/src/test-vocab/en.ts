@@ -1,7 +1,7 @@
 /**
- * Test-only English vocabulary tables.
- *
- * @module
+ Test-only English vocabulary tables.
+ 
+ @module
  */
 
 import type {
@@ -17,7 +17,7 @@ import type {
 } from './types.ts';
 
 /**
- * English label table for tests.
+ English label table for tests.
  */
 export const enLabels: Record<TestLabel, string> = {
   siteName: 'Aquaticat',
@@ -26,7 +26,7 @@ export const enLabels: Record<TestLabel, string> = {
 };
 
 /**
- * English subject table for tests.
+ English subject table for tests.
  */
 export const enSubjects: Record<TestSubject, SubjectEntry> = {
   I: {
@@ -56,7 +56,7 @@ export const enSubjects: Record<TestSubject, SubjectEntry> = {
 };
 
 /**
- * English noun table for tests.
+ English noun table for tests.
  */
 export const enNouns: Record<TestNoun, NounEntry> = {
   cat: {
@@ -95,7 +95,7 @@ export const enNouns: Record<TestNoun, NounEntry> = {
 };
 
 /**
- * English verb table for tests.
+ English verb table for tests.
  */
 export const enVerbs: Record<TestVerb, EnglishVerbEntry> = {
   have: {

@@ -17,25 +17,25 @@ import {
 } from './worktree-copy-fixture.unit.test.ts';
 
 /**
- * Absolute real-Git executable for identity fixtures.
+ Absolute real-Git executable for identity fixtures.
  */
 const gitPath = await resolveGit();
 
 /**
- * Temporarily overrides one process environment entry.
- *
- * @param key - environment key to replace
- *
- * @param value - temporary environment value
- *
- * @returns disposable environment restoration
- *
- * @mutates process.env
- *
- * @example
- * ```ts
- * using override = overrideEnvironment({ key: 'GIT_DIR', value: '/repo/.git' });
- * ```
+ Temporarily overrides one process environment entry.
+ 
+ @param key - environment key to replace
+ 
+ @param value - temporary environment value
+ 
+ @returns disposable environment restoration
+ 
+ @mutates process.env
+ 
+ @example
+ ```ts
+ using override = overrideEnvironment({ key: 'GIT_DIR', value: '/repo/.git' });
+ ```
  */
 function overrideEnvironment({
   key,
@@ -45,11 +45,11 @@ function overrideEnvironment({
   value: string;
 }>,): Disposable {
   /**
-   * Whether environment originally owned key.
+   Whether environment originally owned key.
    */
   const hadOriginal = Object.hasOwn(process.env, key,);
   /**
-   * Original value retained only when key was present.
+   Original value retained only when key was present.
    */
   const original = process.env[key] ?? '';
   process.env[key] = value;
@@ -75,7 +75,7 @@ await describe({
         await using fixture = await createTempDirectory();
 
         /**
-         * Identity resolved outside repository.
+         Identity resolved outside repository.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: [
@@ -98,13 +98,13 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Main repository root under disposable fixture.
+         Main repository root under disposable fixture.
          */
         const mainRoot = join(fixture.path, 'main',);
         await initializeMainRepository(mainRoot,);
 
         /**
-         * Canonical main repository identity.
+         Canonical main repository identity.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: [
@@ -115,7 +115,7 @@ await describe({
           gitPath,
         },);
         /**
-         * Canonical main Git directory expected in identity.
+         Canonical main Git directory expected in identity.
          */
         const expectedGitDir = await realpath(join(mainRoot, '.git',),);
 
@@ -134,13 +134,13 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Linked source root created with sibling main repository.
+         Linked source root created with sibling main repository.
          */
         const linkedRoot = join(fixture.path, 'linked',);
         await initializeRepository(linkedRoot,);
 
         /**
-         * Canonical linked repository identity.
+         Canonical linked repository identity.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: [
@@ -164,7 +164,7 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Bare repository selected through explicit Git directory.
+         Bare repository selected through explicit Git directory.
          */
         const bareRoot = join(fixture.path, 'bare.git',);
         await runRealGit({
@@ -177,7 +177,7 @@ await describe({
         },);
 
         /**
-         * Canonical bare repository identity.
+         Canonical bare repository identity.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: [
@@ -188,7 +188,7 @@ await describe({
           gitPath,
         },);
         /**
-         * Canonical bare Git directory expected for both administrative fields.
+         Canonical bare Git directory expected for both administrative fields.
          */
         const expectedGitDir = await realpath(bareRoot,);
 
@@ -206,13 +206,13 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Main repository selected from unrelated invocation cwd.
+         Main repository selected from unrelated invocation cwd.
          */
         const mainRoot = join(fixture.path, 'main',);
         await initializeMainRepository(mainRoot,);
 
         /**
-         * Main identity selected through pre-subcommand chdir.
+         Main identity selected through pre-subcommand chdir.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: [
@@ -232,11 +232,11 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Unrelated cwd for explicit repository-selection options.
+         Unrelated cwd for explicit repository-selection options.
          */
         const invocationRoot = join(fixture.path, 'invocation',);
         /**
-         * Main repository selected explicitly from unrelated cwd.
+         Main repository selected explicitly from unrelated cwd.
          */
         const mainRoot = join(fixture.path, 'main',);
         await Promise.all([
@@ -245,7 +245,7 @@ await describe({
         ],);
 
         /**
-         * Main identity selected through explicit administrative options.
+         Main identity selected through explicit administrative options.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: [
@@ -269,13 +269,13 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Main repository reached through relative second chdir.
+         Main repository reached through relative second chdir.
          */
         const mainRoot = join(fixture.path, 'main',);
         await initializeMainRepository(mainRoot,);
 
         /**
-         * Identity selected after ordered absolute and relative chdir options.
+         Identity selected after ordered absolute and relative chdir options.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: [
@@ -298,13 +298,13 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Main repository selected by glued global options.
+         Main repository selected by glued global options.
          */
         const mainRoot = join(fixture.path, 'main',);
         await initializeMainRepository(mainRoot,);
 
         /**
-         * Main identity selected through glued administrative options.
+         Main identity selected through glued administrative options.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: [
@@ -324,19 +324,19 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Main repository selected by inherited Git environment.
+         Main repository selected by inherited Git environment.
          */
         const mainRoot = join(fixture.path, 'main',);
         await initializeMainRepository(mainRoot,);
         /**
-         * Temporary inherited Git-directory selection.
+         Temporary inherited Git-directory selection.
          */
         using gitDirOverride = overrideEnvironment({
           key: 'GIT_DIR',
           value: join(mainRoot, '.git',),
         },);
         /**
-         * Temporary inherited worktree selection.
+         Temporary inherited worktree selection.
          */
         using workTreeOverride = overrideEnvironment({
           key: 'GIT_WORK_TREE',
@@ -344,7 +344,7 @@ await describe({
         },);
 
         /**
-         * Main identity selected through inherited environment.
+         Main identity selected through inherited environment.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: ['status',],
@@ -361,7 +361,7 @@ await describe({
         await using fixture = await createTempDirectory();
 
         /**
-         * Outside identity produced after real Git rejects explicit missing directory.
+         Outside identity produced after real Git rejects explicit missing directory.
          */
         const identity = await resolveGitWorktreeIdentity({
           args: [

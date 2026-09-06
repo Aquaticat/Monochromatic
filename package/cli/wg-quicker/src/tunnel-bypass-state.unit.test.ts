@@ -15,7 +15,7 @@ import {
 import { readBypassStatePath, } from '../dist/final/node/tunnel-bypass.mjs';
 
 /**
- * Valid persisted state shared by shape mutations.
+ Valid persisted state shared by shape mutations.
  */
 const VALID_STATE = {
   version: 2,
@@ -39,7 +39,7 @@ const VALID_STATE = {
 } as const;
 
 /**
- * Invalid persisted-state fixture.
+ Invalid persisted-state fixture.
  */
 type InvalidStateCase = {
   readonly name: string;
@@ -47,7 +47,7 @@ type InvalidStateCase = {
 };
 
 /**
- * Invalid field shapes rejected before route mutation.
+ Invalid field shapes rejected before route mutation.
  */
 const INVALID_STATE_CASES: readonly InvalidStateCase[] = [
   {
@@ -132,7 +132,7 @@ const INVALID_STATE_CASES: readonly InvalidStateCase[] = [
 ];
 
 /**
- * Disposable state fixture directory.
+ Disposable state fixture directory.
  */
 type TempDir = {
   readonly path: string;
@@ -140,18 +140,18 @@ type TempDir = {
 };
 
 /**
- * Creates disposable state fixture directory.
- *
- * @returns Directory removed recursively on disposal.
- *
- * @example
- * ```ts
- * await using directory = await makeTempDir();
- * ```
+ Creates disposable state fixture directory.
+ 
+ @returns Directory removed recursively on disposal.
+ 
+ @example
+ ```ts
+ await using directory = await makeTempDir();
+ ```
  */
 async function makeTempDir(): Promise<TempDir> {
   /**
-   * Fresh operating-system temporary path.
+   Fresh operating-system temporary path.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -172,16 +172,16 @@ async function makeTempDir(): Promise<TempDir> {
 }
 
 /**
- * Captures asynchronous failure.
- *
- * @param operation - Operation expected to reject.
- *
- * @returns Rejection value.
- *
- * @example
- * ```ts
- * await captureRejected({ operation: async () => { throw new Error('fixture'); } });
- * ```
+ Captures asynchronous failure.
+ 
+ @param operation - Operation expected to reject.
+ 
+ @returns Rejection value.
+ 
+ @example
+ ```ts
+ await captureRejected({ operation: async () => { throw new Error('fixture'); } });
+ ```
  */
 async function captureRejected(
   { operation, }: { readonly operation: () => Promise<unknown>; },
@@ -203,7 +203,7 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Valid state path.
+         Valid state path.
          */
         const path = join(directory.path, 'valid.json',);
         await writeFile(
@@ -218,11 +218,11 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Missing path carrying diagnostic identity.
+         Missing path carrying diagnostic identity.
          */
         const path = join(directory.path, 'absent.json',);
         /**
-         * Missing-state rejection.
+         Missing-state rejection.
          */
         const error = await captureRejected({
           operation: async function readAbsentState(): Promise<unknown> {
@@ -238,7 +238,7 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Malformed state path.
+         Malformed state path.
          */
         const path = join(directory.path, 'malformed.json',);
         await writeFile(
@@ -246,7 +246,7 @@ await describe({
           '{',
         );
         /**
-         * Parse rejection carrying state error identity.
+         Parse rejection carrying state error identity.
          */
         const error = await captureRejected({
           operation: async function readMalformedState(): Promise<unknown> {
@@ -263,7 +263,7 @@ await describe({
         fn: async () => {
           await using directory = await makeTempDir();
           /**
-           * Invalid shape state path.
+           Invalid shape state path.
            */
           const path = join(directory.path, 'invalid.json',);
           await writeFile(
@@ -271,7 +271,7 @@ await describe({
             JSON.stringify(fixture.value,),
           );
           /**
-           * Shape validation rejection.
+           Shape validation rejection.
            */
           const error = await captureRejected({
             operation: async function readInvalidState(): Promise<unknown> {

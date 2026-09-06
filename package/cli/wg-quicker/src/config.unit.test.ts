@@ -189,7 +189,7 @@ await describe({
           name: 'parses a very large AllowedIPs value without quadratic slowdown',
           fn: async () => {
             /**
-             * Large comma-separated prefix list approximating a wg-allowedips expansion.
+             Large comma-separated prefix list approximating a wg-allowedips expansion.
              */
             const big = Array.from(
               { length: 4_000, },
@@ -203,7 +203,7 @@ await describe({
               text: ['[Interface]', 'PrivateKey = aaaaa', '[Peer]', `AllowedIPs = ${big}`,].join('\n',),
             },);
             /**
-             * Elapsed milliseconds for the parse.
+             Elapsed milliseconds for the parse.
              */
             const elapsed = performance.now() - start;
             expect(config.wgConfig,).toContain('AllowedIPs = ',);

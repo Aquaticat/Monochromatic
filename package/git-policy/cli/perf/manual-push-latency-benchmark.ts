@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Reproducible packed cli-git repository-scale manual-push benchmark.
- *
- * Run in documented Node container with `/fixture/cli.tgz`,
- * `/fixture/forbidden-strings`, and read-only `/source` mounts.
- * Container limits must be 2 GiB RAM, 2 CPUs, and a 1 GiB `/tmp` tmpfs.
- *
- * @module
+ Reproducible packed cli-git repository-scale manual-push benchmark.
+ 
+ Run in documented Node container with `/fixture/cli.tgz`,
+ `/fixture/forbidden-strings`, and read-only `/source` mounts.
+ Container limits must be 2 GiB RAM, 2 CPUs, and a 1 GiB `/tmp` tmpfs.
+ 
+ @module
  */
 
 import { execute } from './manual-push-latency-command.ts';
@@ -36,34 +36,34 @@ import {
 //region Benchmark execution -- Prepare fixture, stabilize measurements, record samples, and enforce ceiling.
 
 /**
- * Prepared source revisions for repeatable pair execution.
+ Prepared source revisions for repeatable pair execution.
  */
 const fixture = await prepareFixture();
 /**
- * Warm-up pair state accumulated until stability or maximum count.
+ Warm-up pair state accumulated until stability or maximum count.
  */
 const warmups = await collectWarmups({ baseOid: fixture.baseOid });
 if (!warmups.stable) {
   throw new BenchmarkError('Benchmark did not reach its warm-up stability threshold.');
 }
 /**
- * Recorded benchmark pairs after stable warm-up.
+ Recorded benchmark pairs after stable warm-up.
  */
 const samples = await collectSamples({ baseOid: fixture.baseOid });
 /**
- * Wrapper-added latency values extracted for threshold enforcement.
+ Wrapper-added latency values extracted for threshold enforcement.
  */
 const added = addedValues(samples);
 /**
- * Direct Git latency values used by summary statistics.
+ Direct Git latency values used by summary statistics.
  */
 const direct = directValues(samples);
 /**
- * Wrapper latency values used by summary statistics.
+ Wrapper latency values used by summary statistics.
  */
 const wrapped = wrapperValues(samples);
 /**
- * Largest observed wrapper-added latency.
+ Largest observed wrapper-added latency.
  */
 const maximumAddedMs = Math.max(...added);
 console.log(JSON.stringify(

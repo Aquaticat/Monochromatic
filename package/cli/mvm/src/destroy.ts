@@ -13,29 +13,29 @@ import {
 } from './virsh.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 /**
- * Destroys a single VM by force-stopping it, removing its libvirt definition,
- * and deleting all associated storage and metadata.
- *
- * @param name - VM name without the mvm- prefix
- *
- * @param rl - Tagged logger for status messages
- *
- * @throws Error when the VM cannot be undefined (e.g. does not exist)
- *
- * @example
- * ```ts
- * await destroyOne({ name: 'dev-01', rl: logger });
- * ```
+ Destroys a single VM by force-stopping it, removing its libvirt definition,
+ and deleting all associated storage and metadata.
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @param rl - Tagged logger for status messages
+ 
+ @throws Error when the VM cannot be undefined (e.g. does not exist)
+ 
+ @example
+ ```ts
+ await destroyOne({ name: 'dev-01', rl: logger });
+ ```
  */
 async function destroyOne(
   {
@@ -64,7 +64,7 @@ async function destroyOne(
   await undefineVm({ name, },);
 
   /**
-   * Per-VM directory holding storage and metadata; removed to complete destruction.
+   Per-VM directory holding storage and metadata; removed to complete destruction.
    */
   const vmDir = join(
     VMS_DIR,
@@ -82,22 +82,22 @@ async function destroyOne(
 }
 
 /**
- * Destroys a VM by force-stopping it, removing its libvirt definition,
- * and deleting all associated storage and metadata.
- *
- * @param name - VM name without the mvm- prefix
- *
- * @throws Error when the VM cannot be undefined (e.g. does not exist)
- *
- * @example
- * ```ts
- * await destroy({ name: 'dev-01' });
- * ```
+ Destroys a VM by force-stopping it, removing its libvirt definition,
+ and deleting all associated storage and metadata.
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @throws Error when the VM cannot be undefined (e.g. does not exist)
+ 
+ @example
+ ```ts
+ await destroy({ name: 'dev-01' });
+ ```
  */
 export async function destroy({ name, }: { readonly name: string; },): Promise<void> {
   validateName(name,);
   /**
-   * Tagged logger so destroy entries are scoped to {@link destroy} in the output.
+   Tagged logger so destroy entries are scoped to {@link destroy} in the output.
    */
   const rl = tagged({
     tag: destroy.name,
@@ -110,25 +110,25 @@ export async function destroy({ name, }: { readonly name: string; },): Promise<v
 }
 
 /**
- * Destroys all managed VMs.
- *
- * @throws Error when any VM cannot be destroyed
- *
- * @example
- * ```ts
- * await destroyAll();
- * ```
+ Destroys all managed VMs.
+ 
+ @throws Error when any VM cannot be destroyed
+ 
+ @example
+ ```ts
+ await destroyAll();
+ ```
  */
 export async function destroyAll(): Promise<void> {
   /**
-   * Tagged logger so bulk-destroy entries are scoped to {@link destroyAll} in the output.
+   Tagged logger so bulk-destroy entries are scoped to {@link destroyAll} in the output.
    */
   const rl = tagged({
     tag: destroyAll.name,
     l,
   },);
   /**
-   * Current set of managed VM names enumerated before any destruction runs.
+   Current set of managed VM names enumerated before any destruction runs.
    */
   const vms = await listVms();
 

@@ -1,10 +1,10 @@
 /**
- * Tests for `formatErrorDeep` and `formatFailure` from
- * `./format-error.ts`. Covers the dispatch-machinery stack-frame
- * filter (harness bundle plus the vendored chai / sinon assertion
- * stack) and the chain-walk branches (cause, cycle, non-Error throws).
- *
- * @module
+ Tests for `formatErrorDeep` and `formatFailure` from
+ `./format-error.ts`. Covers the dispatch-machinery stack-frame
+ filter (harness bundle plus the vendored chai / sinon assertion
+ stack) and the chain-walk branches (cause, cycle, non-Error throws).
+ 
+ @module
  */
 
 import {
@@ -16,27 +16,27 @@ import {
 } from '@monochromatic-dev/module-test';
 
 /**
- * Builds an Error whose `.stack` is exactly the lines passed in.
- * A synthetic header line (`Error: <message>`) is prepended so the
- * formatter's first-line-duplicate-skip branch fires as it does in
- * real V8 / JavaScriptCore stacks.
- *
- * @param message - human-readable message used for both the Error
- *   constructor and the synthetic header line
- *
- * @param frames - already-formatted frame lines such as
- *   `at fn (path/file.ts:9:19)`; rendered with the four-space
- *   indent V8 emits
- *
- * @returns Error with deterministic `.stack`
- *
- * @example
- * ```ts
- * const e = makeError({
- *   message: 'boom',
- *   frames: ['at userFn (package/foo/src/bar.ts:9:19)',],
- * });
- * ```
+ Builds an Error whose `.stack` is exactly the lines passed in.
+ A synthetic header line (`Error: <message>`) is prepended so the
+ formatter's first-line-duplicate-skip branch fires as it does in
+ real V8 / JavaScriptCore stacks.
+ 
+ @param message - human-readable message used for both the Error
+   constructor and the synthetic header line
+ 
+ @param frames - already-formatted frame lines such as
+   `at fn (path/file.ts:9:19)`; rendered with the four-space
+   indent V8 emits
+ 
+ @returns Error with deterministic `.stack`
+ 
+ @example
+ ```ts
+ const e = makeError({
+   message: 'boom',
+   frames: ['at userFn (package/foo/src/bar.ts:9:19)',],
+ });
+ ```
  */
 function makeError({
   message,
@@ -57,9 +57,9 @@ function makeError({
 }
 
 /**
- * Marker frame embedded in every fixture so each test can confirm
- * user code survives the filter while assertion-stack frames are
- * dropped.
+ Marker frame embedded in every fixture so each test can confirm
+ user code survives the filter while assertion-stack frames are
+ dropped.
  */
 const USER_FRAME = 'at userFn (package/foo/src/bar.ts:9:19)';
 
@@ -122,12 +122,12 @@ await describe({
       name: 'bare chai/ fragment does not match chai-as-promised paths',
       fn: async () => {
         /**
-         * Sanity check that the four fragments do not cross-match.
-         * A chai-as-promised frame that is not also matched by the
-         * `node_modules/chai-as-promised/` fragment would survive.
-         * Here both fragments would match; the assertion proves the
-         * specific substring `node_modules/chai/` (with literal slash
-         * after `chai`) is absent from chai-as-promised paths.
+         Sanity check that the four fragments do not cross-match.
+         A chai-as-promised frame that is not also matched by the
+         `node_modules/chai-as-promised/` fragment would survive.
+         Here both fragments would match; the assertion proves the
+         specific substring `node_modules/chai/` (with literal slash
+         after `chai`) is absent from chai-as-promised paths.
          */
         const path =
           'node_modules/.pnpm/chai-as-promised@8.0.2_chai@6.2.2/node_modules/chai-as-promised/lib/chai-as-promised.js:340:16';

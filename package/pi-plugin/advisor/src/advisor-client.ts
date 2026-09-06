@@ -1,7 +1,7 @@
 /**
- * Secondary model call client for Advisor.
- *
- * @module
+ Secondary model call client for Advisor.
+ 
+ @module
  */
 
 import {
@@ -33,12 +33,12 @@ import type {
 //region Constants
 
 /**
- * Reasoning levels Advisor may request, all strictly lower than `max`.
- *
- * @example
- * ```typescript
- * ADVISOR_REASONING_LEVELS_BELOW_MAX.has('xhigh'); // true
- * ```
+ Reasoning levels Advisor may request, all strictly lower than `max`.
+ 
+ @example
+ ```typescript
+ ADVISOR_REASONING_LEVELS_BELOW_MAX.has('xhigh'); // true
+ ```
  */
 const ADVISOR_REASONING_LEVELS_BELOW_MAX: ReadonlySet<ModelThinkingLevel> = new Set([
   'off',
@@ -54,54 +54,54 @@ const ADVISOR_REASONING_LEVELS_BELOW_MAX: ReadonlySet<ModelThinkingLevel> = new 
 //region Types
 
 /**
- * Options handed to Advisor model completion seams.
+ Options handed to Advisor model completion seams.
  */
 type CompleteAdvisorModelOptions = {
   /**
-   * Pi extension context that owns provider registrations.
+   Pi extension context that owns provider registrations.
    */
   readonly ctx: ForeignHostCapability<ExtensionContext>;
   /**
-   * Selected Advisor model.
+   Selected Advisor model.
    */
   readonly model: ForeignHostCapability<Model<Api>>;
   /**
-   * Provider context consumed by provider runtime.
+   Provider context consumed by provider runtime.
    */
   readonly context: ForeignHostCapability<Context>;
   /**
-   * Provider stream options consumed by provider runtime.
+   Provider stream options consumed by provider runtime.
    */
   readonly providerOptions?: ForeignHostCapability<SimpleStreamOptions>;
 };
 
 /**
- * Complete through selected model provider's registered simple-stream implementation.
- *
- * @param ctx - pi extension context that owns provider registrations
- *
- * @param model - selected Advisor model
- *
- * @param context - provider context
- *
- * @param providerOptions - provider stream options with resolved auth
- *
- * @returns final assistant message from registered provider implementation
- *
- * @mutates ctx - provider lookup can inspect model-registry host state
- *
- * @mutates model - provider stream implementations can inspect or retain selected model data
- *
- * @mutates context - provider stream implementations consume message context and reachable content
- *
- * @mutates providerOptions - provider stream implementations observe abort and auth capabilities
- *
- * @throws when selected model provider is not registered
- *
- * @example
- * ```typescript
- * const message = await defaultCompleteAdvisorModel({ ctx, model, context, providerOptions });
- * ```
+ Complete through selected model provider's registered simple-stream implementation.
+ 
+ @param ctx - pi extension context that owns provider registrations
+ 
+ @param model - selected Advisor model
+ 
+ @param context - provider context
+ 
+ @param providerOptions - provider stream options with resolved auth
+ 
+ @returns final assistant message from registered provider implementation
+ 
+ @mutates ctx - provider lookup can inspect model-registry host state
+ 
+ @mutates model - provider stream implementations can inspect or retain selected model data
+ 
+ @mutates context - provider stream implementations consume message context and reachable content
+ 
+ @mutates providerOptions - provider stream implementations observe abort and auth capabilities
+ 
+ @throws when selected model provider is not registered
+ 
+ @example
+ ```typescript
+ const message = await defaultCompleteAdvisorModel({ ctx, model, context, providerOptions });
+ ```
  */
 async function defaultCompleteAdvisorModel(
   {
@@ -112,7 +112,7 @@ async function defaultCompleteAdvisorModel(
   }: ForeignBorrowed<CompleteAdvisorModelOptions>,
 ): Promise<AssistantMessage> {
   /**
-   * Registered provider implementation for selected Advisor model.
+   Registered provider implementation for selected Advisor model.
    */
   const provider = ctx
     .modelRegistry
@@ -139,48 +139,48 @@ async function defaultCompleteAdvisorModel(
 }
 
 /**
- * Complete function used to call Advisor model.
+ Complete function used to call Advisor model.
  */
 export type CompleteAdvisorModel = typeof defaultCompleteAdvisorModel;
 
 /**
- * Options for invoking the selected Advisor model.
+ Options for invoking the selected Advisor model.
  */
 export type CompleteAdvisorOptions = ForeignHostCapability<{
   /**
-   * Pi extension context, used for auth lookup.
+   Pi extension context, used for auth lookup.
    */
   readonly ctx: ForeignHostCapability<ExtensionContext>;
   /**
-   * Selected Advisor model handed to provider runtime.
+   Selected Advisor model handed to provider runtime.
    */
   readonly model: ForeignHostCapability<AdvisorReadonlyModel>;
   /**
-   * Runtime Advisor config.
+   Runtime Advisor config.
    */
   readonly config: AdvisorConfig;
   /**
-   * Serialized Advisor context.
+   Serialized Advisor context.
    */
   readonly advisorContext: AdvisorContext;
   /**
-   * Loaded project-context files serialized for Advisor system prompt.
+   Loaded project-context files serialized for Advisor system prompt.
    */
   readonly projectContext?: string;
   /**
-   * Focused question supplied by the primary agent.
+   Focused question supplied by the primary agent.
    */
   readonly question?: string;
   /**
-   * Abort signal from tool or command mode.
+   Abort signal from tool or command mode.
    */
   readonly signal?: ForeignHostCapability<AbortSignal>;
   /**
-   * Advisor operation start time before context preparation.
+   Advisor operation start time before context preparation.
    */
   readonly operationStartedAtMs?: number;
   /**
-   * Override model completion implementation for focused tests.
+   Override model completion implementation for focused tests.
    */
   readonly completeModel?: CompleteAdvisorModel;
 }>;
@@ -190,32 +190,32 @@ export type CompleteAdvisorOptions = ForeignHostCapability<{
 //region Public API
 
 /**
- * Call the selected Advisor model with serialized conversation context and no tools.
- *
- * @param options - call inputs
- *
- * @returns final assistant message from the advisor model
- *
- * @mutates options - auth lookup can run command-backed configuration, provider callbacks consume supplied capabilities, and `AbortSignal.any` stores dependent-signal relations
- *
- * @throws when auth lookup or provider call fails
- *
- * @example
- * ```typescript
- * const message = await completeAdvisor({ ctx, model, config, advisorContext });
- * ```
+ Call the selected Advisor model with serialized conversation context and no tools.
+ 
+ @param options - call inputs
+ 
+ @returns final assistant message from the advisor model
+ 
+ @mutates options - auth lookup can run command-backed configuration, provider callbacks consume supplied capabilities, and `AbortSignal.any` stores dependent-signal relations
+ 
+ @throws when auth lookup or provider call fails
+ 
+ @example
+ ```typescript
+ const message = await completeAdvisor({ ctx, model, config, advisorContext });
+ ```
  */
 export async function completeAdvisor(
   options: ForeignHostCapability<CompleteAdvisorOptions>,
 ): Promise<AssistantMessage> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai accepts mutable Model while this boundary retains the selected model without changing it. */
   /**
-   * Mutable view of the advisor model for external pi-ai API calls.
+   Mutable view of the advisor model for external pi-ai API calls.
    */
   const mutableModel = options.model as ForeignHostCapability<Model<Api>>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /**
-   * Canonical selected model slug used in eligibility and attempt diagnostics.
+   Canonical selected model slug used in eligibility and attempt diagnostics.
    */
   const modelSlug = `${options.model
     .provider}/${options.model
@@ -228,7 +228,7 @@ export async function completeAdvisor(
       .maxAdvisorOutputTokens,
   },);
   /**
-   * Request auth resolved through pi's model registry.
+   Request auth resolved through pi's model registry.
    */
   const auth = await options
     .ctx
@@ -243,11 +243,11 @@ export async function completeAdvisor(
   }
 
   /**
-   * Model-supported reasoning levels ordered from least to most reasoning.
+   Model-supported reasoning levels ordered from least to most reasoning.
    */
   const supportedReasoningLevels = getSupportedThinkingLevels(mutableModel,);
   /**
-   * Supported levels strictly below `max`, including any provider default levels.
+   Supported levels strictly below `max`, including any provider default levels.
    */
   const allowedReasoningLevels = supportedReasoningLevels.filter(
     function isAllowedAdvisorReasoningLevel(
@@ -257,12 +257,12 @@ export async function completeAdvisor(
     },
   );
   /**
-   * Highest allowed reasoning level advertised by selected model.
+   Highest allowed reasoning level advertised by selected model.
    */
   const highestAllowedReasoningLevel = allowedReasoningLevels
     .at(-1,);
   /**
-   * Highest allowed reasoning effort supplied to simple provider API, or no effort for non-reasoning model.
+   Highest allowed reasoning effort supplied to simple provider API, or no effort for non-reasoning model.
    */
   const advisorReasoningLevel = highestAllowedReasoningLevel
     === 'off'
@@ -270,7 +270,7 @@ export async function completeAdvisor(
     : highestAllowedReasoningLevel;
 
   /**
-   * Secondary user message containing serialized evidence.
+   Secondary user message containing serialized evidence.
    */
   const userMessage: Message = {
     role: 'user',
@@ -286,22 +286,22 @@ export async function completeAdvisor(
   };
 
   /**
-   * Provider API key, when the selected model registry supplies one.
+   Provider API key, when the selected model registry supplies one.
    */
   const providerApiKey = auth.apiKey;
   /**
-   * Provider headers, when the selected model registry supplies them.
+   Provider headers, when the selected model registry supplies them.
    */
   const providerHeaders = auth.headers;
 
   /**
-   * Completion implementation for provider call.
+   Completion implementation for provider call.
    */
   const completeModel = options.completeModel
     ?? defaultCompleteAdvisorModel;
 
   /**
-   * Provider context shared by initial call and retry.
+   Provider context shared by initial call and retry.
    */
   const providerContext = {
     systemPrompt: buildAdvisorSystemPromptForProject({
@@ -311,7 +311,7 @@ export async function completeAdvisor(
     messages: [userMessage,],
   };
   /**
-   * Provider options independent of attempt deadline state.
+   Provider options independent of attempt deadline state.
    */
   const providerOptions: Omit<SimpleStreamOptions, 'signal' | 'timeoutMs'> = {
     maxTokens: options.config
@@ -335,13 +335,13 @@ export async function completeAdvisor(
     providerOptions,
     complete:
     /**
-     * Invoke selected provider with current attempt options.
-     *
-     * @param attempt - deadline-bound provider attempt
-     *
-     * @returns terminal provider response
-     *
-     * @mutates attempt - registered provider can consume or retain supplied host capabilities
+     Invoke selected provider with current attempt options.
+     
+     @param attempt - deadline-bound provider attempt
+     
+     @returns terminal provider response
+     
+     @mutates attempt - registered provider can consume or retain supplied host capabilities
      */
       async function completeAttempt(
       attempt: ForeignHostCapability<{
@@ -359,22 +359,22 @@ export async function completeAdvisor(
 }
 
 /**
- * Extract all text blocks from an advisor response.
- *
- * @param message - advisor assistant message
- *
- * @returns joined text content
- *
- * @example
- * ```typescript
- * const text = extractAdvisorText(message);
- * ```
+ Extract all text blocks from an advisor response.
+ 
+ @param message - advisor assistant message
+ 
+ @returns joined text content
+ 
+ @example
+ ```typescript
+ const text = extractAdvisorText(message);
+ ```
  */
 export function extractAdvisorText(
   message: ReadonlyDeep<AssistantMessage>,
 ): string {
   /**
-   * Text blocks collected from Advisor response.
+   Text blocks collected from Advisor response.
    */
   const textParts: string[] = [];
   for (const block of message.content) {
@@ -386,16 +386,16 @@ export function extractAdvisorText(
 }
 
 /**
- * Build Advisor-model system prompt from built-in and project-specific prompts.
- *
- * @param config - runtime Advisor config
- *
- * @returns final system prompt
- *
- * @example
- * ```typescript
- * const systemPrompt = buildAdvisorSystemPrompt(config);
- * ```
+ Build Advisor-model system prompt from built-in and project-specific prompts.
+ 
+ @param config - runtime Advisor config
+ 
+ @returns final system prompt
+ 
+ @example
+ ```typescript
+ const systemPrompt = buildAdvisorSystemPrompt(config);
+ ```
  */
 export function buildAdvisorSystemPrompt(
   config: AdvisorConfig,
@@ -409,21 +409,21 @@ export function buildAdvisorSystemPrompt(
 }
 
 /**
- * Add Pi-loaded project context to Advisor system prompt.
- *
- * Context files use JSON data grammar so file contents cannot terminate or
- * forge surrounding prompt sections through delimiter text.
- *
- * @param config - runtime Advisor config
- *
- * @param projectContext - serialized loaded context-file records
- *
- * @returns Advisor system prompt with active project instructions
- *
- * @example
- * ```typescript
- * buildAdvisorSystemPromptForProject({ config, projectContext });
- * ```
+ Add Pi-loaded project context to Advisor system prompt.
+ 
+ Context files use JSON data grammar so file contents cannot terminate or
+ forge surrounding prompt sections through delimiter text.
+ 
+ @param config - runtime Advisor config
+ 
+ @param projectContext - serialized loaded context-file records
+ 
+ @returns Advisor system prompt with active project instructions
+ 
+ @example
+ ```typescript
+ buildAdvisorSystemPromptForProject({ config, projectContext });
+ ```
  */
 export function buildAdvisorSystemPromptForProject(
   {
@@ -435,7 +435,7 @@ export function buildAdvisorSystemPromptForProject(
   },
 ): string {
   /**
-   * Built-in and explicitly configured Advisor instructions.
+   Built-in and explicitly configured Advisor instructions.
    */
   const basePrompt = buildAdvisorSystemPrompt(config,);
   if (projectContext === '')

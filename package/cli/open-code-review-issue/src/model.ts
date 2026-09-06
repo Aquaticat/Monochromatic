@@ -1,18 +1,18 @@
 /**
- * Normalized OCR finding and input contracts.
- *
- * @module
+ Normalized OCR finding and input contracts.
+ 
+ @module
  */
 
 //region Finding metadata
 
 /**
- * OCR finding categories accepted by the adapter.
- *
- * @example
- * ```ts
- * const category: FindingCategory = 'security';
- * ```
+ OCR finding categories accepted by the adapter.
+ 
+ @example
+ ```ts
+ const category: FindingCategory = 'security';
+ ```
  */
 export type FindingCategory =
   | 'bug'
@@ -25,22 +25,22 @@ export type FindingCategory =
   | 'other';
 
 /**
- * OCR finding severities accepted by the adapter.
- *
- * @example
- * ```ts
- * const severity: FindingSeverity = 'high';
- * ```
+ OCR finding severities accepted by the adapter.
+ 
+ @example
+ ```ts
+ const severity: FindingSeverity = 'high';
+ ```
  */
 export type FindingSeverity = 'critical' | 'high' | 'medium' | 'low';
 
 /**
- * Source position used for diagnostics without repeating finding content.
- *
- * @example
- * ```ts
- * const position: InputPosition = { kind: 'record', value: 1 };
- * ```
+ Source position used for diagnostics without repeating finding content.
+ 
+ @example
+ ```ts
+ const position: InputPosition = { kind: 'record', value: 1 };
+ ```
  */
 export type InputPosition = {
   readonly kind: 'record' | 'line';
@@ -48,22 +48,22 @@ export type InputPosition = {
 };
 
 /**
- * Validated finding independent of OCR's input envelope.
- *
- * @example
- * ```ts
- * const finding: NormalizedFinding = {
- *   position: { kind: 'record', value: 1 },
- *   path: 'src/example.ts',
- *   content: 'Boundary handling is incorrect.',
- *   existingCode: '',
- *   suggestionCode: '',
- *   startLine: 4,
- *   endLine: 4,
- *   category: 'bug',
- *   severity: 'high',
- * };
- * ```
+ Validated finding independent of OCR's input envelope.
+ 
+ @example
+ ```ts
+ const finding: NormalizedFinding = {
+   position: { kind: 'record', value: 1 },
+   path: 'src/example.ts',
+   content: 'Boundary handling is incorrect.',
+   existingCode: '',
+   suggestionCode: '',
+   startLine: 4,
+   endLine: 4,
+   category: 'bug',
+   severity: 'high',
+ };
+ ```
  */
 export type NormalizedFinding = {
   readonly position: InputPosition;
@@ -82,15 +82,15 @@ export type NormalizedFinding = {
 //region Input envelope
 
 /**
- * Recognized OCR envelope after atomic validation.
- *
- * @example
- * ```ts
- * const input: NormalizedInput = {
- *   inputKind: 'comments',
- *   findings: [],
- * };
- * ```
+ Recognized OCR envelope after atomic validation.
+ 
+ @example
+ ```ts
+ const input: NormalizedInput = {
+   inputKind: 'comments',
+   findings: [],
+ };
+ ```
  */
 export type NormalizedInput = {
   readonly inputKind: 'result' | 'comments' | 'jsonl';

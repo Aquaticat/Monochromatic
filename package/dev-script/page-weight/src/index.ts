@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 /**
- * `page-weight` CLI.
- *
- * Walks a dist directory of static HTML, computes per-page transfer size
- * (HTML plus every asset a browser would fetch to render it), and prints
- * min/max/mean/median summary statistics.
- *
- * Wire sizes prefer a `.zst` companion when one exists, matching the
- * precompressed variant served by file servers that speak zstd
- * content-encoding.
- *
- * @example
- * ```sh
- * node package/dev-script/page-weight/src/index.ts ./dist
- * ```
+ `page-weight` CLI.
+ 
+ Walks a dist directory of static HTML, computes per-page transfer size
+ (HTML plus every asset a browser would fetch to render it), and prints
+ min/max/mean/median summary statistics.
+ 
+ Wire sizes prefer a `.zst` companion when one exists, matching the
+ precompressed variant served by file servers that speak zstd
+ content-encoding.
+ 
+ @example
+ ```sh
+ node package/dev-script/page-weight/src/index.ts ./dist
+ ```
  */
 import { resolve, } from 'node:path';
 
@@ -27,10 +27,10 @@ import { summarize, } from './stats.ts';
 
 import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 
-export {};
+
 
 /**
- * Human-readable binary size units, ordered by magnitude.
+ Human-readable binary size units, ordered by magnitude.
  */
 const BYTE_UNITS = [
   'B',
@@ -40,60 +40,60 @@ const BYTE_UNITS = [
 ];
 
 /**
- * Exit code for missing or invalid arguments.
+ Exit code for missing or invalid arguments.
  */
 const EXIT_USAGE = 1;
 
 /**
- * Exit code for summary succeeded but some references did not resolve.
+ Exit code for summary succeeded but some references did not resolve.
  */
 const EXIT_MISSING_REFS = 2;
 
 /**
- * Result of scaling a raw byte count into a chosen unit; pairs the scaled
- * numeric value with the `BYTE_UNITS` index that names the unit.
+ Result of scaling a raw byte count into a chosen unit; pairs the scaled
+ numeric value with the `BYTE_UNITS` index that names the unit.
  */
 type Scaled = {
   /**
-   * Byte count divided down by `BYTES_PER_KIB` repeatedly until the unit fits.
+   Byte count divided down by `BYTES_PER_KIB` repeatedly until the unit fits.
    */
   value: number;
   /**
-   * Position in `BYTE_UNITS` reached by the scaling loop.
+   Position in `BYTE_UNITS` reached by the scaling loop.
    */
   unitIndex: number;
 };
 
 /**
- * Formats a byte count as a human-readable string using binary prefixes,
- * dividing by {@link BYTES_PER_KIB} repeatedly until the value fits a unit.
- *
- * Keeps output readable in a small terminal; precision is capped at 1 decimal
- * place to avoid noise when byte counts differ trivially between runs.
- *
- * @param bytes - byte count
- *
- * @returns formatted string (e.g. `"1.2 MiB"`)
- *
- * @example
- * ```ts
- * humanBytes(1536); // '1.5 KiB'
- * ```
+ Formats a byte count as a human-readable string using binary prefixes,
+ dividing by {@link BYTES_PER_KIB} repeatedly until the value fits a unit.
+ 
+ Keeps output readable in a small terminal; precision is capped at 1 decimal
+ place to avoid noise when byte counts differ trivially between runs.
+ 
+ @param bytes - byte count
+ 
+ @returns formatted string (e.g. `"1.2 MiB"`)
+ 
+ @example
+ ```ts
+ humanBytes(1536); // '1.5 KiB'
+ ```
  */
 function humanBytes(bytes: number,): string {
   /**
-   * Scaled byte count and the `BYTE_UNITS` index it lives in after dividing by `BYTES_PER_KIB` until the unit fits.
+   Scaled byte count and the `BYTE_UNITS` index it lives in after dividing by `BYTES_PER_KIB` until the unit fits.
    */
   const {
     value,
     unitIndex,
   } = (function scale(): Scaled {
     /**
-     * Working value mutated in-place by the scaling loop; renamed to avoid clashing with the destructured `value`.
+     Working value mutated in-place by the scaling loop; renamed to avoid clashing with the destructured `value`.
      */
     let scaledValue = bytes;
     /**
-     * Working position in `BYTE_UNITS`; renamed to avoid clashing with the destructured `unitIndex`.
+     Working position in `BYTE_UNITS`; renamed to avoid clashing with the destructured `unitIndex`.
      */
     let scaledIndex = 0;
     while ((scaledValue >= BYTES_PER_KIB) && (scaledIndex < (BYTE_UNITS.length
@@ -107,7 +107,7 @@ function humanBytes(bytes: number,): string {
     };
   })();
   /**
-   * Decimals shown in the formatted output; raw bytes are reported as integers.
+   Decimals shown in the formatted output; raw bytes are reported as integers.
    */
   const precision = unitIndex === 0 ? 0 : 1;
   return `${value.toFixed(precision,)} ${BYTE_UNITS[unitIndex]}`;
@@ -116,13 +116,13 @@ function humanBytes(bytes: number,): string {
 //region Main
 
 /**
- * Command-line arguments after `page-weight` or direct `node` execution.
+ Command-line arguments after `page-weight` or direct `node` execution.
  */
 const args = process.argv
   .slice(2,);
 
 /**
- * First positional argument: the dist directory to scan.
+ First positional argument: the dist directory to scan.
  */
 const [distArg,] = args;
 if (distArg === undefined) {
@@ -132,12 +132,12 @@ if (distArg === undefined) {
 }
 
 /**
- * Resolved absolute dist directory.
+ Resolved absolute dist directory.
  */
 const root = resolve(distArg,);
 
 /**
- * Discover every `.html` file inside the dist root.
+ Discover every `.html` file inside the dist root.
  */
 const found = await readdir(
   '**/*.html',
@@ -152,7 +152,7 @@ if (found.files
 }
 
 /**
- * Weighed-page results, computed via {@link weighPage} concurrently.
+ Weighed-page results, computed via {@link weighPage} concurrently.
  */
 const weights: PageWeight[] = await Promise.all(
   found.files
@@ -165,7 +165,7 @@ const weights: PageWeight[] = await Promise.all(
 );
 
 /**
- * Page rows sorted largest-first for readability.
+ Page rows sorted largest-first for readability.
  */
 const sorted = weights.toSorted(function byTotalDescending(
   a: PageWeight,
@@ -177,19 +177,19 @@ const sorted = weights.toSorted(function byTotalDescending(
 },);
 
 /**
- * Aggregate min/max/mean/median summary over page totals.
+ Aggregate min/max/mean/median summary over page totals.
  */
 const totals = weights.map(function pageTotal(entry: PageWeight,): number {
   return entry.totalBytes;
 },);
 /**
- * Summary statistics for the page-weight distribution, computed via
- * {@link summarize}.
+ Summary statistics for the page-weight distribution, computed via
+ {@link summarize}.
  */
 const stats = summarize(totals,);
 
 /**
- * Column width for the page path.
+ Column width for the page path.
  */
 const pageColumnWidth = Math.max(
   'page'.length,
@@ -199,7 +199,7 @@ const pageColumnWidth = Math.max(
   },),
 );
 /**
- * Column width for the bytes column.
+ Column width for the bytes column.
  */
 const bytesColumnWidth = Math.max(
   'bytes'.length,
@@ -209,7 +209,7 @@ const bytesColumnWidth = Math.max(
   },),
 );
 /**
- * Column width for the resource count.
+ Column width for the resource count.
  */
 const resourcesColumnWidth = Math.max(
   'assets'.length,
@@ -220,7 +220,7 @@ const resourcesColumnWidth = Math.max(
 );
 
 /**
- * Formatted header row.
+ Formatted header row.
  */
 const header = [
   'page'.padEnd(pageColumnWidth,),
@@ -231,7 +231,7 @@ const header = [
 console.log(header,);
 for (const entry of sorted) {
   /**
-   * Pre-padded report row joined for terminal-aligned columns.
+   Pre-padded report row joined for terminal-aligned columns.
    */
   const row = [
     entry.page
@@ -253,7 +253,7 @@ console.log(`mean:   ${humanBytes(stats.mean,)}`,);
 console.log(`median: ${humanBytes(stats.median,)}`,);
 
 /**
- * Unique references that could not be resolved to a file under the root.
+ Unique references that could not be resolved to a file under the root.
  */
 const missingAll = new Set<string>();
 for (const entry of weights) {

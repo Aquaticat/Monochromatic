@@ -1,5 +1,5 @@
 /**
- * Tests for terminal title engine entries and registry lookup.
+ Tests for terminal title engine entries and registry lookup.
  */
 
 import {
@@ -28,7 +28,7 @@ await describe({
       name: 'formats static entries by lifecycle tense',
       fn: async () => {
         /**
-         * Registry with one static no-input title entry.
+         Registry with one static no-input title entry.
          */
         const registry: ToolTitleRegistry = {
           TaskList: staticTitleEntry({ pre: 'Listing tasks', post: 'Listed tasks', },),
@@ -42,7 +42,7 @@ await describe({
       name: 'formats path entries with smart relative path',
       fn: async () => {
         /**
-         * Registry with one path title entry.
+         Registry with one path title entry.
          */
         const registry: ToolTitleRegistry = {
           Read: pathTitleEntry({
@@ -66,7 +66,7 @@ await describe({
       name: 'uses fallback when field entry has no string value',
       fn: async () => {
         /**
-         * Registry with one text title entry.
+         Registry with one text title entry.
          */
         const registry: ToolTitleRegistry = {
           Grep: textTitleEntry({
@@ -84,7 +84,7 @@ await describe({
       name: 'formats shell command entries with lifecycle verbs',
       fn: async () => {
         /**
-         * Registry with one shell command title entry.
+         Registry with one shell command title entry.
          */
         const registry: ToolTitleRegistry = {
           Bash: shellCommandTitleEntry({ field: 'command', },),
@@ -150,7 +150,7 @@ await describe({
       name: 'does not display-cap long titles',
       fn: async () => {
         /**
-         * Long body that used to exceed display-length caps.
+         Long body that used to exceed display-length caps.
          */
         const body = 'a'.repeat(200,);
         expect(buildTerminalTitle({ prefix: 'π', body, },),).toBe(`π ${body}`,);
@@ -166,7 +166,7 @@ await describe({
       name: 'formats and prefixes tool titles',
       fn: async () => {
         /**
-         * Registry with one path title entry.
+         Registry with one path title entry.
          */
         const registry: ToolTitleRegistry = {
           Read: pathTitleEntry({

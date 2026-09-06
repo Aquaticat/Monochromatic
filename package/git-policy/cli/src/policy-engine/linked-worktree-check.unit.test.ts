@@ -47,15 +47,15 @@ type TempDirectory = {
 };
 
 /**
- * Creates disposable temporary directory for worktree-shape fixtures.
- *
- * @returns Temporary directory that removes itself when disposed.
- *
- * @example
- * ```ts
- * await using tempDirectory = await createTempDirectory();
- * console.log(tempDirectory.path);
- * ```
+ Creates disposable temporary directory for worktree-shape fixtures.
+ 
+ @returns Temporary directory that removes itself when disposed.
+ 
+ @example
+ ```ts
+ await using tempDirectory = await createTempDirectory();
+ console.log(tempDirectory.path);
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /** Absolute temporary directory path for one test case. */
@@ -79,16 +79,16 @@ async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
- * Runs real git binary for fixture setup.
- *
- * @param options - Working directory and git argv.
- *
- * @returns Nothing after git command succeeds.
- *
- * @example
- * ```ts
- * await runRealGit({ cwd: '/repo', args: ['init', '--quiet'] });
- * ```
+ Runs real git binary for fixture setup.
+ 
+ @param options - Working directory and git argv.
+ 
+ @returns Nothing after git command succeeds.
+ 
+ @example
+ ```ts
+ await runRealGit({ cwd: '/repo', args: ['init', '--quiet'] });
+ ```
  */
 async function runRealGit(options: RunGitOptions,): Promise<void> {
   await nanoSpawn(
@@ -99,16 +99,16 @@ async function runRealGit(options: RunGitOptions,): Promise<void> {
 }
 
 /**
- * Initializes disposable real git repository.
- *
- * @param repoPath - Repository path to create and initialize.
- *
- * @returns Nothing after repository is initialized.
- *
- * @example
- * ```ts
- * await initializeRepository({ repoPath: '/tmp/repo' });
- * ```
+ Initializes disposable real git repository.
+ 
+ @param repoPath - Repository path to create and initialize.
+ 
+ @returns Nothing after repository is initialized.
+ 
+ @example
+ ```ts
+ await initializeRepository({ repoPath: '/tmp/repo' });
+ ```
  */
 async function initializeRepository({
   repoPath,
@@ -146,16 +146,16 @@ async function initializeRepository({
 }
 
 /**
- * Creates initial empty commit in repository.
- *
- * @param repoPath - Repository path to seed.
- *
- * @returns Nothing after initial commit exists.
- *
- * @example
- * ```ts
- * await createInitialCommit({ repoPath: '/tmp/repo' });
- * ```
+ Creates initial empty commit in repository.
+ 
+ @param repoPath - Repository path to seed.
+ 
+ @returns Nothing after initial commit exists.
+ 
+ @example
+ ```ts
+ await createInitialCommit({ repoPath: '/tmp/repo' });
+ ```
  */
 async function createInitialCommit({
   repoPath,
@@ -176,17 +176,17 @@ async function createInitialCommit({
 }
 
 /**
- * Captures asynchronous error from linked-worktree-only invocation.
- *
- * @param args - Git argv to pass through linked-worktree-only rule.
- *
- * @returns Error thrown by rule, or `undefined` when rule passes.
- *
- * @example
- * ```ts
- * const caught = await catchLinkedWorktreeOnlyError(['-C', '/tmp', 'stash']);
- * expect(caught).toBeInstanceOf(Error);
- * ```
+ Captures asynchronous error from linked-worktree-only invocation.
+ 
+ @param args - Git argv to pass through linked-worktree-only rule.
+ 
+ @returns Error thrown by rule, or `undefined` when rule passes.
+ 
+ @example
+ ```ts
+ const caught = await catchLinkedWorktreeOnlyError(['-C', '/tmp', 'stash']);
+ expect(caught).toBeInstanceOf(Error);
+ ```
  */
 async function catchLinkedWorktreeOnlyError(
   args: readonly string[],

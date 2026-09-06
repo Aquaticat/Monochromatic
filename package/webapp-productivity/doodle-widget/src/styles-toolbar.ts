@@ -1,10 +1,10 @@
 /**
- * Toolbar and button CSS rules for the doodle widget.
- *
- * Covers the top toolbar bar, a shared base rule for all interactive
- * controls (buttons, selects, toggle labels, color picker), and the
- * toolbar title. Control-specific overrides live in composed modules:
- * {@link renderToolbarControlStyles} and {@link renderToggleGroupStyles}.
+ Toolbar and button CSS rules for the doodle widget.
+ 
+ Covers the top toolbar bar, a shared base rule for all interactive
+ controls (buttons, selects, toggle labels, color picker), and the
+ toolbar title. Control-specific overrides live in composed modules:
+ {@link renderToolbarControlStyles} and {@link renderToggleGroupStyles}.
  */
 import {
   cssOklch,
@@ -29,23 +29,23 @@ import { renderToolbarControlStyles, } from './styles-toolbar-controls.ts';
 import { renderToggleGroupStyles, } from './styles-toolbar-toggle.ts';
 
 /**
- * Selector targeting all interactive controls in the toolbar.
- *
- * Buttons, selects, toggle-option labels, and the color picker
- * share the same base styling.
+ Selector targeting all interactive controls in the toolbar.
+ 
+ Buttons, selects, toggle-option labels, and the color picker
+ share the same base styling.
  */
 const CONTROL_SELECTOR =
   '.toolbar button, .toolbar select, .toggle-option, #color-picker';
 
 /**
- * Generates CSS rules for the toolbar, buttons, and composed sub-groups.
- *
- * @returns array of minified CSS rule strings
- *
- * @example
- * ```ts
- * const css = renderToolbarStyles().join('');
- * ```
+ Generates CSS rules for the toolbar, buttons, and composed sub-groups.
+ 
+ @returns array of minified CSS rule strings
+ 
+ @example
+ ```ts
+ const css = renderToolbarStyles().join('');
+ ```
  */
 export function renderToolbarStyles(): string[] {
   return [
@@ -76,7 +76,7 @@ export function renderToolbarStyles(): string[] {
     },),
 
     /**
-     * Base styling shared by all interactive toolbar controls
+     Base styling shared by all interactive toolbar controls
      */
     $({
       rule: CONTROL_SELECTOR,

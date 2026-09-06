@@ -1,30 +1,30 @@
 /**
- * Rule-specific oxlint diagnostic guidance configuration.
- *
- * This module owns the rule knowledge used by the generic output augmenter:
- * which diagnostics receive extra text.
- *
- * @module
+ Rule-specific oxlint diagnostic guidance configuration.
+ 
+ This module owns the rule knowledge used by the generic output augmenter:
+ which diagnostics receive extra text.
+ 
+ @module
  */
 
 //region Guidance types
 
 /**
- * Rule guidance plus optional generic diagnostic-header match conditions.
+ Rule guidance plus optional generic diagnostic-header match conditions.
  */
 export type RuleGuidance = {
   /**
-   * Guidance text appended to oxlint help output.
+   Guidance text appended to oxlint help output.
    */
   readonly guidance: string;
   /**
-   * Header fragments that must all appear before this guidance applies.
+   Header fragments that must all appear before this guidance applies.
    */
   readonly headerIncludes?: readonly string[];
 };
 
 /**
- * Sentinel returned when no configured guidance matches a diagnostic header.
+ Sentinel returned when no configured guidance matches a diagnostic header.
  */
 export const NO_DIAGNOSTIC_GUIDANCE: unique symbol = Symbol('diagnostic_guidance_absent',);
 
@@ -33,15 +33,15 @@ export const NO_DIAGNOSTIC_GUIDANCE: unique symbol = Symbol('diagnostic_guidance
 //region Rule guidance
 
 /**
- * Maps oxlint rule names to enhanced guidance text.
- *
- * @example
- * ```ts
- * RULE_GUIDANCE['no-misused-promises']?.guidance;
- * // 'Async callbacks silently drop ...'
- * ```
- *
- * @internal
+ Maps oxlint rule names to enhanced guidance text.
+ 
+ @example
+ ```ts
+ RULE_GUIDANCE['no-misused-promises']?.guidance;
+ // 'Async callbacks silently drop ...'
+ ```
+ 
+ @internal
  */
 export const RULE_GUIDANCE: Record<string, RuleGuidance> = {
   'no-misused-promises': {
@@ -103,25 +103,25 @@ export const RULE_GUIDANCE: Record<string, RuleGuidance> = {
 //region Guidance resolution
 
 /**
- * Resolves configured guidance for a parsed oxlint diagnostic header.
- *
- * Some rule guidance is guarded by a diagnostic header fragment so specialised
- * messages can target one diagnostic variant without affecting the rest of the rule.
- *
- * @param ruleName - rule parsed from the diagnostic header
- *
- * @param strippedHeaderLine - ANSI-stripped diagnostic header line
- *
- * @returns configured guidance, or {@link NO_DIAGNOSTIC_GUIDANCE} when none applies
- *
- * @example
- * ```ts
- * resolveDiagnosticGuidance({
- *   ruleName: 'no-misused-promises',
- *   strippedHeaderLine: 'x typescript-eslint(no-misused-promises): Promise-returning function.',
- * });
- * // 'Async callbacks silently drop ...'
- * ```
+ Resolves configured guidance for a parsed oxlint diagnostic header.
+ 
+ Some rule guidance is guarded by a diagnostic header fragment so specialised
+ messages can target one diagnostic variant without affecting the rest of the rule.
+ 
+ @param ruleName - rule parsed from the diagnostic header
+ 
+ @param strippedHeaderLine - ANSI-stripped diagnostic header line
+ 
+ @returns configured guidance, or {@link NO_DIAGNOSTIC_GUIDANCE} when none applies
+ 
+ @example
+ ```ts
+ resolveDiagnosticGuidance({
+   ruleName: 'no-misused-promises',
+   strippedHeaderLine: 'x typescript-eslint(no-misused-promises): Promise-returning function.',
+ });
+ // 'Async callbacks silently drop ...'
+ ```
  */
 export function resolveDiagnosticGuidance({
   ruleName,
@@ -131,7 +131,7 @@ export function resolveDiagnosticGuidance({
   readonly strippedHeaderLine: string;
 },): string | typeof NO_DIAGNOSTIC_GUIDANCE {
   /**
-   * Guidance entry, when this rule has configured advice.
+   Guidance entry, when this rule has configured advice.
    */
   const ruleGuidance = RULE_GUIDANCE[ruleName];
   if (ruleGuidance === undefined)

@@ -1,7 +1,7 @@
 /**
- * Unit tests for budget-model strategy selection.
- *
- * @module
+ Unit tests for budget-model strategy selection.
+ 
+ @module
  */
 
 import {
@@ -89,11 +89,11 @@ const allModelsWithSpeed = [
 const auth: BudgetModelAuth = { apiKey: 'test-key', };
 
 /**
- * Build authenticated slug callbacks for budget tests.
- *
- * @param authenticatedSlugs - slugs that should resolve auth
- *
- * @returns auth callbacks for shared budget selection
+ Build authenticated slug callbacks for budget tests.
+ 
+ @param authenticatedSlugs - slugs that should resolve auth
+ 
+ @returns auth callbacks for shared budget selection
  */
 function authCallbacks(
   authenticatedSlugs: readonly string[],

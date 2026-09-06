@@ -1,8 +1,8 @@
 /**
- * Unit tests for the backend registry: kind resolution, the pure platform
- * guard, and lazy selection. No network or filesystem.
- *
- * @module
+ Unit tests for the backend registry: kind resolution, the pure platform
+ guard, and lazy selection. No network or filesystem.
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '@monochromatic-dev/cli-mvm/ts/backend/registry.ts';
 
 /**
- * Sets an env var for the duration of a `using` scope, restoring it after.
+ Sets an env var for the duration of a `using` scope, restoring it after.
  */
 function withEnv(key: string, value?: string,): Disposable {
   const prior = process.env[key];
@@ -41,7 +41,7 @@ function withEnv(key: string, value?: string,): Disposable {
 }
 
 /**
- * Overrides `process.platform` for the duration of a `using` scope.
+ Overrides `process.platform` for the duration of a `using` scope.
  */
 function withPlatform(platform: string,): Disposable {
   const original = Object.getOwnPropertyDescriptor(process, 'platform',);

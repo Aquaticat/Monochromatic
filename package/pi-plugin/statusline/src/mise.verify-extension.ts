@@ -1,7 +1,7 @@
 /**
- * Verifies built pi-statusline extension registration and footer warning behavior.
- *
- * @module
+ Verifies built pi-statusline extension registration and footer warning behavior.
+ 
+ @module
  */
 
 import type { ExtensionFactory, } from '@earendil-works/pi-coding-agent';
@@ -15,27 +15,27 @@ import {
 //region Constants
 
 /**
- * Built extension path consumed by Pi.
+ Built extension path consumed by Pi.
  */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
 /**
- * Expected provider response registration from the extension entry point.
+ Expected provider response registration from the extension entry point.
  */
 const EXPECTED_REGISTRATION = 'event:after_provider_response';
 
 /**
- * Status key owned by built extension.
+ Status key owned by built extension.
  */
 const EXPECTED_STATUS_KEY = 'pi-statusline.usage';
 
 /**
- * Verification clock used for deterministic reset formatting.
+ Verification clock used for deterministic reset formatting.
  */
 const NOW_MS = Date.parse('2026-06-01T12:00:00Z',);
 
 /**
- * Milliseconds in forty seconds for projected-overflow fixture.
+ Milliseconds in forty seconds for projected-overflow fixture.
  */
 const FORTY_SECONDS_MS = 40_000;
 
@@ -44,21 +44,21 @@ const FORTY_SECONDS_MS = 40_000;
 //region Types
 
 /**
- * Built pi-statusline extension module shape.
+ Built pi-statusline extension module shape.
  */
 type StatuslineExtensionModule = {
   /**
-   * Pi extension factory.
+   Pi extension factory.
    */
   readonly default: ExtensionFactory;
 };
 
 /**
- * Date.now restore handle.
+ Date.now restore handle.
  */
 type DateNowRestore = {
   /**
-   * Restores original Date.now implementation.
+   Restores original Date.now implementation.
    */
   readonly [Symbol.dispose]: () => void;
 };
@@ -68,16 +68,16 @@ type DateNowRestore = {
 //region Helpers
 
 /**
- * Detects built pi-statusline extension module shape.
- *
- * @param value - imported module namespace
- *
- * @returns whether module exports extension factory
- *
- * @example
- * ```ts
- * isStatuslineExtensionModule(await import('../dist/final/node/index.mjs'));
- * ```
+ Detects built pi-statusline extension module shape.
+ 
+ @param value - imported module namespace
+ 
+ @returns whether module exports extension factory
+ 
+ @example
+ ```ts
+ isStatuslineExtensionModule(await import('../dist/final/node/index.mjs'));
+ ```
  */
 function isStatuslineExtensionModule(
   value: unknown,
@@ -88,20 +88,20 @@ function isStatuslineExtensionModule(
 }
 
 /**
- * Freezes Date.now for deterministic built-extension verification.
- *
- * @param nowMs - timestamp returned by Date.now
- *
- * @returns restore handle used by `using`
- *
- * @example
- * ```ts
- * using frozen = freezeDateNow(Date.now());
- * ```
+ Freezes Date.now for deterministic built-extension verification.
+ 
+ @param nowMs - timestamp returned by Date.now
+ 
+ @returns restore handle used by `using`
+ 
+ @example
+ ```ts
+ using frozen = freezeDateNow(Date.now());
+ ```
  */
 function freezeDateNow(nowMs: number,): DateNowRestore {
   /**
-   * Original Date.now implementation restored after verification.
+   Original Date.now implementation restored after verification.
    */
   const originalDateNow = Date.now;
   Date.now = function now(): number {
@@ -116,14 +116,14 @@ function freezeDateNow(nowMs: number,): DateNowRestore {
 }
 
 /**
- * Creates Anthropic token rate-limit headers for verification.
- *
- * @returns deterministic projected-overflow token header group
- *
- * @example
- * ```ts
- * const headers = verificationHeaders();
- * ```
+ Creates Anthropic token rate-limit headers for verification.
+ 
+ @returns deterministic projected-overflow token header group
+ 
+ @example
+ ```ts
+ const headers = verificationHeaders();
+ ```
  */
 function verificationHeaders(): Record<string, string> {
   return {
@@ -138,26 +138,26 @@ function verificationHeaders(): Record<string, string> {
 //region Verification
 
 /**
- * Verifies built {@link StatuslineExtensionModule} registers and renders usage warning status.
- *
- * @returns verification result text
- *
- * @throws when built extension import, registration, or handler output fails
- *
- * @example
- * ```ts
- * console.log(await verifyBuiltExtension());
- * ```
+ Verifies built {@link StatuslineExtensionModule} registers and renders usage warning status.
+ 
+ @returns verification result text
+ 
+ @throws when built extension import, registration, or handler output fails
+ 
+ @example
+ ```ts
+ console.log(await verifyBuiltExtension());
+ ```
  */
 async function verifyBuiltExtension(): Promise<string> {
   /**
-   * Date.now restore handle scoped to this verification run.
+   Date.now restore handle scoped to this verification run.
    */
   using frozenDateNow = freezeDateNow(NOW_MS,);
   void frozenDateNow;
 
   /**
-   * Built extension module imported through package output.
+   Built extension module imported through package output.
    */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isStatuslineExtensionModule(mod,)) {
@@ -167,7 +167,7 @@ async function verifyBuiltExtension(): Promise<string> {
   }
 
   /**
-   * Fake Pi API harness for registration verification.
+   Fake Pi API harness for registration verification.
    */
   const harness = fakePiApi();
   await mod.default(harness.api,);
@@ -180,13 +180,13 @@ async function verifyBuiltExtension(): Promise<string> {
   }
 
   /**
-   * Captured provider response handler from built extension.
+   Captured provider response handler from built extension.
    */
   const handler = getAfterProviderResponseHandler(
     harness.afterProviderResponseHandlers,
   );
   /**
-   * Fake context capturing footer status writes.
+   Fake context capturing footer status writes.
    */
   const {
     ctx,
@@ -199,7 +199,7 @@ async function verifyBuiltExtension(): Promise<string> {
   );
 
   /**
-   * Captured footer status text.
+   Captured footer status text.
    */
   const status = statuses.get(EXPECTED_STATUS_KEY,);
   if (status !== 'anthropic tokens <error>60% left →120%</error> (40s)') {

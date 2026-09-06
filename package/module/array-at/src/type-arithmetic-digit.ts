@@ -1,21 +1,21 @@
 /**
- * Bounded digit arithmetic used by array-index diagnostics.
- *
- * Every recursive walk is bounded by a safe integer's decimal representation.
- * Tuple construction is used only for one decimal digit at a time.
- *
- * @module
+ Bounded digit arithmetic used by array-index diagnostics.
+ 
+ Every recursive walk is bounded by a safe integer's decimal representation.
+ Tuple construction is used only for one decimal digit at a time.
+ 
+ @module
  */
 
 //region Decimal primitives
 
 /**
- * Decimal digit character.
- *
- * @example
- * ```ts
- * const digit: DigitCharacter = '7';
- * ```
+ Decimal digit character.
+ 
+ @example
+ ```ts
+ const digit: DigitCharacter = '7';
+ ```
  */
 export type DigitCharacter =
   | '0'
@@ -30,25 +30,25 @@ export type DigitCharacter =
   | '9';
 
 /**
- * Borrow state carried between subtraction columns.
- *
- * @example
- * ```ts
- * const borrow: Borrow = 1;
- * ```
+ Borrow state carried between subtraction columns.
+ 
+ @example
+ ```ts
+ const borrow: Borrow = 1;
+ ```
  */
 export type Borrow = 0 | 1;
 
 /**
- * Removes non-empty accumulator marker from bounded tuple counter.
- *
- * Marker prevents genuine zero-length sequence state from resembling fake
- * optionality to repository lint rules.
- *
- * @example
- * ```ts
- * type EmptySequence = DropAccumulatorMarker<readonly [unknown]>;
- * ```
+ Removes non-empty accumulator marker from bounded tuple counter.
+ 
+ Marker prevents genuine zero-length sequence state from resembling fake
+ optionality to repository lint rules.
+ 
+ @example
+ ```ts
+ type EmptySequence = DropAccumulatorMarker<readonly [unknown]>;
+ ```
  */
 type DropAccumulatorMarker<Accumulator extends readonly unknown[]> =
   Accumulator extends readonly [
@@ -59,15 +59,15 @@ type DropAccumulatorMarker<Accumulator extends readonly unknown[]> =
     : never;
 
 /**
- * Constructs tuple whose length represents one bounded decimal value.
- *
- * Callers use values from zero through ten, so recursion cannot approach
- * TypeScript's instantiation limit.
- *
- * @example
- * ```ts
- * type ThreeSlots = TupleOfLength<3>;
- * ```
+ Constructs tuple whose length represents one bounded decimal value.
+ 
+ Callers use values from zero through ten, so recursion cannot approach
+ TypeScript's instantiation limit.
+ 
+ @example
+ ```ts
+ type ThreeSlots = TupleOfLength<3>;
+ ```
  */
 export type TupleOfLength<
   Length extends number,
@@ -80,12 +80,12 @@ export type TupleOfLength<
   ]>;
 
 /**
- * Converts decimal character into numeric literal.
- *
- * @example
- * ```ts
- * type Seven = DigitValue<'7'>;
- * ```
+ Converts decimal character into numeric literal.
+ 
+ @example
+ ```ts
+ type Seven = DigitValue<'7'>;
+ ```
  */
 export type DigitValue<Character extends string> =
   Character extends `${infer Value extends number}`
@@ -93,14 +93,14 @@ export type DigitValue<Character extends string> =
     : never;
 
 /**
- * Splits bounded decimal text into character tuple.
- *
- * Safe integers have at most sixteen decimal digits, which bounds recursion.
- *
- * @example
- * ```ts
- * type Digits = DecimalCharacters<'407'>;
- * ```
+ Splits bounded decimal text into character tuple.
+ 
+ Safe integers have at most sixteen decimal digits, which bounds recursion.
+ 
+ @example
+ ```ts
+ type Digits = DecimalCharacters<'407'>;
+ ```
  */
 export type DecimalCharacters<
   Text extends string,
@@ -125,12 +125,12 @@ export type DecimalCharacters<
 //region Subtraction
 
 /**
- * Subtracts one decimal column and reports outgoing borrow.
- *
- * @example
- * ```ts
- * type Difference = SubtractDigit<2, 7, 0>;
- * ```
+ Subtracts one decimal column and reports outgoing borrow.
+ 
+ @example
+ ```ts
+ type Difference = SubtractDigit<2, 7, 0>;
+ ```
  */
 export type SubtractDigit<
   Top extends number,
@@ -160,18 +160,18 @@ export type SubtractDigit<
     : never;
 
 /**
- * Performs right-to-left long subtraction over bounded decimal digits.
- *
- * `never` means bottom value exceeds top value. Result retains leading zeros
- * for a later normalization step.
- *
- * @example
- * ```ts
- * type Difference = SubtractDigitSequences<
- *   readonly ['4', '0', '7'],
- *   readonly ['9'],
- * >;
- * ```
+ Performs right-to-left long subtraction over bounded decimal digits.
+ 
+ `never` means bottom value exceeds top value. Result retains leading zeros
+ for a later normalization step.
+ 
+ @example
+ ```ts
+ type Difference = SubtractDigitSequences<
+   readonly ['4', '0', '7'],
+   readonly ['9'],
+ >;
+ ```
  */
 export type SubtractDigitSequences<
   Top extends readonly string[],

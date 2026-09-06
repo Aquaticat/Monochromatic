@@ -1,10 +1,10 @@
 /**
- * Locate the entry block (key-value or table) a path names, for comment ops.
- *
- * Unlike {@link locateValueNode}, this returns the enclosing block so callers
- * can read its line span and attached comments.
- *
- * @module
+ Locate the entry block (key-value or table) a path names, for comment ops.
+ 
+ Unlike {@link locateValueNode}, this returns the enclosing block so callers
+ can read its line span and attached comments.
+ 
+ @module
  */
 
 import type {
@@ -20,7 +20,7 @@ import {
 import type { TomlPath, } from './types.ts';
 
 /**
- * A located entry block.
+ A located entry block.
  */
 export type LocatedBlock =
   | {
@@ -30,14 +30,14 @@ export type LocatedBlock =
   | TableSectionHit;
 
 /**
- * Locate the entry block named by `path`.
- *
- * @returns A {@link LocatedBlock}, or {@link NOT_LOCATED}.
- *
- * @example
- * ```ts
- * locateBlock({ blocks: edit.blocks, path: ['tools'], },);
- * ```
+ Locate the entry block named by `path`.
+ 
+ @returns A {@link LocatedBlock}, or {@link NOT_LOCATED}.
+ 
+ @example
+ ```ts
+ locateBlock({ blocks: edit.blocks, path: ['tools'], },);
+ ```
  */
 export function locateBlock(
   {
@@ -49,7 +49,7 @@ export function locateBlock(
   },
 ): LocatedBlock | typeof NOT_LOCATED {
   /**
-   * Exact key-value hit takes priority over any table scan.
+   Exact key-value hit takes priority over any table scan.
    */
   const kv = blocks.find(function isKv(b,): b is KeyValueNode {
     return (b.kind
@@ -65,7 +65,7 @@ export function locateBlock(
       kv,
     };
   /**
-   * Section scan shared with {@link locateValueNode}; descent stays block-shaped.
+   Section scan shared with {@link locateValueNode}; descent stays block-shaped.
    */
   const section = matchTableSection({
     blocks,

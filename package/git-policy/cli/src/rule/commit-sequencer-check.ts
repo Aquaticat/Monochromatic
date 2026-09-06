@@ -6,49 +6,49 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 /**
- * Logger root for cli-git after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for cli-git after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'cli-git', },);
 
 //region Sequencer-state check
 
 /**
- * Whether a merge, cherry-pick, or revert is awaiting its concluding commit.
- * `none` also covers query failures (missing repository), because callers then
- * fall back to normal enforcement and real git surfaces its own error.
+ Whether a merge, cherry-pick, or revert is awaiting its concluding commit.
+ `none` also covers query failures (missing repository), because callers then
+ fall back to normal enforcement and real git surfaces its own error.
  */
 export type SequencerState = 'in-progress' | 'none';
 
 /**
- * Options for asking whether a merge/cherry-pick/revert is in progress.
+ Options for asking whether a merge/cherry-pick/revert is in progress.
  */
 export type CheckSequencerInProgressOptions = {
   /**
-   * Pre-subcommand global git options (`-C <path>`, `--git-dir <path>`, ...)
-   * forwarded verbatim so the check inspects the same repository the commit
-   * will run in.
+   Pre-subcommand global git options (`-C <path>`, `--git-dir <path>`, ...)
+   forwarded verbatim so the check inspects the same repository the commit
+   will run in.
    */
   readonly preSubcommandArgs: readonly string[];
 };
 
 /**
- * Signature of the sequencer-state checker consumed by the commit-only rule;
- * tests substitute fakes through {@link makeCommitOnly}.
+ Signature of the sequencer-state checker consumed by the commit-only rule;
+ tests substitute fakes through {@link makeCommitOnly}.
  */
 export type CheckSequencerInProgress = (
   options: CheckSequencerInProgressOptions,
 ) => Promise<SequencerState>;
 
 /**
- * Git-dir files whose presence marks an operation awaiting a concluding
- * commit: a conflicted merge, cherry-pick, or revert. While any of them
- * exists, git forbids partial commits, so a pathless `git commit` is the
- * documented conclusion.
+ Git-dir files whose presence marks an operation awaiting a concluding
+ commit: a conflicted merge, cherry-pick, or revert. While any of them
+ exists, git forbids partial commits, so a pathless `git commit` is the
+ documented conclusion.
  */
 const SEQUENCER_HEAD_FILES: readonly string[] = [
   'MERGE_HEAD',
@@ -57,21 +57,21 @@ const SEQUENCER_HEAD_FILES: readonly string[] = [
 ];
 
 /**
- * Reports whether a path exists without throwing.
- *
- * @param path - Absolute filesystem path to probe.
- *
- * @returns `true` when path is accessible.
- *
- * @example
- * ```ts
- * await pathExists('/repo/.git/MERGE_HEAD');
- * // => true mid-merge
- * ```
+ Reports whether a path exists without throwing.
+ 
+ @param path - Absolute filesystem path to probe.
+ 
+ @returns `true` when path is accessible.
+ 
+ @example
+ ```ts
+ await pathExists('/repo/.git/MERGE_HEAD');
+ // => true mid-merge
+ ```
  */
 async function pathExists(path: string,): Promise<boolean> {
   /**
-   * Tagged logger for sequencer head existence checks.
+   Tagged logger for sequencer head existence checks.
    */
   const rl = tagged({
     tag: pathExists.name,
@@ -88,41 +88,41 @@ async function pathExists(path: string,): Promise<boolean> {
 }
 
 /**
- * Asks real git whether a merge, cherry-pick, or revert is awaiting its
- * concluding commit, by resolving the absolute git-dir paths of the
- * {@link SEQUENCER_HEAD_FILES} and probing each with {@link pathExists}.
- * Spawns the real git binary resolved by {@link resolveGit} so the check does
- * not re-enter the wrapper.
- *
- * @param preSubcommandArgs - Pre-subcommand global options forwarded to git.
- *
- * @returns `'in-progress'` when any sequencer head file exists, `'none'`
- *   otherwise or when {@link SubprocessError} reports git cannot answer.
- *
- * @example
- * ```ts
- * await sequencerInProgress({ preSubcommandArgs: ['-C', '/repo'] });
- * // => 'in-progress' while /repo has a conflicted merge
- * ```
+ Asks real git whether a merge, cherry-pick, or revert is awaiting its
+ concluding commit, by resolving the absolute git-dir paths of the
+ {@link SEQUENCER_HEAD_FILES} and probing each with {@link pathExists}.
+ Spawns the real git binary resolved by {@link resolveGit} so the check does
+ not re-enter the wrapper.
+ 
+ @param preSubcommandArgs - Pre-subcommand global options forwarded to git.
+ 
+ @returns `'in-progress'` when any sequencer head file exists, `'none'`
+   otherwise or when {@link SubprocessError} reports git cannot answer.
+ 
+ @example
+ ```ts
+ await sequencerInProgress({ preSubcommandArgs: ['-C', '/repo'] });
+ // => 'in-progress' while /repo has a conflicted merge
+ ```
  */
 export async function sequencerInProgress({
   preSubcommandArgs,
 }: CheckSequencerInProgressOptions,): Promise<SequencerState> {
   /**
-   * Tagged logger for the sequencer-state check.
+   Tagged logger for the sequencer-state check.
    */
   const rl = tagged({
     tag: sequencerInProgress.name,
     l,
   },);
   /**
-   * Absolute path to the real git binary.
+   Absolute path to the real git binary.
    */
   const gitPath = await resolveGit();
 
   try {
     /**
-     * Result whose stdout carries one absolute git-dir path per head file.
+     Result whose stdout carries one absolute git-dir path per head file.
      */
     const result = await nanoSpawn(
       gitPath,
@@ -139,7 +139,7 @@ export async function sequencerInProgress({
       ],
     );
     /**
-     * Absolute paths of the sequencer head files, one per output line.
+     Absolute paths of the sequencer head files, one per output line.
      */
     const headPaths = result.stdout
       .split('\n',)
@@ -147,7 +147,7 @@ export async function sequencerInProgress({
         return line !== '';
       },);
     /**
-     * Existence of each sequencer head file, probed concurrently.
+     Existence of each sequencer head file, probed concurrently.
      */
     const present = await Promise.all(
       headPaths.map(function probeHeadPath(headPath,) {

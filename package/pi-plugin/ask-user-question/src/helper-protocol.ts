@@ -1,7 +1,7 @@
 //region Protocol types
 
 /**
- * Completion sent by detached answer helper after editor process settles.
+ Completion sent by detached answer helper after editor process settles.
  */
 export type HelperCompletion =
   | {
@@ -20,20 +20,20 @@ export type HelperCompletion =
 //region Error
 
 /**
- * Reports malformed or unauthenticated helper protocol content.
- *
- * @example
- * ```ts
- * new HelperProtocolError('Helper token did not match.');
- * ```
+ Reports malformed or unauthenticated helper protocol content.
+ 
+ @example
+ ```ts
+ new HelperProtocolError('Helper token did not match.');
+ ```
  */
 export class HelperProtocolError extends Error {
   /**
-   * Creates a helper protocol diagnostic.
-   *
-   * @param message - protocol evidence that prevented completion
-   *
-   * @param options - optional source error
+   Creates a helper protocol diagnostic.
+   
+   @param message - protocol evidence that prevented completion
+   
+   @param options - optional source error
    */
   constructor(
     message: string,
@@ -52,16 +52,16 @@ export class HelperProtocolError extends Error {
 //region Serialization
 
 /**
- * Serializes one terminal helper completion frame.
- *
- * @param completion - helper completion value
- *
- * @returns one JSON frame without framing delimiter
- *
- * @example
- * ```ts
- * serializeHelperCompletion({ completion: { status: 'submitted' } });
- * ```
+ Serializes one terminal helper completion frame.
+ 
+ @param completion - helper completion value
+ 
+ @returns one JSON frame without framing delimiter
+ 
+ @example
+ ```ts
+ serializeHelperCompletion({ completion: { status: 'submitted' } });
+ ```
  */
 export function serializeHelperCompletion(
   { completion, }: { readonly completion: HelperCompletion; },
@@ -70,21 +70,21 @@ export function serializeHelperCompletion(
 }
 
 /**
- * Parses completion JSON received after authenticated helper handshake.
- *
- * Empty content means authenticated helper disappeared before submission,
- * which is cancellation rather than protocol failure.
- *
- * @param payload - completion-frame text after authentication line
- *
- * @returns validated helper completion
- *
- * @throws {@link HelperProtocolError} when frame is malformed
- *
- * @example
- * ```ts
- * parseHelperCompletion({ payload: '{"status":"cancelled"}' });
- * ```
+ Parses completion JSON received after authenticated helper handshake.
+ 
+ Empty content means authenticated helper disappeared before submission,
+ which is cancellation rather than protocol failure.
+ 
+ @param payload - completion-frame text after authentication line
+ 
+ @returns validated helper completion
+ 
+ @throws {@link HelperProtocolError} when frame is malformed
+ 
+ @example
+ ```ts
+ parseHelperCompletion({ payload: '{"status":"cancelled"}' });
+ ```
  */
 export function parseHelperCompletion(
   { payload, }: { readonly payload: string; },
@@ -92,13 +92,13 @@ export function parseHelperCompletion(
   if (payload.length === 0)
     return { status: 'cancelled', };
   /**
-   * Parsed JSON value before structural narrowing.
+   Parsed JSON value before structural narrowing.
    */
   const parsed: unknown = parseJson({ payload, },);
   if (!hasStatus(parsed,))
     throw new HelperProtocolError('Answer helper completion must be an object with a status.',);
   /**
-   * Status field copied after structural narrowing.
+   Status field copied after structural narrowing.
    */
   const { status, } = parsed;
   if (status === 'submitted')
@@ -110,7 +110,7 @@ export function parseHelperCompletion(
   if (!('message' in parsed))
     throw new HelperProtocolError('Answer helper error completion must include a nonempty message.',);
   /**
-   * Error message before string narrowing.
+   Error message before string narrowing.
    */
   const { message, } = parsed;
   if (((typeof message) !== 'string') || (message.length === 0))
@@ -122,11 +122,11 @@ export function parseHelperCompletion(
 }
 
 /**
- * Determines whether decoded value exposes completion status.
- *
- * @param value - decoded JSON candidate
- *
- * @returns whether status property is readable
+ Determines whether decoded value exposes completion status.
+ 
+ @param value - decoded JSON candidate
+ 
+ @returns whether status property is readable
  */
 function hasStatus(
   value: unknown,
@@ -139,13 +139,13 @@ function hasStatus(
 }
 
 /**
- * Parses JSON while retaining source failure as error cause.
- *
- * @param payload - raw completion payload
- *
- * @returns decoded JSON value
- *
- * @throws {@link HelperProtocolError} when payload is not JSON
+ Parses JSON while retaining source failure as error cause.
+ 
+ @param payload - raw completion payload
+ 
+ @returns decoded JSON value
+ 
+ @throws {@link HelperProtocolError} when payload is not JSON
  */
 function parseJson(
   { payload, }: { readonly payload: string; },

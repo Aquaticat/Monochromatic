@@ -1,7 +1,7 @@
 /**
- * Ambiguous GitHub Issue creation reconciliation.
- *
- * @module
+ Ambiguous GitHub Issue creation reconciliation.
+ 
+ @module
  */
 
 import type {
@@ -17,17 +17,17 @@ import {
 import type { CreatedIssue, } from './publisher-model.ts';
 
 /**
- * Successful GitHub read status.
+ Successful GitHub read status.
  */
 const HTTP_OK = 200;
 
 /**
- * Confirmed missing Issue status.
+ Confirmed missing Issue status.
  */
 const HTTP_NOT_FOUND = 404;
 
 /**
- * Reconciliation result proving match or absence.
+ Reconciliation result proving match or absence.
  */
 export type ReconciliationResult =
   | { readonly kind: 'none'; }
@@ -37,31 +37,31 @@ export type ReconciliationResult =
   };
 
 /**
- * Builds repository REST endpoint prefix.
- *
- * @param repository - Canonical destination identity.
- *
- * @returns REST owner/name prefix.
+ Builds repository REST endpoint prefix.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @returns REST owner/name prefix.
  */
 function repositoryEndpoint(repository: GitHubRepository,): string {
   return `repos/${repository.owner}/${repository.name}`;
 }
 
 /**
- * Reads greatest current shared Issue or pull-request number.
- *
- * @param repository - Canonical destination identity.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @returns Current high-water number or zero for empty repository.
- *
- * @throws {@link IssuePublicationError} when response is not valid list.
- *
- * @example
- * ```ts
- * await readHighWater({ repository, api });
- * ```
+ Reads greatest current shared Issue or pull-request number.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @returns Current high-water number or zero for empty repository.
+ 
+ @throws {@link IssuePublicationError} when response is not valid list.
+ 
+ @example
+ ```ts
+ await readHighWater({ repository, api });
+ ```
  */
 export async function readHighWater({
   repository,
@@ -71,7 +71,7 @@ export async function readHighWater({
   readonly api: GitHubApiClient;
 },): Promise<number> {
   /**
-   * Most-recent Issue list response.
+   Most-recent Issue list response.
    */
   const response = await api({
     method: 'GET',
@@ -83,7 +83,7 @@ export async function readHighWater({
     );
   }
   /**
-   * Narrowed untrusted list values.
+   Narrowed untrusted list values.
    */
   const items: readonly unknown[] = response.body;
   return items
@@ -109,19 +109,19 @@ export async function readHighWater({
 }
 
 /**
- * Reads one Issue or pull request and compares exact generated content.
- *
- * @param repository - Canonical destination identity.
- *
- * @param issue - Generated request being reconciled.
- *
- * @param number - Candidate shared Issue number.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @returns Matching created identity or no-match object.
- *
- * @throws {@link IssuePublicationError} when candidate read fails.
+ Reads one Issue or pull request and compares exact generated content.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param issue - Generated request being reconciled.
+ 
+ @param number - Candidate shared Issue number.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @returns Matching created identity or no-match object.
+ 
+ @throws {@link IssuePublicationError} when candidate read fails.
  */
 async function compareCandidate({
   repository,
@@ -135,7 +135,7 @@ async function compareCandidate({
   readonly api: GitHubApiClient;
 },): Promise<ReconciliationResult> {
   /**
-   * Candidate Issue-or-pull-request response.
+   Candidate Issue-or-pull-request response.
    */
   const response = await api({
     method: 'GET',
@@ -172,26 +172,26 @@ async function compareCandidate({
 }
 
 /**
- * Scans every number above pre-request high-water for exact request match.
- *
- * @param repository - Canonical destination identity.
- *
- * @param issue - Generated request being reconciled.
- *
- * @param highWater - Greatest number recorded before create request.
- *
- * @param api - Authenticated GitHub API client.
- *
- * @returns No match or one confirmed created Issue.
- *
- * @throws {@link AmbiguousReconciliationError} when multiple exact matches exist.
- *
- * @throws {@link IssuePublicationError} when any owning read fails.
- *
- * @example
- * ```ts
- * await reconcileCreate({ repository, issue, highWater: 0, api });
- * ```
+ Scans every number above pre-request high-water for exact request match.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param issue - Generated request being reconciled.
+ 
+ @param highWater - Greatest number recorded before create request.
+ 
+ @param api - Authenticated GitHub API client.
+ 
+ @returns No match or one confirmed created Issue.
+ 
+ @throws {@link AmbiguousReconciliationError} when multiple exact matches exist.
+ 
+ @throws {@link IssuePublicationError} when any owning read fails.
+ 
+ @example
+ ```ts
+ await reconcileCreate({ repository, issue, highWater: 0, api });
+ ```
  */
 export async function reconcileCreate({
   repository,
@@ -205,19 +205,19 @@ export async function reconcileCreate({
   readonly api: GitHubApiClient;
 },): Promise<ReconciliationResult> {
   /**
-   * Greatest number visible after ambiguous failure.
+   Greatest number visible after ambiguous failure.
    */
   const currentHighWater = await readHighWater({
     repository,
     api,
   });
   /**
-   * Exact matches accumulated for multiple-match terminal handling.
+   Exact matches accumulated for multiple-match terminal handling.
    */
   const matches: CreatedIssue[] = [];
   for (let number = highWater + 1; number <= currentHighWater; number += 1) {
     /**
-     * Exact-comparison result for current candidate number.
+     Exact-comparison result for current candidate number.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- every newer number must be checked in ascending order before deciding match count.
     const result = await compareCandidate({
@@ -235,7 +235,7 @@ export async function reconcileCreate({
   }
   if (matches.length === 1) {
     /**
-     * Sole confirmed exact match.
+     Sole confirmed exact match.
      */
     const [created,] = matches;
     if (created !== undefined) {

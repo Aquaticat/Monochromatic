@@ -33,34 +33,34 @@ import {
 } from './virsh.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 /**
- * Clones an existing VM by copying its disk and creating a new cloud-init seed.
- * The new instance-id in the seed ISO triggers cloud-init to re-run,
- * updating the hostname on the cloned disk. Preserves the source VM's
- * image identifier so the correct guest config is used for cloud-init.
- *
- * For Windows VMs, hostname is set via guest agent after boot instead of
- * cloud-init since Windows does not support the NoCloud datasource.
- *
- * @param destination - Destination VM name
- *
- * @param source - Source VM name to clone from
- *
- * @throws Error when source disk is missing or clone fails
- *
- * @example
- * ```ts
- * await clone({ destination: 'dev-02', source: 'dev-01' });
- * ```
+ Clones an existing VM by copying its disk and creating a new cloud-init seed.
+ The new instance-id in the seed ISO triggers cloud-init to re-run,
+ updating the hostname on the cloned disk. Preserves the source VM's
+ image identifier so the correct guest config is used for cloud-init.
+ 
+ For Windows VMs, hostname is set via guest agent after boot instead of
+ cloud-init since Windows does not support the NoCloud datasource.
+ 
+ @param destination - Destination VM name
+ 
+ @param source - Source VM name to clone from
+ 
+ @throws Error when source disk is missing or clone fails
+ 
+ @example
+ ```ts
+ await clone({ destination: 'dev-02', source: 'dev-01' });
+ ```
  */
 export async function clone(
   {
@@ -74,7 +74,7 @@ export async function clone(
   validateName(source,);
   validateName(destination,);
   /**
-   * Logger scoped to this clone call so step logs are namespaced.
+   Logger scoped to this clone call so step logs are namespaced.
    */
   const rl = tagged({
     tag: clone.name,
@@ -82,14 +82,14 @@ export async function clone(
   },);
 
   /**
-   * Source VM directory; holds the disk and metadata that get copied.
+   Source VM directory; holds the disk and metadata that get copied.
    */
   const srcVmDir = join(
     VMS_DIR,
     source,
   );
   /**
-   * Destination VM directory; created below before the qemu-img copy.
+   Destination VM directory; created below before the qemu-img copy.
    */
   const dstVmDir = join(
     VMS_DIR,
@@ -103,14 +103,14 @@ export async function clone(
   );
 
   /**
-   * Source qcow2 path; existence is checked next to detect a missing source VM.
+   Source qcow2 path; existence is checked next to detect a missing source VM.
    */
   const srcDiskPath = join(
     srcVmDir,
     'disk.qcow2',
   );
   /**
-   * Destination qcow2 path; `qemu-img convert` writes the cloned image here.
+   Destination qcow2 path; `qemu-img convert` writes the cloned image here.
    */
   const dstDiskPath = join(
     dstVmDir,
@@ -122,7 +122,7 @@ export async function clone(
   }
   catch (error) {
     /**
-     * Listing of {@link VMS_DIR} so the error message can surface known VM names to the user.
+     Listing of {@link VMS_DIR} so the error message can surface known VM names to the user.
      */
     const entries = await readdir(VMS_DIR,);
     throw new Error(
@@ -146,15 +146,15 @@ export async function clone(
   },);
 
   /**
-   * Source VM metadata; the image field is preserved so the clone inherits the same guest config.
+   Source VM metadata; the image field is preserved so the clone inherits the same guest config.
    */
   const meta = await readVmMeta(srcVmDir,);
   /**
-   * Resolved image record; either a registry spec or a fall-through for custom images.
+   Resolved image record; either a registry spec or a fall-through for custom images.
    */
   const resolved = await resolveImage(meta.image,);
   /**
-   * Guest config used for cloud-init seeding; defaults applied when the image isn't in the registry.
+   Guest config used for cloud-init seeding; defaults applied when the image isn't in the registry.
    */
   const guest = resolved.kind
     === 'registry'
@@ -162,7 +162,7 @@ export async function clone(
     : CUSTOM_GUEST_DEFAULTS;
 
   /**
-   * Shared directory exposed to the guest via virtiofs.
+   Shared directory exposed to the guest via virtiofs.
    */
   const sharedDir = join(
     dstVmDir,
@@ -174,7 +174,7 @@ export async function clone(
   );
 
   /**
-   * Generated NoCloud seed ISO with a new instance-id so cloud-init reruns on the clone; {@link NO_SEED_ISO} for Windows.
+   Generated NoCloud seed ISO with a new instance-id so cloud-init reruns on the clone; {@link NO_SEED_ISO} for Windows.
    */
   const seedIso = await createSeedIso({
     guest,
@@ -182,7 +182,7 @@ export async function clone(
     vmDir: dstVmDir,
   },);
   /**
-   * Libvirt domain XML for the clone; attaches the cloned disk, seed ISO, and shared dir.
+   Libvirt domain XML for the clone; attaches the cloned disk, seed ISO, and shared dir.
    */
   const xml = domainXml({
     diskPath: dstDiskPath,
@@ -204,7 +204,7 @@ export async function clone(
     === 'windows') {
     rl.info(`setting Windows hostname to ${destination}`,);
     /**
-     * Result of the `Rename-Computer` invocation; non-zero exit codes are logged but not fatal.
+     Result of the `Rename-Computer` invocation; non-zero exit codes are logged but not fatal.
      */
     const result = await exec({
       command: `Rename-Computer -NewName '${destination}' -Force`,

@@ -21,37 +21,37 @@ import {
 } from './index.ts';
 
 /**
- * Stable sample time used by rate-limit projection tests.
+ Stable sample time used by rate-limit projection tests.
  */
 const SAMPLED_AT_MS = Date.parse('2026-06-01T12:00:00Z',);
 
 /**
- * Milliseconds in one second for test fixtures.
+ Milliseconds in one second for test fixtures.
  */
 const SECOND_MS = 1_000;
 
 /**
- * Milliseconds in one minute for test fixtures.
+ Milliseconds in one minute for test fixtures.
  */
 const MINUTE_MS = 60 * SECOND_MS;
 
 /**
- * Milliseconds in one hour for test fixtures.
+ Milliseconds in one hour for test fixtures.
  */
 const HOUR_MS = 60 * MINUTE_MS;
 
 /**
- * Milliseconds in one day for test fixtures.
+ Milliseconds in one day for test fixtures.
  */
 const DAY_MS = 24 * HOUR_MS;
 
 /**
- * Five-hour test window in seconds.
+ Five-hour test window in seconds.
  */
 const FIVE_HOUR_WINDOW_SECONDS = 5 * 3_600;
 
 /**
- * Angle-bracket style used to verify selected severity.
+ Angle-bracket style used to verify selected severity.
  */
 const ANGLE_STYLE: RateLimitStyle = {
   green: function green(text,): string {
@@ -66,20 +66,20 @@ const ANGLE_STYLE: RateLimitStyle = {
 };
 
 /**
- * Builds a rate-limit snapshot for shared formatter tests.
- *
- * @param label - statusline label prefix
- *
- * @param usedPercent - current used capacity percentage
- *
- * @param resetOffsetMs - reset offset from {@link SAMPLED_AT_MS}
- *
- * @returns rate-limit snapshot fixture
- *
- * @example
- * ```ts
- * snapshot({ label: 'demo', usedPercent: 60, resetOffsetMs: HOUR_MS });
- * ```
+ Builds a rate-limit snapshot for shared formatter tests.
+ 
+ @param label - statusline label prefix
+ 
+ @param usedPercent - current used capacity percentage
+ 
+ @param resetOffsetMs - reset offset from {@link SAMPLED_AT_MS}
+ 
+ @returns rate-limit snapshot fixture
+ 
+ @example
+ ```ts
+ snapshot({ label: 'demo', usedPercent: 60, resetOffsetMs: HOUR_MS });
+ ```
  */
 function snapshot({
   label,
@@ -131,7 +131,7 @@ await describe({
           name: 'uses sampledAtMs rather than render time for projection',
           fn: async function testProjectionUsesSampleTime(): Promise<void> {
             /**
-             * Snapshot sampled one hour into a five-hour window.
+             Snapshot sampled one hour into a five-hour window.
              */
             const current = snapshot({
               label: 'demo',
@@ -181,7 +181,7 @@ await describe({
           name: 'computes remaining capacity and clamps overuse to zero',
           fn: async function testRemainingPercent(): Promise<void> {
             /**
-             * Snapshot whose provider reports credit above full capacity.
+             Snapshot whose provider reports credit above full capacity.
              */
             const overCredit = snapshot({
               label: 'over-credit',
@@ -189,7 +189,7 @@ await describe({
               resetOffsetMs: HOUR_MS,
             },);
             /**
-             * Snapshot with ordinary partial usage.
+             Snapshot with ordinary partial usage.
              */
             const partial = snapshot({
               label: 'partial',
@@ -197,7 +197,7 @@ await describe({
               resetOffsetMs: HOUR_MS,
             },);
             /**
-             * Snapshot whose provider reports usage past full capacity.
+             Snapshot whose provider reports usage past full capacity.
              */
             const overused = snapshot({
               label: 'overused',

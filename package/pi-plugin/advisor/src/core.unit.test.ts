@@ -1,7 +1,7 @@
 /**
- * Unit tests for Advisor-specific core helpers.
- *
- * @module
+ Unit tests for Advisor-specific core helpers.
+ 
+ @module
  */
 
 import {

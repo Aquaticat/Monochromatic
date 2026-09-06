@@ -13,110 +13,110 @@ import {
 } from './commit-only.ts';
 
 /**
- * Index checker stub reporting staged changes (index differs from HEAD).
- *
- * @returns `'differs'` always.
- *
- * @example
- * ```ts
- * await dirtyIndexChecker();
- * // => 'differs'
- * ```
+ Index checker stub reporting staged changes (index differs from HEAD).
+ 
+ @returns `'differs'` always.
+ 
+ @example
+ ```ts
+ await dirtyIndexChecker();
+ // => 'differs'
+ ```
  */
 async function dirtyIndexChecker(): Promise<IndexVsHeadState> {
   return 'differs';
 }
 
 /**
- * Index checker stub reporting an index matching HEAD.
- *
- * @returns `'matches'` always.
- *
- * @example
- * ```ts
- * await cleanIndexChecker();
- * // => 'matches'
- * ```
+ Index checker stub reporting an index matching HEAD.
+ 
+ @returns `'matches'` always.
+ 
+ @example
+ ```ts
+ await cleanIndexChecker();
+ // => 'matches'
+ ```
  */
 async function cleanIndexChecker(): Promise<IndexVsHeadState> {
   return 'matches';
 }
 
 /**
- * Index checker stub reporting git could not answer (e.g. unborn HEAD).
- *
- * @returns `'unknown'` always.
- *
- * @example
- * ```ts
- * await unknownIndexChecker();
- * // => 'unknown'
- * ```
+ Index checker stub reporting git could not answer (e.g. unborn HEAD).
+ 
+ @returns `'unknown'` always.
+ 
+ @example
+ ```ts
+ await unknownIndexChecker();
+ // => 'unknown'
+ ```
  */
 async function unknownIndexChecker(): Promise<IndexVsHeadState> {
   return 'unknown';
 }
 
 /**
- * Index checker stub that fails the test when consulted.
- *
- * @returns Never resolves.
- *
- * @throws Always, so argv shapes decided without repository state fail loudly when they consult the checker.
- *
- * @example
- * ```ts
- * await forbiddenIndexChecker();
- * // throws
- * ```
+ Index checker stub that fails the test when consulted.
+ 
+ @returns Never resolves.
+ 
+ @throws Always, so argv shapes decided without repository state fail loudly when they consult the checker.
+ 
+ @example
+ ```ts
+ await forbiddenIndexChecker();
+ // throws
+ ```
  */
 async function forbiddenIndexChecker(): Promise<IndexVsHeadState> {
   throw new Error('index checker must not be consulted for this argv',);
 }
 
 /**
- * Sequencer checker stub reporting a merge/cherry-pick/revert awaiting its
- * concluding commit.
- *
- * @returns `'in-progress'` always.
- *
- * @example
- * ```ts
- * await sequencerActiveChecker();
- * // => 'in-progress'
- * ```
+ Sequencer checker stub reporting a merge/cherry-pick/revert awaiting its
+ concluding commit.
+ 
+ @returns `'in-progress'` always.
+ 
+ @example
+ ```ts
+ await sequencerActiveChecker();
+ // => 'in-progress'
+ ```
  */
 async function sequencerActiveChecker(): Promise<SequencerState> {
   return 'in-progress';
 }
 
 /**
- * Sequencer checker stub reporting no merge/cherry-pick/revert in progress.
- *
- * @returns `'none'` always.
- *
- * @example
- * ```ts
- * await sequencerNoneChecker();
- * // => 'none'
- * ```
+ Sequencer checker stub reporting no merge/cherry-pick/revert in progress.
+ 
+ @returns `'none'` always.
+ 
+ @example
+ ```ts
+ await sequencerNoneChecker();
+ // => 'none'
+ ```
  */
 async function sequencerNoneChecker(): Promise<SequencerState> {
   return 'none';
 }
 
 /**
- * Sequencer checker stub that fails the test when consulted.
- *
- * @returns Never resolves.
- *
- * @throws Always, so argv shapes decided without repository state fail loudly when they consult the checker.
- *
- * @example
- * ```ts
- * await forbiddenSequencerChecker();
- * // throws
- * ```
+ Sequencer checker stub that fails the test when consulted.
+ 
+ @returns Never resolves.
+ 
+ @throws Always, so argv shapes decided without repository state fail loudly when they consult the checker.
+ 
+ @example
+ ```ts
+ await forbiddenSequencerChecker();
+ // throws
+ ```
  */
 async function forbiddenSequencerChecker(): Promise<SequencerState> {
   throw new Error('sequencer checker must not be consulted for this argv',);
@@ -497,20 +497,20 @@ const REJECTED_CASES: readonly {
 ];
 
 /**
- * Captures error from commit-only invocation.
- *
- * @param options - Rule variant and git argv to pass through it.
- *
- * @returns Error thrown by rule, or `undefined` when rule passes.
- *
- * @example
- * ```ts
- * const caught = await catchCommitOnlyError({
- *   rule: commitOnlyStateless,
- *   args: ['commit', '-m', 'message'],
- * });
- * expect(caught).toBeInstanceOf(Error);
- * ```
+ Captures error from commit-only invocation.
+ 
+ @param options - Rule variant and git argv to pass through it.
+ 
+ @returns Error thrown by rule, or `undefined` when rule passes.
+ 
+ @example
+ ```ts
+ const caught = await catchCommitOnlyError({
+   rule: commitOnlyStateless,
+   args: ['commit', '-m', 'message'],
+ });
+ expect(caught).toBeInstanceOf(Error);
+ ```
  */
 async function catchCommitOnlyError({
   rule,

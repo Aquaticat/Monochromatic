@@ -14,47 +14,47 @@ import {
 //region Lock owner constants and types
 
 /**
- * Metadata file written inside each acquired lock directory.
+ Metadata file written inside each acquired lock directory.
  */
 const LOCK_OWNER_FILE_NAME = 'owner.json';
 
 /**
- * Minimum valid operating-system process id.
+ Minimum valid operating-system process id.
  */
 const MINIMUM_PROCESS_ID = 1;
 
 /**
- * Signal number reserved by POSIX and Node for process-existence checks.
+ Signal number reserved by POSIX and Node for process-existence checks.
  */
 const PROCESS_EXISTS_SIGNAL = 0;
 
 /**
- * Sentinel for a missing pid record while checking stale writer liveness.
+ Sentinel for a missing pid record while checking stale writer liveness.
  */
 const ABSENT_MANIFEST_LOCK_OWNER: unique symbol = Symbol('file-enforcer/io/staleness-manifest-lock-owner: pid record missing while checking writer liveness',);
 
 /**
- * Metadata stored in lock owner file.
+ Metadata stored in lock owner file.
  */
 type ManifestLockOwner = Readonly<{
   /**
-   * Process id that acquired lock.
+   Process id that acquired lock.
    */
   readonly pid: number;
 
   /**
-   * ISO timestamp for diagnostics.
+   ISO timestamp for diagnostics.
    */
   readonly createdAt: string;
 }>;
 
 /**
- * Result of reading lock owner metadata.
+ Result of reading lock owner metadata.
  */
 type ManifestLockOwnerRead = ManifestLockOwner | typeof ABSENT_MANIFEST_LOCK_OWNER;
 
 /**
- * Liveness state inferred from lock owner metadata.
+ Liveness state inferred from lock owner metadata.
  */
 export type ManifestLockOwnerState = 'absent' | 'dead' | 'live';
 
@@ -63,16 +63,16 @@ export type ManifestLockOwnerState = 'absent' | 'dead' | 'live';
 //region Lock owner file helpers
 
 /**
- * Returns owner metadata file path for a lock directory.
- *
- * @param lockPath - Lock directory path.
- *
- * @returns Owner metadata path.
- *
- * @example
- * ```ts
- * const path = lockOwnerPath('/tmp/manifest.json.lock');
- * ```
+ Returns owner metadata file path for a lock directory.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @returns Owner metadata path.
+ 
+ @example
+ ```ts
+ const path = lockOwnerPath('/tmp/manifest.json.lock');
+ ```
  */
 function lockOwnerPath(lockPath: string,): string {
   return join(
@@ -82,16 +82,16 @@ function lockOwnerPath(lockPath: string,): string {
 }
 
 /**
- * Returns whether parsed JSON value is lock owner metadata.
- *
- * @param value - Parsed JSON value.
- *
- * @returns Whether value is owner metadata.
- *
- * @example
- * ```ts
- * const valid = isManifestLockOwner(value);
- * ```
+ Returns whether parsed JSON value is lock owner metadata.
+ 
+ @param value - Parsed JSON value.
+ 
+ @returns Whether value is owner metadata.
+ 
+ @example
+ ```ts
+ const valid = isManifestLockOwner(value);
+ ```
  */
 function isManifestLockOwner(value: unknown,): value is ManifestLockOwner {
   if ((typeof value) !== 'object')
@@ -101,7 +101,7 @@ function isManifestLockOwner(value: unknown,): value is ManifestLockOwner {
   if (Array.isArray(value,))
     return false;
   /**
-   * Potential owner fields from parsed JSON object.
+   Potential owner fields from parsed JSON object.
    */
   const {
     createdAt,
@@ -121,19 +121,19 @@ function isManifestLockOwner(value: unknown,): value is ManifestLockOwner {
 }
 
 /**
- * Writes owner metadata into newly acquired lock directory, at the path
- * returned by {@link lockOwnerPath}.
- *
- * @param lockPath - Lock directory path.
- *
- * @example
- * ```ts
- * await writeLockOwner('/tmp/manifest.json.lock');
- * ```
+ Writes owner metadata into newly acquired lock directory, at the path
+ returned by {@link lockOwnerPath}.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @example
+ ```ts
+ await writeLockOwner('/tmp/manifest.json.lock');
+ ```
  */
 export async function writeLockOwner(lockPath: string,): Promise<void> {
   /**
-   * Metadata describing current lock holder.
+   Metadata describing current lock holder.
    */
   const owner: ManifestLockOwner = {
     pid: process.pid,
@@ -151,26 +151,26 @@ export async function writeLockOwner(lockPath: string,): Promise<void> {
 }
 
 /**
- * Reads owner metadata from the {@link lockOwnerPath} file when present and
- * valid per {@link isManifestLockOwner}.
- *
- * @param lockPath - Lock directory path.
- *
- * @returns Owner metadata, or the {@link ABSENT_MANIFEST_LOCK_OWNER} sentinel when absent.
- *
- * @throws {@link StalenessManifestPersistenceError} When owner metadata exists
- * but cannot be parsed (message derived via {@link caughtErrorMessage}) or
- * validated; absence is distinguished via {@link caughtErrorHasCode}.
- *
- * @example
- * ```ts
- * const owner = await readLockOwner('/tmp/manifest.json.lock');
- * ```
+ Reads owner metadata from the {@link lockOwnerPath} file when present and
+ valid per {@link isManifestLockOwner}.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @returns Owner metadata, or the {@link ABSENT_MANIFEST_LOCK_OWNER} sentinel when absent.
+ 
+ @throws {@link StalenessManifestPersistenceError} When owner metadata exists
+ but cannot be parsed (message derived via {@link caughtErrorMessage}) or
+ validated; absence is distinguished via {@link caughtErrorHasCode}.
+ 
+ @example
+ ```ts
+ const owner = await readLockOwner('/tmp/manifest.json.lock');
+ ```
  */
 async function readLockOwner(lockPath: string,): Promise<ManifestLockOwnerRead> {
   try {
     /**
-     * Parsed owner metadata JSON.
+     Parsed owner metadata JSON.
      */
     const owner: unknown = JSON.parse(await readFile(
       lockOwnerPath(lockPath,),
@@ -205,17 +205,17 @@ async function readLockOwner(lockPath: string,): Promise<ManifestLockOwnerRead> 
 //region Process liveness helpers
 
 /**
- * Returns whether process id appears to identify a live process, treating
- * an `ESRCH` error (checked via {@link caughtErrorHasCode}) as dead.
- *
- * @param pid - Process id from lock owner metadata.
- *
- * @returns Whether process still appears alive or inaccessible.
- *
- * @example
- * ```ts
- * const alive = processAppearsAlive(process.pid);
- * ```
+ Returns whether process id appears to identify a live process, treating
+ an `ESRCH` error (checked via {@link caughtErrorHasCode}) as dead.
+ 
+ @param pid - Process id from lock owner metadata.
+ 
+ @returns Whether process still appears alive or inaccessible.
+ 
+ @example
+ ```ts
+ const alive = processAppearsAlive(process.pid);
+ ```
  */
 function processAppearsAlive(pid: number,): boolean {
   try {
@@ -242,22 +242,22 @@ function processAppearsAlive(pid: number,): boolean {
 }
 
 /**
- * Returns liveness state for lock owner metadata read via {@link readLockOwner}
- * (`'absent'` when the {@link ABSENT_MANIFEST_LOCK_OWNER} sentinel comes back),
- * checking the recorded pid with {@link processAppearsAlive}.
- *
- * @param lockPath - Lock directory path.
- *
- * @returns Whether owner metadata is absent, dead, or live.
- *
- * @example
- * ```ts
- * const state = await lockOwnerState('/tmp/manifest.json.lock');
- * ```
+ Returns liveness state for lock owner metadata read via {@link readLockOwner}
+ (`'absent'` when the {@link ABSENT_MANIFEST_LOCK_OWNER} sentinel comes back),
+ checking the recorded pid with {@link processAppearsAlive}.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @returns Whether owner metadata is absent, dead, or live.
+ 
+ @example
+ ```ts
+ const state = await lockOwnerState('/tmp/manifest.json.lock');
+ ```
  */
 export async function lockOwnerState(lockPath: string,): Promise<ManifestLockOwnerState> {
   /**
-   * Owner metadata read from lock directory.
+   Owner metadata read from lock directory.
    */
   const owner = await readLockOwner(lockPath,);
   if (owner === ABSENT_MANIFEST_LOCK_OWNER)

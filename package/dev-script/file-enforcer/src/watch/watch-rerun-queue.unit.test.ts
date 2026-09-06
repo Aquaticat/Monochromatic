@@ -11,7 +11,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Test logger that suppresses expected reporter-failure output.
+ Test logger that suppresses expected reporter-failure output.
  */
 const quietReporterLogger: WatchRerunReporterLogger = {
   error(message: string,): void {
@@ -26,19 +26,19 @@ await describe({
       name: 'serializes reruns queued while a rerun is active',
       fn: async function serializesQueuedReruns(): Promise<void> {
         /**
-         * Signal resolved when first rerun starts.
+         Signal resolved when first rerun starts.
          */
         const firstRerunStarted = Promise.withResolvers<void>();
         /**
-         * Signal that keeps first rerun active while second batch is queued.
+         Signal that keeps first rerun active while second batch is queued.
          */
         const releaseFirstRerun = Promise.withResolvers<void>();
         /**
-         * Rerun batch names in handler execution order.
+         Rerun batch names in handler execution order.
          */
         const runOrder: string[] = [];
         /**
-         * Current number of active rerun handlers.
+         Current number of active rerun handlers.
          */
         const activeRerunCount = new Map<'count', number>([
           [
@@ -47,7 +47,7 @@ await describe({
           ],
         ],);
         /**
-         * Highest active handler count observed during the test.
+         Highest active handler count observed during the test.
          */
         const maxActiveRerunCount = new Map<'count', number>([
           [
@@ -56,16 +56,16 @@ await describe({
           ],
         ],);
         /**
-         * Errors reported by queue error handling.
+         Errors reported by queue error handling.
          */
         const reportedErrors: unknown[] = [];
         /**
-         * Serial rerun queue under test.
+         Serial rerun queue under test.
          */
         const queue = createWatchRerunQueue({
           run: async function recordRerun(batch: WatchRerunBatch,): Promise<void> {
             /**
-             * Updated active handler count after this handler starts.
+             Updated active handler count after this handler starts.
              */
             const nextActiveCount = (activeRerunCount.get('count',) ?? 0) + 1;
             activeRerunCount.set(
@@ -80,7 +80,7 @@ await describe({
               ),
             );
             /**
-             * Name carried by this synthetic rerun batch.
+             Name carried by this synthetic rerun batch.
              */
             const [batchName,] = batch.paths;
             if (batchName === undefined)
@@ -102,7 +102,7 @@ await describe({
         },);
 
         /**
-         * Completion promise for first queued rerun.
+         Completion promise for first queued rerun.
          */
         const firstRerunFinished = queue.enqueue({
           paths: ['first',],
@@ -110,7 +110,7 @@ await describe({
         },);
         await firstRerunStarted.promise;
         /**
-         * Completion promise for second queued rerun.
+         Completion promise for second queued rerun.
          */
         const secondRerunFinished = queue.enqueue({
           paths: ['second',],
@@ -140,20 +140,20 @@ await describe({
       name: 'continues draining after rerun and reporter failures',
       fn: async function continuesAfterRerunAndReporterFailures(): Promise<void> {
         /**
-         * Rerun batch names in handler execution order.
+         Rerun batch names in handler execution order.
          */
         const runOrder: string[] = [];
         /**
-         * Errors received by configured error reporter.
+         Errors received by configured error reporter.
          */
         const reportedErrors: unknown[] = [];
         /**
-         * Queue under test with failing first rerun and failing reporter.
+         Queue under test with failing first rerun and failing reporter.
          */
         const queue = createWatchRerunQueue({
           run: async function runMaybeFailingBatch(batch: WatchRerunBatch,): Promise<void> {
             /**
-             * Name carried by this synthetic rerun batch.
+             Name carried by this synthetic rerun batch.
              */
             const [batchName,] = batch.paths;
             if (batchName === undefined)

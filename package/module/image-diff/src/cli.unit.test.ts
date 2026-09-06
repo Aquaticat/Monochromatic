@@ -13,16 +13,16 @@ const REPO_ROOT = await findMiseMonorepoRootCached();
 const BIN_PATH = 'package/module/image-diff/dist/final/node/cli.mjs';
 
 /**
- * Runs the built image-diff bin as a subprocess and returns stdout, stderr, and exit code.
- *
- * @param args - CLI arguments to pass after `image-diff`
- * @returns Stdout text, stderr text, and numeric exit code
- *
- * @example
- * ```ts
- * const result = await runImageDiff({ args: ['--help'] });
- * // result.exitCode === 0
- * ```
+ Runs the built image-diff bin as a subprocess and returns stdout, stderr, and exit code.
+ 
+ @param args - CLI arguments to pass after `image-diff`
+ @returns Stdout text, stderr text, and numeric exit code
+ 
+ @example
+ ```ts
+ const result = await runImageDiff({ args: ['--help'] });
+ // result.exitCode === 0
+ ```
  */
 async function runImageDiff({ args, }: { args: readonly string[]; },): Promise<{
   stdout: string;

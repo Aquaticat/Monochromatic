@@ -1,7 +1,7 @@
 /**
- * Client entry script for the Search page.
- *
- * Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
+ Client entry script for the Search page.
+ 
+ Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { SearchTask, } from '../lib/types.ts';
@@ -17,27 +17,27 @@ import './component/side-drawer.ts';
 import './component/search-bar.ts';
 
 /**
- * Shape of the JSON blob embedded in the search page by the server.
+ Shape of the JSON blob embedded in the search page by the server.
  */
 type SearchPageData = {
   /**
-   * User's search query string.
+   User's search query string.
    */
   query: string;
   /**
-   * Task results matching the query.
+   Task results matching the query.
    */
   results: SearchTask[];
   /**
-   * All known tags for the tag chip display.
+   All known tags for the tag chip display.
    */
   availableTags: string[];
 };
 
 /**
- * Navigates to the task detail page.
- *
- * @param taskId - ID of task to open
+ Navigates to the task detail page.
+ 
+ @param taskId - ID of task to open
  */
 function handleOpen(taskId: string,): void {
   globalThis.location
@@ -45,13 +45,13 @@ function handleOpen(taskId: string,): void {
 }
 
 /**
- * Navigates to the search results for the search-bar's query.
- *
- * @param event - `search` CustomEvent carrying the typed query
+ Navigates to the search results for the search-bar's query.
+ 
+ @param event - `search` CustomEvent carrying the typed query
  */
 function handleSearch(event: CustomEvent<{ query: string; }>,): void {
   /**
-   * Search-bar query text destructured for the URL builder below.
+   Search-bar query text destructured for the URL builder below.
    */
   const { query, } = event.detail;
   globalThis.location
@@ -62,9 +62,9 @@ function handleSearch(event: CustomEvent<{ query: string; }>,): void {
 }
 
 /**
- * Completes a task via {@link api}, then reloads to drop it from the results.
- *
- * @param taskId - ID of task to complete
+ Completes a task via {@link api}, then reloads to drop it from the results.
+ 
+ @param taskId - ID of task to complete
  */
 async function handleComplete(taskId: string,): Promise<void> {
   await api({
@@ -79,19 +79,19 @@ injectCSS(globalStyles,);
 injectCSS(searchStyles,);
 
 /**
- * Deserialized page data containing search query, results, and available tags.
+ Deserialized page data containing search query, results, and available tags.
  */
 const pageData = readPageData<SearchPageData>();
 
 /**
- * Raw DOM element for the `#app` container.
+ Raw DOM element for the `#app` container.
  */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
 /**
- * Validated `#app` container element.
+ Validated `#app` container element.
  */
 const app = appElement;
 
@@ -115,7 +115,7 @@ if (pageData.query
   );
 
   /**
-   * Tags surfaced as quick-pick chips when the user has not typed anything yet.
+   Tags surfaced as quick-pick chips when the user has not typed anything yet.
    */
   const { availableTags, } = pageData;
   if (availableTags.length
@@ -143,7 +143,7 @@ if (pageData.query
 }
 else {
   /**
-   * Container appended below; populated by iterating `pageData.results`.
+   Container appended below; populated by iterating `pageData.results`.
    */
   const resultList = h({
     tag: 'ul',

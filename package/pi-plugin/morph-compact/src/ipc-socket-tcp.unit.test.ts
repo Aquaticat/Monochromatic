@@ -1,8 +1,8 @@
 /**
- * Tests for TCP localhost IPC
- * ({@link createOneShotTcpServer}, {@link readFromTcpSocket}).
- *
- * @module
+ Tests for TCP localhost IPC
+ ({@link createOneShotTcpServer}, {@link readFromTcpSocket}).
+ 
+ @module
  */
 
 import {

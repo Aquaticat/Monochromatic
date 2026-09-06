@@ -1,12 +1,12 @@
 /**
- * Resolves the cheapest currently-offered Hetzner server type.
- *
- * Server-type slugs are deprecated over time (cx22 -> cx23, ...), so rather
- * than hardcode a default, pick the cheapest non-deprecated type offered in the
- * target locations at call time. Any architecture is eligible; callers that
- * boot from an architecture-specific image (a clone snapshot) constrain it.
- *
- * @module
+ Resolves the cheapest currently-offered Hetzner server type.
+ 
+ Server-type slugs are deprecated over time (cx22 -> cx23, ...), so rather
+ than hardcode a default, pick the cheapest non-deprecated type offered in the
+ target locations at call time. Any architecture is eligible; callers that
+ boot from an architecture-specific image (a clone snapshot) constrain it.
+ 
+ @module
  */
 
 import { listServerTypes, } from './api-resources.ts';
@@ -15,13 +15,13 @@ import type { HetznerServerType, } from './types.ts';
 //region Helpers
 
 /**
- * Sentinel hourly price meaning "not offered in the requested locations"; any
- * real price compares lower.
+ Sentinel hourly price meaning "not offered in the requested locations"; any
+ real price compares lower.
  */
 const NOT_OFFERED = Number.POSITIVE_INFINITY;
 
 /**
- * Observational server candidate paired with cheapest offered price.
+ Observational server candidate paired with cheapest offered price.
  */
 type PricedServerCandidate = {
   readonly name: string;
@@ -29,40 +29,40 @@ type PricedServerCandidate = {
 };
 
 /**
- * Whether a server type is current (not deprecated). Hetzner sends `null` for
- * current types and an object for deprecated ones.
- *
- * @param type - server type to inspect
- *
- * @returns whether the type is not deprecated
- *
- * @example
- * ```ts
- * isCurrent({ name: 'cx23', architecture: 'x86', deprecation: null, prices: [] }); // true
- * ```
+ Whether a server type is current (not deprecated). Hetzner sends `null` for
+ current types and an object for deprecated ones.
+ 
+ @param type - server type to inspect
+ 
+ @returns whether the type is not deprecated
+ 
+ @example
+ ```ts
+ isCurrent({ name: 'cx23', architecture: 'x86', deprecation: null, prices: [] }); // true
+ ```
  */
 function isCurrent(type: HetznerServerType,): boolean {
   /**
-   * Deprecation marker, typed `unknown` so the null/undefined check is legal.
+   Deprecation marker, typed `unknown` so the null/undefined check is legal.
    */
   const dep = type.deprecation;
   return (dep === undefined) || (dep === null);
 }
 
 /**
- * Lowest hourly price of a server type across the requested locations, or
- * {@link NOT_OFFERED} when it is offered in none of them.
- *
- * @param locations - location codes to consider
- *
- * @param type - server type whose prices are scanned
- *
- * @returns lowest hourly gross price, or {@link NOT_OFFERED}
- *
- * @example
- * ```ts
- * minHourlyPrice({ type, locations: ['fsn1', 'nbg1'] }); // 0.008
- * ```
+ Lowest hourly price of a server type across the requested locations, or
+ {@link NOT_OFFERED} when it is offered in none of them.
+ 
+ @param locations - location codes to consider
+ 
+ @param type - server type whose prices are scanned
+ 
+ @returns lowest hourly gross price, or {@link NOT_OFFERED}
+ 
+ @example
+ ```ts
+ minHourlyPrice({ type, locations: ['fsn1', 'nbg1'] }); // 0.008
+ ```
  */
 function minHourlyPrice(
   {
@@ -80,7 +80,7 @@ function minHourlyPrice(
       price,
     ) {
       /**
-       * This location's hourly price, only when the location is in scope.
+       This location's hourly price, only when the location is in scope.
        */
       const here = locations.includes(price.location,)
         ? Number(price.price_hourly
@@ -97,22 +97,22 @@ function minHourlyPrice(
 //region Resolution
 
 /**
- * Resolves the cheapest non-deprecated server type offered in the given
- * locations, optionally constrained to one CPU architecture.
- *
- * @param architecture - required CPU architecture (e.g. `arm`), or any when omitted
- *
- * @param locations - location codes the type must be offered in
- *
- * @returns cheapest matching server type slug
- *
- * @throws Error when no non-deprecated type matches in the given locations
- *
- * @example
- * ```ts
- * await resolveCheapestServerType({ locations: ['fsn1', 'nbg1', 'hel1'] }); // 'cx23'
- * await resolveCheapestServerType({ architecture: 'arm', locations: ['fsn1'] }); // 'cax11'
- * ```
+ Resolves the cheapest non-deprecated server type offered in the given
+ locations, optionally constrained to one CPU architecture.
+ 
+ @param architecture - required CPU architecture (e.g. `arm`), or any when omitted
+ 
+ @param locations - location codes the type must be offered in
+ 
+ @returns cheapest matching server type slug
+ 
+ @throws Error when no non-deprecated type matches in the given locations
+ 
+ @example
+ ```ts
+ await resolveCheapestServerType({ locations: ['fsn1', 'nbg1', 'hel1'] }); // 'cx23'
+ await resolveCheapestServerType({ architecture: 'arm', locations: ['fsn1'] }); // 'cax11'
+ ```
  */
 export async function resolveCheapestServerType(
   {
@@ -124,8 +124,8 @@ export async function resolveCheapestServerType(
   },
 ): Promise<string> {
   /**
-   * Non-deprecated, architecture-matching types paired with their cheapest
-   * in-location price, keeping only those offered in a requested location.
+   Non-deprecated, architecture-matching types paired with their cheapest
+   in-location price, keeping only those offered in a requested location.
    */
   const priced = (await listServerTypes())
     .filter(function current(type,) {
@@ -147,7 +147,7 @@ export async function resolveCheapestServerType(
       return candidate.price < NOT_OFFERED;
     },);
   /**
-   * Head and tail of the candidate list; head seeds the cheapest-wins reduce.
+   Head and tail of the candidate list; head seeds the cheapest-wins reduce.
    */
   const [first, ...others] = priced;
   if (first === undefined) {

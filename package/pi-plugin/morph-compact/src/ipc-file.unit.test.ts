@@ -1,7 +1,7 @@
 /**
- * Tests for file-based IPC ({@link writeCompactFile}, {@link readCompactFile}).
- *
- * @module
+ Tests for file-based IPC ({@link writeCompactFile}, {@link readCompactFile}).
+ 
+ @module
  */
 
 import {

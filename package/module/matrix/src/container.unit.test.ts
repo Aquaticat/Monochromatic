@@ -1,7 +1,7 @@
 /**
- * Tests for OS specification parsing and container command building.
- *
- * @module
+ Tests for OS specification parsing and container command building.
+ 
+ @module
  */
 
 import {

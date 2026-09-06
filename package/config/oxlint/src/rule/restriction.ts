@@ -1,19 +1,19 @@
 /**
- * Restriction rule configuration.
- *
- * Rules that ban specific language features, enforce coding conventions,
- * and prevent patterns that conflict with the project's style decisions.
- *
- * @example
- * ```typescript
- * import { restrictionRules } from './rule/restriction.ts';
- * ```
+ Restriction rule configuration.
+ 
+ Rules that ban specific language features, enforce coding conventions,
+ and prevent patterns that conflict with the project's style decisions.
+ 
+ @example
+ ```typescript
+ import { restrictionRules } from './rule/restriction.ts';
+ ```
  */
 
 import type { DummyRuleMap, } from 'oxlint';
 
 /**
- * Restriction rules.
+ Restriction rules.
  */
 export const restrictionRules: DummyRuleMap = {
   'eslint/no-iterator': 'error',

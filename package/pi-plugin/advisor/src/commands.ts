@@ -1,7 +1,7 @@
 /**
- * Slash command registration for Advisor.
- *
- * @module
+ Slash command registration for Advisor.
+ 
+ @module
  */
 
 import type {
@@ -21,44 +21,44 @@ import type { AdvisorConfig, } from './types.ts';
 //region Types
 
 /**
- * Session-scoped Advisor toggle controlled by `/advisor on` and `/advisor off`.
- *
- * Exposes a readonly handle pair (`getEnabled` / `setEnabled`) backed by a
- * closure-private boolean so parameter types stay readonly while the toggle
- * mutation remains intentional and centralised in {@link createAdvisorSessionState}.
+ Session-scoped Advisor toggle controlled by `/advisor on` and `/advisor off`.
+ 
+ Exposes a readonly handle pair (`getEnabled` / `setEnabled`) backed by a
+ closure-private boolean so parameter types stay readonly while the toggle
+ mutation remains intentional and centralised in {@link createAdvisorSessionState}.
  */
 export type AdvisorSessionState = {
   /**
-   * Read current session-enable flag.
+   Read current session-enable flag.
    */
   readonly getEnabled: () => boolean;
   /**
-   * Update session-enable flag.
+   Update session-enable flag.
    */
   readonly setEnabled: (enabled: boolean) => void;
 };
 
 /**
- * Build an {@link AdvisorSessionState} handle around a private mutable flag.
- *
- * @param initialEnabled - starting toggle value
- *
- * @returns session-state handle with readonly getter and setter
- *
- * @example
- * ```typescript
- * const state = createAdvisorSessionState(true);
- * ```
+ Build an {@link AdvisorSessionState} handle around a private mutable flag.
+ 
+ @param initialEnabled - starting toggle value
+ 
+ @returns session-state handle with readonly getter and setter
+ 
+ @example
+ ```typescript
+ const state = createAdvisorSessionState(true);
+ ```
  */
 export function createAdvisorSessionState(
   initialEnabled: boolean,
 ): AdvisorSessionState {
   /**
-   * Closure-private session-enable flag.
+   Closure-private session-enable flag.
    */
   let enabled = initialEnabled;
   /**
-   * Handle exposing getter and setter over the closure-private flag.
+   Handle exposing getter and setter over the closure-private flag.
    */
   const state: AdvisorSessionState = {
     getEnabled: function getEnabled() {
@@ -72,19 +72,19 @@ export function createAdvisorSessionState(
 }
 
 /**
- * Options for command registration.
+ Options for command registration.
  */
 export type RegisterAdvisorCommandsOptions = {
   /**
-   * Pi extension API.
+   Pi extension API.
    */
   readonly pi: ForeignHostCapability<ExtensionAPI>;
   /**
-   * Runtime config accessor.
+   Runtime config accessor.
    */
   readonly getConfig: () => AdvisorConfig;
   /**
-   * Session enablement state.
+   Session enablement state.
    */
   readonly state: AdvisorSessionState;
 };
@@ -94,16 +94,16 @@ export type RegisterAdvisorCommandsOptions = {
 //region Public API
 
 /**
- * Register `/advisor` command and subcommands.
- *
- * @param options - pi API and runtime state
- *
- * @mutates options - `options.pi.registerCommand` stores command registration in Pi host state
- *
- * @example
- * ```typescript
- * registerAdvisorCommands({ pi, getConfig, state });
- * ```
+ Register `/advisor` command and subcommands.
+ 
+ @param options - pi API and runtime state
+ 
+ @mutates options - `options.pi.registerCommand` stores command registration in Pi host state
+ 
+ @example
+ ```typescript
+ registerAdvisorCommands({ pi, getConfig, state });
+ ```
  */
 export function registerAdvisorCommands(
   options: ForeignHostCapability<RegisterAdvisorCommandsOptions>,
@@ -115,9 +115,9 @@ export function registerAdvisorCommands(
       description:
         'Run Advisor, inspect scoped models, or toggle Advisor for this session',
       /**
-       * Execute Advisor slash command through Pi host context.
-       *
-       * @mutates ctx - command handling can update Pi notifications and session state
+       Execute Advisor slash command through Pi host context.
+       
+       @mutates ctx - command handling can update Pi notifications and session state
        */
       async handler(
         args,
@@ -136,18 +136,18 @@ export function registerAdvisorCommands(
 }
 
 /**
- * Synchronize active tools with Advisor session state.
- *
- * @param pi - pi extension API
- *
- * @param enabled - whether Advisor should be active
- *
- * @mutates pi - `pi.setActiveTools` changes active Pi host tools when Advisor state differs
- *
- * @example
- * ```typescript
- * syncAdvisorActiveTool({ pi, enabled: false });
- * ```
+ Synchronize active tools with Advisor session state.
+ 
+ @param pi - pi extension API
+ 
+ @param enabled - whether Advisor should be active
+ 
+ @mutates pi - `pi.setActiveTools` changes active Pi host tools when Advisor state differs
+ 
+ @example
+ ```typescript
+ syncAdvisorActiveTool({ pi, enabled: false });
+ ```
  */
 export function syncAdvisorActiveTool(
   {
@@ -159,11 +159,11 @@ export function syncAdvisorActiveTool(
   },
 ): void {
   /**
-   * Current active tool names.
+   Current active tool names.
    */
   const activeTools = pi.getActiveTools();
   /**
-   * Whether Advisor is active.
+   Whether Advisor is active.
    */
   const alreadyActive = containsToolName({
     toolNames: activeTools,
@@ -178,7 +178,7 @@ export function syncAdvisorActiveTool(
   }
   if ((!enabled) && alreadyActive) {
     /**
-     * Active tools excluding Advisor.
+     Active tools excluding Advisor.
      */
     const retainedTools: string[] = [];
     for (const toolName of activeTools) {
@@ -194,43 +194,43 @@ export function syncAdvisorActiveTool(
 //region Handler
 
 /**
- * Options for the command handler.
+ Options for the command handler.
  */
 type HandleAdvisorCommandOptions = {
   /**
-   * Raw command args.
+   Raw command args.
    */
   readonly args: string;
   /**
-   * Command context.
+   Command context.
    */
   readonly ctx: ForeignHostCapability<ExtensionCommandContext>;
   /**
-   * Pi extension API.
+   Pi extension API.
    */
   readonly pi: ForeignHostCapability<ExtensionAPI>;
   /**
-   * Runtime config accessor.
+   Runtime config accessor.
    */
   readonly getConfig: () => AdvisorConfig;
   /**
-   * Mutable session state.
+   Mutable session state.
    */
   readonly state: AdvisorSessionState;
 };
 
 /**
- * Handle one `/advisor` invocation.
- *
- * @param options - command handler inputs
- *
- * @mutates options - changes session toggle and invokes Pi active-tool and notification capabilities
+ Handle one `/advisor` invocation.
+ 
+ @param options - command handler inputs
+ 
+ @mutates options - changes session toggle and invokes Pi active-tool and notification capabilities
  */
 async function handleAdvisorCommand(
   options: ForeignHostCapability<HandleAdvisorCommandOptions>,
 ): Promise<void> {
   /**
-   * Trimmed command args.
+   Trimmed command args.
    */
   const trimmed = options.args
     .trim();
@@ -296,11 +296,11 @@ async function handleAdvisorCommand(
 }
 
 /**
- * Run immediate manual Advisor review and append a custom message.
- *
- * @mutates ctx - prompt-option access and `ctx.ui.notify` can update Pi host state
- *
- * @mutates pi - `sendAdvisorMessage` calls `pi.sendMessage` to append Advisor output
+ Run immediate manual Advisor review and append a custom message.
+ 
+ @mutates ctx - prompt-option access and `ctx.ui.notify` can update Pi host state
+ 
+ @mutates pi - `sendAdvisorMessage` calls `pi.sendMessage` to append Advisor output
  */
 async function runImmediateAdvisor(
   {
@@ -318,17 +318,17 @@ async function runImmediateAdvisor(
   await ctx.waitForIdle();
   try {
     /**
-     * Current prompt options read after pending agent work settles.
+     Current prompt options read after pending agent work settles.
      */
     const promptOptions = ctx.getSystemPromptOptions();
     /**
-     * Current Pi-loaded project context from authoritative prompt options.
+     Current Pi-loaded project context from authoritative prompt options.
      */
     const projectContext = serializeAdvisorProjectContext(
       promptOptions.contextFiles ?? [],
     );
     /**
-     * Manual Advisor review result.
+     Manual Advisor review result.
      */
     const result = await runAdvisor({
       ctx,

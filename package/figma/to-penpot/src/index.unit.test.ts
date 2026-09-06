@@ -24,12 +24,12 @@ import {
 type FigmaFile = FigmaFileType;
 
 /**
- * Directory holding the maintainer's personal Figma export fixtures.
- *
- * These integration tests read real `.fig`/`.deck`/`.jam` exports that are
- * not checked into the repo; they only run on a machine where the files are
- * present at this path under the home directory. `homedir()` keeps the path
- * independent of the `/home` vs `/var/home` mount.
+ Directory holding the maintainer's personal Figma export fixtures.
+ 
+ These integration tests read real `.fig`/`.deck`/`.jam` exports that are
+ not checked into the repo; they only run on a machine where the files are
+ present at this path under the home directory. `homedir()` keeps the path
+ independent of the `/home` vs `/var/home` mount.
  */
 const FIGMA_EXPORT_DIR = join(
   homedir(),

@@ -1,12 +1,12 @@
 /**
- * Tests for repository and workspace root discovery.
- *
- * Runs from inside this monorepo checkout. Real-checkout tests assert the three
- * finders converge on one directory rather than pinning its name, so they pass
- * in worktrees whose directory is not named after the repository. Temp fixture
- * tests verify marker semantics without depending on this checkout layout.
- *
- * @module
+ Tests for repository and workspace root discovery.
+ 
+ Runs from inside this monorepo checkout. Real-checkout tests assert the three
+ finders converge on one directory rather than pinning its name, so they pass
+ in worktrees whose directory is not named after the repository. Temp fixture
+ tests verify marker semantics without depending on this checkout layout.
+ 
+ @module
  */
 
 import {
@@ -53,18 +53,18 @@ type RootFixture = {
 };
 
 /**
- * Creates a temporary root fixture with nested child directory.
- *
- * @param prefix - temporary directory prefix passed to `mkdtemp`
- *
- * @param parent - optional logical parent preserving caller path spelling
- *
- * @returns disposable fixture paths
- *
- * @example
- * ```ts
- * await using fixture = await createRootFixture({ prefix: 'fs-path-' });
- * ```
+ Creates a temporary root fixture with nested child directory.
+ 
+ @param prefix - temporary directory prefix passed to `mkdtemp`
+ 
+ @param parent - optional logical parent preserving caller path spelling
+ 
+ @returns disposable fixture paths
+ 
+ @example
+ ```ts
+ await using fixture = await createRootFixture({ prefix: 'fs-path-' });
+ ```
  */
 async function createRootFixture({
   prefix,
@@ -105,14 +105,14 @@ async function createRootFixture({
 }
 
 /**
- * Creates a mise monorepo root fixture.
- *
- * @returns disposable mise monorepo fixture
- *
- * @example
- * ```ts
- * await using fixture = await createMiseMonorepoFixture();
- * ```
+ Creates a mise monorepo root fixture.
+ 
+ @returns disposable mise monorepo fixture
+ 
+ @example
+ ```ts
+ await using fixture = await createMiseMonorepoFixture();
+ ```
  */
 async function createMiseMonorepoFixture(): Promise<RootFixture> {
   /** Fixture root that receives monorepo `mise.toml`. */
@@ -128,14 +128,14 @@ async function createMiseMonorepoFixture(): Promise<RootFixture> {
 }
 
 /**
- * Creates a mise config fixture without monorepo marker.
- *
- * @returns disposable non-monorepo mise fixture
- *
- * @example
- * ```ts
- * await using fixture = await createNonMonorepoMiseFixture();
- * ```
+ Creates a mise config fixture without monorepo marker.
+ 
+ @returns disposable non-monorepo mise fixture
+ 
+ @example
+ ```ts
+ await using fixture = await createNonMonorepoMiseFixture();
+ ```
  */
 async function createNonMonorepoMiseFixture(): Promise<RootFixture> {
   /** Fixture root that receives non-monorepo `mise.toml`. */
@@ -151,14 +151,14 @@ async function createNonMonorepoMiseFixture(): Promise<RootFixture> {
 }
 
 /**
- * Creates minimum valid Git administrative directory structure.
- *
- * @param gitDirectory - administrative directory path
- *
- * @example
- * ```ts
- * await createValidGitDirectory({ gitDirectory: '/repo/.git' });
- * ```
+ Creates minimum valid Git administrative directory structure.
+ 
+ @param gitDirectory - administrative directory path
+ 
+ @example
+ ```ts
+ await createValidGitDirectory({ gitDirectory: '/repo/.git' });
+ ```
  */
 async function createValidGitDirectory({
   gitDirectory,
@@ -191,18 +191,18 @@ async function createValidGitDirectory({
 }
 
 /**
- * Creates a Git root fixture with directory or gitfile marker.
- *
- * @param markerKind - marker shape to create at fixture root
- *
- * @returns disposable Git root fixture
- *
- * @throws when marker kind is unsupported
- *
- * @example
- * ```ts
- * await using fixture = await createGitFixture({ markerKind: 'directory' });
- * ```
+ Creates a Git root fixture with directory or gitfile marker.
+ 
+ @param markerKind - marker shape to create at fixture root
+ 
+ @returns disposable Git root fixture
+ 
+ @throws when marker kind is unsupported
+ 
+ @example
+ ```ts
+ await using fixture = await createGitFixture({ markerKind: 'directory' });
+ ```
  */
 async function createGitFixture({
   markerKind,
@@ -238,14 +238,14 @@ async function createGitFixture({
 }
 
 /**
- * Creates linked-worktree-style gitfile with separate common directory.
- *
- * @returns disposable linked-worktree fixture
- *
- * @example
- * ```ts
- * await using fixture = await createLinkedGitFixture();
- * ```
+ Creates linked-worktree-style gitfile with separate common directory.
+ 
+ @returns disposable linked-worktree fixture
+ 
+ @example
+ ```ts
+ await using fixture = await createLinkedGitFixture();
+ ```
  */
 async function createLinkedGitFixture(): Promise<RootFixture> {
   /** Fixture root that receives linked-worktree gitfile. */
@@ -289,14 +289,14 @@ async function createLinkedGitFixture(): Promise<RootFixture> {
 }
 
 /**
- * Creates a pnpm workspace root fixture.
- *
- * @returns disposable pnpm workspace fixture
- *
- * @example
- * ```ts
- * await using fixture = await createPnpmWorkspaceFixture();
- * ```
+ Creates a pnpm workspace root fixture.
+ 
+ @returns disposable pnpm workspace fixture
+ 
+ @example
+ ```ts
+ await using fixture = await createPnpmWorkspaceFixture();
+ ```
  */
 async function createPnpmWorkspaceFixture(): Promise<RootFixture> {
   /** Fixture root that receives `pnpm-workspace.yaml`. */
@@ -312,16 +312,16 @@ async function createPnpmWorkspaceFixture(): Promise<RootFixture> {
 }
 
 /**
- * Creates a fixture with no root markers.
- *
- * @param prefix - temporary directory prefix passed to `mkdtemp`
- *
- * @returns disposable markerless fixture
- *
- * @example
- * ```ts
- * await using fixture = await createMarkerlessFixture({ prefix: 'missing-' });
- * ```
+ Creates a fixture with no root markers.
+ 
+ @param prefix - temporary directory prefix passed to `mkdtemp`
+ 
+ @returns disposable markerless fixture
+ 
+ @example
+ ```ts
+ await using fixture = await createMarkerlessFixture({ prefix: 'missing-' });
+ ```
  */
 function createMarkerlessFixture({
   prefix,

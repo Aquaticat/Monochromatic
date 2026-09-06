@@ -1,9 +1,9 @@
 /**
- * Unit tests for the Hetzner API client against a stubbed `fetch`: request
- * construction (bearer auth, label selector, body fields, DELETE path),
- * label-scoped exact lookup, and the action-poll state machine. No real calls.
- *
- * @module
+ Unit tests for the Hetzner API client against a stubbed `fetch`: request
+ construction (bearer auth, label selector, body fields, DELETE path),
+ label-scoped exact lookup, and the action-poll state machine. No real calls.
+ 
+ @module
  */
 
 import {
@@ -23,7 +23,7 @@ import {
 } from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/api-resources.ts';
 
 /**
- * One recorded fetch invocation.
+ One recorded fetch invocation.
  */
 type Call = {
   readonly url: string;
@@ -33,12 +33,12 @@ type Call = {
 };
 
 /**
- * Fetch stub recorder: replaceable global fetch plus the recorded calls.
+ Fetch stub recorder: replaceable global fetch plus the recorded calls.
  */
 type FetchMock = Disposable & { readonly calls: readonly Call[] };
 
 /**
- * Sets HCLOUD_TOKEN for a `using` scope so requireToken passes, restoring after.
+ Sets HCLOUD_TOKEN for a `using` scope so requireToken passes, restoring after.
  */
 function withToken(): Disposable {
   const prior = process.env.HCLOUD_TOKEN;
@@ -56,14 +56,14 @@ function withToken(): Disposable {
 }
 
 /**
- * Builds a JSON Response for the stub.
+ Builds a JSON Response for the stub.
  */
 function jsonResponse(body: unknown, status = 200,): Response {
   return Response.json(body, { status, },);
 }
 
 /**
- * Replaces global fetch with a handler, recording calls; restores on dispose.
+ Replaces global fetch with a handler, recording calls; restores on dispose.
  */
 function installFetch(handler: (call: Call,) => Response,): FetchMock {
   const calls: Call[] = [];
@@ -88,7 +88,7 @@ function installFetch(handler: (call: Call,) => Response,): FetchMock {
 }
 
 /**
- * Returns the first recorded call, throwing when none was made.
+ Returns the first recorded call, throwing when none was made.
  */
 function firstCall(mock: FetchMock,): Call {
   const [call] = mock.calls;
@@ -99,7 +99,7 @@ function firstCall(mock: FetchMock,): Call {
 }
 
 /**
- * Representative server payload.
+ Representative server payload.
  */
 const SERVER = {
   id: 1,

@@ -1,10 +1,10 @@
 /**
- * Tests for `tomlDelete` and its splice-mode behaviour.
- *
- * The trailing-inline-comment absorption case is the most likely shipping
- * bug; it is gated here.
- *
- * @module
+ Tests for `tomlDelete` and its splice-mode behaviour.
+ 
+ The trailing-inline-comment absorption case is the most likely shipping
+ bug; it is gated here.
+ 
+ @module
  */
 
 import {

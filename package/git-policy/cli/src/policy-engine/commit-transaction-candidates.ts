@@ -1,7 +1,7 @@
 /**
- * Lazy policy candidates backed by private Git index.
- *
- * @module
+ Lazy policy candidates backed by private Git index.
+ 
+ @module
  */
 import {
   ABSENT_GIT_VALUE,
@@ -25,18 +25,18 @@ import {
 } from './commit-transaction-git.ts';
 
 /**
- * Strict Git metadata decoder.
+ Strict Git metadata decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
 /**
- * Exact submodule identity encoder.
+ Exact submodule identity encoder.
  */
 const ENCODER = new TextEncoder();
 /**
- * Git index mode mapping.
+ Git index mode mapping.
  */
 const INDEX_MODES: Readonly<Record<string, CandidateFileMode>> = {
   '100644': 'regular',
@@ -45,62 +45,62 @@ const INDEX_MODES: Readonly<Record<string, CandidateFileMode>> = {
   '160000': 'submodule',
 };
 /**
- * Creates transaction-domain error for failed or malformed Git output.
- *
- * @param message - safe failure explanation
- *
- * @returns private-state failure
+ Creates transaction-domain error for failed or malformed Git output.
+ 
+ @param message - safe failure explanation
+ 
+ @returns private-state failure
  */
 function transactionGitError(message: string,): Error {
   return new CommitTransactionGitError(message,);
 }
 
 /**
- * Returns absent landed commit before commit execution.
- *
- * @returns explicit absence sentinel
+ Returns absent landed commit before commit execution.
+ 
+ @returns explicit absence sentinel
  */
 function absentLandedCommit(): Promise<typeof ABSENT_GIT_VALUE> {
   return Promise.resolve(ABSENT_GIT_VALUE,);
 }
 
 /**
- * Returns no push updates during commit checks.
- *
- * @returns empty push update list
+ Returns no push updates during commit checks.
+ 
+ @returns empty push update list
  */
 function emptyPushUpdates(): Promise<readonly never[]> {
   return Promise.resolve([],);
 }
 
 /**
- * Returns exact empty bytes for deleted candidate.
- *
- * @returns empty content bytes
+ Returns exact empty bytes for deleted candidate.
+ 
+ @returns empty content bytes
  */
 function deletedBytes(): Promise<Uint8Array> {
   return Promise.resolve(new Uint8Array(),);
 }
 
 /**
- * HEAD tree does not contain requested candidate path.
+ HEAD tree does not contain requested candidate path.
  */
 const HEAD_MODE_ABSENT: unique symbol = Symbol('requested HEAD tree entry was absent',);
 
 /**
- * Maps one HEAD tree mode, rejecting modes no candidate can carry.
- *
- * Resolved for every path present in HEAD, including paths the index also
- * holds, so a directory standing where a file is staged is rejected exactly as
- * a per-path HEAD read rejected it.
- *
- * @param headEntries - HEAD tree records for complete path set
- *
- * @param path - repository path
- *
- * @returns policy mode, or absence sentinel when HEAD lacks path
- *
- * @throws CommitTransactionGitError when HEAD mode maps to no candidate mode
+ Maps one HEAD tree mode, rejecting modes no candidate can carry.
+ 
+ Resolved for every path present in HEAD, including paths the index also
+ holds, so a directory standing where a file is staged is rejected exactly as
+ a per-path HEAD read rejected it.
+ 
+ @param headEntries - HEAD tree records for complete path set
+ 
+ @param path - repository path
+ 
+ @returns policy mode, or absence sentinel when HEAD lacks path
+ 
+ @throws CommitTransactionGitError when HEAD mode maps to no candidate mode
  */
 function headCandidateMode({
   headEntries,
@@ -110,13 +110,13 @@ function headCandidateMode({
   path: string;
 }>,): CandidateFileMode | typeof HEAD_MODE_ABSENT {
   /**
-   * Optional baseline record.
+   Optional baseline record.
    */
   const headEntry = headEntries.get(path,);
   if (headEntry === undefined)
     return HEAD_MODE_ABSENT;
   /**
-   * Policy mode mapped from Git mode.
+   Policy mode mapped from Git mode.
    */
   const mode = INDEX_MODES[headEntry.modeText];
   if (mode === undefined)
@@ -125,19 +125,19 @@ function headCandidateMode({
 }
 
 /**
- * Builds one candidate from batched index, HEAD, and blob facts.
- *
- * @param path - repository path
- *
- * @param indexEntries - private index records for complete path set
- *
- * @param headEntries - HEAD tree records for complete path set
- *
- * @param blobBytes - exact blob views loaded by one batch subprocess
- *
- * @returns immutable candidate over batch-owned bytes
- *
- * @throws CommitTransactionGitError when index state cannot back one candidate
+ Builds one candidate from batched index, HEAD, and blob facts.
+ 
+ @param path - repository path
+ 
+ @param indexEntries - private index records for complete path set
+ 
+ @param headEntries - HEAD tree records for complete path set
+ 
+ @param blobBytes - exact blob views loaded by one batch subprocess
+ 
+ @returns immutable candidate over batch-owned bytes
+ 
+ @throws CommitTransactionGitError when index state cannot back one candidate
  */
 function buildCandidate({
   path,
@@ -151,14 +151,14 @@ function buildCandidate({
   blobBytes: ReadonlyMap<string, Uint8Array>;
 }>,): CandidateFile {
   /**
-   * Validated baseline mode, or absence sentinel when HEAD lacks path.
+   Validated baseline mode, or absence sentinel when HEAD lacks path.
    */
   const headMode = headCandidateMode({
     headEntries,
     path,
   },);
   /**
-   * Optional staged record.
+   Optional staged record.
    */
   const indexEntry = indexEntries.get(path,);
   if (indexEntry === undefined) {
@@ -176,13 +176,13 @@ function buildCandidate({
   if (indexEntry.stage !== '0')
     throw new CommitTransactionGitError(`Private index entry is unavailable for ${path}`,);
   /**
-   * Policy mode.
+   Policy mode.
    */
   const mode = INDEX_MODES[indexEntry.modeText];
   if (mode === undefined)
     throw new CommitTransactionGitError(`Unsupported private index mode ${indexEntry.modeText} for ${path}`,);
   /**
-   * Exact staged identity.
+   Exact staged identity.
    */
   const { oid, } = indexEntry;
   return {
@@ -195,7 +195,7 @@ function buildCandidate({
       if (mode === 'submodule')
         return Promise.resolve(ENCODER.encode(oid,),);
       /**
-       * Exact shared blob view loaded by the single batch subprocess.
+       Exact shared blob view loaded by the single batch subprocess.
        */
       const bytes = blobBytes.get(oid,);
       if (bytes === undefined)
@@ -206,23 +206,23 @@ function buildCandidate({
 }
 
 /**
- * Loads every candidate through batched index, HEAD, and blob reads.
- *
- * Replaces two spawns per path plus one `git show` per byte read with three
- * invocation groups for the complete path set. Staged blobs are read by object
- * ID rather than `:path`, which names the same stage-zero object.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param indexPath - private index
- *
- * @param paths - candidate repository paths
- *
- * @returns candidates in requested path order
- *
- * @throws CommitTransactionGitError when private state cannot back candidates
+ Loads every candidate through batched index, HEAD, and blob reads.
+ 
+ Replaces two spawns per path plus one `git show` per byte read with three
+ invocation groups for the complete path set. Staged blobs are read by object
+ ID rather than `:path`, which names the same stage-zero object.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param indexPath - private index
+ 
+ @param paths - candidate repository paths
+ 
+ @returns candidates in requested path order
+ 
+ @throws CommitTransactionGitError when private state cannot back candidates
  */
 async function loadPrivateIndexCandidates({
   gitPath,
@@ -236,7 +236,7 @@ async function loadPrivateIndexCandidates({
   paths: readonly string[];
 }>,): Promise<readonly CandidateFile[]> {
   /**
-   * Independent staged and baseline reads for complete path set.
+   Independent staged and baseline reads for complete path set.
    */
   const [indexEntries, headEntries,] = await Promise.all([
     loadIndexEntries({
@@ -252,16 +252,16 @@ async function loadPrivateIndexCandidates({
     },),
   ],);
   /**
-   * One batched read for every content-bearing staged blob. Submodules publish
-   * their commit identity and deleted paths publish no bytes, so neither
-   * requests a blob.
+   One batched read for every content-bearing staged blob. Submodules publish
+   their commit identity and deleted paths publish no bytes, so neither
+   requests a blob.
    */
   const blobBytes = await loadBlobBatch({
     gitPath,
     cwd,
     oids: paths.flatMap(function contentOid(path,): readonly GitObjectId[] {
       /**
-       * Staged record for one path.
+       Staged record for one path.
        */
       const entry = indexEntries.get(path,);
       if (entry === undefined)
@@ -283,27 +283,27 @@ async function loadPrivateIndexCandidates({
 }
 
 /**
- * Creates lazy facts backed by current private index bytes.
- *
- * Every call reads current state, and is never memoized: one facts object
- * outlives the patches applied through it, and callers deliberately re-read it
- * to observe them. `direct-fix-install.ts` writes back what the last call
- * returns, so a cached first read would reinstall the unfixed bytes.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param indexPath - private index
- *
- * @param paths - candidate paths
- *
- * @returns policy Git facts
- *
- * @example
- * ```ts
- * createPrivateIndexFacts({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index', paths: ['a'] });
- * ```
+ Creates lazy facts backed by current private index bytes.
+ 
+ Every call reads current state, and is never memoized: one facts object
+ outlives the patches applied through it, and callers deliberately re-read it
+ to observe them. `direct-fix-install.ts` writes back what the last call
+ returns, so a cached first read would reinstall the unfixed bytes.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param indexPath - private index
+ 
+ @param paths - candidate paths
+ 
+ @returns policy Git facts
+ 
+ @example
+ ```ts
+ createPrivateIndexFacts({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index', paths: ['a'] });
+ ```
  */
 export function createPrivateIndexFacts({
   gitPath,
@@ -343,20 +343,20 @@ export function createPrivateIndexFacts({
 }
 
 /**
- * Returns unmerged paths from private index.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - repository directory
- *
- * @param indexPath - private index
- *
- * @returns unique unmerged repository paths
- *
- * @example
- * ```ts
- * await listUnmergedIndexPaths({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index' });
- * ```
+ Returns unmerged paths from private index.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - repository directory
+ 
+ @param indexPath - private index
+ 
+ @returns unique unmerged repository paths
+ 
+ @example
+ ```ts
+ await listUnmergedIndexPaths({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index' });
+ ```
  */
 export async function listUnmergedIndexPaths({
   gitPath,
@@ -368,7 +368,7 @@ export async function listUnmergedIndexPaths({
   indexPath: string;
 }>,): Promise<readonly string[]> {
   /**
-   * NUL-delimited unmerged stage records.
+   NUL-delimited unmerged stage records.
    */
   const output = await runTransactionGit({
     gitPath,
@@ -381,13 +381,13 @@ export async function listUnmergedIndexPaths({
     ],
   },);
   /**
-   * Repository paths deduplicated across conflict stages.
+   Repository paths deduplicated across conflict stages.
    */
   const paths = DECODER.decode(output.stdout,)
     .split('\0',)
     .flatMap(function recordPath(record,) {
       /**
-       * Metadata/path separator.
+       Metadata/path separator.
        */
       const tab = record.indexOf('\t',);
       return tab === (-1) ? [] : [record.slice(tab + 1,),];
@@ -396,22 +396,22 @@ export async function listUnmergedIndexPaths({
 }
 
 /**
- * Returns concrete paths from private index through Git pathspec semantics.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository cwd
- *
- * @param indexPath - private index path
- *
- * @param pathspecs - Git pathspec scope
- *
- * @returns ordered concrete repository paths
- *
- * @example
- * ```ts
- * await listPrivateIndexPaths({ gitPath, cwd, indexPath, pathspecs: [':/'] });
- * ```
+ Returns concrete paths from private index through Git pathspec semantics.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository cwd
+ 
+ @param indexPath - private index path
+ 
+ @param pathspecs - Git pathspec scope
+ 
+ @returns ordered concrete repository paths
+ 
+ @example
+ ```ts
+ await listPrivateIndexPaths({ gitPath, cwd, indexPath, pathspecs: [':/'] });
+ ```
  */
 export async function listPrivateIndexPaths({
   gitPath,
@@ -425,7 +425,7 @@ export async function listPrivateIndexPaths({
   pathspecs: readonly string[];
 }>,): Promise<readonly string[]> {
   /**
-   * NUL-delimited private-index path output.
+   NUL-delimited private-index path output.
    */
   const output = await runTransactionGit({
     gitPath,
@@ -446,20 +446,20 @@ export async function listPrivateIndexPaths({
 }
 
 /**
- * Returns staged paths from private index relative to HEAD.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - repository directory
- *
- * @param indexPath - private index
- *
- * @returns repository paths
- *
- * @example
- * ```ts
- * await listChangedIndexPaths({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index' });
- * ```
+ Returns staged paths from private index relative to HEAD.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - repository directory
+ 
+ @param indexPath - private index
+ 
+ @returns repository paths
+ 
+ @example
+ ```ts
+ await listChangedIndexPaths({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index' });
+ ```
  */
 export async function listChangedIndexPaths({
   gitPath,
@@ -471,7 +471,7 @@ export async function listChangedIndexPaths({
   indexPath: string;
 }>,): Promise<readonly string[]> {
   /**
-   * Optional existing parent commit.
+   Optional existing parent commit.
    */
   const head = await runTransactionGit({
     gitPath,
@@ -484,7 +484,7 @@ export async function listChangedIndexPaths({
     allowFailure: true,
   },);
   /**
-   * NUL-delimited changed or unborn-index paths.
+   NUL-delimited changed or unborn-index paths.
    */
   const output = await runTransactionGit({
     gitPath,

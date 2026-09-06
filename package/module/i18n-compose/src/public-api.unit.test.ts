@@ -1,7 +1,7 @@
 /**
- * Public package import tests for consumer-facing i18n-compose usage.
- *
- * @module
+ Public package import tests for consumer-facing i18n-compose usage.
+ 
+ @module
  */
 
 import {

@@ -1,10 +1,10 @@
 /**
- * Cornerstone fixture coverage for TOML parser data from `toml-eslint-parser`.
- *
- * Valid fixtures round-trip byte-for-byte in splice mode with the current parser
- * stack. Invalid fixtures throw `TomlEditError` on parse.
- *
- * @module
+ Cornerstone fixture coverage for TOML parser data from `toml-eslint-parser`.
+ 
+ Valid fixtures round-trip byte-for-byte in splice mode with the current parser
+ stack. Invalid fixtures throw `TomlEditError` on parse.
+ 
+ @module
  */
 
 import {

@@ -76,11 +76,11 @@ type TrustFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable real Git repository and private registry.
- *
- * @param source - MJS config source
- *
- * @returns disposable trust fixture
+ Creates disposable real Git repository and private registry.
+ 
+ @param source - MJS config source
+ 
+ @returns disposable trust fixture
  */
 async function createTrustFixture(source: string = VALID_CONFIG,): Promise<TrustFixture> {
   /** Disposable fixture root. */
@@ -108,11 +108,11 @@ async function createTrustFixture(source: string = VALID_CONFIG,): Promise<Trust
 }
 
 /**
- * Discovers fixture config and rejects impossible absence.
- *
- * @param fixture - disposable fixture
- *
- * @returns discovered MJS config
+ Discovers fixture config and rejects impossible absence.
+ 
+ @param fixture - disposable fixture
+ 
+ @returns discovered MJS config
  */
 async function fixtureConfig(fixture: TrustFixture,) {
   const discovered = await discoverConfig(['-C', fixture.repository, 'future-command',],);
@@ -122,11 +122,11 @@ async function fixtureConfig(fixture: TrustFixture,) {
 }
 
 /**
- * Creates deterministic noninteractive trust adapters.
- *
- * @param disclosures - captured disclosure output
- *
- * @returns trust consent adapters
+ Creates deterministic noninteractive trust adapters.
+ 
+ @param disclosures - captured disclosure output
+ 
+ @returns trust consent adapters
  */
 function trustAdapters(disclosures: string[],): TrustConsentAdapters {
   return {

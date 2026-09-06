@@ -1,7 +1,7 @@
 /**
- * Tests for multimodal content parts.
- *
- * @module
+ Tests for multimodal content parts.
+ 
+ @module
  */
 
 import {

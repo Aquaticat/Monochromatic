@@ -1,10 +1,10 @@
 /**
- * CSS rules for syntax highlighting via the CSS Custom Highlight API.
- *
- * Uses `::highlight(hl-<group>)` pseudo-elements styled by
- * `--hl-<group>` custom properties defined in `tokens.ts`.
- * Rules are generated from the shared `HIGHLIGHT_GROUPS` array
- * so adding a new group automatically creates its CSS rule.
+ CSS rules for syntax highlighting via the CSS Custom Highlight API.
+ 
+ Uses `::highlight(hl-<group>)` pseudo-elements styled by
+ `--hl-<group>` custom properties defined in `tokens.ts`.
+ Rules are generated from the shared `HIGHLIGHT_GROUPS` array
+ so adding a new group automatically creates its CSS rule.
  */
 
 import {
@@ -15,15 +15,15 @@ import {
 import { HIGHLIGHT_GROUPS, } from '../client/highlight-groups.ts';
 
 /**
- * Generates `::highlight()` CSS rules for all syntax highlight groups.
- *
- * @returns CSS string with `::highlight(hl-*)` rules
- *
- * @example
- * ```ts
- * const css = highlightStyles();
- * // '::highlight(hl-keyword) { color: var(--hl-keyword); } ...'
- * ```
+ Generates `::highlight()` CSS rules for all syntax highlight groups.
+ 
+ @returns CSS string with `::highlight(hl-*)` rules
+ 
+ @example
+ ```ts
+ const css = highlightStyles();
+ // '::highlight(hl-keyword) { color: var(--hl-keyword); } ...'
+ ```
  */
 export function highlightStyles(): string {
   return HIGHLIGHT_GROUPS

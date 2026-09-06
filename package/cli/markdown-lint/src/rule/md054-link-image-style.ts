@@ -10,24 +10,24 @@ import type {
 import { walk, } from '../walk.ts';
 
 /**
- * Rule id.
+ Rule id.
  */
 const ID = 'MD054';
 
 /**
- * Flag shortcut reference links and images (`[label]`, `![label]`), the one
- * style the repo's MD054 config disallows (`shortcut: false`, every other
- * style allowed). The fix appends `[]` to convert the shortcut into the allowed
- * collapsed style, which resolves to the same definition. mdast's
- * `referenceType` already records the style, so no source slice is needed.
- *
- * @param tree - mdast tree under lint
- *
- * @returns one diagnostic per shortcut reference
+ Flag shortcut reference links and images (`[label]`, `![label]`), the one
+ style the repo's MD054 config disallows (`shortcut: false`, every other
+ style allowed). The fix appends `[]` to convert the shortcut into the allowed
+ collapsed style, which resolves to the same definition. mdast's
+ `referenceType` already records the style, so no source slice is needed.
+ 
+ @param tree - mdast tree under lint
+ 
+ @returns one diagnostic per shortcut reference
  */
 function checkLinkImageStyle({ tree, }: RuleContext,): readonly Diagnostic[] {
   /**
-   * Diagnostics collected across the walk.
+   Diagnostics collected across the walk.
    */
   const diagnostics: Diagnostic[] = [];
   for (const { node, } of walk(tree,)) {
@@ -38,7 +38,7 @@ function checkLinkImageStyle({ tree, }: RuleContext,): readonly Diagnostic[] {
       continue;
     }
     /**
-     * Reference's source offsets; the fix inserts `[]` at its end.
+     Reference's source offsets; the fix inserts `[]` at its end.
      */
     const { end, } = offsetsOf(node,);
     diagnostics.push(diagnose({
@@ -56,8 +56,8 @@ function checkLinkImageStyle({ tree, }: RuleContext,): readonly Diagnostic[] {
 }
 
 /**
- * MD054 link-image-style: shortcut reference style is disallowed. Fixable:
- * converts a shortcut reference to the collapsed style.
+ MD054 link-image-style: shortcut reference style is disallowed. Fixable:
+ converts a shortcut reference to the collapsed style.
  */
 export const linkImageStyle: Rule = {
   id: ID,

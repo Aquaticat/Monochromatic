@@ -11,20 +11,20 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Sink factories under test, read from the built artifact's `sinks` namespace.
+ Sink factories under test, read from the built artifact's `sinks` namespace.
  */
 const {
   createSessionStorageSink,
 } = sinks;
 
 /**
- * Swaps `globalThis.sessionStorage` for `fake`, restoring the real backend when
- * the returned guard leaves `using` scope, so a fake never leaks into a later
- * test in the serial suite.
- *
- * @param fake - Storage stand-in to install for the duration of the scope.
- *
- * @returns Disposable that restores the original `sessionStorage` on exit.
+ Swaps `globalThis.sessionStorage` for `fake`, restoring the real backend when
+ the returned guard leaves `using` scope, so a fake never leaks into a later
+ test in the serial suite.
+ 
+ @param fake - Storage stand-in to install for the duration of the scope.
+ 
+ @returns Disposable that restores the original `sessionStorage` on exit.
  */
 function installFakeStorage(fake: Storage,): Disposable {
   const original = globalThis.sessionStorage;
@@ -37,14 +37,14 @@ function installFakeStorage(fake: Storage,): Disposable {
 }
 
 /**
- * Builds an in-memory `Storage` stand-in that rejects a `setItem` once stored
- * value lengths would exceed `byteBudget`, throwing the same
- * `QuotaExceededError` a real backend raises. Records every `removeItem` under
- * `removed` so a test can assert exactly which keys the sink evicted.
- *
- * @param byteBudget - Total value length the store accepts before overflowing.
- *
- * @returns Storage stand-in exposing the evicted-key log as `removed`.
+ Builds an in-memory `Storage` stand-in that rejects a `setItem` once stored
+ value lengths would exceed `byteBudget`, throwing the same
+ `QuotaExceededError` a real backend raises. Records every `removeItem` under
+ `removed` so a test can assert exactly which keys the sink evicted.
+ 
+ @param byteBudget - Total value length the store accepts before overflowing.
+ 
+ @returns Storage stand-in exposing the evicted-key log as `removed`.
  */
 function createQuotaStorage(byteBudget: number,): Storage & { readonly removed: string[]; } {
   const store = new Map<string, string>();
@@ -77,12 +77,12 @@ function createQuotaStorage(byteBudget: number,): Storage & { readonly removed: 
 }
 
 /**
- * Builds an in-memory `Storage` stand-in whose first `setItem` succeeds and
- * every later one throws a non-quota error, so a test can prove the sink does
- * not evict for failures other than a quota overflow. Records `removeItem`
- * calls under `removed`.
- *
- * @returns Storage stand-in exposing the evicted-key log as `removed`.
+ Builds an in-memory `Storage` stand-in whose first `setItem` succeeds and
+ every later one throws a non-quota error, so a test can prove the sink does
+ not evict for failures other than a quota overflow. Records `removeItem`
+ calls under `removed`.
+ 
+ @returns Storage stand-in exposing the evicted-key log as `removed`.
  */
 function createFlakyStorage(): Storage & { readonly removed: string[]; } {
   const store = new Map<string, string>();
@@ -107,10 +107,10 @@ function createFlakyStorage(): Storage & { readonly removed: string[]; } {
 }
 
 /**
- * Captures `console.warn` output, restoring the real method when the returned
- * guard leaves `using` scope, so a test can count the sink's give-up reports.
- *
- * @returns Disposable exposing captured warn lines as `calls`.
+ Captures `console.warn` output, restoring the real method when the returned
+ guard leaves `using` scope, so a test can count the sink's give-up reports.
+ 
+ @returns Disposable exposing captured warn lines as `calls`.
  */
 function spyConsoleWarn(): Disposable & { readonly calls: string[]; } {
   const original = console.warn;
@@ -128,11 +128,11 @@ function spyConsoleWarn(): Disposable & { readonly calls: string[]; } {
 }
 
 /**
- * Counts captured warn lines that are the sessionStorage sink's give-up report.
- *
- * @param calls - Captured `console.warn` lines from {@link spyConsoleWarn}.
- *
- * @returns How many lines report a sink write failure.
+ Counts captured warn lines that are the sessionStorage sink's give-up report.
+ 
+ @param calls - Captured `console.warn` lines from {@link spyConsoleWarn}.
+ 
+ @returns How many lines report a sink write failure.
  */
 function sinkFailureCount(calls: readonly string[],): number {
   return calls.filter(function isSinkFailure(line,) {
@@ -174,7 +174,7 @@ await describe({
         await sink.verify();
 
         /**
-         * Routine record; severity below `warn` stays buffered.
+         Routine record; severity below `warn` stays buffered.
          */
         const record: LogRecord = {
           level: 'info',
@@ -206,7 +206,7 @@ await describe({
         await sink.verify();
 
         /**
-         * Routine record buffered first; must survive into the batch the warning triggers.
+         Routine record buffered first; must survive into the batch the warning triggers.
          */
         const first: LogRecord = {
           level: 'info',
@@ -214,7 +214,7 @@ await describe({
           timestamp: 0,
         };
         /**
-         * Warning record whose severity forces the synchronous flush.
+         Warning record whose severity forces the synchronous flush.
          */
         const second: LogRecord = {
           level: 'warn',
@@ -244,7 +244,7 @@ await describe({
         await sink.verify();
 
         /**
-         * Routine record left to the deadline timer.
+         Routine record left to the deadline timer.
          */
         const record: LogRecord = {
           level: 'debug',
@@ -254,7 +254,7 @@ await describe({
         await sink.write(record,);
 
         /**
-         * Comfortably past the sink's 250 ms quiet-period deadline.
+         Comfortably past the sink's 250 ms quiet-period deadline.
          */
         const pastDeadlineMs = 400;
         await wait(pastDeadlineMs,);
@@ -275,7 +275,7 @@ await describe({
         await sink.verify();
 
         /**
-         * Small routine record buffered first; must not share a batch with the cap-breaching record.
+         Small routine record buffered first; must not share a batch with the cap-breaching record.
          */
         const small: LogRecord = {
           level: 'info',
@@ -343,7 +343,7 @@ await describe({
       name: 'caps its own footprint at half the runtime quota, proactively evicting oldest',
       fn: async () => {
         /**
-         * Half the detected runtime quota: the footprint ceiling the engine enforces.
+         Half the detected runtime quota: the footprint ceiling the engine enforces.
          */
         const capChars = detectSessionStorageQuotaChars() / 2;
         // A fake store far larger than the cap, so only the proactive half-quota
@@ -483,7 +483,7 @@ await describe({
         using warn = spyConsoleWarn();
         const sink = createSessionStorageSink();
         /**
-         * Record larger than the whole budget; unwritable even after eviction.
+         Record larger than the whole budget; unwritable even after eviction.
          */
         const oversized = {
           level: 'error' as const,

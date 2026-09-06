@@ -23,16 +23,16 @@ import { findVariable, } from './no-sync.syntax.ts';
 //region Expression helpers
 
 /**
- * Removes parenthesized-expression wrappers from an expression.
- *
- * @param expression - Expression to unwrap.
- *
- * @returns Inner expression once no parenthesized wrapper remains.
- *
- * @example
- * ```ts
- * unwrapParentheses({ expression: node.left });
- * ```
+ Removes parenthesized-expression wrappers from an expression.
+ 
+ @param expression - Expression to unwrap.
+ 
+ @returns Inner expression once no parenthesized wrapper remains.
+ 
+ @example
+ ```ts
+ unwrapParentheses({ expression: node.left });
+ ```
  */
 export function unwrapParentheses(
   { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
@@ -43,20 +43,20 @@ export function unwrapParentheses(
 }
 
 /**
- * Extracts named identifier from an expression, after unwrapping it via
- * {@link unwrapParentheses}.
- *
- * @param expression - Expression to inspect.
- *
- * @param name - Expected identifier name.
- *
- * @returns Identifier node, or {@link NOT_ERROR_DETECTION} when expression
- * is not the named identifier.
- *
- * @example
- * ```ts
- * getIdentifierNamed({ expression: node.right, name: 'Error' });
- * ```
+ Extracts named identifier from an expression, after unwrapping it via
+ {@link unwrapParentheses}.
+ 
+ @param expression - Expression to inspect.
+ 
+ @param name - Expected identifier name.
+ 
+ @returns Identifier node, or {@link NOT_ERROR_DETECTION} when expression
+ is not the named identifier.
+ 
+ @example
+ ```ts
+ getIdentifierNamed({ expression: node.right, name: 'Error' });
+ ```
  */
 export function getIdentifierNamed(
   {
@@ -68,7 +68,7 @@ export function getIdentifierNamed(
   }>,
 ): ESTree.IdentifierReference | typeof NOT_ERROR_DETECTION {
   /**
-   * Expression without redundant parentheses.
+   Expression without redundant parentheses.
    */
   const unwrapped = unwrapParentheses({ expression, },);
   if (unwrapped.type !== 'Identifier')
@@ -79,25 +79,25 @@ export function getIdentifierNamed(
 }
 
 /**
- * Extracts a static property name from a member expression via the shared
- * {@link getSharedStaticMemberName} helper, mapping its
- * {@link NO_STATIC_MEMBER_NAME} sentinel to this rule's own.
- *
- * @param member - Member expression to inspect.
- *
- * @returns Property name, or {@link NOT_ERROR_DETECTION} when property is
- * private or dynamic.
- *
- * @example
- * ```ts
- * getStaticMemberName({ member: node.callee });
- * ```
+ Extracts a static property name from a member expression via the shared
+ {@link getSharedStaticMemberName} helper, mapping its
+ {@link NO_STATIC_MEMBER_NAME} sentinel to this rule's own.
+ 
+ @param member - Member expression to inspect.
+ 
+ @returns Property name, or {@link NOT_ERROR_DETECTION} when property is
+ private or dynamic.
+ 
+ @example
+ ```ts
+ getStaticMemberName({ member: node.callee });
+ ```
  */
 export function getStaticMemberName(
   { member, }: ForeignBorrowed<{ readonly member: ESTree.MemberExpression; }>,
 ): string | typeof NOT_ERROR_DETECTION {
   /**
-   * Shared static member name result; mapped to this rule's sentinel below.
+   Shared static member name result; mapped to this rule's sentinel below.
    */
   const memberName = getSharedStaticMemberName({ member, },);
   if (memberName === NO_STATIC_MEMBER_NAME)
@@ -106,19 +106,19 @@ export function getStaticMemberName(
 }
 
 /**
- * Returns whether member expression reads a named property, via
- * {@link getStaticMemberName}.
- *
- * @param member - Member expression to inspect.
- *
- * @param name - Expected static property name.
- *
- * @returns Whether member reads the expected property without optional chaining.
- *
- * @example
- * ```ts
- * isStaticMemberNamed({ member: node.callee, name: 'call' });
- * ```
+ Returns whether member expression reads a named property, via
+ {@link getStaticMemberName}.
+ 
+ @param member - Member expression to inspect.
+ 
+ @param name - Expected static property name.
+ 
+ @returns Whether member reads the expected property without optional chaining.
+ 
+ @example
+ ```ts
+ isStaticMemberNamed({ member: node.callee, name: 'call' });
+ ```
  */
 export function isStaticMemberNamed(
   {
@@ -139,19 +139,19 @@ export function isStaticMemberNamed(
 //region Scope and import helpers
 
 /**
- * Checks whether an identifier resolves to a global binding rather than a
- * local declaration, resolved via {@link findVariable}.
- *
- * @param context - Oxlint rule context.
- *
- * @param identifier - Identifier to classify.
- *
- * @returns Whether identifier is global or unresolved in local scope metadata.
- *
- * @example
- * ```ts
- * isUnshadowedGlobalIdentifier({ context, identifier: errorIdentifier });
- * ```
+ Checks whether an identifier resolves to a global binding rather than a
+ local declaration, resolved via {@link findVariable}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param identifier - Identifier to classify.
+ 
+ @returns Whether identifier is global or unresolved in local scope metadata.
+ 
+ @example
+ ```ts
+ isUnshadowedGlobalIdentifier({ context, identifier: errorIdentifier });
+ ```
  */
 export function isUnshadowedGlobalIdentifier(
   {
@@ -163,7 +163,7 @@ export function isUnshadowedGlobalIdentifier(
   }>,
 ): boolean {
   /**
-   * Scope variable visible for the identifier.
+   Scope variable visible for the identifier.
    */
   const variable = findVariable({
     context,
@@ -178,20 +178,20 @@ export function isUnshadowedGlobalIdentifier(
 }
 
 /**
- * Returns the first import definition for an identifier expression, after
- * resolving its scope variable via {@link findVariable}.
- *
- * @param context - Oxlint rule context.
- *
- * @param identifier - Identifier to resolve.
- *
- * @returns Import definition, or {@link NOT_ERROR_DETECTION} when identifier
- * does not resolve to an import.
- *
- * @example
- * ```ts
- * getImportDefinition({ context, identifier: node.callee });
- * ```
+ Returns the first import definition for an identifier expression, after
+ resolving its scope variable via {@link findVariable}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param identifier - Identifier to resolve.
+ 
+ @returns Import definition, or {@link NOT_ERROR_DETECTION} when identifier
+ does not resolve to an import.
+ 
+ @example
+ ```ts
+ getImportDefinition({ context, identifier: node.callee });
+ ```
  */
 export function getImportDefinition(
   {
@@ -203,7 +203,7 @@ export function getImportDefinition(
   }>,
 ): Definition | typeof NOT_ERROR_DETECTION {
   /**
-   * Scope variable for the identifier.
+   Scope variable for the identifier.
    */
   const variable = findVariable({
     context,
@@ -213,7 +213,7 @@ export function getImportDefinition(
   if ((typeof variable) === 'symbol')
     return NOT_ERROR_DETECTION;
   /**
-   * First definition for the resolved variable.
+   First definition for the resolved variable.
    */
   const [definition,] = variable.defs;
   if (definition === undefined)
@@ -224,25 +224,25 @@ export function getImportDefinition(
 }
 
 /**
- * Returns import declaration source for an import definition, resolved via
- * {@link getImportDeclarationForDefinition} and translating its
- * {@link NO_IMPORT_DECLARATION} sentinel to {@link NOT_ERROR_DETECTION}.
- *
- * @param definition - Import definition to inspect.
- *
- * @returns Import declaration source, or {@link NOT_ERROR_DETECTION} when
- * metadata is unexpected.
- *
- * @example
- * ```ts
- * getImportSource({ definition });
- * ```
+ Returns import declaration source for an import definition, resolved via
+ {@link getImportDeclarationForDefinition} and translating its
+ {@link NO_IMPORT_DECLARATION} sentinel to {@link NOT_ERROR_DETECTION}.
+ 
+ @param definition - Import definition to inspect.
+ 
+ @returns Import declaration source, or {@link NOT_ERROR_DETECTION} when
+ metadata is unexpected.
+ 
+ @example
+ ```ts
+ getImportSource({ definition });
+ ```
  */
 export function getImportSource(
   { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
 ): string | typeof NOT_ERROR_DETECTION {
   /**
-   * Import declaration owning the binding definition.
+   Import declaration owning the binding definition.
    */
   const declaration = getImportDeclarationForDefinition({ definition, },);
   if (declaration === NO_IMPORT_DECLARATION)
@@ -252,18 +252,18 @@ export function getImportSource(
 }
 
 /**
- * Returns whether named import definition imports a specific binding name.
- *
- * @param definition - Import definition to inspect.
- *
- * @param importedName - Expected imported binding name.
- *
- * @returns Whether definition is a named import for importedName.
- *
- * @example
- * ```ts
- * isNamedImport({ definition, importedName: 'types' });
- * ```
+ Returns whether named import definition imports a specific binding name.
+ 
+ @param definition - Import definition to inspect.
+ 
+ @param importedName - Expected imported binding name.
+ 
+ @returns Whether definition is a named import for importedName.
+ 
+ @example
+ ```ts
+ isNamedImport({ definition, importedName: 'types' });
+ ```
  */
 export function isNamedImport(
   {
@@ -302,20 +302,20 @@ export function isNamedImport(
 //region Fix helpers
 
 /**
- * Returns text for a single non-spread call argument, located via
- * {@link getSingleNonSpreadArgument}.
- *
- * @param context - Oxlint rule context.
- *
- * @param call - Call expression to inspect.
- *
- * @returns Argument source text, or {@link NOT_ERROR_DETECTION} when call
- * shape is unsupported (including {@link NO_SINGLE_ARGUMENT}).
- *
- * @example
- * ```ts
- * getSingleArgumentText({ context, call: node });
- * ```
+ Returns text for a single non-spread call argument, located via
+ {@link getSingleNonSpreadArgument}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param call - Call expression to inspect.
+ 
+ @returns Argument source text, or {@link NOT_ERROR_DETECTION} when call
+ shape is unsupported (including {@link NO_SINGLE_ARGUMENT}).
+ 
+ @example
+ ```ts
+ getSingleArgumentText({ context, call: node });
+ ```
  */
 export function getSingleArgumentText(
   {
@@ -327,7 +327,7 @@ export function getSingleArgumentText(
   }>,
 ): ErrorDetectionArgumentText {
   /**
-   * Sole ordinary argument of the call, when the detector shape is supported.
+   Sole ordinary argument of the call, when the detector shape is supported.
    */
   const argument = getSingleNonSpreadArgument({ call, },);
   if (argument === NO_SINGLE_ARGUMENT)
@@ -337,17 +337,17 @@ export function getSingleArgumentText(
 }
 
 /**
- * Builds canonical replacement source for a detected Error value expression,
- * using the {@link ERROR_IS_ERROR_CALLEE} callee.
- *
- * @param argumentText - Source text for value being tested.
- *
- * @returns `Error.isError(value,)` call source.
- *
- * @example
- * ```ts
- * buildErrorIsErrorCall({ argumentText: 'error' });
- * ```
+ Builds canonical replacement source for a detected Error value expression,
+ using the {@link ERROR_IS_ERROR_CALLEE} callee.
+ 
+ @param argumentText - Source text for value being tested.
+ 
+ @returns `Error.isError(value,)` call source.
+ 
+ @example
+ ```ts
+ buildErrorIsErrorCall({ argumentText: 'error' });
+ ```
  */
 export function buildErrorIsErrorCall(
   { argumentText, }: { readonly argumentText: string; },

@@ -1,7 +1,7 @@
 /**
- * Claude statusline composition.
- *
- * @module
+ Claude statusline composition.
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import type { StatuslineInput, } from './types.ts';
 //region Constants
 
 /**
- * Separator inserted between rendered segments.
+ Separator inserted between rendered segments.
  */
 const STATUSLINE_SEPARATOR = '    ';
 
@@ -27,18 +27,18 @@ const STATUSLINE_SEPARATOR = '    ';
 //region Segment formatting
 
 /**
- * Formats model segment from statusline input and effort indicator.
- *
- * @param input - statusline input payload
- *
- * @param effortIndicator - rendered effort indicator symbol
- *
- * @returns model segment, or empty string when display name is absent
- *
- * @example
- * ```ts
- * formatModelSegment({ input, effortIndicator: '○' });
- * ```
+ Formats model segment from statusline input and effort indicator.
+ 
+ @param input - statusline input payload
+ 
+ @param effortIndicator - rendered effort indicator symbol
+ 
+ @returns model segment, or empty string when display name is absent
+ 
+ @example
+ ```ts
+ formatModelSegment({ input, effortIndicator: '○' });
+ ```
  */
 function formatModelSegment({
   input,
@@ -48,14 +48,14 @@ function formatModelSegment({
   effortIndicator: string;
 }>,): string {
   /**
-   * Model metadata pulled from the input.
+   Model metadata pulled from the input.
    */
   const modelMetadata = input.model;
   if (modelMetadata === undefined)
     return '';
 
   /**
-   * Model display name pulled from the input.
+   Model display name pulled from the input.
    */
   const displayName = modelMetadata.display_name;
   if (displayName === undefined)
@@ -64,7 +64,7 @@ function formatModelSegment({
     return '';
 
   /**
-   * Trimmed display form of the model name.
+   Trimmed display form of the model name.
    */
   const model = formatModelDisplay(displayName,);
   if (effortIndicator.length === 0)
@@ -77,20 +77,20 @@ function formatModelSegment({
 }
 
 /**
- * Reads activity word when transcript path is available.
- *
- * @param input - statusline input payload
- *
- * @returns activity word, or empty string when unavailable
- *
- * @example
- * ```ts
- * await activitySegment(input);
- * ```
+ Reads activity word when transcript path is available.
+ 
+ @param input - statusline input payload
+ 
+ @returns activity word, or empty string when unavailable
+ 
+ @example
+ ```ts
+ await activitySegment(input);
+ ```
  */
 async function activitySegment(input: StatuslineInput,): Promise<string> {
   /**
-   * Transcript path from Claude statusline input.
+   Transcript path from Claude statusline input.
    */
   const transcriptPath = input.transcript_path;
   if (transcriptPath === undefined)
@@ -102,16 +102,16 @@ async function activitySegment(input: StatuslineInput,): Promise<string> {
 }
 
 /**
- * Joins non-empty statusline segments.
- *
- * @param segments - segment candidates in display order
- *
- * @returns joined statusline
- *
- * @example
- * ```ts
- * joinStatuslineSegments(['Opus', '', 'Testing']);
- * ```
+ Joins non-empty statusline segments.
+ 
+ @param segments - segment candidates in display order
+ 
+ @returns joined statusline
+ 
+ @example
+ ```ts
+ joinStatuslineSegments(['Opus', '', 'Testing']);
+ ```
  */
 function joinStatuslineSegments(segments: readonly string[],): string {
   return segments
@@ -126,18 +126,18 @@ function joinStatuslineSegments(segments: readonly string[],): string {
 //region Public render
 
 /**
- * Renders complete Claude statusline text.
- *
- * @param input - statusline input payload
- *
- * @param renderedAtMs - render timestamp in epoch milliseconds
- *
- * @returns statusline text, or empty string when every segment is absent
- *
- * @example
- * ```ts
- * await renderStatusline({ input, renderedAtMs: Date.now() });
- * ```
+ Renders complete Claude statusline text.
+ 
+ @param input - statusline input payload
+ 
+ @param renderedAtMs - render timestamp in epoch milliseconds
+ 
+ @returns statusline text, or empty string when every segment is absent
+ 
+ @example
+ ```ts
+ await renderStatusline({ input, renderedAtMs: Date.now() });
+ ```
  */
 async function renderStatusline({
   input,
@@ -147,22 +147,22 @@ async function renderStatusline({
   renderedAtMs: number;
 }>,): Promise<string> {
   /**
-   * Effort-level indicator read from `~/.claude/settings.json`.
+   Effort-level indicator read from `~/.claude/settings.json`.
    */
   const effortIndicator = await readEffortIndicator();
   /**
-   * Composed model segment.
+   Composed model segment.
    */
   const modelSegment = formatModelSegment({
     input,
     effortIndicator,
   },);
   /**
-   * Rendered context-window segment.
+   Rendered context-window segment.
    */
   const contextSegment = formatContextWindowSegment(input,);
   /**
-   * Rendered shared rate-limit segment.
+   Rendered shared rate-limit segment.
    */
   const rateSegment = formatRateLimits({
     ...(input.rate_limits === undefined ? {} : { rateLimits: input.rate_limits, }),
@@ -170,7 +170,7 @@ async function renderStatusline({
     renderedAtMs,
   },);
   /**
-   * Context-aware activity word extracted from transcript tail.
+   Context-aware activity word extracted from transcript tail.
    */
   const activityWord = await activitySegment(input,);
 

@@ -10,10 +10,10 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Builds a capturing backend handoff so a test can assert exactly which
- * batches left the buffer and in what shape.
- *
- * @returns Handoff function plus the captured batch list.
+ Builds a capturing backend handoff so a test can assert exactly which
+ batches left the buffer and in what shape.
+ 
+ @returns Handoff function plus the captured batch list.
  */
 function createCapturingFlush(): {
   readonly batches: string[];
@@ -29,11 +29,11 @@ function createCapturingFlush(): {
 }
 
 /**
- * Installs a capturing `globalThis.addEventListener` (absent under Node, so
- * the buffer's lifecycle registration is otherwise a no-op there), restoring
- * the prior value when the returned guard leaves `using` scope.
- *
- * @returns Disposable exposing captured handlers by event type.
+ Installs a capturing `globalThis.addEventListener` (absent under Node, so
+ the buffer's lifecycle registration is otherwise a no-op there), restoring
+ the prior value when the returned guard leaves `using` scope.
+ 
+ @returns Disposable exposing captured handlers by event type.
  */
 function installFakeGlobalListeners(): Disposable & {
   readonly handlers: Map<string, () => void>;
@@ -55,12 +55,12 @@ function installFakeGlobalListeners(): Disposable & {
 }
 
 /**
- * Installs a fake `globalThis.document` (absent under Node) whose
- * `visibilityState` is controllable and whose `addEventListener` captures
- * handlers, restoring the prior value when the returned guard leaves `using`
- * scope.
- *
- * @returns Disposable exposing captured handlers and mutable visibility.
+ Installs a fake `globalThis.document` (absent under Node) whose
+ `visibilityState` is controllable and whose `addEventListener` captures
+ handlers, restoring the prior value when the returned guard leaves `using`
+ scope.
+ 
+ @returns Disposable exposing captured handlers and mutable visibility.
  */
 function installFakeDocument(): Disposable & {
   readonly handlers: Map<string, () => void>;
@@ -90,12 +90,12 @@ function installFakeDocument(): Disposable & {
 }
 
 /**
- * Severities the buffer must flush synchronously on `add`.
+ Severities the buffer must flush synchronously on `add`.
  */
 const URGENT_LEVELS: readonly Level[] = ['warn', 'error', 'fatal',];
 
 /**
- * Severities the buffer must keep buffered on `add`.
+ Severities the buffer must keep buffered on `add`.
  */
 const ROUTINE_LEVELS: readonly Level[] = ['trace', 'debug', 'info',];
 
@@ -211,7 +211,7 @@ await describe({
         buffer.add({ level: 'debug', serialized: 'idle', },);
 
         /**
-         * Comfortably past the buffer's 250 ms quiet-period deadline.
+         Comfortably past the buffer's 250 ms quiet-period deadline.
          */
         const pastDeadlineMs = 400;
         await wait(pastDeadlineMs,);
@@ -244,7 +244,7 @@ await describe({
 
         buffer.add({ level: 'info', serialized: 'leaving', },);
         /**
-         * Captured pagehide handler; the buffer must have registered one.
+         Captured pagehide handler; the buffer must have registered one.
          */
         const onPagehide = listeners.handlers
           .get('pagehide',);
@@ -266,7 +266,7 @@ await describe({
 
         buffer.add({ level: 'info', serialized: 'tabbed away', },);
         /**
-         * Captured visibilitychange handler; the buffer must have registered one.
+         Captured visibilitychange handler; the buffer must have registered one.
          */
         const onVisibilityChange = fakeDocument.handlers
           .get('visibilitychange',);

@@ -10,18 +10,18 @@ import {
 import type { ParsedArgs, } from './cli-types.ts';
 
 /**
- * Runs {@link parseArgs} against a synthetic argv with output / exit
- * hooks wired to a sink so a failing parse cannot kill the test
- * process and help text does not pollute the test runner output.
- *
- * @param argv - argv slice (after the program name) to parse
- *
- * @returns parsed args; tests assert on this directly
- *
- * @example
- * ```ts
- * const args = runParser(['-w', 'src', '--', 'node',],);
- * ```
+ Runs {@link parseArgs} against a synthetic argv with output / exit
+ hooks wired to a sink so a failing parse cannot kill the test
+ process and help text does not pollute the test runner output.
+ 
+ @param argv - argv slice (after the program name) to parse
+ 
+ @returns parsed args; tests assert on this directly
+ 
+ @example
+ ```ts
+ const args = runParser(['-w', 'src', '--', 'node',],);
+ ```
  */
 function runParser(argv: readonly string[],): ParsedArgs {
   return parseArgs({

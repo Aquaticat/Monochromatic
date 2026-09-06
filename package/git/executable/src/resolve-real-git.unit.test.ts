@@ -29,58 +29,58 @@ import {
 //region Disposable executable fixtures
 
 /**
- * File mode making fixture scripts executable by owner.
+ File mode making fixture scripts executable by owner.
  */
 const EXECUTABLE_MODE = 0o755;
 
 /**
- * File mode leaving fixture readable but not executable.
+ File mode leaving fixture readable but not executable.
  */
 const NON_EXECUTABLE_MODE = 0o644;
 
 /**
- * File mode allowing execution while denying read access.
+ File mode allowing execution while denying read access.
  */
 const UNREADABLE_EXECUTABLE_MODE = 0o111;
 
 /**
- * Prefix bytes placing self-shim marker beyond resolver inspection bound.
+ Prefix bytes placing self-shim marker beyond resolver inspection bound.
  */
 const PADDED_SELF_SHIM_PREFIX_BYTES = 65_536;
 
 /**
- * Distinct successful resolutions needed to exceed bounded cache capacity.
+ Distinct successful resolutions needed to exceed bounded cache capacity.
  */
 const CACHE_EVICTION_FIXTURE_COUNT = 17;
 
 /**
- * Child-process deadline proving special-file candidates cannot block resolver.
+ Child-process deadline proving special-file candidates cannot block resolver.
  */
 const RESOLVER_CHILD_TIMEOUT_MS = 2_000;
 
 /* oxlint-disable typescript/strict-void-return -- node:util.promisify intentionally accepts execFile while promise result excludes ChildProcess handle. */
 /**
- * Promise adapter for external fixture and isolated resolver processes.
+ Promise adapter for external fixture and isolated resolver processes.
  */
 const executeFile = promisify(execFile,);
 /* oxlint-enable typescript/strict-void-return */
 
 /**
- * Shell script standing in for external real Git.
+ Shell script standing in for external real Git.
  */
 const REAL_GIT_CONTENT = `#!/bin/sh
 echo real git "$@"
 `;
 
 /**
- * Bundled entry marker emitted by pnpm command shims.
+ Bundled entry marker emitted by pnpm command shims.
  */
 const BUNDLED_ENTRY_SHIM_CONTENT = `#!/bin/sh
 exec node "$basedir/../../package/git-policy/cli/dist/final/node/index.mjs" "$@"
 `;
 
 /**
- * Cases proving every known Git policy self-shim marker is skipped.
+ Cases proving every known Git policy self-shim marker is skipped.
  */
 const SELF_SHIM_CASES: readonly {
   readonly name: string;
@@ -111,7 +111,7 @@ node "%~dp0\..\..\package\git-policy\cli\dist\final\node\index.mjs" %*
 ];
 
 /**
- * Disposable temporary directory used by resolver tests.
+ Disposable temporary directory used by resolver tests.
  */
 type TempDirectory = {
   readonly path: string;
@@ -119,18 +119,18 @@ type TempDirectory = {
 };
 
 /**
- * Creates disposable temporary directory for executable fixtures.
- *
- * @returns Directory removed when async disposal completes.
- *
- * @example
- * ```ts
- * await using tempDirectory = await createTempDirectory();
- * ```
+ Creates disposable temporary directory for executable fixtures.
+ 
+ @returns Directory removed when async disposal completes.
+ 
+ @example
+ ```ts
+ await using tempDirectory = await createTempDirectory();
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /**
-   * Absolute fixture root unique to current test.
+   Absolute fixture root unique to current test.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -152,18 +152,18 @@ async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
- * Writes executable fixture bytes.
- *
- * @param path - Absolute fixture path.
- *
- * @param content - Script or native-format bytes.
- *
- * @returns Nothing after fixture becomes executable.
- *
- * @example
- * ```ts
- * await writeExecutable({ path: '/tmp/git', content: '#!/bin/sh\n' });
- * ```
+ Writes executable fixture bytes.
+ 
+ @param path - Absolute fixture path.
+ 
+ @param content - Script or native-format bytes.
+ 
+ @returns Nothing after fixture becomes executable.
+ 
+ @example
+ ```ts
+ await writeExecutable({ path: '/tmp/git', content: '#!/bin/sh\n' });
+ ```
  */
 async function writeExecutable({
   path,
@@ -184,16 +184,16 @@ async function writeExecutable({
 }
 
 /**
- * Captures resolver rejection without promise matcher indirection.
- *
- * @param options - Disposable resolver inputs expected to reject.
- *
- * @returns Caught value or undefined when lookup unexpectedly resolves.
- *
- * @example
- * ```ts
- * const caught = await captureResolutionError({ pathEnv: '/missing' });
- * ```
+ Captures resolver rejection without promise matcher indirection.
+ 
+ @param options - Disposable resolver inputs expected to reject.
+ 
+ @returns Caught value or undefined when lookup unexpectedly resolves.
+ 
+ @example
+ ```ts
+ const caught = await captureResolutionError({ pathEnv: '/missing' });
+ ```
  */
 async function captureResolutionError(
   options: ResolveRealGitOptions,
@@ -208,23 +208,23 @@ async function captureResolutionError(
 }
 
 /**
- * Resolves Git in isolated process with deadline protecting FIFO regression tests.
- *
- * @param pathEnv - PATH-like candidate directories passed to child resolver.
- *
- * @param commonGitPaths - Preferred paths passed to child resolver.
- *
- * @returns Resolved path plus captured verbose diagnostics.
- *
- * @throws When resolver blocks beyond deadline or child lookup fails.
- *
- * @example
- * ```ts
- * await resolveRealGitInChild({
- *   pathEnv: '/tmp/bin:/usr/bin',
- *   commonGitPaths: ['/usr/bin/git'],
- * });
- * ```
+ Resolves Git in isolated process with deadline protecting FIFO regression tests.
+ 
+ @param pathEnv - PATH-like candidate directories passed to child resolver.
+ 
+ @param commonGitPaths - Preferred paths passed to child resolver.
+ 
+ @returns Resolved path plus captured verbose diagnostics.
+ 
+ @throws When resolver blocks beyond deadline or child lookup fails.
+ 
+ @example
+ ```ts
+ await resolveRealGitInChild({
+   pathEnv: '/tmp/bin:/usr/bin',
+   commonGitPaths: ['/usr/bin/git'],
+ });
+ ```
  */
 async function resolveRealGitInChild({
   pathEnv,
@@ -237,7 +237,7 @@ async function resolveRealGitInChild({
   readonly diagnostics: string;
 }> {
   /**
-   * Built package interface loaded by child process.
+   Built package interface loaded by child process.
    */
   const moduleUrl = pathToFileURL(join(
     import.meta.dirname,
@@ -249,18 +249,18 @@ async function resolveRealGitInChild({
   ),)
     .href;
   /**
-   * Destination-JavaScript-safe serialized resolver inputs.
+   Destination-JavaScript-safe serialized resolver inputs.
    */
   const serializedOptions = JSON.stringify({
     pathEnv,
     commonGitPaths,
   },);
   /**
-   * Child module source using only JSON-encoded interpolations.
+   Child module source using only JSON-encoded interpolations.
    */
   const childSource = `import { resolveRealGit } from ${JSON.stringify(moduleUrl,)};\nprocess.stdout.write(await resolveRealGit(${serializedOptions}));\n`;
   /**
-   * Isolated resolver output.
+   Isolated resolver output.
    */
   const {
     stdout,
@@ -287,16 +287,16 @@ async function resolveRealGitInChild({
 }
 
 /**
- * Creates executable FIFO candidate for non-blocking resolver tests.
- *
- * @param path - Absolute FIFO path to create.
- *
- * @returns Nothing after FIFO is executable.
- *
- * @example
- * ```ts
- * await createExecutableFifo('/tmp/git');
- * ```
+ Creates executable FIFO candidate for non-blocking resolver tests.
+ 
+ @param path - Absolute FIFO path to create.
+ 
+ @returns Nothing after FIFO is executable.
+ 
+ @example
+ ```ts
+ await createExecutableFifo('/tmp/git');
+ ```
  */
 async function createExecutableFifo(path: string,): Promise<void> {
   await executeFile(
@@ -322,11 +322,11 @@ await describe({
       fn: async function promotesCommonGit(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Earlier ordinary PATH directory.
+         Earlier ordinary PATH directory.
          */
         const ordinaryBin = join(tempDirectory.path, 'ordinary-bin',);
         /**
-         * Later common PATH directory.
+         Later common PATH directory.
          */
         const commonBin = join(tempDirectory.path, 'common-bin',);
         await Promise.all([
@@ -334,11 +334,11 @@ await describe({
           mkdir(commonBin,),
         ],);
         /**
-         * Earlier external executable that common priority must supersede.
+         Earlier external executable that common priority must supersede.
          */
         const ordinaryGit = join(ordinaryBin, 'git',);
         /**
-         * Later preferred executable exposed through PATH.
+         Later preferred executable exposed through PATH.
          */
         const commonGit = join(commonBin, 'git',);
         await Promise.all([
@@ -357,17 +357,17 @@ await describe({
       fn: async function skipsAbsentPackageBins(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * PATH directory containing selected common Git fixture.
+         PATH directory containing selected common Git fixture.
          */
         const commonBin = join(tempDirectory.path, 'common-bin',);
         await mkdir(commonBin,);
         /**
-         * Selected executable after absent workspace candidates.
+         Selected executable after absent workspace candidates.
          */
         const commonGit = join(commonBin, 'git',);
         await writeExecutable({ path: commonGit, content: REAL_GIT_CONTENT, },);
         /**
-         * Broad PATH-like sequence reproducing package-local bin misses.
+         Broad PATH-like sequence reproducing package-local bin misses.
          */
         const pathEnv = [
           join(tempDirectory.path, 'package-a', 'node_modules', '.bin',),
@@ -389,11 +389,11 @@ await describe({
       fn: async function rejectsExecutableFifo(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Earlier PATH directory containing executable FIFO candidate.
+         Earlier PATH directory containing executable FIFO candidate.
          */
         const fifoBin = join(tempDirectory.path, 'fifo-bin',);
         /**
-         * Later PATH directory containing regular executable candidate.
+         Later PATH directory containing regular executable candidate.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         await Promise.all([
@@ -401,11 +401,11 @@ await describe({
           mkdir(externalBin,),
         ],);
         /**
-         * Executable FIFO that must not be opened in blocking mode.
+         Executable FIFO that must not be opened in blocking mode.
          */
         const fifoGit = join(fifoBin, 'git',);
         /**
-         * Regular executable selected after FIFO rejection.
+         Regular executable selected after FIFO rejection.
          */
         const externalGit = join(externalBin, 'git',);
         await Promise.all([
@@ -414,7 +414,7 @@ await describe({
         ],);
 
         /**
-         * Isolated result proving FIFO candidate cannot block lookup.
+         Isolated result proving FIFO candidate cannot block lookup.
          */
         const result = await resolveRealGitInChild({
           pathEnv: [fifoBin, externalBin,].join(delimiter,),
@@ -430,11 +430,11 @@ await describe({
       fn: async function doesNotInspectLaterUnreadableCandidate(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Earlier PATH directory containing preferred common executable.
+         Earlier PATH directory containing preferred common executable.
          */
         const commonBin = join(tempDirectory.path, 'common-bin',);
         /**
-         * Later PATH directory containing executable without read permission.
+         Later PATH directory containing executable without read permission.
          */
         const unreadableBin = join(tempDirectory.path, 'unreadable-bin',);
         await Promise.all([
@@ -442,11 +442,11 @@ await describe({
           mkdir(unreadableBin,),
         ],);
         /**
-         * Preferred regular executable that must end sequential lookup.
+         Preferred regular executable that must end sequential lookup.
          */
         const commonGit = join(commonBin, 'git',);
         /**
-         * Later candidate that emits path-specific diagnostic if inspected.
+         Later candidate that emits path-specific diagnostic if inspected.
          */
         const unreadableGit = join(unreadableBin, 'git',);
         await Promise.all([
@@ -458,7 +458,7 @@ await describe({
           ),
         ],);
         /**
-         * Child result carrying positive-control resolver log.
+         Child result carrying positive-control resolver log.
          */
         const result = await resolveRealGitInChild({
           pathEnv: [commonBin, unreadableBin,].join(delimiter,),
@@ -476,11 +476,11 @@ await describe({
         fn: async function skipsSelfShim(): Promise<void> {
           await using tempDirectory = await createTempDirectory();
           /**
-           * Directory containing self-referential wrapper fixture.
+           Directory containing self-referential wrapper fixture.
            */
           const selfBin = join(tempDirectory.path, 'self-bin',);
           /**
-           * Directory containing external Git fixture.
+           Directory containing external Git fixture.
            */
           const externalBin = join(tempDirectory.path, 'external-bin',);
           await Promise.all([
@@ -488,11 +488,11 @@ await describe({
             mkdir(externalBin,),
           ],);
           /**
-           * Self-referential executable rejected by marker inspection.
+           Self-referential executable rejected by marker inspection.
            */
           const selfGit = join(selfBin, 'git',);
           /**
-           * External executable selected after wrapper rejection.
+           External executable selected after wrapper rejection.
            */
           const externalGit = join(externalBin, 'git',);
           await Promise.all([
@@ -512,11 +512,11 @@ await describe({
       fn: async function rejectsPaddedSelfShim(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Earlier PATH directory containing oversized non-native wrapper.
+         Earlier PATH directory containing oversized non-native wrapper.
          */
         const paddedBin = join(tempDirectory.path, 'padded-bin',);
         /**
-         * Later PATH directory containing external Git fixture.
+         Later PATH directory containing external Git fixture.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         await Promise.all([
@@ -524,15 +524,15 @@ await describe({
           mkdir(externalBin,),
         ],);
         /**
-         * Oversized wrapper whose self marker is outside bounded prefix.
+         Oversized wrapper whose self marker is outside bounded prefix.
          */
         const paddedGit = join(paddedBin, 'git',);
         /**
-         * External executable selected after oversized wrapper rejection.
+         External executable selected after oversized wrapper rejection.
          */
         const externalGit = join(externalBin, 'git',);
         /**
-         * Non-native wrapper bytes placing package marker after bound.
+         Non-native wrapper bytes placing package marker after bound.
          */
         const paddedSelfShim = Buffer.concat([
           Buffer.from('#!/bin/sh\n',),
@@ -555,11 +555,11 @@ await describe({
       fn: async function skipsCommonSelfShim(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Earlier ordinary PATH directory.
+         Earlier ordinary PATH directory.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         /**
-         * Later promoted self-shim directory.
+         Later promoted self-shim directory.
          */
         const selfBin = join(tempDirectory.path, 'self-bin',);
         await Promise.all([
@@ -567,11 +567,11 @@ await describe({
           mkdir(selfBin,),
         ],);
         /**
-         * External executable selected after promoted self shim is rejected.
+         External executable selected after promoted self shim is rejected.
          */
         const externalGit = join(externalBin, 'git',);
         /**
-         * Promoted wrapper fixture.
+         Promoted wrapper fixture.
          */
         const selfGit = join(selfBin, 'git',);
         await Promise.all([
@@ -590,12 +590,12 @@ await describe({
       fn: async function fallsBackToPathOrder(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * PATH directory containing fallback executable.
+         PATH directory containing fallback executable.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         await mkdir(externalBin,);
         /**
-         * PATH executable selected because preferred path is absent.
+         PATH executable selected because preferred path is absent.
          */
         const externalGit = join(externalBin, 'git',);
         await writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },);
@@ -611,11 +611,11 @@ await describe({
       fn: async function skipsNonExecutableCandidate(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Earlier directory containing readable non-executable candidate.
+         Earlier directory containing readable non-executable candidate.
          */
         const nonExecutableBin = join(tempDirectory.path, 'non-executable-bin',);
         /**
-         * Later directory containing usable executable.
+         Later directory containing usable executable.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         await Promise.all([
@@ -623,11 +623,11 @@ await describe({
           mkdir(externalBin,),
         ],);
         /**
-         * Candidate rejected because execute permission is absent.
+         Candidate rejected because execute permission is absent.
          */
         const nonExecutableGit = join(nonExecutableBin, 'git',);
         /**
-         * Later selected executable.
+         Later selected executable.
          */
         const externalGit = join(externalBin, 'git',);
         await Promise.all([
@@ -655,16 +655,16 @@ await describe({
       fn: async function followsWindowsPathExtensions(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Directory containing Windows-named executable fixtures.
+         Directory containing Windows-named executable fixtures.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         await mkdir(externalBin,);
         /**
-         * Earlier PATHEXT candidate superseded by promoted common candidate.
+         Earlier PATHEXT candidate superseded by promoted common candidate.
          */
         const comGit = join(externalBin, 'git.COM',);
         /**
-         * Case-insensitively matched preferred executable.
+         Case-insensitively matched preferred executable.
          */
         const exeGit = join(externalBin, 'git.EXE',);
         await Promise.all([
@@ -688,12 +688,12 @@ await describe({
       fn: async function resolvesRelativePathEntry(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Relative PATH directory under injected cwd.
+         Relative PATH directory under injected cwd.
          */
         const externalBin = join(tempDirectory.path, 'bin',);
         await mkdir(externalBin,);
         /**
-         * Absolute result expected from relative PATH input.
+         Absolute result expected from relative PATH input.
          */
         const externalGit = join(externalBin, 'git',);
         await writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },);
@@ -710,7 +710,7 @@ await describe({
       fn: async function resolvesEmptyPathEntry(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Executable exposed by empty PATH entry at injected cwd.
+         Executable exposed by empty PATH entry at injected cwd.
          */
         const externalGit = join(tempDirectory.path, 'git',);
         await writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },);
@@ -727,12 +727,12 @@ await describe({
       fn: async function usesInjectedEnvironmentPath(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Directory exposed only through injected process environment.
+         Directory exposed only through injected process environment.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         await mkdir(externalBin,);
         /**
-         * Executable selected from injected environment.
+         Executable selected from injected environment.
          */
         const externalGit = join(externalBin, 'git',);
         await writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },);
@@ -753,17 +753,17 @@ await describe({
       fn: async function sharesInflightResolution(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Directory containing concurrently resolved executable.
+         Directory containing concurrently resolved executable.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         await mkdir(externalBin,);
         /**
-         * Executable expected from both concurrent calls.
+         Executable expected from both concurrent calls.
          */
         const externalGit = join(externalBin, 'git',);
         await writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },);
         /**
-         * Concurrent equal lookup results.
+         Concurrent equal lookup results.
          */
         const resolved = await Promise.all([
           resolveRealGit({ pathEnv: externalBin, commonGitPaths: [], },),
@@ -778,17 +778,17 @@ await describe({
       fn: async function reusesSuccessfulResolution(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Directory containing cache fixture.
+         Directory containing cache fixture.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         await mkdir(externalBin,);
         /**
-         * Executable removed after initial successful lookup.
+         Executable removed after initial successful lookup.
          */
         const externalGit = join(externalBin, 'git',);
         await writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },);
         /**
-         * Initial result persisted by candidate-sequence identity.
+         Initial result persisted by candidate-sequence identity.
          */
         const initial = await resolveRealGit({
           pathEnv: externalBin,
@@ -808,11 +808,11 @@ await describe({
       fn: async function separatesChangedInputs(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * First candidate directory.
+         First candidate directory.
          */
         const firstBin = join(tempDirectory.path, 'first-bin',);
         /**
-         * Second candidate directory.
+         Second candidate directory.
          */
         const secondBin = join(tempDirectory.path, 'second-bin',);
         await Promise.all([
@@ -820,11 +820,11 @@ await describe({
           mkdir(secondBin,),
         ],);
         /**
-         * First candidate result.
+         First candidate result.
          */
         const firstGit = join(firstBin, 'git',);
         /**
-         * Second candidate result.
+         Second candidate result.
          */
         const secondGit = join(secondBin, 'git',);
         await Promise.all([
@@ -847,7 +847,7 @@ await describe({
       fn: async function evictsLeastRecentlyUsedSuccess(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Distinct PATH directories exceeding documented cache capacity.
+         Distinct PATH directories exceeding documented cache capacity.
          */
         const cacheBinPaths = Array.from(
           { length: CACHE_EVICTION_FIXTURE_COUNT, },
@@ -875,14 +875,14 @@ await describe({
         }
 
         /**
-         * Oldest successful candidate expected to have been evicted.
+         Oldest successful candidate expected to have been evicted.
          */
         const [oldestCacheBinPath,] = cacheBinPaths;
         if (oldestCacheBinPath === undefined)
           throw new Error('Cache eviction fixture did not create oldest candidate.',);
         await rm(join(oldestCacheBinPath, 'git',),);
         /**
-         * Fresh lookup failure proving oldest success no longer remains cached.
+         Fresh lookup failure proving oldest success no longer remains cached.
          */
         const caught = await captureResolutionError({
           pathEnv: oldestCacheBinPath,
@@ -897,16 +897,16 @@ await describe({
       fn: async function retriesRejectedResolution(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Existing directory whose Git candidate initially does not exist.
+         Existing directory whose Git candidate initially does not exist.
          */
         const externalBin = join(tempDirectory.path, 'external-bin',);
         await mkdir(externalBin,);
         /**
-         * Candidate created only after initial rejection.
+         Candidate created only after initial rejection.
          */
         const externalGit = join(externalBin, 'git',);
         /**
-         * Initial no-candidate failure.
+         Initial no-candidate failure.
          */
         const caught = await captureResolutionError({
           pathEnv: externalBin,
@@ -926,7 +926,7 @@ await describe({
       fn: async function throwsDedicatedError(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
-         * Captured dedicated lookup failure.
+         Captured dedicated lookup failure.
          */
         const caught = await captureResolutionError({
           pathEnv: join(tempDirectory.path, 'missing-bin',),

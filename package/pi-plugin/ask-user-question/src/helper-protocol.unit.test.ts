@@ -77,7 +77,7 @@ await describe({
             name: `rejects ${payload}`,
             fn: async () => {
               /**
-               * Captured protocol failure.
+               Captured protocol failure.
                */
               const caught: { value?: unknown; } = {};
               try {

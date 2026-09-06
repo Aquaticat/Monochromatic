@@ -3,12 +3,12 @@ import { readFile, } from 'node:fs/promises';
 import { BypassRouteError, } from './errors.ts';
 
 /**
- * Sentinel representing process absent from procfs.
+ Sentinel representing process absent from procfs.
  */
 export const PROCESS_ABSENT: unique symbol = Symbol('Linux process is absent',);
 
 /**
- * Procfs identity fields used for liveness and command validation.
+ Procfs identity fields used for liveness and command validation.
  */
 export type LinuxProcessIdentity = {
   readonly commandLine: readonly string[];
@@ -17,21 +17,21 @@ export type LinuxProcessIdentity = {
 };
 
 /**
- * Zero-based start-time offset after proc stat command field.
+ Zero-based start-time offset after proc stat command field.
  */
 const PROC_START_TIME_OFFSET = 19;
 
 /**
- * Narrows caught value to Node filesystem error.
- *
- * @param error - Caught value.
- *
- * @returns Whether value carries error code.
- *
- * @example
- * ```ts
- * isErrnoException({ code: 'ENOENT' }); // true
- * ```
+ Narrows caught value to Node filesystem error.
+ 
+ @param error - Caught value.
+ 
+ @returns Whether value carries error code.
+ 
+ @example
+ ```ts
+ isErrnoException({ code: 'ENOENT' }); // true
+ ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
   return ((typeof error) === 'object')
@@ -40,18 +40,18 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
 }
 
 /**
- * Parses proc stat fields after parenthesized command name.
- *
- * @param pid - Process identifier named in diagnostics.
- *
- * @param stat - Proc stat text.
- *
- * @returns Process state and start-time ticks.
- *
- * @example
- * ```ts
- * parseProcStat({ pid: 1, stat: '1 (init) S 0 ...' });
- * ```
+ Parses proc stat fields after parenthesized command name.
+ 
+ @param pid - Process identifier named in diagnostics.
+ 
+ @param stat - Proc stat text.
+ 
+ @returns Process state and start-time ticks.
+ 
+ @example
+ ```ts
+ parseProcStat({ pid: 1, stat: '1 (init) S 0 ...' });
+ ```
  */
 function parseProcStat(
   {
@@ -63,24 +63,24 @@ function parseProcStat(
   },
 ): Pick<LinuxProcessIdentity, 'startTime' | 'state'> {
   /**
-   * End of parenthesized command field.
+   End of parenthesized command field.
    */
   const commandEnd = stat.lastIndexOf(')',);
   if (commandEnd === (-1))
     throw new BypassRouteError(`Cannot parse process identity for PID ${String(pid,)}.`,);
   /**
-   * Fields beginning with process state,
-   * which is proc field three.
+   Fields beginning with process state,
+   which is proc field three.
    */
   const fields = stat.slice(commandEnd + 2,)
     .split(' ',);
   /**
-   * Process state field.
+   Process state field.
    */
   const [state,] = fields;
   /**
-   * Start time is proc field twenty-two,
-   * index nineteen after field three.
+   Start time is proc field twenty-two,
+   index nineteen after field three.
    */
   const startTime = fields.at(PROC_START_TIME_OFFSET,);
   if ((state === undefined) || (startTime === undefined))
@@ -92,16 +92,16 @@ function parseProcStat(
 }
 
 /**
- * Reads Linux process identity resistant to PID reuse.
- *
- * @param pid - Positive process identifier.
- *
- * @returns Procfs identity or absence when process no longer exists.
- *
- * @example
- * ```ts
- * await readLinuxProcessIdentity({ pid: process.pid });
- * ```
+ Reads Linux process identity resistant to PID reuse.
+ 
+ @param pid - Positive process identifier.
+ 
+ @returns Procfs identity or absence when process no longer exists.
+ 
+ @example
+ ```ts
+ await readLinuxProcessIdentity({ pid: process.pid });
+ ```
  */
 export async function readLinuxProcessIdentity(
   { pid, }: { readonly pid: number; },
@@ -110,7 +110,7 @@ export async function readLinuxProcessIdentity(
     throw new BypassRouteError(`Invalid process identifier: ${String(pid,)}`,);
   try {
     /**
-     * Proc stat and command line from same bounded observation.
+     Proc stat and command line from same bounded observation.
      */
     const [stat, commandLineText,] = await Promise.all([
       readFile(
@@ -123,7 +123,7 @@ export async function readLinuxProcessIdentity(
       ),
     ],);
     /**
-     * Parsed state and start-time fields.
+     Parsed state and start-time fields.
      */
     const parsed = parseProcStat({
       pid,
@@ -145,18 +145,18 @@ export async function readLinuxProcessIdentity(
 }
 
 /**
- * Checks process arguments independently from executable install path.
- *
- * @param identity - Live procfs identity retaining executable argument.
- *
- * @param expected - Exact arguments following nonempty executable argument.
- *
- * @returns Whether argument vectors have equal length and values.
- *
- * @example
- * ```ts
- * processArgumentsMatch({ identity, expected: ['watcher.mjs'] });
- * ```
+ Checks process arguments independently from executable install path.
+ 
+ @param identity - Live procfs identity retaining executable argument.
+ 
+ @param expected - Exact arguments following nonempty executable argument.
+ 
+ @returns Whether argument vectors have equal length and values.
+ 
+ @example
+ ```ts
+ processArgumentsMatch({ identity, expected: ['watcher.mjs'] });
+ ```
  */
 export function processArgumentsMatch(
   {
@@ -168,19 +168,19 @@ export function processArgumentsMatch(
   },
 ): boolean {
   /**
-   * Actual vector includes executable argument before compared process arguments.
+   Actual vector includes executable argument before compared process arguments.
    */
   const actualLength = identity
     .commandLine
     .length;
   /**
-   * Expected vector gains one slot for executable argument.
+   Expected vector gains one slot for executable argument.
    */
   const expectedLength = expected.length + 1;
   if (actualLength !== expectedLength)
     return false;
   /**
-   * Nonempty executable argument intentionally independent from runtime install path.
+   Nonempty executable argument intentionally independent from runtime install path.
    */
   const [executable,] = identity.commandLine;
   if ((executable === undefined) || (executable === ''))

@@ -1,7 +1,7 @@
 /**
- * Activity word extraction from Claude transcripts.
- *
- * @module
+ Activity word extraction from Claude transcripts.
+ 
+ @module
  */
 
 import { openAsBlob, } from 'node:fs';
@@ -10,7 +10,7 @@ import { readFile, } from 'node:fs/promises';
 //region Gerund filters
 
 /**
- * Words ending in "-ing" that are not meaningful activity verbs.
+ Words ending in "-ing" that are not meaningful activity verbs.
  */
 const NOISE_GERUNDS = new Set([
   'beginning',
@@ -114,18 +114,18 @@ const NOISE_GERUNDS = new Set([
 ],);
 
 /**
- * Minimum word length to consider as a gerund candidate.
+ Minimum word length to consider as a gerund candidate.
  */
 const MIN_GERUND_LENGTH = 5;
 
 /**
- * Matches words ending in "-ing", including hyphenated compounds.
+ Matches words ending in "-ing", including hyphenated compounds.
  */
 // oxlint-disable-next-line no-restricted-syntax/no-regex -- bounded transcript tail, simple word-character class, global scan without nested quantifiers.
 const GERUND_PATTERN = /\b[a-z]+-?[a-z]*ing\b/gu;
 
 /**
- * Number of bytes to read from the end of the transcript.
+ Number of bytes to read from the end of the transcript.
  */
 const TAIL_BYTES = 8_192;
 
@@ -134,28 +134,28 @@ const TAIL_BYTES = 8_192;
 //region Gerund extraction
 
 /**
- * Finds the last meaningful gerund in text.
- *
- * @param value - text to scan
- *
- * @returns capitalized gerund, or empty string when none is found
- *
- * @example
- * ```ts
- * findGerundInText('I am compiling and testing');
- * ```
+ Finds the last meaningful gerund in text.
+ 
+ @param value - text to scan
+ 
+ @returns capitalized gerund, or empty string when none is found
+ 
+ @example
+ ```ts
+ findGerundInText('I am compiling and testing');
+ ```
  */
 function findGerundInText(value: string,): string {
   /**
-   * Lowercased text for case-insensitive matching.
+   Lowercased text for case-insensitive matching.
    */
   const lowercaseValue = value.toLowerCase();
   /**
-   * Raw `-ing` matches across lowercased text.
+   Raw `-ing` matches across lowercased text.
    */
   const matches = lowercaseValue.match(GERUND_PATTERN,) ?? [];
   /**
-   * Matches that survive length and noise filters.
+   Matches that survive length and noise filters.
    */
   const candidates = matches
     .filter(function isLongEnough(word,): boolean {
@@ -166,7 +166,7 @@ function findGerundInText(value: string,): string {
     },);
 
   /**
-   * Last surviving candidate.
+   Last surviving candidate.
    */
   const last = candidates.at(-1,);
   if (last === undefined)
@@ -178,16 +178,16 @@ function findGerundInText(value: string,): string {
 }
 
 /**
- * Reads transcript tail without loading the entire file.
- *
- * @param transcriptPath - path to session transcript JSONL
- *
- * @returns transcript tail text
- *
- * @example
- * ```ts
- * await readTranscriptTail({ transcriptPath: '/tmp/session.jsonl' });
- * ```
+ Reads transcript tail without loading the entire file.
+ 
+ @param transcriptPath - path to session transcript JSONL
+ 
+ @returns transcript tail text
+ 
+ @example
+ ```ts
+ await readTranscriptTail({ transcriptPath: '/tmp/session.jsonl' });
+ ```
  */
 async function readTranscriptTail({
   transcriptPath,
@@ -195,11 +195,11 @@ async function readTranscriptTail({
   transcriptPath: string;
 }>,): Promise<string> {
   /**
-   * Blob view of the transcript.
+   Blob view of the transcript.
    */
   const blob = await openAsBlob(transcriptPath,);
   /**
-   * Slice offset clamped to zero for short transcripts.
+   Slice offset clamped to zero for short transcripts.
    */
   const start = Math.max(
     0,
@@ -214,16 +214,16 @@ async function readTranscriptTail({
 }
 
 /**
- * Extracts a context-aware activity word from transcript path.
- *
- * @param transcriptPath - path to session transcript JSONL
- *
- * @returns capitalized activity word, or empty string when unavailable
- *
- * @example
- * ```ts
- * await readActivityWord({ transcriptPath: '/tmp/session.jsonl' });
- * ```
+ Extracts a context-aware activity word from transcript path.
+ 
+ @param transcriptPath - path to session transcript JSONL
+ 
+ @returns capitalized activity word, or empty string when unavailable
+ 
+ @example
+ ```ts
+ await readActivityWord({ transcriptPath: '/tmp/session.jsonl' });
+ ```
  */
 async function readActivityWord({
   transcriptPath,
@@ -232,7 +232,7 @@ async function readActivityWord({
 }>,): Promise<string> {
   try {
     /**
-     * Tail of the transcript decoded as UTF-8 text.
+     Tail of the transcript decoded as UTF-8 text.
      */
     const tail = await readTranscriptTail({ transcriptPath, },);
     return findGerundInText(tail,);
@@ -243,16 +243,16 @@ async function readActivityWord({
 }
 
 /**
- * Reads complete transcript text for small test fixtures.
- *
- * @param transcriptPath - path to session transcript JSONL
- *
- * @returns transcript text, or empty string when unreadable
- *
- * @example
- * ```ts
- * await readTranscriptForTest({ transcriptPath: '/tmp/session.jsonl' });
- * ```
+ Reads complete transcript text for small test fixtures.
+ 
+ @param transcriptPath - path to session transcript JSONL
+ 
+ @returns transcript text, or empty string when unreadable
+ 
+ @example
+ ```ts
+ await readTranscriptForTest({ transcriptPath: '/tmp/session.jsonl' });
+ ```
  */
 async function readTranscriptForTest({
   transcriptPath,

@@ -1,9 +1,9 @@
 /**
- * Synthetic.new quota response header parsing.
- *
- * The `x-synthetic-quotas` header shape mirrors `@aliou/pi-synthetic`.
- *
- * @module
+ Synthetic.new quota response header parsing.
+ 
+ The `x-synthetic-quotas` header shape mirrors `@aliou/pi-synthetic`.
+ 
+ @module
  */
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -33,52 +33,52 @@ import {
 } from './rate-limit-parse-helpers.ts';
 
 /**
- * Logger root for Synthetic quota header parsing.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: syntheticQuotaHeadersLogger, },);
- * ```
+ Logger root for Synthetic quota header parsing.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: syntheticQuotaHeadersLogger, },);
+ ```
  */
 const syntheticQuotaHeadersLogger = tagged({ tag: 'pi-statusline:synthetic-quota-headers', },);
 
 /**
- * Synthetic quotas response header name.
+ Synthetic quotas response header name.
  */
 const SYNTHETIC_QUOTAS_HEADER = 'x-synthetic-quotas';
 
 /**
- * Pace multiplier used by Synthetic's weekly token quota.
- *
- * The Synthetic extension source models weekly credits as daily regeneration
- * normalized across seven days.
+ Pace multiplier used by Synthetic's weekly token quota.
+ 
+ The Synthetic extension source models weekly credits as daily regeneration
+ normalized across seven days.
  */
 const SYNTHETIC_WEEKLY_PACE_SCALE = SECONDS_PER_DAY / SECONDS_PER_WEEK;
 
 /**
- * Parses Synthetic quotas header as an object.
- *
- * @param headers - lowercase provider response headers
- *
- * @returns {@link UnknownRecord}, or invalid sentinel when missing or invalid
- *
- * @example
- * ```ts
- * parseSyntheticQuotasHeader({ 'x-synthetic-quotas': '{}' });
- * ```
+ Parses Synthetic quotas header as an object.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @returns {@link UnknownRecord}, or invalid sentinel when missing or invalid
+ 
+ @example
+ ```ts
+ parseSyntheticQuotasHeader({ 'x-synthetic-quotas': '{}' });
+ ```
  */
 function parseSyntheticQuotasHeader(
   headers: Readonly<Record<string, string>>,
 ): UnknownRecord | InvalidValue {
   /**
-   * Function-scoped logger tagged by function name.
+   Function-scoped logger tagged by function name.
    */
   const log = tagged({
     tag: parseSyntheticQuotasHeader.name,
     l: syntheticQuotaHeadersLogger,
   },);
   /**
-   * Raw quotas header JSON string.
+   Raw quotas header JSON string.
    */
   const rawValue = headers[SYNTHETIC_QUOTAS_HEADER];
   if (rawValue === undefined)
@@ -86,7 +86,7 @@ function parseSyntheticQuotasHeader(
 
   try {
     /**
-     * Parsed quotas JSON value.
+     Parsed quotas JSON value.
      */
     const parsedValue: unknown = JSON.parse(rawValue,);
     if (!isUnknownRecord(parsedValue,))
@@ -95,7 +95,7 @@ function parseSyntheticQuotasHeader(
     return parsedValue;
   } catch (error: unknown) {
     /**
-     * Rendered caught value; malformed quotas JSON is treated as a missing header.
+     Rendered caught value; malformed quotas JSON is treated as a missing header.
      */
     const detail = caughtValueText(error,);
     log.debug(`ignoring invalid quotas header JSON: ${detail}`,);
@@ -104,18 +104,18 @@ function parseSyntheticQuotasHeader(
 }
 
 /**
- * Parses Synthetic weekly credit quota into a projectable snapshot.
- *
- * @param quotas - Synthetic quotas response object
- *
- * @param nowMs - wall-clock sample time in epoch milliseconds
- *
- * @returns parsed weekly {@link RateLimitSnapshot} or invalid sentinel
- *
- * @example
- * ```ts
- * parseSyntheticWeeklySnapshot({ quotas, nowMs: Date.now() });
- * ```
+ Parses Synthetic weekly credit quota into a projectable snapshot.
+ 
+ @param quotas - Synthetic quotas response object
+ 
+ @param nowMs - wall-clock sample time in epoch milliseconds
+ 
+ @returns parsed weekly {@link RateLimitSnapshot} or invalid sentinel
+ 
+ @example
+ ```ts
+ parseSyntheticWeeklySnapshot({ quotas, nowMs: Date.now() });
+ ```
  */
 function parseSyntheticWeeklySnapshot({
   quotas,
@@ -125,7 +125,7 @@ function parseSyntheticWeeklySnapshot({
   nowMs: number;
 }>,): RateLimitSnapshot | InvalidRateLimitSnapshot {
   /**
-   * Synthetic weekly token limit object.
+   Synthetic weekly token limit object.
    */
   const weeklyTokenLimit = readRecordProperty({
     record: quotas,
@@ -136,7 +136,7 @@ function parseSyntheticWeeklySnapshot({
 
   /**
 
-   * Remaining weekly credits as percentage.
+   Remaining weekly credits as percentage.
 
    */
   const percentRemaining = readNumberProperty({
@@ -144,7 +144,7 @@ function parseSyntheticWeeklySnapshot({
     key: 'percentRemaining',
   },);
   /**
-   * Next daily regeneration timestamp.
+   Next daily regeneration timestamp.
    */
   const resetAtMs = readResetProperty({
     record: weeklyTokenLimit,
@@ -155,7 +155,7 @@ function parseSyntheticWeeklySnapshot({
 
   /**
 
-   * Used weekly credits percentage.
+   Used weekly credits percentage.
 
    */
   const usedPercent = PERCENT_BASE - clampNumber({
@@ -176,18 +176,18 @@ function parseSyntheticWeeklySnapshot({
 }
 
 /**
- * Parses Synthetic hourly search quota into a projectable snapshot.
- *
- * @param quotas - Synthetic quotas response object
- *
- * @param nowMs - wall-clock sample time in epoch milliseconds
- *
- * @returns parsed search snapshot or invalid sentinel
- *
- * @example
- * ```ts
- * parseSyntheticSearchSnapshot({ quotas, nowMs: Date.now() });
- * ```
+ Parses Synthetic hourly search quota into a projectable snapshot.
+ 
+ @param quotas - Synthetic quotas response object
+ 
+ @param nowMs - wall-clock sample time in epoch milliseconds
+ 
+ @returns parsed search snapshot or invalid sentinel
+ 
+ @example
+ ```ts
+ parseSyntheticSearchSnapshot({ quotas, nowMs: Date.now() });
+ ```
  */
 function parseSyntheticSearchSnapshot({
   quotas,
@@ -197,7 +197,7 @@ function parseSyntheticSearchSnapshot({
   nowMs: number;
 }>,): RateLimitSnapshot | InvalidRateLimitSnapshot {
   /**
-   * Search quota object.
+   Search quota object.
    */
   const search = readRecordProperty({
     record: quotas,
@@ -208,7 +208,7 @@ function parseSyntheticSearchSnapshot({
 
   /**
 
-   * Hourly search quota object.
+   Hourly search quota object.
 
    */
   const hourly = readRecordProperty({
@@ -220,7 +220,7 @@ function parseSyntheticSearchSnapshot({
 
   /**
 
-   * Search request limit.
+   Search request limit.
 
    */
   const limit = readNumberProperty({
@@ -228,14 +228,14 @@ function parseSyntheticSearchSnapshot({
     key: 'limit',
   },);
   /**
-   * Search requests already used in this window.
+   Search requests already used in this window.
    */
   const requests = readNumberProperty({
     record: hourly,
     key: 'requests',
   },);
   /**
-   * Hourly reset timestamp.
+   Hourly reset timestamp.
    */
   const resetAtMs = readResetProperty({
     record: hourly,
@@ -248,7 +248,7 @@ function parseSyntheticSearchSnapshot({
 
   /**
 
-   * Used search percentage.
+   Used search percentage.
 
    */
   const usedPercent = usedPercentFromLimit({
@@ -270,18 +270,18 @@ function parseSyntheticSearchSnapshot({
 }
 
 /**
- * Parses Synthetic daily free-tool quota into a projectable snapshot.
- *
- * @param quotas - Synthetic quotas response object
- *
- * @param nowMs - wall-clock sample time in epoch milliseconds
- *
- * @returns parsed tool snapshot or invalid sentinel
- *
- * @example
- * ```ts
- * parseSyntheticToolsSnapshot({ quotas, nowMs: Date.now() });
- * ```
+ Parses Synthetic daily free-tool quota into a projectable snapshot.
+ 
+ @param quotas - Synthetic quotas response object
+ 
+ @param nowMs - wall-clock sample time in epoch milliseconds
+ 
+ @returns parsed tool snapshot or invalid sentinel
+ 
+ @example
+ ```ts
+ parseSyntheticToolsSnapshot({ quotas, nowMs: Date.now() });
+ ```
  */
 function parseSyntheticToolsSnapshot({
   quotas,
@@ -291,7 +291,7 @@ function parseSyntheticToolsSnapshot({
   nowMs: number;
 }>,): RateLimitSnapshot | InvalidRateLimitSnapshot {
   /**
-   * Free tool calls quota object.
+   Free tool calls quota object.
    */
   const freeToolCalls = readRecordProperty({
     record: quotas,
@@ -302,7 +302,7 @@ function parseSyntheticToolsSnapshot({
 
   /**
 
-   * Free tool call limit.
+   Free tool call limit.
 
    */
   const limit = readNumberProperty({
@@ -310,14 +310,14 @@ function parseSyntheticToolsSnapshot({
     key: 'limit',
   },);
   /**
-   * Free tool calls already used.
+   Free tool calls already used.
    */
   const requests = readNumberProperty({
     record: freeToolCalls,
     key: 'requests',
   },);
   /**
-   * Daily reset timestamp.
+   Daily reset timestamp.
    */
   const resetAtMs = readResetProperty({
     record: freeToolCalls,
@@ -330,7 +330,7 @@ function parseSyntheticToolsSnapshot({
 
   /**
 
-   * Used free-tool percentage.
+   Used free-tool percentage.
 
    */
   const usedPercent = usedPercentFromLimit({
@@ -352,18 +352,18 @@ function parseSyntheticToolsSnapshot({
 }
 
 /**
- * Parses all projectable Synthetic quota windows from response headers.
- *
- * @param headers - lowercase provider response headers
- *
- * @param nowMs - wall-clock sample time in epoch milliseconds
- *
- * @returns parsed Synthetic {@link RateLimitSnapshot} entries
- *
- * @example
- * ```ts
- * parseSyntheticRateLimitSnapshots({ headers, nowMs: Date.now() });
- * ```
+ Parses all projectable Synthetic quota windows from response headers.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param nowMs - wall-clock sample time in epoch milliseconds
+ 
+ @returns parsed Synthetic {@link RateLimitSnapshot} entries
+ 
+ @example
+ ```ts
+ parseSyntheticRateLimitSnapshots({ headers, nowMs: Date.now() });
+ ```
  */
 function parseSyntheticRateLimitSnapshots({
   headers,
@@ -373,14 +373,14 @@ function parseSyntheticRateLimitSnapshots({
   nowMs: number;
 }>,): readonly RateLimitSnapshot[] {
   /**
-   * Parsed Synthetic quotas header.
+   Parsed Synthetic quotas header.
    */
   const quotas = parseSyntheticQuotasHeader(headers,);
   if (quotas === INVALID_VALUE)
     return [];
 
   /**
-   * Candidate Synthetic snapshots before invalid sentinels are removed.
+   Candidate Synthetic snapshots before invalid sentinels are removed.
    */
   const snapshots: readonly (RateLimitSnapshot | InvalidRateLimitSnapshot)[] = [
     parseSyntheticWeeklySnapshot({

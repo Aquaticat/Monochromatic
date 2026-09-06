@@ -1,7 +1,7 @@
 /**
- * Writable property and index declaration ownership extraction.
- *
- * @module
+ Writable property and index declaration ownership extraction.
+ 
+ @module
  */
 
 import type { Node, } from 'typescript/unstable/ast';
@@ -16,13 +16,13 @@ import { declarationIsReadonly, } from './readonly-declaration.ts';
 import { writableDeclarationOwners, } from './readonly-declaration-ownership.ts';
 
 /**
- * Resolves writable declaration nodes from one property symbol.
- *
- * @param property - Semantic property classified as writable.
- *
- * @param project - Project resolving declaration handles.
- *
- * @returns writable declarations and whether any declaration was unavailable.
+ Resolves writable declaration nodes from one property symbol.
+ 
+ @param property - Semantic property classified as writable.
+ 
+ @param project - Project resolving declaration handles.
+ 
+ @returns writable declarations and whether any declaration was unavailable.
  */
 function writablePropertyDeclarations({
   property,
@@ -35,20 +35,20 @@ function writablePropertyDeclarations({
   readonly unresolved: boolean;
 } {
   /**
-   * Semantic declarations narrowed once for resolution and traversal.
+   Semantic declarations narrowed once for resolution and traversal.
    */
   const { declarations: propertyDeclarations, } = property;
   /**
-   * Mutable resolution state carried across declaration handles.
+   Mutable resolution state carried across declaration handles.
    */
   const resolution = { unresolved: propertyDeclarations.length === 0, };
   /**
-   * Resolved declarations whose authored slot is not readonly.
+   Resolved declarations whose authored slot is not readonly.
    */
   const declarations = propertyDeclarations
     .flatMap(function resolveWritable(handle,): readonly Node[] {
       /**
-       * Declaration resolved through current semantic snapshot.
+       Declaration resolved through current semantic snapshot.
        */
       const declaration = handle.resolve(project,);
       if (declaration === undefined) {
@@ -64,18 +64,18 @@ function writablePropertyDeclarations({
 }
 
 /**
- * Collects ownership for declarations making one property writable.
- *
- * @param property - Semantic property classified as writable.
- *
- * @param project - Project resolving and classifying declarations.
- *
- * @returns sorted distinct writable declaration owners.
- *
- * @example
- * ```ts
- * writablePropertyOwners({ property, project });
- * ```
+ Collects ownership for declarations making one property writable.
+ 
+ @param property - Semantic property classified as writable.
+ 
+ @param project - Project resolving and classifying declarations.
+ 
+ @returns sorted distinct writable declaration owners.
+ 
+ @example
+ ```ts
+ writablePropertyOwners({ property, project });
+ ```
  */
 export function writablePropertyOwners({
   property,
@@ -85,7 +85,7 @@ export function writablePropertyOwners({
   readonly project: Project;
 }): readonly WritableDeclarationOwner[] {
   /**
-   * Writable declaration resolution for current property.
+   Writable declaration resolution for current property.
    */
   const resolution = writablePropertyDeclarations({
     property,
@@ -98,18 +98,18 @@ export function writablePropertyOwners({
 }
 
 /**
- * Collects ownership for one writable index signature.
- *
- * @param indexInfo - Semantic index classified as writable.
- *
- * @param project - Project resolving and classifying declaration.
- *
- * @returns writable declaration ownership or unresolved evidence.
- *
- * @example
- * ```ts
- * writableIndexOwners({ indexInfo, project });
- * ```
+ Collects ownership for one writable index signature.
+ 
+ @param indexInfo - Semantic index classified as writable.
+ 
+ @param project - Project resolving and classifying declaration.
+ 
+ @returns writable declaration ownership or unresolved evidence.
+ 
+ @example
+ ```ts
+ writableIndexOwners({ indexInfo, project });
+ ```
  */
 export function writableIndexOwners({
   indexInfo,
@@ -119,7 +119,7 @@ export function writableIndexOwners({
   readonly project: Project;
 }): readonly WritableDeclarationOwner[] {
   /**
-   * Optional authored index declaration resolved in current snapshot.
+   Optional authored index declaration resolved in current snapshot.
    */
   const declaration = indexInfo.declaration
     ?.resolve(project,);

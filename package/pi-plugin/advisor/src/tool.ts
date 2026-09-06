@@ -1,7 +1,7 @@
 /**
- * Advisor tool registration and execution.
- *
- * @module
+ Advisor tool registration and execution.
+ 
+ @module
  */
 
 import type {
@@ -41,34 +41,34 @@ import type {
 //region Public API
 
 /**
- * Options for creating the registered Advisor tool.
+ Options for creating the registered Advisor tool.
  */
 export type CreateAdvisorToolOptions = {
   /**
-   * Return current runtime config.
+   Return current runtime config.
    */
   readonly getConfig: () => AdvisorConfig;
   /**
-   * Return current session enablement.
+   Return current session enablement.
    */
   readonly getSessionEnabled: () => boolean;
   /**
-   * Return current Pi-loaded project-context snapshot.
+   Return current Pi-loaded project-context snapshot.
    */
   readonly getProjectContext: () => string;
 };
 
 /**
- * Create the Advisor tool definition.
- *
- * @param toolOptions - runtime state accessors
- *
- * @returns pi tool definition
- *
- * @example
- * ```typescript
- * pi.registerTool(createAdvisorTool({ getConfig, getSessionEnabled, getProjectContext }));
- * ```
+ Create the Advisor tool definition.
+ 
+ @param toolOptions - runtime state accessors
+ 
+ @returns pi tool definition
+ 
+ @example
+ ```typescript
+ pi.registerTool(createAdvisorTool({ getConfig, getSessionEnabled, getProjectContext }));
+ ```
  */
 export function createAdvisorTool(
   toolOptions: CreateAdvisorToolOptions,
@@ -91,21 +91,21 @@ export function createAdvisorTool(
     prepareArguments: prepareAdvisorArguments,
     execute:
     /**
-     * Run Advisor tool against active Pi host context.
-     *
-     * @param toolCallId - identity used to exclude in-flight placeholder context
-     *
-     * @param params - selected model and focus question
-     *
-     * @param signal - cancellation capability for provider request
-     *
-     * @param _onUpdate - unused progress callback required by Pi host
-     *
-     * @param ctx - host context required for scope and auth resolution
-     *
-     * @returns Advisor review result for primary model
-     *
-     * @mutates ctx - scope and auth resolution can invoke Pi host capabilities
+     Run Advisor tool against active Pi host context.
+     
+     @param toolCallId - identity used to exclude in-flight placeholder context
+     
+     @param params - selected model and focus question
+     
+     @param signal - cancellation capability for provider request
+     
+     @param _onUpdate - unused progress callback required by Pi host
+     
+     @param ctx - host context required for scope and auth resolution
+     
+     @returns Advisor review result for primary model
+     
+     @mutates ctx - scope and auth resolution can invoke Pi host capabilities
      */
       async function executeAdvisorTool(
       toolCallId: string,
@@ -125,18 +125,18 @@ export function createAdvisorTool(
       }
 
       /**
-       * Primitive Advisor inputs copied from host-owned tool parameters.
+       Primitive Advisor inputs copied from host-owned tool parameters.
        */
       const {
         model: requestedSlug,
         question,
       } = params;
       /**
-       * Runtime config snapshot for this call.
+       Runtime config snapshot for this call.
        */
       const config = toolOptions.getConfig();
       /**
-       * Advisor run result.
+       Advisor run result.
        */
       const result = await runAdvisor({
         ctx,
@@ -161,17 +161,17 @@ export function createAdvisorTool(
     /* oxlint-disable unicorn/consistent-function-scoping -- ToolDefinition.renderCall expects positional args; require-destructured-params forbids extracting this to a module-level declaration. */
     renderCall:
     /**
-     * Render Advisor tool call through Pi theme capability.
-     *
-     * @param args - model and question displayed before execution
-     *
-     * @param theme - Pi theme used to style call row
-     *
-     * @param _context - unused render context required by Pi host
-     *
-     * @returns styled call-row component
-     *
-     * @mutates theme - theme methods can update Pi host styling caches
+     Render Advisor tool call through Pi theme capability.
+     
+     @param args - model and question displayed before execution
+     
+     @param theme - Pi theme used to style call row
+     
+     @param _context - unused render context required by Pi host
+     
+     @returns styled call-row component
+     
+     @mutates theme - theme methods can update Pi host styling caches
      */
       function renderCall(
         args: {
@@ -190,19 +190,19 @@ export function createAdvisorTool(
     /* oxlint-disable unicorn/consistent-function-scoping -- ToolDefinition.renderResult expects positional args; require-destructured-params forbids extracting this to a module-level declaration. */
     renderResult:
     /**
-     * Render Advisor tool result through Pi theme capability.
-     *
-     * @param result - completed Advisor tool result
-     *
-     * @param renderOptions - expansion state from Pi host
-     *
-     * @param theme - Pi theme used to style result row
-     *
-     * @param _context - unused render context required by Pi host
-     *
-     * @returns styled result-row component
-     *
-     * @mutates theme - theme methods can update Pi host styling caches
+     Render Advisor tool result through Pi theme capability.
+     
+     @param result - completed Advisor tool result
+     
+     @param renderOptions - expansion state from Pi host
+     
+     @param theme - Pi theme used to style result row
+     
+     @param _context - unused render context required by Pi host
+     
+     @returns styled result-row component
+     
+     @mutates theme - theme methods can update Pi host styling caches
      */
       function renderResult(
         result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>,
@@ -221,32 +221,32 @@ export function createAdvisorTool(
 }
 
 /**
- * Execute an Advisor review for tool or command mode.
- *
- * @param options - runtime call options
- *
- * @returns advisor text and details
- *
- * @mutates options - `resolveEffectiveScope` can invoke context scope callbacks and `completeAdvisor` can run command-backed auth through `ctx.modelRegistry.getApiKeyAndHeaders`
- *
- * @example
- * ```typescript
- * const result = await runAdvisor({ ctx, config });
- * ```
+ Execute an Advisor review for tool or command mode.
+ 
+ @param options - runtime call options
+ 
+ @returns advisor text and details
+ 
+ @mutates options - `resolveEffectiveScope` can invoke context scope callbacks and `completeAdvisor` can run command-backed auth through `ctx.modelRegistry.getApiKeyAndHeaders`
+ 
+ @example
+ ```typescript
+ const result = await runAdvisor({ ctx, config });
+ ```
  */
 export async function runAdvisor(
   options: ForeignHostCapability<AdvisorRunOptions>,
 ): Promise<AdvisorRunResult> {
   /**
-   * Start time for duration metadata.
+   Start time for duration metadata.
    */
   const startedAt = Date.now();
   /**
-   * Pi extension context for this Advisor run.
+   Pi extension context for this Advisor run.
    */
   const { ctx, } = options;
   /**
-   * Effective scoped model set.
+   Effective scoped model set.
    */
   const scope = await resolveEffectiveScope({
     ctx,
@@ -260,7 +260,7 @@ export async function runAdvisor(
     );
   }
   /**
-   * Scoped models whose endpoints advertise configured output capacity.
+   Scoped models whose endpoints advertise configured output capacity.
    */
   const eligibleScope = filterAdvisorScopeByOutputCapacity({
     scope,
@@ -269,18 +269,18 @@ export async function runAdvisor(
   },);
 
   /**
-   * Advisor model system prompt.
+   Advisor model system prompt.
    */
   const advisorSystemPrompt = buildAdvisorSystemPromptForProject({
     config: options.config,
     projectContext: options.projectContext ?? '',
   },);
   /**
-   * Current primary model to avoid for default Advisor selection when possible.
+   Current primary model to avoid for default Advisor selection when possible.
    */
   const { model: currentMainModel, } = ctx;
   /**
-   * Selected Advisor model and model-budgeted serialized context.
+   Selected Advisor model and model-budgeted serialized context.
    */
   const selectionContext = selectAdvisorRunContext({
     branch: ctx
@@ -307,7 +307,7 @@ export async function runAdvisor(
       === undefined ? {} : { toolCallId: options.toolCallId, }),
   },);
   /**
-   * Selected Advisor model and serialized conversation context.
+   Selected Advisor model and serialized conversation context.
    */
   const {
     selection,
@@ -315,7 +315,7 @@ export async function runAdvisor(
   } = selectionContext;
 
   /**
-   * Provider response from selected secondary model.
+   Provider response from selected secondary model.
    */
   const response = await completeAdvisor({
     ctx,
@@ -331,7 +331,7 @@ export async function runAdvisor(
       === undefined ? {} : { signal: options.signal, }),
   },);
   /**
-   * Extracted advisor text.
+   Extracted advisor text.
    */
   const text = extractAdvisorText(response,)
     || '(advisor returned no text)';

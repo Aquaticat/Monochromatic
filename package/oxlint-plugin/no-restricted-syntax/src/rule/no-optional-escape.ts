@@ -9,18 +9,18 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 //region Constants
 
 /**
- * Sentinel returned by every classifier below when a node matches no banned
- * fake-optional form. A unique `Symbol` keeps the "no match" signal out of a
- * `string | undefined` union (which {@link noNullishUnion} bans) and
- * dogfoods the real-sentinel pattern this rule prescribes as the fix for
- * fake optionality.
+ Sentinel returned by every classifier below when a node matches no banned
+ fake-optional form. A unique `Symbol` keeps the "no match" signal out of a
+ `string | undefined` union (which {@link noNullishUnion} bans) and
+ dogfoods the real-sentinel pattern this rule prescribes as the fix for
+ fake optionality.
  */
 const NO_MATCH = Symbol('node matches no banned fake-optional form',);
 
 /**
- * Keyword `type` names whose presence in a union widens the slot to accept
- * everything (including nullish): `T | unknown` and `T | any` both collapse to
- * the wide type. A `Set` keeps the membership test a single call.
+ Keyword `type` names whose presence in a union widens the slot to accept
+ everything (including nullish): `T | unknown` and `T | any` both collapse to
+ the wide type. A `Set` keeps the membership test a single call.
  */
 const WIDENING_KEYWORD_TYPES: ReadonlySet<string> = new Set([
   'TSUnknownKeyword',
@@ -28,8 +28,8 @@ const WIDENING_KEYWORD_TYPES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Utility-type names that produce an empty object when their second type
- * argument is `never`: `Record<K, never>` and `Pick<T, never>`.
+ Utility-type names that produce an empty object when their second type
+ argument is `never`: `Record<K, never>` and `Pick<T, never>`.
  */
 const EMPTY_OBJECT_UTILITIES: ReadonlySet<string> = new Set([
   'Record',
@@ -37,8 +37,8 @@ const EMPTY_OBJECT_UTILITIES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Allowed-alternative guidance appended to every diagnostic message. Names the
- * four sanctioned ways to express "may be absent" without a type-level escape.
+ Allowed-alternative guidance appended to every diagnostic message. Names the
+ four sanctioned ways to express "may be absent" without a type-level escape.
  */
 const ALLOWED = 'exactOptionalPropertyTypes is on; faking optionality at the type level is banned. Use `foo?: T` for an optional property; an `if`-guard so the value is always present where typed; throw via `nonNullishOrThrow` (@monochromatic-dev/module-or-throw); or a real sentinel: a unique `Symbol`, or a distinct non-empty domain value. Never null, undefined, the empty string, zero, negative one, `false`, `void`, an empty tuple, an empty object, or `Partial`. Genuine external-boundary mirrors use a scoped `oxlint-disable-next-line no-restricted-syntax/no-optional-escape` with a justification.';
 
@@ -47,21 +47,21 @@ const ALLOWED = 'exactOptionalPropertyTypes is on; faking optionality at the typ
 //region Predicates
 
 /**
- * Checks whether a union member is not a literal type.
- *
- * Falsy-literal sentinels (`T | 0`, `T | ""`) are flagged only when a union has
- * such a member, so a pure literal domain (`0 | 1 | 2`, `"a" | "b"`) is left
- * alone: there the falsy literal is a genuine member of the finite domain, not
- * a sentinel bolted onto a wider type.
- *
- * @param member - union member to test
- *
- * @returns whether member is not a `TSLiteralType`
- *
- * @example
- * ```ts
- * isNonLiteralMember(member); // true for `string`, false for `0`
- * ```
+ Checks whether a union member is not a literal type.
+ 
+ Falsy-literal sentinels (`T | 0`, `T | ""`) are flagged only when a union has
+ such a member, so a pure literal domain (`0 | 1 | 2`, `"a" | "b"`) is left
+ alone: there the falsy literal is a genuine member of the finite domain, not
+ a sentinel bolted onto a wider type.
+ 
+ @param member - union member to test
+ 
+ @returns whether member is not a `TSLiteralType`
+ 
+ @example
+ ```ts
+ isNonLiteralMember(member); // true for `string`, false for `0`
+ ```
  */
 function isNonLiteralMember(member: ForeignBorrowed<ESTree.TSType>,): boolean {
   return member.type
@@ -69,16 +69,16 @@ function isNonLiteralMember(member: ForeignBorrowed<ESTree.TSType>,): boolean {
 }
 
 /**
- * Checks whether a tuple element is an optional element (`T?`).
- *
- * @param element - tuple element to test
- *
- * @returns whether element is a `TSOptionalType`
- *
- * @example
- * ```ts
- * isOptionalTupleElement(element); // true for the `T?` in `[T?]`
- * ```
+ Checks whether a tuple element is an optional element (`T?`).
+ 
+ @param element - tuple element to test
+ 
+ @returns whether element is a `TSOptionalType`
+ 
+ @example
+ ```ts
+ isOptionalTupleElement(element); // true for the `T?` in `[T?]`
+ ```
  */
 function isOptionalTupleElement(element: ForeignBorrowed<ESTree.TSTupleElement>,): boolean {
   return element.type
@@ -90,24 +90,24 @@ function isOptionalTupleElement(element: ForeignBorrowed<ESTree.TSTupleElement>,
 //region Classifiers
 
 /**
- * Classifies a literal-type union member as a falsy sentinel form.
- *
- * Covers the empty string (`""`), an empty template literal type, numeric zero
- * (`0`), a negative numeric literal (`-1`), and `false`. A non-empty literal
- * (`42`, `"pending"`) is a real domain value and returns {@link NO_MATCH}.
- *
- * @param member - literal-type union member to classify
- *
- * @returns message id for the matched falsy form, or {@link NO_MATCH}
- *
- * @example
- * ```ts
- * falsyLiteralMessageId(member); // 'emptyStringUnion' for `T | ""`
- * ```
+ Classifies a literal-type union member as a falsy sentinel form.
+ 
+ Covers the empty string (`""`), an empty template literal type, numeric zero
+ (`0`), a negative numeric literal (`-1`), and `false`. A non-empty literal
+ (`42`, `"pending"`) is a real domain value and returns {@link NO_MATCH}.
+ 
+ @param member - literal-type union member to classify
+ 
+ @returns message id for the matched falsy form, or {@link NO_MATCH}
+ 
+ @example
+ ```ts
+ falsyLiteralMessageId(member); // 'emptyStringUnion' for `T | ""`
+ ```
  */
 function falsyLiteralMessageId(member: ForeignBorrowed<ESTree.TSLiteralType>,): string | typeof NO_MATCH {
   /**
-   * Literal node carried by this union member.
+   Literal node carried by this union member.
    */
   const { literal, } = member;
   if (literal.type
@@ -129,7 +129,7 @@ function falsyLiteralMessageId(member: ForeignBorrowed<ESTree.TSLiteralType>,): 
   if (literal.type
     === 'TemplateLiteral') {
     /**
-     * First template quasi, present on every template literal.
+     First template quasi, present on every template literal.
      */
     const [firstQuasi,] = literal.quasis;
     if (firstQuasi === undefined) {
@@ -168,23 +168,23 @@ function falsyLiteralMessageId(member: ForeignBorrowed<ESTree.TSLiteralType>,): 
 }
 
 /**
- * Classifies a single union member as a fake-optional escape.
- *
- * Handles the keyword widening forms (`void`, `never`, `unknown`, `any`) and
- * the empty-object form (`{}`) directly; delegates falsy literals to
- * {@link falsyLiteralMessageId}, gated on `hasNonLiteral`. `undefined` and
- * `null` are intentionally not matched here: {@link noNullishUnion} owns them.
- *
- * @param member - union member to classify
- *
- * @param hasNonLiteral - whether the union has a non-literal member
- *
- * @returns message id for the matched form, or {@link NO_MATCH}
- *
- * @example
- * ```ts
- * unionMemberMessageId({ member, hasNonLiteral }); // 'voidUnion' for `T | void`
- * ```
+ Classifies a single union member as a fake-optional escape.
+ 
+ Handles the keyword widening forms (`void`, `never`, `unknown`, `any`) and
+ the empty-object form (`{}`) directly; delegates falsy literals to
+ {@link falsyLiteralMessageId}, gated on `hasNonLiteral`. `undefined` and
+ `null` are intentionally not matched here: {@link noNullishUnion} owns them.
+ 
+ @param member - union member to classify
+ 
+ @param hasNonLiteral - whether the union has a non-literal member
+ 
+ @returns message id for the matched form, or {@link NO_MATCH}
+ 
+ @example
+ ```ts
+ unionMemberMessageId({ member, hasNonLiteral }); // 'voidUnion' for `T | void`
+ ```
  */
 function unionMemberMessageId(
   {
@@ -226,22 +226,22 @@ function unionMemberMessageId(
 }
 
 /**
- * Classifies a tuple type as a fake-optional escape.
- *
- * Flags an empty tuple (`[]`), a tuple with an optional element (`[T?]`), and
- * a rest-only tuple (`[...T[]]`, functionally `T[]` dressed as 0-or-many). A
- * fixed non-empty tuple (`[number, string]`) and a leading-element variadic
- * tuple (`[T, ...U[]]`) are legitimate and return {@link NO_MATCH}. An optional
- * named member (`[foo?: T]`) is handled by the `TSNamedTupleMember` visitor.
- *
- * @param node - tuple type to classify
- *
- * @returns message id for the matched form, or {@link NO_MATCH}
- *
- * @example
- * ```ts
- * tupleMessageId(node); // 'emptyTuple' for `[]`
- * ```
+ Classifies a tuple type as a fake-optional escape.
+ 
+ Flags an empty tuple (`[]`), a tuple with an optional element (`[T?]`), and
+ a rest-only tuple (`[...T[]]`, functionally `T[]` dressed as 0-or-many). A
+ fixed non-empty tuple (`[number, string]`) and a leading-element variadic
+ tuple (`[T, ...U[]]`) are legitimate and return {@link NO_MATCH}. An optional
+ named member (`[foo?: T]`) is handled by the `TSNamedTupleMember` visitor.
+ 
+ @param node - tuple type to classify
+ 
+ @returns message id for the matched form, or {@link NO_MATCH}
+ 
+ @example
+ ```ts
+ tupleMessageId(node); // 'emptyTuple' for `[]`
+ ```
  */
 function tupleMessageId(node: ForeignBorrowed<ESTree.TSTupleType>,): string | typeof NO_MATCH {
   if (node.elementTypes
@@ -259,7 +259,7 @@ function tupleMessageId(node: ForeignBorrowed<ESTree.TSTupleType>,): string | ty
     return NO_MATCH;
   }
   /**
-   * Sole tuple element, checked for the rest-only `[...T[]]` shape.
+   Sole tuple element, checked for the rest-only `[...T[]]` shape.
    */
   const [firstElement,] = node.elementTypes;
   if (firstElement === undefined) {
@@ -273,20 +273,20 @@ function tupleMessageId(node: ForeignBorrowed<ESTree.TSTupleType>,): string | ty
 }
 
 /**
- * Classifies a type reference as a fake-optional escape.
- *
- * Flags `Partial<T>` (makes every property optional) and the empty-object
- * utility forms `Record<K, never>` and `Pick<T, never>` (second type argument
- * `never`). A real `Record<K, V>` or `Pick<T, K>` returns {@link NO_MATCH}.
- *
- * @param node - type reference to classify
- *
- * @returns message id for the matched form, or {@link NO_MATCH}
- *
- * @example
- * ```ts
- * typeReferenceMessageId(node); // 'partial' for `Partial<T>`
- * ```
+ Classifies a type reference as a fake-optional escape.
+ 
+ Flags `Partial<T>` (makes every property optional) and the empty-object
+ utility forms `Record<K, never>` and `Pick<T, never>` (second type argument
+ `never`). A real `Record<K, V>` or `Pick<T, K>` returns {@link NO_MATCH}.
+ 
+ @param node - type reference to classify
+ 
+ @returns message id for the matched form, or {@link NO_MATCH}
+ 
+ @example
+ ```ts
+ typeReferenceMessageId(node); // 'partial' for `Partial<T>`
+ ```
  */
 function typeReferenceMessageId(node: ForeignBorrowed<ESTree.TSTypeReference>,): string | typeof NO_MATCH {
   if (node.typeName
@@ -295,7 +295,7 @@ function typeReferenceMessageId(node: ForeignBorrowed<ESTree.TSTypeReference>,):
     return NO_MATCH;
   }
   /**
-   * Referenced type name, e.g. `Partial`, `Record`, `Pick`.
+   Referenced type name, e.g. `Partial`, `Record`, `Pick`.
    */
   const { name, } = node.typeName;
   if (name === 'Partial') {
@@ -305,14 +305,14 @@ function typeReferenceMessageId(node: ForeignBorrowed<ESTree.TSTypeReference>,):
     return NO_MATCH;
   }
   /**
-   * Type arguments supplied to the reference, if any.
+   Type arguments supplied to the reference, if any.
    */
   const { typeArguments, } = node;
   if (typeArguments === null) {
     return NO_MATCH;
   }
   /**
-   * Second type argument; `never` here marks an empty-object utility type.
+   Second type argument; `never` here marks an empty-object utility type.
    */
   const [, secondArg,] = typeArguments.params;
   if (secondArg === undefined) {
@@ -328,60 +328,60 @@ function typeReferenceMessageId(node: ForeignBorrowed<ESTree.TSTypeReference>,):
 //endregion Classifiers
 
 /**
- * Bans every statically-detectable type-level encoding of "optional / absent /
- * empty-as-absent" except the two nullish keywords (`undefined`, `null`), which
- * {@link noNullishUnion} already owns.
- *
- * `tsconfig` sets `exactOptionalPropertyTypes: true`. Agents repeatedly invent
- * new encodings to dodge that setting: once `| undefined` and `| null` were
- * banned, the next dodge was `| void`, then tuple-as-Maybe (`[]`, `[T?]`), then
- * literal sentinels in unions (`T | ""`, `T | 0`), then `Partial<T>`. This rule
- * enumerates and bans the whole detectable space in one pass.
- *
- * Banned forms (each its own diagnostic):
- *
- * - Union members: `void`, `never`, `unknown`/`any` (widening dodge: the union
- *   collapses to the wide type), an empty object `{}`, and falsy literals
- *   (`""`, an empty template literal type, `0`, a negative number, `false`).
- *   Falsy literals are flagged only when the union also has a non-literal
- *   member, so a finite literal domain like `0 | 1 | 2` is left alone.
- * - Tuples: empty `[]`, optional element `[T?]`, optional named member
- *   `[foo?: T]`, rest-only `[...T[]]`.
- * - Type references: `Partial<T>`, `Record<K, never>`, `Pick<T, never>`.
- * - Mapped types that add optionality: `{ [K in keyof T]?: ... }` (a hand-rolled
- *   `Partial`). The `Required` form `{ [K in keyof T]-?: ... }` is not flagged.
- *
- * Allowed (not flagged): a bare `(): void` return (only `void` inside a union
- * is banned); `T | null` / `T | undefined` (owned by {@link noNullishUnion});
- * a fixed non-empty tuple (`[number, string]`); a leading-element variadic
- * tuple (`[T, ...U[]]`); a real `Symbol` sentinel via `typeof MY_SYMBOL`; a
- * non-empty literal member (`T | 42`, `T | "pending"`); a real
- * `Record<K, V>` / `Pick`.
- *
- * Statically undetectable (documented blind spots, addressed by review): a
- * field honestly typed `string` but defaulted to `""` at runtime; a `T[]` whose
- * emptiness encodes absence; `0`/`-1` used as absent on a plain `number`. In all
- * three the type annotation itself is honest and carries no syntactic marker, so
- * there is nothing to detect. `T | typeof CONST` where `CONST` resolves to a
- * falsy literal is detectable only by resolving the binding's value: the
- * `typeof` node is identical whether `CONST` is a real `Symbol` or an empty
- * string, so the dodge is indistinguishable at the type node without scope or
- * type-checker analysis the JS plugin lacks.
- *
- * @example
- * ```ts
- * // Bad
- * type A = string | void;
- * type B = string | "";
- * type C = [string?];
- * type D = Partial<{ a: string }>;
- *
- * // Good
- * type Opt = { foo?: string };
- * const NOT_FOUND = Symbol('requested key not found in store');
- * type Result = string | typeof NOT_FOUND;
- * type Pair = [number, string];
- * ```
+ Bans every statically-detectable type-level encoding of "optional / absent /
+ empty-as-absent" except the two nullish keywords (`undefined`, `null`), which
+ {@link noNullishUnion} already owns.
+ 
+ `tsconfig` sets `exactOptionalPropertyTypes: true`. Agents repeatedly invent
+ new encodings to dodge that setting: once `| undefined` and `| null` were
+ banned, the next dodge was `| void`, then tuple-as-Maybe (`[]`, `[T?]`), then
+ literal sentinels in unions (`T | ""`, `T | 0`), then `Partial<T>`. This rule
+ enumerates and bans the whole detectable space in one pass.
+ 
+ Banned forms (each its own diagnostic):
+ 
+ - Union members: `void`, `never`, `unknown`/`any` (widening dodge: the union
+   collapses to the wide type), an empty object `{}`, and falsy literals
+   (`""`, an empty template literal type, `0`, a negative number, `false`).
+   Falsy literals are flagged only when the union also has a non-literal
+   member, so a finite literal domain like `0 | 1 | 2` is left alone.
+ - Tuples: empty `[]`, optional element `[T?]`, optional named member
+   `[foo?: T]`, rest-only `[...T[]]`.
+ - Type references: `Partial<T>`, `Record<K, never>`, `Pick<T, never>`.
+ - Mapped types that add optionality: `{ [K in keyof T]?: ... }` (a hand-rolled
+   `Partial`). The `Required` form `{ [K in keyof T]-?: ... }` is not flagged.
+ 
+ Allowed (not flagged): a bare `(): void` return (only `void` inside a union
+ is banned); `T | null` / `T | undefined` (owned by {@link noNullishUnion});
+ a fixed non-empty tuple (`[number, string]`); a leading-element variadic
+ tuple (`[T, ...U[]]`); a real `Symbol` sentinel via `typeof MY_SYMBOL`; a
+ non-empty literal member (`T | 42`, `T | "pending"`); a real
+ `Record<K, V>` / `Pick`.
+ 
+ Statically undetectable (documented blind spots, addressed by review): a
+ field honestly typed `string` but defaulted to `""` at runtime; a `T[]` whose
+ emptiness encodes absence; `0`/`-1` used as absent on a plain `number`. In all
+ three the type annotation itself is honest and carries no syntactic marker, so
+ there is nothing to detect. `T | typeof CONST` where `CONST` resolves to a
+ falsy literal is detectable only by resolving the binding's value: the
+ `typeof` node is identical whether `CONST` is a real `Symbol` or an empty
+ string, so the dodge is indistinguishable at the type node without scope or
+ type-checker analysis the JS plugin lacks.
+ 
+ @example
+ ```ts
+ // Bad
+ type A = string | void;
+ type B = string | "";
+ type C = [string?];
+ type D = Partial<{ a: string }>;
+ 
+ // Good
+ type Opt = { foo?: string };
+ const NOT_FOUND = Symbol('requested key not found in store');
+ type Result = string | typeof NOT_FOUND;
+ type Pair = [number, string];
+ ```
  */
 export const noOptionalEscape: CreateOnceRule = {
   meta: {
@@ -409,28 +409,28 @@ export const noOptionalEscape: CreateOnceRule = {
     },
   },
   /**
-   * Handles foreign Oxlint callback.
-   *
-   * @param context - Foreign rule context receiving diagnostics.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles foreign Oxlint callback.
+   
+   @param context - Foreign rule context receiving diagnostics.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
       TSUnionType(node: ForeignBorrowed<ESTree.TSUnionType>,): void {
         /**
-         * Whether the union has a non-literal member, gating falsy-literal sentinels.
+         Whether the union has a non-literal member, gating falsy-literal sentinels.
          */
         const hasNonLiteral = node.types
           .some(isNonLiteralMember,);
         for (const member of node.types) {
           /**
-           * Matched fake-optional form for this member, or the no-match sentinel.
+           Matched fake-optional form for this member, or the no-match sentinel.
            */
           const messageId = unionMemberMessageId({
             member,
@@ -446,7 +446,7 @@ export const noOptionalEscape: CreateOnceRule = {
       },
       TSTupleType(node: ForeignBorrowed<ESTree.TSTupleType>,): void {
         /**
-         * Matched fake-optional tuple form, or the no-match sentinel.
+         Matched fake-optional tuple form, or the no-match sentinel.
          */
         const messageId = tupleMessageId(node,);
         if (messageId !== NO_MATCH) {
@@ -466,7 +466,7 @@ export const noOptionalEscape: CreateOnceRule = {
       },
       TSTypeReference(node: ForeignBorrowed<ESTree.TSTypeReference>,): void {
         /**
-         * Matched fake-optional utility form, or the no-match sentinel.
+         Matched fake-optional utility form, or the no-match sentinel.
          */
         const messageId = typeReferenceMessageId(node,);
         if (messageId !== NO_MATCH) {

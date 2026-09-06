@@ -10,11 +10,11 @@ import type { Diagnostic, } from '../types.ts';
 import { headingIncrement, } from './md001-heading-increment.ts';
 
 /**
- * Run only MD001 over Markdown source.
- *
- * @param source - Markdown source
- *
- * @returns diagnostics from the rule
+ Run only MD001 over Markdown source.
+ 
+ @param source - Markdown source
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string,): readonly Diagnostic[] {
   return runRules({
@@ -37,7 +37,7 @@ await describe({
       name: 'flags a skipped level',
       fn: async function skips() {
         /**
-         * Diagnostics for an h1 followed by an h3.
+         Diagnostics for an h1 followed by an h3.
          */
         const diagnostics = lint('# A\n\n### C\n',);
         expect(diagnostics.length,).toBe(1,);

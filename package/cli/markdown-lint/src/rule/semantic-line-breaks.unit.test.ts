@@ -9,16 +9,16 @@ import { runRules, } from '../lint.ts';
 import { semanticLineBreaks, } from './semantic-line-breaks.ts';
 
 /**
- * One diagnostic as `runRules` reports it.
+ One diagnostic as `runRules` reports it.
  */
 type ReportedDiagnostic = ReturnType<typeof runRules>[number];
 
 /**
- * Count semantic-line-breaks diagnostics for a source.
- *
- * @param source - Markdown source
- *
- * @returns number of break diagnostics
+ Count semantic-line-breaks diagnostics for a source.
+ 
+ @param source - Markdown source
+ 
+ @returns number of break diagnostics
  */
 function count(source: string,): number {
   return runRules({
@@ -29,11 +29,11 @@ function count(source: string,): number {
 }
 
 /**
- * Report semantic-line-breaks diagnostics as `line:column` strings.
- *
- * @param source - Markdown source
- *
- * @returns reported positions, in the order found
+ Report semantic-line-breaks diagnostics as `line:column` strings.
+ 
+ @param source - Markdown source
+ 
+ @returns reported positions, in the order found
  */
 function positions(source: string,): readonly string[] {
   return runRules({
@@ -46,11 +46,11 @@ function positions(source: string,): readonly string[] {
 }
 
 /**
- * Fix a source with only semantic-line-breaks.
- *
- * @param source - Markdown source
- *
- * @returns fixed source and remaining diagnostics
+ Fix a source with only semantic-line-breaks.
+ 
+ @param source - Markdown source
+ 
+ @returns fixed source and remaining diagnostics
  */
 function fix(source: string,): {
   readonly source: string;
@@ -180,7 +180,7 @@ await describe({
       name: 'inserts a list-item-aligned continuation prefix',
       fn: async function listPrefix() {
         /**
-         * Fixed list item.
+         Fixed list item.
          */
         const fixed = fix('- first, second word.\n',);
         expect(fixed.source.includes('- first,\n',),).toBe(true,);
@@ -192,7 +192,7 @@ await describe({
       name: 'inserts a blockquote continuation prefix',
       fn: async function blockquotePrefix() {
         /**
-         * Fixed blockquote.
+         Fixed blockquote.
          */
         const fixed = fix('> first, second word.\n',);
         expect(fixed.source.includes('> first,\n>',),).toBe(true,);
@@ -203,7 +203,7 @@ await describe({
       name: 'breaks after a bold span rather than inside its closing delimiter',
       fn: async function boldTail() {
         /**
-         * Fixed definition-list item, the shape the documentation tree is full of.
+         Fixed definition-list item, the shape the documentation tree is full of.
          */
         const fixed = fix('- **Term.** Explanation continues.\n',);
         expect(fixed.source.includes('- **Term.**\n',),).toBe(true,);
@@ -235,7 +235,7 @@ await describe({
       name: 'still breaks between sentences inside one bold span',
       fn: async function boldInternalBreak() {
         /**
-         * Fixed multi-sentence bold run.
+         Fixed multi-sentence bold run.
          */
         const fixed = fix('**First. Second.** Tail text here.\n',);
         expect(fixed.source.includes('**First.\n',),).toBe(true,);
@@ -356,12 +356,12 @@ await describe({
       name: 'the add-only fix is clean and idempotent in one pass',
       fn: async function idempotent() {
         /**
-         * First fixpoint result.
+         First fixpoint result.
          */
         const once = fix('one, two. three word.\n',);
         expect(once.diagnostics.length,).toBe(0,);
         /**
-         * Re-fixing the settled source.
+         Re-fixing the settled source.
          */
         const twice = fix(once.source,);
         expect(twice.source,).toBe(once.source,);

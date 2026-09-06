@@ -1,7 +1,7 @@
 /**
- * Unit tests for reusable Electron app staging helpers.
- *
- * @module
+ Unit tests for reusable Electron app staging helpers.
+ 
+ @module
  */
 
 import {
@@ -23,7 +23,7 @@ import {
 import { stageElectronApp, } from '../dist/final/node/index.mjs';
 
 /**
- * Disposable staging fixture.
+ Disposable staging fixture.
  */
 type StageFixture = {
   /** Package root path. */
@@ -33,18 +33,18 @@ type StageFixture = {
 };
 
 /**
- * Creates a minimal Electron package source tree.
- *
- * @returns Disposable staging fixture.
- *
- * @example
- * ```ts
- * await using fixture = await makeStageFixture();
- * ```
+ Creates a minimal Electron package source tree.
+ 
+ @returns Disposable staging fixture.
+ 
+ @example
+ ```ts
+ await using fixture = await makeStageFixture();
+ ```
  */
 async function makeStageFixture(): Promise<StageFixture> {
   /**
-   * Temporary package root.
+   Temporary package root.
    */
   const packageRoot = await mkdtemp(join(
     tmpdir(),

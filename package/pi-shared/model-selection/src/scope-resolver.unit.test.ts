@@ -1,7 +1,7 @@
 /**
- * Unit tests for effective scope resolution.
- *
- * @module
+ Unit tests for effective scope resolution.
+ 
+ @module
  */
 
 import {

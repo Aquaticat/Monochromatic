@@ -1,7 +1,7 @@
 /**
- * Test fixtures for shared model-selection unit tests.
- *
- * @module
+ Test fixtures for shared model-selection unit tests.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -9,90 +9,90 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { ReadonlyModel, } from './types.ts';
 
 /**
- * Cheap input token price.
+ Cheap input token price.
  */
 export const CHEAP_INPUT = 1;
 
 /**
- * Cheap output token price.
+ Cheap output token price.
  */
 export const CHEAP_OUTPUT = 2;
 
 /**
- * Mid input token price.
+ Mid input token price.
  */
 export const MID_INPUT = 3;
 
 /**
- * Mid output token price.
+ Mid output token price.
  */
 export const MID_OUTPUT = 4;
 
 /**
- * Expensive input token price.
+ Expensive input token price.
  */
 export const EXPENSIVE_INPUT = 5;
 
 /**
- * Expensive output token price.
+ Expensive output token price.
  */
 export const EXPENSIVE_OUTPUT = 8;
 
 /**
- * Fixture context budget.
+ Fixture context budget.
  */
 const CONTEXT_WINDOW = 128_000;
 
 /**
- * Fixture maximum output tokens.
+ Fixture maximum output tokens.
  */
 const MAX_TOKENS = 4_096;
 
 /**
- * Options for building fixture models.
+ Options for building fixture models.
  */
 export type FixtureModelOptions = {
   /**
-   * Provider slug.
+   Provider slug.
    */
   readonly provider: string;
   /**
-   * Model id.
+   Model id.
    */
   readonly id: string;
   /**
-   * Display name.
+   Display name.
    */
   readonly name?: string;
   /**
-   * Input-token price.
+   Input-token price.
    */
   readonly inputCost?: number;
   /**
-   * Output-token price.
+   Output-token price.
    */
   readonly outputCost?: number;
 };
 
 /**
- * Build a complete readonly model fixture.
- *
- * @param provider - provider slug
- *
- * @param id - model id
- *
- * @param name - optional display name
- *
- * @param inputCost - optional input token price
- *
- * @param outputCost - optional output token price
- *
- * @returns readonly model fixture
- *
- * @example
- * ```typescript
- * fixtureModel({ provider: 'openai', id: 'gpt-5.5' });
- * ```
+ Build a complete readonly model fixture.
+ 
+ @param provider - provider slug
+ 
+ @param id - model id
+ 
+ @param name - optional display name
+ 
+ @param inputCost - optional input token price
+ 
+ @param outputCost - optional output token price
+ 
+ @returns readonly model fixture
+ 
+ @example
+ ```typescript
+ fixtureModel({ provider: 'openai', id: 'gpt-5.5' });
+ ```
  */
 export function fixtureModel(
   {
@@ -123,16 +123,16 @@ export function fixtureModel(
 }
 
 /**
- * Return provider/model slug for a fixture model.
- *
- * @param model - model fixture
- *
- * @returns provider/model slug
- *
- * @example
- * ```typescript
- * fixtureSlug(model);
- * ```
+ Return provider/model slug for a fixture model.
+ 
+ @param model - model fixture
+ 
+ @returns provider/model slug
+ 
+ @example
+ ```typescript
+ fixtureSlug(model);
+ ```
  */
 export function fixtureSlug(
   model: Pick<ReadonlyModel, 'provider' | 'id'>,
@@ -141,18 +141,18 @@ export function fixtureSlug(
 }
 
 /**
- * Capture a synchronous error from an action.
- *
- * @param action - action expected to throw
- *
- * @returns caught error value
- *
- * @mutates action - invokes supplied test callback and its captured state
- *
- * @example
- * ```typescript
- * const error = captureError(function fail() { throw new Error('x'); });
- * ```
+ Capture a synchronous error from an action.
+ 
+ @param action - action expected to throw
+ 
+ @returns caught error value
+ 
+ @mutates action - invokes supplied test callback and its captured state
+ 
+ @example
+ ```typescript
+ const error = captureError(function fail() { throw new Error('x'); });
+ ```
  */
 export function captureError(
   action: ForeignBorrowed<() => unknown>,
@@ -167,18 +167,18 @@ export function captureError(
 }
 
 /**
- * Capture an async error from an action.
- *
- * @param action - async action expected to throw
- *
- * @returns caught error value
- *
- * @mutates action - invokes supplied async test callback and its captured state
- *
- * @example
- * ```typescript
- * const error = await captureAsyncError(async function fail() { throw new Error('x'); });
- * ```
+ Capture an async error from an action.
+ 
+ @param action - async action expected to throw
+ 
+ @returns caught error value
+ 
+ @mutates action - invokes supplied async test callback and its captured state
+ 
+ @example
+ ```typescript
+ const error = await captureAsyncError(async function fail() { throw new Error('x'); });
+ ```
  */
 export async function captureAsyncError(
   action: ForeignBorrowed<() => Promise<unknown>>,

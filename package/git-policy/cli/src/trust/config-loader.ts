@@ -1,7 +1,7 @@
 /**
- * Strict exact-snapshot trusted MJS execution.
- *
- * @module
+ Strict exact-snapshot trusted MJS execution.
+ 
+ @module
  */
 import { randomUUID, } from 'node:crypto';
 import { join, } from 'node:path';
@@ -20,7 +20,7 @@ import type {
 } from './types.ts';
 
 /**
- * Trusted configuration loading failure code.
+ Trusted configuration loading failure code.
  */
 export type TrustedConfigFailureCode =
   | 'config-untrusted'
@@ -28,24 +28,24 @@ export type TrustedConfigFailureCode =
   | 'trust-consent-unavailable'
   | 'trust-failed';
 /**
- * Trusted configuration loading failure.
+ Trusted configuration loading failure.
  */
 export class TrustedConfigError extends Error {
   /**
-   * Stable engine failure code.
+   Stable engine failure code.
    */
   public readonly code: TrustedConfigFailureCode;
 
   /**
-   * Creates trusted configuration failure.
-   *
-   * @param code - stable engine event code
-   *
-   * @param message - safe failure explanation
-   *
-   * @param options - optional underlying cause
-   *
-   * @mutates options through super options.cause getter or proxy effects
+   Creates trusted configuration failure.
+   
+   @param code - stable engine event code
+   
+   @param message - safe failure explanation
+   
+   @param options - optional underlying cause
+   
+   @mutates options through super options.cause getter or proxy effects
    */
   public constructor(
     code: TrustedConfigFailureCode,
@@ -62,18 +62,18 @@ export class TrustedConfigError extends Error {
 }
 
 /**
- * Compares exact byte sequences without hashing.
- *
- * @param left - first byte sequence
- *
- * @param right - second byte sequence
- *
- * @returns whether lengths and every byte match
- *
- * @example
- * ```ts
- * exactBytesEqual({ left: new Uint8Array([1]), right: new Uint8Array([1]) });
- * ```
+ Compares exact byte sequences without hashing.
+ 
+ @param left - first byte sequence
+ 
+ @param right - second byte sequence
+ 
+ @returns whether lengths and every byte match
+ 
+ @example
+ ```ts
+ exactBytesEqual({ left: new Uint8Array([1]), right: new Uint8Array([1]) });
+ ```
  */
 export function exactBytesEqual({
   left,
@@ -93,20 +93,20 @@ export function exactBytesEqual({
 }
 
 /**
- * Imports stored executable snapshot and validates default export.
- *
- * @param executablePath - private stored MJS path
- *
- * @returns runtime-authoritative validated configuration
- *
- * @example
- * ```ts
- * await executeStoredConfig('/private/snapshots/config.mjs');
- * ```
+ Imports stored executable snapshot and validates default export.
+ 
+ @param executablePath - private stored MJS path
+ 
+ @returns runtime-authoritative validated configuration
+ 
+ @example
+ ```ts
+ await executeStoredConfig('/private/snapshots/config.mjs');
+ ```
  */
 export async function executeStoredConfig(executablePath: string,): Promise<ValidatedConfig> {
   /**
-   * Exact stored executable bytes revalidated before import.
+   Exact stored executable bytes revalidated before import.
    */
   const executableBytes = await readPrivateFile(executablePath,);
   validateMjs({
@@ -114,7 +114,7 @@ export async function executeStoredConfig(executablePath: string,): Promise<Vali
     sourceName: executablePath,
   },);
   /**
-   * Cache-busting private stored executable URL.
+   Cache-busting private stored executable URL.
    */
   const executableUrl = pathToFileURL(executablePath,);
   executableUrl.searchParams
@@ -123,12 +123,12 @@ export async function executeStoredConfig(executablePath: string,): Promise<Vali
       randomUUID(),
     );
   /**
-   * Imported module namespace from private snapshot only.
+   Imported module namespace from private snapshot only.
    */
   const imported: unknown = await (async function importStoredSnapshot() {
     try {
       /**
-       * Dynamic import result narrowed to unknown boundary.
+       Dynamic import result narrowed to unknown boundary.
        */
       const importedModule: unknown = await import(executableUrl.href,);
       return importedModule;
@@ -162,20 +162,20 @@ export async function executeStoredConfig(executablePath: string,): Promise<Vali
 }
 
 /**
- * Verifies live bytes against record and executes only stored snapshot.
- *
- * @param recordDirectory - exact record directory
- *
- * @param candidate - freshly captured live source
- *
- * @param record - validated record
- *
- * @returns loaded trusted config
- *
- * @example
- * ```ts
- * await loadStrictMjs({ recordDirectory, candidate, record });
- * ```
+ Verifies live bytes against record and executes only stored snapshot.
+ 
+ @param recordDirectory - exact record directory
+ 
+ @param candidate - freshly captured live source
+ 
+ @param record - validated record
+ 
+ @returns loaded trusted config
+ 
+ @example
+ ```ts
+ await loadStrictMjs({ recordDirectory, candidate, record });
+ ```
  */
 export async function loadStrictMjs({
   recordDirectory,
@@ -187,7 +187,7 @@ export async function loadStrictMjs({
   record: TrustRecord;
 }>,): Promise<LoadedTrustedConfig> {
   /**
-   * Canonical sole MJS source record.
+   Canonical sole MJS source record.
    */
   const [source,] = record.sources;
   if ((record.format !== 'mjs') || (source === undefined)
@@ -213,14 +213,14 @@ export async function loadStrictMjs({
       'Trust record identity or source metadata does not match candidate.',
     );
   /**
-   * Private executable snapshot path.
+   Private executable snapshot path.
    */
   const snapshotPath = join(
     recordDirectory,
     record.executableSnapshotFile,
   );
   /**
-   * Exact stored bytes compared directly without hashing.
+   Exact stored bytes compared directly without hashing.
    */
   const snapshotBytes = await readPrivateFile(snapshotPath,);
   if (!exactBytesEqual({
@@ -233,7 +233,7 @@ export async function loadStrictMjs({
     );
   }
   /**
-   * Runtime-authoritative config imported from stored path.
+   Runtime-authoritative config imported from stored path.
    */
   const validated = await executeStoredConfig(snapshotPath,);
   return {
@@ -243,20 +243,20 @@ export async function loadStrictMjs({
 }
 
 /**
- * Verifies every tracked TypeScript source and executes stored bundle.
- *
- * @param recordDirectory - exact record directory
- *
- * @param candidate - freshly captured live entry
- *
- * @param record - validated TypeScript record
- *
- * @returns loaded trusted config
- *
- * @example
- * ```ts
- * await loadStrictTypeScript({ recordDirectory, candidate, record });
- * ```
+ Verifies every tracked TypeScript source and executes stored bundle.
+ 
+ @param recordDirectory - exact record directory
+ 
+ @param candidate - freshly captured live entry
+ 
+ @param record - validated TypeScript record
+ 
+ @returns loaded trusted config
+ 
+ @example
+ ```ts
+ await loadStrictTypeScript({ recordDirectory, candidate, record });
+ ```
  */
 export async function loadStrictTypeScript({
   recordDirectory,
@@ -291,13 +291,13 @@ export async function loadStrictTypeScript({
     );
   }
   /**
-   * Exact comparison result for every tracked source.
+   Exact comparison result for every tracked source.
    */
   const sourceMatches = await Promise.all(record.sources
     .map(async function sourceMatchesSnapshot(source,) {
     try {
       /**
-       * Fresh exact live source bytes.
+       Fresh exact live source bytes.
        */
       const liveBytes = source.canonicalPath
         === candidate.discovered
@@ -305,7 +305,7 @@ export async function loadStrictTypeScript({
         ? candidate.bytes
         : (await captureTrustSource(source.canonicalPath,)).bytes;
       /**
-       * Exact private source snapshot bytes.
+       Exact private source snapshot bytes.
        */
       const storedBytes = await readPrivateFile(join(
         recordDirectory,
@@ -333,14 +333,14 @@ export async function loadStrictTypeScript({
     );
   }
   /**
-   * Private executable bundle path.
+   Private executable bundle path.
    */
   const executablePath = join(
     recordDirectory,
     record.executableSnapshotFile,
   );
   /**
-   * Runtime-authoritative config imported only from stored bundle.
+   Runtime-authoritative config imported only from stored bundle.
    */
   const validated = await executeStoredConfig(executablePath,);
   return {

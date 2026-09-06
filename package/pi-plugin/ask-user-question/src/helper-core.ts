@@ -17,7 +17,7 @@ import { readHelperRequest, } from './helper-request.ts';
 //region Logger
 
 /**
- * Tagged logger for detached answer helper.
+ Tagged logger for detached answer helper.
  */
 const l = tagged({ tag: 'ask-user-question:helper-core', },);
 
@@ -26,28 +26,28 @@ const l = tagged({ tag: 'ask-user-question:helper-core', },);
 //region Public helper
 
 /**
- * Authenticates with Pi,
- * runs configured editor,
- * and sends terminal completion frame.
- *
- * @param requestPath - private helper request path
- *
- * @throws when request or loopback connection cannot be established
- *
- * @example
- * ```ts
- * await runAnswerHelper({ requestPath: '/tmp/request.json' });
- * ```
+ Authenticates with Pi,
+ runs configured editor,
+ and sends terminal completion frame.
+ 
+ @param requestPath - private helper request path
+ 
+ @throws when request or loopback connection cannot be established
+ 
+ @example
+ ```ts
+ await runAnswerHelper({ requestPath: '/tmp/request.json' });
+ ```
  */
 export async function runAnswerHelper(
   { requestPath, }: { readonly requestPath: string; },
 ): Promise<void> {
   /**
-   * Private endpoint and answer file from Pi process.
+   Private endpoint and answer file from Pi process.
    */
   const request = await readHelperRequest({ requestPath, },);
   /**
-   * Loopback connection kept open for editor lifetime.
+   Loopback connection kept open for editor lifetime.
    */
   const socket = createConnection({
     host: request.host,
@@ -60,7 +60,7 @@ export async function runAnswerHelper(
   socket.setNoDelay(true,);
   socket.write(`${request.token}\n`,);
   /**
-   * Cancels attached editor if originating Pi request disappears.
+   Cancels attached editor if originating Pi request disappears.
    */
   const controller = new AbortController();
   socket.once(
@@ -71,7 +71,7 @@ export async function runAnswerHelper(
   );
   try {
     /**
-     * Attached editor outcome mapped directly to protocol status.
+     Attached editor outcome mapped directly to protocol status.
      */
     const status = await runEditor({
       answerPath: request.answerPath,
@@ -102,11 +102,11 @@ export async function runAnswerHelper(
 //region Protocol output
 
 /**
- * Sends one terminal completion frame and waits for socket settlement.
- *
- * @param socket - authenticated Pi socket
- *
- * @param completion - terminal editor completion status
+ Sends one terminal completion frame and waits for socket settlement.
+ 
+ @param socket - authenticated Pi socket
+ 
+ @param completion - terminal editor completion status
  */
 async function sendCompletion(
   {
@@ -118,7 +118,7 @@ async function sendCompletion(
   },
 ): Promise<void> {
   /**
-   * Close event subscribed before ending stream to avoid race.
+   Close event subscribed before ending stream to avoid race.
    */
   const closed = once(
     socket,

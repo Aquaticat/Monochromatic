@@ -30,9 +30,9 @@ type DiscoveryFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable real Git repository.
- *
- * @returns disposable discovery fixture
+ Creates disposable real Git repository.
+ 
+ @returns disposable discovery fixture
  */
 async function createFixture(): Promise<DiscoveryFixture> {
   /** Disposable fixture root. */

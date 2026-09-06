@@ -1,10 +1,10 @@
 /**
- * Distribution manifest writer for Electron Packager runs.
- *
- * @example
- * ```ts
- * await writeDistributionManifest({ appBundleId: 'dev.example.app', electronVersion: '42.0.0', manifestPath: '/tmp/manifest.json', targets: [] });
- * ```
+ Distribution manifest writer for Electron Packager runs.
+ 
+ @example
+ ```ts
+ await writeDistributionManifest({ appBundleId: 'dev.example.app', electronVersion: '42.0.0', manifestPath: '/tmp/manifest.json', targets: [] });
+ ```
  */
 
 import { writeFile, } from 'node:fs/promises';
@@ -15,20 +15,20 @@ import {
 } from './distribution-targets.js';
 
 /**
- * Writes a machine-readable manifest for dry-run and completed distribution runs.
- *
- * @param appBundleId - Stable Electron application bundle identifier.
- *
- * @param electronVersion - Electron version used for target bundles.
- *
- * @param manifestPath - JSON path receiving the manifest.
- *
- * @param targets - Distribution targets represented in the manifest.
- *
- * @example
- * ```ts
- * await writeDistributionManifest({ appBundleId: 'dev.example.app', electronVersion: '42.0.0', manifestPath: '/tmp/manifest.json', targets: [] });
- * ```
+ Writes a machine-readable manifest for dry-run and completed distribution runs.
+ 
+ @param appBundleId - Stable Electron application bundle identifier.
+ 
+ @param electronVersion - Electron version used for target bundles.
+ 
+ @param manifestPath - JSON path receiving the manifest.
+ 
+ @param targets - Distribution targets represented in the manifest.
+ 
+ @example
+ ```ts
+ await writeDistributionManifest({ appBundleId: 'dev.example.app', electronVersion: '42.0.0', manifestPath: '/tmp/manifest.json', targets: [] });
+ ```
  */
 export async function writeDistributionManifest(
   {

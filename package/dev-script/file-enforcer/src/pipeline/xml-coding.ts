@@ -1,54 +1,54 @@
 //region XML attribute coding: escape and unescape JetBrains attribute text
 
 /**
- * ASCII code point of the first decimal digit `0`.
+ ASCII code point of the first decimal digit `0`.
  */
 const DIGIT_ZERO_CODE_POINT = 48;
 
 /**
- * ASCII code point of the last decimal digit `9`.
+ ASCII code point of the last decimal digit `9`.
  */
 const DIGIT_NINE_CODE_POINT = 57;
 
 /**
- * Decimal radix used when parsing `&#NN;` numeric entities.
+ Decimal radix used when parsing `&#NN;` numeric entities.
  */
 const DECIMAL_RADIX = 10;
 
 /**
- * Hexadecimal radix used when parsing `&#xNN;` numeric entities.
+ Hexadecimal radix used when parsing `&#xNN;` numeric entities.
  */
 const HEX_RADIX = 16;
 
 /**
- * Checks whether a code point is an ASCII decimal digit.
- *
- * @param codePoint - Code point to test.
- *
- * @returns Whether the code point is `0` through `9`.
- *
- * @example
- * ```ts
- * isDigitCodePoint({ codePoint: 53 });
- * ```
+ Checks whether a code point is an ASCII decimal digit.
+ 
+ @param codePoint - Code point to test.
+ 
+ @returns Whether the code point is `0` through `9`.
+ 
+ @example
+ ```ts
+ isDigitCodePoint({ codePoint: 53 });
+ ```
  */
 export function isDigitCodePoint({ codePoint, }: { readonly codePoint: number; },): boolean {
   return (codePoint >= DIGIT_ZERO_CODE_POINT) && (codePoint <= DIGIT_NINE_CODE_POINT);
 }
 
 /**
- * Decodes one numeric XML entity code point.
- *
- * @param text - Numeric text after entity prefix.
- *
- * @param radix - Number base used by entity notation.
- *
- * @returns Decoded code point, or original entity syntax when invalid.
- *
- * @example
- * ```ts
- * decodeXmlCodePoint({ text: '10', radix: 10 });
- * ```
+ Decodes one numeric XML entity code point.
+ 
+ @param text - Numeric text after entity prefix.
+ 
+ @param radix - Number base used by entity notation.
+ 
+ @returns Decoded code point, or original entity syntax when invalid.
+ 
+ @example
+ ```ts
+ decodeXmlCodePoint({ text: '10', radix: 10 });
+ ```
  */
 function decodeXmlCodePoint({
   text,
@@ -58,7 +58,7 @@ function decodeXmlCodePoint({
   readonly text: string
 },): string {
   /**
-   * Numeric code point parsed from the entity body.
+   Numeric code point parsed from the entity body.
    */
   const codePoint = Number.parseInt(
     text,
@@ -75,17 +75,17 @@ function decodeXmlCodePoint({
 }
 
 /**
- * Decodes one XML entity body, delegating numeric entities to
- * {@link decodeXmlCodePoint}.
- *
- * @param entity - Entity body between ampersand and semicolon.
- *
- * @returns Decoded entity, or original entity syntax when unknown.
- *
- * @example
- * ```ts
- * decodeXmlEntity({ entity: 'quot' });
- * ```
+ Decodes one XML entity body, delegating numeric entities to
+ {@link decodeXmlCodePoint}.
+ 
+ @param entity - Entity body between ampersand and semicolon.
+ 
+ @returns Decoded entity, or original entity syntax when unknown.
+ 
+ @example
+ ```ts
+ decodeXmlEntity({ entity: 'quot' });
+ ```
  */
 function decodeXmlEntity({ entity, }: { readonly entity: string; },): string {
   if (entity === 'quot') return '"';
@@ -105,30 +105,30 @@ function decodeXmlEntity({ entity, }: { readonly entity: string; },): string {
 }
 
 /**
- * Decodes XML attribute text used by JetBrains persistent-state files, via
- * {@link decodeXmlEntity} for each entity found.
- *
- * @param value - XML attribute value without surrounding quote characters.
- *
- * @returns Decoded text.
- *
- * @example
- * ```ts
- * unescapeXmlAttribute({ value: '&quot;x&quot;' });
- * ```
+ Decodes XML attribute text used by JetBrains persistent-state files, via
+ {@link decodeXmlEntity} for each entity found.
+ 
+ @param value - XML attribute value without surrounding quote characters.
+ 
+ @returns Decoded text.
+ 
+ @example
+ ```ts
+ unescapeXmlAttribute({ value: '&quot;x&quot;' });
+ ```
  */
 export function unescapeXmlAttribute({ value, }: { readonly value: string; },): string {
   /**
-   * Accumulated decoded output.
+   Accumulated decoded output.
    */
   let output = '';
   /**
-   * Scan cursor into the source value.
+   Scan cursor into the source value.
    */
   let cursorIndex = 0;
   while (cursorIndex < value.length) {
     /**
-     * Index of the next entity ampersand, or -1 when none remain.
+     Index of the next entity ampersand, or -1 when none remain.
      */
     const entityStart = value.indexOf(
       '&',
@@ -143,7 +143,7 @@ export function unescapeXmlAttribute({ value, }: { readonly value: string; },): 
       entityStart,
     );
     /**
-     * Index of the entity-terminating semicolon, or -1 when unterminated.
+     Index of the entity-terminating semicolon, or -1 when unterminated.
      */
     const entityEnd = value.indexOf(
       ';',
@@ -163,20 +163,20 @@ export function unescapeXmlAttribute({ value, }: { readonly value: string; },): 
 }
 
 /**
- * Encodes text for a double-quoted XML attribute.
- *
- * @param value - Raw attribute text.
- *
- * @returns XML-safe attribute value.
- *
- * @example
- * ```ts
- * escapeXmlAttribute({ value: '"x"' });
- * ```
+ Encodes text for a double-quoted XML attribute.
+ 
+ @param value - Raw attribute text.
+ 
+ @returns XML-safe attribute value.
+ 
+ @example
+ ```ts
+ escapeXmlAttribute({ value: '"x"' });
+ ```
  */
 export function escapeXmlAttribute({ value, }: { readonly value: string; },): string {
   /**
-   * Accumulated XML-safe output.
+   Accumulated XML-safe output.
    */
   let output = '';
   for (const char of value) {
@@ -193,20 +193,20 @@ export function escapeXmlAttribute({ value, }: { readonly value: string; },): st
 }
 
 /**
- * Renders one XML option line.
- *
- * @param indent - Whitespace prefix for line.
- *
- * @param name - Option name.
- *
- * @param value - Raw option value, escaped via {@link escapeXmlAttribute}.
- *
- * @returns XML option line.
- *
- * @example
- * ```ts
- * xmlOptionLine({ indent: '  ', name: 'x', value: 'y' });
- * ```
+ Renders one XML option line.
+ 
+ @param indent - Whitespace prefix for line.
+ 
+ @param name - Option name.
+ 
+ @param value - Raw option value, escaped via {@link escapeXmlAttribute}.
+ 
+ @returns XML option line.
+ 
+ @example
+ ```ts
+ xmlOptionLine({ indent: '  ', name: 'x', value: 'y' });
+ ```
  */
 export function xmlOptionLine(
   {

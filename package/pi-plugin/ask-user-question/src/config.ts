@@ -19,7 +19,7 @@ import {
 //region Constants
 
 /**
- * Missing-file system error code.
+ Missing-file system error code.
  */
 const FILE_NOT_FOUND_CODE = 'ENOENT';
 
@@ -28,7 +28,7 @@ const FILE_NOT_FOUND_CODE = 'ENOENT';
 //region Logger
 
 /**
- * Tagged logger for user config loading.
+ Tagged logger for user config loading.
  */
 const l = tagged({ tag: 'ask-user-question:config', },);
 
@@ -37,11 +37,11 @@ const l = tagged({ tag: 'ask-user-question:config', },);
 //region File reading
 
 /**
- * Narrows missing-file system errors without unsafe assertion.
- *
- * @param error - caught filesystem value
- *
- * @returns whether error carries ENOENT code
+ Narrows missing-file system errors without unsafe assertion.
+ 
+ @param error - caught filesystem value
+ 
+ @returns whether error carries ENOENT code
  */
 function isFileNotFoundError(error: unknown,): boolean {
   if (!Error.isError(error,))
@@ -52,22 +52,22 @@ function isFileNotFoundError(error: unknown,): boolean {
 }
 
 /**
- * Reads optional JSON config and validates its shape.
- *
- * @param configPath - absolute user config path
- *
- * @returns validated file and presence marker
- *
- * @throws {@link AskUserQuestionConfigError} for read,
- * parse,
- * or shape failures
+ Reads optional JSON config and validates its shape.
+ 
+ @param configPath - absolute user config path
+ 
+ @returns validated file and presence marker
+ 
+ @throws {@link AskUserQuestionConfigError} for read,
+ parse,
+ or shape failures
  */
 async function readConfigFile(
   { configPath, }: { readonly configPath: string; },
 ): Promise<AskUserQuestionConfigReadResult> {
   try {
     /**
-     * Decoded JSON candidate.
+     Decoded JSON candidate.
      */
     const value: unknown = JSON.parse(await readFile(
       configPath,
@@ -104,45 +104,45 @@ async function readConfigFile(
 //region Public loading
 
 /**
- * Loads user editor override and resolves effective editor command.
- *
- * User config takes precedence over VISUAL,
- * then EDITOR,
- * then platform fallback.
- *
- * @param options - optional home,
- * environment,
- * and platform overrides
- *
- * @returns effective editor command and source metadata
- *
- * @throws {@link AskUserQuestionConfigError} when config cannot be read or validated
- *
- * @example
- * ```ts
- * await loadAskUserQuestionConfig();
- * ```
+ Loads user editor override and resolves effective editor command.
+ 
+ User config takes precedence over VISUAL,
+ then EDITOR,
+ then platform fallback.
+ 
+ @param options - optional home,
+ environment,
+ and platform overrides
+ 
+ @returns effective editor command and source metadata
+ 
+ @throws {@link AskUserQuestionConfigError} when config cannot be read or validated
+ 
+ @example
+ ```ts
+ await loadAskUserQuestionConfig();
+ ```
  */
 export async function loadAskUserQuestionConfig(
   options: LoadAskUserQuestionConfigOptions = {},
 ): Promise<AskUserQuestionConfig> {
   /**
-   * Effective home without hardcoded account path.
+   Effective home without hardcoded account path.
    */
   const home = options.home
     ?? process.env
     .HOME
     ?? homedir();
   /**
-   * User config path.
+   User config path.
    */
   const configPath = askUserQuestionConfigPath({ home, },);
   /**
-   * Optional parsed config file.
+   Optional parsed config file.
    */
   const file = await readConfigFile({ configPath, },);
   /**
-   * Effective editor environment.
+   Effective editor environment.
    */
   const env = options.env
     ?? editorEnvironmentFromProcess(process.env,);

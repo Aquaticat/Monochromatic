@@ -1,14 +1,14 @@
 /**
- * Equivalence tests for `firstWhitespaceIndex`.
- *
- * Captures the pre-refactor behavior of the sha256sum hash-token scanner
- * (formerly the nested recursive `findFirstWhitespace` inside `checksum`)
- * so the linear-pass rewrite stays behavior-identical: empty input, no
- * whitespace at all, each whitespace kind (space, tab, newline, carriage
- * return), leading and all-whitespace input, the real "<hash>  file"
- * shape, and a long no-whitespace run the old recursion would overflow on.
- *
- * @module
+ Equivalence tests for `firstWhitespaceIndex`.
+ 
+ Captures the pre-refactor behavior of the sha256sum hash-token scanner
+ (formerly the nested recursive `findFirstWhitespace` inside `checksum`)
+ so the linear-pass rewrite stays behavior-identical: empty input, no
+ whitespace at all, each whitespace kind (space, tab, newline, carriage
+ return), leading and all-whitespace input, the real "<hash>  file"
+ shape, and a long no-whitespace run the old recursion would overflow on.
+ 
+ @module
  */
 
 import {

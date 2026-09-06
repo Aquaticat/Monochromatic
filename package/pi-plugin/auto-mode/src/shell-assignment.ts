@@ -1,11 +1,11 @@
 /**
- * Shell assignment word helpers.
- *
- * Bash treats leading `NAME=value` words as environment assignments for the
- * command that follows. The guardrail also uses assignment-name extraction to
- * recognise credential handoffs in commands that include command substitution.
- *
- * @module
+ Shell assignment word helpers.
+ 
+ Bash treats leading `NAME=value` words as environment assignments for the
+ command that follows. The guardrail also uses assignment-name extraction to
+ recognise credential handoffs in commands that include command substitution.
+ 
+ @module
  */
 
 import type { EnvAssignment, } from './types.ts';
@@ -13,12 +13,12 @@ import type { EnvAssignment, } from './types.ts';
 //region Sentinels
 
 /**
- * Sentinel returned when token is not shell assignment word.
+ Sentinel returned when token is not shell assignment word.
  */
 const NO_SHELL_ASSIGNMENT: unique symbol = Symbol('shell assignment prefix absent before command',);
 
 /**
- * Result from parsing shell assignment word.
+ Result from parsing shell assignment word.
  */
 type ShellAssignmentParseResult = EnvAssignment | typeof NO_SHELL_ASSIGNMENT;
 
@@ -27,31 +27,31 @@ type ShellAssignmentParseResult = EnvAssignment | typeof NO_SHELL_ASSIGNMENT;
 //region Public API
 
 /**
- * Parse shell assignment word when whole token is `NAME=value`, validated
- * with {@link isShellIdentifier}.
- *
- * @param word - shell token to inspect
- *
- * @returns parsed assignment when token starts with valid shell identifier
- *
- * @example
- * ```typescript
- * parseShellAssignmentWord('API_KEY=value'); // { name: 'API_KEY', value: 'value' }
- * parseShellAssignmentWord('echo'); // NO_SHELL_ASSIGNMENT
- * ```
+ Parse shell assignment word when whole token is `NAME=value`, validated
+ with {@link isShellIdentifier}.
+ 
+ @param word - shell token to inspect
+ 
+ @returns parsed assignment when token starts with valid shell identifier
+ 
+ @example
+ ```typescript
+ parseShellAssignmentWord('API_KEY=value'); // { name: 'API_KEY', value: 'value' }
+ parseShellAssignmentWord('echo'); // NO_SHELL_ASSIGNMENT
+ ```
  */
 function parseShellAssignmentWord(
   word: string,
 ): ShellAssignmentParseResult {
   /**
-   * Equals sign separating shell assignment name from value.
+   Equals sign separating shell assignment name from value.
    */
   const equalsIndex = word.indexOf('=',);
   if (equalsIndex <= 0)
     return NO_SHELL_ASSIGNMENT;
 
   /**
-   * Candidate variable name before equals sign.
+   Candidate variable name before equals sign.
    */
   const name = word.slice(
     0,
@@ -67,42 +67,42 @@ function parseShellAssignmentWord(
 }
 
 /**
- * Extract shell assignment names embedded anywhere in token text.
- *
- * Trusted-helper detection scans rendered command words and assignment words,
- * including fragments that may contain multiple shell statements. This helper
- * recovers assignment names from that text without treating source text as
- * regular expressions, using {@link isShellIdentifierStartChar} and
- * {@link isShellIdentifierChar} to scan and {@link findShellIdentifierEnd} to
- * bound each candidate.
- *
- * @param word - shell token or token fragment to scan
- *
- * @returns assignment names found before equals signs
- *
- * @example
- * ```typescript
- * extractShellAssignmentNames('); API_KEY='); // ['API_KEY']
- * ```
+ Extract shell assignment names embedded anywhere in token text.
+ 
+ Trusted-helper detection scans rendered command words and assignment words,
+ including fragments that may contain multiple shell statements. This helper
+ recovers assignment names from that text without treating source text as
+ regular expressions, using {@link isShellIdentifierStartChar} and
+ {@link isShellIdentifierChar} to scan and {@link findShellIdentifierEnd} to
+ bound each candidate.
+ 
+ @param word - shell token or token fragment to scan
+ 
+ @returns assignment names found before equals signs
+ 
+ @example
+ ```typescript
+ extractShellAssignmentNames('); API_KEY='); // ['API_KEY']
+ ```
  */
 function extractShellAssignmentNames(
   word: string,
 ): readonly string[] {
   /**
-   * Assignment names discovered while scanning token text.
+   Assignment names discovered while scanning token text.
    */
   const names: string[] = [];
 
   for (let loopIndex = 0; loopIndex < word.length; loopIndex += 1) {
     /**
-     * Character where a shell identifier may begin.
+     Character where a shell identifier may begin.
      */
     const candidateStart = word.at(loopIndex,) ?? '';
     if (!isShellIdentifierStartChar(candidateStart,))
       continue;
 
     /**
-     * Previous character blocks matches from middle of longer identifiers.
+     Previous character blocks matches from middle of longer identifiers.
      */
     const previous = loopIndex > 0
       ? word.at(loopIndex - 1,) ?? ''
@@ -111,7 +111,7 @@ function extractShellAssignmentNames(
       continue;
 
     /**
-     * Index immediately after contiguous shell identifier characters.
+     Index immediately after contiguous shell identifier characters.
      */
     const identifierEnd = findShellIdentifierEnd({
       word,
@@ -134,19 +134,19 @@ function extractShellAssignmentNames(
 //region Character helpers
 
 /**
- * Check whether string is valid shell identifier, testing the first
- * character with {@link isShellIdentifierStartChar} and the rest with
- * {@link isShellIdentifierChar}.
- *
- * @param value - identifier candidate
- *
- * @returns whether candidate follows shell variable naming rules
- *
- * @example
- * ```typescript
- * isShellIdentifier('API_KEY'); // true
- * isShellIdentifier('1API_KEY'); // false
- * ```
+ Check whether string is valid shell identifier, testing the first
+ character with {@link isShellIdentifierStartChar} and the rest with
+ {@link isShellIdentifierChar}.
+ 
+ @param value - identifier candidate
+ 
+ @returns whether candidate follows shell variable naming rules
+ 
+ @example
+ ```typescript
+ isShellIdentifier('API_KEY'); // true
+ isShellIdentifier('1API_KEY'); // false
+ ```
  */
 function isShellIdentifier(
   value: string,
@@ -165,19 +165,19 @@ function isShellIdentifier(
 }
 
 /**
- * Find first index after shell identifier characters, tested with
- * {@link isShellIdentifierChar}.
- *
- * @param word - token text being scanned
- *
- * @param start - index where identifier starts
- *
- * @returns index of first non-identifier character
- *
- * @example
- * ```typescript
- * findShellIdentifierEnd({ word: 'API_KEY=value', start: 0 }); // 7
- * ```
+ Find first index after shell identifier characters, tested with
+ {@link isShellIdentifierChar}.
+ 
+ @param word - token text being scanned
+ 
+ @param start - index where identifier starts
+ 
+ @returns index of first non-identifier character
+ 
+ @example
+ ```typescript
+ findShellIdentifierEnd({ word: 'API_KEY=value', start: 0 }); // 7
+ ```
  */
 function findShellIdentifierEnd(
   {
@@ -197,17 +197,17 @@ function findShellIdentifierEnd(
 }
 
 /**
- * Check whether character may start shell identifier.
- *
- * @param char - single-character string
- *
- * @returns whether character is ASCII letter or underscore
- *
- * @example
- * ```typescript
- * isShellIdentifierStartChar('A'); // true
- * isShellIdentifierStartChar('1'); // false
- * ```
+ Check whether character may start shell identifier.
+ 
+ @param char - single-character string
+ 
+ @returns whether character is ASCII letter or underscore
+ 
+ @example
+ ```typescript
+ isShellIdentifierStartChar('A'); // true
+ isShellIdentifierStartChar('1'); // false
+ ```
  */
 function isShellIdentifierStartChar(
   char: string,
@@ -218,17 +218,17 @@ function isShellIdentifierStartChar(
 }
 
 /**
- * Check whether character may appear after first shell identifier character.
- *
- * @param char - single-character string
- *
- * @returns whether character is ASCII letter, digit, or underscore
- *
- * @example
- * ```typescript
- * isShellIdentifierChar('1'); // true
- * isShellIdentifierChar('-'); // false
- * ```
+ Check whether character may appear after first shell identifier character.
+ 
+ @param char - single-character string
+ 
+ @returns whether character is ASCII letter, digit, or underscore
+ 
+ @example
+ ```typescript
+ isShellIdentifierChar('1'); // true
+ isShellIdentifierChar('-'); // false
+ ```
  */
 function isShellIdentifierChar(
   char: string,

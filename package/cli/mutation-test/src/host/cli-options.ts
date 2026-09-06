@@ -1,13 +1,13 @@
 /**
- * CLI option parsing for the mutation-test bin.
- *
- * Lives apart from the executable entrypoint so tests can import the
- * parser from the built library without executing a run.
- *
- * @example
- * ```ts
- * parseCliOptions(['--package', 'package/module/fs-path']);
- * ```
+ CLI option parsing for the mutation-test bin.
+ 
+ Lives apart from the executable entrypoint so tests can import the
+ parser from the built library without executing a run.
+ 
+ @example
+ ```ts
+ parseCliOptions(['--package', 'package/module/fs-path']);
+ ```
  */
 
 import { cwd, } from 'node:process';
@@ -15,37 +15,37 @@ import { cwd, } from 'node:process';
 import type { OrchestrateOptions, } from './orchestrate-types.ts';
 
 /**
- * Default mutants per shard; tuned after first benchmarks.
+ Default mutants per shard; tuned after first benchmarks.
  */
 const DEFAULT_SHARD_SIZE = 16;
 
 /**
- * Default concurrent shard containers.
+ Default concurrent shard containers.
  */
 const DEFAULT_CONTAINERS = 2;
 
 /**
- * Default per-mutant test timeout floor in milliseconds.
+ Default per-mutant test timeout floor in milliseconds.
  */
 const DEFAULT_TIMEOUT_FLOOR_MS = 5_000;
 
 /**
- * Default multiple of baseline test time allowed per mutant.
+ Default multiple of baseline test time allowed per mutant.
  */
 const DEFAULT_TIMEOUT_FACTOR = 3;
 
 /**
- * Default per-container session timeout in seconds.
+ Default per-container session timeout in seconds.
  */
 const DEFAULT_SESSION_TIMEOUT_SECONDS = 1_800;
 
 /**
- * Default pids cap per container.
+ Default pids cap per container.
  */
 const DEFAULT_PIDS_LIMIT = 512;
 
 /**
- * Parsed CLI options plus run mode.
+ Parsed CLI options plus run mode.
  */
 export type CliOptions = OrchestrateOptions & {
   dryRun: boolean;
@@ -53,19 +53,19 @@ export type CliOptions = OrchestrateOptions & {
 };
 
 /**
- * Reads one flag value, throwing when it is missing.
- *
- * @param options - Argv, cursor, and flag name.
- *
- * @returns Value following the flag.
- *
- * @throws Error when no value follows.
- *
- * @example
- * ```ts
- * flagValue({ argv: ['--x', 'y'], cursor: 0, name: '--x' });
- * // 'y'
- * ```
+ Reads one flag value, throwing when it is missing.
+ 
+ @param options - Argv, cursor, and flag name.
+ 
+ @returns Value following the flag.
+ 
+ @throws Error when no value follows.
+ 
+ @example
+ ```ts
+ flagValue({ argv: ['--x', 'y'], cursor: 0, name: '--x' });
+ // 'y'
+ ```
  */
 function flagValue(options: {
   readonly argv: readonly string[];
@@ -73,7 +73,7 @@ function flagValue(options: {
   readonly name: string;
 },): string {
   /**
-   * Candidate value following the flag.
+   Candidate value following the flag.
    */
   const value = options.argv[options.cursor + 1];
 
@@ -84,26 +84,26 @@ function flagValue(options: {
 }
 
 /**
- * Parses one positive integer flag value.
- *
- * @param options - Raw value and flag name.
- *
- * @returns Parsed positive integer.
- *
- * @throws Error when not a positive integer.
- *
- * @example
- * ```ts
- * positiveInteger({ value: '4', name: '--containers' });
- * // 4
- * ```
+ Parses one positive integer flag value.
+ 
+ @param options - Raw value and flag name.
+ 
+ @returns Parsed positive integer.
+ 
+ @throws Error when not a positive integer.
+ 
+ @example
+ ```ts
+ positiveInteger({ value: '4', name: '--containers' });
+ // 4
+ ```
  */
 function positiveInteger(options: {
   readonly value: string;
   readonly name: string;
 },): number {
   /**
-   * Numeric parse of the flag value.
+   Numeric parse of the flag value.
    */
   const parsed = Number(options.value,);
 
@@ -114,22 +114,22 @@ function positiveInteger(options: {
 }
 
 /**
- * Parses CLI argv into run options.
- *
- * @param argv - Raw arguments after the bin name.
- *
- * @returns Parsed options.
- *
- * @throws Error on unknown flags or missing package path.
- *
- * @example
- * ```ts
- * parseCliOptions(['--package', 'package/module/fs-path']);
- * ```
+ Parses CLI argv into run options.
+ 
+ @param argv - Raw arguments after the bin name.
+ 
+ @returns Parsed options.
+ 
+ @throws Error on unknown flags or missing package path.
+ 
+ @example
+ ```ts
+ parseCliOptions(['--package', 'package/module/fs-path']);
+ ```
  */
 export function parseCliOptions(argv: readonly string[],): CliOptions {
   /**
-   * Mutable accumulator for parsed options.
+   Mutable accumulator for parsed options.
    */
   const state = {
     packagePath: '',
@@ -153,7 +153,7 @@ export function parseCliOptions(argv: readonly string[],): CliOptions {
 
   while (state.cursor < argv.length) {
     /**
-     * Current argument under the cursor.
+     Current argument under the cursor.
      */
     const arg = argv[state.cursor] ?? '';
 

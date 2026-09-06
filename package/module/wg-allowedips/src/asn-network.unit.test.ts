@@ -11,16 +11,16 @@ import {
 } from '../dist/final/node/asn-network.mjs';
 
 /**
- * Captures synchronous error from operation expected to throw.
- *
- * @param operation - Operation expected to throw.
- *
- * @returns Thrown value.
- *
- * @example
- * ```ts
- * captureThrown({ operation: () => { throw new Error('fixture'); } });
- * ```
+ Captures synchronous error from operation expected to throw.
+ 
+ @param operation - Operation expected to throw.
+ 
+ @returns Thrown value.
+ 
+ @example
+ ```ts
+ captureThrown({ operation: () => { throw new Error('fixture'); } });
+ ```
  */
 function captureThrown(
   { operation, }: { readonly operation: () => unknown; },
@@ -56,7 +56,7 @@ await describe({
             name: `rejects ${JSON.stringify(asn,)}`,
             fn: async () => {
               /**
-               * Validation failure for invalid ASN fixture.
+               Validation failure for invalid ASN fixture.
                */
               const error = captureThrown({
                 operation: function normalizeInvalidAsn(): string {
@@ -101,7 +101,7 @@ await describe({
             name: `rejects ${network}`,
             fn: async () => {
               /**
-               * Validation failure for invalid network fixture.
+               Validation failure for invalid network fixture.
                */
               const error = captureThrown({
                 operation: function validateInvalidNetwork(): string {

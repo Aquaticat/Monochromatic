@@ -1,46 +1,46 @@
 /**
- * Cross-platform process birth identities for transaction ownership.
- *
- * @module
+ Cross-platform process birth identities for transaction ownership.
+ 
+ @module
  */
 import { readFile, } from 'node:fs/promises';
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 
 /**
- * Recorded PID does not currently identify a process.
+ Recorded PID does not currently identify a process.
  */
 export const PROCESS_IDENTITY_ABSENT: unique symbol = Symbol('transaction owner process identity absent',);
 
 /**
- * Resolves Linux kernel process start tick.
- *
- * @param pid - process identifier
- *
- * @returns birth identity or absence after process exit
+ Resolves Linux kernel process start tick.
+ 
+ @param pid - process identifier
+ 
+ @returns birth identity or absence after process exit
  */
 async function resolveLinuxIdentity(pid: number,): Promise<string | typeof PROCESS_IDENTITY_ABSENT> {
   try {
     /**
-     * Proc stat containing parenthesized command followed by numbered fields.
+     Proc stat containing parenthesized command followed by numbered fields.
      */
     const stat = await readFile(
       `/proc/${String(pid,)}/stat`,
       'utf8',
     );
     /**
-     * Final command delimiter before field three.
+     Final command delimiter before field three.
      */
     const commandEnd = stat.lastIndexOf(')',);
     if (commandEnd === (-1))
       throw new TypeError(`Malformed Linux process stat for PID ${String(pid,)}`,);
     /**
-     * Fields three onward.
+     Fields three onward.
      */
     const fields = stat.slice(commandEnd + 2,)
       .trim()
       .split(' ',);
     /**
-     * Field twenty-two relative to field-three origin.
+     Field twenty-two relative to field-three origin.
      */
     const startTick = fields[(2 ** (2 + 2)) + 2
       + 1];
@@ -57,15 +57,15 @@ async function resolveLinuxIdentity(pid: number,): Promise<string | typeof PROCE
 }
 
 /**
- * Resolves process identity through bounded platform command.
- *
- * @param command - platform process inspector
- *
- * @param args - exact inspector arguments
- *
- * @param prefix - platform identity prefix
- *
- * @returns birth identity or absence after process exit
+ Resolves process identity through bounded platform command.
+ 
+ @param command - platform process inspector
+ 
+ @param args - exact inspector arguments
+ 
+ @param prefix - platform identity prefix
+ 
+ @returns birth identity or absence after process exit
  */
 async function resolveCommandIdentity({
   command,
@@ -78,7 +78,7 @@ async function resolveCommandIdentity({
 }>,): Promise<string | typeof PROCESS_IDENTITY_ABSENT> {
   try {
     /**
-     * Locale-stable process inspector result.
+     Locale-stable process inspector result.
      */
     const result = await nanoSpawn(
       command,
@@ -86,7 +86,7 @@ async function resolveCommandIdentity({
       { env: { LC_ALL: 'C', }, },
     );
     /**
-     * Trimmed platform birth identity.
+     Trimmed platform birth identity.
      */
     const value = result.stdout
       .trim();
@@ -100,16 +100,16 @@ async function resolveCommandIdentity({
 }
 
 /**
- * Resolves stable PID plus process-birth identity on supported hosts.
- *
- * @param pid - process identifier
- *
- * @returns platform birth identity or absence after process exit
- *
- * @example
- * ```ts
- * await resolveProcessBirthIdentity(process.pid);
- * ```
+ Resolves stable PID plus process-birth identity on supported hosts.
+ 
+ @param pid - process identifier
+ 
+ @returns platform birth identity or absence after process exit
+ 
+ @example
+ ```ts
+ await resolveProcessBirthIdentity(process.pid);
+ ```
  */
 export function resolveProcessBirthIdentity(pid: number,): Promise<string | typeof PROCESS_IDENTITY_ABSENT> {
   if (process.platform === 'linux')

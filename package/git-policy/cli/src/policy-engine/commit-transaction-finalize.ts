@@ -1,7 +1,7 @@
 /**
- * Ref-advancing and recoverable index-install phase.
- *
- * @module
+ Ref-advancing and recoverable index-install phase.
+ 
+ @module
  */
 import {
   type OriginalHead,
@@ -18,7 +18,7 @@ import { resolveLandedCommitOid, } from './post-commit-facts.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
- * Strict landed tree decoder.
+ Strict landed tree decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
@@ -26,26 +26,26 @@ const DECODER = new TextDecoder(
 );
 
 /**
- * Runs real Git and installs prepared index with durable phase markers.
- *
- * @param workspace - prepared recoverable workspace
- *
- * @param gitPath - resolved real Git executable
- *
- * @param spawnCwd - caller cwd used with original global arguments
- *
- * @param effectiveCwd - parsed repository cwd
- *
- * @param commitArgs - final real Git commit arguments
- *
- * @param intendedTreeOid - exact policy-settled tree
- *
- * @param originalHead - journaled ref state before Git
- *
- * @example
- * ```ts
- * await executePreparedCommit({ workspace, gitPath: '/usr/bin/git', spawnCwd: '/work', effectiveCwd: '/repo', commitArgs: ['commit'], intendedTreeOid });
- * ```
+ Runs real Git and installs prepared index with durable phase markers.
+ 
+ @param workspace - prepared recoverable workspace
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param spawnCwd - caller cwd used with original global arguments
+ 
+ @param effectiveCwd - parsed repository cwd
+ 
+ @param commitArgs - final real Git commit arguments
+ 
+ @param intendedTreeOid - exact policy-settled tree
+ 
+ @param originalHead - journaled ref state before Git
+ 
+ @example
+ ```ts
+ await executePreparedCommit({ workspace, gitPath: '/usr/bin/git', spawnCwd: '/work', effectiveCwd: '/repo', commitArgs: ['commit'], intendedTreeOid });
+ ```
  */
 export async function executePreparedCommit({
   workspace,
@@ -77,7 +77,7 @@ export async function executePreparedCommit({
   catch (error: unknown) {
     workspace.preserveForRecovery();
     /**
-     * Ref state after failed or interrupted Git process.
+     Ref state after failed or interrupted Git process.
      */
     const currentHead = await resolveCurrentHead({
       gitPath,
@@ -94,14 +94,14 @@ export async function executePreparedCommit({
   }
   workspace.preserveForRecovery();
   /**
-   * Exact landed commit after successful private-index Git.
+   Exact landed commit after successful private-index Git.
    */
   const landedOid = await resolveLandedCommitOid({
     gitPath,
     cwd: effectiveCwd,
   },);
   /**
-   * Exact landed tree proving hooks did not change predicted content.
+   Exact landed tree proving hooks did not change predicted content.
    */
   const landedTreeOid = DECODER.decode((await runTransactionGit({
     gitPath,

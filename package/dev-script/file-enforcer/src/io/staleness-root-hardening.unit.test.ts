@@ -18,14 +18,14 @@ import { findNodeModulesRoot, } from '../../dist/final/node/index.mjs';
 //region Fixture helpers
 
 /**
- * Creates isolated temp directory for staleness root hardening tests.
- *
- * @returns Temp directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates isolated temp directory for staleness root hardening tests.
+ 
+ @returns Temp directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return await mkdtemp(join(
@@ -35,14 +35,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes isolated temp directory.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes isolated temp directory.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(
@@ -59,16 +59,16 @@ async function teardown(tempDir: string,): Promise<void> {
 //region Error capture helpers
 
 /**
- * Captures node_modules root discovery failure for assertion.
- *
- * @param startDirectory - Start directory passed to findNodeModulesRoot.
- *
- * @returns Caught error, or undefined when discovery resolves.
- *
- * @example
- * ```ts
- * const error = await findNodeModulesRootError('/tmp/project/packages/app');
- * ```
+ Captures node_modules root discovery failure for assertion.
+ 
+ @param startDirectory - Start directory passed to findNodeModulesRoot.
+ 
+ @returns Caught error, or undefined when discovery resolves.
+ 
+ @example
+ ```ts
+ const error = await findNodeModulesRootError('/tmp/project/packages/app');
+ ```
  */
 async function findNodeModulesRootError(startDirectory: string,): Promise<unknown> {
   try {

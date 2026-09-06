@@ -1,7 +1,7 @@
 /**
- * Demand-bounded owned inbound graph for declaration-global foreign provenance.
- *
- * @module
+ Demand-bounded owned inbound graph for declaration-global foreign provenance.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -39,25 +39,25 @@ import {
 import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
 
 /**
- * Foreign inbound graph logger.
+ Foreign inbound graph logger.
  */
 const l = tagged({ tag: 'foreign-borrowed-complete-graph', },);
 
 /**
- * Sentinel when TypeScript cannot enumerate signature usage.
+ Sentinel when TypeScript cannot enumerate signature usage.
  */
 const SIGNATURE_USAGE_UNAVAILABLE: unique symbol = Symbol(
   'TypeScript signature usages could not be enumerated',
 );
 
 /**
- * Reads project-wide usages for one exact callable signature.
- *
- * @param project - TypeScript semantic project snapshot.
- *
- * @param declaration - Callable whose inbound references are required.
- *
- * @returns signature usages or unavailable sentinel after logged failure.
+ Reads project-wide usages for one exact callable signature.
+ 
+ @param project - TypeScript semantic project snapshot.
+ 
+ @param declaration - Callable whose inbound references are required.
+ 
+ @returns signature usages or unavailable sentinel after logged failure.
  */
 function signatureUsages({
   project,
@@ -79,20 +79,20 @@ function signatureUsages({
 }
 
 /**
- * Creates ordinary unknown inbound edge that removes inferred provenance.
- *
- * @param declaration - Callee whose unknown inbound must fail closed.
- *
- * @returns synthetic caller summary carrying ordinary argument origins.
+ Creates ordinary unknown inbound edge that removes inferred provenance.
+ 
+ @param declaration - Callee whose unknown inbound must fail closed.
+ 
+ @returns synthetic caller summary carrying ordinary argument origins.
  */
 function unknownInboundSummary(
   declaration: EffectCallableDeclaration,
 ): MutableEffectSummary {
   /**
-   * Callee slots this synthetic edge answers for, all of them with no origins.
-   *
-   * Sized by the callee's slots rather than its formals, because that is what propagation
-   * indexes this array with. A callee that destructures has strictly more of the first.
+   Callee slots this synthetic edge answers for, all of them with no origins.
+   
+   Sized by the callee's slots rather than its formals, because that is what propagation
+   indexes this array with. A callee that destructures has strictly more of the first.
    */
   const emptyBySlot = parameterSlotTable({ declaration, },)
     .parameterOfSlot
@@ -100,7 +100,7 @@ function unknownInboundSummary(
     return [];
   },);
   /**
-   * Foreign origins per formal, empty for the same reason ordinary origins are.
+   Foreign origins per formal, empty for the same reason ordinary origins are.
    */
   const foreignOrigins = declaration.parameters
     .map(function emptyForeignOrigins(): readonly ParameterIndex[] {
@@ -164,11 +164,11 @@ function unknownInboundSummary(
 }
 
 /**
- * Records unknown inbound once for one callee.
- *
- * @param summaries - Mutable ownership summaries.
- *
- * @param declaration - Callee whose inbound cannot be proven.
+ Records unknown inbound once for one callee.
+ 
+ @param summaries - Mutable ownership summaries.
+ 
+ @param declaration - Callee whose inbound cannot be proven.
  */
 function addUnknownInbound({
   summaries,
@@ -178,7 +178,7 @@ function addUnknownInbound({
   readonly declaration: EffectCallableDeclaration;
 }): void {
   /**
-   * Synthetic caller identity unique to callee.
+   Synthetic caller identity unique to callee.
    */
   const syntheticKey = `\0unknown-inbound:${callableKey(declaration,)}`;
   if (summaries.has(syntheticKey,))
@@ -190,34 +190,34 @@ function addUnknownInbound({
 }
 
 /**
- * Computes guaranteed foreign parameters through exact signature inbounds.
- *
- * TypeScript enumerates every reference to each demanded callable signature.
- * Caller summaries are then added backwards until no new callable owner is
- * reached. Non-call references, top-level calls, and unresolved owned edges
- * add ordinary inbounds and therefore reject inferred foreign provenance.
- *
- * @param project - TypeScript project resolving signature usages.
- *
- * @param indexedSourceFiles - Complete source scope admitted by ownership policy.
- *
- * @param rootDeclaration - Reached candidate requiring complete inbound proof.
- *
- * @param analysisBudget - Shared fail-closed project analysis budget.
- *
- * @param analysisRoot - Optional external package root admitted as owned.
- *
- * @returns foreign parameter indexes for demanded backwards closure.
- *
- * @example
- * ```ts
- * completeForeignBorrowedGraph({
- *   project,
- *   indexedSourceFiles,
- *   rootDeclaration,
- *   analysisBudget,
- * });
- * ```
+ Computes guaranteed foreign parameters through exact signature inbounds.
+ 
+ TypeScript enumerates every reference to each demanded callable signature.
+ Caller summaries are then added backwards until no new callable owner is
+ reached. Non-call references, top-level calls, and unresolved owned edges
+ add ordinary inbounds and therefore reject inferred foreign provenance.
+ 
+ @param project - TypeScript project resolving signature usages.
+ 
+ @param indexedSourceFiles - Complete source scope admitted by ownership policy.
+ 
+ @param rootDeclaration - Reached candidate requiring complete inbound proof.
+ 
+ @param analysisBudget - Shared fail-closed project analysis budget.
+ 
+ @param analysisRoot - Optional external package root admitted as owned.
+ 
+ @returns foreign parameter indexes for demanded backwards closure.
+ 
+ @example
+ ```ts
+ completeForeignBorrowedGraph({
+   project,
+   indexedSourceFiles,
+   rootDeclaration,
+   analysisBudget,
+ });
+ ```
  */
 export function completeForeignBorrowedGraph({
   project,
@@ -233,32 +233,32 @@ export function completeForeignBorrowedGraph({
   readonly analysisRoot?: string;
 }): ReadonlyMap<string, ReadonlySet<ParameterIndex>> {
   /**
-   * Ownership summaries in demanded backwards caller closure.
+   Ownership summaries in demanded backwards caller closure.
    */
   const summaries = new Map<string, MutableEffectSummary>();
   /**
-   * Callable declarations queued for exact inbound discovery.
+   Callable declarations queued for exact inbound discovery.
    */
   const queue: EffectCallableDeclaration[] = [rootDeclaration,];
   /**
-   * Callable identities whose signature usages were enumerated.
+   Callable identities whose signature usages were enumerated.
    */
   const visited = new Set<string>();
   /**
-   * Queue cursor avoiding recursive graph traversal.
+   Queue cursor avoiding recursive graph traversal.
    */
   const cursor = { current: 0, };
 
   while (cursor.current < queue.length) {
     /**
-     * Current callable requiring direct facts and every inbound usage.
+     Current callable requiring direct facts and every inbound usage.
      */
     const declaration = queue[cursor.current];
     cursor.current++;
     if (declaration === undefined)
       throw new Error('Foreign inbound queue lost current declaration.',);
     /**
-     * Stable current callable identity.
+     Stable current callable identity.
      */
     const key = callableKey(declaration,);
     if (visited.has(key,))
@@ -275,11 +275,11 @@ export function completeForeignBorrowedGraph({
       );
     }
     /**
-     * Collection call directly containing inline observer declaration.
+     Collection call directly containing inline observer declaration.
      */
     const inlineObserverCall = foreignObserverCall({ node: declaration, },);
     /**
-     * Whether inline observer received one exact position-aware inbound.
+     Whether inline observer received one exact position-aware inbound.
      */
     const inlineObserverAdded = inlineObserverCall === FOREIGN_OBSERVER_CALL_UNAVAILABLE
       ? false
@@ -317,11 +317,11 @@ export function completeForeignBorrowedGraph({
       },);
     }
     /**
-     * Start time for exact TypeScript signature reference query.
+     Start time for exact TypeScript signature reference query.
      */
     const startedAt = analysisBudget.start();
     /**
-     * Every project usage of current callable signature.
+     Every project usage of current callable signature.
      */
     const usages = signatureUsages({
       project,
@@ -340,21 +340,21 @@ export function completeForeignBorrowedGraph({
     }
     usages.forEach(function addInboundCaller(usage,): void {
       /**
-       * Resolved call expression or non-call escape marker.
+       Resolved call expression or non-call escape marker.
        */
       const call = usage.call
         ?.resolve(project,);
       if (call === undefined) {
         /**
-         * Signature reference passed as observer rather than directly invoked.
+         Signature reference passed as observer rather than directly invoked.
          */
         const { name: usageNameHandle, } = usage;
         /**
-         * Reference node resolved from signature usage handle.
+         Reference node resolved from signature usage handle.
          */
         const usageName = usageNameHandle.resolve(project,);
         /**
-         * Collection call containing reference as direct argument.
+         Collection call containing reference as direct argument.
          */
         const observerCall = usageName === undefined
           ? FOREIGN_OBSERVER_CALL_UNAVAILABLE
@@ -376,7 +376,7 @@ export function completeForeignBorrowedGraph({
         return;
       }
       /**
-       * Nearest callable owner admitted as project-owned source.
+       Nearest callable owner admitted as project-owned source.
        */
       const caller = nearestForeignOwnedCallable({
         node: call,
@@ -390,11 +390,11 @@ export function completeForeignBorrowedGraph({
         return;
       }
       /**
-       * Stable caller identity.
+       Stable caller identity.
        */
       const callerKey = callableKey(caller,);
       /**
-       * Caller ownership seed receiving exact current usage edge.
+       Caller ownership seed receiving exact current usage edge.
        */
       const callerSummary = summaries.get(callerKey,)
         ?? foreignBorrowedOwnershipSeed({
@@ -414,12 +414,12 @@ export function completeForeignBorrowedGraph({
         return;
       }
       /**
-       * Call count before exact usage edge is added.
+       Call count before exact usage edge is added.
        */
       const priorCallCount = callerSummary.calls
         .length;
       /**
-       * Whether exact usage resolved to owned callee.
+       Whether exact usage resolved to owned callee.
        */
       const added = addForeignBorrowedCallEdge({
         project,
@@ -429,7 +429,7 @@ export function completeForeignBorrowedGraph({
         ...(analysisRoot === undefined) ? {} : { analysisRoot, },
       },);
       /**
-       * Exact edge produced for current usage.
+       Exact edge produced for current usage.
        */
       const exactEdge = callerSummary.calls[priorCallCount];
       if ((!added)

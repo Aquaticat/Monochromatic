@@ -1,9 +1,9 @@
 /**
- * Tests for cross-path effective-value projection: queries at a path
- * that intersects pending state get the post-edit JS value via
- * longest-prefix-first walking plus sub-tree synthesis.
- *
- * @module
+ Tests for cross-path effective-value projection: queries at a path
+ that intersects pending state get the post-edit JS value via
+ longest-prefix-first walking plus sub-tree synthesis.
+ 
+ @module
  */
 
 import {

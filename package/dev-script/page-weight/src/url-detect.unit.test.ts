@@ -1,14 +1,14 @@
 /**
- * Equivalence tests for `startsWithUriScheme`.
- *
- * Lock in the pre-refactor behavior of the URI-scheme detector so the
- * recursion-to-linear-pass rewrite stays behavior-identical: the length
- * guard, the leading-letter requirement, scheme-body characters, the colon
- * terminator, case-insensitivity, the reject paths (digit/symbol start,
- * missing colon, non-scheme char before the colon), and a long repeated run
- * that a per-character recursion would overflow on a V8 target.
- *
- * @module
+ Equivalence tests for `startsWithUriScheme`.
+ 
+ Lock in the pre-refactor behavior of the URI-scheme detector so the
+ recursion-to-linear-pass rewrite stays behavior-identical: the length
+ guard, the leading-letter requirement, scheme-body characters, the colon
+ terminator, case-insensitivity, the reject paths (digit/symbol start,
+ missing colon, non-scheme char before the colon), and a long repeated run
+ that a per-character recursion would overflow on a V8 target.
+ 
+ @module
  */
 
 import {

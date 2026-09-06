@@ -1,7 +1,7 @@
 /**
- * Unit tests for Pi Search Fetch config loading.
- *
- * @module
+ Unit tests for Pi Search Fetch config loading.
+ 
+ @module
  */
 
 import {
@@ -26,22 +26,22 @@ import {
 //region Fixtures
 
 /**
- * Config API key fixture.
+ Config API key fixture.
  */
 const CONFIG_API_KEY = 'config-key';
 
 /**
- * Environment API key fixture.
+ Environment API key fixture.
  */
 const ENV_API_KEY = 'env-key';
 
 /**
- * Blocklist entry fixture.
+ Blocklist entry fixture.
  */
 const BLOCKLIST_ENTRY = 'badwikipedia.invalid';
 
 /**
- * Invalid blocklist entry fixture.
+ Invalid blocklist entry fixture.
  */
 const INVALID_BLOCKLIST_ENTRY = 'badwikipedia.invalid:443';
 
@@ -54,11 +54,11 @@ await describe({
       name: 'uses empty blocklist and no config API key when config is absent',
       fn: async () => {
         /**
-         * Local value for home.
+         Local value for home.
          */
         const home = await tempHome();
         /**
-         * Local value for config.
+         Local value for config.
          */
         const config = await loadLinkupConfig({
           home,
@@ -75,7 +75,7 @@ await describe({
       name: 'lets environment API keys beat config API keys',
       fn: async () => {
         /**
-         * Local value for home.
+         Local value for home.
          */
         const home = await tempHome();
         await writeConfig({
@@ -87,7 +87,7 @@ await describe({
         },);
 
         /**
-         * Local value for config.
+         Local value for config.
          */
         const config = await loadLinkupConfig({
           home,
@@ -105,7 +105,7 @@ await describe({
       name: 'loads flat provider keys and blocklist config',
       fn: async () => {
         /**
-         * Local value for home.
+         Local value for home.
          */
         const home = await tempHome();
         await writeConfig({
@@ -118,7 +118,7 @@ await describe({
         },);
 
         /**
-         * Local value for config.
+         Local value for config.
          */
         const config = await loadLinkupConfig({
           home,
@@ -136,7 +136,7 @@ await describe({
       name: 'migrates legacy config into new config path',
       fn: async () => {
         /**
-         * Local value for home.
+         Local value for home.
          */
         const home = await tempHome();
         await writeLegacyConfig({
@@ -148,14 +148,14 @@ await describe({
         },);
 
         /**
-         * Local value for config.
+         Local value for config.
          */
         const config = await loadLinkupConfig({
           home,
           env: {},
         },);
         /**
-         * Local value for migratedContent.
+         Local value for migratedContent.
          */
         const migratedContent = JSON.parse(
           await readFile(configPathForHome({ home, },), 'utf8',),
@@ -171,11 +171,11 @@ await describe({
       name: 'reports invalid JSON with config path and parsing phase',
       fn: async () => {
         /**
-         * Local value for home.
+         Local value for home.
          */
         const home = await tempHome();
         /**
-         * Local value for configPath.
+         Local value for configPath.
          */
         const configPath = configPathForHome({ home, },);
         await mkdir(dirname(configPath,), { recursive: true, },);
@@ -202,7 +202,7 @@ await describe({
       name: 'reports invalid blocklist entry with offending entry',
       fn: async () => {
         /**
-         * Local value for home.
+         Local value for home.
          */
         const home = await tempHome();
         await writeConfig({
@@ -235,9 +235,9 @@ await describe({
 //region Helpers
 
 /**
- * Create an isolated home directory.
- *
- * @returns temp home path
+ Create an isolated home directory.
+ 
+ @returns temp home path
  */
 async function tempHome(): Promise<string> {
   return mkdtemp(join(
@@ -247,11 +247,11 @@ async function tempHome(): Promise<string> {
 }
 
 /**
- * Write Pi Search Fetch config under a temp home.
- *
- * @param home - temp home directory
- *
- * @param value - JSON-serializable config value
+ Write Pi Search Fetch config under a temp home.
+ 
+ @param home - temp home directory
+ 
+ @param value - JSON-serializable config value
  */
 async function writeConfig(
   {
@@ -263,7 +263,7 @@ async function writeConfig(
   },
 ): Promise<void> {
   /**
-   * Local value for configPath.
+   Local value for configPath.
    */
   const configPath = configPathForHome({ home, },);
   await mkdir(dirname(configPath,), { recursive: true, },);
@@ -274,11 +274,11 @@ async function writeConfig(
 }
 
 /**
- * Write legacy Pi Linkup config under a temp home.
- *
- * @param home - temp home directory
- *
- * @param value - JSON-serializable config value
+ Write legacy Pi Linkup config under a temp home.
+ 
+ @param home - temp home directory
+ 
+ @param value - JSON-serializable config value
  */
 async function writeLegacyConfig(
   {
@@ -290,7 +290,7 @@ async function writeLegacyConfig(
   },
 ): Promise<void> {
   /**
-   * Local value for configPath.
+   Local value for configPath.
    */
   const configPath = legacyConfigPathForHome({ home, },);
   await mkdir(dirname(configPath,), { recursive: true, },);

@@ -1,7 +1,7 @@
 /**
- * Policy JSONL schema compatibility tests.
- *
- * @module
+ Policy JSONL schema compatibility tests.
+ 
+ @module
  */
 import {
   describe,

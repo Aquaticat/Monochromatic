@@ -1,7 +1,7 @@
 /**
- * Claude Code title entries for plan mode, worktrees, tasks, and cron tools.
- *
- * @module
+ Claude Code title entries for plan mode, worktrees, tasks, and cron tools.
+ 
+ @module
  */
 
 import {
@@ -12,7 +12,7 @@ import {
 } from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 /**
- * Built-in tool names held in the extended registry segment.
+ Built-in tool names held in the extended registry segment.
  */
 type ExtendedToolTitleName =
   | 'EnterPlanMode'
@@ -29,7 +29,7 @@ type ExtendedToolTitleName =
   | 'CronList';
 
 /**
- * Title entries for plan mode, worktree, task, and cron tools.
+ Title entries for plan mode, worktree, task, and cron tools.
  */
 const EXTENDED_TOOL_TITLES: Record<ExtendedToolTitleName, ToolTitleEntry> = {
   EnterPlanMode: staticTitleEntry({

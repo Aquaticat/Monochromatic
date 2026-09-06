@@ -1,7 +1,7 @@
 /**
- * Unit tests for model-id helpers.
- *
- * @module
+ Unit tests for model-id helpers.
+ 
+ @module
  */
 
 import {

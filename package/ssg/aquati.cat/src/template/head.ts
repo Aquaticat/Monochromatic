@@ -1,9 +1,9 @@
 /**
- * HTML `<head>` template.
- *
- * Renders meta tags, title, favicon link, and CSS stylesheet reference.
- * No inline CSS or large strings; styles are in a generated external file.
- * Element order follows Capo.js recommendations for optimal browser parsing.
+ HTML `<head>` template.
+ 
+ Renders meta tags, title, favicon link, and CSS stylesheet reference.
+ No inline CSS or large strings; styles are in a generated external file.
+ Element order follows Capo.js recommendations for optimal browser parsing.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -13,47 +13,47 @@ import {
 } from '../i18n/index.ts';
 
 /**
- * Git-derived article dates exposed as Open Graph metadata on post pages.
+ Git-derived article dates exposed as Open Graph metadata on post pages.
  */
 export type ArticleDates = {
   /**
-   * Publication date derived from the oldest git commit touching the post.
+   Publication date derived from the oldest git commit touching the post.
    */
   readonly published: Date;
   /**
-   * Modification date derived from the newest git commit touching the post.
+   Modification date derived from the newest git commit touching the post.
    */
   readonly updated: Date;
 };
 
 /**
- * Renders the `<head>` element with meta, title, and stylesheet link.
- *
- * Elements are ordered per Capo.js priorities for optimal browser parsing:
- * pragma directives (11: charset, viewport) \> title (10) \> stylesheet (4)
- * \> preload (3) \> module script (2) \> other meta/links (0).
- *
- * @param title - page-specific title (prepended to site name)
- *
- * @param lang - current language code for site name lookup
- *
- * @param description - page-specific meta description
- *
- * @param canonicalUrl - full canonical URL for this page
- *
- * @param articleDates - optional git-derived publication and modification dates for article pages
- *
- * @returns HTML string for the `<head>` element
- *
- * @example
- * ```ts
- * const head = headFragment({
- *   title: 'Home',
- *   lang: 'en',
- *   description: 'Welcome to the site',
- *   canonicalUrl: 'https://aquati.cat/en/',
- * });
- * ```
+ Renders the `<head>` element with meta, title, and stylesheet link.
+ 
+ Elements are ordered per Capo.js priorities for optimal browser parsing:
+ pragma directives (11: charset, viewport) \> title (10) \> stylesheet (4)
+ \> preload (3) \> module script (2) \> other meta/links (0).
+ 
+ @param title - page-specific title (prepended to site name)
+ 
+ @param lang - current language code for site name lookup
+ 
+ @param description - page-specific meta description
+ 
+ @param canonicalUrl - full canonical URL for this page
+ 
+ @param articleDates - optional git-derived publication and modification dates for article pages
+ 
+ @returns HTML string for the `<head>` element
+ 
+ @example
+ ```ts
+ const head = headFragment({
+   title: 'Home',
+   lang: 'en',
+   description: 'Welcome to the site',
+   canonicalUrl: 'https://aquati.cat/en/',
+ });
+ ```
  */
 export function headFragment(
   {
@@ -71,14 +71,14 @@ export function headFragment(
   },
 ): string {
   /**
-   * Page title with site name suffix per the Capo.js title convention.
+   Page title with site name suffix per the Capo.js title convention.
    */
   const fullTitle = `${title} | ${i18n.label(
     lang,
     'siteName',
   )}`;
   /**
-   * Optional Open Graph article metadata, emitted only for post pages.
+   Optional Open Graph article metadata, emitted only for post pages.
    */
   const articleMeta = articleDates === undefined
     ? []

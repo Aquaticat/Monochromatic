@@ -1,11 +1,11 @@
 /**
- * Unit tests for the ssh/scp argument builders.
- *
- * STB boundary: the remote command and remote paths must reach ssh/scp as
- * single argv elements, verbatim, never shell-quoted or split, so no remote
- * shell can act on adversarial characters. No process spawned.
- *
- * @module
+ Unit tests for the ssh/scp argument builders.
+ 
+ STB boundary: the remote command and remote paths must reach ssh/scp as
+ single argv elements, verbatim, never shell-quoted or split, so no remote
+ shell can act on adversarial characters. No process spawned.
+ 
+ @module
  */
 
 import {
@@ -22,8 +22,8 @@ import {
 } from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/ssh.ts';
 
 /**
- * Adversarial fragments: shell metacharacters, quotes, substitution, newline,
- * spaces, and traversal that must survive verbatim as one argv element.
+ Adversarial fragments: shell metacharacters, quotes, substitution, newline,
+ spaces, and traversal that must survive verbatim as one argv element.
  */
 const ADVERSARIAL = [
   'a;b',
@@ -38,7 +38,7 @@ const ADVERSARIAL = [
 ];
 
 /**
- * Test server IPv4.
+ Test server IPv4.
  */
 const IP = '203.0.113.7';
 

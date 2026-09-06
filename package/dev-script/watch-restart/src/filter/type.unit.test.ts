@@ -13,25 +13,25 @@ import type {
 import { typeFilter, } from './type.ts';
 
 /**
- * Logger root for watch-restart after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
- * ```
+ Logger root for watch-restart after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
+ ```
  */
 const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
- * Builds a minimal {@link WatchCtx}; typeFilter ignores everything but
- * `event.entity`, so a default-everything ctx is sufficient.
- *
- * @returns context object suitable for handing to typeFilter
- *
- * @example
- * ```ts
- * const ctx = makeCtx();
- * ```
+ Builds a minimal {@link WatchCtx}; typeFilter ignores everything but
+ `event.entity`, so a default-everything ctx is sufficient.
+ 
+ @returns context object suitable for handing to typeFilter
+ 
+ @example
+ ```ts
+ const ctx = makeCtx();
+ ```
  */
 function makeCtx(): WatchCtx {
   return {
@@ -42,17 +42,17 @@ function makeCtx(): WatchCtx {
 }
 
 /**
- * Builds a {@link WatchEvent} from overrides; defaults give a `change`
- * to a file under `/abs/`. Tests vary `entity` and `kind`.
- *
- * @param overrides - partial event fields to merge over the default
- *
- * @returns fully-populated event
- *
- * @example
- * ```ts
- * const event = makeEvent({ entity: 'dir', kind: 'addDir', },);
- * ```
+ Builds a {@link WatchEvent} from overrides; defaults give a `change`
+ to a file under `/abs/`. Tests vary `entity` and `kind`.
+ 
+ @param overrides - partial event fields to merge over the default
+ 
+ @returns fully-populated event
+ 
+ @example
+ ```ts
+ const event = makeEvent({ entity: 'dir', kind: 'addDir', },);
+ ```
  */
 function makeEvent(
   overrides: {

@@ -10,22 +10,22 @@ import { currentNetworkNamespace, } from './network-namespace.ts';
 import { runAllowingFailure, } from './runner.ts';
 
 /**
- * Delay between live-reload verification probes.
+ Delay between live-reload verification probes.
  */
 const RELOAD_PROBE_INTERVAL_MS = 100;
 
 /**
- * Bounded number of probes allowing OpenSnitch file watcher to rebuild nftables rules.
+ Bounded number of probes allowing OpenSnitch file watcher to rebuild nftables rules.
  */
 const RELOAD_PROBE_ATTEMPTS = 40;
 
 /**
- * Consecutive healthy observations required after file watcher reload.
+ Consecutive healthy observations required after file watcher reload.
  */
 const RELOAD_STABLE_PROBES = 3;
 
 /**
- * Deep-readonly projection of one settled namespace probe.
+ Deep-readonly projection of one settled namespace probe.
  */
 type NamespaceProbeResult = {
   readonly status: 'fulfilled';
@@ -36,24 +36,24 @@ type NamespaceProbeResult = {
 };
 
 /**
- * Reports whether OpenSnitch daemon is active in current network namespace.
- *
- * Exit status one from `pgrep` proves process absence.
- * Namespace comparison excludes daemons attached to unrelated disposable fixtures;
- * other probe failures are operational errors rather than absence.
- *
- * @returns Whether exact daemon process name is active.
- *
- * @throws {@link OpenSnitchConfigError} when process probe itself fails.
- *
- * @example
- * ```ts
- * await isOpenSnitchDaemonActive();
- * ```
+ Reports whether OpenSnitch daemon is active in current network namespace.
+ 
+ Exit status one from `pgrep` proves process absence.
+ Namespace comparison excludes daemons attached to unrelated disposable fixtures;
+ other probe failures are operational errors rather than absence.
+ 
+ @returns Whether exact daemon process name is active.
+ 
+ @throws {@link OpenSnitchConfigError} when process probe itself fails.
+ 
+ @example
+ ```ts
+ await isOpenSnitchDaemonActive();
+ ```
  */
 async function isOpenSnitchDaemonActive(): Promise<boolean> {
   /**
-   * Exact process-name probe returning candidate process IDs.
+   Exact process-name probe returning candidate process IDs.
    */
   const result = await runAllowingFailure({
     command: 'pgrep',
@@ -70,11 +70,11 @@ async function isOpenSnitchDaemonActive(): Promise<boolean> {
     );
   }
   /**
-   * Current network-namespace identity.
+   Current network-namespace identity.
    */
   const { identity: currentNamespace, } = await currentNetworkNamespace();
   /**
-   * Candidate daemon process identifiers from pgrep.
+   Candidate daemon process identifiers from pgrep.
    */
   const processIds = result
     .stdout
@@ -83,7 +83,7 @@ async function isOpenSnitchDaemonActive(): Promise<boolean> {
       return value !== '';
     },);
   /**
-   * Namespace probes tolerate candidates exiting between pgrep and readlink.
+   Namespace probes tolerate candidates exiting between pgrep and readlink.
    */
   const namespaces = await Promise.allSettled(processIds.map(async function processNamespace(
     processId,
@@ -96,24 +96,24 @@ async function isOpenSnitchDaemonActive(): Promise<boolean> {
 }
 
 /**
- * Reports whether live output chain contains correctly ordered allowances.
- *
- * @param output - Numeric nft chain listing.
- *
- * @param requiredPorts - UDP destination ports that must precede NFQUEUE.
- *
- * @param forbiddenPorts - Formerly owned ports that must be absent.
- *
- * @returns Whether live reload reached usable strict-deny state.
- *
- * @example
- * ```ts
- * isLiveRuleSetReady({
- *   output: 'udp dport 51820 accept\nqueue',
- *   requiredPorts: [51820],
- *   forbiddenPorts: [],
- * });
- * ```
+ Reports whether live output chain contains correctly ordered allowances.
+ 
+ @param output - Numeric nft chain listing.
+ 
+ @param requiredPorts - UDP destination ports that must precede NFQUEUE.
+ 
+ @param forbiddenPorts - Formerly owned ports that must be absent.
+ 
+ @returns Whether live reload reached usable strict-deny state.
+ 
+ @example
+ ```ts
+ isLiveRuleSetReady({
+   output: 'udp dport 51820 accept\nqueue',
+   requiredPorts: [51820],
+   forbiddenPorts: [],
+ });
+ ```
  */
 export function isLiveRuleSetReady(
   {
@@ -127,24 +127,24 @@ export function isLiveRuleSetReady(
   },
 ): boolean {
   /**
-   * First application-filter queue position establishing ordering boundary.
+   First application-filter queue position establishing ordering boundary.
    */
   const queueIndex = output.indexOf('queue',);
   if (queueIndex === (-1))
     return false;
   /**
-   * Resolves exact generated accept-rule position.
-   *
-   * @param port - Exact UDP destination port.
-   *
-   * @returns Character offset or negative absence sentinel.
+   Resolves exact generated accept-rule position.
+   
+   @param port - Exact UDP destination port.
+   
+   @returns Character offset or negative absence sentinel.
    */
   function portIndex(port: number,): number {
     return output.indexOf(`udp dport ${String(port,)} accept`,);
   }
   if (!requiredPorts.every(function precedesQueue(port,): boolean {
     /**
-     * Exact generated rule offset.
+     Exact generated rule offset.
      */
     const index = portIndex(port,);
     return (index >= 0) && (index < queueIndex);
@@ -156,24 +156,24 @@ export function isLiveRuleSetReady(
 }
 
 /**
- * Reports whether processless OpenSnitch chain is safe for requested transition.
- *
- * Without NFQUEUE,
- * positive allowances are unnecessary until daemon reloads persisted config.
- * Forbidden exact ports must never remain.
- *
- * @param output - Numeric stale chain listing.
- *
- * @param requiredPorts - Ports needed when stale NFQUEUE remains.
- *
- * @param forbiddenPorts - Removed exact ports required absent.
- *
- * @returns Whether processless chain cannot preserve or cause policy failure.
- *
- * @example
- * ```ts
- * isInactiveRuleSetSafe({ output: '', requiredPorts: [51820], forbiddenPorts: [] });
- * ```
+ Reports whether processless OpenSnitch chain is safe for requested transition.
+ 
+ Without NFQUEUE,
+ positive allowances are unnecessary until daemon reloads persisted config.
+ Forbidden exact ports must never remain.
+ 
+ @param output - Numeric stale chain listing.
+ 
+ @param requiredPorts - Ports needed when stale NFQUEUE remains.
+ 
+ @param forbiddenPorts - Removed exact ports required absent.
+ 
+ @returns Whether processless chain cannot preserve or cause policy failure.
+ 
+ @example
+ ```ts
+ isInactiveRuleSetSafe({ output: '', requiredPorts: [51820], forbiddenPorts: [] });
+ ```
  */
 export function isInactiveRuleSetSafe(
   {
@@ -187,11 +187,11 @@ export function isInactiveRuleSetSafe(
   },
 ): boolean {
   /**
-   * Reports exact generated allowance presence.
-   *
-   * @param port - Exact UDP destination port.
-   *
-   * @returns Whether stale chain contains generated accept rule.
+   Reports exact generated allowance presence.
+   
+   @param port - Exact UDP destination port.
+   
+   @returns Whether stale chain contains generated accept rule.
    */
   function containsPort(port: number,): boolean {
     return output.includes(`udp dport ${String(port,)} accept`,);
@@ -208,30 +208,30 @@ export function isInactiveRuleSetSafe(
 }
 
 /**
- * Verifies stale kernel state when no OpenSnitch daemon process exists.
- *
- * Absent table is safe because next daemon start reads persisted config.
- * Existing table must not retain forbidden ports;
- * an existing NFQUEUE path must already carry required ordered allowances.
- *
- * @param path - Config path used in failure diagnostic.
- *
- * @param requiredPorts - Managed endpoint ports needed when stale NFQUEUE remains.
- *
- * @param forbiddenPorts - Removed exact ports required absent from stale chain.
- *
- * @throws {@link OpenSnitchConfigError} when nftables inspection fails.
- *
- * @throws {@link OpenSnitchLiveReloadError} when stale kernel state is unsafe.
- *
- * @example
- * ```ts
- * await verifyInactiveOpenSnitchKernelState({
- *   path,
- *   requiredPorts: [51820],
- *   forbiddenPorts: [],
- * });
- * ```
+ Verifies stale kernel state when no OpenSnitch daemon process exists.
+ 
+ Absent table is safe because next daemon start reads persisted config.
+ Existing table must not retain forbidden ports;
+ an existing NFQUEUE path must already carry required ordered allowances.
+ 
+ @param path - Config path used in failure diagnostic.
+ 
+ @param requiredPorts - Managed endpoint ports needed when stale NFQUEUE remains.
+ 
+ @param forbiddenPorts - Removed exact ports required absent from stale chain.
+ 
+ @throws {@link OpenSnitchConfigError} when nftables inspection fails.
+ 
+ @throws {@link OpenSnitchLiveReloadError} when stale kernel state is unsafe.
+ 
+ @example
+ ```ts
+ await verifyInactiveOpenSnitchKernelState({
+   path,
+   requiredPorts: [51820],
+   forbiddenPorts: [],
+ });
+ ```
  */
 async function verifyInactiveOpenSnitchKernelState(
   {
@@ -245,7 +245,7 @@ async function verifyInactiveOpenSnitchKernelState(
   },
 ): Promise<void> {
   /**
-   * Full table listing distinguishes absent table from failed chain probe.
+   Full table listing distinguishes absent table from failed chain probe.
    */
   const tables = await runAllowingFailure({
     command: 'nft',
@@ -265,7 +265,7 @@ async function verifyInactiveOpenSnitchKernelState(
     .includes('table inet opensnitch',))
     return;
   /**
-   * Existing stale OpenSnitch output chain.
+   Existing stale OpenSnitch output chain.
    */
   const chain = await runAllowingFailure({
     command: 'nft',
@@ -295,26 +295,26 @@ async function verifyInactiveOpenSnitchKernelState(
 }
 
 /**
- * Waits for active OpenSnitch daemon to apply config through file watcher.
- *
- * Confirmed daemon absence still inspects any surviving nftables table.
- *
- * @param path - Config path used in failure diagnostic.
- *
- * @param requiredPorts - Managed endpoint ports expected before live NFQUEUE rules.
- *
- * @param forbiddenPorts - Removed exact ports expected absent from live chain.
- *
- * @throws {@link OpenSnitchConfigError} when active daemon does not converge.
- *
- * @example
- * ```ts
- * await verifyOpenSnitchLiveReload({
- *   path,
- *   requiredPorts: [51820],
- *   forbiddenPorts: [],
- * });
- * ```
+ Waits for active OpenSnitch daemon to apply config through file watcher.
+ 
+ Confirmed daemon absence still inspects any surviving nftables table.
+ 
+ @param path - Config path used in failure diagnostic.
+ 
+ @param requiredPorts - Managed endpoint ports expected before live NFQUEUE rules.
+ 
+ @param forbiddenPorts - Removed exact ports expected absent from live chain.
+ 
+ @throws {@link OpenSnitchConfigError} when active daemon does not converge.
+ 
+ @example
+ ```ts
+ await verifyOpenSnitchLiveReload({
+   path,
+   requiredPorts: [51820],
+   forbiddenPorts: [],
+ });
+ ```
  */
 export async function verifyOpenSnitchLiveReload(
   {
@@ -336,7 +336,7 @@ export async function verifyOpenSnitchLiveReload(
     return;
   }
   /**
-   * Mutable bounded cursor contained in object rather than function-root binding.
+   Mutable bounded cursor contained in object rather than function-root binding.
    */
   const cursor = {
     attempt: 0,
@@ -346,7 +346,7 @@ export async function verifyOpenSnitchLiveReload(
   while (cursor.attempt < RELOAD_PROBE_ATTEMPTS) {
     await wait(RELOAD_PROBE_INTERVAL_MS,);
     /**
-     * Current numeric output-chain listing after one reload interval.
+     Current numeric output-chain listing after one reload interval.
      */
     const result = await runAllowingFailure({
       command: 'nft',

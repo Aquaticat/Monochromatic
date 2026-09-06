@@ -1,17 +1,17 @@
 /**
- * Core value-comparison matcher factories for the test module's expect.
- * Split out of `expect-matchers.ts` to keep each module under the
- * line-count limit; `buildMatchers` merges this subset with the sinon
- * spy matchers into the full {@link MatcherSet}.
- *
- * @module
+ Core value-comparison matcher factories for the test module's expect.
+ Split out of `expect-matchers.ts` to keep each module under the
+ line-count limit; `buildMatchers` merges this subset with the sinon
+ spy matchers into the full {@link MatcherSet}.
+ 
+ @module
  */
 
 import type { MatcherSet, } from './expect-matchers.ts';
 
 /**
- * Value-comparison matcher methods, the subset of {@link MatcherSet}
- * that asserts on a value directly and needs only the chai Assertion.
+ Value-comparison matcher methods, the subset of {@link MatcherSet}
+ that asserts on a value directly and needs only the chai Assertion.
  */
 export type CoreMatcherSet = Pick<
   MatcherSet,
@@ -42,21 +42,21 @@ export type CoreMatcherSet = Pick<
 >;
 
 /**
- * Builds the core value-comparison matcher subset from a chai Assertion
- * instance. None of these matchers need the raw `actual` value, so the
- * builder takes only the assertion.
- *
- * @param a - Chai assertion (may have `.not` flag set)
- *
- * @returns object with the value-comparison matcher methods
- *
- * @mutates a - `a.to.be.a`, `a.to.be.above`, `a.to.be.at.least`, `a.to.be.at.most`, `a.to.be.below`, `a.to.be.closeTo`, `a.to.be.instanceOf`, `a.to.deep.equal`, `a.to.deep.include`, `a.to.equal`, `a.to.have.lengthOf`, `a.to.have.nested.property`, `a.to.include`, `a.to.match`, `a.to.satisfy`, and `a.to.throw` may change assertion state or inspect caller hooks.
- *
- * @example
- * ```ts
- * const coreMatchers = buildCoreMatchers({ a: chaiExpect(42) });
- * coreMatchers.toBe(42);
- * ```
+ Builds the core value-comparison matcher subset from a chai Assertion
+ instance. None of these matchers need the raw `actual` value, so the
+ builder takes only the assertion.
+ 
+ @param a - Chai assertion (may have `.not` flag set)
+ 
+ @returns object with the value-comparison matcher methods
+ 
+ @mutates a - `a.to.be.a`, `a.to.be.above`, `a.to.be.at.least`, `a.to.be.at.most`, `a.to.be.below`, `a.to.be.closeTo`, `a.to.be.instanceOf`, `a.to.deep.equal`, `a.to.deep.include`, `a.to.equal`, `a.to.have.lengthOf`, `a.to.have.nested.property`, `a.to.include`, `a.to.match`, `a.to.satisfy`, and `a.to.throw` may change assertion state or inspect caller hooks.
+ 
+ @example
+ ```ts
+ const coreMatchers = buildCoreMatchers({ a: chaiExpect(42) });
+ coreMatchers.toBe(42);
+ ```
  */
 export function buildCoreMatchers(
   {
@@ -68,11 +68,11 @@ export function buildCoreMatchers(
   return {
     toBe:
       /**
-       * Compares strict equality through Chai.
-       *
-       * @param expected - Expected value inspected by Chai.
-       *
-       * @mutates expected - `a.to.equal` may inspect caller getters or proxy traps.
+       Compares strict equality through Chai.
+       
+       @param expected - Expected value inspected by Chai.
+       
+       @mutates expected - `a.to.equal` may inspect caller getters or proxy traps.
        */
       function toBe(expected: unknown,): void {
       a.to
@@ -81,11 +81,11 @@ export function buildCoreMatchers(
 
     toEqual:
       /**
-       * Compares deep equality through Chai.
-       *
-       * @param expected - Expected value inspected by Chai.
-       *
-       * @mutates expected - `a.to.deep.equal` may inspect caller getters or proxy traps.
+       Compares deep equality through Chai.
+       
+       @param expected - Expected value inspected by Chai.
+       
+       @mutates expected - `a.to.deep.equal` may inspect caller getters or proxy traps.
        */
       function toEqual(expected: unknown,): void {
       a.to
@@ -95,11 +95,11 @@ export function buildCoreMatchers(
 
     toContain:
       /**
-       * Checks containment through Chai.
-       *
-       * @param expected - Contained value inspected by Chai.
-       *
-       * @mutates expected - `a.to.include` may inspect caller getters or proxy traps.
+       Checks containment through Chai.
+       
+       @param expected - Contained value inspected by Chai.
+       
+       @mutates expected - `a.to.include` may inspect caller getters or proxy traps.
        */
       function toContain(expected: unknown,): void {
       a.to
@@ -108,11 +108,11 @@ export function buildCoreMatchers(
 
     toContainEqual:
       /**
-       * Checks deep containment through Chai.
-       *
-       * @param expected - Contained value inspected by Chai.
-       *
-       * @mutates expected - `a.to.deep.include` may inspect caller getters or proxy traps.
+       Checks deep containment through Chai.
+       
+       @param expected - Contained value inspected by Chai.
+       
+       @mutates expected - `a.to.deep.include` may inspect caller getters or proxy traps.
        */
       function toContainEqual(expected: unknown,): void {
       a.to
@@ -122,11 +122,11 @@ export function buildCoreMatchers(
 
     toThrow:
       /**
-       * Checks thrown value through Chai.
-       *
-       * @param expected - Optional message, expression, or constructor inspected by Chai.
-       *
-       * @mutates expected - `a.to.throw` may inspect regular-expression or constructor hooks.
+       Checks thrown value through Chai.
+       
+       @param expected - Optional message, expression, or constructor inspected by Chai.
+       
+       @mutates expected - `a.to.throw` may inspect regular-expression or constructor hooks.
        */
       function toThrow(
       expected?: string | RegExp | (abstract new(...args: never) => unknown),
@@ -150,12 +150,12 @@ export function buildCoreMatchers(
       precision: number = 2,
     ): void {
       /**
-       * Half-tolerance multiplier (named to keep the magic constant rule from firing on `0.5`).
+       Half-tolerance multiplier (named to keep the magic constant rule from firing on `0.5`).
        */
       const HALF = 1 / 2;
       /* oxlint-disable prefer-exponentiation-operator -- Math.pow is clearer here with a variable exponent */
       /**
-       * Floating-point tolerance derived from `precision` so chai's `closeTo` accepts values within +/-HALF of the lowest place.
+       Floating-point tolerance derived from `precision` so chai's `closeTo` accepts values within +/-HALF of the lowest place.
        */
       const delta = Math.pow(
         10,
@@ -259,13 +259,13 @@ export function buildCoreMatchers(
 
     toHaveProperty:
       /**
-       * Checks nested property through Chai.
-       *
-       * @param path - Nested property path.
-       *
-       * @param value - Optional expected value inspected by Chai.
-       *
-       * @mutates value - `a.to.have.nested.property` may inspect caller getters or proxy traps.
+       Checks nested property through Chai.
+       
+       @param path - Nested property path.
+       
+       @param value - Optional expected value inspected by Chai.
+       
+       @mutates value - `a.to.have.nested.property` may inspect caller getters or proxy traps.
        */
       function toHaveProperty(
       path: string,
@@ -296,11 +296,11 @@ export function buildCoreMatchers(
 
     toMatchObject:
       /**
-       * Checks partial deep object match through Chai.
-       *
-       * @param expected - Expected object inspected by Chai.
-       *
-       * @mutates expected - `a.to.deep.include` may inspect caller getters or proxy traps.
+       Checks partial deep object match through Chai.
+       
+       @param expected - Expected object inspected by Chai.
+       
+       @mutates expected - `a.to.deep.include` may inspect caller getters or proxy traps.
        */
       function toMatchObject(expected: Readonly<Record<string, unknown>>,): void {
       a.to
@@ -310,11 +310,11 @@ export function buildCoreMatchers(
 
     toBeInstanceOf:
       /**
-       * Checks constructor identity through Chai.
-       *
-       * @param expected - Constructor inspected by Chai.
-       *
-       * @mutates expected - `a.to.be.instanceOf` may inspect caller constructor hooks.
+       Checks constructor identity through Chai.
+       
+       @param expected - Constructor inspected by Chai.
+       
+       @mutates expected - `a.to.be.instanceOf` may inspect caller constructor hooks.
        */
       function toBeInstanceOf(
       expected: abstract new(...args: never) => unknown,
@@ -326,11 +326,11 @@ export function buildCoreMatchers(
 
     toSatisfy:
       /**
-       * Invokes caller predicate through Chai.
-       *
-       * @param predicate - Predicate retained and invoked by Chai.
-       *
-       * @mutates predicate - `a.to.satisfy` invokes caller-provided capability.
+       Invokes caller predicate through Chai.
+       
+       @param predicate - Predicate retained and invoked by Chai.
+       
+       @mutates predicate - `a.to.satisfy` invokes caller-provided capability.
        */
       function toSatisfy(predicate: (value: unknown,) => boolean,): void {
       a.to
@@ -339,11 +339,11 @@ export function buildCoreMatchers(
 
     toStrictEqual:
       /**
-       * Compares deep strict equality through Chai.
-       *
-       * @param expected - Expected value inspected by Chai.
-       *
-       * @mutates expected - `a.to.deep.equal` may inspect caller getters or proxy traps.
+       Compares deep strict equality through Chai.
+       
+       @param expected - Expected value inspected by Chai.
+       
+       @mutates expected - `a.to.deep.equal` may inspect caller getters or proxy traps.
        */
       function toStrictEqual(expected: unknown,): void {
       a.to

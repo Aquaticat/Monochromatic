@@ -1,25 +1,25 @@
 /**
- * Side-effect-free formatting for unknown diagnostic values.
- *
- * @module
+ Side-effect-free formatting for unknown diagnostic values.
+ 
+ @module
  */
 
 /**
- * Formats primitive values without invoking caller-owned coercion hooks.
- *
- * Objects and functions intentionally use category placeholders. Calling
- * `String` on either can execute `toString`, `valueOf`, proxy, or symbol hooks
- * supplied by caller-owned state while an assertion failure is being rendered.
- *
- * @param value - Unknown value being rendered for diagnostics.
- *
- * @returns primitive text or side-effect-free reference category.
- *
- * @example
- * ```ts
- * formatUnknownValue({ custom: true, }); // '[object]'
- * formatUnknownValue(-0,); // '0'
- * ```
+ Formats primitive values without invoking caller-owned coercion hooks.
+ 
+ Objects and functions intentionally use category placeholders. Calling
+ `String` on either can execute `toString`, `valueOf`, proxy, or symbol hooks
+ supplied by caller-owned state while an assertion failure is being rendered.
+ 
+ @param value - Unknown value being rendered for diagnostics.
+ 
+ @returns primitive text or side-effect-free reference category.
+ 
+ @example
+ ```ts
+ formatUnknownValue({ custom: true, }); // '[object]'
+ formatUnknownValue(-0,); // '0'
+ ```
  */
 export function formatUnknownValue(value: unknown,): string {
   if (value === null)
@@ -36,7 +36,7 @@ export function formatUnknownValue(value: unknown,): string {
     return 'undefined';
   if ((typeof value) === 'symbol') {
     /**
-     * Primitive symbol description read without invoking custom hooks.
+     Primitive symbol description read without invoking custom hooks.
      */
     const { description, } = value;
     return description === undefined ? 'Symbol()' : `Symbol(${description})`;

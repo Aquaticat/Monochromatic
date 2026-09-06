@@ -1,11 +1,11 @@
 /**
- * Tests for caller-scoped virtual-input guard.
- *
- * Covers direct and wrapped ydotool execution,
- * nested shell programs,
- * non-executing text mentions,
- * durable supervision,
- * and non-Bash tool calls.
+ Tests for caller-scoped virtual-input guard.
+ 
+ Covers direct and wrapped ydotool execution,
+ nested shell programs,
+ non-executing text mentions,
+ durable supervision,
+ and non-Bash tool calls.
  */
 
 import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
@@ -57,16 +57,16 @@ const ALLOWED_COMMANDS = [
 ] as const;
 
 /**
- * Build minimal Pi Bash tool event for guard tests.
- *
- * @param command - Bash source under test.
- *
- * @returns Tool-call event accepted by virtual-input guard.
- *
- * @example
- * ```typescript
- * bashEvent('ydotool key 1:1 1:0');
- * ```
+ Build minimal Pi Bash tool event for guard tests.
+ 
+ @param command - Bash source under test.
+ 
+ @returns Tool-call event accepted by virtual-input guard.
+ 
+ @example
+ ```typescript
+ bashEvent('ydotool key 1:1 1:0');
+ ```
  */
 function bashEvent(command: string,): ToolCallEvent {
   return {
@@ -108,7 +108,7 @@ await describe({
           name: 'returns fixed hard-block reason for Bash invocation',
           fn: async () => {
             /**
-             * Hard-guard decision for direct caller-scoped injection.
+             Hard-guard decision for direct caller-scoped injection.
              */
             const decision = guardVirtualInput(
               bashEvent('ydotool key 1:1 1:0',),
@@ -123,7 +123,7 @@ await describe({
           name: 'allows Bash text inspection',
           fn: async () => {
             /**
-             * Guard decision for text-only ydotool inspection.
+             Guard decision for text-only ydotool inspection.
              */
             const decision = guardVirtualInput(
               bashEvent("rg 'ydotool' .",),

@@ -1,7 +1,7 @@
 /**
- * Tests for the complete stylesheet assembly.
- *
- * @module
+ Tests for the complete stylesheet assembly.
+ 
+ @module
  */
 
 import {
@@ -13,7 +13,7 @@ import {
 import { renderStyles, } from './styles.ts';
 
 /**
- * Fixture base64 payload standing in for the subsetted font bytes.
+ Fixture base64 payload standing in for the subsetted font bytes.
  */
 const FONT_FIXTURE_BASE64 = 'AAEC';
 
@@ -24,7 +24,7 @@ await describe({
       name: 'uses flexbox for the layout, tiles, and frequency rows, never CSS grid',
       fn: async function usesFlexboxNeverGrid(): Promise<void> {
         /**
-         * Complete stylesheet string.
+         Complete stylesheet string.
          */
         const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 
@@ -39,7 +39,7 @@ await describe({
       name: 'embeds the font bytes as a woff2 data URI in an Inter font-face',
       fn: async function embedsFontDataUri(): Promise<void> {
         /**
-         * Complete stylesheet string.
+         Complete stylesheet string.
          */
         const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 
@@ -54,7 +54,7 @@ await describe({
       name: 'includes the wide-viewport media query and the dark palette override',
       fn: async function includesMediaQueryAndPalette(): Promise<void> {
         /**
-         * Complete stylesheet string.
+         Complete stylesheet string.
          */
         const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 
@@ -67,7 +67,7 @@ await describe({
       name: 'contains per-row rendering containment and tabular numerals for frequency',
       fn: async function containsFrequencyRendering(): Promise<void> {
         /**
-         * Complete stylesheet string.
+         Complete stylesheet string.
          */
         const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 
@@ -80,7 +80,7 @@ await describe({
       name: 'keeps the frequency bars grayscale with a transparent track in both engines',
       fn: async function keepsBarsGrayscale(): Promise<void> {
         /**
-         * Complete stylesheet string.
+         Complete stylesheet string.
          */
         const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 
@@ -110,7 +110,7 @@ await describe({
       name: 'ships the inclusively-hidden utility for the frequency header row',
       fn: async function shipsVisuallyHidden(): Promise<void> {
         /**
-         * Complete stylesheet string.
+         Complete stylesheet string.
          */
         const css = renderStyles({ fontWoff2Base64: FONT_FIXTURE_BASE64, },);
 

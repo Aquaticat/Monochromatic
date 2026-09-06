@@ -1,7 +1,7 @@
 /**
- * Registration accessors for real Pi goal loader verification.
- *
- * @module
+ Registration accessors for real Pi goal loader verification.
+ 
+ @module
  */
 
 import type {
@@ -17,20 +17,20 @@ import type {
 } from './pi-runtime-verifier-harness.ts';
 
 /**
- * Retrieve loaded handlers for one lifecycle event as sequential composite.
- *
- * @param harness - loaded goal extension harness
- *
- * @param event - lifecycle event name
- *
- * @returns registered handlers invoked in extension registration order
- *
- * @throws when registration is absent
- *
- * @example
- * ```ts
- * getRuntimeHandler({ harness, event: 'agent_settled' });
- * ```
+ Retrieve loaded handlers for one lifecycle event as sequential composite.
+ 
+ @param harness - loaded goal extension harness
+ 
+ @param event - lifecycle event name
+ 
+ @returns registered handlers invoked in extension registration order
+ 
+ @throws when registration is absent
+ 
+ @example
+ ```ts
+ getRuntimeHandler({ harness, event: 'agent_settled' });
+ ```
  */
 function getRuntimeHandler(
   {
@@ -42,7 +42,7 @@ function getRuntimeHandler(
   },
 ): RuntimeHandler {
   /**
-   * Handlers captured by real extension loader.
+   Handlers captured by real extension loader.
    */
   const handlers = harness.extension
     .handlers
@@ -50,20 +50,20 @@ function getRuntimeHandler(
   if ((handlers === undefined) || (handlers.length === 0))
     throw new Error(`missing ${eventName} handler`,);
   /**
-   * Narrowed nonempty handler collection.
+   Narrowed nonempty handler collection.
    */
   const loadedHandlers: NonNullable<typeof handlers> = handlers;
   /**
-   * Invoke every foreign callback using Pi registration order.
-   *
-   * @param input - externally owned lifecycle payload and Pi context
-   *
-   * @mutates input - handlers may mutate or retain event and context references
-   *
-   * @example
-   * ```ts
-   * await invokeLoadedHandlers({ event: { type: 'agent_settled' }, context });
-   * ```
+   Invoke every foreign callback using Pi registration order.
+   
+   @param input - externally owned lifecycle payload and Pi context
+   
+   @mutates input - handlers may mutate or retain event and context references
+   
+   @example
+   ```ts
+   await invokeLoadedHandlers({ event: { type: 'agent_settled' }, context });
+   ```
    */
   async function invokeLoadedHandlers(
     input: ForeignBorrowed<{
@@ -83,22 +83,22 @@ function getRuntimeHandler(
 }
 
 /**
- * Retrieve loaded `/goal` command callback.
- *
- * @param harness - loaded goal extension harness
- *
- * @returns registered command callback
- *
- * @throws when command is absent
- *
- * @example
- * ```ts
- * getGoalCommand(harness)({ args: 'objective', context: harness.context });
- * ```
+ Retrieve loaded `/goal` command callback.
+ 
+ @param harness - loaded goal extension harness
+ 
+ @returns registered command callback
+ 
+ @throws when command is absent
+ 
+ @example
+ ```ts
+ getGoalCommand(harness)({ args: 'objective', context: harness.context });
+ ```
  */
 function getGoalCommand(harness: GoalRuntimeHarness,): RuntimeCommand {
   /**
-   * Goal command discovered from package default factory.
+   Goal command discovered from package default factory.
    */
   const command = harness.extension
     .commands
@@ -106,20 +106,20 @@ function getGoalCommand(harness: GoalRuntimeHarness,): RuntimeCommand {
   if (command === undefined)
     throw new Error('discovered goal command is absent',);
   /**
-   * Narrowed command retained across nested declaration seam.
+   Narrowed command retained across nested declaration seam.
    */
   const loadedCommand: NonNullable<typeof command> = command;
   /**
-   * Invoke foreign goal command.
-   *
-   * @param input - exact arguments and Pi command context
-   *
-   * @mutates input - loaded command may invoke or retain context capabilities
-   *
-   * @example
-   * ```ts
-   * await invokeLoadedCommand({ args: 'objective', context });
-   * ```
+   Invoke foreign goal command.
+   
+   @param input - exact arguments and Pi command context
+   
+   @mutates input - loaded command may invoke or retain context capabilities
+   
+   @example
+   ```ts
+   await invokeLoadedCommand({ args: 'objective', context });
+   ```
    */
   async function invokeLoadedCommand(
     input: ForeignBorrowed<{
@@ -136,18 +136,18 @@ function getGoalCommand(harness: GoalRuntimeHarness,): RuntimeCommand {
 }
 
 /**
- * Require verifier condition with focused diagnostic.
- *
- * @param condition - runtime observation to require
- *
- * @param message - failure diagnostic
- *
- * @throws when condition is false
- *
- * @example
- * ```ts
- * requireCondition({ condition: true, message: 'must pass' });
- * ```
+ Require verifier condition with focused diagnostic.
+ 
+ @param condition - runtime observation to require
+ 
+ @param message - failure diagnostic
+ 
+ @throws when condition is false
+ 
+ @example
+ ```ts
+ requireCondition({ condition: true, message: 'must pass' });
+ ```
  */
 function requireCondition(
   {
@@ -163,20 +163,20 @@ function requireCondition(
 }
 
 /**
- * Require exact mutable capture count.
- *
- * @param actual - observed capture count
- *
- * @param expected - required capture count
- *
- * @param message - failure diagnostic
- *
- * @throws when counts differ
- *
- * @example
- * ```ts
- * requireCount({ actual: 1, expected: 1, message: 'one event' });
- * ```
+ Require exact mutable capture count.
+ 
+ @param actual - observed capture count
+ 
+ @param expected - required capture count
+ 
+ @param message - failure diagnostic
+ 
+ @throws when counts differ
+ 
+ @example
+ ```ts
+ requireCount({ actual: 1, expected: 1, message: 'one event' });
+ ```
  */
 function requireCount(
   {
@@ -194,18 +194,18 @@ function requireCount(
 }
 
 /**
- * Drive one real-loader event callback.
- *
- * @param harness - disposable loaded extension harness
- *
- * @param type - registered Pi lifecycle event
- *
- * @param event - focused event fixture
- *
- * @example
- * ```ts
- * await emitGoalEvent({ harness, type: 'agent_settled', event: { type: 'agent_settled' } });
- * ```
+ Drive one real-loader event callback.
+ 
+ @param harness - disposable loaded extension harness
+ 
+ @param type - registered Pi lifecycle event
+ 
+ @param event - focused event fixture
+ 
+ @example
+ ```ts
+ await emitGoalEvent({ harness, type: 'agent_settled', event: { type: 'agent_settled' } });
+ ```
  */
 async function emitGoalEvent(
   {
@@ -228,16 +228,16 @@ async function emitGoalEvent(
 }
 
 /**
- * Emit final assistant stop reason followed by settlement.
- *
- * @param harness - disposable loaded extension harness
- *
- * @param stopReason - Pi assistant terminal reason
- *
- * @example
- * ```ts
- * await settleGoalRun({ harness, stopReason: 'stop' });
- * ```
+ Emit final assistant stop reason followed by settlement.
+ 
+ @param harness - disposable loaded extension harness
+ 
+ @param stopReason - Pi assistant terminal reason
+ 
+ @example
+ ```ts
+ await settleGoalRun({ harness, stopReason: 'stop' });
+ ```
  */
 async function settleGoalRun(
   {

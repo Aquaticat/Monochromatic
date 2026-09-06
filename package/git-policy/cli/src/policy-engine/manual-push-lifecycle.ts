@@ -1,7 +1,7 @@
 /**
- * Manual-push policy lifecycle over authoritative remote updates.
- *
- * @module
+ Manual-push policy lifecycle over authoritative remote updates.
+ 
+ @module
  */
 import nanoSpawn from 'nano-spawn';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -26,26 +26,26 @@ import type {
 } from './types.ts';
 
 /**
- * Returns absent commit identity for manual-push lifecycle.
- *
- * @returns shared absence sentinel
+ Returns absent commit identity for manual-push lifecycle.
+ 
+ @returns shared absence sentinel
  */
 function absentOid(): Promise<typeof ABSENT_GIT_VALUE> {
   return Promise.resolve(ABSENT_GIT_VALUE,);
 }
 
 /**
- * Creates lazy manual-push facts around settled updates.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param updates - authoritative push updates
- *
- * @mutates updates through Promise.resolve then getter or callback effects during thenable assimilation
- *
- * @returns lazy lifecycle facts
+ Creates lazy manual-push facts around settled updates.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param updates - authoritative push updates
+ 
+ @mutates updates through Promise.resolve then getter or callback effects during thenable assimilation
+ 
+ @returns lazy lifecycle facts
  */
 function createManualPushFacts({
   gitPath,
@@ -57,7 +57,7 @@ function createManualPushFacts({
   updates: Awaited<ReturnType<typeof probeManualPushUpdates>>;
 }>,): LazyPolicyGitFacts {
   /**
-   * Candidate promise memoized after first policy request.
+   Candidate promise memoized after first policy request.
    */
   const state: { candidates?: Promise<readonly CandidateFile[]> } = {};
   return {
@@ -78,18 +78,18 @@ function createManualPushFacts({
 }
 
 /**
- * Reports whether registered policy requires manual-push facts.
- *
- * @param registeredPolicies - trusted runtime registry
- *
- * @param policySeverities - configured effective overrides
- *
- * @returns whether at least one enabled policy has manual-push trigger
- *
- * @example
- * ```ts
- * hasManualPushPolicy({ registeredPolicies: [], policySeverities: {} });
- * ```
+ Reports whether registered policy requires manual-push facts.
+ 
+ @param registeredPolicies - trusted runtime registry
+ 
+ @param policySeverities - configured effective overrides
+ 
+ @returns whether at least one enabled policy has manual-push trigger
+ 
+ @example
+ ```ts
+ hasManualPushPolicy({ registeredPolicies: [], policySeverities: {} });
+ ```
  */
 export function hasManualPushPolicy({
   registeredPolicies,
@@ -100,7 +100,7 @@ export function hasManualPushPolicy({
 }>,): boolean {
   return registeredPolicies.some(function isEnabledManualPushPolicy(policy,) {
     /**
-     * Effective configured or declared severity.
+     Effective configured or declared severity.
      */
     const severity = policySeverities[policy.name] ?? policy.defaultSeverity;
     return (severity !== 'off')
@@ -110,13 +110,13 @@ export function hasManualPushPolicy({
 }
 
 /**
- * Resolves canonical repository root through real Git.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @returns canonical repository root
+ Resolves canonical repository root through real Git.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @returns canonical repository root
  */
 async function resolveRepositoryRoot({
   gitPath,
@@ -126,7 +126,7 @@ async function resolveRepositoryRoot({
   cwd: string;
 }>,): Promise<string> {
   /**
-   * Real Git repository-root query.
+   Real Git repository-root query.
    */
   const result = await nanoSpawn(
     gitPath,
@@ -144,28 +144,28 @@ async function resolveRepositoryRoot({
 }
 
 /**
- * Runs manual-push policies before forwarding real Git.
- *
- * @param rawArgs - exact wrapper arguments
- *
- * @param transformedArgs - final forwardable push arguments
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param policySeverities - trusted policy settings
- *
- * @param registeredPolicies - trusted runtime registry
- *
- * @param policyOptions - validated policy options
- *
- * @returns settled engine result
- *
- * @example
- * ```ts
- * await runManualPushLifecycle({ rawArgs, transformedArgs, gitPath, cwd, policySeverities, registeredPolicies, policyOptions });
- * ```
+ Runs manual-push policies before forwarding real Git.
+ 
+ @param rawArgs - exact wrapper arguments
+ 
+ @param transformedArgs - final forwardable push arguments
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param policySeverities - trusted policy settings
+ 
+ @param registeredPolicies - trusted runtime registry
+ 
+ @param policyOptions - validated policy options
+ 
+ @returns settled engine result
+ 
+ @example
+ ```ts
+ await runManualPushLifecycle({ rawArgs, transformedArgs, gitPath, cwd, policySeverities, registeredPolicies, policyOptions });
+ ```
  */
 export async function runManualPushLifecycle({
   rawArgs,
@@ -186,7 +186,7 @@ export async function runManualPushLifecycle({
 }>,): Promise<PolicyEngineResult> {
   try {
     /**
-     * Canonical repository root and authoritative push updates.
+     Canonical repository root and authoritative push updates.
      */
     const [repositoryRoot, updates,] = await Promise.all([
       resolveRepositoryRoot({
@@ -200,7 +200,7 @@ export async function runManualPushLifecycle({
       },),
     ],);
     /**
-     * Lazy manual-push Git facts.
+     Lazy manual-push Git facts.
      */
     const gitFacts = createManualPushFacts({
       gitPath,

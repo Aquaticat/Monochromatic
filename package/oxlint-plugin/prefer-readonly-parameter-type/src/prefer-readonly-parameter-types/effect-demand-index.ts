@@ -1,7 +1,7 @@
 /**
- * Demand-driven effect index over active callable dependency closure.
- *
- * @module
+ Demand-driven effect index over active callable dependency closure.
+ 
+ @module
  */
 
 import type { SourceFile, } from 'typescript/unstable/ast';
@@ -54,34 +54,34 @@ import {
 } from './foreign-borrowed-demand.ts';
 
 /**
- * Creates mutable index that expands only from requested callable sources.
- *
- * Foreign ownership is declaration-global rather than path-local,
- * so proving it walks the complete owned source graph rather than the reached part of it.
- * `proveForeignBorrowed` therefore stays a separate demand:
- * every other fact `get` answers is already paid for by the expansion that reached the callable.
- *
- * @param options - Exact project,
- * cache,
- * ownership,
- * and recursive external-analysis inputs.
- *
- * @returns effect index expanding monotonically within one project snapshot.
- *
- * @example
- * ```ts
- * const index = createDemandDrivenEffectIndex(options);
- * ```
+ Creates mutable index that expands only from requested callable sources.
+ 
+ Foreign ownership is declaration-global rather than path-local,
+ so proving it walks the complete owned source graph rather than the reached part of it.
+ `proveForeignBorrowed` therefore stays a separate demand:
+ every other fact `get` answers is already paid for by the expansion that reached the callable.
+ 
+ @param options - Exact project,
+ cache,
+ ownership,
+ and recursive external-analysis inputs.
+ 
+ @returns effect index expanding monotonically within one project snapshot.
+ 
+ @example
+ ```ts
+ const index = createDemandDrivenEffectIndex(options);
+ ```
  */
 export function createDemandDrivenEffectIndex(
   options: DemandDrivenEffectIndexOptions,
 ): EffectSummaryIndex {
   /**
-   * Exact project,
-   * cache,
-   * ownership,
-   * budget,
-   * and recursive external-analysis inputs.
+   Exact project,
+   cache,
+   ownership,
+   budget,
+   and recursive external-analysis inputs.
    */
   const {
     project,
@@ -95,11 +95,11 @@ export function createDemandDrivenEffectIndex(
     analysisBudget,
   } = options;
   /**
-   * Exact owned source membership for closure validation.
+   Exact owned source membership for closure validation.
    */
   const indexedFileNames = new Set(indexedSourceFiles.keys(),);
   /**
-   * Dependency resolver combining module and semantic call edges.
+   Dependency resolver combining module and semantic call edges.
    */
   const closureResolver = createDependencyClosureResolver({
     project,
@@ -107,64 +107,64 @@ export function createDemandDrivenEffectIndex(
     sourceDigests: projectFingerprint.sourceDigests,
   },);
   /**
-   * Current program state validating persistent entries.
+   Current program state validating persistent entries.
    */
   const dependencyState = projectFingerprint;
   /**
-   * Direct and propagated summaries reached in current snapshot.
+   Direct and propagated summaries reached in current snapshot.
    */
   const summaries = new Map<string, MutableEffectSummary>();
   /**
-   * Callables left out of the index because building their summary threw.
-   *
-   * Kept so the completeness assertion can tell a deliberate omission from a missing key it
-   * should refuse. The omission path is documented as fail-closed, callers taking opacity
-   * through the absent-callee branch, and the assertion did not know that, so one upstream
-   * panic cost every file in the program its analysis rather than one callable its summary.
-   * Measured in `doc/troubleshooting/typescript-go-tuple-type-panic.md`.
+   Callables left out of the index because building their summary threw.
+   
+   Kept so the completeness assertion can tell a deliberate omission from a missing key it
+   should refuse. The omission path is documented as fail-closed, callers taking opacity
+   through the absent-callee branch, and the assertion did not know that, so one upstream
+   panic cost every file in the program its analysis rather than one callable its summary.
+   Measured in `doc/troubleshooting/typescript-go-tuple-type-panic.md`.
    */
   const omittedCallableKeys = new Set<string>();
   /**
-   * Source paths already loaded into current graph.
+   Source paths already loaded into current graph.
    */
   const loadedFileNames = new Set<string>();
   /**
-   * Fresh summaries awaiting complete semantic-edge closure before persistence.
+   Fresh summaries awaiting complete semantic-edge closure before persistence.
    */
   const pendingStores = new Map<string, PendingEffectSummaryStore>();
   /**
-   * Whether a proof could find any marker to anchor on in this scope.
-   *
-   * Computed once because it reads every indexed source, and consulted before every demanded
-   * proof. `foreign-borrowed-demand.ts` records what it is and is not equivalent to.
+   Whether a proof could find any marker to anchor on in this scope.
+   
+   Computed once because it reads every indexed source, and consulted before every demanded
+   proof. `foreign-borrowed-demand.ts` records what it is and is not equivalent to.
    */
   const markerReachable = scopeNamesOwnershipMarker({ indexedSourceFiles, },);
   /**
-   * Proven foreign parameters by the callable each closure was rooted at.
-   *
-   * Only the root's own entry is kept. A closure carries summaries for callers it reached, but
-   * those hold ownership seeds plus whichever outbound edges this root's walk discovered, not
-   * the summaries a closure rooted at the caller would have built: `getSignatureUsage`
-   * enumerates references rather than call edges, and a caller whose edge fails validation stays
-   * in the map with a synthetic unknown inbound in its place. Reusing those entries is what
-   * attempt two in `doc/planning/prefer-readonly-foreign-proof-cost.md` did, and it produced an
-   * offer for a parameter a write reaches. Membership doubles as the memo.
+   Proven foreign parameters by the callable each closure was rooted at.
+   
+   Only the root's own entry is kept. A closure carries summaries for callers it reached, but
+   those hold ownership seeds plus whichever outbound edges this root's walk discovered, not
+   the summaries a closure rooted at the caller would have built: `getSignatureUsage`
+   enumerates references rather than call edges, and a caller whose edge fails validation stays
+   in the map with a synthetic unknown inbound in its place. Reusing those entries is what
+   attempt two in `doc/planning/prefer-readonly-foreign-proof-cost.md` did, and it produced an
+   offer for a parameter a write reaches. Membership doubles as the memo.
    */
   const foreignByProvenRoot = new Map<string, ReadonlySet<ParameterIndex>>();
 
   /**
-   * Loads one reached source from cache or exact semantic scan.
-   *
-   * @param sourceFile - Owned source newly entering effect graph.
-   *
-   * @returns direct summaries and semantic source dependencies.
+   Loads one reached source from cache or exact semantic scan.
+   
+   @param sourceFile - Owned source newly entering effect graph.
+   
+   @returns direct summaries and semantic source dependencies.
    */
   function loadSource(sourceFile: SourceFile,): {
     readonly fileSummaries: ReadonlyMap<string, MutableEffectSummary>;
     readonly dependencies: readonly string[];
   } {
     /**
-     * Layered cache identity for current source.
+     Layered cache identity for current source.
      */
     const identity = sourceIdentity({
       project,
@@ -174,7 +174,7 @@ export function createDemandDrivenEffectIndex(
       ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
     },);
     /**
-     * Validated cached direct summaries and dependency edges.
+     Validated cached direct summaries and dependency edges.
      */
     const hit = readCachedSummariesForSource({
       identity,
@@ -200,22 +200,22 @@ export function createDemandDrivenEffectIndex(
       };
     }
     /**
-     * Callable declarations decoded only for reached source.
+     Callable declarations decoded only for reached source.
      */
     const declarations = collectAstNodes(sourceFile,)
       .filter(function retainEffectCallable(node,): node is EffectCallableDeclaration {
         return isEffectCallableDeclaration(node,);
       },);
     /**
-     * Callable identities omitted while scanning this exact source.
+     Callable identities omitted while scanning this exact source.
      */
     const sourceOmittedCallableKeys = new Set<string>();
     /**
-     * Bounded reasons for every omission encountered in current source.
+     Bounded reasons for every omission encountered in current source.
      */
     const sourceOmissionReasons = new Set<EffectSummaryOmissionReason>();
     /**
-     * Fresh direct summaries for reached source.
+     Fresh direct summaries for reached source.
      */
     const fileSummaries = new Map(declarations.flatMap(function gatherCallable(declaration,): readonly [
       string,
@@ -268,7 +268,7 @@ export function createDemandDrivenEffectIndex(
       reasons: sourceOmissionReasons,
     },);
     /**
-     * Owned source dependencies discovered through semantic call edges.
+     Owned source dependencies discovered through semantic call edges.
      */
     const dependencies = reachedSourceFileNames({
       fileSummaries,
@@ -294,22 +294,22 @@ export function createDemandDrivenEffectIndex(
   }
 
   /**
-   * Expands graph from one requested source and completes fixed points.
-   *
-   * @param sourceFile - Requested owned source root.
+   Expands graph from one requested source and completes fixed points.
+   
+   @param sourceFile - Requested owned source root.
    */
   function ensureSource(sourceFile: SourceFile,): void {
     /**
-     * Work stack of reached source files awaiting direct summaries.
+     Work stack of reached source files awaiting direct summaries.
      */
     const pending: SourceFile[] = [sourceFile,];
     /**
-     * Whether current request expanded graph and requires propagation.
+     Whether current request expanded graph and requires propagation.
      */
     const expansion = { changed: false, };
     while (pending.length > 0) {
       /**
-       * Next reached source file.
+       Next reached source file.
        */
       const current = pending.pop();
       if ((current === undefined) || loadedFileNames.has(current.fileName,))
@@ -318,11 +318,11 @@ export function createDemandDrivenEffectIndex(
       expansion.changed = true;
       analysisBudget.assertAvailable(`source ${current.fileName}`,);
       /**
-       * Start time for one reached-source cache or semantic analysis.
+       Start time for one reached-source cache or semantic analysis.
        */
       const sourceStartedAt = analysisBudget.start();
       /**
-       * Current source summaries and their semantic dependencies.
+       Current source summaries and their semantic dependencies.
        */
       const loaded = loadSource(current,);
       analysisBudget.record({
@@ -342,7 +342,7 @@ export function createDemandDrivenEffectIndex(
       loaded.dependencies
         .forEach(function enqueueDependency(fileName,): void {
           /**
-           * Owned source corresponding to semantic edge.
+           Owned source corresponding to semantic edge.
            */
           const dependency = indexedSourceFiles.get(fileName,);
           if ((dependency !== undefined)
@@ -353,7 +353,7 @@ export function createDemandDrivenEffectIndex(
     if (!expansion.changed)
       return;
     /**
-     * Start time for cache publication and fixed-point completion.
+     Start time for cache publication and fixed-point completion.
      */
     const finalizationStartedAt = analysisBudget.start();
     assertReachedCallSummaries({
@@ -362,7 +362,7 @@ export function createDemandDrivenEffectIndex(
     },);
     pendingStores.forEach(function persistReachedSource(pendingStore,): void {
       /**
-       * Complete dependency closure after every reached edge is loaded.
+       Complete dependency closure after every reached edge is loaded.
        */
       const closure = closureResolver.closureFor(
         pendingStore.sourceFile
@@ -403,7 +403,7 @@ export function createDemandDrivenEffectIndex(
   return {
     get(declaration,): CallableEffectSummary | typeof NO_EFFECT_SUMMARY {
       /**
-       * Source from exact analyzer snapshot rather than foreign wrapper.
+       Source from exact analyzer snapshot rather than foreign wrapper.
        */
       const sourceFile = indexedSourceFiles.get(declaration.getSourceFile()
         .fileName,);
@@ -411,11 +411,11 @@ export function createDemandDrivenEffectIndex(
         return NO_EFFECT_SUMMARY;
       ensureSource(sourceFile,);
       /**
-       * Stable declaration identity shared across source wrappers.
+       Stable declaration identity shared across source wrappers.
        */
       const key = callableKey(declaration,);
       /**
-       * Completed summary after demanded closure propagation.
+       Completed summary after demanded closure propagation.
        */
       const summary = summaries.get(key,);
       if (summary === undefined)
@@ -427,7 +427,7 @@ export function createDemandDrivenEffectIndex(
     },
     proveForeignBorrowed(declaration,): ReadonlySet<ParameterIndex> {
       /**
-       * Source from exact analyzer snapshot rather than foreign wrapper.
+       Source from exact analyzer snapshot rather than foreign wrapper.
        */
       const sourceFile = indexedSourceFiles.get(declaration.getSourceFile()
         .fileName,);
@@ -443,11 +443,11 @@ export function createDemandDrivenEffectIndex(
       }
       ensureSource(sourceFile,);
       /**
-       * Stable declaration identity shared across source wrappers.
+       Stable declaration identity shared across source wrappers.
        */
       const key = callableKey(declaration,);
       /**
-       * Answer from an earlier demand for this same callable.
+       Answer from an earlier demand for this same callable.
        */
       const proven = foreignByProvenRoot.get(key,);
       if (proven !== undefined)
@@ -468,11 +468,11 @@ export function createDemandDrivenEffectIndex(
        * the measurement. Deferring which callables are asked about therefore cannot move an
        * answer, only how many are computed. */
       /**
-       * Foreign parameters proven for this root, empty when no marker exists to prove from.
-       *
-       * A scope whose sources name no marker anywhere can yield no foreign parameter for any
-       * callable, since the closure walks exactly those sources, so the walk would return
-       * nothing every time.
+       Foreign parameters proven for this root, empty when no marker exists to prove from.
+       
+       A scope whose sources name no marker anywhere can yield no foreign parameter for any
+       callable, since the closure walks exactly those sources, so the walk would return
+       nothing every time.
        */
       const rootForeign = markerReachable
         ? provenRootEntry({

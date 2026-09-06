@@ -1,8 +1,8 @@
 /**
- * Internal helper functions for building libvirt domain XML fragments.
- * Provides Hyper-V enlightenments, clock configuration, IDE CDROM
- * device generation, and common device elements used by the main
- * {@link domainXml} generator.
+ Internal helper functions for building libvirt domain XML fragments.
+ Provides Hyper-V enlightenments, clock configuration, IDE CDROM
+ device generation, and common device elements used by the main
+ {@link domainXml} generator.
  */
 
 import { hXml as h, } from '@monochromatic-dev/module-hyperscript/ts';
@@ -12,17 +12,17 @@ import type { OsFamily, } from './registry.ts';
 //region Hyper-V enlightenments
 
 /**
- * Generates libvirt XML elements for Hyper-V enlightenments.
- * These are performance optimizations recognized by the Windows kernel
- * that reduce virtualization overhead for timer handling, interrupt
- * processing, and spinlock contention.
- *
- * @returns Array of XML element strings for the `<features>` block
- *
- * @example
- * ```ts
- * hypervFeatures(); // => h({ tag: 'hyperv', children: [...] })
- * ```
+ Generates libvirt XML elements for Hyper-V enlightenments.
+ These are performance optimizations recognized by the Windows kernel
+ that reduce virtualization overhead for timer handling, interrupt
+ processing, and spinlock contention.
+ 
+ @returns Array of XML element strings for the `<features>` block
+ 
+ @example
+ ```ts
+ hypervFeatures(); // => h({ tag: 'hyperv', children: [...] })
+ ```
  */
 export function hypervFeatures(): string {
   return h({
@@ -53,19 +53,19 @@ export function hypervFeatures(): string {
 //region Clock configuration
 
 /**
- * Generates the clock XML element appropriate for the guest OS.
- * Linux uses UTC offset; Windows expects localtime with a Hyper-V
- * reference clock for accurate timekeeping.
- *
- * @param osFamily - Guest OS family
- *
- * @returns XML string for the `<clock>` element
- *
- * @example
- * ```ts
- * clockElement('windows'); // => '<clock offset="localtime">...'
- * clockElement('linux');   // => '<clock offset="utc"/>'
- * ```
+ Generates the clock XML element appropriate for the guest OS.
+ Linux uses UTC offset; Windows expects localtime with a Hyper-V
+ reference clock for accurate timekeeping.
+ 
+ @param osFamily - Guest OS family
+ 
+ @returns XML string for the `<clock>` element
+ 
+ @example
+ ```ts
+ clockElement('windows'); // => '<clock offset="localtime">...'
+ clockElement('linux');   // => '<clock offset="utc"/>'
+ ```
  */
 export function clockElement(osFamily: OsFamily,): string {
   if (osFamily === 'windows') {
@@ -101,23 +101,23 @@ export function clockElement(osFamily: OsFamily,): string {
 //region CDROM devices
 
 /**
- * Generates IDE CDROM device elements for the given ISO paths.
- * Assigns sequential IDE device names (hda, hdb, hdc, hdd).
- *
- * @param cdroms - Array of objects with ISO paths
- *
- * @returns Array of XML strings for disk elements
- *
- * @example
- * ```ts
- * ideCdromDevices([{ path: '/tmp/win.iso' }]); // => ['<disk type="file" device="cdrom">...']
- * ```
+ Generates IDE CDROM device elements for the given ISO paths.
+ Assigns sequential IDE device names (hda, hdb, hdc, hdd).
+ 
+ @param cdroms - Array of objects with ISO paths
+ 
+ @returns Array of XML strings for disk elements
+ 
+ @example
+ ```ts
+ ideCdromDevices([{ path: '/tmp/win.iso' }]); // => ['<disk type="file" device="cdrom">...']
+ ```
  */
 export function ideCdromDevices(
   cdroms: readonly { readonly path: string; }[],
 ): readonly string[] {
   /**
-   * IDE device name sequence: hda through hdd.
+   IDE device name sequence: hda through hdd.
    */
   const ideDevNames = [
     'hda',
@@ -130,7 +130,7 @@ export function ideCdromDevices(
     index,
   ) {
     /**
-     * Sequential IDE slot for this CDROM, undefined past the bus's four-slot limit.
+     Sequential IDE slot for this CDROM, undefined past the bus's four-slot limit.
      */
     const devName = ideDevNames[index];
     if (devName === undefined) {
@@ -174,23 +174,23 @@ export function ideCdromDevices(
 //region Common devices
 
 /**
- * Generates common VM device elements shared across all domain configurations:
- * SLIRP user-mode networking, QEMU guest agent channel, serial console,
- * and Windows-specific VGA/tablet devices.
- *
- * @param osFamily - Guest OS family for platform-specific devices
- *
- * @returns Array of XML strings for common device elements
- *
- * @example
- * ```ts
- * commonDevices('linux');   // => [network, channel, serial, console]
- * commonDevices('windows'); // => [network, channel, serial, console, video, tablet]
- * ```
+ Generates common VM device elements shared across all domain configurations:
+ SLIRP user-mode networking, QEMU guest agent channel, serial console,
+ and Windows-specific VGA/tablet devices.
+ 
+ @param osFamily - Guest OS family for platform-specific devices
+ 
+ @returns Array of XML strings for common device elements
+ 
+ @example
+ ```ts
+ commonDevices('linux');   // => [network, channel, serial, console]
+ commonDevices('windows'); // => [network, channel, serial, console, video, tablet]
+ ```
  */
 export function commonDevices(osFamily: OsFamily,): readonly string[] {
   /**
-   * Mutable buffer because Windows appends VGA and tablet on top of the base list.
+   Mutable buffer because Windows appends VGA and tablet on top of the base list.
    */
   const devices: string[] = [
     // SLIRP user-mode networking for outbound internet without bridge setup

@@ -2,15 +2,15 @@
 import type { ReporterName, } from './reporters.ts';
 import { run, } from './run.ts';
 
-export {};
+
 
 /**
- * Prefix on `--format=` arguments, sliced off to read the reporter name.
+ Prefix on `--format=` arguments, sliced off to read the reporter name.
  */
 const FORMAT_PREFIX = '--format=';
 
 /**
- * Help text printed for `--help`.
+ Help text printed for `--help`.
  */
 const HELP = `markdown-lint - lint Markdown and MDX
 
@@ -32,19 +32,19 @@ Exit codes:
   2  Usage error.`;
 
 /**
- * Error raised for a bad command line, distinct from a lint failure so the CLI
- * can exit with the usage code rather than the violations code.
+ Error raised for a bad command line, distinct from a lint failure so the CLI
+ can exit with the usage code rather than the violations code.
  */
 class CliUsageError extends Error {
   /**
-   * Construct a usage error.
-   *
-   * @param message - description of the misuse
-   *
-   * @example
-   * ```ts
-   * throw new CliUsageError('Unknown option: --bogus');
-   * ```
+   Construct a usage error.
+   
+   @param message - description of the misuse
+   
+   @example
+   ```ts
+   throw new CliUsageError('Unknown option: --bogus');
+   ```
    */
   constructor(message: string,) {
     super(message,);
@@ -53,7 +53,7 @@ class CliUsageError extends Error {
 }
 
 /**
- * Known option flags; `--format=<name>` is matched separately by prefix.
+ Known option flags; `--format=<name>` is matched separately by prefix.
  */
 const KNOWN_FLAGS: ReadonlySet<string> = new Set([
   '--fix',
@@ -63,13 +63,13 @@ const KNOWN_FLAGS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Validate a reporter name from the command line.
- *
- * @param value - raw `--format=` value
- *
- * @returns validated reporter name
- *
- * @throws {@link CliUsageError} when the value is not a known reporter
+ Validate a reporter name from the command line.
+ 
+ @param value - raw `--format=` value
+ 
+ @returns validated reporter name
+ 
+ @throws {@link CliUsageError} when the value is not a known reporter
  */
 function parseReporter(value: string,): ReporterName {
   if ((value === 'pretty') || (value === 'json')) {
@@ -79,21 +79,21 @@ function parseReporter(value: string,): ReporterName {
 }
 
 /**
- * Resolve the reporter from the flag list: `--json` wins, then `--format=<name>`,
- * otherwise the pretty default.
- *
- * @param flags - flag tokens (those starting with `-`)
- *
- * @returns chosen reporter
- *
- * @throws {@link CliUsageError} when a `--format=` value is not a known reporter
+ Resolve the reporter from the flag list: `--json` wins, then `--format=<name>`,
+ otherwise the pretty default.
+ 
+ @param flags - flag tokens (those starting with `-`)
+ 
+ @returns chosen reporter
+ 
+ @throws {@link CliUsageError} when a `--format=` value is not a known reporter
  */
 function deriveReporter(flags: readonly string[],): ReporterName {
   if (flags.includes('--json',)) {
     return 'json';
   }
   /**
-   * First `--format=<name>` flag, if any.
+   First `--format=<name>` flag, if any.
    */
   const formatFlag = flags.find(function isFormatFlag(flag: string,): boolean {
     return flag.startsWith(FORMAT_PREFIX,);
@@ -105,52 +105,52 @@ function deriveReporter(flags: readonly string[],): ReporterName {
 }
 
 /**
- * Parsed command line: the paths to lint and the chosen behavior.
+ Parsed command line: the paths to lint and the chosen behavior.
  */
 type ParsedArgs = {
   /**
-   * Path arguments.
+   Path arguments.
    */
   readonly paths: readonly string[];
   /**
-   * Whether `--fix` was given.
+   Whether `--fix` was given.
    */
   readonly fix: boolean;
   /**
-   * Chosen reporter.
+   Chosen reporter.
    */
   readonly reporter: ReporterName;
   /**
-   * Whether help was requested.
+   Whether help was requested.
    */
   readonly help: boolean;
 };
 
 /**
- * Parse argv (after the runtime and script name) into structured options. Flags
- * and positionals are partitioned by leading `-`; every flag must be known.
- *
- * @param argv - raw arguments after the script name
- *
- * @returns parsed options
- *
- * @throws {@link CliUsageError} on an unknown option
+ Parse argv (after the runtime and script name) into structured options. Flags
+ and positionals are partitioned by leading `-`; every flag must be known.
+ 
+ @param argv - raw arguments after the script name
+ 
+ @returns parsed options
+ 
+ @throws {@link CliUsageError} on an unknown option
  */
 function parseArgs(argv: readonly string[],): ParsedArgs {
   /**
-   * Flag tokens (those starting with `-`).
+   Flag tokens (those starting with `-`).
    */
   const flags = argv.filter(function isFlag(arg: string,): boolean {
     return arg.startsWith('-',);
   },);
   /**
-   * Positional path tokens.
+   Positional path tokens.
    */
   const paths = argv.filter(function isPositional(arg: string,): boolean {
     return !arg.startsWith('-',);
   },);
   /**
-   * First unrecognized flag, if any.
+   First unrecognized flag, if any.
    */
   const unknown = flags.find(function isUnknownFlag(flag: string,): boolean {
     return !(KNOWN_FLAGS.has(flag,) || flag.startsWith(FORMAT_PREFIX,));
@@ -167,13 +167,13 @@ function parseArgs(argv: readonly string[],): ParsedArgs {
 }
 
 /**
- * Entry point: parse arguments, lint or fix, print the report, and set the
- * process exit code. Usage errors exit with code 2; remaining violations exit
- * with code 1; a clean run exits 0.
+ Entry point: parse arguments, lint or fix, print the report, and set the
+ process exit code. Usage errors exit with code 2; remaining violations exit
+ with code 1; a clean run exits 0.
  */
 async function main(): Promise<void> {
   /**
-   * Parsed command-line options.
+   Parsed command-line options.
    */
   const args = parseArgs(process.argv
     .slice(2,),);
@@ -183,7 +183,7 @@ async function main(): Promise<void> {
     return;
   }
   /**
-   * Lint or fix result.
+   Lint or fix result.
    */
   const result = await run({
     paths: args.paths,

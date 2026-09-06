@@ -19,22 +19,22 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 //region Constants
 
 /**
- * Prefix for retained complete-answer directories.
+ Prefix for retained complete-answer directories.
  */
 const RETAINED_ANSWER_PREFIX = 'pi-ask-user-answer-';
 
 /**
- * Filename used for complete answer fallback.
+ Filename used for complete answer fallback.
  */
 const RETAINED_ANSWER_FILENAME = 'answer.txt';
 
 /**
- * Private directory mode for retained answer.
+ Private directory mode for retained answer.
  */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 
 /**
- * Private file mode for retained answer.
+ Private file mode for retained answer.
  */
 const PRIVATE_FILE_MODE = 0o600;
 
@@ -43,7 +43,7 @@ const PRIVATE_FILE_MODE = 0o600;
 //region Logger
 
 /**
- * Tagged logger for model-visible answer formatting.
+ Tagged logger for model-visible answer formatting.
  */
 const l = tagged({ tag: 'ask-user-question:tool-result', },);
 
@@ -52,27 +52,27 @@ const l = tagged({ tag: 'ask-user-question:tool-result', },);
 //region Types
 
 /**
- * Persisted details for answered or cancelled question.
+ Persisted details for answered or cancelled question.
  */
 export type AskUserQuestionDetails =
   | {
     /**
-     * User submitted nonblank answer.
+     User submitted nonblank answer.
      */
     readonly status: 'answered';
     /**
-     * Complete answer when visible,
-     * or visible prefix when truncated.
+     Complete answer when visible,
+     or visible prefix when truncated.
      */
     readonly answer: string;
     /**
-     * Private full-answer path when model-visible text was truncated.
+     Private full-answer path when model-visible text was truncated.
      */
     readonly fullAnswerPath?: string;
   }
   | {
     /**
-     * User declined or answer helper disappeared.
+     User declined or answer helper disappeared.
      */
     readonly status: 'cancelled';
   };
@@ -82,14 +82,14 @@ export type AskUserQuestionDetails =
 //region Result construction
 
 /**
- * Builds model-visible cancelled result.
- *
- * @returns successful tool result carrying cancellation status
- *
- * @example
- * ```ts
- * buildCancelledResult();
- * ```
+ Builds model-visible cancelled result.
+ 
+ @returns successful tool result carrying cancellation status
+ 
+ @example
+ ```ts
+ buildCancelledResult();
+ ```
  */
 export function buildCancelledResult(): AgentToolResult<AskUserQuestionDetails> {
   return {
@@ -102,24 +102,24 @@ export function buildCancelledResult(): AgentToolResult<AskUserQuestionDetails> 
 }
 
 /**
- * Builds context-bounded model result for submitted answer.
- *
- * Complete oversized answer remains in private temp file for model read tool.
- *
- * @param answer - normalized nonblank answer
- *
- * @returns tool result with answer or truncation path
- *
- * @example
- * ```ts
- * await buildAnsweredResult({ answer: 'Use the external editor.' });
- * ```
+ Builds context-bounded model result for submitted answer.
+ 
+ Complete oversized answer remains in private temp file for model read tool.
+ 
+ @param answer - normalized nonblank answer
+ 
+ @returns tool result with answer or truncation path
+ 
+ @example
+ ```ts
+ await buildAnsweredResult({ answer: 'Use the external editor.' });
+ ```
  */
 export async function buildAnsweredResult(
   { answer, }: { readonly answer: string; },
 ): Promise<AgentToolResult<AskUserQuestionDetails>> {
   /**
-   * Pi-standard context truncation over answer text.
+   Pi-standard context truncation over answer text.
    */
   const truncation = truncateHead(
     answer,
@@ -140,11 +140,11 @@ export async function buildAnsweredResult(
       },
     };
   /**
-   * Private path retaining complete oversized answer.
+   Private path retaining complete oversized answer.
    */
   const fullAnswerPath = await writeRetainedAnswer({ answer, },);
   /**
-   * Model-visible truncation notice with precise line and byte evidence.
+   Model-visible truncation notice with precise line and byte evidence.
    */
   const notice = `Answer truncated: showing ${String(truncation.outputLines,)} of ${String(truncation.totalLines,)} lines (${formatSize(truncation.outputBytes,)} of ${formatSize(truncation.totalBytes,)}). Full answer saved to: ${fullAnswerPath}`;
   l.warn(`truncated model-visible answer; full answer at ${fullAnswerPath}`,);
@@ -169,17 +169,17 @@ export async function buildAnsweredResult(
 //region Retained answer
 
 /**
- * Writes complete oversized answer to private temp file.
- *
- * @param answer - complete answer text
- *
- * @returns readable absolute path for model tool
+ Writes complete oversized answer to private temp file.
+ 
+ @param answer - complete answer text
+ 
+ @returns readable absolute path for model tool
  */
 async function writeRetainedAnswer(
   { answer, }: { readonly answer: string; },
 ): Promise<string> {
   /**
-   * Unique retained-answer directory.
+   Unique retained-answer directory.
    */
   const directory = await mkdtemp(join(
     tmpdir(),
@@ -190,7 +190,7 @@ async function writeRetainedAnswer(
     PRIVATE_DIRECTORY_MODE,
   );
   /**
-   * Stable answer filename inside unique directory.
+   Stable answer filename inside unique directory.
    */
   const path = join(
     directory,

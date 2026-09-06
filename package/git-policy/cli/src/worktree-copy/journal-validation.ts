@@ -22,44 +22,44 @@ import { assertPrivateWorktreeCopyPath, } from './private-path.ts';
 import { STAGE_PREFIX, } from './snapshot.ts';
 
 /**
- * Git-file prefix introducing linked-worktree administrative path.
+ Git-file prefix introducing linked-worktree administrative path.
  */
 const GITDIR_PREFIX = 'gitdir: ';
 
 /**
- * Filesystem path is absent.
+ Filesystem path is absent.
  */
 const PATH_ABSENT: unique symbol = Symbol('journal path is absent',);
 
 /**
- * Reports whether unknown JSON value is a non-null object record.
- *
- * @param value - untrusted parsed JSON value
- *
- * @returns whether value supports named field inspection
- *
- * @example
- * ```ts
- * isRecord({ version: 1 });
- * // => true
- * ```
+ Reports whether unknown JSON value is a non-null object record.
+ 
+ @param value - untrusted parsed JSON value
+ 
+ @returns whether value supports named field inspection
+ 
+ @example
+ ```ts
+ isRecord({ version: 1 });
+ // => true
+ ```
  */
 function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
   return ((typeof value) === 'object') && (value !== null);
 }
 
 /**
- * Reports whether unknown JSON value is an array containing only strings.
- *
- * @param value - untrusted parsed JSON field
- *
- * @returns whether every array member is a string
- *
- * @example
- * ```ts
- * isStringArray(['cache']);
- * // => true
- * ```
+ Reports whether unknown JSON value is an array containing only strings.
+ 
+ @param value - untrusted parsed JSON field
+ 
+ @returns whether every array member is a string
+ 
+ @example
+ ```ts
+ isStringArray(['cache']);
+ // => true
+ ```
  */
 function isStringArray(value: unknown,): value is readonly string[] {
   return Array.isArray(value,)
@@ -69,17 +69,17 @@ function isStringArray(value: unknown,): value is readonly string[] {
 }
 
 /**
- * Reports whether string is canonical nonnegative decimal identity.
- *
- * @param value - untrusted device or inode text
- *
- * @returns whether text has canonical decimal form
- *
- * @example
- * ```ts
- * isDecimalIdentity('42');
- * // => true
- * ```
+ Reports whether string is canonical nonnegative decimal identity.
+ 
+ @param value - untrusted device or inode text
+ 
+ @returns whether text has canonical decimal form
+ 
+ @example
+ ```ts
+ isDecimalIdentity('42');
+ // => true
+ ```
  */
 function isDecimalIdentity(value: unknown,): value is string {
   if (((typeof value) !== 'string') || (value === '')
@@ -88,7 +88,7 @@ function isDecimalIdentity(value: unknown,): value is string {
   }
   for (let index = 0; index < value.length; index += 1) {
     /**
-     * Current decimal candidate character.
+     Current decimal candidate character.
      */
     const character = value.charAt(index,);
     if ((character < '0') || (character > '9'))
@@ -98,17 +98,17 @@ function isDecimalIdentity(value: unknown,): value is string {
 }
 
 /**
- * Reports whether unknown value is durable created-entry identity.
- *
- * @param value - untrusted created-entry record
- *
- * @returns whether every required primitive field is valid
- *
- * @example
- * ```ts
- * isInstalledEntry({ device: '1', inode: '2', relativePath: 'cache', selected: true });
- * // => true
- * ```
+ Reports whether unknown value is durable created-entry identity.
+ 
+ @param value - untrusted created-entry record
+ 
+ @returns whether every required primitive field is valid
+ 
+ @example
+ ```ts
+ isInstalledEntry({ device: '1', inode: '2', relativePath: 'cache', selected: true });
+ // => true
+ ```
  */
 function isInstalledEntry(value: unknown,): value is InstalledWorktreePath {
   return isRecord(value,)
@@ -119,17 +119,17 @@ function isInstalledEntry(value: unknown,): value is InstalledWorktreePath {
 }
 
 /**
- * Reports whether unknown value is array of durable created-entry identities.
- *
- * @param value - untrusted created-entry array
- *
- * @returns whether every entry has valid primitive fields
- *
- * @example
- * ```ts
- * isInstalledEntryArray([]);
- * // => true
- * ```
+ Reports whether unknown value is array of durable created-entry identities.
+ 
+ @param value - untrusted created-entry array
+ 
+ @returns whether every entry has valid primitive fields
+ 
+ @example
+ ```ts
+ isInstalledEntryArray([]);
+ // => true
+ ```
  */
 function isInstalledEntryArray(
   value: unknown,
@@ -139,18 +139,18 @@ function isInstalledEntryArray(
 }
 
 /**
- * Asserts absolute path is lexically canonical.
- *
- * @param value - untrusted journal path
- *
- * @param field - journal field name for diagnostics
- *
- * @throws {@link WorktreeCopyError} when path is relative or noncanonical
- *
- * @example
- * ```ts
- * assertCanonicalAbsolutePath({ value: '/repo/cache', field: 'sourceRoot' });
- * ```
+ Asserts absolute path is lexically canonical.
+ 
+ @param value - untrusted journal path
+ 
+ @param field - journal field name for diagnostics
+ 
+ @throws {@link WorktreeCopyError} when path is relative or noncanonical
+ 
+ @example
+ ```ts
+ assertCanonicalAbsolutePath({ value: '/repo/cache', field: 'sourceRoot' });
+ ```
  */
 function assertCanonicalAbsolutePath({
   value,
@@ -167,22 +167,22 @@ function assertCanonicalAbsolutePath({
 }
 
 /**
- * Validates durable JSON record before recovery uses filesystem paths.
- *
- * @param value - parsed unknown JSON value
- *
- * @param path - journal path used in diagnostics
- *
- * @param journalRoot - exact private journal directory
- *
- * @returns validated schema-version-one journal
- *
- * @throws {@link WorktreeCopyError} when record or path relation is malformed
- *
- * @example
- * ```ts
- * validateJournalValue({ value: parsed, path: '/repo/.git/cli-git-worktree-copy/v1/id.json', journalRoot });
- * ```
+ Validates durable JSON record before recovery uses filesystem paths.
+ 
+ @param value - parsed unknown JSON value
+ 
+ @param path - journal path used in diagnostics
+ 
+ @param journalRoot - exact private journal directory
+ 
+ @returns validated schema-version-one journal
+ 
+ @throws {@link WorktreeCopyError} when record or path relation is malformed
+ 
+ @example
+ ```ts
+ validateJournalValue({ value: parsed, path: '/repo/.git/cli-git-worktree-copy/v1/id.json', journalRoot });
+ ```
  */
 export function validateJournalValue({
   value,
@@ -209,7 +209,7 @@ export function validateJournalValue({
     );
   }
   /**
-   * Plain immutable journal detached from untrusted parsed object.
+   Plain immutable journal detached from untrusted parsed object.
    */
   const record: WorktreeCopyJournal = {
     createdEntries: value.createdEntries
@@ -268,7 +268,7 @@ export function validateJournalValue({
     assertSafeRepositoryPath(entry.relativePath,);
   },);
   /**
-   * Created paths used to reject duplicate ownership claims.
+   Created paths used to reject duplicate ownership claims.
    */
   const createdPaths = record.createdEntries
     .map(function createdPath(entry,): string {
@@ -289,16 +289,16 @@ export function validateJournalValue({
 }
 
 /**
- * Reads no-follow metadata or absence for journal path validation.
- *
- * @param path - exact filesystem path
- *
- * @returns no-follow metadata or absence sentinel
- *
- * @example
- * ```ts
- * await lstatOrAbsent('/private/stage');
- * ```
+ Reads no-follow metadata or absence for journal path validation.
+ 
+ @param path - exact filesystem path
+ 
+ @returns no-follow metadata or absence sentinel
+ 
+ @example
+ ```ts
+ await lstatOrAbsent('/private/stage');
+ ```
  */
 async function lstatOrAbsent(path: string,): Promise<Readonly<Stats> | typeof PATH_ABSENT> {
   try {
@@ -313,18 +313,18 @@ async function lstatOrAbsent(path: string,): Promise<Readonly<Stats> | typeof PA
 }
 
 /**
- * Asserts journal destination remains registered under expected common directory.
- *
- * @param commonDir - canonical common Git directory
- *
- * @param destinationRoot - canonical linked-worktree root
- *
- * @throws {@link WorktreeCopyError} when destination registration changed
- *
- * @example
- * ```ts
- * await assertRegisteredDestination({ commonDir: '/repo/.git', destinationRoot: '/worktrees/topic' });
- * ```
+ Asserts journal destination remains registered under expected common directory.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @param destinationRoot - canonical linked-worktree root
+ 
+ @throws {@link WorktreeCopyError} when destination registration changed
+ 
+ @example
+ ```ts
+ await assertRegisteredDestination({ commonDir: '/repo/.git', destinationRoot: '/worktrees/topic' });
+ ```
  */
 async function assertRegisteredDestination({
   commonDir,
@@ -339,7 +339,7 @@ async function assertRegisteredDestination({
     );
   }
   /**
-   * Linked-worktree Git-file pointer.
+   Linked-worktree Git-file pointer.
    */
   const pointer = (await readFile(
     join(
@@ -355,14 +355,14 @@ async function assertRegisteredDestination({
     );
   }
   /**
-   * Canonical linked administrative directory.
+   Canonical linked administrative directory.
    */
   const adminPath = await realpath(resolve(
     destinationRoot,
     pointer.slice(GITDIR_PREFIX.length,),
   ),);
   /**
-   * Canonical expected linked administrative parent.
+   Canonical expected linked administrative parent.
    */
   const expectedAdminRoot = await realpath(join(
     commonDir,
@@ -376,18 +376,18 @@ async function assertRegisteredDestination({
 }
 
 /**
- * Validates live identities before recovery reads, installs, or removes stage state.
- *
- * @param commonDir - canonical common Git directory
- *
- * @param record - schema-validated journal record
- *
- * @throws {@link WorktreeCopyError} when private stage or destination changed
- *
- * @example
- * ```ts
- * await validateJournalFilesystem({ commonDir: '/repo/.git', record });
- * ```
+ Validates live identities before recovery reads, installs, or removes stage state.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @param record - schema-validated journal record
+ 
+ @throws {@link WorktreeCopyError} when private stage or destination changed
+ 
+ @example
+ ```ts
+ await validateJournalFilesystem({ commonDir: '/repo/.git', record });
+ ```
  */
 export async function validateJournalFilesystem({
   commonDir,
@@ -402,7 +402,7 @@ export async function validateJournalFilesystem({
       destinationRoot: record.destinationRoot,
     },);
     /**
-     * Private stage-container metadata or completed-cleanup absence.
+     Private stage-container metadata or completed-cleanup absence.
      */
     const containerStats = await lstatOrAbsent(record.stageContainer,);
     if ((typeof containerStats) === 'symbol') {
@@ -417,7 +417,7 @@ export async function validateJournalFilesystem({
       role: 'private stage',
     },);
     /**
-     * Private payload metadata or partial completed cleanup absence.
+     Private payload metadata or partial completed cleanup absence.
      */
     const stageStats = await lstatOrAbsent(record.stageRoot,);
     if ((typeof stageStats) === 'symbol') {

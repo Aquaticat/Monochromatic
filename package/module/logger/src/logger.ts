@@ -10,21 +10,21 @@ import type {
 } from './types.ts';
 
 /**
- * Default sink backends to attempt, in priority order. Each runtime keeps
- * only the sinks whose `verify` confirms its backend: {@link createConsoleSink}
- * everywhere, {@link createIndexedDbSink} in browsers,
- * {@link createSessionStorageSink} wherever web storage round-trips (browsers,
- * Node 22+, Deno), {@link createLocalStorageSink} wherever `localStorage`
- * round-trips (browsers, Deno, Node launched with `--localstorage-file`),
- * {@link createFileSink} under Node. The noop sink is intentionally absent:
- * the console sink verifies wherever `console` and `queueMicrotask` exist,
- * so the default logger has a backend in every supported runtime, and a
- * custom `createLogger` whose sinks all fail verification surfaces the
- * "No logging backends available" error instead of silently discarding.
- * The OPFS sink is exported
- * but no longer a default: its stream stages writes until a close that a
- * crash never performs, so IndexedDB holds the persistent-browser slot; see
- * `DECISIONS.md`.
+ Default sink backends to attempt, in priority order. Each runtime keeps
+ only the sinks whose `verify` confirms its backend: {@link createConsoleSink}
+ everywhere, {@link createIndexedDbSink} in browsers,
+ {@link createSessionStorageSink} wherever web storage round-trips (browsers,
+ Node 22+, Deno), {@link createLocalStorageSink} wherever `localStorage`
+ round-trips (browsers, Deno, Node launched with `--localstorage-file`),
+ {@link createFileSink} under Node. The noop sink is intentionally absent:
+ the console sink verifies wherever `console` and `queueMicrotask` exist,
+ so the default logger has a backend in every supported runtime, and a
+ custom `createLogger` whose sinks all fail verification surfaces the
+ "No logging backends available" error instead of silently discarding.
+ The OPFS sink is exported
+ but no longer a default: its stream stages writes until a close that a
+ crash never performs, so IndexedDB holds the persistent-browser slot; see
+ `DECISIONS.md`.
  */
 const defaultSinks: readonly Sink[] = [
   createConsoleSink(),
@@ -35,8 +35,8 @@ const defaultSinks: readonly Sink[] = [
 ];
 
 /**
- * Default multi-sink logger plus its eager readiness promise, built by
- * applying {@link createLogger} to {@link defaultSinks}.
+ Default multi-sink logger plus its eager readiness promise, built by
+ applying {@link createLogger} to {@link defaultSinks}.
  */
 const {
   initPromise: defaultInitPromise,
@@ -44,24 +44,24 @@ const {
 } = createLogger({ sinks: defaultSinks, },);
 
 /**
- * Eager readiness promise. Consumers do not need to await this before logging;
- * {@link Logger.flush} awaits it internally, and startup records replay to
- * async sinks as they become available.
+ Eager readiness promise. Consumers do not need to await this before logging;
+ {@link Logger.flush} awaits it internally, and startup records replay to
+ async sinks as they become available.
  */
 export const initPromise: Promise<void> = defaultInitPromise;
 
 /**
- * Multi-sink logger that writes to all available backends.
- * Startup records replay to async sinks that verify after the log call.
- * Log calls throw only when initialization proves no backend is available,
- * which the console sink prevents in every supported runtime.
- *
- * @example
- * ```ts
- * import { logger, } from '\@monochromatic-dev/module-logger/logger';
- *
- * logger.error('unexpected shutdown',);
- * await logger.flush();
- * ```
+ Multi-sink logger that writes to all available backends.
+ Startup records replay to async sinks that verify after the log call.
+ Log calls throw only when initialization proves no backend is available,
+ which the console sink prevents in every supported runtime.
+ 
+ @example
+ ```ts
+ import { logger, } from '\@monochromatic-dev/module-logger/logger';
+ 
+ logger.error('unexpected shutdown',);
+ await logger.flush();
+ ```
  */
 export const logger: Logger = defaultLogger;

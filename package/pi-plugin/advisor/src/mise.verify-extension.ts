@@ -1,7 +1,7 @@
 /**
- * Verifies built Advisor extension registers expected Pi resources.
- *
- * @module
+ Verifies built Advisor extension registers expected Pi resources.
+ 
+ @module
  */
 
 import type { Provider, } from '@earendil-works/pi-ai';
@@ -17,12 +17,12 @@ import type { ReadonlyDeep, } from 'type-fest';
 //region Constants
 
 /**
- * Built extension path consumed by Pi.
+ Built extension path consumed by Pi.
  */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
 /**
- * Expected resource registrations from the extension entry point.
+ Expected resource registrations from the extension entry point.
  */
 const EXPECTED_REGISTRATIONS = [
   'tool:advisor',
@@ -37,25 +37,25 @@ const EXPECTED_REGISTRATIONS = [
 //region Types
 
 /**
- * Built Advisor extension module shape.
+ Built Advisor extension module shape.
  */
 type AdvisorExtensionModule = {
   /**
-   * Pi extension factory.
+   Pi extension factory.
    */
   readonly default: ExtensionFactory;
 };
 
 /**
- * Registered tool subset inspected by verification.
+ Registered tool subset inspected by verification.
  */
 type RegisteredTool = {
   /**
-   * Tool name.
+   Tool name.
    */
   readonly name: string;
   /**
-   * Whether tool schema exposes focused-question parameter.
+   Whether tool schema exposes focused-question parameter.
    */
   readonly questionParameterPresent: boolean;
 };
@@ -65,15 +65,15 @@ type RegisteredTool = {
 //region Verification
 
 /**
- * Verify built extension registers expected Pi resources.
- *
- * @returns verification result text
- *
- * @throws when built extension import or registration fails
+ Verify built extension registers expected Pi resources.
+ 
+ @returns verification result text
+ 
+ @throws when built extension import or registration fails
  */
 async function verifyBuiltExtension(): Promise<string> {
   /**
-   * Built extension module imported through package output.
+   Built extension module imported through package output.
    */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isAdvisorExtensionModule(mod,)) {
@@ -83,18 +83,18 @@ async function verifyBuiltExtension(): Promise<string> {
   }
 
   /**
-   * Fake Pi API and its registration call log.
+   Fake Pi API and its registration call log.
    */
   const fakeApi = fakePiApi();
   await mod.default(fakeApi.api,);
 
   /**
-   * Snapshot of recorded registration calls.
+   Snapshot of recorded registration calls.
    */
   const registrations = fakeApi.registrations();
 
   /**
-   * Expected registrations not observed.
+   Expected registrations not observed.
    */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
@@ -109,11 +109,11 @@ async function verifyBuiltExtension(): Promise<string> {
 }
 
 /**
- * Detect built Advisor extension module shape.
- *
- * @param value - imported module namespace
- *
- * @returns whether module exports an extension factory
+ Detect built Advisor extension module shape.
+ 
+ @param value - imported module namespace
+ 
+ @returns whether module exports an extension factory
  */
 function isAdvisorExtensionModule(
   value: unknown,
@@ -124,13 +124,13 @@ function isAdvisorExtensionModule(
 }
 
 /**
- * Return registered Advisor tool from captured registrations.
- *
- * @param tools - registered tools
- *
- * @returns registered Advisor tool
- *
- * @throws when Advisor tool was not captured
+ Return registered Advisor tool from captured registrations.
+ 
+ @param tools - registered tools
+ 
+ @returns registered Advisor tool
+ 
+ @throws when Advisor tool was not captured
  */
 function advisorToolOrThrow(
   tools: readonly ReadonlyDeep<RegisteredTool>[],
@@ -144,17 +144,17 @@ function advisorToolOrThrow(
 }
 
 /**
- * Assert built Advisor tool exposes focused-question parameter.
- *
- * @param tools - registered tools
- *
- * @throws when Advisor question parameter is missing
+ Assert built Advisor tool exposes focused-question parameter.
+ 
+ @param tools - registered tools
+ 
+ @throws when Advisor question parameter is missing
  */
 function assertAdvisorQuestionParameter(
   tools: readonly ReadonlyDeep<RegisteredTool>[],
 ): void {
   /**
-   * Registered Advisor tool definition discovered by linear scan.
+   Registered Advisor tool definition discovered by linear scan.
    */
   const advisorTool = advisorToolOrThrow(tools,);
   if (!advisorTool.questionParameterPresent)
@@ -162,9 +162,9 @@ function assertAdvisorQuestionParameter(
 }
 
 /**
- * Build fake Pi API used to verify extension registration.
- *
- * @returns fake Pi extension API and registrations accessor
+ Build fake Pi API used to verify extension registration.
+ 
+ @returns fake Pi extension API and registrations accessor
  */
 function fakePiApi(): {
   readonly api: ExtensionAPI;
@@ -172,24 +172,24 @@ function fakePiApi(): {
   readonly tools: () => readonly ReadonlyDeep<RegisteredTool>[];
 } {
   /**
-   * Locally-owned registration log accessed through closures.
+   Locally-owned registration log accessed through closures.
    */
   const registrations: string[] = [];
   /**
-   * Registered tool definitions accessed through closures.
+   Registered tool definitions accessed through closures.
    */
   const tools: RegisteredTool[] = [];
   /**
-   * Fake provider registrar accepting both current Pi overloads.
-   *
-   * @param providerOrName - complete provider or legacy provider identity
-   *
+   Fake provider registrar accepting both current Pi overloads.
+   
+   @param providerOrName - complete provider or legacy provider identity
+   
    */
   function registerProvider(
     providerOrName: Provider | string,
   ): void {
     /**
-     * Provider identity normalized from complete-provider or legacy arguments.
+     Provider identity normalized from complete-provider or legacy arguments.
      */
     const providerName = (typeof providerOrName)
       === 'string'
@@ -198,7 +198,7 @@ function fakePiApi(): {
     registrations.push(`provider:${providerName}`,);
   }
   /**
-   * Fake extension API that records registration calls into the closure.
+   Fake extension API that records registration calls into the closure.
    */
   const api: ExtensionAPI = {
     on(event: string,) {
@@ -212,14 +212,14 @@ function fakePiApi(): {
     }>,) {
       registrations.push(`tool:${tool.name}`,);
       /**
-       * Captured focused-question parameter schema.
+       Captured focused-question parameter schema.
        */
       const questionParameter = tool
         .parameters
         ?.properties
         ?.question;
       /**
-       * Whether captured schema exposes focused-question parameter.
+       Whether captured schema exposes focused-question parameter.
        */
       const questionParameterPresent = questionParameter !== undefined;
       tools.push({

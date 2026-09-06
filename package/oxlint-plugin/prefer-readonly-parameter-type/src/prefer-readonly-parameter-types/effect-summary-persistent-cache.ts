@@ -1,7 +1,7 @@
 /**
- * Content-addressed incremental persistent cache for direct effect summaries.
- *
- * @module
+ Content-addressed incremental persistent cache for direct effect summaries.
+ 
+ @module
  */
 
 import { randomUUID, } from 'node:crypto';
@@ -40,45 +40,45 @@ import {
 } from './effect-summary-serialization.ts';
 
 /**
- * Persistent cache logger.
+ Persistent cache logger.
  */
 const l = tagged({ tag: 'effect-summary-persistent-cache', },);
 
 /**
- * Bytes in one kibibyte.
+ Bytes in one kibibyte.
  */
 const BYTES_PER_KIBIBYTE = 1_024;
 
 /**
- * Kibibytes in one mebibyte.
+ Kibibytes in one mebibyte.
  */
 const KIBIBYTES_PER_MEBIBYTE = 1_024;
 
 /**
- * Mebibytes accepted for one persistent entry.
+ Mebibytes accepted for one persistent entry.
  */
 const MAX_CACHE_ENTRY_MEBIBYTES = 16;
 
 /**
- * Maximum persistent entry size accepted before JSON decoding.
+ Maximum persistent entry size accepted before JSON decoding.
  */
 const MAX_CACHE_ENTRY_BYTES = MAX_CACHE_ENTRY_MEBIBYTES
   * KIBIBYTES_PER_MEBIBYTE
   * BYTES_PER_KIBIBYTE;
 
 /**
- * Sentinel returned when persistent cache cannot prove an exact hit.
+ Sentinel returned when persistent cache cannot prove an exact hit.
  */
 export const PERSISTENT_EFFECT_CACHE_MISS: unique symbol = Symbol(
   'persistent effect cache miss',
 );
 
 /**
- * Cache address shared by reads and writes.
- *
- * `projectKey` carries the configured project path plus analysis-scope
- * policy; per-project content identity lives in each envelope's dependency
- * snapshot rather than the address, so one changed file relocates nothing.
+ Cache address shared by reads and writes.
+ 
+ `projectKey` carries the configured project path plus analysis-scope
+ policy; per-project content identity lives in each envelope's dependency
+ snapshot rather than the address, so one changed file relocates nothing.
  */
 export type PersistentEffectCacheAddress = {
   readonly projectKey: string;
@@ -88,10 +88,10 @@ export type PersistentEffectCacheAddress = {
 };
 
 /**
- * Dependency-closure snapshot written into one entry.
- *
- * `resolved` distinguishes an exact transitive closure from the whole-scope
- * fallback used when module references cannot be fully resolved.
+ Dependency-closure snapshot written into one entry.
+ 
+ `resolved` distinguishes an exact transitive closure from the whole-scope
+ fallback used when module references cannot be fully resolved.
  */
 export type EffectDependencyClosure = {
   readonly resolved: boolean;
@@ -100,7 +100,7 @@ export type EffectDependencyClosure = {
 };
 
 /**
- * Validated persistent hit: rehydrated summaries plus recorded closure edges.
+ Validated persistent hit: rehydrated summaries plus recorded closure edges.
  */
 export type PersistentEffectCacheHit = {
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
@@ -111,13 +111,13 @@ export type PersistentEffectCacheHit = {
 };
 
 /**
- * Builds exact cache identity and path for source snapshot.
- *
- * @param address - Project,
- * source,
- * and optional test cache root.
- *
- * @returns cache path and every validated identity component.
+ Builds exact cache identity and path for source snapshot.
+ 
+ @param address - Project,
+ source,
+ and optional test cache root.
+ 
+ @returns cache path and every validated identity component.
  */
 function cacheIdentity(
   address: PersistentEffectCacheAddress,
@@ -129,23 +129,23 @@ function cacheIdentity(
   readonly root: string;
 } {
   /**
-   * Analyzer implementation and TypeScript runtime digest.
+   Analyzer implementation and TypeScript runtime digest.
    */
   const analyzer = analyzerDigest();
   /**
-   * Exact source-text digest.
+   Exact source-text digest.
    */
   const source = contentDigest(address.sourceText,);
   /**
-   * Project scope identity isolating configurations without content coupling.
+   Project scope identity isolating configurations without content coupling.
    */
   const projectDirectoryName = contentDigest(address.projectKey,);
   /**
-   * Source path identity isolating files with equal contents.
+   Source path identity isolating files with equal contents.
    */
   const fileDirectoryName = contentDigest(address.fileName,);
   /**
-   * Dependency-local or disposable persistent cache root.
+   Dependency-local or disposable persistent cache root.
    */
   const root = effectCacheRoot({
     projectKey: address.projectKey,
@@ -154,7 +154,7 @@ function cacheIdentity(
       : { override: address.cacheRootOverride, },
   },);
   /**
-   * Content-addressed directory for project scope and source path.
+   Content-addressed directory for project scope and source path.
    */
   const directory = join(
     root,
@@ -174,19 +174,19 @@ function cacheIdentity(
 }
 
 /**
- * Reads direct summaries from persistent entry validated against program state.
- *
- * @param address - Project and source identity.
- *
- * @param state - Current whole-scope surfaces and per-source digests.
- *
- * @returns rehydrated summaries with recorded closure edges,
- * or cache-miss sentinel.
- *
- * @example
- * ```ts
- * readPersistentEffectSummaries({ address, state });
- * ```
+ Reads direct summaries from persistent entry validated against program state.
+ 
+ @param address - Project and source identity.
+ 
+ @param state - Current whole-scope surfaces and per-source digests.
+ 
+ @returns rehydrated summaries with recorded closure edges,
+ or cache-miss sentinel.
+ 
+ @example
+ ```ts
+ readPersistentEffectSummaries({ address, state });
+ ```
  */
 export function readPersistentEffectSummaries({
   address,
@@ -196,7 +196,7 @@ export function readPersistentEffectSummaries({
   readonly state: PersistentEffectDependencyState;
 },): PersistentEffectCacheHit | typeof PERSISTENT_EFFECT_CACHE_MISS {
   /**
-   * Current content-addressed cache path.
+   Current content-addressed cache path.
    */
   const identity = cacheIdentity(address,);
   // oxlint-disable-next-line no-restricted-syntax/no-sync -- Synchronous Oxlint visitor must finish cache lookup before reporting diagnostics.
@@ -205,7 +205,7 @@ export function readPersistentEffectSummaries({
   try {
     /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous Oxlint visitor validates cache size before reading. */
     /**
-     * Published cache entry metadata checked before allocation and decoding.
+     Published cache entry metadata checked before allocation and decoding.
      */
     const metadata = statSync(identity.path,);
     /* oxlint-enable no-restricted-syntax/no-sync */
@@ -213,7 +213,7 @@ export function readPersistentEffectSummaries({
       return PERSISTENT_EFFECT_CACHE_MISS;
     /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous Oxlint visitor must finish cache lookup before reporting diagnostics. */
     /**
-     * Complete cache JSON read after atomic publication.
+     Complete cache JSON read after atomic publication.
      */
     const text = readFileSync(
       identity.path,
@@ -223,11 +223,11 @@ export function readPersistentEffectSummaries({
     if (Buffer.byteLength(text,) > MAX_CACHE_ENTRY_BYTES)
       return PERSISTENT_EFFECT_CACHE_MISS;
     /**
-     * Untrusted parsed cache value narrowed by envelope validation.
+     Untrusted parsed cache value narrowed by envelope validation.
      */
     const parsed = JSON.parse(text,) as unknown;
     /**
-     * Cache envelope matching requested identity and current program state.
+     Cache envelope matching requested identity and current program state.
      */
     const envelope = validatePersistentEnvelope({
       value: parsed,
@@ -256,35 +256,35 @@ export function readPersistentEffectSummaries({
 }
 
 /**
- * Writes direct summaries atomically to persistent cache.
- *
- * Existing entries are replaced: a write follows a validation miss, so any
- * entry already at this path carries a stale dependency snapshot that must
- * not outlive the rebuild that disproved it.
- *
- * @param address - Project and source identity.
- *
- * @param summaries - Direct summaries for exact source snapshot.
- *
- * @param surfaces - Whole-scope surface digests at creation time.
- *
- * @param closure - Dependency-closure snapshot for exact source.
- *
- * @param omittedCallableKeys - Direct summaries deliberately omitted for this source.
- *
- * @param omissionReasons - Bounded reasons encountered while scanning source.
- *
- * @example
- * ```ts
- * writePersistentEffectSummaries({
- *   address,
- *   summaries,
- *   surfaces,
- *   closure,
- *   omittedCallableKeys,
- *   omissionReasons,
- * });
- * ```
+ Writes direct summaries atomically to persistent cache.
+ 
+ Existing entries are replaced: a write follows a validation miss, so any
+ entry already at this path carries a stale dependency snapshot that must
+ not outlive the rebuild that disproved it.
+ 
+ @param address - Project and source identity.
+ 
+ @param summaries - Direct summaries for exact source snapshot.
+ 
+ @param surfaces - Whole-scope surface digests at creation time.
+ 
+ @param closure - Dependency-closure snapshot for exact source.
+ 
+ @param omittedCallableKeys - Direct summaries deliberately omitted for this source.
+ 
+ @param omissionReasons - Bounded reasons encountered while scanning source.
+ 
+ @example
+ ```ts
+ writePersistentEffectSummaries({
+   address,
+   summaries,
+   surfaces,
+   closure,
+   omittedCallableKeys,
+   omissionReasons,
+ });
+ ```
  */
 export function writePersistentEffectSummaries({
   address,
@@ -302,14 +302,14 @@ export function writePersistentEffectSummaries({
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 },): void {
   /**
-   * Current content-addressed cache path.
+   Current content-addressed cache path.
    */
   const identity = cacheIdentity(address,);
   /**
-   * Cache envelope tied to source,
-   * project scope,
-   * analyzer,
-   * and dependency snapshot identity.
+   Cache envelope tied to source,
+   project scope,
+   analyzer,
+   and dependency snapshot identity.
    */
   const envelope: PersistentEffectCacheEnvelope = {
     schema: EFFECT_CACHE_SCHEMA,
@@ -326,7 +326,7 @@ export function writePersistentEffectSummaries({
     payload: serializeEffectSummaries(summaries,),
   };
   /**
-   * Unique sibling temporary file for atomic rename.
+   Unique sibling temporary file for atomic rename.
    */
   const temporaryPath = join(
     identity.directory,

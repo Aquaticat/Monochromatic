@@ -1,7 +1,7 @@
 /**
- * Unit tests for Pi Search Fetch domain policy helpers.
- *
- * @module
+ Unit tests for Pi Search Fetch domain policy helpers.
+ 
+ @module
  */
 
 import {
@@ -19,17 +19,17 @@ import {
 //region Fixtures
 
 /**
- * Canonical blocked host fixture.
+ Canonical blocked host fixture.
  */
 const BLOCKED_HOST = 'badwikipedia.invalid';
 
 /**
- * Uppercase host fixture with root dot.
+ Uppercase host fixture with root dot.
  */
 const UPPERCASE_ROOT_DOT_HOST = ' BadWikipedia.INVALID. ';
 
 /**
- * Invalid blocklist entry fixtures.
+ Invalid blocklist entry fixtures.
  */
 const INVALID_BLOCKLIST_ENTRIES = [
   'https://badwikipedia.invalid',

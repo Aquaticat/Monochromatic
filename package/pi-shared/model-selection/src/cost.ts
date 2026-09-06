@@ -1,7 +1,7 @@
 /**
- * Cost scoring and default model ranking helpers for pi plugins.
- *
- * @module
+ Cost scoring and default model ranking helpers for pi plugins.
+ 
+ @module
  */
 
 export * from './cost-ranking.ts';

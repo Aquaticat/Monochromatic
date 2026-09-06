@@ -1,17 +1,17 @@
 /**
- * End-user boundary test for the sticky-flow file manager under pure Wayland.
- *
- * The test builds a throwaway fixture directory tree, hosts Electron inside
- * this repo's nested Wayland compositor with `DISPLAY` unset, drives the strip
- * with compositor keyboard input, and asserts the renderer-observed state:
- * spawn, dedup, close, and, decisively, that the root pane pins to the
- * scroller top while the strip is scrolled (`rootPinned`) with zero pane
- * overlaps (`overlapCount`), the behavior CSS sticky flow must provide.
- *
- * @example
- * ```ts
- * await runFileManagerWaylandBoundaryTest();
- * ```
+ End-user boundary test for the sticky-flow file manager under pure Wayland.
+ 
+ The test builds a throwaway fixture directory tree, hosts Electron inside
+ this repo's nested Wayland compositor with `DISPLAY` unset, drives the strip
+ with compositor keyboard input, and asserts the renderer-observed state:
+ spawn, dedup, close, and, decisively, that the root pane pins to the
+ scroller top while the strip is scrolled (`rootPinned`) with zero pane
+ overlaps (`overlapCount`), the behavior CSS sticky flow must provide.
+ 
+ @example
+ ```ts
+ await runFileManagerWaylandBoundaryTest();
+ ```
  */
 
 import {
@@ -32,50 +32,50 @@ import {
 } from './constants.js';
 
 /**
- * Fixture directory tree of known contents the app browses during the test.
- *
- * @example
- * ```ts
- * const fixture = await createFixtureTree();
- * ```
+ Fixture directory tree of known contents the app browses during the test.
+ 
+ @example
+ ```ts
+ const fixture = await createFixtureTree();
+ ```
  */
 type FixtureTree = {
   /**
-   * Path of the `alpha` subdirectory (first entry, dirs sort first).
+   Path of the `alpha` subdirectory (first entry, dirs sort first).
    */
   readonly alphaPath: string;
 
   /**
-   * Path of the `beta` subdirectory (second entry).
+   Path of the `beta` subdirectory (second entry).
    */
   readonly betaPath: string;
 
   /**
-   * Fixture root the first pane lists.
+   Fixture root the first pane lists.
    */
   readonly rootPath: string;
 
   /**
-   * Removes the fixture tree at end of scope.
+   Removes the fixture tree at end of scope.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Creates the throwaway fixture tree: `alpha/` (with one nested directory and
- * one file), `beta/` (empty), and one root-level file, so the sorted root
- * listing is deterministic: alpha, beta, readme.txt.
- *
- * @returns Fixture paths plus async disposal.
- *
- * @example
- * ```ts
- * await using fixture = await createFixtureTree();
- * ```
+ Creates the throwaway fixture tree: `alpha/` (with one nested directory and
+ one file), `beta/` (empty), and one root-level file, so the sorted root
+ listing is deterministic: alpha, beta, readme.txt.
+ 
+ @returns Fixture paths plus async disposal.
+ 
+ @example
+ ```ts
+ await using fixture = await createFixtureTree();
+ ```
  */
 async function createFixtureTree(): Promise<FixtureTree> {
   /**
-   * Temporary fixture root for this run.
+   Temporary fixture root for this run.
    */
   const rootPath = await mkdtemp(join(
     tmpdir(),
@@ -83,7 +83,7 @@ async function createFixtureTree(): Promise<FixtureTree> {
   ),);
 
   /**
-   * First subdirectory, aligned to the root's row when descended into.
+   First subdirectory, aligned to the root's row when descended into.
    */
   const alphaPath = join(
     rootPath,
@@ -91,7 +91,7 @@ async function createFixtureTree(): Promise<FixtureTree> {
   );
 
   /**
-   * Second subdirectory, stacked one row below when descended into.
+   Second subdirectory, stacked one row below when descended into.
    */
   const betaPath = join(
     rootPath,
@@ -143,16 +143,16 @@ async function createFixtureTree(): Promise<FixtureTree> {
 }
 
 /**
- * Runs the complete pure-Wayland interaction test.
- *
- * @example
- * ```ts
- * await runFileManagerWaylandBoundaryTest();
- * ```
+ Runs the complete pure-Wayland interaction test.
+ 
+ @example
+ ```ts
+ await runFileManagerWaylandBoundaryTest();
+ ```
  */
 async function runFileManagerWaylandBoundaryTest(): Promise<void> {
   /**
-   * Throwaway fixture tree removed when the test scope ends.
+   Throwaway fixture tree removed when the test scope ends.
    */
   await using fixture = await createFixtureTree();
 

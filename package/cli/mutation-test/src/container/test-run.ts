@@ -1,10 +1,10 @@
 /**
- * Test execution with process-group timeout kill.
- *
- * @example
- * ```ts
- * await runTests({ cwd: '/work/packages/module/fs-path', tests: ['src/a.unit.test.ts'], timeoutMs: 5000 });
- * ```
+ Test execution with process-group timeout kill.
+ 
+ @example
+ ```ts
+ await runTests({ cwd: '/work/packages/module/fs-path', tests: ['src/a.unit.test.ts'], timeoutMs: 5000 });
+ ```
  */
 
 import { spawn as nodeSpawn, } from 'node:child_process';
@@ -13,12 +13,12 @@ import { once, } from 'node:events';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Module logger for container-side test execution.
+ Module logger for container-side test execution.
  */
 const l = tagged({ tag: 'mutation-test-container', },);
 
 /**
- * Outcome of one full selected-test run.
+ Outcome of one full selected-test run.
  */
 export type TestRunOutcome = {
   readonly kind: 'passed' | 'failed' | 'timeout';
@@ -27,20 +27,20 @@ export type TestRunOutcome = {
 };
 
 /**
- * Runs one test file under plain node in its own process group.
- *
- * The child leads a process group (detached) so a timeout kill also
- * reaps any grandchildren a mutant may have spawned; a mutant is
- * arbitrary bad code and must not outlive its verdict.
- *
- * @param options - Working directory, test file, and timeout.
- *
- * @returns Exit outcome for this file.
- *
- * @example
- * ```ts
- * await runOneTest({ cwd, test: 'src/a.unit.test.ts', timeoutMs: 5000 });
- * ```
+ Runs one test file under plain node in its own process group.
+ 
+ The child leads a process group (detached) so a timeout kill also
+ reaps any grandchildren a mutant may have spawned; a mutant is
+ arbitrary bad code and must not outlive its verdict.
+ 
+ @param options - Working directory, test file, and timeout.
+ 
+ @returns Exit outcome for this file.
+ 
+ @example
+ ```ts
+ await runOneTest({ cwd, test: 'src/a.unit.test.ts', timeoutMs: 5000 });
+ ```
  */
 async function runOneTest(options: {
   readonly cwd: string;
@@ -48,22 +48,22 @@ async function runOneTest(options: {
   readonly timeoutMs: number;
 },): Promise<TestRunOutcome> {
   /**
-   * Logger scoped to this test invocation.
+   Logger scoped to this test invocation.
    */
   const rl = tagged({
     tag: runOneTest.name,
     l,
   },);
   /**
-   * Start timestamp for duration measurement.
+   Start timestamp for duration measurement.
    */
   const startedAt = performance.now();
   /**
-   * Mutable timeout marker shared with the kill timer.
+   Mutable timeout marker shared with the kill timer.
    */
   const state = { timedOut: false, };
   /**
-   * Detached child so it leads its own killable process group.
+   Detached child so it leads its own killable process group.
    */
   const child = nodeSpawn(
     'node',
@@ -77,7 +77,7 @@ async function runOneTest(options: {
     },
   );
   /**
-   * Timeout handle killing the whole process group.
+   Timeout handle killing the whole process group.
    */
   const timer = setTimeout(
     function killGroup(): void {
@@ -99,7 +99,7 @@ async function runOneTest(options: {
     options.timeoutMs,
   );
   /**
-   * Scope guard clearing the kill timer on every exit path.
+   Scope guard clearing the kill timer on every exit path.
    */
   using stopTimer = {
     [Symbol.dispose](): void {
@@ -109,16 +109,16 @@ async function runOneTest(options: {
 
   try {
     /**
-     * Exit event payload (code, signal) from the child process; `once`
-     * rejects when the child emits `error` (spawn failure). Kept as
-     * unknowns since only equality checks and stringification follow.
+     Exit event payload (code, signal) from the child process; `once`
+     rejects when the child emits `error` (spawn failure). Kept as
+     unknowns since only equality checks and stringification follow.
      */
     const exitInfo: readonly unknown[] = await once(
       child,
       'exit',
     );
     /**
-     * Exit code, number or null per child_process semantics.
+     Exit code, number or null per child_process semantics.
      */
     const [
       code,
@@ -157,19 +157,19 @@ async function runOneTest(options: {
 }
 
 /**
- * Runs selected tests in order, stopping at the first failure.
- *
- * First failure wins because a failing test already proves the mutant
- * detected; remaining tests add wall time without information.
- *
- * @param options - Working directory, test files, and per-run timeout.
- *
- * @returns Aggregate outcome across the executed prefix of tests.
- *
- * @example
- * ```ts
- * await runTests({ cwd, tests: ['src/a.unit.test.ts'], timeoutMs: 5000 });
- * ```
+ Runs selected tests in order, stopping at the first failure.
+ 
+ First failure wins because a failing test already proves the mutant
+ detected; remaining tests add wall time without information.
+ 
+ @param options - Working directory, test files, and per-run timeout.
+ 
+ @returns Aggregate outcome across the executed prefix of tests.
+ 
+ @example
+ ```ts
+ await runTests({ cwd, tests: ['src/a.unit.test.ts'], timeoutMs: 5000 });
+ ```
  */
 export async function runTests(options: {
   readonly cwd: string;
@@ -177,15 +177,15 @@ export async function runTests(options: {
   readonly timeoutMs: number;
 },): Promise<TestRunOutcome> {
   /**
-   * Aggregate start timestamp across all files.
+   Aggregate start timestamp across all files.
    */
   const startedAt = performance.now();
 
   /* oxlint-disable no-await-in-loop */
   for (const test of options.tests) {
     /**
-     * Outcome for this test file; sequential by design, since running
-     * later files after a failure adds wall time without information.
+     Outcome for this test file; sequential by design, since running
+     later files after a failure adds wall time without information.
      */
     const outcome = await runOneTest({
       cwd: options.cwd,

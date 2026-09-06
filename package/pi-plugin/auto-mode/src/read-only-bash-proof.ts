@@ -1,7 +1,7 @@
 /**
- * Whole-shell proof for read-only Bash inspection.
- *
- * @module
+ Whole-shell proof for read-only Bash inspection.
+ 
+ @module
  */
 
 import {
@@ -16,34 +16,34 @@ import type {
 } from './types.ts';
 
 /**
- * Read-only proof applicability and result.
+ Read-only proof applicability and result.
  */
 type ReadOnlyBashProof = {
   /**
-   * Whether command should be gated by positive read-only proof.
+   Whether command should be gated by positive read-only proof.
    */
   readonly required: boolean;
   /**
-   * Whether complete shell passed command, expansion, and path checks.
+   Whether complete shell passed command, expansion, and path checks.
    */
   readonly proven: boolean;
 };
 
 /**
- * Prove complete parsed shell consists only of supported read-only commands.
- *
- * @param analysis - parsed shell facts
- *
- * @param ctx - Pi cwd and account home
- *
- * @param trustedAgentTempDirs - canonical private scratch roots
- *
- * @returns whether whole shell is read-only and scope-bounded
- *
- * @example
- * ```typescript
- * await shellIsProvenReadOnly({ analysis, ctx, trustedAgentTempDirs });
- * ```
+ Prove complete parsed shell consists only of supported read-only commands.
+ 
+ @param analysis - parsed shell facts
+ 
+ @param ctx - Pi cwd and account home
+ 
+ @param trustedAgentTempDirs - canonical private scratch roots
+ 
+ @returns whether whole shell is read-only and scope-bounded
+ 
+ @example
+ ```typescript
+ await shellIsProvenReadOnly({ analysis, ctx, trustedAgentTempDirs });
+ ```
  */
 async function shellIsProvenReadOnly(
   {
@@ -65,7 +65,7 @@ async function shellIsProvenReadOnly(
   if (analysis.hasProcessSubstitution)
     return false;
   /**
-   * Executed and definition command partitions used by positive proof.
+   Executed and definition command partitions used by positive proof.
    */
   const {
     executedCommands,
@@ -76,7 +76,7 @@ async function shellIsProvenReadOnly(
   if (executedCommands.length === 0)
     return false;
   /**
-   * Concurrent path-provenance checks for every command after shape checks.
+   Concurrent path-provenance checks for every command after shape checks.
    */
   const commandScopePromises: Promise<boolean>[] = [];
   for (const command of executedCommands) {
@@ -89,7 +89,7 @@ async function shellIsProvenReadOnly(
     },);
   }
   /**
-   * Per-command scope decisions after every independent check settles.
+   Per-command scope decisions after every independent check settles.
    */
   const commandScopeDecisions = await Promise.all(commandScopePromises,);
   return commandScopeDecisions.every(function commandScopeIsProven(decision,): boolean {
@@ -98,20 +98,20 @@ async function shellIsProvenReadOnly(
 }
 
 /**
- * Check whether existing path facts reach private agent scratch.
- *
- * @param analysis - parsed shell facts
- *
- * @param ctx - Pi cwd and account home
- *
- * @param trustedAgentTempDirs - canonical private scratch roots
- *
- * @returns whether shell names existing trusted scratch path
- *
- * @example
- * ```typescript
- * await analysisTouchesTrustedScratch({ analysis, ctx, trustedAgentTempDirs });
- * ```
+ Check whether existing path facts reach private agent scratch.
+ 
+ @param analysis - parsed shell facts
+ 
+ @param ctx - Pi cwd and account home
+ 
+ @param trustedAgentTempDirs - canonical private scratch roots
+ 
+ @returns whether shell names existing trusted scratch path
+ 
+ @example
+ ```typescript
+ await analysisTouchesTrustedScratch({ analysis, ctx, trustedAgentTempDirs });
+ ```
  */
 async function analysisTouchesTrustedScratch(
   {
@@ -125,7 +125,7 @@ async function analysisTouchesTrustedScratch(
   },
 ): Promise<boolean> {
   /**
-   * Concurrent containment checks for analyzer path facts.
+   Concurrent containment checks for analyzer path facts.
    */
   const decisionPromises: Promise<boolean>[] = [];
   for (const filePath of analysis.allFiles) {
@@ -136,7 +136,7 @@ async function analysisTouchesTrustedScratch(
     },);
   }
   /**
-   * Containment decisions after every independent check settles.
+   Containment decisions after every independent check settles.
    */
   const decisions = await Promise.all(decisionPromises,);
   return decisions.some(function decisionAllowsScratch(decision,): boolean {
@@ -145,20 +145,20 @@ async function analysisTouchesTrustedScratch(
 }
 
 /**
- * Classify whether Bash call requires and satisfies read-only bypass proof.
- *
- * @param analysis - parsed shell facts
- *
- * @param ctx - Pi cwd and account home
- *
- * @param trustedAgentTempDirs - canonical private scratch roots
- *
- * @returns proof applicability and decision
- *
- * @example
- * ```typescript
- * await classifyReadOnlyBash({ analysis, ctx, trustedAgentTempDirs });
- * ```
+ Classify whether Bash call requires and satisfies read-only bypass proof.
+ 
+ @param analysis - parsed shell facts
+ 
+ @param ctx - Pi cwd and account home
+ 
+ @param trustedAgentTempDirs - canonical private scratch roots
+ 
+ @returns proof applicability and decision
+ 
+ @example
+ ```typescript
+ await classifyReadOnlyBash({ analysis, ctx, trustedAgentTempDirs });
+ ```
  */
 async function classifyReadOnlyBash(
   {
@@ -172,7 +172,7 @@ async function classifyReadOnlyBash(
   },
 ): Promise<ReadOnlyBashProof> {
   /**
-   * Whether any executed command belongs to positively modeled family.
+   Whether any executed command belongs to positively modeled family.
    */
   const provableCommand = { found: false, };
   for (const command of analysis.executedCommands) {
@@ -180,11 +180,11 @@ async function classifyReadOnlyBash(
       provableCommand.found = true;
   }
   /**
-   * Final modeled-command presence after linear scan.
+   Final modeled-command presence after linear scan.
    */
   const hasProvableCommand = provableCommand.found;
   /**
-   * Whether unmodeled command reaches trusted scratch path.
+   Whether unmodeled command reaches trusted scratch path.
    */
   const touchesTrustedScratch = await analysisTouchesTrustedScratch({
     analysis,
@@ -192,7 +192,7 @@ async function classifyReadOnlyBash(
     trustedAgentTempDirs,
   },);
   /**
-   * Whether this call enters positive read-proof policy.
+   Whether this call enters positive read-proof policy.
    */
   const required = hasProvableCommand || touchesTrustedScratch;
   if (!required) {

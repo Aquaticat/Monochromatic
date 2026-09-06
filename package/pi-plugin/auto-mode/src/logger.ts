@@ -1,7 +1,7 @@
 /**
- * Tagged logger roots for auto-mode extension.
- *
- * @module
+ Tagged logger roots for auto-mode extension.
+ 
+ @module
  */
 
 import {
@@ -10,12 +10,12 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Package logger root shared by auto-mode modules.
+ Package logger root shared by auto-mode modules.
  */
 const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
- * Tagged logger for extension entry-point lifecycle.
+ Tagged logger for extension entry-point lifecycle.
  */
 const indexLogger = tagged({
   tag: 'index',
@@ -23,16 +23,16 @@ const indexLogger = tagged({
 },);
 
 /**
- * Create function-boundary logger below auto-mode entry point.
- *
- * @param tag - Function name used as structured logger tag.
- *
- * @returns Logger tagged below package and entry-point roots.
- *
- * @example
- * ```typescript
- * const l = entryPointLogger('initialize');
- * ```
+ Create function-boundary logger below auto-mode entry point.
+ 
+ @param tag - Function name used as structured logger tag.
+ 
+ @returns Logger tagged below package and entry-point roots.
+ 
+ @example
+ ```typescript
+ const l = entryPointLogger('initialize');
+ ```
  */
 function entryPointLogger(tag: string,): Logger {
   return tagged({

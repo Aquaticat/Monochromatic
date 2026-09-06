@@ -9,11 +9,11 @@ import type { Diagnostic, } from '../types.ts';
 import { noDuplicateHeading, } from './md024-no-duplicate-heading.ts';
 
 /**
- * Run only MD024 over Markdown source.
- *
- * @param source - Markdown source
- *
- * @returns diagnostics from the rule
+ Run only MD024 over Markdown source.
+ 
+ @param source - Markdown source
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string,): readonly Diagnostic[] {
   return runRules({

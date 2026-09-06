@@ -1,10 +1,10 @@
 /**
- * Library surface of the yuku-based container-native mutation tester.
- *
- * @example
- * ```ts
- * import { enumerateMutants } from '@monochromatic-dev/cli-mutation-test/ts';
- * ```
+ Library surface of the yuku-based container-native mutation tester.
+ 
+ @example
+ ```ts
+ import { enumerateMutants } from '@monochromatic-dev/cli-mutation-test/ts';
+ ```
  */
 
 export {

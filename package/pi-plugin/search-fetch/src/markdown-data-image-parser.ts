@@ -1,28 +1,28 @@
 /**
- * Bounded Markdown parsing for base64-backed inline images.
- *
- * @module
+ Bounded Markdown parsing for base64-backed inline images.
+ 
+ @module
  */
 
 //region Constants
 
 /**
- * Markdown inline-image opening token.
+ Markdown inline-image opening token.
  */
 const IMAGE_OPEN = '![';
 
 /**
- * Data URL prefix limited to image media types.
+ Data URL prefix limited to image media types.
  */
 const IMAGE_DATA_PREFIX = 'data:image/';
 
 /**
- * Data URL marker introducing base64 payload bytes.
+ Data URL marker introducing base64 payload bytes.
  */
 const BASE64_MARKER = ';base64,';
 
 /**
- * Parser result for unsupported or malformed Markdown syntax.
+ Parser result for unsupported or malformed Markdown syntax.
  */
 const UNPARSEABLE_MARKDOWN: unique symbol = Symbol('Markdown candidate is unsupported or malformed',);
 
@@ -31,21 +31,21 @@ const UNPARSEABLE_MARKDOWN: unique symbol = Symbol('Markdown candidate is unsupp
 //region Types
 
 /**
- * Half-open character range inside Markdown text.
+ Half-open character range inside Markdown text.
  */
 type CharacterRange = {
   /**
-   * Inclusive range start.
+   Inclusive range start.
    */
   readonly start: number;
   /**
-   * Exclusive range end.
+   Exclusive range end.
    */
   readonly end: number;
 };
 
 /**
- * Parsed value or domain-specific rejection sentinel.
+ Parsed value or domain-specific rejection sentinel.
  */
 type MarkdownParseResult<Value> = Value | typeof UNPARSEABLE_MARKDOWN;
 
@@ -54,18 +54,18 @@ type MarkdownParseResult<Value> = Value | typeof UNPARSEABLE_MARKDOWN;
 //region Image parsing
 
 /**
- * Parse one complete base64 image token beginning at candidate offset.
- *
- * @param markdown - fetched page Markdown
- *
- * @param imageStart - offset of `![`
- *
- * @returns image token range or parser rejection sentinel
- *
- * @example
- * ```ts
- * findBase64ImageRange({ markdown: '![x](data:image/png;base64,AAAA)', imageStart: 0 });
- * ```
+ Parse one complete base64 image token beginning at candidate offset.
+ 
+ @param markdown - fetched page Markdown
+ 
+ @param imageStart - offset of `![`
+ 
+ @returns image token range or parser rejection sentinel
+ 
+ @example
+ ```ts
+ findBase64ImageRange({ markdown: '![x](data:image/png;base64,AAAA)', imageStart: 0 });
+ ```
  */
 function findBase64ImageRange(
   {
@@ -77,7 +77,7 @@ function findBase64ImageRange(
   },
 ): MarkdownParseResult<CharacterRange> {
   /**
-   * Start of inline destination after balanced alt text and opening parenthesis.
+   Start of inline destination after balanced alt text and opening parenthesis.
    */
   const destinationStart = imageDestinationStart({
     markdown,
@@ -87,7 +87,7 @@ function findBase64ImageRange(
     return UNPARSEABLE_MARKDOWN;
 
   /**
-   * Exclusive token end after validated data-image destination.
+   Exclusive token end after validated data-image destination.
    */
   const imageEnd = base64ImageDestinationEnd({
     markdown,
@@ -102,13 +102,13 @@ function findBase64ImageRange(
 }
 
 /**
- * Find inline image destination start after balanced alt text.
- *
- * @param markdown - fetched page Markdown
- *
- * @param imageStart - offset of `![`
- *
- * @returns destination start or parser rejection sentinel
+ Find inline image destination start after balanced alt text.
+ 
+ @param markdown - fetched page Markdown
+ 
+ @param imageStart - offset of `![`
+ 
+ @returns destination start or parser rejection sentinel
  */
 function imageDestinationStart(
   {
@@ -121,17 +121,17 @@ function imageDestinationStart(
 ): MarkdownParseResult<number> {
   return (function scanAltText(): MarkdownParseResult<number> {
     /**
-     * Nested square-bracket depth inside alt text.
+     Nested square-bracket depth inside alt text.
      */
     let bracketDepth = 1;
     /**
-     * Current alt-text offset.
+     Current alt-text offset.
      */
     let cursor = imageStart + IMAGE_OPEN.length;
 
     while (cursor < markdown.length) {
       /**
-       * Current alt-text character.
+       Current alt-text character.
        */
       const character = markdown.charAt(cursor,);
       if (character === '\\')
@@ -156,13 +156,13 @@ function imageDestinationStart(
 }
 
 /**
- * Find end of validated base64 image data destination.
- *
- * @param markdown - fetched page Markdown
- *
- * @param destinationStart - first destination character
- *
- * @returns exclusive image token end or parser rejection sentinel
+ Find end of validated base64 image data destination.
+ 
+ @param markdown - fetched page Markdown
+ 
+ @param destinationStart - first destination character
+ 
+ @returns exclusive image token end or parser rejection sentinel
  */
 function base64ImageDestinationEnd(
   {
@@ -174,11 +174,11 @@ function base64ImageDestinationEnd(
   },
 ): MarkdownParseResult<number> {
   /**
-   * Whether destination uses Markdown angle brackets.
+   Whether destination uses Markdown angle brackets.
    */
   const angleWrapped = markdown.charAt(destinationStart,) === '<';
   /**
-   * Start of data URL after optional angle bracket.
+   Start of data URL after optional angle bracket.
    */
   const dataStart = angleWrapped
     ? destinationStart + 1
@@ -191,7 +191,7 @@ function base64ImageDestinationEnd(
 
   return (function scanDataImageDestination(): MarkdownParseResult<number> {
     /**
-     * Cursor scanning media type, then payload.
+     Cursor scanning media type, then payload.
      */
     let cursor = dataStart + IMAGE_DATA_PREFIX.length;
     while (!markdown.startsWith(
@@ -199,7 +199,7 @@ function base64ImageDestinationEnd(
       cursor,
     )) {
       /**
-       * Current media-type character.
+       Current media-type character.
        */
       const character = markdown.charAt(cursor,);
       if ((character === '')
@@ -212,12 +212,12 @@ function base64ImageDestinationEnd(
     cursor += BASE64_MARKER.length;
 
     /**
-     * Whether payload includes at least one base64 character.
+     Whether payload includes at least one base64 character.
      */
     let hasPayload = false;
     while (cursor < markdown.length) {
       /**
-       * Current payload or closing character.
+       Current payload or closing character.
        */
       const character = markdown.charAt(cursor,);
       if ((!angleWrapped) && (character === ')'))
@@ -246,18 +246,18 @@ function base64ImageDestinationEnd(
 //region Removal ranges
 
 /**
- * Expand image range to tight outer Markdown link when one is complete on its ending line.
- *
- * @param markdown - fetched page Markdown
- *
- * @param imageRange - parsed inner image range
- *
- * @returns linked-image range or unchanged inner image range
- *
- * @example
- * ```ts
- * findLinkedImageRange({ markdown: '[![x](data:image/png;base64,AAAA)]()', imageRange: { start: 1, end: 39 } });
- * ```
+ Expand image range to tight outer Markdown link when one is complete on its ending line.
+ 
+ @param markdown - fetched page Markdown
+ 
+ @param imageRange - parsed inner image range
+ 
+ @returns linked-image range or unchanged inner image range
+ 
+ @example
+ ```ts
+ findLinkedImageRange({ markdown: '[![x](data:image/png;base64,AAAA)]()', imageRange: { start: 1, end: 39 } });
+ ```
  */
 function findLinkedImageRange(
   {
@@ -277,7 +277,7 @@ function findLinkedImageRange(
     return imageRange;
 
   /**
-   * Exclusive end of outer link when destination closes safely.
+   Exclusive end of outer link when destination closes safely.
    */
   const linkedEnd = sameLineLinkEnd({
     markdown,
@@ -292,13 +292,13 @@ function findLinkedImageRange(
 }
 
 /**
- * Find balanced outer-link destination end without scanning beyond its physical line.
- *
- * @param markdown - fetched page Markdown
- *
- * @param destinationStart - first outer destination character
- *
- * @returns exclusive link end or parser rejection sentinel
+ Find balanced outer-link destination end without scanning beyond its physical line.
+ 
+ @param markdown - fetched page Markdown
+ 
+ @param destinationStart - first outer destination character
+ 
+ @returns exclusive link end or parser rejection sentinel
  */
 function sameLineLinkEnd(
   {
@@ -311,17 +311,17 @@ function sameLineLinkEnd(
 ): MarkdownParseResult<number> {
   return (function scanLinkDestination(): MarkdownParseResult<number> {
     /**
-     * Parenthesis depth including already-consumed opening parenthesis.
+     Parenthesis depth including already-consumed opening parenthesis.
      */
     let parenthesisDepth = 1;
     /**
-     * Current outer destination offset.
+     Current outer destination offset.
      */
     let cursor = destinationStart;
 
     while ((cursor < markdown.length) && (markdown.charAt(cursor,) !== '\n')) {
       /**
-       * Current destination character.
+       Current destination character.
        */
       const character = markdown.charAt(cursor,);
       if (character === '\\')
@@ -344,18 +344,18 @@ function sameLineLinkEnd(
 }
 
 /**
- * Widen construct range to complete physical lines only when no other content shares boundaries.
- *
- * @param markdown - fetched page Markdown
- *
- * @param constructRange - image or linked-image range
- *
- * @returns construct span or complete owned-line span
- *
- * @example
- * ```ts
- * lineOwnedRemovalRange({ markdown: '![x](data:image/png;base64,AAAA)', constructRange: { start: 0, end: 38 } });
- * ```
+ Widen construct range to complete physical lines only when no other content shares boundaries.
+ 
+ @param markdown - fetched page Markdown
+ 
+ @param constructRange - image or linked-image range
+ 
+ @returns construct span or complete owned-line span
+ 
+ @example
+ ```ts
+ lineOwnedRemovalRange({ markdown: '![x](data:image/png;base64,AAAA)', constructRange: { start: 0, end: 38 } });
+ ```
  */
 function lineOwnedRemovalRange(
   {
@@ -367,34 +367,34 @@ function lineOwnedRemovalRange(
   },
 ): CharacterRange {
   /**
-   * Start of first physical line touched by construct.
+   Start of first physical line touched by construct.
    */
   const lineStart = (markdown.lastIndexOf(
     '\n',
     constructRange.start - 1,
   ) + 1);
   /**
-   * Newline ending last touched line, when present.
+   Newline ending last touched line, when present.
    */
   const followingLineBreak = markdown.indexOf(
     '\n',
     constructRange.end,
   );
   /**
-   * End of last physical line excluding newline.
+   End of last physical line excluding newline.
    */
   const lineEnd = (followingLineBreak === (-1))
     ? markdown.length
     : followingLineBreak;
   /**
-   * Content before construct on first touched line.
+   Content before construct on first touched line.
    */
   const prefix = markdown.slice(
     lineStart,
     constructRange.start,
   );
   /**
-   * Content after construct on last touched line.
+   Content after construct on last touched line.
    */
   const suffix = markdown.slice(
     constructRange.end,
@@ -416,16 +416,16 @@ function lineOwnedRemovalRange(
 //region Value helpers
 
 /**
- * Return whether value is parser rejection sentinel.
- *
- * @param value - candidate parser result
- *
- * @returns whether candidate is exact parser sentinel
- *
- * @example
- * ```ts
- * isUnparseableMarkdown(findBase64ImageRange({ markdown: 'plain text', imageStart: 0 }));
- * ```
+ Return whether value is parser rejection sentinel.
+ 
+ @param value - candidate parser result
+ 
+ @returns whether candidate is exact parser sentinel
+ 
+ @example
+ ```ts
+ isUnparseableMarkdown(findBase64ImageRange({ markdown: 'plain text', imageStart: 0 }));
+ ```
  */
 function isUnparseableMarkdown(value: unknown,): value is typeof UNPARSEABLE_MARKDOWN {
   return ((typeof value) === 'symbol')
@@ -433,11 +433,11 @@ function isUnparseableMarkdown(value: unknown,): value is typeof UNPARSEABLE_MAR
 }
 
 /**
- * Return whether character is allowed inside standard base64 payload.
- *
- * @param character - candidate payload character
- *
- * @returns whether character belongs to standard base64 alphabet or padding
+ Return whether character is allowed inside standard base64 payload.
+ 
+ @param character - candidate payload character
+ 
+ @returns whether character belongs to standard base64 alphabet or padding
  */
 function isBase64Character(character: string,): boolean {
   return ((character >= 'A') && (character <= 'Z'))
@@ -449,11 +449,11 @@ function isBase64Character(character: string,): boolean {
 }
 
 /**
- * Return whether character is whitespace accepted in line-wrapped payloads.
- *
- * @param character - candidate Markdown character
- *
- * @returns whether character is space, tab, carriage return, or line feed
+ Return whether character is whitespace accepted in line-wrapped payloads.
+ 
+ @param character - candidate Markdown character
+ 
+ @returns whether character is space, tab, carriage return, or line feed
  */
 function isMarkdownWhitespace(character: string,): boolean {
   return (character === ' ')

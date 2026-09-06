@@ -1,9 +1,9 @@
 /**
- * CLI argument parser definitions for the image-diff command.
- * Defines the result type and combines subcommand parsers into a single
- * top-level parser.
- *
- * @module
+ CLI argument parser definitions for the image-diff command.
+ Defines the result type and combines subcommand parsers into a single
+ top-level parser.
+ 
+ @module
  */
 
 // TODO: deprecate Optique
@@ -23,7 +23,7 @@ import type {
 //region Result types: discriminated union for subcommand dispatch
 
 /**
- * Discriminated union of all subcommand parse results.
+ Discriminated union of all subcommand parse results.
  */
 export type ImageDiffArgs =
   | {
@@ -44,13 +44,13 @@ export type ImageDiffArgs =
 
 /* oxlint-disable typescript-eslint/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown */
 /**
- * TODO: deprecate Optique
- * Combined top-level parser across all subcommands.
- *
- * @example
- * ```ts
- * const result = runSync(parser, { programName: 'image-diff' });
- * ```
+ TODO: deprecate Optique
+ Combined top-level parser across all subcommands.
+ 
+ @example
+ ```ts
+ const result = runSync(parser, { programName: 'image-diff' });
+ ```
  */
 export const parser: Parser<'sync', ImageDiffArgs, any> = or(
   compareCmd,

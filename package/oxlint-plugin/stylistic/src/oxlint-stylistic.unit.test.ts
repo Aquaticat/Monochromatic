@@ -57,8 +57,8 @@ const FIXTURES = fixtureSourceRoot({
 },);
 
 /**
- * Fixture-specific oxlint config with all stylistic rules enabled and no
- * ignorePatterns that would skip test-fixture or invalid paths.
+ Fixture-specific oxlint config with all stylistic rules enabled and no
+ ignorePatterns that would skip test-fixture or invalid paths.
  */
 const FIXTURE_CONFIG = fixtureConfigPath({
   fixturePackageName: 'oxlint-stylistic',
@@ -99,11 +99,11 @@ const ASTERISK_PREFIX_INVALID_FIXTURE_CONFIG = fixtureConfigPath({
 const MAX_AUTOFIX_PASSES = 8;
 
 /**
- * Runs oxlint against one fixture with selected config.
- *
- * @param params - fixture path and configuration
- *
- * @returns array of diagnostics from stylistic rules only
+ Runs oxlint against one fixture with selected config.
+ 
+ @param params - fixture path and configuration
+ 
+ @returns array of diagnostics from stylistic rules only
  */
 async function lintWithConfig(params: Readonly<LintWithConfigParams>,): Promise<readonly OxlintDiagnostic[]> {
   /** Selected fixture path and configuration. */
@@ -126,11 +126,11 @@ async function lintWithConfig(params: Readonly<LintWithConfigParams>,): Promise<
 }
 
 /**
- * Runs oxlint with complete fixture config against one fixture path.
- *
- * @param fixturePath - path relative to fixture `src/` root, or absolute temp path
- *
- * @returns array of diagnostics from stylistic rules only
+ Runs oxlint with complete fixture config against one fixture path.
+ 
+ @param fixturePath - path relative to fixture `src/` root, or absolute temp path
+ 
+ @returns array of diagnostics from stylistic rules only
  */
 async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
   return lintWithConfig({
@@ -141,18 +141,18 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
 
 
 /**
- * Runs oxlint --fix on a fixture until content stops changing.
- *
- * Some stylistic fixes overlap, so oxlint applies only one fix for that source
- * region per pass. Repeating until stable exercises the same boundary while
- * avoiding fixture mutation.
- *
- * @param filePath - absolute path to temp fixture copy
- *
- * @example
- * ```ts
- * await fixUntilStable(fixture.filePath);
- * ```
+ Runs oxlint --fix on a fixture until content stops changing.
+ 
+ Some stylistic fixes overlap, so oxlint applies only one fix for that source
+ region per pass. Repeating until stable exercises the same boundary while
+ avoiding fixture mutation.
+ 
+ @param filePath - absolute path to temp fixture copy
+ 
+ @example
+ ```ts
+ await fixUntilStable(fixture.filePath);
+ ```
  */
 async function fixUntilStable(filePath: string,): Promise<void> {
   for (
@@ -185,37 +185,37 @@ async function fixUntilStable(filePath: string,): Promise<void> {
 }
 
 /**
- * Casts a structural stub to a `ChainNode` for synthetic-AST construction.
- *
- * The chain walk reads only `type`, the receiver links, `start`/`end`, and a
- * member's `property`/`computed`; a hand-built stub supplies exactly those, so
- * one assertion at the boundary keeps the builders free of per-field casts.
- *
- * @param stub - object carrying the chain-walk fields for one node
- *
- * @returns stub viewed as a `ChainNode`
+ Casts a structural stub to a `ChainNode` for synthetic-AST construction.
+ 
+ The chain walk reads only `type`, the receiver links, `start`/`end`, and a
+ member's `property`/`computed`; a hand-built stub supplies exactly those, so
+ one assertion at the boundary keeps the builders free of per-field casts.
+ 
+ @param stub - object carrying the chain-walk fields for one node
+ 
+ @returns stub viewed as a `ChainNode`
  */
 function asChainNode(stub: object,): ChainNode {
   return stub as unknown as ChainNode;
 }
 
 /**
- * Builds a mock rule context whose token lookups satisfy the chain walk for
- * synthetic nodes, so the flatten can run on chains far deeper than oxlint feeds
- * a plugin in practice (where its own deep-AST handling fails first).
- *
- * `getTokenBefore` returns the dot punctuator for a property stub (no `type`)
- * and a non-`(` neighbour for a node; `getTokenAfter` returns the `+` operator
- * when a filter is supplied (the operator-token lookup) and a non-`)` neighbour
- * otherwise (the grouping-paren probe). No node is ever treated as grouped.
- *
- * @returns context stub exposing the two token accessors the walk uses
+ Builds a mock rule context whose token lookups satisfy the chain walk for
+ synthetic nodes, so the flatten can run on chains far deeper than oxlint feeds
+ a plugin in practice (where its own deep-AST handling fails first).
+ 
+ `getTokenBefore` returns the dot punctuator for a property stub (no `type`)
+ and a non-`(` neighbour for a node; `getTokenAfter` returns the `+` operator
+ when a filter is supplied (the operator-token lookup) and a non-`)` neighbour
+ otherwise (the grouping-paren probe). No node is ever treated as grouped.
+ 
+ @returns context stub exposing the two token accessors the walk uses
  */
 function mockChainContext(): Context {
   /**
-   * @param target - node or property whose preceding token is wanted
-   *
-   * @returns dot for a property stub, a non-`(` marker for a node
+   @param target - node or property whose preceding token is wanted
+   
+   @returns dot for a property stub, a non-`(` marker for a node
    */
   function getTokenBefore(target: {
     readonly type?: string;
@@ -263,22 +263,22 @@ function mockChainContext(): Context {
 }
 
 /**
- * Casts a token-accessor stub to a `Context` for the synthetic chain walk.
- *
- * @param stub - object carrying the two `sourceCode` token accessors
- *
- * @returns stub viewed as a `Context`
+ Casts a token-accessor stub to a `Context` for the synthetic chain walk.
+ 
+ @param stub - object carrying the two `sourceCode` token accessors
+ 
+ @returns stub viewed as a `Context`
  */
 function asChainContext(stub: object,): Context {
   return stub as unknown as Context;
 }
 
 /**
- * Builds a synthetic member chain `x.a.a...` of the given step count.
- *
- * @param steps - number of `.a` member steps past the leaf
- *
- * @returns outermost `MemberExpression` node of the chain
+ Builds a synthetic member chain `x.a.a...` of the given step count.
+ 
+ @param steps - number of `.a` member steps past the leaf
+ 
+ @returns outermost `MemberExpression` node of the chain
  */
 function buildMemberChain(steps: number,): ChainNode {
   /** Leaf identifier `x` at the head of the chain. */
@@ -308,11 +308,11 @@ function buildMemberChain(steps: number,): ChainNode {
 }
 
 /**
- * Builds a synthetic left-associative operator chain `a + a + ...`.
- *
- * @param operators - number of `+` operators in the chain
- *
- * @returns outermost `BinaryExpression` node of the chain
+ Builds a synthetic left-associative operator chain `a + a + ...`.
+ 
+ @param operators - number of `+` operators in the chain
+ 
+ @returns outermost `BinaryExpression` node of the chain
  */
 function buildOperatorChain(operators: number,): ChainNode {
   /** Leftmost operand `a`. */
@@ -343,11 +343,11 @@ function buildOperatorChain(operators: number,): ChainNode {
 }
 
 /**
- * Extracts unique rule codes from a set of diagnostics.
- *
- * @param diagnostics - array of oxlint diagnostics
- *
- * @returns sorted array of unique `stylistic(rule-name)` codes
+ Extracts unique rule codes from a set of diagnostics.
+ 
+ @param diagnostics - array of oxlint diagnostics
+ 
+ @returns sorted array of unique `stylistic(rule-name)` codes
  */
 //endregion Helpers
 

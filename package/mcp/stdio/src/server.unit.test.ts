@@ -28,18 +28,18 @@ import {
 import * as v from 'valibot';
 
 /**
- * Permissive argument schema for tools whose cases exercise dispatch rather than validation.
- *
- * `object` ignores unknown keys where `strictObject` would reject them, so adding it to an
- * existing case changes nothing about what that case asserts.
+ Permissive argument schema for tools whose cases exercise dispatch rather than validation.
+ 
+ `object` ignores unknown keys where `strictObject` would reject them, so adding it to an
+ existing case changes nothing about what that case asserts.
  */
 const ANY_ARGUMENTS = v.object({},);
 
 /**
- * Envelope every derived `inputSchema` carries regardless of a tool's arguments.
- *
- * `$schema` names 2020-12 because that is the draft revision 2026-07-28 expects; the
- * converter would otherwise default to draft-07.
+ Envelope every derived `inputSchema` carries regardless of a tool's arguments.
+ 
+ `$schema` names 2020-12 because that is the draft revision 2026-07-28 expects; the
+ converter would otherwise default to draft-07.
  */
 const DERIVED_ROOT = {
   type: 'object',
@@ -61,17 +61,17 @@ const echoTool: ToolEntry = {
 const serverIdentity = { name: 'srv', version: '0.1.0', };
 
 /**
- * Builds a request carrying the protocol revision metadata every served request needs.
- *
- * @param id - Request id echoed back in the response.
- *
- * @param method - MCP method to invoke.
- *
- * @param params - Method params merged alongside the generated `_meta`.
- *
- * @param version - Revision to declare, defaulting to the one this server implements.
- *
- * @returns Inbound request ready for `handleMessage`.
+ Builds a request carrying the protocol revision metadata every served request needs.
+ 
+ @param id - Request id echoed back in the response.
+ 
+ @param method - MCP method to invoke.
+ 
+ @param params - Method params merged alongside the generated `_meta`.
+ 
+ @param version - Revision to declare, defaulting to the one this server implements.
+ 
+ @returns Inbound request ready for `handleMessage`.
  */
 const modernRequest = ({
   id,

@@ -1,7 +1,7 @@
 /**
- * Public config parsing and loading surface.
- *
- * @module
+ Public config parsing and loading surface.
+ 
+ @module
  */
 
 export { loadConfig, } from './config-load.ts';

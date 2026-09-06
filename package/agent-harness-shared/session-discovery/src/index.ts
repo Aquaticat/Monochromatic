@@ -1,7 +1,7 @@
 /**
- * Shared session discovery helpers for agent harness spawners.
- *
- * @module
+ Shared session discovery helpers for agent harness spawners.
+ 
+ @module
  */
 
 export {

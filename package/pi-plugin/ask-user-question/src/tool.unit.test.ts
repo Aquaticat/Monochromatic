@@ -21,7 +21,7 @@ import askUserQuestionExtension, {
 //region Harness types
 
 /**
- * Runtime tool surface exercised through fake Pi host.
+ Runtime tool surface exercised through fake Pi host.
  */
 type RegisteredTool = {
   readonly name: string;
@@ -42,7 +42,7 @@ type RegisteredTool = {
 };
 
 /**
- * Captured Pi registrations.
+ Captured Pi registrations.
  */
 type PiHarness = {
   readonly api: ExtensionAPI;
@@ -57,17 +57,17 @@ type PiHarness = {
 //region Harness
 
 /**
- * Creates fake Pi API for tool and shutdown registration.
- *
- * @returns fake host and captured registration state
+ Creates fake Pi API for tool and shutdown registration.
+ 
+ @returns fake host and captured registration state
  */
 function createPiHarness(): PiHarness {
   /**
-   * Mutable captured registration slots.
+   Mutable captured registration slots.
    */
   const state: PiHarness['state'] = {};
   /**
-   * Minimal fake implementation narrowed through runtime checks.
+   Minimal fake implementation narrowed through runtime checks.
    */
   const fakeApi = {
     registerTool(tool: unknown): void {
@@ -90,11 +90,11 @@ function createPiHarness(): PiHarness {
 }
 
 /**
- * Narrows unknown registration value to test tool surface.
- *
- * @param value - registration candidate
- *
- * @returns whether required tool functions and fields exist
+ Narrows unknown registration value to test tool surface.
+ 
+ @param value - registration candidate
+ 
+ @returns whether required tool functions and fields exist
  */
 function isRegisteredTool(value: unknown,): value is RegisteredTool {
   if (value === null)
@@ -110,15 +110,15 @@ function isRegisteredTool(value: unknown,): value is RegisteredTool {
 }
 
 /**
- * Retrieves registered tool or fails test with plain diagnostic.
- *
- * @param harness - fake Pi registration state
- *
- * @returns registered ask-user tool
+ Retrieves registered tool or fails test with plain diagnostic.
+ 
+ @param harness - fake Pi registration state
+ 
+ @returns registered ask-user tool
  */
 function registeredTool(harness: PiHarness,): RegisteredTool {
   /**
-   * Optional captured tool after extension registration.
+   Optional captured tool after extension registration.
    */
   const { tool, } = harness.state;
   if (tool === undefined)
@@ -127,11 +127,11 @@ function registeredTool(harness: PiHarness,): RegisteredTool {
 }
 
 /**
- * Creates minimal external Pi context for execute callback.
- *
- * @param mode - host run mode
- *
- * @returns fake context with mode and cwd
+ Creates minimal external Pi context for execute callback.
+ 
+ @param mode - host run mode
+ 
+ @returns fake context with mode and cwd
  */
 function fakeContext(mode: ExtensionContext['mode'],): ExtensionContext {
   return {
@@ -141,9 +141,9 @@ function fakeContext(mode: ExtensionContext['mode'],): ExtensionContext {
 }
 
 /**
- * Creates identity-style theme required by call renderer.
- *
- * @returns fake theme with used styling methods
+ Creates identity-style theme required by call renderer.
+ 
+ @returns fake theme with used styling methods
  */
 function fakeTheme(): Theme {
   return {
@@ -165,7 +165,7 @@ await describe({
       name: 'registers sequential tool and shutdown cleanup through default export',
       fn: async () => {
         /**
-         * Default-extension registration harness.
+         Default-extension registration harness.
          */
         const harness = createPiHarness();
         await askUserQuestionExtension(harness.api,);
@@ -183,7 +183,7 @@ await describe({
       name: 'returns submitted answer from TUI requester',
       fn: async () => {
         /**
-         * Registration harness with answered requester.
+         Registration harness with answered requester.
          */
         const harness = createPiHarness();
         registerAskUserQuestionExtension({
@@ -215,7 +215,7 @@ await describe({
       name: 'returns cancellation from TUI requester',
       fn: async () => {
         /**
-         * Registration harness with cancelling requester.
+         Registration harness with cancelling requester.
          */
         const harness = createPiHarness();
         registerAskUserQuestionExtension({
@@ -237,11 +237,11 @@ await describe({
       name: 'rejects non-TUI mode without requesting answer',
       fn: async () => {
         /**
-         * Request invocation evidence.
+         Request invocation evidence.
          */
         const calls: string[] = [];
         /**
-         * Registration harness for noninteractive execution.
+         Registration harness for noninteractive execution.
          */
         const harness = createPiHarness();
         registerAskUserQuestionExtension({
@@ -252,7 +252,7 @@ await describe({
           },
         },);
         /**
-         * Captured unavailable-mode failure.
+         Captured unavailable-mode failure.
          */
         const caught: { value?: unknown; } = {};
         try {
@@ -277,7 +277,7 @@ await describe({
       name: 'renders complete wrapped question with visible controls',
       fn: async () => {
         /**
-         * Registration harness for call rendering.
+         Registration harness for call rendering.
          */
         const harness = createPiHarness();
         registerAskUserQuestionExtension({
@@ -285,7 +285,7 @@ await describe({
           requestAnswer: async () => ({ status: 'cancelled', }),
         },);
         /**
-         * Rendered lines from narrow transcript width.
+         Rendered lines from narrow transcript width.
          */
         const lines = registeredTool(harness,)
           .renderCall(
@@ -295,7 +295,7 @@ await describe({
           )
           .render(12,);
         /**
-         * Rendered content without wrapping whitespace.
+         Rendered content without wrapping whitespace.
          */
         const compact = lines
           .join('',)

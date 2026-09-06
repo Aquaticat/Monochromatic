@@ -1,10 +1,10 @@
 /**
- * Subcommand parser definitions for the image-diff CLI.
- *
- * Defines individual subcommand parsers (`compare`, `embed`) that are
- * combined into the top-level parser in `cli-parsers.ts`.
- *
- * @module
+ Subcommand parser definitions for the image-diff CLI.
+ 
+ Defines individual subcommand parsers (`compare`, `embed`) that are
+ combined into the top-level parser in `cli-parsers.ts`.
+ 
+ @module
  */
 
 // TODO: deprecate Optique
@@ -33,10 +33,10 @@ import {
 import type { ImageDiffArgs, } from './cli-parsers.ts';
 
 /**
- * TODO: deprecate Optique
- * Subcommand parser producing ImageDiffArgs.
- * Uses `any` for TState because Parser is invariant in TState
- * and the deeply-nested state types are opaque implementation details.
+ TODO: deprecate Optique
+ Subcommand parser producing ImageDiffArgs.
+ Uses `any` for TState because Parser is invariant in TState
+ and the deeply-nested state types are opaque implementation details.
  */
 // oxlint-disable-next-line typescript/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown
 type SubcommandParser = Parser<'sync', ImageDiffArgs, any>;
@@ -44,8 +44,8 @@ type SubcommandParser = Parser<'sync', ImageDiffArgs, any>;
 //region Shared value parsers
 
 /**
- * TODO: deprecate Optique
- * Recognized provider names.
+ TODO: deprecate Optique
+ Recognized provider names.
  */
 const providerValue = choice(
   [
@@ -56,8 +56,8 @@ const providerValue = choice(
 );
 
 /**
- * TODO: deprecate Optique
- * Recognized embedding model names across providers.
+ TODO: deprecate Optique
+ Recognized embedding model names across providers.
  */
 const modelValue = choice(
   [
@@ -69,8 +69,8 @@ const modelValue = choice(
 );
 
 /**
- * TODO: deprecate Optique
- * Value parser for image arguments (file path or URL); URL vs path resolved at runtime.
+ TODO: deprecate Optique
+ Value parser for image arguments (file path or URL); URL vs path resolved at runtime.
  */
 const imageValue = string({ metavar: 'IMAGE', },);
 
@@ -79,8 +79,8 @@ const imageValue = string({ metavar: 'IMAGE', },);
 //region Subcommand parsers
 
 /**
- * TODO: deprecate Optique
- * Parser for `compare <imageA> <imageB> [--provider PROVIDER] [--model MODEL]`.
+ TODO: deprecate Optique
+ Parser for `compare <imageA> <imageB> [--provider PROVIDER] [--model MODEL]`.
  */
 export const compareCmd: SubcommandParser = command(
   'compare',
@@ -101,7 +101,7 @@ export const compareCmd: SubcommandParser = command(
     },),
     function toCompareArgs(v,): ImageDiffArgs {
       /**
-       * Parsed fields destructured so optional spreads read plain identifiers.
+       Parsed fields destructured so optional spreads read plain identifiers.
        */
       const {
         imageA,
@@ -124,8 +124,8 @@ export const compareCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `embed <image> [--provider PROVIDER] [--model MODEL]`.
+ TODO: deprecate Optique
+ Parser for `embed <image> [--provider PROVIDER] [--model MODEL]`.
  */
 export const embedCmd: SubcommandParser = command(
   'embed',
@@ -145,7 +145,7 @@ export const embedCmd: SubcommandParser = command(
     },),
     function toEmbedArgs(v,): ImageDiffArgs {
       /**
-       * Parsed fields destructured so optional spreads read plain identifiers.
+       Parsed fields destructured so optional spreads read plain identifiers.
        */
       const {
         image,

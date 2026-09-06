@@ -10,64 +10,64 @@ import { join, } from 'node:path';
 import { json, } from 'node:stream/consumers';
 
 /**
- * OpenTofu `data.external` query carrying comma-separated service hostnames.
- *
- * @example
- * ```ts
- * const query: ResolveHostsQuery = { hostnames: 'nginx.org,palant.info' };
- * ```
+ OpenTofu `data.external` query carrying comma-separated service hostnames.
+ 
+ @example
+ ```ts
+ const query: ResolveHostsQuery = { hostnames: 'nginx.org,palant.info' };
+ ```
  */
 type ResolveHostsQuery = {
   readonly hostnames: string;
 };
 
 /**
- * DNS record family resolved for each hostname.
- *
- * @example
- * ```ts
- * const family: AddressFamily = 'A';
- * ```
+ DNS record family resolved for each hostname.
+ 
+ @example
+ ```ts
+ const family: AddressFamily = 'A';
+ ```
  */
 type AddressFamily = 'A' | 'AAAA';
 
 /**
- * Unknown JSON object shape used before field-specific type guards run.
- *
- * @example
- * ```ts
- * const object: UnknownRecord = { 'nginx.org': [] };
- * ```
+ Unknown JSON object shape used before field-specific type guards run.
+ 
+ @example
+ ```ts
+ const object: UnknownRecord = { 'nginx.org': [] };
+ ```
  */
 type UnknownRecord = Record<PropertyKey, unknown>;
 
 /**
- * CIDR lists keyed by hostname, used for both seed and accumulation cache files.
- *
- * @example
- * ```ts
- * const map: CidrsByHost = { 'nginx.org': ['3.147.99.198/32'] };
- * ```
+ CIDR lists keyed by hostname, used for both seed and accumulation cache files.
+ 
+ @example
+ ```ts
+ const map: CidrsByHost = { 'nginx.org': ['3.147.99.198/32'] };
+ ```
  */
 type CidrsByHost = Record<string, readonly string[]>;
 
 /**
- * Comma-joined CIDR strings keyed by hostname, matching OpenTofu's `map(string)` result shape.
- *
- * @example
- * ```ts
- * const result: ResultByHost = { 'nginx.org': '3.147.99.198/32,2a05:d014:5c0:2600::6/128' };
- * ```
+ Comma-joined CIDR strings keyed by hostname, matching OpenTofu's `map(string)` result shape.
+ 
+ @example
+ ```ts
+ const result: ResultByHost = { 'nginx.org': '3.147.99.198/32,2a05:d014:5c0:2600::6/128' };
+ ```
  */
 type ResultByHost = Record<string, string>;
 
 /**
- * One resolved hostname paired with its accumulated CIDR list, used to rebuild the map.
- *
- * @example
- * ```ts
- * const entry: ResolvedEntry = ['nginx.org', ['3.147.99.198/32']];
- * ```
+ One resolved hostname paired with its accumulated CIDR list, used to rebuild the map.
+ 
+ @example
+ ```ts
+ const entry: ResolvedEntry = ['nginx.org', ['3.147.99.198/32']];
+ ```
  */
 type ResolvedEntry = readonly [
   string,
@@ -75,12 +75,12 @@ type ResolvedEntry = readonly [
 ];
 
 /**
- * One resolved hostname paired with its comma-joined CIDR string for OpenTofu output.
- *
- * @example
- * ```ts
- * const entry: ResultEntry = ['nginx.org', '3.147.99.198/32'];
- * ```
+ One resolved hostname paired with its comma-joined CIDR string for OpenTofu output.
+ 
+ @example
+ ```ts
+ const entry: ResultEntry = ['nginx.org', '3.147.99.198/32'];
+ ```
  */
 type ResultEntry = readonly [
   string,
@@ -88,16 +88,16 @@ type ResultEntry = readonly [
 ];
 
 /**
- * Checks whether unknown value is object-like enough for property guards.
- *
- * @param value - Candidate JSON value.
- *
- * @returns Whether value supports property checks.
- *
- * @example
- * ```ts
- * isRecord({ hostnames: 'nginx.org' }); // true
- * ```
+ Checks whether unknown value is object-like enough for property guards.
+ 
+ @param value - Candidate JSON value.
+ 
+ @returns Whether value supports property checks.
+ 
+ @example
+ ```ts
+ isRecord({ hostnames: 'nginx.org' }); // true
+ ```
  */
 function isRecord(value: unknown,): value is UnknownRecord {
   return ((typeof value) === 'object')
@@ -105,16 +105,16 @@ function isRecord(value: unknown,): value is UnknownRecord {
 }
 
 /**
- * Checks whether unknown value is OpenTofu hostname query input.
- *
- * @param value - Candidate OpenTofu query value.
- *
- * @returns Whether value carries hostname text.
- *
- * @example
- * ```ts
- * isResolveHostsQuery({ hostnames: 'nginx.org' }); // true
- * ```
+ Checks whether unknown value is OpenTofu hostname query input.
+ 
+ @param value - Candidate OpenTofu query value.
+ 
+ @returns Whether value carries hostname text.
+ 
+ @example
+ ```ts
+ isResolveHostsQuery({ hostnames: 'nginx.org' }); // true
+ ```
  */
 function isResolveHostsQuery(value: unknown,): value is ResolveHostsQuery {
   return isRecord(value,)
@@ -122,18 +122,18 @@ function isResolveHostsQuery(value: unknown,): value is ResolveHostsQuery {
 }
 
 /**
- * Parses OpenTofu query input or throws with context.
- *
- * @param value - Candidate OpenTofu query value.
- *
- * @returns Validated hostname query.
- *
- * @throws When value lacks hostname text.
- *
- * @example
- * ```ts
- * parseResolveHostsQuery({ hostnames: 'nginx.org' });
- * ```
+ Parses OpenTofu query input or throws with context.
+ 
+ @param value - Candidate OpenTofu query value.
+ 
+ @returns Validated hostname query.
+ 
+ @throws When value lacks hostname text.
+ 
+ @example
+ ```ts
+ parseResolveHostsQuery({ hostnames: 'nginx.org' });
+ ```
  */
 function parseResolveHostsQuery(value: unknown,): ResolveHostsQuery {
   if (isResolveHostsQuery(value,))
@@ -143,16 +143,16 @@ function parseResolveHostsQuery(value: unknown,): ResolveHostsQuery {
 }
 
 /**
- * Checks whether unknown value is an array of strings.
- *
- * @param value - Candidate parsed JSON value.
- *
- * @returns Whether value is a string array.
- *
- * @example
- * ```ts
- * isStringArray(['3.147.99.198/32']); // true
- * ```
+ Checks whether unknown value is an array of strings.
+ 
+ @param value - Candidate parsed JSON value.
+ 
+ @returns Whether value is a string array.
+ 
+ @example
+ ```ts
+ isStringArray(['3.147.99.198/32']); // true
+ ```
  */
 function isStringArray(value: unknown,): value is readonly string[] {
   return Array.isArray(value,)
@@ -162,18 +162,18 @@ function isStringArray(value: unknown,): value is readonly string[] {
 }
 
 /**
- * Validates and normalizes one configured hostname.
- *
- * @param hostname - Candidate hostname from `local.resolvable_hostnames`.
- *
- * @returns Hostname accepted for DNS resolution.
- *
- * @throws When hostname is a wildcard or empty, since neither resolves to a concrete address.
- *
- * @example
- * ```ts
- * assertHostname('nginx.org'); // 'nginx.org'
- * ```
+ Validates and normalizes one configured hostname.
+ 
+ @param hostname - Candidate hostname from `local.resolvable_hostnames`.
+ 
+ @returns Hostname accepted for DNS resolution.
+ 
+ @throws When hostname is a wildcard or empty, since neither resolves to a concrete address.
+ 
+ @example
+ ```ts
+ assertHostname('nginx.org'); // 'nginx.org'
+ ```
  */
 function assertHostname(hostname: string,): string {
   if (hostname === '')
@@ -186,17 +186,17 @@ function assertHostname(hostname: string,): string {
 }
 
 /**
- * Narrows an unknown caught value to {@link NodeJS.ErrnoException} so callers can
- * branch on `error.code` without an unsafe `as` assertion (oxlint bans that cast).
- *
- * @param error - Caught value, which `try` lifts to `unknown`.
- *
- * @returns Whether value is an {@link Error} carrying a `code` property.
- *
- * @example
- * ```ts
- * if (isErrnoException(error,) && (error.code === 'ENOENT')) return ABSENT;
- * ```
+ Narrows an unknown caught value to {@link NodeJS.ErrnoException} so callers can
+ branch on `error.code` without an unsafe `as` assertion (oxlint bans that cast).
+ 
+ @param error - Caught value, which `try` lifts to `unknown`.
+ 
+ @returns Whether value is an {@link Error} carrying a `code` property.
+ 
+ @example
+ ```ts
+ if (isErrnoException(error,) && (error.code === 'ENOENT')) return ABSENT;
+ ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
   return ((typeof error) === 'object')
@@ -205,25 +205,25 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
 }
 
 /**
- * Sentinel for "the requested file does not exist". A unique `Symbol` rather than
- * `null`/`undefined` so the absent case stays out of a `no-nullish-union`-banned union.
+ Sentinel for "the requested file does not exist". A unique `Symbol` rather than
+ `null`/`undefined` so the absent case stays out of a `no-nullish-union`-banned union.
  */
 const ABSENT: unique symbol = Symbol('cidr map file missing on disk',);
 
 /**
- * Reads a file's UTF-8 contents, collapsing a missing file to {@link ABSENT};
- * every other read error propagates.
- *
- * @param path - Absolute path to read.
- *
- * @returns File contents, or {@link ABSENT} on `ENOENT`.
- *
- * @throws When the read fails for any reason other than a missing file.
- *
- * @example
- * ```ts
- * const text = await readTextIfExists('/abs/cache_resolved_hosts.json');
- * ```
+ Reads a file's UTF-8 contents, collapsing a missing file to {@link ABSENT};
+ every other read error propagates.
+ 
+ @param path - Absolute path to read.
+ 
+ @returns File contents, or {@link ABSENT} on `ENOENT`.
+ 
+ @throws When the read fails for any reason other than a missing file.
+ 
+ @example
+ ```ts
+ const text = await readTextIfExists('/abs/cache_resolved_hosts.json');
+ ```
  */
 async function readTextIfExists(path: string,): Promise<string | typeof ABSENT> {
   try {
@@ -242,35 +242,35 @@ async function readTextIfExists(path: string,): Promise<string | typeof ABSENT> 
 }
 
 /**
- * Reads a hostname-to-CIDR map file, returning an empty map when absent or malformed.
- *
- * @param path - Absolute path to a seed or cache JSON file.
- *
- * @returns Parsed map, or empty map when the file is missing or fails validation.
- *
- * @example
- * ```ts
- * await loadCidrMap('/abs/seed_resolved_hosts.json');
- * ```
+ Reads a hostname-to-CIDR map file, returning an empty map when absent or malformed.
+ 
+ @param path - Absolute path to a seed or cache JSON file.
+ 
+ @returns Parsed map, or empty map when the file is missing or fails validation.
+ 
+ @example
+ ```ts
+ await loadCidrMap('/abs/seed_resolved_hosts.json');
+ ```
  */
 async function loadCidrMap(path: string,): Promise<CidrsByHost> {
   /**
-   * Raw file contents, or {@link ABSENT} when the seed/cache file does not exist yet.
+   Raw file contents, or {@link ABSENT} when the seed/cache file does not exist yet.
    */
   const contents = await readTextIfExists(path,);
   if (contents === ABSENT)
     return {};
 
   /**
-   * Parsed file contents before runtime shape validation.
+   Parsed file contents before runtime shape validation.
    */
   const parsed: unknown = JSON.parse(contents,);
   if (!isRecord(parsed,))
     return {};
 
   /**
-   * Validated hostname map rebuilt from JSON-owned entries so no caller-owned
-   * property access capability crosses this function boundary.
+   Validated hostname map rebuilt from JSON-owned entries so no caller-owned
+   property access capability crosses this function boundary.
    */
   const cidrsByHost: CidrsByHost = {};
   for (const [hostname, value,] of Object.entries(parsed,)) {
@@ -282,18 +282,18 @@ async function loadCidrMap(path: string,): Promise<CidrsByHost> {
 }
 
 /**
- * Resolves one DNS address family, returning an empty list when the family has no records.
- *
- * @param hostname - Concrete service hostname.
- *
- * @param family - DNS address family to resolve.
- *
- * @returns Address records for the family, or empty list when the resolver reports none or fails.
- *
- * @example
- * ```ts
- * await resolveAddressFamily({ hostname: 'nginx.org', family: 'A' });
- * ```
+ Resolves one DNS address family, returning an empty list when the family has no records.
+ 
+ @param hostname - Concrete service hostname.
+ 
+ @param family - DNS address family to resolve.
+ 
+ @returns Address records for the family, or empty list when the resolver reports none or fails.
+ 
+ @example
+ ```ts
+ await resolveAddressFamily({ hostname: 'nginx.org', family: 'A' });
+ ```
  */
 async function resolveAddressFamily({
   hostname,
@@ -318,20 +318,20 @@ async function resolveAddressFamily({
 }
 
 /**
- * Resolves one hostname into `/32` and `/128` CIDRs, tolerating hosts with no records.
- *
- * @param hostname - Concrete service hostname.
- *
- * @returns Freshly resolved CIDRs, or empty list when the host resolves to nothing.
- *
- * @example
- * ```ts
- * await resolveHostCidrs('nginx.org');
- * ```
+ Resolves one hostname into `/32` and `/128` CIDRs, tolerating hosts with no records.
+ 
+ @param hostname - Concrete service hostname.
+ 
+ @returns Freshly resolved CIDRs, or empty list when the host resolves to nothing.
+ 
+ @example
+ ```ts
+ await resolveHostCidrs('nginx.org');
+ ```
  */
 async function resolveHostCidrs(hostname: string,): Promise<readonly string[]> {
   /**
-   * IPv4 and IPv6 DNS records for the hostname.
+   IPv4 and IPv6 DNS records for the hostname.
    */
   const [
     ipv4Addresses,
@@ -348,14 +348,14 @@ async function resolveHostCidrs(hostname: string,): Promise<readonly string[]> {
   ],);
 
   /**
-   * IPv4 CIDR destinations for the hcloud firewall rule.
+   IPv4 CIDR destinations for the hcloud firewall rule.
    */
   const ipv4Cidrs = ipv4Addresses.map(function ipv4ToCidr(address,): string {
     return `${address}/32`;
   },);
 
   /**
-   * IPv6 CIDR destinations for the hcloud firewall rule.
+   IPv6 CIDR destinations for the hcloud firewall rule.
    */
   const ipv6Cidrs = ipv6Addresses.map(function ipv6ToCidr(address,): string {
     return `${address}/128`;
@@ -368,20 +368,20 @@ async function resolveHostCidrs(hostname: string,): Promise<readonly string[]> {
 }
 
 /**
- * Unions CIDR lists while preserving first-seen order and dropping duplicates.
- *
- * @param lists - CIDR lists to merge, earliest first.
- *
- * @returns Deduplicated CIDR list keeping the earliest occurrence of each entry.
- *
- * @example
- * ```ts
- * unionCidrs([['1.1.1.1/32'], ['1.1.1.1/32', '2.2.2.2/32']]); // ['1.1.1.1/32', '2.2.2.2/32']
- * ```
+ Unions CIDR lists while preserving first-seen order and dropping duplicates.
+ 
+ @param lists - CIDR lists to merge, earliest first.
+ 
+ @returns Deduplicated CIDR list keeping the earliest occurrence of each entry.
+ 
+ @example
+ ```ts
+ unionCidrs([['1.1.1.1/32'], ['1.1.1.1/32', '2.2.2.2/32']]); // ['1.1.1.1/32', '2.2.2.2/32']
+ ```
  */
 function unionCidrs(lists: readonly (readonly string[])[],): readonly string[] {
   /**
-   * CIDRs accumulated through audited array iteration while preserving insertion order.
+   CIDRs accumulated through audited array iteration while preserving insertion order.
    */
   const cidrs = new Set<string>();
   for (const list of lists) {
@@ -392,17 +392,17 @@ function unionCidrs(lists: readonly (readonly string[])[],): readonly string[] {
 }
 
 /**
- * Raw OpenTofu `data.external` payload read from stdin.
+ Raw OpenTofu `data.external` payload read from stdin.
  */
 const rawInput: unknown = await json(process.stdin,);
 
 /**
- * Validated OpenTofu query payload.
+ Validated OpenTofu query payload.
  */
 const input = parseResolveHostsQuery(rawInput,);
 
 /**
- * Concrete, deduplicated, validated hostnames to resolve.
+ Concrete, deduplicated, validated hostnames to resolve.
  */
 const hostnames = [
   ...new Set(input.hostnames
@@ -420,8 +420,8 @@ const hostnames = [
 },);
 
 /**
- * Committed baseline of known-good CIDRs per hostname, unioned in so a cold checkout
- * (no cache) and transiently moved hosts never lose previously-allowed addresses.
+ Committed baseline of known-good CIDRs per hostname, unioned in so a cold checkout
+ (no cache) and transiently moved hosts never lose previously-allowed addresses.
  */
 const SEED_FILE = join(
   import.meta.dirname,
@@ -429,7 +429,7 @@ const SEED_FILE = join(
 );
 
 /**
- * Local, gitignored accumulation of every CIDR ever resolved for the configured hostnames.
+ Local, gitignored accumulation of every CIDR ever resolved for the configured hostnames.
  */
 const CACHE_FILE = join(
   import.meta.dirname,
@@ -437,7 +437,7 @@ const CACHE_FILE = join(
 );
 
 /**
- * Seed and prior-cache CIDR maps, both used as accumulation inputs.
+ Seed and prior-cache CIDR maps, both used as accumulation inputs.
  */
 const [
   seed,
@@ -448,12 +448,12 @@ const [
 ],);
 
 /**
- * Per-host accumulation entries, each unioning seed, prior cache, and fresh DNS.
+ Per-host accumulation entries, each unioning seed, prior cache, and fresh DNS.
  */
 const accumulatedEntries = await Promise.all(hostnames.map(
   async function accumulateHost(hostname,): Promise<ResolvedEntry> {
     /**
-     * Freshly resolved CIDRs for this hostname on this run.
+     Freshly resolved CIDRs for this hostname on this run.
      */
     const fresh = await resolveHostCidrs(hostname,);
 
@@ -469,12 +469,12 @@ const accumulatedEntries = await Promise.all(hostnames.map(
 ),);
 
 /**
- * Per-host union of seed, prior cache, and freshly resolved CIDRs.
+ Per-host union of seed, prior cache, and freshly resolved CIDRs.
  */
 const resolvedByHost: CidrsByHost = Object.fromEntries(accumulatedEntries,);
 
 /**
- * Total CIDRs across every configured hostname, used to detect a cold total-resolution failure.
+ Total CIDRs across every configured hostname, used to detect a cold total-resolution failure.
  */
 const totalCidrs = Object.values(resolvedByHost,)
   .flat()
@@ -494,20 +494,20 @@ if (hostnames.length > 0) {
 }
 
 /**
- * Joins CIDRs without passing caller-owned array identity to an unresolved method.
- *
- * @param cidrs - CIDR strings to join in source order.
- *
- * @returns Comma-separated CIDR text.
- *
- * @example
- * ```ts
- * joinCidrs(['192.0.2.1/32', '2001:db8::1/128']);
- * ```
+ Joins CIDRs without passing caller-owned array identity to an unresolved method.
+ 
+ @param cidrs - CIDR strings to join in source order.
+ 
+ @returns Comma-separated CIDR text.
+ 
+ @example
+ ```ts
+ joinCidrs(['192.0.2.1/32', '2001:db8::1/128']);
+ ```
  */
 function joinCidrs(cidrs: readonly string[],): string {
   /**
-   * Output text accumulated from primitive CIDR strings.
+   Output text accumulated from primitive CIDR strings.
    */
   let result = '';
   for (const cidr of cidrs)
@@ -516,7 +516,7 @@ function joinCidrs(cidrs: readonly string[],): string {
 }
 
 /**
- * Per-host output entries, each pairing a hostname with its comma-joined CIDR string.
+ Per-host output entries, each pairing a hostname with its comma-joined CIDR string.
  */
 const resultEntries = Object.entries(resolvedByHost,)
   .map(function joinHost([
@@ -530,7 +530,7 @@ const resultEntries = Object.entries(resolvedByHost,)
   },);
 
 /**
- * Comma-joined CIDR map ready to stream out to OpenTofu's `map(string)` result.
+ Comma-joined CIDR map ready to stream out to OpenTofu's `map(string)` result.
  */
 const result: ResultByHost = Object.fromEntries(resultEntries,);
 

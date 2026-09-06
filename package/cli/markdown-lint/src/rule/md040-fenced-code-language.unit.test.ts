@@ -10,11 +10,11 @@ import type { Diagnostic, } from '../types.ts';
 import { fencedCodeLanguage, } from './md040-fenced-code-language.ts';
 
 /**
- * Run only MD040 over Markdown source.
- *
- * @param source - Markdown source
- *
- * @returns diagnostics from the rule
+ Run only MD040 over Markdown source.
+ 
+ @param source - Markdown source
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string,): readonly Diagnostic[] {
   return runRules({
@@ -49,7 +49,7 @@ await describe({
       name: 'fix inserts a text language label and is idempotent',
       fn: async function fixes() {
         /**
-         * Source after inserting the default language label.
+         Source after inserting the default language label.
          */
         const fixed = applyFixes({
           source: '````\nplain\n````\n',

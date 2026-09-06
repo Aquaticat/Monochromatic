@@ -24,25 +24,25 @@ import {
 } from './tool-schema.ts';
 
 /**
- * Dispatches a `tools/call` request to the registered handler.
- * Validates tool name and arguments from untrusted client input before dispatch.
- *
- * @param toolMap - Immutable map of registered tools keyed by name.
- *
- * @param request - Request containing tool `name` and `arguments` in `params`.
- *
- * @param serverInfo - Identity stamped into result metadata.
- *
- * @returns Tool result wrapped in a JSON-RPC response via {@link respondSuccess}, or an error via {@link respondError} if the tool is unknown.
- *
- * @example
- * ```ts
- * const response = await handleToolCall({
- *   toolMap,
- *   request: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'get_diagnostics' } },
- *   serverInfo: { name: 'demo', version: '0.1.0' },
- * });
- * ```
+ Dispatches a `tools/call` request to the registered handler.
+ Validates tool name and arguments from untrusted client input before dispatch.
+ 
+ @param toolMap - Immutable map of registered tools keyed by name.
+ 
+ @param request - Request containing tool `name` and `arguments` in `params`.
+ 
+ @param serverInfo - Identity stamped into result metadata.
+ 
+ @returns Tool result wrapped in a JSON-RPC response via {@link respondSuccess}, or an error via {@link respondError} if the tool is unknown.
+ 
+ @example
+ ```ts
+ const response = await handleToolCall({
+   toolMap,
+   request: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'get_diagnostics' } },
+   serverInfo: { name: 'demo', version: '0.1.0' },
+ });
+ ```
  */
 export async function handleToolCall(
   {
@@ -56,7 +56,7 @@ export async function handleToolCall(
   },
 ): Promise<JsonRpcOutbound> {
   /**
-   * Echoed back in the response so the client can correlate the call with the result.
+   Echoed back in the response so the client can correlate the call with the result.
    */
   const {
     id,
@@ -64,7 +64,7 @@ export async function handleToolCall(
   } = request;
 
   /**
-   * Tool name extracted from untrusted params; `undefined` triggers an invalid-params error below.
+   Tool name extracted from untrusted params; `undefined` triggers an invalid-params error below.
    */
   const toolName = ((typeof params?.name) === 'string') ? params.name : undefined;
   if (toolName === undefined) {
@@ -76,7 +76,7 @@ export async function handleToolCall(
   }
 
   /**
-   * Raw `arguments` value from params, validated below before being handed to the tool.
+   Raw `arguments` value from params, validated below before being handed to the tool.
    */
   const rawArgs = params?.arguments;
   // A null, array, or primitive `arguments` value is a malformed call, not an empty one:
@@ -93,7 +93,7 @@ export async function handleToolCall(
     },);
   }
   /**
-   * Validated argument bag; empty when the client sent no `arguments` at all.
+   Validated argument bag; empty when the client sent no `arguments` at all.
    */
   const toolArgs: Record<string, unknown> = (rawArgs === undefined)
     ? {}
@@ -101,7 +101,7 @@ export async function handleToolCall(
     : (rawArgs as Record<string, unknown>);
 
   /**
-   * Tool entry resolved from the registry; `undefined` means the client requested an unknown tool.
+   Tool entry resolved from the registry; `undefined` means the client requested an unknown tool.
    */
   const registered = toolMap.get(toolName,);
   if (registered === undefined) {
@@ -113,7 +113,7 @@ export async function handleToolCall(
   }
 
   /**
-   * Verdict from the same schema advertised for this tool.
+   Verdict from the same schema advertised for this tool.
    */
   const validation = validateToolArguments({
     schema: registered.schema,
@@ -134,7 +134,7 @@ export async function handleToolCall(
   // from the model, which then cannot see what went wrong and correct its next call.
   try {
     /**
-     * Tool handler output, wrapped below into a JSON-RPC success response.
+     Tool handler output, wrapped below into a JSON-RPC success response.
      */
     const result: ToolCallResult = await registered.handler(toolArgs,);
     return respondSuccess({
@@ -147,7 +147,7 @@ export async function handleToolCall(
   }
   catch (error: unknown) {
     /**
-     * Human-readable error text; falls back to `String(error)` when the thrown value is not an `Error`.
+     Human-readable error text; falls back to `String(error)` when the thrown value is not an `Error`.
      */
     const message = caughtValueText(error,);
     console.error(

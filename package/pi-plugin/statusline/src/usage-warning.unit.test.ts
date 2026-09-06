@@ -71,7 +71,7 @@ function syntheticQuotasHeader(quotas: unknown,): Record<string, string> {
 
 function firstSnapshot(headers: Readonly<Record<string, string>>,): RateLimitSnapshot {
   /**
-   * First parsed snapshot from supplied header fixture.
+   First parsed snapshot from supplied header fixture.
    */
   const [snapshot,] = parseRateLimitSnapshots({
     headers,

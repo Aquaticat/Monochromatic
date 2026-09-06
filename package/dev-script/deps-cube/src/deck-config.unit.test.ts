@@ -1,23 +1,23 @@
 /**
- * Tests for the deck.gl-side per-probe accessors.
- *
- * This file is named `deck-config.unit.test.ts` per the plan, but
- * covers `deck-accessors.ts` only: importing `deck-config.ts`
- * fails at module-load time because `@loaders.gl/schema-utils`
- * statically imports `@math.gl/types`, which is not declared as a
- * dependency on disk. rolldown (used by `render-html.ts` at
- * runtime) sidesteps the resolution path via tree-shaking; Node
- * module-load does not, so any test that touches
- * `deck-config.ts` cannot load. The layer-count snapshot from the
- * plan is therefore skipped with an explicit `skip` reason naming
- * the upstream loader-gl packaging bug.
- *
- * Accessor outputs are still exercised here against fixture probes
- * and bounds, covering position (known + unknown), fill colour
- * (visible + filtered, known + unknown), radius, and the
- * filled-vs-stroked encoding.
- *
- * @module
+ Tests for the deck.gl-side per-probe accessors.
+ 
+ This file is named `deck-config.unit.test.ts` per the plan, but
+ covers `deck-accessors.ts` only: importing `deck-config.ts`
+ fails at module-load time because `@loaders.gl/schema-utils`
+ statically imports `@math.gl/types`, which is not declared as a
+ dependency on disk. rolldown (used by `render-html.ts` at
+ runtime) sidesteps the resolution path via tree-shaking; Node
+ module-load does not, so any test that touches
+ `deck-config.ts` cannot load. The layer-count snapshot from the
+ plan is therefore skipped with an explicit `skip` reason naming
+ the upstream loader-gl packaging bug.
+ 
+ Accessor outputs are still exercised here against fixture probes
+ and bounds, covering position (known + unknown), fill colour
+ (visible + filtered, known + unknown), radius, and the
+ filled-vs-stroked encoding.
+ 
+ @module
  */
 
 import {
@@ -38,7 +38,7 @@ import type { PackageProbe, } from './probe.ts';
 import { defaultState, } from './script/state.ts';
 
 /**
- * Healthy GH-hosted leaf with known spatial coords.
+ Healthy GH-hosted leaf with known spatial coords.
  */
 const KNOWN: PackageProbe = {
   catalogKey: 'preact',
@@ -58,7 +58,7 @@ const KNOWN: PackageProbe = {
   isMonorepoHoused: false,};
 
 /**
- * Monorepo-housed probe; TS ratio and source bytes unknown.
+ Monorepo-housed probe; TS ratio and source bytes unknown.
  */
 const UNKNOWN: PackageProbe = {
   catalogKey: '@lezer/common',
@@ -77,7 +77,7 @@ const UNKNOWN: PackageProbe = {
 };
 
 /**
- * Non-leaf probe (renders stroked in the default shape encoding).
+ Non-leaf probe (renders stroked in the default shape encoding).
  */
 const NON_LEAF: PackageProbe = {
   catalogKey: 'ms',
@@ -100,8 +100,8 @@ const PROBES = [KNOWN, NON_LEAF, UNKNOWN,];
 const STATE = defaultState({ probes: PROBES, },);
 
 /**
- * Bounds spanning each channel from 0 to 1 so accessor maths are
- * easy to reason about (no nontrivial normalisation needed).
+ Bounds spanning each channel from 0 to 1 so accessor maths are
+ easy to reason about (no nontrivial normalisation needed).
  */
 const BOUNDS = {
   x: [0, 1,],

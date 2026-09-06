@@ -1,9 +1,9 @@
 /**
- * Stroke erasure for the doodle widget.
- *
- * Tests stroke points **and stroke segments** against the eraser's
- * travel segment between frames, so fast drags do not skip over
- * strokes even when stroke points are widely spaced.
+ Stroke erasure for the doodle widget.
+ 
+ Tests stroke points **and stroke segments** against the eraser's
+ travel segment between frames, so fast drags do not skip over
+ strokes even when stroke points are widely spaced.
  */
 
 import { getStrokeWidth, } from './drawing-config.ts';
@@ -20,40 +20,40 @@ import {
 } from './geometry.ts';
 
 /**
- * Minimum number of points required for a valid sub-stroke after splitting
+ Minimum number of points required for a valid sub-stroke after splitting
  */
 const MIN_SEGMENT_POINTS = 2;
 
 /**
- * Erases stroke segments near the eraser path.
- *
- * Tests each stroke point (via {@link distToSegmentSq}) **and each
- * stroke segment** (via {@link segToSegDistSq}) against the line
- * segment from `previousPoint` to `point` (the eraser's travel path
- * between frames). When `previousPoint` is omitted (first event of a
- * gesture), tests against the single point only.
- *
- * The segment-to-segment check catches cases where the eraser crosses
- * a stroke line between two widely-spaced points without being close
- * enough to either individual point.
- *
- * @param point - current eraser position in normalized [0..1] space
- *
- * @param previousPoint - previous eraser position; omitted on first event
- *
- * @param cw - current canvas width in CSS pixels
- *
- * @param ch - current canvas height in CSS pixels
- *
- * @returns `true` if any stroke was modified
- *
- * @example
- * ```ts
- * const erased = eraseStrokesAt({
- *   point: [0.5, 0.5], previousPoint: [0.4, 0.4], cw: 800, ch: 600,
- * });
- * if (erased) redraw({ ctx, cw, ch });
- * ```
+ Erases stroke segments near the eraser path.
+ 
+ Tests each stroke point (via {@link distToSegmentSq}) **and each
+ stroke segment** (via {@link segToSegDistSq}) against the line
+ segment from `previousPoint` to `point` (the eraser's travel path
+ between frames). When `previousPoint` is omitted (first event of a
+ gesture), tests against the single point only.
+ 
+ The segment-to-segment check catches cases where the eraser crosses
+ a stroke line between two widely-spaced points without being close
+ enough to either individual point.
+ 
+ @param point - current eraser position in normalized [0..1] space
+ 
+ @param previousPoint - previous eraser position; omitted on first event
+ 
+ @param cw - current canvas width in CSS pixels
+ 
+ @param ch - current canvas height in CSS pixels
+ 
+ @returns `true` if any stroke was modified
+ 
+ @example
+ ```ts
+ const erased = eraseStrokesAt({
+   point: [0.5, 0.5], previousPoint: [0.4, 0.4], cw: 800, ch: 600,
+ });
+ if (erased) redraw({ ctx, cw, ch });
+ ```
  */
 export function eraseStrokesAt({
   point,
@@ -67,11 +67,11 @@ export function eraseStrokesAt({
   readonly ch: number;
 },): boolean {
   /**
-   * Eraser radius in CSS pixels, matching the active stroke width
+   Eraser radius in CSS pixels, matching the active stroke width
    */
   const radiusPx = getStrokeWidth();
   /**
-   * Eraser segment endpoint in pixel space
+   Eraser segment endpoint in pixel space
    */
   const {
     px: bx,
@@ -82,7 +82,7 @@ export function eraseStrokesAt({
     ch,
   },);
   /**
-   * Eraser segment start in pixel space (same as end when no previous point)
+   Eraser segment start in pixel space (same as end when no previous point)
    */
   const {
     px: ax,
@@ -98,43 +98,43 @@ export function eraseStrokesAt({
       py: by,
     };
   /**
-   * Squared radius for distance comparison without sqrt
+   Squared radius for distance comparison without sqrt
    */
   const radiusSq = radiusPx * radiusPx;
 
   /**
-   * Snapshot taken once so the loop can build the replacement list in isolation.
+   Snapshot taken once so the loop can build the replacement list in isolation.
    */
   const oldStrokes = getStrokes();
   /**
-   * Flag flipped only when at least one stroke loses a point, so the caller can skip redraws.
+   Flag flipped only when at least one stroke loses a point, so the caller can skip redraws.
    */
   let erased = false;
   /**
-   * Replacement list built alongside the iteration to avoid in-place mutation.
+   Replacement list built alongside the iteration to avoid in-place mutation.
    */
   const newStrokes: StrokeData[] = [];
 
   for (const stroke of oldStrokes) {
     /**
-     * Per-stroke flag separating untouched strokes from segment-split survivors.
+     Per-stroke flag separating untouched strokes from segment-split survivors.
      */
     let strokeModified = false;
     /**
-     * Sub-stroke segments surviving after erasure
+     Sub-stroke segments surviving after erasure
      */
     const segments: NormalizedPoint[][] = [];
     /**
-     * Points accumulating for the current sub-stroke
+     Points accumulating for the current sub-stroke
      */
     let currentSegment: NormalizedPoint[] = [];
 
     /**
-     * Previous stroke point in pixel space, for segment-to-segment checks
+     Previous stroke point in pixel space, for segment-to-segment checks
      */
     let prevStrokePx = 0;
     /**
-     * Companion to {@link prevStrokePx} on the y axis.
+     Companion to {@link prevStrokePx} on the y axis.
      */
     let prevStrokePy = 0;
 
@@ -143,13 +143,13 @@ export function eraseStrokesAt({
       .points
       .length; loopIndex++) {
       /**
-       * Skipped when undefined so sparse arrays do not break segment math.
+       Skipped when undefined so sparse arrays do not break segment math.
        */
       const p = stroke.points[loopIndex];
       if (p === undefined)
         continue;
       /**
-       * Stroke point in pixel space
+       Stroke point in pixel space
        */
       const {
         px,
@@ -160,7 +160,7 @@ export function eraseStrokesAt({
         ch,
       },);
       /**
-       * Squared distance from stroke point to eraser travel segment
+       Squared distance from stroke point to eraser travel segment
        */
       const pointDistSq = distToSegmentSq({
         px,
@@ -172,7 +172,7 @@ export function eraseStrokesAt({
       },);
 
       /**
-       * Mutable so the fallback segment-distance check can promote it to `true`.
+       Mutable so the fallback segment-distance check can promote it to `true`.
        */
       let shouldErase = pointDistSq <= radiusSq;
 
@@ -182,7 +182,7 @@ export function eraseStrokesAt({
       // erases that cross between widely-spaced stroke points.
       if ((!shouldErase) && (loopIndex > 0)) {
         /**
-         * Segment-to-segment distance covers fast drags that skip between stroke samples.
+         Segment-to-segment distance covers fast drags that skip between stroke samples.
          */
         const segDistSq = segToSegDistSq({
           a1x: prevStrokePx,

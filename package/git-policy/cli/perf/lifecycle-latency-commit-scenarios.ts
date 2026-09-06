@@ -1,7 +1,7 @@
 /**
- * Commit-pair scenarios for the lifecycle latency benchmark.
- *
- * @module
+ Commit-pair scenarios for the lifecycle latency benchmark.
+ 
+ @module
  */
 import { appendFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -31,15 +31,15 @@ import {
 import { assertStableWarmups, } from './lifecycle-latency-warmup.ts';
 
 /**
- * Prepares next commit command.
- *
- * @param repository - target repository
- *
- * @param command - Git executable
- *
- * @param iteration - unique content sequence
- *
- * @returns measured commit request
+ Prepares next commit command.
+ 
+ @param repository - target repository
+ 
+ @param command - Git executable
+ 
+ @param iteration - unique content sequence
+ 
+ @returns measured commit request
  */
 async function commitRequest({
   repository,
@@ -79,7 +79,7 @@ async function commitRequest({
 }
 
 /**
- * Repository-relative paths one wide commit changes.
+ Repository-relative paths one wide commit changes.
  */
 const WIDE_COMMIT_PATHS: readonly string[] = Array.from(
   { length: WIDE_COMMIT_FILE_COUNT, },
@@ -99,18 +99,18 @@ const WIDE_COMMIT_PATHS: readonly string[] = Array.from(
 );
 
 /**
- * Prepares next wide commit naming every changed path.
- *
- * Changes {@link WIDE_COMMIT_FILE_COUNT} already-tracked files so the measured
- * command carries a delta, and an argv, as wide as a mechanical sweep.
- *
- * @param repository - target repository
- *
- * @param command - Git executable
- *
- * @param iteration - unique content sequence
- *
- * @returns measured wide commit request
+ Prepares next wide commit naming every changed path.
+ 
+ Changes {@link WIDE_COMMIT_FILE_COUNT} already-tracked files so the measured
+ command carries a delta, and an argv, as wide as a mechanical sweep.
+ 
+ @param repository - target repository
+ 
+ @param command - Git executable
+ 
+ @param iteration - unique content sequence
+ 
+ @returns measured wide commit request
  */
 async function wideCommitRequest({
   repository,
@@ -152,18 +152,18 @@ async function wideCommitRequest({
 }
 
 /**
- * Collects wide-commit pairs with equivalent prepared mutations.
- *
- * @returns enforced wide-commit wrapper-added summary
- *
- * @example
- * ```ts
- * await collectWideCommit();
- * ```
+ Collects wide-commit pairs with equivalent prepared mutations.
+ 
+ @returns enforced wide-commit wrapper-added summary
+ 
+ @example
+ ```ts
+ await collectWideCommit();
+ ```
  */
 export async function collectWideCommit(): Promise<ScenarioSummary> {
   /**
-   * Complete sequential wide-commit-pair collection.
+   Complete sequential wide-commit-pair collection.
    */
   const allSamples = await measurementIndices()
     .reduce(
@@ -172,11 +172,11 @@ export async function collectWideCommit(): Promise<ScenarioSummary> {
         index,
       ) {
         /**
-         * Earlier sequential wide-commit samples.
+         Earlier sequential wide-commit samples.
          */
         const previous = await previousPromise;
         /**
-         * Prepared direct wide commit request.
+         Prepared direct wide commit request.
          */
         const direct = await wideCommitRequest({
           repository: DIRECT_COMMIT_REPOSITORY,
@@ -184,7 +184,7 @@ export async function collectWideCommit(): Promise<ScenarioSummary> {
           iteration: index,
         },);
         /**
-         * Prepared wrapper wide commit request.
+         Prepared wrapper wide commit request.
          */
         const wrapper = await wideCommitRequest({
           repository: TYPESCRIPT_REPOSITORY,
@@ -192,11 +192,11 @@ export async function collectWideCommit(): Promise<ScenarioSummary> {
           iteration: index,
         },);
         /**
-         * Direct wide commit duration.
+         Direct wide commit duration.
          */
         const directCommitMs = await measure(direct,);
         /**
-         * Direct local push duration paired with wrapper auto-push.
+         Direct local push duration paired with wrapper auto-push.
          */
         const directPushMs = await measure({
           command: REAL_GIT,
@@ -204,11 +204,11 @@ export async function collectWideCommit(): Promise<ScenarioSummary> {
           cwd: DIRECT_COMMIT_REPOSITORY,
         },);
         /**
-         * Complete direct wide commit and push duration.
+         Complete direct wide commit and push duration.
          */
         const directMs = directCommitMs + directPushMs;
         /**
-         * Wrapper wide commit including local auto-push duration.
+         Wrapper wide commit including local auto-push duration.
          */
         const wrapperMs = await measure(wrapper,);
         return [
@@ -234,18 +234,18 @@ export async function collectWideCommit(): Promise<ScenarioSummary> {
 }
 
 /**
- * Collects post-commit pairs with equivalent prepared mutations.
- *
- * @returns enforced post-commit wrapper-added summary
- *
- * @example
- * ```ts
- * await collectPostCommit();
- * ```
+ Collects post-commit pairs with equivalent prepared mutations.
+ 
+ @returns enforced post-commit wrapper-added summary
+ 
+ @example
+ ```ts
+ await collectPostCommit();
+ ```
  */
 export async function collectPostCommit(): Promise<ScenarioSummary> {
   /**
-   * Complete sequential commit-pair collection.
+   Complete sequential commit-pair collection.
    */
   const allSamples = await measurementIndices()
     .reduce(
@@ -254,11 +254,11 @@ export async function collectPostCommit(): Promise<ScenarioSummary> {
       index,
     ) {
       /**
-       * Earlier sequential commit samples.
+       Earlier sequential commit samples.
        */
       const previous = await previousPromise;
       /**
-       * Prepared direct commit request.
+       Prepared direct commit request.
        */
       const direct = await commitRequest({
         repository: DIRECT_COMMIT_REPOSITORY,
@@ -266,7 +266,7 @@ export async function collectPostCommit(): Promise<ScenarioSummary> {
         iteration: index,
       },);
       /**
-       * Prepared wrapper commit request.
+       Prepared wrapper commit request.
        */
       const wrapper = await commitRequest({
         repository: TYPESCRIPT_REPOSITORY,
@@ -274,11 +274,11 @@ export async function collectPostCommit(): Promise<ScenarioSummary> {
         iteration: index,
       },);
       /**
-       * Direct commit duration.
+       Direct commit duration.
        */
       const directCommitMs = await measure(direct,);
       /**
-       * Direct local push duration paired with wrapper auto-push.
+       Direct local push duration paired with wrapper auto-push.
        */
       const directPushMs = await measure({
         command: REAL_GIT,
@@ -286,11 +286,11 @@ export async function collectPostCommit(): Promise<ScenarioSummary> {
         cwd: DIRECT_COMMIT_REPOSITORY,
       },);
       /**
-       * Complete direct commit and push duration.
+       Complete direct commit and push duration.
        */
       const directMs = directCommitMs + directPushMs;
       /**
-       * Wrapper commit including local auto-push duration.
+       Wrapper commit including local auto-push duration.
        */
       const wrapperMs = await measure(wrapper,);
       return [

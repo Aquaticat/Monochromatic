@@ -1,7 +1,7 @@
 /**
- * Owned callback-argument effect propagation.
- *
- * @module
+ Owned callback-argument effect propagation.
+ 
+ @module
  */
 
 import { addOpaqueEffect, } from './effect-call-resolution.ts';
@@ -20,24 +20,24 @@ import {
 import { addUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
 
 /**
- * Propagates callback argument effects through one owned call edge.
- *
- * @param summaries - Owned callable summaries by declaration key.
- *
- * @param summary - Caller summary receiving callback effects.
- *
- * @param calleeSummary - Callee summary defining callback relations.
- *
- * @param edge - Caller-to-callee argument edge.
- *
- * @returns whether caller summary changed.
- *
- * @mutates summary - Adds callback mutation and uncertainty effects.
- *
- * @example
- * ```ts
- * propagateCallbackRelations({ summaries, summary, calleeSummary, edge });
- * ```
+ Propagates callback argument effects through one owned call edge.
+ 
+ @param summaries - Owned callable summaries by declaration key.
+ 
+ @param summary - Caller summary receiving callback effects.
+ 
+ @param calleeSummary - Callee summary defining callback relations.
+ 
+ @param edge - Caller-to-callee argument edge.
+ 
+ @returns whether caller summary changed.
+ 
+ @mutates summary - Adds callback mutation and uncertainty effects.
+ 
+ @example
+ ```ts
+ propagateCallbackRelations({ summaries, summary, calleeSummary, edge });
+ ```
  */
 export function propagateCallbackRelations({
   summaries,
@@ -51,12 +51,12 @@ export function propagateCallbackRelations({
   readonly edge: CallEdge;
 },): boolean {
   /**
-   * Whether any callback effect changed caller summary.
+   Whether any callback effect changed caller summary.
    */
   let changed = false;
   for (const relation of calleeSummary.relations) {
     /**
-     * Caller parameters packaged as callback source value.
+     Caller parameters packaged as callback source value.
      */
     const sourceCallerIndexes = calleeSlotOrigins({
       edge,
@@ -64,11 +64,11 @@ export function propagateCallbackRelations({
       slot: relation.sourceSlot,
     },);
     /**
-     * Callback declaration key passed to callback parameter.
+     Callback declaration key passed to callback parameter.
      */
     const callbackKey = edge.callbackKeysByCalleeSlot[relation.callbackSlot];
     /**
-     * Summary for passed callback declaration, absent when none is named or built.
+     Summary for passed callback declaration, absent when none is named or built.
      */
     const callbackSummary = ((callbackKey === undefined)
         || (callbackKey === OWNED_CALLABLE_UNAVAILABLE))
@@ -105,11 +105,11 @@ export function propagateCallbackRelations({
      * the answer sound; carrying property precision through a callback would need the
      * relation to name a slot on both sides, which it does not yet. */
     /**
-     * Callback parameter this relation's argument position fills.
+     Callback parameter this relation's argument position fills.
      */
     const callbackParameter = asParameterIndex(relation.callbackArgumentPosition,);
     /**
-     * Whether callback argument carries proven mutation.
+     Whether callback argument carries proven mutation.
      */
     const callbackArgumentMutated = parameterCarriesSlot({
       ownership: callbackSummary.slots,
@@ -117,7 +117,7 @@ export function propagateCallbackRelations({
       parameterIndex: callbackParameter,
     },);
     /**
-     * Whether callback argument carries unresolved uncertainty.
+     Whether callback argument carries unresolved uncertainty.
      */
     const callbackArgumentOpaque = parameterCarriesSlot({
       ownership: callbackSummary.slots,
@@ -126,7 +126,7 @@ export function propagateCallbackRelations({
     },);
     for (const sourceCallerIndex of sourceCallerIndexes) {
       /**
-       * Whether mutation propagation changed caller summary.
+       Whether mutation propagation changed caller summary.
        */
       const mutationChanged = callbackArgumentMutated
         && addEffectSlot({
@@ -134,7 +134,7 @@ export function propagateCallbackRelations({
           value: sourceCallerIndex,
         },);
       /**
-       * Whether opaque propagation changed caller summary.
+       Whether opaque propagation changed caller summary.
        */
       const opaqueChanged = callbackArgumentOpaque
         && addEffectSlot({
@@ -142,7 +142,7 @@ export function propagateCallbackRelations({
           value: sourceCallerIndex,
         },);
       /**
-       * Whether callback uncertainty provenance changed caller summary.
+       Whether callback uncertainty provenance changed caller summary.
        */
       const provenanceChanged = callbackArgumentOpaque
         && addUncertaintyProvenance({

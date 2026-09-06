@@ -1,7 +1,7 @@
 /**
- * Shared guardrail helpers for misleading `bun test` invocations.
- *
- * @module
+ Shared guardrail helpers for misleading `bun test` invocations.
+ 
+ @module
  */
 
 import { analyzeShellCommand, } from './analyzer.ts';
@@ -9,12 +9,12 @@ import { analyzeShellCommand, } from './analyzer.ts';
 //region Constants
 
 /**
- * Refusal reason used when a shell command invokes `bun test`.
- *
- * @example
- * ```ts
- * return BUN_TEST_BAN_REASON;
- * ```
+ Refusal reason used when a shell command invokes `bun test`.
+ 
+ @example
+ ```ts
+ return BUN_TEST_BAN_REASON;
+ ```
  */
 const BUN_TEST_BAN_REASON: string = [
   'Blocked: `bun test` invocations are banned in this repo.',
@@ -32,26 +32,26 @@ const BUN_TEST_BAN_REASON: string = [
 //region Predicates
 
 /**
- * Checks whether shell command contains a `bun test` command anywhere in parsed shell syntax.
- *
- * Uses the shared `unbash` analyzer so quoted prose, escaped characters,
- * nested command substitutions, and function definitions are classified by
- * shell grammar instead of text boundaries. Function bodies stay visible so
- * `f(){ bun test; }; f` cannot hide the banned invocation behind a shell name.
- *
- * @param command - shell command from agent harness Bash tool input
- *
- * @returns whether command contains `bun test`
- *
- * @example
- * ```ts
- * invokesBunTest('cd x && bun test'); // true
- * invokesBunTest('echo "bun test"'); // false
- * ```
+ Checks whether shell command contains a `bun test` command anywhere in parsed shell syntax.
+ 
+ Uses the shared `unbash` analyzer so quoted prose, escaped characters,
+ nested command substitutions, and function definitions are classified by
+ shell grammar instead of text boundaries. Function bodies stay visible so
+ `f(){ bun test; }; f` cannot hide the banned invocation behind a shell name.
+ 
+ @param command - shell command from agent harness Bash tool input
+ 
+ @returns whether command contains `bun test`
+ 
+ @example
+ ```ts
+ invokesBunTest('cd x && bun test'); // true
+ invokesBunTest('echo "bun test"'); // false
+ ```
  */
 function invokesBunTest(command: string,): boolean {
   /**
-   * Parsed shell command analysis.
+   Parsed shell command analysis.
    */
   const analysis = analyzeShellCommand(command,);
   if (!analysis.parsed)

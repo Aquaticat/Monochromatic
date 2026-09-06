@@ -1,19 +1,19 @@
 /**
- * Round-trip and metamorphic properties for the parse/emit cycle.
- *
- * Three oracles, each over both generated documents and the committed corpus:
- *
- * 1. Splice fidelity: re-emitting an unmutated splice-mode parse is byte-for-byte
- *    identical to the source.
- * 2. Canonical semantic round-trip: parsing in canonical mode, re-emitting from
- *    the AST, and reparsing preserves the normalized semantic model. This drives
- *    the emitter, where re-spelling a value could silently corrupt it.
- * 3. Metamorphic invariance: adding a leading comment, a trailing comment, or
- *    trailing blank lines never changes a document's meaning.
- *
- * Run plan and seed policy: see `../fuzz-budget.ts`.
- *
- * @module
+ Round-trip and metamorphic properties for the parse/emit cycle.
+ 
+ Three oracles, each over both generated documents and the committed corpus:
+ 
+ 1. Splice fidelity: re-emitting an unmutated splice-mode parse is byte-for-byte
+    identical to the source.
+ 2. Canonical semantic round-trip: parsing in canonical mode, re-emitting from
+    the AST, and reparsing preserves the normalized semantic model. This drives
+    the emitter, where re-spelling a value could silently corrupt it.
+ 3. Metamorphic invariance: adding a leading comment, a trailing comment, or
+    trailing blank lines never changes a document's meaning.
+ 
+ Run plan and seed policy: see `../fuzz-budget.ts`.
+ 
+ @module
  */
 
 import {
@@ -53,12 +53,12 @@ import {
 //region Setup
 
 /**
- * Run plan resolved once for every property in this file.
+ Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
 
 /**
- * Upper bound on live repository TOML files pulled into the campaign corpus.
+ Upper bound on live repository TOML files pulled into the campaign corpus.
  */
 const REPO_CORPUS_LIMIT = 300;
 
@@ -66,18 +66,18 @@ const REPO_CORPUS_LIMIT = 300;
 const UPSTREAM_PROTOTYPE_KEY = '__proto__';
 
 /**
- * Minimized source whose `__proto__` datetime triggers upstream static-oracle prototype assignment.
+ Minimized source whose `__proto__` datetime triggers upstream static-oracle prototype assignment.
  */
 const UPSTREAM_PROTOTYPE_SOURCE = `value = { "${UPSTREAM_PROTOTYPE_KEY}" = 1979-05-27T07:32:00Z }\n`;
 
 /**
- * Whether the package accepts `source` under the default dialect.
- *
- * Live-discovered repository TOML can be version-specific or malformed; the
- * valid-requiring properties keep only sources the package actually parses, so
- * a parse failure here classifies corpus rather than failing the property.
- *
- * @returns Whether `parseTomlEdit` accepts `source`.
+ Whether the package accepts `source` under the default dialect.
+ 
+ Live-discovered repository TOML can be version-specific or malformed; the
+ valid-requiring properties keep only sources the package actually parses, so
+ a parse failure here classifies corpus rather than failing the property.
+ 
+ @returns Whether `parseTomlEdit` accepts `source`.
  */
 function parsesUnderDefault(source: string,): boolean {
   try {
@@ -92,8 +92,8 @@ function parsesUnderDefault(source: string,): boolean {
 }
 
 /**
- * Committed valid fixtures plus, in campaign mode, live repository TOML, kept to
- * what the package parses so the round-trip oracles see only valid input.
+ Committed valid fixtures plus, in campaign mode, live repository TOML, kept to
+ what the package parses so the round-trip oracles see only valid input.
  */
 const validSources = [
   ...(await loadValidFixtures()).map(function source(entry,) { return entry.source; },),
@@ -104,7 +104,7 @@ const validSources = [
 ].filter(function keepValid(source,) { return parsesUnderDefault(source,); },);
 
 /**
- * Valid source arbitrary: generated documents unioned with the real corpus.
+ Valid source arbitrary: generated documents unioned with the real corpus.
  */
 const validSourceArbitrary = oneof(
   documentArbitrary,
@@ -112,7 +112,7 @@ const validSourceArbitrary = oneof(
 );
 
 /**
- * Metamorphic transform tags applied to a valid source.
+ Metamorphic transform tags applied to a valid source.
  */
 const TRANSFORMS = [
   'leading-comment',
@@ -121,9 +121,9 @@ const TRANSFORMS = [
 ] as const;
 
 /**
- * Apply a meaning-preserving transform named by `tag` to `source`.
- *
- * @returns Transformed source that must share `source`'s semantic model.
+ Apply a meaning-preserving transform named by `tag` to `source`.
+ 
+ @returns Transformed source that must share `source`'s semantic model.
  */
 function applyTransform(
   {
@@ -135,7 +135,7 @@ function applyTransform(
   },
 ): string {
   /**
-   * Source guaranteed to end in a newline so an appended line is well-formed.
+   Source guaranteed to end in a newline so an appended line is well-formed.
    */
   const terminated = source.endsWith('\n',) ? source : `${source}\n`;
   const transforms: Record<typeof TRANSFORMS[number], () => string> = {
@@ -211,7 +211,7 @@ await describe({
           asyncProperty(validSourceArbitrary, async function preserves(source,) {
             pre(staticSemanticOracleSupports({ source, },),);
             /**
-             * Canonical re-emission, rebuilt from the AST rather than spliced.
+             Canonical re-emission, rebuilt from the AST rather than spliced.
              */
             const emitted = tomlStringify({
               edit: parseTomlEdit({
@@ -242,7 +242,7 @@ await describe({
             async function invariant(source, tag,) {
               pre(staticSemanticOracleSupports({ source, },),);
               /**
-               * Transformed source whose meaning must equal the original.
+               Transformed source whose meaning must equal the original.
                */
               const transformed = applyTransform({
                 source,

@@ -16,13 +16,13 @@ import {
 import { isOnlyWhitespaceOrSeparator, } from '../utility/source-filler.ts';
 
 /**
- * Parent node types that allow a single inline child statement
- * (the inner statement does not count toward this line's tally).
- *
- * Mirrors the upstream `@stylistic/max-statements-per-line` regex:
- * `if (a) foo();` counts as 1 statement (the `IfStatement`), the inner
- * `foo()` is exempt; `if (a) foo(); else bar();` counts as 2 because the
- * alternate branch of `IfStatement` is not exempt.
+ Parent node types that allow a single inline child statement
+ (the inner statement does not count toward this line's tally).
+ 
+ Mirrors the upstream `@stylistic/max-statements-per-line` regex:
+ `if (a) foo();` counts as 1 statement (the `IfStatement`), the inner
+ `foo()` is exempt; `if (a) foo(); else bar();` counts as 2 because the
+ alternate branch of `IfStatement` is not exempt.
  */
 const SINGLE_CHILD_ALLOWED = new Set([
   'DoWhileStatement',
@@ -37,7 +37,7 @@ const SINGLE_CHILD_ALLOWED = new Set([
 ],);
 
 /**
- * Statement-shaped AST nodes that contribute to the per-line tally.
+ Statement-shaped AST nodes that contribute to the per-line tally.
  */
 const STATEMENT_TYPES = [
   'BreakStatement',
@@ -66,34 +66,34 @@ const STATEMENT_TYPES = [
 ];
 
 /**
- * Enforces at most one statement per source line.
- *
- * Mirrors the upstream `@stylistic/max-statements-per-line` semantics with
- * a hard-coded `max` of `1`. Single-child container parents
- * (`if`, `while`, `do-while`, `for`, `for-in`, `for-of`, `labeled`, and
- * `export-default`/`export-named` declarations) exempt their inner
- * statement, so `if (a) foo();` reports zero violations. The alternate
- * branch of an `if`/`else` is not exempt: `if (a) foo(); else bar();`
- * counts as 2 statements and reports `bar()`.
- *
- * The autofix inserts `\n<indent>` between same-line statements. When the
- * inter-statement source slice contains anything beyond whitespace and `;`
- * (a comment, a label, anything non-trivial), the fix is suppressed and
- * the violation is still reported. This preserves inline comments like
- * `foo(); /* note *\/ bar();` rather than deleting them.
- *
- * @example
- * ```ts
- * // Bad
- * const a = 1; const b = 2;
- * if (true) foo(); else bar();
- *
- * // Good
- * const a = 1;
- * const b = 2;
- * if (true) foo();
- * else bar();
- * ```
+ Enforces at most one statement per source line.
+ 
+ Mirrors the upstream `@stylistic/max-statements-per-line` semantics with
+ a hard-coded `max` of `1`. Single-child container parents
+ (`if`, `while`, `do-while`, `for`, `for-in`, `for-of`, `labeled`, and
+ `export-default`/`export-named` declarations) exempt their inner
+ statement, so `if (a) foo();` reports zero violations. The alternate
+ branch of an `if`/`else` is not exempt: `if (a) foo(); else bar();`
+ counts as 2 statements and reports `bar()`.
+ 
+ The autofix inserts `\n<indent>` between same-line statements. When the
+ inter-statement source slice contains anything beyond whitespace and `;`
+ (a comment, a label, anything non-trivial), the fix is suppressed and
+ the violation is still reported. This preserves inline comments like
+ `foo(); /* note *\/ bar();` rather than deleting them.
+ 
+ @example
+ ```ts
+ // Bad
+ const a = 1; const b = 2;
+ if (true) foo(); else bar();
+ 
+ // Good
+ const a = 1;
+ const b = 2;
+ if (true) foo();
+ else bar();
+ ```
  */
 export const maxStatementsPerLine: CreateOnceRule = {
   meta: {
@@ -108,32 +108,32 @@ export const maxStatementsPerLine: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
-     * Statements counted per start-line, in source order.
+     Statements counted per start-line, in source order.
      */
     const perLine = new Map<number, Span[]>();
 
     /**
-     * Records a statement under its start-line bucket unless its parent is
-     * a single-child container that absorbs it into the parent's tally.
-     *
-     * @param node - statement AST node
+     Records a statement under its start-line bucket unless its parent is
+     a single-child container that absorbs it into the parent's tally.
+     
+     @param node - statement AST node
      */
     function trackStatement(node: ForeignBorrowed<Span>,): void {
       /**
-       * Statement node narrowed to the parent link used for exemptions.
+       Statement node narrowed to the parent link used for exemptions.
        */
       const { parent, } = node as Span & {
         readonly parent?: {
@@ -144,7 +144,7 @@ export const maxStatementsPerLine: CreateOnceRule = {
       if ((parent !== undefined) && SINGLE_CHILD_ALLOWED
         .has(parent.type,)) {
         /**
-         * Alternate branch of an `if`/`else` is not exempt; it counts toward the line tally.
+         Alternate branch of an `if`/`else` is not exempt; it counts toward the line tally.
          */
         const isIfAlternate = (parent.type
           === 'IfStatement')
@@ -155,19 +155,19 @@ export const maxStatementsPerLine: CreateOnceRule = {
       }
 
       /**
-       * Source text is needed to map the node's start offset to a line number.
+       Source text is needed to map the node's start offset to a line number.
        */
       const sourceText = context.sourceCode
         .getText();
       /**
-       * Line number of the statement's start offset; bucket key.
+       Line number of the statement's start offset; bucket key.
        */
       const line = lineAt({
         sourceText,
         offset: rangeOf(node,)[0],
       },);
       /**
-       * Per-line bucket of statements seen so far; created on demand.
+       Per-line bucket of statements seen so far; created on demand.
        */
       const bucket = perLine.get(line,)
         ?? [];
@@ -179,12 +179,12 @@ export const maxStatementsPerLine: CreateOnceRule = {
     }
 
     /**
-     * On program exit, walks every line bucket and reports each statement
-     * past the first.
+     On program exit, walks every line bucket and reports each statement
+     past the first.
      */
     function reportExceeding(): void {
       /**
-       * Source text is needed for indent lookup and inter-statement slices.
+       Source text is needed for indent lookup and inter-statement slices.
        */
       const sourceText = context.sourceCode
         .getText();
@@ -194,14 +194,14 @@ export const maxStatementsPerLine: CreateOnceRule = {
           continue;
 
         /**
-         * Range of the first statement on this line; its leading whitespace defines the indent for the fix.
+         Range of the first statement on this line; its leading whitespace defines the indent for the fix.
          */
         const firstRange = rangeOf(at({
           arr: stmts,
           index: 0,
         },),);
         /**
-         * Indent applied to each split-out statement so continuations align with the original line.
+         Indent applied to each split-out statement so continuations align with the original line.
          */
         const indent = baseIndentAt({
           sourceText,
@@ -211,25 +211,25 @@ export const maxStatementsPerLine: CreateOnceRule = {
         for (let loopIndex = 1; loopIndex < stmts
           .length; loopIndex++) {
           /**
-           * Previous statement; its end offset is the cut point for the inter-statement slice.
+           Previous statement; its end offset is the cut point for the inter-statement slice.
            */
           const prev = at({
             arr: stmts,
             index: loopIndex - 1,
           },);
           /**
-           * Current statement; its start offset is the other cut point and the reported node.
+           Current statement; its start offset is the other cut point and the reported node.
            */
           const curr = at({
             arr: stmts,
             index: loopIndex,
           },);
           /**
-           * End offset of the previous statement; queried once and reused below.
+           End offset of the previous statement; queried once and reused below.
            */
           const [, prevEnd,] = rangeOf(prev,);
           /**
-           * Start offset of the current statement; queried once and reused below.
+           Start offset of the current statement; queried once and reused below.
            */
           const [currStart,] = rangeOf(curr,);
           // When `curr` is nested inside `prev` (e.g. the alternate of an
@@ -239,18 +239,18 @@ export const maxStatementsPerLine: CreateOnceRule = {
           // requires inserting before `else`, not before `bar()`. Skip the
           // fix and still report.
           /**
-           * Whether the current statement is nested inside the previous (e.g. `if/else` alternate); blocks the autofix.
+           Whether the current statement is nested inside the previous (e.g. `if/else` alternate); blocks the autofix.
            */
           const nested = currStart <= prevEnd;
           /**
-           * Source slice between the two statements; comments here block the autofix.
+           Source slice between the two statements; comments here block the autofix.
            */
           const between = nested ? '' : sourceText.slice(
             prevEnd,
             currStart,
           );
           /**
-           * Whether the inter-statement slice is trivially replaceable (no nested span, only whitespace/semicolons).
+           Whether the inter-statement slice is trivially replaceable (no nested span, only whitespace/semicolons).
            */
           const canFix = (!nested) && isOnlyWhitespaceOrSeparator({
             text: between,
@@ -281,7 +281,7 @@ export const maxStatementsPerLine: CreateOnceRule = {
     }
 
     /**
-     * Build the visitor: each statement type plus the Program:exit hook.
+     Build the visitor: each statement type plus the Program:exit hook.
      */
     const visitor: VisitorWithHooks = {
       'Program:exit': reportExceeding,

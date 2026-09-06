@@ -1,7 +1,7 @@
 /**
- * Human and machine CLI output rendering.
- *
- * @module
+ Human and machine CLI output rendering.
+ 
+ @module
  */
 
 import type { AppliedResult, } from './cli-result.ts';
@@ -11,7 +11,7 @@ import type { InputPosition, } from './model.ts';
 import type { CreatedIssue, } from './publisher-model.ts';
 
 /**
- * Complete command help text with disclosure warnings.
+ Complete command help text with disclosure warnings.
  */
 export const HELP_TEXT: string = [
   'Usage:',
@@ -33,16 +33,16 @@ export const HELP_TEXT: string = [
 ].join('\n',);
 
 /**
- * Writes one JSON value and terminal newline.
- *
- * @param output - Destination standard output stream.
- *
- * @param value - Machine-readable object.
- *
- * @example
- * ```ts
- * writeJson({ output: process.stdout, value: {} });
- * ```
+ Writes one JSON value and terminal newline.
+ 
+ @param output - Destination standard output stream.
+ 
+ @param value - Machine-readable object.
+ 
+ @example
+ ```ts
+ writeJson({ output: process.stdout, value: {} });
+ ```
  */
 export function writeJson({
   output,
@@ -55,31 +55,31 @@ export function writeJson({
 }
 
 /**
- * Formats one safe input position label.
- *
- * @param position - Record ordinal or JSONL line.
- *
- * @returns Human-readable position.
+ Formats one safe input position label.
+ 
+ @param position - Record ordinal or JSONL line.
+ 
+ @returns Human-readable position.
  */
 function formatPosition(position: InputPosition,): string {
   return `${position.kind} ${String(position.value,)}`;
 }
 
 /**
- * Writes final interactive batch summary before confirmation.
- *
- * @param output - Interactive TTY standard output.
- *
- * @param repository - Canonical destination identity.
- *
- * @param issues - Selected complete Issues.
- *
- * @param withheldCount - Security findings not authorized for publication.
- *
- * @example
- * ```ts
- * writeInteractiveSummary({ output, repository, issues, withheldCount: 0 });
- * ```
+ Writes final interactive batch summary before confirmation.
+ 
+ @param output - Interactive TTY standard output.
+ 
+ @param repository - Canonical destination identity.
+ 
+ @param issues - Selected complete Issues.
+ 
+ @param withheldCount - Security findings not authorized for publication.
+ 
+ @example
+ ```ts
+ writeInteractiveSummary({ output, repository, issues, withheldCount: 0 });
+ ```
  */
 export function writeInteractiveSummary({
   output,
@@ -93,11 +93,11 @@ export function writeInteractiveSummary({
   readonly withheldCount: number;
 },): void {
   /**
-   * Selected title lines safe because user already reviewed security choices.
+   Selected title lines safe because user already reviewed security choices.
    */
   const titles = issues.map(function titleLine(issue,): string {
     /**
-     * Optional explicit ordinary classification marker.
+     Optional explicit ordinary classification marker.
      */
     const marker = issue.classificationMarker === undefined
       ? ''
@@ -115,16 +115,16 @@ export function writeInteractiveSummary({
 }
 
 /**
- * Writes human-readable created Issue URLs.
- *
- * @param output - Interactive TTY standard output.
- *
- * @param created - Confirmed created or reconciled Issues.
- *
- * @example
- * ```ts
- * writeCreatedIssues({ output, created: [] });
- * ```
+ Writes human-readable created Issue URLs.
+ 
+ @param output - Interactive TTY standard output.
+ 
+ @param created - Confirmed created or reconciled Issues.
+ 
+ @example
+ ```ts
+ writeCreatedIssues({ output, created: [] });
+ ```
  */
 export function writeCreatedIssues({
   output,
@@ -140,30 +140,30 @@ export function writeCreatedIssues({
 }
 
 /**
- * Writes exact clean cancellation message.
- *
- * @param output - Interactive TTY standard output.
- *
- * @example
- * ```ts
- * writeCancellation(process.stdout);
- * ```
+ Writes exact clean cancellation message.
+ 
+ @param output - Interactive TTY standard output.
+ 
+ @example
+ ```ts
+ writeCancellation(process.stdout);
+ ```
  */
 export function writeCancellation(output: NodeJS.WritableStream,): void {
   output.write('Issue creation canceled.\n',);
 }
 
 /**
- * Writes final non-interactive applied result.
- *
- * @param output - Standard output reserved for one JSON object.
- *
- * @param result - Complete success or handled failure result.
- *
- * @example
- * ```ts
- * writeAppliedResult({ output, result });
- * ```
+ Writes final non-interactive applied result.
+ 
+ @param output - Standard output reserved for one JSON object.
+ 
+ @param result - Complete success or handled failure result.
+ 
+ @example
+ ```ts
+ writeAppliedResult({ output, result });
+ ```
  */
 export function writeAppliedResult({
   output,

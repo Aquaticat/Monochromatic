@@ -22,17 +22,17 @@ import {
 //region Static syntax extraction
 
 /**
- * Extracts a static string value from an expression.
- *
- * @param expression - Expression that may be a string literal.
- *
- * @returns Literal string, or {@link NO_STATIC_SOURCE} when expression is
- * not a string literal.
- *
- * @example
- * ```ts
- * getStaticString({ expression: literalNode });
- * ```
+ Extracts a static string value from an expression.
+ 
+ @param expression - Expression that may be a string literal.
+ 
+ @returns Literal string, or {@link NO_STATIC_SOURCE} when expression is
+ not a string literal.
+ 
+ @example
+ ```ts
+ getStaticString({ expression: literalNode });
+ ```
  */
 export function getStaticString(
   { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
@@ -45,16 +45,16 @@ export function getStaticString(
 }
 
 /**
- * Extracts a static property name from a property key.
- *
- * @param key - Property key node from member access, import, or object pattern syntax.
- *
- * @returns Static property name, or {@link NO_STATIC_SOURCE} when key is dynamic.
- *
- * @example
- * ```ts
- * getStaticPropertyName({ key: member.property });
- * ```
+ Extracts a static property name from a property key.
+ 
+ @param key - Property key node from member access, import, or object pattern syntax.
+ 
+ @returns Static property name, or {@link NO_STATIC_SOURCE} when key is dynamic.
+ 
+ @example
+ ```ts
+ getStaticPropertyName({ key: member.property });
+ ```
  */
 export function getStaticPropertyName(
   { key, }: ForeignBorrowed<{ readonly key: ESTree.Node; }>,
@@ -69,18 +69,18 @@ export function getStaticPropertyName(
 }
 
 /**
- * Extracts a static member property name, delegating non-private members to
- * {@link getStaticPropertyName}.
- *
- * @param member - Member expression being inspected.
- *
- * @returns Member property name, or {@link NO_STATIC_SOURCE} when member is
- * private or dynamic.
- *
- * @example
- * ```ts
- * getMemberName({ member: node.callee });
- * ```
+ Extracts a static member property name, delegating non-private members to
+ {@link getStaticPropertyName}.
+ 
+ @param member - Member expression being inspected.
+ 
+ @returns Member property name, or {@link NO_STATIC_SOURCE} when member is
+ private or dynamic.
+ 
+ @example
+ ```ts
+ getMemberName({ member: node.callee });
+ ```
  */
 export function getMemberName(
   { member, }: ForeignBorrowed<{ readonly member: ESTree.MemberExpression; }>,
@@ -93,25 +93,25 @@ export function getMemberName(
 }
 
 /**
- * Returns first function argument when it is a string literal: the sole
- * argument is read via {@link getSingleNonSpreadArgument} and the literal
- * value via {@link getStaticString}.
- *
- * @param call - Call expression to inspect.
- *
- * @returns Static source string, or {@link NO_STATIC_SOURCE} when call
- * shape is not supported (including {@link NO_SINGLE_ARGUMENT}).
- *
- * @example
- * ```ts
- * getSingleStringArgument({ call: requireCall });
- * ```
+ Returns first function argument when it is a string literal: the sole
+ argument is read via {@link getSingleNonSpreadArgument} and the literal
+ value via {@link getStaticString}.
+ 
+ @param call - Call expression to inspect.
+ 
+ @returns Static source string, or {@link NO_STATIC_SOURCE} when call
+ shape is not supported (including {@link NO_SINGLE_ARGUMENT}).
+ 
+ @example
+ ```ts
+ getSingleStringArgument({ call: requireCall });
+ ```
  */
 export function getSingleStringArgument(
   { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): StaticSource {
   /**
-   * Sole ordinary argument of the call, when the call shape is supported.
+   Sole ordinary argument of the call, when the call shape is supported.
    */
   const argument = getSingleNonSpreadArgument({ call, },);
   if (argument === NO_SINGLE_ARGUMENT)
@@ -124,18 +124,18 @@ export function getSingleStringArgument(
 //region Scope metadata extraction
 
 /**
- * Finds a variable in a scope or one of its parents.
- *
- * @param scope - Scope lookup starts from.
- *
- * @param name - Identifier name to resolve.
- *
- * @returns Scope variable, or {@link NO_VARIABLE} when no binding exists.
- *
- * @example
- * ```ts
- * findVariableInScope({ scope, name: 'fs' });
- * ```
+ Finds a variable in a scope or one of its parents.
+ 
+ @param scope - Scope lookup starts from.
+ 
+ @param name - Identifier name to resolve.
+ 
+ @returns Scope variable, or {@link NO_VARIABLE} when no binding exists.
+ 
+ @example
+ ```ts
+ findVariableInScope({ scope, name: 'fs' });
+ ```
  */
 function findVariableInScope(
   {
@@ -147,14 +147,14 @@ function findVariableInScope(
   }>,
 ): VariableLookup {
   /**
-   * Binding registered in this scope, or absent when lookup must continue upward.
+   Binding registered in this scope, or absent when lookup must continue upward.
    */
   const variable = scope.set
     .get(name,);
   if (variable !== undefined)
     return variable;
   /**
-   * Parent scope, or `null` above global scope per oxlint's scope API.
+   Parent scope, or `null` above global scope per oxlint's scope API.
    */
   const { upper, } = scope;
   if (upper === null)
@@ -166,21 +166,21 @@ function findVariableInScope(
 }
 
 /**
- * Finds a variable visible at a node by walking lexical scopes outward via
- * {@link findVariableInScope}.
- *
- * @param context - Oxlint rule context.
- *
- * @param node - Node whose scope should be used as lookup start.
- *
- * @param name - Identifier name to resolve.
- *
- * @returns Scope variable, or {@link NO_VARIABLE} when no binding exists.
- *
- * @example
- * ```ts
- * findVariable({ context, node, name: 'fs' });
- * ```
+ Finds a variable visible at a node by walking lexical scopes outward via
+ {@link findVariableInScope}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param node - Node whose scope should be used as lookup start.
+ 
+ @param name - Identifier name to resolve.
+ 
+ @returns Scope variable, or {@link NO_VARIABLE} when no binding exists.
+ 
+ @example
+ ```ts
+ findVariable({ context, node, name: 'fs' });
+ ```
  */
 export function findVariable(
   {
@@ -201,25 +201,25 @@ export function findVariable(
 }
 
 /**
- * Resolves enclosing import declaration for an import definition via
- * {@link getImportDeclarationForDefinition}, translating its
- * {@link NO_IMPORT_DECLARATION} sentinel to {@link NO_VARIABLE}.
- *
- * @param definition - Scope-manager definition produced for an import binding.
- *
- * @returns Import declaration, or {@link NO_VARIABLE} when scope metadata
- * is unexpected.
- *
- * @example
- * ```ts
- * const declaration = getImportDeclaration({ definition });
- * ```
+ Resolves enclosing import declaration for an import definition via
+ {@link getImportDeclarationForDefinition}, translating its
+ {@link NO_IMPORT_DECLARATION} sentinel to {@link NO_VARIABLE}.
+ 
+ @param definition - Scope-manager definition produced for an import binding.
+ 
+ @returns Import declaration, or {@link NO_VARIABLE} when scope metadata
+ is unexpected.
+ 
+ @example
+ ```ts
+ const declaration = getImportDeclaration({ definition });
+ ```
  */
 export function getImportDeclaration(
   { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
 ): ESTree.ImportDeclaration | typeof NO_VARIABLE {
   /**
-   * Import declaration resolved from scope-manager definition metadata.
+   Import declaration resolved from scope-manager definition metadata.
    */
   const declaration = getImportDeclarationForDefinition({ definition, },);
   if (declaration === NO_IMPORT_DECLARATION)
@@ -228,17 +228,17 @@ export function getImportDeclaration(
 }
 
 /**
- * Resolves variable declarator for a variable definition.
- *
- * @param definition - Scope-manager definition produced for a local variable.
- *
- * @returns Variable declarator, or {@link NO_VARIABLE} when scope metadata
- * is unexpected.
- *
- * @example
- * ```ts
- * const declarator = getVariableDeclarator({ definition });
- * ```
+ Resolves variable declarator for a variable definition.
+ 
+ @param definition - Scope-manager definition produced for a local variable.
+ 
+ @returns Variable declarator, or {@link NO_VARIABLE} when scope metadata
+ is unexpected.
+ 
+ @example
+ ```ts
+ const declarator = getVariableDeclarator({ definition });
+ ```
  */
 export function getVariableDeclarator(
   { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,

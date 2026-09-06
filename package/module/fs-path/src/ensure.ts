@@ -1,8 +1,8 @@
 /**
- * Filesystem path-existence guarantees for Node.js / Bun.
- *
- * Each function creates the target path (file or directory) when it does
- * not exist and verifies read/write accessibility when it does.
+ Filesystem path-existence guarantees for Node.js / Bun.
+ 
+ Each function creates the target path (file or directory) when it does
+ not exist and verifies read/write accessibility when it does.
  */
 
 import {
@@ -19,31 +19,31 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Module-scoped tagged logger.
+ Module-scoped tagged logger.
  */
 const l = tagged({ tag: 'path/ensure', },);
 
 /* oxlint-disable eslint/require-await -- delegates to ensureFile/ensureDir which are async */
 /**
- * Ensures a path exists as either a file or directory, based on whether
- * the path has a file extension, dispatching to {@link ensureFile} or
- * {@link ensureDir}.
- *
- * @param path - Filesystem path to ensure
- *
- * @returns Resolved path string
- *
- * @throws When the path exists but is the wrong kind (file vs directory)
- *
- * @example
- * ```ts
- * await ensurePath('logs/app.log');   // creates file + parent dirs
- * await ensurePath('logs/archive/');  // creates directory tree
- * ```
+ Ensures a path exists as either a file or directory, based on whether
+ the path has a file extension, dispatching to {@link ensureFile} or
+ {@link ensureDir}.
+ 
+ @param path - Filesystem path to ensure
+ 
+ @returns Resolved path string
+ 
+ @throws When the path exists but is the wrong kind (file vs directory)
+ 
+ @example
+ ```ts
+ await ensurePath('logs/app.log');   // creates file + parent dirs
+ await ensurePath('logs/archive/');  // creates directory tree
+ ```
  */
 export async function ensurePath(path: string,): Promise<string> {
   /**
-   * Parsed segments used solely to read `ext`, which decides file-vs-directory dispatch.
+   Parsed segments used solely to read `ext`, which decides file-vs-directory dispatch.
    */
   const parsed = posix.parse(path,);
 
@@ -57,24 +57,24 @@ export async function ensurePath(path: string,): Promise<string> {
 /* oxlint-enable eslint/require-await */
 
 /**
- * Ensures a directory exists and is readable/writable.
- * Creates it recursively when missing.
- *
- * @param path - Directory path to ensure
- *
- * @returns Resolved path string
- *
- * @throws When the path exists but is not a directory
- *
- * @example
- * ```ts
- * await ensureDir('logs/archive');
- * ```
+ Ensures a directory exists and is readable/writable.
+ Creates it recursively when missing.
+ 
+ @param path - Directory path to ensure
+ 
+ @returns Resolved path string
+ 
+ @throws When the path exists but is not a directory
+ 
+ @example
+ ```ts
+ await ensureDir('logs/archive');
+ ```
  */
 export async function ensureDir(path: string,): Promise<string> {
   try {
     /**
-     * Metadata of the existing path; `ENOENT` short-circuits to the create branch via the outer `catch`.
+     Metadata of the existing path; `ENOENT` short-circuits to the create branch via the outer `catch`.
      */
     const stats = await stat(path,);
 
@@ -120,29 +120,29 @@ export async function ensureDir(path: string,): Promise<string> {
 }
 
 /**
- * Ensures a file exists and is readable/writable.
- * Creates the file (and parent directories, via {@link ensureDir}) when missing.
- *
- * @param path - File path to ensure
- *
- * @returns Resolved path string
- *
- * @throws When the path exists but is not a regular file
- *
- * @example
- * ```ts
- * await ensureFile('config/app.json');
- * ```
+ Ensures a file exists and is readable/writable.
+ Creates the file (and parent directories, via {@link ensureDir}) when missing.
+ 
+ @param path - File path to ensure
+ 
+ @returns Resolved path string
+ 
+ @throws When the path exists but is not a regular file
+ 
+ @example
+ ```ts
+ await ensureFile('config/app.json');
+ ```
  */
 export async function ensureFile(path: string,): Promise<string> {
   /**
-   * Parsed segments captured up front so the create branch can pass `parsed.dir` to `ensureDir` without re-parsing.
+   Parsed segments captured up front so the create branch can pass `parsed.dir` to `ensureDir` without re-parsing.
    */
   const parsed = posix.parse(path,);
 
   try {
     /**
-     * Metadata of the existing path; `ENOENT` short-circuits to the create branch via the outer `catch`.
+     Metadata of the existing path; `ENOENT` short-circuits to the create branch via the outer `catch`.
      */
     const stats = await stat(path,);
 

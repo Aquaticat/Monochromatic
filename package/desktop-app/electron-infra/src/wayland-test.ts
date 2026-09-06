@@ -1,14 +1,14 @@
 /**
- * High-level pure-Wayland Electron boundary-test runner.
- *
- * @example
- * ```ts
- * await runWaylandElectronBoundaryTest({
- *   packageRoot: process.cwd(),
- *   statePathEnvironmentVariable: 'APP_STATE',
- *   steps: [{ expected: { ready: true } }],
- * });
- * ```
+ High-level pure-Wayland Electron boundary-test runner.
+ 
+ @example
+ ```ts
+ await runWaylandElectronBoundaryTest({
+   packageRoot: process.cwd(),
+   statePathEnvironmentVariable: 'APP_STATE',
+   steps: [{ expected: { ready: true } }],
+ });
+ ```
  */
 
 import { join, } from 'node:path';
@@ -37,12 +37,12 @@ import {
 } from './wayland-state.js';
 
 /**
- * One expected state checkpoint, optionally preceded by compositor commands.
- *
- * @example
- * ```ts
- * const step: WaylandBoundaryStep = { commands: ['key tab', 'key space'], expected: { count: 1 } };
- * ```
+ One expected state checkpoint, optionally preceded by compositor commands.
+ 
+ @example
+ ```ts
+ const step: WaylandBoundaryStep = { commands: ['key tab', 'key space'], expected: { count: 1 } };
+ ```
  */
 export type WaylandBoundaryStep = {
   readonly commands?: readonly string[];
@@ -50,16 +50,16 @@ export type WaylandBoundaryStep = {
 };
 
 /**
- * Options for running an Electron app inside the nested Wayland compositor.
- *
- * @example
- * ```ts
- * const options: WaylandElectronBoundaryTestOptions = {
- *   packageRoot: process.cwd(),
- *   statePathEnvironmentVariable: 'APP_STATE',
- *   steps: [{ expected: { ready: true } }],
- * };
- * ```
+ Options for running an Electron app inside the nested Wayland compositor.
+ 
+ @example
+ ```ts
+ const options: WaylandElectronBoundaryTestOptions = {
+   packageRoot: process.cwd(),
+   statePathEnvironmentVariable: 'APP_STATE',
+   steps: [{ expected: { ready: true } }],
+ };
+ ```
  */
 export type WaylandElectronBoundaryTestOptions = {
   readonly appDir?: string;
@@ -72,12 +72,12 @@ export type WaylandElectronBoundaryTestOptions = {
 };
 
 /**
- * Asserts that this host can run the pure-Wayland boundary test.
- *
- * @example
- * ```ts
- * assertLinuxWaylandHost();
- * ```
+ Asserts that this host can run the pure-Wayland boundary test.
+ 
+ @example
+ ```ts
+ assertLinuxWaylandHost();
+ ```
  */
 function assertLinuxWaylandHost(): void {
   if (process.platform !== 'linux')
@@ -95,20 +95,20 @@ function assertLinuxWaylandHost(): void {
 }
 
 /**
- * Runs compositor commands before waiting for expected observed state.
- *
- * @param socketPath - Nested compositor control socket path.
- *
- * @param statePath - State file written by Electron main process.
- *
- * @param step - Boundary-test step to execute.
- *
- * @mutates step - `JSON.stringify` may invoke accessors or proxy traps on expected state when timeout is reported.
- *
- * @example
- * ```ts
- * await runBoundaryStep({ socketPath: '/tmp/nws.sock', statePath: '/tmp/state.json', step: { expected: { count: 0 } } });
- * ```
+ Runs compositor commands before waiting for expected observed state.
+ 
+ @param socketPath - Nested compositor control socket path.
+ 
+ @param statePath - State file written by Electron main process.
+ 
+ @param step - Boundary-test step to execute.
+ 
+ @mutates step - `JSON.stringify` may invoke accessors or proxy traps on expected state when timeout is reported.
+ 
+ @example
+ ```ts
+ await runBoundaryStep({ socketPath: '/tmp/nws.sock', statePath: '/tmp/state.json', step: { expected: { count: 0 } } });
+ ```
  */
 async function runBoundaryStep(
   {
@@ -134,18 +134,18 @@ async function runBoundaryStep(
 }
 
 /**
- * Captures a screenshot after boundary-test steps complete.
- *
- * @param root - Boundary-test fixture root directory.
- *
- * @param screenshotName - Screenshot file basename.
- *
- * @param socketPath - Nested compositor control socket path.
- *
- * @example
- * ```ts
- * await captureBoundaryScreenshot({ root: '/tmp/run', screenshotName: 'after.png', socketPath: '/tmp/nws.sock' });
- * ```
+ Captures a screenshot after boundary-test steps complete.
+ 
+ @param root - Boundary-test fixture root directory.
+ 
+ @param screenshotName - Screenshot file basename.
+ 
+ @param socketPath - Nested compositor control socket path.
+ 
+ @example
+ ```ts
+ await captureBoundaryScreenshot({ root: '/tmp/run', screenshotName: 'after.png', socketPath: '/tmp/nws.sock' });
+ ```
  */
 async function captureBoundaryScreenshot(
   {
@@ -168,28 +168,28 @@ async function captureBoundaryScreenshot(
 }
 
 /**
- * Runs a staged Electron app through this repo's pure-Wayland boundary harness.
- *
- * @param appDir - Optional staged app directory, defaulting to `dist/app`.
- *
- * @param nestedWaylandBinary - Optional nested compositor binary path.
- *
- * @param packageRoot - Package directory used as task working directory.
- *
- * @param repoRoot - Optional repository root, defaulting from package root.
- *
- * @param screenshotName - Optional screenshot basename captured after steps.
- *
- * @param statePathEnvironmentVariable - Environment variable receiving test state path.
- *
- * @param steps - State checkpoints and optional control commands.
- *
- * @mutates steps - `JSON.stringify` may invoke accessors or proxy traps on foreign expected state.
- *
- * @example
- * ```ts
- * await runWaylandElectronBoundaryTest({ packageRoot: process.cwd(), statePathEnvironmentVariable: 'APP_STATE', steps: [{ expected: { count: 0 } }] });
- * ```
+ Runs a staged Electron app through this repo's pure-Wayland boundary harness.
+ 
+ @param appDir - Optional staged app directory, defaulting to `dist/app`.
+ 
+ @param nestedWaylandBinary - Optional nested compositor binary path.
+ 
+ @param packageRoot - Package directory used as task working directory.
+ 
+ @param repoRoot - Optional repository root, defaulting from package root.
+ 
+ @param screenshotName - Optional screenshot basename captured after steps.
+ 
+ @param statePathEnvironmentVariable - Environment variable receiving test state path.
+ 
+ @param steps - State checkpoints and optional control commands.
+ 
+ @mutates steps - `JSON.stringify` may invoke accessors or proxy traps on foreign expected state.
+ 
+ @example
+ ```ts
+ await runWaylandElectronBoundaryTest({ packageRoot: process.cwd(), statePathEnvironmentVariable: 'APP_STATE', steps: [{ expected: { count: 0 } }] });
+ ```
  */
 export async function runWaylandElectronBoundaryTest(
   {
@@ -205,17 +205,17 @@ export async function runWaylandElectronBoundaryTest(
   assertLinuxWaylandHost();
 
   /**
-   * Repository root used to locate the nested compositor binary.
+   Repository root used to locate the nested compositor binary.
    */
   const resolvedRepoRoot = repoRoot ?? defaultRepoRoot({ packageRoot, },);
 
   /**
-   * Staged app directory loaded by Electron.
+   Staged app directory loaded by Electron.
    */
   const resolvedAppDir = appDir ?? defaultAppDir({ packageRoot, },);
 
   /**
-   * Nested compositor binary path.
+   Nested compositor binary path.
    */
   const resolvedNestedWaylandBinary = nestedWaylandBinary ?? defaultNestedWaylandBinary({
     repoRoot: resolvedRepoRoot,
@@ -231,12 +231,12 @@ export async function runWaylandElectronBoundaryTest(
   },);
 
   /**
-   * Temp fixture shared by nested compositor and control client.
+   Temp fixture shared by nested compositor and control client.
    */
   await using fixture = await createWaylandFixture();
 
   /**
-   * Nested compositor process hosting Electron.
+   Nested compositor process hosting Electron.
    */
   const child = spawnNestedWaylandElectron({
     appDir: resolvedAppDir,

@@ -21,32 +21,32 @@ import type {
 } from './model.ts';
 
 /**
- * Git-file prefix introducing linked-worktree administrative path.
+ Git-file prefix introducing linked-worktree administrative path.
  */
 const GITDIR_PREFIX = 'gitdir: ';
 
 /**
- * Main worktree has no linked administrative identity.
+ Main worktree has no linked administrative identity.
  */
 const MAIN_WORKTREE_ADMIN_ID: unique symbol = Symbol('main worktree has no linked admin identity',);
 
 /**
- * Registered worktree root is currently absent from filesystem.
+ Registered worktree root is currently absent from filesystem.
  */
 const REGISTERED_ROOT_MISSING: unique symbol = Symbol('registered worktree root is absent',);
 
 /**
- * Parses NUL-delimited porcelain output into canonical worktree roots.
- *
- * @param output - `git worktree list --porcelain -z` stdout
- *
- * @returns listed worktree path fields
- *
- * @example
- * ```ts
- * parseWorktreeRoots('worktree /repo\0HEAD abc\0\0');
- * // => ['/repo']
- * ```
+ Parses NUL-delimited porcelain output into canonical worktree roots.
+ 
+ @param output - `git worktree list --porcelain -z` stdout
+ 
+ @returns listed worktree path fields
+ 
+ @example
+ ```ts
+ parseWorktreeRoots('worktree /repo\0HEAD abc\0\0');
+ // => ['/repo']
+ ```
  */
 function parseWorktreeRoots(output: string,): readonly string[] {
   return output
@@ -59,24 +59,24 @@ function parseWorktreeRoots(output: string,): readonly string[] {
 }
 
 /**
- * Resolves linked-worktree admin identity from root `.git` pointer.
- *
- * @param root - canonical linked-worktree root
- *
- * @returns canonical admin directory basename, or main-worktree sentinel
- *
- * @example
- * ```ts
- * await readLinkedAdminId('/worktrees/topic');
- * // => 'topic'
- * ```
+ Resolves linked-worktree admin identity from root `.git` pointer.
+ 
+ @param root - canonical linked-worktree root
+ 
+ @returns canonical admin directory basename, or main-worktree sentinel
+ 
+ @example
+ ```ts
+ await readLinkedAdminId('/worktrees/topic');
+ // => 'topic'
+ ```
  */
 async function readLinkedAdminId(
   root: string,
 ): Promise<string | typeof MAIN_WORKTREE_ADMIN_ID> {
   try {
     /**
-     * Linked-worktree `.git` pointer text.
+     Linked-worktree `.git` pointer text.
      */
     const pointer = stripGitLine(await readFile(
       join(
@@ -88,11 +88,11 @@ async function readLinkedAdminId(
     if (!pointer.startsWith(GITDIR_PREFIX,))
       return MAIN_WORKTREE_ADMIN_ID;
     /**
-     * Raw absolute or root-relative administrative path.
+     Raw absolute or root-relative administrative path.
      */
     const rawAdminPath = pointer.slice(GITDIR_PREFIX.length,);
     /**
-     * Canonical linked-worktree administrative path.
+     Canonical linked-worktree administrative path.
      */
     const adminPath = await realpath(isAbsolute(rawAdminPath,)
       ? rawAdminPath
@@ -116,16 +116,16 @@ async function readLinkedAdminId(
 }
 
 /**
- * Canonicalizes registered root while tolerating Git-retained missing worktrees.
- *
- * @param root - Git-reported registered worktree path
- *
- * @returns canonical root or missing-root sentinel
- *
- * @example
- * ```ts
- * await canonicalRegisteredRoot('/worktrees/topic');
- * ```
+ Canonicalizes registered root while tolerating Git-retained missing worktrees.
+ 
+ @param root - Git-reported registered worktree path
+ 
+ @returns canonical root or missing-root sentinel
+ 
+ @example
+ ```ts
+ await canonicalRegisteredRoot('/worktrees/topic');
+ ```
  */
 async function canonicalRegisteredRoot(
   root: string,
@@ -142,18 +142,18 @@ async function canonicalRegisteredRoot(
 }
 
 /**
- * Reads canonical registered worktree roots keyed by linked admin identity.
- *
- * @param observation - effective repository captured before forwarding
- *
- * @param gitPath - absolute real-Git executable
- *
- * @returns linked worktree roots and complete root exclusion set
- *
- * @example
- * ```ts
- * await readRegisteredWorktrees({ observation, gitPath: '/usr/bin/git' });
- * ```
+ Reads canonical registered worktree roots keyed by linked admin identity.
+ 
+ @param observation - effective repository captured before forwarding
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @returns linked worktree roots and complete root exclusion set
+ 
+ @example
+ ```ts
+ await readRegisteredWorktrees({ observation, gitPath: '/usr/bin/git' });
+ ```
  */
 export async function readRegisteredWorktrees({
   observation,
@@ -166,7 +166,7 @@ export async function readRegisteredWorktrees({
   roots: readonly string[];
 }>> {
   /**
-   * NUL-delimited stable worktree inventory.
+   NUL-delimited stable worktree inventory.
    */
   const output = await runMetadataGit({
     gitPath,
@@ -181,12 +181,12 @@ export async function readRegisteredWorktrees({
     cwd: observation.effectiveCwd,
   },);
   /**
-   * Canonical roots still present on filesystem.
+   Canonical roots still present on filesystem.
    */
   const rootResults = await Promise.all(parseWorktreeRoots(output,)
     .map(canonicalRegisteredRoot,),);
   /**
-   * Existing canonical roots, omitting Git-retained missing registrations.
+   Existing canonical roots, omitting Git-retained missing registrations.
    */
   const roots = rootResults.filter(function existingRoot(
     root,
@@ -194,7 +194,7 @@ export async function readRegisteredWorktrees({
     return (typeof root) === 'string';
   },);
   /**
-   * Optional linked admin identities aligned with existing roots.
+   Optional linked admin identities aligned with existing roots.
    */
   const adminIds = await Promise.all(roots.map(function linkedAdminId(
     root,
@@ -204,7 +204,7 @@ export async function readRegisteredWorktrees({
       : readLinkedAdminId(root,);
   },),);
   /**
-   * Linked-worktree identity map excluding main worktree.
+   Linked-worktree identity map excluding main worktree.
    */
   const rootsByAdminId = new Map(adminIds.flatMap(function indexedRoot(
     adminId,
@@ -214,7 +214,7 @@ export async function readRegisteredWorktrees({
     string
   ])[] {
     /**
-     * Root aligned with current admin identity.
+     Root aligned with current admin identity.
      */
     const root = roots[index];
     return ((typeof adminId) === 'symbol') || (root === undefined)
@@ -231,18 +231,18 @@ export async function readRegisteredWorktrees({
 }
 
 /**
- * Finds worktrees newly registered since initial observation.
- *
- * @param observation - effective repository captured before real Git
- *
- * @param gitPath - absolute real-Git executable
- *
- * @returns created worktrees and complete registered root set
- *
- * @example
- * ```ts
- * await findCreatedWorktrees({ observation, gitPath: '/usr/bin/git' });
- * ```
+ Finds worktrees newly registered since initial observation.
+ 
+ @param observation - effective repository captured before real Git
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @returns created worktrees and complete registered root set
+ 
+ @example
+ ```ts
+ await findCreatedWorktrees({ observation, gitPath: '/usr/bin/git' });
+ ```
  */
 export async function findCreatedWorktrees({
   observation,
@@ -255,11 +255,11 @@ export async function findCreatedWorktrees({
   registeredRoots: readonly string[];
 }>> {
   /**
-   * Linked-worktree identities after real Git returned.
+   Linked-worktree identities after real Git returned.
    */
   const afterAdminIds = await readAdminIds(observation.adminRoot,);
   /**
-   * Newly present administrative identities.
+   Newly present administrative identities.
    */
   const createdAdminIds = [...afterAdminIds,]
     .filter(function wasAbsent(adminId,): boolean {
@@ -274,18 +274,18 @@ export async function findCreatedWorktrees({
     };
   }
   /**
-   * Registered worktree paths after creation.
+   Registered worktree paths after creation.
    */
   const registered = await readRegisteredWorktrees({
     observation,
     gitPath,
   },);
   /**
-   * Created roots resolved from stable admin identities.
+   Created roots resolved from stable admin identities.
    */
   const created = createdAdminIds.map(function createdWorktree(adminId,): CreatedWorktree {
     /**
-     * Created root associated with new admin directory.
+     Created root associated with new admin directory.
      */
     const root = registered.rootsByAdminId
       .get(adminId,);

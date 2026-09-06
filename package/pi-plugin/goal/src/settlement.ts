@@ -1,7 +1,7 @@
 /**
- * Deferred kickoff and shutdown transitions at Pi's settlement seam.
- *
- * @module
+ Deferred kickoff and shutdown transitions at Pi's settlement seam.
+ 
+ @module
  */
 
 import { buildGoalMessage, } from './message.ts';
@@ -11,18 +11,18 @@ import type {
 } from './types.ts';
 
 /**
- * Deliver deferred kickoff for exact active generation.
- *
- * Generic continuation is owned by independent settlement review.
- *
- * @param controller - controller at settlement time
- *
- * @returns next controller with at most one kickoff message
- *
- * @example
- * ```ts
- * deliverPendingGoalKickoff(controller);
- * ```
+ Deliver deferred kickoff for exact active generation.
+ 
+ Generic continuation is owned by independent settlement review.
+ 
+ @param controller - controller at settlement time
+ 
+ @returns next controller with at most one kickoff message
+ 
+ @example
+ ```ts
+ deliverPendingGoalKickoff(controller);
+ ```
  */
 function deliverPendingGoalKickoff(controller: GoalControllerState,): GoalControllerTransition {
   if (controller.shutdown)
@@ -44,7 +44,7 @@ function deliverPendingGoalKickoff(controller: GoalControllerState,): GoalContro
     };
   }
   /**
-   * Deferred kickoff captured while Pi was busy.
+   Deferred kickoff captured while Pi was busy.
    */
   const { pendingKickoff, } = controller;
   if (pendingKickoff === undefined)
@@ -70,7 +70,7 @@ function deliverPendingGoalKickoff(controller: GoalControllerState,): GoalContro
     };
   }
   /**
-   * Task-only kickoff rebuilt from current validated generation.
+   Task-only kickoff rebuilt from current validated generation.
    */
   const kickoff = buildGoalMessage({
     goal: controller.goal,
@@ -80,7 +80,7 @@ function deliverPendingGoalKickoff(controller: GoalControllerState,): GoalContro
     marker: pendingKickoff.marker,
   },);
   /**
-   * Settlement sequence identifying emitted kickoff.
+   Settlement sequence identifying emitted kickoff.
    */
   const settlementSequence = controller.settlementSequence + 1;
   return {
@@ -100,16 +100,16 @@ function deliverPendingGoalKickoff(controller: GoalControllerState,): GoalContro
 }
 
 /**
- * Stop delayed goal actions before runtime replacement or quit.
- *
- * @param controller - current controller
- *
- * @returns shutdown controller and footer-clear effect
- *
- * @example
- * ```ts
- * shutdownGoalController(controller);
- * ```
+ Stop delayed goal actions before runtime replacement or quit.
+ 
+ @param controller - current controller
+ 
+ @returns shutdown controller and footer-clear effect
+ 
+ @example
+ ```ts
+ shutdownGoalController(controller);
+ ```
  */
 function shutdownGoalController(controller: GoalControllerState,): GoalControllerTransition {
   return {

@@ -10,7 +10,7 @@ import {
 } from '@monochromatic-dev/git-policy-forbidden-strings';
 
 /**
- * Exact valid warning records accepted by protocol.
+ Exact valid warning records accepted by protocol.
  */
 const VALID_WARNINGS = [
   ['missing', '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}',],
@@ -23,11 +23,11 @@ const VALID_WARNINGS = [
 ] as const;
 
 /**
- * Captures parser failure without function-root mutable binding.
- *
- * @param line - Warning candidate.
- *
- * @returns Caught failure or undefined when parser accepted candidate.
+ Captures parser failure without function-root mutable binding.
+ 
+ @param line - Warning candidate.
+ 
+ @returns Caught failure or undefined when parser accepted candidate.
  */
 function captureWarningError(line: string,): unknown {
   try {

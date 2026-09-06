@@ -1,13 +1,13 @@
 /**
- * Equivalence tests for `splitOnWhitespace`.
- *
- * Capture the pre-refactor behavior of the whitespace splitter so the
- * linear-pass rewrite stays behavior-identical: empty and all-whitespace
- * inputs, leading and trailing whitespace, interior whitespace runs, each
- * ASCII whitespace variety, the documented examples, realistic virsh data
- * rows, and long inputs that exercise stack-safety and linear time.
- *
- * @module
+ Equivalence tests for `splitOnWhitespace`.
+ 
+ Capture the pre-refactor behavior of the whitespace splitter so the
+ linear-pass rewrite stays behavior-identical: empty and all-whitespace
+ inputs, leading and trailing whitespace, interior whitespace runs, each
+ ASCII whitespace variety, the documented examples, realistic virsh data
+ rows, and long inputs that exercise stack-safety and linear time.
+ 
+ @module
  */
 
 import {

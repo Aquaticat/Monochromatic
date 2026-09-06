@@ -1,16 +1,16 @@
 /**
- * Shared inject check that scans for completed child sessions
- * and returns context text for the parent.
- *
- * Called from hook handlers with two modes:
- * - **Consuming** (`consume: true`): renames `.json` to `.reported`,
- *   preventing future reads. Used by all delivery hooks; first one to
- *   fire wins.
- * - **Non-consuming** (`consume: false`): reads but does not rename.
- *   Reserved for diagnostic or observability use cases where the result
- *   should remain available for a consuming hook to pick up later.
- *
- * @module
+ Shared inject check that scans for completed child sessions
+ and returns context text for the parent.
+ 
+ Called from hook handlers with two modes:
+ - **Consuming** (`consume: true`): renames `.json` to `.reported`,
+   preventing future reads. Used by all delivery hooks; first one to
+   fire wins.
+ - **Non-consuming** (`consume: false`): reads but does not rename.
+   Reserved for diagnostic or observability use cases where the result
+   should remain available for a consuming hook to pick up later.
+ 
+ @module
  */
 
 import {
@@ -26,17 +26,17 @@ import {
 } from './paths.ts';
 
 /**
- * Formats a completed spawn state into a human-readable context string.
- *
- * @param state - spawn state to format
- *
- * @returns multi-line context string describing completed child session
- *
- * @example
- * ```ts
- * const text = formatSpawnResult(state);
- * // "Spawned Claude session completed (spawnId: abc-123):\n..."
- * ```
+ Formats a completed spawn state into a human-readable context string.
+ 
+ @param state - spawn state to format
+ 
+ @returns multi-line context string describing completed child session
+ 
+ @example
+ ```ts
+ const text = formatSpawnResult(state);
+ // "Spawned Claude session completed (spawnId: abc-123):\n..."
+ ```
  */
 function formatSpawnResult(state: SpawnState,): string {
   return [
@@ -53,24 +53,24 @@ function formatSpawnResult(state: SpawnState,): string {
 }
 
 /**
- * Sentinel returned by {@link checkCompletedChildren} when no completed child
- * is pending delivery.
- *
- * A unique symbol rather than `null`: the caller narrows on identity
- * (`=== NOTHING_TO_REPORT`), keeping the context string free of a nullish union.
+ Sentinel returned by {@link checkCompletedChildren} when no completed child
+ is pending delivery.
+ 
+ A unique symbol rather than `null`: the caller narrows on identity
+ (`=== NOTHING_TO_REPORT`), keeping the context string free of a nullish union.
  */
 const NOTHING_TO_REPORT: unique symbol = Symbol('claude-spawn/nothing-to-report',);
 
 /**
- * Lists the filenames in the spawns coordination directory.
- *
- * @returns directory entries, or {@link NOTHING_TO_REPORT} when the directory is
- *   missing or unreadable (there is then nothing to deliver)
- *
- * @example
- * ```ts
- * const entries = readSpawnsDir();
- * ```
+ Lists the filenames in the spawns coordination directory.
+ 
+ @returns directory entries, or {@link NOTHING_TO_REPORT} when the directory is
+   missing or unreadable (there is then nothing to deliver)
+ 
+ @example
+ ```ts
+ const entries = readSpawnsDir();
+ ```
  */
 async function readSpawnsDir(): Promise<readonly string[] | typeof NOTHING_TO_REPORT> {
   try {
@@ -82,26 +82,26 @@ async function readSpawnsDir(): Promise<readonly string[] | typeof NOTHING_TO_RE
 }
 
 /**
- * Whether a per-file scan produced deliverable context.
- *
- * @param result - scan result for one file
- *
- * @returns true when the result contains context text
+ Whether a per-file scan produced deliverable context.
+ 
+ @param result - scan result for one file
+ 
+ @returns true when the result contains context text
  */
 function hasReport(result: string | typeof NOTHING_TO_REPORT,): result is string {
   return result !== NOTHING_TO_REPORT;
 }
 
 /**
- * Reads one spawn-state file and consumes it when it belongs to a stopped child.
- *
- * @param filename - candidate filename under {@link SPAWNS_DIR}
- *
- * @param parentSessionId - session identifier of calling session
- *
- * @param consume - whether to rename matched files to `.reported`
- *
- * @returns formatted child result, or {@link NOTHING_TO_REPORT} when not deliverable
+ Reads one spawn-state file and consumes it when it belongs to a stopped child.
+ 
+ @param filename - candidate filename under {@link SPAWNS_DIR}
+ 
+ @param parentSessionId - session identifier of calling session
+ 
+ @param consume - whether to rename matched files to `.reported`
+ 
+ @returns formatted child result, or {@link NOTHING_TO_REPORT} when not deliverable
  */
 async function readCompletedChild(
   {
@@ -118,15 +118,15 @@ async function readCompletedChild(
     return NOTHING_TO_REPORT;
 
   /**
-   * Absolute path to the candidate spawn-state file.
+   Absolute path to the candidate spawn-state file.
    */
   const filePath = join(
     SPAWNS_DIR,
     filename,
   );
   /**
-   * Sibling `.reported` path used to consume the entry atomically via rename.
-   * The `.json` suffix guard above means the slice always drops the suffix.
+   Sibling `.reported` path used to consume the entry atomically via rename.
+   The `.json` suffix guard above means the slice always drops the suffix.
    */
   const reportedPath = join(
     SPAWNS_DIR,
@@ -140,7 +140,7 @@ async function readCompletedChild(
 
   try {
     /**
-     * Raw JSON for the candidate; parsed below to recover the spawn state.
+     Raw JSON for the candidate; parsed below to recover the spawn state.
      */
     const raw = await readFile(
       filePath,
@@ -148,7 +148,7 @@ async function readCompletedChild(
     );
     /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
     /**
-     * Parsed spawn state used to filter by parent session and stopped status.
+     Parsed spawn state used to filter by parent session and stopped status.
      */
     const state = JSON.parse(raw,) as SpawnState;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -170,7 +170,7 @@ async function readCompletedChild(
       }
       catch (_error: unknown) {
         /**
-         * Another hook invocation already renamed this file.
+         Another hook invocation already renamed this file.
          */
         return NOTHING_TO_REPORT;
       }
@@ -184,27 +184,27 @@ async function readCompletedChild(
 }
 
 /**
- * Scans the spawns directory for children of the given session that have
- * stopped and not yet been reported.
- *
- * When `consume` is true, atomically renames `{spawnId}.json` to
- * `{spawnId}.reported` to prevent duplicate injection across concurrent hook
- * invocations. When `consume` is false, reads the state without renaming:
- * callers should treat the result as best-effort since the file may be
- * consumed by a later reliable hook invocation.
- *
- * @param parentSessionId - session identifier of calling session
- *
- * @param consume - whether to rename matched files to `.reported`. Use `true`
- *   from reliable delivery hooks (UserPromptSubmit, Stop), `false` from
- *   best-effort hooks (PreToolUse, PostToolUse, etc.).
- *
- * @returns combined context string, or {@link NOTHING_TO_REPORT} if nothing to report
- *
- * @example
- * ```ts
- * const context = await checkCompletedChildren({ parentSessionId: 'abc', consume: true });
- * ```
+ Scans the spawns directory for children of the given session that have
+ stopped and not yet been reported.
+ 
+ When `consume` is true, atomically renames `{spawnId}.json` to
+ `{spawnId}.reported` to prevent duplicate injection across concurrent hook
+ invocations. When `consume` is false, reads the state without renaming:
+ callers should treat the result as best-effort since the file may be
+ consumed by a later reliable hook invocation.
+ 
+ @param parentSessionId - session identifier of calling session
+ 
+ @param consume - whether to rename matched files to `.reported`. Use `true`
+   from reliable delivery hooks (UserPromptSubmit, Stop), `false` from
+   best-effort hooks (PreToolUse, PostToolUse, etc.).
+ 
+ @returns combined context string, or {@link NOTHING_TO_REPORT} if nothing to report
+ 
+ @example
+ ```ts
+ const context = await checkCompletedChildren({ parentSessionId: 'abc', consume: true });
+ ```
  */
 async function checkCompletedChildren(
   {
@@ -216,7 +216,7 @@ async function checkCompletedChildren(
   },
 ): Promise<string | typeof NOTHING_TO_REPORT> {
   /**
-   * Filenames in `SPAWNS_DIR`, or {@link NOTHING_TO_REPORT} when the directory is missing or unreadable.
+   Filenames in `SPAWNS_DIR`, or {@link NOTHING_TO_REPORT} when the directory is missing or unreadable.
    */
   const entries = await readSpawnsDir();
 
@@ -224,7 +224,7 @@ async function checkCompletedChildren(
     return NOTHING_TO_REPORT;
 
   /**
-   * Per-file completed-child results in directory order.
+   Per-file completed-child results in directory order.
    */
   const results = (await Promise.all(
     entries.map(function readEntry(filename,): Promise<string | typeof NOTHING_TO_REPORT> {

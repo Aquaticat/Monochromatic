@@ -1,36 +1,36 @@
 /**
- * Message builders for the auto-mode judge and its direct JSON retry.
- *
- * @module
+ Message builders for the auto-mode judge and its direct JSON retry.
+ 
+ @module
  */
 
 import type { BatchEntry, } from './types.ts';
 
 /**
- * Tool-call transport instruction from the base judge prompt.
- *
- * The direct JSON retry removes this sentence before appending retry-specific
- * JSON instructions, which avoids asking the model to call an unavailable tool.
- *
- * @example
- * ```typescript
- * systemPrompt.includes(TOOL_CALL_TRANSPORT_INSTRUCTION);
- * ```
+ Tool-call transport instruction from the base judge prompt.
+ 
+ The direct JSON retry removes this sentence before appending retry-specific
+ JSON instructions, which avoids asking the model to call an unavailable tool.
+ 
+ @example
+ ```typescript
+ systemPrompt.includes(TOOL_CALL_TRANSPORT_INSTRUCTION);
+ ```
  */
 const TOOL_CALL_TRANSPORT_INSTRUCTION =
   'You MUST call the render_verdict tool to submit your evaluation. Do not respond with text; use the tool.';
 
 /**
- * Additional system-prompt instructions for the direct JSON retry.
- *
- * The original safety rubric remains intact, but this suffix replaces the
- * first attempt's tool-call transport contract because the retry sends no
- * tools.
- *
- * @example
- * ```typescript
- * const retryPrompt = `${systemPrompt}\n\n${JSON_RETRY_SYSTEM_SUFFIX}`;
- * ```
+ Additional system-prompt instructions for the direct JSON retry.
+ 
+ The original safety rubric remains intact, but this suffix replaces the
+ first attempt's tool-call transport contract because the retry sends no
+ tools.
+ 
+ @example
+ ```typescript
+ const retryPrompt = `${systemPrompt}\n\n${JSON_RETRY_SYSTEM_SUFFIX}`;
+ ```
  */
 const JSON_RETRY_SYSTEM_SUFFIX = `Retry mode:
 The previous response did not call render_verdict. For this retry, no tools are available. Evaluate the action with the same safety rubric, but emit exactly one JSON object and no markdown.
@@ -40,36 +40,36 @@ Required JSON shape:
 The verdict value must be exactly one of "approve", "deny", or "ask".`;
 
 /**
- * Build the user content message for the judge.
- *
- * @param action - human-readable action being evaluated
- *
- * @param actionInput - complete current tool input encoded as JSON
- *
- * @param cwd - agent working directory for path context
- *
- * @param projectContext - complete loaded project-context files encoded as JSON
- *
- * @param recentContext - complete selected user-visible messages encoded as JSON
- *
- * @param trustDirectives - active user-approved guardrail relaxations
- *
- * @param batchContext - sibling tool calls already evaluated in the current turn
- *
- * @returns formatted user message content
- *
- * @example
- * ```typescript
- * buildUserContent({
- *   action: 'bash: rm -rf node_modules',
- *   actionInput: '{"command":"rm -rf node_modules"}',
- *   cwd: '/project',
- *   projectContext: '',
- *   recentContext: '',
- *   trustDirectives: [],
- *   batchContext: [],
- * });
- * ```
+ Build the user content message for the judge.
+ 
+ @param action - human-readable action being evaluated
+ 
+ @param actionInput - complete current tool input encoded as JSON
+ 
+ @param cwd - agent working directory for path context
+ 
+ @param projectContext - complete loaded project-context files encoded as JSON
+ 
+ @param recentContext - complete selected user-visible messages encoded as JSON
+ 
+ @param trustDirectives - active user-approved guardrail relaxations
+ 
+ @param batchContext - sibling tool calls already evaluated in the current turn
+ 
+ @returns formatted user message content
+ 
+ @example
+ ```typescript
+ buildUserContent({
+   action: 'bash: rm -rf node_modules',
+   actionInput: '{"command":"rm -rf node_modules"}',
+   cwd: '/project',
+   projectContext: '',
+   recentContext: '',
+   trustDirectives: [],
+   batchContext: [],
+ });
+ ```
  */
 function buildUserContent(
   {
@@ -91,7 +91,7 @@ function buildUserContent(
   },
 ): string {
   /**
-   * Per-line accumulator for the rendered prompt body; joined with newlines on return.
+   Per-line accumulator for the rendered prompt body; joined with newlines on return.
    */
   const lines: string[] = [
     `Working directory: ${cwd}`,
@@ -147,19 +147,19 @@ function buildUserContent(
 }
 
 /**
- * Build the system prompt for the direct JSON retry.
- *
- * Removes {@link TOOL_CALL_TRANSPORT_INSTRUCTION} from the original prompt
- * before appending the retry-specific JSON instructions.
- *
- * @param systemPrompt - original judge system prompt containing the safety rubric
- *
- * @returns retry prompt that preserves the rubric and switches transport to JSON text
- *
- * @example
- * ```typescript
- * buildJsonRetrySystemPrompt({ systemPrompt: 'Judge safely.' });
- * ```
+ Build the system prompt for the direct JSON retry.
+ 
+ Removes {@link TOOL_CALL_TRANSPORT_INSTRUCTION} from the original prompt
+ before appending the retry-specific JSON instructions.
+ 
+ @param systemPrompt - original judge system prompt containing the safety rubric
+ 
+ @returns retry prompt that preserves the rubric and switches transport to JSON text
+ 
+ @example
+ ```typescript
+ buildJsonRetrySystemPrompt({ systemPrompt: 'Judge safely.' });
+ ```
  */
 function buildJsonRetrySystemPrompt(
   {
@@ -169,7 +169,7 @@ function buildJsonRetrySystemPrompt(
   },
 ): string {
   /**
-   * System prompt with the unavailable tool-call transport sentence removed.
+   System prompt with the unavailable tool-call transport sentence removed.
    */
   const retryBasePrompt = systemPrompt
     .split(TOOL_CALL_TRANSPORT_INSTRUCTION,)
@@ -178,18 +178,18 @@ function buildJsonRetrySystemPrompt(
 }
 
 /**
- * Build the user message for the direct JSON retry.
- *
- * @param userContent - original judge request body
- *
- * @param firstAttemptTextContent - non-tool text from the first attempt, if any
- *
- * @returns retry user message asking for JSON directly
- *
- * @example
- * ```typescript
- * buildJsonRetryUserContent({ userContent: 'Action: read', firstAttemptTextContent: '' });
- * ```
+ Build the user message for the direct JSON retry.
+ 
+ @param userContent - original judge request body
+ 
+ @param firstAttemptTextContent - non-tool text from the first attempt, if any
+ 
+ @returns retry user message asking for JSON directly
+ 
+ @example
+ ```typescript
+ buildJsonRetryUserContent({ userContent: 'Action: read', firstAttemptTextContent: '' });
+ ```
  */
 function buildJsonRetryUserContent(
   {
@@ -201,7 +201,7 @@ function buildJsonRetryUserContent(
   },
 ): string {
   /**
-   * Retry prompt lines, optionally extended with first-attempt text for diagnostics.
+   Retry prompt lines, optionally extended with first-attempt text for diagnostics.
    */
   const lines = [
     'The previous judge response did not call render_verdict.',

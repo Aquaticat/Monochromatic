@@ -47,31 +47,31 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the written parameter positions of one fixture caller.
-         *
-         * Reads `referentMutatedParameterIndexes` rather than the union with the invoked
-         * set, because the readonly offer is gated on that set alone.
-         *
-         * @param functionName - Exported fixture caller to inspect.
-         *
-         * @returns written parameter positions in ascending order.
+         Reads the written parameter positions of one fixture caller.
+         
+         Reads `referentMutatedParameterIndexes` rather than the union with the invoked
+         set, because the readonly offer is gated on that set alone.
+         
+         @param functionName - Exported fixture caller to inspect.
+         
+         @returns written parameter positions in ascending order.
          */
         function writtenIndexes(functionName: string,): readonly number[] {
           /**
-           * Name node of the declaration under test.
+           Name node of the declaration under test.
            */
           const nameNode = session.nodeAtOffset(
             NARROWING_SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration the name belongs to.
+           Declaration the name belongs to.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Summary of that declaration.
+           Summary of that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -86,28 +86,28 @@ await describe({
             },);
         }
         /**
-         * Reads the parameter positions one fixture caller cannot account for.
-         *
-         * @param functionName - Exported fixture caller to inspect.
-         *
-         * @returns opaque parameter positions in ascending order.
+         Reads the parameter positions one fixture caller cannot account for.
+         
+         @param functionName - Exported fixture caller to inspect.
+         
+         @returns opaque parameter positions in ascending order.
          */
         function opaqueIndexes(functionName: string,): readonly number[] {
           /**
-           * Name node of the declaration under test.
+           Name node of the declaration under test.
            */
           const nameNode = session.nodeAtOffset(
             NARROWING_SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration the name belongs to.
+           Declaration the name belongs to.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Summary of that declaration.
+           Summary of that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)

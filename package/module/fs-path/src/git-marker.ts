@@ -1,9 +1,9 @@
 /**
- * Git administrative marker validation.
- *
- * Mirrors Git's repository signatures without starting a Git subprocess.
- *
- * @module
+ Git administrative marker validation.
+ 
+ Mirrors Git's repository signatures without starting a Git subprocess.
+ 
+ @module
  */
 
 import {
@@ -12,56 +12,56 @@ import {
 } from './root-discovery.ts';
 
 /**
- * Gitfile prefix required by Git's `read_gitfile_gently`.
+ Gitfile prefix required by Git's `read_gitfile_gently`.
  */
 const GIT_DIRECTORY_PREFIX = 'gitdir: ';
 
 /**
- * Maximum gitfile character count accepted before validation.
+ Maximum gitfile character count accepted before validation.
  */
 const MAX_GIT_FILE_CHARACTERS = 1_048_576;
 
 /**
- * SHA-1 hexadecimal length.
+ SHA-1 hexadecimal length.
  */
 const SHA_ONE_LENGTH = 40;
 
 /**
- * SHA-256 hexadecimal length.
+ SHA-256 hexadecimal length.
  */
 const SHA_TWO_LENGTH = 64;
 
 /**
- * ASCII hexadecimal characters accepted in detached HEAD IDs.
+ ASCII hexadecimal characters accepted in detached HEAD IDs.
  */
 const HEX_CHARACTERS: ReadonlySet<string> = new Set('0123456789abcdefABCDEF',);
 
 /**
- * ASCII carriage return code point.
+ ASCII carriage return code point.
  */
 const CARRIAGE_RETURN_CODE_POINT = 13;
 
 /**
- * ASCII line feed code point.
+ ASCII line feed code point.
  */
 const LINE_FEED_CODE_POINT = 10;
 
 /**
- * Removes trailing line endings the same way Git reads gitfiles and commondir.
- *
- * @param value - text whose trailing CR and LF characters should be removed
- *
- * @returns text without trailing line endings
- *
- * @example
- * ```ts
- * trimTrailingLineEndings('path\r\n');
- * ```
+ Removes trailing line endings the same way Git reads gitfiles and commondir.
+ 
+ @param value - text whose trailing CR and LF characters should be removed
+ 
+ @returns text without trailing line endings
+ 
+ @example
+ ```ts
+ trimTrailingLineEndings('path\r\n');
+ ```
  */
 function trimTrailingLineEndings(value: string,): string {
   for (let index = value.length - 1; index >= 0; index -= 1) {
     /**
-     * Last retained code point candidate.
+     Last retained code point candidate.
      */
     const codePoint = value.codePointAt(index,);
     if ((codePoint !== CARRIAGE_RETURN_CODE_POINT)
@@ -76,16 +76,16 @@ function trimTrailingLineEndings(value: string,): string {
 }
 
 /**
- * Checks hexadecimal object-ID text without regular expressions.
- *
- * @param value - candidate detached HEAD value
- *
- * @returns whether every character is an ASCII hexadecimal digit
- *
- * @example
- * ```ts
- * isHexObjectId('a'.repeat(40));
- * ```
+ Checks hexadecimal object-ID text without regular expressions.
+ 
+ @param value - candidate detached HEAD value
+ 
+ @returns whether every character is an ASCII hexadecimal digit
+ 
+ @example
+ ```ts
+ isHexObjectId('a'.repeat(40));
+ ```
  */
 function isHexObjectId(value: string,): boolean {
   if ((value.length !== SHA_ONE_LENGTH) && (value.length !== SHA_TWO_LENGTH))
@@ -98,20 +98,20 @@ function isHexObjectId(value: string,): boolean {
 }
 
 /**
- * Validates symbolic or detached HEAD text.
- *
- * @param content - exact HEAD file text
- *
- * @returns whether Git accepts this broad HEAD shape
- *
- * @example
- * ```ts
- * isValidHead('ref: refs/heads/main\n');
- * ```
+ Validates symbolic or detached HEAD text.
+ 
+ @param content - exact HEAD file text
+ 
+ @returns whether Git accepts this broad HEAD shape
+ 
+ @example
+ ```ts
+ isValidHead('ref: refs/heads/main\n');
+ ```
  */
 function isValidHead(content: string,): boolean {
   /**
-   * HEAD text without Git-ignored trailing line endings.
+   HEAD text without Git-ignored trailing line endings.
    */
   const value = trimTrailingLineEndings(content,);
   if (value.startsWith('ref:',))
@@ -122,18 +122,18 @@ function isValidHead(content: string,): boolean {
 }
 
 /**
- * Validates regular-file and symbolic-link HEAD forms.
- *
- * @param headPath - candidate HEAD path
- *
- * @param fs - root-discovery filesystem adapter
- *
- * @returns whether HEAD has a Git-supported shape
- *
- * @example
- * ```ts
- * await isValidHeadPath({ headPath: '/repo/.git/HEAD', fs });
- * ```
+ Validates regular-file and symbolic-link HEAD forms.
+ 
+ @param headPath - candidate HEAD path
+ 
+ @param fs - root-discovery filesystem adapter
+ 
+ @returns whether HEAD has a Git-supported shape
+ 
+ @example
+ ```ts
+ await isValidHeadPath({ headPath: '/repo/.git/HEAD', fs });
+ ```
  */
 async function isValidHeadPath({
   headPath,
@@ -143,7 +143,7 @@ async function isValidHeadPath({
   readonly fs: RootMatcherArgs['fs'];
 },): Promise<boolean> {
   /**
-   * Symbolic HEAD target accepted when it names refs namespace.
+   Symbolic HEAD target accepted when it names refs namespace.
    */
   const symbolicHead = await fs.readSymbolicLink(headPath,);
   if (symbolicHead !== ABSENT)
@@ -151,25 +151,25 @@ async function isValidHeadPath({
   if (!await fs.isFile(headPath,))
     return false;
   /**
-   * Regular HEAD content.
+   Regular HEAD content.
    */
   const head = await fs.readTextFile(headPath,);
   return (head !== ABSENT) && isValidHead(head,);
 }
 
 /**
- * Parses a Git path payload after a required prefix.
- *
- * @param content - exact file text
- *
- * @param prefix - required syntax prefix
- *
- * @returns path payload or absence sentinel when malformed
- *
- * @example
- * ```ts
- * parsePathPayload({ content: 'gitdir: target\n', prefix: 'gitdir: ' });
- * ```
+ Parses a Git path payload after a required prefix.
+ 
+ @param content - exact file text
+ 
+ @param prefix - required syntax prefix
+ 
+ @returns path payload or absence sentinel when malformed
+ 
+ @example
+ ```ts
+ parsePathPayload({ content: 'gitdir: target\n', prefix: 'gitdir: ' });
+ ```
  */
 function parsePathPayload({
   content,
@@ -181,7 +181,7 @@ function parsePathPayload({
   if ((content.length > MAX_GIT_FILE_CHARACTERS) || (!content.startsWith(prefix,)))
     return ABSENT;
   /**
-   * Path payload without Git-ignored trailing line endings.
+   Path payload without Git-ignored trailing line endings.
    */
   const path = trimTrailingLineEndings(content.slice(prefix.length,),);
   if ((path === '') || path.includes('\0',))
@@ -190,18 +190,18 @@ function parsePathPayload({
 }
 
 /**
- * Resolves common administrative directory for ordinary and linked worktrees.
- *
- * @param gitDirectory - candidate Git administrative directory
- *
- * @param fs - root-discovery filesystem adapter
- *
- * @returns common directory or absence sentinel when commondir is malformed
- *
- * @example
- * ```ts
- * await resolveCommonDirectory({ gitDirectory: '/repo/.git', fs });
- * ```
+ Resolves common administrative directory for ordinary and linked worktrees.
+ 
+ @param gitDirectory - candidate Git administrative directory
+ 
+ @param fs - root-discovery filesystem adapter
+ 
+ @returns common directory or absence sentinel when commondir is malformed
+ 
+ @example
+ ```ts
+ await resolveCommonDirectory({ gitDirectory: '/repo/.git', fs });
+ ```
  */
 async function resolveCommonDirectory({
   gitDirectory,
@@ -211,7 +211,7 @@ async function resolveCommonDirectory({
   readonly fs: RootMatcherArgs['fs'];
 },): Promise<string | typeof ABSENT> {
   /**
-   * Optional linked-worktree common directory pointer path.
+   Optional linked-worktree common directory pointer path.
    */
   const commonDirectoryPath = `${gitDirectory}/commondir`;
   if (!await fs.exists(commonDirectoryPath,))
@@ -219,13 +219,13 @@ async function resolveCommonDirectory({
   if (!await fs.isFile(commonDirectoryPath,))
     return ABSENT;
   /**
-   * Linked-worktree common directory pointer content.
+   Linked-worktree common directory pointer content.
    */
   const content = await fs.readTextFile(commonDirectoryPath,);
   if (content === ABSENT)
     return ABSENT;
   /**
-   * Parsed common directory path.
+   Parsed common directory path.
    */
   const path = parsePathPayload({
     content,
@@ -240,18 +240,18 @@ async function resolveCommonDirectory({
 }
 
 /**
- * Checks Git's HEAD, objects, and refs repository signatures.
- *
- * @param gitDirectory - candidate Git administrative directory
- *
- * @param fs - root-discovery filesystem adapter
- *
- * @returns whether candidate is usable as a Git directory
- *
- * @example
- * ```ts
- * await isValidGitDirectory({ gitDirectory: '/repo/.git', fs });
- * ```
+ Checks Git's HEAD, objects, and refs repository signatures.
+ 
+ @param gitDirectory - candidate Git administrative directory
+ 
+ @param fs - root-discovery filesystem adapter
+ 
+ @returns whether candidate is usable as a Git directory
+ 
+ @example
+ ```ts
+ await isValidGitDirectory({ gitDirectory: '/repo/.git', fs });
+ ```
  */
 async function isValidGitDirectory({
   gitDirectory,
@@ -263,7 +263,7 @@ async function isValidGitDirectory({
   if (!await fs.isDirectory(gitDirectory,))
     return false;
   /**
-   * Candidate HEAD path.
+   Candidate HEAD path.
    */
   const headPath = `${gitDirectory}/HEAD`;
   if (!await isValidHeadPath({
@@ -272,7 +272,7 @@ async function isValidGitDirectory({
   },))
     return false;
   /**
-   * Directory that must own objects and refs.
+   Directory that must own objects and refs.
    */
   const commonDirectory = await resolveCommonDirectory({
     gitDirectory,
@@ -281,7 +281,7 @@ async function isValidGitDirectory({
   if (commonDirectory === ABSENT)
     return false;
   /**
-   * Required common-directory signatures.
+   Required common-directory signatures.
    */
   const [hasObjects, hasRefs,] = await Promise.all([
     fs.isDirectory(`${commonDirectory}/objects`,),
@@ -291,25 +291,25 @@ async function isValidGitDirectory({
 }
 
 /**
- * Checks whether candidate directory contains a usable `.git` directory or gitfile.
- *
- * @param dir - candidate worktree root
- *
- * @param fs - root-discovery filesystem adapter
- *
- * @returns whether Git would recognize candidate marker
- *
- * @example
- * ```ts
- * await matchesValidGitMarker({ dir: '/repo', fs });
- * ```
+ Checks whether candidate directory contains a usable `.git` directory or gitfile.
+ 
+ @param dir - candidate worktree root
+ 
+ @param fs - root-discovery filesystem adapter
+ 
+ @returns whether Git would recognize candidate marker
+ 
+ @example
+ ```ts
+ await matchesValidGitMarker({ dir: '/repo', fs });
+ ```
  */
 export async function matchesValidGitMarker({
   dir,
   fs,
 }: RootMatcherArgs,): Promise<boolean> {
   /**
-   * Candidate worktree marker path.
+   Candidate worktree marker path.
    */
   const markerPath = `${dir}/.git`;
   if (await fs.isDirectory(markerPath,))
@@ -320,13 +320,13 @@ export async function matchesValidGitMarker({
   if (!await fs.isFile(markerPath,))
     return false;
   /**
-   * Candidate gitfile content when marker is not a directory.
+   Candidate gitfile content when marker is not a directory.
    */
   const content = await fs.readTextFile(markerPath,);
   if (content === ABSENT)
     return false;
   /**
-   * Path declared by valid gitfile syntax.
+   Path declared by valid gitfile syntax.
    */
   const gitDirectoryPath = parsePathPayload({
     content,
@@ -335,7 +335,7 @@ export async function matchesValidGitMarker({
   if (gitDirectoryPath === ABSENT)
     return false;
   /**
-   * Runtime-native absolute administrative directory path.
+   Runtime-native absolute administrative directory path.
    */
   const gitDirectory = fs.resolvePath({
     from: dir,

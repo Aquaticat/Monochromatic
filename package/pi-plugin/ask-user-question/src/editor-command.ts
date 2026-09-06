@@ -6,15 +6,15 @@ import {
 //region Types
 
 /**
- * Environment keys used to resolve a preferred editor.
+ Environment keys used to resolve a preferred editor.
  */
 export type EditorEnvironment = {
   /**
-   * Preferred full-screen editor command.
+   Preferred full-screen editor command.
    */
   readonly VISUAL?: string;
   /**
-   * General editor command fallback.
+   General editor command fallback.
    */
   readonly EDITOR?: string;
 };
@@ -24,18 +24,18 @@ export type EditorEnvironment = {
 //region Error
 
 /**
- * Reports an editor command that cannot become a safe executable argument vector.
- *
- * @example
- * ```ts
- * new EditorCommandError('EDITOR contains unsupported syntax.');
- * ```
+ Reports an editor command that cannot become a safe executable argument vector.
+ 
+ @example
+ ```ts
+ new EditorCommandError('EDITOR contains unsupported syntax.');
+ ```
  */
 export class EditorCommandError extends Error {
   /**
-   * Creates an editor configuration diagnostic.
-   *
-   * @param message - actionable editor-resolution message
+   Creates an editor configuration diagnostic.
+   
+   @param message - actionable editor-resolution message
    */
   constructor(message: string,) {
     super(message,);
@@ -48,26 +48,26 @@ export class EditorCommandError extends Error {
 //region Resolution
 
 /**
- * Copies editor keys from process environment into narrow resolver input.
- *
- * @param env - process environment supplied by host runtime
- *
- * @returns present VISUAL and EDITOR string values
- *
- * @example
- * ```ts
- * editorEnvironmentFromProcess(process.env);
- * ```
+ Copies editor keys from process environment into narrow resolver input.
+ 
+ @param env - process environment supplied by host runtime
+ 
+ @returns present VISUAL and EDITOR string values
+ 
+ @example
+ ```ts
+ editorEnvironmentFromProcess(process.env);
+ ```
  */
 export function editorEnvironmentFromProcess(
   env: Readonly<NodeJS.ProcessEnv>,
 ): EditorEnvironment {
   /**
-   * Optional visual editor value.
+   Optional visual editor value.
    */
   const visual = env.VISUAL;
   /**
-   * Optional general editor value.
+   Optional general editor value.
    */
   const editor = env.EDITOR;
   return {
@@ -77,27 +77,27 @@ export function editorEnvironmentFromProcess(
 }
 
 /**
- * Resolves a blocking editor command from user config and standard environment variables.
- *
- * User config takes precedence over `$VISUAL`,
- * then `$EDITOR`.
- * Windows falls back to `notepad.exe`;
- * other platforms fall back to `vi`.
- *
- * @param configuredEditor - optional user-level config override
- *
- * @param env - editor environment
- *
- * @param platform - runtime operating-system identifier
- *
- * @returns executable followed by configured editor arguments
- *
- * @throws {@link EditorCommandError} when selected command is empty or uses unsupported shell syntax
- *
- * @example
- * ```ts
- * resolveEditorCommand({ env: { EDITOR: 'code --wait' }, platform: 'linux' });
- * ```
+ Resolves a blocking editor command from user config and standard environment variables.
+ 
+ User config takes precedence over `$VISUAL`,
+ then `$EDITOR`.
+ Windows falls back to `notepad.exe`;
+ other platforms fall back to `vi`.
+ 
+ @param configuredEditor - optional user-level config override
+ 
+ @param env - editor environment
+ 
+ @param platform - runtime operating-system identifier
+ 
+ @returns executable followed by configured editor arguments
+ 
+ @throws {@link EditorCommandError} when selected command is empty or uses unsupported shell syntax
+ 
+ @example
+ ```ts
+ resolveEditorCommand({ env: { EDITOR: 'code --wait' }, platform: 'linux' });
+ ```
  */
 export function resolveEditorCommand(
   {
@@ -115,7 +115,7 @@ export function resolveEditorCommand(
     > 0))
     return parseEditorCommand({ command: configuredEditor.trim(), },);
   /**
-   * Preferred visual editor from external process environment.
+   Preferred visual editor from external process environment.
    */
   const visual = env.VISUAL;
   if (((typeof visual) === 'string') && (visual.trim()
@@ -123,7 +123,7 @@ export function resolveEditorCommand(
     > 0))
     return parseEditorCommand({ command: visual.trim(), },);
   /**
-   * General editor from external process environment.
+   General editor from external process environment.
    */
   const editor = env.EDITOR;
   if (((typeof editor) === 'string') && (editor.trim()
@@ -138,19 +138,19 @@ export function resolveEditorCommand(
 }
 
 /**
- * Parses one configured editor command through terminal-exec tokenizer.
- *
- * @param command - nonblank editor command
- *
- * @returns executable and configured arguments
- *
- * @throws {@link EditorCommandError} when command uses unsupported syntax
+ Parses one configured editor command through terminal-exec tokenizer.
+ 
+ @param command - nonblank editor command
+ 
+ @returns executable and configured arguments
+ 
+ @throws {@link EditorCommandError} when command uses unsupported syntax
  */
 function parseEditorCommand(
   { command, }: { readonly command: string; },
 ): readonly string[] {
   /**
-   * Parsed executable and argument vector.
+   Parsed executable and argument vector.
    */
   const parsed = tokenizeExec({ exec: command, },);
   if ((parsed === INVALID_EXEC) || (parsed.length === 0))

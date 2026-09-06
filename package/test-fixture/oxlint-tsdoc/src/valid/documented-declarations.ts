@@ -2,64 +2,64 @@
 // Expected: zero tsdoc rule violations.
 
 /**
- * Adds two numbers.
- *
- * @param a - first operand
- *
- * @param b - second operand
- *
- * @returns sum of a and b
- *
- * @example
- * ```ts
- * add(1, 2); // => 3
- * ```
+ Adds two numbers.
+ 
+ @param a - first operand
+ 
+ @param b - second operand
+ 
+ @returns sum of a and b
+ 
+ @example
+ ```ts
+ add(1, 2); // => 3
+ ```
  */
 function add(a: number, b: number,): number {
   return a + b;
 }
 
 /**
- * Logs a message.
- *
- * @example
- * ```ts
- * log();
- * ```
+ Logs a message.
+ 
+ @example
+ ```ts
+ log();
+ ```
  */
 function log(): void {}
 
 /**
- * Available directions.
+ Available directions.
  */
 type Direction = 'up' | 'down' | 'left' | 'right';
 
 /**
- * Configuration shape.
+ Configuration shape.
  */
 type Config = {
   /**
-   * Enables verbose logging.
+   Enables verbose logging.
    */
   debug: boolean;
 };
 
 /**
- * Status codes.
+ Status codes.
  */
 enum Status {
   /**
-   * Request succeeded.
+   Request succeeded.
    */
   Ok = 200,
   /**
-   * Resource not found.
+   Resource not found.
    */
   NotFound = 404,
 }
 
 /**
- * Maximum retry attempts.
+ Maximum retry attempts.
  */
 const MAX_RETRIES = 3;
 

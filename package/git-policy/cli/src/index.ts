@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Cli-git authoring exports and direct executable entry.
- *
- * @module
+ Cli-git authoring exports and direct executable entry.
+ 
+ @module
  */
 
 import { runCliGit, } from './bin.ts';

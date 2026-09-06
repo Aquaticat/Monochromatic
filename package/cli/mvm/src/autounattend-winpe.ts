@@ -1,7 +1,7 @@
 /**
- * Windows PE settings pass for Autounattend.xml generation.
- * Produces the `windowsPE` section with internationalization, disk
- * partitioning, image selection, and VirtIO driver loading configuration.
+ Windows PE settings pass for Autounattend.xml generation.
+ Produces the `windowsPE` section with internationalization, disk
+ partitioning, image selection, and VirtIO driver loading configuration.
  */
 
 import {
@@ -10,19 +10,19 @@ import {
 } from './autounattend-virtio.ts';
 
 /**
- * Generates the windowsPE settings pass for Autounattend.xml.
- * Configures locale, MBR disk partitioning, WIM image selection by index,
- * and PnP driver paths via {@link pnpDriverPaths} for VirtIO storage and
- * network during WinPE.
- *
- * @param imageIndex - WIM image index for OS edition selection
- *
- * @returns XML string for the complete `<settings pass="windowsPE">` block
- *
- * @example
- * ```ts
- * windowsPeSection({ imageIndex: 1 }); // => '  <settings pass="windowsPE">...'
- * ```
+ Generates the windowsPE settings pass for Autounattend.xml.
+ Configures locale, MBR disk partitioning, WIM image selection by index,
+ and PnP driver paths via {@link pnpDriverPaths} for VirtIO storage and
+ network during WinPE.
+ 
+ @param imageIndex - WIM image index for OS edition selection
+ 
+ @returns XML string for the complete `<settings pass="windowsPE">` block
+ 
+ @example
+ ```ts
+ windowsPeSection({ imageIndex: 1 }); // => '  <settings pass="windowsPE">...'
+ ```
  */
 export function windowsPeSection({ imageIndex, }: { readonly imageIndex: number; },): string {
   return `  <settings pass="windowsPE">

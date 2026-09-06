@@ -1,7 +1,7 @@
 /**
- * Semantic call classification for callable effect summaries.
- *
- * @module
+ Semantic call classification for callable effect summaries.
+ 
+ @module
  */
 
 import type {
@@ -68,34 +68,34 @@ import { recordResultRetentionSites, } from './effect-result-substitution.ts';
 import { handoffProvenance, } from './effect-retention-provenance.ts';
 
 /**
- * Classifies one call as callback invocation, owned source edge, derived package edge, or opaque boundary.
- *
- * @param project - TypeScript project resolving symbols.
- *
- * @param checker - TypeScript checker resolving call receiver.
- *
- * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
- *
- * @param containerLiteralHolders - Bindings holding a container this callable built.
- *
- * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
- *
- * @param call - Call expression to classify.
- *
- * @param summary - Current callable summary receiving facts.
- *
- * @param foreignInbound - Whether call belongs directly to summary callable.
- *
- * @param analysisRoot - Optional external implementation root accepted for owned call edges.
- *
- * @param externalEffectResolver - Demand-driven package implementation analyzer.
- *
- * @mutates summary - Adds call, mutation, callback, or opaque effect facts.
- *
- * @example
- * ```ts
- * inspectEffectCall({ project, checker, bindingOriginBySymbolId, call, summary });
- * ```
+ Classifies one call as callback invocation, owned source edge, derived package edge, or opaque boundary.
+ 
+ @param project - TypeScript project resolving symbols.
+ 
+ @param checker - TypeScript checker resolving call receiver.
+ 
+ @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
+ 
+ @param containerLiteralHolders - Bindings holding a container this callable built.
+ 
+ @param bindingOriginBySymbolId - Current callable parameter and alias origins.
+ 
+ @param call - Call expression to classify.
+ 
+ @param summary - Current callable summary receiving facts.
+ 
+ @param foreignInbound - Whether call belongs directly to summary callable.
+ 
+ @param analysisRoot - Optional external implementation root accepted for owned call edges.
+ 
+ @param externalEffectResolver - Demand-driven package implementation analyzer.
+ 
+ @mutates summary - Adds call, mutation, callback, or opaque effect facts.
+ 
+ @example
+ ```ts
+ inspectEffectCall({ project, checker, bindingOriginBySymbolId, call, summary });
+ ```
  */
 export function inspectEffectCall({
   project,
@@ -123,7 +123,7 @@ export function inspectEffectCall({
   readonly body?: Node;
 },): void {
   /**
-   * Caller parameter roots corresponding to call arguments.
+   Caller parameter roots corresponding to call arguments.
    */
   const allArgumentIndexes = call.arguments
     .map(function argumentIndex(argument,): readonly EffectSlot[] {
@@ -134,7 +134,7 @@ export function inspectEffectCall({
       },);
     },);
   /**
-   * Parameters the direct callee identifier can hold, when it is a callback.
+   Parameters the direct callee identifier can hold, when it is a callback.
    */
   const callbackParameterOrigins = isIdentifier(call.expression,)
     ? rootParameterOrigins({
@@ -154,7 +154,7 @@ export function inspectEffectCall({
         callbackArgumentPosition,
       ): void {
         /**
-         * Source parameter passed to callback argument, when direct.
+         Source parameter passed to callback argument, when direct.
          */
         const sourceSlots = parameterIndexes({
           project,
@@ -257,11 +257,11 @@ export function inspectEffectCall({
   }
 
   /**
-   * Selected call signature for overload-aware declaration resolution.
+   Selected call signature for overload-aware declaration resolution.
    */
   const resolvedSignature = checker.getResolvedSignature(call,);
   /**
-   * Function-like declaration selected by resolved signature.
+   Function-like declaration selected by resolved signature.
    */
   const resolvedDeclaration = resolvedSignature
     ?.declaration
@@ -278,7 +278,7 @@ export function inspectEffectCall({
    * question left is what its result shares with what it read. */
   if (resolvedDeclaration !== undefined) {
     /**
-     * Verified reader and the value it reads, when this call is one.
+     Verified reader and the value it reads, when this call is one.
      */
     const reader = verifiedReaderCall({
       project,
@@ -306,11 +306,11 @@ export function inspectEffectCall({
     }
   }
   /**
-   * Expression the call was made on, however the member was named.
+   Expression the call was made on, however the member was named.
    */
   const collectionReceiver = memberCallReceiver({ call, },);
   /**
-   * How much of a default-library collection call the derivation answered.
+   How much of a default-library collection call the derivation answered.
    */
   const collectionCoverage = (resolvedDeclaration !== undefined)
       && (collectionReceiver !== NO_MEMBER_RECEIVER)
@@ -340,17 +340,17 @@ export function inspectEffectCall({
    * it. Treating the call as unresolved is what the rule already does everywhere it cannot see
    * the body that runs. */
   /**
-   * Whether the resolved declaration is an instance method a subclass may override.
+   Whether the resolved declaration is an instance method a subclass may override.
    */
   const overridable = (resolvedDeclaration !== undefined)
     && isOverridableMethod({ declaration: resolvedDeclaration, },);
   /**
-   * Whether the signature resolved to a callable this analysis can inspect.
+   Whether the signature resolved to a callable this analysis can inspect.
    */
   const resolvedIsOwnedCallable = (resolvedDeclaration !== undefined)
     && isEffectCallableDeclaration(resolvedDeclaration,);
   /**
-   * Owned callee declaration selected by signature, when one body certainly runs.
+   Owned callee declaration selected by signature, when one body certainly runs.
    */
   const signatureCallee = (resolvedIsOwnedCallable && (!overridable))
     ? callableDeclaration({
@@ -360,7 +360,7 @@ export function inspectEffectCall({
     },)
     : OWNED_CALLABLE_UNAVAILABLE;
   /**
-   * Owned callee selected by signature or expression symbol fallback.
+   Owned callee selected by signature or expression symbol fallback.
    */
   const callee = ((signatureCallee === OWNED_CALLABLE_UNAVAILABLE) && (!overridable))
     ? callableDeclaration({
@@ -379,7 +379,7 @@ export function inspectEffectCall({
   if ((callee === OWNED_CALLABLE_UNAVAILABLE)
     && (resolvedDeclaration !== undefined)) {
     /**
-     * Demand-driven effect inferred from exact shipped package implementation.
+     Demand-driven effect inferred from exact shipped package implementation.
      */
     const externalEffect = externalEffectResolver({
       consumerProject: project,

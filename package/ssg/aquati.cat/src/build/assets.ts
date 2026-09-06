@@ -1,7 +1,7 @@
 /**
- * Asset generation for the SSG build.
- *
- * Generates CSS, RSS feeds, and copies static assets to dist.
+ Asset generation for the SSG build.
+ 
+ Generates CSS, RSS feeds, and copies static assets to dist.
  */
 import {
   copyFile,
@@ -28,12 +28,12 @@ import {
 } from './write-page.ts';
 
 /**
- * Copies all files from a source directory into dist, preserving relative structure.
- * Creates target directories before copying.
- *
- * @param sourceDir - base directory to copy from
- *
- * @param files - absolute file paths to copy
+ Copies all files from a source directory into dist, preserving relative structure.
+ Creates target directories before copying.
+ 
+ @param sourceDir - base directory to copy from
+ 
+ @param files - absolute file paths to copy
  */
 async function copyTreeToDist(
   {
@@ -45,7 +45,7 @@ async function copyTreeToDist(
   },
 ): Promise<void> {
   /**
-   * Deduplicated parent directories pre-created before the per-file copy fan-out.
+   Deduplicated parent directories pre-created before the per-file copy fan-out.
    */
   const targetDirs = [...new Set(
     files.map(function targetDir(filePath,) {
@@ -85,23 +85,23 @@ async function copyTreeToDist(
 }
 
 /**
- * Generates CSS, RSS feeds, and copies static assets to dist.
- *
- * @param siteUrl - base URL for RSS feed links
- *
- * @param contentDir - content source directory path
- *
- * @param byLang - posts grouped by locale (pre-computed by build orchestrator)
- *
- * @param validLangs - locale codes present in the content
- *
- * @param l - parent logger for tagged output
- *
- *
- * @example
- * ```ts
- * await generateAssets({ siteUrl: 'https://example.com', contentDir: 'src/content', byLang, validLangs, l: rootLogger });
- * ```
+ Generates CSS, RSS feeds, and copies static assets to dist.
+ 
+ @param siteUrl - base URL for RSS feed links
+ 
+ @param contentDir - content source directory path
+ 
+ @param byLang - posts grouped by locale (pre-computed by build orchestrator)
+ 
+ @param validLangs - locale codes present in the content
+ 
+ @param l - parent logger for tagged output
+ 
+ 
+ @example
+ ```ts
+ await generateAssets({ siteUrl: 'https://example.com', contentDir: 'src/content', byLang, validLangs, l: rootLogger });
+ ```
  */
 export async function generateAssets(
   {
@@ -119,11 +119,11 @@ export async function generateAssets(
   },
 ): Promise<void> {
   /**
-   * Parent logger retained by tagged wrapper.
+   Parent logger retained by tagged wrapper.
    */
   const parentLogger = l;
   /**
-   * Function-scoped logger tagged with the caller name for traceable log lines.
+   Function-scoped logger tagged with the caller name for traceable log lines.
    */
   const childLogger = tagged({
     tag: generateAssets.name,
@@ -131,16 +131,16 @@ export async function generateAssets(
   },);
 
   /**
-   * Per-language RSS write promises kicked off concurrently.
+   Per-language RSS write promises kicked off concurrently.
    */
   const rssWrites = validLangs.map(function writeRss(lang,) {
     /**
-     * Posts narrowed to this locale; absent locales yield an empty feed instead of an error.
+     Posts narrowed to this locale; absent locales yield an empty feed instead of an error.
      */
     const langPosts = byLang.get(lang,)
       ?? [];
     /**
-     * Pre-rendered XML body written to `{lang}/rss.xml`.
+     Pre-rendered XML body written to `{lang}/rss.xml`.
      */
     const rssXml = generateLanguageRss({
       lang,
@@ -156,7 +156,7 @@ export async function generateAssets(
   // Copies all content files (including MDX source) to dist intentionally,
   // so readers can inspect the original source of any post.
   /**
-   * Directory listings for content and public trees fetched concurrently.
+   Directory listings for content and public trees fetched concurrently.
    */
   const [contentResult, publicResult,] = await Promise.all([
     readdir(`${contentDir}/**/*`,),
@@ -164,7 +164,7 @@ export async function generateAssets(
   ],);
 
   /**
-   * robots.txt allowing all crawlers with sitemap references.
+   robots.txt allowing all crawlers with sitemap references.
    */
   const robotsTxt = [
     'User-agent: *',

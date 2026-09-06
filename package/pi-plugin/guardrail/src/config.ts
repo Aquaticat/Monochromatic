@@ -1,7 +1,7 @@
 /**
- * Global configuration loading for pi guardrail.
- *
- * @module
+ Global configuration loading for pi guardrail.
+ 
+ @module
  */
 
 import { homedir, } from 'node:os';
@@ -24,15 +24,15 @@ import type {
 //region Types
 
 /**
- * Options for loading global guardrail config.
+ Options for loading global guardrail config.
  */
 type LoadGuardrailConfigOptions = {
   /**
-   * Home directory override for tests.
+   Home directory override for tests.
    */
   readonly home?: string;
   /**
-   * Config reader dependency for tests.
+   Config reader dependency for tests.
    */
   readonly readConfigFile?: (path: string) => Promise<string>;
 };
@@ -42,48 +42,48 @@ type LoadGuardrailConfigOptions = {
 //region Public API
 
 /**
- * Loads global pi guardrail config and merges built-in defaults.
- *
- * Config is optional. When present, it may be a direct map from gitignore-style
- * pattern to refusal message, matching the short user-facing shape, or an
- * advanced object with `pathRules` and `blockBunTest` fields.
- *
- * @param options - test overrides for home, env, and file reading
- *
- * @returns runtime guardrail config
- *
- * @example
- * ```typescript
- * const config = await loadGuardrailConfig();
- * ```
+ Loads global pi guardrail config and merges built-in defaults.
+ 
+ Config is optional. When present, it may be a direct map from gitignore-style
+ pattern to refusal message, matching the short user-facing shape, or an
+ advanced object with `pathRules` and `blockBunTest` fields.
+ 
+ @param options - test overrides for home, env, and file reading
+ 
+ @returns runtime guardrail config
+ 
+ @example
+ ```typescript
+ const config = await loadGuardrailConfig();
+ ```
  */
 async function loadGuardrailConfig(
   options: LoadGuardrailConfigOptions = {},
 ): Promise<GuardrailConfig> {
   /**
-   * HOME environment value read separately for chain formatting.
+   HOME environment value read separately for chain formatting.
    */
   const processHome = process.env
     .HOME;
   /**
-   * Home directory used for global config lookup.
+   Home directory used for global config lookup.
    */
   const home = options.home
     ?? processHome
     ?? homedir();
   /**
-   * Config path in the pi global extension config directory.
+   Config path in the pi global extension config directory.
    */
   const configPath = configPathForHome({ home, },);
   /**
-   * Optional JSON config read result.
+   Optional JSON config read result.
    */
   const readResult = await readOptionalConfigJson({
     configPath,
     readConfigFile: options.readConfigFile ?? defaultReadConfigFile,
   },);
   /**
-   * User config normalized to ordered path rules and optional scalar settings.
+   User config normalized to ordered path rules and optional scalar settings.
    */
   const normalized = readResult.loaded
     ? normalizeConfigFile({

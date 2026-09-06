@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Explicit command boundary for retiring hk Git-config registrations.
- *
- * Invoke only through the root `cleanup:hk-git-config` mise task.
- *
- * @module
+ Explicit command boundary for retiring hk Git-config registrations.
+ 
+ Invoke only through the root `cleanup:hk-git-config` mise task.
+ 
+ @module
  */
 
 import {
@@ -16,19 +16,19 @@ import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable
 //region Cleanup command -- Require explicit scopes and report exact removed keys.
 
 /**
- * Whether caller explicitly authorized current-repository cleanup.
+ Whether caller explicitly authorized current-repository cleanup.
  */
 const cleansLocal = process.env
   .usage_local
   === 'true';
 /**
- * Whether caller explicitly authorized per-user global cleanup.
+ Whether caller explicitly authorized per-user global cleanup.
  */
 const cleansGlobal = process.env
   .usage_global
   === 'true';
 /**
- * Explicit configuration scopes in stable local-before-global order.
+ Explicit configuration scopes in stable local-before-global order.
  */
 const scopes: readonly HkConfigScope[] = [
   ...(cleansLocal ? ['local' as const,] : []),
@@ -38,17 +38,17 @@ if (scopes.length === 0)
   throw new TypeError('Choose --local, --global, or both for hk Git-config cleanup.',);
 
 /**
- * Repository boundary, overridable only so disposable verification never touches checkout configuration.
+ Repository boundary, overridable only so disposable verification never touches checkout configuration.
  */
 const cleanupCwd = process.env
   .CLI_GIT_HK_CLEANUP_CWD
   ?? process.cwd();
 /**
- * Real Git executable selected with cli-git's self-shim rejection.
+ Real Git executable selected with cli-git's self-shim rejection.
  */
 const gitPath = await resolveGit();
 /**
- * Exact cleanup results from independently owned configuration scopes.
+ Exact cleanup results from independently owned configuration scopes.
  */
 const results = await Promise.all(scopes.map(function cleanScope(scope,) {
   return cleanupHkGitConfig({

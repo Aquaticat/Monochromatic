@@ -10,14 +10,14 @@ import {
 } from './guardrail.ts';
 
 /**
- * Builds a synthetic Agent PreToolUse event with the given tool_input.
- *
- * Test-only helper; production events are produced by Claude Code's hook
- * dispatcher and parsed via `guardrailParser`.
- *
- * @param toolInput - shape passed to the Agent tool
- *
- * @returns event object that satisfies {@link PreToolUseInput}
+ Builds a synthetic Agent PreToolUse event with the given tool_input.
+ 
+ Test-only helper; production events are produced by Claude Code's hook
+ dispatcher and parsed via `guardrailParser`.
+ 
+ @param toolInput - shape passed to the Agent tool
+ 
+ @returns event object that satisfies {@link PreToolUseInput}
  */
 function makeAgentEvent(toolInput: Record<string, unknown>,): PreToolUseInput {
   return {
@@ -33,11 +33,11 @@ function makeAgentEvent(toolInput: Record<string, unknown>,): PreToolUseInput {
 }
 
 /**
- * Builds a synthetic Bash PreToolUse event with the given command string.
- *
- * @param command - shell command that the Bash tool would execute
- *
- * @returns event object that satisfies {@link PreToolUseInput}
+ Builds a synthetic Bash PreToolUse event with the given command string.
+ 
+ @param command - shell command that the Bash tool would execute
+ 
+ @returns event object that satisfies {@link PreToolUseInput}
  */
 function makeBashEvent(command: string,): PreToolUseInput {
   return {
@@ -53,11 +53,11 @@ function makeBashEvent(command: string,): PreToolUseInput {
 }
 
 /**
- * Returns whether the handler output is a deny response.
- *
- * @param output - value returned by {@link guardrailHandler}
- *
- * @returns `true` when `output` carries a deny decision
+ Returns whether the handler output is a deny response.
+ 
+ @param output - value returned by {@link guardrailHandler}
+ 
+ @returns `true` when `output` carries a deny decision
  */
 function isDeny(output: GuardrailOutput,): boolean {
   return ('hookSpecificOutput' in output)

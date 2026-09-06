@@ -1,7 +1,7 @@
 /**
- * Project-owned caller resolution and collection-observer graph insertion.
- *
- * @module
+ Project-owned caller resolution and collection-observer graph insertion.
+ 
+ @module
  */
 
 import type {
@@ -22,18 +22,18 @@ import { foreignBorrowedOwnershipSeed, } from './foreign-borrowed-direct-summary
 import { addForeignObserverInbound, } from './foreign-borrowed-observer-edge.ts';
 
 /**
- * Finds nearest callable owner admitted by effect source policy.
- *
- * @param node - Call expression whose caller is needed.
- *
- * @param indexedSourceFiles - Sources admitted as owned.
- *
- * @returns caller declaration or unavailable sentinel.
- *
- * @example
- * ```ts
- * nearestForeignOwnedCallable({ node: call, indexedSourceFiles });
- * ```
+ Finds nearest callable owner admitted by effect source policy.
+ 
+ @param node - Call expression whose caller is needed.
+ 
+ @param indexedSourceFiles - Sources admitted as owned.
+ 
+ @returns caller declaration or unavailable sentinel.
+ 
+ @example
+ ```ts
+ nearestForeignOwnedCallable({ node: call, indexedSourceFiles });
+ ```
  */
 export function nearestForeignOwnedCallable({
   node,
@@ -43,14 +43,14 @@ export function nearestForeignOwnedCallable({
   readonly indexedSourceFiles: ReadonlyMap<string, SourceFile>;
 }): EffectCallableDeclaration | typeof OWNED_CALLABLE_UNAVAILABLE {
   /**
-   * Parent cursor seeking callable boundary.
+   Parent cursor seeking callable boundary.
    */
   const cursor: { current: Node; } = { current: node.parent, };
   while (!isEffectCallableDeclaration(cursor.current,)) {
     /**
-     * Next parent,
-     * self-parented source boundary,
-     * or absent past source root.
+     Next parent,
+     self-parented source boundary,
+     or absent past source root.
      */
     const { parent, } = cursor.current;
     if ((parent === undefined) || (parent === cursor.current))
@@ -65,37 +65,37 @@ export function nearestForeignOwnedCallable({
 }
 
 /**
- * Adds one exact collection-observer inbound and queues its enclosing caller.
- *
- * @param project - Project resolving observer relation.
- *
- * @param indexedSourceFiles - Sources admitted as owned.
- *
- * @param summaries - Mutable ownership graph summaries.
- *
- * @param queue - Caller declarations awaiting inbound discovery.
- *
- * @param call - Collection call carrying observer.
- *
- * @param observerDeclaration - Observer declaration receiving receiver state.
- *
- * @returns whether supported observer edge was added.
- *
- * @mutates summaries - Adds caller ownership seed and observer edge.
- *
- * @mutates queue - Appends enclosing caller declaration.
- *
- * @example
- * ```ts
- * addForeignObserverCaller({
- *   project,
- *   indexedSourceFiles,
- *   summaries,
- *   queue,
- *   call,
- *   observerDeclaration,
- * });
- * ```
+ Adds one exact collection-observer inbound and queues its enclosing caller.
+ 
+ @param project - Project resolving observer relation.
+ 
+ @param indexedSourceFiles - Sources admitted as owned.
+ 
+ @param summaries - Mutable ownership graph summaries.
+ 
+ @param queue - Caller declarations awaiting inbound discovery.
+ 
+ @param call - Collection call carrying observer.
+ 
+ @param observerDeclaration - Observer declaration receiving receiver state.
+ 
+ @returns whether supported observer edge was added.
+ 
+ @mutates summaries - Adds caller ownership seed and observer edge.
+ 
+ @mutates queue - Appends enclosing caller declaration.
+ 
+ @example
+ ```ts
+ addForeignObserverCaller({
+   project,
+   indexedSourceFiles,
+   summaries,
+   queue,
+   call,
+   observerDeclaration,
+ });
+ ```
  */
 export function addForeignObserverCaller({
   project,
@@ -113,7 +113,7 @@ export function addForeignObserverCaller({
   readonly observerDeclaration: EffectCallableDeclaration;
 }): boolean {
   /**
-   * Nearest project-owned callable containing collection call.
+   Nearest project-owned callable containing collection call.
    */
   const caller = nearestForeignOwnedCallable({
     node: call,
@@ -122,11 +122,11 @@ export function addForeignObserverCaller({
   if (caller === OWNED_CALLABLE_UNAVAILABLE)
     return false;
   /**
-   * Stable caller identity for graph summary.
+   Stable caller identity for graph summary.
    */
   const callerKey = callableKey(caller,);
   /**
-   * Caller ownership seed receiving synthetic observer edge.
+   Caller ownership seed receiving synthetic observer edge.
    */
   const callerSummary = summaries.get(callerKey,)
     ?? foreignBorrowedOwnershipSeed({

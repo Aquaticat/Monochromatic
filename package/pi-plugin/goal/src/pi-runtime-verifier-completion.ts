@@ -1,7 +1,7 @@
 /**
- * Default noninteractive settlement-review exhaustion runtime scenario.
- *
- * @module
+ Default noninteractive settlement-review exhaustion runtime scenario.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -13,18 +13,18 @@ import {
 import type { GoalRuntimeHarness, } from './pi-runtime-verifier-harness.ts';
 
 /**
- * Verify discovered settlement review terminates when reviewers are unavailable.
- *
- * @param harness - real-loader harness positioned on active branch
- *
- * @returns exhaustion scenario summary
- *
- * @throws when tool inventory, terminal state, or footer differs
- *
- * @example
- * ```ts
- * await verifyDefaultCompletionExhaustion(harness);
- * ```
+ Verify discovered settlement review terminates when reviewers are unavailable.
+ 
+ @param harness - real-loader harness positioned on active branch
+ 
+ @returns exhaustion scenario summary
+ 
+ @throws when tool inventory, terminal state, or footer differs
+ 
+ @example
+ ```ts
+ await verifyDefaultCompletionExhaustion(harness);
+ ```
  */
 async function verifyDefaultCompletionExhaustion(
   harness: GoalRuntimeHarness,
@@ -41,7 +41,7 @@ async function verifyDefaultCompletionExhaustion(
     stopReason: 'stop',
   },);
   /**
-   * Latest persisted private goal-state event.
+   Latest persisted private goal-state event.
    */
   const latestGoalEvent = harness.sessionManager
     .getBranch()

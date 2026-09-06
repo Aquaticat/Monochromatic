@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Imports an already-built qcow2 disk image into libvirt as a VM.
- * Skips the container build and bootc-image-builder conversion steps.
- * Use this after `mise run ...:run` has built the qcow2 at least once.
- *
- * Run: mise run //package/dev-script/vm-builder:import
+ Imports an already-built qcow2 disk image into libvirt as a VM.
+ Skips the container build and bootc-image-builder conversion steps.
+ Use this after `mise run ...:run` has built the qcow2 at least once.
+ 
+ Run: mise run //package/dev-script/vm-builder:import
  */
 import { exec, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 import { findUp, } from 'find-up';
@@ -26,35 +26,35 @@ import { generateDomainXml, } from './domain-xml.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 /**
- * Libvirt domain name.
+ Libvirt domain name.
  */
 const VM_NAME = 'monochromatic-dev';
 
 /**
- * VM memory in MiB (16 GiB).
+ VM memory in MiB (16 GiB).
  */
 const VM_MEMORY_MIB = '16384';
 
 /**
- * Virtual CPU count.
+ Virtual CPU count.
  */
 const VM_VCPUS = '8';
 
 /**
- * Absolute path to this package's root directory.
- * Found by walking up from the script's directory to find the nearest `package.json`.
+ Absolute path to this package's root directory.
+ Found by walking up from the script's directory to find the nearest `package.json`.
  */
 const packageJson = await findUp('package.json',);
 if (packageJson === undefined)
   throw new Error('could not find package.json for vm-builder',);
 
 /**
- * Resolved absolute path to the vm-builder package directory.
+ Resolved absolute path to the vm-builder package directory.
  */
 const PACKAGE_DIR = resolve(dirname(packageJson,),);
 
 /**
- * Directory where bootc-image-builder wrote its output.
+ Directory where bootc-image-builder wrote its output.
  */
 const OUTPUT_DIR = join(
   PACKAGE_DIR,
@@ -62,7 +62,7 @@ const OUTPUT_DIR = join(
 );
 
 /**
- * Path to the qcow2 disk image built by bootc-image-builder.
+ Path to the qcow2 disk image built by bootc-image-builder.
  */
 const BUILD_QCOW2_PATH = join(
   OUTPUT_DIR,
@@ -71,15 +71,15 @@ const BUILD_QCOW2_PATH = join(
 );
 
 /**
- * Path where the qcow2 is copied for libvirt access.
- * `/var/lib/libvirt/images/` has SELinux context `virt_image_t`,
- * which allows QEMU (running in `svirt_t`) to read and write the image.
- * Files in the user's home directory have `user_home_t` which QEMU cannot access.
+ Path where the qcow2 is copied for libvirt access.
+ `/var/lib/libvirt/images/` has SELinux context `virt_image_t`,
+ which allows QEMU (running in `svirt_t`) to read and write the image.
+ Files in the user's home directory have `user_home_t` which QEMU cannot access.
  */
 const LIBVIRT_IMAGES_DIR = '/var/lib/libvirt/images';
 
 /**
- * Final qcow2 path under the libvirt images directory for QEMU access.
+ Final qcow2 path under the libvirt images directory for QEMU access.
  */
 const QCOW2_PATH = join(
   LIBVIRT_IMAGES_DIR,
@@ -87,18 +87,18 @@ const QCOW2_PATH = join(
 );
 
 /**
- * libvirt session URI: no sudo needed.
+ libvirt session URI: no sudo needed.
  */
 const LIBVIRT_URI = 'qemu:///session';
 
 /**
- * Spawns a command with inherited stdio for progress feedback.
- *
- * @param cmd - Executable name
- *
- * @param args - Arguments passed to the command
- *
- * @throws When the command exits with a non-zero code
+ Spawns a command with inherited stdio for progress feedback.
+ 
+ @param cmd - Executable name
+ 
+ @param args - Arguments passed to the command
+ 
+ @throws When the command exits with a non-zero code
  */
 async function run(
   {
@@ -110,7 +110,7 @@ async function run(
   },
 ): Promise<void> {
   /**
-   * Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code.
+   Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code.
    */
   const child = nodeSpawn(
     cmd,
@@ -126,11 +126,11 @@ async function run(
 }
 
 /**
- * Destroys and undefines an existing libvirt domain if it exists.
- * No-op when the domain is not defined; the existence probe's failure is
- * logged via {@link caughtValueText}.
- *
- * @param name - Libvirt domain name to remove
+ Destroys and undefines an existing libvirt domain if it exists.
+ No-op when the domain is not defined; the existence probe's failure is
+ logged via {@link caughtValueText}.
+ 
+ @param name - Libvirt domain name to remove
  */
 async function undefineVmIfExists(name: string,): Promise<void> {
   try {
@@ -152,7 +152,7 @@ async function undefineVmIfExists(name: string,): Promise<void> {
   }
   console.log(`[vm-builder] removing existing VM '${name}'...`,);
   /**
-   * Current domain state from `virsh domstate`; `'running'` requires `destroy` before `undefine`.
+   Current domain state from `virsh domstate`; `'running'` requires `destroy` before `undefine`.
    */
   const state = (await exec({
     cmd: 'virsh',
@@ -188,15 +188,15 @@ async function undefineVmIfExists(name: string,): Promise<void> {
 }
 
 /**
- * Imports the qcow2 disk image into libvirt using XML rendered by
- * {@link generateDomainXml}.
- *
- * @param name - Libvirt domain name to create
+ Imports the qcow2 disk image into libvirt using XML rendered by
+ {@link generateDomainXml}.
+ 
+ @param name - Libvirt domain name to create
  */
 async function importVm(name: string,): Promise<void> {
   console.log(`[vm-builder] importing '${name}' into libvirt...`,);
   /**
-   * Domain XML rendered for {@link name}; consumed by `virsh define`.
+   Domain XML rendered for {@link name}; consumed by `virsh define`.
    */
   const xml = generateDomainXml({
     name,
@@ -205,7 +205,7 @@ async function importVm(name: string,): Promise<void> {
     qcow2Path: QCOW2_PATH,
   },);
   /**
-   * On-disk location of {@link xml}; `virsh define` reads from this path, not stdin.
+   On-disk location of {@link xml}; `virsh define` reads from this path, not stdin.
    */
   const xmlPath = join(
     OUTPUT_DIR,
@@ -227,9 +227,9 @@ async function importVm(name: string,): Promise<void> {
 }
 
 /**
- * Grants the virt-manager Flatpak read-write access to {@link OUTPUT_DIR}.
- * No-op if virt-manager is not installed as a Flatpak; the probe's failure
- * is logged via {@link caughtValueText}.
+ Grants the virt-manager Flatpak read-write access to {@link OUTPUT_DIR}.
+ No-op if virt-manager is not installed as a Flatpak; the probe's failure
+ is logged via {@link caughtValueText}.
  */
 async function grantFlatpakAccess(): Promise<void> {
   try {
@@ -262,10 +262,10 @@ async function grantFlatpakAccess(): Promise<void> {
 }
 
 /**
- * Copies the built qcow2 to {@link LIBVIRT_IMAGES_DIR} where SELinux
- * labels it `virt_image_t`, allowing QEMU to access it.
- * Uses `sudo cp` because {@link LIBVIRT_IMAGES_DIR} is root-owned,
- * then restores ownership to the current user.
+ Copies the built qcow2 to {@link LIBVIRT_IMAGES_DIR} where SELinux
+ labels it `virt_image_t`, allowing QEMU to access it.
+ Uses `sudo cp` because {@link LIBVIRT_IMAGES_DIR} is root-owned,
+ then restores ownership to the current user.
  */
 async function copyToLibvirtImages(): Promise<void> {
   console.log(`[vm-builder] copying qcow2 to ${LIBVIRT_IMAGES_DIR}...`,);
@@ -278,7 +278,7 @@ async function copyToLibvirtImages(): Promise<void> {
     ],
   },);
   /**
-   * Login name used to restore ownership of the qcow2 after the root-owned `sudo cp`.
+   Login name used to restore ownership of the qcow2 after the root-owned `sudo cp`.
    */
   const currentUser = process.env
     .USER

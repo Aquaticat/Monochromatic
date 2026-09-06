@@ -15,13 +15,13 @@ import {
 //region CLI: parses args and runs the build
 
 /**
- * TODO: deprecate Optique
- * Optique parser for the CSS build tool CLI.
- *
- * @example
- * ```bash
- * build-css src/main.css dist/bundle.css
- * ```
+ TODO: deprecate Optique
+ Optique parser for the CSS build tool CLI.
+ 
+ @example
+ ```bash
+ build-css src/main.css dist/bundle.css
+ ```
  */
 const parser = object({
   input: argument(string({ metavar: 'INPUT', },),),
@@ -29,8 +29,8 @@ const parser = object({
 },);
 
 /**
- * TODO: deprecate Optique
- * Parsed CLI arguments cast to the shared build options type
+ TODO: deprecate Optique
+ Parsed CLI arguments cast to the shared build options type
  */
 const args: CssBuildOptions = runSync(
   parser,

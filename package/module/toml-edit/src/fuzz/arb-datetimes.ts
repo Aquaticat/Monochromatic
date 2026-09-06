@@ -1,14 +1,14 @@
 /**
- * Datetime value arbitraries for the fuzz generators.
- *
- * Covers all four RFC-3339 / TOML kinds: offset datetime, local datetime, local
- * date, and local time. Components are bounded to always-valid ranges (day at
- * most 28 to dodge month-length and leap rules, which have their own fixtures)
- * so every generated value parses. Samples omit a predicted value because the
- * parser projects these to host-zone-shifted `Date`s; properties assert parse
- * success and round-trip instead.
- *
- * @module
+ Datetime value arbitraries for the fuzz generators.
+ 
+ Covers all four RFC-3339 / TOML kinds: offset datetime, local datetime, local
+ date, and local time. Components are bounded to always-valid ranges (day at
+ most 28 to dodge month-length and leap rules, which have their own fixtures)
+ so every generated value parses. Samples omit a predicted value because the
+ parser projects these to host-zone-shifted `Date`s; properties assert parse
+ success and round-trip instead.
+ 
+ @module
  */
 
 import {
@@ -22,9 +22,9 @@ import {
 import type { ValueSample, } from './arb-types.ts';
 
 /**
- * Left-pad `value` with zeros to `width` digits.
- *
- * @returns Zero-padded decimal string.
+ Left-pad `value` with zeros to `width` digits.
+ 
+ @returns Zero-padded decimal string.
  */
 function pad({
   value,
@@ -41,7 +41,7 @@ function pad({
 }
 
 /**
- * Arbitrary valid calendar date as `YYYY-MM-DD`.
+ Arbitrary valid calendar date as `YYYY-MM-DD`.
  */
 const dateTextArbitrary: Arbitrary<string> = tuple(
   integer({
@@ -71,7 +71,7 @@ const dateTextArbitrary: Arbitrary<string> = tuple(
 },);
 
 /**
- * Arbitrary valid wall-clock time as `HH:MM:SS`, half with fractional seconds.
+ Arbitrary valid wall-clock time as `HH:MM:SS`, half with fractional seconds.
  */
 const timeTextArbitrary: Arbitrary<string> = tuple(
   integer({
@@ -107,7 +107,7 @@ const timeTextArbitrary: Arbitrary<string> = tuple(
 },);
 
 /**
- * Arbitrary timezone designator: Zulu or a signed offset.
+ Arbitrary timezone designator: Zulu or a signed offset.
  */
 const offsetTextArbitrary: Arbitrary<string> = oneof(
   constantFrom(
@@ -140,7 +140,7 @@ const offsetTextArbitrary: Arbitrary<string> = oneof(
 );
 
 /**
- * Offset datetimes: date and time joined by `T` or a space, then an offset.
+ Offset datetimes: date and time joined by `T` or a space, then an offset.
  */
 const offsetDateTimeArbitrary: Arbitrary<ValueSample> = tuple(
   dateTextArbitrary,
@@ -157,7 +157,7 @@ const offsetDateTimeArbitrary: Arbitrary<ValueSample> = tuple(
 },);
 
 /**
- * Local datetimes: date and time with no offset.
+ Local datetimes: date and time with no offset.
  */
 const localDateTimeArbitrary: Arbitrary<ValueSample> = tuple(
   dateTextArbitrary,
@@ -173,21 +173,21 @@ const localDateTimeArbitrary: Arbitrary<ValueSample> = tuple(
 },);
 
 /**
- * Local dates.
+ Local dates.
  */
 const localDateArbitrary: Arbitrary<ValueSample> = dateTextArbitrary.map(function build(date,) {
   return { text: date, };
 },);
 
 /**
- * Local times.
+ Local times.
  */
 const localTimeArbitrary: Arbitrary<ValueSample> = timeTextArbitrary.map(function build(time,) {
   return { text: time, };
 },);
 
 /**
- * Deterministic datetime examples spanning every kind.
+ Deterministic datetime examples spanning every kind.
  */
 export const DATETIME_EXAMPLES: readonly ValueSample[] = [
   { text: '1979-05-27T07:32:00Z', },
@@ -199,7 +199,7 @@ export const DATETIME_EXAMPLES: readonly ValueSample[] = [
 ];
 
 /**
- * Datetime value arbitrary across all four kinds.
+ Datetime value arbitrary across all four kinds.
  */
 export const datetimeSampleArbitrary: Arbitrary<ValueSample> = oneof(
   offsetDateTimeArbitrary,

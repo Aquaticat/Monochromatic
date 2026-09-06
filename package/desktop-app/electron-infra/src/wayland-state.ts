@@ -1,10 +1,10 @@
 /**
- * Observed-state helpers for pure-Wayland Electron boundary tests.
- *
- * @example
- * ```ts
- * await waitForObservedState({ statePath: '/tmp/state.json', expected: { count: 1 } });
- * ```
+ Observed-state helpers for pure-Wayland Electron boundary tests.
+ 
+ @example
+ ```ts
+ await waitForObservedState({ statePath: '/tmp/state.json', expected: { count: 1 } });
+ ```
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -20,38 +20,38 @@ import {
 } from './wayland-constants.js';
 
 /**
- * Sentinel for an observed state file that has not been written yet.
- *
- * @example
- * ```ts
- * console.log(typeof OBSERVED_STATE_ABSENT);
- * ```
+ Sentinel for an observed state file that has not been written yet.
+ 
+ @example
+ ```ts
+ console.log(typeof OBSERVED_STATE_ABSENT);
+ ```
  */
 const OBSERVED_STATE_ABSENT: unique symbol = Symbol(
   'Boundary test state file has not been written yet',
 );
 
 /**
- * Expected shallow state snapshot.
- *
- * @example
- * ```ts
- * const state: ExpectedObservedState = { count: 1 };
- * ```
+ Expected shallow state snapshot.
+ 
+ @example
+ ```ts
+ const state: ExpectedObservedState = { count: 1 };
+ ```
  */
 export type ExpectedObservedState = JsonObject;
 
 /**
- * Checks whether an unknown value is a supported JSON scalar.
- *
- * @param value - Value to check.
- *
- * @returns Whether value can be compared by the state poller.
- *
- * @example
- * ```ts
- * isJsonScalar(1);
- * ```
+ Checks whether an unknown value is a supported JSON scalar.
+ 
+ @param value - Value to check.
+ 
+ @returns Whether value can be compared by the state poller.
+ 
+ @example
+ ```ts
+ isJsonScalar(1);
+ ```
  */
 function isJsonScalar(value: unknown,): value is JsonScalar {
   return ((typeof value) === 'string')
@@ -60,16 +60,16 @@ function isJsonScalar(value: unknown,): value is JsonScalar {
 }
 
 /**
- * Checks whether a value can be read as a string-keyed unknown record.
- *
- * @param value - Value to check.
- *
- * @returns Whether value is a non-array object.
- *
- * @example
- * ```ts
- * isReadonlyUnknownRecord({ count: 1 });
- * ```
+ Checks whether a value can be read as a string-keyed unknown record.
+ 
+ @param value - Value to check.
+ 
+ @returns Whether value is a non-array object.
+ 
+ @example
+ ```ts
+ isReadonlyUnknownRecord({ count: 1 });
+ ```
  */
 function isReadonlyUnknownRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
   return ((typeof value) === 'object')
@@ -78,25 +78,25 @@ function isReadonlyUnknownRecord(value: unknown,): value is Readonly<Record<stri
 }
 
 /**
- * Parses observed JSON state written by an Electron main process.
- *
- * @param value - Parsed JSON value.
- *
- * @returns Observed shallow JSON state.
- *
- * @throws Error when JSON shape is unexpected.
- *
- * @example
- * ```ts
- * parseObservedState({ value: { count: 1 } });
- * ```
+ Parses observed JSON state written by an Electron main process.
+ 
+ @param value - Parsed JSON value.
+ 
+ @returns Observed shallow JSON state.
+ 
+ @throws Error when JSON shape is unexpected.
+ 
+ @example
+ ```ts
+ parseObservedState({ value: { count: 1 } });
+ ```
  */
 function parseObservedState({ value, }: { readonly value: unknown; },): JsonObject {
   if (!isReadonlyUnknownRecord(value,))
     throw new Error('Observed boundary-test state must be a shallow object.',);
 
   /**
-   * State reconstructed after scalar validation.
+   State reconstructed after scalar validation.
    */
   const state: Record<string, JsonScalar> = {};
 
@@ -112,23 +112,23 @@ function parseObservedState({ value, }: { readonly value: unknown; },): JsonObje
 }
 
 /**
- * Reads observed state file if it exists.
- *
- * @param statePath - State file path written by Electron main process.
- *
- * @returns Parsed observed state, or {@link OBSERVED_STATE_ABSENT} when file is not present yet.
- *
- * @example
- * ```ts
- * await readObservedState({ statePath: '/tmp/state.json' });
- * ```
+ Reads observed state file if it exists.
+ 
+ @param statePath - State file path written by Electron main process.
+ 
+ @returns Parsed observed state, or {@link OBSERVED_STATE_ABSENT} when file is not present yet.
+ 
+ @example
+ ```ts
+ await readObservedState({ statePath: '/tmp/state.json' });
+ ```
  */
 async function readObservedState(
   { statePath, }: { readonly statePath: string; },
 ): Promise<JsonObject | typeof OBSERVED_STATE_ABSENT> {
   try {
     /**
-     * Raw state JSON emitted by Electron main process.
+     Raw state JSON emitted by Electron main process.
      */
     const stateText = await readFile(
       statePath,
@@ -149,18 +149,18 @@ async function readObservedState(
 }
 
 /**
- * Checks whether observed state contains every expected entry.
- *
- * @param expected - Expected shallow state entries.
- *
- * @param observed - Observed shallow state entries.
- *
- * @returns Whether all expected entries match.
- *
- * @example
- * ```ts
- * stateMatches({ observed: { count: 1 }, expected: { count: 1 } });
- * ```
+ Checks whether observed state contains every expected entry.
+ 
+ @param expected - Expected shallow state entries.
+ 
+ @param observed - Observed shallow state entries.
+ 
+ @returns Whether all expected entries match.
+ 
+ @example
+ ```ts
+ stateMatches({ observed: { count: 1 }, expected: { count: 1 } });
+ ```
  */
 function stateMatches(
   {
@@ -178,18 +178,18 @@ function stateMatches(
 }
 
 /**
- * Waits until observed state contains expected entries.
- *
- * @param expected - Expected shallow state entries.
- *
- * @param statePath - State file path written by Electron main process.
- *
- * @mutates expected - `JSON.stringify` may invoke record accessors or proxy traps when timeout is reported.
- *
- * @example
- * ```ts
- * await waitForObservedState({ statePath: '/tmp/state.json', expected: { count: 1 } });
- * ```
+ Waits until observed state contains expected entries.
+ 
+ @param expected - Expected shallow state entries.
+ 
+ @param statePath - State file path written by Electron main process.
+ 
+ @mutates expected - `JSON.stringify` may invoke record accessors or proxy traps when timeout is reported.
+ 
+ @example
+ ```ts
+ await waitForObservedState({ statePath: '/tmp/state.json', expected: { count: 1 } });
+ ```
  */
 export async function waitForObservedState(
   {
@@ -201,13 +201,13 @@ export async function waitForObservedState(
   },
 ): Promise<void> {
   /**
-   * Absolute timestamp when state waiting must fail.
+   Absolute timestamp when state waiting must fail.
    */
   const deadline = Date.now() + stateReadyDeadlineMs;
 
   while (Date.now() < deadline) {
     /**
-     * Current observed state, if Electron has written one.
+     Current observed state, if Electron has written one.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- sequential polling must read latest state before sleeping.
     const state = await readObservedState({ statePath, },);

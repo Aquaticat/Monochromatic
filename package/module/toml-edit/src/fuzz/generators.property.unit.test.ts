@@ -1,16 +1,16 @@
 /**
- * Self-validation for the fuzz generators and the semantic-equality oracle.
- *
- * Before the generators are trusted to drive parser, emitter, and stateful
- * properties, they must themselves be proven sound: every "valid" arbitrary
- * must produce text the parser accepts, every predicted value must match the
- * parser's projection, the independent escaper must agree with the parser's
- * string decoding, and whole documents must round-trip byte-identically in
- * splice mode. A failure here is a generator bug, not a package bug.
- *
- * Run plan and seed policy: see `../fuzz-budget.ts`.
- *
- * @module
+ Self-validation for the fuzz generators and the semantic-equality oracle.
+ 
+ Before the generators are trusted to drive parser, emitter, and stateful
+ properties, they must themselves be proven sound: every "valid" arbitrary
+ must produce text the parser accepts, every predicted value must match the
+ parser's projection, the independent escaper must agree with the parser's
+ string decoding, and whole documents must round-trip byte-identically in
+ splice mode. A failure here is a generator bug, not a package bug.
+ 
+ Run plan and seed policy: see `../fuzz-budget.ts`.
+ 
+ @module
  */
 
 import {
@@ -49,31 +49,31 @@ import {
 //region Helpers
 
 /**
- * Run plan resolved once for every property in this file.
+ Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
 
 /**
- * Project the value of `text` placed under a synthetic top-level key.
- *
- * @returns Native projection of the single generated value.
+ Project the value of `text` placed under a synthetic top-level key.
+ 
+ @returns Native projection of the single generated value.
  */
 function projectValue({ text, }: { readonly text: string; },): unknown {
   /**
-   * Whole document wrapping the value so the parser sees a complete statement.
+   Whole document wrapping the value so the parser sees a complete statement.
    */
   const model = semanticModel({ source: `probe = ${text}\n`, },) as Record<string, unknown>;
   return model.probe;
 }
 
 /**
- * Assert that a value sample parses and, when it predicts a value, matches it.
- *
- * @returns Nothing; throws via `expect` on a generator defect.
+ Assert that a value sample parses and, when it predicts a value, matches it.
+ 
+ @returns Nothing; throws via `expect` on a generator defect.
  */
 function checkSample({ sample, }: { readonly sample: ValueSample; },): void {
   /**
-   * Parsed projection of the sample's text.
+   Parsed projection of the sample's text.
    */
   const projected = projectValue({ text: sample.text, },);
   if (sample.value !== undefined) {
@@ -183,7 +183,7 @@ await describe({
         await assert(
           asyncProperty(documentArbitrary, async function check(source,) {
             /**
-             * Splice-mode re-emission of the parsed document.
+             Splice-mode re-emission of the parsed document.
              */
             const text = tomlStringify({ edit: parseTomlEdit({ source, },), },);
             expect(text,).toBe(source,);
@@ -202,7 +202,7 @@ await describe({
       timeout: RUN.timeout,
       fn: async () => {
         /**
-         * Pairs that must compare equal under TOML semantics.
+         Pairs that must compare equal under TOML semantics.
          */
         const equalPairs: readonly (readonly [string, string])[] = [
           ['a = 0x10\n', 'a = 16\n',],
@@ -219,7 +219,7 @@ await describe({
           ).toBe(true,);
         }
         /**
-         * Pairs that must compare unequal.
+         Pairs that must compare unequal.
          */
         const unequalPairs: readonly (readonly [string, string])[] = [
           ['a = inf\n', 'a = -inf\n',],

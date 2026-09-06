@@ -1,7 +1,7 @@
 /**
- * Direct Inquirer prompt adapters with explicit streams and themes.
- *
- * @module
+ Direct Inquirer prompt adapters with explicit streams and themes.
+ 
+ @module
  */
 
 import checkbox from '@inquirer/checkbox';
@@ -15,15 +15,15 @@ import type {
 } from './interactive-model.ts';
 
 /**
- * Applies terminal-aware color at final output stream boundary.
- *
- * @param color - Native Node red or green style.
- *
- * @param value - Prompt text to style.
- *
- * @param output - TTY output whose capability and color environment are honored.
- *
- * @returns Styled or plain text according to native color policy.
+ Applies terminal-aware color at final output stream boundary.
+ 
+ @param color - Native Node red or green style.
+ 
+ @param value - Prompt text to style.
+ 
+ @param output - TTY output whose capability and color environment are honored.
+ 
+ @returns Styled or plain text according to native color policy.
  */
 function colorize({
   color,
@@ -42,29 +42,29 @@ function colorize({
 }
 
 /**
- * Returns prompt text unchanged for ordinary picker.
- *
- * @param value - Prompt text.
- *
- * @returns Original text.
+ Returns prompt text unchanged for ordinary picker.
+ 
+ @param value - Prompt text.
+ 
+ @returns Original text.
  */
 function unchangedText(value: string,): string {
   return value;
 }
 
 /**
- * Creates square checkbox override for ordinary or security picker.
- *
- * @param security - Whether all visible states need red security styling.
- *
- * @param output - TTY output used for native color capability validation.
- *
- * @returns Inquirer checkbox theme subset with `☐` and `☑` indicators.
- *
- * @example
- * ```ts
- * createSquareCheckboxTheme({ security: true, output: process.stdout });
- * ```
+ Creates square checkbox override for ordinary or security picker.
+ 
+ @param security - Whether all visible states need red security styling.
+ 
+ @param output - TTY output used for native color capability validation.
+ 
+ @returns Inquirer checkbox theme subset with `☐` and `☑` indicators.
+ 
+ @example
+ ```ts
+ createSquareCheckboxTheme({ security: true, output: process.stdout });
+ ```
  */
 export function createSquareCheckboxTheme({
   security,
@@ -74,7 +74,7 @@ export function createSquareCheckboxTheme({
   readonly output: NodeJS.WritableStream;
 },): SquareCheckboxTheme {
   /**
-   * Selected indicator colored red for security and green otherwise.
+   Selected indicator colored red for security and green otherwise.
    */
   const checked = colorize({
     color: security ? 'red' : 'green',
@@ -82,7 +82,7 @@ export function createSquareCheckboxTheme({
     output,
   });
   /**
-   * Unselected indicator red only in security picker.
+   Unselected indicator red only in security picker.
    */
   const unchecked = security
     ? colorize({
@@ -92,7 +92,7 @@ export function createSquareCheckboxTheme({
     })
     : '☐';
   /**
-   * Security-aware text style or identity for ordinary picker.
+   Security-aware text style or identity for ordinary picker.
    */
   const textStyle = security
     ? function red(value: string,): string {
@@ -118,18 +118,18 @@ export function createSquareCheckboxTheme({
 }
 
 /**
- * Prompts one explicit yes-or-no decision with no default.
- *
- * @param message - Decision question naming its authority consequence.
- *
- * @param streams - Explicit TTY streams.
- *
- * @returns True only for exact case-insensitive `yes`.
- *
- * @example
- * ```ts
- * await promptForExplicitDecision({ message: 'Create?', streams });
- * ```
+ Prompts one explicit yes-or-no decision with no default.
+ 
+ @param message - Decision question naming its authority consequence.
+ 
+ @param streams - Explicit TTY streams.
+ 
+ @returns True only for exact case-insensitive `yes`.
+ 
+ @example
+ ```ts
+ await promptForExplicitDecision({ message: 'Create?', streams });
+ ```
  */
 export async function promptForExplicitDecision({
   message,
@@ -139,14 +139,14 @@ export async function promptForExplicitDecision({
   readonly streams: PromptStreams;
 },): Promise<boolean> {
   /**
-   * Validated explicit decision text.
+   Validated explicit decision text.
    */
   const answer = await inputPrompt(
     {
     message,
     validate(value,) {
       /**
-       * Case-folded trimmed decision candidate.
+       Case-folded trimmed decision candidate.
        */
       const normalized = value.trim()
         .toLowerCase();
@@ -163,13 +163,13 @@ export async function promptForExplicitDecision({
 }
 
 /**
- * Builds visible picker label with mandatory textual classification markers.
- *
- * @param issue - Complete rendered candidate.
- *
- * @param security - Whether security disclosure marker is required.
- *
- * @returns SECURITY, OTHER, UNCATEGORIZED, or ordinary title label.
+ Builds visible picker label with mandatory textual classification markers.
+ 
+ @param issue - Complete rendered candidate.
+ 
+ @param security - Whether security disclosure marker is required.
+ 
+ @returns SECURITY, OTHER, UNCATEGORIZED, or ordinary title label.
  */
 function issueChoiceName({
   issue,
@@ -187,22 +187,22 @@ function issueChoiceName({
 }
 
 /**
- * Prompts one ordinary or security checkbox stage.
- *
- * @param issues - Issues available in this picker.
- *
- * @param security - Whether picker is disclosure-sensitive.
- *
- * @param required - Whether this stage must select at least one.
- *
- * @param streams - Explicit TTY streams.
- *
- * @returns Selected issues in picker order.
- *
- * @example
- * ```ts
- * await promptForIssues({ issues, security: false, required: true, streams });
- * ```
+ Prompts one ordinary or security checkbox stage.
+ 
+ @param issues - Issues available in this picker.
+ 
+ @param security - Whether picker is disclosure-sensitive.
+ 
+ @param required - Whether this stage must select at least one.
+ 
+ @param streams - Explicit TTY streams.
+ 
+ @returns Selected issues in picker order.
+ 
+ @example
+ ```ts
+ await promptForIssues({ issues, security: false, required: true, streams });
+ ```
  */
 export async function promptForIssues({
   issues,
@@ -219,7 +219,7 @@ export async function promptForIssues({
     return [];
   }
   /**
-   * Selected zero-based issue indexes.
+   Selected zero-based issue indexes.
    */
   const selected = await checkbox<number>(
     {
@@ -257,7 +257,7 @@ export async function promptForIssues({
   );
   return selected.map(function selectedIssue(index,) {
     /**
-     * Selected issue indexed by library-owned choice value.
+     Selected issue indexed by library-owned choice value.
      */
     const issue = issues[index];
     if (issue === undefined) {
@@ -268,16 +268,16 @@ export async function promptForIssues({
 }
 
 /**
- * Identifies clean Inquirer Ctrl+C cancellation without importing transitive error class.
- *
- * @param error - Unknown caught prompt failure.
- *
- * @returns Whether Inquirer reported its documented exit prompt error.
- *
- * @example
- * ```ts
- * isPromptCancellation({ name: 'ExitPromptError' }); // true
- * ```
+ Identifies clean Inquirer Ctrl+C cancellation without importing transitive error class.
+ 
+ @param error - Unknown caught prompt failure.
+ 
+ @returns Whether Inquirer reported its documented exit prompt error.
+ 
+ @example
+ ```ts
+ isPromptCancellation({ name: 'ExitPromptError' }); // true
+ ```
  */
 export function isPromptCancellation(error: unknown,): boolean {
   return Error.isError(error,) && (error.name === 'ExitPromptError');

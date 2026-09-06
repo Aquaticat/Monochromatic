@@ -19,13 +19,13 @@ import {
 
 /* oxlint-disable no-restricted-syntax/no-class -- test double implementing the SpawnedChildHandle contract and instantiated via `new` by the recording spawn factory; it carries mutable per-instance state (signalsReceived, exit listeners) that a frozen-object factory cannot model for the state-machine assertions. */
 /**
- * Fake stand-in for `node:child_process.ChildProcess`.
- *
- * Records every signal it received so tests can assert SIGTERM-vs-SIGKILL
- * sequencing without spawning a real OS process. The fake is honest about
- * exit timing: it does NOT exit automatically on `kill()`. Tests drive
- * `simulateExit()` to flip the state when they want the child to "die",
- * which lets each test pick its own race timeline.
+ Fake stand-in for `node:child_process.ChildProcess`.
+ 
+ Records every signal it received so tests can assert SIGTERM-vs-SIGKILL
+ sequencing without spawning a real OS process. The fake is honest about
+ exit timing: it does NOT exit automatically on `kill()`. Tests drive
+ `simulateExit()` to flip the state when they want the child to "die",
+ which lets each test pick its own race timeline.
  */
 class FakeChild implements SpawnedChildHandle {
   /** Mirrors `ChildProcess.pid`; always a number here (assignable to the handle's `number | undefined`). */
@@ -42,14 +42,14 @@ class FakeChild implements SpawnedChildHandle {
   readonly autoExitOnSigterm: boolean;
 
   /**
-   * Constructs a fake child.
-   *
-   * @param options - construction options
-   *
-   * @example
-   * ```ts
-   * const fake = new FakeChild({ pid: 100, autoExitOnSigterm: true, },);
-   * ```
+   Constructs a fake child.
+   
+   @param options - construction options
+   
+   @example
+   ```ts
+   const fake = new FakeChild({ pid: 100, autoExitOnSigterm: true, },);
+   ```
    */
   constructor(
     {
@@ -65,11 +65,11 @@ class FakeChild implements SpawnedChildHandle {
   }
 
   /**
-   * Records the signal and flips {@link killed}. Optionally auto-exits on SIGTERM.
-   *
-   * @param signal - signal name; defaults to `'SIGTERM'` like node
-   *
-   * @returns `true` always (matches `ChildProcess.kill`'s sentinel for "delivered")
+   Records the signal and flips {@link killed}. Optionally auto-exits on SIGTERM.
+   
+   @param signal - signal name; defaults to `'SIGTERM'` like node
+   
+   @returns `true` always (matches `ChildProcess.kill`'s sentinel for "delivered")
    */
   kill(signal: NodeJS.Signals | number = 'SIGTERM',): boolean {
     if ((typeof signal) === 'string')
@@ -91,11 +91,11 @@ class FakeChild implements SpawnedChildHandle {
   }
 
   /**
-   * Registers a one-shot exit listener.
-   *
-   * @param event - event name; only `'exit'` is supported
-   *
-   * @param listener - callback to fire on exit
+   Registers a one-shot exit listener.
+   
+   @param event - event name; only `'exit'` is supported
+   
+   @param listener - callback to fire on exit
    */
   once(
     event: 'exit',
@@ -106,11 +106,11 @@ class FakeChild implements SpawnedChildHandle {
   }
 
   /**
-   * Removes a previously registered exit listener; no-op if not registered.
-   *
-   * @param event - event name; only `'exit'` is supported
-   *
-   * @param listener - callback previously passed to {@link once}
+   Removes a previously registered exit listener; no-op if not registered.
+   
+   @param event - event name; only `'exit'` is supported
+   
+   @param listener - callback previously passed to {@link once}
    */
   off(
     event: 'exit',
@@ -126,15 +126,15 @@ class FakeChild implements SpawnedChildHandle {
   }
 
   /**
-   * Test helper: pretends the OS reported an exit. Fires every registered
-   * listener once, clears the list, sets {@link exitCode}.
-   *
-   * @param result - exit code and signal to pass to listeners
-   *
-   * @example
-   * ```ts
-   * fake.simulateExit({ code: 0, signal: null, },);
-   * ```
+   Test helper: pretends the OS reported an exit. Fires every registered
+   listener once, clears the list, sets {@link exitCode}.
+   
+   @param result - exit code and signal to pass to listeners
+   
+   @example
+   ```ts
+   fake.simulateExit({ code: 0, signal: null, },);
+   ```
    */
   simulateExit(
     {
@@ -159,8 +159,8 @@ class FakeChild implements SpawnedChildHandle {
 /* oxlint-enable no-restricted-syntax/no-class */
 
 /**
- * Records spawn calls so tests can assert command/args wiring and inspect
- * each returned fake handle.
+ Records spawn calls so tests can assert command/args wiring and inspect
+ each returned fake handle.
  */
 type SpawnRecord = {
   readonly command: string;
@@ -169,19 +169,19 @@ type SpawnRecord = {
 };
 
 /**
- * Builds a {@link SpawnFn} that returns fresh {@link FakeChild} instances and
- * records every call. Tests use the records to assert order of spawns and
- * to drive each handle's exit timing.
- *
- * @param options - per-test fake-child configuration
- *
- * @returns spawn factory and the captured records
- *
- * @example
- * ```ts
- * const { spawn, records, } = makeRecordingSpawn({ autoExitOnSigterm: true, },);
- * const child = new Child({ command: 'node', spawn, },);
- * ```
+ Builds a {@link SpawnFn} that returns fresh {@link FakeChild} instances and
+ records every call. Tests use the records to assert order of spawns and
+ to drive each handle's exit timing.
+ 
+ @param options - per-test fake-child configuration
+ 
+ @returns spawn factory and the captured records
+ 
+ @example
+ ```ts
+ const { spawn, records, } = makeRecordingSpawn({ autoExitOnSigterm: true, },);
+ const child = new Child({ command: 'node', spawn, },);
+ ```
  */
 function makeRecordingSpawn(
   options: {
@@ -193,14 +193,14 @@ function makeRecordingSpawn(
 } {
   const records: SpawnRecord[] = [];
   /**
-   * Spawn factory captured by the closure: pushes a record per call and
-   * returns a fresh fake. Declared as a function so the lint rule banning
-   * variable-assigned function expressions is satisfied; the closure picks
-   * up `records` and `options` from the enclosing factory.
-   *
-   * @param spawnArgs - command and argument list
-   *
-   * @returns fake child handle
+   Spawn factory captured by the closure: pushes a record per call and
+   returns a fresh fake. Declared as a function so the lint rule banning
+   variable-assigned function expressions is satisfied; the closure picks
+   up `records` and `options` from the enclosing factory.
+   
+   @param spawnArgs - command and argument list
+   
+   @returns fake child handle
    */
   function recordingSpawn(
     spawnArgs: {
@@ -541,12 +541,12 @@ await describe({
               readonly signal: NodeJS.Signals | number;
             }[] = [];
             /**
-             * Recording processSignal sink: pushes every received `(pid, signal)`
-             * and drives the corresponding fake handle's synthetic exit so the
-             * Promise.race in `#stopRunning` resolves on the `exited` branch
-             * rather than hitting the SIGKILL timeout.
-             *
-             * @param args - pid and signal forwarded from `Child.#sendSignal`
+             Recording processSignal sink: pushes every received `(pid, signal)`
+             and drives the corresponding fake handle's synthetic exit so the
+             Promise.race in `#stopRunning` resolves on the `exited` branch
+             rather than hitting the SIGKILL timeout.
+             
+             @param args - pid and signal forwarded from `Child.#sendSignal`
              */
             function recordingProcessSignal(
               args: {
@@ -594,9 +594,9 @@ await describe({
           fn: async () => {
             const calls: { count: number; } = { count: 0, };
             /**
-             * Counting writeClear sink so the test can assert call timing
-             * without polluting stdout. Declared as a function expression
-             * to match the {@link WriteClearFn} structural type.
+             Counting writeClear sink so the test can assert call timing
+             without polluting stdout. Declared as a function expression
+             to match the {@link WriteClearFn} structural type.
              */
             function recordingWriteClear(): void {
               calls.count += 1;

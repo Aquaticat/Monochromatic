@@ -1,7 +1,7 @@
 /**
- * Construction inputs for one exact-snapshot demand-driven effect index.
- *
- * @module
+ Construction inputs for one exact-snapshot demand-driven effect index.
+ 
+ @module
  */
 
 import type { SourceFile, } from 'typescript/unstable/ast';
@@ -14,7 +14,7 @@ import type { MutableEffectSummary, } from './effect-summary-model.ts';
 import type { ExternalEffectIndexBuilder, } from './external-callable-effect.ts';
 
 /**
- * Fresh source scan awaiting complete dependency closure before persistence.
+ Fresh source scan awaiting complete dependency closure before persistence.
  */
 export type PendingEffectSummaryStore = {
   readonly sourceFile: SourceFile;
@@ -24,7 +24,7 @@ export type PendingEffectSummaryStore = {
 };
 
 /**
- * Inputs needed to construct one exact-snapshot demand index.
+ Inputs needed to construct one exact-snapshot demand index.
  */
 export type DemandDrivenEffectIndexOptions = {
   readonly project: Project;

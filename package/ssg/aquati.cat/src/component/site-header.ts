@@ -1,9 +1,9 @@
 /**
- * Site header bar with navigation.
- *
- * Renders the brand logo, site name, and nav shell as a
- * `<site-header>` custom element. The nav contains the
- * `<theme-toggle>` and `<site-search>` sub-components.
+ Site header bar with navigation.
+ 
+ Renders the brand logo, site name, and nav shell as a
+ `<site-header>` custom element. The nav contains the
+ `<theme-toggle>` and `<site-search>` sub-components.
  */
 import {
   cssCalc,
@@ -29,14 +29,14 @@ import { html as themeToggleHtml, } from './theme-toggle.ts';
 //region CSS
 
 /**
- * Header bar layout, brand link, and nav styles.
- *
- * @returns CSS string for the `<site-header>` element
- *
- * @example
- * ```ts
- * const styles = css();
- * ```
+ Header bar layout, brand link, and nav styles.
+ 
+ @returns CSS string for the `<site-header>` element
+ 
+ @example
+ ```ts
+ const styles = css();
+ ```
  */
 export function css(): string {
   return [
@@ -90,22 +90,22 @@ export function css(): string {
 //region HTML
 
 /**
- * Renders the site header as a `<site-header>` custom element.
- *
- * @param lang - current language code for localized text and links
- *
- * @param currentName - current post slug; forwarded to the lang switcher
- * so its items can link to the same post in the target locale
- *
- * @param availableInLangs - locales in which the current post exists;
- * forwarded to the lang switcher to compute per-locale fallbacks
- *
- * @returns HTML string for the header
- *
- * @example
- * ```ts
- * const markup = html({ lang: 'en', currentName: 'hello', availableInLangs: ['en', 'ca'] });
- * ```
+ Renders the site header as a `<site-header>` custom element.
+ 
+ @param lang - current language code for localized text and links
+ 
+ @param currentName - current post slug; forwarded to the lang switcher
+ so its items can link to the same post in the target locale
+ 
+ @param availableInLangs - locales in which the current post exists;
+ forwarded to the lang switcher to compute per-locale fallbacks
+ 
+ @returns HTML string for the header
+ 
+ @example
+ ```ts
+ const markup = html({ lang: 'en', currentName: 'hello', availableInLangs: ['en', 'ca'] });
+ ```
  */
 export function html(
   {

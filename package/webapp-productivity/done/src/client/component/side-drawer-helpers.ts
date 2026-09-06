@@ -1,18 +1,18 @@
 /**
- * DOM building helpers for `<side-drawer>`.
+ DOM building helpers for `<side-drawer>`.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Builds a nav element with the standard link set.
- *
- * @returns Navigation element with inbox, in-progress, settings, and contact links
- *
- * @example
- * ```ts
- * const nav = buildNav();
- * shadow.append(nav);
- * ```
+ Builds a nav element with the standard link set.
+ 
+ @returns Navigation element with inbox, in-progress, settings, and contact links
+ 
+ @example
+ ```ts
+ const nav = buildNav();
+ shadow.append(nav);
+ ```
  */
 export function buildNav(): HTMLElement {
   return h({
@@ -43,20 +43,20 @@ export function buildNav(): HTMLElement {
 }
 
 /**
- * Builds a header row with a name label and an optional close button.
- *
- * @param closeButton - Close button element, omitted for read-only headers
- *
- * @returns Header div element
- *
- * @example
- * ```ts
- * const header = buildHeader(buildCloseButton('Close drawer'));
- * ```
+ Builds a header row with a name label and an optional close button.
+ 
+ @param closeButton - Close button element, omitted for read-only headers
+ 
+ @returns Header div element
+ 
+ @example
+ ```ts
+ const header = buildHeader(buildCloseButton('Close drawer'));
+ ```
  */
 export function buildHeader(closeButton?: HTMLElement,): HTMLElement {
   /**
-   * Accumulator for the header children so an optional close button can be appended.
+   Accumulator for the header children so an optional close button can be appended.
    */
   const children: HTMLElement[] = [
     h({
@@ -75,20 +75,20 @@ export function buildHeader(closeButton?: HTMLElement,): HTMLElement {
 }
 
 /**
- * Builds a close button with an X SVG icon.
- *
- * @param label - Accessible aria-label for the button
- *
- * @returns Button element with SVG close icon
- *
- * @example
- * ```ts
- * const closeBtn = buildCloseButton('Close drawer');
- * ```
+ Builds a close button with an X SVG icon.
+ 
+ @param label - Accessible aria-label for the button
+ 
+ @returns Button element with SVG close icon
+ 
+ @example
+ ```ts
+ const closeBtn = buildCloseButton('Close drawer');
+ ```
  */
 export function buildCloseButton(label: string,): HTMLElement {
   /**
-   * Bare button shell so the inline SVG can be injected via innerHTML below.
+   Bare button shell so the inline SVG can be injected via innerHTML below.
    */
   const button = h({
     tag: 'button',

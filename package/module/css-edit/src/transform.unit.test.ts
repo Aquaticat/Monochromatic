@@ -28,20 +28,20 @@ import {
 //region Test helpers
 
 /**
- * Parses a plain string as CSS, asserting the brand at the test boundary.
- *
- * @param source - CSS text under test.
- * @returns Parsed edit state.
+ Parses a plain string as CSS, asserting the brand at the test boundary.
+ 
+ @param source - CSS text under test.
+ @returns Parsed edit state.
  */
 function parse(source: string,): CssEditState {
   return parseCss({ source: source as StringCss, },);
 }
 
 /**
- * Visitor removing every at-rule with a given name via the empty-array form.
- *
- * @param name - At-rule name to remove.
- * @returns Visitor for {@link transformNodes}.
+ Visitor removing every at-rule with a given name via the empty-array form.
+ 
+ @param name - At-rule name to remove.
+ @returns Visitor for {@link transformNodes}.
  */
 function removeAtRule(name: string,) {
   return function visit(node: CssNode,) {
@@ -50,10 +50,10 @@ function removeAtRule(name: string,) {
 }
 
 /**
- * First structural node parsed from a CSS fragment, for building replacements.
- *
- * @param source - Fragment to parse.
- * @returns First non-trivia node.
+ First structural node parsed from a CSS fragment, for building replacements.
+ 
+ @param source - Fragment to parse.
+ @returns First non-trivia node.
  */
 function nodeFrom(source: string,): CssNode {
   return nonNullishOrThrow(
@@ -174,8 +174,8 @@ await describe({
           name: 'splices a multi-node array in place',
           fn: async () => {
             /**
-             * Replacement body including its interior trivia, so the splice
-             * carries its own separator whitespace.
+             Replacement body including its interior trivia, so the splice
+             carries its own separator whitespace.
              */
             const body = parse('top: 0; left: 1px;',).root.children;
             const nodes = transformNodes({

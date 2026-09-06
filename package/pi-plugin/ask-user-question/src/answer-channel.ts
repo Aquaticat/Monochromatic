@@ -25,12 +25,12 @@ import {
 //region Constants
 
 /**
- * IPv4 loopback keeps helper channel unreachable from network peers.
+ IPv4 loopback keeps helper channel unreachable from network peers.
  */
 const LOOPBACK_HOST = '127.0.0.1';
 
 /**
- * Non-aborting fallback used with {@link addAbortListener}.
+ Non-aborting fallback used with {@link addAbortListener}.
  */
 const NEVER_ABORT_SIGNAL = new AbortController().signal;
 
@@ -39,7 +39,7 @@ const NEVER_ABORT_SIGNAL = new AbortController().signal;
 //region Logger
 
 /**
- * Tagged logger for answer-channel lifecycle.
+ Tagged logger for answer-channel lifecycle.
  */
 const l = tagged({ tag: 'ask-user-question:answer-channel', },);
 
@@ -48,26 +48,26 @@ const l = tagged({ tag: 'ask-user-question:answer-channel', },);
 //region Types
 
 /**
- * Authenticated one-shot channel awaited by Pi tool execution.
+ Authenticated one-shot channel awaited by Pi tool execution.
  */
 export type AnswerChannel = AsyncDisposable & {
   /**
-   * Loopback host written to helper request file.
+   Loopback host written to helper request file.
    */
   readonly host: string;
   /**
-   * Ephemeral listening port written to helper request file.
+   Ephemeral listening port written to helper request file.
    */
   readonly port: number;
   /**
-   * Random authentication token written to private helper request file.
+   Random authentication token written to private helper request file.
    */
   readonly token: string;
   /**
-   * Waits until helper submits,
-   * cancels,
-   * fails,
-   * or disconnects.
+   Waits until helper submits,
+   cancels,
+   fails,
+   or disconnects.
    */
   readonly wait: (options: { readonly signal?: AbortSignal; },) => Promise<HelperCompletion>;
 };
@@ -77,22 +77,22 @@ export type AnswerChannel = AsyncDisposable & {
 //region Public lifecycle
 
 /**
- * Opens a private one-shot loopback answer channel.
- *
- * @returns disposable endpoint and authenticated completion waiter
- *
- * @example
- * ```ts
- * await using channel = await createAnswerChannel();
- * ```
+ Opens a private one-shot loopback answer channel.
+ 
+ @returns disposable endpoint and authenticated completion waiter
+ 
+ @example
+ ```ts
+ await using channel = await createAnswerChannel();
+ ```
  */
 export async function createAnswerChannel(): Promise<AnswerChannel> {
   /**
-   * Listener accepting detached helper connection.
+   Listener accepting detached helper connection.
    */
   const server = createServer();
   /**
-   * Mutable accepted-socket slot used by disposal path.
+   Mutable accepted-socket slot used by disposal path.
    */
   const handles: { socket?: Socket; } = {};
   server.listen({
@@ -106,13 +106,13 @@ export async function createAnswerChannel(): Promise<AnswerChannel> {
   );
   server.unref();
   /**
-   * Bound endpoint assigned by operating system.
+   Bound endpoint assigned by operating system.
    */
   const address = server.address();
   if ((address === null) || ((typeof address) === 'string'))
     throw new Error('Answer channel did not receive a TCP endpoint.',);
   /**
-   * Per-request token unavailable through process arguments.
+   Per-request token unavailable through process arguments.
    */
   const token = randomUUID();
   l.debug(`listening on ${LOOPBACK_HOST}:${String(address.port,)}`,);
@@ -124,7 +124,7 @@ export async function createAnswerChannel(): Promise<AnswerChannel> {
       { signal, }: { readonly signal?: AbortSignal; },
     ): Promise<HelperCompletion> {
       /**
-       * Authenticated helper socket and buffered completion prefix.
+       Authenticated helper socket and buffered completion prefix.
        */
       const authenticated = await acceptAuthenticatedSocket({
         server,
@@ -140,8 +140,8 @@ export async function createAnswerChannel(): Promise<AnswerChannel> {
     },
     async [Symbol.asyncDispose](): Promise<void> {
       /**
-       * Accepted helper socket,
-       * when authentication completed.
+       Accepted helper socket,
+       when authentication completed.
        */
       const {socket} = handles;
       if (socket !== undefined)
@@ -157,14 +157,14 @@ export async function createAnswerChannel(): Promise<AnswerChannel> {
 //region Completion
 
 /**
- * Reads one helper completion frame until authenticated socket closes.
- *
- * @param authenticated - helper socket positioned after authentication
- *
- * @param signal - optional tool cancellation signal
- *
- * @returns validated helper completion;
- * empty frame means cancellation
+ Reads one helper completion frame until authenticated socket closes.
+ 
+ @param authenticated - helper socket positioned after authentication
+ 
+ @param signal - optional tool cancellation signal
+ 
+ @returns validated helper completion;
+ empty frame means cancellation
  */
 async function readCompletion(
   {
@@ -176,7 +176,7 @@ async function readCompletion(
   },
 ): Promise<HelperCompletion> {
   /**
-   * Completion accumulation state seeded by authentication chunk remainder.
+   Completion accumulation state seeded by authentication chunk remainder.
    */
   const state = {
     text: authenticated.remainder,
@@ -186,7 +186,7 @@ async function readCompletion(
     ),
   };
   /**
-   * Subscription closing helper socket when tool aborts.
+   Subscription closing helper socket when tool aborts.
    */
   using abortSubscription = addAbortListener(
     signal ?? NEVER_ABORT_SIGNAL,
@@ -214,9 +214,9 @@ async function readCompletion(
 }
 
 /**
- * Closes listening server when still active.
- *
- * @param server - server owned by channel
+ Closes listening server when still active.
+ 
+ @param server - server owned by channel
  */
 async function closeListeningServer(
   { server, }: { readonly server: Server; },
@@ -224,7 +224,7 @@ async function closeListeningServer(
   if (!server.listening)
     return;
   /**
-   * Close event registered before close call to avoid event race.
+   Close event registered before close call to avoid event race.
    */
   const closed = once(
     server,

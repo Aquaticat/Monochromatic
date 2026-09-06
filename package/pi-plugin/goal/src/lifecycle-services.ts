@@ -1,7 +1,7 @@
 /**
- * Goal lifecycle runtime contracts and nondeterministic defaults.
- *
- * @module
+ Goal lifecycle runtime contracts and nondeterministic defaults.
+ 
+ @module
  */
 
 import { randomUUID, } from 'node:crypto';
@@ -17,31 +17,31 @@ import type {
 } from './types.ts';
 
 /**
- * Injectable nondeterministic lifecycle services.
+ Injectable nondeterministic lifecycle services.
  */
 type GoalLifecycleServices = {
   /**
-   * Mint unique run, generation, runtime, and message identities.
+   Mint unique run, generation, runtime, and message identities.
    */
   readonly createId: () => string;
 
   /**
-   * Read current ISO timestamp.
+   Read current ISO timestamp.
    */
   readonly now: () => string;
 };
 
 /**
- * Shared runtime boundary used by completion-review registration.
+ Shared runtime boundary used by completion-review registration.
  */
 type GoalLifecycleHandle = {
   /**
-   * Read current immutable controller snapshot.
+   Read current immutable controller snapshot.
    */
   readonly currentController: () => GoalControllerState;
 
   /**
-   * Commit pure transition and execute ordered Pi effects.
+   Commit pure transition and execute ordered Pi effects.
    */
   readonly applyTransition: (
     input: {
@@ -51,7 +51,7 @@ type GoalLifecycleHandle = {
   ) => void;
 
   /**
-   * Deliver deferred kickoff before reviewing settlement.
+   Deliver deferred kickoff before reviewing settlement.
    */
   readonly deliverPendingKickoff: (
     context: ForeignBorrowed<ExtensionContext>,
@@ -59,28 +59,28 @@ type GoalLifecycleHandle = {
 };
 
 /**
- * Default cryptographically unique lifecycle identity source.
- *
- * @returns UUID identity
- *
- * @example
- * ```ts
- * defaultCreateId();
- * ```
+ Default cryptographically unique lifecycle identity source.
+ 
+ @returns UUID identity
+ 
+ @example
+ ```ts
+ defaultCreateId();
+ ```
  */
 function defaultCreateId(): string {
   return randomUUID();
 }
 
 /**
- * Default wall-clock source for persisted transition timestamps.
- *
- * @returns current ISO timestamp
- *
- * @example
- * ```ts
- * defaultNow();
- * ```
+ Default wall-clock source for persisted transition timestamps.
+ 
+ @returns current ISO timestamp
+ 
+ @example
+ ```ts
+ defaultNow();
+ ```
  */
 function defaultNow(): string {
   return new Date().toISOString();

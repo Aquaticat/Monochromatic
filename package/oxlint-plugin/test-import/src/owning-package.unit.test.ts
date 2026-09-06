@@ -17,29 +17,29 @@ const FIXTURE_ROOT = resolve(
 );
 
 /**
- * Resolves the owning package of a file inside one fixture case.
- *
- * @param caseName - nested pseudo-package directory name
- *
- * @param fileName - file inside that case's `src`
- *
- * @returns owning package facts, or the unresolved sentinel
- *
- * @example
- * ```ts
- * ownerOfCase({ caseName: 'standard', fileName: 'allowed.test.ts' });
- * ```
+ Resolves the owning package of a file inside one fixture case.
+ 
+ @param caseName - nested pseudo-package directory name
+ 
+ @param fileName - file inside that case's `src`
+ 
+ @returns owning package facts, or the unresolved sentinel
+ 
+ @example
+ ```ts
+ ownerOfCase({ caseName: 'standard', fileName: 'allowed.test.ts' });
+ ```
  */
 function ownerOfCase({
   caseName,
   fileName,
 }: {
   /**
-   * Nested pseudo-package directory name.
+   Nested pseudo-package directory name.
    */
   readonly caseName: string;
   /**
-   * File inside that case's `src`.
+   File inside that case's `src`.
    */
   readonly fileName: string;
 },): ReturnType<typeof owningPackage> {

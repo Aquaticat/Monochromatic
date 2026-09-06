@@ -10,8 +10,8 @@ import {
 } from '@monochromatic-dev/module-logger';
 
 /**
- * Every log level paired with the message body the all-levels test sends
- * through each, so the assertion can be built from one source of truth.
+ Every log level paired with the message body the all-levels test sends
+ through each, so the assertion can be built from one source of truth.
  */
 const LEVEL_MESSAGES: readonly { readonly level: Level; readonly message: string; }[] = [
   {
@@ -41,12 +41,12 @@ const LEVEL_MESSAGES: readonly { readonly level: Level; readonly message: string
 ];
 
 /**
- * Builds a stub logger whose methods record the messages they receive
- * and whose `flush` is a trivial resolved promise. Used to verify the
- * tagged wrapper's message prefixing and `flush` forwarding without
- * touching the default multi-sink singleton.
- *
- * @returns Object containing the stub logger and the recorded message list.
+ Builds a stub logger whose methods record the messages they receive
+ and whose `flush` is a trivial resolved promise. Used to verify the
+ tagged wrapper's message prefixing and `flush` forwarding without
+ touching the default multi-sink singleton.
+ 
+ @returns Object containing the stub logger and the recorded message list.
  */
 function createStubLogger(): {
   l: Logger;

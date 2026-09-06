@@ -1,7 +1,7 @@
 /**
- * Auto-mode verdict parser over shared balanced JSON extraction.
- *
- * @module
+ Auto-mode verdict parser over shared balanced JSON extraction.
+ 
+ @module
  */
 
 import { extractStructuredJson, } from '@monochromatic-dev/pi-shared-model-review/ts';
@@ -9,16 +9,16 @@ import { extractStructuredJson, } from '@monochromatic-dev/pi-shared-model-revie
 import type { Verdict, } from './types.ts';
 
 /**
- * Narrow unknown JSON value to property record.
- *
- * @param value - parsed reviewer value
- *
- * @returns whether value supports string property lookup
- *
- * @example
- * ```ts
- * isRecord({ verdict: 'approve' });
- * ```
+ Narrow unknown JSON value to property record.
+ 
+ @param value - parsed reviewer value
+ 
+ @returns whether value supports string property lookup
+ 
+ @example
+ ```ts
+ isRecord({ verdict: 'approve' });
+ ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return (value !== null)
@@ -26,22 +26,22 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Extract JSON reviewer arguments using shared balanced-object scanner.
- *
- * @param text - direct reviewer output
- *
- * @returns parsed reviewer property record
- *
- * @throws when output contains no object
- *
- * @example
- * ```ts
- * extractJsonVerdict('prefix {"verdict":"approve"} suffix');
- * ```
+ Extract JSON reviewer arguments using shared balanced-object scanner.
+ 
+ @param text - direct reviewer output
+ 
+ @returns parsed reviewer property record
+ 
+ @throws when output contains no object
+ 
+ @example
+ ```ts
+ extractJsonVerdict('prefix {"verdict":"approve"} suffix');
+ ```
  */
 function extractJsonVerdict(text: string,): Record<string, unknown> {
   /**
-   * Shared whole-text or balanced-object parse result.
+   Shared whole-text or balanced-object parse result.
    */
   const value = extractStructuredJson(text,);
   if (!isRecord(value,))
@@ -50,38 +50,38 @@ function extractJsonVerdict(text: string,): Record<string, unknown> {
 }
 
 /**
- * Parse unknown structured reviewer value into auto-mode verdict.
- *
- * Missing fields retain historical defaults.
- * Unknown string verdicts degrade to `ask` with diagnostic reason.
- * Mistyped fields reject candidate attempt so shared availability fallback can run.
- *
- * @param value - unknown tool arguments or direct JSON value
- *
- * @returns normalized auto-mode verdict
- *
- * @throws when value or fields have malformed types
- *
- * @example
- * ```ts
- * parseVerdict({ verdict: 'deny', reason: 'unsafe', guidance: 'Use dry run.' });
- * ```
+ Parse unknown structured reviewer value into auto-mode verdict.
+ 
+ Missing fields retain historical defaults.
+ Unknown string verdicts degrade to `ask` with diagnostic reason.
+ Mistyped fields reject candidate attempt so shared availability fallback can run.
+ 
+ @param value - unknown tool arguments or direct JSON value
+ 
+ @returns normalized auto-mode verdict
+ 
+ @throws when value or fields have malformed types
+ 
+ @example
+ ```ts
+ parseVerdict({ verdict: 'deny', reason: 'unsafe', guidance: 'Use dry run.' });
+ ```
  */
 function parseVerdict(value: unknown,): Verdict {
   if (!isRecord(value,))
     throw new Error('Judge verdict must be an object',);
   /**
-   * Verdict discriminator with historical missing-field default.
+   Verdict discriminator with historical missing-field default.
    */
   const verdict = value.verdict
     ?? 'ask';
   /**
-   * Judge rationale with historical missing-field default.
+   Judge rationale with historical missing-field default.
    */
   const reason = value.reason
     ?? '';
   /**
-   * Agent guidance with historical missing-field default.
+   Agent guidance with historical missing-field default.
    */
   const guidance = value.guidance
     ?? '';

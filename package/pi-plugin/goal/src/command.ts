@@ -1,7 +1,7 @@
 /**
- * Strict `/goal` command parser.
- *
- * @module
+ Strict `/goal` command parser.
+ 
+ @module
  */
 
 import {
@@ -11,7 +11,7 @@ import {
 import type { ParsedGoalCommand, } from './types.ts';
 
 /**
- * Removed command prefixes reserved for direct rejection.
+ Removed command prefixes reserved for direct rejection.
  */
 const REMOVED_COMMAND_PREFIXES = [
   'status',
@@ -22,21 +22,21 @@ const REMOVED_COMMAND_PREFIXES = [
 ] as const;
 
 /**
- * Return first whitespace-delimited token without regular expression parsing.
- *
- * @param text - normalized command text
- *
- * @returns first token
- *
- * @example
- * ```ts
- * firstToken('status now');
- * ```
+ Return first whitespace-delimited token without regular expression parsing.
+ 
+ @param text - normalized command text
+ 
+ @returns first token
+ 
+ @example
+ ```ts
+ firstToken('status now');
+ ```
  */
 function firstToken(text: string,): string {
   for (let cursor = 0; cursor < text.length; cursor++) {
     /**
-     * Character inspected for token boundary.
+     Character inspected for token boundary.
      */
     const character = text[cursor];
     if ((character !== undefined) && (character.trim() === ''))
@@ -49,20 +49,20 @@ function firstToken(text: string,): string {
 }
 
 /**
- * Parse exact public `/goal` command surface.
- *
- * @param args - command arguments after `/goal`
- *
- * @returns start, clear, or direct rejection
- *
- * @example
- * ```ts
- * parseGoalCommand('finish migration');
- * ```
+ Parse exact public `/goal` command surface.
+ 
+ @param args - command arguments after `/goal`
+ 
+ @returns start, clear, or direct rejection
+ 
+ @example
+ ```ts
+ parseGoalCommand('finish migration');
+ ```
  */
 function parseGoalCommand(args: string,): ParsedGoalCommand {
   /**
-   * Surrounding-whitespace-normalized arguments.
+   Surrounding-whitespace-normalized arguments.
    */
   const normalized = args.trim();
   if (normalized === '') {
@@ -72,7 +72,7 @@ function parseGoalCommand(args: string,): ParsedGoalCommand {
     };
   }
   /**
-   * First command token used to reserve removed operations.
+   First command token used to reserve removed operations.
    */
   const prefix = firstToken(normalized,);
   if (prefix === 'clear') {

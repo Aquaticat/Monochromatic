@@ -1,7 +1,7 @@
 /**
- * Tests for source classification and remote URL parsing.
- *
- * @module
+ Tests for source classification and remote URL parsing.
+ 
+ @module
  */
 
 import {

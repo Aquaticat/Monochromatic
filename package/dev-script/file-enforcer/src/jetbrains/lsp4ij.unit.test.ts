@@ -26,7 +26,7 @@ import { manageLsp4ijServerSettings, } from './lsp4ij.ts';
 import type { Lsp4ijServerSettings, } from './lsp4ij-types.ts';
 
 /**
- * Minimal global settings XML holding one base server's configuration.
+ Minimal global settings XML holding one base server's configuration.
  */
 const LANGUAGE_XML = [
   '<application>',
@@ -50,7 +50,7 @@ const LANGUAGE_XML = [
 ].join('\n',);
 
 /**
- * Minimal user-defined settings XML holding one base server definition.
+ Minimal user-defined settings XML holding one base server definition.
  */
 const USER_DEFINED_XML = [
   '<application>',
@@ -74,7 +74,7 @@ const USER_DEFINED_XML = [
 ].join('\n',);
 
 /**
- * Policy exercising base patch, schema defaults, omit keys, and one scoped server.
+ Policy exercising base patch, schema defaults, omit keys, and one scoped server.
  */
 const SETTINGS: Lsp4ijServerSettings = {
   productPrefixes: ['IntelliJIdea',],
@@ -102,20 +102,20 @@ const SETTINGS: Lsp4ijServerSettings = {
 };
 
 /**
- * Sets `XDG_CONFIG_HOME` for the scope, restoring the prior value on disposal.
- *
- * @param configRoot - Directory to expose as the XDG config root.
- *
- * @returns Disposable that restores the previous environment value.
- *
- * @example
- * ```ts
- * using xdg = withXdgConfigHome('/tmp/x');
- * ```
+ Sets `XDG_CONFIG_HOME` for the scope, restoring the prior value on disposal.
+ 
+ @param configRoot - Directory to expose as the XDG config root.
+ 
+ @returns Disposable that restores the previous environment value.
+ 
+ @example
+ ```ts
+ using xdg = withXdgConfigHome('/tmp/x');
+ ```
  */
 function withXdgConfigHome(configRoot: string,): Disposable {
   /**
-   * Prior XDG config root, restored on disposal.
+   Prior XDG config root, restored on disposal.
    */
   const previous = process.env.XDG_CONFIG_HOME;
   process.env.XDG_CONFIG_HOME = configRoot;
@@ -128,16 +128,16 @@ function withXdgConfigHome(configRoot: string,): Disposable {
 }
 
 /**
- * Owns a throwaway directory, removing it on async disposal.
- *
- * @param directory - Directory to remove on disposal.
- *
- * @returns Async disposable that recursively removes the directory.
- *
- * @example
- * ```ts
- * await using owned = throwawayDir(await mkdtemp(prefix));
- * ```
+ Owns a throwaway directory, removing it on async disposal.
+ 
+ @param directory - Directory to remove on disposal.
+ 
+ @returns Async disposable that recursively removes the directory.
+ 
+ @example
+ ```ts
+ await using owned = throwawayDir(await mkdtemp(prefix));
+ ```
  */
 function throwawayDir(directory: string,): AsyncDisposable {
   return {
@@ -148,20 +148,20 @@ function throwawayDir(directory: string,): AsyncDisposable {
 }
 
 /**
- * Narrows an entry lookup to a present entry, throwing otherwise.
- *
- * @param entry - Entry lookup result.
- *
- * @param label - Identifier surfaced when absent.
- *
- * @returns Present entry.
- *
- * @throws Error when entry is the absent sentinel.
- *
- * @example
- * ```ts
- * requireEntry(findXmlEntryByKey({ xml, key: 'a' }), 'a');
- * ```
+ Narrows an entry lookup to a present entry, throwing otherwise.
+ 
+ @param entry - Entry lookup result.
+ 
+ @param label - Identifier surfaced when absent.
+ 
+ @returns Present entry.
+ 
+ @throws Error when entry is the absent sentinel.
+ 
+ @example
+ ```ts
+ requireEntry(findXmlEntryByKey({ xml, key: 'a' }), 'a');
+ ```
  */
 function requireEntry(entry: XmlEntry | typeof ABSENT_XML_ENTRY, label: string,): XmlEntry {
   if (entry === ABSENT_XML_ENTRY) throw new Error(`expected entry '${label}' to be present`,);
@@ -169,30 +169,30 @@ function requireEntry(entry: XmlEntry | typeof ABSENT_XML_ENTRY, label: string,)
 }
 
 /**
- * Reads and parses a server entry's configuration content from settings XML.
- *
- * @param xml - Global settings XML.
- *
- * @param key - Server entry key.
- *
- * @returns Parsed configuration object.
- *
- * @throws Error when the entry or its configuration content is absent.
- *
- * @example
- * ```ts
- * configOf({ xml, key: 'srv-1' });
- * ```
+ Reads and parses a server entry's configuration content from settings XML.
+ 
+ @param xml - Global settings XML.
+ 
+ @param key - Server entry key.
+ 
+ @returns Parsed configuration object.
+ 
+ @throws Error when the entry or its configuration content is absent.
+ 
+ @example
+ ```ts
+ configOf({ xml, key: 'srv-1' });
+ ```
  */
 function configOf(
   { xml, key, }: { readonly key: string; readonly xml: string; },
 ): Record<string, unknown> {
   /**
-   * Present settings entry for the key.
+   Present settings entry for the key.
    */
   const entry = requireEntry(findXmlEntryByKey({ xml, key, },), key,);
   /**
-   * Embedded configuration content, or absent sentinel.
+   Embedded configuration content, or absent sentinel.
    */
   const content = getXmlOptionValue({ block: entry.block, optionName: 'configurationContent', },);
   if (content === ABSENT_XML_VALUE) throw new Error(`expected configurationContent for '${key}'`,);
@@ -213,20 +213,20 @@ await describe({
           name: 'patches the base server and inserts a scoped server in both files',
           fn: async () => {
             /**
-             * Throwaway JetBrains config root.
+             Throwaway JetBrains config root.
              */
             const configRoot = await mkdtemp(join(tmpdir(), 'fe-lsp4ij-',),);
             await using owned = throwawayDir(configRoot,);
             /**
-             * Options directory of a synthetic latest IDEA install.
+             Options directory of a synthetic latest IDEA install.
              */
             const optionsDirectory = join(configRoot, 'JetBrains', 'IntelliJIdea9999.9', 'options',);
             /**
-             * Path to the global settings file under the throwaway root.
+             Path to the global settings file under the throwaway root.
              */
             const languagePath = join(optionsDirectory, 'LanguageServersSettings.xml',);
             /**
-             * Path to the user-defined settings file under the throwaway root.
+             Path to the user-defined settings file under the throwaway root.
              */
             const userDefinedPath = join(optionsDirectory, 'UserDefinedLanguageServerSettings.xml',);
             await mkdir(optionsDirectory, { recursive: true, },);
@@ -238,16 +238,16 @@ await describe({
             await manageLsp4ijServerSettings(SETTINGS,);
 
             /**
-             * Global settings XML after the sync.
+             Global settings XML after the sync.
              */
             const languageXml = await readFile(languagePath, 'utf8',);
             /**
-             * User-defined settings XML after the sync.
+             User-defined settings XML after the sync.
              */
             const userDefinedXml = await readFile(userDefinedPath, 'utf8',);
 
             /**
-             * Base server configuration after patching.
+             Base server configuration after patching.
              */
             const baseConfig = configOf({ xml: languageXml, key: 'srv-1', },);
             expect(baseConfig['harper-ls.linters.Keep'],).toBe(true,);
@@ -255,7 +255,7 @@ await describe({
             expect(baseConfig['harper-ls.excludePatterns'],).toEqual(['**/X.md',],);
 
             /**
-             * Scoped server configuration derived from the base.
+             Scoped server configuration derived from the base.
              */
             const scopedConfig = configOf({ xml: languageXml, key: 'srv-scoped', },);
             expect(scopedConfig['harper-ls.linters.Keep'],).toBe(true,);
@@ -263,17 +263,17 @@ await describe({
             expect(scopedConfig['harper-ls.excludePatterns'],).toBeUndefined();
 
             /**
-             * Present base global settings entry, for schema inspection.
+             Present base global settings entry, for schema inspection.
              */
             const baseLanguageEntry = requireEntry(findXmlEntryByKey({ xml: languageXml, key: 'srv-1', },), 'srv-1',);
             /**
-             * Embedded schema content of the base entry, or absent sentinel.
+             Embedded schema content of the base entry, or absent sentinel.
              */
             const schema = getXmlOptionValue({ block: baseLanguageEntry.block, optionName: 'configurationSchemaContent', },);
             expect((schema !== ABSENT_XML_VALUE) && (schema.includes('harper-ls.linters.Disabled',)),).toBe(true,);
 
             /**
-             * Present scoped user-defined entry.
+             Present scoped user-defined entry.
              */
             const scopedEntry = requireEntry(findXmlEntryByKey({ xml: userDefinedXml, key: 'srv-scoped', },), 'srv-scoped',);
             expect(getXmlOptionValue({ block: scopedEntry.block, optionName: 'commandLine', },),).toBe('harper-ls',);

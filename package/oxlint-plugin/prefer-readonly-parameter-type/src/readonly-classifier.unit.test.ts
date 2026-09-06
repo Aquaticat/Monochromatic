@@ -180,7 +180,7 @@ await describe({
         if (classification.kind !== 'mutable')
           throw new Error('Expected mutable mixed owner type.',);
         /**
-         * Shared `name` path merged across both union branches.
+         Shared `name` path merged across both union branches.
          */
         const mixedPath = classification.writablePaths.find(function namePath(path,): boolean {
           return path.segments.some(function nameSegment(segment,): boolean {
@@ -205,7 +205,7 @@ await describe({
           hasBOM: false,
         },);
         /**
-         * Kinds for both cycle parameters, head asked for first.
+         Kinds for both cycle parameters, head asked for first.
          */
         const kinds = [
           'cycleHead:',

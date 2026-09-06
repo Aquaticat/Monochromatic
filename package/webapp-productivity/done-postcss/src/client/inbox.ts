@@ -1,12 +1,12 @@
 /**
- * Client entry script for the Inbox page.
- *
- * Loaded by the browser as `\<script type="module" src="/dist/client/inbox.js"\>`.
- *
- * Hydration flow:
- * 1. `injectCSS()` inserts the compiled global stylesheet into `\<head\>`
- * 2. `readPageData()` deserializes the `\<script id="page-data"\>` JSON blob
- * 3. The script builds DOM elements via `h()` and appends them to `\<main id="app"\>`
+ Client entry script for the Inbox page.
+ 
+ Loaded by the browser as `\<script type="module" src="/dist/client/inbox.js"\>`.
+ 
+ Hydration flow:
+ 1. `injectCSS()` inserts the compiled global stylesheet into `\<head\>`
+ 2. `readPageData()` deserializes the `\<script id="page-data"\>` JSON blob
+ 3. The script builds DOM elements via `h()` and appends them to `\<main id="app"\>`
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import styles from '../../dist/css/styles.css' with { type: 'text', };
@@ -35,19 +35,19 @@ import './component/focus-dropdown.ts';
 import './component/fab-button.ts';
 
 /**
- * Shape of the JSON blob embedded in the inbox page by the server.
+ Shape of the JSON blob embedded in the inbox page by the server.
  */
 type InboxPageData = {
   /**
-   * Tasks suggested based on context.
+   Tasks suggested based on context.
    */
   suggestedTasks: Task[];
   /**
-   * All inbox tasks.
+   All inbox tasks.
    */
   allTasks: Task[];
   /**
-   * Blocked tasks grouped by their blocker task ID.
+   Blocked tasks grouped by their blocker task ID.
    */
   blockedTasksByBlocker: BlockedTasksByBlocker;
 };
@@ -56,26 +56,26 @@ injectCSS(styles,);
 injectCSS(inboxStyles,);
 
 /**
- * Deserialized page data from the server-rendered JSON blob.
+ Deserialized page data from the server-rendered JSON blob.
  */
 const pageData = readPageData<InboxPageData>();
 
 /**
- * Root app container element where client-rendered content is appended.
+ Root app container element where client-rendered content is appended.
  */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
 /**
- * Typed reference to the app container.
+ Typed reference to the app container.
  */
 const app = appElement;
 
 /**
- * Navigates to the task detail page for the given task.
- *
- * @param taskId - UUID of the task to open
+ Navigates to the task detail page for the given task.
+ 
+ @param taskId - UUID of the task to open
  */
 function openTask(taskId: string,): void {
   globalThis.location
@@ -83,14 +83,14 @@ function openTask(taskId: string,): void {
 }
 
 /**
- * Sends a complete-task API call and reloads the page on success.
- *
- * @param taskId - UUID of the task to complete
- *
- * @example
- * ```ts
- * await completeTask('uuid-123');
- * ```
+ Sends a complete-task API call and reloads the page on success.
+ 
+ @param taskId - UUID of the task to complete
+ 
+ @example
+ ```ts
+ await completeTask('uuid-123');
+ ```
  */
 async function completeTask(taskId: string,): Promise<void> {
   await api({
@@ -102,19 +102,19 @@ async function completeTask(taskId: string,): Promise<void> {
 }
 
 /**
- * Builds a task list with optional blocked-child nesting.
- *
- * @param tasks - Tasks to display
- *
- * @param blockedTasksByBlocker - Map of blocker ID to blocked task links
- *
- * @returns Unordered list element containing task cards
- *
- * @example
- * ```ts
- * const list = buildTaskList({ tasks: pageData.allTasks, blockedTasksByBlocker: pageData.blockedTasksByBlocker });
- * app.append(list);
- * ```
+ Builds a task list with optional blocked-child nesting.
+ 
+ @param tasks - Tasks to display
+ 
+ @param blockedTasksByBlocker - Map of blocker ID to blocked task links
+ 
+ @returns Unordered list element containing task cards
+ 
+ @example
+ ```ts
+ const list = buildTaskList({ tasks: pageData.allTasks, blockedTasksByBlocker: pageData.blockedTasksByBlocker });
+ app.append(list);
+ ```
  */
 function buildTaskList(
   {
@@ -126,7 +126,7 @@ function buildTaskList(
   },
 ): HTMLUListElement {
   /**
-   * Top-level list element; child tasks are appended as nested sub-lists.
+   Top-level list element; child tasks are appended as nested sub-lists.
    */
   const list = h({
     tag: 'ul',
@@ -143,7 +143,7 @@ function buildTaskList(
       },),
     );
     /**
-     * Blocked-by children for the current task, defaulted to empty when none exist.
+     Blocked-by children for the current task, defaulted to empty when none exist.
      */
     const childLinks = blockedTasksByBlocker[task.id]
       ?? [];
@@ -184,7 +184,7 @@ app.append(h({
 },),);
 
 /**
- * Collapsible section heading for all tasks.
+ Collapsible section heading for all tasks.
  */
 const allSection = h({
   tag: 'section-heading',
@@ -218,7 +218,7 @@ allSection.append(h({
 app.append(allSection,);
 
 /**
- * New-task panel and FAB button created by the dialog module.
+ New-task panel and FAB button created by the dialog module.
  */
 const {
   panel: newTaskPanel,

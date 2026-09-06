@@ -1,11 +1,11 @@
 /**
- * Mixin engine: collects `\@mixin` definitions, expands nested `\@apply`
- * references between definitions, and splices bodies into documents.
- *
- * Internal to the package; consumers use `buildCss` or `expandCssMixins`.
- * One visitor ({@link applyVisitor}) drives both nested-definition expansion
- * and document expansion, and immutable css-edit nodes make body splices
- * reference-shared instead of cloned.
+ Mixin engine: collects `\@mixin` definitions, expands nested `\@apply`
+ references between definitions, and splices bodies into documents.
+ 
+ Internal to the package; consumers use `buildCss` or `expandCssMixins`.
+ One visitor ({@link applyVisitor}) drives both nested-definition expansion
+ and document expansion, and immutable css-edit nodes make body splices
+ reference-shared instead of cloned.
  */
 import {
   type CssAtRule,
@@ -25,8 +25,8 @@ import {
 //region Registry type
 
 /**
- * Mixin definitions by name. Bodies are immutable css-edit nodes, so registry
- * entries splice into documents by reference without cloning.
+ Mixin definitions by name. Bodies are immutable css-edit nodes, so registry
+ entries splice into documents by reference without cloning.
  */
 export type CssMixinRegistry = ReadonlyMap<string, readonly CssNode[]>;
 
@@ -35,12 +35,12 @@ export type CssMixinRegistry = ReadonlyMap<string, readonly CssNode[]>;
 //region Helpers
 
 /**
- * Trimmed prelude text of an at-rule, used as the mixin identifier for both
- * `\@mixin` definitions and `\@apply` references.
- *
- * @param node - At-rule carrying the identifier.
- *
- * @returns Trimmed prelude text; empty when the at-rule has no prelude.
+ Trimmed prelude text of an at-rule, used as the mixin identifier for both
+ `\@mixin` definitions and `\@apply` references.
+ 
+ @param node - At-rule carrying the identifier.
+ 
+ @returns Trimmed prelude text; empty when the at-rule has no prelude.
  */
 function atRuleParam(node: CssAtRule,): string {
   return rawTextOfTokens({ tokens: node.preludeTokens, },)
@@ -48,12 +48,12 @@ function atRuleParam(node: CssAtRule,): string {
 }
 
 /**
- * Whether a node list has any non-trivia content; a mixin body of pure
- * whitespace counts as missing.
- *
- * @param nodes - Candidate body nodes.
- *
- * @returns Whether structural content exists.
+ Whether a node list has any non-trivia content; a mixin body of pure
+ whitespace counts as missing.
+ 
+ @param nodes - Candidate body nodes.
+ 
+ @returns Whether structural content exists.
  */
 function hasStructuralContent(nodes: readonly CssNode[],): boolean {
   return nodes.some(function isStructural(node,) {
@@ -62,14 +62,14 @@ function hasStructuralContent(nodes: readonly CssNode[],): boolean {
 }
 
 /**
- * Builds the shared `\@apply`-splicing visitor: every `\@apply` at-rule is
- * replaced by whatever the resolver returns for its name; all other nodes
- * pass through. Used for nested expansion inside definitions and for
- * document expansion, so reference resolution differs but splicing never does.
- *
- * @param resolve - Maps a referenced mixin name to its replacement body.
- *
- * @returns Visitor for css-edit transforms.
+ Builds the shared `\@apply`-splicing visitor: every `\@apply` at-rule is
+ replaced by whatever the resolver returns for its name; all other nodes
+ pass through. Used for nested expansion inside definitions and for
+ document expansion, so reference resolution differs but splicing never does.
+ 
+ @param resolve - Maps a referenced mixin name to its replacement body.
+ 
+ @returns Visitor for css-edit transforms.
  */
 function applyVisitor({
   resolve,
@@ -81,7 +81,7 @@ function applyVisitor({
       return node;
 
     /**
-     * Referenced mixin name from the apply prelude.
+     Referenced mixin name from the apply prelude.
      */
     const mixinName = atRuleParam(node,);
     if (!mixinName)
@@ -96,21 +96,21 @@ function applyVisitor({
 //region Collection
 
 /**
- * Collects `\@mixin` definitions out of a stylesheet: definitions land in the
- * returned registry and disappear from the returned tree (leading blank space
- * pruned, comments kept).
- *
- * @param root - Parsed stylesheet to strip.
- *
- * @returns Stylesheet without definitions plus the collected registry.
- *
- * @throws When a `\@mixin` has no name or no body (definitions require content).
- *
- * @example
- * ```ts
- * const { root, mixins, } = collectMixins({ root: parsed.root, },);
- * mixins.has('--card',); // => true
- * ```
+ Collects `\@mixin` definitions out of a stylesheet: definitions land in the
+ returned registry and disappear from the returned tree (leading blank space
+ pruned, comments kept).
+ 
+ @param root - Parsed stylesheet to strip.
+ 
+ @returns Stylesheet without definitions plus the collected registry.
+ 
+ @throws When a `\@mixin` has no name or no body (definitions require content).
+ 
+ @example
+ ```ts
+ const { root, mixins, } = collectMixins({ root: parsed.root, },);
+ mixins.has('--card',); // => true
+ ```
  */
 export function collectMixins({
   root,
@@ -121,12 +121,12 @@ export function collectMixins({
   readonly mixins: CssMixinRegistry;
 } {
   /**
-   * Definitions found during the strip pass.
+   Definitions found during the strip pass.
    */
   const collected = new Map<string, readonly CssNode[]>();
 
   /**
-   * Stylesheet with every definition removed.
+   Stylesheet with every definition removed.
    */
   const stripped = transformStylesheet({
     root,
@@ -135,7 +135,7 @@ export function collectMixins({
         return node;
 
       /**
-       * Mixin identifier from the definition prelude.
+       Mixin identifier from the definition prelude.
        */
       const mixinName = atRuleParam(node,);
       if (!mixinName)
@@ -167,27 +167,27 @@ export function collectMixins({
 //region Expansion
 
 /**
- * Expands nested `\@apply` references inside every mixin body, returning a
- * registry whose entries contain no `\@apply` at-rules.
- *
- * Definition-chain recursion with an explicit trail: each mixin expands
- * exactly once (memoized), and a cycle surfaces as the exact reference chain
- * instead of a pass-count heuristic.
- *
- * @param mixins - Raw registry from {@link collectMixins}.
- *
- * @returns Registry with fully expanded bodies.
- *
- * @throws UnknownCssMixinError when a nested `\@apply` references an
- * unregistered mixin.
- *
- * @throws CircularCssMixinError when definitions reference each other in a
- * cycle.
- *
- * @example
- * ```ts
- * const expanded = expandMixinRegistry({ mixins, },);
- * ```
+ Expands nested `\@apply` references inside every mixin body, returning a
+ registry whose entries contain no `\@apply` at-rules.
+ 
+ Definition-chain recursion with an explicit trail: each mixin expands
+ exactly once (memoized), and a cycle surfaces as the exact reference chain
+ instead of a pass-count heuristic.
+ 
+ @param mixins - Raw registry from {@link collectMixins}.
+ 
+ @returns Registry with fully expanded bodies.
+ 
+ @throws UnknownCssMixinError when a nested `\@apply` references an
+ unregistered mixin.
+ 
+ @throws CircularCssMixinError when definitions reference each other in a
+ cycle.
+ 
+ @example
+ ```ts
+ const expanded = expandMixinRegistry({ mixins, },);
+ ```
  */
 export function expandMixinRegistry({
   mixins,
@@ -195,22 +195,22 @@ export function expandMixinRegistry({
   readonly mixins: CssMixinRegistry;
 },): CssMixinRegistry {
   /**
-   * Fully expanded bodies, filled on demand.
+   Fully expanded bodies, filled on demand.
    */
   const expanded = new Map<string, readonly CssNode[]>();
 
   /**
-   * Expands one mixin body along a definition trail.
-   *
-   * @param name - Mixin under expansion.
-   *
-   * @param trail - Definition names already on the recursion path.
-   *
-   * @returns Fully expanded body nodes.
-   *
-   * @throws UnknownCssMixinError for unregistered references.
-   *
-   * @throws CircularCssMixinError when name already sits on the trail.
+   Expands one mixin body along a definition trail.
+   
+   @param name - Mixin under expansion.
+   
+   @param trail - Definition names already on the recursion path.
+   
+   @returns Fully expanded body nodes.
+   
+   @throws UnknownCssMixinError for unregistered references.
+   
+   @throws CircularCssMixinError when name already sits on the trail.
    */
   function expandName({
     name,
@@ -220,7 +220,7 @@ export function expandMixinRegistry({
     readonly trail: readonly string[];
   },): readonly CssNode[] {
     /**
-     * Previously expanded body for this name.
+     Previously expanded body for this name.
      */
     const memoized = expanded.get(name,);
     if (memoized !== undefined)
@@ -235,7 +235,7 @@ export function expandMixinRegistry({
       },);
 
     /**
-     * Raw body as collected from the definition.
+     Raw body as collected from the definition.
      */
     const body = mixins.get(name,);
     if (body === undefined)
@@ -245,7 +245,7 @@ export function expandMixinRegistry({
       },);
 
     /**
-     * Body with nested references spliced in.
+     Body with nested references spliced in.
      */
     const result = transformNodes({
       nodes: body,
@@ -281,22 +281,22 @@ export function expandMixinRegistry({
 }
 
 /**
- * Replaces every `\@apply` in a document with the referenced mixin body.
- *
- * @param root - Stylesheet containing `\@apply` references.
- *
- * @param mixins - Registry, normally pre-expanded by {@link expandMixinRegistry}.
- *
- * @returns Stylesheet with references replaced.
- *
- * @throws When an `\@apply` carries no mixin name.
- *
- * @throws UnknownCssMixinError when a reference is not in the registry.
- *
- * @example
- * ```ts
- * const finalRoot = expandApplyRules({ root, mixins: expanded, },);
- * ```
+ Replaces every `\@apply` in a document with the referenced mixin body.
+ 
+ @param root - Stylesheet containing `\@apply` references.
+ 
+ @param mixins - Registry, normally pre-expanded by {@link expandMixinRegistry}.
+ 
+ @returns Stylesheet with references replaced.
+ 
+ @throws When an `\@apply` carries no mixin name.
+ 
+ @throws UnknownCssMixinError when a reference is not in the registry.
+ 
+ @example
+ ```ts
+ const finalRoot = expandApplyRules({ root, mixins: expanded, },);
+ ```
  */
 export function expandApplyRules({
   root,
@@ -310,7 +310,7 @@ export function expandApplyRules({
     visit: applyVisitor({
       resolve: function resolveFromRegistry(mixinName,) {
         /**
-         * Stored body nodes for the referenced mixin.
+         Stored body nodes for the referenced mixin.
          */
         const body = mixins.get(mixinName,);
         if (body === undefined)

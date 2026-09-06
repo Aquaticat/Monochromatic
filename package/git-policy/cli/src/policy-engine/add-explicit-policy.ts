@@ -1,5 +1,5 @@
 /**
- * Unified add-explicit built-in policy. @module
+ Unified add-explicit built-in policy. @module
  */
 import type { PolicyFinding, } from '../api/policy-types.ts';
 import {
@@ -9,12 +9,12 @@ import {
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
- * Configurable add-explicit policy.
- *
- * @example
- * ```ts
- * addExplicitPolicy.name;
- * ```
+ Configurable add-explicit policy.
+ 
+ @example
+ ```ts
+ addExplicitPolicy.name;
+ ```
  */
 export const addExplicitPolicy: RuntimePolicyDefinition = {
   name: 'add-explicit',

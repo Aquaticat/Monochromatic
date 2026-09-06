@@ -1,7 +1,7 @@
 /**
- * OCR comment validation and normalization.
- *
- * @module
+ OCR comment validation and normalization.
+ 
+ @module
  */
 
 import {
@@ -16,22 +16,22 @@ import type {
 } from './model.ts';
 
 /**
- * Reads mandatory string property from one untrusted record.
- *
- * @param record - Record carrying candidate property.
- *
- * @param key - Property whose type is part of accepted OCR schema.
- *
- * @param positionLabel - Input position for diagnostic evidence.
- *
- * @returns Validated string value.
- *
- * @throws {@link InputValidationError} when property is absent or non-string.
- *
- * @example
- * ```ts
- * requiredString({ record: { path: 'a.ts' }, key: 'path', positionLabel: 'record 1' });
- * ```
+ Reads mandatory string property from one untrusted record.
+ 
+ @param record - Record carrying candidate property.
+ 
+ @param key - Property whose type is part of accepted OCR schema.
+ 
+ @param positionLabel - Input position for diagnostic evidence.
+ 
+ @returns Validated string value.
+ 
+ @throws {@link InputValidationError} when property is absent or non-string.
+ 
+ @example
+ ```ts
+ requiredString({ record: { path: 'a.ts' }, key: 'path', positionLabel: 'record 1' });
+ ```
  */
 function requiredString({
   record,
@@ -43,7 +43,7 @@ function requiredString({
   readonly positionLabel: string;
 },): string {
   /**
-   * Untrusted property value at current validation boundary.
+   Untrusted property value at current validation boundary.
    */
   const value = record[key];
   if ((typeof value) !== 'string') {
@@ -53,22 +53,22 @@ function requiredString({
 }
 
 /**
- * Reads optional string property with empty-string normalization.
- *
- * @param record - Record carrying candidate property.
- *
- * @param key - Optional OCR property.
- *
- * @param positionLabel - Input position for diagnostic evidence.
- *
- * @returns Empty string when absent or validated supplied text.
- *
- * @throws {@link InputValidationError} when supplied value is non-string.
- *
- * @example
- * ```ts
- * optionalString({ record: {}, key: 'existing_code', positionLabel: 'record 1' });
- * ```
+ Reads optional string property with empty-string normalization.
+ 
+ @param record - Record carrying candidate property.
+ 
+ @param key - Optional OCR property.
+ 
+ @param positionLabel - Input position for diagnostic evidence.
+ 
+ @returns Empty string when absent or validated supplied text.
+ 
+ @throws {@link InputValidationError} when supplied value is non-string.
+ 
+ @example
+ ```ts
+ optionalString({ record: {}, key: 'existing_code', positionLabel: 'record 1' });
+ ```
  */
 function optionalString({
   record,
@@ -80,7 +80,7 @@ function optionalString({
   readonly positionLabel: string;
 },): string {
   /**
-   * Untrusted property value at current validation boundary.
+   Untrusted property value at current validation boundary.
    */
   const value = record[key];
   if (value === undefined) {
@@ -93,22 +93,22 @@ function optionalString({
 }
 
 /**
- * Reads positive integer line property.
- *
- * @param record - Record carrying line property.
- *
- * @param key - Start or end line key.
- *
- * @param positionLabel - Input position for diagnostic evidence.
- *
- * @returns Validated positive integer.
- *
- * @throws {@link InputValidationError} when property is not positive integer.
- *
- * @example
- * ```ts
- * positiveLine({ record: { start_line: 2 }, key: 'start_line', positionLabel: 'record 1' });
- * ```
+ Reads positive integer line property.
+ 
+ @param record - Record carrying line property.
+ 
+ @param key - Start or end line key.
+ 
+ @param positionLabel - Input position for diagnostic evidence.
+ 
+ @returns Validated positive integer.
+ 
+ @throws {@link InputValidationError} when property is not positive integer.
+ 
+ @example
+ ```ts
+ positiveLine({ record: { start_line: 2 }, key: 'start_line', positionLabel: 'record 1' });
+ ```
  */
 function positiveLine({
   record,
@@ -120,7 +120,7 @@ function positiveLine({
   readonly positionLabel: string;
 },): number {
   /**
-   * Untrusted property value at current validation boundary.
+   Untrusted property value at current validation boundary.
    */
   const value = record[key];
   if (((typeof value) !== 'number') || (!Number.isInteger(value,))
@@ -131,22 +131,22 @@ function positiveLine({
 }
 
 /**
- * Selects explicit comment path or inherited JSONL item path.
- *
- * @param record - Comment carrying optional explicit path.
- *
- * @param fallbackPath - Item-level path inherited by pathless JSONL comments.
- *
- * @param positionLabel - Input position for diagnostic evidence.
- *
- * @returns Non-empty source path.
- *
- * @throws {@link InputValidationError} when no usable path exists.
- *
- * @example
- * ```ts
- * commentPath({ record: { path: '' }, fallbackPath: 'a.ts', positionLabel: 'line 2' });
- * ```
+ Selects explicit comment path or inherited JSONL item path.
+ 
+ @param record - Comment carrying optional explicit path.
+ 
+ @param fallbackPath - Item-level path inherited by pathless JSONL comments.
+ 
+ @param positionLabel - Input position for diagnostic evidence.
+ 
+ @returns Non-empty source path.
+ 
+ @throws {@link InputValidationError} when no usable path exists.
+ 
+ @example
+ ```ts
+ commentPath({ record: { path: '' }, fallbackPath: 'a.ts', positionLabel: 'line 2' });
+ ```
  */
 function commentPath({
   record,
@@ -158,7 +158,7 @@ function commentPath({
   readonly positionLabel: string;
 },): string {
   /**
-   * Explicit comment path before JSONL inheritance.
+   Explicit comment path before JSONL inheritance.
    */
   const suppliedPath = requiredString({
     record,
@@ -166,7 +166,7 @@ function commentPath({
     positionLabel,
   });
   /**
-   * Effective non-empty path after optional inheritance.
+   Effective non-empty path after optional inheritance.
    */
   const path = suppliedPath === '' ? fallbackPath ?? '' : suppliedPath;
   if (path.trim() === '') {
@@ -176,16 +176,16 @@ function commentPath({
 }
 
 /**
- * Detects at least one line containing non-whitespace text.
- *
- * @param text - Finding text field used as possible title summary source.
- *
- * @returns Whether title generation can obtain a meaningful line.
- *
- * @example
- * ```ts
- * hasNonWhitespaceLine('  \nvalue'); // true
- * ```
+ Detects at least one line containing non-whitespace text.
+ 
+ @param text - Finding text field used as possible title summary source.
+ 
+ @returns Whether title generation can obtain a meaningful line.
+ 
+ @example
+ ```ts
+ hasNonWhitespaceLine('  \nvalue'); // true
+ ```
  */
 function hasNonWhitespaceLine(text: string,): boolean {
   return text.split('\n',)
@@ -195,25 +195,25 @@ function hasNonWhitespaceLine(text: string,): boolean {
 }
 
 /**
- * Converts one OCR comment to adapter-owned naming and position metadata.
- *
- * @param value - Untrusted comment value.
- *
- * @param position - Input position attached to normalized finding.
- *
- * @param fallbackPath - Item path inherited by a pathless JSONL comment.
- *
- * @returns Validated normalized finding.
- *
- * @throws {@link InputValidationError} when comment violates OCR schema.
- *
- * @example
- * ```ts
- * normalizeComment({
- *   value: { path: 'a.ts', content: 'x', start_line: 1, end_line: 1 },
- *   position: { kind: 'record', value: 1 },
- * });
- * ```
+ Converts one OCR comment to adapter-owned naming and position metadata.
+ 
+ @param value - Untrusted comment value.
+ 
+ @param position - Input position attached to normalized finding.
+ 
+ @param fallbackPath - Item path inherited by a pathless JSONL comment.
+ 
+ @returns Validated normalized finding.
+ 
+ @throws {@link InputValidationError} when comment violates OCR schema.
+ 
+ @example
+ ```ts
+ normalizeComment({
+   value: { path: 'a.ts', content: 'x', start_line: 1, end_line: 1 },
+   position: { kind: 'record', value: 1 },
+ });
+ ```
  */
 export function normalizeComment({
   value,
@@ -225,14 +225,14 @@ export function normalizeComment({
   readonly fallbackPath?: string;
 },): NormalizedFinding {
   /**
-   * Human-readable input position for validation diagnostics.
+   Human-readable input position for validation diagnostics.
    */
   const positionLabel = `${position.kind} ${String(position.value,)}`;
   if (!isRecord(value,)) {
     throw new InputValidationError(`${positionLabel} must be an object`,);
   }
   /**
-   * Effective source path after JSONL inheritance.
+   Effective source path after JSONL inheritance.
    */
   const path = commentPath({
     record: value,
@@ -240,7 +240,7 @@ export function normalizeComment({
     positionLabel,
   });
   /**
-   * Primary finding prose retained unchanged.
+   Primary finding prose retained unchanged.
    */
   const content = requiredString({
     record: value,
@@ -248,7 +248,7 @@ export function normalizeComment({
     positionLabel,
   });
   /**
-   * Existing source text retained unchanged.
+   Existing source text retained unchanged.
    */
   const existingCode = optionalString({
     record: value,
@@ -256,7 +256,7 @@ export function normalizeComment({
     positionLabel,
   });
   /**
-   * Suggested source text retained unchanged.
+   Suggested source text retained unchanged.
    */
   const suggestionCode = optionalString({
     record: value,
@@ -271,7 +271,7 @@ export function normalizeComment({
     throw new InputValidationError(`${positionLabel} must contain a non-whitespace line`,);
   }
   /**
-   * Inclusive first source line.
+   Inclusive first source line.
    */
   const startLine = positiveLine({
     record: value,
@@ -279,7 +279,7 @@ export function normalizeComment({
     positionLabel,
   });
   /**
-   * Inclusive last source line.
+   Inclusive last source line.
    */
   const endLine = positiveLine({
     record: value,
@@ -290,14 +290,14 @@ export function normalizeComment({
     throw new InputValidationError(`${positionLabel} end_line precedes start_line`,);
   }
   /**
-   * Optional normalized category property.
+   Optional normalized category property.
    */
   const categoryMetadata = normalizeCategoryMetadata({
     record: value,
     positionLabel,
   });
   /**
-   * Optional normalized severity property.
+   Optional normalized severity property.
    */
   const severityMetadata = normalizeSeverityMetadata({
     record: value,

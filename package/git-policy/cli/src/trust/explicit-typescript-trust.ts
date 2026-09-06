@@ -1,5 +1,5 @@
 /**
- * Explicit two-stage TypeScript bundle trust. @module
+ Explicit two-stage TypeScript bundle trust. @module
  */
 import {
   mkdtemp,
@@ -32,32 +32,32 @@ import type {
 } from './types.ts';
 
 /**
- * Disposable private build directory.
+ Disposable private build directory.
  */
 export type PrivateBuildDirectory = Readonly<{
   /**
-   * Exact private path.
+   Exact private path.
    */
   path: string;
   /**
-   * Removes private build state.
+   Removes private build state.
    */
   [Symbol.asyncDispose]: () => Promise<void>;
 }>;
 
 /**
- * Creates private disposable tsdown output directory.
- *
- * @returns private directory handle
- *
- * @example
- * ```ts
- * await using directory = await createPrivateBuildDirectory();
- * ```
+ Creates private disposable tsdown output directory.
+ 
+ @returns private directory handle
+ 
+ @example
+ ```ts
+ await using directory = await createPrivateBuildDirectory();
+ ```
  */
 export async function createPrivateBuildDirectory(): Promise<PrivateBuildDirectory> {
   /**
-   * Private random output path.
+   Private random output path.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -78,13 +78,13 @@ export async function createPrivateBuildDirectory(): Promise<PrivateBuildDirecto
 }
 
 /**
- * Determines prior exact bundle state without execution.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - rebuilt exact candidate
- *
- * @returns disclosure snapshot state
+ Determines prior exact bundle state without execution.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - rebuilt exact candidate
+ 
+ @returns disclosure snapshot state
  */
 async function bundleState({
   registryRoot,
@@ -95,14 +95,14 @@ async function bundleState({
 }>,): Promise<'new' | 'unchanged' | 'changed' | 'corrupt'> {
   try {
     /**
-     * Existing validated exact record.
+     Existing validated exact record.
      */
     const record = await loadRecord({
       registryRoot,
       candidate: candidate.entry,
     },);
     /**
-     * Exact prior stored bundle.
+     Exact prior stored bundle.
      */
     const storedBytes = await readPrivateFile(join(
       recordDirectory({
@@ -125,13 +125,13 @@ async function bundleState({
 }
 
 /**
- * Creates complete TypeScript root consent disclosure.
- *
- * @param candidate - exact rebuilt candidate
- *
- * @param state - prior bundle state
- *
- * @returns human-readable disclosure
+ Creates complete TypeScript root consent disclosure.
+ 
+ @param candidate - exact rebuilt candidate
+ 
+ @param state - prior bundle state
+ 
+ @returns human-readable disclosure
  */
 function rootDisclosure({
   candidate,
@@ -141,14 +141,14 @@ function rootDisclosure({
   state: 'new' | 'unchanged' | 'changed' | 'corrupt';
 }>,): string {
   /**
-   * Exact tracked source list.
+   Exact tracked source list.
    */
   const sources = candidate.sources
     .map(function sourceLine(source,) {
     return `Tracked source: ${source.canonicalPath} (${source.size} bytes)`;
   },);
   /**
-   * Bare-package invalidation warnings.
+   Bare-package invalidation warnings.
    */
   const packageWarnings = candidate.barePackageImports
     .map(function packageWarning(specifier,) {
@@ -181,11 +181,11 @@ function rootDisclosure({
 }
 
 /**
- * Creates second-stage recursive authority disclosure.
- *
- * @param repositoryRoot - exact canonical recursive root
- *
- * @returns human-readable cross-filesystem warning
+ Creates second-stage recursive authority disclosure.
+ 
+ @param repositoryRoot - exact canonical recursive root
+ 
+ @returns human-readable cross-filesystem warning
  */
 function recursiveDisclosure(repositoryRoot: string,): string {
   return [
@@ -198,15 +198,15 @@ function recursiveDisclosure(repositoryRoot: string,): string {
 }
 
 /**
- * Executes bundle candidate from temporary record without persistence.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - exact TypeScript candidate
- *
- * @param recordedAt - audit timestamp
- *
- * @returns runtime-validated config
+ Executes bundle candidate from temporary record without persistence.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - exact TypeScript candidate
+ 
+ @param recordedAt - audit timestamp
+ 
+ @returns runtime-validated config
  */
 async function validatePrivateCandidate({
   registryRoot,
@@ -218,7 +218,7 @@ async function validatePrivateCandidate({
   recordedAt: string;
 }>,): Promise<ValidatedConfig> {
   /**
-   * Disposable private validation record.
+   Disposable private validation record.
    */
   await using prepared = await prepareTypeScriptRecord({
     registryRoot,
@@ -229,22 +229,22 @@ async function validatePrivateCandidate({
 }
 
 /**
- * Explicitly trusts one rebuilt TypeScript bundle with two-stage consent.
- *
- * @param discovered - canonical TypeScript config
- *
- * @param registryRoot - injected or account-derived root
- *
- * @param yes - explicit noninteractive approval
- *
- * @param adapters - disclosure, prompt, and clock effects
- *
- * @returns loaded validated config installed by trust
- *
- * @example
- * ```ts
- * await trustTypeScript({ discovered, registryRoot, yes: true, adapters });
- * ```
+ Explicitly trusts one rebuilt TypeScript bundle with two-stage consent.
+ 
+ @param discovered - canonical TypeScript config
+ 
+ @param registryRoot - injected or account-derived root
+ 
+ @param yes - explicit noninteractive approval
+ 
+ @param adapters - disclosure, prompt, and clock effects
+ 
+ @returns loaded validated config installed by trust
+ 
+ @example
+ ```ts
+ await trustTypeScript({ discovered, registryRoot, yes: true, adapters });
+ ```
  */
 export async function trustTypeScript({
   discovered,
@@ -258,11 +258,11 @@ export async function trustTypeScript({
   adapters: TrustConsentAdapters;
 }>,): Promise<LoadedTrustedConfig> {
   /**
-   * Disposable private tsdown output directory.
+   Disposable private tsdown output directory.
    */
   await using buildDirectory = await createPrivateBuildDirectory();
   /**
-   * Fresh build required for every explicit trust.
+   Fresh build required for every explicit trust.
    */
   const candidate = await buildTypeScriptCandidate({
     discovered,
@@ -270,7 +270,7 @@ export async function trustTypeScript({
   },);
   await ensureRegistryRoot(registryRoot,);
   /**
-   * Exact prior bundle state.
+   Exact prior bundle state.
    */
   const state = await bundleState({
     registryRoot,
@@ -281,7 +281,7 @@ export async function trustTypeScript({
     state,
   },),);
   /**
-   * Root trust decision preserving unavailable terminal state.
+   Root trust decision preserving unavailable terminal state.
    */
   const rootConsent = yes ? 'approved' : await adapters.prompt();
   if (rootConsent === 'unavailable')
@@ -299,12 +299,12 @@ export async function trustTypeScript({
       'Trust declined; no persistent record was installed.',
     );
   /**
-   * Stable timestamp shared by validation and final record.
+   Stable timestamp shared by validation and final record.
    */
   const recordedAt = adapters.now()
     .toISOString();
   /**
-   * Built config executes only after first consent.
+   Built config executes only after first consent.
    */
   const validated = await validatePrivateCandidate({
     registryRoot,
@@ -312,14 +312,14 @@ export async function trustTypeScript({
     recordedAt,
   },);
   /**
-   * Whether second-stage recursive authority was accepted.
+   Whether second-stage recursive authority was accepted.
    */
   const recursiveChildren = await (async function resolveRecursiveConsent(): Promise<boolean> {
     if (!validated.recursiveChildren)
       return false;
     adapters.disclose(recursiveDisclosure(discovered.repositoryRoot,),);
     /**
-     * Recursive trust decision preserving unavailable terminal state.
+     Recursive trust decision preserving unavailable terminal state.
      */
     const recursiveConsent = yes ? 'approved' : await adapters.prompt();
     if (recursiveConsent === 'unavailable')
@@ -334,18 +334,18 @@ export async function trustTypeScript({
     return recursiveConsent === 'approved';
   })();
   /**
-   * Registry-wide lock serializes enrollment and revocation.
+   Registry-wide lock serializes enrollment and revocation.
    */
   await using recursiveLock = await acquireRecursiveRegistryLock({ registryRoot, },);
   /**
-   * Explicit self-authorizer plus unchanged outer roots.
+   Explicit self-authorizer plus unchanged outer roots.
    */
   const authorizingRoots = await explicitAuthorizers({
     registryRoot,
     candidate: candidate.entry,
   },);
   /**
-   * Final source and bundle record installed only after validation.
+   Final source and bundle record installed only after validation.
    */
   await using prepared = await prepareTypeScriptRecord({
     registryRoot,

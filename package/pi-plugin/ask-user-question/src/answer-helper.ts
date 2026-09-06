@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Detached terminal entry that opens configured editor for one Pi answer request.
- *
- * @module
+ Detached terminal entry that opens configured editor for one Pi answer request.
+ 
+ @module
  */
 
 import { parseArgs, } from 'node:util';
@@ -13,7 +13,7 @@ import { runAnswerHelper, } from './helper-core.ts';
 //region Arguments
 
 /**
- * Strict helper command-line values supplied by extension bundle.
+ Strict helper command-line values supplied by extension bundle.
  */
 const parsed = parseArgs({
   args: process.argv
@@ -27,7 +27,7 @@ const parsed = parseArgs({
 },);
 
 /**
- * Private helper request path passed as sole required option.
+ Private helper request path passed as sole required option.
  */
 const requestPath = parsed.values
   .request;

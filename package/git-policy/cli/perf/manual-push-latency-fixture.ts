@@ -1,7 +1,7 @@
 /**
- * Disposable repository fixture for repository-scale manual-push latency measurements.
- *
- * @module
+ Disposable repository fixture for repository-scale manual-push latency measurements.
+ 
+ @module
  */
 
 import {
@@ -25,12 +25,12 @@ import {
 } from './manual-push-latency-contracts.ts';
 
 /**
- * Prepared revisions needed by benchmark execution and evidence.
- *
- * @example
- * ```ts
- * const fixture: BenchmarkFixture = { baseOid: 'base', headOid: 'head' };
- * ```
+ Prepared revisions needed by benchmark execution and evidence.
+ 
+ @example
+ ```ts
+ const fixture: BenchmarkFixture = { baseOid: 'base', headOid: 'head' };
+ ```
  */
 export type BenchmarkFixture = Readonly<{
   baseOid: string;
@@ -38,16 +38,16 @@ export type BenchmarkFixture = Readonly<{
 }>;
 
 /**
- * Prepare equivalent direct and wrapped repositories from source mount.
- *
- * @returns Baseline and evidence revisions.
- *
- * @throws Error when filesystem or command setup fails.
- *
- * @example
- * ```ts
- * await prepareFixture();
- * ```
+ Prepare equivalent direct and wrapped repositories from source mount.
+ 
+ @returns Baseline and evidence revisions.
+ 
+ @throws Error when filesystem or command setup fails.
+ 
+ @example
+ ```ts
+ await prepareFixture();
+ ```
  */
 export async function prepareFixture(): Promise<BenchmarkFixture> {
   await execute({
@@ -85,7 +85,7 @@ export async function prepareFixture(): Promise<BenchmarkFixture> {
     options: { cwd: '/work' },
   });
   /**
-   * Remote baseline used before each paired measurement.
+   Remote baseline used before each paired measurement.
    */
   const baseOid = await execute({
     command: '/usr/bin/git',
@@ -97,7 +97,7 @@ export async function prepareFixture(): Promise<BenchmarkFixture> {
     ],
   });
   /**
-   * Revision represented by benchmark evidence.
+   Revision represented by benchmark evidence.
    */
   const headOid = await execute({
     command: '/usr/bin/git',
@@ -181,7 +181,7 @@ export async function prepareFixture(): Promise<BenchmarkFixture> {
     `${WRAPPED_REPOSITORY}/packages/cli/forbidden-strings/target/release/forbidden-strings`,
   );
   /**
-   * Scanner rule guaranteed absent from source revision.
+   Scanner rule guaranteed absent from source revision.
    */
   const absentRule = `MANUAL_PUSH_LATENCY_${String(Date.now())}_${String(process.pid)}`;
   await writeFile(
@@ -204,16 +204,16 @@ export async function prepareFixture(): Promise<BenchmarkFixture> {
 }
 
 /**
- * Reset both benchmark remotes to common baseline revision.
- *
- * @param baseOid - Revision installed on both remote main branches.
- *
- * @throws Error when either update-ref command fails.
- *
- * @example
- * ```ts
- * await resetRemotes({ baseOid: '0123456789abcdef' });
- * ```
+ Reset both benchmark remotes to common baseline revision.
+ 
+ @param baseOid - Revision installed on both remote main branches.
+ 
+ @throws Error when either update-ref command fails.
+ 
+ @example
+ ```ts
+ await resetRemotes({ baseOid: '0123456789abcdef' });
+ ```
  */
 async function resetRemotes({ baseOid }: Readonly<{ baseOid: string }>): Promise<void> {
   await Promise.all([
@@ -239,20 +239,20 @@ async function resetRemotes({ baseOid }: Readonly<{ baseOid: string }>): Promise
 }
 
 /**
- * Measure one direct and wrapped push in alternating order.
- *
- * @param wrapperFirst - Whether wrapped push runs before direct push.
- *
- * @param baseOid - Revision restored before measurements.
- *
- * @returns Paired direct, wrapped, and added latency values.
- *
- * @throws Error when reset or either push fails.
- *
- * @example
- * ```ts
- * await runPair({ wrapperFirst: true, baseOid: '0123456789abcdef' });
- * ```
+ Measure one direct and wrapped push in alternating order.
+ 
+ @param wrapperFirst - Whether wrapped push runs before direct push.
+ 
+ @param baseOid - Revision restored before measurements.
+ 
+ @returns Paired direct, wrapped, and added latency values.
+ 
+ @throws Error when reset or either push fails.
+ 
+ @example
+ ```ts
+ await runPair({ wrapperFirst: true, baseOid: '0123456789abcdef' });
+ ```
  */
 export async function runPair({
   wrapperFirst,
@@ -264,7 +264,7 @@ export async function runPair({
   await resetRemotes({ baseOid });
   if (wrapperFirst) {
     /**
-     * Wrapped push duration measured first for this pair.
+     Wrapped push duration measured first for this pair.
      */
     const wrapperMs = await measure({
       command: PACKAGE_BIN,
@@ -276,7 +276,7 @@ export async function runPair({
       cwd: WRAPPED_REPOSITORY,
     });
     /**
-     * Direct push duration measured second for this pair.
+     Direct push duration measured second for this pair.
      */
     const directMs = await measure({
       command: '/usr/bin/git',
@@ -294,7 +294,7 @@ export async function runPair({
     };
   }
   /**
-   * Direct push duration measured first for this pair.
+   Direct push duration measured first for this pair.
    */
   const directMs = await measure({
     command: '/usr/bin/git',
@@ -306,7 +306,7 @@ export async function runPair({
     cwd: DIRECT_REPOSITORY,
   });
   /**
-   * Wrapped push duration measured second for this pair.
+   Wrapped push duration measured second for this pair.
    */
   const wrapperMs = await measure({
     command: PACKAGE_BIN,

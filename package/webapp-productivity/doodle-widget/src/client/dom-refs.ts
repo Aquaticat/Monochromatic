@@ -1,31 +1,31 @@
 /**
- * DOM element references for the doodle widget.
- *
- * All queries execute at module load time and throw if an element
- * is missing, ensuring early failure for missing markup.
+ DOM element references for the doodle widget.
+ 
+ All queries execute at module load time and throw if an element
+ is missing, ensuring early failure for missing markup.
  */
 
 /**
- * Queries a required DOM element by CSS selector and validates its type.
- *
- * Takes the expected element constructor so the result is narrowed by a
- * runtime `instanceof` check rather than an unchecked assertion. Throws
- * when the selector matches nothing or matches an element of the wrong
- * type.
- *
- * @param selector - CSS selector string
- *
- * @param Ctor - constructor of the expected element type, used both to
- *   infer the return type and to validate the match at runtime
- *
- * @returns matched element, guaranteed non-null and of type `T`
- *
- * @throws Error if no element matches the selector or the match is not a `T`
- *
- * @example
- * ```ts
- * const btn = requireElement({ selector: '#my-btn', Ctor: HTMLButtonElement });
- * ```
+ Queries a required DOM element by CSS selector and validates its type.
+ 
+ Takes the expected element constructor so the result is narrowed by a
+ runtime `instanceof` check rather than an unchecked assertion. Throws
+ when the selector matches nothing or matches an element of the wrong
+ type.
+ 
+ @param selector - CSS selector string
+ 
+ @param Ctor - constructor of the expected element type, used both to
+   infer the return type and to validate the match at runtime
+ 
+ @returns matched element, guaranteed non-null and of type `T`
+ 
+ @throws Error if no element matches the selector or the match is not a `T`
+ 
+ @example
+ ```ts
+ const btn = requireElement({ selector: '#my-btn', Ctor: HTMLButtonElement });
+ ```
  */
 export function requireElement<T extends Element,>(
   {
@@ -37,7 +37,7 @@ export function requireElement<T extends Element,>(
   },
 ): T {
   /**
-   * Query result, possibly null if selector has no match
+   Query result, possibly null if selector has no match
    */
   const element = document.querySelector<T>(selector,);
   if (element === null)
@@ -48,7 +48,7 @@ export function requireElement<T extends Element,>(
 }
 
 /**
- * Canvas container element (scrollable centering viewport)
+ Canvas container element (scrollable centering viewport)
  */
 export const container: HTMLDivElement = requireElement({
   selector: '#canvas-container',
@@ -56,7 +56,7 @@ export const container: HTMLDivElement = requireElement({
 },);
 
 /**
- * Fixed letter-size page element (coordinate reference for drawing and export)
+ Fixed letter-size page element (coordinate reference for drawing and export)
  */
 export const page: HTMLDivElement = requireElement({
   selector: '#page',
@@ -64,7 +64,7 @@ export const page: HTMLDivElement = requireElement({
 },);
 
 /**
- * Drawing canvas element
+ Drawing canvas element
  */
 export const canvas: HTMLCanvasElement = requireElement({
   selector: '#draw-canvas',
@@ -72,7 +72,7 @@ export const canvas: HTMLCanvasElement = requireElement({
 },);
 
 /**
- * SVG overlay element for displaying SVG backgrounds with multiply blending
+ SVG overlay element for displaying SVG backgrounds with multiply blending
  */
 export const svgOverlay: HTMLDivElement = requireElement({
   selector: '#svg-overlay',
@@ -80,7 +80,7 @@ export const svgOverlay: HTMLDivElement = requireElement({
 },);
 
 /**
- * Draw tool radio input
+ Draw tool radio input
  */
 export const drawRadio: HTMLInputElement = requireElement({
   selector: '#tool-draw',
@@ -88,7 +88,7 @@ export const drawRadio: HTMLInputElement = requireElement({
 },);
 
 /**
- * Erase tool radio input
+ Erase tool radio input
  */
 export const eraseRadio: HTMLInputElement = requireElement({
   selector: '#tool-erase',
@@ -96,7 +96,7 @@ export const eraseRadio: HTMLInputElement = requireElement({
 },);
 
 /**
- * Zoom tool radio input
+ Zoom tool radio input
  */
 export const zoomRadio: HTMLInputElement = requireElement({
   selector: '#tool-zoom',
@@ -104,7 +104,7 @@ export const zoomRadio: HTMLInputElement = requireElement({
 },);
 
 /**
- * Text label overlay layer
+ Text label overlay layer
  */
 export const textLayer: HTMLDivElement = requireElement({
   selector: '#text-layer',
@@ -112,7 +112,7 @@ export const textLayer: HTMLDivElement = requireElement({
 },);
 
 /**
- * Zoom layer wrapper for CSS transform-based zoom and pan
+ Zoom layer wrapper for CSS transform-based zoom and pan
  */
 export const zoomLayer: HTMLDivElement = requireElement({
   selector: '#zoom-layer',
@@ -120,7 +120,7 @@ export const zoomLayer: HTMLDivElement = requireElement({
 },);
 
 /**
- * Tool selection toggle group
+ Tool selection toggle group
  */
 export const toolToggle: HTMLDivElement = requireElement({
   selector: '#tool-toggle',
@@ -128,7 +128,7 @@ export const toolToggle: HTMLDivElement = requireElement({
 },);
 
 /**
- * Page selection toggle group
+ Page selection toggle group
  */
 export const pageToggle: HTMLDivElement = requireElement({
   selector: '#page-toggle',
@@ -136,7 +136,7 @@ export const pageToggle: HTMLDivElement = requireElement({
 },);
 
 /**
- * JSON script element holding page background SVGs
+ JSON script element holding page background SVGs
  */
 export const backgroundsScript: HTMLScriptElement = requireElement({
   selector: '#page-backgrounds',
@@ -144,7 +144,7 @@ export const backgroundsScript: HTMLScriptElement = requireElement({
 },);
 
 /**
- * Undo button
+ Undo button
  */
 export const undoBtn: HTMLButtonElement = requireElement({
   selector: '#undo-btn',
@@ -152,7 +152,7 @@ export const undoBtn: HTMLButtonElement = requireElement({
 },);
 
 /**
- * Redo button
+ Redo button
  */
 export const redoBtn: HTMLButtonElement = requireElement({
   selector: '#redo-btn',
@@ -160,7 +160,7 @@ export const redoBtn: HTMLButtonElement = requireElement({
 },);
 
 /**
- * Color picker input
+ Color picker input
  */
 export const colorPicker: HTMLInputElement = requireElement({
   selector: '#color-picker',
@@ -168,7 +168,7 @@ export const colorPicker: HTMLInputElement = requireElement({
 },);
 
 /**
- * Stroke width slider
+ Stroke width slider
  */
 export const sizeSlider: HTMLInputElement = requireElement({
   selector: '#size-slider',
@@ -176,7 +176,7 @@ export const sizeSlider: HTMLInputElement = requireElement({
 },);
 
 /**
- * Clear button
+ Clear button
  */
 export const clearBtn: HTMLButtonElement = requireElement({
   selector: '#clear-btn',
@@ -184,7 +184,7 @@ export const clearBtn: HTMLButtonElement = requireElement({
 },);
 
 /**
- * Export button
+ Export button
  */
 export const exportBtn: HTMLButtonElement = requireElement({
   selector: '#export-btn',
@@ -192,7 +192,7 @@ export const exportBtn: HTMLButtonElement = requireElement({
 },);
 
 /**
- * Export format dropdown
+ Export format dropdown
  */
 export const formatSelect: HTMLSelectElement = requireElement({
   selector: '#format-select',
@@ -200,7 +200,7 @@ export const formatSelect: HTMLSelectElement = requireElement({
 },);
 
 /**
- * Upload trigger button
+ Upload trigger button
  */
 export const uploadBtn: HTMLButtonElement = requireElement({
   selector: '#upload-btn',
@@ -208,7 +208,7 @@ export const uploadBtn: HTMLButtonElement = requireElement({
 },);
 
 /**
- * Hidden file upload input
+ Hidden file upload input
  */
 export const uploadInput: HTMLInputElement = requireElement({
   selector: '#upload-input',
@@ -216,7 +216,7 @@ export const uploadInput: HTMLInputElement = requireElement({
 },);
 
 /**
- * Zoom instruction toast popover
+ Zoom instruction toast popover
  */
 export const zoomToast: HTMLDivElement = requireElement({
   selector: '#zoom-toast',

@@ -1,7 +1,7 @@
 /**
- * Internal traversal types for shell command analyzer.
- *
- * @module
+ Internal traversal types for shell command analyzer.
+ 
+ @module
  */
 
 import type {
@@ -23,134 +23,134 @@ import type {
 } from './types.ts';
 
 /**
- * `unbash` script plus tolerant parser diagnostics.
+ `unbash` script plus tolerant parser diagnostics.
  */
 type ParsedUnbashScript = ForeignBorrowed<UnbashScript> & {
   /**
-   * Recoverable parse errors reported by `unbash`.
+   Recoverable parse errors reported by `unbash`.
    */
   readonly errors?: readonly ForeignBorrowed<UnbashParseError>[];
 };
 
 /**
- * Word part union reached from full words or quoted child lists.
+ Word part union reached from full words or quoted child lists.
  */
 type TraversablePart = ForeignBorrowed<UnbashWordPart> | ForeignBorrowed<UnbashDoubleQuotedChild>;
 
 /**
- * AST node work item.
+ AST node work item.
  */
 type NodeWorkItem = {
   /**
-   * Work item discriminant.
+   Work item discriminant.
    */
   readonly kind: 'node';
   /**
-   * AST node to visit.
+   AST node to visit.
    */
   readonly node: ForeignBorrowed<UnbashNode>;
   /**
-   * Redirects inherited from wrapping statement nodes.
+   Redirects inherited from wrapping statement nodes.
    */
   readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
   /**
-   * Execution context inherited by child commands.
+   Execution context inherited by child commands.
    */
   readonly context: ShellCommandContext;
 };
 
 /**
- * Shell word work item.
+ Shell word work item.
  */
 type WordWorkItem = {
   /**
-   * Work item discriminant.
+   Work item discriminant.
    */
   readonly kind: 'word';
   /**
-   * Word whose parts may contain nested scripts.
+   Word whose parts may contain nested scripts.
    */
   readonly word: ForeignBorrowed<UnbashWord>;
   /**
-   * Execution context inherited by expansions inside word.
+   Execution context inherited by expansions inside word.
    */
   readonly context: ShellCommandContext;
 };
 
 /**
- * Word-parts work item.
+ Word-parts work item.
  */
 type PartsWorkItem = {
   /**
-   * Work item discriminant.
+   Work item discriminant.
    */
   readonly kind: 'parts';
   /**
-   * Parts to scan for nested scripts and words.
+   Parts to scan for nested scripts and words.
    */
   readonly parts: readonly TraversablePart[];
   /**
-   * Execution context inherited by expansions inside parts.
+   Execution context inherited by expansions inside parts.
    */
   readonly context: ShellCommandContext;
 };
 
 /**
- * Arithmetic expression work item.
+ Arithmetic expression work item.
  */
 type ArithmeticWorkItem = {
   /**
-   * Work item discriminant.
+   Work item discriminant.
    */
   readonly kind: 'arithmetic';
   /**
-   * Expression that may contain command expansion.
+   Expression that may contain command expansion.
    */
   readonly expression: ForeignBorrowed<UnbashArithmeticExpression>;
   /**
-   * Execution context inherited by expansions inside expression.
+   Execution context inherited by expansions inside expression.
    */
   readonly context: ShellCommandContext;
 };
 
 /**
- * Bash test expression work item.
+ Bash test expression work item.
  */
 type TestWorkItem = {
   /**
-   * Work item discriminant.
+   Work item discriminant.
    */
   readonly kind: 'test';
   /**
-   * Expression whose operands may contain command expansion.
+   Expression whose operands may contain command expansion.
    */
   readonly expression: ForeignBorrowed<UnbashTestExpression>;
   /**
-   * Execution context inherited by expansions inside expression.
+   Execution context inherited by expansions inside expression.
    */
   readonly context: ShellCommandContext;
 };
 
 /**
- * Redirect-only work item for compound command redirects.
+ Redirect-only work item for compound command redirects.
  */
 type RedirectsWorkItem = {
   /**
-   * Work item discriminant.
+   Work item discriminant.
    */
   readonly kind: 'redirects';
   /**
-   * Redirects to surface as path signals.
+   Redirects to surface as path signals.
    */
   readonly redirects: readonly ForeignBorrowed<UnbashRedirect>[];
   /**
-   * Execution context inherited by redirect words.
+   Execution context inherited by redirect words.
    */
   readonly context: ShellCommandContext;
 };
 
 /**
- * Union of all iterative traversal work items.
+ Union of all iterative traversal work items.
  */
 type WorkItem =
   | NodeWorkItem
@@ -161,74 +161,74 @@ type WorkItem =
   | RedirectsWorkItem;
 
 /**
- * Boolean feature flags gathered while walking AST.
+ Boolean feature flags gathered while walking AST.
  */
 type TraversalFlags = {
   /**
-   * Whether a pipeline operator appears.
+   Whether a pipeline operator appears.
    */
   readonly isPipeline: boolean;
   /**
-   * Whether any statement is backgrounded.
+   Whether any statement is backgrounded.
    */
   readonly hasBackground: boolean;
   /**
-   * Whether command substitution appears.
+   Whether command substitution appears.
    */
   readonly hasCommandSubstitution: boolean;
   /**
-   * Whether process substitution appears.
+   Whether process substitution appears.
    */
   readonly hasProcessSubstitution: boolean;
 };
 
 /**
- * Result of visiting one traversal work item.
+ Result of visiting one traversal work item.
  */
 type VisitResult = {
   /**
-   * Commands emitted by this work item.
+   Commands emitted by this work item.
    */
   readonly commands: readonly ShellCommandInfo[];
   /**
-   * Child work items to process in source order.
+   Child work items to process in source order.
    */
   readonly workItems: readonly WorkItem[];
   /**
-   * Feature flags emitted by this work item.
+   Feature flags emitted by this work item.
    */
   readonly flags: TraversalFlags;
   /**
-   * Parse errors emitted by nested parsing.
+   Parse errors emitted by nested parsing.
    */
   readonly parseErrors: readonly ShellParseError[];
 };
 
 /**
- * Command collection returned to public parser wrapper.
+ Command collection returned to public parser wrapper.
  */
 type CommandCollection = {
   /**
-   * Parsed command records.
+   Parsed command records.
    */
   readonly commands: readonly ShellCommandInfo[];
   /**
-   * Feature flags gathered while walking AST.
+   Feature flags gathered while walking AST.
    */
   readonly flags: TraversalFlags;
   /**
-   * Parse errors emitted by nested parsing.
+   Parse errors emitted by nested parsing.
    */
   readonly parseErrors: readonly ShellParseError[];
 };
 
 /**
- * Sentinel returned when no nested script exists.
+ Sentinel returned when no nested script exists.
  */
 const NO_SCRIPT: unique symbol = Symbol('nested script payload absent from unbash command',);
 
 /**
- * Context for commands executed by script evaluation.
+ Context for commands executed by script evaluation.
  */
 const EXECUTED_CONTEXT: ShellCommandContext = {
   kind: 'executed',
@@ -236,12 +236,12 @@ const EXECUTED_CONTEXT: ShellCommandContext = {
 };
 
 /**
- * Empty redirects singleton used for child work items.
+ Empty redirects singleton used for child work items.
  */
 const EMPTY_REDIRECTS: readonly ForeignBorrowed<UnbashRedirect>[] = [];
 
 /**
- * Empty traversal flags singleton.
+ Empty traversal flags singleton.
  */
 const EMPTY_FLAGS: TraversalFlags = {
   isPipeline: false,
@@ -251,7 +251,7 @@ const EMPTY_FLAGS: TraversalFlags = {
 };
 
 /**
- * Empty visit result for leaf work items.
+ Empty visit result for leaf work items.
  */
 const EMPTY_VISIT_RESULT: VisitResult = {
   commands: [],

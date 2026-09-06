@@ -1,5 +1,5 @@
 /**
- * New-task panel keyframe animation and positioning styles.
+ New-task panel keyframe animation and positioning styles.
  */
 import {
   cssCalc,
@@ -16,53 +16,53 @@ import {
 import { $ as css, } from './css.ts';
 
 /**
- * Initial scale for the FAB-to-surface animation.
+ Initial scale for the FAB-to-surface animation.
  */
 const FAB_SCALE_FROM = 0.15;
 
 /**
- * Percentage for circular border-radius in the "from" keyframe.
+ Percentage for circular border-radius in the "from" keyframe.
  */
 const HALF_PERCENT = 50;
 
 /**
- * Opacity at the start of the FAB-to-surface animation.
+ Opacity at the start of the FAB-to-surface animation.
  */
 const FAB_OPACITY_FROM = 0.6;
 
 /**
- * Panel inline-size expressed as a pixel-to-rem ratio.
+ Panel inline-size expressed as a pixel-to-rem ratio.
  */
 const PANEL_WIDTH_PX = 393;
 
 /**
- * Maximum block-size of the panel in dvb units.
+ Maximum block-size of the panel in dvb units.
  */
 const PANEL_MAX_DVB = 80;
 
 /**
- * Panel slide-in animation duration in seconds.
+ Panel slide-in animation duration in seconds.
  */
 const PANEL_SLIDE_S = 1 / 2
   / 2;
 
 /**
- * First cubic-bezier x control point for the panel easing.
+ First cubic-bezier x control point for the panel easing.
  */
 const EASE_X1 = 0.4;
 
 /**
- * Second cubic-bezier x control point for the panel easing.
+ Second cubic-bezier x control point for the panel easing.
  */
 const EASE_X2 = 0.2;
 
 /**
- * Shadow alpha channel for oklch shadow color.
+ Shadow alpha channel for oklch shadow color.
  */
 const SHADOW_ALPHA = 0.2;
 
 /**
- * Keyframe animation and fixed-position styles for the new-task slide-up panel.
+ Keyframe animation and fixed-position styles for the new-task slide-up panel.
  */
 export const newTaskPanel: string = [
   css({

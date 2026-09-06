@@ -1,7 +1,7 @@
 /**
- * Characterization tests for auto-mode adapter over shared model review.
- *
- * @module
+ Characterization tests for auto-mode adapter over shared model review.
+ 
+ @module
  */
 
 import type {
@@ -82,16 +82,16 @@ const MODEL = {
 } satisfies Model<Api>;
 
 /**
- * Build async event stream from fixed events.
- *
- * @param entries - ordered provider events
- *
- * @returns async reviewer stream
- *
- * @example
- * ```ts
- * events([]);
- * ```
+ Build async event stream from fixed events.
+ 
+ @param entries - ordered provider events
+ 
+ @returns async reviewer stream
+ 
+ @example
+ ```ts
+ events([]);
+ ```
  */
 async function* events(
   entries: readonly AssistantMessageEvent[],
@@ -101,16 +101,16 @@ async function* events(
 }
 
 /**
- * Build valid render-verdict stream.
- *
- * @param verdict - fixture verdict value
- *
- * @returns one-event reviewer stream
- *
- * @example
- * ```ts
- * verdictStream('approve');
- * ```
+ Build valid render-verdict stream.
+ 
+ @param verdict - fixture verdict value
+ 
+ @returns one-event reviewer stream
+ 
+ @example
+ ```ts
+ verdictStream('approve');
+ ```
  */
 function verdictStream(
   verdict: 'approve' | 'deny' | 'ask',
@@ -133,16 +133,16 @@ function verdictStream(
 }
 
 /**
- * Build finalized text stream.
- *
- * @param content - final provider text
- *
- * @returns one-event reviewer stream
- *
- * @example
- * ```ts
- * textStream('{}');
- * ```
+ Build finalized text stream.
+ 
+ @param content - final provider text
+ 
+ @returns one-event reviewer stream
+ 
+ @example
+ ```ts
+ textStream('{}');
+ ```
  */
 function textStream(content: string,): AsyncIterable<AssistantMessageEvent> {
   return events([{
@@ -154,16 +154,16 @@ function textStream(content: string,): AsyncIterable<AssistantMessageEvent> {
 }
 
 /**
- * Build deterministic data transport.
- *
- * @param responses - ordered response streams
- *
- * @returns mutable script state
- *
- * @example
- * ```ts
- * scriptedTransport([verdictStream('approve')]);
- * ```
+ Build deterministic data transport.
+ 
+ @param responses - ordered response streams
+ 
+ @returns mutable script state
+ 
+ @example
+ ```ts
+ scriptedTransport([verdictStream('approve')]);
+ ```
  */
 function scriptedTransport(
   responses: readonly AsyncIterable<AssistantMessageEvent>[],
@@ -176,16 +176,16 @@ function scriptedTransport(
 }
 
 /**
- * Capture async error without promise matcher indirection.
- *
- * @param action - async action expected to fail
- *
- * @returns thrown value
- *
- * @example
- * ```ts
- * await captureError(async () => { throw new Error('failure'); });
- * ```
+ Capture async error without promise matcher indirection.
+ 
+ @param action - async action expected to fail
+ 
+ @returns thrown value
+ 
+ @example
+ ```ts
+ await captureError(async () => { throw new Error('failure'); });
+ ```
  */
 async function captureError(action: () => Promise<unknown>,): Promise<unknown> {
   try {

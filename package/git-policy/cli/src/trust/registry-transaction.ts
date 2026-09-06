@@ -1,5 +1,5 @@
 /**
- * Recoverable multi-record provenance transaction coordination. @module
+ Recoverable multi-record provenance transaction coordination. @module
  */
 import { randomUUID, } from 'node:crypto';
 import type { Dirent, } from 'node:fs';
@@ -30,11 +30,11 @@ import {
 export type { ProvenanceOperation, } from './registry-transaction-types.ts';
 
 /**
- * Reports whether transaction owner process still exists.
- *
- * @param ownerPid - recorded process ID
- *
- * @returns whether operating system still exposes process
+ Reports whether transaction owner process still exists.
+ 
+ @param ownerPid - recorded process ID
+ 
+ @returns whether operating system still exposes process
  */
 function processExists(ownerPid: number,): boolean {
   try {
@@ -53,23 +53,23 @@ function processExists(ownerPid: number,): boolean {
 }
 
 /**
- * Ensures private transaction journal directory.
- *
- * @param registryRoot - complete registry root
- *
- * @returns private journal directory
+ Ensures private transaction journal directory.
+ 
+ @param registryRoot - complete registry root
+ 
+ @returns private journal directory
  */
 async function transactionDirectory(registryRoot: string,): Promise<string> {
   await ensureRegistryRoot(registryRoot,);
   /**
-   * Private transaction journal directory.
+   Private transaction journal directory.
    */
   const directory = join(
     registryRoot,
     'transactions',
   );
   /**
-   * Whether this invocation created exact leaf without following substitution.
+   Whether this invocation created exact leaf without following substitution.
    */
   const created = await (async function createTransactionDirectory(): Promise<boolean> {
     try {
@@ -100,14 +100,14 @@ async function transactionDirectory(registryRoot: string,): Promise<string> {
 }
 
 /**
- * Recovers every interrupted provenance transaction.
- *
- * @param registryRoot - complete registry root
- *
- * @example
- * ```ts
- * await recoverProvenanceTransactions({ registryRoot });
- * ```
+ Recovers every interrupted provenance transaction.
+ 
+ @param registryRoot - complete registry root
+ 
+ @example
+ ```ts
+ await recoverProvenanceTransactions({ registryRoot });
+ ```
  */
 export async function recoverProvenanceTransactions({
   registryRoot,
@@ -115,11 +115,11 @@ export async function recoverProvenanceTransactions({
   registryRoot: string;
 }>,): Promise<void> {
   /**
-   * Private journal directory.
+   Private journal directory.
    */
   const directory = await transactionDirectory(registryRoot,);
   /**
-   * Journal filenames in deterministic order.
+   Journal filenames in deterministic order.
    */
   const entries = (await readdir(
     directory,
@@ -141,14 +141,14 @@ export async function recoverProvenanceTransactions({
     if (!entry.isFile())
       throw new TrustStorageError(`Unsafe transaction journal entry: ${entry.name}`,);
     /**
-     * Exact journal path.
+     Exact journal path.
      */
     const journalPath = join(
       directory,
       entry.name,
     );
     /**
-     * Parsed private journal.
+     Parsed private journal.
      */
     const journal = parseTransactionJournal(Buffer.from(await readPrivateFile(journalPath,),)
       .toString('utf8',),);
@@ -166,15 +166,15 @@ export async function recoverProvenanceTransactions({
 }
 
 /**
- * Compares operation paths by reversible identity bytes.
- *
- * @param registryRoot - complete registry root
- *
- * @param left - first operation
- *
- * @param right - second operation
- *
- * @returns deterministic ordering
+ Compares operation paths by reversible identity bytes.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param left - first operation
+ 
+ @param right - second operation
+ 
+ @returns deterministic ordering
  */
 function compareOperation({
   registryRoot,
@@ -186,14 +186,14 @@ function compareOperation({
   right: ProvenanceOperation;
 }>,): number {
   /**
-   * First reversible record path.
+   First reversible record path.
    */
   const leftPath = recordDirectory({
     registryRoot,
     identity: left.identity,
   },);
   /**
-   * Second reversible record path.
+   Second reversible record path.
    */
   const rightPath = recordDirectory({
     registryRoot,
@@ -205,16 +205,16 @@ function compareOperation({
 }
 
 /**
- * Applies recoverable multi-record provenance changes.
- *
- * @param registryRoot - complete registry root
- *
- * @param operations - final states in any order
- *
- * @example
- * ```ts
- * await applyProvenanceTransaction({ registryRoot, operations });
- * ```
+ Applies recoverable multi-record provenance changes.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param operations - final states in any order
+ 
+ @example
+ ```ts
+ await applyProvenanceTransaction({ registryRoot, operations });
+ ```
  */
 export async function applyProvenanceTransaction({
   registryRoot,
@@ -227,7 +227,7 @@ export async function applyProvenanceTransaction({
     return;
   await recoverProvenanceTransactions({ registryRoot, },);
   /**
-   * Deterministic operation order.
+   Deterministic operation order.
    */
   const orderedOperations = operations.toSorted(function byIdentity(
     left,
@@ -240,11 +240,11 @@ export async function applyProvenanceTransaction({
     },);
   },);
   /**
-   * Unique journal identifier.
+   Unique journal identifier.
    */
   const transactionId = randomUUID();
   /**
-   * Complete persistent journal.
+   Complete persistent journal.
    */
   const journal: TransactionJournal = {
     schemaVersion: 1,
@@ -253,11 +253,11 @@ export async function applyProvenanceTransaction({
     operations: orderedOperations,
   };
   /**
-   * Private journal directory.
+   Private journal directory.
    */
   const directory = await transactionDirectory(registryRoot,);
   /**
-   * Private durable journal path.
+   Private durable journal path.
    */
   const journalPath = join(
     directory,

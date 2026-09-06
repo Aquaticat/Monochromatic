@@ -1,7 +1,7 @@
 /**
- * Landed-commit identity and exact tree facts.
- *
- * @module
+ Landed-commit identity and exact tree facts.
+ 
+ @module
  */
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
@@ -22,11 +22,11 @@ import { loadBlobBatch, } from './blob-batch.ts';
 import { parseRawDiffRecords, } from './raw-diff-records.ts';
 
 /**
- * Candidate promise has not been initialized.
+ Candidate promise has not been initialized.
  */
 const CANDIDATES_NOT_LOADED: unique symbol = Symbol('landed candidates not loaded',);
 /**
- * Strict decoder for Git metadata and repository paths.
+ Strict decoder for Git metadata and repository paths.
  */
 const UTF8_DECODER = new TextDecoder(
   'utf-8',
@@ -34,13 +34,13 @@ const UTF8_DECODER = new TextDecoder(
 );
 
 /**
- * Git command could not provide required landed state.
+ Git command could not provide required landed state.
  */
 export class PostCommitGitError extends Error {
   /**
-   * Creates landed-state failure.
-   *
-   * @param message - safe command failure explanation
+   Creates landed-state failure.
+   
+   @param message - safe command failure explanation
    */
   public constructor(message: string,) {
     super(message,);
@@ -49,17 +49,17 @@ export class PostCommitGitError extends Error {
 }
 
 /**
- * Runs real Git and returns exact stdout bytes.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param args - exact Git arguments
- *
- * @returns exact stdout bytes
- *
- * @throws PostCommitGitError when Git exits nonzero
+ Runs real Git and returns exact stdout bytes.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param args - exact Git arguments
+ 
+ @returns exact stdout bytes
+ 
+ @throws PostCommitGitError when Git exits nonzero
  */
 async function runGitBytes({
   gitPath,
@@ -71,7 +71,7 @@ async function runGitBytes({
   args: readonly string[];
 }>,): Promise<Uint8Array> {
   /**
-   * Child process with exact binary stdout.
+   Child process with exact binary stdout.
    */
   const child = spawn(
     gitPath,
@@ -86,7 +86,7 @@ async function runGitBytes({
   },
   );
   /**
-   * Concurrent output consumers started before settlement.
+   Concurrent output consumers started before settlement.
    */
   const output = Promise.all([
     arrayBuffer(child.stdout,),
@@ -97,7 +97,7 @@ async function runGitBytes({
     'close',
   );
   /**
-   * Exact stdout bytes and decoded stderr.
+   Exact stdout bytes and decoded stderr.
    */
   const [stdout, stderr,] = await output;
   if (child.exitCode !== 0)
@@ -106,26 +106,26 @@ async function runGitBytes({
 }
 
 /**
- * Creates landed-domain error for malformed or failed Git output.
- *
- * @param message - safe failure explanation
- *
- * @returns landed-state failure
+ Creates landed-domain error for malformed or failed Git output.
+ 
+ @param message - safe failure explanation
+ 
+ @returns landed-state failure
  */
 function landedGitError(message: string,): Error {
   return new PostCommitGitError(message,);
 }
 
 /**
- * Loads only paths the landed commit changed as immutable candidate files.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param landedOid - exact landed commit
- *
- * @returns landed-delta candidates without unchanged tree entries
+ Loads only paths the landed commit changed as immutable candidate files.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param landedOid - exact landed commit
+ 
+ @returns landed-delta candidates without unchanged tree entries
  */
 async function loadLandedCandidates({
   gitPath,
@@ -137,7 +137,7 @@ async function loadLandedCandidates({
   landedOid: GitObjectId;
 }>,): Promise<readonly CandidateFile[]> {
   /**
-   * Raw NUL-delimited landed change records against every parent.
+   Raw NUL-delimited landed change records against every parent.
    */
   const deltaBytes = await runGitBytes({
     gitPath,
@@ -153,17 +153,17 @@ async function loadLandedCandidates({
     ],
   },);
   /**
-   * Retained content-bearing landed change records.
+   Retained content-bearing landed change records.
    */
   const records = parseRawDiffRecords({
     text: UTF8_DECODER.decode(deltaBytes,),
     createError: landedGitError,
   },);
   /**
-   * One batched read for every content-bearing landed blob. Submodule records
-   * publish their commit identity rather than tree content, so they request no
-   * blob; every remaining candidate is materialized by post-commit policies,
-   * so nothing is read that a lazy per-candidate spawn would have skipped.
+   One batched read for every content-bearing landed blob. Submodule records
+   publish their commit identity rather than tree content, so they request no
+   blob; every remaining candidate is materialized by post-commit policies,
+   so nothing is read that a lazy per-candidate spawn would have skipped.
    */
   const blobBytes = await loadBlobBatch({
     gitPath,
@@ -186,7 +186,7 @@ async function loadLandedCandidates({
         if (record.mode === 'submodule')
           return Promise.resolve(new TextEncoder().encode(record.oid,),);
         /**
-         * Exact shared blob view loaded by the single batch subprocess.
+         Exact shared blob view loaded by the single batch subprocess.
          */
         const bytes = blobBytes.get(record.oid,);
         if (bytes === undefined)
@@ -198,18 +198,18 @@ async function loadLandedCandidates({
 }
 
 /**
- * Resolves exact landed commit after real Git succeeds.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @returns exact landed commit OID
- *
- * @example
- * ```ts
- * await resolveLandedCommitOid({ gitPath: '/usr/bin/git', cwd: '/repo' });
- * ```
+ Resolves exact landed commit after real Git succeeds.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @returns exact landed commit OID
+ 
+ @example
+ ```ts
+ await resolveLandedCommitOid({ gitPath: '/usr/bin/git', cwd: '/repo' });
+ ```
  */
 export async function resolveLandedCommitOid({
   gitPath,
@@ -219,7 +219,7 @@ export async function resolveLandedCommitOid({
   cwd: string;
 }>,): Promise<GitObjectId> {
   /**
-   * Exact commit identity command output.
+   Exact commit identity command output.
    */
   const oidBytes = await runGitBytes({
     gitPath,
@@ -231,7 +231,7 @@ export async function resolveLandedCommitOid({
     ],
   },);
   /**
-   * Decoded exact landed commit object ID.
+   Decoded exact landed commit object ID.
    */
   const oid = UTF8_DECODER.decode(oidBytes,)
     .trim();
@@ -241,18 +241,18 @@ export async function resolveLandedCommitOid({
 }
 
 /**
- * Resolves canonical repository root after landed OID is known.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @returns canonical repository root
- *
- * @example
- * ```ts
- * await resolvePostCommitRepositoryRoot({ gitPath: '/usr/bin/git', cwd: '/repo' });
- * ```
+ Resolves canonical repository root after landed OID is known.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @returns canonical repository root
+ 
+ @example
+ ```ts
+ await resolvePostCommitRepositoryRoot({ gitPath: '/usr/bin/git', cwd: '/repo' });
+ ```
  */
 export async function resolvePostCommitRepositoryRoot({
   gitPath,
@@ -262,7 +262,7 @@ export async function resolvePostCommitRepositoryRoot({
   cwd: string;
 }>,): Promise<string> {
   /**
-   * Repository-root command output.
+   Repository-root command output.
    */
   const rootBytes = await runGitBytes({
     gitPath,
@@ -273,7 +273,7 @@ export async function resolvePostCommitRepositoryRoot({
     ],
   },);
   /**
-   * Decoded repository root from real Git.
+   Decoded repository root from real Git.
    */
   const root = UTF8_DECODER.decode(rootBytes,)
     .trim();
@@ -283,29 +283,29 @@ export async function resolvePostCommitRepositoryRoot({
 }
 
 /**
- * Returns empty push updates for non-push lifecycle.
- *
- * @returns empty immutable update set
+ Returns empty push updates for non-push lifecycle.
+ 
+ @returns empty immutable update set
  */
 function emptyPushUpdates(): Promise<readonly PushUpdate[]> {
   return Promise.resolve([],);
 }
 
 /**
- * Creates memoized landed-commit facts for post-commit policies.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param landedOid - exact landed commit
- *
- * @returns lazy immutable Git facts
- *
- * @example
- * ```ts
- * createPostCommitGitFacts({ gitPath: '/usr/bin/git', cwd: '/repo', landedOid: 'abc' });
- * ```
+ Creates memoized landed-commit facts for post-commit policies.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param landedOid - exact landed commit
+ 
+ @returns lazy immutable Git facts
+ 
+ @example
+ ```ts
+ createPostCommitGitFacts({ gitPath: '/usr/bin/git', cwd: '/repo', landedOid: 'abc' });
+ ```
  */
 export function createPostCommitGitFacts({
   gitPath,
@@ -317,11 +317,11 @@ export function createPostCommitGitFacts({
   landedOid: GitObjectId;
 }>,): LazyPolicyGitFacts {
   /**
-   * Memoized lazy candidate loader with domain-specific absence state.
+   Memoized lazy candidate loader with domain-specific absence state.
    */
   const candidates = (function createCandidateLoader() {
     /**
-     * Candidate loading state retained only inside loader closure.
+     Candidate loading state retained only inside loader closure.
      */
     let state: Promise<readonly CandidateFile[]> | typeof CANDIDATES_NOT_LOADED = CANDIDATES_NOT_LOADED;
     return function loadCandidates(): Promise<readonly CandidateFile[]> {

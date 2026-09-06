@@ -1,9 +1,9 @@
 /**
- * Tests for the read-through-edits semantics: pending `tomlSet` and
- * `tomlDelete` deltas must be visible to subsequent `tomlGetValue` calls on
- * the same (or branched) state.
- *
- * @module
+ Tests for the read-through-edits semantics: pending `tomlSet` and
+ `tomlDelete` deltas must be visible to subsequent `tomlGetValue` calls on
+ the same (or branched) state.
+ 
+ @module
  */
 
 import {

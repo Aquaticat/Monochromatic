@@ -1,7 +1,7 @@
 /**
- * TUI manual and non-interactive fallbacks after reviewer exhaustion.
- *
- * @module
+ TUI manual and non-interactive fallbacks after reviewer exhaustion.
+ 
+ @module
  */
 
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -30,12 +30,12 @@ import {
 } from './manual-review-dialog.ts';
 
 /**
- * Task-only fallback guidance when manual rejection has no reason.
+ Task-only fallback guidance when manual rejection has no reason.
  */
 const DEFAULT_MANUAL_REJECTION_REMAINING_WORK = 'Continue working on the current user objective.';
 
 /**
- * Normalized model-review exhaustion audit.
+ Normalized model-review exhaustion audit.
  */
 type GoalReviewFailureAudit = {
   readonly attemptedReviewerIdentities: readonly string[];
@@ -44,21 +44,21 @@ type GoalReviewFailureAudit = {
 };
 
 /**
- * Convert arbitrary exhausted-review error to stable audit fields.
- *
- * @param error - model selection, auth, transport, timeout, or parser failure
- *
- * @returns attempted identities and normalized diagnostics
- *
- * @example
- * ```ts
- * normalizeGoalReviewFailure(error);
- * ```
+ Convert arbitrary exhausted-review error to stable audit fields.
+ 
+ @param error - model selection, auth, transport, timeout, or parser failure
+ 
+ @returns attempted identities and normalized diagnostics
+ 
+ @example
+ ```ts
+ normalizeGoalReviewFailure(error);
+ ```
  */
 function normalizeGoalReviewFailure(error: unknown,): GoalReviewFailureAudit {
   if (error instanceof ReviewUnavailableError) {
     /**
-     * Shared normalized diagnostics with non-empty fallback.
+     Shared normalized diagnostics with non-empty fallback.
      */
     const diagnostics = error.diagnostics
       .length
@@ -72,7 +72,7 @@ function normalizeGoalReviewFailure(error: unknown,): GoalReviewFailureAudit {
     };
   }
   /**
-   * Normalized unexpected reviewer orchestration failure.
+   Normalized unexpected reviewer orchestration failure.
    */
   const diagnostic = caughtValueText(error,);
   return {
@@ -83,38 +83,38 @@ function normalizeGoalReviewFailure(error: unknown,): GoalReviewFailureAudit {
 }
 
 /**
- * Return explicit stale fallback disposition.
- *
- * @returns stale harness outcome
- *
- * @example
- * ```ts
- * staleFallbackDisposition();
- * ```
+ Return explicit stale fallback disposition.
+ 
+ @returns stale harness outcome
+ 
+ @example
+ ```ts
+ staleFallbackDisposition();
+ ```
  */
 function staleFallbackDisposition(): GoalSettlementDisposition {
   return 'stale';
 }
 
 /**
- * Create mode-specific reviewer exhaustion handler.
- *
- * @param lifecycle - live runtime used for stale revalidation
- *
- * @param promptManualReview - injectable mandatory TUI decision dialog
- *
- * @param createId - private continuation identity source
- *
- * @param now - timestamp source
- *
- * @returns reviewer-unavailable handler
- *
- * @mutates promptManualReview - dialog capability may update TUI state
- *
- * @example
- * ```ts
- * const handler = createGoalReviewerUnavailableHandler({ lifecycle });
- * ```
+ Create mode-specific reviewer exhaustion handler.
+ 
+ @param lifecycle - live runtime used for stale revalidation
+ 
+ @param promptManualReview - injectable mandatory TUI decision dialog
+ 
+ @param createId - private continuation identity source
+ 
+ @param now - timestamp source
+ 
+ @returns reviewer-unavailable handler
+ 
+ @mutates promptManualReview - dialog capability may update TUI state
+ 
+ @example
+ ```ts
+ const handler = createGoalReviewerUnavailableHandler({ lifecycle });
+ ```
  */
 function createGoalReviewerUnavailableHandler(
   {
@@ -137,11 +137,11 @@ function createGoalReviewerUnavailableHandler(
     },
   ) {
     /**
-     * Normalized failed-model audit.
+     Normalized failed-model audit.
      */
     const audit = normalizeGoalReviewFailure(error,);
     /**
-     * Stale check before mode-specific UI or transition.
+     Stale check before mode-specific UI or transition.
      */
     const initialRevalidation = revalidateSettlementReview({
       lifecycle,
@@ -164,14 +164,14 @@ function createGoalReviewerUnavailableHandler(
       return 'review_unavailable';
     }
     /**
-     * Mandatory human decision after model exhaustion.
+     Mandatory human decision after model exhaustion.
      */
     const decision = await promptManualReview({
       context,
       diagnostic: audit.diagnostic,
     },);
     /**
-     * Post-dialog stale check before state mutation.
+     Post-dialog stale check before state mutation.
      */
     const finalRevalidation = revalidateSettlementReview({
       lifecycle,
@@ -194,12 +194,12 @@ function createGoalReviewerUnavailableHandler(
       return 'approved';
     }
     /**
-     * Optional human reason normalized to task-only fallback guidance.
+     Optional human reason normalized to task-only fallback guidance.
      */
     const reason = decision.reason
       .trim();
     /**
-     * Task-only guidance from human reason or stable fallback.
+     Task-only guidance from human reason or stable fallback.
      */
     const remainingWork = reason === ''
       ? DEFAULT_MANUAL_REJECTION_REMAINING_WORK

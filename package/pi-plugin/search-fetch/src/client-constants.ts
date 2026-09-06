@@ -1,81 +1,81 @@
 /**
- * Linkup client constants.
- *
- * @module
+ Linkup client constants.
+ 
+ @module
  */
 
 /**
- * Default Linkup API base URL.
+ Default Linkup API base URL.
  */
 const DEFAULT_LINKUP_BASE_URL = 'https://api.linkup.so/v1' as const;
 
 /**
- * Linkup search endpoint path.
+ Linkup search endpoint path.
  */
 const LINKUP_SEARCH_ENDPOINT = '/search' as const;
 
 /**
- * Linkup fetch endpoint path.
+ Linkup fetch endpoint path.
  */
 const LINKUP_FETCH_ENDPOINT = '/fetch' as const;
 
 /**
- * Fixed Linkup search depth selected for this package.
+ Fixed Linkup search depth selected for this package.
  */
 const LINKUP_SEARCH_DEPTH = 'standard' as const;
 
 /**
- * Fixed Linkup search output type selected for this package.
+ Fixed Linkup search output type selected for this package.
  */
 const LINKUP_SEARCH_OUTPUT_TYPE = 'searchResults' as const;
 
 /**
- * Fixed Linkup fetch JavaScript rendering mode.
+ Fixed Linkup fetch JavaScript rendering mode.
  */
 const LINKUP_FETCH_RENDER_JS = true as const;
 
 /**
- * Fixed Linkup fetch image extraction mode.
+ Fixed Linkup fetch image extraction mode.
  */
 const LINKUP_FETCH_EXTRACT_IMAGES = false as const;
 
 /**
- * Fixed Linkup fetch raw HTML mode.
+ Fixed Linkup fetch raw HTML mode.
  */
 const LINKUP_FETCH_INCLUDE_RAW_HTML = false as const;
 
 /**
- * HTTP POST method.
+ HTTP POST method.
  */
 const HTTP_POST = 'POST' as const;
 
 /**
- * Authorization header name.
+ Authorization header name.
  */
 const AUTHORIZATION_HEADER = 'Authorization' as const;
 
 /**
- * JSON content type header name.
+ JSON content type header name.
  */
 const CONTENT_TYPE_HEADER = 'Content-Type' as const;
 
 /**
- * JSON media type sent to Linkup.
+ JSON media type sent to Linkup.
  */
 const JSON_CONTENT_TYPE = 'application/json' as const;
 
 /**
- * User-Agent header name.
+ User-Agent header name.
  */
 const USER_AGENT_HEADER = 'User-Agent' as const;
 
 /**
- * User-Agent value sent by this package.
+ User-Agent value sent by this package.
  */
 const USER_AGENT_VALUE = '@monochromatic-dev/pi-plugin-search-fetch' as const;
 
 /**
- * AbortError name used by fetch implementations.
+ AbortError name used by fetch implementations.
  */
 const ABORT_ERROR_NAME = 'AbortError' as const;
 

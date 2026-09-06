@@ -1,7 +1,7 @@
 /**
- * Client entry script for the Inbox page.
- *
- * Loaded by the browser as `<script type="module" src="/dist/client/inbox.js">`.
+ Client entry script for the Inbox page.
+ 
+ Loaded by the browser as `<script type="module" src="/dist/client/inbox.js">`.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
@@ -33,26 +33,26 @@ injectCSS(globalStyles,);
 injectCSS(inboxStyles,);
 
 /**
- * Deserialized page data containing suggested and all inbox tasks.
+ Deserialized page data containing suggested and all inbox tasks.
  */
 const pageData = readPageData<InboxPageData>();
 
 /**
- * Raw DOM element for the `#app` container.
+ Raw DOM element for the `#app` container.
  */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
 /**
- * Validated `#app` container element.
+ Validated `#app` container element.
  */
 const app = appElement;
 
 /**
- * Navigates to the task detail page for the given task.
- *
- * @param taskId - ID of task to open
+ Navigates to the task detail page for the given task.
+ 
+ @param taskId - ID of task to open
  */
 function openTask(taskId: string,): void {
   globalThis.location
@@ -60,9 +60,9 @@ function openTask(taskId: string,): void {
 }
 
 /**
- * Sends a complete-task API call via {@link api} and reloads the page on success.
- *
- * @param taskId - ID of task to complete
+ Sends a complete-task API call via {@link api} and reloads the page on success.
+ 
+ @param taskId - ID of task to complete
  */
 async function completeTask(taskId: string,): Promise<void> {
   await api({
@@ -93,7 +93,7 @@ app.append(h({
 //region All section
 
 /**
- * Collapsible section heading for the "All" tasks block.
+ Collapsible section heading for the "All" tasks block.
  */
 const allSection = h({
   tag: 'section-heading',
@@ -104,7 +104,7 @@ const allSection = h({
 },);
 
 /**
- * Content container for the all tasks section.
+ Content container for the all tasks section.
  */
 const allContent = h({
   tag: 'div',
@@ -139,7 +139,7 @@ app.append(allSection,);
 //region New-task dialog (FAB opens a modal <dialog> with task-detail in create mode)
 
 /**
- * New-task dialog panel and trigger FAB button.
+ New-task dialog panel and trigger FAB button.
  */
 const {
   panel: newTaskPanel,

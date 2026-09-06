@@ -31,25 +31,25 @@ const FORBIDDEN_MODULE_NAME_FRAGMENTS = [
 ] as const;
 
 /**
- * Authority modules permitted by an accepted decision, with their pinned size.
- *
- * The audit forbade handwritten effect catalogs outright. One amendment reopened
- * that for a single table, so this guard's subject narrows from "no authority
- * module" to "no authority module outside this registry", and the fragment match
- * widened from `effect-authority` to `authority` because the permitted module was
- * passing the old match by accident of naming rather than by permission.
- *
- * The pinned count is what gives the registry teeth. Checking that some test file
- * exists beside an authority would be a rubber stamp, satisfiable by an empty test.
- *
- * That count is a literal here on purpose. An earlier version imported
- * `VERIFIED_MEMBER_CHANNEL_COUNT` for it, which pinned that constant against itself
- * and enforced nothing: editing the table and the constant in one commit passed the
- * guard untouched, while this comment claimed an author had to change a number here.
- * A literal makes the claim true, at the cost of one more place to edit deliberately.
- *
- * This cannot verify that the enforcement is any good, and no test in this
- * repository could. It converts a silent addition into a deliberate one.
+ Authority modules permitted by an accepted decision, with their pinned size.
+ 
+ The audit forbade handwritten effect catalogs outright. One amendment reopened
+ that for a single table, so this guard's subject narrows from "no authority
+ module" to "no authority module outside this registry", and the fragment match
+ widened from `effect-authority` to `authority` because the permitted module was
+ passing the old match by accident of naming rather than by permission.
+ 
+ The pinned count is what gives the registry teeth. Checking that some test file
+ exists beside an authority would be a rubber stamp, satisfiable by an empty test.
+ 
+ That count is a literal here on purpose. An earlier version imported
+ `VERIFIED_MEMBER_CHANNEL_COUNT` for it, which pinned that constant against itself
+ and enforced nothing: editing the table and the constant in one commit passed the
+ guard untouched, while this comment claimed an author had to change a number here.
+ A literal makes the claim true, at the cost of one more place to edit deliberately.
+ 
+ This cannot verify that the enforcement is any good, and no test in this
+ repository could. It converts a silent addition into a deliberate one.
  */
 const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
   readonly decision: string;

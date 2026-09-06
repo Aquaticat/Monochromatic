@@ -13,16 +13,16 @@ const REPO_ROOT = await findMiseMonorepoRootCached();
 const BIN_PATH = 'package/cli/mvm/dist/final/node/cli.mjs';
 
 /**
- * Runs the built mvm bin as a subprocess and returns stdout, stderr, and exit code.
- *
- * @param args - CLI arguments to pass after `mvm`
- * @returns Stdout text, stderr text, and numeric exit code
- *
- * @example
- * ```ts
- * const result = await runMvm({ args: ['--help'] });
- * // result.exitCode === 0
- * ```
+ Runs the built mvm bin as a subprocess and returns stdout, stderr, and exit code.
+ 
+ @param args - CLI arguments to pass after `mvm`
+ @returns Stdout text, stderr text, and numeric exit code
+ 
+ @example
+ ```ts
+ const result = await runMvm({ args: ['--help'] });
+ // result.exitCode === 0
+ ```
  */
 async function runMvm({ args, env, }: {
   args: readonly string[];

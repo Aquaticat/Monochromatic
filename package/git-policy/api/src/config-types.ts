@@ -1,7 +1,7 @@
 /**
- * Typed plugin and configuration contracts.
- *
- * @module
+ Typed plugin and configuration contracts.
+ 
+ @module
  */
 
 import type {
@@ -11,12 +11,12 @@ import type {
 } from './policy-types.ts';
 
 /**
- * Plugin with policies in declaration order.
- *
- * @example
- * ```ts
- * const plugin: PluginDefinition = { name: 'example', policies: [] };
- * ```
+ Plugin with policies in declaration order.
+ 
+ @example
+ ```ts
+ const plugin: PluginDefinition = { name: 'example', policies: [] };
+ ```
  */
 export type PluginDefinition<
   TPolicies extends readonly NamedPolicyDefinition[] =
@@ -24,22 +24,22 @@ export type PluginDefinition<
   TName extends string = string,
 > = Readonly<{
   /**
-   * Namespace name.
+   Namespace name.
    */
   name: TName;
   /**
-   * Declaration-ordered policies.
+   Declaration-ordered policies.
    */
   policies: TPolicies;
 }>;
 
 /**
- * Severity alone or severity plus validated options.
- *
- * @example
- * ```ts
- * const setting: PolicySetting<string> = ['warn', 'value'];
- * ```
+ Severity alone or severity plus validated options.
+ 
+ @example
+ ```ts
+ const setting: PolicySetting<string> = ['warn', 'value'];
+ ```
  */
 export type PolicySetting<TOptions = unknown> =
   | PolicySeverity
@@ -49,12 +49,12 @@ export type PolicySetting<TOptions = unknown> =
   ];
 
 /**
- * Built-in policy IDs accepted by configuration.
- *
- * @example
- * ```ts
- * const id: BuiltInPolicyId = 'require-root';
- * ```
+ Built-in policy IDs accepted by configuration.
+ 
+ @example
+ ```ts
+ const id: BuiltInPolicyId = 'require-root';
+ ```
  */
 export type BuiltInPolicyId =
   | 'require-root'
@@ -63,80 +63,80 @@ export type BuiltInPolicyId =
   | 'add-explicit';
 
 /**
- * Plugin namespace map.
- *
- * @example
- * ```ts
- * const plugins: PluginMap = {};
- * ```
+ Plugin namespace map.
+ 
+ @example
+ ```ts
+ const plugins: PluginMap = {};
+ ```
  */
 export type PluginMap = Readonly<Record<string, PluginDefinition>>;
 
 /**
- * Consumer cli-git configuration.
- *
- * Precise policy-ID and option checking occurs in {@link defineConfig}.
- *
- * @example
- * ```ts
- * const config: CliGitConfig = {};
- * ```
+ Consumer cli-git configuration.
+ 
+ Precise policy-ID and option checking occurs in {@link defineConfig}.
+ 
+ @example
+ ```ts
+ const config: CliGitConfig = {};
+ ```
  */
 export type CliGitConfig<TPlugins extends PluginMap = PluginMap> = Readonly<{
   /**
-   * Plugins keyed by namespace.
+   Plugins keyed by namespace.
    */
   plugins?: TPlugins;
   /**
-   * Explicit policy overrides.
+   Explicit policy overrides.
    */
   policies?: Readonly<Record<string, PolicySetting>>;
   /**
-   * Trust behavior.
+   Trust behavior.
    */
   trust?: Readonly<{
     /**
-     * Whether descendant repositories may inherit trust.
+     Whether descendant repositories may inherit trust.
      */
     children?: boolean;
   }>;
 }>;
 
 /**
- * Broad inference input accepted before precise policy checking.
- *
- * @example
- * ```ts
- * const input: CliGitConfigInput = {};
- * ```
+ Broad inference input accepted before precise policy checking.
+ 
+ @example
+ ```ts
+ const input: CliGitConfigInput = {};
+ ```
  */
 export type CliGitConfigInput = Readonly<{
   /**
-   * Consumer plugins.
+   Consumer plugins.
    */
   plugins?: PluginMap;
   /**
-   * Consumer policy settings before ID validation.
+   Consumer policy settings before ID validation.
    */
   policies?: Readonly<Record<string, unknown>>;
   /**
-   * Trust behavior.
+   Trust behavior.
    */
   trust?: Readonly<{
     /**
-     * Whether descendant repositories may inherit trust.
+     Whether descendant repositories may inherit trust.
      */
     children?: boolean;
   }>;
 }>;
 
 /**
- * Extracts plugin map.
- *
- * @example
- * ```ts
- * type Plugins = ConfigPlugins<{ plugins: {} }>;
- * ```
+ Extracts plugin map.
+ 
+ @example
+ ```ts
+ type Plugins = ConfigPlugins<{ plugins: {} }>;
+ ```
  */
 export type ConfigPlugins<TConfig extends CliGitConfigInput> =
   TConfig extends { readonly plugins: infer TPlugins extends PluginMap }
@@ -144,12 +144,12 @@ export type ConfigPlugins<TConfig extends CliGitConfigInput> =
     : never;
 
 /**
- * Extracts policy map.
- *
- * @example
- * ```ts
- * type Policies = ConfigPolicies<{ policies: {} }>;
- * ```
+ Extracts policy map.
+ 
+ @example
+ ```ts
+ type Policies = ConfigPolicies<{ policies: {} }>;
+ ```
  */
 export type ConfigPolicies<TConfig extends CliGitConfigInput> =
   TConfig extends {
@@ -159,12 +159,12 @@ export type ConfigPolicies<TConfig extends CliGitConfigInput> =
     : never;
 
 /**
- * Extracts matching plugin policy from namespaced ID.
- *
- * @example
- * ```ts
- * type Policy = PluginPolicyForId<{}, 'example/check'>;
- * ```
+ Extracts matching plugin policy from namespaced ID.
+ 
+ @example
+ ```ts
+ type Policy = PluginPolicyForId<{}, 'example/check'>;
+ ```
  */
 export type PluginPolicyForId<
   TPlugins extends PluginMap,
@@ -176,12 +176,12 @@ export type PluginPolicyForId<
   : never;
 
 /**
- * Determines allowed setting for one policy ID.
- *
- * @example
- * ```ts
- * type Setting = AllowedPolicySetting<{}, 'require-root'>;
- * ```
+ Determines allowed setting for one policy ID.
+ 
+ @example
+ ```ts
+ type Setting = AllowedPolicySetting<{}, 'require-root'>;
+ ```
  */
 export type AllowedPolicySetting<
   TConfig extends CliGitConfigInput,
@@ -197,12 +197,12 @@ export type AllowedPolicySetting<
     : never;
 
 /**
- * Rejects unknown IDs and incompatible option outputs.
- *
- * @example
- * ```ts
- * type Checked = CheckedPolicySettings<{}>;
- * ```
+ Rejects unknown IDs and incompatible option outputs.
+ 
+ @example
+ ```ts
+ type Checked = CheckedPolicySettings<{}>;
+ ```
  */
 export type CheckedPolicySettings<TConfig extends CliGitConfigInput> = Readonly<{
   [TId in keyof ConfigPolicies<TConfig>]:

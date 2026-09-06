@@ -1,18 +1,18 @@
 /**
- * Property-based fuzz tests for the TOML wrappers in `./toml.ts`.
- *
- * The wrappers bottom out in `@monochromatic-dev/module-toml-edit`, which
- * this monorepo owns; the goal here is to prove file-enforcer never exposes
- * unexpected or undocumented behavior on top of it. Properties:
- * `editTomlKey` and `getTomlProperty` are total over arbitrary input,
- * succeeding or throwing only the declared `TomlEditError` (never an
- * undeclared crash); a string value written at a bare key reads back
- * byte-identically (a round-trip across the TOML string-escaping boundary);
- * and re-applying the same edit is idempotent.
- *
- * Run plan and seed policy: see `../fuzz-budget.ts`.
- *
- * @module
+ Property-based fuzz tests for the TOML wrappers in `./toml.ts`.
+ 
+ The wrappers bottom out in `@monochromatic-dev/module-toml-edit`, which
+ this monorepo owns; the goal here is to prove file-enforcer never exposes
+ unexpected or undocumented behavior on top of it. Properties:
+ `editTomlKey` and `getTomlProperty` are total over arbitrary input,
+ succeeding or throwing only the declared `TomlEditError` (never an
+ undeclared crash); a string value written at a bare key reads back
+ byte-identically (a round-trip across the TOML string-escaping boundary);
+ and re-applying the same edit is idempotent.
+ 
+ Run plan and seed policy: see `../fuzz-budget.ts`.
+ 
+ @module
  */
 
 import {
@@ -43,12 +43,12 @@ import {
 //region Constants and arbitraries
 
 /**
- * Run plan resolved once for every property in this file.
+ Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
 
 /**
- * Arbitrary structured path of string keys and numeric indices.
+ Arbitrary structured path of string keys and numeric indices.
  */
 const pathArbitrary = array(
   oneof(string(), nat(),),
@@ -59,13 +59,13 @@ const pathArbitrary = array(
 );
 
 /**
- * Arbitrary value to write; spans the JSON-ish shapes the wrappers accept.
+ Arbitrary value to write; spans the JSON-ish shapes the wrappers accept.
  */
 const valueArbitrary = jsonValue();
 
 /**
- * Arbitrary TOML source: mostly invalid text unioned with small valid
- * documents, so both the parse-error and edit paths are exercised.
+ Arbitrary TOML source: mostly invalid text unioned with small valid
+ documents, so both the parse-error and edit paths are exercised.
  */
 const contentArbitrary = oneof(
   string(),
@@ -79,7 +79,7 @@ const contentArbitrary = oneof(
 );
 
 /**
- * Arbitrary single TOML bare key (letters, digits, underscore, hyphen).
+ Arbitrary single TOML bare key (letters, digits, underscore, hyphen).
  */
 const bareKeyArbitrary = string({
   minLength: 1,
@@ -123,7 +123,7 @@ await describe({
                 },) {
                   try {
                     /**
-                     * Edited TOML text.
+                     Edited TOML text.
                      */
                     const edited = editTomlKey({
                       content,
@@ -157,7 +157,7 @@ await describe({
                   value,
                 },) {
                   /**
-                   * Document after the first edit of an empty source.
+                   Document after the first edit of an empty source.
                    */
                   const once = editTomlKey({
                     content: '',
@@ -165,7 +165,7 @@ await describe({
                     value,
                   },);
                   /**
-                   * Document after repeating the identical edit.
+                   Document after repeating the identical edit.
                    */
                   const twice = editTomlKey({
                     content: once,
@@ -205,7 +205,7 @@ await describe({
                 },) {
                   try {
                     /**
-                     * Extracted value, or undefined when missing.
+                     Extracted value, or undefined when missing.
                      */
                     const value: unknown = getTomlProperty({
                       content,
@@ -238,7 +238,7 @@ await describe({
                   value,
                 },) {
                   /**
-                   * Document holding the written value at the bare key.
+                   Document holding the written value at the bare key.
                    */
                   const content = editTomlKey({
                     content: '',

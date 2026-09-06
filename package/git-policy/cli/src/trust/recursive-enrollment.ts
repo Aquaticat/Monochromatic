@@ -1,5 +1,5 @@
 /**
- * Recursive MJS and TypeScript descendant enrollment. @module
+ Recursive MJS and TypeScript descendant enrollment. @module
  */
 import { captureTrustCandidate, } from './candidate.ts';
 import { executeStoredConfig, } from './config-loader.ts';
@@ -28,18 +28,18 @@ import type {
 } from './types.ts';
 
 /**
- * No recursive root authorizes candidate.
+ No recursive root authorizes candidate.
  */
 export const RECURSIVE_TRUST_ABSENT: unique symbol = Symbol('no RECURSIVE_ROOT authorizes candidate config',);
 
 /**
- * Revalidates exact recursive roots immediately before installation.
- *
- * @param registryRoot - complete registry root
- *
- * @param repositoryRoot - descendant repository root
- *
- * @param expected - identities that authorized candidate build
+ Revalidates exact recursive roots immediately before installation.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param repositoryRoot - descendant repository root
+ 
+ @param expected - identities that authorized candidate build
  */
 async function assertAuthorizersCurrent({
   registryRoot,
@@ -51,24 +51,24 @@ async function assertAuthorizersCurrent({
   expected: readonly TrustIdentity[];
 }>,): Promise<void> {
   /**
-   * Fresh complete registry catalog.
+   Fresh complete registry catalog.
    */
   const entries = await listTrustRecords({ registryRoot, },);
   /**
-   * Fresh unchanged covering roots.
+   Fresh unchanged covering roots.
    */
   const current = canonicalAuthorizers(await activeRecursiveAuthorizers({
     entries,
     repositoryRoot,
   },));
   /**
-   * Deterministic exact provenance keys.
+   Deterministic exact provenance keys.
    */
   const currentKeys = current.map(function currentKey(identity,) {
     return trustIdentityKey(identity,);
   },);
   /**
-   * Expected provenance keys from initial authorization.
+   Expected provenance keys from initial authorization.
    */
   const expectedKeys = expected.map(function expectedKey(identity,) {
     return trustIdentityKey(identity,);
@@ -83,19 +83,19 @@ async function assertAuthorizersCurrent({
 }
 
 /**
- * Validates and installs one MJS descendant.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - exact MJS candidate
- *
- * @param authorizingRoots - inherited roots
- *
- * @param recordedAt - audit timestamp
- *
- * @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
- *
- * @returns loaded installed config
+ Validates and installs one MJS descendant.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - exact MJS candidate
+ 
+ @param authorizingRoots - inherited roots
+ 
+ @param recordedAt - audit timestamp
+ 
+ @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
+ 
+ @returns loaded installed config
  */
 async function enrollMjs({
   registryRoot,
@@ -114,11 +114,11 @@ async function enrollMjs({
       .configPath,
   },);
   /**
-   * Runtime-validated config after disposable validation lock releases.
+   Runtime-validated config after disposable validation lock releases.
    */
   const validated = await (async function validateMjsCandidate(): Promise<ValidatedConfig> {
     /**
-     * Disposable private validation record.
+     Disposable private validation record.
      */
     await using validationRecord = await prepareMjsRecord({
       registryRoot,
@@ -135,7 +135,7 @@ async function enrollMjs({
     expected: authorizingRoots,
   },);
   /**
-   * Final exact descendant record.
+   Final exact descendant record.
    */
   await using prepared = await prepareMjsRecord({
     registryRoot,
@@ -152,17 +152,17 @@ async function enrollMjs({
 }
 
 /**
- * Executes TypeScript bundle from disposable record.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - exact bundle candidate
- *
- * @param authorizingRoots - inherited roots
- *
- * @param recordedAt - audit timestamp
- *
- * @returns runtime-validated config
+ Executes TypeScript bundle from disposable record.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - exact bundle candidate
+ 
+ @param authorizingRoots - inherited roots
+ 
+ @param recordedAt - audit timestamp
+ 
+ @returns runtime-validated config
  */
 async function validateTypeScriptCandidate({
   registryRoot,
@@ -176,7 +176,7 @@ async function validateTypeScriptCandidate({
   recordedAt: string;
 }>,): Promise<ValidatedConfig> {
   /**
-   * Disposable private validation record.
+   Disposable private validation record.
    */
   await using prepared = await prepareTypeScriptRecord({
     registryRoot,
@@ -188,17 +188,17 @@ async function validateTypeScriptCandidate({
 }
 
 /**
- * Builds, validates, and installs one TypeScript descendant.
- *
- * @param discovered - canonical TypeScript config
- *
- * @param registryRoot - complete registry root
- *
- * @param authorizingRoots - inherited roots
- *
- * @param recordedAt - audit timestamp
- *
- * @returns loaded installed config
+ Builds, validates, and installs one TypeScript descendant.
+ 
+ @param discovered - canonical TypeScript config
+ 
+ @param registryRoot - complete registry root
+ 
+ @param authorizingRoots - inherited roots
+ 
+ @param recordedAt - audit timestamp
+ 
+ @returns loaded installed config
  */
 async function enrollTypeScript({
   discovered,
@@ -212,18 +212,18 @@ async function enrollTypeScript({
   recordedAt: string;
 }>,): Promise<LoadedTrustedConfig> {
   /**
-   * Disposable private tsdown output directory.
+   Disposable private tsdown output directory.
    */
   await using buildDirectory = await createPrivateBuildDirectory();
   /**
-   * Exact private descendant build.
+   Exact private descendant build.
    */
   const candidate = await buildTypeScriptCandidate({
     discovered,
     buildDirectory: buildDirectory.path,
   },);
   /**
-   * Runtime validation before persistent enrollment.
+   Runtime validation before persistent enrollment.
    */
   const validated = await validateTypeScriptCandidate({
     registryRoot,
@@ -237,7 +237,7 @@ async function enrollTypeScript({
     expected: authorizingRoots,
   },);
   /**
-   * Final exact source and bundle record.
+   Final exact source and bundle record.
    */
   await using prepared = await prepareTypeScriptRecord({
     registryRoot,
@@ -254,20 +254,20 @@ async function enrollTypeScript({
 }
 
 /**
- * Auto-enrolls exact descendant under every current recursive root.
- *
- * @param discovered - canonical descendant config
- *
- * @param registryRoot - complete private registry root
- *
- * @param recordedAt - audit timestamp
- *
- * @returns loaded config or absence when no root authorizes it
- *
- * @example
- * ```ts
- * await autoEnrollRecursiveConfig({ discovered, registryRoot, recordedAt });
- * ```
+ Auto-enrolls exact descendant under every current recursive root.
+ 
+ @param discovered - canonical descendant config
+ 
+ @param registryRoot - complete private registry root
+ 
+ @param recordedAt - audit timestamp
+ 
+ @returns loaded config or absence when no root authorizes it
+ 
+ @example
+ ```ts
+ await autoEnrollRecursiveConfig({ discovered, registryRoot, recordedAt });
+ ```
  */
 export async function autoEnrollRecursiveConfig({
   discovered,
@@ -279,20 +279,20 @@ export async function autoEnrollRecursiveConfig({
   recordedAt: string;
 }>,): Promise<LoadedTrustedConfig | typeof RECURSIVE_TRUST_ABSENT> {
   /**
-   * Registry-wide serialization against revocation.
+   Registry-wide serialization against revocation.
    */
   await using recursiveLock = await acquireRecursiveRegistryLock({ registryRoot, },);
   await recoverProvenanceTransactions({ registryRoot, },);
   /**
-   * Entry candidate establishes exact identity before authorization.
+   Entry candidate establishes exact identity before authorization.
    */
   const candidate = await captureTrustCandidate(discovered,);
   /**
-   * Every installed record before enrollment.
+   Every installed record before enrollment.
    */
   const entries = await listTrustRecords({ registryRoot, },);
   /**
-   * Every unchanged recursive root covering descendant.
+   Every unchanged recursive root covering descendant.
    */
   const authorizingRoots = canonicalAuthorizers(await activeRecursiveAuthorizers({
     entries,

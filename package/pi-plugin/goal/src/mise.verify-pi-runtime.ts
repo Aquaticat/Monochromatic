@@ -1,7 +1,7 @@
 /**
- * Exercises built goal package through real Pi discovery and runtime boundaries.
- *
- * @module
+ Exercises built goal package through real Pi discovery and runtime boundaries.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ import { verifyInjectedReviewerOutcomes, } from './pi-runtime-verifier-review.ts
 import { verifyOrdinaryToolsAfterAbort, } from './pi-runtime-verifier-tools.ts';
 
 /**
- * Disposable async temporary directory owner.
+ Disposable async temporary directory owner.
  */
 type AsyncTemporaryDirectory = {
   readonly path: string;
@@ -27,18 +27,18 @@ type AsyncTemporaryDirectory = {
 };
 
 /**
- * Create disposable directory removed through `await using`.
- *
- * @returns asynchronous temporary directory owner
- *
- * @example
- * ```ts
- * await using temporary = await createTemporaryDirectory();
- * ```
+ Create disposable directory removed through `await using`.
+ 
+ @returns asynchronous temporary directory owner
+ 
+ @example
+ ```ts
+ await using temporary = await createTemporaryDirectory();
+ ```
  */
 async function createTemporaryDirectory(): Promise<AsyncTemporaryDirectory> {
   /**
-   * Unique root containing every verifier-controlled resource.
+   Unique root containing every verifier-controlled resource.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -59,36 +59,36 @@ async function createTemporaryDirectory(): Promise<AsyncTemporaryDirectory> {
 }
 
 /**
- * Run all disposable Pi consumer-boundary checks.
- *
- * @returns verification result text
- *
- * @example
- * ```ts
- * console.log(await verifyPiGoalRuntime());
- * ```
+ Run all disposable Pi consumer-boundary checks.
+ 
+ @returns verification result text
+ 
+ @example
+ ```ts
+ console.log(await verifyPiGoalRuntime());
+ ```
  */
 async function verifyPiGoalRuntime(): Promise<string> {
   /**
-   * Disposable root removed after every success or failure path.
+   Disposable root removed after every success or failure path.
    */
   await using temporary = await createTemporaryDirectory();
   /**
-   * Disposable Pi global directory.
+   Disposable Pi global directory.
    */
   const agentDirectory = join(
     temporary.path,
     'agent',
   );
   /**
-   * Disposable persisted session directory.
+   Disposable persisted session directory.
    */
   const sessionDirectory = join(
     temporary.path,
     'sessions',
   );
   /**
-   * Disposable ordinary-tool workspace.
+   Disposable ordinary-tool workspace.
    */
   const workspaceDirectory = join(
     temporary.path,
@@ -116,11 +116,11 @@ async function verifyPiGoalRuntime(): Promise<string> {
     '{}\n',
   );
   /**
-   * Goal package directory is task working directory.
+   Goal package directory is task working directory.
    */
   const packageDirectory = process.cwd();
   /**
-   * Real-loader lifecycle flow and active harness for completion.
+   Real-loader lifecycle flow and active harness for completion.
    */
   const flow = await verifyDiscoveredGoalFlow({
     packageDirectory,
@@ -128,15 +128,15 @@ async function verifyPiGoalRuntime(): Promise<string> {
     sessionDirectory,
   },);
   /**
-   * Default registered noninteractive exhaustion result.
+   Default registered noninteractive exhaustion result.
    */
   const exhaustion = await verifyDefaultCompletionExhaustion(flow.harness,);
   /**
-   * Deterministic injected reviewer denial and approval results.
+   Deterministic injected reviewer denial and approval results.
    */
   const reviews = await verifyInjectedReviewerOutcomes();
   /**
-   * Real AgentSession ordinary-tool names executed after abort boundary.
+   Real AgentSession ordinary-tool names executed after abort boundary.
    */
   const tools = await verifyOrdinaryToolsAfterAbort({
     packageDirectory,

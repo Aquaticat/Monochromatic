@@ -1,7 +1,7 @@
 /**
- * GitHub REST transport through bounded `gh api --include` subprocesses.
- *
- * @module
+ GitHub REST transport through bounded `gh api --include` subprocesses.
+ 
+ @module
  */
 
 import {
@@ -23,12 +23,12 @@ import {
 } from './github-response.ts';
 
 /**
- * HTTP methods used by adapter GitHub boundary.
+ HTTP methods used by adapter GitHub boundary.
  */
 export type GitHubApiMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 /**
- * One non-paginated GitHub REST request.
+ One non-paginated GitHub REST request.
  */
 export type GitHubApiRequest = {
   readonly method: GitHubApiMethod;
@@ -37,24 +37,24 @@ export type GitHubApiRequest = {
 };
 
 /**
- * Parses included output from successful or HTTP-error process result.
- *
- * @param runProcess - Bounded process implementation.
- *
- * @param arguments - Exact GitHub CLI argument vector.
- *
- * @param cwd - Explicit child working directory.
- *
- * @returns Parsed included response including non-success HTTP status.
- *
- * @throws {@link GitHubProcessError} when process output is not HTTP response.
- *
- * @throws {@link IncludedResponseError} when successful output is malformed.
- *
- * @example
- * ```ts
- * await executeApi({ runProcess, arguments: ['api'], cwd: process.cwd() });
- * ```
+ Parses included output from successful or HTTP-error process result.
+ 
+ @param runProcess - Bounded process implementation.
+ 
+ @param arguments - Exact GitHub CLI argument vector.
+ 
+ @param cwd - Explicit child working directory.
+ 
+ @returns Parsed included response including non-success HTTP status.
+ 
+ @throws {@link GitHubProcessError} when process output is not HTTP response.
+ 
+ @throws {@link IncludedResponseError} when successful output is malformed.
+ 
+ @example
+ ```ts
+ await executeApi({ runProcess, arguments: ['api'], cwd: process.cwd() });
+ ```
  */
 async function executeApi({
   runProcess,
@@ -67,7 +67,7 @@ async function executeApi({
 },): Promise<IncludedResponse> {
   try {
     /**
-     * Successful GitHub CLI process result.
+     Successful GitHub CLI process result.
      */
     const result = await runProcess({
       file: 'gh',
@@ -95,16 +95,16 @@ async function executeApi({
 }
 
 /**
- * Builds base non-paginated GitHub CLI argument vector.
- *
- * @param request - REST method and endpoint.
- *
- * @returns Exact arguments before optional input path.
- *
- * @example
- * ```ts
- * apiArguments({ method: 'GET', endpoint: 'repos/owner/repo' });
- * ```
+ Builds base non-paginated GitHub CLI argument vector.
+ 
+ @param request - REST method and endpoint.
+ 
+ @returns Exact arguments before optional input path.
+ 
+ @example
+ ```ts
+ apiArguments({ method: 'GET', endpoint: 'repos/owner/repo' });
+ ```
  */
 function apiArguments(request: GitHubApiRequest,): readonly string[] {
   return [
@@ -117,20 +117,20 @@ function apiArguments(request: GitHubApiRequest,): readonly string[] {
 }
 
 /**
- * Executes body request through private named JSON file.
- *
- * @param request - REST request carrying body.
- *
- * @param cwd - Explicit child working directory.
- *
- * @param runProcess - Bounded process implementation.
- *
- * @returns Parsed included response.
- *
- * @example
- * ```ts
- * await executeBodyRequest({ request, cwd: process.cwd(), runProcess });
- * ```
+ Executes body request through private named JSON file.
+ 
+ @param request - REST request carrying body.
+ 
+ @param cwd - Explicit child working directory.
+ 
+ @param runProcess - Bounded process implementation.
+ 
+ @returns Parsed included response.
+ 
+ @example
+ ```ts
+ await executeBodyRequest({ request, cwd: process.cwd(), runProcess });
+ ```
  */
 async function executeBodyRequest({
   request,
@@ -144,14 +144,14 @@ async function executeBodyRequest({
   readonly runProcess: BoundedProcessRunner;
 },): Promise<IncludedResponse> {
   /**
-   * Private disposable directory owning request file cleanup.
+   Private disposable directory owning request file cleanup.
    */
   await using directory = await mkdtempDisposable(join(
     tmpdir(),
     'ocr-issue-gh-',
   ),);
   /**
-   * Private named JSON input path.
+   Private named JSON input path.
    */
   const inputPath = join(
     directory.path,
@@ -179,20 +179,20 @@ async function executeBodyRequest({
 }
 
 /**
- * Executes one GitHub REST request through fixed process boundary.
- *
- * @param request - Method, endpoint, and optional JSON body.
- *
- * @param cwd - Explicit child working directory.
- *
- * @param runProcess - Injectable process boundary used by artifact tests.
- *
- * @returns Parsed HTTP status, headers, and JSON body.
- *
- * @example
- * ```ts
- * await runGitHubApi({ request: { method: 'GET', endpoint: 'user' }, cwd: process.cwd() });
- * ```
+ Executes one GitHub REST request through fixed process boundary.
+ 
+ @param request - Method, endpoint, and optional JSON body.
+ 
+ @param cwd - Explicit child working directory.
+ 
+ @param runProcess - Injectable process boundary used by artifact tests.
+ 
+ @returns Parsed HTTP status, headers, and JSON body.
+ 
+ @example
+ ```ts
+ await runGitHubApi({ request: { method: 'GET', endpoint: 'user' }, cwd: process.cwd() });
+ ```
  */
 export function runGitHubApi({
   request,

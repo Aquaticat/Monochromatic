@@ -1,7 +1,7 @@
 /**
- * Agent and stop hook event types: Stop, SubagentStart, SubagentStop, TeammateIdle, TaskCompleted.
- *
- * @module
+ Agent and stop hook event types: Stop, SubagentStart, SubagentStop, TeammateIdle, TaskCompleted.
+ 
+ @module
  */
 
 import type {
@@ -12,83 +12,83 @@ import type {
 //region Stop
 
 /**
- * Input for `Stop` hooks.
- * Fires when the main Claude Code agent finishes responding.
- * Does not fire on user interrupt.
+ Input for `Stop` hooks.
+ Fires when the main Claude Code agent finishes responding.
+ Does not fire on user interrupt.
  */
 type StopInput = HookInputBase & {
   hook_event_name: 'Stop';
 
   /**
-   * `true` when Claude is already continuing as a result of a stop hook.
-   * Check this to prevent infinite loops.
+   `true` when Claude is already continuing as a result of a stop hook.
+   Check this to prevent infinite loops.
    */
   stop_hook_active: boolean;
 
   /**
-   * Text content of Claude's final response. May be absent if the stop was triggered before any message was generated.
+   Text content of Claude's final response. May be absent if the stop was triggered before any message was generated.
    */
   last_assistant_message?: string;
 
   /**
-   * Background tasks known to the session, including ones still running.
-   *
-   * Verified against Claude Code 2.1.224 by dumping a live `Stop` payload; the
-   * published hook reference does not list it.
+   Background tasks known to the session, including ones still running.
+   
+   Verified against Claude Code 2.1.224 by dumping a live `Stop` payload; the
+   published hook reference does not list it.
    */
   background_tasks?: readonly BackgroundTask[];
 
   /**
-   * Scheduled jobs registered for the session; empty when none are set.
+   Scheduled jobs registered for the session; empty when none are set.
    */
   session_crons?: readonly unknown[];
 };
 
 /**
- * One background task as reported on the `Stop` event.
- *
- * A `status` of `running` means the session is waiting on something the agent
- * cannot advance by taking another turn.
+ One background task as reported on the `Stop` event.
+ 
+ A `status` of `running` means the session is waiting on something the agent
+ cannot advance by taking another turn.
  */
 type BackgroundTask = {
   /**
-   * Identifier used to address the task from tooling.
+   Identifier used to address the task from tooling.
    */
   readonly id: string;
 
   /**
-   * Task family, `shell` for backgrounded commands.
+   Task family, `shell` for backgrounded commands.
    */
   readonly type: string;
 
   /**
-   * Lifecycle state; `running` while the task has not exited.
+   Lifecycle state; `running` while the task has not exited.
    */
   readonly status: string;
 
   /**
-   * Human-readable summary shown in the session UI.
+   Human-readable summary shown in the session UI.
    */
   readonly description?: string;
 
   /**
-   * Command backing the task, present for shell tasks.
+   Command backing the task, present for shell tasks.
    */
   readonly command?: string;
 };
 
 /**
- * Output for `Stop` and `SubagentStop` hooks.
- * Can prevent Claude from stopping.
+ Output for `Stop` and `SubagentStop` hooks.
+ Can prevent Claude from stopping.
  */
 type StopOutput = HookOutputBase & {
   /**
-   * `"block"` prevents Claude from stopping.
+   `"block"` prevents Claude from stopping.
    */
   decision?: 'block';
 
   /**
-   * Required when `decision` is `"block"`. Tells Claude why it should continue.
+   Required when `decision` is `"block"`. Tells Claude why it should continue.
    */
   reason?: string;
 };
@@ -98,33 +98,33 @@ type StopOutput = HookOutputBase & {
 //region SubagentStart
 
 /**
- * Input for `SubagentStart` hooks.
- * Fires when a subagent is spawned via the Agent tool.
+ Input for `SubagentStart` hooks.
+ Fires when a subagent is spawned via the Agent tool.
  */
 type SubagentStartInput = HookInputBase & {
   hook_event_name: 'SubagentStart';
 
   /**
-   * Unique identifier for the subagent.
+   Unique identifier for the subagent.
    */
   agent_id: string;
 
   /**
-   * Agent type name (e.g. `"Bash"`, `"Explore"`, `"Plan"`, or custom agent names).
+   Agent type name (e.g. `"Bash"`, `"Explore"`, `"Plan"`, or custom agent names).
    */
   agent_type: string;
 };
 
 /**
- * Output for `SubagentStart` hooks.
- * Cannot block subagent creation, but can inject context.
+ Output for `SubagentStart` hooks.
+ Cannot block subagent creation, but can inject context.
  */
 type SubagentStartOutput = HookOutputBase & {
   hookSpecificOutput?: {
     hookEventName: 'SubagentStart';
 
     /**
-     * Context added to the subagent's conversation.
+     Context added to the subagent's conversation.
      */
     additionalContext?: string;
   };
@@ -135,43 +135,43 @@ type SubagentStartOutput = HookOutputBase & {
 //region SubagentStop
 
 /**
- * Input for `SubagentStop` hooks.
- * Fires when a subagent finishes responding.
+ Input for `SubagentStop` hooks.
+ Fires when a subagent finishes responding.
  */
 type SubagentStopInput = HookInputBase & {
   hook_event_name: 'SubagentStop';
 
   /**
-   * `true` when the subagent is already continuing as a result of a stop hook.
-   * Check this to prevent infinite loops.
+   `true` when the subagent is already continuing as a result of a stop hook.
+   Check this to prevent infinite loops.
    */
   stop_hook_active: boolean;
 
   /**
-   * Unique identifier for the subagent.
+   Unique identifier for the subagent.
    */
   agent_id: string;
 
   /**
-   * Agent type name.
+   Agent type name.
    */
   agent_type: string;
 
   /**
-   * Path to the subagent's own transcript, stored in a `subagents/` subfolder.
-   * Distinct from the main session's `transcript_path`.
+   Path to the subagent's own transcript, stored in a `subagents/` subfolder.
+   Distinct from the main session's `transcript_path`.
    */
   agent_transcript_path: string;
 
   /**
-   * Text content of the subagent's final response. May be absent if the stop was triggered before any message was generated.
+   Text content of the subagent's final response. May be absent if the stop was triggered before any message was generated.
    */
   last_assistant_message?: string;
 };
 
 /**
- * Output for `SubagentStop` hooks.
- * Uses the same decision control format as `Stop` hooks.
+ Output for `SubagentStop` hooks.
+ Uses the same decision control format as `Stop` hooks.
  */
 type SubagentStopOutput = StopOutput;
 
@@ -180,27 +180,27 @@ type SubagentStopOutput = StopOutput;
 //region TeammateIdle
 
 /**
- * Input for `TeammateIdle` hooks.
- * Fires when an agent team teammate is about to go idle.
+ Input for `TeammateIdle` hooks.
+ Fires when an agent team teammate is about to go idle.
  */
 type TeammateIdleInput = HookInputBase & {
   hook_event_name: 'TeammateIdle';
 
   /**
-   * Name of the teammate about to go idle.
+   Name of the teammate about to go idle.
    */
   teammate_name: string;
 
   /**
-   * Name of the team.
+   Name of the team.
    */
   team_name: string;
 };
 
 /**
- * Output for `TeammateIdle` hooks.
- * Exit code 2 continues the teammate with stderr as feedback.
- * `{ continue: false }` stops the teammate entirely.
+ Output for `TeammateIdle` hooks.
+ Exit code 2 continues the teammate with stderr as feedback.
+ `{ continue: false }` stops the teammate entirely.
  */
 type TeammateIdleOutput = HookOutputBase;
 
@@ -209,42 +209,42 @@ type TeammateIdleOutput = HookOutputBase;
 //region TaskCompleted
 
 /**
- * Input for `TaskCompleted` hooks.
- * Fires when a task is being marked as completed.
+ Input for `TaskCompleted` hooks.
+ Fires when a task is being marked as completed.
  */
 type TaskCompletedInput = HookInputBase & {
   hook_event_name: 'TaskCompleted';
 
   /**
-   * Identifier of the task being completed.
+   Identifier of the task being completed.
    */
   task_id: string;
 
   /**
-   * Title of the task.
+   Title of the task.
    */
   task_subject: string;
 
   /**
-   * Detailed description of the task.
+   Detailed description of the task.
    */
   task_description?: string;
 
   /**
-   * Name of the teammate completing the task.
+   Name of the teammate completing the task.
    */
   teammate_name?: string;
 
   /**
-   * Name of the team.
+   Name of the team.
    */
   team_name?: string;
 };
 
 /**
- * Output for `TaskCompleted` hooks.
- * Exit code 2 blocks completion with stderr as feedback.
- * `{ continue: false }` stops the teammate entirely.
+ Output for `TaskCompleted` hooks.
+ Exit code 2 blocks completion with stderr as feedback.
+ `{ continue: false }` stops the teammate entirely.
  */
 type TaskCompletedOutput = HookOutputBase;
 

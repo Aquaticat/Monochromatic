@@ -8,20 +8,20 @@ import type {
 } from '../types.ts';
 
 /**
- * Sentinel for an uncomputed `verboseCache` slot. A unique `Symbol` rather
- * than `null`: the `no-nullish-union` rule bans a nullish "absent" arm, and
- * a real `boolean` value is the computed state this must stay distinct from.
+ Sentinel for an uncomputed `verboseCache` slot. A unique `Symbol` rather
+ than `null`: the `no-nullish-union` rule bans a nullish "absent" arm, and
+ a real `boolean` value is the computed state this must stay distinct from.
  */
 const VERBOSE_UNCOMPUTED = Symbol('logger:verbose-detection-uncomputed',);
 
 /**
- * Levels silenced by default unless verbose mode is active.
- *
- * @example
- * ```ts
- * SILENT_LEVELS.has('trace'); // true
- * SILENT_LEVELS.has('info');  // false
- * ```
+ Levels silenced by default unless verbose mode is active.
+ 
+ @example
+ ```ts
+ SILENT_LEVELS.has('trace'); // true
+ SILENT_LEVELS.has('info');  // false
+ ```
  */
 const SILENT_LEVELS: ReadonlySet<string> = new Set([
   'debug',
@@ -29,28 +29,28 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Detects verbose mode from environment variables, process arguments,
- * and runtime environment.
- * Checks `process.env.MONOCHROMATIC_VERBOSE`, `process.argv` for `--verbose`,
- * and whether the runtime is a browser.
- * Browser environments enable verbose by default because DevTools
- * already provides its own log-level filtering, making logger-side
- * suppression redundant. Each check is individually guarded
- * so unavailable globals never cause throws.
- *
- * @returns Whether verbose output is enabled.
- *
- * @example
- * ```ts
- * // With MONOCHROMATIC_VERBOSE=true in environment
- * detectVerbose(); // true
- * ```
- *
- * @example
- * ```ts
- * // In a browser environment (window is defined)
- * detectVerbose(); // true
- * ```
+ Detects verbose mode from environment variables, process arguments,
+ and runtime environment.
+ Checks `process.env.MONOCHROMATIC_VERBOSE`, `process.argv` for `--verbose`,
+ and whether the runtime is a browser.
+ Browser environments enable verbose by default because DevTools
+ already provides its own log-level filtering, making logger-side
+ suppression redundant. Each check is individually guarded
+ so unavailable globals never cause throws.
+ 
+ @returns Whether verbose output is enabled.
+ 
+ @example
+ ```ts
+ // With MONOCHROMATIC_VERBOSE=true in environment
+ detectVerbose(); // true
+ ```
+ 
+ @example
+ ```ts
+ // In a browser environment (window is defined)
+ detectVerbose(); // true
+ ```
  */
 function detectVerbose(): boolean {
   try {
@@ -101,22 +101,22 @@ function detectVerbose(): boolean {
 }
 
 /**
- * Detects explicit warn suppression via the `MONOCHROMATIC_WARN` environment
- * variable.
- *
- * Setting `MONOCHROMATIC_WARN=false` drops `warn`-level records, for machine-protocol
- * consumers (such as a stdin/stdout codec) whose output streams must stay clean
- * on success. Only the exact string `'false'` suppresses; any other value, or an
- * absent variable, leaves `warn` enabled. Read on each call (not memoized) so a
- * host can toggle it between logs.
- *
- * @returns Whether `warn`-level records are suppressed.
- *
- * @example
- * ```ts
- * // With MONOCHROMATIC_WARN=false in environment
- * isWarnSuppressed(); // true
- * ```
+ Detects explicit warn suppression via the `MONOCHROMATIC_WARN` environment
+ variable.
+ 
+ Setting `MONOCHROMATIC_WARN=false` drops `warn`-level records, for machine-protocol
+ consumers (such as a stdin/stdout codec) whose output streams must stay clean
+ on success. Only the exact string `'false'` suppresses; any other value, or an
+ absent variable, leaves `warn` enabled. Read on each call (not memoized) so a
+ host can toggle it between logs.
+ 
+ @returns Whether `warn`-level records are suppressed.
+ 
+ @example
+ ```ts
+ // With MONOCHROMATIC_WARN=false in environment
+ isWarnSuppressed(); // true
+ ```
  */
 function isWarnSuppressed(): boolean {
   try {
@@ -134,11 +134,11 @@ function isWarnSuppressed(): boolean {
 }
 
 /**
- * Maps log levels to the name of the console method that handles them.
- * Names rather than function references so tests (and other hot patches)
- * that replace `console.info` etc. after module load still see their
- * replacement when the sink flushes. `debug` uses this mapping only when
- * process stderr is unavailable, preserving browser `console.debug` output.
+ Maps log levels to the name of the console method that handles them.
+ Names rather than function references so tests (and other hot patches)
+ that replace `console.info` etc. after module load still see their
+ replacement when the sink flushes. `debug` uses this mapping only when
+ process stderr is unavailable, preserving browser `console.debug` output.
  */
 const LEVEL_TO_CONSOLE_METHOD: Record<Level,
   'debug' | 'error' | 'info' | 'trace' | 'warn'> = {
@@ -151,19 +151,19 @@ const LEVEL_TO_CONSOLE_METHOD: Record<Level,
   };
 
 /**
- * Formats a single log record into the display string used by console output.
- * The message passes through {@link neutralizeControlCharacters} first, so a
- * terminal never receives a control sequence smuggled inside log text.
- *
- * @param record - Record to format.
- *
- * @returns Formatted line of the shape `[level] [iso] message`.
- *
- * @example
- * ```ts
- * formatRecord({ level: 'info', message: 'hi', timestamp: 0 });
- * // => '[info] [1970-01-01T00:00:00.000Z] hi'
- * ```
+ Formats a single log record into the display string used by console output.
+ The message passes through {@link neutralizeControlCharacters} first, so a
+ terminal never receives a control sequence smuggled inside log text.
+ 
+ @param record - Record to format.
+ 
+ @returns Formatted line of the shape `[level] [iso] message`.
+ 
+ @example
+ ```ts
+ formatRecord({ level: 'info', message: 'hi', timestamp: 0 });
+ // => '[info] [1970-01-01T00:00:00.000Z] hi'
+ ```
  */
 function formatRecord(record: LogRecord,): string {
   return `[${record.level}] [${
@@ -173,17 +173,17 @@ function formatRecord(record: LogRecord,): string {
 }
 
 /**
- * Detects whether process stderr can receive debug records directly. Kept
- * separate from writing so availability checks can still require
- * `console.debug` when stderr is unavailable and browser fallback is needed.
- *
- * @returns Whether process stderr exposes a callable `write` method.
- *
- * @example
- * ```ts
- * hasProcessStderr();
- * // => true in Node.js and Bun processes
- * ```
+ Detects whether process stderr can receive debug records directly. Kept
+ separate from writing so availability checks can still require
+ `console.debug` when stderr is unavailable and browser fallback is needed.
+ 
+ @returns Whether process stderr exposes a callable `write` method.
+ 
+ @example
+ ```ts
+ hasProcessStderr();
+ // => true in Node.js and Bun processes
+ ```
  */
 function hasProcessStderr(): boolean {
   try {
@@ -204,19 +204,19 @@ function hasProcessStderr(): boolean {
 }
 
 /**
- * Writes a formatted debug run to process stderr when the host exposes a
- * process stream. Falling back to `console.debug` keeps browser and restricted
- * runtimes working when `process` is absent or unusable.
- *
- * @param text - Formatted debug run text that should stay off stdout.
- *
- * @returns Whether process stderr accepted the debug run.
- *
- * @example
- * ```ts
- * writeDebugRunToProcessStderr('[debug] [1970-01-01T00:00:00.000Z] hi');
- * // => true when process.stderr.write is available
- * ```
+ Writes a formatted debug run to process stderr when the host exposes a
+ process stream. Falling back to `console.debug` keeps browser and restricted
+ runtimes working when `process` is absent or unusable.
+ 
+ @param text - Formatted debug run text that should stay off stdout.
+ 
+ @returns Whether process stderr accepted the debug run.
+ 
+ @example
+ ```ts
+ writeDebugRunToProcessStderr('[debug] [1970-01-01T00:00:00.000Z] hi');
+ // => true when process.stderr.write is available
+ ```
  */
 function writeDebugRunToProcessStderr(text: string,): boolean {
   try {
@@ -237,20 +237,20 @@ function writeDebugRunToProcessStderr(text: string,): boolean {
 }
 
 /**
- * Emits a contiguous run of same-level records as a single console call,
- * joining formatted lines with `\n`. Debug records write to process stderr
- * when `process.stderr.write` is available, keeping stdout clean in CLI hosts.
- *
- * @param records - Records that all share `level`.
- *
- * @param level - Shared severity level whose mapped `console.*` receives
- * the joined text.
- *
- * @example
- * ```ts
- * emitRun({ records: [{ level: 'info', message: 'a', timestamp: 0 }], level: 'info' });
- * // calls console.info('[info] [1970-01-01T00:00:00.000Z] a')
- * ```
+ Emits a contiguous run of same-level records as a single console call,
+ joining formatted lines with `\n`. Debug records write to process stderr
+ when `process.stderr.write` is available, keeping stdout clean in CLI hosts.
+ 
+ @param records - Records that all share `level`.
+ 
+ @param level - Shared severity level whose mapped `console.*` receives
+ the joined text.
+ 
+ @example
+ ```ts
+ emitRun({ records: [{ level: 'info', message: 'a', timestamp: 0 }], level: 'info' });
+ // calls console.info('[info] [1970-01-01T00:00:00.000Z] a')
+ ```
  */
 function emitRun(
   {
@@ -262,7 +262,7 @@ function emitRun(
   },
 ): void {
   /**
-   * Joined run text; one `\n`-separated string per console call so a long run becomes a single grouped entry rather than N separate ones.
+   Joined run text; one `\n`-separated string per console call so a long run becomes a single grouped entry rather than N separate ones.
    */
   const text = records
     .map(function formatOne(r,) {
@@ -273,11 +273,11 @@ function emitRun(
     return;
   try {
     /**
-     * Name (not the function reference) of the matching `console.*` method; resolved lazily so post-import hot patches still apply.
+     Name (not the function reference) of the matching `console.*` method; resolved lazily so post-import hot patches still apply.
      */
     const method = LEVEL_TO_CONSOLE_METHOD[level];
     /**
-     * Resolved console method looked up by name; may be missing or non-callable in stripped runtimes, which the guard handles.
+     Resolved console method looked up by name; may be missing or non-callable in stripped runtimes, which the guard handles.
      */
     const consoleFn = console[method];
     if ((typeof consoleFn) === 'function') {
@@ -296,9 +296,9 @@ function emitRun(
 }
 
 /**
- * A contiguous slice of buffered records that share one level. Built by
- * {@link groupRuns} and consumed by {@link flushBuffer} to emit one
- * `console.*` call per slice.
+ A contiguous slice of buffered records that share one level. Built by
+ {@link groupRuns} and consumed by {@link flushBuffer} to emit one
+ `console.*` call per slice.
  */
 type Run = {
   level: Level;
@@ -306,24 +306,24 @@ type Run = {
 };
 
 /**
- * Groups a record sequence into contiguous same-level runs. Each input
- * record is appended to the trailing run when its level matches, otherwise
- * a new run is opened. A reduce-based collapse keeps the cursor (run head
- * and span) out of mutable function-body locals.
- *
- * @param records - Buffered records in arrival order.
- *
- * @returns Ordered list of runs covering every input record exactly once.
- *
- * @example
- * ```ts
- * groupRuns([
- *   { level: 'debug', message: 'a', timestamp: 0 },
- *   { level: 'debug', message: 'b', timestamp: 0 },
- *   { level: 'warn',  message: 'c', timestamp: 0 },
- * ]);
- * // => [{ level: 'debug', records: [a, b] }, { level: 'warn', records: [c] }]
- * ```
+ Groups a record sequence into contiguous same-level runs. Each input
+ record is appended to the trailing run when its level matches, otherwise
+ a new run is opened. A reduce-based collapse keeps the cursor (run head
+ and span) out of mutable function-body locals.
+ 
+ @param records - Buffered records in arrival order.
+ 
+ @returns Ordered list of runs covering every input record exactly once.
+ 
+ @example
+ ```ts
+ groupRuns([
+   { level: 'debug', message: 'a', timestamp: 0 },
+   { level: 'debug', message: 'b', timestamp: 0 },
+   { level: 'warn',  message: 'c', timestamp: 0 },
+ ]);
+ // => [{ level: 'debug', records: [a, b] }, { level: 'warn', records: [c] }]
+ ```
  */
 function groupRuns(records: readonly LogRecord[],): Run[] {
   return records.reduce<Run[]>(
@@ -332,7 +332,7 @@ function groupRuns(records: readonly LogRecord[],): Run[] {
       record,
     ) {
       /**
-       * Trailing run being extended; new same-level records append onto it, otherwise a fresh run is opened.
+       Trailing run being extended; new same-level records append onto it, otherwise a fresh run is opened.
        */
       const tail = runs.at(-1,);
       if ((tail !== undefined) && (tail.level
@@ -353,21 +353,21 @@ function groupRuns(records: readonly LogRecord[],): Run[] {
 }
 
 /**
- * Verifies console is available and microtask scheduling is supported.
- * `queueMicrotask` is the batching primitive; without it there is no
- * ordering guarantee that preserves "end of current sync frame" semantics,
- * so the sink reports itself unavailable instead of falling back to an
- * inferior scheduler. Stateless: the logger calls this once and owns the
- * resulting availability.
- *
- * @returns Whether console logging is available.
- *
- * @example
- * ```ts
- * if (await verifyConsole()) {
- *   // console usable
- * }
- * ```
+ Verifies console is available and microtask scheduling is supported.
+ `queueMicrotask` is the batching primitive; without it there is no
+ ordering guarantee that preserves "end of current sync frame" semantics,
+ so the sink reports itself unavailable instead of falling back to an
+ inferior scheduler. Stateless: the logger calls this once and owns the
+ resulting availability.
+ 
+ @returns Whether console logging is available.
+ 
+ @example
+ ```ts
+ if (await verifyConsole()) {
+   // console usable
+ }
+ ```
  */
 function verifyConsole(): Promise<boolean> {
   try {
@@ -375,8 +375,8 @@ function verifyConsole(): Promise<boolean> {
       return Promise.resolve(false,);
 
     /**
-     * Sample console method used only to check that debug has an output path:
-     * process runtimes use stderr, while fallback runtimes need `console.debug`.
+     Sample console method used only to check that debug has an output path:
+     process runtimes use stderr, while fallback runtimes need `console.debug`.
      */
     const testFn = hasProcessStderr() ? console.info : console.debug;
     if ((typeof testFn) !== 'function')
@@ -397,29 +397,29 @@ function verifyConsole(): Promise<boolean> {
 }
 
 /**
- * Builds a microtask-batched console sink. The pending buffer, schedule flag,
- * and memoized verbose detection live in this instance's closure (no
- * module-global state), so independent loggers and tests stay isolated with
- * no reset hook. Collapses contiguous same-level runs into single `console.*`
- * calls, sharply reducing console-panel overhead when an instrumented path
- * emits many records per sync frame.
- *
- * @returns Sink that writes formatted lines to `console.*`, except
- * process-hosted debug records write to stderr.
- *
- * @example
- * ```ts
- * const { logger } = createLogger({ sinks: [createConsoleSink()] });
- * logger.info('server started');
- * ```
+ Builds a microtask-batched console sink. The pending buffer, schedule flag,
+ and memoized verbose detection live in this instance's closure (no
+ module-global state), so independent loggers and tests stay isolated with
+ no reset hook. Collapses contiguous same-level runs into single `console.*`
+ calls, sharply reducing console-panel overhead when an instrumented path
+ emits many records per sync frame.
+ 
+ @returns Sink that writes formatted lines to `console.*`, except
+ process-hosted debug records write to stderr.
+ 
+ @example
+ ```ts
+ const { logger } = createLogger({ sinks: [createConsoleSink()] });
+ logger.info('server started');
+ ```
  */
 export function createConsoleSink(): Sink {
   /**
-   * Instance-local console-sink state. `buffer` holds records awaiting the
-   * next microtask flush; `scheduled` guards against redundant
-   * `queueMicrotask` calls within one sync frame; `verboseCache` memoizes
-   * verbose detection (the sentinel means not yet computed) so a host can
-   * mutate `process.env.MONOCHROMATIC_VERBOSE` before the first log and still be seen.
+   Instance-local console-sink state. `buffer` holds records awaiting the
+   next microtask flush; `scheduled` guards against redundant
+   `queueMicrotask` calls within one sync frame; `verboseCache` memoizes
+   verbose detection (the sentinel means not yet computed) so a host can
+   mutate `process.env.MONOCHROMATIC_VERBOSE` before the first log and still be seen.
    */
   const state: {
     buffer: LogRecord[];
@@ -432,22 +432,22 @@ export function createConsoleSink(): Sink {
   };
 
   /**
-   * Reads the memoized verbose flag, evaluating via {@link detectVerbose} on
-   * first call. Lazy rather than at construction so tests (and hosts) can
-   * mutate `process.env.MONOCHROMATIC_VERBOSE` between construction and first log without a
-   * stale cache.
-   *
-   * @returns Whether verbose logging is enabled for this process.
+   Reads the memoized verbose flag, evaluating via {@link detectVerbose} on
+   first call. Lazy rather than at construction so tests (and hosts) can
+   mutate `process.env.MONOCHROMATIC_VERBOSE` between construction and first log without a
+   stale cache.
+   
+   @returns Whether verbose logging is enabled for this process.
    */
   function getVerbose(): boolean {
     /**
-     * Cached verbose flag; the sentinel means detection has not run yet.
+     Cached verbose flag; the sentinel means detection has not run yet.
      */
     const cached = state.verboseCache;
     if (cached !== VERBOSE_UNCOMPUTED)
       return cached;
     /**
-     * Computed verbose flag, stored so subsequent reads skip detection.
+     Computed verbose flag, stored so subsequent reads skip detection.
      */
     const computed = detectVerbose();
     state.verboseCache = computed;
@@ -455,13 +455,13 @@ export function createConsoleSink(): Sink {
   }
 
   /**
-   * Drains the buffer, collapsing contiguous same-level runs (via
-   * {@link groupRuns}) into single console calls emitted by {@link emitRun}.
-   * A sequence `[debug, debug, warn, debug]` becomes three calls:
-   * `process.stderr.write` (two lines joined), `console.warn`, then
-   * `process.stderr.write` under process runtimes. Typical instrumented
-   * functions use a single level throughout, so most flushes collapse to one
-   * call.
+   Drains the buffer, collapsing contiguous same-level runs (via
+   {@link groupRuns}) into single console calls emitted by {@link emitRun}.
+   A sequence `[debug, debug, warn, debug]` becomes three calls:
+   `process.stderr.write` (two lines joined), `console.warn`, then
+   `process.stderr.write` under process runtimes. Typical instrumented
+   functions use a single level throughout, so most flushes collapse to one
+   call.
    */
   function flushBuffer(): void {
     state.scheduled = false;
@@ -471,10 +471,10 @@ export function createConsoleSink(): Sink {
       return;
 
     /**
-     * Snapshot of buffered records drained before the loop.
-     *
-     * Using `splice(0)` empties the buffer atomically so any record enqueued
-     * during emission lands in the next flush rather than this one.
+     Snapshot of buffered records drained before the loop.
+     
+     Using `splice(0)` empties the buffer atomically so any record enqueued
+     during emission lands in the next flush rather than this one.
      */
     const records = state.buffer
       .splice(0,);
@@ -487,12 +487,12 @@ export function createConsoleSink(): Sink {
   }
 
   /**
-   * Enqueues a record for microtask-batched emission. Silently discards
-   * `debug`/`trace` unless {@link getVerbose} reports verbose mode is active
-   * (via `MONOCHROMATIC_VERBOSE=true` env var, `--verbose` argv, or browser environment), and
-   * drops `warn` when {@link isWarnSuppressed}.
-   *
-   * @param record - Log record to write.
+   Enqueues a record for microtask-batched emission. Silently discards
+   `debug`/`trace` unless {@link getVerbose} reports verbose mode is active
+   (via `MONOCHROMATIC_VERBOSE=true` env var, `--verbose` argv, or browser environment), and
+   drops `warn` when {@link isWarnSuppressed}.
+   
+   @param record - Log record to write.
    */
   function write(record: LogRecord,): Promise<void> {
     if ((!getVerbose()) && SILENT_LEVELS
@@ -514,9 +514,9 @@ export function createConsoleSink(): Sink {
   }
 
   /**
-   * Forces any buffered records through to the console immediately via
-   * {@link flushBuffer}. Returns an already-resolved promise so call sites
-   * await uniformly with async sinks. Safe to call when the buffer is empty.
+   Forces any buffered records through to the console immediately via
+   {@link flushBuffer}. Returns an already-resolved promise so call sites
+   await uniformly with async sinks. Safe to call when the buffer is empty.
    */
   function flush(): Promise<void> {
     flushBuffer();

@@ -1,7 +1,7 @@
 /**
- * Test-only Chinese vocabulary tables.
- *
- * @module
+ Test-only Chinese vocabulary tables.
+ 
+ @module
  */
 
 import type {
@@ -17,7 +17,7 @@ import type {
 } from './types.ts';
 
 /**
- * Chinese label table for tests.
+ Chinese label table for tests.
  */
 export const zhLabels: Record<TestLabel, string> = {
   siteName: 'Aquaticat',
@@ -26,7 +26,7 @@ export const zhLabels: Record<TestLabel, string> = {
 };
 
 /**
- * Chinese subject table for tests.
+ Chinese subject table for tests.
  */
 export const zhSubjects: Record<TestSubject, SubjectEntry> = {
   I: {
@@ -56,7 +56,7 @@ export const zhSubjects: Record<TestSubject, SubjectEntry> = {
 };
 
 /**
- * Chinese noun table for tests.
+ Chinese noun table for tests.
  */
 export const zhNouns: Record<TestNoun, NounEntry> = {
   cat: {
@@ -74,7 +74,7 @@ export const zhNouns: Record<TestNoun, NounEntry> = {
 };
 
 /**
- * Chinese verb table for tests.
+ Chinese verb table for tests.
  */
 export const zhVerbs: Record<TestVerb, ChineseVerbEntry> = {
   have: { surface: '有', },

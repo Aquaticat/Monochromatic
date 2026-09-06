@@ -1,7 +1,7 @@
 /**
- * Failure-state and deadline tests for Advisor provider completion.
- *
- * @module
+ Failure-state and deadline tests for Advisor provider completion.
+ 
+ @module
  */
 
 import { setTimeout as delay, } from 'node:timers/promises';
@@ -110,11 +110,11 @@ const extensionContext = {
 } as unknown as ExtensionContext;
 
 /**
- * Build Advisor config with selected timeout.
- *
- * @param timeoutMs - total operation deadline
- *
- * @returns complete Advisor config fixture
+ Build Advisor config with selected timeout.
+ 
+ @param timeoutMs - total operation deadline
+ 
+ @returns complete Advisor config fixture
  */
 function advisorConfig(timeoutMs: number,): AdvisorConfig {
   return {
@@ -131,15 +131,15 @@ function advisorConfig(timeoutMs: number,): AdvisorConfig {
 }
 
 /**
- * Build terminal provider response fixture.
- *
- * @param stopReason - provider terminal state
- *
- * @param text - optional user-visible text
- *
- * @param errorMessage - optional provider diagnostic
- *
- * @returns assistant response fixture
+ Build terminal provider response fixture.
+ 
+ @param stopReason - provider terminal state
+ 
+ @param text - optional user-visible text
+ 
+ @param errorMessage - optional provider diagnostic
+ 
+ @returns assistant response fixture
  */
 function assistantResponse(
   {
@@ -171,11 +171,11 @@ function assistantResponse(
 }
 
 /**
- * Capture error from asynchronous Advisor completion.
- *
- * @param action - completion expected to fail
- *
- * @returns caught Error instance
+ Capture error from asynchronous Advisor completion.
+ 
+ @param action - completion expected to fail
+ 
+ @returns caught Error instance
  */
 async function captureError(
   action: () => Promise<unknown>,
@@ -195,15 +195,15 @@ async function captureError(
 }
 
 /**
- * Complete fixture Advisor request through supplied provider seam.
- *
- * @param completeModel - provider completion seam
- *
- * @param timeoutMs - total operation deadline
- *
- * @param signal - optional caller cancellation signal
- *
- * @returns terminal successful response
+ Complete fixture Advisor request through supplied provider seam.
+ 
+ @param completeModel - provider completion seam
+ 
+ @param timeoutMs - total operation deadline
+ 
+ @param signal - optional caller cancellation signal
+ 
+ @returns terminal successful response
  */
 async function completeFixture(
   {
@@ -237,9 +237,9 @@ await describe({
         /** Count of provider attempts. */
         const attempts: number[] = [];
         /**
-         * Provider seam returning terminal error.
-         *
-         * @returns terminal provider error
+         Provider seam returning terminal error.
+         
+         @returns terminal provider error
          */
         async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
@@ -267,9 +267,9 @@ await describe({
         /** Count of provider attempts. */
         const attempts: number[] = [];
         /**
-         * Provider seam aborting caller during request.
-         *
-         * @returns terminal aborted response
+         Provider seam aborting caller during request.
+         
+         @returns terminal aborted response
          */
         async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
@@ -298,9 +298,9 @@ await describe({
         /** Count of provider attempts. */
         const attempts: number[] = [];
         /**
-         * Provider seam waiting beyond configured deadline.
-         *
-         * @returns terminal aborted response after deadline
+         Provider seam waiting beyond configured deadline.
+         
+         @returns terminal aborted response after deadline
          */
         async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
@@ -329,9 +329,9 @@ await describe({
         /** Count of provider attempts. */
         const attempts: number[] = [];
         /**
-         * Provider seam returning independent abort.
-         *
-         * @returns terminal provider abort
+         Provider seam returning independent abort.
+         
+         @returns terminal provider abort
          */
         async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
@@ -361,11 +361,11 @@ await describe({
           assistantResponse({ stopReason: 'stop', text: 'advisor answer', }),
         ];
         /**
-         * Provider seam returning queued responses.
-         *
-         * @param providerOptions - current provider attempt options
-         *
-         * @returns response at current attempt index
+         Provider seam returning queued responses.
+         
+         @param providerOptions - current provider attempt options
+         
+         @returns response at current attempt index
          */
         async function completeModel(
           { providerOptions, }: Parameters<CompleteAdvisorModel>[0],
@@ -374,7 +374,7 @@ await describe({
             throw new Error('provider options missing',);
           capturedOptions.push(providerOptions,);
           /**
-           * Response at current attempt index.
+           Response at current attempt index.
            */
           const response = responses.at(capturedOptions.length - 1,);
           if (response === undefined)
@@ -408,9 +408,9 @@ await describe({
         /** Count of provider attempts. */
         const attempts: number[] = [];
         /**
-         * Provider seam returning successful empty response.
-         *
-         * @returns terminal empty response
+         Provider seam returning successful empty response.
+         
+         @returns terminal empty response
          */
         async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
@@ -431,9 +431,9 @@ await describe({
         /** Count of provider attempts. */
         const attempts: number[] = [];
         /**
-         * Provider seam returning tool-use terminal state.
-         *
-         * @returns terminal tool-use response
+         Provider seam returning tool-use terminal state.
+         
+         @returns terminal tool-use response
          */
         async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
@@ -455,9 +455,9 @@ await describe({
         name: `returns text for ${stopReason} terminal response`,
         fn: async function testSuccessfulTextResponse() {
           /**
-           * Provider seam returning text.
-           *
-           * @returns successful terminal response
+           Provider seam returning text.
+           
+           @returns successful terminal response
            */
           async function completeModel(): Promise<AssistantMessage> {
             return assistantResponse({

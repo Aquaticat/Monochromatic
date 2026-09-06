@@ -9,61 +9,61 @@ import { detectLocalStorageQuotaChars, } from './local-storage-quota.ts';
 import { isQuotaExceededError, } from './web-storage-quota-error.ts';
 
 /**
- * Radix for the run nonce so `Number.prototype.toString` yields compact
- * alphanumerics.
+ Radix for the run nonce so `Number.prototype.toString` yields compact
+ alphanumerics.
  */
 const NONCE_RADIX = 36;
 
 /**
- * Length of the run nonce; four base-36 characters make a same-millisecond
- * collision between two tabs vanishingly unlikely while keeping keys short.
+ Length of the run nonce; four base-36 characters make a same-millisecond
+ collision between two tabs vanishingly unlikely while keeping keys short.
  */
 const NONCE_LENGTH = 4;
 
 /**
- * One adopted prior-run entry: its parsed identity plus the value length it
- * occupies, captured once at adoption so eviction needs no re-read.
+ One adopted prior-run entry: its parsed identity plus the value length it
+ occupies, captured once at adoption so eviction needs no re-read.
  */
 type PriorEntry = ParsedLogKey & { readonly chars: number; };
 
 /**
- * Builds the persistence engine behind the localStorage sink: each `persist`
- * lands one already-serialized batch under a run-scoped counter-incremented
- * key, with proactive and reactive quota eviction. Run identity and counters
- * live in this instance's closure (no module-global state), so independent
- * sinks and tests never share keys or need a reset hook.
- *
- * Unlike sessionStorage, localStorage is shared by every tab of the origin and
- * survives restarts, so this engine differs from the sessionStorage engine in
- * two ways. Keys carry a run identity (see `local-storage-key.ts`), so
- * concurrent tabs never collide on a counter. And on its first persist the
- * engine adopts every strictly-parsed entry left by other runs into its
- * footprint tally, evicting those oldest-first before its own entries;
- * without that, leftovers from dead sessions would fill the store until no
- * run could ever write again. Adoption is deferred to first persist rather
- * than construction so building the default sink set never touches
- * `globalThis.localStorage` on runtimes where the sink never verifies (plain
- * Node warns on mere access). Keys that fail the strict parse, including the
- * host application's, are never counted and never evicted.
- *
- * The engine caps its own footprint (adopted entries included) at half the
- * runtime's localStorage quota, proactively dropping oldest-first, and
- * reactively drops again if the real store still overflows; see
- * {@link createLocalStorageStore.persist}.
- *
- * @returns Engine exposing `persist` for one batch value per call.
- *
- * @example
- * ```ts
- * const store = createLocalStorageStore();
- * store.persist('{"level":"info","message":"hi","timestamp":0}');
- * ```
+ Builds the persistence engine behind the localStorage sink: each `persist`
+ lands one already-serialized batch under a run-scoped counter-incremented
+ key, with proactive and reactive quota eviction. Run identity and counters
+ live in this instance's closure (no module-global state), so independent
+ sinks and tests never share keys or need a reset hook.
+ 
+ Unlike sessionStorage, localStorage is shared by every tab of the origin and
+ survives restarts, so this engine differs from the sessionStorage engine in
+ two ways. Keys carry a run identity (see `local-storage-key.ts`), so
+ concurrent tabs never collide on a counter. And on its first persist the
+ engine adopts every strictly-parsed entry left by other runs into its
+ footprint tally, evicting those oldest-first before its own entries;
+ without that, leftovers from dead sessions would fill the store until no
+ run could ever write again. Adoption is deferred to first persist rather
+ than construction so building the default sink set never touches
+ `globalThis.localStorage` on runtimes where the sink never verifies (plain
+ Node warns on mere access). Keys that fail the strict parse, including the
+ host application's, are never counted and never evicted.
+ 
+ The engine caps its own footprint (adopted entries included) at half the
+ runtime's localStorage quota, proactively dropping oldest-first, and
+ reactively drops again if the real store still overflows; see
+ {@link createLocalStorageStore.persist}.
+ 
+ @returns Engine exposing `persist` for one batch value per call.
+ 
+ @example
+ ```ts
+ const store = createLocalStorageStore();
+ store.persist('{"level":"info","message":"hi","timestamp":0}');
+ ```
  */
 export function createLocalStorageStore(): { readonly persist: (batch: string,) => void; } {
   /**
-   * Identity of this run, embedded in every key this engine writes: the stamp
-   * orders runs for cross-run eviction and the nonce keeps two tabs started
-   * in the same millisecond apart.
+   Identity of this run, embedded in every key this engine writes: the stamp
+   orders runs for cross-run eviction and the nonce keeps two tabs started
+   in the same millisecond apart.
    */
   const runIdentity = {
     stamp: Date.now(),
@@ -80,14 +80,14 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
   };
 
   /**
-   * Instance-local write cursor, eviction watermark, and footprint tally,
-   * mirroring the sessionStorage engine: this run's own entries occupy the
-   * contiguous index range `[oldestIndex, lineCounter)` and `usedChars`
-   * tracks the code units the engine accounts for (adopted prior-run entries
-   * included) so the half-quota cap needs no re-summing. `reportedFailure`
-   * gates the give-up diagnostic to once per failure episode, re-armed by the
-   * next landed write. `adoptedPrior` defers the prior-run scan to the first
-   * persist, which only happens after verification.
+   Instance-local write cursor, eviction watermark, and footprint tally,
+   mirroring the sessionStorage engine: this run's own entries occupy the
+   contiguous index range `[oldestIndex, lineCounter)` and `usedChars`
+   tracks the code units the engine accounts for (adopted prior-run entries
+   included) so the half-quota cap needs no re-summing. `reportedFailure`
+   gates the give-up diagnostic to once per failure episode, re-armed by the
+   next landed write. `adoptedPrior` defers the prior-run scan to the first
+   persist, which only happens after verification.
    */
   const state: {
     lineCounter: number;
@@ -104,10 +104,10 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
   };
 
   /**
-   * Prior-run entries adopted at first persist, sorted oldest-first, with a
-   * cursor marking how far eviction has consumed them; entries before the
-   * cursor are already removed. Prior entries always evict before this run's
-   * own, since they predate everything this run writes.
+   Prior-run entries adopted at first persist, sorted oldest-first, with a
+   cursor marking how far eviction has consumed them; entries before the
+   cursor are already removed. Prior entries always evict before this run's
+   own, since they predate everything this run writes.
    */
   const prior: {
     entries: readonly PriorEntry[];
@@ -118,21 +118,21 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
   };
 
   /**
-   * Half the detected runtime localStorage quota, in UTF-16 code units, or
-   * `Number.POSITIVE_INFINITY` on an unrecognized runtime. The engine keeps
-   * its accounted footprint at or below this so the logger never claims more
-   * than half the store, leaving the rest for the host application. An
-   * infinite cap disables the proactive check, leaving only reactive
-   * quota-error eviction.
+   Half the detected runtime localStorage quota, in UTF-16 code units, or
+   `Number.POSITIVE_INFINITY` on an unrecognized runtime. The engine keeps
+   its accounted footprint at or below this so the logger never claims more
+   than half the store, leaving the rest for the host application. An
+   infinite cap disables the proactive check, leaving only reactive
+   quota-error eviction.
    */
   const capChars = detectLocalStorageQuotaChars() / 2;
 
   /**
-   * Builds this run's key for a batch slot.
-   *
-   * @param index - Zero-based batch slot within this run.
-   *
-   * @returns Run-scoped namespaced key.
+   Builds this run's key for a batch slot.
+   
+   @param index - Zero-based batch slot within this run.
+   
+   @returns Run-scoped namespaced key.
    */
   function ownKey(index: number,): string {
     return buildLogKey({
@@ -143,32 +143,32 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
   }
 
   /**
-   * Scans localStorage once for strictly-parsed entries left by other runs,
-   * sorts them oldest-first for eviction, and adds their lengths to the
-   * footprint tally. Entries another tab writes after this scan are invisible
-   * to the tally; the reactive quota loop covers that staleness.
+   Scans localStorage once for strictly-parsed entries left by other runs,
+   sorts them oldest-first for eviction, and adds their lengths to the
+   footprint tally. Entries another tab writes after this scan are invisible
+   to the tally; the reactive quota loop covers that staleness.
    */
   function adoptPriorEntries(): void {
     /**
-     * Entry count at scan time; enumeration is by index because `Storage`
-     * exposes no iterator.
+     Entry count at scan time; enumeration is by index because `Storage`
+     exposes no iterator.
      */
     const total = globalThis.localStorage
       .length;
     /**
-     * Strictly-parsed foreign-run entries found by the scan, unsorted.
+     Strictly-parsed foreign-run entries found by the scan, unsorted.
      */
     const found: PriorEntry[] = [];
     for (let slot = 0; slot < total; slot++) {
       /**
-       * Key at this enumeration slot; `null` past the end under concurrent removal.
+       Key at this enumeration slot; `null` past the end under concurrent removal.
        */
       const key = globalThis.localStorage
         .key(slot,);
       if (key === null)
         continue;
       /**
-       * Parsed run identity, absent for any key the engine must not touch.
+       Parsed run identity, absent for any key the engine must not touch.
        */
       const { parsed, } = parseLogKey(key,);
       if (parsed === undefined)
@@ -176,7 +176,7 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
       if ((parsed.stamp === runIdentity.stamp) && (parsed.nonce === runIdentity.nonce))
         continue;
       /**
-       * Stored batch, read so its length enters the footprint tally.
+       Stored batch, read so its length enters the footprint tally.
        */
       const value = globalThis.localStorage
         .getItem(key,);
@@ -208,14 +208,14 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
   }
 
   /**
-   * Reports whether anything remains this engine may evict: an adopted
-   * prior-run entry past the cursor, or one of this run's own entries.
-   *
-   * @returns Whether an eviction call would reclaim something.
+   Reports whether anything remains this engine may evict: an adopted
+   prior-run entry past the cursor, or one of this run's own entries.
+   
+   @returns Whether an eviction call would reclaim something.
    */
   function hasEvictable(): boolean {
     /**
-     * Count of adopted prior-run entries; those before the cursor are gone.
+     Count of adopted prior-run entries; those before the cursor are gone.
      */
     const priorCount = prior.entries
       .length;
@@ -224,17 +224,17 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
   }
 
   /**
-   * Removes the oldest not-yet-evicted adopted prior-run entry, if one
-   * remains. Its length leaves the tally from the adoption snapshot: prior
-   * keys are never rewritten (counters only advance), so a re-read could only
-   * observe the same value or a concurrent removal, and in both cases the
-   * snapshot is what the tally counted.
-   *
-   * @returns Whether a prior-run entry was evicted.
+   Removes the oldest not-yet-evicted adopted prior-run entry, if one
+   remains. Its length leaves the tally from the adoption snapshot: prior
+   keys are never rewritten (counters only advance), so a re-read could only
+   observe the same value or a concurrent removal, and in both cases the
+   snapshot is what the tally counted.
+   
+   @returns Whether a prior-run entry was evicted.
    */
   function evictOldestPrior(): boolean {
     /**
-     * Oldest remaining adopted entry, or `undefined` when all are consumed.
+     Oldest remaining adopted entry, or `undefined` when all are consumed.
      */
     const entry = prior.entries[prior.cursor];
     if (entry === undefined)
@@ -250,18 +250,18 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
   }
 
   /**
-   * Removes this run's oldest still-present entry, advancing the watermark
-   * and subtracting the reclaimed entry's code units from the running
-   * footprint. Reading the value back before removal keeps `usedChars` honest
-   * even if the entry drifted from what was written.
+   Removes this run's oldest still-present entry, advancing the watermark
+   and subtracting the reclaimed entry's code units from the running
+   footprint. Reading the value back before removal keeps `usedChars` honest
+   even if the entry drifted from what was written.
    */
   function evictOldestOwn(): void {
     /**
-     * Key of the oldest owned entry, removed to reclaim its slot and its space.
+     Key of the oldest owned entry, removed to reclaim its slot and its space.
      */
     const key = ownKey(state.oldestIndex,);
     /**
-     * Value being evicted, read back so its length can leave the footprint tally.
+     Value being evicted, read back so its length can leave the footprint tally.
      */
     const evicted = globalThis.localStorage
       .getItem(key,);
@@ -276,9 +276,9 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
   }
 
   /**
-   * Evicts the single oldest thing the engine still owns: adopted prior-run
-   * entries first (they predate everything this run wrote), then this run's
-   * own oldest. Callers guard with {@link hasEvictable}.
+   Evicts the single oldest thing the engine still owns: adopted prior-run
+   entries first (they predate everything this run wrote), then this run's
+   own oldest. Callers guard with {@link hasEvictable}.
    */
   function evictOldest(): void {
     if (evictOldestPrior())
@@ -288,21 +288,21 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
   }
 
   /**
-   * Persists one serialized batch to localStorage under this run's next
-   * counter-incremented key.
-   *
-   * The first call adopts prior-run entries into the footprint tally. Each
-   * call then proactively evicts oldest-first (prior runs before this run's
-   * own) until the accounted footprint fits under half the runtime's
-   * localStorage quota, writes, and on a quota overflow (the store being
-   * fuller than the tally accounts for, such as another live tab writing
-   * concurrently) evicts and retries until the batch fits or nothing owned
-   * remains to drop. A batch larger than the whole quota therefore evicts
-   * everything owned, then reports and gives up rather than looping forever.
-   * A non-quota failure is reported without any eviction. The sink only
-   * persists after verification, so no availability guard is needed here.
-   *
-   * @param batch - Serialized JSONL batch to persist.
+   Persists one serialized batch to localStorage under this run's next
+   counter-incremented key.
+   
+   The first call adopts prior-run entries into the footprint tally. Each
+   call then proactively evicts oldest-first (prior runs before this run's
+   own) until the accounted footprint fits under half the runtime's
+   localStorage quota, writes, and on a quota overflow (the store being
+   fuller than the tally accounts for, such as another live tab writing
+   concurrently) evicts and retries until the batch fits or nothing owned
+   remains to drop. A batch larger than the whole quota therefore evicts
+   everything owned, then reports and gives up rather than looping forever.
+   A non-quota failure is reported without any eviction. The sink only
+   persists after verification, so no availability guard is needed here.
+   
+   @param batch - Serialized JSONL batch to persist.
    */
   function persist(batch: string,): void {
     if (!state.adoptedPrior) {
@@ -311,7 +311,7 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
     }
 
     /**
-     * Code units this batch adds; the key's length is left out as a negligible near-constant.
+     Code units this batch adds; the key's length is left out as a negligible near-constant.
      */
     const batchChars = batch.length;
 
@@ -323,8 +323,8 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
     }
 
     /**
-     * Write-attempt bound: one try for each entry still available to evict,
-     * followed by one final try after every owned entry has been removed.
+     Write-attempt bound: one try for each entry still available to evict,
+     followed by one final try after every owned entry has been removed.
      */
     const maxWriteAttempts = (prior
       .entries

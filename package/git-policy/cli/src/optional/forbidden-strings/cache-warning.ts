@@ -2,13 +2,13 @@
 import { ForbiddenStringsPluginError, } from './errors.ts';
 
 /**
- * Exact schema-version-1 cache-warning JSON lines emitted by scanner.
- *
- * A byte-exact allow-list rejects duplicate keys,
- * unknown fields,
- * alternate reason/recovery pairings,
- * whitespace variants,
- * and arbitrary JSON while keeping every accepted line valid compact JSON.
+ Exact schema-version-1 cache-warning JSON lines emitted by scanner.
+ 
+ A byte-exact allow-list rejects duplicate keys,
+ unknown fields,
+ alternate reason/recovery pairings,
+ whitespace variants,
+ and arbitrary JSON while keeping every accepted line valid compact JSON.
  */
 const VALID_CACHE_WARNING_LINES: ReadonlySet<string> = new Set([
   '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}',
@@ -21,33 +21,33 @@ const VALID_CACHE_WARNING_LINES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Throws fail-closed malformed-output diagnostic.
- *
- * @param line - Complete scanner stderr line.
- *
- * @throws Always, because unknown scanner output cannot be ignored.
+ Throws fail-closed malformed-output diagnostic.
+ 
+ @param line - Complete scanner stderr line.
+ 
+ @throws Always, because unknown scanner output cannot be ignored.
  */
 function malformedWarning(line: string,): never {
   throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
 }
 
 /**
- * Parses one complete JSON cache warning or reports that line is plain finding syntax.
- *
- * A scanner finding always ends in ` rule=<token>`, so only a line beginning and
- * ending with JSON object delimiters enters the allow-list. Every complete JSON
- * object must be one exact canonical warning line or fail closed.
- *
- * @param line - Complete nonempty scanner stderr line.
- *
- * @returns Whether line is valid cache warning and should not become a finding.
- *
- * @throws {@link ForbiddenStringsPluginError} for malformed or unknown JSON records.
- *
- * @example
- * ```ts
- * parseCacheWarning('{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}');
- * ```
+ Parses one complete JSON cache warning or reports that line is plain finding syntax.
+ 
+ A scanner finding always ends in ` rule=<token>`, so only a line beginning and
+ ending with JSON object delimiters enters the allow-list. Every complete JSON
+ object must be one exact canonical warning line or fail closed.
+ 
+ @param line - Complete nonempty scanner stderr line.
+ 
+ @returns Whether line is valid cache warning and should not become a finding.
+ 
+ @throws {@link ForbiddenStringsPluginError} for malformed or unknown JSON records.
+ 
+ @example
+ ```ts
+ parseCacheWarning('{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}');
+ ```
  */
 export function parseCacheWarning(line: string,): boolean {
   if ((!line.startsWith('{',)) || (!line.endsWith('}',)))

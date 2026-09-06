@@ -1,30 +1,30 @@
 /**
- * Unified staleness detection for task-depends.
- *
- * Both `-s` (source) and `-o` (output) items resolve to timestamps.
- * Items can be file globs or `sh:` prefixed shell commands.
- *
- * Shell commands must output a parseable timestamp on stdout:
- * unix epoch (seconds or ms), ISO 8601, `Infinity`, or `-Infinity`.
- * Non-zero exit codes and unparseable output are treated as errors,
- * preventing silent misinterpretation of unexpected command failures.
- *
- * File globs resolve to file modification times.
- * Empty globs contribute no timestamps (empty array).
- *
- * Timestamps are aggregated per-side using configurable strategies
- * (`newest`/`oldest`), then compared: `sourceTime > outputTime` → stale.
- *
- * @example
- * ```ts
- * const stale = await checkStaleness({
- *   sources: ['src/*.ts'],
- *   outputs: ['sh:podman image exists img && echo Infinity || echo -Infinity'],
- *   verbose: false,
- *   sourceTimeStrategy: 'newest',
- *   outputTimeStrategy: 'newest',
- * });
- * ```
+ Unified staleness detection for task-depends.
+ 
+ Both `-s` (source) and `-o` (output) items resolve to timestamps.
+ Items can be file globs or `sh:` prefixed shell commands.
+ 
+ Shell commands must output a parseable timestamp on stdout:
+ unix epoch (seconds or ms), ISO 8601, `Infinity`, or `-Infinity`.
+ Non-zero exit codes and unparseable output are treated as errors,
+ preventing silent misinterpretation of unexpected command failures.
+ 
+ File globs resolve to file modification times.
+ Empty globs contribute no timestamps (empty array).
+ 
+ Timestamps are aggregated per-side using configurable strategies
+ (`newest`/`oldest`), then compared: `sourceTime > outputTime` → stale.
+ 
+ @example
+ ```ts
+ const stale = await checkStaleness({
+   sources: ['src/*.ts'],
+   outputs: ['sh:podman image exists img && echo Infinity || echo -Infinity'],
+   verbose: false,
+   sourceTimeStrategy: 'newest',
+   outputTimeStrategy: 'newest',
+ });
+ ```
  */
 
 import { resolveItems, } from './depends-resolve.ts';
@@ -39,17 +39,17 @@ export type {
 //region Staleness check
 
 /**
- * Formats a timestamp for verbose output.
- *
- * @param t - Timestamp in milliseconds (possibly `Infinity` or `-Infinity`)
- *
- * @returns ISO 8601 string for finite values, `"Infinity"` or `"-Infinity"` for sentinels
- *
- * @example
- * ```ts
- * formatTimestamp(1710000000000) // '2024-03-09T...'
- * formatTimestamp(Infinity) // 'Infinity'
- * ```
+ Formats a timestamp for verbose output.
+ 
+ @param t - Timestamp in milliseconds (possibly `Infinity` or `-Infinity`)
+ 
+ @returns ISO 8601 string for finite values, `"Infinity"` or `"-Infinity"` for sentinels
+ 
+ @example
+ ```ts
+ formatTimestamp(1710000000000) // '2024-03-09T...'
+ formatTimestamp(Infinity) // 'Infinity'
+ ```
  */
 function formatTimestamp(t: number,): string {
   if (!Number.isFinite(t,))
@@ -58,43 +58,43 @@ function formatTimestamp(t: number,): string {
 }
 
 /**
- * Checks whether sources are stale relative to outputs.
- *
- * Both sources and outputs accept file globs and `sh:` shell commands.
- * All items resolve to timestamps via {@link resolveItems} (including `Infinity` and `-Infinity`).
- *
- * Timestamps are aggregated per-side using the given strategies via {@link aggregateTimestamps},
- * then compared: `sourceTime > outputTime` → stale.
- *
- * When no sources are provided (or all source globs match nothing),
- * source time resolves to `-Infinity` ("no information"), making the
- * comparison always false (fresh). To trigger rebuilds without file
- * sources, use an explicit `sh:` source like `-s "sh:echo Infinity"`.
- *
- * @param sources - File globs or `sh:` commands for source timestamps
- *
- * @param outputs - File globs or `sh:` commands for output timestamps
- *
- * @param verbose - Whether to log diagnostic messages
- *
- * @param sourceTimeStrategy - Strategy for aggregating source timestamps
- *
- * @param outputTimeStrategy - Strategy for aggregating output timestamps
- *
- * @returns `true` when stale (command needs to run)
- *
- * @throws When a `sh:` command fails or returns unparseable output
- *
- * @example
- * ```ts
- * const stale = await checkStaleness({
- *   sources: ['src/*.ts'],
- *   outputs: ['dist/*.js'],
- *   verbose: false,
- *   sourceTimeStrategy: 'newest',
- *   outputTimeStrategy: 'newest',
- * });
- * ```
+ Checks whether sources are stale relative to outputs.
+ 
+ Both sources and outputs accept file globs and `sh:` shell commands.
+ All items resolve to timestamps via {@link resolveItems} (including `Infinity` and `-Infinity`).
+ 
+ Timestamps are aggregated per-side using the given strategies via {@link aggregateTimestamps},
+ then compared: `sourceTime > outputTime` → stale.
+ 
+ When no sources are provided (or all source globs match nothing),
+ source time resolves to `-Infinity` ("no information"), making the
+ comparison always false (fresh). To trigger rebuilds without file
+ sources, use an explicit `sh:` source like `-s "sh:echo Infinity"`.
+ 
+ @param sources - File globs or `sh:` commands for source timestamps
+ 
+ @param outputs - File globs or `sh:` commands for output timestamps
+ 
+ @param verbose - Whether to log diagnostic messages
+ 
+ @param sourceTimeStrategy - Strategy for aggregating source timestamps
+ 
+ @param outputTimeStrategy - Strategy for aggregating output timestamps
+ 
+ @returns `true` when stale (command needs to run)
+ 
+ @throws When a `sh:` command fails or returns unparseable output
+ 
+ @example
+ ```ts
+ const stale = await checkStaleness({
+   sources: ['src/*.ts'],
+   outputs: ['dist/*.js'],
+   verbose: false,
+   sourceTimeStrategy: 'newest',
+   outputTimeStrategy: 'newest',
+ });
+ ```
  */
 export async function checkStaleness(
   {
@@ -112,7 +112,7 @@ export async function checkStaleness(
   },
 ): Promise<boolean> {
   /**
-   * Per-source timestamps resolved from globs, files, or shell commands; aggregated below into one source-side time.
+   Per-source timestamps resolved from globs, files, or shell commands; aggregated below into one source-side time.
    */
   const sourceTimestamps = await resolveItems({
     items: sources,
@@ -120,7 +120,7 @@ export async function checkStaleness(
     verbose,
   },);
   /**
-   * Per-output timestamps resolved from globs, files, or shell commands; aggregated below into one output-side time.
+   Per-output timestamps resolved from globs, files, or shell commands; aggregated below into one output-side time.
    */
   const outputTimestamps = await resolveItems({
     items: outputs,
@@ -129,7 +129,7 @@ export async function checkStaleness(
   },);
 
   /**
-   * Single source-side timestamp produced by the configured strategy (max, min, mean, median, ...).
+   Single source-side timestamp produced by the configured strategy (max, min, mean, median, ...).
    */
   const sourceTime = await aggregateTimestamps({
     timestamps: sourceTimestamps,
@@ -137,7 +137,7 @@ export async function checkStaleness(
     verbose,
   },);
   /**
-   * Single output-side timestamp produced by the configured strategy; compared against `sourceTime` to decide staleness.
+   Single output-side timestamp produced by the configured strategy; compared against `sourceTime` to decide staleness.
    */
   const outputTime = await aggregateTimestamps({
     timestamps: outputTimestamps,
@@ -146,7 +146,7 @@ export async function checkStaleness(
   },);
 
   /**
-   * True when the source side is newer than the output side, meaning the build is stale and must rerun.
+   True when the source side is newer than the output side, meaning the build is stale and must rerun.
    */
   const stale = sourceTime > outputTime;
 

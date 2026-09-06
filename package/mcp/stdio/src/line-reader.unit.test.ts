@@ -9,10 +9,10 @@ import { readLines, } from '@monochromatic-dev/mcp-stdio';
 //region helpers: create ReadableStream from string content
 
 /**
- * Creates a ReadableStream from a string, encoding it as a single UTF-8 chunk.
- *
- * @param content - Raw string to stream.
- * @returns ReadableStream yielding a single Uint8Array chunk.
+ Creates a ReadableStream from a string, encoding it as a single UTF-8 chunk.
+ 
+ @param content - Raw string to stream.
+ @returns ReadableStream yielding a single Uint8Array chunk.
  */
 function streamFromString(content: string,): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -25,11 +25,11 @@ function streamFromString(content: string,): ReadableStream<Uint8Array> {
 }
 
 /**
- * Creates a ReadableStream from multiple string chunks, each encoded separately.
- * Simulates data arriving in pieces across chunk boundaries.
- *
- * @param chunks - Strings to enqueue as separate chunks.
- * @returns ReadableStream yielding one Uint8Array per chunk.
+ Creates a ReadableStream from multiple string chunks, each encoded separately.
+ Simulates data arriving in pieces across chunk boundaries.
+ 
+ @param chunks - Strings to enqueue as separate chunks.
+ @returns ReadableStream yielding one Uint8Array per chunk.
  */
 function streamFromChunks(chunks: readonly string[],): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -43,10 +43,10 @@ function streamFromChunks(chunks: readonly string[],): ReadableStream<Uint8Array
 }
 
 /**
- * Collects all lines from a readLines async generator into an array.
- *
- * @param stream - Input byte stream.
- * @returns Array of yielded lines.
+ Collects all lines from a readLines async generator into an array.
+ 
+ @param stream - Input byte stream.
+ @returns Array of yielded lines.
  */
 async function collectLines(
   stream: ReadableStream<Uint8Array>,

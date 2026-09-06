@@ -1,11 +1,11 @@
 /**
- * Top-level serializer for ZIP archives.
- *
- * Computes per-entry offsets, writes local file headers (delegated to
- * `headers.ts`), the central directory (delegated), and the
- * end-of-central-directory record.
- *
- * @module
+ Top-level serializer for ZIP archives.
+ 
+ Computes per-entry offsets, writes local file headers (delegated to
+ `headers.ts`), the central directory (delegated), and the
+ end-of-central-directory record.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -32,14 +32,14 @@ import type {
 export type { ZipEntry, } from './types.ts';
 
 /**
- * Compute byte offsets for each entry's local file header and the start of
- * the central directory.
- *
- * @param entries - Iterable of entries in the order they appear in the archive
- *
- * @returns Positioned entries plus computed offsets and totals
- *
- * @throws When the archive would exceed legacy ZIP size limits
+ Compute byte offsets for each entry's local file header and the start of
+ the central directory.
+ 
+ @param entries - Iterable of entries in the order they appear in the archive
+ 
+ @returns Positioned entries plus computed offsets and totals
+ 
+ @throws When the archive would exceed legacy ZIP size limits
  */
 function computeOffsets(
   entries: Iterable<ZipEntry>,
@@ -50,11 +50,11 @@ function computeOffsets(
   totalSize: number;
 } {
   /**
-   * Accumulates entries paired with their computed local file header offsets.
+   Accumulates entries paired with their computed local file header offsets.
    */
   const positioned: Positioned[] = [];
   /**
-   * Running byte position marking the next local file header.
+   Running byte position marking the next local file header.
    */
   let cursor = 0;
   for (const entry of entries) {
@@ -71,11 +71,11 @@ function computeOffsets(
       .length;
   }
   /**
-   * Cursor frozen at the point the central directory begins.
+   Cursor frozen at the point the central directory begins.
    */
   const cdStart = cursor;
   /**
-   * Running total of central directory header bytes.
+   Running total of central directory header bytes.
    */
   let cdSize = 0;
   for (const { entry, } of positioned)
@@ -84,7 +84,7 @@ function computeOffsets(
       .nameBytes
       .length;
   /**
-   * Final archive size used to allocate the output buffer.
+   Final archive size used to allocate the output buffer.
    */
   const totalSize = cdStart + cdSize
     + EOCD_FIXED_SIZE;
@@ -95,7 +95,7 @@ function computeOffsets(
     );
   }
   /**
-   * Aggregated computation result; named binding so the function matches the helper-shape allowlist.
+   Aggregated computation result; named binding so the function matches the helper-shape allowlist.
    */
   const result = {
     positioned,
@@ -107,21 +107,21 @@ function computeOffsets(
 }
 
 /**
- * Write the end of central directory record, terminating the archive.
- *
- * @param view - DataView over the archive buffer
- *
- * @param entryCount - Number of entries in the central directory
- *
- * @param cdSize - Total size of the central directory in bytes
- *
- * @param cdStart - Offset of the start of the central directory
- *
- * @param startOffset - Cursor where the EOCD record begins
- *
- * @returns Cursor position after the last write
- *
- * @mutates view - `view.setUint16` and `view.setUint32` write end-record fields
+ Write the end of central directory record, terminating the archive.
+ 
+ @param view - DataView over the archive buffer
+ 
+ @param entryCount - Number of entries in the central directory
+ 
+ @param cdSize - Total size of the central directory in bytes
+ 
+ @param cdStart - Offset of the start of the central directory
+ 
+ @param startOffset - Cursor where the EOCD record begins
+ 
+ @returns Cursor position after the last write
+ 
+ @mutates view - `view.setUint16` and `view.setUint32` write end-record fields
  */
 function writeEndOfCentralDirectory(
   {
@@ -139,7 +139,7 @@ function writeEndOfCentralDirectory(
   }>>,
 ): number {
   /**
-   * Local cursor tracking each successive little-endian write.
+   Local cursor tracking each successive little-endian write.
    */
   let offset = startOffset;
   view.setUint32(
@@ -194,26 +194,26 @@ function writeEndOfCentralDirectory(
 }
 
 /**
- * Serialize an ordered set of entries into a STORE-only ZIP byte sequence.
- *
- * Layout: local file headers and data, then central directory headers,
- * then end-of-central-directory record. Computed in two passes: first the
- * total length and per-entry offsets, then the actual write into a
- * pre-allocated buffer.
- *
- * @param entries - Map of path to entry, in insertion order
- *
- * @returns Newly allocated `Uint8Array` containing the archive
- *
- * @throws When the archive would exceed legacy ZIP limits (≥ 65 535
- *   entries or ≥ 4 GiB total) since Zip64 is not implemented
- *
- * @example
- * ```ts
- * const entries = new Map<string, ZipEntry>();
- * entries.set('hello.txt', { nameBytes, content, crc, modified, },);
- * const bytes = serializeEntries(entries,);
- * ```
+ Serialize an ordered set of entries into a STORE-only ZIP byte sequence.
+ 
+ Layout: local file headers and data, then central directory headers,
+ then end-of-central-directory record. Computed in two passes: first the
+ total length and per-entry offsets, then the actual write into a
+ pre-allocated buffer.
+ 
+ @param entries - Map of path to entry, in insertion order
+ 
+ @returns Newly allocated `Uint8Array` containing the archive
+ 
+ @throws When the archive would exceed legacy ZIP limits (≥ 65 535
+   entries or ≥ 4 GiB total) since Zip64 is not implemented
+ 
+ @example
+ ```ts
+ const entries = new Map<string, ZipEntry>();
+ entries.set('hello.txt', { nameBytes, content, crc, modified, },);
+ const bytes = serializeEntries(entries,);
+ ```
  */
 export function serializeEntries(entries: ReadonlyMap<string, ZipEntry>,): Uint8Array {
   if (entries.size
@@ -224,7 +224,7 @@ export function serializeEntries(entries: ReadonlyMap<string, ZipEntry>,): Uint8
   }
 
   /**
-   * Offsets and totals derived in one pass over the entries.
+   Offsets and totals derived in one pass over the entries.
    */
   const {
     positioned,
@@ -234,16 +234,16 @@ export function serializeEntries(entries: ReadonlyMap<string, ZipEntry>,): Uint8
   } = computeOffsets(entries.values(),);
 
   /**
-   * Output byte buffer sized to the precomputed total.
+   Output byte buffer sized to the precomputed total.
    */
   const buffer = new Uint8Array(totalSize,);
   /**
-   * Little-endian view over the output buffer for numeric writes.
+   Little-endian view over the output buffer for numeric writes.
    */
   const view = new DataView(buffer.buffer,);
 
   /**
-   * Cursor after the local file headers; central directory begins here.
+   Cursor after the local file headers; central directory begins here.
    */
   const lfhEnd = writeLocalFileHeaders({
     view,
@@ -252,7 +252,7 @@ export function serializeEntries(entries: ReadonlyMap<string, ZipEntry>,): Uint8
     startOffset: 0,
   },);
   /**
-   * Cursor after the central directory; EOCD record begins here.
+   Cursor after the central directory; EOCD record begins here.
    */
   const cdEnd = writeCentralDirectory({
     view,
@@ -261,7 +261,7 @@ export function serializeEntries(entries: ReadonlyMap<string, ZipEntry>,): Uint8
     startOffset: lfhEnd,
   },);
   /**
-   * Final cursor used to assert the write neither overshot nor undershot the buffer.
+   Final cursor used to assert the write neither overshot nor undershot the buffer.
    */
   const eocdEnd = writeEndOfCentralDirectory({
     view,

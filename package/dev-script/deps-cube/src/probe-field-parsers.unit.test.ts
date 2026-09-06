@@ -1,19 +1,19 @@
 /**
- * Equivalence tests for the two flat string scanners in
- * `probe-field-parsers.ts`: `scanRepoEnd` (repo-span walk inside
- * `parseGithubUrl`, reached through `parseRepository`) and `scanDigits`
- * (digit-run walk inside `looksLikePinnedSemver`, reached through
- * `resolveVersion`).
- *
- * Both were recursive cursor scans (`return scan(idx + 1)`) that grow stack
- * depth with input length and overflow under V8, which lacks tail-call
- * elimination. These cases capture the pre-rewrite behavior so the linear
- * single-pass replacements stay behavior-identical: each delimiter, end of
- * input, `.git` stripping, an empty span from a trailing separator, partial
- * and prefix-only semver shapes, and a long repeated run that exercises the
- * scan at a depth that would overflow a recursive walker on V8.
- *
- * @module
+ Equivalence tests for the two flat string scanners in
+ `probe-field-parsers.ts`: `scanRepoEnd` (repo-span walk inside
+ `parseGithubUrl`, reached through `parseRepository`) and `scanDigits`
+ (digit-run walk inside `looksLikePinnedSemver`, reached through
+ `resolveVersion`).
+ 
+ Both were recursive cursor scans (`return scan(idx + 1)`) that grow stack
+ depth with input length and overflow under V8, which lacks tail-call
+ elimination. These cases capture the pre-rewrite behavior so the linear
+ single-pass replacements stay behavior-identical: each delimiter, end of
+ input, `.git` stripping, an empty span from a trailing separator, partial
+ and prefix-only semver shapes, and a long repeated run that exercises the
+ scan at a depth that would overflow a recursive walker on V8.
+ 
+ @module
  */
 
 import {
@@ -38,26 +38,26 @@ import type {
 const LONG_RUN = 100_000;
 
 /**
- * Fallback `dist-tags.latest` returned by {@link pinnedOrLatest} when the range is not a pinned semver; distinct from any pinned range so the branch is observable.
+ Fallback `dist-tags.latest` returned by {@link pinnedOrLatest} when the range is not a pinned semver; distinct from any pinned range so the branch is observable.
  */
 const LATEST_SENTINEL = 'LATEST-FALLBACK';
 
 /**
- * Resolves `range` against a registry stub whose only concrete version key
- * is `range` itself. `resolveVersion` returns `range` when
- * `looksLikePinnedSemver(range)` holds (the `scanDigits`-driven branch) and
- * otherwise falls back to `dist-tags.latest`, so the return value reveals the
- * scanner's pinned/not-pinned verdict without exporting the private helper.
- *
- * @param range - Candidate range fed to the pinned-semver scan.
- *
- * @returns `range` when scanned as a pinned `major.minor.patch`, else {@link LATEST_SENTINEL}.
- *
- * @example
- * ```ts
- * pinnedOrLatest('1.2.3'); // '1.2.3'
- * pinnedOrLatest('^1.0.0'); // 'LATEST-FALLBACK'
- * ```
+ Resolves `range` against a registry stub whose only concrete version key
+ is `range` itself. `resolveVersion` returns `range` when
+ `looksLikePinnedSemver(range)` holds (the `scanDigits`-driven branch) and
+ otherwise falls back to `dist-tags.latest`, so the return value reveals the
+ scanner's pinned/not-pinned verdict without exporting the private helper.
+ 
+ @param range - Candidate range fed to the pinned-semver scan.
+ 
+ @returns `range` when scanned as a pinned `major.minor.patch`, else {@link LATEST_SENTINEL}.
+ 
+ @example
+ ```ts
+ pinnedOrLatest('1.2.3'); // '1.2.3'
+ pinnedOrLatest('^1.0.0'); // 'LATEST-FALLBACK'
+ ```
  */
 function pinnedOrLatest(range: string,): string | typeof VERSION_UNRESOLVED {
   /** Registry stub whose sole version key is `range`; `latest` differs so the non-pinned branch returns an observably different value. */
@@ -72,19 +72,19 @@ function pinnedOrLatest(range: string,): string | typeof VERSION_UNRESOLVED {
 }
 
 /**
- * Parses `raw` and narrows away {@link REPO_UNPARSEABLE} so positive parser
- * assertions can read `.owner`/`.repo`/`.host` directly. Throws when the field
- * does not parse, surfacing a fixture mistake instead of a silent `undefined`.
- *
- * @param raw - Raw `repository` field forwarded to {@link parseRepository}.
- *
- * @returns Parsed repository info.
- *
- * @throws When `raw` does not parse to a repository.
+ Parses `raw` and narrows away {@link REPO_UNPARSEABLE} so positive parser
+ assertions can read `.owner`/`.repo`/`.host` directly. Throws when the field
+ does not parse, surfacing a fixture mistake instead of a silent `undefined`.
+ 
+ @param raw - Raw `repository` field forwarded to {@link parseRepository}.
+ 
+ @returns Parsed repository info.
+ 
+ @throws When `raw` does not parse to a repository.
  */
 function parsedRepo(raw: NpmVersion['repository'],): RepositoryInfo {
   /**
-   * Parse result; {@link REPO_UNPARSEABLE} here means the test fed an unparseable fixture.
+   Parse result; {@link REPO_UNPARSEABLE} here means the test fed an unparseable fixture.
    */
   const info = parseRepository(raw,);
   if (info === REPO_UNPARSEABLE)

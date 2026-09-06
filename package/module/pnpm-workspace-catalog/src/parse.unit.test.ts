@@ -1,7 +1,7 @@
 /**
- * Unit tests for the built pnpm workspace catalog parser.
- *
- * @module
+ Unit tests for the built pnpm workspace catalog parser.
+ 
+ @module
  */
 
 import {
@@ -24,7 +24,7 @@ await describe({
       name: 'parses single-quoted default entries and comments',
       fn: async () => {
         /**
-         * Workspace text using the repository's single-quoted catalog style.
+         Workspace text using the repository's single-quoted catalog style.
          */
         const content = [
           'catalog:',
@@ -33,7 +33,7 @@ await describe({
           "  '@types/node': '>=24.0.0'",
         ].join('\n',);
         /**
-         * Parsed default map used for the independent expected-value assertions.
+         Parsed default map used for the independent expected-value assertions.
          */
         const catalog = parseCatalogFromYaml(content,).defaultCatalog;
         expect(catalog,).toEqual({
@@ -47,7 +47,7 @@ await describe({
       name: 'parses double-quoted keys and values',
       fn: async () => {
         /**
-         * Workspace text using double-quoted YAML scalars.
+         Workspace text using double-quoted YAML scalars.
          */
         const content = [
           'catalog:',
@@ -63,7 +63,7 @@ await describe({
       name: 'parses default and named catalogs without merging them',
       fn: async () => {
         /**
-         * Workspace text with the same package key in separate catalog blocks.
+         Workspace text with the same package key in separate catalog blocks.
          */
         const content = [
           'catalog:',
@@ -73,7 +73,7 @@ await describe({
           '    react: ^18.0.0',
         ].join('\n',);
         /**
-         * Parsed document containing separate default and named maps.
+         Parsed document containing separate default and named maps.
          */
         const document = parseCatalogFromYaml(content,);
         expect(document.defaultCatalog.react,).toBe('^19.0.0',);
@@ -103,7 +103,7 @@ await describe({
       name: 'preserves npm alias values without decoding them',
       fn: async () => {
         /**
-         * Alias value whose target and selector must remain one raw scalar.
+         Alias value whose target and selector must remain one raw scalar.
          */
         const content = [
           'catalog:',
@@ -118,14 +118,14 @@ await describe({
       name: 'returns empty safe maps when no catalog exists',
       fn: async () => {
         /**
-         * Workspace text containing only a package glob.
+         Workspace text containing only a package glob.
          */
         const content = [
           'packages:',
           "  - 'package/*'",
         ].join('\n',);
         /**
-         * Empty parsed document whose maps are still safe containers.
+         Empty parsed document whose maps are still safe containers.
          */
         const document = parseCatalogFromYaml(content,);
         expect(document.defaultCatalog,).toEqual({});
@@ -143,7 +143,7 @@ await describe({
       name: 'skips invalid keys while preserving valid siblings',
       fn: async () => {
         /**
-         * Workspace text containing a crafted key and a valid package name.
+         Workspace text containing a crafted key and a valid package name.
          */
         const content = [
           'catalog:',
@@ -151,7 +151,7 @@ await describe({
           "  foo: '>=1.2.3'",
         ].join('\n',);
         /**
-         * Parsed map after invalid-key filtering.
+         Parsed map after invalid-key filtering.
          */
         const catalog = parseCatalogFromYaml(content,).defaultCatalog;
         expect(catalog.foo,).toBe('>=1.2.3',);
@@ -165,7 +165,7 @@ await describe({
       name: 'keeps name-shaped reserved words inert in every catalog map',
       fn: async () => {
         /**
-         * Workspace text using a valid npm-shaped key that is also a prototype name.
+         Workspace text using a valid npm-shaped key that is also a prototype name.
          */
         const content = [
           'catalog:',
@@ -175,7 +175,7 @@ await describe({
           "    prototype: '>=1.0.0'",
         ].join('\n',);
         /**
-         * Parsed document with null-prototype maps at both levels.
+         Parsed document with null-prototype maps at both levels.
          */
         const document = parseCatalogFromYaml(content,);
         expect(Object.getPrototypeOf(document.defaultCatalog,),).toBeNull();
@@ -190,7 +190,7 @@ await describe({
       name: 'keeps reserved named-catalog keys in safe maps',
       fn: async () => {
         /**
-         * Named catalog whose name resembles an inherited object property.
+         Named catalog whose name resembles an inherited object property.
          */
         const content = [
           'catalogs:',
@@ -198,7 +198,7 @@ await describe({
           "    foo: '>=1.2.3'",
         ].join('\n',);
         /**
-         * Parsed named catalog map with an own property for the reserved name.
+         Parsed named catalog map with an own property for the reserved name.
          */
         const document = parseCatalogFromYaml(content,);
         expect(Object.hasOwn(document.namedCatalogs, '__proto__',),).toBe(true,);
@@ -216,14 +216,14 @@ await describe({
       name: 'treats malformed catalog blocks as empty safe maps',
       fn: async () => {
         /**
-         * Workspace text using sequences where catalog mappings are required.
+         Workspace text using sequences where catalog mappings are required.
          */
         const content = [
           'catalog: []',
           'catalogs: []',
         ].join('\n',);
         /**
-         * Parsed document after malformed optional blocks are ignored.
+         Parsed document after malformed optional blocks are ignored.
          */
         const document = parseCatalogFromYaml(content,);
         expect(document.defaultCatalog,).toEqual({});
@@ -235,7 +235,7 @@ await describe({
       name: 'skips non-string values without dropping string entries',
       fn: async () => {
         /**
-         * Workspace text mixing a scalar number with a valid string range.
+         Workspace text mixing a scalar number with a valid string range.
          */
         const content = [
           'catalog:',
@@ -243,7 +243,7 @@ await describe({
           "  valid: '>=1.2.3'",
         ].join('\n',);
         /**
-         * Parsed map containing only the usable string value.
+         Parsed map containing only the usable string value.
          */
         const catalog = parseCatalogFromYaml(content,).defaultCatalog;
         expect(catalog,).toEqual({ valid: '>=1.2.3', });

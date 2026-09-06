@@ -1,9 +1,9 @@
 /**
- * Property test proving that an arbitrary comment body (including `*\/`,
- * newlines, quotes, and control characters) always emits parseable JSONC that
- * reaches a canonical fixpoint. This is the STB guard for the comment emitter.
- *
- * @module
+ Property test proving that an arbitrary comment body (including `*\/`,
+ newlines, quotes, and control characters) always emits parseable JSONC that
+ reaches a canonical fixpoint. This is the STB guard for the comment emitter.
+ 
+ @module
  */
 
 import {

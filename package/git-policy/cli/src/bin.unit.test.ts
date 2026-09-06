@@ -66,15 +66,15 @@ type TempDirectory = {
 };
 
 /**
- * Creates disposable temporary directory for git repositories.
- *
- * @returns Temporary directory that removes itself when disposed.
- *
- * @example
- * ```ts
- * await using tempDirectory = await createTempDirectory();
- * console.log(tempDirectory.path);
- * ```
+ Creates disposable temporary directory for git repositories.
+ 
+ @returns Temporary directory that removes itself when disposed.
+ 
+ @example
+ ```ts
+ await using tempDirectory = await createTempDirectory();
+ console.log(tempDirectory.path);
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /** Absolute temporary directory path for one test case. */
@@ -98,16 +98,16 @@ async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
- * Runs real git binary, bypassing wrapper under test.
- *
- * @param options - Working directory and git argv.
- *
- * @returns Captured subprocess result.
- *
- * @example
- * ```ts
- * await runRealGit({ cwd: '/repo', args: ['status', '--short'] });
- * ```
+ Runs real git binary, bypassing wrapper under test.
+ 
+ @param options - Working directory and git argv.
+ 
+ @returns Captured subprocess result.
+ 
+ @example
+ ```ts
+ await runRealGit({ cwd: '/repo', args: ['status', '--short'] });
+ ```
  */
 async function runRealGit(options: RunGitOptions,): Promise<Result> {
   return nanoSpawn(
@@ -118,16 +118,16 @@ async function runRealGit(options: RunGitOptions,): Promise<Result> {
 }
 
 /**
- * Runs cli-git entry point through Node.
- *
- * @param options - Working directory and git argv.
- *
- * @returns Captured subprocess result.
- *
- * @example
- * ```ts
- * await runWrapper({ cwd: '/repo', args: ['status', '--short'] });
- * ```
+ Runs cli-git entry point through Node.
+ 
+ @param options - Working directory and git argv.
+ 
+ @returns Captured subprocess result.
+ 
+ @example
+ ```ts
+ await runWrapper({ cwd: '/repo', args: ['status', '--short'] });
+ ```
  */
 async function runWrapper(options: RunGitOptions,): Promise<Result> {
   return nanoSpawn(
@@ -144,25 +144,25 @@ async function runWrapper(options: RunGitOptions,): Promise<Result> {
 }
 
 /**
- * Sentinel returned by {@link catchWrapperError} when the wrapper unexpectedly
- * succeeded instead of failing. A real `Symbol` rather than `undefined` so the
- * "no error captured" case is a distinct value {@link requireSubprocessError}
- * rejects.
+ Sentinel returned by {@link catchWrapperError} when the wrapper unexpectedly
+ succeeded instead of failing. A real `Symbol` rather than `undefined` so the
+ "no error captured" case is a distinct value {@link requireSubprocessError}
+ rejects.
  */
 const WRAPPER_SUCCEEDED = Symbol('git wrapper command unexpectedly succeeded',);
 
 /**
- * Captures cli-git subprocess failure.
- *
- * @param options - Working directory and git argv.
- *
- * @returns Subprocess failure, or {@link WRAPPER_SUCCEEDED} when invocation succeeds.
- *
- * @example
- * ```ts
- * const error = await catchWrapperError({ cwd: '/repo', args: ['status'] });
- * expect(error).toBeInstanceOf(SubprocessError);
- * ```
+ Captures cli-git subprocess failure.
+ 
+ @param options - Working directory and git argv.
+ 
+ @returns Subprocess failure, or {@link WRAPPER_SUCCEEDED} when invocation succeeds.
+ 
+ @example
+ ```ts
+ const error = await catchWrapperError({ cwd: '/repo', args: ['status'] });
+ expect(error).toBeInstanceOf(SubprocessError);
+ ```
  */
 async function catchWrapperError(
   options: RunGitOptions,
@@ -179,19 +179,19 @@ async function catchWrapperError(
 }
 
 /**
- * Narrows captured subprocess error after expectation assertion.
- *
- * @param error - Subprocess error, or {@link WRAPPER_SUCCEEDED} from catch helper.
- *
- * @returns Subprocess error when present.
- *
- * @throws When subprocess unexpectedly succeeded.
- *
- * @example
- * ```ts
- * const error = requireSubprocessError(await catchWrapperError(options));
- * console.log(error.stderr);
- * ```
+ Narrows captured subprocess error after expectation assertion.
+ 
+ @param error - Subprocess error, or {@link WRAPPER_SUCCEEDED} from catch helper.
+ 
+ @returns Subprocess error when present.
+ 
+ @throws When subprocess unexpectedly succeeded.
+ 
+ @example
+ ```ts
+ const error = requireSubprocessError(await catchWrapperError(options));
+ console.log(error.stderr);
+ ```
  */
 function requireSubprocessError(error: SubprocessError | typeof WRAPPER_SUCCEEDED,): SubprocessError {
   expect(error,).toBeInstanceOf(SubprocessError,);
@@ -203,16 +203,16 @@ function requireSubprocessError(error: SubprocessError | typeof WRAPPER_SUCCEEDE
 }
 
 /**
- * Initializes disposable git repository and configures commit identity.
- *
- * @param options - Repository path to create and initialize.
- *
- * @returns Nothing after repository is initialized.
- *
- * @example
- * ```ts
- * await initializeRepository({ repoPath: '/tmp/repo' });
- * ```
+ Initializes disposable git repository and configures commit identity.
+ 
+ @param options - Repository path to create and initialize.
+ 
+ @returns Nothing after repository is initialized.
+ 
+ @example
+ ```ts
+ await initializeRepository({ repoPath: '/tmp/repo' });
+ ```
  */
 async function initializeRepository({
   repoPath,
@@ -250,16 +250,16 @@ async function initializeRepository({
 }
 
 /**
- * Writes file and stages it with real git.
- *
- * @param options - Repository path, relative file name, and file content.
- *
- * @returns Nothing after file is staged.
- *
- * @example
- * ```ts
- * await writeAndStageFile({ repoPath: '/repo', fileName: 'file.txt', content: 'x\n' });
- * ```
+ Writes file and stages it with real git.
+ 
+ @param options - Repository path, relative file name, and file content.
+ 
+ @returns Nothing after file is staged.
+ 
+ @example
+ ```ts
+ await writeAndStageFile({ repoPath: '/repo', fileName: 'file.txt', content: 'x\n' });
+ ```
  */
 async function writeAndStageFile({
   repoPath,
@@ -290,16 +290,16 @@ async function writeAndStageFile({
 }
 
 /**
- * Creates initial commit in repository.
- *
- * @param options - Repository path to seed.
- *
- * @returns Nothing after initial commit exists.
- *
- * @example
- * ```ts
- * await createInitialCommit({ repoPath: '/repo' });
- * ```
+ Creates initial commit in repository.
+ 
+ @param options - Repository path to seed.
+ 
+ @returns Nothing after initial commit exists.
+ 
+ @example
+ ```ts
+ await createInitialCommit({ repoPath: '/repo' });
+ ```
  */
 async function createInitialCommit({
   repoPath,
@@ -324,16 +324,16 @@ async function createInitialCommit({
 }
 
 /**
- * Reads latest commit subject from repository.
- *
- * @param options - Repository path to inspect.
- *
- * @returns Latest commit subject.
- *
- * @example
- * ```ts
- * const subject = await readLatestSubject({ repoPath: '/repo' });
- * ```
+ Reads latest commit subject from repository.
+ 
+ @param options - Repository path to inspect.
+ 
+ @returns Latest commit subject.
+ 
+ @example
+ ```ts
+ const subject = await readLatestSubject({ repoPath: '/repo' });
+ ```
  */
 async function readLatestSubject({
   repoPath,

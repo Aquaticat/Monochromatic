@@ -1,7 +1,7 @@
 /**
- * Tests for runtime installation and execution command generation.
- *
- * @module
+ Tests for runtime installation and execution command generation.
+ 
+ @module
  */
 
 import {

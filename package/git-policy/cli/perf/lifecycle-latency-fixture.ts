@@ -1,7 +1,7 @@
 /**
- * Disposable packed-package fixture for lifecycle latency benchmarks.
- *
- * @module
+ Disposable packed-package fixture for lifecycle latency benchmarks.
+ 
+ @module
  */
 
 import {
@@ -27,27 +27,27 @@ import {
 import { prepareCommitRemotes, } from './lifecycle-latency-remotes.ts';
 
 /**
- * Executable mode for synthetic scanner.
+ Executable mode for synthetic scanner.
  */
 const EXECUTABLE_MODE = 0o755;
 /**
- * Prepared environment needed by measured scenarios.
+ Prepared environment needed by measured scenarios.
  */
 export type LifecycleFixture = Readonly<{
   /**
-   * Exact relaxed-mode environment entry for MJS config.
+   Exact relaxed-mode environment entry for MJS config.
    */
   mjsRelaxedEnvironment: Readonly<Record<string, string>>;
   /**
-   * Exact relaxed-mode environment entry for TypeScript config.
+   Exact relaxed-mode environment entry for TypeScript config.
    */
   typescriptRelaxedEnvironment: Readonly<Record<string, string>>;
 }>;
 
 /**
- * Initializes one repository and author identity.
- *
- * @param path - repository path
+ Initializes one repository and author identity.
+ 
+ @param path - repository path
  */
 async function initializeRepository(path: string,): Promise<void> {
   await mkdir(
@@ -84,13 +84,13 @@ async function initializeRepository(path: string,): Promise<void> {
 }
 
 /**
- * Writes bounded repository-scale tracked tree.
- *
- * @param repository - target repository
+ Writes bounded repository-scale tracked tree.
+ 
+ @param repository - target repository
  */
 async function writeTrackedTree(repository: string,): Promise<void> {
   /**
-   * Root containing repository-scale tracked files.
+   Root containing repository-scale tracked files.
    */
   const treeRoot = join(
     repository,
@@ -101,7 +101,7 @@ async function writeTrackedTree(repository: string,): Promise<void> {
     { recursive: true, },
   );
   /**
-   * Deterministic tracked file paths.
+   Deterministic tracked file paths.
    */
   const paths = Array.from(
     { length: TREE_FILE_COUNT, },
@@ -120,7 +120,7 @@ async function writeTrackedTree(repository: string,): Promise<void> {
     },
   );
   /**
-   * Ordered starts for bounded write batches.
+   Ordered starts for bounded write batches.
    */
   const batchStarts = Array.from(
     { length: Math.ceil(paths.length / TREE_WRITE_BATCH_SIZE,), },
@@ -154,9 +154,9 @@ async function writeTrackedTree(repository: string,): Promise<void> {
 }
 
 /**
- * Commits complete fixture baseline through real Git.
- *
- * @param repository - target repository
+ Commits complete fixture baseline through real Git.
+ 
+ @param repository - target repository
  */
 async function commitBaseline(repository: string,): Promise<void> {
   await execute({
@@ -179,22 +179,22 @@ async function commitBaseline(repository: string,): Promise<void> {
 }
 
 /**
- * Reads filesystem identity from built trust status.
- *
- * @param repository - trusted repository
- *
- * @returns stable filesystem identity
- *
- * @throws {@link TypeError} when built status omits required identity
- *
- * @example
- * ```ts
- * await trustFilesystemId('/work/repository');
- * ```
+ Reads filesystem identity from built trust status.
+ 
+ @param repository - trusted repository
+ 
+ @returns stable filesystem identity
+ 
+ @throws {@link TypeError} when built status omits required identity
+ 
+ @example
+ ```ts
+ await trustFilesystemId('/work/repository');
+ ```
  */
 async function trustFilesystemId(repository: string,): Promise<string> {
   /**
-   * Unknown JSON trust-status boundary.
+   Unknown JSON trust-status boundary.
    */
   const trustStatus: unknown = JSON.parse(await execute({
     command: PACKAGE_BIN,
@@ -212,18 +212,18 @@ async function trustFilesystemId(repository: string,): Promise<string> {
 }
 
 /**
- * Builds exact relaxed-mode environment for one config identity.
- *
- * @param repository - trusted repository
- *
- * @param configName - repository-relative config path
- *
- * @returns relaxed trust environment
- *
- * @example
- * ```ts
- * await relaxedEnvironment({ repository: '/work/repository', configName: 'cli-git.config.ts' });
- * ```
+ Builds exact relaxed-mode environment for one config identity.
+ 
+ @param repository - trusted repository
+ 
+ @param configName - repository-relative config path
+ 
+ @returns relaxed trust environment
+ 
+ @example
+ ```ts
+ await relaxedEnvironment({ repository: '/work/repository', configName: 'cli-git.config.ts' });
+ ```
  */
 async function relaxedEnvironment({
   repository,
@@ -241,14 +241,14 @@ async function relaxedEnvironment({
 }
 
 /**
- * Prepares package installation, trusted configs, and equivalent repositories.
- *
- * @returns reusable benchmark fixture facts
- *
- * @example
- * ```ts
- * await prepareLifecycleFixture();
- * ```
+ Prepares package installation, trusted configs, and equivalent repositories.
+ 
+ @returns reusable benchmark fixture facts
+ 
+ @example
+ ```ts
+ await prepareLifecycleFixture();
+ ```
  */
 export async function prepareLifecycleFixture(): Promise<LifecycleFixture> {
   await writeFile(

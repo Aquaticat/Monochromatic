@@ -1,13 +1,13 @@
 /**
- * Key arbitraries for the fuzz generators.
- *
- * A `KeySegment` pairs the TOML source spelling of one key segment with its
- * decoded logical name, so document generators can both emit text and predict
- * the resolved path. Coverage spans bare keys (letters, digits, underscore,
- * hyphen, numeric-looking), basic and literal quoted keys (empty, unicode,
- * dotted-looking, float-looking), and dotted multi-segment keys.
- *
- * @module
+ Key arbitraries for the fuzz generators.
+ 
+ A `KeySegment` pairs the TOML source spelling of one key segment with its
+ decoded logical name, so document generators can both emit text and predict
+ the resolved path. Coverage spans bare keys (letters, digits, underscore,
+ hyphen, numeric-looking), basic and literal quoted keys (empty, unicode,
+ dotted-looking, float-looking), and dotted multi-segment keys.
+ 
+ @module
  */
 
 import {
@@ -22,37 +22,37 @@ import {
 import { basicStringLiteral, } from './escape.ts';
 
 /**
- * One key segment: its TOML spelling and the decoded name it resolves to.
+ One key segment: its TOML spelling and the decoded name it resolves to.
  */
 export type KeySegment = {
   /**
-   * TOML source for this one segment (bare token or quoted literal).
+   TOML source for this one segment (bare token or quoted literal).
    */
   readonly text: string;
   /**
-   * Decoded key name this segment resolves to.
+   Decoded key name this segment resolves to.
    */
   readonly name: string;
 };
 
 /**
- * A dotted key: its joined TOML spelling and the resolved segment path.
+ A dotted key: its joined TOML spelling and the resolved segment path.
  */
 export type DottedKey = {
   /**
-   * TOML source for the whole dotted key, segments joined by `.`.
+   TOML source for the whole dotted key, segments joined by `.`.
    */
   readonly text: string;
   /**
-   * Resolved logical path, one decoded name per segment.
+   Resolved logical path, one decoded name per segment.
    */
   readonly path: readonly string[];
 };
 
 /**
- * Bare-key content arbitrary over the unquoted character class. Exported so
- * document generators can draw collision-free owner names for tables and
- * top-level keys.
+ Bare-key content arbitrary over the unquoted character class. Exported so
+ document generators can draw collision-free owner names for tables and
+ top-level keys.
  */
 export const bareName: Arbitrary<string> = string({
   unit: constantFrom(
@@ -69,7 +69,7 @@ export const bareName: Arbitrary<string> = string({
 },);
 
 /**
- * Bare key segments.
+ Bare key segments.
  */
 const bareSegment: Arbitrary<KeySegment> = bareName.map(function build(name,) {
   return {
@@ -79,8 +79,8 @@ const bareSegment: Arbitrary<KeySegment> = bareName.map(function build(name,) {
 },);
 
 /**
- * Content for quoted keys, including shapes that are special only when bare:
- * empty, dotted-looking, numeric-looking, float-looking, and unicode.
+ Content for quoted keys, including shapes that are special only when bare:
+ empty, dotted-looking, numeric-looking, float-looking, and unicode.
  */
 const quotedKeyName: Arbitrary<string> = oneof(
   string({
@@ -100,7 +100,7 @@ const quotedKeyName: Arbitrary<string> = oneof(
 );
 
 /**
- * Basic-quoted key segments via the independent escaper.
+ Basic-quoted key segments via the independent escaper.
  */
 const quotedSegment: Arbitrary<KeySegment> = quotedKeyName.map(function build(name,) {
   return {
@@ -110,7 +110,7 @@ const quotedSegment: Arbitrary<KeySegment> = quotedKeyName.map(function build(na
 },);
 
 /**
- * Deterministic key examples spanning bare, quoted, and edge shapes.
+ Deterministic key examples spanning bare, quoted, and edge shapes.
  */
 export const KEY_SEGMENT_EXAMPLES: readonly KeySegment[] = [
   {
@@ -140,7 +140,7 @@ export const KEY_SEGMENT_EXAMPLES: readonly KeySegment[] = [
 ];
 
 /**
- * Single key-segment arbitrary across bare and quoted spellings.
+ Single key-segment arbitrary across bare and quoted spellings.
  */
 export const keySegmentArbitrary: Arbitrary<KeySegment> = oneof(
   bareSegment,
@@ -149,8 +149,8 @@ export const keySegmentArbitrary: Arbitrary<KeySegment> = oneof(
 );
 
 /**
- * Dotted key arbitrary of one to three segments with distinct resolved names,
- * so a document built from several keys cannot collide by accident.
+ Dotted key arbitrary of one to three segments with distinct resolved names,
+ so a document built from several keys cannot collide by accident.
  */
 export const dottedKeyArbitrary: Arbitrary<DottedKey> = uniqueArray(
   keySegmentArbitrary,

@@ -1,13 +1,13 @@
 /**
- * New-task panel module for the Inbox page.
- *
- * The FAB button transforms into a fixed panel containing `\<task-detail\>`
- * in create mode. Uses the Popover API for top-layer stacking without a
- * blocking backdrop, so the side-drawer remains visible and interactive.
- *
- * Exceeds 100 lines: the blank task template (18 fields), event listener
- * with save/close branches, and panel open/close logic form a single cohesive
- * unit; splitting further would scatter the lifecycle across files.
+ New-task panel module for the Inbox page.
+ 
+ The FAB button transforms into a fixed panel containing `\<task-detail\>`
+ in create mode. Uses the Popover API for top-layer stacking without a
+ blocking backdrop, so the side-drawer remains visible and interactive.
+ 
+ Exceeds 100 lines: the blank task template (18 fields), event listener
+ with save/close branches, and panel open/close logic form a single cohesive
+ unit; splitting further would scatter the lifecycle across files.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../lib/types.ts';
@@ -18,7 +18,7 @@ import { api, } from './lib/api.ts';
 import './component/task-detail.ts';
 
 /**
- * Blank task template used when creating a new task; optional fields stay absent.
+ Blank task template used when creating a new task; optional fields stay absent.
  */
 const emptyTask: Task = {
   id: '',
@@ -35,45 +35,45 @@ const emptyTask: Task = {
 };
 
 /**
- * Return value of {@link createNewTaskDialog}.
+ Return value of {@link createNewTaskDialog}.
  */
 type NewTaskDialog = {
   /**
-   * Fixed panel element to append to the document body.
+   Fixed panel element to append to the document body.
    */
   panel: HTMLElement;
   /**
-   * FAB button element to append to the document body.
+   FAB button element to append to the document body.
    */
   fab: HTMLElement;
 };
 
 /**
- * Builds the new-task panel and its trigger FAB button.
- *
- * Clicking the FAB hides it and reveals a fixed panel in the same
- * bottom-right region. Closing or saving collapses the panel and
- * restores the FAB. The panel uses `popover="manual"` for top-layer
- * stacking without a blocking backdrop.
- *
- * @returns panel and fab elements ready for DOM insertion
- *
- * @example
- * ```ts
- * const { panel, fab } = createNewTaskDialog();
- * document.body.append(panel, fab);
- * ```
+ Builds the new-task panel and its trigger FAB button.
+ 
+ Clicking the FAB hides it and reveals a fixed panel in the same
+ bottom-right region. Closing or saving collapses the panel and
+ restores the FAB. The panel uses `popover="manual"` for top-layer
+ stacking without a blocking backdrop.
+ 
+ @returns panel and fab elements ready for DOM insertion
+ 
+ @example
+ ```ts
+ const { panel, fab } = createNewTaskDialog();
+ document.body.append(panel, fab);
+ ```
  */
 export function createNewTaskDialog(): NewTaskDialog {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail */
   /**
-   * Detail web component captured so the action handler and open flow can configure it.
+   Detail web component captured so the action handler and open flow can configure it.
    */
   const detail = document.createElement('task-detail',) as TaskDetail;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
 
   /**
-   * Popover panel wrapping the detail component; toggled via `showPopover`/`hidePopover`.
+   Popover panel wrapping the detail component; toggled via `showPopover`/`hidePopover`.
    */
   const panel = h({
     tag: 'div',
@@ -86,7 +86,7 @@ export function createNewTaskDialog(): NewTaskDialog {
   panel.append(detail,);
 
   /**
-   * FAB element returned to the caller and toggled hidden when the panel is open.
+   FAB element returned to the caller and toggled hidden when the panel is open.
    */
   const fab = h({
     tag: 'fab-button',
@@ -94,7 +94,7 @@ export function createNewTaskDialog(): NewTaskDialog {
   },);
 
   /**
-   * Hides the panel popover and restores the FAB.
+   Hides the panel popover and restores the FAB.
    */
   function closePanel(): void {
     panel.hidePopover();
@@ -110,7 +110,7 @@ export function createNewTaskDialog(): NewTaskDialog {
             throw new TypeError("Expected CustomEvent for 'action' listener",);
           /* oxlint-disable typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload */
           /**
-           * Destructured action payload from the `action` custom event detail.
+           Destructured action payload from the `action` custom event detail.
            */
           const {
             action,
@@ -130,7 +130,7 @@ export function createNewTaskDialog(): NewTaskDialog {
 
           if (action === 'save') {
             /**
-             * Title with leading/trailing whitespace stripped; empty trim aborts the save.
+             Title with leading/trailing whitespace stripped; empty trim aborts the save.
              */
             const trimmedTitle = title.trim();
             if (trimmedTitle.length
@@ -138,7 +138,7 @@ export function createNewTaskDialog(): NewTaskDialog {
               return;
 
             /**
-             * Current metadata snapshot from the detail component, included in the POST body.
+             Current metadata snapshot from the detail component, included in the POST body.
              */
             const metadata = detail.getMetadata();
             await api({
@@ -173,7 +173,7 @@ export function createNewTaskDialog(): NewTaskDialog {
   );
 
   /**
-   * Opens the panel with a fresh empty task, hiding the FAB and playing the expand animation.
+   Opens the panel with a fresh empty task, hiding the FAB and playing the expand animation.
    */
   function openPanel(): void {
     console.log(
@@ -195,7 +195,7 @@ export function createNewTaskDialog(): NewTaskDialog {
       panel.dataset
         .animating = '';
       /**
-       * Title input from inside the detail's shadow root; focused after the expand frame.
+       Title input from inside the detail's shadow root; focused after the expand frame.
        */
       const titleInput = detail.shadowRoot
         ?.querySelector<HTMLInputElement>(

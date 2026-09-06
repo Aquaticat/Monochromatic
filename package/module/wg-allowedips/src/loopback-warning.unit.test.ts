@@ -17,14 +17,14 @@ await describe({
       name: 'warns for missing or partial coverage and accepts exact or broader coverage',
       fn: async ({ sinon, }) => {
         /**
-         * Console warning spy observing built logger output after its microtask flush.
+         Console warning spy observing built logger output after its microtask flush.
          */
         const warningSpy = sinon.spy(
           console,
           'warn',
         );
         /**
-         * Result produced while both loopback ranges remain uncovered.
+         Result produced while both loopback ranges remain uncovered.
          */
         const missingOutput = await generateAllowedIpsWithLookup({
           allowedText: '192.0.2.1',
@@ -33,7 +33,7 @@ await describe({
           lookupAsnNetworks: fixtureAsnLookup,
         },);
         /**
-         * Result produced while half of IPv4 loopback remains uncovered.
+         Result produced while half of IPv4 loopback remains uncovered.
          */
         const partialOutput = await generateAllowedIpsWithLookup({
           allowedText: '192.0.2.1',
@@ -42,7 +42,7 @@ await describe({
           lookupAsnNetworks: fixtureAsnLookup,
         },);
         /**
-         * Result produced with exact complete loopback coverage.
+         Result produced with exact complete loopback coverage.
          */
         const exactOutput = await generateAllowedIpsWithLookup({
           allowedText: '192.0.2.1',
@@ -51,7 +51,7 @@ await describe({
           lookupAsnNetworks: fixtureAsnLookup,
         },);
         /**
-         * Result produced with broader networks covering every loopback address.
+         Result produced with broader networks covering every loopback address.
          */
         const broaderOutput = await generateAllowedIpsWithLookup({
           allowedText: '192.0.2.1',
@@ -61,7 +61,7 @@ await describe({
         },);
         await Promise.resolve();
         /**
-         * Every console warning argument flattened for occurrence checks.
+         Every console warning argument flattened for occurrence checks.
          */
         const warningText = warningSpy.args
           .map(function warningArgument([message,],): string {

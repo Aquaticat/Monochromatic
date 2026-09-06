@@ -1,7 +1,7 @@
 /**
- * Element-flow effect propagation for read-only view receivers.
- *
- * @module
+ Element-flow effect propagation for read-only view receivers.
+ 
+ @module
  */
 
 import {
@@ -15,30 +15,30 @@ import {
 import { addUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
 
 /**
- * Propagates observer effects from read-only view elements to their receiver.
- *
- * Runs per summary rather than per call edge, because the member handing state
- * to the observer belongs to the default library and therefore never has a
- * summary of its own for an edge to point at.
- *
- * An observer that mutates receiver-reachable state marks the receiver mutated,
- * matching how the same mutation surfaces when it reaches the observer through
- * an owned callee instead. One that leaves such state unresolved marks the
- * receiver opaque and carries the provenance, so the diagnostic still names the
- * call that could not be derived.
- *
- * @param summaries - Owned callable summaries by declaration key.
- *
- * @param summary - Caller summary receiving observer effects.
- *
- * @returns whether caller summary changed.
- *
- * @mutates summary - Adds receiver mutation and uncertainty effects.
- *
- * @example
- * ```ts
- * propagateElementApplications({ summaries, summary });
- * ```
+ Propagates observer effects from read-only view elements to their receiver.
+ 
+ Runs per summary rather than per call edge, because the member handing state
+ to the observer belongs to the default library and therefore never has a
+ summary of its own for an edge to point at.
+ 
+ An observer that mutates receiver-reachable state marks the receiver mutated,
+ matching how the same mutation surfaces when it reaches the observer through
+ an owned callee instead. One that leaves such state unresolved marks the
+ receiver opaque and carries the provenance, so the diagnostic still names the
+ call that could not be derived.
+ 
+ @param summaries - Owned callable summaries by declaration key.
+ 
+ @param summary - Caller summary receiving observer effects.
+ 
+ @returns whether caller summary changed.
+ 
+ @mutates summary - Adds receiver mutation and uncertainty effects.
+ 
+ @example
+ ```ts
+ propagateElementApplications({ summaries, summary });
+ ```
  */
 export function propagateElementApplications({
   summaries,
@@ -48,12 +48,12 @@ export function propagateElementApplications({
   readonly summary: MutableEffectSummary;
 },): boolean {
   /**
-   * Whether any observer effect changed caller summary.
+   Whether any observer effect changed caller summary.
    */
   let changed = false;
   for (const application of summary.elementApplications) {
     /**
-     * Summary for the owned observer passed to the read-only view member.
+     Summary for the owned observer passed to the read-only view member.
      */
     const observerSummary = summaries.get(application.callbackKey,);
     if (observerSummary === undefined)
@@ -63,7 +63,7 @@ export function propagateElementApplications({
        * destructures its element records writes against property slots, so its slot sets
        * are projected before being asked, exactly as callback relations are. */
       /**
-       * Whether observer mutates receiver-reachable state at this position.
+       Whether observer mutates receiver-reachable state at this position.
        */
       const observerMutated = parameterCarriesSlot({
         ownership: observerSummary.slots,
@@ -71,7 +71,7 @@ export function propagateElementApplications({
         parameterIndex,
       },);
       /**
-       * Whether observer leaves receiver-reachable state unresolved here.
+       Whether observer leaves receiver-reachable state unresolved here.
        */
       const observerOpaque = parameterCarriesSlot({
         ownership: observerSummary.slots,
@@ -79,7 +79,7 @@ export function propagateElementApplications({
         parameterIndex,
       },);
       /**
-       * Whether mutation propagation changed caller summary.
+       Whether mutation propagation changed caller summary.
        */
       const mutationChanged = observerMutated
         && addEffectSlot({
@@ -87,7 +87,7 @@ export function propagateElementApplications({
           value: application.receiverSlot,
         },);
       /**
-       * Whether opaque propagation changed caller summary.
+       Whether opaque propagation changed caller summary.
        */
       const opaqueChanged = observerOpaque
         && addEffectSlot({
@@ -112,7 +112,7 @@ export function propagateElementApplications({
        * `opaque: [0]`, so the unresolved case is refused by the branch above rather than
        * discharged by this one. */
       /**
-       * Whether observer hands receiver-reachable state back through its result.
+       Whether observer hands receiver-reachable state back through its result.
        */
       const observerReturned = parameterCarriesSlot({
         ownership: observerSummary.slots,
@@ -120,7 +120,7 @@ export function propagateElementApplications({
         parameterIndex,
       },);
       /**
-       * Whether returned-state propagation changed caller summary.
+       Whether returned-state propagation changed caller summary.
        */
       const returnedChanged = observerReturned
         && addEffectSlot({
@@ -128,7 +128,7 @@ export function propagateElementApplications({
           value: application.receiverSlot,
         },);
       /**
-       * Whether observer uncertainty provenance changed caller summary.
+       Whether observer uncertainty provenance changed caller summary.
        */
       const provenanceChanged = (observerOpaque || observerReturned)
         && addUncertaintyProvenance({

@@ -24,24 +24,24 @@ export {
 } from './opensnitch-daemon-config.ts';
 
 /**
- * Module logger for OpenSnitch system-firewall integration.
+ Module logger for OpenSnitch system-firewall integration.
  */
 const l = tagged({ tag: 'opensnitch', },);
 
 /**
- * Adds visible OpenSnitch accept rules for WireGuard endpoint UDP ports.
- *
- * Any process can use accepted destination port while interface is up;
- * warning makes policy widening explicit.
- *
- * @param interfaceName - WireGuard interface owning rules.
- *
- * @param endpointPorts - Distinct peer endpoint UDP ports.
- *
- * @example
- * ```ts
- * await installOpenSnitchEndpointAllowance({ interfaceName: 'wg0', endpointPorts: [51820] });
- * ```
+ Adds visible OpenSnitch accept rules for WireGuard endpoint UDP ports.
+ 
+ Any process can use accepted destination port while interface is up;
+ warning makes policy widening explicit.
+ 
+ @param interfaceName - WireGuard interface owning rules.
+ 
+ @param endpointPorts - Distinct peer endpoint UDP ports.
+ 
+ @example
+ ```ts
+ await installOpenSnitchEndpointAllowance({ interfaceName: 'wg0', endpointPorts: [51820] });
+ ```
  */
 export async function installOpenSnitchEndpointAllowance(
   {
@@ -53,25 +53,25 @@ export async function installOpenSnitchEndpointAllowance(
   },
 ): Promise<void> {
   /**
-   * Current network namespace establishing ownership identity.
+   Current network namespace establishing ownership identity.
    */
   const { key: networkNamespaceKey, } = await currentNetworkNamespace();
   /**
-   * Interface lock covering manifest and config transition.
+   Interface lock covering manifest and config transition.
    */
   await using interfaceOperation = await claimOpenSnitchInterfaceOperation({
     interfaceName,
     networkNamespaceKey,
   },);
   /**
-   * Prior lifecycle state surviving normal operation or interrupted transition.
+   Prior lifecycle state surviving normal operation or interrupted transition.
    */
   const previous = await readOpenSnitchState({
     interfaceName,
     networkNamespaceKey,
   },);
   /**
-   * Effective validated startup path or daemon-absence sentinel.
+   Effective validated startup path or daemon-absence sentinel.
    */
   const resolvedPath = await resolveOpenSnitchPath({ requireNftables: true, },);
   if ((typeof resolvedPath) === 'symbol') {
@@ -92,13 +92,13 @@ export async function installOpenSnitchEndpointAllowance(
     },);
   }
   /**
-   * State remaining on same path after stale-path cleanup.
+   State remaining on same path after stale-path cleanup.
    */
   const samePathState = ((typeof previous) !== 'symbol') && (previous.path === resolvedPath)
     ? previous
     : OPENSNITCH_STATE_ABSENT;
   /**
-   * Dry schema check before claiming external cleanup ownership.
+   Dry schema check before claiming external cleanup ownership.
    */
   const inspection = await inspectOpenSnitchConfig({
     path: resolvedPath,
@@ -117,7 +117,7 @@ export async function installOpenSnitchEndpointAllowance(
     return;
   }
   /**
-   * Transitional ownership includes every port a crash could leave behind.
+   Transitional ownership includes every port a crash could leave behind.
    */
   const transitionPorts = mergePorts({
     groups: [
@@ -135,7 +135,7 @@ export async function installOpenSnitchEndpointAllowance(
     },
   },);
   /**
-   * Reconciled and positively verified OpenSnitch state.
+   Reconciled and positively verified OpenSnitch state.
    */
   const result = await reconcileOpenSnitchEndpointAllowance({
     path: resolvedPath,
@@ -152,7 +152,7 @@ export async function installOpenSnitchEndpointAllowance(
     );
   }
   /**
-   * Managed port count after successful reconciliation.
+   Managed port count after successful reconciliation.
    */
   const managedPortCount = result
     .ports
@@ -173,7 +173,7 @@ export async function installOpenSnitchEndpointAllowance(
     },
   },);
   /**
-   * Human-readable accepted port list.
+   Human-readable accepted port list.
    */
   const renderedPorts = result
     .ports
@@ -188,35 +188,35 @@ export async function installOpenSnitchEndpointAllowance(
 }
 
 /**
- * Removes one interface's managed OpenSnitch rules during teardown.
- *
- * Removal is best-effort so malformed external config cannot strand tunnel routes or link.
- * Every failure is logged because stale rules widen firewall policy.
- *
- * @param interfaceName - WireGuard interface whose rules are removed.
- *
- * @example
- * ```ts
- * await removeOpenSnitchEndpointAllowance({ interfaceName: 'wg0' });
- * ```
+ Removes one interface's managed OpenSnitch rules during teardown.
+ 
+ Removal is best-effort so malformed external config cannot strand tunnel routes or link.
+ Every failure is logged because stale rules widen firewall policy.
+ 
+ @param interfaceName - WireGuard interface whose rules are removed.
+ 
+ @example
+ ```ts
+ await removeOpenSnitchEndpointAllowance({ interfaceName: 'wg0' });
+ ```
  */
 export async function removeOpenSnitchEndpointAllowance(
   { interfaceName, }: { readonly interfaceName: string; },
 ): Promise<void> {
   try {
     /**
-     * Current network namespace establishing ownership identity.
+     Current network namespace establishing ownership identity.
      */
     const { key: networkNamespaceKey, } = await currentNetworkNamespace();
     /**
-     * Interface lock covering manifest and config transition.
+     Interface lock covering manifest and config transition.
      */
     await using interfaceOperation = await claimOpenSnitchInterfaceOperation({
       interfaceName,
       networkNamespaceKey,
     },);
     /**
-     * Persisted exact cleanup target when installation reached ownership transition.
+     Persisted exact cleanup target when installation reached ownership transition.
      */
     const persisted = await readOpenSnitchState({
       interfaceName,
@@ -232,7 +232,7 @@ export async function removeOpenSnitchEndpointAllowance(
     if (persisted !== OPENSNITCH_STATE_ABSENT)
       throw new OpenSnitchConfigError('Unexpected OpenSnitch lifecycle-state result.',);
     /**
-     * Fallback path supports managed rules created before lifecycle manifests existed.
+     Fallback path supports managed rules created before lifecycle manifests existed.
      */
     const path = await resolveOpenSnitchPath({ requireNftables: false, },);
     if ((typeof path) === 'symbol') {

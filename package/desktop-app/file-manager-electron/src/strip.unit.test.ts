@@ -1,12 +1,12 @@
 /**
- * Unit tests for the pane-strip state machine.
- *
- * Mirrors `package/desktop-app/file-manager/src/model_tests.rs` case for
- * case (for the ported surface) so the TS port and the Rust original stay
- * behaviorally identical. Tests import from built `dist/app` so they verify
- * the artifact the Electron renderer consumes, not sibling source.
- *
- * @module
+ Unit tests for the pane-strip state machine.
+ 
+ Mirrors `package/desktop-app/file-manager/src/model_tests.rs` case for
+ case (for the ported surface) so the TS port and the Rust original stay
+ behaviorally identical. Tests import from built `dist/app` so they verify
+ the artifact the Electron renderer consumes, not sibling source.
+ 
+ @module
  */
 
 import {
@@ -32,7 +32,7 @@ import {
 } from '../dist/app/strip.js';
 
 /**
- * Looks a pane up and fails the calling test when it is not live.
+ Looks a pane up and fails the calling test when it is not live.
  */
 function mustFind(
   {

@@ -13,7 +13,7 @@ await describe({
       name: 'uses the production boundary for address-only input',
       fn: async () => {
         /**
-         * Output from public built package entry.
+         Output from public built package entry.
          */
         const output = await generateAllowedIps({
           allowedText: '10.0.0.0/8\n2001:db8::/126',

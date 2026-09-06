@@ -1,15 +1,15 @@
 /**
- * Regex literal mutations: a bounded token-level subset.
- *
- * Stryker delegates its regex family to the weapon-regex library; porting
- * that is out of scope, so this family mutates a fixed token set in one
- * escape-aware linear pass: quantifier swaps, anchor drops, and escape
- * class negations. Documented as a reduced-scope family in the README.
- *
- * @example
- * ```ts
- * regexReplacements({ node, parent: undefined, source });
- * ```
+ Regex literal mutations: a bounded token-level subset.
+ 
+ Stryker delegates its regex family to the weapon-regex library; porting
+ that is out of scope, so this family mutates a fixed token set in one
+ escape-aware linear pass: quantifier swaps, anchor drops, and escape
+ class negations. Documented as a reduced-scope family in the README.
+ 
+ @example
+ ```ts
+ regexReplacements({ node, parent: undefined, source });
+ ```
  */
 
 import type {
@@ -18,8 +18,8 @@ import type {
 } from '../types.ts';
 
 /**
- * Escape class negation swaps applied to `\\d`, `\\w`, `\\s` and their
- * negated forms.
+ Escape class negation swaps applied to `\\d`, `\\w`, `\\s` and their
+ negated forms.
  */
 const ESCAPE_SWAPS: Readonly<Record<string, string>> = {
   d: 'D',
@@ -31,7 +31,7 @@ const ESCAPE_SWAPS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Unescaped single-character token swaps: quantifiers swap, anchors drop.
+ Unescaped single-character token swaps: quantifiers swap, anchors drop.
  */
 const TOKEN_SWAPS: Readonly<Record<string, string>> = {
   '+': '*',
@@ -41,19 +41,19 @@ const TOKEN_SWAPS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Emits mutated regex literals for one Literal node carrying a regex.
- *
- * Each mutation rebuilds the whole literal text so the span splice stays
- * a single contiguous replacement.
- *
- * @param options - Node under inspection with parent and source.
- *
- * @returns Replacements, possibly empty.
- *
- * @example
- * ```ts
- * regexReplacements({ node: regexLiteral, parent: undefined, source });
- * ```
+ Emits mutated regex literals for one Literal node carrying a regex.
+ 
+ Each mutation rebuilds the whole literal text so the span splice stays
+ a single contiguous replacement.
+ 
+ @param options - Node under inspection with parent and source.
+ 
+ @returns Replacements, possibly empty.
+ 
+ @example
+ ```ts
+ regexReplacements({ node: regexLiteral, parent: undefined, source });
+ ```
  */
 export function regexReplacements(options: {
   readonly node: EstreeNode;
@@ -66,7 +66,7 @@ export function regexReplacements(options: {
     return [];
 
   /**
-   * Regex descriptor present only on regex literals.
+   Regex descriptor present only on regex literals.
    */
   const { regex, } = options.node;
 
@@ -76,7 +76,7 @@ export function regexReplacements(options: {
     return [];
 
   /**
-   * Raw pattern property before narrowing.
+   Raw pattern property before narrowing.
    */
   const rawPattern: unknown = regex.pattern;
 
@@ -84,39 +84,39 @@ export function regexReplacements(options: {
     return [];
 
   /**
-   * Original pattern text under mutation.
+   Original pattern text under mutation.
    */
   const pattern = rawPattern;
   /**
-   * Raw flags property before narrowing.
+   Raw flags property before narrowing.
    */
   const rawFlags: unknown = 'flags' in regex ? regex.flags : '';
   /**
-   * Regex flags preserved across mutations.
+   Regex flags preserved across mutations.
    */
   const flags = (typeof rawFlags) === 'string' ? rawFlags : '';
   /**
-   * Collected replacements, one per mutated pattern variant.
+   Collected replacements, one per mutated pattern variant.
    */
   const replacements: Replacement[] = [];
   /**
-   * Scan cursor over the pattern text.
+   Scan cursor over the pattern text.
    */
   let cursor = 0;
 
   while (cursor < pattern.length) {
     /**
-     * Character at the cursor.
+     Character at the cursor.
      */
     const character = pattern[cursor] ?? '';
 
     if (character === '\\') {
       /**
-       * Escaped character following the backslash.
+       Escaped character following the backslash.
        */
       const escaped = pattern[cursor + 1] ?? '';
       /**
-       * Negated escape class for this escape, when applicable.
+       Negated escape class for this escape, when applicable.
        */
       const negated = ESCAPE_SWAPS[escaped];
 
@@ -139,7 +139,7 @@ export function regexReplacements(options: {
     }
 
     /**
-     * Swap text for this unescaped token, when applicable.
+     Swap text for this unescaped token, when applicable.
      */
     const swap = TOKEN_SWAPS[character];
 

@@ -1,8 +1,8 @@
 /**
- * Tests for the JSONC parser: the fast-path, comment attachment to keys and
- * values, merged stacked comments, trailing-comma tolerance, and error cases.
- *
- * @module
+ Tests for the JSONC parser: the fast-path, comment attachment to keys and
+ values, merged stacked comments, trailing-comma tolerance, and error cases.
+ 
+ @module
  */
 
 import {

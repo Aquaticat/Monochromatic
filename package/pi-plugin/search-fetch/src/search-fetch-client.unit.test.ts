@@ -1,7 +1,7 @@
 /**
- * Unit tests for Search Fetch provider routing.
- *
- * @module
+ Unit tests for Search Fetch provider routing.
+ 
+ @module
  */
 
 import {
@@ -19,27 +19,27 @@ import {
 //region Fixtures
 
 /**
- * Exa API key fixture.
+ Exa API key fixture.
  */
 const EXA_API_KEY = 'exa-secret-key';
 
 /**
- * Linkup API key fixture.
+ Linkup API key fixture.
  */
 const LINKUP_API_KEY = 'linkup-secret-key';
 
 /**
- * Exa base URL fixture.
+ Exa base URL fixture.
  */
 const EXA_BASE_URL = 'https://exa.test';
 
 /**
- * Linkup base URL fixture.
+ Linkup base URL fixture.
  */
 const LINKUP_BASE_URL = 'https://linkup.test/v1';
 
 /**
- * Blocklist fixture containing one Exa-incompatible entry.
+ Blocklist fixture containing one Exa-incompatible entry.
  */
 const BLOCKLIST = [
   'gov',
@@ -47,22 +47,22 @@ const BLOCKLIST = [
 ] as const;
 
 /**
- * Exa search response fixture.
+ Exa search response fixture.
  */
 const EXA_SEARCH_RESPONSE = { results: [{ title: 'Exa', url: 'https://example.com/exa', },], };
 
 /**
- * Linkup search response fixture.
+ Linkup search response fixture.
  */
 const LINKUP_SEARCH_RESPONSE = { results: [{ title: 'Linkup', url: 'https://example.com/linkup', },], };
 
 /**
- * Linkup fetch response fixture.
+ Linkup fetch response fixture.
  */
 const LINKUP_FETCH_RESPONSE = { markdown: 'Linkup page', };
 
 /**
- * Exa fetch response fixture.
+ Exa fetch response fixture.
  */
 const EXA_FETCH_RESPONSE = { results: [{ url: 'https://example.com', text: 'Exa page', },], };
 
@@ -78,13 +78,13 @@ await describe({
           name: 'search sends fast mode and only Exa-compatible excluded domains',
           fn: async () => {
             /**
-             * Local value for mock.
+             Local value for mock.
              */
             const mock = mockFetch({
               responses: [{ body: EXA_SEARCH_RESPONSE, },],
             },);
             /**
-             * Local value for client.
+             Local value for client.
              */
             const client = createExaClient({
               apiKey: EXA_API_KEY,
@@ -103,7 +103,7 @@ await describe({
             },);
 
             /**
-             * Local value for requestBody.
+             Local value for requestBody.
              */
             const requestBody = requestJsonBody(firstCall(mock,),);
             expect(firstCall(mock,).url,).toBe(`${EXA_BASE_URL}/search`,);
@@ -131,18 +131,18 @@ await describe({
           name: 'search uses Exa when Exa key is configured',
           fn: async () => {
             /**
-             * Local value for mock.
+             Local value for mock.
              */
             const mock = mockFetch({
               responses: [{ body: EXA_SEARCH_RESPONSE, },],
             },);
             /**
-             * Local value for client.
+             Local value for client.
              */
             const client = clientWithMock({ mock, exaApiKey: EXA_API_KEY, linkupApiKey: LINKUP_API_KEY, },);
 
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await client.search({ input: { query: 'docs', }, },);
 
@@ -156,18 +156,18 @@ await describe({
           name: 'search falls back to Linkup when Exa key is missing',
           fn: async () => {
             /**
-             * Local value for mock.
+             Local value for mock.
              */
             const mock = mockFetch({
               responses: [{ body: LINKUP_SEARCH_RESPONSE, },],
             },);
             /**
-             * Local value for client.
+             Local value for client.
              */
             const client = clientWithMock({ mock, linkupApiKey: LINKUP_API_KEY, },);
 
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await client.search({ input: { query: 'docs', }, },);
 
@@ -180,7 +180,7 @@ await describe({
           name: 'search falls back to Linkup when Exa request fails',
           fn: async () => {
             /**
-             * Local value for mock.
+             Local value for mock.
              */
             const mock = mockFetch({
               responses: [
@@ -189,12 +189,12 @@ await describe({
               ],
             },);
             /**
-             * Local value for client.
+             Local value for client.
              */
             const client = clientWithMock({ mock, exaApiKey: EXA_API_KEY, linkupApiKey: LINKUP_API_KEY, },);
 
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await client.search({ input: { query: 'docs', }, },);
 
@@ -213,18 +213,18 @@ await describe({
           name: 'fetch uses Linkup first when Linkup key is configured',
           fn: async () => {
             /**
-             * Local value for mock.
+             Local value for mock.
              */
             const mock = mockFetch({
               responses: [{ body: LINKUP_FETCH_RESPONSE, },],
             },);
             /**
-             * Local value for client.
+             Local value for client.
              */
             const client = clientWithMock({ mock, exaApiKey: EXA_API_KEY, linkupApiKey: LINKUP_API_KEY, },);
 
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await client.fetch({ input: { url: 'https://example.com', }, },);
 
@@ -238,22 +238,22 @@ await describe({
           name: 'fetch falls back to Exa contents when Linkup key is missing',
           fn: async () => {
             /**
-             * Local value for mock.
+             Local value for mock.
              */
             const mock = mockFetch({
               responses: [{ body: EXA_FETCH_RESPONSE, },],
             },);
             /**
-             * Local value for client.
+             Local value for client.
              */
             const client = clientWithMock({ mock, exaApiKey: EXA_API_KEY, },);
 
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await client.fetch({ input: { url: 'https://example.com', }, },);
             /**
-             * Local value for requestBody.
+             Local value for requestBody.
              */
             const requestBody = requestJsonBody(firstCall(mock,),);
 
@@ -274,79 +274,79 @@ await describe({
 //region Helpers
 
 /**
- * Mock response fixture.
+ Mock response fixture.
  */
 type MockResponse = {
   /**
-   * Response body object.
+   Response body object.
    */
   readonly body: unknown;
   /**
-   * HTTP status.
+   HTTP status.
    */
   readonly status?: number;
   /**
-   * HTTP status text.
+   HTTP status text.
    */
   readonly statusText?: string;
 };
 
 /**
- * Recorded fetch call.
+ Recorded fetch call.
  */
 type FetchCall = {
   /**
-   * Request URL.
+   Request URL.
    */
   readonly url: string;
   /**
-   * Request init.
+   Request init.
    */
   readonly init: RequestInit;
 };
 
 /**
- * Mock fetch harness.
+ Mock fetch harness.
  */
 type FetchMock = {
   /**
-   * Fetch implementation passed to client.
+   Fetch implementation passed to client.
    */
   readonly fetchImpl: FetchLike;
   /**
-   * Recorded fetch calls.
+   Recorded fetch calls.
    */
   readonly calls: FetchCall[];
 };
 
 /**
- * Client mock options.
+ Client mock options.
  */
 type ClientWithMockOptions = {
   /**
-   * Fetch mock.
+   Fetch mock.
    */
   readonly mock: FetchMock;
   /**
-   * Optional Exa API key.
+   Optional Exa API key.
    */
   readonly exaApiKey?: string;
   /**
-   * Optional Linkup API key.
+   Optional Linkup API key.
    */
   readonly linkupApiKey?: string;
 };
 
 /**
- * Create provider-routing client with common fixtures.
- *
- * @param mock - fetch mock harness
- *
- * @param exaApiKey - optional Exa API key
- *
- * @param linkupApiKey - optional Linkup API key
- *
- * @returns provider-routing client
+ Create provider-routing client with common fixtures.
+ 
+ @param mock - fetch mock harness
+ 
+ @param exaApiKey - optional Exa API key
+ 
+ @param linkupApiKey - optional Linkup API key
+ 
+ @returns provider-routing client
  */
 function clientWithMock(
   {
@@ -366,19 +366,19 @@ function clientWithMock(
 }
 
 /**
- * Create ordered JSON response fetch mock.
- *
- * @param responses - responses returned in call order
- *
- * @returns mock fetch harness
+ Create ordered JSON response fetch mock.
+ 
+ @param responses - responses returned in call order
+ 
+ @returns mock fetch harness
  */
 function mockFetch({ responses, }: { readonly responses: readonly MockResponse[]; }): FetchMock {
   /**
-   * Recorded calls.
+   Recorded calls.
    */
   const calls: FetchCall[] = [];
   /**
-   * Fetch implementation.
+   Fetch implementation.
    */
   async function fetchImpl(input: RequestInfo | URL, init?: RequestInit,): Promise<Response> {
     calls.push({
@@ -386,7 +386,7 @@ function mockFetch({ responses, }: { readonly responses: readonly MockResponse[]
       init: init ?? {},
     },);
     /**
-     * Local value for response.
+     Local value for response.
      */
     const response = responses[calls.length - 1];
     if (response === undefined)
@@ -406,11 +406,11 @@ function mockFetch({ responses, }: { readonly responses: readonly MockResponse[]
 }
 
 /**
- * Return URL text for fetch input.
- *
- * @param input - fetch input
- *
- * @returns URL text
+ Return URL text for fetch input.
+ 
+ @param input - fetch input
+ 
+ @returns URL text
  */
 function fetchInputUrl(input: RequestInfo | URL,): string {
   if ((typeof input) === 'string')
@@ -421,15 +421,15 @@ function fetchInputUrl(input: RequestInfo | URL,): string {
 }
 
 /**
- * Return first recorded fetch call.
- *
- * @param mock - mock fetch harness
- *
- * @returns first fetch call
+ Return first recorded fetch call.
+ 
+ @param mock - mock fetch harness
+ 
+ @returns first fetch call
  */
 function firstCall(mock: FetchMock,): FetchCall {
   /**
-   * First recorded call.
+   First recorded call.
    */
   const [call,] = mock.calls;
   if (call === undefined)
@@ -438,11 +438,11 @@ function firstCall(mock: FetchMock,): FetchCall {
 }
 
 /**
- * Parse recorded JSON request body.
- *
- * @param call - fetch call
- *
- * @returns parsed JSON object
+ Parse recorded JSON request body.
+ 
+ @param call - fetch call
+ 
+ @returns parsed JSON object
  */
 function requestJsonBody(call: FetchCall,): Record<string, unknown> {
   if ((typeof call.init.body) !== 'string')

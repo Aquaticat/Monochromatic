@@ -16,7 +16,7 @@ import { isKnownUnaryFunctionExpression, } from './no-array-callback-reference.a
 //region Constants
 
 /**
- * Array iterator methods whose first argument is a callback.
+ Array iterator methods whose first argument is a callback.
  */
 const ARRAY_CALLBACK_METHODS = [
   'every',
@@ -34,7 +34,7 @@ const ARRAY_CALLBACK_METHODS = [
 ] as const;
 
 /**
- * Built-in constructor callbacks accepted because their arity is intentional.
+ Built-in constructor callbacks accepted because their arity is intentional.
  */
 const ALLOWED_BUILTIN_CALLBACKS = [
   'String',
@@ -76,7 +76,7 @@ const ALLOWED_BUILTIN_CALLBACKS = [
 ] as const;
 
 /**
- * Receiver identifiers known to expose array-like helper methods.
+ Receiver identifiers known to expose array-like helper methods.
  */
 const IGNORED_RECEIVER_NAMES = [
   'Promise',
@@ -94,7 +94,7 @@ const IGNORED_RECEIVER_NAMES = [
 ] as const;
 
 /**
- * Callback wrapper names allowed because this repo owns their arity-capping semantics.
+ Callback wrapper names allowed because this repo owns their arity-capping semantics.
  */
 const ALLOWED_CALLBACK_WRAPPER_NAMES = [
   'unary',
@@ -102,12 +102,12 @@ const ALLOWED_CALLBACK_WRAPPER_NAMES = [
 ] as const;
 
 /**
- * Sentinel returned when a call expression has no ordinary callback argument.
+ Sentinel returned when a call expression has no ordinary callback argument.
  */
 const NO_CALLBACK_ARGUMENT: unique symbol = Symbol('array callback argument absent or spread');
 
 /**
- * Diagnostic identifier used by {@link noArrayCallbackReference}.
+ Diagnostic identifier used by {@link noArrayCallbackReference}.
  */
 const MESSAGE_ID = 'directReference';
 
@@ -116,16 +116,16 @@ const MESSAGE_ID = 'directReference';
 //region Static-shape helpers
 
 /**
- * Returns expression with transparent wrappers removed.
- *
- * @param expression - Expression that may be wrapped by parentheses or TS-only casts.
- *
- * @returns Runtime expression inside transparent wrappers.
- *
- * @example
- * ```ts
- * unwrapExpression({ expression: callback });
- * ```
+ Returns expression with transparent wrappers removed.
+ 
+ @param expression - Expression that may be wrapped by parentheses or TS-only casts.
+ 
+ @returns Runtime expression inside transparent wrappers.
+ 
+ @example
+ ```ts
+ unwrapExpression({ expression: callback });
+ ```
  */
 function unwrapExpression(
   { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
@@ -146,16 +146,16 @@ function unwrapExpression(
 }
 
 /**
- * Reports whether `name` is an allowed built-in callback.
- *
- * @param name - Identifier name supplied as callback.
- *
- * @returns Whether callback reference is exempt.
- *
- * @example
- * ```ts
- * isAllowedBuiltinCallback({ name: 'Number' });
- * ```
+ Reports whether `name` is an allowed built-in callback.
+ 
+ @param name - Identifier name supplied as callback.
+ 
+ @returns Whether callback reference is exempt.
+ 
+ @example
+ ```ts
+ isAllowedBuiltinCallback({ name: 'Number' });
+ ```
  */
 function isAllowedBuiltinCallback({ name, }: { readonly name: string; },): boolean {
   return ALLOWED_BUILTIN_CALLBACKS.some(
@@ -166,16 +166,16 @@ function isAllowedBuiltinCallback({ name, }: { readonly name: string; },): boole
 }
 
 /**
- * Reports whether `name` is a receiver whose callback-like method is not an Array iterator.
- *
- * @param name - Static receiver identifier.
- *
- * @returns Whether receiver should be skipped.
- *
- * @example
- * ```ts
- * isIgnoredReceiverName({ name: 'Promise' });
- * ```
+ Reports whether `name` is a receiver whose callback-like method is not an Array iterator.
+ 
+ @param name - Static receiver identifier.
+ 
+ @returns Whether receiver should be skipped.
+ 
+ @example
+ ```ts
+ isIgnoredReceiverName({ name: 'Promise' });
+ ```
  */
 function isIgnoredReceiverName({ name, }: { readonly name: string; },): boolean {
   return IGNORED_RECEIVER_NAMES.some(
@@ -186,16 +186,16 @@ function isIgnoredReceiverName({ name, }: { readonly name: string; },): boolean 
 }
 
 /**
- * Reports whether call target name is one of the array callback methods.
- *
- * @param name - Static method name.
- *
- * @returns Whether method's first argument is an array callback.
- *
- * @example
- * ```ts
- * isArrayCallbackMethod({ name: 'findIndex' });
- * ```
+ Reports whether call target name is one of the array callback methods.
+ 
+ @param name - Static method name.
+ 
+ @returns Whether method's first argument is an array callback.
+ 
+ @example
+ ```ts
+ isArrayCallbackMethod({ name: 'findIndex' });
+ ```
  */
 function isArrayCallbackMethod({ name, }: { readonly name: string; },): boolean {
   return ARRAY_CALLBACK_METHODS.some(
@@ -206,16 +206,16 @@ function isArrayCallbackMethod({ name, }: { readonly name: string; },): boolean 
 }
 
 /**
- * Reports whether `name` is an allowed arity wrapper callee.
- *
- * @param name - Identifier name supplied as callback wrapper callee.
- *
- * @returns Whether callee is a known arity wrapper.
- *
- * @example
- * ```ts
- * isAllowedCallbackWrapperName({ name: 'unary' });
- * ```
+ Reports whether `name` is an allowed arity wrapper callee.
+ 
+ @param name - Identifier name supplied as callback wrapper callee.
+ 
+ @returns Whether callee is a known arity wrapper.
+ 
+ @example
+ ```ts
+ isAllowedCallbackWrapperName({ name: 'unary' });
+ ```
  */
 function isAllowedCallbackWrapperName({ name, }: { readonly name: string; },): boolean {
   return ALLOWED_CALLBACK_WRAPPER_NAMES.some(
@@ -226,20 +226,20 @@ function isAllowedCallbackWrapperName({ name, }: { readonly name: string; },): b
 }
 
 /**
- * Reports whether receiver is a jQuery object-producing call.
- *
- * @param call - Receiver expression shaped as a call expression.
- *
- * @returns Whether receiver is `$()` or `jQuery()`.
- *
- * @example
- * ```ts
- * isJqueryReceiverCall({ call: receiver });
- * ```
+ Reports whether receiver is a jQuery object-producing call.
+ 
+ @param call - Receiver expression shaped as a call expression.
+ 
+ @returns Whether receiver is `$()` or `jQuery()`.
+ 
+ @example
+ ```ts
+ isJqueryReceiverCall({ call: receiver });
+ ```
  */
 function isJqueryReceiverCall({ call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,): boolean {
   /**
-   * Callee expression with transparent wrappers removed.
+   Callee expression with transparent wrappers removed.
    */
   const callee = unwrapExpression({ expression: call.callee, },);
   if (callee.type !== 'Identifier')
@@ -248,20 +248,20 @@ function isJqueryReceiverCall({ call, }: ForeignBorrowed<{ readonly call: ESTree
 }
 
 /**
- * Reports whether receiver is known not to be an Array instance.
- *
- * @param receiver - Object expression for the method call.
- *
- * @returns Whether receiver should be skipped.
- *
- * @example
- * ```ts
- * isIgnoredReceiver({ receiver: call.callee.object });
- * ```
+ Reports whether receiver is known not to be an Array instance.
+ 
+ @param receiver - Object expression for the method call.
+ 
+ @returns Whether receiver should be skipped.
+ 
+ @example
+ ```ts
+ isIgnoredReceiver({ receiver: call.callee.object });
+ ```
  */
 function isIgnoredReceiver({ receiver, }: ForeignBorrowed<{ readonly receiver: ESTree.Expression; }>,): boolean {
   /**
-   * Receiver with transparent wrappers removed.
+   Receiver with transparent wrappers removed.
    */
   const unwrappedReceiver = unwrapExpression({ expression: receiver, },);
   if (unwrappedReceiver.type === 'Identifier')
@@ -272,13 +272,13 @@ function isIgnoredReceiver({ receiver, }: ForeignBorrowed<{ readonly receiver: E
     return false;
 
   /**
-   * Static property name for member receiver.
+   Static property name for member receiver.
    */
   const propertyName = getStaticMemberName({ member: unwrappedReceiver, },);
   if (propertyName === NO_STATIC_MEMBER_NAME)
     return false;
   /**
-   * Object expression for member receiver.
+   Object expression for member receiver.
    */
   const { object, } = unwrappedReceiver;
   if (object.type !== 'Identifier')
@@ -287,50 +287,50 @@ function isIgnoredReceiver({ receiver, }: ForeignBorrowed<{ readonly receiver: E
 }
 
 /**
- * Reports whether argument count can represent an array callback plus optional second parameter.
- *
- * @param call - Candidate array method call.
- *
- * @returns Whether call has one or two arguments.
- *
- * @example
- * ```ts
- * hasCallbackArity({ call });
- * ```
+ Reports whether argument count can represent an array callback plus optional second parameter.
+ 
+ @param call - Candidate array method call.
+ 
+ @returns Whether call has one or two arguments.
+ 
+ @example
+ ```ts
+ hasCallbackArity({ call });
+ ```
  */
 function hasCallbackArity({ call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,): boolean {
   /**
-   * Arguments supplied to candidate call.
+   Arguments supplied to candidate call.
    */
   const callArguments = call.arguments;
   /**
-   * Number of supplied arguments.
+   Number of supplied arguments.
    */
   const argumentCount = callArguments.length;
   return (argumentCount === 1) || (argumentCount === 2);
 }
 
 /**
- * Returns first ordinary expression argument from a call expression.
- *
- * @param call - Call expression being inspected.
- *
- * @returns First expression argument, or sentinel for no argument or spread.
- *
- * @example
- * ```ts
- * const callback = firstExpressionArgument({ call });
- * ```
+ Returns first ordinary expression argument from a call expression.
+ 
+ @param call - Call expression being inspected.
+ 
+ @returns First expression argument, or sentinel for no argument or spread.
+ 
+ @example
+ ```ts
+ const callback = firstExpressionArgument({ call });
+ ```
  */
 function firstExpressionArgument(
   { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): ESTree.Expression | typeof NO_CALLBACK_ARGUMENT {
   /**
-   * Arguments supplied to candidate call.
+   Arguments supplied to candidate call.
    */
   const callArguments = call.arguments;
   /**
-   * First call argument, when present.
+   First call argument, when present.
    */
   const [argument,] = callArguments;
   if (argument === undefined)
@@ -341,16 +341,16 @@ function firstExpressionArgument(
 }
 
 /**
- * Reports whether call expression is an array iterator call this rule owns.
- *
- * @param call - Call expression being inspected.
- *
- * @returns Whether call's first argument should be checked as callback.
- *
- * @example
- * ```ts
- * isRelevantArrayCallbackCall({ call });
- * ```
+ Reports whether call expression is an array iterator call this rule owns.
+ 
+ @param call - Call expression being inspected.
+ 
+ @returns Whether call's first argument should be checked as callback.
+ 
+ @example
+ ```ts
+ isRelevantArrayCallbackCall({ call });
+ ```
  */
 function isRelevantArrayCallbackCall(
   { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
@@ -358,7 +358,7 @@ function isRelevantArrayCallbackCall(
   if (!hasCallbackArity({ call, },))
     return false;
   /**
-   * Static method name for candidate call.
+   Static method name for candidate call.
    */
   const methodName = getStaticCallMemberName({ call, },);
   if (methodName === NO_STATIC_MEMBER_NAME)
@@ -366,13 +366,13 @@ function isRelevantArrayCallbackCall(
   if (!isArrayCallbackMethod({ name: methodName, },))
     return false;
   /**
-   * Callee expression for candidate call.
+   Callee expression for candidate call.
    */
   const { callee, } = call;
   if (callee.type !== 'MemberExpression')
     return false;
   /**
-   * Method receiver expression.
+   Method receiver expression.
    */
   const receiver = unwrapExpression({ expression: callee.object, },);
   if (isIgnoredReceiver({ receiver, },))
@@ -385,28 +385,28 @@ function isRelevantArrayCallbackCall(
 //region Callback classification
 
 /**
- * Reports whether call expression is an allowed explicit arity wrapper.
- *
- * @param call - Callback-position call expression being inspected.
- *
- * @returns Whether call is a known single-argument arity wrapper call.
- *
- * @example
- * ```ts
- * isAllowedCallbackWrapperCall({ call: unary(callback) });
- * ```
+ Reports whether call expression is an allowed explicit arity wrapper.
+ 
+ @param call - Callback-position call expression being inspected.
+ 
+ @returns Whether call is a known single-argument arity wrapper call.
+ 
+ @example
+ ```ts
+ isAllowedCallbackWrapperCall({ call: unary(callback) });
+ ```
  */
 function isAllowedCallbackWrapperCall(
   { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): boolean {
   /**
-   * Arguments supplied to the wrapper call.
+   Arguments supplied to the wrapper call.
    */
   const callArguments = call.arguments;
   if (callArguments.length !== 1)
     return false;
   /**
-   * Sole argument supplied to the wrapper call.
+   Sole argument supplied to the wrapper call.
    */
   const [argument,] = callArguments;
   if (argument === undefined)
@@ -414,7 +414,7 @@ function isAllowedCallbackWrapperCall(
   if (argument.type === 'SpreadElement')
     return false;
   /**
-   * Wrapper callee with transparent wrappers removed.
+   Wrapper callee with transparent wrappers removed.
    */
   const callee = unwrapExpression({ expression: call.callee, },);
   if (callee.type !== 'Identifier')
@@ -423,22 +423,22 @@ function isAllowedCallbackWrapperCall(
 }
 
 /**
- * Reports whether callback expression is a direct reference needing wrapping.
- *
- * Call expressions are reported unless they are allowlisted explicit arity
- * wrappers. Identifier and local object-member references short-circuit when
- * their resolved function declaration has exactly one non-rest parameter.
- *
- * @param context - Oxlint rule context.
- *
- * @param callback - First argument supplied to an array iterator method.
- *
- * @returns Whether callback expression should be reported.
- *
- * @example
- * ```ts
- * shouldReportCallback({ context, callback: firstArgument });
- * ```
+ Reports whether callback expression is a direct reference needing wrapping.
+ 
+ Call expressions are reported unless they are allowlisted explicit arity
+ wrappers. Identifier and local object-member references short-circuit when
+ their resolved function declaration has exactly one non-rest parameter.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param callback - First argument supplied to an array iterator method.
+ 
+ @returns Whether callback expression should be reported.
+ 
+ @example
+ ```ts
+ shouldReportCallback({ context, callback: firstArgument });
+ ```
  */
 function shouldReportCallback(
   {
@@ -450,7 +450,7 @@ function shouldReportCallback(
   }>,
 ): boolean {
   /**
-   * Callback expression with transparent wrappers removed.
+   Callback expression with transparent wrappers removed.
    */
   const expression = unwrapExpression({ expression: callback, },);
   if (isKnownUnaryFunctionExpression({
@@ -471,11 +471,11 @@ function shouldReportCallback(
       },);
   if (expression.type === 'SequenceExpression') {
     /**
-     * Expressions inside sequence expression.
+     Expressions inside sequence expression.
      */
     const { expressions, } = expression;
     /**
-     * Last sequence expression, which becomes the callback value.
+     Last sequence expression, which becomes the callback value.
      */
     const lastExpression = expressions.at(-1,);
     if (lastExpression === undefined)
@@ -501,18 +501,18 @@ function shouldReportCallback(
 //endregion Callback classification
 
 /**
- * Flags direct callback references passed to array iterator methods.
- *
- * This project-owned replacement for `unicorn/no-array-callback-reference`
- * keeps the arity-footgun guard for multi-argument bare references such as
- * `items.map(fn,)` while allowing statically-known unary callbacks and explicit
- * unary()/binary() wrapper calls such as `items.findIndex(unary(fn,),)`.
- *
- * @example
- * ```ts
- * items.map(callback,); // reported
- * items.map(unary(callback,),); // accepted
- * ```
+ Flags direct callback references passed to array iterator methods.
+ 
+ This project-owned replacement for `unicorn/no-array-callback-reference`
+ keeps the arity-footgun guard for multi-argument bare references such as
+ `items.map(fn,)` while allowing statically-known unary callbacks and explicit
+ unary()/binary() wrapper calls such as `items.findIndex(unary(fn,),)`.
+ 
+ @example
+ ```ts
+ items.map(callback,); // reported
+ items.map(unary(callback,),); // accepted
+ ```
  */
 export const noArrayCallbackReference: CreateOnceRule = {
   meta: {
@@ -526,16 +526,16 @@ export const noArrayCallbackReference: CreateOnceRule = {
     },
   },
   /**
-   * Handles foreign Oxlint callback.
-   *
-   * @param context - Foreign rule context receiving diagnostics.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles foreign Oxlint callback.
+   
+   @param context - Foreign rule context receiving diagnostics.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
@@ -543,7 +543,7 @@ export const noArrayCallbackReference: CreateOnceRule = {
         if (!isRelevantArrayCallbackCall({ call: node, },))
           return;
         /**
-         * Candidate callback argument.
+         Candidate callback argument.
          */
         const callback = firstExpressionArgument({ call: node, },);
         if (callback === NO_CALLBACK_ARGUMENT)

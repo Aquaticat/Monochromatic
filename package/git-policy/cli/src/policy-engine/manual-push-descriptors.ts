@@ -1,7 +1,7 @@
 /**
- * Manual-push candidate descriptors for pushed trees and per-commit deltas.
- *
- * @module
+ Manual-push candidate descriptors for pushed trees and per-commit deltas.
+ 
+ @module
  */
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
@@ -17,7 +17,7 @@ import { ManualPushProbeError, } from './manual-push-probe.ts';
 import { parseRawDiffRecords, } from './raw-diff-records.ts';
 
 /**
- * Git tree modes mapped to policy modes.
+ Git tree modes mapped to policy modes.
  */
 const TREE_MODES: Readonly<Record<string, CandidateFileMode>> = {
   '100644': 'regular',
@@ -26,7 +26,7 @@ const TREE_MODES: Readonly<Record<string, CandidateFileMode>> = {
   '160000': 'submodule',
 };
 /**
- * Strict decoder for Git metadata and paths.
+ Strict decoder for Git metadata and paths.
  */
 const DECODER = new TextDecoder(
   'utf-8',
@@ -34,79 +34,79 @@ const DECODER = new TextDecoder(
 );
 
 /**
- * Candidate metadata separated from batched object content.
+ Candidate metadata separated from batched object content.
  */
 export type ManualPushCandidateDescriptor = Readonly<{
   /**
-   * Invocation-local candidate identity.
+   Invocation-local candidate identity.
    */
   targetId: string;
   /**
-   * Repository-relative finding path.
+   Repository-relative finding path.
    */
   path: CandidateFile['path'];
   /**
-   * Exact Git object identity.
+   Exact Git object identity.
    */
   revision: string;
   /**
-   * Candidate Git mode.
+   Candidate Git mode.
    */
   mode: CandidateFileMode;
   /**
-   * Change classification toward the pushed destination.
+   Change classification toward the pushed destination.
    */
   change: CandidateFile['change'];
   /**
-   * Content source resolved after every descriptor is known.
+   Content source resolved after every descriptor is known.
    */
   content: Readonly<{
     /**
-     * Git blob content discriminator.
+     Git blob content discriminator.
      */
     kind: 'blob';
     /**
-     * Blob object ID requested from batch reader.
+     Blob object ID requested from batch reader.
      */
     oid: string;
   }> | Readonly<{
     /**
-     * Already-materialized content discriminator.
+     Already-materialized content discriminator.
      */
     kind: 'inline';
     /**
-     * Exact inline bytes.
+     Exact inline bytes.
      */
     bytes: Uint8Array;
   }>;
 }>;
 
 /**
- * Creates push-domain error for malformed raw diff output.
- *
- * @param message - safe failure explanation
- *
- * @returns manual-push probe failure
+ Creates push-domain error for malformed raw diff output.
+ 
+ @param message - safe failure explanation
+ 
+ @returns manual-push probe failure
  */
 function pushedDiffError(message: string,): Error {
   return new ManualPushProbeError(message,);
 }
 
 /**
- * Runs real Git and returns exact stdout bytes.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param args - exact Git arguments
- *
- * @returns exact stdout bytes
- *
- * @example
- * ```ts
- * await runGitBytes({ gitPath: '/usr/bin/git', cwd: '/repo', args: ['rev-parse', 'HEAD'] });
- * ```
+ Runs real Git and returns exact stdout bytes.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param args - exact Git arguments
+ 
+ @returns exact stdout bytes
+ 
+ @example
+ ```ts
+ await runGitBytes({ gitPath: '/usr/bin/git', cwd: '/repo', args: ['rev-parse', 'HEAD'] });
+ ```
  */
 export async function runGitBytes({
   gitPath,
@@ -118,7 +118,7 @@ export async function runGitBytes({
   args: readonly string[];
 }>,): Promise<Uint8Array> {
   /**
-   * Child process with binary stdout.
+   Child process with binary stdout.
    */
   const child = spawn(
     gitPath,
@@ -133,7 +133,7 @@ export async function runGitBytes({
     },
   );
   /**
-   * Concurrent output consumers.
+   Concurrent output consumers.
    */
   const output = Promise.all([
     arrayBuffer(child.stdout,),
@@ -144,7 +144,7 @@ export async function runGitBytes({
     'close',
   );
   /**
-   * Settled stdout and stderr.
+   Settled stdout and stderr.
    */
   const [stdout, stderr,] = await output;
   if (child.exitCode !== 0)
@@ -153,25 +153,25 @@ export async function runGitBytes({
 }
 
 /**
- * Parses complete recursive tree into immutable candidates.
- *
- * Serves directly pushed tree objects, whose complete content is newly
- * published; pushed commits go through {@link commitDeltaCandidates}.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param treeish - commit or tree object
- *
- * @param targetPrefix - invocation-local target prefix
- *
- * @returns complete tree candidate descriptors
- *
- * @example
- * ```ts
- * await treeCandidates({ gitPath: '/usr/bin/git', cwd: '/repo', treeish: 'abc', targetPrefix: 'manual-push:origin:refs/trees/x:abc' });
- * ```
+ Parses complete recursive tree into immutable candidates.
+ 
+ Serves directly pushed tree objects, whose complete content is newly
+ published; pushed commits go through {@link commitDeltaCandidates}.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param treeish - commit or tree object
+ 
+ @param targetPrefix - invocation-local target prefix
+ 
+ @returns complete tree candidate descriptors
+ 
+ @example
+ ```ts
+ await treeCandidates({ gitPath: '/usr/bin/git', cwd: '/repo', treeish: 'abc', targetPrefix: 'manual-push:origin:refs/trees/x:abc' });
+ ```
  */
 export async function treeCandidates({
   gitPath,
@@ -185,7 +185,7 @@ export async function treeCandidates({
   targetPrefix: string;
 }>,): Promise<readonly ManualPushCandidateDescriptor[]> {
   /**
-   * NUL-delimited recursive tree records.
+   NUL-delimited recursive tree records.
    */
   const records = DECODER.decode(await runGitBytes({
     gitPath,
@@ -204,13 +204,13 @@ export async function treeCandidates({
     },);
   return records.map(function toCandidate(record,): ManualPushCandidateDescriptor {
     /**
-     * Metadata and path separator.
+     Metadata and path separator.
      */
     const pathSeparator = record.indexOf('\t',);
     if (pathSeparator === (-1))
       throw new ManualPushProbeError('Manual-push tree entry lacks path separator.',);
     /**
-     * Space-delimited tree metadata.
+     Space-delimited tree metadata.
      */
     const metadata = record.slice(
       0,
@@ -218,14 +218,14 @@ export async function treeCandidates({
     )
       .split(' ',);
     /**
-     * Required Git tree fields.
+     Required Git tree fields.
      */
     const [modeText, objectType, objectOid,] = metadata;
     if ((modeText === undefined) || (objectType === undefined)
       || (objectOid === undefined))
       throw new ManualPushProbeError('Manual-push tree metadata is incomplete.',);
     /**
-     * Policy mode.
+     Policy mode.
      */
     const mode = TREE_MODES[modeText];
     if (mode === undefined)
@@ -233,7 +233,7 @@ export async function treeCandidates({
     if ((objectType !== 'blob') && (objectType !== 'commit'))
       throw new ManualPushProbeError(`Unsupported manual-push object type: ${objectType}`,);
     /**
-     * Repository-relative path.
+     Repository-relative path.
      */
     const path = record.slice(pathSeparator + 1,);
     return {
@@ -257,22 +257,22 @@ export async function treeCandidates({
 }
 
 /**
- * Parses one pushed commit's own delta into immutable candidates.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param commitOid - newly reachable pushed commit
- *
- * @param targetPrefix - invocation-local target prefix
- *
- * @returns content-bearing delta candidate descriptors
- *
- * @example
- * ```ts
- * await commitDeltaCandidates({ gitPath: '/usr/bin/git', cwd: '/repo', commitOid: 'abc', targetPrefix: 'manual-push:origin:refs/heads/main:abc' });
- * ```
+ Parses one pushed commit's own delta into immutable candidates.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param commitOid - newly reachable pushed commit
+ 
+ @param targetPrefix - invocation-local target prefix
+ 
+ @returns content-bearing delta candidate descriptors
+ 
+ @example
+ ```ts
+ await commitDeltaCandidates({ gitPath: '/usr/bin/git', cwd: '/repo', commitOid: 'abc', targetPrefix: 'manual-push:origin:refs/heads/main:abc' });
+ ```
  */
 export async function commitDeltaCandidates({
   gitPath,
@@ -286,7 +286,7 @@ export async function commitDeltaCandidates({
   targetPrefix: string;
 }>,): Promise<readonly ManualPushCandidateDescriptor[]> {
   /**
-   * Raw NUL-delimited change records against every parent.
+   Raw NUL-delimited change records against every parent.
    */
   const deltaBytes = await runGitBytes({
     gitPath,
@@ -302,7 +302,7 @@ export async function commitDeltaCandidates({
     ],
   },);
   /**
-   * Retained content-bearing pushed change records.
+   Retained content-bearing pushed change records.
    */
   const records = parseRawDiffRecords({
     text: DECODER.decode(deltaBytes,),

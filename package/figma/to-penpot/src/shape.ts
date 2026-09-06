@@ -1,7 +1,7 @@
 /**
- * Shape-assembly helpers shared by node and document conversion.
- *
- * @module figma-to-penpot-shape
+ Shape-assembly helpers shared by node and document conversion.
+ 
+ @module figma-to-penpot-shape
  */
 
 import {
@@ -35,7 +35,7 @@ import type {
 } from './types.ts';
 
 /**
- * Effective bounding geometry derived from a Figma node.
+ Effective bounding geometry derived from a Figma node.
  */
 export type ShapeGeometry = {
   hasGeometry: boolean;
@@ -48,14 +48,14 @@ export type ShapeGeometry = {
 };
 
 /**
- * Build a zeroed selrect for shapes without measurable bounds.
- *
- * @returns fresh all-zero selrect
- *
- * @example
- * ```ts
- * const selrect = zeroSelRect();
- * ```
+ Build a zeroed selrect for shapes without measurable bounds.
+ 
+ @returns fresh all-zero selrect
+ 
+ @example
+ ```ts
+ const selrect = zeroSelRect();
+ ```
  */
 function zeroSelRect(): PenpotSelRect {
   return {
@@ -71,14 +71,14 @@ function zeroSelRect(): PenpotSelRect {
 }
 
 /**
- * Build zeroed corner points for shapes without measurable bounds.
- *
- * @returns fresh 4-tuple of origin points
- *
- * @example
- * ```ts
- * const points = zeroPoints();
- * ```
+ Build zeroed corner points for shapes without measurable bounds.
+ 
+ @returns fresh 4-tuple of origin points
+ 
+ @example
+ ```ts
+ const points = zeroPoints();
+ ```
  */
 function zeroPoints(): PenpotPoints {
   return [
@@ -102,32 +102,32 @@ function zeroPoints(): PenpotPoints {
 }
 
 /**
- * Derive effective geometry (position, size, selrect, points) for a node.
- *
- * Position comes from the transform's translation; size from the optional
- * `size` struct. Nodes without measurable bounds report `hasGeometry: false`
- * and zeroed rect/points.
- *
- * @param nc - Figma NodeChange record
- *
- * @returns effective geometry for the shape
- *
- * @example
- * ```ts
- * const geom = geometryOf(nc);
- * ```
+ Derive effective geometry (position, size, selrect, points) for a node.
+ 
+ Position comes from the transform's translation; size from the optional
+ `size` struct. Nodes without measurable bounds report `hasGeometry: false`
+ and zeroed rect/points.
+ 
+ @param nc - Figma NodeChange record
+ 
+ @returns effective geometry for the shape
+ 
+ @example
+ ```ts
+ const geom = geometryOf(nc);
+ ```
  */
 export function geometryOf(nc: FigmaRecord,): ShapeGeometry {
   /**
-   * SVG-shaped transform; its `e`/`f` translation doubles as the shape's x/y.
+   SVG-shaped transform; its `e`/`f` translation doubles as the shape's x/y.
    */
   const transform = figmaTransformToPenpot(nc.transform,);
   /**
-   * Optional size struct from Figma.
+   Optional size struct from Figma.
    */
   const {size} = nc;
   /**
-   * Width from the size struct, 0 when absent.
+   Width from the size struct, 0 when absent.
    */
   const width = isRecord(size,)
     ? numberOr({
@@ -136,7 +136,7 @@ export function geometryOf(nc: FigmaRecord,): ShapeGeometry {
     },)
     : 0;
   /**
-   * Height from the size struct, 0 when absent.
+   Height from the size struct, 0 when absent.
    */
   const height = isRecord(size,)
     ? numberOr({
@@ -145,7 +145,7 @@ export function geometryOf(nc: FigmaRecord,): ShapeGeometry {
     },)
     : 0;
   /**
-   * True only when the node has a measurable bounding rect.
+   True only when the node has a measurable bounding rect.
    */
   const hasGeometry = (width > 0) && (height > 0);
   if (!hasGeometry) {
@@ -160,7 +160,7 @@ export function geometryOf(nc: FigmaRecord,): ShapeGeometry {
     };
   }
   /**
-   * Selrect and corner points computed from the measured bounds.
+   Selrect and corner points computed from the measured bounds.
    */
   const {
     selrect,
@@ -183,25 +183,25 @@ export function geometryOf(nc: FigmaRecord,): ShapeGeometry {
 }
 
 /**
- * Convert a node's fill paints to Penpot fills, dropping unsupported paints.
- *
- * @param nc - Figma NodeChange record
- *
- * @returns Penpot fills
- *
- * @example
- * ```ts
- * const fills = collectFills(nc);
- * ```
+ Convert a node's fill paints to Penpot fills, dropping unsupported paints.
+ 
+ @param nc - Figma NodeChange record
+ 
+ @returns Penpot fills
+ 
+ @example
+ ```ts
+ const fills = collectFills(nc);
+ ```
  */
 export function collectFills(nc: FigmaRecord,): PenpotFill[] {
   /**
-   * Fills accumulated from the node's paint list.
+   Fills accumulated from the node's paint list.
    */
   const fills: PenpotFill[] = [];
   for (const paint of recordArray(nc.fillPaints,)) {
     /**
-     * Solid fill candidate; {@link SKIP} means an unsupported paint type.
+     Solid fill candidate; {@link SKIP} means an unsupported paint type.
      */
     const fill = figmaPaintToFill(paint,);
     if (fill !== SKIP)
@@ -211,39 +211,39 @@ export function collectFills(nc: FigmaRecord,): PenpotFill[] {
 }
 
 /**
- * Convert a node's stroke paints to Penpot strokes, dropping unsupported paints.
- *
- * @param nc - Figma NodeChange record
- *
- * @returns Penpot strokes
- *
- * @example
- * ```ts
- * const strokes = collectStrokes(nc);
- * ```
+ Convert a node's stroke paints to Penpot strokes, dropping unsupported paints.
+ 
+ @param nc - Figma NodeChange record
+ 
+ @returns Penpot strokes
+ 
+ @example
+ ```ts
+ const strokes = collectStrokes(nc);
+ ```
  */
 export function collectStrokes(nc: FigmaRecord,): PenpotStroke[] {
   /**
-   * Stroke width with 0-fallback so a missing weight stays encodable.
+   Stroke width with 0-fallback so a missing weight stays encodable.
    */
   const strokeWeight = numberOr({
     value: nc.strokeWeight,
     fallback: 0,
   },);
   /**
-   * Stroke alignment enum, defaulting to centered.
+   Stroke alignment enum, defaulting to centered.
    */
   const strokeAlign = stringOr({
     value: nc.strokeAlign,
     fallback: 'CENTER',
   },);
   /**
-   * Strokes accumulated from the node's paint list.
+   Strokes accumulated from the node's paint list.
    */
   const strokes: PenpotStroke[] = [];
   for (const paint of recordArray(nc.strokePaints,)) {
     /**
-     * Solid stroke candidate; {@link SKIP} means an unsupported paint type.
+     Solid stroke candidate; {@link SKIP} means an unsupported paint type.
      */
     const stroke = figmaPaintToStroke({
       paint,
@@ -257,47 +257,47 @@ export function collectStrokes(nc: FigmaRecord,): PenpotStroke[] {
 }
 
 /**
- * Extract the first SVG path string from a Figma geometry array.
- *
- * @param geometry - Figma fill/stroke geometry value of unknown type
- *
- * @returns path string, or {@link SKIP} when no path is present
- *
- * @example
- * ```ts
- * const path = geometryPath(nc.fillGeometry);
- * if (path !== SKIP) shape.content = path;
- * ```
+ Extract the first SVG path string from a Figma geometry array.
+ 
+ @param geometry - Figma fill/stroke geometry value of unknown type
+ 
+ @returns path string, or {@link SKIP} when no path is present
+ 
+ @example
+ ```ts
+ const path = geometryPath(nc.fillGeometry);
+ if (path !== SKIP) shape.content = path;
+ ```
  */
 export function geometryPath(geometry: unknown,): string | typeof SKIP {
   /**
-   * First geometry entry, or undefined for an empty/non-array value.
+   First geometry entry, or undefined for an empty/non-array value.
    */
   const [first,] = recordArray(geometry,);
   if (!isRecord(first,))
     return SKIP;
   /**
-   * Candidate SVG path string off the first geometry entry.
+   Candidate SVG path string off the first geometry entry.
    */
   const {path} = first;
   return ((typeof path) === 'string') ? path : SKIP;
 }
 
 /**
- * Build the implicit root frame Penpot requires on every page.
- *
- * @param pageId - page the root frame belongs to
- *
- * @returns root-frame {@link PenpotShape} with a degenerate non-zero extent
- *
- * @example
- * ```ts
- * shapes.set(ZERO_UUID, makeRootFrame(pageId));
- * ```
+ Build the implicit root frame Penpot requires on every page.
+ 
+ @param pageId - page the root frame belongs to
+ 
+ @returns root-frame {@link PenpotShape} with a degenerate non-zero extent
+ 
+ @example
+ ```ts
+ shapes.set(ZERO_UUID, makeRootFrame(pageId));
+ ```
  */
 export function makeRootFrame(pageId: Uuid,): PenpotShape {
   /**
-   * Right/bottom edge of the degenerate root-frame rect.
+   Right/bottom edge of the degenerate root-frame rect.
    */
   const extent = ROOT_FRAME_EXTENT;
   return {

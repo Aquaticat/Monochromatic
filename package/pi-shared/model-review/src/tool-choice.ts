@@ -1,41 +1,41 @@
 /**
- * Provider-specific forced structured-tool selection.
- *
- * @module
+ Provider-specific forced structured-tool selection.
+ 
+ @module
  */
 
 /**
- * Options for provider tool-choice projection.
- *
- * @example
- * ```ts
- * toolChoiceForApi({ api: 'anthropic-messages', toolName: 'submit_review' });
- * ```
+ Options for provider tool-choice projection.
+ 
+ @example
+ ```ts
+ toolChoiceForApi({ api: 'anthropic-messages', toolName: 'submit_review' });
+ ```
  */
 type ToolChoiceForApiOptions = {
   /**
-   * Pi AI API identifier.
+   Pi AI API identifier.
    */
   readonly api: string;
   /**
-   * Exact forced tool name.
+   Exact forced tool name.
    */
   readonly toolName: string;
 };
 
 /**
- * Return provider-specific forced tool choice.
- *
- * @param api - Pi AI API identifier
- *
- * @param toolName - exact forced tool name
- *
- * @returns provider tool-choice value
- *
- * @example
- * ```ts
- * toolChoiceForApi({ api: 'openai-responses', toolName: 'submit_review' });
- * ```
+ Return provider-specific forced tool choice.
+ 
+ @param api - Pi AI API identifier
+ 
+ @param toolName - exact forced tool name
+ 
+ @returns provider tool-choice value
+ 
+ @example
+ ```ts
+ toolChoiceForApi({ api: 'openai-responses', toolName: 'submit_review' });
+ ```
  */
 function toolChoiceForApi(
   {

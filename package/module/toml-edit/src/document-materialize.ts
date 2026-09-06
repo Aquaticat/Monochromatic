@@ -1,17 +1,17 @@
 /**
- * Materialize a whole {@link TomlEditState} into a nested JS value, and
- * navigate it by {@link TomlPath}.
- *
- * Folds top-level key-values and table sections into one object the same way
- * `getStaticTOMLValue` folds an AST: dotted keys and `[a.b]` headers nest into
- * objects, `[[foo]]` headers append objects to an array. Because it walks the
- * current tree, reads reflect every prior mutation.
- *
- * The fold is immutable and prototype-safe: it threads a fresh root through
- * {@link setDeep} / {@link updateDeep}, which write keys as own properties, so a
- * `__proto__` key round-trips as a normal own property.
- *
- * @module
+ Materialize a whole {@link TomlEditState} into a nested JS value, and
+ navigate it by {@link TomlPath}.
+ 
+ Folds top-level key-values and table sections into one object the same way
+ `getStaticTOMLValue` folds an AST: dotted keys and `[a.b]` headers nest into
+ objects, `[[foo]]` headers append objects to an array. Because it walks the
+ current tree, reads reflect every prior mutation.
+ 
+ The fold is immutable and prototype-safe: it threads a fresh root through
+ {@link setDeep} / {@link updateDeep}, which write keys as own properties, so a
+ `__proto__` key round-trips as a normal own property.
+ 
+ @module
  */
 
 import type {
@@ -31,23 +31,23 @@ import {
 } from './value-materialize.ts';
 
 /**
- * Sentinel for "no value at this path". A unique symbol so it never collides
- * with a real materialized value (which may legitimately be `undefined`-free
- * but never this symbol).
+ Sentinel for "no value at this path". A unique symbol so it never collides
+ with a real materialized value (which may legitimately be `undefined`-free
+ but never this symbol).
  */
 export const MISSING: unique symbol = Symbol('toml-edit/document-navigate-path-missing',);
 
 /**
- * Materialize the whole document into a nested JS object.
- *
- * @param edit - Current document state whose blocks are folded into one object.
- *
- * @returns Root object.
- *
- * @example
- * ```ts
- * materializeDocument({ edit, },); // { title: 'x', tools: { bun: 'latest' } }
- * ```
+ Materialize the whole document into a nested JS object.
+ 
+ @param edit - Current document state whose blocks are folded into one object.
+ 
+ @returns Root object.
+ 
+ @example
+ ```ts
+ materializeDocument({ edit, },); // { title: 'x', tools: { bun: 'latest' } }
+ ```
  */
 export function materializeDocument(
   { edit, }: { readonly edit: TomlEditState; },
@@ -79,14 +79,14 @@ export function materializeDocument(
 }
 
 /**
- * Append a fresh empty array-of-tables instance to `existing`, creating the
- * array when the slot is absent or not an array. The `updateDeep` leaf op for
- * an `[[foo]]` header.
- *
- * @param existing - Current value at the header slot; an array is extended,
- *   anything else is replaced with a one-instance array.
- *
- * @returns Array with a fresh empty instance appended.
+ Append a fresh empty array-of-tables instance to `existing`, creating the
+ array when the slot is absent or not an array. The `updateDeep` leaf op for
+ an `[[foo]]` header.
+ 
+ @param existing - Current value at the header slot; an array is extended,
+   anything else is replaced with a one-instance array.
+ 
+ @returns Array with a fresh empty instance appended.
  */
 function appendInstance(existing: unknown,): readonly unknown[] {
   return isUnknownArray(existing,)
@@ -98,31 +98,31 @@ function appendInstance(existing: unknown,): readonly unknown[] {
 }
 
 /**
- * Keep the existing record at the slot, or create a fresh one when absent. The
- * `updateDeep` leaf op for a standard `[foo]` header.
- *
- * @param existing - Current value at the header slot; a record is kept, anything
- *   else becomes a fresh table.
- *
- * @returns Record the table body folds into.
+ Keep the existing record at the slot, or create a fresh one when absent. The
+ `updateDeep` leaf op for a standard `[foo]` header.
+ 
+ @param existing - Current value at the header slot; a record is kept, anything
+   else becomes a fresh table.
+ 
+ @returns Record the table body folds into.
  */
 function ensureRecord(existing: unknown,): Record<string, unknown> {
   return isRecord(existing,) ? existing : {};
 }
 
 /**
- * Fold one table section (standard or array-of-tables) into `root`.
- *
- * @param root - Accumulated document object the section folds into.
- *
- * @param table - Table section whose header and body entries are folded.
- *
- * @returns Fresh root with the section folded in.
- *
- * @example
- * ```ts
- * foldTable({ root: {}, table, },);
- * ```
+ Fold one table section (standard or array-of-tables) into `root`.
+ 
+ @param root - Accumulated document object the section folds into.
+ 
+ @param table - Table section whose header and body entries are folded.
+ 
+ @returns Fresh root with the section folded in.
+ 
+ @example
+ ```ts
+ foldTable({ root: {}, table, },);
+ ```
  */
 function foldTable(
   {
@@ -134,12 +134,12 @@ function foldTable(
   },
 ): Record<string, unknown> {
   /**
-   * Header path both kinds fold their body entries under.
+   Header path both kinds fold their body entries under.
    */
   const header = table.headerSegments;
   /**
-   * Root with the target container established: a fresh appended instance for an
-   * array-of-tables header, else an ensured (kept-or-created) standard record.
+   Root with the target container established: a fresh appended instance for an
+   array-of-tables header, else an ensured (kept-or-created) standard record.
    */
   const base = table.tableKind
     === 'array'
@@ -154,7 +154,7 @@ function foldTable(
       update: ensureRecord,
     },);
   /**
-   * Body key-values so both table kinds share the fold into their container.
+   Body key-values so both table kinds share the fold into their container.
    */
   const bodyKvs = table.body
     .filter(function isKv(b,): b is Extract<Block, { kind: 'keyvalue'; }> {
@@ -180,21 +180,21 @@ function foldTable(
 }
 
 /**
- * Navigate `path` through a materialized root, returning {@link MISSING} when a
- * segment does not resolve.
- *
- * @param root - Materialized document object to walk.
- *
- * @param path - Segment chain addressing the value to read.
- *
- * @returns Value at the path, or {@link MISSING}.
- *
- * @mutates root - `Object.hasOwn` can invoke caller-owned proxy descriptor hooks while navigating.
- *
- * @example
- * ```ts
- * navigate({ root, path: ['tools', 'bun'], },);
- * ```
+ Navigate `path` through a materialized root, returning {@link MISSING} when a
+ segment does not resolve.
+ 
+ @param root - Materialized document object to walk.
+ 
+ @param path - Segment chain addressing the value to read.
+ 
+ @returns Value at the path, or {@link MISSING}.
+ 
+ @mutates root - `Object.hasOwn` can invoke caller-owned proxy descriptor hooks while navigating.
+ 
+ @example
+ ```ts
+ navigate({ root, path: ['tools', 'bun'], },);
+ ```
  */
 export function navigate(
   {
@@ -206,7 +206,7 @@ export function navigate(
   },
 ): unknown {
   /**
-   * Cursor descending one segment per step; short-circuits to MISSING on a miss.
+   Cursor descending one segment per step; short-circuits to MISSING on a miss.
    */
   let cursor: unknown = root;
   for (const seg of path) {
@@ -221,7 +221,7 @@ export function navigate(
     if (!isRecord(cursor,))
       return MISSING;
     /**
-     * Object property key for this segment, read own-only for prototype safety.
+     Object property key for this segment, read own-only for prototype safety.
      */
     const key = String(seg,);
     if (!Object.hasOwn(

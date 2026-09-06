@@ -1,21 +1,21 @@
 /**
- * Shared per-dim metadata: display names, kind classification (continuous /
- * binary / categorical), per-channel acceptance allowlist, and toggle
- * labels.
- *
- * Owned here rather than in `./deck-labels.ts` so both the axis-label
- * `TextLayer` builder (used at runtime by deck.gl) and the control-panel
- * dropdown emitter (used at HTML-generation time by Node) can import the
- * same constants without crossing the Node/browser boundary or duplicating
- * the table.
- *
- * @example
- * ```ts
- * import { acceptsDim, DIM_DISPLAY_NAMES } from './dim-meta.ts';
- * if (!acceptsDim({ channel: 'shape', dim: 'tsRatio' })) {
- *   // shape only accepts binary/categorical; render this option disabled
- * }
- * ```
+ Shared per-dim metadata: display names, kind classification (continuous /
+ binary / categorical), per-channel acceptance allowlist, and toggle
+ labels.
+ 
+ Owned here rather than in `./deck-labels.ts` so both the axis-label
+ `TextLayer` builder (used at runtime by deck.gl) and the control-panel
+ dropdown emitter (used at HTML-generation time by Node) can import the
+ same constants without crossing the Node/browser boundary or duplicating
+ the table.
+ 
+ @example
+ ```ts
+ import { acceptsDim, DIM_DISPLAY_NAMES } from './dim-meta.ts';
+ if (!acceptsDim({ channel: 'shape', dim: 'tsRatio' })) {
+   // shape only accepts binary/categorical; render this option disabled
+ }
+ ```
  */
 
 import type {
@@ -27,7 +27,7 @@ import type {
 //region Types
 
 /**
- * Coarse type classification used by the channel-acceptance allowlist.
+ Coarse type classification used by the channel-acceptance allowlist.
  */
 export type DimKind = 'continuous' | 'binary' | 'categorical';
 
@@ -36,7 +36,7 @@ export type DimKind = 'continuous' | 'binary' | 'categorical';
 //region Display names
 
 /**
- * Per-dim display string for axis labels, dropdowns, and tooltips.
+ Per-dim display string for axis labels, dropdowns, and tooltips.
  */
 export const DIM_DISPLAY_NAMES: Record<DataDimKey, string> = {
   logSourceBytes: 'log10(source bytes)',
@@ -56,10 +56,10 @@ export const DIM_DISPLAY_NAMES: Record<DataDimKey, string> = {
 //region Dim kinds
 
 /**
- * Kind classification per dim. Drives {@link CHANNEL_ACCEPTED_KINDS}.
- *
- * Continuous = anything ordinal with meaningful interpolation; binary =
- * two discrete values; categorical = small set of unordered codes.
+ Kind classification per dim. Drives {@link CHANNEL_ACCEPTED_KINDS}.
+ 
+ Continuous = anything ordinal with meaningful interpolation; binary =
+ two discrete values; categorical = small set of unordered codes.
  */
 export const DIM_KINDS: Record<DataDimKey, DimKind> = {
   logSourceBytes: 'continuous',
@@ -79,20 +79,20 @@ export const DIM_KINDS: Record<DataDimKey, DimKind> = {
 //region Channel-acceptance allowlist
 
 /**
- * Which kinds each visual channel meaningfully represents.
- *
- * Spatial axes (`x`, `y`, `z`) and `color` accept every kind; the
- * renderer's accessors normalise any numeric output gracefully, so binary
- * on `x` clusters probes onto two lines and categorical on `color` gives
- * banded hues rather than crashes. Aesthetically coarser, but useful for
- * audit queries like "stack on x by leaf-ness".
- *
- * `shape` accepts only binary/categorical; the filled-vs-stroked split
- * is fundamentally a 2-state encoding; continuous values get thresholded
- * at 0.5 which discards most of the information.
- *
- * `size` accepts only continuous; radius is a magnitude. Binary on
- * size yields two radii and conveys nothing the shape channel doesn't.
+ Which kinds each visual channel meaningfully represents.
+ 
+ Spatial axes (`x`, `y`, `z`) and `color` accept every kind; the
+ renderer's accessors normalise any numeric output gracefully, so binary
+ on `x` clusters probes onto two lines and categorical on `color` gives
+ banded hues rather than crashes. Aesthetically coarser, but useful for
+ audit queries like "stack on x by leaf-ness".
+ 
+ `shape` accepts only binary/categorical; the filled-vs-stroked split
+ is fundamentally a 2-state encoding; continuous values get thresholded
+ at 0.5 which discards most of the information.
+ 
+ `size` accepts only continuous; radius is a magnitude. Binary on
+ size yields two radii and conveys nothing the shape channel doesn't.
  */
 export const CHANNEL_ACCEPTED_KINDS: Record<ChannelKey, readonly DimKind[]> = {
   x: [
@@ -127,7 +127,7 @@ export const CHANNEL_ACCEPTED_KINDS: Record<ChannelKey, readonly DimKind[]> = {
 //region Toggle labels
 
 /**
- * Human-readable legend per 3-state boolean filter toggle.
+ Human-readable legend per 3-state boolean filter toggle.
  */
 export const TOGGLE_LABELS: Record<ToggleKey, string> = {
   isLeaf: 'Is leaf (no runtime deps)',
@@ -144,19 +144,19 @@ export const TOGGLE_LABELS: Record<ToggleKey, string> = {
 //region Helpers
 
 /**
- * Tests whether a visual channel will represent a given dim.
- *
- * @param channel - Channel key being assigned.
- *
- * @param dim - Candidate dim.
- *
- * @returns `true` if the channel's accepted-kinds list contains the dim's kind.
- *
- * @example
- * ```ts
- * acceptsDim({ channel: 'size', dim: 'isLeafNumeric' }); // false
- * acceptsDim({ channel: 'x', dim: 'isLeafNumeric' });    // true
- * ```
+ Tests whether a visual channel will represent a given dim.
+ 
+ @param channel - Channel key being assigned.
+ 
+ @param dim - Candidate dim.
+ 
+ @returns `true` if the channel's accepted-kinds list contains the dim's kind.
+ 
+ @example
+ ```ts
+ acceptsDim({ channel: 'size', dim: 'isLeafNumeric' }); // false
+ acceptsDim({ channel: 'x', dim: 'isLeafNumeric' });    // true
+ ```
  */
 export function acceptsDim(
   {

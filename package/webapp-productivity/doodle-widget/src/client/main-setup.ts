@@ -1,8 +1,8 @@
 /**
- * Initialization and handler wiring for the doodle widget.
- *
- * Parses page backgrounds, sets up pointer/toolbar/undo handlers,
- * and attaches page switching and resize observers.
+ Initialization and handler wiring for the doodle widget.
+ 
+ Parses page backgrounds, sets up pointer/toolbar/undo handlers,
+ and attaches page switching and resize observers.
  */
 
 import {
@@ -19,7 +19,7 @@ import { initHistory, } from './undo-history.ts';
 import { resetZoom, } from './zoom.ts';
 
 /**
- * Dependencies for {@link setupWidget}.
+ Dependencies for {@link setupWidget}.
  */
 export type WidgetDeps = {
   readonly backgroundsScript: HTMLScriptElement;
@@ -33,7 +33,7 @@ export type WidgetDeps = {
   readonly textLayer: HTMLDivElement;
   readonly container: HTMLDivElement;
   /**
-   * Fixed letter-size page element (coordinate reference for drawing and export)
+   Fixed letter-size page element (coordinate reference for drawing and export)
    */
   readonly page: HTMLDivElement;
   readonly zoomLayer: HTMLDivElement;
@@ -52,20 +52,20 @@ export type WidgetDeps = {
 };
 
 /**
- * Initializes page state, handler wiring, and observers.
- *
- * @param deps - all DOM elements and state accessors, see {@link WidgetDeps}
- *
- * @mutates deps - `clearBtn.addEventListener`, `colorPicker.addEventListener`, `exportBtn.addEventListener`, `pageToggle.addEventListener`, `redoBtn.addEventListener`, `sizeSlider.addEventListener`, `textLayer.addEventListener`, `undoBtn.addEventListener`, `uploadBtn.addEventListener`, and `uploadInput.addEventListener` change event targets and retain handlers; `new ResizeObserver(sizeCanvas,).observe` retains `sizeCanvas` and observes its target; `uploadInput.click` can dispatch retained listeners.
- *
- * @example
- * ```ts
- * setupWidget(deps);
- * ```
+ Initializes page state, handler wiring, and observers.
+ 
+ @param deps - all DOM elements and state accessors, see {@link WidgetDeps}
+ 
+ @mutates deps - `clearBtn.addEventListener`, `colorPicker.addEventListener`, `exportBtn.addEventListener`, `pageToggle.addEventListener`, `redoBtn.addEventListener`, `sizeSlider.addEventListener`, `textLayer.addEventListener`, `undoBtn.addEventListener`, `uploadBtn.addEventListener`, and `uploadInput.addEventListener` change event targets and retain handlers; `new ResizeObserver(sizeCanvas,).observe` retains `sizeCanvas` and observes its target; `uploadInput.click` can dispatch retained listeners.
+ 
+ @example
+ ```ts
+ setupWidget(deps);
+ ```
  */
 export function setupWidget(deps: WidgetDeps,): void {
   /**
-   * Destructured up front so the long list of handles can be passed individually to each setup helper.
+   Destructured up front so the long list of handles can be passed individually to each setup helper.
    */
   const {
     backgroundsScript,
@@ -92,13 +92,13 @@ export function setupWidget(deps: WidgetDeps,): void {
   } = deps;
 
   /**
-   * Untyped JSON tree narrowed before assigning to {@link backgrounds}.
+   Untyped JSON tree narrowed before assigning to {@link backgrounds}.
    */
   const parsed: unknown = JSON.parse(backgroundsScript.textContent,);
   if (!Array.isArray(parsed,))
     throw new Error('Page backgrounds data is not an array',);
   /**
-   * Narrowed alias so consumers see a readonly string array without re-asserting.
+   Narrowed alias so consumers see a readonly string array without re-asserting.
    */
   const backgrounds: readonly string[] = parsed;
 
@@ -110,7 +110,7 @@ export function setupWidget(deps: WidgetDeps,): void {
   setTextLayer(textLayer,);
 
   /**
-   * Handler hooks returned by undo setup so the toolbar can call them later.
+   Handler hooks returned by undo setup so the toolbar can call them later.
    */
   const {
     pushSnapshot,
@@ -128,7 +128,7 @@ export function setupWidget(deps: WidgetDeps,): void {
   );
 
   /**
-   * Shared bag so both pointer setups receive identical handles without re-typing the object.
+   Shared bag so both pointer setups receive identical handles without re-typing the object.
    */
   const pointerDeps = {
     canvas,
@@ -165,14 +165,14 @@ export function setupWidget(deps: WidgetDeps,): void {
     'change',
     function handlePageChange(event: Event,): void {
       /**
-       * Event target destructured so the narrowing `instanceof` check can short-circuit.
+       Event target destructured so the narrowing `instanceof` check can short-circuit.
        */
       const { target, } = event;
       if (!(target instanceof HTMLInputElement))
         return;
       resetZoom(zoomLayer,);
       /**
-       * Canvas dimensions resolved after the zoom reset so the page switch sees fresh sizing.
+       Canvas dimensions resolved after the zoom reset so the page switch sees fresh sizing.
        */
       const {
         cw,

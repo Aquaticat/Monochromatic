@@ -1,7 +1,7 @@
 /**
- * English noun-phrase renderer factory.
- *
- * @module
+ English noun-phrase renderer factory.
+ 
+ @module
  */
 
 import type {
@@ -15,18 +15,18 @@ import type {
 } from '../../entries.ts';
 
 /**
- * Returns the plural surface for a noun under a specific count.
- *
- * @param entry - resolved noun entry
- *
- * @param count - count requesting the form
- *
- * @returns plural surface; falls back to `surface + s` when no plural is supplied
- *
- * @example
- * ```ts
- * nounPlural({ entry: { surface: 'cat', plural: 'cats' }, count: 2 }); // 'cats'
- * ```
+ Returns the plural surface for a noun under a specific count.
+ 
+ @param entry - resolved noun entry
+ 
+ @param count - count requesting the form
+ 
+ @returns plural surface; falls back to `surface + s` when no plural is supplied
+ 
+ @example
+ ```ts
+ nounPlural({ entry: { surface: 'cat', plural: 'cats' }, count: 2 }); // 'cats'
+ ```
  */
 function nounPlural(
   {
@@ -46,18 +46,18 @@ function nounPlural(
 }
 
 /**
- * Picks singular vs plural surface for a counted noun.
- *
- * @param entry - noun entry
- *
- * @param count - count attached by the phrase
- *
- * @returns singular surface when count is 1, plural otherwise
- *
- * @example
- * ```ts
- * countedNoun({ entry: { surface: 'cat', plural: 'cats' }, count: 3 }); // 'cats'
- * ```
+ Picks singular vs plural surface for a counted noun.
+ 
+ @param entry - noun entry
+ 
+ @param count - count attached by the phrase
+ 
+ @returns singular surface when count is 1, plural otherwise
+ 
+ @example
+ ```ts
+ countedNoun({ entry: { surface: 'cat', plural: 'cats' }, count: 3 }); // 'cats'
+ ```
  */
 function countedNoun(
   {
@@ -75,19 +75,19 @@ function countedNoun(
 }
 
 /**
- * Builds an English noun-phrase renderer closed over the supplied vocab tables.
- *
- * @param nouns - noun vocabulary keyed by the consumer's `Noun` union
- *
- * @param subjects - subject vocabulary keyed by the consumer's `Subject` union
- *
- * @returns render function for noun phrases
- *
- * @example
- * ```ts
- * const renderNounPhrase = makeEnglishNounPhraseRenderer({ nouns, subjects });
- * renderNounPhrase({ kind: 'noun.counted', count: 1, noun: 'cat' }); // '1 cat'
- * ```
+ Builds an English noun-phrase renderer closed over the supplied vocab tables.
+ 
+ @param nouns - noun vocabulary keyed by the consumer's `Noun` union
+ 
+ @param subjects - subject vocabulary keyed by the consumer's `Subject` union
+ 
+ @returns render function for noun phrases
+ 
+ @example
+ ```ts
+ const renderNounPhrase = makeEnglishNounPhraseRenderer({ nouns, subjects });
+ renderNounPhrase({ kind: 'noun.counted', count: 1, noun: 'cat' }); // '1 cat'
+ ```
  */
 export function makeEnglishNounPhraseRenderer<S extends string, N extends string,>(
   {
@@ -99,11 +99,11 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
   },
 ): (phrase: NounPhrase<S, N>,) => string {
   /**
-   * Renders a possessor surface for `noun.possessed`.
-   *
-   * @param p - possessor AST node
-   *
-   * @returns possessive surface to drop into the rendered phrase
+   Renders a possessor surface for `noun.possessed`.
+   
+   @param p - possessor AST node
+   
+   @returns possessive surface to drop into the rendered phrase
    */
   function renderPossessor(p: Possessor<S>,): string {
     if (p.kind
@@ -114,11 +114,11 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
   }
 
   /**
-   * Renders a noun-phrase AST in English.
-   *
-   * @param phrase - noun-phrase AST
-   *
-   * @returns rendered surface
+   Renders a noun-phrase AST in English.
+   
+   @param phrase - noun-phrase AST
+   
+   @returns rendered surface
    */
   function renderNounPhrase(phrase: NounPhrase<S, N>,): string {
     if (phrase.kind
@@ -128,7 +128,7 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
     if (phrase.kind
       === 'noun.counted') {
       /**
-       * Resolved noun entry validated before numeric rendering.
+       Resolved noun entry validated before numeric rendering.
        */
       const entry = nouns[phrase.noun];
       assertCountableNoun({
@@ -136,7 +136,7 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
         noun: phrase.noun,
       },);
       /**
-       * Counted noun head: singular at count 1, plural otherwise.
+       Counted noun head: singular at count 1, plural otherwise.
        */
       const head = countedNoun({
         entry,
@@ -147,7 +147,7 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
     if (phrase.kind
       === 'noun.definite') {
       /**
-       * Definite-article singular form, defaults to `the` when the entry omits it.
+       Definite-article singular form, defaults to `the` when the entry omits it.
        */
       const article = nouns[phrase.noun]
         .articles
@@ -160,7 +160,7 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
     if (phrase.kind
       === 'noun.indefinite') {
       /**
-       * Indefinite-article singular form, defaults to `a` (no a/an inference).
+       Indefinite-article singular form, defaults to `a` (no a/an inference).
        */
       const article = nouns[phrase.noun]
         .articles

@@ -10,36 +10,36 @@ import { reportMissing, } from './node-extraction.ts';
 import { shouldSkipIgnoredFile, } from './tsdoc-visitors.ts';
 
 /**
- * Requires TSDoc comments on every documentable declaration, including
- * local variables inside function bodies and block scopes.
- *
- * FunctionExpression and ArrowFunctionExpression are excluded because
- * their TSDoc is owned by the enclosing VariableDeclaration or
- * MethodDefinition node.
- *
- * For-loop bindings (`for (const x of arr)`, `for (let loopIndex = 0; ...)`)
- * are excluded because they have no natural site for TSDoc.
- *
- * Each visitor reports through {@link reportMissing}, and
- * {@link shouldSkipIgnoredFile} skips files excluded from this rule.
- *
- * @example
- * ```ts
- * // Bad; missing TSDoc on local
- * /\** Doubles a value. *\/
- * function double(n: number): number {
- *   const result = n * 2;
- *   return result;
- * }
- *
- * // Good
- * /\** Doubles a value. *\/
- * function double(n: number): number {
- *   /\** Computed double of the input. *\/
- *   const result = n * 2;
- *   return result;
- * }
- * ```
+ Requires TSDoc comments on every documentable declaration, including
+ local variables inside function bodies and block scopes.
+ 
+ FunctionExpression and ArrowFunctionExpression are excluded because
+ their TSDoc is owned by the enclosing VariableDeclaration or
+ MethodDefinition node.
+ 
+ For-loop bindings (`for (const x of arr)`, `for (let loopIndex = 0; ...)`)
+ are excluded because they have no natural site for TSDoc.
+ 
+ Each visitor reports through {@link reportMissing}, and
+ {@link shouldSkipIgnoredFile} skips files excluded from this rule.
+ 
+ @example
+ ```ts
+ // Bad; missing TSDoc on local
+ /\** Doubles a value. *\/
+ function double(n: number): number {
+   const result = n * 2;
+   return result;
+ }
+ 
+ // Good
+ /\** Doubles a value. *\/
+ function double(n: number): number {
+   /\** Computed double of the input. *\/
+   const result = n * 2;
+   return result;
+ }
+ ```
  */
 export const requireTsdoc: CreateOnceRule = {
   meta: {
@@ -53,27 +53,27 @@ export const requireTsdoc: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
-     * Mutable visitor traversal state shared across AST callbacks.
-     *
-     * AGENTS.md bans function-root `let` for cleanliness; an object with
-     * a mutable property carries the same state in a single `const` binding.
+     Mutable visitor traversal state shared across AST callbacks.
+     
+     AGENTS.md bans function-root `let` for cleanliness; an object with
+     a mutable property carries the same state in a single `const` binding.
      */
     const state = {
       /**
-       * True when the next VariableDeclaration is a for-loop binding (for/for-of/for-in init).
+       True when the next VariableDeclaration is a for-loop binding (for/for-of/for-in init).
        */
       inForLoopInit: false,
     };

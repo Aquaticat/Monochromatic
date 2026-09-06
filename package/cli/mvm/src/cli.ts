@@ -11,56 +11,56 @@ import {
 } from './backend/registry.ts';
 import { parser, } from './index-parsers.ts';
 
-export {};
+
 
 //region Infra flags: stripped before parsing (logger reads --verbose from raw argv; --backend selects the backend)
 
 /**
- * Valueless flags consumed by infrastructure rather than the argument parser.
- * Only stripped from tokens before `--` so that VM commands like
- * `mvm exec myvm -- --verbose cmd` preserve `--verbose` for the guest.
- *
- * @example
- * ```ts
- * INFRA_FLAGS.has('--verbose'); // true
- * ```
+ Valueless flags consumed by infrastructure rather than the argument parser.
+ Only stripped from tokens before `--` so that VM commands like
+ `mvm exec myvm -- --verbose cmd` preserve `--verbose` for the guest.
+ 
+ @example
+ ```ts
+ INFRA_FLAGS.has('--verbose'); // true
+ ```
  */
 const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose',],);
 
 /**
- * Long flag selecting the backend; consumes the following token as its value.
+ Long flag selecting the backend; consumes the following token as its value.
  */
 const BACKEND_FLAG = '--backend';
 
 /**
- * Inline form `--backend=value`.
+ Inline form `--backend=value`.
  */
 const BACKEND_FLAG_EQ = `${BACKEND_FLAG}=`;
 
 /**
- * Raw args after the script name.
+ Raw args after the script name.
  */
 const rawArgs = process.argv
   .slice(2,);
 
 /**
- * Index of the `--` separator, or end-of-args when absent.
- * Infrastructure flags are only stripped before this boundary.
+ Index of the `--` separator, or end-of-args when absent.
+ Infrastructure flags are only stripped before this boundary.
  */
 const doubleDashIndex = rawArgs.indexOf('--',);
 
 /**
- * Boundary past which tokens belong to the VM command and must not be touched.
+ Boundary past which tokens belong to the VM command and must not be touched.
  */
 const boundary = (doubleDashIndex === (-1)) ? rawArgs.length : doubleDashIndex;
 
 /**
- * TODO: deprecate Optique
- * Captured backend value (`''` when `--backend` is absent) and the args handed
- * to the optique parser, after stripping infrastructure flags from the
- * mvm-owned prefix. Tokens at or past the `--` boundary are preserved verbatim.
- * The scan runs in a named IIFE so its cursor/accumulator `let`s do not leak to
- * the module body.
+ TODO: deprecate Optique
+ Captured backend value (`''` when `--backend` is absent) and the args handed
+ to the optique parser, after stripping infrastructure flags from the
+ mvm-owned prefix. Tokens at or past the `--` boundary are preserved verbatim.
+ The scan runs in a named IIFE so its cursor/accumulator `let`s do not leak to
+ the module body.
  */
 const {
   backendValue,
@@ -70,20 +70,20 @@ const {
   readonly filteredArgs: readonly string[];
 } {
   /**
-   * Backend value captured from `--backend`, empty until found.
+   Backend value captured from `--backend`, empty until found.
    */
   let captured = '';
   /**
-   * Args surviving the infra strip, handed to the optique parser.
+   Args surviving the infra strip, handed to the optique parser.
    */
   const kept: string[] = [];
   /**
-   * Scan cursor; advances by two when consuming `--backend value`.
+   Scan cursor; advances by two when consuming `--backend value`.
    */
   let idx = 0;
   while (idx < rawArgs.length) {
     /**
-     * Current token; guarded for the indexed-access undefined case.
+     Current token; guarded for the indexed-access undefined case.
      */
     const arg = rawArgs[idx];
     if (arg === undefined) {
@@ -122,8 +122,8 @@ const {
 //region Dispatch: parse argv, select the backend, and route to the operation
 
 /**
- * TODO: deprecate Optique
- * Parsed CLI result from process.argv
+ TODO: deprecate Optique
+ Parsed CLI result from process.argv
  */
 const args = runSync(
   parser,
@@ -139,8 +139,8 @@ const args = runSync(
 );
 
 /**
- * Selected backend, resolved from `--backend`/`MVM_BACKEND` (default libvirt)
- * and guarded against the current platform before any work runs.
+ Selected backend, resolved from `--backend`/`MVM_BACKEND` (default libvirt)
+ and guarded against the current platform before any work runs.
  */
 const backend = await selectBackend(resolveBackendKind(backendValue,),);
 
@@ -165,7 +165,7 @@ else if (args.cmd
 else if (args.cmd
   === 'list') {
   /**
-   * All managed VMs queried from the selected backend.
+   All managed VMs queried from the selected backend.
    */
   const vms = await backend.list();
   if (vms.length
@@ -173,7 +173,7 @@ else if (args.cmd
     console.error('no VMs found',);
   else {
     /**
-     * Column width for aligned output.
+     Column width for aligned output.
      */
     const NAME_COL_WIDTH = 24;
     vms.forEach(function printVm(vm: ReadonlyDeep<(typeof vms)[number]>,) {
@@ -198,7 +198,7 @@ else if (args.cmd
 else if (args.cmd
   === 'exec') {
   /**
-   * Execution result with stdout, stderr, and exit code.
+   Execution result with stdout, stderr, and exit code.
    */
   const result = await backend.exec({
     command: args.command,
@@ -221,7 +221,7 @@ else if (args.cmd
 else if (args.cmd
   === 'push') {
   /**
-   * Guest path where the file is accessible inside the VM.
+   Guest path where the file is accessible inside the VM.
    */
   const guestFilePath = await backend.pushFile({
     name: args.name,
@@ -233,14 +233,14 @@ else if (args.cmd
 else if (args.cmd
   === 'pull') {
   /**
-   * File content retrieved from the guest.
+   File content retrieved from the guest.
    */
   const content = await backend.pullFile({
     name: args.name,
     guestPath: args.guestPath,
   },);
   /**
-   * Dynamic import keeps the pull-only branch off the cold-start dependency graph.
+   Dynamic import keeps the pull-only branch off the cold-start dependency graph.
    */
   const { writeFile, } = await import('node:fs/promises');
   await writeFile(
@@ -251,7 +251,7 @@ else if (args.cmd
 }
 else {
   /**
-   * Execution result from the ephemeral VM.
+   Execution result from the ephemeral VM.
    */
   const result = await backend.run({
     command: args.command,

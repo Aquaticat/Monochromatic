@@ -1,22 +1,22 @@
 /**
- * Raw V8 coverage reader for the toml-edit fuzz coverage gate.
- *
- * Node v26 runs the package `.ts` source directly and its type stripping is
- * position preserving (type syntax is blanked to whitespace, never shifted), so
- * a `NODE_V8_COVERAGE` JSON range offset indexes the on-disk `.ts` source
- * one-to-one. This module turns those raw ranges into a per-file covered-line
- * count for the shipped implementation files (the coverage targets), excluding
- * the fuzz, conformance, and test helpers that drive them.
- *
- * The metric is V8 block coverage projected to lines: paint a per-character
- * bitmap where the innermost range's count decides coverage (paint the longest
- * range first so a never-taken block inside a covered function wins), then a
- * source line counts as covered when it holds a non-whitespace character at a
- * covered offset. Coverage is unioned at the line-set level so a file split
- * across coverage processes stays the union of its runs, and no mutable bitmap
- * or map is ever passed across a function boundary.
- *
- * @module
+ Raw V8 coverage reader for the toml-edit fuzz coverage gate.
+ 
+ Node v26 runs the package `.ts` source directly and its type stripping is
+ position preserving (type syntax is blanked to whitespace, never shifted), so
+ a `NODE_V8_COVERAGE` JSON range offset indexes the on-disk `.ts` source
+ one-to-one. This module turns those raw ranges into a per-file covered-line
+ count for the shipped implementation files (the coverage targets), excluding
+ the fuzz, conformance, and test helpers that drive them.
+ 
+ The metric is V8 block coverage projected to lines: paint a per-character
+ bitmap where the innermost range's count decides coverage (paint the longest
+ range first so a never-taken block inside a covered function wins), then a
+ source line counts as covered when it holds a non-whitespace character at a
+ covered offset. Coverage is unioned at the line-set level so a file split
+ across coverage processes stays the union of its runs, and no mutable bitmap
+ or map is ever passed across a function boundary.
+ 
+ @module
  */
 
 import { relative, } from 'node:path';
@@ -25,7 +25,7 @@ import { fileURLToPath, } from 'node:url';
 //region V8 JSON shapes
 
 /**
- * One V8 source range: a half-open character span and its execution count.
+ One V8 source range: a half-open character span and its execution count.
  */
 export type V8Range = {
   readonly startOffset: number;
@@ -34,7 +34,7 @@ export type V8Range = {
 };
 
 /**
- * One V8 function coverage entry: the function's own range plus block ranges.
+ One V8 function coverage entry: the function's own range plus block ranges.
  */
 export type V8Function = {
   readonly functionName: string;
@@ -43,7 +43,7 @@ export type V8Function = {
 };
 
 /**
- * One covered script: its source URL and the function coverage entries.
+ One covered script: its source URL and the function coverage entries.
  */
 export type V8Script = {
   readonly url: string;
@@ -51,26 +51,26 @@ export type V8Script = {
 };
 
 /**
- * One `NODE_V8_COVERAGE` output file: the array of covered scripts.
+ One `NODE_V8_COVERAGE` output file: the array of covered scripts.
  */
 export type V8CoverageFile = {
   readonly result: readonly V8Script[];
 };
 
 /**
- * Whether parsed JSON has the coverage-file shape (a `result` array), narrowing
- * from `unknown` without an `as` assertion.
- *
- * @param value - Parsed JSON to test before reading as coverage.
- *
- * @returns Whether `value` can be read as a coverage file.
- *
- * @example
- * ```ts
- * if (isCoverageFile(parsed)) {
- *   parsed.result.length;
- * }
- * ```
+ Whether parsed JSON has the coverage-file shape (a `result` array), narrowing
+ from `unknown` without an `as` assertion.
+ 
+ @param value - Parsed JSON to test before reading as coverage.
+ 
+ @returns Whether `value` can be read as a coverage file.
+ 
+ @example
+ ```ts
+ if (isCoverageFile(parsed)) {
+   parsed.result.length;
+ }
+ ```
  */
 export function isCoverageFile(value: unknown,): value is V8CoverageFile {
   return ((typeof value) === 'object')
@@ -84,25 +84,25 @@ export function isCoverageFile(value: unknown,): value is V8CoverageFile {
 //region Public coverage shapes
 
 /**
- * Line coverage for one target file.
+ Line coverage for one target file.
  */
 export type FileCoverage = {
   /**
-   * Count of non-blank lines with a covered non-whitespace character.
+   Count of non-blank lines with a covered non-whitespace character.
    */
   readonly covered: number;
   /**
-   * Count of non-blank lines (the line denominator).
+   Count of non-blank lines (the line denominator).
    */
   readonly total: number;
   /**
-   * One-based line numbers that hold code yet stayed uncovered.
+   One-based line numbers that hold code yet stayed uncovered.
    */
   readonly uncovered: readonly number[];
 };
 
 /**
- * Per-target-file coverage, keyed by package-relative path (`src/foo.ts`).
+ Per-target-file coverage, keyed by package-relative path (`src/foo.ts`).
  */
 export type CoverageMap = Readonly<Record<string, FileCoverage>>;
 
@@ -111,8 +111,8 @@ export type CoverageMap = Readonly<Record<string, FileCoverage>>;
 //region URL classification
 
 /**
- * Path fragments that mark a `src` `.ts` file as a fuzz, conformance, or test
- * helper that drives the implementation rather than a coverage target.
+ Path fragments that mark a `src` `.ts` file as a fuzz, conformance, or test
+ helper that drives the implementation rather than a coverage target.
  */
 const NON_TARGET_FRAGMENTS: readonly string[] = [
   '/fuzz/',
@@ -122,7 +122,7 @@ const NON_TARGET_FRAGMENTS: readonly string[] = [
 ];
 
 /**
- * Classification of one V8 script URL against the coverage-target rule.
+ Classification of one V8 script URL against the coverage-target rule.
  */
 export type UrlClass =
   | {
@@ -133,15 +133,15 @@ export type UrlClass =
   | { readonly kind: 'other'; };
 
 /**
- * Classify a V8 script URL as a shipped-implementation coverage target or not.
- *
- * @returns Target descriptor for `src` implementation files under `packageRoot`;
- *   otherwise an `other` marker for dependencies, helpers, and test files.
- *
- * @example
- * ```ts
- * const cls = classifyUrl({ url: script.url, packageRoot, },);
- * ```
+ Classify a V8 script URL as a shipped-implementation coverage target or not.
+ 
+ @returns Target descriptor for `src` implementation files under `packageRoot`;
+   otherwise an `other` marker for dependencies, helpers, and test files.
+ 
+ @example
+ ```ts
+ const cls = classifyUrl({ url: script.url, packageRoot, },);
+ ```
  */
 export function classifyUrl(
   {
@@ -154,11 +154,11 @@ export function classifyUrl(
 ): UrlClass {
   if (!url.startsWith('file:',)) return { kind: 'other', };
   /**
-   * Absolute filesystem path behind the `file:` URL.
+   Absolute filesystem path behind the `file:` URL.
    */
   const absPath = fileURLToPath(url,);
   /**
-   * Package-relative path used as the coverage key.
+   Package-relative path used as the coverage key.
    */
   const rel = relative(
     packageRoot,
@@ -183,18 +183,18 @@ export function classifyUrl(
 //region Bitmap painting and line projection
 
 /**
- * Characters treated as whitespace, so a line of only these never counts as
- * code: space, tab, carriage return, form feed, vertical tab.
+ Characters treated as whitespace, so a line of only these never counts as
+ code: space, tab, carriage return, form feed, vertical tab.
  */
 const WHITESPACE_CHARS = ' \t\r\f\v';
 
 /**
- * Paint a per-character covered bitmap from one script's ranges.
- *
- * Ranges nest; painting longest first lets the innermost range's count decide,
- * so a never-taken block inside a covered function paints uncovered.
- *
- * @returns Bitmap of length `length` where `1` marks a covered character offset.
+ Paint a per-character covered bitmap from one script's ranges.
+ 
+ Ranges nest; painting longest first lets the innermost range's count decide,
+ so a never-taken block inside a covered function paints uncovered.
+ 
+ @returns Bitmap of length `length` where `1` marks a covered character offset.
  */
 function paintBitmap(
   {
@@ -206,7 +206,7 @@ function paintBitmap(
   },
 ): Uint8Array {
   /**
-   * Every range across the script's functions, longest first.
+   Every range across the script's functions, longest first.
    */
   const ranges = functions
     .flatMap(function rangesOf(fn,) { return fn.ranges; },)
@@ -217,16 +217,16 @@ function paintBitmap(
       return (b.endOffset - b.startOffset) - (a.endOffset - a.startOffset);
     },);
   /**
-   * Covered bitmap, mutated as ranges paint over it from longest to shortest.
+   Covered bitmap, mutated as ranges paint over it from longest to shortest.
    */
   const bitmap = new Uint8Array(length,);
   for (const range of ranges) {
     /**
-     * Covered when the range executed at least once.
+     Covered when the range executed at least once.
      */
     const fill = range.count > 0 ? 1 : 0;
     /**
-     * Clamp so a malformed range never writes past the source.
+     Clamp so a malformed range never writes past the source.
      */
     const end = Math.min(
       range.endOffset,
@@ -243,9 +243,9 @@ function paintBitmap(
 }
 
 /**
- * Whether `line` holds at least one non-whitespace character (is a code line).
- *
- * @returns Whether the line denominator should count this line.
+ Whether `line` holds at least one non-whitespace character (is a code line).
+ 
+ @returns Whether the line denominator should count this line.
  */
 function lineHasCode({ line, }: { readonly line: string; },): boolean {
   for (const char of line) {
@@ -255,10 +255,10 @@ function lineHasCode({ line, }: { readonly line: string; },): boolean {
 }
 
 /**
- * Whether `line` holds a non-whitespace character at a covered bitmap offset.
- * Indexed in code units so the offset aligns with V8's character offsets.
- *
- * @returns Whether the line counts as covered.
+ Whether `line` holds a non-whitespace character at a covered bitmap offset.
+ Indexed in code units so the offset aligns with V8's character offsets.
+ 
+ @returns Whether the line counts as covered.
  */
 function lineHasCoveredCode(
   {
@@ -278,14 +278,14 @@ function lineHasCoveredCode(
 }
 
 /**
- * Project one script's ranges onto the set of covered one-based line numbers.
- *
- * @returns Covered code-line numbers for this script.
- *
- * @example
- * ```ts
- * const covered = projectCovered({ source: 'x = 1\n', functions: [] });
- * ```
+ Project one script's ranges onto the set of covered one-based line numbers.
+ 
+ @returns Covered code-line numbers for this script.
+ 
+ @example
+ ```ts
+ const covered = projectCovered({ source: 'x = 1\n', functions: [] });
+ ```
  */
 export function projectCovered(
   {
@@ -297,14 +297,14 @@ export function projectCovered(
   },
 ): ReadonlySet<number> {
   /**
-   * Per-character covered bitmap, local to this projection.
+   Per-character covered bitmap, local to this projection.
    */
   const bitmap = paintBitmap({
     length: source.length,
     functions,
   },);
   /**
-   * Covered one-based line numbers accumulated over the source lines.
+   Covered one-based line numbers accumulated over the source lines.
    */
   const covered = new Set<number>();
   source.split('\n',)
@@ -328,14 +328,14 @@ export function projectCovered(
 }
 
 /**
- * Project a covered-line set onto per-file coverage counts.
- *
- * @returns Covered and total code-line counts plus the uncovered line numbers.
- *
- * @example
- * ```ts
- * const coverage = fileCoverageFrom({ source: 'x = 1\n', coveredLines: new Set([1]) });
- * ```
+ Project a covered-line set onto per-file coverage counts.
+ 
+ @returns Covered and total code-line counts plus the uncovered line numbers.
+ 
+ @example
+ ```ts
+ const coverage = fileCoverageFrom({ source: 'x = 1\n', coveredLines: new Set([1]) });
+ ```
  */
 export function fileCoverageFrom(
   {
@@ -347,11 +347,11 @@ export function fileCoverageFrom(
   },
 ): FileCoverage {
   /**
-   * One-based numbers of code lines that stayed uncovered, pushed in order.
+   One-based numbers of code lines that stayed uncovered, pushed in order.
    */
   const uncovered: number[] = [];
   /**
-   * Fold of covered and total code-line counts over the source lines.
+   Fold of covered and total code-line counts over the source lines.
    */
   const tally = source.split('\n',)
     .reduce(
@@ -365,7 +365,7 @@ export function fileCoverageFrom(
     ) {
       if (!lineHasCode({ line, },)) return acc;
       /**
-       * One-based line number for this code line.
+       One-based line number for this code line.
        */
       const lineNumber = index + 1;
       if (coveredLines.has(lineNumber,)) {

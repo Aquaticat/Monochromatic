@@ -1,7 +1,7 @@
 /**
- * Unit tests for Advisor rendering summaries.
- *
- * @module
+ Unit tests for Advisor rendering summaries.
+ 
+ @module
  */
 
 import {

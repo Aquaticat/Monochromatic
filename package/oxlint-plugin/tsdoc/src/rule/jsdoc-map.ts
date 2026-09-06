@@ -1,21 +1,21 @@
 /**
- * JSDoc-to-TSDoc tag migration suggestions.
- *
- * Maps JSDoc-only tag names to human-readable replacement guidance,
- * used by the tag-names validation rule.
- *
- * @module
+ JSDoc-to-TSDoc tag migration suggestions.
+ 
+ Maps JSDoc-only tag names to human-readable replacement guidance,
+ used by the tag-names validation rule.
+ 
+ @module
  */
 
 /**
- * JSDoc tags that have no TSDoc equivalent or have a different name.
- * Each value is a user-facing suggestion for how to migrate.
- *
- * @example
- * ```ts
- * JSDOC_TO_TSDOC_MAP.get('\@type');
- * // => 'Remove \@type; TypeScript handles types.'
- * ```
+ JSDoc tags that have no TSDoc equivalent or have a different name.
+ Each value is a user-facing suggestion for how to migrate.
+ 
+ @example
+ ```ts
+ JSDOC_TO_TSDOC_MAP.get('\@type');
+ // => 'Remove \@type; TypeScript handles types.'
+ ```
  */
 export const JSDOC_TO_TSDOC_MAP: ReadonlyMap<string, string> = new Map([
   [

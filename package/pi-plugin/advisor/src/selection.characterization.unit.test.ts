@@ -1,7 +1,7 @@
 /**
- * Characterization tests for Advisor model-selection behavior before shared extraction.
- *
- * @module
+ Characterization tests for Advisor model-selection behavior before shared extraction.
+ 
+ @module
  */
 
 import type {
@@ -72,26 +72,26 @@ const advisorConfig: AdvisorConfig = {
 };
 
 /**
- * Build a complete pi model fixture.
- *
- * @param provider - provider slug
- *
- * @param id - model id
- *
- * @param name - display name
- *
- * @param inputCost - input price per million tokens
- *
- * @param outputCost - output price per million tokens
- *
- * @param maxOutputTokens - optional advertised output capacity
- *
- * @returns pi model fixture
- *
- * @example
- * ```typescript
- * modelFixture({ provider: 'openai', id: 'gpt-5', name: 'GPT', inputCost: 1, outputCost: 2 });
- * ```
+ Build a complete pi model fixture.
+ 
+ @param provider - provider slug
+ 
+ @param id - model id
+ 
+ @param name - display name
+ 
+ @param inputCost - input price per million tokens
+ 
+ @param outputCost - output price per million tokens
+ 
+ @param maxOutputTokens - optional advertised output capacity
+ 
+ @returns pi model fixture
+ 
+ @example
+ ```typescript
+ modelFixture({ provider: 'openai', id: 'gpt-5', name: 'GPT', inputCost: 1, outputCost: 2 });
+ ```
  */
 function modelFixture(
   {
@@ -195,16 +195,16 @@ const modelRegistry = {
 } as ModelRegistry;
 
 /**
- * Capture a synchronous error from a selection action.
- *
- * @param action - action expected to throw
- *
- * @returns caught error value
- *
- * @example
- * ```typescript
- * const error = captureError(function fail() { throw new Error('x'); });
- * ```
+ Capture a synchronous error from a selection action.
+ 
+ @param action - action expected to throw
+ 
+ @returns caught error value
+ 
+ @example
+ ```typescript
+ const error = captureError(function fail() { throw new Error('x'); });
+ ```
  */
 function captureError(
   action: () => unknown,

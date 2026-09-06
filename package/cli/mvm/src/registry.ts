@@ -6,103 +6,103 @@ import { pathExists, } from './path-exists.ts';
 //region OS family and guest config types
 
 /**
- * Top-level OS family discriminant for guest configuration dispatch.
- * Determines which provisioning, exec, and domain XML paths are used.
- *
- * @example
- * ```ts
- * const family: OsFamily = 'windows';
- * ```
+ Top-level OS family discriminant for guest configuration dispatch.
+ Determines which provisioning, exec, and domain XML paths are used.
+ 
+ @example
+ ```ts
+ const family: OsFamily = 'windows';
+ ```
  */
 export type OsFamily = 'linux' | 'windows';
 
 /**
- * Init system used by a Linux guest OS, determines how services are managed
- * in cloud-init runcmd directives.
- *
- * @example
- * ```ts
- * const system: InitSystem = 'systemd';
- * ```
+ Init system used by a Linux guest OS, determines how services are managed
+ in cloud-init runcmd directives.
+ 
+ @example
+ ```ts
+ const system: InitSystem = 'systemd';
+ ```
  */
 export type InitSystem = 'openrc' | 'systemd';
 
 /**
- * Linux guest OS configuration for cloud-init provisioning.
- * Discriminated from {@link WindowsGuestConfig} by `osFamily: 'linux'`.
- *
- * @example
- * ```ts
- * const guest: LinuxGuestConfig = {
- *   osFamily: 'linux',
- *   defaultUser: 'ubuntu',
- *   initSystem: 'systemd',
- *   shell: '/bin/bash',
- * };
- * ```
+ Linux guest OS configuration for cloud-init provisioning.
+ Discriminated from {@link WindowsGuestConfig} by `osFamily: 'linux'`.
+ 
+ @example
+ ```ts
+ const guest: LinuxGuestConfig = {
+   osFamily: 'linux',
+   defaultUser: 'ubuntu',
+   initSystem: 'systemd',
+   shell: '/bin/bash',
+ };
+ ```
  */
 export type LinuxGuestConfig = {
   /**
-   * Discriminant identifying this as a Linux guest.
+   Discriminant identifying this as a Linux guest.
    */
   readonly osFamily: 'linux';
   /**
-   * Default login user created by cloud-init for this distro.
+   Default login user created by cloud-init for this distro.
    */
   readonly defaultUser: string;
   /**
-   * Init system for service management (systemd or openrc).
+   Init system for service management (systemd or openrc).
    */
   readonly initSystem: InitSystem;
   /**
-   * Login shell path for the default user.
+   Login shell path for the default user.
    */
   readonly shell: string;
 };
 
 /**
- * Windows guest OS configuration for unattended provisioning.
- * Discriminated from {@link LinuxGuestConfig} by `osFamily: 'windows'`.
- * Windows guests use the QEMU guest agent for post-boot hostname configuration
- * instead of cloud-init.
- *
- * @example
- * ```ts
- * const guest: WindowsGuestConfig = {
- *   osFamily: 'windows',
- *   defaultUser: 'Administrator',
- *   shell: 'powershell.exe',
- * };
- * ```
+ Windows guest OS configuration for unattended provisioning.
+ Discriminated from {@link LinuxGuestConfig} by `osFamily: 'windows'`.
+ Windows guests use the QEMU guest agent for post-boot hostname configuration
+ instead of cloud-init.
+ 
+ @example
+ ```ts
+ const guest: WindowsGuestConfig = {
+   osFamily: 'windows',
+   defaultUser: 'Administrator',
+   shell: 'powershell.exe',
+ };
+ ```
  */
 export type WindowsGuestConfig = {
   /**
-   * Discriminant identifying this as a Windows guest.
+   Discriminant identifying this as a Windows guest.
    */
   readonly osFamily: 'windows';
   /**
-   * Default admin user created during unattended install.
+   Default admin user created during unattended install.
    */
   readonly defaultUser: string;
   /**
-   * Shell executable for guest-exec commands (powershell.exe or cmd.exe).
+   Shell executable for guest-exec commands (powershell.exe or cmd.exe).
    */
   readonly shell: string;
 };
 
 /**
- * Discriminated union of guest OS configurations.
- * Check `osFamily` to narrow to the correct variant.
- *
- * @example
- * ```ts
- * function getShell(guest: GuestConfig): string {
- *   if (guest.osFamily === 'linux') {
- *     return guest.shell; // LinuxGuestConfig
- *   }
- *   return guest.shell; // WindowsGuestConfig
- * }
- * ```
+ Discriminated union of guest OS configurations.
+ Check `osFamily` to narrow to the correct variant.
+ 
+ @example
+ ```ts
+ function getShell(guest: GuestConfig): string {
+   if (guest.osFamily === 'linux') {
+     return guest.shell; // LinuxGuestConfig
+   }
+   return guest.shell; // WindowsGuestConfig
+ }
+ ```
  */
 export type GuestConfig = LinuxGuestConfig | WindowsGuestConfig;
 
@@ -111,72 +111,72 @@ export type GuestConfig = LinuxGuestConfig | WindowsGuestConfig;
 //region Image spec types
 
 /**
- * Linux cloud image specification for download, caching, and template baking.
- * The `fileName` refers to a qcow2 cloud image downloaded from `url`.
- *
- * @example
- * ```ts
- * const spec: LinuxImageSpec = IMAGES['ubuntu'] as LinuxImageSpec;
- * spec.initSystem; // => 'systemd'
- * ```
+ Linux cloud image specification for download, caching, and template baking.
+ The `fileName` refers to a qcow2 cloud image downloaded from `url`.
+ 
+ @example
+ ```ts
+ const spec: LinuxImageSpec = IMAGES['ubuntu'] as LinuxImageSpec;
+ spec.initSystem; // => 'systemd'
+ ```
  */
 export type LinuxImageSpec = LinuxGuestConfig & {
   /**
-   * Cached qcow2 cloud image filename under `~/.local/share/mvm/images/`.
+   Cached qcow2 cloud image filename under `~/.local/share/mvm/images/`.
    */
   readonly fileName: string;
   /**
-   * Template filename derived from this image (e.g. `template-ubuntu.qcow2`).
+   Template filename derived from this image (e.g. `template-ubuntu.qcow2`).
    */
   readonly templateFileName: string;
   /**
-   * Remote URL to download the cloud image from.
+   Remote URL to download the cloud image from.
    */
   readonly url: string;
 };
 
 /**
- * Windows image specification for ISO-based unattended template baking.
- * The `fileName` refers to a Windows evaluation ISO downloaded from `url`.
- * Template creation installs Windows from the ISO using an autounattend answer file.
- *
- * @example
- * ```ts
- * const spec: WindowsImageSpec = IMAGES['windows'] as WindowsImageSpec;
- * spec.imageIndex; // => 1 (Server Core)
- * ```
+ Windows image specification for ISO-based unattended template baking.
+ The `fileName` refers to a Windows evaluation ISO downloaded from `url`.
+ Template creation installs Windows from the ISO using an autounattend answer file.
+ 
+ @example
+ ```ts
+ const spec: WindowsImageSpec = IMAGES['windows'] as WindowsImageSpec;
+ spec.imageIndex; // => 1 (Server Core)
+ ```
  */
 export type WindowsImageSpec = WindowsGuestConfig & {
   /**
-   * Cached ISO filename under `~/.local/share/mvm/images/`.
+   Cached ISO filename under `~/.local/share/mvm/images/`.
    */
   readonly fileName: string;
   /**
-   * Template filename derived from this image (e.g. `template-windows.qcow2`).
+   Template filename derived from this image (e.g. `template-windows.qcow2`).
    */
   readonly templateFileName: string;
   /**
-   * Remote URL to download the evaluation ISO from.
+   Remote URL to download the evaluation ISO from.
    */
   readonly url: string;
   /**
-   * WIM image index for unattended install (1-based, selects the OS edition).
+   WIM image index for unattended install (1-based, selects the OS edition).
    */
   readonly imageIndex: number;
 };
 
 /**
- * Discriminated union of image specifications.
- * Linux images are qcow2 cloud images; Windows images are evaluation ISOs.
- * Check `osFamily` to narrow to the correct variant.
- *
- * @example
- * ```ts
- * const spec = IMAGES['ubuntu'];
- * if (spec.osFamily === 'linux') {
- *   spec.initSystem; // narrowed to LinuxImageSpec
- * }
- * ```
+ Discriminated union of image specifications.
+ Linux images are qcow2 cloud images; Windows images are evaluation ISOs.
+ Check `osFamily` to narrow to the correct variant.
+ 
+ @example
+ ```ts
+ const spec = IMAGES['ubuntu'];
+ if (spec.osFamily === 'linux') {
+   spec.initSystem; // narrowed to LinuxImageSpec
+ }
+ ```
  */
 export type ImageSpec = LinuxImageSpec | WindowsImageSpec;
 
@@ -185,15 +185,15 @@ export type ImageSpec = LinuxImageSpec | WindowsImageSpec;
 //region Virtio-win shared resource
 
 /**
- * Stable download URL for the latest virtio-win ISO from the Fedora project.
- * Contains VirtIO storage/network drivers and the QEMU guest agent installer
- * for Windows guests. Redirects to the latest versioned filename on download.
+ Stable download URL for the latest virtio-win ISO from the Fedora project.
+ Contains VirtIO storage/network drivers and the QEMU guest agent installer
+ for Windows guests. Redirects to the latest versioned filename on download.
  */
 export const VIRTIO_WIN_URL =
   'https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso';
 
 /**
- * Cached filename for the virtio-win ISO under `~/.local/share/mvm/images/`.
+ Cached filename for the virtio-win ISO under `~/.local/share/mvm/images/`.
  */
 export const VIRTIO_WIN_FILENAME = 'virtio-win.iso';
 
@@ -202,15 +202,15 @@ export const VIRTIO_WIN_FILENAME = 'virtio-win.iso';
 //region Built-in image registry
 
 /**
- * Built-in registry of supported cloud images.
- * Each entry maps a shorthand name to a full image specification.
- * Linux entries are qcow2 cloud images; the Windows entry is an evaluation ISO.
- *
- * @example
- * ```ts
- * const fedora = IMAGES['fedora'];
- * // => { url: 'https://download.fedoraproject.org/...', defaultUser: 'fedora', ... }
- * ```
+ Built-in registry of supported cloud images.
+ Each entry maps a shorthand name to a full image specification.
+ Linux entries are qcow2 cloud images; the Windows entry is an evaluation ISO.
+ 
+ @example
+ ```ts
+ const fedora = IMAGES['fedora'];
+ // => { url: 'https://download.fedoraproject.org/...', defaultUser: 'fedora', ... }
+ ```
  */
 export const IMAGES: Readonly<Record<string, ImageSpec>> = {
   alpine: {
@@ -255,18 +255,18 @@ export const IMAGES: Readonly<Record<string, ImageSpec>> = {
 };
 
 /**
- * Default image shorthand when `--image` is not specified.
+ Default image shorthand when `--image` is not specified.
  */
 export const DEFAULT_IMAGE = 'ubuntu';
 
 /**
- * Fallback guest configuration for custom template images.
- * Uses root with systemd since the actual OS is unknown.
- *
- * @example
- * ```ts
- * createSeedIso({ name: 'vm', guest: CUSTOM_GUEST_DEFAULTS, vmDir: '...' });
- * ```
+ Fallback guest configuration for custom template images.
+ Uses root with systemd since the actual OS is unknown.
+ 
+ @example
+ ```ts
+ createSeedIso({ name: 'vm', guest: CUSTOM_GUEST_DEFAULTS, vmDir: '...' });
+ ```
  */
 export const CUSTOM_GUEST_DEFAULTS: LinuxGuestConfig = {
   osFamily: 'linux',
@@ -280,31 +280,31 @@ export const CUSTOM_GUEST_DEFAULTS: LinuxGuestConfig = {
 //region Resolution
 
 /**
- * Resolves an image identifier to a full image spec.
- * Checks the built-in registry first. If not found, looks for a custom template
- * file named `<identifier>.qcow2` in the images directory.
- *
- * @param identifier - Registry shorthand (e.g. `ubuntu`, `windows`) or custom template name
- *
- * @returns Image spec for registry images, or `{ customTemplatePath }` for user-provided templates
- *
- * @throws Error when identifier matches neither the registry nor a custom template file
- *
- * @example
- * ```ts
- * const result = await resolveImage('ubuntu');
- * // => { kind: 'registry', spec: { url: '...', ... } }
- *
- * const win = await resolveImage('windows');
- * // => { kind: 'registry', spec: { osFamily: 'windows', imageIndex: 1, ... } }
- *
- * const custom = await resolveImage('my-custom');
- * // => { kind: 'custom', customTemplatePath: '/home/user/.local/share/mvm/images/my-custom.qcow2' }
- * ```
+ Resolves an image identifier to a full image spec.
+ Checks the built-in registry first. If not found, looks for a custom template
+ file named `<identifier>.qcow2` in the images directory.
+ 
+ @param identifier - Registry shorthand (e.g. `ubuntu`, `windows`) or custom template name
+ 
+ @returns Image spec for registry images, or `{ customTemplatePath }` for user-provided templates
+ 
+ @throws Error when identifier matches neither the registry nor a custom template file
+ 
+ @example
+ ```ts
+ const result = await resolveImage('ubuntu');
+ // => { kind: 'registry', spec: { url: '...', ... } }
+ 
+ const win = await resolveImage('windows');
+ // => { kind: 'registry', spec: { osFamily: 'windows', imageIndex: 1, ... } }
+ 
+ const custom = await resolveImage('my-custom');
+ // => { kind: 'custom', customTemplatePath: '/home/user/.local/share/mvm/images/my-custom.qcow2' }
+ ```
  */
 export async function resolveImage(identifier: string,): Promise<ResolvedImage> {
   /**
-   * Registry lookup; primary resolution path before the custom-template fallback.
+   Registry lookup; primary resolution path before the custom-template fallback.
    */
   const spec = IMAGES[identifier];
   if (spec !== undefined) {
@@ -315,7 +315,7 @@ export async function resolveImage(identifier: string,): Promise<ResolvedImage> 
   }
 
   /**
-   * Candidate path for a user-supplied template under the images directory.
+   Candidate path for a user-supplied template under the images directory.
    */
   const customPath = join(
     IMAGES_DIR,
@@ -329,7 +329,7 @@ export async function resolveImage(identifier: string,): Promise<ResolvedImage> 
   }
 
   /**
-   * Listed in the error message so an unknown identifier shows the valid choices.
+   Listed in the error message so an unknown identifier shows the valid choices.
    */
   const available = Object.keys(IMAGES,)
     .join(', ',);
@@ -340,17 +340,17 @@ export async function resolveImage(identifier: string,): Promise<ResolvedImage> 
 }
 
 /**
- * Discriminated union returned by {@link resolveImage}.
- * Registry images go through the download-and-template-bake pipeline.
- * Custom images are used directly as backing templates.
- *
- * @example
- * ```ts
- * const resolved = await resolveImage('ubuntu');
- * if (resolved.kind === 'registry') {
- *   resolved.spec.url; // download URL
- * }
- * ```
+ Discriminated union returned by {@link resolveImage}.
+ Registry images go through the download-and-template-bake pipeline.
+ Custom images are used directly as backing templates.
+ 
+ @example
+ ```ts
+ const resolved = await resolveImage('ubuntu');
+ if (resolved.kind === 'registry') {
+   resolved.spec.url; // download URL
+ }
+ ```
  */
 export type ResolvedImage =
   | {

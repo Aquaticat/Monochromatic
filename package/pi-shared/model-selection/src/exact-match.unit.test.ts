@@ -1,7 +1,7 @@
 /**
- * Unit tests for exact model matching.
- *
- * @module
+ Unit tests for exact model matching.
+ 
+ @module
  */
 
 import {

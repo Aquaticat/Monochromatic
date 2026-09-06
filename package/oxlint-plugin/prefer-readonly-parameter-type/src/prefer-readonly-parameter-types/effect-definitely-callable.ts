@@ -1,7 +1,7 @@
 /**
- * Definite runtime callability classification for callback positions.
- *
- * @module
+ Definite runtime callability classification for callback positions.
+ 
+ @module
  */
 
 import {
@@ -12,18 +12,18 @@ import {
 } from 'typescript/unstable/sync';
 
 /**
- * Tests whether semantic type is definitely callable at runtime.
- *
- * @param checker - TypeScript checker resolving constraints and signatures.
- *
- * @param type - Candidate callback type.
- *
- * @returns whether every runtime constituent is callable.
- *
- * @example
- * ```ts
- * typeDefinitelyCallable({ checker, type });
- * ```
+ Tests whether semantic type is definitely callable at runtime.
+ 
+ @param checker - TypeScript checker resolving constraints and signatures.
+ 
+ @param type - Candidate callback type.
+ 
+ @returns whether every runtime constituent is callable.
+ 
+ @example
+ ```ts
+ typeDefinitelyCallable({ checker, type });
+ ```
  */
 export function typeDefinitelyCallable({
   checker,
@@ -45,7 +45,7 @@ export function typeDefinitelyCallable({
   }
   if (type.isTypeParameter()) {
     /**
-     * Constraint proving callable shape when present.
+     Constraint proving callable shape when present.
      */
     const constraint = checker.getBaseConstraintOfType(type,);
     return (constraint !== undefined)
@@ -55,7 +55,7 @@ export function typeDefinitelyCallable({
       },);
   }
   /**
-   * Callable signatures exposed by nonunion candidate type.
+   Callable signatures exposed by nonunion candidate type.
    */
   const signatures = checker.getSignaturesOfType(
     type,

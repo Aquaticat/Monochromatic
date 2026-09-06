@@ -11,12 +11,12 @@ import { API_URL, } from './analyze/llama.ts';
 import { log, } from './infra/syslog.ts';
 
 /**
- * Maximum number of capture sets sent to the LLM in a single request.
+ Maximum number of capture sets sent to the LLM in a single request.
  */
 const MAX_CAPTURE_SETS = 3;
 
 /**
- * System prompt instructing the vision LLM how to evaluate productivity.
+ System prompt instructing the vision LLM how to evaluate productivity.
  */
 const SYSTEM_PROMPT =
   `You are a strict productivity monitor for a user with ADHD. You analyze desktop screenshots and webcam captures taken at 5-minute intervals.
@@ -34,17 +34,17 @@ OUTPUT FORMAT:
 - FINAL LINE must be exactly: VERDICT: PRODUCTIVE or VERDICT: UNPRODUCTIVE`;
 
 /**
- * Chat completion response extended with the token-usage block this monitor logs.
+ Chat completion response extended with the token-usage block this monitor logs.
  */
 type CompletionResponse = ChatCompletionResponse & { readonly usage: CompletionUsage; };
 
 /**
- * Wraps a raw image buffer as a base64 data-URL content entry
- * for the OpenAI-compatible vision API.
- *
- * @param buf - JPEG image bytes
- *
- * @returns image_url content entry
+ Wraps a raw image buffer as a base64 data-URL content entry
+ for the OpenAI-compatible vision API.
+ 
+ @param buf - JPEG image bytes
+ 
+ @returns image_url content entry
  */
 function buildImageEntry(
   buf: Buffer,
@@ -59,33 +59,33 @@ function buildImageEntry(
 }
 
 /**
- * Literal keyword that prefixes the canonical verdict line in LLM output.
+ Literal keyword that prefixes the canonical verdict line in LLM output.
  */
 const VERDICT_PREFIX = 'VERDICT:';
 
 /**
- * Sentinel returned by {@link findVerdictToken} when no canonical verdict line is present.
+ Sentinel returned by {@link findVerdictToken} when no canonical verdict line is present.
  */
 const NO_VERDICT: unique symbol = Symbol('hall-monitor/verdict-line-token-absent',);
 
 /**
- * Returns the position just after any horizontal whitespace starting at `from`.
- *
- * Single linear pass: a cursor walks forward over each space or tab, so the
- * scan is O(n) time and O(1) stack rather than the prior one recursive frame
- * per skipped character (which overflows on a long blank run under engines
- * without tail-call elimination). Exported for unit tests.
- *
- * @param s - haystack
- *
- * @param from - starting index
- *
- * @returns first non-space/tab position at or after `from`
- *
- * @example
- * ```ts
- * skipSpacesAndTabs({ s: 'a   b', from: 1 }); // 4
- * ```
+ Returns the position just after any horizontal whitespace starting at `from`.
+ 
+ Single linear pass: a cursor walks forward over each space or tab, so the
+ scan is O(n) time and O(1) stack rather than the prior one recursive frame
+ per skipped character (which overflows on a long blank run under engines
+ without tail-call elimination). Exported for unit tests.
+ 
+ @param s - haystack
+ 
+ @param from - starting index
+ 
+ @returns first non-space/tab position at or after `from`
+ 
+ @example
+ ```ts
+ skipSpacesAndTabs({ s: 'a   b', from: 1 }); // 4
+ ```
  */
 export function skipSpacesAndTabs({
   s,
@@ -96,7 +96,7 @@ export function skipSpacesAndTabs({
 },): number {
   return (function scan(): number {
     /**
-     * Cursor walked forward past each leading space or tab; the first non-blank position.
+     Cursor walked forward past each leading space or tab; the first non-blank position.
      */
     let cursor = from;
     while (
@@ -112,21 +112,21 @@ export function skipSpacesAndTabs({
 }
 
 /**
- * Locates the literal verdict token after `VERDICT:` in an upper-cased line.
- *
- * @param upper - upper-cased LLM response
- *
- * @returns `'PRODUCTIVE'` / `'UNPRODUCTIVE'` when present; {@link NO_VERDICT} otherwise
+ Locates the literal verdict token after `VERDICT:` in an upper-cased line.
+ 
+ @param upper - upper-cased LLM response
+ 
+ @returns `'PRODUCTIVE'` / `'UNPRODUCTIVE'` when present; {@link NO_VERDICT} otherwise
  */
 function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | typeof NO_VERDICT {
   /**
-   * Index of the canonical `VERDICT:` literal; -1 means the line is missing.
+   Index of the canonical `VERDICT:` literal; -1 means the line is missing.
    */
   const idx = upper.indexOf(VERDICT_PREFIX,);
   if (idx === (-1))
     return NO_VERDICT;
   /**
-   * Cursor after `VERDICT:` and any inline whitespace; verdict word starts here.
+   Cursor after `VERDICT:` and any inline whitespace; verdict word starts here.
    */
   const start = skipSpacesAndTabs({
     s: upper,
@@ -134,7 +134,7 @@ function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | typeo
       .length,
   },);
   /**
-   * Substring beginning at `start`; checked against the longer alternative first.
+   Substring beginning at `start`; checked against the longer alternative first.
    */
   const tail = upper.slice(start,);
   if (tail.startsWith('UNPRODUCTIVE',))
@@ -145,27 +145,27 @@ function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | typeo
 }
 
 /**
- * Extracts a PRODUCTIVE or UNPRODUCTIVE verdict from the LLM response text.
- * Looks for the canonical `VERDICT: ...` line first via {@link findVerdictToken},
- * falls back to keyword matching.
- *
- * @param result - raw LLM response text
- *
- * @returns parsed verdict
- *
- * @example
- * ```ts
- * parseVerdict("... VERDICT: UNPRODUCTIVE"); // "UNPRODUCTIVE"
- * parseVerdict("The user appears productive."); // "PRODUCTIVE"
- * ```
+ Extracts a PRODUCTIVE or UNPRODUCTIVE verdict from the LLM response text.
+ Looks for the canonical `VERDICT: ...` line first via {@link findVerdictToken},
+ falls back to keyword matching.
+ 
+ @param result - raw LLM response text
+ 
+ @returns parsed verdict
+ 
+ @example
+ ```ts
+ parseVerdict("... VERDICT: UNPRODUCTIVE"); // "UNPRODUCTIVE"
+ parseVerdict("The user appears productive."); // "PRODUCTIVE"
+ ```
  */
 export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
   /**
-   * Upper-cased copy of the response so verdict matching is case-insensitive.
+   Upper-cased copy of the response so verdict matching is case-insensitive.
    */
   const upper = result.toUpperCase();
   /**
-   * Parsed verdict from the canonical line; {@link NO_VERDICT} when only fallback keyword matching can apply.
+   Parsed verdict from the canonical line; {@link NO_VERDICT} when only fallback keyword matching can apply.
    */
   const verdict = findVerdictToken(upper,);
   if ((typeof verdict) === 'string')
@@ -176,43 +176,43 @@ export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
 }
 
 /**
- * Sends buffered capture sets to the local vision LLM at {@link API_URL} for
- * productivity analysis. Constructs a multimodal prompt with timestamped
- * screenshot/webcam pairs and returns the raw LLM response text containing
- * the verdict.
- *
- * @param sets - recent capture sets to analyze
- *
- * @returns raw LLM response text including the verdict line
- *
- * @throws when the LLM API returns a non-OK status
- *
- * @example
- * ```ts
- * const result = await analyze(getRecent());
- * const verdict = parseVerdict(result);
- * ```
+ Sends buffered capture sets to the local vision LLM at {@link API_URL} for
+ productivity analysis. Constructs a multimodal prompt with timestamped
+ screenshot/webcam pairs and returns the raw LLM response text containing
+ the verdict.
+ 
+ @param sets - recent capture sets to analyze
+ 
+ @returns raw LLM response text including the verdict line
+ 
+ @throws when the LLM API returns a non-OK status
+ 
+ @example
+ ```ts
+ const result = await analyze(getRecent());
+ const verdict = parseVerdict(result);
+ ```
  */
 export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
   /**
-   * Capture sets trimmed to {@link MAX_CAPTURE_SETS} so prompt size stays bounded.
+   Capture sets trimmed to {@link MAX_CAPTURE_SETS} so prompt size stays bounded.
    */
   const capped = sets.slice(
     0,
     MAX_CAPTURE_SETS,
   );
   /**
-   * Cached length so the prompt-tail branch does not re-walk `capped`.
+   Cached length so the prompt-tail branch does not re-walk `capped`.
    */
   const numSets = capped.length;
 
   /**
-   * Build content array by flat-mapping each capture into its message entries.
+   Build content array by flat-mapping each capture into its message entries.
    */
   const content: ContentPart[] = capped.flatMap(
     function captureEntries(capture,) {
       /**
-       * Human-readable local time used to label each capture in the prompt.
+       Human-readable local time used to label each capture in the prompt.
        */
       const ts = new Date(capture.timestamp,).toLocaleTimeString();
       return [
@@ -242,7 +242,7 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
   },);
 
   /**
-   * OpenAI-compatible chat completion request body sent to the local llama-server.
+   OpenAI-compatible chat completion request body sent to the local llama-server.
    */
   const payload = {
     model: 'lfm2.5-vl-1.6b',
@@ -263,11 +263,11 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
   };
 
   /**
-   * Monotonic timestamp captured before the request so elapsed time can be logged.
+   Monotonic timestamp captured before the request so elapsed time can be logged.
    */
   const start = performance.now();
   /**
-   * Response handle from llama-server; checked for non-OK status before reading the body.
+   Response handle from llama-server; checked for non-OK status before reading the body.
    */
   const res = await fetch(
     API_URL,
@@ -280,24 +280,24 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
 
   if (!res.ok) {
     /**
-     * Raw error body included in the thrown error so callers can diagnose API failures.
+     Raw error body included in the thrown error so callers can diagnose API failures.
      */
     const text = await res.text();
     throw new Error(`LLM API error ${res.status}: ${text}`,);
   }
 
   /**
-   * Parsed completion response carrying both the verdict text and token-usage stats.
+   Parsed completion response carrying both the verdict text and token-usage stats.
    */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response shape is defined by the OpenAI-compatible API
   const data = (await res.json()) as CompletionResponse;
   /**
-   * Wall-clock seconds spent on the request, rounded to one decimal for log output.
+   Wall-clock seconds spent on the request, rounded to one decimal for log output.
    */
   const elapsed = ((performance.now()
     - start) / MS_PER_SECOND).toFixed(1,);
   /**
-   * Token-usage fields pulled out for the debug log line.
+   Token-usage fields pulled out for the debug log line.
    */
   const {
     prompt_tokens,
@@ -308,7 +308,7 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
     `[analyze] ${prompt_tokens} prompt + ${completion_tokens} completion tokens, ${elapsed}s`,
   );
   /**
-   * First completion choice; treated as the canonical response since `n=1`.
+   First completion choice; treated as the canonical response since `n=1`.
    */
   const [firstChoice,] = data.choices;
   if (firstChoice === undefined)

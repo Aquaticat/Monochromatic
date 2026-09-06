@@ -1,7 +1,7 @@
 /**
- * Advisor explicit-model resolution boundary.
- *
- * @module
+ Advisor explicit-model resolution boundary.
+ 
+ @module
  */
 
 import {
@@ -21,22 +21,22 @@ import type {
 } from './types.ts';
 
 /**
- * Resolve explicit Advisor model while isolating caller-owned scoped entries from shared matching internals.
- *
- * @param scope - effective Advisor model scope
- *
- * @param requestedSlug - explicit model slug
- *
- * @param modelRegistry - pi model registry used for global lookup
- *
- * @returns explicit Advisor model selection
- *
- * @throws when requested slug is empty, ambiguous, out of scope, unknown, or no longer in supplied scope
- *
- * @example
- * ```typescript
- * resolveAdvisorRequestedModel({ scope, requestedSlug: 'provider/model', modelRegistry });
- * ```
+ Resolve explicit Advisor model while isolating caller-owned scoped entries from shared matching internals.
+ 
+ @param scope - effective Advisor model scope
+ 
+ @param requestedSlug - explicit model slug
+ 
+ @param modelRegistry - pi model registry used for global lookup
+ 
+ @returns explicit Advisor model selection
+ 
+ @throws when requested slug is empty, ambiguous, out of scope, unknown, or no longer in supplied scope
+ 
+ @example
+ ```typescript
+ resolveAdvisorRequestedModel({ scope, requestedSlug: 'provider/model', modelRegistry });
+ ```
  */
 export function resolveAdvisorRequestedModel(
   {
@@ -50,7 +50,7 @@ export function resolveAdvisorRequestedModel(
   }>,
 ): ModelSelection {
   /**
-   * Locally-owned identity-only entries safe for shared matching internals.
+   Locally-owned identity-only entries safe for shared matching internals.
    */
   const detachedEntries: ScopedModel<ModelIdentity>[] = [];
   for (const entry of scope.entries) {
@@ -71,7 +71,7 @@ export function resolveAdvisorRequestedModel(
   }
 
   /**
-   * Locally-owned scope patterns safe for shared matching internals.
+   Locally-owned scope patterns safe for shared matching internals.
    */
   const detachedPatterns: string[] = [];
   if (scope.patterns !== undefined) {
@@ -80,7 +80,7 @@ export function resolveAdvisorRequestedModel(
   }
 
   /**
-   * Explicit identity selection from detached scope.
+   Explicit identity selection from detached scope.
    */
   const detachedSelection = resolveRequestedModel({
     scope: {
@@ -95,7 +95,7 @@ export function resolveAdvisorRequestedModel(
     errorPrefix: 'advisor',
   },);
   /**
-   * Canonical slug selected from detached scope.
+   Canonical slug selected from detached scope.
    */
   const selectedSlug = detachedSelection
     .selected

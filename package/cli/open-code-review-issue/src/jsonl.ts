@@ -1,7 +1,7 @@
 /**
- * OCR session JSONL text parsing.
- *
- * @module
+ OCR session JSONL text parsing.
+ 
+ @module
  */
 
 import { InputValidationError, } from './input-validation-error.ts';
@@ -13,20 +13,20 @@ import {
 import type { NormalizedInput, } from './model.ts';
 
 /**
- * Parses one line as untrusted JSON.
- *
- * @param text - Non-blank JSONL line text.
- *
- * @param line - One-based physical line number.
- *
- * @returns Parsed JSON value.
- *
- * @throws {@link InputValidationError} when text is invalid JSON.
- *
- * @example
- * ```ts
- * parseJsonlValue({ text: '{"type":"session_start"}', line: 1 });
- * ```
+ Parses one line as untrusted JSON.
+ 
+ @param text - Non-blank JSONL line text.
+ 
+ @param line - One-based physical line number.
+ 
+ @returns Parsed JSON value.
+ 
+ @throws {@link InputValidationError} when text is invalid JSON.
+ 
+ @example
+ ```ts
+ parseJsonlValue({ text: '{"type":"session_start"}', line: 1 });
+ ```
  */
 function parseJsonlValue({
   text,
@@ -44,20 +44,20 @@ function parseJsonlValue({
 }
 
 /**
- * Parses one JSONL line as event record.
- *
- * @param text - One physical JSONL line without newline delimiter.
- *
- * @param line - One-based line number.
- *
- * @returns Validated positioned event record.
- *
- * @throws {@link InputValidationError} when line is blank, invalid JSON, or non-object.
- *
- * @example
- * ```ts
- * parseJsonlRecord({ text: '{"type":"session_start"}', line: 1 });
- * ```
+ Parses one JSONL line as event record.
+ 
+ @param text - One physical JSONL line without newline delimiter.
+ 
+ @param line - One-based line number.
+ 
+ @returns Validated positioned event record.
+ 
+ @throws {@link InputValidationError} when line is blank, invalid JSON, or non-object.
+ 
+ @example
+ ```ts
+ parseJsonlRecord({ text: '{"type":"session_start"}', line: 1 });
+ ```
  */
 function parseJsonlRecord({
   text,
@@ -70,7 +70,7 @@ function parseJsonlRecord({
     throw new InputValidationError(`line ${String(line,)} must not be blank`,);
   }
   /**
-   * Parsed line before event-object narrowing.
+   Parsed line before event-object narrowing.
    */
   const value = parseJsonlValue({
     text,
@@ -86,16 +86,16 @@ function parseJsonlRecord({
 }
 
 /**
- * Removes one CR suffix from a CRLF-delimited physical line.
- *
- * @param text - Physical line after LF splitting.
- *
- * @returns Line text without CR delimiter portion.
- *
- * @example
- * ```ts
- * normalizePhysicalLine('x\r'); // 'x'
- * ```
+ Removes one CR suffix from a CRLF-delimited physical line.
+ 
+ @param text - Physical line after LF splitting.
+ 
+ @returns Line text without CR delimiter portion.
+ 
+ @example
+ ```ts
+ normalizePhysicalLine('x\r'); // 'x'
+ ```
  */
 function normalizePhysicalLine(text: string,): string {
   return text.endsWith('\r',) ? text.slice(
@@ -105,26 +105,26 @@ function normalizePhysicalLine(text: string,): string {
 }
 
 /**
- * Parses and replays OCR JSONL checkpoint semantics.
- *
- * @param text - Complete JSONL transcript text.
- *
- * @returns Replayed findings and resolved head provenance.
- *
- * @throws {@link InputValidationError} when any physical record is malformed.
- *
- * @example
- * ```ts
- * parseJsonlInput({ text: '{"type":"session_start"}' });
- * ```
+ Parses and replays OCR JSONL checkpoint semantics.
+ 
+ @param text - Complete JSONL transcript text.
+ 
+ @returns Replayed findings and resolved head provenance.
+ 
+ @throws {@link InputValidationError} when any physical record is malformed.
+ 
+ @example
+ ```ts
+ parseJsonlInput({ text: '{"type":"session_start"}' });
+ ```
  */
 export function parseJsonlInput({ text, }: { readonly text: string; },): NormalizedInput {
   /**
-   * Physical lines including possible terminal empty segment.
+   Physical lines including possible terminal empty segment.
    */
   const physicalLines = text.split('\n',);
   /**
-   * Event lines after permitting one terminal newline.
+   Event lines after permitting one terminal newline.
    */
   const lines = physicalLines.at(-1,) === ''
     ? physicalLines.slice(
@@ -133,7 +133,7 @@ export function parseJsonlInput({ text, }: { readonly text: string; },): Normali
     )
     : physicalLines;
   /**
-   * Parsed event records with source line positions.
+   Parsed event records with source line positions.
    */
   const records = lines.map(function parsePhysicalLine(
     lineText,

@@ -1,19 +1,19 @@
 /**
- * Coverage baseline gate and human summary for the toml-edit fuzz campaign.
- *
- * Reads a `NODE_V8_COVERAGE` directory produced by `coverage-driver.ts`, projects
- * it to per-file covered-line counts through `coverage-v8.ts`, then either freezes
- * a baseline (`write`) or fails on any per-file regression against the committed
- * baseline (`check`). The gate compares covered-line counts, not percentages, so
- * a target file whose reachable lines shrink fails even if another file grows.
- *
- * Run as a script by the `fuzz:coverage` mise task:
- *
- * ```sh
- * node coverage-report.ts <check|write> <coverageDir> <baselinePath>
- * ```
- *
- * @module
+ Coverage baseline gate and human summary for the toml-edit fuzz campaign.
+ 
+ Reads a `NODE_V8_COVERAGE` directory produced by `coverage-driver.ts`, projects
+ it to per-file covered-line counts through `coverage-v8.ts`, then either freezes
+ a baseline (`write`) or fails on any per-file regression against the committed
+ baseline (`check`). The gate compares covered-line counts, not percentages, so
+ a target file whose reachable lines shrink fails even if another file grows.
+ 
+ Run as a script by the `fuzz:coverage` mise task:
+ 
+ ```sh
+ node coverage-report.ts <check|write> <coverageDir> <baselinePath>
+ ```
+ 
+ @module
  */
 
 import {
@@ -29,12 +29,12 @@ import type { CoverageMap, } from './coverage-v8.ts';
 //region Baseline shapes
 
 /**
- * Committed baseline: covered code-line count per package-relative target path.
+ Committed baseline: covered code-line count per package-relative target path.
  */
 export type Baseline = Readonly<Record<string, number>>;
 
 /**
- * One per-file regression: covered lines fell below the baseline.
+ One per-file regression: covered lines fell below the baseline.
  */
 export type Regression = {
   readonly file: string;
@@ -43,27 +43,27 @@ export type Regression = {
 };
 
 /**
- * Whole numbers used for the human percentage; `100` is the percentage scale.
+ Whole numbers used for the human percentage; `100` is the percentage scale.
  */
 const PERCENT_SCALE = 100;
 
 /**
- * Right-aligned column width for the percentage in the summary table.
+ Right-aligned column width for the percentage in the summary table.
  */
 const PERCENT_WIDTH = 3;
 
 /**
- * Column width for the covered and total line counts in the summary table.
+ Column width for the covered and total line counts in the summary table.
  */
 const COUNT_WIDTH = 4;
 
 /**
- * Whether parsed JSON has the baseline shape (an object), narrowing from
- * `unknown` without an `as` assertion.
- *
- * @param value - Parsed JSON to test before reading as a baseline.
- *
- * @returns Whether `value` can be read as a baseline.
+ Whether parsed JSON has the baseline shape (an object), narrowing from
+ `unknown` without an `as` assertion.
+ 
+ @param value - Parsed JSON to test before reading as a baseline.
+ 
+ @returns Whether `value` can be read as a baseline.
  */
 function isBaseline(value: unknown,): value is Baseline {
   return ((typeof value) === 'object') && (value !== null);
@@ -74,11 +74,11 @@ function isBaseline(value: unknown,): value is Baseline {
 //region Baseline derivation and IO
 
 /**
- * Reduce a coverage map to its committed baseline form (covered counts only),
- * with keys sorted so the on-disk baseline diffs cleanly.
- *
- * @returns Baseline keyed by sorted package-relative path.
- *
+ Reduce a coverage map to its committed baseline form (covered counts only),
+ with keys sorted so the on-disk baseline diffs cleanly.
+ 
+ @returns Baseline keyed by sorted package-relative path.
+ 
  */
 function toBaseline({ map, }: { readonly map: Readonly<Record<string, CoverageMap[string]>>; },): Baseline {
   return Object.fromEntries(
@@ -98,12 +98,12 @@ function toBaseline({ map, }: { readonly map: Readonly<Record<string, CoverageMa
 }
 
 /**
- * Serialize a baseline to stable JSON text (sorted keys, two-space indent,
- * trailing newline) so a refreeze produces a minimal diff.
- *
- * @returns JSON text for the baseline file.
- *
- * @mutates baseline - `JSON.stringify` can invoke getters, proxy traps, `toJSON`, replacer, and coercion hooks.
+ Serialize a baseline to stable JSON text (sorted keys, two-space indent,
+ trailing newline) so a refreeze produces a minimal diff.
+ 
+ @returns JSON text for the baseline file.
+ 
+ @mutates baseline - `JSON.stringify` can invoke getters, proxy traps, `toJSON`, replacer, and coercion hooks.
  */
 function serializeBaseline({ baseline, }: { baseline: Record<string, number>; },): string {
   return `${JSON.stringify(
@@ -114,14 +114,14 @@ function serializeBaseline({ baseline, }: { baseline: Record<string, number>; },
 }
 
 /**
- * Load a committed baseline from disk.
- *
- * @returns Parsed baseline; an empty baseline when the file is absent.
+ Load a committed baseline from disk.
+ 
+ @returns Parsed baseline; an empty baseline when the file is absent.
  */
 async function loadBaseline({ baselinePath, }: { readonly baselinePath: string; },): Promise<Baseline> {
   try {
     /**
-     * Parsed baseline JSON, narrowed by assertion from `unknown`.
+     Parsed baseline JSON, narrowed by assertion from `unknown`.
      */
     const parsed: unknown = JSON.parse(await readFile(
       baselinePath,
@@ -144,11 +144,11 @@ async function loadBaseline({ baselinePath, }: { readonly baselinePath: string; 
 //region Comparison
 
 /**
- * Find every target file whose covered-line count regressed below the baseline,
- * including a baseline file the current run no longer covers at all.
- *
- * @returns Regressions in sorted path order; empty when nothing regressed.
- *
+ Find every target file whose covered-line count regressed below the baseline,
+ including a baseline file the current run no longer covers at all.
+ 
+ @returns Regressions in sorted path order; empty when nothing regressed.
+ 
  */
 function findRegressions(
   {
@@ -163,11 +163,11 @@ function findRegressions(
     .toSorted()
     .flatMap(function check(file,) {
       /**
-       * Baseline covered count for this file.
+       Baseline covered count for this file.
        */
       const baselineCovered = baseline[file] ?? 0;
       /**
-       * Current covered count, or zero when the run no longer reaches the file.
+       Current covered count, or zero when the run no longer reaches the file.
        */
       const currentCovered = (map[file] ?? {
         covered: 0,
@@ -190,9 +190,9 @@ function findRegressions(
 //region Summary
 
 /**
- * Format one target file's coverage line for the human summary.
- *
- * @returns A single aligned summary line.
+ Format one target file's coverage line for the human summary.
+ 
+ @returns A single aligned summary line.
  */
 function formatFileLine(
   {
@@ -206,17 +206,17 @@ function formatFileLine(
   },
 ): string {
   /**
-   * Integer percentage; a file with no code lines reads as fully covered.
+   Integer percentage; a file with no code lines reads as fully covered.
    */
   const percent = coverage.total === 0
     ? PERCENT_SCALE
     : Math.round((coverage.covered / coverage.total) * PERCENT_SCALE,);
   /**
-   * Baseline covered count for the delta annotation, if the file is tracked.
+   Baseline covered count for the delta annotation, if the file is tracked.
    */
   const baselineCovered = baseline[file];
   /**
-   * Signed delta against the baseline, or a new-file marker.
+   Signed delta against the baseline, or a new-file marker.
    */
   const delta = baselineCovered === undefined
     ? ' (new)'
@@ -230,10 +230,10 @@ function formatFileLine(
 }
 
 /**
- * Build the full human summary: a per-file table plus a totals line.
- *
- * @returns Multi-line summary text for CI logs and local runs.
- *
+ Build the full human summary: a per-file table plus a totals line.
+ 
+ @returns Multi-line summary text for CI logs and local runs.
+ 
  */
 function formatSummary(
   {
@@ -245,7 +245,7 @@ function formatSummary(
   },
 ): string {
   /**
-   * Per-file lines in sorted path order.
+   Per-file lines in sorted path order.
    */
   const fileLines = Object.keys(map,)
     .toSorted()
@@ -261,7 +261,7 @@ function formatSummary(
       },);
     },);
   /**
-   * Summed covered and total code lines across all target files.
+   Summed covered and total code lines across all target files.
    */
   const totals = Object.values(map,)
     .reduce(
@@ -283,7 +283,7 @@ function formatSummary(
     },
   );
   /**
-   * Overall integer percentage across target files.
+   Overall integer percentage across target files.
    */
   const overall = totals.total === 0
     ? PERCENT_SCALE
@@ -305,17 +305,17 @@ function formatSummary(
 //region CLI
 
 /**
- * Run the coverage gate as a script.
- *
- * `write` freezes the baseline from the current coverage and prints the summary.
- * `check` prints the summary and throws when any target file regressed, so the
- * mise task exits non-zero.
- *
- * @throws Error when `mode` is unknown, or when `check` finds a regression.
+ Run the coverage gate as a script.
+ 
+ `write` freezes the baseline from the current coverage and prints the summary.
+ `check` prints the summary and throws when any target file regressed, so the
+ mise task exits non-zero.
+ 
+ @throws Error when `mode` is unknown, or when `check` finds a regression.
  */
 async function main(): Promise<void> {
   /**
-   * Positional arguments: mode, coverage directory, baseline path.
+   Positional arguments: mode, coverage directory, baseline path.
    */
   const [mode, coverageDir, baselinePath,] = process.argv
     .slice(2,);
@@ -324,8 +324,8 @@ async function main(): Promise<void> {
     throw new Error('usage: coverage-report.ts <check|write> <coverageDir> <baselinePath>',);
   }
   /**
-   * Package root two directories above this file (`src/fuzz` to package), with
-   * no trailing separator so relative target paths read as `src/foo.ts`.
+   Package root two directories above this file (`src/fuzz` to package), with
+   no trailing separator so relative target paths read as `src/foo.ts`.
    */
   const packageRoot = dirname(
     dirname(
@@ -333,7 +333,7 @@ async function main(): Promise<void> {
     ),
   );
   /**
-   * Current per-file coverage from the driver run.
+   Current per-file coverage from the driver run.
    */
   const map = await aggregateCoverage({
     coverageDir,
@@ -360,7 +360,7 @@ async function main(): Promise<void> {
     throw new Error(`Unknown mode ${mode}; expected 'check' or 'write'`,);
   }
   /**
-   * Committed baseline to gate against.
+   Committed baseline to gate against.
    */
   const baseline = await loadBaseline({ baselinePath, },);
   console.log(formatSummary({
@@ -368,7 +368,7 @@ async function main(): Promise<void> {
     baseline,
   },),);
   /**
-   * Per-file regressions against the baseline.
+   Per-file regressions against the baseline.
    */
   const regressions = findRegressions({
     map,

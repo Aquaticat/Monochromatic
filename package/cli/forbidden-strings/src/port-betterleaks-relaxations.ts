@@ -1,30 +1,30 @@
 /** Per-rule relaxations applied around {@link pcreToResharp}. Each entry
- *  maps a rule id to functions that rewrite the upstream regex before
- *  conversion or the converted regex after conversion. The relaxation
- *  comment travels with the rule in the emitted output so the lossy step
- *  is visible in the example file. */
+  maps a rule id to functions that rewrite the upstream regex before
+  conversion or the converted regex after conversion. The relaxation
+  comment travels with the rule in the emitted output so the lossy step
+  is visible in the example file. */
 export type Relaxation = {
   /**
-   * Human-readable explanation emitted above generated rule.
+   Human-readable explanation emitted above generated rule.
    */
   readonly note: string;
   /**
-   * Optional rewrite applied before PCRE-to-resharp conversion.
+   Optional rewrite applied before PCRE-to-resharp conversion.
    */
   readonly transform?: (regex: string,) => string;
   /**
-   * Optional rewrite applied after PCRE-to-resharp conversion.
+   Optional rewrite applied after PCRE-to-resharp conversion.
    */
   readonly convertedTransform?: (regex: string,) => string;
 };
 
 /**
- * Rule-id to relaxation lookup applied around {@link pcreToResharp}.
- *
- * Each entry pairs the upstream betterleaks rule id with rewrite hooks plus
- * a human-readable note explaining what changed. The note is emitted
- * alongside the rule in the generated example file so the change stays
- * visible.
+ Rule-id to relaxation lookup applied around {@link pcreToResharp}.
+ 
+ Each entry pairs the upstream betterleaks rule id with rewrite hooks plus
+ a human-readable note explaining what changed. The note is emitted
+ alongside the rule in the generated example file so the change stays
+ visible.
  */
 export const RELAXATIONS: ReadonlyMap<string, Relaxation> = new Map([
   // `(?:^|[X])` start-anchor alternation: drop the `^|` arm. Loses the

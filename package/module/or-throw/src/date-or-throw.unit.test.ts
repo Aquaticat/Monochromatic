@@ -1,7 +1,7 @@
 /**
- * Tests for `dateOrThrow`.
- *
- * @module
+ Tests for `dateOrThrow`.
+ 
+ @module
  */
 
 import {

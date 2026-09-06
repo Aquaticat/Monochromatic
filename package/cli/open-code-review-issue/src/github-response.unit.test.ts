@@ -13,7 +13,7 @@ await describe({
       name: 'parses status headers and JSON body from gh include output',
       fn: async () => {
         /**
-         * Representative `gh api --include` response using CRLF delimiters.
+         Representative `gh api --include` response using CRLF delimiters.
          */
         const stdout = [
           'HTTP/2.0 201 Created',

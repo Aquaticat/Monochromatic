@@ -9,38 +9,38 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { CommandError, } from './errors.ts';
 
 /**
- * Module logger for external command execution.
+ Module logger for external command execution.
  */
 const l = tagged({ tag: 'runner', },);
 
 /**
- * Result of a successfully executed external command.
+ Result of a successfully executed external command.
  */
 export type CommandResult = {
   /**
-   * Captured standard output decoded as UTF-8.
+   Captured standard output decoded as UTF-8.
    */
   readonly stdout: string;
 
   /**
-   * Captured standard error decoded as UTF-8.
+   Captured standard error decoded as UTF-8.
    */
   readonly stderr: string;
 };
 
 /**
- * Renders an argument list for logging without reading a caller-owned array.
- *
- * @param command - Executable name.
- *
- * @param args - Arguments passed to the executable.
- *
- * @returns Single-line rendering of the invocation.
- *
- * @example
- * ```ts
- * renderInvocation({ command: 'ip', args: ['link', 'show'] });
- * ```
+ Renders an argument list for logging without reading a caller-owned array.
+ 
+ @param command - Executable name.
+ 
+ @param args - Arguments passed to the executable.
+ 
+ @returns Single-line rendering of the invocation.
+ 
+ @example
+ ```ts
+ renderInvocation({ command: 'ip', args: ['link', 'show'] });
+ ```
  */
 function renderInvocation(
   {
@@ -52,7 +52,7 @@ function renderInvocation(
   },
 ): string {
   /**
-   * Fresh copy so joining never touches a caller-owned array.
+   Fresh copy so joining never touches a caller-owned array.
    */
   const rendered: readonly string[] = [
     ...args,
@@ -61,25 +61,25 @@ function renderInvocation(
 }
 
 /**
- * Runs one external command, capturing output and throwing on non-zero exit.
- *
- * Input can be piped to standard in, which is how the raw peer config reaches
- * `wg addconf` without an intermediate file.
- *
- * @param command - Executable name resolved through `PATH`.
- *
- * @param args - Arguments passed to the command.
- *
- * @param input - Optional text written to the command's standard in.
- *
- * @returns Captured stdout and stderr.
- *
- * @throws {@link CommandError} when the command exits non-zero or closes without a code.
- *
- * @example
- * ```ts
- * await run({ command: 'ip', args: ['link', 'show', 'dev', 'wg0'] });
- * ```
+ Runs one external command, capturing output and throwing on non-zero exit.
+ 
+ Input can be piped to standard in, which is how the raw peer config reaches
+ `wg addconf` without an intermediate file.
+ 
+ @param command - Executable name resolved through `PATH`.
+ 
+ @param args - Arguments passed to the command.
+ 
+ @param input - Optional text written to the command's standard in.
+ 
+ @returns Captured stdout and stderr.
+ 
+ @throws {@link CommandError} when the command exits non-zero or closes without a code.
+ 
+ @example
+ ```ts
+ await run({ command: 'ip', args: ['link', 'show', 'dev', 'wg0'] });
+ ```
  */
 export async function run(
   {
@@ -93,7 +93,7 @@ export async function run(
   },
 ): Promise<CommandResult> {
   /**
-   * Function-scoped logger for one command invocation.
+   Function-scoped logger for one command invocation.
    */
   const fl = tagged({
     tag: run.name,
@@ -104,7 +104,7 @@ export async function run(
     args,
   },)}`,);
   /**
-   * Spawned child with piped streams for capture.
+   Spawned child with piped streams for capture.
    */
   const child = spawnChild(
     command,
@@ -120,11 +120,11 @@ export async function run(
     },
   );
   /**
-   * Swallows `EPIPE` from a child that closes standard in early (for example a
-   * rejection), so the real error surfaces via the child's exit code instead of
-   * an unhandled stream error.
-   *
-   * @param error - Stream error from the standard-in pipe.
+   Swallows `EPIPE` from a child that closes standard in early (for example a
+   rejection), so the real error surfaces via the child's exit code instead of
+   an unhandled stream error.
+   
+   @param error - Stream error from the standard-in pipe.
    */
   function onStdinError(error: Readonly<Error & { readonly code?: string; }>,): void {
     if (error.code !== 'EPIPE')
@@ -141,7 +141,7 @@ export async function run(
   child.stdin
     .end();
   /**
-   * Captured stdout, stderr, and close event awaited concurrently.
+   Captured stdout, stderr, and close event awaited concurrently.
    */
   const [stdout, stderr,] = await Promise.all([
     text(child.stdout,),
@@ -152,7 +152,7 @@ export async function run(
     ),
   ],);
   /**
-   * Numeric exit code established by the close event.
+   Numeric exit code established by the close event.
    */
   const { exitCode, } = child;
   if (exitCode !== 0) {
@@ -171,20 +171,20 @@ export async function run(
 }
 
 /**
- * Runs a command that is allowed to fail, returning its exit code instead of throwing.
- *
- * Used for idempotent teardown and for probes where absence is expected.
- *
- * @param command - Executable name resolved through `PATH`.
- *
- * @param args - Arguments passed to the command.
- *
- * @returns Exit code and captured output.
- *
- * @example
- * ```ts
- * await runAllowingFailure({ command: 'ip', args: ['link', 'delete', 'dev', 'wg0'] });
- * ```
+ Runs a command that is allowed to fail, returning its exit code instead of throwing.
+ 
+ Used for idempotent teardown and for probes where absence is expected.
+ 
+ @param command - Executable name resolved through `PATH`.
+ 
+ @param args - Arguments passed to the command.
+ 
+ @returns Exit code and captured output.
+ 
+ @example
+ ```ts
+ await runAllowingFailure({ command: 'ip', args: ['link', 'delete', 'dev', 'wg0'] });
+ ```
  */
 export async function runAllowingFailure(
   {
@@ -196,7 +196,7 @@ export async function runAllowingFailure(
   },
 ): Promise<CommandResult & { readonly exitCode: number; }> {
   /**
-   * Function-scoped logger for one tolerated invocation.
+   Function-scoped logger for one tolerated invocation.
    */
   const fl = tagged({
     tag: runAllowingFailure.name,
@@ -207,7 +207,7 @@ export async function runAllowingFailure(
     args,
   },)}`,);
   /**
-   * Spawned child with standard in closed and output captured.
+   Spawned child with standard in closed and output captured.
    */
   const child = spawnChild(
     command,
@@ -223,7 +223,7 @@ export async function runAllowingFailure(
     },
   );
   /**
-   * Captured stdout and stderr awaited alongside the close event.
+   Captured stdout and stderr awaited alongside the close event.
    */
   const [stdout, stderr,] = await Promise.all([
     text(child.stdout,),

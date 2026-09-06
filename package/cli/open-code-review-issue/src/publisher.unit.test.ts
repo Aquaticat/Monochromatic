@@ -21,19 +21,19 @@ await describe({
       name: 'creates Issues serially with pacing between mutations',
       fn: async () => {
         /**
-         * Create request titles observed by fake API.
+         Create request titles observed by fake API.
          */
         const createdTitles: string[] = [];
         /**
-         * Requested pacing delays.
+         Requested pacing delays.
          */
         const waits: number[] = [];
         /**
-         * Next synthetic Issue number.
+         Next synthetic Issue number.
          */
         let nextNumber = 1;
         /**
-         * Fake GitHub API for high-water reads and successful creates.
+         Fake GitHub API for high-water reads and successful creates.
          */
         const api: GitHubApiClient = async (request,) => {
           if (request.method === 'GET') {
@@ -44,7 +44,7 @@ await describe({
             };
           }
           /**
-           * Create request body required by publisher.
+           Create request body required by publisher.
            */
           const {body} = request;
           if ((body === undefined) || ((typeof body.title) !== 'string')) {
@@ -52,7 +52,7 @@ await describe({
           }
           createdTitles.push(body.title,);
           /**
-           * Number allocated to current fake Issue.
+           Number allocated to current fake Issue.
            */
           const number = nextNumber;
           nextNumber += 1;
@@ -66,7 +66,7 @@ await describe({
           };
         };
         /**
-         * Two complete rendered Issue requests.
+         Two complete rendered Issue requests.
          */
         const issues: readonly RenderedIssue[] = [
           {
@@ -118,7 +118,7 @@ await describe({
       name: 'reconciles an ambiguous server failure before retrying',
       fn: async () => {
         /**
-         * Mutable fake API state hidden behind one binding.
+         Mutable fake API state hidden behind one binding.
          */
         const state = {
           creates: 0,
@@ -126,7 +126,7 @@ await describe({
           waits: [] as number[],
         };
         /**
-         * Fake API returning one ambiguous failure followed by success.
+         Fake API returning one ambiguous failure followed by success.
          */
         const api: GitHubApiClient = async (request,) => {
           if (request.method === 'GET') {
@@ -155,7 +155,7 @@ await describe({
           };
         };
         /**
-         * Single rendered Issue request.
+         Single rendered Issue request.
          */
         const issue: RenderedIssue = {
           position: { kind: 'line', value: 3, },
@@ -194,11 +194,11 @@ await describe({
       name: 'accepts one exact reconciliation match without retry',
       fn: async () => {
         /**
-         * Mutable call counters for fake API.
+         Mutable call counters for fake API.
          */
         const state = { highWaterReads: 0, creates: 0, };
         /**
-         * Fake timeout followed by one exact visible Issue.
+         Fake timeout followed by one exact visible Issue.
          */
         const api: GitHubApiClient = async (request,) => {
           if (request.method === 'POST') {
@@ -224,7 +224,7 @@ await describe({
           };
         };
         /**
-         * Ambiguously created Issue request.
+         Ambiguously created Issue request.
          */
         const issue: RenderedIssue = {
           position: { kind: 'record', value: 1, },
@@ -257,11 +257,11 @@ await describe({
       name: 'honors retry-after without reconciliation for rate limits',
       fn: async () => {
         /**
-         * Mutable fake rate-limit state.
+         Mutable fake rate-limit state.
          */
         const state = { creates: 0, waits: [] as number[], };
         /**
-         * Fake rate-limited create followed by success.
+         Fake rate-limited create followed by success.
          */
         const api: GitHubApiClient = async (request,) => {
           if (request.method === 'GET') {
@@ -284,7 +284,7 @@ await describe({
             };
         };
         /**
-         * Rate-limited Issue request.
+         Rate-limited Issue request.
          */
         const issue: RenderedIssue = {
           position: { kind: 'record', value: 1, },
@@ -313,11 +313,11 @@ await describe({
       name: 'stops on multiple exact reconciliation matches',
       fn: async () => {
         /**
-         * Mutable high-water lookup count.
+         Mutable high-water lookup count.
          */
         const state = { highWaterReads: 0, };
         /**
-         * Fake API exposing two exact matches after server failure.
+         Fake API exposing two exact matches after server failure.
          */
         const api: GitHubApiClient = async (request,) => {
           if (request.method === 'POST') {
@@ -345,7 +345,7 @@ await describe({
           };
         };
         /**
-         * Captured multiple-match failure.
+         Captured multiple-match failure.
          */
         let caught: unknown;
         try {
@@ -385,11 +385,11 @@ await describe({
       name: 'reports created Issues and positioned stopping failure',
       fn: async () => {
         /**
-         * Mutable fake create count.
+         Mutable fake create count.
          */
         const state = { creates: 0, };
         /**
-         * Fake API succeeding once then returning terminal validation status.
+         Fake API succeeding once then returning terminal validation status.
          */
         const api: GitHubApiClient = async (request,) => {
           if (request.method === 'GET') {
@@ -412,7 +412,7 @@ await describe({
             };
         };
         /**
-         * Captured positioned publication failure.
+         Captured positioned publication failure.
          */
         let caught: unknown;
         try {
@@ -463,11 +463,11 @@ await describe({
       name: 'stops future creation after publication interrupt',
       fn: async () => {
         /**
-         * Mutable publication interrupt state.
+         Mutable publication interrupt state.
          */
         const state = { creates: 0, interrupted: false, };
         /**
-         * Fake API that raises stop flag after first successful create.
+         Fake API that raises stop flag after first successful create.
          */
         const api: GitHubApiClient = async (request,) => {
           if (request.method === 'GET') {
@@ -485,7 +485,7 @@ await describe({
           };
         };
         /**
-         * Captured handled interruption.
+         Captured handled interruption.
          */
         let caught: unknown;
         try {

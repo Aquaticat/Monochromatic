@@ -9,11 +9,11 @@ import type { Diagnostic, } from '../types.ts';
 import { noEmphasisAsHeading, } from './md036-no-emphasis-as-heading.ts';
 
 /**
- * Run only MD036 over Markdown source.
- *
- * @param source - Markdown source
- *
- * @returns diagnostics from the rule
+ Run only MD036 over Markdown source.
+ 
+ @param source - Markdown source
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string,): readonly Diagnostic[] {
   return runRules({
