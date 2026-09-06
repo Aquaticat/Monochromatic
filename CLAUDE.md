@@ -322,6 +322,11 @@ Agent has tools;
  using them is its job,
  not user's.
 
+DVP:
+ Target device available:
+ probe its current settings and limits directly before web research.
+Use external sources only to explain direct evidence or when the device probe cannot answer.
+
 QAB:
  Before-state reading isn't after-state evidence.
 Predicting a change's effect from unchanged code is inference.
