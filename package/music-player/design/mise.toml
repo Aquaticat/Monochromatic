@@ -173,9 +173,6 @@ for (const path of matrixPaths) {
   if (currentTransport !== transportFingerprint) {
     throw new Error(`${path} does not preserve chosen transport option 1B.`);
   }
-  if (imageFingerprint({ path, crop: '1009x1100+0+300' }) !== pickerFingerprint) {
-    throw new Error(`${path} changes the accepted picker outside the Open app-bar action.`);
-  }
   const currentTitleX = firstCuePixelX({ path, crop: '500x80+1090+320', cropWidth: 500, absoluteX: 1090 });
   const ordinaryTitleX = firstCuePixelX({ path, crop: '500x90+1090+490', cropWidth: 500, absoluteX: 1090 });
   if (currentTitleX < 1107 || currentTitleX > 1110 || ordinaryTitleX < 1107 || ordinaryTitleX > 1111) {
@@ -201,6 +198,9 @@ for (const path of matrixPaths) {
   }
   if (pixelAt({ path, x: 117, y: 1000 }) !== 'srgba(176,177,188,1)') {
     throw new Error(`${path} does not preserve the accepted letter-rail boundary.`);
+  }
+  if (imageFingerprint({ path, crop: '1009x1100+0+300' }) !== pickerFingerprint) {
+    throw new Error(`${path} changes the accepted picker outside the Open app-bar action.`);
   }
 }
 
