@@ -189,7 +189,9 @@ function archiveConventionOf(
   const { archiveText, } = preparation;
   if (typeof archiveText === 'string')
     return archiveText;
-  return (archiveText.kind === 'stored') ? archiveText.text : '';
+  if (archiveText.kind === 'stored')
+    return archiveText.text;
+  return '';
 }
 
 /**
