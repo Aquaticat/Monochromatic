@@ -110,8 +110,13 @@ jobs:
       - name: Install pnpm and node
         run: mise install 'npm:pnpm' node
 
-      - name: Install dependencies
-        run: mise exec -- pnpm install --frozen-lockfile
+      # dedupe-direct-deps=false: with the workspace default (true), a direct
+      # workspace dependency also declared at the root is linked only at the root,
+      # and pnpm pack then fails with ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL
+      # (pnpm/pnpm#9566, doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md).
+      # The override changes node_modules layout only, never the lockfile.
+      - name: Install dependencies with every direct dependency linked per package
+        run: mise exec -- pnpm install --frozen-lockfile --config.dedupe-direct-deps=false
 
       - name: Build the packages in the publish plan
         run: mise run changeset:build
