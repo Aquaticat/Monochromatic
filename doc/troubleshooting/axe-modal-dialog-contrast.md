@@ -153,6 +153,13 @@ agent-browser --session music-player-md3 --cdp 9224 eval \
   toolbar differently and produces no incomplete nodes,
    confirming that node count is
   layout-sensitive rather than a stable property of the dialog.
+- The redundant-cue matrix modal at a 390 × 844 CSS-pixel viewport reports two
+  `color-contrast` incompletes,
+   `#zoom-title` and `#zoom-dimensions`,
+   through the
+  same overlap path.
+   Their flat computed pairs resolve to 17.075:1 and 9.344:1.
+  It reports no axe violation.
 
 ### Replacement-form accessibility corrections
 
