@@ -76,6 +76,19 @@ Its post-release value (toml-edit verification bar,
 - First version:
    0.1.0 for the logger;
    caught-value also 0.1.0 unless the owner vetoes.
+- `module-caught-value` becomes an optional peer dependency of the logger (`workspace:^` so the published range is `^0.1.0`),
+   kept as a devDependency for the logger's own build and tests.
+   Repo precedent:
+   workspace peers in `package/pi-plugin/goal/package.json`,
+   `peerDependenciesMeta` in `package/pi-shared/model-selection/package.json`.
+- The 25 `require-eventual-artifact` findings gate the publish:
+   internals are exported from the entry as `@internal` and their tests import the built artifact.
+- A `doc/decision/` entry supersedes the "bundle, do not publish" direction.
+- The no-backend throw stays in 0.1.0:
+   reachable only through `createLogger` with sinks that all fail verify,
+   documented,
+   pinned by tests,
+   and consistent with rules PP4 and PP7.
 - The legacy plan becomes a post-release track after a rewrite that fixes its inventory and removes the items decided against here.
 
 ## Measured state (2026-09-06)
@@ -171,17 +184,18 @@ Its post-release value (toml-edit verification bar,
    its README forbids allowlisting behavior modules,
    so the 25 logger findings are fixed by exporting the internals from the entry as `@internal` and importing the built artifact,
    not by config.
+- pnpm rewrites every `workspace:` specifier on pack or publish to the workspace version (`workspace:*` to the exact version,
+   `workspace:^` to a caret range),
+   per <https://pnpm.io/workspaces>.
+   `pnpm-workspace.yaml` sets `autoInstallPeers: false` and `strictPeerDependencies: true`.
+- `.github/workflows/cargo-publish.yml` already uses a `type: choice` dispatch input to select one crate.
 - Prior direction in `doc/handover/cli-git-policies-platform.md` says to bundle logger into public artifacts rather than publish it.
 
 ## Open questions
 
-- Dependency type of `module-caught-value` in the logger manifest given `./ts` (dev,
-   runtime,
-   or optional peer).
-- Whether the 25 lint errors gate the publish.
-- Whether the "bundle, don't publish" direction is formally reversed.
-- Whether the no-backend throw stays in 0.1.0.
 - Whether the `flush()` hang is fixed before 0.1.0.
+- How neutralized control characters render in console output.
+- How the publish workflow selects packages for a run.
 
 ## Next action
 
