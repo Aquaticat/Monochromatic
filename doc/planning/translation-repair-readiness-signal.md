@@ -475,3 +475,39 @@ running since 20:21 UTC on the plain invocation;
 the other double-quoted-paths entry never run;
 and one consolidation that completes unstarved,
 which the refilled meters make possible for the first time since 2026-09-02.
+
+## What the first plain-invocation run showed (2026-09-06, 20:21 UTC)
+
+No page.
+`yulianNyanner` stopped at consolidation after 28.6 minutes and 742 calls,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The first plain-invocation run".
+
+WHAT IT FOUND:
+the fifth class,
+in this package.
+The slice floor parsed the original under the strict MDX grammar without masking HTML comments,
+which the document reader has masked since the corpus was first read,
+so every slice whose original carries a translator note was an original that could not be read,
+and the floor's `unknown` is inadmissible at both gates.
+17 of 92 sources carry a comment;
+none of the three shipped pages did.
+Fixed in `259708e79` with guards shown to fail first.
+
+THE READING:
+not ready,
+and the rate has not reached zero.
+The first entry with a source shape no shipped page had (translator notes) found a class at once,
+which is the pattern of 2026-09-04:
+a class per new shape,
+none on a repeat.
+Of the 92 sources,
+the shapes no shipped page has carried are now:
+HTML comments (17,
+fixed today and relaunched),
+and whatever the next reading finds.
+What would move the belief is unchanged:
+`yulianNyanner` on the fix,
+running since 21:03 UTC;
+`Arita`;
+one unstarved consolidation.

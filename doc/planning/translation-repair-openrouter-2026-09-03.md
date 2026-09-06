@@ -1904,6 +1904,88 @@ and the instruction not to wait on it.
     `withheld=none`.
     The reading follows.
 
+## The first plain-invocation run, 2026-09-06, 20:21 UTC: the fifth class, and no page
+
+`yulianNyanner` ended `INCOMPLETE` at 20:50:19 UTC,
+1,715,943 ms (28.6 minutes) and 742 calls in
+(Hyper 55 percent,
+Synthetic 45 percent,
+no OpenRouter call),
+with `slice 1: the standing text failed the deterministic publication rule and the consolidation left nothing
+valid to ship (incumbent-only)`.
+Weekly Synthetic went from 32.19 to 31.40 percent and Hyper from 2722 to 2686 credits,
+which prices one stopped attempt at about 0.8 percent of the week and 36 credits.
+
+- **What the log said.**
+  Eleven `MdxParseError` lines,
+    eight at `3:2`,
+    two at `5:2`,
+    one at `9:2`,
+    every one `micromark-extension-mdx-jsx/unexpected-character`,
+    every one on the ORIGINAL:
+    `contest winner fails publication invariants and remains retryable: no comparison was possible: original
+    could not be read` on slices 1,
+    2,
+    4,
+    8,
+    11 and 12 at the contest,
+    then `consolidation standing text fails the deterministic publication rule and is withheld from the slate`
+    on slice 1,
+    then `ConsolidationStandingIneligibleError`.
+    Translation itself had finished:
+    `translated 17 slices (0 resumed): 13 changed, 0 refused by a guard`.
+- **What the source carries.**
+  Fourteen HTML comment lines,
+    translator notes between paragraphs
+    (a glossary and section-voice markers),
+    and the column the grammar names is the `!` of `<!--`.
+    Measured at pin `a41fc607`:
+    17 of 92 sources carry a comment,
+    34 comment lines in all,
+    14 of them here;
+    22 of 92 archives carry one,
+    and this archive renders the fourteen as twelve English comments.
+    The three pages that shipped on 2026-09-04 carry none,
+    and the one comment `keyword233` and `Toka_ls` each carry is the contributor credit,
+    which preparation handles apart.
+- **The class.**
+  `parse-document.ts` masks HTML comments to same-length whitespace before its strict MDX parse,
+    because the grammar refuses `<!--` outright.
+    `readSliceSkeleton` in `translate-skeleton.ts` handed the strict grammar the raw slice.
+    So an original with a note was `unparseable`,
+    `validateTranslatedSlice` answered `unknown`
+    (its own comment says an unreadable original "is not a candidate's fault"),
+    and both consumers of the floor,
+    `lane-contest-eligibility.ts` and `consolidate-ineligible-standing.ts`,
+    treat `unknown` as inadmissible.
+    Every commented slice was therefore unshippable on any roster,
+    and the entry could never settle.
+    The candidates were fine:
+    142 slice-cache files carry a rendered comment.
+- **The fix,
+  `259708e79`.**
+  The slice reader masks comments the way the document reader does,
+    on both sides of the comparison;
+    the mask keeps offsets,
+    so atoms after a comment still index the unmasked text.
+    Whether a candidate carries the note rendered is left to the judges as wording,
+    since the archive itself does not keep parity (fourteen to twelve).
+    Guards `ebf6524de` in `translate-skeleton.unit.test.ts` and `translate-validate.unit.test.ts`,
+    shown to fail on the unfixed build (2 `FAIL` lines in each suite) and pass on the fixed one;
+    `translate-skeleton-page.unit.test.ts` 0 `FAIL` as well;
+    oxlint 0 and 0,
+    types clean.
+    `inspect-paragraph.ts` parses strictly too but is handed paragraphs the document reader already produced,
+    which never contain a comment,
+    so it is not a sibling.
+- **`yulianNyanner` relaunched at 21:03:43 UTC** on `3ab2d318a`,
+  pipeline `597fa3e0`,
+    plain invocation,
+    fresh runs dir `~/temp/agent/yuliannyanner3-20260906`,
+    log beside it,
+    under the kill-and-relaunch rule (the 20:21 run had already exited on its own).
+    The reading follows.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
