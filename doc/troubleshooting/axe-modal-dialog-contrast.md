@@ -107,6 +107,11 @@ agent-browser --session music-player-md3 --cdp 9224 eval \
 - The replacement divider-clarification modal reports the same `bgOverlap` path for
   six visible nodes. Its toolbar wraps differently, so axe's virtual overlap set is a
   subset rather than a stable node count.
+- The existing-screen refinement modal reports seven `color-contrast` incomplete
+  nodes. Six use `bgOverlap`; `#zoom-dimensions` uses
+  `elmPartiallyObscuring`. Direct computed-color checks resolve the dimensions text to
+  9.344:1, the scale label to 17.075:1, and each affected button pair to 6.441:1.
+  Axe reports no violation.
 
 ### Replacement-form accessibility corrections
 
