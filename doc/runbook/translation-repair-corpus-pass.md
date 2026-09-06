@@ -211,6 +211,16 @@ TODO | DONE
     A value the dial cannot read refuses the launch in one line naming the variable, at zero quota,
     which `-- --plan` shows without spending anything.
 
+    ALWAYS KILL AND RELAUNCH, the owner's rule of 2026-09-06:
+    if source changes after this launch,
+    kill the pass by its pid,
+    build,
+    and launch the same entry again into a fresh `TRANSLATION_REPAIR_RUNS_DIR` on the new build.
+    A pass that finishes on a superseded build stamps a digest that no longer describes the files on disk,
+    and its page is not readiness evidence.
+    When a fix is already known before the launch,
+    land it first and launch once.
+
     For a measured arm that needs named providers,
     insert `-- --require-providers synthetic,hyper` (or any subset of `synthetic`, `hyper`, `openrouter`)
     after `corpus-pass`.
@@ -743,6 +753,15 @@ not quality verdict.
 Every stage caches, so a relaunch into the same `TRANSLATION_REPAIR_RUNS_DIR`
 republishes what was already bought rather than re-buying it,
 provided no source file changed in between.
+
+When a source file DID change,
+the rule is always kill and relaunch:
+stop the pass by pid as shown,
+build,
+and relaunch the entry into a fresh runs dir on the new build.
+The old runs dir holds what the old digest bought and is not resumed;
+a page finished on a superseded build is not readiness evidence,
+whatever it cost.
 
 If a resume supervisor is driving the pass,
 stopping the run and stopping the supervisor are two different operations.

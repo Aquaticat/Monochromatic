@@ -15,7 +15,22 @@ logs and the runs directory
 because the runs directory holds corpus text from an
  unlicensed source.
 
-## Current status, 2026-09-01
+## Current status, 2026-09-06
+
+Passes on the legacy pipeline are authorized again since the owner's direction decision of 2026-09-01
+and the OpenRouter order of 2026-09-03;
+the current handover is [`translation-repair.md`](translation-repair.md).
+Every pass runs under the owner's rule of 2026-09-06,
+ALWAYS KILL AND RELAUNCH:
+when source changes while a pass is running,
+kill the pass by pid,
+build,
+and relaunch the same entry into a fresh runs dir on the new build.
+A supervisor that resumes a pass across a rebuild would break that rule,
+so no supervisor is used;
+the launch is one detached process per entry.
+
+## Superseded status, 2026-09-01
 
 No corpus pass or continuity supervisor is running for the current redesign work.
 This is historical operating evidence for the legacy pipeline,

@@ -439,6 +439,15 @@ or hold the work and launch from the committed tree.
 The reading of the pass output gates the readiness signal;
 this task does not.
 
+Since 2026-09-06 the owner's rule closes the other direction as well:
+a pass running when source changes is killed by pid and relaunched on the new build into a fresh runs dir,
+never left to finish on the superseded one
+(package README,
+"A source change while a pass is in flight means kill and relaunch").
+The pass overlap fallback moved to four the same day
+(`doc/decision/translation-repair-pass-overlap.md`),
+on the four matched pairs recorded in "Measurement status, 2026-08-27" and the package README.
+
 ## The verification chain for each landing
 
 Run from the repository root unless stated:

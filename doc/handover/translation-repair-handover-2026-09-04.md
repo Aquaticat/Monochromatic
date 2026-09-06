@@ -153,6 +153,16 @@ and the `env -u` form that leaves a provider out of a run.
 Every pass today used that form with both Synthetic and Charm Hyper unset,
 so OpenRouter served alone.
 
+ALWAYS KILL AND RELAUNCH,
+the owner's rule of 2026-09-06,
+written after this snapshot:
+when source changes while a pass is running,
+kill the pass by pid,
+build,
+and relaunch the same entry into a fresh runs dir on the new build.
+The relaunches of BI4PBV and Uekawakuyuurei recorded here were that practice before it was a rule;
+a page finished on a superseded build is not readiness evidence.
+
 READING A PAGE is the gate the owner set on 2026-08-26,
 and it is not the same as the pass reporting `SETTLED`.
 What the three readings of 2026-09-04 did,

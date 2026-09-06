@@ -23,6 +23,19 @@ and the readiness judgement lives in
 [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md).
 The pipeline is not production ready.
 
+ALWAYS KILL AND RELAUNCH is the owner's rule of 2026-09-06 for every pass:
+when source changes while a pass is running,
+kill the pass by pid,
+build,
+and relaunch the same entry into a fresh runs dir on the new build.
+Never let a pass finish on a build a commit has superseded,
+and never read its page as readiness evidence.
+When the fix is known before the launch,
+land it first and launch once.
+The rule is written in the package README ("A source change while a pass is in flight means kill and relaunch")
+and in the runbook's launch and restore steps;
+it is deliberately not a root `AGENTS.md` rule.
+
 ## Superseded handover, 2026-09-01
 
 ### Start here
