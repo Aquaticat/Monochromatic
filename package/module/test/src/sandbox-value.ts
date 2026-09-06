@@ -1,6 +1,10 @@
-/** Primitive target classification before delegating dynamic Sinon overloads. @module */
+/**
+ Primitive target classification before delegating dynamic Sinon overloads. @module
+ */
 
-/** The property argument needs Sinon's own overload validation rather than contextual routing. */
+/**
+ The property argument needs Sinon's own overload validation rather than contextual routing.
+ */
 export const SINON_VALIDATES_PROPERTY: unique symbol = Symbol('property argument requires Sinon validation',);
 
 /**
@@ -16,7 +20,7 @@ export const SINON_VALIDATES_PROPERTY: unique symbol = Symbol('property argument
  ```
  */
 export function isSandboxTarget(value: unknown,): value is object {
-  return (typeof value === 'object' && value !== null) || typeof value === 'function';
+  return (((typeof value) === 'object') && (value !== null)) || ((typeof value) === 'function');
 }
 
 /**
@@ -32,7 +36,7 @@ export function isSandboxTarget(value: unknown,): value is object {
  ```
  */
 export function sandboxPropertyKey(value: unknown,): string | symbol {
-  if (typeof value === 'string' || typeof value === 'symbol')
+  if (((typeof value) === 'string') || ((typeof value) === 'symbol'))
     return value;
-  return typeof value === 'number' ? String(value,) : SINON_VALIDATES_PROPERTY;
+  return (typeof value) === 'number' ? String(value,) : SINON_VALIDATES_PROPERTY;
 }

@@ -82,7 +82,7 @@ function preflightOrdinaryMutation(invocation: SandboxInvocation,): void {
      Unsupported key overloads remain subject to ordinary Sinon validation.
      */
     const key = sandboxPropertyKey(property,);
-    if (typeof key === 'string' || key !== SINON_VALIDATES_PROPERTY)
+    if (((typeof key) === 'string') || (key !== SINON_VALIDATES_PROPERTY))
       requireUnownedProperty({
         target,
         key,
@@ -169,7 +169,7 @@ export function dispatchSandboxOperation({
     .length
     === 2)
     && isSandboxTarget(target,)
-    && (typeof key === 'string' || key !== SINON_VALIDATES_PROPERTY)) {
+    && (((typeof key) === 'string') || (key !== SINON_VALIDATES_PROPERTY))) {
     /**
      Unsupported descriptors delegate to Sinon after collision preflight.
      */
@@ -178,7 +178,7 @@ export function dispatchSandboxOperation({
       key,
       runtime: policy.runtime,
     },);
-    if (typeof slot !== 'symbol') {
+    if ((typeof slot) !== 'symbol') {
       /**
        Target configuration must remain private even when fake.value/get/set are used later.
        */
@@ -203,7 +203,9 @@ export function dispatchSandboxOperation({
     return undefined;
   }
   if (invocation.operation === 'ctx.sinon.verifyAndRestore') {
-    /** Restoration remains mandatory when mock verification fails. */
+    /**
+     Restoration remains mandatory when mock verification fails.
+     */
     using cleanup = { [Symbol.dispose]: policy.restore, };
     /**
      Verify uses the same sandbox receiver, but cleanup remains runner-owned.
@@ -231,7 +233,7 @@ export function dispatchSandboxOperation({
       owner: policy.owner,
       restoring: policy.restoring,
       ...isSandboxTarget(target,) ? { target, } : {},
-      ...typeof key === 'symbol' && key === SINON_VALIDATES_PROPERTY ? {} : { key, },
+      ...((typeof key) === 'symbol') && (key === SINON_VALIDATES_PROPERTY) ? {} : { key, },
     },);
   }
   if (invocation.operation === 'ctx.sinon.mock')

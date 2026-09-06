@@ -1,7 +1,10 @@
 /**
  Lazy runtime adapter keeps Node built-ins outside neutral module imports. @module
  */
-import { NO_SANDBOX_OWNER, type SandboxRuntime, } from './sandbox-owner.ts';
+import {
+  NO_SANDBOX_OWNER,
+  type SandboxRuntime,
+} from './sandbox-owner.ts';
 
 /**
  Resolves context support using the same runtime gate as descriptor observation.

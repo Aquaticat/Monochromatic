@@ -4,7 +4,9 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { SandboxOwnershipError, } from './sandbox-error.ts';
 
-/** Execution has no test-body ownership, including suites and reporting contexts. */
+/**
+ Execution has no test-body ownership, including suites and reporting contexts.
+ */
 export const NO_SANDBOX_OWNER: unique symbol = Symbol('execution has no sandbox owner',);
 
 /**

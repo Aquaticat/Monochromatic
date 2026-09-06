@@ -5,14 +5,17 @@ import { SandboxOwnershipError, } from './sandbox-error.ts';
 import type { SandboxRuntime, } from './sandbox-owner.ts';
 import { isSandboxTarget, } from './sandbox-value.ts';
 
-/** No contextual lease exists or the method requires ordinary Sinon semantics. */
-export const NO_METHOD_SLOT: unique symbol = Symbol('no applicable context-owned method slot',);
 import {
   methodRegistry,
   methodSlotConflict,
   methodSlotIntact,
   type MethodSlot,
 } from './sandbox-registry.ts';
+
+/**
+ No contextual lease exists or the method requires ordinary Sinon semantics.
+ */
+export const NO_METHOD_SLOT: unique symbol = Symbol('no context-owned Sinon property slot for this object and key',);
 
 /**
  Finds an active slot through an own property, prototype, or copied contextual accessor.
@@ -66,9 +69,16 @@ export function findMethodSlot({
       key,
     );
     if (descriptor !== undefined) {
-      /** Read the getter as an identity token, never as an unbound method to invoke. */
-      const getter: unknown = Reflect.get(descriptor, 'get');
-      return typeof getter === 'function' ? registry.getters.get(getter) ?? NO_METHOD_SLOT : NO_METHOD_SLOT;
+      /**
+       Read the getter as an identity token, never as an unbound method to invoke.
+       */
+      const getter: unknown = Reflect.get(
+        descriptor,
+        'get'
+      );
+      return (typeof getter) === 'function' ? registry.getters
+        .get(getter)
+        ?? NO_METHOD_SLOT : NO_METHOD_SLOT;
     }
   }
   return NO_METHOD_SLOT;
@@ -107,7 +117,7 @@ export function prepareMethodSlot({
     target,
     key,
   },);
-  if (typeof existing !== 'symbol') {
+  if ((typeof existing) !== 'symbol') {
     if ((!runtime.contextual) || runtime.isProxy(target,)
       || (existing.target !== target)
       || (!methodSlotIntact(existing,)))
@@ -146,7 +156,7 @@ export function prepareMethodSlot({
       /**
        Missing registrations include suites, unrelated tests, and contextless consumers.
        */
-      const replacement = typeof current !== 'symbol' && current.phase === 'running' ? owners.get(current,) : undefined;
+      const replacement = ((typeof current) !== 'symbol') && (current.phase === 'running') ? owners.get(current,) : undefined;
       return replacement === undefined ? original.value : Reflect.get(
         replacement.facade,
         key,

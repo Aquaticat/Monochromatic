@@ -76,7 +76,9 @@ export function createOwnedSandbox({
    */
   function restore(): void {
     cleanupState.active = true;
-    /** Restore internal cleanup authority even if a restorer throws. */
+    /**
+     Restore internal cleanup authority even if a restorer throws.
+     */
     using completion = {
       [Symbol.dispose](): void {
         cleanupState.active = false;

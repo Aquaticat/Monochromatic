@@ -6,7 +6,11 @@ import { AsyncLocalStorage, } from 'node:async_hooks';
 import { writeSync, } from 'node:fs';
 import process from 'node:process';
 import { types, } from 'node:util';
-import { NO_SANDBOX_OWNER, type SandboxRuntime, type SandboxOwner, } from './sandbox-owner.ts';
+import {
+  NO_SANDBOX_OWNER,
+  type SandboxRuntime,
+  type SandboxOwner,
+} from './sandbox-owner.ts';
 import { SandboxOwnershipError, } from './sandbox-error.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
@@ -352,7 +356,9 @@ export function nodeSandboxRuntime(): SandboxRuntime {
         .run(
           execution,
           async function runAttempt(): Promise<void> {
-            /** Keep late rejection attribution tied to this completed attempt. */
+            /**
+             Keep late rejection attribution tied to this completed attempt.
+             */
             using completion = {
               [Symbol.dispose](): void {
                 execution.phase = 'completed';

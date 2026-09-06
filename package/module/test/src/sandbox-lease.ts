@@ -76,7 +76,8 @@ function installMethodSlot(slot: MethodSlot,): void {
       set: slot.set,
       configurable: true,
       enumerable: slot.original
-        .enumerable ?? false,
+        .enumerable
+        ?? false,
     },
   );
   properties.set(

@@ -4,7 +4,12 @@
 import { SandboxOwnershipError, } from './sandbox-error.ts';
 import { findMethodSlot, } from './sandbox-slot.ts';
 import { isSandboxTarget, } from './sandbox-value.ts';
-export { isSandboxTarget, sandboxPropertyKey, SINON_VALIDATES_PROPERTY, } from './sandbox-value.ts';
+
+export {
+  isSandboxTarget,
+  sandboxPropertyKey,
+  SINON_VALIDATES_PROPERTY,
+} from './sandbox-value.ts';
 
 /**
  Refuses noncontextual replacement of a property with an active contextual owner.
@@ -38,7 +43,7 @@ export function requireUnownedProperty({
     target,
     key,
   },);
-  if (typeof slot !== 'symbol') {
+  if ((typeof slot) !== 'symbol') {
     throw new SandboxOwnershipError(
       `${operation} cannot replace property "${String(key,)}" on the supplied object while it has context-owned mocks. `
         + 'Use ctx.sinon.stub(object, property) or ctx.sinon.spy(object, property) for supported methods, '
@@ -75,7 +80,7 @@ export function requireUnownedObject({
   /**
    Stop at standard object behavior rather than treating it as a stubbing target.
    */
-  for (let cursor: unknown = target; isSandboxTarget(cursor) && cursor !== Object.prototype; cursor = Object.getPrototypeOf(cursor)) {
+  for (let cursor: unknown = target; isSandboxTarget(cursor) && (cursor !== Object.prototype); cursor = Object.getPrototypeOf(cursor)) {
     if (visited.has(cursor,))
       throw new SandboxOwnershipError(`${operation} encountered a cyclic prototype chain.`,);
     visited.add(cursor,);
