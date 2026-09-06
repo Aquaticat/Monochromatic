@@ -202,6 +202,107 @@ The general rule: a feature probe and the code it guards must be generated from
 one spelling, or verified against each other, because a probe in the wrong
 grammar fails safe-looking and silent.
 
+## Verified in WebKit 26.6
+
+Chrome cannot answer the question that matters, because it rejects
+`random(1, 1000, 1)` and `random(1, 1000, by 1)` alike.
+WebKit 26.6, via the Playwright container, discriminates them:
+
+```json
+{"supportsCurrentGrammar": true, "supportsStaleByGrammar": false}
+```
+
+That is the direct proof that `by` was the defect rather than absent support.
+
+The same run confirmed three further things, all previously spec-read rather than
+observed:
+
+-   **The omitted key really is per-element.** All 16 `shuffle-children` children
+    drew distinct `order` values (`distinctOrders: 16`), so `auto` behaves as
+    `element-scoped property-index-scoped`.
+-   **`random()` with `@property` works end to end.** The footer ticker's
+    `--ticker-seed` computed to `6`, not the registered `initial-value` of `0`,
+    so a real draw happened.
+-   **The probe fix removes the double-shuffle**, shown against a positive
+    control rather than asserted:
+
+```json
+{"shipped": {"domMatchesSource": true,  "distinctCssOrders": 16},
+ "positiveControl": {"domMatchesSource": false, "distinctCssOrders": 16}}
+```
+
+With the shipped probe the DOM stays in source order, so only the CSS shuffles.
+Forcing `CSS.supports` to report `random()` unsupported reproduces the pre-fix
+probe, and the DOM order then diverges from source order while the CSS ordering
+still applies: both shuffles running at once.
+The control is what makes the passing arm meaningful; without it,
+`domMatchesSource: true` is equally consistent with a harness that cannot detect
+reordering at all, which is exactly the false null an earlier version of this
+harness produced when its extraction regex silently matched nothing.
+
+### Harness
+
+Requires the container from `playwright.Dockerfile` and the site served on
+`:4321` (`mise run //package/ssg/aquati.cat:dev`, or `caddy run --config Caddyfile`
+from `package/ssg/aquati.cat` against a built `dist`).
+
+```bash
+podman run --rm --network=host --security-opt label=disable \
+  -v "$PWD:/work" -w /work monochromatic-playwright node probe.mjs
+```
+
+Three host-specific details cost time and are worth keeping:
+`:Z` relabelling fails here (`lsetxattr ... operation not permitted` on a
+`node_modules` file), so the mount needs `--security-opt label=disable`;
+the image deliberately ships only browsers, so the host `node_modules` must be
+mounted rather than a narrow probe directory;
+and `playwright` is not hoisted by pnpm, so the import must be `@playwright/test`.
+
+```js
+import { webkit } from '@playwright/test';
+
+const url = 'http://localhost:4321/en/guess-the-tagline';
+const raw = await (await fetch(url)).text();
+const seg = raw.slice(raw.indexOf('<shuffle-children'), raw.indexOf('</shuffle-children>'));
+const sourceIds = [...new Set([...seg.matchAll(/name="(q-[0-9a-f]+)"/g)].map((m) => m[1]))];
+
+const run = async (label, forceUnsupported) => {
+  const browser = await webkit.launch();
+  const page = await browser.newPage();
+  if (forceUnsupported) {
+    await page.addInitScript(() => {
+      const real = CSS.supports.bind(CSS);
+      CSS.supports = (...a) =>
+        (a[0] === 'order' && String(a[1]).includes('random') ? false : real(...a));
+    });
+  }
+  await page.goto(url, { waitUntil: 'load' });
+  const r = await page.evaluate(() => {
+    const kids = [...document.querySelector('shuffle-children').children];
+    return {
+      domIds: kids.map((k) => k.querySelector('input[type=radio]')?.name ?? '?'),
+      orders: kids.map((k) => getComputedStyle(k).order),
+    };
+  });
+  await browser.close();
+  return {
+    label,
+    domMatchesSource: JSON.stringify(r.domIds) === JSON.stringify(sourceIds),
+    distinctCssOrders: new Set(r.orders).size,
+  };
+};
+
+console.log(JSON.stringify({
+  shipped: await run('shipped probe', false),
+  positiveControl: await run('probe forced false', true),
+}, null, 1));
+```
+
+This is not yet a standing test.
+`playwright.browser.config.ts:11` sets `testDir: './packages'`, a directory that
+does not exist in this repo (the tree is `package/`, singular),
+so no browser test in that config can run until that is corrected.
+
 ## Verified workarounds
 
 ### Register the target custom property with `@property`
