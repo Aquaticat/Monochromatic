@@ -191,9 +191,14 @@ await describe({
     it({
       name: 'createStubInstance returns configurable local fakes guarded after completion',
       fn: async (): Promise<void> => {
+        class MethodSource {
+          getTime(this: void,): number {
+            return 0;
+          }
+        }
         const late: (() => unknown)[] = [];
         await it({ name: 'stub-instance owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
-          const instance = sinon.createStubInstance(Date,);
+          const instance = sinon.createStubInstance(MethodSource,);
           instance.getTime.returns(1,);
           expect(instance.getTime(),).toBe(1,);
           const retained = instance.getTime;
