@@ -373,6 +373,13 @@ Split by what each actually decides;
  answering both "yes,
  in this order" must be reachable.
 
+QPM:
+ Every option set asserts a shared premise.
+Before asking which mechanism,
+ try dissolving the constraint that demands one;
+ offer the menu only if it survives.
+Dissolving beats choosing.
+
 ### Present options with pros, cons, and a personal ranking
 
 OPT:
