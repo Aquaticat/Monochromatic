@@ -111,7 +111,9 @@ agent-browser --session music-player-md3 --cdp 9224 eval \
   nodes. Six use `bgOverlap`; `#zoom-dimensions` uses
   `elmPartiallyObscuring`. Direct computed-color checks resolve the dimensions text to
   9.344:1, the scale label to 17.075:1, and each affected button pair to 6.441:1.
-  Axe reports no violation.
+  Axe reports no violation. The longer large-text segmented preview title wraps the
+  toolbar differently and produces no incomplete nodes, confirming that node count is
+  layout-sensitive rather than a stable property of the dialog.
 
 ### Replacement-form accessibility corrections
 

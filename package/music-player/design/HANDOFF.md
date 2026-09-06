@@ -1168,3 +1168,52 @@ connected full-label segments stacked top to bottom, with segmented outlines,
 selection fill, checkmark, and radio semantics. Do not use horizontal scrolling and do
 not substitute plain radio rows. The default one-row segmented control remains
 unchanged. Recapture the 200% state and show the corrected evidence in the active form.
+
+Prototype commit `67d5f9720` implements the vertical state from real Material
+`SegmentedButton` elements. Four one-item row hosts sit in an outer selectable column;
+position-specific shapes and a negative 1dp gap produce one connected outline. Android
+build and lint pass. The pinned Material artifact has no public vertical segmented-row
+wrapper, so the implementation boundary and production semantics tradeoff are recorded
+in `doc/troubleshooting/compose-material3-vertical-segmented-buttons.md`.
+
+The 200% native capture is
+`questions/render/refine-large-text-segmented.png`. Full-resolution inspection shows
+four full-width connected segments from x=73 through x=935 and y=1620 through y=2137.
+`Play in order` retains the selected container and checkmark; all four full labels are
+visible. UI Automator exposes each label and a checked selected mode. No horizontal
+scroll exists. The active questionnaire now presents this settled correction directly
+after the accepted before-state, before the default-text 3 × 3 matrix. Its validator
+requires the 863 × 518px connected outline and selected-container pixels. A positive
+control substituting the rejected radio-row capture fails with `is missing its
+connected mode-control outline`.
+
+Final isolated Helium verification passes after the vertical-segment correction. The
+self-contained form loads eleven opaque 2076 × 2152px images: the accepted before-state,
+the settled 200% vertical segmented state, and nine default-text deck refinements. All
+eleven previews open in the measured 907 × 937 CSS px hardware frame at 100%, report
+their exact titles and source dimensions, and return focus on close. Zoom out, in, Fit,
+1:1 display pixels, 100% reset, and vertical scrolling pass. At 1280 × 800 the three
+matrix cards share each row; at 390 × 844 every row independently traverses its 772px
+horizontal range while the page remains exactly 390px wide. The accepted evidence cards
+remain one column.
+
+Blank validation focuses Q1; selecting Q1 and Q2 then focuses the required free-text
+field. All nine combinations report their expected code and rank, including 2A at rank
+1 and 3B at rank 9. Prepared output, immediate copy, named text download, and clear
+pass. Clear returns all controls and output to blank state. Offline reload decodes all
+eleven images with no external URL; host dark mode leaves the document's light paper
+palette unchanged. Direct checks find no duplicate IDs, missing labels or alternatives,
+unnamed buttons, or visible target smaller than 48px. Axe reports no WCAG A/AA
+violations or incomplete checks on the page or the large-text modal. The recommended
+modal's seven conservative contrast incompletes resolve manually to 6.441:1 or higher
+and remain documented in `doc/troubleshooting/axe-modal-dialog-contrast.md`. Browser
+errors and console output are empty.
+
+Positive controls prove the validator rejects the displaced before-state used as a
+centered cell, tonal buttons substituted for standard buttons, balanced spacing
+substituted for tight spacing, unauthorized command-bar text, one changed segmented
+mode pixel, and the rejected large-text radio-row raster. Package build, lint, and unit
+contracts pass after restoration. Next: commit this verification record and the
+troubleshooting updates, clear and close isolated Helium, stop the emulator, remove
+temporary prototype captures, open the exact cleared form through normal Helium, and
+activate its KWin window. Then wait for the user's matrix answers.
