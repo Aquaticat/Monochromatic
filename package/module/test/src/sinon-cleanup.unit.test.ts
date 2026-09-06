@@ -64,7 +64,7 @@ await describe({
             const mock = sinon.mock(target,);
             /** Saved factory namespaces must enforce completion at invocation. */
             const returns: unknown = Reflect.get(sinon.fake, 'returns',);
-            if (typeof returns !== 'function')
+            if ((typeof returns) !== 'function')
               throw new Error('Sinon fake namespace did not provide returns',);
             /** A saved plain method must carry the same guard as a property lookup. */
             const {spy} = sinon;

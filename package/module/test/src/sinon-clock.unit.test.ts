@@ -32,18 +32,16 @@ await describe({
               throw new Error('First attempt did not provide a clock',);
             /** Sinon exposes uninstall at runtime although its sandbox clock type lists restore. */
             const uninstall: unknown = Reflect.get(previous, 'uninstall',);
-            if (typeof uninstall !== 'function')
+            if ((typeof uninstall) !== 'function')
               throw new Error('Sinon clock did not provide uninstall',);
             Reflect.apply(uninstall, previous, [],);
             previous.restore();
             expect(globalThis.setTimeout,).toBe(installed,);
             /** Local timers still execute under ordinary Sinon clock semantics. */
-            const callback = sinon.spy();
-            setTimeout(() => {
-              callback();
-            }, 1,);
+            const timerSpy = sinon.spy((): void => {},);
+            setTimeout(timerSpy, 1,);
             clock.tick(1,);
-            expect(callback.callCount,).toBe(1,);
+            expect(timerSpy.callCount,).toBe(1,);
           },
         },);
         expect(globalThis.setTimeout,).toBe(original,);
@@ -59,9 +57,11 @@ await describe({
         first.restore();
         expect(globalThis.setTimeout,).toBe(installed,);
         const setTickMode: unknown = Reflect.get(first, 'setTickMode',);
-        if (typeof setTickMode !== 'function')
+        if ((typeof setTickMode) !== 'function')
           throw new Error('Sinon clock did not provide setTickMode',);
-        expect(() => Reflect.apply(setTickMode, first, [{ mode: 'nextAsync', },],),).toThrow('uninstalled',);
+        expect((): void => {
+          Reflect.apply(setTickMode, first, [{ mode: 'nextAsync', },],);
+        },).toThrow('uninstalled',);
       },
     },),
     it({

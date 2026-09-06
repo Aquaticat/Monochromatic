@@ -41,6 +41,15 @@ app.all(
       );
     }
 
+    if (pathname.startsWith('/dist/module-test/',)) {
+      /** Browser acceptance imports only this package's built fixture assets. */
+      const contentType = mimeTypes[extname(pathname,)] ?? 'application/octet-stream';
+      return new Response(
+        await readFile(`package/module/test/dist/${pathname.slice('/dist/module-test/'.length,)}`,),
+        { headers: { 'content-type': contentType, }, },
+      );
+    }
+
     if (pathname.startsWith('/dist/module-logger.fuzz/',)) {
       /**
        * Resolved MIME type for the requested sidecar asset; falls back to a safe binary type.

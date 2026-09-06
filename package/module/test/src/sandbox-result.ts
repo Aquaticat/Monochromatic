@@ -52,7 +52,9 @@ export function guardFakeMutators({
 },): void {
   if (!isSandboxTarget(value,))
     return;
-  /** A restored generation cannot regain descriptor-changing authority. */
+  /**
+   A restored generation cannot regain descriptor-changing authority.
+   */
   const generation = { restored: false, };
   for (const operation of [
     'get',
@@ -98,8 +100,14 @@ export function guardFakeMutators({
               operation: `Sinon fake.${operation}`,
             },);
         }
-        /** Mark restoration only after success so failed cleanup remains reportable. */
-        const result: unknown = Reflect.apply(original, receiver, args,);
+        /**
+         Mark restoration only after success so failed cleanup remains reportable.
+         */
+        const result: unknown = Reflect.apply(
+          original,
+          receiver,
+          args,
+        );
         if (operation === 'restore')
           generation.restored = true;
         return result;

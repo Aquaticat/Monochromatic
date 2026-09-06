@@ -14,12 +14,12 @@ await describe({
         await it({ name: 'factory owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
           /** Read the actual callable namespace member with an explicit invocation receiver. */
           const helper: unknown = Reflect.get(sinon.stub, mode,);
-          if (typeof helper !== 'function')
+          if ((typeof helper) !== 'function')
             throw new Error(`Missing function helper ${mode}`,);
           const args = mode === 'call' ? [sinon, target, 'method',]
             : mode === 'apply' ? [sinon, [target, 'method',],] : [sinon,];
           const result: unknown = Reflect.apply(helper, sinon.stub, args,);
-          if (mode === 'bind' && typeof result === 'function') {
+          if ((mode === 'bind') && ((typeof result) === 'function')) {
             Reflect.apply(result, undefined, [target, 'method',],);
             late.push(() => Reflect.apply(result, undefined, [target, 'method',],),);
           }

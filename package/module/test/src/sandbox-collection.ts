@@ -106,7 +106,9 @@ export function guardTimerController({
    Preserve aliases such as clock.restore === clock.uninstall.
    */
   const wrappers = new WeakMap<object, object>();
-  /** A manually uninstalled clock cannot restore over a subsequent installation. */
+  /**
+   A manually uninstalled clock cannot restore over a subsequent installation.
+   */
   const generation = { restored: false, };
   for (const property of [
     'restore',
@@ -147,15 +149,24 @@ export function guardTimerController({
               'mode',
             ) === 'manual');
           if (!stopping) {
-            requireRunningOwner({ owner, operation: 'Sinon clock.setTickMode', },);
+            requireRunningOwner({
+              owner,
+              operation: 'Sinon clock.setTickMode',
+            },);
             if (generation.restored)
               throw new SandboxOwnershipError('Sinon clock.setTickMode belongs to an uninstalled clock. Install a new clock instead.',);
           }
         }
         else if (generation.restored || ((owner.phase === 'completed') && (!restoring())))
           return undefined;
-        /** Preserve retry eligibility when underlying restoration throws. */
-        const result: unknown = Reflect.apply(original, receiver, args,);
+        /**
+         Preserve retry eligibility when underlying restoration throws.
+         */
+        const result: unknown = Reflect.apply(
+          original,
+          receiver,
+          args,
+        );
         if (property !== 'setTickMode')
           generation.restored = true;
         return result;
