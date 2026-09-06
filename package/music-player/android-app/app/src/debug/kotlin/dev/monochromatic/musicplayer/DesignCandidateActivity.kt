@@ -199,14 +199,18 @@ import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 
-// What:     `CircleShape` is Compose's reusable circular clipping outline.
-// Why:      The selected letter uses shape as a second state cue alongside color.
+// What:     `CircleShape` and `RoundedCornerShape` provide circular and selected-corner
+//           clipping outlines.
+// Why:      The selected letter stays circular while the vertical segmented control rounds only
+//           its outside top and bottom corners.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const circle = { borderRadius: '50%' };
+// const roundedCorners = { borderStartStartRadius: 20, borderStartEndRadius: 20 };
 // ```
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 // What:     Material imports supply the real Android theme, app bars, buttons, lists, slider,
 //           segmented control, surfaces, icons, dividers, and text renderer.
@@ -228,7 +232,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -270,18 +273,20 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 
 // What:     `Offset` and `Size` store two-dimensional geometry, `Color` stores packed ARGB
-//           values, and `ImageVector` stores a scalable icon path.
+//           values, `RectangleShape` supplies a square outline, and `ImageVector` stores a
+//           scalable icon path.
 // Why:      The prototype needs geometry for the folder indicator, verified palette values for
-//           surfaces, and typed official Material icons for shared transport-button rendering.
+//           surfaces, square middle segments, and typed Material transport icons.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // import type { ImageVector, Offset, Size } from 'compose/ui/graphics';
-// import { Color } from 'compose/ui/graphics';
+// import { Color, RectangleShape } from 'compose/ui/graphics';
 // ```
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 
 // What:     `FontWeight`, `TextAlign`, and `TextOverflow` configure native text rendering.
@@ -842,7 +847,59 @@ private fun TransportControls(candidate: String) {
     }
 }
 
-/** Draws one non-wrapping segmented control or a reflowing radio group for enlarged text. */
+/**
+ * What:     `LargeTextModeControl` composes four real `SegmentedButton` elements as one
+ *           connected vertical single-select group with full labels.
+ * Why:      Text can grow to 200% without replacing the settled component or scrolling sideways.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function LargeTextModeControl(props: { labels: readonly string[] }): UIElement;
+ * ```
+ */
+@Composable
+private fun LargeTextModeControl(labels: List<String>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectableGroup(),
+        verticalArrangement = Arrangement.spacedBy((-1).dp),
+    ) {
+        for (index in labels.indices) {
+            // What:     Kotlin's `if` expression selects a shape value for this segment's stack position.
+            // Why:      Only the outside top and bottom corners round, making four rows read as one control.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const shape = index === 0 ? topShape : index === labels.length - 1 ? bottomShape : rectangle;
+            // ```
+            val shape = if (index == 0) {
+                RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+            } else if (index == labels.lastIndex) {
+                RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+            } else {
+                RectangleShape
+            }
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                SegmentedButton(
+                    selected = index == 1,
+                    onClick = {},
+                    shape = shape,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                        .semantics {
+                            contentDescription = labels[index]
+                        },
+                ) {
+                    Text(text = labels[index], maxLines = 1)
+                }
+            }
+        }
+    }
+}
+
+/** Keeps the settled segmented mode control horizontal at default text and vertical at large text. */
 @Composable
 private fun ModeControl() {
     val labels = listOf("Repeat", "In order", "Shuffle", "Shuffle all")
@@ -864,32 +921,6 @@ private fun ModeControl() {
                     },
             ) {
                 Text(text = labels[index], maxLines = 1)
-            }
-        }
-    }
-}
-
-/** Reflows playback modes into full-label Material radio rows when system text is enlarged. */
-@Composable
-private fun LargeTextModeControl(labels: List<String>) {
-    Column(modifier = Modifier.fillMaxWidth().selectableGroup()) {
-        for (index in labels.indices) {
-            val selectedMode = index == 1
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp)
-                    .selectable(
-                        selected = selectedMode,
-                        onClick = {},
-                        role = Role.RadioButton,
-                    )
-                    .padding(horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                RadioButton(selected = selectedMode, onClick = null)
-                Text(text = labels[index], style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
