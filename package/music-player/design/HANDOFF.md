@@ -1217,3 +1217,14 @@ contracts pass after restoration. Next: commit this verification record and the
 troubleshooting updates, clear and close isolated Helium, stop the emulator, remove
 temporary prototype captures, open the exact cleared form through normal Helium, and
 activate its KWin window. Then wait for the user's matrix answers.
+
+Housekeeping is complete. The isolated Helium process and emulator are stopped;
+temporary refinement captures were removed from the prototype worktree without touching
+its pre-existing capture changes. The exact cleared questionnaire is open through the
+normal Helium desktop entry. KWin reports `Music player design: existing-screen
+refinement matrix - Helium` active and non-minimized at 1080 × 1880 on `HDMI-A-1`,
+internal ID `{63ccc0f8-3470-4305-a7fd-11e71988cbc1}`. Prototype HEAD and upstream are
+`67d5f9720`. Check main HEAD against upstream after this final handover commit, leave
+the form visible, and wait. The vertical segmented large-text correction is settled;
+the form asks only the separable spacing and Previous/Next icon-button treatment
+questions.
