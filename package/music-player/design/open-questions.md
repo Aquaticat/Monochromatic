@@ -546,7 +546,7 @@ validation,
  Do not
 invent those details or narrow the requirement without a dedicated design round.
 
-## 12. Existing-screen refinement, 1B settled
+## 12. Existing-screen refinement, 3B settled
 
 The active round stays within the accepted screenshot.
  Centering and seek-value
@@ -561,25 +561,20 @@ The user chose matrix option 1B:
 Previous and Next icon buttons,
  with Pause remaining filled.
 
-Two existing-screen treatments remain open:
+The user chose matrix option 3B.
+ The current track uses a soft neutral
+`surfaceContainerLow` row plus a bold title.
+ Every row retains full title width with no
+play icon or reserved leading slot.
+ The existing folder `Open` action uses a tonal
+Material button while retaining its folder icon and explicit label.
+ Decisions D36 and
+D38 record these independent treatments.
 
-- Current track:
-   explicit `Playing` label plus bold title,
-   primary-colored bold
-  title,
-   soft neutral container plus bold title,
-   or rounded outline plus bold title.
-  Every option removes the play icon and reserved leading slot.
-- Existing `Open` action:
-   filled,
-   tonal,
-   elevated,
-   or outlined Material button.
-  Every option retains the folder icon and explicit label.
-
-The sixteen cells are the cross-product of four consequential current-track treatments
-and four consequential Open treatments.
- Matrix size is not capped to an example count.
+The completed matrix was the cross-product of four consequential current-track
+treatments and four consequential Open treatments.
+ Matrix size was not capped to an
+example count.
 
 No absent control or future feature is part of this round.
  The command bar,

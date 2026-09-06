@@ -969,29 +969,28 @@ hard-code true-peak emphasis.
  which creates a trailing
 true-peak column.
 
-### D36. Track rows have no invented ordinals or permanent state column (reopened 2026-09-05)
-Do not prefix tracks with interface-generated numbers;
- they can be confused with real
-track-number metadata.
- Remove the play icon and its reserved leading slot from every row
-so titles retain the full list width.
- Expose current state semantically.
+### D36. Current track uses a soft neutral container and bold title
+Do not prefix tracks with interface-generated numbers.
+ Remove the play icon and its
+reserved leading slot from every row so titles retain the full list width.
+ Mark the
+current row with `surfaceContainerLow` plus a bold title,
+ and expose current state
+semantically.
+ This is matrix treatment T3.
 **Why.**
- The user rejected agent-invented numbering and the saturated blue current-row
-undertone on accuracy,
- accessibility,
- and Material grounds.
- They then rejected the
-play shape because its mostly empty column reduced space for every track.
-**Reopened.**
- Current-track treatment must preserve text width and combine visible cues rather than
-relying solely on color or solely on shape;
- exact cues are not settled.
+ The user selected 3B.
+ The neutral container plus weight differentiates current
+state through more than one visible channel without reducing title width or restoring
+the rejected saturated fill.
 **Rejected.**
  Sequential UI ordinals;
  saturated `primaryContainer` current-row fill;
  play icon or reserved state column;
- color-only or shape-only current-track treatment.
+ color-only or shape-only treatment;
+ T1,
+ T2,
+ and T4.
 
 ### D37. Transport uses tight spacing and outlined skip buttons
 Use 8dp spacing between the existing playback groups and outlined styling for the
@@ -1003,6 +1002,23 @@ separate Previous and Next icon buttons.
 **Rejected.**
  The other eight spacing and skip-button combinations from the existing-screen
 refinement matrix.
+
+### D38. Open uses a tonal button
+Use the Material tonal button treatment for the existing folder `Open` action.
+ Retain
+both the folder icon and explicit `Open` label.
+ This is matrix treatment O2 and completes
+selection 3B with D36.
+**Why.**
+ The user selected 3B.
+ Tonal treatment increases prominence through container fill,
+shape,
+ icon,
+ and label while remaining calmer than the filled primary action.
+**Rejected.**
+ Filled,
+ elevated,
+ and outlined Open treatments from this matrix.
 
 ---
 

@@ -268,6 +268,13 @@ action most strongly;
  the
 outlined boundary is weakest.
 
+**Selected:**
+ 3B.
+ T3 uses the soft neutral row container plus bold current title;
+O2 uses the tonal folder `Open` button.
+ This supersedes the recommendation for 1A
+without changing the settled transport treatment.
+
 ## ROUND 10 — white-divider clarification
 
 Three native full-device captures keep the chosen `1c` tonal structure and `3a`

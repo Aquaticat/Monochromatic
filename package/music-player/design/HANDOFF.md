@@ -3072,3 +3072,14 @@ Helium`,
  Unminimize and activate that exact window as the final operation,
  then
 wait for the user's separable current-track and Open decisions.
+
+The user selected 3B on 2026-09-06.
+ D36 now settles the current row as a soft
+neutral `surfaceContainerLow` container plus bold title,
+ with no play icon,
+ ordinal,
+or reserved leading slot.
+ D38 settles the existing folder `Open` action as a tonal
+button retaining its folder icon and explicit label.
+ This choice overrides the form's 1A
+recommendation while preserving transport 1B and every other settled screen decision.
