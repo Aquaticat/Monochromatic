@@ -32,6 +32,15 @@ test.describe('localStorage sink', () => {
     expect(result,).toBe(true,);
   });
 
+  test('a partial process shim does not prevent browser storage detection', async ({ page, },): Promise<void> => {
+    /** This synthetic process belongs only to Playwright's disposable page. */
+    const available = await page.evaluate(async (): Promise<boolean> => {
+      Object.defineProperty(globalThis, 'process', { configurable: true, value: { env: {}, }, },);
+      return await globalThis.moduleLogger.sinks.createLocalStorageSink().verify();
+    },);
+    expect(available,).toBe(true,);
+  },);
+
   test('a verified sink writes records across levels and message shapes', async ({ page, },) => {
     const allSucceeded = await page.evaluate(async () => {
       const { createLocalStorageSink, } = globalThis.moduleLogger.sinks;

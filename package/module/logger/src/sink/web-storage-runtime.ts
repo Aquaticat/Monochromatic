@@ -39,7 +39,7 @@ export function detectWebStorageRuntime(): WebStorageRuntime {
     return 'bun';
 
   if (((typeof process) !== 'undefined') && ((typeof process.versions
-    .node) === 'string'))
+    ?.node) === 'string'))
     return 'node';
 
   if ('document' in globalThis)

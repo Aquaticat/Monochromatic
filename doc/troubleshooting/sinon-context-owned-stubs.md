@@ -329,6 +329,25 @@ The corrected fixture captures the fake before completion,
 then exercises its deferred `value` method.
 The built test passes with completion rejection and the original target unchanged.
 
+### Actual browser integration findings
+
+The first real browser run could not import the neutral consumer bundle.
+Firefox named `node:fs/promises`;
+the neutral chunk began with static Node builtin imports.
+`package/module/test/src/format-error.ts` imported the module-fs-path barrel at load time.
+Its workspace lookup now dynamically imports that dependency only after Node detection.
+The subsequent run passed the no-process fixtures in Chromium,
+Firefox,
+and WebKit.
+
+The partial-process fixtures then reached a separate failure:
+logger's `detectWebStorageRuntime` read `process.versions.node` when the injected process had no `versions`.
+This is a logger runtime probe,
+not a Sinon or async-context failure.
+`package/module/logger/src/sink/web-storage-runtime.ts` now checks `versions` optionally.
+Both the module-test browser consumer and a dedicated local-storage browser regression exercise that input.
+Their post-change verification is pending.
+
 ### Intentional Node emitter fixture
 
 `package/module/test/src/sinon-semantics.unit.test.ts` intentionally constructs Node's `EventEmitter`.
