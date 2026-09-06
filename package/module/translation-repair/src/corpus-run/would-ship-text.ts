@@ -2,6 +2,7 @@ import type { ArtifactConsolidateSlice, } from './artifact-two-lane-consolidate.
 import type { ArtifactContestSlice, } from './artifact-two-lane-contest.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
+import { restoreTypography, } from '../restore-typography.ts';
 
 //region Would-ship vocabulary
 // WHAT A READER WOULD SEE AT ONE SLICE, and no field holds it. Two deciding
@@ -131,7 +132,7 @@ export type WouldShipReading =
 export type WouldShipSource = Pick<
   ParsedTwoLaneArtifact,
   'comparison' | 'consolidation' | 'laneSelection'
->;
+> & Partial<Pick<ParsedTwoLaneArtifact, 'preparation'>>;
 
 /**
  * One slice's reading, beside the index both lanes name it by.
@@ -544,17 +545,81 @@ export function wouldShipTextFor(
 export function wouldShipTextPerSlice(
   { artifact, }: { readonly artifact: WouldShipSource; },
 ): readonly WouldShipSlice[] {
+  /**
+   * Whole archive English, which is the page's quote convention; empty where
+   * the artifact predates the stored archive text, which leaves each row's own
+   * incumbent as the only witness.
+   */
+  const convention = (artifact.preparation?.archiveText.kind === 'stored')
+    ? artifact.preparation.archiveText.text
+    : '';
+
   return artifact
     .comparison
     .map(function readIt(row: ArtifactComparisonRow,): WouldShipSlice {
       return {
         sliceIndex: row.sliceIndex,
-        reading: wouldShipTextFor({
-          artifact,
+        reading: inArchiveTypography({
+          reading: wouldShipTextFor({
+            artifact,
+            row,
+          },),
           row,
+          convention,
         },),
       };
     },);
+}
+
+/**
+ * Puts a stage's wording into the archive's quote style before it ships.
+ *
+ * THE REPAIR LANE ALREADY DID THIS and nothing else did. `restore-typography.ts`
+ * runs on every editor and refiner replacement, so a repair-lane wording reaches
+ * the page in the page's own convention; a translate-lane wording, a
+ * consolidation proposal and a polish rewrite never passed through it, and on
+ * 2026-09-06 the yulianNyanner page carried five straight apostrophes among
+ * thirty curly ones, two days after the Uekawakuyuurei page shipped the same
+ * mix unread. Done here, on the reading every publisher and checker derives
+ * the page from, rather than in each producing stage, so the artifact keeps
+ * what the stages wrote and the page and its checks agree on what ships. An
+ * archive wording is the convention itself and is left as it stands.
+ *
+ * @param reading - what the slice would contribute
+ *
+ * @param row - comparison row it came from, whose incumbent is the archive
+ * wording at this slice
+ *
+ * @param convention - whole archive English, or empty when unrecorded
+ *
+ * @returns Same reading, its wording in the archive's quote style
+ *
+ * @example
+ * ```ts
+ * const shipped = inArchiveTypography({ reading, row, convention, },);
+ * ```
+ */
+function inArchiveTypography(
+  {
+    reading,
+    row,
+    convention,
+  }: {
+    readonly reading: WouldShipReading;
+    readonly row: ArtifactComparisonRow;
+    readonly convention: string;
+  },
+): WouldShipReading {
+  if ((reading.kind !== 'wording') || (reading.decidedBy === 'archive'))
+    return reading;
+  return {
+    ...reading,
+    text: restoreTypography({
+      replacement: reading.text,
+      replaced: row.incumbentText,
+      convention,
+    },),
+  };
 }
 
 //endregion Would-ship reader
