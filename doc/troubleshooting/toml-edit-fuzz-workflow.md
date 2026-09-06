@@ -162,6 +162,11 @@ both kept:
   Verified with a positive control on 2026-09-06:
   `mise --version` prints the "mise version 2026.9.1 available" warning by default and nothing but the version under `MISE_LOG_LEVEL=error`.
 
+Confirmed in CI on 2026-09-06:
+run 34062395210 on `1c28c42a5` passed every step,
+conformance and the coverage gate included,
+the first green `toml-edit-fuzz` run since 2026-08-19.
+
 ## What does not work
 
 ### Reordering `npm:pnpm` and Node
