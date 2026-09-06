@@ -163,6 +163,57 @@ Owner decisions so far,
    the same as every package in the prior-art sample;
    the minor changelog line names it.
 
+### Prototype 1 measurements (stub shape, worktree `logger-file-sink-split-20260906`, 2026-09-06)
+
+The round-1 stub shape was built to validate the `imports`-field mechanism before the round-2 shape;
+ every mechanism result carries over.
+
+- Build,
+   unit tests (23 suites),
+   and `lint:types` pass.
+   `lint:oxlint` exits 1 with 1719 warnings,
+   every one `stylistic(require-asterisk-prefix)` in files the prototype did not touch:
+   commit `4b09ccd18` (`style(config-oxlint): require starless tsdoc`) landed on main during the session,
+   and the logger package has not been reformatted for it yet;
+   `mise run //package/module/logger:format:oxlint` is the package-wide fix.
+- `import(` count:
+   node artifact 0 (was 2),
+   neutral artifact 0 (was 2).
+   The node artifact carries `from"node:fs/promises"` and `from"node:path"` statically;
+   the neutral artifact mentions neither.
+- Artifact bytes:
+   node 25401 to 25351,
+   neutral 26590 to 25501.
+- Consumer bundles of the neutral artifact for the browser:
+   rolldown 29.44 kB and esbuild 29.2 kB,
+   no warnings,
+   0 `import(` in each.
+- End-user check on the node artifact:
+   one `logger.info` plus `flush()` created `node_modules/.monochromatic/2026-09-06T18-35-55.672Z.log.jsonl` with the record.
+- Survey:
+   no workspace package both depends on the logger,
+   builds with the neutral config,
+   and is executed under Node directly.
+   Transitive exposure exists:
+   five libraries ship only a neutral build and inline the logger (`css-edit`,
+   `fs-path`,
+   `jsonc-edit`,
+   `test`,
+   `toml-edit`),
+   and `kv-store` and `pipe` ship both builds.
+   Today their inlined logger copy carries the dynamic import and writes files under Node;
+   after the split the inlined copy follows the neutral default list and does not.
+   Node-executed dependents that bundle those libraries through `default`:
+   `build-tool/css`,
+   `cli/fy`,
+   `dev-script/deps-cube`,
+   `dev-script/vm-builder` (through `fs-path`),
+   `build-tool/css` and `dev-script/file-enforcer` (through `toml-edit` and `css-edit`).
+   Only the inlined copy inside the library is affected;
+   each dependent's own logger import still resolves the node artifact.
+- Resolution facts read from rolldown's own type declarations:
+   default `conditionNames` are `["import","node","default"]` for `platform: node` and `["import","default"]` for neutral.
+
 ## Verification campaign (the toml-edit bar)
 
 `package/module/toml-edit` has a budgeted property campaign,
