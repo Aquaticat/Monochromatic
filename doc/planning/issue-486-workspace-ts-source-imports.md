@@ -105,6 +105,52 @@ and it has since been seen to hurt.
 - `doc/decision/npm-publishing.md`:
   `./ts` is stripped at publish.
 
+## Precedent (research, 2026-09-06)
+
+`doc/research/typescript-monorepo-cross-package-imports.md` surveys Vue core,
+Vite,
+Vitest,
+typescript-eslint,
+Effect,
+Babel,
+Sentry,
+Nx,
+Turborepo,
+and JSR at pinned commits.
+Patterns found:
+
+- Single root program with `paths` to source (Vue core,
+   Vitest):
+   sibling source checked once;
+   lint not type-aware.
+- Custom source condition plus compiled default (Vitest,
+   Babel,
+   Nx):
+   editors,
+   bundlers,
+   and tests opt into source;
+  checking is one root program or references.
+- Source exports in-repo,
+   compiled on publish (Effect):
+   checking by references.
+- Per-package programs over sibling declarations (typescript-eslint,
+   Effect,
+   Babel,
+   Sentry,
+   Nx):
+  type-aware lint reads declarations;
+  Sentry runs oxlint `--type-aware` per package after `^build:types`.
+- Compiled-only with build ordering (Vite `plugin-legacy`,
+   Sentry runtime).
+- Per-package programs over source:
+   only Vite's intra-package overlap and this repo's `/ts` subpath;
+  no surveyed project documents choosing it for cross-package imports.
+
+Every surveyed repo with type-aware lint (Sentry,
+ typescript-eslint,
+ Babel) has that lint read sibling declarations
+and orders lint after a declaration build.
+
 ## Rejected
 
 - TypeScript project references plus `emitDeclarationOnly`.
