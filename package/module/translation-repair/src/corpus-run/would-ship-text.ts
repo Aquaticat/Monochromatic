@@ -1,6 +1,9 @@
 import type { ArtifactConsolidateSlice, } from './artifact-two-lane-consolidate.ts';
 import type { ArtifactContestSlice, } from './artifact-two-lane-contest.ts';
-import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
+import type {
+  ParsedArchiveText,
+  ParsedTwoLaneArtifact,
+} from './artifact-two-lane-read-contract.ts';
 import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
 import { restoreTypography, } from '../restore-typography.ts';
 
@@ -132,7 +135,62 @@ export type WouldShipReading =
 export type WouldShipSource = Pick<
   ParsedTwoLaneArtifact,
   'comparison' | 'consolidation' | 'laneSelection'
-> & Partial<Pick<ParsedTwoLaneArtifact, 'preparation'>>;
+> & ArchiveTextCarrier;
+
+/**
+ * Archive English as either artifact shape carries it: the settled artifact a
+ * pass writes holds the string, and the parsed artifact a reader opens wraps it
+ * with whether it was recorded. Optional, so a source built from the three
+ * reading fields alone still reads.
+ *
+ * @example
+ * ```ts
+ * const carrier: ArchiveTextCarrier = { preparation: { archiveText: 'The cat’s asleep.', }, };
+ * ```
+ */
+type ArchiveTextCarrier = {
+  /**
+   * The slicing's record of the archive, when the source carries one.
+   */
+  readonly preparation?: {
+    /**
+     * Whole archive English, or the parsed statement of whether it was kept.
+     */
+    readonly archiveText: string | ParsedArchiveText;
+  };
+};
+
+/**
+ * Whole archive English a source carries, which is the page's quote
+ * convention, or empty when the source carries none.
+ *
+ * @param artifact - source being read
+ *
+ * @returns Archive English verbatim, or empty
+ *
+ * @example
+ * ```ts
+ * const convention = archiveConventionOf({ artifact, },);
+ * ```
+ */
+function archiveConventionOf(
+  { artifact, }: { readonly artifact: WouldShipSource; },
+): string {
+  /**
+   * The slicing's record, absent on a source built from the reading fields alone.
+   */
+  const { preparation, } = artifact;
+  if (preparation === undefined)
+    return '';
+
+  /**
+   * Archive English in whichever shape this source carries it.
+   */
+  const { archiveText, } = preparation;
+  if (typeof archiveText === 'string')
+    return archiveText;
+  return (archiveText.kind === 'stored') ? archiveText.text : '';
+}
 
 /**
  * One slice's reading, beside the index both lanes name it by.
@@ -547,12 +605,10 @@ export function wouldShipTextPerSlice(
 ): readonly WouldShipSlice[] {
   /**
    * Whole archive English, which is the page's quote convention; empty where
-   * the artifact predates the stored archive text, which leaves each row's own
-   * incumbent as the only witness.
+   * the source carries none, which leaves each row's own incumbent as the only
+   * witness.
    */
-  const convention = (artifact.preparation?.archiveText.kind === 'stored')
-    ? artifact.preparation.archiveText.text
-    : '';
+  const convention = archiveConventionOf({ artifact, },);
 
   return artifact
     .comparison
