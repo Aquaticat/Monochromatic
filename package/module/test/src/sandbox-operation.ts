@@ -230,6 +230,18 @@ export function dispatchSandboxOperation({
       [],
     );
   }
+  if (invocation.operation === 'ctx.sinon.inject') {
+    /** Only function properties changed by Sinon injection belong to this attempt. */
+    const previous: PropertyDescriptorMap = isSandboxTarget(target,) ? Object.getOwnPropertyDescriptors(target,) : {};
+    return guardInjectedFactories({
+      value: invokeSandboxMethod(invocation,),
+      previous,
+      owner: policy.owner,
+      invoke(next: SandboxInvocation,): unknown {
+        return dispatchSandboxOperation({ invocation: next, policy, },);
+      },
+    },);
+  }
   preflightOrdinaryMutation(invocation,);
   /**
    Factory behavior not selected for contextual isolation remains owned by Sinon.
@@ -262,15 +274,5 @@ export function dispatchSandboxOperation({
       target,
       owner: policy.owner,
     },);
-  if (invocation.operation === 'ctx.sinon.inject') {
-    return guardInjectedFactories({
-      value: result,
-      owner: policy.owner,
-      invoke(next: SandboxInvocation,): unknown { return dispatchSandboxOperation({
-        invocation: next,
-        policy,
-      },); },
-    },);
-  }
   return result;
 }

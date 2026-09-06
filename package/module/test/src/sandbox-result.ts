@@ -171,6 +171,8 @@ export function guardMockController({
  Replaces injected factory references in place so the original injection destination is guarded too.
 
  @param value - destination returned by Sinon injection
+
+ @param previous - own descriptors before Sinon wrote its factories
  
  @param owner - attempt supplying these factories
  
@@ -180,15 +182,17 @@ export function guardMockController({
  
  @example
  ```ts
- return guardInjectedFactories({ value, owner, invoke });
+ return guardInjectedFactories({ value, previous, owner, invoke });
  ```
  */
 export function guardInjectedFactories({
   value,
+  previous,
   owner,
   invoke,
 }: {
   readonly value: unknown;
+  readonly previous: PropertyDescriptorMap;
   readonly owner: SandboxOwner;
   readonly invoke: (invocation: SandboxInvocation,) => unknown;
 },): unknown {
@@ -198,11 +202,8 @@ export function guardInjectedFactories({
     /**
      Sinon injection defines plain factory properties.
      */
-    const method: unknown = Reflect.get(
-      value,
-      key,
-    );
-    if ((typeof method) === 'function') {
+    const method: unknown = Object.getOwnPropertyDescriptor(value, key,)?.value;
+    if ((typeof method) === 'function' && previous[key]?.value !== method) {
       Reflect.set(
         value,
         key,
