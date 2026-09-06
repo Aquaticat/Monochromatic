@@ -182,6 +182,43 @@ pause action the clearest focal point without compressing the stack.
  This choice
 settles both matrix dimensions and supersedes the recommendation.
 
+## ROUND 13 — redundant current-track cues
+
+All current-track studies inherit chosen option 1B:
+ centered deck,
+ corrected 24% seek
+position,
+ 8dp transport spacing,
+ outlined Previous and Next buttons,
+ filled Pause,
+and every settled picker,
+ track,
+ spacer,
+ and mode-control rule.
+ They retain the
+leading play icon and add another visible channel:
+
+- **T1, bold title:**
+   play icon plus bold current-track title.
+- **T2, accent title:**
+   play icon plus primary-colored medium-weight title.
+- **T3, tonal badge:**
+   play icon in a tonal circular badge plus medium-weight title.
+
+Prototype commits `52132c7c6`,
+ `abbe743d9`,
+ and `d7e028c64` implement and
+correct this dimension.
+ Native 2076 × 2152px captures confirm all three cues are
+visibly distinct.
+ T3 retains the accepted 24dp leading footprint;
+ the title and supporting
+text remain aligned with every other row.
+ Pixel comparison against
+`refine-tight-outlined` finds no change in the complete left pane or below the current
+track on the right pane.
+ Open-action prominence remains a separate unfinished dimension.
+
 ## ROUND 10 — white-divider clarification
 
 Three native full-device captures keep the chosen `1c` tonal structure and `3a`

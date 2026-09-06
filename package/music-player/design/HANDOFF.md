@@ -2819,3 +2819,32 @@ the folder picker's primary action;
  Keep the
 current-track and Open choices separable,
  and add no absent feature.
+
+Three native current-track candidates now inherit 1B and retain the play icon:
+ T1 adds
+a bold title;
+ T2 adds a primary-colored medium-weight title;
+ T3 places the play
+icon in a tonal circle and adds medium title weight.
+ Prototype commits `52132c7c6`,
+`abbe743d9`,
+ and `d7e028c64` contain the work.
+ Early review caught two
+comparison faults before presentation:
+ T3 had enlarged only the selected row's leading
+slot,
+ and full unfolded studies still hard-coded `dbtp-a` into the track pane.
+ T3 now
+uses the accepted 24dp slot,
+ and cue candidates route into the track pane while every
+non-cue candidate retains `dbtp-a`.
+ Build,
+ Android lint,
+ and install pass.
+ New
+2076 × 2152px captures show each intended cue;
+ exact pixel comparison against
+`refine-tight-outlined` reports no changes in the complete left pane or below the
+current row on the right.
+ Proceed to the separate Open-prominence dimension before
+building the user-facing matrix.
