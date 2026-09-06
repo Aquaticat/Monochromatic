@@ -100,6 +100,16 @@ and it has since been seen to hurt.
   so the rule's share sits somewhere between 49 s and 89 s of the warm sweep until a back-to-back pair is
   measured on a quiet machine.
 
+- Back-to-back warm sweep pair on a quiet machine (wrapper from the root,
+   16 threads,
+   3086 files):
+  rule on 63.6 s and 63.4 s;
+  rule allowed 64.8 s and 65.6 s;
+  identical 4273 warnings and 1327 errors in all four.
+  The rule's warm share of the sweep is inside the noise,
+  and the earlier 114.4 s and 154.2 s runs were inflated by the research and spike agents running alongside.
+  The warm sweep sits at the 60 s target within the recorded 4.6 s band.
+
 ## Evidence already in the repo
 
 - `doc/planning/oxlint-warm-sweep-attribution.md` (issue #374,
