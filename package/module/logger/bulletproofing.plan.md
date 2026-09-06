@@ -310,6 +310,43 @@ The round-2 shape,
    the Q14 issue;
    removal of both throwaway worktrees.
 
+### Landed on main (2026-09-06)
+
+- `eac44c979` fix(playwright):
+   harness paths after the singular rename.
+- `8e6f494ef` feat(module-logger):
+   platform-specific sinks behind `./node` and `./browser`,
+   with the six-case artifact guard.
+   Guard-failure proof:
+   pointing the `default` condition of `#default-sinks` at the Node list fails the two neutral-side cases;
+   restored,
+   every suite passes.
+- `ce38d07db` docs(module-logger):
+   README,
+   description,
+   DECISIONS entry superseding the open problem,
+   minor changeset.
+- `25188f00f`,
+   `f222e67c5`,
+   `b6b6afdff`,
+   `f06a9b05a`,
+   `6e3ffeb76`:
+   node builds with a `node` export condition for css-edit,
+   fs-path,
+   jsonc-edit,
+   test,
+   toml-edit (owner instruction on go;
+   replaces the planned issue).
+   Each builds,
+   tests,
+   and type-checks;
+   Node resolves each self-reference to `dist/final/node`;
+   the node builds inline the file sink and the neutral builds do not.
+   Pre-existing `require-eventual-artifact` findings in fs-path (3) and toml-edit (99) test files are untouched by these commits.
+- The TSDoc reformat step was unnecessary:
+   `3d6c20c9f` (another session) had already swept the repository.
+- Both prototype worktrees removed.
+
 ## Verification campaign (the toml-edit bar)
 
 `package/module/toml-edit` has a budgeted property campaign,
