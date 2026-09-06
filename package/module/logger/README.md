@@ -98,6 +98,10 @@ Availability is verified at module load,
  so one hung backend probe cannot starve the others.
 Records emitted while an async sink is
 still being verified are replayed to that sink when it becomes available.
+That startup buffer holds at most `STARTUP_BUFFER_CAP` records (10000,
+ exported);
+ past the cap the oldest buffered record is dropped,
+ and once every sink has answered one `warn` record naming the dropped count is written to every available sink.
 
 - **console**:
    formats as `[level] [ISO timestamp] message`;
@@ -268,6 +272,9 @@ File,
    remaining sinks continue,
    and a late verify answer after the limit is ignored
 - Individual `write` failures are handled per sink and do not disable the backend
+- Records logged before every sink has answered buffer under `STARTUP_BUFFER_CAP`;
+   on overflow the oldest is dropped and the count is reported as one `warn` record after initialization,
+   never silently
 
 ## Custom loggers
 
@@ -343,6 +350,7 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
 - Console output neutralizes control characters
 - `flush()` has a deadline
 - Sinks verify concurrently under a time limit
+- The startup buffer is bounded and overflow is reported
 - Zero-config at import,
    no configure step (the logtape migration observations)
 

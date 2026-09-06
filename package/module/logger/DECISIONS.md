@@ -354,3 +354,29 @@ Concurrency is safe for the exactly-once guarantee because a record's immediate-
 (sinks available when it was logged) and its replay set (sinks that become available later)
 are disjoint regardless of which verify settles first;
  a unit test pins that with two sinks verifying at different speeds.
+
+## Startup buffer is bounded and overflow is reported (2026-09-06)
+
+Records logged before every sink has answered its verify wait in a startup buffer and replay once a sink becomes available.
+That buffer had no cap,
+ so a burst during the verify window claimed memory without limit;
+ verify liveness bounded the window (`verifyTimeoutMs`) but not the volume.
+The buffer now holds at most `STARTUP_BUFFER_CAP` records (10000,
+ exported as a constant).
+On overflow the oldest buffered record is dropped,
+ because the newest records carry the context closest to whatever is being diagnosed,
+ and once initialization completes one synthetic `warn` record naming the dropped count is written to every available sink,
+ so the loss appears in the log stream itself instead of being silent.
+
+The cap is a constant rather than a `createLogger` option.
+The section "`flush()` has a deadline" recorded that a startup buffer cap knob had no measured trigger;
+ that still holds for tuning it,
+ while the bound itself is a safety property whose cost was measured on 2026-09-06 on the built artifact:
+ a full buffer holds about 1.6 MiB of heap,
+ a burst of the cap settles in about 3 ms,
+ and bursts of ten and one hundred times the cap settle in about 20 ms and 150 ms (five runs each,
+ lowest reported),
+ so `Array.prototype.shift` on the full buffer stays linear under V8 and no ring buffer is needed.
+When no sink survives verification the count is never written;
+ the logger throws on the next call in that state,
+ and a marker with nowhere to go has no consumer.

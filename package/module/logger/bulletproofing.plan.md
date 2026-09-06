@@ -43,25 +43,29 @@ Nothing here blocks a publish;
 - Every unit test imports the built artifact through the package name;
    internals are exposed as underscore-prefixed entry exports.
 
+## What shipped after 0.1.0 (pending release)
+
+- Verify liveness (2026-09-06):
+   every sink verifies concurrently under `verifyTimeoutMs` (`DEFAULT_VERIFY_TIMEOUT_MS`),
+   with tests for a never-settling verify no longer starving later sinks and for the replay invariant under concurrency.
+   The guard was shown to fail against the sequential,
+   unbounded code before the fix was restored.
+- Startup buffer bound (2026-09-06):
+   pre-initialization records buffer under `STARTUP_BUFFER_CAP`,
+   oldest dropped on overflow,
+   one synthetic `warn` record naming the dropped count once every sink has answered.
+   Measured on the built artifact:
+   a full buffer holds about 1.6 MiB of heap and a burst one hundred times the cap settles in about 150 ms,
+   so the drop path stays linear.
+   The guard was shown to fail against the unbounded code before the fix was restored.
+
 ## Open robustness items, in priority order
 
-1.   Verify liveness.
-     `initialize()` awaits verifiers sequentially,
-     so one sink whose `verify` never settles keeps `initialized` false forever and starves the later sinks.
-     The flush deadline bounds shutdown but not steady-state delivery to sinks behind the stuck one.
-     Candidate:
-     concurrent verification with a per-verify bound;
-     the replay invariant (immediate-write set and replay set are disjoint per record) must hold under concurrency.
-2.   Startup buffer bound.
-     Records logged before initialization accumulate without a cap.
-     The Node init window is one filesystem probe,
-     so no trigger has been observed;
-     a bounded ring with a dropped-count marker is the candidate if one ever is.
-3.   Abandoned-write accounting.
+1.   Abandoned-write accounting.
      After a deadline hit the logger clears its view of in-flight writes;
      the sinks keep working in the background.
      Worth a property that a late settlement never surfaces as an unhandled rejection.
-4.   Import-time sink discovery.
+2.   Import-time sink discovery.
      Consumers defer the import (`await import(...)`) to keep contexts that never log,
      such as worker threads,
      from paying for sink auto-discovery;
