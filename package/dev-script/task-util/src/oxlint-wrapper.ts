@@ -15,7 +15,7 @@
  
  @example
  ```bash
- task-oxlint --type-aware
+ task-oxlint
  task-oxlint --fix
  ```
  */

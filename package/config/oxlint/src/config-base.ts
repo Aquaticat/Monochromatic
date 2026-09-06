@@ -51,10 +51,6 @@ export const base: OxlintConfig = {
 
   settings: {},
 
-  // Root-only options like `typeAware` cannot live in any config file because
-  // oxlint treats configs found via upward directory walk as nested (not root).
-  // Pass `--type-aware` via the CLI instead (see mise task template `lint:oxlint`).
-
   ignorePatterns: [
     '**/dist',
     // Committed Claude Code plugin bundles (tsdown output moved out of dist;

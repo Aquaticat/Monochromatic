@@ -69,12 +69,11 @@ handles workspace resolution).
  This lets development linting track live plugin source
 without a rebuild.
 
-## Root-only options
+## Type-aware options
 
-`options.typeAware` cannot live in the config file because oxlint treats
-any config found via upward directory walk as "nested" (not root).
-The `--type-aware` flag is passed via the CLI in the mise task template
-`lint:oxlint` instead.
+The shared config enables `options.typeAware` and `options.typeCheck`.
+Consumers inherit both through the root config import,
+so mise tasks do not need equivalent CLI flags.
 
 ## Related packages
 

@@ -165,14 +165,14 @@ so the mise `lint:oxlint` task is the consumer boundary that matters.
 The wrapper never removes diagnostics or converts Oxlint failures to success.
 
 ```sh
-# Type-aware lint (what the mise lint:oxlint task runs)
-task-oxlint --type-aware
+# Type-aware lint from the shared config (what the mise lint:oxlint task runs)
+task-oxlint
 
 # Auto-fix
 task-oxlint --fix
 
 # Any oxlint arguments are forwarded
-task-oxlint --type-aware src/
+task-oxlint src/
 ```
 
 Several behaviors differ from invoking `oxlint` directly.
