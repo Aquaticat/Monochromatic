@@ -1182,7 +1182,7 @@ await describe({
             const after = readFileSync(exponentiationCopy.filePath, 'utf8',);
             /** Diagnostics after all overlapping fixes converge. */
             const afterDiagnostics = await lint(exponentiationCopy.filePath,);
-            expect(after,).toContain('** (',);
+            expect(after,).toContain('const r6 = 2 ** (3',);
             expect(afterDiagnostics,).toEqual([],);
           },
         },),
