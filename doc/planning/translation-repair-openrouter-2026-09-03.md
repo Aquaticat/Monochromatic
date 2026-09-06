@@ -1818,6 +1818,91 @@ and one six-minute delay per corpus pass may not be worth another dial.
 Recorded as measured;
 no dial added.
 
+## The providers come back, 2026-09-06: two defaults move and a rule is written
+
+The owner returned with Synthetic refilled to a third
+(`METERS synthetic=wet hyper=wet openrouter=wet syntheticWeekly=33.18% syntheticFiveHour=2750/2750
+hyperBalance=2734 openrouterUsd=0.32` at 19:51 UTC),
+OpenRouter still uncharged and expected within days,
+and the instruction not to wait on it.
+
+- **19:53 UTC, `yulianNyanner` launched** on tip `14231350f` with all three providers configured and the
+  2026-09-04 dials set (overlap 4,
+    writer grace 180000),
+    runs dir `~/temp/agent/yuliannyanner-20260906`.
+    Asked whether the launch was necessary,
+    the honest split:
+    the double-quoted-path shape it was picked for had already been read on `MTF_0615` and `BI4PBV`;
+    what it does test is the first run on this build with all three providers configured,
+    the first chance at a consolidation that completes unstarved,
+    and a fresh page to read.
+- **The production default had never shipped a page.**
+  `PASS_OVERLAP` in `corpus-run/pass-overlap.ts` was 1 "until `#261` decides";
+    every page that shipped ran at 4 through `TRANSLATION_REPAIR_SLICE_OVERLAP`.
+    `#261` had been measured on four matched pairs on 2026-08-27 and 2026-08-28
+    (`keyword233`,
+    `Toka_ls`,
+    `Zha_Ke`,
+    `Weideriche_`;
+    normalized wall down 0.091,
+    0.273,
+    0.239 and 0.183 against a 0.03 band,
+    voices never worse)
+    and never read into a default because the 2026-09-01 hold froze the pipeline.
+    Guard `bb5e97e0e` shown to fail on the old build (`value=1 source=fallback` at
+    `pass-entry.unit.test.ts:1927`);
+    fallback moved in `e50be2299`;
+    record `doc/decision/translation-repair-pass-overlap.md`,
+    flagged for veto.
+- **The owner's rule, always kill and relaunch.**
+  A source change while a pass runs means kill the pass by pid,
+    build,
+    and relaunch the same entry into a fresh runs dir on the new build;
+    a page finished on a superseded build is not readiness evidence;
+    a known fix lands before the launch.
+    Written into the package README,
+    the runbook's launch and restore steps,
+    the handover hub,
+    the 2026-09-04 snapshot,
+    the run-continuity and overlap-dial handovers (`0d2203abd`),
+    and deliberately not into the root `AGENTS.md`.
+    The 19:53 run was killed at 20:01:44 UTC under it,
+    264 calls in (148 Hyper,
+    116 Synthetic),
+    still in the lanes phase.
+- **The writer window was the same defect,** and the straggler-grace record reserved it for the owner.
+  Every shipped page ran its writers at 180000 ms through `TRANSLATION_REPAIR_WRITER_GRACE_MS` while the
+    round window was the owner's 120000 ms.
+    Measured off the four shipped logs of 2026-09-04:
+    writer-round cuts at 180 s were 4,
+    6,
+    11 and 20 (almost all `produceConsolidations`) against 28,
+    35,
+    26 and 135 reader-round cuts at 120 s;
+    writers at 120 s has no matched arm.
+    Offered build it in,
+    keep the dial,
+    or writers at the round window,
+    the owner chose build it in.
+    `7a2bdbedf`:
+    `WRITER_GRACE_MS = 180_000`,
+    never shorter than the round window so the calibration keeps its 300000 ms;
+    guard shown to fail neutralised (4 `FAIL`) and pass restored (0);
+    oxlint 0 and 0,
+    types clean.
+- **20:21 UTC, `yulianNyanner` relaunched** on `7a2bdbedf`,
+  pipeline `cb326421`,
+    the plain invocation with no dial set,
+    runs dir `~/temp/agent/yuliannyanner2-20260906`,
+    log beside it.
+    The log opens `OVERLAP yulianNyanner value=4 source=fallback` and `WRITER GRACE built in`,
+    all three providers wet,
+    weekly 32.19 percent after the killed run,
+    Hyper 2722,
+    roster 9,
+    `withheld=none`.
+    The reading follows.
+
 ## Build plan, transport-independent layers first
 
 In commit order,

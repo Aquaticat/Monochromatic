@@ -447,3 +447,31 @@ and one entry whose consolidation runs unstarved end to end on this build,
 which no run has yet done.
 All three wait on the OpenRouter top-up.
 The balance reads about 0.36 USD.
+
+## What 2026-09-06 changed before the next page
+
+Synthetic and Hyper are wet again and the owner said not to wait on OpenRouter,
+so the passes no longer wait.
+Before the first page,
+two defaults that had never shipped a page became the configuration every shipped page ran:
+the pass keeps four slices in flight (`doc/decision/translation-repair-pass-overlap.md`),
+and the writer rounds wait 180000 ms
+(`doc/decision/translation-repair-straggler-grace.md`,
+decision of 2026-09-06).
+The production launch is now the plain invocation in the runbook with no dial set,
+which no earlier page had been read under.
+The owner's rule of the same day,
+always kill and relaunch,
+is in the package README and the runbook.
+
+THE READING:
+unchanged,
+still not ready,
+since no page has been read on this build.
+What would move the belief:
+`yulianNyanner`,
+running since 20:21 UTC on the plain invocation;
+`Arita`,
+the other double-quoted-paths entry never run;
+and one consolidation that completes unstarved,
+which the refilled meters make possible for the first time since 2026-09-02.
