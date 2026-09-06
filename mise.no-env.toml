@@ -880,7 +880,7 @@ description = "Lint Markdown and MDX with cli-markdown-lint, optionally restrict
 # No usage spec: mise appends post-`--` args to the command as a real argv vector
 # (preserving spaces). The cli defaults to walking `.` when no paths are given
 # (see package/cli/markdown-lint/src/run.ts).
-run = "node package/cli/markdown-lint/src/cli.ts"
+run = "node package/cli/markdown-lint/src/cli.ts --lfs-image-exclude=package/ssg/"
 
 [tasks."lint:rust"]
 description = "Enforce the code-line budget and required rustdoc on .rs via monochromatic-rust-linter, fanned out per package"
@@ -944,7 +944,7 @@ description = "Apply cli-markdown-lint autofixes, optionally restricted to speci
 # No usage spec: mise appends post-`--` args after `--fix` as a real argv vector.
 # The cli defaults to walking `.` when no paths are given
 # (see package/cli/markdown-lint/src/run.ts).
-run = "node package/cli/markdown-lint/src/cli.ts --fix"
+run = "node package/cli/markdown-lint/src/cli.ts --fix --lfs-image-exclude=package/ssg/"
 
 #region Validation and Check Tasks
 

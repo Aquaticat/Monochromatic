@@ -250,6 +250,43 @@ Answered by the user on 2026-09-06:
   The user fears a rule could block ordinary work;
   the decision is tracked as undecided in issue #491.
 
+## Implementation log
+
+- 2026-09-06,
+  Worker:
+  `package/config/lfs-r2-worker` converted to TypeScript with handler modules,
+  `GET` and `HEAD` on `/<oid>/<path>` with image media types,
+  immutable cache headers,
+  `ETag` with `If-None-Match`,
+  and unit tests over an in-memory store.
+  workerd rejects non-handler named exports on the main module,
+  so the wrangler entry is `src/worker.ts` and the library surface is `src/index.ts`.
+  Deployed as version `b1781083`;
+  the local `wrangler dev` probe and the production probe both passed every read and write path.
+- 2026-09-06,
+  module-logger:
+  the default logger ran sink verification at import,
+  which Cloudflare Workers forbid in global scope.
+  Reported as issue #493;
+  the maintainer fixed it in commit `b333197d5` (lazy singleton,
+  `sideEffects: false`),
+  so the Worker imports `tagged` at module scope without a workaround.
+- 2026-09-06,
+  markdown-lint:
+  rule `lfs-image-url` landed with `--lfs-image-exclude=<pattern>`.
+  Running it over the whole repository found the expected 25 gallery links and the islands-black screenshot,
+  and also 16 images in `package/ssg/aquati.cat/src/content/**/*.mdx` that reference LFS-tracked `.avif` files.
+  The earlier claim that no SSG MDX embeds LFS images was wrong:
+  that search had matched nothing because of a bad glob combination.
+  The site serves those images through its own build,
+  so the root `lint:markdown` and `format:markdown` tasks pass `--lfs-image-exclude=package/ssg/`,
+  exactly the exclude case the user anticipated when choosing the all-files scope.
+- Pre-existing lint debt noted,
+  not touched:
+  the older markdown-lint rule tests import package source,
+  which `test-import/require-eventual-artifact` now rejects (56 findings).
+  The new tests import the built entry.
+
 ## Open questions
 
 Deferred by the user:
