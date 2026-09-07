@@ -1,4 +1,4 @@
-# AWS CloudFront mirror: certificate and DNS setup failures, then unresolved HTTP 502
+# AWS CloudFront mirror: hostname correction and Free-plan restrictions
 
 **Original investigation**:
  2026-05-09.
@@ -22,8 +22,10 @@ Direct probes of `aquati.cat:443` negotiate TLS 1.3 and reject TLS 1.2 over IPv4
 Authenticated inspection subsequently confirmed that both active CloudFront policies forward the viewer's `Host`.
 The configured origin serves the page with `aquati.cat` SNI/Host,
 but rejects mirror SNI and returns an empty body with mirror Host.
-Hostname forwarding is the leading explanation;
-a corrected CloudFront deployment has not been tested.
+Removing viewer Host from both policies restored matching content on a disposable distribution.
+The live Free plan rejected its custom cache policy.
+A native origin Host/SNI override is now undergoing independent fixture validation;
+production remains unchanged.
 See issue 7 for evidence,
 omitted alternatives,
 and verification limits.
@@ -571,7 +573,7 @@ openssl s_client -connect aquati.cat:443 -servername aquati.cat \
 # Protocol version: TLSv1.3
 ```
 
-### Root cause: viewer-host forwarding is the leading explanation
+### Root cause: viewer-host forwarding is incompatible with this origin
 
 The 2026-05-09 inference was too strong.
 The [AWS announcement][origin-tls-announcement],
@@ -768,6 +770,89 @@ The empty-body probe demonstrates why status alone is insufficient.
 Use uncached request identities and retain original policy IDs for rollback.
 No AWS resource was created or changed during this review.
 
+### Authorized correction and Free-plan restriction
+
+After the user authorized the targeted correction,
+a disposable distribution reproduced HTTP 502 with both original policies.
+Replacing them with a custom cache-policy clone minus `host` and
+`Managed-AllViewerExceptHostHeader` restored matching origin content.
+The comparison covered 12 routes/resources,
+including language pages,
+clean URLs,
+CSS,
+JavaScript,
+font,
+favicon,
+manifest,
+and a nonexistent file.
+Status,
+body SHA-256,
+selected origin headers,
+and decoded compressed responses matched.
+The fixture used its generated hostname and default certificate,
+and omitted the live WAF because AWS rejected sharing that pricing-plan resource.
+Production's alias,
+certificate,
+and WAF remained untouched.
+
+The subsequent live `UpdateDistribution` changed only those policy IDs using a fresh ETag,
+but AWS rejected it:
+
+```text
+Distributions with the Free pricing plan can't have the following features: Custom cache policy
+```
+
+A fresh read confirmed the original live configuration was unchanged.
+No pricing-plan or billing change was made.
+The [plan documentation][flat-rate-plans] lists custom cache policies only for Business and Premium,
+but CloudFront Functions are included in Free.
+
+The replacement implementation uses runtime `cloudfront-js-2.0` with:
+
+```js
+cf.updateRequestOrigin({ hostHeader: 'aquati.cat', sni: 'aquati.cat' });
+```
+
+The [native helper documentation][origin-helper] explicitly defines these origin-only overrides
+and inheritance of omitted origin settings.
+The function returns the original viewer request,
+retaining the original cache key and both policies.
+Its exact uploaded artifact and rollback are recorded in
+[`package/ssg/aquati.cat/cloudfront/README.md`](../../package/ssg/aquati.cat/cloudfront/README.md).
+The API's virtual tests preserved requests across every configured HTTP method,
+but AWS explicitly says those tests do not verify origin modification.
+
+For independent validation,
+the disposable distribution was restored to its original policies.
+A fresh query returned HTTP 502 at `2026-09-07T21:25:20Z`.
+Only the viewer-request function association was then added.
+Real-traffic validation is pending deployment.
+The same published artifact must be detached from the fixture before live association
+because flat-rate resources cannot share CloudFront Functions.
+
+Browser search did not produce results in either the primary-site control or the fixture;
+a Pagefind worker request remained pending.
+This does not establish a CloudFront regression or a working search interaction.
+Navigation,
+loaded resources,
+and theme toggling worked during the policy-fixture checks.
+
+#### Deployment wait observation
+
+The native `aws cloudfront wait distribution-deployed` command returned success after 1,813 seconds.
+While it was still reported running,
+a separate `get-distribution` read returned `Deployed`.
+Its eventual success notification followed around the stop request.
+That timing does not prove the waiter stalled or establish when global deployment completed.
+The assertion that the wait was unnecessary was retracted.
+
+Subsequent checks use a managed process with timestamped `GetDistribution` observations,
+bounded call timeouts,
+and a checkpoint after 10 observations separated by 30 seconds.
+A pending checkpoint does not authorize the next mutation.
+This keeps control with the agent without requiring another user prompt.
+The handover records the communication gap and proposed agent-guideline addition.
+
 ### Omitted avenues and their tradeoffs
 
 This is an architecture review,
@@ -915,7 +1000,9 @@ not a validated deployment selection.
 
 ### Workaround verification status
 
-None verified for this distribution in the reassessment.
+The policy-pair correction is verified on the disposable distribution,
+but production rejects its custom cache policy under the Free plan.
+The native function substitution is not yet verified with real traffic.
 The original heading incorrectly called unshipped configuration sketches verified workarounds.
 The alternatives in "Omitted avenues and their tradeoffs" remain proposals.
 Global TLS relaxation is outside issue #146's scope;
@@ -998,8 +1085,9 @@ Its historical rejection does not make future execution safe.
 **Status**:
 mirror returns HTTP 502 in the 2026-09-07 probes.
 The authenticated follow-up confirmed the current origin and policy associations.
-Viewer-host forwarding is the leading explanation;
-a corrected deployment and its end-to-end behavior remain untested.
+The policy-pair correction succeeded on a disposable distribution,
+but the live Free plan rejected the custom policy.
+Independent validation of an origin-only function override is in progress.
 The remaining certificate and DNS inventory records the original investigation
 unless explicitly corroborated in the authenticated follow-up.
 
@@ -1283,7 +1371,8 @@ The 2026-09-07 reassessment supersedes the original upstream attribution.
 1. **Upstream's fault?**
    No upstream defect established.
    The active policies forward a hostname that the configured origin does not serve correctly;
-   no correlated CloudFront trace or tested correction establishes the complete failure chain.
+   the policy-pair fixture correction restored matching content without changing TLS.
+   No CloudFront handshake capture was obtained.
 2. **Can upstream fix it?**
    Not assessed without an established defect;
    extending the API enum is not a proven requirement for automatic TLS 1.3.
@@ -1299,16 +1388,16 @@ The 2026-09-07 reassessment supersedes the original upstream attribution.
    and [Caddy #7445][caddy-cloudfront-issue];
    the latter was read with all comments and describes a separate SNI incident.
 6. **Minimal-fix prototype?**
-   None:
-   root cause is unconfirmed,
-   so the auto-prototype gate is not met.
+   A consumer-side policy correction passed fixture testing.
+   This establishes a configuration remedy,
+   not an upstream defect requiring a source patch.
 
 The `.out-of-scope/` file inventory contained no AWS or Caddy exemption.
 No upstream issue or comment was filed or drafted:
 there is no established upstream defect or additive fix to report.
-The recommendation is further evidence collection,
-not waiting for an inferred rollout.
-No deployment decision was adopted.
+Waiting for an inferred TLS rollout is not the remedy.
+The user authorized the targeted hostname correction after the review;
+its production implementation and verification remain in progress.
 
 ## References
 
@@ -1326,6 +1415,8 @@ Sources for the reassessment were accessed on 2026-09-07.
 [policy-interaction]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/understanding-how-origin-request-policies-and-cache-policies-work-together.html
 [custom-origin-requests]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.md
 [origin-sni-note]: https://repost.aws/knowledge-center/cloudfront-https-connection-fails
+[origin-helper]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/helper-functions-origin-modification.md
+[flat-rate-plans]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/flat-rate-pricing-plan.md
 
 - RFC 7838,
    HTTP Alternative Services,
