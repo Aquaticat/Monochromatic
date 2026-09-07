@@ -191,3 +191,67 @@ After this release,
 - 2026-09-07:
    grilling complete;
    this record written.
+- 2026-09-07,
+   split landed:
+   `e3badc3d7` (platform split,
+   native OPFS backend,
+   happy-opfs out of manifest,
+   catalog,
+   and lockfile;
+   deps-cube imports moved to `/ts/node.ts`).
+   The lockfile was regenerated with the committed pnpm 11.21.0 through `mise exec pnpm@11.21.0`:
+   the uncommitted pnpm 12.3.4 bump in `mise.lock` (another session's change) fails every `pnpm install` in this checkout,
+   pristine or not,
+   while re-verifying the lockfile:
+   `ERR_PNPM_META_FETCH_FAIL` fetching `@jsr/std__path` from `registry.npmjs.org`.
+   Recorded in `doc/troubleshooting/pnpm-12-jsr-scope-lockfile-verification.md`.
+   The deps-cube lint findings (11 warnings,
+   21 errors in `controller.ts` and two test files) predate this change.
+- 2026-09-07,
+   tests landed:
+   `27ad96116`.
+   Two defects surfaced and fixed in the same commit:
+   `ensureDir` and `ensureFile` repaired permissions with `chmod(path, R_OK | W_OK)` (mode `0o006`,
+   owner locked out);
+   the pure-JS `dirname` skipped one trailing slash where `node:path/posix` skips the run.
+   Guard-failure proof for the platform-split guard:
+   root entry made to re-export `ensureDir`,
+   rebuilt,
+   two cases red;
+   restored,
+   green.
+- 2026-09-07,
+   browser gate landed:
+   `36400f8c8`.
+   Chromium 2 passed,
+   Firefox 2 passed,
+   WebKit 1 passed and 1 skipped (OPFS writes refused).
+   Guard-failure proof:
+   OPFS backend made to report every path absent,
+   rebuilt,
+   Chromium 1 failed;
+   restored,
+   2 passed.
+- 2026-09-07,
+   manifest and docs:
+   `fdc0302df`;
+   changeset and todo item:
+   `bbb395445`.
+   The manifest commit reached `main` before the changeset,
+   so the release workflow saw a public package at 0.0.1 missing from the registry and tried to publish it:
+   `E404` from `PUT .../module-fs-path` (no trusted publisher can exist before the bootstrap).
+   Harmless;
+   lesson for the runbook:
+   land the changeset in the same push as dropping `private`.
+- 2026-09-07,
+   tarball verified in a disposable Node 26 consumer:
+   `dependencies` empty,
+   no `./ts` export,
+   no `workspace:` string,
+   no tsbuildinfo;
+   `findMiseMonorepoRoot`,
+   `ensureDir`,
+   and `findPackageRootCached` work from the installed package;
+   `/ts` refused with `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+   The consumer's fixture put `[monorepo]` on line 1 of `mise.toml` and the finder missed it (the marker required a newline before the header):
+   fixed in `a7876a2a2` with three regression cases.
