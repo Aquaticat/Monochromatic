@@ -53,6 +53,16 @@ That was the tenth class and a design question;
 the owner chose either rendering at 08:38 UTC and it is landed bounded to split-only pages
 (`b46dd9210`,
 `doc/decision/translation-repair-block-floor.md`).
+The third `Huasheng` pass then ran 150 minutes on Hyper alone,
+passed the containers and the poem,
+and was refused at the publisher by `directory-id-name`,
+because the pinyin of 椛笙 is the directory id:
+the eleventh class,
+a second design question,
+recorded with options under "The third Huasheng launch ends at the publisher".
+No run is in flight;
+Hyper has 1275 credits,
+about one pass of this size.
 When a pass runs next it is read by the seven steps in the 2026-09-04 snapshot,
 "How a pass is launched and read",
 which gained the apostrophe and ellipsis counts and two refusal greps today.
@@ -75,13 +85,12 @@ markdown lint clean on every line written today.
   `b46dd9210` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 05:31 UTC on 2026-09-07:
+- Meters at 11:14 UTC on 2026-09-07:
   `synthetic=dry hyper=wet openrouter=wet syntheticWeekly=0%`,
-  Hyper 1843 credits,
+  Hyper 1275 credits,
   OpenRouter 0.32 USD.
-  The Synthetic week is spent and Hyper serves alone,
-  which the owner has said is normal;
-  the refill schedule is not on record.
+  Synthetic trickled back to 2 percent between 05:31 and 08:43 and was spent again within the hour;
+  a Huasheng pass on Hyper alone costs about 800 credits.
   Each settled `yulianNyanner` pass today cost 3.9 to 4.6 points of the Synthetic week and 60 to 82 Hyper
   credits at zero USD.
   One stopped 28-minute attempt cost about 0.8 percent of the Synthetic week and 36 Hyper credits;
@@ -278,6 +287,20 @@ landed bounded to pages whose surplus is only more blocks of the original's own 
 so that the sixth consolidation bed's dropped passage and the archive's meaningful blockquote stay
 refused.
 
+## The eleventh class
+
+Found at the publisher by the third Huasheng pass.
+`directory-id-name` refuses a page whose visible name is the directory id while the source's is not,
+the owner's rule of 2026-09-02 for archives that never translated their metadata.
+The source names the person 椛笙,
+whose pinyin is Huasheng,
+which is the directory id;
+the judges chose it by the identity rule and the floor refused it.
+7 of the 22 archives naming the directory do so because the id is a rendering of the name.
+A design question with four options,
+ranked judged-and-read first;
+the owner decides.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -319,9 +342,12 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Run and read `Huasheng` on the class-ten build,
-    on whatever roster the meters allow,
-    one run at a time.
+1.  Put the `directory-id-name` question to the owner
+    (planning log,
+    "The third Huasheng launch ends at the publisher";
+    ranking A over D over C over B),
+    land the answer guard-first,
+    and run `Huasheng` once more on whatever roster the meters allow.
     The order is the census's,
     recorded in the planning log under "The run order after TLL1122",
     and open to veto.

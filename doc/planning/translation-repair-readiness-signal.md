@@ -760,3 +760,31 @@ whether a page from that roster is read as readiness evidence is recorded with t
 What would move the belief:
 `Huasheng` on the class-ten build,
 then the census's next entries.
+
+## What the third Huasheng launch showed (2026-09-07, 08:43 UTC)
+
+Ended at the publisher at 11:14 UTC after 150 minutes with no page,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The third Huasheng launch ends at the publisher".
+The ninth and tenth classes held where they were found:
+the container halves passed and the poem shipped from its slate.
+
+WHAT IT FOUND:
+the eleventh class,
+a decided rule again:
+`directory-id-name` refuses a page whose visible name is the directory id,
+and for 椛笙 every correct romanisation is the directory id.
+7 of the 22 archives that name the directory do so because the id is a rendering of the name.
+Four options are recorded with a ranking;
+the owner decides.
+
+THE READING:
+not ready,
+and this entry cannot ship on any roster until the owner answers.
+Hyper alone carried the pass at about 800 credits and 1275 remain;
+Synthetic is dry and OpenRouter uncharged,
+so one more pass of this size is what the meters allow.
+What would move the belief:
+the owner's answer,
+then `Huasheng` on that build,
+read whole.

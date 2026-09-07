@@ -2846,6 +2846,123 @@ and its wording is read knowing which seats spoke.
 The reading follows,
 with slice 21 first.
 
+## The third Huasheng launch ends at the publisher, 2026-09-07, 11:14 UTC: the eleventh class
+
+`Huasheng` ended `INCOMPLETE` at 11:14 UTC after 9,014,980 ms (150.2 minutes),
+2,539 calls (Hyper 2,158,
+Synthetic 381),
+89 voices abandoned after quorum,
+no voice lost to a dry provider,
+Hyper 2080 to 1275,
+weekly Synthetic 2 to 0 percent within the first hour,
+zero USD,
+no page.
+The Synthetic seats threw once the week dried
+(Qwen3.8-27B 58 of 373 asks,
+Kimi-K3 16,
+GLM-5.3-Flash 11)
+and the pass went on without them.
+
+Slice 21,
+the poem,
+passed the lane contest under the either-rendering floor,
+had its consolidation standing withheld once by the line-structured rule
+(7 lines against 8)
+and shipped from the valid proposals;
+the tenth class is closed where it was found.
+The container halves passed again.
+No slice was unreadable.
+
+The entry then stopped at the publisher:
+`entry Huasheng front matter is not publishable (directory-id-name)`.
+The rule,
+the owner's of 2026-09-02 in `doc/decision/translation-repair-front-matter-guard.md`,
+refuses a page whose visible `name` is the directory id while the source's is not,
+written for `#269`,
+archives whose metadata was never translated and still name the folder.
+The source names the person 椛笙,
+whose pinyin is Huasheng;
+the archive's `name` is `Huasheng`;
+the judges' front-matter ballot chose `Huasheng` over the original script by the sheet's own identity
+rule,
+and the floor refused it because the string is the directory id.
+The rule cannot tell a folder name left untranslated from a romanisation that coincides with the
+folder name,
+and for this entry every correct rendering coincides.
+
+Measured today:
+22 archives name the directory.
+8 do so because the handle is the person's name in the source too,
+as the decision record says.
+Of the other 14,
+the directory id is itself a rendering of the source's name for 7:
+`Huasheng` (椛笙),
+`lintong` (林童),
+`Kotori` (琴里),
+`MioCardMeow` (澪卡喵),
+`MocaKawai` (摩卡好可爱),
+`noname` (无名逝者),
+`donotexist_A` (不存在);
+the other 7
+(`DarlinChit`,
+`dogesir_`,
+`homoyamakaze`,
+`interrgned`,
+`lxyddice`,
+`Weideriche_`,
+`XingZ60`)
+are handles the source does not use as the name,
+the `#269` shape.
+Under the rule as written the first 7 cannot ship unless a lane renders the name some other way.
+
+A design question on a decided rule,
+recorded for the owner:
+
+- A,
+  judged and read,
+  not floored:
+  `directory-id-name` becomes a finding the publisher logs and the reading checks,
+  and the judges' identity rules decide the name.
+  Pro:
+  dissolves the 7;
+  the judges see the source name and the sheet's rules;
+  the owner's own premise of 2026-09-02 was to stop caring about metadata differing from the source.
+  Con:
+  a folder name the judges keep on one of the `#269` 7 ships,
+  and only the reading catches it.
+- D,
+  a romanisation check:
+  the id-equal name passes when it is a pinyin reading of the source's name.
+  Pro:
+  deterministic where it applies.
+  Con:
+  a new dependency with heteronyms,
+  and it covers 2 of the 7 (`Huasheng`,
+  `lintong`),
+  not the Japanese reading,
+  the literal renderings or `noname`.
+- C,
+  exempt the id-equal name where the source's name appears among the page's aliases in original
+  script.
+  Pro:
+  no dependency,
+  and the identity rule already puts the source name in the alias.
+  Con:
+  the `#269` 7 can pass the same way,
+  so it is A with a weaker reading.
+- B,
+  keep the rule and tell the producers to render the name otherwise.
+  Con:
+  for 椛笙 there is no other correct rendering.
+
+Ranking A > D > C > B:
+A over D because D covers two of seven and adds a dependency;
+D over C because C admits what A admits with less honesty about it;
+C over B because B cannot be satisfied for this entry.
+Nothing is changed in code until the owner answers.
+Hyper stands at 1275 credits;
+a Huasheng pass on Hyper alone costs about 800.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
