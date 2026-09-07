@@ -252,5 +252,8 @@ Run package tests and lint before closing #481.
   Other operations and non-Node runtimes retain ordinary Sinon behavior,
   with attempt-lifetime guards and rejection of operations that would overwrite active contextual properties.
   This does not advertise complete global-state isolation.
-- Implementation and consumer acceptance are complete.
-  Reconcile documentation and perform the final issue-closure gate.
+- Implementation,
+  consumer acceptance,
+  and documentation gates passed.
+  Closing commit `f7da78f63` is pushed;
+  GitHub confirmed #481 closed on `2026-09-07T09:34:59Z`.

@@ -9,11 +9,12 @@ Implement and resolve Aquaticat/Monochromatic#481 through existing `ctx.sinon` s
 not suite restructuring or an exclusivity option.
 Continue the tracked queue without asking the user to say continue.
 
-Tasks #4 through #7 are complete.
-Final implementation and documentation acceptance passed.
-Task #8 is verifying the closing commit's push and GitHub issue state.
-No runtime blocker remains established.
-Do not claim issue closure before checking GitHub.
+All tracked tasks are complete.
+Implementation,
+documentation,
+consumer acceptance,
+and GitHub closure are verified.
+No further #481 work is queued.
 
 The [planning record](../planning/issue-481-context-owned-stubs.md) holds the accepted scope.
 The [troubleshooting record](../troubleshooting/sinon-context-owned-stubs.md) holds source traces,
@@ -169,7 +170,7 @@ The console-sink tests retain serialization because they also change `process.en
 - `b4e78ed32`:
    verified contract and canonical testing guidance.
 
-## Documentation verification and remaining action
+## Documentation and closure verification
 
 File-enforcer regenerated the canonical testing skill's mirrors and manifests.
 Canonical and generated copies share SHA-256 digest
@@ -198,8 +199,11 @@ Post-correction acceptance passed:
   Firefox,
   and WebKit consumer checks.
 
-The closing commit carries `Closes #481`.
-Verify its push and actual GitHub closure before marking task #8 complete.
+Closing commit `f7da78f6314dce62065cb4b4a8413a2816274ab0` carries `Closes #481`.
+`git ls-remote origin refs/heads/main` confirmed that commit on the remote.
+`gh issue view 481 --repo Aquaticat/Monochromatic --json state,closedAt,url`
+confirmed `CLOSED` at `2026-09-07T09:34:59Z`.
+The final scoped Markdown gate passed in `proc_2054` before closure.
 
 ## Tooling and concurrent work
 
