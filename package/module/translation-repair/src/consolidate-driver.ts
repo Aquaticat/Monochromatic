@@ -193,6 +193,7 @@ export async function consolidateDocument(
     signal,
     perCallTimeoutMs,
     overlap = 1,
+    beforeSlice,
     l,
   }: {
     readonly client: SyntheticClient;
@@ -210,6 +211,12 @@ export async function consolidateDocument(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly overlap?: number;
+
+    /**
+     * Awaited before each slice starts, so a caller can hold the slice back
+     * while a named provider hold keeps the bench from quorum.
+     */
+    readonly beforeSlice?: () => Promise<void>;
     readonly l: Logger;
   },
 ): Promise<readonly ArtifactConsolidateSlice[]> {
@@ -290,6 +297,8 @@ export async function consolidateDocument(
         contest,
       },
     },): Promise<ArtifactConsolidateSlice> {
+    if (beforeSlice !== undefined)
+      await beforeSlice();
     /**
      * Original of this slice, which every ledger row carries.
      */

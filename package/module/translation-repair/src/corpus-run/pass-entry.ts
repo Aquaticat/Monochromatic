@@ -39,7 +39,7 @@ import {
   RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
-import { readJudgeSeats, } from './run-seats.ts';
+import { readJudgeSeats, } from './run-seats-read.ts';
 import { readLanesSeats, } from './pass-reseat.ts';
 
 //region Pass entry
@@ -273,7 +273,7 @@ async function runEntryPipeline(
      */
     const {
       seats,
-      reseatTranslate,
+      lanesHooks,
     } = await readLanesSeats({
       client,
       signal: deadline.callSignal,
@@ -306,7 +306,7 @@ async function runEntryPipeline(
       prepared,
       repairModels: seats.repairModels,
       translateModels: seats.translateModels,
-      reseatTranslate,
+      ...lanesHooks,
       pictureReadings,
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,

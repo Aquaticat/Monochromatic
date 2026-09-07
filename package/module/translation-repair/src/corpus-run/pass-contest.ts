@@ -9,7 +9,7 @@ import type { ProjectedLanes, } from './artifact-two-lane-derive.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
-import { readJudgeSeats, } from './run-seats.ts';
+import { readJudgeSeats, } from './run-seats-read.ts';
 
 //region Corpus pass lane contest
 

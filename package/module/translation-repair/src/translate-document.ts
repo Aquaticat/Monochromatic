@@ -110,6 +110,7 @@ export async function translateDocument(
     sliceCache,
     insertionAdmission,
     overlap = 1,
+    beforeSlice,
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -121,6 +122,12 @@ export async function translateDocument(
     readonly sliceCache?: SliceCache<TranslateSliceRecord>;
     readonly insertionAdmission?: InsertionAdmission;
     readonly overlap?: number;
+
+    /**
+     * Awaited before each slice starts, so a caller can hold the slice back
+     * while a named provider hold keeps the bench from quorum.
+     */
+    readonly beforeSlice?: () => Promise<void>;
     readonly l: Logger;
   }>,
 ): Promise<TranslateDocumentResult> {
@@ -191,6 +198,8 @@ export async function translateDocument(
       item: slice,
       position: slicePosition,
     },) {
+      if (beforeSlice !== undefined)
+        await beforeSlice();
       /**
        * Whether production evidence permits filling this source-only slice.
        */

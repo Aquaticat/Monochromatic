@@ -106,6 +106,7 @@ export async function repairPreparedDocument(
     sliceCache,
     refineCache,
     overlap = 1,
+    beforeSlice,
     parentLogger = l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -117,6 +118,12 @@ export async function repairPreparedDocument(
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly overlap?: number;
+
+    /**
+     * Awaited before each slice starts, so a caller can hold the slice back
+     * while a named provider hold keeps the bench from quorum.
+     */
+    readonly beforeSlice?: () => Promise<void>;
     readonly parentLogger?: Logger;
   }>,
 ): Promise<RepairTranslationResult> {
@@ -197,6 +204,8 @@ export async function repairPreparedDocument(
       item: slice,
       position: slicePosition,
     },) {
+      if (beforeSlice !== undefined)
+        await beforeSlice();
       return await settleRepairSlice({
         client,
         prepared,

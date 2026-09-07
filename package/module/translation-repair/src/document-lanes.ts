@@ -209,6 +209,10 @@ function laneDelivery(
  * provider may have been held out meanwhile (the thirteenth class); the
  * roster given is used when absent
  *
+ * @param beforeSlice - awaited before each slice of either lane starts, told
+ * which lane, so a caller can hold the slice back while a named provider hold
+ * keeps that lane's bench from quorum (the thirteenth class's second face)
+ *
  *
  * @param adjudicationConfig - tally thresholds and weights for the repair lane
  *
@@ -257,6 +261,7 @@ export async function runDocumentLanes(
     repairModels,
     translateModels,
     reseatTranslate,
+    beforeSlice,
     adjudicationConfig,
     pictureReadings,
     signal,
@@ -273,6 +278,7 @@ export async function runDocumentLanes(
     readonly repairModels: RepairModels;
     readonly translateModels: TranslateModels;
     readonly reseatTranslate?: () => Promise<TranslateModels>;
+    readonly beforeSlice?: (args: { readonly lane: 'repair' | 'translate'; },) => Promise<void>;
     readonly adjudicationConfig?: AdjudicationConfig;
 
     /**
@@ -353,6 +359,13 @@ export async function runDocumentLanes(
     ...((refineSliceCache === undefined)
       ? {}
       : { refineCache: refineSliceCache, }),
+    ...((beforeSlice === undefined)
+      ? {}
+      : {
+        beforeSlice: async function beforeRepairSlice(): Promise<void> {
+          await beforeSlice({ lane: 'repair', },);
+        },
+      }),
     parentLogger: dl,
   },);
 
@@ -391,6 +404,13 @@ export async function runDocumentLanes(
     ...((translateInsertionAdmission === undefined)
       ? {}
       : { insertionAdmission: translateInsertionAdmission, }),
+    ...((beforeSlice === undefined)
+      ? {}
+      : {
+        beforeSlice: async function beforeTranslateSlice(): Promise<void> {
+          await beforeSlice({ lane: 'translate', },);
+        },
+      }),
     l: dl,
   },);
   dl.info(

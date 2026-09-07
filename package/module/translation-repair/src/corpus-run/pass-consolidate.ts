@@ -13,7 +13,10 @@ import type { ProjectedLanes, } from './artifact-two-lane-derive.ts';
 import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
-import { readJudgeSeats, } from './run-seats.ts';
+import {
+  awaitBenchQuorum,
+  readJudgeSeats,
+} from './run-seats-read.ts';
 
 //region Corpus pass consolidation
 
@@ -105,6 +108,16 @@ export async function runPassConsolidation(
     client,
     projected,
     contests,
+    // EVERY CHUNK WAITS OUT A NAMED HOLD that keeps the slate from quorum
+    // (the thirteenth class's second face, the fourth hakureico pass).
+    beforeSlice: async function beforeConsolidationSlice(): Promise<void> {
+      await awaitBenchQuorum({
+        client,
+        phase: 'consolidation',
+        signal,
+        l,
+      },);
+    },
     // THE WHOLE SEATED ROSTER WRITES, the slate judges judge and the late
     // judges gate: GLM-5.3-Flash keeps its writing seats and left every judge
     // seat on 2026-09-02, the reason on `WIDE_SEAT_DROPPED` in

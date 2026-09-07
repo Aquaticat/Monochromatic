@@ -104,8 +104,12 @@ export {
   judgeSeatsFor,
   OPENROUTER_CHECKER_SUBSTITUTE,
   OPENROUTER_WITHHELD,
-  readJudgeSeats,
 } from './corpus-run/run-seats.ts';
+export {
+  awaitBenchQuorum,
+  readJudgeSeats,
+  type SeatReadingClient,
+} from './corpus-run/run-seats-read.ts';
 export {
   type BenchName,
   type JudgeSeatPhase,
