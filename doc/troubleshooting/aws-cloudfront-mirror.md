@@ -612,7 +612,8 @@ an unexpected SNI name and Caddy logging `no certificate available`.
 It is a hypothesis source,
 not proof that this distribution has the same cause.
 No CloudFront implementation source or origin-side trace was available in this reassessment.
-No claim about Caddy's internal call chain is made.
+No claim about the deployed Caddy version's internal call chain is made.
+The public-precedent source check separately identifies the diagnostic in current CertMagic source.
 
 ### Authenticated follow-up on 2026-09-07
 
@@ -1026,10 +1027,10 @@ The clone's origin was verified and no source was changed.
 This is a current-source explanation of the diagnostic,
 not identification of the reporter's or our deployed version.
 
-`handshake.go:294` obtains the name used by the handshake certificate path:
+`handshake.go:292` obtains the name used by the handshake certificate path:
 
 ```go
-// certmagic/handshake.go:294
+// certmagic/handshake.go:292
 name, err := cfg.getNameFromClientHello(hello)
 ```
 
@@ -1629,11 +1630,59 @@ The 2026-09-07 reassessment supersedes the original upstream attribution.
    not an upstream defect requiring a source patch.
 
 The `.out-of-scope/` file inventory contained no AWS or Caddy exemption.
-No upstream issue or comment was filed or drafted:
-there is no established upstream defect or additive fix to report.
+No upstream issue or comment was filed.
+There is no established upstream defect.
+The public-precedent review found that the existing Caddy thread lacks our tested consumer-side correction,
+so an additive-only draft is retained instead of asserting there is nothing new to share.
+The `.out-of-scope/` inventory and AWS/CloudFront/Caddy/CertMagic content search were repeated before drafting;
+no matching exemption was found.
 Waiting for an inferred TLS rollout is not the remedy.
 The user authorized the targeted hostname correction after the review;
 the native-function implementation is deployed and verified on the live endpoint.
+
+#### Additive comment draft for Caddy #7445
+
+Do not file as-is.
+This is configuration corroboration,
+not a validated Caddy defect report;
+contribution-policy review and authorization to post to this external repository remain outstanding.
+It intentionally does not claim to reproduce the other reporter's exact distribution.
+
+~~~md
+We restored delivery for a separate Caddy/CloudFront hostname mismatch without changing Caddy or origin TLS.
+Our distribution forwarded viewer Host through both `Managed-AllViewer` and the cache policy
+`UseOriginCacheControlHeaders-QueryStrings`.
+
+Changing only the origin-request policy to `AllViewerExceptHostHeader` would have left Host included by the cache policy.
+AWS documents that the cache-policy allowlist overrides the origin-request blocklist:
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/understanding-how-origin-request-policies-and-cache-policies-work-together.html
+
+An independent test distribution recovered after removing Host from both forwarding contributions.
+Our live Free plan rejected the custom cache policy needed to preserve the other cache settings.
+We therefore tested a viewer-request CloudFront Function using the native origin helper:
+`cf.updateRequestOrigin({ hostHeader: 'aquati.cat', sni: 'aquati.cat' })`,
+returning the unchanged viewer request.
+The hostname here is our configured origin,
+not a value another deployment should copy.
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/helper-functions-origin-modification.html
+
+With both original policies restored,
+the function alone changed fresh 502 responses into matching origin content on the fixture and subsequently production.
+We verified routes,
+assets,
+statuses,
+bodies,
+and compression rather than relying only on a root HTTP 200.
+
+We did not capture our original CloudFront ClientHello or obtain origin logs,
+so this does not prove what SNI CloudFront sent before our correction,
+nor establish that this issue's distribution has the same policy combination.
+
+AI assistance disclosure:
+an AI coding assistant performed the investigation and automated fixture/production checks and drafted this comment.
+These checks are agent-executed evidence,
+not a claim of independent human reproduction or source review.
+~~~
 
 ## References
 
