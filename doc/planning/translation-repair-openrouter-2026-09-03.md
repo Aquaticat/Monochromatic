@@ -2286,6 +2286,91 @@ three pictures textless,
     The reading follows,
     with the component line and the apostrophe count first.
 
+## The seventh launch, 2026-09-07, 00:12 UTC: the class-eight page reads clean, and one ellipsis
+
+`yulianNyanner` SETTLED at 01:03 UTC in 3,070,546 ms (51.2 minutes),
+17 slices,
+1,314 calls (Hyper 760,
+Synthetic 554,
+OpenRouter none),
+25 voices abandoned after quorum,
+every meter wet,
+consolidation unstarved.
+Weekly Synthetic 21.05 to 16.44 percent,
+Hyper 2490 to 2408,
+zero USD.
+`verify-published` matched,
+1 of 1 at the length the artifact implies.
+`DESTINATIONS source=0 page=0 dropped=0` with no finding,
+where the 23:11 line carried `destinations-mdx-downgraded (page)`.
+
+- **The component line holds.**
+  `> <PhotoScroll photos={["${path}/photos/photo3.webp"]} />`,
+    straight,
+    and the multi-line `PhotoScroll` keeps its single-quoted paths;
+    two straight double quotes on the page and two in the archive,
+    two straight quotes after a letter on each,
+    both the closing quotes of those paths.
+    No `mdx-downgraded`,
+    no `would ship a page`.
+- **The quotes hold.**
+  Zero straight apostrophes inside words against thirty-five curly ones;
+    the archive has thirty-six.
+    The `girls'` sentence was rendered without a possessive this time,
+    so the trailing rule was not exercised on the page.
+- **The floors spoke twice and were right.**
+  Two consolidation standings were withheld from the slate under the line-structured rule,
+    slice 8 at 8 lines against 9 and slice 12 at 14 against 15,
+    both lyric sections,
+    and each slice shipped from its remaining candidates.
+    `fails the deterministic` reads 2 in the log for that reason;
+    the other refusal greps read 0.
+- **Five distinct headings,
+  fourteen comments,
+  three pictures textless.**
+- **The judges settled the two wording findings.**
+  自慰 reads "self-pleasing fantasies",
+    the archive's sense,
+    after a ballot argued the literal rendering "is blunter than needed";
+    贴贴 reads "was taught how to cuddle online".
+    `*Angel Beats!*` gains the exclamation mark the source and the archive omit,
+    which is the house rule on a work's official English title,
+    by design.
+- **One ellipsis.**
+  The page carries one U+2026 ("no chance anymore…")
+    against eleven three-dot ellipses,
+    on an archive that writes eleven three-dot ellipses and no U+2026,
+    from a source that writes twenty U+2026.
+    The third convention a page can mix,
+    after the two quote forms;
+    measured at the pin,
+    28 archives write three dots only,
+    14 U+2026 only,
+    11 both and 39 neither.
+    Fixed in `e3471dc0b`:
+    `restore-ellipsis.ts` reads the replaced region and the document together,
+    and where they show one form converts a run of U+2026 to one three-dot ellipsis or a run of
+    exactly three dots to U+2026,
+    through the prose mask,
+    called at the end of `restoreTypography` so every caller has it;
+    where they show both forms or neither it says nothing.
+    Guard shown to fail neutralised and pass restored (the counts are in the section that follows the
+    launch).
+    The reading step gains the ellipsis count beside the apostrophe count.
+- **Recorded,
+  not fixed.**
+  The blank line after the front matter is dropped as before.
+    The archive's `> Take up arms if you have them.  ` ends in two spaces,
+    a hard break with nothing after it,
+    and the page's line does not;
+    bytes,
+    not rendering.
+
+THE READING of this page is the first of the day that found no defect class,
+one convention glyph aside.
+It is one page of one entry,
+read four times.
+
 ## The shape census, 2026-09-07, 00:20 UTC: what no read page has carried
 
 Every new source shape so far found a class on its first page,

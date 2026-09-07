@@ -11,9 +11,10 @@ Before the first page,
 two defaults that had never shipped a page became the configuration every shipped page had run,
 the owner wrote one operating rule,
 and the first pass on the plain invocation found the fifth defect class in 28.6 minutes.
-Four pages of `yulianNyanner` shipped after it and each was read;
-each found a class,
-the eighth made by the seventh's fix.
+Five pages of `yulianNyanner` shipped after it and each was read;
+the first four found a class each,
+the eighth made by the seventh's fix,
+and the fifth found none.
 The pipeline is still not production ready,
 and the reason is recorded in
 [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md).
@@ -29,16 +30,16 @@ found the seventh),
 23:11 on the class-seven build (44.1 minutes,
 apostrophes held,
 found the eighth),
+and 00:12 UTC on 2026-09-07 on the class-eight build (51.2 minutes,
+component line held,
+no class found,
+one ellipsis restored after it in `e3471dc0b`),
 each at zero USD with an unstarved consolidation and `verify-published` matched.
-The eighth class is fixed and proven,
-and `yulianNyanner` is running again on the class-eight build,
-launched 00:12:39 UTC on 2026-09-07 into `~/temp/agent/yuliannyanner7-20260907`,
-tip `ba91c5587`,
-pipeline `4d000da8`.
-Its reading is the next action,
+The next action is `TLL1122` on the ellipsis build,
+the first read page with a footnote,
 by the seven steps in the 2026-09-04 snapshot,
 "How a pass is launched and read",
-which gained the apostrophe count and two refusal greps today.
+which gained the apostrophe and ellipsis counts and two refusal greps today.
 If a pass is running when this is read and the tree has moved past its tip,
 the kill-and-relaunch rule applies.
 
@@ -55,14 +56,14 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `ba91c5587` for the code;
+  `e3471dc0b` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 00:12 UTC on 2026-09-07:
-  `synthetic=wet hyper=wet openrouter=wet syntheticWeekly=21.05% syntheticFiveHour=2750/2750`,
-  Hyper 2490 credits,
+- Meters at 01:03 UTC on 2026-09-07:
+  `synthetic=wet hyper=wet openrouter=wet syntheticWeekly=16.44% syntheticFiveHour=2740/2750`,
+  Hyper 2408 credits,
   OpenRouter 0.32 USD.
-  Each settled `yulianNyanner` pass today cost 3.9 to 4.4 points of the Synthetic week and 60 to 68 Hyper
+  Each settled `yulianNyanner` pass today cost 3.9 to 4.6 points of the Synthetic week and 60 to 82 Hyper
   credits at zero USD.
   One stopped 28-minute attempt cost about 0.8 percent of the Synthetic week and 36 Hyper credits;
   no call reached OpenRouter,
@@ -72,6 +73,9 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `e3471dc0b` restores the ellipsis form the document uses beside its quote style,
+    through the same prose mask,
+    silent where a document shows both forms.
 -   `ba91c5587` keeps the typography restoration out of tags and code through `typography-prose-mask.ts`
     and curls a trailing possessive apostrophe;
     `2079c8c99` refuses a would-ship page the MDX grammar cannot parse (`UnparseablePageError`),
@@ -254,16 +258,14 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Read the `yulianNyanner` page from the class-eight build (run 7,
-    launched 00:12:39 UTC on 2026-09-07),
-    the component line and the count of straight quotes after a letter first.
-2.  Run and read `TLL1122`,
+1.  Run and read `TLL1122`,
     the smallest source carrying a footnote and nothing else new,
-    after that reading rather than beside it,
+    on the ellipsis build,
+    one run at a time,
     so a fix found in one reading does not kill two runs.
     The shape census of 00:20 UTC on 2026-09-07 in the planning log names it:
     footnotes are on 23 of 92 sources and on no read page.
-3.  Then `Arita`,
+2.  Then `Arita`,
     the double-quoted `PhotoScroll` repeat,
     and the second tier the census lists
     (bold,

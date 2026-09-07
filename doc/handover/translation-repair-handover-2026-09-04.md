@@ -205,7 +205,10 @@ in order:
     Added 2026-09-06 after four pages had shipped with it unmeasured:
     count the page's straight quotes after a letter against its curly apostrophes
     (`grep -c "[A-Za-z]'"` beside `grep -c "[A-Za-z]’[a-z]"`;
-    the first pattern widened the same night from `[A-Za-z]'[a-z]` after a plural possessive slipped it)
+    the first pattern widened the same night from `[A-Za-z]'[a-z]` after a plural possessive slipped it),
+    count its U+2026 ellipses against its three-dot ones
+    (added 2026-09-07,
+    for the same reason),
     and compare with the archive,
     since a page mixing the two conventions is a defect no reader notices and every reader can measure.
 7.  Write the reading into

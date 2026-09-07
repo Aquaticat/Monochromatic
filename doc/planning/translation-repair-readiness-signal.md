@@ -639,3 +639,36 @@ the first read page with a footnote,
 which the shape census of 2026-09-07 in the planning log names as the largest shape no read page has
 carried;
 then `Arita`.
+
+## What the page on the class-eight build showed (2026-09-07, 00:12 UTC)
+
+Shipped in 51.2 minutes at zero USD,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The seventh launch".
+The class-eight fix held where it was aimed:
+the component line straight,
+the page parsing,
+no downgrade finding,
+and the quotes as the archive writes them.
+
+WHAT IT FOUND:
+no defect class.
+One U+2026 on a three-dot archive,
+the third convention glyph after the two quote forms,
+restored in `e3471dc0b` by the same reading the quotes use.
+Two consolidation standings withheld by the line-structured rule,
+which is a floor doing what it is for.
+The two wording findings of the earlier readings settled the archive's way by the judges.
+
+THE READING:
+not ready,
+but the first page of the day that moves the belief forward rather than sideways.
+Four pages of one entry found four classes and the fourth page found none;
+the entry is one shape,
+and the census names the shapes no read page has carried,
+footnotes first.
+What would move the belief:
+`TLL1122` on this build,
+read clean by every step including the footnote's reference and definition;
+then `Arita`;
+then the second tier.
