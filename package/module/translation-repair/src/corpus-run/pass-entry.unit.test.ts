@@ -613,6 +613,12 @@ function entryClient(
   },
 ): RunClient {
   return {
+    providerHolds: () => ({
+      synthetic: 0,
+      bedrock: 0,
+      hyper: 0,
+      openrouter: 0,
+    }),
     chatText: async () => {
       throw new Error('chatText unused by either lane',);
     },
@@ -1268,7 +1274,7 @@ await describe({
     },),
     it({
       name: 'RECOVERS repair-lane source destination loss through consolidation before page write, and '
-        + 'READS the judge seats before each of the five stages rather than once, the preparation and '
+        + 'READS the judge seats before each of the six stages rather than once, the preparation, translate-lane and '
         + 'picture readings included (XIEPT2, 2026-09-03: Synthetic ran dry seven minutes into a '
         + '219-minute entry; the OpenRouter-only passes bought a withheld model\'s calls from stages '
         + 'that read no seats)',
@@ -1303,9 +1309,10 @@ await describe({
         expect(served,).toContain('lane_contest');
         expect(served,).toContain('consolidate_gate');
         expect(page,).toContain('https://example.test/cat-record');
-        // Preparation, pictures, lanes, lane contest, consolidation: one
+        // Preparation, pictures, lanes, the translate lane (re-seated when it
+        // starts, the thirteenth class), lane contest, consolidation: one
         // reading each.
-        expect(quotaReads.count,).toBe(5,);
+        expect(quotaReads.count,).toBe(6,);
       },
     },),
     it({

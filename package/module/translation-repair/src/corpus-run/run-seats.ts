@@ -1,6 +1,11 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  HOLD_POLL_MS,
+  shortestHold,
+  waitOutHold,
+} from '../budget-hold-wait.ts';
+import {
   type NO_PROVIDER,
   providerServing,
 } from '../budget-routing.ts';
@@ -19,6 +24,11 @@ import { reachOf, } from '../roster-reach.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { TranslateModels, } from '../translate-document-contract.ts';
 import type { RunClient, } from './run-client-contract.ts';
+import {
+  type JudgeSeatPhase,
+  phaseBenches,
+  shortBenches,
+} from './run-seats-wait.ts';
 import {
   RUN_LATE_JUDGES,
   RUN_MODELS,
@@ -387,17 +397,6 @@ export function judgeSeatsFor(
 }
 
 /**
- * Phase of one entry a bench is read for, named in the log line so a run's
- * log says which reading seated whom.
- *
- * @example
- * ```ts
- * const phase: JudgeSeatPhase = 'lane contest';
- * ```
- */
-export type JudgeSeatPhase = 'preparation' | 'pictures' | 'lanes' | 'lane contest' | 'consolidation';
-
-/**
  * Reads every provider's dryness and derives the benches for one phase of
  * one entry.
  *
@@ -422,28 +421,85 @@ export async function readJudgeSeats(
     phase,
     signal,
     l,
+    pollMs = HOLD_POLL_MS,
   }: {
-    readonly client: Pick<RunClient, 'providerDryness'>;
+    readonly client: Pick<RunClient, 'providerDryness' | 'providerHolds'>;
     readonly phase: JudgeSeatPhase;
     readonly signal: AbortSignal;
     readonly l: Logger;
+    readonly pollMs?: number;
   },
 ): Promise<JudgeSeats> {
   /**
-   * Which providers are dry, or none when the view could not be read.
+   * Reads which providers are dry, or none when the view could not be read.
+   *
+   * @returns Dryness per provider, holds folded in
    */
-  const dry = await (async function readDryness(): Promise<BudgetView> {
+  async function readDryness(): Promise<BudgetView> {
     try {
       return await client.providerDryness({ signal, },);
     } catch (error) {
       l.warn(`judge seats: the budget view could not be read (${String(error,)}); seating the full bench`,);
       return providerRecord({ of: wetWhenUnread, },);
     }
-  })();
+  }
+  /**
+   * Dryness as first read.
+   */
+  const first = await readDryness();
+  /**
+   * Benches as first read.
+   */
+  const firstSeats = judgeSeatsFor({ dry: first, },);
+  /**
+   * Benches this phase leans on that cannot reach quorum as first read.
+   */
+  const short = shortBenches({
+    benches: {
+      wide: firstSeats.wideSeats,
+      select: firstSeats.selectJudges,
+      slate: firstSeats.slateJudges,
+      translators: firstSeats.translators,
+      readers: firstSeats.readers,
+    },
+    names: phaseBenches({ phase, },),
+    dry: first,
+  },);
+  /**
+   * How long each provider's refusal still holds it out.
+   */
+  const holds = client.providerHolds();
+  /**
+   * How long this reading waits: the shortest running hold, when a bench is
+   * short and some provider has named its return; nothing otherwise.
+   */
+  const waitMs = (short.length > 0) ? shortestHold({ holds, },) : 0;
+  if (waitMs > 0) {
+    /**
+     * Each provider's hold, for the line.
+     */
+    const held = PROVIDER_ORDER.map(function holdOf(provider,): string {
+      return `${provider} ${String(holds[provider],)}ms`;
+    },);
+    l.warn(
+      `JUDGE SEATS phase=${phase} short of quorum: ${short.join('; ',)}; holds ${held.join(', ',)}; `
+        + `waiting ${String(waitMs,)}ms for the shortest hold to end rather than seating a bench that cannot settle`,
+    );
+    await waitOutHold({
+      ms: waitMs,
+      signal,
+      pollMs,
+    },);
+  }
+  /**
+   * Dryness this phase seats on: read again after a wait, the first reading
+   * otherwise.
+   */
+  const dry = (waitMs > 0) ? await readDryness() : first;
   /**
    * Benches for this reading.
    */
-  const seats = judgeSeatsFor({ dry, },);
+  const seats = (waitMs > 0) ? judgeSeatsFor({ dry, },) : firstSeats;
   /**
    * Each bench, named once for the line.
    */
@@ -470,7 +526,8 @@ export async function readJudgeSeats(
       + `slate=${String(slateJudges.length,)} checkers=${String(checkers.length,)} `
       + `translators=${String(translators.length,)} readers=${String(readers.length,)} `
       + `roster=${String(roster.length,)} `
-      + `withheld=${(withheld.length === 0) ? 'none' : withheld.join(',',)}`,
+      + `withheld=${(withheld.length === 0) ? 'none' : withheld.join(',',)} `
+      + `waited=${String(waitMs,)}ms`,
   );
   return seats;
 }

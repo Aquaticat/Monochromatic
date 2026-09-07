@@ -940,6 +940,7 @@ export function createRunClient(
         : { store: promptPayloadStore({ dir: promptPayloadDir, },), }),
     },),
     providerDryness: budgets.read,
+    providerHolds: budgets.holds,
   };
 }
 

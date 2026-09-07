@@ -100,13 +100,20 @@ export {
 export {
   HYPER_SLOW_JUDGES,
   HYPER_SLOW_SELECT_JUDGES,
-  type JudgeSeatPhase,
   type JudgeSeats,
   judgeSeatsFor,
   OPENROUTER_CHECKER_SUBSTITUTE,
   OPENROUTER_WITHHELD,
   readJudgeSeats,
 } from './corpus-run/run-seats.ts';
+export {
+  type BenchName,
+  type JudgeSeatPhase,
+  phaseBenches,
+  reachableSeats,
+  shortBenches,
+} from './corpus-run/run-seats-wait.ts';
+export { rosterQuorumSize, } from './roster-quorum-size.ts';
 export type { RunClient, } from './corpus-run/run-client-contract.ts';
 export {
   assertRequiredProvidersReady,

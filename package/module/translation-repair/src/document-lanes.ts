@@ -204,6 +204,12 @@ function laneDelivery(
  *
  * @param translateModels - roster for the translate lane
  *
+ * @param reseatTranslate - re-reads the translate lane's roster when the lane
+ * is about to start, since the repair lane has spent minutes by then and a
+ * provider may have been held out meanwhile (the thirteenth class); the
+ * roster given is used when absent
+ *
+ *
  * @param adjudicationConfig - tally thresholds and weights for the repair lane
  *
  * @param signal - entry abort both lanes honor
@@ -250,6 +256,7 @@ export async function runDocumentLanes(
     prepared,
     repairModels,
     translateModels,
+    reseatTranslate,
     adjudicationConfig,
     pictureReadings,
     signal,
@@ -265,6 +272,7 @@ export async function runDocumentLanes(
     readonly prepared: PreparedDocumentPair;
     readonly repairModels: RepairModels;
     readonly translateModels: TranslateModels;
+    readonly reseatTranslate?: () => Promise<TranslateModels>;
     readonly adjudicationConfig?: AdjudicationConfig;
 
     /**
@@ -349,13 +357,28 @@ export async function runDocumentLanes(
   },);
 
   /**
+   * Translate lane's roster as of now: re-read when the caller can, since the
+   * repair lane has just spent minutes and a provider held out meanwhile
+   * would refuse every writer it serves in the same millisecond.
+   */
+  const translateSeats = (reseatTranslate === undefined) ? translateModels : await reseatTranslate();
+  if (reseatTranslate !== undefined) {
+    /**
+     * Writers the re-seating kept, for the line.
+     */
+    const writers = translateSeats.translatorModelIds
+      .join(', ',);
+    dl.info(`translate lane re-seated before starting: ${writers} writing`,);
+  }
+
+  /**
    * Translate lane's answer: every slice rendered afresh, with the archive's
    * own English standing as one candidate.
    */
   const translate = await translateDocument({
     client,
     prepared,
-    models: translateModels,
+    models: translateSeats,
     ...((pictureReadings === undefined)
       ? {}
       : { pictureReadings, }),

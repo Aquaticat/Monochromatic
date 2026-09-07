@@ -1,5 +1,6 @@
 import type { SyntheticClient, } from '../chat-contract.ts';
 import type { BudgetView, } from '../provider-budget.ts';
+import type { ProviderRecord, } from '../provider-name.ts';
 
 //region Run client contract
 // THE CLIENT A CORPUS RUN HOLDS: the routed caller every stage calls, the
@@ -30,6 +31,16 @@ export type RunClient = SyntheticClient & {
    * about where a call would go.
    */
   readonly providerDryness: (args: { readonly signal: AbortSignal; },) => Promise<BudgetView>;
+
+  /**
+   * How long each provider's last refusal still holds it out, in
+   * milliseconds, zero when it is not held.
+   * READ BESIDE THE DRYNESS by `run-seats.ts` since the thirteenth class: a
+   * bench that cannot reach quorum among the seats a wet provider serves waits
+   * out the shortest running hold once, as the router does when every provider
+   * reads dry, rather than seating a phase that settles on nobody.
+   */
+  readonly providerHolds: () => ProviderRecord<number>;
 };
 
 //endregion Run client contract

@@ -395,12 +395,14 @@ async function runLanes(
     repairSliceCache,
     overlap = 1,
     activity,
+    reseatTranslate,
   }: {
     readonly served: SchemaLog;
     readonly abortAfterCriticCalls?: number;
     readonly repairSliceCache?: SliceCache<ChunkRepairOutcome>;
     readonly overlap?: number;
     readonly activity?: LaneConcurrency;
+    readonly reseatTranslate?: () => Promise<TranslateModels>;
   },
 ) {
   /**
@@ -428,6 +430,9 @@ async function runLanes(
     ...((repairSliceCache === undefined)
       ? {}
       : { repairSliceCache, }),
+    ...((reseatTranslate === undefined)
+      ? {}
+      : { reseatTranslate, }),
     l,
   },);
 }
@@ -448,6 +453,38 @@ await describe({
 
         const lanes = await runLanes({ served, },);
         // The repair lane found nothing to repair, so it hands back the archive.
+        expect(lanes.repair
+          .status,).toBe('unchanged',);
+        expect(lanes.translate
+          .translatedText,).toContain(FRESH,);
+      },
+    },),
+    it({
+      name: 'RE-SEATS THE TRANSLATE LANE when it is about to start, after the repair lane has spent its '
+        + 'calls, and writes with the roster the re-seating returns: the thirteenth class, where the '
+        + 'lanes reading was minutes old by the time the writers were asked',
+      fn: async () => {
+        /**
+         * Schemas the run served, in order.
+         */
+        const served: SchemaLog = [];
+        /**
+         * How many calls the repair lane had made when the translate lane re-seated, and how often.
+         */
+        const reseated = {
+          times: 0,
+          callsBefore: -1,
+        };
+        const lanes = await runLanes({
+          served,
+          reseatTranslate: async (): Promise<TranslateModels> => {
+            reseated.times += 1;
+            reseated.callsBefore = served.length;
+            return TRANSLATE_MODELS;
+          },
+        },);
+        expect(reseated.times,).toBe(1,);
+        expect(reseated.callsBefore,).toBeGreaterThan(0,);
         expect(lanes.repair
           .status,).toBe('unchanged',);
         expect(lanes.repair

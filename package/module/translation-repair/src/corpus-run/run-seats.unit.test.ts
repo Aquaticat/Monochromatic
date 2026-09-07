@@ -79,9 +79,32 @@ const OPENROUTER_ONLY: BudgetView = {
 };
 
 /**
- * Builds a client whose dryness view answers as scripted.
+ * No provider held out.
+ */
+const NO_HOLDS = {
+  synthetic: 0,
+  bedrock: 0,
+  hyper: 0,
+  openrouter: 0,
+};
+
+/**
+ * The third hakureico pass at 22:00 UTC: Synthetic's week spent, Hyper held
+ * out by its daily limit, OpenRouter at 0.01 USD, Bedrock alone wet.
+ */
+const BEDROCK_ALONE: BudgetView = {
+  synthetic: true,
+  bedrock: false,
+  hyper: true,
+  openrouter: true,
+};
+
+/**
+ * Builds a client whose dryness view and holds answer as scripted.
  *
  * @param providerDryness - scripted view
+ *
+ * @param providerHolds - scripted holds, none when absent
  *
  * @returns Client with only the seat reader's surface
  *
@@ -91,9 +114,46 @@ const OPENROUTER_ONLY: BudgetView = {
  * ```
  */
 function viewClient(
-  { providerDryness, }: { readonly providerDryness: () => Promise<BudgetView>; },
+  {
+    providerDryness,
+    providerHolds = () => NO_HOLDS,
+  }: {
+    readonly providerDryness: () => Promise<BudgetView>;
+    readonly providerHolds?: () => typeof NO_HOLDS;
+  },
 ) {
-  return { providerDryness, };
+  return {
+    providerDryness,
+    providerHolds,
+  };
+}
+
+/**
+ * Dryness views handed out in order, the last one repeated, counting reads.
+ *
+ * @param views - views in the order they are read
+ *
+ * @returns Reader and the count of reads so far
+ *
+ * @example
+ * ```ts
+ * const script = scriptedViews({ views: [BEDROCK_ALONE, ALL_WET,], },);
+ * ```
+ */
+function scriptedViews(
+  { views, }: { readonly views: readonly BudgetView[]; },
+) {
+  const counter = { reads: 0, };
+  return {
+    counter,
+    read: async (): Promise<BudgetView> => {
+      const view = views[Math.min(counter.reads, views.length - 1,)];
+      counter.reads += 1;
+      if (view === undefined)
+        throw new Error('scripted views must name at least one view',);
+      return view;
+    },
+  };
 }
 
 await describe({
@@ -267,6 +327,75 @@ await describe({
         },);
         expect(unread.dry,).toEqual(ALL_WET,);
         expect(unread.wideSeats.includes(QWEN,),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'WAITS OUT THE SHORTEST HOLD ONCE and reads again when a bench this phase leans on cannot '
+        + 'reach quorum among the seats a wet provider serves and a provider has named its return, '
+        + 'the thirteenth class: Bedrock alone wet at the translate lane, Hyper held for its daily limit',
+      fn: async () => {
+        const l = tagged({ tag: 'run-seats-test', },);
+        const script = scriptedViews({
+          views: [
+            BEDROCK_ALONE,
+            ALL_WET,
+          ],
+        },);
+        const seats = await readJudgeSeats({
+          client: viewClient({
+            providerDryness: script.read,
+            providerHolds: () => ({
+              ...NO_HOLDS,
+              hyper: 40,
+            }),
+          },),
+          phase: 'translate lane',
+          signal: new AbortController().signal,
+          l,
+          pollMs: 5,
+        },);
+        expect(script.counter.reads,).toBe(2,);
+        expect(seats.dry,).toEqual(ALL_WET,);
+        expect(seats.translators,).toEqual(RUN_TRANSLATORS,);
+      },
+    },),
+    it({
+      name: 'DOES NOT WAIT when no provider has named its return, seating what it read, nor when every '
+        + 'bench can reach quorum however long a provider is held',
+      fn: async () => {
+        const l = tagged({ tag: 'run-seats-test', },);
+        const noHold = scriptedViews({
+          views: [
+            BEDROCK_ALONE,
+            ALL_WET,
+          ],
+        },);
+        const short = await readJudgeSeats({
+          client: viewClient({ providerDryness: noHold.read, },),
+          phase: 'consolidation',
+          signal: new AbortController().signal,
+          l,
+          pollMs: 5,
+        },);
+        expect(noHold.counter.reads,).toBe(1,);
+        expect(short.dry,).toEqual(BEDROCK_ALONE,);
+
+        const wet = scriptedViews({ views: [ALL_WET,], },);
+        const full = await readJudgeSeats({
+          client: viewClient({
+            providerDryness: wet.read,
+            providerHolds: () => ({
+              ...NO_HOLDS,
+              openrouter: 60_000,
+            }),
+          },),
+          phase: 'consolidation',
+          signal: new AbortController().signal,
+          l,
+          pollMs: 5,
+        },);
+        expect(wet.counter.reads,).toBe(1,);
+        expect(full.dry,).toEqual(ALL_WET,);
       },
     },),
   ],

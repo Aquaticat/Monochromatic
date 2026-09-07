@@ -40,6 +40,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { readJudgeSeats, } from './run-seats.ts';
+import { readLanesSeats, } from './pass-reseat.ts';
 
 //region Pass entry
 
@@ -270,11 +271,13 @@ async function runEntryPipeline(
      * The contest and the consolidation seams read their own: XIEPT2 on
      * 2026-09-03 ran Synthetic dry seven minutes into a 219-minute entry.
      */
-    const seats = await readJudgeSeats({
+    const {
+      seats,
+      reseatTranslate,
+    } = await readLanesSeats({
       client,
-      phase: 'lanes',
       signal: deadline.callSignal,
-      l: tagged({ tag: entry.id, },),
+      entryId: entry.id,
     },);
 
     /**
@@ -303,6 +306,7 @@ async function runEntryPipeline(
       prepared,
       repairModels: seats.repairModels,
       translateModels: seats.translateModels,
+      reseatTranslate,
       pictureReadings,
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
