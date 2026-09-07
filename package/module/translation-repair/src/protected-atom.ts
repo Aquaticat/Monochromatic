@@ -27,6 +27,7 @@ export type AtomKind =
   | 'reference'
   | 'footnote'
   | 'inline-code'
+  | 'container-tag'
   | 'number'
   | 'foreign-run';
 

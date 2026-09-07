@@ -3,6 +3,10 @@ import type {
   RootContent,
 } from 'mdast';
 
+import {
+  type LoneContainerTag,
+  maskLoneContainerTags,
+} from './mask-container-tags.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
 
@@ -38,6 +42,15 @@ import type {
 // wording, and the judges are the instrument for wording; the archive itself
 // renders yulianNyanner's fourteen comment lines as twelve.
 //
+// THE SAME FOR A CONTAINER TAG WITHOUT ITS PARTNER. `container-extents.ts`
+// gives a container's opening tag to the first block inside it and its closing
+// tag to the last, so when the blocks fall in different slices each slice
+// owns one half, and the strict grammar refuses either half alone. The
+// Huasheng pass of 2026-09-07 stopped at slices 9 and 12 that way. A lone tag
+// is masked here (`mask-container-tags.ts`) and carried as a `container-tag`
+// atom, so the rest of the slice reads as the document did and a candidate
+// that drops the tag fails the floor rather than the page grammar.
+//
 // WHAT IS DELIBERATELY NOT HERE: prose atoms. `scanTextAtoms` protects numbers
 // and foreign runs, which is right when a rewrite and its base are the same
 // language and wrong across a translation, where 三只猫 becomes "three cats"
@@ -57,6 +70,7 @@ const TRANSLATABLE_ATOM_KINDS: ReadonlySet<AtomKind> = new Set<AtomKind>([
   'reference',
   'footnote',
   'inline-code',
+  'container-tag',
 ],);
 
 /**
@@ -264,6 +278,41 @@ function walkAtoms({ root, }: { readonly root: ReadonlyMdastRoot; },): readonly 
 }
 
 /**
+ * Lone container tags of one kind as atoms, in document order.
+ *
+ * @param tags - lone tags the mask reported
+ *
+ * @param kind - which half of a container to keep
+ *
+ * @returns Those tags as `container-tag` atoms
+ *
+ * @example
+ * ```ts
+ * const openers = tagAtomsOf({ tags, kind: 'open', },);
+ * ```
+ */
+function tagAtomsOf(
+  {
+    tags,
+    kind,
+  }: {
+    readonly tags: readonly LoneContainerTag[];
+    readonly kind: 'open' | 'close';
+  },
+): readonly ProtectedAtom[] {
+  return tags
+    .filter(function ofKind(tag,): boolean {
+      return tag.kind === kind;
+    },)
+    .map(function toAtom(tag,): ProtectedAtom {
+      return {
+        kind: 'container-tag',
+        value: tag.text,
+      };
+    },);
+}
+
+/**
  * Reads one slice into the shape a translation of it has to match.
  *
  * @param text - exact slice source, original or candidate
@@ -283,12 +332,22 @@ export function readSliceSkeleton(
      * Slice with its HTML comments blanked to same-length whitespace, which is
      * what the document reader hands the strict grammar.
      */
-    const { masked, } = maskHtmlComments({ text, },);
+    const { masked: withoutComments, } = maskHtmlComments({ text, },);
+
+    /**
+     * Slice with any container tag standing without its partner blanked too,
+     * and those tags reported so the skeleton can carry them.
+     */
+    const {
+      masked,
+      tags,
+    } = maskLoneContainerTags({ text: withoutComments, },);
 
     /**
      * Parsed slice under the strict grammar.
      */
     const root: ReadonlyMdastRoot = parseMdxBody({ body: masked, },);
+
     return {
       kind: 'read',
       skeleton: {
@@ -299,7 +358,19 @@ export function readSliceSkeleton(
               detail: blockDetail({ node, },),
             };
           },),
-        atoms: walkAtoms({ root, },),
+        // Openers before the content and closers after it, which is where
+        // their extents put them.
+        atoms: [
+          ...tagAtomsOf({
+            tags,
+            kind: 'open',
+          },),
+          ...walkAtoms({ root, },),
+          ...tagAtomsOf({
+            tags,
+            kind: 'close',
+          },),
+        ],
       },
     };
   }

@@ -520,5 +520,19 @@ In the morning it dozes on the windowsill.
         ).toBe('valid',);
       },
     },),
+    it({
+      name: 'REFUSES a translation that drops the container closer its original owns, and ACCEPTS one '
+        + 'that carries it (Huasheng, 2026-09-07)',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '它醒了。\n\n</details>',
+          candidateText: 'It wakes.',
+        },).kind,).toBe('invalid',);
+        expect(validateTranslatedSlice({
+          sourceText: '它醒了。\n\n</details>',
+          candidateText: 'It wakes.\n\n</details>',
+        },).kind,).toBe('valid',);
+      },
+    },),
   ],
 },);

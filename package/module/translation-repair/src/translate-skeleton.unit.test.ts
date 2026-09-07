@@ -415,5 +415,62 @@ await describe({
           .toContain('MdxParseError',);
       },
     },),
+    it({
+      name: 'READS a slice that owns a container opener without its closer, carrying the tag as an '
+        + 'atom, since the first block inside a container owns its opening tag (Huasheng, 2026-09-07)',
+      fn: async () => {
+        /**
+         * Head of a disclosure block as a slice carries it.
+         */
+        const head = '<details>\n<summary>**A cat**</summary>\n\nThe cat naps.';
+
+        // A `<summary>` holding phrasing on one line is a paragraph of inline
+        // JSX to this grammar, inside a container or out of one.
+        expect(blocksOf({ text: head, },),).toEqual([
+          {
+            kind: 'paragraph',
+            detail: '',
+          },
+          {
+            kind: 'paragraph',
+            detail: '',
+          },
+        ],);
+        expect(atomsOf({ text: head, },),).toEqual([
+          {
+            kind: 'container-tag',
+            value: '<details>',
+          },
+        ],);
+      },
+    },),
+
+    it({
+      name: 'READS a slice that owns the closer alone, and puts it after the content atoms',
+      fn: async () => {
+        expect(atomsOf({ text: 'The cat wakes[^1].\n\n</details>\n\n[^1]: At dawn.', },),).toEqual([
+          {
+            kind: 'footnote',
+            value: '1',
+          },
+          {
+            kind: 'footnote',
+            value: '1',
+          },
+          {
+            kind: 'container-tag',
+            value: '</details>',
+          },
+        ],);
+      },
+    },),
+
+    it({
+      name: 'LEAVES a container whose both tags sit in one slice to the grammar, which reads it as '
+        + 'one element and carries no tag atom',
+      fn: async () => {
+        expect(atomsOf({ text: '<details>\n\nThe cat.\n\n</details>', },),).toEqual([],);
+      },
+    },),
   ],
 },);
