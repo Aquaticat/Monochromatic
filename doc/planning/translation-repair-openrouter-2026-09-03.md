@@ -3523,6 +3523,124 @@ the roster of 2026-09-01 with every provider wet.
 Bedrock now serves only the two seats the roster already names,
 once Synthetic dries.
 
+## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
+
+The probes ran the run roster and nothing else,
+so a seat that needs a number before it is taken could never be asked for one.
+Landed on `translation-repair-class12` at `abdb06c1b` and `35e0b1fad`
+(the branch stays unmerged until `hakureico` settles,
+under the kill-and-relaunch rule):
+`--candidates a,b` names seatable ids that judge beside the seated roster in `judge-fidelity-probe`
+and write and judge beside it in `producer-calibrate`,
+for that run only;
+`--candidates-alone` runs the named ids without the seated roster,
+so a probe beside a production pass spends only at the candidates' provider.
+An id the roster does not know is refused with the ids it does;
+alone over nobody is refused.
+Six guards bite (`probe-candidates.unit.test.ts`);
+types and oxlint clean;
+the full suite green.
+
+### The instrument as it stands
+
+`judge-fidelity-probe` over a throwaway runs dir holding the three settled artifacts on disk
+(Huasheng from the fourth pass,
+TLL1122,
+yulianNyanner from the seventh),
+`--cap 36`,
+build `35e0b1fad`.
+TLL1122 carries no slice of 400 characters;
+neither remaining slice states a number the alteration fixture can move;
+so the walk built one deletion and one insertion pair on each of two slices,
+Huasheng/1 and yulianNyanner/3,
+each put four ways:
+16 rows.
+Two of the four ways share one slate
+(the same two texts in the same order,
+differing only in which is called the incumbent),
+and the select memo answers the second without a call:
+7 of 16 rounds closed at 0 ms,
+and every judge was asked 8 distinct questions.
+The direction column of this probe measures nothing on a warm memo;
+recorded,
+not fixed here.
+
+### The candidates alone, 21:19 UTC
+
+Judges `google.gemma-4-e2b` and `google.gemma-4-31b`,
+nobody else,
+16 Bedrock calls,
+0.0045 USD by the ledger.
+Distinct questions answered with the complete text:
+
+- `google.gemma-4-e2b`: 7 of 8.
+  Deletion 3 of 4,
+  insertion 4 of 4,
+  never declined;
+  the miss chose the damaged text where it sat second on the Huasheng deletion,
+  and it chose position two on 5 of 8.
+- `google.gemma-4-31b`: 4 of 8.
+  Deletion 2 of 4,
+  insertion 2 of 4,
+  declined the other 4,
+  every one on Huasheng/1,
+  saying both candidates add imagery and emotional language the original lacks;
+  it never chose the damaged text.
+
+### The seated roster on the same questions, 21:20 UTC
+
+The nine roster models,
+72 calls,
+`fidelity: 16 of 16 trials chose the complete text`;
+per judge,
+distinct questions answered with the complete text:
+
+- 8 of 8: `hf:moonshotai/Kimi-K3`,
+  `deepseek-v4-pro-0813`,
+  `hf:zai-org/GLM-5.3-Flash` (no judge seat since 2026-09-02).
+- 7 of 8: `deepseek-v4-flash-0731` (one damaged pick),
+  `glm-5.3` (one decline),
+  `hf:Qwen/Qwen3.8-27B` (one decline;
+  no judge seat since 2026-09-03).
+- 5 of 8: `hf:openai/gpt-oss-120b` (three declines),
+  `minimax-m3` (one damaged pick,
+  two declines).
+- 4 of 8: `gemma-4-26b-a4b-it` (four declines,
+  all on Huasheng/1,
+  the family's reading).
+
+Among the seven judges the wide seats hold,
+the median is 7 of 8 and the floor 4 of 8.
+
+### The rule, written before the next questions arrive
+
+Two slices are eight questions,
+which separates a family's habit of declining from a habit of choosing the damaged text
+and not much finer.
+The fourth settled artifact,
+`hakureico`,
+adds one slice when the pass settles,
+and the probe is re-run over all four before any seat moves.
+The rule for the wide seats,
+pre-registered here as the 2026-09-01 rules were:
+a candidate joins critic,
+panel and judge when,
+over the same distinct questions,
+it chooses the complete text at least as often as the median seated judge
+and chooses the damaged text no more often than the seated judge who chooses it most;
+a candidate that declines its way below the floor stays out.
+On the eight so far `google.gemma-4-e2b` meets both clauses
+(7 against a median of 7;
+one damaged pick against `deepseek-v4-flash-0731`'s one and `minimax-m3`'s one)
+and `google.gemma-4-31b` meets neither
+(4 against 7,
+on declines).
+The translator seat is `producer-calibrate`'s to give,
+by the pooled null as on 2026-09-01,
+run with `--candidates` over the whole roster once the pass is done with the meters.
+Editor and refiner seats stay where the 2026-09-01 calibration put them;
+no candidate is measured for them here.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
