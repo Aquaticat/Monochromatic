@@ -779,12 +779,13 @@ Four options are recorded with a ranking;
 the owner decides.
 
 THE READING:
-not ready,
-and this entry cannot ship on any roster until the owner answers.
-Hyper alone carried the pass at about 800 credits and 1275 remain;
+not ready.
+The owner answered at 11:30 UTC with the pinyin check and the alias exemption,
+landed in `912dbe2dc`;
+under it every directory-named archive at the pin stands and a bare folder name still falls.
+Hyper alone carried the last pass at about 800 credits and 1275 remain;
 Synthetic is dry and OpenRouter uncharged,
 so one more pass of this size is what the meters allow.
 What would move the belief:
-the owner's answer,
-then `Huasheng` on that build,
+`Huasheng` on the class-eleven build,
 read whole.

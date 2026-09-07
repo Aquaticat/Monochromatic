@@ -2963,6 +2963,56 @@ Nothing is changed in code until the owner answers.
 Hyper stands at 1275 credits;
 a Huasheng pass on Hyper alone costs about 800.
 
+## The owner answers on the name, 2026-09-07, 11:30 UTC: the pinyin check and the alias exemption
+
+The owner's words:
+"pinyin check and alias exemption (see both the original Chinese and the original English,
+there's gotta be a English rendering in the frontmatter)".
+Landed in `912dbe2dc`,
+`corpus-run/directory-id-name.ts`,
+recorded as an addendum to `doc/decision/translation-repair-front-matter-guard.md`.
+The id-equal visible name stands when any of three holds:
+the id,
+lower-cased and reduced to its Latin letters,
+is a pinyin reading of the source's name with every heteronym of every character allowed
+(`pinyin-pro`,
+a new catalog dependency,
+MIT,
+no dependencies of its own,
+reads 椛 as hua and 单 as dan,
+shan or chan);
+the source itself carries the id among its aliases;
+or the page or the archive carries an alias in Latin script other than the id,
+the English rendering the owner said the front matter has to have.
+What stays refused is a folder name with no Latin rendering beside it on either side.
+
+Measured over the pinned corpus with the rule as landed
+(scratch `name-census.mjs`):
+23 archives name their directory,
+8 in the source too,
+and the other 15 all stand,
+`Huasheng` and `lintong` by pinyin among them and the seven handles by the archive's own alias
+(Sakuya,
+Lan Gou,
+Qian Yu Mao Tou,
+Danpian,
+lxy,
+Zihe,
+Lili);
+none falls.
+Suites:
+directory-id-name,
+front-matter-completeness,
+publish-fixed 0 `FAIL`;
+oxlint 0 and 0;
+types clean;
+the lockfile diff is the one package.
+Guard shown to fail with every clause neutralised,
+5 `FAIL` lines in the rule's suite and 3 in the completeness suite,
+0 restored;
+full suite 937 `PASS`,
+0 `FAIL`.
+
 ## Build plan, transport-independent layers first
 
 In commit order,

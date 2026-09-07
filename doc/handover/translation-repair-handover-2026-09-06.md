@@ -59,8 +59,8 @@ and was refused at the publisher by `directory-id-name`,
 because the pinyin of 椛笙 is the directory id:
 the eleventh class,
 a second design question,
-recorded with options under "The third Huasheng launch ends at the publisher".
-No run is in flight;
+answered by the owner at 11:30 UTC with the pinyin check and the alias exemption and landed in
+`912dbe2dc`.
 Hyper has 1275 credits,
 about one pass of this size.
 When a pass runs next it is read by the seven steps in the 2026-09-04 snapshot,
@@ -82,7 +82,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `b46dd9210` for the code;
+  `912dbe2dc` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - Meters at 11:14 UTC on 2026-09-07:
@@ -101,6 +101,13 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `912dbe2dc` lets a directory id stand as the visible name where it is a pinyin reading of the
+    source name,
+    the source's own alias,
+    or beside a Latin-script alias,
+    the owner's decision (`doc/decision/translation-repair-front-matter-guard.md`,
+    addendum 2026-09-07);
+    `pinyin-pro` joins the catalog.
 -   `b46dd9210` accepts a candidate shaped as the original where the page only splits its blocks,
     the owner's either-rendering decision bounded to splits
     (`doc/decision/translation-repair-block-floor.md`).
@@ -297,9 +304,10 @@ whose pinyin is Huasheng,
 which is the directory id;
 the judges chose it by the identity rule and the floor refused it.
 7 of the 22 archives naming the directory do so because the id is a rendering of the name.
-A design question with four options,
-ranked judged-and-read first;
-the owner decides.
+The owner chose the pinyin check and the alias exemption,
+read on both front matters;
+landed in `912dbe2dc`,
+and under it every directory-named archive at the pin stands while a bare folder name still falls.
 
 ## The two defaults and the rule
 
@@ -342,12 +350,9 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Put the `directory-id-name` question to the owner
-    (planning log,
-    "The third Huasheng launch ends at the publisher";
-    ranking A over D over C over B),
-    land the answer guard-first,
-    and run `Huasheng` once more on whatever roster the meters allow.
+1.  Run and read `Huasheng` on the class-eleven build,
+    on whatever roster the meters allow,
+    one run at a time.
     The order is the census's,
     recorded in the planning log under "The run order after TLL1122",
     and open to veto.
