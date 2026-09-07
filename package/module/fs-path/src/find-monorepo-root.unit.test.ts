@@ -32,6 +32,7 @@ import {
   findMiseMonorepoRootCached,
   findPnpmWorkspaceRoot,
   findPnpmWorkspaceRootCached,
+  GitRepositoryRootNotFoundError,
   isAbsolute,
 } from '@monochromatic-dev/module-fs-path';
 
@@ -600,6 +601,26 @@ await describe({
           prefix: 'fs-path-missing-git-',
         },);
         await findGitRepoRoot({ cwd: fixture.nested, },);
+      },
+    },),
+    it({
+      name: 'rejects with GitRepositoryRootNotFoundError when no .git marker exists',
+      fn: async () => {
+        /** Temporary fixture without Git marker. */
+        await using fixture = await createMarkerlessFixture({
+          prefix: 'fs-path-missing-git-class-',
+        },);
+        /** Value the finder rejected with. */
+        let caught: unknown;
+        try {
+          await findGitRepoRoot({ cwd: fixture.nested, },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(GitRepositoryRootNotFoundError,);
+        expect((caught as Error).name,).toBe('GitRepositoryRootNotFoundError',);
+        expect((caught as Error).message,).toContain('no .git marker',);
       },
     },),
     it({

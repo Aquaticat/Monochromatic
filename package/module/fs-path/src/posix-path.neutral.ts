@@ -111,6 +111,58 @@ export function normalize(filePath: string,): string {
 //region dirname
 
 /**
+ Finds the last character that is not a slash, with one backward pass.
+
+ @param filePath - POSIX path
+
+ @returns index of the last non-slash character, or -1 when every character is a slash
+
+ @example
+ ```ts
+ lastNonSlashIndex('/a/b//'); // 3
+ ```
+ */
+function lastNonSlashIndex(filePath: string,): number {
+  for (let index = filePath.length - 1; index >= 0; index -= 1) {
+    if (filePath.codePointAt(index,) !== SLASH_CODE_POINT)
+      return index;
+  }
+  return -1;
+}
+
+/**
+ Finds the slash that separates the directory portion from the basename,
+ ignoring trailing slashes: the last slash before the basename's last
+ character, at index 1 or later.
+
+ @param filePath - non-empty POSIX path
+
+ @returns index of the separating slash, or -1 when there is none past index 0
+
+ @example
+ ```ts
+ directoryBoundary('/a/b/'); // 2
+ ```
+ */
+function directoryBoundary(filePath: string,): number {
+  /**
+   Last character of the basename; below 1 means the path has no basename
+   past a leading slash.
+   */
+  const basenameEnd = lastNonSlashIndex(filePath,);
+  if (basenameEnd < 1)
+    return -1;
+  /**
+   Slash preceding the basename, if any.
+   */
+  const boundary = filePath.lastIndexOf(
+    '/',
+    basenameEnd,
+  );
+  return (boundary >= 1) ? boundary : -1;
+}
+
+/**
  Returns the directory portion of a POSIX path.
 
  @param filePath - POSIX path
@@ -133,29 +185,21 @@ export function dirname(filePath: string,): string {
    */
   const isRoot = isAbsolute(filePath,);
   /**
-   Highest index to consider when searching backward for the separator:
-   one before a trailing slash, otherwise the last character. Skipping
-   any trailing slash keeps it from being picked as the directory boundary.
+   Index of the slash that ends the directory portion: the first slash met
+   scanning backward once the trailing run of slashes and the basename are
+   behind, or -1 when the basename reaches the start. Mirrors the scan in
+   `node:path/posix`, which the node build delegates to, so both builds
+   agree on every input.
    */
-  const searchEnd = ((filePath.length > 1)
-      && (filePath.codePointAt(filePath.length - 1,) === SLASH_CODE_POINT))
-    ? filePath.length - 2
-    : filePath.length - 1;
-  /**
-   Index of the last meaningful slash, or -1 when none exists.
-   */
-  const lastSlash = filePath.lastIndexOf(
-    '/',
-    searchEnd,
-  );
+  const boundary = directoryBoundary(filePath,);
 
-  if (lastSlash === (-1))
+  if (boundary === (-1))
     return isRoot ? '/' : '.';
-  if (isRoot && (lastSlash === 0))
-    return '/';
+  if (isRoot && (boundary === 1))
+    return '//';
   return filePath.slice(
     0,
-    lastSlash,
+    boundary,
   );
 }
 
