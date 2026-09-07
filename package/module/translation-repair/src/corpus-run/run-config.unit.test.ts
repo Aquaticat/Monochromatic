@@ -313,6 +313,48 @@ function withOpenRouterKey({ value, }: { readonly value: string; },): Disposable
 }
 
 /**
+ * Environment variable carrying the fourth provider's API key.
+ *
+ * Only its NAME appears in this file, for the same reason as
+ * `API_KEY_VAR`. THE REFUSAL CASES MUST CLEAR IT TOO, as the third: the day
+ * this key landed (2026-09-07) the same four refusal cases built a client in
+ * the worktree whose secrets file carries it.
+ */
+const BEDROCK_KEY_VAR = 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY';
+
+/**
+ * Sets the fourth provider's key for the life of a scope, or removes it.
+ *
+ * @param value - stand-in key; the empty string removes the variable
+ *
+ * @returns Disposable restoring the previous value, including its absence
+ *
+ * @example
+ * ```ts
+ * using _fourth = withBedrockKey({ value: '', },);
+ * ```
+ */
+function withBedrockKey({ value, }: { readonly value: string; },): Disposable {
+  /**
+   * Value before this scope; absent means the variable was unset.
+   */
+  const original = process.env[BEDROCK_KEY_VAR];
+
+  if (value === '')
+    Reflect.deleteProperty(process.env, BEDROCK_KEY_VAR,);
+  else
+    process.env[BEDROCK_KEY_VAR] = value;
+  return {
+    [Symbol.dispose](): void {
+      if (original === undefined)
+        Reflect.deleteProperty(process.env, BEDROCK_KEY_VAR,);
+      else
+        process.env[BEDROCK_KEY_VAR] = original;
+    },
+  };
+}
+
+/**
  * Removes the API key for the life of a scope and restores it on exit.
  *
  * @returns Disposable restoring the previous value
@@ -404,6 +446,7 @@ await describe({
         using _unset = withoutApiKey();
         using _second = withHyperKey({ value: '', },);
         using _third = withOpenRouterKey({ value: '', },);
+        using _fourth = withBedrockKey({ value: '', },);
 
         /**
          * What buildWithoutKey raised, read for the marker the boundary checks.
@@ -423,6 +466,7 @@ await describe({
         using _unset = withoutApiKey();
         using _second = withHyperKey({ value: '', },);
         using _third = withOpenRouterKey({ value: '', },);
+        using _fourth = withBedrockKey({ value: '', },);
 
         /**
          * What buildWithoutKey raised, read for its class as well as its wording.
@@ -442,6 +486,7 @@ await describe({
         using _empty = withApiKey({ value: '', },);
         using _second = withHyperKey({ value: '', },);
         using _third = withOpenRouterKey({ value: '', },);
+        using _fourth = withBedrockKey({ value: '', },);
 
         /**
          * What buildWithEmptyKey raised, read for its class as well as its wording.
@@ -461,6 +506,7 @@ await describe({
         using _unset = withoutApiKey();
         using _second = withHyperKey({ value: '', },);
         using _third = withOpenRouterKey({ value: '', },);
+        using _fourth = withBedrockKey({ value: '', },);
 
         /**
          * What buildWithoutKey raised, read for its class as well as its wording.
