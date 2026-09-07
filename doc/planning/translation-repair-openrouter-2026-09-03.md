@@ -3457,7 +3457,7 @@ whose secrets file carries the key,
 and 0 after).
 Types clean,
 oxlint 0 and 0,
-947 `PASS` with those four.
+the full suite green with those four.
 `budget-sample` at 21:00 read every meter wet:
 Synthetic 0.97 percent of the week,
 Hyper 828,
@@ -3473,7 +3473,9 @@ pid 3692614.
 The second footnote carrier after Huasheng,
 chosen over the math pair for the footnote observation on the fourth Huasheng page.
 The first pass with Bedrock in the order:
-its two seats (`gemma-4-26b-a4b-it` and `hf:openai/gpt-oss-120b`) route there once Synthetic dries,
+its two seats,
+`gemma-4-26b-a4b-it` and `hf:openai/gpt-oss-120b`,
+route there once Synthetic dries,
 which at 0.97 percent is soon,
 and the ledger writes its first lines.
 The reading follows:
