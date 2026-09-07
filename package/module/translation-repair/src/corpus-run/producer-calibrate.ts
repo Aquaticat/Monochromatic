@@ -27,6 +27,7 @@ import { readAskedCount, } from './asked-count.ts';
 import {
   probeRosterWith,
   readCandidateIds,
+  readCandidatesAlone,
 } from './probe-candidates.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 
@@ -185,9 +186,13 @@ async function main(): Promise<void> {
 
   /**
    * Every model writing and judging: the seated roster and any seatable
-   * candidate named after `--candidates`, measured beside it for this run only.
+   * candidate named after `--candidates`, measured beside it for this run only,
+   * or the candidates alone under `--candidates-alone`.
    */
-  const roster = probeRosterWith({ candidates: readCandidateIds({ argv: process.argv, },), },);
+  const roster = probeRosterWith({
+    candidates: readCandidateIds({ argv: process.argv, },),
+    alone: readCandidatesAlone({ argv: process.argv, },),
+  },);
 
   /**
    * Slices every model writes.

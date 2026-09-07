@@ -141,7 +141,7 @@ depends = ["build"]
 run = "node dist/final/node/editor-width-probe.mjs"
 
 [tasks."judge-fidelity-probe"]
-description = "#84: ask the translate judges to choose between a real archive slice and a damaged twin, in both directions and both ballot positions; SPENDS QUOTA (pass --only ids, --cap n, --damage deletion|insertion|alteration, --context, --candidates seatable,ids after --)"
+description = "#84: ask the translate judges to choose between a real archive slice and a damaged twin, in both directions and both ballot positions; SPENDS QUOTA (pass --only ids, --cap n, --damage deletion|insertion|alteration, --context, --candidates seatable,ids, --candidates-alone after --)"
 depends = ["build"]
 run = "node dist/final/node/judge-fidelity-probe.mjs"
 
@@ -200,7 +200,7 @@ depends = ["build"]
 run = "node dist/final/node/checker-sensitivity.mjs"
 
 [tasks."producer-calibrate"]
-description = "Run the same corpus slices with every roster model writing and every one judging, then rank producers by the share of disinterested ballots their work drew; SPENDS QUOTA, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR (pass a slice count, then --candidates seatable,ids, after --)"
+description = "Run the same corpus slices with every roster model writing and every one judging, then rank producers by the share of disinterested ballots their work drew; SPENDS QUOTA, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR (pass a slice count, then --candidates seatable,ids and --candidates-alone, after --)"
 depends = ["build"]
 run = "node dist/final/node/producer-calibrate.mjs"
 

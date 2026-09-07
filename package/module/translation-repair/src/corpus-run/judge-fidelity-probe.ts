@@ -23,6 +23,7 @@ import {
 import {
   probeRosterWith,
   readCandidateIds,
+  readCandidatesAlone,
 } from './probe-candidates.ts';
 import {
   carveSettled,
@@ -201,9 +202,13 @@ async function main(): Promise<void> {
 
   /**
    * Judges asked: the seated roster and any seatable candidate named after
-   * `--candidates`, measured beside it for this run only.
+   * `--candidates`, measured beside it for this run only, or the candidates
+   * alone under `--candidates-alone`.
    */
-  const judgeModelIds = probeRosterWith({ candidates: readCandidateIds({ argv: process.argv, },), },);
+  const judgeModelIds = probeRosterWith({
+    candidates: readCandidateIds({ argv: process.argv, },),
+    alone: readCandidatesAlone({ argv: process.argv, },),
+  },);
   log.info(`judges: ${judgeModelIds.join(', ',)}`,);
 
   /**

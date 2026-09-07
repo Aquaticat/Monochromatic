@@ -24,6 +24,7 @@ import {
   BEDROCK_ONLY_ROSTER_IDS,
   probeRosterWith,
   readCandidateIds,
+  readCandidatesAlone,
   ROSTER_MODEL_IDS,
   RUN_ROSTER,
   StatedRefusalError,
@@ -122,7 +123,10 @@ await describe({
     it({
       name: 'RUNS THE SEATED ROSTER ALONE with no candidates',
       fn: async () => {
-        expect(probeRosterWith({ candidates: [], },),).toEqual(RUN_ROSTER,);
+        expect(probeRosterWith({
+          candidates: [],
+          alone: false,
+        },),).toEqual(RUN_ROSTER,);
       },
     },),
     it({
@@ -134,6 +138,7 @@ await describe({
             ...BEDROCK_ONLY_ROSTER_IDS,
             BEDROCK_ONLY_ROSTER_IDS[0],
           ],
+          alone: false,
         },);
         expect(roster,).toEqual([
           ...RUN_ROSTER,
@@ -142,6 +147,46 @@ await describe({
         expect(roster.filter(function isSeated(id,): boolean {
           return id === SEATED;
         },).length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'RUNS THE CANDIDATES ALONE, each once, leaving every seated judge out, when asked to',
+      fn: async () => {
+        const roster = probeRosterWith({
+          candidates: [
+            ...BEDROCK_ONLY_ROSTER_IDS,
+            BEDROCK_ONLY_ROSTER_IDS[0],
+          ],
+          alone: true,
+        },);
+        expect(roster,).toEqual([...BEDROCK_ONLY_ROSTER_IDS,],);
+        expect(roster.includes(SEATED,),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'REFUSES to run alone over nobody, rather than probing an empty roster',
+      fn: async () => {
+        expect(() => {
+          probeRosterWith({
+            candidates: [],
+            alone: true,
+          },);
+        },).toThrow(StatedRefusalError,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: readCandidatesAlone.name,
+  children: [
+    it({
+      name: 'READS the flag only when written',
+      fn: async () => {
+        expect(readCandidatesAlone({ argv: commandLine({ typed: ['--candidates', BOTH_UNMEASURED,], },), },),).toBe(false,);
+        expect(
+          readCandidatesAlone({ argv: commandLine({ typed: ['--candidates', BOTH_UNMEASURED, '--candidates-alone',], },), },),
+        ).toBe(true,);
       },
     },),
   ],
