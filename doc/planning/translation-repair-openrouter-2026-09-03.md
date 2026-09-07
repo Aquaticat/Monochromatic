@@ -2597,6 +2597,31 @@ the second an archive-only translator note.
 The reading follows,
 with the container's two tags and the poem's line endings first.
 
+## The Huasheng pass killed, 2026-09-07, 02:56 UTC: the ninth class
+
+At 02:54 UTC,
+70 minutes in and at the lane contest,
+the slice floor reported slice 9 as an original that could not be read
+(`MdxParseError at 1:1 (mdast-util-mdx-jsx/end-tag-mismatch)`)
+and at 02:55 slice 12 the same
+(`3:2-3:3 (mdast-util-mdx-jsx/unexpected-closing-slash)`):
+slice 9 owns the `<details>` opener and slice 12 its `</details>` closer,
+by the design of `container-extents.ts`,
+and the strict grammar refuses either half alone.
+Both gates that consume the floor treat a refusal as inadmissible,
+so the entry would have stopped at consolidation with nothing to ship,
+as yulianNyanner did on 2026-09-06 for a comment.
+The pass was killed under the rule at 02:56:24 UTC after 1,726 calls,
+weekly Synthetic 13.67 to 6.64 percent,
+Hyper 2367 to 2273,
+zero USD.
+The class-five pattern for containers;
+30 of the pinned corpus's pages carry a disclosure element,
+and `Zha_Ke`,
+`SevenBird`,
+`mikaela_khara` and `XingZ60` are named in the extents record as the entries whose tags fall in
+different slices.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
