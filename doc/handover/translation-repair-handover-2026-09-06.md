@@ -15,6 +15,9 @@ Five pages of `yulianNyanner` shipped after it and each was read;
 the first four found a class each,
 the eighth made by the seventh's fix,
 and the fifth found none.
+`TLL1122` then shipped clean with the first footnote,
+and `Huasheng` found the ninth class before its first page,
+the slice floor refusing half a container.
 The pipeline is still not production ready,
 and the reason is recorded in
 [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md).
@@ -38,7 +41,10 @@ each at zero USD with an unstarved consolidation and `verify-published` matched.
 `TLL1122` then shipped on the ellipsis build at 01:41 UTC on 2026-09-07 (30.1 minutes,
 the first read page with a footnote,
 no class found).
-The next action is `Huasheng`,
+`Huasheng` was launched at 01:44 UTC and killed at 02:56 under the rule after the slice floor refused
+its two container halves (the ninth class,
+fixed in `ed7f82de9`).
+The next action is `Huasheng` again on the class-nine build,
 the first read page with a `<details>` container,
 by the seven steps in the 2026-09-04 snapshot,
 "How a pass is launched and read",
@@ -59,13 +65,16 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `e3471dc0b` for the code;
+  `ed7f82de9` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 01:41 UTC on 2026-09-07:
-  `synthetic=wet hyper=wet openrouter=wet syntheticWeekly=13.72% syntheticFiveHour=2705/2750`,
-  Hyper 2367 credits,
+- Meters at 02:56 UTC on 2026-09-07:
+  `synthetic=wet hyper=wet openrouter=wet syntheticWeekly=6.64%`,
+  Hyper 2273 credits,
   OpenRouter 0.32 USD.
+  The Synthetic week is nearly spent;
+  when it runs dry Hyper serves alone,
+  which the owner has said is normal.
   Each settled `yulianNyanner` pass today cost 3.9 to 4.6 points of the Synthetic week and 60 to 82 Hyper
   credits at zero USD.
   One stopped 28-minute attempt cost about 0.8 percent of the Synthetic week and 36 Hyper credits;
@@ -76,6 +85,9 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `ed7f82de9` reads a slice that owns one half of a container by masking the lone tag before the
+    strict parse and carrying it as a `container-tag` atom (`mask-container-tags.ts`),
+    guard shown to fail first.
 -   `e3471dc0b` restores the ellipsis form the document uses beside its quote style,
     through the same prose mask,
     silent where a document shows both forms.
@@ -220,6 +232,27 @@ and a trailing possessive apostrophe (`girls'`) converts when nothing in the rep
 The reading steps gain `mdx-downgraded` and `would ship a page`,
 and the apostrophe count widens to any straight quote after a letter.
 
+## The ninth class
+
+Found by the Huasheng pass before its first page,
+at the lane contest,
+70 minutes in.
+`container-extents.ts` gives a container's opening tag to the first block inside it and its closing tag to
+the last,
+so a container whose blocks fall in different slices puts `<details>` alone at the head of one slice and
+`</details>` alone at the foot of another,
+and the strict grammar the slice floor reads under refuses either half alone
+(end-tag mismatch,
+unexpected closing slash).
+The floor answered that the original could not be read,
+which both gates treat as inadmissible,
+so the entry would have stopped at consolidation as yulianNyanner did for a comment on 2026-09-06.
+A lone tag is now masked to same-length whitespace before the strict parse,
+as comments are,
+and carried as a `container-tag` atom,
+so a candidate that drops the tag fails the floor deterministically.
+30 of the pinned pages carry a disclosure element.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -261,7 +294,7 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Run and read `Huasheng`,
+1.  Run and read `Huasheng` on the class-nine build,
     the first entry with a `<details>` container,
     bold and an inline `<br>`,
     one run at a time,

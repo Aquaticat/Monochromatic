@@ -2622,6 +2622,45 @@ and `Zha_Ke`,
 `mikaela_khara` and `XingZ60` are named in the extents record as the entries whose tags fall in
 different slices.
 
+## The ninth class fixed, 2026-09-07, 03:05 UTC
+
+`ed7f82de9`:
+`mask-container-tags.ts` reads a slice line by line,
+takes a line that is exactly one tag
+(an opener with or without attributes,
+or a closer;
+never a self-closing tag,
+a comment or a line holding a whole element),
+pairs openers with closers of the same name innermost first,
+and masks each unpaired tag to same-length whitespace,
+reporting it.
+`readSliceSkeleton` applies it after the comment mask and carries each lone tag as a `container-tag`
+atom,
+openers before the content atoms and closers after,
+which is where the extents put them;
+`container-tag` joins the atom kinds a translation must carry,
+so a candidate that drops the tag fails the floor deterministically rather than at the page grammar.
+A `<summary>` holding phrasing on one line reads as a paragraph of inline JSX under this grammar,
+inside a container or out of one,
+which the skeleton test now pins.
+Guard shown to fail with the mask neutralised:
+3 `FAIL` lines in the skeleton suite and 2 in the validate suite,
+0 restored.
+
+The suite `floor-holds-on-an-unparseable-page` had pinned the old answer,
+fail closed both ways at a span cut between a container's tags,
+with the note that making such slices shippable "belongs to the slicer rather than to this check".
+The extents cut every split container exactly that way,
+so that answer was every such entry stopping at consolidation.
+The suite now exercises the relaxed path with a page torn through an inline element,
+which no mask reads for the grammar,
+and pins the cut-container page as the strict,
+ordinary case:
+a candidate dropping the lone tag is refused by name,
+one carrying it passes with `pageGrammar` strict,
+and one closing the element is refused as a different block.
+The container-integrity header names the slice floor as the first catch.
+
 ## Build plan, transport-independent layers first
 
 In commit order,

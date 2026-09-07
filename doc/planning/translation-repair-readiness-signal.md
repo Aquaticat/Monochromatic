@@ -700,3 +700,32 @@ then `Arita`.
 What would move the belief:
 `Huasheng` read clean,
 its `<details>` block whole on the page.
+
+## What the Huasheng attempt showed (2026-09-07, 01:44 UTC)
+
+Killed under the rule at 02:56 UTC,
+70 minutes in,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The Huasheng pass killed".
+
+WHAT IT FOUND:
+the ninth class,
+in this package:
+the slice floor cannot read a slice that owns one half of a container,
+because `container-extents.ts` gives the opener to the first block inside it and the closer to the last,
+and the strict grammar refuses either half alone.
+The class-five pattern for containers,
+which 30 pinned pages carry.
+Fixed in `ed7f82de9`,
+guard shown to fail first:
+a lone tag is masked before the strict parse and carried as an atom,
+so a candidate that drops it fails the floor.
+
+THE READING:
+not ready.
+The first entry with a container found a class before its first page,
+as the first entry with a comment did;
+the shapes the census names are finding what the pipeline's own screens never met.
+What would move the belief:
+`Huasheng` on the class-nine build,
+its `<details>` block whole on the page and both footnote conventions read.
