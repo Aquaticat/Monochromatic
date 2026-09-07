@@ -743,12 +743,10 @@ await describe({
       },
     },),
 
-    //region Breadcrumb suites (stub the shared console.warn, so sequential)
+    //region Breadcrumb suites (each attempt owns its console.warn replacement)
 
     describe({
       name: 'breadcrumb suites',
-      // One test at a time across both nested suites: each stubs console.warn.
-      concurrency: 1,
       children: [
     describe({
       name: 'flush deadline',
