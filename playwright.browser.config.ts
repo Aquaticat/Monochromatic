@@ -17,6 +17,7 @@ const config: PlaywrightTestConfig = defineConfig({
   testDir: './package',
   testMatch: [
     'module/es/src/**/*.browser.test.ts',
+    'module/fs-path/src/**/*.browser.test.ts',
     'module/test/src/**/*.browser.test.ts',
     'module/logger/src/**/*.browser.test.ts',
     'module/logger.fuzz/src/**/*.browser.test.ts',

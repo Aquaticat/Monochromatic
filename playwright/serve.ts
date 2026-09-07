@@ -68,6 +68,22 @@ app.all(
       );
     }
 
+    if (pathname.startsWith('/dist/module-fs-path/',)) {
+      /**
+       Resolved MIME type for the requested fs-path asset; falls back to a safe binary type.
+       */
+      const contentType = mimeTypes[extname(pathname,)]
+        ?? 'application/octet-stream';
+      return new Response(
+        await readFile(
+          `package/module/fs-path/dist/${pathname.slice('/dist/module-fs-path/'.length,)}`,
+        ),
+        {
+          headers: { 'content-type': contentType, },
+        },
+      );
+    }
+
     if (pathname.startsWith('/dist/module-logger/',)) {
       /**
        Resolved MIME type for the requested asset; falls back to a safe binary type.
