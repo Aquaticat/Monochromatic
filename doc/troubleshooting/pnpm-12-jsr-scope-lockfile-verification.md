@@ -155,6 +155,9 @@ Patterns that fail:
      (the OPFS backend now uses `navigator.storage.getDirectory()` directly).
      With no `@jsr/*` entry left,
      the verification pass has nothing to route to JSR.
+     Measured after the release landed (`3e46e38df`):
+     `pnpm install --lockfile-only` under pnpm 12.3.4 prints
+     `✓ Lockfile passes supply-chain policies (775 entries in 5.3s)` and leaves the lockfile unchanged.
      Tradeoff:
      structural,
      not a fix of pnpm;
