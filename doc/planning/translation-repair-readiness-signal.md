@@ -828,3 +828,39 @@ What would move the belief:
 the next entry on the landed build,
 four providers,
 read whole.
+
+## What the three hakureico launches of 2026-09-07 showed (21:00 to 22:00 UTC)
+
+The first two were killed under the rule before a page:
+the first for seating two unmeasured Gemma sizes (`645c8787b` unseats them),
+the second for the owner's order decision (`a317f4e03`,
+Bedrock ahead of Hyper).
+The third settled at 22:00 in 13.3 minutes,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The first hakureico page".
+
+WHAT IT FOUND:
+the thirteenth class.
+Hyper's daily limit named a return in 538 s and the twelfth class held it out for exactly that,
+in one line where the fourth Huasheng pass had spent 2,693 attempts;
+but with Bedrock wet nothing waited,
+the translate lane and the consolidation ran on the two Bedrock seats,
+and the page shipped without the source's two footnotes.
+Fixed at `752bf9a9b`:
+a phase whose benches cannot reach quorum waits out the shortest named hold once.
+Also on record for the first time:
+Bedrock in production for its two shared seats (224 calls,
+0.24 USD),
+and three repairs read faithful against the source.
+
+THE READING:
+closer,
+and the same shape as before.
+Every class found on a read page has been closed on the entry that found it,
+and each pass on a fresh build finds the next one at a seam the last did not reach:
+the twelfth at the meters,
+the thirteenth at the first phase boundary after a hold.
+What would move the belief:
+the fourth hakureico page,
+read whole,
+with its footnotes and with `waited=` on every seats line.

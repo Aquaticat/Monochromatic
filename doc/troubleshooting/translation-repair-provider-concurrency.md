@@ -226,6 +226,14 @@ whatever the meter reads.
 The daily quota's size is not published;
 today it closed after about 1,000 requests of this pass on top of the day's earlier passes,
 and it reopened at the instant the bodies named.
+It closed again at 21:57 UTC on the third hakureico pass,
+naming 538 s,
+and that pass showed the hold's other face:
+with Bedrock wet nothing waited,
+so the translate lane and the consolidation ran on the two Bedrock seats and settled on nobody.
+Since `752bf9a9b` a phase whose benches cannot reach quorum among the seats a wet provider serves
+waits out the shortest named hold once before it starts (`JUDGE SEATS ... waited=`),
+and the translate lane re-reads its seats when it is about to start.
 
 ## Production scheduler contract
 

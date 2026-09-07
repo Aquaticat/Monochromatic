@@ -101,6 +101,23 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `752bf9a9b` (2026-09-07,
+    22:17 UTC):
+    the thirteenth class.
+    A phase whose benches cannot reach quorum among the seats a wet provider serves
+    waits out the shortest named hold once (`run-seats-wait.ts`,
+    `RunClient.providerHolds`,
+    `JUDGE SEATS ... waited=`),
+    and the translate lane re-reads its seats when it is about to start
+    (`runDocumentLanes` `reseatTranslate`,
+    `pass-reseat.ts`).
+    Found by the third hakureico pass,
+    which settled in 13.3 minutes with Bedrock on its two shared seats,
+    class twelve holding Hyper out for the 538 s it named,
+    and the translate lane and consolidation running on nobody under that hold;
+    read in the planning log under "The first hakureico page".
+    The fourth launch at 22:21 (runs dir `~/temp/agent/hakureico4-20260907`,
+    pid 3814733) is on it.
 -   `a317f4e03` (2026-09-07,
     21:45 UTC):
     Bedrock sits ahead of Hyper,
@@ -409,6 +426,27 @@ Where the two seats both Hyper and Bedrock serve go is Hyper's first:
 when Synthetic dried at 21:24 the pass sent `gemma-4-26b-a4b-it` and `gpt-oss-120b` to Hyper
 and Bedrock had answered nothing by 21:35.
 
+## The thirteenth class
+
+Found by the third hakureico pass of 2026-09-07 at the first phase boundary after a named hold.
+Hyper's daily limit answered 429 naming its return in 538 s at 21:57;
+the twelfth class ended the ladder at once and held Hyper out for exactly that.
+Bedrock stayed wet,
+so nothing waited:
+the translate lane started at 21:58 with every Hyper-only writer refused in the same millisecond
+(the footnote passage the archive lacks stayed unfilled),
+the lane contest and consolidation at 22:00 ran on the two Bedrock seats,
+and every consolidation round read `quorum-not-met` at 0 ms,
+five and a half minutes before Hyper came back.
+Landed in `752bf9a9b`:
+`readJudgeSeats` names the benches each phase leans on,
+counts the seats a wet provider would serve against each bench's quorum,
+and when a bench is short and a provider has named its return,
+waits out the shortest running hold once and reads again;
+the lanes driver re-seats the translate lane when it is about to start.
+Per phase rather than per call,
+since a call's deadline is shorter than a daily-limit hold.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -452,15 +490,18 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Read the `hakureico` page from the 21:47 launch on `a317f4e03`
-    (runs dir `~/temp/agent/hakureico3-20260907`,
+1.  Read the `hakureico` page from the 22:21 launch on `752bf9a9b`
+    (runs dir `~/temp/agent/hakureico4-20260907`,
     log beside it,
-    pid 3764858):
-    the footnotes first,
-    then the Bedrock `SPEND` lines and the ledger's sum against `bedrockUsd=`,
-    then whether Hyper's daily limit named a return and Bedrock carried the shared seats through it.
-    `translation-repair-class12` is merged;
-    every later pass and probe runs from this worktree.
+    pid 3814733):
+    the footnotes first
+    (`[^1]` on Mayday,
+    `[^2]` on the GAE line,
+    both definitions),
+    then every `JUDGE SEATS` line's `waited=` and any `short of quorum` line,
+    then the Bedrock `SPEND` lines and the ledger against `bedrockUsd=`.
+    The third page (22:00) shipped three faithful repairs and no footnotes,
+    for the thirteenth class's reason.
 2.  Re-run `judge-fidelity-probe --cap 48 --candidates google.gemma-4-e2b,google.gemma-4-31b`
     over a throwaway runs dir holding all four settled artifacts,
     apply the pre-registered wide-seat rule,

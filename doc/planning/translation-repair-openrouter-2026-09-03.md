@@ -3751,6 +3751,30 @@ the footnotes,
 the translate lane,
 or judged consolidation.
 
+## The fourth hakureico launch, 2026-09-07, 22:21 UTC, on the class-thirteen build
+
+`hakureico` relaunched at 22:21:26 UTC on `2b13ef813` (code `752bf9a9b`),
+pipeline `d6bfaa95`,
+plain invocation,
+fresh runs dir `~/temp/agent/hakureico4-20260907`,
+log beside it,
+pid 3814733.
+`METERS` at launch:
+Synthetic dry,
+Bedrock 199.75 USD,
+Hyper 593,
+OpenRouter 0.01 USD.
+`JUDGE SEATS phase=preparation` reads the third launch's benches with `waited=0ms`.
+The reading follows:
+the footnotes first
+(`[^1]` on Mayday,
+`[^2]` on the GAE line,
+the two definitions the translate lane owns),
+then every `JUDGE SEATS` line's `waited=` and any `short of quorum` line,
+then the Bedrock `SPEND` lines and the ledger against `bedrockUsd=`.
+Hyper's daily limit reopened at 22:06 and its next closing is unpublished;
+a pass that meets it now waits at the next phase boundary instead of settling on nobody.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
