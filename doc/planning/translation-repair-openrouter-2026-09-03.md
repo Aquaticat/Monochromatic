@@ -2579,6 +2579,24 @@ Weekly Synthetic stands at 13.72 percent,
 enough for about three runs of this size before Hyper serves alone,
 which the owner has said is normal.
 
+## The Huasheng launch, 2026-09-07, 01:44 UTC: the first container
+
+`Huasheng` launched at 01:44:14 UTC on `202323d50`,
+pipeline `1b748b56`,
+the ellipsis build unchanged in code since `e3471dc0b`,
+plain invocation,
+fresh runs dir `~/temp/agent/huasheng-20260907`,
+log beside it.
+Weekly Synthetic 13.67 percent at launch,
+five-hour window full.
+The source is 113 lines:
+a `<details>` block whose `<summary>` is bold,
+a poem of twelve `<br/>` line endings,
+one footnote where the archive carries two,
+the second an archive-only translator note.
+The reading follows,
+with the container's two tags and the poem's line endings first.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
