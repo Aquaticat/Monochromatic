@@ -112,7 +112,8 @@ Newest first.
     (`awaitBenchQuorum` in `run-seats-read.ts`,
     `beforeSlice` on the three drivers,
     free while nothing is held).
-    Planning log: "The fourth hakureico pass stops INCOMPLETE".
+    Planning log:
+    "The fourth hakureico pass stops INCOMPLETE".
 -   `752bf9a9b` (2026-09-07,
     22:17 UTC):
     the thirteenth class.
