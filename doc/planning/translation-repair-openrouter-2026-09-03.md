@@ -2680,6 +2680,105 @@ The reading follows,
 with the two container halves,
 the poem's line endings and both footnote conventions first.
 
+## The Huasheng relaunch stops at slice 21, 2026-09-07, 05:21 UTC: the tenth class, a design question
+
+The container halves passed the lane contest at 04:21 UTC with no unreadable slice,
+so the ninth class is closed where it was found.
+The Synthetic week ran dry at 04:36 UTC during consolidation,
+as the launch record said it would,
+and Hyper served on alone with no voice lost to a dry provider.
+
+Slice 21 then stopped the entry.
+It is the poem "To the Eternal Star",
+which the source writes as two paragraphs whose lines end in `<br/>`,
+and the archive as five paragraphs with soft line breaks and no `<br/>`.
+Every producer followed the source:
+the contest winner carried two paragraphs at 04:27,
+the consolidation standing two at 05:07,
+and the consolidation "left nothing valid to ship",
+so `ConsolidationStandingIneligibleError` stopped the entry under the 2026-09-04 decision that an
+ineligible standing stops rather than reattempts.
+The floor that refused them is `compareBlocks` in `translate-validate.ts`,
+whose rule is that the page is a floor and not a ceiling:
+a candidate must carry the page's block sequence in order and may add blocks only up to the larger
+of the two references.
+It was written on 68 settled slice records
+(48 same,
+11 archive more,
+7 archive fewer)
+so that an archive which merged the original's paragraphs is not undone,
+and it is pinned by a case in which the archive's blockquote says a passage was left by someone else.
+
+Measured now at the document level over the 92 pairs
+(scratch `block-census.mjs`,
+`parseDocument` top-level blocks):
+the archive carries more blocks than its source on 34 entries,
+the same on 40,
+fewer on 18.
+Of the 34,
+five carry `<br/>` or two-space hard breaks in the source
+(`Huasheng` 11 `<br/>`,
+`xixi_yuexi`,
+`Anilovr`,
+`Chinatsu_Suzuki`,
+`Mio`),
+the shape of this stop;
+the other 29 split or add for reasons the census cannot read,
+`shihai4h` by 21 blocks,
+`windward0032` by 15,
+`MeowBot233` and `Mio` by 9.
+Under the floor as written,
+every slice of those 34 entries where the archive has more blocks ships only if the producers reproduce
+the archive's split rather than the source's,
+which eight producers declined to do here.
+
+This is a design question,
+recorded for the owner rather than decided,
+because the floor's rule is a written decision with a pinned rationale and the alternatives trade
+against each other:
+
+- A,
+  either rendering at the block level:
+  the floor also accepts a candidate whose block sequence is exactly the original's.
+  Pro:
+  one principle the house already applies to destinations and atoms,
+  covers all 34,
+  and leaves the choice between two faithful shapes to the judges,
+  who see both texts.
+  Con:
+  a paragraph the archive added with no source counterpart becomes droppable by a source-shaped
+  candidate,
+  and the pinned blockquote case flips from refused to judged.
+- C,
+  hard-break equivalence:
+  a source paragraph carrying hard breaks may be rendered as the page's run of paragraphs or as one
+  paragraph carrying the same breaks.
+  Pro:
+  aimed at the measured shape of this stop and the four entries like it,
+  and the blockquote case stays refused.
+  Con:
+  more machinery for one sub-shape,
+  and the other 29 entries stay exposed.
+- B,
+  teach the producers:
+  a sheet clause saying the page's split is kept where it has more blocks than the original.
+  Pro:
+  no floor change.
+  Con:
+  the finding already says this to every producer and eight ignored it;
+  whether a clause moves them is unmeasured.
+- D,
+  A with a size guard that accepts the original's shape only when the candidate is not shorter than
+  the page by some margin.
+  Con:
+  a magic number.
+
+Ranking A > C > B > D:
+A over C because one house principle beats a sub-shape rule and covers 29 entries C does not;
+C over B because C is deterministic where B hopes;
+B over D because D needs a number the owner has said not to test against.
+Nothing is changed in code until the owner answers.
+
 ## Build plan, transport-independent layers first
 
 In commit order,

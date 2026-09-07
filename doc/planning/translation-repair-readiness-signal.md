@@ -729,3 +729,34 @@ the shapes the census names are finding what the pipeline's own screens never me
 What would move the belief:
 `Huasheng` on the class-nine build,
 its `<details>` block whole on the page and both footnote conventions read.
+
+## What the Huasheng relaunch showed (2026-09-07, 03:09 UTC)
+
+Stopped by its own gate at slice 21 at 05:21 UTC,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The Huasheng relaunch stops at slice 21".
+The ninth class held where it was found:
+both container halves passed the lane contest.
+
+WHAT IT FOUND:
+the tenth class,
+and the first that is a design question rather than a defect:
+the slice floor requires a candidate to carry the archive's block sequence,
+the archive split a `<br/>` poem into five paragraphs where the source has two,
+and every producer followed the source,
+so nothing was valid and the entry stopped.
+34 of 92 archives carry more top-level blocks than their source.
+Four options are recorded with a ranking;
+the owner decides.
+
+THE READING:
+not ready,
+and blocked on that decision for every entry among the 34 whose split the producers will not reproduce.
+The Synthetic week is dry;
+Hyper alone serves the seats it has,
+and a run on that roster is not readiness evidence,
+so no entry is launched until the week refills or OpenRouter is charged.
+What would move the belief:
+the owner's answer,
+then `Huasheng` on that build,
+then the census's next entries.

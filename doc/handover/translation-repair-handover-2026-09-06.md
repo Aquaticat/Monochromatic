@@ -44,9 +44,15 @@ no class found).
 `Huasheng` was launched at 01:44 UTC and killed at 02:56 under the rule after the slice floor refused
 its two container halves (the ninth class,
 fixed in `ed7f82de9`).
-The next action is `Huasheng` again on the class-nine build,
-the first read page with a `<details>` container,
-by the seven steps in the 2026-09-04 snapshot,
+`Huasheng` ran again on the class-nine build from 03:09 UTC:
+the container halves passed,
+the Synthetic week ran dry at 04:36,
+and slice 21 stopped the entry at 05:21 because every producer followed the source's two poem
+paragraphs where the archive has five and the block floor requires the archive's.
+That is the tenth class and a design question the owner decides;
+the options and a ranking are in the planning log under "The Huasheng relaunch stops at slice 21".
+No run is in flight and none is launched until the owner answers and a provider week refills.
+When a pass runs next it is read by the seven steps in the 2026-09-04 snapshot,
 "How a pass is launched and read",
 which gained the apostrophe and ellipsis counts and two refusal greps today.
 If a pass is running when this is read and the tree has moved past its tip,
@@ -294,11 +300,12 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Run and read `Huasheng` on the class-nine build,
-    the first entry with a `<details>` container,
-    bold and an inline `<br>`,
-    one run at a time,
-    so a fix found in one reading does not kill two runs.
+1.  Put the block-floor question to the owner
+    (planning log,
+    "The Huasheng relaunch stops at slice 21";
+    ranking A over C over B over D),
+    land the answer guard-first,
+    and run `Huasheng` again once Synthetic refills or OpenRouter is charged.
     The order is the census's,
     recorded in the planning log under "The run order after TLL1122",
     and open to veto.
