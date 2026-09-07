@@ -83,10 +83,11 @@ await describe({
         expect(
           readCandidateIds({ argv: commandLine({ typed: ['--candidates', BOTH_UNMEASURED,], },), },),
         ).toEqual([...BEDROCK_ONLY_ROSTER_IDS,],);
-        for (const id of BEDROCK_ONLY_ROSTER_IDS) {
+        for (const id of BEDROCK_ONLY_ROSTER_IDS)
           expect(ROSTER_MODEL_IDS.includes(id,),).toBe(true,);
-          expect(RUN_ROSTER.includes(id,),).toBe(false,);
-        }
+        // The unseated size is what the flag exists for; the seated one is
+        // named too, and joins nothing twice.
+        expect(RUN_ROSTER.includes('google.gemma-4-31b',),).toBe(false,);
       },
     },),
     it({
@@ -142,7 +143,9 @@ await describe({
         },);
         expect(roster,).toEqual([
           ...RUN_ROSTER,
-          ...BEDROCK_ONLY_ROSTER_IDS,
+          ...BEDROCK_ONLY_ROSTER_IDS.filter(function unseated(id,): boolean {
+            return !RUN_ROSTER.includes(id,);
+          },),
         ],);
         expect(roster.filter(function isSeated(id,): boolean {
           return id === SEATED;
