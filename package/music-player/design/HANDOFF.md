@@ -3111,8 +3111,8 @@ the active Camellia screen must say `Shuffle Camellia`,
 Prototype commits `f06971b1e`,
  `53fb648ee`,
  `bb5dad664`,
- and `d8b2552b6`
-implement overflow-driven one-to-two-to-four reflow with real Compose
+ `d8b2552b6`,
+and `538b71304` implement overflow-driven one-to-two-to-four reflow with real Compose
 `SegmentedButton` elements.
  The control first tries baseline 12dp horizontal content
 padding,
@@ -3128,7 +3128,7 @@ read back `font_scale=0.5`,
 `AGENTS.md` now requires a target-device probe before web research when the device can
 answer.
 
-Native evidence commit `cb02226ae` records exact accepted 3B at all five requested
+Native evidence commit `3a20f5207` records exact accepted 3B at all five requested
 scales.
  UI Automator measures one row at 50% and 75%,
  connected 2×2 at 100% and
@@ -3140,6 +3140,10 @@ pixels high,
  each group ends at y=2035,
  39
 physical pixels before the navigation inset at y=2074.
+ The 200% evidence is the
+maximum-scrolled deck state that exposes the complete four-row group;
+ it does not claim
+simultaneous initial-entry visibility.
  Every hierarchy exposes
 `Shuffle Camellia` and `Current track: Another Xronixle`.
  All five captures are opaque
@@ -3173,10 +3177,20 @@ output invalidation,
  scratch download,
  offline reload,
  and forced-light rendering pass.
-The page and open preview each report zero axe A/AA violations and zero incomplete
-checks.
+ The desktop page and desktop open
+preview each report zero axe A/AA violations and zero incomplete checks.
+ At a measured
+390 × 500 viewport,
+ the preview fits inside its 326 × 102 CSS-pixel content box;
+ axe
+reports no violation and one unresolved `color-contrast` check on that scaled modal.
+This matches the transformed-ancestor limitation recorded in
+`doc/troubleshooting/axe-modal-dialog-contrast.md`,
+ not a production accessibility
+certification.
  Browser errors and console output are empty.
- Disposable mutation controls reject
+ Disposable mutation
+controls reject
 wrong 3B styling,
  center-spacer damage,
  missing system UI,
@@ -3186,3 +3200,19 @@ context-free Shuffle label,
  missing current-track semantics,
  and stale form evidence;
 all fixtures restore cleanly.
+ Package `lint` and `test:unit` run the same artifact
+contract;
+ they are not Kotlin reflow unit tests.
+ The contract compares the 100% right
+pane and tonal Open button with the selected 3B baseline,
+ fixes the 100% transport and
+mode fingerprint,
+ and checks title alignment,
+ ordinals,
+ row counts,
+ labels,
+ target
+bounds,
+ system UI,
+ spacer,
+ and rail evidence.

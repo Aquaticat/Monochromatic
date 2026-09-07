@@ -39,6 +39,7 @@ const requiredPaths = [
   'material-3-compliance.md',
   'questions/current.template.html',
   'questions/current.html',
+  'questions/render/cue-container-tonal.png',
   ...renderPaths,
   ...semanticsPaths,
 ];
@@ -151,6 +152,28 @@ for (const path of renderPaths) {
   }
 }
 
+const acceptedDefaultPath = 'questions/render/accepted-3b-font-100.png';
+const selectedBaselinePath = 'questions/render/cue-container-tonal.png';
+if (
+  imageFingerprint({ path: acceptedDefaultPath, crop: '1067x1850+1009+150' })
+  !== imageFingerprint({ path: selectedBaselinePath, crop: '1067x1850+1009+150' })
+) {
+  throw new Error('The 100% state changes selected T3 track treatment or alignment.');
+}
+if (
+  imageFingerprint({ path: acceptedDefaultPath, crop: '300x150+710+140' })
+  !== imageFingerprint({ path: selectedBaselinePath, crop: '300x150+710+140' })
+) {
+  throw new Error('The 100% state changes selected O2 tonal Open treatment.');
+}
+const defaultTransportFingerprint = imageFingerprint({
+  path: acceptedDefaultPath,
+  crop: '1009x674+0+1400',
+});
+if (defaultTransportFingerprint !== 'a6ebede2afec45fde01b3e2580579704eae774e51844c7cb61efa73dcc411a5a') {
+  throw new Error('The 100% state changes transport 1B, seek position, or adaptive mode geometry.');
+}
+
 const uniqueCaptures = new Set(renderPaths.map((path) => imageFingerprint({ path, crop: '2076x2152+0+0' })));
 if (uniqueCaptures.size !== renderPaths.length) {
   throw new Error('Requested font scales did not produce five distinct native captures.');
@@ -164,6 +187,7 @@ const expectedRowCounts = {
   '200': 4,
 };
 const expectedDescriptions = ['Repeat track', 'Play in order', 'Shuffle Camellia', 'Shuffle all folders'];
+const expectedVisibleLabels = ['Repeat', 'In order', 'Shuffle Camellia', 'Shuffle all'];
 for (const label of scaleLabels) {
   const path = `questions/evidence/accepted-3b-font-${label}.xml`;
   const hierarchy = readFileSync(resolve(path), 'utf8');
@@ -173,13 +197,32 @@ for (const label of scaleLabels) {
   if (hierarchy.includes('content-desc="Playing"')) {
     throw new Error(`${path} restores the rejected play-icon accessibility node.`);
   }
-  if (!hierarchy.includes('text="Shuffle Camellia"')) {
-    throw new Error(`${path} does not visibly name the current subdirectory in Shuffle.`);
+  if (expectedVisibleLabels.some((text) => !hierarchy.includes(`text="${text}"`))) {
+    throw new Error(`${path} does not retain all four visible mode labels.`);
   }
   if (hierarchy.includes('text="Shuffle"') || hierarchy.includes('content-desc="Shuffle current folder"')) {
     throw new Error(`${path} restores a context-free current-folder Shuffle label.`);
   }
   const nodes = hierarchyNodes(hierarchy);
+  if (nodes.some((node) => {
+    const text = attributeValue({ node, name: 'text' });
+    return text.length > 0 && [...text].every((character) => character >= '0' && character <= '9');
+  })) {
+    throw new Error(`${path} restores interface-generated track ordinals.`);
+  }
+  if (label === '100') {
+    const currentTitleAligned = nodes.some((node) =>
+      attributeValue({ node, name: 'text' }) === 'Another Xronixle'
+      && attributeValue({ node, name: 'bounds' }) === '[1107,331][1420,390]'
+    );
+    const ordinaryTitleAligned = nodes.some((node) =>
+      attributeValue({ node, name: 'text' }) === 'Burning Aquamarine'
+      && attributeValue({ node, name: 'bounds' }) === '[1107,507][1483,566]'
+    );
+    if (!currentTitleAligned || !ordinaryTitleAligned) {
+      throw new Error(`${path} restores a leading state column or misaligns track titles.`);
+    }
+  }
   const modeNodes = nodes.filter((node) => expectedDescriptions.includes(attributeValue({ node, name: 'content-desc' })));
   if (modeNodes.length !== expectedDescriptions.length) {
     throw new Error(`${path} does not expose exactly four mode options.`);
@@ -217,7 +260,7 @@ const requiredFragments = [
   'Answer changed. Prepare it again before copying or downloading.',
   'spaces alone do not complete this field.',
   'Math.max(0.02, value)',
-  'prototype commit cb02226ae',
+  'prototype commit 3a20f5207',
 ];
 for (const fragment of requiredFragments) {
   if (!question.includes(fragment)) {

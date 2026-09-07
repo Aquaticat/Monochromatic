@@ -437,13 +437,13 @@ the system navigation inset.
 prototype commits `f06971b1e`,
  `53fb648ee`,
  `bb5dad664`,
- and `d8b2552b6`.
-Exact accepted 3B captures at 50%,
+ `d8b2552b6`,
+ and `538b71304`.
+ Exact accepted 3B captures at 50%,
  75%,
- 100%,
+100%,
  150%,
- and 200% are preserved by
-commit `cb02226ae`.
+ and 200% are preserved by commit `3a20f5207`.
  The visible third option is `Shuffle Camellia`.
  Overflow-driven
 reflow uses one row at 50% and 75%,
