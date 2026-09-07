@@ -58,6 +58,7 @@ import {
   shippableReplacements,
   SliceSpliceError,
   spliceSlices,
+  UnparseablePageError,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
 
@@ -952,6 +953,47 @@ await describe({
           dropped: [],
           findings: [],
         },);
+      },
+    },),
+    it({
+      name: 'REFUSES a page whose decided wording curls a JSX string literal, so the grammar floor '
+        + 'sits between the would-ship reading and the disk (2026-09-06)',
+      fn: async () => {
+        await using tree = await throwawayTree();
+
+        /**
+         * What the publisher threw for the wording no grammar reads.
+         */
+        const thrown = await (async (): Promise<unknown> => {
+          try {
+            await publishFixedPage({
+              artifact: artifactShipping({
+                translateText: `\n> <PhotoScroll photos={[\u{201C}\${path}/photos/photo3.webp\u{201D}]} />\n`,
+              },),
+              slices: documentSlices(),
+              archiveText: ARCHIVE,
+              sourceText: SOURCE_PAGE,
+              entryId: 'BookshopCat',
+              publishDir: tree.publishDir,
+              l: tagged({ tag: 'publish-test', },),
+            },);
+            return undefined;
+          } catch (error) {
+            return error;
+          }
+        })();
+
+        /**
+         * Where the page would have landed.
+         */
+        const path = fixedPagePath({
+          publishDir: tree.publishDir,
+          entryId: 'BookshopCat',
+        },);
+
+        expect(thrown,).toBeInstanceOf(UnparseablePageError,);
+        expect((thrown as Error).message,).not.toContain('photo3',);
+        expect(existsSync(path,),).toBe(false,);
       },
     },),
   ],

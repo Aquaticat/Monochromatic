@@ -12,6 +12,10 @@ export {
   CollapsedHeadingError,
 } from './corpus-run/heading-distinctness.ts';
 export {
+  assertPageParses,
+  UnparseablePageError,
+} from './corpus-run/page-grammar.ts';
+export {
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
 } from './archive-block-evidence.ts';

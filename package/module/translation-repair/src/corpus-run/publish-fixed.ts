@@ -35,6 +35,7 @@ import {
   droppedDestinations,
 } from './dropped-destinations.ts';
 import { assertHeadingsStayDistinct, } from './heading-distinctness.ts';
+import { assertPageParses, } from './page-grammar.ts';
 
 /**
  * Directory under a runs dir holding the published corpus tree.
@@ -298,6 +299,14 @@ export async function publishFixedPage(
   assertHeadingsStayDistinct({
     entryId,
     sourceText,
+    pageText,
+  },);
+
+  // A PAGE THE GRAMMAR REFUSES is a defect every slice floor passed, since the
+  // would-ship reading runs after them; the yulianNyanner page of 2026-09-06
+  // carried a curled JSX string literal that way (page-grammar.ts).
+  assertPageParses({
+    entryId,
     pageText,
   },);
 
