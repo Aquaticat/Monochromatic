@@ -154,8 +154,12 @@ This file tracks improvements needed across different packages in the monorepo,
 
 #### Path and URL Utilities
 
-- [ ] Decide whether `module-fs-path` should publicly export `normalize()`;
-       path helpers moved out of `module-es`
+- [x] Decide whether `module-fs-path` should publicly export `normalize()`;
+       path helpers moved out of `module-es`.
+       Decided 2026-09-07:
+       public,
+       delegating to `node:path/posix` under the `node` condition
+       (`package/module/fs-path/DECISIONS.md`)
 - [ ] Add `url.build()`:
        Build URLs with query parameters
 - [ ] Add `url.parse()`:
