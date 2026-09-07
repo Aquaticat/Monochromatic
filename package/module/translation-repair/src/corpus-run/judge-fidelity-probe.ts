@@ -19,8 +19,11 @@ import {
   resolveRunsDir,
   RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
-  RUN_ROSTER,
 } from './run-config.ts';
+import {
+  probeRosterWith,
+  readCandidateIds,
+} from './probe-candidates.ts';
 import {
   carveSettled,
   listSettledEntryIds,
@@ -197,6 +200,13 @@ async function main(): Promise<void> {
   } = readFidelityArguments();
 
   /**
+   * Judges asked: the seated roster and any seatable candidate named after
+   * `--candidates`, measured beside it for this run only.
+   */
+  const judgeModelIds = probeRosterWith({ candidates: readCandidateIds({ argv: process.argv, },), },);
+  log.info(`judges: ${judgeModelIds.join(', ',)}`,);
+
+  /**
    * Client for every exchange.
    */
   const client = createRunClient();
@@ -352,7 +362,7 @@ async function main(): Promise<void> {
             const outcome = await runFidelityTrial({
               client,
               trial,
-              judgeModelIds: RUN_ROSTER,
+              judgeModelIds,
               signal: controller.signal,
               perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
               l: log,
@@ -437,7 +447,7 @@ async function main(): Promise<void> {
       finishedAt: new Date().toISOString(),
       pipelineDigest,
       runnerClosure,
-      roster: RUN_ROSTER,
+      roster: judgeModelIds,
       subject: {
         corpusPin: RUN_CORPUS_PIN.commitSha,
         entriesWalked: entryIds,
