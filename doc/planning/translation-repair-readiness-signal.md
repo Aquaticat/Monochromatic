@@ -750,13 +750,13 @@ Four options are recorded with a ranking;
 the owner decides.
 
 THE READING:
-not ready,
-and blocked on that decision for every entry among the 34 whose split the producers will not reproduce.
-The Synthetic week is dry;
-Hyper alone serves the seats it has,
-and a run on that roster is not readiness evidence,
-so no entry is launched until the week refills or OpenRouter is charged.
+not ready.
+The owner answered A at 08:38 UTC;
+it is landed bounded to split-only pages (`b46dd9210`,
+`doc/decision/translation-repair-block-floor.md`),
+which covers Huasheng and 21 entries like it and leaves 12 under the page-as-floor rule.
+The Synthetic week is dry and Hyper alone serves the seats it has;
+whether a page from that roster is read as readiness evidence is recorded with the next launch.
 What would move the belief:
-the owner's answer,
-then `Huasheng` on that build,
+`Huasheng` on the class-ten build,
 then the census's next entries.

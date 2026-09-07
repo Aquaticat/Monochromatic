@@ -2779,6 +2779,45 @@ C over B because C is deterministic where B hopes;
 B over D because D needs a number the owner has said not to test against.
 Nothing is changed in code until the owner answers.
 
+## The owner answers A, 2026-09-07, 08:38 UTC: either rendering, bounded to splits
+
+The Huasheng relaunch ended `INCOMPLETE` at 05:31 UTC after 8,473,853 ms (141.2 minutes),
+2,743 calls,
+Hyper 2272 to 1843,
+weekly Synthetic 6.55 to 0 percent,
+zero USD,
+no page.
+
+The owner chose A,
+either rendering at the block level.
+Implementing it as asked flipped the case the suite `floor-holds-on-an-unparseable-page` was built
+to stop:
+its fixture is a one-paragraph original against a page span read as a paragraph,
+an html block and a blockquote,
+and the 164-character rendering that shipped on the sixth consolidation bed was shaped exactly as
+that original.
+So the rule is bounded where the two cases part:
+the original's shape counts only where every block of the page is of a kind and detail the original
+has,
+so the page's surplus is a split;
+a page adding a kind the original lacks keeps the page as the floor,
+which also keeps the pinned blockquote case refused.
+Measured at the document level over the 34 archive-more entries,
+22 are split-only,
+Huasheng among them,
+and 12 add a kind.
+`b46dd9210`,
+recorded in `doc/decision/translation-repair-block-floor.md` with the widening named as the veto.
+Suites:
+translate-validate,
+floor-holds-on-an-unparseable-page,
+translate-skeleton 0 `FAIL`;
+oxlint 0 and 0;
+types clean.
+Guard shown to fail with the early return neutralised,
+14 `FAIL` lines,
+0 restored.
+
 ## Build plan, transport-independent layers first
 
 In commit order,

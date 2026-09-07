@@ -49,9 +49,10 @@ the container halves passed,
 the Synthetic week ran dry at 04:36,
 and slice 21 stopped the entry at 05:21 because every producer followed the source's two poem
 paragraphs where the archive has five and the block floor requires the archive's.
-That is the tenth class and a design question the owner decides;
-the options and a ranking are in the planning log under "The Huasheng relaunch stops at slice 21".
-No run is in flight and none is launched until the owner answers and a provider week refills.
+That was the tenth class and a design question;
+the owner chose either rendering at 08:38 UTC and it is landed bounded to split-only pages
+(`b46dd9210`,
+`doc/decision/translation-repair-block-floor.md`).
 When a pass runs next it is read by the seven steps in the 2026-09-04 snapshot,
 "How a pass is launched and read",
 which gained the apostrophe and ellipsis counts and two refusal greps today.
@@ -71,16 +72,16 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `ed7f82de9` for the code;
+  `b46dd9210` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 02:56 UTC on 2026-09-07:
-  `synthetic=wet hyper=wet openrouter=wet syntheticWeekly=6.64%`,
-  Hyper 2273 credits,
+- Meters at 05:31 UTC on 2026-09-07:
+  `synthetic=dry hyper=wet openrouter=wet syntheticWeekly=0%`,
+  Hyper 1843 credits,
   OpenRouter 0.32 USD.
-  The Synthetic week is nearly spent;
-  when it runs dry Hyper serves alone,
-  which the owner has said is normal.
+  The Synthetic week is spent and Hyper serves alone,
+  which the owner has said is normal;
+  the refill schedule is not on record.
   Each settled `yulianNyanner` pass today cost 3.9 to 4.6 points of the Synthetic week and 60 to 82 Hyper
   credits at zero USD.
   One stopped 28-minute attempt cost about 0.8 percent of the Synthetic week and 36 Hyper credits;
@@ -91,6 +92,9 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `b46dd9210` accepts a candidate shaped as the original where the page only splits its blocks,
+    the owner's either-rendering decision bounded to splits
+    (`doc/decision/translation-repair-block-floor.md`).
 -   `ed7f82de9` reads a slice that owns one half of a container by masking the lone tag before the
     strict parse and carrying it as a `container-tag` atom (`mask-container-tags.ts`),
     guard shown to fail first.
@@ -259,6 +263,21 @@ and carried as a `container-tag` atom,
 so a candidate that drops the tag fails the floor deterministically.
 30 of the pinned pages carry a disclosure element.
 
+## The tenth class
+
+Found by the Huasheng relaunch at its poem slice,
+which the source writes as two `<br/>` paragraphs and the archive as five paragraphs.
+The block floor required the archive's five and every producer followed the source,
+so nothing was valid and the entry stopped.
+34 of 92 archives carry more top-level blocks than their source.
+A design question,
+put to the owner with four options;
+the owner chose either rendering,
+landed bounded to pages whose surplus is only more blocks of the original's own kinds
+(22 of the 34),
+so that the sixth consolidation bed's dropped passage and the archive's meaningful blockquote stay
+refused.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -300,12 +319,9 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Put the block-floor question to the owner
-    (planning log,
-    "The Huasheng relaunch stops at slice 21";
-    ranking A over C over B over D),
-    land the answer guard-first,
-    and run `Huasheng` again once Synthetic refills or OpenRouter is charged.
+1.  Run and read `Huasheng` on the class-ten build,
+    on whatever roster the meters allow,
+    one run at a time.
     The order is the census's,
     recorded in the planning log under "The run order after TLL1122",
     and open to veto.
