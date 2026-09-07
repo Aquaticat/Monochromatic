@@ -181,6 +181,22 @@ await describe({
       },
     },),
     it({
+      name: 'detached function spying does not preflight unrelated static replacements',
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        function callable(): string {
+          return 'call result';
+        }
+        callable.method = (): string => 'original static';
+        sinon.stub(callable, 'method',).returns('owned static',);
+        const before = Object.getOwnPropertyDescriptor(callable, 'method',);
+        const spy = sinon.spy(callable,);
+        expect(spy(),).toBe('call result',);
+        expect(spy.callCount,).toBe(1,);
+        expect(callable.method(),).toBe('owned static',);
+        expect(Object.getOwnPropertyDescriptor(callable, 'method',),).toEqual(before,);
+      },
+    },),
+    it({
       name: 'numeric method keys use their ordinary JavaScript property spelling',
       fn: async ({ sinon, }: TestContext,): Promise<void> => {
         const target = { 0: (): string => 'original', };
