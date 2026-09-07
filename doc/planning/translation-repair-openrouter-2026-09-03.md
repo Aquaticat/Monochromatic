@@ -3859,6 +3859,45 @@ Hyper's balance is the day's constraint now:
 the owner will not recharge it,
 and each hakureico pass has spent 70 to 290 of it.
 
+## The fifth pass stops in 67 seconds; the fourteenth class, 2026-09-07, 23:10 UTC
+
+`TALLY hakureico status=INCOMPLETE ms=66920 error=visual evidence incomplete for 2 referenced assets`.
+The first Hyper calls at 23:09:44 met the daily limit still running from the fourth pass
+(429 naming 94 s;
+this process had no hold for it),
+and in the same second six OpenRouter calls answered
+`402: This request requires more credits, or fewer max_tokens. You requested up to 131072 tokens, but can only afford 2411`.
+OpenRouter's meter reads 0.01 USD,
+which `openrouterIsDry` reads as wet,
+so `markRefused` held it out for the 60 s rate-limit backoff.
+At 23:10:00 the pictures phase read
+`readers 0 of 4 reachable, quorum 2; holds hyper 77970ms, openrouter 44473ms; waiting 44473ms`:
+the thirteenth class waited for the shortest hold,
+which was OpenRouter's,
+re-seated three readers on OpenRouter,
+and every reading was refused for payment again;
+the pass stopped before the lanes,
+8 Bedrock calls and 0 Hyper calls spent.
+
+A payment refusal is a statement about the balance,
+not about the minute.
+Fixed at `c9cd537e6`:
+`isPaymentRefusal` names HTTP 402;
+`markRefused({ paymentRequired })` marks the provider with the meter level it read
+(`openrouterUsd=0.01`)
+and `read()` folds it as dry while that level stands,
+with no timed hold,
+so `holds()` reports nothing for it and the seat wait targets the hold that would bring a bench back.
+The mark clears when the meter moves,
+whichever way,
+since the refusal was about the balance read then;
+a top-up is the only thing that moves it up.
+Four guards bite (`provider-budget.unit.test.ts`);
+types and oxlint clean.
+With OpenRouter reading dry,
+the roster with Synthetic's week spent is Bedrock's two shared seats and Hyper's six,
+and Hyper's daily limit is what every phase and chunk now waits out.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

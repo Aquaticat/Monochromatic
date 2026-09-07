@@ -101,6 +101,17 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `c9cd537e6` (2026-09-07,
+    23:35 UTC):
+    the fourteenth class.
+    OpenRouter at 0.01 USD read wet and answered every call 402,
+    was held 60 s as a rate limit,
+    and the fifth hakureico pass waited on its short hold instead of Hyper's and stopped in 67 seconds.
+    A payment refusal now reads the provider dry until its meter moves
+    (`markRefused({ paymentRequired })`,
+    `isPaymentRefusal`).
+    Planning log:
+    "The fifth pass stops in 67 seconds".
 -   `e17d0c487` (2026-09-07,
     23:20 UTC),
     guarded at `8e64a6ef7`:
@@ -463,6 +474,22 @@ Per chunk as well since `e17d0c487`,
 after the fourth pass met the hold two minutes into consolidation and stopped INCOMPLETE:
 each driver awaits `beforeSlice` before a chunk,
 which costs one synchronous read of the holds while nothing is held.
+
+## The fourteenth class
+
+Found by the fifth hakureico pass of 2026-09-07 in its first second.
+OpenRouter's balance stood at 0.01 USD,
+which the meter reads as wet;
+every call answered 402 naming what it could afford;
+the budget layer held it out for the 60 s rate-limit backoff and walked back into the same wall each minute,
+and the thirteenth class's wait,
+choosing the shortest hold,
+chose that one over Hyper's.
+Landed in `c9cd537e6`:
+a 402 marks the provider with the meter level it read and it reads dry while that level stands,
+with no timed hold,
+so the seat wait targets a hold whose end brings a bench back.
+A top-up moves the meter and clears the mark on the next reading.
 
 ## The two defaults and the rule
 
