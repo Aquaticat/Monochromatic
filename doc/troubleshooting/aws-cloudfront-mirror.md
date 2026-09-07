@@ -17,15 +17,17 @@ path (certificate issuance,
 The reassessment retracts the inference that this proves an unfinished TLS 1.3 rollout.
 
 **Mirror status on 2026-09-07**:
-HTTP 502 from CloudFront.
-Direct probes of `aquati.cat:443` negotiate TLS 1.3 and reject TLS 1.2 over IPv4 and IPv6 with `aquati.cat` SNI.
+Restored and verified at `2026-09-07T21:42Z`.
+The live endpoint serves matching origin content through a native origin Host/SNI override.
+Direct probes of `aquati.cat:443` still negotiate TLS 1.3 and reject TLS 1.2 over IPv4 and IPv6 with `aquati.cat` SNI.
 Authenticated inspection subsequently confirmed that both active CloudFront policies forward the viewer's `Host`.
 The configured origin serves the page with `aquati.cat` SNI/Host,
 but rejects mirror SNI and returns an empty body with mirror Host.
 Removing viewer Host from both policies restored matching content on a disposable distribution.
 The live Free plan rejected its custom cache policy.
-A native origin Host/SNI override is now undergoing independent fixture validation;
-production remains unchanged.
+The native origin Host/SNI override passed independent fixture validation and was then deployed to production.
+Only the viewer-request function association changed;
+both original policies and the active Free subscription remain unchanged.
 See issue 7 for evidence,
 omitted alternatives,
 and verification limits.
@@ -63,8 +65,7 @@ The configuration path:
 4. Remove the subdomain CAA when `aws.aquati.cat` becomes a CNAME to
    CloudFront.
 5. Encounter HTTP 502 from CloudFront (issue 7).
-   Requests to `/` still fail in the reassessment;
-   neither the failure's full path scope nor its cause has been established.
+   The authorized hostname correction subsequently restored `/` and the tested routes/resources.
 
 This document records the issues encountered along that path.
 
@@ -826,9 +827,83 @@ For independent validation,
 the disposable distribution was restored to its original policies.
 A fresh query returned HTTP 502 at `2026-09-07T21:25:20Z`.
 Only the viewer-request function association was then added.
-Real-traffic validation is pending deployment.
-The same published artifact must be detached from the fixture before live association
+Real-traffic validation then passed at `2026-09-07T21:29:28Z`.
+The same published artifact was detached from the fixture before live association
 because flat-rate resources cannot share CloudFront Functions.
+The fixture and unused custom policy were deleted;
+list calls confirmed their absence.
+
+#### Verified production resolution
+
+The live function association was accepted at `2026-09-07T21:38:48Z`.
+The deployed distribution ETag is `E1VC38T7YXB528`.
+A full configuration comparison proved that only
+`DefaultCacheBehavior.FunctionAssociations` changed from the pre-task snapshot.
+The comparison includes origin settings,
+TLS policies,
+viewer certificate,
+WAF,
+cache/origin-request policies,
+and other behavior fields.
+The pricing API still returned the original subscription as `FREE`,
+`ACTIVE`,
+with unchanged subscription ETag `2`.
+
+The live content harness passed at `2026-09-07T21:42:12Z`.
+Paths and resource classes:
+
+- `/`,
+  `/en`,
+  `/en/about`,
+  `/en/tag/accessibility`,
+  `/ca`,
+  `/zh`.
+- Fingerprinted CSS,
+  client JavaScript,
+  WOFF2 font,
+  SVG favicon,
+  and `/manifest.webmanifest`.
+- A nonexistent resource,
+  matching the origin's empty HTTP 404 response.
+
+Fresh query keys bypassed previous error objects.
+Statuses,
+body hashes,
+and selected response headers matched the origin.
+The root body contained 3,445 bytes with SHA-256
+`15789f6f382e87508716b0840b9962fde1fe0324ed5ad868ec953629b52e903e`.
+Additional checks covered HEAD,
+compressed content parity,
+and actual gzip/Brotli wire bodies decoded to the original CSS hash.
+Both encodings advertised `Vary: Accept-Encoding`.
+Repeated CSS requests returned Miss/Miss without origin `Cache-Control`;
+no cache-hit guarantee is inferred from that observation.
+
+Live browser verification followed the English language link,
+loaded fonts/CSS/JavaScript/images/manifest,
+toggled the theme through its visible label,
+and followed `About Aquaticat` to its rendered heading and title.
+No page errors were reported.
+The browser was closed after verification.
+Search remains a separately disclosed verification limit,
+not a claim that the whole application was exhaustively tested.
+
+Primary-origin TLS controls still accepted TLS 1.3 and rejected TLS 1.2 with curl exit 35 and
+`alert protocol version` over IPv4 and IPv6.
+The mirror delivered matching root bodies over TLS 1.3 in both address families.
+No Caddy,
+DNS,
+certificate,
+WAF,
+TLS-protocol,
+or pricing-plan modification was needed.
+Successful correction establishes hostname handling as a sufficient remedy for the observed 502;
+it does not substitute for an origin-side packet capture.
+
+Rollback removes only the exact viewer-request function association using a fresh ETag.
+The original full snapshot is a comparison reference,
+not a payload to overwrite future unrelated changes.
+The function source and rollback boundary live in the package's CloudFront README.
 
 Browser search did not produce results in either the primary-site control or the fixture;
 a Pagefind worker request remained pending.
@@ -1002,7 +1077,7 @@ not a validated deployment selection.
 
 The policy-pair correction is verified on the disposable distribution,
 but production rejects its custom cache policy under the Free plan.
-The native function substitution is not yet verified with real traffic.
+The native function substitution is verified on the fixture and live endpoint without replacing either policy.
 The original heading incorrectly called unshipped configuration sketches verified workarounds.
 The alternatives in "Omitted avenues and their tradeoffs" remain proposals.
 Global TLS relaxation is outside issue #146's scope;
@@ -1083,11 +1158,12 @@ Its historical rejection does not make future execution safe.
 ## Current configuration state
 
 **Status**:
-mirror returns HTTP 502 in the 2026-09-07 probes.
-The authenticated follow-up confirmed the current origin and policy associations.
-The policy-pair correction succeeded on a disposable distribution,
-but the live Free plan rejected the custom policy.
-Independent validation of an origin-only function override is in progress.
+mirror restoration verified on 2026-09-07.
+The deployed function overrides origin HTTP Host and TLS SNI to `aquati.cat`.
+Both original policies remain associated,
+and all other distribution fields match the original snapshot.
+The live Free plan remains active.
+The disposable distribution and unused custom cache policy are deleted.
 The remaining certificate and DNS inventory records the original investigation
 unless explicitly corroborated in the authenticated follow-up.
 
@@ -1397,7 +1473,7 @@ No upstream issue or comment was filed or drafted:
 there is no established upstream defect or additive fix to report.
 Waiting for an inferred TLS rollout is not the remedy.
 The user authorized the targeted hostname correction after the review;
-its production implementation and verification remain in progress.
+the native-function implementation is deployed and verified on the live endpoint.
 
 ## References
 
