@@ -2468,13 +2468,6 @@ importers:
         version: 7.0.2
 
   package/module/fs-path:
-    dependencies:
-      '@monochromatic-dev/module-caught-value':
-        specifier: workspace:*
-        version: link:../caught-value
-      '@monochromatic-dev/module-logger':
-        specifier: workspace:*
-        version: link:../logger
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -2482,6 +2475,12 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test

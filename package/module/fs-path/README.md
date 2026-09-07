@@ -1,180 +1,179 @@
 # module-fs-path
 
-POSIX path utilities,
- filesystem path-emptying and ensuring helpers,
- and repository-root discovery.
-Cross-runtime helpers delegate to `node:path/posix` and `node:fs/promises` when available,
-fall back to pure-JS path implementations,
- and use OPFS through `happy-opfs` in browser environments.
+POSIX path operations and repository-root discovery that run under Node,
+ Bun,
+ and browsers,
+ plus Node-only directory and file helpers.
+The package was extracted from `@monochromatic-dev/module-es`'s `path/` submodule so consumers that need only
+filesystem and path utilities can depend on it directly.
 
-This package was extracted from `@monochromatic-dev/module-es`'s `path/` submodule so consumers needing only
-filesystem and path utilities can depend on it directly without pulling in the rest of `module-es`.
+## Entries
 
-## Exports
+### `.` (platform-neutral)
 
-The package is source-only.
-`.` resolves to `./src/index.ts` (the barrel),
- which re-exports every public helper.
-`./find-monorepo-root` resolves directly to `./src/find-monorepo-root.ts` for consumers that only need root
-finders.
-`./find-package-root` resolves directly to `./src/find-package-root.ts` for consumers that only need package-root
-finding.
+Path operations:
 
-### Path helpers
+- `dirname`,
+   `join`,
+   `resolve`,
+   `normalize`,
+   `isAbsolute`,
+   `sep`:
+   POSIX path operations.
+   `join` and `resolve` take one array of segments.
+- `trimLeadingSlash`,
+   `trimTrailingSlash`:
+   strip one leading or trailing `/` unless the path is `/`.
 
-- `dirname` (`src/index.ts`):
-   returns the directory portion of a POSIX path and delegates to `node:path/posix`
-  when available.
-- `join` (`src/index.ts`):
-   joins path segments with `/` and normalizes the result.
-- `resolve` (`src/index.ts`):
-   resolves a sequence of paths to an absolute path.
-- `isAbsolute` (`src/index.ts`):
-   checks whether a POSIX path starts with `/`.
-- `sep` (`src/index.ts`):
-   exposes POSIX path separator `/`.
-- `trimLeadingSlash` (`src/trim.ts`):
-   removes a leading `/` unless the path is root.
-- `trimTrailingSlash` (`src/trim.ts`):
-   removes a trailing `/` unless the path is root.
+Root finders,
+ each walking upward from `cwd` (default:
+ the process working directory,
+ or `/` where no process exists):
 
-### Root finders
+- `findMiseMonorepoRoot`:
+   nearest ancestor whose `mise.toml` contains a `[monorepo]` section.
+- `findGitRepoRoot`:
+   nearest ancestor with a structurally usable `.git` directory or gitfile
+   (HEAD,
+   objects,
+   refs,
+   relative targets,
+   and linked-worktree `commondir` pointers are validated;
+   invalid nearer markers are skipped).
+   Rejects with `GitRepositoryRootNotFoundError` when none exists.
+- `findPnpmWorkspaceRoot`:
+   nearest ancestor holding `pnpm-workspace.yaml`.
+- `findMiseMonorepoRootCached`,
+   `findGitRepoRootCached`,
+   `findPnpmWorkspaceRootCached`:
+   memoised variants that take no arguments,
+   start from the process working directory on the first call,
+   and return the same in-flight,
+   fulfilled,
+   or rejected promise for the process lifetime.
 
-- `findMiseMonorepoRoot` (`src/find-monorepo-root.ts`):
-   walks upward for a `mise.toml` containing `[monorepo]`
-  and preserves runtime-native path identity.
-- `findMiseMonorepoRootCached` (`src/find-monorepo-root.ts`):
-   memoised variant that locks the first resolved
-  mise root for process lifetime.
-- `findGitRepoRoot` (`src/find-monorepo-root.ts`):
-   walks upward for a structurally usable `.git` directory or gitfile,
-   validating HEAD,
-  objects,
-  refs,
-  relative targets,
-  and linked-worktree `commondir` pointers while preserving runtime-native path identity.
-  Invalid nearer markers are skipped.
-- `findGitRepoRootCached` (`src/find-monorepo-root.ts`):
-   memoised variant that locks the first resolved Git root
-  for process lifetime.
-- `findPnpmWorkspaceRoot` (`src/find-monorepo-root.ts`):
-   walks upward for `pnpm-workspace.yaml` and preserves runtime-native path identity.
-- `findPnpmWorkspaceRootCached` (`src/find-monorepo-root.ts`):
-   memoised variant that locks the first resolved
-  pnpm workspace root for process lifetime.
-- `findPackageRoot` (`src/find-package-root.ts`):
-   walks upward for a `package.json` whose `name` field matches a
-  given value,
+### `./node` (Node and Bun only)
+
+- `ensureDir`,
+   `ensureFile`,
+   `ensurePath`:
+   create the path when missing (parents included) and verify owner read and write access when it exists,
+   granting the owner bits when the mode denies them.
+   `ensurePath` picks file or directory by whether the path has an extension.
+- `emptyDir`,
+   `emptyFile`,
+   `emptyPath`,
+   `removeEmptyFilesInDir`:
+   clear a directory's entries,
+   truncate a file (a `?query` suffix is stripped first),
+   dispatch by extension,
+   or delete files that are empty after trimming.
+- `findPackageRoot`,
+   `findPackageRootCached`:
+   nearest ancestor whose `package.json` `name` matches the given name,
    anchoring a package on its own root in source and built modes.
-   Node/Bun only.
-- `findPackageRootCached` (`src/find-package-root.ts`):
-   memoised variant of `findPackageRoot`,
-   keyed by package
-  name.
-
-### Filesystem helpers
-
-- `ensureDir` (`src/ensure.ts`):
-   creates a directory recursively when missing,
-   verifies read/write when it exists.
-- `ensureFile` (`src/ensure.ts`):
-   creates a file and parents when missing,
-   verifies read/write when it exists.
-- `ensurePath` (`src/ensure.ts`):
-   dispatches to `ensureFile` or `ensureDir` based on whether the path has an
-  extension.
-- `emptyDir` (`src/empty.ts`):
-   removes all entries inside a directory without removing the directory itself.
-- `emptyFile` (`src/empty.ts`):
-   truncates a file to zero bytes and strips `?query` suffix before opening.
-- `emptyPath` (`src/empty.ts`):
-   dispatches to `emptyFile` or `emptyDir` based on whether the path has an
-  extension.
-- `removeEmptyFilesInDir` (`src/empty.ts`):
-   deletes zero-byte files after trimming within a directory and leaves
-  non-files and non-empty files alone.
 
 ## Usage
 
 ```ts
 import {
   findGitRepoRoot,
-  findMiseMonorepoRoot,
-  findPnpmWorkspaceRoot,
-} from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+  findMiseMonorepoRootCached,
+  join,
+} from '@monochromatic-dev/module-fs-path';
 
-const miseRoot = await findMiseMonorepoRoot();
+const repoRoot = await findMiseMonorepoRootCached();
 const gitRoot = await findGitRepoRoot({ cwd: import.meta.dirname, });
-const pnpmRoot = await findPnpmWorkspaceRoot();
+const manifest = join([repoRoot, 'package.json',],);
 ```
 
 ```ts
 import {
-  dirname,
   emptyDir,
   ensureDir,
-  trimTrailingSlash,
-} from '@monochromatic-dev/module-fs-path';
+} from '@monochromatic-dev/module-fs-path/node';
 
 await ensureDir('dist',);
-await emptyDir(trimTrailingSlash(dirname('dist/bundle.js/',),),);
+await emptyDir('dist',);
 ```
 
 ## Runtime support
 
-`findMiseMonorepoRoot`,
- `findGitRepoRoot`,
- and `findPnpmWorkspaceRoot` share one filesystem backend chosen on
-first root-discovery call:
+The backends are chosen when the package is resolved,
+ not at runtime.
+`package.json` `imports` maps two private aliases by export condition:
 
-- Node and Bun:
-   `node:fs/promises` via dynamic import.
-   Text probes use `readFile`,
-   and marker probes use `lstat`.
-- Browser with OPFS support:
-   `happy-opfs` `readTextFile` and `exists`,
-   with a warning logged on first use.
-- Browser without OPFS:
-   stub backend that never finds marker files,
-   so the upward walk exhausts and the finder
-  throws.
+- `#posix-path`:
+   `node:path/posix` under the `node` condition,
+   a pure-JS implementation with the same semantics under `default`.
+- `#root-filesystem`:
+   `node:fs/promises` under the `node` condition;
+   under `default`,
+   the origin private file system through `navigator.storage.getDirectory()` where the platform grants it,
+   and otherwise an empty backend that finds no marker,
+   so the finder rejects.
 
-Cached root finders take no arguments.
- The first call captures the process working directory and returns the same
-in-flight,
- fulfilled,
- or rejected promise for process lifetime.
- Use the uncached finder when a caller intentionally
-changes `process.cwd()` and needs a fresh walk.
+Node and Bun resolve the `node` condition (Bun's order is `bun`,
+ `node-addons`,
+ `node`,
+ `require`,
+ `import`,
+ `default`),
+ so they get `dist/final/node/index.mjs`.
+Browsers and bundlers targeting them resolve `default` and get `dist/final/neutral/index.mjs`,
+ which names no `node:` module.
+Neither build contains a dynamic `import()`;
+ a unit test reads every built chunk and rejects leaks in either direction,
+ and a Playwright test drives the neutral build over OPFS in Chromium and Firefox
+ (headless WebKit refuses OPFS writes and reports itself skipped).
 
-`findPackageRoot` is Node/Bun only:
- it reads `package.json` via `node:fs/promises` directly with no browser fallback.
-Current consumers anchor on `import.meta.dirname`,
- which is itself Node-only.
- A cross-runtime backend can be added
-when a browser consumer needs it.
+In browsers,
+ paths are absolute POSIX strings rooted at the OPFS root:
+ `/repo/mise.toml` is the file `mise.toml` in the directory `repo` under `navigator.storage.getDirectory()`.
+Marker files must exist there to be found.
 
-The path utilities (`dirname`,
- `join`,
- `resolve`,
- `isAbsolute`) delegate to `node:path/posix` when available and fall
-back to pure-JS implementations in `src/fallbacks.ts` otherwise.
+A Node consumer whose bundler resolves the `default` condition gets the neutral build:
+ path operations work,
+ root discovery finds no filesystem and rejects.
+Point the bundler at the `node` condition to keep `node:fs`.
 
-## Built artifact is node/bun only
+## Logging
 
-The source obfuscates the `node:path` specifier (`` `node${':path'}` ``) so browser bundlers cannot statically
-resolve it,
- keeping `src/` genuinely cross-runtime.
- Browser consumers import the `/ts` source,
- where that obfuscation
-is intact.
+Diagnostics go through `@monochromatic-dev/module-logger`,
+ inlined into both builds under the tags `rootDiscovery`,
+ `rootFilesystem`,
+ `findMonorepoRoot`,
+ `findPackageRoot`,
+ `path/ensure`,
+ and `path/empty`.
+The inlined logger builds its default sinks on first use;
+ a consumer that also installs `@monochromatic-dev/module-logger` runs a second,
+ independent logger instance.
 
-The neutral `.` build (`dist/final/neutral/index.mjs`) is a different story:
- rolldown constant-folds the template
-literal back to a plain `import('node:path')`,
- so the built artifact is effectively node/bun-only.
- Nothing in this
-repo loads the `.` dist in a browser (all consumers use `/ts`),
- so this is inconsequential in practice,
- but do not
-assume the built `.` bundle is browser-loadable.
+## Source files
+
+- `src/index.ts`:
+   platform-neutral entry.
+- `src/node.ts`:
+   Node-only entry.
+- `src/posix-path.node.ts`,
+   `src/posix-path.neutral.ts`:
+   the `#posix-path` backends.
+- `src/root-filesystem-contract.ts`,
+   `src/root-filesystem.node.ts`,
+   `src/root-filesystem.neutral.ts`:
+   the `#root-filesystem` contract and backends.
+- `src/root-discovery.ts`:
+   upward walk shared by the finders.
+- `src/find-monorepo-root.ts`:
+   the three root finders and `GitRepositoryRootNotFoundError`.
+- `src/git-marker.ts`:
+   Git administrative marker validation.
+- `src/find-package-root.ts`,
+   `src/ensure.ts`,
+   `src/empty.ts`,
+   `src/trim.ts`:
+   the remaining helpers.
+
+Decisions:
+ `DECISIONS.md`.

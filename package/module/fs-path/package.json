@@ -1,10 +1,10 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/module-fs-path",
-  "description": "POSIX path utilities, filesystem path-emptying and ensuring helpers, and monorepo-root discovery. Cross-runtime (Node/Bun and browser via OPFS).",
+  "description": "POSIX path operations and repository-root discovery for Node, Bun, and browsers (over the origin private file system), plus Node-only directory and file helpers behind the ./node entry. No dynamic imports in either build.",
   "type": "module",
+  "sideEffects": false,
   "version": "0.0.1",
-  "private": true,
   "module": "dist/final/neutral/index.mjs",
   "exports": {
     ".": {
@@ -29,25 +29,43 @@
       "default": "./src/root-filesystem.neutral.ts"
     }
   },
-  "dependencies": {
-    "@monochromatic-dev/module-caught-value": "workspace:*",
-    "@monochromatic-dev/module-logger": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-caught-value": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
   "files": [
-    "src",
     "dist/final",
-    "LICENSES"
+    "src",
+    "LICENSES",
+    "CHANGELOG.md"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "package/module/fs-path"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/final/neutral/index.d.mts",
+        "node": "./dist/final/node/index.mjs",
+        "default": "./dist/final/neutral/index.mjs"
+      },
+      "./node": {
+        "types": "./dist/final/node/node.d.mts",
+        "default": "./dist/final/node/node.mjs"
+      }
+    }
   }
 }
