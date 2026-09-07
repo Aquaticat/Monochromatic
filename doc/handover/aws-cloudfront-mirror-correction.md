@@ -245,6 +245,26 @@ not minimized,
 on the user's measured current output `DP-2`,
 with geometry `1080,0 1080×1880`.
 
+## Public-precedent follow-up
+
+The user's question about matching reports is recorded in
+[`aws-cloudfront-mirror.md`](../troubleshooting/aws-cloudfront-mirror.md#public-precedents-checked-on-2026-09-07).
+Caddy #7445 corroborates the origin certificate-name symptom;
+an AWS re:Post commenter names the exact managed-cache-policy interaction that defeats Host exclusion.
+A Fly.io thread reports a successful policy correction with a different backend and changed cache semantics.
+These establish matching failure components,
+not an exact full-stack duplicate or a demonstrated CloudFront implementation bug.
+
+The source check used an unchanged CertMagic clone at commit
+`31be911f5425b80393154a94a21403c9c0029910`.
+An independent advisor reviewed the strength and limitations of the matches.
+Research commits are `18c9a8259` and `4b3b2c814`.
+The troubleshooting document retains an additive-only upstream comment draft marked not to file as-is;
+no upstream post or AWS change was made.
+No deployment,
+cleanup,
+or walkthrough modification remains pending from this follow-up.
+
 ## Proposed agent guideline
 
 Proposed addition to `AGENTS.md` under `Command execution conventions`:
