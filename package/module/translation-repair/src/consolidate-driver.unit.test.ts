@@ -597,6 +597,7 @@ async function driveWith(
     neighbourContextBySlice = new Map(),
     modelIds = ROSTER,
     overlap = 1,
+    beforeSlice,
     activity,
     messages,
     writes,
@@ -612,6 +613,7 @@ async function driveWith(
     readonly neighbourContextBySlice?: ReadonlyMap<number, SliceNeighbourContext>;
     readonly modelIds?: readonly RosterModelId[];
     readonly overlap?: number;
+    readonly beforeSlice?: () => Promise<void>;
     readonly activity?: ConsolidationConcurrency;
     readonly messages?: string[];
     readonly writes?: string[];
@@ -668,6 +670,7 @@ async function driveWith(
     signal,
     perCallTimeoutMs: CALL_TIMEOUT_MS,
     overlap,
+    ...((beforeSlice === undefined) ? {} : { beforeSlice, }),
     lineStructuredSlices,
     pictureContextBySlice,
     neighbourContextBySlice,
@@ -738,11 +741,21 @@ await describe({
           },
         };
         const messages: string[] = [];
+        /**
+         * How often the driver asked before a slice, which it does even for a
+         * slice the cache then answers: the wait belongs to the bench, not
+         * to the purchase.
+         */
+        const before = { calls: 0, };
         const resumed = await driveWith({
           contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           resumed: new Map<string, ConsolidationSettlement>([[key, settled,],]),
           messages,
+          beforeSlice: async (): Promise<void> => {
+            before.calls += 1;
+          },
         },);
+        expect(before.calls,).toBe(1,);
         expect(resumed.written,).toEqual([],);
         expect(messages.some(function started(line,): boolean {
           return line.includes(

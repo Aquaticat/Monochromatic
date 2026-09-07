@@ -455,6 +455,7 @@ async function runDriver(
       select: 0,
       selectAttempts: 0,
     },
+    beforeSlice,
   }: {
     readonly sourceText?: string;
     readonly targetText?: string;
@@ -468,6 +469,7 @@ async function runDriver(
     readonly translateConcurrency?: TranslateConcurrency;
     readonly persisted?: Map<string, TranslateSliceRecord>;
     readonly calls?: CallLog;
+    readonly beforeSlice?: () => Promise<void>;
   },
 ) {
   /**
@@ -535,6 +537,7 @@ async function runDriver(
     perCallTimeoutMs: 1_000,
     overlap,
     ...((insertionAdmission === undefined) ? {} : { insertionAdmission, }),
+    ...((beforeSlice === undefined) ? {} : { beforeSlice, }),
     sliceCache: {
       resumed,
       persist: async ({
@@ -571,6 +574,21 @@ await describe({
         expect(result.sliceCount,).toBeGreaterThan(1,);
         for (const record of result.slices)
           expect(record.kind,).toBe('translate-slice',);
+      },
+    },),
+
+    it({
+      name: 'ASKS BEFORE EVERY SLICE when given a hook, so a caller can hold a slice back while a '
+        + 'named provider hold keeps the bench from quorum (the thirteenth class\'s second face)',
+      fn: async () => {
+        const before = { calls: 0, };
+        const { result, } = await runDriver({
+          beforeSlice: async (): Promise<void> => {
+            before.calls += 1;
+          },
+        },);
+        expect(before.calls,).toBe(result.sliceCount,);
+        expect(result.sliceCount,).toBeGreaterThan(1,);
       },
     },),
 

@@ -396,6 +396,7 @@ async function runLanes(
     overlap = 1,
     activity,
     reseatTranslate,
+    beforeSlice,
   }: {
     readonly served: SchemaLog;
     readonly abortAfterCriticCalls?: number;
@@ -403,6 +404,7 @@ async function runLanes(
     readonly overlap?: number;
     readonly activity?: LaneConcurrency;
     readonly reseatTranslate?: () => Promise<TranslateModels>;
+    readonly beforeSlice?: (args: { readonly lane: 'repair' | 'translate'; },) => Promise<void>;
   },
 ) {
   /**
@@ -433,6 +435,9 @@ async function runLanes(
     ...((reseatTranslate === undefined)
       ? {}
       : { reseatTranslate, }),
+    ...((beforeSlice === undefined)
+      ? {}
+      : { beforeSlice, }),
     l,
   },);
 }
@@ -487,6 +492,44 @@ await describe({
         expect(reseated.callsBefore,).toBeGreaterThan(0,);
         expect(lanes.repair
           .status,).toBe('unchanged',);
+      },
+    },),
+    it({
+      name: 'ASKS BEFORE EVERY SLICE OF EITHER LANE, naming the lane, so a caller can hold a slice back '
+        + 'while a named provider hold keeps that lane\'s bench from quorum: the thirteenth class\'s '
+        + 'second face, a hold two minutes into a phase',
+      fn: async () => {
+        /**
+         * Schemas the run served, in order.
+         */
+        const served: SchemaLog = [];
+        /**
+         * Lanes asked, in the order asked.
+         */
+        const asked: string[] = [];
+        const lanes = await runLanes({
+          served,
+          beforeSlice: async ({ lane, },): Promise<void> => {
+            asked.push(lane,);
+          },
+        },);
+        /**
+         * Slices both lanes ran over.
+         */
+        const sliceCount = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+        },).slices
+          .length;
+        expect(asked.filter(function isRepair(lane,): boolean {
+          return lane === 'repair';
+        },).length,).toBe(sliceCount,);
+        expect(asked.filter(function isTranslate(lane,): boolean {
+          return lane === 'translate';
+        },).length,).toBe(sliceCount,);
+        expect(asked.lastIndexOf('repair',),).toBeLessThan(asked.indexOf('translate',),);
+        expect(lanes.translate
+          .translatedText,).toContain(FRESH,);
         expect(lanes.repair
           .repairedText,).toBe(TARGET_TEXT,);
         // The translate lane rewrote both slices, so its document differs.

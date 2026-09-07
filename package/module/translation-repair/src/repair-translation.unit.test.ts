@@ -1175,6 +1175,29 @@ Meow meow meow meow.
     },),
 
     it({
+      name: 'ASKS BEFORE EVERY SLICE when given a hook, so a caller can hold a slice back while a '
+        + 'named provider hold keeps the bench from quorum (the thirteenth class\'s second face)',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+        },);
+        const before = { calls: 0, };
+        await repairPreparedDocument({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          prepared,
+          models: MODELS,
+          signal: new AbortController().signal,
+          beforeSlice: async (): Promise<void> => {
+            before.calls += 1;
+          },
+        },);
+        expect(before.calls,).toBe(prepared.slices.length,);
+        expect(prepared.slices.length,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
       name: 'repairs a pair PREPARED BY THE CALLER, and reaches the same result '
         + 'as preparing it itself. This is what lets both lanes run over one '
         + 'preparation: two lanes slicing separately would drift the moment '
