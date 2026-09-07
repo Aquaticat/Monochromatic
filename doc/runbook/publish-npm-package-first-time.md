@@ -43,6 +43,11 @@ Prerequisites:
 - The "Version Packages" pull request opened by the `npm-release` workflow,
    titled `chore(*): version packages`,
    still open.
+   Land the changeset in the same push as the manifest change that drops `private`:
+   a public manifest reaching `main` without a pending changeset makes the workflow try to publish the pre-release version through trusted publishing,
+   which fails with `E404` because no trusted publisher exists yet
+   (harmless,
+   seen for `module-fs-path` on 2026-09-07).
    It bumps the package to its first version and carries the changelog and lockfile changes.
    If it was merged already,
    check out `main` instead of the pull request branch in step 1 and skip steps 12 and 13.
@@ -65,6 +70,15 @@ TODO
      `gh pr checkout <number>`.
      Expected:
      `git branch --show-current` prints `changeset-release/main`.
+     When the main worktree carries other sessions' uncommitted changes,
+     do not switch its branch;
+     check the branch out in a linked worktree instead
+     (`git fetch origin changeset-release/main` then
+     `git worktree add "${HOME}/temp/agent/<package>-release" origin/changeset-release/main`,
+     `mise trust` inside it,
+     and run steps 4 to 9 there;
+     remove it with `git worktree remove` at the end).
+     Done that way for `module-fs-path` on 2026-09-07.
 3.   Confirm the version:
      `jq -r .version package/module/logger/package.json`.
      Expected:
@@ -109,12 +123,22 @@ TODO
      a prompt `This operation requires a one-time password.`;
      type the six digits from the authenticator app and press **Enter**;
      the output ends with `+ @monochromatic-dev/module-logger@0.1.0`.
+     From a shell without a terminal (an agent's command tool),
+     pass the code instead:
+     `--otp=<six digits>`;
+     the code is good for about 30 seconds,
+     so run the command right after reading it.
 12.  Register the release workflow as the trusted publisher:
      `mise exec -- npm trust github @monochromatic-dev/module-logger --repo Aquaticat/Monochromatic --file npm-release.yml --allow-publish`.
      Expected:
      a confirmation prompt,
-     answer **y**,
+     answer **y** (or pass `--yes`),
      then a line confirming the trusted publisher for `Aquaticat/Monochromatic` and `npm-release.yml`.
+     This command and `npm trust list` open a browser for npm's web authentication every time,
+     even with a logged-in token,
+     so they must run from your own terminal;
+     an agent's command tool only prints
+     `Open this URL in your browser to authenticate`.
 13.  Wait for the registry index to replicate:
      `npm view @monochromatic-dev/module-logger version` until it prints `0.1.0`.
      Expected:
