@@ -3584,6 +3584,173 @@ the footnotes first,
 then the Bedrock `SPEND` lines and the ledger's sum against `bedrockUsd=`,
 then whether Hyper's daily limit named a return and Bedrock carried the shared seats through it.
 
+## The first hakureico page, 2026-09-07, 22:00 UTC, and the thirteenth class
+
+`TALLY hakureico status=SETTLED slices=18` at 22:00:47,
+13.3 wall minutes,
+the shortest settled pass on record;
+`repairIssues=80 repairAccepted=38 repairResolved=26 repairChanged=3`,
+`translateStatus=unfilled`,
+`documentsDiffer=3 pageChanged=3 pageSilent=1`,
+`selection=contested`,
+`DESTINATIONS source=0 page=0 dropped=0`,
+`verify-published` exit 0.
+Calls:
+Bedrock 224 (0.2448 USD by the log's `cost=` sum;
+the ledger grew by exactly that,
+0.005607 to 0.250384 USD,
+and `bedrockUsd=` read 199.77 at the last `METERS`),
+Hyper 151 (664 to 593),
+Synthetic 0,
+OpenRouter 0.
+The first pass in which Bedrock took the two seats it shares with Hyper:
+its first two calls went to `gemma-4-26b-a4b` and `gpt-oss-120b` at 21:47:27,
+and neither seat touched Hyper all pass.
+`SEATS DARK` names Qwen3.8-27B,
+thrown 30 of 30,
+which is the hold below and not the model.
+
+### The twelfth class working, and what it uncovered
+
+At 21:57:25 three Hyper calls answered 429 naming a return in 538000 ms;
+the ladder ended at once ("past this ladder's reach of 16000ms"),
+and `markRefused` held Hyper out for 538000 ms,
+to 22:06:24.
+That is the twelfth class as built.
+What it uncovered is the thirteenth:
+Bedrock stayed wet,
+so nothing waited.
+The translate lane started at 21:58:46 and every Hyper-only writer
+(GLM-5.3-Flash,
+Kimi-K3,
+minimax-m3,
+deepseek-v4-pro-0813,
+glm-5.3)
+was refused as `NoProviderForModelError` in the same millisecond,
+leaving the two Bedrock seats to write;
+`every proposal was the incumbent`,
+`winner short of the minimum vote weight; keeping the incumbent`,
+`declined-indecision` on every slice,
+and chunk 17,
+the passage only the translate lane owns,
+stayed unfilled.
+The lane contest at 22:00:14 read `hyper=dry openrouter=dry` (OpenRouter had just refused at 0.01 USD),
+settled its three differing slices on repair with the two Bedrock judges,
+and the consolidation at 22:00:24 ran every select and refiner round at 0 to 1 ms with nobody heard:
+three chunks `quorum-not-met`,
+done by 22:00:46,
+five and a half minutes before Hyper came back.
+
+The router already waits out the shortest hold once,
+but only when every provider reads dry (`readBudgetsPastHolds`),
+because that is the case where the alternative is ending the run.
+A phase is the same case one level up.
+Fixed at `752bf9a9b`:
+`readJudgeSeats` names the benches each phase leans on
+(`run-seats-wait.ts`:
+wide for preparation and the contest,
+readers for pictures,
+wide and translators for the lanes,
+translators and select judges for the translate lane,
+slate and wide for consolidation),
+counts the seats a wet provider would serve against each bench's quorum,
+and when a bench is short and a provider has named its return,
+waits out the shortest running hold once (`RunClient.providerHolds`,
+the budgets' own) and reads again;
+the `JUDGE SEATS` line carries `waited=`.
+The lanes driver takes a `reseatTranslate` reader and the pass gives it one,
+so the translate lane reads its seats when it is about to start rather than inheriting a reading minutes old
+(the lanes were seated at 21:52,
+the hold began at 21:57,
+the writers were asked at 21:58).
+Per phase rather than per call,
+because a call's deadline (360 s) is shorter than a daily-limit hold and would cut the wait it was serving.
+Six guards bite
+(`run-seats.unit.test.ts`,
+`run-seats-wait.unit.test.ts`,
+`document-lanes.unit.test.ts`,
+`pass-entry.unit.test.ts`,
+whose seat-reading count is six now);
+types and oxlint clean.
+
+### The page
+
+The mechanical reading (`read-page.mjs`):
+0 straight apostrophes in words against 8 curly (archive 0 and 8),
+0 straight double quotes against 18 curly (archive 0 and 18),
+1 three-dot ellipsis on the page against 0 on the archive,
+3 headings and 3 distinct,
+3 comments (archive 3),
+the PhotoScroll line byte-identical,
+none of the refusal vocabulary in the log,
+`mdx-downgraded` 0,
+`would ship a page` 0,
+169 lines against the archive's 158.
+
+The three changed slices,
+read against the source:
+
+- Transit.
+  Source:
+  `不仅关注着城市公交，还经常坐火车，偶尔，她也坐上飞机看看蓝天。`
+  Archive:
+  `She was interested in city buses, rail transit and national railways.`
+  Page:
+  `Not only did she follow city buses, she often rode the trains as well.`
+  The archive's national railways were its own;
+  the page is the source.
+  The next line,
+  `Though, so many of those journeys were ones she made alone...`,
+  renders `虽然，许多时候都是一个人的旅行呢……` with a three-dot ellipsis where the archive had rewritten the sentence without one;
+  the corpus's own pages split 39 three-dot to 25 unicode of 92,
+  so there is no convention to restore against,
+  and the archive file carries none.
+  Not a class.
+- osu!.
+  `Her osu!` then `account stayed online even when she was in a bad mental condition.` on the next line
+  is the source (`她的 OSU 也是在线状态`) where the archive said `She was still online`.
+  The line breaker took `osu!` for a sentence end and broke inside the sentence;
+  Markdown renders the break as a space,
+  so the page reads right and the file's one-sentence-per-line habit is off by one line.
+  Recorded,
+  not a class.
+- Games and IKEA.
+  `she gradually lost interest in many game-related things due to life pressure, and she no longer posted updates afterwards`
+  and `Hanasaka and her companions went to IKEA and ate cheap, tasty little ice cream cones together`
+  are the source (`对许多游戏相关的事情逐渐失去了兴趣`;
+  `千歌和她的伙伴去过宜家，一起吃了便宜好吃的小甜筒`),
+  where the archive had `games` and `an acquaintance`.
+  Hanasaka is the archive's rendering of 千歌 throughout.
+
+### The footnotes
+
+The source carries two:
+`「Mayday[^1]」` with its definition,
+and `HOSTED__WITH__GAE[^2]____` with its definition.
+The archive carries neither marker and neither definition
+(`> HOSTED__WITH__GAE____`),
+and the page carries neither.
+The repair lane saw them:
+the Mayday slice's candidates carried `[^1]` and the judges argued its placement against the corner brackets
+(seven ballots name the marker),
+and the slice shipped unchanged.
+The definitions are chunk 17,
+the passage only the translate lane owns,
+which the hold left unfilled.
+So the second footnote carrier shipped without its footnotes,
+for the reason the thirteenth class names;
+the fourth launch on `752bf9a9b` is where the footnote reading happens.
+
+What the page is evidence of:
+Bedrock in production for its two shared seats,
+the twelfth class closing a daily-limit hold in one line instead of 2,693 attempts,
+three faithful repairs,
+and the thirteenth class.
+What it is not evidence of:
+the footnotes,
+the translate lane,
+or judged consolidation.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
