@@ -30,15 +30,21 @@ await describe({
           const destination = {};
           Object.defineProperty(destination, 'spy', {
             configurable: true,
+            get(): unknown {
+              return captured.at(-1,);
+            },
             set(this: unknown, factory: unknown): void {
               expect(this,).toBe(destination,);
               captured.push(factory,);
             },
           },);
           Object.defineProperty(destination, 'stub', { value: undefined, writable: false, },);
-          expect(() => sinon.inject(destination,),).toThrow('stub',);
+          const inject: unknown = Reflect.get(sinon, 'inject',);
+          if (typeof inject !== 'function')
+            throw new Error('Missing Sinon inject factory',);
+          expect(() => Reflect.apply(inject, sinon, [destination,],),).toThrow('stub',);
           const [factory,] = captured;
-          if (typeof factory !== 'function')
+          if ((typeof factory) !== 'function')
             throw new Error('Injection did not expose its first factory',);
           const target = { method: (): string => 'original', };
           Reflect.apply(factory, destination, [target, 'method',],);
@@ -59,7 +65,7 @@ await describe({
         const independent = { method: (): string => 'untouched', };
         sinon.stub(independent, 'method',).returns('existing replacement',);
         const before = Object.getOwnPropertyDescriptors(target,);
-        expect(() => sinon[operation](target,),).toThrow('already wrapped',);
+        expect(() => operation === 'stub' ? sinon.stub(target,) : sinon.spy(target,),).toThrow('already wrapped',);
         expect(Object.getOwnPropertyDescriptors(target,),).toEqual(before,);
         expect(target.first(),).toBe('original',);
         expect(independent.method(),).toBe('existing replacement',);

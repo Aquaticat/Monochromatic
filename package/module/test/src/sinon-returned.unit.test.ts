@@ -3,7 +3,7 @@ import { describe, expect, it, type TestContext, } from '@monochromatic-dev/modu
 import type { SinonStub, } from 'sinon';
 
 /** Ordinary object shape shared by the supported and fallback probes. */
-type Target = { method: () => string; };
+type Target = { toString: () => string; };
 
 /** Produce the distinct public fake-returning operation families. */
 function createReplacement({ sinon, mode, }: {
@@ -11,24 +11,16 @@ function createReplacement({ sinon, mode, }: {
   readonly mode: 'method' | 'object' | 'function-object' | 'instance';
 },): { target: Target; fake: SinonStub; } {
   if (mode === 'instance') {
-    class MethodSource {
-      method(this: void,): string {
-        return 'original';
-      }
-    }
-    const target = sinon.createStubInstance(MethodSource,);
-    return { target, fake: target.method, };
+    const target = sinon.createStubInstance(Date,);
+    return { target, fake: target.toString.returns('original',), };
   }
   if (mode === 'function-object') {
-    class FunctionTarget {
-      static method(this: void,): string {
-        return 'original';
-      }
-    }
-    return { target: FunctionTarget, fake: sinon.stub(FunctionTarget,).method, };
+    function target(): void {}
+    target.toString = (): string => 'original';
+    return { target, fake: sinon.stub(target,).toString.returns('original',), };
   }
-  const target = { method: (): string => 'original', };
-  return { target, fake: mode === 'object' ? sinon.stub(target,).method : sinon.stub(target, 'method',), };
+  const target = { toString: (): string => 'original', };
+  return { target, fake: mode === 'object' ? sinon.stub(target,).toString : sinon.stub(target, 'toString',), };
 }
 
 await describe({
@@ -60,24 +52,24 @@ await describe({
         await it({ name: 'old owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
           const replacement = createReplacement({ sinon, mode, },);
           replacement.fake.returns('owned',);
-          expect(replacement.target.method(),).toBe('owned',);
+          expect(replacement.target.toString(),).toBe('owned',);
           entries.push({ ...replacement, behavior: replacement.fake.onCall(0,), },);
         }, },);
         const [entry,] = entries;
         if (entry === undefined)
           throw new Error('Missing completed replacement',);
         await it({ name: 'new owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
-          sinon.stub(entry.target, 'method',).returns('fresh',);
-          const installed = Object.getOwnPropertyDescriptor(entry.target, 'method',);
+          sinon.stub(entry.target, 'toString',).returns('fresh',);
+          const installed = Object.getOwnPropertyDescriptor(entry.target, 'toString',);
           for (const controller of [entry.fake, entry.behavior,]) {
             for (const operation of ['get', 'set', 'value',] as const) {
-              expect(() => controller[operation](() => 'stale',),).toThrow('completed',);
-              expect(Object.getOwnPropertyDescriptor(entry.target, 'method',),).toEqual(installed,);
+              expect(() => controller[operation]((): void => {},),).toThrow('completed',);
+              expect(Object.getOwnPropertyDescriptor(entry.target, 'toString',),).toEqual(installed,);
             }
           }
           entry.fake.restore();
-          expect(entry.target.method(),).toBe('fresh',);
-          expect(Object.getOwnPropertyDescriptor(entry.target, 'method',),).toEqual(installed,);
+          expect(entry.target.toString(),).toBe('fresh',);
+          expect(Object.getOwnPropertyDescriptor(entry.target, 'toString',),).toEqual(installed,);
           entry.fake.onCall(entry.fake.callCount,).returns('local',);
           expect(entry.fake(),).toBe('local',);
         }, },);

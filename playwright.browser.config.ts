@@ -4,8 +4,11 @@ import {
   type PlaywrightTestConfig,
 } from '@playwright/test';
 
-/** Whether CI was enabled through a nonempty environment value. */
-const isCi = Boolean(process.env.CI,);
+/**
+ Whether CI was enabled through a nonempty environment value.
+ */
+const isCi = Boolean(process.env
+  .CI,);
 
 /**
  Browser Playwright configuration with an explicit public export type for isolated declarations.

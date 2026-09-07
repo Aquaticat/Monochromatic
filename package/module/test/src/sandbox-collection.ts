@@ -41,7 +41,10 @@ export function guardCollectionFakes({
   readonly restoring: () => boolean;
   readonly previous?: PropertyDescriptorMap;
 },): void {
-  for (const member of collectionFakes({ value, previous, },)) {
+  for (const member of collectionFakes({
+    value,
+    previous,
+  },)) {
     /**
      Sinon records target metadata on descriptor-changing stubs, but not on detached spies.
      */

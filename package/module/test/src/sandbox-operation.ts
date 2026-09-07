@@ -93,7 +93,7 @@ function preflightOrdinaryMutation(invocation: SandboxInvocation,): void {
         key,
         operation: invocation.operation,
       },);
-    else if (property === undefined && (invocation.operation === 'ctx.sinon.stub' || invocation.operation === 'ctx.sinon.spy'))
+    else if ((property === undefined) && ((invocation.operation === 'ctx.sinon.stub') || (invocation.operation === 'ctx.sinon.spy')))
       requireUnownedObject({
         target,
         operation: invocation.operation,
@@ -243,9 +243,15 @@ export function dispatchSandboxOperation({
     },);
   }
   preflightOrdinaryMutation(invocation,);
-  if (methodFactory && isSandboxTarget(target,) && property === undefined
-    && (invocation.operation === 'ctx.sinon.stub' || typeof target !== 'function')) {
-    return invokeCollectionFactory({ invocation, target, owner: policy.owner, restoring: policy.restoring, },);
+  if (methodFactory && isSandboxTarget(target,)
+    && (property === undefined)
+    && ((invocation.operation === 'ctx.sinon.stub') || ((typeof target) !== 'function'))) {
+    return invokeCollectionFactory({
+      invocation,
+      target,
+      owner: policy.owner,
+      restoring: policy.restoring,
+    },);
   }
   /**
    Factory behavior not selected for contextual isolation remains owned by Sinon.
@@ -260,7 +266,7 @@ export function dispatchSandboxOperation({
       ...((typeof key) === 'symbol') && (key === SINON_VALIDATES_PROPERTY) ? {} : { key, },
     },);
   }
-  if ((methodFactory && typeof result !== 'function') || (invocation.operation === 'ctx.sinon.createStubInstance'))
+  if ((methodFactory && ((typeof result) !== 'function')) || (invocation.operation === 'ctx.sinon.createStubInstance'))
     guardCollectionFakes({
       value: result,
       owner: policy.owner,
