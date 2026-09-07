@@ -1,3 +1,4 @@
+import { restoreEllipsis, } from './restore-ellipsis.ts';
 import { proseMask, } from './typography-prose-mask.ts';
 
 //region Typography restoration
@@ -169,7 +170,8 @@ function countOpeningSingles(
  * Text inside a backtick span or a tag is never touched, because a straight
  * quote there is code or markup rather than prose. A trailing apostrophe, a
  * word character before it and none after, converts only when the replacement
- * holds no straight single quote shaped like an opening one.
+ * holds no straight single quote shaped like an opening one. The ellipsis form
+ * follows the same reading through `restoreEllipsis`.
  *
  * @param replacement - text the editor wrote
  *
@@ -305,7 +307,14 @@ export function restoreTypography(
       }
       rebuilt.push(character,);
     }
-    return rebuilt.join('',);
+    // The ellipsis form is the third convention a page can mix, found on
+    // 2026-09-07 after the two quote forms were settled; same inputs, same
+    // silence where the document shows both forms.
+    return restoreEllipsis({
+      replacement: rebuilt.join('',),
+      replaced,
+      convention,
+    },);
   })();
 }
 

@@ -98,6 +98,7 @@ export {
   buildSliceSelections,
   type SliceSelection,
 } from './slice-selection.ts';
+export { restoreEllipsis, } from './restore-ellipsis.ts';
 export { restoreTypography, } from './restore-typography.ts';
 export { describeSelfPreference, } from './self-preference-line.ts';
 export {

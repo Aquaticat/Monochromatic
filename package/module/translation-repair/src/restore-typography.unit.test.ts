@@ -239,5 +239,44 @@ await describe({
         },),).toBe("on the 'girls' side too.",);
       },
     },),
+    it({
+      name: 'RESTORES three dots where the document writes three dots, collapsing the doubled '
+        + 'U+2026 Chinese carries, and leaves a tag alone (yulianNyanner, 2026-09-07)',
+      fn: async () => {
+        expect(restoreTypography({
+          replacement: 'No chance anymore\u{2026}\u{2026} <a href="x…y">so\u{2026}</a>',
+          replaced: 'No chance now.',
+          convention: 'She waited... and waited...',
+        },),).toBe('No chance anymore... <a href="x…y">so...</a>',);
+      },
+    },),
+
+    it({
+      name: 'RESTORES U+2026 where the document writes it, from a run of exactly three dots and '
+        + 'not from a longer one',
+      fn: async () => {
+        expect(restoreTypography({
+          replacement: 'Well... no.... never',
+          replaced: 'Well, no.',
+          convention: 'She waited\u{2026} and waited\u{2026}',
+        },),).toBe('Well\u{2026} no.... never',);
+      },
+    },),
+
+    it({
+      name: 'LEAVES the ellipsis alone where the document shows both forms or neither',
+      fn: async () => {
+        expect(restoreTypography({
+          replacement: 'Well... no\u{2026}',
+          replaced: 'Well, no.',
+          convention: 'She waited\u{2026} and waited...',
+        },),).toBe('Well... no\u{2026}',);
+        expect(restoreTypography({
+          replacement: 'Well... no\u{2026}',
+          replaced: 'Well, no.',
+          convention: 'She waited and waited.',
+        },),).toBe('Well... no\u{2026}',);
+      },
+    },),
   ],
 },);
