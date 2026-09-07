@@ -2661,6 +2661,25 @@ one carrying it passes with `pageGrammar` strict,
 and one closing the element is refused as a different block.
 The container-integrity header names the slice floor as the first catch.
 
+## The Huasheng relaunch, 2026-09-07, 03:09 UTC
+
+`Huasheng` launched again at 03:09:14 UTC on `f54da91e2`,
+pipeline `95196dfc`,
+the class-nine build,
+plain invocation,
+fresh runs dir `~/temp/agent/huasheng2-20260907`,
+log beside it,
+after the full suite on that build read 936 `PASS` and 0 `FAIL`,
+oxlint 0 and 0,
+types clean.
+Weekly Synthetic 6.55 percent at launch,
+Hyper 2272;
+the week will likely run dry during this pass,
+after which Hyper serves alone.
+The reading follows,
+with the two container halves,
+the poem's line endings and both footnote conventions first.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
