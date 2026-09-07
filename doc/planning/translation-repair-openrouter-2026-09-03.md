@@ -3013,6 +3013,27 @@ Guard shown to fail with every clause neutralised,
 full suite 937 `PASS`,
 0 `FAIL`.
 
+## The fourth Huasheng launch, 2026-09-07, 15:43 UTC, on the class-eleven build
+
+`Huasheng` launched at 15:43:52 UTC on `32dd30437`,
+pipeline `a4c73f76`,
+plain invocation,
+fresh runs dir `~/temp/agent/huasheng4-20260907`,
+log beside it,
+after the full suite on that build read 937 `PASS` and 0 `FAIL`.
+Meters at launch:
+Synthetic 1.98 percent of the week,
+Hyper 1272,
+OpenRouter 0.32 USD,
+every seat filled.
+Hyper carries the pass once Synthetic dries,
+at about 800 credits,
+so this is the last pass the meters allow before a refill or a top-up.
+The reading follows,
+the front matter's name first,
+then the container,
+the poem and both footnote conventions.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
