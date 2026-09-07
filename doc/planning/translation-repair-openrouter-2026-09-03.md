@@ -3521,7 +3521,20 @@ pid 3706395.
 `wide=7 select=7 late=8 slate=8 checkers=3 translators=7 readers=4 roster=9 withheld=none`,
 the roster of 2026-09-01 with every provider wet.
 Bedrock now serves only the two seats the roster already names,
-once Synthetic dries.
+and those only third in line:
+Hyper serves both,
+so when Synthetic dried at 21:24 UTC
+(the week at 0 percent after the seated fidelity run and this pass)
+the two seats went to Hyper,
+60 and 40 calls by 21:35,
+and the pass had made no Bedrock call at all.
+Bedrock takes them when Hyper holds,
+which today means its daily limit,
+or when Hyper's balance is gone;
+the launch record's "route there once Synthetic dries" was wrong about the order.
+Whether prepaid and expiring Bedrock money should sit ahead of Hyper's credits for the seats both serve
+is the order question the fourth-provider record left open to veto,
+and it is put to the owner in the handover.
 
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
