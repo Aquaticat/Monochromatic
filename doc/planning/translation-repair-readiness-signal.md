@@ -789,3 +789,42 @@ so one more pass of this size is what the meters allow.
 What would move the belief:
 `Huasheng` on the class-eleven build,
 read whole.
+
+## What the fourth Huasheng launch showed (2026-09-07, 15:43 UTC)
+
+Settled at 20:48 UTC after 305 minutes with a page,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The fourth Huasheng page".
+The ninth,
+tenth and eleventh classes held on the entry that found them:
+the container arrived whole,
+the poem kept the original's shape,
+and the directory name stood beside its Latin aliases.
+
+WHAT IT FOUND:
+the twelfth class,
+not at the publisher but in the meters:
+Hyper's daily limit,
+"try again in 2h25m18s",
+read by the ladder as no wait and by the router as a 60 s concurrency hold,
+2,693 refused attempts over 2h53m while the balance read wet.
+Fixed on `translation-repair-class12` at `31e67a100`,
+landing with the fourth provider.
+Also seen for the first time:
+the block-floor decision's cost,
+an archive-added footnote whose anchor the source-shaped paragraph does not carry.
+
+THE READING:
+closer.
+Every class found on a read page has been closed and re-read on the same entry,
+and the fourth Huasheng page carries no refusal vocabulary,
+no typography residue and every destination.
+What is not yet on record:
+a page judged by a wet roster,
+since this one settled on Hyper's return after four chunks with nobody heard;
+a page from the second tier (`hakureico` or `yuki418330012`) and from `Arita`;
+and a pass with the fourth provider in the order.
+What would move the belief:
+the next entry on the landed build,
+four providers,
+read whole.

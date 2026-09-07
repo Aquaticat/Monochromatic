@@ -117,8 +117,14 @@ the third provider since 2026-09-03,
 has no local ceiling either:
 a width-32 chat-completions arm completed 32 of 32 on two models with no refusal,
 and the provider states no request-rate limit for paid models.
+Amazon Bedrock,
+the fourth provider since 2026-09-07,
+publishes no requests-per-minute quota and no token quota for the four models it serves here,
+asks for retry with backoff on throttling and a gradual ramp,
+and has no local ceiling either.
 Routing walks `PROVIDER_ORDER` (Synthetic,
 Hyper,
+Bedrock,
 OpenRouter):
 the first provider that serves the model and has budget takes the call,
 a saturated provider overflows to the next usable one,
@@ -868,6 +874,37 @@ and reading one as an instruction has cost this package a defect before.
     ModelRun's 504 timeouts on MiniMax M3,
     2026-09-04,
     were the case).
+
+-   `TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY`.
+    Bearer token for the fourth provider,
+    Amazon Bedrock,
+    the owner's 200 USD of prepaid credits of 2026-09-07,
+    expiring early next year and never to be topped up,
+    to be spent freely until then.
+    OPTIONAL AND LOUD like the second and third.
+    Under the account's zero-data-retention mode the served models are the three Gemma 4 sizes and gpt-oss-120b,
+    on the `bedrock-mantle` host in us-east-1 over raw fetch and chat completions:
+    the Gemma sizes under `/openai/v1` ending on `[DONE]`,
+    gpt-oss-120b under `/v1` ending on its usage chunk
+    (`bedrock-catalog.ts` records the probes).
+    The provider exposes no balance to a bearer key,
+    so every priced call appends one line to a durable ledger and the `METERS` line's `bedrockUsd=`
+    is the credit less that file's sum;
+    `SPEND` lines carry `cost=` computed from the usage and the catalog's prices.
+
+-   `TRANSLATION_REPAIR_BEDROCK_LEDGER`.
+    Where that ledger lives;
+    `~/.local/state/translation-repair/bedrock-spend.jsonl` under the running user's home when unset.
+    Append-only JSON lines,
+    one per priced call;
+    a line that will not read stops the meter with the line's number rather than reading the money as unspent.
+
+-   `TRANSLATION_REPAIR_BEDROCK_CREDIT_USD`.
+    The credit line the ledger is read against;
+    200 when unset,
+    the owner's figure.
+    Set it when the console reads a different balance;
+    anything that is not a non-negative number is refused at once.
 
 Every key lives in the sops-encrypted,
 gitignored `.env.local.json` at the repository root,

@@ -201,6 +201,32 @@ not a provider guarantee.
 The 1,000 requests-per-hour account limit must be implemented as a rate budget,
 not by lowering simultaneous in-flight work to 8.
 
+## Hyper's daily limit is not its hourly one (2026-09-07)
+
+Hyper has a second limit the pacer cannot see.
+On the fourth Huasheng pass of 2026-09-07,
+from 17:00 to 19:54 UTC,
+every Hyper call answered HTTP 429 with the body
+`You've hit your daily rate limit. Please try again in 2h25m18s.`
+(84 bodies logged,
+each wait counting down to 19:53 or 19:54),
+while the balance meter read wet at 909 the whole time and the hourly pacer kept the window exactly full.
+The retry ladder read digits followed by `s` only,
+so a wait written in hours and minutes parsed as no wait;
+the router then held the provider out for the 60 s concurrency backoff and walked back in:
+2,693 refused attempts,
+831 holds,
+four consolidation chunks of about 75 min each settling on nobody.
+
+Since `31e67a100` the stated wait parses as hours,
+minutes and seconds,
+a wait past the ladder's own widest backoff window ends the ladder at once,
+and `markRefused` holds the provider out for at least the wait its refusal named,
+whatever the meter reads.
+The daily quota's size is not published;
+today it closed after about 1,000 requests of this pass on top of the day's earlier passes,
+and it reopened at the instant the bodies named.
+
 ## Production scheduler contract
 
 For the replacement finite dependency graph:
