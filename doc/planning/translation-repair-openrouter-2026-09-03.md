@@ -4051,6 +4051,59 @@ The seated roster's reading over the same twelve is bought after the fourth haku
 since its 108 calls would land on the Hyper quota the pass is spending;
 the rule is applied then.
 
+### The seated roster on the same twelve, 23:17 UTC, and the rule applied
+
+The nine roster models over the same three slices,
+108 calls (84 Hyper,
+24 Bedrock,
+no daily-limit refusal),
+`fidelity: 24 of 24 trials chose the complete text`;
+per judge,
+distinct questions answered with the complete text:
+
+- 12 of 12:
+  `glm-5.3` (no judge seat since 2026-09-01),
+  `hf:Qwen/Qwen3.8-27B` (none since 2026-09-03),
+  `hf:moonshotai/Kimi-K3`,
+  `hf:zai-org/GLM-5.3-Flash` (none since 2026-09-02).
+- 11 of 12:
+  `deepseek-v4-pro-0813` (one damaged pick),
+  `minimax-m3` (one damaged pick).
+- 8 of 12:
+  `deepseek-v4-flash-0731` (one damaged pick,
+  three declines).
+- 7 of 12:
+  `hf:openai/gpt-oss-120b` (five declines).
+- 4 of 12:
+  `gemma-4-26b-a4b-it` (eight declines).
+
+The six judges the wide seats hold read 12,
+11,
+11,
+8,
+7 and 4:
+median 9.5,
+worst damaged count 1.
+By the rule written before these numbers:
+
+- `google.gemma-4-e2b`,
+  11 of 12 with one damaged pick,
+  meets both clauses and JOINS critic,
+  panel and judge in both lanes,
+  the late bench and the slate.
+  It holds no writing seat,
+  since no producer calibration has measured it:
+  `RUN_WRITERS` names the consolidation writers and the translate lane leaves it out
+  (`b0b48d6f4`,
+  four guards bite).
+  Bedrock serves it alone,
+  so it is the third judge that answers while Hyper is held out.
+- `google.gemma-4-31b`,
+  6 of 12 on declines,
+  meets neither and stays out.
+
+Recorded as the addendum of 2026-09-07 in `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
+
 ## Build plan, transport-independent layers first
 
 In commit order,

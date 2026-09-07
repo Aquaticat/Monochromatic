@@ -101,6 +101,16 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `b0b48d6f4` (2026-09-07,
+    23:50 UTC):
+    `google.gemma-4-e2b` seated as a judge on the fidelity probe
+    (11 of 12 against a seated median of 9.5),
+    in no writing seat;
+    `google.gemma-4-31b` stays out (6 of 12).
+    Decision addendum in `doc/decision/translation-repair-roster-seating-2026-09-01.md`;
+    numbers in the planning log under "Measuring the two Bedrock-only sizes".
+    The roster is ten;
+    Bedrock serves three judges while Hyper is held out.
 -   `c9cd537e6` (2026-09-07,
     23:35 UTC):
     the fourteenth class.
@@ -554,11 +564,8 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     301 at 23:09,
     never to be recharged,
     70 to 290 per hakureico pass.
-2.  Re-run `judge-fidelity-probe --cap 48 --candidates google.gemma-4-e2b,google.gemma-4-31b`
-    over a throwaway runs dir holding all four settled artifacts,
-    apply the pre-registered wide-seat rule,
-    and run `producer-calibrate` with the same `--candidates` for the translator seat;
-    seat or leave out on those numbers in one commit with the decision record's addendum.
+2.  Run `producer-calibrate` with `--candidates google.gemma-4-e2b` for the translator seat when the meters allow;
+    the judge seat is decided (`b0b48d6f4`).
 3.  Then `yuki418330012` (a math pair),
     then `Arita`,
     then the seven components no read page has met.

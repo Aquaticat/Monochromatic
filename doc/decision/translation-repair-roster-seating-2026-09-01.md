@@ -178,3 +178,38 @@ on 2026-09-03 while XIEPT2's fifth run was in flight; it reaches the next launch
     half in critic and panel; the seat sets are coarser than that profile, which is part of the
     provider-aware seat question.
 -   The 60 s round window stays, as on 2026-09-02.
+
+## Addendum 2026-09-07: `google.gemma-4-e2b` joins the judge seats; `google.gemma-4-31b` stays out
+
+Taken on the same delegation as the seating above,
+under a rule pre-registered in `doc/planning/translation-repair-openrouter-2026-09-03.md`
+("Measuring the two Bedrock-only sizes",
+"The rule, written before the next questions arrive")
+before the seated roster was measured on the same questions.
+Instrument:
+`judge-fidelity-probe` over the three settled slices the four artifacts on disk yield,
+twelve distinct questions per judge,
+the candidates alone at Bedrock and then the seated roster,
+build `3fc918013`.
+
+-   `google.gemma-4-e2b`:
+    11 of 12 with one damaged pick,
+    against the six seated judges' median of 9.5 and worst damaged count of 1.
+    Seated in critic,
+    adjudication panel and judge in both lanes,
+    the late bench and the slate (`b0b48d6f4`,
+    `SEATED_BEDROCK_JUDGES` in `run-config.ts`).
+    No writing seat:
+    no producer calibration has measured it,
+    and `RUN_WRITERS` keeps the consolidation writers to the measured roster.
+-   `google.gemma-4-31b`:
+    6 of 12,
+    declining the rest,
+    never the damaged text.
+    Not seated.
+
+Twelve questions over three slices separate a habit of declining from a habit of choosing the damaged text;
+the 40-slice calibration that seated the writers was not repeated for a judge seat,
+which the 2026-09-01 decision did not measure either.
+The translator seat is `producer-calibrate`'s to give by the pooled null,
+run with `--candidates` when the meters allow.
