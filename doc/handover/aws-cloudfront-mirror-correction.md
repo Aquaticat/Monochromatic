@@ -203,6 +203,48 @@ theme toggle worked,
 and HTTP content parity passed.
 Keep this browser-verification limitation separate from CloudFront HTTP 502 remediation.
 
+## Local interactive walkthrough
+
+The user requested a self-contained visual explanation with interactive networking controls.
+Created `doc/troubleshooting/aws-cloudfront-walkthrough.local.html`.
+It is intentionally local and ignored by the existing `*.local.*` rule;
+no external assets,
+network calls,
+or persistent storage are needed.
+
+The guide contains request journeys,
+independent TLS/SNI/Host controls,
+a Host-forwarding policy sandbox,
+and the measured resolution with limitations and rollback.
+Independent review tightened the distinction between modeled SNI and captured evidence,
+scoped the policy union to Host,
+and clarified origin behavior on cache hits.
+
+Browser verification exercised every journey stage,
+all direct-origin and forwarding-switch combinations,
+quiz answers,
+disclosure panels,
+and chapter navigation.
+It checked desktop,
+portrait,
+and narrow layouts for overflow and minimum control sizes.
+Optional source-link activations were intercepted to retain an offline test boundary;
+the external pages were not re-tested by that harness.
+No page or console errors were reported.
+
+The first automation pass did not change an offscreen switch despite a completed click command.
+It was not counted as a pass.
+The rerun explicitly positioned controls in the viewport and asserted the rendered states;
+all checks passed.
+Private action logs and screenshots are retained in the task directory.
+
+The automated browser was closed.
+The exact file was then opened in Helium.
+KWin verified its window was active,
+not minimized,
+on the user's measured current output `DP-2`,
+with geometry `1080,0 1080×1880`.
+
 ## Proposed agent guideline
 
 Proposed addition to `AGENTS.md` under `Command execution conventions`:
