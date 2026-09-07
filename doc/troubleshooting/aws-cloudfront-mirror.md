@@ -928,6 +928,166 @@ A pending checkpoint does not authorize the next mutation.
 This keeps control with the agent without requiring another user prompt.
 The handover records the communication gap and proposed agent-guideline addition.
 
+### Public precedents checked on 2026-09-07
+
+The user asked whether other people had this specific issue.
+Public reports corroborate both the Caddy symptom and the policy interaction.
+They do not establish an exact duplicate of our complete Caddy,
+Free-plan,
+policy,
+and native-function combination,
+or measure how prevalent it is.
+
+#### Caddy and CloudFront with a distribution-name certificate lookup
+
+[Caddy #7445][caddy-cloudfront-issue],
+opened on 2026-01-21,
+reports a Caddy origin that serves `HELLO` directly but returns CloudFront HTTP 502 through a distribution.
+The reporter supplied this debug-log message on 2026-01-22:
+
+```text
+http: TLS handshake error from 1.2.3.4:123456: no certificate available for 'xxxxxxxx.cloudfront.net'
+```
+
+The reporter interpreted this as CloudFront supplying the distribution hostname in ClientHello.
+Their follow-up said enabling Host passthrough changed the name to the Host-header domain,
+but they had not found how to use the origin domain.
+The maintainer closed the report because it did not appear to be a Caddy defect,
+while leaving discussion open.
+
+This is a close Caddy/CloudFront symptom match,
+with origin-side diagnostic evidence that our investigation did not obtain.
+The thread does not provide the exact cache/origin-request policy pair,
+pricing plan,
+or a successful tested correction.
+Its reference to default behavior is the reporter's observation,
+not proof of a universal CloudFront default.
+
+#### Exact managed-cache-policy trap on AWS re:Post
+
+In ["configure the Cloud Front to set the origin request header"][host-policy-report],
+the origin accepts its own hostname,
+but CloudFront forwards the viewer hostname.
+The author supplied CLI output confirming
+`Managed-AllViewerExceptHostHeader`,
+ID `b689b0a8-53d0-40ab-baf2-68738e2966ac`,
+was associated with the behavior.
+
+Commenter `Kal` explicitly names:
+
+> Using a Cache Policy of UseOriginCacheControlHeaders-QueryStrings
+> with an Origin Request policy of AllViewerExceptHostHeader,
+> I am still seeing the Cloudfront Distribution Domain name being sent to my backend server as the Host name.
+
+This matches the one-policy-only correction we identified as insufficient:
+the same managed cache policy still includes `host`,
+so the origin-request exclusion cannot cancel it.
+It does not match our original origin-request policy,
+which was `Managed-AllViewer`.
+The thread records no successful correction,
+Caddy version,
+or plan constraint.
+The generated AI answer recommending only the origin-request policy is not used as evidence of a fix.
+AWS's [policy interaction guide][policy-interaction],
+not the unanswered comments alone,
+establishes why cache-policy inclusion wins.
+
+#### Self-reported successful correction with a different backend
+
+The [Fly.io discussion][fly-host-report] starts with direct-origin success and CloudFront HTTP 502.
+On 2024-05-27,
+the author reports successful delivery using
+`Managed-AllViewerExceptHostHeader` with `Managed-CachingDisabled`,
+while retaining an HTTPS origin.
+They describe the viewer hostname causing a certificate-name mismatch at the backend.
+
+This corroborates the failure family and a reported working policy combination.
+It is not a controlled reproduction of our incident:
+the backend is not Caddy,
+the serving configuration also changed during troubleshooting,
+and disabling caching would not preserve our cache semantics.
+Its TLS 1.2 configuration is not a recommendation for this TLS-1.3-only origin.
+
+#### Host-derived SNI can also be intentional
+
+The accepted answer in ["Cloud Front To ALB SNI"][alb-sni-report] explains how forwarding viewer Host
+makes origin SNI use that viewer hostname when the load balancer has its certificate.
+The asker replies that it worked.
+This is community corroboration of the mechanism in the opposite direction,
+not another matching failure or formal service documentation.
+The answer's linked AWS whitepaper currently redirects to a general security page,
+so that redirected page is not treated as verification of the specific claim.
+
+#### Source check for the certificate diagnostic
+
+Read-only source inspection used [CertMagic][certmagic-source] commit
+`31be911f5425b80393154a94a21403c9c0029910`.
+The clone's origin was verified and no source was changed.
+This is a current-source explanation of the diagnostic,
+not identification of the reporter's or our deployed version.
+
+`handshake.go:294` obtains the name used by the handshake certificate path:
+
+```go
+// certmagic/handshake.go:294
+name, err := cfg.getNameFromClientHello(hello)
+```
+
+For a nonempty TLS server name,
+`handshake.go:904` normalizes and returns `hello.ServerName`:
+
+```go
+// certmagic/handshake.go:904
+name, err := idna.Lookup.ToASCII(strings.TrimSpace(hello.ServerName))
+if err != nil {
+	return "", err
+}
+if name != "" {
+	return name, nil
+}
+```
+
+The unsuccessful certificate path in `handshake.go:419` emits:
+
+```go
+// certmagic/handshake.go:419
+return Certificate{}, fmt.Errorf("no certificate available for '%s'", name)
+```
+
+The empty-SNI branch at `handshake.go:911` can instead use a configured default name or local address:
+
+```go
+// certmagic/handshake.go:911
+if cfg.DefaultServerName != "" {
+	return normalizedName(cfg.DefaultServerName), nil
+}
+return localIPFromConn(hello.Conn), nil
+```
+
+Consequently,
+this diagnostic is relevant to certificate selection during TLS,
+but its text is not universally a verbatim SNI capture.
+The public reporter's SNI interpretation stays attributed to that reporter.
+
+#### Search scope and conclusion
+
+Queries covered Caddy/CloudFront SNI and certificate failures,
+the exact managed cache policy,
+`AllViewerExceptHostHeader`,
+Free-plan/custom-policy restrictions,
+and `updateRequestOrigin` with `hostHeader` and `sni`.
+Comparable searches included Fly.io and ALB rather than treating a narrow Caddy query as exhaustive.
+The Caddy issue was read with all comments;
+the re:Post and Fly.io pages were read including the follow-up discussion.
+
+Conclusion:
+this is a documented policy interaction with public reports of matching failure components,
+not a unique networking anomaly or an established CloudFront implementation bug.
+No public report found in these searches reproduces every constraint and the final native-function remedy together.
+The issue 7 upstream-filing decision remains unchanged:
+no implementation defect is established,
+and no upstream issue or comment was posted.
+
 ### Omitted avenues and their tradeoffs
 
 This is an architecture review,
@@ -1493,6 +1653,10 @@ Sources for the reassessment were accessed on 2026-09-07.
 [origin-sni-note]: https://repost.aws/knowledge-center/cloudfront-https-connection-fails
 [origin-helper]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/helper-functions-origin-modification.md
 [flat-rate-plans]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/flat-rate-pricing-plan.md
+[host-policy-report]: https://repost.aws/questions/QUyKQbjgzkRYG-DI0bsKE6Mg/configure-the-cloud-front-to-set-the-origin-request-header
+[fly-host-report]: https://community.fly.io/t/fly-io-apps-behind-cloudfront/20028
+[alb-sni-report]: https://repost.aws/questions/QU6ztFUrqgSlOTgVFu2CM9KA/cloud-front-to-alb-sni
+[certmagic-source]: https://github.com/caddyserver/certmagic
 
 - RFC 7838,
    HTTP Alternative Services,
