@@ -101,6 +101,18 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `263b7ca73`,
+    `7b532ae31` and `31e67a100`,
+    fast-forwarded from `translation-repair-class12` on 2026-09-07 at 20:55 UTC:
+    Amazon Bedrock as the fourth provider (order Synthetic,
+    Hyper,
+    Bedrock,
+    OpenRouter;
+    the three Gemma 4 sizes and gpt-oss-120b on mantle's two routes;
+    a durable USD ledger against the owner's 200 USD),
+    and the twelfth class,
+    a refusal that names its return held out for that wait.
+    Both built and proven in a throwaway worktree while the fourth Huasheng pass ran.
 -   `912dbe2dc` lets a directory id stand as the visible name where it is a pinyin reading of the
     source name,
     the source's own alias,
@@ -309,6 +321,52 @@ read on both front matters;
 landed in `912dbe2dc`,
 and under it every directory-named archive at the pin stands while a bare folder name still falls.
 
+## The twelfth class
+
+Found in the meters by the fourth Huasheng pass,
+not at the publisher.
+From 17:00 to 19:54 UTC Hyper answered every call
+`You've hit your daily rate limit. Please try again in 2h25m18s`
+(84 bodies,
+each counting down to the same instant)
+while its balance read wet at 909 and the hourly pacer kept the window exactly full.
+The retry ladder read digits followed by `s` only,
+so a wait in hours and minutes parsed as no wait;
+the router held Hyper out 60 s at a time as a concurrency limit:
+2,693 refused attempts,
+831 holds,
+four consolidation chunks of 75 min settling on nobody.
+Landed in `31e67a100`:
+the wait parses as hours,
+minutes and seconds;
+a wait past the ladder's own widest backoff window ends the ladder at once;
+`markRefused` holds the provider out for at least the wait its refusal named,
+whatever the meter reads.
+
+## The fourth provider
+
+The owner's Amazon Bedrock account,
+2026-09-07:
+200 USD of credits expiring early next year,
+never to be topped up,
+to be used as much as the pipeline likes;
+raw fetch,
+no SDK;
+under zero data retention the served models are Gemma 4 E2B,
+31B,
+26B-A4B and gpt-oss-120b (Claude Sonnet 5 was named and retracted).
+Landed in `7b532ae31`,
+recorded in the planning log under "The owner adds Amazon Bedrock":
+the key in this worktree's `.env.local.json`,
+`bedrock` third in `PROVIDER_ORDER`,
+the Gemma sizes under `/openai/v1` ending on `[DONE]` and gpt-oss under `/v1` ending on its usage chunk,
+cost computed from usage and the catalog's prices,
+an append-only ledger under `~/.local/state/translation-repair/bedrock-spend.jsonl` read as the meter
+(`bedrockUsd=` on the `METERS` line),
+the two Bedrock-only Gemma sizes in the roster as seatable and in no role,
+and the router's refusal loop bounded by the providers that serve a call.
+The README names the three variables.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -343,25 +401,31 @@ The plain invocation in
 [`translation-repair-corpus-pass.md`](../runbook/translation-repair-corpus-pass.md) is the production launch:
 a fresh `TRANSLATION_REPAIR_RUNS_DIR`,
 no dial,
-all three provider keys present.
+whichever provider keys are present (four since 2026-09-07;
+any number dry or absent is normal operation,
+the owner's words).
 The log opens with `OVERLAP <entry> value=4 source=fallback` and `WRITER GRACE built in`.
 Every dial still works for a measured arm.
 The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Run and read `Huasheng` on the class-eleven build,
-    on whatever roster the meters allow,
-    one run at a time.
-    The order is the census's,
-    recorded in the planning log under "The run order after TLL1122",
-    and open to veto.
-2.  Then a math pair (`yuki418330012`) or a second footnote entry (`hakureico`),
+1.  Run and read the next entry on `263b7ca73` with four providers in the order:
+    `hakureico` (a second footnote carrier) or `yuki418330012` (a math pair),
     then `Arita`,
     then the seven components no read page has met.
-4.  The OpenRouter top-up is the owner's and expected within days;
-    nothing waits on it while Synthetic and Hyper are wet.
-    One settled entry costs about 3.9 points of the Synthetic week and 64 Hyper credits at zero USD.
+    The fourth Huasheng page (2026-09-07 at 20:49 UTC) closed the ninth,
+    tenth and eleventh classes on the entry that found them;
+    what is not yet on record is a page judged by a wet roster and a pass with Bedrock in the order.
+2.  Seat `google.gemma-4-e2b` and `google.gemma-4-31b` by measured fidelity,
+    running the existing probes through Bedrock,
+    and record the numbers before any role takes them.
+3.  Hyper's daily quota is unpublished and closed once today after about a thousand requests of one pass;
+    a pass that meets it now holds Hyper out until the instant the refusal names and spends elsewhere.
+    Synthetic stands at 1 percent of the week,
+    Hyper at 829,
+    OpenRouter at 0.01 USD,
+    Bedrock at its full 200 USD.
 
 ## Standing constraints
 
