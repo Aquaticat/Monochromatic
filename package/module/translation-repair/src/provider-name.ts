@@ -14,11 +14,15 @@
 // and the routing arithmetic in `budget-routing.ts` walks this list rather
 // than naming providers one by one.
 //
-// AMAZON BEDROCK JOINED ON 2026-09-07, third in the order: the owner's 200 USD
+// AMAZON BEDROCK JOINED ON 2026-09-07, SECOND IN THE ORDER: the owner's 200 USD
 // of credits there expire early next year and will never be topped up ("you're
 // allowed to use it as much as you like. But I will NEVER top it up"), where
 // OpenRouter's credits are the owner's to top up. So prepaid and expiring
-// money is spent before money that would be bought.
+// money is spent before money that would be bought. It landed third, behind
+// Hyper, and the owner moved it ahead the same evening ("Yes Bedrock sit
+// ahead"): the two seats both serve had gone to Hyper the moment Synthetic
+// dried, spending the balance the Hyper-only seats run on, while the expiring
+// money answered nothing.
 
 /**
  * One of the providers this pipeline can buy a call from.
@@ -40,8 +44,8 @@ export type ProviderName = 'synthetic' | 'hyper' | 'bedrock' | 'openrouter';
  */
 export const PROVIDER_ORDER: readonly ProviderName[] = [
   'synthetic',
-  'hyper',
   'bedrock',
+  'hyper',
   'openrouter',
 ];
 
@@ -76,8 +80,8 @@ export function providerRecord<ValueT,>(
 ): ProviderRecord<ValueT> {
   return {
     synthetic: of('synthetic',),
-    hyper: of('hyper',),
     bedrock: of('bedrock',),
+    hyper: of('hyper',),
     openrouter: of('openrouter',),
   };
 }
@@ -93,6 +97,8 @@ export function providerRecord<ValueT,>(
  * ```ts
  * otherProviders({ provider: 'hyper', },);
  * // => ['synthetic', 'bedrock', 'openrouter',]
+ * otherProviders({ provider: 'synthetic', },);
+ * // => ['bedrock', 'hyper', 'openrouter',]
  * ```
  */
 export function otherProviders(

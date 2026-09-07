@@ -178,22 +178,22 @@ await describe({
             ...allWet,
             synthetic: true,
           },
-        },),).toBe('hyper',);
-        expect(providerServing({
-          reach: everyReach,
-          dry: {
-            ...allWet,
-            synthetic: true,
-            hyper: true,
-          },
         },),).toBe('bedrock',);
         expect(providerServing({
           reach: everyReach,
           dry: {
             ...allWet,
             synthetic: true,
-            hyper: true,
             bedrock: true,
+          },
+        },),).toBe('hyper',);
+        expect(providerServing({
+          reach: everyReach,
+          dry: {
+            ...allWet,
+            synthetic: true,
+            bedrock: true,
+            hyper: true,
           },
         },),).toBe('openrouter',);
         expect(providerServing({
@@ -202,7 +202,7 @@ await describe({
             synthetic: false,
           },
           dry: allWet,
-        },),).toBe('hyper',);
+        },),).toBe('bedrock',);
         expect(providerServing({
           reach: everyReach,
           dry: {
@@ -233,8 +233,9 @@ await describe({
     },),
 
     it({
-      name: 'OVERFLOWS TO HYPER once that limit is taken, because this provider has no per-model '
-        + 'concurrency limit and waiting would cost the speed the split is for',
+      name: 'OVERFLOWS TO BEDROCK, next in the order since 2026-09-07, once that limit is taken, '
+        + 'because this provider has no per-model concurrency limit and waiting would cost the speed '
+        + 'the split is for',
       fn: async () => {
         expect(routeProviderFor({
           reach: everyReach,
@@ -243,13 +244,13 @@ await describe({
             ...noneSaturated,
             synthetic: true,
           },
-        },),).toEqual({ kind: 'hyper', },);
+        },),).toEqual({ kind: 'bedrock', },);
       },
     },),
 
     it({
-      name: 'SWITCHES TO HYPER when Synthetic is dry, whether or not its concurrency had room, '
-        + 'since budget outranks saturation',
+      name: 'SWITCHES TO BEDROCK when Synthetic is dry, whether or not its concurrency had room, '
+        + 'since budget outranks saturation, and to Hyper when Bedrock is dry too',
       fn: async () => {
         for (const synthetic of [true, false,]) {
           expect(routeProviderFor({
@@ -257,6 +258,18 @@ await describe({
             dry: {
               ...allWet,
               synthetic: true,
+            },
+            saturated: {
+              ...noneSaturated,
+              synthetic,
+            },
+          },),).toEqual({ kind: 'bedrock', },);
+          expect(routeProviderFor({
+            reach: everyReach,
+            dry: {
+              ...allWet,
+              synthetic: true,
+              bedrock: true,
             },
             saturated: {
               ...noneSaturated,
@@ -388,13 +401,24 @@ await describe({
     },),
 
     it({
-      name: 'SENDS a model Synthetic does not serve to Hyper regardless of what Synthetic is doing',
+      name: 'SENDS a model Synthetic does not serve to the next provider that does, Bedrock then Hyper, '
+        + 'regardless of what Synthetic is doing',
       fn: async () => {
         expect(routeProviderFor({
           reach: {
             synthetic: false,
             hyper: true,
             bedrock: true,
+            openrouter: true,
+          },
+          dry: allWet,
+          saturated: noneSaturated,
+        },),).toEqual({ kind: 'bedrock', },);
+        expect(routeProviderFor({
+          reach: {
+            synthetic: false,
+            hyper: true,
+            bedrock: false,
             openrouter: true,
           },
           dry: allWet,
