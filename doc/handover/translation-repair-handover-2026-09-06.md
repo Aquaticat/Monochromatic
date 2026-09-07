@@ -101,6 +101,18 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `e17d0c487` (2026-09-07,
+    23:20 UTC),
+    guarded at `8e64a6ef7`:
+    the thirteenth class's second face.
+    The fourth hakureico pass met Hyper's daily limit two minutes into consolidation,
+    after the phase had seated,
+    and stopped INCOMPLETE when slice 5's slate declined under the hold.
+    Every chunk of every lane now waits out a named hold that keeps its bench from quorum
+    (`awaitBenchQuorum` in `run-seats-read.ts`,
+    `beforeSlice` on the three drivers,
+    free while nothing is held).
+    Planning log: "The fourth hakureico pass stops INCOMPLETE".
 -   `752bf9a9b` (2026-09-07,
     22:17 UTC):
     the thirteenth class.
@@ -446,6 +458,10 @@ waits out the shortest running hold once and reads again;
 the lanes driver re-seats the translate lane when it is about to start.
 Per phase rather than per call,
 since a call's deadline is shorter than a daily-limit hold.
+Per chunk as well since `e17d0c487`,
+after the fourth pass met the hold two minutes into consolidation and stopped INCOMPLETE:
+each driver awaits `beforeSlice` before a chunk,
+which costs one synchronous read of the holds while nothing is held.
 
 ## The two defaults and the rule
 

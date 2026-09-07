@@ -3775,6 +3775,61 @@ then the Bedrock `SPEND` lines and the ledger against `bedrockUsd=`.
 Hyper's daily limit reopened at 22:06 and its next closing is unpublished;
 a pass that meets it now waits at the next phase boundary instead of settling on nobody.
 
+## The fourth hakureico pass stops INCOMPLETE; the thirteenth class's second face, 2026-09-07, 22:56 UTC
+
+Every `JUDGE SEATS` line read `waited=0ms`
+(preparation 22:21,
+pictures 22:21,
+lanes 22:23,
+translate lane 22:42 with six writers reachable,
+lane contest 22:49,
+consolidation 22:53),
+the translate lane ran on the full bench,
+and `consolidation: 18 contested slices to settle`.
+Then at 22:55:54,
+two minutes into consolidation,
+Hyper's daily limit answered 429 naming 923 s
+(nine bodies,
+held out to 23:11:18);
+the phase had already seated,
+so the chunks in flight and after ran on the two Bedrock seats
+(`absolute naturalness review: 2/7 usable, quorum-not-met`).
+Slice 5's contest winner had failed the block floor at 22:50
+(`Your translation is 2 blocks (paragraph, paragraph) and the PAGE AS IT STANDS is 1`,
+the games-and-IKEA paragraph split in two,
+where the third pass's repair had kept it whole);
+consolidation withheld that standing text from the slate,
+the slate under the hold declined,
+and with nothing valid to ship the entry stopped:
+`TALLY hakureico status=INCOMPLETE ms=2125586`,
+`ConsolidationStandingIneligibleError: slice 5 ... (slate-declined-standing)`.
+That stop is the contract as decided
+(an unheard roster is not persisted and a page that would be refused is not written);
+the hold is what emptied the slate.
+Calls:
+Bedrock 373,
+Hyper 689 (593 to 305 credits,
+the largest single-pass spend on record,
+since the translate lane and eighteen consolidations all ran);
+ledger 199.39 USD.
+
+The phase-boundary wait of `752bf9a9b` cannot see a hold that begins inside a phase.
+Fixed at `e17d0c487` and guarded at `8e64a6ef7`:
+the seat reader moves to `run-seats-read.ts` with `awaitBenchQuorum` beside it,
+which reads the holds synchronously and returns at once while nothing is held
+(no dryness read,
+so a pass under wet providers asks its meters exactly as often as before),
+and otherwise reads the benches and waits out the shortest hold once when one the phase leans on is short;
+`repairPreparedDocument`,
+`translateDocument` and `consolidateDocument` take a `beforeSlice` hook awaited before each chunk,
+the lanes driver routes it per lane,
+and the pass wires it through `lanesHooksFor` and the consolidation seam.
+Twelve guards bite across the two commits;
+types and oxlint clean.
+What remains uncovered is a hold that begins while a chunk's own rounds are in flight:
+those rounds lose their Hyper voices and retry three times at once;
+the next chunk waits.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
