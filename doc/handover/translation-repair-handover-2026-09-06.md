@@ -35,8 +35,11 @@ component line held,
 no class found,
 one ellipsis restored after it in `e3471dc0b`),
 each at zero USD with an unstarved consolidation and `verify-published` matched.
-The next action is `TLL1122` on the ellipsis build,
+`TLL1122` then shipped on the ellipsis build at 01:41 UTC on 2026-09-07 (30.1 minutes,
 the first read page with a footnote,
+no class found).
+The next action is `Huasheng`,
+the first read page with a `<details>` container,
 by the seven steps in the 2026-09-04 snapshot,
 "How a pass is launched and read",
 which gained the apostrophe and ellipsis counts and two refusal greps today.
@@ -59,9 +62,9 @@ markdown lint clean on every line written today.
   `e3471dc0b` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 01:03 UTC on 2026-09-07:
-  `synthetic=wet hyper=wet openrouter=wet syntheticWeekly=16.44% syntheticFiveHour=2740/2750`,
-  Hyper 2408 credits,
+- Meters at 01:41 UTC on 2026-09-07:
+  `synthetic=wet hyper=wet openrouter=wet syntheticWeekly=13.72% syntheticFiveHour=2705/2750`,
+  Hyper 2367 credits,
   OpenRouter 0.32 USD.
   Each settled `yulianNyanner` pass today cost 3.9 to 4.6 points of the Synthetic week and 60 to 82 Hyper
   credits at zero USD.
@@ -258,20 +261,17 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Run and read `TLL1122`,
-    the smallest source carrying a footnote and nothing else new,
-    on the ellipsis build,
+1.  Run and read `Huasheng`,
+    the first entry with a `<details>` container,
+    bold and an inline `<br>`,
     one run at a time,
     so a fix found in one reading does not kill two runs.
-    The shape census of 00:20 UTC on 2026-09-07 in the planning log names it:
-    footnotes are on 23 of 92 sources and on no read page.
-2.  Then `Arita`,
-    the double-quoted `PhotoScroll` repeat,
-    and the second tier the census lists
-    (bold,
-    `<details>`,
-    a math pair,
-    the seven components no read page has met).
+    The order is the census's,
+    recorded in the planning log under "The run order after TLL1122",
+    and open to veto.
+2.  Then a math pair (`yuki418330012`) or a second footnote entry (`hakureico`),
+    then `Arita`,
+    then the seven components no read page has met.
 4.  The OpenRouter top-up is the owner's and expected within days;
     nothing waits on it while Synthetic and Hyper are wet.
     One settled entry costs about 3.9 points of the Synthetic week and 64 Hyper credits at zero USD.

@@ -672,3 +672,31 @@ What would move the belief:
 read clean by every step including the footnote's reference and definition;
 then `Arita`;
 then the second tier.
+
+## What the TLL1122 page showed (2026-09-07, 01:11 UTC)
+
+Shipped in 30.1 minutes at zero USD,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The TLL1122 page".
+The first read page with a footnote:
+the reference and the definition both in place,
+the definition rendered fuller than the archive's and closer to the source.
+
+WHAT IT FOUND:
+no defect class.
+Trailing whitespace and em dashes on the page are measured against the corpus and are its own habit.
+
+THE READING:
+not ready,
+and the first new shape that found nothing on its first page.
+Seven shapes are still on no read page,
+and the run order from here is the census's,
+recorded in the planning log under "The run order after TLL1122":
+`Huasheng` (containers,
+bold,
+an inline tag),
+then a math pair or a second footnote entry,
+then `Arita`.
+What would move the belief:
+`Huasheng` read clean,
+its `<details>` block whole on the page.

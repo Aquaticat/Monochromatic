@@ -2478,6 +2478,107 @@ and its `desc` and alias differ from the source's.
 The reading follows,
 with the footnote's reference and definition first.
 
+## The TLL1122 page, 2026-09-07, 01:41 UTC: the footnote holds, and no class
+
+`TLL1122` SETTLED at 01:41 UTC in 1,806,012 ms (30.1 minutes),
+8 slices,
+every one changed,
+798 calls (Hyper 446,
+Synthetic 352,
+OpenRouter none),
+3 voices abandoned after quorum,
+one judge ballot lost to a control character in its JSON,
+every meter wet,
+consolidation unstarved.
+Weekly Synthetic 16.34 to 13.72 percent,
+Hyper 2406 to 2367,
+zero USD.
+`verify-published` matched,
+1 of 1 at the length the artifact implies.
+`DESTINATIONS source=0 page=0 dropped=0`,
+no refusal grep above zero,
+no `mdx-downgraded`.
+
+- **The footnote holds.**
+  The reference `[^1]` sits inside the quoted wish where the source and the archive put it,
+    and the definition `[^1]:` closes the page on one line as the archive writes it.
+    The judges read both slices as their own:
+    the translate slate over the definition argued the archive's "male pronouns" against the source's
+    broader 称呼,
+    and the consolidation slate settled a rendering fuller than the archive's
+    ("characters who are a kind of human made up of various minerals and gemstones",
+    "and so in fact there is no gender distinction"),
+    which the source says and the archive dropped.
+- **Typography holds.**
+  Two curly apostrophes and no straight one,
+    four curly doubles and no straight one,
+    two three-dot ellipses and no U+2026,
+    as the archive.
+    One heading,
+    no comment,
+    no component,
+    no picture.
+- **Measured and within the corpus's own habit,
+  not defects.**
+  Two lines end in whitespace,
+    one at a paragraph end and one a blank blockquote line;
+    59 of 92 archives carry trailing whitespace on 441 lines,
+    this entry's own archive on 6.
+    Three em dashes against the archive's none and the source's one `——`,
+    two of them where the source has a comma;
+    38 of 92 archives use an em dash,
+    so it is the judges' wording,
+    recorded.
+    The prose is rewrapped one clause per line throughout,
+    which the archive does in most paragraphs and not all;
+    a soft break renders as a space either way.
+    The `desc` is the source's line rather than the archive's different one,
+    and the alias carries the name,
+    the archive's aliases and the source's 鹿鹿,
+    both by the rules already recorded.
+    The blank line after the front matter is dropped as on every page.
+- **The transport shape of the night.**
+  Five times across the last three runs a stream from `gemma-4-26b-a4b-it` on Hyper ended without
+    `message_stop`,
+    every one recovered on the first retry;
+    that seat completed its other streams.
+    Nothing to act on;
+    counted so the next reader need not.
+
+THE READING:
+the first entry of a new shape whose first page found no class,
+against five shapes that each did.
+One entry,
+one footnote,
+one page.
+
+## The run order after TLL1122, decided 2026-09-07, 01:50 UTC
+
+The 2026-09-06 snapshot named `Arita` next,
+the other double-quoted `PhotoScroll` entry never run.
+That shape has now shipped clean twice on `yulianNyanner`,
+and the census shows the shapes no read page has carried.
+The order is therefore the census's,
+by shapes per run:
+`Huasheng` (2,764 characters;
+`<details>` and `<summary>`,
+bold,
+`<br>`,
+a footnote),
+which exercises the container spans no read page has touched and the prose mask on an inline tag;
+then `hakureico` (bold,
+two notes) or `yuki418330012` (a math pair),
+whichever the `Huasheng` reading leaves more open;
+then `Arita`.
+A decision about run order,
+not design,
+made without the owner and open to veto;
+the reason to prefer it is the one every page of the day gave,
+that a repeated shape has found nothing and a new one has found something every time.
+Weekly Synthetic stands at 13.72 percent,
+enough for about three runs of this size before Hyper serves alone,
+which the owner has said is normal.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
