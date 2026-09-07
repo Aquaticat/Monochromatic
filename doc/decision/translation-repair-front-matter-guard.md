@@ -1,74 +1,215 @@
 # Front-matter publication guard: structural checks only
 
-Decided by the owner on 2026-09-02, in answer to the question whether a page whose metadata equals the
-archive's should be refused, published when a panel chose the keep, or published outright. The owner's
-answer was to the premise: "why are we caring about metadata being different vs Chinese source at all?"
+Decided by the owner on 2026-09-02,
+in answer to the question whether a page whose metadata equals the
+archive's should be refused,
+published when a panel chose the keep,
+or published outright.
+The owner's
+answer was to the premise:
+"why are we caring about metadata being different vs Chinese source at all?"
 Landed as commit `34e5c7ecd` in `package/module/translation-repair/src/corpus-run/front-matter-completeness.ts`.
 
 ## The rule
 
 `assertFrontMatterComplete` refuses a page only on structural grounds:
 
-- `missing-slice`: the preparation carries no metadata slice, or carries it anywhere but slice zero over
+- `missing-slice`:
+  the preparation carries no metadata slice,
+  or carries it anywhere but slice zero over
   exactly the two sides' front-matter bytes.
-- `invalid-page`: the page's metadata does not parse, or breaks the identity rule (source name equal to
-  alias requires the same on the page) or the contributor-attribution rule in
-  `validateFrontMatterTranslation`.
-- `directory-id-name`: the page's visible `name` is the entry's directory id while the source's is not,
-  checked on the assembled page whether or not it equals the archive byte for byte. Narrowed by
-  `6d85b619a` on a census of the pinned corpus: 23 of 92 archives name the directory, and 8 of them
-  (Anilovr, Arita, ArtsEpiphany, Hangmster, keyword233, Mio, mone, s5ehfr9) do so in the source too,
-  because the handle is the person's name; the page-only form of `34e5c7ecd` would have refused those
-  eight forever.
+- `invalid-page`:
+  the page's metadata does not parse,
+  or breaks the identity rule (source name equal to
+  alias requires the same on the page) or the contributor-attribution rule in `validateFrontMatterTranslation`.
+- `directory-id-name`:
+  the page's visible `name` is the entry's directory id while the source's is not,
+  checked on the assembled page whether or not it equals the archive byte for byte.
+  Narrowed by
+  `6d85b619a` on a census of the pinned corpus:
+  23 of 92 archives name the directory,
+  and 8 of them
+  (Anilovr,
+  Arita,
+  ArtsEpiphany,
+  Hangmster,
+  keyword233,
+  Mio,
+  mone,
+  s5ehfr9) do so in the source too,
+  because the handle is the person's name;
+  the page-only form of `34e5c7ecd` would have refused those eight forever.
 
-Whether the lanes kept the archive's metadata or replaced it is not a question the guard asks. The lanes,
-the lane contest and the consolidation gate judge the metadata slice like every other slice, and the
+Whether the lanes kept the archive's metadata or replaced it is not a question the guard asks.
+The lanes,
+the lane contest and the consolidation gate judge the metadata slice like every other slice,
+and the
 artifact keeps their records for the reading.
 
 ## What it replaces
 
-The rule of 2026-08-28 (`69df7d881`, "review visible front matter", written for #269, archives whose
+The rule of 2026-08-28 (`69df7d881`,
+"review visible front matter",
+written for #269,
+archives whose
 metadata was never translated and still named the directory id) refused any page whose metadata equalled
-the archive's while the source's differed, reading that as nobody having reviewed the slice. Chinese and
-English metadata always differ, so the trigger fired on every kept incumbent: it discarded the Carena0442
-pass of 2026-09-02 after 94 minutes, and would have discarded the Toka_ls relaunch, whose consolidation
+the archive's while the source's differed,
+reading that as nobody having reviewed the slice.
+Chinese and
+English metadata always differ,
+so the trigger fired on every kept incumbent:
+it discarded the Carena0442
+pass of 2026-09-02 after 94 minutes,
+and would have discarded the Toka_ls relaunch,
+whose consolidation
 gate kept the archive six ballots to two with reasons.
 
-Three commits that night (`daaf0ffa0`, `6f70a2085`, `1160ebb4c`) replaced the byte comparison with a
-reading of which panel had chosen the keep (translate judges, every heard translator, lane contest,
-consolidation slate, consolidation gate). They answered the question well, and the question only existed
-because of the proxy. They were removed with the proxy. The reading of the Toka_ls run that motivated them
-is in `doc/planning/translation-repair-toka-ls-reading-2026-09-02.md`; the night's record is in
+Three commits that night (`daaf0ffa0`,
+`6f70a2085`,
+`1160ebb4c`) replaced the byte comparison with a
+reading of which panel had chosen the keep (translate judges,
+every heard translator,
+lane contest,
+consolidation slate,
+consolidation gate).
+They answered the question well,
+and the question only existed
+because of the proxy.
+They were removed with the proxy.
+The reading of the Toka_ls run that motivated them
+is in `doc/planning/translation-repair-toka-ls-reading-2026-09-02.md`;
+the night's record is in
 `doc/planning/translation-repair-roster-calibration-2026-09-01.md`.
 
 ## Consequences
 
-- A hold-starved judge indecision on the metadata slice publishes the archive's metadata as it stands, as
-  it does for any other slice. The artifact records the indecision; the reading catches it.
-- The directory-id refusal is wider than before in one direction and narrower in another: it fires on any
-  assembled page whose visible name is the directory id, not only on a byte-equal keep, and it does not
-  fire where the source names the person by that same handle. The 15 archives that show the directory id
+- A hold-starved judge indecision on the metadata slice publishes the archive's metadata as it stands,
+  as
+  it does for any other slice.
+  The artifact records the indecision;
+  the reading catches it.
+- The directory-id refusal is wider than before in one direction and narrower in another:
+  it fires on any
+  assembled page whose visible name is the directory id,
+  not only on a byte-equal keep,
+  and it does not
+  fire where the source names the person by that same handle.
+  The 15 archives that show the directory id
   where the source has a name of its own (the #269 shape) stay refused until a lane renders the name.
-- `FrontMatterCompletenessError` carries no decision detail any more; its message names the entry and the
+- `FrontMatterCompletenessError` carries no decision detail any more;
+  its message names the entry and the
   structural reason only.
 
 ## Addendum 2026-09-04: the identity rule reads containment, not equality
 
-Decided by the owner ("Alias may carry the name among other renderings"), asked with three options after
-the luxuanwen3 pass of 2026-09-04 ended `INCOMPLETE` on `invalid-page`: its source declares `name: 鲵鲵`,
-`alias: 鲵鲵`, and the archive's own front matter has `name: Nini`, `alias: 鲵鲵, Nini`, which the equality
-rule refused. Measured over the pinned corpus: 14 of 92 sources declare name equal to alias, and in 7 of
-them the archive renders the alias with more than the name (MizuharaNagisa, SevenBird, Weideriche_,
-gaoyanger "Gaoyang, Lamb", interrgned, luxuanwen3, noname "noname, no name, anonymous, ..."). Under
+Decided by the owner ("Alias may carry the name among other renderings"),
+asked with three options after
+the luxuanwen3 pass of 2026-09-04 ended `INCOMPLETE` on `invalid-page`:
+its source declares `name: 鲵鲵`,
+`alias: 鲵鲵`,
+and the archive's own front matter has `name: Nini`,
+`alias: 鲵鲵, Nini`,
+which the equality
+rule refused.
+Measured over the pinned corpus:
+14 of 92 sources declare name equal to alias,
+and in 7 of
+them the archive renders the alias with more than the name (MizuharaNagisa,
+SevenBird,
+Weideriche_,
+gaoyanger "Gaoyang,
+Lamb",
+interrgned,
+luxuanwen3,
+noname "noname,
+no name,
+anonymous,
+...").
+Under
 equality none of the seven could ship an archive-shaped front matter.
 
-The rule now: where the ORIGINAL declares name and alias the same identity, the translated name must appear
+The rule now:
+where the ORIGINAL declares name and alias the same identity,
+the translated name must appear
 among the comma-separated renderings of the translated alias (`aliasCarriesName` in
-`front-matter-translation.ts`; the archives separate alias lists with a comma in 70 cases and a slash in one,
-never a Chinese comma). A name absent from its alias is still refused. The judges' decision rule, the
-translators' front matter rule and the selection criteria say the same. Guard: the
+`front-matter-translation.ts`;
+the archives separate alias lists with a comma in 70 cases and a slash in one,
+never a Chinese comma).
+A name absent from its alias is still refused.
+The judges' decision rule,
+the
+translators' front matter rule and the selection criteria say the same.
+Guard:
+the
 `front-matter-completeness` test accepting `alias: 猫猫, Maomao` for `name: Maomao` and refusing
-`alias: 猫猫, Kitty`, shown to fail with equality put back.
+`alias: 猫猫, Kitty`,
+shown to fail with equality put back.
 
-Options rejected: strict equality (forces the seven archives to drop the original-script alias they
-publish); dropping the identity rule (name and alias could diverge freely).
+Options rejected:
+strict equality (forces the seven archives to drop the original-script alias they
+publish);
+dropping the identity rule (name and alias could diverge freely).
+
+## Addendum 2026-09-07: the directory id as a rendering of the name
+
+Decided by the owner ("pinyin check and alias exemption;
+see both the original Chinese and the original
+English,
+there's gotta be an English rendering in the frontmatter"),
+asked with four options after the
+third Huasheng pass ended `INCOMPLETE` on `directory-id-name`:
+the source names the person 椛笙,
+whose
+pinyin is Huasheng,
+which is the directory id,
+and the judges had chosen it by the identity rule.
+Measured over the pinned corpus:
+22 archives name their directory;
+8 do so in the source too;
+of the other
+14,
+the id is a rendering of the name for 7 (Huasheng,
+lintong,
+Kotori,
+MioCardMeow,
+MocaKawai,
+noname,
+donotexist_A) and a handle standing where the name goes for 7 (DarlinChit,
+dogesir_,
+homoyamakaze,
+interrgned,
+lxyddice,
+Weideriche_,
+XingZ60).
+
+Landed in `package/module/translation-repair/src/corpus-run/directory-id-name.ts`.
+The id-equal name
+stands when any of three holds,
+read on the original Chinese and the original English front matter:
+
+- the id,
+  lower-cased and reduced to its Latin letters,
+  is a pinyin reading of the source's `name`,
+  every
+  heteronym of every character allowed,
+  through `pinyin-pro` (new dependency,
+  MIT,
+  no dependencies of its own);
+- the source itself carries the id among its aliases,
+  so the handle is the person's own;
+- the page or the archive carries an alias in Latin script other than the id,
+  the English rendering the
+  front matter has to have.
+
+What stays refused is a page whose visible name is the folder and whose front matter,
+on both sides,
+carries no Latin rendering but the folder itself:
+the `#269` shape as it was literally described.
+The `#269` 7 above all carry a Latin rendering in the archive alias (Sakuya,
+Lan Gou,
+Qian Yu Mao Tou,
+Danpian,
+lxy,
+Zihe,
+Lili) and so stand under the third clause,
+which the owner's words accept.
