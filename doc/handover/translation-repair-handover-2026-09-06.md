@@ -101,7 +101,8 @@ markdown lint clean on every line written today.
 
 Newest first.
 
--   `645c8787b` (2026-09-07, 21:04 UTC):
+-   `645c8787b` (2026-09-07,
+    21:04 UTC):
     the two Bedrock-only Gemma sizes leave every run role.
     `RUN_ROSTER` had been the whole of `ROSTER_MODEL_IDS`,
     eleven since the fourth provider,
