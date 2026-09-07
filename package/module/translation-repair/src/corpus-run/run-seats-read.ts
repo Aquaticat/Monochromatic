@@ -242,6 +242,7 @@ export async function readJudgeSeats(
     checkers,
     translators,
     readers,
+    writers,
     roster,
     withheld,
   } = seats;
@@ -256,7 +257,7 @@ export async function readJudgeSeats(
       + `select=${String(selectJudges.length,)} late=${String(lateJudges.length,)} `
       + `slate=${String(slateJudges.length,)} checkers=${String(checkers.length,)} `
       + `translators=${String(translators.length,)} readers=${String(readers.length,)} `
-      + `roster=${String(roster.length,)} `
+      + `writers=${String(writers.length,)} roster=${String(roster.length,)} `
       + `withheld=${(withheld.length === 0) ? 'none' : withheld.join(',',)} `
       + `waited=${String(waitMs,)}ms`,
   );

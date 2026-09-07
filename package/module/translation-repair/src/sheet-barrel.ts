@@ -95,6 +95,8 @@ export {
   RUN_ROSTER,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
+  RUN_WRITERS,
+  SEATED_BEDROCK_JUDGES,
   RunConfigError,
 } from './corpus-run/run-config.ts';
 export {

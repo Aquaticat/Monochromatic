@@ -65,6 +65,31 @@ export { RunConfigError, } from './run-config-error.ts';
 const HERE = import.meta.dirname;
 
 /**
+ * Bedrock-only models seated on the judge fidelity probe of 2026-09-07 under
+ * the rule pre-registered in the planning log before the seated roster was
+ * measured: a candidate joins critic, panel and judge when, over the same
+ * distinct questions, it chooses the complete text at least as often as the
+ * median seated judge and the damaged text no more often than the seated
+ * judge who chooses it most. `google.gemma-4-e2b`: 11 of 12 with one damaged
+ * pick, against a seated median of 9.5 and a worst damaged count of 1
+ * (Kimi-K3 12, deepseek-v4-pro-0813 11, minimax-m3 11, deepseek-v4-flash-0731
+ * 8, gpt-oss-120b 7, gemma-4-26b-a4b-it 4). Bedrock serves it alone, so it
+ * is the third judge that answers while Hyper is held out by its daily limit.
+ */
+export const SEATED_BEDROCK_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'google.gemma-4-e2b',
+],);
+
+/**
+ * Roster models no producer calibration has measured, so they hold no
+ * writing seat: not the translate lane, not the consolidation. The judge
+ * fidelity probe measures reading, and reading is what they were seated for.
+ */
+const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'google.gemma-4-e2b',
+],);
+
+/**
  * Every model this run may seat, across both providers.
  * Critics and the adjudication panel both use the whole roster so coverage
  * overlaps across models rather than partitioning the work.
@@ -82,16 +107,32 @@ const HERE = import.meta.dirname;
  * probe, GLM-5.3-Flash gained a second route, and two Qwen3.8 routes were
  * culled as automatic-only. Remaining seats retain full weight.
  *
- * THE TWO BEDROCK-ONLY GEMMA 4 SIZES ARE NOT SEATED. The roster of 2026-09-01
- * was seated by measured fidelity, and nothing has been measured for
- * `google.gemma-4-e2b` or `google.gemma-4-31b` (the planning log of 2026-09-07,
- * "What is asked of the owner"). They join a role when the probes say so.
+ * TEN SINCE 2026-09-07. Of the two Bedrock-only Gemma 4 sizes the owner
+ * approved that day, `google.gemma-4-e2b` joined on the judge fidelity probe
+ * ({@link SEATED_BEDROCK_JUDGES}) and `google.gemma-4-31b` stayed out: over the
+ * same twelve questions it chose the complete text on 6, declining the rest,
+ * against a seated median of 9.5 (the planning log of 2026-09-07, "Measuring
+ * the two Bedrock-only sizes").
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function measured(modelId,): boolean {
-    return !BEDROCK_ONLY_ROSTER_IDS.some(function is(unmeasured,): boolean {
-      return unmeasured === modelId;
-    },);
+    return SEATED_BEDROCK_JUDGES.has(modelId,)
+      || (!BEDROCK_ONLY_ROSTER_IDS.some(function is(unmeasured,): boolean {
+        return unmeasured === modelId;
+      },));
+  },);
+
+/**
+ * Consolidation writers: the roster less {@link WRITER_UNMEASURED}. The whole
+ * measured roster writes there, GLM-5.3-Flash included, which keeps its
+ * writing seats and left every judge seat on 2026-09-02.
+ */
+export const RUN_WRITERS: readonly RosterModelId[] = ROSTER_MODEL_IDS
+  .filter(function measuredWriter(modelId,): boolean {
+    return (!WRITER_UNMEASURED.has(modelId,))
+      && (!BEDROCK_ONLY_ROSTER_IDS.some(function is(unmeasured,): boolean {
+        return unmeasured === modelId;
+      },));
   },);
 
 /**
@@ -171,13 +212,13 @@ const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['
 
 /**
  * Translators for the translate lane: the roster less
- * {@link TRANSLATOR_DROPPED}. Seven since 2026-09-01, so the stage quorum is
- * 4 and every slate keeps at least two disinterested judges under
- * `assertJudgeableProducerRoster`.
+ * {@link TRANSLATOR_DROPPED} and less {@link WRITER_UNMEASURED}. Seven since
+ * 2026-09-01, so the stage quorum is 4 and every slate keeps at least two
+ * disinterested judges under `assertJudgeableProducerRoster`.
  */
 export const RUN_TRANSLATORS: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillWrites(modelId,): boolean {
-    return !TRANSLATOR_DROPPED.has(modelId,);
+    return (!TRANSLATOR_DROPPED.has(modelId,)) && (!WRITER_UNMEASURED.has(modelId,));
   },);
 
 /**

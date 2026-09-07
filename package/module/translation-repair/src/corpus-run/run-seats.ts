@@ -26,6 +26,7 @@ import {
   RUN_TRANSLATE_MODELS,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
+  RUN_WRITERS,
 } from './run-config.ts';
 
 //region Provider-aware judge seats
@@ -178,6 +179,12 @@ export type JudgeSeats = {
   readonly readers: readonly RosterModelId[];
 
   /**
+   * Consolidation writers for this reading: the measured writers less any
+   * withheld model.
+   */
+  readonly writers: readonly RosterModelId[];
+
+  /**
    * The whole roster less any withheld model, for every stage that asks the
    * roster rather than a named bench: block pairing and archive review in
    * preparation, insertion admission, and the consolidation writers. The
@@ -313,6 +320,10 @@ export function judgeSeatsFor(
    */
   const readers = RUN_READER_MODELS.filter(seated,);
   /**
+   * Consolidation writers for this reading.
+   */
+  const writers = RUN_WRITERS.filter(seated,);
+  /**
    * The roster for this reading.
    */
   const roster = RUN_ROSTER.filter(seated,);
@@ -325,6 +336,7 @@ export function judgeSeatsFor(
     ...staticCheckers,
     ...RUN_TRANSLATORS,
     ...RUN_READER_MODELS,
+    ...RUN_WRITERS,
     ...RUN_ROSTER,
   ];
   /**
@@ -355,6 +367,7 @@ export function judgeSeatsFor(
     checkers,
     translators,
     readers,
+    writers,
     roster,
     repairModels: {
       ...RUN_MODELS,

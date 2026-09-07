@@ -32,6 +32,8 @@ import {
   RUN_ROSTER,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
+  RUN_WRITERS,
+  SEATED_BEDROCK_JUDGES,
   BEDROCK_ONLY_ROSTER_IDS,
   ROSTER_MODEL_IDS,
 } from '../../dist/final/node/index.mjs';
@@ -116,19 +118,32 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES THE UNMEASURED BEDROCK-ONLY GEMMA SIZES OUT OF EVERY ROLE while the roster still names them',
-      fn: async function leavesUnmeasuredOut(): Promise<void> {
+      name: 'SEATS THE MEASURED BEDROCK-ONLY SIZE AS A JUDGE AND NOWHERE ELSE, and LEAVES THE UNMEASURED ONE '
+        + 'OUT OF EVERY ROLE while the roster still names both: google.gemma-4-e2b read 11 of 12 on the '
+        + 'fidelity probe of 2026-09-07 and no producer calibration has measured it',
+      fn: async function seatsByMeasurement(): Promise<void> {
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
-        for (const unmeasured of BEDROCK_ONLY_ROSTER_IDS) {
-          expect(ROSTER_MODEL_IDS.includes(unmeasured,),).toBe(true,);
-          expect(RUN_ROSTER.includes(unmeasured,),).toBe(false,);
-          expect(wet.roster.includes(unmeasured,),).toBe(false,);
-          expect(wet.wideSeats.includes(unmeasured,),).toBe(false,);
-          expect(wet.translators.includes(unmeasured,),).toBe(false,);
-          expect(wet.checkers.includes(unmeasured,),).toBe(false,);
-          expect(wet.readers.includes(unmeasured,),).toBe(false,);
+        for (const candidate of BEDROCK_ONLY_ROSTER_IDS) {
+          expect(ROSTER_MODEL_IDS.includes(candidate,),).toBe(true,);
+          expect(wet.translators.includes(candidate,),).toBe(false,);
+          expect(wet.writers.includes(candidate,),).toBe(false,);
+          expect(wet.checkers.includes(candidate,),).toBe(false,);
+          expect(wet.readers.includes(candidate,),).toBe(false,);
         }
-        expect(RUN_ROSTER.length,).toBe(ROSTER_MODEL_IDS.length - BEDROCK_ONLY_ROSTER_IDS.length,);
+        for (const seated of SEATED_BEDROCK_JUDGES) {
+          expect(RUN_ROSTER.includes(seated,),).toBe(true,);
+          expect(wet.roster.includes(seated,),).toBe(true,);
+          expect(wet.wideSeats.includes(seated,),).toBe(true,);
+          expect(wet.selectJudges.includes(seated,),).toBe(true,);
+          expect(wet.lateJudges.includes(seated,),).toBe(true,);
+          expect(wet.slateJudges.includes(seated,),).toBe(true,);
+        }
+        expect(RUN_ROSTER.includes('google.gemma-4-31b',),).toBe(false,);
+        expect(wet.wideSeats.includes('google.gemma-4-31b',),).toBe(false,);
+        expect(RUN_ROSTER.length,).toBe((ROSTER_MODEL_IDS.length - BEDROCK_ONLY_ROSTER_IDS.length) + SEATED_BEDROCK_JUDGES.size,);
+        expect(wet.writers,).toEqual(RUN_WRITERS,);
+        expect(RUN_WRITERS.includes('google.gemma-4-e2b',),).toBe(false,);
+        expect(RUN_WRITERS.length,).toBe(ROSTER_MODEL_IDS.length - BEDROCK_ONLY_ROSTER_IDS.length,);
       },
     },),
 

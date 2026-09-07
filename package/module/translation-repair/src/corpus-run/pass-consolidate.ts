@@ -124,7 +124,7 @@ export async function runPassConsolidation(
     // `run-config.ts`; the Hyper-slow judge sits only while Synthetic serves
     // it, the select-slow judge judges slates only then, and a model withheld
     // on the provider that would serve it writes nothing (`run-seats.ts`).
-    modelIds: seats.roster,
+    modelIds: seats.writers,
     judgeModelIds: seats.slateJudges,
     ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
     frontMatterSlices,
