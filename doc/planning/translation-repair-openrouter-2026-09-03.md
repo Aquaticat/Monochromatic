@@ -3449,7 +3449,8 @@ the roster that judged this page is not the roster a production pass would have.
 
 Class twelve and the fourth provider fast-forwarded onto `translation-repair-rebased` at 20:55 UTC
 (`263b7ca73`),
-the four doc records followed (`c2b8103a5`, `a97f39183`),
+the four doc records followed (`c2b8103a5`,
+`a97f39183`),
 and the run-config refusal cases learned to clear the fourth key as they had learned the third on 2026-09-03
 (`ee577ee0c`;
 the merged tree's full suite had read 5 `FAIL` on exactly those cases in this worktree,
