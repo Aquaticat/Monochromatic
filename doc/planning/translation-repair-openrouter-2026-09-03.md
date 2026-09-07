@@ -3536,6 +3536,54 @@ Whether prepaid and expiring Bedrock money should sit ahead of Hyper's credits f
 is the order question the fourth-provider record left open to veto,
 and it is put to the owner in the handover.
 
+## The owner moves Bedrock ahead of Hyper; the third hakureico launch, 2026-09-07, 21:47 UTC
+
+The owner,
+21:41 UTC:
+"Yes Bedrock sit ahead."
+Recorded as the addendum of 2026-09-07 in `doc/decision/translation-repair-openrouter-fallback.md`.
+`PROVIDER_ORDER` reads Synthetic,
+Bedrock,
+Hyper,
+OpenRouter (`a317f4e03`,
+with `providerRecord` filling in that order,
+the README's routing paragraph,
+and the tests that had spelled the walk out:
+`providerServing` and `routeProviderFor` now reach Bedrock after Synthetic and Hyper after Bedrock,
+`otherProviders` and the hold-wait refusal list the four in the new order).
+The second hakureico pass was killed by pid at 21:41 under the kill-and-relaunch rule,
+33 minutes and 559 calls in,
+in the repair lane at chunk 13;
+Hyper read 664 at the relaunch,
+so the two passes killed today spent 164 of its credits between them.
+The probe flags landed with the order,
+rebased onto the day's doc commits and fast-forwarded (`8f47f117b`,
+`7de4e7b64`,
+`a317f4e03`);
+the full suite read 0 `FAIL` on the merged tree,
+types and oxlint clean.
+
+`hakureico` relaunched at 21:47:26 UTC on `a317f4e03`,
+pipeline `b87b238c`,
+plain invocation,
+fresh runs dir `~/temp/agent/hakureico3-20260907`,
+log beside it,
+pid 3764858.
+`METERS` at launch:
+Synthetic dry at 0 percent of the week,
+Bedrock 199.99 USD,
+Hyper 664,
+OpenRouter 0.01 USD.
+`JUDGE SEATS phase=preparation` reads
+`wide=6 select=5 late=7 slate=6 checkers=3 translators=6 readers=3 roster=8`,
+`withheld=hf:Qwen/Qwen3.8-27B,hf:moonshotai/Kimi-K3`,
+the Hyper-slow judges held out because Hyper would serve them with Synthetic dry.
+The first pass in which Bedrock takes the two seats it shares with Hyper.
+The reading follows:
+the footnotes first,
+then the Bedrock `SPEND` lines and the ledger's sum against `bedrockUsd=`,
+then whether Hyper's daily limit named a return and Bedrock carried the shared seats through it.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

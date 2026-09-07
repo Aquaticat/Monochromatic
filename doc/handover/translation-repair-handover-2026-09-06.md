@@ -101,6 +101,18 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `a317f4e03` (2026-09-07,
+    21:45 UTC):
+    Bedrock sits ahead of Hyper,
+    the owner's decision of 21:41 ("Yes Bedrock sit ahead"),
+    recorded as the addendum in `doc/decision/translation-repair-openrouter-fallback.md`;
+    with it the probe flags `--candidates` and `--candidates-alone` (`8f47f117b`,
+    `7de4e7b64`),
+    rebased from `translation-repair-class12`.
+    The second hakureico pass was killed under the rule at 21:41 and the third launched at 21:47
+    (runs dir `~/temp/agent/hakureico3-20260907`,
+    pid 3764858),
+    the first in which Bedrock takes the seats it shares with Hyper.
 -   `645c8787b` (2026-09-07,
     21:04 UTC):
     the two Bedrock-only Gemma sizes leave every run role.
@@ -440,16 +452,15 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Read the `hakureico` page from the 21:08 launch on `645c8787b`
-    (runs dir `~/temp/agent/hakureico2-20260907`,
+1.  Read the `hakureico` page from the 21:47 launch on `a317f4e03`
+    (runs dir `~/temp/agent/hakureico3-20260907`,
     log beside it,
-    pid 3706395):
+    pid 3764858):
     the footnotes first,
-    then whether Bedrock answered anything once Hyper held,
-    and the ledger's sum against `bedrockUsd=`.
-    Then fast-forward `translation-repair-rebased` onto `translation-repair-class12` (`35e0b1fad`),
-    build,
-    and run every later pass and probe from this worktree.
+    then the Bedrock `SPEND` lines and the ledger's sum against `bedrockUsd=`,
+    then whether Hyper's daily limit named a return and Bedrock carried the shared seats through it.
+    `translation-repair-class12` is merged;
+    every later pass and probe runs from this worktree.
 2.  Re-run `judge-fidelity-probe --cap 48 --candidates google.gemma-4-e2b,google.gemma-4-31b`
     over a throwaway runs dir holding all four settled artifacts,
     apply the pre-registered wide-seat rule,
@@ -458,17 +469,12 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 3.  Then `yuki418330012` (a math pair),
     then `Arita`,
     then the seven components no read page has met.
-4.  A question for the owner,
-    not blocking:
-    whether Bedrock should sit ahead of Hyper for the two seats both serve,
-    since Bedrock's money is prepaid and expiring and Hyper's credits are what the Hyper-only seats run on
-    (720 at 21:35 after 108 in one pass).
-    Moving it is one line in `provider-name.ts`.
-5.  Synthetic's week is at 0 percent as of 21:24 UTC and stays dry until the week turns;
+4.  Synthetic's week is at 0 percent as of 21:24 UTC and stays dry until the week turns;
     Hyper's daily quota is unpublished and closed once today after about a thousand requests of one pass,
     and a pass that meets it holds Hyper out until the instant the refusal names.
     OpenRouter 0.01 USD,
-    Bedrock 199.99 USD.
+    Bedrock 199.99 USD,
+    Hyper 664 at 21:47 after two killed passes.
 
 ## Standing constraints
 
