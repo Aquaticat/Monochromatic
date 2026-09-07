@@ -67,7 +67,7 @@ await describe({
           second: (): string => 'second',
         };
         const witness = Object.getOwnPropertyDescriptor(target, 'witness',);
-        Object.defineProperty(target.second, 'isSinonProxy', {
+        Object.defineProperty(target.second, 'restore', {
           get(): never {
             Object.defineProperty(target, 'first', { configurable: false, writable: false, },);
             throw constructionError;
