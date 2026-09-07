@@ -125,6 +125,15 @@ type MeterReading = {
    * What each meter said, or that it said nothing.
    */
   readonly states: ProviderRecord<MeterState>;
+
+  /**
+   * Every number each meter reported, as the `METERS` line prints them,
+   * empty for a meter that reported none.
+   * WHAT A PAYMENT REFUSAL IS JUDGED AGAINST: a provider that answered 402
+   * reads dry until this text changes, since the balance that refused is the
+   * balance still there until someone adds to it.
+   */
+  readonly levels: ProviderRecord<string>;
 };
 
 /**
@@ -156,6 +165,13 @@ export type ProviderBudgets = {
      * reads.
      */
     readonly statedWaitMs?: number;
+
+    /**
+     * Whether the refusal said the balance cannot pay for the call (HTTP
+     * 402); the provider then reads dry until its meter moves, however wet
+     * the meter reads, and no timed hold is placed for it.
+     */
+    readonly paymentRequired?: boolean;
   },) => Promise<void>;
 
   /**
@@ -178,6 +194,51 @@ export type ProviderBudgets = {
  */
 function spendableBeforeReading(): boolean {
   return false;
+}
+
+/**
+ * The level before any meter has answered: no number at all.
+ *
+ * @returns Empty
+ *
+ * @example
+ * ```ts
+ * const levels = providerRecord({ of: noLevelBeforeReading, },);
+ * ```
+ */
+function noLevelBeforeReading(): string {
+  return '';
+}
+
+/**
+ * Whether a provider last refused us for payment, and the meter level it
+ * read then.
+ *
+ * @example
+ * ```ts
+ * const mark: PaymentMark = { marked: true, level: 'openrouterUsd=0.01', };
+ * ```
+ */
+type PaymentMark = {
+  marked: boolean;
+  level: string;
+};
+
+/**
+ * The mark before any provider has refused us for payment: none.
+ *
+ * @returns Unmarked
+ *
+ * @example
+ * ```ts
+ * const marks = providerRecord({ of: unmarkedPayment, },);
+ * ```
+ */
+function unmarkedPayment(): PaymentMark {
+  return {
+    marked: false,
+    level: '',
+  };
 }
 
 /**
@@ -259,6 +320,7 @@ export function createProviderBudgets(
     reading: Promise.resolve({
       view: providerRecord({ of: spendableBeforeReading, },),
       states: providerRecord({ of: unreadBeforeReading, },),
+      levels: providerRecord({ of: noLevelBeforeReading, },),
     },),
   };
 
@@ -363,7 +425,61 @@ export function createProviderBudgets(
           return meter.state;
         },
       },),
+      levels: providerRecord({
+        of: function levelOf(provider,): string {
+          /**
+           * This provider's meter record.
+           */
+          const meter = meters[provider];
+          return meter.fields
+            .join(' ',);
+        },
+      },),
     };
+  }
+
+  /**
+   * Which providers last refused us for payment and have not moved since,
+   * beside the meter level each read at that refusal; a provider reads dry
+   * while it is marked and its meter still reads that level.
+   */
+  const paidOutAt: Record<ProviderName, PaymentMark> = providerRecord({ of: unmarkedPayment, },);
+
+  /**
+   * Whether a payment refusal still holds a provider dry: its meter has not
+   * moved since. A meter that has moved clears the mark, whichever way it
+   * moved, since the refusal was about the balance it read then.
+   *
+   * @param provider - provider to check
+   *
+   * @param levels - what every meter reads now
+   *
+   * @returns Whether the provider reads dry for payment
+   *
+   * @example
+   * ```ts
+   * const dry = paidOut({ provider: 'openrouter', levels, },);
+   * ```
+   */
+  function paidOut(
+    {
+      provider,
+      levels,
+    }: {
+      readonly provider: ProviderName;
+      readonly levels: ProviderRecord<string>;
+    },
+  ): boolean {
+    /**
+     * The mark and the level at the refusal.
+     */
+    const refused = paidOutAt[provider];
+    if (!refused.marked)
+      return false;
+    if (refused.level === levels[provider])
+      return true;
+    refused.marked = false;
+    return false;
   }
 
   /**
@@ -466,12 +582,20 @@ export function createProviderBudgets(
        * Meter reading this call is decided on, shared with every other call
        * that arrived inside the same window.
        */
-      const { view, } = await cache.reading;
+      const {
+        view,
+        levels,
+      } = await cache.reading;
 
       // A hold can only keep a provider OUT, never bring one back in.
       return providerRecord({
         of: function dryOrHeld(provider,): boolean {
-          return view[provider] || (holdLeft({ provider, },) > 0);
+          return view[provider]
+            || (holdLeft({ provider, },) > 0)
+            || paidOut({
+              provider,
+              levels,
+            },);
         },
       },);
     },
@@ -480,6 +604,7 @@ export function createProviderBudgets(
       provider,
       signal,
       statedWaitMs = 0,
+      paymentRequired = false,
     },): Promise<void> {
       /**
        * Logger pre-tagged with this function's name.
@@ -497,11 +622,26 @@ export function createProviderBudgets(
       /**
        * What every meter said just now.
        */
-      const { states, } = await readNow({ signal, },);
+      const {
+        states,
+        levels,
+      } = await readNow({ signal, },);
       /**
        * What that provider's meter said just now.
        */
       const state = states[provider];
+      if (paymentRequired) {
+        paidOutAt[provider] = {
+          marked: true,
+          level: levels[provider],
+        };
+        heldUntil[provider] = now() + statedWaitMs;
+        rl.info(
+          `${provider}: refused us for payment while its meter reads ${state} (${levels[provider]}); `
+            + `reads dry until that meter moves`,
+        );
+        return;
+      }
       /**
        * The other providers, in spending order.
        */

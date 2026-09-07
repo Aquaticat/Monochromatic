@@ -45,6 +45,33 @@ export function isBudgetRefusal(
 }
 
 /**
+ * Whether thrown failure says the provider's balance cannot pay for the call.
+ * THE FOURTEENTH CLASS (hakureico, 2026-09-07): OpenRouter at 0.01 USD read
+ * wet and answered every call `402: This request requires more credits, or
+ * fewer max_tokens. You requested up to 131072 tokens, but can only afford
+ * 2411`; held out for the 60 s rate-limit backoff, it came back every minute
+ * to the same wall, and the seat wait chose its short hold over Hyper's long
+ * one. A payment refusal is a statement about the balance, not about the
+ * minute, so the budget layer reads the provider dry until its meter moves.
+ *
+ * @param error - whatever call threw
+ *
+ * @returns Whether the provider's balance refused the call
+ *
+ * @example
+ * ```ts
+ * await budgets.markRefused({ provider, signal, paymentRequired: isPaymentRefusal({ error, },), },);
+ * ```
+ */
+export function isPaymentRefusal(
+  { error, }: { readonly error: unknown; },
+): boolean {
+  if (!(error instanceof SyntheticHttpError))
+    return false;
+  return error.status === HTTP_PAYMENT_REQUIRED;
+}
+
+/**
  * Wait a refusal names for its provider's return, zero when it names none or
  * when the failure is not a provider reply.
  *

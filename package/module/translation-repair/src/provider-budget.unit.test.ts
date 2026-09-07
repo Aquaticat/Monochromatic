@@ -328,6 +328,55 @@ await describe({
     },),
 
     it({
+      name: 'READS A PROVIDER DRY UNTIL ITS METER MOVES after a payment refusal on a wet meter, placing '
+        + 'no timed hold for it, the fourteenth class: OpenRouter at 0.01 USD answered every call 402 '
+        + 'and came back to the same wall every minute (hakureico, 2026-09-07)',
+      fn: async () => {
+        /** Stub providers whose meters all report budget left. */
+        const { synthetic, hyper, } = stubProviders({},);
+        /** OpenRouter's balance, which a top-up moves. */
+        const balance = { usd: 0.01, };
+        /** Clock the reads are judged against. */
+        let clock = 1_000;
+        /** Budget view under test, on an injected clock and a movable balance. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          openrouter: {
+            credits: async () => ({
+              ...WET_CREDITS,
+              remainingUsd: balance.usd,
+            }),
+          },
+          freshForMs: 100,
+          cooldownMs: 10_000,
+          rateLimitBackoffMs: 300,
+          now: () => clock,
+        },);
+
+        expect((await budgets.read({ signal: SIGNAL, },)).openrouter,).toBe(false,);
+        await budgets.markRefused({
+          provider: 'openrouter',
+          signal: SIGNAL,
+          paymentRequired: true,
+        },);
+        // Dry at once, with no hold to wait out: the balance is the reason.
+        expect((await budgets.read({ signal: SIGNAL, },)).openrouter,).toBe(true,);
+        expect(budgets.holds().openrouter,).toBe(0,);
+
+        // Still dry after every backoff and cooldown has passed, since the
+        // meter still reads the balance that refused.
+        clock += 20_000;
+        expect((await budgets.read({ signal: SIGNAL, },)).openrouter,).toBe(true,);
+
+        // A top-up moves the meter, and the next reading brings it back.
+        balance.usd = 5;
+        clock += 200;
+        expect((await budgets.read({ signal: SIGNAL, },)).openrouter,).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'HOLDS A PROVIDER FOR THE WAIT ITS REFUSAL NAMES past the rate-limit backoff, whatever the '
         + 'meter reads: Hyper\'s daily limit said "try again in 2h25m18s" on a meter reading wet '
         + '(Huasheng, 2026-09-07), and a 60 s hold walked back into it 831 times',

@@ -20,6 +20,7 @@ import {
 } from './chat-contract.ts';
 import {
   isBudgetRefusal,
+  isPaymentRefusal,
   statedWaitMsOf,
 } from './provider-budget-refusal.ts';
 import type { ProviderBudgets, } from './provider-budget.ts';
@@ -396,6 +397,7 @@ export function createRoutingClient(
           provider,
           signal: request.signal,
           statedWaitMs: statedWaitMsOf({ error, },),
+          paymentRequired: isPaymentRefusal({ error, },),
         },);
         if (attempt >= (serving - 1))
           throw error;

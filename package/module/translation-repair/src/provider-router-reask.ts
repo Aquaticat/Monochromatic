@@ -11,6 +11,7 @@ import type {
 import { readJsonOutcome, } from './chat-json-outcome.ts';
 import {
   isBudgetRefusal,
+  isPaymentRefusal,
   statedWaitMsOf,
 } from './provider-budget-refusal.ts';
 import type { ProviderBudgets, } from './provider-budget.ts';
@@ -219,6 +220,7 @@ async function replyOrBudgetRefusal(
       provider,
       signal: request.signal,
       statedWaitMs: statedWaitMsOf({ error, },),
+      paymentRequired: isPaymentRefusal({ error, },),
     },);
     rl.warn(`${request.modelId}: ${provider} refused the re-ask; keeping the first answer`,);
     return { kind: 'budget-refused', };
