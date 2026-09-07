@@ -255,7 +255,18 @@ The exact lesson has been opened in Helium through the separate user-facing
 The page reported the correct file URL, document title, eight chapters, and two initial conversations.
 Its scroll offset was already 1,728 pixels when inspected;
 no reset to the top was performed, to avoid disrupting possible user interaction.
-KWin activation verification is still pending.
+KWin then verified the Helium window as active, non-minimized, and on the current output `DP-2`.
+Its measured frame was 1,018 by 744 pixels.
+The global system journal, not the user-only journal, retained the `PI_PROMISES_LESSON_VISIBLE` record.
+A later browser probe still reported the correct visible file and a changed scroll position;
+focus was no longer on the page at that later moment.
+No claim of sustained keyboard focus is made.
+The temporary KWin script was unloaded without closing the user's lesson window.
+
+The delivered local file's SHA-256 is
+`dd9df982e76e4d4e4d7db9def3236a1f2f75af354637c4ae7074c3b4606f90ef`.
+The artifact is ready as the concrete example for critique,
+not an accepted or proven teaching method.
 
 Sources consulted for semantic verification:
 
@@ -267,7 +278,7 @@ Sources consulted for semantic verification:
 
 ## Next action
 
-Finish KWin visibility verification for the already-open Helium lesson,
-then resume discovery from the user's critique.
+Resume discovery from the user's critique of the already-open Helium lesson.
+Keep the user-facing presentation session open and preserve their reading position.
 The printable requirement must never motivate simplifying the teaching source.
 Keep the final teaching skill pending until the concrete lesson has informed discovery.
