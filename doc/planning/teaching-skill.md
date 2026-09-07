@@ -38,6 +38,13 @@ Their examples specify meanings, not exact wording or a canned questionnaire:
 - Explain the intended presentation.
   Default to building an interactive, visual, self-contained, auto-dark-theme, printable HTML demo.
   Mention Markdown as an available alternative when the user wants something quick.
+- Printing is never a reason to simplify either output:
+  the HTML page as viewed in a browser or the printout.
+  The user explicitly defined "source material" to include both.
+  Their requirement is: "Print merely graceful degrades the interactivity."
+  Both versions preserve the full teaching material, including depth, examples, and explanations.
+  Only the interactive mechanisms adapt into usable static equivalents.
+  Keeping the browser version complete while reducing the printout does not satisfy this requirement.
 
 ## Design tree
 
@@ -211,7 +218,38 @@ cancellation phases,
 reset races,
 seed replay,
 and downloads.
-Verification is currently running; inspect its notification and logs before trusting results.
+The complete interaction driver subsequently passed in process `proc_7c0a`.
+Its log is `/tmp/pi-processes-uCxua0/proc_7c0a-stdout.log`.
+The first attempts exposed harness assumptions, not lesson defects:
+CSS iframe selection failed,
+native eval stayed in the main frame,
+a completion predicate mistakenly treated "Attempt timed out" as pending,
+and a nested selector string was incorrectly escaped.
+The frame bridge and corrected assertions yielded the completed passing run.
+The tool-specific scope evidence is in
+[`agent-browser-iframe-evaluation.md`](../troubleshooting/agent-browser-iframe-evaluation.md).
+
+`~/temp/agent/verify-promises-delivery.ts` then exercised the downloaded reference and learner HTML,
+adversarial source text containing a mixed-case closing script tag,
+network-offline use,
+light and dark themes,
+a 390-pixel viewport,
+and actual PDF/Print lifecycle behavior.
+A fresh-session rerun with an assertion requiring an empty page-error record passed as `proc_648b`.
+The disposable verification browser was closed.
+
+The generated PDF contained 29 pages, measured with `pdfinfo`.
+Its first and sixth pages were rendered with `pdftoppm` and inspected.
+Screenshots are under `~/temp/agent/` with the `promises-lesson-`, `promises-chat-`,
+and `promises-print-` prefixes.
+These verify rendering and operation, not pedagogical success.
+
+The exact lesson has been opened in Helium through the separate user-facing
+`promises-lesson-present` browser session.
+The page reported the correct file URL, document title, eight chapters, and two initial conversations.
+Its scroll offset was already 1,728 pixels when inspected;
+no reset to the top was performed, to avoid disrupting possible user interaction.
+KWin activation verification is still pending.
 
 Sources consulted for semantic verification:
 
@@ -223,8 +261,7 @@ Sources consulted for semantic verification:
 
 ## Next action
 
-Finish the running browser verification and repair any failures.
-Reopen and exercise exported HTML,
-check responsive and print output,
-then close the disposable verification browser and open the exact lesson in Helium for critique.
+Finish KWin visibility verification for the already-open Helium lesson,
+then resume discovery from the user's critique.
+The printable requirement must never motivate simplifying the teaching source.
 Keep the final teaching skill pending until the concrete lesson has informed discovery.
