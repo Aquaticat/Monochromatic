@@ -517,6 +517,31 @@ These are harness ownership guarantees,
 not a claim that ordinary Sinon offers transactional construction or completed-attempt authority.
 They do not change the upstream filing decision.
 
+### Detached function spies are not whole-object mutations
+
+The final ordinary-overload fixture in `sinon-semantics.unit.test.ts` exposed an overbroad adapter preflight.
+`sinon.spy(fn)` was rejected when `fn` already had a context-owned static method,
+although detached spying does not replace that method.
+`proc_a541` reproduced the incorrect `ctx.sinon.spy cannot replace property "method"` diagnostic.
+
+The distinction comes from Sinon 22.1.0's `src/sinon/spy.js:183`:
+
+```js
+// Sinon 22.1.0, src/sinon/spy.js:183.
+if (!property && typeof object === "function") {
+    return createSpy(object, context);
+}
+```
+
+Commit `2fe8e6311` excludes that detached function form from whole-object mutation preflight.
+Whole-object function stubbing still uses collision checks and collection guards.
+The regression verifies invocation,
+history,
+and an unchanged descriptor on the independently stubbed static method.
+`proc_c6c6` passed the rebuilt full module-test suite,
+scoped lint,
+and types after the correction.
+
 ### Build ordering and artifact control
 
 `proc_56a3` failed before the intended setter regression ran:

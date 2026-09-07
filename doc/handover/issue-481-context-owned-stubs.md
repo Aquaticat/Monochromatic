@@ -9,11 +9,8 @@ Implement and resolve Aquaticat/Monochromatic#481 through existing `ctx.sinon` s
 not suite restructuring or an exclusivity option.
 Continue the tracked queue without asking the user to say continue.
 
-Tasks #4,
-#5,
-and #6 are complete.
-Task #7 is reconciling documentation and canonical testing-skill mirrors.
-Task #8 must run closure gates and confirm the closing commit was pushed and the issue closed.
+Tasks #4 through #7 are complete.
+Task #8 is checking final acceptance and the closing commit's push and issue state.
 No runtime blocker remains established.
 Do not claim issue closure before checking GitHub.
 
@@ -75,6 +72,9 @@ and reproducible controls.
 - `proc_e422` passed the added rollback-failure fixture,
   its scoped formatting/lint,
   and package types.
+- `proc_c6c6` passed full rebuilt unit tests,
+  scoped lint,
+  and types after the final detached-spy correction.
 - Browser checks exercise a consumer of built neutral output,
   absent/partial process globals,
   repeat identities,
@@ -122,7 +122,11 @@ The console-sink tests retain serialization because they also change `process.en
   which did not trigger wrapping failure.
   Reading `wrap-method.js` identified `restore` as the actual preflight read.
   The corrected fixture passed in `proc_e422`.
-- Final focused independent review found no normal public-Sinon reproduction violating the accepted ownership contract.
+- Focused independent review found no normal public-Sinon reproduction violating the accepted ownership contract.
+  A subsequent ordinary-overload check nevertheless found detached function spying was over-preflighted.
+  `proc_a541` proved the failure;
+  `2fe8e6311` narrows the check,
+  and `proc_c6c6` passed the rebuilt regression and full unit suite.
 - Ordinary Sinon cleanup stopping after a throwing restorer remains a baseline limitation.
   Do not expand this task into a reflective security membrane or complete global-state isolation.
 
@@ -164,28 +168,24 @@ The console-sink tests retain serialization because they also change `process.en
 - `b4e78ed32`:
    verified contract and canonical testing guidance.
 
-## Remaining actions
+## Documentation verification and remaining action
 
-1. File-enforcer synchronization passed in `proc_8d15`.
-   Canonical testing guidance and both generated mirrors have matching SHA-256 digests,
-   and both manifests record that digest.
-   The mirror files and manifests are ignored local outputs,
-   confirmed with `git check-ignore` and `git ls-files`;
-   only canonical guidance belongs in the commit.
-2. Finish scoped Markdown lint on README,
-   architecture plan,
-   planning,
-   troubleshooting,
-   handover,
-   and canonical/mirrored testing guidance.
-   The Markdown CLI now starts normally;
-   the old missing-`isMdxPath` startup failure is no longer the current blocker.
-3. Commit owned documentation and formatting.
-   A final explicit descriptor-field parameter annotation in `sandbox-member.ts` also needs verification.
-4. Run final affected package gates and confirm no scoped changes were omitted.
-5. Commit `Closes #481` only after acceptance,
-   confirm push and actual GitHub closure,
-   and complete task #8.
+File-enforcer regenerated the canonical testing skill's mirrors and manifests.
+Canonical and generated copies share SHA-256 digest
+`0706fcd84c0c96ac8df583eaf62a25fd48479f340768e7eb2a6cbdb37102db17`.
+Both manifests record it.
+Mirrors are ignored local outputs,
+confirmed with `git check-ignore` and `git ls-files`;
+only canonical guidance is committed.
+
+Scoped Markdown lint passed in `proc_11df`.
+The historical missing-`isMdxPath` startup error is no longer present.
+The final descriptor-field annotation passed scoped lint and types in `proc_c502`.
+
+Finish the post-detached-spy consumer/browser gates and scoped documentation lint.
+Then commit `Closes #481`,
+verify push and actual GitHub closure,
+and complete task #8.
 
 ## Tooling and concurrent work
 
