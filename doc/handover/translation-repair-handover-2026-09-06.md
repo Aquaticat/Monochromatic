@@ -257,14 +257,19 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 1.  Read the `yulianNyanner` page from the class-eight build (run 7,
     launched 00:12:39 UTC on 2026-09-07),
     the component line and the count of straight quotes after a letter first.
-2.  Run and read `Arita`,
-    the other double-quoted-paths entry never run,
+2.  Run and read `TLL1122`,
+    the smallest source carrying a footnote and nothing else new,
     after that reading rather than beside it,
     so a fix found in one reading does not kill two runs.
-3.  Name from the corpus,
-    rather than meet by accident,
-    the next source shape no shipped page has carried,
-    since every new shape so far has found a class on its first page.
+    The shape census of 00:20 UTC on 2026-09-07 in the planning log names it:
+    footnotes are on 23 of 92 sources and on no read page.
+3.  Then `Arita`,
+    the double-quoted `PhotoScroll` repeat,
+    and the second tier the census lists
+    (bold,
+    `<details>`,
+    a math pair,
+    the seven components no read page has met).
 4.  The OpenRouter top-up is the owner's and expected within days;
     nothing waits on it while Synthetic and Hyper are wet.
     One settled entry costs about 3.9 points of the Synthetic week and 64 Hyper credits at zero USD.

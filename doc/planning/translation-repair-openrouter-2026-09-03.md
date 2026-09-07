@@ -2286,6 +2286,92 @@ three pictures textless,
     The reading follows,
     with the component line and the apostrophe count first.
 
+## The shape census, 2026-09-07, 00:20 UTC: what no read page has carried
+
+Every new source shape so far found a class on its first page,
+so the next entry is chosen by shape rather than met by accident.
+A surface census of the 92 sources at the pin
+(scratch `shape-census.mjs`,
+regular expressions over `page.md`,
+counted against the four entries whose pages were read on this line:
+`luxuanwen3`,
+`SS3B_0016`,
+`Uekawakuyuurei`,
+`yulianNyanner`)
+finds these shapes carried by no read page,
+largest first:
+
+- footnote references,
+  23 sources,
+  the pipeline's footnote graph never exercised by a read page;
+- bold,
+  10;
+- `<details>` with `<summary>`,
+  9;
+- a math pair,
+  6 (the README's "The site's grammar is not this one" already holds the question);
+- a `<br>` tag,
+  6;
+- a bare URL,
+  6;
+- a horizontal rule in the body,
+  5;
+- a heading at level 3 or deeper,
+  5;
+- the components `Banner`,
+  `BlurBlock`,
+  `CapDownQuote`,
+  `Sakura`,
+  `DottedNumber`,
+  `Hexagon` and `TextRing`,
+  1 to 3 each;
+- `<ruby>`,
+  3;
+- emphasis,
+  3;
+- a level-1 heading,
+  2;
+- an unordered list,
+  2;
+- an ordered list and inline code,
+  1 each.
+
+Shapes a read page has carried:
+HTML comments (17 sources),
+`PhotoScroll` in every spelling (50),
+a component inside a blockquote (3),
+an HTML element with a double-quoted attribute (11),
+the neutral pronoun (16),
+nested blockquotes (46),
+links (58),
+corner brackets (73),
+and every front matter key the corpus uses
+(`name`,
+`info`,
+`alias`,
+`location`,
+`desc`).
+
+THE NEXT ENTRY is `TLL1122`:
+640 characters,
+one footnote definition and two references on each side,
+no component,
+so the footnote shape arrives alone.
+`DarlinChit` (540) is smaller but adds a `PhotoScroll`,
+which is carried.
+After it,
+`Arita`,
+the double-quoted `PhotoScroll` repeat the 2026-09-06 snapshot named,
+and then the second tier by size:
+`hakureico` (bold and two notes),
+`Huasheng` (`<details>`,
+bold,
+`<br>`),
+`yuki418330012` (a math pair).
+`XingZ60` carries five of the uncarried shapes and five components at 16,733 characters,
+and is the entry to run last,
+not first.
+
 ## Build plan, transport-independent layers first
 
 In commit order,

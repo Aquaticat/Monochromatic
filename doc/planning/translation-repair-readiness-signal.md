@@ -634,4 +634,8 @@ so this shape of defect cannot ship again whatever causes it.
 What would move the belief:
 `yulianNyanner` on the class-eight build,
 read clean including the component line and the count of straight quotes after a letter;
+then `TLL1122`,
+the first read page with a footnote,
+which the shape census of 2026-09-07 in the planning log names as the largest shape no read page has
+carried;
 then `Arita`.
