@@ -101,6 +101,19 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `645c8787b` (2026-09-07, 21:04 UTC):
+    the two Bedrock-only Gemma sizes leave every run role.
+    `RUN_ROSTER` had been the whole of `ROSTER_MODEL_IDS`,
+    eleven since the fourth provider,
+    so the first `hakureico` launch judged and translated with two unmeasured models;
+    killed under the rule after eight Bedrock calls,
+    relaunched at 21:08 on the fix.
+    Beside it,
+    unmerged on `translation-repair-class12` until that pass settles:
+    `abdb06c1b` and `35e0b1fad`,
+    `--candidates` and `--candidates-alone` on `judge-fidelity-probe` and `producer-calibrate`,
+    so a seatable model can be measured without first taking a role.
+    The numbers are in the planning log under "Measuring the two Bedrock-only sizes".
 -   `263b7ca73`,
     `7b532ae31` and `31e67a100`,
     fast-forwarded from `translation-repair-class12` on 2026-09-07 at 20:55 UTC:
@@ -363,9 +376,25 @@ the Gemma sizes under `/openai/v1` ending on `[DONE]` and gpt-oss under `/v1` en
 cost computed from usage and the catalog's prices,
 an append-only ledger under `~/.local/state/translation-repair/bedrock-spend.jsonl` read as the meter
 (`bedrockUsd=` on the `METERS` line),
-the two Bedrock-only Gemma sizes in the roster as seatable and in no role,
+the two Bedrock-only Gemma sizes in the roster as seatable,
 and the router's refusal loop bounded by the providers that serve a call.
 The README names the three variables.
+Seatable was not unseated until `645c8787b`:
+every role derives from `RUN_ROSTER`,
+which took the whole roster,
+and the first hakureico launch ran the two sizes as judges and translators.
+Through the probe flags of `translation-repair-class12` they were then measured alone,
+at Bedrock only,
+on the eight distinct fidelity questions the three settled artifacts yield:
+`google.gemma-4-e2b` chose the complete text on 7 of 8 with one damaged pick,
+level with the seated median;
+`google.gemma-4-31b` on 4 of 8,
+declining the rest as the seated `gemma-4-26b-a4b-it` did on the same questions.
+The wide-seat rule is pre-registered in the planning log;
+no seat moves until the probe has run over the fourth artifact.
+Where the two seats both Hyper and Bedrock serve go is Hyper's first:
+when Synthetic dried at 21:24 the pass sent `gemma-4-26b-a4b-it` and `gpt-oss-120b` to Hyper
+and Bedrock had answered nothing by 21:35.
 
 ## The two defaults and the rule
 
@@ -410,22 +439,35 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Run and read the next entry on `263b7ca73` with four providers in the order:
-    `hakureico` (a second footnote carrier) or `yuki418330012` (a math pair),
+1.  Read the `hakureico` page from the 21:08 launch on `645c8787b`
+    (runs dir `~/temp/agent/hakureico2-20260907`,
+    log beside it,
+    pid 3706395):
+    the footnotes first,
+    then whether Bedrock answered anything once Hyper held,
+    and the ledger's sum against `bedrockUsd=`.
+    Then fast-forward `translation-repair-rebased` onto `translation-repair-class12` (`35e0b1fad`),
+    build,
+    and run every later pass and probe from this worktree.
+2.  Re-run `judge-fidelity-probe --cap 48 --candidates google.gemma-4-e2b,google.gemma-4-31b`
+    over a throwaway runs dir holding all four settled artifacts,
+    apply the pre-registered wide-seat rule,
+    and run `producer-calibrate` with the same `--candidates` for the translator seat;
+    seat or leave out on those numbers in one commit with the decision record's addendum.
+3.  Then `yuki418330012` (a math pair),
     then `Arita`,
     then the seven components no read page has met.
-    The fourth Huasheng page (2026-09-07 at 20:49 UTC) closed the ninth,
-    tenth and eleventh classes on the entry that found them;
-    what is not yet on record is a page judged by a wet roster and a pass with Bedrock in the order.
-2.  Seat `google.gemma-4-e2b` and `google.gemma-4-31b` by measured fidelity,
-    running the existing probes through Bedrock,
-    and record the numbers before any role takes them.
-3.  Hyper's daily quota is unpublished and closed once today after about a thousand requests of one pass;
-    a pass that meets it now holds Hyper out until the instant the refusal names and spends elsewhere.
-    Synthetic stands at 1 percent of the week,
-    Hyper at 829,
-    OpenRouter at 0.01 USD,
-    Bedrock at its full 200 USD.
+4.  A question for the owner,
+    not blocking:
+    whether Bedrock should sit ahead of Hyper for the two seats both serve,
+    since Bedrock's money is prepaid and expiring and Hyper's credits are what the Hyper-only seats run on
+    (720 at 21:35 after 108 in one pass).
+    Moving it is one line in `provider-name.ts`.
+5.  Synthetic's week is at 0 percent as of 21:24 UTC and stays dry until the week turns;
+    Hyper's daily quota is unpublished and closed once today after about a thousand requests of one pass,
+    and a pass that meets it holds Hyper out until the instant the refusal names.
+    OpenRouter 0.01 USD,
+    Bedrock 199.99 USD.
 
 ## Standing constraints
 
