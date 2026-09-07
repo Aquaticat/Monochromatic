@@ -93,7 +93,8 @@ function preflightOrdinaryMutation(invocation: SandboxInvocation,): void {
         key,
         operation: invocation.operation,
       },);
-    else if ((property === undefined) && ((invocation.operation === 'ctx.sinon.stub') || (invocation.operation === 'ctx.sinon.spy')))
+    else if ((property === undefined) && ((invocation.operation === 'ctx.sinon.stub')
+      || ((invocation.operation === 'ctx.sinon.spy') && (typeof target !== 'function'))))
       requireUnownedObject({
         target,
         operation: invocation.operation,
