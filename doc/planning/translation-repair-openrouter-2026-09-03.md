@@ -3830,6 +3830,35 @@ What remains uncovered is a hold that begins while a chunk's own rounds are in f
 those rounds lose their Hyper voices and retry three times at once;
 the next chunk waits.
 
+## The fifth hakureico launch, 2026-09-07, 23:09 UTC, on the per-chunk-wait build
+
+`hakureico` relaunched at 23:09:43 UTC on `3fc918013` (code `8e64a6ef7`),
+pipeline `b34822e2`,
+plain invocation,
+fresh runs dir `~/temp/agent/hakureico5-20260907`,
+log beside it,
+pid 3852763.
+`METERS` at launch:
+Synthetic dry,
+Bedrock 199.36 USD,
+Hyper 301,
+OpenRouter 0.01 USD.
+Hyper's hold from the fourth pass (to 23:11:18) lived in that process's budgets and not in this one's,
+so this pass reads Hyper wet,
+meets the same refusal on its first Hyper call,
+and holds it out for what the body names;
+the first chunk after that reads `short of quorum` and waits.
+The reading follows:
+the footnotes first,
+then every `JUDGE SEATS` line's `waited=` and every `chunk resumes` line,
+then the Bedrock `SPEND` lines and the ledger,
+then Hyper's balance against 301.
+Hyper's balance is the day's constraint now:
+828 at 21:00,
+301 at 23:09,
+the owner will not recharge it,
+and each hakureico pass has spent 70 to 290 of it.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

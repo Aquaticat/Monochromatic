@@ -507,18 +507,26 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Read the `hakureico` page from the 22:21 launch on `752bf9a9b`
-    (runs dir `~/temp/agent/hakureico4-20260907`,
+1.  Read the `hakureico` page from the 23:09 launch on `3fc918013`
+    (runs dir `~/temp/agent/hakureico5-20260907`,
     log beside it,
-    pid 3814733):
+    pid 3852763;
+    the 22:21 launch stopped INCOMPLETE under a mid-consolidation hold):
     the footnotes first
     (`[^1]` on Mayday,
     `[^2]` on the GAE line,
     both definitions),
-    then every `JUDGE SEATS` line's `waited=` and any `short of quorum` line,
-    then the Bedrock `SPEND` lines and the ledger against `bedrockUsd=`.
+    then every `JUDGE SEATS` line's `waited=`,
+    every `short of quorum` and `chunk resumes` line,
+    then the Bedrock `SPEND` lines and the ledger against `bedrockUsd=`,
+    then Hyper's balance against 301.
     The third page (22:00) shipped three faithful repairs and no footnotes,
     for the thirteenth class's reason.
+    Hyper's balance is the day's constraint:
+    828 at 21:00,
+    301 at 23:09,
+    never to be recharged,
+    70 to 290 per hakureico pass.
 2.  Re-run `judge-fidelity-probe --cap 48 --candidates google.gemma-4-e2b,google.gemma-4-31b`
     over a throwaway runs dir holding all four settled artifacts,
     apply the pre-registered wide-seat rule,
