@@ -3573,13 +3573,15 @@ nobody else,
 0.0045 USD by the ledger.
 Distinct questions answered with the complete text:
 
-- `google.gemma-4-e2b`: 7 of 8.
+- `google.gemma-4-e2b`:
+  7 of 8.
   Deletion 3 of 4,
   insertion 4 of 4,
   never declined;
   the miss chose the damaged text where it sat second on the Huasheng deletion,
   and it chose position two on 5 of 8.
-- `google.gemma-4-31b`: 4 of 8.
+- `google.gemma-4-31b`:
+  4 of 8.
   Deletion 2 of 4,
   insertion 2 of 4,
   declined the other 4,
@@ -3595,14 +3597,17 @@ The nine roster models,
 per judge,
 distinct questions answered with the complete text:
 
-- 8 of 8: `hf:moonshotai/Kimi-K3`,
+- 8 of 8:
+  `hf:moonshotai/Kimi-K3`,
   `deepseek-v4-pro-0813`,
   `hf:zai-org/GLM-5.3-Flash` (no judge seat since 2026-09-02).
-- 7 of 8: `deepseek-v4-flash-0731` (one damaged pick),
+- 7 of 8:
+  `deepseek-v4-flash-0731` (one damaged pick),
   `glm-5.3` (one decline),
   `hf:Qwen/Qwen3.8-27B` (one decline;
   no judge seat since 2026-09-03).
-- 5 of 8: `hf:openai/gpt-oss-120b` (three declines),
+- 5 of 8:
+  `hf:openai/gpt-oss-120b` (three declines),
   `minimax-m3` (one damaged pick,
   two declines).
 - 4 of 8: `gemma-4-26b-a4b-it` (four declines,
