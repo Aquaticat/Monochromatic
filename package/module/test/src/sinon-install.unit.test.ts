@@ -57,6 +57,39 @@ await describe({
           expect(invoke,).toThrow('completed',);
       },
     },),
+    it({
+      name: 'partial rollback retains construction and cleanup errors while restoring other members',
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        const constructionError = new Error('construction stopped',);
+        const target = {
+          first: (): string => 'first',
+          witness: (): string => 'witness',
+          second: (): string => 'second',
+        };
+        const witness = Object.getOwnPropertyDescriptor(target, 'witness',);
+        Object.defineProperty(target.second, 'isSinonProxy', {
+          get(): never {
+            Object.defineProperty(target, 'first', { configurable: false, writable: false, },);
+            throw constructionError;
+          },
+        },);
+        const failures: unknown[] = [];
+        try {
+          sinon.stub(target,);
+        }
+        catch (error) {
+          failures.push(error,);
+        }
+        const [failure,] = failures;
+        if (!(failure instanceof AggregateError))
+          throw new Error('Expected construction and rollback aggregate', { cause: failure, },);
+        const errors: readonly unknown[] = failure.errors;
+        expect(errors[0],).toBe(constructionError,);
+        expect(errors[1],).toBeInstanceOf(AggregateError,);
+        expect(Object.getOwnPropertyDescriptor(target, 'witness',),).toEqual(witness,);
+        expect(target.witness(),).toBe('witness',);
+      },
+    },),
     ...(['stub', 'spy',] as const).map(operation => it({
       name: `failed whole-object ${operation} restores only newly introduced descriptors`,
       fn: async ({ sinon, }: TestContext,): Promise<void> => {
