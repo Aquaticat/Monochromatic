@@ -34,7 +34,9 @@ The task scripts save immutable JSON evidence alongside their input files.
 
 Disposable distribution:
 `E35CZ02308UXVB` at `d1na6uytzcnwt9.cloudfront.net`.
-Its original forwarding policies are unchanged for the failure control.
+The original-policy failure control returned HTTP 502.
+The fixture now has the corrected policy pair,
+and content-parity verification is running.
 It has no custom aliases and uses CloudFront's default viewer certificate.
 The first creation attempt was rejected because the live distribution's flat-rate-plan WAF ACL cannot be shared.
 The successful test-only configuration omits that ACL;
@@ -42,6 +44,13 @@ the live WAF was not changed.
 Both test phases must retain this same fixture configuration apart from the policy pair.
 Delete this disposable distribution after validation,
 even if live correction is blocked.
+
+Task-created custom cache policy:
+`bb6179b5-8f0c-443f-af07-15822be803fd`,
+`AquatiCat-OriginCacheControl-NoViewerHost`.
+Its payload is the original managed policy minus `host`,
+with descriptive name/comment changes.
+Delete it too if the live correction cannot use it.
 
 ## Measured plan constraint
 
@@ -57,13 +66,13 @@ the default quota API listed 20 cache policies and 500 web distributions.
 
 ## Next action
 
-The process tool is running the native deployment waiter for the baseline fixture.
+The baseline and corrected fixture deployments completed.
+The process tool is running `verify.ts fixture` from the private task directory.
 After its success notification:
 
-- Fetch the fixture with an uncached request and require the original 502.
-- Create the cache-policy clone removing only `host`,
-  then change the fixture's policy pair together.
-- Require content success before attempting live application.
+- Require the saved `fixture-verification-passed.json` marker before attempting live application.
+- Preserve every live distribution field except the policy associations;
+  compare against `live-before.json` and use a fresh ETag.
 - If live policy attachment is rejected by plan gating,
   retain the original live configuration,
   clean up test resources,
