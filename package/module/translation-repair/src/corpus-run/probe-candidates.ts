@@ -22,11 +22,25 @@ import { RUN_ROSTER, } from './run-config.ts';
 // not know is refused with the names it does, because a probe that quietly ran
 // without the model it was started for would print a clean standing over the
 // wrong roster, which is the failure `asked-count.ts` exists to stop.
+//
+// `--candidates-alone` RUNS THE CANDIDATES WITHOUT THE SEATED ROSTER. The
+// fidelity probe reads each ballot by the judge that cast it, so two judges
+// measured on their own answer the same per-judge question as eleven, and they
+// answer it at the candidates' provider only: a probe run beside a production
+// pass then spends nothing the pass is spending. The calibration ranks
+// producers by disinterested ballots, which two seats cannot supply, so it runs
+// the flag too and is refused by `assertJudgeableProducerRoster` on its own
+// terms.
 
 /**
  * Flag the candidate ids are written after.
  */
 const CANDIDATES_FLAG = '--candidates';
+
+/**
+ * Flag that leaves the seated roster out and runs the candidates by themselves.
+ */
+const ALONE_FLAG = '--candidates-alone';
 
 /**
  * Reads seatable ids named after `--candidates`.
@@ -85,29 +99,80 @@ export function readCandidateIds(
 }
 
 /**
- * Roster a probe runs: the seated roster, then every candidate it does not
- * already seat, in the order the candidates were named.
+ * Reads whether `--candidates-alone` was written.
  *
- * @param candidates - ids read by {@link readCandidateIds}
+ * @param argv - process arguments, passed rather than read so this is testable
+ * without a subprocess
  *
- * @returns Seated roster followed by the candidates new to it
+ * @returns Whether the candidates run without the seated roster
  *
  * @example
  * ```ts
- * const roster = probeRosterWith({ candidates: readCandidateIds({ argv: process.argv, },), },);
+ * const alone = readCandidatesAlone({ argv: process.argv, },);
+ * ```
+ */
+export function readCandidatesAlone(
+  { argv, }: { readonly argv: readonly string[]; },
+): boolean {
+  return argv.includes(ALONE_FLAG,);
+}
+
+/**
+ * Roster a probe runs: the seated roster, then every candidate it does not
+ * already seat, in the order the candidates were named; or the candidates by
+ * themselves when asked to run alone.
+ *
+ * @param candidates - ids read by {@link readCandidateIds}
+ *
+ * @param alone - whether the seated roster stays out,
+ * read by {@link readCandidatesAlone}
+ *
+ * @returns Seated roster followed by the candidates new to it, or the
+ * candidates each once
+ *
+ * @throws StatedRefusalError when asked to run the candidates alone and none
+ * was named, since a probe over nobody measures nothing
+ *
+ * @example
+ * ```ts
+ * const roster = probeRosterWith({
+ *   candidates: readCandidateIds({ argv: process.argv, },),
+ *   alone: readCandidatesAlone({ argv: process.argv, },),
+ * },);
  * ```
  */
 export function probeRosterWith(
-  { candidates, }: { readonly candidates: readonly RosterModelId[]; },
+  {
+    candidates,
+    alone,
+  }: {
+    readonly candidates: readonly RosterModelId[];
+    readonly alone: boolean;
+  },
 ): readonly RosterModelId[] {
   /**
-   * Candidates the seated roster does not already carry, each once.
+   * Candidates each once, in the order named.
    */
-  const joining = candidates.filter(function isNew(
+  const once = candidates.filter(function isFirst(
     candidate,
     at,
   ): boolean {
-    return (!RUN_ROSTER.includes(candidate,)) && (candidates.indexOf(candidate,) === at);
+    return candidates.indexOf(candidate,) === at;
+  },);
+  if (alone) {
+    if (once.length === 0) {
+      throw new StatedRefusalError({
+        says: `${ALONE_FLAG} runs the candidates without the seated roster, and ${CANDIDATES_FLAG} named none`,
+      },);
+    }
+    return once;
+  }
+
+  /**
+   * Candidates the seated roster does not already carry.
+   */
+  const joining = once.filter(function isNew(candidate,): boolean {
+    return !RUN_ROSTER.includes(candidate,);
   },);
   return [
     ...RUN_ROSTER,

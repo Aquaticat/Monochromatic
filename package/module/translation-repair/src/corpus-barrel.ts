@@ -16,6 +16,7 @@ export { readAskedCount, } from './corpus-run/asked-count.ts';
 export {
   probeRosterWith,
   readCandidateIds,
+  readCandidatesAlone,
 } from './corpus-run/probe-candidates.ts';
 export {
   TALLY_ERROR_CAP,
