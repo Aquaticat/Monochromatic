@@ -177,5 +177,67 @@ await describe({
         },),).toBe('The cat is 12" tall.',);
       },
     },),
+    it({
+      name: 'LEAVES a JSX string literal inside a blockquoted component line straight on a curly '
+        + 'page, since a literal in typographic quotes compiles nowhere (yulianNyanner, 2026-09-06)',
+      fn: async () => {
+        /**
+         * Component line as the archives write it.
+         */
+        const line = `> <PhotoScroll photos={["\${path}/photos/photo3.webp"]} />\n`;
+
+        expect(restoreTypography({
+          replacement: line,
+          replaced: line,
+          convention: `She said ${OPEN}hello${CLOSE}, didn${APOSTROPHE}t she.`,
+        },),).toBe(line,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES a double-quoted HTML attribute straight while curling the prose around it, '
+        + 'and does not count the attribute quotes toward the pairing',
+      fn: async () => {
+        expect(restoreTypography({
+          replacement: '<p style="text-align: end;">"Whiskers," she said.</p>',
+          replaced: '<p style="text-align: end;">Tabby, she said.</p>',
+          convention: `A neighbour said ${OPEN}hello${CLOSE}.`,
+        },),).toBe(`<p style="text-align: end;">${OPEN}Whiskers,${CLOSE} she said.</p>`,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS a tag spanning blockquote lines as one tag, so the marker on each line does '
+        + 'not end it early',
+      fn: async () => {
+        /**
+         * Component whose array runs over three quoted lines.
+         */
+        const block = `> <PhotoScroll photos={[\n>     "\${path}/a.webp",\n>     "\${path}/b.webp",\n> ]} />\n`;
+
+        expect(restoreTypography({
+          replacement: block,
+          replaced: block,
+          convention: `A neighbour said ${OPEN}hello${CLOSE}.`,
+        },),).toBe(block,);
+      },
+    },),
+
+    it({
+      name: 'RESTORES a trailing possessive apostrophe when nothing in the replacement could be '
+        + 'its opening quote, and leaves a quoted phrase alone (yulianNyanner, 2026-09-06)',
+      fn: async () => {
+        expect(restoreTypography({
+          replacement: "on the girls' side too.",
+          replaced: 'on the other side too.',
+          convention: `Every other line here reads didn${APOSTROPHE}t.`,
+        },),).toBe(`on the girls${APOSTROPHE} side too.`,);
+        expect(restoreTypography({
+          replacement: "on the 'girls' side too.",
+          replaced: 'on the other side too.',
+          convention: `Every other line here reads didn${APOSTROPHE}t.`,
+        },),).toBe("on the 'girls' side too.",);
+      },
+    },),
   ],
 },);

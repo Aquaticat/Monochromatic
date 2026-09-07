@@ -1,3 +1,5 @@
+import { proseMask, } from './typography-prose-mask.ts';
+
 //region Typography restoration
 // Puts back the quote characters an editor flattened.
 //
@@ -11,6 +13,14 @@
 // comply and occasionally not, and "mostly" is what leaves a document with two
 // conventions in it. This decides the question in code, from what the replaced
 // text itself used, so the rule can be read rather than trusted.
+//
+// Two findings of 2026-09-06, from the first page the rule reached at the
+// would-ship reading: a JSX string literal inside a blockquoted component line
+// was curled, which no MDX grammar compiles, and a plural possessive `girls'`
+// stayed straight on a curly page because its apostrophe has a space on one
+// side. Markup and code are now masked out (`typography-prose-mask.ts`), and a
+// trailing apostrophe converts when nothing in the replacement could be its
+// opening quote.
 
 /**
  * Right single quotation mark, used as an apostrophe in the corpus.
@@ -63,14 +73,82 @@ function bindsWord({ character, }: { readonly character: string; },): boolean {
  * countStraightDoubles({ text: 'a "b" c', },);
  * ```
  */
-function countStraightDoubles({ text, }: { readonly text: string; },): number {
+function countStraightDoubles(
+  {
+    text,
+    mask,
+  }: {
+    readonly text: string;
+    readonly mask: readonly boolean[];
+  },
+): number {
   return (function count(): number {
     /**
      * Straight doubles seen so far.
      */
     let seen = 0;
     for (let index = 0; index < text.length; index += 1) {
-      if (text.charAt(index,) === '"')
+      if ((mask[index] === true) && (text.charAt(index,) === '"'))
+        seen += 1;
+    }
+    return seen;
+  })();
+}
+
+/**
+ * Counts straight single quotes shaped like an opening quote: a non-word
+ * character before, a word character after.
+ *
+ * One such quote anywhere in the replacement means a trailing straight quote
+ * elsewhere may be closing it, so the trailing rule then leaves every one
+ * alone rather than curl half of a quoted phrase.
+ *
+ * @param text - text to scan
+ *
+ * @param mask - which units are prose
+ *
+ * @returns How many opening-shaped singles it holds
+ *
+ * @example
+ * ```ts
+ * countOpeningSingles({ text: "rock 'n' roll", mask, },);
+ * ```
+ */
+function countOpeningSingles(
+  {
+    text,
+    mask,
+  }: {
+    readonly text: string;
+    readonly mask: readonly boolean[];
+  },
+): number {
+  return (function count(): number {
+    /**
+     * Opening-shaped singles seen so far.
+     */
+    let seen = 0;
+    for (let index = 0; index < text.length; index += 1) {
+      /**
+       * Whether this unit is a prose straight single quote.
+       */
+      const single = (mask[index] === true)
+        && (text.charAt(index,) === '\'');
+      if (!single)
+        continue;
+
+      /**
+       * Whether a word character precedes it.
+       */
+      const boundBefore = bindsWord({ character: text.charAt(index - 1,), },);
+
+      /**
+       * Whether a word character follows it.
+       */
+      const boundAfter = bindsWord({ character: text.charAt(index + 1,), },);
+      if (boundBefore)
+        continue;
+      if (boundAfter)
         seen += 1;
     }
     return seen;
@@ -88,8 +166,10 @@ function countStraightDoubles({ text, }: { readonly text: string; },): number {
  * then in open-close order, since an odd count means the quote is doing
  * something this rule cannot read.
  *
- * Text inside a backtick span is never touched, because a straight quote there
- * is part of code rather than prose.
+ * Text inside a backtick span or a tag is never touched, because a straight
+ * quote there is code or markup rather than prose. A trailing apostrophe, a
+ * word character before it and none after, converts only when the replacement
+ * holds no straight single quote shaped like an opening one.
  *
  * @param replacement - text the editor wrote
  *
@@ -145,7 +225,13 @@ export function restoreTypography(
     || convention.includes(CURLY_CLOSE_DOUBLE,);
 
   /**
-   * Straight doubles in the replacement, which must pair up to be convertible.
+   * Which units of the replacement are prose rather than code or markup.
+   */
+  const mask = proseMask({ text: replacement, },);
+
+  /**
+   * Straight doubles in the prose of the replacement, which must pair up to be
+   * convertible.
    *
    * Counted by scanning rather than by building a character array. Splitting a
    * string into characters is what the two lint rules here disagree about, and
@@ -155,23 +241,30 @@ export function restoreTypography(
    * every character this function compares or writes is ASCII, so a surrogate
    * half is only ever copied through untouched.
    */
-  const straightDoubles = countStraightDoubles({ text: replacement, },);
+  const straightDoubles = countStraightDoubles({
+    text: replacement,
+    mask,
+  },);
 
   /**
    * Whether double quotes may be converted at all.
    */
   const convertDoubles = wantsCurlyDouble && ((straightDoubles % 2) === 0);
 
+  /**
+   * Whether a trailing straight single quote may be read as an apostrophe.
+   */
+  const convertTrailing = wantsCurlyApostrophe
+    && (countOpeningSingles({
+      text: replacement,
+      mask,
+    },) === 0);
+
   return (function scan(): string {
     /**
      * Characters emitted so far.
      */
     const rebuilt: string[] = [];
-
-    /**
-     * Whether the scan sits inside a backtick span.
-     */
-    let inCode = false;
 
     /**
      * Whether the next convertible double quote opens rather than closes.
@@ -182,23 +275,27 @@ export function restoreTypography(
        * Character under the cursor.
        */
       const character = replacement.charAt(index,);
-      if (character === '`') {
-        inCode = !inCode;
-        rebuilt.push(character,);
-        continue;
-      }
-      if (inCode) {
+      if (mask[index] !== true) {
         rebuilt.push(character,);
         continue;
       }
       if ((character === '\'') && wantsCurlyApostrophe) {
         /**
-         * Whether both neighbours bind this quote into one word.
+         * Whether the character before binds this quote into a word.
          */
-        const insideWord =
-          bindsWord({ character: replacement.charAt(index - 1,), },)
-          && bindsWord({ character: replacement.charAt(index + 1,), },);
-        rebuilt.push(insideWord ? CURLY_APOSTROPHE : character,);
+        const boundBefore = bindsWord({ character: replacement.charAt(index - 1,), },);
+
+        /**
+         * Whether the character after does.
+         */
+        const boundAfter = bindsWord({ character: replacement.charAt(index + 1,), },);
+
+        /**
+         * Whether the quote reads as an apostrophe: inside a word, or trailing
+         * a word with nothing that could pair with it.
+         */
+        const apostrophe = boundBefore && (boundAfter || convertTrailing);
+        rebuilt.push(apostrophe ? CURLY_APOSTROPHE : character,);
         continue;
       }
       if ((character === '"') && convertDoubles) {
