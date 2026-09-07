@@ -50,6 +50,16 @@ const FAST_POLICY = {
 };
 
 /**
+ * Retry policy whose reach, the widest backoff window it grants on its own,
+ * covers the one-second wait Hyper's hourly refusal names, so the ladder
+ * sleeps that wait instead of ending on it.
+ */
+const WAIT_POLICY = {
+  limit: 2,
+  baseMs: 300,
+};
+
+/**
  * Builds the exchange every case sends.
  *
  * @param signal - caller abort handle
@@ -227,6 +237,48 @@ await describe({
     },),
 
     it({
+      name: 'ENDS THE LADDER AT ONCE when the refusal names a wait past the ladder\'s reach, since '
+        + 'Hyper\'s daily limit says "try again in 14m40s" and no retry inside the ladder would live to '
+        + 'see it (Huasheng, 2026-09-07: 2,693 refused attempts over 2h53m)',
+      fn: async () => {
+        /**
+         * Attempt counter.
+         */
+        const calls = { count: 0, };
+
+        /**
+         * Refusal naming a wait of fourteen minutes and forty seconds.
+         */
+        const dailyRefusal = {
+          status: 429,
+          bodyText: '{"type":"error","error":{"type":"rate_limit_error","message":'
+            + '"You\'ve hit your daily rate limit. Please try again in 14m40s."}}',
+        };
+
+        /**
+         * When the exchange started.
+         */
+        const startedAt = Date.now();
+        expect(
+          await exchangeWithRetry({
+            transport: scriptedTransport({
+              script: [
+                dailyRefusal,
+                OK_REPLY,
+              ],
+              calls,
+            },),
+            exchange: exchangeWith({ signal: new AbortController().signal, },),
+            policy: FAST_POLICY,
+          },),
+        ).toStrictEqual(dailyRefusal,);
+        expect(calls.count,).toBe(1,);
+        // The reply came back without the ladder sleeping the named wait.
+        expect(Date.now() - startedAt,).toBeLessThan(retryAfterMsOf({ bodyText: dailyRefusal.bodyText, },),);
+      },
+    },),
+
+    it({
       name: 'WAITS as long as a refusal asks before retrying, since Hyper\'s 429 body names its own '
         + 'wait ("try again in 1s") and a retry sent sooner is refused again',
       fn: async () => {
@@ -234,6 +286,10 @@ await describe({
         expect(retryAfterMsOf({ bodyText: 'try again in s', },),).toBe(0,);
         expect(retryAfterMsOf({ bodyText: 'try again in 12 minutes', },),).toBe(0,);
         expect(retryAfterMsOf({ bodyText: 'busy', },),).toBe(0,);
+        // The daily wording writes hours, minutes and seconds in one run.
+        expect(retryAfterMsOf({ bodyText: 'Please try again in 14m40s.', },),).toBe(880_000,);
+        expect(retryAfterMsOf({ bodyText: 'Please try again in 2h25m18s.', },),).toBe(8_718_000,);
+        expect(retryAfterMsOf({ bodyText: 'try again in 2h', },),).toBe(7_200_000,);
 
         /**
          * Attempt counter.
@@ -257,12 +313,12 @@ await describe({
               calls,
             },),
             exchange: exchangeWith({ signal: new AbortController().signal, },),
-            policy: FAST_POLICY,
+            policy: WAIT_POLICY,
           },),
         ).toStrictEqual(OK_REPLY,);
         expect(calls.count,).toBe(2,);
-        // FAST_POLICY backs off in milliseconds; only the body's wait can
-        // hold the retry for a second.
+        // WAIT_POLICY backs off in hundreds of milliseconds; only the body's
+        // wait can hold the retry for a full second.
         expect(Date.now() - startedAt,).toBeGreaterThanOrEqual(1_000,);
       },
     },),

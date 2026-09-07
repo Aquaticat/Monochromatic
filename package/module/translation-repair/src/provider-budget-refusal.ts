@@ -1,4 +1,5 @@
 import { SyntheticHttpError, } from './completion-shape.ts';
+import { retryAfterMsOf, } from './transient-retry.ts';
 
 /**
  * How subscription reports spent allowance.
@@ -41,4 +42,28 @@ export function isBudgetRefusal(
   if (!(error instanceof SyntheticHttpError))
     return false;
   return BUDGET_REFUSAL_STATUSES.has(error.status,);
+}
+
+/**
+ * Wait a refusal names for its provider's return, zero when it names none or
+ * when the failure is not a provider reply.
+ *
+ * Hyper's daily limit answers "You've hit your daily rate limit. Please try
+ * again in 2h25m18s" (Huasheng, 2026-09-07); a hold shorter than that walks
+ * straight back into the same wall, which the router did every 60 s for
+ * 2h53m.
+ *
+ * @param error - whatever call threw
+ *
+ * @returns Milliseconds the provider asked us to stay away
+ *
+ * @example
+ * ```ts
+ * await budgets.markRefused({ provider, signal, statedWaitMs: statedWaitMsOf({ error, },), },);
+ * ```
+ */
+export function statedWaitMsOf({ error, }: { readonly error: unknown; },): number {
+  if (!(error instanceof SyntheticHttpError))
+    return 0;
+  return retryAfterMsOf({ bodyText: error.bodyExcerpt, },);
 }

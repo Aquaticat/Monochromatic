@@ -9,7 +9,10 @@ import type {
   ChatTextRequest,
 } from './chat-contract.ts';
 import { readJsonOutcome, } from './chat-json-outcome.ts';
-import { isBudgetRefusal, } from './provider-budget-refusal.ts';
+import {
+  isBudgetRefusal,
+  statedWaitMsOf,
+} from './provider-budget-refusal.ts';
 import type { ProviderBudgets, } from './provider-budget.ts';
 import {
   otherProviders,
@@ -215,6 +218,7 @@ async function replyOrBudgetRefusal(
     await budgets.markRefused({
       provider,
       signal: request.signal,
+      statedWaitMs: statedWaitMsOf({ error, },),
     },);
     rl.warn(`${request.modelId}: ${provider} refused the re-ask; keeping the first answer`,);
     return { kind: 'budget-refused', };

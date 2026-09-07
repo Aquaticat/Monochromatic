@@ -90,6 +90,8 @@ type PerProvider<ValueT,> = {
  *
  * @param text - what each provider answers when it answers
  *
+ * @param bodyText - what each provider's refusal says, `refused` by default
+ *
  * @returns Every provider's caller plus the log of who was called
  *
  * @example
@@ -102,10 +104,12 @@ function stubProviders(
     status = {},
     refusals = {},
     text = {},
+    bodyText = {},
   }: {
     readonly status?: PerProvider<number>;
     readonly refusals?: PerProvider<number>;
     readonly text?: PerProvider<string>;
+    readonly bodyText?: PerProvider<string>;
   },
 ) {
   /**
@@ -146,7 +150,7 @@ function stubProviders(
           refusalsLeft[provider] -= 1;
           throw new SyntheticHttpError({
             status: status[provider] ?? 0,
-            bodyText: 'refused',
+            bodyText: bodyText[provider] ?? 'refused',
           },);
         }
         return { text: answers[provider], };
@@ -201,6 +205,11 @@ function stubBudgets(
   const refused: ProviderName[] = [];
 
   /**
+   * Wait each refusal named, in the same order, zero for none.
+   */
+  const statedWaits: number[] = [];
+
+  /**
    * View as the meters read it, which a refusal then overrides.
    */
   const view: Record<ProviderName, boolean> = {
@@ -216,6 +225,7 @@ function stubBudgets(
 
   return {
     refused,
+    statedWaits,
     holdReads,
     view,
     budgets: {
@@ -227,8 +237,17 @@ function stubBudgets(
           onHoldEnd?.();
         return { ...view, };
       },
-      markRefused: async function markRefused({ provider, }: { readonly provider: ProviderName; },): Promise<void> {
+      markRefused: async function markRefused(
+        {
+          provider,
+          statedWaitMs = 0,
+        }: {
+          readonly provider: ProviderName;
+          readonly statedWaitMs?: number;
+        },
+      ): Promise<void> {
         refused.push(provider,);
+        statedWaits.push(statedWaitMs,);
         view[provider] = true;
       },
       holds: function holds(): ProviderRecord<number> {
@@ -382,6 +401,31 @@ await describe({
         expect(await ask({ client, },),).toEqual({ text: '{"spot":"radiator"}', },);
         expect(called,).toEqual(['synthetic', 'hyper',],);
         expect(refused,).toEqual(['synthetic',],);
+      },
+    },),
+
+    it({
+      name: 'PASSES THE WAIT A REFUSAL NAMES to the budgets, so a provider saying "try again in 14m40s" '
+        + 'is held out until then rather than for the concurrency backoff (Hyper\'s daily limit, '
+        + 'Huasheng, 2026-09-07)',
+      fn: async () => {
+        const { callers, called, } = stubProviders({
+          status: { synthetic: 429, },
+          bodyText: {
+            synthetic: '{"type":"error","error":{"type":"rate_limit_error","message":'
+            + '"You\'ve hit your daily rate limit. Please try again in 14m40s."}}',
+          },
+        },);
+        const { budgets, refused, statedWaits, } = stubBudgets({},);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+        },);
+
+        expect(await ask({ client, },),).toEqual({ text: '{"spot":"radiator"}', },);
+        expect(called,).toEqual(['synthetic', 'hyper',],);
+        expect(refused,).toEqual(['synthetic',],);
+        expect(statedWaits,).toEqual([880_000,],);
       },
     },),
 

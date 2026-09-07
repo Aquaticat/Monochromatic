@@ -18,7 +18,10 @@ import {
   type ChatTextRequest,
   type ModelCaller,
 } from './chat-contract.ts';
-import { isBudgetRefusal, } from './provider-budget-refusal.ts';
+import {
+  isBudgetRefusal,
+  statedWaitMsOf,
+} from './provider-budget-refusal.ts';
 import type { ProviderBudgets, } from './provider-budget.ts';
 import {
   PROVIDER_ORDER,
@@ -373,6 +376,7 @@ export function createRoutingClient(
         await budgets.markRefused({
           provider,
           signal: request.signal,
+          statedWaitMs: statedWaitMsOf({ error, },),
         },);
         if (attempt === (PROVIDER_ORDER.length - 1))
           throw error;

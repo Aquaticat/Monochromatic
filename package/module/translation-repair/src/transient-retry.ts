@@ -109,7 +109,9 @@ const l = tagged({ tag: 'translation-repair', },);
 /**
  * Phrase a rate-limit refusal uses to name its wait:
  * Hyper's 429 body reads "You've hit your hourly rate limit. Please try again
- * in 1s" (also 2s, 3s, 4s; measured on XIEPT2, 2026-09-03).
+ * in 1s" (also 2s, 3s, 4s; measured on XIEPT2, 2026-09-03), and its daily one
+ * "You've hit your daily rate limit. Please try again in 2h25m18s" (measured
+ * on Huasheng, 2026-09-07, 84 bodies all counting down to 19:54 UTC).
  */
 const RETRY_AFTER_PHRASE = 'try again in ';
 
@@ -117,6 +119,26 @@ const RETRY_AFTER_PHRASE = 'try again in ';
  * Milliseconds in one second.
  */
 const SECOND_MS = 1_000;
+
+/**
+ * Seconds in one minute.
+ */
+const MINUTE_S = 60;
+
+/**
+ * Minutes in one hour.
+ */
+const HOUR_MIN = 60;
+
+/**
+ * Milliseconds each unit letter of a stated wait stands for, in the order
+ * Hyper writes them: hours, minutes, seconds.
+ */
+const WAIT_UNIT_MS: Readonly<Record<string, number>> = {
+  h: HOUR_MIN * MINUTE_S * SECOND_MS,
+  m: MINUTE_S * SECOND_MS,
+  s: SECOND_MS,
+};
 
 /**
  * What `indexOf` returns for an absent phrase.
@@ -174,8 +196,9 @@ function digitRunEnd(
 /**
  * Wait the refusal itself asks for, when its body names one.
  *
- * A single forward scan: the phrase, then the digits that follow it, then an
- * `s`; anything else means the body names no wait.
+ * A single forward scan: the phrase, then one or more runs of digits each
+ * followed by its unit letter (`h`, `m`, `s`), summed; a body whose first
+ * run is followed by anything else names no wait.
  *
  * @param bodyText - reply body of the refused attempt
  *
@@ -183,7 +206,8 @@ function digitRunEnd(
  *
  * @example
  * ```ts
- * const ms = retryAfterMsOf({ bodyText: 'Please try again in 2s', },);
+ * const ms = retryAfterMsOf({ bodyText: 'Please try again in 14m40s', },);
+ * // => 880_000
  * ```
  */
 export function retryAfterMsOf({ bodyText, }: { readonly bodyText: string; },): number {
@@ -193,23 +217,38 @@ export function retryAfterMsOf({ bodyText, }: { readonly bodyText: string; },): 
   const at = bodyText.indexOf(RETRY_AFTER_PHRASE,);
   if (at === NOT_FOUND)
     return 0;
-  /**
-   * First character after the phrase.
-   */
-  const from = at + RETRY_AFTER_PHRASE.length;
-  /**
-   * Index past the digits.
-   */
-  const end = digitRunEnd({
-    text: bodyText,
-    from,
-  },);
-  if ((end === from) || (bodyText[end] !== 's'))
-    return 0;
-  return Number(bodyText.slice(
-    from,
-    end,
-  ),) * SECOND_MS;
+
+  return (function sumSegments(): number {
+    /**
+     * Milliseconds named by the segments read so far.
+     */
+    let totalMs = 0;
+    for (let cursor = at + RETRY_AFTER_PHRASE.length; cursor < bodyText.length;) {
+      /**
+       * Index past the digits starting at the cursor.
+       */
+      const end = digitRunEnd({
+        text: bodyText,
+        from: cursor,
+      },);
+      if (end === cursor)
+        return totalMs;
+
+      /**
+       * Milliseconds the letter after the digits stands for, absent when it
+       * is no unit.
+       */
+      const unitMs = WAIT_UNIT_MS[bodyText.charAt(end,)];
+      if (unitMs === undefined)
+        return totalMs;
+      totalMs += Number(bodyText.slice(
+        cursor,
+        end,
+      ),) * unitMs;
+      cursor = end + 1;
+    }
+    return totalMs;
+  })();
 }
 
 /**
@@ -244,6 +283,25 @@ function backoffDelayMs(
   const windowMs = baseMs * (2 ** attempt);
   return Math.floor(windowMs / 2,)
     + Math.floor(Math.random() * (windowMs / 2),);
+}
+
+/**
+ * Longest backoff a policy grants on its own: the full exponential window of
+ * its last retry. A refusal naming a wait past it is the provider naming its
+ * return, which no retry inside the ladder would live to see.
+ *
+ * @param policy - retry pacing in force
+ *
+ * @returns Milliseconds of the widest window
+ *
+ * @example
+ * ```ts
+ * longestBackoffMs({ policy: DEFAULT_RETRY_POLICY, },);
+ * // => 16_000
+ * ```
+ */
+function longestBackoffMs({ policy, }: { readonly policy: RetryPolicy; },): number {
+  return policy.baseMs * (2 ** policy.limit);
 }
 
 /**
@@ -448,12 +506,33 @@ export async function exchangeWithRetry(
       : outcome.thrown;
 
     if (reply !== undefined) {
+      if (!RETRYABLE_STATUSES.has(reply.status,))
+        return reply;
+
       /**
-       * Whether this reply's status merits another attempt.
+       * Wait the reply names for the provider's return, zero when it names
+       * none.
        */
-      const retryable = RETRYABLE_STATUSES.has(reply.status,)
-        && attemptsRemain;
-      if (!retryable)
+      const statedWaitMs = retryAfterMsOf({ bodyText: reply.bodyText, },);
+
+      /**
+       * Widest window this ladder would grant on its own.
+       */
+      const reachMs = longestBackoffMs({ policy, },);
+      // A WAIT PAST THE LADDER'S REACH IS THE PROVIDER NAMING ITS RETURN, and
+      // no retry inside this ladder would live to see it. Hyper's daily limit
+      // answered "try again in 2h25m18s" on Huasheng, 2026-09-07; the ladder
+      // read no wait in it and retried on its jitter 2,693 times over 2h53m.
+      // The reply goes back as it is, for the router to hold the provider out
+      // until the named instant.
+      if (statedWaitMs > reachMs) {
+        rl.warn(
+          `HTTP ${String(reply.status,)} names its return in ${String(statedWaitMs,)}ms, past this `
+            + `ladder's reach of ${String(reachMs,)}ms; ending the ladder`,
+        );
+        return reply;
+      }
+      if (!attemptsRemain)
         return reply;
     }
     else if (!attemptsRemain) {

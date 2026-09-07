@@ -319,6 +319,76 @@ await describe({
     },),
 
     it({
+      name: 'HOLDS A PROVIDER FOR THE WAIT ITS REFUSAL NAMES past the rate-limit backoff, whatever the '
+        + 'meter reads: Hyper\'s daily limit said "try again in 2h25m18s" on a meter reading wet '
+        + '(Huasheng, 2026-09-07), and a 60 s hold walked back into it 831 times',
+      fn: async () => {
+        /** Stub providers whose meters all report budget left. */
+        const { synthetic, hyper, openrouter, } = stubProviders({},);
+        /** Clock the holds are judged against. */
+        let clock = 1_000;
+        /** Budget view under test, on an injected clock. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          openrouter,
+          cooldownMs: 10_000,
+          rateLimitBackoffMs: 300,
+          now: () => clock,
+        },);
+
+        await budgets.read({ signal: SIGNAL, },);
+        await budgets.markRefused({
+          provider: 'hyper',
+          signal: SIGNAL,
+          statedWaitMs: 5_000,
+        },);
+        expect(budgets.holds().hyper,).toBe(5_000,);
+
+        // Still out once the backoff alone would have ended.
+        clock += 300;
+        expect(budgets.holds().hyper,).toBe(4_700,);
+        expect((await budgets.read({ signal: SIGNAL, },)).hyper,).toBe(true,);
+
+        clock += 4_700;
+        expect(budgets.holds().hyper,).toBe(0,);
+        expect((await budgets.read({ signal: SIGNAL, },)).hyper,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'HOLDS A PROVIDER FOR THE WAIT ITS REFUSAL NAMES even when every other provider is dry and '
+        + 'the meter alone would hold nothing, since a provider that named its return is not coming back '
+        + 'sooner for being asked',
+      fn: async () => {
+        /** Stub providers with the second and third out of money. */
+        const { synthetic, hyper, openrouter, } = stubProviders({
+          balance: 0,
+          remainingUsd: 0,
+        },);
+        /** Clock the holds are judged against. */
+        const clock = 1_000;
+        /** Budget view under test, on an injected clock. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          openrouter,
+          cooldownMs: 10_000,
+          rateLimitBackoffMs: 300,
+          now: () => clock,
+        },);
+
+        await budgets.read({ signal: SIGNAL, },);
+        await budgets.markRefused({
+          provider: 'synthetic',
+          signal: SIGNAL,
+          statedWaitMs: 5_000,
+        },);
+        expect(budgets.holds().synthetic,).toBe(5_000,);
+      },
+    },),
+
+    it({
       name: 'HOLDS NOTHING when a wet provider refuses us and every other provider is dry, since a hold '
         + 'with nowhere to move traffic only herds every call into the same limit when it ends '
         + '(XIEPT2 on Hyper alone, 2026-09-03: 429 bursts every 80 seconds and no slice settled in five '

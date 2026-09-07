@@ -87,6 +87,9 @@ const REFUSAL_COOLDOWN_MS = 300_000;
  * TIED TO THE FRESHNESS WINDOW rather than picked: the reading that excused
  * the refusal is trusted for this long, so the hold expires with it, and the
  * window is longer than every burst measured.
+ *
+ * UNLESS THE REFUSAL NAMES ITS RETURN: a wait the refusal itself states holds
+ * the provider out past this backoff, whatever the meter reads (`markRefused`).
  */
 const RATE_LIMIT_BACKOFF_MS = BUDGET_FRESH_MS;
 
@@ -148,6 +151,13 @@ export type ProviderBudgets = {
   readonly markRefused: (args: {
     readonly provider: ProviderName;
     readonly signal: AbortSignal;
+
+    /**
+     * Wait the refusal named for the provider's return, zero or absent when
+     * it named none; the hold lasts at least this long whatever the meter
+     * reads.
+     */
+    readonly statedWaitMs?: number;
   },) => Promise<void>;
 
   /**
@@ -676,6 +686,7 @@ export function createProviderBudgets(
     markRefused: async function markRefused({
       provider,
       signal,
+      statedWaitMs = 0,
     },): Promise<void> {
       /**
        * Logger pre-tagged with this function's name.
@@ -721,11 +732,26 @@ export function createProviderBudgets(
       // With no hold, each call keeps its own jittered retry ladder in the
       // transport layer, which is the pacing a concurrency limit wants.
       /**
-       * How long this refusal holds the provider out.
+       * How long this refusal would hold the provider out on its meter alone.
        */
-      const holdMs = (state === 'wet')
+      const meterHoldMs = (state === 'wet')
         ? (anotherIsWet ? rateLimitBackoffMs : 0)
         : cooldownMs;
+
+      // A REFUSAL THAT NAMES ITS RETURN IS NOT A CONCURRENCY LIMIT, whatever
+      // the meter reads. Hyper's daily limit on Huasheng, 2026-09-07, 17:00 to
+      // 19:54 UTC: "You've hit your daily rate limit. Please try again in
+      // 2h25m18s" on a meter reading wet at 909 credits, held out 60 s at a
+      // time: 831 holds and 2,693 refused attempts before the named instant,
+      // and four consolidation chunks of 75 min each settling on nobody.
+      /**
+       * How long this refusal holds the provider out: the meter's hold or the
+       * wait the refusal named, whichever is longer.
+       */
+      const holdMs = Math.max(
+        meterHoldMs,
+        statedWaitMs,
+      );
       heldUntil[provider] = now() + holdMs;
       /**
        * The other meters' states, for the line.
@@ -733,9 +759,15 @@ export function createProviderBudgets(
       const otherStates = others.map(function stateOf(other,): string {
         return `${other} ${states[other]}`;
       },);
+      /**
+       * Clause naming the refusal's own wait, empty when it named none.
+       */
+      const naming = (statedWaitMs > 0)
+        ? `, naming its return in ${String(statedWaitMs,)}ms`
+        : '';
       rl.info(
-        `${provider}: refused us while its meter reads ${state} and ${otherStates.join(', ',)}; `
-          + `held out for ${String(holdMs,)}ms`,
+        `${provider}: refused us while its meter reads ${state} and ${otherStates.join(', ',)}`
+          + `${naming}; held out for ${String(holdMs,)}ms`,
       );
     },
 
