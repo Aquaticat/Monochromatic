@@ -544,11 +544,12 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Read the `hakureico` page from the 23:09 launch on `3fc918013`
-    (runs dir `~/temp/agent/hakureico5-20260907`,
+1.  Read the `hakureico` page from the 23:38 launch on `49aca5770`
+    (runs dir `~/temp/agent/hakureico6-20260907`,
     log beside it,
-    pid 3852763;
-    the 22:21 launch stopped INCOMPLETE under a mid-consolidation hold):
+    pid 3905110;
+    the 22:21 launch stopped INCOMPLETE under a mid-consolidation hold,
+    the 23:09 launch in 67 seconds on OpenRouter's payment refusals):
     the footnotes first
     (`[^1]` on Mayday,
     `[^2]` on the GAE line,

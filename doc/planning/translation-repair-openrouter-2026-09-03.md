@@ -3898,6 +3898,31 @@ With OpenRouter reading dry,
 the roster with Synthetic's week spent is Bedrock's two shared seats and Hyper's six,
 and Hyper's daily limit is what every phase and chunk now waits out.
 
+## The sixth hakureico launch, 2026-09-07, 23:38 UTC, on the seated build
+
+`hakureico` relaunched at 23:38:03 UTC on `49aca5770` (code `b0b48d6f4`,
+the same pipeline `6bb40f9b` as `f9a17ebf1`),
+plain invocation,
+fresh runs dir `~/temp/agent/hakureico6-20260907`,
+log beside it,
+pid 3905110.
+`METERS` at launch:
+Synthetic dry,
+Bedrock 199.34 USD,
+Hyper 277,
+OpenRouter 0.01 USD.
+`JUDGE SEATS phase=preparation` reads
+`wide=7 select=6 late=8 slate=7 checkers=3 translators=6 readers=3 writers=8 roster=9`,
+`withheld=hf:Qwen/Qwen3.8-27B,hf:moonshotai/Kimi-K3`,
+`waited=0ms`:
+the first pass with `google.gemma-4-e2b` judging and with a `writers` bench of its own.
+The reading follows as for the fifth launch,
+plus whether OpenRouter's first 402 reads it dry for the rest of the pass
+(`refused us for payment` once,
+no 60 s cycle),
+and whether Hyper's next daily-limit hold is waited out at a chunk boundary
+(`short of quorum` then `chunk resumes`).
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
