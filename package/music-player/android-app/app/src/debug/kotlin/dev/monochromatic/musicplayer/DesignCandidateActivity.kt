@@ -1037,7 +1037,7 @@ private fun TwoRowModeControl(
  * ```
  */
 @Composable
-private fun FourRowModeControl(labels: List<String>) {
+private fun FourRowModeControl(labels: List<String>, accessibleLabels: List<String>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1068,7 +1068,7 @@ private fun FourRowModeControl(labels: List<String>) {
                         .fillMaxWidth()
                         .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                         .semantics {
-                            contentDescription = labels[index]
+                            contentDescription = accessibleLabels[index]
                         },
                 ) {
                     Text(text = labels[index], maxLines = 1)
@@ -1150,7 +1150,7 @@ private fun ModeControl() {
             )
             return@BoxWithConstraints
         }
-        FourRowModeControl(labels = accessibleLabels)
+        FourRowModeControl(labels = labels, accessibleLabels = accessibleLabels)
     }
 }
 
