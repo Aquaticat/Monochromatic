@@ -3181,7 +3181,7 @@ output invalidation,
 preview each report zero axe A/AA violations and zero incomplete checks.
  At a measured
 390 × 500 viewport,
- the preview fits inside its 326 × 102 CSS-pixel content box;
+ the preview fits inside its 326 × 103 CSS-pixel content box;
  axe
 reports no violation and one unresolved `color-contrast` check on that scaled modal.
 This matches the transformed-ancestor limitation recorded in
