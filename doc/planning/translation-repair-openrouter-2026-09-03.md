@@ -3483,6 +3483,46 @@ The reading follows:
 the footnotes first,
 then the Bedrock seats' `SPEND` lines and the ledger's sum against the `METERS` line.
 
+## The first hakureico launch was on the wrong roster; the second, 2026-09-07, 21:08 UTC
+
+The first launch's `JUDGE SEATS` line read `roster=11 wide=9 translators=9`,
+and its first eight `SPEND provider=bedrock` lines named `google.gemma-4-e2b` and `google.gemma-4-31b`,
+twenty to 154 completion tokens each:
+ballots.
+The record under "The owner adds Amazon Bedrock" says seatable is not seated,
+and `roster-id.ts` says the same over `BEDROCK_ONLY_ROSTER_IDS`,
+but `RUN_ROSTER` in `run-config.ts` was the whole of `ROSTER_MODEL_IDS`,
+which the fourth provider had grown to eleven,
+so every role derived from it took the two unmeasured sizes:
+judges,
+critics,
+panel and translators.
+A defect in what landed at `7b532ae31`,
+not in the pass.
+
+Fixed at `645c8787b`:
+`RUN_ROSTER` leaves the Bedrock-only ids out until the probes measure them,
+guarded in `run-seats.unit.test.ts`
+(the guard read 2 `FAIL` with the filter neutralised and 0 restored;
+types and oxlint clean).
+Under the kill-and-relaunch rule the first pass was killed by pid at 21:04 UTC,
+four minutes in,
+having spent 0.0011 USD of the credit on the eight calls
+(the ledger's sum;
+`bedrockUsd=200.00` at two decimals).
+
+`hakureico` relaunched at 21:08:36 UTC on `645c8787b`,
+pipeline `8cf0b4fa`,
+plain invocation,
+fresh runs dir `~/temp/agent/hakureico2-20260907`,
+log beside it,
+pid 3706395.
+`JUDGE SEATS phase=preparation` reads
+`wide=7 select=7 late=8 slate=8 checkers=3 translators=7 readers=4 roster=9 withheld=none`,
+the roster of 2026-09-01 with every provider wet.
+Bedrock now serves only the two seats the roster already names,
+once Synthetic dries.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
