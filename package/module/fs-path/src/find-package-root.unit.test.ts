@@ -14,11 +14,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { isAbsolute, } from '@monochromatic-dev/module-fs-path';
 import {
   findPackageRoot,
   findPackageRootCached,
-  isAbsolute,
-} from '@monochromatic-dev/module-fs-path';
+} from '@monochromatic-dev/module-fs-path/node';
 
 /** Name in this package's own `package.json`; used as the walk target. */
 const OWN_PACKAGE_NAME = '@monochromatic-dev/module-fs-path';

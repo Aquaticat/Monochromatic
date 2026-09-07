@@ -1,12 +1,15 @@
 /**
- Tests for the pure path-manipulation helpers.
- 
- These exercise both the Node-delegating and pure-JS fallback paths.
- On Node and Bun, the exported functions delegate to `node:path/posix`;
- the fallbacks are tested directly to keep the browser path honest.
- 
+ Tests for the POSIX path operations through the built root entry.
+
+ Under Node the `node` export condition serves `dist/final/node/index.mjs`,
+ whose `#posix-path` backend delegates to `node:path/posix`; every case
+ here therefore pins the delegating build. The pure-JS backend that the
+ neutral artifact inlines is covered by `posix-path-neutral.unit.test.ts`.
+
  @module
  */
+
+import { posix, } from 'node:path';
 
 import {
   describe,
@@ -16,13 +19,10 @@ import {
 
 import {
   dirname,
-  dirnameFallback,
   isAbsolute,
   join,
-  joinFallback,
   normalize,
   resolve,
-  resolveFallback,
   sep,
   trimLeadingSlash,
   trimTrailingSlash,
@@ -58,6 +58,7 @@ await describe({
       fn: async () => {
         expect(join(['/foo', 'bar', 'baz',],),).toBe('/foo/bar/baz',);
         expect(join(['foo', '../bar',],),).toBe('bar',);
+        expect(join([],),).toBe('.',);
       },
     },),
     it({
@@ -65,37 +66,18 @@ await describe({
       fn: async () => {
         expect(resolve(['/foo', 'bar', 'baz',],),).toBe('/foo/bar/baz',);
         expect(resolve(['foo', '/bar', 'baz',],),).toBe('/bar/baz',);
+        expect(resolve(['foo', 'bar',],),).toBe(posix.resolve(
+          'foo',
+          'bar',
+        ),);
       },
     },),
     it({
-      name: 'dirnameFallback matches dirname for common cases',
-      fn: async () => {
-        expect(dirnameFallback('/foo/bar/baz.ts',),).toBe('/foo/bar',);
-        expect(dirnameFallback('/foo/bar/',),).toBe('/foo',);
-        expect(dirnameFallback('',),).toBe('.',);
-        expect(dirnameFallback('/',),).toBe('/',);
-      },
-    },),
-    it({
-      name: 'joinFallback handles empty and relative segments',
-      fn: async () => {
-        expect(joinFallback(['foo', 'bar', 'baz',],),).toBe('foo/bar/baz',);
-        expect(joinFallback(['/root', '../sibling',],),).toBe('/sibling',);
-        expect(joinFallback([],),).toBe('.',);
-      },
-    },),
-    it({
-      name: 'resolveFallback yields an absolute path',
-      fn: async () => {
-        expect(resolveFallback(['/foo', 'bar', './baz',],),).toBe('/foo/bar/baz',);
-        expect(resolveFallback(['/foo', '/bar',],),).toBe('/bar',);
-      },
-    },),
-    it({
-      name: 'normalize collapses redundant segments',
+      name: 'normalize collapses redundant segments and delegates to node:path/posix',
       fn: async () => {
         expect(normalize('/foo/bar//baz/./qux/../quux',),).toBe('/foo/bar/baz/quux',);
         expect(normalize('',),).toBe('.',);
+        expect(normalize('a/../../b/',),).toBe(posix.normalize('a/../../b/',),);
       },
     },),
     it({

@@ -11,11 +11,11 @@
  `package.json` triggers an explicit error instead of silently landing
  on a parent monorepo manifest.
  
- Runtime: Node/Bun only. Uses `node:fs/promises` directly with no
- browser fallback; current call sites pass `import.meta.dirname`,
- which is itself Node-only. A cross-runtime backend (matching
- {@link findMiseMonorepoRoot}'s OPFS support) can be added when a browser
- consumer needs it.
+ Runtime: Node/Bun only, shipped from the `./node` entry. Uses
+ `node:fs/promises` directly with no browser fallback; current call sites
+ pass `import.meta.dirname`, which is itself Node-only. A cross-runtime
+ backend (matching the root finders' OPFS support) can be added when a
+ browser consumer needs it.
  
  @module
  */
@@ -25,12 +25,10 @@ import { readFile, } from 'node:fs/promises';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-/* oxlint-disable import/no-cycle -- barrel re-export cycle; dirname and resolve are fully initialized before findPackageRoot runs */
 import {
   dirname,
   resolve,
-} from './index.ts';
-/* oxlint-enable import/no-cycle */
+} from '#posix-path';
 
 //region Walk
 

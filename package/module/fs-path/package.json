@@ -12,13 +12,26 @@
       "node": "./dist/final/node/index.mjs",
       "default": "./dist/final/neutral/index.mjs"
     },
+    "./node": {
+      "types": "./dist/final/node/node.d.mts",
+      "default": "./dist/final/node/node.mjs"
+    },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
+  "imports": {
+    "#posix-path": {
+      "node": "./src/posix-path.node.ts",
+      "default": "./src/posix-path.neutral.ts"
+    },
+    "#root-filesystem": {
+      "node": "./src/root-filesystem.node.ts",
+      "default": "./src/root-filesystem.neutral.ts"
+    }
+  },
   "dependencies": {
     "@monochromatic-dev/module-caught-value": "workspace:*",
-    "@monochromatic-dev/module-logger": "workspace:*",
-    "happy-opfs": "catalog:"
+    "@monochromatic-dev/module-logger": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",

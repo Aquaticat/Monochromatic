@@ -34,10 +34,9 @@ extends = "format:oxlint"
 [tasks."lint:types"]
 extends = "lint:types"
 
-[tasks.test]
-description = "Run unit tests for fs-path"
-run = "node src/self.unit.test.ts"
+[tasks."test:unit"]
+extends = "test:unit"
 
 [tasks.buildAndTest]
-description = "Build the neutral dist, then run the aggregator (path-ops imports the built `.` bundle as the smoke test)"
-run = ["mise run build", "mise run test"]
+description = "Build both platform artifacts, then run the unit tests (they import the built `.` and `./node` entries)"
+run = ["mise run build", "mise run test:unit"]

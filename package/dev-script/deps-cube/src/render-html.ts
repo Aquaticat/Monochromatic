@@ -26,7 +26,7 @@ import {
   rolldown,
 } from 'rolldown';
 
-import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path/ts';
+import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path/ts/node.ts';
 
 import type { PackageProbe, } from './probe.ts';
 import { renderControls, } from './render-controls.ts';

@@ -86,7 +86,6 @@ catalog:
   'find-up': '>=8.0.0'
   'h3': '>=2.0.1-rc.29'
   'happy-dom': '>=20.5.0'
-  'happy-opfs': '>=2.2.0'
   'happy-rusty': '>=1.9.1'
   'hb-subset-wasm': '>=0.4.0'
   'hyphen': '>=1.14.1'
