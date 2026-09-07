@@ -27,6 +27,7 @@ import {
   STREAM_IDLE_MS,
 } from '../stream-idle-guard.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
+import { BEDROCK_ONLY_ROSTER_IDS, } from '../roster-id.ts';
 import {
   readsImages,
   ROSTER_MODEL_IDS,
@@ -80,8 +81,18 @@ const HERE = import.meta.dirname;
  * refreshed the catalog under it: `glm-5.3` was admitted on the forced-tool
  * probe, GLM-5.3-Flash gained a second route, and two Qwen3.8 routes were
  * culled as automatic-only. Remaining seats retain full weight.
+ *
+ * THE TWO BEDROCK-ONLY GEMMA 4 SIZES ARE NOT SEATED. The roster of 2026-09-01
+ * was seated by measured fidelity, and nothing has been measured for
+ * `google.gemma-4-e2b` or `google.gemma-4-31b` (the planning log of 2026-09-07,
+ * "What is asked of the owner"). They join a role when the probes say so.
  */
-export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
+export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
+  .filter(function measured(modelId,): boolean {
+    return !BEDROCK_ONLY_ROSTER_IDS.some(function is(unmeasured,): boolean {
+      return unmeasured === modelId;
+    },);
+  },);
 
 /**
  * Writers the 40-round producer calibration of 2026-09-01 measured out of the

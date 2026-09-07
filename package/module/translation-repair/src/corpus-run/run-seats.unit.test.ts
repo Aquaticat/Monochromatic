@@ -33,6 +33,8 @@ import {
   RUN_ROSTER,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
+  BEDROCK_ONLY_ROSTER_IDS,
+  ROSTER_MODEL_IDS,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -129,6 +131,23 @@ await describe({
         expect(wet.translateModels.translatorModelIds,).toEqual(RUN_TRANSLATORS,);
         expect(wet.withheld,).toEqual([],);
         expect(wet.wideSeats.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES THE UNMEASURED BEDROCK-ONLY GEMMA SIZES OUT OF EVERY ROLE while the roster still names them',
+      fn: async function leavesUnmeasuredOut(): Promise<void> {
+        const wet = judgeSeatsFor({ dry: ALL_WET, },);
+        for (const unmeasured of BEDROCK_ONLY_ROSTER_IDS) {
+          expect(ROSTER_MODEL_IDS.includes(unmeasured,),).toBe(true,);
+          expect(RUN_ROSTER.includes(unmeasured,),).toBe(false,);
+          expect(wet.roster.includes(unmeasured,),).toBe(false,);
+          expect(wet.wideSeats.includes(unmeasured,),).toBe(false,);
+          expect(wet.translators.includes(unmeasured,),).toBe(false,);
+          expect(wet.checkers.includes(unmeasured,),).toBe(false,);
+          expect(wet.readers.includes(unmeasured,),).toBe(false,);
+        }
+        expect(RUN_ROSTER.length,).toBe(ROSTER_MODEL_IDS.length - BEDROCK_ONLY_ROSTER_IDS.length,);
       },
     },),
 
