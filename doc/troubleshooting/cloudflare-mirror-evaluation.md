@@ -2,8 +2,9 @@
 
 This file documents a procurement decision against using Cloudflare
 for a third diversification mirror behind `fastly.aquati.cat`
-(working) and `aws.aquati.cat` (waiting on TLS 1.3 origin auto-neg,
-see `TROUBLESHOOTING.aws-cloudfront-mirror.md`).
+(working) and `aws.aquati.cat` (HTTP 502;
+the 2026-09-07 [AWS reassessment](aws-cloudfront-mirror.md#issue-7-cloudfront-http-502-does-not-establish-absent-tls-13-origin-support)
+retracts the assumption that an unfinished TLS 1.3 rollout is the cause).
  The shape matches
 the canonical troubleshooting structure even though the "bug" is a
 plan-tier constraint rather than a code defect.
@@ -215,9 +216,9 @@ makes the effort worthwhile.
 
 Skip Cloudflare.
  The mirror set remains `fastly.aquati.cat`
-(working) plus `aws.aquati.cat` once AWS ships TLS 1.3 origin
-auto-negotiation cleanly (see
-`TROUBLESHOOTING.aws-cloudfront-mirror.md` issue 7).
+(working) plus the unresolved `aws.aquati.cat` endpoint.
+The [AWS mirror investigation](aws-cloudfront-mirror.md)
+no longer treats waiting for TLS 1.3 as an established resolution path.
  Re-evaluate
 if Cloudflare loosens partial-setup or subdomain-setup plan
 gating,
@@ -265,5 +266,5 @@ Decision:
    CAA tree-walk and CNAME-following:
   <https://datatracker.ietf.org/doc/html/rfc8659#section-3>
 - Related:
-   `TROUBLESHOOTING.aws-cloudfront-mirror.md` (the AWS
-  path's CAA pattern this evaluation reused).
+   [AWS mirror investigation](aws-cloudfront-mirror.md)
+  (the AWS path's CAA pattern this evaluation reused).
