@@ -2457,6 +2457,27 @@ bold,
 and is the entry to run last,
 not first.
 
+## The TLL1122 launch, 2026-09-07, 01:11 UTC: the first footnote
+
+`TLL1122` launched at 01:11:14 UTC on `d384e08fd`,
+pipeline `1b748b56`,
+the ellipsis build,
+plain invocation,
+fresh runs dir `~/temp/agent/tll1122-20260907`,
+log beside it,
+after the full suite on that build read 936 `PASS` and 0 `FAIL`,
+oxlint 0 and 0,
+types clean,
+and the ellipsis guard read 3 `FAIL` neutralised and 0 restored.
+Weekly Synthetic 16.34 percent at launch.
+The source is 640 characters with a positional blockquote before the first heading,
+corner brackets,
+one footnote definition and a reference inside a quoted line;
+the archive writes emphasis the source has none of,
+and its `desc` and alias differ from the source's.
+The reading follows,
+with the footnote's reference and definition first.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
