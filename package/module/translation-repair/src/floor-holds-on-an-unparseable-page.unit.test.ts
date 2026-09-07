@@ -18,6 +18,13 @@
  * parses under the strict grammar perfectly well, so a tidy fixture proves
  * nothing here: it would pass before the fix and after it. Only a span cut
  * through an element reproduces the refusal.
+ * SINCE 2026-09-07 A SPAN CUT BETWEEN A CONTAINER'S TAGS READS STRICTLY: the
+ * lone tag is masked before the parse and carried as a `container-tag` atom
+ * (`mask-container-tags.ts`), because `container-extents.ts` cuts every
+ * container whose blocks fall in different slices exactly that way, and the
+ * Huasheng pass stopped on it. The relaxed path is therefore exercised here by
+ * a page the grammar refuses for another reason, an inline tag torn from its
+ * closer on the same line, and the cut-container page has its own cases.
  *
  * Fixtures are cat-themed invention.
  *
@@ -57,6 +64,16 @@ const CUT_PAGE = `(Warning: this account may be upsetting.)
  */
 const WHOLE_PAGE = `${CUT_PAGE}
 </details>`;
+
+/**
+ * Page torn through an inline element, which no mask reads for the grammar:
+ * the `summary` opener has content on its line and no closer anywhere.
+ */
+const TORN_PAGE = `(Warning: this account may be upsetting.)
+
+<summary>The cat's requests
+> Feed the birds at dawn.
+> Leave the window open.`;
 
 /**
  * Candidate carrying the note and nothing that followed it.
@@ -101,7 +118,7 @@ await describe({
         const verdict = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,
           candidateText: NOTE_ONLY,
-          pageText: CUT_PAGE,
+          pageText: TORN_PAGE,
         },);
 
         expect(verdict.kind,).toBe('invalid',);
@@ -117,7 +134,7 @@ await describe({
         const verdict = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,
           candidateText: NOTE_ONLY,
-          pageText: CUT_PAGE,
+          pageText: TORN_PAGE,
         },);
 
         expect(findingsOf({ verdict, },),).toContain('html',);
@@ -148,8 +165,8 @@ await describe({
         // text we should not splice into a page.
         const verdict = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,
-          candidateText: CUT_PAGE,
-          pageText: CUT_PAGE,
+          candidateText: TORN_PAGE,
+          pageText: TORN_PAGE,
         },);
 
         expect(verdict.kind,).toBe('invalid',);
@@ -164,8 +181,8 @@ await describe({
         // a valid verdict cannot tell a strict reading from a relaxed one.
         const relaxed = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,
-          candidateText: CUT_PAGE,
-          pageText: CUT_PAGE,
+          candidateText: TORN_PAGE,
+          pageText: TORN_PAGE,
         },);
         const strict = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,
@@ -182,17 +199,37 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a well-formed candidate too, so nothing ships at a cut slice',
+      name: 'READS a page cut between a container\'s tags STRICTLY, refusing a candidate that drops '
+        + 'the lone tag and passing one that carries it (Huasheng, 2026-09-07)',
       fn: async () => {
-        // The two grammars disagree about what the same element IS: the page,
-        // read relaxed, calls it an html block, while a candidate read strictly
-        // calls it an mdxJsxFlowElement. So a candidate cannot satisfy the floor
-        // here even by writing the element correctly.
-        //
-        // FAIL-CLOSED BOTH WAYS IS THE SAFE ANSWER for a span that is not a
-        // well-formed fragment: every candidate is refused, the incumbent
-        // stays, and the content survives. It is NOT shipping, and making these
-        // slices shippable belongs to the slicer rather than to this check.
+        // The cut page was the fail-closed case until 2026-09-07; it is now the
+        // ordinary case, since the extents cut every split container this way.
+        const dropped = validateTranslatedSlice({
+          sourceText: SOURCE_TEXT,
+          candidateText: NOTE_ONLY,
+          pageText: CUT_PAGE,
+        },);
+        const carried = validateTranslatedSlice({
+          sourceText: SOURCE_TEXT,
+          candidateText: CUT_PAGE,
+          pageText: CUT_PAGE,
+        },);
+
+        expect(dropped.kind,).toBe('invalid',);
+        expect(findingsOf({ verdict: dropped, },),).toContain('container-tag <details>',);
+        expect(findingsOf({ verdict: dropped, },),).not.toContain('html',);
+        expect(carried.kind,).toBe('valid',);
+        expect(carried.kind === 'valid' ? carried.pageGrammar : 'not-valid',).toBe('strict',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a well-formed candidate at a cut slice still, since a closed element is a '
+        + 'different block from the opener the page owns',
+      fn: async () => {
+        // The page owns the opener alone and reads as three blocks with a tag
+        // atom; a candidate that closes the element reads as one flow element,
+        // which is not what the page has. The incumbent stays.
         const verdict = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,
           candidateText: WHOLE_PAGE,

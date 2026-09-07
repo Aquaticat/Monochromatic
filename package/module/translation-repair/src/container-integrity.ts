@@ -26,8 +26,9 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 // ordinary healthy case: a container whose blocks fall in different slices puts
 // its opening tag in the first slice's own text and its closing tag in the
 // last's, each lane sees its tag and reproduces it, and the page stays
-// balanced. A lane that drops one is a CANDIDATE fault, caught where the page
-// grammar is read, not a preparation fault.
+// balanced. A lane that drops one is a CANDIDATE fault, caught at the slice
+// floor since 2026-09-07 (`mask-container-tags.ts` carries a lone tag as an
+// atom) and again where the page grammar is read, not a preparation fault.
 //
 // What is checked instead is the property the origin fix establishes: every tag
 // of a container that holds blocks lies wholly inside one of them, and no slice
