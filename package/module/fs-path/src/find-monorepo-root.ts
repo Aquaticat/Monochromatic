@@ -140,8 +140,15 @@ async function matchesMiseMonorepoRoot({
    Candidate `mise.toml` content; the {@link ABSENT} sentinel when the file is missing.
    */
   const content = await fs.readTextFile(`${dir}/mise.toml`,);
-  return (content !== ABSENT) && content
-    .includes(MONOREPO_SECTION_MARKER,);
+  if (content === ABSENT)
+    return false;
+  /**
+   Content framed by line breaks, so a `[monorepo]` header on the first
+   line or on a last line without a trailing newline still matches the
+   line-delimited marker.
+   */
+  const framed = `\n${content}\n`;
+  return framed.includes(MONOREPO_SECTION_MARKER,);
 }
 
 /**

@@ -116,14 +116,30 @@ async function createRootFixture({
  ```
  */
 async function createMiseMonorepoFixture(): Promise<RootFixture> {
-  /** Fixture root that receives monorepo `mise.toml`. */
+  return createMiseFixtureFromText({ text: '# test fixture\n\n[monorepo]\n', },);
+}
+
+/**
+ Creates a mise fixture whose `mise.toml` holds exactly the given text.
+
+ @param text - full `mise.toml` content
+
+ @returns disposable mise fixture
+
+ @example
+ ```ts
+ await using fixture = await createMiseFixtureFromText({ text: '[monorepo]\n' });
+ ```
+ */
+async function createMiseFixtureFromText({ text, }: { readonly text: string; },): Promise<RootFixture> {
+  /** Fixture root that receives the `mise.toml`. */
   const fixture = await createRootFixture({ prefix: 'fs-path-mise-', },);
   await writeFile(
     nodeJoin(
       fixture.root,
       'mise.toml',
     ),
-    '# test fixture\n\n[monorepo]\n',
+    text,
   );
   return fixture;
 }
@@ -353,6 +369,31 @@ await describe({
         /** Mise monorepo root discovered from nested fixture child. */
         const root = await findMiseMonorepoRoot({ cwd: fixture.nested, },);
         expect(root,).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'finds the marker when [monorepo] is the first line',
+      fn: async () => {
+        /** Fixture whose mise.toml opens with the section header. */
+        await using fixture = await createMiseFixtureFromText({ text: '[monorepo]\nroot = true\n', },);
+        expect(await findMiseMonorepoRoot({ cwd: fixture.nested, },),).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'finds the marker when [monorepo] is the last line without a trailing newline',
+      fn: async () => {
+        /** Fixture whose mise.toml ends with the section header and no newline. */
+        await using fixture = await createMiseFixtureFromText({ text: '[tools]\nnode = "24"\n\n[monorepo]', },);
+        expect(await findMiseMonorepoRoot({ cwd: fixture.nested, },),).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'ignores [monorepo] that is not on its own line',
+      fails: true,
+      fn: async () => {
+        /** Fixture whose mise.toml mentions the header inside a value. */
+        await using fixture = await createMiseFixtureFromText({ text: 'description = "[monorepo] later"\n', },);
+        await findMiseMonorepoRoot({ cwd: fixture.nested, },);
       },
     },),
     it({

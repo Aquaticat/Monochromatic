@@ -26,3 +26,4 @@ Backends are chosen by export condition through `package.json` `imports`;
  `joinFallback`,
  and `resolveFallback` are no longer exported.
 `ensureDir` and `ensureFile` now grant the owner read and write bits when repairing an inaccessible path instead of setting mode `0o006`.
+`findMiseMonorepoRoot` now matches a `[monorepo]` header on the first line of `mise.toml` and on a last line without a trailing newline.
