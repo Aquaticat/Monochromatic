@@ -1,4 +1,4 @@
-# AWS CloudFront mirror (us-east-1 ACM + Njalla DNS, Nov 2025): seven failure surfaces from Alt-Svc cross-origin SAN through TLS 1.3 origin handshake mismatch
+# AWS CloudFront mirror: certificate and DNS setup failures, then unresolved HTTP 502
 
 **Original investigation**:
  2026-05-09.
@@ -18,7 +18,7 @@ The reassessment retracts the inference that this proves an unfinished TLS 1.3 r
 
 **Mirror status on 2026-09-07**:
 HTTP 502 from CloudFront.
-Direct origin probes accept TLS 1.3 and reject TLS 1.2 over IPv4 and IPv6.
+Direct probes of `aquati.cat:443` negotiate TLS 1.3 and reject TLS 1.2 over IPv4 and IPv6 with `aquati.cat` SNI.
 The current distribution configuration and CloudFront-to-origin handshake were not obtained;
 the exact cause remains unconfirmed.
 See issue 7 for evidence,
@@ -553,8 +553,8 @@ curl -sI https://aws.aquati.cat/
 ```
 
 The original investigation attributed this to a TLS version mismatch.
-Direct OpenSSL probes establish the origin's policy,
-not CloudFront's actual handshake:
+Direct OpenSSL probes establish how `aquati.cat:443` responds to those inputs,
+not CloudFront's actual handshake or current origin configuration:
 
 ```bash
 openssl s_client -connect aquati.cat:443 -servername aquati.cat \
@@ -658,23 +658,27 @@ file_server
 
 Publish the same release to a separate origin for CloudFront rather than retrieving it from Caddy.
 A concrete AWS-native candidate is a private S3 bucket origin with origin access control (OAC).
-[AWS documents][s3-oac] distribution-scoped bucket access and HTTPS with OAC's `always` signing setting.
+[AWS documents][s3-oac] a bucket-policy distribution-ARN condition that scopes access,
+and HTTPS origin requests with OAC's `always` signing setting.
+The REST origin does not supply Caddy's `try_files` behavior;
+key layout or edge rewriting would need validation.
 The S3 website endpoint is a different mechanism:
 [it does not support origin HTTPS][origin-https] and does not support OAC.
 
 - Benefit:
   removes the CloudFront-to-Caddy handshake from the serving path;
   could keep the AWS copy available when the primary host fails.
-  The primary site can remain on Caddy with TLS 1.3 only.
+  This design need not change the primary site's Caddy configuration or TLS policy.
 - Cost:
   adds artifact publication,
   freshness monitoring,
   rollback,
   and serving-policy parity work.
-  It does not remove shared source,
+  Shared source,
   build,
   DNS,
-  or deployment-credential failure domains.
+  and publication-credential dependencies need separate analysis;
+  their isolation depends on the design.
 - Verification before selection:
   prove self-contained assets and runtime requests,
   clean URLs,
@@ -738,15 +742,19 @@ replication follows because it addresses the shared-origin dependency diagnosis 
 These are complementary steps,
 not exclusive choices.
 
-For the omitted architectures under an origin-independence goal:
+For further evaluation toward restoring the AWS endpoint:
 artifact replica > dedicated compatibility endpoint > CDN chaining.
-Replication removes the live primary dependency;
+Replication could also remove the live primary dependency;
 a compatibility endpoint preserves it but avoids dependence on Fastly;
 chaining adds that CDN dependency.
+If independence from the primary origin is mandatory,
+only replication among these candidates qualifies.
 Under a strict prohibition on any TLS 1.2 leg,
-the compatibility endpoint is excluded rather than ranked as an acceptable deployment.
+a compatibility endpoint requiring that concession is excluded.
+This is an investigation ranking,
+not a validated deployment selection.
 
-### Verified workarounds
+### Workaround verification status
 
 None verified for this distribution in the reassessment.
 The original heading incorrectly called unshipped configuration sketches verified workarounds.
