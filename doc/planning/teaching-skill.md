@@ -68,7 +68,32 @@ Clarification was already implied by the initial failure example.
 Subsequent questions should discover unresolved failures or preferences,
 not ask the user to ratify an obvious repair.
 
+## Concrete lesson requested
+
+The user redirected the interview toward a built example:
+"Build me a *.local.html explaining Promises in JavaScript."
+They explicitly allowed clarifying questions.
+Build this lesson now to anchor subsequent critique;
+this authorizes the lesson artifact, not a finalized teaching skill.
+
+Planned artifact: `doc/planning/promises-teaching.local.html`.
+The repository ignores `*.local.*`; preserve that local-only status.
+The confirmed default presentation requirements apply.
+
+Workspace discovery found relevant examples:
+
+- `package/module/async-time/src/index.ts`: waiting and timeout operations.
+- `package/module/async-iter/src/map-iterable-async.ts`:
+  starting asynchronous operations before collecting results with `Promise.all`.
+- `AGENTS.md`, `PP1` and `PP2`: implementation uses `async`/`await`
+  and Promise combinators rather than callback chains or explicit Promise constructors.
+
+Repository code establishes available examples and implementation conventions,
+not the human learner's knowledge.
+The learner's starting point and desired outcome remain open.
+
 ## Next action
 
-Ask what fails during the lesson even when the intake and presentation requirements are met.
-Use the answer to refine the tree before drafting skill instructions.
+Establish the learner's starting point and desired outcome for the Promises lesson,
+then build, exercise, and open the local HTML artifact for critique.
+Resume teaching-skill discovery from the user's reaction to the concrete lesson.
