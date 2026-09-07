@@ -40,9 +40,11 @@ await describe({
           },);
           Object.defineProperty(destination, 'stub', { value: undefined, writable: false, },);
           const inject: unknown = Reflect.get(sinon, 'inject',);
-          if (typeof inject !== 'function')
+          if ((typeof inject) !== 'function')
             throw new Error('Missing Sinon inject factory',);
-          expect(() => Reflect.apply(inject, sinon, [destination,],),).toThrow('stub',);
+          expect((): void => {
+            Reflect.apply(inject, sinon, [destination,],);
+          },).toThrow('stub',);
           const [factory,] = captured;
           if ((typeof factory) !== 'function')
             throw new Error('Injection did not expose its first factory',);

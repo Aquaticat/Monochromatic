@@ -15,7 +15,7 @@ function createReplacement({ sinon, mode, }: {
     return { target, fake: target.toString.returns('original',), };
   }
   if (mode === 'function-object') {
-    function target(): void {}
+    const target = function functionTarget(): void {};
     target.toString = (): string => 'original';
     return { target, fake: sinon.stub(target,).toString.returns('original',), };
   }
