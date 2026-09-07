@@ -163,6 +163,77 @@ function appearsInOrder(
 }
 
 /**
+ * Whether two block sequences are the same shape, kind for kind and detail
+ * for detail.
+ *
+ * @param left - one sequence
+ *
+ * @param right - other sequence
+ *
+ * @returns Whether every block matches its counterpart
+ *
+ * @example
+ * ```ts
+ * sameShape({ left: source, right: candidate, },);
+ * ```
+ */
+function sameShape(
+  {
+    left,
+    right,
+  }: {
+    readonly left: readonly BlockShape[];
+    readonly right: readonly BlockShape[];
+  },
+): boolean {
+  return (left.length === right.length)
+    && left.every(function matches(
+      block,
+      index,
+    ): boolean {
+      /**
+       * Counterpart block in the other sequence.
+       */
+      const other = right[index];
+      return (other !== undefined)
+        && (other.kind === block.kind)
+        && (other.detail === block.detail);
+    },);
+}
+
+/**
+ * Whether the floor's blocks are all of kinds the original has, so any surplus
+ * is a split of the original's blocks rather than something added.
+ *
+ * @param floor - blocks the candidate is asked to carry
+ *
+ * @param source - original's blocks
+ *
+ * @returns Whether every floor block has a kind and detail the original has
+ *
+ * @example
+ * ```ts
+ * splitOnly({ floor: page.blocks, source: expected.blocks, },);
+ * ```
+ */
+function splitOnly(
+  {
+    floor,
+    source,
+  }: {
+    readonly floor: readonly BlockShape[];
+    readonly source: readonly BlockShape[];
+  },
+): boolean {
+  return floor.every(function hasKind(block,): boolean {
+    return source.some(function sameKind(candidate,): boolean {
+      return (candidate.kind === block.kind)
+        && (candidate.detail === block.detail);
+    },);
+  },);
+}
+
+/**
  * Findings for a block skeleton that does not carry the floor's.
  *
  * THE PAGE IS A FLOOR, NOT A CEILING, and two references are why. Measured over
@@ -176,6 +247,20 @@ function appearsInOrder(
  * WITH THE ORIGINAL AS THE FLOOR THIS IS TODAY'S EXACT MATCH. A floor of the
  * original with a ceiling of the original's own length admits one sequence, the
  * original's.
+ * EITHER RENDERING, the owner's decision of 2026-09-07
+ * (`doc/decision/translation-repair-block-floor.md`): a candidate shaped
+ * exactly as the original is a faithful rendering of it whatever shape the
+ * archive chose, so it passes beside one shaped as the page. The Huasheng poem
+ * is two `<br/>` paragraphs in the source and five paragraphs in the archive,
+ * every producer followed the source, and the entry stopped with nothing
+ * valid; 34 of the 92 archives carry more top-level blocks than their source.
+ * What stays refused is a shape that is neither reference's, which is what a
+ * dropped passage looks like. THE ORIGINAL'S SHAPE COUNTS ONLY WHERE THE PAGE'S
+ * SURPLUS IS MORE BLOCKS OF THE ORIGINAL'S OWN KINDS, a split: a page whose
+ * extra blocks are of a kind the original lacks (the sixth consolidation bed's
+ * html and blockquote against one paragraph, an archive's blockquote that says
+ * a passage was left by someone) is carrying something a split cannot explain,
+ * and a candidate shaped as the original would drop it.
  *
  * @param floor - blocks the candidate has to carry, the page's where there is
  * one and the original's where there is not
@@ -206,6 +291,18 @@ function compareBlocks(
     readonly candidate: readonly BlockShape[];
   },
 ): readonly string[] {
+  if (
+    splitOnly({
+      floor,
+      source,
+    },)
+    && sameShape({
+      left: source,
+      right: candidate,
+    },)
+  )
+    return [];
+
   /**
    * Most blocks any reference asks for.
    */

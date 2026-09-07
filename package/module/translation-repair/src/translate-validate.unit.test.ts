@@ -339,13 +339,13 @@ In the morning it dozes on the windowsill.
     },),
 
     it({
-      name: 'REFUSES a rendering shaped like the ORIGINAL when the page it '
-        + 'replaces is shaped otherwise, since the block quote is what says '
-        + 'somebody left this passage rather than wrote it',
+      name: 'REFUSES a rendering shaped like the ORIGINAL when the page it replaces is shaped '
+        + 'otherwise in KIND, since the block quote is what says somebody left this passage rather '
+        + 'than wrote it, and a kind the original lacks is not a split',
       fn: async () => {
         /**
          * Verdict where the candidate keeps the original's shape and loses the
-         * page's.
+         * page's quote.
          */
         const validation = validateTranslatedSlice({
           sourceText: '猫猫在窗台上打盹。\n\n（邻居留）',
@@ -356,6 +356,70 @@ In the morning it dozes on the windowsill.
         expect(
           (validation.kind === 'invalid') ? validation.findings.join('\n',) : '',
         ).toContain('PAGE AS IT STANDS',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS a rendering shaped like the ORIGINAL where the page only splits the original\'s '
+        + 'blocks into more of the same kind, the owner\'s either-rendering decision of 2026-09-07',
+      fn: async () => {
+        expect(
+          validateTranslatedSlice({
+            sourceText: '猫猫在窗台上打盹。它每天都来。',
+            pageText: 'The cat dozes on the windowsill.\n\nIt comes every day.',
+            candidateText: 'The cat naps on the windowsill; it comes every day.',
+          },).kind,
+        ).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a rendering shaped like NEITHER reference, which is what a dropped passage '
+        + 'looks like and what the sixth consolidation bed shipped',
+      fn: async () => {
+        /**
+         * Verdict where the candidate carries one paragraph against two on
+         * each side.
+         */
+        const validation = validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。\n\n（邻居留）',
+          pageText: '> The cat dozes on the windowsill.\n\n—left by a neighbour',
+          candidateText: 'The cat naps on the windowsill, left by a neighbour.',
+        },);
+        expect(validation.kind,).toBe('invalid',);
+        expect(
+          (validation.kind === 'invalid') ? validation.findings.join('\n',) : '',
+        ).toContain('PAGE AS IT STANDS',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS the original\'s two hard-broken stanzas where the page splits the poem into '
+        + 'five paragraphs, and still REFUSES one stanza (Huasheng, 2026-09-07)',
+      fn: async () => {
+        /**
+         * Poem as the source writes it, lines ending in `<br/>`.
+         */
+        const source = '春风又来，<br/>\n却唤不回你。\n\n此生太短，<br/>\n此别太长。';
+
+        /**
+         * Poem as the archive writes it, one couplet per paragraph and more.
+         */
+        const page = 'The spring wind returns,\n\nbut cannot call you back.\n\nThis life was too short,'
+          + '\n\nthis parting too long.\n\nWritten in tears.';
+
+        expect(validateTranslatedSlice({
+          sourceText: source,
+          pageText: page,
+          candidateText: 'The spring wind returns,<br/>\nbut cannot call you back.\n\n'
+            + 'This life was too short,<br/>\nthis parting too long.',
+        },).kind,).toBe('valid',);
+        expect(validateTranslatedSlice({
+          sourceText: source,
+          pageText: page,
+          candidateText: 'The spring wind returns but cannot call you back; this life was too short, '
+            + 'this parting too long.',
+        },).kind,).toBe('invalid',);
       },
     },),
 
