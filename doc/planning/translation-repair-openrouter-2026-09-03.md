@@ -3899,6 +3899,35 @@ run with `--candidates` over the whole roster once the pass is done with the met
 Editor and refiner seats stay where the 2026-09-01 calibration put them;
 no candidate is measured for them here.
 
+### The candidates alone over four artifacts, 22:21 UTC
+
+With the third hakureico artifact beside the three,
+`--cap 48 --candidates google.gemma-4-e2b,google.gemma-4-31b --candidates-alone` on `752bf9a9b`:
+four entries walked,
+TLL1122 still too short,
+three slices,
+24 rows,
+12 distinct questions per judge,
+24 Bedrock calls.
+
+- `google.gemma-4-e2b`:
+  11 of 12.
+  Deletion 5 of 6 with one damaged pick,
+  insertion 6 of 6,
+  never declined;
+  position two on 7 of 12.
+- `google.gemma-4-31b`:
+  6 of 12.
+  Deletion 2 of 6,
+  insertion 4 of 6,
+  declined the other 6,
+  never chose the damaged text;
+  position two on 3 of 12.
+
+The seated roster's reading over the same twelve is bought after the fourth hakureico pass settles,
+since its 108 calls would land on the Hyper quota the pass is spending;
+the rule is applied then.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
