@@ -203,5 +203,24 @@ theme toggle worked,
 and HTTP content parity passed.
 Keep this browser-verification limitation separate from CloudFront HTTP 502 remediation.
 
+## Proposed agent guideline
+
+Proposed addition to `AGENTS.md` under `Command execution conventions`:
+
+> Silent deployment waits: run bounded status observations in a managed process,
+> report pending checkpoints,
+> and require the service's ready state before dependent actions.
+
+This addresses the user's report of prolonged silence.
+It complements `PX1` by keeping observation inside the managed process rather than repeatedly polling tools.
+No root-policy edit was made.
+The task used this approach for function deployment,
+fixture disable,
+and live deployment;
+each produced timestamped `InProgress` observations followed by `Deployed`.
+Live verification and cleanup independently required the service's deployed state before proceeding.
+The pending-checkpoint branch was not reached in these runs,
+so a process success event alone is explicitly not treated as deployment evidence.
+
 [plans]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/flat-rate-pricing-plan.md
 [resolution]: https://github.com/Aquaticat/Monochromatic/issues/146#issuecomment-5575913552
