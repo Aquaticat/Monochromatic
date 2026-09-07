@@ -3216,3 +3216,10 @@ bounds,
  system UI,
  spacer,
  and rail evidence.
+
+The final isolated verifier is closed.
+ Normal Helium now holds the exact cleared scale
+review at KWin ID `{daeddc48-db41-4dcd-9ca5-60ca4bd14882}` on `HDMI-A-2`,
+1280 × 680.
+ Activate that non-minimized window as the final operation and wait for the
+user's review.
