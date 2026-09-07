@@ -117,21 +117,47 @@ Supplying a working application or a clickable demo alone would not establish in
 The lesson must account for prerequisites absent from the confirmed starting point
 and provide opportunities to build and explain rather than only inspect supplied code.
 
-### Open application contract
+### Rejected clarification: Q5
 
-The requested feature names still need operational definitions where choices affect teaching:
-real AI API access and credential ownership,
-rate-limit scope,
-cancellation behavior,
-retryable faults and stopping conditions,
-thread separation,
-and what the learner must demonstrate to the interviewer.
-Discover workspace evidence where relevant;
-ask about the hypothetical application's requirements instead of inferring them from repository code.
+The assistant asked:
+
+> What AI API setup should the learner’s finished application target?
+>
+> Describe the service or API contract, who will use the application,
+> and who supplies API access. No actual credentials are needed.
+>
+> My recommendation for the lesson itself: include an offline, controllable API simulator
+> so the learner can deliberately trigger delays, failures, and cancellations,
+> then teach the real-service connection explicitly.
+> The simulator should support learning and testing,
+> not masquerade as a finished AI integration.
+
+The user called this a textbook wrong question,
+challenged its relevance,
+and required it to become a counterexample in the skill.
+They required confirmation of the assistant's understanding even if the assistant thinks it understands.
+
+The prior plan made the real API and credential boundary a blocker
+and framed the remaining discovery as an application contract.
+That plan is withdrawn.
+
+Candidate explanation, awaiting user confirmation:
+
+- The assistant confused an application-building learning outcome
+  with commissioning an application that needs a product specification.
+- A teacher can choose and explain a representative API contract
+  and provide controllable failures without asking for provider or deployment preferences first.
+- Asking a novice to describe an API contract may require concepts the lesson must itself teach.
+- Real integration details can matter when a learning activity actually reaches that boundary;
+  their possible eventual relevance does not make them prerequisites for this lesson.
+
+Independent advisor review supported this reading and also noted
+that Q5 bundled service, audience, and credential questions.
+These are hypotheses about why the question failed,
+not a substitute for the user's required confirmation.
 
 ## Next action
 
-Clarify the real API and credential boundary for the intended browser application.
-Use it to shape the implementation examples and remaining application questions,
-then build, exercise, and open the local HTML lesson for critique.
-Resume teaching-skill discovery from the user's reaction to the concrete lesson.
+Present the candidate explanation of Q5 and ask the user to confirm or correct it.
+Record the confirmed reason and include the rejected question as a skill counterexample.
+Then continue the authorized local HTML lesson rather than restart product requirements gathering.
