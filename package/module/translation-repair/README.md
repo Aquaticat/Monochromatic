@@ -2204,6 +2204,13 @@ no page that shipped had one.
 Fixed with a guard shown to fail on the unfixed build (`translate-skeleton.ts`).
 The class-per-entry rate has not reached zero:
 the first entry read on a new shape of source found a new class.
+Four pages of that entry then shipped and were read the same day,
+and each found a class:
+a positional translator note carried into every slice without its position,
+one apostrophe convention on the page against another in the archive,
+and a JSX string literal curled by the fix for the one before,
+after which the publisher reads the whole would-ship page under the MDX grammar and refuses one it cannot
+parse (`corpus-run/page-grammar.ts`).
 
 ### Superseded generation-14 operation history
 

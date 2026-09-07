@@ -11,6 +11,9 @@ Before the first page,
 two defaults that had never shipped a page became the configuration every shipped page had run,
 the owner wrote one operating rule,
 and the first pass on the plain invocation found the fifth defect class in 28.6 minutes.
+Four pages of `yulianNyanner` shipped after it and each was read;
+each found a class,
+the eighth made by the seventh's fix.
 The pipeline is still not production ready,
 and the reason is recorded in
 [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md).
@@ -23,19 +26,23 @@ found the sixth class),
 22:10 on the class-six build (39.4 minutes,
 headings held,
 found the seventh),
+23:11 on the class-seven build (44.1 minutes,
+apostrophes held,
+found the eighth),
 each at zero USD with an unstarved consolidation and `verify-published` matched.
-The seventh class is fixed and proven,
-and the next action is the relaunch of `yulianNyanner` on the class-seven build into a fresh runs dir,
-then its reading by the seven steps in the 2026-09-04 snapshot,
+The eighth class is fixed and proven,
+and `yulianNyanner` is running again on the class-eight build,
+launched 00:12:39 UTC on 2026-09-07 into `~/temp/agent/yuliannyanner7-20260907`,
+tip `ba91c5587`,
+pipeline `4d000da8`.
+Its reading is the next action,
+by the seven steps in the 2026-09-04 snapshot,
 "How a pass is launched and read",
-which gained the apostrophe count today.
+which gained the apostrophe count and two refusal greps today.
 If a pass is running when this is read and the tree has moved past its tip,
 the kill-and-relaunch rule applies.
 
-The full unit suite emitted 934 `PASS` lines and zero `FAIL` lines on the class-five build;
-the class-six suites,
-the publisher,
-critic and preparation suites are 0 `FAIL` on the class-six build.
+The full unit suite emitted 936 `PASS` lines and zero `FAIL` lines on the class-eight build,
 oxlint 0 warnings and 0 errors,
 types clean,
 markdown lint clean on every line written today.
@@ -48,12 +55,15 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `cf1450162`.
+  `ba91c5587` for the code;
+  the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 21:03 UTC:
-  `synthetic=wet hyper=wet openrouter=wet syntheticWeekly=31.37% syntheticFiveHour=2750/2750`,
-  Hyper 2686 credits,
+- Meters at 00:12 UTC on 2026-09-07:
+  `synthetic=wet hyper=wet openrouter=wet syntheticWeekly=21.05% syntheticFiveHour=2750/2750`,
+  Hyper 2490 credits,
   OpenRouter 0.32 USD.
+  Each settled `yulianNyanner` pass today cost 3.9 to 4.4 points of the Synthetic week and 60 to 68 Hyper
+  credits at zero USD.
   One stopped 28-minute attempt cost about 0.8 percent of the Synthetic week and 36 Hyper credits;
   no call reached OpenRouter,
   since routing spends Synthetic and Hyper first.
@@ -62,6 +72,11 @@ markdown lint clean on every line written today.
 
 Newest first.
 
+-   `ba91c5587` keeps the typography restoration out of tags and code through `typography-prose-mask.ts`
+    and curls a trailing possessive apostrophe;
+    `2079c8c99` refuses a would-ship page the MDX grammar cannot parse (`UnparseablePageError`),
+    read as every document is read;
+    three guards shown to fail on the neutralised build and to pass restored.
 -   `bc42fe330`,
     `b669363b6`,
     `ec91a14f5` ship every stage's wording in the archive's quote convention at the would-ship reading,
@@ -179,6 +194,25 @@ Two wording findings are recorded for the judges rather than fixed:
 (the house policy now says so with this example),
 and 自慰 read by its blunt literal sense in a quoted despairing thought.
 
+## The eighth class
+
+Found on the 23:11 page,
+where the apostrophes held.
+The blockquoted component line shipped as `{[“…”]}`,
+a JSX string literal in typographic quotes,
+because the seventh class's fix sent every non-archive wording through a restoration that protected
+backtick spans and nothing else.
+Every slice floor had passed the slice;
+the would-ship reading runs after them,
+and nothing between it and the disk read the page as a document,
+though the destination check had logged `destinations-mdx-downgraded (page)` as a warning.
+19 of 92 sources carry a tag with a double-quoted attribute.
+The publisher now refuses a page whose strict parse falls back to plain markdown,
+the restoration reads one prose mask that excludes tags and code,
+and a trailing possessive apostrophe (`girls'`) converts when nothing in the replacement could pair with it.
+The reading steps gain `mdx-downgraded` and `would ship a page`,
+and the apostrophe count widens to any straight quote after a letter.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -220,8 +254,9 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Relaunch `yulianNyanner` on the class-seven build into a fresh runs dir and read its page,
-    counting its straight apostrophes first.
+1.  Read the `yulianNyanner` page from the class-eight build (run 7,
+    launched 00:12:39 UTC on 2026-09-07),
+    the component line and the count of straight quotes after a letter first.
 2.  Run and read `Arita`,
     the other double-quoted-paths entry never run,
     after that reading rather than beside it,

@@ -194,14 +194,18 @@ in order:
     `StandingIneligible`,
     `REATTEMPT`,
     `would drop`,
-    and `untranslated as`.
+    `untranslated as`,
+    and,
+    added 2026-09-06 after a page the grammar could not parse shipped with the warning in the log,
+    `mdx-downgraded` and `would ship a page`.
     Read the `TALLY` and `DESTINATIONS` lines,
     and the `SEAT` lines for how many calls each model threw.
 6.  Sum the `cost=` fields for what the pass spent,
     and read the last `METERS` line for what is left.
     Added 2026-09-06 after four pages had shipped with it unmeasured:
-    count the page's straight apostrophes inside words against its curly ones
-    (`grep -c "[A-Za-z]'[a-z]"` beside `grep -c "[A-Za-z]’[a-z]"`)
+    count the page's straight quotes after a letter against its curly apostrophes
+    (`grep -c "[A-Za-z]'"` beside `grep -c "[A-Za-z]’[a-z]"`;
+    the first pattern widened the same night from `[A-Za-z]'[a-z]` after a plural possessive slipped it)
     and compare with the archive,
     since a page mixing the two conventions is a defect no reader notices and every reader can measure.
 7.  Write the reading into

@@ -597,3 +597,41 @@ What would move the belief:
 `yulianNyanner` on the class-seven build,
 read clean including the count of straight apostrophes;
 then `Arita`.
+
+## What the page on the class-seven build showed (2026-09-06, 23:11 UTC)
+
+Shipped in 44.1 minutes at zero USD,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The sixth launch".
+The class-seven fix held where it was aimed:
+no straight apostrophe inside a word,
+the headings distinct,
+every comment in place.
+
+WHAT IT FOUND:
+the eighth class,
+in this package,
+and made by the seventh's fix:
+the typography restoration curled the JSX string literal of a blockquoted component line,
+and the page compiles nowhere.
+The log had named it as a warning (`destinations-mdx-downgraded`) and nothing refused.
+Fixed in `2079c8c99` and `ba91c5587`,
+floor first:
+the publisher refuses a would-ship page the MDX grammar cannot parse,
+and the restoration no longer reads markup or code as prose.
+19 of 92 sources carry the shape.
+
+THE READING:
+not ready.
+Four pages of one entry on one day,
+and the eighth class was introduced by the fix for the seventh,
+which is the reason the rule is fix first,
+relaunch,
+read again,
+rather than ship.
+A floor that reads the whole page as a document now stands where none did,
+so this shape of defect cannot ship again whatever causes it.
+What would move the belief:
+`yulianNyanner` on the class-eight build,
+read clean including the component line and the count of straight quotes after a letter;
+then `Arita`.

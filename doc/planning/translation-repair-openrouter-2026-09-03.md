@@ -2186,6 +2186,106 @@ both `PhotoScroll` shapes intact,
     The reading follows,
     with the apostrophe count first.
 
+## The sixth launch, 2026-09-06, 23:11 UTC: the apostrophes hold, and the eighth class
+
+`yulianNyanner` SETTLED at 23:56 UTC in 2,647,492 ms (44.1 minutes),
+17 slices,
+1,228 calls (Hyper 702,
+Synthetic 526,
+OpenRouter none),
+no refusal of any kind,
+every meter wet,
+consolidation unstarved.
+Weekly Synthetic 23.53 to 19.13 percent,
+Hyper 2559 to 2491,
+zero USD.
+`verify-published` matched,
+1 of 1 at the length the artifact implies.
+Five distinct headings,
+all fourteen comments rendered in place,
+three pictures textless,
+`DESTINATIONS source=0 page=0 dropped=0`.
+
+- **The apostrophes hold.**
+  Zero straight apostrophes inside words against forty curly ones,
+    where the 22:10 page had five against twenty-nine and the archive has none against thirty-six.
+    The one straight quote left after a letter is `girls'`,
+    a plural possessive,
+    which the restoration's apostrophe rule skipped because a quote with a space on one side may be
+    closing a quotation.
+- **The eighth class.**
+  The blockquoted component line reads
+    `> <PhotoScroll photos={[“${path}/photos/photo3.webp”]} />`:
+    the class-seven fix put every non-archive wording through the restoration,
+    the restoration protected backtick spans and nothing else,
+    and a JSX string literal in typographic quotes compiles nowhere.
+    Every slice floor had passed the straight-quoted slice,
+    since the would-ship reading runs after them,
+    and nothing between that reading and the disk read the page as a document.
+    The log had said it and nobody refused:
+    `publish: destinations-mdx-downgraded (page)`,
+    a warning from the destination check,
+    which parses the page and names the fall to plain markdown as a finding.
+    Measured at the pin,
+    19 of 92 sources carry a tag with a double-quoted attribute
+    (`<p style="text-align: end;">` in `XingZ60` and `luxuanwen3` among them),
+    so the class was waiting on every one of those.
+- **Fixed guard first.**
+  `2079c8c99`:
+    the publisher reads the assembled page the way every document is read,
+    `parseDocument`,
+    and refuses one whose strict parse fell back (`UnparseablePageError`,
+    names only,
+    entry id and the parser's refusal site).
+    `ba91c5587`:
+    `typography-prose-mask.ts` marks backtick spans and tags,
+    `<` followed by a letter or `/` through the `>` that is not a blockquote marker,
+    as not prose,
+    and every rule of the restoration reads that one mask;
+    a trailing apostrophe converts when the replacement holds no straight single quote shaped like an
+    opening one,
+    which is `girls'`.
+    Guards shown to fail on the neutralised build:
+    the floor inverted,
+    5 and 7 `FAIL` lines in the page-grammar and publisher suites;
+    the mask never entering a tag,
+    4;
+    the trailing rule removed,
+    2;
+    0 on each restore.
+    Full suite 936 `PASS`,
+    0 `FAIL`;
+    oxlint 0 and 0;
+    types clean.
+- **The reading gains two greps.**
+    `mdx-downgraded` and `would ship a page` join the refusal vocabulary,
+    and the apostrophe count now reads any straight quote after a letter,
+    not only one inside a word.
+- **A page from a superseded build no longer verifies.**
+  `verify-published` against the 22:10 runs dir on the class-seven build reads 0 of 1,
+    because the would-ship reading moved under it;
+    the tool now says what the rule says.
+- **Recorded,
+  not fixed.**
+  The blank line after the front matter is dropped on every `yulianNyanner` page and on `Hangmster`,
+    a splice property of the front-matter slice,
+    not a rendering defect,
+    since the site strips the front matter before the body is compiled.
+    贴贴 now reads "cuddle online" under the house rule;
+    自慰 reads "masturbation fantasies" again,
+    the same literal sense as the 22:10 page,
+    the judges' call.
+    The alias and the `desc` are as before,
+    the one by the identity rule and the other from the source.
+- **`yulianNyanner` relaunched at 00:12:39 UTC on 2026-09-07** on `ba91c5587`,
+  pipeline `4d000da8`,
+    plain invocation,
+    fresh runs dir `~/temp/agent/yuliannyanner7-20260907`,
+    log beside it,
+    weekly Synthetic 21.05 percent at launch.
+    The reading follows,
+    with the component line and the apostrophe count first.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
