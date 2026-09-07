@@ -141,23 +141,39 @@ The prior plan made the real API and credential boundary a blocker
 and framed the remaining discovery as an application contract.
 That plan is withdrawn.
 
-Candidate explanation, awaiting user confirmation:
+The user confirmed the central explanation:
+the assistant confused an application-building learning destination with a product specification.
+They added these required distinctions:
 
-- The assistant confused an application-building learning outcome
-  with commissioning an application that needs a product specification.
-- A teacher can choose and explain a representative API contract
-  and provide controllable failures without asking for provider or deployment preferences first.
-- Asking a novice to describe an API contract may require concepts the lesson must itself teach.
-- Real integration details can matter when a learning activity actually reaches that boundary;
-  their possible eventual relevance does not make them prerequisites for this lesson.
+- Asking someone whose established knowledge ends at `Hello <name>` to choose an API setup
+  invites a non-answer such as "maybe A".
+  Treating that answer as an informed requirement would mislead the teacher.
+- Applications shown in interviews do not need to be production applications.
+- The focus is `Promise`, not AI.
+- An offline, semi-deterministic simulated API with randomness is the appropriate teaching fixture.
+  This is settled; do not ask the user to choose it again.
 
-Independent advisor review supported this reading and also noted
-that Q5 bundled service, audience, and credential questions.
-These are hypotheses about why the question failed,
-not a substitute for the user's required confirmation.
+The confirmed counterexample must teach the agent to choose incidental teaching fixtures itself,
+keep the requested subject central,
+and ask questions the learner is equipped to answer.
+Clarification should improve the lesson rather than manufacture unreliable requirements.
+
+Independent advisor review also identified the novice-knowledge mismatch
+and the inappropriate product-specification framing before the user confirmed them.
+
+## Lesson implementation direction
+
+Build the authorized `*.local.html` now.
+Use repeatable fault scenarios and an optional random mode for the offline API.
+The simulated chat application gives Promise behavior a concrete purpose;
+it is not a production AI integration project.
+Provide prerequisites at the point of use without assuming more than the confirmed starting point.
+Use actual Promise behavior in interactions and distinguish observation of a supplied demo
+from independent building and interview explanation.
 
 ## Next action
 
-Present the candidate explanation of Q5 and ask the user to confirm or correct it.
-Record the confirmed reason and include the rejected question as a skill counterexample.
-Then continue the authorized local HTML lesson rather than restart product requirements gathering.
+Research the relevant JavaScript semantics,
+build and exercise the self-contained HTML lesson,
+then open the exact local artifact for the user's critique.
+Keep the final teaching skill pending until the concrete lesson has informed discovery.
