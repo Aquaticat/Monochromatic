@@ -10,7 +10,8 @@ not suite restructuring or an exclusivity option.
 Continue the tracked queue without asking the user to say continue.
 
 Tasks #4 through #7 are complete.
-Task #8 is checking final acceptance and the closing commit's push and issue state.
+Final implementation and documentation acceptance passed.
+Task #8 is verifying the closing commit's push and GitHub issue state.
 No runtime blocker remains established.
 Do not claim issue closure before checking GitHub.
 
@@ -182,10 +183,23 @@ Scoped Markdown lint passed in `proc_11df`.
 The historical missing-`isMdxPath` startup error is no longer present.
 The final descriptor-field annotation passed scoped lint and types in `proc_c502`.
 
-Finish the post-detached-spy consumer/browser gates and scoped documentation lint.
-Then commit `Closes #481`,
-verify push and actual GitHub closure,
-and complete task #8.
+Post-correction acceptance passed:
+
+- `proc_c6c6`:
+  rebuilt full module-test unit tests,
+  scoped lint,
+  and types.
+- `proc_fbfd`:
+  full module-test Oxlint,
+  actual logger unit tests,
+  and logger Oxlint.
+- `proc_df13`:
+  combined real Chromium,
+  Firefox,
+  and WebKit consumer checks.
+
+The closing commit carries `Closes #481`.
+Verify its push and actual GitHub closure before marking task #8 complete.
 
 ## Tooling and concurrent work
 
