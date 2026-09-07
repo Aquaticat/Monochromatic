@@ -43,8 +43,14 @@ Their examples specify meanings, not exact wording or a canned questionnaire:
   The user explicitly defined "source material" to include both.
   Their requirement is: "Print merely graceful degrades the interactivity."
   Both versions preserve the full teaching material, including depth, examples, and explanations.
-  Only the interactive mechanisms adapt into usable static equivalents.
+  The browser version keeps the interactivity the lesson needs.
+  Only the printout adapts interactive mechanisms into usable static equivalents.
+  Printability requires another presentation of the material,
+  not a least-interactive version imposed on both outputs.
   Keeping the browser version complete while reducing the printout does not satisfy this requirement.
+  Required counterexample from the user:
+  "oh you want it printable? I'll not add some interactivity, ANYWHERE".
+  The skill must explicitly deter omitting browser interactivity just because print support was requested.
 
 ## Design tree
 
