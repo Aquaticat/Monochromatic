@@ -22,9 +22,12 @@ import {
   createRunClient,
   readHeadSha,
   RUN_PER_CALL_TIMEOUT_MS,
-  RUN_ROSTER,
 } from './run-config.ts';
 import { readAskedCount, } from './asked-count.ts';
+import {
+  probeRosterWith,
+  readCandidateIds,
+} from './probe-candidates.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Producer calibrate
@@ -78,7 +81,7 @@ const DEFAULT_SLICES = 10;
  *
  * @example
  * ```ts
- * const { round, authors, } = await runOne({ slice, },);
+ * const { round, authors, } = await runOne({ slice, roster, },);
  * ```
  */
 type SliceRound = {
@@ -99,15 +102,23 @@ type SliceRound = {
  *
  * @param slice - passage to translate
  *
+ * @param roster - every model that writes and judges it
+ *
  * @returns Slate, ballots and authors of that round
  *
  * @example
  * ```ts
- * const round = await runOne({ slice, },);
+ * const round = await runOne({ slice, roster, },);
  * ```
  */
 async function runOne(
-  { slice, }: { readonly slice: BenchSlice; },
+  {
+    slice,
+    roster,
+  }: {
+    readonly slice: BenchSlice;
+    readonly roster: readonly RosterModelId[];
+  },
 ): Promise<SliceRound> {
   /**
    * Logger tagged for this slice.
@@ -119,8 +130,8 @@ async function runOne(
    */
   const result = await runTranslateStage({
     client: createRunClient(),
-    translatorModelIds: RUN_ROSTER,
-    judgeModelIds: RUN_ROSTER,
+    translatorModelIds: roster,
+    judgeModelIds: roster,
     sourceText: slice.sourceText,
     incumbentText: slice.incumbentText,
     // Every drawn slice comes from a pair the archive HAS translated, so there
@@ -173,6 +184,12 @@ async function main(): Promise<void> {
   },);
 
   /**
+   * Every model writing and judging: the seated roster and any seatable
+   * candidate named after `--candidates`, measured beside it for this run only.
+   */
+  const roster = probeRosterWith({ candidates: readCandidateIds({ argv: process.argv, },), },);
+
+  /**
    * Slices every model writes.
    */
   const sample = await sampleBenchSlices({ count: wanted, },);
@@ -183,8 +200,8 @@ async function main(): Promise<void> {
   const headSha = await readHeadSha();
 
   console.log(
-    `CALIBRATE ${String(sample.length,)} slices, all ${String(RUN_ROSTER.length,)} writing`
-      + ` and all ${String(RUN_ROSTER.length,)} judging, at ${headSha}`,
+    `CALIBRATE ${String(sample.length,)} slices, all ${String(roster.length,)} writing`
+      + ` and all ${String(roster.length,)} judging (${roster.join(', ',)}), at ${headSha}`,
   );
 
   /**
@@ -199,7 +216,10 @@ async function main(): Promise<void> {
   for (const slice of sample) {
     try {
       // oxlint-disable-next-line no-await-in-loop -- one round already asks twenty models
-      rounds.push(await runOne({ slice, },),);
+      rounds.push(await runOne({
+        slice,
+        roster,
+      },),);
       console.log(
         `  ${slice.entryId}#${String(slice.index,)}: round ${String(rounds.length,)}`
           + ` of ${String(sample.length,)}`,
@@ -237,7 +257,7 @@ async function main(): Promise<void> {
    * refusal.
    */
   const coverage = readStandingCoverage({
-    roster: RUN_ROSTER,
+    roster,
     standings,
     produced: rounds.flatMap(function authorsOf(sliceRound,): readonly RosterModelId[] {
       return sliceRound.authors;
