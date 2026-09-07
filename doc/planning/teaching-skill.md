@@ -90,10 +90,48 @@ Workspace discovery found relevant examples:
 
 Repository code establishes available examples and implementation conventions,
 not the human learner's knowledge.
-The learner's starting point and desired outcome remain open.
+The user then specified a role-play learner rather than their personal knowledge.
+
+### Confirmed learner and destination
+
+Starting point:
+
+- Independently build a JavaScript hello-world program.
+- Build a single-file HTML page whose script prompts for a name
+  and renders `Hello <name>` in the DOM.
+- Nothing beyond that is established.
+
+The lesson should enable the learner to independently build a browser AI chat application with:
+
+- No dependencies.
+- Rate limiting.
+- Accepted cancellation requests.
+- Exponential retries.
+- Tolerance of AI API faults.
+- Multiple chat threads.
+
+The learner must also be prepared to present the application to an interviewer.
+Promises are therefore part of an application-building learning path,
+not the complete learning objective.
+Supplying a working application or a clickable demo alone would not establish independent ability.
+The lesson must account for prerequisites absent from the confirmed starting point
+and provide opportunities to build and explain rather than only inspect supplied code.
+
+### Open application contract
+
+The requested feature names still need operational definitions where choices affect teaching:
+real AI API access and credential ownership,
+rate-limit scope,
+cancellation behavior,
+retryable faults and stopping conditions,
+thread separation,
+and what the learner must demonstrate to the interviewer.
+Discover workspace evidence where relevant;
+ask about the hypothetical application's requirements instead of inferring them from repository code.
 
 ## Next action
 
-Establish the learner's starting point and desired outcome for the Promises lesson,
-then build, exercise, and open the local HTML artifact for critique.
+Clarify the real API and credential boundary for the intended browser application.
+Use it to shape the implementation examples and remaining application questions,
+then build, exercise, and open the local HTML lesson for critique.
 Resume teaching-skill discovery from the user's reaction to the concrete lesson.
