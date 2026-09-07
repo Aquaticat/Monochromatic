@@ -118,8 +118,10 @@ and the count of `console.warn` breadcrumbs.
 The "loud signal once,
  at a boundary" contract is therefore a checked invariant,
  not a comment.
-Properties that stub `console.warn` run sequentially,
- the same rule the runtime package's breadcrumb suites follow.
+Properties that stub `console.warn` retain the sidecar's sequential setting.
+This originally matched the runtime package's breadcrumb suites.
+Issue #481 gives the runtime suites context-owned method replacements;
+those suites now run concurrently without changing this campaign's scheduling decision.
 
 ## Decision: two run layers
 

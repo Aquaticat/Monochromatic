@@ -208,7 +208,7 @@ if (untestableCondition) {
 
 - Use descriptive test names that explain expected behavior
 - Group related tests using nested `describe` blocks as children
-- Keep `describe` names unique at the same scope within a file -- duplicate names cause misattributed results (see `TROUBLESHOOTING.testing.md`)
+- Keep `describe` names unique at the same scope within a file -- duplicate names cause misattributed results (see [testing troubleshooting](../../../doc/troubleshooting/testing.md))
 - Use `.map()` to generate parameterized `it` entries in the `children` array
 - Test both happy path and error scenarios
 
@@ -430,7 +430,8 @@ descriptor mutation,
 captured references,
 call-sequence controllers,
 or callback ownership,
-read `package/module/test/README.md` under "Stubs and spies" before choosing a fixture.
+read the [harness ownership contract](../../../package/module/test/README.md#stubs-and-spies)
+before choosing a fixture.
 
 ## Async error assertions
 
@@ -635,4 +636,4 @@ expect(isError(new Error(),),).toBe(true,);
 For known testing issues (duplicate describe blocks,
  missing test output,
  misattributed logs),
-see `TROUBLESHOOTING.testing.md` in the repository root.
+see [testing troubleshooting](../../../doc/troubleshooting/testing.md).

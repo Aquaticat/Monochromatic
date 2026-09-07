@@ -1,207 +1,198 @@
 # Issue #481 implementation handover
 
-## Authority and goal
+## Authority and state
 
-The user accepted implementation with "Okay, do it."
-Implement and verify context-owned `ctx.sinon` methods,
-then close Aquaticat/Monochromatic#481.
-Do not substitute serialization,
-suite restructuring,
-or an exclusivity option.
-Continue tracked work without asking the user to say continue.
+The user accepted implementation with
+"Okay,
+do it."
+Implement and resolve Aquaticat/Monochromatic#481 through existing `ctx.sinon` syntax,
+not suite restructuring or an exclusivity option.
+Continue the tracked queue without asking the user to say continue.
 
-Canonical plan:
-[`issue-481-context-owned-stubs.md`](../planning/issue-481-context-owned-stubs.md).
-Source and prototype evidence:
-[`sinon-context-owned-stubs.md`](../troubleshooting/sinon-context-owned-stubs.md).
+Tasks #4,
+#5,
+and #6 are complete.
+Task #7 is reconciling documentation and canonical testing-skill mirrors.
+Task #8 must run closure gates and confirm the closing commit was pushed and the issue closed.
+No runtime blocker remains established.
+Do not claim issue closure before checking GitHub.
 
-## Contract and implementation
+The [planning record](../planning/issue-481-context-owned-stubs.md) holds the accepted scope.
+The [troubleshooting record](../troubleshooting/sinon-context-owned-stubs.md) holds source traces,
+rejected hypotheses,
+and reproducible controls.
 
-- Every body attempt gets a fresh context,
+## Implemented contract
+
+- `it-attempt.ts` creates a fresh context,
   sandbox,
-  and irreversible owner generation.
-  Repeats do not reuse authority.
-  Timeout closes ownership before cleanup but does not cancel application work.
-- `it-attempt.ts` runs the attempt and timeout in the existing shared Node async context.
-  Body and cleanup failures are aggregated.
-- `execution-node.ts` reuses the realm-shared rejection observer's `AsyncLocalStorage`.
-  `sandbox-runtime.ts` selects Node lazily.
-  Other runtimes use ordinary Sinon plus lifetime guards,
+  and owner for every body attempt,
+  including repeats.
+  Ownership closes before cleanup and after timeout.
+  This does not cancel application work.
+- `execution-node.ts` reuses the realm-shared rejection observer's async storage.
+  `sandbox-runtime.ts` selects it lazily.
+  Browsers retain ordinary Sinon plus lifetime guards,
   not claimed browser async-context isolation.
-- Own,
-  configurable,
-  writable function-valued data methods use owner-private Sinon facades.
-  String/symbol keys and normalized numeric keys work.
-  A context-selected getter returns the reading owner's ordinary fake.
-  Captured references keep identity;
-  unowned/contextless/completed readers get the original.
-- `sandbox-registry.ts`,
-  `sandbox-slot.ts`,
-  and `sandbox-lease.ts` coordinate copies through a versioned realm-shared weak registry.
-  Assignment rejects while leased.
-  Final restoration preserves the exact original descriptor.
-  Foreign deletion/redefinition is preserved and reported.
-- Other operation families remain ordinary Sinon,
-  with active-slot collision preflight and deferred lifetime guards.
-  This is not a security membrane against arbitrary reflection,
-  direct target changes,
-  or direct Sinon.
-- Successful restoration retires ordinary fake,
-  mock,
-  and clock generations.
-  An old restorer cannot remove a newer replacement.
-  Local history/behavior operations remain usable where they cannot mutate a target.
-- The supplied context owns a factory capability.
-  Do not add a requirement that every explicitly borrowed active context equals the current reader.
-- Contextual deferred getters preserve the actual receiver.
-  Root fake `.set()` conversion rejects before mutation because assignment to leased data methods is prohibited.
-  Existing accessor properties retain ordinary getter/setter stubbing.
+- Own configurable writable data methods use owner-private Sinon facades.
+  Property reads select by current context.
+  Captured fakes keep identity;
+  unowned and completed readers get the original.
+- The registry and method-slot modules coordinate source and built copies in one realm.
+  Assignment rejects during ownership.
+  Final release restores the exact original descriptor.
+  Foreign deletion or redefinition is preserved and reported.
+- Contextual getters preserve their actual receiver.
+  Converting a contextual data method into a setter rejects before mutation.
+  Existing accessors retain ordinary stubbing behavior.
+- `sandbox-fake.ts` shares owner and restoration generation with call-sequence behavior objects.
+  Descriptor-changing authority retires after completion or successful restoration.
+  Local fake history and ordinary behavior remain available.
+- `sandbox-member.ts` discovers introduced data-method and accessor fakes,
+  including function-object members.
+  `sandbox-install.ts` rolls back only partial installations from the failed operation,
+  retaining independent cleanup errors.
+- `sandbox-result.ts` retires mock-controller generations and guards injected factories before setters receive them.
+  Partial injection cannot expose an unguarded factory through an application setter.
+- Ordinary fake timers,
+  replacements,
+  mocks,
+  inherited/nonconfigurable/accessor/proxy targets,
+  and whole-object operations do not gain context isolation.
+  Collision preflight and lifetime safeguards still apply.
+- This is not a security membrane against arbitrary reflection or direct mutation.
+  Explicitly borrowed active contexts retain their own factory authority;
+  do not add a current-reader equality requirement.
 
-## Verification history
+## Verified evidence
 
-- `e658d1bbd` committed red attempt/repeat tests before lifecycle implementation.
-- `proc_608a` passed the initial complete build/tests/types/Oxlint gates.
-- Retained clocks exposed manual restoration and automatic tick shutdown paths.
-  Sinon `clock.uninstall` calls `setTickMode({ mode: 'manual' })` internally;
-  runner cleanup narrowly permits stopping that automation.
-- Browser loading initially failed because `format-error.ts` statically imported a filesystem barrel.
-  `e2a77c23a` moves that dependency behind Node detection and a dynamic import.
-- A partial browser process shim exposed logger access to `process.versions.node`.
-  `4c3c805c8` guards absent versions and adds a real-browser regression.
-- `proc_a844` passed selected logger/module-test browser cases across Chromium,
+### Core acceptance
+
+- `proc_bced` passed full rebuilt module-test unit tests and real Chromium,
   Firefox,
-  and WebKit,
-  plus logger types.
-- `proc_2ed7` demonstrated that old raw mock restoration removed a newer contextual generation.
-  `8daa2901b` retires raw mock controllers after successful restoration,
-  including restoration invoked internally by verification.
-- `proc_9107` passed full module-test build/tests,
-  all module-test browser cases,
-  and types after injection/mock fixes.
-- `proc_6886` demonstrated the contextual getter receiver failure.
-  `c63fd9ac8` forwards the actual receiver when reading the private facade.
-- `proc_56a3` failed before tests:
-  nested build fan-out built the neutral artifact twice while the client consumer tried to import it.
-  `b6f1a813c` replaces module-test's JS group fan-out with a declared dependency graph.
-  `proc_d897` then built successfully and reached the expected setter-conversion red assertion.
-- `1f821673c` rejects contextual root `.set()` and documents the contract.
-  `proc_6647` passed full rebuilt module-test tests and types,
-  including getter/setter,
-  numeric key,
-  and initial stub-instance cases.
-  Its formatter failed only on an unbound Date method reference in a test.
-  `28793f3a5` replaces that fixture with an explicit `this: void` method.
-  Final lint has not been rechecked.
+  and WebKit acceptance.
+- `proc_e1c1` passed full module-test Oxlint and types.
+- `proc_e422` passed the added rollback-failure fixture,
+  its scoped formatting/lint,
+  and package types.
+- Browser checks exercise a consumer of built neutral output,
+  absent/partial process globals,
+  repeat identities,
+  completed factories,
+  restoration,
+  error formatting,
+  and absence of the Node observer.
+- Earlier `proc_a844` and `proc_9107` also passed actual browser acceptance.
+  They are historical evidence,
+  not replacements for the final runs.
 
-## Current confirmed blockers
+### Routing mutation control
 
-Task #4 is complete.
-Task #5 remains in progress.
-Task #6 remains pending.
-Do not close #481.
+A throwaway worktree at `94996e25a` resolved its package self-import to its own built Node artifact.
+The committed `sinon-context.unit.test.ts` passed in `proc_8267`.
+Only contextual dispatch was then disabled and the artifact rebuilt.
+`proc_6a49` failed with double wrapping,
+foreign reader values,
+and nested ownership contamination.
+Restoring the condition and rebuilding passed in `proc_fc0e`.
 
-`28793f3a5` adds `sinon-returned.unit.test.ts` and `sinon-install.unit.test.ts`.
-`proc_46f5` demonstrates failures against the already rebuilt implementation:
+The worktree used Node 26.7.0 from its tracked lock.
+It was removed after restoring source,
+checking root ignored sentinels,
+and unlinking the read-only dependency links.
+The worktree path was `/home/user/temp/agent/issue-481-routing.thixd4dI`.
 
-- `onCall`,
-  `onFirstCall`,
-  `onSecondCall`,
-  and `onThirdCall` return behavior objects whose `.get`/`.set`/`.value` reach the root descriptor.
-  These objects currently bypass root fake guards and generation retirement.
-- Whole-object stubs,
-  function-object static stubs,
-  and `createStubInstance` need direct-member and returned-behavior lifetime coverage.
-  Collection guarding currently skips function-valued whole-object results.
-- Failed whole-object `stub` and `spy` can leave an earlier member wrapped.
-  The raw sandbox does not register the partial collection before the later member throws.
-  Its subsequent `restore()` therefore does not restore that earlier member.
-  Do not restore the whole sandbox on failure:
-  unrelated successful fakes from the same attempt must survive.
+### Logger consumer
 
-Raw control:
-`/home/user/temp/agent/issue-481-returned-control.ts`.
-It uses Sinon 22.1.0 from the installed bundle and disposable local targets.
-It proved descriptor mutation through every listed call selector,
-plus partial collection installation surviving ordinary sandbox restoration.
+`42de970c5` removes only breadcrumb-wrapper serialization in
+`package/module/logger/src/create-logger.unit.test.ts`.
+`proc_511c` passed rebuilt logger unit tests and types.
+`proc_81bb` passed logger Oxlint and the combined real-browser process-shim cases.
+The console-sink tests retain serialization because they also change `process.env` and `process.argv`.
 
-### Independent review correction
+### Review findings and corrections
 
-Advisor suggested `withArgs()` children retained descriptor authority.
-The raw control disproved that specific reading:
-child `.get`,
-`.set`,
-and `.value` each throw `TypeError: Object.defineProperty called on non-object`.
-`src/sinon/spy.js:45` creates an independent fake;
-`src/sinon/stub.js:64` does not copy root descriptor metadata into it.
-By contrast,
-`onCall` behavior objects retain their root through `stub` and really mutate descriptors.
-Guard proven target-changing paths,
-not harmless local `withArgs` behavior.
+- Raw Sinon 22.1.0 disproved the proposed `withArgs` descriptor-authority escape:
+  child `get`/`set`/`value` throw `Object.defineProperty called on non-object` without changing the target.
+- The corresponding `onCall` selector paths really mutated descriptors.
+  Committed tests failed in `proc_46f5` before guards were propagated.
+- The same red run exposed failed whole-object construction leaving unregistered partial fakes.
+  The adapter now rolls them back without restoring unrelated sandbox work.
+- The first rollback-failure fixture used `isSinonProxy`,
+  which did not trigger wrapping failure.
+  Reading `wrap-method.js` identified `restore` as the actual preflight read.
+  The corrected fixture passed in `proc_e422`.
+- Final focused independent review found no normal public-Sinon reproduction violating the accepted ownership contract.
+- Ordinary Sinon cleanup stopping after a throwing restorer remains a baseline limitation.
+  Do not expand this task into a reflective security membrane or complete global-state isolation.
 
-Sinon's ordinary cleanup stopping after a throwing restorer is a baseline limitation,
-not automatically an adapter regression.
-Contextual leases already clean up independently.
+## Integration fixes and commits
 
-## Next actions
+- `e658d1bbd`: red attempt/repeat lifecycle tests.
+- `473407d38`,
+  `1bcf62d56`,
+  `10bb13e69`: attempt lifecycle and context-owned routing.
+- `53013f383`: ordinary fake and clock restoration generations.
+- `e2a77c23a`: lazy filesystem imports for browser diagnostics.
+- `4c3c805c8`: logger handles a partial process shim.
+- `8daa2901b`: mock verification/restoration generations.
+- `c63fd9ac8`,
+  `1f821673c`: contextual getter receiver and setter rejection.
+- `b6f1a813c`: one build dependency graph prevents duplicate neutral builds racing the client consumer.
+- `28793f3a5`: red returned-controller and partial-install tests.
+- `8abaff575`: returned behavior generations,
+  partial installation rollback,
+  function-object members,
+  and injection before setter exposure.
+- `5e033ebc6`: function-object fixture satisfies declaration rules.
+- `54faa77f6`,
+  `6b98e7f27`: independent partial rollback failure coverage.
+- `42de970c5`: actual logger breadcrumb concurrency.
+- `b4e78ed32`: verified contract and canonical testing guidance.
 
-1. Guard returned call-sequence behavior objects with the root's same owner and restoration generation.
-   Preserve fake/controller identity and harmless local behavior after completion.
-2. Guard function-object collection members without treating application static helpers as root fake mutators.
-3. Roll back only replacements introduced by failed whole-object operations.
-   Preserve unrelated existing fakes and aggregate rollback failures with the original error.
-   Check partial injection failure too;
-   success-only injection wrapping may expose unguarded factories after a later write fails.
-4. Rebuild and run the committed red tests,
-   complete package tests,
-   types,
-   and scoped formatting plus Oxlint.
-5. Prove the committed contextual concurrency regression fails with routing disabled in a disposable worktree.
-   The commit-before-mutation prerequisite is satisfied.
-6. Remove only the breadcrumb wrapper's `concurrency: 1` in logger's `create-logger.unit.test.ts`.
-   Keep `sink/console.unit.test.ts` serialization because it also mutates process environment.
-   Run rebuilt logger package tests and lint.
-7. Repeat actual module-test/logger browser acceptance after final source changes.
-8. Reconcile README,
+## Remaining actions
+
+1. File-enforcer synchronization passed in `proc_8d15`.
+   Canonical testing guidance and both generated mirrors have matching SHA-256 digests,
+   and both manifests record that digest.
+   The mirror files and manifests are ignored local outputs,
+   confirmed with `git check-ignore` and `git ls-files`;
+   only canonical guidance belongs in the commit.
+2. Finish scoped Markdown lint on README,
    architecture plan,
-   planning/troubleshooting records,
-   and testing-practices guidance with verified outcomes.
-   `file-enforcer.config.ts` owns canonical `.agents/skills` mirrors in `.claude/skills` and `.factory/skills`.
-   Read its mirror implementation and writing-for-agents skill before editing guidance.
-9. Commit with `Closes #481` only after all acceptance gates pass,
-   then confirm push and issue closure.
+   planning,
+   troubleshooting,
+   handover,
+   and canonical/mirrored testing guidance.
+   The Markdown CLI now starts normally;
+   the old missing-`isMdxPath` startup failure is no longer the current blocker.
+3. Commit owned documentation and formatting.
+   A final explicit descriptor-field parameter annotation in `sandbox-member.ts` also needs verification.
+4. Run final affected package gates and confirm no scoped changes were omitted.
+5. Commit `Closes #481` only after acceptance,
+   confirm push and actual GitHub closure,
+   and complete task #8.
 
-## Tooling and unrelated work
+## Tooling and concurrent work
 
 Repository:
 `/var/home/user/Monochromatic`.
 Commits auto-push.
-Stage and commit explicit owned paths only.
+Use explicit owned pathspecs;
+concurrent music-player changes may already be staged.
+Preserve `mise.lock` and `doc/troubleshooting/module-test-unhandled-rejection.md`.
 
-Builds and tests use `mise run`.
-Package browser task uses a disposable Podman container limited to 2 GiB RAM,
+All builds and tests run through `mise run`.
+The module-test browser task uses a disposable Podman container limited to 2 GiB RAM,
 2 CPUs,
 and one Playwright worker.
-The browser consumer imports built neutral output and is served under `/dist/module-test/` on port 3005.
-Root Playwright configuration was checked and is not file-enforcer generated.
+The neutral consumer is served at `/dist/module-test/` on port 3005.
 
-Scoped formatter:
+The module-test scoped formatter accepts package-relative paths or normalized absolute paths outside the package.
+It rejects `..`.
+Root `format:oxlint` templates do not forward positional file paths.
 
-```bash
-# Paths inside the package are relative to its root.
-mise run //package/module/test:format:oxlint -- src/sandbox-slot.ts
-```
-
-Outside-package paths must be normalized absolute paths;
-`..` is rejected by the wrapper.
-The root formatter template does not forward positional file paths.
-
-Preserve concurrent changes in `mise.lock`,
-`doc/troubleshooting/module-test-unhandled-rejection.md`,
-and music-player design evidence/render files.
-Earlier unrelated changes included Markdown CLI and logger-fuzz work.
-Do not revert or format those to clear #481 gates.
-
-The historical Markdown CLI startup error was:
-`SyntaxError: The requested module './walk-files.ts' does not provide an export named 'isMdxPath'`.
-Its current status needs rechecking;
-do not fix unrelated CLI work as part of this issue.
+Process logs from the initial session under `/tmp/pi-processes-Htuiik` disappeared during the pause.
+Current logs are under `/tmp/pi-processes-CFxuQr`.
+Durable verification details belong in these documents,
+not only process logs.

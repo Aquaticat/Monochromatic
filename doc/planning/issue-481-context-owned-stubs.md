@@ -4,7 +4,8 @@
 
 The user asks what to do about [issue #481](https://github.com/Aquaticat/Monochromatic/issues/481).
 The user accepted the recommendation with
-"Okay, do it."
+"Okay,
+do it."
 Production implementation,
 verification,
 and issue closure are authorized.

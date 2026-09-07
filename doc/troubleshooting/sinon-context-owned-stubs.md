@@ -312,7 +312,7 @@ Broader issue search for `"already wrapped"` found #2622;
 broader PR search for `parallel` found #2715.
 Both matching threads were read in full.
 
-## Production boundary checks in progress
+## Production boundary checks
 
 Built-artifact boundary tests exposed an integration error in our fake-timer guard:
 Sinon 22.1.0's bundled `clock.uninstall` calls `clock.setTickMode({ mode: 'manual' })`.
@@ -321,8 +321,7 @@ but initially blocked this required shutdown call too.
 The guard now allows runner restoration to stop automatic ticking,
 not restart it.
 A rebuilt full package test run passed after that correction.
-Package lint still reported fixture typing and style findings;
-those are being corrected before acceptance is complete.
+Subsequent fixture corrections passed full package Oxlint and type checks.
 
 The whole-object fixture initially reread the restored target instead of retaining its fake.
 The corrected fixture captures the fake before completion,
@@ -349,7 +348,9 @@ Both the module-test browser consumer and a dedicated local-storage browser regr
 The combined post-change run passed all nine selected cases across Chromium,
 Firefox,
 and WebKit in process `proc_a844`.
-A direct browser error-formatting assertion was subsequently added and still needs its next browser run.
+The subsequent direct browser error-formatting assertion passed in `proc_9107` and `proc_bced`.
+After logger integration,
+`proc_81bb` passed the combined process-shim browser checks again.
 
 ### Intentional Node emitter fixture
 
@@ -386,11 +387,176 @@ The production fixture in `sinon-injection.unit.test.ts` demonstrated that an al
 could restore a newly installed contextual stub in the same still-running attempt.
 The rebuilt failure was `expected 'original' to equal 'new generation'` in process `proc_2ed7`.
 
-Sinon 22.1.0's `src/sinon/mock.js` restores by reading the target's current property and invoking its `restore`.
-It does not restrict that lookup to the controller's original replacement.
+Sinon 22.1.0's `src/sinon/mock.js:84` restores by reading the target's current property:
+
+```js
+// Sinon 22.1.0, src/sinon/mock.js:87.
+if (typeof object[proxy].restore === "function") {
+    object[proxy].restore();
+}
+```
+
+This lookup is not restricted to the controller's original replacement.
 The adapter now retires the controller on successful restoration,
 including restoration called internally by `verify`.
 New `expects` calls require a fresh controller after that point.
+
+### Call-sequence behavior authority
+
+The built regressions in `sinon-returned.unit.test.ts` failed in `proc_46f5`:
+`onCall` and its named aliases returned objects whose descriptor methods bypassed the root fake guard.
+A raw Sinon 22.1.0 control confirmed descriptor changes through `.get`,
+`.set`,
+and `.value` on each selector result.
+
+The source establishes the connection:
+
+```js
+// Sinon 22.1.0, src/sinon/stub.js:255.
+onCall: function onCall(index) {
+    if (!this.behaviors[index]) {
+        this.behaviors[index] = behavior.create(this);
+    }
+    return this.behaviors[index];
+}
+```
+
+`src/sinon/behavior.js:127` records the root:
+
+```js
+// Sinon 22.1.0, src/sinon/behavior.js:127.
+behavior.stub = stub;
+```
+
+The descriptor methods then use that reference:
+
+```js
+// Sinon 22.1.0, src/sinon/default-behaviors.js:314.
+value: function value(fake, newVal) {
+    const rootStub = fake.stub || fake;
+    Object.defineProperty(rootStub.rootObj, rootStub.propName, {
+        value: newVal,
+```
+
+`sandbox-fake.ts` now guards selector results with the same owner and restoration generation as their root.
+The rebuilt regression suite passed in `proc_ec54` and `proc_bced`.
+Local behavior changes and saved fake calls remain usable after completion;
+only descriptor-changing authority is retired.
+
+An independent review's `withArgs` hypothesis was incorrect for this installed version.
+The raw control's child `.get`,
+`.set`,
+and `.value` calls each threw `TypeError: Object.defineProperty called on non-object`.
+`src/sinon/spy.js:45` creates an independent fake:
+
+```js
+// Sinon 22.1.0, src/sinon/spy.js:45.
+const fakeInstance = this.instantiateFake();
+fakeInstance.matchingArguments = args;
+fakeInstance.parent = this;
+```
+
+The descriptor methods use `fake.stub || fake`,
+not that parent.
+No target descriptor changed in those controls.
+Ordinary `withArgs` behavior remains unchanged.
+
+### Partial installation and injection
+
+Raw whole-object `stub` and `spy` controls installed the first method,
+then threw `Attempted to wrap second which is already wrapped` on a later member.
+Calling the raw sandbox's `restore()` did not restore the first method.
+The registration boundary explains why:
+
+```js
+// Sinon 22.1.0, src/sinon/sandbox.js:233.
+const createdStub = sinonStub.withContext.apply(sinonStub, args);
+const result = commonPostInitSetup(
+    arguments,
+    createdStub,
+```
+
+Construction can throw before `commonPostInitSetup` receives the collection.
+`sandbox-install.ts` snapshots descriptors and rolls back only introduced fakes on failure.
+It does not restore unrelated successful fakes in the same sandbox.
+Independent rollback steps run even when one restorer fails;
+both construction and rollback errors are retained.
+`sinon-install.unit.test.ts` verifies these paths.
+
+The first rollback-failure fixture instrumented `isSinonProxy`,
+but no construction failure occurred.
+The deciding source is `src/sinon/util/core/wrap-method.js:81`:
+
+```js
+// Sinon 22.1.0, src/sinon/util/core/wrap-method.js:81.
+} else if (wrappedMethod.restore && wrappedMethod.restore.sinon) {
+```
+
+Instrumenting `restore` reached that boundary.
+The corrected test passed in `proc_e422`,
+including preservation of an independent member's descriptor.
+
+Injection has an earlier exposure boundary than return from the factory:
+
+```js
+// Sinon 22.1.0, src/sinon/sandbox.js:127.
+sandbox.inject = function inject(obj) {
+    obj.spy = function spy() {
+        return sandbox.spy.apply(sandbox, arguments);
+    };
+```
+
+An application setter receives that function immediately.
+`sandbox-result.ts` therefore guards factories before assignment,
+not merely after successful injection.
+A fixture setter retains the spy factory before a later readonly `stub` assignment fails;
+that retained factory rejects after completion.
+The fixture also verifies the setter receives its original destination as `this`.
+
+These are harness ownership guarantees,
+not a claim that ordinary Sinon offers transactional construction or completed-attempt authority.
+They do not change the upstream filing decision.
+
+### Build ordering and artifact control
+
+`proc_56a3` failed before the intended setter regression ran:
+the browser consumer could not resolve `../dist/final/neutral/index.mjs`.
+The repository's nested task fan-out launched the neutral build twice,
+allowing its output to disappear while the consumer bundled it.
+Commit `b6f1a813c` changes `package/module/test/mise.toml` to one declared JS dependency graph.
+The client task depends on the neutral artifact.
+The next build reached the intended test failure instead of failing module resolution.
+Full builds and browser acceptance subsequently passed.
+
+The production routing control used a disposable worktree at `94996e25a`:
+
+```bash
+# From the disposable repository root, using its own built Node artifact.
+mise run //package/module/test:build:js:node
+mise run //package/module/test:test:unit -- package/module/test/src/sinon-context.unit.test.ts
+```
+
+`import.meta.resolve('@monochromatic-dev/module-test')`,
+run from the disposable package directory,
+resolved to that worktree's `dist/final/node/index.mjs`.
+The fixture passed in `proc_8267`.
+After adding `false &&` only to the contextual dispatch condition in `sandbox-operation.ts`,
+rebuilding and rerunning failed in `proc_6a49` with:
+
+```text
+Attempted to wrap method which is already wrapped
+expected 'fake 0' to equal 'original:reader'
+expected 'parent' to equal 'original'
+```
+
+Removing that change and rebuilding restored the passing result in `proc_fc0e`.
+The control used Node 26.7.0 from the worktree's tracked tool lock.
+The worktree and its dependency symlinks were removed after verification.
+
+The actual logger breadcrumb wrapper now uses default concurrent scheduling.
+Rebuilt logger unit tests and types passed in `proc_511c`;
+logger Oxlint and combined real-browser checks passed in `proc_81bb`.
+The console-sink tests that mutate `process.env` and `process.argv` retain their sequential setting.
 
 [event-target-rule]: https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/src/rules/unicorn/prefer_event_target.rs
 [issue]: https://github.com/Aquaticat/Monochromatic/issues/481

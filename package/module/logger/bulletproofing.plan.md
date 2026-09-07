@@ -402,8 +402,9 @@ The round-2 shape,
    and the `console.warn` breadcrumb count,
    so the "loud signal once,
    at a boundary" contract is a checked invariant.
-   Properties that stub `console.warn` run sequentially,
-   as the breadcrumb suites do today.
+   Properties that stub `console.warn` retain the sidecar's sequential setting.
+   The runtime breadcrumb suites originally matched that setting;
+   issue #481 now lets those suites run concurrently with context-owned replacements.
 - CI and gate:
    `logger-fuzz.yml` mirrors `toml-edit-fuzz.yml` exactly (build,
    `lint:types`,
