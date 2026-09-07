@@ -171,9 +171,60 @@ Provide prerequisites at the point of use without assuming more than the confirm
 Use actual Promise behavior in interactions and distinguish observation of a supplied demo
 from independent building and interview explanation.
 
+## Current artifact and verification
+
+`doc/planning/promises-teaching.local.html` now exists and remains ignored by `.gitignore`'s `*.local.*` rule.
+The user requested writing in chunks of 200 to 500 lines to avoid API timeout errors;
+large additions have been split across tool calls.
+
+The artifact contains:
+
+- A progression from named functions and event callbacks to Promise states,
+  `async`/`await`, rejection, timers, retries, rate limiting, cancellation, and conversation ownership.
+- Actual Promise settlement and continuation-order experiments.
+- An offline chat fixture with repeatable scenarios and seeded-random per-attempt choices.
+- A sandboxed, network-disabled code workshop with starters, hints, and worked repairs.
+- Exercises for cancellation, timeout causes, a shared rate gate,
+  invalid fulfillment values, and destination ownership before the independent capstone.
+- Downloadable learner HTML, reference HTML, and critique notes.
+- System-following theme, print expansion, sources, and a visible critique path back to Pi.
+
+Independent advisor review identified a prerequisite gap before the capstone.
+The added gate, timeout, validation, and fixed-conversation exercises address that concern structurally.
+Other implemented review corrections distinguish cancellation from failure,
+show measured start gaps,
+explain the gate's lack of FIFO fairness,
+state per-attempt random probabilities,
+and warn that retrying a real timeout can duplicate remote side effects.
+The simulator tracks displayed conversation histories but deliberately does not simulate model memory.
+
+Initial browser load succeeded with no reported page errors.
+The rendered document had one `main`, eight chapters, and no horizontal overflow at a 1,280-pixel viewport.
+The initial screenshot is `~/temp/agent/promises-lesson-first.png`.
+These are smoke checks, not completed interaction verification or evidence of learner mastery.
+
+The browser verification driver is `~/temp/agent/verify-promises-lesson.ts`.
+It uses the isolated `promises-lesson-verify` session and exercises controls,
+expected broken starters and worked repairs,
+service scenarios,
+cancellation phases,
+reset races,
+seed replay,
+and downloads.
+Verification is currently running; inspect its notification and logs before trusting results.
+
+Sources consulted for semantic verification:
+
+- <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise>
+- <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await>
+- <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers>
+- <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises>
+- <https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal>
+
 ## Next action
 
-Research the relevant JavaScript semantics,
-build and exercise the self-contained HTML lesson,
-then open the exact local artifact for the user's critique.
+Finish the running browser verification and repair any failures.
+Reopen and exercise exported HTML,
+check responsive and print output,
+then close the disposable verification browser and open the exact lesson in Helium for critique.
 Keep the final teaching skill pending until the concrete lesson has informed discovery.
