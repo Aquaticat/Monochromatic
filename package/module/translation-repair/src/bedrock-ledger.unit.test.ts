@@ -255,6 +255,45 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES A LINE THAT IS JSON BUT NOT AN OBJECT, since a bare number or list is not a call',
+      fn: async () => {
+        await inScratch(async function body(dir,) {
+          /**
+           * Ledger file whose one line is a bare number.
+           */
+          const path = join(
+            dir,
+            'bedrock-spend.jsonl',
+          );
+          await writeFile(
+            path,
+            '42\n',
+            'utf8',
+          );
+
+          /**
+           * What the read threw.
+           */
+          const thrown = await createBedrockLedger({
+            path,
+            creditUsd: 200,
+          },)
+            .read()
+            .then(
+              function unexpected(): unknown {
+                return undefined;
+              },
+              function caught(error: unknown,): unknown {
+                return error;
+              },
+            );
+          expect(thrown,).toBeInstanceOf(BedrockLedgerShapeError,);
+          expect((thrown as Error).message,).toContain('not a JSON object',);
+        },);
+      },
+    },),
+
+    it({
       name: 'REFUSES A LINE WHOSE COST IS NOT A NON-NEGATIVE NUMBER, since a negative or absent cost '
         + 'would refund the credit',
       fn: async () => {
