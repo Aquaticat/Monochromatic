@@ -3610,7 +3610,8 @@ distinct questions answered with the complete text:
   `hf:openai/gpt-oss-120b` (three declines),
   `minimax-m3` (one damaged pick,
   two declines).
-- 4 of 8: `gemma-4-26b-a4b-it` (four declines,
+- 4 of 8:
+  `gemma-4-26b-a4b-it` (four declines,
   all on Huasheng/1,
   the family's reading).
 
