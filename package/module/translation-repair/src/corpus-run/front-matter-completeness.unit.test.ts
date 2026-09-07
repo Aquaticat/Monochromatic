@@ -216,10 +216,33 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A VISIBLE NAME THAT IS THE DIRECTORY ID, naming directory-id-name, whether the '
-        + 'page kept the archive byte for byte or changed another field, since the person would '
-        + 'ship under the folder either way',
+      name: 'REFUSES A VISIBLE NAME THAT IS THE DIRECTORY ID with no English rendering beside it, '
+        + 'naming directory-id-name, whether the page kept the archive byte for byte or changed '
+        + 'another field, since the person would ship under the folder either way',
       fn: async () => {
+        /**
+         * Archive and page whose alias is in the source script only, so no
+         * rendering stands beside the folder name.
+         */
+        const folderOnlyText = '---\nname: EntryId\ninfo:\n  alias: 猫咪\n---\n\nBody.\n';
+
+        /**
+         * Parsed folder-only metadata.
+         */
+        const folderOnly = splitFrontMatter({ text: folderOnlyText, },).frontMatter;
+        if (folderOnly === undefined)
+          throw new Error('folder-only fixture did not parse',);
+
+        /**
+         * Explicit metadata slice over the folder-only pages.
+         */
+        const folderOnlySlice = frontMatterSlice({
+          source: distinctAliasFrontMatter,
+          target: folderOnly,
+        },);
+        if (folderOnlySlice.kind !== 'paired')
+          throw new Error('folder-only fixture did not pair',);
+
         /**
          * What the guard threw for the archive kept byte for byte.
          */
@@ -227,29 +250,90 @@ await describe({
           run: () => assertFrontMatterComplete({
             entryId: 'EntryId',
             sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
-            archiveText: TARGET_TEXT,
-            pageText: TARGET_TEXT,
-            slices: [placeholderSliceResult.slice,],
+            archiveText: folderOnlyText,
+            pageText: folderOnlyText,
+            slices: [folderOnlySlice.slice,],
           },),
         },);
         expect(keptRefusal,).toBeInstanceOf(FrontMatterCompletenessError,);
         expect((keptRefusal as Error).message,).toContain('directory-id-name',);
 
         /**
-         * What the guard threw for a page that changed the alias and left the
-         * directory id as the name.
+         * What the guard threw for a page that changed the alias to another
+         * source-script rendering and left the directory id as the name.
          */
         const changedRefusal = thrownBy({
           run: () => assertFrontMatterComplete({
             entryId: 'EntryId',
             sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
-            archiveText: TARGET_TEXT,
-            pageText: '---\nname: EntryId\ninfo:\n  alias: Kitty\n---\n\nBody.\n',
-            slices: [placeholderSliceResult.slice,],
+            archiveText: folderOnlyText,
+            pageText: '---\nname: EntryId\ninfo:\n  alias: 小猫\n---\n\nBody.\n',
+            slices: [folderOnlySlice.slice,],
           },),
         },);
         expect(changedRefusal,).toBeInstanceOf(FrontMatterCompletenessError,);
         expect((changedRefusal as Error).message,).toContain('directory-id-name',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS A VISIBLE NAME THAT IS THE DIRECTORY ID beside an English rendering in the '
+        + 'alias, the owner\'s decision of 2026-09-07, since the front matter then carries the '
+        + 'name in English',
+      fn: async () => {
+        // TARGET_TEXT names the directory and carries `Maomao` as an alias.
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
+          archiveText: TARGET_TEXT,
+          pageText: TARGET_TEXT,
+          slices: [placeholderSliceResult.slice,],
+        },),).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS A VISIBLE NAME THAT IS THE DIRECTORY ID when the id is the pinyin of the '
+        + 'source name and nothing else in the front matter is Latin (Huasheng, 2026-09-07)',
+      fn: async () => {
+        /**
+         * Source naming the person 林童 with a distinct alias.
+         */
+        const pinyinSourceText = '---\nname: 林童\ninfo:\n  alias: 小林\n---\n\n正文。\n';
+
+        /**
+         * Page naming the person by the pinyin, which is the id.
+         */
+        const pinyinPageText = '---\nname: lintong\ninfo:\n  alias: 小林\n---\n\nBody.\n';
+
+        /**
+         * Parsed source metadata.
+         */
+        const source = splitFrontMatter({ text: pinyinSourceText, },).frontMatter;
+
+        /**
+         * Parsed page metadata.
+         */
+        const target = splitFrontMatter({ text: pinyinPageText, },).frontMatter;
+        if ((source === undefined) || (target === undefined))
+          throw new Error('pinyin fixture did not parse',);
+
+        /**
+         * Explicit metadata slice over the pinyin pages.
+         */
+        const result = frontMatterSlice({
+          source,
+          target,
+        },);
+        if (result.kind !== 'paired')
+          throw new Error('pinyin fixture did not pair',);
+        expect(() => assertFrontMatterComplete({
+          entryId: 'lintong',
+          sourceText: pinyinSourceText,
+          archiveText: pinyinPageText,
+          pageText: pinyinPageText,
+          slices: [result.slice,],
+        },),).not.toThrow();
       },
     },),
 

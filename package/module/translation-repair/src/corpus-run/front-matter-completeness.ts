@@ -5,6 +5,7 @@ import {
   splitFrontMatter,
 } from '../front-matter.ts';
 import { validateFrontMatterTranslation, } from '../front-matter-translation.ts';
+import { directoryIdNameStands, } from './directory-id-name.ts';
 
 //region Front matter publication completeness
 // Final page must retain parseable metadata under explicit reviewed slice.
@@ -276,6 +277,12 @@ export function assertFrontMatterComplete(
   // s5ehfr9) do so because the handle IS the person's name in the source too,
   // and the other 15 show the directory id where the source has a name of its
   // own. Refusing on the page alone would have refused the 8 forever.
+  //
+  // AND NOT WHERE THE ID IS A RENDERING OF THE NAME, the owner's decision of
+  // 2026-09-07 after the Huasheng page was refused for naming 椛笙 by its
+  // pinyin: the id stands when it spells the source's name, when the source
+  // carries it among its aliases, or when the page or the archive carries a
+  // Latin-script alias other than the id (`directory-id-name.ts`).
   /**
    * Whether the assembled page shows the directory id as the person's name.
    */
@@ -290,12 +297,22 @@ export function assertFrontMatterComplete(
     metadata: source.frontMatter,
     entryId,
   },);
-  if (pageNamesDirectory && (!sourceNamesDirectory)) {
-    throw new FrontMatterCompletenessError({
-      entryId,
-      reason: 'directory-id-name',
-    },);
-  }
+  if (!pageNamesDirectory)
+    return;
+  if (sourceNamesDirectory)
+    return;
+  if (directoryIdNameStands({
+    entryId,
+    source: source.frontMatter,
+    page: pageMetadata,
+    archives: (archiveMetadata === undefined) ? [] : [archiveMetadata,],
+  },))
+    return;
+
+  throw new FrontMatterCompletenessError({
+    entryId,
+    reason: 'directory-id-name',
+  },);
 }
 
 //endregion Front matter publication completeness

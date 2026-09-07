@@ -25,6 +25,7 @@
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "nano-spawn": "catalog:",
     "p-limit": "catalog:",
+    "pinyin-pro": "catalog:",
     "remark-gfm": "catalog:",
     "satteri": "catalog:",
     "remark-mdx": "catalog:",

@@ -213,6 +213,9 @@ catalogs:
     picomatch:
       specifier: '>=4.0.5'
       version: 4.0.5
+    pinyin-pro:
+      specifier: '>=3.29.3'
+      version: 3.29.3
     postcss-html:
       specifier: '>=2.0.0'
       version: 2.0.0
@@ -2971,6 +2974,9 @@ importers:
       p-limit:
         specifier: 'catalog:'
         version: 7.3.1
+      pinyin-pro:
+        specifier: 'catalog:'
+        version: 3.29.3
       remark-gfm:
         specifier: 'catalog:'
         version: 4.0.1(supports-color@10.2.2)
@@ -6654,6 +6660,9 @@ packages:
     resolution: {integrity: sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A==, tarball: https://registry.npmjs.org/picomatch/-/picomatch-4.0.5.tgz}
     engines: {node: '>=12'}
 
+  pinyin-pro@3.29.3:
+    resolution: {integrity: sha512-+UU9bx6vfDw8amOJGHm0TE0rdQl8VPylsDWviQ5OOQ3e+on1xRP4OqDbiDuMT5OISgvfl/Y6ez1BBRaIP80GLQ==, tarball: https://registry.npmjs.org/pinyin-pro/-/pinyin-pro-3.29.3.tgz}
+
   playwright-core@1.62.1:
     resolution: {integrity: sha512-wPYSwEBJY9GHraISXqyqtx0na0LpO3XEX7jNDhntbex7tzUS7kLnZsOlFruFJB4Hi/rhDMjXGqHewDZ68nYZVw==, tarball: https://registry.npmjs.org/playwright-core/-/playwright-core-1.62.1.tgz}
     engines: {node: '>=20'}
@@ -9698,6 +9707,8 @@ snapshots:
   picomatch@2.3.2: {}
 
   picomatch@4.0.5: {}
+
+  pinyin-pro@3.29.3: {}
 
   playwright-core@1.62.1: {}
 
