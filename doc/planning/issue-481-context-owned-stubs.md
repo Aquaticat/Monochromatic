@@ -247,7 +247,8 @@ Run package tests and lint before closing #481.
   Those unrelated files were not changed by this investigation.
 - The initial investigation changed documentation only.
   The user then authorized implementation and closure.
-- Production scope: context-selected own configurable writable method stubs and spies on the Node execution path.
+- Production scope:
+   context-selected own configurable writable method stubs and spies on the Node execution path.
   Other operations and non-Node runtimes retain ordinary Sinon behavior,
   with attempt-lifetime guards and rejection of operations that would overwrite active contextual properties.
   This does not advertise complete global-state isolation.

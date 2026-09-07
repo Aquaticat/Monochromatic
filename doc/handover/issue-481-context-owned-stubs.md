@@ -128,27 +128,41 @@ The console-sink tests retain serialization because they also change `process.en
 
 ## Integration fixes and commits
 
-- `e658d1bbd`: red attempt/repeat lifecycle tests.
+- `e658d1bbd`:
+   red attempt/repeat lifecycle tests.
 - `473407d38`,
   `1bcf62d56`,
-  `10bb13e69`: attempt lifecycle and context-owned routing.
-- `53013f383`: ordinary fake and clock restoration generations.
-- `e2a77c23a`: lazy filesystem imports for browser diagnostics.
-- `4c3c805c8`: logger handles a partial process shim.
-- `8daa2901b`: mock verification/restoration generations.
+  `10bb13e69`:
+   attempt lifecycle and context-owned routing.
+- `53013f383`:
+   ordinary fake and clock restoration generations.
+- `e2a77c23a`:
+   lazy filesystem imports for browser diagnostics.
+- `4c3c805c8`:
+   logger handles a partial process shim.
+- `8daa2901b`:
+   mock verification/restoration generations.
 - `c63fd9ac8`,
-  `1f821673c`: contextual getter receiver and setter rejection.
-- `b6f1a813c`: one build dependency graph prevents duplicate neutral builds racing the client consumer.
-- `28793f3a5`: red returned-controller and partial-install tests.
-- `8abaff575`: returned behavior generations,
+  `1f821673c`:
+   contextual getter receiver and setter rejection.
+- `b6f1a813c`:
+   one build dependency graph prevents duplicate neutral builds racing the client consumer.
+- `28793f3a5`:
+   red returned-controller and partial-install tests.
+- `8abaff575`:
+   returned behavior generations,
   partial installation rollback,
   function-object members,
   and injection before setter exposure.
-- `5e033ebc6`: function-object fixture satisfies declaration rules.
+- `5e033ebc6`:
+   function-object fixture satisfies declaration rules.
 - `54faa77f6`,
-  `6b98e7f27`: independent partial rollback failure coverage.
-- `42de970c5`: actual logger breadcrumb concurrency.
-- `b4e78ed32`: verified contract and canonical testing guidance.
+  `6b98e7f27`:
+   independent partial rollback failure coverage.
+- `42de970c5`:
+   actual logger breadcrumb concurrency.
+- `b4e78ed32`:
+   verified contract and canonical testing guidance.
 
 ## Remaining actions
 
