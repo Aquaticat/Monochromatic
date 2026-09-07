@@ -70,8 +70,27 @@ the first local assertion was corrected to inspect that observed output envelope
 No function-source change was required.
 
 The Test API does not verify origin overrides.
-Actual requests through a disposable distribution with the original policies must demonstrate
-failure without the function and correct content with it.
+Actual requests through a disposable distribution with the original policies demonstrated
+HTTP 502 without the function and matching origin content with it.
+The same published bytes were then deployed to `EYK5GXXEGWEYZ` at `aws.aquati.cat`.
+Live verification passed at `2026-09-07T21:42:12Z`;
+deployed distribution ETag:
+`E1VC38T7YXB528`.
+The full config comparison showed only the viewer-request function association changed.
+Both policies and the active Free subscription remain unchanged.
+The disposable distribution and unused custom cache policy are deleted.
+
+Validation covered route/asset/status/body/header parity,
+HEAD,
+actual gzip/Brotli decoding,
+browser navigation,
+resource loading,
+and theme toggling.
+The primary still rejects TLS 1.2 over IPv4 and IPv6.
+Search interaction was not established in either origin or fixture browser controls.
+Repeated CSS probes were cache misses with no origin `Cache-Control`,
+so cache-hit behavior is not claimed.
+
 Deployment results and rollback state are tracked in
 [`doc/handover/aws-cloudfront-mirror-correction.md`](../../../../doc/handover/aws-cloudfront-mirror-correction.md).
 
