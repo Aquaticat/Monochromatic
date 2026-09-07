@@ -10,14 +10,14 @@ function createReplacement({ sinon, mode, }: {
   readonly sinon: TestContext['sinon'];
   readonly mode: 'method' | 'object' | 'function-object' | 'instance';
 },): { target: Target; fake: SinonStub; } {
+  function functionTarget(): void {}
   if (mode === 'instance') {
     const target = sinon.createStubInstance(Date,);
     return { target, fake: target.toString.returns('original',), };
   }
   if (mode === 'function-object') {
-    const target = function functionTarget(): void {};
-    target.toString = (): string => 'original';
-    return { target, fake: sinon.stub(target,).toString.returns('original',), };
+    functionTarget.toString = (): string => 'original';
+    return { target: functionTarget, fake: sinon.stub(functionTarget,).toString.returns('original',), };
   }
   const target = { toString: (): string => 'original', };
   return { target, fake: mode === 'object' ? sinon.stub(target,).toString : sinon.stub(target, 'toString',), };
