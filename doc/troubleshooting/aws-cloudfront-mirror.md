@@ -19,8 +19,11 @@ The reassessment retracts the inference that this proves an unfinished TLS 1.3 r
 **Mirror status on 2026-09-07**:
 HTTP 502 from CloudFront.
 Direct probes of `aquati.cat:443` negotiate TLS 1.3 and reject TLS 1.2 over IPv4 and IPv6 with `aquati.cat` SNI.
-The current distribution configuration and CloudFront-to-origin handshake were not obtained;
-the exact cause remains unconfirmed.
+Authenticated inspection subsequently confirmed that both active CloudFront policies forward the viewer's `Host`.
+The configured origin serves the page with `aquati.cat` SNI/Host,
+but rejects mirror SNI and returns an empty body with mirror Host.
+Hostname forwarding is the leading explanation;
+a corrected CloudFront deployment has not been tested.
 See issue 7 for evidence,
 omitted alternatives,
 and verification limits.
@@ -568,7 +571,7 @@ openssl s_client -connect aquati.cat:443 -servername aquati.cat \
 # Protocol version: TLSv1.3
 ```
 
-### Root cause: not established
+### Root cause: viewer-host forwarding is the leading explanation
 
 The 2026-05-09 inference was too strong.
 The [AWS announcement][origin-tls-announcement],
@@ -608,6 +611,163 @@ not proof that this distribution has the same cause.
 No CloudFront implementation source or origin-side trace was available in this reassessment.
 No claim about Caddy's internal call chain is made.
 
+### Authenticated follow-up on 2026-09-07
+
+The user restored AWS CLI authentication.
+The following read-only calls succeeded:
+
+```bash
+# Distribution details were queried with secret-bearing header values omitted.
+aws cloudfront get-distribution --id EYK5GXXEGWEYZ \
+  --query '{ETag:ETag,Status:Distribution.Status,LastModifiedTime:Distribution.LastModifiedTime}' \
+  --output json --no-cli-pager
+aws cloudfront get-origin-request-policy --id 216adef6-5c7f-47e4-b989-5492eafa07d3 \
+  --output json --no-cli-pager
+aws cloudfront get-cache-policy --id 4cc15a8a-d715-48a4-82b8-cc0b614638fe \
+  --output json --no-cli-pager
+aws cloudfront get-origin-request-policy --id b689b0a8-53d0-40ab-baf2-68738e2966ac \
+  --output json --no-cli-pager
+```
+
+The distribution read returned:
+
+- `Status: Deployed`,
+  `Enabled: true`,
+  ETag `E13V1IB3VIYZZH`,
+  last modified `2026-05-09T05:36:01.600000+00:00`.
+- Origin `aquati.cat`,
+  HTTPS port 443,
+  `https-only`,
+  `OriginSslProtocols: ["TLSv1.2"]`,
+  `IpAddressType: dualstack`.
+- No alternate cache behaviors,
+  edge-function associations,
+  custom origin headers,
+  custom error responses,
+  or enabled Origin Shield.
+- Legacy distribution logging disabled.
+  This field alone does not establish whether separately configured standard logging v2 exists.
+- Viewer certificate policy `TLSv1.3_2025`,
+  independently disproving the historical claim that this distribution could not accept that viewer setting.
+
+Both active policies independently forward the viewer hostname:
+
+- Origin-request policy `Managed-AllViewer`
+  (`216adef6-5c7f-47e4-b989-5492eafa07d3`)
+  has `HeadersConfig.HeaderBehavior: allViewer`.
+- Cache policy `UseOriginCacheControlHeaders-QueryStrings`
+  (`4cc15a8a-d715-48a4-82b8-cc0b614638fe`)
+  includes `host` in its header allowlist,
+  alongside `x-method-override`,
+  `origin`,
+  `x-http-method`,
+  and `x-http-method-override`.
+
+The cache-policy API returns the enclosing field name
+`ParametersInCacheKeyAndForwardedToOrigin`.
+AWS's [policy interaction guide][policy-interaction] explicitly says:
+
+> The cache policy allow list overrides the origin request policy block list.
+
+AWS names the cache policy as the rule that wins:
+a header selected there still reaches the origin even if the origin-request policy excludes it.
+Consequently,
+changing only to `Managed-AllViewerExceptHostHeader` would not remove viewer `Host`
+from this distribution's effective forwarding configuration.
+The retrieved replacement policy has `HeaderBehavior: allExcept` and `Headers.Items: ["host"]`.
+
+The [custom-origin request guide][custom-origin-requests] documents replacing `Host` with the origin domain
+when viewer Host is not selected for forwarding.
+Its encryption section explicitly includes TLS 1.3;
+the TLS 1.3 evidence is therefore not limited to the announcement.
+AWS's [load-balancer troubleshooting note][origin-sni-note] links Host-based caching with origin SNI
+and certificate selection.
+That is corroborating documentation,
+not a captured ClientHello from this distribution.
+
+#### Controlled origin results
+
+Both IPv4 and IPv6 yielded these results with TLS pinned to 1.3 and HTTP pinned to 1.1:
+
+- SNI `aquati.cat`,
+  HTTP Host `aquati.cat`:
+  GET `/` returned HTTP 200 and 3,445 body bytes.
+- SNI `aquati.cat`,
+  HTTP Host `aws.aquati.cat`:
+  GET `/` returned HTTP 200 and zero body bytes.
+- SNI and HTTP Host `aws.aquati.cat`,
+  connection forced directly to the origin address:
+  TLS handshake failed with curl exit 35 and `tlsv1 alert internal error`.
+  The corresponding OpenSSL probe recorded alert 80.
+
+Representative IPv4 invocations:
+
+```bash
+# Working origin-name control; output: HTTP 200, body 3445 bytes.
+curl --silent --show-error --ipv4 --http1.1 --tlsv1.3 --tls-max 1.3 \
+  --output /dev/null --write-out 'HTTP %{http_code}, body %{size_download} bytes\n' \
+  --connect-timeout 15 --max-time 30 https://aquati.cat/
+
+# Only HTTP Host changes; output: HTTP 200, body 0 bytes.
+curl --silent --show-error --ipv4 --http1.1 --tlsv1.3 --tls-max 1.3 \
+  --header 'Host: aws.aquati.cat' \
+  --output /dev/null --write-out 'HTTP %{http_code}, body %{size_download} bytes\n' \
+  --connect-timeout 15 --max-time 30 https://aquati.cat/
+
+# Mirror SNI at the origin address fails during TLS.
+curl --silent --show-error --head --http1.1 --tlsv1.3 --tls-max 1.3 \
+  --resolve aws.aquati.cat:443:135.181.104.96 \
+  --connect-timeout 15 --max-time 30 https://aws.aquati.cat/
+```
+
+The IPv6 controls used `--ipv6` instead of `--ipv4`,
+and `--resolve 'aws.aquati.cat:443:[2a01:4f9:c012:34ed::1]'` for mirror SNI.
+A fresh CloudFront HEAD still returned HTTP 502 at `LHR61-P6`.
+The evidence establishes incompatible viewer-name delivery at the configured origin;
+it does not establish which handshake CloudFront attempted or that no second defect exists.
+
+#### Proposed correction and verification boundary
+
+Exclude viewer `Host` from both policy contributions,
+so CloudFront supplies origin Host `aquati.cat` instead.
+The proposed change is:
+
+- Use a cache policy equivalent to the current managed policy except for removing `host`.
+  Preserve its TTLs,
+  remaining header keys,
+  cookies,
+  query strings,
+  and compression settings.
+  Reuse an equivalent custom policy if one exists;
+  otherwise a custom clone will no longer inherit future AWS-managed policy changes.
+- Associate `Managed-AllViewerExceptHostHeader`
+  (`b689b0a8-53d0-40ab-baf2-68738e2966ac`)
+  in the same update.
+- Leave origin domain,
+  TLS settings,
+  Caddy,
+  DNS,
+  and viewer certificate unchanged.
+
+This is a proposed configuration correction,
+not a verified workaround.
+After action authorization,
+validation should first reproduce failure on a disposable distribution with the original policies,
+then change only the policy pair.
+Its generated hostname differs from the live alias,
+so it tests the mechanism rather than fully reproducing the production request identity.
+A passing original-policy control would invalidate that reproduction.
+A successful correction must deliver actual pages,
+clean routes,
+assets,
+headers,
+compression,
+and browser behavior,
+not merely HTTP 200.
+The empty-body probe demonstrates why status alone is insufficient.
+Use uncached request identities and retain original policy IDs for rollback.
+No AWS resource was created or changed during this review.
+
 ### Omitted avenues and their tradeoffs
 
 This is an architecture review,
@@ -620,14 +780,11 @@ not a completed vendor selection or authorization to deploy.
   certificate,
   or routing correction could preserve the current architecture and TLS policy.
 - Cost:
-  requires authenticated distribution inspection and correlated origin evidence;
-  an actual CloudFront interoperability defect remains possible.
+  authenticated inspection is complete,
+  but a controlled CloudFront correction and correlated origin evidence are outstanding;
+  an additional CloudFront interoperability defect remains possible.
 - Verification:
-  inspect the active origin hostname,
-  port,
-  request/cache policies,
-  deployed state,
-  and any request functions.
+  test the policy-pair correction described in "Authenticated follow-up on 2026-09-07".
   Correlate a failing request with CloudFront detailed results and the origin's received
   SNI,
   supported TLS versions,
@@ -637,8 +794,10 @@ not a completed vendor selection or authorization to deploy.
 AWS [documents][origin-request-policies] an existing mechanism that replaces the viewer's `Host`
 with the origin domain when the viewer `Host` is excluded.
 This establishes a configuration avenue,
-not that attaching `AllViewerExceptHostHeader` fixes this site.
-Its broad forwarding of other viewer data is not automatically appropriate for a static site.
+not that attaching `AllViewerExceptHostHeader` alone fixes this site.
+The authenticated cache-policy read proves why that change alone is insufficient.
+Broad forwarding of other viewer data is a separate static-site policy question,
+not part of the proposed hostname correction.
 
 #### Publish a separate static-artifact replica
 
@@ -811,13 +970,15 @@ This proves name-sensitive behavior at this origin,
 not that CloudFront sent either failing name.
 A separate GET also returned the generic CloudFront 502 page.
 
-Evidence acquisition limits:
+Initial evidence acquisition limits,
+with authentication subsequently restored:
 
 - `aws cloudfront get-distribution-config --id EYK5GXXEGWEYZ` with a field-filtered query failed:
   `aws: [ERROR]: Your session has expired. Please reauthenticate using 'aws login'.`
   Exit status 255;
   `aws configure list-profiles` listed only `default`.
   No active distribution settings were inferred from this failure.
+  The authenticated follow-up resolved this access blocker and records actual settings.
 - A read-only SSH attempt to obtain Caddy journal entries used batch authentication and strict host-key checking.
   It failed with `Host key verification failed.` because no trusted ED25519 key was known for `aquati.cat`.
   Host verification was not bypassed;
@@ -836,9 +997,11 @@ Its historical rejection does not make future execution safe.
 
 **Status**:
 mirror returns HTTP 502 in the 2026-09-07 probes.
-The current distribution settings and exact cause remain unconfirmed.
-The configuration inventory records the original investigation,
-not an authenticated current-state read.
+The authenticated follow-up confirmed the current origin and policy associations.
+Viewer-host forwarding is the leading explanation;
+a corrected deployment and its end-to-end behavior remain untested.
+The remaining certificate and DNS inventory records the original investigation
+unless explicitly corroborated in the authenticated follow-up.
 
 Concrete identifiers recorded on 2026-05-09:
 
@@ -1118,8 +1281,9 @@ filed.
 The 2026-09-07 reassessment supersedes the original upstream attribution.
 
 1. **Upstream's fault?**
-   Unconfirmed;
-   no correlated CloudFront-to-origin evidence distinguishes configuration from a service defect.
+   No upstream defect established.
+   The active policies forward a hostname that the configured origin does not serve correctly;
+   no correlated CloudFront trace or tested correction establishes the complete failure chain.
 2. **Can upstream fix it?**
    Not assessed without an established defect;
    extending the API enum is not a proven requirement for automatic TLS 1.3.
@@ -1159,6 +1323,9 @@ Sources for the reassessment were accessed on 2026-09-07.
 [s3-oac]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.md
 [origin-https]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-cloudfront-to-custom-origin.html
 [origin-feature-request]: https://repost.aws/questions/QUzNusy9axTz2iWIyfK1q-nw/feature-cloudfront-origin-tls-v1-3
+[policy-interaction]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/understanding-how-origin-request-policies-and-cache-policies-work-together.html
+[custom-origin-requests]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.md
+[origin-sni-note]: https://repost.aws/knowledge-center/cloudfront-https-connection-fails
 
 - RFC 7838,
    HTTP Alternative Services,
