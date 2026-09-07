@@ -37,21 +37,26 @@ Disposable distribution:
 The original-policy failure control returned HTTP 502.
 The corrected policy pair passed content verification,
 but the live Free-plan update was rejected.
-The fixture is now being restored to its original policies for independent native-function validation.
+Independent function validation also passed with both original policies restored.
+The fixture was subsequently disabled,
+detached from the function,
+and deleted at `2026-09-07T21:37Z`.
+A list read confirmed its absence.
 It has no custom aliases and uses CloudFront's default viewer certificate.
 The first creation attempt was rejected because the live distribution's flat-rate-plan WAF ACL cannot be shared.
 The successful test-only configuration omits that ACL;
 the live WAF was not changed.
-Both test phases must retain this same fixture configuration apart from the policy pair.
-Delete this disposable distribution after validation,
-even if live correction is blocked.
+The policy test changed only the policy pair;
+the independent function test changed only the function association.
+Cleanup is complete.
 
 Task-created custom cache policy:
 `bb6179b5-8f0c-443f-af07-15822be803fd`,
 `AquatiCat-OriginCacheControl-NoViewerHost`.
 Its payload is the original managed policy minus `host`,
 with descriptive name/comment changes.
-Delete it too if the live correction cannot use it.
+Deleted after fixture cleanup;
+the custom-policy list confirmed its absence.
 
 ## Measured plan constraint
 
@@ -84,36 +89,90 @@ and rollback are recorded in
 [`package/ssg/aquati.cat/cloudfront/README.md`](../../package/ssg/aquati.cat/cloudfront/README.md).
 AWS virtual tests preserve requests for every configured HTTP method.
 Actual origin rewriting is not verified by that API.
+Independent real-traffic verification passed at `2026-09-07T21:29:28Z`:
+12 routes/assets,
+status and body hash parity,
+selected header parity,
+decoded compression parity,
+actual gzip and Brotli wire decoding,
+and HEAD.
+Browser navigation to `/en/about`,
+resource loading,
+and theme toggle passed;
+`agent-browser errors` returned no page errors.
+The checkbox itself was covered;
+clicking its visible label successfully changed its checked state.
 
 The function cannot remain associated with the disposable distribution when it is attached to the live Free-plan
 resource:
 flat-rate resources cannot share CloudFront Functions.
-Detach it from the fixture and wait for deployment before live association.
-Do not republish or change the validated function bytes.
+The fixture detach deployed before deletion.
+`DescribeFunction` then returned `UNASSOCIATED` in LIVE.
+The LIVE source was fetched immediately before production mutation;
+its ETag and SHA-256 matched the tested artifact.
+The function was not republished or edited.
 
 The account had no custom cache policies and one distribution before fixture creation.
 Applied service-quota listing returned no entries;
 the default quota API listed 20 cache policies and 500 web distributions.
 
+## Live update accepted
+
+At `2026-09-07T21:38:48Z`,
+`attach-function.ts live` submitted the function association successfully.
+The full live config matched `live-before.json` immediately before mutation.
+An assertion verified that only `DefaultCacheBehavior.FunctionAssociations` changed.
+Both policy IDs,
+TLS settings,
+origin configuration,
+viewer certificate,
+and WAF were preserved.
+
+The active subscription was re-read and required to remain:
+`sub_3DTSjxYPTfECao1AdspkkEBB8cY`,
+`FREE`,
+`ACTIVE`.
+No subscription mutation was submitted.
+
+`rollback-live-function.ts detach` is prepared but has not been executed.
+It fetches fresh config/ETag,
+requires this task's exact association,
+and removes only that association.
+It does not restore the old full config over unrelated changes.
+
 ## Next action
 
-The native waiter for restoring the original-policy fixture is running.
-After its success notification:
+The managed `watch-deployment.ts EYK5GXXEGWEYZ` process is observing live deployment.
+Require `DEPLOYMENT_READY`,
+not merely process exit zero:
+a pending checkpoint also exits successfully.
+Then:
 
-- Run `attach-function.ts fixture` in the private task directory.
-  It first requires a fresh original-policy HTTP 502 control.
-- Wait for function association deployment and run the actual-content verification with a new output prefix.
-- Disable the disposable distribution and detach its function;
-  wait for deployment,
-  then delete the fixture and unused custom cache policy.
-- Run `attach-function.ts live` only after the saved function-fixture verification marker exists.
-  It changes only the viewer-request function association,
-  checking the full live configuration against `live-before.json`.
-- Verify the live endpoint,
-  pricing subscription,
-  TLS boundary,
-  and selected headers/content.
-  Preserve original policy IDs and all other distribution settings.
+- Run `verify.ts live` and require `live-verification-passed.json`.
+- Verify live browser navigation,
+  resources,
+  and theme behavior;
+  close the task browser afterward.
+- Compare deployed configuration with the submitted input and the original snapshot.
+- Recheck primary TLS controls and the active pricing subscription.
+- Update the troubleshooting doc and issue #146 with verified results,
+  then commit scoped docs.
+
+## Wait correction and verification limits
+
+The native baseline waiter eventually returned exit zero after 1,813 seconds.
+A direct read returned `Deployed` just before its success notification around a stop request.
+The claim that it had stalled or delayed progress unnecessarily was retracted:
+the completion time is not established by these observations.
+The communication failure was leaving a silent wait without bounded checkpoints.
+The replacement process logs timestamped observations and returns a pending checkpoint after 10 observations,
+with 30-second intervals and bounded AWS connection/read calls.
+Ready observations were obtained for function deployment and fixture disable.
+
+Repeated requests for the CSS asset returned `Miss from cloudfront` twice,
+with no origin `Cache-Control`.
+No cache-hit preservation claim is made.
+The original cache policy and its minimum/default TTL of zero remain unchanged.
 
 Browser search did not produce results in the agent-browser control on the primary site or the fixture.
 A Pagefind worker request remained pending;
