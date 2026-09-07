@@ -352,7 +352,7 @@ await describe({
           // The message states what was measured, so a reader can tell
           // exhaustion from refusal holds (#474, option 3).
           expect((outcome.thrown as Error).message,)
-            .toContain('meters read synthetic dry, hyper dry, bedrock dry, openrouter dry; holds synthetic',);
+            .toContain('meters read synthetic dry, bedrock dry, hyper dry, openrouter dry; holds synthetic',);
         }
         /**
          * The waited case names the wait it made.

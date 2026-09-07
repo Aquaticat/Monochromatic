@@ -123,9 +123,11 @@ publishes no requests-per-minute quota and no token quota for the four models it
 asks for retry with backoff on throttling and a gradual ramp,
 and has no local ceiling either.
 Routing walks `PROVIDER_ORDER` (Synthetic,
-Hyper,
 Bedrock,
-OpenRouter):
+Hyper,
+OpenRouter;
+Bedrock ahead of Hyper by the owner's decision of 2026-09-07,
+so the seats both serve spend the expiring credits before the balance the Hyper-only seats run on):
 the first provider that serves the model and has budget takes the call,
 a saturated provider overflows to the next usable one,
 and a dry provider passes the call down the order.

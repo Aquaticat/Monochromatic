@@ -22,14 +22,15 @@ await describe({
   name: 'PROVIDER_ORDER',
   children: [
     it({
-      name: 'SPENDS ON SYNTHETIC, THEN HYPER, THEN OPENROUTER, which is the owner\'s order of '
-        + '2026-09-03: the subscription first, the balance that will not be topped up next, and '
-        + 'the per-token provider last',
+      name: 'SPENDS ON SYNTHETIC, THEN BEDROCK, THEN HYPER, THEN OPENROUTER, which is the owner\'s '
+        + 'order of 2026-09-03 with the 2026-09-07 insertion: the subscription first, the expiring '
+        + 'credits that will never be topped up next, the balance that will not be topped up after, '
+        + 'and the per-token provider last',
       fn: async () => {
         expect(PROVIDER_ORDER,).toEqual([
           'synthetic',
-          'hyper',
           'bedrock',
+          'hyper',
           'openrouter',
         ],);
       },
@@ -55,8 +56,8 @@ await describe({
           },
         },),).toEqual({
           synthetic: 1,
-          hyper: 2,
-          bedrock: 3,
+          bedrock: 2,
+          hyper: 3,
           openrouter: 4,
         },);
         expect(asked,).toEqual(PROVIDER_ORDER,);
@@ -72,9 +73,9 @@ await describe({
       name: 'NAMES the others in spending order, whichever one is left out',
       fn: async () => {
         expect(otherProviders({ provider: 'hyper', },),).toEqual(['synthetic', 'bedrock', 'openrouter',],);
-        expect(otherProviders({ provider: 'synthetic', },),).toEqual(['hyper', 'bedrock', 'openrouter',],);
+        expect(otherProviders({ provider: 'synthetic', },),).toEqual(['bedrock', 'hyper', 'openrouter',],);
         expect(otherProviders({ provider: 'bedrock', },),).toEqual(['synthetic', 'hyper', 'openrouter',],);
-        expect(otherProviders({ provider: 'openrouter', },),).toEqual(['synthetic', 'hyper', 'bedrock',],);
+        expect(otherProviders({ provider: 'openrouter', },),).toEqual(['synthetic', 'bedrock', 'hyper',],);
       },
     },),
   ],
