@@ -1114,7 +1114,7 @@ External deletion or redefinition is preserved and reported during cleanup,
 not silently overwritten.
 Do not mix direct Sinon replacements with context-owned replacements on that property.
 
-Other overloads and mutation families retain ordinary Sinon behavior,
+Other overloads and mutation families retain ordinary Sinon shared-target semantics,
 with checks preventing them from overwriting an active contextual property:
 
 - Detached fakes,
@@ -1133,14 +1133,23 @@ with checks preventing them from overwriting an active contextual property:
   Contextual behavior on other Node-compatible runtimes is not verified.
 
 Completed attempts cannot invoke retained sandbox factories or deferred target-changing fake methods.
+Call-sequence behavior objects returned by `onCall` and its aliases share their root fake's authority.
+Injected factories are guarded before application setters receive them,
+including when a later injection assignment fails.
+Failed whole-object stubbing or spying rolls back only newly introduced replacements;
+independent earlier fakes remain installed.
+If rollback also fails,
+both construction and cleanup errors are retained.
+
 Restoring a replacement or mock controller retires that generation;
 create a new fake or controller for new mutations.
 Saved fake history and ordinary behavior configuration remain usable.
 These guards do not cancel application work or sandbox arbitrary JavaScript:
 await or stop background work before finishing a test.
 
-Shared ordinary replacements and other process-wide mutations still require serialization
-across every affected test.
+For shared ordinary replacements and other process-wide mutations,
+use test-local resources or serialize every affected reader and writer under a common ancestor.
+Separate sequential sibling suites still overlap under a concurrent parent.
 Supported Node method stubs can instead run concurrently:
 
 ```ts

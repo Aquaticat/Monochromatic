@@ -3,7 +3,8 @@
 ## Request and scope
 
 The user asks what to do about [issue #481](https://github.com/Aquaticat/Monochromatic/issues/481).
-The user accepted the recommendation with "Okay, do it."
+The user accepted the recommendation with
+"Okay, do it."
 Production implementation,
 verification,
 and issue closure are authorized.
@@ -20,10 +21,10 @@ not an instruction-file change.
 
 ## Recommendation
 
-Pursue **context-owned method stubs behind the existing `ctx.sinon` API** as the primary fix.
-The code-only approach is demonstrated for the Node method-stub case,
-not yet implemented for production or established across the full Sinon surface.
-Keep #481 open until production acceptance passes.
+The accepted implementation provides **context-owned method stubs behind the existing `ctx.sinon` API**.
+Production artifact tests now verify Node ownership and ordinary-Sinon fallback boundaries.
+This does not claim context isolation across the full Sinon surface.
+Keep #481 open until documentation and closure gates also pass.
 
 The caller should still write:
 
@@ -44,7 +45,7 @@ Internally:
 
 `ctx` identifies who installs the fake.
 It does not travel into arbitrary code calling `console.warn`.
-Async execution context supplies that missing connection in the prototype.
+Async execution context supplies that connection in the prototype and production adapter.
 A private sandbox alone,
 or a proxy only passed to the test,
 does not isolate what unchanged code reads from the real global.
@@ -72,11 +73,11 @@ not the context that registered it.
 A fake reference already captured by one owner retains that fake's identity when another owner invokes it.
 Do not describe either behavior as universal registration-owner isolation.
 
-This is feasibility evidence through real source-level `describe` and `it`,
-not a complete implementation,
-full Sinon compatibility,
-a browser test,
-or a rebuilt logger-suite result.
+The initial experiment was feasibility evidence through real source-level `describe` and `it`,
+not production acceptance.
+The production verification record names the subsequent artifact,
+browser,
+and logger checks.
 An independent reviewer accepted the direction with the production gates in this plan.
 
 ## Ranked approaches
@@ -91,7 +92,8 @@ and also isolates unstubbed readers in the proven method case.
 Cons:
 requires runtime context support and explicit method/property semantics.
 The temporary getter is observable through descriptor reflection.
-Broader Sinon operations and lifecycle rejection still need implementation and verification.
+Other mutation families retain shared-target semantics,
+with lifecycle guards rather than claimed context isolation.
 
 ### Existing sequential ancestor, fallback
 
@@ -121,7 +123,7 @@ Ranking:
 context-owned method replacement > existing sequential fallback > new exclusive option.
 The first outranks serialization because the prototype demonstrates isolation without sacrificing overlap.
 The existing fallback outranks a new option because the new scheduling surface is not required by this incident.
-This ranks the next investment for #481,
+This records the accepted investment for #481,
 not every future shared-resource problem.
 
 Documentation and owner-aware diagnostics complement the fix;
@@ -196,9 +198,42 @@ a Node-only prototype must not become a static Node import in the neutral entry.
 
 Build the harness and test the public artifact,
 not only its source.
-Rebuild and run the logger tests with the breadcrumb sequential workaround removed in a throwaway worktree.
+Rebuild and run the logger tests with the breadcrumb sequential workaround removed.
+The package task runs each test file in a disposable Node process.
 Verify the regression fails when the ownership mechanism is disabled.
 Run package tests and lint before closing #481.
+
+## Production verification
+
+- Fresh attempt identities,
+  timeout tails,
+  retained factories,
+  independent cleanup,
+  descriptor restoration,
+  and deferred controller generations have built-artifact regressions.
+- Whole-object construction failures now restore only their new fakes.
+  A rollback-failure fixture confirms independent cleanup and both error causes.
+- Source and Node/neutral artifacts share ownership within one realm.
+- The neutral browser consumer passed in Chromium,
+  Firefox,
+  and WebKit.
+  It covers absent and partial process globals,
+  restoration,
+  repeat identities,
+  completed factories,
+  and error formatting.
+- The logger breadcrumb suites pass under default concurrent scheduling.
+  Serialization for console-sink tests that change environment or arguments remains intact.
+- In a disposable worktree,
+  `sinon-context.unit.test.ts` passed with routing enabled,
+  failed with double wrapping and reader contamination after routing was disabled and rebuilt,
+  then passed again after restoration and rebuilding.
+- Full module-test and logger unit tests,
+  types,
+  and Oxlint passed.
+  The troubleshooting and handover records identify commands,
+  commits,
+  and process evidence.
 
 ## Session record
 
@@ -209,13 +244,11 @@ Run package tests and lint before closing #481.
 - Scoped Markdown lint passed using the worktree's base-version linter against these exact documentation paths.
   The main-worktree linter could not start because concurrent edits left `run.ts` importing missing `isMdxPath`.
   Those unrelated files were not changed by this investigation.
-- Main-worktree changes are documentation only.
-  The GitHub issue was not edited or closed.
-- Implementation is now authorized.
+- The initial investigation changed documentation only.
+  The user then authorized implementation and closure.
 - Production scope: context-selected own configurable writable method stubs and spies on the Node execution path.
   Other operations and non-Node runtimes retain ordinary Sinon behavior,
   with attempt-lifetime guards and rejection of operations that would overwrite active contextual properties.
   This does not advertise complete global-state isolation.
-- Next action:
-  implement the attempt lifecycle and registry,
-  beginning with the completed-owner mutation regression.
+- Implementation and consumer acceptance are complete.
+  Reconcile documentation and perform the final issue-closure gate.
