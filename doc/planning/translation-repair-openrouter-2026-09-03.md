@@ -2818,6 +2818,34 @@ Guard shown to fail with the early return neutralised,
 14 `FAIL` lines,
 0 restored.
 
+## The third Huasheng launch, 2026-09-07, 08:43 UTC, on the class-ten build
+
+`Huasheng` launched at 08:43:38 UTC on `e645de7f4`,
+pipeline `7f740697`,
+plain invocation,
+fresh runs dir `~/temp/agent/huasheng3-20260907`,
+log beside it,
+after the full suite on that build read 936 `PASS` and 0 `FAIL`,
+oxlint 0 and 0,
+types clean,
+and the either-rendering guard read 14 `FAIL` neutralised and 0 restored.
+Meters at launch:
+Synthetic wet again at 2 percent of the week
+(0 at 05:31,
+so the week trickles back rather than resetting on a day;
+the schedule is still not on record),
+Hyper 2080 (1843 at 05:31,
+237 credits returned without a top-up on record),
+OpenRouter 0.32 USD,
+every seat filled,
+none withheld.
+Synthetic will dry within the pass and Hyper serve on;
+the page is read for defect classes,
+which live in the pipeline's screens and not in the roster,
+and its wording is read knowing which seats spoke.
+The reading follows,
+with slice 21 first.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
