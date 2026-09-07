@@ -1,4 +1,4 @@
-# CloudFront mirror correction in progress
+# CloudFront mirror correction completed
 
 ## Authorization and scope
 
@@ -140,23 +140,44 @@ requires this task's exact association,
 and removes only that association.
 It does not restore the old full config over unrelated changes.
 
-## Next action
+## Verified completion
 
-The managed `watch-deployment.ts EYK5GXXEGWEYZ` process is observing live deployment.
-Require `DEPLOYMENT_READY`,
-not merely process exit zero:
-a pending checkpoint also exits successfully.
-Then:
+`verify-live-state.ts` passed at `2026-09-07T21:41:59Z`.
+The live distribution was `Deployed`,
+ETag `E1VC38T7YXB528`.
+Its full configuration matched the submitted input;
+removing only the new association reconstructed the original snapshot exactly.
+The subscription remained `FREE`,
+`ACTIVE`,
+with ETag `2` and its original update timestamp.
+Primary TLS 1.3 succeeded and TLS 1.2 failed with protocol-version alerts over IPv4 and IPv6.
+Live mirror root bodies matched the primary over TLS 1.3 in both families.
 
-- Run `verify.ts live` and require `live-verification-passed.json`.
-- Verify live browser navigation,
-  resources,
-  and theme behavior;
-  close the task browser afterward.
-- Compare deployed configuration with the submitted input and the original snapshot.
-- Recheck primary TLS controls and the active pricing subscription.
-- Update the troubleshooting doc and issue #146 with verified results,
-  then commit scoped docs.
+`verify.ts live` passed at `2026-09-07T21:42:12Z`.
+It verified the same route/resource catalog,
+headers,
+content hashes,
+HEAD,
+and compression boundaries as the function fixture.
+The root body was 3,445 bytes,
+SHA-256 `15789f6f382e87508716b0840b9962fde1fe0324ed5ad868ec953629b52e903e`.
+The missing resource remained HTTP 404 with an empty body.
+
+Live browser verification followed the English language link,
+toggled the theme through its visible label,
+confirmed loaded resources,
+and navigated to the rendered About page.
+No page errors were reported.
+The task browser was closed.
+
+Resolution commit `983b39022` closed issue #146 through auto-push.
+The issue state was read back as `CLOSED`.
+The [resolution comment][resolution] records measured outcomes and remaining verification limits.
+Package artifact verification is recorded in commit `3b7f8b120`,
+with its package README link in `0c7be2c4f`.
+
+No AWS cleanup or live deployment work remains.
+The only retained task-created AWS resource is the live-associated function.
 
 ## Wait correction and verification limits
 
@@ -183,3 +204,4 @@ and HTTP content parity passed.
 Keep this browser-verification limitation separate from CloudFront HTTP 502 remediation.
 
 [plans]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/flat-rate-pricing-plan.md
+[resolution]: https://github.com/Aquaticat/Monochromatic/issues/146#issuecomment-5575913552
