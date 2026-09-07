@@ -134,3 +134,33 @@ Measurements and the build record are in `doc/planning/translation-repair-openro
 ## Rollback
 
 Seating Kimi-K3 on OpenRouter, or turning ZDR off, needs an explicit owner decision and fresh cost evidence.
+
+## Addendum 2026-09-07: Amazon Bedrock sits ahead of Charm Hyper
+
+Decided by the owner on 2026-09-07 ("Yes Bedrock sit ahead"),
+answering the order question the fourth-provider record left open to veto
+(`doc/planning/translation-repair-openrouter-2026-09-03.md`,
+"The owner adds Amazon Bedrock" and "The first hakureico launch was on the wrong roster").
+`PROVIDER_ORDER` reads Synthetic,
+Bedrock,
+Hyper,
+OpenRouter.
+
+Why:
+Bedrock is 200 USD of prepaid credits that expire early next year and will never be topped up,
+Hyper is a prepaid balance the owner will not recharge either,
+and the two seats both serve
+(`gemma-4-26b-a4b-it`,
+`gpt-oss-120b`)
+had gone to Hyper the moment Synthetic dried on the second hakureico launch,
+108 credits in one pass,
+while the expiring money answered nothing.
+Ahead of Hyper,
+those seats spend Bedrock first,
+and Hyper's balance is kept for the seats only Hyper serves.
+Landed with the probe candidate flags;
+the running pass was killed and relaunched under the kill-and-relaunch rule.
+
+Rollback:
+swap the two names in `provider-name.ts`;
+the routing arithmetic walks the list and names no provider by position.
