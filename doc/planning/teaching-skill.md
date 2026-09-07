@@ -20,22 +20,55 @@ The user identified these failures in the AI response:
   The user wanted a specific product link for delivery or a map opened for an in-person trip.
 - "Set oven to 300degrees": omits the temperature scale and invites misunderstanding.
 
+## Confirmed intake requirements
+
+The user confirmed that the AI should ask clarifying questions.
+Their examples specify meanings, not exact wording or a canned questionnaire:
+
+- Discover relevant evidence in the user's workspace first.
+  If there is sufficient reason to suspect an A/B or X/Y problem,
+  ask about the underlying choice and whether a different approach would better serve the goal.
+  Suspicion must come from discovery, not a reflex to challenge every request.
+- Anchor questions in the user's experience and available tools.
+  Ask about comfort with the relevant techniques or tools.
+- Establish the intended outcome:
+  accomplishing the immediate task and whether the user also wants missing background knowledge
+  that improves their general ability.
+  Offer requested science or related background in foldable `<details>` sections.
+- Explain the intended presentation.
+  Default to building an interactive, visual, self-contained, auto-dark-theme, printable HTML demo.
+  Mention Markdown as an available alternative when the user wants something quick.
+
 ## Design tree
 
 - Establish what the teaching should accomplish.
-  - Open: how to handle the ambiguous dish name before teaching.
-  - Open: how to establish relevant prior knowledge without assuming prerequisite skills.
+  - Settled: clarify the intended dish instead of passing over the ambiguous name.
+  - Settled: discover workspace evidence before asking questions that evidence can answer.
+  - Settled: investigate an alternative underlying goal when evidence warrants it.
+  - Settled: anchor relevant experience and available tools through discovery and questions.
+  - Settled: distinguish the immediate goal from additionally desired background learning.
 - Make instructions usable by the intended learner.
   - Observed failure: quantities without usable calibration.
   - Observed failure: procurement instructions without concrete access to the required item.
   - Observed failure: measurements without units.
-  - Open: what successful replacements look like in context.
-- Determine scope and operating boundaries after the failures are understood.
+  - Open: other failures during teaching after intake is done correctly.
+  - Open: examples that distinguish successful teaching from merely precise instructions.
+- Present the material.
+  - Settled: default HTML properties and availability of Markdown alternative.
+  - Settled: optional background can use foldable `<details>` sections.
+  - Open: useful interaction and visual behavior in the teaching artifact.
+- Determine remaining scope and operating boundaries after the failures are understood.
   - Open: how these requirements apply to live teaching and drafted materials.
-  - Open: what the agent should resolve itself and what needs learner input.
   - Open: acceptance examples and confirmation of shared understanding.
+
+## Interview adjustment
+
+The user answered "Of course ask clarifying questions" to the question about the first response.
+Clarification was already implied by the initial failure example.
+Subsequent questions should discover unresolved failures or preferences,
+not ask the user to ratify an obvious repair.
 
 ## Next action
 
-Ask what the first response to the ambiguous cooking request should accomplish.
+Ask what fails during the lesson even when the intake and presentation requirements are met.
 Use the answer to refine the tree before drafting skill instructions.
