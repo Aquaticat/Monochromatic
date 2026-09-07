@@ -52,6 +52,7 @@ const KIMI = 'hf:moonshotai/Kimi-K3';
 const ALL_WET: BudgetView = {
   synthetic: false,
   hyper: false,
+  bedrock: false,
   openrouter: false,
 };
 
@@ -61,6 +62,7 @@ const ALL_WET: BudgetView = {
 const SYNTHETIC_DRY: BudgetView = {
   synthetic: true,
   hyper: false,
+  bedrock: false,
   openrouter: false,
 };
 
@@ -70,6 +72,7 @@ const SYNTHETIC_DRY: BudgetView = {
 const OPENROUTER_ONLY: BudgetView = {
   synthetic: true,
   hyper: true,
+  bedrock: true,
   openrouter: false,
 };
 

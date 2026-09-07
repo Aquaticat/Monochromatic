@@ -278,6 +278,7 @@ export * from './document-barrel.ts';
 export * from './generation-barrel.ts';
 export * from './lane-barrel.ts';
 export * from './provider-barrel.ts';
+export * from './bedrock-barrel.ts';
 export * from './publish-barrel.ts';
 export * from './pairing-barrel.ts';
 export * from './editor-barrel.ts';

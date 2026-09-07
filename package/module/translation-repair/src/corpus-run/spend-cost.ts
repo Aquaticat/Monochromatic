@@ -83,8 +83,8 @@ export type SpendCost = {
   readonly subscription: readonly SeatSpend[];
 
   /**
-   * Seats billed in USD per token on OpenRouter, costliest first, each
-   * carrying the USD its lines reported.
+   * Seats billed in USD per token, on OpenRouter or on Bedrock, costliest
+   * first, each carrying the USD its lines reported.
    *
    * A FOURTH BUCKET AND A SECOND CURRENCY. Hypercredits and USD are never
    * summed: the credit figure below stays a credit figure, and this bucket's
@@ -189,8 +189,8 @@ export function priceTally(
    */
   const openRouter = tally
     .seats
-    .filter(function isOpenRouter(seat,): boolean {
-      return seat.provider === 'openrouter';
+    .filter(function isBilledInUsd(seat,): boolean {
+      return (seat.provider === 'openrouter') || (seat.provider === 'bedrock');
     },)
     .toSorted(function costliestFirst(
       left,

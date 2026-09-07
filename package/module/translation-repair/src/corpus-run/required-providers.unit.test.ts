@@ -24,6 +24,7 @@ import {
 const KEY_NAMES = {
   synthetic: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY',
   hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
+  bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
   openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
 } as const;
 
@@ -43,6 +44,7 @@ function withProviderKeys(
   keys: {
     readonly synthetic?: string;
     readonly hyper?: string;
+    readonly bedrock?: string;
     readonly openrouter?: string;
   },
 ): Disposable {
@@ -74,6 +76,11 @@ function withProviderKeys(
     wanted.set(
       KEY_NAMES.hyper,
       keys.hyper,
+    );
+  if (keys.bedrock !== undefined)
+    wanted.set(
+      KEY_NAMES.bedrock,
+      keys.bedrock,
     );
   if (keys.openrouter !== undefined)
     wanted.set(

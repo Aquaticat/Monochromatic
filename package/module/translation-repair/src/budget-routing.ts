@@ -1,3 +1,4 @@
+import type { BedrockCredits, } from './bedrock-ledger.ts';
 import type { HyperCredits, } from './hyper-credits.ts';
 import type { OpenRouterCredits, } from './openrouter-credits.ts';
 import {
@@ -217,6 +218,27 @@ export function openRouterIsDry(
 }
 
 /**
+ * Whether Bedrock's ledger says nothing more can be bought there.
+ * THE SAME RULE AS THE OTHER TWO BALANCES, on a balance this package keeps
+ * itself: past the owner's credit the account would bill the owner's card,
+ * which the owner said never to reach ("I will NEVER top it up").
+ *
+ * @param credits - most recent ledger reading
+ *
+ * @returns Whether that reading leaves nothing buyable
+ *
+ * @example
+ * ```ts
+ * const dry = bedrockIsDry({ credits, },);
+ * ```
+ */
+export function bedrockIsDry(
+  { credits, }: { readonly credits: BedrockCredits; },
+): boolean {
+  return credits.remainingUsd <= 0;
+}
+
+/**
  * First provider in spending order that serves a model and has budget.
  *
  * THE SEAT READER'S QUESTION AS WELL AS THE ROUTER'S: `run-seats.ts` asks
@@ -412,6 +434,32 @@ export function openRouterMeterLevel(
   const { remainingUsd, } = credits;
 
   return [`openrouterUsd=${remainingUsd.toFixed(2,)}`,];
+}
+
+/**
+ * Renders what the fourth provider's meter actually said, as record fields.
+ * WHAT IS LEFT, IN USD, TO TWO PLACES, as for OpenRouter; the figure is the
+ * ledger's, not the account's, which is worth remembering when reading one.
+ *
+ * @param credits - ledger reading the dryness verdict was read from
+ *
+ * @returns `key=value` tokens, no value carrying a space
+ *
+ * @example
+ * ```ts
+ * bedrockMeterLevel({ credits, },);
+ * // => ['bedrockUsd=198.50',]
+ * ```
+ */
+export function bedrockMeterLevel(
+  { credits, }: { readonly credits: BedrockCredits; },
+): readonly string[] {
+  /**
+   * What is left, which is the one number the record watches.
+   */
+  const { remainingUsd, } = credits;
+
+  return [`bedrockUsd=${remainingUsd.toFixed(2,)}`,];
 }
 
 //endregion Budget routing

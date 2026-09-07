@@ -129,6 +129,7 @@ const SIGNAL = new AbortController().signal;
 const ALL_WET = {
   synthetic: false,
   hyper: false,
+  bedrock: true,
   openrouter: false,
 } as const;
 
@@ -149,6 +150,8 @@ await describe({
 
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
         expect(reads,).toEqual({ quota: 1, credits: 1, openrouter: 1, },);
+        // The fourth provider has no client here, so it reads as dry and is
+        // never asked; `bedrock: true` in every view below says so.
       },
     },),
 
@@ -164,16 +167,19 @@ await describe({
         expect(await syntheticOnly.read({ signal: SIGNAL, },),).toEqual({
           synthetic: false,
           hyper: true,
+          bedrock: true,
           openrouter: true,
         },);
         expect(await hyperOnly.read({ signal: SIGNAL, },),).toEqual({
           synthetic: true,
           hyper: false,
+          bedrock: true,
           openrouter: true,
         },);
         expect(await openRouterOnly.read({ signal: SIGNAL, },),).toEqual({
           synthetic: true,
           hyper: true,
+          bedrock: true,
           openrouter: false,
         },);
       },
@@ -216,6 +222,7 @@ await describe({
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
           synthetic: false,
           hyper: true,
+          bedrock: true,
           openrouter: true,
         },);
       },
@@ -299,6 +306,7 @@ await describe({
         expect(budgets.holds(),).toEqual({
           synthetic: 0,
           hyper: 300,
+          bedrock: 0,
           openrouter: 0,
         },);
 
@@ -312,6 +320,7 @@ await describe({
         expect(budgets.holds(),).toEqual({
           synthetic: 0,
           hyper: 0,
+          bedrock: 0,
           openrouter: 0,
         },);
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
@@ -420,12 +429,14 @@ await describe({
         expect(budgets.holds(),).toEqual({
           synthetic: 0,
           hyper: 0,
+          bedrock: 0,
           openrouter: 0,
         },);
         // The refuser is still spendable at once; only the dry providers are out.
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
           synthetic: false,
           hyper: true,
+          bedrock: true,
           openrouter: true,
         },);
       },
@@ -454,6 +465,7 @@ await describe({
         expect(budgets.holds(),).toEqual({
           synthetic: 300,
           hyper: 0,
+          bedrock: 0,
           openrouter: 0,
         },);
       },
@@ -658,6 +670,7 @@ await describe({
         expect(budgets.holds(),).toEqual({
           synthetic: 50,
           hyper: 50,
+          bedrock: 0,
           openrouter: 0,
         },);
       },

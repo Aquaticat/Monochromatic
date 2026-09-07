@@ -1,4 +1,4 @@
-import type { MeterState, } from '../provider-budget.ts';
+import type { MeterState, } from '../provider-meters.ts';
 
 //region Meter sample read
 // Reads the availability record `provider-budget.ts` leaves in a run log back
@@ -76,6 +76,12 @@ export type MeterSample = {
    * historical reading to a column that did not exist yet.
    */
   readonly openrouter: MeterState | 'absent';
+
+  /**
+   * What the fourth provider's meter said, or that the record predates it:
+   * every line written before 2026-09-07 carries three states.
+   */
+  readonly bedrock: MeterState | 'absent';
 
   /**
    * Every field beyond the states, in the order written.
@@ -393,10 +399,19 @@ export function readMeterLine(
     name: 'openrouter',
   },);
 
+  /**
+   * What the fourth provider's meter said, absent on lines older than it.
+   */
+  const bedrock = fieldValue({
+    tail,
+    name: 'bedrock',
+  },);
+
   return {
     at,
     synthetic,
     hyper,
+    bedrock,
     openrouter,
     levels: levelFields({ tail, },),
   };

@@ -47,6 +47,7 @@ const FIRST_FIELD = 'provider=';
 const PROVIDERS = [
   'synthetic',
   'hyper',
+  'bedrock',
   'openrouter',
 ] as const;
 

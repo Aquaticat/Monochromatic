@@ -23,6 +23,7 @@ import {
   HYPER_ONLY_NAMES_ARE_SERVED,
   HYPER_ONLY_ROSTER_IDS,
   hyperIdFor,
+  bedrockServesLabel,
   hyperServesLabel,
   readsImages,
   reachOf,
@@ -54,7 +55,7 @@ await describe({
          * Roster ids no catalog has a row for under the roster's own spelling.
          */
         const unserved = ROSTER_MODEL_IDS.filter(function nobodyServes(modelId,): boolean {
-          return (!syntheticServes(modelId,)) && (!hyperServesLabel(modelId,));
+          return (!syntheticServes(modelId,)) && (!hyperServesLabel(modelId,)) && (!bedrockServesLabel(modelId,));
         },);
         expect(unserved,).toStrictEqual([],);
       },
@@ -85,13 +86,16 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'SEATS NINE DISTINCT MODELS, four Synthetic serves and five only the second provider does',
+      name: 'SEATS ELEVEN DISTINCT MODELS: four Synthetic serves, five only the second provider does and '
+        + 'two only the fourth does',
       fn: async () => {
         // Eight until 2026-09-01, when the post-blocklist candidate refresh
         // admitted glm-5.3 and the same-day conformance probe culled the
         // refresh's two automatic-only Qwen3.8 routes before seating.
-        expect(ROSTER_MODEL_IDS.length,).toBe(9,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(9,);
+        // Eleven since 2026-09-07, when the owner's Bedrock account added the
+        // two Gemma 4 sizes no other provider serves.
+        expect(ROSTER_MODEL_IDS.length,).toBe(11,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(11,);
       },
     },),
 
@@ -224,6 +228,7 @@ await describe({
         expect(reachOf({ modelId: 'hf:openai/gpt-oss-120b', },),).toEqual({
           synthetic: true,
           hyper: true,
+          bedrock: true,
           openrouter: true,
         },);
       },
@@ -239,12 +244,14 @@ await describe({
         expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
           synthetic: true,
           hyper: true,
+          bedrock: false,
           openrouter: true,
         },);
 
         expect(reachOf({ modelId: 'gemma-4-26b-a4b-it', },),).toEqual({
           synthetic: false,
           hyper: true,
+          bedrock: true,
           openrouter: true,
         },);
       },
@@ -260,7 +267,7 @@ await describe({
            */
           const reach = reachOf({ modelId, },);
 
-          expect(reach.synthetic || reach.hyper || reach.openrouter,).toBe(true,);
+          expect(reach.synthetic || reach.hyper || reach.bedrock || reach.openrouter,).toBe(true,);
         }
       },
     },),
@@ -278,12 +285,14 @@ await describe({
         expect(visionReachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
           synthetic: true,
           hyper: true,
+          bedrock: false,
           openrouter: true,
         },);
 
         expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
           synthetic: true,
           hyper: true,
+          bedrock: false,
           openrouter: true,
         },);
       },
@@ -296,6 +305,7 @@ await describe({
         expect(visionReachOf({ modelId: 'hf:moonshotai/Kimi-K3', },),).toEqual({
           synthetic: true,
           hyper: true,
+          bedrock: false,
           openrouter: true,
         },);
       },
@@ -308,18 +318,20 @@ await describe({
         expect(visionReachOf({ modelId: 'hf:openai/gpt-oss-120b', },),).toEqual({
           synthetic: false,
           hyper: false,
+          bedrock: false,
           openrouter: false,
         },);
       },
     },),
 
     it({
-      name: 'KEEPS gemma off the picture readers on OpenRouter until a transcription is measured, so '
+      name: 'KEEPS gemma off the picture readers on OpenRouter and on Bedrock until a transcription is measured, so '
         + 'a listing field alone cannot widen the reader roster',
       fn: async () => {
         expect(visionReachOf({ modelId: 'gemma-4-26b-a4b-it', },),).toEqual({
           synthetic: false,
           hyper: false,
+          bedrock: false,
           openrouter: false,
         },);
       },

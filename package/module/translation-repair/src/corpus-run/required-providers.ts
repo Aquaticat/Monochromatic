@@ -1,8 +1,11 @@
 import {
+  bedrockIsDry,
   hyperIsDry,
   openRouterIsDry,
   syntheticIsDry,
 } from '../budget-routing.ts';
+import { createBedrockClient, } from '../bedrock-client.ts';
+import { bedrockLedgerFromEnv, } from '../bedrock-ledger.ts';
 import { createHyperClient, } from '../hyper-client.ts';
 import { createOpenRouterClient, } from '../openrouter-client.ts';
 import {
@@ -37,6 +40,7 @@ const FLAG_NOT_FOUND = -1;
 const KEY_VARIABLES: Readonly<Record<ProviderName, string>> = {
   synthetic: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY',
   hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
+  bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
   openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
 };
 
@@ -276,6 +280,23 @@ export async function assertRequiredProvidersReady(
         provider,
         readDry: async function readCredits(): Promise<boolean> {
           return hyperIsDry({ credits: await client.credits({ signal, },), },);
+        },
+      },);
+      return;
+    }
+    if (provider === 'bedrock') {
+      /**
+       * Required Bedrock meter client, over the ledger the environment names.
+       */
+      const client = createBedrockClient({
+        apiKey: key,
+        ledger: bedrockLedgerFromEnv({ env: process.env, },),
+        ...seam,
+      },);
+      await gateProvider({
+        provider,
+        readDry: async function readBedrockCredits(): Promise<boolean> {
+          return bedrockIsDry({ credits: await client.credits({ signal, },), },);
         },
       },);
       return;

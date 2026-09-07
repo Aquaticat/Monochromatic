@@ -1,4 +1,4 @@
-import type { MeterState, } from '../provider-budget.ts';
+import type { MeterState, } from '../provider-meters.ts';
 import type { ProviderName, } from '../provider-name.ts';
 import type { MeterSample, } from './meter-sample-read.ts';
 

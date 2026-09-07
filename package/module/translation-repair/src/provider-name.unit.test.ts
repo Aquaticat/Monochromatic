@@ -29,6 +29,7 @@ await describe({
         expect(PROVIDER_ORDER,).toEqual([
           'synthetic',
           'hyper',
+          'bedrock',
           'openrouter',
         ],);
       },
@@ -55,7 +56,8 @@ await describe({
         },),).toEqual({
           synthetic: 1,
           hyper: 2,
-          openrouter: 3,
+          bedrock: 3,
+          openrouter: 4,
         },);
         expect(asked,).toEqual(PROVIDER_ORDER,);
       },
@@ -69,9 +71,10 @@ await describe({
     it({
       name: 'NAMES the others in spending order, whichever one is left out',
       fn: async () => {
-        expect(otherProviders({ provider: 'hyper', },),).toEqual(['synthetic', 'openrouter',],);
-        expect(otherProviders({ provider: 'synthetic', },),).toEqual(['hyper', 'openrouter',],);
-        expect(otherProviders({ provider: 'openrouter', },),).toEqual(['synthetic', 'hyper',],);
+        expect(otherProviders({ provider: 'hyper', },),).toEqual(['synthetic', 'bedrock', 'openrouter',],);
+        expect(otherProviders({ provider: 'synthetic', },),).toEqual(['hyper', 'bedrock', 'openrouter',],);
+        expect(otherProviders({ provider: 'bedrock', },),).toEqual(['synthetic', 'hyper', 'openrouter',],);
+        expect(otherProviders({ provider: 'openrouter', },),).toEqual(['synthetic', 'hyper', 'bedrock',],);
       },
     },),
   ],
@@ -81,7 +84,7 @@ await describe({
   name: isProviderName.name,
   children: [
     it({
-      name: 'ADMITS the three names and nothing else, since a flag value reaches this unchecked',
+      name: 'ADMITS the four names and nothing else, since a flag value reaches this unchecked',
       fn: async () => {
         expect(PROVIDER_ORDER.every(function admitted(provider,): boolean {
           return isProviderName(provider,);

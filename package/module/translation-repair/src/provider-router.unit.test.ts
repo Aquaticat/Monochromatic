@@ -67,6 +67,7 @@ const EXPECTED_SYNTHETIC_SLOTS = 5;
 const ONE_SYNTHETIC_SLOT = {
   synthetic: 1,
   hyper: Number.POSITIVE_INFINITY,
+  bedrock: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 
@@ -77,6 +78,7 @@ const ONE_SYNTHETIC_SLOT = {
 type PerProvider<ValueT,> = {
   readonly synthetic?: ValueT;
   readonly hyper?: ValueT;
+  readonly bedrock?: ValueT;
   readonly openrouter?: ValueT;
 };
 
@@ -123,6 +125,7 @@ function stubProviders(
   const answers: ProviderRecord<string> = {
     synthetic: text.synthetic ?? '{"spot":"windowsill"}',
     hyper: text.hyper ?? '{"spot":"radiator"}',
+    bedrock: text.bedrock ?? '{"spot":"cat tree"}',
     openrouter: text.openrouter ?? '{"spot":"laundry basket"}',
   };
 
@@ -132,6 +135,7 @@ function stubProviders(
   const refusalsLeft: Record<ProviderName, number> = {
     synthetic: refusals.synthetic ?? (((status.synthetic ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     hyper: refusals.hyper ?? (((status.hyper ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
+    bedrock: refusals.bedrock ?? (((status.bedrock ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     openrouter: refusals.openrouter ?? (((status.openrouter ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
   };
 
@@ -163,6 +167,7 @@ function stubProviders(
     callers: {
       synthetic: callerFor('synthetic',),
       hyper: callerFor('hyper',),
+      bedrock: callerFor('bedrock',),
       openrouter: callerFor('openrouter',),
     },
   };
@@ -190,6 +195,7 @@ function stubBudgets(
     holdsMs = {
       synthetic: 0,
       hyper: 0,
+      bedrock: 0,
       openrouter: 0,
     },
     onHoldEnd,
@@ -215,6 +221,10 @@ function stubBudgets(
   const view: Record<ProviderName, boolean> = {
     synthetic: dry.synthetic ?? false,
     hyper: dry.hyper ?? false,
+    // DRY UNLESS A CASE SAYS OTHERWISE: the fourth provider serves none of the
+    // models these cases route, and a wet meter on a provider that serves
+    // nothing would turn an all-dry ending into a no-provider one.
+    bedrock: dry.bedrock ?? true,
     openrouter: dry.openrouter ?? false,
   };
 
@@ -453,6 +463,7 @@ await describe({
           status: {
             synthetic: 429,
             hyper: 429,
+            bedrock: 0,
             openrouter: 402,
           },
         },);
@@ -501,11 +512,13 @@ await describe({
           dry: {
             synthetic: true,
             hyper: true,
+            bedrock: true,
             openrouter: true,
           },
           holdsMs: {
             synthetic: 5,
             hyper: 20,
+            bedrock: 0,
             openrouter: 20,
           },
           onHoldEnd: function syntheticComesBack(): void {
@@ -536,11 +549,13 @@ await describe({
         const stub = stubBudgets({
           dry: {
             hyper: true,
+            bedrock: true,
             openrouter: true,
           },
           holdsMs: {
             synthetic: 5,
             hyper: 0,
+            bedrock: 0,
             openrouter: 0,
           },
           onHoldEnd: function syntheticComesBack(): void {
@@ -569,6 +584,7 @@ await describe({
           dry: {
             synthetic: true,
             hyper: true,
+            bedrock: true,
             openrouter: true,
           },
         },);
@@ -611,6 +627,7 @@ await describe({
         const { budgets, } = stubBudgets({
           dry: {
             hyper: true,
+            bedrock: true,
             openrouter: true,
           },
         },);
@@ -734,12 +751,20 @@ await describe({
             return { text: '{"spot":"windowsill"}', };
           },
         };
+        /** Fourth provider, serving none of these models. */
+        const bedrock = {
+          chatText: async function chatText() {
+            called.push('bedrock',);
+            return { text: '{"spot":"windowsill"}', };
+          },
+        };
         const { budgets, } = stubBudgets({},);
         /** Router using production default slot count. */
         const client = createRoutingClient({
           callers: {
             synthetic,
             hyper,
+            bedrock,
             openrouter,
           },
           budgets,
@@ -847,12 +872,20 @@ await describe({
             return { text: '{"spot":"windowsill"}', };
           },
         };
+        /** Fourth provider, serving none of these models. */
+        const bedrock = {
+          chatText: async function chatText() {
+            called.push('bedrock',);
+            return { text: '{"spot":"windowsill"}', };
+          },
+        };
         const { budgets, } = stubBudgets({ dry: { openrouter: true, }, },);
         /** Router under test, one Synthetic slot per model. */
         const client = createRoutingClient({
           callers: {
             synthetic,
             hyper,
+            bedrock,
             openrouter,
           },
           budgets,

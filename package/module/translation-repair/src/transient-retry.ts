@@ -131,12 +131,22 @@ const MINUTE_S = 60;
 const HOUR_MIN = 60;
 
 /**
+ * Milliseconds in one minute.
+ */
+const MINUTE_MS = MINUTE_S * SECOND_MS;
+
+/**
+ * Milliseconds in one hour.
+ */
+const HOUR_MS = HOUR_MIN * MINUTE_MS;
+
+/**
  * Milliseconds each unit letter of a stated wait stands for, in the order
  * Hyper writes them: hours, minutes, seconds.
  */
 const WAIT_UNIT_MS: Readonly<Record<string, number>> = {
-  h: HOUR_MIN * MINUTE_S * SECOND_MS,
-  m: MINUTE_S * SECOND_MS,
+  h: HOUR_MS,
+  m: MINUTE_MS,
   s: SECOND_MS,
 };
 

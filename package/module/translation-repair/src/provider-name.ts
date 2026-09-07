@@ -13,6 +13,12 @@
 // the first provider in this order that serves its model and still has budget,
 // and the routing arithmetic in `budget-routing.ts` walks this list rather
 // than naming providers one by one.
+//
+// AMAZON BEDROCK JOINED ON 2026-09-07, third in the order: the owner's 200 USD
+// of credits there expire early next year and will never be topped up ("you're
+// allowed to use it as much as you like. But I will NEVER top it up"), where
+// OpenRouter's credits are the owner's to top up. So prepaid and expiring
+// money is spent before money that would be bought.
 
 /**
  * One of the providers this pipeline can buy a call from.
@@ -22,7 +28,7 @@
  * const provider: ProviderName = 'openrouter';
  * ```
  */
-export type ProviderName = 'synthetic' | 'hyper' | 'openrouter';
+export type ProviderName = 'synthetic' | 'hyper' | 'bedrock' | 'openrouter';
 
 /**
  * Every provider, in the order the owner prefers to spend on them.
@@ -35,6 +41,7 @@ export type ProviderName = 'synthetic' | 'hyper' | 'openrouter';
 export const PROVIDER_ORDER: readonly ProviderName[] = [
   'synthetic',
   'hyper',
+  'bedrock',
   'openrouter',
 ];
 
@@ -47,7 +54,7 @@ export const PROVIDER_ORDER: readonly ProviderName[] = [
  *
  * @example
  * ```ts
- * const dry: ProviderRecord<boolean> = { synthetic: false, hyper: true, openrouter: false, };
+ * const dry: ProviderRecord<boolean> = { synthetic: false, hyper: true, bedrock: false, openrouter: false, };
  * ```
  */
 export type ProviderRecord<ValueT,> = Readonly<Record<ProviderName, ValueT>>;
@@ -70,6 +77,7 @@ export function providerRecord<ValueT,>(
   return {
     synthetic: of('synthetic',),
     hyper: of('hyper',),
+    bedrock: of('bedrock',),
     openrouter: of('openrouter',),
   };
 }
@@ -84,7 +92,7 @@ export function providerRecord<ValueT,>(
  * @example
  * ```ts
  * otherProviders({ provider: 'hyper', },);
- * // => ['synthetic', 'openrouter',]
+ * // => ['synthetic', 'bedrock', 'openrouter',]
  * ```
  */
 export function otherProviders(

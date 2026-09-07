@@ -24,6 +24,7 @@ const KIMI = 'hf:moonshotai/Kimi-K3';
 const ONE_SYNTHETIC_SLOT = {
   synthetic: 1,
   hyper: Number.POSITIVE_INFINITY,
+  bedrock: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 
@@ -40,6 +41,7 @@ await describe({
         expect(ledger.saturated({ modelId: KIMI, },),).toEqual({
           synthetic: false,
           hyper: false,
+          bedrock: false,
           openrouter: false,
         },);
         ledger.take({
@@ -57,6 +59,7 @@ await describe({
         expect(ledger.saturated({ modelId: KIMI, },),).toEqual({
           synthetic: true,
           hyper: false,
+          bedrock: false,
           openrouter: false,
         },);
         expect(ledger.limits({ provider: 'synthetic', },),).toBe(true,);

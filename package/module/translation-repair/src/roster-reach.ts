@@ -1,3 +1,7 @@
+import {
+  BEDROCK_MODELS,
+  type BedrockServedId,
+} from './bedrock-catalog.ts';
 import type { ModelReach, } from './budget-routing.ts';
 import {
   HYPER_MODELS,
@@ -8,6 +12,7 @@ import {
   type OpenRouterServedId,
 } from './openrouter-catalog.ts';
 import {
+  BEDROCK_ONLY_ROSTER_IDS,
   HYPER_ONLY_ROSTER_IDS,
   type RosterModelId,
 } from './roster-id.ts';
@@ -34,6 +39,10 @@ import { PROVIDER_ORDER, } from './provider-name.ts';
 // THREE SPELLINGS SINCE 2026-09-03. `hf:moonshotai/Kimi-K3`, `kimi-k3` and
 // `moonshotai/kimi-k3` are one seat; the roster keeps the Synthetic spelling
 // and each provider's translation lives beside that provider's catalog.
+//
+// A FOURTH SPELLING SINCE 2026-09-07. Amazon Bedrock spells the shared seats
+// `google.gemma-4-26b-a4b` and `openai.gpt-oss-120b`, and adds two Gemma 4
+// sizes no other provider serves, which the roster names by that spelling.
 
 /**
  * Where one roster model can be reached on Charm Hyper.
@@ -90,6 +99,33 @@ export type OpenRouterSpelling =
   };
 
 /**
+ * Where one roster model can be reached on Amazon Bedrock.
+ *
+ * @example
+ * ```ts
+ * const served = bedrockIdFor({ modelId: 'gemma-4-26b-a4b-it', },);
+ * ```
+ */
+export type BedrockSpelling =
+  | {
+    /**
+     * Discriminator marking a model this provider serves.
+     */
+    readonly served: true;
+
+    /**
+     * Identifier to send, which differs from the roster's for shared models.
+     */
+    readonly id: BedrockServedId;
+  }
+  | {
+    /**
+     * Discriminator marking a model this provider does not serve.
+     */
+    readonly served: false;
+  };
+
+/**
  * Every model the roster seats, both catalogs' contributions unioned.
  *
  * ORDERED SYNTHETIC FIRST, then the models only the second provider serves, so
@@ -108,6 +144,7 @@ export const ROSTER_MODEL_IDS: readonly RosterModelId[] = [
       return info.id;
     },),
   ...HYPER_ONLY_ROSTER_IDS,
+  ...BEDROCK_ONLY_ROSTER_IDS,
 ];
 
 /**
@@ -164,6 +201,39 @@ export function openRouterIdFor(
    */
   const entry = Object
     .values(OPENROUTER_MODELS,)
+    .find(function serves(info,): boolean {
+      return info.sharedWith === modelId;
+    },);
+
+  if (entry === undefined)
+    return { served: false, };
+
+  return {
+    served: true,
+    id: entry.id,
+  };
+}
+
+/**
+ * How Amazon Bedrock spells one roster model, where it serves it at all.
+ *
+ * @param modelId - roster model to look up
+ *
+ * @returns Wire identifier, or that this provider does not serve it
+ *
+ * @example
+ * ```ts
+ * const spelling = bedrockIdFor({ modelId, },);
+ * ```
+ */
+export function bedrockIdFor(
+  { modelId, }: { readonly modelId: RosterModelId; },
+): BedrockSpelling {
+  /**
+   * Entry standing in for this roster seat, if this provider has one.
+   */
+  const entry = Object
+    .values(BEDROCK_MODELS,)
     .find(function serves(info,): boolean {
       return info.sharedWith === modelId;
     },);
@@ -271,9 +341,15 @@ export function reachOf(
    */
   const openrouter = openRouterIdFor({ modelId, },);
 
+  /**
+   * Bedrock's spelling, which is also whether it serves this model at all.
+   */
+  const bedrock = bedrockIdFor({ modelId, },);
+
   return {
     synthetic: synthetic.served,
     hyper: hyper.served,
+    bedrock: bedrock.served,
     openrouter: openrouter.served,
   };
 }
@@ -372,6 +448,37 @@ function openRouterShowsPictures(
 }
 
 /**
+ * Whether Amazon Bedrock will show one roster model a picture.
+ *
+ * @param modelId - roster model to look up
+ *
+ * @returns Whether this provider serves it AND its card reports image input
+ *
+ * @example
+ * ```ts
+ * const shows = bedrockShowsPictures({ modelId, },);
+ * ```
+ */
+function bedrockShowsPictures(
+  { modelId, }: { readonly modelId: RosterModelId; },
+): boolean {
+  /**
+   * Bedrock's spelling, which is also whether it serves this model at all.
+   */
+  const spelling = bedrockIdFor({ modelId, },);
+
+  if (!spelling.served)
+    return false;
+
+  /**
+   * What the model card reports about this model's modalities.
+   */
+  const { readsImages: shows, } = BEDROCK_MODELS[spelling.id];
+
+  return shows;
+}
+
+/**
  * Which providers can take a call carrying a picture for one roster model.
  *
  * NARROWER THAN {@link reachOf} AND DERIVED PER PROVIDER. A later catalog
@@ -392,6 +499,7 @@ export function visionReachOf(
   return {
     synthetic: syntheticShowsPictures({ modelId, },),
     hyper: hyperShowsPictures({ modelId, },),
+    bedrock: bedrockShowsPictures({ modelId, },),
     openrouter: openRouterShowsPictures({ modelId, },),
   };
 }

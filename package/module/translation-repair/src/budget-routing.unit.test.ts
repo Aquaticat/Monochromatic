@@ -55,6 +55,7 @@ const roomyQuota = {
 const everyReach = {
   synthetic: true,
   hyper: true,
+  bedrock: true,
   openrouter: true,
 } as const;
 
@@ -64,6 +65,7 @@ const everyReach = {
 const allWet = {
   synthetic: false,
   hyper: false,
+  bedrock: false,
   openrouter: false,
 } as const;
 
@@ -184,6 +186,15 @@ await describe({
             synthetic: true,
             hyper: true,
           },
+        },),).toBe('bedrock',);
+        expect(providerServing({
+          reach: everyReach,
+          dry: {
+            ...allWet,
+            synthetic: true,
+            hyper: true,
+            bedrock: true,
+          },
         },),).toBe('openrouter',);
         expect(providerServing({
           reach: {
@@ -197,6 +208,7 @@ await describe({
           dry: {
             synthetic: true,
             hyper: true,
+            bedrock: true,
             openrouter: true,
           },
         },),).toBe(NO_PROVIDER,);
@@ -265,6 +277,7 @@ await describe({
           dry: {
             synthetic: true,
             hyper: true,
+            bedrock: true,
             openrouter: false,
           },
           saturated: noneSaturated,
@@ -281,6 +294,7 @@ await describe({
           dry: {
             synthetic: false,
             hyper: true,
+            bedrock: true,
             openrouter: true,
           },
           saturated: {
@@ -300,6 +314,7 @@ await describe({
           dry: {
             synthetic: false,
             hyper: true,
+            bedrock: true,
             openrouter: false,
           },
           saturated: {
@@ -319,6 +334,7 @@ await describe({
             dry: {
               synthetic: true,
               hyper: true,
+              bedrock: true,
               openrouter: true,
             },
             saturated: noneSaturated,
@@ -336,11 +352,13 @@ await describe({
             reach: {
               synthetic: false,
               hyper: false,
+              bedrock: false,
               openrouter: false,
             },
             dry: {
               synthetic: true,
               hyper: true,
+              bedrock: true,
               openrouter: true,
             },
             saturated: noneSaturated,
@@ -357,6 +375,7 @@ await describe({
           reach: {
             synthetic: true,
             hyper: false,
+            bedrock: false,
             openrouter: false,
           },
           dry: allWet,
@@ -375,6 +394,7 @@ await describe({
           reach: {
             synthetic: false,
             hyper: true,
+            bedrock: true,
             openrouter: true,
           },
           dry: allWet,
@@ -391,6 +411,7 @@ await describe({
           reach: {
             synthetic: true,
             hyper: false,
+            bedrock: false,
             openrouter: false,
           },
           dry: {
@@ -410,6 +431,7 @@ await describe({
           reach: {
             synthetic: false,
             hyper: false,
+            bedrock: false,
             openrouter: false,
           },
           dry: allWet,
@@ -423,6 +445,7 @@ await describe({
           reach: {
             synthetic: true,
             hyper: false,
+            bedrock: false,
             openrouter: false,
           },
           dry: {

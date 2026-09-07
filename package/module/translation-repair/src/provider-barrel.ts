@@ -80,12 +80,7 @@ export {
 export {
   type BudgetView,
   createProviderBudgets,
-  type MeterLevel,
-  type MeterRecord,
-  meterRecordOf,
-  type MeterState,
   type ProviderBudgets,
-  routesAsDry,
 } from './provider-budget.ts';
 export {
   isProviderName,
@@ -111,11 +106,17 @@ export {
   type StreamWireFormat,
 } from './stream-wire-format.ts';
 export type {
+  BedrockOnlyRosterId,
   HyperOnlyRosterId,
   SyntheticServedId,
 } from './roster-id.ts';
-export { HYPER_ONLY_ROSTER_IDS, } from './roster-id.ts';
 export {
+  BEDROCK_ONLY_ROSTER_IDS,
+  HYPER_ONLY_ROSTER_IDS,
+} from './roster-id.ts';
+export {
+  bedrockIdFor,
+  type BedrockSpelling,
   hyperIdFor,
   type HyperSpelling,
   openRouterIdFor,
@@ -139,6 +140,8 @@ export {
   hyperMeterLevel,
   type ModelReach,
   NO_PROVIDER,
+  bedrockIsDry,
+  bedrockMeterLevel,
   openRouterIsDry,
   openRouterMeterLevel,
   type ProviderChoice,
@@ -266,5 +269,15 @@ export {
   type SeatTally,
   seatTallyClient,
 } from './seat-tally.ts';
+
+export {
+  type MeterLevel,
+  type MeterRecord,
+  meterRecordOf,
+  type MeterState,
+  readEveryMeter,
+  routesAsDry,
+  UNCONFIGURED_METER,
+} from './provider-meters.ts';
 
 //endregion Provider barrel

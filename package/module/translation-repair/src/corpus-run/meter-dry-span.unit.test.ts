@@ -48,6 +48,7 @@ function minuteByMinute(
   at: number;
   synthetic: 'wet' | 'dry' | 'unreadable';
   hyper: 'wet';
+  bedrock: 'absent';
   openrouter: 'absent';
   levels: readonly string[];
 }[] {
@@ -58,6 +59,7 @@ function minuteByMinute(
       hyper: 'wet' as const,
       // A record from before the third provider, which contributes no
       // reading to its series.
+      bedrock: 'absent' as const,
       openrouter: 'absent' as const,
       // Spans are arithmetic over states; what the meters read does not enter.
       levels: [],

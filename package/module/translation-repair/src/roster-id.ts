@@ -88,6 +88,35 @@ export const HYPER_ONLY_ROSTER_IDS = [
 export type HyperOnlyRosterId = typeof HYPER_ONLY_ROSTER_IDS[number];
 
 /**
+ * Roster models only Amazon Bedrock serves, spelled as that provider spells
+ * them for the reason the Hyper-only list gives: no other spelling exists.
+ * THE TWO GEMMA 4 SIZES THE OWNER APPROVED ON 2026-09-07 that no other
+ * provider serves; the third size and gpt-oss-120b are reached under seats
+ * the roster already names. Listed here is seatable, not seated: which roles
+ * they take is decided on evidence, as the roster calibration record has it.
+ *
+ * @example
+ * ```ts
+ * const everyone = BEDROCK_ONLY_ROSTER_IDS;
+ * ```
+ */
+export const BEDROCK_ONLY_ROSTER_IDS = [
+  'google.gemma-4-e2b',
+  'google.gemma-4-31b',
+] as const;
+
+/**
+ * Union of the models only Amazon Bedrock serves, derived from
+ * {@link BEDROCK_ONLY_ROSTER_IDS} for the reason the Hyper-only union gives.
+ *
+ * @example
+ * ```ts
+ * const modelId: BedrockOnlyRosterId = 'google.gemma-4-31b';
+ * ```
+ */
+export type BedrockOnlyRosterId = typeof BEDROCK_ONLY_ROSTER_IDS[number];
+
+/**
  * Every model this pipeline may seat, whoever serves it.
  *
  * @example
@@ -95,6 +124,6 @@ export type HyperOnlyRosterId = typeof HYPER_ONLY_ROSTER_IDS[number];
  * const modelId: RosterModelId = 'hf:moonshotai/Kimi-K3';
  * ```
  */
-export type RosterModelId = SyntheticServedId | HyperOnlyRosterId;
+export type RosterModelId = SyntheticServedId | HyperOnlyRosterId | BedrockOnlyRosterId;
 
 //endregion Roster identity

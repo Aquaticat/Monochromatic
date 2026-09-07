@@ -125,6 +125,7 @@ export class NoProviderForModelError extends Error {
 const DEFAULT_SLOT_LIMITS: SlotLimits = {
   synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY,
   hyper: Number.POSITIVE_INFINITY,
+  bedrock: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 
@@ -346,6 +347,24 @@ export function createRoutingClient(
      */
     const last: { refused: ProviderName | typeof NOBODY_REFUSED; } = { refused: NOBODY_REFUSED, };
 
+    /**
+     * Which providers serve this call at all. COUNTED OVER THE REACH RATHER
+     * THAN THE ORDER since 2026-09-07, when a fourth provider that serves
+     * few of the roster's models joined: a loop bounded by the order would
+     * ask once more after the last serving provider refused and end on a
+     * no-provider error instead of the refusal itself.
+     */
+    const reach = reachFor({ request, },);
+
+    /**
+     * How many of them serve this call.
+     */
+    const serving = PROVIDER_ORDER
+      .filter(function serves(candidate,): boolean {
+        return reach[candidate];
+      },)
+      .length;
+
     // ONE ATTEMPT PER PROVIDER AT MOST. The loop cannot be a `map`: each
     // decision depends on the refusal before it, and the last refusal is the
     // answer.
@@ -378,7 +397,7 @@ export function createRoutingClient(
           signal: request.signal,
           statedWaitMs: statedWaitMsOf({ error, },),
         },);
-        if (attempt === (PROVIDER_ORDER.length - 1))
+        if (attempt >= (serving - 1))
           throw error;
         rl.warn(`${request.modelId}: ${provider} refused us, asking the next provider`,);
         last.refused = provider;

@@ -19,6 +19,7 @@ import {
   openRouterProviderPreferencesFor,
   openRouterServesLabel,
   reachOf,
+  BEDROCK_ONLY_ROSTER_IDS,
   ROSTER_MODEL_IDS,
 } from '../dist/final/node/index.mjs';
 
@@ -37,8 +38,17 @@ await describe({
           .map(function seatOf(info,): string {
             return info.sharedWith;
           },);
-        expect(seats.toSorted(),).toEqual([...ROSTER_MODEL_IDS,].toSorted(),);
-        expect(new Set(seats,).size,).toBe(ROSTER_MODEL_IDS.length,);
+        /**
+         * Roster ids this provider can stand in for: everything but the two
+         * sizes only Bedrock serves.
+         */
+        const reachable = ROSTER_MODEL_IDS.filter(function notBedrockOnly(modelId,): boolean {
+          return !BEDROCK_ONLY_ROSTER_IDS.some(function isBedrockOnly(id,): boolean {
+            return id === modelId;
+          },);
+        },);
+        expect(seats.toSorted(),).toEqual([...reachable,].toSorted(),);
+        expect(new Set(seats,).size,).toBe(reachable.length,);
       },
     },),
 
@@ -46,8 +56,14 @@ await describe({
       name: 'REACHES every roster model, so a day with Synthetic and Hyper both dry still seats the '
         + 'whole roster',
       fn: async () => {
-        for (const modelId of ROSTER_MODEL_IDS)
+        // The two Gemma 4 sizes only Bedrock serves are reached there alone.
+        for (const modelId of ROSTER_MODEL_IDS) {
+          if (BEDROCK_ONLY_ROSTER_IDS.some(function isBedrockOnly(id,): boolean {
+            return id === modelId;
+          },))
+            continue;
           expect(reachOf({ modelId, },).openrouter,).toBe(true,);
+        }
       },
     },),
 

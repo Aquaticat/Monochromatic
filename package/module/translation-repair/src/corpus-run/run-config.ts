@@ -31,15 +31,11 @@ import {
   readsImages,
   ROSTER_MODEL_IDS,
 } from '../roster-reach.ts';
-import { createSyntheticClient, } from '../synthetic-client.ts';
 import type { ModelTransport, } from '../synthetic-transport.ts';
-import { createHyperClient, } from '../hyper-client.ts';
-import { createOpenRouterClient, } from '../openrouter-client.ts';
-import { hyperRequestsPerHour, } from '../request-pace.ts';
-import { createProviderBudgets, } from '../provider-budget.ts';
 import type { ProviderName, } from '../provider-name.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { promptPayloadStore, } from '../prompt-payload-store.ts';
+import { configureProviders, } from './run-providers.ts';
 import { promptUniqueClient, } from '../prompt-uniqueness-client.ts';
 import {
   createRoutingClient,
@@ -49,7 +45,6 @@ import {
   RUN_SEATS,
   seatTallyClient,
 } from '../seat-tally.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { QuotaSnapshot, } from '../synthetic-quota.ts';
 import { resolveGit, } from './git-command.ts';
 
@@ -61,36 +56,7 @@ import { resolveGit, } from './git-command.ts';
 // the gitignored durable dir `node_modules/.monochromatic/translation-repair-runs/`
 // (AGENTS.md TMP/NMD), never into git.
 
-/**
- * Raised when a setting a run depends on is absent from its environment.
- *
- * @example
- * ```ts
- * throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY', },);
- * ```
- */
-export class RunConfigError extends StatedRefusalError {
-  /**
-   * Declared here as well as inherited, so the source scan that keeps the
-   * marked-class inventory sees it: the message names a variable and a fix.
-   */
-  override readonly messageNamesOnly: true = true;
-
-  /**
-   * Builds refusal naming the variable that could not be read.
-   *
-   * @param variable - environment variable name a run cannot start without
-   *
-   * @example
-   * ```ts
-   * throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY', },);
-   * ```
-   */
-  public constructor({ variable, }: { readonly variable: string; },) {
-    super({ says: `${variable} is not set; run under mise so sops injects it`, },);
-    this.name = 'RunConfigError';
-  }
-}
+export { RunConfigError, } from './run-config-error.ts';
 
 /**
  * Directory of this source file, for locating the worktree via git.
@@ -920,84 +886,15 @@ export function createRunClient(
   },);
 
   /**
-   * Synthetic API key, resolved by name from the mise-injected env.
+   * Every configured provider's client and the budget view over them.
    */
-  const apiKey = process.env
-    .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
-    ?? '';
-  /**
-   * Second provider key,
-   * independently optional because either provider may run alone.
-   */
-  const hyperKey = process.env
-    .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
-    ?? '';
-  /**
-   * Third provider key, the paid fallback, optional for the same reason.
-   */
-  const openRouterKey = process.env
-    .TRANSLATION_REPAIR_OPENROUTER_API_KEY
-    ?? '';
-  /**
-   * Whether no provider at all is configured, which nothing can run on.
-   */
-  const noKeyAtAll = (apiKey === '')
-    && (hyperKey === '')
-    && (openRouterKey === '');
-  if (noKeyAtAll) {
-    throw new RunConfigError({
-      variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY '
-        + 'or TRANSLATION_REPAIR_OPENROUTER_API_KEY',
-    },);
-  }
-
-  /**
-   * Transport handed to configured clients,
-   * absent when production's fetch is meant.
-   */
-  const seam = (transport === undefined)
-    ? {}
-    : { transport, };
-
-  /**
-   * First provider client when configured.
-   */
-  const synthetic = (apiKey === '')
-    ? undefined
-    : createSyntheticClient({
-      apiKey,
-      ...seam,
-    },);
-
-  /**
-   * Second provider client when configured.
-   */
-  const hyper = (hyperKey === '')
-    ? undefined
-    : createHyperClient({
-      apiKey: hyperKey,
-      requestsPerHour: hyperRequestsPerHour({ env: process.env, },),
-      ...seam,
-    },);
-
-  /**
-   * Third provider client when configured.
-   */
-  const openrouter = (openRouterKey === '')
-    ? undefined
-    : createOpenRouterClient({
-      apiKey: openRouterKey,
-      ...seam,
-    },);
-
-  /**
-   * Shared budget view every provider is routed by.
-   */
-  const budgets = createProviderBudgets({
-    ...((synthetic === undefined) ? {} : { synthetic, }),
-    ...((hyper === undefined) ? {} : { hyper, }),
-    ...((openrouter === undefined) ? {} : { openrouter, }),
-  },);
+  const {
+    synthetic,
+    hyper,
+    bedrock,
+    openrouter,
+    budgets,
+  } = configureProviders((transport === undefined) ? {} : { transport, },);
 
   /**
    * Routed client with stable compatibility quota surface.
@@ -1007,6 +904,7 @@ export function createRunClient(
       callers: {
         synthetic: synthetic ?? unconfiguredProviderCaller({ provider: 'synthetic', },),
         hyper: hyper ?? unconfiguredProviderCaller({ provider: 'hyper', },),
+        bedrock: bedrock ?? unconfiguredProviderCaller({ provider: 'bedrock', },),
         openrouter: openrouter ?? unconfiguredProviderCaller({ provider: 'openrouter', },),
       },
       budgets,
@@ -1017,7 +915,7 @@ export function createRunClient(
   rl.debug(
     `provider configuration synthetic=${String(synthetic !== undefined,)} hyper=${
       String(hyper !== undefined,)
-    } openrouter=${String(openrouter !== undefined,)}`,
+    } bedrock=${String(bedrock !== undefined,)} openrouter=${String(openrouter !== undefined,)}`,
   );
 
   return {

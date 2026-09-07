@@ -65,6 +65,9 @@ const BYTE_OFFSET_OR_NOTHING = "(at === OFFSET_UNSTATED) ? '' : ` at byte $"
 const MARKED_CLASSES: readonly string[] = [
   'ArtifactParseError',
   'AssemblyContractError',
+  'BedrockCreditOverrideError',
+  'BedrockLedgerShapeError',
+  'BedrockModelNotServedError',
   'BlankSelectionError',
   'CallTimeoutError',
   'CheckerIndependenceError',
@@ -168,6 +171,8 @@ const NAMED_PARTS: Record<string, string> = {
   'String(overlap,)': 'count',
   'String(PASSING_BODY_BYTES,)': 'count',
   'variable': 'environment variable name',
+  'String(line,)': 'one-based line number in a file',
+  'BEDROCK_CREDIT_USD_VAR': 'environment variable name',
   'String(bodyBytes - PASSING_BODY_BYTES,)': 'count',
   'String(bodyBytes,)': 'count',
   'String(cap,)': 'count',

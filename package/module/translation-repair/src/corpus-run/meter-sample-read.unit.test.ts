@@ -45,6 +45,7 @@ await describe({
           at: Date.parse('2026-08-24T18:17:35.383Z',),
           synthetic: 'wet',
           hyper: 'dry',
+          bedrock: 'absent',
           openrouter: 'absent',
           levels: [],
         },);
@@ -66,6 +67,7 @@ await describe({
           at: Date.parse('2026-09-03T17:00:00.000Z',),
           synthetic: 'dry',
           hyper: 'wet',
+          bedrock: 'absent',
           openrouter: 'wet',
           levels: [
             'syntheticWeekly=0%',
@@ -91,6 +93,7 @@ await describe({
           at: Date.parse('2026-08-24T10:00:00.000Z',),
           synthetic: 'unreadable',
           hyper: 'wet',
+          bedrock: 'absent',
           openrouter: 'absent',
           levels: [],
         },);
@@ -111,6 +114,7 @@ await describe({
           at: Date.parse('2026-08-24T19:00:00.000Z',),
           synthetic: 'wet',
           hyper: 'dry',
+          bedrock: 'absent',
           openrouter: 'absent',
           levels: [
             'syntheticWeekly=97%',
@@ -136,6 +140,7 @@ await describe({
           at: Date.parse('2026-08-24T19:00:00.000Z',),
           synthetic: 'wet',
           hyper: 'wet',
+          bedrock: 'absent',
           openrouter: 'absent',
           levels: ['hyperResetsAt=03:00',],
         },);
