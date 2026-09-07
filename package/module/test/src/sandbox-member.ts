@@ -39,7 +39,7 @@ export function collectionFakes({
       'value',
       'get',
       'set',
-    ] as const).flatMap(function collectDescriptorFake(field,): object[] {
+    ] as const).flatMap(function collectDescriptorFake(field: keyof PropertyDescriptor,): object[] {
       /**
        New members may be data methods or accessor spies.
        */
