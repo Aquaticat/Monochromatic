@@ -29,6 +29,12 @@ Its consumers in `module-test`,
 `module-toml-edit`,
 and `dev-script-watch-restart` keep working through workspace links;
 `module-test` stays blocked on the private `module-fs-path` until that package gets the same treatment.
+`module-fs-path` followed on 2026-09-07 (`doc/planning/module-fs-path-release.md`),
+ after a platform split that mirrors the logger's;
+`module-test` then waits on `module-async-time`,
+ `module-caught-value`,
+ `module-const`,
+ and `module-numeric-format`.
 
 ### Versioning and publishing tool: changesets
 

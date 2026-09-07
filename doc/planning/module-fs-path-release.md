@@ -1,7 +1,10 @@
 # module-fs-path first npm release
 
 Status:
- in progress (2026-09-07).
+ done (2026-09-07);
+ 0.1.0 is published,
+ the trusted publisher exists,
+ and the release is tagged.
 Owner decisions from the release grilling are recorded here as they land;
  this file is canonical for the release.
 Mechanism and prior art:
@@ -255,3 +258,34 @@ After this release,
    `/ts` refused with `ERR_PACKAGE_PATH_NOT_EXPORTED`.
    The consumer's fixture put `[monorepo]` on line 1 of `mise.toml` and the finder missed it (the marker required a newline before the header):
    fixed in `a7876a2a2` with three regression cases.
+
+## Result (2026-09-07)
+
+- `@monochromatic-dev/module-fs-path@0.1.0` is on the registry
+   (`npm view` prints the version and a `registry.npmjs.org` tarball URL);
+   published from a linked worktree of the version branch with `npm publish --otp`,
+   no provenance.
+- The owner registered the trusted publisher for `npm-release.yml` from their own terminal
+   (`npm trust github` needs browser web authentication;
+   `npm trust list` too,
+   so the registration is verified by the next CI publish rather than here).
+- Version pull request #499 merged as `3e46e38df`;
+   the release run it triggered (34111678810) found nothing to version or publish;
+   tag and GitHub release `@monochromatic-dev/module-fs-path@0.1.0` created through the API on the merge commit.
+- A throwaway Node 26 project installed 0.1.0 from the registry and ran the mise finder,
+   `ensureDir`,
+   and `findPackageRootCached`;
+   `/ts` refused with `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+- Runbook amended with the linked-worktree checkout,
+   `--otp`,
+   the web-auth constraint on `npm trust`,
+   and the changeset-with-manifest ordering.
+
+## Next action
+
+None for this release.
+The next changeset merged to `main` for this package exercises the CI publish path with provenance for the first time and proves the trusted publisher.
+`module-test` still waits on `module-async-time`,
+ `module-caught-value`,
+ `module-const`,
+ and `module-numeric-format`.
