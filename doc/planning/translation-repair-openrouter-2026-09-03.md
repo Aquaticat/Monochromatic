@@ -3445,6 +3445,41 @@ Hyper answered nothing from 17:00 to 19:54,
 and four consolidation chunks settled on nobody;
 the roster that judged this page is not the roster a production pass would have.
 
+## The first hakureico launch, 2026-09-07, 21:00 UTC, on the four-provider build
+
+Class twelve and the fourth provider fast-forwarded onto `translation-repair-rebased` at 20:55 UTC
+(`263b7ca73`),
+the four doc records followed (`c2b8103a5`, `a97f39183`),
+and the run-config refusal cases learned to clear the fourth key as they had learned the third on 2026-09-03
+(`ee577ee0c`;
+the merged tree's full suite had read 5 `FAIL` on exactly those cases in this worktree,
+whose secrets file carries the key,
+and 0 after).
+Types clean,
+oxlint 0 and 0,
+947 `PASS` with those four.
+`budget-sample` at 21:00 read every meter wet:
+Synthetic 0.97 percent of the week,
+Hyper 828,
+Bedrock 200.00 USD off an empty ledger,
+OpenRouter 0.01 USD.
+
+`hakureico` launched at 21:00:35 UTC on `ee577ee0c`,
+pipeline `80958d2c`,
+plain invocation,
+fresh runs dir `~/temp/agent/hakureico1-20260907`,
+log beside it,
+pid 3692614.
+The second footnote carrier after Huasheng,
+chosen over the math pair for the footnote observation on the fourth Huasheng page.
+The first pass with Bedrock in the order:
+its two seats (`gemma-4-26b-a4b-it` and `hf:openai/gpt-oss-120b`) route there once Synthetic dries,
+which at 0.97 percent is soon,
+and the ledger writes its first lines.
+The reading follows:
+the footnotes first,
+then the Bedrock seats' `SPEND` lines and the ledger's sum against the `METERS` line.
+
 ## Build plan, transport-independent layers first
 
 In commit order,
