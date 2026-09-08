@@ -77,14 +77,6 @@ export function relabelArchiveFootnotes(
    * What the slices say about the labels.
    */
   const reading = footnoteRelabelOf({ slices, },);
-  if (reading.kind === 'unchanged') {
-    l.debug(`${relabelArchiveFootnotes.name}: entry ${entryId} archive footnote labels agree with the original's`,);
-    return {
-      archiveText,
-      changed: false,
-      findings: [],
-    };
-  }
   if (reading.kind === 'ambiguous') {
     l.warn(
       `FOOTNOTES entry=${entryId} archive labels stand, since the slices disagree: ${reading.detail}`,
@@ -93,6 +85,22 @@ export function relabelArchiveFootnotes(
       archiveText,
       changed: false,
       findings: [ `footnotes: archive labels stand, since the slices disagree: ${reading.detail}`, ],
+    };
+  }
+  /**
+   * Findings for the slices the reading left out, each logged as it is.
+   */
+  const skippedFindings = reading.skipped
+    .map(function toFinding(detail,): string {
+      l.warn(`FOOTNOTES entry=${entryId} left out of the relabel reading: ${detail}`,);
+      return `footnotes: left out of the relabel reading: ${detail}`;
+    },);
+  if (reading.kind === 'unchanged') {
+    l.debug(`${relabelArchiveFootnotes.name}: entry ${entryId} archive footnote labels agree with the original's`,);
+    return {
+      archiveText,
+      changed: false,
+      findings: skippedFindings,
     };
   }
   /**
@@ -112,7 +120,10 @@ export function relabelArchiveFootnotes(
       map: reading.map,
     },),
     changed: true,
-    findings: [ `footnotes: archive relabelled ${spelled} to follow the original's labels`, ],
+    findings: [
+      ...skippedFindings,
+      `footnotes: archive relabelled ${spelled} to follow the original's labels`,
+    ],
   };
 }
 

@@ -28,9 +28,11 @@ import {
 // READ OFF THE PAIRED SLICES, positionally. Within one slice the original and
 // the archive carry the same passage, so the k-th distinct marker on one side
 // is the k-th on the other. A slice whose two sides carry different counts of
-// distinct markers, or two slices that disagree about one label, leave the
-// archive as it is with a warning: a wrong relabel would be the defect this
-// exists to stop.
+// distinct markers says nothing about the labels (the archive dropped or added
+// a note there, which the lanes see as the fidelity defect it is; hakureico's
+// archive carries no [^2] at all) and is left out of the reading, named. Two
+// slices that disagree about one label leave the archive as it is with a
+// warning: a wrong relabel would be the defect this exists to stop.
 
 /**
  * One label the archive carries and the original's label for the same note.
@@ -70,11 +72,21 @@ export type FootnoteRelabelReading = {
    * Labels to rewrite, only the ones that change.
    */
   readonly map: readonly FootnoteRelabel[];
+
+  /**
+   * Slices left out of the reading, each with why.
+   */
+  readonly skipped: readonly string[];
 } | {
   /**
    * The labels already agree, or no slice carries a marker on both sides.
    */
   readonly kind: 'unchanged';
+
+  /**
+   * Slices left out of the reading, each with why.
+   */
+  readonly skipped: readonly string[];
 } | {
   /**
    * The slices disagree, so the archive stands as it is.
@@ -238,6 +250,11 @@ export function footnoteRelabelOf(
    * Original label to the archive's, so two archive labels cannot claim one.
    */
   const backward = new Map<string, string>();
+
+  /**
+   * Slices that said nothing about the labels, each with why.
+   */
+  const skipped: string[] = [];
   for (const slice of slices) {
     if (isInsertionChunk(slice.target,))
       continue;
@@ -264,13 +281,14 @@ export function footnoteRelabelOf(
     );
     if ((original.length === 0) && (archive.length === 0))
       continue;
-    if (original.length !== archive.length)
-      return {
-        kind: 'ambiguous',
-        detail: `slice ${sliceIndex} references ${String(original.length,)} distinct notes in the original and ${
+    if (original.length !== archive.length) {
+      skipped.push(
+        `slice ${sliceIndex} references ${String(original.length,)} distinct notes in the original and ${
           String(archive.length,)
         } in the archive`,
-      };
+      );
+      continue;
+    }
     for (const [at, from,] of archive.entries()) {
       /**
        * The original's label at the same position.
@@ -327,10 +345,14 @@ export function footnoteRelabelOf(
       };
     },);
   if (map.length === 0)
-    return { kind: 'unchanged', };
+    return {
+      kind: 'unchanged',
+      skipped,
+    };
   return {
     kind: 'relabel',
     map,
+    skipped,
   };
 }
 
