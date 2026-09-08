@@ -1,8 +1,8 @@
 # module-fs-path deepening: the walker and its filesystem seam become the interface
 
 Status:
- code landed (2026-09-08);
- waiting on the CI publish of 0.2.0.
+ done (2026-09-08);
+ `@monochromatic-dev/module-fs-path@0.2.0` is on the registry.
 Owner decisions from the architecture grilling are recorded here as they land;
  this file is canonical for the change.
 Mechanism for the release that follows:
@@ -253,10 +253,21 @@ Mapping:
    Unrelated to this change;
    mechanism in `doc/troubleshooting/mise-action-version-ahead-of-release.md`,
    workflow-level fix tracked as #506.
+- The release asset for `v2026.9.3` answered 200 at about 13:57Z;
+   the rerun of 34228368589 succeeded and opened #507 (`chore(*): version packages`),
+   squash-merged as `c9bb16793` the way #499 and #489 were.
+   Run 34235495820 for that commit published through the trusted publisher (success at 14:03Z);
+   `npm view` reports `0.2.0` under `latest`,
+   and the tag `@monochromatic-dev/module-fs-path@0.2.0` exists.
+   Consumer check of the published tarball in a temporary `npm install` directory:
+   `findRoot` with `MISE_MONOREPO` found a root through a CRLF header with a trailing comment,
+   `findRootCached` returned the same promise result twice,
+   `packageNamed` over `createMemoryRootFilesystem` found `/m`,
+   a git miss rejected with `RootNotFoundError` carrying `marker` and `startDir`,
+   and `ensureDir` loaded from the `./node` entry;
+   both `dist/final/neutral` and `dist/final/node` ship.
 
 ## Next action
 
-Rerun the failed `npm-release.yml` run once `v2026.9.3` has assets
- (`gh run rerun --failed 34228368589`),
- then merge the "Version Packages" pull request it opens;
- the merge publishes 0.2.0 through the trusted publisher.
+None for this change.
+Follow-ups live in GitHub issues #500 to #506.

@@ -118,7 +118,8 @@ Patterns that fail:
 - Any job during a window where the second command prints `404`
    (2026-09-08,
    `2026.9.3`,
-   from at least 12:50Z through 13:05Z).
+   from at least 12:50Z until the asset answered 200 at about 13:57Z,
+   polled once a minute).
 
 Patterns that work:
 
