@@ -367,6 +367,12 @@ CXD:
 Preserve content space;
 never rely on color or shape alone.
 
+PFG:
+ Minimum padding or spacing is a hard floor.
+Test fit at that floor;
+reflow or truncate permitted content when it fails.
+Never introduce a below-minimum compact fallback.
+
 QVM:
  Design matrix includes pros,
 cons,

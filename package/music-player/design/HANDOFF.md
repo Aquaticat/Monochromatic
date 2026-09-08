@@ -3423,3 +3423,16 @@ cleared exact form is active and non-minimized in normal Helium at KWin ID
  1080 × 1880.
  Activate
 that window as the final operation and wait for the user's review.
+
+The user corrected the one-row padding rule:
+ 12dp is the minimum,
+ not a first attempt
+that may fall to 6dp.
+ The 100% one-row capture and every active statement permitting
+6dp are therefore invalid.
+ The normal review was closed immediately.
+ Remove the compact
+one-row and compact two-row branches,
+ rebuild at a strict 12dp minimum,
+ and remeasure
+every Settings preset plus the long-name diagnostic before reopening the form.
