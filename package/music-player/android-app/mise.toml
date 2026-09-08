@@ -160,7 +160,7 @@ depends = ["prototype:build"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
 [tasks."prototype:capture"]
-description = "Install and capture accepted screen 3B at 50%, 75%, 100%, 150%, and 200% text scales"
+description = "Install and capture accepted screen 3B at every user-facing Android text scale"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 shell = "node --input-type=module-typescript -e"
@@ -180,10 +180,12 @@ const candidate = "cue-container-tonal";
 const renderDirectory = resolve("../design/questions/render");
 const evidenceDirectory = resolve("../design/questions/evidence");
 const scales = [
-  { value: "0.5", label: "050", scrollDeck: false },
-  { value: "0.75", label: "075", scrollDeck: false },
+  { value: "0.85", label: "085", scrollDeck: false },
   { value: "1.0", label: "100", scrollDeck: false },
-  { value: "1.5", label: "150", scrollDeck: false },
+  { value: "1.15", label: "115", scrollDeck: false },
+  { value: "1.30", label: "130", scrollDeck: false },
+  { value: "1.50", label: "150", scrollDeck: false },
+  { value: "1.80", label: "180", scrollDeck: true },
   { value: "2.0", label: "200", scrollDeck: true },
 ];
 const themeCustomization = execFileSync(
