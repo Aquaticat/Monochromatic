@@ -960,11 +960,70 @@ KWin reported it active and non-minimized on `DP-3`.
 The earlier `promises-shop-present` window and its possible user work were left untouched.
 This is an interim view; reference-chat changes and final verification remain pending.
 
+## Reference-chat correction in progress
+
+`proc_8820` reproduced the reference download's send lock with an actual native Send activation:
+`The reference chat must allow another send in the same conversation while a reply is pending`,
+`true !== false`.
+
+The scratch `chat-ui.mjs` now replaces only the retained interface module during assembly.
+Every send captures its message and owns a fresh controller.
+Each conversation keeps a list of pending controllers, rather than one replaceable controller slot.
+Completion filters out only its own controller.
+Stop aborts the current list in that conversation, while another conversation and subsequently started sends remain independent.
+Send is not disabled by pending replies. The explicit demonstration send-count bound remains.
+
+The input clears only when a message is accepted.
+Per-message progress receipts remain attached to the originating sent message;
+incoming replies append when received, rather than occupying a future reply slot in the history.
+The pending count is distinct from the latest operation event and from input-validation feedback.
+This separation prevents another send's progress from hiding a refused blank or over-bound input.
+The existing reset generation still prevents old continuations and notes from entering the new experiment.
+
+A labelled `Reset and send example messages` control clears the experiment and starts two sends in A and one in B.
+It is lesson equipment, not a normal chat gesture, and removes the need for a timing race in the reference demonstration.
+The existing conversation-level Stop is now labelled `Stop pending sends` to disclose its expanded pending-work scope.
+It does not remove already displayed messages or replies.
+The downstream fixture's one-reply-per-successful-send contract is distinguished from general chat behavior.
+
+`proc_9dac` passed the earlier behavior checks but failed when verifier probes redeclared `card`
+in the page evaluation context: `SyntaxError: Identifier 'card' has already been declared`.
+The caller probes now use invocation-local declarations. This is not a lesson or third-party patch.
+`proc_08c8` then passed the focused reference checks in 13 seconds.
+
+Advisor identified missing out-of-order and stale-generation checks, not teaching acceptance.
+`reference-routing-probe.mjs` temporarily replaces the policy runner only in a disposable exported page:
+it controls settlement order, checks per-message association, preserves the unsent draft,
+stops an unfinished send without changing a fulfilled send or another conversation,
+and delivers a late note and settlement after reset.
+An old-generation note visibly appears before reset as a positive control;
+after reset, the old continuation leaves the current event record unchanged.
+The real runner is restored before later checks.
+`proc_1c52` passed the expanded focused suite in 16 seconds.
+These controlled checks isolate UI ownership; they do not replace the real rate/retry/deadline tests.
+
+Capstone source comments and hints now require multiple pending sends with per-send controllers.
+The cancellation/deadline task descriptions explicitly identify their single-operation scope.
+The destination exercise documents appending `sendFirst(); sendSecond();` and running the preview,
+so observing its ownership defect does not require quick button clicks.
+The advanced verifier is being updated to exercise those literal documented calls.
+Printed task/hint/source material is generated from those same exercise definitions.
+
+`proc_235c` stopped before writing output because new workshop-text patches were applied to the backend fragment,
+which does not contain the workshop runtime. The strict unique-match guard caught the boundary error.
+The metadata patches now belong in `revisedLesson`; template/UI/starter patches remain in `independentBackend`.
+`proc_e6f6` passed the rebuilt reference and advanced/workshop checks in 87 seconds,
+producing a 422,859-byte artifact.
+The disposable clear-all-controllers mutant was rejected by the fresh-send ownership assertion;
+the authored guard was never removed.
+The run also exercised the documented paired destination calls, real success/failure/retry/deadline paths,
+Stop during gate/request/backoff, separate conversation ownership, source downloads, and an isolated error channel.
+
 ## Next action
 
-Correct and regress the downstream reference-chat send lock without reintroducing it through cancellation ownership.
-Keep per-send outcomes and drafts independent within each conversation.
-Then verify the combined artifact and exports/print, finish the visible handoff, and resume user critique.
+Finish the current reference/workshop checks, then verify the combined artifact and exports/print.
+Inspect the final rendered state and preserve the user's existing windows and drafts during handoff.
+Resume critique of that concrete artifact afterward.
 The final teaching skill remains unconfirmed and unimplemented.
 Continue discovery from the user's critique of the visibly revised Promise toy.
 Do not replace that critique with another acceptance checklist or an inference from passing tests.
