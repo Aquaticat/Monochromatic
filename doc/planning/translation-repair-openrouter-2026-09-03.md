@@ -4450,6 +4450,70 @@ which the sixth pass ran short of quorum from slice 3,
 then the footnotes,
 then every seats line and any shortfall line.
 
+### The writing-bench floor, built in the throwaway while the ninth pass runs, 11:50 UTC
+
+Built on branch `translation-repair-class15` in `~/temp/agent/tr-class15-20260908`
+(commit `5ac7b6f49` on `1ddbcc75a`),
+so the running worktree's source does not move under the ninth pass;
+merged into `translation-repair-rebased` after that pass settles.
+
+THE SHAPE:
+
+-   `run-seats-floor.ts` (new):
+    `WRITING_BENCHES` (editors,
+    refiners,
+    translators),
+    `WRITING_BENCH_FLOOR = 2`
+    (the pair a slate needs,
+    the same number the readers are held to),
+    `WritingBenchUnreachableError` (`messageNamesOnly`,
+    as the visual-evidence stop),
+    `benchesOf({ seats })` naming every bench the readings look at,
+    and `unreachableWritingBenches({ benches, names, dry })` returning clauses like
+    `editors 0 of 3 reachable, floor 2`.
+-   `run-seats-wait.ts`:
+    `BenchName` gains `editors` and `refiners`,
+    and the lanes phase leans on wide,
+    editors,
+    refiners and translators.
+    The quorum clauses keep their majority threshold,
+    so the thirteenth class's wait is unchanged:
+    a bench short of its majority under a named hold still waits.
+-   `run-seats-read.ts`:
+    every phase reading computes both the quorum shortfall and the floor shortfall.
+    With no hold,
+    a judge bench short of quorum runs and says so (as since `c4a9682fe`),
+    and a writing bench below the floor throws the error,
+    which the entry queue records as INCOMPLETE
+    (`stage-local work remains; whole entry will not restart in this invocation`).
+    Under a hold the reading waits once,
+    reads again,
+    and throws if a writing bench is still below the floor.
+    The per-chunk reading still costs nothing while nothing is held,
+    so a bench lost inside a phase with no hold finishes the phase,
+    as the sixth pass did;
+    that case is recorded as unsettled in the decision.
+-   Tests:
+    `run-seats-floor.unit.test.ts` (new,
+    the eighth pass's view at the lanes and the translate lane,
+    nothing at consolidation or the pictures,
+    the error's message),
+    two cases in `run-seats-read.unit.test.ts`
+    (stop with nothing to wait for;
+    wait once then stop,
+    or seat when the wait brought the bench back),
+    and the lanes clauses in `run-seats-wait.unit.test.ts` now name editors and refiners.
+    Guards neutralised 2,
+    2,
+    2 and 3 `FAIL`;
+    restored 0.
+
+WHAT THE EIGHTH PASS WOULD HAVE DONE ON THIS BUILD:
+stopped at 02:21:13 at the lanes reading with
+`writing bench unreachable at lanes: editors 0 of 3 reachable, floor 2; refiners 0 of 3 reachable, floor 2;`
+`translators 1 of 7 reachable, floor 2`,
+after its pictures and for the Bedrock cost of the pairing and the pictures alone.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
