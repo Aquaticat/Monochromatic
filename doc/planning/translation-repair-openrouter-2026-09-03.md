@@ -5554,6 +5554,54 @@ slice 7 still named as left out (the archive carries no `[^2]`),
 no definition moved,
 the seal as before.
 
+## The relabel must close over the archive's labels, 2026-09-08, 22:42 UTC
+
+The fourth `yuki418330012` launch (`e5ff6c4f8`,
+22:36 UTC) showed the pairing whole again
+(`paired 6 of 8 original and 10 of 12 translation blocks across 10 relations, from 8 usable voices of 9 heard`,
+the one refusal `google.gemma-4-e2b returned an unusable pairing: pairing pairs a footnote definition with a
+body block at position 5`,
+the right refusal)
+and then a relabel bug:
+`FOOTNOTES entry=yuki418330012 relabelled [^2]->[^1] off the definitions the roster paired`,
+one pair,
+not two.
+The roster agreed on the sister's definitions (`[^1]` in the original,
+`[^2]` in the archive) and not on the parent's,
+so the map moved the archive's `[^2]` onto `[^1]` and said nothing about the archive's own `[^1]`,
+and the rewrite gave the archive two `[^1]` notes.
+A map whose target label the archive already carries must also move that label away,
+or it is a merge.
+Fixed in `2da6e7f22` (`archive-footnote-closure.ts`):
+`documentLabels` lists every distinct label a text carries,
+references and definition openers alike;
+`closeFootnoteRelabel` completes the one pair elimination forces
+(exactly one label left unmapped on each side and not the identity)
+and refuses as open any map that lands on a label the archive carries and does not move,
+naming the labels and how many stand unaccounted for on each side;
+the pass applies only a closed map,
+skips the reorder when the map is open,
+and logs
+`FOOTNOTES entry=<id> archive labels stand, since the map read off <basis> does not close: ...`.
+The suite failed first (`does not provide an export named 'closeFootnoteRelabel'`),
+then passed;
+full suite 975 `PASS` and 0 `FAIL`,
+oxlint and types clean.
+The sixteenth `hakureico`,
+the fourth `yuki418330012` and the first `Arita` (launched 22:38 UTC beside them,
+the next entry in the queue) were killed at 22:39 UTC under the rule,
+and the seventeenth `hakureico` (`~/temp/agent/hakureico17-20260908`,
+pid 500384),
+the fifth `yuki418330012` (`~/temp/agent/yuki5-20260908`,
+pid 501073) and the second `Arita` (`~/temp/agent/arita2-20260908`,
+pid 501893) launched at 22:42 UTC on `2da6e7f22`,
+each watched by the filtered poller.
+What `yuki418330012`'s log must show:
+`relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired`
+(the second pair by elimination where the roster agrees on one),
+`definitions moved into the original's order: [^1], [^2]`,
+and a re-preparation whose section pairs both definitions in order.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

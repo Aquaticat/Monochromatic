@@ -1875,7 +1875,8 @@ since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
 Since `1ba94c27a`,
-corrected by `ea07a1512` and completed by `e5ff6c4f8` (2026-09-08,
+corrected by `ea07a1512`,
+completed by `e5ff6c4f8` and closed by `2da6e7f22` (2026-09-08,
 the nineteenth class) the archive's footnotes follow the original's before any lane reads a slice:
 the block pairing treats footnote definitions as order-free blocks
 (`readBlockPairing` takes their indices as `freeOrder` and reads its never-backwards rule over body pairs alone;

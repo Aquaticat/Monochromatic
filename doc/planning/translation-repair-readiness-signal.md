@@ -1305,3 +1305,10 @@ the map is read off the paired definitions,
 the archive's definitions move into the original's order);
 the sixteenth `hakureico` and the fourth `yuki418330012` run on it since 22:36 UTC,
 and their pages are what the reading waits on.
+
+The fourth `yuki418330012` launch then showed the relabel applying a partial map (one definition pair agreed,
+two `[^1]` notes on the archive);
+`2da6e7f22` closes the map over the archive's labels first,
+completing the one pair elimination forces and standing otherwise.
+The seventeenth `hakureico`,
+the fifth `yuki418330012` and the second `Arita` run on it since 22:42 UTC.

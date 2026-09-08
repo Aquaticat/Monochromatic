@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 22:40 UTC on 2026-09-08 the tree is `e5ff6c4f8`:
+As of 22:45 UTC on 2026-09-08 the tree is `2da6e7f22`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -38,7 +38,7 @@ the `yuki418330012` page settled on `bb04656ef` at 21:22 UTC and read
 the nineteenth class found,
 two community-slang regressions found;
 see "The nineteenth class" and "The glossary question"),
-the nineteenth class fixed in three steps
+the nineteenth class fixed in four steps
 (`1ba94c27a`,
 the archive's footnote labels follow the original's before any lane reads a slice;
 `ea07a1512`,
@@ -46,8 +46,11 @@ a count mismatch leaves the slice out instead of aborting the reading;
 `e5ff6c4f8`,
 footnote definitions are order-free in the block pairing,
 the map is read off the definitions the roster paired,
-and the archive's definitions move into the original's order),
-and the sixteenth `hakureico` and the fourth `yuki418330012` running on `e5ff6c4f8` since 22:36 UTC;
+and the archive's definitions move into the original's order;
+`2da6e7f22`,
+a relabel is closed over the archive's labels before it is applied),
+and the seventeenth `hakureico`,
+the fifth `yuki418330012` and the second `Arita` running on `2da6e7f22` since 22:42 UTC;
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -944,6 +947,21 @@ full suite 973 `PASS` and 0 `FAIL`.
 Recorded in the planning log under
 "The nineteenth class's second face where the crossing definitions starve the pairing".
 
+The fourth `yuki418330012` launch (`e5ff6c4f8`,
+22:36 UTC) paired whole again (8 usable voices of 9,
+the one refusal a definition paired with a body block,
+the right refusal) and then showed a relabel bug:
+the roster agreed on one of the two definition pairs,
+the map moved the archive's `[^2]` onto `[^1]` and said nothing about the archive's own `[^1]`,
+and the archive came out with two `[^1]` notes.
+Fixed in `2da6e7f22` (`archive-footnote-closure.ts`):
+`closeFootnoteRelabel` completes the one pair elimination forces
+(exactly one label left unmapped on each side)
+and refuses as open any map that lands on a label the archive carries and does not move;
+the pass applies only a closed map and logs why the archive stands otherwise.
+Full suite 975 `PASS` and 0 `FAIL`.
+Recorded in the planning log under "The relabel must close over the archive's labels".
+
 ## The glossary question
 
 The same page rendered two community terms wrongly where the archive had them right:
@@ -1016,16 +1034,20 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Two passes are running on `e5ff6c4f8`,
-    launched 22:36 UTC on 2026-09-08 on Bedrock and OpenRouter:
-    the sixteenth `hakureico`,
-    runs dir `~/temp/agent/hakureico16-20260908`,
+1.  Three passes are running on `2da6e7f22`,
+    launched 22:42 UTC on 2026-09-08 on Bedrock and OpenRouter:
+    the seventeenth `hakureico`,
+    runs dir `~/temp/agent/hakureico17-20260908`,
     log beside it,
-    pid 489831;
-    and the fourth `yuki418330012`,
-    runs dir `~/temp/agent/yuki4-20260908`,
+    pid 500384;
+    the fifth `yuki418330012`,
+    runs dir `~/temp/agent/yuki5-20260908`,
     log beside it,
-    pid 489956.
+    pid 501073;
+    and the second `Arita`,
+    runs dir `~/temp/agent/arita2-20260908`,
+    log beside it,
+    pid 501893.
     Each is watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit.
@@ -1043,13 +1065,17 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     `yuki418330012`,
     the second pairing round with every voice usable and
     `block-pairing section 1: the footnote definitions cross` in the log,
-    `FOOTNOTES entry=yuki418330012 relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired`,
+    `FOOTNOTES entry=yuki418330012 relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired`
+    (the second pair by elimination where the roster agrees on one),
     `FOOTNOTES entry=yuki418330012 definitions moved into the original's order: [^1], [^2]`,
-    a re-preparation whose section pairs the definitions in order,
+    a re-preparation whose section pairs both definitions in order,
     `Zhouzhou[^2]` above `[^2]: ... substitute parent` and `Zhenli[^1]` above `[^1]: ... sister` on the page,
     `pageSilent=0` or the silent block named,
-    and whether `自切` and `超天酱` regress again.
-    If the tree moves past `e5ff6c4f8` while either runs,
+    and whether `自切` and `超天酱` regress again;
+    `Arita`,
+    the double-quoted-path component this entry exercises,
+    the first page to meet it.
+    If the tree moves past `2da6e7f22` while any runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
