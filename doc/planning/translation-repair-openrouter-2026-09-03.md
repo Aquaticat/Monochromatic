@@ -3923,6 +3923,149 @@ no 60 s cycle),
 and whether Hyper's next daily-limit hold is waited out at a chunk boundary
 (`short of quorum` then `chunk resumes`).
 
+## The sixth pass settles; the second footnote page, 2026-09-08, 00:38 UTC
+
+`TALLY hakureico status=SETTLED slices=18` at 00:38:13,
+`repairIssues=181 repairAccepted=114 repairResolved=109 repairFindings=279 repairChanged=13`,
+`translateChanged=16 documentsDiffer=18 pageChanged=16 pageSilent=0 alignmentFindings=5 selection=contested`,
+`ms=3610303`:
+60.2 minutes,
+zero `[error]` lines,
+`verify-published` matched 1 of 1 at the length the artifact implies.
+The page is `~/temp/agent/hakureico6-20260907/fixed/people/hakureico/page.en.md`,
+195 lines against the archive's 157,
+on tip `49aca5770` and pipeline `6bb40f9b`.
+
+### The footnotes, read first
+
+Both on the page and both defined.
+`Mayday[^1]` sits on the "In May" sentence,
+`HOSTED__WITH__GAE[^2]____` on the last line of the transponder blockquote,
+and the definitions are the page's last two lines:
+`[^1]` names the internationally used radio distress signal,
+which from an aircraft usually signals an extreme emergency requiring immediate rescue,
+and `[^2]` reads `That is, Google App Engine`.
+The third pass had shipped this page without them for the thirteenth class's reason;
+this is the first hakureico page that carries them,
+and the second read page with a footnote after `TLL1122`.
+
+### The seats lines
+
+Six,
+one per phase,
+every one `waited=0ms`;
+no `short of quorum`,
+no `chunk resumes`,
+no `names its return`:
+Hyper's daily limit did not close during the pass,
+so the thirteenth class had nothing to wait for.
+Synthetic read wet at one reading of the six,
+`phase=lanes` at 23:43,
+where the bench was whole
+(`wide=8 select=8 late=9 slate=9 checkers=3 translators=7 readers=4 writers=9 roster=10 withheld=none`);
+the other five read it dry with the two Hyper-slow judges withheld
+(`wide=7 select=6 late=8 slate=7 checkers=3 translators=6 readers=3 writers=8 roster=9`).
+The phases by their readings:
+preparation 23:38:03,
+pictures 23:38:38,
+lanes 23:43:03,
+translate lane 00:16:01,
+lane contest 00:25:24,
+consolidation 00:31:28,
+tally 00:38:13.
+The lanes took 33 minutes where the third pass's took 8 (21:52 to 22:00).
+
+### The fourteenth class in production
+
+At 00:36:13,
+two minutes into consolidation,
+Hyper answered 402 on seven concurrent calls
+(`hyperBalance=0`;
+277 at launch,
+748 calls in this pass),
+the router walked each to OpenRouter,
+and OpenRouter answered 402 on the same seven
+(`openrouterUsd=0.01`;
+`You requested up to 131072 tokens, but can only afford 6762`).
+Each call marked its provider once,
+`hyper: refused us for payment while its meter reads dry (hyperBalance=0)`
+and `openrouter: refused us for payment while its meter reads wet (openrouterUsd=0.01)`,
+both with the tail `reads dry until that meter moves`,
+fourteen lines in the same instant,
+and neither provider was asked again for the rest of the pass,
+where the fifth pass had walked back into OpenRouter's wall every 60 s.
+From that instant every voice a model without a Bedrock seat owed was lost at once
+(`no provider can take <model>: every provider serving this model is out of budget, voice lost`,
+625 lines),
+and the consolidation finished its fifteen remaining slices on the Bedrock seats alone,
+00:36:14 to 00:38:13.
+
+### The consolidation on two seats
+
+Of eighteen slices,
+three shipped consolidated (slices 0 and 2 and 16),
+five gate-kept-standing,
+seven slate-declined-standing,
+two slate-unjudged-standing,
+one incumbent-only;
+the sixteen changed page slices come from the lanes.
+Slices 1 and 2 were reviewed by a full bench and read `unacceptable`,
+recorded as evidence with the gated text shipping.
+From slice 3 on every absolute naturalness review read `quorum-not-met`
+(`3/8 usable` while the Hyper voices were being lost,
+then two valid verdicts of two from slice 7),
+each recorded on its settlement as
+`absolute naturalness review quorum not met; recorded as evidence`
+while the gated or standing text ships.
+The thirteenth class did not wait here,
+by design:
+a payment mark carries no hold,
+`providerHolds()` reads zero for it,
+and `awaitBenchQuorum` returns at once,
+since there is no instant at which a spent balance comes back.
+So a pass that loses a paid provider inside a phase finishes the phase on whoever is left,
+and says so on every review line;
+the fourth pass had stopped INCOMPLETE under the same reading only because the slice it declined
+held a text the block floor refused,
+and none of this pass's standing texts did.
+
+### Meters and spend
+
+Bedrock 199.34 to 198.99 USD on the meter;
+511 `SPEND` lines summing 0.4006 USD
+(`google.gemma-4-26b-a4b` 198 calls 0.14 USD,
+`openai.gpt-oss-120b` 153 calls 0.22 USD,
+`google.gemma-4-e2b` 160 calls 0.03 USD).
+Hyper 277 to 0 over 748 calls,
+spent out at 00:36:13;
+the owner will not recharge it.
+Synthetic 212 calls in its one wet window,
+`syntheticWeekly=0%` throughout,
+`syntheticFiveHour=2750/2750` at the tally.
+OpenRouter 0.01 USD,
+no call answered.
+2118 calls asked by the `SEAT` lines;
+16 voices abandoned after quorum.
+`google.gemma-4-e2b` in its first seated pass:
+asked 160,
+usable 160,
+threw 0.
+
+### The read-page checks
+
+Headings 3 of 3 against the source's three,
+comments 3,
+`PhotoScroll` kept,
+0 straight apostrophes in words (5 curly against the archive's 8),
+0 straight double quotes (16 curly against 18),
+1 three-dot ellipsis and 0 unicode (archive 0 and 0),
+every forbidden rendering 0,
+every refusal grep 0.
+The page differs from the third pass's page on 153 of its lines:
+two passes' wordings,
+not a class.
+No class found on this page.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

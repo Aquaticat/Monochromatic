@@ -864,3 +864,53 @@ What would move the belief:
 the fourth hakureico page,
 read whole,
 with its footnotes and with `waited=` on every seats line.
+
+## What the sixth hakureico launch showed (2026-09-08, 00:38 UTC)
+
+The sixth launch (23:38 UTC on `49aca5770`,
+`google.gemma-4-e2b` seated as a judge,
+Bedrock ahead of Hyper) settled in 60.2 minutes and shipped the page with both footnotes and their definitions,
+read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The sixth pass settles".
+`verify-published` matched,
+every read-page check held,
+zero error lines,
+no class found on the page.
+
+WHAT IT FOUND:
+not a class,
+a wall.
+Hyper's balance reached 0 two minutes into consolidation and OpenRouter's 0.01 USD answered 402 in the same instant;
+the fourteenth class marked both once
+(fourteen lines,
+no 60 s cycle,
+where the fifth pass had cycled)
+and the pass finished its fifteen remaining slices on Bedrock's seats,
+every naturalness review `quorum-not-met` and recorded as evidence,
+three slices consolidated of eighteen.
+That is the designed behaviour for a spent balance,
+since there is no hold to wait out,
+and the page is whole;
+but the consolidation of those fifteen slices was a two-seat reading and says so on every settlement.
+
+THE READING:
+every class found on a read page is closed on the entry that found it,
+and the twelfth,
+thirteenth and fourteenth were each seen working in production on this entry
+(one held line on the third pass,
+six `waited=0ms` readings with nothing to wait for on this one,
+fourteen payment marks and no cycle).
+This pass found no new class at any seam.
+What keeps the belief where it is:
+the consolidation ran short of quorum,
+so the hakureico page that would move it is one consolidated by a whole bench,
+which needs a provider besides Bedrock.
+Hyper is at 0 and stays there,
+OpenRouter at 0.01 USD until the owner tops it up,
+and Synthetic's week is at 0 percent with a five-hour window that refills
+(2750/2750 at the tally,
+wet at one reading of six).
+A launch on Bedrock alone seats three of the wide bench's quorum of four,
+and would read `quorum-not-met` from its first review,
+so the next launch waits for one of those meters to move;
+a launch of all 92 entries now would consolidate nothing.

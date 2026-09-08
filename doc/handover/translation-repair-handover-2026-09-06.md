@@ -500,6 +500,11 @@ a 402 marks the provider with the meter level it read and it reads dry while tha
 with no timed hold,
 so the seat wait targets a hold whose end brings a bench back.
 A top-up moves the meter and clears the mark on the next reading.
+Seen in production on the sixth hakureico pass at 00:36:13 UTC on 2026-09-08:
+Hyper's balance reached 0 and OpenRouter answered 402 on the same seven concurrent calls,
+fourteen marks in one instant,
+neither provider asked again,
+and the pass finished its consolidation on Bedrock's seats.
 
 ## The two defaults and the rule
 
@@ -544,38 +549,41 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Read the `hakureico` page from the 23:38 launch on `49aca5770`
-    (runs dir `~/temp/agent/hakureico6-20260907`,
-    log beside it,
-    pid 3905110;
-    the 22:21 launch stopped INCOMPLETE under a mid-consolidation hold,
-    the 23:09 launch in 67 seconds on OpenRouter's payment refusals):
-    the footnotes first
-    (`[^1]` on Mayday,
-    `[^2]` on the GAE line,
-    both definitions),
-    then every `JUDGE SEATS` line's `waited=`,
-    every `short of quorum` and `chunk resumes` line,
-    then the Bedrock `SPEND` lines and the ledger against `bedrockUsd=`,
-    then Hyper's balance against 301.
-    The third page (22:00) shipped three faithful repairs and no footnotes,
-    for the thirteenth class's reason.
-    Hyper's balance is the day's constraint:
-    828 at 21:00,
-    301 at 23:09,
-    never to be recharged,
-    70 to 290 per hakureico pass.
+1.  The `hakureico` page from the 23:38 launch on `49aca5770` settled at 00:38 UTC on 2026-09-08
+    (60.2 minutes,
+    runs dir `~/temp/agent/hakureico6-20260907`,
+    log beside it)
+    and is read in the planning log under "The sixth pass settles":
+    both footnotes and both definitions on the page,
+    six `JUDGE SEATS` lines all `waited=0ms`,
+    no `short of quorum` or `chunk resumes` line,
+    Bedrock 199.34 to 198.99 USD against 511 `SPEND` lines summing 0.40 USD,
+    Hyper 277 to 0 at 00:36:13,
+    every read-page check held,
+    no class found.
+    What the page still owes is a consolidation by a whole bench:
+    from slice 3 of 18 the pass ran on Bedrock's seats under `quorum-not-met`,
+    which the settlement records as evidence.
+    When a meter besides Bedrock's moves,
+    relaunch `hakureico` into a fresh runs dir and read that consolidation first.
+    Until then do not launch:
+    Bedrock alone seats three of the wide bench's quorum of four.
 2.  Run `producer-calibrate` with `--candidates google.gemma-4-e2b` for the translator seat when the meters allow;
     the judge seat is decided (`b0b48d6f4`).
 3.  Then `yuki418330012` (a math pair),
     then `Arita`,
     then the seven components no read page has met.
-4.  Synthetic's week is at 0 percent as of 21:24 UTC and stays dry until the week turns;
+4.  Synthetic's week is at 0 percent as of 21:24 UTC and stays dry until the week turns,
+    while its five-hour window refills on its own
+    (2750 of 2750 at the sixth pass's tally,
+    wet at one reading of six);
     Hyper's daily quota is unpublished and closed once today after about a thousand requests of one pass,
     and a pass that meets it holds Hyper out until the instant the refusal names.
+    At 00:38 UTC on 2026-09-08:
     OpenRouter 0.01 USD,
-    Bedrock 199.99 USD,
-    Hyper 664 at 21:47 after two killed passes.
+    Bedrock 198.99 USD,
+    Hyper 0 since 00:36 and never to be recharged (the owner's words).
+    Bedrock is the one wet provider and the only one whose meter moves without the owner.
 
 ## Standing constraints
 
