@@ -26,7 +26,10 @@ import {
   rolldown,
 } from 'rolldown';
 
-import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path/ts/node.ts';
+import {
+  findRootCached,
+  packageNamed,
+} from '@monochromatic-dev/module-fs-path/ts';
 
 import type { PackageProbe, } from './probe.ts';
 import { renderControls, } from './render-controls.ts';
@@ -39,12 +42,12 @@ import { defaultState, } from './script/state.ts';
  
  Walks up from `import.meta.dirname` to the `package.json` whose
  `name` matches `@monochromatic-dev/dev-script-deps-cube`. Result is
- memoised by the helper, so `cli.ts` (which also resolves this root)
- shares the same walk.
+ memoised by the helper per marker and start directory; `cli.ts` resolves
+ the same root from its own directory.
  */
-const PACKAGE_ROOT = await findPackageRootCached({
-  dir: import.meta.dirname,
-  name: '@monochromatic-dev/dev-script-deps-cube',
+const PACKAGE_ROOT = await findRootCached({
+  cwd: import.meta.dirname,
+  marker: packageNamed('@monochromatic-dev/dev-script-deps-cube',),
 },);
 
 /**

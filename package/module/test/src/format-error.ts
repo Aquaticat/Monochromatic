@@ -36,7 +36,7 @@ import {
 
 /**
  Resolves the monorepo root directory (with trailing slash) by
- calling `findMiseMonorepoRootCached` from
+ calling `findRootCached` with `MISE_MONOREPO` from
  `@monochromatic-dev/module-fs-path`. The shared cached variant
  memoises the result process-wide, so no local cache is needed.
  Falls back to `process.cwd()` when the cached variant rejects
@@ -60,11 +60,14 @@ async function resolveWorkspacePrefix(): Promise<string> {
     /**
      Workspace filesystem discovery belongs only to the Node diagnostic path.
      */
-    const { findMiseMonorepoRootCached, } = await import('@monochromatic-dev/module-fs-path/ts');
+    const {
+      findRootCached,
+      MISE_MONOREPO,
+    } = await import('@monochromatic-dev/module-fs-path/ts');
     /**
      Captured root so the trailing slash can be appended exactly once before returning.
      */
-    const root = await findMiseMonorepoRootCached();
+    const root = await findRootCached({ marker: MISE_MONOREPO, },);
     return `${root}/`;
   }
   catch (error: unknown) {

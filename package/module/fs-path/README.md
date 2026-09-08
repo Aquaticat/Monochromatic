@@ -25,14 +25,29 @@ Path operations:
    `trimTrailingSlash`:
    strip one leading or trailing `/` unless the path is `/`.
 
-Root finders,
- each walking upward from `cwd` (default:
- the process working directory,
- or `/` where no process exists):
+Root discovery,
+ one walker driven by marker values:
 
-- `findMiseMonorepoRoot`:
-   nearest ancestor whose `mise.toml` contains a `[monorepo]` section.
-- `findGitRepoRoot`:
+- `findRoot({ marker, cwd?, fs? })`:
+   nearest ancestor of `cwd` (itself included) that `marker` accepts,
+   spelled as the caller spelled `cwd`.
+   `cwd` defaults to the process working directory,
+   or `/` where no process exists;
+   `fs` defaults to the runtime adapter.
+   Rejects with `RootNotFoundError`,
+   which carries `marker` (the marker name) and `startDir`.
+- `findRootCached({ marker, cwd? })`:
+   memoised variant over the runtime adapter,
+   keyed by marker name and start directory resolved at call time.
+   Concurrent first callers share one walk;
+   a rejection stays memoised for its key.
+- `MISE_MONOREPO`:
+   nearest ancestor whose `mise.toml` has a `[monorepo]` table header on its own line
+   (CRLF endings,
+   trailing spaces,
+   and a trailing comment tolerated;
+   a header quoted inside a value refused).
+- `GIT_REPOSITORY`:
    nearest ancestor with a structurally usable `.git` directory or gitfile
    (HEAD,
    objects,
@@ -40,17 +55,35 @@ Root finders,
    relative targets,
    and linked-worktree `commondir` pointers are validated;
    invalid nearer markers are skipped).
-   Rejects with `GitRepositoryRootNotFoundError` when none exists.
-- `findPnpmWorkspaceRoot`:
-   nearest ancestor holding `pnpm-workspace.yaml`.
-- `findMiseMonorepoRootCached`,
-   `findGitRepoRootCached`,
-   `findPnpmWorkspaceRootCached`:
-   memoised variants that take no arguments,
-   start from the process working directory on the first call,
-   and return the same in-flight,
-   fulfilled,
-   or rejected promise for the process lifetime.
+- `PNPM_WORKSPACE`:
+   nearest ancestor holding a `pnpm-workspace.yaml` file.
+- `packageNamed(name)`:
+   nearest ancestor whose `package.json` declares that `name`,
+   anchoring a package on its own root in source and built modes;
+   an unparsable or differently named manifest is walked past.
+- `fileNamed(name)`,
+   `directoryNamed(name)`:
+   nearest ancestor holding a regular file,
+   or a directory,
+   with that name.
+- `RootMarker`:
+   `{ name, matches({ dir, fs }) }`.
+   A custom marker is one object literal;
+   its `name` must differ from the shipped ones because it keys the memo.
+- `createMemoryRootFilesystem({ files, directories, links })`:
+   a `RootFilesystem` over a tree held in memory.
+   Every ancestor of a declared path is a directory;
+   `exists` and `readSymbolicLink` look at the entry itself,
+   the other probes look through links.
+- `RootFilesystem`,
+   `ABSENT`:
+   the seam the adapters fill
+   (`readTextFile`,
+   `readSymbolicLink`,
+   `exists`,
+   `isDirectory`,
+   `isFile`)
+   and the sentinel `readTextFile` and `readSymbolicLink` return for an absent path.
 
 ### `./node` (Node and Bun only)
 
@@ -68,23 +101,47 @@ Root finders,
    truncate a file (a `?query` suffix is stripped first),
    dispatch by extension,
    or delete files that are empty after trimming.
-- `findPackageRoot`,
-   `findPackageRootCached`:
-   nearest ancestor whose `package.json` `name` matches the given name,
-   anchoring a package on its own root in source and built modes.
 
 ## Usage
 
 ```ts
 import {
-  findGitRepoRoot,
-  findMiseMonorepoRootCached,
+  findRoot,
+  findRootCached,
+  GIT_REPOSITORY,
   join,
+  MISE_MONOREPO,
+  packageNamed,
 } from '@monochromatic-dev/module-fs-path';
 
-const repoRoot = await findMiseMonorepoRootCached();
-const gitRoot = await findGitRepoRoot({ cwd: import.meta.dirname, });
+const repoRoot = await findRootCached({ marker: MISE_MONOREPO, },);
+const gitRoot = await findRoot({ cwd: import.meta.dirname, marker: GIT_REPOSITORY, },);
+const packageRoot = await findRootCached({
+  cwd: import.meta.dirname,
+  marker: packageNamed('@scope/pkg',),
+},);
 const manifest = join([repoRoot, 'package.json',],);
+```
+
+A custom marker,
+ and a test that walks a tree without touching a disk:
+
+```ts
+import {
+  createMemoryRootFilesystem,
+  findRoot,
+  type RootMarker,
+} from '@monochromatic-dev/module-fs-path';
+
+const QUARANTINE_WARD: RootMarker = {
+  name: 'quarantine ward',
+  matches: async ({ dir, fs, },) => await fs.isDirectory(`${dir}/quarantine`,),
+};
+
+const fs = createMemoryRootFilesystem({
+  directories: ['/registry/quarantine', '/registry/north/3',],
+},);
+await findRoot({ cwd: '/registry/north/3', fs, marker: QUARANTINE_WARD, },); // '/registry'
 ```
 
 ```ts
@@ -140,10 +197,9 @@ Point the bundler at the `node` condition to keep `node:fs`.
 ## Logging
 
 Diagnostics go through `@monochromatic-dev/module-logger`,
- inlined into both builds under the tags `rootDiscovery`,
+ inlined into both builds under the tags `rootDiscovery` (one line per walk),
  `rootFilesystem`,
- `findMonorepoRoot`,
- `findPackageRoot`,
+ `rootMarker`,
  `path/ensure`,
  and `path/empty`.
 The inlined logger builds its default sinks on first use;
@@ -161,16 +217,20 @@ The inlined logger builds its default sinks on first use;
    the `#posix-path` backends.
 - `src/root-filesystem-contract.ts`,
    `src/root-filesystem.node.ts`,
-   `src/root-filesystem.neutral.ts`:
-   the `#root-filesystem` contract and backends.
+   `src/root-filesystem.neutral.ts`,
+   `src/memory-root-filesystem.ts`:
+   the `RootFilesystem` seam and its three adapters.
 - `src/root-discovery.ts`:
-   upward walk shared by the finders.
-- `src/find-monorepo-root.ts`:
-   the three root finders and `GitRepositoryRootNotFoundError`.
-- `src/git-marker.ts`:
-   Git administrative marker validation.
-- `src/find-package-root.ts`,
-   `src/ensure.ts`,
+   `findRoot`,
+   `findRootCached`,
+   `RootNotFoundError`.
+- `src/root-marker-contract.ts`,
+   `src/root-marker.ts`,
+   `src/git-marker.ts`:
+   the `RootMarker` type,
+   the shipped markers,
+   and Git administrative marker validation.
+- `src/ensure.ts`,
    `src/empty.ts`,
    `src/trim.ts`:
    the remaining helpers.

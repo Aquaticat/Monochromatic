@@ -3,11 +3,14 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  findRootCached,
+  MISE_MONOREPO,
+} from '@monochromatic-dev/module-fs-path/ts';
 import spawn, { type SubprocessError, } from 'nano-spawn';
 
 /** Mise monorepo root for the spawn cwd, so the bin path is invariant to the task's launch directory. */
-const REPO_ROOT = await findMiseMonorepoRootCached();
+const REPO_ROOT = await findRootCached({ marker: MISE_MONOREPO, },);
 
 /** Prefix emitted by the tagged logger on info-level lines */
 const LOG_PREFIX = '[info]';

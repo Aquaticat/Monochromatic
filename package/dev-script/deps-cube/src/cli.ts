@@ -10,7 +10,7 @@
  goes to stderr via `console.error` in {@link probeAll}.
  
  Output is anchored to this package's `dist/` via {@link PACKAGE_ROOT},
- resolved at module load by {@link findPackageRootCached} from
+ resolved at module load by {@link findRootCached} from
  `@monochromatic-dev/module-fs-path`. The helper walks up from
  `import.meta.dirname` until the package's own `package.json` is
  found. This works identically in source mode (`node src/cli.ts`) and
@@ -36,7 +36,10 @@ import {
 } from 'node:fs/promises';
 import { resolve as resolvePath, } from 'node:path';
 
-import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path/ts/node.ts';
+import {
+  findRootCached,
+  packageNamed,
+} from '@monochromatic-dev/module-fs-path/ts';
 
 import { createCache, } from './cache.ts';
 import { readCatalog, } from './catalog.ts';
@@ -50,12 +53,12 @@ import { renderHtml, } from './render-html.ts';
  
  Walks up from `import.meta.dirname` to the `package.json` whose
  `name` matches `@monochromatic-dev/dev-script-deps-cube`. Result is
- memoised by the helper, so `render-html.ts` (which also resolves
- this root) shares the same walk.
+ memoised by the helper per marker and start directory; `render-html.ts`
+ resolves the same root from its own directory.
  */
-const PACKAGE_ROOT = await findPackageRootCached({
-  dir: import.meta.dirname,
-  name: '@monochromatic-dev/dev-script-deps-cube',
+const PACKAGE_ROOT = await findRootCached({
+  cwd: import.meta.dirname,
+  marker: packageNamed('@monochromatic-dev/dev-script-deps-cube',),
 },);
 
 //endregion Package root

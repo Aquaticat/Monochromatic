@@ -19,12 +19,16 @@ import {
 import { resolve, } from 'node:path';
 
 import {
+  findRootCached,
+  MISE_MONOREPO,
+} from '@monochromatic-dev/module-fs-path/ts';
+
+import {
   parseOs,
   runContainer,
 } from './container.ts';
 import { discoverTestFiles, } from './discover.ts';
 import { runHost, } from './host.ts';
-import { findMiseMonorepoRootCached, } from './root.ts';
 import type {
   Combination,
   ExcludeEntry,
@@ -337,7 +341,7 @@ export async function matrix({
   /**
    Resolved once and threaded into every container invocation as the bind-mount source.
    */
-  const monorepoRoot = await findMiseMonorepoRootCached();
+  const monorepoRoot = await findRootCached({ marker: MISE_MONOREPO, },);
   l.debug(`monorepo root: ${monorepoRoot}`,);
   //endregion Discover monorepo root
 

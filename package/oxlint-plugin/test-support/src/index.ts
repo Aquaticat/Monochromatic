@@ -10,7 +10,10 @@ import {
   resolve,
 } from 'node:path';
 
-import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  findRoot,
+  MISE_MONOREPO,
+} from '@monochromatic-dev/module-fs-path/ts';
 import spawn from 'nano-spawn';
 
 /**
@@ -31,8 +34,9 @@ import spawn from 'nano-spawn';
  OXLINT_PLUGIN_TEST_ROOT;
  ```
  */
-export const OXLINT_PLUGIN_TEST_ROOT: string = await findMiseMonorepoRoot({
+export const OXLINT_PLUGIN_TEST_ROOT: string = await findRoot({
   cwd: import.meta.dirname,
+  marker: MISE_MONOREPO,
 },);
 
 /**

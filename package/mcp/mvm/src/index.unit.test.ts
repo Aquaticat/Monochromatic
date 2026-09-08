@@ -3,7 +3,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  findRootCached,
+  MISE_MONOREPO,
+} from '@monochromatic-dev/module-fs-path/ts';
 import {
   JSON_RPC_INVALID_PARAMS,
   JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,
@@ -12,7 +15,7 @@ import {
 import spawn, { type SubprocessError, } from 'nano-spawn';
 
 /** Mise monorepo root for spawn cwd, so the built bin path is invariant to the task's launch directory. */
-const REPO_ROOT = await findMiseMonorepoRootCached();
+const REPO_ROOT = await findRootCached({ marker: MISE_MONOREPO, },);
 
 /** Built bin path, resolved from the monorepo root. */
 const BIN_PATH = 'package/mcp/mvm/dist/final/node/index.mjs';

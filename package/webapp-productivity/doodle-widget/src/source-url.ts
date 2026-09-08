@@ -10,7 +10,8 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
-  findMiseMonorepoRootCached,
+  findRootCached,
+  MISE_MONOREPO,
 } from '@monochromatic-dev/module-fs-path/ts';
 import spawn from 'nano-spawn';
 
@@ -34,7 +35,7 @@ async function resolveRepoUrl(): Promise<string> {
     /**
      Monorepo root so `git remote` runs against the correct working tree.
      */
-    const repoRoot = await findMiseMonorepoRootCached();
+    const repoRoot = await findRootCached({ marker: MISE_MONOREPO, },);
     /**
      Captured so the trailing `.git` can be trimmed before returning.
      */

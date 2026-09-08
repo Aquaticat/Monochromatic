@@ -3,7 +3,10 @@
  * Defines container resource limits, device paths, and tuning parameters.
  */
 
-import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  findRoot,
+  MISE_MONOREPO,
+} from '@monochromatic-dev/module-fs-path/ts';
 import spawn from 'nano-spawn';
 import { realpath, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
@@ -12,8 +15,9 @@ import { resolve, } from 'node:path';
  * Canonical monorepo root path, normalized to `/var/home` on Fedora ostree
  * where `/home` is a symlink that breaks `readlink -f` resolution.
  */
-export const MONOREPO_ROOT: string = await findMiseMonorepoRoot({
+export const MONOREPO_ROOT: string = await findRoot({
   cwd: resolve(import.meta.dirname,),
+  marker: MISE_MONOREPO,
 },);
 
 /** Containerfile location */

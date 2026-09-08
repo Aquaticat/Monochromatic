@@ -279,7 +279,7 @@ async function symlinkWorkspacePackageNodeModules(): Promise<void> {
  
  Also materialises an empty `.git` directory marker: the work tree is
  a copy of a git repository, and package tests may legitimately assume
- an upward repo marker exists (fs-path's findGitRepoRoot does).
+ an upward repo marker exists (fs-path's GIT_REPOSITORY marker does).
  
  @example
  ```ts

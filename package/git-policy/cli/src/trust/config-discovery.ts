@@ -9,8 +9,9 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 import {
-  findGitRepoRoot,
-  GitRepositoryRootNotFoundError,
+  findRoot,
+  GIT_REPOSITORY,
+  RootNotFoundError,
 } from '@monochromatic-dev/module-fs-path/ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 
@@ -114,10 +115,13 @@ export async function resolveConfigRepositoryRoot(
    */
   const { effectiveCwd, } = parseGlobalOptions(args,);
   try {
-    return await realpath(await findGitRepoRoot({ cwd: effectiveCwd, },),);
+    return await realpath(await findRoot({
+      cwd: effectiveCwd,
+      marker: GIT_REPOSITORY,
+    },),);
   }
   catch (error: unknown) {
-    if ((error instanceof GitRepositoryRootNotFoundError) || isMissingPath(error,))
+    if ((error instanceof RootNotFoundError) || isMissingPath(error,))
       return CONFIG_ABSENT;
     throw error;
   }

@@ -14,7 +14,10 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  findRootCached,
+  MISE_MONOREPO,
+} from '@monochromatic-dev/module-fs-path/ts';
 import {
   describe,
   it,
@@ -26,7 +29,7 @@ import type { EstimateSnapshot, } from './types.ts';
 /**
  Monorepo root so the built bin path is invariant to the launch directory.
  */
-const REPO_ROOT = await findMiseMonorepoRootCached();
+const REPO_ROOT = await findRootCached({ marker: MISE_MONOREPO, },);
 
 /**
  Path to the built node bin.

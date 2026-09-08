@@ -1,6 +1,7 @@
 import {
-  findGitRepoRoot,
-  GitRepositoryRootNotFoundError,
+  findRoot,
+  GIT_REPOSITORY,
+  RootNotFoundError,
 } from '@monochromatic-dev/module-fs-path/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -60,10 +61,13 @@ const VALID_GIT_ROOT_ABSENT: unique symbol = Symbol(
  */
 async function resolveValidGitRoot(cwd: string,): Promise<string | typeof VALID_GIT_ROOT_ABSENT> {
   try {
-    return await findGitRepoRoot({ cwd, },);
+    return await findRoot({
+      cwd,
+      marker: GIT_REPOSITORY,
+    },);
   }
   catch (error: unknown) {
-    if (error instanceof GitRepositoryRootNotFoundError)
+    if (error instanceof RootNotFoundError)
       return VALID_GIT_ROOT_ABSENT;
     throw error;
   }

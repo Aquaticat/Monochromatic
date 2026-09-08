@@ -127,3 +127,109 @@ Accepted consequences:
 Surfaced by the first tests written for the family.
 The repair now keeps the existing permission bits and adds owner read and write,
  plus owner traverse for directories.
+
+## The walker and its filesystem seam are the root-discovery interface (2026-09-08)
+
+Decided by the owner during the architecture grilling recorded in `doc/planning/module-fs-path-deepening.md`.
+
+Before this change the package exposed four root finders
+ (`findMiseMonorepoRoot`,
+ `findGitRepoRoot`,
+ `findPnpmWorkspaceRoot`,
+ `findPackageRoot`),
+ each with a cached twin,
+ its own error text,
+ its own memo,
+ and its own log tag,
+ while the upward walk they shared sat behind them where no caller or test could reach it.
+`findPackageRoot` kept its own recursion and read `node:fs/promises` directly,
+ so it shipped from `./node`.
+The `RootFilesystem` seam had two real adapters and no test adapter,
+ so every marker test built a directory tree under `mkdtemp`.
+Error identity was a string compare on the message,
+ rewrapped into `GitRepositoryRootNotFoundError` for one finder only.
+
+The shape now:
+
+- `findRoot({ marker, cwd?, fs? })` and `findRootCached({ marker, cwd? })` are the interface.
+   A `RootMarker` is `{ name, matches({ dir, fs }) }`;
+   the package ships `MISE_MONOREPO`,
+   `GIT_REPOSITORY`,
+   `PNPM_WORKSPACE`,
+   `packageNamed(name)`,
+   `fileNamed(name)`,
+   and `directoryNamed(name)`.
+   A new kind of root is one value.
+   Deletion test:
+   removing the named finders loses nothing a marker value does not express;
+   removing the walker would reappear in every caller.
+- The filesystem contract keeps five probes
+   (`readTextFile`,
+   `readSymbolicLink`,
+   `exists`,
+   `isDirectory`,
+   `isFile`)
+   and drops `resolvePath`:
+   both adapters implemented it with the same POSIX arithmetic,
+   so the Git marker resolves gitfile and `commondir` targets through `#posix-path`.
+- `createMemoryRootFilesystem({ files, directories, links })` is the third adapter,
+   exported so tests and callers without a disk walk a declared tree through the same seam.
+   It follows the `node:fs/promises` rules:
+   `exists` and `readSymbolicLink` look at the entry itself,
+   the other probes look through links along the whole path.
+- One `RootNotFoundError { marker, startDir }` for every marker.
+- `findRootCached` keys its memo on the marker name and the start directory resolved at call time,
+   and keeps rejections per key.
+   A process-pinned key was proposed and withdrawn:
+   commit `701dfc88e` chose lock-first as a lazy wrapper,
+   not for a reason,
+   and nothing in the workspace calls a finder after `process.chdir`.
+   Consequence:
+   two modules of one package with different `import.meta.dirname` run two walks;
+   accepted.
+- `packageNamed` moves package-root discovery to the root entry;
+   `./node` keeps only the ensure and empty family.
+- The `[monorepo]` matcher splits on `\n`,
+   trims each line,
+   and accepts the header alone or followed by a comment,
+   so CRLF files and trailing comments match and a header quoted inside a value does not.
+- `fileNamed` probes `isFile` and `directoryNamed` probes `isDirectory`,
+   so `PNPM_WORKSPACE` no longer accepts a directory named `pnpm-workspace.yaml`.
+
+Rejected shapes:
+
+- Keeping the named finders as thin wrappers over `findRoot`:
+   they would pass the deletion test as pass-throughs,
+   and the package has one consumer,
+   this repository,
+   whose 25 files moved in the same change.
+- A marker registry keyed by string:
+   nothing varies across it that a value does not already express.
+- Deprecating instead of removing:
+   an unpublished-to-anyone-else 0.1.0 has no external consumer to protect.
+
+Measured on 2026-09-08:
+
+- Marker behaviour runs as data tables over the memory adapter:
+   18 mise header shapes,
+   36 Git marker shapes (every branch of `git-marker.ts`),
+   4 pnpm,
+   3 `fileNamed`,
+   3 `directoryNamed`,
+   6 `packageNamed`;
+   with the matcher reverted to the old `\n[monorepo]\n` framing,
+   the CRLF,
+   comment,
+   trailing-space,
+   and indented cases failed (5 red),
+   restored they passed.
+- Seven real-filesystem cases remain,
+   proving the Node adapter reads CRLF files,
+   gitfiles,
+   and symbolic-link HEADs,
+   and that the three presets converge on this checkout.
+- Node build `index.mjs` 9.16 kB,
+   `node.mjs` 2.91 kB;
+   the leak guard still finds no `import(`,
+   no `node:` in the neutral build,
+   and no `navigator.storage` in the node build.

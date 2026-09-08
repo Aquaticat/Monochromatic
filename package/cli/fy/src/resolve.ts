@@ -3,7 +3,8 @@ import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
 import {
-  findMiseMonorepoRootCached,
+  findRootCached,
+  MISE_MONOREPO,
 } from '@monochromatic-dev/module-fs-path/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -172,7 +173,7 @@ async function findGlobalNodeModules(): Promise<string | typeof NOT_FOUND> {
 }
 
 /**
- Wraps {@link findMiseMonorepoRootCached} to swallow discovery errors and emit a single
+ Wraps {@link findRootCached} to swallow discovery errors and emit a single
  diagnostic log instead. Returns the cached root or {@link NOT_FOUND} when the helper throws
  (i.e. when no `mise.toml` with `[monorepo]` exists above CWD).
  
@@ -193,7 +194,7 @@ async function tryFindMiseMonorepoRoot(): Promise<string | typeof NOT_FOUND> {
     l,
   },);
   try {
-    return await findMiseMonorepoRootCached();
+    return await findRootCached({ marker: MISE_MONOREPO, },);
   }
   catch (discoveryError: unknown) {
     rl.info(`no monorepo root found: ${String(discoveryError,)}`,);
@@ -247,7 +248,7 @@ export async function resolveSpecifier(
 
   //region Monorepo root resolution
   /**
-   Cached monorepo root populated by {@link findMiseMonorepoRootCached}.
+   Cached monorepo root populated by {@link findRootCached}.
    
    Stays {@link NOT_FOUND} outside a monorepo or when discovery throws; reused below to
    render the diagnostic line for the not-found error.

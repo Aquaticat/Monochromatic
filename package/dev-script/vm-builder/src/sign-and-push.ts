@@ -13,7 +13,8 @@
  - Cosign key pair at `package/config/cosign/`
  */
 import {
-  findMiseMonorepoRootCached,
+  findRootCached,
+  MISE_MONOREPO,
 } from '@monochromatic-dev/module-fs-path/ts';
 import { spawn as nodeSpawn, } from 'node:child_process';
 import { once, } from 'node:events';
@@ -32,7 +33,7 @@ const GHCR_TAG = 'ghcr.io/aquaticat/monochromatic-dev:latest';
 /**
  Absolute path to the monorepo root.
  */
-const MONOREPO_ROOT = await findMiseMonorepoRootCached();
+const MONOREPO_ROOT = await findRootCached({ marker: MISE_MONOREPO, },);
 
 /**
  Path to the cosign private key for image signing.
