@@ -1,0 +1,90 @@
+diff --git a/cli/src/commands.rs b/cli/src/commands.rs
+index d0b6949..df8a354 100644
+--- a/cli/src/commands.rs
++++ b/cli/src/commands.rs
+@@ -4844,6 +4844,13 @@ mod tests {
+         assert_eq!(cmd["action"], "recording_stop");
+     }
+ 
++    #[test]
++    fn test_errors_clear() {
++        let cmd = parse_command(&args("errors --clear"), &default_flags()).unwrap();
++        assert_eq!(cmd["action"], "errors");
++        assert_eq!(cmd["clear"], true);
++    }
++
+     #[test]
+     fn test_record_restart() {
+         let cmd = parse_command(&args("record restart output.webm"), &default_flags()).unwrap();
+diff --git a/cli/src/native/actions.rs b/cli/src/native/actions.rs
+index 4b33319..2459eb9 100644
+--- a/cli/src/native/actions.rs
++++ b/cli/src/native/actions.rs
+@@ -2670,7 +2670,7 @@ pub async fn execute_command(cmd: &Value, state: &mut DaemonState) -> Value {
+         "headers" => handle_headers(cmd, state).await,
+         "offline" => handle_offline(cmd, state).await,
+         "console" => handle_console(cmd, state).await,
+-        "errors" => handle_errors(state).await,
++        "errors" => handle_errors(cmd, state).await,
+         "session_info" => handle_session_info(state).await,
+         "state_save" => handle_state_save(cmd, state).await,
+         "state_load" => handle_state_load(cmd, state).await,
+@@ -6189,8 +6189,14 @@ async fn handle_console(cmd: &Value, state: &mut DaemonState) -> Result<Value, S
+     }
+ }
+ 
+-async fn handle_errors(state: &DaemonState) -> Result<Value, String> {
+-    Ok(state.event_tracker.get_errors_json())
++async fn handle_errors(cmd: &Value, state: &mut DaemonState) -> Result<Value, String> {
++    let clear = cmd.get("clear").and_then(|v| v.as_bool()).unwrap_or(false);
++    if clear {
++        state.event_tracker.clear_errors();
++        Ok(json!({ "cleared": true }))
++    } else {
++        Ok(state.event_tracker.get_errors_json())
++    }
+ }
+ 
+ async fn handle_session_info(state: &DaemonState) -> Result<Value, String> {
+@@ -12053,6 +12059,26 @@ mod tests {
+         assert_eq!(FIND_ACTIONS.join(", "), "click, fill, check, hover, text");
+     }
+ 
++    #[tokio::test]
++    async fn errors_clear_empties_page_error_log() {
++        let mut state = DaemonState::new();
++        state
++            .event_tracker
++            .add_error("boom", Some("app.js"), Some(7), Some(3));
++
++        let resp = execute_command(
++            &json!({ "id": "1", "action": "errors", "clear": true }),
++            &mut state,
++        )
++        .await;
++        assert_eq!(resp["success"], true);
++        assert_eq!(resp["data"]["cleared"], true);
++
++        let resp = execute_command(&json!({ "id": "2", "action": "errors" }), &mut state).await;
++        assert_eq!(resp["success"], true);
++        assert_eq!(resp["data"]["errors"], json!([]));
++    }
++
+     /// `type`, `focus`, and `uncheck` are real standalone commands but were
+     /// never wired into `execute_subaction`, so they used to reach here and
+     /// fail with "Browser not launched" (masking the real problem) or a bare
+diff --git a/cli/src/native/network.rs b/cli/src/native/network.rs
+index 98c2212..d681319 100644
+--- a/cli/src/native/network.rs
++++ b/cli/src/native/network.rs
+@@ -625,6 +625,10 @@ impl EventTracker {
+         self.console_entries.clear();
+     }
+ 
++    pub fn clear_errors(&mut self) {
++        self.error_entries.clear();
++    }
++
+     pub fn get_console_json(&self) -> Value {
+         let messages: Vec<Value> = self
+             .console_entries
