@@ -1052,3 +1052,40 @@ the next entries (`yuki418330012`,
 The production fact to carry:
 one entry of 18 slices on a whole bench consumes a Synthetic week's remainder and a Hyper day,
 so the next whole-bench pass either waits for the week to turn or runs on Bedrock and OpenRouter alone.
+
+## What the owner decided on the front matter (2026-09-08, 13:15 UTC)
+
+The sixteenth thing,
+asked as the name question,
+was answered with "We're not supposed to change front matter though?"
+and then,
+of three options,
+"publish the archive's front matter as is;
+render it only where the archive never translated it".
+What the measurement behind the question showed is the larger finding:
+13 of 127 shipped pages,
+9 of the last 10 read,
+carried a rewritten `desc`,
+`alias` or `name`,
+and no reading had diffed the front matter,
+so pages read as "no class found" had changed the memorial's own words about the person.
+Built in a throwaway as `20e5135a6` and merged after the E2B calibration ends
+(planning log,
+"The front-matter rule");
+recorded in the front-matter guard decision's addendum of 2026-09-08.
+Measured over the pinned corpus,
+every one of the 92 archives stands,
+so from here no page changes its front matter and the mechanical reading checks that it did not.
+
+THE READING:
+the belief after the ninth pass holds,
+with one line changed.
+The page the pipeline ships is the body the whole bench made under the memorial's own metadata,
+and the read-page checks now cover the whole page rather than the body.
+No further code is owed from the ninth pass.
+What remains before an all-entries launch:
+the E2B translator seat from the calibration in flight,
+the next entries (`yuki418330012`,
+`Arita`),
+the seven components no read page has met,
+and one relaunch of `hakureico` on the merged build to read a page whose front matter the rule kept.

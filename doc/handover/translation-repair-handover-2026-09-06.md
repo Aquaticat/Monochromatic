@@ -292,6 +292,16 @@ Newest first.
     the ninth hakureico launch and its reading,
     the readiness signal and this handover.
 
+-   `20e5135a6` (2026-09-08,
+    on the throwaway branch `translation-repair-front-matter`,
+    merged after the E2B calibration):
+    the front-matter rule,
+    artifact generation eleven;
+    guards neutralised 13,
+    6 and 9 `FAIL` across the suites,
+    restored 0;
+    955 `PASS` and 0 `FAIL`.
+
 ## The fifth class
 
 Found by the first pass on the plain invocation,
@@ -564,6 +574,35 @@ on four providers,
 lost Synthetic and Hyper inside its consolidation and finished on Bedrock and OpenRouter,
 which reach every bench.
 
+## The front-matter rule
+
+The sixteenth thing found,
+by the ninth hakureico pass on 2026-09-08:
+slice zero shipped `name: Kagurazaka Chika` while the body kept the archive's `Hanasaka`,
+each by a rule doing what it says.
+The owner's answer:
+"We're not supposed to change front matter though?",
+and then option 1 of three,
+"publish the archive's front matter as is;
+render it only where the archive never translated it"
+(`doc/decision/translation-repair-front-matter-guard.md`,
+addendum 2026-09-08).
+The measurement behind it:
+9 of the last 10 read pages had rewritten `desc`,
+`alias` or `name` and no reading had diffed the front matter.
+Built as `20e5135a6` on branch `translation-repair-front-matter` in `~/temp/agent/tr-frontmatter-20260908`
+while the E2B calibration runs on the main worktree's build,
+and merged after it:
+`archive-front-matter.ts` decides whether the archive stands,
+the preparation makes no slice zero where it does,
+the guard refuses `archive-front-matter` for any other page,
+and artifact generation eleven records it.
+All 92 pinned archives stand,
+so no page changes its front matter from here.
+The read-page check to add to every reading:
+the page's front matter equals the archive's byte for byte
+(`read-page.mjs` prints `frontMatterEqualsArchive`).
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -629,17 +668,32 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     and the eighth (one writer,
     three judges,
     the fifteenth class).
-    THE OPEN QUESTION,
-    the owner's,
-    the sixteenth thing found:
-    the front matter now reads `name: Kagurazaka Chika` (chosen 6 to 3,
+    THE SIXTEENTH THING,
+    answered by the owner the same day:
+    the front matter read `name: Kagurazaka Chika` (chosen 6 to 3,
     endorsed 9 of 9)
-    while the body and the letter's signature keep the archive's `Hanasaka` and `Kagurazaka Hanasaka`,
-    because the declared-name guard takes its forms from the archive's front matter and exempts the front-matter
-    slice on purpose;
-    the readiness signal's last section states the three answers.
-    Until it is answered,
-    the page stands as shipped.
+    while the body kept the archive's `Hanasaka`;
+    the owner chose "publish the archive's front matter as is;
+    render it only where the archive never translated it",
+    built as `20e5135a6` on the throwaway branch `translation-repair-front-matter`
+    (see "The front-matter rule").
+    When the E2B calibration prints its standing,
+    merge that branch (rebase onto `translation-repair-rebased`,
+    fast-forward,
+    build,
+    full suite),
+    remove the throwaway worktree and both branches,
+    then relaunch `hakureico` once on the merged build and read the page:
+    its front matter must equal the archive's byte for byte,
+    its log must carry `FRONT MATTER entry=hakureico authority=archive`,
+    and its artifact `artifactSchemaVersion: 11` with `frontMatterAuthority: 'archive'` in the preparation.
+    The E2B calibration itself (`~/temp/agent/producer-calibrate-e2b-20260908.log`,
+    pid 87207,
+    launched 13:07 UTC,
+    40 slices,
+    ten writers and judges with `google.gemma-4-e2b` as the candidate)
+    is read by the pooled-null rule of the 2026-09-01 seating decision;
+    seat or refuse E2B as a translator by it.
 2.  Run `producer-calibrate` with `--candidates google.gemma-4-e2b` for the translator seat when the meters allow;
     the judge seat is decided (`b0b48d6f4`).
 3.  Then `yuki418330012` (a math pair),

@@ -4674,6 +4674,70 @@ built in the main worktree,
 the throwaway worktree,
 its local branch and its remote branch removed.
 
+### The front-matter rule, the sixteenth thing decided and built in a throwaway, 13:45 UTC
+
+The owner answered the name question with a question:
+"We're not supposed to change front matter though?"
+Measured before answering:
+the front matter is slice zero,
+written by the translate lane from the source
+(the repair lane has always kept the archive's,
+`frontMatterRepairOutcome`),
+judged at the contest and endorsed or consolidated like every other slice,
+and the guard checks structure only (the 2026-09-02 decision,
+on the owner's "why are we caring about metadata being different vs Chinese source at all?");
+13 of the 127 pages shipped under `~/temp/agent` changed the archive's front matter,
+9 of the last 10 read pages among them,
+and the read-page checks never diffed it,
+so TLL1122's `desc` "Lulu loves you!",
+yulianNyanner's "In the end,
+we heard her voice."
+and Hangmster's "They had brought us laughter."
+were rewritten on pages read as "no class found".
+The owner chose,
+of three,
+"publish the archive's front matter as is;
+render it only where the archive never translated it"
+(`doc/decision/translation-repair-front-matter-guard.md`,
+addendum 2026-09-08).
+
+BUILT ON `translation-repair-front-matter` in `~/temp/agent/tr-frontmatter-20260908` (`20e5135a6` on `5462257b4`),
+since the E2B calibration runs on the main worktree's build and the kill-and-relaunch rule holds for it too;
+merged after the calibration's standing is printed.
+The shape:
+`corpus-run/archive-front-matter.ts` decides `archiveFrontMatterStands` from the two documents
+(the archive stands unless it shows the directory id while the source names the person and no 2026-09-07 clause makes
+the id stand),
+`pass-prepare.ts` decides it once per entry and logs `FRONT MATTER entry=<id> authority=<archive|rendered>`,
+`prepareDocumentPair` makes no metadata slice under `frontMatterAuthority: 'archive'` and marks the preparation,
+`assertFrontMatterComplete` recomputes the answer and refuses `archive-front-matter` for a changed page or a rendered slice,
+and artifact generation eleven records `frontMatterAuthority` in its preparation,
+which the rebuild reads off the file.
+`namesDirectoryId` moved beside `directoryIdNameStands`,
+and the artifact reader's two field helpers moved to `artifact-two-lane-read-fields.ts` to stay under the file budget.
+Types and oxlint clean;
+955 `PASS` and 0 `FAIL`;
+guards shown to fail first (predicate 4,
+7 and 2;
+preparation 2,
+2 and 2;
+guard branch 7 and 2),
+restored 0.
+
+THE CENSUS,
+measured on the merged build's predicate over the 92 pinned archives:
+every one stands.
+23 name their directory,
+8 because the source does too,
+and the other 15 all stand by the clauses of 2026-09-07.
+So the lanes will render no front matter on this corpus,
+every page from here carries the archive's metadata byte for byte,
+and the mechanical reading gains a check for exactly that.
+The ninth pass's page,
+re-read under the rule,
+would carry `name: Hanasaka` and the archive's alias,
+and the body would agree with it.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

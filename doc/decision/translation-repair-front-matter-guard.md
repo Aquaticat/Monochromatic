@@ -213,3 +213,113 @@ lxy,
 Zihe,
 Lili) and so stand under the third clause,
 which the owner's words accept.
+
+## Addendum 2026-09-08: the archive's front matter stands
+
+Decided by the owner ("We're not supposed to change front matter though?",
+then option 1 of three:
+"publish the archive's front matter as is;
+render it only where the archive never translated it"),
+asked after the ninth hakureico pass shipped `name: Kagurazaka Chika` in slice zero
+(the translate lane's faithful rendering of 神楽坂千歌,
+six ballots to three at the contest,
+endorsed nine of nine at the consolidation)
+while the body kept the archive's `Hanasaka` and the letter's signature `Kagurazaka Hanasaka`,
+since the declared-name guard takes its forms from the archive's front matter and exempts slice zero on purpose.
+The census that went with the question:
+13 of the 127 pages shipped under `~/temp/agent` changed the archive's front matter,
+among them 9 of the last 10 read pages,
+none of which the read-page checks had diffed;
+TLL1122's `desc` "Lulu loves you!"
+became "This is Tian Lulu" followed by an em-dash and "hope every day brings you happiness!",
+yulianNyanner's "In the end,
+we heard her voice."
+became "Together,
+we resist this unjust world even after death.",
+Hangmster's "They had brought us laughter."
+became "Everyone's joy.",
+and aliases gained forms in the original script.
+
+Options offered,
+ranked 1 over 2 over 3:
+1 as above;
+2 freeze `name` and `desc` and leave `alias` and `location` repairable;
+3 keep the lanes' rendering and add the front matter to the read-page checks.
+1 over 2 because the owner's expectation is no change and a rewritten `desc` is an editorial change nobody asked for;
+2 over 3 because 3 keeps rewriting `desc` on most pages.
+
+THE RULE,
+landed in `package/module/translation-repair/src/corpus-run/archive-front-matter.ts` (`20e5135a6`):
+the archive's front matter stands unless the archive shows the directory id as the visible name while the source names
+the person and none of the three clauses of 2026-09-07 makes the id stand,
+which is the `#269` shape as literally described.
+Where it stands,
+the preparation makes no metadata slice
+(`prepareDocumentPair({ frontMatterAuthority: 'archive' })`,
+decided once per entry in `pass-prepare.ts` and logged as `FRONT MATTER entry=<id> authority=archive`),
+so no lane spends on it and no judge is asked to prefer a rendering over the memorial's choice;
+the page carries the archive's bytes;
+and `assertFrontMatterComplete` recomputes the answer from the two documents and refuses,
+as `archive-front-matter`,
+a page whose front matter differs from the archive's or a preparation that rendered a standing archive.
+Where it does not stand,
+everything is as the 2026-09-02 decision and its addenda left it.
+The artifact records it:
+generation eleven's preparation carries `frontMatterAuthority: 'archive'` and no slice zero,
+and the rebuild reads that off the file rather than recomputing the rule,
+so a later change to the rule cannot re-slice an older artifact.
+
+MEASURED OVER THE PINNED CORPUS on the day of the decision:
+every one of the 92 archives stands.
+23 name their directory;
+8 of those because the source does too;
+the other 15 (Acheron,
+DarlinChit,
+Huasheng,
+Kotori,
+MioCardMeow,
+MocaKawai,
+Weideriche_,
+XingZ60,
+dogesir_,
+donotexist_A,
+homoyamakaze,
+interrgned,
+lintong,
+lxyddice,
+noname) all stand by the clauses of 2026-09-07.
+So on this corpus the lanes render no front matter at all,
+and the rendering path is kept for the `#269` shape a future archive may still have.
+A consequence the owner should know:
+the front-matter defects the earlier decisions were written for
+(an archive still naming its folder where the source names the person)
+are no longer corrected by the pipeline where the archive also carries a Latin alias;
+they are the archive's to correct by hand.
+
+Guards:
+`archive-front-matter.unit.test.ts` (the ninth pass's shape stands,
+the `#269` shape does not,
+each 2026-09-07 clause,
+the two one-sided cases),
+`front-matter-completeness.unit.test.ts` (the standing archive accepted as it is with no slice,
+refused with a rendered slice,
+refused when the page changes it,
+the hakureico rendering refused and the archive's bytes accepted;
+every rendered-branch case moved onto a folder-named archive with no Latin alias),
+`document-preparation.unit.test.ts` (no slice zero under the archive's authority,
+no legacy identity),
+`artifact-two-lane-rebuild.unit.test.ts` (generation eleven rebuilt off the record),
+and the pass-entry case that carries a translated archive through the whole pass.
+Shown to fail first:
+the predicate neutralised fails 4,
+7 and 2 cases across three suites,
+the preparation neutralised 2,
+2 and 2,
+the guard's archive branch neutralised 7 and 2;
+restored,
+0.
+
+Options rejected:
+letting the body follow a corrected front matter (re-derives the declared forms exactly where six of six judges once dropped
+a declared alias);
+freezing the whole front matter to the archive even where it names the folder (the `#269` shape would then never be rendered).

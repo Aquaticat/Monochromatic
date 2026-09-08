@@ -1874,6 +1874,18 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `20e5135a6` (2026-09-08,
+the owner's rule "publish the archive's front matter as is;
+render it only where the archive never translated it",
+addendum in the same decision) the archive's front matter stands unless the archive shows the directory id as the
+visible name while the source names the person and no clause of 2026-09-07 makes the id stand:
+where it stands the preparation makes no metadata slice (`frontMatterAuthority: 'archive'`,
+logged as `FRONT MATTER entry=<id> authority=archive`),
+the page carries the archive's bytes,
+and the final guard refuses any other front matter or any rendered slice as `archive-front-matter`;
+artifact generation eleven records the authority in its preparation and the rebuild reads it off the file.
+Measured over the pinned corpus,
+all 92 archives stand.
 Since `6bfe6da56` (2026-09-04,
 two owner decisions after the luxuanwen3 pass lost a full run to its front matter) the identity rule reads containment:
 where the source declares `name` and `info.alias` the same,
