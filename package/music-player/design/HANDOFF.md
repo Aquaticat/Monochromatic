@@ -3436,3 +3436,9 @@ one-row and compact two-row branches,
  rebuild at a strict 12dp minimum,
  and remeasure
 every Settings preset plus the long-name diagnostic before reopening the form.
+Prototype commit `13913118a` removes both compact fallback branches;
+ one-row and 2×2
+now use `SegmentedButtonDefaults.ContentPadding` only.
+ Prototype build and Android lint
+pass.
+ Direct device recapture remains.
