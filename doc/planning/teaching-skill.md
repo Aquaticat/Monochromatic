@@ -276,9 +276,75 @@ Sources consulted for semantic verification:
 - <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises>
 - <https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal>
 
+## User critique of the first built lesson
+
+The user reported "tons of failures" and gave an unfinished list.
+Preserve these individually rather than treating them as cosmetic wording fixes:
+
+- A lesson targets a learner profile, not one specific learner's biography.
+  `"Hello, name" page` will not be immediately clear to everyone with the specified skills.
+- "Learn `Promise`" is wrong framing for someone who does not know what a Promise is.
+- "chat" is undefined.
+- "wait, fail, retry, and stop" are undefined.
+- "You need only your existing ability to edit and open a single HTML file" is misplaced.
+  The user wrote: "We should constrain ourselves and the learner to only what they already know",
+  then said teaching a tool or related thing that substantially improves the objective is fine.
+  Editing one HTML file is not much of a bottleneck here;
+  the user contrasted teaching "WAPI or something".
+  The intended boundary needs clarification; do not silently resolve the apparent wording conflict.
+- "The pretend chat service" uses an undefined and potentially misleading term.
+- Code lacks syntax highlighting despite an existing repository facility.
+- "defining" and "display" are under-defined.
+- "Let the browser call a function on a click" is misleading phrasing.
+  The precise intended correction remains to be elicited.
+- "A service request" is vague and misleading when the experiment waits for the learner's intervention.
+- "stopping the whole page" is under-backed;
+  the JavaScript thread model needs clarification.
+- "now" is under-specified because JavaScript has multiple relevant notions of timing.
+- The paragraph explaining objects is good but belongs before the paragraph depending on it.
+- Pending, Fulfilled, and Rejected cards look clickable despite not being clickable.
+  They also miss an opportunity to show code in each state.
+- `Promise.withResolvers()` introduces another failure:
+  the lesson has not established enough pain or shown how people managed the need
+  before Promises were specified and shipped.
+- "resolved is not always the same as fulfilled" needs a concrete example.
+- The user emphasized:
+  "This is HTML. Take advantage of it. There is a reason the format isn't interactive PDF or something."
+
+### Verified repository evidence for highlighting
+
+A targeted dependency and filename search found the Lezer highlighting implementation:
+
+- `package/ssg/aquati.cat/src/lib/rehype-highlight.ts` parses supported languages
+  and writes token-offset attributes onto code nodes during the build.
+- `package/ssg/aquati.cat/src/client/highlight-groups.ts` defines token groups.
+- `package/ssg/aquati.cat/src/style/highlight.ts` supplies CSS Custom Highlight styles.
+
+The implementation exists and was missed during the initial lesson construction.
+Its standalone integration has not yet been verified;
+inspect the client registration, dependencies, and consumers before prescribing reuse mechanics.
+
+### Design implications still being tested
+
+Independent review supports distinguishing these concerns:
+
+- Profile-based framing and accessible goals.
+- Definitions at adequate depth, separately from prerequisite ordering.
+- Accurate causal models that match the actual experiment,
+  not merely more citations or a renamed simulator.
+- Establishing the need and predecessor mechanism before introducing an abstraction,
+  without assuming every subject needs an exhaustive historical survey.
+- HTML interactions that reveal concepts and honest action affordances,
+  not additional controls for their own sake.
+
+These are candidate generalizations, not a user-confirmed final skill design.
+Technical checks established operational behavior, not pedagogical adequacy.
+
 ## Next action
 
-Resume discovery from the user's critique of the already-open Helium lesson.
-Keep the user-facing presentation session open and preserve their reading position.
-The printable requirement must never motivate simplifying the teaching source.
-Keep the final teaching skill pending until the concrete lesson has informed discovery.
+Clarify the operational boundary in critique point 5:
+untaught assumptions versus introducing useful tools or related knowledge.
+Then clarify the critiques whose intended correction is not yet understood,
+especially causal phrasing, execution timing, and how HTML should demonstrate the concepts.
+Keep the user-facing presentation session open and preserve the user's reading position.
+Do not draft the final skill or treat the critique as resolved by superficial lesson edits.
