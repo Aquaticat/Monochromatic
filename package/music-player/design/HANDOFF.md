@@ -3341,3 +3341,77 @@ without widening the Camellia-sized segment,
 `Camellia` before final capture.
  Prototype evidence commit `7b30db15e` and main
 evidence commit `dedf76cd5` preserve the seven updated states.
+ Prototype commit
+`d0ba2d9f9` makes the same current-directory value drive the folder list,
+ app bar,
+and mode label.
+ Prototype commit `f7590d9a3` and main commit `92b0e3075` preserve
+an additional exact 85% long-name diagnostic;
+ its Shuffle target remains 276px wide,
+matching Camellia,
+ while semantics remain unshortened.
+ The installed emulator app is
+restored to the accepted Camellia source.
+
+Main commits `b8a1c110e` and `b7bb8daca` rebuild the self-contained form around
+the new row mapping and embed the long-name proof.
+ Commit `bca8eb40a` updates the
+settled design and Compose limitation docs.
+ Browser verification decodes all eight
+2076 × 2152px images and shows no horizontal page overflow at 1920 × 1080,
+390 × 844,
+ or 390 × 500 CSS px;
+ every narrow card is 316px wide.
+ The long-name
+preview opens at Fit,
+ exposes Fit,
+ native pixels,
+ 1dp-to-1-CSS-pixel reset,
+ zoom,
+dimensions,
+ scrolling,
+ and restores focus to its trigger.
+ At 390 × 500 it opens at
+8%,
+ a 74 × 76px frame within the 358 × 108px stage.
+ Commit `856bab52f`
+incorrectly claimed that nested frame callbacks fixed this short-window opening;
+ a
+GitHub commit comment records that correction,
+ and commit `20c24aa81` supplies the
+measured synchronous fix.
+ Offline reload retains all eight images with no network
+resources.
+ Form whitespace rejection,
+ answer preparation,
+ stale-output invalidation,
+clear,
+ and clipboard pass.
+ Desktop page and preview axe checks report zero violations
+and zero incomplete checks.
+ The 390 × 500 preview reports zero violations and the
+known unresolved `color-contrast` check documented in
+`doc/troubleshooting/axe-modal-dialog-contrast.md`.
+ Browser errors and page console output
+are empty.
+
+Disposable positive controls reject changed 3B pixels,
+ center spacer,
+ system UI,
+row count,
+ content-sized widths,
+ visible Shuffle content,
+ current-track semantics,
+title alignment,
+ T3,
+ O2,
+ transport 1B,
+ long-name semantics,
+ long-name raster,
+and questionnaire mapping;
+ every artifact restores and validates afterward.
+ The isolated
+verifier must now be closed,
+ the prior normal review replaced,
+ and the cleared exact
+form presented in normal Helium.
