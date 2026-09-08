@@ -5,7 +5,7 @@
 The user requested a skill to curb failures in AI teaching and drafted teaching materials.
 They requested grilling to discover the failures from their experience.
 Repository material remains potentially relevant.
-Discovery is ongoing and the first prototype has not been repaired.
+Discovery is ongoing. A revised prototype is being implemented and verified, but has not been delivered yet.
 The shared-understanding checkpoint was premature and is withdrawn.
 [Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
 The user requires an updated Promise toy before continuing to weed out failure modes.
@@ -458,11 +458,70 @@ The assistant must demonstrate its interpretation through a materially revised t
 then continue discovery from that artifact's failures.
 The acceptance proposal is not an approved design or a reason to close the interview.
 
+## Revised prototype in progress
+
+The first artifact is preserved at `doc/planning/promises-teaching-first.local.html`.
+Its SHA-256 still matches the recorded first-delivery hash.
+Both HTML files remain ignored and local-only.
+
+Current authoring sources are in `~/temp/agent/promises-revision/`:
+
+- `opening.html`: target preview, concrete function motivation,
+  separate call/return/DOM behavior, listener wiring, data, and delayed-return foundations.
+- `promise-sequence.html`: callback coordination, Promise construction and states,
+  adoption, collection, and scoped execution-order explanations.
+- `advanced.html`: audited downstream explanations and workshop scaffolding.
+- `basic-samples.html`: executable source for the revised foundation labs and their comparisons.
+- `labs.mjs`: source-backed sandboxed previews, report helper, and standalone example downloads.
+- `revision.css`: revised presentation; highlighting and print coverage are not finished.
+- `build.mjs` and `mise.toml`: assemble the single local HTML using the preserved runtime modules.
+- `frame-eval.mjs`: direct CDP evaluation of a particular opaque-origin preview.
+  It matches a document title including the preview's run identity,
+  so it cannot silently inspect the previous navigation.
+- `verify-foundations.mjs`: behavioral checks of the reconstructed foundations.
+
+Run assembly and foundation checks from the scratch authoring directory with
+`mise run build` and `mise run test:foundations`.
+The authoring task passes the repository path explicitly;
+the resulting lesson needs no build tool or server to open.
+
+The expanded foundation pass succeeded as process `proc_14db`:
+
+- The target preview accepts another action while preserving the originally sent message.
+- Defining, calling, receiving a primitive return, and assigning to the DOM remain distinguishable.
+- The greeting button does nothing before listener attachment or after removal.
+- Array counts and comparisons drive the shown branch.
+- Zero-delay and delayed timers cannot retroactively replace an already-returned primitive.
+- A naive last-started completion rule works at count one and fails when scaled.
+- The valid callback repair and Promise collection preserve input order and report the first failure once.
+- Empty-input collection behavior is correct, with the callback/Promise observer timing difference visible.
+- Constructor execution, return, and fulfillment observation have the explained order.
+- A distinct outer Promise adopts either inner outcome despite a competing direct resolution attempt.
+- The page-error record is empty.
+
+The build in that pass produced 159,816 bytes.
+These checks establish implemented behavior, not that the revised teaching is accepted or sufficient.
+
+Independent reconstruction review identified additional gaps which were addressed in the source:
+prerequisites before callback coordination,
+actual callback history rather than a Node-only contract presented as generic browser behavior,
+matching collection policies,
+no imaginary public Promise state field,
+and explicit distinctions between real execution and teaching instrumentation.
+A later independent review of the rebuilt text timed out without returning findings.
+It is not counted as a passed review; obtain a new content review during final verification.
+
+Verification session: `promises-revision-verify`.
+The user-facing `promises-lesson-present` session still shows the first prototype;
+do not claim the revision has been presented.
+
 ## Next action
 
-Rebuild and verify `doc/planning/promises-teaching.local.html`,
-then visibly present the exact updated artifact in Helium.
-Preserve the initial prototype as local evidence and keep local artifacts ignored.
+Finish syntax highlighting using the existing Lezer parsers and repository `ssgHighlighter` mapping,
+including edited code and a verified fallback presentation.
+Finish full-content print counterparts and an inventory containing every example and workshop exercise.
+Then rerun the retained advanced scenarios, exports, offline/theme/layout/print checks,
+obtain independent content review, and visibly present the exact revised HTML in Helium.
 Write additions in chunks no larger than the requested 200 to 500 lines.
 Do not write the final skill or ask for final confirmation yet.
 Do not edit `AGENTS.md`.
