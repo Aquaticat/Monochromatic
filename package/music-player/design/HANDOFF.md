@@ -3411,7 +3411,15 @@ title alignment,
 and questionnaire mapping;
  every artifact restores and validates afterward.
  The isolated
-verifier must now be closed,
- the prior normal review replaced,
- and the cleared exact
-form presented in normal Helium.
+verifier is closed.
+ Emulator font scale is restored to 1.0,
+ temporary device XML files
+are removed,
+ and the emulator is stopped.
+ The prior normal review is closed.
+ The
+cleared exact form is active and non-minimized in normal Helium at KWin ID
+`{78195ca3-e2bd-4e50-a392-ef6729765795}` on `DP-3`,
+ 1080 × 1880.
+ Activate
+that window as the final operation and wait for the user's review.
