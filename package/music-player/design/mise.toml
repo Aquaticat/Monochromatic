@@ -177,7 +177,7 @@ const defaultTransportFingerprint = imageFingerprint({
   path: acceptedDefaultPath,
   crop: '1009x674+0+1400',
 });
-if (defaultTransportFingerprint !== '945d52d93b878c2b98a08b45bf812b5fa1af2dff450cfa7ba62df131dda4b99a') {
+if (defaultTransportFingerprint !== 'a6ebede2afec45fde01b3e2580579704eae774e51844c7cb61efa73dcc411a5a') {
   throw new Error('The 100% state changes transport 1B, seek position, or adaptive mode geometry.');
 }
 
@@ -188,16 +188,15 @@ if (uniqueCaptures.size !== renderPaths.length) {
 
 const expectedRowCounts = {
   '085': 1,
-  '100': 1,
+  '100': 2,
   '115': 2,
   '130': 2,
-  '150': 2,
+  '150': 4,
   '180': 4,
   '200': 4,
 };
 const expectedOneRowWidths = {
   '085': [153, 224, 276, 190],
-  '100': [138, 214, 284, 184],
 };
 const expectedDescriptions = ['Repeat track', 'Play in order', 'Shuffle Camellia', 'Shuffle all folders'];
 const expectedVisibleLabels = ['Repeat', 'In order', 'Shuffle all'];
@@ -296,19 +295,20 @@ const requiredFragments = [
   'Review accepted 3B across text sizes',
   'the installed <code>SettingsGoogle.apk</code> exposes exactly 85%, 100%, 115%, 130%, 150%, 180%, and 200%',
   'Shuffle Camellia',
-  '85% and 100% use one content-sized row. 115%, 130%, and 150% use 2×2. 180% and 200% use four rows.',
+  '85% uses one content-sized row. 100%, 115%, and 130% use 2×2. 150%, 180%, and 200% use four rows.',
   'longer names middle-ellipsize the subdirectory only while accessibility retains the full name',
   'Long-name middle-ellipsis proof',
-  'prototype commit f7590d9a3',
+  'prototype commit dea1d968f',
   'one row &gt; two rows &gt; four rows',
   'soft neutral current-track container, bold current title, tonal Open, and transport 1B',
-  'The one-row branch sizes each cell to its content and tries 12dp horizontal padding, then 6dp.',
+  'Every segment keeps at least 12dp horizontal content padding.',
+  'The control adds rows rather than reducing that floor.',
   'Production assistive technology must still verify one mutually exclusive group announcement.',
   'What should change? Enter “None” if the scale behavior is accepted.',
   'Answer changed. Prepare it again before copying or downloading.',
   'spaces alone do not complete this field.',
   'Math.max(0.02, value)',
-  'prototype commit 7b30db15e',
+  'prototype commit cedc2a668',
 ];
 for (const fragment of requiredFragments) {
   if (!question.includes(fragment)) {
@@ -322,6 +322,9 @@ const disallowedFragments = [
   'Shuffle current folder',
   'command-bar',
   'volume control',
+  'then 6dp',
+  'Compact 6dp',
+  'padding falls from 12dp to 6dp',
 ];
 for (const fragment of disallowedFragments) {
   if (question.includes(fragment)) {
