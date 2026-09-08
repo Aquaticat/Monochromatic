@@ -908,11 +908,63 @@ the continuous reading surface must not acquire its hue from the accent palette.
 Record this as a requirement for the eventual teaching skill, not a proposed preference question.
 No `AGENTS.md` change is authorized in this discovery session.
 
+## Independent-sending and neutral-surface progress
+
+The send-locked artifact is preserved as `doc/planning/promises-teaching-send-locked.local.html`,
+SHA-256 `aedb13c57ae4b49c22659a9dfb5ed12023d59ed89bb103ab45b2f4525fea9229`.
+
+The opening now keeps Send enabled, captures each sent message in its own callback,
+and uses one lesson-control listener to remove and invoke one stored reply at a time.
+The list is identified as application data, not a browser task or microtask queue.
+The fixture's one-reply/in-order behavior is disclosed, not presented as a universal chat rule.
+The primary path sends both questions before either reply; an unfinished draft is optional.
+History scrolls in a bounded keyboard-accessible region and expands for print.
+
+`proc_1d81` passed focused build/shop checks.
+`proc_1b08` additionally passed trusted native pointer clicks in the opaque iframe,
+multiple pending replies, a history-overflow control, restart with pending work,
+and a deliberately broken once-listener fan-out example that the one-reply assertion rejects.
+The integer-coordinate correction to that verifier is documented in
+`doc/troubleshooting/agent-browser-mouse-coordinates.md`.
+
+`neutral-reading.css` is inserted inside the shared `lesson-style`,
+so the page, isolated previews, reference downloads, and practice downloads receive the same base palette.
+The main light/dark backgrounds are `#f4f4f4` and `#1e1e1e`;
+dark panels are `#292929`, and code surfaces are neutral too.
+Gray values were derived from the previous colors' relative luminance, then rounded to sRGB bytes.
+Long callout backgrounds are neutral; bounded accents may retain color.
+
+`proc_d930` proved the new surface probe rejects the former background:
+`lesson/light: non-neutral background on html`, `246 !== 244`.
+`proc_c276` passed composited opaque/equal-RGB checks in both automatic preference modes,
+the opaque shop, downloaded shop, and print.
+It measures the largest background rectangle and checks selected reading surfaces;
+this is not a screenshot pixel-coverage census.
+Sampled visible text and syntax colors retained at least 4.5:1 measured contrast.
+Light/dark screenshots were inspected. No medical eye-fatigue outcome is claimed.
+
+`proc_fce8` passed the complete then-current suite in 140 seconds.
+This covers the corrected opening and backgrounds but does not establish the later chat's missing behavior.
+A downstream source audit found the same lock in the retained `chat-runtime`:
+`thread.controller !== null` returns early, and `thread.sendButton.disabled = true` blocks another send.
+The later teaching text also explicitly limits each conversation to one active send.
+Those paths must be corrected before declaring the lesson internally consistent.
+
+The isolated cancellation/deadline workshops are single-operation mechanism experiments,
+not chat models. Their restriction must be named as exercise scope;
+the reference chat and independent-build criteria must allow multiple sends in one conversation.
+
+A fresh public session, `promises-open-chat-present`, was opened as `proc_2cb9` with title
+`Promises: build a shop chat`.
+KWin reported it active and non-minimized on `DP-3`.
+The earlier `promises-shop-present` window and its possible user work were left untouched.
+This is an interim view; reference-chat changes and final verification remain pending.
+
 ## Next action
 
-Remove forced turn-taking, then neutralize long-form base surfaces.
-Verify the user's actual send-before-reply case and computed neutral backgrounds,
-update print/export material, and visibly present the corrected artifact.
+Correct and regress the downstream reference-chat send lock without reintroducing it through cancellation ownership.
+Keep per-send outcomes and drafts independent within each conversation.
+Then verify the combined artifact and exports/print, finish the visible handoff, and resume user critique.
 The final teaching skill remains unconfirmed and unimplemented.
 Continue discovery from the user's critique of the visibly revised Promise toy.
 Do not replace that critique with another acceptance checklist or an inference from passing tests.
