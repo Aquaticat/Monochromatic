@@ -17,6 +17,11 @@ export {
   reorderFootnoteDefinitions,
 } from './archive-footnote-order.ts';
 export {
+  closeFootnoteRelabel,
+  documentLabels,
+  type RelabelClosure,
+} from './archive-footnote-closure.ts';
+export {
   crossingFinding,
   type DefinitionLabelPair,
   definitionIndexes,

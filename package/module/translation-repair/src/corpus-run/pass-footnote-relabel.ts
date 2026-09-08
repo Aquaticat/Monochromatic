@@ -1,6 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  closeFootnoteRelabel,
+  documentLabels,
+} from '../archive-footnote-closure.ts';
+import {
   definitionLabelOrder,
   reorderFootnoteDefinitions,
 } from '../archive-footnote-order.ts';
@@ -158,19 +162,43 @@ export function relabelArchiveFootnotes(
       return `footnotes: left out of the relabel reading: ${detail}`;
     },);
   /**
+   * The map closed over the archive's labels, completed by elimination where
+   * that is forced; an empty map where the labels already agree.
+   */
+  const closure = closeFootnoteRelabel({
+    map: (reading.kind === 'relabel') ? reading.map : [],
+    archiveLabels: documentLabels({ text: archiveText, },),
+    originalLabels: documentLabels({ text: sourceText, },),
+  },);
+  if (closure.kind === 'open') {
+    l.warn(`FOOTNOTES entry=${entryId} archive labels stand, since the map read off ${basis} does not close: ${closure.detail}`,);
+    return {
+      archiveText,
+      changed: false,
+      findings: [
+        ...findings,
+        `footnotes: archive labels stand, since the map read off ${basis} does not close: ${closure.detail}`,
+      ],
+    };
+  }
+  /**
+   * The closed map, empty where the labels already agree.
+   */
+  const { map: closed, } = closure;
+  /**
    * The archive under the original's labels.
    */
-  const relabelled = (reading.kind === 'relabel')
+  const relabelled = (closed.length > 0)
     ? applyFootnoteRelabel({
       text: archiveText,
-      map: reading.map,
+      map: closed,
     },)
     : archiveText;
-  if (reading.kind === 'relabel') {
+  if (closed.length > 0) {
     /**
      * The map, spelled for the log and the finding.
      */
-    const spelled = reading.map
+    const spelled = closed
       .map(function spell(relabel,): string {
         return `[^${relabel.from}]->[^${relabel.to}]`;
       },)
@@ -207,7 +235,7 @@ export function relabelArchiveFootnotes(
     l.warn(`FOOTNOTES entry=${entryId} definitions stand: ${reordered.note}`,);
     findings.push(`footnotes: archive definitions stand: ${reordered.note}`,);
   }
-  if ((!reordered.changed) && (reading.kind !== 'relabel'))
+  if ((!reordered.changed) && (closed.length === 0))
     l.debug(`${relabelArchiveFootnotes.name}: entry ${entryId} archive footnotes agree with the original's`,);
   return {
     archiveText: reordered.text,
