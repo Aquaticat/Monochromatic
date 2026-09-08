@@ -5,7 +5,9 @@
 The user requested a skill to curb failures in AI teaching and drafted teaching materials.
 They requested grilling to discover the failures from their experience.
 Repository material remains potentially relevant.
-Discovery is ongoing; no skill design has been confirmed or implemented.
+The initial discovery and concrete prototype critique have been recorded.
+[Proposed acceptance checks](teaching-skill-acceptance.md) synthesize the requirements for confirmation.
+No skill design has been confirmed or implemented.
 
 ## Evidence from the user
 
@@ -64,12 +66,14 @@ Their examples specify meanings, not exact wording or a canned questionnaire:
   - Observed failure: quantities without usable calibration.
   - Observed failure: procurement instructions without concrete access to the required item.
   - Observed failure: measurements without units.
-  - Open: other failures during teaching after intake is done correctly.
-  - Open: examples that distinguish successful teaching from merely precise instructions.
+  - Captured: profile-based framing, prerequisite order, definitions, and role-appropriate mental models.
+  - Captured: apples and scaling as an example of motivating an abstraction through a demonstrated need.
+  - Captured: independent performance and explanation differ from inspecting supplied working code.
 - Present the material.
   - Settled: default HTML properties and availability of Markdown alternative.
   - Settled: optional background can use foldable `<details>` sections.
-  - Open: useful interaction and visual behavior in the teaching artifact.
+  - Captured: concept-revealing interactions, state-linked code, syntax highlighting, and honest affordances.
+  - Settled: preserve both browser interactivity and full teaching substance in the printout.
 - Determine remaining scope and operating boundaries after the failures are understood.
   - Open: how these requirements apply to live teaching and drafted materials.
   - Open: acceptance examples and confirmation of shared understanding.
@@ -174,9 +178,13 @@ Clarification should improve the lesson rather than manufacture unreliable requi
 Independent advisor review also identified the novice-knowledge mismatch
 and the inappropriate product-specification framing before the user confirmed them.
 
-## Lesson implementation direction
+## Initial lesson implementation direction
 
-Build the authorized `*.local.html` now.
+This was the direction used for the first prototype.
+The user's critique and proposed acceptance checks identify why it was insufficient;
+do not treat it as the blueprint for a repaired lesson.
+
+The initial action was to build the authorized `*.local.html`.
 Use repeatable fault scenarios and an optional random mode for the offline API.
 The simulated chat application gives Promise behavior a concrete purpose;
 it is not a production AI integration project.
@@ -265,8 +273,8 @@ The temporary KWin script was unloaded without closing the user's lesson window.
 
 The delivered local file's SHA-256 is
 `dd9df982e76e4d4e4d7db9def3236a1f2f75af354637c4ae7074c3b4606f90ef`.
-The artifact is ready as the concrete example for critique,
-not an accepted or proven teaching method.
+The artifact served as the concrete example for the recorded critique.
+It is not an accepted or proven teaching method.
 
 Sources consulted for semantic verification:
 
@@ -414,11 +422,31 @@ with an unrelated lecture on scheduling exceptions.
 - <https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener>
 - <https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent>
 
+## Requirements synthesis review
+
+`teaching-skill-acceptance.md` groups proposed checks by learner framing,
+observable problems and causal explanations,
+HTML and print behavior,
+and verification evidence.
+It keeps the cooking, apples, and Promise examples as concrete acceptance cases.
+
+Independent advisor review prompted these corrections before confirmation:
+
+- Apply failure-driven scaling when an abstraction addresses an existing method's limitation,
+  not as a universal prerequisite for teaching every fact.
+- Preserve the requested real pre-Promise callback history,
+  separately from the Promise constructor pattern that precedes `Promise.withResolvers()`.
+- Preserve all reasons Q5 failed without banning pedagogically relevant audience questions.
+- Separate artifact behavior, content review, teaching-effectiveness evidence, and demonstrated mastery.
+
+The highlighter's producer, consumer, registration, and style paths were inspected.
+Standalone integration remains unverified and is not claimed.
+No lesson rewrite, skill implementation, or `AGENTS.md` edit has occurred during this synthesis.
+
 ## Next action
 
-Synthesize the elicited requirements and concrete acceptance examples independently.
-Use the confirmed role distinction to diagnose the remaining lesson wording,
-not to ask the user to explain every instance.
-Then seek shared-understanding confirmation before writing the final teaching skill.
+Present the synthesized requirements and seek shared-understanding confirmation.
+Do not write the final skill until the user confirms or delegates that decision.
+Any remaining corrections revise the proposal rather than becoming new assumptions.
 Keep the user-facing presentation session open and preserve the user's reading position.
 Do not edit `AGENTS.md` or treat the critique as resolved by superficial lesson edits.
