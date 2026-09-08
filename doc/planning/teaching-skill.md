@@ -5,7 +5,8 @@
 The user requested a skill to curb failures in AI teaching and drafted teaching materials.
 They requested grilling to discover the failures from their experience.
 Repository material remains potentially relevant.
-Discovery is ongoing. A revised prototype is being implemented and verified, but has not been delivered yet.
+Discovery is ongoing. The revised prototype has been operationally verified and visibly presented for critique.
+Its teaching effectiveness and the sufficiency of the proposed skill requirements remain unestablished.
 The shared-understanding checkpoint was premature and is withdrawn.
 [Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
 The user requires an updated Promise toy before continuing to weed out failure modes.
@@ -441,9 +442,9 @@ Independent advisor review prompted these corrections before confirmation:
 - Preserve all reasons Q5 failed without banning pedagogically relevant audience questions.
 - Separate artifact behavior, content review, teaching-effectiveness evidence, and demonstrated mastery.
 
-The highlighter's producer, consumer, registration, and style paths were inspected.
-Standalone integration remains unverified and is not claimed.
-No lesson rewrite, skill implementation, or `AGENTS.md` edit has occurred during this synthesis.
+At that synthesis stage, the highlighter's producer, consumer, registration, and style paths were inspected,
+but standalone integration had not yet been built or verified.
+No lesson rewrite, skill implementation, or `AGENTS.md` edit had occurred during that synthesis.
 
 ## Rejected premature confirmation checkpoint
 
@@ -458,7 +459,7 @@ The assistant must demonstrate its interpretation through a materially revised t
 then continue discovery from that artifact's failures.
 The acceptance proposal is not an approved design or a reason to close the interview.
 
-## Revised prototype in progress
+## Revised prototype reconstruction
 
 The first artifact is preserved at `doc/planning/promises-teaching-first.local.html`.
 Its SHA-256 still matches the recorded first-delivery hash.
@@ -534,9 +535,9 @@ Review output is evidence to check, not a reason to alter correct content blindl
 
 ## Revised presentation verification
 
-`mise run test:all` passed as `proc_cc0f` after rebuilding the current candidate.
-This runs assembly, foundations, presentation, and native Print/Cancel checks.
-It is not the advanced app/workshop regression pass;
+The historical `mise run test:all` pass `proc_cc0f` ran assembly,
+foundations, presentation, and native Print/Cancel checks.
+At that point the task did not yet include the advanced app/workshop regression pass;
 that separate adapted driver ran as `proc_cf10`.
 Its chat scenarios, workshop starters/repairs, explicit Stop branch,
 capstone, navigation, and downloads passed.
@@ -589,25 +590,91 @@ Current visual evidence in `~/temp/agent/promises-revision/`:
 - `native-print-preview.png`, showing the enabled native print action and Cancel control.
   It is not evidence that the embedded PDF preview had finished painting.
 
-The off-screen native browser remains managed as process `proc_e7c6`.
-Its current profile path is recorded in `print-profile-path.txt`;
-read that profile's `DevToolsActivePort` to reacquire its endpoint.
-The user-facing original browser has not been navigated or used for this verification.
+The native print verifier used the off-screen browser in process `proc_e7c6`.
+It reads `print-profile-path.txt` and that profile's `DevToolsActivePort`, rather than hardcoding an endpoint.
+The process was stopped after verification.
+No claim is retained about the original presentation window's current existence or contents.
+The original HTML file itself remains preserved.
 
-Verification session: `promises-revision-verify`.
-The user-facing `promises-lesson-present` session still shows the first prototype;
-do not claim the revision has been presented.
+## Final revised verification and visible handoff
+
+The verified revised HTML is 400,193 bytes.
+It contains 14 chapters, ten foundation labs, ten workshop choices, and eleven native code editors.
+The original file's SHA-256 remains
+`dd9df982e76e4d4e4d7db9def3236a1f2f75af354637c4ae7074c3b4606f90ef`.
+Both HTML artifacts remain ignored and local-only.
+
+`mise run test:all` passed as `proc_28b9` in 104 seconds.
+The task now sequentially runs assembly, foundations, presentation, native Print/Cancel,
+the isolated error-channel positive control, and the advanced regression driver.
+The advanced driver uses a fresh error record and finishes with a genuinely empty record;
+it does not filter the positive-control text from lesson errors.
+Its coverage includes policy outcomes, cancellation during each asynchronous phase,
+conversation ownership, shared spacing, seeded decisions,
+workshop starters and repairs, the explicit Stop branch, capstone controls, navigation, and downloads.
+Capstone controls passing is not evidence of independent learner mastery.
+
+The separate `mise run test:exports` passed as `proc_f17b` in 18 seconds.
+It reopened and exercised the actual reference and learner downloads,
+all ten foundation downloads, and an edited source-boundary example.
+The boundary text remained literal and did not inject an image or unexpected page error.
+The reference handled success and cancellation; the learner greeting ran independently.
+A reachable loopback HTTP canary became blocked in a fresh browser launched through a non-forwarding proxy,
+without increasing the origin's canary count.
+The proxy also rejects CONNECT in its implementation;
+there was no separate HTTPS-canary test or physical-disconnection test.
+A pre-reload `navigator.onLine` check is not used as proof that the reloaded document was offline.
+
+Print evidence now covers 503 independently collected teaching entries and 62 appendix entries.
+Every entry was found in extracted PDF text using whitespace-normalized comparisons.
+This checks inventoried text, not every page's visual layout or exact source whitespace.
+The PDF has 82 Letter pages and is 1,672,499 bytes.
+Pages 1, 2, 23, 32, 39, and 78 were rendered and visually inspected.
+Not every PDF page was visually inspected.
+Static rejection choices include the answer;
+static chat paths include every scenario, simultaneous sends, Stop, and a paper-tracing exercise.
+Printed external source links expose their destinations.
+The browser's interactivity remains available rather than being removed to make printing easier.
+
+The latest independent GLM review found no consequential causal error or blocking prerequisite
+in the visible excerpts supplied to it.
+That is bounded source review, not exhaustive content approval or learner evidence.
+User critique of this revision is still required for discovery.
+
+Required tool investigations are recorded in:
+
+- `doc/troubleshooting/agent-browser-errors-clear.md`:
+  isolate deliberate error-monitor failures from the lesson's record.
+- `doc/troubleshooting/agent-browser-partial-viewport-click.md`:
+  scroll and verify the actual click point before interpreting a download timeout.
+  A private selector-geometry prototype also passed real pointer checks;
+  the installed tool remains unchanged, and the additive upstream comment is only a local draft.
+- `doc/troubleshooting/agent-browser-offline-verification.md`:
+  use a positively tested rejecting proxy rather than assuming emulation state survives navigation.
+- `doc/troubleshooting/agent-browser-print-lifecycle.md` and
+  `doc/troubleshooting/agent-browser-emulation-session.md`:
+  distinguish completed native cycles and same-session observations from premature or unmeasured assertions.
+
+The revised artifact was opened in headed Helium session `promises-revised-present`,
+in tab `revised-promises`, at its exact file URL.
+The title is `Build the connections behind a chat: revised Promise lesson`.
+Browser inspection confirmed its chapter/lab counts and ready highlighting/print material.
+KWin inspection confirmed the matching window active, non-minimized, and on the selected output `DP-2`
+at the time of handoff.
+The page was left at `#goal-preview`, with that preview fully in the viewport.
+The temporary KWin activation script was unloaded afterward.
+This is a handoff-time observation, not a claim of sustained focus.
+
+Visible handoff captures:
+`~/temp/agent/promises-revision/revised-visible-handoff.png` and `revised-visible-goal.png`.
+The disposable native-print process `proc_e7c6` and rejecting-proxy process `proc_f6d4` were stopped.
+Successful disposable verification drivers close their sessions.
+Keep the user-facing `promises-revised-present` window open.
 
 ## Next action
 
-Isolate the error-channel positive control and rerun the adapted advanced regression pass.
-Document the installed `errors --clear` behavior with its source trace and verified workaround.
-Reopen and exercise the revised exports;
-verify offline operation and the current PDF's rendered pages.
-Finish a focused content review without treating reviewer absence claims as source evidence.
-Then visibly present the exact revised HTML in Helium and continue discovery from the user's critique.
-Close disposable browser sessions and stop the off-screen Cage process after verification,
-but keep the user's presentation window open.
+Continue discovery from the user's critique of the visibly revised Promise toy.
+Do not replace that critique with another acceptance checklist or an inference from passing tests.
 Write additions in chunks no larger than the requested 200 to 500 lines.
 Do not write the final skill or ask for final confirmation yet.
 Do not edit `AGENTS.md`.
