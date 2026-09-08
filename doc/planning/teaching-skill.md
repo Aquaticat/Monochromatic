@@ -7,6 +7,8 @@ They requested grilling to discover the failures from their experience.
 Repository material remains potentially relevant.
 Discovery is ongoing. The revised prototype has been operationally verified and visibly presented for critique.
 Its teaching effectiveness and the sufficiency of the proposed skill requirements remain unestablished.
+The user has now rejected the opening preview as confusing and detached from a real-world example.
+That opening has not yet been changed in the HTML.
 The shared-understanding checkpoint was premature and is withdrawn.
 [Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
 The user requires an updated Promise toy before continuing to weed out failure modes.
@@ -682,8 +684,55 @@ To repeat verification, `ui:print` and `ui:offline-fixture` recreate their respe
 those services are not left running after delivery.
 Keep the user-facing `promises-revised-present` window open.
 
+## Opening preview rejected: observable mechanics without a human purpose
+
+The user quoted the opening instructions about sending a message,
+editing the box, pressing an independent-action button, and receiving the original text back.
+Their assessment: "This is extremely confusing and detached from any kind of real world example."
+
+Source inspection confirms the problem is not confined to that paragraph:
+
+- `~/temp/agent/promises-revision/opening.html:9` introduces a sequence of test actions,
+  not a person with a reason to use the application.
+- `~/temp/agent/promises-revision/basic-samples.html:1` supplies an echo,
+  an unrelated counter, and a 1,200 ms window for the prescribed actions.
+- `opening.html:53` also uses resetting that counter to motivate functions.
+  Replacing only the opening prose would leave the same disconnected example downstream.
+
+The assistant confused an observable implementation property with a meaningful application problem.
+Captured-input and responsiveness checks can verify code,
+but they do not explain why anyone would send this message or want its echoed reply.
+"Independent action" names the experimenter's classification, not an understandable activity.
+The opening also foregrounds a programmer's input-capture concern before establishing the user's task.
+Passing the mechanical checks did not address this failure.
+
+A proposed illustrative replacement is a hypothetical shop-support conversation:
+ask whether Saturday delivery is available,
+then draft a question about delivery cost while the answer is pending.
+The sent question belongs in a visible transcript;
+the answer should address that question without overwriting the unfinished follow-up.
+The example must disclose that the shop and response delay are simulated locally.
+This is an illustration of the correction, not an accepted final scenario or an implemented change.
+
+Independent review confirmed a substantive replacement needs different behavior,
+not shop-themed labels on the echo and counter:
+
+- Meaningful answers must depend on the sent question, rather than repeating arbitrary text.
+- Sending adds the question to the transcript and makes the composer available for the next draft.
+- The later answer is appended to the conversation; the unsent draft remains in the composer.
+- Observation must not depend on completing a typing-and-clicking race within the delay.
+- The function motivation should distinguish rerunning initialization from invoking a selected operation,
+  with conversation or draft state providing the meaningful consequence.
+- Neither responsiveness, captured input, nor draft preservation should be attributed automatically to Promises.
+
+Abstract mechanism experiments are not prohibited.
+Their question needs an understandable purpose before the experiment's controls become the learner's task.
+No final skill confirmation or `AGENTS.md` edit follows from this critique.
+
 ## Next action
 
+Replace the rejected opening's task and interaction, not merely its wording,
+and revisit the dependent function motivation before claiming that correction is implemented.
 Continue discovery from the user's critique of the visibly revised Promise toy.
 Do not replace that critique with another acceptance checklist or an inference from passing tests.
 Write additions in chunks no larger than the requested 200 to 500 lines.
