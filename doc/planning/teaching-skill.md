@@ -1062,12 +1062,14 @@ These are separate measurements, not interchangeable geometry evidence.
 The page was scrolled to expose both controls without replacing drafts or replaying the conversation.
 
 The print and offline fixtures, `proc_8a49` and `proc_efdd`, have been stopped.
-`proc_756c` is closing their remaining print controller and the owned headless verification session.
-Disposable profile removal and final scoped documentation status checks remain pending.
+`proc_756c` successfully closed the remaining print controller and the owned headless verification session.
+The owned `helium-print-profile-qZ4J6X` and `exports-profile-Yfe3Ci` directories were removed.
+The final session listing retains only the current and earlier public presentation sessions.
+Repository status still shows only the previously observed unrelated changes outside this documentation.
 
 ## Next action
 
-Finish the owned verification-resource cleanup, then resume critique of the visible corrected example.
+Resume critique of the visible corrected example; no final skill confirmation has been requested.
 Independent sending and neutral surfaces are implemented and operationally checked;
 those checks do not establish teaching acceptance, learner independence, or mastery.
 The final teaching skill remains unconfirmed and unimplemented.
