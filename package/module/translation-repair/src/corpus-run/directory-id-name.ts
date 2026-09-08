@@ -122,6 +122,32 @@ function nameOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): strin
 }
 
 /**
+ * Whether metadata still shows the directory id where a person's name goes.
+ *
+ * @param metadata - parsed front matter block
+ *
+ * @param entryId - directory id of the entry
+ *
+ * @returns Whether the visible name is the directory id
+ *
+ * @example
+ * ```ts
+ * namesDirectoryId({ metadata, entryId: 'Cat', },);
+ * ```
+ */
+export function namesDirectoryId(
+  {
+    metadata,
+    entryId,
+  }: {
+    readonly metadata: FrontMatterBlock;
+    readonly entryId: string;
+  },
+): boolean {
+  return nameOf({ metadata, },) === entryId;
+}
+
+/**
  * Reads the aliases of a front matter block, split on every separator the
  * corpus uses and trimmed; empty when there are none.
  *

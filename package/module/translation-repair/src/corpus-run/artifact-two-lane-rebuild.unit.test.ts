@@ -196,7 +196,7 @@ function writeAndRead(
   }: {
     readonly prepared: PreparedDocumentPair;
     readonly strip: readonly string[];
-    readonly generation?: 4 | 5;
+    readonly generation?: 4 | 5 | 11;
   },
 ): ReturnType<typeof parseSettledTwoLaneArtifact> {
   /**
@@ -336,6 +336,73 @@ await describe({
           .toBe(preparationIdentity({ prepared: legacyPrepared, }),);
         expect(preparationIdentity({ prepared: current.prepared, }),)
           .toBe(preparationIdentity({ prepared: currentPrepared, }),);
+      },
+    },),
+    it({
+      name: 'REBUILDS GENERATION 11 WITHOUT SLICE ZERO where the record says the archive\'s front matter '
+        + 'stood, reading that off the file rather than recomputing the rule, and with it where the '
+        + 'record says nothing',
+      fn: async () => {
+        /**
+         * Original carrying visible metadata.
+         */
+        const sourceText = '---\nname: 猫猫\n---\n\n猫睡了。\n';
+        /**
+         * Translation whose metadata the archive already translated.
+         */
+        const targetText = '---\nname: Maomao\n---\n\nThe cat slept.\n';
+        /**
+         * Slicing that left the archive's front matter alone.
+         */
+        const standingPrepared = prepareDocumentPair({
+          sourceText,
+          targetText,
+          frontMatterAuthority: 'archive',
+        },);
+        /**
+         * Slicing that rendered it, as every generation before eleven did.
+         */
+        const renderedPrepared = prepareDocumentPair({
+          sourceText,
+          targetText,
+        },);
+        /**
+         * The standing record read back.
+         */
+        const standingArtifact = writeAndRead({
+          prepared: standingPrepared,
+          strip: [],
+          generation: 11,
+        },);
+        expect(standingArtifact.preparation.frontMatterAuthority,).toBe('archive',);
+        /**
+         * Rebuild off the standing record.
+         */
+        const standing = rebuildPreparation({
+          artifact: standingArtifact,
+          sourceText,
+          targetText,
+        },);
+        expect(standing.prepared.slices.some(function hasMetadata(slice,): boolean {
+          return slice.syntax === 'front-matter';
+        },),).toBe(false,);
+        expect(standing.prepared.frontMatterAuthority,).toBe('archive',);
+        expect(preparationIdentity({ prepared: standing.prepared, }),)
+          .toBe(preparationIdentity({ prepared: standingPrepared, }),);
+        /**
+         * Rebuild off a record that says nothing, which renders.
+         */
+        const rendered = rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: renderedPrepared,
+            strip: [],
+            generation: 11,
+          },),
+          sourceText,
+          targetText,
+        },);
+        expect(rendered.prepared.slices.at(0,)?.syntax,).toBe('front-matter',);
+        expect(rendered.prepared.frontMatterAuthority,).toBeUndefined();
       },
     },),
     it({

@@ -18,6 +18,7 @@ import {
 import { repairArchiveBlocks, } from './archive-block-repair.ts';
 import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
 import { passArchiveText, } from './pass-archive.ts';
+import { frontMatterAuthorityOf, } from './archive-front-matter.ts';
 
 //region Pass preparation
 // Corpus-specific shell owns pairing cache namespaces and reviews inherited
@@ -109,6 +110,23 @@ export async function preparePassEntry(
     l,
   },);
   /**
+   * Whose front matter the page carries, decided on the archive as inherited
+   * and shared by both preparations, since the block correction round never
+   * touches metadata.
+   */
+  const frontMatterAuthority = frontMatterAuthorityOf({
+    entryId,
+    sourceText,
+    archiveText,
+  },);
+  l.info(
+    `FRONT MATTER entry=${entryId} authority=${frontMatterAuthority}: ${
+      (frontMatterAuthority === 'archive')
+        ? 'the archive translated it, so it ships as it stands and no lane writes it'
+        : 'the archive never translated it, so the lanes render slice zero'
+    }`,
+  );
+  /**
    * Cache for block-pairing rounds across revised archive preparations.
    */
   const pairingCache = await openPairingCache({
@@ -151,6 +169,7 @@ export async function preparePassEntry(
     exchangeTimeoutMs,
     l,
     contextLines,
+    frontMatterAuthority,
   },);
   /**
    * Unclaimed blocks not already licensed unchanged.
@@ -195,6 +214,7 @@ export async function preparePassEntry(
     exchangeTimeoutMs,
     l,
     contextLines,
+    frontMatterAuthority,
   },);
   /**
    * Blocks the single correction round could not claim.

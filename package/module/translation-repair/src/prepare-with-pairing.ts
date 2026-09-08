@@ -1,4 +1,5 @@
 import { createHash, } from 'node:crypto';
+import type { FrontMatterAuthority, } from './prepared-document-pair.ts';
 
 import {
   type Logger,
@@ -118,6 +119,7 @@ export async function prepareDocumentPairWithRoster(
     pairingCache,
     sectionCache,
     contextLines,
+    frontMatterAuthority,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -130,6 +132,7 @@ export async function prepareDocumentPairWithRoster(
     readonly pairingCache?: SliceCache<PairedSectionRecord>;
     readonly sectionCache?: SliceCache<PairedDocumentRecord>;
     readonly contextLines?: readonly string[];
+    readonly frontMatterAuthority?: FrontMatterAuthority;
   }>,
 ): Promise<PairedPreparation> {
   /**
@@ -495,6 +498,7 @@ export async function prepareDocumentPairWithRoster(
     ...((sliceCharBudget === undefined) ? {} : { sliceCharBudget, }),
     ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
     ...((contextLines === undefined) ? {} : { contextLines, }),
+    ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
     blockPairings,
   },);
 

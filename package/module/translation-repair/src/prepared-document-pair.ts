@@ -63,6 +63,20 @@ export type UnclaimedTargetBlock = {
 };
 
 /**
+ * Who the page's front matter comes from.
+ *
+ * `rendered` is the lanes' rendering of the source's metadata, judged like
+ * every other slice; `archive` is the archive's own bytes, left alone by the
+ * owner's rule of 2026-09-08 (`corpus-run/archive-front-matter.ts`).
+ *
+ * @example
+ * ```ts
+ * const authority: FrontMatterAuthority = 'archive';
+ * ```
+ */
+export type FrontMatterAuthority = 'archive' | 'rendered';
+
+/**
  * A document pair reduced to the slices both lanes run over.
  *
  * @example
@@ -77,6 +91,12 @@ export type PreparedDocumentPair = {
    * Current preparations omit it and use metadata-aware identity scheme.
    */
   readonly legacyIdentity?: true;
+
+  /**
+   * Marks a preparation whose front matter is the archive's, left alone,
+   * rather than a slice zero the lanes render; omitted when they render it.
+   */
+  readonly frontMatterAuthority?: 'archive';
 
   /**
    * Original document this preparation was made from.

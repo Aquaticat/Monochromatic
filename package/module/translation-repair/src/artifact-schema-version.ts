@@ -12,6 +12,7 @@ import {
   ARTIFACT_SCHEMA_VERSION_V8,
   ARTIFACT_SCHEMA_VERSION_V9,
   ARTIFACT_SCHEMA_VERSION_V10,
+  ARTIFACT_SCHEMA_VERSION_V11,
 } from './corpus-run/artifact-two-lane-contract.ts';
 
 //region Artifact schema version
@@ -155,6 +156,7 @@ export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V8,
   ARTIFACT_SCHEMA_VERSION_V9,
   ARTIFACT_SCHEMA_VERSION_V10,
+  ARTIFACT_SCHEMA_VERSION_V11,
 ];
 
 /**

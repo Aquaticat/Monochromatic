@@ -7,7 +7,7 @@ import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts'
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
 import {
-  ARTIFACT_SCHEMA_VERSION_V10,
+  ARTIFACT_SCHEMA_VERSION_V11,
   type ArtifactJsonValue,
   type ArtifactSectionAlignment,
   type ArtifactSectionCorrespondence,
@@ -247,7 +247,7 @@ export function buildSettledTwoLaneArtifact(
       },),
   },);
   return {
-    artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V10,
+    artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V11,
     id: entryId,
     tip,
     pipelineDigest,
@@ -265,6 +265,9 @@ export function buildSettledTwoLaneArtifact(
       archiveText: prepared.targetText,
       sliceCount: prepared.slices
         .length,
+      ...((prepared.frontMatterAuthority === undefined)
+        ? {}
+        : { frontMatterAuthority: prepared.frontMatterAuthority, }),
 
       // CHARACTER counts, named that way on purpose: they are UTF-16 code unit
       // lengths for reading an entry's size off a log line, and they are NOT

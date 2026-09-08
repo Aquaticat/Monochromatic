@@ -1,11 +1,12 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import { isInsertionChunk, } from '../chunk-placement.ts';
-import {
-  type FrontMatterBlock,
-  splitFrontMatter,
-} from '../front-matter.ts';
+import { splitFrontMatter, } from '../front-matter.ts';
 import { validateFrontMatterTranslation, } from '../front-matter-translation.ts';
-import { directoryIdNameStands, } from './directory-id-name.ts';
+import { archiveFrontMatterStands, } from './archive-front-matter.ts';
+import {
+  directoryIdNameStands,
+  namesDirectoryId,
+} from './directory-id-name.ts';
 
 //region Front matter publication completeness
 // Final page must retain parseable metadata under explicit reviewed slice.
@@ -49,7 +50,8 @@ export class FrontMatterCompletenessError extends Error {
    * preparation carries no metadata slice where it must, `invalid-page` when
    * the page's metadata does not parse or breaks the identity or attribution
    * rules, `directory-id-name` when the page's visible name is the directory id
-   * while the source's is not
+   * while the source's is not, `archive-front-matter` when the archive's
+   * front matter stands and the page or the preparation did not leave it alone
    */
   public constructor(
     {
@@ -57,46 +59,12 @@ export class FrontMatterCompletenessError extends Error {
       reason,
     }: {
       readonly entryId: string;
-      readonly reason: 'missing-slice' | 'invalid-page' | 'directory-id-name';
+      readonly reason: 'missing-slice' | 'invalid-page' | 'directory-id-name' | 'archive-front-matter';
     },
   ) {
     super(`entry ${entryId} front matter is not publishable (${reason})`,);
     this.name = 'FrontMatterCompletenessError';
   }
-}
-
-/**
- * Whether metadata still shows the directory id where a person's name goes.
- *
- * @param metadata - parsed front matter block
- *
- * @param entryId - directory id of the entry
- *
- * @returns Whether the visible name is the directory id
- *
- * @example
- * ```ts
- * namesDirectoryId({ metadata, entryId: 'Cat', },);
- * ```
- */
-function namesDirectoryId(
-  {
-    metadata,
-    entryId,
-  }: {
-    readonly metadata: FrontMatterBlock;
-    readonly entryId: string;
-  },
-): boolean {
-  /**
-   * Parsed YAML, unknown until proven a record with a name.
-   */
-  const { data, } = metadata;
-  if (((typeof data) !== 'object') || (data === null))
-    return false;
-  if (!('name' in data))
-    return false;
-  return (data as { readonly name: unknown; }).name === entryId;
 }
 
 /**
@@ -187,11 +155,33 @@ export function assertFrontMatterComplete(
   }
 
   /**
-   * Metadata slices, which must be exactly slice zero.
+   * Metadata slices, which must be exactly slice zero where the lanes render
+   * the front matter and none at all where the archive's stands.
    */
   const metadataSlices = slices.filter(function isFrontMatter(slice,): boolean {
     return slice.syntax === 'front-matter';
   },);
+  // THE ARCHIVE'S FRONT MATTER STANDS (the owner's rule of 2026-09-08): the
+  // page carries it byte for byte and the preparation made no metadata slice,
+  // since nothing was to render it. Recomputed here from the two documents
+  // rather than read off the preparation, so a preparation that rendered a
+  // standing archive is refused instead of trusted.
+  if (archiveFrontMatterStands({
+    entryId,
+    sourceText,
+    archiveText,
+  },)) {
+    if ((metadataSlices.length > 0)
+      || (pageMetadata === undefined)
+      || (archiveMetadata === undefined)
+      || (pageMetadata.raw !== archiveMetadata.raw)) {
+      throw new FrontMatterCompletenessError({
+        entryId,
+        reason: 'archive-front-matter',
+      },);
+    }
+    return;
+  }
   /**
    * Sole metadata slice when count is valid.
    */

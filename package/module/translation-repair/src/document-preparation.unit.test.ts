@@ -105,6 +105,34 @@ await describe({
     },),
 
     it({
+      name: 'MAKES NO METADATA SLICE UNDER THE ARCHIVE\'S AUTHORITY, the owner\'s rule of 2026-09-08, marking '
+        + 'the preparation without the legacy identity, so the body slices start at zero and the archive\'s '
+        + 'front matter ships as it stands',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          frontMatterAuthority: 'archive',
+        },);
+        expect(prepared.slices.some(function isMetadata(slice,): boolean {
+          return slice.syntax === 'front-matter';
+        },),).toBe(false,);
+        expect(prepared.slices.at(0,)?.target.sliceIndex,).toBe(0,);
+        expect(prepared.frontMatterAuthority,).toBe('archive',);
+        expect(prepared.legacyIdentity,).toBeUndefined();
+        /**
+         * The same pair rendered, for the count the archive's authority removes.
+         */
+        const rendered = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+        },);
+        expect(rendered.slices.length,).toBe(prepared.slices.length + 1,);
+        expect(rendered.frontMatterAuthority,).toBeUndefined();
+      },
+    },),
+
+    it({
       name: 'indexes slices GLOBALLY and in document order, which is what lets '
         + 'a cached outcome and a spliced replacement name the same slice. '
         + 'Per-section indexes would collide the moment any section subdivided',

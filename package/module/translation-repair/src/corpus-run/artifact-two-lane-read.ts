@@ -25,6 +25,10 @@ import {
 } from '../artifact-key-vocabulary.ts';
 import { assertRecordedComparisonMatches, } from './artifact-two-lane-read-comparison.ts';
 import { parseLaneSelection, } from './artifact-two-lane-read-contest.ts';
+import {
+  requireArchiveAuthority,
+  requireDigest,
+} from './artifact-two-lane-read-fields.ts';
 import type {
   ParsedTwoLaneArtifact,
   ParsedPreparation,
@@ -34,10 +38,6 @@ import { parseConsolidation, } from './artifact-two-lane-read-consolidate.ts';
 import { parseBlockPairing, } from './artifact-two-lane-read-pairing.ts';
 import { parseSectionPairing, } from './artifact-two-lane-read-section-pairing.ts';
 import { parseComparisonRow, } from './artifact-two-lane-read-rows.ts';
-import {
-  assertPipelineDigest,
-  type PipelineDigest,
-} from './pipeline-digest.ts';
 
 //region Artifact version 2 reading
 // Reading one whole version 2 artifact, and refusing everything it cannot
@@ -102,50 +102,6 @@ function requireIdentity(
 }
 
 /**
- * Reads the digest naming the built output that ran.
- *
- * @param value - recorded digest
- *
- * @param path - dotted path for error message
- *
- * @returns Digest, narrowed by the same check a fresh one passes
- *
- * @throws {@link ArtifactParseError} when the value is not a string, or not
- * shaped like a digest
- *
- * @example
- * ```ts
- * const digest = requireDigest({ value: artifact.pipelineDigest, path, },);
- * ```
- */
-function requireDigest(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): PipelineDigest {
-  /**
-   * Recorded string, before it is known to be a digest.
-   */
-  const held = requireString({
-    value,
-    path,
-  },);
-  try {
-    assertPipelineDigest(held,);
-  } catch (error) {
-    throw new ArtifactParseError({
-      path,
-      reason: `a pipeline digest: ${caughtValueText(error,)}`,
-    },);
-  }
-  return held;
-}
-
-/**
  * Reads the slicing both lanes ran over.
  *
  * @param value - preparation JSON
@@ -184,6 +140,7 @@ function parsePreparation(
       'identity',
       'archiveText',
       'sliceCount',
+      'frontMatterAuthority',
       'sourceChars',
       'targetChars',
       'sourceBytes',
@@ -227,6 +184,19 @@ function parsePreparation(
       value: record.sliceCount,
       path: `${path}.sliceCount`,
     },),
+
+    // ABSENT MEANS RENDERED. A file written before the archive's front matter
+    // stood carries no authority, and so does one whose lanes rendered slice
+    // zero; only a standing archive is recorded, so the one value the field
+    // can carry is 'archive'.
+    ...((record.frontMatterAuthority === undefined)
+      ? {}
+      : {
+        frontMatterAuthority: requireArchiveAuthority({
+          value: record.frontMatterAuthority,
+          path: `${path}.frontMatterAuthority`,
+        },),
+      }),
     sourceChars: requireCount({
       value: record.sourceChars,
       path: `${path}.sourceChars`,

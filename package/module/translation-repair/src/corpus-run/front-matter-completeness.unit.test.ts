@@ -4,10 +4,12 @@
  * STRUCTURAL CHECKS ONLY, by the owner's decision of 2026-09-02: the metadata
  * slice sits where the preparation put it, the page parses, the identity and
  * attribution rules hold, and the visible name is not the directory id where
- * the source names the person differently. A page whose metadata equals the
- * archive's is not a question this guard asks any more; the lanes, the contest
- * and the gate judge metadata like every other slice, and the artifact keeps
- * their records.
+ * the source names the person differently. Those apply where the lanes render
+ * the front matter. Where the archive translated it, the owner's rule of
+ * 2026-09-08 applies instead: the archive's front matter stands, the
+ * preparation made no metadata slice, and the page carries the archive's
+ * bytes, which this guard recomputes from the two documents rather than
+ * trusting the preparation.
  *
  * @module
  */
@@ -23,6 +25,7 @@ import {
   type ChunkPair,
   FrontMatterCompletenessError,
   frontMatterSlice,
+  namesDirectoryId,
   splitFrontMatter,
 } from '../../dist/final/node/index.mjs';
 
@@ -32,9 +35,17 @@ import {
 const SOURCE_TEXT = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n\nBody.\n';
 
 /**
- * Complete target page fixture whose visible name is still the directory id.
+ * Complete target page fixture whose visible name is still the directory id
+ * beside an English rendering, which makes the id stand (2026-09-07) and so
+ * the archive's front matter with it (2026-09-08).
  */
 const TARGET_TEXT = '---\nname: EntryId\ninfo:\n  alias: Maomao\n---\n\nBody.\n';
+
+/**
+ * Complete target page fixture whose visible name is the directory id with
+ * nothing Latin beside it: the #269 shape, the one the lanes still render.
+ */
+const FOLDER_TEXT = '---\nname: EntryId\ninfo:\n  alias: 猫咪\n---\n\nBody.\n';
 
 /**
  * Complete target page fixture whose metadata is already translated.
@@ -53,14 +64,20 @@ const targetFrontMatter = splitFrontMatter({ text: TARGET_TEXT, }).frontMatter;
  * Parsed translated target metadata fixture.
  */
 const translatedFrontMatter = splitFrontMatter({ text: TRANSLATED_TEXT, }).frontMatter;
-if ((sourceFrontMatter === undefined) || (targetFrontMatter === undefined) || (translatedFrontMatter === undefined))
+/**
+ * Parsed folder-only target metadata fixture.
+ */
+const folderFrontMatter = splitFrontMatter({ text: FOLDER_TEXT, }).frontMatter;
+if ((sourceFrontMatter === undefined) || (targetFrontMatter === undefined) || (translatedFrontMatter === undefined)
+  || (folderFrontMatter === undefined))
   throw new Error('front matter fixture did not parse',);
 /**
- * Explicit metadata slice shared by guarded cases.
+ * Explicit metadata slice shared by the rendered cases: the source beside the
+ * folder-only archive.
  */
 const sliceResult = frontMatterSlice({
   source: sourceFrontMatter,
-  target: targetFrontMatter,
+  target: folderFrontMatter,
 },);
 if (sliceResult.kind !== 'paired')
   throw new Error('front matter fixture did not pair',);
@@ -89,16 +106,6 @@ const distinctAliasFrontMatter = splitFrontMatter({ text: DISTINCT_ALIAS_SOURCE_
 if (distinctAliasFrontMatter === undefined)
   throw new Error('distinct-alias front matter fixture did not parse',);
 /**
- * Explicit metadata slice pairing that source with the directory-id archive.
- */
-const placeholderSliceResult = frontMatterSlice({
-  source: distinctAliasFrontMatter,
-  target: targetFrontMatter,
-},);
-if (placeholderSliceResult.kind !== 'paired')
-  throw new Error('placeholder front matter fixture did not pair',);
-
-/**
  * Ordinary body slice preceding metadata in invalid-order fixture.
  */
 const BODY_SLICE: ChunkPair = {
@@ -114,8 +121,8 @@ const BODY_SLICE: ChunkPair = {
     kind: 'content',
     sliceIndex: 0,
     nodes: [],
-    startOffset: TARGET_TEXT.length,
-    endOffset: TARGET_TEXT.length,
+    startOffset: FOLDER_TEXT.length,
+    endOffset: FOLDER_TEXT.length,
     text: '',
   },
 };
@@ -146,12 +153,13 @@ await describe({
   name: assertFrontMatterComplete.name,
   children: [
     it({
-      name: 'ACCEPTS PARSEABLE SAME-SHAPE METADATA under explicit reviewed slice',
+      name: 'ACCEPTS PARSEABLE SAME-SHAPE METADATA under explicit reviewed slice where the archive never '
+        + 'translated it',
       fn: async () => {
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
-          archiveText: TARGET_TEXT,
+          archiveText: FOLDER_TEXT,
           pageText: TRANSLATED_TEXT,
           slices: [sliceResult.slice,],
         },),).not.toThrow();
@@ -159,28 +167,85 @@ await describe({
     },),
 
     it({
-      name: 'ACCEPTS A PAGE WHOSE METADATA EQUALS THE ARCHIVE\'S translated metadata, which the '
-        + '2026-08-28 rule refused as unreviewed: whether the lanes kept it or replaced it is '
-        + 'the lanes\' business and the artifact\'s record, not this guard\'s question',
+      name: 'ACCEPTS THE ARCHIVE\'S TRANSLATED METADATA AS IT STANDS with no metadata slice, the owner\'s '
+        + 'rule of 2026-09-08, where the 2026-08-28 rule refused the same page as unreviewed and the '
+        + '2026-09-02 rule let the lanes rewrite it',
       fn: async () => {
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
           archiveText: TRANSLATED_TEXT,
           pageText: TRANSLATED_TEXT,
-          slices: [translatedSliceResult.slice,],
+          slices: [],
         },),).not.toThrow();
       },
     },),
 
     it({
-      name: 'REFUSES MISSING REVIEW SLICE when both sides declare metadata',
+      name: 'REFUSES A RENDERED SLICE OVER A STANDING ARCHIVE, naming archive-front-matter, since a '
+        + 'preparation that rendered what the rule leaves alone is refused rather than trusted',
+      fn: async () => {
+        /**
+         * What the guard threw for a slice the preparation should not have made.
+         */
+        const refusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'EntryId',
+            sourceText: SOURCE_TEXT,
+            archiveText: TRANSLATED_TEXT,
+            pageText: TRANSLATED_TEXT,
+            slices: [translatedSliceResult.slice,],
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('archive-front-matter',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A PAGE THAT CHANGES A STANDING ARCHIVE\'S FRONT MATTER, the ninth hakureico pass: '
+        + 'name: Kagurazaka Chika over the archive\'s Hanasaka, and ACCEPTS the archive\'s bytes',
+      fn: async () => {
+        /**
+         * The ninth pass's source metadata.
+         */
+        const hakureicoSource = '---\nname: 神楽坂千歌\ninfo:\n    alias: 千歌, Hanasaka, Hakureico\n---\n\n正文。\n';
+        /**
+         * The archive's editorial metadata.
+         */
+        const hakureicoArchive = '---\nname: Hanasaka\ninfo:\n    alias: Kagurazaka Hanasaka, Hakureico\n---\n\nBody.\n';
+        /**
+         * What the guard threw for the translate lane's rendering.
+         */
+        const refusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'hakureico',
+            sourceText: hakureicoSource,
+            archiveText: hakureicoArchive,
+            pageText: '---\nname: Kagurazaka Chika\ninfo:\n    alias: Kagurazaka Chika, Chika, Hanasaka, Hakureico\n---\n\nBody.\n',
+            slices: [],
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('archive-front-matter',);
+        expect(() => assertFrontMatterComplete({
+          entryId: 'hakureico',
+          sourceText: hakureicoSource,
+          archiveText: hakureicoArchive,
+          pageText: hakureicoArchive,
+          slices: [],
+        },),).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'REFUSES MISSING REVIEW SLICE when both sides declare metadata and the archive never translated it',
       fn: async () => {
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
-          archiveText: TARGET_TEXT,
-          pageText: TARGET_TEXT,
+          archiveText: FOLDER_TEXT,
+          pageText: FOLDER_TEXT,
           slices: [],
         },),).toThrow(FrontMatterCompletenessError,);
       },
@@ -279,7 +344,7 @@ await describe({
     it({
       name: 'ACCEPTS A VISIBLE NAME THAT IS THE DIRECTORY ID beside an English rendering in the '
         + 'alias, the owner\'s decision of 2026-09-07, since the front matter then carries the '
-        + 'name in English',
+        + 'name in English; such an archive stands, so it ships with no slice',
       fn: async () => {
         // TARGET_TEXT names the directory and carries `Maomao` as an alias.
         expect(() => assertFrontMatterComplete({
@@ -287,7 +352,7 @@ await describe({
           sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
           archiveText: TARGET_TEXT,
           pageText: TARGET_TEXT,
-          slices: [placeholderSliceResult.slice,],
+          slices: [],
         },),).not.toThrow();
       },
     },),
@@ -318,21 +383,21 @@ await describe({
         if ((source === undefined) || (target === undefined))
           throw new Error('pinyin fixture did not parse',);
 
-        /**
-         * Explicit metadata slice over the pinyin pages.
-         */
-        const result = frontMatterSlice({
-          source,
-          target,
-        },);
-        if (result.kind !== 'paired')
-          throw new Error('pinyin fixture did not pair',);
+        expect(namesDirectoryId({
+          metadata: target,
+          entryId: 'lintong',
+        },),).toBe(true,);
+        expect(namesDirectoryId({
+          metadata: source,
+          entryId: 'lintong',
+        },),).toBe(false,);
+        // The id stands as the pinyin, so the archive stands and ships with no slice.
         expect(() => assertFrontMatterComplete({
           entryId: 'lintong',
           sourceText: pinyinSourceText,
           archiveText: pinyinPageText,
           pageText: pinyinPageText,
-          slices: [result.slice,],
+          slices: [],
         },),).not.toThrow();
       },
     },),
@@ -360,18 +425,21 @@ await describe({
         const target = splitFrontMatter({ text: handlePageText, },).frontMatter;
         if ((source === undefined) || (target === undefined))
           throw new Error('handle fixture did not parse',);
-        /**
-         * Explicit metadata slice over the handle pages.
-         */
-        const result = frontMatterSlice({ source, target, },);
-        if (result.kind !== 'paired')
-          throw new Error('handle fixture did not pair',);
+        expect(namesDirectoryId({
+          metadata: source,
+          entryId: 'EntryId',
+        },),).toBe(true,);
+        expect(namesDirectoryId({
+          metadata: target,
+          entryId: 'EntryId',
+        },),).toBe(true,);
+        // The handle is the name, so the archive stands and ships with no slice.
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: handleSourceText,
           archiveText: handlePageText,
           pageText: handlePageText,
-          slices: [result.slice,],
+          slices: [],
         },),).not.toThrow();
       },
     },),
@@ -387,7 +455,7 @@ await describe({
           run: () => assertFrontMatterComplete({
             entryId: 'EntryId',
             sourceText: SOURCE_TEXT,
-            archiveText: TARGET_TEXT,
+            archiveText: FOLDER_TEXT,
             pageText: '---\nname: EntryId2\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
             slices: [sliceResult.slice,],
           },),
@@ -407,7 +475,7 @@ await describe({
         assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
-          archiveText: TARGET_TEXT,
+          archiveText: FOLDER_TEXT,
           pageText: '---\nname: Maomao\ninfo:\n  alias: 猫猫, Maomao\n---\n\nBody.\n',
           slices: [sliceResult.slice,],
         },);
@@ -419,7 +487,7 @@ await describe({
           run: () => assertFrontMatterComplete({
             entryId: 'EntryId',
             sourceText: SOURCE_TEXT,
-            archiveText: TARGET_TEXT,
+            archiveText: FOLDER_TEXT,
             pageText: '---\nname: Maomao\ninfo:\n  alias: 猫猫, Kitty\n---\n\nBody.\n',
             slices: [sliceResult.slice,],
           },),
@@ -439,7 +507,7 @@ await describe({
         /**
          * Archive page establishing target contributor spelling.
          */
-        const archiveText = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Guangdong #Qingyuan, by MoguHandle\n---\n\nBody.\n';
+        const archiveText = '---\nname: CatEntry\ninfo:\n  alias: 猫猫\n  location: Guangdong #Qingyuan, by MoguHandle\n---\n\nBody.\n';
         /**
          * Candidate retaining source-script attribution.
          */
@@ -460,13 +528,20 @@ await describe({
         const result = frontMatterSlice({ source, target, });
         if (result.kind !== 'paired')
           throw new Error('comment authority fixture did not pair',);
-        expect(() => assertFrontMatterComplete({
-          entryId: 'CatEntry',
-          sourceText,
-          archiveText,
-          pageText,
-          slices: [result.slice,],
-        },),).toThrow(FrontMatterCompletenessError,);
+        /**
+         * What the guard threw for the source-script attribution.
+         */
+        const refusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'CatEntry',
+            sourceText,
+            archiveText,
+            pageText,
+            slices: [result.slice,],
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('invalid-page',);
       },
     },),
 
@@ -476,7 +551,7 @@ await describe({
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
-          archiveText: TARGET_TEXT,
+          archiveText: FOLDER_TEXT,
           pageText: '---\nname: Maomao\n---\n\nBody.\n',
           slices: [sliceResult.slice,],
         },),).toThrow(FrontMatterCompletenessError,);
@@ -489,7 +564,7 @@ await describe({
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
-          archiveText: TARGET_TEXT,
+          archiveText: FOLDER_TEXT,
           pageText: TRANSLATED_TEXT,
           slices: [{
             ...sliceResult.slice,
@@ -502,7 +577,7 @@ await describe({
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
-          archiveText: TARGET_TEXT,
+          archiveText: FOLDER_TEXT,
           pageText: TRANSLATED_TEXT,
           slices: [BODY_SLICE, sliceResult.slice,],
         },),).toThrow(FrontMatterCompletenessError,);

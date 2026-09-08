@@ -231,9 +231,11 @@ const ARCHIVE_REVISION_ENTRY = {
 const FRONT_MATTER_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
 
 /**
- * Archive metadata carrying entry id as visible name.
+ * Archive metadata carrying entry id as visible name and no Latin rendering
+ * beside it: the one shape the lanes still render (the owner's rule of
+ * 2026-09-08), since nothing in it makes the directory id stand for the name.
  */
-const FRONT_MATTER_TARGET = '---\nname: CatFrontMatter\ninfo:\n  alias: Maomao\n---\n';
+const FRONT_MATTER_TARGET = '---\nname: CatFrontMatter\ninfo:\n  alias: 猫猫\n---\n';
 
 /**
  * Source-faithful metadata rendering scripted for ensemble.
@@ -252,6 +254,16 @@ const FRONT_MATTER_ENTRY = {
 /**
  * Entry inserting source metadata into target page that has none.
  */
+/**
+ * Entry whose archive translated its metadata, which therefore stands: the
+ * lanes never see slice zero and the page carries the archive's bytes.
+ */
+const FRONT_MATTER_STANDING_ENTRY = {
+  id: 'CatFrontMatterStanding',
+  sourceText: `${FRONT_MATTER_SOURCE}${SOURCE_TEXT}`,
+  targetText: `${FRONT_MATTER_FRESH}${TARGET_TEXT}`,
+};
+
 const FRONT_MATTER_SOURCE_ONLY_ENTRY = {
   id: 'CatFrontMatterInsertion',
   sourceText: `${FRONT_MATTER_SOURCE}${SOURCE_TEXT}`,
@@ -1061,7 +1073,7 @@ await describe({
         // Read structurally rather than through the writer's own types, since
         // what is under test is the FILE: a reader holding only this has to
         // find both lanes nested and no lane at the top level.
-        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(10,);
+        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(11,);
         expect(Object.keys((artifact as { lanes: object; }).lanes,)
           .toSorted(),).toEqual([
           'repair',
@@ -1352,7 +1364,7 @@ await describe({
           entryId: FRONT_MATTER_ENTRY.id,
         },), 'utf8',);
 
-        expect(artifact.artifactSchemaVersion,).toBe(10,);
+        expect(artifact.artifactSchemaVersion,).toBe(11,);
         expect(artifact.preparation.sliceCount,).toBe(1,);
         if (artifact.laneSelection.kind !== 'contested')
           throw new Error('front matter pass did not record lane contest',);
@@ -1367,6 +1379,48 @@ await describe({
         expect(served,).toContain('translation_report',);
         expect(served,).toContain('candidate_ballot',);
         expect(served,).toContain('lane_contest',);
+      },
+    },),
+    it({
+      name: 'KEEPS A TRANSLATED ARCHIVE\'S FRONT MATTER AS IT STANDS through the complete pass, the owner\'s '
+        + 'rule of 2026-09-08: no metadata slice reaches the lanes or the contest, the artifact records the '
+        + 'archive\'s authority, and the page carries the archive\'s bytes',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        const served: string[] = [];
+        const outcome = await settleEntry({
+          client: entryClient({ served, },),
+          entry: FRONT_MATTER_STANDING_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+        expect(outcome,).toEqual({ kind: 'settled', },);
+        /**
+         * Serialized artifact read through production parser.
+         */
+        const artifact = parseSettledTwoLaneArtifact({
+          value: JSON.parse(await readFile(
+            join(dirs.artifactsDir, `${FRONT_MATTER_STANDING_ENTRY.id}.json`,),
+            'utf8',
+          ),),
+        },);
+        const page = await readFile(fixedPagePath({
+          publishDir: dirs.publishDir,
+          entryId: FRONT_MATTER_STANDING_ENTRY.id,
+        },), 'utf8',);
+        expect(page.startsWith(FRONT_MATTER_FRESH,)).toBe(true,);
+        expect(artifact.preparation.frontMatterAuthority,).toBe('archive',);
+        if (artifact.laneSelection.kind === 'contested') {
+          expect(artifact.laneSelection.slices.some(function isMetadata(slice,): boolean {
+            return slice.eligibility?.syntax === 'front-matter';
+          },),).toBe(false,);
+        }
+        expect(served,).toContain('translation_report',);
       },
     },),
     it({

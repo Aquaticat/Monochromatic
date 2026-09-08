@@ -268,6 +268,12 @@ export type ParsedPreparation = {
   readonly sliceCount: number;
 
   /**
+   * Present when the file records a standing archive front matter and so no
+   * metadata slice; absent on every earlier generation and on rendered ones.
+   */
+  readonly frontMatterAuthority?: 'archive';
+
+  /**
    * Original document length in UTF-16 code units.
    */
   readonly sourceChars: number;

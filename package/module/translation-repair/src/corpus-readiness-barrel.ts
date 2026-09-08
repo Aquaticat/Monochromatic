@@ -15,7 +15,14 @@ export {
   assertPageParses,
   UnparseablePageError,
 } from './corpus-run/page-grammar.ts';
-export { directoryIdNameStands, } from './corpus-run/directory-id-name.ts';
+export {
+  archiveFrontMatterStands,
+  frontMatterAuthorityOf,
+} from './corpus-run/archive-front-matter.ts';
+export {
+  directoryIdNameStands,
+  namesDirectoryId,
+} from './corpus-run/directory-id-name.ts';
 export {
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,

@@ -248,11 +248,18 @@ export function rebuildPreparation(
     blockPairings,
     unrecorded,
   } = recipeOf({ artifact, },);
+  /**
+   * Whose front matter the recorded slicing carried, read off the file and
+   * never recomputed: a later change to the rule must not re-slice an older
+   * file.
+   */
+  const { frontMatterAuthority, } = artifact.preparation;
   return {
     prepared: prepareDocumentPair({
       sourceText,
       targetText,
       includeFrontMatter: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V5,
+      ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
       ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
       ...((blockPairings === undefined) ? {} : { blockPairings, }),
     },),

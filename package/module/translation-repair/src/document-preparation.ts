@@ -25,6 +25,7 @@ import {
 } from './section-pairing.ts';
 import { parseDocument, } from './parse-document.ts';
 import type {
+  FrontMatterAuthority,
   PreparedDocumentPair,
   UnclaimedTargetBlock,
 } from './prepared-document-pair.ts';
@@ -71,6 +72,11 @@ import {
  * @param includeFrontMatter - whether visible metadata becomes explicit slice;
  * false only when rebuilding pre-generation-5 artifacts
  *
+ * @param frontMatterAuthority - whose front matter the page carries: under
+ * `archive` no metadata slice is made and the archive's bytes ship as they
+ * stand (the owner's rule of 2026-09-08); under `rendered` slice zero is the
+ * lanes' to write
+ *
  * @param blockPairings - correspondences a roster agreed on WITHIN each aligned
  * section, keyed by section index
  *
@@ -97,6 +103,7 @@ export function prepareDocumentPair(
     targetText,
     sliceCharBudget = SLICE_CHAR_BUDGET,
     includeFrontMatter = true,
+    frontMatterAuthority = 'rendered',
     blockPairings,
     sectionPairing,
     contextLines = [],
@@ -105,6 +112,7 @@ export function prepareDocumentPair(
     readonly targetText: string;
     readonly sliceCharBudget?: number;
     readonly includeFrontMatter?: boolean;
+    readonly frontMatterAuthority?: FrontMatterAuthority;
     readonly blockPairings?: ReadonlyMap<number, readonly BlockPair[]>;
     readonly sectionPairing?: readonly SectionPair[];
     readonly contextLines?: readonly string[];
@@ -280,7 +288,7 @@ export function prepareDocumentPair(
   /**
    * Visible localized metadata excluded from Markdown nodes.
    */
-  const metadataSlice = includeFrontMatter
+  const metadataSlice = (includeFrontMatter && (frontMatterAuthority === 'rendered'))
     ? frontMatterSlice({
       ...(sourceDocument.frontMatter === undefined ? {} : { source: sourceDocument.frontMatter, }),
       ...(targetDocument.frontMatter === undefined ? {} : { target: targetDocument.frontMatter, }),
@@ -477,6 +485,7 @@ export function prepareDocumentPair(
 
   return {
     ...(!includeFrontMatter ? { legacyIdentity: true as const, } : {}),
+    ...((frontMatterAuthority === 'archive') ? { frontMatterAuthority: 'archive' as const, } : {}),
     sourceText,
     targetText,
     slices,
