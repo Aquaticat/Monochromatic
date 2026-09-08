@@ -19,16 +19,18 @@ import { repairArchiveBlocks, } from './archive-block-repair.ts';
 import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
 import { passArchiveText, } from './pass-archive.ts';
 import { frontMatterAuthorityOf, } from './archive-front-matter.ts';
+import { relabelArchiveFootnotes, } from './pass-footnote-relabel.ts';
 
 //region Pass preparation
 // Corpus-specific shell owns pairing cache namespaces and reviews inherited
 // blocks outside source claims before any later quality-stage purchase.
 //
-// LINEAR TWO-STEP BY DESIGN: one preparation, at most one archive correction
-// round, one re-preparation over the corrected archive. The second
-// preparation is the structural consequence of having edited the archive,
-// not a rejection-driven re-ask; blocks still unclaimed after it become
-// findings (doc/planning/translation-repair-no-loop-design.md).
+// LINEAR BY DESIGN: one preparation, at most one relabel of the archive's
+// footnote labels to the original's with its re-preparation, at most one
+// archive correction round, one re-preparation over the corrected archive.
+// Each re-preparation is the structural consequence of having edited the
+// archive, not a rejection-driven re-ask; blocks still unclaimed after the
+// last become findings (doc/planning/translation-repair-no-loop-design.md).
 
 /**
  * The clock a lookup record is stamped with.
@@ -156,27 +158,72 @@ export async function preparePassEntry(
     logger: l,
   },);
   /**
+   * Preparation over one archive text, the same roster, caches, context and
+   * authority each time: once over the archive as inherited, once more where
+   * the relabel rewrote it, and once more where the block correction round
+   * did.
+   *
+   * @param targetText - archive text to prepare over
+   *
+   * @returns Prepared slices and pairing findings
+   *
+   * @example
+   * ```ts
+   * const paired = await prepareOver({ targetText: archiveText, },);
+   * ```
+   */
+  function prepareOver(
+    { targetText: over, }: { readonly targetText: string; },
+  ): Promise<PairedPreparation> {
+    return prepareDocumentPairWithRoster({
+      client,
+      modelIds,
+      pairingCache,
+      sectionCache,
+      sourceText,
+      targetText: over,
+      signal,
+      exchangeTimeoutMs,
+      l,
+      contextLines,
+      frontMatterAuthority,
+      sealArchiveOriginal: true,
+    },);
+  }
+  /**
    * Preparation over the archive as inherited.
    */
-  const firstPaired = await prepareDocumentPairWithRoster({
-    client,
-    modelIds,
-    pairingCache,
-    sectionCache,
-    sourceText,
-    targetText: archiveText,
-    signal,
-    exchangeTimeoutMs,
+  const firstPaired = await prepareOver({ targetText: archiveText, },);
+  /**
+   * The archive under the original's footnote labels, read off the first
+   * preparation's slices (the nineteenth class, 2026-09-08).
+   */
+  const relabel = relabelArchiveFootnotes({
+    entryId,
+    slices: firstPaired.prepared
+      .slices,
+    archiveText,
     l,
-    contextLines,
-    frontMatterAuthority,
-    sealArchiveOriginal: true,
   },);
+  /**
+   * Preparation the block correction round starts from: over the relabelled
+   * archive where the relabel changed it, since the labels moved the offsets.
+   */
+  const labelled = relabel.changed
+    ? await prepareOver({ targetText: relabel.archiveText, },)
+    : firstPaired;
+  /**
+   * Findings so far: the preparation's and the relabel's.
+   */
+  const labelledFindings = [
+    ...labelled.findings,
+    ...relabel.findings,
+  ];
   /**
    * Spans the archive's translators' note sealed as the English original,
    * which no slice covers and no lane writes (the owner's rule of 2026-09-08).
    */
-  const sealedSpans = firstPaired.prepared
+  const sealedSpans = labelled.prepared
     .archiveOriginalSpans
     ?? [];
   for (const [at, span,] of sealedSpans.entries()) {
@@ -189,28 +236,32 @@ export async function preparePassEntry(
   /**
    * Unclaimed blocks not already licensed unchanged.
    */
-  const pending = firstPaired.prepared
+  const pending = labelled.prepared
     .unclaimedTargetBlocks;
-  if (pending.length === 0)
-    return firstPaired;
+  if (pending.length === 0) {
+    return {
+      prepared: labelled.prepared,
+      findings: labelledFindings,
+    };
+  }
   /**
    * Selected corrections and retained licenses from the single review round.
    */
   const repaired = await repairArchiveBlocks({
     client,
     modelIds,
-    targetText: archiveText,
-    sourceContexts: archiveBlockSourceContexts({ prepared: firstPaired.prepared, }),
+    targetText: relabel.archiveText,
+    sourceContexts: archiveBlockSourceContexts({ prepared: labelled.prepared, }),
     blocks: pending,
     signal,
     exchangeTimeoutMs,
     l,
   },);
-  if (repaired.targetText === archiveText) {
+  if (repaired.targetText === relabel.archiveText) {
     return {
-      prepared: firstPaired.prepared,
+      prepared: labelled.prepared,
       findings: [
-        ...firstPaired.findings,
+        ...labelledFindings,
         ...repaired.findings,
       ],
     };
@@ -218,20 +269,7 @@ export async function preparePassEntry(
   /**
    * Re-preparation over the corrected archive, whose offsets the correction moved.
    */
-  const secondPaired = await prepareDocumentPairWithRoster({
-    client,
-    modelIds,
-    pairingCache,
-    sectionCache,
-    sourceText,
-    targetText: repaired.targetText,
-    signal,
-    exchangeTimeoutMs,
-    l,
-    contextLines,
-    frontMatterAuthority,
-    sealArchiveOriginal: true,
-  },);
+  const secondPaired = await prepareOver({ targetText: repaired.targetText, },);
   /**
    * Blocks the single correction round could not claim.
    */
@@ -241,6 +279,7 @@ export async function preparePassEntry(
     prepared: secondPaired.prepared,
     findings: [
       ...secondPaired.findings,
+      ...relabel.findings,
       ...repaired.findings,
       ...(remaining.length === 0
         ? []
