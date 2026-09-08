@@ -4910,6 +4910,98 @@ front matter equal to the archive's byte for byte
 `artifactSchemaVersion: 11` with `frontMatterAuthority: 'archive'` in the preparation,
 and E2B's candidates and ballots in the translate lane.
 
+## The tenth pass is killed at 37 minutes; the seventeenth class, 2026-09-08, 16:55 UTC
+
+The tenth pass lost five deepseek-v4-flash-0731 voices between 16:37 and 16:49 UTC,
+one critic and four select ballots,
+every one a `schema-mismatch` whose raw opening doubled:
+`{   "issues":{     "issues": [`,
+`{"best": 1{"best": 1, "reason": ...`,
+`{"{"best": 1, "reason": ...`,
+`{"{"best": 1, ...`,
+`{"best": 2{"best": 2, ...`.
+Each stream was served by OpenRouter's Makora endpoint and carried reasoning
+(391189 raw characters and 11635 reasoning characters on the critic,
+153070 and 4214 on the first select),
+where the model's clean replies that same quarter hour came from Together with no reasoning and 2000 raw characters.
+Read back through the ninth pass (all four providers wet):
+of its eight mismatches,
+six were gpt-oss-120b through Bedrock with the same doubled opening
+(`{ {   "choice`,
+`{  {"choice"`,
+`{"{"resolution`,
+`{"{ "resolut`),
+every one on a stream with reasoning characters;
+the sixth pass,
+on Synthetic and Hyper with no reasoning streams,
+had none of that shape.
+THE SEVENTEENTH CLASS:
+a reasoning stream opens its answer,
+abandons the opening,
+and writes the whole object after it,
+and the reply ladder refused the whole as unparseable.
+The object after the fragment is the answer,
+and the fragment's whitespace differs from the object's
+(`{   "issues":` against `{     "issues": [`),
+so this is the model writing twice,
+not a client appending a retry to a partial buffer:
+the retries the log carries are minutes away from the mismatches and name other models.
+
+Landed as `8bf9deec0`:
+`json-false-start.ts` reads the object past the opening
+(`readJsonPastFalseStart` tries each brace inside the first 256 characters as the start until one parses to the end;
+`parseAnswerJson` parses the whole first and reads past only when the whole fails),
+the reply ladder in `chat-json-outcome.ts` calls it where it called `parseModelJson`
+and warns `json false start: read the object past an abandoned opening of N chars`,
+and the caller's guard still judges what was read.
+Guards:
+the five observed shapes read with their abandoned lengths (10,
+2,
+2,
+3,
+13),
+a cut reply,
+a reply that opens no object and an opening past the window read nothing,
+and the ladder case (`READS PAST an abandoned opening ahead of the object`) failed first on the old build
+(`expected 'schema-mismatch' to equal 'ok'`).
+Types and oxlint clean;
+956 `PASS` and 0 `FAIL`.
+
+The tenth pass was killed at 16:55:44 UTC (pid 276432,
+37 minutes,
+in the repair lane at its sixteenth chunk) under the kill-and-relaunch rule.
+What it had shown before the kill:
+`FRONT MATTER entry=hakureico authority=archive` on its first reading;
+Synthetic's rolling window returned at 16:27:29,
+nine minutes into the pass,
+and served 186 calls after it;
+Bedrock 191 calls for 0.09 USD;
+OpenRouter 275 calls for 0.57 USD;
+one minimax-m3 select reply ended at its content bound (32003 characters against 32000,
+`StreamOverrunError`,
+voice lost),
+one gpt-oss-120b `StreamCutShortError` retried,
+one in-stream 504 retried.
+
+## The eleventh hakureico launch on the false-start build, 2026-09-08, 16:56 UTC
+
+`hakureico` launched at 16:56:22 UTC on `8bf9deec0`
+(pipeline `f39a482e`),
+plain invocation,
+runs dir `~/temp/agent/hakureico11-20260908`,
+log beside it,
+pid 297691.
+`JUDGE SEATS phase=preparation synthetic=wet bedrock=wet hyper=dry openrouter=wet wide=8 select=8 late=9 slate=9
+checkers=3 translators=8 readers=6 writers=10 roster=10 withheld=none waited=0ms`:
+the first seat line with eight translators and ten writers,
+every bench whole on three providers,
+Hyper at zero credits.
+`FRONT MATTER entry=hakureico authority=archive` on the same reading.
+What the page must show when it settles:
+the front-matter and artifact checks of the tenth launch,
+E2B's candidates and ballots in the translate lane,
+and every `json false start` line a voice kept where the tenth pass lost one.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

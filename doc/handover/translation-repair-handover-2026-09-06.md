@@ -24,11 +24,13 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 16:18 UTC on 2026-09-08 the tree is `169a86173`:
+As of 16:56 UTC on 2026-09-08 the tree is `8bf9deec0`:
 the front-matter rule merged (`d11f36799`),
-`google.gemma-4-e2b` seated as translator and consolidation writer on the day's producer calibration,
-and `hakureico` running on that build into `~/temp/agent/hakureico10-20260908` to be read under the
-front-matter checks;
+`google.gemma-4-e2b` seated as translator and consolidation writer on the day's producer calibration (`169a86173`),
+the seventeenth class fixed (`8bf9deec0`,
+a JSON object read past an abandoned opening),
+and `hakureico` running on that build into `~/temp/agent/hakureico11-20260908` to be read under the
+front-matter and false-start checks;
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -77,7 +79,7 @@ which gained the apostrophe and ellipsis counts and two refusal greps today.
 If a pass is running when this is read and the tree has moved past its tip,
 the kill-and-relaunch rule applies.
 
-The full unit suite emitted 954 `PASS` lines and zero `FAIL` lines on `169a86173`,
+The full unit suite emitted 956 `PASS` lines and zero `FAIL` lines on `8bf9deec0`,
 oxlint 0 warnings and 0 errors,
 types clean,
 markdown lint clean on every line written today.
@@ -90,22 +92,32 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `169a86173` for the code;
+  `8bf9deec0` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 16:18 UTC on 2026-09-08,
-  off the tenth launch's seat line:
-  `synthetic=dry bedrock=wet hyper=dry openrouter=wet`;
-  Synthetic's rolling week at zero after the calibration,
+- Meters at 16:56 UTC on 2026-09-08,
+  off the eleventh launch's seat line:
+  `synthetic=wet bedrock=wet hyper=dry openrouter=wet`;
+  Synthetic's rolling week returned at 16:27 (nine minutes into the tenth pass) and served 186 of its calls,
   Hyper at zero credits and never to be recharged,
-  Bedrock and OpenRouter in USD (198.39 and 199.56 at 12:52 UTC,
-  before the calibration and this pass).
-  The calibration and this pass are the first spend on Bedrock and OpenRouter alone;
-  the tally at the end of the pass prints the meters.
+  Bedrock and OpenRouter in USD (198.39 and 199.56 at 12:52 UTC;
+  the tenth pass spent 0.09 and 0.57 in 37 minutes,
+  the calibration before it unmeasured).
+  The tally at the end of the pass prints the meters.
 
 ## What landed today
 
 Newest first.
+
+-   `8bf9deec0` (2026-09-08,
+    16:54 UTC):
+    the seventeenth class,
+    a JSON object read past an abandoned opening fragment
+    (`json-false-start.ts`,
+    the reply ladder),
+    found by the tenth hakureico pass on reasoning streams from OpenRouter's Makora route and read back through the ninth on Bedrock's gpt-oss-120b;
+    guard shown to fail first;
+    956 `PASS` and 0 `FAIL`.
 
 -   `169a86173` (2026-09-08,
     16:15 UTC):
@@ -662,6 +674,32 @@ Not acted on:
 gpt-oss-120b below the null again (z -2.90),
 the two deepseeks at -2.31 and -2.36.
 
+## The seventeenth class
+
+Found by the tenth hakureico pass on 2026-09-08 (16:37 to 16:49 UTC):
+five deepseek-v4-flash-0731 voices lost to `schema-mismatch` whose raw opening was written twice,
+`{"best": 1{"best": 1, "reason": ...}` and `{"{"best": ...}`,
+every one a reasoning stream from OpenRouter's Makora endpoint.
+Read back through the ninth pass:
+six of its eight mismatches were gpt-oss-120b through Bedrock with the same shape
+(`{ {   "choice`,
+`{"{"resolution`),
+every one with reasoning characters;
+the sixth pass,
+with no reasoning streams,
+had none.
+The fragment's whitespace differs from the object's,
+so it is the model writing twice,
+not a client appending a retry.
+Fixed as `8bf9deec0`:
+`json-false-start.ts` tries each brace inside the first 256 characters as the object's start until one parses to the end,
+the reply ladder (`chat-json-outcome.ts`) parses the whole first and reads past only when the whole fails,
+warns `json false start: read the object past an abandoned opening of N chars`,
+and the caller's guard still judges what was read.
+The read-page check to add:
+every `json false start` line in a pass log is a voice kept;
+a `schema-mismatch` whose raw opens `{` twice would mean the window or the shape has moved.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -705,29 +743,34 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  `hakureico` is running on `169a86173` (the merged front-matter rule and the E2B seat),
-    launched 16:18:30 UTC on 2026-09-08,
-    runs dir `~/temp/agent/hakureico10-20260908`,
+1.  `hakureico` is running on `8bf9deec0` (the merged front-matter rule,
+    the E2B seat and the false-start reading),
+    launched 16:56:22 UTC on 2026-09-08,
+    runs dir `~/temp/agent/hakureico11-20260908`,
     log beside it,
-    pid 276432,
-    on Bedrock and OpenRouter (Synthetic's window at zero after the calibration,
-    Hyper at zero credits),
-    seat line `wide=7 select=7 late=8 slate=8 checkers=3 translators=7 readers=5 writers=9 roster=9`
-    with Kimi-K3 withheld as the OpenRouter-cost seat,
+    pid 297691,
+    on Synthetic,
+    Bedrock and OpenRouter (Hyper at zero credits),
+    seat line `wide=8 select=8 late=9 slate=9 checkers=3 translators=8 readers=6 writers=10 roster=10 withheld=none`,
+    the first with eight translators and ten writers,
     and `FRONT MATTER entry=hakureico authority=archive` on its first reading.
-    Read it by the seven steps plus the front-matter check:
+    Read it by the seven steps plus:
     the page's front matter equals the archive's byte for byte (`read-page.mjs` prints `frontMatterEqualsArchive`),
     the artifact carries `artifactSchemaVersion: 11` with `frontMatterAuthority: 'archive'` in the preparation,
-    and E2B's candidates and ballots appear in the translate lane.
+    E2B's candidates and ballots appear in the translate lane,
+    and every `json false start` line is a voice kept
+    (the tenth pass lost five deepseek-v4-flash-0731 voices to that shape in 37 minutes before it was killed under the rule at 16:55;
+    see "The seventeenth class").
     The ninth launch's page (`061b46c0b`,
     12:50 UTC,
     83.3 minutes,
     `~/temp/agent/hakureico9-20260908`) is read in the planning log under
     "The ninth pass settles in 83 minutes on a whole bench":
     every bench whole,
-    no class found,
-    and the sixteenth thing (the front matter) answered by the owner and built (see "The front-matter rule").
-    If the tree moves past `169a86173` while it runs,
+    no class found by its page,
+    and two things found in its log since:
+    the front matter (the owner's rule) and the doubled opening (the seventeenth class).
+    If the tree moves past `8bf9deec0` while it runs,
     the kill-and-relaunch rule applies.
 2.  The translator seat is decided (`169a86173`,
     see "The E2B translator seat");

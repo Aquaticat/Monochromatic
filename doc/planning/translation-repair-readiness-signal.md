@@ -1123,3 +1123,36 @@ the tenth hakureico page read under the front-matter checks,
 `yuki418330012`,
 `Arita`,
 and the seven components no read page has met.
+
+## What the tenth hakureico launch showed (2026-09-08, 16:18 to 16:55 UTC)
+
+The tenth pass,
+the first on the merged front-matter rule and the E2B seat,
+logged `FRONT MATTER entry=hakureico authority=archive` on its first reading and then lost five
+deepseek-v4-flash-0731 voices in the repair lane to replies whose JSON opening was written twice
+(`{"best": 1{"best": 1, ...}`),
+every one a reasoning stream from OpenRouter's Makora endpoint.
+The ninth pass had lost six gpt-oss-120b voices through Bedrock to the same shape and the reading had counted them as provider weather.
+That is the seventeenth class:
+the reply ladder refused a readable answer.
+Fixed as `8bf9deec0` (the object after the abandoned opening is read,
+the guard still judges it,
+the abandoned length is logged),
+the tenth pass killed at 37 minutes under the rule,
+and `hakureico` relaunched at 16:56 UTC on the fix into `~/temp/agent/hakureico11-20260908`,
+reading every bench whole on Synthetic,
+Bedrock and OpenRouter with eight translators and ten writers.
+
+THE READING:
+the belief holds,
+and the count of things the read passes had waved through as weather is now two
+(the front matter on 2026-09-08 morning,
+the doubled opening this afternoon):
+each was in the logs of a pass read as "no class found",
+and each was found by reading the raw text behind a warning rather than the warning's count.
+The next reading reads the raw text behind every remaining warning class before it calls the page whole.
+What remains before an all-entries launch:
+the eleventh hakureico page read under the front-matter and false-start checks,
+`yuki418330012`,
+`Arita`,
+and the seven components no read page has met.

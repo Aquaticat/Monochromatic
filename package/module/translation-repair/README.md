@@ -1874,6 +1874,16 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `8bf9deec0` (2026-09-08,
+the seventeenth class) a reply whose JSON opening was written twice,
+an abandoned fragment and then the whole object
+(`{"best": 1{"best": 1, ...}`,
+the shape reasoning streams from Bedrock's gpt-oss-120b and OpenRouter's Makora route deliver),
+is read past the fragment (`json-false-start.ts`,
+each brace inside the first 256 characters tried as the start until one parses),
+the caller's guard still judges what was read,
+and the log carries `json false start: read the object past an abandoned opening of N chars`
+where before the voice was lost as `schema-mismatch`.
 Since `20e5135a6`,
 merged as `d11f36799` (2026-09-08,
 the owner's rule "publish the archive's front matter as is;
