@@ -84,10 +84,19 @@ export const SEATED_BEDROCK_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterM
  * Roster models no producer calibration has measured, so they hold no
  * writing seat: not the translate lane, not the consolidation. The judge
  * fidelity probe measures reading, and reading is what they were seated for.
+ *
+ * EMPTY SINCE 2026-09-08. `google.gemma-4-e2b` sat here from its judge seat
+ * of 2026-09-07 until the 40-round producer calibration of 2026-09-08 measured
+ * it beside the nine measured writers: 30 of 298 disinterested ballots
+ * (10.1 percent, z -1.40 against a 12.8 percent pooled null, 39 of 40
+ * candidates, 94 of 94 asks usable), not separated from the null, where the
+ * two writers {@link TRANSLATOR_DROPPED} names sat at z -4.5 on 2026-09-01.
+ * By the rule of that day it takes the translator seat and, as a measured
+ * writer, the consolidation seat. The next Bedrock-only candidate the owner
+ * approves starts here again. Record: the 2026-09-08 addendum of
+ * `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
  */
-const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'google.gemma-4-e2b',
-],);
+const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>();
 
 /**
  * Every model this run may seat, across both providers.
@@ -123,16 +132,16 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
   },);
 
 /**
- * Consolidation writers: the roster less {@link WRITER_UNMEASURED}. The whole
- * measured roster writes there, GLM-5.3-Flash included, which keeps its
- * writing seats and left every judge seat on 2026-09-02.
+ * Consolidation writers: the run roster less {@link WRITER_UNMEASURED}. The
+ * whole measured roster writes there, GLM-5.3-Flash included, which keeps its
+ * writing seats and left every judge seat on 2026-09-02, and since 2026-09-08
+ * `google.gemma-4-e2b`, the first Bedrock-only writer a producer calibration
+ * measured. Filtered off {@link RUN_ROSTER} rather than off the catalog so a
+ * Bedrock-only size the roster seats writes once measured and never before.
  */
-export const RUN_WRITERS: readonly RosterModelId[] = ROSTER_MODEL_IDS
+export const RUN_WRITERS: readonly RosterModelId[] = RUN_ROSTER
   .filter(function measuredWriter(modelId,): boolean {
-    return (!WRITER_UNMEASURED.has(modelId,))
-      && (!BEDROCK_ONLY_ROSTER_IDS.some(function is(unmeasured,): boolean {
-        return unmeasured === modelId;
-      },));
+    return !WRITER_UNMEASURED.has(modelId,);
   },);
 
 /**
@@ -212,8 +221,9 @@ const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['
 
 /**
  * Translators for the translate lane: the roster less
- * {@link TRANSLATOR_DROPPED} and less {@link WRITER_UNMEASURED}. Seven since
- * 2026-09-01, so the stage quorum is 4 and every slate keeps at least two
+ * {@link TRANSLATOR_DROPPED} and less {@link WRITER_UNMEASURED}. Eight since
+ * 2026-09-08 (seven from 2026-09-01), when `google.gemma-4-e2b` was measured
+ * in, so the stage quorum stays 4 and every slate keeps at least two
  * disinterested judges under `assertJudgeableProducerRoster`.
  */
 export const RUN_TRANSLATORS: readonly RosterModelId[] = RUN_ROSTER

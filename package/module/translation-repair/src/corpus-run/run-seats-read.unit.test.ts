@@ -328,7 +328,8 @@ await describe({
     it({
       name: 'STOPS THE ENTRY when a writing bench the phase leans on is below the pair a slate needs and no '
         + 'provider has named its return, the fifteenth class: the eighth hakureico pass at the lanes on '
-        + 'Bedrock alone, no editor, no refiner, one translator',
+        + 'Bedrock alone, no editor, no refiner (and, since google.gemma-4-e2b writes, a pair of '
+        + 'translators at the floor)',
       fn: async () => {
         const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
         const { logger, lines, } = capturingLogger();
@@ -347,8 +348,9 @@ await describe({
       },
     },),
     it({
-      name: 'WAITS OUT THE HOLD ONCE and STOPS when the bench is still below the floor after it, and SEATS '
-        + 'when the wait brought the bench back',
+      name: 'WAITS OUT THE HOLD ONCE and STOPS when a bench is still below the floor after it (the editors '
+        + 'at the lanes, since Bedrock alone reaches a pair of translators from 2026-09-08), and SEATS when '
+        + 'the wait brought the bench back',
       fn: async () => {
         const stays = scriptedViews({
           views: [
@@ -364,11 +366,11 @@ await describe({
               hyper: 40,
             }),
           },),
-          phase: 'translate lane',
+          phase: 'lanes',
           signal: new AbortController().signal,
           l,
           pollMs: 5,
-        },),).rejects.toThrow('writing bench unreachable at translate lane: translators',);
+        },),).rejects.toThrow('writing bench unreachable at lanes: editors',);
         expect(stays.counter.reads,).toBe(2,);
 
         const returns = scriptedViews({

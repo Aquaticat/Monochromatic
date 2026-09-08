@@ -80,17 +80,22 @@ await describe({
     it({
       name: 'NAMES each writing bench below the pair a slate needs, with the reachable count against the '
         + 'floor, in the order the phase lists them: the eighth hakureico pass at the lanes, no editor, '
-        + 'no refiner and one translator reachable',
+        + 'no refiner and one translator reachable on the roster of that day; since google.gemma-4-e2b '
+        + 'took the translator seat (2026-09-08) Bedrock alone reaches the pair and the lanes name only '
+        + 'the editors and refiners',
       fn: async () => {
         const benches = benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },);
         /**
-         * Translators Bedrock serves under that view.
+         * Translators Bedrock serves under that view: the pair the floor asks for.
          */
         const translatorsReachable = reachableSeats({
           seats: RUN_TRANSLATORS,
           dry: BEDROCK_ALONE,
-        },).length;
-        expect(translatorsReachable,).toBeLessThan(WRITING_BENCH_FLOOR,);
+        },);
+        expect(translatorsReachable,).toEqual([
+          'gemma-4-26b-a4b-it',
+          'google.gemma-4-e2b',
+        ],);
         expect(reachableSeats({
           seats: RUN_MODELS.editorModelIds,
           dry: BEDROCK_ALONE,
@@ -102,18 +107,27 @@ await describe({
         },),).toEqual([
           `editors 0 of ${String(RUN_MODELS.editorModelIds.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
           `refiners 0 of ${String((RUN_MODELS.refinerModelIds ?? []).length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
-          `translators ${String(translatorsReachable,)} of ${String(RUN_TRANSLATORS.length,)} reachable, floor ${
-            String(WRITING_BENCH_FLOOR,)
-          }`,
         ],);
         expect(unreachableWritingBenches({
           benches,
           names: phaseBenches({ phase: 'translate lane', },),
           dry: BEDROCK_ALONE,
+        },),).toEqual([],);
+        /**
+         * The eighth pass's translators bench, the roster of that day: one Bedrock seat.
+         */
+        const thatDay = RUN_TRANSLATORS.filter(function seatedBefore(modelId,): boolean {
+          return modelId !== 'google.gemma-4-e2b';
+        },);
+        expect(unreachableWritingBenches({
+          benches: {
+            ...benches,
+            translators: thatDay,
+          },
+          names: phaseBenches({ phase: 'translate lane', },),
+          dry: BEDROCK_ALONE,
         },),).toEqual([
-          `translators ${String(translatorsReachable,)} of ${String(RUN_TRANSLATORS.length,)} reachable, floor ${
-            String(WRITING_BENCH_FLOOR,)
-          }`,
+          `translators 1 of ${String(thatDay.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
         ],);
       },
     },),
