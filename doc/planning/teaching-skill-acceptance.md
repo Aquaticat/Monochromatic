@@ -191,4 +191,93 @@ The semantic basis was checked against MDN's
 [resolve function documentation][resolve-function].
 This is a proposed exercise; it has not been added to the local lesson or claimed as browser-tested.
 
+## HTML behavior and repository reuse
+
+### Use the medium to expose the concept
+
+Passing behavior:
+
+- Build visual and interactive representations around the relationship being taught.
+- Let relevant changes reveal their consequences:
+  for example, increase equal rows, change code inputs, or observe a state transition beside its source.
+- Keep code and the effect it explains close enough for the learner to connect them.
+- Provide syntax highlighting and legible code presentation using relevant existing capabilities.
+- Make controls behave as their presentation suggests.
+  Distinguish read-only indicators from actions rather than adding arbitrary actions to every card.
+
+Counterexamples this must catch:
+
+- A long explanation accompanied by buttons that do not help expose its underlying relationships.
+- Pending, Fulfilled, and Rejected cards that look clickable but are not.
+- State descriptions without the corresponding code when the representation could explain both together.
+- Ignoring repository highlighting support and presenting all code as unhighlighted text.
+
+Repository evidence:
+
+- `package/ssg/aquati.cat/src/lib/rehype-highlight.ts` computes token-offset attributes.
+- `package/ssg/aquati.cat/src/lib/markdown.ts` uses that plugin in the content pipeline.
+- `package/ssg/aquati.cat/src/client/index.ts`, `highlightAllCodeBlocks`,
+  reads attributes and registers DOM ranges with the CSS Custom Highlight API.
+- `package/ssg/aquati.cat/src/style/highlight.ts` supplies the corresponding styles;
+  `package/ssg/aquati.cat/src/style/base.ts` consumes them.
+
+This establishes a relevant existing implementation, not a verified standalone integration.
+A lesson implementation must exercise its chosen integration,
+including changed code, themes, and print output where applicable.
+The acceptance checks do not prescribe copying the whole site client into a lesson.
+
+### Preserve both teaching substance and browser interactivity
+
+Passing behavior:
+
+- Default to visual, interactive, self-contained HTML with automatic theme adaptation and print support.
+- Offer Markdown when the user wants that alternative.
+- Keep the browser's useful interactivity even though the material also prints.
+- Preserve full teaching substance in both browser HTML and printout.
+- Supply usable static counterparts for the printout's interactive mechanisms:
+  relevant code, examples, states, explanations, and exercises remain available.
+- Check printed content coverage, not just whether a PDF was generated or fits on paper.
+
+Required rejected behavior:
+
+- "Printable" becomes an excuse to omit interactivity everywhere.
+- The browser remains complete but the printout loses substantive material.
+- Both outputs are simplified to avoid designing static counterparts.
+
+The scope of print adaptation is interactive mechanics, not conceptual depth or content.
+
+## Verification and proposed scope
+
+### Distinguish a functioning artifact from successful teaching
+
+Passing behavior:
+
+- Verify controls, displayed outcomes, examples, exports, offline behavior, and print behavior as applicable.
+- Separately review prerequisites, definitions, causal models, examples, and learner actions.
+- Provide opportunities to build or perform independently and explain the result,
+  progressively withdrawing supplied answers and scaffolding.
+- Report the evidence actually obtained rather than equating a supplied working solution with learner ability.
+- Use learner critique to revise the teaching, not merely its superficial wording.
+
+Counterexamples this must catch:
+
+- Browser tests pass, so the lesson is declared pedagogically adequate.
+- The reference chat application works, so the learner is declared capable of building one.
+- The learner is said to have understood or noticed something without supporting evidence.
+
+### Scope proposed for confirmation
+
+The skill would guide both teaching conversations and authored teaching materials across subjects.
+The cooking, apples, and Promise cases are acceptance examples, not limits on its domain.
+Its process would cover discovery, learner and goal modeling, instructional sequencing,
+medium-specific construction, and distinct operational and pedagogical review.
+
+Required counterexamples belong in material the agent must consult at the relevant decision:
+product-specification questions posed to a novice,
+print support used to suppress browser interactivity,
+and clarification without an initial reasoned diagnosis.
+
+The final skill and any lesson reconstruction remain separate from this requirements proposal.
+This document does not claim user confirmation, a finished skill, or a repaired Promises lesson.
+
 [resolve-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise
