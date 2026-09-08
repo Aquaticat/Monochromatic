@@ -860,12 +860,60 @@ The print controller was closed without reusing the ended endpoint.
 The presentation session remains open; the unrelated `music-player-android-presets` session was left alone.
 Future full verification must recreate `ui:print` and `ui:offline-fixture`, not reuse their stale endpoint files.
 
+## User correction: chat sending must not wait for a reply
+
+The user rejected the send lock:
+"This chat isn't how it works. No chat app blocks you from sending your next message
+before the other party replies."
+
+The assistant had turned an optional unfinished draft into forced turn-taking.
+`basic-samples.html` explicitly set `send.disabled = true` after sending,
+and `verify-shop.mjs` asserted that this restriction was correct.
+Those tests encoded the invented policy rather than checking an authentic chat interaction.
+The prior operational passes and Advisor review did not establish the teaching model's validity.
+
+`mise run test:shop-sending` reproduced this failure through a native click in the actual downloaded shop.
+Process `proc_2aae` failed in two seconds with:
+
+```text
+AssertionError [ERR_ASSERTION]: Sending the Saturday question must not disable sending while its reply is pending
+true !== false
+```
+
+This is an explicit authored policy, not an unexplained intermittent defect.
+There is no reason to invent competing runtime hypotheses or investigate an external chat vendor.
+The correction must keep sending independent of reply arrival.
+Simply enabling Send is insufficient:
+the old one-shot listeners would all execute on the same reply-control click.
+Pending replies need their own captured sent messages and deliberate delivery handling.
+
+The revised opening should demonstrate sending both delivery questions before receiving either answer.
+Leaving a question unfinished remains an optional path, never a required wait.
+The separate teaching control can pause and reveal fixture replies without locking the shop's Send control.
+A fixture's reply ordering must be identified as a fixture policy, not a universal rule of chat.
+
+Potential future skill guidance, not an `AGENTS.md` edit or approved final skill:
+control the mechanism being demonstrated without silently restricting independent user actions.
+Test against the real activity, not solely against the implementation's own invented rules.
+
+## User requirement: neutral long-form backgrounds
+
+The user specified:
+"For long form content, cap the biggest bg's color saturation/chroma at 0.
+This is to prevent eye fatigue."
+
+The lesson's main reading backgrounds must be achromatic in both light and dark themes.
+Purposeful accents and controls may retain color;
+the continuous reading surface must not acquire its hue from the accent palette.
+Record this as a requirement for the eventual teaching skill, not a proposed preference question.
+No `AGENTS.md` change is authorized in this discovery session.
+
 ## Next action
 
-Resume user critique of the grounded opening and its transition into functions.
-The authorized artifact correction is implemented and presented;
-the final teaching skill remains unconfirmed and unimplemented.
-Do not turn these operational passes into a request for final skill approval.
+Remove forced turn-taking, then neutralize long-form base surfaces.
+Verify the user's actual send-before-reply case and computed neutral backgrounds,
+update print/export material, and visibly present the corrected artifact.
+The final teaching skill remains unconfirmed and unimplemented.
 Continue discovery from the user's critique of the visibly revised Promise toy.
 Do not replace that critique with another acceptance checklist or an inference from passing tests.
 Write additions in chunks no larger than the requested 200 to 500 lines.
