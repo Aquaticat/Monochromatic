@@ -8,7 +8,8 @@ Repository material remains potentially relevant.
 Discovery is ongoing. The revised prototype has been operationally verified and visibly presented for critique.
 Its teaching effectiveness and the sufficiency of the proposed skill requirements remain unestablished.
 The user has now rejected the opening preview as confusing and detached from a real-world example.
-That opening has not yet been changed in the HTML.
+After the user explicitly said "Do it", the opening was rebuilt as the shop conversation.
+The corrected opening is undergoing full verification and a new visible handoff.
 The shared-understanding checkpoint was premature and is withdrawn.
 [Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
 The user requires an updated Promise toy before continuing to weed out failure modes.
@@ -729,10 +730,58 @@ Abstract mechanism experiments are not prohibited.
 Their question needs an understandable purpose before the experiment's controls become the learner's task.
 No final skill confirmation or `AGENTS.md` edit follows from this critique.
 
+## Grounded shop opening implementation
+
+The user explicitly instructed the assistant to implement the correction after the assistant had only described it.
+Do not substitute another explanation or confirmation request for applying that authorized change.
+
+The rejected mechanical revision is preserved as
+`doc/planning/promises-teaching-mechanical-preview.local.html`.
+The original prototype remains separately preserved.
+All teaching HTML artifacts remain local-only.
+
+Implemented changes in `~/temp/agent/promises-revision/`:
+
+- `opening.html` supplies a reason to ask about delivery before ordering,
+  a Saturday question, and an unfinished cost question.
+- `shop-preview.html` and `shop-preview.css` provide a conversation and composer,
+  with the lesson's reply-advance control outside the shop interface.
+- `basic-samples.html` answers the sent question from local rules,
+  appends messages rather than replacing the conversation,
+  and leaves the unsent follow-up untouched when an answer arrives.
+- Replies advance through a clearly disclosed lesson control,
+  not a typing race against a timer or an unrelated counter.
+- Empty questions, repeated reply activation, pending sends, unsupported questions,
+  and literal markup are handled without granting new sandbox permissions.
+- The function explanation contrasts invoking the sending operation with rerunning initialization,
+  using actual conversation and draft state instead of the counter.
+- `build.mjs` reuses the same static shop trace in the lesson and downloaded shop.
+- `labs.mjs` accepts bounded layout measurements only from the current owned shop frame,
+  keeping its composer in the page's scrolling flow without granting same-origin access.
+
+The focused native-control and embedding check passed as `proc_8ab5`.
+It exercised the actual downloaded file, distinct Saturday/cost answers, preserved draft/history,
+input boundaries, a deliberately wrong live-draft lookup, print snapshots, and restarting.
+A subsequent label correction makes the lesson-control heading describe its purpose,
+not falsely say that a reply is paused after it has already arrived.
+
+The first implementation worked standalone but its form-submit path did not operate in the opaque preview.
+Direct button click wiring replaced that path without relaxing the sandbox;
+the embedded conversation then passed.
+A later restart assertion selected the iframe's `data-run` attribute instead of the button.
+The verifier now selects `button[data-run]` explicitly.
+Neither failure was treated as evidence to weaken isolation or erase unrelated checks.
+
+The full suite is running as `proc_76ab`.
+It includes the rebuilt shop and layout-message positive/negative controls,
+followed by foundations, presentation/PDF content, native Print/Cancel, and advanced behavior.
+The export reopening suite remains a separate check.
+No complete pass or new visible handoff is claimed yet.
+
 ## Next action
 
-Replace the rejected opening's task and interaction, not merely its wording,
-and revisit the dependent function motivation before claiming that correction is implemented.
+Finish full verification and reopen the corrected lesson visibly for the user.
+Do not stop at describing the new opening.
 Continue discovery from the user's critique of the visibly revised Promise toy.
 Do not replace that critique with another acceptance checklist or an inference from passing tests.
 Write additions in chunks no larger than the requested 200 to 500 lines.
