@@ -46,10 +46,16 @@ import type { RosterModelId, } from './roster-id.ts';
 // 200 USD off these, since the account exposes no balance endpoint to a
 // bearer key.
 //
-// THE GEMMA 4 CARDS REPORT IMAGE INPUT AND THE CATALOG SAYS FALSE, for the
-// reason the OpenRouter catalog gives for the same model: a transcription
-// through this serving stack is unmeasured, and the picture-reader roster is
-// the measured four until one is. gpt-oss-120b reads no pictures anywhere.
+// THE GEMMA 4 CARDS REPORT IMAGE INPUT AND THE CATALOG SAID FALSE until a
+// transcription through this serving stack was measured, for the reason the
+// OpenRouter catalog gives for the same model. Measured 2026-09-08 02:20 UTC
+// over nine pictures the seated readers had corroborated (planning log,
+// "The three Gemma sizes against the seated readers"): 26B-A4B and 31B
+// produced eight readings each and every one was corroborated by every
+// seated reader, so both read pictures here; E2B produced two readings no
+// seated reader corroborated and stays a text seat. gpt-oss-120b reads no
+// pictures anywhere. A 1.27 MB picture came back as an empty stream from all
+// three sizes; the reader stage records that reader as `empty-reply`.
 //
 // NO PUBLISHED OUTPUT CEILING FOR GEMMA 4. The model cards give context
 // windows (128K for E2B, 256K for the other two) and no maximum output; the
@@ -194,7 +200,7 @@ export const BEDROCK_MODELS: Readonly<Record<BedrockServedId, BedrockModelInfo>>
   'google.gemma-4-31b': {
     id: 'google.gemma-4-31b',
     sharedWith: 'google.gemma-4-31b',
-    readsImages: false,
+    readsImages: true,
     contextLength: 262_144,
     maxOutputLength: 262_144,
     route: 'openai-v1',
@@ -208,7 +214,7 @@ export const BEDROCK_MODELS: Readonly<Record<BedrockServedId, BedrockModelInfo>>
   'google.gemma-4-26b-a4b': {
     id: 'google.gemma-4-26b-a4b',
     sharedWith: 'gemma-4-26b-a4b-it',
-    readsImages: false,
+    readsImages: true,
     contextLength: 262_144,
     maxOutputLength: 262_144,
     route: 'openai-v1',

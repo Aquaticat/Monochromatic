@@ -589,9 +589,11 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
  * disinterested judge would remain on any slice carrying a picture. Asking them
  * only to READ turns the picture into text, and the whole roster translates
  * and judges from that text with its weights untouched. Four of the nine read
- * images since the 2026-09-01 catalog refresh (`glm-5.3` reads none); the stage
- * stays separate because the reasoning in this note is about weights, not about
- * how many readers there happen to be.
+ * images since the 2026-09-01 catalog refresh (`glm-5.3` reads none), and six
+ * since 2026-09-08, when two Gemma sizes were measured as readers through
+ * Bedrock, so a Bedrock-only pass has two reachable readers; the stage stays
+ * separate because the reasoning in this note is about weights, not about how
+ * many readers there happen to be.
  *
  * @example
  * ```ts

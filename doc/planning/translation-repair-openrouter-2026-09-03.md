@@ -4195,6 +4195,101 @@ That needs the seated readings as text,
 which the pass records only as overlaps;
 where they are cached is the next thing to find.
 
+### The three Gemma sizes against the seated readers on nine pictures, 02:20 UTC
+
+The instrument (`bedrock-reader-measure.mjs` in the session scratch):
+every picture whose seated readers left a `corroborated` record in a runs dir's picture cache
+(twelve unique records over `gqt`,
+`Toka_ls`,
+`hakureico`,
+`luxuanwen3` and `XingZ60`),
+matched to its corpus picture by the OCR reading's overlap with the record's texts
+(floor 0.3;
+`gqt/photo3.webp` matched nothing and is out),
+nine pictures in all;
+each candidate asked through the production Bedrock client with the reader stage's own prompt;
+each reading scored by the trigram overlap `readImagePair` uses and by its `readingsCorroborate` verdict
+against every seated reading of that picture.
+The positive control is each seated reader scored the same way against the others.
+
+THE SEATED BAND:
+every seated reader is corroborated by every other seated reader on every picture it read
+(Kimi-K3 8 of 8,
+Qwen3.8-27B 7 of 7,
+minimax-m3 6 of 6,
+GLM-5.3-Flash 5 of 5,
+Qwen3.6-27B 2 of 2),
+none uncorroborated,
+mean overlap against the others 0.80 to 0.92.
+The records hold only the readings that were produced,
+so a seated reader's failed or empty call is not in its count.
+
+THE CANDIDATES:
+
+-   `gemma-4-26b-a4b-it` (Bedrock `google.gemma-4-26b-a4b`):
+    nine asked,
+    eight produced,
+    every one of the eight corroborated by every seated reader,
+    mean overlap 0.668 (first run 0.683,
+    a run-to-run band of 0.015),
+    mean 5.9 s.
+-   `google.gemma-4-31b`:
+    nine asked,
+    eight produced,
+    every one of the eight corroborated by every seated reader,
+    mean overlap 0.671,
+    mean 8.7 s,
+    up to 29 s on the two dense screenshots.
+-   `google.gemma-4-e2b`:
+    nine asked,
+    eight produced,
+    one cut at the 32000-character content bound
+    (`StreamOverrunError`,
+    a runaway on `Toka_ls`),
+    six corroborated by every seated reader and two by none
+    (an invented reading on `Toka_ls/photo1.webp` at overlap 0.006 and a drifted one on `photo3.webp` at 0.279),
+    every reading opening with the prompt's `READING RESPONSIBILITY:` label,
+    mean overlap 0.430.
+-   The picture none produced:
+    `gqt/photo1.webp`,
+    1.27 MB,
+    answered with an empty stream by all three sizes,
+    no error;
+    the seated readers read it at 2718 and 2748 characters.
+    Recorded as a Bedrock limit on picture size to find;
+    the reader stage already turns an empty reply into `empty-reply` for that reader and the others carry the picture.
+
+THE RULE FOR A READER SEAT,
+written after these numbers and before any others,
+in the shape of the wide-seat rule:
+a candidate joins the readers when,
+over the same pictures,
+each reading it produces is corroborated by every seated reader of that picture at least as often
+as the seated reader corroborated least often,
+and it produces a reading no seated reader corroborates no more often than the seated reader
+uncorroborated most often;
+a call that produces nothing (empty,
+cut,
+thrown) counts for neither clause,
+as it is absent from a seated reader's record too.
+On the nine:
+`gemma-4-26b-a4b-it` and `google.gemma-4-31b` meet both clauses (8 of 8,
+none uncorroborated,
+against 100 percent and 0);
+`google.gemma-4-e2b` meets neither (6 of 8,
+two uncorroborated).
+The two join the readers through Bedrock's cards
+(`readsImages: true` on `google.gemma-4-26b-a4b` and `google.gemma-4-31b`,
+OpenRouter's row for the same model unchanged),
+which makes the readers bench six and gives a Bedrock-only pass two reachable readers,
+enough for `readImagePair` to corroborate.
+On record beside the seat:
+their overlaps sit below the seated band
+(0.67 against 0.80 to 0.92),
+which is a less exact transcription that the seated readers still corroborate,
+and every cached picture reading is re-read once,
+since the cache key names the reader roster.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

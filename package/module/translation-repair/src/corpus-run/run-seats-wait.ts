@@ -93,6 +93,15 @@ const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> =
 };
 
 /**
+ * Voices the readers bench needs: two, since `readImagePair` corroborates a
+ * picture from two readings and calls a single one `one-reader-only`. The
+ * judge benches' quorum is a majority of a bench that votes; readers never
+ * vote, and holding them to it would call a Bedrock-only pass with its two
+ * measured readers short before every pictures phase (2026-09-08).
+ */
+const READER_QUORUM = 2;
+
+/**
  * Names the benches one phase cannot run without.
  *
  * @param phase - phase about to start
@@ -177,9 +186,12 @@ export function shortBenches(
      */
     const seats = benches[name];
     /**
-     * Voices the bench needs to settle.
+     * Voices the bench needs to settle: a pair for the readers, a majority
+     * for a bench that votes.
      */
-    const quorum = rosterQuorumSize({ rosterSize: seats.length, },);
+    const quorum = (name === 'readers')
+      ? READER_QUORUM
+      : rosterQuorumSize({ rosterSize: seats.length, },);
     /**
      * Seats a wet provider would serve.
      */

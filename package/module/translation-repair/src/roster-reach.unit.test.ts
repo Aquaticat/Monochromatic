@@ -325,10 +325,16 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS gemma off the picture readers on OpenRouter and on Bedrock until a transcription is measured, so '
-        + 'a listing field alone cannot widen the reader roster',
+      name: 'SENDS gemma pictures through Bedrock alone, where its transcription was measured (2026-09-08), '
+        + 'and not through OpenRouter, whose listing field alone cannot widen the reader roster',
       fn: async () => {
         expect(visionReachOf({ modelId: 'gemma-4-26b-a4b-it', },),).toEqual({
+          synthetic: false,
+          hyper: false,
+          bedrock: true,
+          openrouter: false,
+        },);
+        expect(visionReachOf({ modelId: 'google.gemma-4-e2b', },),).toEqual({
           synthetic: false,
           hyper: false,
           bedrock: false,
@@ -343,13 +349,16 @@ await describe({
   name: readsImages.name,
   children: [
     it({
-      name: 'KEEPS READER SUB-ROSTER AT FOUR after the refresh, since its one image-capable arrival was culled',
+      name: 'READS WITH SIX: the four of the 2026-09-01 refresh and the two Gemma sizes measured through '
+        + 'Bedrock on 2026-09-08, so a Bedrock-only pass has two reachable readers',
       fn: async () => {
         expect(ROSTER_MODEL_IDS
           .filter(function reads(modelId,): boolean {
             return readsImages({ modelId, },);
           },)
           .toSorted(),).toEqual([
+          'gemma-4-26b-a4b-it',
+          'google.gemma-4-31b',
           'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
           'hf:zai-org/GLM-5.3-Flash',

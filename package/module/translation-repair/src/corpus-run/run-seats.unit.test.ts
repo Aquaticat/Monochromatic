@@ -118,9 +118,10 @@ await describe({
     },),
 
     it({
-      name: 'SEATS THE MEASURED BEDROCK-ONLY SIZE AS A JUDGE AND NOWHERE ELSE, and LEAVES THE UNMEASURED ONE '
-        + 'OUT OF EVERY ROLE while the roster still names both: google.gemma-4-e2b read 11 of 12 on the '
-        + 'fidelity probe of 2026-09-07 and no producer calibration has measured it',
+      name: 'SEATS THE MEASURED BEDROCK-ONLY SIZES WHERE THEY WERE MEASURED AND NOWHERE ELSE while the roster '
+        + 'names both: google.gemma-4-e2b judges (11 of 12 on the fidelity probe of 2026-09-07) and reads no '
+        + 'pictures (two readings no seated reader corroborated, 2026-09-08); google.gemma-4-31b reads '
+        + 'pictures (8 of 8 corroborated) and judges nothing; no producer calibration has measured either',
       fn: async function seatsByMeasurement(): Promise<void> {
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
         for (const candidate of BEDROCK_ONLY_ROSTER_IDS) {
@@ -128,8 +129,9 @@ await describe({
           expect(wet.translators.includes(candidate,),).toBe(false,);
           expect(wet.writers.includes(candidate,),).toBe(false,);
           expect(wet.checkers.includes(candidate,),).toBe(false,);
-          expect(wet.readers.includes(candidate,),).toBe(false,);
         }
+        expect(wet.readers.includes('google.gemma-4-e2b',),).toBe(false,);
+        expect(wet.readers.includes('google.gemma-4-31b',),).toBe(true,);
         for (const seated of SEATED_BEDROCK_JUDGES) {
           expect(RUN_ROSTER.includes(seated,),).toBe(true,);
           expect(wet.roster.includes(seated,),).toBe(true,);

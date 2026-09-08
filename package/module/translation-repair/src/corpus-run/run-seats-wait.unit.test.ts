@@ -149,6 +149,42 @@ await describe({
       },
     },),
     it({
+      name: 'HOLDS THE READERS TO A PAIR, not to a majority: two Bedrock readers of six can corroborate a '
+        + 'picture, so a Bedrock-only pictures phase is not short (2026-09-08), and one reader alone is',
+      fn: async () => {
+        const benches = benchesUnder({ dry: BEDROCK_ALONE, },);
+        /**
+         * Readers Bedrock serves under that view.
+         */
+        const readersReachable = reachableSeats({
+          seats: benches.readers,
+          dry: BEDROCK_ALONE,
+        },);
+        expect(readersReachable.length,).toBe(2,);
+        expect(shortBenches({
+          benches,
+          names: phaseBenches({ phase: 'pictures', },),
+          dry: BEDROCK_ALONE,
+        },),).toEqual([],);
+        /**
+         * The same bench with one Bedrock reader gone: a single reachable reader.
+         */
+        const oneReader = benches.readers.filter(function keeps(modelId,): boolean {
+          return modelId !== readersReachable[0];
+        },);
+        expect(shortBenches({
+          benches: {
+            ...benches,
+            readers: oneReader,
+          },
+          names: phaseBenches({ phase: 'pictures', },),
+          dry: BEDROCK_ALONE,
+        },),).toEqual([
+          `readers 1 of ${String(oneReader.length,)} reachable, quorum 2`,
+        ],);
+      },
+    },),
+    it({
       name: 'READS ONLY the benches the phase leans on, so a phase that reads no pictures never waits on '
         + 'the readers',
       fn: async () => {

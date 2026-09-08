@@ -281,25 +281,25 @@ await describe({
     },),
     it({
       name: 'SAYS SO when a bench the phase leans on is short of quorum and no provider has named its '
-        + 'return, seating what it read without a wait: the seventh hakureico launch, Bedrock alone at the '
-        + 'pictures, whose seats line read readers=4 withheld=none with no reader reachable',
+        + 'return, seating what it read without a wait: the seventh hakureico launch, Bedrock alone, whose '
+        + 'seats lines read roster=10 withheld=none with three seats reachable',
       fn: async () => {
         const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
         const { logger, lines, } = capturingLogger();
         const seats = await readJudgeSeats({
           client: viewClient({ providerDryness: script.read, },),
-          phase: 'pictures',
+          phase: 'preparation',
           signal: new AbortController().signal,
           l: logger,
           pollMs: 5,
         },);
         expect(script.counter.reads,).toBe(1,);
-        expect(seats.readers.length,).toBe(4,);
+        expect(seats.wideSeats.length,).toBe(8,);
         /**
          * The line that names the shortfall, if the reading said so.
          */
         const said = lines.find(function namesShortfall(line: string,): boolean {
-          return line.includes('JUDGE SEATS phase=pictures short of quorum: readers 0 of 4 reachable',);
+          return line.includes('JUDGE SEATS phase=preparation short of quorum: wide 3 of 8 reachable, quorum 4',);
         },);
         expect(said === undefined,).toBe(false,);
         expect(said?.includes('no provider has named its return',),).toBe(true,);

@@ -97,11 +97,14 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS PICTURES OFF EVERY ROW until a transcription through this stack is measured, as the '
-        + 'OpenRouter catalog holds gemma',
+      name: 'SHOWS PICTURES to the two Gemma sizes whose transcriptions the seated readers corroborated on '
+        + 'every picture they produced (2026-09-08, nine pictures), and to nobody else: E2B invented two '
+        + 'readings, gpt-oss-120b reads no pictures anywhere',
       fn: async () => {
-        for (const info of Object.values(BEDROCK_MODELS,))
-          expect(info.readsImages,).toBe(false,);
+        expect(BEDROCK_MODELS['google.gemma-4-26b-a4b'].readsImages,).toBe(true,);
+        expect(BEDROCK_MODELS['google.gemma-4-31b'].readsImages,).toBe(true,);
+        expect(BEDROCK_MODELS['google.gemma-4-e2b'].readsImages,).toBe(false,);
+        expect(BEDROCK_MODELS['openai.gpt-oss-120b'].readsImages,).toBe(false,);
       },
     },),
 
