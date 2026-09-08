@@ -1,7 +1,8 @@
 # module-fs-path deepening: the walker and its filesystem seam become the interface
 
 Status:
- in progress (2026-09-08).
+ code landed (2026-09-08);
+ waiting on the CI publish of 0.2.0.
 Owner decisions from the architecture grilling are recorded here as they land;
  this file is canonical for the change.
 Mechanism for the release that follows:
@@ -183,9 +184,79 @@ Mapping:
 
 ## Progress log
 
-- 2026-09-08:
-   record written.
+- 2026-09-08,
+   `df3409d8a`:
+   this record.
+- `e8e7461bd`:
+   package source.
+   `findRoot`,
+   `findRootCached`,
+   `RootNotFoundError` in `root-discovery.ts`;
+   `RootMarker` types in `root-marker-contract.ts`;
+   presets and factories in `root-marker.ts`;
+   `createMemoryRootFilesystem` in `memory-root-filesystem.ts`;
+   contract without `resolvePath`;
+   `find-monorepo-root.ts`,
+   `find-package-root.ts`,
+   and `module/matrix/src/root.ts` deleted.
+   Package lint and types clean.
+- `0546bf787`:
+   tests.
+   Marker tables over the memory adapter (18 mise,
+   36 git,
+   4 pnpm,
+   3 `fileNamed`,
+   3 `directoryNamed`,
+   6 `packageNamed` rows),
+   walker and memo cases with recording markers,
+   7 real-filesystem cases,
+   10 memory-adapter semantics cases;
+   the memory adapter resolves links along the whole parent chain after the git symbolic-link row exposed the gap.
+   Guard-failure proof for the `[monorepo]` fix:
+   with the old framing restored,
+   5 rows failed (CRLF,
+   comment,
+   comment without space,
+   trailing spaces,
+   indented);
+   restored,
+   all pass.
+- `80302aa1f`:
+   migration of 25 files,
+   `DECISIONS.md`,
+   README,
+   manifest description,
+   changeset (`changeset:status` reports `module-fs-path -> 0.2.0`).
+   Types clean in every migrated package;
+   the oxlint failures those packages report are pre-existing `require-eventual-artifact` findings on imports this change did not touch (fy,
+   git-clone-size,
+   mvm,
+   vmsync,
+   image-diff,
+   aquati.cat,
+   matrix,
+   deps-cube,
+   git-policy).
+   Unit tests pass for git-policy (both `RootNotFoundError` sites),
+   fy,
+   deps-cube (`packageNamed` at module load),
+   and the oxlint test-support consumer;
+   `module/matrix` has no `test:unit` task.
+   Chromium gate:
+   three presets fulfilled against OPFS markers,
+   two negatives rejected with `RootNotFoundError`,
+   2 passed.
+- The `npm-release.yml` run for `80302aa1f` (34228368589) failed before any release step:
+   `jdx/mise-action` read `2026.9.3` from `mise.jdx.dev/VERSION` while the GitHub release for that tag did not exist yet
+   (asset 404;
+   `gh release view v2026.9.3 --repo jdx/mise` reports not found).
+   Unrelated to this change;
+   mechanism in `doc/troubleshooting/mise-action-version-ahead-of-release.md`,
+   workflow-level fix tracked as #506.
 
 ## Next action
 
-Implement step 2.
+Rerun the failed `npm-release.yml` run once `v2026.9.3` has assets
+ (`gh run rerun --failed 34228368589`),
+ then merge the "Version Packages" pull request it opens;
+ the merge publishes 0.2.0 through the trusted publisher.
