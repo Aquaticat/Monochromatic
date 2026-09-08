@@ -81,6 +81,7 @@ import androidx.activity.enableEdgeToEdge
 // import { icons } from '@material-design-icons/svg';
 // ```
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -97,6 +98,7 @@ import androidx.compose.material.icons.filled.SkipPrevious
 // ```
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 
 // What:     `rememberScrollState` creates composition-owned scroll position state.
@@ -322,6 +324,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 // import { FontWeight, TextAlign, TextOverflow } from 'compose/ui/text';
 // ```
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 
 // What:     `dp` and `sp` construct density-aware layout and font measurements.
@@ -340,6 +343,12 @@ const val DESIGN_CANDIDATE_EXTRA: String = "candidate"
 
 /** Default candidate used when screenshot automation omits its explicit selection. */
 const val DEFAULT_DESIGN_CANDIDATE: String = "light-c"
+
+/** Current folder name shown by dynamic Shuffle mode label in this static prototype. */
+private const val CURRENT_SUBDIRECTORY: String = "Camellia"
+
+/** Longest subdirectory content width allowed inside one-row Shuffle segment. */
+private const val MAX_SHUFFLE_SUBDIRECTORY: String = "Camellia"
 
 /** Candidate-specific Material surface roles and decorative-divider treatment. */
 private data class CandidatePalette(
@@ -913,8 +922,156 @@ private fun TransportControls(candidate: String) {
 }
 
 /**
- * What:     `OneRowModeControl` composes all four Material segments in one horizontal group.
- * Why:      This is the shortest arrangement when every label fits at current text scale.
+ * What:     `ShuffleModeLabel` renders fixed `Shuffle` prefix beside width-capped folder name.
+ * Why:      Longer names keep useful beginning and ending characters without widening one-row cell beyond `Camellia`.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function ShuffleModeLabel(props: { currentSubdirectory: string; onUnexpectedOverflow(): void }): UIElement;
+ * ```
+ */
+@Composable
+private fun ShuffleModeLabel(
+    currentSubdirectory: String,
+    onUnexpectedOverflow: () -> Unit,
+) {
+    val textStyle = MaterialTheme.typography.labelLarge
+    // What:     `rememberTextMeasurer()` creates a Compose text-width calculator retained across redraws.
+    // Why:      Cell cap must follow actual Material font and Android text scale rather than character count.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const textMeasurer = useMemo(() => createCanvasTextMeasurer(), []);
+    // ```
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val maximumSubdirectoryWidthPixels = remember(textMeasurer, textStyle) {
+        textMeasurer.measure(text = MAX_SHUFFLE_SUBDIRECTORY, style = textStyle).size.width
+    }
+    val naturalSubdirectoryWidthPixels = remember(currentSubdirectory, textMeasurer, textStyle) {
+        textMeasurer.measure(text = currentSubdirectory, style = textStyle).size.width
+    }
+    val desiredSubdirectoryWidthPixels = minOf(
+        naturalSubdirectoryWidthPixels,
+        maximumSubdirectoryWidthPixels,
+    )
+    // What:     `with(density) { pixels.toDp() }` converts rendered panel pixels to Compose density-independent width.
+    // Why:      Layout modifier and text measurer must compare the same physical width at every device density.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const desiredSubdirectoryWidthDp = desiredSubdirectoryWidthPixels / density;
+    // ```
+    val desiredSubdirectoryWidth = with(density) {
+        desiredSubdirectoryWidthPixels.toDp()
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "Shuffle ",
+            maxLines = 1,
+            overflow = TextOverflow.Clip,
+            style = textStyle,
+            onTextLayout = { result ->
+                if (result.hasVisualOverflow) {
+                    onUnexpectedOverflow()
+                }
+            },
+        )
+        Text(
+            text = currentSubdirectory,
+            modifier = Modifier.width(desiredSubdirectoryWidth),
+            maxLines = 1,
+            overflow = TextOverflow.MiddleEllipsis,
+            style = textStyle,
+            onTextLayout = { result ->
+                if (result.size.width < desiredSubdirectoryWidthPixels) {
+                    onUnexpectedOverflow()
+                }
+            },
+        )
+    }
+}
+
+/**
+ * What:     `VariableWidthModeSegment` renders one connected Material-style segment at intrinsic label width.
+ * Why:      Unequal labels can share one line without wasting pane width on equal quarters.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function VariableWidthModeSegment(props: ModeSegmentProps): UIElement;
+ * ```
+ */
+@Composable
+private fun VariableWidthModeSegment(
+    index: Int,
+    labels: List<String>,
+    accessibleLabels: List<String>,
+    contentPadding: PaddingValues,
+    onOverflow: () -> Unit,
+) {
+    val isSelected = index == 1
+    val containerColor = if (isSelected) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        Color.Transparent
+    }
+    val contentColor = if (isSelected) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    OutlinedButton(
+        onClick = {},
+        shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
+        modifier = Modifier
+            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+            .semantics {
+                contentDescription = accessibleLabels[index]
+                role = Role.RadioButton
+                selected = isSelected
+            },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = contentColor,
+        ),
+        border = BorderStroke(
+            width = SegmentedButtonDefaults.BorderWidth,
+            color = MaterialTheme.colorScheme.outline,
+        ),
+        contentPadding = contentPadding,
+    ) {
+        if (isSelected) {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .size(SegmentedButtonDefaults.IconSize),
+            )
+        }
+        if (index == 2) {
+            ShuffleModeLabel(
+                currentSubdirectory = CURRENT_SUBDIRECTORY,
+                onUnexpectedOverflow = onOverflow,
+            )
+        } else {
+            Text(
+                text = labels[index],
+                maxLines = 1,
+                overflow = TextOverflow.Clip,
+                onTextLayout = { result ->
+                    if (result.hasVisualOverflow) {
+                        onOverflow()
+                    }
+                },
+            )
+        }
+    }
+}
+
+/**
+ * What:     `OneRowModeControl` composes four content-sized segments in one connected horizontal group.
+ * Why:      Intrinsic cell widths make one row the first fitting arrangement without shortening ordinary labels.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -928,30 +1085,19 @@ private fun OneRowModeControl(
     contentPadding: PaddingValues,
     onOverflow: () -> Unit,
 ) {
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+    Row(
+        modifier = Modifier.selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy((-1).dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         for (index in labels.indices) {
-            SegmentedButton(
-                selected = index == 1,
-                onClick = {},
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
-                modifier = Modifier
-                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-                    .semantics {
-                        contentDescription = accessibleLabels[index]
-                    },
+            VariableWidthModeSegment(
+                index = index,
+                labels = labels,
+                accessibleLabels = accessibleLabels,
                 contentPadding = contentPadding,
-            ) {
-                Text(
-                    text = labels[index],
-                    maxLines = 1,
-                    overflow = TextOverflow.Clip,
-                    onTextLayout = { result ->
-                        if (result.hasVisualOverflow) {
-                            onOverflow()
-                        }
-                    },
-                )
-            }
+                onOverflow = onOverflow,
+            )
         }
     }
 }
@@ -1089,8 +1235,8 @@ private fun FourRowModeControl(labels: List<String>, accessibleLabels: List<Stri
  */
 @Composable
 private fun ModeControl() {
-    val labels = listOf("Repeat", "In order", "Shuffle Camellia", "Shuffle all")
-    val accessibleLabels = listOf("Repeat track", "Play in order", "Shuffle Camellia", "Shuffle all folders")
+    val labels = listOf("Repeat", "In order", "Shuffle $CURRENT_SUBDIRECTORY", "Shuffle all")
+    val accessibleLabels = listOf("Repeat track", "Play in order", "Shuffle $CURRENT_SUBDIRECTORY", "Shuffle all folders")
     val density = LocalDensity.current
     BoxWithConstraints(
         modifier = Modifier.fillMaxWidth(),
