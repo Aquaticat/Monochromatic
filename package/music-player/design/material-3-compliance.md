@@ -341,27 +341,32 @@ The active labels are `Repeat`,
  `Shuffle Camellia`,
  and `Shuffle all`.
 Native captures cover every Settings UI preset:
- two rows at 85%,
- 100%,
- 115%,
-130%,
+ one content-sized row at 85% and 100%,
+two rows at 115%,
+ 130%,
  and 150%,
  then four rows at 180% and 200%.
- No user-facing preset fits
-`Shuffle Camellia` in one row.
- The control tries baseline 12dp horizontal content padding,
-then 6dp before adding rows;
+ The
+one-row control tries baseline 12dp horizontal content padding,
+ then 6dp before adding
+rows;
  every target remains at least 48dp.
- The pinned Compose
-artifact exposes horizontal segmented rows but no multi-row group wrapper,
- so the
-prototype composes real `SegmentedButton` elements in one outer selectable group and
-applies the same colors,
+ The pinned Compose `SegmentedButton`
+forces equal child weights and exposes no multi-row group wrapper.
+ The one-row branch
+therefore uses connected Material-style outlined buttons with intrinsic widths;
+ later
+branches compose real `SegmentedButton` elements in one outer selectable group.
+ Both
+apply the same colors,
  outline,
  selection fill,
  checkmark,
  and radio semantics.
-It does not substitute another component or add horizontal scrolling.
+The `Shuffle` cell caps its name content at rendered `Camellia` width and middle-ellipsizes
+longer names without shortening accessibility semantics.
+ No branch adds horizontal
+scrolling.
 
 ### State cues and contrast
 

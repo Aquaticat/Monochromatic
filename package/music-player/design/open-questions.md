@@ -595,14 +595,19 @@ Settings UI:
  1.50,
  1.80,
  and 2.0.
- Measured
-overflow produces connected 2×2 from 85% through 150%,
- then four connected
-vertical rows at 180% and 200%.
+ Measured overflow produces one connected content-sized row at 85% and 100%,
+connected 2×2 at 115%,
+ 130%,
+ and 150%,
+ then four connected vertical rows at
+180% and 200%.
  Every state shows `Shuffle Camellia`,
- uses no
-horizontal mode scrolling,
+ uses no horizontal mode
+scrolling,
  and clears the navigation inset.
+ Longer names retain the full `Shuffle`
+prefix and middle-ellipsize only the subdirectory at rendered `Camellia` width;
+semantics retain the unshortened name.
  Shell-injected 50% and 75%
 captures are historical diagnostics,
  not user-facing Android presets.

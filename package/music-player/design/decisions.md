@@ -259,8 +259,8 @@ is used only for **demo annotations**,
 
 ## D. Components and behaviour
 
-### D1. Mode control = adaptive outlined segmented button (revised 2026-09-06)
-Keep every option as a real Compose `SegmentedButton` with its outlined container,
+### D1. Mode control = adaptive outlined segmented button (revised 2026-09-08)
+Keep every option as a connected Material-style radio segment with an outlined container,
 48dp minimum target,
  selected fill,
  checkmark,
@@ -272,11 +272,15 @@ the fewest connected rows whose complete labels fit:
  a
 connected 2×2 block second,
  then four connected vertical rows.
- Only outside corners
-round in multi-row arrangements;
+ One-row cells use
+variable intrinsic widths because Compose `SegmentedButton` forces equal weights;
+ the 2×2
+and vertical fallbacks retain real `SegmentedButton` elements.
+ Only outside corners round
+in multi-row arrangements;
  internal edges remain shared.
- Never add horizontal
-scrolling or replace the control with plain radio rows or a single chip.
+ Never add horizontal scrolling
+or replace the control with plain radio rows or a single chip.
 
 Visible labels are `Repeat`,
  `In order`,
@@ -286,8 +290,13 @@ Visible labels are `Repeat`,
  Replace `<currentSubDir>` with the active subdirectory name;
  the current
 prototype therefore says `Shuffle Camellia`.
- Accessibility descriptions expand only
-where that adds meaning:
+ Cap one-row subdirectory content at the
+rendered width of `Camellia`.
+ Longer subdirectory names use a middle ellipsis in the
+name only;
+ the `Shuffle` prefix remains complete.
+ Accessibility descriptions retain the full
+subdirectory name and expand only where that adds meaning:
  `Repeat track`,
  `Play in order`,
  `Shuffle Camellia`,
@@ -311,16 +320,18 @@ wrapping behavior.
  150%,
 180%,
  and 200%.
- Native captures use 2×2 from 85% through 150%,
- then four
-rows at 180% and 200%.
- No user-facing preset fits `Shuffle Camellia` in one row;
-that branch remains available for shorter names or wider panes.
- The control tries 12dp
-horizontal content padding,
+ Native captures use one content-sized row at 85% and 100%,
+ 2×2 at 115%,
+130%,
+ and 150%,
+ then four rows at 180% and 200%.
+ The one-row control tries
+12dp horizontal content padding,
  then 6dp before adding rows;
- all targets retain a 48dp
-minimum.
+ all targets retain a
+48dp minimum.
+ A long-name probe renders `Shuffle Extr…ory` for
+`ExtraordinarilyLongDirectory` while exposing the unshortened name in semantics.
 
 ### D1 (superseded). Mode control = connected button group (candidate mode-d)
 Four options:

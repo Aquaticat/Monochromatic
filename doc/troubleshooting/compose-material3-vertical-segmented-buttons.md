@@ -1,4 +1,4 @@
-# Compose Material 3 1.5.0-alpha27 exposes row-only segmented layout for a vertical large-text control
+# Compose Material 3 1.5.0-alpha27 forces equal-width row segments and has no vertical wrapper
 
 ## Symptom
 
@@ -7,7 +7,7 @@ scale.
  Four full labels no longer fit in the 414dp pane's horizontal segmented row.
 The installed Compose Material 3 API exposes `SingleChoiceSegmentedButtonRow`,
  but no
-vertical segmented wrapper.
+vertical segmented wrapper or content-sized segment option.
 
 There is no compiler diagnostic for the missing orientation.
  The failed designs are
@@ -60,14 +60,25 @@ The public scope itself extends `RowScope` at line 482:
 public interface SingleChoiceSegmentedButtonRowScope : RowScope
 ```
 
-The library therefore supplies horizontal sizing,
+The element also appends equal weight internally at lines 231 to 234,
+ after the caller's
+modifier:
+
+```kotlin
+modifier =
+    modifier
+        .weight(1f)
+```
+
+The library therefore supplies horizontal equal-width sizing,
  overlap,
- and group semantics,
- but no
-parallel column layout.
- This is an API-shape limitation,
- not evidence that a vertical
-segmented control is invalid as a product design.
+ and group
+semantics,
+ but no intrinsic-width option or parallel column layout.
+ This is an API-shape
+limitation,
+ not evidence that content-sized or vertical segments are invalid as a
+product design.
 
 ## Verification
 
@@ -84,46 +95,53 @@ javap -classpath ~/.gradle/caches/9.5.1/transforms/5482783770c2ea5cd3ac7fbc2b7c0
 
 ### Cleanly supported cases
 
-- One horizontal `SingleChoiceSegmentedButtonRow` at default text scale.
-- Two to five real `SegmentedButton` elements inside that row.
+- One horizontal equal-width `SingleChoiceSegmentedButtonRow` at a fitting text scale.
+- Two to five real equal-width `SegmentedButton` elements inside that row.
 - Selected fill,
    checkmark,
    outline,
    and radio role from the Material component.
 
-### Unsupported wrapper case
+### Unsupported layout cases
 
 - No `SingleChoiceSegmentedButtonColumn`,
    vertical orientation parameter,
    or other
   public vertical group appears in the installed jar or current AndroidX source.
+- No public parameter disables the element's unconditional `.weight(1f)` to produce
+  content-sized cells.
 
 ### Consumer-side prototype
 
-Prototype commit `bf6830f4f` builds and Android lint passes.
- At 200% text,
- the native
-capture is 2076 × 2152px and shows four connected full-label vertical segments.
- After
-the transport scrolls vertically,
- the outer segmented outline spans x=73 through x=935
-and y=1517 through y=2034,
- leaving 39 physical pixels before the navigation inset at
-y=2074.
- UI Automator exposes all labels and a checked mode.
+Prototype commit `f9635cb56` builds and Android lint passes.
+ Native captures use one
+connected content-sized row at 85% and 100%,
+ connected 2×2 at 115% through 150%,
+and four rows at 180% and 200%.
+ At 200%,
+ the complete group clears the navigation
+inset after vertical deck scrolling.
+ UI Automator exposes all labels and a checked
+mode.
 
-## Verified workaround
+A throwaway long-name build renders `Shuffle Extr…ory` for
+`ExtraordinarilyLongDirectory` inside the same maximum content width as `Shuffle
+Camellia`.
+ UI Automator retains the full name in `contentDescription`.
 
-The debug-only visual prototype stacks four real one-item
-`SingleChoiceSegmentedButtonRow` instances inside one outer selectable column.
- It uses
-custom top,
- rectangular middle,
- and bottom shapes,
- with a negative 1dp gap to overlap
-shared outlines.
+## Verified workarounds
+
+### Multi-row connected groups
+
+The debug-only visual prototype stacks real `SingleChoiceSegmentedButtonRow` instances
+inside one outer selectable column.
+ It uses custom outside shapes,
+ rectangular internal
+corners,
+ and a negative 1dp gap to overlap shared outlines.
  The implementation is in
-`package/music-player/android-app/app/src/debug/kotlin/dev/monochromatic/musicplayer/DesignCandidateActivity.kt:861-897`.
+`package/music-player/android-app/app/src/debug/kotlin/dev/monochromatic/musicplayer/DesignCandidateActivity.kt:1115-1227`
+on the prototype branch.
 
 ```kotlin
 Column(
@@ -144,21 +162,43 @@ and per-segment radio role without horizontal scrolling.
 hosted by a one-item row because the library's segmented element is row-scoped.
  The
 production implementation must verify that assistive technology announces the outer
-mutually exclusive group rather than four unrelated one-item groups.
+mutually exclusive group rather than separate row groups.
+
+### Content-sized one-row group
+
+Because the library element forces equal weight,
+ the one-row branch uses connected
+`OutlinedButton` elements at intrinsic content width.
+ It explicitly retains the
+segmented outline,
+ outside shapes,
+ selected secondary container,
+ checkmark,
+ 48dp
+minimum target,
+ radio role,
+ and full accessibility description.
+ The implementation is in
+`DesignCandidateActivity.kt:925-1110` on the prototype branch.
+
+The `Shuffle` prefix and subdirectory are separate text nodes.
+ The name node is capped at
+the rendered width of `Camellia` and uses `TextOverflow.MiddleEllipsis`.
+ Tradeoff:
+the one-row branch reproduces the Material segmented treatment rather than using
+`SegmentedButton` itself;
+ production assistive technology must verify its group and radio
+announcements.
 
 ## What does not work
 
 - Plain radio rows fit the labels but violate settled component identity.
 - A horizontally scrolling segmented row preserves component identity but violates the
   required purely vertical presentation.
-- A 2 by 2 arrangement is not purely vertical and wraps the set into another line.
+- A 2 by 2 arrangement cannot preserve one-row deck height and still does not fit the 180% and 200% labels.
 - One constrained horizontal row cannot preserve all four full labels at 200% text.
-- `gh repo clone` could not run because `gh` is absent in this environment.
-   The
-  investigation used immutable Gitiles source,
-   installed bytecode,
-   and the real build
-  instead.
+- Adding `wrapContentWidth()` at the group boundary does not remove the element's
+  internal equal weight.
 
 ## Upstream filing decision
 
@@ -182,8 +222,6 @@ request.
 4. **Contribution policy:**
     Not evaluated further because the supported-use-case gate
    fails.
-    The unavailable `gh` executable also prevents the repository-policy path
-   required for a filing decision.
 5. **Likely upstream action:**
     Unknown;
     no matching maintained issue was verified.
