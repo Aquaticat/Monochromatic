@@ -72,6 +72,7 @@ export {
   BlockPairingError,
   type BlockPairingWire,
   buildBlockPairingMessages,
+  type FreeOrderBlocks,
   isBlockPairingWire,
   type NumberedBlock,
   readBlockPairing,

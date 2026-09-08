@@ -24,6 +24,12 @@ import type {
   BlockPair,
   NumberedBlock,
 } from './pair-blocks-wire.ts';
+import {
+  crossingFinding,
+  type DefinitionLabelPair,
+  definitionIndexes,
+  splitDefinitionPairs,
+} from './pair-definition-order.ts';
 import { claimMediaAdjacentTargets, } from './pair-media-adjacency.ts';
 import type {
   PairedDocumentRecord,
@@ -68,6 +74,12 @@ export type PairedPreparation = {
    * What the pairing rounds reported, in scorecard-stable wording.
    */
   readonly findings: readonly string[];
+
+  /**
+   * Every footnote definition the roster paired with one of the other side's,
+   * by label, across the chunks, for the archive relabel.
+   */
+  readonly footnoteDefinitionPairs: readonly DefinitionLabelPair[];
 };
 
 /**
@@ -208,6 +220,11 @@ export async function prepareDocumentPairWithRoster(
    * What the rounds reported, opened with whatever the section round said.
    */
   const findings: string[] = [...sectionRound.findings,];
+
+  /**
+   * Definition pairs read off every chunk's agreed pairing.
+   */
+  const footnoteDefinitionPairs: DefinitionLabelPair[] = [];
   for (
     const [pairIndex, pair,] of alignment
       .pairs
@@ -257,6 +274,13 @@ export async function prepareDocumentPairWithRoster(
         };
       },);
 
+    /**
+     * The footnote definitions on each side, exempt from the order rule.
+     */
+    const freeOrder = {
+      source: definitionIndexes({ nodes: sourceNodes, },),
+      target: definitionIndexes({ nodes: targetNodes, },),
+    };
     // NOTHING TO PAIR is not a question worth buying: one block against one
     // block has exactly one answer, and an empty side has none.
     if ((sourceBlocks.length < 2) && (targetBlocks.length < 2))
@@ -340,9 +364,22 @@ export async function prepareDocumentPairWithRoster(
         pl.warn(`section ${String(pairIndex,)}: no agreed pairing, keeping the deterministic aligner`,);
         continue;
       }
+      /**
+       * The resumed pairing split for the slicer and the relabel.
+       */
+      const resumedSplit = splitDefinitionPairs({
+        pairs: resumedPairs,
+        sourceNodes,
+        targetNodes,
+      },);
+      footnoteDefinitionPairs.push(...resumedSplit.definitionPairs,);
+      if (resumedSplit.crossing) {
+        pl.warn(crossingFinding({ pairIndex, },),);
+        findings.push(crossingFinding({ pairIndex, },),);
+      }
       blockPairings.set(
         pairIndex,
-        resumedPairs,
+        resumedSplit.forSlicing,
       );
       continue;
     }
@@ -356,6 +393,7 @@ export async function prepareDocumentPairWithRoster(
       modelIds,
       sourceBlocks,
       targetBlocks,
+      freeOrder,
       signal,
       exchangeTimeoutMs,
       l: pl,
@@ -485,9 +523,22 @@ export async function prepareDocumentPairWithRoster(
       pl.warn(`section ${String(pairIndex,)}: no agreed pairing, keeping the deterministic aligner`,);
       continue;
     }
+    /**
+     * The agreed pairing split for the slicer and the relabel.
+     */
+    const split = splitDefinitionPairs({
+      pairs,
+      sourceNodes,
+      targetNodes,
+    },);
+    footnoteDefinitionPairs.push(...split.definitionPairs,);
+    if (split.crossing) {
+      pl.warn(crossingFinding({ pairIndex, },),);
+      findings.push(crossingFinding({ pairIndex, },),);
+    }
     blockPairings.set(
       pairIndex,
-      pairs,
+      split.forSlicing,
     );
   }
 
@@ -518,6 +569,7 @@ export async function prepareDocumentPairWithRoster(
       ],
     },
     findings,
+    footnoteDefinitionPairs,
   };
 }
 

@@ -263,6 +263,76 @@ export function isBlockPairingWire(value: unknown,): value is BlockPairingWire {
 }
 
 /**
+ * Chunk-local indices of the blocks whose order carries no meaning: the
+ * footnote definitions on each side.
+ *
+ * @example
+ * ```ts
+ * const freeOrder: FreeOrderBlocks = { source: new Set([ 7, 8, ],), target: new Set([ 11, 12, ],), };
+ * ```
+ */
+export type FreeOrderBlocks = {
+  /**
+   * Original-side definition indices.
+   */
+  readonly source: ReadonlySet<number>;
+
+  /**
+   * Translation-side definition indices.
+   */
+  readonly target: ReadonlySet<number>;
+};
+
+/**
+ * No block exempt from the order rule, the reader's default.
+ */
+const NO_FREE_ORDER: FreeOrderBlocks = {
+  source: new Set<number>(),
+  target: new Set<number>(),
+};
+
+/**
+ * Whether a pair joins two definitions, two body blocks, or one of each.
+ *
+ * @param pair - pair to classify
+ *
+ * @param freeOrder - definition indices, empty when the caller named none
+ *
+ * @returns The class
+ *
+ * @example
+ * ```ts
+ * pairClass({ pair: { source: 7, target: 12, }, freeOrder, },);
+ * // => 'definition'
+ * ```
+ */
+function pairClass(
+  {
+    pair,
+    freeOrder,
+  }: {
+    readonly pair: BlockPair;
+    readonly freeOrder: FreeOrderBlocks;
+  },
+): 'definition' | 'body' | 'mixed' {
+  /**
+   * Whether the original side is a definition.
+   */
+  const sourceFree = freeOrder.source
+    .has(pair.source,);
+  /**
+   * Whether the translation side is a definition.
+   */
+  const targetFree = freeOrder.target
+    .has(pair.target,);
+  if (sourceFree && targetFree)
+    return 'definition';
+  if (sourceFree || targetFree)
+    return 'mixed';
+  return 'body';
+}
+
+/**
  * Reads a model's pairing, refusing anything that cannot be used as one.
  *
  * REFUSES RATHER THAN REPAIRS. A pairing that runs backwards, names a block
@@ -295,10 +365,12 @@ export function readBlockPairing(
     value,
     sourceCount,
     targetCount,
+    freeOrder = NO_FREE_ORDER,
   }: {
     readonly value: unknown;
     readonly sourceCount: number;
     readonly targetCount: number;
+    readonly freeOrder?: FreeOrderBlocks;
   },
 ): readonly BlockPair[] {
   if (!isBlockPairingWire(value,))
@@ -335,11 +407,50 @@ export function readBlockPairing(
   // What stays forbidden is going BACKWARDS, since both documents say things in
   // the same order, and standing still on BOTH sides at once, which repeats a
   // correspondence already made rather than describing a new one.
+  //
+  // FOOTNOTE DEFINITIONS ARE THE EXCEPTION TO THE ORDER, since a page renders
+  // its notes by reference order and two documents may define the same notes
+  // in a different order and both be right (the third `yuki418330012` launch
+  // of 2026-09-08 lost six of eight voices to this rule when the archive had
+  // renumbered its two notes). A definition pairs only with a definition, and
+  // the order rule reads over the body pairs alone.
   for (const [at, pair,] of pairs.entries()) {
     /**
      * Pair before this one, absent at the first position.
      */
     const previous = pairs[at - 1];
+    if (pairClass({
+      pair,
+      freeOrder,
+    },) === 'mixed')
+      throw new BlockPairingError({
+        message: `pairing pairs a footnote definition with a body block at position ${String(at,)}`,
+      },);
+    if (previous === undefined)
+      continue;
+    if ((pair.source === previous.source) && (pair.target === previous.target))
+      throw new BlockPairingError({
+        message: `pairing repeats the same correspondence at position ${String(at,)}`,
+      },);
+  }
+  /**
+   * The body pairs with their positions, the ones the order rule reads.
+   */
+  const bodyPairs = [ ...pairs.entries(), ]
+    .filter(function isBody([
+      ,
+      pair,
+    ],): boolean {
+      return pairClass({
+        pair,
+        freeOrder,
+      },) === 'body';
+    },);
+  for (const [step, [at, pair,],] of bodyPairs.entries()) {
+    /**
+     * Body pair before this one, absent at the first.
+     */
+    const previous = bodyPairs[step - 1]?.[1];
     if (previous === undefined)
       continue;
     if (pair.source < previous.source)
@@ -349,10 +460,6 @@ export function readBlockPairing(
     if (pair.target < previous.target)
       throw new BlockPairingError({
         message: `pairing moves backwards on the translation side at position ${String(at,)}`,
-      },);
-    if ((pair.source === previous.source) && (pair.target === previous.target))
-      throw new BlockPairingError({
-        message: `pairing repeats the same correspondence at position ${String(at,)}`,
       },);
   }
   return pairs;

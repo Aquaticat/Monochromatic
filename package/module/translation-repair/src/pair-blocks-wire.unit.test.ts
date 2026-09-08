@@ -180,6 +180,122 @@ await describe({
       },
     },),
     it({
+      name: 'ACCEPTS definition pairs that cross when told which blocks are definitions, since a page '
+        + 'renders its notes by reference order (the third yuki418330012 launch of 2026-09-08 lost six of '
+        + 'eight voices to the order rule), and still refuses a body pair that steps backwards',
+      fn: async () => {
+        /**
+         * Body in order, the two definitions paired by content, crossing.
+         */
+        const crossing = {
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 1,
+              target: 1,
+            },
+            {
+              source: 2,
+              target: 4,
+            },
+            {
+              source: 3,
+              target: 3,
+            },
+          ],
+        };
+        /**
+         * Which blocks are definitions on each side.
+         */
+        const freeOrder = {
+          source: new Set([
+            2,
+            3,
+          ],),
+          target: new Set([
+            3,
+            4,
+          ],),
+        };
+        expect(readBlockPairing({
+          value: crossing,
+          sourceCount: 4,
+          targetCount: 5,
+          freeOrder,
+        },).length,).toBe(4,);
+        expect(function readsWithoutTheExemption() {
+          readBlockPairing({
+            value: crossing,
+            sourceCount: 4,
+            targetCount: 5,
+          },);
+        },).toThrow(BlockPairingError,);
+        expect(function readsABodyStepBack() {
+          readBlockPairing({
+            value: {
+              pairs: [
+                {
+                  source: 1,
+                  target: 1,
+                },
+                {
+                  source: 2,
+                  target: 4,
+                },
+                {
+                  source: 0,
+                  target: 0,
+                },
+                {
+                  source: 3,
+                  target: 3,
+                },
+              ],
+            },
+            sourceCount: 4,
+            targetCount: 5,
+            freeOrder,
+          },);
+        },).toThrow(BlockPairingError,);
+      },
+    },),
+    it({
+      name: 'REFUSES a pair that joins a footnote definition with a body block',
+      fn: async () => {
+        expect(function readsMixed() {
+          readBlockPairing({
+            value: {
+              pairs: [
+                {
+                  source: 0,
+                  target: 0,
+                },
+                {
+                  source: 1,
+                  target: 3,
+                },
+              ],
+            },
+            sourceCount: 4,
+            targetCount: 5,
+            freeOrder: {
+              source: new Set([
+                2,
+                3,
+              ],),
+              target: new Set([
+                3,
+                4,
+              ],),
+            },
+          },);
+        },).toThrow(BlockPairingError,);
+      },
+    },),
+    it({
       name: 'REFUSES a pairing that moves backwards on the original side',
       fn: async () => {
         expect(function readsBackwards() {

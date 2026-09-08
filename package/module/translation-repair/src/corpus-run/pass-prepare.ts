@@ -202,6 +202,8 @@ export async function preparePassEntry(
     entryId,
     slices: firstPaired.prepared
       .slices,
+    definitionPairs: firstPaired.footnoteDefinitionPairs,
+    sourceText,
     archiveText,
     l,
   },);
@@ -241,6 +243,7 @@ export async function preparePassEntry(
   if (pending.length === 0) {
     return {
       prepared: labelled.prepared,
+      footnoteDefinitionPairs: labelled.footnoteDefinitionPairs,
       findings: labelledFindings,
     };
   }
@@ -260,6 +263,7 @@ export async function preparePassEntry(
   if (repaired.targetText === relabel.archiveText) {
     return {
       prepared: labelled.prepared,
+      footnoteDefinitionPairs: labelled.footnoteDefinitionPairs,
       findings: [
         ...labelledFindings,
         ...repaired.findings,
@@ -277,6 +281,7 @@ export async function preparePassEntry(
     .unclaimedTargetBlocks;
   return {
     prepared: secondPaired.prepared,
+    footnoteDefinitionPairs: secondPaired.footnoteDefinitionPairs,
     findings: [
       ...secondPaired.findings,
       ...relabel.findings,

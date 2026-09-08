@@ -1,4 +1,5 @@
 import type { ChunkPair, } from './chunk-document.ts';
+import type { DefinitionLabelPair, } from './pair-definition-order.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import {
   scanGfmReferenceLiterals,
@@ -225,6 +226,127 @@ export function referenceLabels(
 }
 
 /**
+ * One claim that an archive label is an original label, and where it was
+ * read.
+ */
+type LabelCorrespondence = {
+  /**
+   * Label as the archive spells it.
+   */
+  readonly from: string;
+
+  /**
+   * Label the original gives the same note.
+   */
+  readonly to: string;
+
+  /**
+   * Where the claim was read, for the detail.
+   */
+  readonly where: string;
+
+  /**
+   * What kind of place that is, for the detail's grammar.
+   */
+  readonly unit: 'slice' | 'pair';
+};
+
+/**
+ * Folds correspondences into one map, refusing as ambiguous the first that
+ * contradicts an earlier one on either side.
+ *
+ * @param correspondences - claims in reading order
+ *
+ * @param skipped - places that said nothing, carried into the reading
+ *
+ * @returns The reading
+ *
+ * @example
+ * ```ts
+ * mapLabels({ correspondences: [ { from: '1', to: '2', where: 'slice 3', unit: 'slice', }, ], skipped: [], },);
+ * ```
+ */
+function mapLabels(
+  {
+    correspondences,
+    skipped,
+  }: {
+    readonly correspondences: readonly LabelCorrespondence[];
+    readonly skipped: readonly string[];
+  },
+): FootnoteRelabelReading {
+  /**
+   * Archive label to the original's, as the claims agree so far.
+   */
+  const forward = new Map<string, string>();
+
+  /**
+   * Original label to the archive's, so two archive labels cannot claim one.
+   */
+  const backward = new Map<string, string>();
+  for (const claim of correspondences) {
+    /**
+     * Where an earlier claim mapped this archive label, when one did.
+     */
+    const forwardSeen = forward.get(claim.from,);
+    /**
+     * Which archive label an earlier claim mapped onto this original label,
+     * when one did.
+     */
+    const backwardSeen = backward.get(claim.to,);
+    if (((forwardSeen !== undefined) && (forwardSeen !== claim.to))
+      || ((backwardSeen !== undefined) && (backwardSeen !== claim.from)))
+      return {
+        kind: 'ambiguous',
+        detail: `${claim.where} maps archive [^${claim.from}] to original [^${claim.to}] where an earlier ${
+          claim.unit
+        } mapped [^${
+          forwardSeen
+            ?? backwardSeen
+            ?? ''
+        }]`,
+      };
+    forward.set(
+      claim.from,
+      claim.to,
+    );
+    backward.set(
+      claim.to,
+      claim.from,
+    );
+  }
+  /**
+   * The labels that change.
+   */
+  const map = [ ...forward.entries(), ]
+    .filter(function changes([
+      from,
+      to,
+    ],): boolean {
+      return from !== to;
+    },)
+    .map(function toRelabel([
+      from,
+      to,
+    ],): FootnoteRelabel {
+      return {
+        from,
+        to,
+      };
+    },);
+  if (map.length === 0)
+    return {
+      kind: 'unchanged',
+      skipped,
+    };
+  return {
+    kind: 'relabel',
+    map,
+    skipped,
+  };
+}
+
+/**
  * Reads, off the paired slices, how the archive's labels map to the
  * original's.
  *
@@ -242,14 +364,9 @@ export function footnoteRelabelOf(
   { slices, }: { readonly slices: readonly ChunkPair[]; },
 ): FootnoteRelabelReading {
   /**
-   * Archive label to the original's, as the slices agree so far.
+   * Correspondences the slices give, positionally.
    */
-  const forward = new Map<string, string>();
-
-  /**
-   * Original label to the archive's, so two archive labels cannot claim one.
-   */
-  const backward = new Map<string, string>();
+  const correspondences: LabelCorrespondence[] = [];
 
   /**
    * Slices that said nothing about the labels, each with why.
@@ -296,64 +413,52 @@ export function footnoteRelabelOf(
       const to = original[at];
       if (to === undefined)
         throw new Error('unreachable: the two label lists have one length',);
-      /**
-       * Where an earlier slice mapped this archive label, when it did.
-       */
-      const forwardSeen = forward.get(from,);
-      /**
-       * Which archive label an earlier slice mapped onto this original label,
-       * when one did.
-       */
-      const backwardSeen = backward.get(to,);
-      if (((forwardSeen !== undefined) && (forwardSeen !== to))
-        || ((backwardSeen !== undefined) && (backwardSeen !== from)))
-        return {
-          kind: 'ambiguous',
-          detail: `slice ${sliceIndex} maps archive [^${from}] to original [^${to}] where an earlier slice mapped [^${
-            forwardSeen
-              ?? backwardSeen
-              ?? ''
-          }]`,
-        };
-      forward.set(
+      correspondences.push({
         from,
         to,
-      );
-      backward.set(
-        to,
-        from,
-      );
+        where: `slice ${sliceIndex}`,
+        unit: 'slice',
+      },);
     }
   }
-  /**
-   * The labels that change.
-   */
-  const map = [ ...forward.entries(), ]
-    .filter(function changes([
-      from,
-      to,
-    ],): boolean {
-      return from !== to;
-    },)
-    .map(function toRelabel([
-      from,
-      to,
-    ],): FootnoteRelabel {
-      return {
-        from,
-        to,
-      };
-    },);
-  if (map.length === 0)
-    return {
-      kind: 'unchanged',
-      skipped,
-    };
-  return {
-    kind: 'relabel',
-    map,
+  return mapLabels({
+    correspondences,
     skipped,
-  };
+  },);
+}
+
+/**
+ * Reads the map off the definitions the roster paired by content, the exact
+ * evidence: the archive's definition of a note carries the archive's label
+ * for it, and the original's carries the original's.
+ *
+ * @param pairs - definition pairs, by label
+ *
+ * @returns The map, that nothing changes, or why the archive must stand
+ *
+ * @example
+ * ```ts
+ * footnoteRelabelOfDefinitions({ pairs: [ { sourceLabel: '2', targetLabel: '1', }, { sourceLabel: '1', targetLabel: '2', }, ], },);
+ * // => { kind: 'relabel', map: [ { from: '1', to: '2', }, { from: '2', to: '1', }, ], skipped: [], }
+ * ```
+ */
+export function footnoteRelabelOfDefinitions(
+  { pairs, }: { readonly pairs: readonly DefinitionLabelPair[]; },
+): FootnoteRelabelReading {
+  return mapLabels({
+    correspondences: pairs.map(function toCorrespondence(
+      pair,
+      at,
+    ): LabelCorrespondence {
+      return {
+        from: pair.targetLabel,
+        to: pair.sourceLabel,
+        where: `definition pair ${String(at,)}`,
+        unit: 'pair',
+      };
+    },),
+    skipped: [],
+  },);
 }
 
 /**

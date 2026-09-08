@@ -12,6 +12,7 @@ import {
   type BlockPair,
   BlockPairingError,
   buildBlockPairingMessages,
+  type FreeOrderBlocks,
   isBlockPairingWire,
   type NumberedBlock,
   readBlockPairing,
@@ -172,6 +173,9 @@ export type PairedSectionRecord = {
  *
  * @param targetBlocks - translation blocks in document order
  *
+ * @param freeOrder - chunk-local indices of the footnote definitions on each
+ * side, exempt from the order rule
+ *
  * @param signal - caller's steering
  *
  * @param exchangeTimeoutMs - per-call bound
@@ -191,6 +195,7 @@ export async function pairBlocksWithRoster(
     modelIds,
     sourceBlocks,
     targetBlocks,
+    freeOrder,
     signal,
     exchangeTimeoutMs,
     l,
@@ -199,6 +204,7 @@ export async function pairBlocksWithRoster(
     readonly modelIds: readonly RosterModelId[];
     readonly sourceBlocks: readonly NumberedBlock[];
     readonly targetBlocks: readonly NumberedBlock[];
+    readonly freeOrder?: FreeOrderBlocks;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
@@ -264,6 +270,7 @@ export async function pairBlocksWithRoster(
         value: voice.value,
         sourceCount: sourceBlocks.length,
         targetCount: targetBlocks.length,
+        ...((freeOrder === undefined) ? {} : { freeOrder, }),
       },),);
     }
     catch (error) {

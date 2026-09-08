@@ -1,21 +1,30 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  definitionLabelOrder,
+  reorderFootnoteDefinitions,
+} from '../archive-footnote-order.ts';
+import {
   applyFootnoteRelabel,
   footnoteRelabelOf,
+  footnoteRelabelOfDefinitions,
+  type FootnoteRelabelReading,
 } from '../archive-footnote-relabel.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
+import type { DefinitionLabelPair, } from '../pair-definition-order.ts';
 
 //region Pass footnote relabel
-// How the pass applies the archive footnote relabel
-// (`archive-footnote-relabel.ts`): read off the first preparation's slices,
-// rewrite the archive, and let the caller prepare again over the rewritten
-// text. Split out of `pass-prepare.ts` so that file keeps to its two-step
-// shape and its line budget.
+// How the pass makes the archive's footnotes the original's
+// (`archive-footnote-relabel.ts`, `archive-footnote-order.ts`): read the
+// label map off the definitions the roster paired by content, or off the
+// paired slices when it paired none, rewrite the archive's labels, move its
+// definitions into the original's order, and let the caller prepare again
+// over the rewritten text. Split out of `pass-prepare.ts` so that file keeps
+// to its shape and its line budget.
 
 /**
- * Archive text after the relabel, with whether anything changed and what the
- * artifact's findings should say about it.
+ * Archive text after the relabel and the reorder, with whether anything
+ * changed and what the artifact's findings should say about it.
  *
  * @example
  * ```ts
@@ -24,8 +33,8 @@ import type { ChunkPair, } from '../chunk-document.ts';
  */
 export type RelabelledArchive = {
   /**
-   * Archive text under the original's labels, or as it came when nothing
-   * changed.
+   * Archive text under the original's labels and definition order, or as it
+   * came when nothing changed.
    */
   readonly archiveText: string;
 
@@ -36,20 +45,63 @@ export type RelabelledArchive = {
   readonly changed: boolean;
 
   /**
-   * Preparation findings naming what was relabelled or why nothing was.
+   * Preparation findings naming what moved or why nothing did.
    */
   readonly findings: readonly string[];
 };
 
 /**
- * Rewrites the archive's footnote labels to the original's, read off the
- * paired slices, logging the map or why the archive stands.
+ * Reads the label map off the paired definitions, or off the paired slices
+ * where the roster paired no definition.
+ *
+ * @param definitionPairs - definitions the roster paired, by label
+ *
+ * @param slices - first preparation's slices
+ *
+ * @returns The reading and what it was read off
+ *
+ * @example
+ * ```ts
+ * const { reading, basis, } = readRelabel({ definitionPairs, slices, },);
+ * ```
+ */
+function readRelabel(
+  {
+    definitionPairs,
+    slices,
+  }: {
+    readonly definitionPairs: readonly DefinitionLabelPair[];
+    readonly slices: readonly ChunkPair[];
+  },
+): {
+  readonly reading: FootnoteRelabelReading;
+  readonly basis: string;
+} {
+  if (definitionPairs.length > 0)
+    return {
+      reading: footnoteRelabelOfDefinitions({ pairs: definitionPairs, },),
+      basis: 'the definitions the roster paired',
+    };
+  return {
+    reading: footnoteRelabelOf({ slices, },),
+    basis: 'the paired slices',
+  };
+}
+
+/**
+ * Rewrites the archive's footnote labels to the original's and moves its
+ * definitions into the original's order, logging what moved or why the
+ * archive stands.
  *
  * @param entryId - entry being prepared, for the log
  *
  * @param slices - first preparation's slices
  *
- * @param archiveText - archive text that preparation was over
+ * @param definitionPairs - definitions the roster paired, by label
+ *
+ * @param sourceText - original page, whose definition order the archive takes
+ *
+ * @param archiveText - archive text the first preparation was over
  *
  * @param l - entry logger
  *
@@ -57,73 +109,110 @@ export type RelabelledArchive = {
  *
  * @example
  * ```ts
- * const relabel = relabelArchiveFootnotes({ entryId, slices: firstPaired.prepared.slices, archiveText, l, },);
+ * const relabel = relabelArchiveFootnotes({ entryId, slices, definitionPairs, sourceText, archiveText, l, },);
  * ```
  */
 export function relabelArchiveFootnotes(
   {
     entryId,
     slices,
+    definitionPairs,
+    sourceText,
     archiveText,
     l,
   }: {
     readonly entryId: string;
     readonly slices: readonly ChunkPair[];
+    readonly definitionPairs: readonly DefinitionLabelPair[];
+    readonly sourceText: string;
     readonly archiveText: string;
     readonly l: Logger;
   },
 ): RelabelledArchive {
   /**
-   * What the slices say about the labels.
+   * What the evidence says about the labels, and which evidence.
    */
-  const reading = footnoteRelabelOf({ slices, },);
+  const {
+    reading,
+    basis,
+  } = readRelabel({
+    definitionPairs,
+    slices,
+  },);
   if (reading.kind === 'ambiguous') {
     l.warn(
-      `FOOTNOTES entry=${entryId} archive labels stand, since the slices disagree: ${reading.detail}`,
+      `FOOTNOTES entry=${entryId} archive labels stand, since ${basis} disagree: ${reading.detail}`,
     );
     return {
       archiveText,
       changed: false,
-      findings: [ `footnotes: archive labels stand, since the slices disagree: ${reading.detail}`, ],
+      findings: [ `footnotes: archive labels stand, since ${basis} disagree: ${reading.detail}`, ],
     };
   }
   /**
    * Findings for the slices the reading left out, each logged as it is.
    */
-  const skippedFindings = reading.skipped
+  const findings = reading.skipped
     .map(function toFinding(detail,): string {
       l.warn(`FOOTNOTES entry=${entryId} left out of the relabel reading: ${detail}`,);
       return `footnotes: left out of the relabel reading: ${detail}`;
     },);
-  if (reading.kind === 'unchanged') {
-    l.debug(`${relabelArchiveFootnotes.name}: entry ${entryId} archive footnote labels agree with the original's`,);
-    return {
-      archiveText,
-      changed: false,
-      findings: skippedFindings,
-    };
-  }
   /**
-   * The map, spelled for the log and the finding.
+   * The archive under the original's labels.
    */
-  const spelled = reading.map
-    .map(function spell(relabel,): string {
-      return `[^${relabel.from}]->[^${relabel.to}]`;
-    },)
-    .join(', ',);
-  l.info(
-    `FOOTNOTES entry=${entryId} relabelled ${spelled}: the archive's footnote labels follow the original's`,
-  );
-  return {
-    archiveText: applyFootnoteRelabel({
+  const relabelled = (reading.kind === 'relabel')
+    ? applyFootnoteRelabel({
       text: archiveText,
       map: reading.map,
-    },),
-    changed: true,
-    findings: [
-      ...skippedFindings,
-      `footnotes: archive relabelled ${spelled} to follow the original's labels`,
-    ],
+    },)
+    : archiveText;
+  if (reading.kind === 'relabel') {
+    /**
+     * The map, spelled for the log and the finding.
+     */
+    const spelled = reading.map
+      .map(function spell(relabel,): string {
+        return `[^${relabel.from}]->[^${relabel.to}]`;
+      },)
+      .join(', ',);
+    l.info(
+      `FOOTNOTES entry=${entryId} relabelled ${spelled} off ${basis}: the archive's footnote labels follow the original's`,
+    );
+    findings.push(`footnotes: archive relabelled ${spelled} off ${basis} to follow the original's labels`,);
+  }
+  /**
+   * The original's definition order.
+   */
+  const order = definitionLabelOrder({ text: sourceText, },);
+  /**
+   * The archive moved into it.
+   */
+  const reordered = reorderFootnoteDefinitions({
+    text: relabelled,
+    order,
+  },);
+  if (reordered.changed) {
+    /**
+     * The order, spelled.
+     */
+    const spelledOrder = order
+      .map(function spell(label,): string {
+        return `[^${label}]`;
+      },)
+      .join(', ',);
+    l.info(`FOOTNOTES entry=${entryId} definitions moved into the original's order: ${spelledOrder}`,);
+    findings.push(`footnotes: archive definitions moved into the original's order: ${spelledOrder}`,);
+  }
+  if (reordered.note !== undefined) {
+    l.warn(`FOOTNOTES entry=${entryId} definitions stand: ${reordered.note}`,);
+    findings.push(`footnotes: archive definitions stand: ${reordered.note}`,);
+  }
+  if ((!reordered.changed) && (reading.kind !== 'relabel'))
+    l.debug(`${relabelArchiveFootnotes.name}: entry ${entryId} archive footnotes agree with the original's`,);
+  return {
+    archiveText: reordered.text,
+    changed: reordered.text !== archiveText,
+    findings,
   };
 }
 

@@ -18,6 +18,7 @@ import {
 import {
   applyFootnoteRelabel,
   footnoteRelabelOf,
+  footnoteRelabelOfDefinitions,
   prepareDocumentPair,
   referenceLabels,
 } from '../dist/final/node/index.mjs';
@@ -184,6 +185,70 @@ await describe({
         expect(reading.kind,).toBe('ambiguous',);
         if (reading.kind === 'ambiguous')
           expect(reading.detail,).toContain('maps archive [^1] to original [^3] where an earlier slice mapped [^2]',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: footnoteRelabelOfDefinitions.name,
+  children: [
+    it({
+      name: 'reads the map off the definitions the roster paired by content, and nothing off none',
+      fn: async () => {
+        expect(footnoteRelabelOfDefinitions({
+          pairs: [
+            {
+              sourceLabel: '1',
+              targetLabel: '2',
+            },
+            {
+              sourceLabel: '2',
+              targetLabel: '1',
+            },
+          ],
+        },),).toStrictEqual({
+          kind: 'relabel',
+          map: [
+            {
+              from: '2',
+              to: '1',
+            },
+            {
+              from: '1',
+              to: '2',
+            },
+          ],
+          skipped: [],
+        },);
+        expect(footnoteRelabelOfDefinitions({ pairs: [], },),).toStrictEqual({
+          kind: 'unchanged',
+          skipped: [],
+        },);
+      },
+    },),
+
+    it({
+      name: 'leaves the archive as it is where two pairs map one archive label to different original labels',
+      fn: async () => {
+        /**
+         * The reading where archive [^1] pairs with original [^2] and then [^3].
+         */
+        const reading = footnoteRelabelOfDefinitions({
+          pairs: [
+            {
+              sourceLabel: '2',
+              targetLabel: '1',
+            },
+            {
+              sourceLabel: '3',
+              targetLabel: '1',
+            },
+          ],
+        },);
+        expect(reading.kind,).toBe('ambiguous',);
+        if (reading.kind === 'ambiguous')
+          expect(reading.detail,).toContain('where an earlier pair mapped [^2]',);
       },
     },),
   ],
