@@ -4414,6 +4414,42 @@ Until it is decided,
 no further launch on Bedrock alone:
 the next one would buy the same page for the same 0.22 USD.
 
+## The ninth hakureico launch, four providers wet, 2026-09-08, 11:27 UTC
+
+The owner topped OpenRouter up
+(`openrouterUsd=200.01`)
+and answered the single-provider question:
+a pass whose writing bench has no reachable seat stops INCOMPLETE
+([`translation-repair-writing-bench-floor.md`](../decision/translation-repair-writing-bench-floor.md)).
+`budget-sample` at 11:26 read every provider wet:
+`syntheticWeekly=5.8%`,
+Bedrock 198.71 USD,
+Hyper 250,
+OpenRouter 200.01 USD.
+`hakureico` launched at 11:27:26 UTC on `061b46c0b`
+(code `f7f9c9136`,
+pipeline `e069d942`,
+the eighth pass's build),
+plain invocation,
+runs dir `~/temp/agent/hakureico9-20260908`,
+log beside it,
+pid 4118147.
+`JUDGE SEATS phase=preparation` read every provider wet and every bench whole:
+`wide=8 select=8 late=9 slate=9 checkers=3 translators=7 readers=6 writers=9 roster=10 withheld=none waited=0ms`,
+the first reading with six readers.
+Launched before the writing-bench floor is built,
+since a whole bench never meets it;
+the floor is built in a throwaway worktree
+(`~/temp/agent/tr-class15-20260908`,
+branch `translation-repair-class15`)
+and merged after the pass settles,
+so the running worktree's source does not move under it.
+The reading this page owes:
+the consolidation by a whole bench,
+which the sixth pass ran short of quorum from slice 3,
+then the footnotes,
+then every seats line and any shortfall line.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
