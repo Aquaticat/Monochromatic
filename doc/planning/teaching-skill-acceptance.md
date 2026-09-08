@@ -111,3 +111,84 @@ Required rejected questions:
   with the lesson focused on Promises rather than production AI integration.
 - Q9 asks what is misleading about the click-listener heading without first recognizing its role mismatch.
   Its repair is thoughtful analysis before a clarification question, not a prohibition on questions.
+
+## Observable problems and causal explanations
+
+### Establish the need before introducing its solution
+
+Passing behavior:
+
+- Let the learner use a concrete method they understand before introducing a replacement abstraction.
+- Increase the same problem's demands when its limitation has not yet become apparent.
+- Make the limitation observable in the learner's attempt or a demonstration they can inspect.
+- Explain what the replacement changes and why that addresses the demonstrated problem.
+
+Promise-specific acceptance example:
+
+- Show how delayed work is coordinated without Promises before presenting Promise conveniences.
+- Develop a meaningful coordination or failure-handling problem using that predecessor mechanism.
+- Compare how the Promise-based approach handles the same problem.
+- Explain what `Promise.withResolvers()` provides after the underlying need and model are established.
+
+Scope of the generalization:
+
+- This requires a motivated abstraction, not an exhaustive chronology for every topic.
+- Scaling should reveal a relevant method limit, not manufacture failure through unrelated difficulty.
+- Use safe demonstrations or simulations where exposing a real-world failure could cause harm.
+  The user's scaling example does not authorize exhausting hardware or creating physical hazards.
+
+### Explain the operation the demonstration actually performs
+
+Passing behavior:
+
+- Distinguish an operation from the representation used to observe its eventual outcome.
+- Explain which participant or piece of code starts work and which produces its result.
+- Label learner-controlled settlement as a model of supplying an outcome,
+  rather than presenting the learner's button press as an actual service request.
+- Define waiting, failure, retry, and cancellation in terms of the specific operation and outcome.
+- Separate chosen demonstration policies from guarantees of the language abstraction.
+
+Counterexamples this must catch:
+
+- Calling the manual settlement experiment "a service request" without distinguishing their mechanisms.
+- Saying "stop" without identifying what stops and what may continue.
+- Teaching the fixture's attempt count or timing policy as if it were Promise semantics.
+
+### Use causal and temporal precision without losing the teaching sequence
+
+Passing behavior:
+
+- Replace unqualified "now" and "later" with the relevant boundary in a visible execution sequence.
+- Distinguish creating a function, registering it, invoking it, returning, and continuing delayed work
+  when the learner needs those distinctions for the current problem.
+- Establish the relevant JavaScript execution and thread model before relying on claims about blocking.
+- Connect code execution to the observed page behavior instead of treating an unchanged or responsive page
+  as a self-explanatory account of the mechanism.
+- Verify the actual execution paths used in a demonstration against current sources.
+
+Counterexamples this must catch:
+
+- "Stopping the whole page" without an established explanation of what occupies the execution thread.
+- "Promise object now" without identifying the return boundary and the work that remains incomplete.
+- Correct trace output accompanied by an explanation that skips the mechanism the learner must understand.
+
+### Make conceptual distinctions inspectable
+
+Passing behavior:
+
+- Pair a distinction with a concrete example in which the difference matters.
+- Let the learner relate the source operation, observed state, and resulting behavior.
+- Use actual language behavior for claims about execution rather than an animation that merely asserts it.
+
+Promise acceptance example:
+
+- Show a Promise resolved with another still-pending Promise.
+- Make the unresolved outcome visible, then show how the eventual fulfillment or rejection is adopted.
+- Use this to explain why "resolved" does not mean "fulfilled",
+  rather than adding that sentence as an unsupported terminology warning.
+
+The semantic basis was checked against MDN's
+[resolve function documentation][resolve-function].
+This is a proposed exercise; it has not been added to the local lesson or claimed as browser-tested.
+
+[resolve-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise
