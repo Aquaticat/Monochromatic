@@ -10,6 +10,7 @@ const renderPaths = {
   IMAGE_FONT_150: 'questions/render/accepted-3b-font-150.png',
   IMAGE_FONT_180: 'questions/render/accepted-3b-font-180.png',
   IMAGE_FONT_200: 'questions/render/accepted-3b-font-200.png',
+  IMAGE_LONG_085: 'questions/render/accepted-3b-long-subdirectory-085.png',
 };
 let output = readFileSync(resolve('questions/current.template.html'), 'utf8');
 for (const [name, path] of Object.entries(renderPaths)) {
@@ -33,6 +34,8 @@ const { resolve } = await import('node:path');
 const scaleLabels = ['085', '100', '115', '130', '150', '180', '200'];
 const renderPaths = scaleLabels.map((label) => `questions/render/accepted-3b-font-${label}.png`);
 const semanticsPaths = scaleLabels.map((label) => `questions/evidence/accepted-3b-font-${label}.xml`);
+const longNameRenderPath = 'questions/render/accepted-3b-long-subdirectory-085.png';
+const longNameSemanticsPath = 'questions/evidence/accepted-3b-long-subdirectory-085.xml';
 const requiredPaths = [
   'HANDOFF.md',
   'decisions.md',
@@ -44,6 +47,8 @@ const requiredPaths = [
   'questions/render/cue-container-tonal.png',
   ...renderPaths,
   ...semanticsPaths,
+  longNameRenderPath,
+  longNameSemanticsPath,
 ];
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
@@ -117,7 +122,7 @@ const parseBounds = (bounds) => {
   return { left: values[0], top: values[1], right: values[2], bottom: values[3] };
 };
 
-for (const path of renderPaths) {
+for (const path of [...renderPaths, longNameRenderPath]) {
   const image = readFileSync(resolve(path));
   if (image.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {
     throw new Error(`${path} is not a PNG.`);
@@ -266,6 +271,25 @@ for (const label of scaleLabels) {
   }
 }
 
+const longNameHierarchy = readFileSync(resolve(longNameSemanticsPath), 'utf8');
+const longNameNodes = hierarchyNodes(longNameHierarchy);
+const longNameModeNode = longNameNodes.find((node) =>
+  attributeValue({ node, name: 'content-desc' }) === 'Shuffle ExtraordinarilyLongDirectory'
+);
+if (!longNameModeNode) {
+  throw new Error(`${longNameSemanticsPath} does not retain the full long-name accessibility description.`);
+}
+const longNameBounds = parseBounds(attributeValue({ node: longNameModeNode, name: 'bounds' }));
+if (longNameBounds.right - longNameBounds.left !== 276) {
+  throw new Error(`${longNameSemanticsPath} widens Shuffle beyond the measured Camellia-sized cell.`);
+}
+if (
+  imageFingerprint({ path: longNameRenderPath, crop: '1009x300+0+1800' })
+  !== 'c262c2c3e48abc2bb6ee77ddfaeb729365a8044a13fefecd5f4025135bde8d79'
+) {
+  throw new Error(`${longNameRenderPath} does not preserve the verified middle-ellipsis rendering.`);
+}
+
 const template = readFileSync(resolve('questions/current.template.html'), 'utf8');
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
 const requiredFragments = [
@@ -274,6 +298,8 @@ const requiredFragments = [
   'Shuffle Camellia',
   '85% and 100% use one content-sized row. 115%, 130%, and 150% use 2×2. 180% and 200% use four rows.',
   'longer names middle-ellipsize the subdirectory only while accessibility retains the full name',
+  'Long-name middle-ellipsis proof',
+  'prototype commit f7590d9a3',
   'one row &gt; two rows &gt; four rows',
   'soft neutral current-track container, bold current title, tonal Open, and transport 1B',
   'The one-row branch sizes each cell to its content and tries 12dp horizontal padding, then 6dp.',
@@ -308,17 +334,17 @@ if (question.includes('http://') || question.includes('https://')) {
 if (question.includes('@@')) {
   throw new Error('Built questionnaire still contains an unresolved image marker.');
 }
-const templateMarkers = template.split('@@IMAGE_FONT_').length - 1;
+const templateMarkers = template.split('@@IMAGE_').length - 1;
 const embeddedImages = question.split('data:image/png;base64,').length - 1;
 const radioCount = question.split('type="radio" name="scaleVerdict"').length - 1;
-if (templateMarkers !== 7 || embeddedImages !== 7 || radioCount !== 2) {
-  throw new Error(`Expected seven image markers, seven renders, and two verdict radios; found ${templateMarkers}, ${embeddedImages}, and ${radioCount}.`);
+if (templateMarkers !== 8 || embeddedImages !== 8 || radioCount !== 2) {
+  throw new Error(`Expected eight image markers, eight renders, and two verdict radios; found ${templateMarkers}, ${embeddedImages}, and ${radioCount}.`);
 }
 console.log('Accepted-3B scale review is valid.');
 '''
 
 [tasks.build]
-description = "Embed seven native accepted-3B text-scale captures into the self-contained review"
+description = "Embed seven accepted-3B text-scale captures and one long-name diagnostic into the self-contained review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
