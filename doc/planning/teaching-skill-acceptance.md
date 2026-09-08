@@ -106,9 +106,14 @@ Passing behavior:
 
 Required rejected questions:
 
-- Q5 asks the novice to choose an AI API, service contract, audience, and access setup.
+- Q5 asks the novice to choose an AI API, service contract, product audience, and access setup.
+  The learner is not equipped to choose unexplained service or credential architecture;
+  an answer such as "maybe A" would manufacture an unreliable requirement.
+  An interview demonstration does not imply a production application.
   Its repair is the already-selected offline, semi-deterministic random fixture,
   with the lesson focused on Promises rather than production AI integration.
+  Pedagogically relevant questions about the learner or learning audience remain appropriate;
+  these are different from specifying the application's customers and service contract.
 - Q9 asks what is misleading about the click-listener heading without first recognizing its role mismatch.
   Its repair is thoughtful analysis before a clarification question, not a prohibition on questions.
 
@@ -118,17 +123,23 @@ Required rejected questions:
 
 Passing behavior:
 
-- Let the learner use a concrete method they understand before introducing a replacement abstraction.
-- Increase the same problem's demands when its limitation has not yet become apparent.
+- When an abstraction addresses the limitations of an existing method,
+  let the learner use a concrete version of that method they understand.
+- In that case, increase the same problem's demands when the limitation has not yet become apparent.
 - Make the limitation observable in the learner's attempt or a demonstration they can inspect.
 - Explain what the replacement changes and why that addresses the demonstrated problem.
+- Other introductions can build directly from concrete observations or operations;
+  learner failure is not a universal prerequisite for teaching any new fact.
 
 Promise-specific acceptance example:
 
-- Show how delayed work is coordinated without Promises before presenting Promise conveniences.
+- Show the callback-based approaches actually used before Promises were specified and shipped,
+  rather than inventing a predecessor solely to make Promises look preferable.
 - Develop a meaningful coordination or failure-handling problem using that predecessor mechanism.
 - Compare how the Promise-based approach handles the same problem.
-- Explain what `Promise.withResolvers()` provides after the underlying need and model are established.
+- Distinguish this pre-Promise history from the established Promise constructor pattern.
+- Explain what `Promise.withResolvers()` provides relative to that pattern
+  after the underlying need and model are established.
 
 Scope of the generalization:
 
@@ -257,6 +268,12 @@ Passing behavior:
 - Provide opportunities to build or perform independently and explain the result,
   progressively withdrawing supplied answers and scaffolding.
 - Report the evidence actually obtained rather than equating a supplied working solution with learner ability.
+- Distinguish evidence levels:
+  browser checks establish artifact behavior;
+  content review checks for the presence and structure of teaching elements;
+  learner performance, explanation, or critique is needed to assess teaching effectiveness.
+- Require demonstrated learner performance and explanation to claim mastery.
+  Including an independent exercise does not establish that the learner completed it.
 - Use learner critique to revise the teaching, not merely its superficial wording.
 
 Counterexamples this must catch:
