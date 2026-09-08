@@ -93,6 +93,62 @@ No error-text filtering is used.
 Tradeoff:
 this adds a separate browser lifecycle and does not repair clearing within a long-lived session.
 
+## Verified upstream component prototype
+
+The installed-source applicability check found the candidate implementation absent:
+the native dispatcher still omits the command, and the handler only reads errors.
+The issue's `errors --clear` input and retained-buffer symptom match this incident.
+
+A fresh private clone at `~/temp/agent/upstream-prototype.Xn969D`
+was checked against the cited origin and release commit before applying PR #1654.
+The [preserved patch](agent-browser-errors-clear.patch) contains its command-parser test,
+command forwarding, clearing method, and native-action regression.
+No installed executable was modified.
+
+`mise run probe:error-clear-prototype`, from `~/temp/agent/promises-revision/`,
+builds a generated Rust component fixture using:
+
+- The actual before/after dispatcher call expression and `handle_errors` function.
+- The complete upstream `EventTracker` and its entry types.
+- The PR's error-clearing test, with additional read-only, empty-buffer,
+  console-preservation, and later-error controls.
+
+The fixture substitutes a minimal state owner and response envelope for the full daemon.
+Compilation and execution use `rust:1.97-bookworm` in a 2 GiB, 2-CPU container,
+with only the private clone writable and no host proxy environment or credentials.
+Dependencies are resolved into that fixture's own generated lockfile and cache.
+The post-patch run uses that same lockfile with `--locked --offline` and no container network.
+
+Process `proc_10a7` recorded the required before/after difference:
+
+```text
+Before patch:
+3 passed; 4 failed
+PASS expected pre-patch regression failures and read-only controls
+
+After patch:
+test tests::clearing_empty_record_succeeds ... ok
+test tests::clearing_errors_preserves_console ... ok
+test tests::errors_clear_empties_page_error_log ... ok
+test tests::errors_after_clearing_are_recorded ... ok
+test tests::errors_without_clear_preserve_records ... ok
+test tests::missing_clear_flag_preserves_records ... ok
+test tests::non_boolean_clear_preserves_records ... ok
+7 passed; 0 failed
+```
+
+The correctness argument follows the tested boundaries:
+forwarding `cmd` makes the parsed flag available to the handler;
+only boolean `true` clears `error_entries`;
+other inputs preserve the record;
+clearing does not modify console entries or prevent recording later errors.
+The non-boolean control probes the handler's existing fallback,
+not a claim that the public CLI accepts a string-valued clear option.
+
+This is component verification, not a rebuild or end-to-end run of the patched CLI.
+The preserved parser test was not run by this component harness.
+The installed tool still uses the verified separate-session workaround.
+
 ## What does not work
 
 - Assuming the documented flag cleared the native buffer without inspecting its result.
@@ -114,16 +170,17 @@ Searches covered issues and PRs using `"errors" "clear"`.
 4.  Contribution policy: the clone has no contribution file or issue/PR template;
     `AGENTS.md` explicitly addresses AI coding agents. No contribution ban was found in those files.
 5.  Direction: an open fix exists; its comments contain no maintainer rejection of the change.
-6.  Prototype: this session verified the consumer workaround, not the upstream patch.
-    The PR records its own native-action regressions and real-CLI verification;
-    those results were not independently rerun here.
+6.  Prototype: the existing patch was applied in a fresh private clone and its changed components
+    passed the recorded before/after checks.
+    The PR's full-CLI verification was not independently rerun.
 
 The skill-relative `.out-of-scope/` directory was absent.
 No new upstream contribution is prepared:
 the existing issue and PR already identify this defect and its remedy.
 There is no additional diagnosis or fix to contribute from this lesson test.
 No duplicate issue or status-only comment was posted.
-The upstream patch has not been installed or represented as independently verified.
+The upstream patch has not been installed.
+Independent verification is limited to the component prototype described in this document.
 
 [issue]: https://github.com/vercel-labs/agent-browser/issues/1645
 [pr]: https://github.com/vercel-labs/agent-browser/pull/1654
