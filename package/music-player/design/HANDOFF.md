@@ -3311,3 +3311,33 @@ ellipsis on the subdirectory only.
 `contentDescription`.
  Prototype build and Android lint pass;
  device measurement remains.
+
+Direct device measurement now replaces the prior row mapping.
+ At 85%,
+ one-row
+target widths are 153,
+ 224,
+ 276,
+ and 190 physical px;
+ at 100%,
+ they are 138,
+214,
+ 284,
+ and 184 physical px.
+ Every target is 117px high,
+ approximately 48dp.
+The first-fitting arrangements are one content-sized row at 85% and 100%,
+ connected
+2×2 at 115%,
+ 130%,
+ and 150%,
+ then four rows at 180% and 200%.
+ A
+throwaway `ExtraordinarilyLongDirectory` build visibly renders `Shuffle Extr…ory`
+without widening the Camellia-sized segment,
+ while UI Automator retains the full
+`Shuffle ExtraordinarilyLongDirectory` content description.
+ The source was restored to
+`Camellia` before final capture.
+ Prototype evidence commit `7b30db15e` and main
+evidence commit `dedf76cd5` preserve the seven updated states.
