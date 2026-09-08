@@ -5,7 +5,7 @@ index d0b6949..df8a354 100644
 @@ -4844,6 +4844,13 @@ mod tests {
          assert_eq!(cmd["action"], "recording_stop");
      }
- 
+
 +    #[test]
 +    fn test_errors_clear() {
 +        let cmd = parse_command(&args("errors --clear"), &default_flags()).unwrap();
@@ -32,7 +32,7 @@ index 4b33319..2459eb9 100644
 @@ -6189,8 +6189,14 @@ async fn handle_console(cmd: &Value, state: &mut DaemonState) -> Result<Value, S
      }
  }
- 
+
 -async fn handle_errors(state: &DaemonState) -> Result<Value, String> {
 -    Ok(state.event_tracker.get_errors_json())
 +async fn handle_errors(cmd: &Value, state: &mut DaemonState) -> Result<Value, String> {
@@ -44,12 +44,12 @@ index 4b33319..2459eb9 100644
 +        Ok(state.event_tracker.get_errors_json())
 +    }
  }
- 
+
  async fn handle_session_info(state: &DaemonState) -> Result<Value, String> {
 @@ -12053,6 +12059,26 @@ mod tests {
          assert_eq!(FIND_ACTIONS.join(", "), "click, fill, check, hover, text");
      }
- 
+
 +    #[tokio::test]
 +    async fn errors_clear_empties_page_error_log() {
 +        let mut state = DaemonState::new();
@@ -80,7 +80,7 @@ index 98c2212..d681319 100644
 @@ -625,6 +625,10 @@ impl EventTracker {
          self.console_entries.clear();
      }
- 
+
 +    pub fn clear_errors(&mut self) {
 +        self.error_entries.clear();
 +    }
