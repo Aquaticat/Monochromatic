@@ -4145,6 +4145,56 @@ Until one of those lands or another meter moves,
 a launch on Bedrock alone stops at the pictures in twenty seconds at no cost,
 which is a fine thing to know and not a page.
 
+### Gemma 4 on Bedrock as a picture reader, first probe, 02:05 UTC
+
+Four calls through the production Bedrock client
+(`bedrock-reader-probe.mjs` in the session scratch:
+the reader stage's own instruction and first perspective,
+the picture as the same `image_url` data-URI part the stage sends,
+the ledger the meter reads),
+against the OCR reading of each picture,
+in the trigram overlap `readImagePair` corroborates readers with.
+Bedrock's endpoint takes the image part for both Gemma sizes:
+every call answered in 1.5 to 2.6 s.
+
+-   `photo2.webp` (114 KB,
+    a captioned photograph,
+    OCR 33 characters):
+    `google.gemma-4-e2b` 84 characters at overlap 0.893,
+    `gemma-4-26b-a4b-it` 65 characters at 0.893,
+    both `corroborated`;
+    the seated three had corroborated it at 0.767 in the sixth pass.
+-   `photo1.webp` (168 KB,
+    a dense screenshot,
+    OCR 4652 characters):
+    `google.gemma-4-e2b` 423 characters at 0.129,
+    `disagree`,
+    and the text is an invented ticket template
+    (`TrainTicketSummary= Date=2026/09/08 TicketID= PassengerName= FlightNumber=`),
+    nothing from the picture;
+    `gemma-4-26b-a4b-it` 231 characters at 0.376,
+    `corroborated` at the threshold,
+    and the text is the spreadsheet chrome
+    (menu labels,
+    column letters,
+    row numbers),
+    none of the cells.
+    The seated three had corroborated it at 0.902.
+
+WHAT THAT SAYS,
+on two pictures:
+the E2B size invents a reading for a dense picture and echoes the prompt's `READING RESPONSIBILITY:` label into it,
+so it does not take a reader seat;
+the 26B-A4B size reads a caption whole and a dense screenshot's furniture,
+which is neither a seat nor a refusal on this sample.
+The measurement that decides it is the same shape as the judge probe:
+every picture the seated readers have already read,
+each Gemma reading scored by overlap against the seated readers' corroborated text,
+the way `readImagePair` scores a fourth reader.
+That needs the seated readings as text,
+which the pass records only as overlaps;
+where they are cached is the next thing to find.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
