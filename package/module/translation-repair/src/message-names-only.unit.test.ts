@@ -63,6 +63,7 @@ const BYTE_OFFSET_OR_NOTHING = "(at === OFFSET_UNSTATED) ? '' : ` at byte $"
  * name is written down, which is the moment to ask what its message carries.
  */
 const MARKED_CLASSES: readonly string[] = [
+  'ArchiveOriginalCompletenessError',
   'ArtifactParseError',
   'AssemblyContractError',
   'BedrockCreditOverrideError',
@@ -170,6 +171,7 @@ const NAMED_PARTS: Record<string, string> = {
   'JSON.stringify(value,)': 'value the operator set in that variable',
   'String(MINIMUM_CHECKER_COUNT,)': 'count',
   'String(overlap,)': 'count',
+  'String(spanIndex,)': 'count',
   'String(PASSING_BODY_BYTES,)': 'count',
   'variable': 'environment variable name',
   'String(line,)': 'one-based line number in a file',
