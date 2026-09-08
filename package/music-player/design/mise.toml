@@ -3,10 +3,12 @@ build_question = '''
 const { readFileSync, writeFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const renderPaths = {
-  IMAGE_FONT_050: 'questions/render/accepted-3b-font-050.png',
-  IMAGE_FONT_075: 'questions/render/accepted-3b-font-075.png',
+  IMAGE_FONT_085: 'questions/render/accepted-3b-font-085.png',
   IMAGE_FONT_100: 'questions/render/accepted-3b-font-100.png',
+  IMAGE_FONT_115: 'questions/render/accepted-3b-font-115.png',
+  IMAGE_FONT_130: 'questions/render/accepted-3b-font-130.png',
   IMAGE_FONT_150: 'questions/render/accepted-3b-font-150.png',
+  IMAGE_FONT_180: 'questions/render/accepted-3b-font-180.png',
   IMAGE_FONT_200: 'questions/render/accepted-3b-font-200.png',
 };
 let output = readFileSync(resolve('questions/current.template.html'), 'utf8');
@@ -28,7 +30,7 @@ const { execFileSync } = await import('node:child_process');
 const { existsSync, readFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 
-const scaleLabels = ['050', '075', '100', '150', '200'];
+const scaleLabels = ['085', '100', '115', '130', '150', '180', '200'];
 const renderPaths = scaleLabels.map((label) => `questions/render/accepted-3b-font-${label}.png`);
 const semanticsPaths = scaleLabels.map((label) => `questions/evidence/accepted-3b-font-${label}.xml`);
 const requiredPaths = [
@@ -180,10 +182,12 @@ if (uniqueCaptures.size !== renderPaths.length) {
 }
 
 const expectedRowCounts = {
-  '050': 1,
-  '075': 1,
+  '085': 2,
   '100': 2,
+  '115': 2,
+  '130': 2,
   '150': 2,
+  '180': 4,
   '200': 4,
 };
 const expectedDescriptions = ['Repeat track', 'Play in order', 'Shuffle Camellia', 'Shuffle all folders'];
@@ -249,9 +253,9 @@ const template = readFileSync(resolve('questions/current.template.html'), 'utf8'
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
 const requiredFragments = [
   'Review accepted 3B across text sizes',
-  'font_scale=0.5',
+  'the installed <code>SettingsGoogle.apk</code> exposes exactly 85%, 100%, 115%, 130%, 150%, 180%, and 200%',
   'Shuffle Camellia',
-  '50% and 75% use one row. 100% and 150% use 2×2. 200% uses four rows.',
+  '85%, 100%, 115%, 130%, and 150% use 2×2. 180% and 200% use four rows.',
   'one row &gt; two rows &gt; four rows',
   'soft neutral current-track container, bold current title, tonal Open, and transport 1B',
   'The control tries Material\'s 12dp horizontal content padding first, then 6dp before adding rows.',
@@ -260,7 +264,7 @@ const requiredFragments = [
   'Answer changed. Prepare it again before copying or downloading.',
   'spaces alone do not complete this field.',
   'Math.max(0.02, value)',
-  'prototype commit 3a20f5207',
+  'prototype commit 2c0001ad3',
 ];
 for (const fragment of requiredFragments) {
   if (!question.includes(fragment)) {
@@ -289,8 +293,8 @@ if (question.includes('@@')) {
 const templateMarkers = template.split('@@IMAGE_FONT_').length - 1;
 const embeddedImages = question.split('data:image/png;base64,').length - 1;
 const radioCount = question.split('type="radio" name="scaleVerdict"').length - 1;
-if (templateMarkers !== 5 || embeddedImages !== 5 || radioCount !== 2) {
-  throw new Error(`Expected five image markers, five renders, and two verdict radios; found ${templateMarkers}, ${embeddedImages}, and ${radioCount}.`);
+if (templateMarkers !== 7 || embeddedImages !== 7 || radioCount !== 2) {
+  throw new Error(`Expected seven image markers, seven renders, and two verdict radios; found ${templateMarkers}, ${embeddedImages}, and ${radioCount}.`);
 }
 console.log('Accepted-3B scale review is valid.');
 '''

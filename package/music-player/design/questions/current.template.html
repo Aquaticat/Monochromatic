@@ -542,13 +542,13 @@ dialog::backdrop {
         This is the accepted unfolded screen only: soft neutral current-track container, bold current title, tonal Open, and transport 1B. For Camellia in the measured 414dp pane, the mode selector uses the first fitting connected arrangement in the one-row, 2×2, four-row sequence.
       </p>
     </div>
-    <span class="round-badge">Native Android · 50% to 200%</span>
+    <span class="round-badge">Every Android preset · 85% to 200%</span>
   </header>
 
   <section class="panel" aria-labelledby="evidence-title">
     <h2 id="evidence-title">What changed and what stayed fixed</h2>
     <ol class="instructions">
-      <li><strong>Direct device setting:</strong> the target emulator stored <code>font_scale=0.5</code>, so the requested 50% capture is used rather than a substitute.</li>
+      <li><strong>Direct target evidence:</strong> the installed <code>SettingsGoogle.apk</code> exposes exactly 85%, 100%, 115%, 130%, 150%, 180%, and 200%. The earlier 50% and 75% shell-injected states are excluded.</li>
       <li><strong>Dynamic mode label:</strong> the third option always names the active subdirectory. Every capture says <code>Shuffle Camellia</code>.</li>
       <li><strong>Adaptive row count:</strong> on this measured pane, complete labels try one connected row, then a connected 2×2 block, then four connected vertical rows. No state scrolls horizontally.</li>
       <li><strong>Accepted 3B:</strong> every capture retains the T3 current row, O2 tonal Open, centered transport, 24% seek position, outlined Previous and Next, and filled Pause.</li>
@@ -557,7 +557,7 @@ dialog::backdrop {
     <div class="evidence-summary">
       <article class="summary-card">
         <h3>Observed wrapping</h3>
-        <p>50% and 75% use one row. 100% and 150% use 2×2. 200% uses four rows.</p>
+        <p>85%, 100%, 115%, 130%, and 150% use 2×2. 180% and 200% use four rows. No user-facing preset fits one row with <code>Shuffle Camellia</code>.</p>
       </article>
       <article class="summary-card">
         <h3>Padding behavior</h3>
@@ -569,61 +569,74 @@ dialog::backdrop {
       </article>
     </div>
     <div class="priority">
-      <p><strong>Priority:</strong> one row &gt; two rows &gt; four rows. One row preserves the most deck space; two rows ranks next because it preserves more space than four; four rows is the fallback that keeps every label complete. This is one adaptive design, not five competing visual options.</p>
+      <p><strong>Priority:</strong> one row &gt; two rows &gt; four rows. One row remains the first runtime branch for a shorter directory name or wider pane, but Camellia starts at 2×2 across Android's user-facing range. Two rows ranks above four because it preserves deck space; four rows is the fallback that keeps every label complete. These are states of one adaptive design, not competing styles.</p>
     </div>
   </section>
 
   <section class="panel" aria-labelledby="captures-title">
-    <h2 id="captures-title">Exact accepted screen at each requested scale</h2>
+    <h2 id="captures-title">Exact accepted screen at every Android text preset</h2>
     <p class="supporting">Open any capture to inspect it at Fit, 1dp per CSS pixel, or native panel pixels.</p>
     <div class="scale-grid">
       <article class="scale-card">
         <div class="scale-heading">
-          <span class="scale-code">50% · one row</span>
-          <h3>Minimum requested scale</h3>
-          <p>Default Material content padding fits all four labels in one connected row.</p>
+          <span class="scale-code">85% · connected 2×2</span>
+          <h3>Smallest Android preset</h3>
+          <p><code>Shuffle Camellia</code> needs two rows even at the user-facing minimum.</p>
         </div>
-        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 50% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 0.5, prototype commit 3a20f5207" src="@@IMAGE_FONT_050@@" width="852" height="883" alt="Accepted unfolded music player 3B at 50 percent text with one connected row of mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open 50% at measured size</span>
+        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 85% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 0.85, prototype commit 2c0001ad3" src="@@IMAGE_FONT_085@@" width="852" height="883" alt="Accepted unfolded music player 3B at 85 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open 85% at measured size</span>
         </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>One mode row preserves maximum deck space.</li><li>More folder and track content is visible.</li></ul><strong>Cons</strong><ul><li>Text is intentionally smaller than the normal setting.</li></ul></div>
-      </article>
-
-      <article class="scale-card">
-        <div class="scale-heading">
-          <span class="scale-code">75% · one row</span>
-          <h3>Compact one-row padding</h3>
-          <p>Full available width plus 6dp horizontal content padding keeps <code>Shuffle Camellia</code> complete.</p>
-        </div>
-        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 75% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 0.75, prototype commit 3a20f5207" src="@@IMAGE_FONT_075@@" width="852" height="883" alt="Accepted unfolded music player 3B at 75 percent text with one connected row of mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open 75% at measured size</span>
-        </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>All labels remain complete in one row.</li><li>Targets remain at least 48dp.</li></ul><strong>Cons</strong><ul><li>Inner horizontal padding falls from the Material default 12dp to 6dp.</li></ul></div>
+        <div class="assessment"><strong>Pros</strong><ul><li>This is Android's actual smallest selectable text preset.</li><li>The complete directory label remains visible.</li></ul><strong>Cons</strong><ul><li>Camellia cannot use the one-row branch at any user-facing scale.</li></ul></div>
       </article>
 
       <article class="scale-card">
         <div class="scale-heading">
           <span class="scale-code">100% · connected 2×2</span>
           <h3>Default Android scale</h3>
-          <p>One row clips the named Shuffle option even after compact padding, so the control uses two rows.</p>
+          <p>The same two-row arrangement preserves all labels at the default preset.</p>
         </div>
         <button class="preview-open" type="button" data-preview-title="Accepted 3B at 100% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.0, prototype commit 3a20f5207" src="@@IMAGE_FONT_100@@" width="852" height="883" alt="Accepted unfolded music player 3B at 100 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.0, prototype commit 2c0001ad3" src="@@IMAGE_FONT_100@@" width="852" height="883" alt="Accepted unfolded music player 3B at 100 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
           <span class="preview-label">Open 100% at measured size</span>
         </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>The complete current-subdirectory label remains visible.</li><li>The 2×2 block uses half the rows of the vertical fallback.</li></ul><strong>Cons</strong><ul><li>The mode control now occupies two rows at the default scale.</li></ul></div>
+        <div class="assessment"><strong>Pros</strong><ul><li>The complete current-subdirectory label remains visible.</li><li>The 2×2 block uses half the rows of the vertical fallback.</li></ul><strong>Cons</strong><ul><li>The mode control occupies two rows at the default scale.</li></ul></div>
+      </article>
+
+      <article class="scale-card">
+        <div class="scale-heading">
+          <span class="scale-code">115% · connected 2×2</span>
+          <h3>First enlarged preset</h3>
+          <p>Two rows still fit without clipping or horizontal mode scrolling.</p>
+        </div>
+        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 115% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.15, prototype commit 2c0001ad3" src="@@IMAGE_FONT_115@@" width="852" height="883" alt="Accepted unfolded music player 3B at 115 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open 115% at measured size</span>
+        </button>
+        <div class="assessment"><strong>Pros</strong><ul><li>All mode labels remain complete.</li><li>Track and folder text grows without changing row count.</li></ul><strong>Cons</strong><ul><li>Less list content fits than at 100%.</li></ul></div>
+      </article>
+
+      <article class="scale-card">
+        <div class="scale-heading">
+          <span class="scale-code">130% · connected 2×2</span>
+          <h3>Intermediate enlarged preset</h3>
+          <p>The connected block remains two rows with compact content padding.</p>
+        </div>
+        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 130% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.30, prototype commit 2c0001ad3" src="@@IMAGE_FONT_130@@" width="852" height="883" alt="Accepted unfolded music player 3B at 130 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open 130% at measured size</span>
+        </button>
+        <div class="assessment"><strong>Pros</strong><ul><li>Two rows preserve more deck height than the vertical fallback.</li><li>Every target remains connected and fully labeled.</li></ul><strong>Cons</strong><ul><li>Visible list density continues to decrease.</li></ul></div>
       </article>
 
       <article class="scale-card">
         <div class="scale-heading">
           <span class="scale-code">150% · connected 2×2</span>
-          <h3>Enlarged text</h3>
+          <h3>Largest two-row preset</h3>
           <p>Compact content padding keeps two segments per row without clipping.</p>
         </div>
         <button class="preview-open" type="button" data-preview-title="Accepted 3B at 150% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.5, prototype commit 3a20f5207" src="@@IMAGE_FONT_150@@" width="852" height="883" alt="Accepted unfolded music player 3B at 150 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.50, prototype commit 2c0001ad3" src="@@IMAGE_FONT_150@@" width="852" height="883" alt="Accepted unfolded music player 3B at 150 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
           <span class="preview-label">Open 150% at measured size</span>
         </button>
         <div class="assessment"><strong>Pros</strong><ul><li>2×2 preserves deck height while retaining complete labels.</li><li>All four mode targets remain connected.</li></ul><strong>Cons</strong><ul><li>Less folder and track content fits in each pane.</li></ul></div>
@@ -631,15 +644,28 @@ dialog::backdrop {
 
       <article class="scale-card">
         <div class="scale-heading">
+          <span class="scale-code">180% · four rows</span>
+          <h3>First vertical preset</h3>
+          <p><code>Shuffle Camellia</code> no longer fits a half-width segment, so each mode gets one row.</p>
+        </div>
+        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 180% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.80, prototype commit 2c0001ad3" src="@@IMAGE_FONT_180@@" width="852" height="883" alt="Accepted unfolded music player 3B at 180 percent text with four connected vertical mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="preview-label">Open 180% at measured size</span>
+        </button>
+        <div class="assessment"><strong>Pros</strong><ul><li>Every visible label remains complete.</li><li>The connected stack clears the navigation inset after deck scrolling.</li></ul><strong>Cons</strong><ul><li>Four rows consume more deck height than 2×2.</li><li>The evidence is a scrolled state.</li></ul></div>
+      </article>
+
+      <article class="scale-card">
+        <div class="scale-heading">
           <span class="scale-code">200% · four rows</span>
-          <h3>Largest requested scale</h3>
-          <p><code>Shuffle Camellia</code> cannot share a half-width row without clipping, so every segment gets one row.</p>
+          <h3>Largest Android preset</h3>
+          <p>The vertical fallback preserves all four labels at Android's maximum setting.</p>
         </div>
         <button class="preview-open" type="button" data-preview-title="Accepted 3B at 200% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 2.0, prototype commit 3a20f5207" src="@@IMAGE_FONT_200@@" width="852" height="883" alt="Accepted unfolded music player 3B at 200 percent text with four connected vertical mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
+          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 2.0, prototype commit 2c0001ad3" src="@@IMAGE_FONT_200@@" width="852" height="883" alt="Accepted unfolded music player 3B at 200 percent text with four connected vertical mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
           <span class="preview-label">Open 200% at measured size</span>
         </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>Every mode label remains complete at the largest scale.</li><li>The full control clears the navigation inset.</li></ul><strong>Cons</strong><ul><li>Four rows use the most deck height.</li><li>The deck must scroll vertically to expose its complete lower state.</li></ul></div>
+        <div class="assessment"><strong>Pros</strong><ul><li>Every mode label remains complete at the largest scale.</li><li>The full control clears the navigation inset after deck scrolling.</li></ul><strong>Cons</strong><ul><li>Four rows use the most deck height.</li><li>The evidence is a scrolled state.</li></ul></div>
       </article>
     </div>
   </section>
@@ -648,9 +674,9 @@ dialog::backdrop {
     <section class="panel" aria-labelledby="response-title">
       <h2 id="response-title">Review result</h2>
       <fieldset>
-        <legend><strong>Does this adaptive 3B screen hold across the requested scales?</strong></legend>
+        <legend><strong>Does this adaptive 3B screen hold across every Android text preset?</strong></legend>
         <div class="review-choices">
-          <label class="review-choice"><input type="radio" name="scaleVerdict" value="accept" required><span><strong>Accept adaptive 3B (Recommended).</strong> Pros: complete labels and minimum row count at every tested scale. Cons: 100% already needs 2×2 and 200% needs four rows.</span></label>
+          <label class="review-choice"><input type="radio" name="scaleVerdict" value="accept" required><span><strong>Accept adaptive 3B (Recommended).</strong> Pros: complete labels and first-fitting row count at every user-facing preset. Cons: Camellia needs 2×2 even at 85%, then four rows at 180% and 200%.</span></label>
           <label class="review-choice"><input type="radio" name="scaleVerdict" value="revise" required><span><strong>Revise it.</strong> Pros: records that a visible scale state still fails. Cons: requires a concrete correction before another variant can be evaluated.</span></label>
         </div>
       </fieldset>
