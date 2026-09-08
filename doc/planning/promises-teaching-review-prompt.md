@@ -87,7 +87,8 @@ Necessary prerequisites belong in the teaching path; optional background may be 
     They contain chronological history, prior corrections, and provisional acceptance hypotheses,
     not a complete specification of quality or proof of acceptance.
     Check historical complaints against the current artifact before reporting them as current defects.
-    Review test assertions too: passing tests establish their checked behavior, not the soundness of the teaching model.
+    Review test assertions too: passing tests establish their checked behavior,
+    not the soundness of the teaching model.
     Look beyond the failure categories already recorded.
 
 ## Supporting files and boundaries
@@ -111,7 +112,8 @@ Distinguish a tool or harness failure from a lesson defect.
 Keep the lesson, authoring sources, `AGENTS.md`, and existing browser tabs/drafts unchanged.
 Use generated PDFs or disposable print previews, not physical print jobs.
 Close only resources you created.
-If an interaction cannot be exercised, continue through available evidence and mark that coverage limitation explicitly.
+If an interaction cannot be exercised, continue through available evidence
+and mark that coverage limitation explicitly.
 
 ## What to return
 
