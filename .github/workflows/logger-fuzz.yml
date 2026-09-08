@@ -74,8 +74,13 @@ jobs:
 
     - name: Set up mise (skip auto-install of all tools)
       if: steps.scope.outputs.run == 'true'
-      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
       with:
+        # Resolve "latest" through the GitHub releases API, published releases only,
+        # one day old like pnpm's minimumReleaseAge. Without it the action installs
+        # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release
+        # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
+        minimum_release_age: 1d
         # mise-action defaults to install:true, which runs `mise install` over
         # the whole root toolset (slint included) before any step. Matches
         # publish.yml and toml-edit-fuzz.yml.
