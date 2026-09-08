@@ -1226,7 +1226,7 @@ private fun FourRowModeControl(labels: List<String>, accessibleLabels: List<Stri
 
 /**
  * What:     `ModeControl` measures fixed labels and chooses one, two, or four connected rows.
- * Why:      The control always uses the fewest rows that fit without clipping or horizontal scrolling.
+ * Why:      The control uses the fewest rows that fit while preserving 12dp minimum horizontal padding.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -1242,56 +1242,26 @@ private fun ModeControl() {
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
-        val defaultOneRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
-        val compactOneRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
-        val defaultTwoRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
-        val compactTwoRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
-        if (maxWidth >= 189.dp && !defaultOneRowOverflow.value) {
+        val oneRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
+        val twoRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
+        if (maxWidth >= 189.dp && !oneRowOverflow.value) {
             OneRowModeControl(
                 labels = labels,
                 accessibleLabels = accessibleLabels,
                 contentPadding = SegmentedButtonDefaults.ContentPadding,
                 onOverflow = {
-                    defaultOneRowOverflow.value = true
+                    oneRowOverflow.value = true
                 },
             )
             return@BoxWithConstraints
         }
-        val compactModePadding = PaddingValues(
-            start = 6.dp,
-            top = ButtonDefaults.ContentPadding.calculateTopPadding(),
-            end = 6.dp,
-            bottom = ButtonDefaults.ContentPadding.calculateBottomPadding(),
-        )
-        if (maxWidth >= 189.dp && !compactOneRowOverflow.value) {
-            OneRowModeControl(
-                labels = labels,
-                accessibleLabels = accessibleLabels,
-                contentPadding = compactModePadding,
-                onOverflow = {
-                    compactOneRowOverflow.value = true
-                },
-            )
-            return@BoxWithConstraints
-        }
-        if (maxWidth >= 95.dp && !defaultTwoRowOverflow.value) {
+        if (maxWidth >= 95.dp && !twoRowOverflow.value) {
             TwoRowModeControl(
                 labels = labels,
                 accessibleLabels = accessibleLabels,
                 contentPadding = SegmentedButtonDefaults.ContentPadding,
                 onOverflow = {
-                    defaultTwoRowOverflow.value = true
-                },
-            )
-            return@BoxWithConstraints
-        }
-        if (maxWidth >= 95.dp && !compactTwoRowOverflow.value) {
-            TwoRowModeControl(
-                labels = labels,
-                accessibleLabels = accessibleLabels,
-                contentPadding = compactModePadding,
-                onOverflow = {
-                    compactTwoRowOverflow.value = true
+                    twoRowOverflow.value = true
                 },
             )
             return@BoxWithConstraints
