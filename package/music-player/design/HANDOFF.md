@@ -3289,3 +3289,16 @@ is ready in normal Helium at KWin ID `{bec7e813-4eac-4c39-ae0a-d138dc43df19}` on
  1080 × 1880.
  Activate that non-minimized window as the final operation and
 wait for the user's review.
+
+The user refined the adaptive mode rule after seeing the actual-preset review.
+ A one-row
+arrangement may use variable-width cells sized to each label rather than equal-width
+quarters.
+ The visible `Shuffle <currentSubDir>` content is capped at the content length
+of `Shuffle Camellia`;
+ longer subdirectory names use a middle ellipsis within the
+subdirectory name only.
+ The full unshortened name remains required in accessibility
+semantics.
+ Rebuild and measure the native prototype before changing the recorded preset row
+mapping.
