@@ -296,8 +296,10 @@ Preserve these individually rather than treating them as cosmetic wording fixes:
 - "The pretend chat service" uses an undefined and potentially misleading term.
 - Code lacks syntax highlighting despite an existing repository facility.
 - "defining" and "display" are under-defined.
-- "Let the browser call a function on a click" is misleading phrasing.
-  The precise intended correction remains to be elicited.
+- "Let the browser call a function on a click" teaches the browser user's action-to-outcome model,
+  not the developer's model of attaching a click event listener to a button
+  and supplying the function it runs.
+  See "Role-appropriate mental models and questions with prior thought".
 - "A service request" is vague and misleading when the experiment waits for the learner's intervention.
 - "stopping the whole page" is under-backed;
   the JavaScript thread model needs clarification.
@@ -371,9 +373,52 @@ rather than merely asserting that counting is cumbersome or narrating an unobser
 This is evidence about the method's limits, not a judgment about the learner.
 Do not assume a required lockstep UI, forced quiz, or exhaustive historical survey.
 
+## Role-appropriate mental models and questions with prior thought
+
+The assistant asked:
+"You called 'Let the browser call a function on a click' misleading.
+What incorrect understanding would that phrasing give the learner?"
+The user challenged whether the assistant genuinely failed to see the problem.
+
+The assistant then overcorrected toward not asking the user to diagnose its wording.
+The user clarified that questions are welcome, but must show thinking first.
+Their challenge was a probe of the assistant's understanding, not a ban on asking.
+Do not turn this correction into a rule against clarification questions.
+
+The user supplied the distinction:
+
+- A generic browser user clicks a button and things happen.
+- The learner is becoming a developer.
+  The developer attaches a click event listener to the button;
+  when triggered, it runs a function.
+
+The heading replaces the mechanism the developer must construct with the outcome a browser user observes.
+The assistant should have inferred that mismatch before asking.
+A question should start from a reasoned interpretation and investigate a remaining uncertainty,
+not ask the user to perform the initial analysis of an already-identified failure.
+
+Teach the causal model appropriate to the learner's intended role.
+Accessible wording must not erase the relationships the learner needs to create, inspect, or explain.
+This also guides independent review of the remaining under-defined or misleading lesson language.
+
+The user explicitly said not to edit `AGENTS.md` for now.
+Keep the teaching-specific correction and rejected question in these planning notes.
+No final skill is authorized until shared understanding is confirmed.
+
+The assistant checked MDN's `addEventListener()` and `dispatchEvent()` documentation while investigating.
+The first distinguishes registering a listener on a target from invoking it;
+the second documents synchronous programmatic dispatch.
+These checks must not replace the user's central role-and-mental-model distinction
+with an unrelated lecture on scheduling exceptions.
+
+- <https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener>
+- <https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent>
+
 ## Next action
 
-The user has resolved the missed-connection case by increasing the same problem's scale.
-Continue clarifying causal phrasing, execution timing, and meaningful HTML behavior from actual failures.
+Synthesize the elicited requirements and concrete acceptance examples independently.
+Use the confirmed role distinction to diagnose the remaining lesson wording,
+not to ask the user to explain every instance.
+Then seek shared-understanding confirmation before writing the final teaching skill.
 Keep the user-facing presentation session open and preserve the user's reading position.
-Do not draft the final skill or treat the critique as resolved by superficial lesson edits.
+Do not edit `AGENTS.md` or treat the critique as resolved by superficial lesson edits.
