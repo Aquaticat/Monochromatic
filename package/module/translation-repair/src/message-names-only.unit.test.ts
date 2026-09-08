@@ -151,6 +151,7 @@ const MARKED_CLASSES: readonly string[] = [
   'VisualEvidenceInterruptedError',
   'UnseatedStandingError',
   'WindowEvidenceError',
+  'WritingBenchUnreachableError',
 ];
 
 /**
@@ -264,6 +265,7 @@ const NAMED_PARTS: Record<string, string> = {
   'short({ id: recorded, },)': 'abbreviated digest',
   'short({ id: requiredCommit, },)': 'abbreviated commit',
   'unavailableCount': 'count of source-referenced assets without usable visual evidence',
+  'clauses.join(\'; \',)': 'bench names, seat counts and the floor, built by the seat reading and quoting nothing',
   'yamlRefusalSite({ cause, },)': 'position, built to state a place and quote nothing',
 };
 
