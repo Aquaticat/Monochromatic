@@ -6,11 +6,13 @@ The user requested a skill to curb failures in AI teaching and drafted teaching 
 They requested grilling to discover the failures from their experience.
 Repository material remains potentially relevant.
 Discovery is ongoing. The revised prototype has been operationally verified and visibly presented for critique.
+The user's latest quick scan found no major complaints, but they worry that they missed issues.
+They requested a prompt for an independent opinion from Claude Fable 5.1, which will have filesystem access
+but not this conversation.
 Its teaching effectiveness and the sufficiency of the proposed skill requirements remain unestablished.
-The user has now rejected the opening preview as confusing and detached from a real-world example.
-After the user explicitly said "Do it", the opening was rebuilt as the shop conversation.
-The corrected opening has passed the current operational checks and was visibly presented in Helium.
-That is not user acceptance, learner-performance evidence, or approval of the final skill.
+Earlier critiques rejected a detached opening and forced chat turn-taking.
+The shop opening, reference chat, and reading backgrounds have since been corrected and operationally checked.
+The quick scan is not learner-performance evidence or approval of the final skill.
 The shared-understanding checkpoint was premature and is withdrawn.
 [Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
 The user requires an updated Promise toy before continuing to weed out failure modes.
@@ -1067,9 +1069,20 @@ The owned `helium-print-profile-qZ4J6X` and `exports-profile-Yfe3Ci` directories
 The final session listing retains only the current and earlier public presentation sessions.
 Repository status still shows only the previously observed unrelated changes outside this documentation.
 
+## Independent review request
+
+The user will send a review prompt to Claude Fable 5.1.
+The self-contained draft is [the independent review prompt](promises-teaching-review-prompt.md).
+It supplies the learner profile, intended outcome, presentation requirements, artifact paths, and review boundaries.
+It asks the reviewer to inspect the artifact before the planning history,
+then challenge both the teaching and the existing test assertions.
+The requested opinion distinguishes observed behavior, source-backed concerns, and pedagogical judgment.
+The user has not requested implementation of future review findings or final skill confirmation.
+
 ## Next action
 
-Resume critique of the visible corrected example; no final skill confirmation has been requested.
+Provide the review prompt, then assess the independent findings against the current artifact when they are available.
+No final skill confirmation has been requested.
 Independent sending and neutral surfaces are implemented and operationally checked;
 those checks do not establish teaching acceptance, learner independence, or mastery.
 The final teaching skill remains unconfirmed and unimplemented.
