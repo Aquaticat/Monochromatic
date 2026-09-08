@@ -363,14 +363,17 @@ but require a bridge from the learner's established understanding.
 The Promises page reversed that order by naming the abstraction and listing its features
 before sufficiently establishing the problem it solves.
 
-Open: how standalone material should support a learner who does not make the intended observation,
-instead of merely narrating that the learner noticed or understood it.
+When asked what to do if the learner counts correctly but sees no reason to change methods,
+the user answered: "Scale up. There WILL be a point where they fail."
+Increase the same problem's demands until the current method's limitation is observable.
+Introduce the new method in response to that demonstrated need,
+rather than merely asserting that counting is cumbersome or narrating an unobserved realization.
+This is evidence about the method's limits, not a judgment about the learner.
 Do not assume a required lockstep UI, forced quiz, or exhaustive historical survey.
 
 ## Next action
 
-Explore what the lesson should do when the learner does not make the intended connection
-in the concrete example.
+The user has resolved the missed-connection case by increasing the same problem's scale.
 Continue clarifying causal phrasing, execution timing, and meaningful HTML behavior from actual failures.
 Keep the user-facing presentation session open and preserve the user's reading position.
 Do not draft the final skill or treat the critique as resolved by superficial lesson edits.
