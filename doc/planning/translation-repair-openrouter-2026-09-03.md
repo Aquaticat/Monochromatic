@@ -5093,6 +5093,225 @@ the eleventh's checks,
 and no `schema-mismatch` line naming `finish_reason=error`;
 an `InStreamProviderError` line with `code unnamed` is the class caught.
 
+## The twelfth pass settles in 108 minutes under the three checks and rewrites the letter, 2026-09-08, 20:10 UTC
+
+`TALLY hakureico status=SETTLED slices=17 repairStatus=repaired repairIssues=78 repairAccepted=52 repairResolved=47
+repairFindings=223 repairChanged=13 translateStatus=complete translateChanged=13 documentsDiffer=16 pageChanged=15
+pageSilent=0 alignmentFindings=4 selection=contested ms=6504858`
+at 20:10 UTC:
+108.4 minutes,
+against the ninth's 83.3 on a whole bench.
+Every seat line of the six phases read
+`synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8 slate=8 checkers=3 translators=7
+readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3 waited=0ms`;
+Synthetic's rolling week returned at 19:48:52 (`METERS synthetic=wet`,
+1.23 percent used at the tally) and the per-chunk re-seating of the thirteenth class routed 159 calls to it
+before the end
+(gpt-oss-120b 71,
+Qwen3.8-27B 68,
+GLM-5.3-Flash 20).
+
+The three checks.
+The page's front matter is the archive's seven lines byte for byte
+(`read-page.mjs` prints `frontMatterEqualsArchive: true`;
+`name: Hanasaka`,
+alias `Kagurazaka Hanasaka, Hakureico`),
+the artifact carries `artifactSchemaVersion: 11` and `frontMatterAuthority: "archive"`,
+the log `FRONT MATTER entry=hakureico authority=archive` at 18:21:58,
+and the blank line after the front matter that the ninth page lacked is back,
+since the archive's is what ships.
+E2B in the translate lane:
+18 ballots (`google.gemma-4-e2b chose candidate N at weight 1`,
+one at weight 0.5),
+two `translate-repair: google.gemma-4-e2b revised its candidate`,
+and one win,
+in the consolidation (`translate stage: google.gemma-4-e2b won weight 6.5` at 20:02:53);
+the translate-stage winners across lane and consolidation were GLM-5.3-Flash 8,
+minimax-m3 5,
+Qwen3.8-27B 5,
+gemma-4-26b-a4b-it 3,
+deepseek-v4-flash-0731 2,
+and one each for the incumbent,
+gpt-oss-120b,
+E2B,
+glm-5.3 and deepseek-v4-pro-0813.
+Eight `json false start` lines
+(seven deepseek-v4-flash-0731 through OpenRouter at openings of 2 to 12 characters,
+one Synthetic gpt-oss-120b at 19:45:04),
+no `schema-mismatch` beside any of them:
+eight voices kept.
+No line names `finish_reason=error`,
+no `InStreamProviderError`,
+and no `retrying in` at all
+(the eleventh had two transport retries;
+this pass had none),
+so the eighteenth class did not occur and its guard was not exercised live;
+it stands on its unit suite.
+The pass's one `schema-mismatch`,
+19:45:21,
+`produceConsolidations deepseek-v4-flash-0731: ... Unexpected end of JSON input (model stopped with
+finish_reason=stop) raw=""`,
+is an empty answer on a normal stop,
+one writer of a consolidation slate that settled without it.
+
+The seven steps.
+`verify-published` matched 1 of 1 at the length the artifact implies
+(`wordings=17 silent=0 chars=4864/expected 4861+separators missing=0`,
+exit 0).
+`DESTINATIONS hakureico source=0 page=0 dropped=0`;
+one `PhotoScroll`,
+single-quoted paths as the archive's;
+four footnote markers (two references,
+two definitions) on an archive with none;
+three headings as the source;
+the archive's three translator notes carried (the source has none);
+Chinese punctuation 11 and CJK runs 14,
+equal to the archive's (the notes and the Japanese lyric).
+Refusal vocabulary 0 (the one `attempt` hit is a ballot's prose).
+Straight apostrophes after a letter 0,
+curly 9 (archive 8);
+straight double quotes 0,
+curly 16 (archive 18);
+three-dot ellipses 1,
+U+2026 0 (archive 0 and 0;
+the source's one `……` closes the solo-journeys sentence).
+No run of two or more blank lines:
+the seam of three blank lines before the closing sentence that the ninth page carried is gone.
+`cost=` fields summed 6.49;
+the meters moved OpenRouter 185.59 to 177.62 USD (7.97),
+Bedrock 197.85 to 197.37 (0.48),
+Synthetic weekly 0 to 1.23 percent;
+Hyper 0.
+
+What the prose read found,
+beside the source and the archive.
+THE LETTER.
+The archive's note above it
+(`这段话以下全部，包括结尾的两句祝愿，原文都是英文，中文是反向翻译的，请仅修可能造成误解或明显的非刻意语法错误，不大修`:
+everything from here,
+the two closing wishes included,
+was written in English,
+the Chinese is a back-translation,
+fix only what misleads or is plainly unintended grammar,
+no heavy revision)
+ships on the page,
+and the page still rewrote the English original in five places:
+`I am never gone` became `I am never really gone`;
+`If you happen to see this` became `If you happen to see this little poem`;
+`And who’s by your side w` became `And no matter who’s by your side w`;
+`I will always be with you` moved from before the two `No matter` lines to after them,
+the back-translation's order;
+and the archive's two closing wishes
+(`Now these accounts are free. May she be free too.` and `Time to sleep friends, and keep smiling, stay alive.`)
+became one sentence rendered from the source
+(`It’s time to say goodnight. May everyone keep smiling and live well.`),
+the source carrying only the second.
+The ninth page had gone further
+(`I actually never left`,
+`Just changed places`,
+`From the earth to heaven above owo`,
+`Cause cats have nine lives`);
+the twelfth keeps `From ground to heaven owo`,
+`Cause neko has 9 lives =w=`,
+`Aug. 8th, 2018` and the signature.
+The page's first note
+(`本文的大部分引用原文都是英文，引用部分请仅修语法和可能造成误解的错误`:
+most quoted passages were English,
+fix only grammar and what misleads)
+is followed for the two short quotes,
+which ship verbatim
+(`Finally went to hell as a devil.` with `updated 18-08-09`,
+and `May the world treat you well.` with `At least better than me.`),
+and not for the letter.
+The notes reach the slices (the sixth class's fix carries them with their position),
+so this is the models' judgment on a long quoted span,
+not a missing note;
+nothing on the pipeline's side makes the archive the authority for a span whose note says the archive is the
+original,
+which is the front-matter rule's shape (the archive's text is the original and ships as it stands) applied to a
+span instead of the front matter.
+Measured across the pinned corpus:
+22 of the 93 archive pages carry a translator note,
+and 2 carry one saying the English is the original
+(this page's,
+and `cheonwoomaeng`'s,
+saying the whole page is the author's English and must not be touched).
+A DESIGN QUESTION for the owner,
+recorded in the handover under "The twelfth page and the letter";
+nothing landed.
+Smaller:
+`“Mayday”[^1]` puts the footnote marker outside the closing quote where the source has it inside the brackets
+(`「Mayday[^1]」`) and the ninth page had `“Mayday[^1]”`,
+the English convention;
+one em dash (`rhythm games — she also focused`) on an archive page with none,
+where 38 of the corpus's 93 archive pages carry one;
+seven lines ending in a space (the Mayday quote's blank `> ` lines) where the archive has 23 and the ninth page 21,
+the letter's blank quote lines being bare `>`;
+the `osu!` line break inside its sentence (`her *osu!*` then `account was still online.`),
+recorded at the sixth pass;
+`feeling down` for 精神不好 where the ninth had `struggling mentally`,
+softer than the source.
+The rest reads true to the source:
+the Giftia paragraph,
+the transponder quote with three and two Maydays as the source (the archive's four and three) and the archive's
+bold,
+`Hanasaka’s Letter` for 千歌的信 under the name rendering,
+the departure paragraphs.
+
+The straggler count against the ninth (`SEAT ... threw=`):
+Qwen3.8-27B 35 of 245 (ninth 17 of 258),
+deepseek-v4-pro-0813 21 of 241 (0 of 248),
+deepseek-v4-flash-0731 9 of 193 (0 of 198),
+glm-5.3 8 of 121 (3 of 120),
+GLM-5.3-Flash 7 of 73 (7 of 75),
+gemma-4-26b-a4b-it 1 of 245 (0 of 219),
+minimax-m3 0 of 230 (1 of 240),
+gpt-oss-120b 0 of 227 (0 of 242),
+E2B 0 of 223 (0 of 180),
+Gemma 31B 0 of 2 (0 of 2),
+Kimi-K3 withheld (3 of 258).
+81 lost voices against 38,
+by round:
+select 26,
+critic 16,
+panel 15,
+lane contest 7,
+translate 6,
+consolidation writers 5 (one of them the empty answer),
+refiner 3,
+editor 1,
+checker 1,
+naturalness review 1;
+every one but the empty answer abandoned after quorum at the straggler window.
+With five readers and nine seats against the ninth's six and ten,
+quorum came from the fast seats and the window cut the long reasoners
+(Qwen3.8-27B through CoreWeave at 2.9 to 3.2 M delivered characters per cut,
+deepseek-v4-pro-0813 at 0.85 M);
+that is a reading of the lines,
+not a measurement of who answered first.
+Quorum held in every round (`quorum-not-met` 0,
+`one-reader-only` 0,
+43 corroborated),
+so no seat moves;
+the 25 minutes over the ninth are the window's price on a shorter bench.
+GLM-5.3-Flash on `photo1.webp`:
+`stream cut after 7127626 characters (CallTimeoutError: ... exceeded its 360000ms deadline)`,
+eight passes of eight;
+four readers corroborated the picture at overlap 0.598.
+
+`yuki418330012` launched at 20:18 UTC on `bb04656ef` (tree `ba7ce85a9`) into `~/temp/agent/yuki418330012-20260908`,
+log beside it,
+pid 393298,
+on three providers
+(`JUDGE SEATS phase=preparation synthetic=wet bedrock=wet hyper=dry openrouter=wet wide=8 select=8 late=9 slate=9
+checkers=3 translators=8 readers=6 writers=10 roster=10 withheld=none waited=0ms`)
+and `FRONT MATTER entry=yuki418330012 authority=archive` at 20:18:17.
+Watched by the filtered poller that reports only the tally,
+a stop,
+a crash,
+an error-finish regression or the process exit;
+read by the seven steps plus the three checks when it settles.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

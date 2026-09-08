@@ -24,16 +24,23 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 18:23 UTC on 2026-09-08 the tree is `bb04656ef`:
+As of 20:20 UTC on 2026-09-08 the tree is `ba7ce85a9`,
+docs on the code of `bb04656ef`:
 the front-matter rule merged (`d11f36799`),
 `google.gemma-4-e2b` seated as translator and consolidation writer on the day's producer calibration (`169a86173`),
 the seventeenth class fixed (`8bf9deec0`,
 a JSON object read past an abandoned opening),
 the eighteenth class fixed (`bb04656ef`,
 an error finish on a whole stream read as the provider failure it is),
-and `hakureico` running on that build into `~/temp/agent/hakureico12-20260908` to be read under the
-front-matter,
-false-start and error-finish checks;
+the twelfth `hakureico` page settled on that build at 20:10 UTC and read
+(front matter byte for byte the archive's,
+eight false starts kept,
+no error finish occurred,
+`verify-published` matched at length;
+see "The twelfth page and the letter"),
+one design question open (the letter,
+same section),
+and `yuki418330012` running on that build into `~/temp/agent/yuki418330012-20260908` since 20:18 UTC;
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -762,6 +769,97 @@ The read-page check to add:
 a `schema-mismatch` line naming `finish_reason=error` would mean the shape has moved;
 an `InStreamProviderError` line with `code unnamed` is this class caught.
 
+## The twelfth page and the letter
+
+The twelfth `hakureico` pass (`bb04656ef`,
+18:21 to 20:10 UTC on 2026-09-08,
+108.4 minutes,
+`~/temp/agent/hakureico12-20260908`) settled on Bedrock and OpenRouter with Synthetic's week returning at 19:48.
+Its page passed the three checks it was launched for:
+the front matter is the archive's seven lines byte for byte
+(artifact `artifactSchemaVersion: 11`,
+`frontMatterAuthority: "archive"`),
+E2B cast 18 ballots and won once across the translate stages,
+eight `json false start` reads kept their voices,
+and no reply carried `finish_reason=error`
+(none occurred and no retry ran,
+so the eighteenth class's guard stands on its suite,
+not on this pass).
+`verify-published` matched 1 of 1 at length,
+destinations 0 and 0,
+quotes and ellipses on the archive's conventions,
+the blank line after the front matter back,
+the three-blank-line seam gone.
+81 voices were lost at the straggler window against the ninth's 38,
+on five readers and nine seats against six and ten,
+quorum held in every round;
+no seat moved.
+The full reading is in the planning log under
+"The twelfth pass settles in 108 minutes under the three checks and rewrites the letter".
+
+What the prose read found is a design question.
+The archive page carries a translator note above Hanasaka's letter:
+`这段话以下全部，包括结尾的两句祝愿，原文都是英文，中文是反向翻译的，请仅修可能造成误解或明显的非刻意语法错误，不大修`
+(everything from here,
+the two closing wishes included,
+was written in English;
+the Chinese is a back-translation;
+fix only what misleads or is plainly unintended grammar;
+no heavy revision).
+The note ships on the page and reaches the slices,
+and the page still rewrote the English original in five places
+(`I am never gone` to `I am never really gone`,
+`see this` to `see this little poem`,
+`And who’s by your side w` to `And no matter who’s by your side w`,
+`I will always be with you` moved to the back-translation's position,
+and the archive's two closing wishes replaced by one sentence rendered from the source,
+which carries only the second).
+The two short quotes under the page's other note (`本文的大部分引用原文都是英文`) ship verbatim.
+Nothing in the pipeline makes the archive the authority for a span whose note says the archive is the original.
+That is the front-matter rule's shape,
+decided by the owner on 2026-09-08 (the archive translated it,
+so it ships as it stands),
+applied to a span.
+Measured across the pinned corpus:
+22 of the 93 archive pages carry a translator note,
+2 of them one saying the English is the original:
+this page's,
+and `cheonwoomaeng`,
+whose note says the whole page is the author's own English and must not be touched in translation.
+
+The options,
+each with what it buys and costs.
+Span authority from the note:
+where an archive note says the English is the original,
+the archive's text from the note to the next heading (or the whole page,
+where the note says so) ships as it stands,
+as the front matter does,
+touched by no lane;
+it follows the decision already made,
+removes the span from the models' reach,
+and costs recognizing the note (a free-text Chinese comment,
+two wordings in the corpus) and its extent,
+and ships any real grammar slip the note would have allowed fixing.
+Copy-edit lane:
+the same recognition,
+but the span goes to the writers as an English original with a copy-edit brief and is judged against the
+archive's text under a change budget;
+it keeps the note's own allowance and costs a new lane,
+a new judge and a budget that is a magic number.
+Leave it:
+the models see the note and the twelfth's five changes are all defensible English;
+it costs nothing to build and ships a dead person's own words reworded.
+Ranking:
+span authority,
+then leave it,
+then the copy-edit lane.
+Span authority over leaving it because the letter is a quotation of the subject's own English and the owner has
+already ruled that the archive is the authority where it is the original;
+leaving it over the copy-edit lane because the lane builds a judge around a magic number for a problem the first
+option dissolves.
+Nothing is landed;
+the owner decides.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -805,48 +903,49 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  `hakureico` is running on `bb04656ef` (the merged front-matter rule,
-    the E2B seat,
-    the false-start reading and the error-finish reading),
-    launched 18:22 UTC on 2026-09-08,
-    runs dir `~/temp/agent/hakureico12-20260908`,
+1.  `yuki418330012`,
+    a math pair,
+    is running on `bb04656ef` (tree `ba7ce85a9` with docs only above it),
+    launched 20:18 UTC on 2026-09-08,
+    runs dir `~/temp/agent/yuki418330012-20260908`,
     log beside it,
-    pid 369919,
-    on Bedrock and OpenRouter (Synthetic's rolling week dry since 17:21,
-    Hyper at zero credits).
-    Read it by the seven steps plus:
-    the page's front matter equals the archive's byte for byte (`read-page.mjs` prints `frontMatterEqualsArchive`),
-    the artifact carries `artifactSchemaVersion: 11` with `frontMatterAuthority: 'archive'` in the preparation,
-    E2B's candidates and ballots appear in the translate lane,
-    every `json false start` line is a voice kept,
-    and no `schema-mismatch` line names `finish_reason=error`
-    (an `InStreamProviderError` with `code unnamed` is the eighteenth class caught and retried;
-    see "The eighteenth class").
-    The eleventh pass (`8bf9deec0`,
-    16:56 to 18:21 UTC,
-    `~/temp/agent/hakureico11-20260908`) was killed under the rule inside its consolidation when `bb04656ef` landed;
-    its log had already shown `FRONT MATTER entry=hakureico authority=archive`,
-    the first seat line with eight translators and ten writers,
-    E2B writing and winning in the translate lane
-    (candidate 1 from `google.gemma-4-e2b` won weight 3 across 7 ballots at 18:03),
-    four `json false start` reads on Bedrock's gpt-oss-120b with no schema mismatch beside them,
-    and the one lost voice that became the eighteenth class.
-    The ninth launch's page (`061b46c0b`,
-    12:50 UTC,
-    83.3 minutes,
-    `~/temp/agent/hakureico9-20260908`) is read in the planning log under
-    "The ninth pass settles in 83 minutes on a whole bench":
-    every bench whole,
-    no class found by its page,
-    and two things found in its log since:
-    the front matter (the owner's rule) and the doubled opening (the seventeenth class).
-    If the tree moves past `bb04656ef` while it runs,
+    pid 393298,
+    on Synthetic,
+    Bedrock and OpenRouter
+    (`JUDGE SEATS phase=preparation synthetic=wet bedrock=wet hyper=dry openrouter=wet wide=8 select=8 late=9
+    slate=9 checkers=3 translators=8 readers=6 writers=10 roster=10 withheld=none waited=0ms`,
+    `FRONT MATTER entry=yuki418330012 authority=archive`).
+    Read it by the seven steps plus the three checks
+    (front matter byte for byte the archive's,
+    artifact `artifactSchemaVersion: 11` with `frontMatterAuthority: 'archive'`,
+    E2B's candidates and ballots in the translate lane,
+    every `json false start` a voice kept,
+    no `schema-mismatch` naming `finish_reason=error`;
+    an `InStreamProviderError` with `code unnamed` is the eighteenth class caught),
+    and read its letter-shaped spans,
+    if any,
+    against their notes.
+    The twelfth `hakureico` page (`bb04656ef`,
+    18:21 to 20:10 UTC,
+    108.4 minutes,
+    `~/temp/agent/hakureico12-20260908`) is read in the planning log under
+    "The twelfth pass settles in 108 minutes under the three checks and rewrites the letter":
+    the three checks passed,
+    `verify-published` matched at length,
+    no error finish occurred (the guard stands on its suite),
+    81 voices lost at the straggler window against the ninth's 38 on a bench one reader and one seat shorter with
+    quorum held in every round,
+    and the letter rewritten under a note that says it is the English original (the design question).
+    If the tree moves past `bb04656ef` while `yuki418330012` runs,
     the kill-and-relaunch rule applies.
 2.  The translator seat is decided (`169a86173`,
     see "The E2B translator seat");
     no calibration is owed.
-3.  Then `yuki418330012` (a math pair),
-    then `Arita`,
+3.  The letter is the open design question (see "The twelfth page and the letter");
+    the owner's answer decides whether a span the archive's note calls the English original ships as the archive
+    has it.
+    Nothing to build until then.
+4.  Then `Arita`,
     then the seven components no read page has met.
 4.  Synthetic's weekly meter is a ROLLING WINDOW,
     not a calendar week (measured 2026-09-08:
@@ -859,9 +958,11 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     wet at one reading of six);
     Hyper's daily quota is unpublished and closed once today after about a thousand requests of one pass,
     and a pass that meets it holds Hyper out until the instant the refusal names.
-    At 12:52 UTC on 2026-09-08:
-    OpenRouter 199.56 USD (topped up to 200.01 at 11:26),
-    Bedrock 198.39 USD,
+    At 20:10 UTC on 2026-09-08:
+    OpenRouter 177.62 USD (topped up to 200.01 at 11:26;
+    the twelfth hakureico pass spent 7.97),
+    Bedrock 197.37 USD (0.48 on that pass),
+    Synthetic's rolling week at 1.23 percent (returned 19:48),
     Hyper 0 since 12:45 and never to be recharged (the owner's words).
     Bedrock and OpenRouter are the two wet providers and together reach every bench at every phase,
     measured on the merged build;

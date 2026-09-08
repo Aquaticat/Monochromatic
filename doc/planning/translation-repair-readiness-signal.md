@@ -1195,3 +1195,46 @@ false-start and error-finish checks,
 `yuki418330012`,
 `Arita`,
 and the seven components no read page has met.
+
+## What the twelfth hakureico launch showed (2026-09-08, 18:21 to 20:10 UTC)
+
+The twelfth pass,
+the first on the error-finish reading,
+settled in 108 minutes on Bedrock and OpenRouter,
+Synthetic's week returning at 19:48.
+Its page passed the three checks:
+the front matter is the archive's byte for byte with the artifact at schema 11 and `frontMatterAuthority: "archive"`,
+E2B voted 18 times and won once across the translate stages,
+eight doubled openings were read past with no mismatch beside them,
+and no reply carried an error finish
+(none occurred;
+the eighteenth class's guard stands on its suite,
+not on this pass).
+`verify-published` matched at length,
+destinations 0 and 0,
+quotes and ellipses on the archive's conventions,
+the blank line after the front matter back and the three-blank-line seam gone.
+What its prose showed:
+the page rewrote the letter the archive's note says is the English original
+(five places,
+on a ninth page that had rewritten it more),
+while the two short quotes under the same kind of note ship verbatim.
+That is not a class in the pipeline's reading of its inputs;
+it is the archive-as-original rule (the owner's front-matter decision) not yet applied to a span,
+and a design question for the owner.
+Its log showed 81 voices lost at the straggler window against the ninth's 38,
+on five readers and nine seats against six and ten,
+with quorum held in every round;
+no seat moved.
+
+THE READING:
+the belief holds.
+Of the three things read passes had waved through as weather,
+two are confirmed fixed on a settled page (the front matter,
+the doubled opening) and the third was not exercised (no error finish occurred) and stands on its suite.
+One design question is open (the letter).
+What remains before an all-entries launch:
+the owner's answer on the letter,
+`yuki418330012` (running since 20:18 UTC),
+`Arita`,
+and the seven components no read page has met.
