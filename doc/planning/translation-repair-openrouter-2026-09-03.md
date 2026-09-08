@@ -4066,6 +4066,85 @@ two passes' wordings,
 not a class.
 No class found on this page.
 
+## The seventh hakureico launch on Bedrock alone stops at the pictures, 2026-09-08, 01:49 UTC
+
+Launched at 01:49:33 UTC on `ed278cbf1`
+(docs only past `49aca5770`,
+pipeline `6bb40f9b` unchanged),
+plain invocation,
+runs dir `~/temp/agent/hakureico7-20260908`,
+log beside it,
+pid 3956345,
+after `budget-sample` read
+`synthetic=dry bedrock=wet hyper=dry openrouter=wet syntheticWeekly=0%`
+and `bedrockUsd=198.94 hyperBalance=0 openrouterUsd=0.01`.
+Launched on the owner's words that a single wet provider is normal operation
+(`Run now, because only one provider is wet is just normal`),
+to read what the pipeline does on Bedrock alone,
+the state production is in tonight.
+
+`TALLY hakureico status=INCOMPLETE ms=20233 aborted=false error=visual evidence incomplete for 2 referenced assets`,
+20 seconds,
+no Bedrock spend on the meter.
+
+WHAT THE TWENTY SECONDS SHOWED:
+
+-   OpenRouter's meter reads wet at 0.01 USD at every launch,
+    so `phase=preparation` seated its six models
+    (`wide=7 select=7 late=8 slate=8 checkers=3 translators=6 readers=3 writers=8 roster=9`,
+    `withheld=hf:moonshotai/Kimi-K3`),
+    the first block-pairing round lost all six to 402 in 300 ms,
+    and the fourteenth class marked OpenRouter dry for the rest of the process.
+    A fresh process starts unmarked,
+    so every launch at this balance buys the same six refusals.
+    Harmless and noisy;
+    the 402 body names what the balance can afford
+    (`can only afford 6762` tokens against a 131072 request),
+    which is the reading a threshold would want,
+    and the owner's rule against magic numbers keeps 0.01 USD out of the meter.
+-   The block pairing paired every relation from `3 usable voices of 3 heard`,
+    the three Bedrock seats,
+    `3/9 heard` each round.
+-   `phase=pictures` then read
+    `synthetic=dry bedrock=wet hyper=dry openrouter=dry`
+    `wide=8 select=8 late=9 slate=9 checkers=3 translators=7 readers=4 writers=9 roster=10`
+    `withheld=none waited=0ms`:
+    the fullest bench the log has ever printed,
+    with three providers dry.
+    `withheld=` names only the seats the Hyper-slow and OpenRouter-cost rules take,
+    and with Hyper and OpenRouter dry neither rule applies,
+    so nothing is withheld and nothing on the line says that seven of the ten have no provider.
+    The bench a reader of the log sees is not the bench the router can reach.
+    `reachableSeats` already computes the difference,
+    but the seats line prints it only when a hold is running (the thirteenth class's clause).
+-   The readers bench is `hf:zai-org/GLM-5.3-Flash`,
+    `hf:Qwen/Qwen3.8-27B`,
+    `hf:moonshotai/Kimi-K3` and `minimax-m3`,
+    none of which Bedrock serves;
+    both photos read `0 of 4 readers produced a reading`,
+    `unavailable for a transient reason, so it is not cached and is read again next run`,
+    and the entry stopped honestly.
+    Bedrock's four cards all carry `readsImages: false` in `bedrock-catalog.ts`,
+    by the rule the OpenRouter catalog set:
+    a listing field alone cannot widen the reader roster,
+    a transcription has to be measured first
+    (`roster-reach.unit.test.ts`,
+    `KEEPS gemma off the picture readers on OpenRouter and on Bedrock until a transcription is measured`).
+    So on Bedrock alone no pass can pass its pictures phase until that measurement is taken.
+
+WHAT FOLLOWS:
+two pieces of work,
+neither a design decision.
+The seats line should say how many seats of each bench the router can reach at that reading,
+hold or no hold,
+so a phase that will run short of quorum says so before it starts;
+and Gemma 4 on Bedrock should be measured as a picture reader against the readings the four seated readers gave
+on pages already read,
+which is the same shape as the judge-seat measurement of 21:19 UTC.
+Until one of those lands or another meter moves,
+a launch on Bedrock alone stops at the pictures in twenty seconds at no cost,
+which is a fine thing to know and not a page.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

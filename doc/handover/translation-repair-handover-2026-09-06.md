@@ -566,8 +566,19 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     which the settlement records as evidence.
     When a meter besides Bedrock's moves,
     relaunch `hakureico` into a fresh runs dir and read that consolidation first.
-    Until then do not launch:
-    Bedrock alone seats three of the wide bench's quorum of four.
+    A seventh launch on Bedrock alone at 01:49 UTC
+    (the owner's words:
+    one wet provider is normal operation)
+    stopped INCOMPLETE at the pictures in 20 seconds at no cost,
+    read in the planning log under "The seventh hakureico launch on Bedrock alone":
+    no reader on the readers bench is served by Bedrock,
+    Bedrock's cards carry `readsImages: false` until a transcription is measured,
+    and the `phase=pictures` seats line printed `readers=4 roster=10 withheld=none` with three providers dry,
+    saying nothing about reach.
+    Two pieces of work follow,
+    neither a design decision:
+    the seats line names the reachable seats of a short bench with or without a hold,
+    and Gemma 4 on Bedrock is measured as a picture reader.
 2.  Run `producer-calibrate` with `--candidates google.gemma-4-e2b` for the translator seat when the meters allow;
     the judge seat is decided (`b0b48d6f4`).
 3.  Then `yuki418330012` (a math pair),
