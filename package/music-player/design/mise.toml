@@ -172,26 +172,30 @@ const defaultTransportFingerprint = imageFingerprint({
   path: acceptedDefaultPath,
   crop: '1009x674+0+1400',
 });
-if (defaultTransportFingerprint !== 'a6ebede2afec45fde01b3e2580579704eae774e51844c7cb61efa73dcc411a5a') {
+if (defaultTransportFingerprint !== '945d52d93b878c2b98a08b45bf812b5fa1af2dff450cfa7ba62df131dda4b99a') {
   throw new Error('The 100% state changes transport 1B, seek position, or adaptive mode geometry.');
 }
 
 const uniqueCaptures = new Set(renderPaths.map((path) => imageFingerprint({ path, crop: '2076x2152+0+0' })));
 if (uniqueCaptures.size !== renderPaths.length) {
-  throw new Error('Requested font scales did not produce five distinct native captures.');
+  throw new Error('Android font presets did not produce seven distinct native captures.');
 }
 
 const expectedRowCounts = {
-  '085': 2,
-  '100': 2,
+  '085': 1,
+  '100': 1,
   '115': 2,
   '130': 2,
   '150': 2,
   '180': 4,
   '200': 4,
 };
+const expectedOneRowWidths = {
+  '085': [153, 224, 276, 190],
+  '100': [138, 214, 284, 184],
+};
 const expectedDescriptions = ['Repeat track', 'Play in order', 'Shuffle Camellia', 'Shuffle all folders'];
-const expectedVisibleLabels = ['Repeat', 'In order', 'Shuffle Camellia', 'Shuffle all'];
+const expectedVisibleLabels = ['Repeat', 'In order', 'Shuffle all'];
 for (const label of scaleLabels) {
   const path = `questions/evidence/accepted-3b-font-${label}.xml`;
   const hierarchy = readFileSync(resolve(path), 'utf8');
@@ -203,6 +207,12 @@ for (const label of scaleLabels) {
   }
   if (expectedVisibleLabels.some((text) => !hierarchy.includes(`text="${text}"`))) {
     throw new Error(`${path} does not retain all four visible mode labels.`);
+  }
+  const shuffleLabelVisible = expectedRowCounts[label] === 1
+    ? hierarchy.includes('text="Shuffle "') && hierarchy.includes('text="Camellia"')
+    : hierarchy.includes('text="Shuffle Camellia"');
+  if (!shuffleLabelVisible) {
+    throw new Error(`${path} does not retain visible Shuffle Camellia content.`);
   }
   if (hierarchy.includes('text="Shuffle"') || hierarchy.includes('content-desc="Shuffle current folder"')) {
     throw new Error(`${path} restores a context-free current-folder Shuffle label.`);
@@ -240,8 +250,15 @@ for (const label of scaleLabels) {
   if (rowBounds.size !== expectedRowCounts[label]) {
     throw new Error(`${path} uses ${rowBounds.size} mode rows; expected ${expectedRowCounts[label]}.`);
   }
+  const targetWidths = bounds.map((bound) => bound.right - bound.left);
   if (bounds.some((bound) => bound.right - bound.left < 117 || bound.bottom - bound.top < 117)) {
     throw new Error(`${path} reduces a mode target below 48dp.`);
+  }
+  if (
+    expectedOneRowWidths[label]
+    && targetWidths.some((width, index) => width !== expectedOneRowWidths[label][index])
+  ) {
+    throw new Error(`${path} does not preserve measured content-sized one-row cells.`);
   }
   const groupBottom = Math.max(...bounds.map((bound) => bound.bottom));
   if (groupBottom > 2035) {
@@ -255,16 +272,17 @@ const requiredFragments = [
   'Review accepted 3B across text sizes',
   'the installed <code>SettingsGoogle.apk</code> exposes exactly 85%, 100%, 115%, 130%, 150%, 180%, and 200%',
   'Shuffle Camellia',
-  '85%, 100%, 115%, 130%, and 150% use 2×2. 180% and 200% use four rows.',
+  '85% and 100% use one content-sized row. 115%, 130%, and 150% use 2×2. 180% and 200% use four rows.',
+  'longer names middle-ellipsize the subdirectory only while accessibility retains the full name',
   'one row &gt; two rows &gt; four rows',
   'soft neutral current-track container, bold current title, tonal Open, and transport 1B',
-  'The control tries Material\'s 12dp horizontal content padding first, then 6dp before adding rows.',
+  'The one-row branch sizes each cell to its content and tries 12dp horizontal padding, then 6dp.',
   'Production assistive technology must still verify one mutually exclusive group announcement.',
   'What should change? Enter “None” if the scale behavior is accepted.',
   'Answer changed. Prepare it again before copying or downloading.',
   'spaces alone do not complete this field.',
   'Math.max(0.02, value)',
-  'prototype commit 2c0001ad3',
+  'prototype commit 7b30db15e',
 ];
 for (const fragment of requiredFragments) {
   if (!question.includes(fragment)) {
@@ -300,7 +318,7 @@ console.log('Accepted-3B scale review is valid.');
 '''
 
 [tasks.build]
-description = "Embed five native accepted-3B text-scale captures into the self-contained review"
+description = "Embed seven native accepted-3B text-scale captures into the self-contained review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
