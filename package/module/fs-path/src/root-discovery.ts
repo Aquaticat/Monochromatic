@@ -1,11 +1,13 @@
 /**
- Shared upward-walk root discovery.
+ Upward-walk root discovery: the interface of this package's root finding.
 
- Root finders in this package use these helpers to keep filesystem probing
- local and cross-runtime. The filesystem backend comes from the
- `#root-filesystem` import map entry (`node:fs/promises` under the `node`
- condition, the origin private file system otherwise), so this module
- names no platform API itself.
+ `findRoot` walks from a start directory toward the filesystem root and
+ returns the first ancestor a marker accepts; `findRootCached` memoises
+ that walk per marker and start directory for the process lifetime. The
+ filesystem comes from the `#root-filesystem` import map entry
+ (`node:fs/promises` under the `node` condition, the origin private file
+ system otherwise) unless the caller passes one, so this module names no
+ platform API itself.
 
  @module
  */
@@ -18,80 +20,129 @@ import {
   resolveRootFilesystem,
 } from '#root-filesystem';
 import type { RootFilesystem, } from './root-filesystem-contract.ts';
-
-export {
-  ABSENT,
-  type RootFilesystem,
-} from './root-filesystem-contract.ts';
+import type { RootMarker, } from './root-marker-contract.ts';
 
 //region Types
 
 /**
- Arguments supplied to a candidate-root matcher.
+ Options for {@link findRoot}.
  */
-export type RootMatcherArgs = {
+export type FindRootOptions = {
   /**
-   Directory currently being tested as root candidate.
+   Kind of root to look for.
    */
-  readonly dir: string;
+  readonly marker: RootMarker;
 
   /**
-   Filesystem backend resolved for current runtime.
-   */
-  readonly fs: RootFilesystem;
-};
-
-/**
- Predicate that decides whether a directory is a root.
- */
-export type RootMatcher = (args: RootMatcherArgs,) => Promise<boolean>;
-
-/**
- Options for {@link findRootByWalkingUp}.
- */
-export type FindRootByWalkingUpOptions = {
-  /**
-   Starting directory. Defaults to current process working directory.
+   Starting directory. Defaults to the process working directory, or `/`
+   where no process exists.
    */
   readonly cwd?: string;
 
   /**
-   Candidate-root predicate applied at each ancestor.
+   Filesystem to walk. Defaults to the runtime adapter; pass
+   `createMemoryRootFilesystem(...)` to walk a tree held in memory.
    */
-  readonly matches: RootMatcher;
+  readonly fs?: RootFilesystem;
+};
+
+/**
+ Options for {@link findRootCached}: the same as {@link findRoot} without a
+ filesystem, because the memo belongs to the runtime adapter.
+ */
+export type FindRootCachedOptions = {
+  /**
+   Kind of root to look for; its `name` is half of the memo key.
+   */
+  readonly marker: RootMarker;
 
   /**
-   Error message used when no ancestor matches.
+   Starting directory, resolved at call time to the runtime default when
+   omitted; the other half of the memo key.
    */
-  readonly missingMessage: string;
+  readonly cwd?: string;
 };
 
 /**
  Options for the internal upward walk.
  */
-type WalkUpRootOptions = {
+type WalkUpOptions = {
   /**
    Directory currently being tested.
    */
   readonly dir: string;
 
   /**
-   Filesystem backend shared by every level.
+   Filesystem shared by every level.
    */
   readonly fs: RootFilesystem;
 
   /**
-   Candidate-root predicate applied at each ancestor.
+   Marker whose probe runs at each ancestor.
    */
-  readonly matches: RootMatcher;
+  readonly marker: RootMarker;
 
   /**
-   Error message thrown when the filesystem root is reached without a match.
+   Directory the walk began at, reported when no ancestor matches.
    */
-  readonly missingMessage: string;
+  readonly startDir: string;
 };
 
 //endregion Types
+
+//region Error
+
+/**
+ Raised when no ancestor of the start directory satisfies the marker.
+
+ @example
+ ```ts
+ try {
+   await findRoot({ cwd, marker: GIT_REPOSITORY });
+ }
+ catch (error) {
+   if (error instanceof RootNotFoundError) console.log(error.marker, error.startDir);
+ }
+ ```
+ */
+export class RootNotFoundError extends Error {
+  /**
+   Name of the marker that matched no ancestor.
+   */
+  public readonly marker: string;
+
+  /**
+   Directory the walk began at.
+   */
+  public readonly startDir: string;
+
+  /**
+   Creates the error for one failed walk.
+
+   @param marker - name of the marker that matched no ancestor
+
+   @param startDir - directory the walk began at
+
+   @example
+   ```ts
+   throw new RootNotFoundError({ marker: 'git repository', startDir: '/tmp/x' });
+   ```
+   */
+  public constructor({
+    marker,
+    startDir,
+  }: {
+    readonly marker: string;
+    readonly startDir: string;
+  },) {
+    super(`no ${marker} root found walking up from ${startDir}`,);
+    this.name = 'RootNotFoundError';
+    this.marker = marker;
+    this.startDir = startDir;
+  }
+}
+
+//endregion Error
 
 //region Constants
 
@@ -100,106 +151,197 @@ type WalkUpRootOptions = {
  */
 const rootDiscoveryLogger = tagged({ tag: 'rootDiscovery', },);
 
-//endregion Constants
-
-//region Upward walk
+/**
+ Process-lifetime memo for {@link findRootCached}, keyed by marker name and
+ start directory. Holds the in-flight promise so concurrent first callers
+ share one walk, and keeps rejections because the tree does not change
+ during a process lifetime.
+ */
+const walkMemo = new Map<string, Promise<string>>();
 
 /**
- Walks upward from a candidate directory until matcher succeeds.
+ Separator between the two halves of a memo key; a NUL never appears in a
+ marker name or a path.
+ */
+const MEMO_KEY_SEPARATOR = '\0';
 
- @param dir - candidate directory tested first
+//endregion Constants
 
- @param fs - filesystem backend used for all probes
+//region Walk
 
- @param matches - predicate that identifies root directory
+/**
+ Start directory for a walk: the caller's `cwd`, or the runtime default
+ resolved now, not at module load.
 
- @param missingMessage - error text thrown when no ancestor matches
+ @param cwd - caller-provided start directory
 
- @returns matching root directory
-
- @throws when the filesystem root is reached without a match
+ @returns directory the walk begins at
 
  @example
  ```ts
- const root = await walkUpRoot({ dir: '/repo/src', fs, matches, missingMessage });
+ const startDir = startDirectory(undefined);
  ```
  */
-async function walkUpRoot({
+function startDirectory(cwd?: string,): string {
+  return cwd ?? defaultRootSearchCwd();
+}
+
+/**
+ Walks upward from a candidate directory until the marker accepts one.
+
+ @param dir - candidate directory tested first
+
+ @param fs - filesystem used for every probe
+
+ @param marker - kind of root sought
+
+ @param startDir - directory the walk began at
+
+ @returns matching root directory
+
+ @throws RootNotFoundError when the filesystem root is reached without a match
+
+ @example
+ ```ts
+ const root = await walkUp({ dir: '/repo/src', fs, marker, startDir: '/repo/src' });
+ ```
+ */
+async function walkUp({
   dir,
   fs,
-  matches,
-  missingMessage,
-}: WalkUpRootOptions,): Promise<string> {
-  if (await matches({
+  marker,
+  startDir,
+}: WalkUpOptions,): Promise<string> {
+  if (await marker.matches({
     dir,
     fs,
   },))
     return dir;
 
   /**
-   Parent directory inspected after current candidate misses.
+   Parent directory inspected after the current candidate misses.
    */
   const parent = dirname(dir,);
-  if (parent === dir)
-    throw new Error(missingMessage,);
+  if (parent === dir) {
+    throw new RootNotFoundError({
+      marker: marker.name,
+      startDir,
+    },);
+  }
 
   // Bounded structural walk: one level per call, ending at the filesystem
   // root, so the recursion depth is the path depth.
-  return walkUpRoot({
+  return walkUp({
     dir: parent,
     fs,
-    matches,
-    missingMessage,
+    marker,
+    startDir,
   },);
 }
 
 /**
- Finds a root by walking upward from `cwd` and applying `matches`.
+ Finds the nearest ancestor of `cwd` (itself included) that `marker`
+ accepts.
 
- @param cwd - starting directory, defaults to current process working directory
+ @param marker - kind of root sought
 
- @param matches - candidate-root predicate
+ @param cwd - start directory; defaults to the runtime working directory
 
- @param missingMessage - error text when no ancestor matches
+ @param fs - filesystem to walk; defaults to the runtime adapter
 
- @returns matching root directory
+ @returns matching root directory, spelled as the caller spelled `cwd`
 
- @throws when no ancestor satisfies `matches`
+ @throws RootNotFoundError when no ancestor satisfies the marker
 
  @example
  ```ts
- const root = await findRootByWalkingUp({
-   matches: async ({ dir, fs }) => await fs.exists(`${dir}/.git`),
-   missingMessage: 'missing git root',
- });
+ const root = await findRoot({ cwd: import.meta.dirname, marker: GIT_REPOSITORY });
+ ```
+
+ @example
+ ```ts
+ const fs = createMemoryRootFilesystem({ files: { '/repo/pnpm-workspace.yaml': '' } });
+ const root = await findRoot({ cwd: '/repo/a/b', fs, marker: PNPM_WORKSPACE });
  ```
  */
-export async function findRootByWalkingUp({
+export async function findRoot({
+  marker,
   cwd,
-  matches,
-  missingMessage,
-}: FindRootByWalkingUpOptions,): Promise<string> {
+  fs,
+}: FindRootOptions,): Promise<string> {
   /**
-   Directory where upward search starts.
+   Directory where the upward search starts.
    */
-  const startDir = cwd ?? defaultRootSearchCwd();
-  rootDiscoveryLogger.debug(`starting root discovery from ${startDir}`,);
-
+  const startDir = startDirectory(cwd,);
   /**
-   Filesystem backend resolved once per walk.
+   Filesystem for this walk: the caller's, or the runtime adapter.
    */
-  const fs = await resolveRootFilesystem();
+  const walkFs = fs ?? await resolveRootFilesystem();
   /**
-   Matching root using caller's runtime-native path identity.
+   Matching root, spelled with the caller's path identity.
    */
-  const root = await walkUpRoot({
+  const root = await walkUp({
     dir: startDir,
-    fs,
-    matches,
-    missingMessage,
+    fs: walkFs,
+    marker,
+    startDir,
   },);
-  rootDiscoveryLogger.debug(`resolved root discovery result ${root}`,);
+  rootDiscoveryLogger.debug(`${marker.name} root of ${startDir} is ${root}`,);
   return root;
 }
 
-//endregion Upward walk
+/**
+ Memoised {@link findRoot} over the runtime filesystem.
+
+ The memo key is the marker name plus the start directory, resolved at call
+ time, so callers that name their directory never receive another
+ directory's answer, and a walk after `process.chdir` starts from the new
+ directory. Concurrent first callers share one in-flight walk; a rejection
+ stays memoised for its key.
+
+ @param marker - kind of root sought; its `name` keys the memo
+
+ @param cwd - start directory; defaults to the runtime working directory
+
+ @returns matching root directory, locked in per key for the process lifetime
+
+ @throws RootNotFoundError same rejection as the first walk for this key
+
+ @example
+ ```ts
+ const root = await findRootCached({ marker: MISE_MONOREPO });
+ ```
+ */
+export function findRootCached({
+  marker,
+  cwd,
+}: FindRootCachedOptions,): Promise<string> {
+  /**
+   Directory where the upward search starts, fixed now for the key.
+   */
+  const startDir = startDirectory(cwd,);
+  /**
+   Memo key for this marker and start directory.
+   */
+  const key = `${marker.name}${MEMO_KEY_SEPARATOR}${startDir}`;
+  /**
+   In-flight or settled walk from a prior call with the same key.
+   */
+  const existing = walkMemo.get(key,);
+  if (existing !== undefined)
+    return existing;
+  /**
+   Fresh walk, stored before it settles so concurrent callers share it.
+   */
+  const walking = findRoot({
+    cwd: startDir,
+    marker,
+  },);
+  walkMemo.set(
+    key,
+    walking,
+  );
+  return walking;
+}
+
+//endregion Walk

@@ -6,10 +6,12 @@
  @module
  */
 
+import { resolve, } from '#posix-path';
 import {
   ABSENT,
-  type RootMatcherArgs,
-} from './root-discovery.ts';
+  type RootFilesystem,
+} from './root-filesystem-contract.ts';
+import type { RootMatcherArgs, } from './root-marker-contract.ts';
 
 /**
  Gitfile prefix required by Git's `read_gitfile_gently`.
@@ -140,7 +142,7 @@ async function isValidHeadPath({
   fs,
 }: {
   readonly headPath: string;
-  readonly fs: RootMatcherArgs['fs'];
+  readonly fs: RootFilesystem;
 },): Promise<boolean> {
   /**
    Symbolic HEAD target accepted when it names refs namespace.
@@ -208,7 +210,7 @@ async function resolveCommonDirectory({
   fs,
 }: {
   readonly gitDirectory: string;
-  readonly fs: RootMatcherArgs['fs'];
+  readonly fs: RootFilesystem;
 },): Promise<string | typeof ABSENT> {
   /**
    Optional linked-worktree common directory pointer path.
@@ -233,10 +235,10 @@ async function resolveCommonDirectory({
   },);
   if (path === ABSENT)
     return ABSENT;
-  return fs.resolvePath({
-    from: gitDirectory,
+  return resolve([
+    gitDirectory,
     path,
-  },);
+  ],);
 }
 
 /**
@@ -258,7 +260,7 @@ async function isValidGitDirectory({
   fs,
 }: {
   readonly gitDirectory: string;
-  readonly fs: RootMatcherArgs['fs'];
+  readonly fs: RootFilesystem;
 },): Promise<boolean> {
   if (!await fs.isDirectory(gitDirectory,))
     return false;
@@ -337,10 +339,10 @@ export async function matchesValidGitMarker({
   /**
    Runtime-native absolute administrative directory path.
    */
-  const gitDirectory = fs.resolvePath({
-    from: dir,
-    path: gitDirectoryPath,
-  },);
+  const gitDirectory = resolve([
+    dir,
+    gitDirectoryPath,
+  ],);
   return isValidGitDirectory({
     gitDirectory,
     fs,

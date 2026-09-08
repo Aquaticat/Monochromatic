@@ -32,33 +32,6 @@ import {
 const neutralFilesystemLogger = tagged({ tag: 'rootFilesystem', },);
 
 /**
- Resolves a path against a containing directory with pure-JS semantics.
-
- @param from - containing directory
-
- @param path - candidate path
-
- @returns normalized resolved path
-
- @example
- ```ts
- neutralResolvePath({ from: '/repo', path: '.git' });
- ```
- */
-function neutralResolvePath({
-  from,
-  path,
-}: {
-  readonly from: string;
-  readonly path: string;
-},): string {
-  return resolve([
-    from,
-    path,
-  ],);
-}
-
-/**
  Splits an absolute POSIX path into its non-empty segments after
  normalization, so `..` and `.` never reach the handle walk.
 
@@ -219,7 +192,6 @@ function opfsRootFilesystem({ root, }: { readonly root: FileSystemDirectoryHandl
       return await (await handle.getFile()).text();
     },
 
-    resolvePath: neutralResolvePath,
   };
 }
 
@@ -269,7 +241,6 @@ const emptyRootFilesystem: RootFilesystem = {
   isFile: emptyExists,
   readSymbolicLink: unsupportedReadSymbolicLink,
   readTextFile: emptyReadTextFile,
-  resolvePath: neutralResolvePath,
 };
 
 //endregion Empty backend

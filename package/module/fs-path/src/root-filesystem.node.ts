@@ -13,7 +13,6 @@ import {
   readlink,
   stat,
 } from 'node:fs/promises';
-import { posix, } from 'node:path';
 
 import {
   ABSENT,
@@ -172,33 +171,6 @@ async function nodeIsFile(path: string,): Promise<boolean> {
 }
 
 /**
- Resolves a path against a containing directory with `node:path/posix`.
-
- @param from - containing directory
-
- @param path - candidate path
-
- @returns absolute resolved path
-
- @example
- ```ts
- nodeResolvePath({ from: '/repo', path: '.git' });
- ```
- */
-function nodeResolvePath({
-  from,
-  path,
-}: {
-  readonly from: string;
-  readonly path: string;
-},): string {
-  return posix.resolve(
-    from,
-    path,
-  );
-}
-
-/**
  Filesystem backend for Node and Bun, shared by every root finder.
  */
 const nodeRootFilesystem: RootFilesystem = {
@@ -207,7 +179,6 @@ const nodeRootFilesystem: RootFilesystem = {
   isFile: nodeIsFile,
   readSymbolicLink: nodeReadSymbolicLink,
   readTextFile: nodeReadTextFile,
-  resolvePath: nodeResolvePath,
 };
 
 /**
