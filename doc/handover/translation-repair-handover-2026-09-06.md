@@ -24,6 +24,14 @@ and the reason is recorded in
 
 ## Where the work stands
 
+As of 16:18 UTC on 2026-09-08 the tree is `169a86173`:
+the front-matter rule merged (`d11f36799`),
+`google.gemma-4-e2b` seated as translator and consolidation writer on the day's producer calibration,
+and `hakureico` running on that build into `~/temp/agent/hakureico10-20260908` to be read under the
+front-matter checks;
+see "What to do next".
+The paragraphs that follow are the state of 2026-09-07 and stand as history.
+
 Three pages of `yulianNyanner` shipped on the plain invocation today and each was read:
 21:03 on the class-five build (44.9 minutes,
 found the sixth class),
@@ -69,7 +77,7 @@ which gained the apostrophe and ellipsis counts and two refusal greps today.
 If a pass is running when this is read and the tree has moved past its tip,
 the kill-and-relaunch rule applies.
 
-The full unit suite emitted 936 `PASS` lines and zero `FAIL` lines on the class-eight build,
+The full unit suite emitted 954 `PASS` lines and zero `FAIL` lines on `169a86173`,
 oxlint 0 warnings and 0 errors,
 types clean,
 markdown lint clean on every line written today.
@@ -82,24 +90,40 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `912dbe2dc` for the code;
+  `169a86173` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 11:14 UTC on 2026-09-07:
-  `synthetic=dry hyper=wet openrouter=wet syntheticWeekly=0%`,
-  Hyper 1275 credits,
-  OpenRouter 0.32 USD.
-  Synthetic trickled back to 2 percent between 05:31 and 08:43 and was spent again within the hour;
-  a Huasheng pass on Hyper alone costs about 800 credits.
-  Each settled `yulianNyanner` pass today cost 3.9 to 4.6 points of the Synthetic week and 60 to 82 Hyper
-  credits at zero USD.
-  One stopped 28-minute attempt cost about 0.8 percent of the Synthetic week and 36 Hyper credits;
-  no call reached OpenRouter,
-  since routing spends Synthetic and Hyper first.
+- Meters at 16:18 UTC on 2026-09-08,
+  off the tenth launch's seat line:
+  `synthetic=dry bedrock=wet hyper=dry openrouter=wet`;
+  Synthetic's rolling week at zero after the calibration,
+  Hyper at zero credits and never to be recharged,
+  Bedrock and OpenRouter in USD (198.39 and 199.56 at 12:52 UTC,
+  before the calibration and this pass).
+  The calibration and this pass are the first spend on Bedrock and OpenRouter alone;
+  the tally at the end of the pass prints the meters.
 
 ## What landed today
 
 Newest first.
+
+-   `169a86173` (2026-09-08,
+    16:15 UTC):
+    `google.gemma-4-e2b` seated as translator and consolidation writer on the 40-round producer calibration
+    (30 of 298 disinterested ballots,
+    z -1.40 against the 12.8 percent pooled null,
+    94 of 94 asks usable);
+    `RUN_WRITERS` filtered off `RUN_ROSTER`;
+    the class-fifteen fixtures moved to the editors bench,
+    since Bedrock alone now reaches a pair of translators;
+    guard shown to fail first;
+    954 `PASS` and 0 `FAIL`.
+
+-   `d11f36799` (2026-09-08,
+    16:08 UTC):
+    the front-matter branch rebased onto `ab0e9f0e9` and fast-forwarded in,
+    the throwaway worktree and both branches removed;
+    954 `PASS` and 0 `FAIL` in the throwaway and again in the main worktree.
 
 -   `b0b48d6f4` (2026-09-07,
     23:50 UTC):
@@ -294,13 +318,13 @@ Newest first.
 
 -   `20e5135a6` (2026-09-08,
     on the throwaway branch `translation-repair-front-matter`,
-    merged after the E2B calibration):
+    merged as `d11f36799` after the E2B calibration):
     the front-matter rule,
     artifact generation eleven;
     guards neutralised 13,
     6 and 9 `FAIL` across the suites,
     restored 0;
-    955 `PASS` and 0 `FAIL`.
+    954 `PASS` and 0 `FAIL` (the 955 first written here was a miscount of the same set).
 
 ## The fifth class
 
@@ -590,9 +614,9 @@ addendum 2026-09-08).
 The measurement behind it:
 9 of the last 10 read pages had rewritten `desc`,
 `alias` or `name` and no reading had diffed the front matter.
-Built as `20e5135a6` on branch `translation-repair-front-matter` in `~/temp/agent/tr-frontmatter-20260908`
-while the E2B calibration runs on the main worktree's build,
-and merged after it:
+Built as `20e5135a6` on branch `translation-repair-front-matter` in a throwaway worktree
+while the E2B calibration ran on the main worktree's build,
+and merged as `d11f36799` at 16:08 UTC once its standing printed:
 `archive-front-matter.ts` decides whether the archive stands,
 the preparation makes no slice zero where it does,
 the guard refuses `archive-front-matter` for any other page,
@@ -602,6 +626,41 @@ so no page changes its front matter from here.
 The read-page check to add to every reading:
 the page's front matter equals the archive's byte for byte
 (`read-page.mjs` prints `frontMatterEqualsArchive`).
+
+## The E2B translator seat
+
+Measured by `producer-calibrate 40 --candidates google.gemma-4-e2b` on 2026-09-08
+(13:07 to 16:07 UTC,
+log `~/temp/agent/producer-calibrate-e2b-20260908.log`),
+every one of the ten models writing and judging every slice.
+E2B:
+10.1 percent (30 of 298 disinterested ballots,
+over 39 candidates),
+z -1.40 against the pooled null of 12.8 percent,
+threshold 2.81 for ten comparisons,
+94 of 94 asks usable,
+streams p50 1.6 s and p90 2.5 s.
+Not separated from the null,
+so by the 2026-09-01 rule it takes the translator seat and the consolidation seat (`169a86173`):
+translators eight (quorum 4),
+consolidation writers ten,
+`WRITER_UNMEASURED` empty.
+Standing verbatim,
+z table,
+`SEAT` lines and the warnings:
+the planning log,
+"The E2B calibration prints its standing";
+the decision:
+the seating decision's addendum of 2026-09-08.
+What it changes for a Bedrock-only pass:
+the translators bench reaches a pair
+(`gemma-4-26b-a4b-it` and E2B),
+the class-fifteen floor,
+while editors and refiners stay at zero,
+so such a pass still stops at the lanes.
+Not acted on:
+gpt-oss-120b below the null again (z -2.90),
+the two deepseeks at -2.31 and -2.36.
 
 ## The two defaults and the rule
 
@@ -646,56 +705,33 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  The `hakureico` page from the ninth launch on `061b46c0b` settled at 12:50 UTC on 2026-09-08
-    (83.3 minutes,
-    runs dir `~/temp/agent/hakureico9-20260908`,
-    log beside it),
-    every provider wet and every bench whole,
-    read in the planning log under "The ninth pass settles in 83 minutes on a whole bench":
-    six `JUDGE SEATS` lines all wet,
-    no shortfall or `quorum-not-met` line,
-    both pictures corroborated by five and six readers,
-    16 of 18 slices changed,
-    the consolidation on all 16 contested slices with nine judges (7 consolidated),
-    both footnotes,
-    every read-page check held,
-    no class found.
-    The earlier hakureico passes are read in the same log:
-    the sixth (whole page,
-    consolidation short of quorum from slice 3),
-    the seventh (stopped at the pictures,
-    fixed by `c4a9682fe` and `f7f9c9136`)
-    and the eighth (one writer,
-    three judges,
-    the fifteenth class).
-    THE SIXTEENTH THING,
-    answered by the owner the same day:
-    the front matter read `name: Kagurazaka Chika` (chosen 6 to 3,
-    endorsed 9 of 9)
-    while the body kept the archive's `Hanasaka`;
-    the owner chose "publish the archive's front matter as is;
-    render it only where the archive never translated it",
-    built as `20e5135a6` on the throwaway branch `translation-repair-front-matter`
-    (see "The front-matter rule").
-    When the E2B calibration prints its standing,
-    merge that branch (rebase onto `translation-repair-rebased`,
-    fast-forward,
-    build,
-    full suite),
-    remove the throwaway worktree and both branches,
-    then relaunch `hakureico` once on the merged build and read the page:
-    its front matter must equal the archive's byte for byte,
-    its log must carry `FRONT MATTER entry=hakureico authority=archive`,
-    and its artifact `artifactSchemaVersion: 11` with `frontMatterAuthority: 'archive'` in the preparation.
-    The E2B calibration itself (`~/temp/agent/producer-calibrate-e2b-20260908.log`,
-    pid 87207,
-    launched 13:07 UTC,
-    40 slices,
-    ten writers and judges with `google.gemma-4-e2b` as the candidate)
-    is read by the pooled-null rule of the 2026-09-01 seating decision;
-    seat or refuse E2B as a translator by it.
-2.  Run `producer-calibrate` with `--candidates google.gemma-4-e2b` for the translator seat when the meters allow;
-    the judge seat is decided (`b0b48d6f4`).
+1.  `hakureico` is running on `169a86173` (the merged front-matter rule and the E2B seat),
+    launched 16:18:30 UTC on 2026-09-08,
+    runs dir `~/temp/agent/hakureico10-20260908`,
+    log beside it,
+    pid 276432,
+    on Bedrock and OpenRouter (Synthetic's window at zero after the calibration,
+    Hyper at zero credits),
+    seat line `wide=7 select=7 late=8 slate=8 checkers=3 translators=7 readers=5 writers=9 roster=9`
+    with Kimi-K3 withheld as the OpenRouter-cost seat,
+    and `FRONT MATTER entry=hakureico authority=archive` on its first reading.
+    Read it by the seven steps plus the front-matter check:
+    the page's front matter equals the archive's byte for byte (`read-page.mjs` prints `frontMatterEqualsArchive`),
+    the artifact carries `artifactSchemaVersion: 11` with `frontMatterAuthority: 'archive'` in the preparation,
+    and E2B's candidates and ballots appear in the translate lane.
+    The ninth launch's page (`061b46c0b`,
+    12:50 UTC,
+    83.3 minutes,
+    `~/temp/agent/hakureico9-20260908`) is read in the planning log under
+    "The ninth pass settles in 83 minutes on a whole bench":
+    every bench whole,
+    no class found,
+    and the sixteenth thing (the front matter) answered by the owner and built (see "The front-matter rule").
+    If the tree moves past `169a86173` while it runs,
+    the kill-and-relaunch rule applies.
+2.  The translator seat is decided (`169a86173`,
+    see "The E2B translator seat");
+    no calibration is owed.
 3.  Then `yuki418330012` (a math pair),
     then `Arita`,
     then the seven components no read page has met.

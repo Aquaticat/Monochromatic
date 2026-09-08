@@ -260,3 +260,124 @@ both seated sizes transcribe less exactly than the seated four
 a 1.27 MB picture came back as an empty stream from every Gemma size on Bedrock,
 and every cached picture reading is re-read once,
 since the cache key names the reader roster.
+
+## Addendum 2026-09-08: `google.gemma-4-e2b` takes the translator seat and the consolidation seat
+
+Decided by the pooled-null rule the editor and translator seats of this decision were read by,
+run as `producer-calibrate 40 --candidates google.gemma-4-e2b` on `5462257b4`
+(launched 13:07 UTC,
+standing printed 16:07,
+10795 s wall clock,
+one slice at a time,
+every one of the ten models writing and judging every slice),
+the same instrument that dropped two writers on 2026-09-01,
+with the Bonferroni threshold at ten comparisons (z 2.81) rather than nine.
+Log:
+`~/temp/agent/producer-calibrate-e2b-20260908.log`.
+The reader (the scratch `read-standing.mjs`) reproduces the 2026-09-01 record
+(pooled null 13.0 percent,
+z -4.53 and -4.55) before reading this one.
+
+Standing as printed,
+best first,
+with the availability-adjusted share where it differs and the z against the pooled null of 12.8 percent
+(308 disinterested wins over 2413 ballots):
+
+-   `hf:Qwen/Qwen3.8-27B`:
+    24.4 percent (55 of 225 disinterested ballots,
+    over 35 candidates),
+    adjusted 21.4,
+    z +5.25
+-   `gemma-4-26b-a4b-it`:
+    21.3 (56 of 263,
+    over 40),
+    adjusted 21.3,
+    z +4.14
+-   `hf:moonshotai/Kimi-K3`:
+    16.2 (42 of 260,
+    over 40),
+    z +1.64
+-   `minimax-m3`:
+    11.6 (30 of 258,
+    over 40),
+    z -0.55
+-   `hf:zai-org/GLM-5.3-Flash`:
+    11.1 (24 of 217,
+    over 35),
+    adjusted 9.7,
+    z -0.75
+-   `glm-5.3`:
+    10.7 (17 of 159,
+    over 25),
+    adjusted 6.7,
+    z -0.78
+-   `google.gemma-4-e2b`:
+    10.1 (30 of 298,
+    over 39),
+    adjusted 9.8,
+    z -1.40
+-   `deepseek-v4-pro-0813`:
+    7.8 (19 of 243,
+    over 39),
+    adjusted 7.6,
+    z -2.31
+-   `deepseek-v4-flash-0731`:
+    7.6 (18 of 236,
+    over 40),
+    z -2.36
+-   `hf:openai/gpt-oss-120b`:
+    6.7 (17 of 254,
+    over 40),
+    z -2.90
+
+The candidate is not separated from the null (z -1.40 against a threshold of 2.81),
+wrote 39 of 40 candidates,
+threw none of 94 asks (`SEAT google.gemma-4-e2b asked=94 usable=94 unusable=0 threw=0`),
+and its 94 completed streams ran p50 1.6 s,
+p90 2.5 s,
+max 5.1 s,
+the fastest voice on the bench;
+no warning in the log names it.
+Slice-clustered (37 winner-bearing rounds over 37 slices,
+top-three inclusion over 4000 resamples of whole slices):
+Qwen3.8-27B 91.7 percent,
+gemma-4-26b-a4b-it 83.8,
+Kimi-K3 83.0,
+E2B 12.9,
+GLM-5.3-Flash 12.2,
+the rest under 8.
+
+Seated as `169a86173`:
+`google.gemma-4-e2b` leaves `WRITER_UNMEASURED` in `run-config.ts`,
+which is now empty,
+and so joins `RUN_TRANSLATORS` (eight,
+quorum 4) and `RUN_WRITERS` (ten),
+the consolidation seat going with the translator seat as it did for every measured writer on 2026-09-01,
+the two dropped translators included.
+`RUN_WRITERS` now filters off `RUN_ROSTER` rather than off the catalog,
+so a Bedrock-only size the roster seats writes once measured and never before.
+
+What the same standing says about the seated writers,
+recorded and not acted on:
+`hf:openai/gpt-oss-120b` sits below the null again (z -2.90 against 2.81),
+`deepseek-v4-flash-0731` does not this time (z -2.36),
+and `deepseek-v4-pro-0813` is at z -2.31;
+the 2026-09-01 drops stand on their own measurement and nothing here reseats or drops anyone else.
+`glm-5.3` threw 41 of 87 asks to the calibration's windows
+(cut mid-reply after 1.6 to 3.2 million delivered characters),
+Qwen3.8-27B 13 of 84,
+GLM-5.3-Flash 14 of 87,
+Kimi-K3 4 of 88,
+deepseek-v4-pro-0813 3 of 88;
+eight OpenRouter streams carried an in-stream 504 from Together,
+Reka or Wafer after the gateway's success status,
+each retried once and answered.
+
+A consequence for the Bedrock-alone shape:
+the translators bench a Bedrock-only pass reaches is now a pair
+(`gemma-4-26b-a4b-it` and `google.gemma-4-e2b`),
+the floor the fifteenth class asks for,
+while still short of the quorum of 4 of 8;
+the editors and refiners benches stay at zero there,
+so a Bedrock-only pass still stops at the lanes on those two,
+and the fixtures in `run-seats-floor.unit.test.ts` and `run-seats-read.unit.test.ts` now say so.

@@ -1089,3 +1089,37 @@ the next entries (`yuki418330012`,
 `Arita`),
 the seven components no read page has met,
 and one relaunch of `hakureico` on the merged build to read a page whose front matter the rule kept.
+
+## What the E2B calibration and the merge showed (2026-09-08, 16:07 to 16:18 UTC)
+
+The 40-round producer calibration with `google.gemma-4-e2b` beside the nine measured writers printed its
+standing at 16:07 UTC:
+E2B 10.1 percent (30 of 298 disinterested ballots,
+over 39 candidates),
+z -1.40 against a pooled null of 12.8 percent with a Bonferroni threshold of 2.81,
+94 of 94 asks usable,
+streams p50 1.6 s.
+By the rule of the 2026-09-01 seating it is not separated from the null
+and takes the translator seat and the consolidation seat
+(`169a86173`;
+the seating decision's addendum of 2026-09-08).
+The front-matter branch merged as `d11f36799`,
+and `hakureico` launched at 16:18 UTC on `169a86173` into `~/temp/agent/hakureico10-20260908`,
+logging `FRONT MATTER entry=hakureico authority=archive` on its first reading
+and a seat line that counts the seated roster less Kimi-K3,
+on Bedrock and OpenRouter alone.
+
+THE READING:
+the belief holds.
+Every seat a Bedrock-only candidate could take by measurement has now been measured
+(judge,
+reader,
+writer),
+and a pass on Bedrock alone reaches a pair of translators,
+though still no editor or refiner,
+so the class-fifteen stop stands there.
+What remains before an all-entries launch is unchanged:
+the tenth hakureico page read under the front-matter checks,
+`yuki418330012`,
+`Arita`,
+and the seven components no read page has met.

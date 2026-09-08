@@ -4738,6 +4738,178 @@ re-read under the rule,
 would carry `name: Hanasaka` and the archive's alias,
 and the body would agree with it.
 
+## The E2B calibration prints its standing; the translator seat, 2026-09-08, 16:07 UTC
+
+`producer-calibrate 40 --candidates google.gemma-4-e2b` (pid 87207,
+launched 13:07:14 UTC on `5462257b4`,
+log `~/temp/agent/producer-calibrate-e2b-20260908.log`,
+runs dir beside it holding only the candidate ledger)
+printed `STANDING over 40 rounds` at 16:07:09,
+10795 s wall clock,
+about four and a half minutes a slice.
+Read by the scratch `read-standing.mjs`,
+proven first on the 2026-09-01 log
+(pooled null 13.0 percent,
+z -4.53 and -4.55 for the two writers dropped that day,
+threshold 2.77 for nine comparisons,
+all as the seating decision records).
+
+Standing as printed,
+best first,
+with the availability-adjusted share where it differs and the z against the pooled null of 12.8 percent
+(308 disinterested wins over 2413 ballots,
+Bonferroni two-sided threshold for ten comparisons z 2.81):
+
+-   `hf:Qwen/Qwen3.8-27B`:
+    24.4 percent (55 of 225 disinterested ballots,
+    over 35 candidates),
+    adjusted 21.4,
+    z +5.25
+-   `gemma-4-26b-a4b-it`:
+    21.3 (56 of 263,
+    over 40),
+    adjusted 21.3,
+    z +4.14
+-   `hf:moonshotai/Kimi-K3`:
+    16.2 (42 of 260,
+    over 40),
+    z +1.64
+-   `minimax-m3`:
+    11.6 (30 of 258,
+    over 40),
+    z -0.55
+-   `hf:zai-org/GLM-5.3-Flash`:
+    11.1 (24 of 217,
+    over 35),
+    adjusted 9.7,
+    z -0.75
+-   `glm-5.3`:
+    10.7 (17 of 159,
+    over 25),
+    adjusted 6.7,
+    z -0.78
+-   `google.gemma-4-e2b`:
+    10.1 (30 of 298,
+    over 39),
+    adjusted 9.8,
+    z -1.40
+-   `deepseek-v4-pro-0813`:
+    7.8 (19 of 243,
+    over 39),
+    adjusted 7.6,
+    z -2.31
+-   `deepseek-v4-flash-0731`:
+    7.6 (18 of 236,
+    over 40),
+    z -2.36
+-   `hf:openai/gpt-oss-120b`:
+    6.7 (17 of 254,
+    over 40),
+    z -2.90
+
+Slice-clustered (37 winner-bearing rounds over 37 slices,
+top-three inclusion over 4000 resamples of whole slices):
+Qwen3.8-27B 91.7 percent,
+gemma-4-26b-a4b-it 83.8,
+Kimi-K3 83.0,
+E2B 12.9,
+GLM-5.3-Flash 12.2,
+minimax-m3 7.1,
+glm-5.3 7.0,
+the deepseeks under 2.
+
+`SEAT` lines,
+asked and usable:
+minimax-m3 87 and 87;
+glm-5.3 87 and 46 (41 thrown);
+deepseek-v4-flash-0731 88 and 88;
+google.gemma-4-e2b 94 and 94;
+deepseek-v4-pro-0813 88 and 85;
+gemma-4-26b-a4b-it 86 and 86;
+gpt-oss-120b 89 and 89;
+Qwen3.8-27B 84 and 71;
+Kimi-K3 88 and 84;
+GLM-5.3-Flash 87 and 73.
+E2B's 94 completed streams:
+p50 1.6 s,
+p90 2.5 s,
+max 5.1 s;
+no warning names it.
+The warnings the run did carry:
+the cut-mid-reply abandonments the thrown counts sum,
+one Qwen3.8-27B and one GLM-5.3-Flash `StreamCutShortError` retried,
+eight `InStreamProviderError` 504s on OpenRouter streams (Together six,
+Reka one,
+Wafer one) between 15:25 and 15:59 UTC,
+each retried at attempt 1 and answered,
+and one gpt-oss-120b schema mismatch in the last slice's repair round.
+
+THE SEAT,
+by the rule as applied on 2026-09-01
+(a writer leaves the seat when its z crosses the Bonferroni threshold below the pooled null;
+the two dropped that day sat at -4.5):
+E2B at -1.40 is not separated from the null,
+so it takes the translator seat,
+and with it the consolidation seat every measured writer holds.
+Landed as `169a86173`:
+`WRITER_UNMEASURED` empty,
+`RUN_WRITERS` filtered off `RUN_ROSTER`,
+translators eight (quorum 4),
+consolidation writers ten;
+the guard in `run-seats.unit.test.ts` shown to fail first on the old build
+(`expected false to equal true` at the translators check);
+oxlint,
+types,
+954 `PASS` and 0 `FAIL`.
+Two fixtures moved with the fact:
+on Bedrock alone the translators bench now reaches the pair
+(`gemma-4-26b-a4b-it` and E2B),
+so the class-fifteen cases stop at the editors instead,
+and the one-translator shape of the eighth pass is kept on the roster of that day.
+Decision:
+the addendum of 2026-09-08 in `translation-repair-roster-seating-2026-09-01.md`.
+Not acted on:
+gpt-oss-120b below the null again (z -2.90),
+deepseek-v4-flash-0731 not this time (-2.36),
+deepseek-v4-pro-0813 at -2.31;
+the 2026-09-01 drops stand on their own measurement.
+
+## The front-matter branch merges; the tenth hakureico launch, 2026-09-08, 16:18 UTC
+
+With the standing printed,
+the throwaway branch was rebased onto `ab0e9f0e9` as `d11f36799`
+(built,
+types and oxlint clean,
+954 `PASS` and 0 `FAIL` in the throwaway;
+the 955 written earlier was a miscount of the same set),
+fast-forwarded into `translation-repair-rebased` and pushed,
+then built and proven again in the main worktree (954 and 0);
+the worktree `~/temp/agent/tr-frontmatter-20260908` and both branches are gone.
+The seat landed on top as `169a86173`.
+`hakureico` launched at 16:18:30 UTC on `169a86173`
+(pipeline `697d9d67`),
+plain invocation,
+runs dir `~/temp/agent/hakureico10-20260908`,
+log beside it,
+pid 276432.
+The first lines the rule and the seat owe:
+`FRONT MATTER entry=hakureico authority=archive: the archive translated it, so it ships as it stands and no lane
+writes it`,
+and `JUDGE SEATS phase=preparation synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8
+slate=8 checkers=3 translators=7 readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3 waited=0ms`:
+Synthetic's window at zero after the calibration and Hyper at zero credits,
+so Bedrock and OpenRouter serve the pass,
+Kimi-K3 withheld as the OpenRouter-cost seat,
+and every count is the seated roster less that one
+(translators 8 less one,
+writers 10 less one,
+roster 10 less one).
+What the page must show when it settles:
+front matter equal to the archive's byte for byte
+(`read-page.mjs` prints `frontMatterEqualsArchive`),
+`artifactSchemaVersion: 11` with `frontMatterAuthority: 'archive'` in the preparation,
+and E2B's candidates and ballots in the translate lane.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
