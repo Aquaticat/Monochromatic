@@ -263,6 +263,19 @@ Newest first.
     the seventh hakureico launch had printed `readers=4 withheld=none` with no reader reachable.
     Guards neutralised 2 and 3 `FAIL`,
     restored 0.
+-   `f7f9c9136` (2026-09-08):
+    `google.gemma-4-26b-a4b` and `google.gemma-4-31b` read pictures through Bedrock
+    (`readsImages: true` on their cards),
+    by the reader-seat rule written in the planning log under
+    "The three Gemma sizes against the seated readers on nine pictures":
+    eight readings each,
+    every one corroborated by every seated reader;
+    E2B stays off the readers (two readings no seated reader corroborated).
+    The readers bench is six and a Bedrock-only pass has two reachable readers.
+    The readers' quorum in the shortfall reading is a pair,
+    since `readImagePair` corroborates from two readings.
+    Every cached picture reading is re-read once,
+    since the cache key names the reader roster.
 
 ## The fifth class
 

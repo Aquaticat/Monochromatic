@@ -213,3 +213,50 @@ the 40-slice calibration that seated the writers was not repeated for a judge se
 which the 2026-09-01 decision did not measure either.
 The translator seat is `producer-calibrate`'s to give by the pooled null,
 run with `--candidates` when the meters allow.
+
+## Addendum 2026-09-08: `gemma-4-26b-a4b-it` and `google.gemma-4-31b` join the picture readers through Bedrock
+
+Decided by the reader-seat rule recorded in
+[`translation-repair-openrouter-2026-09-03.md`](../planning/translation-repair-openrouter-2026-09-03.md)
+("The three Gemma sizes against the seated readers on nine pictures"),
+written after the first run's numbers and before any others.
+Instrument:
+every picture whose seated readers left a `corroborated` record in a runs dir's picture cache,
+nine pictures over five entries,
+each candidate asked through the production Bedrock client with the reader stage's own prompt,
+each reading scored by the trigram overlap and `readingsCorroborate` verdict `readImagePair` uses
+against every seated reading of that picture,
+the seated readers scored the same way against each other as the band,
+build `c4a9682fe`.
+
+-   `gemma-4-26b-a4b-it` (Bedrock `google.gemma-4-26b-a4b`):
+    eight readings produced of nine asked,
+    every one corroborated by every seated reader,
+    mean overlap 0.668,
+    against a seated band of 0.80 to 0.92 with every seated reader corroborated on every picture.
+    Reads pictures through Bedrock (`readsImages: true` on its Bedrock card,
+    `f7f9c9136`);
+    its OpenRouter row is unchanged.
+-   `google.gemma-4-31b`:
+    eight of nine,
+    every one corroborated by every seated reader,
+    mean overlap 0.671.
+    Reads pictures through Bedrock;
+    holds no judge or writing seat (the 2026-09-07 addendum stands).
+-   `google.gemma-4-e2b`:
+    eight of nine,
+    two corroborated by no seated reader
+    (an invented reading and a drifted one),
+    every reading opening with the prompt's `READING RESPONSIBILITY:` label.
+    Not a reader.
+
+The readers bench is six,
+a Bedrock-only pass has two reachable readers,
+and the readers' quorum in the phase shortfall reading is a pair,
+since `readImagePair` corroborates from two readings.
+On record beside the seat:
+both seated sizes transcribe less exactly than the seated four
+(0.67 against 0.80 to 0.92),
+a 1.27 MB picture came back as an empty stream from every Gemma size on Bedrock,
+and every cached picture reading is re-read once,
+since the cache key names the reader roster.
