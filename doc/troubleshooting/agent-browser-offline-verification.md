@@ -26,10 +26,15 @@ Clone: `~/temp/agent/agent-browser-quality-explorer-2026-09-06`.
 ```rust
 // cli/src/native/network.rs:35
 "Network.emulateNetworkConditions",
+Some(json!({
+    "offline": offline,
+    "latency": 0,
+    "downloadThroughput": -1,
+    "uploadThroughput": -1,
+})),
 ```
 
-Its parameters contain the supplied `offline` boolean, zero latency,
-and unrestricted throughput values.
+This forwards the supplied `offline` boolean and the shown numeric parameters.
 `cli/src/native/actions.rs:5826` implements the native reload path;
 it sends this separate operation through the active page session:
 
@@ -85,7 +90,8 @@ The fixture binds only to `127.0.0.1` and never forwards to another server.
 The verification profile is newly created rather than reusing cached user resources.
 
 Tradeoffs:
-this verifies local-file operation while HTTP(S) is unavailable through the configured browser proxy.
+this verifies local-file operation in a browser whose HTTP denial was positively tested.
+CONNECT rejection is implemented in the proxy, but no separate HTTPS-canary result was recorded.
 It is not an operating-system network-disconnection test,
 not a test of every possible network transport,
 and not a fix for `navigator.onLine` or CDP emulation persistence.
