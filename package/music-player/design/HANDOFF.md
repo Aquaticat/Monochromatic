@@ -3223,3 +3223,26 @@ review at KWin ID `{daeddc48-db41-4dcd-9ca5-60ca4bd14882}` on `HDMI-A-2`,
 1280 × 680.
  Activate that non-minimized window as the final operation and wait for the
 user's review.
+
+The user correctly challenged the 50% capture as visually abnormal.
+ My earlier claim
+that `settings put system font_scale 0.5` made it an ordinary Android state was wrong.
+That command proves only that the settings database accepts the value.
+ A direct dump of
+`array/entryvalues_font_size` from this emulator's installed
+`/system_ext/priv-app/SettingsGoogle/SettingsGoogle.apk` reports the user-facing values
+`0.85`,
+ `1.0`,
+ `1.15`,
+ `1.30`,
+ `1.50`,
+ `1.80`,
+ and `2.0`.
+ Thus 50% and
+75% are both developer-injected states;
+ 85% is the actual Settings UI floor.
+ The
+normal Helium scale review was closed because its framing was misleading.
+ Do not reopen
+it until the user chooses whether to replace synthetic states or retain them as clearly
+labeled diagnostics.
