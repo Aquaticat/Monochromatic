@@ -62,7 +62,8 @@ function wetWhenUnread(): boolean {
 /**
  * Reads the dryness view, waiting out the shortest running hold once when a
  * bench the phase leans on cannot reach quorum among the seats a wet provider
- * serves, and reading again after the wait.
+ * serves, and reading again after the wait; when a bench is short and no
+ * provider has named its return, the reading says so and seats what it read.
  *
  * @param client - run client whose dryness view and holds are the router's own
  *
@@ -125,37 +126,50 @@ async function readDrynessPastShortBench(
    */
   const shortest = shortestHold({ holds, },);
   /**
-   * Benches this phase leans on that cannot reach quorum as first read;
-   * not asked when nothing is held, since then there is nothing to wait for.
+   * Benches as first read.
    */
-  const short = (shortest === 0) ? [] : (function shortNow(): readonly string[] {
-    /**
-     * Benches as first read.
-     */
-    const seats = judgeSeatsFor({ dry: first, },);
-    return shortBenches({
-      benches: {
-        wide: seats.wideSeats,
-        select: seats.selectJudges,
-        slate: seats.slateJudges,
-        translators: seats.translators,
-        readers: seats.readers,
-      },
-      names: phaseBenches({ phase, },),
-      dry: first,
-    },);
-  })();
+  const seats = judgeSeatsFor({ dry: first, },);
   /**
-   * How long this reading waits: the shortest running hold when a bench is
-   * short; nothing otherwise.
+   * Benches this phase leans on that cannot reach quorum as first read.
    */
-  const waitMs = (short.length > 0) ? shortest : 0;
-  if (waitMs === 0) {
+  const short = shortBenches({
+    benches: {
+      wide: seats.wideSeats,
+      select: seats.selectJudges,
+      slate: seats.slateJudges,
+      translators: seats.translators,
+      readers: seats.readers,
+    },
+    names: phaseBenches({ phase, },),
+    dry: first,
+  },);
+  if (short.length === 0) {
     return {
       dry: first,
-      waitMs,
+      waitMs: 0,
     };
   }
+  if (shortest === 0) {
+    // SAID EVEN WHEN THERE IS NOTHING TO WAIT FOR. The seventh hakureico
+    // launch (2026-09-08, Bedrock alone) printed `readers=4 roster=10
+    // withheld=none` at the pictures with three providers dry, since
+    // `withheld=` names only the seats the slowness and cost rules take, and
+    // stopped INCOMPLETE twenty seconds later with no reader reachable. A
+    // spent balance names no return, so the phase runs on what is reachable;
+    // the line says so before it starts.
+    l.warn(
+      `JUDGE SEATS phase=${phase} short of quorum: ${short.join('; ',)}; `
+        + 'no provider has named its return, so the phase runs on what is reachable',
+    );
+    return {
+      dry: first,
+      waitMs: 0,
+    };
+  }
+  /**
+   * How long this reading waits: the shortest running hold.
+   */
+  const waitMs = shortest;
   /**
    * Each provider's hold, for the line.
    */

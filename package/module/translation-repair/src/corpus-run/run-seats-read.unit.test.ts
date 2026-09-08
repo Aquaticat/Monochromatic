@@ -108,6 +108,44 @@ function viewClient(
 }
 
 /**
+ * Logger that keeps every line so a case can read what the reading said.
+ *
+ * @returns Logger beside its captured lines
+ *
+ * @example
+ * ```ts
+ * const { logger, lines, } = capturingLogger();
+ * ```
+ */
+function capturingLogger() {
+  /**
+   * Lines the reading emitted, in order.
+   */
+  const lines: string[] = [];
+
+  /**
+   * Records one line and discards its level.
+   *
+   * @param message - line the reading published
+   */
+  function record(message: string,): void {
+    lines.push(message,);
+  }
+  return {
+    lines,
+    logger: {
+      debug: record,
+      error: record,
+      fatal: record,
+      flush: async () => {},
+      info: record,
+      trace: record,
+      warn: record,
+    },
+  };
+}
+
+/**
  * Dryness views handed out in order, the last one repeated, counting reads.
  *
  * @param views - views in the order they are read
@@ -239,6 +277,45 @@ await describe({
         },);
         expect(wet.counter.reads,).toBe(1,);
         expect(full.dry,).toEqual(ALL_WET,);
+      },
+    },),
+    it({
+      name: 'SAYS SO when a bench the phase leans on is short of quorum and no provider has named its '
+        + 'return, seating what it read without a wait: the seventh hakureico launch, Bedrock alone at the '
+        + 'pictures, whose seats line read readers=4 withheld=none with no reader reachable',
+      fn: async () => {
+        const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
+        const { logger, lines, } = capturingLogger();
+        const seats = await readJudgeSeats({
+          client: viewClient({ providerDryness: script.read, },),
+          phase: 'pictures',
+          signal: new AbortController().signal,
+          l: logger,
+          pollMs: 5,
+        },);
+        expect(script.counter.reads,).toBe(1,);
+        expect(seats.readers.length,).toBe(4,);
+        /**
+         * The line that names the shortfall, if the reading said so.
+         */
+        const said = lines.find(function namesShortfall(line: string,): boolean {
+          return line.includes('JUDGE SEATS phase=pictures short of quorum: readers 0 of 4 reachable',);
+        },);
+        expect(said === undefined,).toBe(false,);
+        expect(said?.includes('no provider has named its return',),).toBe(true,);
+
+        const whole = scriptedViews({ views: [ALL_WET,], },);
+        const quiet = capturingLogger();
+        await readJudgeSeats({
+          client: viewClient({ providerDryness: whole.read, },),
+          phase: 'pictures',
+          signal: new AbortController().signal,
+          l: quiet.logger,
+          pollMs: 5,
+        },);
+        expect(quiet.lines.some(function namesShortfall(line: string,): boolean {
+          return line.includes('short of quorum',);
+        },),).toBe(false,);
       },
     },),
   ],
