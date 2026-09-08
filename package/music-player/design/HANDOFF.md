@@ -3267,4 +3267,25 @@ and 200%.
  the one-row branch remains available for shorter names or wider panes.
 Main commit `17262263d` removes 50% and 75% from the active review and embeds all
 seven real presets.
- Final browser verification and normal Helium presentation remain.
+ The isolated final pass decodes all seven 2076 × 2152px images,
+shows no page overflow at 1920 × 1080 or 390 × 844 CSS px,
+ and measures every narrow
+card at 316px within the 390px page.
+ Offline reload retains all seven images with no
+network resources.
+ Required-field and whitespace validation plus desktop preview Fit pass.
+ The page and desktop 180% preview each report zero axe
+A/AA violations and zero incomplete checks;
+ browser errors and console output are
+empty.
+ Updated disposable mutation controls reject every wrong actual-preset row
+mapping and restore cleanly.
+ The isolated verifier is closed.
+
+The duplicate 1280 × 680 normal window is closed.
+ The exact cleared user-preset review
+is ready in normal Helium at KWin ID `{bec7e813-4eac-4c39-ae0a-d138dc43df19}` on
+`DP-2`,
+ 1080 × 1880.
+ Activate that non-minimized window as the final operation and
+wait for the user's review.
