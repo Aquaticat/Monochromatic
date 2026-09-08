@@ -717,7 +717,7 @@ private fun LetterRail(palette: CandidatePalette) {
 @Composable
 private fun RowScope.FolderNames() {
     val folders = listOf(
-        "Camellia", "C418", "Carpenter Brut", "Casiopea", "Celldweller", "Chicane",
+        CURRENT_SUBDIRECTORY, "C418", "Carpenter Brut", "Casiopea", "Celldweller", "Chicane",
         "CHON", "Clark", "Clown Core", "Coaltar of the Deepers", "Com Truise", "Cornelius",
         "Covet", "Crumb", "Crystal Castles", "Cult of Luna", "Current Value", "Cynic",
         "Cö shu Nie", "capsule", "Charisma.com", "Cornelius Live", "Cytus Sound Team",
@@ -738,7 +738,7 @@ private fun RowScope.FolderNames() {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             for (folder in folders) {
-                val selectedFolder = folder == "Camellia"
+                val selectedFolder = folder == CURRENT_SUBDIRECTORY
                 Box(
                     modifier = Modifier
                         .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
@@ -1323,7 +1323,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
                 Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
                 TopAppBar(
                     title = {
-                        Text(text = "Camellia")
+                        Text(text = CURRENT_SUBDIRECTORY)
                     },
                     actions = {
                         IconButton(onClick = {}) {
