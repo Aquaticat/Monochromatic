@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 22:10 UTC on 2026-09-08 the tree is `ea07a1512`:
+As of 22:40 UTC on 2026-09-08 the tree is `e5ff6c4f8`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -38,10 +38,16 @@ the `yuki418330012` page settled on `bb04656ef` at 21:22 UTC and read
 the nineteenth class found,
 two community-slang regressions found;
 see "The nineteenth class" and "The glossary question"),
-the nineteenth class fixed (`1ba94c27a`,
-the archive's footnote labels follow the original's before any lane reads a slice) and corrected (`ea07a1512`,
-a count mismatch leaves the slice out instead of aborting the reading),
-and the fifteenth `hakureico` and the third `yuki418330012` running on `ea07a1512` since 22:08 UTC;
+the nineteenth class fixed in three steps
+(`1ba94c27a`,
+the archive's footnote labels follow the original's before any lane reads a slice;
+`ea07a1512`,
+a count mismatch leaves the slice out instead of aborting the reading;
+`e5ff6c4f8`,
+footnote definitions are order-free in the block pairing,
+the map is read off the definitions the roster paired,
+and the archive's definitions move into the original's order),
+and the sixteenth `hakureico` and the fourth `yuki418330012` running on `e5ff6c4f8` since 22:36 UTC;
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -911,6 +917,33 @@ and the map is read off the rest.
 The reading is in the planning log under
 "The letter sealed and the yuki page read and the nineteenth class fixed".
 
+The class has a second face,
+found by the third `yuki418330012` launch (`ea07a1512`,
+22:08 UTC),
+which did not relabel:
+the roster's second pairing round had starved to two usable voices of eight
+(`paired 3 of 8 original and 3 of 12 translation blocks`),
+six refused as `pairing moves backwards ... at position 10`,
+because every voice that paired the two definitions by content paired them crossed
+(the original defines the sister then the parent,
+the archive the parent then the sister)
+and the wire reader's never-backwards rule is a rule about prose.
+A footnote definition is an order-free block,
+since a page renders its notes by reference order.
+Fixed in `e5ff6c4f8`:
+`readBlockPairing` takes the definition indices as `freeOrder` and reads the order rule over body pairs alone
+(a definition still pairs only with a definition),
+`splitDefinitionPairs` keeps a crossing definition pair out of the slicing and hands its labels on as
+`footnoteDefinitionPairs`,
+`footnoteRelabelOfDefinitions` reads the map off those pairs
+(the positional slice reading stays as the fallback),
+and `reorderFootnoteDefinitions` moves the archive's definitions into the original's order so the second
+preparation pairs them in order.
+The wire suite failed first;
+full suite 973 `PASS` and 0 `FAIL`.
+Recorded in the planning log under
+"The nineteenth class's second face where the crossing definitions starve the pairing".
+
 ## The glossary question
 
 The same page rendered two community terms wrongly where the archive had them right:
@@ -983,18 +1016,16 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Two passes are running on `ea07a1512`,
-    launched 22:08 UTC on 2026-09-08 on Bedrock and OpenRouter
-    (`JUDGE SEATS phase=preparation synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8
-    slate=8 checkers=3 translators=7 readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3`):
-    the fifteenth `hakureico`,
-    runs dir `~/temp/agent/hakureico15-20260908`,
+1.  Two passes are running on `e5ff6c4f8`,
+    launched 22:36 UTC on 2026-09-08 on Bedrock and OpenRouter:
+    the sixteenth `hakureico`,
+    runs dir `~/temp/agent/hakureico16-20260908`,
     log beside it,
-    pid 461533;
-    and the third `yuki418330012`,
-    runs dir `~/temp/agent/yuki3-20260908`,
+    pid 489831;
+    and the fourth `yuki418330012`,
+    runs dir `~/temp/agent/yuki4-20260908`,
     log beside it,
-    pid 461634.
+    pid 489956.
     Each is watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit.
@@ -1007,13 +1038,18 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     the page carrying the span verbatim,
     the source's footnote definitions after the span),
     `[^1]` agreeing on both sides,
-    slice 7 named as left out of the relabel reading;
+    slice 7 named as left out of the relabel reading,
+    no definition moved;
     `yuki418330012`,
-    `FOOTNOTES entry=yuki418330012 relabelled [^1]->[^2], [^2]->[^1]` in the log,
+    the second pairing round with every voice usable and
+    `block-pairing section 1: the footnote definitions cross` in the log,
+    `FOOTNOTES entry=yuki418330012 relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired`,
+    `FOOTNOTES entry=yuki418330012 definitions moved into the original's order: [^1], [^2]`,
+    a re-preparation whose section pairs the definitions in order,
     `Zhouzhou[^2]` above `[^2]: ... substitute parent` and `Zhenli[^1]` above `[^1]: ... sister` on the page,
     `pageSilent=0` or the silent block named,
     and whether `自切` and `超天酱` regress again.
-    If the tree moves past `ea07a1512` while either runs,
+    If the tree moves past `e5ff6c4f8` while either runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.

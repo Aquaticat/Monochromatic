@@ -1294,3 +1294,14 @@ the fifteenth `hakureico` and the third `yuki418330012` pages on `ea07a1512` (ru
 the owner's answer on the glossary,
 `Arita`,
 and the seven components no read page has met.
+
+The third `yuki418330012` launch on `ea07a1512` showed the class has a second face:
+the roster paired the two definitions by content,
+which crosses when the archive has renumbered them,
+the never-backwards rule refused six of eight voices,
+and the pairing starved before the relabel could read it.
+Fixed in `e5ff6c4f8` (definitions are order-free in the pairing,
+the map is read off the paired definitions,
+the archive's definitions move into the original's order);
+the sixteenth `hakureico` and the fourth `yuki418330012` run on it since 22:36 UTC,
+and their pages are what the reading waits on.

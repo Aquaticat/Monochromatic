@@ -1875,20 +1875,26 @@ since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
 Since `1ba94c27a`,
-corrected by `ea07a1512` (2026-09-08,
-the nineteenth class) the archive's footnote labels follow the original's before any lane reads a slice:
-`footnoteRelabelOf` reads a positional map off each paired slice's distinct reference labels
+corrected by `ea07a1512` and completed by `e5ff6c4f8` (2026-09-08,
+the nineteenth class) the archive's footnotes follow the original's before any lane reads a slice:
+the block pairing treats footnote definitions as order-free blocks
+(`readBlockPairing` takes their indices as `freeOrder` and reads its never-backwards rule over body pairs alone;
+the third `yuki418330012` launch had lost six of eight voices for pairing two definitions by content where the
+archive had renumbered them),
+a crossing definition pair is kept out of the slicing and read for the relabel (`splitDefinitionPairs`),
+`footnoteRelabelOfDefinitions` reads the label map off the definitions the roster paired
 (the `yuki418330012` archive had renumbered `洲洲[^2]` and `真理[^1]` by first appearance,
 and the page shipped the original's markers above the archive's definitions,
 each pointing at the other's note),
-leaves a slice whose sides carry different counts of notes out of the reading,
-named
-(the `hakureico` archive carries no `[^2]` at all),
-refuses as ambiguous where two slices map one label two ways,
-and `applyFootnoteRelabel` rewrites references and definition openers in one pass;
-the pass applies it after the first preparation,
-prepares again over the relabelled archive,
-and logs `FOOTNOTES entry=<id> relabelled [^1]->[^2], [^2]->[^1]`.
+the positional reading off the paired slices stays as the fallback
+(a slice whose sides carry different counts of notes is left out,
+named;
+the `hakureico` archive carries no `[^2]` at all),
+`applyFootnoteRelabel` rewrites references and definition openers in one pass,
+`reorderFootnoteDefinitions` moves the archive's definitions into the original's order,
+and the pass prepares again over the rewritten archive,
+logging `FOOTNOTES entry=<id> relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired` and
+`FOOTNOTES entry=<id> definitions moved into the original's order: [^1], [^2]`.
 Since `439667ec3` (2026-09-08,
 the owner's decision in `doc/decision/translation-repair-archive-original.md`) an archive note saying the English
 is the original is authority:

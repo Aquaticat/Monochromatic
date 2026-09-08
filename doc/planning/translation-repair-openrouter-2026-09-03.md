@@ -5476,6 +5476,84 @@ slice 7 named as left out;
 `Zhouzhou[^2]` above `[^2]: ... substitute parent` and `Zhenli[^1]` above `[^1]: ... sister`,
 and whether `自切` and `超天酱` regress again.
 
+## The nineteenth class's second face where the crossing definitions starve the pairing, 2026-09-08, 22:36 UTC
+
+The third `yuki418330012` launch (`ea07a1512`,
+22:08 UTC) did not relabel.
+Its log read
+`FOOTNOTES entry=yuki418330012 left out of the relabel reading: slice 4 references 0 distinct notes in the original
+and 2 in the archive`
+and no relabel line,
+because the roster's second pairing round had starved:
+`paired 3 of 8 original and 3 of 12 translation blocks across 3 relations, from 2 usable voices of 8 heard`,
+with six voices refused,
+three as `pairing moves backwards on the original side at position 10` and three as
+`pairing moves backwards on the translation side at position 10`.
+Position 10 is the definitions.
+The original defines `[^1]` (the sister) then `[^2]` (the substitute parent);
+the archive defines `[^1]` (the parent) then `[^2]` (the sister);
+every voice that paired the two definitions by content paired them crossed,
+and the wire reader's rule that a correspondence never steps backwards refused each of them.
+The rule is a rule about prose,
+and a footnote definition is an order-free block:
+a page renders its notes by reference order,
+so two documents may define the same notes in different orders and both be right.
+The first `yuki418330012` run had paired 6 of 8 and 10 of 12 in that section for the same reason,
+the two definitions unpaired on each side,
+which is how the archive's definitions came to stand unrepaired under the original's markers.
+So the swap wrecks the pairing before the relabel can read it:
+the same class,
+seen from the other side.
+
+The fix (`e5ff6c4f8`),
+in four pieces.
+`readBlockPairing` takes the chunk-local indices of the definition blocks on each side as `freeOrder`,
+reads the order rule over the body pairs alone,
+and refuses a pair that joins a definition with a body block;
+the stage threads the indices through and `prepareDocumentPairWithRoster` computes them from the nodes' zones.
+`splitDefinitionPairs` (`pair-definition-order.ts`) reads each chunk's agreed pairing after the media claim:
+where the definition pairs cross they are kept out of what the slicer walks
+(its runs must be in document order on both sides),
+named as `block-pairing section N: the footnote definitions cross, kept out of the slicing and read for the relabel`,
+and every definition pair is handed on by label as `footnoteDefinitionPairs` on the paired preparation.
+`footnoteRelabelOfDefinitions` reads the map off those pairs,
+the exact evidence
+(the archive's definition of a note carries the archive's label for it,
+the original's carries the original's),
+and the positional slice reading of `1ba94c27a` stays as the fallback where the roster paired no definition.
+`reorderFootnoteDefinitions` (`archive-footnote-order.ts`) then moves the archive's definition blocks into the
+original's definition order,
+a contiguous run only,
+so the second preparation pairs them in order like any other block and the slices carry both sides;
+the relabel step logs `FOOTNOTES entry=<id> relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired`
+and `FOOTNOTES entry=<id> definitions moved into the original's order: [^1], [^2]`.
+The wire suite failed first on the old build
+(the crossing pairs refused,
+the mixed pair accepted),
+then passed;
+the footnote exports moved to `footnote-barrel.ts` at the pipeline barrel's line budget;
+full suite 973 `PASS` and 0 `FAIL`,
+oxlint and types clean.
+The fifteenth `hakureico` and the third `yuki418330012` were killed at 22:16 UTC under the rule
+(the last reading before the kills:
+Bedrock 197.01 USD,
+OpenRouter 170.95 USD),
+and the sixteenth `hakureico` (`~/temp/agent/hakureico16-20260908`,
+pid 489831) and the fourth `yuki418330012` (`~/temp/agent/yuki4-20260908`,
+pid 489956) launched at 22:36 UTC on `e5ff6c4f8`,
+each watched by the filtered poller.
+What their logs must show before their pages are read:
+`yuki418330012`,
+the second pairing round with every voice usable,
+`block-pairing section 1: the footnote definitions cross`,
+the relabel off the definitions the roster paired,
+the definitions moved,
+and a re-preparation whose section 1 pairs the definitions in order;
+`hakureico`,
+slice 7 still named as left out (the archive carries no `[^2]`),
+no definition moved,
+the seal as before.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
