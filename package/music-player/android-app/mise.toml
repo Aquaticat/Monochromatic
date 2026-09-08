@@ -229,8 +229,8 @@ try {
       ["-s", serial, "shell", "settings", "get", "system", "font_scale"],
       { encoding: "utf8" },
     ).trim();
-    if (appliedScale !== scale.value) {
-      throw new Error(`Android stored font scale ${appliedScale}; expected ${scale.value}.`);
+    if (Number(appliedScale) !== Number(scale.value)) {
+      throw new Error(`Android stored font scale ${appliedScale}; expected numeric value ${scale.value}.`);
     }
     execFileSync(adb, ["-s", serial, "shell", "am", "force-stop", packageName]);
     execFileSync(
