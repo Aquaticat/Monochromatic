@@ -3442,3 +3442,32 @@ now use `SegmentedButtonDefaults.ContentPadding` only.
  Prototype build and Android lint
 pass.
  Direct device recapture remains.
+
+The first capture stopped at 130% because Android serialized requested `1.30` as `1.3`.
+Prototype commit `8ead44c1c` compares those values numerically,
+ after which all presets
+capture successfully.
+ Direct measurement with a strict 12dp floor now gives one content-sized
+row at 85%,
+ connected 2×2 at 100%,
+ 115%,
+ and 130%,
+ then four rows at
+150%,
+ 180%,
+ and 200%.
+ The 85% one-row target widths remain 153,
+ 224,
+ 276,
+and 190 physical px;
+ all are 117px high.
+ The other targets remain at least 117px in
+both dimensions.
+ The 85% long-name diagnostic still keeps its Shuffle target at 276px
+and the complete accessibility name;
+ its verified deck crop is unchanged from the prior
+12dp rendering.
+ Prototype commits `cedc2a668` and `dea1d968f`,
+ plus main commit
+`4594b20a9`,
+ preserve the corrected evidence.
