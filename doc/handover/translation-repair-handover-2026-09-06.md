@@ -255,6 +255,14 @@ Newest first.
     with guard `bb5e97e0e` shown to fail first;
     record `doc/decision/translation-repair-pass-overlap.md`,
     flagged for the owner's veto.
+-   `c4a9682fe` (2026-09-08):
+    every phase reading computes the shortfall clauses,
+    and warns `JUDGE SEATS phase=<p> short of quorum: <bench> N of M reachable, quorum Q;`
+    `no provider has named its return, so the phase runs on what is reachable`
+    when nothing is held;
+    the seventh hakureico launch had printed `readers=4 withheld=none` with no reader reachable.
+    Guards neutralised 2 and 3 `FAIL`,
+    restored 0.
 
 ## The fifth class
 
