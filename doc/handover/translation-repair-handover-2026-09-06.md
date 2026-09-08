@@ -699,7 +699,8 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 3.  Then `yuki418330012` (a math pair),
     then `Arita`,
     then the seven components no read page has met.
-4.  Synthetic's weekly meter is a ROLLING WINDOW, not a calendar week (measured 2026-09-08:
+4.  Synthetic's weekly meter is a ROLLING WINDOW,
+    not a calendar week (measured 2026-09-08:
     0 percent at 12:26 UTC after the ninth pass spent its 5.8 percent,
     2 percent at 13:07 with no top-up,
     then falling again as the calibration spent it),
