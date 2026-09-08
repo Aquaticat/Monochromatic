@@ -99,6 +99,38 @@ this native-dialog driver is Chromium/Helium-specific and depends on the observe
 It verifies cancellation, not a physical printer.
 PDF text verification is separate from visual inspection of rendered PDF pages.
 
+### Ended-browser cleanup
+
+After the owned Cage/browser process was stopped,
+closing the agent-browser session while still supplying its ended `--cdp` endpoint failed in `proc_315e`:
+
+```text
+CDP WebSocket connect failed: IO error: Connection refused (os error 111)
+```
+
+The connection-error wording comes from `cli/src/native/cdp/client.rs:121`
+in the inspected agent-browser source:
+
+```rust
+// cli/src/native/cdp/client.rs:121
+let (ws_stream, _) =
+    tokio_tungstenite::connect_async_with_config(request, Some(ws_config), false)
+        .await
+        .map_err(|e| format!("CDP WebSocket connect failed: {}", e))?;
+```
+
+Closing that disposable controller without the ended endpoint passed as `proc_5e54`:
+
+```bash
+# End only the owned print-verification session after its external browser has ended.
+agent-browser --session promises-print-ui --allow-file-access close
+```
+
+A subsequent session list contained only `promises-revised-present`.
+The ended print and export profiles were then removed; the user-facing browser was retained.
+This cleanup sequence is not advice to omit launch/CDP options during ongoing page verification.
+It is not evidence of a print failure or an upstream defect.
+
 ## What does not work
 
 - Combining event counts across PDF generation and a subsequent Print click.
