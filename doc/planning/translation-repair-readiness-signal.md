@@ -1238,3 +1238,59 @@ the owner's answer on the letter,
 `yuki418330012` (running since 20:18 UTC),
 `Arita`,
 and the seven components no read page has met.
+
+## What the yuki418330012 launch and the letter's landing showed (2026-09-08, 20:18 to 22:10 UTC)
+
+The owner chose span authority for the letter and a decline for the whole-page note;
+both landed (`439667ec3`,
+`58f647ab9`) and were verified live:
+`cheonwoomaeng` declined in 41 ms with its record written and no page,
+and the thirteenth `hakureico` launch logged the sealed span `[3966, 4561)` under the letter's note.
+The publication guard makes the seal a floor:
+a page that does not carry the sealed bytes verbatim is refused,
+so the fifteenth `hakureico` page,
+when it settles,
+proves the letter shipped as the archive has it by existing.
+
+The `yuki418330012` page settled in 64.4 minutes on three providers and passed the three checks
+(front matter the archive's,
+30 doubled openings read past with no mismatch,
+no error finish),
+`verify-published` matched at length,
+destinations 0.
+The prose read found the nineteenth class:
+the archive's footnote labels were renumbered against the original's,
+the lanes followed the original's markers in the body,
+the archive's definitions stood,
+and the page's two markers point at each other's notes.
+No guard sees it:
+the footnote guard diffs unresolved,
+orphan and duplicate findings,
+and a swap is none of those.
+Fixed upstream of every lane (`1ba94c27a`,
+corrected by `ea07a1512` after the fourteenth `hakureico` launch showed a count mismatch aborting the reading where
+the archive simply omits a note):
+the archive is relabelled to the original's labels off the paired slices before the lanes run,
+so label equality is the correspondence.
+The read also found two regressions of correct archive renderings
+(`自切` as self-harm where the archive had self-surgery,
+`超天酱` as a made-up name where the archive named the game),
+a bench that does not know the community's words;
+that is a design question for the owner (a glossary),
+not a class.
+
+THE READING:
+the belief holds,
+and the count of classes the read passes find is not falling to zero:
+two of the last three read pages each found one
+(the letter,
+the footnote swap),
+each fixed the same day,
+each a floor no earlier page could have exercised
+(one archive note in the corpus seals a span,
+one entry swaps its labels).
+What remains before an all-entries launch:
+the fifteenth `hakureico` and the third `yuki418330012` pages on `ea07a1512` (running since 22:08 UTC),
+the owner's answer on the glossary,
+`Arita`,
+and the seven components no read page has met.

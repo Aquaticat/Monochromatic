@@ -1874,6 +1874,38 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `1ba94c27a`,
+corrected by `ea07a1512` (2026-09-08,
+the nineteenth class) the archive's footnote labels follow the original's before any lane reads a slice:
+`footnoteRelabelOf` reads a positional map off each paired slice's distinct reference labels
+(the `yuki418330012` archive had renumbered `洲洲[^2]` and `真理[^1]` by first appearance,
+and the page shipped the original's markers above the archive's definitions,
+each pointing at the other's note),
+leaves a slice whose sides carry different counts of notes out of the reading,
+named
+(the `hakureico` archive carries no `[^2]` at all),
+refuses as ambiguous where two slices map one label two ways,
+and `applyFootnoteRelabel` rewrites references and definition openers in one pass;
+the pass applies it after the first preparation,
+prepares again over the relabelled archive,
+and logs `FOOTNOTES entry=<id> relabelled [^1]->[^2], [^2]->[^1]`.
+Since `439667ec3` (2026-09-08,
+the owner's decision in `doc/decision/translation-repair-archive-original.md`) an archive note saying the English
+is the original is authority:
+a span note (`以下` with `原文` and `英文`) seals the archive from the note's end to the next heading or the end
+of the page,
+the sealed blocks and the originals paired with them reach no slice
+(an original behind the seal becomes an insertion at its end),
+the preparation records `archiveOriginalSpans` (artifact generation twelve),
+`assertArchiveOriginalComplete` refuses a page that does not carry every sealed span byte for byte,
+and the pass logs `ARCHIVE ORIGINAL entry=<id> span=<k> [start, end)`;
+a whole-page note (`原文即英文` or `不要动本篇`) declines the entry before any purchase,
+`declined/<id>.json` beside the artifacts,
+`TALLY <id> status=DECLINED reason=archive-original`,
+counted as done by every later pass and reported by `verify-published` as `declined=N`
+(`cheonwoomaeng`,
+the one such entry in the pinned corpus,
+declines in 41 ms).
 Since `bb04656ef` (2026-09-08,
 the eighteenth class) a whole stream whose choice stopped on `finish_reason: "error"` with no error object
 beside it

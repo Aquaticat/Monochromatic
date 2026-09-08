@@ -24,23 +24,24 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 20:20 UTC on 2026-09-08 the tree is `ba7ce85a9`,
-docs on the code of `bb04656ef`:
-the front-matter rule merged (`d11f36799`),
-`google.gemma-4-e2b` seated as translator and consolidation writer on the day's producer calibration (`169a86173`),
-the seventeenth class fixed (`8bf9deec0`,
-a JSON object read past an abandoned opening),
-the eighteenth class fixed (`bb04656ef`,
-an error finish on a whole stream read as the provider failure it is),
-the twelfth `hakureico` page settled on that build at 20:10 UTC and read
-(front matter byte for byte the archive's,
-eight false starts kept,
-no error finish occurred,
-`verify-published` matched at length;
+As of 22:10 UTC on 2026-09-08 the tree is `ea07a1512`:
+the letter question answered by the owner (span authority;
+the whole-page note declines the entry) and landed
+(`439667ec3`,
+`58f647ab9`,
+`doc/decision/translation-repair-archive-original.md`;
 see "The twelfth page and the letter"),
-one design question open (the letter,
-same section),
-and `yuki418330012` running on that build into `~/temp/agent/yuki418330012-20260908` since 20:18 UTC;
+`cheonwoomaeng` declined live in 41 ms,
+the `yuki418330012` page settled on `bb04656ef` at 21:22 UTC and read
+(the three checks passed,
+`verify-published` matched at length,
+the nineteenth class found,
+two community-slang regressions found;
+see "The nineteenth class" and "The glossary question"),
+the nineteenth class fixed (`1ba94c27a`,
+the archive's footnote labels follow the original's before any lane reads a slice) and corrected (`ea07a1512`,
+a count mismatch leaves the slice out instead of aborting the reading),
+and the fifteenth `hakureico` and the third `yuki418330012` running on `ea07a1512` since 22:08 UTC;
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -89,7 +90,7 @@ which gained the apostrophe and ellipsis counts and two refusal greps today.
 If a pass is running when this is read and the tree has moved past its tip,
 the kill-and-relaunch rule applies.
 
-The full unit suite emitted 957 `PASS` lines and zero `FAIL` lines on `bb04656ef`,
+The full unit suite emitted 967 `PASS` lines and zero `FAIL` lines on `ea07a1512`,
 oxlint 0 warnings and 0 errors,
 types clean,
 markdown lint clean on every line written today.
@@ -857,6 +858,85 @@ Span authority over leaving it because the letter is a quotation of the subject'
 already ruled that the archive is the authority where it is the original;
 leaving it over the copy-edit lane because the lane builds a judge around a magic number for a problem the first
 option dissolves.
+The owner chose span authority ("1") and added that the whole-page case must be refused,
+not repaired.
+Landed as `439667ec3` and `58f647ab9`,
+recorded in `doc/decision/translation-repair-archive-original.md`,
+and verified live (`cheonwoomaeng` declined in 41 ms into `~/temp/agent/cheonwoomaeng-20260908`;
+the thirteenth `hakureico` launch logged the sealed span `[3966, 4561)`).
+The fifteenth `hakureico` page proves the letter shipped as the archive has it by existing,
+since `assertArchiveOriginalComplete` refuses any other page.
+
+## The nineteenth class
+
+The `yuki418330012` page (`bb04656ef`,
+20:18 to 21:22 UTC on 2026-09-08,
+64.4 minutes,
+`~/temp/agent/yuki418330012-20260908`) passed the three checks
+(front matter the archive's,
+30 `json false start` reads kept with no mismatch beside them,
+no error finish),
+`verify-published` matched at length (`wordings=8 silent=1`),
+destinations 0.
+Its prose carries the nineteenth class.
+The original writes `洲洲[^2]` and `真理[^1]`;
+the archive had renumbered by first appearance,
+`Zhouzhou[^1]` and `Zhenli[^2]`,
+with its two definitions numbered to match.
+Every lane judged the body against the original,
+so the body follows the original's labels,
+while the archive's definitions stood as they were
+(the roster paired neither and the original's definitions came through as an insertion withdrawn as duplicates;
+`pageSilent=1`),
+and the page carries `Zhenli[^1]` above `[^1]: Yuki's substitute parent`.
+The footnote guard diffs unresolved,
+orphan and duplicate findings against the incumbent,
+and a swap is none of those.
+Fixed upstream of every lane in `1ba94c27a`:
+`archive-footnote-relabel.ts` reads a positional map off each paired slice's distinct reference labels
+(`footnoteRelabelOf`),
+refuses as ambiguous where two slices map one label two ways,
+and rewrites references and definition openers in one pass (`applyFootnoteRelabel`);
+`pass-footnote-relabel.ts` applies it after the first preparation and `pass-prepare.ts` prepares again over the
+relabelled archive before the block correction round,
+logging `FOOTNOTES entry=<id> relabelled [^1]->[^2], [^2]->[^1]`.
+Corrected in `ea07a1512` after the fourteenth `hakureico` launch read slice 7 as one note against none and aborted:
+the `hakureico` archive carries no `[^2]` at all
+(the source's `HOSTED__WITH__GAE[^2]` inside the letter was never translated),
+which is an omission the lanes see,
+not a labelling conflict,
+so a count mismatch now leaves that slice out of the reading,
+named (`FOOTNOTES entry=<id> left out of the relabel reading: ...`),
+and the map is read off the rest.
+The reading is in the planning log under
+"The letter sealed and the yuki page read and the nineteenth class fixed".
+
+## The glossary question
+
+The same page rendered two community terms wrongly where the archive had them right:
+`自切`,
+the community's word for self-surgery,
+shipped as `self-harmed by cutting` where the archive had `attempted self-surgery`;
+`超天酱`,
+the KAngel character of *Needy Streamer Overload*,
+shipped as `Choco-chan` where the archive named the game.
+Both are regressions of correct archive renderings by a bench that does not know the community's words,
+and nothing in the pipeline tells it.
+This is a design question for the owner,
+put in the session's report with the options and a ranking:
+a corpus glossary of community terms fed to the identity context
+(a file beside the corpus pin,
+a term,
+its rendering and one line of why,
+read into every sheet that sees the term;
+buys the archive's knowledge for every entry and costs curating it and keeping it out of terms the archive got
+wrong),
+the archive's rendering as a candidate the judges must weigh where a term of the glossary's shape appears
+(no curation,
+but the judges already saw the archive and chose against it twice),
+or leaving it
+(nothing to build,
+and the community's own words ship wrong on a memorial).
 Nothing is landed;
 the owner decides.
 
@@ -903,51 +983,47 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  `yuki418330012`,
-    a math pair,
-    is running on `bb04656ef` (tree `ba7ce85a9` with docs only above it),
-    launched 20:18 UTC on 2026-09-08,
-    runs dir `~/temp/agent/yuki418330012-20260908`,
+1.  Two passes are running on `ea07a1512`,
+    launched 22:08 UTC on 2026-09-08 on Bedrock and OpenRouter
+    (`JUDGE SEATS phase=preparation synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8
+    slate=8 checkers=3 translators=7 readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3`):
+    the fifteenth `hakureico`,
+    runs dir `~/temp/agent/hakureico15-20260908`,
     log beside it,
-    pid 393298,
-    on Synthetic,
-    Bedrock and OpenRouter
-    (`JUDGE SEATS phase=preparation synthetic=wet bedrock=wet hyper=dry openrouter=wet wide=8 select=8 late=9
-    slate=9 checkers=3 translators=8 readers=6 writers=10 roster=10 withheld=none waited=0ms`,
-    `FRONT MATTER entry=yuki418330012 authority=archive`).
-    Read it by the seven steps plus the three checks
-    (front matter byte for byte the archive's,
-    artifact `artifactSchemaVersion: 11` with `frontMatterAuthority: 'archive'`,
-    E2B's candidates and ballots in the translate lane,
-    every `json false start` a voice kept,
-    no `schema-mismatch` naming `finish_reason=error`;
-    an `InStreamProviderError` with `code unnamed` is the eighteenth class caught),
-    and read its letter-shaped spans,
-    if any,
-    against their notes.
-    The twelfth `hakureico` page (`bb04656ef`,
-    18:21 to 20:10 UTC,
-    108.4 minutes,
-    `~/temp/agent/hakureico12-20260908`) is read in the planning log under
-    "The twelfth pass settles in 108 minutes under the three checks and rewrites the letter":
-    the three checks passed,
-    `verify-published` matched at length,
-    no error finish occurred (the guard stands on its suite),
-    81 voices lost at the straggler window against the ninth's 38 on a bench one reader and one seat shorter with
-    quorum held in every round,
-    and the letter rewritten under a note that says it is the English original (the design question).
-    If the tree moves past `bb04656ef` while `yuki418330012` runs,
+    pid 461533;
+    and the third `yuki418330012`,
+    runs dir `~/temp/agent/yuki3-20260908`,
+    log beside it,
+    pid 461634.
+    Each is watched by the filtered poller that reports only the tally,
+    a stop,
+    a crash or the process exit.
+    Read each by the seven steps plus the three checks,
+    then the class-specific checks:
+    `hakureico`,
+    the letter byte for byte the archive's under the seal
+    (`ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)` in the log,
+    artifact `artifactSchemaVersion: 12` with `archiveOriginalSpans`,
+    the page carrying the span verbatim,
+    the source's footnote definitions after the span),
+    `[^1]` agreeing on both sides,
+    slice 7 named as left out of the relabel reading;
+    `yuki418330012`,
+    `FOOTNOTES entry=yuki418330012 relabelled [^1]->[^2], [^2]->[^1]` in the log,
+    `Zhouzhou[^2]` above `[^2]: ... substitute parent` and `Zhenli[^1]` above `[^1]: ... sister` on the page,
+    `pageSilent=0` or the silent block named,
+    and whether `自切` and `超天酱` regress again.
+    If the tree moves past `ea07a1512` while either runs,
     the kill-and-relaunch rule applies.
-2.  The translator seat is decided (`169a86173`,
-    see "The E2B translator seat");
-    no calibration is owed.
-3.  The letter is the open design question (see "The twelfth page and the letter");
-    the owner's answer decides whether a span the archive's note calls the English original ships as the archive
-    has it.
-    Nothing to build until then.
+2.  The glossary is the open design question (see "The glossary question");
+    nothing to build until the owner answers.
+3.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
+    right for any corpus pass (pages stand beside the declines),
+    wrong on a decline-only dir;
+    a one-line change when it matters.
 4.  Then `Arita`,
     then the seven components no read page has met.
-4.  Synthetic's weekly meter is a ROLLING WINDOW,
+5.  Synthetic's weekly meter is a ROLLING WINDOW,
     not a calendar week (measured 2026-09-08:
     0 percent at 12:26 UTC after the ninth pass spent its 5.8 percent,
     2 percent at 13:07 with no top-up,
@@ -958,11 +1034,11 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     wet at one reading of six);
     Hyper's daily quota is unpublished and closed once today after about a thousand requests of one pass,
     and a pass that meets it holds Hyper out until the instant the refusal names.
-    At 20:10 UTC on 2026-09-08:
-    OpenRouter 177.62 USD (topped up to 200.01 at 11:26;
-    the twelfth hakureico pass spent 7.97),
-    Bedrock 197.37 USD (0.48 on that pass),
-    Synthetic's rolling week at 1.23 percent (returned 19:48),
+    At 21:22 UTC on 2026-09-08 (the `yuki418330012` tally):
+    OpenRouter 172.94 USD (topped up to 200.01 at 11:26;
+    that pass spent 4.68),
+    Bedrock 197.20 USD (0.17 on that pass),
+    Synthetic refused at 20:33 and was held out 300 s,
     Hyper 0 since 12:45 and never to be recharged (the owner's words).
     Bedrock and OpenRouter are the two wet providers and together reach every bench at every phase,
     measured on the merged build;

@@ -5312,6 +5312,170 @@ a crash,
 an error-finish regression or the process exit;
 read by the seven steps plus the three checks when it settles.
 
+## The letter sealed and the yuki page read and the nineteenth class fixed, 2026-09-08, 22:10 UTC
+
+The owner answered the letter question after the twelfth page was reported (20:20 UTC):
+"1",
+span authority from the note,
+and "in this specific case our pipeline should refuse to 'repair' that specific entry" for `cheonwoomaeng`,
+whose note says the whole page is the author's own English.
+Landed as `439667ec3` (the seal and the decline) and `58f647ab9` (the fixtures and
+`doc/decision/translation-repair-archive-original.md`).
+The seal:
+`archive-original-note.ts` reads the archive's HTML comments for the marks
+(`以下` with `原文` and `英文` for a span,
+`原文即英文` or `不要动本篇` for the whole page),
+a span runs from the note's end to the next heading or the end of the page,
+`groupNodesSealed` keeps the sealed translation blocks and the originals paired with them as `SealedRun`s through
+merge and anchor and drops them before slicing
+(an original the source carries behind the seal becomes an insertion at the seal's end),
+the preparation records `archiveOriginalSpans` (artifact generation twelve),
+`assertArchiveOriginalComplete` refuses a page that does not carry every sealed span byte for byte,
+and the pass logs `ARCHIVE ORIGINAL entry=<id> span=<k> [start, end) of the archive ships as it stands under the note`.
+The decline:
+`runEntryPipeline` reads the note before any purchase,
+writes `declined/<id>.json`,
+prints `TALLY <id> status=DECLINED reason=archive-original`,
+the scheduler counts the id as done from the artifacts and the declines together,
+and `verify-published` prints `declined=N` and flags `DECLINED AND PUBLISHED ANYWAY`.
+Verified live:
+`cheonwoomaeng` into `~/temp/agent/cheonwoomaeng-20260908` declined in 41 ms,
+`declined/cheonwoomaeng.json` written and no page;
+the thirteenth `hakureico` launch (`439667ec3`,
+`~/temp/agent/hakureico13-20260908`,
+21:46 UTC) logged `ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)` under the letter's note at 21:46:19
+and reached the lanes at 21:52.
+One thing `verify-published` still does:
+a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2,
+since no page was published;
+a whole-corpus pass always has pages beside its declines,
+so the exit is right there and wrong only on a decline-only dir.
+
+The `yuki418330012` page (`bb04656ef`,
+20:18 to 21:22 UTC,
+`~/temp/agent/yuki418330012-20260908`),
+read by the seven steps plus the three checks.
+`TALLY yuki418330012 status=SETTLED slices=9 repairStatus=repaired repairIssues=68 repairAccepted=46
+repairResolved=44 repairFindings=107 repairChanged=5 translateStatus=complete translateChanged=6 documentsDiffer=6
+pageChanged=5 pageSilent=1 alignmentFindings=8 selection=contested ms=3862504`:
+64.4 minutes on three providers
+(`synthetic=wet bedrock=wet hyper=dry openrouter=wet wide=8 select=8 late=9 slate=9 checkers=3 translators=8
+readers=6 writers=10 roster=10 withheld=none` at the preparation;
+Synthetic refused at 20:33 and was held out for 300 s under the fourteenth class's reading,
+14 `HTTP 429` retries at 20:32 to 20:33).
+The three checks passed:
+the front matter is the archive's byte for byte (`FRONT MATTER entry=yuki418330012 authority=archive`),
+30 `json false start` reads (26 of them deepseek-v4-flash-0731) every one kept with no `schema-mismatch` beside it,
+and no error finish occurred.
+`verify-published` matched at length (`wordings=8 silent=1`),
+destinations 0,
+0 and 0.
+Seats that threw at the straggler window:
+Qwen3.8-27B 28 of 118 calls,
+deepseek-v4-flash 9 of 90,
+Kimi-K3 6 of 67,
+GLM-5.3-Flash 3 of 48,
+deepseek-v4-pro 2 of 115,
+E2B 1 of 101.
+Meters at the tally:
+OpenRouter 172.94 USD,
+Bedrock 197.20 USD.
+
+The prose read found three things.
+THE NINETEENTH CLASS,
+the footnote label swap:
+the original writes `洲洲[^2]` and `真理[^1]`;
+the archive had renumbered by first appearance,
+`Zhouzhou[^1]` and `Zhenli[^2]`,
+with its two definitions numbered to match
+(`[^1]: Yuki's substitute parent ... Zhouzhou`,
+`[^2]: She's younger ... sister`).
+Every lane judged the body against the original,
+so the page's body follows the original's labels,
+while the archive's definitions stood as they were:
+the roster paired neither
+(section 1 paired 6 of 8 original and 10 of 12 translation blocks),
+the original's definitions came through as an insertion and were withdrawn as duplicates,
+`pageSilent=1`.
+The page carries `Zhenli[^1]` above `[^1]: Yuki's substitute parent`:
+each marker points at the other's note.
+The assembly guard (`introducedFootnoteFindings`) diffs only unresolved,
+orphan and duplicate findings against the incumbent,
+and a swap is none of those.
+Second,
+`自切`,
+community slang for self-surgery,
+rendered `self-harmed by cutting` where the archive had `attempted self-surgery`.
+Third,
+`超天酱`,
+the KAngel character of *Needy Streamer Overload*,
+rendered `Choco-chan` where the archive named the game.
+The second and third are regressions of correct archive renderings by a bench that does not know the community's
+words;
+they are the glossary question put to the owner in the handover.
+
+The fix for the nineteenth class,
+landed as `1ba94c27a` and corrected as `ea07a1512`,
+sits upstream of every lane:
+once the archive's labels are rewritten to the original's,
+label equality is the correspondence,
+a definition pairs with the definition of the same label,
+and a definition that renders the wrong note is a fidelity defect the lanes see.
+`archive-footnote-relabel.ts`:
+`referenceLabels` lists a text's distinct GFM reference labels in first-appearance order,
+definition openers left out;
+`footnoteRelabelOf` reads a positional map off each paired slice
+(the k-th distinct marker on one side is the k-th on the other),
+leaves a slice whose sides carry different counts out of the reading with a note naming it,
+and refuses as ambiguous where two slices map one label two ways;
+`applyFootnoteRelabel` rewrites references and definition openers of the mapped labels in one pass.
+`pass-footnote-relabel.ts` applies it after the first preparation and `pass-prepare.ts` prepares again over the
+relabelled archive before the block correction round
+(one preparation,
+at most one relabel with its re-preparation,
+at most one correction round with its re-preparation),
+logging `FOOTNOTES entry=<id> relabelled [^1]->[^2], [^2]->[^1]`,
+`FOOTNOTES entry=<id> left out of the relabel reading: slice N references ...`,
+or `FOOTNOTES entry=<id> archive labels stand, since the slices disagree: ...`.
+The suite failed first on the old build (`does not provide an export named 'applyFootnoteRelabel'`),
+then passed;
+the full suite on `1ba94c27a` printed 967 `PASS` and 0 `FAIL`.
+
+The correction:
+the fourteenth `hakureico` launch (`1ba94c27a`,
+22:05 UTC) read
+`FOOTNOTES entry=hakureico archive labels stand, since the slices disagree: slice 7 references 1 distinct notes in
+the original and 0 in the archive`,
+because the archive of `hakureico` carries no `[^2]` at all
+(the source's `HOSTED__WITH__GAE[^2]` inside the letter and its definition `即 Google App Engine` were never
+translated).
+An omitted or added note is the fidelity defect the lanes see,
+not a labelling conflict,
+so the first build's abort on a count mismatch was wrong;
+`ea07a1512` leaves that slice out of the reading,
+named,
+and reads the map off the rest.
+Under the kill-and-relaunch rule the thirteenth pass was killed at 22:04 for `1ba94c27a`,
+the fourteenth and the second `yuki418330012` (22:05) at 22:07 for `ea07a1512`,
+and the fifteenth `hakureico` (`~/temp/agent/hakureico15-20260908`,
+pid 461533) and the third `yuki418330012` (`~/temp/agent/yuki3-20260908`,
+pid 461634) launched at 22:08 UTC on `ea07a1512`,
+both on Bedrock and OpenRouter
+(`synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8 slate=8 checkers=3 translators=7
+readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3`),
+each watched by the filtered poller.
+What their pages must show:
+`hakureico`,
+the letter byte for byte the archive's under the seal
+(`assertArchiveOriginalComplete` would have refused the page otherwise),
+the source's footnote definitions after the span,
+`[^1]` agreeing on both sides,
+slice 7 named as left out;
+`yuki418330012`,
+`FOOTNOTES entry=yuki418330012 relabelled [^1]->[^2], [^2]->[^1]`,
+`Zhouzhou[^2]` above `[^2]: ... substitute parent` and `Zhenli[^1]` above `[^1]: ... sister`,
+and whether `自切` and `超天酱` regress again.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
