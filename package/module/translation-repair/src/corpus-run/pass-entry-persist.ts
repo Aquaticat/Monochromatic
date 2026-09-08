@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
@@ -51,6 +52,7 @@ export async function persistSettledEntry(
     publishDir,
     artifactsDir,
     l,
+    archiveOriginalSpans,
   }: ForeignBorrowed<{
     readonly artifact: SettledArtifact;
     readonly slices: readonly ChunkPair[];
@@ -60,6 +62,7 @@ export async function persistSettledEntry(
     readonly publishDir: string;
     readonly artifactsDir: string;
     readonly l: Logger;
+    readonly archiveOriginalSpans?: readonly ArchiveOriginalSpan[];
   }>,
 ): Promise<DestinationCheck> {
   // FIRST MUTATION SITS BELOW THIS LINE. A contest decline is not approval;
@@ -79,6 +82,7 @@ export async function persistSettledEntry(
     entryId,
     publishDir,
     l,
+    ...((archiveOriginalSpans === undefined) ? {} : { archiveOriginalSpans, }),
   },);
   await writeFileAtomic({
     path: join(

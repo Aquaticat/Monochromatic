@@ -1,7 +1,6 @@
 import {
   alignDocumentSections,
   type ChunkPair,
-  chunkByHeadings,
   describeAlignmentAttachment,
 } from './chunk-document.ts';
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
@@ -32,7 +31,6 @@ import type {
 import { frontMatterSlice, } from './front-matter-slice.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
 import { assertContainerIntegrity, } from './container-integrity.ts';
-import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
 import { assertSliceCoverage, } from './slice-coverage.ts';
 import { assertSpanContiguity, } from './span-contiguity.ts';
 import {
@@ -41,8 +39,16 @@ import {
 } from './slice-indexing.ts';
 import {
   SLICE_CHAR_BUDGET,
-  subdivideChunkPair,
+  subdivideSealedChunkPair,
 } from './slice-pair.ts';
+import { sealedNodeIds, } from './archive-original-note.ts';
+import {
+  archiveOriginalSpansOf,
+  chunkSealedTargets,
+  declinedLessSealed,
+  sealedFinding,
+} from './preparation-seal.ts';
+import { unclaimedOutsideAlignment, } from './preparation-unclaimed.ts';
 
 //region Document preparation
 // Everything a lane needs to know about a document PAIR before any model is
@@ -90,6 +96,12 @@ import {
  * (web lookups of the works the original names), appended to the identity
  * context after the notes both documents carry
  *
+ * @param sealArchiveOriginal - whether a span the archive's translators' note
+ * calls the English original is sealed out of every slice so it ships as it
+ * stands (the owner's rule of 2026-09-08, `archive-original-note.ts`); false
+ * when rebuilding an artifact written before generation twelve, whose slicing
+ * sealed nothing
+ *
  * @returns Slices, governance, declared names and alignment findings
  *
  * @example
@@ -107,6 +119,7 @@ export function prepareDocumentPair(
     blockPairings,
     sectionPairing,
     contextLines = [],
+    sealArchiveOriginal = false,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
@@ -116,6 +129,7 @@ export function prepareDocumentPair(
     readonly blockPairings?: ReadonlyMap<number, readonly BlockPair[]>;
     readonly sectionPairing?: readonly SectionPair[];
     readonly contextLines?: readonly string[];
+    readonly sealArchiveOriginal?: boolean;
   },
 ): PreparedDocumentPair {
   /**
@@ -128,6 +142,23 @@ export function prepareDocumentPair(
    * Whole translation document, parsed once for the same two uses.
    */
   const targetDocument = parseDocument({ text: targetText, },);
+
+  /**
+   * Spans of the archive that ship as they stand, EMPTY when no note seals
+   * one or the caller asked for no seal (`preparation-seal.ts`).
+   */
+  const archiveOriginalSpans = archiveOriginalSpansOf({
+    document: targetDocument,
+    seal: sealArchiveOriginal,
+  },);
+
+  /**
+   * Ids of every translation block a seal covers, across the whole archive.
+   */
+  const sealedTargetIds = sealedNodeIds({
+    nodes: targetDocument.nodes,
+    spans: archiveOriginalSpans,
+  },);
 
   /**
    * Declared names and handles from both sides' front matter. Front matter is
@@ -232,54 +263,16 @@ export function prepareDocumentPair(
   const declinedFindings: string[] = [];
 
   /**
-   * Target node ids gathered from aligned sections.
+   * Target blocks outside every aligned section, which no slice can review,
+   * less the sealed ones (`preparation-unclaimed.ts`).
    */
-  const alignedTargetIdRows = alignment.pairs
-    .flatMap(function toTargetIds(pair,): readonly string[] {
-      /**
-       * Target nodes this aligned pair owns.
-       */
-      const { nodes, } = pair.target;
-      return nodes.map(function toId(node,): string {
-        return node.id;
-      },);
-    },);
-  /**
-   * Target node ids belonging to some aligned section.
-   */
-  const alignedTargetIds = new Set(alignedTargetIdRows,);
-  /**
-   * Target heading chunks across whole archive.
-   */
-  const targetChunks = chunkByHeadings({ document: targetDocument, },);
-  /**
-   * Target blocks outside every aligned section, which no slice can review.
-   */
-  const unclaimedTargetBlocks: UnclaimedTargetBlock[] = targetChunks
-    .flatMap(function outsideAlignment(
-      chunk,
-      sectionIndex,
-    ): readonly UnclaimedTargetBlock[] {
-      /**
-       * Nodes belonging to this target section.
-       */
-      const { nodes, } = chunk;
-      return nodes
-        .filter(function isOutside(node,): boolean {
-          return !alignedTargetIds.has(node.id,);
-        },)
-        .map(function toUnclaimed(node,): UnclaimedTargetBlock {
-          return {
-            location: {
-              kind: 'target-section',
-              sectionIndex,
-            },
-            blockId: node.id,
-            startOffset: node.startOffset,
-            endOffset: node.endOffset,
-          };
-        },);
-    },);
+  const unclaimedTargetBlocks: UnclaimedTargetBlock[] = [
+    ...unclaimedOutsideAlignment({
+      alignment,
+      targetDocument,
+      sealedTargetIds,
+    },),
+  ];
 
   /**
    * Slice pairs accumulated across front matter and aligned body sections.
@@ -332,32 +325,44 @@ export function prepareDocumentPair(
     const blockPairing = blockPairings?.get(pairIndex,);
 
     /**
-     * Slices carved from this chunk.
+     * Translation blocks of this chunk the archive's note seals.
      */
-    const carved = subdivideChunkPair({
+    const sealedTargets = chunkSealedTargets({
+      pair,
+      sealedTargetIds,
+    },);
+
+    /**
+     * Slices carved from this chunk, and the originals the seal took.
+     */
+    const {
+      slices: carved,
+      sealedSourceIds,
+    } = subdivideSealedChunkPair({
       pair,
       sourceText,
       targetText,
       baseIndex: slices.length,
       budget: sliceCharBudget,
       ...((blockPairing === undefined) ? {} : { blockPairing, }),
+      sealed: sealedTargets,
     },);
+    if (sealedTargets.size > 0)
+      declinedFindings.push(sealedFinding({
+        pairIndex,
+        sealedTargets,
+        sealedSourceIds,
+      },),);
 
     /**
-     * Translation blocks this chunk's pairing accounted for nowhere.
-     *
-     * Derived here rather than returned by subdivision, from the same pairing
-     * subdivision was handed, so the assertion and the carving cannot drift.
+     * Translation blocks this chunk's pairing accounted for nowhere, less the
+     * sealed ones (`preparation-seal.ts`).
      */
-    const declined = (blockPairing === undefined)
-      ? new Set<string>()
-      : declinedTargetIdsOfPairing({
-        pairs: blockPairing,
-        sourceNodes: pair.source
-          .nodes,
-        targetNodes: pair.target
-          .nodes,
-      },);
+    const declined = declinedLessSealed({
+      pair,
+      ...((blockPairing === undefined) ? {} : { blockPairing, }),
+      sealedTargets,
+    },);
     if (declined.size > 0) {
       /**
        * Declined blocks of this chunk, for the characters they hold.
@@ -410,6 +415,10 @@ export function prepareDocumentPair(
       pair,
       carved,
       declined,
+      sealed: {
+        source: sealedSourceIds,
+        target: sealedTargets,
+      },
     },);
 
     /**
@@ -486,6 +495,9 @@ export function prepareDocumentPair(
   return {
     ...(!includeFrontMatter ? { legacyIdentity: true as const, } : {}),
     ...((frontMatterAuthority === 'archive') ? { frontMatterAuthority: 'archive' as const, } : {}),
+    // OMITTED WHEN NOTHING WAS SEALED, so a preparation that read no note and
+    // one that was asked not to seal both read as the absence they are.
+    ...((archiveOriginalSpans.length === 0) ? {} : { archiveOriginalSpans, }),
     sourceText,
     targetText,
     slices,

@@ -7,7 +7,7 @@ import {
   makeInsertionChunk,
 } from './chunk-placement.ts';
 import type { DocumentNode, } from './document-node.ts';
-import { groupNodesAligned, } from './group-aligned.ts';
+import { groupNodesSealed, } from './group-aligned.ts';
 import { blockPairingToSteps, } from './pair-blocks-steps.ts';
 import type { BlockPair, } from './pair-blocks-wire.ts';
 import { groupNodes, } from './group-nodes.ts';
@@ -111,19 +111,24 @@ function runToChunk(
  * @param budget - target-side characters one slice aims for;
  * defaults to {@link SLICE_CHAR_BUDGET}
  *
- * @returns Slice pairs covering both sides of the section completely
+ * @param sealed - ids of translation blocks the archive's note seals, which
+ * reach no slice and take the originals paired to them along
+ *
+ * @returns Slice pairs covering both sides of the section completely but for
+ * the sealed blocks, beside the ids of the originals sealed with them
  *
  * @example
  * ```ts
- * const slices = subdivideChunkPair({
+ * const { slices, sealedSourceIds, } = subdivideSealedChunkPair({
  *   pair,
  *   sourceText,
  *   targetText,
  *   baseIndex: 0,
+ *   sealed: new Set(['block/7',],),
  * },);
  * ```
  */
-export function subdivideChunkPair(
+export function subdivideSealedChunkPair(
   {
     pair,
     sourceText,
@@ -131,6 +136,7 @@ export function subdivideChunkPair(
     baseIndex,
     budget = SLICE_CHAR_BUDGET,
     blockPairing,
+    sealed,
   }: {
     readonly pair: ChunkPair;
     readonly sourceText: string;
@@ -138,8 +144,12 @@ export function subdivideChunkPair(
     readonly baseIndex: number;
     readonly budget?: number;
     readonly blockPairing?: readonly BlockPair[];
+    readonly sealed: ReadonlySet<string>;
   },
-): readonly ChunkPair[] {
+): {
+  readonly slices: readonly ChunkPair[];
+  readonly sealedSourceIds: ReadonlySet<string>;
+} {
   /**
    * How much shorter the original runs than its translation, measured over
    * the WHOLE documents rather than over this section.
@@ -183,7 +193,10 @@ export function subdivideChunkPair(
       .length
       > 0)
   ) {
-    return groupNodesAligned({
+    /**
+     * Runs the grouping settled, and the originals the seal took with it.
+     */
+    const grouped = groupNodesSealed({
       sourceNodes: pair.source
         .nodes,
       targetNodes: pair.target
@@ -207,8 +220,12 @@ export function subdivideChunkPair(
               .length,
           },),
         }),
-    },)
-      .map(function toSlice(
+      sealed,
+    },);
+    return {
+      sealedSourceIds: grouped.sealedSourceIds,
+      slices: grouped.runs
+        .map(function toSlice(
         run,
         sliceOffset,
       ): ChunkPair {
@@ -242,8 +259,15 @@ export function subdivideChunkPair(
             sliceIndex: baseIndex + sliceOffset,
           },),
         };
-      },);
+      },),
+    };
   }
+
+  /**
+   * Nothing is sealed from here on: a seal names translation blocks, and the
+   * paths below are the ones where the translation side carries none.
+   */
+  const nothingSealed = new Set<string>();
 
   /**
    * Source-side node runs within the scaled budget.
@@ -267,27 +291,30 @@ export function subdivideChunkPair(
   // member is 384 characters. Nothing had to be split to slice them; they were
   // one slice only because the side that frames subdivision was empty.
   if ((sourceRuns.length > 0) && isInsertionChunk(pair.target,))
-    return sourceRuns.map(function toInsertionSlice(
-      run,
-      sliceOffset,
-    ): ChunkPair {
-      return {
-        source: runToChunk({
-          run,
-          documentText: sourceText,
-          sliceIndex: baseIndex + sliceOffset,
-        },),
+    return {
+      sealedSourceIds: nothingSealed,
+      slices: sourceRuns.map(function toInsertionSlice(
+        run,
+        sliceOffset,
+      ): ChunkPair {
+        return {
+          source: runToChunk({
+            run,
+            documentText: sourceText,
+            sliceIndex: baseIndex + sliceOffset,
+          },),
 
-        // EVERY SLICE AT THE SAME BOUNDARY, in slice order, which is the shape
-        // `spliceSlices` orders. The section has one place to be written, and
-        // its slices go there one after another.
-        target: makeInsertionChunk({
-          sliceIndex: baseIndex + sliceOffset,
-          offset: pair.target
-            .startOffset,
-        },),
-      };
-    },);
+          // EVERY SLICE AT THE SAME BOUNDARY, in slice order, which is the shape
+          // `spliceSlices` orders. The section has one place to be written, and
+          // its slices go there one after another.
+          target: makeInsertionChunk({
+            sliceIndex: baseIndex + sliceOffset,
+            offset: pair.target
+              .startOffset,
+          },),
+        };
+      },),
+    };
   // ONE SIDE HAS NO BLOCKS FROM HERE ON: both-sided pairs took
   // `groupNodesAligned`, a run list is empty exactly when its side has no
   // nodes, and an insertion returned just now. The proportional merge that
@@ -305,18 +332,80 @@ export function subdivideChunkPair(
   // not an insertion: several pairs would have to replace one span rather
   // than be written into a boundary, and that is a different question from
   // the one above.
-  return [
-    {
-      source: {
-        ...pair.source,
-        sliceIndex: baseIndex,
+  return {
+    sealedSourceIds: nothingSealed,
+    slices: [
+      {
+        source: {
+          ...pair.source,
+          sliceIndex: baseIndex,
+        },
+        target: {
+          ...pair.target,
+          sliceIndex: baseIndex,
+        },
       },
-      target: {
-        ...pair.target,
-        sliceIndex: baseIndex,
-      },
-    },
-  ];
+    ],
+  };
+}
+
+/**
+ * Subdivides one aligned section pair with nothing sealed.
+ *
+ * {@inheritDoc subdivideSealedChunkPair}
+ *
+ * @param pair - aligned section pair to subdivide
+ *
+ * @param sourceText - whole original document text for slice extraction
+ *
+ * @param targetText - whole translation document text for slice extraction
+ *
+ * @param baseIndex - global slice index of this pair's first slice
+ *
+ * @param budget - target-side characters one slice aims for;
+ * defaults to {@link SLICE_CHAR_BUDGET}
+ *
+ * @param blockPairing - correspondences a roster agreed on, chunk-local
+ *
+ * @returns Slice pairs covering both sides of the section completely
+ *
+ * @example
+ * ```ts
+ * const slices = subdivideChunkPair({
+ *   pair,
+ *   sourceText,
+ *   targetText,
+ *   baseIndex: 0,
+ * },);
+ * ```
+ */
+export function subdivideChunkPair(
+  {
+    pair,
+    sourceText,
+    targetText,
+    baseIndex,
+    budget = SLICE_CHAR_BUDGET,
+    blockPairing,
+  }: {
+    readonly pair: ChunkPair;
+    readonly sourceText: string;
+    readonly targetText: string;
+    readonly baseIndex: number;
+    readonly budget?: number;
+    readonly blockPairing?: readonly BlockPair[];
+  },
+): readonly ChunkPair[] {
+  return subdivideSealedChunkPair({
+    pair,
+    sourceText,
+    targetText,
+    baseIndex,
+    budget,
+    ...((blockPairing === undefined) ? {} : { blockPairing, }),
+    sealed: new Set<string>(),
+  },)
+    .slices;
 }
 
 //endregion Paragraph slicing

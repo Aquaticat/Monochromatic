@@ -1,4 +1,4 @@
-import type { AlignedRun, } from './group-aligned.ts';
+import type { GroupedRun, } from './group-aligned.ts';
 
 //region Insertion anchors read off the settled runs
 // Where a block the translation never rendered gets written, decided from the
@@ -46,7 +46,7 @@ const NO_BOUNDARY = -1;
  * ```
  */
 function nextTargetStarts(
-  { runs, }: { readonly runs: readonly AlignedRun[]; },
+  { runs, }: { readonly runs: readonly GroupedRun[]; },
 ): readonly number[] {
   /**
    * Nearest start seen while walking backwards, one named record rather than a
@@ -62,11 +62,12 @@ function nextTargetStarts(
       const answer = scan.next;
 
       /**
-       * First translation block this run carries, absent for an insertion.
+       * First translation block this run carries, absent for an insertion; a
+       * sealed run's blocks are boundaries like any other's.
        */
-      const first = (run.kind === 'paired')
-        ? run.targetRun[0]
-        : undefined;
+      const first = (run.kind === 'insertion')
+        ? undefined
+        : run.targetRun[0];
       if (first !== undefined)
         scan.next = first.startOffset;
       return answer;
@@ -87,7 +88,7 @@ function nextTargetStarts(
  * ```
  */
 function previousTargetEnds(
-  { runs, }: { readonly runs: readonly AlignedRun[]; },
+  { runs, }: { readonly runs: readonly GroupedRun[]; },
 ): readonly number[] {
   /**
    * Nearest end seen while walking forwards.
@@ -100,12 +101,13 @@ function previousTargetEnds(
     const answer = scan.previous;
 
     /**
-     * Last translation block this run carries, absent for an insertion.
+     * Last translation block this run carries, absent for an insertion; a
+     * sealed run's blocks are boundaries like any other's.
      */
-    const last = (run.kind === 'paired')
-      ? run.targetRun
-        .at(-1,)
-      : undefined;
+    const last = (run.kind === 'insertion')
+      ? undefined
+      : run.targetRun
+        .at(-1,);
     if (last !== undefined)
       scan.previous = last.endOffset;
     return answer;
@@ -125,8 +127,8 @@ function previousTargetEnds(
  * ```
  */
 export function reanchorInsertions(
-  { runs, }: { readonly runs: readonly AlignedRun[]; },
-): readonly AlignedRun[] {
+  { runs, }: { readonly runs: readonly GroupedRun[]; },
+): readonly GroupedRun[] {
   /**
    * Where the next translation blocks start, per run.
    */
@@ -139,7 +141,7 @@ export function reanchorInsertions(
   return runs.map(function toAnchored(
     run,
     at,
-  ): AlignedRun {
+  ): GroupedRun {
     if (run.kind !== 'insertion')
       return run;
 

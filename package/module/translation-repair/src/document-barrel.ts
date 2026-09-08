@@ -10,6 +10,13 @@ export {
   type UnclaimedTargetBlock,
 } from './document-preparation.ts';
 export {
+  type ArchiveOriginalReading,
+  type ArchiveOriginalSpan,
+  archiveOriginalReadingOf,
+  readNote,
+  sealedNodeIds,
+} from './archive-original-note.ts';
+export {
   frontMatterSlice,
   frontMatterSliceIndexes,
   type FrontMatterSliceResult,

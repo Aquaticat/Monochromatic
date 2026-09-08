@@ -201,7 +201,10 @@ export {
 } from './lane-slice-sets.ts';
 export {
   type AlignedRun,
+  type GroupedRun,
   groupNodesAligned,
+  groupNodesSealed,
+  type SealedRun,
 } from './group-aligned.ts';
 export {
   fenceForMarkdown,
@@ -223,6 +226,7 @@ export {
 export {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
+  subdivideSealedChunkPair,
 } from './slice-pair.ts';
 export { repairTranslation, } from './repair-entry.ts';
 export {

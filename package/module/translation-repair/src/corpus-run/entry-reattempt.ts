@@ -85,6 +85,13 @@ export type ReattemptVerdict =
   }
   | {
     /**
+     * The pipeline declined the entry by the archive's own note; its decline
+     * record stands where the artifact would and no pass attempts it again.
+     */
+    readonly kind: 'declined';
+  }
+  | {
+    /**
      * Entry did not settle and cached slices it did not have before, so the
      * next attempt starts further along than this one did.
      */
@@ -193,6 +200,8 @@ export function readAttemptOutcome(
     return { kind: 'settled', };
   if (outcome.kind === 'stopped')
     return { kind: 'stopped', };
+  if (outcome.kind === 'declined')
+    return { kind: 'declined', };
 
   /**
    * Slices this attempt is responsible for, reset-aware.

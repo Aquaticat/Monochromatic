@@ -1,3 +1,4 @@
+import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { RepairTranslationResult, } from '../repair-result.ts';
 import type { TranslateDocumentResult, } from '../translate-document-contract.ts';
@@ -35,6 +36,19 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  *
  * A LITERAL rather than a reference to the writer's current version, so the
  * type says which generation it is and a later bump cannot quietly re-label it.
+ *
+ * WHAT MOVED FROM ELEVEN: a span the archive's translators' note calls the
+ * English original is SEALED out of every slice and ships as the archive has
+ * it (the owner's rule of 2026-09-08, `archive-original-note.ts`), and the
+ * preparation records the sealed spans as `archiveOriginalSpans`. A reader
+ * rebuilding the slicing of a file from this generation on seals again; one
+ * rebuilding an older file seals nothing, since that slicing never did.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V12 = 12;
+
+/**
+ * Generation before archive-original spans were sealed; the archive's front
+ * matter stood as published from here.
  *
  * WHAT MOVED FROM TEN: the archive's front matter stands as published where
  * the archive translated it (the owner's rule of 2026-09-08), so the
@@ -136,6 +150,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V9,
   ARTIFACT_SCHEMA_VERSION_V10,
   ARTIFACT_SCHEMA_VERSION_V11,
+  ARTIFACT_SCHEMA_VERSION_V12,
 ];
 
 /**
@@ -156,7 +171,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V8
   | typeof ARTIFACT_SCHEMA_VERSION_V9
   | typeof ARTIFACT_SCHEMA_VERSION_V10
-  | typeof ARTIFACT_SCHEMA_VERSION_V11;
+  | typeof ARTIFACT_SCHEMA_VERSION_V11
+  | typeof ARTIFACT_SCHEMA_VERSION_V12;
 
 /**
  * Narrows numeric artifact version to known two-lane generation.
@@ -196,7 +212,8 @@ export function artifactGenerationRequiresPolish(
     || (generation === ARTIFACT_SCHEMA_VERSION_V8)
     || (generation === ARTIFACT_SCHEMA_VERSION_V9)
     || (generation === ARTIFACT_SCHEMA_VERSION_V10)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V11);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V11)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V12);
 }
 
 /**
@@ -217,7 +234,8 @@ export function artifactGenerationRequiresNaturalnessReview(
   return (generation === ARTIFACT_SCHEMA_VERSION_V8)
     || (generation === ARTIFACT_SCHEMA_VERSION_V9)
     || (generation === ARTIFACT_SCHEMA_VERSION_V10)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V11);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V11)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V12);
 }
 
 /**
@@ -237,7 +255,8 @@ export function artifactGenerationRequiresNaturalnessCorrectionChain(
 ): boolean {
   return (generation === ARTIFACT_SCHEMA_VERSION_V9)
     || (generation === ARTIFACT_SCHEMA_VERSION_V10)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V11);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V11)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V12);
 }
 
 /**
@@ -258,7 +277,8 @@ export function artifactGenerationReviewsEveryBodyBlock(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
   return (generation === ARTIFACT_SCHEMA_VERSION_V10)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V11);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V11)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V12);
 }
 
 /**
@@ -353,6 +373,14 @@ export type SettledPreparation = {
    * slice zero, and on every file written before generation eleven.
    */
   readonly frontMatterAuthority?: 'archive';
+
+  /**
+   * Present when the archive's translators' note sealed one or more spans as
+   * the English original (the owner's rule of 2026-09-08), each in archive
+   * text offsets with the note that sealed it; absent when nothing was
+   * sealed, and on every file written before generation twelve.
+   */
+  readonly archiveOriginalSpans?: readonly ArchiveOriginalSpan[];
 
   /**
    * Original document length, in UTF-16 code units, for eyeballing an entry's
@@ -560,7 +588,7 @@ export type SettledArtifact = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V11;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V12;
 
   /**
    * Corpus entry this covers.

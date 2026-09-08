@@ -27,6 +27,8 @@ import {
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
 import { assertFrontMatterComplete, } from './front-matter-completeness.ts';
+import { assertArchiveOriginalComplete, } from './archive-original-completeness.ts';
+import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
 import { assertContributorNamesComplete, } from './contributor-completeness.ts';
 import { assertDestinationsComplete, } from './destination-completeness.ts';
@@ -206,6 +208,10 @@ export function shippableReplacements(
  *
  * @param l - logger, tagged by the caller with this entry
  *
+ * @param archiveOriginalSpans - spans of the archive the preparation sealed as
+ * the English original, which the page must carry byte for byte; empty when
+ * none
+ *
  * @returns Path written, and what the page carries of the source's destinations
  *
  * @throws {@link UnansweredContestSliceError} when a slice the contest was
@@ -225,6 +231,7 @@ export async function publishFixedPage(
     entryId,
     publishDir,
     l,
+    archiveOriginalSpans = [],
   }: {
     readonly artifact: WouldShipSource;
     readonly slices: readonly ChunkPair[];
@@ -233,6 +240,7 @@ export async function publishFixedPage(
     readonly entryId: string;
     readonly publishDir: string;
     readonly l: Logger;
+    readonly archiveOriginalSpans?: readonly ArchiveOriginalSpan[];
   },
 ): Promise<{
   readonly path: string;
@@ -258,6 +266,12 @@ export async function publishFixedPage(
     archiveText,
     pageText,
     slices,
+  },);
+  assertArchiveOriginalComplete({
+    entryId,
+    archiveText,
+    pageText,
+    spans: archiveOriginalSpans,
   },);
   assertContributorNamesComplete({
     entryId,

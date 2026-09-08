@@ -1,7 +1,4 @@
-import {
-  mkdir,
-  writeFile,
-} from 'node:fs/promises';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 
@@ -32,7 +29,6 @@ import type { EntryOutcome, } from './pass-entry-contract.ts';
 import {
   settleEntry,
 } from './pass-entry.ts';
-import { FIXED_TREE_DIR, } from './publish-fixed.ts';
 import {
   assertArtifactsPlaceable,
   assertBuildGenerationResumable,
@@ -42,6 +38,8 @@ import {
   countSettled,
   artifactBackedIds,
 } from './pass-settled.ts';
+import { declinedEntryIds, } from './declined-entries.ts';
+import { prepareRunsLayout, } from './runs-layout.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import {
   capOutlastsOneCall,
@@ -250,53 +248,17 @@ async function runCorpusPass(): Promise<void> {
   await using _lock = await lockRunsDir({ runsDir, },);
 
   /**
-   * Per-entry artifact directory.
+   * Every path this pass reads and writes under its runs dir; the artifacts
+   * directory and the published tree are created now so a pass that settles
+   * nothing still leaves what it promised (`runs-layout.ts`).
    */
-  const artifactsDir = join(
-    runsDir,
-    'artifacts',
-  );
-  await mkdir(
+  const {
     artifactsDir,
-    { recursive: true, },
-  );
-
-  /**
-   * Root of the corpus tree this pass publishes its fixed pages into.
-   *
-   * BESIDE THE ARTIFACTS, under the same runs directory, so a tree carrying
-   * corpus wording inherits the property that keeps that wording safe: runs
-   * directories live outside this repository and are never committed. It also
-   * means a throwaway run publishes into a throwaway tree rather than over
-   * anything real.
-   *
-   * CREATED HERE rather than lazily at the first page, so a pass that settles
-   * no entry still leaves the empty tree it promised rather than nothing.
-   */
-  const publishDir = join(
-    runsDir,
-    FIXED_TREE_DIR,
-  );
-  await mkdir(
     publishDir,
-    { recursive: true, },
-  );
-
-  /**
-   * Root of per-entry slice caches making large documents resumable.
-   */
-  const sliceCacheDir = join(
-    runsDir,
-    'slice-cache',
-  );
-
-  /**
-   * Persisted attempt-count map path.
-   */
-  const attemptsPath = join(
-    runsDir,
-    'attempts.json',
-  );
+    declinedDir,
+    sliceCacheDir,
+    attemptsPath,
+  } = await prepareRunsLayout({ runsDir, },);
 
   /**
    * Pipeline tip recorded into every artifact.
@@ -340,9 +302,12 @@ async function runCorpusPass(): Promise<void> {
   },);
 
   /**
-   * Entry ids already carrying an artifact this pass.
+   * Entry ids already carrying an artifact this pass, or a decline record.
    */
-  const done = await artifactBackedIds({ artifactsDir, },);
+  const done = new Set([
+    ...(await artifactBackedIds({ artifactsDir, },)),
+    ...(await declinedEntryIds({ declinedDir, },)),
+  ],);
 
   /**
    * Attempt counts from prior runs, or empty on the first.
@@ -616,6 +581,7 @@ async function runCorpusPass(): Promise<void> {
         entry,
         artifactsDir,
         publishDir,
+        declinedDir,
         sliceCacheDir,
         tip,
         pipelineDigest,

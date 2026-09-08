@@ -1,3 +1,4 @@
+import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type { ParsedConsolidation, } from './artifact-two-lane-read-consolidate.ts';
@@ -272,6 +273,13 @@ export type ParsedPreparation = {
    * metadata slice; absent on every earlier generation and on rendered ones.
    */
   readonly frontMatterAuthority?: 'archive';
+
+  /**
+   * Present when the file records spans the archive's note sealed as the
+   * English original; absent on every earlier generation and where nothing
+   * was sealed.
+   */
+  readonly archiveOriginalSpans?: readonly ArchiveOriginalSpan[];
 
   /**
    * Original document length in UTF-16 code units.

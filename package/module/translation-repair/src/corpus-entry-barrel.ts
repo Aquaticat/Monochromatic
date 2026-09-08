@@ -16,5 +16,12 @@ export type {
   EntryOutcome,
 } from './corpus-run/pass-entry-contract.ts';
 export { settleEntry, } from './corpus-run/pass-entry.ts';
+export {
+  DECLINED_DIR,
+  type DeclinedEntryRecord,
+  type DeclineReason,
+  declinedEntryIds,
+  writeDeclinedEntry,
+} from './corpus-run/declined-entries.ts';
 
 //endregion Corpus entry barrel

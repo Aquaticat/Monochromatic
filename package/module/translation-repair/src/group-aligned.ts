@@ -4,11 +4,13 @@ import {
 } from './align-blocks-walk.ts';
 import { declinedTargetIds, } from './declined-target-runs.ts';
 import type { DocumentNode, } from './document-node.ts';
-import { reanchorInsertions, } from './group-run-anchor.ts';
 import {
-  anchorOffsets,
-  leavesOriginalUnplaced,
-} from './group-source-anchor.ts';
+  mergeOneSidedRuns,
+  NOT_AN_INSERTION,
+  type OpenRun,
+} from './group-merge.ts';
+import { reanchorInsertions, } from './group-run-anchor.ts';
+import { anchorOffsets, } from './group-source-anchor.ts';
 
 //region Aligned run grouping
 // Turns a monotone block alignment into budget-bounded slice runs. This
@@ -23,6 +25,16 @@ import {
 // text is sliced from first to last offset, so leaving a block out of the run
 // would not even remove it from the text, only from the record of what the
 // slice was built from.
+//
+// SEALED BLOCKS ARE THE ONE DELIBERATE ABSENCE, added 2026-09-08 for the
+// owner's rule that a span the archive's note calls the English original ships
+// as it stands (`archive-original-note.ts`). A sealed translation block and the
+// original paired with it (the back-translation) form a run of their own that
+// no neighbour may absorb and no slice is made from; it is dropped once the
+// runs are settled. It is KEPT UNTIL THEN on purpose: the anchors of the
+// originals either side of it are read off its span, so a footnote definition
+// the source carries after a sealed letter is written after the letter rather
+// than folded into the passage before it.
 
 /**
  * One slice's paired node runs.
@@ -73,32 +85,42 @@ export type AlignedRun =
   };
 
 /**
- * Mutable run under construction, plus the character counts deciding when it
- * closes.
+ * A run of translation blocks the archive's note seals, with the originals
+ * paired to them, which stands between the runs beside it while anchors are
+ * read and is dropped before any slice is made.
+ *
+ * @example
+ * ```ts
+ * const run: SealedRun = { kind: 'sealed', sourceRun: [node,], targetRun: [node,], };
+ * ```
  */
-type OpenRun = {
+export type SealedRun = {
   /**
-   * Original-side blocks gathered so far.
+   * Names the run as sealed: no slice, no lane, the archive's bytes stand.
    */
-  readonly sourceRun: DocumentNode[];
+  readonly kind: 'sealed';
 
   /**
-   * Translation-side blocks gathered so far.
+   * Originals paired to the sealed blocks, in document order; the
+   * back-translation, which no lane reads.
    */
-  readonly targetRun: DocumentNode[];
+  readonly sourceRun: readonly DocumentNode[];
 
   /**
-   * Where this run's rendering belongs when it holds only unplaced originals,
-   * or {@link NOT_AN_INSERTION} when it is an ordinary run.
+   * Sealed translation blocks, in document order.
    */
-  readonly anchor: number;
+  readonly targetRun: readonly DocumentNode[];
 };
 
 /**
- * Anchor value for a run that is not an insertion, which no document offset can
- * collide with.
+ * A run as it stands between grouping and the slices: shippable, or sealed.
+ *
+ * @example
+ * ```ts
+ * const runs: GroupedRun[] = [ { kind: 'sealed', sourceRun, targetRun, }, ];
+ * ```
  */
-const NOT_AN_INSERTION = -1;
+export type GroupedRun = AlignedRun | SealedRun;
 
 /**
  * Character span of one block.
@@ -179,246 +201,374 @@ function positionsAfterDecline(
 }
 
 /**
- * Places blocks held from one-sided runs, never emitting a run with an empty
- * side and never dropping one.
+ * Walks the steps into open runs, closing on budget, on a decline, on a change
+ * of kind and on either side of a sealed block.
  *
- * TWO SIDES MAKE A SLICE AND ONE SIDE FOLDS. Held blocks on both sides are a
- * reviewable slice of their own. A single side is not: `runToChunk` builds a
- * span from a run's first and last node, so a run with an empty side has no
- * span and throws. Dropping it instead is the opposite failure, and it defeats
- * `declinedTargetIds` refusing to decline a block precisely so it stays in
- * review.
+ * @param sourceNodes - original blocks in document order
  *
- * THE TWO SIDES FOLD DIFFERENTLY, because an insertion run carries originals
- * and a translation OFFSET rather than translation blocks. Held translations
- * may fold back past an insertion, which contributes none of them. Held
- * originals may not: that insertion's own originals sit between, so reaching
- * past them would report the two groups out of document order. They join the
- * insertion instead, which is where the nearest place for a rendering is.
+ * @param targetNodes - translation blocks in document order
  *
- * @param merged - runs settled so far, extended in place
+ * @param sourceBudget - original-side character budget per slice
  *
- * @param heldSource - original blocks waiting for somewhere to go, emptied here
+ * @param targetBudget - translation-side character budget per slice
  *
- * @param heldTarget - translation-side counterpart, emptied here
+ * @param walk - steps in document order
+ *
+ * @param supplied - whether the walk came from a roster, which is the one
+ * case a target-only step declines and a source-only step is an absence
+ *
+ * @param sealed - ids of translation blocks the archive's note seals
+ *
+ * @returns Open runs in document order, sealed ones marked
  *
  * @example
  * ```ts
- * placeHeldRuns({ merged, heldSource, heldTarget, },);
+ * const runs = walkIntoRuns({ sourceNodes, targetNodes, sourceBudget, targetBudget, walk, supplied: true, sealed, },);
  * ```
  */
-function placeHeldRuns(
+function walkIntoRuns(
   {
-    merged,
-    heldSource,
-    heldTarget,
+    sourceNodes,
+    targetNodes,
+    sourceBudget,
+    targetBudget,
+    walk,
+    supplied,
+    sealed,
   }: {
-    readonly merged: AlignedRun[];
-    readonly heldSource: DocumentNode[];
-    readonly heldTarget: DocumentNode[];
+    readonly sourceNodes: readonly DocumentNode[];
+    readonly targetNodes: readonly DocumentNode[];
+    readonly sourceBudget: number;
+    readonly targetBudget: number;
+    readonly walk: readonly AlignmentStep[];
+    readonly supplied: boolean;
+    readonly sealed: ReadonlySet<string>;
   },
-): void {
-  if ((heldSource.length === 0) && (heldTarget.length === 0))
-    return;
-  if ((heldSource.length > 0) && (heldTarget.length > 0)) {
-    merged.push({
-      kind: 'paired',
-      sourceRun: [ ...heldSource, ],
-      targetRun: [ ...heldTarget, ],
-    },);
-    heldSource.length = 0;
-    heldTarget.length = 0;
-    return;
-  }
+): readonly OpenRun[] {
+  /**
+   * Completed and in-progress runs in document order.
+   */
+  const runs: OpenRun[] = [];
 
   /**
-   * Where the held blocks fold, before the last position when only
-   * translations are held and an insertion closed the list.
+   * Characters accumulated in the run currently accepting blocks, one named
+   * record rather than two loose counters.
    */
-  const at = (heldTarget.length > 0)
-    ? merged.findLastIndex(function isPaired(candidate,): boolean {
-      return candidate.kind === 'paired';
+  const open = {
+    sourceChars: 0,
+    targetChars: 0,
+  };
+
+  /**
+   * Blocks no original claims, EMPTY when the scorer produced the walk.
+   *
+   * The scorer cannot abstain, so its `target-only` steps report where its
+   * heuristic ran out rather than a decision that nothing renders this block.
+   * Dropping those would hide content on the strength of length and token
+   * overlap, which is the evidence `llm-assisted-block-pairing.md` found
+   * insufficient in the first place.
+   */
+  const declined = supplied
+    ? declinedTargetIds({
+      steps: walk,
+      targetNodes,
     },)
-    : merged.length - 1;
+    : new Set<string>();
+  /**
+   * Walk positions a declined block falls immediately before.
+   */
+  const afterDecline = positionsAfterDecline({
+    walk,
+    targetNodes,
+    declined,
+  },);
 
   /**
-   * Run absorbing them, absent when nothing settled yet can carry them, which
-   * leaves them held for a later run or for the caller's one-sided fallback.
+   * Walk positions holding an original nothing rendered, mapped to where its
+   * rendering belongs, EMPTY when the scorer produced the walk.
+   *
+   * `#100` landing 4. These positions each start and end a run of their own, so
+   * the blocks nothing rendered become their own slice rather than riding
+   * inside a neighbour's span.
+   *
+   * THE SCORER CANNOT TELL A MERGE FROM AN OMISSION, which is the same reason
+   * its `target-only` steps decline nothing above. It scores kind, script-
+   * neutral tokens and length; facing four originals rendered as one
+   * translation block it reports one pairing and three bare `source-only`
+   * steps, indistinguishable from three originals nobody translated. A roster
+   * that read both texts marks the difference with `continuesPairing`.
+   *
+   * Reading the scorer's version as absence would write a SECOND rendering of a
+   * passage the page already carries, merged, which is the expensive error this
+   * whole question was decided around. So an insertion needs a pairing someone
+   * read the texts to produce.
+   *
+   * READ OVER THE WHOLE WALK, sealed steps included, so an original behind a
+   * sealed block is anchored at the sealed block's end rather than at the end
+   * of whatever precedes the seal.
    */
-  const host = merged[at];
-  if (host === undefined)
-    return;
-  merged[at] = (host.kind === 'paired')
-    ? {
-      kind: 'paired',
-      sourceRun: [
-        ...host.sourceRun,
-        ...heldSource,
-      ],
-      targetRun: [
-        ...host.targetRun,
-        ...heldTarget,
-      ],
+  const anchors = supplied
+    ? anchorOffsets({
+      walk,
+      targetNodes,
+    },)
+    : new Map<number, number>();
+  for (const [at, step,] of walk.entries()) {
+    /**
+     * Block this step would contribute on the translation side, absent when it
+     * contributes none, read before anything else so a declined one can end the
+     * run without entering it.
+     */
+    const declinedNode = (step.kind === 'target-only')
+      ? targetNodes[step.targetIndex]
+      : undefined;
+    if ((declinedNode !== undefined) && declined.has(declinedNode.id,))
+      continue;
+
+    /**
+     * Original block this step contributes, when it contributes one.
+     */
+    const sourceNode = step.kind === 'target-only'
+      ? []
+      : [ sourceNodes[step.sourceIndex], ].filter(function isPresent(node,) {
+        return node !== undefined;
+      },);
+
+    /**
+     * Translation block this step contributes, when it contributes one.
+     */
+    const targetNode = step.kind === 'source-only'
+      ? []
+      : [ targetNodes[step.targetIndex], ].filter(function isPresent(node,) {
+        return node !== undefined;
+      },);
+
+    /**
+     * Run currently accepting blocks, absent before the first step.
+     */
+    const current = runs.at(-1,);
+
+    /**
+     * Whether this step may not be cut away from the one before it.
+     *
+     * A continuation renders the SAME original as the step before it, so
+     * starting a new run here would hand the critics a passage with no source
+     * beside it. Cohesion outranks the budget, which is a sizing heuristic
+     * rather than a correctness bound, and the overrun is one block wide.
+     */
+    const cohesive = (step.kind !== 'paired')
+      && (step.continuesPairing === true)
+      && (current !== undefined);
+
+    /**
+     * Whether the run being filled is a sealed one.
+     */
+    const openIsSealed = (current !== undefined) && current.sealed;
+
+    /**
+     * Whether this step belongs to a sealed block: it names one, or it
+     * continues the rendering of the sealed run being built.
+     */
+    const sealsHere = targetNode.some(function isSealed(node,): boolean {
+      return sealed.has(node.id,);
+    },)
+      || (cohesive && openIsSealed);
+    if (sealsHere) {
+      if (cohesive && openIsSealed) {
+        current.sourceRun
+          .push(...sourceNode,);
+        current.targetRun
+          .push(...targetNode,);
+        continue;
+      }
+      runs.push({
+        sourceRun: [ ...sourceNode, ],
+        targetRun: [ ...targetNode, ],
+        anchor: NOT_AN_INSERTION,
+        sealed: true,
+      },);
+      open.sourceChars = 0;
+      open.targetChars = 0;
+      continue;
     }
-    : {
-      kind: 'insertion',
-      sourceRun: [
-        ...host.sourceRun,
-        ...heldSource,
-      ],
-      targetOffset: host.targetOffset,
-    };
-  heldSource.length = 0;
-  heldTarget.length = 0;
+
+    /**
+     * Characters this step adds on the original side.
+     */
+    const sourceChars = sourceNode.reduce(
+      function addChars(
+        sum,
+        node,
+      ) {
+        return sum + nodeChars(node,);
+      },
+      0,
+    );
+
+    /**
+     * Characters this step adds on the translation side.
+     */
+    const targetChars = targetNode.reduce(
+      function addChars(
+        sum,
+        node,
+      ) {
+        return sum + nodeChars(node,);
+      },
+      0,
+    );
+
+    /**
+     * Whether this step no longer fits the run being filled.
+     */
+    const overBudget = (current === undefined)
+      || ((open.sourceChars + sourceChars) > sourceBudget)
+      || ((open.targetChars + targetChars) > targetBudget);
+    // A DECLINE OUTRANKS COHESION, because cohesion is about which slice a
+    // block belongs to and this is about which bytes a slice's span covers.
+    // Keeping a continuation attached across a declined block would put the
+    // declined bytes back inside the span.
+    /**
+     * Where this step's original belongs when nothing rendered it, or
+     * {@link NOT_AN_INSERTION} when something did.
+     */
+    const anchor = anchors.get(at,) ?? NOT_AN_INSERTION;
+
+    /**
+     * Whether this step may join the run being filled.
+     *
+     * AN INSERTION RUN IS SEALED IN BOTH DIRECTIONS. It may not absorb a step
+     * that was rendered, and a rendered step's run may not absorb it, because
+     * the whole point is that these blocks sit outside every existing span. A
+     * run mixing the two would have no single answer to "is this passage on the
+     * page". A SEALED RUN is closed the same way from the other side.
+     */
+    const sameKindAsOpen = (current !== undefined)
+      && (current.anchor === anchor)
+      && (!current.sealed);
+    if (afterDecline.has(at,)
+      || (!sameKindAsOpen)
+      || ((!cohesive) && overBudget)) {
+      runs.push({
+        sourceRun: [ ...sourceNode, ],
+        targetRun: [ ...targetNode, ],
+        anchor,
+        sealed: false,
+      },);
+      open.sourceChars = sourceChars;
+      open.targetChars = targetChars;
+      continue;
+    }
+    current.sourceRun
+      .push(...sourceNode,);
+    current.targetRun
+      .push(...targetNode,);
+    open.sourceChars += sourceChars;
+    open.targetChars += targetChars;
+  }
+  return runs;
 }
 
 /**
- * Folds runs that ended up with nothing on one side into a neighbour, EXCEPT
- * the ones holding originals nothing rendered.
+ * Groups an aligned block pair into budget-bounded runs, keeping the blocks the
+ * archive's note seals out of every run.
  *
- * A run of purely unpartnered TRANSLATION blocks has no original to compare
- * against and nothing to write, so it joins the run beside it rather than
- * becoming a slice nobody can review. It merges backwards when a previous run
- * exists and forwards otherwise, which keeps a leading run of skips attached to
- * the first reviewable slice.
+ * @param sourceNodes - original blocks in document order
  *
- * A run of unplaced ORIGINALS is the opposite case and `#100` landing 4 stops
- * folding it. Those blocks have something to write and nowhere yet to write it;
- * folding them into a neighbour puts them inside that slice's span, where no
- * later stage can tell them apart from the passage they were folded into.
+ * @param targetNodes - translation blocks in document order
  *
- * @param runs - runs as grouped, possibly one-sided
+ * @param sourceBudget - original-side character budget per slice
  *
- * @returns Runs that all carry blocks on both sides
+ * @param targetBudget - translation-side character budget per slice
+ *
+ * @param steps - roster's pairing as steps, when the caller has one
+ *
+ * @param sealed - ids of translation blocks that ship as they stand
+ *
+ * @returns Runs covering every unsealed block on both sides exactly once,
+ * beside the ids of the originals the sealed blocks took with them
  *
  * @example
  * ```ts
- * const usable = mergeOneSidedRuns({ runs, },);
+ * const { runs, sealedSourceIds, } = groupNodesSealed({
+ *   sourceNodes,
+ *   targetNodes,
+ *   sourceBudget: 900,
+ *   targetBudget: 1600,
+ *   sealed: new Set(['block/7',],),
+ * },);
  * ```
  */
-function mergeOneSidedRuns(
-  { runs, }: { readonly runs: readonly OpenRun[]; },
-): readonly AlignedRun[] {
+export function groupNodesSealed(
+  {
+    sourceNodes,
+    targetNodes,
+    sourceBudget,
+    targetBudget,
+    steps,
+    sealed,
+  }: {
+    readonly sourceNodes: readonly DocumentNode[];
+    readonly targetNodes: readonly DocumentNode[];
+    readonly sourceBudget: number;
+    readonly targetBudget: number;
+    readonly steps?: readonly AlignmentStep[];
+    readonly sealed: ReadonlySet<string>;
+  },
+): {
+  readonly runs: readonly AlignedRun[];
+  readonly sealedSourceIds: ReadonlySet<string>;
+} {
+  // A SUPPLIED PAIRING WINS, because it came from models that read both texts
+  // while `alignBlocks` scores kind, script-neutral tokens and length. On this
+  // corpus those three are exhausted: kind is constant across paragraphs,
+  // Chinese and English prose share no Latin tokens, and length alone reaches
+  // four correct pairings in eight on `saurikissa` and goes no further.
+  // `doc/decision/llm-assisted-block-pairing.md` decides it; the scorer remains
+  // the fallback when the roster cannot be reached or cannot agree.
   /**
-   * Runs that carry both sides, each replaced wholesale when it absorbs a
-   * one-sided neighbour so no run is ever mutated in place.
+   * Steps the grouping walks, the roster's when it supplied them.
    */
-  const merged: AlignedRun[] = [];
-
-  /**
-   * Blocks from leading one-sided runs, waiting for the first run that can
-   * carry them.
-   */
-  const heldSource: DocumentNode[] = [];
-
-  /**
-   * Translation-side counterpart of the held blocks.
-   */
-  const heldTarget: DocumentNode[] = [];
-  for (const run of runs) {
-    if (run.anchor !== NOT_AN_INSERTION) {
-      // An insertion run stands alone by construction: it carries originals and
-      // the place their rendering goes, so there is nothing to fold it into and
-      // nothing it needs from a neighbour. Held blocks still settle ahead of it,
-      // since they precede it in the document.
-      //
-      // THIS USED TO SETTLE THEM ON EITHER SIDE BEING NON-EMPTY, which emitted
-      // a `paired` run with nothing on one side and threw in `runToChunk`. It
-      // reached 123 of 910 randomised reader-legal pairings over the corpus.
-      placeHeldRuns({
-        merged,
-        heldSource,
-        heldTarget,
-      },);
-      merged.push({
-        kind: 'insertion',
-        sourceRun: [ ...run.sourceRun, ],
-        targetOffset: run.anchor,
-      },);
-      continue;
-    }
-
-    /**
-     * Whether this run can stand as a slice of its own.
-     */
-    const twoSided = (run.sourceRun
-      .length
-      > 0)
-      && (run.targetRun
-        .length
-        > 0);
-
-    /**
-     * Previous complete run, which absorbs a one-sided run when one exists.
-     */
-    const previous = merged.at(-1,);
-    if ((!twoSided)
-      && (previous !== undefined)
-      && (previous.kind === 'paired')) {
-      merged[merged.length - 1] = {
-        kind: 'paired',
-        sourceRun: [
-          ...previous.sourceRun,
-          ...run.sourceRun,
-        ],
-        targetRun: [
-          ...previous.targetRun,
-          ...run.targetRun,
-        ],
-      };
-      continue;
-    }
-    if (!twoSided) {
-      heldSource.push(...run.sourceRun,);
-      heldTarget.push(...run.targetRun,);
-      continue;
-    }
-
-    // Held blocks have no earlier neighbour, so they prepend to this run.
-    merged.push({
-      kind: 'paired',
-      sourceRun: [
-        ...heldSource,
-        ...run.sourceRun,
-      ],
-      targetRun: [
-        ...heldTarget,
-        ...run.targetRun,
-      ],
-    },);
-    heldSource.length = 0;
-    heldTarget.length = 0;
-  }
-
-  // ANYTHING STILL HELD BELONGS TO A SECTION WHOSE RUNS WERE ALL ONE-SIDED,
-  // which is NOT the same as a section with an empty side. The caller only
-  // reaches here when both sides carry blocks, so this is what a supplied
-  // pairing that pairs nothing produces once the budget splits the unpaired
-  // blocks into separate runs: source-only and target-only runs, alternating,
-  // and never a two-sided one to settle into.
-  //
-  // Discarding them dropped the whole section. It was silent, because every
-  // later reader works from the runs, and it took `assertSliceCoverage` to see
-  // it: 10 of 920 randomised in-range pairings over the corpus lost a section
-  // this way.
-  //
-  // A ONE-SIDED REMAINDER USED TO BE DROPPED HERE TOO, on the reasoning that a
-  // one-sided run is a slice nobody can review. So it is, but folding it into
-  // a settled run keeps its blocks in review, and dropping them defeated
-  // `declinedTargetIds`, which declines nothing unless the pairing placed every
-  // original precisely so an unclaimed translation stays. 534 of 3000
-  // randomised reader-legal pairings lost a block this way, and
-  // `assertSliceCoverage` then refused the document.
-  //
-  // The module's stated exception survives as the case `placeHeldRuns` cannot
-  // settle: a section with no two-sided run at all leaves the blocks held and
-  // returns without them, which is the caller's one-sided fallback.
-  placeHeldRuns({
-    merged,
-    heldSource,
-    heldTarget,
+  const walk = steps ?? alignBlocks({
+    sourceNodes,
+    targetNodes,
   },);
-  return merged;
+  /**
+   * Runs as walked, sealed ones marked.
+   */
+  const open = walkIntoRuns({
+    sourceNodes,
+    targetNodes,
+    sourceBudget,
+    targetBudget,
+    walk,
+    supplied: steps !== undefined,
+    sealed,
+  },);
+  // ANCHORS COME LAST, because merging is what invalidates them: folding an
+  // unclaimed translation into a neighbour stretches that run's span over it,
+  // and an anchor naming that block's start then points inside a passage.
+  /**
+   * Settled runs, sealed ones still standing where they were for the anchors.
+   */
+  const settled = reanchorInsertions({ runs: mergeOneSidedRuns({ runs: open, },), },);
+  return {
+    runs: settled.filter(function ships(run,): run is AlignedRun {
+      return run.kind !== 'sealed';
+    },),
+    sealedSourceIds: new Set(
+      settled
+        .filter(function isSealed(run,): run is SealedRun {
+          return run.kind === 'sealed';
+        },)
+        .flatMap(function toSourceIds(run,): readonly string[] {
+          return run.sourceRun
+            .map(function toId(node,): string {
+              return node.id;
+            },);
+        },),
+    ),
+  };
 }
 
 /**
@@ -461,207 +611,15 @@ export function groupNodesAligned(
     readonly steps?: readonly AlignmentStep[];
   },
 ): readonly AlignedRun[] {
-  /**
-   * Completed and in-progress runs in document order.
-   */
-  const runs: OpenRun[] = [];
-
-  /**
-   * Characters accumulated in the run currently accepting blocks, one named
-   * record rather than two loose counters.
-   */
-  const open = {
-    sourceChars: 0,
-    targetChars: 0,
-  };
-
-  // A SUPPLIED PAIRING WINS, because it came from models that read both texts
-  // while `alignBlocks` scores kind, script-neutral tokens and length. On this
-  // corpus those three are exhausted: kind is constant across paragraphs,
-  // Chinese and English prose share no Latin tokens, and length alone reaches
-  // four correct pairings in eight on `saurikissa` and goes no further.
-  // `doc/decision/llm-assisted-block-pairing.md` decides it; the scorer remains
-  // the fallback when the roster cannot be reached or cannot agree.
-  /**
-   * Steps the grouping walks, the roster's when it supplied them.
-   */
-  const walk = steps ?? alignBlocks({
+  return groupNodesSealed({
     sourceNodes,
     targetNodes,
-  },);
-
-  /**
-   * Blocks no original claims, EMPTY when the scorer produced the walk.
-   *
-   * The scorer cannot abstain, so its `target-only` steps report where its
-   * heuristic ran out rather than a decision that nothing renders this block.
-   * Dropping those would hide content on the strength of length and token
-   * overlap, which is the evidence `llm-assisted-block-pairing.md` found
-   * insufficient in the first place.
-   */
-  const declined = (steps === undefined)
-    ? new Set<string>()
-    : declinedTargetIds({
-      steps,
-      targetNodes,
-    },);
-  /**
-   * Walk positions a declined block falls immediately before.
-   */
-  const afterDecline = positionsAfterDecline({
-    walk,
-    targetNodes,
-    declined,
-  },);
-
-  /**
-   * Walk positions holding an original nothing rendered, mapped to where its
-   * rendering belongs, EMPTY when the scorer produced the walk.
-   *
-   * `#100` landing 4. These positions each start and end a run of their own, so
-   * the blocks nothing rendered become their own slice rather than riding
-   * inside a neighbour's span.
-   *
-   * THE SCORER CANNOT TELL A MERGE FROM AN OMISSION, which is the same reason
-   * its `target-only` steps decline nothing above. It scores kind, script-
-   * neutral tokens and length; facing four originals rendered as one
-   * translation block it reports one pairing and three bare `source-only`
-   * steps, indistinguishable from three originals nobody translated. A roster
-   * that read both texts marks the difference with `continuesPairing`.
-   *
-   * Reading the scorer's version as absence would write a SECOND rendering of a
-   * passage the page already carries, merged, which is the expensive error this
-   * whole question was decided around. So an insertion needs a pairing someone
-   * read the texts to produce.
-   */
-  const anchors = (steps === undefined)
-    ? new Map<number, number>()
-    : anchorOffsets({
-      walk,
-      targetNodes,
-    },);
-  for (const [at, step,] of walk.entries()) {
-    /**
-     * Block this step would contribute on the translation side, absent when it
-     * contributes none, read before anything else so a declined one can end the
-     * run without entering it.
-     */
-    const declinedNode = (step.kind === 'target-only')
-      ? targetNodes[step.targetIndex]
-      : undefined;
-    if ((declinedNode !== undefined) && declined.has(declinedNode.id,))
-      continue;
-
-    /**
-     * Original block this step contributes, when it contributes one.
-     */
-    const sourceNode = step.kind === 'target-only'
-      ? []
-      : [ sourceNodes[step.sourceIndex], ].filter(function isPresent(node,) {
-        return node !== undefined;
-      },);
-
-    /**
-     * Translation block this step contributes, when it contributes one.
-     */
-    const targetNode = step.kind === 'source-only'
-      ? []
-      : [ targetNodes[step.targetIndex], ].filter(function isPresent(node,) {
-        return node !== undefined;
-      },);
-
-    /**
-     * Characters this step adds on the original side.
-     */
-    const sourceChars = sourceNode.reduce(
-      function addChars(
-        sum,
-        node,
-      ) {
-        return sum + nodeChars(node,);
-      },
-      0,
-    );
-
-    /**
-     * Characters this step adds on the translation side.
-     */
-    const targetChars = targetNode.reduce(
-      function addChars(
-        sum,
-        node,
-      ) {
-        return sum + nodeChars(node,);
-      },
-      0,
-    );
-
-    /**
-     * Run currently accepting blocks, absent before the first step.
-     */
-    const current = runs.at(-1,);
-
-    /**
-     * Whether this step may not be cut away from the one before it.
-     *
-     * A continuation renders the SAME original as the step before it, so
-     * starting a new run here would hand the critics a passage with no source
-     * beside it. Cohesion outranks the budget, which is a sizing heuristic
-     * rather than a correctness bound, and the overrun is one block wide.
-     */
-    const cohesive = (step.kind !== 'paired')
-      && (step.continuesPairing === true)
-      && (current !== undefined);
-    /**
-     * Whether this step no longer fits the run being filled.
-     */
-    const overBudget = (current === undefined)
-      || ((open.sourceChars + sourceChars) > sourceBudget)
-      || ((open.targetChars + targetChars) > targetBudget);
-    // A DECLINE OUTRANKS COHESION, because cohesion is about which slice a
-    // block belongs to and this is about which bytes a slice's span covers.
-    // Keeping a continuation attached across a declined block would put the
-    // declined bytes back inside the span.
-    /**
-     * Where this step's original belongs when nothing rendered it, or
-     * {@link NOT_AN_INSERTION} when something did.
-     */
-    const anchor = anchors.get(at,) ?? NOT_AN_INSERTION;
-
-    /**
-     * Whether this step may join the run being filled.
-     *
-     * AN INSERTION RUN IS SEALED IN BOTH DIRECTIONS. It may not absorb a step
-     * that was rendered, and a rendered step's run may not absorb it, because
-     * the whole point is that these blocks sit outside every existing span. A
-     * run mixing the two would have no single answer to "is this passage on the
-     * page".
-     */
-    const sameKindAsOpen = (current !== undefined)
-      && (current.anchor === anchor);
-    if (afterDecline.has(at,)
-      || (!sameKindAsOpen)
-      || ((!cohesive) && overBudget)) {
-      runs.push({
-        sourceRun: [ ...sourceNode, ],
-        targetRun: [ ...targetNode, ],
-        anchor,
-      },);
-      open.sourceChars = sourceChars;
-      open.targetChars = targetChars;
-      continue;
-    }
-    current.sourceRun
-      .push(...sourceNode,);
-    current.targetRun
-      .push(...targetNode,);
-    open.sourceChars += sourceChars;
-    open.targetChars += targetChars;
-  }
-  // ANCHORS COME LAST, because merging is what invalidates them: folding an
-  // unclaimed translation into a neighbour stretches that run's span over it,
-  // and an anchor naming that block's start then points inside a passage.
-  return reanchorInsertions({ runs: mergeOneSidedRuns({ runs, },), },);
+    sourceBudget,
+    targetBudget,
+    ...((steps === undefined) ? {} : { steps, }),
+    sealed: new Set<string>(),
+  },)
+    .runs;
 }
 
 //endregion Aligned run grouping

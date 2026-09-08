@@ -1,3 +1,4 @@
+import type { ArchiveOriginalSpan, } from './archive-original-note.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SectionPair, } from './pair-sections-wire.ts';
 import type { SectionBlockPairing, } from './section-pairing.ts';
@@ -97,6 +98,14 @@ export type PreparedDocumentPair = {
    * rather than a slice zero the lanes render; omitted when they render it.
    */
   readonly frontMatterAuthority?: 'archive';
+
+  /**
+   * Spans of the archive its translators' notes call the English original,
+   * which no slice covers and which ship as they stand (the owner's rule of
+   * 2026-09-08, `archive-original-note.ts`); omitted when the archive carries
+   * no such note or the preparation was asked not to seal.
+   */
+  readonly archiveOriginalSpans?: readonly ArchiveOriginalSpan[];
 
   /**
    * Original document this preparation was made from.

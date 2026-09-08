@@ -55,6 +55,10 @@ export {
 } from './corpus-run/front-matter-completeness.ts';
 export { persistSettledEntry, } from './corpus-run/pass-entry-persist.ts';
 export {
+  ArchiveOriginalCompletenessError,
+  assertArchiveOriginalComplete,
+} from './corpus-run/archive-original-completeness.ts';
+export {
   assertVisualEvidenceComplete,
   VisualEvidenceInterruptedError,
 } from './corpus-run/visual-evidence-completeness.ts';

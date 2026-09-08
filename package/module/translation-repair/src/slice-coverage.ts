@@ -111,6 +111,26 @@ export type SliceCoverageFault = {
   readonly contradicted: readonly string[];
 } | {
   /**
+   * Blocks the archive's note sealed reached a slice anyway.
+   */
+  readonly kind: 'sealed-reached';
+
+  /**
+   * Chunk being sliced.
+   */
+  readonly sliceIndex: number;
+
+  /**
+   * Side whose sealed blocks a slice placed.
+   */
+  readonly side: 'source' | 'target';
+
+  /**
+   * Ids of the sealed blocks a slice placed.
+   */
+  readonly contradicted: readonly string[];
+} | {
+  /**
    * One side's blocks were not placed exactly once, in order.
    */
   readonly kind: 'placement';
@@ -190,6 +210,13 @@ export function coverageSentence({ fault, }: { readonly fault: SliceCoverageFaul
      */
     const { contradicted, } = fault;
     return `target ${String(contradicted.length,)} declined blocks reached a slice: ${contradicted.join(', ',)}`;
+  }
+  if (fault.kind === 'sealed-reached') {
+    /**
+     * Ids of the sealed blocks a slice placed.
+     */
+    const { contradicted, } = fault;
+    return `${fault.side} ${String(contradicted.length,)} sealed blocks reached a slice: ${contradicted.join(', ',)}`;
   }
   return `${fault.side} ${blockPlacementSentence({ placement: fault.placement, },)}`;
 }
@@ -320,6 +347,12 @@ function describePlacement(
  *
  * @param carved - slices it was carved into
  *
+ * @param declined - ids of translation blocks the pairing accounted for
+ * nowhere, which reach no slice by decision
+ *
+ * @param sealed - ids, per side, of the blocks the archive's note seals,
+ * which reach no slice by the owner's rule of 2026-09-08
+ *
  * @throws SliceCoverageError when either side loses, repeats or reorders a block
  *
  * @example
@@ -332,10 +365,18 @@ export function assertSliceCoverage(
     pair,
     carved,
     declined = new Set<string>(),
+    sealed = {
+      source: new Set<string>(),
+      target: new Set<string>(),
+    },
   }: {
     readonly pair: ChunkPair;
     readonly carved: readonly ChunkPair[];
     readonly declined?: ReadonlySet<string>;
+    readonly sealed?: {
+      readonly source: ReadonlySet<string>;
+      readonly target: ReadonlySet<string>;
+    };
   },
 ): void {
   /**
@@ -345,6 +386,16 @@ export function assertSliceCoverage(
   const placedTargets = idsOf({
     runs: carved.map(function toRun(slice,): readonly DocumentNode[] {
       return slice.target
+        .nodes;
+    },),
+  },);
+
+  /**
+   * Original blocks the slices carry.
+   */
+  const placedSources = idsOf({
+    runs: carved.map(function toRun(slice,): readonly DocumentNode[] {
+      return slice.source
         .nodes;
     },),
   },);
@@ -365,32 +416,67 @@ export function assertSliceCoverage(
       },
     },);
   /**
+   * Sealed blocks a slice carries anyway, per side, which contradicts the seal.
+   */
+  const sealedReached = [
+    {
+      side: 'source' as const,
+      contradicted: placedSources.filter(function isSealed(id,): boolean {
+        return sealed.source
+          .has(id,);
+      },),
+    },
+    {
+      side: 'target' as const,
+      contradicted: placedTargets.filter(function isSealed(id,): boolean {
+        return sealed.target
+          .has(id,);
+      },),
+    },
+  ];
+  for (const reached of sealedReached) {
+    if (reached.contradicted
+      .length
+      > 0)
+      throw new SliceCoverageError({
+        fault: {
+          kind: 'sealed-reached',
+          sliceIndex: pair.source
+            .sliceIndex,
+          side: reached.side,
+          contradicted: reached.contradicted,
+        },
+      },);
+  }
+  /**
    * Both sides, each with the blocks it was given and the blocks it placed.
    */
   const sides = [
     {
       name: 'source' as const,
+      // Sealed originals are the back-translation of sealed blocks and are
+      // not expected in a slice either.
       expected: idsOf({
         runs: [ pair.source
           .nodes, ],
+      },)
+        .filter(function isNotSealed(id,): boolean {
+        return !sealed.source
+          .has(id,);
       },),
-      placed: idsOf({
-        runs: carved.map(function toRun(slice,): readonly DocumentNode[] {
-          return slice.source
-            .nodes;
-        },),
-      },),
+      placed: placedSources,
     },
     {
       name: 'target' as const,
-      // Declined blocks are not expected in a slice, so they drop out of the
-      // comparison entirely rather than reading as losses.
+      // Declined and sealed blocks are not expected in a slice, so they drop
+      // out of the comparison entirely rather than reading as losses.
       expected: idsOf({
         runs: [ pair.target
           .nodes, ],
       },)
-        .filter(function isNotDeclined(id,): boolean {
-        return !declined.has(id,);
+        .filter(function isNotDeclinedOrSealed(id,): boolean {
+        return (!declined.has(id,)) && (!sealed.target
+          .has(id,));
       },),
       placed: placedTargets,
     },

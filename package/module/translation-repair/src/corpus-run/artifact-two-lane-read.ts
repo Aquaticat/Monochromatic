@@ -27,6 +27,7 @@ import { assertRecordedComparisonMatches, } from './artifact-two-lane-read-compa
 import { parseLaneSelection, } from './artifact-two-lane-read-contest.ts';
 import {
   requireArchiveAuthority,
+  requireArchiveOriginalSpans,
   requireDigest,
 } from './artifact-two-lane-read-fields.ts';
 import type {
@@ -141,6 +142,7 @@ function parsePreparation(
       'archiveText',
       'sliceCount',
       'frontMatterAuthority',
+      'archiveOriginalSpans',
       'sourceChars',
       'targetChars',
       'sourceBytes',
@@ -195,6 +197,18 @@ function parsePreparation(
         frontMatterAuthority: requireArchiveAuthority({
           value: record.frontMatterAuthority,
           path: `${path}.frontMatterAuthority`,
+        },),
+      }),
+
+    // ABSENT MEANS NOTHING SEALED, on a file from before generation twelve
+    // and on one whose archive carries no such note alike; a recorded list is
+    // never empty, so absence is the one way to say it.
+    ...((record.archiveOriginalSpans === undefined)
+      ? {}
+      : {
+        archiveOriginalSpans: requireArchiveOriginalSpans({
+          value: record.archiveOriginalSpans,
+          path: `${path}.archiveOriginalSpans`,
         },),
       }),
     sourceChars: requireCount({

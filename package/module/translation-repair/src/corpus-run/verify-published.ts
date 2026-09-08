@@ -24,6 +24,10 @@ import {
 } from './published-tree-listing.ts';
 import { resolveRunsDir, } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import {
+  DECLINED_DIR,
+  declinedEntryIds,
+} from './declined-entries.ts';
 
 //region Verify published
 // Checks a run's PUBLISHED TREE against the artifacts that produced it, which
@@ -350,10 +354,23 @@ async function verifyPublished(): Promise<void> {
     published: toVerify.published,
   },);
 
+  /**
+   * Entries the pipeline declined to repair (the archive's note says the page
+   * is the author's own English), which carry no artifact and must carry no
+   * page: the archive stands.
+   */
+  const declined = await declinedEntryIds({
+    declinedDir: join(
+      runsDir,
+      DECLINED_DIR,
+    ),
+  },);
+
   console.log(
     `verify-published: matched=${String(matched.length,)} `
       + `settledWithNoPage=${String(unpublished.length,)} `
-      + `pageWithNoArtifact=${String(unsettled.length,)}`,
+      + `pageWithNoArtifact=${String(unsettled.length,)} `
+      + `declined=${String(declined.size,)}`,
   );
 
   for (const id of unpublished) {
@@ -363,7 +380,10 @@ async function verifyPublished(): Promise<void> {
   }
   for (const id of unsettled) {
     console.log(
-      `  PUBLISHED AND NOT SETTLED: ${id}. A resumed pass re-settles it and overwrites the page`,
+      declined.has(id,)
+        ? `  DECLINED AND PUBLISHED ANYWAY: ${id}. The archive's note says the page is the author's own `
+          + 'English, so no page should stand here'
+        : `  PUBLISHED AND NOT SETTLED: ${id}. A resumed pass re-settles it and overwrites the page`,
     );
   }
 

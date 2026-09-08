@@ -120,6 +120,7 @@ export async function prepareDocumentPairWithRoster(
     sectionCache,
     contextLines,
     frontMatterAuthority,
+    sealArchiveOriginal,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -133,6 +134,7 @@ export async function prepareDocumentPairWithRoster(
     readonly sectionCache?: SliceCache<PairedDocumentRecord>;
     readonly contextLines?: readonly string[];
     readonly frontMatterAuthority?: FrontMatterAuthority;
+    readonly sealArchiveOriginal?: boolean;
   }>,
 ): Promise<PairedPreparation> {
   /**
@@ -499,6 +501,7 @@ export async function prepareDocumentPairWithRoster(
     ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
     ...((contextLines === undefined) ? {} : { contextLines, }),
     ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
+    ...((sealArchiveOriginal === undefined) ? {} : { sealArchiveOriginal, }),
     blockPairings,
   },);
 

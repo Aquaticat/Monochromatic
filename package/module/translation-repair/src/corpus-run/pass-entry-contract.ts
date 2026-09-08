@@ -24,6 +24,13 @@ export type EntryOutcome = {
    * Work remains incomplete but same invocation must not start whole entry again.
    */
   readonly kind: 'stopped';
+} | {
+  /**
+   * The archive's note says the whole page is the author's own English, so the
+   * pipeline declined to repair it (the owner's rule of 2026-09-08); a decline
+   * record stands where the artifact would, and no pass attempts it again.
+   */
+  readonly kind: 'declined';
 };
 
 /**

@@ -4,7 +4,10 @@ import {
 } from '../document-preparation.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
 import type { SectionPair, } from '../pair-sections-wire.ts';
-import { ARTIFACT_SCHEMA_VERSION_V5, } from './artifact-two-lane-contract.ts';
+import {
+  ARTIFACT_SCHEMA_VERSION_V12,
+  ARTIFACT_SCHEMA_VERSION_V5,
+} from './artifact-two-lane-contract.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 
 //region Preparation rebuilt from a settled artifact
@@ -260,6 +263,11 @@ export function rebuildPreparation(
       targetText,
       includeFrontMatter: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V5,
       ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
+      // SEALED AGAIN ONLY FROM THE GENERATION THAT SEALED, read off the
+      // version rather than the record: the spans are recomputed from the
+      // archive text because the block correction round moves offsets, and an
+      // older file's slicing never sealed anything.
+      sealArchiveOriginal: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V12,
       ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
       ...((blockPairings === undefined) ? {} : { blockPairings, }),
     },),

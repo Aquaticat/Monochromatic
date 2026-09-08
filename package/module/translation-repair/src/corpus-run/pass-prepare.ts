@@ -170,7 +170,22 @@ export async function preparePassEntry(
     l,
     contextLines,
     frontMatterAuthority,
+    sealArchiveOriginal: true,
   },);
+  /**
+   * Spans the archive's translators' note sealed as the English original,
+   * which no slice covers and no lane writes (the owner's rule of 2026-09-08).
+   */
+  const sealedSpans = firstPaired.prepared
+    .archiveOriginalSpans
+    ?? [];
+  for (const [at, span,] of sealedSpans.entries()) {
+    l.info(
+      `ARCHIVE ORIGINAL entry=${entryId} span=${String(at,)} [${String(span.startOffset,)}, ${
+        String(span.endOffset,)
+      }) of the archive ships as it stands under the note: ${span.note}`,
+    );
+  }
   /**
    * Unclaimed blocks not already licensed unchanged.
    */
@@ -215,6 +230,7 @@ export async function preparePassEntry(
     l,
     contextLines,
     frontMatterAuthority,
+    sealArchiveOriginal: true,
   },);
   /**
    * Blocks the single correction round could not claim.
