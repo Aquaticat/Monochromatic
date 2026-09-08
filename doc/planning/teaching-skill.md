@@ -1019,11 +1019,57 @@ the authored guard was never removed.
 The run also exercised the documented paired destination calls, real success/failure/retry/deadline paths,
 Stop during gate/request/backoff, separate conversation ownership, source downloads, and an isolated error channel.
 
+## Combined correction verification and handoff
+
+`proc_af31` passed `mise run test:all` followed by `mise run test:exports` in 149 seconds.
+The complete stdout/stderr were inspected.
+This includes native opening sends, the reference ownership checks and negative controls,
+neutral light/dark/print surfaces, foundations, highlighted native editing,
+PDF content inventories, native Print/Cancel, advanced policy/workshop behavior,
+and actual reopened downloads through the positively tested HTTP-denying proxy.
+The reopened reference accepted another send in the same conversation, preserved a draft,
+and cancelled during backoff. Browser evidence is Chromium/Helium, not Firefox execution.
+
+The resulting `doc/planning/promises-teaching.local.html` is 422,859 bytes,
+SHA-256 `aef8e02094efce04096989c4e102c7416edf342e2ff0affd81b8f72c2f478e3b`.
+The preserved first artifact still matches its original hash.
+The PDF is 88 Letter pages and 1,754,348 bytes,
+with 527 independently collected teaching entries and 62 appendix entries.
+The text inventory compares normalized content; it does not establish every page's layout or exact source line breaks.
+
+`proc_32f6` rendered measured PDF locations 1, 2, 32, 35, 47, 49, and 55.
+Those pages were inspected for the opening instructions/paper trace,
+reference experiment, controller ownership explanation, and relevant source.
+The current light-theme opening and mobile shop capture were inspected too.
+No claim is made that every PDF page received visual inspection.
+
+`proc_6d54` opened a new tab rather than reloading possible user work:
+`promises-open-chat-present`, label `independent-chat`, tab `t2`,
+target `A4082053FEAAEFE227BFEA1BD0FD6225`.
+The previous `t1` and the older `promises-shop-present` session remain intact.
+A parent-page read confirmed the corrected controller-list interface is loaded.
+The owned goal snapshot reports the initial Saturday question and no pending replies.
+The rendered page exposes Send and the separate reply-control area together,
+with the main background resolving to `rgb(30, 30, 30)`.
+`independent-shop-visible.png` records this ready state.
+
+The selected browser tab is `independent-chat`, with title `Promises: build a shop chat`.
+A read-only KWin check reported the matching Helium window active, non-minimized,
+and on its then-current output `DP-3`.
+The browser viewport readback was 1274 by 612 CSS pixels;
+KWin's reported window geometry was 1018 by 744 in its coordinate space.
+These are separate measurements, not interchangeable geometry evidence.
+The page was scrolled to expose both controls without replacing drafts or replaying the conversation.
+
+The print and offline fixtures, `proc_8a49` and `proc_efdd`, have been stopped.
+`proc_756c` is closing their remaining print controller and the owned headless verification session.
+Disposable profile removal and final scoped documentation status checks remain pending.
+
 ## Next action
 
-Finish the current reference/workshop checks, then verify the combined artifact and exports/print.
-Inspect the final rendered state and preserve the user's existing windows and drafts during handoff.
-Resume critique of that concrete artifact afterward.
+Finish the owned verification-resource cleanup, then resume critique of the visible corrected example.
+Independent sending and neutral surfaces are implemented and operationally checked;
+those checks do not establish teaching acceptance, learner independence, or mastery.
 The final teaching skill remains unconfirmed and unimplemented.
 Continue discovery from the user's critique of the visibly revised Promise toy.
 Do not replace that critique with another acceptance checklist or an inference from passing tests.
