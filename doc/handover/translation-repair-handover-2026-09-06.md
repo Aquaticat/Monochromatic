@@ -596,10 +596,20 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     Bedrock's cards carry `readsImages: false` until a transcription is measured,
     and the `phase=pictures` seats line printed `readers=4 roster=10 withheld=none` with three providers dry,
     saying nothing about reach.
-    Two pieces of work follow,
-    neither a design decision:
-    the seats line names the reachable seats of a short bench with or without a hold,
-    and Gemma 4 on Bedrock is measured as a picture reader.
+    Both pieces of work that followed have landed
+    (`c4a9682fe` the shortfall line,
+    `f7f9c9136` the two Bedrock reader seats),
+    and an eighth launch on Bedrock alone started at 02:19 UTC on `56ccbdc23`
+    (runs dir `~/temp/agent/hakureico8-20260908`,
+    log beside it,
+    pid 3992895),
+    recorded in the planning log under "The eighth hakureico launch on Bedrock alone".
+    Read it on its tally:
+    whether both pictures corroborated on the two Bedrock readers,
+    every phase's shortfall line,
+    and what a page on three judges and one translator says on its settlements.
+    If it is still running when this is read and the tree has moved past `56ccbdc23`,
+    the kill-and-relaunch rule applies.
 2.  Run `producer-calibrate` with `--candidates google.gemma-4-e2b` for the translator seat when the meters allow;
     the judge seat is decided (`b0b48d6f4`).
 3.  Then `yuki418330012` (a math pair),

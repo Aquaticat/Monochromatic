@@ -4290,6 +4290,38 @@ which is a less exact transcription that the seated readers still corroborate,
 and every cached picture reading is re-read once,
 since the cache key names the reader roster.
 
+## The eighth hakureico launch on Bedrock alone, on the reader build, 2026-09-08, 02:19 UTC
+
+Launched at 02:19:56 UTC on `56ccbdc23`
+(code `f7f9c9136`,
+pipeline `e069d942`,
+the two Bedrock reader seats and the readers' pair quorum),
+plain invocation,
+runs dir `~/temp/agent/hakureico8-20260908`,
+log beside it,
+pid 3992895,
+after the full unit suite read 950 `PASS` and 0 `FAIL` on the build.
+`METERS` at launch:
+Synthetic dry (`syntheticWeekly=0%`),
+Bedrock 198.93 USD,
+Hyper 0,
+OpenRouter 0.01 USD reading wet.
+`phase=preparation` read `readers=5` with Kimi-K3 withheld under OpenRouter;
+`phase=pictures` at 02:20:11,
+after OpenRouter's six 402s,
+read
+`synthetic=dry bedrock=wet hyper=dry openrouter=dry`
+`wide=8 select=8 late=9 slate=9 checkers=3 translators=7 readers=6 writers=9 roster=10`
+and no shortfall line,
+since the readers bench holds two reachable seats against its pair quorum.
+The reading follows as for the seventh launch:
+whether both pictures corroborate on the two Bedrock readers,
+then every phase's shortfall line
+(`wide 3 of 8 reachable, quorum 4` is expected at the lanes,
+the contest and the consolidation),
+then whether a page on Bedrock's three judges and one translator ships at all,
+with what its settlements say.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
