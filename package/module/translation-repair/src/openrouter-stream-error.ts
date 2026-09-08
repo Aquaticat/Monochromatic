@@ -1,6 +1,7 @@
 import { isJsonRecord, } from './json-guard.ts';
 import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 import { openRouterEndpointOf, } from './openrouter-endpoint.ts';
+import { openRouterErrorFinishOf, } from './openrouter-error-finish.ts';
 
 //region OpenRouter in-stream error
 // A PROVIDER FAILURE THAT ARRIVES AS A SUCCESS. OpenRouter answers a chat
@@ -26,6 +27,11 @@ import { openRouterEndpointOf, } from './openrouter-endpoint.ts';
 // upstream; this reader carries the numeric code, the gateway's error type
 // and the endpoint's display name, which is what an operator needs to act
 // and nothing a run log must not hold.
+//
+// A SECOND SHAPE, 2026-09-08: a stream that closes its choice with
+// `finish_reason: "error"`, carries no error object and does send `[DONE]`.
+// `openrouter-error-finish.ts` records that class; this reader asks it when
+// no chunk carried an error object, so both shapes throw the same failure.
 
 /**
  * Field OpenRouter puts the upstream's failure in, on the chunk that ends
@@ -52,6 +58,12 @@ const ERROR_TYPE_KEY = 'error_type';
  * Value written where the wire carried no usable field.
  */
 const UNNAMED = 'unnamed';
+
+/**
+ * Failure kind written when a choice stopped on an error finish and the wire
+ * forwarded no native reason for it.
+ */
+const ERROR_FINISH_KIND = 'error-finish';
 
 /**
  * What one stream's error chunk said, reduced to names.
@@ -152,7 +164,9 @@ export class InStreamProviderError extends Error {
  * Reads the failure a stream's error chunk carried, if any chunk carried one.
  *
  * THE FIRST ERROR CHUNK WINS, as the endpoint reader's first name does: the
- * gateway writes one and closes.
+ * gateway writes one and closes. A choice that stopped on an error finish
+ * with no error object beside it counts as a failure too, with no code and
+ * the upstream's own reason as its kind.
  *
  * @param bodyText - whole drained `text/event-stream` body
  *
@@ -179,11 +193,33 @@ export function openRouterStreamErrorOf(
     },);
 
   /**
+   * Upstream named on the chunks, or that none was.
+   */
+  const endpoint = openRouterEndpointOf({ bodyText, },);
+
+  /**
+   * Upstream's display name as the reading carries it.
+   */
+  const endpointName = endpoint.reported ? endpoint.name : UNNAMED;
+
+  /**
    * First error object, or none.
    */
   const [first,] = errors;
-  if (first === undefined)
-    return STREAM_ERROR_ABSENT;
+  if (first === undefined) {
+    /**
+     * Whether a choice stopped on an error finish with no error object beside it.
+     */
+    const finish = openRouterErrorFinishOf({ bodyText, },);
+    if (!finish.found)
+      return STREAM_ERROR_ABSENT;
+    return {
+      found: true,
+      code: UNNAMED,
+      errorType: finish.nativeReason ?? ERROR_FINISH_KIND,
+      endpoint: endpointName,
+    };
+  }
 
   /**
    * Numeric code, or that none was reported.
@@ -200,16 +236,11 @@ export function openRouterStreamErrorOf(
    */
   const errorType = isJsonRecord(metadata,) ? metadata[ERROR_TYPE_KEY] : undefined;
 
-  /**
-   * Upstream named on the chunks, or that none was.
-   */
-  const endpoint = openRouterEndpointOf({ bodyText, },);
-
   return {
     found: true,
     code: ((typeof code) === 'number') ? code : UNNAMED,
     errorType: ((typeof errorType) === 'string') ? errorType : UNNAMED,
-    endpoint: endpoint.reported ? endpoint.name : UNNAMED,
+    endpoint: endpointName,
   };
 }
 
@@ -223,6 +254,7 @@ export function openRouterStreamErrorOf(
  * @param bodyText - whole drained `text/event-stream` body
  *
  * @throws {@link InStreamProviderError} when a chunk carried an error object
+ * or a choice stopped on an error finish
  *
  * @example
  * ```ts

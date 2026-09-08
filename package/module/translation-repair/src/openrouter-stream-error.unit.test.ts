@@ -76,6 +76,41 @@ const WHOLE_STREAM = `${
   },)
 }data: [DONE]\n\n`;
 
+/**
+ * The eighteenth class's shape (2026-09-08): reasoning, no content, a choice
+ * closed with `finish_reason: "error"` and no error object, then the
+ * terminator.
+ */
+const ERROR_FINISH_STREAM = `${
+  framed({
+    chunk: {
+      id: 'gen-cat',
+      provider: 'Sill',
+      choices: [{
+        index: 0,
+        delta: {
+          content: '',
+          reasoning: 'is the sill warm',
+        },
+        finish_reason: null,
+      },],
+    },
+  },)
+}${
+  framed({
+    chunk: {
+      id: 'gen-cat',
+      provider: 'Sill',
+      choices: [{
+        index: 0,
+        delta: { content: '', },
+        finish_reason: 'error',
+        native_finish_reason: 'upstream_error',
+      },],
+    },
+  },)
+}data: [DONE]\n\n`;
+
 await describe({
   name: openRouterStreamErrorOf.name,
   children: [
@@ -117,6 +152,39 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'READS A CHOICE THAT STOPPED ON AN ERROR FINISH as the failure it is, the eighteenth class, '
+        + 'naming the native reason as the kind and no code, when no chunk carried an error object',
+      fn: async () => {
+        expect(openRouterStreamErrorOf({ bodyText: ERROR_FINISH_STREAM, },),).toEqual({
+          found: true,
+          code: 'unnamed',
+          errorType: 'upstream_error',
+          endpoint: 'Sill',
+        },);
+        /**
+         * The same closing choice with no native reason and no upstream named.
+         */
+        const unnamed = `${
+          framed({
+            chunk: {
+              choices: [{
+                index: 0,
+                delta: { content: '', },
+                finish_reason: 'error',
+              },],
+            },
+          },)
+        }data: [DONE]\n\n`;
+        expect(openRouterStreamErrorOf({ bodyText: unnamed, },),).toEqual({
+          found: true,
+          code: 'unnamed',
+          errorType: 'error-finish',
+          endpoint: 'unnamed',
+        },);
+      },
+    },),
   ],
 },);
 
@@ -154,6 +222,27 @@ await describe({
         // reading the check was made from.
         requireNoStreamError({ bodyText: WHOLE_STREAM, },);
         expect(openRouterStreamErrorOf({ bodyText: WHOLE_STREAM, },).found,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'THROWS THE SAME FAILURE CLASS on an error finish, so the call rides the retry ladder '
+        + 'under its own name instead of reaching the reply ladder as an empty answer',
+      fn: async () => {
+        /**
+         * What the error-finish stream produces.
+         */
+        let thrown: unknown;
+        try {
+          requireNoStreamError({ bodyText: ERROR_FINISH_STREAM, },);
+        } catch (error) {
+          thrown = error;
+        }
+        expect(thrown instanceof InStreamProviderError,).toBe(true,);
+        expect((thrown as InStreamProviderError).code,).toBe('unnamed',);
+        expect((thrown as InStreamProviderError).endpoint,).toBe('Sill',);
+        expect((thrown as InStreamProviderError).message,).toContain('type upstream_error',);
+        expect((thrown as InStreamProviderError).message,).toContain('served by Sill',);
       },
     },),
   ],

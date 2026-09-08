@@ -185,6 +185,11 @@ export {
   type StreamErrorReading,
 } from './openrouter-stream-error.ts';
 export {
+  ERROR_FINISH_ABSENT,
+  type ErrorFinishReading,
+  openRouterErrorFinishOf,
+} from './openrouter-error-finish.ts';
+export {
   OPENROUTER_AUTH_HEADER,
   OPENROUTER_CHAT_URL,
   OPENROUTER_CREDITS_URL,
