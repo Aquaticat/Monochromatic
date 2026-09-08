@@ -1156,3 +1156,42 @@ the eleventh hakureico page read under the front-matter and false-start checks,
 `yuki418330012`,
 `Arita`,
 and the seven components no read page has met.
+
+## What the eleventh hakureico launch showed (2026-09-08, 16:56 to 18:21 UTC)
+
+The eleventh pass,
+the first on the false-start reading,
+ran 85 minutes on three providers until Synthetic's rolling week ran dry at 17:21,
+then on Bedrock and OpenRouter.
+Its log showed the front matter standing (`authority=archive`),
+E2B writing and winning in the translate lane,
+four doubled openings on Bedrock's gpt-oss-120b read past with no mismatch beside them,
+and one voice lost in the lane contest to a reply the provider itself had marked failed:
+`finish_reason=error`,
+no content,
+cost 0,
+served by CoreWeave.
+Seven such replies since 2026-09-03,
+all through OpenRouter,
+had each been read as the model's unparseable answer.
+That is the eighteenth class:
+the ladder counted a provider failure as a vote.
+Fixed as `bb04656ef` (the error finish rides the retry ladder as the provider failure it is),
+the eleventh pass killed inside its consolidation under the rule,
+and `hakureico` relaunched at 18:21 UTC into `~/temp/agent/hakureico12-20260908` on Bedrock and OpenRouter
+with seven translators and nine writers.
+
+THE READING:
+the belief holds,
+and the count of things read passes had waved through as weather is three
+(the front matter,
+the doubled opening,
+the error finish),
+each found by reading the raw text behind a warning.
+The error finish had sat in four logs read as "no class found" since 2026-09-03 under the `schema-mismatch` count.
+What remains before an all-entries launch:
+the twelfth hakureico page read under the front-matter,
+false-start and error-finish checks,
+`yuki418330012`,
+`Arita`,
+and the seven components no read page has met.

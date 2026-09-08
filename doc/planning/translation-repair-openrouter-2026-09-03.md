@@ -5002,6 +5002,97 @@ the front-matter and artifact checks of the tenth launch,
 E2B's candidates and ballots in the translate lane,
 and every `json false start` line a voice kept where the tenth pass lost one.
 
+## The eleventh pass is killed at 85 minutes; the eighteenth class; the twelfth launch, 2026-09-08, 18:21 UTC
+
+What the eleventh pass showed before it was killed.
+`FRONT MATTER entry=hakureico authority=archive` at 16:56:23.
+The pictures phase lost one GLM-5.3-Flash reading of `photo1.webp` to the 360000 ms deadline after
+3.5 M characters (17:04:29);
+five readers remained.
+Synthetic's rolling week ran dry at 17:21:15 inside the lanes phase
+(`markRefused synthetic: refused us while its meter reads dry ... held out for 300000ms`,
+six calls in ten seconds,
+each routed to the next provider),
+and the translate lane opened at 17:51:13 on
+`synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8 slate=8 checkers=3 translators=7
+readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3`.
+E2B wrote and voted in that lane:
+`candidate 1 from google.gemma-4-e2b won weight 3 across 7 ballots` at 18:03:02,
+the lane's other winners Qwen3.8-27B (twice),
+a GLM-5.3-Flash and glm-5.3 composite,
+GLM-5.3-Flash,
+minimax-m3 and gemma-4-26b-a4b-it (twice).
+Four `json false start` lines,
+every one Bedrock's gpt-oss-120b (`served=openai.gpt-oss-120b`,
+2291 reasoning characters on the first),
+abandoned openings of 2,
+3,
+2 and 3 characters,
+and no `schema-mismatch` beside any of them:
+the seventeenth class's fix read live.
+Two transport failures retried on the first attempt (a 503 from Together at 17:31:59,
+a 502 from NextBit at 17:39:42).
+
+The one lost voice,
+18:08:45 in the lane contest:
+`lane-contest deepseek-v4-pro-0813: schema-mismatch (content is not valid JSON: SyntaxError: Unexpected end of
+JSON input (model stopped with finish_reason=error)) raw="", voice lost`,
+on a stream served by CoreWeave that completed after 24291 ms with 315414 raw characters,
+8284 reasoning characters,
+0 content characters and a cost of 0.
+The provider had marked the generation failed and the ladder counted the failure as the model's answer.
+Read back across the logs since 2026-09-03 with `finish_reason=error`:
+seven replies in four passes
+(`openrouter-live3-20260903` two GLM-5.3-Flash translations on Together,
+`mtf_0615-shapes-20260904` one GLM-5.3-Flash refiner on Together,
+`Uekawakuyuurei-pictures-20260904` one gpt-oss-120b probe and one GLM-5.3-Flash consolidation on Together,
+and this one),
+every one through OpenRouter,
+every one with no content,
+every one a lost voice.
+OpenRouter's API reference (read 18:10 UTC) normalizes `finish_reason` to `stop`,
+`length`,
+`tool_calls`,
+`content_filter` and `error`;
+its errors page draws the mid-stream failure as a chunk with a top-level `error` object,
+`finish_reason: "error"` and the stream terminated,
+which `requireNoStreamError` has read since 2026-09-04.
+These seven passed that check (no error object) and the terminator check (`[DONE]` present),
+so the wire shape is one the reference does not draw:
+the choice closed on the error finish and the stream terminated normally.
+THE EIGHTEENTH CLASS.
+
+Fixed as `bb04656ef` (18:21 UTC):
+`openrouter-error-finish.ts` reads any choice whose `finish_reason` is `error`,
+carrying `native_finish_reason` when the gateway forwarded one;
+`openRouterStreamErrorOf` asks it when no chunk carried an error object and reports `code unnamed`,
+the native reason or `error-finish` as the kind,
+and the endpoint;
+`requireNoStreamError` throws the same `InStreamProviderError`,
+so the call rides the retry ladder (five attempts) under its own name.
+The guard was shown to fail first against the old build
+(`expected { found: false } to deeply equal { found: true, code: 'unnamed', ... }`,
+and the new module's suite could not import its export);
+oxlint 0 and 0,
+types clean,
+957 `PASS` and 0 `FAIL`.
+
+The eleventh pass was killed at 18:21 UTC under the rule,
+85 minutes in,
+inside its consolidation
+(the translate stage of a slice had just settled on the incumbent;
+three select judges abandoned 120000 ms after quorum).
+`hakureico` relaunched at 18:21 UTC on `bb04656ef` (pipeline `920ee70b`) into `~/temp/agent/hakureico12-20260908`,
+log beside it,
+pid 369919;
+`JUDGE SEATS phase=preparation synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8 slate=8
+checkers=3 translators=7 readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3 waited=0ms`
+and `FRONT MATTER entry=hakureico authority=archive` at 18:21:58.
+What the page must show when it settles:
+the eleventh's checks,
+and no `schema-mismatch` line naming `finish_reason=error`;
+an `InStreamProviderError` line with `code unnamed` is the class caught.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

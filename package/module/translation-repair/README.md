@@ -1874,6 +1874,15 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `bb04656ef` (2026-09-08,
+the eighteenth class) a whole stream whose choice stopped on `finish_reason: "error"` with no error object
+beside it
+(the shape OpenRouter's Together and CoreWeave routes delivered seven times since 2026-09-03,
+each after reasoning and with no content)
+is read as the provider failure it is (`openrouter-error-finish.ts`,
+asked by `openrouter-stream-error.ts` when no chunk carried an error object),
+rides the retry ladder as `InStreamProviderError` with `code unnamed` and the upstream's own reason as its kind,
+and no longer reaches the reply ladder as an empty answer that lost the voice as `schema-mismatch`.
 Since `8bf9deec0` (2026-09-08,
 the seventeenth class) a reply whose JSON opening was written twice,
 an abandoned fragment and then the whole object
