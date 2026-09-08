@@ -9,7 +9,8 @@ Discovery is ongoing. The revised prototype has been operationally verified and 
 Its teaching effectiveness and the sufficiency of the proposed skill requirements remain unestablished.
 The user has now rejected the opening preview as confusing and detached from a real-world example.
 After the user explicitly said "Do it", the opening was rebuilt as the shop conversation.
-The corrected opening is undergoing full verification and a new visible handoff.
+The corrected opening has passed the current operational checks and was visibly presented in Helium.
+That is not user acceptance, learner-performance evidence, or approval of the final skill.
 The shared-understanding checkpoint was premature and is withdrawn.
 [Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
 The user requires an updated Promise toy before continuing to weed out failure modes.
@@ -772,16 +773,99 @@ A later restart assertion selected the iframe's `data-run` attribute instead of 
 The verifier now selects `button[data-run]` explicitly.
 Neither failure was treated as evidence to weaken isolation or erase unrelated checks.
 
-The full suite is running as `proc_76ab`.
-It includes the rebuilt shop and layout-message positive/negative controls,
-followed by foundations, presentation/PDF content, native Print/Cancel, and advanced behavior.
-The export reopening suite remains a separate check.
-No complete pass or new visible handoff is claimed yet.
+### Verification corrections
+
+`proc_76ab` passed the shop's interaction and layout-message controls,
+then waited for mobile layout before bringing its frame into view.
+The frame's top was 1131.78125 CSS pixels in an 844-pixel-high viewport.
+After scrolling it into view, its reported height changed from 711 to 918 CSS pixels.
+The verifier now exposes the actual target before checking its rendered size.
+This observation does not establish a general browser scheduling cause.
+
+That failed wait also exposed a helper lifetime error:
+Node reported `Warning: Detected unsettled top-level await` and exited with status 13.
+`frame-eval.mjs` could create a new protocol request after its deadline had drained pending requests.
+It now checks the deadline and socket before sending, and rejects outstanding requests on socket closure.
+`proc_ab8a` passed a true-predicate control and a deliberately false predicate:
+the latter reported its deadline and input with status 1, without an unsettled-await warning.
+
+`proc_0ee5` passed the first complete shop revision.
+Print review then prompted copy corrections:
+"message box" replaces the unexplained "composer" in the paper trace;
+the source reference identifies the lesson's JavaScript appendix rather than claiming complete runnable HTML;
+and the appendix explains that visual wrapping does not insert source-code line breaks.
+
+`proc_3299` passed the rebuilt shop, foundations, and PDF/presentation checks,
+then exposed a premature native Cancel-control assertion.
+The corrected driver waits for both Cancel and Print/Save to be enabled.
+Evidence and the distinct cleanup boundary are recorded in
+`doc/troubleshooting/agent-browser-print-lifecycle.md`.
+
+### Current verification and handoff
+
+The complete current suite passed as `proc_e6a1`, `mise run test:all`, in 126 seconds.
+It includes shop interaction and layout-message positive/negative controls,
+foundations, highlighting, PDF content, native Print/Cancel, and advanced policies/workshops.
+The deliberate error-channel control remains separate from the lesson's unexpected-error record.
+
+The separate reopened-export suite passed as `proc_4ae5` in 17 seconds.
+It exercises the downloaded shop's distinct exchanges and retained draft/history,
+the reference application, learner file, every foundation download,
+and an edited boundary-string export.
+The proxy probe positively verifies HTTP-canary denial.
+It does not test an HTTPS canary, every transport, physical disconnection, or learner independence.
+
+Measured after these runs:
+
+- `doc/planning/promises-teaching.local.html`: 413111 bytes;
+  SHA-256 `aedb13c57ae4b49c22659a9dfb5ed12023d59ed89bb103ab45b2f4525fea9229`.
+- Original prototype SHA-256 remains
+  `dd9df982e76e4d4e4d7db9def3236a1f2f75af354637c4ae7074c3b4606f90ef`.
+- Preserved mechanical-preview SHA-256 remains
+  `d912a4ac357bb84a86a4dc7bc9d522d6a982273b559a800547c9c78ae0f155ba`.
+- Current PDF: 85 Letter pages, 1707506 bytes, tagged Skia/PDF m149.
+- PDF checks found 516 independently collected teaching entries and 62 appendix entries.
+  Comparisons normalize whitespace; they do not establish exact indentation or source-line fidelity.
+- `proc_6adb` rendered current PDF pages 1, 2, 4, 51, and 52.
+  Those images were visually inspected, not every PDF page.
+  They are `~/temp/agent/promises-revision/shop-print-review-<page>.png`.
+
+`proc_5218` opened the corrected file in headed Helium session `promises-shop-present`.
+The final print-copy revision was then reloaded after checking that notes, edited code,
+conversation activity, and practice state were still at their initial values.
+The loaded page was checked for the new heading, current print wording,
+and ready highlighting/print material.
+
+The final handoff was activated on the then-current output `DP-3`.
+KWin reported the matching Helium window active and non-minimized,
+with a 1018 by 744 frame; its activation script was unloaded afterward.
+The shop was left ready at the Saturday question, not pre-completed for the user.
+Its whole 599-CSS-pixel preview fitted within the measured 676-pixel browser viewport.
+`shop-visible-ready.png` records that presentation;
+`shop-visible-opening.png` records the contextual opening before scrolling to the shop.
+This is handoff-time visibility, not sustained focus or proof the user read it.
+
+The current mobile screenshot was also inspected.
+The conversation and unfinished cost question remain distinct;
+vertical movement uses the containing page, without horizontal document overflow in the tested viewport.
+
+Advisor reviewed the supplied implementation and conversation evidence for the specific counter/echo criticism.
+It found a material behavioral correction rather than a reskin and no consequential contradiction in that scope.
+That was not an independent exhaustive source audit or human teaching acceptance.
+Firefox ESR 140 remains the compatibility target, not a runtime tested by these Chromium/Helium checks.
+
+Owned failed verification browsers and the shared foundation browser were closed.
+The native-print and proxy fixtures were stopped, and their disposable print/export profiles were removed.
+The print controller was closed without reusing the ended endpoint.
+The presentation session remains open; the unrelated `music-player-android-presets` session was left alone.
+Future full verification must recreate `ui:print` and `ui:offline-fixture`, not reuse their stale endpoint files.
 
 ## Next action
 
-Finish full verification and reopen the corrected lesson visibly for the user.
-Do not stop at describing the new opening.
+Resume user critique of the grounded opening and its transition into functions.
+The authorized artifact correction is implemented and presented;
+the final teaching skill remains unconfirmed and unimplemented.
+Do not turn these operational passes into a request for final skill approval.
 Continue discovery from the user's critique of the visibly revised Promise toy.
 Do not replace that critique with another acceptance checklist or an inference from passing tests.
 Write additions in chunks no larger than the requested 200 to 500 lines.
