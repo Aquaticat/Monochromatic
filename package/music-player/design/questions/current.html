@@ -789,7 +789,9 @@ const openPreview = (button) => {
   previewScale = 1;
   renderScale();
   dialog.showModal();
-  requestAnimationFrame(fitPreview);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(fitPreview);
+  });
 };
 
 document.querySelectorAll('.preview-open').forEach((button) => {
