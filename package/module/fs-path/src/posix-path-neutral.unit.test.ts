@@ -6,7 +6,7 @@
  `dist/final/neutral/index.mjs` directly (bypassing the `node` export
  condition) exercises the code browsers run. The path operations are
  checked against `node:path/posix` as the oracle over a corpus of edge
- cases; the root finders must report that no filesystem exists rather
+ cases; root discovery must report that no filesystem exists rather
  than quietly reach `node:fs`.
 
  @module
@@ -22,14 +22,15 @@ import {
 
 import {
   dirname,
-  findGitRepoRoot,
-  findMiseMonorepoRoot,
-  findPnpmWorkspaceRoot,
-  GitRepositoryRootNotFoundError,
+  findRoot,
+  GIT_REPOSITORY,
   isAbsolute,
   join,
+  MISE_MONOREPO,
   normalize,
+  PNPM_WORKSPACE,
   resolve,
+  RootNotFoundError,
   sep,
 } from '../dist/final/neutral/index.mjs';
 
@@ -139,16 +140,16 @@ await describe({
     },),
 
     it({
-      name: 'root finders see no filesystem and fail instead of reaching node:fs',
+      name: 'root discovery sees no filesystem and fails instead of reaching node:fs',
       fn: async () => {
         /**
-         Rejections from the three finders, started from this checkout where
-         every marker exists on the real filesystem.
+         Rejections for the three preset markers, started from this checkout
+         where every marker exists on the real filesystem.
          */
         const outcomes = await Promise.allSettled([
-          findMiseMonorepoRoot({ cwd: import.meta.dirname, },),
-          findGitRepoRoot({ cwd: import.meta.dirname, },),
-          findPnpmWorkspaceRoot({ cwd: import.meta.dirname, },),
+          findRoot({ cwd: import.meta.dirname, marker: MISE_MONOREPO, },),
+          findRoot({ cwd: import.meta.dirname, marker: GIT_REPOSITORY, },),
+          findRoot({ cwd: import.meta.dirname, marker: PNPM_WORKSPACE, },),
         ],);
         expect(outcomes.map(function toStatus(outcome,): string {
           return outcome.status;
@@ -157,11 +158,8 @@ await describe({
           'rejected',
           'rejected',
         ],);
-        /**
-         Git finder rejection, which carries the dedicated error class.
-         */
-        const [, gitOutcome,] = outcomes;
-        expect((gitOutcome as PromiseRejectedResult).reason,).toBeInstanceOf(GitRepositoryRootNotFoundError,);
+        for (const outcome of outcomes)
+          expect((outcome as PromiseRejectedResult).reason,).toBeInstanceOf(RootNotFoundError,);
       },
     },),
   ],

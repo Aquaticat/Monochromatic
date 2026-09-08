@@ -93,7 +93,6 @@ await describe({
       name: 'positive control: node build ships the fs helpers with static node:fs/promises and node:path imports',
       fn: async () => {
         expect(nodeText.includes('ensureDir',),).toBe(true,);
-        expect(nodeText.includes('findPackageRoot',),).toBe(true,);
         expect(nodeText.includes('node:fs/promises',),).toBe(true,);
         expect(nodeText.includes('node:path',),).toBe(true,);
       },
@@ -104,6 +103,17 @@ await describe({
       fn: async () => {
         expect(neutralText.includes('navigator.storage',),).toBe(true,);
         expect(neutralText.includes('getDirectory',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'positive control: both builds ship the walker, the markers, and the memory adapter',
+      fn: async () => {
+        for (const text of [nodeText, neutralText,]) {
+          expect(text.includes('RootNotFoundError',),).toBe(true,);
+          expect(text.includes('createMemoryRootFilesystem',),).toBe(true,);
+          expect(text.includes('[monorepo]',),).toBe(true,);
+        }
       },
     },),
 
@@ -144,7 +154,6 @@ await describe({
       fn: async () => {
         expect(neutralText.includes('ensureDir',),).toBe(false,);
         expect(neutralText.includes('emptyDir',),).toBe(false,);
-        expect(neutralText.includes('findPackageRoot',),).toBe(false,);
       },
     },),
   ],

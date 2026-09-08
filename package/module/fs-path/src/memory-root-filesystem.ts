@@ -231,8 +231,52 @@ function entryKind({
 const MAX_LINK_HOPS = 40;
 
 /**
- Follows links from a normalized path to the path of the entry they end
- at, the way `stat` does; a dangling or absent path resolves to itself.
+ Non-empty segments of a normalized absolute path.
+
+ @param path - normalized absolute path
+
+ @returns names from the root downward
+
+ @example
+ ```ts
+ pathSegments('/repo/.git/HEAD'); // ['repo', '.git', 'HEAD']
+ ```
+ */
+function pathSegments(path: string,): readonly string[] {
+  return path.split('/',)
+    .filter(function nonEmpty(segment,): boolean {
+      return segment !== '';
+    },);
+}
+
+/**
+ Joins one more name onto a normalized directory path.
+
+ @param dir - normalized directory path
+
+ @param name - entry name
+
+ @returns normalized child path
+
+ @example
+ ```ts
+ childPath({ dir: '/', name: 'repo' }); // '/repo'
+ ```
+ */
+function childPath({
+  dir,
+  name,
+}: {
+  readonly dir: string;
+  readonly name: string;
+},): string {
+  return (dir === '/') ? `/${name}` : `${dir}/${name}`;
+}
+
+/**
+ Path of the entry a normalized path names once every link on the way is
+ followed, the way `stat` resolves it; a dangling link resolves to its
+ target path, which then reads as absent.
 
  @param tables - lookup tables
 
@@ -244,10 +288,10 @@ const MAX_LINK_HOPS = 40;
 
  @example
  ```ts
- followLinks({ tables, path: '/repo/.git/HEAD', hops: 0 });
+ resolveEntryPath({ tables, path: '/repo/.git/HEAD', hops: 0 });
  ```
  */
-function followLinks({
+function resolveEntryPath({
   tables,
   path,
   hops,
@@ -256,22 +300,77 @@ function followLinks({
   readonly path: string;
   readonly hops: number;
 },): string {
+  return pathSegments(path,)
+    .reduce(
+      function step(
+        current: string,
+        name: string,
+      ): string {
+      /**
+       Path of this segment under the directory resolved so far.
+       */
+      const candidate = childPath({
+        dir: current,
+        name,
+      },);
+      /**
+       Link target text when this segment is a link.
+       */
+      const target = tables.links
+        .get(candidate,);
+      if ((target === undefined) || (hops >= MAX_LINK_HOPS))
+        return candidate;
+      // Bounded structural walk: each hop moves to one link target, and
+      // the hop budget ends a cycle.
+      return resolveEntryPath({
+        hops: hops + 1,
+        path: resolve([
+          current,
+          target,
+        ],),
+        tables,
+      },);
+    },
+      '/',
+    );
+}
+
+/**
+ Path a link-aware entry probe (`lstat`) looks at: the parent chain
+ resolved through links, the final name left as it is.
+
+ @param tables - lookup tables
+
+ @param path - normalized absolute path
+
+ @returns path whose parent is resolved and whose leaf is not
+
+ @example
+ ```ts
+ resolveParentPath({ tables, path: '/repo/.git/HEAD' });
+ ```
+ */
+function resolveParentPath({
+  tables,
+  path,
+}: {
+  readonly tables: Tables;
+  readonly path: string;
+},): string {
   /**
-   Link target text when the path is a link.
+   Final name; empty only for the root.
    */
-  const target = tables.links
-    .get(path,);
-  if ((target === undefined) || (hops >= MAX_LINK_HOPS))
+  const leaf = pathSegments(path,)
+    .at(-1,);
+  if (leaf === undefined)
     return path;
-  // Bounded structural walk: each hop moves to one link target, and the
-  // hop budget ends a cycle.
-  return followLinks({
-    hops: hops + 1,
-    path: resolve([
-      dirname(path,),
-      target,
-    ],),
-    tables,
+  return childPath({
+    dir: resolveEntryPath({
+      hops: 0,
+      path: dirname(path,),
+      tables,
+    },),
+    name: leaf,
   },);
 }
 
@@ -298,7 +397,7 @@ export function createMemoryRootFilesystem(tree: MemoryTree = {},): RootFilesyst
   const tables = buildTables(tree,);
 
   /**
-   Kind of the entry a path names after following links.
+   Kind of the entry a path names after following every link.
 
    @param path - declared or probed path
 
@@ -311,7 +410,7 @@ export function createMemoryRootFilesystem(tree: MemoryTree = {},): RootFilesyst
    */
   function resolvedKind(path: string,): EntryKind {
     return entryKind({
-      path: followLinks({
+      path: resolveEntryPath({
         hops: 0,
         path: normalizePath(path,),
         tables,
@@ -320,10 +419,29 @@ export function createMemoryRootFilesystem(tree: MemoryTree = {},): RootFilesyst
     },);
   }
 
+  /**
+   Path the entry probes look at: parents resolved, leaf as spelled.
+
+   @param path - declared or probed path
+
+   @returns normalized path with a link-resolved parent chain
+
+   @example
+   ```ts
+   entryPath('/repo/.git/HEAD');
+   ```
+   */
+  function entryPath(path: string,): string {
+    return resolveParentPath({
+      path: normalizePath(path,),
+      tables,
+    },);
+  }
+
   return {
     exists: function memoryExists(path: string,): Promise<boolean> {
       return Promise.resolve(entryKind({
-        path: normalizePath(path,),
+        path: entryPath(path,),
         tables,
       },) !== 'absent',);
     },
@@ -337,19 +455,25 @@ export function createMemoryRootFilesystem(tree: MemoryTree = {},): RootFilesyst
     },
 
     readSymbolicLink: function memoryReadSymbolicLink(path: string,): Promise<string | typeof ABSENT> {
-      return Promise.resolve(tables.links
-        .get(normalizePath(path,),)
-        ?? ABSENT,);
+      /**
+       Link target text, absent for every other entry kind.
+       */
+      const target = tables.links
+        .get(entryPath(path,),);
+      return Promise.resolve(target ?? ABSENT,);
     },
 
     readTextFile: function memoryReadTextFile(path: string,): Promise<string | typeof ABSENT> {
-      return Promise.resolve(tables.files
-        .get(followLinks({
-        hops: 0,
-        path: normalizePath(path,),
-        tables,
-      },),)
-        ?? ABSENT,);
+      /**
+       File text at the end of the link chain, absent otherwise.
+       */
+      const text = tables.files
+        .get(resolveEntryPath({
+          hops: 0,
+          path: normalizePath(path,),
+          tables,
+        },),);
+      return Promise.resolve(text ?? ABSENT,);
     },
   };
 }

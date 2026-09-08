@@ -2,7 +2,7 @@
  Drives the platform-neutral artifact in a real browser through the
  Playwright harness page, which imports `dist/final/neutral/index.mjs`
  onto `window.moduleFsPath`. The test writes repository markers into the
- origin private file system, calls the root finders against them, and
+ origin private file system, runs findRoot with each preset marker, and
  checks the pure-JS path operations. A browser that refuses OPFS writes
  (headless WebKit exposes `getDirectory` but no `createWritable`) reports
  itself skipped, never failed.
@@ -83,7 +83,7 @@ test.describe('root discovery over the origin private file system', () => {
     },);
   },);
 
-  test('the finders locate markers written into OPFS and fail cleanly without them', async ({ page, },) => {
+  test('findRoot locates markers written into OPFS and fails cleanly without them', async ({ page, },) => {
     /**
      Repository fixture written into OPFS by the page, or the skip reason.
      */
@@ -200,9 +200,10 @@ test.describe('root discovery over the origin private file system', () => {
      */
     const outcomes: readonly FinderOutcome[] = await page.evaluate(async (root,) => {
       const {
-        findGitRepoRoot,
-        findMiseMonorepoRoot,
-        findPnpmWorkspaceRoot,
+        findRoot,
+        GIT_REPOSITORY,
+        MISE_MONOREPO,
+        PNPM_WORKSPACE,
       } = globalThis.moduleFsPath;
       /**
        Deepest directory of the fixture, forcing an upward walk.
@@ -232,11 +233,11 @@ test.describe('root discovery over the origin private file system', () => {
         }
       }
       return [
-        await settle(findMiseMonorepoRoot({ cwd, },),),
-        await settle(findGitRepoRoot({ cwd, },),),
-        await settle(findPnpmWorkspaceRoot({ cwd, },),),
-        await settle(findMiseMonorepoRoot({ cwd: nowhere, },),),
-        await settle(findGitRepoRoot({ cwd: nowhere, },),),
+        await settle(findRoot({ cwd, marker: MISE_MONOREPO, },),),
+        await settle(findRoot({ cwd, marker: GIT_REPOSITORY, },),),
+        await settle(findRoot({ cwd, marker: PNPM_WORKSPACE, },),),
+        await settle(findRoot({ cwd: nowhere, marker: MISE_MONOREPO, },),),
+        await settle(findRoot({ cwd: nowhere, marker: GIT_REPOSITORY, },),),
       ];
     }, fixture.root,);
 
@@ -262,12 +263,12 @@ test.describe('root discovery over the origin private file system', () => {
         value: fixture.root,
       },
       {
-        errorName: 'Error',
+        errorName: 'RootNotFoundError',
         status: 'rejected',
         value: '',
       },
       {
-        errorName: 'GitRepositoryRootNotFoundError',
+        errorName: 'RootNotFoundError',
         status: 'rejected',
         value: '',
       },
