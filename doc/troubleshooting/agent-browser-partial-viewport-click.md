@@ -96,6 +96,71 @@ It does not establish a general fix for fixed off-screen elements,
 wrapped inline fragments, overlays, or every frame coordinate system.
 Those inputs were not substituted for this measured button.
 
+## Verified selector-geometry prototype
+
+A fresh private clone at `~/temp/agent/upstream-prototype.EsTqN4`
+was checked against the origin URL and release commit before editing.
+The installed tool and lesson were not patched.
+
+`mise run probe:click-prototype`, from `~/temp/agent/promises-revision/`,
+compiles the actual Rust `build_selector_js` emitter and `BLOCKER_AT_JS` constant
+before and after the change.
+Only selector lookup is replaced with a fixture lookup for `#target`.
+Compilation uses `rust:1.97-bookworm` with no network,
+no proxy environment, a 2 GiB memory limit, and 2 CPUs.
+The generated JavaScript computes points in a real disposable browser;
+actual mouse move/down/up commands exercise those points.
+
+Process `proc_9b2e` passed:
+
+```text
+PASS geometry fully visible
+PASS geometry bottom intersection
+PASS geometry right intersection
+PASS geometry fixed bottom intersection
+PASS geometry fixed top intersection
+PASS geometry fixed left intersection
+PASS geometry corner intersection
+PASS geometry oversized fixed rectangle
+PASS geometry wholly offscreen but scrollable
+```
+
+Every named intersection case and the oversized fixed rectangle missed before the patch and hit afterward.
+The fully visible and scrollable cases hit in both versions.
+The driver also asserted an empty page-error record.
+The first setup attempt stopped before editing because `/home` and `/var/home` were compared without canonicalization;
+that harness check was corrected with `realpathSync`.
+
+The prototype chooses the center of the visible intersection when one exists:
+
+```diff
+--- a/cli/src/native/element.rs
++++ b/cli/src/native/element.rs
+@@ -779,8 +779,14 @@ fn build_selector_js(selector: &str) -> String {
+                 el.scrollIntoView({{ block: 'center', inline: 'center', behavior: 'instant' }});
+                 rect = el.getBoundingClientRect();
+             }}
+-            const x = rect.x + rect.width / 2;
+-            const y = rect.y + rect.height / 2;
++            // A visible intersection does not guarantee that the full box's center is visible.
++            const left = Math.max(0, rect.left);
++            const right = Math.min(document.documentElement.clientWidth || window.innerWidth, rect.right);
++            const top = Math.max(0, rect.top);
++            const bottom = Math.min(document.documentElement.clientHeight || window.innerHeight, rect.bottom);
++            const hasVisibleArea = right > left && bottom > top;
++            const x = hasVisibleArea ? (left + right) / 2 : rect.x + rect.width / 2;
++            const y = hasVisibleArea ? (top + bottom) / 2 : rect.y + rect.height / 2;
+             const blockerAt = {BLOCKER_AT_JS};
+             return {{ x: x, y: y, blocker: blockerAt(document, el, x, y) }};
+         }})()"#,
+```
+
+Coverage limits:
+this compiles and exercises the changed emitter, not the whole CLI.
+It does not test every selector parser, ref path, iframe, clipping ancestor, or wrapped inline element.
+A wholly unreachable rectangle retains its previous fallback behavior.
+The consumer's explicit-scroll workaround remains in use regardless of this prototype.
+
 ## What does not work
 
 - Treating intersection with the viewport as proof that the rectangle's center is visible.
@@ -121,14 +186,41 @@ The wrapped-inline PR concerns another geometry problem and is not treated as th
 4.  Contribution policy: no contribution file or issue/PR template exists in the inspected clone.
     `AGENTS.md` addresses AI contributors; a tracker search for `AI-generated` found no matching policy report.
 5.  Direction: collaborator responses on PR #1073 support improving scroll-before-interaction behavior.
-6.  Prototype: the consumer sequence was verified, not an upstream patch.
-    PR #1073 is a candidate, not an independently verified remedy for this precise partial-visibility case.
+6.  Prototype: the changed Rust geometry emitter was compiled and its generated points were exercised
+    before and after the patch as recorded in `Verified selector-geometry prototype`.
+    PR #1073 itself was not applied or independently verified.
 
 The skill-relative `.out-of-scope/` directory was absent.
-No new issue or comment is prepared or filed.
-An upstream contribution would first require reproducing this bounded case against that candidate patch;
-it must not be represented as an already verified upstream fix.
+No new issue is warranted for this related symptom.
+The partial-intersection evidence is additional to the wholly-off-screen case discussed in issue #1044.
+The comment draft remains local; external posting has not been authorized.
 The local workaround does not depend on upstream acceptance.
+
+### Additive comment draft
+
+~~~md
+There is a bounded partial-visibility case in v0.36.0 which is distinct from the older absence of scrolling.
+
+In `cli/src/native/element.rs`, `build_selector_js` checks whether any part of the rectangle intersects
+with the viewport, but then dispatches at the entire rectangle's center.
+A button at top `565.140625`, height `48`, in a `577`-pixel viewport passes that intersection check;
+its center is at `589.140625`, outside the viewport.
+A download driven by that selector timed out without the button receiving the click.
+Explicit `scrollintoview` followed by the native download command worked.
+
+A local prototype computes the center of the viewport-visible intersection instead.
+The actual Rust emitter was compiled before and after the change,
+with only selector lookup replaced by `document.querySelector("#target")`.
+Its generated points were exercised using real browser mouse events.
+Bottom, right, fixed bottom/top/left, corner, and oversized fixed cases missed before and hit afterward.
+Fully visible and wholly off-screen-but-scrollable controls continued to work.
+
+This is component verification, not a full CLI regression run.
+It does not validate wrapped inline elements, every frame/ref path, or wholly unreachable rectangles.
+The installed CLI was not modified.
+The source trace and tests were AI-assisted and executed by automation;
+no human manual verification is claimed.
+~~~
 
 [issue]: https://github.com/vercel-labs/agent-browser/issues/1044
 [scroll-pr]: https://github.com/vercel-labs/agent-browser/pull/1073
