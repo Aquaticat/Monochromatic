@@ -169,6 +169,13 @@ Notifications,
  don't poll.
 Stop only at completion or genuine blocker.
 
+MWK:
+ Monitors,
+ wakeups and the like must rarely wake the main agent.
+Emit only terminal states and lines you would act on,
+ never routine progress;
+ prefer one completion notification over a stream.
+
 PXQ:
  "Completion" in PX1 means the queue,
  not the task.
