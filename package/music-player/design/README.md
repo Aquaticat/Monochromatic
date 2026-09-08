@@ -28,10 +28,13 @@ Read these files in order:
 
 The active scale review is a self-contained HTML file under `questions/`.
  It shows
-accepted option 3B at Android font scales 0.5,
- 0.75,
+accepted option 3B at every font scale exposed by the target Android Settings UI:
+0.85,
  1.0,
- 1.5,
+ 1.15,
+ 1.30,
+ 1.50,
+ 1.80,
  and 2.0.
 The earlier matrix and its 1A recommendation are historical evidence;
  the user chose

@@ -3246,3 +3246,25 @@ normal Helium scale review was closed because its framing was misleading.
  Do not reopen
 it until the user chooses whether to replace synthetic states or retain them as clearly
 labeled diagnostics.
+
+The user chose actual Android choices only.
+ Prototype commit `5baf0eda6` changes the
+capture task to the installed Settings sequence;
+ evidence commit `2c0001ad3` records
+85%,
+ 100%,
+ 115%,
+ 130%,
+ 150%,
+ 180%,
+ and 200%.
+ UI Automator measures
+connected 2×2 from 85% through 150%,
+ then four connected vertical rows at 180%
+and 200%.
+ No user-facing preset fits `Shuffle Camellia` in one row on the measured
+414dp pane;
+ the one-row branch remains available for shorter names or wider panes.
+Main commit `17262263d` removes 50% and 75% from the active review and embeds all
+seven real presets.
+ Final browser verification and normal Helium presentation remain.

@@ -340,9 +340,15 @@ The active labels are `Repeat`,
  `In order`,
  `Shuffle Camellia`,
  and `Shuffle all`.
-Native captures prove one row at 50% and 75%,
- two rows at 100% and 150%,
-and four rows at 200%.
+Native captures cover every Settings UI preset:
+ two rows at 85%,
+ 100%,
+ 115%,
+130%,
+ and 150%,
+ then four rows at 180% and 200%.
+ No user-facing preset fits
+`Shuffle Camellia` in one row.
  The control tries baseline 12dp horizontal content padding,
 then 6dp before adding rows;
  every target remains at least 48dp.

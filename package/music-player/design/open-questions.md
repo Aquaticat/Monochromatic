@@ -586,20 +586,26 @@ screen,
  and every other unbuilt item remain
 outside the active form.
 
-Exact accepted 3B is now captured at Android font scales 0.5,
- 0.75,
+Exact accepted 3B is now captured at every font scale exposed by the target's Android
+Settings UI:
+ 0.85,
  1.0,
- 1.5,
-and 2.0.
- Measured overflow produces one mode row at 50% and 75%,
- a connected
-2×2 at 100% and 150%,
- and four connected vertical rows at 200%.
- Every state
-shows `Shuffle Camellia`,
- uses no horizontal mode scrolling,
- and clears the navigation
-inset.
+ 1.15,
+ 1.30,
+ 1.50,
+ 1.80,
+ and 2.0.
+ Measured
+overflow produces connected 2×2 from 85% through 150%,
+ then four connected
+vertical rows at 180% and 200%.
+ Every state shows `Shuffle Camellia`,
+ uses no
+horizontal mode scrolling,
+ and clears the navigation inset.
+ Shell-injected 50% and 75%
+captures are historical diagnostics,
+ not user-facing Android presets.
 
 Production accessibility verification must confirm every adaptive arrangement is
 announced as one mutually exclusive group.

@@ -439,17 +439,22 @@ prototype commits `f06971b1e`,
  `bb5dad664`,
  `d8b2552b6`,
  and `538b71304`.
- Exact accepted 3B captures at 50%,
- 75%,
-100%,
+ Exact accepted 3B captures at every target Settings preset are preserved by prototype
+commit `2c0001ad3`:
+ 85%,
+ 100%,
+ 115%,
+ 130%,
  150%,
- and 200% are preserved by commit `3a20f5207`.
- The visible third option is `Shuffle Camellia`.
- Overflow-driven
-reflow uses one row at 50% and 75%,
- connected 2×2 at 100% and 150%,
- and
-four vertical rows at 200%.
+ 180%,
+ and 200%.
+ The
+visible third option is `Shuffle Camellia`.
+ Overflow-driven reflow uses connected 2×2
+from 85% through 150%,
+ then four vertical rows at 180% and 200%.
+ Earlier 50% and
+75% captures are developer-injected diagnostics rather than ordinary Android states.
 The user's
 settled baseline combines the `light-c` tonal structure with `dbtp-a`.
  D34 makes the

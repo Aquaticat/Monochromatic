@@ -304,13 +304,23 @@ Shuffle label.
 this multi-row arrangement is an explicit product decision rather than baseline Material
 wrapping behavior.
 **Verified.**
- Native captures use one row at 50% and 75%,
- 2×2 at 100% and 150%,
-and four rows at 200%.
- The control tries 12dp horizontal content padding,
- then
-6dp before adding rows;
- all targets retain a 48dp minimum.
+ Installed Android Settings exposes 85%,
+ 100%,
+ 115%,
+ 130%,
+ 150%,
+180%,
+ and 200%.
+ Native captures use 2×2 from 85% through 150%,
+ then four
+rows at 180% and 200%.
+ No user-facing preset fits `Shuffle Camellia` in one row;
+that branch remains available for shorter names or wider panes.
+ The control tries 12dp
+horizontal content padding,
+ then 6dp before adding rows;
+ all targets retain a 48dp
+minimum.
 
 ### D1 (superseded). Mode control = connected button group (candidate mode-d)
 Four options:
