@@ -914,3 +914,69 @@ A launch on Bedrock alone seats three of the wide bench's quorum of four,
 and would read `quorum-not-met` from its first review,
 so the next launch waits for one of those meters to move;
 a launch of all 92 entries now would consolidate nothing.
+
+## What the seventh and eighth hakureico launches on Bedrock alone showed (2026-09-08, 01:49 and 02:19 UTC)
+
+Both launched on the owner's words that one wet provider is normal operation,
+to read what the pipeline does in the state production is in tonight:
+Synthetic's week at 0 percent,
+Hyper at 0 for good,
+OpenRouter at 0.01 USD,
+Bedrock alone.
+Read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The seventh hakureico launch on Bedrock alone" and "The eighth pass settles in 4.4 minutes".
+
+THE SEVENTH stopped INCOMPLETE at the pictures in 20 seconds:
+no picture reader had a Bedrock seat,
+and the seats line printed `readers=4 withheld=none` with none reachable.
+Two things landed on it,
+neither a design decision:
+the seats line now names every short bench with or without a hold (`c4a9682fe`),
+and the two Gemma sizes whose transcriptions every seated reader corroborated on nine pictures
+read pictures through Bedrock,
+by a reader-seat rule written in the planning log (`f7f9c9136`,
+addendum in
+[`translation-repair-roster-seating-2026-09-01.md`](../decision/translation-repair-roster-seating-2026-09-01.md)).
+
+THE EIGHTH,
+on that build,
+passed its pictures on the two Bedrock readers and settled in 4.4 minutes for 0.22 USD:
+a page with five slices rewritten by the one reachable translator,
+each chosen by three judges of nine
+(the contest asks a minimum ballot weight,
+not a majority),
+zero repairs
+(no editor or refiner has a Bedrock seat;
+92 writer rounds heard nobody),
+every consolidation slate declined under `quorum-not-met`,
+and no footnote.
+Every line the pass printed said so:
+`repairStatus=unchanged translateStatus=unfilled` on the tally,
+`short of quorum` before every phase.
+The page went to `fixed/` and `verify-published` matched it.
+
+THE READING:
+no new defect class on either launch,
+and the fifteenth thing found is not a defect but a question.
+The sixth pass's page,
+made by a whole bench,
+had fourteen changed slices,
+three consolidated,
+both footnotes;
+the eighth's,
+made by one writer and three judges,
+has five and none,
+and both are `SETTLED`.
+The pipeline distinguishes them only in the findings.
+Whether a pass whose editor,
+refiner and translator benches have no reachable seat should ship a page,
+or stop INCOMPLETE and leave the entry for a pass that has them,
+is the owner's decision,
+and the readiness belief waits on it:
+under the first answer the pipeline is what it is on one provider and the reading stands where the sixth pass left it;
+under the second there is one more floor to build,
+in the shape of the thirteenth class's wait,
+before a single-provider night ships nothing it should not.
+Until the answer,
+no launch on Bedrock alone,
+and no launch at all until a meter besides Bedrock's moves.

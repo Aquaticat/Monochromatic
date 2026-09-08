@@ -4322,6 +4322,98 @@ the contest and the consolidation),
 then whether a page on Bedrock's three judges and one translator ships at all,
 with what its settlements say.
 
+### The eighth pass settles in 4.4 minutes; what one provider buys, 02:24 UTC
+
+`TALLY hakureico status=SETTLED slices=18 repairStatus=unchanged repairIssues=38 repairAccepted=29 repairResolved=0`,
+`repairFindings=315 repairChanged=0 translateStatus=unfilled translateChanged=6 documentsDiffer=6`,
+`pageChanged=5 pageSilent=1 alignmentFindings=4 selection=contested ms=266781`:
+4.4 minutes,
+zero `[error]` lines,
+`verify-published` matched,
+Bedrock 198.93 to 198.71 USD on the meter against 253 `SPEND` lines summing 0.22 USD
+(`openai.gpt-oss-120b` 80 calls,
+`google.gemma-4-26b-a4b` 98,
+`google.gemma-4-e2b` 73,
+`google.gemma-4-31b` 2).
+2382 calls asked by the `SEAT` lines,
+2129 of them thrown as `NoProviderForModelError` for the seven seats no wet provider serves.
+
+WHAT THE TWO READER SEATS BOUGHT:
+both pictures corroborated on the two Bedrock readers
+(`photo1.webp` by 2 readers at overlap 0.653,
+`photo2.webp` at 0.814),
+where the seventh launch had stopped;
+`google.gemma-4-31b` in its first seated calls:
+asked 2,
+usable 2.
+
+WHAT THE SHORTFALL LINE SAID,
+at every phase after OpenRouter's first 402:
+`lanes`:
+`wide 3 of 8 reachable, quorum 4; translators 1 of 7 reachable, quorum 4`;
+`translate lane`:
+`translators 1 of 7 reachable, quorum 4; select 3 of 8 reachable, quorum 4`;
+`lane contest`:
+`wide 3 of 8 reachable, quorum 4`;
+`consolidation`:
+`slate 3 of 9 reachable, quorum 5; wide 3 of 8 reachable, quorum 4`;
+each ending `no provider has named its return, so the phase runs on what is reachable`.
+The pictures phase printed none,
+its two reachable readers meeting the pair.
+
+WHAT THE PAGE IS:
+162 lines against the archive's 158,
+38 lines differing from the archive,
+148 from the sixth pass's page,
+no footnote
+(`translateStatus=unfilled`:
+the passage the archive lacks stayed unfilled,
+as on the third pass).
+The repair lane changed nothing:
+its editor and refiner benches have no Bedrock seat,
+so `editor round: 0/3 heard` 40 times and `refiner round: 0/3 heard` 52 times,
+38 issues found by the three reachable critics and none resolved.
+The five changed slices are the translate lane's,
+written by the one reachable translator (`gemma-4-26b-a4b-it`,
+`translate round: 1/7 heard` 17 times)
+and chosen at the lane contest by three ballots each
+(`lane-won:translate` with 3 ballots on five slices,
+`settled-neither` with 2 on one):
+the contest asks a minimum ballot weight rather than a majority of its bench,
+so three judges of nine decide.
+The six slices that reached consolidation all kept standing text
+(five `slate-declined-standing`,
+one `gate-kept-standing`,
+every naturalness review `quorum-not-met`),
+and slice 14 shipped with `standing lacks contest endorsement` recorded as a finding.
+The changed prose reads as English
+(the Giftia paragraph,
+the IKEA sentence,
+the former lover's answer),
+by one writer,
+unrepaired,
+unpolished.
+
+THE READING:
+the pipeline on one provider is honest in every line it prints and ships a page anyway.
+`repairStatus=unchanged translateStatus=unfilled` on the tally,
+`short of quorum` before every phase,
+`quorum-not-met` on every review;
+and a page with five one-writer slices and no footnotes goes to `fixed/`,
+where the sixth pass's page had fourteen changed slices,
+three consolidated,
+and both footnotes.
+Nothing in the settlement distinguishes a page a whole bench made from a page one writer and three judges made,
+except the findings.
+Whether a pass whose editor,
+refiner and translator benches have no reachable seat should ship at all,
+or stop INCOMPLETE until a provider returns,
+is the owner's to decide;
+it is recorded as the open question in the readiness signal.
+Until it is decided,
+no further launch on Bedrock alone:
+the next one would buy the same page for the same 0.22 USD.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

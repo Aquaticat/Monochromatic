@@ -603,13 +603,24 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     (runs dir `~/temp/agent/hakureico8-20260908`,
     log beside it,
     pid 3992895),
-    recorded in the planning log under "The eighth hakureico launch on Bedrock alone".
-    Read it on its tally:
-    whether both pictures corroborated on the two Bedrock readers,
-    every phase's shortfall line,
-    and what a page on three judges and one translator says on its settlements.
-    If it is still running when this is read and the tree has moved past `56ccbdc23`,
-    the kill-and-relaunch rule applies.
+    recorded in the planning log under "The eighth hakureico launch on Bedrock alone"
+    and read under "The eighth pass settles in 4.4 minutes":
+    both pictures corroborated on the two Bedrock readers,
+    every phase printed its shortfall line,
+    and the page shipped with five slices by one translator and three judges,
+    zero repairs,
+    no footnotes,
+    `SETTLED`,
+    for 0.22 USD.
+    THE OPEN QUESTION,
+    the owner's:
+    whether a pass whose editor,
+    refiner and translator benches have no reachable seat ships a page or stops INCOMPLETE;
+    the readiness signal's last section states both answers and what each costs.
+    Until it is answered,
+    no launch on Bedrock alone;
+    until a meter besides Bedrock's moves,
+    no launch at all.
 2.  Run `producer-calibrate` with `--candidates google.gemma-4-e2b` for the translator seat when the meters allow;
     the judge seat is decided (`b0b48d6f4`).
 3.  Then `yuki418330012` (a math pair),
