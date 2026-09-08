@@ -291,7 +291,8 @@ Preserve these individually rather than treating them as cosmetic wording fixes:
   then said teaching a tool or related thing that substantially improves the objective is fine.
   Editing one HTML file is not much of a bottleneck here;
   the user contrasted teaching "WAPI or something".
-  The intended boundary needs clarification; do not silently resolve the apparent wording conflict.
+  The user's answer in "Addition-to-multiplication example" grounds this boundary in instructional sequence,
+  rather than a blanket ban on new tools or concepts.
 - "The pretend chat service" uses an undefined and potentially misleading term.
 - Code lacks syntax highlighting despite an existing repository facility.
 - "defining" and "display" are under-defined.
@@ -340,11 +341,36 @@ Independent review supports distinguishing these concerns:
 These are candidate generalizations, not a user-confirmed final skill design.
 Technical checks established operational behavior, not pedagogical adequacy.
 
+## Addition-to-multiplication example
+
+The user answered the prior-knowledge question with a concrete teaching sequence:
+
+- Present an apple and arrange a row of three apples.
+  The learner can establish its count using familiar addition: `1 + 2 = 3`.
+- Arrange another aligned row of three.
+  The learner can establish the combined count: `3 + 3 = 6`.
+- Add another row and let the repeated counting expose why the current method becomes unwieldy.
+- Introduce multiplication, then the multiplication table, in response to that need.
+
+Their contrast is opening with a multiplication table instead of building this understanding.
+The example establishes the importance of concrete representations,
+known reasoning,
+visible structure,
+and a problem that motivates the next abstraction before its name or reference material arrives.
+
+The assistant's interpretation is that new tools and concepts are allowed,
+but require a bridge from the learner's established understanding.
+The Promises page reversed that order by naming the abstraction and listing its features
+before sufficiently establishing the problem it solves.
+
+Open: how standalone material should support a learner who does not make the intended observation,
+instead of merely narrating that the learner noticed or understood it.
+Do not assume a required lockstep UI, forced quiz, or exhaustive historical survey.
+
 ## Next action
 
-Clarify the operational boundary in critique point 5:
-untaught assumptions versus introducing useful tools or related knowledge.
-Then clarify the critiques whose intended correction is not yet understood,
-especially causal phrasing, execution timing, and how HTML should demonstrate the concepts.
+Explore what the lesson should do when the learner does not make the intended connection
+in the concrete example.
+Continue clarifying causal phrasing, execution timing, and meaningful HTML behavior from actual failures.
 Keep the user-facing presentation session open and preserve the user's reading position.
 Do not draft the final skill or treat the critique as resolved by superficial lesson edits.
