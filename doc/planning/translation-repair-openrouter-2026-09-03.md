@@ -4514,6 +4514,166 @@ stopped at 02:21:13 at the lanes reading with
 `translators 1 of 7 reachable, floor 2`,
 after its pictures and for the Bedrock cost of the pairing and the pictures alone.
 
+### The ninth pass settles in 83 minutes on a whole bench; the name two rules render differently, 12:50 UTC
+
+`TALLY hakureico status=SETTLED slices=18 repairStatus=repaired repairIssues=134 repairAccepted=90 repairResolved=85`,
+`repairFindings=226 repairChanged=13 translateStatus=complete translateChanged=17 documentsDiffer=16`,
+`pageChanged=16 pageSilent=0 alignmentFindings=4 selection=contested ms=4998984`:
+83.3 minutes,
+zero `[error]` lines,
+`publish: wrote 18 slices into a page of 4878 characters` at 12:50:44 UTC.
+Six `JUDGE SEATS` lines,
+every provider wet on each,
+`wide=8 select=8 late=9 slate=9 checkers=3 translators=7 readers=6 writers=9 roster=10 withheld=none waited=0ms`,
+no shortfall line,
+no `quorum-not-met`,
+no `chunk resumes`,
+no hold named.
+The phases:
+pictures at 11:28:41,
+lanes at 11:35:04,
+translate lane at 12:01:28,
+lane contest at 12:16:47,
+consolidation at 12:21:04.
+
+WHAT A WHOLE BENCH BOUGHT,
+the reading this page owed:
+`photo1.webp` corroborated by 5 readers at overlap 0.878
+(`hf:zai-org/GLM-5.3-Flash` failed outright on it,
+its stream cut),
+`photo2.webp` by 6 at 0.949.
+The repair lane changed 13 slices
+(134 issues,
+90 accepted,
+85 resolved),
+the translate lane 17,
+and 16 of 18 differed between the lanes.
+The contest,
+9 ballots on every slice but one (8),
+gave 12 to translate,
+2 to repair,
+2 to neither;
+the closest splits 4/4/1 on slice 5,
+4/3/1 on slice 12 and 3/2/4 on slice 13.
+The consolidation ran all 16 contested slices on 9 of 9
+(two rounds on 8 of 9):
+7 consolidated,
+3 `slate-endorsed-standing`,
+5 `gate-kept-standing`,
+1 `slate-unjudged-standing`;
+18 naturalness-review rounds,
+every one 9 of 9 heard;
+2 slices recorded `standing text lacks contest endorsement and remains retryable`.
+The sixth pass's consolidation had run short of quorum from slice 3;
+this one never did.
+
+WHAT IT COST.
+Synthetic's week went from 5.83 percent to 0 at 12:25
+(615 calls);
+at 12:26:22 Synthetic answered HTTP 429 with its meter reading dry,
+was held out 300 s and the call routed on.
+Hyper's balance went from 250 to 0 at 12:45
+(898 calls).
+Bedrock 198.71 to 198.39 USD
+(463 calls).
+OpenRouter 200.01 to 199.56 USD:
+33 calls,
+every one after 12:45:53 when Hyper's meter read dry,
+the first paid OpenRouter calls that were not 402s.
+Both went dry inside the consolidation;
+the per-chunk reading costs nothing while nothing is held,
+no provider named its return,
+and the phase finished on Bedrock and OpenRouter.
+The floor merged afterwards would not have stopped it,
+and Bedrock with OpenRouter reaches every bench at every phase
+(measured on the merged build:
+no shortfall clause and no floor clause under `synthetic=dry hyper=dry`).
+One entry of 18 slices consumed the remainder of a Synthetic week and a Hyper day.
+
+WHAT THE WARNINGS SAID:
+30 `abandoned after quorum, voice lost`
+(`hf:Qwen/Qwen3.8-27B` 15 across select,
+panel,
+consolidate-gate,
+produceConsolidations,
+critic and polish-gate;
+`hf:zai-org/GLM-5.3-Flash` 6;
+`hf:moonshotai/Kimi-K3` 3;
+`glm-5.3` 3;
+`minimax-m3` 1),
+8 `hf:openai/gpt-oss-120b` schema-mismatch,
+1 select recovery round,
+2 stream cuts retried,
+1 `translate-refused-declared-name`.
+
+THE MECHANICAL READING (`read-page.mjs`,
+calibrated on the eighth pass's recorded page first):
+196 lines against the archive's 158 and the sixth pass's 195;
+176 lines differ from the archive,
+122 from the sixth pass's page;
+headings 3 of 3,
+comments 3,
+`PhotoScroll` kept,
+0 straight apostrophes in words (5 curly against the archive's 8),
+0 straight double quotes (14 curly against 18),
+2 three-dot ellipses and 0 unicode
+(archive 0 and 0;
+the source's one `……` rendered twice around `Though... many of those journeys were ones she took alone...`),
+both footnote markers and both definitions,
+every refusal grep 0,
+CJK punctuation and runs equal to the archive's (the comments and the Japanese quote).
+The details block carries the Japanese and English lines as the archive does,
+where the sixth pass's page had kept the source's Chinese lines beside the English.
+One em-dash on the page,
+none on the archive page;
+38 of 92 archive pages carry 228 of them,
+so it is within the archive's conventions.
+A run of three blank lines between the letter's blockquote and the closing sentence,
+where source,
+archive and sixth pass have one:
+a seam artefact that renders the same.
+No defect class on this page.
+
+THE NAME,
+the sixteenth thing found,
+a question and not a defect.
+The archive's front matter reads `name: Hanasaka`,
+alias `Kagurazaka Hanasaka, Hakureico`;
+the source's,
+`name: 神楽坂千歌`,
+alias `千歌, Hanasaka, Hakureico`.
+The translate lane wrote `name: Kagurazaka Chika`,
+alias `Kagurazaka Chika, Chika, Hanasaka, Hakureico`;
+the repair lane kept the archive (`incumbent-fallback`);
+the contest gave the slice to translate 6 ballots to 3,
+the three reasoning that the declared names settle the visible name as Hanasaka,
+the six that 千歌 is Chika and the alias should carry the given name;
+the consolidation slate endorsed it 9 of 9.
+In the body the repair lane's judges chose Chika for the IKEA sentence 8 of 8 at 11:41,
+the consolidation's refine stage chose it again,
+and the guard refused it at 12:28:
+`translate-refused-declared-name (slice 4: archive text carries "Hanasaka" and the replacement does not;`
+`keeping the archive text)`;
+the letter's signature stays `Kagurazaka Hanasaka`.
+Both are the rules as written:
+`document-preparation.ts` takes the declared forms from the target's front matter
+("target-authoritative identity forms guards preserve wherever archive body already carries them"),
+and `translate-slice.ts` exempts the front-matter slice from that guard
+("front matter is where declarations themselves are corrected from source,
+so protecting target values there would make metadata unrepairable").
+So the page names her Kagurazaka Chika at the top and Kagurazaka Hanasaka at the letter's foot,
+and no rule reads both.
+Recorded in the readiness signal for the owner.
+
+THE FLOOR MERGED.
+After the tally,
+`translation-repair-class15` was rebased onto `aa133492d` and fast-forwarded:
+`d74ef4a43` (the floor) and `977c242c1` (the names-only inventory);
+built in the main worktree,
+954 `PASS` and 0 `FAIL`;
+the throwaway worktree,
+its local branch and its remote branch removed.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

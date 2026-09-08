@@ -980,3 +980,75 @@ before a single-provider night ships nothing it should not.
 Until the answer,
 no launch on Bedrock alone,
 and no launch at all until a meter besides Bedrock's moves.
+
+## What the ninth hakureico launch on four wet providers showed (2026-09-08, 11:27 UTC)
+
+Launched on `061b46c0b` the minute OpenRouter was topped up,
+every provider wet and every bench whole,
+to buy the reading the sixth pass owed:
+a consolidation by a whole bench.
+Read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
+under "The ninth pass settles in 83 minutes on a whole bench".
+
+THE PASS settled in 83 minutes with zero errors:
+six seats lines all wet,
+no shortfall line,
+no hold,
+no `quorum-not-met`;
+both pictures corroborated by five and six readers;
+16 of 18 slices changed;
+the contest 12 to translate,
+2 to repair,
+2 to neither on nine ballots;
+the consolidation on all 16 contested slices with nine judges,
+7 of them consolidated;
+both footnotes;
+every read-page check held;
+no defect class.
+It spent the remainder of Synthetic's week and all of Hyper's day,
+0.32 USD on Bedrock and 0.45 USD on OpenRouter,
+whose first paid calls came in the last five minutes after Hyper's meter read dry.
+At 12:52 UTC:
+Synthetic and Hyper dry,
+Bedrock 198.39 USD,
+OpenRouter 199.56 USD;
+those two together reach every bench at every phase,
+measured on the merged build.
+
+THE SIXTEENTH THING is a question,
+like the fifteenth.
+The front matter now reads `name: Kagurazaka Chika`,
+the translate lane's faithful rendering of 神楽坂千歌,
+chosen 6 ballots to 3 over the archive's `Hanasaka` and endorsed 9 of 9;
+the body keeps `Hanasaka` and the letter's signature `Kagurazaka Hanasaka`,
+because the declared-name guard takes its forms from the archive's front matter and refused the same judges'
+`Chika` on slice 4.
+The guard exempts the front-matter slice on purpose
+("metadata unrepairable" otherwise),
+so each rule did what it says,
+and the page carries two renderings of one name that no rule reads together.
+Whether the archive's display name is editorial and stays,
+whether the body follows a corrected front matter,
+or whether the page only reports the disagreement,
+is the owner's decision.
+
+THE READING:
+the first page every phase of which ran on a whole bench,
+and the page the pipeline was built to ship:
+nine judges on every contested slice,
+seven consolidated,
+both footnotes,
+nothing failing a check.
+No code change is owed from this page.
+The fifteenth class landed after the tally (`d74ef4a43`,
+`977c242c1`),
+so a single-provider night now stops INCOMPLETE at the lanes instead of shipping a one-writer page.
+The readiness belief moves from "waits on the owner's answer" to this:
+on a whole bench the pipeline produces the page it should,
+and what remains before an all-entries launch is the name question above,
+the translator-seat calibration for the E2B size,
+the next entries (`yuki418330012`,
+`Arita`) and the seven components no read page has met.
+The production fact to carry:
+one entry of 18 slices on a whole bench consumes a Synthetic week's remainder and a Hyper day,
+so the next whole-bench pass either waits for the week to turn or runs on Bedrock and OpenRouter alone.

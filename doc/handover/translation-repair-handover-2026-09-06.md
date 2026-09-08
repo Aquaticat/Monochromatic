@@ -277,6 +277,21 @@ Newest first.
     Every cached picture reading is re-read once,
     since the cache key names the reader roster.
 
+-   `d74ef4a43`,
+    `977c242c1` (2026-09-08):
+    the fifteenth class,
+    the writing-bench floor;
+    guards neutralised 2,
+    2,
+    2 and 3 `FAIL`,
+    restored 0;
+    954 `PASS` and 0 `FAIL` on the merged build.
+-   `1ddbcc75a`,
+    `aa133492d` and the commit carrying this line:
+    the floor decision,
+    the ninth hakureico launch and its reading,
+    the readiness signal and this handover.
+
 ## The fifth class
 
 Found by the first pass on the plain invocation,
@@ -527,6 +542,28 @@ fourteen marks in one instant,
 neither provider asked again,
 and the pass finished its consolidation on Bedrock's seats.
 
+## The fifteenth class
+
+Found by the eighth hakureico pass on Bedrock alone at 02:24 UTC on 2026-09-08:
+a page with five slices by one translator and three judges,
+zero repairs and no footnote,
+shipped `SETTLED` for 0.22 USD,
+with nothing but the findings to tell it from the sixth pass's whole-bench page.
+The owner chose "Stop INCOMPLETE" (`doc/decision/translation-repair-writing-bench-floor.md`).
+Built in a throwaway worktree while the ninth pass ran and merged after its tally,
+`d74ef4a43` and `977c242c1`:
+`run-seats-floor.ts` holds the editors,
+refiners and translators to a reachable pair,
+every phase reading throws `WritingBenchUnreachableError` when a writing bench is below it with no hold to wait for,
+and the entry queue records the entry INCOMPLETE.
+Under a hold the reading waits once and reads again.
+A bench lost inside a phase with no hold still finishes the phase,
+recorded as unsettled in the decision.
+The ninth pass,
+on four providers,
+lost Synthetic and Hyper inside its consolidation and finished on Bedrock and OpenRouter,
+which reach every bench.
+
 ## The two defaults and the rule
 
 -   The corpus pass ran at overlap 1 by default while every page that shipped ran at 4 through a dial.
@@ -570,73 +607,58 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  The `hakureico` page from the 23:38 launch on `49aca5770` settled at 00:38 UTC on 2026-09-08
-    (60.2 minutes,
-    runs dir `~/temp/agent/hakureico6-20260907`,
-    log beside it)
-    and is read in the planning log under "The sixth pass settles":
-    both footnotes and both definitions on the page,
-    six `JUDGE SEATS` lines all `waited=0ms`,
-    no `short of quorum` or `chunk resumes` line,
-    Bedrock 199.34 to 198.99 USD against 511 `SPEND` lines summing 0.40 USD,
-    Hyper 277 to 0 at 00:36:13,
+1.  The `hakureico` page from the ninth launch on `061b46c0b` settled at 12:50 UTC on 2026-09-08
+    (83.3 minutes,
+    runs dir `~/temp/agent/hakureico9-20260908`,
+    log beside it),
+    every provider wet and every bench whole,
+    read in the planning log under "The ninth pass settles in 83 minutes on a whole bench":
+    six `JUDGE SEATS` lines all wet,
+    no shortfall or `quorum-not-met` line,
+    both pictures corroborated by five and six readers,
+    16 of 18 slices changed,
+    the consolidation on all 16 contested slices with nine judges (7 consolidated),
+    both footnotes,
     every read-page check held,
     no class found.
-    What the page still owes is a consolidation by a whole bench:
-    from slice 3 of 18 the pass ran on Bedrock's seats under `quorum-not-met`,
-    which the settlement records as evidence.
-    When a meter besides Bedrock's moves,
-    relaunch `hakureico` into a fresh runs dir and read that consolidation first.
-    A seventh launch on Bedrock alone at 01:49 UTC
-    (the owner's words:
-    one wet provider is normal operation)
-    stopped INCOMPLETE at the pictures in 20 seconds at no cost,
-    read in the planning log under "The seventh hakureico launch on Bedrock alone":
-    no reader on the readers bench is served by Bedrock,
-    Bedrock's cards carry `readsImages: false` until a transcription is measured,
-    and the `phase=pictures` seats line printed `readers=4 roster=10 withheld=none` with three providers dry,
-    saying nothing about reach.
-    Both pieces of work that followed have landed
-    (`c4a9682fe` the shortfall line,
-    `f7f9c9136` the two Bedrock reader seats),
-    and an eighth launch on Bedrock alone started at 02:19 UTC on `56ccbdc23`
-    (runs dir `~/temp/agent/hakureico8-20260908`,
-    log beside it,
-    pid 3992895),
-    recorded in the planning log under "The eighth hakureico launch on Bedrock alone"
-    and read under "The eighth pass settles in 4.4 minutes":
-    both pictures corroborated on the two Bedrock readers,
-    every phase printed its shortfall line,
-    and the page shipped with five slices by one translator and three judges,
-    zero repairs,
-    no footnotes,
-    `SETTLED`,
-    for 0.22 USD.
+    The earlier hakureico passes are read in the same log:
+    the sixth (whole page,
+    consolidation short of quorum from slice 3),
+    the seventh (stopped at the pictures,
+    fixed by `c4a9682fe` and `f7f9c9136`)
+    and the eighth (one writer,
+    three judges,
+    the fifteenth class).
     THE OPEN QUESTION,
-    the owner's:
-    whether a pass whose editor,
-    refiner and translator benches have no reachable seat ships a page or stops INCOMPLETE;
-    the readiness signal's last section states both answers and what each costs.
+    the owner's,
+    the sixteenth thing found:
+    the front matter now reads `name: Kagurazaka Chika` (chosen 6 to 3,
+    endorsed 9 of 9)
+    while the body and the letter's signature keep the archive's `Hanasaka` and `Kagurazaka Hanasaka`,
+    because the declared-name guard takes its forms from the archive's front matter and exempts the front-matter
+    slice on purpose;
+    the readiness signal's last section states the three answers.
     Until it is answered,
-    no launch on Bedrock alone;
-    until a meter besides Bedrock's moves,
-    no launch at all.
+    the page stands as shipped.
 2.  Run `producer-calibrate` with `--candidates google.gemma-4-e2b` for the translator seat when the meters allow;
     the judge seat is decided (`b0b48d6f4`).
 3.  Then `yuki418330012` (a math pair),
     then `Arita`,
     then the seven components no read page has met.
-4.  Synthetic's week is at 0 percent as of 21:24 UTC and stays dry until the week turns,
+4.  Synthetic's week is at 0 percent again as of 12:25 UTC on 2026-09-08 (the ninth pass spent its 5.8 percent)
+    and stays dry until the week turns,
     while its five-hour window refills on its own
     (2750 of 2750 at the sixth pass's tally,
     wet at one reading of six);
     Hyper's daily quota is unpublished and closed once today after about a thousand requests of one pass,
     and a pass that meets it holds Hyper out until the instant the refusal names.
-    At 00:38 UTC on 2026-09-08:
-    OpenRouter 0.01 USD,
-    Bedrock 198.99 USD,
-    Hyper 0 since 00:36 and never to be recharged (the owner's words).
-    Bedrock is the one wet provider and the only one whose meter moves without the owner.
+    At 12:52 UTC on 2026-09-08:
+    OpenRouter 199.56 USD (topped up to 200.01 at 11:26),
+    Bedrock 198.39 USD,
+    Hyper 0 since 12:45 and never to be recharged (the owner's words).
+    Bedrock and OpenRouter are the two wet providers and together reach every bench at every phase,
+    measured on the merged build;
+    OpenRouter is the one whose spend is per token.
 
 ## Standing constraints
 
