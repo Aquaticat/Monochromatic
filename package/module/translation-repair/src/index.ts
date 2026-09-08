@@ -200,6 +200,11 @@ export {
   stripThinkBlock,
 } from './model-content.ts';
 export {
+  FALSE_START_WINDOW,
+  parseAnswerJson,
+  readJsonPastFalseStart,
+} from './json-false-start.ts';
+export {
   armCallDeadline,
   type CallDeadline,
 } from './call-deadline.ts';

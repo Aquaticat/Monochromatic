@@ -5,8 +5,8 @@ import type {
   ChatJsonOutcome,
   ChatTextReply,
 } from './chat-contract.ts';
+import { parseAnswerJson, } from './json-false-start.ts';
 import {
-  parseModelJson,
   stripCodeFence,
   stripThinkBlock,
 } from './model-content.ts';
@@ -47,6 +47,12 @@ import { detectRefusalShape, } from './refusal.ts';
 //   Without a token-limit marker, content that parses and passes the guard
 //   WINS even when it quotes refusal-like phrasing; the refusal scan runs
 //   only on parse failure.
+//
+//   An abandoned opening ahead of the object is read past, never refused:
+//   reasoning streams (Bedrock's gpt-oss-120b, OpenRouter's Makora route for
+//   deepseek-v4-flash-0731) wrote `{ {   "choice`, `{"{"resolution` and
+//   `{"best": 1{"best": 1, ...` on 2026-09-08, and the guard still judges
+//   what was read (`json-false-start.ts`, the seventeenth class).
 
 /**
  * Logger root for the provider-neutral reply reader.
@@ -238,7 +244,7 @@ export function readJsonOutcome<ValueT,>(
    * Parse attempt over the unwrapped answer, fence-stripped a SECOND time
    * because the first pass was looking at the marker.
    */
-  const attempt = parseModelJson({
+  const attempt = parseAnswerJson({
     text: (marker === '') ? content : stripCodeFence({ text: content, },),
   },);
 
@@ -270,6 +276,14 @@ export function readJsonOutcome<ValueT,>(
       detail: `content is not valid JSON: ${attempt.detail}${stopped}`,
       ...usageSpread,
     };
+  }
+
+  if (attempt.abandoned > 0) {
+    rl.warn(
+      `${modelId}: json false start: read the object past an abandoned opening of ${
+        String(attempt.abandoned,)
+      } chars`,
+    );
   }
 
   /**

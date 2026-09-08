@@ -212,6 +212,34 @@ await describe({
     },),
 
     it({
+      name: 'READS PAST an abandoned opening ahead of the object, the seventeenth class, and still holds the '
+        + 'guard to what it read',
+      fn: async () => {
+        const outcome = read({
+          text: '{"verdict": "nap{"verdict": "nap", "why": "sun"}',
+          finishReason: 'stop',
+        },);
+        expect(outcome.kind,).toBe('ok',);
+        expect(outcome.kind === 'ok' ? outcome.value : undefined,).toEqual({
+          verdict: 'nap',
+          why: 'sun',
+        },);
+
+        /**
+         * A false start whose object the guard rejects: read, then refused as the guard says.
+         */
+        const rejected = read({
+          text: '{"{"mood": "nap"}',
+          finishReason: 'stop',
+        },);
+        expect(rejected.kind,).toBe('schema-mismatch',);
+        expect(
+          rejected.kind === 'schema-mismatch' ? rejected.reason : undefined,
+        ).toBe('caller-guard-rejected',);
+      },
+    },),
+
+    it({
       name: 'names why the model stopped when content will not parse',
       fn: async () => {
         // A non-truncating stop reason stays on the unparseable path; the
