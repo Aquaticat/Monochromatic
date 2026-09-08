@@ -600,6 +600,9 @@ The original HTML file itself remains preserved.
 
 The verified revised HTML is 400,193 bytes.
 It contains 14 chapters, ten foundation labs, ten workshop choices, and eleven native code editors.
+The post-presentation file SHA-256 is
+`d912a4ac357bb84a86a4dc7bc9d522d6a982273b559a800547c9c78ae0f155ba`.
+This was recorded after presentation, not captured by the earlier test run.
 The original file's SHA-256 remains
 `dd9df982e76e4d4e4d7db9def3236a1f2f75af354637c4ae7074c3b4606f90ef`.
 Both HTML artifacts remain ignored and local-only.
@@ -639,12 +642,15 @@ The browser's interactivity remains available rather than being removed to make 
 The latest independent GLM review found no consequential causal error or blocking prerequisite
 in the visible excerpts supplied to it.
 That is bounded source review, not exhaustive content approval or learner evidence.
+Runtime verification was in Chromium/Helium, not Firefox ESR 140.
 User critique of this revision is still required for discovery.
 
 Required tool investigations are recorded in:
 
 - `doc/troubleshooting/agent-browser-errors-clear.md`:
   isolate deliberate error-monitor failures from the lesson's record.
+  The existing upstream patch also passed before/after component checks in `proc_10a7`;
+  this did not rebuild or replace the installed CLI.
 - `doc/troubleshooting/agent-browser-partial-viewport-click.md`:
   scroll and verify the actual click point before interpreting a download timeout.
   A private selector-geometry prototype also passed real pointer checks;
@@ -669,6 +675,11 @@ Visible handoff captures:
 `~/temp/agent/promises-revision/revised-visible-handoff.png` and `revised-visible-goal.png`.
 The disposable native-print process `proc_e7c6` and rejecting-proxy process `proc_f6d4` were stopped.
 Successful disposable verification drivers close their sessions.
+The remaining ended print controller was closed without its expired CDP endpoint;
+a fresh session list contained only `promises-revised-present`.
+The owned print and export profiles were removed.
+To repeat verification, `ui:print` and `ui:offline-fixture` recreate their respective setup;
+those services are not left running after delivery.
 Keep the user-facing `promises-revised-present` window open.
 
 ## Next action
