@@ -3471,3 +3471,61 @@ and the complete accessibility name;
  plus main commit
 `4594b20a9`,
  preserve the corrected evidence.
+ Main commit `a5f052502` rebuilds the
+form and validator with the strict floor;
+ `c684c0451` updates the settled design and
+troubleshooting docs.
+ `AGENTS.md` rule `PFG` now prevents minimum padding from being
+reinterpreted as a reducible fallback.
+
+Disposable controls reject wrong 3B pixels,
+ spacer,
+ system UI,
+ one-row width,
+ 85%
+row count,
+ 150% row count,
+ Shuffle content,
+ current-track semantics,
+ title alignment,
+T3,
+ O2,
+ transport 1B,
+ long-name semantics and raster,
+ preset mapping,
+ and the
+12dp statement;
+ all restore and pass.
+ Final browser verification decodes all eight
+2076 × 2152px images,
+ finds no visible 6dp claim,
+ and measures no horizontal page
+overflow at 1920 × 1080 or 390 × 500 CSS px.
+ Every narrow card is 316px wide.
+The 100% 2×2 preview opens at Fit and preserves focus restoration.
+ Desktop page and
+preview axe checks report zero violations and zero incomplete checks.
+ At 390 × 500,
+the same preview fits as a 100 × 103px frame inside its 358 × 135px stage,
+ with zero
+axe violations and the known unresolved `color-contrast` check.
+ Offline reload retains
+all eight images with no network resources;
+ whitespace validation,
+ browser errors,
+ and
+console output pass.
+
+The isolated verifier is closed.
+ The emulator is restored to the Camellia build at
+font scale 1.0,
+ temporary device XML files are removed,
+ and the emulator is stopped.
+The corrected form is open in normal Helium at KWin ID
+`{e3eeaeb2-4796-4fb5-aec4-844765d4690b}` on `DP-2`,
+ 1080 × 1880;
+ it is currently
+minimized.
+ Activate and unminimize that window as the final operation,
+ then wait for the
+user's review.
