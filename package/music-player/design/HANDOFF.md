@@ -3302,3 +3302,12 @@ subdirectory name only.
 semantics.
  Rebuild and measure the native prototype before changing the recorded preset row
 mapping.
+ Prototype commit `f9635cb56` implements that rule with content-sized
+Material-style segments,
+ a selected fill plus checkmark,
+ and rendered-width middle
+ellipsis on the subdirectory only.
+ The unshortened dynamic name remains in
+`contentDescription`.
+ Prototype build and Android lint pass;
+ device measurement remains.
