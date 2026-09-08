@@ -85,7 +85,8 @@ Separate PDF-content verification from native-dialog lifecycle verification.
 For the native path,
 start the click without blocking the verification driver,
 inspect the real print-preview target through a separate CDP connection,
-and activate its Cancel button.
+wait until both Cancel and Print/Save are enabled,
+and activate Cancel.
 Only then await the initiating click and assert post-print state.
 
 The runnable implementation is
@@ -98,6 +99,42 @@ Tradeoffs:
 this native-dialog driver is Chromium/Helium-specific and depends on the observed WebUI controls.
 It verifies cancellation, not a physical printer.
 PDF text verification is separate from visual inspection of rendered PDF pages.
+
+### Target registration is not control readiness
+
+During the shop-opening revision, `proc_3299` passed PDF-content checks but failed in
+`~/temp/agent/promises-revision/verify-native-print.mjs`:
+
+```text
+AssertionError [ERR_ASSERTION]:
+assert.ok(controls.some(button => button.text === 'Cancel' && !button.disabled))
+```
+
+The driver's `printTarget()` only waited for a `chrome://print/` target to exist.
+It then immediately asserted that Cancel was available,
+although it already waited for Print/Save to become enabled.
+The failing assertion does not distinguish an absent control from a disabled control.
+
+A later inspection of that same owned print target reported `document.readyState` as `complete`,
+with both Cancel and Print enabled.
+The driver now waits for both conditions within its existing bounded readiness loop.
+The corrected full suite passed as `proc_e6a1`, including real Cancel and disclosure restoration.
+No lesson restoration code or browser implementation was changed for this assertion.
+
+One cleanup invocation clicked Cancel synchronously through `cdp-page.mjs`.
+The evaluation returned `Cancelled owned failed verification dialog`,
+then the helper's explicit `Target.detachFromTarget` request failed:
+
+```text
+{"code":-32602,"message":"No session with given id"}
+```
+
+A subsequent target-list inspection found zero print targets and one lesson target:
+cancellation had happened despite the cleanup command's nonzero exit.
+Do not repeat Cancel against that ended target.
+The native verifier retains its separate scheduled Cancel action,
+then waits for the completed print cycle rather than treating an evaluation response as completion.
+This is a caller/cleanup boundary observation, not a new agent-browser defect.
 
 ### Ended-browser cleanup
 
