@@ -23,6 +23,7 @@ import {
   phaseBenches,
   reachableSeats,
   rosterQuorumSize,
+  RUN_MODELS,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   shortBenches,
@@ -71,6 +72,8 @@ function benchesUnder(
     wide: seats.wideSeats,
     select: seats.selectJudges,
     slate: seats.slateJudges,
+    editors: seats.repairModels.editorModelIds,
+    refiners: seats.repairModels.refinerModelIds ?? [],
     translators: seats.translators,
     readers: seats.readers,
   };
@@ -136,11 +139,22 @@ await describe({
           seats: RUN_TRANSLATORS,
           dry: BEDROCK_ALONE,
         },).length;
+        /**
+         * Editors and refiners, none of which Bedrock serves.
+         */
+        const editors = RUN_MODELS.editorModelIds;
+        const refiners = RUN_MODELS.refinerModelIds ?? [];
         expect(wideReachable,).toBeLessThan(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),);
         expect(writersReachable,).toBeLessThan(rosterQuorumSize({ rosterSize: RUN_TRANSLATORS.length, },),);
         expect(clauses,).toEqual([
           `wide ${String(wideReachable,)} of ${String(RUN_WIDE_SEATS.length,)} reachable, quorum ${
             String(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),)
+          }`,
+          `editors 0 of ${String(editors.length,)} reachable, quorum ${
+            String(rosterQuorumSize({ rosterSize: editors.length, },),)
+          }`,
+          `refiners 0 of ${String(refiners.length,)} reachable, quorum ${
+            String(rosterQuorumSize({ rosterSize: refiners.length, },),)
           }`,
           `translators ${String(writersReachable,)} of ${String(RUN_TRANSLATORS.length,)} reachable, quorum ${
             String(rosterQuorumSize({ rosterSize: RUN_TRANSLATORS.length, },),)

@@ -16,6 +16,11 @@ import {
   judgeSeatsFor,
 } from './run-seats.ts';
 import {
+  benchesOf,
+  unreachableWritingBenches,
+  WritingBenchUnreachableError,
+} from './run-seats-floor.ts';
+import {
   type JudgeSeatPhase,
   phaseBenches,
   shortBenches,
@@ -62,8 +67,13 @@ function wetWhenUnread(): boolean {
 /**
  * Reads the dryness view, waiting out the shortest running hold once when a
  * bench the phase leans on cannot reach quorum among the seats a wet provider
- * serves, and reading again after the wait; when a bench is short and no
- * provider has named its return, the reading says so and seats what it read.
+ * serves, and reading again after the wait; when a judge bench is short and
+ * no provider has named its return, the reading says so and seats what it
+ * read; when a writing bench is below its floor with nothing to wait for, or
+ * still below it after the wait, the entry stops.
+ *
+ * @throws {@link WritingBenchUnreachableError} when a writing bench the phase
+ * leans on cannot write a slate and no hold promises it back
  *
  * @param client - run client whose dryness view and holds are the router's own
  *
@@ -126,30 +136,45 @@ async function readDrynessPastShortBench(
    */
   const shortest = shortestHold({ holds, },);
   /**
+   * Benches this phase leans on, in the order the line prints them.
+   */
+  const names = phaseBenches({ phase, },);
+  /**
    * Benches as first read.
    */
-  const seats = judgeSeatsFor({ dry: first, },);
+  const benches = benchesOf({ seats: judgeSeatsFor({ dry: first, },), },);
   /**
    * Benches this phase leans on that cannot reach quorum as first read.
    */
   const short = shortBenches({
-    benches: {
-      wide: seats.wideSeats,
-      select: seats.selectJudges,
-      slate: seats.slateJudges,
-      translators: seats.translators,
-      readers: seats.readers,
-    },
-    names: phaseBenches({ phase, },),
+    benches,
+    names,
     dry: first,
   },);
-  if (short.length === 0) {
+  /**
+   * Writing benches this phase leans on that cannot write a slate as first read.
+   */
+  const unreachable = unreachableWritingBenches({
+    benches,
+    names,
+    dry: first,
+  },);
+  if ((short.length === 0) && (unreachable.length === 0)) {
     return {
       dry: first,
       waitMs: 0,
     };
   }
   if (shortest === 0) {
+    if (unreachable.length > 0) {
+      // THE FIFTEENTH CLASS: a writing bench below its floor with nothing to
+      // wait for stops the entry rather than writing a one-writer page.
+      l.error(`JUDGE SEATS phase=${phase} writing bench unreachable: ${unreachable.join('; ',)}; stopping the entry`,);
+      throw new WritingBenchUnreachableError({
+        phase,
+        clauses: unreachable,
+      },);
+    }
     // SAID EVEN WHEN THERE IS NOTHING TO WAIT FOR. The seventh hakureico
     // launch (2026-09-08, Bedrock alone) printed `readers=4 roster=10
     // withheld=none` at the pictures with three providers dry, since
@@ -185,8 +210,30 @@ async function readDrynessPastShortBench(
     signal,
     pollMs,
   },);
+  /**
+   * Dryness after the wait.
+   */
+  const again = await readDryness();
+  /**
+   * Writing benches still below the floor after the one wait this reading takes.
+   */
+  const stillUnreachable = unreachableWritingBenches({
+    benches: benchesOf({ seats: judgeSeatsFor({ dry: again, },), },),
+    names,
+    dry: again,
+  },);
+  if (stillUnreachable.length > 0) {
+    l.error(
+      `JUDGE SEATS phase=${phase} writing bench unreachable after waiting ${String(waitMs,)}ms: `
+        + `${stillUnreachable.join('; ',)}; stopping the entry`,
+    );
+    throw new WritingBenchUnreachableError({
+      phase,
+      clauses: stillUnreachable,
+    },);
+  }
   return {
-    dry: await readDryness(),
+    dry: again,
     waitMs,
   };
 }

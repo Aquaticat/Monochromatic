@@ -119,6 +119,13 @@ export {
   reachableSeats,
   shortBenches,
 } from './corpus-run/run-seats-wait.ts';
+export {
+  benchesOf,
+  unreachableWritingBenches,
+  WRITING_BENCH_FLOOR,
+  WRITING_BENCHES,
+  WritingBenchUnreachableError,
+} from './corpus-run/run-seats-floor.ts';
 export { rosterQuorumSize, } from './roster-quorum-size.ts';
 export type { RunClient, } from './corpus-run/run-client-contract.ts';
 export {

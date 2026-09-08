@@ -23,6 +23,7 @@ import {
   type BudgetView,
   readJudgeSeats,
   RUN_TRANSLATORS,
+  WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
 
 //region Seat reading tests
@@ -316,6 +317,81 @@ await describe({
         expect(quiet.lines.some(function namesShortfall(line: string,): boolean {
           return line.includes('short of quorum',);
         },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${readJudgeSeats.name} on the writing-bench floor`,
+  children: [
+    it({
+      name: 'STOPS THE ENTRY when a writing bench the phase leans on is below the pair a slate needs and no '
+        + 'provider has named its return, the fifteenth class: the eighth hakureico pass at the lanes on '
+        + 'Bedrock alone, no editor, no refiner, one translator',
+      fn: async () => {
+        const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
+        const { logger, lines, } = capturingLogger();
+        await expect(readJudgeSeats({
+          client: viewClient({ providerDryness: script.read, },),
+          phase: 'lanes',
+          signal: new AbortController().signal,
+          l: logger,
+          pollMs: 5,
+        },),).rejects.toThrow(WritingBenchUnreachableError,);
+        expect(script.counter.reads,).toBe(1,);
+        expect(lines.some(function namesStop(line: string,): boolean {
+          return line.includes('JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of',)
+            && line.includes('stopping the entry',);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'WAITS OUT THE HOLD ONCE and STOPS when the bench is still below the floor after it, and SEATS '
+        + 'when the wait brought the bench back',
+      fn: async () => {
+        const stays = scriptedViews({
+          views: [
+            BEDROCK_ALONE,
+            BEDROCK_ALONE,
+          ],
+        },);
+        await expect(readJudgeSeats({
+          client: viewClient({
+            providerDryness: stays.read,
+            providerHolds: () => ({
+              ...NO_HOLDS,
+              hyper: 40,
+            }),
+          },),
+          phase: 'translate lane',
+          signal: new AbortController().signal,
+          l,
+          pollMs: 5,
+        },),).rejects.toThrow('writing bench unreachable at translate lane: translators',);
+        expect(stays.counter.reads,).toBe(2,);
+
+        const returns = scriptedViews({
+          views: [
+            BEDROCK_ALONE,
+            ALL_WET,
+          ],
+        },);
+        const seats = await readJudgeSeats({
+          client: viewClient({
+            providerDryness: returns.read,
+            providerHolds: () => ({
+              ...NO_HOLDS,
+              hyper: 40,
+            }),
+          },),
+          phase: 'lanes',
+          signal: new AbortController().signal,
+          l,
+          pollMs: 5,
+        },);
+        expect(returns.counter.reads,).toBe(2,);
+        expect(seats.translators,).toEqual(RUN_TRANSLATORS,);
       },
     },),
   ],

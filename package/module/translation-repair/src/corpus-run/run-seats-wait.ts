@@ -42,7 +42,14 @@ import { reachOf, } from '../roster-reach.ts';
  * const bench: BenchName = 'translators';
  * ```
  */
-export type BenchName = 'wide' | 'select' | 'slate' | 'translators' | 'readers';
+export type BenchName =
+  | 'wide'
+  | 'select'
+  | 'slate'
+  | 'editors'
+  | 'refiners'
+  | 'translators'
+  | 'readers';
 
 /**
  * Phase a seat reading is taken for.
@@ -69,7 +76,8 @@ export type JudgeSeatPhase =
  *
  * Preparation pairs blocks and reviews the archive with the wide bench; the
  * pictures phase reads with the readers; the lanes need critics, panel and
- * judges (wide) for repair and writers for translate; the translate lane
+ * judges (wide), editors and refiners for repair and writers for translate
+ * (the writing benches since the fifteenth class, `run-seats-floor.ts`); the translate lane
  * needs its writers and its slate judges; the contest judges with the wide
  * bench; consolidation writes with the roster and judges with the slate and
  * gates with the late bench, of which the slate is the narrower.
@@ -79,6 +87,8 @@ const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> =
   pictures: ['readers',],
   lanes: [
     'wide',
+    'editors',
+    'refiners',
     'translators',
   ],
   'translate lane': [
