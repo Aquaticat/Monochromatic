@@ -440,7 +440,7 @@ prototype commits `f06971b1e`,
  `d8b2552b6`,
  and `538b71304`.
  Exact accepted 3B captures at every target Settings preset are preserved by prototype
-commit `7b30db15e`:
+commit `cedc2a668`:
  85%,
  100%,
  115%,
@@ -451,12 +451,17 @@ commit `7b30db15e`:
  The
 visible third option is `Shuffle Camellia`.
  Overflow-driven reflow uses one connected
-content-sized row at 85% and 100%,
- connected 2×2 at 115%,
- 130%,
- and 150%,
- then
-four vertical rows at 180% and 200%.
+content-sized row at 85%,
+ connected 2×2 at 100%,
+ 115%,
+ and 130%,
+ then four
+vertical rows at 150%,
+ 180%,
+ and 200%.
+ Every segment keeps at least 12dp
+horizontal content padding;
+ overflow adds rows instead of reducing that floor.
  One-row subdirectory content is capped at
 rendered `Camellia` width;
  longer names middle-ellipsize the name only and retain full

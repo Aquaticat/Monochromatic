@@ -36,10 +36,11 @@ accepted option 3B at every font scale exposed by the target Android Settings UI
  1.50,
  1.80,
  and 2.0.
- The mode group uses one content-sized row at 85% and 100%,
- 2×2 from 115%
-through 150%,
- and four rows at 180% and 200%.
+ The mode group uses one content-sized row at 85%,
+ 2×2 from 100% through 130%,
+and four rows from 150% through 200%.
+ Every segment retains at least 12dp horizontal
+content padding.
  The `Shuffle` cell caps longer
 subdirectory names at rendered `Camellia` width with a middle ellipsis while retaining
 the full accessibility name.

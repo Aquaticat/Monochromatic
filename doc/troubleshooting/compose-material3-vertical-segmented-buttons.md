@@ -113,11 +113,15 @@ javap -classpath ~/.gradle/caches/9.5.1/transforms/5482783770c2ea5cd3ac7fbc2b7c0
 
 ### Consumer-side prototype
 
-Prototype commit `f9635cb56` builds and Android lint passes.
+Prototype commit `13913118a` builds and Android lint passes.
  Native captures use one
-connected content-sized row at 85% and 100%,
- connected 2×2 at 115% through 150%,
-and four rows at 180% and 200%.
+connected content-sized row at 85%,
+ connected 2×2 from 100% through 130%,
+ and four
+rows from 150% through 200%.
+ Every segment retains at least 12dp horizontal content
+padding;
+ overflow adds rows rather than reducing that floor.
  At 200%,
  the complete group clears the navigation
 inset after vertical deck scrolling.
@@ -195,7 +199,7 @@ announcements.
 - Plain radio rows fit the labels but violate settled component identity.
 - A horizontally scrolling segmented row preserves component identity but violates the
   required purely vertical presentation.
-- A 2 by 2 arrangement cannot preserve one-row deck height and still does not fit the 180% and 200% labels.
+- A 2 by 2 arrangement cannot preserve one-row deck height and does not fit labels from 150% through 200%.
 - One constrained horizontal row cannot preserve all four full labels at 200% text.
 - Adding `wrapContentWidth()` at the group boundary does not remove the element's
   internal equal weight.

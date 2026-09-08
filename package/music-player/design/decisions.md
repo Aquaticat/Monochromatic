@@ -320,16 +320,18 @@ wrapping behavior.
  150%,
 180%,
  and 200%.
- Native captures use one content-sized row at 85% and 100%,
- 2×2 at 115%,
+ Native captures use one content-sized row at 85%,
+ 2×2 at 100%,
+ 115%,
+ and
 130%,
- and 150%,
- then four rows at 180% and 200%.
- The one-row control tries
-12dp horizontal content padding,
- then 6dp before adding rows;
- all targets retain a
-48dp minimum.
+ then four rows at 150%,
+ 180%,
+ and 200%.
+ Every segment keeps at least
+12dp horizontal content padding;
+ the control adds rows instead of crossing that floor.
+All targets retain a 48dp minimum.
  A long-name probe renders `Shuffle Extr…ory` for
 `ExtraordinarilyLongDirectory` while exposing the unshortened name in semantics.
 

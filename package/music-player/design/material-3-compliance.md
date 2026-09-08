@@ -341,16 +341,17 @@ The active labels are `Repeat`,
  `Shuffle Camellia`,
  and `Shuffle all`.
 Native captures cover every Settings UI preset:
- one content-sized row at 85% and 100%,
-two rows at 115%,
- 130%,
- and 150%,
- then four rows at 180% and 200%.
- The
-one-row control tries baseline 12dp horizontal content padding,
- then 6dp before adding
-rows;
- every target remains at least 48dp.
+ one content-sized row at 85%,
+two rows at 100%,
+ 115%,
+ and 130%,
+ then four rows at 150%,
+ 180%,
+ and 200%.
+Every segment keeps at least 12dp horizontal content padding;
+ the control adds rows
+instead of crossing that floor.
+ Every target remains at least 48dp.
  The pinned Compose `SegmentedButton`
 forces equal child weights and exposes no multi-row group wrapper.
  The one-row branch

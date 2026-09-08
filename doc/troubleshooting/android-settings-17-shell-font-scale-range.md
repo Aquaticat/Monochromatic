@@ -131,10 +131,11 @@ Read the target's preset resource:
 
 The accepted music-player screen was recaptured at every user-facing value.
  The mode
-control uses one content-sized row at 85% and 100%,
- connected 2×2 from 115%
-through 150%,
- then four connected rows at 180% and 200%.
+control uses one content-sized row at 85%,
+ connected 2×2 from 100% through 130%,
+then four connected rows from 150% through 200%.
+ Every segment retains at least
+12dp horizontal content padding.
 
 ## Verified workarounds
 

@@ -595,12 +595,18 @@ Settings UI:
  1.50,
  1.80,
  and 2.0.
- Measured overflow produces one connected content-sized row at 85% and 100%,
-connected 2×2 at 115%,
- 130%,
- and 150%,
- then four connected vertical rows at
-180% and 200%.
+ Measured overflow produces one connected content-sized row at 85%,
+ connected 2×2 at
+100%,
+ 115%,
+ and 130%,
+ then four connected vertical rows at 150%,
+ 180%,
+ and
+200%.
+ Every segment retains at least 12dp horizontal content padding;
+ overflow adds
+rows rather than reducing that floor.
  Every state shows `Shuffle Camellia`,
  uses no horizontal mode
 scrolling,
