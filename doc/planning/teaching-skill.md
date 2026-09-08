@@ -5,8 +5,10 @@
 The user requested a skill to curb failures in AI teaching and drafted teaching materials.
 They requested grilling to discover the failures from their experience.
 Repository material remains potentially relevant.
-The initial discovery and concrete prototype critique have been recorded.
-[Proposed acceptance checks](teaching-skill-acceptance.md) synthesize the requirements for confirmation.
+Discovery is ongoing and the first prototype has not been repaired.
+The shared-understanding checkpoint was premature and is withdrawn.
+[Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
+The user requires an updated Promise toy before continuing to weed out failure modes.
 No skill design has been confirmed or implemented.
 
 ## Evidence from the user
@@ -443,10 +445,24 @@ The highlighter's producer, consumer, registration, and style paths were inspect
 Standalone integration remains unverified and is not claimed.
 No lesson rewrite, skill implementation, or `AGENTS.md` edit has occurred during this synthesis.
 
+## Rejected premature confirmation checkpoint
+
+After collecting the critique and writing acceptance checks,
+the assistant asked whether shared understanding had been reached.
+The user rejected that progression:
+"We haven't weeded out all failure modes, even just in the Promise toy example."
+They requested the updated Promise toy first.
+
+Recording and classifying failures does not establish that they have been resolved or exhausted.
+The assistant must demonstrate its interpretation through a materially revised teaching artifact,
+then continue discovery from that artifact's failures.
+The acceptance proposal is not an approved design or a reason to close the interview.
+
 ## Next action
 
-Present the synthesized requirements and seek shared-understanding confirmation.
-Do not write the final skill until the user confirms or delegates that decision.
-Any remaining corrections revise the proposal rather than becoming new assumptions.
-Keep the user-facing presentation session open and preserve the user's reading position.
-Do not edit `AGENTS.md` or treat the critique as resolved by superficial lesson edits.
+Rebuild and verify `doc/planning/promises-teaching.local.html`,
+then visibly present the exact updated artifact in Helium.
+Preserve the initial prototype as local evidence and keep local artifacts ignored.
+Write additions in chunks no larger than the requested 200 to 500 lines.
+Do not write the final skill or ask for final confirmation yet.
+Do not edit `AGENTS.md`.
