@@ -473,7 +473,16 @@ Current authoring sources are in `~/temp/agent/promises-revision/`:
 - `advanced.html`: audited downstream explanations and workshop scaffolding.
 - `basic-samples.html`: executable source for the revised foundation labs and their comparisons.
 - `labs.mjs`: source-backed sandboxed previews, report helper, and standalone example downloads.
-- `revision.css`: revised presentation; highlighting and print coverage are not finished.
+- `revision.css`: responsive side-by-side code/output presentation, read-only state cues, and print styles.
+- `highlight.mjs` and `bundle-highlight.mjs`: the installed Lezer grammars and actual repository tag mapping,
+  bundled for offline use in static code and native textarea mirrors.
+- `preview-snapshot.mjs` and `print.mjs`: text-only snapshots from owned opaque frames,
+  current-draft/run distinctions, and the complete example/workshop print catalog.
+- `verify-presentation.mjs`: highlighting, source identity, boundary strings, scrolling,
+  forced-color fallback, layouts, PDF content inventory, and disclosure restoration.
+- `launch-print-browser.mjs`, `cdp-page.mjs`, and `verify-native-print.mjs`:
+  real Helium Print/Cancel verification inside an off-screen Cage compositor.
+- `verify-advanced.mjs`: adapted application, workshop, and export checks using exact preview run identities.
 - `build.mjs` and `mise.toml`: assemble the single local HTML using the preserved runtime modules.
 - `frame-eval.mjs`: direct CDP evaluation of a particular opaque-origin preview.
   It matches a document title including the preview's run identity,
@@ -508,8 +517,82 @@ actual callback history rather than a Node-only contract presented as generic br
 matching collection policies,
 no imaginary public Promise state field,
 and explicit distinctions between real execution and teaching instrumentation.
-A later independent review of the rebuilt text timed out without returning findings.
-It is not counted as a passed review; obtain a new content review during final verification.
+The first independent review of the rebuilt text timed out without returning findings.
+A subsequent GLM review returned actionable and incorrect findings.
+The text now explicitly motivates `Promise.withResolvers()` through the constructor-and-capture predecessor,
+acknowledges that separating creation from controls is a choice,
+and gives concrete `typeof` examples.
+
+The review's proposed removal of the printed greeting transformation was rejected after checking the browser source:
+`loadExercise()` itself changes the greeting comparison from `Hello` to `Welcome`.
+The print catalog deliberately matches it.
+The presentation driver now compares every printed workshop comparison with its actual browser counterpart.
+The review's claim that the adoption distinction was missing was also rejected:
+the section explicitly says that a resolved Promise can still be pending and can eventually reject,
+and the experiment verifies both outcomes.
+Review output is evidence to check, not a reason to alter correct content blindly.
+
+## Revised presentation verification
+
+`mise run test:all` passed as `proc_cc0f` after rebuilding the current candidate.
+This runs assembly, foundations, presentation, and native Print/Cancel checks.
+It is not the advanced app/workshop regression pass;
+that separate adapted driver ran as `proc_cf10`.
+Its chat scenarios, workshop starters/repairs, explicit Stop branch,
+capstone, navigation, and downloads passed.
+Its final empty-error assertion failed because agent-browser retained the deliberately injected
+`revised-lesson-error-positive-control` despite `errors --clear`.
+The installed native handler ignores that flag;
+isolate the positive control in a separate disposable browser rather than filtering errors.
+
+Implemented presentation behavior includes:
+
+- Desktop lab source and actual output appear side by side; narrow layouts stack them.
+- Source colors reuse `ssgHighlighter` from `package/ssg/aquati.cat/src/client/tags.ts`.
+  The highlighting bundle is self-contained and is not a learner-app dependency.
+- Every editor remains a labeled native textarea.
+  Typed source, colored source, executed source, reset/comparison states,
+  scroll positions, and forced-color fallback were checked.
+- Editing without Run is explicitly labeled as an unrun draft.
+  Printing identifies both the draft and the source which produced the latest observed output.
+- Every foundation starter and comparison,
+  every workshop task, starter, hint, and worked comparison,
+  current drafts, current settings, notes, and reported preview output are inventoried for print.
+- Every inventoried item was found in text extracted from an actual generated PDF.
+  This is stronger than checking a DOM copy but does not replace visual PDF review.
+- Static alternatives remain in the teaching path;
+  browser interactivity was not removed to obtain print support.
+- Owned previews publish literal text snapshots with their run identity.
+  Their sandbox still omits `allow-same-origin`.
+  No snapshot is interpreted as HTML.
+
+The headless Print-button check was initially misdiagnosed as a PDF restoration bug.
+PDF generation and all its content checks had passed;
+the failed assertion followed a new Print click whose cycle had not ended.
+The unnecessary implementation patch was removed.
+Native Helium verification now opens the real Print UI,
+waits for an enabled Print/Save action,
+activates Cancel,
+and verifies `afterprint` plus restoration of mixed disclosure states.
+It does not submit a physical printer job.
+See `doc/troubleshooting/agent-browser-print-lifecycle.md`.
+
+The forced-color check inspects rendering in the CDP session which applied that condition.
+A separate-client null result was not treated as a tested forced-color state.
+See `doc/troubleshooting/agent-browser-emulation-session.md`.
+
+Current visual evidence in `~/temp/agent/promises-revision/`:
+
+- `revised-code-light.png` and `revised-code-dark.png`.
+- `revised-code-mobile.png` and `revised-goal-mobile.png`.
+- `revised-lesson-print.pdf`, its extracted text, and `print-inventory.json`.
+- `native-print-preview.png`, showing the enabled native print action and Cancel control.
+  It is not evidence that the embedded PDF preview had finished painting.
+
+The off-screen native browser remains managed as process `proc_e7c6`.
+Its current profile path is recorded in `print-profile-path.txt`;
+read that profile's `DevToolsActivePort` to reacquire its endpoint.
+The user-facing original browser has not been navigated or used for this verification.
 
 Verification session: `promises-revision-verify`.
 The user-facing `promises-lesson-present` session still shows the first prototype;
@@ -517,11 +600,14 @@ do not claim the revision has been presented.
 
 ## Next action
 
-Finish syntax highlighting using the existing Lezer parsers and repository `ssgHighlighter` mapping,
-including edited code and a verified fallback presentation.
-Finish full-content print counterparts and an inventory containing every example and workshop exercise.
-Then rerun the retained advanced scenarios, exports, offline/theme/layout/print checks,
-obtain independent content review, and visibly present the exact revised HTML in Helium.
+Isolate the error-channel positive control and rerun the adapted advanced regression pass.
+Document the installed `errors --clear` behavior with its source trace and verified workaround.
+Reopen and exercise the revised exports;
+verify offline operation and the current PDF's rendered pages.
+Finish a focused content review without treating reviewer absence claims as source evidence.
+Then visibly present the exact revised HTML in Helium and continue discovery from the user's critique.
+Close disposable browser sessions and stop the off-screen Cage process after verification,
+but keep the user's presentation window open.
 Write additions in chunks no larger than the requested 200 to 500 lines.
 Do not write the final skill or ask for final confirmation yet.
 Do not edit `AGENTS.md`.
