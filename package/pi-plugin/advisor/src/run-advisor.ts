@@ -172,8 +172,7 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
          Live session scope can change during asynchronous authentication.
          */
         assertAdvisorLiveScope({
-          scope: options.ctx
-            .scopedModels,
+          ctx: options.ctx,
           model: input.candidate
             .model,
         },);

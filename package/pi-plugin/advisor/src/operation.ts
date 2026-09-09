@@ -291,7 +291,9 @@ export async function runAdvisorOperation(options: ForeignHostCapability<Advisor
       .length
       > 0) {
       if (![...active.keys(),].some(function running(id: number,): boolean {
-        return ledger.attempt(id,).state === 'running';
+        return ledger.attempt(id,)
+          .state
+          === 'running';
       },))
         return finish('complete',);
     }

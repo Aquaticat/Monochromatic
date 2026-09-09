@@ -1,62 +1,29 @@
-/**
- Final synchronous scope check accepts both live shapes supported by the shared resolver. @module
- */
+/** Final dispatch uses the shared live-scope reader, including getter-backed hosts. @module */
+import { NO_LIVE_SCOPE, readLiveScope, type ResolveEffectiveScopeContext, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { AdvisorReadonlyModel, ScopedAdvisorModel, } from './types.ts';
 
 /**
- Resolve one runtime scope item's canonical identity without trusting its wrapper shape.
- 
- @param value - raw model or model/thinking-level entry
- 
- @param model - selected canonical identity
- 
- @returns whether this scope item authorizes the selected endpoint
- */
-function matchesScopeItem({
-  value,
-  model,
-}: {
-  readonly value: unknown;
-  readonly model: string
-},): boolean {
-  if ((value === null) || ((typeof value) !== 'object'))
-    return false;
-  /**
-   Both historical raw-model and current wrapped-model live scopes are supported.
-   */
-  const identity = 'model' in value ? value.model : value;
-  return (identity !== null) && ((typeof identity) === 'object')
-    && ('provider' in identity)
-    && ('id' in identity)
-    && ((typeof identity.provider) === 'string')
-    && ((typeof identity.id) === 'string')
-    && (`${identity.provider}/${identity.id}` === model);
-}
-
-/**
- Reject a selected endpoint removed from a currently restricted live scope during authentication.
- 
- @param scope - current host scope property, when available
- 
+ Recheck the authoritative live scope after asynchronous request preparation.
+ @param ctx - host scope property or getter, using the same precedence as initial selection
  @param model - prepared canonical endpoint
- 
- @throws when a nonempty live scope excludes this endpoint
- 
+ @mutates ctx - invokes the optional runtime scope getter
+ @throws when the current live scope excludes this endpoint
  @example
  ```ts
- assertAdvisorLiveScope({ scope: ctx.scopedModels, model: 'provider/reviewer' });
+ assertAdvisorLiveScope({ ctx, model: 'provider/reviewer' });
  ```
  */
-export function assertAdvisorLiveScope({
-  scope,
-  model,
-}: {
-  readonly scope: unknown;
-  readonly model: string
+export function assertAdvisorLiveScope({ ctx, model, }: {
+  readonly ctx: ForeignHostCapability<Pick<ResolveEffectiveScopeContext, 'scopedModels' | 'getScopedModels'>>;
+  readonly model: string;
 },): void {
-  if (Array.isArray(scope,) && (scope.length > 0)
-    && (!scope.some(function included(value: unknown,): boolean { return matchesScopeItem({
-      value,
-      model,
-    },); },)))
+  /** Synchronous normalized snapshot, not a selection-time cached property. */
+  const scope = readLiveScope<AdvisorReadonlyModel>(ctx,);
+  if (scope === NO_LIVE_SCOPE)
+    return;
+  if (!scope.some(function includesEndpoint(entry: ScopedAdvisorModel,): boolean {
+    return entry.canonicalSlug === model;
+  },))
     throw new Error(`advisor: ${model} left the live scope before dispatch`,);
 }

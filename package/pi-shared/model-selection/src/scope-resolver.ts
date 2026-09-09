@@ -21,11 +21,11 @@ import type {
 } from './types.ts';
 
 /**
- Sentinel returned by internal {@link readLiveScope} when the runtime exposes no
+ Sentinel returned by {@link readLiveScope} when the runtime exposes no
  usable live model scope. A `unique symbol`; narrowed with
  `=== NO_LIVE_SCOPE`.
  */
-const NO_LIVE_SCOPE: unique symbol = Symbol('model-selection/no-live-scope',);
+export const NO_LIVE_SCOPE: unique symbol = Symbol('model-selection/no-live-scope',);
 
 //region Types
 
@@ -211,8 +211,13 @@ export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
  @returns live scoped models, or {@link NO_LIVE_SCOPE} when unavailable
  
  @mutates getScopedModels - invokes supplied live-scope callback when present
+
+ @example
+ ```typescript
+ const scope = readLiveScope(ctx);
+ ```
  */
-function readLiveScope<TModel extends ReadonlyModel,>(
+export function readLiveScope<TModel extends ReadonlyModel,>(
   {
     getScopedModels,
     scopedModels,

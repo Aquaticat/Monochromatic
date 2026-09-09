@@ -264,7 +264,10 @@ export function operationFixture({
     ],);
     if (settled !== NOT_READY)
       return settled;
-    queue.sort(function eventOrder(left: FixtureEvent, right: FixtureEvent,): number { return left.at - right.at; },);
+    queue.sort(function eventOrder(
+      left: FixtureEvent,
+      right: FixtureEvent,
+    ): number { return left.at - right.at; },);
     /**
      Next event may follow the operation's wakeup boundary.
      */
@@ -312,7 +315,10 @@ export function operationFixture({
     },
     async flush(): Promise<void> {
       while (queue.length > 0) {
-        queue.sort(function eventOrder(left: FixtureEvent, right: FixtureEvent,): number { return left.at - right.at; },);
+        queue.sort(function eventOrder(
+          left: FixtureEvent,
+          right: FixtureEvent,
+        ): number { return left.at - right.at; },);
         /**
          Finite remaining fixture event.
          */

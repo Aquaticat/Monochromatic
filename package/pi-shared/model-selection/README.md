@@ -34,6 +34,17 @@ Advisor and auto-mode can import heavier `/scope`,
  and `/pi-coding-agent` modules.
 Thinking-defaults imports only root or `/core` helpers.
 
+## Synchronous live scope
+
+`readLiveScope()` uses the same live-scope precedence as `resolveEffectiveScope()`:
+ a getter takes precedence over the property.
+It accepts raw models and `{ model, thinkingLevel }` entries,
+ normalizes their canonical slugs,
+ and filters malformed entries.
+An unavailable or non-array live value returns `NO_LIVE_SCOPE`;
+ an explicit empty array remains an empty scope.
+Use this helper for a final dispatch check after asynchronous authentication.
+
 ## Fast judge-model ranking
 
 Budget helpers retain their API names for compatibility,
