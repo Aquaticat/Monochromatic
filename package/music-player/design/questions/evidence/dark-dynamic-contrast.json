@@ -1,0 +1,161 @@
+{
+  "environments": [
+    {
+      "key": "wallpaper",
+      "request": {
+        "key": "wallpaper",
+        "label": "Measured current wallpaper seed",
+        "seed": "45588C",
+        "style": "TONAL_SPOT",
+        "styleNumber": "1",
+        "contrast": "0.0"
+      },
+      "ratios": {
+        "primary": 6.08,
+        "secondaryContainer": 6.04,
+        "blackText": 16.76,
+        "blackSupporting": 9.1,
+        "blackOutline": 4.58,
+        "stableContainerText": 15.78,
+        "stableContainerSupporting": 8.57,
+        "lowContainerText": 14.81,
+        "lowContainerSupporting": 8.04,
+        "containerText": 13.99,
+        "highContainerText": 13.11
+      }
+    },
+    {
+      "key": "coral",
+      "request": {
+        "key": "coral",
+        "label": "Warm coral",
+        "seed": "D45D42",
+        "style": "TONAL_SPOT",
+        "styleNumber": "1",
+        "contrast": "0.0"
+      },
+      "ratios": {
+        "primary": 6.09,
+        "secondaryContainer": 6.08,
+        "blackText": 16.71,
+        "blackSupporting": 9.11,
+        "blackOutline": 4.56,
+        "stableContainerText": 15.74,
+        "stableContainerSupporting": 8.57,
+        "lowContainerText": 14.78,
+        "lowContainerSupporting": 8.05,
+        "containerText": 13.91,
+        "highContainerText": 13.01
+      }
+    },
+    {
+      "key": "green",
+      "request": {
+        "key": "green",
+        "label": "Forest green",
+        "seed": "2E7D32",
+        "style": "TONAL_SPOT",
+        "styleNumber": "1",
+        "contrast": "0.0"
+      },
+      "ratios": {
+        "primary": 6.1,
+        "secondaryContainer": 6.07,
+        "blackText": 16.77,
+        "blackSupporting": 9.11,
+        "blackOutline": 4.6,
+        "stableContainerText": 15.79,
+        "stableContainerSupporting": 8.58,
+        "lowContainerText": 14.76,
+        "lowContainerSupporting": 8.02,
+        "containerText": 13.95,
+        "highContainerText": 13.08
+      }
+    },
+    {
+      "key": "gold",
+      "request": {
+        "key": "gold",
+        "label": "Gold vibrant",
+        "seed": "C49000",
+        "style": "VIBRANT",
+        "styleNumber": "2",
+        "contrast": "0.0"
+      },
+      "ratios": {
+        "primary": 6.04,
+        "secondaryContainer": 6.08,
+        "blackText": 16.73,
+        "blackSupporting": 9.17,
+        "blackOutline": 4.57,
+        "stableContainerText": 15.75,
+        "stableContainerSupporting": 8.64,
+        "lowContainerText": 14.75,
+        "lowContainerSupporting": 8.09,
+        "containerText": 13.9,
+        "highContainerText": 13.01
+      }
+    },
+    {
+      "key": "magenta-medium",
+      "request": {
+        "key": "magenta-medium",
+        "label": "Magenta expressive, medium contrast",
+        "seed": "A43D96",
+        "style": "EXPRESSIVE",
+        "styleNumber": "3",
+        "contrast": "0.5"
+      },
+      "ratios": {
+        "primary": 7.09,
+        "secondaryContainer": 4.63,
+        "blackText": 21,
+        "blackSupporting": 10.64,
+        "blackOutline": 6.88,
+        "stableContainerText": 19.77,
+        "stableContainerSupporting": 10.02,
+        "lowContainerText": 18.52,
+        "lowContainerSupporting": 9.38,
+        "containerText": 17.45,
+        "highContainerText": 16.34
+      }
+    },
+    {
+      "key": "monochrome-high",
+      "request": {
+        "key": "monochrome-high",
+        "label": "Monochrome, high contrast",
+        "seed": "808080",
+        "style": "MONOCHROMATIC",
+        "styleNumber": "7",
+        "contrast": "1.0"
+      },
+      "ratios": {
+        "primary": 21,
+        "secondaryContainer": 11.05,
+        "blackText": 21,
+        "blackSupporting": 21,
+        "blackOutline": 18.43,
+        "stableContainerText": 19.77,
+        "stableContainerSupporting": 19.77,
+        "lowContainerText": 16.48,
+        "lowContainerSupporting": 16.48,
+        "containerText": 13.2,
+        "highContainerText": 11.2
+      }
+    }
+  ],
+  "minima": {
+    "primary": 6.04,
+    "secondaryContainer": 4.63,
+    "blackText": 16.71,
+    "blackSupporting": 9.1,
+    "blackOutline": 4.56,
+    "stableContainerText": 15.74,
+    "stableContainerSupporting": 8.57,
+    "lowContainerText": 14.75,
+    "lowContainerSupporting": 8.02,
+    "containerText": 13.2,
+    "highContainerText": 11.2
+  }
+}
