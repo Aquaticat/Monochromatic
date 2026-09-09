@@ -282,6 +282,11 @@ async function buildMainModelGuidance(
 
 //endregion Prompt guidance
 
+/** Operation internals exported for built-artifact verification. @internal */
+export { AdvisorOperationLedger, } from './operation-ledger.ts';
+export { aggregateAdvisorUsage, copyAdvisorUsage, } from './operation-usage.ts';
+export type { AdvisorAttemptRecord, AdvisorOperationSnapshot, } from './operation-types.ts';
+
 export { buildAdvisorStatus, } from './status.ts';
 export { buildMainModelGuidance, };
 
