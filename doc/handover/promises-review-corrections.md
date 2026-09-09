@@ -232,3 +232,13 @@ OS process inspection established their surviving children before cleanup, rathe
 The delegated concrete lesson corrections are implemented, verified, and presented.
 The learner-observation veto remains settled.
 This is not final approval or implementation of the teaching skill.
+
+## Subsequent correction to presentation policy
+
+The user clarified that the visible-window requirement had been added to `AGENTS.md` in error
+and explicitly requested its removal.
+The canonical visible-window delivery rule was removed;
+its retired shortcode is reserved in the existing local appendix.
+`CLAUDE.md` is regenerated through file-enforcer rather than edited separately.
+Browser verification remains distinct from a requirement to show an active window.
+The window observations in this handover are historical evidence, not a requirement for future HTML work.
