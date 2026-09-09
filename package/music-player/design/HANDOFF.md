@@ -3709,8 +3709,11 @@ temporary device evidence files are removed,
 source is unchanged from accepted-review commit `57ccfcac9`;
  the mistaken implementation
 remains fully reverted by `6d2d06e41`.
- Open the cleared accessibility form in normal
-Helium,
- verify its exact window is active and non-minimized,
- then wait for the user's two
-design decisions.
+ The cleared accessibility form is open in normal Helium at KWin ID
+`{032ccb9d-422e-4932-83f1-d39e11806ebc}` on `DP-2`,
+ 1080 × 1880;
+ it is
+non-minimized but not yet active.
+ Activate that exact window as the final operation,
+ then
+wait for the user's two design decisions.
