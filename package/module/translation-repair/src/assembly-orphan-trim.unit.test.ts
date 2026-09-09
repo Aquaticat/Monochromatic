@@ -63,6 +63,24 @@ await describe({
       },
     },),
     it({
+      name: 'cuts the orphan block out of two notes one line apart, which is how the bench writes them',
+      fn: async () => {
+        const trimmed = trimOrphanDefinitions({
+          findings: [ORPHAN_TWO,],
+          replacements: [{
+            sliceIndex: 14,
+            replacementText: '[^1]: That is its favourite spot.\n[^2]: A sparrow.',
+          },],
+          incumbentBySlice: NO_INCUMBENT,
+        },);
+        expect(trimmed.replacements,).toEqual([{
+          sliceIndex: 14,
+          replacementText: '[^1]: That is its favourite spot.',
+        },],);
+        expect(trimmed.findings,).toEqual(['assembly-footnote-trimmed orphan-definition gfm 2 (slice 14)',],);
+      },
+    },),
+    it({
       name: 'cuts the orphan block out of a definitions-only replacement and keeps the trailing break',
       fn: async () => {
         const trimmed = trimOrphanDefinitions({
@@ -171,6 +189,46 @@ await describe({
         },),).toBe('The cat naps[^1].\n\n[^1]: That is its favourite spot.\n',);
       },
     },),
+    it({
+      name: 'READS a definition line as a block of its own with no blank line before it (the twenty-first '
+        + 'hakureico pass of 2026-09-09 rendered its two notes one line apart and the trim saw one block)',
+      fn: async () => {
+        expect(cutDefinitionBlocks({
+          text: '[^1]: That is its favourite spot.\n[^2]: A sparrow.',
+          labels: new Set(['2',],),
+        },),).toBe('[^1]: That is its favourite spot.',);
+        expect(cutDefinitionBlocks({
+          text: '[^1]: That is its favourite spot.\n[^2]: A sparrow.\n[^3]: A crow.\n',
+          labels: new Set(['1',],),
+        },),).toBe('[^2]: A sparrow.\n[^3]: A crow.\n',);
+      },
+    },),
+    it({
+      name: 'keeps the gap that stood before a cut run, so a paragraph break survives the cut of what followed it',
+      fn: async () => {
+        expect(cutDefinitionBlocks({
+          text: '[^1]: One.\n\n[^2]: Two.\n[^3]: Three.\n',
+          labels: new Set(['2',],),
+        },),).toBe('[^1]: One.\n\n[^3]: Three.\n',);
+        expect(cutDefinitionBlocks({
+          text: '[^1]: One.\n\n[^2]: Two.\n\n\n[^3]: Three.',
+          labels: new Set(['2', '3',],),
+        },),).toBe('[^1]: One.',);
+      },
+    },),
+    it({
+      name: 'keeps a definition\'s indented continuation lines inside its block',
+      fn: async () => {
+        expect(cutDefinitionBlocks({
+          text: '[^1]: One,\n    continued.\n[^2]: Two.',
+          labels: new Set(['2',],),
+        },),).toBe('[^1]: One,\n    continued.',);
+        expect(cutDefinitionBlocks({
+          text: '[^1]: One,\n    continued.\n[^2]: Two.',
+          labels: new Set(['1',],),
+        },),).toBe('[^2]: Two.',);
+      },
+    },),
   ],
 },);
 
@@ -187,6 +245,10 @@ await describe({
         expect(isDefinitionTrim({
           decided: `The cat naps[^1].\n\n${TWO_NOTES}`,
           carried: 'The cat naps[^1].\n\n[^1]: That is its favourite spot.\n',
+        },),).toBe(true,);
+        expect(isDefinitionTrim({
+          decided: '[^1]: That is its favourite spot.\n[^2]: A sparrow.',
+          carried: '[^1]: That is its favourite spot.',
         },),).toBe(true,);
       },
     },),

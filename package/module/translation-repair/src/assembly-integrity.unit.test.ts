@@ -465,6 +465,69 @@ await describe({
     },),
 
     it({
+      name: 'TRIMS the orphan out of two notes one line apart, the shape the bench writes (the twenty-first '
+        + 'hakureico pass of 2026-09-09 withdrew both notes and the reference over it)',
+      fn: async () => {
+        /**
+         * Archive whose body refers to a note it never defines.
+         */
+        const referring = 'The cat naps on the windowsill[^1].\n';
+
+        /**
+         * One content slice plus the anchor where the notes belong.
+         */
+        const slices: readonly ChunkPair[] = [
+          {
+            source: {
+              kind: 'content',
+              sliceIndex: 0,
+              nodes: [],
+              startOffset: 0,
+              endOffset: 12,
+              text: '猫猫在窗台上打盹〔1〕。',
+            },
+            target: {
+              kind: 'content',
+              sliceIndex: 0,
+              nodes: [],
+              startOffset: 0,
+              endOffset: referring.length,
+              text: referring,
+            },
+          },
+          {
+            source: {
+              kind: 'content',
+              sliceIndex: 1,
+              nodes: [],
+              startOffset: 14,
+              endOffset: 40,
+              text: '〔1〕：那是它最喜欢的位置。\n〔2〕：一只麻雀。',
+            },
+            target: makeInsertionChunk({
+              sliceIndex: 1,
+              offset: referring.length,
+            },),
+          },
+        ];
+        const guarded = guardFootnoteAssembly({
+          targetText: referring,
+          slices,
+          replacements: [{
+            sliceIndex: 1,
+            replacementText: '[^1]: That is its favourite spot.\n[^2]: A sparrow.',
+          },],
+        },);
+        expect(guarded.revertedChunkIndices,).toEqual([],);
+        expect(guarded.trimmed,).toEqual([{
+          sliceIndex: 1,
+          replacementText: '[^1]: That is its favourite spot.',
+        },],);
+        expect(guarded.assembledText,).not.toContain('[^2]',);
+      },
+    },),
+
+    it({
       name: 'WITHDRAWS a prose replacement that carries an orphan definition '
         + 'among its paragraphs, since cutting a block out of judged prose '
         + 'would ship a text nobody judged',

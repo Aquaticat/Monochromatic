@@ -169,6 +169,11 @@ export function assembleTranslation(
       } replacements at assembly; the findings say why`,
     );
   }
+  // THE FINDINGS REACH THE LOG. An entry the pass stops before its artifact is
+  // written leaves the log as the only trace, and the twenty-first hakureico
+  // pass of 2026-09-09 left "withdrew 2 replacements" with nothing saying why.
+  for (const finding of guarded.findings)
+    l.warn(finding,);
 
   /**
    * Slices the returned document carries a change for, derived from the
