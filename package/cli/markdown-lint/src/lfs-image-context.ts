@@ -7,9 +7,14 @@
  @module
  */
 
+import {
+  fileNamed,
+  findRoot,
+  type RootFilesystem,
+  RootNotFoundError,
+} from '@monochromatic-dev/module-fs-path/ts';
 import { stat, } from 'node:fs/promises';
 import {
-  dirname,
   join,
   resolve,
 } from 'node:path';
@@ -104,84 +109,70 @@ export type LfsImageRepo = {
 };
 
 /**
- Whether `dir` holds a `.lfsconfig`.
-
- @param dir - directory to probe
-
- @returns `true` when the file exists
+ Marker for the nearest ancestor holding a regular `.lfsconfig` file.
  */
-async function hasLfsConfig(dir: string,): Promise<boolean> {
-  try {
-    await stat(join(
-      dir,
-      LFS_CONFIG_FILENAME,
-    ),);
-    return true;
-  }
-  catch (error) {
-    if (isAbsentPathError(error,)) {
-      return false;
-    }
-    throw error;
-  }
-}
+const LFS_CONFIG_MARKER = fileNamed(LFS_CONFIG_FILENAME,);
 
 /**
- Every ancestor directory of `cwd` (inclusive), nearest first, ending at the
- filesystem root. Built with a cursor rather than recursion.
-
- @param cwd - directory to start from
-
- @returns ancestors from `cwd` up to the root
+ Parameters for {@link findLfsRepoRoot}.
  */
-function ancestorsOf(cwd: string,): readonly string[] {
+export type FindLfsRepoRootParams = {
   /**
-   Ancestors collected so far.
+   Directory to start from; a relative path resolves against the process
+   working directory.
    */
-  const chain: string[] = [];
-  for (
-    let dir = resolve(cwd,);
-    ;
-    dir = dirname(dir,)
-  ) {
-    chain.push(dir,);
-    if (dirname(dir,) === dir) {
-      return chain;
-    }
-  }
-}
+  readonly cwd: string;
+  /**
+   Filesystem the walk probes. Omitted, the runtime's real filesystem;
+   tests pass an in-memory adapter.
+   */
+  readonly fs?: RootFilesystem;
+};
 
 /**
- Nearest ancestor directory of `cwd` (inclusive) holding `.lfsconfig`, as a
- one-element list, or empty when no ancestor has one. Every ancestor is
- probed concurrently and the nearest hit wins.
+ Nearest ancestor directory of `cwd` (inclusive) holding a `.lfsconfig`
+ file, as a one-element list, or empty when no ancestor has one.
 
  @param cwd - directory to start from
+
+ @param fs - filesystem seam, an in-memory adapter in tests
 
  @returns one repository root, or none
+
+ @example
+ ```ts
+ const [root] = await findLfsRepoRoot({ cwd: process.cwd() });
+ ```
  */
-async function findLfsRepoRoot(cwd: string,): Promise<readonly string[]> {
+export async function findLfsRepoRoot({
+  cwd,
+  fs,
+}: FindLfsRepoRootParams,): Promise<readonly string[]> {
   /**
-   Ancestors, nearest first.
+   Absolute start directory.
    */
-  const ancestors = ancestorsOf(cwd,);
-  /**
-   Whether each ancestor holds a `.lfsconfig`, in the same order.
-   */
-  const present = await Promise.all(ancestors.map(function probe(dir: string,): Promise<boolean> {
-    return hasLfsConfig(dir,);
-  },),);
-  return ancestors
-    .filter(function holdsConfig(
-      _dir: string,
-      index: number,
-    ): boolean {
-      return present[index] === true;
-    },)
-    .slice(
-      0,
-      1,
-    );
+  const start = resolve(cwd,);
+  try {
+    return [
+      await findRoot(
+        fs === undefined
+          ? {
+            cwd: start,
+            marker: LFS_CONFIG_MARKER,
+          }
+          : {
+            cwd: start,
+            fs,
+            marker: LFS_CONFIG_MARKER,
+          },
+      ),
+    ];
+  }
+  catch (error: unknown) {
+    if (!(error instanceof RootNotFoundError))
+      throw error;
+    return [];
+  }
 }
 
 /**
@@ -222,7 +213,7 @@ export async function discoverLfsImageRepo({
   /**
    Repository root, when one declares `.lfsconfig`.
    */
-  const [repoRoot,] = await findLfsRepoRoot(cwd,);
+  const [repoRoot,] = await findLfsRepoRoot({ cwd, },);
   if (repoRoot === undefined) {
     return [];
   }

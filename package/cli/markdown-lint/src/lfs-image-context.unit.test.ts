@@ -10,7 +10,9 @@ import {
 
 import {
   candidateTargetPaths,
+  createMemoryRootFilesystem,
   discoverLfsImageRepo,
+  findLfsRepoRoot,
   isRelativePath,
   objectUrlParts,
   parse,
@@ -137,6 +139,63 @@ await describe({
               'pkg/asset/a.png',
               'pkg/asset/b.png',
             ],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: findLfsRepoRoot.name,
+      children: [
+        it({
+          name: 'finds the nearest ancestor holding .lfsconfig from a nested directory',
+          fn: async function nearest() {
+            /**
+             Tree with one repository root above a nested package.
+             */
+            const fs = createMemoryRootFilesystem({
+              directories: ['/r/pkg/asset',],
+              files: { '/r/.lfsconfig': '', },
+            },);
+            expect(await findLfsRepoRoot({ cwd: '/r/pkg/asset', fs, },),).toEqual(['/r',],);
+          },
+        },),
+        it({
+          name: 'prefers a nearer .lfsconfig over an outer one',
+          fn: async function nearer() {
+            /**
+             Tree with a nested repository inside an outer one.
+             */
+            const fs = createMemoryRootFilesystem({
+              directories: ['/r/sub/deep',],
+              files: {
+                '/r/.lfsconfig': '',
+                '/r/sub/.lfsconfig': '',
+              },
+            },);
+            expect(await findLfsRepoRoot({ cwd: '/r/sub/deep', fs, },),).toEqual(['/r/sub',],);
+          },
+        },),
+        it({
+          name: 'skips a directory named .lfsconfig',
+          fn: async function skipsDirectory() {
+            /**
+             Tree where the nearer entry is a directory, not a file.
+             */
+            const fs = createMemoryRootFilesystem({
+              directories: ['/r/pkg/.lfsconfig',],
+              files: { '/r/.lfsconfig': '', },
+            },);
+            expect(await findLfsRepoRoot({ cwd: '/r/pkg', fs, },),).toEqual(['/r',],);
+          },
+        },),
+        it({
+          name: 'finds nothing when no ancestor holds one',
+          fn: async function nothing() {
+            /**
+             Tree without any `.lfsconfig`.
+             */
+            const fs = createMemoryRootFilesystem({ directories: ['/r/pkg',], },);
+            expect(await findLfsRepoRoot({ cwd: '/r/pkg', fs, },),).toEqual([],);
           },
         },),
       ],

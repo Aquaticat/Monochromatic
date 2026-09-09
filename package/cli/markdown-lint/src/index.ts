@@ -45,11 +45,20 @@ export {
  */
 export {
   discoverLfsImageRepo,
+  type FindLfsRepoRootParams,
+  findLfsRepoRoot,
   type LfsImageContext,
   type LfsImageRepo,
   type LfsImageTarget,
   prepareLfsImageContext,
 } from './lfs-image-context.ts';
+/**
+ Re-exported so built-artifact tests build an in-memory filesystem whose
+ types match the bundled copy of the root-discovery contract.
+
+ @internal
+ */
+export { createMemoryRootFilesystem, } from '@monochromatic-dev/module-fs-path/ts';
 /**
  @internal
  */

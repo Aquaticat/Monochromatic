@@ -960,6 +960,9 @@ importers:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../../module/caught-value
+      '@monochromatic-dev/module-fs-path':
+        specifier: workspace:*
+        version: link:../../module/fs-path
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
