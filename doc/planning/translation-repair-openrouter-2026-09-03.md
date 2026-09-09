@@ -6936,6 +6936,52 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Picture support reaches archive review before removal, 2026-09-09, 21:46 UTC
+
+The takeover confirmed the clean documents tip `2cfad6236`,
+code tip `40aba2fdb`,
+corpus pin `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`,
+and no running pass.
+The canonical files live in the translation-repair worktree,
+not the main repository.
+
+The class-twenty-five guard (`aba89b50c`) scripts an archive review that removes a greeting unless its
+source sheet contains the corroborated Chinese picture text.
+On the pre-fix build,
+`pass-readiness-boundaries.unit.test.ts` failed because the archive block was removed.
+The section-context guard (`d62c76b4b`) failed because the transcription was absent.
+It also checks unrelated pictures,
+textless and unavailable evidence,
+deduplication,
+each corroborating reader's wording and target-only sections.
+
+The handoff's cache assumption did not survive source inspection:
+`corpus-run/slice-cache-namespace.ts` writes persisted readings to disk but leaves its open `resumed` map unchanged.
+The reuse guard (`a72361aa6`) failed with four reader calls against the first reading's measured two.
+Completed evidence is therefore retained by an entry-scoped reader,
+not inferred from disk persistence.
+A newly exposed reference is still read even when its slice also names an already completed picture.
+The same pinned entry is the lifetime boundary;
+failed readings are not retained as completed evidence,
+and cross-entry cache keys still include picture bytes and reader roster.
+
+Implementation:
+`f6cd6e5e7` supplies picture support before archive review and limits it to references in the aligned source section;
+`07a99e23a` binds that reader through the real pass and retains completed evidence for the later picture phase.
+The review prompt explicitly permits exact source anchors from corroborated transcriptions.
+No authority or roster policy changed.
+
+The first full suite passed all three new guards and ended with `unit exit 0`
+(`~/temp/agent/class25-unit-20260909.log`).
+Type-checking exposed incomplete test fixtures,
+corrected in `009eacc3e`.
+Oxlint found formatting findings and the pass-entry module one code line over its limit;
+these remain work in progress,
+not waived.
+An independent review requested a guard through `settleEntry` proving the shared callback wiring,
+which is being added before launch.
+No provider generation has been purchased during this work.
+
 ## The calibration is read, the anchor judge loses a seat, and two classes open, 2026-09-09, 21:00 UTC
 
 THE MERCURY CALIBRATION printed `STANDING over 40 rounds` at 20:02 UTC after 176 minutes

@@ -24,6 +24,27 @@ and the reason is recorded in
 
 ## Where the work stands
 
+Takeover update at 21:46 UTC on 2026-09-09:
+class twenty-five is implemented in `f6cd6e5e7` and `07a99e23a`,
+with verification still in progress and no pass launched.
+The preservation,
+section-scope and no-repurchase guards each failed on the pre-fix build,
+then passed in the full suite (`~/temp/agent/class25-unit-20260909.log`,
+last line `unit exit 0`).
+Type-checking found incomplete test fixtures,
+corrected in `009eacc3e`;
+oxlint found formatting findings and `pass-entry.ts` at 301 code lines,
+which still need correction and re-verification before launching `Mio`.
+The baseline markdown check passed on this handover,
+the planning log and package README.
+The proposed shared disk-cache object was not sufficient:
+`openNamespacedCache.persist` writes disk without updating `resumed`.
+The implemented reader retains completed evidence within one entry and reads only newly exposed references,
+so a re-preparation or reader reseating cannot buy the same completed picture again.
+Unavailable readings never enter that completed map.
+The queue and owner decisions remain unchanged.
+
+Historical state at the handoff follows.
 As of 21:00 UTC on 2026-09-09 the code tip is `40aba2fdb` and the documents move after it.
 The 40-round producer calibration launched at 17:06 UTC printed its standing at 20:02:
 `inception/mercury-2.5` is not separated from the pooled null (z -0.43) and takes the translator and
@@ -1747,8 +1768,10 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  BUILD CLASS TWENTY-FIVE FIRST,
-    since it is the only thing between the pipeline and a clean page.
+1.  FINISH CLASS TWENTY-FIVE VERIFICATION FIRST.
+    Implementation and red/green evidence are in the takeover update under "Where the work stands";
+    finish lint and the production-entry wiring guard before any launch.
+    The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
     `preparePassEntry` (`corpus-run/pass-prepare.ts`) runs the archive block review inside preparation,
     and `readSeatedPictures` (`corpus-run/pass-seated-pictures.ts`) runs in the phase after it,
