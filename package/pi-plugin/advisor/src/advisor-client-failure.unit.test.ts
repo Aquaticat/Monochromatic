@@ -4,7 +4,6 @@
  @module
  */
 
-import { setTimeout as delay, } from 'node:timers/promises';
 import type {
   Api,
   AssistantMessage,
@@ -31,12 +30,6 @@ import {
 
 /** Fixture provider timeout. */
 const TIMEOUT_MS = 1_000;
-
-/** Deadline used by timeout classification test. */
-const EXPIRED_TIMEOUT_MS = 1;
-
-/** Wait ensuring fixture deadline signal expires. */
-const DEADLINE_EXPIRY_WAIT_MS = 10;
 
 /** Fixture output token budget. */
 const OUTPUT_TOKENS = 100;
@@ -294,7 +287,9 @@ await describe({
     },),
     it({
       name: 'classifies shared deadline expiry without retry',
-      fn: async function testDeadlineExpiry() {
+      fn: async function testDeadlineExpiry(testContext) {
+        /** Test-local wall clock advances only after provider dispatch. */
+        const clock = testContext.sinon.stub(Date, 'now',).returns(0,);
         /** Count of provider attempts. */
         const attempts: number[] = [];
         /**
@@ -304,7 +299,7 @@ await describe({
          */
         async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
-          await delay(DEADLINE_EXPIRY_WAIT_MS,);
+          clock.returns(TIMEOUT_MS + 1,);
           return assistantResponse({
             stopReason: 'aborted',
             errorMessage: 'request aborted',
@@ -314,12 +309,12 @@ await describe({
         const error = await captureError(async function completeTimedOutResponse() {
           await completeFixture({
             completeModel,
-            timeoutMs: EXPIRED_TIMEOUT_MS,
+            timeoutMs: TIMEOUT_MS,
           },);
         },);
 
         expect(attempts,).toHaveLength(1,);
-        expect(error.message,).toContain('timed out after 1ms',);
+        expect(error.message,).toContain(`timed out after ${TIMEOUT_MS}ms`,);
         expect(error.message,).toContain('attempt 1',);
       },
     },),

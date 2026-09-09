@@ -14,7 +14,7 @@ const attempt: AdvisorAttemptRecord = {
 };
 
 await describe({ name: '', children: [
-  it({ name: 'aggregates optional subsets without adding them to total tokens', fn: (): void => {
+  it({ name: 'aggregates optional subsets without adding them to total tokens', fn: async (): Promise<void> => {
     /** Combined usage for two actual attempts. */
     const total = aggregateAdvisorUsage([usage, usage,],);
     expect(total.totalTokens,).toBe(36,);
@@ -29,7 +29,7 @@ await describe({ name: '', children: [
     const withoutSubsets = { input: 1, output: 1, cacheRead: 0, cacheWrite: 0, totalTokens: 2, cost: usage.cost, };
     expect(aggregateAdvisorUsage([withoutSubsets, withoutSubsets,],).reasoning,).toBeUndefined();
   }, },),
-  it({ name: 'copies provider counters including nested cost', fn: (): void => {
+  it({ name: 'copies provider counters including nested cost', fn: async (): Promise<void> => {
     /** Provider-owned mutable data. */
     const mutable = { ...usage, cost: { ...usage.cost, }, };
     /** Snapshot retained before provider writes another event. */
@@ -39,7 +39,7 @@ await describe({ name: '', children: [
     expect(copy.input,).toBe(7,);
     expect(copy.cost.total,).toBe(10,);
   }, },),
-  it({ name: 'replaces usage snapshots and seals late updates after local cancellation', fn: (): void => {
+  it({ name: 'replaces usage snapshots and seals late updates after local cancellation', fn: async (): Promise<void> => {
     /** Operation under test. */
     const ledger = new AdvisorOperationLedger({ startedAtMs: 0, deadlineAtMs: 100, },);
     ledger.record(attempt,);
@@ -62,7 +62,7 @@ await describe({ name: '', children: [
     expect(ledger.snapshot().usageIncomplete,).toBe(true,);
     expect(() => ledger.attempt(2,),).toThrow('unknown attempt',);
   }, },),
-  it({ name: 'retains all reviews in attempt order and caps collection at the original deadline', fn: (): void => {
+  it({ name: 'retains all reviews in attempt order and caps collection at the original deadline', fn: async (): Promise<void> => {
     /** Operation under test. */
     const ledger = new AdvisorOperationLedger({ startedAtMs: 0, deadlineAtMs: 100, },);
     ledger.record({ ...attempt, state: 'succeeded', usage, usageIncomplete: false, },);
