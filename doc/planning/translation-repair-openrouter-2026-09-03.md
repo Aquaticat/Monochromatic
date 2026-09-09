@@ -6936,6 +6936,46 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## The eighth Mio launches with picture support before archive review, 2026-09-09, 21:58 UTC
+
+The class-twenty-five build is frozen at
+`package/module/translation-repair/node_modules/.frozen-dist-5b228736b`.
+The canonical launcher started `Mio` alone at pid `1178354`,
+runs `~/temp/agent/Mio8-20260909`,
+log `~/temp/agent/Mio8-20260909.log`.
+The process-managed supervisor (`proc_8ef1`) watches pid lifetime and emits only a terminal notification.
+Its scratch scripts are `~/temp/agent/supervise-translation-pass-20260909.mjs` and
+`~/temp/agent/watch-translation-pass-20260909.mjs`.
+A terminal notification is not a settlement verdict;
+the log and page decide that.
+
+Launch meters:
+OpenRouter 270.03 USD,
+Bedrock 186.24 USD,
+Synthetic weekly zero and five-hour 2750/2750,
+Hyper zero.
+The log confirms the unchanged overlap and writer-grace defaults,
+Kimi withheld,
+and archive front-matter authority.
+No source changes are planned while the pass runs;
+a necessary source change requires killing pid `1178354` and relaunching from a fresh frozen build.
+
+Read for:
+the `photo6.webp` and `photo7.webp` chat translation retained through preparation and on the shipped page;
+the `photo3.webp` translation retained;
+completed pictures bought once across preparation and lanes;
+the horizontal rules,
+links,
+poem and front matter;
+then every remaining seven-step and three-check item.
+Run the daily-cost helper after the terminal state,
+read actual pass spend by provider rather than its mixed-provider total label,
+and record the reading before `hulicaijia` starts.
+The remaining queue is `hulicaijia`,
+`shi_Yumiaoya`,
+`yingying`,
+`XingZ60`.
+
 ## Picture support reaches archive review before removal, 2026-09-09, 21:46 UTC
 
 The takeover confirmed the clean documents tip `2cfad6236`,

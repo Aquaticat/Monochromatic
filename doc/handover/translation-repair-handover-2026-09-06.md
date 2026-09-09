@@ -24,9 +24,26 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Takeover update at 21:55 UTC on 2026-09-09:
+Takeover update at 21:58 UTC on 2026-09-09:
 class twenty-five is implemented in `f6cd6e5e7` and `07a99e23a`,
-with verification complete and `Mio` next to launch.
+with verification complete and the eighth `Mio` running on frozen `5b228736b`.
+Pass pid `1178354`,
+runs `~/temp/agent/Mio8-20260909`,
+log `~/temp/agent/Mio8-20260909.log`.
+The managed supervisor is `translation-repair-Mio8-20260909` (`proc_8ef1`);
+it watches that pid's lifetime and emits only its terminal state,
+not progress.
+Launch-time meters at 21:58 match the 21:55 prelaunch reading:
+OpenRouter 270.03 USD,
+Bedrock 186.24 USD,
+Synthetic weekly zero,
+Hyper zero.
+The log confirms overlap 4,
+built-in writer grace,
+archive front-matter authority and Kimi withheld.
+Read the page by the seven steps and three checks,
+including both screenshot translations and no duplicate picture purchase,
+before launching `hulicaijia`.
 The preservation,
 section-scope and no-repurchase guards each failed on the pre-fix build,
 then passed in the full suite.
@@ -1800,8 +1817,9 @@ each read off the pass log and the shipped page:
 
 1.  CLASS TWENTY-FIVE IS VERIFIED LOCALLY.
     Implementation and red/green evidence are in the takeover update under "Where the work stands".
-    Launch and read `Mio` next;
-    only a real page can establish that both screenshot translations survive.
+    The eighth `Mio` is running at pid `1178354` on frozen `5b228736b`;
+    read it when the terminal notification arrives.
+    Only a real page can establish that both screenshot translations survive.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
     `preparePassEntry` (`corpus-run/pass-prepare.ts`) runs the archive block review inside preparation,
