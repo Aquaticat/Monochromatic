@@ -37,8 +37,8 @@ GitHub cannot show private planning,
 unpushed branches,
 or how a company allocates employee hours.
 Consequently,
-"no public implementation pull request" is supported;
-"nobody has started privately" is not.
+"the documented searches did not find a complete implementation pull request" is supported;
+"none exists" and "nobody has started privately" are not.
 
 ## Current answer
 
@@ -81,7 +81,9 @@ not a maintainer-stated cause of the historical delay.
 
 The status changed materially in 2026.
 On 2026-03-17 the team assigned the `1.2` milestone and `scope: standards` label.
-Its 2026 Q3 plan explicitly lists import attributes among the Vite 7 to Vite 8 migration blockers
+The milestone remains open without a due date,
+and released version `1.2.7` does not make milestone assignment a delivery promise or completion signal.
+The 2026 Q3 plan explicitly lists import attributes among the Vite 7 to Vite 8 migration blockers
 and assigns that work area to `@shulaoda`
 ([Q3 plan](https://github.com/rolldown/rolldown/issues/10042)).
 On 2026-08-22 the team removed the hold label and assigned `@shulaoda` to `#2758`;
@@ -152,9 +154,11 @@ so the verification date is just under twenty-two months later,
 not two full years.
 The public history divides into two periods:
 
-- From 2024-11-17 through early 2026,
-  maintainers explicitly treated it as low priority and awaited more demand
+- On 2024-11-17,
+  a maintainer explicitly called it low priority
   ([maintainer comment](https://github.com/rolldown/rolldown/issues/2758#issuecomment-2481138757)).
+  The `on hold: awaiting more feedback` label then remained until 2026-08-22,
+  but the public record does not establish one unchanged reason throughout that period.
 - In 2026,
   Vite 8 migration reports turned it into a roadmap item.
   The remaining complete-support surface crosses loading semantics,

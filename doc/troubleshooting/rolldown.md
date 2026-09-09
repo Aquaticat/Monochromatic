@@ -159,7 +159,7 @@ Already represented by rolldown/rolldown#2758.
 4. **Will they likely fix it?
    ** The 2026 Q3 roadmap names import attributes as a Vite 8 migration blocker;
     `@shulaoda` is assigned,
-    but no complete implementation PR is public yet.
+    but the documented searches did not find a complete implementation PR.
 5. **Have we prototyped a minimal fix?
    ** External plugin is
    the prototype.
