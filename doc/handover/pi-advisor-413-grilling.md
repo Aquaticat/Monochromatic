@@ -11,7 +11,7 @@ Implementation is not the only possible resolution:
 No implementation changes or verification runs have occurred in this interview.
 The first round corrected a quality premise.
 The second round established bounded collection after the first usable result.
-Collection duration and its interaction with the original deadline remain undecided.
+The user accepted a configurable 30-second collection grace capped by the original operation deadline.
 The user also explicitly requested just-in-time,
  operation-local exclusion of providers reporting exhausted credits.
 
@@ -128,8 +128,23 @@ The first-result grace is distinct from the launch delay for speculative work.
 Do not silently treat the user's straggler grace as a value for the original hedge-launch delay.
 No implementation is authorized until the design interview receives shared-understanding confirmation.
 
-The current frontier is collection grace duration
- and whether the original deadline truncates that grace after partial success.
+Round 3 asked for collection grace duration and deadline precedence.
+The user answered:
+
+> I'll go with whatever you recommend this round.
+
+Accepted policy:
+
+- Default collection grace is 30 seconds,
+   configurable.
+  This is an initial policy choice,
+   not a measured optimum.
+- The original operation deadline remains absolute.
+- Collection ends at the earlier of grace expiry and original deadline.
+- At either cutoff,
+   cancel pending calls and return all usable reviews already collected.
+- Caller cancellation stops the operation immediately.
+
 Retain delayed launch and one fallback as the issue's working scope,
  rather than expanding to simultaneous or wider review fan-out without need.
 Later decisions include scoped participant selection,
@@ -207,7 +222,9 @@ Leave those changes untouched.
 
 ## Next action
 
-Ask for the post-success grace duration
- and whether it is truncated by the original operation deadline.
-Do not repeat the settled collection policy or ask permission for the newly authorized credit-exhaustion block.
-Investigate provider failure representation before implementing the JIT classifier.
+Investigate current provider failure,
+ cancellation,
+ and accounting representations before the next design frontier.
+Read current Pi API documentation and source before prescribing integration behavior.
+Do not repeat settled collection decisions or ask permission for the authorized credit-exhaustion block.
+Obtain shared-understanding confirmation before implementation.
