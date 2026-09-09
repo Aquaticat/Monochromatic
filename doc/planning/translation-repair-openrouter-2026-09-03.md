@@ -6855,6 +6855,87 @@ the most damage-prone seated judge chose the damaged text twice.
 Mercury's 14 of 14 with no damaged pick clears both clauses by measurement,
 not only by the maximum argument.
 
+## The third noname page is read and the Kimi-K3 leak closes, 2026-09-09, 18:40 UTC
+
+THE PASS:
+launched 16:45 UTC on frozen `33a023445`,
+SETTLED at 18:08 after 83 minutes,
+13 slices,
+`pageChanged=9`,
+Synthetic wet at 2 percent of the week at launch and dry from 17:25 inside the translate lane,
+Hyper dry throughout,
+Bedrock and OpenRouter wet.
+Meters:
+OpenRouter 273.99 to 271.68 USD,
+Bedrock 186.68 to 186.49.
+
+THE LEVERS,
+measured with the scratch `pass-spend.mjs` beside the two earlier noname passes of the day:
+
+- Seats asked 893 over 900 calls,
+  21 retry rounds;
+  the second noname asked 1,999 seats over 715 calls with 222 retry rounds,
+  the first 1,322 over 1,355.
+  Select rounds asked 318 seats over 66 rounds (4.8 a round;
+  the first pass asked 7.1).
+- Cached prompt tokens 602,368 across the OpenRouter DeepSeek and MiniMax calls (`cached=` on the SPEND line),
+  none before the price routing.
+- Abandoned streams 28 of 900,
+  reckoned at 0.44 USD:
+  23 of them DeepSeek-flash reasoning streams at 5,000 prompt and 7,500 to 14,500 completion tokens
+  (0.05 USD in all,
+  0.10 USD for every DeepSeek-flash call of the pass),
+  two of them Kimi-K3 on OpenRouter at 0.28 and 0.08 USD.
+- OpenRouter spend 1.87 USD against the second noname's 1.72 and the first's 5.04,
+  but 1.14 of it is 22 Kimi-K3 calls the router sent to OpenRouter after Synthetic dried mid-phase,
+  at 3 and 15 USD per million (Makora,
+  Morph,
+  DeepInfra,
+  Together and Sail Research endpoints,
+  the price sort finding nothing cheaper);
+  the other 382 OpenRouter calls cost 0.73 USD.
+  The seat reader withholds Kimi-K3 at phase start when OpenRouter would serve it (2026-09-03) and the
+  router did not honour that mid-phase;
+  closed in `19b6043a3` (the reach says OpenRouter does not serve a withheld model;
+  addendum of `doc/decision/translation-repair-provider-aware-judge-seat.md`).
+- `glm-5.3` asked 53 times and threw 53 (Hyper dry,
+  dropped from OpenRouter since `037d1f650`):
+  a dark seat every day Hyper's limit is spent,
+  which the select minimum of `db5927630` now counts as unreachable rather than as a lost voice.
+  Qwen3.8-27B threw 52 of 125 after Synthetic dried,
+  for the same reason.
+
+THE PAGE,
+by the seven steps:
+`verify-published` 1 of 1 at the length the artifact implies;
+`DESTINATIONS noname source=3 page=3 dropped=0`;
+front matter as the archive has it;
+the fourth `PhotoScroll` path repaired (the archive wrote `'${path} /photos/kuan4.webp'` with a space);
+the `## Introduction` heading above the first paragraph,
+which the twenty-third class had dropped on the first two passes;
+straight quotes 1 and curly 11 on page and archive alike,
+ellipses 0 and three-dot 1 alike;
+two em dashes where the archive has none,
+one carrying the source's own `ーー` in the memorial tweet and one a comma,
+inside the archive's convention (38 of the 92 archive pages use one).
+The two passages the archive paraphrased read faithful on the page:
+"They may not even have been transgender themselves" for
+"ta 们或许甚至未必是跨性别本身",
+and "Nine days later,
+on March 18" where the archive added a year the source does not state.
+Refusal vocabulary in the log:
+three slices whose standing lacked contest endorsement and shipped with the finding (2,
+3 and 12);
+no `fails the deterministic`,
+no `StandingIneligible`,
+no `mdx-downgraded`.
+Contest:
+8 slices to the translate lane,
+4 settled neither;
+consolidation:
+one slice consolidated (10),
+the rest kept their standing.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

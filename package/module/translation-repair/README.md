@@ -1874,6 +1874,15 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `19b6043a3` (2026-09-09) the owner's 2026-09-03 cost decision on Kimi-K3 is a fact of the reach,
+not only of the seat reader:
+`OPENROUTER_WITHHELD` lives in `openrouter-catalog.ts`,
+`reachOf` and the picture reach say OpenRouter does not serve a withheld model,
+and a seated Kimi-K3 whose provider dries mid-phase is an unreachable seat rather than 22 calls at 3 and 15 USD
+per million (1.14 USD on the third `noname` pass,
+61 percent of its OpenRouter spend);
+the seat reader withholds the seat whose only wet provider would have been OpenRouter,
+so the substitute checker sits as before.
 Since `db5927630` (2026-09-09,
 the owner's answer to the thin-bench question) a select round whose bench is short of quorum,
 because the router refused seats for want of a wet provider,

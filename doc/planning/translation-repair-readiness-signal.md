@@ -1578,3 +1578,30 @@ and its retries stopped under the fifteenth class with no editor or refiner reac
 the floor held and no page shipped.
 What remains before an all-entries launch is unchanged,
 with `noname` first when a meter moves.
+
+## What the third noname launch showed (2026-09-09, 16:45 to 18:08 UTC)
+
+The first page read on the levers of the day
+(the completion cap on every provider,
+the fan-out window,
+the windowed six stages,
+the price routing with cached prompt tokens):
+SETTLED in 83 minutes,
+893 seats asked where the second noname asked 1,999,
+21 retry rounds where it ran 222,
+and the page clean by the seven steps,
+with the `## Introduction` heading in place that the twenty-third class had dropped twice.
+OpenRouter spent 1.87 USD,
+of which 1.14 was Kimi-K3 bought there after Synthetic dried mid-phase,
+against the owner's 2026-09-03 decision;
+the reach honours that decision since the same evening.
+
+THE READING:
+the belief holds,
+and the levers do what they were built for;
+the remaining spend on a pass with Synthetic dry is the cheap DeepSeek and MiniMax seats,
+about 0.7 USD a page.
+`Mio` launches next on the build that carries the three answers of 17:25 UTC and the reach fix,
+then `hulicaijia`,
+`shi_Yumiaoya`,
+`yingying` and `XingZ60`.

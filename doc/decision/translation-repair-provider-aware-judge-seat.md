@@ -90,6 +90,26 @@ Synthetic ones (p50 18.3 s against 16.5 s, p90 52.8 s against 48.8 s), and 7 of 
 60 second straggler grace while still reasoning, which is the grace's doing rather than the endpoint's
 and is put to the owner in `translation-repair-openrouter-fallback.md`.
 
+## Addendum 2026-09-09: the reach honours the Kimi-K3 withholding
+
+The seat reader honoured the cost decision at phase start and nothing honoured it afterwards.
+On the third `noname` pass of 2026-09-09 (frozen `33a023445`) Synthetic dried at 17:25 UTC,
+inside the translate lane,
+and the router sent the seated Kimi-K3's calls to OpenRouter as the next wet provider serving it:
+22 calls,
+1.14 USD at 3 and 15 USD per million,
+61 percent of the 1.87 USD the pass spent there,
+two of them abandoned streams at 0.28 and 0.08 USD.
+Since `19b6043a3` the withheld set lives in `openrouter-catalog.ts` (`OPENROUTER_WITHHELD`),
+`reachOf` and the picture reach say OpenRouter does not serve a withheld model,
+so the router refuses the call as `NoProviderForModelError` and the seat counts as unreachable
+(the select minimum of the same day sizes for it),
+and the seat reader withholds the seat whose only wet provider would have been OpenRouter,
+which is the same seat as before and keeps the substitute checker sitting where it did.
+The catalog still lists the model,
+so its spelling and prices stay known;
+what changed is that the run never buys it there.
+
 ## Where the evidence lives
 
 - `doc/planning/translation-repair-roster-calibration-2026-09-01.md`: the cut counts per seat and

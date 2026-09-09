@@ -1467,39 +1467,24 @@ a fix that matters to the running entry still kills and relaunches it.
 
 ## What to do next
 
-1.  THE QUEUE RESUMED at 16:45 UTC on 2026-09-09 with the third `noname`
-    (`~/temp/agent/noname3-20260909`,
-    frozen `33a023445`) after the owner's final OpenRouter top-up
-    (273.99 USD remaining at launch;
-    Synthetic at 2 percent of its week,
-    Hyper dry,
-    Bedrock 186.68).
-    Read it for the `## 简介` heading above the first paragraph and for the levers
-    (the seats each round asked,
-    `cached=`,
-    the endpoints the price sort picked,
-    any `estimated=abandoned` line),
-    then launch `Mio` (the rule's position) and `hulicaijia` (the ruby,
+1.  THE THIRD `noname` IS READ (SETTLED 18:08 UTC on frozen `33a023445`,
+    83 minutes,
+    1.87 USD on OpenRouter of which 1.14 was the Kimi-K3 leak closed in `19b6043a3`;
+    planning log "The third noname page is read and the Kimi-K3 leak closes",
+    readiness signal "What the third noname launch showed").
+    The queue continues on the build that carries the three answers of 17:25 UTC and the reach fix:
+    freeze the built `dist` under `node_modules/.frozen-dist-<commit>` and launch `Mio` (the rule's position)
+    with the scratch `launch-pass.mjs <runs-dir> Mio <frozen-dir>`,
+    then `hulicaijia` (the ruby,
     the Sakura line,
     the footnote),
     then `shi_Yumiaoya` (the emphasis,
     the `Banner` and its bare-URL prop),
-    `yingying` (a bare URL as a footnote definition) and,
-    on a quiet bench,
-    `XingZ60` (the unordered list with a rule and three components).
-    One pass at a time;
-    a pass killed before its page is read is money spent for nothing
-    (69.70 USD of the 200 went that way),
-    so a fix that does not matter to the running entry waits for its tally.
-    The third `hulicaijia` ended ERROR at 13:04 UTC on the heading-distinctness floor on Bedrock alone,
-    the second `noname` settled with the heading unfilled and the sixth `Mio` stopped INCOMPLETE at slice 3
-    (see "The twenty-third class" and "The thin-bench questions");
-    the census (scratch `unmet-shapes.mjs`) is in the planning log under
-    "Two shapes-first entries launched beside it".
-    Every earlier `gqt`,
-    `Mio` and `hulicaijia` launch was killed under the kill-and-relaunch rule as the tree moved,
-    except the fourth `gqt` (read;
-    `gqt` now declines) and the first two `noname` (read).
+    `yingying` (a bare URL as a footnote definition) and `XingZ60`,
+    one at a time,
+    each read by the seven steps and the three checks before the next.
+    A pass on a dry Synthetic now costs about 0.7 USD on OpenRouter;
+    `glm-5.3` is dark whenever Hyper's daily limit is spent and the select minimum counts it as unreachable.
 2.  MERCURY 2.5 JUDGES SINCE `fcc8ca197` (owner:
     "Mercury 2.5 is out and approved";
     `inception/mercury-2.5`,
