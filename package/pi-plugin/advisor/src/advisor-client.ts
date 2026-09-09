@@ -13,6 +13,7 @@ import {
   type Model,
   type ModelThinkingLevel,
   type SimpleStreamOptions,
+  type Usage,
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
@@ -20,7 +21,8 @@ import type {
   ForeignBorrowed,
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { completeAdvisorAttempts, } from './advisor-completion.ts';
+import { copyAdvisorUsage, } from './operation-usage.ts';
+export { completeAdvisor, } from './advisor-completion-client.ts';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
 import { assertAdvisorEndpointOutputCapacity, } from './output-eligibility.ts';
@@ -73,6 +75,8 @@ type CompleteAdvisorModelOptions = {
    Provider stream options consumed by provider runtime.
    */
   readonly providerOptions?: ForeignHostCapability<SimpleStreamOptions>;
+  /** Observe available streaming counters without publishing provider-owned objects. */
+  readonly onUsage?: (usage: ReadonlyDeep<Usage>) => void;
 };
 
 /**
@@ -109,6 +113,7 @@ async function defaultCompleteAdvisorModel(
     model,
     context,
     providerOptions,
+    onUsage,
   }: ForeignBorrowed<CompleteAdvisorModelOptions>,
 ): Promise<AssistantMessage> {
   /**
@@ -122,20 +127,13 @@ async function defaultCompleteAdvisorModel(
       `No provider registered for advisor model "${model.provider}/${model.id}"`,
     );
   }
-  if (providerOptions !== undefined)
-    return await provider
-      .streamSimple(
-        model,
-        context,
-        providerOptions,
-      )
-      .result();
-  return await provider
-    .streamSimple(
-      model,
-      context,
-    )
-    .result();
+  /** Provider stream consumed so cancellation can retain already-received usage. */
+  const stream = provider.streamSimple(model, context, providerOptions,);
+  for await (const event of stream) {
+    if ('partial' in event)
+      onUsage?.(copyAdvisorUsage(event.partial.usage,),);
+  }
+  return await stream.result();
 }
 
 /**
@@ -183,6 +181,10 @@ export type CompleteAdvisorOptions = ForeignHostCapability<{
    Override model completion implementation for focused tests.
    */
   readonly completeModel?: CompleteAdvisorModel;
+  /** Observe actual dispatch after authentication and request preparation. */
+  readonly onDispatch?: (reasoning: string | undefined) => void;
+  /** Observe detached streaming usage snapshots for cancellation accounting. */
+  readonly onUsage?: (usage: ReadonlyDeep<Usage>) => void;
 }>;
 
 //endregion Types
@@ -205,7 +207,7 @@ export type CompleteAdvisorOptions = ForeignHostCapability<{
  const message = await completeAdvisor({ ctx, model, config, advisorContext });
  ```
  */
-export async function completeAdvisor(
+export async function requestAdvisor(
   options: ForeignHostCapability<CompleteAdvisorOptions>,
 ): Promise<AssistantMessage> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai accepts mutable Model while this boundary retains the selected model without changing it. */
@@ -324,37 +326,23 @@ export async function completeAdvisor(
       === undefined ? {} : { headers: providerHeaders, }),
   };
 
-  return await completeAdvisorAttempts({
-    modelSlug,
-    timeoutMs: options.config
-      .timeoutMs,
-    ...(options.operationStartedAtMs === undefined
-      ? {}
-      : { operationStartedAtMs: options.operationStartedAtMs, }),
-    ...(options.signal === undefined ? {} : { signal: options.signal, }),
-    providerOptions,
-    complete:
-    /**
-     Invoke selected provider with current attempt options.
-     
-     @param attempt - deadline-bound provider attempt
-     
-     @returns terminal provider response
-     
-     @mutates attempt - registered provider can consume or retain supplied host capabilities
-     */
-      async function completeAttempt(
-      attempt: ForeignHostCapability<{
-        readonly providerOptions: ForeignHostCapability<SimpleStreamOptions>;
-      }>,
-    ): Promise<AssistantMessage> {
-      return await completeModel({
-        ctx: options.ctx,
-        model: mutableModel,
-        context: providerContext,
-        providerOptions: attempt.providerOptions,
-      },);
+  options.signal?.throwIfAborted();
+  /** Remaining time includes local authentication and prompt preparation. */
+  const remainingMs = options.config.timeoutMs - (Date.now() - (options.operationStartedAtMs ?? Date.now()));
+  if (remainingMs <= 0)
+    throw new Error(`advisor: operation deadline elapsed before dispatch to ${modelSlug}`,);
+  options.onDispatch?.(advisorReasoningLevel,);
+  return await completeModel({
+    ctx: options.ctx,
+    model: mutableModel,
+    context: providerContext,
+    providerOptions: {
+      ...providerOptions,
+      maxRetries: 0,
+      timeoutMs: remainingMs,
+      ...(options.signal === undefined ? {} : { signal: options.signal, }),
     },
+    ...(options.onUsage === undefined ? {} : { onUsage: options.onUsage, }),
   },);
 }
 
