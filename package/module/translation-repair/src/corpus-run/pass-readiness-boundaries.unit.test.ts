@@ -61,7 +61,12 @@ const l = tagged({ tag: 'pass-readiness-boundaries-test', },);
  * const client = pairingClient();
  * ```
  */
-function pairingClient(): SyntheticClient {
+function pairingClient(
+  { sheets, pictureSupport, }: {
+    readonly sheets?: string[];
+    readonly pictureSupport?: string;
+  } = {},
+): SyntheticClient {
   return {
     chatText: async () => {
       throw new Error('chatText not used',);
@@ -71,14 +76,26 @@ function pairingClient(): SyntheticClient {
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /** Stage schema deciding scripted reply. */
       const schema = request.responseFormat?.json_schema.name ?? '';
+      /** Review sheet retained to prove which source evidence reached this boundary. */
+      const sheet = JSON.stringify(request.messages,);
+      if (schema === 'archive_block_review')
+        sheets?.push(sheet,);
+      /** Picture text is support only when preparation supplied it to this review. */
+      const supported = pictureSupport !== undefined && sheet.includes(pictureSupport,);
       /** Pairing or archive-review value. */
       const value: unknown = schema === 'archive_block_review'
         ? {
-          disposition: 'editorial-context',
-          sourceQuote: '',
+          disposition: pictureSupport === undefined
+            ? 'editorial-context'
+            : supported ? 'source-supported' : 'revise',
+          sourceQuote: supported ? pictureSupport : '',
           replacementText: '',
-          finding: 'This is an archive note.',
+          finding: pictureSupport === undefined
+            ? 'This is an archive note.'
+            : supported ? 'The picture carries this greeting.' : 'No source supports this greeting.',
         }
+        : schema === 'candidate_ballot'
+        ? { best: 1, reason: 'Remove wording unsupported by the supplied source.', }
         : schema === 'absolute_naturalness_review'
         ? {
           acceptable: true,
@@ -222,6 +239,55 @@ await describe({
         expect(paired.prepared.targetText,).toContain('Translator: Cat Friend.');
         expect(paired.findings.some(function namesRetainedBlock(finding,): boolean {
           return finding.startsWith('archive block reviewed and retained: ');
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'PRESERVES archive picture translation by supplying corroborated source before block review',
+      fn: async () => {
+        /** Disposable pairing stores for this preparation. */
+        const dir = await mkdtemp(join(tmpdir(), 'pass-prepare-picture-',),);
+        /** Exact image text absent from both pages as prose. */
+        const pictureSupport = '手套猫：你好，姐姐。';
+        /** Sheets the archive reviewers actually received. */
+        const sheets: string[] = [];
+        /** Component shared by source and archive, leaving its translation unclaimed. */
+        const sourceText = `<PhotoScroll photos={['\${path}/photos/chat.webp']} />`;
+        /** Archive block which must survive the review. */
+        const translation = '> Mittens: Hello, sister.';
+        /** Preparation through the production archive review and correction slate. */
+        const paired = await preparePassEntry({
+          client: pairingClient({ sheets, pictureSupport, },),
+          entryId: 'Cat',
+          entryCacheDir: dir,
+          pipelineDigest: GENERATION,
+          modelIds: [...ROSTER, 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b',],
+          sourceText,
+          targetText: `${sourceText}\n\n${translation}`,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+          readPictures: async ({ slices, },) => {
+            expect(slices.some(function namesChat(slice,): boolean {
+              return slice.source.text.includes('chat.webp',);
+            },),).toBe(true,);
+            return new Map([['chat.webp', {
+              kind: 'corroborated',
+              readings: ROSTER.map(function reading(modelId,) {
+                return { modelId, text: pictureSupport, };
+              },),
+              overlap: 1,
+            },],]);
+          },
+        },);
+        await rm(dir, { recursive: true, force: true, },);
+
+        expect(paired.prepared.targetText,).toContain(translation,);
+        expect(sheets.length,).toBeGreaterThan(0,);
+        expect(sheets.every(function sawSupport(sheet,): boolean {
+          return sheet.includes(pictureSupport,)
+            && sheet.includes('CORROBORATED PICTURE SOURCE SUPPORT',)
+            && sheet.includes('chat.webp',);
         },),).toBe(true,);
       },
     },),
