@@ -87,7 +87,7 @@ private fun playbackModeAccessibilityLabels(currentPage: String): List<String> =
 
 /** Renders the fixed Shuffle prefix beside a middle-ellipsized, exemplar-capped page name. */
 @Composable
-private fun ShuffleModeLabel(
+private fun shuffleModeLabel(
     currentPage: String,
     onUnexpectedOverflow: () -> Unit,
 ) {
@@ -139,14 +139,14 @@ private fun ShuffleModeLabel(
 
 /** Renders one label while keeping Shuffle prefix and accessibility behavior specialized. */
 @Composable
-private fun PlaybackModeLabel(
+private fun playbackModeLabel(
     index: Int,
     labels: List<String>,
     currentPage: String,
     onUnexpectedOverflow: () -> Unit,
 ) {
     if (index == 2) {
-        ShuffleModeLabel(
+        shuffleModeLabel(
             currentPage = visibleModePageName(currentPage),
             onUnexpectedOverflow = onUnexpectedOverflow,
         )
@@ -166,7 +166,7 @@ private fun PlaybackModeLabel(
 
 /** Renders one intrinsic-width Material-style segment for the one-row arrangement. */
 @Composable
-private fun VariableWidthModeSegment(
+private fun variableWidthModeSegment(
     index: Int,
     modes: List<PlaybackMode>,
     labels: List<String>,
@@ -221,7 +221,7 @@ private fun VariableWidthModeSegment(
                     .size(SegmentedButtonDefaults.IconSize),
             )
         }
-        PlaybackModeLabel(
+        playbackModeLabel(
             index = index,
             labels = labels,
             currentPage = currentPage,
@@ -232,7 +232,7 @@ private fun VariableWidthModeSegment(
 
 /** Composes four content-sized segments as one connected horizontal group. */
 @Composable
-private fun OneRowModeControl(
+private fun oneRowModeControl(
     modes: List<PlaybackMode>,
     labels: List<String>,
     accessibilityLabels: List<String>,
@@ -248,7 +248,7 @@ private fun OneRowModeControl(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         for (index in labels.indices) {
-            VariableWidthModeSegment(
+            variableWidthModeSegment(
                 index = index,
                 modes = modes,
                 labels = labels,
@@ -280,7 +280,7 @@ private fun twoRowSegmentShape(index: Int): RoundedCornerShape {
 /** Composes four real Material segments as one connected two-by-two group. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TwoRowModeControl(
+private fun twoRowModeControl(
     modes: List<PlaybackMode>,
     labels: List<String>,
     accessibilityLabels: List<String>,
@@ -313,7 +313,7 @@ private fun TwoRowModeControl(
                             },
                         contentPadding = contentPadding,
                     ) {
-                        PlaybackModeLabel(
+                        playbackModeLabel(
                             index = index,
                             labels = labels,
                             currentPage = currentPage,
@@ -340,7 +340,7 @@ private fun fourRowSegmentShape(index: Int, lastIndex: Int): androidx.compose.ui
 /** Composes four real Material segments as one connected vertical group. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FourRowModeControl(
+private fun fourRowModeControl(
     modes: List<PlaybackMode>,
     labels: List<String>,
     accessibilityLabels: List<String>,
@@ -367,7 +367,7 @@ private fun FourRowModeControl(
                             contentDescription = accessibilityLabels[index]
                         },
                 ) {
-                    PlaybackModeLabel(
+                    playbackModeLabel(
                         index = index,
                         labels = labels,
                         currentPage = currentPage,
@@ -382,7 +382,7 @@ private fun FourRowModeControl(
 /** Chooses the first connected arrangement that fits with the strict 12dp content-padding floor. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun AdaptivePlaybackModeControl(
+internal fun adaptivePlaybackModeControl(
     currentPage: String,
     selectedMode: PlaybackMode,
     onSelectMode: (PlaybackMode) -> Unit,
@@ -409,7 +409,7 @@ internal fun AdaptivePlaybackModeControl(
             mutableStateOf(false)
         }
         if (maxWidth >= minimumOneRowModeWidth && !oneRowOverflow.value) {
-            OneRowModeControl(
+            oneRowModeControl(
                 modes = modes,
                 labels = labels,
                 accessibilityLabels = accessibilityLabels,
@@ -422,7 +422,7 @@ internal fun AdaptivePlaybackModeControl(
             return@BoxWithConstraints
         }
         if (maxWidth >= minimumTwoRowModeWidth && !twoRowOverflow.value) {
-            TwoRowModeControl(
+            twoRowModeControl(
                 modes = modes,
                 labels = labels,
                 accessibilityLabels = accessibilityLabels,
@@ -434,7 +434,7 @@ internal fun AdaptivePlaybackModeControl(
             )
             return@BoxWithConstraints
         }
-        FourRowModeControl(
+        fourRowModeControl(
             modes = modes,
             labels = labels,
             accessibilityLabels = accessibilityLabels,
