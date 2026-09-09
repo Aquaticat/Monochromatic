@@ -24,7 +24,32 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 12:10 UTC on 2026-09-09 the tree is `efc9a4f3c`:
+As of 18:25 UTC on 2026-09-09 the tree is `236c812a5` (code tip `19b6043a3`):
+the owner asked where 200 USD went in a day and six levers landed
+(`037d1f650`,
+`4f87555fc`,
+`1fe7ca2fe`,
+`b71a55385`,
+`78ea8c8c7`,
+`33a023445`;
+see "The bleed and the six levers" and "Costs"),
+Mercury 2.5 was approved,
+named (`3224ff347`) and seated as a judge on 14 of 14 (`fcc8ca197`;
+its writing seats wait on the calibration at round 21 of 40 at 18:21 UTC),
+the owner answered the three recorded questions at 17:25 UTC and all three are built
+(`db5927630` the short-bench share,
+`1463cd359` the kept incumbent,
+`b7a0b4f5f` the community glossary;
+see "The thin-bench questions",
+"The glossary question" and "What to do next"),
+the third `noname` settled on frozen `33a023445` at 18:08 UTC and was read clean by the seven steps
+(893 seats asked where the second pass asked 1,999,
+1.87 USD on OpenRouter of which 1.14 was Kimi-K3 bought there after Synthetic dried mid-phase),
+that leak is closed (`19b6043a3`,
+the reach honours the 2026-09-03 withholding),
+and the seventh `Mio` runs on frozen `19b6043a3` since 18:20 UTC.
+Earlier the same day,
+as of 12:10 UTC the tree was `efc9a4f3c`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -168,27 +193,78 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `bb04656ef` for the code;
+  `19b6043a3` for the code,
+  `236c812a5` with the documents;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 18:21 UTC on 2026-09-08,
-  off the eleventh pass's last seat line:
+- Meters at 18:20 UTC on 2026-09-09,
+  off the seventh `Mio` launch's seat line:
   `synthetic=dry bedrock=wet hyper=dry openrouter=wet withheld=hf:moonshotai/Kimi-K3`;
-  Synthetic's rolling week returned at 16:27 (nine minutes into the tenth pass),
-  served the eleventh's preparation,
-  pictures and the first lanes,
-  and ran dry again at 17:21 inside its lanes phase
-  (held out 300 s a time,
-  every refused call routed onward),
+  Synthetic served the third `noname` from 2 percent of its rolling week until 17:25 and reads zero since,
   Hyper at zero credits and never to be recharged,
-  Bedrock and OpenRouter in USD (198.39 and 199.56 at 12:52 UTC;
-  the tenth pass spent 0.09 and 0.57 in 37 minutes,
-  the calibration before it unmeasured).
-  The tally at the end of the pass prints the meters.
+  Bedrock 186.49 USD (never topped up;
+  8.77 spent today),
+  OpenRouter 271.65 USD (the owner's final top-up,
+  273.99 at the 16:45 launch).
+  The tally at the end of the pass prints the meters;
+  the whole account is under "Costs".
 
 ## What landed today
 
 Newest first.
+The 2026-09-09 commits,
+each recorded at length in the planning log of the day and its decision docs:
+
+-   `19b6043a3` (18:15 UTC):
+    the reach honours the Kimi-K3 OpenRouter withholding
+    (`OPENROUTER_WITHHELD` in the catalog,
+    `reachOf` and the picture reach,
+    the seat reader withholding the seat whose only wet provider would have been OpenRouter).
+-   `b7a0b4f5f` and `d7d24f483` (18:00 UTC):
+    the community glossary (`community-glossary.ts`) in the identity context and the
+    `COMMUNITY RENDERINGS` block on the select,
+    lane-contest and consolidation-gate sheets;
+    `editor-selection-sheet.ts` split out.
+-   `1463cd359` (17:55 UTC):
+    a valid incumbent stands in for an ineligible consolidation standing,
+    the artifact's shipped kind `incumbent` writes it to the page.
+-   `db5927630` (17:45 UTC):
+    the select minimum scales by reachable over quorum on a bench the router left short,
+    two ballots the floor;
+    `candidate-select-minimum.ts`,
+    `candidate-select-count.ts`,
+    the gather's `unreachable` seats.
+-   `fcc8ca197` and `3224ff347` (17:00 UTC):
+    Mercury 2.5 named as the OpenRouter-only roster id and seated as a judge on 14 of 14.
+-   `33a023445` (16:35 UTC):
+    the six stages that read their own round windowed with retry rounds (`stage-windowed-rounds.ts`).
+-   `78ea8c8c7` (16:20 UTC):
+    a measured `max_tokens` on every call of every provider (`completion-cap.ts`).
+-   `b71a55385` (16:05 UTC):
+    every round asks quorum plus one seat from a bench rotated by the prompt (`stage-fanout-window.ts`).
+-   `1fe7ca2fe` (15:40 UTC):
+    OpenRouter calls price-sorted across ZDR endpoints,
+    `cached=` on the SPEND line.
+-   `4f87555fc` (15:20 UTC):
+    a reckoned `SPEND ... estimated=abandoned` line for every abandoned OpenRouter stream.
+-   `037d1f650` (15:00 UTC):
+    every OpenRouter call capped at a measured ceiling,
+    Qwen3.8-27B and glm-5.3 off the OpenRouter catalog.
+-   `efc9a4f3c` (11:55 UTC):
+    the twenty-third class,
+    a contested pairing target decided by votes.
+-   `7bcea2dc4` (09:50 UTC):
+    the twenty-second class,
+    an English whole-page note declines the entry.
+-   `3620004db`,
+    `e945b1b5f` and `dc3946757` (08:00 to 09:00 UTC):
+    the twenty-first class's fourth face,
+    the assembly guard over the composed page recorded in the artifact (schema 13).
+-   `379122379` (06:20 UTC):
+    the twenty-first class's third face,
+    a definition line its own block in the orphan trim.
+
+The 2026-09-08 commits:
 
 -   `bb04656ef` (2026-09-08,
     18:21 UTC):
@@ -1416,6 +1492,126 @@ the owner decides.
     The 19:53 launch was killed under it after 264 calls.
     The rule is deliberately not in the root `AGENTS.md`.
 
+## Costs
+
+Measured at 18:25 UTC on 2026-09-09 with the scratch `costs-today.mjs` over every log of the day under
+`~/temp/agent` (the `cost=` field of each `SPEND` line summed per log,
+the first and last `METERS` balances beside it),
+the catalogs' prices,
+and the seat line of the seventh `Mio` launch.
+A reckoned `estimated=abandoned` line is a ceiling (completion at the cap times the price),
+so a log's sum can read above what the balance moved.
+
+BALANCES NOW:
+
+- OpenRouter 271.65 USD,
+    the owner's final top-up ("I have topped up OpenRouter one final time";
+    273.99 at the 16:45 launch).
+- Bedrock 186.49 USD of the 200 the owner will never top up;
+    195.26 at 01:34 UTC today,
+    so 8.77 spent today over 36 logs (gpt-oss-120b 4.88,
+    gemma-4-26b-a4b 3.06,
+    gemma-4-e2b 0.83,
+    gemma-4-31b 0.02).
+- Synthetic at zero of its rolling week since 17:25 UTC;
+    it returns as the oldest usage ages out.
+- Hyper at zero since 12:45 UTC on 2026-09-08 and never to be recharged.
+
+WHAT THE DAY COST BEFORE THE LEVERS
+(01:34 to 13:04 UTC,
+the build before `037d1f650`,
+Synthetic and Hyper dry throughout,
+so every non-Bedrock call went to OpenRouter):
+21 passes logged 104.31 USD on OpenRouter while the balance moved 130.99 to 0.09,
+the 26.6 USD between them the abandoned streams the endpoints billed to the end before
+`4f87555fc` wrote a line for them;
+with the 69 USD spent between the 200.01 top-up of 2026-09-08 11:26 UTC and 01:34,
+that is the 200 USD the owner asked about.
+Per pass,
+in launch order:
+`hakureico19` 8.88 (SETTLED),
+`yuki7` 4.64 (SETTLED),
+`hakureico20` 6.15 (ERROR),
+`gqt1` 5.72,
+`mio1` 4.04,
+`gqt2` 5.83,
+`hakureico21` 6.84 (INCOMPLETE),
+`mio2` 4.71,
+`gqt3` 6.61,
+`hakureico22` 3.87 (INCOMPLETE),
+`mio3` 3.66,
+`gqt4` 7.05 (SETTLED),
+`hakureico23` 6.80 (SETTLED),
+`mio4` 6.41,
+`hulicaijia1` 0.26,
+`hulicaijia2` 7.15,
+`mio5` 5.32,
+`noname1` 5.04 (SETTLED),
+`hulicaijia3` 2.57 (ERROR),
+`mio6` 1.05 (INCOMPLETE),
+`noname2` 1.72 (SETTLED);
+a pass with no status was killed for a fix and relaunched.
+By model on OpenRouter today:
+deepseek-v4-pro 39.77,
+Qwen3.8-27B 24.10 (off the OpenRouter catalog since `037d1f650`),
+glm-5.3 16.73 (off since `037d1f650`),
+Kimi-K3 10.80 (the reach honours the withholding since `19b6043a3`),
+deepseek-v4-flash 3.87,
+minimax-m3 2.40,
+glm-5.3-flash 0.77.
+
+WHAT A PASS COSTS ON THE LEVERS
+(since the 16:45 launch of the third `noname` on `33a023445`):
+
+- The third `noname`,
+    83 minutes,
+    SETTLED,
+    Synthetic wet for its first 40 minutes:
+    1.87 USD on OpenRouter,
+    of which 1.14 was 22 Kimi-K3 calls the router sent there after Synthetic dried,
+    so 0.73 for the other 382 OpenRouter calls;
+    0.19 on Bedrock;
+    28 abandoned streams reckoned at 0.44 (a ceiling;
+    23 of them DeepSeek-flash at 0.05 in all).
+- The Mercury producer calibration,
+    0.98 USD logged on OpenRouter by round 21 of 40 (0.17 of it reckoned abandoned);
+    every `inception/mercury-2.5` call so far billed `cost=0` on the Inception endpoint,
+    against the listing of 0.04 and 0.15 USD per million.
+- The seated-roster fidelity probe,
+    0.02 USD.
+- Since the top-up the balance moved 273.99 to 271.65 (2.34 USD),
+    with 2.87 logged,
+    the difference the reckoned ceilings.
+- The seventh `Mio` (18:20 UTC,
+    frozen `19b6043a3`) is the first pass with the leak closed;
+    read its `SPEND` sum for what a page costs with Synthetic dry,
+    expected near 0.7 to 1.0 USD on OpenRouter and 0.2 on Bedrock,
+    which puts the balances at some 270 pages on OpenRouter and 600 on Bedrock.
+
+PRICES THE CATALOGS CARRY,
+USD per million prompt and completion tokens,
+which `SPEND cost=` is read off the wire against:
+
+- OpenRouter:
+    deepseek-v4-pro 0.58 and 1.74 (paid 1.87 times that before the price sort of `1fe7ca2fe`),
+    deepseek-v4-flash 0.065 and 0.18,
+    minimax-m3 0.3 and 1.2,
+    glm-5.3-flash 0.075 and 0.25,
+    gpt-oss-120b 0.037 and 0.17,
+    gemma-4-26b-a4b 0.07 and 0.34,
+    mercury-2.5 0.04 and 0.15,
+    kimi-k3 3 and 15 (served,
+    not bought).
+- Bedrock:
+    gemma-4-e2b 0.04 and 0.08,
+    gemma-4-26b-a4b 0.13 and 0.40,
+    gemma-4-31b 0.14 and 0.40,
+    gpt-oss-120b 0.1545 and 0.618.
+- Synthetic and Hyper are prepaid quotas,
+    not per token;
+    what reaches them costs nothing per call,
+    which is why the levers that cut tokens make them last longer and send less to OpenRouter.
+
 ## The bleed and the six levers
 
 The owner asked on 2026-09-09 where 200 USD went in a day and said to do everything to stop bleeding,
@@ -1498,7 +1694,9 @@ a fix that matters to the running entry still kills and relaunches it.
     (pid 875801,
     frozen `3224ff347`,
     log `~/temp/agent/producer-calibrate-mercury-20260909.log`;
-    about three hours by the 2026-09-08 precedent).
+    round 21 of 40 at 18:21 UTC,
+    0.98 USD logged so far,
+    every Mercury call billed `cost=0`).
     When it prints `STANDING over 40 rounds`,
     read it with the scratch `read-standing.mjs` (proven on the 2026-09-01 and 2026-09-08 logs):
     not separated from the pooled null,
@@ -1543,12 +1741,15 @@ a fix that matters to the running entry still kills and relaunches it.
     wet at one reading of six);
     Hyper's daily quota is unpublished and closed once today after about a thousand requests of one pass,
     and a pass that meets it holds Hyper out until the instant the refusal names.
-    At 21:22 UTC on 2026-09-08 (the `yuki418330012` tally):
-    OpenRouter 172.94 USD (topped up to 200.01 at 11:26;
-    that pass spent 4.68),
-    Bedrock 197.20 USD (0.17 on that pass),
-    Synthetic refused at 20:33 and was held out 300 s,
-    Hyper 0 since 12:45 and never to be recharged (the owner's words).
+    At 18:20 UTC on 2026-09-09 (the seventh `Mio` launch):
+    OpenRouter 271.65 USD (the owner's final top-up;
+    the third `noname` spent 1.87,
+    the Mercury calibration 0.98 by round 21),
+    Bedrock 186.49 USD (0.19 on that pass,
+    8.77 today),
+    Synthetic at zero of its rolling week since 17:25,
+    Hyper 0 since 12:45 UTC on 2026-09-08 and never to be recharged (the owner's words);
+    the whole account is under "Costs".
     Bedrock and OpenRouter are the two wet providers and together reach every bench at every phase,
     measured on the merged build;
     OpenRouter is the one whose spend is per token.
