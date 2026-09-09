@@ -12,7 +12,8 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { containsToolName, } from './active-tool.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
-import { ADVISOR_TOOL_NAME, } from './constants.ts';
+import { ADVISOR_OPERATION_TYPE, ADVISOR_TOOL_NAME, } from './constants.ts';
+import { AdvisorOperationError, } from './operation-error.ts';
 import { serializeAdvisorProjectContext, } from './project-context.ts';
 import { buildAdvisorStatus, } from './status.ts';
 import { runAdvisor, } from './tool.ts';
@@ -344,6 +345,8 @@ async function runImmediateAdvisor(
     },);
   }
   catch (error) {
+    if (error instanceof AdvisorOperationError)
+      pi.appendEntry(ADVISOR_OPERATION_TYPE, error.operation,);
     if (ctx.signal
       ?.aborted
       === true) {

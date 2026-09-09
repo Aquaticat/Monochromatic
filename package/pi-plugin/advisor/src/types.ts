@@ -343,7 +343,7 @@ export type AdvisorRunOptions = ForeignHostCapability<{
 export type AdvisorToolDefinition<TParameters extends TSchema = TSchema,> =
   ToolDefinition<
     TParameters,
-    AdvisorDetails
+    AdvisorDetails | AdvisorOperationSnapshot
   >;
 
 /**

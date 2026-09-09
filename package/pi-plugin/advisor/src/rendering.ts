@@ -133,10 +133,12 @@ export function renderAdvisorResult(
   {
     result,
     expanded,
+    isPartial = false,
     theme,
   }: {
     readonly result: ReadonlyDeep<AdvisorRenderableResult>;
     readonly expanded: boolean;
+    readonly isPartial?: boolean;
     readonly theme: ForeignHostCapability<Theme>;
   },
 ): Component {
@@ -149,6 +151,8 @@ export function renderAdvisorResult(
     ? result.content[0]
       .text
     : '(advisor returned no text)';
+  if (isPartial)
+    return new Text(theme.fg('dim', text,), 0, 0,);
   if (!isAdvisorDetails(result.details,)) {
     return new Text(
       theme.fg(

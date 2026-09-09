@@ -38,6 +38,7 @@ import { selectAdvisorModel, } from './advisor-selection.ts';
 import { createAdvisorProjectContextState, } from './project-context.ts';
 import { renderAdvisorMessage, } from './rendering.ts';
 import { createAdvisorTool, } from './tool.ts';
+import { registerAdvisorFailureAccounting, } from './operation-failure-accounting.ts';
 
 /**
  Logger root for pi-advisor after removing the package log shim.
@@ -97,7 +98,10 @@ export default async function advisor(
 
   innerL.debug(`advisor extension loaded; enabled=${String(state.getEnabled(),)}`,);
 
+  /** Restore failed nested usage when Pi finalizes the thrown tool error. */
+  const onFailure = registerAdvisorFailureAccounting(pi,);
   pi.registerTool(createAdvisorTool({
+    onFailure,
     getConfig: function getConfig() {
       return config;
     },
@@ -286,6 +290,12 @@ async function buildMainModelGuidance(
  Operation internals exported for built-artifact verification. @internal
  */
 export { createAdvisorOperationLedger, } from './operation-ledger.ts';
+export { runAdvisorOperation, } from './operation.ts';
+export { formatAdvisorProgress, } from './operation-progress.ts';
+export { registerAdvisorFailureAccounting, } from './operation-failure-accounting.ts';
+export { AdvisorOperationError, } from './operation-error.ts';
+export type { AdvisorOperationOptions, } from './operation.ts';
+export type { AdvisorDispatch, AdvisorOperationCandidate, } from './operation-attempt.ts';
 export {
   NO_ADVISOR_CANDIDATE,
   nextAdvisorCandidate,

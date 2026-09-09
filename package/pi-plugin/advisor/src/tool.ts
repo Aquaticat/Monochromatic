@@ -1,383 +1,103 @@
-/**
- Advisor tool registration and execution.
- 
- @module
- */
-
-import type {
-  AgentToolResult,
-  ExtensionContext,
-  Theme,
-  ToolRenderResultOptions,
-} from '@earendil-works/pi-coding-agent';
+/** Advisor tool registration and ledger-driven execution. @module */
+import type { AgentToolResult, ExtensionContext, Theme, ToolRenderResultOptions, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import {
-  buildAdvisorSystemPromptForProject,
-  extractAdvisorText,
-} from './advisor-client.ts';
-import { completeAdvisor, } from './advisor-completion-client.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
-import {
-  renderAdvisorCall,
-  renderAdvisorResult,
-} from './rendering.ts';
-import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
-import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
-import { selectAdvisorRunContext, } from './tool-context-selection.ts';
-import {
-  AdvisorToolParametersSchema,
-  prepareAdvisorArguments,
-} from './tool-params.ts';
-import type {
-  AdvisorConfig,
-  AdvisorDetails,
-  AdvisorRunOptions,
-  AdvisorRunResult,
-  AdvisorToolDefinition,
-  AdvisorToolResult,
-} from './types.ts';
+import { AdvisorOperationError, } from './operation-error.ts';
+import { formatAdvisorProgress, } from './operation-progress.ts';
+import type { AdvisorOperationSnapshot, } from './operation-types.ts';
+import { renderAdvisorCall, renderAdvisorResult, } from './rendering.ts';
+import { runAdvisor, } from './run-advisor.ts';
+import { AdvisorToolParametersSchema, prepareAdvisorArguments, } from './tool-params.ts';
+import type { AdvisorConfig, AdvisorDetails, AdvisorToolDefinition, AdvisorToolResult, } from './types.ts';
 
-//region Public API
+export { runAdvisor, } from './run-advisor.ts';
 
-/**
- Options for creating the registered Advisor tool.
- */
+/** Runtime state and persistence boundaries supplied by the extension. */
 export type CreateAdvisorToolOptions = {
-  /**
-   Return current runtime config.
-   */
+  /** Runtime config snapshot. */
   readonly getConfig: () => AdvisorConfig;
-  /**
-   Return current session enablement.
-   */
+  /** Session enablement. */
   readonly getSessionEnabled: () => boolean;
-  /**
-   Return current Pi-loaded project-context snapshot.
-   */
+  /** Current Pi-loaded project context. */
   readonly getProjectContext: () => string;
+  /** Preserve accounting before throwing through the host's error boundary. */
+  readonly onFailure?: (failure: { readonly toolCallId: string; readonly operation: AdvisorOperationSnapshot; }) => void;
 };
 
+/** Host-defined positional progress callback, including absence outside streaming hosts. */
+type AdvisorUpdateCallback = Parameters<AdvisorToolDefinition<typeof AdvisorToolParametersSchema>['execute']>[3];
+
 /**
- Create the Advisor tool definition.
- 
- @param toolOptions - runtime state accessors
- 
- @returns pi tool definition
- 
+ Register a default fallback tool while preserving exact explicit-model requests.
+ @param toolOptions - session accessors and accounting persistence
+ @returns Pi tool definition
  @example
- ```typescript
+ ```ts
  pi.registerTool(createAdvisorTool({ getConfig, getSessionEnabled, getProjectContext }));
  ```
  */
-export function createAdvisorTool(
-  toolOptions: CreateAdvisorToolOptions,
-): AdvisorToolDefinition<typeof AdvisorToolParametersSchema> {
+export function createAdvisorTool(toolOptions: CreateAdvisorToolOptions,): AdvisorToolDefinition<typeof AdvisorToolParametersSchema> {
   return {
     name: ADVISOR_TOOL_NAME,
     label: 'Advisor',
-    description:
-      'Consult an independent advisor model using the current conversation context. Empty params select the highest expected-cost output-eligible scoped model other than the current main model when possible. Optional model selects an eligible scoped model, and optional question asks Advisor to answer a focused review question.',
-    promptSnippet:
-      'Consult an independent advisor model. Use advisor({}) for default non-current scoped model, advisor({ "question": "..." }) for a focused question, or advisor({ "model": "provider/model", "question": "..." }) for both.',
+    description: 'Consult independent scoped reviewer models using the current conversation context. Empty params start with the highest expected-cost eligible non-current model and recover through other scoped models on failure. Optional configured overlap collects completed reviews together after bounded straggler grace. Explicit model requests never switch models.',
+    promptSnippet: 'Consult Advisor with empty params for default recovery, or specify an exact scoped model and optional focus question.',
     promptGuidelines: [
-      'Advisor receives the conversation context automatically and returns review feedback as a tool result.',
-      'Call advisor when a secondary review can catch flawed assumptions, missing verification, risky changes, or overlooked files.',
-      'Use advisor({ "question": "..." }) when Advisor should answer a focused uncertainty from the main model instead of only giving general review feedback.',
-      'Do not request models outside the eligible scoped model set; out-of-scope or output-ineligible slugs fail and list allowed slugs.',
+      'Advisor receives the current serialized conversation and loaded project context automatically.',
+      'Call Advisor to check flawed assumptions, missing verification, and overlooked files.',
+      'Advisor may return multiple separately labelled reviews; none carries a quality guarantee.',
+      'Explicit Advisor model requests remain exact and never fall back to another model.',
     ],
     parameters: AdvisorToolParametersSchema,
     executionMode: 'sequential',
     prepareArguments: prepareAdvisorArguments,
-    execute:
     /**
-     Run Advisor tool against active Pi host context.
-     
-     @param toolCallId - identity used to exclude in-flight placeholder context
-     
-     @param params - selected model and focus question
-     
-     @param signal - cancellation capability for provider request
-     
-     @param _onUpdate - unused progress callback required by Pi host
-     
-     @param ctx - host context required for scope and auth resolution
-     
-     @returns Advisor review result for primary model
-     
-     @mutates ctx - scope and auth resolution can invoke Pi host capabilities
+     Run through one operation and expose bounded metadata-only progress.
+     @param toolCallId - host identity for persisted failure accounting
+     @param params - model and focus question
+     @param signal - caller cancellation
+     @param onUpdate - host progress callback
+     @param ctx - scope, session, and provider capabilities
+     @returns original collected reviews and aggregate available usage
+     @mutates ctx - resolves scope and provider authentication through the host
+     @mutates onUpdate - publishes progress to the host
      */
-      async function executeAdvisorTool(
-      toolCallId: string,
-      params: {
-        readonly model?: string;
-        readonly question?: string;
-      },
-      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- pi ToolDefinition.execute dictates positional `signal: AbortSignal | undefined` before required `onUpdate`/`ctx`, so optionality cannot move to a trailing `?:`.
+    async execute(toolCallId: string, params: { readonly model?: string; readonly question?: string; },
+      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi dictates a positional optional signal before required host context.
       signal: ForeignHostCapability<AbortSignal> | undefined,
-      _onUpdate: unknown,
-      ctx: ForeignHostCapability<ExtensionContext>,
-    ): Promise<AdvisorToolResult> {
-      if (!toolOptions.getSessionEnabled()) {
-        throw new Error(
-          'advisor: disabled for this session. Run /advisor on to re-enable.',
-        );
+      onUpdate: AdvisorUpdateCallback, ctx: ForeignHostCapability<ExtensionContext>,): Promise<AdvisorToolResult> {
+      if (!toolOptions.getSessionEnabled())
+        throw new Error('advisor: disabled for this session. Run /advisor on to re-enable.',);
+      try {
+        /** Final reviews and operation metadata. */
+        const result = await runAdvisor({
+          ctx, config: toolOptions.getConfig(), projectContext: toolOptions.getProjectContext(), toolCallId,
+          ...(params.model === undefined ? {} : { requestedSlug: params.model, }),
+          ...(params.question === undefined ? {} : { question: params.question, }),
+          ...(signal === undefined ? {} : { signal, }),
+          onUpdate(operation): void {
+            onUpdate?.({ content: [{ type: 'text', text: formatAdvisorProgress({ operation, now: Date.now(), },), },], details: operation, },);
+          },
+        },);
+        return {
+          content: [{ type: 'text', text: result.text, },], details: result.details,
+          ...(result.details.usage === undefined ? {} : { usage: result.details.usage, }),
+        };
       }
-
-      /**
-       Primitive Advisor inputs copied from host-owned tool parameters.
-       */
-      const {
-        model: requestedSlug,
-        question,
-      } = params;
-      /**
-       Runtime config snapshot for this call.
-       */
-      const config = toolOptions.getConfig();
-      /**
-       Advisor run result.
-       */
-      const result = await runAdvisor({
-        ctx,
-        config,
-        projectContext: toolOptions.getProjectContext(),
-        ...(requestedSlug
-          === undefined ? {} : { requestedSlug, }),
-        ...(question
-          === undefined ? {} : { question, }),
-        toolCallId,
-        ...(signal === undefined ? {} : { signal, }),
-      },);
-
-      return {
-        content: [{
-          type: 'text',
-          text: result.text,
-        },],
-        details: result.details,
-      };
+      catch (error) {
+        if (error instanceof AdvisorOperationError)
+          toolOptions.onFailure?.({ toolCallId, operation: error.operation, },);
+        throw error;
+      }
     },
-    /* oxlint-disable unicorn/consistent-function-scoping -- ToolDefinition.renderCall expects positional args; require-destructured-params forbids extracting this to a module-level declaration. */
-    renderCall:
-    /**
-     Render Advisor tool call through Pi theme capability.
-     
-     @param args - model and question displayed before execution
-     
-     @param theme - Pi theme used to style call row
-     
-     @param _context - unused render context required by Pi host
-     
-     @returns styled call-row component
-     
-     @mutates theme - theme methods can update Pi host styling caches
-     */
-      function renderCall(
-        args: {
-          readonly model?: string;
-          readonly question?: string;
-        },
-        theme: ForeignHostCapability<Theme>,
-        _context: unknown,
-      ) {
-        return renderAdvisorCall({
-          args,
-          theme,
-        },);
-      },
-    /* oxlint-enable unicorn/consistent-function-scoping */
-    /* oxlint-disable unicorn/consistent-function-scoping -- ToolDefinition.renderResult expects positional args; require-destructured-params forbids extracting this to a module-level declaration. */
-    renderResult:
-    /**
-     Render Advisor tool result through Pi theme capability.
-     
-     @param result - completed Advisor tool result
-     
-     @param renderOptions - expansion state from Pi host
-     
-     @param theme - Pi theme used to style result row
-     
-     @param _context - unused render context required by Pi host
-     
-     @returns styled result-row component
-     
-     @mutates theme - theme methods can update Pi host styling caches
-     */
-      function renderResult(
-        result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>,
-        renderOptions: ReadonlyDeep<ToolRenderResultOptions>,
-        theme: ForeignHostCapability<Theme>,
-        _context: unknown,
-      ) {
-        return renderAdvisorResult({
-          result,
-          expanded: renderOptions.expanded,
-          theme,
-        },);
-      },
-    /* oxlint-enable unicorn/consistent-function-scoping */
-  };
-}
-
-/**
- Execute an Advisor review for tool or command mode.
- 
- @param options - runtime call options
- 
- @returns advisor text and details
- 
- @mutates options - `resolveEffectiveScope` can invoke context scope callbacks and `completeAdvisor` can run command-backed auth through `ctx.modelRegistry.getApiKeyAndHeaders`
- 
- @example
- ```typescript
- const result = await runAdvisor({ ctx, config });
- ```
- */
-export async function runAdvisor(
-  options: ForeignHostCapability<AdvisorRunOptions>,
-): Promise<AdvisorRunResult> {
-  /**
-   Start time for duration metadata.
-   */
-  const startedAt = Date.now();
-  /**
-   Pi extension context for this Advisor run.
-   */
-  const { ctx, } = options;
-  /**
-   Effective scoped model set.
-   */
-  const scope = await resolveEffectiveScope({
-    ctx,
-    errorPrefix: 'advisor',
-  },);
-  if (scope.entries
-    .length
-    === 0) {
-    throw new Error(
-      'advisor: no scoped models with configured auth. Check --models, enabledModels, /scoped-models, or provider login.',
-    );
-  }
-  /**
-   Scoped models whose endpoints advertise configured output capacity.
-   */
-  const eligibleScope = filterAdvisorScopeByOutputCapacity({
-    scope,
-    maxAdvisorOutputTokens: options.config
-      .maxAdvisorOutputTokens,
-  },);
-
-  /**
-   Advisor model system prompt.
-   */
-  const advisorSystemPrompt = buildAdvisorSystemPromptForProject({
-    config: options.config,
-    projectContext: options.projectContext ?? '',
-  },);
-  /**
-   Current primary model to avoid for default Advisor selection when possible.
-   */
-  const { model: currentMainModel, } = ctx;
-  /**
-   Selected Advisor model and model-budgeted serialized context.
-   */
-  const selectionContext = selectAdvisorRunContext({
-    branch: ctx
-      .sessionManager
-      .buildContextEntries(),
-    config: options.config,
-    advisorSystemPrompt,
-    scope,
-    modelRegistry: ctx
-      .modelRegistry,
-    ...(currentMainModel
-      === undefined
-      ? {}
-      : { currentMainModel, }),
-    ...(options.requestedSlug
-      === undefined
-      ? {}
-      : { requestedSlug: options.requestedSlug, }),
-    ...(options.question
-      === undefined
-      ? {}
-      : { question: options.question, }),
-    ...(options.toolCallId
-      === undefined ? {} : { toolCallId: options.toolCallId, }),
-  },);
-  /**
-   Selected Advisor model and serialized conversation context.
-   */
-  const {
-    selection,
-    advisorContext,
-  } = selectionContext;
-
-  /**
-   Provider response from selected secondary model.
-   */
-  const response = await completeAdvisor({
-    ctx,
-    model: selection.selected
-      .model,
-    config: options.config,
-    advisorContext,
-    projectContext: options.projectContext ?? '',
-    operationStartedAtMs: startedAt,
-    ...(options.question
-      === undefined ? {} : { question: options.question, }),
-    ...(options.signal
-      === undefined ? {} : { signal: options.signal, }),
-  },);
-  /**
-   Extracted advisor text.
-   */
-  const text = extractAdvisorText(response,)
-    || '(advisor returned no text)';
-
-  return {
-    text,
-    details: {
-      ...(selection.requestedSlug
-        === undefined
-        ? {}
-        : { requestedSlug: selection.requestedSlug, }),
-      selectedSlug: selection.selected
-        .canonicalSlug,
-      provider: selection
-        .selected
-        .model
-        .provider,
-      scopeSource: scope.source,
-      scopedSlugs: eligibleScope.entries
-        .map(function mapEntry(
-          entry: ReadonlyDeep<(typeof eligibleScope.entries)[number]>,
-        ) {
-        return entry.canonicalSlug;
-      },),
-      ...(selection.defaultSelection
-        ?.reason
-        === undefined
-        ? {}
-        : { defaultSelectionReason: selection.defaultSelection
-          .reason, }),
-      durationMs: Date.now()
-        - startedAt,
-      contextBudgetChars: advisorContext.maxContextChars,
-      contextChars: advisorContext.finalChars,
-      estimatedInputTokens: advisorContext.estimatedInputTokens,
-      truncated: advisorContext.truncated,
-      stopReason: response.stopReason,
-      usage: response.usage,
-      ...(selection.defaultSelection
-        ?.ranking
-        === undefined
-        ? {}
-        : { costRanking: selection.defaultSelection
-          .ranking, }),
+    /** Render the initial requested identity through the host theme. */
+    renderCall(args: { readonly model?: string; readonly question?: string; }, theme: ForeignHostCapability<Theme>,) {
+      return renderAdvisorCall({ args, theme, },);
+    },
+    /** Render partial metadata independently from final successful or failed results. */
+    renderResult(result: ReadonlyDeep<AgentToolResult<AdvisorDetails | AdvisorOperationSnapshot>>, renderOptions: ReadonlyDeep<ToolRenderResultOptions>, theme: ForeignHostCapability<Theme>,) {
+      return renderAdvisorResult({ result, expanded: renderOptions.expanded, isPartial: renderOptions.isPartial, theme, },);
     },
   };
 }
-
-//endregion Public API

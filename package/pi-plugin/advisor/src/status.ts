@@ -105,6 +105,11 @@ export async function buildAdvisorStatus(
   return [
     `Advisor: ${enabled ? 'on' : 'off'}`,
     `Scope source: ${scope.source}`,
+    'Default failures: serial fallback through untried scoped models; explicit requests remain exact',
+    `Overlapping default reviews: ${config.hedgingEnabled ? `enabled after ${String(config.hedgeDelayMs,)}ms` : 'disabled'}`,
+    `Collection grace: ${String(config.collectionGraceMs,)}ms after first usable review, capped by original deadline`,
+    'Overlap can bill both requests; the set of completed reviewers is nondeterministic',
+    'Credit exhaustion excludes that provider for the current call only; cancellation does not guarantee complete billing data',
     `Scoped models: ${
       scope.entries
         .length

@@ -16,6 +16,9 @@ export const ADVISOR_TOOL_NAME = 'advisor';
  */
 export const ADVISOR_MESSAGE_TYPE = 'pi-advisor.review';
 
+/** Durable failed-operation metadata, excluded from model context and duplicate usage totals. */
+export const ADVISOR_OPERATION_TYPE = 'pi-advisor.operation';
+
 /**
  File name used for global and project extension configuration.
  */
