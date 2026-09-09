@@ -6229,8 +6229,8 @@ THE FIX (`7bcea2dc4`).
 `ENGLISH_WHOLE_PAGE_MARKS` (`original language: english`,
 and the corpus's own `original language: engish`) are matched on the lowercased note and read as whole-page;
 the recognizer's case failed first;
-lint,
-types and the recognizer and pass-entry suites clean.
+lint and types clean;
+full suite 984 `PASS` and 0 `FAIL`.
 The fifth `gqt` on `7bcea2dc4` declined in 146 ms:
 `ARCHIVE ORIGINAL entry=gqt: the archive's note says the whole page is the author's own English
 ((Original Language: Engish)), so the pipeline declines to repair it and the archive stands`,
