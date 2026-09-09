@@ -1,5 +1,17 @@
 # Local music player — full project handoff
 
+## Presentation policy correction (2026-09-09)
+
+The user withdrew the general requirement to display HTML in a visible browser window.
+Keep building self-contained review forms and verifying their rendered content and interactions.
+Headless browser verification is valid;
+window activation, minimization, monitor placement, and keeping a window visible are not completion gates.
+Follow an explicit request to show a design, rather than assuming every HTML artifact requires window management.
+
+This correction supersedes the generic opening and activation instructions in this handoff
+and the former window-opening clause in `review-notes.md` standing standard 9.
+Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
+
 You are picking this project up with **no prior context**.
  Everything known about it
 is in this folder.
@@ -226,7 +238,7 @@ project holds itself to.
   layout.
    Write that field into the form first,
    so it cannot be dropped at the end.
-- **Every design-question round is one self-contained HTML form opened in Helium.**
+- **Every design-question round is one self-contained HTML form.**
   Embed its visual candidates,
    pros,
    cons,
@@ -236,7 +248,7 @@ project holds itself to.
    font or server.
    Render it,
    inspect it and
-  exercise its answer controls before opening it for the user.
+  exercise its answer controls before delivering it.
    Every device mock must
   use a raster captured at cited physical panel resolution,
    display at cited dp size
@@ -362,14 +374,14 @@ in session 5 yet.
  The first grilling round was incorrectly sent as chat text;
  the user
 required one self-contained HTML rendering opened in Helium instead.
- That correction
-is now standing rule 9 in review-notes.md.
+ The self-contained-form requirement remains standing rule 9 in `review-notes.md`;
+the general window-opening obligation was withdrawn in the presentation policy correction.
  The user also required this handover to be
 updated as work proceeds;
  that is standing rule 10.
  The immediate next action is to
 build,
- verify and open the self-contained light-theme questionnaire in Helium.
+ verify and provide the self-contained light-theme questionnaire.
 Imported screenshots and uploads were inspected for visible account,
  path and status-bar
 identifiers;
@@ -1518,18 +1530,11 @@ the preceding delivery claim:
 not the requested selected baseline state.
  The exact `1c` full-frame preview remained
 behind its Open preview action.
- Rule VPH now records that a visual handoff completes
-only when the requested artifact state itself is visible.
+ The general visible-window rule introduced for this incident was withdrawn on 2026-09-09.
  The questionnaire supports
 `#chosen-baseline`,
  which opens the selected full-frame modal as the page loads.
- Verify
-that hash path,
- replace the form-only normal window with it,
- and activate its exact
-non-minimized KWin window before asking any next-round question.
- The hash path is now
-verified in isolated Helium at DPR 2:
+ That artifact-state behavior was verified in isolated Helium at DPR 2:
  the dialog is open immediately,
  its title is
 `1c: Tonal panes with one white rail divider`,
@@ -1541,11 +1546,8 @@ focus is Zoom out,
 closed and the same hash path was launched through the normal Helium desktop entry.
 Its exact replacement KWin window is `{25fcb5c8-6f0f-4554-afb2-a45f1473592c}` at
 1080 × 1880 on `DP-2`.
- Make activation of that window the final operation so a later
-tool call does not return focus to the agent terminal.
- Await visible corrections;
- do
-not ask for next-work ordering yet.
+ The review awaited feedback on the selected baseline;
+next-work ordering was deferred for that review.
 
 That handoff still failed.
  The user saw an unexplained image and reasonably asked what
@@ -1680,9 +1682,8 @@ Labels,
  and 48px targets pass.
 Browser errors and console output are empty.
  Close the isolated browser and emulator,
-then open this exact cleared form through normal Helium with the instructional page,
-not a preview modal,
- visible first.
+then provide the exact cleared form with the instructional page as its initial content,
+not a preview modal.
  The isolated browser and emulator are stopped.
  The
 cleared form was opened through the Helium desktop entry without a preview hash.
@@ -1691,9 +1692,7 @@ reports the exact `Music player design: white divider clarification - Helium` wi
 as non-minimized at 1080 × 1880 on `HDMI-A-1`,
  internal ID
 `{a5f30058-687c-4d2a-940a-e9db0e6a0c30}`.
- Activate that exact window as the final
-operation,
- then wait for the form answer.
+
  The user answered with
 `/var/home/user/Pictures/Screenshots/Screenshot_20260904_191909.png`:
  choose D2,
@@ -1816,8 +1815,7 @@ confirms the corrected pane geometry,
  absent ordinals,
  and
 play-icon current cue.
- Stop isolated processes and replace the earlier clarification
-page in normal Helium with this cleared correction review.
+ Stop isolated processes and provide the cleared correction review.
  The isolated browser and
 emulator are stopped.
  The exact updated file was launched through the normal Helium
@@ -1826,8 +1824,7 @@ desktop entry.
 Helium` active and non-minimized at 1080 × 1880 on `HDMI-A-1`,
  internal ID
 `{a5f30058-687c-4d2a-940a-e9db0e6a0c30}`.
- Leave it visible and wait for the review
-answer.
+
  The user rejected that review structure:
  once a design is discarded,
  do not
@@ -1893,8 +1890,7 @@ checks on either the page or open modal.
  and 48px
 targets pass.
  Browser errors and console output are empty.
- Replace the stale normal
-Helium page with this current-only file and leave its instructional page visible.
+ Provide the current-only file with its instructional page as the initial content.
  The
 isolated verifier is stopped.
  The exact updated file was launched through the normal
@@ -1903,7 +1899,7 @@ Helium desktop entry.
 active and non-minimized at 1080 × 1880 on `HDMI-A-1`,
  internal ID
 `{a5f30058-687c-4d2a-940a-e9db0e6a0c30}`.
- Leave it visible and wait for its answer.
+
  The user rejected the question `Can we
 continue from revised D2?` as poor question design.
  It asks vague permission,
@@ -1968,7 +1964,7 @@ Helium` active and non-minimized at 1080 × 1880 on `DP-2`,
 `{eae6ad9d-37d6-4ff1-bc7d-07e6422ae946}`.
  The stale permission-question window was
 closed.
- Leave this current question visible and wait for its answer.
+
 
 **Phase:
  theme work.
@@ -2757,10 +2753,8 @@ troubleshooting updates,
  stop the emulator,
  remove
 temporary prototype captures,
- open the exact cleared form through normal Helium,
- and
-activate its KWin window.
- Then wait for the user's matrix answers.
+ provide the exact cleared form,
+ then wait for the user's matrix answers.
 
 Housekeeping is complete.
  The isolated Helium process and emulator are stopped;
@@ -2773,10 +2767,7 @@ refinement matrix - Helium` active and non-minimized at 1080 × 1880 on `HDMI-A-
 internal ID `{a3559176-9647-40f0-930f-f4f6095ff83f}`.
  Prototype HEAD and upstream are
 `bf6830f4f`.
- Check main HEAD against upstream after this final handover commit,
- leave
-the form visible,
- and wait.
+ Check main HEAD against upstream after this handover commit.
  The vertical segmented large-text correction is settled;
 the form asks only the separable spacing and Previous/Next icon-button treatment
 questions.
@@ -2795,8 +2786,7 @@ range.
 closed.
  Normal Helium remains active on the exact cleared file at KWin ID
 `{a3559176-9647-40f0-930f-f4f6095ff83f}`.
- Leave it visible and wait for the user's
-spacing and separate Previous/Next icon-button decisions.
+ The review awaited the user's spacing and separate Previous/Next icon-button decisions.
 
 The user chose matrix option 1B:
  8dp spacing between playback groups and outlined
@@ -3221,8 +3211,7 @@ The final isolated verifier is closed.
  Normal Helium now holds the exact cleared scale
 review at KWin ID `{daeddc48-db41-4dcd-9ca5-60ca4bd14882}` on `HDMI-A-2`,
 1280 × 680.
- Activate that non-minimized window as the final operation and wait for the
-user's review.
+ The review awaited the user's response.
 
 The user correctly challenged the 50% capture as visually abnormal.
  My earlier claim
@@ -3287,8 +3276,7 @@ The duplicate 1280 × 680 normal window is closed.
 is ready in normal Helium at KWin ID `{bec7e813-4eac-4c39-ae0a-d138dc43df19}` on
 `DP-2`,
  1080 × 1880.
- Activate that non-minimized window as the final operation and
-wait for the user's review.
+ The review awaited the user's response.
 
 The user refined the adaptive mode rule after seeing the actual-preset review.
  A one-row
@@ -3421,8 +3409,7 @@ are removed,
 cleared exact form is active and non-minimized in normal Helium at KWin ID
 `{78195ca3-e2bd-4e50-a392-ef6729765795}` on `DP-3`,
  1080 × 1880.
- Activate
-that window as the final operation and wait for the user's review.
+ The review awaited the user's response.
 
 The user corrected the one-row padding rule:
  12dp is the minimum,
@@ -3524,11 +3511,8 @@ font scale 1.0,
 The corrected form is open in normal Helium at KWin ID
 `{e3eeaeb2-4796-4fb5-aec4-844765d4690b}` on `DP-2`,
  1080 × 1880;
- it is currently
-minimized.
- Activate and unminimize that window as the final operation,
- then wait for the
-user's review.
+ it was minimized at that checkpoint.
+ The review awaited the user's response.
 
 The user accepted the strict-12dp adaptive 3B review on 2026-09-08 and asked to
 continue with the next required design work.
@@ -3713,10 +3697,8 @@ remains fully reverted by `6d2d06e41`.
 `{032ccb9d-422e-4932-83f1-d39e11806ebc}` on `DP-2`,
  1080 × 1880;
  it is
-non-minimized but not yet active.
- Activate that exact window as the final operation,
- then
-wait for the user's two design decisions.
+non-minimized but was not active at that checkpoint.
+ The review awaited the user's two design decisions.
 
 The user selected F1 and S1.
  Record them as D39 and D40:
