@@ -1,4 +1,8 @@
-import { findUp, } from 'find-up';
+import {
+  fileNamed,
+  findRoot,
+} from '@monochromatic-dev/module-fs-path/ts';
+import { join, } from 'node:path';
 
 import { setActiveConfigPath, } from './context.ts';
 import { l, } from './logger.ts';
@@ -30,13 +34,14 @@ const positionalArgs = args.filter(function isPositional(arg,): boolean {
 },);
 
 /**
- Config path from CLI arg, or found by walking up from cwd
+ Config path from CLI arg, or the config file in the nearest ancestor of cwd that holds one.
+ A missing config rejects with `RootNotFoundError`, which names the file and the start directory.
  */
 const configPath = positionalArgs[0]
-  ?? await findUp(CONFIG_NAME,);
-
-if (configPath === undefined)
-  throw new Error(`Could not find ${CONFIG_NAME} in any parent directory`,);
+  ?? join(
+    await findRoot({ marker: fileNamed(CONFIG_NAME,), },),
+    CONFIG_NAME,
+  );
 
 l.info(`loading config: ${configPath}`,);
 setActiveConfigPath({ configPath, },);

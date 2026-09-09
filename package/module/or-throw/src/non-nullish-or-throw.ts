@@ -29,8 +29,8 @@ import { formatUnknownValue, } from './format-unknown-value.ts';
  @example
  Optional chaining replacement:
  ```ts
- const path: string = nonNullishOrThrow(await findUp('index.html',),);
- // path is string, not string | undefined
+ const home: string = nonNullishOrThrow(process.env['HOME'],);
+ // home is string, not string | undefined
  ```
  
  @example

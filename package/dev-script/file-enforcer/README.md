@@ -39,7 +39,7 @@ Run it directly or through the CLI:
 # Direct execution
 node file-enforcer.config.ts
 
-# CLI (finds config via find-up)
+# CLI (finds the config in the nearest ancestor of cwd)
 node package/dev-script/file-enforcer/src/index.ts
 
 # Watch mode -- re-runs on source changes, protects managed destinations
@@ -504,7 +504,7 @@ All production source files are under 100 lines per the monorepo coding guidelin
 - `mod.ts`:
    re-exports for the public API
 - `index.ts`:
-   CLI entry point with find-up and --watch flag
+   CLI entry point with upward config discovery and --watch flag
 - `notify.ts`:
    terminal warning + platform-aware desktop notification dispatch
 - `p.ts`:

@@ -54,7 +54,7 @@
 
 - No `--verbose` / `--quiet` flags to control log output.
 - No `--config <path>` flag;
-   config path is positional-only or found via find-up.
+   config path is positional-only or found by walking up from cwd.
 - No support for multiple config files (e.g.,
    per-package configs merged at the root).
 

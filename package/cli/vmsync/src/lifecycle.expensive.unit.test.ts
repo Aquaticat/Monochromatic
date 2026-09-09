@@ -19,12 +19,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  dirname,
-  join,
-} from 'node:path';
+import { join, } from 'node:path';
 
-import { findUp, } from 'find-up';
+import {
+  findRootCached,
+  packageNamed,
+} from '@monochromatic-dev/module-fs-path/ts';
 import nanoSpawn from 'nano-spawn';
 
 //region Constants
@@ -41,16 +41,11 @@ const CREATE_TIMEOUT_MS = 180_000;
 /** Timeout for individual mvm exec commands. */
 const EXEC_TIMEOUT_MS = 120_000;
 
-/** Absolute path to the vmsync package.json, found by walking up from the test file. */
-const pkgJsonPath = await findUp(
-  'package.json',
-  { cwd: dirname(new URL(import.meta.url,).pathname,), },
-);
-if (pkgJsonPath === undefined)
-  throw new Error('could not find package.json for vmsync',);
-
-/** Absolute path to the vmsync package root. */
-const PKG_ROOT = dirname(pkgJsonPath,);
+/** Absolute path to the vmsync package root: the nearest ancestor of this file whose manifest names the package. */
+const PKG_ROOT = await findRootCached({
+  cwd: import.meta.dirname,
+  marker: packageNamed('@monochromatic-dev/cli-vmsync',),
+},);
 
 /** Absolute path to the tsdown bundle. */
 const BUNDLE_PATH = join(PKG_ROOT, 'dist', 'final', 'node', 'index.mjs',);

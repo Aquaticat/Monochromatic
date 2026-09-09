@@ -3,7 +3,7 @@
  
  Each test writes a fixture `pnpm-workspace.yaml` under a fresh
  temp directory and calls `readCatalog({ startDir })` so the
- `findUp` search is constrained to that temp tree.
+ upward search is constrained to that temp tree.
  
  @module
  */

@@ -1,4 +1,9 @@
-import { findUp, } from 'find-up';
+import {
+  fileNamed,
+  findRoot,
+  RootNotFoundError,
+} from '@monochromatic-dev/module-fs-path/ts';
+import { join, } from 'node:path';
 import * as v from 'valibot';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -27,11 +32,41 @@ const l = tagged({
 export const DOT_ENV_ABSENT: unique symbol = Symbol('dot env file missing on disk',);
 
 /**
+ File name probed at each ancestor of the working directory.
+ */
+const DOT_ENV_NAME = '.env';
+
+/**
+ Locates the nearest `.env` at or above the working directory.
+
+ @returns absolute path of the file, or {@link DOT_ENV_ABSENT} when no ancestor holds one
+
+ @example
+ ```ts
+ const dotEnv = await locateDotEnv();
+ ```
+ */
+async function locateDotEnv(): Promise<string | typeof DOT_ENV_ABSENT> {
+  try {
+    /**
+     Nearest ancestor directory holding a `.env` file.
+     */
+    const dir = await findRoot({ marker: fileNamed(DOT_ENV_NAME,), },);
+    return join(dir, DOT_ENV_NAME,);
+  }
+  catch (error: unknown) {
+    if (!(error instanceof RootNotFoundError))
+      throw error;
+    l.debug(`no ${DOT_ENV_NAME} at or above ${error.startDir}; relative file URLs stay unsupported`,);
+    return DOT_ENV_ABSENT;
+  }
+}
+
+/**
  Path to the .env file if found in the project directory hierarchy, else {@link DOT_ENV_ABSENT}.
  Enables relative `file://` URL support in OPML paths when present.
  */
-export const DOT_ENV_PATH: string | typeof DOT_ENV_ABSENT = (await findUp('.env',))
-  ?? DOT_ENV_ABSENT;
+export const DOT_ENV_PATH: string | typeof DOT_ENV_ABSENT = await locateDotEnv();
 
 /**
  Valibot schema validating OPML source URLs.

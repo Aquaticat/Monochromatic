@@ -21,19 +21,15 @@ import { exec, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 import {
   findRootCached,
   MISE_MONOREPO,
+  packageNamed,
 } from '@monochromatic-dev/module-fs-path/ts';
-import { findUp, } from 'find-up';
 import { spawn as nodeSpawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import {
   mkdir,
   writeFile,
 } from 'node:fs/promises';
-import {
-  dirname,
-  join,
-  resolve,
-} from 'node:path';
+import { join, } from 'node:path';
 
 import { generateDomainXml, } from './domain-xml.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -59,17 +55,13 @@ const VM_MEMORY_MIB = '16384';
 const VM_VCPUS = '8';
 
 /**
- Absolute path to this package's root directory.
- Found by walking up from the script's directory to find the nearest `package.json`.
+ Resolved absolute path to the vm-builder package directory:
+ the nearest ancestor of this file whose manifest names this package.
  */
-const packageJson = await findUp('package.json',);
-if (packageJson === undefined)
-  throw new Error('could not find package.json for vm-builder',);
-
-/**
- Resolved absolute path to the vm-builder package directory.
- */
-const PACKAGE_DIR = resolve(dirname(packageJson,),);
+const PACKAGE_DIR = await findRootCached({
+  cwd: import.meta.dirname,
+  marker: packageNamed('@monochromatic-dev/dev-script-vm-builder',),
+},);
 
 /**
  Absolute path to the monorepo root.

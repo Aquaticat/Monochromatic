@@ -4,9 +4,12 @@
  @module
  */
 
+import {
+  findRoot,
+  PNPM_WORKSPACE,
+} from '@monochromatic-dev/module-fs-path/ts';
 import { readFile, } from 'node:fs/promises';
-
-import { findUp, } from 'find-up';
+import { join, } from 'node:path';
 
 import {
   parseCatalogFromYaml,
@@ -19,6 +22,11 @@ import type {
 //region Public file reader
 
 /**
+ Workspace file name appended to the directory the walk finds.
+ */
+const WORKSPACE_FILE_NAME = 'pnpm-workspace.yaml';
+
+/**
  Locates and parses the nearest `pnpm-workspace.yaml`.
  
  The returned `content` is the exact UTF-8 text that was parsed, allowing a
@@ -28,7 +36,7 @@ import type {
  
  @returns located path, original content, and parsed catalogs
  
- @throws Error when no workspace YAML file exists up from the start directory
+ @throws RootNotFoundError when no workspace YAML file exists up from the start directory
  
  @example
  ```ts
@@ -42,17 +50,20 @@ export async function readCatalogFile(
   }: ReadCatalogFileOptions = {},
 ): Promise<CatalogFile> {
   /**
+   Nearest ancestor directory holding the workspace file.
+   */
+  const workspaceDir = await findRoot(
+    startDir === undefined
+      ? { marker: PNPM_WORKSPACE, }
+      : {
+        cwd: startDir,
+        marker: PNPM_WORKSPACE,
+      },
+  );
+  /**
    Absolute path to the nearest workspace YAML file.
    */
-  const workspaceYamlPath = await findUp(
-    'pnpm-workspace.yaml',
-    startDir === undefined ? undefined : { cwd: startDir, },
-  );
-  if (workspaceYamlPath === undefined) {
-    throw new Error(
-      `Could not locate pnpm-workspace.yaml by walking up from ${startDir ?? process.cwd()}`,
-    );
-  }
+  const workspaceYamlPath = join(workspaceDir, WORKSPACE_FILE_NAME,);
 
   /**
    Original workspace YAML text retained for callers that need surgical edits.
