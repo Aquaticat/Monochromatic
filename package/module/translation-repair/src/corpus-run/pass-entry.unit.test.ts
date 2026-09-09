@@ -614,6 +614,8 @@ function entryClient(
     polishScript = false,
     contestChoice = 'translate',
     quotaReads = { count: 0, },
+    archivePictureSupport,
+    archiveReviewSheets,
   }: {
     readonly served: string[];
     readonly failOnSchema?: string;
@@ -622,6 +624,8 @@ function entryClient(
     readonly polishScript?: boolean;
     readonly contestChoice?: 'repair' | 'translate';
     readonly quotaReads?: { count: number; };
+    readonly archivePictureSupport?: string;
+    readonly archiveReviewSheets?: string[];
   },
 ): RunClient {
   return {
@@ -656,6 +660,20 @@ function entryClient(
           return messageText({ message, },);
         },)
         .join('\n',);
+
+      if ((schema === 'archive_block_review') && (archivePictureSupport !== undefined)) {
+        archiveReviewSheets?.push(content,);
+        /** Source-supported reply depends on evidence actually reaching the review. */
+        const value = {
+          disposition: content.includes(archivePictureSupport,) ? 'source-supported' : 'revise',
+          sourceQuote: content.includes(archivePictureSupport,) ? archivePictureSupport : '',
+          replacementText: '',
+          finding: 'Read the picture translation against the supplied source evidence.',
+        };
+        if (!request.validate(value,))
+          throw new Error('scripted picture support failed archive review validator',);
+        return { kind: 'ok', value, rawText: JSON.stringify(value,), };
+      }
 
       /**
        * Whether shared translation schema belongs to consolidation producer.
@@ -1004,6 +1022,52 @@ await describe({
       },
     },),
 
+    it({
+      name: 'SHARES picture evidence from archive review through lanes without asking the reader twice',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /** Stage ordering across the actual entry orchestrator. */
+        const served: string[] = [];
+        /** Archive sheets read at the production call boundary. */
+        const archiveReviewSheets: string[] = [];
+        /** Picture-only source text, absent from both document bodies. */
+        const archivePictureSupport = '手套猫：联系电话是 555-0134。';
+        /** Reader invocations, not provider roster size. */
+        const reads: string[] = [];
+        await settleEntry({
+          client: entryClient({ served, coverageScript: 'absent', archivePictureSupport, archiveReviewSheets, },),
+          entry: { ...REVIEWED_VISUAL_ENTRY, targetText: `${REVIEWED_VISUAL_ENTRY.targetText}\n\n> Mittens: Call 555-0134.`, },
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          declinedDir: dirs.declinedDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+          visualEvidenceReader: async function pictureEvidence() {
+            reads.push('missing.webp',);
+            served.push('picture-evidence',);
+            return new Map([['missing.webp', {
+              kind: 'corroborated',
+              readings: [
+                { modelId: 'hf:moonshotai/Kimi-K3', text: archivePictureSupport, },
+                { modelId: 'hf:zai-org/GLM-5.3-Flash', text: archivePictureSupport, },
+              ],
+              overlap: 1,
+            },],]);
+          },
+        },);
+        expect(archiveReviewSheets.length,).toBeGreaterThan(0,);
+        expect(archiveReviewSheets.every(function supported(sheet,): boolean {
+          return sheet.includes(archivePictureSupport,);
+        },),).toBe(true,);
+        expect(served.indexOf('picture-evidence',),).toBeLessThan(served.indexOf('archive_block_review',),);
+        expect(reads,).toEqual(['missing.webp',],);
+        expect(served,).toContain('critic_report',);
+        expect(served,).toContain('translation_report',);
+      },
+    },),
     it({
       name: 'PASSES REVIEWED VISUAL into insertion and lane stages',
       fn: async () => {
