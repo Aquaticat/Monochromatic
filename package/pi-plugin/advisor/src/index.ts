@@ -286,6 +286,7 @@ async function buildMainModelGuidance(
  Operation internals exported for built-artifact verification. @internal
  */
 export { createAdvisorOperationLedger, } from './operation-ledger.ts';
+export { ADVISOR_CLOCK_BOUNDARY, createAdvisorCancellation, waitForAdvisorEvent, } from './operation-clock.ts';
 export {
   aggregateAdvisorUsage,
   copyAdvisorUsage,
