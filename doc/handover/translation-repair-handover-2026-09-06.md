@@ -1254,6 +1254,92 @@ The bare URL the census credited to `noname` was the inner URL of a `web.archive
 the corrected census names `shi_Yumiaoya` (a `Banner` prop) and `yingying` (a footnote definition).
 Recorded in the planning log under
 "The first noname page is read and the twenty-third class decides a contested target by votes".
+The second `noname` (`efc9a4f3c`,
+11:59 to 12:32 UTC,
+`~/temp/agent/noname2-20260909`) confirms the fix at the pairing:
+`contested target (target 0: source 1 outvotes source 0, 7 to 3)`,
+the heading a slice of its own,
+admitted as absent.
+OpenRouter refused for payment at 12:22 UTC and the heading was rendered `## Introduction` by both reachable
+translators and chosen by every judge who voted,
+at weight 1.5 against the minimum of 2,
+so it stays unfilled on that page;
+the heading ships is read on the first full-bench pass.
+Recorded in the planning log under
+"The second noname page confirms the pairing on a bench OpenRouter left".
+
+## The thin-bench questions
+
+Two decisions for the owner,
+raised by the second `noname` and the sixth `Mio` on Bedrock alone (2026-09-09,
+12:22 to 12:33 UTC;
+planning log,
+the same section).
+Nothing is changed in code until answered.
+
+The first:
+what a deciding bench short of quorum but not empty should do.
+Today it runs on what is reachable (the thirteenth class),
+and `MIN_SELECTION_WEIGHT` of 2 in `candidate-select-model.ts` seats a winner only when every reachable
+Bedrock judge names it,
+so insertions stay unfilled and slices ship unchanged.
+
+- A,
+  widen Bedrock's judge benches by measuring `gemma-4-31b` for the select and wide seats,
+  the way the E2B and 26B seats were measured.
+  Pro:
+  no rule changes,
+  and four Bedrock seats reach the quorum of four.
+  Con:
+  a measurement to run,
+  and the slate's quorum of five and the translators' stay short.
+- B,
+  widen the fifteenth class:
+  a deciding bench short of quorum stops the entry INCOMPLETE for a pass that has one.
+  Pro:
+  no thin page ships,
+  deterministic.
+  Con:
+  on one provider nothing ships,
+  and the Bedrock credit the owner wants spent buys nothing.
+- C,
+  ask a winner for a share of the reachable bench's weight rather than an absolute 2,
+  keeping 2 as the floor against one judge deciding.
+  Pro:
+  Bedrock alone seats winners.
+  Con:
+  three judges decide,
+  and the share is a number to choose.
+
+Ranking A > B > C:
+A over B because it buys pages from the credit the owner said to spend;
+B over C because a floor that stands beats a threshold that moves.
+
+The second:
+what the consolidation should do when the standing text is ineligible and the incumbent is valid.
+The 2026-09-04 decision stops the entry;
+it was taken on `luxuanwen3`,
+where the incumbent itself was ineligible.
+On `Mio` slice 3 the archive's paragraph and list were valid and were not offered.
+
+- A,
+  keep the incumbent for that slice with the finding recorded,
+  and stop only when the incumbent is ineligible too.
+  Pro:
+  an entry is not lost over one slice whose safe text exists;
+  the luxuanwen3 case still stops.
+  Con:
+  a slice the lanes wanted to change ships unchanged,
+  said only in the findings.
+- B,
+  as now.
+  Pro:
+  the decision as written.
+  Con:
+  one thin slice costs the page.
+
+Ranking A > B because the decision's reason ("an ineligible standing was never going to ship") does not reach
+an incumbent that can.
 
 ## The glossary question
 
@@ -1329,74 +1415,44 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Three passes are running on `efc9a4f3c`,
-    each watched by the filtered poller that reports only the tally,
-    a stop,
-    a crash or the process exit:
-    the second `noname` (the level-3 heading,
-    now read;
-    the `## 简介` heading the twenty-third class should restore),
-    launched 11:59 UTC on 2026-09-09 on Bedrock and OpenRouter,
-    runs dir `~/temp/agent/noname2-20260909`,
-    pid 711861;
-    the sixth `Mio` (a rule in the body;
-    one shape on no read page),
-    launched 11:59 UTC,
-    runs dir `~/temp/agent/mio6-20260909`,
-    pid 711977;
+1.  THE QUEUE IS PAUSED.
+    OpenRouter refused for payment at 12:22 UTC on 2026-09-09 (`HTTP 402`,
+    meter 1.51 USD,
+    172.94 fifteen hours earlier),
+    and the 2026-09-08 rule applies:
+    no launch on Bedrock alone,
+    and no launch at all until a meter besides Bedrock's moves.
+    One pass is still running on `efc9a4f3c`:
     the third `hulicaijia` (an inline `<ruby>` annotation beside a footnote reference,
-    `<Sakura count="50" />` at the end;
-    two shapes on no read page),
+    `<Sakura count="50" />` at the end),
     launched 11:59 UTC,
     runs dir `~/temp/agent/hulicaijia3-20260909`,
-    pid 712107.
-    Every earlier `gqt`,
-    `Mio` and `hulicaijia` launch was killed under the kill-and-relaunch rule as the tree moved,
-    except the fourth `gqt`,
-    which settled and is read (see "The twenty-second class";
-    `gqt` now declines),
-    and the first `noname`,
-    which settled and is read (see "The twenty-third class").
-    The census behind the choices (scratch `unmet-shapes.mjs`,
-    corrected for the bare URL) is in the planning log under
-    "Two shapes-first entries launched beside it" and
-    "The first noname page is read and the twenty-third class decides a contested target by votes".
-    Read the three by the seven steps plus the three checks,
-    then the shapes each carries:
-    `noname`,
-    whether `## Introduction` (or the archive convention's `## Description`) stands above the first paragraph,
-    the artifact's `alignmentFindings` for section 0 (`contested target ...` naming the votes),
-    and the three level-3 headings again;
-    `Mio`,
-    the rule's position;
-    `hulicaijia`,
-    the ruby element and the Sakura line verbatim,
-    the footnote's reference above its definition,
-    the `pageAssembly` section empty or its findings explained.
-    Then `shi_Yumiaoya` (the emphasis,
+    pid 712107,
+    watched by the quiet poller (monitor bcsv0w1ey).
+    Read it for the two shapes verbatim,
+    the footnote's reference above its definition and the `pageAssembly` section,
+    and not for its wording:
+    it finished on Bedrock alone (46 `winner short of the minimum vote weight` by 12:33 UTC).
+    The second `noname` settled with the heading unfilled and the sixth `Mio` stopped INCOMPLETE at slice 3
+    (see "The twenty-third class" and "The thin-bench questions").
+    When a meter moves,
+    launch `noname` first (the `## 简介` heading above the first paragraph is the read),
+    then `Mio` (the rule's position) and `hulicaijia`,
+    then `shi_Yumiaoya` (the emphasis,
     the `Banner` and its bare-URL prop),
     `yingying` (a bare URL as a footnote definition) and,
     on a quiet bench,
     `XingZ60` (the unordered list with a rule and three components).
+    Every earlier `gqt`,
+    `Mio` and `hulicaijia` launch was killed under the kill-and-relaunch rule as the tree moved,
+    except the fourth `gqt` (read;
+    `gqt` now declines) and the first `noname` (read).
+    The census (scratch `unmet-shapes.mjs`,
+    corrected for the bare URL) is in the planning log under
+    "Two shapes-first entries launched beside it" and
+    "The first noname page is read and the twenty-third class decides a contested target by votes".
     If the tree moves past `efc9a4f3c` while any runs,
     the kill-and-relaunch rule applies.
-    OpenRouter refused for payment at 12:22 UTC on 2026-09-09 (`HTTP 402`,
-    meter 1.51 USD,
-    172.94 fifteen hours earlier),
-    so the three run on Bedrock alone (187.91 USD) with the translate bench short of quorum
-    (2 of 8 translators reachable);
-    read their pages knowing that,
-    and read the meters before the next launch.
-    The poller was restarted at 12:30 UTC with the per-phase quorum warnings filtered out
-    (scratch `watch-pass-quiet.mjs`,
-    copy `~/temp/agent/watch-pass-quiet-20260909.mjs`;
-    monitors bwc3kbpnk,
-    b6enivx9y,
-    bnx0abda8),
-    since every phase of every pass repeated the one known condition,
-    and again at 12:31 UTC without `quorum-not-met`,
-    which the naturalness review prints per slice on Bedrock alone
-    (monitors b6enivx9y and its two siblings replaced).
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
 3.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;

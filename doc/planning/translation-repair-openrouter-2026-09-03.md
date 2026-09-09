@@ -6429,6 +6429,111 @@ a two-translator translate lane is thinner evidence than the seven-translator on
 The owner is notified;
 whether OpenRouter is topped up is theirs.
 
+## The second noname page confirms the pairing on a bench OpenRouter left, and the sixth Mio stops at slice 3, 2026-09-09, 12:40 UTC
+
+`TALLY noname status=SETTLED slices=13 repairStatus=repaired repairIssues=71 repairAccepted=58 repairResolved=32
+repairFindings=199 repairChanged=9 translateStatus=unfilled translateChanged=5 documentsDiffer=11 pageChanged=8
+pageSilent=1 alignmentFindings=8 selection=contested ms=2010335`
+at 12:32 UTC on `efc9a4f3c`,
+33.5 minutes,
+`~/temp/agent/noname2-20260909`,
+launched on Bedrock and OpenRouter and finished on Bedrock alone after the 12:22 UTC payment refusal
+(55 refusals counted,
+10 reviews `quorum-not-met`).
+THE TWENTY-THIRD CLASS IS CONFIRMED AT THE PAIRING:
+`block-pairing contested target (target 0: source 1 outvotes source 0, 7 to 3)`,
+the section 0 relation is `{source: 1, target: 0}`,
+slice 0 is the heading alone (`sourceChars=5`),
+the admission read it `coverage=absent` and the translate lane owned it.
+The first pass had the same nine voices and kept the heading on the paragraph;
+this one reads seven to three for the paragraph pair.
+AND THE HEADING STILL DOES NOT SHIP:
+two translators of eight were reachable and both rendered `## Introduction`;
+the judges who voted chose it
+(`deepseek-v4-flash-0731` at weight 1,
+`google.gemma-4-e2b` at 0.5,
+"complete,
+faithful,
+and natural English"),
+but `winner drew only weight 1.5 across 5 ballots (3 abstentions); keeping the fallback`,
+twice,
+then a follow-up round at 0.5,
+and `slice 0: no translation in the archive and none produced (no-candidate-backed); the passage stays missing`,
+`source-passage-unfilled (slice 0, no-candidate-backed)` on the tally.
+`MIN_SELECTION_WEIGHT` is 2 (`candidate-select-model.ts`:
+"two is the smallest number that makes a selection an agreement rather than an opinion"),
+and on Bedrock alone the select bench's whole reachable weight is 2 to 2.5
+(`gpt-oss-120b` at 1,
+`gemma-4-26b-a4b` at 0.5,
+`gemma-4-e2b` at 0.5 or 1 by bench),
+so a winner is seated only when every reachable judge names it,
+the shape the eighth `hakureico` pass showed on 2026-09-08
+("the contest asks a minimum ballot weight rather than a majority of its bench").
+The rest of the page is what a thin bench makes:
+the first paragraph rewritten by the lanes ("This page is used to record those without names,
+the victims who lost their lives due to systemic violence against transgender people.
+They may not even necessarily be transgender themselves."),
+faithful and plainer than the archive's,
+the archive's expanded first heading kept where the first pass had rendered the source's,
+the fullwidth colon and the `知乎` label kept,
+`verify-published` matched at 4402,
+front matter the archive's,
+`pageAssembly` empty.
+Not readiness evidence,
+by the 2026-09-08 rule that a page from a bench short of quorum is read for its findings and not for its wording.
+
+THE SIXTH MIO STOPS INCOMPLETE AT SLICE 3 (12:33 UTC,
+33.5 minutes,
+`~/temp/agent/mio6-20260909`):
+`the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship
+(slate-declined-standing)`.
+The archive's slice 3 is the paragraph "She suffered from major depression ..." and a bulleted list of three
+things she did that year;
+the source's is the paragraph alone,
+ending "还曾：" with the following sections as the list.
+The list is a kind the source lacks,
+so under the block floor's bound (class ten) the page is the floor and a candidate must carry it.
+The repair lane shipped the slice unchanged (`select 3/7` short of quorum),
+the contest chose the translate lane's one-paragraph rendering,
+which `fails publication invariants`,
+the consolidation withheld it from the slate as ineligible,
+three producers of nine proposed,
+and the judges could not seat one:
+`winner drew only weight 1 across 3 ballots (1 abstentions); keeping the fallback`.
+Nothing valid,
+so `ConsolidationStandingIneligibleError` stopped the entry under the 2026-09-04 decision.
+The archive's own paragraph and list,
+valid by construction as the page as it stands,
+were not a fallback:
+that decision was taken on `luxuanwen3`,
+where the incumbent was the ineligible thing,
+and it says every exit that would keep the standing throws.
+On a full bench the slate's nine producers are told the finding and one of them keeps the list;
+whether a thin bench should stop the entry or keep the incumbent for the slice is the second thin-bench
+question below.
+
+THE QUEUE PAUSES.
+The 2026-09-08 rule stands:
+no launch on Bedrock alone,
+and no launch at all until a meter besides Bedrock's moves.
+The third `hulicaijia` (pid 712107) runs on to its tally
+(71 repair and 70 translate slices computed by 12:33 UTC,
+46 `winner short of the minimum vote weight`,
+56 slices shipping unchanged)
+and is read for its shapes and its findings,
+not its wording.
+When OpenRouter moves,
+`noname` relaunches first,
+for the heading;
+then `Mio` and `hulicaijia`.
+Two questions for the owner,
+recorded in the handover under "The thin-bench questions":
+whether a deciding bench short of quorum should stop the entry (the fifteenth class widened),
+seat winners by a share of what is reachable,
+or be widened on Bedrock by measuring `gemma-4-31b` for the judge seats;
+and whether an ineligible standing over a valid incumbent should keep the incumbent for that slice instead of
+stopping the entry.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

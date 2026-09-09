@@ -1544,3 +1544,33 @@ the sixth `Mio` and the third `hulicaijia` on `efc9a4f3c` since 11:59 UTC,
 the emphasis and list carriers after them,
 the owner's answer on the glossary,
 and the components no read page has met.
+
+## What the second noname and sixth Mio launches showed (2026-09-09, 11:59 to 12:33 UTC)
+
+OpenRouter refused for payment at 12:22 UTC with 1.51 USD showing,
+and both passes finished on Bedrock alone.
+The second `noname` confirmed the twenty-third class at the pairing
+(`contested target (target 0: source 1 outvotes source 0, 7 to 3)`,
+the heading a slice of its own,
+admitted as absent)
+and still shipped without it:
+both reachable translators rendered `## Introduction`,
+every judge who voted chose it,
+and the winner drew 1.5 against the minimum of 2.
+The sixth `Mio` stopped INCOMPLETE at slice 3,
+where the archive's bulleted list is a kind the source lacks,
+the contest's winner dropped it,
+and three producers and three judges could not seat a valid replacement,
+so the 2026-09-04 rule stopped the entry over a slice whose incumbent was valid.
+
+THE READING:
+the belief holds and the 2026-09-08 rule applies again:
+a page from a bench short of quorum is read for its findings,
+not its wording,
+and no launch runs on Bedrock alone.
+The queue waits on OpenRouter,
+and on two owner questions recorded in the handover:
+what a deciding bench short of quorum should do,
+and whether an ineligible standing over a valid incumbent should keep the incumbent for the slice.
+What remains before an all-entries launch is unchanged,
+with `noname` first when a meter moves.
