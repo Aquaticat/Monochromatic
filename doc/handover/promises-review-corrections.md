@@ -111,12 +111,38 @@ The lesson now states the supplied names and additional control IDs,
 and explains destructuring, `ServiceFault`, and the comparison's complete execution context.
 Printing takes the complete comparison from the same source definition.
 
-`proc_2fe3` is running the real editor/Run workflow across scenarios,
-Stop/new-send ownership, input limits, printed source, and the actual downloaded capstone.
-`proc_d8a4` checks that the same comparison-entry assertion rejects the preserved syntax defect.
+`proc_2fe3` passed the real editor/Run workflow across scenarios,
+Stop/new-send ownership, input limits, printed source, and the actual downloaded capstone in 63 seconds.
+`proc_49d5` repeated it with the event-log eviction boundary and passed in 69 seconds.
+`proc_d8a4` rejected the preserved syntax defect at the same comparison-entry assertion.
+
+### Source and fixture boundaries
+
+`shop-source-guide.html` explains the opening's additional object-parameter, DOM, string,
+focus/scroll, and callback-list operations.
+The disclosure no longer promises the main function/callback chapters explain every preview line.
+The fixed-panel route remains the required-build alternative to dynamic DOM construction.
+The reference guide also explains its shorthand/default/conditional spellings and numeric display helpers.
+
+The API explanation and retry hint now distinguish the application's retry counter
+from the fixture's explicitly supplied outcome selector.
+They state that the fixture does not remember earlier calls,
+and do not claim real APIs forbid transmitting retry metadata.
+The workshop now accurately calls its encoded downloads runnable snapshots,
+not convenient plain-source editing layouts.
+
+`proc_5be0` is checking the guide's demonstrated operations,
+the declared-third-attempt-first and repeated-attempt-one fixture cases,
+and the retained shop behavior.
+
+### Secondary-review availability
+
+No post-change Advisor review has been obtained.
+The default Advisor attempt timed out after 600,000 ms;
+a second scoped provider returned a billing error.
+These attempts are not counted as review evidence.
 
 ## Remaining work
 
-- Explain supplied source machinery and fixture-only outcome selection.
 - Integrate and run browser, export, print, neutral-surface, and negative-control checks.
 - Document independent review results, inspect changed visible states, and present a fresh tab.
