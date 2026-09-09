@@ -3717,3 +3717,28 @@ non-minimized but not yet active.
  Activate that exact window as the final operation,
  then
 wait for the user's two design decisions.
+
+The user selected F1 and S1.
+ Record them as D39 and D40:
+ TalkBack traverses the
+folder area,
+ playback deck,
+ then track pane;
+ the current row announces `Current
+track. Another Xronixle. 4:35 · −1.2 dBTP. Button.` through structured state speech.
+The unfolded accessibility design pass is complete.
+ Close its normal Helium form.
+
+The user requested dark mode following Android dynamic colors next and asked to see a
+matrix.
+ This remains design-only work in the debug Compose prototype.
+ Preserve 3B,
+ 1B,
+strict 12dp adaptive mode behavior,
+ F1,
+ S1,
+ and the standing true-black base.
+ Probe
+the target first,
+ then build native dynamic-color variants and present opaque 2076 ×
+2152px evidence in a self-contained Helium matrix.

@@ -26,16 +26,25 @@ Read these files in order:
 
 ## Design questionnaire
 
-The active accessibility review is a self-contained HTML file under `questions/`.
- It
-keeps accepted option 3B visually unchanged while asking two separate questions:
-major-area TalkBack traversal and current-track speech.
- Installed TalkBack evidence is
-captured directly from the unfolded emulator through its visible speech-output overlay.
-The prototype repairs the adaptive mode control as one four-item radio list at one row,
-2×2,
+The active design round applies the standing true-black dark requirement while following
+Android dynamic color.
+ It preserves accepted option 3B,
+ transport 1B,
+ strict adaptive
+mode behavior,
+ and the completed accessibility decisions.
+ The native Compose matrix
+compares meaningful dynamic-role strategies across representative wallpaper palettes at
+the target's opaque 2076 × 2152px panel resolution.
+
+The preceding accessibility review settled pane-by-pane TalkBack traversal (F1) and
+structured current-track speech (S1).
+ The prototype repairs the adaptive mode control as
+one four-item radio list at one row,
+ 2×2,
  and four rows;
- reduced motion forbids autonomous or decorative motion.
+ reduced motion forbids
+autonomous or decorative motion.
 
 The preceding accepted scale review covers every font scale exposed by the target Android
 Settings UI:

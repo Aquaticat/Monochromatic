@@ -633,42 +633,48 @@ assistive-technology grouping.
  but production assistive technology must also
 confirm that current-state announcement.
 
-## 13. Unfolded accessibility pass, active review
+## 13. Unfolded accessibility pass, settled (D39 and D40)
 
-Installed TalkBack confirms that the accepted visual layout needs explicit traversal
-groups.
- Default geometric sorting interleaves the pane actions,
- letter rail,
- track rows,
-folder names,
- and playback deck.
- Three visually identical candidates remain:
+The user selected F1 and S1.
+ TalkBack traverses the folder area,
+ playback deck,
+ then
+track pane.
+ The current row uses structured state speech:
+ `Current track. Another
+Xronixle. 4:35 · −1.2 dBTP. Button.`
+ Decisions D39 and D40 record the accepted
+behavior and rejected alternatives.
 
-- Pane by pane:
-   folder area,
-   playback deck,
-   then track pane.
-- Browse first:
-   folder area,
-   track pane,
-   then playback deck.
-- Playback first:
-   playback deck,
-   track pane,
-   then folder area.
-
-The current-row content description repeats the visible title.
- The active form separately
-compares a structured `Current track` state description with one hand-composed complete
-sentence.
-
-Adaptive mode grouping is not a choice.
- The 2×2 baseline becomes two two-item lists and
-the four-row baseline loses one shared group.
+Adaptive mode grouping remains a fixed requirement.
  The repaired prototype uses direct
 Material-style radio segments inside one selectable group at every arrangement;
  TalkBack
 announces accepted option order as one four-item list.
- Reduced motion is also fixed:
- the
-screen adds no autonomous or decorative motion.
+ Reduced motion also remains fixed:
+the screen adds no autonomous or decorative motion.
+ No accessibility design question
+remains on the unfolded screen.
+
+## 14. Unfolded dark dynamic color, active review
+
+The next design-only round applies the standing true-black dark requirement while
+following Android dynamic color.
+ Preserve accepted layout 3B,
+ transport 1B,
+ current-row
+treatment T3,
+ tonal Open O2,
+ adaptive mode behavior,
+ and accessibility decisions
+D39 and D40.
+
+Build a native Compose matrix that separates dynamic-role application strategy from
+representative Android wallpaper palettes.
+ Every candidate must retain pure black for the
+base background under B1,
+ use Android-generated dynamic roles rather than hand-picked
+accent hexes,
+ and keep the current row soft-neutral rather than saturated.
+ Compare at
+opaque 2076 × 2152px on the unfolded target before asking for a choice.

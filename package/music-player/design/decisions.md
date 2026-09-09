@@ -1053,6 +1053,40 @@ shape,
  elevated,
  and outlined Open treatments from this matrix.
 
+### D39. Unfolded TalkBack traversal is pane by pane
+Traverse the folder area first,
+ the playback deck second,
+ and the track pane last.
+ Keep
+each spatial region contiguous even though the deck and tracks share the right pane.
+ This
+is accessibility treatment F1.
+**Why.**
+ The user selected F1.
+ It is predictable from spatial layout and avoids jumping
+between panes or placing playback before browsing context.
+**Rejected.**
+ F2 browse first,
+ which separates the two right-pane regions;
+ F3 playback first,
+ which front-loads controls before browsing context.
+
+### D40. Current track uses structured TalkBack state speech
+Announce `Current track. Another Xronixle. 4:35 · −1.2 dBTP. Button.` through a
+state description while retaining structured visible descendants.
+ Do not repeat the title
+or replace row semantics with one hand-composed sentence.
+ This is accessibility treatment
+S1.
+**Why.**
+ The user selected S1.
+ It removes the baseline duplicate title while preserving
+component structure and deriving speech from visible content.
+**Rejected.**
+ S2,
+ `Selected. Current track: Another Xronixle, 4:35, −1.2 dBTP. Button.`,
+because its single hand-composed label duplicates visible strings in code.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
