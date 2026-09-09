@@ -3752,3 +3752,71 @@ select.
 wallpaper-derived palettes.
  Recommend only a strategy whose hierarchy survives those
 changes without violating true black or the neutral current-row treatment.
+
+The target probe found Android 17 Default,
+ Medium,
+ and High contrast levels,
+ mapped by
+SDK source to 0.0,
+ 0.5,
+ and 1.0.
+ Its theme source accepts eleven palette styles.
+Resolved Compose dependency evidence pins Material 3 `1.5.0-alpha27`;
+ its exact source
+reads Android's `mc3_dark_scheme` resources on API 34 and newer.
+ Android dynamic role
+changes are therefore an uncontrolled runtime input.
+
+Prototype commits `69e034437` through `1556b5843` add three dark strategies,
+ preserve
+all accepted visual and semantic treatments by one shared predicate,
+ use light Android
+system glyphs,
+ strengthen the dark rail boundary with generated `outline`,
+ and add a
+reproducible capture task.
+ The strategy columns are:
+
+- Stable ladder:
+  B2's fixed black surfaces plus generated component accents and
+  foregrounds.
+- Zoned dynamic:
+  black content canvases plus generated low containers for rail,
+  deck,
+  and current row.
+- Tonal pane:
+  black track canvas plus generated container roles across the folder pane,
+  rail,
+  and deck.
+
+The evidence rows are not choices.
+ They use the measured current wallpaper seed,
+ coral
+Tonal Spot,
+ green Tonal Spot,
+ gold Vibrant,
+ magenta Expressive at medium contrast,
+and Monochromatic at high contrast.
+ Main commit `b2eaaa9ee` preserves eighteen opaque
+2076 × 2152px captures,
+ eighteen UI hierarchies,
+ and six resolved role records.
+Every captured role pair passes its applicable contrast floor;
+ the exact per-environment
+values are in `questions/evidence/dark-dynamic-contrast.json`.
+
+Native inspection changes the provisional ranking to Stable > Zoned > Tonal.
+ Stable
+keeps the hierarchy invariant while wallpaper still changes every action and selected
+accent.
+ Zoned gives more Material You expression but its structural surfaces become visibly
+warm,
+ green,
+ gold,
+ magenta,
+ or gray.
+ Tonal lets uncontrolled wallpaper color occupy the
+whole folder pane and weakens the true-black identity.
+ Build the self-contained Helium
+matrix with all three columns and all six evidence rows before asking for a strategy
+choice.

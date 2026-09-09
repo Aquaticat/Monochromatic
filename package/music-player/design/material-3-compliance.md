@@ -608,3 +608,89 @@ Before reopening the questionnaire:
    and accessibility checks in Helium.
 - Clear the form and reopen that exact corrected file in the user's normal Helium
   session.
+
+## Dark dynamic-color evidence
+
+The Android 17 target exposes dynamic color and three user contrast levels.
+ Direct
+Settings inspection names Default,
+ Medium,
+ and High;
+ Android SDK 37 source
+`android/app/UiModeManager.java:730-781` maps them to 0.0,
+ 0.5,
+ and 1.0.
+ The target's theme source also accepts
+TONAL_SPOT,
+ VIBRANT,
+ EXPRESSIVE,
+ SPRITZ,
+ RAINBOW,
+ FRUIT_SALAD,
+ CONTENT,
+MONOCHROMATIC,
+ CLOCK,
+ CLOCK_VIBRANT,
+ and CMF styles.
+ These are user and OEM
+environment inputs,
+ not app preferences.
+
+The debug prototype resolves `androidx.compose.material3:material3-android:1.5.0-alpha27`.
+Its published source implements `dynamicDarkColorScheme(context)` by reading Android's
+`mc3_dark_scheme` resource on API 34 and newer.
+ Android Developer guidance says the
+function derives a dark scheme from system wallpaper and changes when wallpaper changes.
+The app must therefore consume semantic role pairs rather than remember palette hexes.
+
+The matrix fixes the Android environment long enough to compare three app-owned role
+policies.
+ It uses the measured current AVD wallpaper seed plus warm coral,
+ forest green,
+gold Vibrant,
+ magenta Expressive at medium contrast,
+ and Monochromatic at high
+contrast.
+ These rows are stress inputs,
+ never options for the user to choose.
+ Each row
+records the resolved Android roles under `questions/evidence/dark-dynamic-*-roles.json`.
+
+Every candidate preserves a visible `#000000` base and valid generated foreground pairs:
+
+- Stable ladder keeps the B2 black surface ladder and applies Android-generated dynamic
+  roles to components,
+  state accents,
+  text,
+  and outlines.
+- Zoned dynamic keeps both content canvases black but assigns generated
+  `surfaceContainerLow` to the letter rail,
+  deck,
+  and current row.
+- Tonal pane keeps the track canvas black but assigns generated low,
+  standard,
+  and
+  high container roles across the folder pane,
+  rail,
+  and deck.
+
+The last policy is deliberately the widest permissible use of dynamic surfaces;
+ it does
+not silently replace the standing true-black base.
+ Every policy retains D36's neutral
+current-row container plus bold title,
+ D37's transport hierarchy,
+ D38's tonal Open,
+D39 traversal,
+ and D40 state speech.
+
+Measured minimum contrast across all recorded role outputs is 6.04:1 for
+`primary`/`onPrimary`,
+ 4.63:1 for `secondaryContainer`/`onSecondaryContainer`,
+16.71:1 for `onSurface` on black,
+ 9.10:1 for `onSurfaceVariant` on black,
+and 4.56:1 for generated `outline` on black.
+ All text pairs clear 4.5:1 and the
+rail boundary clears 3:1.
+ `questions/evidence/dark-dynamic-contrast.json` retains every
+per-environment value.
