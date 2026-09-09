@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Music player design: unfolded TalkBack review</title>
+  <title>Music player design: dark dynamic-color matrix</title>
   <style>
     :root {
       color-scheme: light;
@@ -19,9 +19,10 @@
       --color-line: #cbc3d2;
       --color-shadow: rgb(36 31 41 / 18%);
       --color-backdrop: rgb(20 16 24 / 72%);
-      --color-device: #242424;
+      --color-device: #242124;
       --color-device-edge: #777177;
-      --color-screen: #ffffff;
+      --color-camera: #080708;
+      --color-screen: #000000;
       font-family: system-ui, sans-serif;
       background-color: var(--color-page);
       color: var(--color-ink);
@@ -32,9 +33,9 @@
     }
 
     body {
+      min-inline-size: 20rem;
       margin-block: 0;
       margin-inline: 0;
-      min-inline-size: 20rem;
       background-color: var(--color-page);
     }
 
@@ -59,7 +60,7 @@
     }
 
     main {
-      inline-size: min(100% - 2rem, 92rem);
+      inline-size: min(100% - 2rem, 96rem);
       margin-inline: auto;
       padding-block: 2rem 5rem;
     }
@@ -76,20 +77,20 @@
     }
 
     h1 {
-      max-inline-size: 18ch;
+      max-inline-size: 19ch;
+      margin-block-end: 1rem;
       font-size: clamp(2rem, 5vw, 4.5rem);
       line-height: 0.98;
-      margin-block-end: 1rem;
     }
 
     h2 {
-      font-size: clamp(1.45rem, 3vw, 2.35rem);
       margin-block-end: 0.75rem;
+      font-size: clamp(1.45rem, 3vw, 2.35rem);
     }
 
     h3 {
-      font-size: 1.25rem;
       margin-block-end: 0.5rem;
+      font-size: 1.25rem;
     }
 
     p,
@@ -98,7 +99,7 @@
     }
 
     .lede {
-      max-inline-size: 72ch;
+      max-inline-size: 76ch;
       color: var(--color-ink-soft);
       font-size: 1.1rem;
     }
@@ -129,19 +130,16 @@
       box-shadow: 0 0.75rem 2rem var(--color-shadow);
     }
 
-    .finding-grid,
-    .choice-grid,
-    .mode-grid,
-    .speech-grid {
+    .requirement-grid,
+    .strategy-grid,
+    .assessment {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
       gap: 1rem;
     }
 
-    .finding,
-    .choice-card,
-    .mode-card,
-    .speech-card {
+    .requirement,
+    .strategy-card {
       padding-block: 1rem;
       padding-inline: 1rem;
       border-color: var(--color-line);
@@ -151,8 +149,7 @@
       background-color: var(--color-surface-soft);
     }
 
-    .choice-card[data-recommended],
-    .speech-card[data-recommended] {
+    .strategy-card[data-recommended] {
       border-color: var(--color-accent);
       border-width: 0.125rem;
       background-color: var(--color-accent-soft);
@@ -169,60 +166,11 @@
       text-transform: uppercase;
     }
 
-    .sequence {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      padding-inline-start: 0;
-      list-style: none;
-    }
-
-    .sequence li {
-      padding-block: 0.45rem;
-      padding-inline: 0.75rem;
-      border-radius: 999rem;
-      background-color: var(--color-surface-strong);
-      font-weight: 650;
-    }
-
-    .sequence li + li::before {
-      content: "→";
-      margin-inline-end: 0.5rem;
-      color: var(--color-accent);
-    }
-
-    .evidence-button {
-      inline-size: 100%;
-      padding-block: 0.75rem;
-      padding-inline: 0.75rem;
-      border-color: var(--color-line);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 0.9rem;
-      background-color: var(--color-surface);
-      color: var(--color-ink);
-      cursor: pointer;
-    }
-
-    .evidence-button img {
-      display: block;
-      inline-size: 100%;
-      block-size: auto;
-      border-radius: 0.6rem;
-      background-color: var(--color-screen);
-    }
-
-    .evidence-label {
-      display: block;
-      margin-block-start: 0.65rem;
-      color: var(--color-accent);
-      font-weight: 750;
+    .role-list {
+      padding-inline-start: 1.25rem;
     }
 
     .assessment {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-      gap: 0.75rem;
       margin-block-start: 0.75rem;
     }
 
@@ -238,22 +186,99 @@
       padding-inline-start: 1.25rem;
     }
 
-    .ranking {
-      margin-block-start: 1rem;
-      padding-block: 0.9rem;
-      padding-inline: 1rem;
-      border-inline-start-color: var(--color-accent);
-      border-inline-start-style: solid;
-      border-inline-start-width: 0.35rem;
-      background-color: var(--color-surface-soft);
-    }
-
+    .ranking,
     .fixed-note {
       margin-block-start: 1rem;
       padding-block: 1rem;
       padding-inline: 1rem;
       border-radius: 0.9rem;
+      background-color: var(--color-surface-soft);
+    }
+
+    .ranking {
+      border-inline-start-color: var(--color-accent);
+      border-inline-start-style: solid;
+      border-inline-start-width: 0.35rem;
+    }
+
+    .fixed-note {
       background-color: var(--color-accent-soft);
+    }
+
+    .matrix-key {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(14rem, 1fr));
+      gap: 0.75rem;
+      margin-block: 1rem;
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.9rem;
+      background-color: var(--color-surface-strong);
+    }
+
+    .matrix-key strong {
+      color: var(--color-accent);
+    }
+
+    .matrix-row {
+      margin-block-start: 1.5rem;
+      padding-block-start: 1.5rem;
+      border-block-start-color: var(--color-line);
+      border-block-start-style: solid;
+      border-block-start-width: 0.0625rem;
+    }
+
+    .environment-meta {
+      color: var(--color-ink-soft);
+    }
+
+    .matrix-scroll {
+      overflow-x: auto;
+      padding-block-end: 0.75rem;
+      scrollbar-gutter: stable;
+    }
+
+    .matrix-candidates {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(18rem, 1fr));
+      gap: 0.75rem;
+      min-inline-size: 56rem;
+    }
+
+    .evidence-card {
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.9rem;
+      background-color: var(--color-surface-soft);
+    }
+
+    .evidence-button {
+      inline-size: 100%;
+      min-inline-size: 3rem;
+      padding-block: 0.65rem;
+      padding-inline: 0.65rem;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 0.8rem;
+      background-color: var(--color-surface);
+      color: var(--color-ink);
+      cursor: pointer;
+    }
+
+    .evidence-button img {
+      display: block;
+      inline-size: 100%;
+      block-size: auto;
+      border-radius: 0.55rem;
+      background-color: var(--color-screen);
+    }
+
+    .evidence-label {
+      display: block;
+      margin-block-start: 0.55rem;
+      color: var(--color-accent);
+      font-weight: 750;
     }
 
     fieldset {
@@ -285,6 +310,10 @@
       cursor: pointer;
     }
 
+    .review-choice[data-recommended] {
+      background-color: var(--color-accent-soft);
+    }
+
     .review-choice input {
       inline-size: 1.35rem;
       block-size: 1.35rem;
@@ -313,8 +342,9 @@
       margin-block-start: 1rem;
     }
 
-    .action-button {
-      min-inline-size: 8rem;
+    .action-button,
+    .toolbar-button {
+      min-inline-size: 3rem;
       padding-inline: 1rem;
       border-color: var(--color-accent);
       border-style: solid;
@@ -326,18 +356,19 @@
       font-weight: 750;
     }
 
-    .action-button[data-secondary] {
+    .action-button[data-secondary],
+    .toolbar-button {
       background-color: var(--color-surface);
       color: var(--color-accent);
     }
 
     #output {
-      white-space: pre-wrap;
       margin-block-start: 1rem;
       padding-block: 1rem;
       padding-inline: 1rem;
       border-radius: 0.75rem;
       background-color: var(--color-surface-strong);
+      white-space: pre-wrap;
     }
 
     dialog {
@@ -379,22 +410,14 @@
     }
 
     .dialog-toolbar h2 {
-      flex: 1 1 20rem;
+      flex: 1 1 18rem;
       margin-block-end: 0;
       font-size: 1.25rem;
     }
 
-    .toolbar-button {
-      min-inline-size: 3rem;
-      padding-inline: 0.85rem;
-      border-color: var(--color-accent);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 999rem;
-      background-color: var(--color-surface);
-      color: var(--color-accent);
-      cursor: pointer;
-      font-weight: 700;
+    #preview-details {
+      flex-basis: 100%;
+      color: var(--color-ink-soft);
     }
 
     .preview-stage {
@@ -405,49 +428,80 @@
     }
 
     .device-shell {
+      --preview-scale: 1;
       position: relative;
-      inline-size: 907px;
-      block-size: 937px;
+      inline-size: calc(907px * var(--preview-scale));
+      block-size: calc(937px * var(--preview-scale));
       margin-inline: auto;
       border-color: var(--color-device-edge);
       border-style: solid;
-      border-width: 0.125rem;
-      border-radius: 3rem;
+      border-width: max(0.0625rem, calc(2px * var(--preview-scale)));
+      border-radius: calc(48px * var(--preview-scale));
       background-color: var(--color-device);
-      transform: scale(var(--preview-scale));
-      transform-origin: top center;
     }
 
     .device-screen {
       position: absolute;
-      inset-block-start: 27px;
-      inset-inline-start: 27px;
-      inline-size: 852px;
-      block-size: 883px;
+      inset-block-start: calc(27px * var(--preview-scale));
+      inset-inline-start: calc(27px * var(--preview-scale));
+      inline-size: calc(852px * var(--preview-scale));
+      block-size: calc(883px * var(--preview-scale));
       overflow: hidden;
-      border-radius: 2rem;
+      border-radius: calc(32px * var(--preview-scale));
       background-color: var(--color-screen);
     }
 
     .device-screen img {
       display: block;
-      inline-size: 852px;
-      block-size: 883px;
+      inline-size: calc(852px * var(--preview-scale));
+      block-size: calc(883px * var(--preview-scale));
     }
 
-    .preview-spacer {
-      block-size: calc(937px * var(--preview-scale));
+    .device-camera {
+      position: absolute;
+      z-index: 2;
+      inset-block-start: calc(43.6px * var(--preview-scale));
+      inset-inline-start: calc(826.2px * var(--preview-scale));
+      inline-size: calc(32.4px * var(--preview-scale));
+      block-size: calc(32.4px * var(--preview-scale));
+      border-color: var(--color-device-edge);
+      border-style: solid;
+      border-width: max(0.0625rem, calc(1px * var(--preview-scale)));
+      border-radius: 999rem;
+      background-color: var(--color-camera);
+    }
+
+    .device-hinge {
+      position: absolute;
+      inset-inline-start: 50%;
+      inline-size: calc(28px * var(--preview-scale));
+      block-size: calc(4px * var(--preview-scale));
+      border-radius: 999rem;
+      background-color: var(--color-device-edge);
+      transform: translateX(-50%);
+    }
+
+    .device-hinge[data-edge="top"] {
+      inset-block-start: calc(7px * var(--preview-scale));
+    }
+
+    .device-hinge[data-edge="bottom"] {
+      inset-block-end: calc(7px * var(--preview-scale));
     }
 
     @media (max-width: 42rem) {
       main {
-        inline-size: min(100% - 1rem, 92rem);
+        inline-size: min(100% - 1rem, 96rem);
         padding-block-start: 1rem;
       }
 
       .panel {
         padding-block: 1rem;
         padding-inline: 0.75rem;
+      }
+
+      .matrix-key {
+        grid-template-columns: 1fr;
       }
 
       .dialog-toolbar h2 {
@@ -459,162 +513,162 @@
 <body>
   <main>
     <header>
-      <span class="status">Design only · native TalkBack evidence</span>
-      <h1>Choose unfolded TalkBack behavior</h1>
-      <p class="lede">The accepted 3B screen remains visually unchanged. This review decides how TalkBack traverses its three major areas and how the current track is announced. It does not authorize production implementation.</p>
+      <span class="status">Design only · native Android dynamic-color evidence</span>
+      <h1>Choose dark dynamic-color reach</h1>
+      <p class="lede">Dark mode and Android dynamic color are required. This matrix asks only how far wallpaper-derived roles should reach into the accepted unfolded screen. It does not authorize production implementation.</p>
     </header>
 
-    <section class="panel" aria-labelledby="observed-title">
-      <h2 id="observed-title">What the installed screen reader found</h2>
-      <div class="finding-grid">
-        <article class="finding">
-          <span class="code">Traversal defect</span>
-          <h3>Default geometry interleaves panes</h3>
-          <p>TalkBack visits header actions, the letter rail, track rows, folder names, then the deck. The order does not preserve either pane or one complete task.</p>
-        </article>
-        <article class="finding">
-          <span class="code">Adaptive-group defect</span>
-          <h3>Only the one-row mode group is unified</h3>
-          <p>The accepted 2×2 state becomes two two-item lists. Four vertical rows lose one shared list announcement.</p>
-        </article>
-        <article class="finding">
-          <span class="code">Current-row defect</span>
-          <h3>The title is spoken twice</h3>
-          <p>The baseline says “Selected. Current track: Another Xronixle. Another Xronixle. 4:35 · −1.2 dBTP. Button.”</p>
-        </article>
-      </div>
-    </section>
-
     <section class="panel" aria-labelledby="fixed-title">
-      <h2 id="fixed-title">Fixed requirements, not choices</h2>
-      <p>Each adaptive arrangement now exposes one four-item radio list in accepted option order. TalkBack says “1 of 4” through “4 of 4” at one row, 2×2, and four rows. The visible screen keeps the accepted 12dp padding floor.</p>
-      <div class="mode-grid">
-        <article class="mode-card">
-          <span class="code">85% · one row</span>
-          <button class="evidence-button" type="button" data-preview-title="TalkBack mode group at 85%" data-preview-src="@@A11Y_MODE_085@@">
-            <img src="@@A11Y_MODE_085@@" width="852" height="883" alt="TalkBack focus on In order at 85 percent, announced as item two of four">
-            <span class="evidence-label">Open one-row TalkBack evidence</span>
-          </button>
+      <h2 id="fixed-title">Fixed requirements</h2>
+      <div class="requirement-grid">
+        <article class="requirement">
+          <span class="code">Uncontrolled input</span>
+          <h3>Wallpaper can change</h3>
+          <p>Palette rows are stress inputs, not choices. The strategy must survive users changing wallpaper, Android color style, and contrast.</p>
         </article>
-        <article class="mode-card">
-          <span class="code">100% · 2×2</span>
-          <button class="evidence-button" type="button" data-preview-title="TalkBack mode group at 100%" data-preview-src="@@A11Y_MODE_100@@">
-            <img src="@@A11Y_MODE_100@@" width="852" height="883" alt="TalkBack focus on In order at 100 percent, announced as item two of four">
-            <span class="evidence-label">Open 2×2 TalkBack evidence</span>
-          </button>
+        <article class="requirement">
+          <span class="code">Standing rule</span>
+          <h3>True black remains visible</h3>
+          <p>Every candidate keeps a pure-black base and track canvas. Generated accents never replace the required black identity.</p>
         </article>
-        <article class="mode-card">
-          <span class="code">150% · four rows</span>
-          <button class="evidence-button" type="button" data-preview-title="TalkBack mode group at 150%" data-preview-src="@@A11Y_MODE_150@@">
-            <img src="@@A11Y_MODE_150@@" width="852" height="883" alt="TalkBack focus on In order at 150 percent, announced as item two of four">
-            <span class="evidence-label">Open four-row TalkBack evidence</span>
-          </button>
+        <article class="requirement">
+          <span class="code">Accepted screen</span>
+          <h3>Only color reach changes</h3>
+          <p>3B, transport 1B, tonal Open, full title width, F1 traversal, S1 speech, 24% seek, system bars, and adaptive mode behavior remain fixed.</p>
+        </article>
+        <article class="requirement">
+          <span class="code">Native source</span>
+          <h3>Android resolves every role</h3>
+          <p>Compose Material 3 1.5.0-alpha27 reads Android 17 dark dynamic resources. Captures are opaque 2076 × 2152 physical px at 852 × 883dp.</p>
         </article>
       </div>
-      <div class="fixed-note"><strong>Reduced motion:</strong> the prototype contains no explicit animation, transition, crossfade, or programmatic scrolling API. The design contract forbids autonomous or decorative motion and requires platform-disabled animation settings to remain effective.</div>
+      <div class="fixed-note"><strong>Measured contrast:</strong> across all environment rows, the minimum text pair is 4.63:1 and the minimum generated outline on black is 4.56:1. Role pairs stay matched. Reduced-motion and TalkBack requirements are unchanged.</div>
     </section>
 
-    <section class="panel" aria-labelledby="focus-title">
-      <h2 id="focus-title">Decision one: major-area traversal</h2>
-      <p>Every candidate keeps the same accepted pixels. Only accessibility grouping changes.</p>
-      <div class="choice-grid">
-        <article class="choice-card" data-recommended>
-          <span class="code">F1 · recommended</span>
-          <h3>Pane by pane</h3>
-          <ol class="sequence"><li>Folder area</li><li>Playback deck</li><li>Track pane</li></ol>
-          <button class="evidence-button" type="button" data-preview-title="Pane-by-pane TalkBack focus" data-preview-src="@@A11Y_FOCUS_PANE@@">
-            <img src="@@A11Y_FOCUS_PANE@@" width="852" height="883" alt="TalkBack evidence as pane traversal enters the playback deck after folder browsing">
-            <span class="evidence-label">Open pane-order evidence</span>
-          </button>
-          <div class="assessment">
-            <section><strong>Pros</strong><ul><li>Follows the left pane from top to bottom, then the right pane.</li><li>Keeps each visual region contiguous.</li></ul></section>
-            <section><strong>Cons</strong><ul><li>Track rows wait until every folder target and deck control.</li></ul></section>
-          </div>
+    <section class="panel" aria-labelledby="strategy-title">
+      <h2 id="strategy-title">Strategies</h2>
+      <div class="strategy-grid">
+        <article class="strategy-card" data-recommended>
+          <span class="code">A · recommended</span>
+          <h3>Stable black ladder</h3>
+          <p>Keep the accepted fixed black surface ladder. Use Android dynamic roles for Pause, Open, selected mode, folder indicator, text, and outlines.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> hierarchy and current-row neutrality stay invariant across wallpaper changes; preserves B2 literally.</li>
+            <li><strong>Cons:</strong> large structural surfaces do not inherit Android's generated neutral tint.</li>
+          </ul>
         </article>
-
-        <article class="choice-card">
-          <span class="code">F2</span>
-          <h3>Browse first</h3>
-          <ol class="sequence"><li>Folder area</li><li>Track pane</li><li>Playback deck</li></ol>
-          <button class="evidence-button" type="button" data-preview-title="Browse-first TalkBack focus" data-preview-src="@@A11Y_FOCUS_BROWSE@@">
-            <img src="@@A11Y_FOCUS_BROWSE@@" width="852" height="883" alt="TalkBack evidence as browse-first traversal enters the track pane after folder browsing">
-            <span class="evidence-label">Open browse-order evidence</span>
-          </button>
-          <div class="assessment">
-            <section><strong>Pros</strong><ul><li>Folder selection is followed immediately by its track results.</li><li>Supports the screen's browsing task.</li></ul></section>
-            <section><strong>Cons</strong><ul><li>Returns from the right pane to the lower-left deck at the end.</li></ul></section>
-          </div>
+        <article class="strategy-card">
+          <span class="code">B</span>
+          <h3>Zoned dynamic containers</h3>
+          <p>Keep both content canvases black. Use generated <code>surfaceContainerLow</code> for the letter rail, deck, and current row.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> adds Material You expression without tinting either content canvas.</li>
+            <li><strong>Cons:</strong> wallpaper changes the visual weight of three structural or state regions.</li>
+          </ul>
         </article>
-
-        <article class="choice-card">
-          <span class="code">F3</span>
-          <h3>Playback first</h3>
-          <ol class="sequence"><li>Playback deck</li><li>Track pane</li><li>Folder area</li></ol>
-          <button class="evidence-button" type="button" data-preview-title="Playback-first TalkBack focus" data-preview-src="@@A11Y_FOCUS_PLAYBACK@@">
-            <img src="@@A11Y_FOCUS_PLAYBACK@@" width="852" height="883" alt="TalkBack evidence starting with playback deck metadata before browsing areas">
-            <span class="evidence-label">Open playback-order evidence</span>
-          </button>
-          <div class="assessment">
-            <section><strong>Pros</strong><ul><li>Seek, transport, and mode actions arrive first.</li><li>Fastest path for an already-playing session.</li></ul></section>
-            <section><strong>Cons</strong><ul><li>Starts at the visual bottom of the left pane.</li><li>Moves Open and all browsing targets to the end.</li></ul></section>
-          </div>
+        <article class="strategy-card">
+          <span class="code">C</span>
+          <h3>Tonal folder pane</h3>
+          <p>Keep the track canvas black. Apply generated low, standard, and high containers across the folder pane, rail, and deck.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> gives the strongest system-personalized pane hierarchy.</li>
+            <li><strong>Cons:</strong> uncontrolled wallpaper color occupies a whole pane and competes with true black.</li>
+          </ul>
         </article>
       </div>
-      <p class="ranking"><strong>Ranking: F1 &gt; F2 &gt; F3.</strong> F1 beats F2 because spatial containment is more predictable than crossing panes and returning. F2 beats F3 because this screen's primary structure begins with choosing folders and tracks, not controls at the visual bottom.</p>
+      <p class="ranking"><strong>Ranking: A &gt; B &gt; C.</strong> A beats B because wallpaper still changes every meaningful accent while the accepted neutral hierarchy remains stable. B beats C because it confines generated surfaces to bounded regions instead of letting an uncontrolled palette dominate the complete folder pane.</p>
     </section>
 
-    <section class="panel" aria-labelledby="speech-title">
-      <h2 id="speech-title">Decision two: current-track speech</h2>
-      <p>Both options remove the baseline's repeated title. They differ in whether TalkBack receives structured state plus visible text or one hand-composed sentence.</p>
-      <div class="speech-grid">
-        <article class="speech-card" data-recommended>
-          <span class="code">S1 · recommended</span>
-          <h3>Structured state</h3>
-          <p><strong>TalkBack:</strong> “Current track. Another Xronixle. 4:35 · −1.2 dBTP. Button.”</p>
-          <button class="evidence-button" type="button" data-preview-title="Structured current-track speech" data-preview-src="@@A11Y_CURRENT_STATE@@">
-            <img src="@@A11Y_CURRENT_STATE@@" width="852" height="883" alt="TalkBack overlay showing structured current-track state followed by title and metadata">
-            <span class="evidence-label">Open structured-speech evidence</span>
-          </button>
-          <div class="assessment">
-            <section><strong>Pros</strong><ul><li>Keeps state, title, and metadata as separate semantics.</li><li>Visible text remains the source of spoken content.</li></ul></section>
-            <section><strong>Cons</strong><ul><li>Does not also say the generic word “Selected.”</li></ul></section>
-          </div>
-        </article>
-
-        <article class="speech-card">
-          <span class="code">S2</span>
-          <h3>Composed sentence</h3>
-          <p><strong>TalkBack:</strong> “Selected. Current track: Another Xronixle, 4:35, −1.2 dBTP. Button.”</p>
-          <button class="evidence-button" type="button" data-preview-title="Composed current-track speech" data-preview-src="@@A11Y_CURRENT_COMPOSED@@">
-            <img src="@@A11Y_CURRENT_COMPOSED@@" width="852" height="883" alt="TalkBack overlay showing one composed current-track sentence">
-            <span class="evidence-label">Open composed-speech evidence</span>
-          </button>
-          <div class="assessment">
-            <section><strong>Pros</strong><ul><li>Explicitly says “Selected.”</li><li>Controls the complete spoken order.</li></ul></section>
-            <section><strong>Cons</strong><ul><li>Duplicates visible strings in a second assembled label.</li><li>Metadata or translation changes can drift.</li></ul></section>
-          </div>
-        </article>
+    <section class="panel" aria-labelledby="matrix-title">
+      <h2 id="matrix-title">Native matrix</h2>
+      <p>Read across each environment row. All three screenshots use the same Android-generated role output, system bars, data, and accepted geometry. Open any candidate for Fit, native pixels, 100% reset, dimensions, and scrolling state.</p>
+      <div class="matrix-key" aria-label="Matrix columns">
+        <strong>A · Stable black ladder</strong>
+        <strong>B · Zoned dynamic containers</strong>
+        <strong>C · Tonal folder pane</strong>
       </div>
-      <p class="ranking"><strong>Ranking: S1 &gt; S2.</strong> S1 beats S2 because it removes repetition without creating a second manually synchronized rendering of the same title and metadata.</p>
+
+      <section class="matrix-row" aria-labelledby="environment-wallpaper">
+        <h3 id="environment-wallpaper">Current wallpaper seed</h3>
+        <p class="environment-meta">Measured seed 45588C · Tonal Spot · Default contrast</p>
+        <div class="matrix-scroll"><div class="matrix-candidates">
+          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Current wallpaper · stable black ladder" data-preview-src="@@DYNAMIC_WALLPAPER_STABLE@@"><img src="@@DYNAMIC_WALLPAPER_STABLE@@" width="852" height="883" alt="Blue dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Current wallpaper · zoned dynamic containers" data-preview-src="@@DYNAMIC_WALLPAPER_ZONED@@"><img src="@@DYNAMIC_WALLPAPER_ZONED@@" width="852" height="883" alt="Blue dynamic accents and bounded blue-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Current wallpaper · tonal folder pane" data-preview-src="@@DYNAMIC_WALLPAPER_TONAL@@"><img src="@@DYNAMIC_WALLPAPER_TONAL@@" width="852" height="883" alt="Blue dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
+        </div></div>
+      </section>
+
+      <section class="matrix-row" aria-labelledby="environment-coral">
+        <h3 id="environment-coral">Warm coral</h3>
+        <p class="environment-meta">Seed D45D42 · Tonal Spot · Default contrast</p>
+        <div class="matrix-scroll"><div class="matrix-candidates">
+          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Warm coral · stable black ladder" data-preview-src="@@DYNAMIC_CORAL_STABLE@@"><img src="@@DYNAMIC_CORAL_STABLE@@" width="852" height="883" alt="Coral dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Warm coral · zoned dynamic containers" data-preview-src="@@DYNAMIC_CORAL_ZONED@@"><img src="@@DYNAMIC_CORAL_ZONED@@" width="852" height="883" alt="Coral dynamic accents and bounded warm-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Warm coral · tonal folder pane" data-preview-src="@@DYNAMIC_CORAL_TONAL@@"><img src="@@DYNAMIC_CORAL_TONAL@@" width="852" height="883" alt="Coral dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
+        </div></div>
+      </section>
+
+      <section class="matrix-row" aria-labelledby="environment-green">
+        <h3 id="environment-green">Forest green</h3>
+        <p class="environment-meta">Seed 2E7D32 · Tonal Spot · Default contrast</p>
+        <div class="matrix-scroll"><div class="matrix-candidates">
+          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Forest green · stable black ladder" data-preview-src="@@DYNAMIC_GREEN_STABLE@@"><img src="@@DYNAMIC_GREEN_STABLE@@" width="852" height="883" alt="Green dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Forest green · zoned dynamic containers" data-preview-src="@@DYNAMIC_GREEN_ZONED@@"><img src="@@DYNAMIC_GREEN_ZONED@@" width="852" height="883" alt="Green dynamic accents and bounded green-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Forest green · tonal folder pane" data-preview-src="@@DYNAMIC_GREEN_TONAL@@"><img src="@@DYNAMIC_GREEN_TONAL@@" width="852" height="883" alt="Green dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
+        </div></div>
+      </section>
+
+      <section class="matrix-row" aria-labelledby="environment-gold">
+        <h3 id="environment-gold">Gold Vibrant</h3>
+        <p class="environment-meta">Seed C49000 · Vibrant style · Default contrast</p>
+        <div class="matrix-scroll"><div class="matrix-candidates">
+          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Gold Vibrant · stable black ladder" data-preview-src="@@DYNAMIC_GOLD_STABLE@@"><img src="@@DYNAMIC_GOLD_STABLE@@" width="852" height="883" alt="Gold dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Gold Vibrant · zoned dynamic containers" data-preview-src="@@DYNAMIC_GOLD_ZONED@@"><img src="@@DYNAMIC_GOLD_ZONED@@" width="852" height="883" alt="Gold dynamic accents and bounded gold-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Gold Vibrant · tonal folder pane" data-preview-src="@@DYNAMIC_GOLD_TONAL@@"><img src="@@DYNAMIC_GOLD_TONAL@@" width="852" height="883" alt="Gold dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
+        </div></div>
+      </section>
+
+      <section class="matrix-row" aria-labelledby="environment-magenta">
+        <h3 id="environment-magenta">Magenta Expressive</h3>
+        <p class="environment-meta">Seed A43D96 · Expressive style · Medium contrast</p>
+        <div class="matrix-scroll"><div class="matrix-candidates">
+          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Magenta Expressive · stable black ladder" data-preview-src="@@DYNAMIC_MAGENTA_STABLE@@"><img src="@@DYNAMIC_MAGENTA_STABLE@@" width="852" height="883" alt="Magenta and teal dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Magenta Expressive · zoned dynamic containers" data-preview-src="@@DYNAMIC_MAGENTA_ZONED@@"><img src="@@DYNAMIC_MAGENTA_ZONED@@" width="852" height="883" alt="Magenta and teal accents with bounded purple-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Magenta Expressive · tonal folder pane" data-preview-src="@@DYNAMIC_MAGENTA_TONAL@@"><img src="@@DYNAMIC_MAGENTA_TONAL@@" width="852" height="883" alt="Magenta dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
+        </div></div>
+      </section>
+
+      <section class="matrix-row" aria-labelledby="environment-monochrome">
+        <h3 id="environment-monochrome">Monochrome at High contrast</h3>
+        <p class="environment-meta">Seed 808080 · Monochromatic style · High contrast</p>
+        <div class="matrix-scroll"><div class="matrix-candidates">
+          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Monochrome High · stable black ladder" data-preview-src="@@DYNAMIC_MONOCHROME_STABLE@@"><img src="@@DYNAMIC_MONOCHROME_STABLE@@" width="852" height="883" alt="High-contrast monochrome accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Monochrome High · zoned dynamic containers" data-preview-src="@@DYNAMIC_MONOCHROME_ZONED@@"><img src="@@DYNAMIC_MONOCHROME_ZONED@@" width="852" height="883" alt="High-contrast monochrome accents and bounded gray rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
+          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Monochrome High · tonal folder pane" data-preview-src="@@DYNAMIC_MONOCHROME_TONAL@@"><img src="@@DYNAMIC_MONOCHROME_TONAL@@" width="852" height="883" alt="High-contrast gray tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
+        </div></div>
+      </section>
+    </section>
+
+    <section class="panel" aria-labelledby="analysis-title">
+      <h2 id="analysis-title">Analysis and recommended additions</h2>
+      <div class="requirement-grid">
+        <article class="requirement"><h3>Wallpaper robustness</h3><p>A changes controls and selected accents in every row without changing structural weight. B and C also tint surfaces, most visibly under Gold Vibrant and Magenta Expressive.</p></article>
+        <article class="requirement"><h3>True-black expression</h3><p>A keeps both panes and the rail black. B keeps both content canvases black. C keeps the track canvas black but makes the complete folder pane dynamic.</p></article>
+        <article class="requirement"><h3>Current state</h3><p>Every candidate retains a neutral current-row container plus bold title. A makes that neutral invariant; B and C accept the generated neutral hue.</p></article>
+        <article class="requirement"><h3>Implementation follow-through</h3><p>Later implementation should follow system theme changes live, retain a baseline dark fallback below Android 12, use generated <code>outline</code> for the dark rail boundary, and regression-test wallpaper changes without restarting the app.</p></article>
+      </div>
     </section>
 
     <section class="panel" aria-labelledby="answer-title">
-      <h2 id="answer-title">Your decisions</h2>
+      <h2 id="answer-title">Your decision</h2>
       <form id="review-form">
         <fieldset>
-          <legend>Choose major-area traversal</legend>
-          <label class="review-choice"><input type="radio" name="focusOrder" value="F1 Pane by pane" required><span><strong>F1 Pane by pane (Recommended).</strong> Pros: follows left pane then right pane and keeps regions contiguous. Cons: track rows arrive after folder and deck targets.</span></label>
-          <label class="review-choice"><input type="radio" name="focusOrder" value="F2 Browse first" required><span><strong>F2 Browse first.</strong> Pros: folders lead directly to tracks. Cons: the sequence returns to the lower-left deck last.</span></label>
-          <label class="review-choice"><input type="radio" name="focusOrder" value="F3 Playback first" required><span><strong>F3 Playback first.</strong> Pros: controls arrive immediately. Cons: traversal begins at the visual bottom and defers browsing.</span></label>
+          <legend>Choose dynamic-color reach</legend>
+          <label class="review-choice" data-recommended><input type="radio" name="dynamicReach" value="A Stable black ladder" required><span><strong>A Stable black ladder (Recommended).</strong> Pros: dynamic actions with invariant black hierarchy and literal B2 preservation. Cons: generated neutral tint stays out of structural surfaces.</span></label>
+          <label class="review-choice"><input type="radio" name="dynamicReach" value="B Zoned dynamic containers" required><span><strong>B Zoned dynamic containers.</strong> Pros: more Material You expression while content canvases stay black. Cons: wallpaper changes the rail, deck, and current-row weight.</span></label>
+          <label class="review-choice"><input type="radio" name="dynamicReach" value="C Tonal folder pane" required><span><strong>C Tonal folder pane.</strong> Pros: strongest system-personalized hierarchy. Cons: uncontrolled palette color occupies the complete folder pane and weakens true black.</span></label>
         </fieldset>
-
-        <fieldset>
-          <legend>Choose current-track speech</legend>
-          <label class="review-choice"><input type="radio" name="currentSpeech" value="S1 Structured state" required><span><strong>S1 Structured state (Recommended).</strong> Pros: no repetition and visible content remains semantic source. Cons: omits generic “Selected.”</span></label>
-          <label class="review-choice"><input type="radio" name="currentSpeech" value="S2 Composed sentence" required><span><strong>S2 Composed sentence.</strong> Pros: explicit selected state and exact order. Cons: hand-composed text can drift from visible content.</span></label>
-        </fieldset>
-
-        <label for="other-corrections"><strong>What should change?</strong> Enter “None” if both selections are accepted.</label>
+        <label for="other-corrections"><strong>What should change?</strong> Enter “None” if the selected strategy is accepted.</label>
         <textarea id="other-corrections" name="otherCorrections" required></textarea>
         <div class="actions">
           <button class="action-button" type="submit">Prepare answer</button>
@@ -631,19 +685,22 @@
   <dialog id="preview-dialog" aria-labelledby="preview-title">
     <div class="dialog-shell">
       <div class="dialog-toolbar">
-        <h2 id="preview-title">Native TalkBack evidence</h2>
-        <span id="preview-details">Source 2076 × 2152 physical px · design 852 × 883dp</span>
+        <h2 id="preview-title">Native dark dynamic-color evidence</h2>
         <button class="toolbar-button" id="zoom-out" type="button">Zoom out</button>
+        <button class="toolbar-button" id="zoom-in" type="button">Zoom in</button>
         <button class="toolbar-button" id="fit" type="button">Fit</button>
         <button class="toolbar-button" id="native" type="button">Native pixels</button>
         <button class="toolbar-button" id="reset" type="button">Reset 100%</button>
         <button class="toolbar-button" id="preview-close" type="button">Close preview</button>
+        <span id="preview-details">Source 2076 × 2152 physical px · design 852 × 883dp · 100%</span>
       </div>
       <div class="preview-stage" id="preview-stage">
-        <div class="device-shell" id="preview-device" style="--preview-scale: 1">
+        <div class="device-shell" id="preview-device">
           <div class="device-screen"><img id="preview-image" width="852" height="883" alt=""></div>
+          <span class="device-camera" aria-hidden="true"></span>
+          <span class="device-hinge" data-edge="top" aria-hidden="true"></span>
+          <span class="device-hinge" data-edge="bottom" aria-hidden="true"></span>
         </div>
-        <div class="preview-spacer" id="preview-spacer" style="--preview-scale: 1" aria-hidden="true"></div>
       </div>
     </div>
   </dialog>
@@ -652,7 +709,6 @@
     const dialog = document.querySelector('#preview-dialog');
     const stage = document.querySelector('#preview-stage');
     const device = document.querySelector('#preview-device');
-    const spacer = document.querySelector('#preview-spacer');
     const previewImage = document.querySelector('#preview-image');
     const previewTitle = document.querySelector('#preview-title');
     const previewDetails = document.querySelector('#preview-details');
@@ -667,8 +723,12 @@
     function applyScale(nextScale) {
       scale = Math.max(0.08, Math.min(nativeScale, nextScale));
       device.style.setProperty('--preview-scale', String(scale));
-      spacer.style.setProperty('--preview-scale', String(scale));
-      previewDetails.textContent = `Source 2076 × 2152 physical px · design 852 × 883dp · ${Math.round(scale * 100)}% · ${Math.round(frameWidth * scale)} × ${Math.round(frameHeight * scale)} CSS px frame`;
+      const scaledWidth = Math.round(frameWidth * scale);
+      const scaledHeight = Math.round(frameHeight * scale);
+      const scrolling = scaledWidth > stage.clientWidth || scaledHeight > stage.clientHeight
+        ? 'scrolling available'
+        : 'no scrolling needed';
+      previewDetails.textContent = `Source 2076 × 2152 physical px · design 852 × 883dp · ${Math.round(scale * 100)}% · ${scaledWidth} × ${scaledHeight} CSS px frame · ${scrolling}`;
       stage.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }
 
@@ -690,6 +750,7 @@
     });
 
     document.querySelector('#zoom-out').addEventListener('click', () => applyScale(scale - 0.1));
+    document.querySelector('#zoom-in').addEventListener('click', () => applyScale(scale + 0.1));
     document.querySelector('#fit').addEventListener('click', fitPreview);
     document.querySelector('#native').addEventListener('click', () => applyScale(nativeScale));
     document.querySelector('#reset').addEventListener('click', () => applyScale(1));
@@ -712,6 +773,7 @@
       output.hidden = true;
       copyActions.hidden = true;
       preparedAnswer = '';
+      document.querySelector('#copy-answer').textContent = 'Copy answer';
     });
 
     form.addEventListener('submit', (event) => {
@@ -725,8 +787,7 @@
       corrections.setCustomValidity('');
       const data = new FormData(form);
       preparedAnswer = [
-        `Major-area traversal: ${data.get('focusOrder')}`,
-        `Current-track speech: ${data.get('currentSpeech')}`,
+        `Dark dynamic-color reach: ${data.get('dynamicReach')}`,
         `Corrections: ${corrections.value.trim()}`,
       ].join('\n');
       output.textContent = preparedAnswer;

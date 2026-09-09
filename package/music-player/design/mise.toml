@@ -6,25 +6,35 @@ const root = process.cwd()
 const templatePath = join(root, "questions", "current.template.html")
 const outputPath = join(root, "questions", "current.html")
 const images = [
-  ["@@A11Y_FOCUS_PANE@@", "questions/render/a11y-focus-pane.png"],
-  ["@@A11Y_FOCUS_BROWSE@@", "questions/render/a11y-focus-browse.png"],
-  ["@@A11Y_FOCUS_PLAYBACK@@", "questions/render/a11y-focus-playback.png"],
-  ["@@A11Y_CURRENT_STATE@@", "questions/render/a11y-current-state.png"],
-  ["@@A11Y_CURRENT_COMPOSED@@", "questions/render/a11y-current-composed.png"],
-  ["@@A11Y_MODE_085@@", "questions/render/a11y-mode-085.png"],
-  ["@@A11Y_MODE_100@@", "questions/render/a11y-mode-100.png"],
-  ["@@A11Y_MODE_150@@", "questions/render/a11y-mode-150.png"],
+  ["@@DYNAMIC_WALLPAPER_STABLE@@", "questions/render/dark-dynamic-wallpaper-stable.png"],
+  ["@@DYNAMIC_WALLPAPER_ZONED@@", "questions/render/dark-dynamic-wallpaper-zoned.png"],
+  ["@@DYNAMIC_WALLPAPER_TONAL@@", "questions/render/dark-dynamic-wallpaper-tonal.png"],
+  ["@@DYNAMIC_CORAL_STABLE@@", "questions/render/dark-dynamic-coral-stable.png"],
+  ["@@DYNAMIC_CORAL_ZONED@@", "questions/render/dark-dynamic-coral-zoned.png"],
+  ["@@DYNAMIC_CORAL_TONAL@@", "questions/render/dark-dynamic-coral-tonal.png"],
+  ["@@DYNAMIC_GREEN_STABLE@@", "questions/render/dark-dynamic-green-stable.png"],
+  ["@@DYNAMIC_GREEN_ZONED@@", "questions/render/dark-dynamic-green-zoned.png"],
+  ["@@DYNAMIC_GREEN_TONAL@@", "questions/render/dark-dynamic-green-tonal.png"],
+  ["@@DYNAMIC_GOLD_STABLE@@", "questions/render/dark-dynamic-gold-stable.png"],
+  ["@@DYNAMIC_GOLD_ZONED@@", "questions/render/dark-dynamic-gold-zoned.png"],
+  ["@@DYNAMIC_GOLD_TONAL@@", "questions/render/dark-dynamic-gold-tonal.png"],
+  ["@@DYNAMIC_MAGENTA_STABLE@@", "questions/render/dark-dynamic-magenta-medium-stable.png"],
+  ["@@DYNAMIC_MAGENTA_ZONED@@", "questions/render/dark-dynamic-magenta-medium-zoned.png"],
+  ["@@DYNAMIC_MAGENTA_TONAL@@", "questions/render/dark-dynamic-magenta-medium-tonal.png"],
+  ["@@DYNAMIC_MONOCHROME_STABLE@@", "questions/render/dark-dynamic-monochrome-high-stable.png"],
+  ["@@DYNAMIC_MONOCHROME_ZONED@@", "questions/render/dark-dynamic-monochrome-high-zoned.png"],
+  ["@@DYNAMIC_MONOCHROME_TONAL@@", "questions/render/dark-dynamic-monochrome-high-tonal.png"],
 ]
 let html = readFileSync(templatePath, "utf8")
 for (const [placeholder, relativePath] of images) {
   const encoded = readFileSync(join(root, relativePath)).toString("base64")
   html = html.replaceAll(placeholder, `data:image/png;base64,${encoded}`)
 }
-if (html.includes("@@A11Y_")) {
-  throw new Error("Accessibility review still contains an unresolved image placeholder.")
+if (html.includes("@@DYNAMIC_")) {
+  throw new Error("Dark dynamic-color matrix still contains an unresolved image placeholder.")
 }
 writeFileSync(outputPath, html)
-console.log("Built self-contained unfolded TalkBack review.")
+console.log("Built self-contained dark dynamic-color matrix.")
 '''
 
 validate_question = '''
@@ -33,19 +43,19 @@ const { join } = await import("node:path")
 const root = process.cwd()
 const htmlPath = join(root, "questions", "current.html")
 const html = readFileSync(htmlPath, "utf8")
-if (html.includes("@@A11Y_")) {
-  throw new Error("Accessibility review contains unresolved image placeholders.")
+if (html.includes("@@DYNAMIC_")) {
+  throw new Error("Dark dynamic-color matrix contains unresolved image placeholders.")
 }
 if (/<script\s+[^>]*src=|<link\s+[^>]*href=/i.test(html)) {
-  throw new Error("Accessibility review depends on an external script or stylesheet.")
+  throw new Error("Dark dynamic-color matrix depends on an external script or stylesheet.")
 }
 const dataUrls = [...html.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)]
-if (dataUrls.length !== 16) {
-  throw new Error(`Accessibility review embeds ${dataUrls.length} image references; expected 16.`)
+if (dataUrls.length !== 36) {
+  throw new Error(`Dark dynamic-color matrix embeds ${dataUrls.length} image references; expected 36.`)
 }
 const uniqueImages = new Map(dataUrls.map((match) => [match[1], Buffer.from(match[1], "base64")]))
-if (uniqueImages.size !== 8) {
-  throw new Error(`Accessibility review embeds ${uniqueImages.size} distinct captures; expected 8.`)
+if (uniqueImages.size !== 18) {
+  throw new Error(`Dark dynamic-color matrix embeds ${uniqueImages.size} distinct captures; expected 18.`)
 }
 const pngSignature = "89504e470d0a1a0a"
 for (const [encoded, image] of uniqueImages) {
@@ -55,84 +65,124 @@ for (const [encoded, image] of uniqueImages) {
   const width = image.readUInt32BE(16)
   const height = image.readUInt32BE(20)
   if (width !== 2076 || height !== 2152) {
-    throw new Error(`Embedded TalkBack evidence is ${width} × ${height}; expected 2076 × 2152.`)
+    throw new Error(`Embedded dynamic-color evidence is ${width} × ${height}; expected 2076 × 2152.`)
   }
 }
 const required = [
-  "Choose unfolded TalkBack behavior",
+  "Choose dark dynamic-color reach",
   "It does not authorize production implementation.",
-  "Fixed requirements, not choices",
-  "TalkBack says “1 of 4” through “4 of 4”",
-  "F1 · recommended",
-  "F2",
-  "F3",
-  "Pane by pane",
-  "Browse first",
-  "Playback first",
-  "Ranking: F1 &gt; F2 &gt; F3.",
-  "S1 · recommended",
-  "S2",
-  "Structured state",
-  "Composed sentence",
-  "Ranking: S1 &gt; S2.",
-  "Current track. Another Xronixle. 4:35 · −1.2 dBTP. Button.",
-  "Selected. Current track: Another Xronixle, 4:35, −1.2 dBTP. Button.",
-  "Reduced motion:",
-  "name=\"focusOrder\"",
-  "name=\"currentSpeech\"",
+  "Wallpaper can change",
+  "Palette rows are stress inputs, not choices.",
+  "True black remains visible",
+  "Only color reach changes",
+  "A · recommended",
+  "B",
+  "C",
+  "Stable black ladder",
+  "Zoned dynamic containers",
+  "Tonal folder pane",
+  "Ranking: A &gt; B &gt; C.",
+  "Current wallpaper seed",
+  "Warm coral",
+  "Forest green",
+  "Gold Vibrant",
+  "Magenta Expressive",
+  "Monochrome at High contrast",
+  "name=\"dynamicReach\"",
   "spaces alone do not complete this field",
   "Native pixels",
   "Reset 100%",
   "Source 2076 × 2152 physical px · design 852 × 883dp",
+  "Reduced-motion and TalkBack requirements are unchanged.",
 ]
 for (const fragment of required) {
   if (!html.includes(fragment)) {
-    throw new Error(`Accessibility review is missing required content: ${fragment}`)
+    throw new Error(`Dark dynamic-color matrix is missing required content: ${fragment}`)
   }
 }
 const radioCount = (html.match(/type="radio"/g) ?? []).length
-if (radioCount !== 5) {
-  throw new Error(`Accessibility review has ${radioCount} radio choices; expected 5.`)
+if (radioCount !== 3) {
+  throw new Error(`Dark dynamic-color matrix has ${radioCount} radio choices; expected 3.`)
 }
-const evidence = (name) => JSON.parse(readFileSync(join(root, "questions", "evidence", name), "utf8"))
-const first = (sequence, fragment) => sequence.findIndex((entry) => entry.speech.includes(fragment))
-const baseline = evidence("a11y-baseline-focus-100.json")
-const pane = evidence("a11y-pane-focus-100.json")
-const browse = evidence("a11y-browse-focus-100.json")
-const playback = evidence("a11y-playback-focus-100.json")
-const assertOrder = (sequence, fragments, label) => {
-  const positions = fragments.map((fragment) => first(sequence, fragment))
-  if (positions.some((position) => position < 0)) {
-    throw new Error(`${label} transcript is missing one required focus landmark.`)
+const environments = [
+  { key: "wallpaper", seed: "45588C", style: "TONAL_SPOT", contrast: "0.0" },
+  { key: "coral", seed: "D45D42", style: "TONAL_SPOT", contrast: "0.0" },
+  { key: "green", seed: "2E7D32", style: "TONAL_SPOT", contrast: "0.0" },
+  { key: "gold", seed: "C49000", style: "VIBRANT", contrast: "0.0" },
+  { key: "magenta-medium", seed: "A43D96", style: "EXPRESSIVE", contrast: "0.5" },
+  { key: "monochrome-high", seed: "808080", style: "MONOCHROMATIC", contrast: "1.0" },
+]
+const strategies = ["stable", "zoned", "tonal"]
+for (const environment of environments) {
+  const rolePath = join(root, "questions", "evidence", `dark-dynamic-${environment.key}-roles.json`)
+  const roleEvidence = JSON.parse(readFileSync(rolePath, "utf8"))
+  if (
+    roleEvidence.request.seed !== environment.seed
+    || roleEvidence.request.style !== environment.style
+    || roleEvidence.request.contrast !== environment.contrast
+  ) {
+    throw new Error(`${environment.key} role evidence does not match its requested Android environment.`)
   }
-  if (!positions.every((position, index) => index === 0 || positions[index - 1] < position)) {
-    throw new Error(`${label} transcript does not preserve required traversal order.`)
+  const roles = roleEvidence.resolvedDarkRoles
+  for (const role of ["primary", "on_primary", "secondary_container", "on_secondary_container", "on_surface", "on_surface_variant", "outline", "surface_container_low"]) {
+    if (!roles[role]) {
+      throw new Error(`${environment.key} role evidence is missing ${role}.`)
+    }
+  }
+  for (const strategy of strategies) {
+    const hierarchyPath = join(root, "questions", "evidence", `dark-dynamic-${environment.key}-${strategy}.xml`)
+    const hierarchy = readFileSync(hierarchyPath, "utf8")
+    const markers = [
+      'text="Camellia"',
+      'text="Another Xronixle"',
+      'bounds="[1107,331][1420,390]"',
+      'content-desc="Previous track"',
+      'content-desc="Pause"',
+      'content-desc="Next track"',
+      'content-desc="Repeat track"',
+      'content-desc="Play in order"',
+      'content-desc="Shuffle Camellia"',
+      'content-desc="Shuffle all folders"',
+      'checked="true" clickable="true"',
+    ]
+    const missing = markers.filter((marker) => !hierarchy.includes(marker))
+    if (missing.length > 0) {
+      throw new Error(`${environment.key}/${strategy} hierarchy is missing accepted markers: ${missing.join(", ")}.`)
+    }
+    if (hierarchy.includes('content-desc="Playing"')) {
+      throw new Error(`${environment.key}/${strategy} restored the rejected current-row play icon.`)
+    }
   }
 }
-assertOrder(baseline, ["Settings. Button", "Current track:", "Selected. Camellia", "1 of 16"], "Baseline")
-assertOrder(pane, ["Selected. Camellia", "1 of 16", "Current track."], "Pane candidate")
-assertOrder(browse, ["Selected. Camellia", "Current track.", "1 of 16"], "Browse candidate")
-assertOrder(playback, ["1 of 16", "Current track.", "Selected. Camellia"], "Playback candidate")
+const contrast = JSON.parse(readFileSync(join(root, "questions", "evidence", "dark-dynamic-contrast.json"), "utf8"))
+for (const pair of ["primary", "secondaryContainer", "blackText", "blackSupporting", "stableContainerText", "stableContainerSupporting", "lowContainerText", "lowContainerSupporting", "containerText", "highContainerText"]) {
+  if (contrast.minima[pair] < 4.5) {
+    throw new Error(`${pair} minimum contrast is ${contrast.minima[pair]}; expected at least 4.5.`)
+  }
+}
+if (contrast.minima.blackOutline < 3) {
+  throw new Error(`Generated outline minimum contrast is ${contrast.minima.blackOutline}; expected at least 3.`)
+}
 if (!html.includes("dialog.showModal()") || !html.includes("returnTarget.focus()")) {
-  throw new Error("Accessibility preview does not retain native modal and focus restoration behavior.")
+  throw new Error("Dynamic-color preview does not retain native modal and focus restoration behavior.")
 }
-console.log("Unfolded TalkBack review is valid.")
+console.log("Dark dynamic-color matrix is valid.")
 '''
 
 [tasks.build]
-description = "Embed native TalkBack evidence into the self-contained unfolded accessibility review"
+description = "Embed native Android evidence into the self-contained dark dynamic-color matrix"
 dir = "{{config_root}}"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
 [tasks.lint]
-description = "Validate the active unfolded TalkBack design review"
+description = "Validate the active dark dynamic-color design matrix"
 dir = "{{config_root}}"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
 
 [tasks."test:unit"]
-description = "Exercise the unfolded TalkBack review completion contract"
+description = "Exercise the dark dynamic-color matrix completion contract"
 dir = "{{config_root}}"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
