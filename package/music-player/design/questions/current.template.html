@@ -246,6 +246,9 @@
     }
 
     .matrix-row-label {
+      position: sticky;
+      z-index: 1;
+      inset-inline-start: 0;
       display: flex;
       align-items: center;
       min-block-size: 3rem;
@@ -733,7 +736,7 @@
       device.style.setProperty('--preview-scale-x', String(scaleX));
       device.style.setProperty('--preview-scale-y', String(scaleY));
       stage.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      requestAnimationFrame(() => requestAnimationFrame(updatePreviewDetails));
+      updatePreviewDetails();
     }
 
     function fitPreview() {
@@ -742,7 +745,7 @@
       const availableHeight = Math.max(1, stage.clientHeight - 32);
       const nextScale = Math.min(1, availableWidth / frameWidth, availableHeight / frameHeight);
       if (Math.abs(scaleX - nextScale) < 0.0001 && Math.abs(scaleY - nextScale) < 0.0001) {
-        requestAnimationFrame(updatePreviewDetails);
+        updatePreviewDetails();
         return;
       }
       applyScale(nextScale);
@@ -755,10 +758,7 @@
         previewImage.src = button.dataset.previewSrc;
         previewImage.alt = button.querySelector('img').alt;
         dialog.showModal();
-        requestAnimationFrame(() => {
-          fitPreview();
-          requestAnimationFrame(fitPreview);
-        });
+        fitPreview();
       });
     });
 
@@ -790,7 +790,7 @@
       if (dialog.open && fitActive) {
         fitPreview();
       } else {
-        requestAnimationFrame(updatePreviewDetails);
+        updatePreviewDetails();
       }
     });
     previewResizeObserver.observe(stage);
