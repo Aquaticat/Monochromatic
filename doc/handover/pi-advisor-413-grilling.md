@@ -5,7 +5,8 @@
 The user requested resolution of GitHub issue #413 with `/grill-me` and `/grilling`,
  explicitly requiring critical examination of its acceptance criteria.
 Do not implement until the user confirms shared understanding.
-Implementation is not the only possible resolution: reframing or declining hedging remains open.
+Implementation is not the only possible resolution:
+ reframing or declining hedging remains open.
 
 No implementation changes or verification runs have occurred in this interview.
 The first decision round is pending.
@@ -22,10 +23,14 @@ Explicit model requests remain exact and hedging starts disabled.
 `gh issue list --state all --search 'repo:Aquaticat/Monochromatic is:issue 408 409 411 412'
  --limit 100 --json number,title,state,body` returned all listed prerequisites as open:
 
-- #408: operation attempt ledger and aggregate usage.
-- #409: configured default preference and session-health fallback.
-- #411: progress rendering derived from the ledger.
-- #412: failure-aware same-model recovery.
+- #408:
+   operation attempt ledger and aggregate usage.
+- #409:
+   configured default preference and session-health fallback.
+- #411:
+   progress rendering derived from the ledger.
+- #412:
+   failure-aware same-model recovery.
 
 `doc/planning/pi-advisor-recovery-policy.md:3` records acceptance for issue tracking,
  not a final implementation contract for this interview.
