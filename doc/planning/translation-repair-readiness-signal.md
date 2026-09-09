@@ -1626,3 +1626,32 @@ about 0.6 to 0.8 USD a page with Synthetic dry.
 What is not yet demonstrated is a clean page on the current build:
 no entry has been read clean since `noname` on `33a023445`,
 and both entries in the queue must be relaunched once class twenty-five is built.
+
+## What the eighth Mio launch showed (2026-09-09, 21:58 to 23:32 UTC)
+
+Class twenty-five's picture-support ordering is built and guarded,
+but its first live pass did not publish a page.
+The pass stopped INCOMPLETE after 5,673,650 ms with a missing source destination.
+The linked poem had been translated correctly at slice 17;
+a malformed `PhotoScroll` at slice 16 caused the translate assembly to withdraw every replacement,
+the poem included.
+The publication guard correctly refused that result.
+
+This is class twenty-seven:
+a structural regression with no footnote identifier was treated as unattributable without testing a
+single-withdrawal counterfactual.
+`ad6d506a6` tests that counterfactual against the whole document's grammar and footnotes,
+preserving siblings only when the trial proves a valid assembly.
+The original blanket fallback remains when no single withdrawal succeeds.
+The reproduction failed on the prior build;
+it and the full suite pass at `5cb66ffaa`,
+with types and oxlint clean.
+
+OpenRouter logged 0.615210094 USD and Bedrock 0.1817423025 USD for the interrupted pass.
+These include abandoned-stream estimates where recorded,
+not only invoices.
+The cost levers remain in place.
+Readiness remains unproven:
+local guards are not a published page,
+and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
+queue advances.
