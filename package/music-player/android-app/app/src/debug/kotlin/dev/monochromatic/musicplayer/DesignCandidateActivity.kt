@@ -1073,6 +1073,7 @@ private fun VariableWidthModeSegment(
                 contentDescription = accessibleLabels[index]
                 role = Role.RadioButton
                 selected = isSelected
+                traversalIndex = index.toFloat()
             },
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
