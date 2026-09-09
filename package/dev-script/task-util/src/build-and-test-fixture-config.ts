@@ -1,36 +1,76 @@
-/** Verbatim generated configuration used by disposable mise regression fixtures. @module */
+/**
+ Verbatim generated configuration used by disposable mise regression fixtures. @module
+ */
 
 import { readFile, } from 'node:fs/promises';
 
-/** Generated configuration consumed by mise, not a reconstructed implementation. */
-export const generatedConfig: string = await readFile(new URL('../../../../mise.toml', import.meta.url,), 'utf8',);
+/**
+ Generated configuration consumed by mise, not a reconstructed implementation.
+ */
+export const generatedConfig: string = await readFile(
+  new URL(
+    '../../../../mise.toml',
+    import.meta.url,
+  ),
+  'utf8',
+);
 
-/** Source owner used to detect stale generated task definitions. */
-export const canonicalConfig: string = await readFile(new URL('../../../../mise.no-env.toml', import.meta.url,), 'utf8',);
+/**
+ Source owner used to detect stale generated task definitions.
+ */
+export const canonicalConfig: string = await readFile(
+  new URL(
+    '../../../../mise.no-env.toml',
+    import.meta.url,
+  ),
+  'utf8',
+);
 
-/** Inputs independently select execution shape and phase outcomes. */
+/**
+ Inputs independently select execution shape and phase outcomes.
+ */
 export type BuildAndTestFixture = {
-  /** Repository-relative file arguments exercise the real usage parser. */
+  /**
+   Repository-relative file arguments exercise the real usage parser.
+   */
   readonly args: readonly string[];
-  /** Build failure must survive passing tests. */
+  /**
+   Build failure must survive passing tests.
+   */
   readonly buildFails: boolean;
-  /** Missing package build tasks retain their existing skip semantics. */
+  /**
+   Missing package build tasks retain their existing skip semantics.
+   */
   readonly packageBuild?: boolean;
-  /** Preparation failure is exercised only by the explicitly tolerant aggregate. */
+  /**
+   Preparation failure is exercised only by the explicitly tolerant aggregate.
+   */
   readonly prepareFails?: boolean;
-  /** Entry point distinguishes ordinary orchestration from intentional tolerance. */
+  /**
+   Entry point distinguishes ordinary orchestration from intentional tolerance.
+   */
   readonly task?: string;
-  /** Test failure must fail the aggregate independently of build status. */
+  /**
+   Test failure must fail the aggregate independently of build status.
+   */
   readonly testFails: boolean;
 };
 
-/** Fixture output includes an execution trace independent of displayed commands. */
+/**
+ Fixture output includes an execution trace independent of displayed commands.
+ */
 export type BuildAndTestResult = {
-  /** File-backed phase order proves which subprocesses actually executed. */
+  /**
+   File-backed phase order proves which subprocesses actually executed.
+   */
   readonly events: readonly string[];
-  /** Both streams retain the aggregate and original child diagnostics. */
+  /**
+   Both streams retain the aggregate and original child diagnostics.
+   */
   readonly output: string;
-  /** Numeric status is returned only after normal child exit, never signal termination. */
+  /**
+   Numeric status is returned only after normal child exit, never signal termination.
+   */
   readonly exitCode: number;
 };
 
@@ -52,14 +92,30 @@ export type BuildAndTestResult = {
  configurationSpan({ start: '[tasks.try]\n', end: '\n[tasks.', });
  ```
  */
-function configurationSpan({ start, end, }: { readonly start: string; readonly end: string; },): string {
-  /** Offset of the exact task or variable definition. */
+function configurationSpan({
+  start,
+  end,
+}: {
+  readonly start: string;
+  readonly end: string
+},): string {
+  /**
+   Offset of the exact task or variable definition.
+   */
   const startIndex = generatedConfig.indexOf(start,);
-  /** Closing boundary after the opening text, not inside it. */
-  const endIndex = generatedConfig.indexOf(end, startIndex + start.length,);
-  if (startIndex === -1 || endIndex === -1)
+  /**
+   Closing boundary after the opening text, not inside it.
+   */
+  const endIndex = generatedConfig.indexOf(
+    end,
+    startIndex + start.length,
+  );
+  if ((startIndex === (-1)) || (endIndex === (-1)))
     throw new Error(`Missing mise fixture configuration boundary: ${start} to ${end}`,);
-  return generatedConfig.slice(startIndex, endIndex,);
+  return generatedConfig.slice(
+    startIndex,
+    endIndex,
+  );
 }
 
 /**
@@ -75,7 +131,10 @@ function configurationSpan({ start, end, }: { readonly start: string; readonly e
  ```
  */
 function taskSection(name: string,): string {
-  return configurationSpan({ start: `[tasks.${name}]\n`, end: '\n[tasks.', },);
+  return configurationSpan({
+    start: `[tasks.${name}]\n`,
+    end: '\n[tasks.',
+  },);
 }
 
 /**
@@ -91,10 +150,15 @@ function taskSection(name: string,): string {
  ```
  */
 function variableSection(name: string,): string {
-  return `${configurationSpan({ start: `${name} = """\n`, end: '\n"""', },)}\n"""`;
+  return `${configurationSpan({
+    start: `${name} = """\n`,
+    end: '\n"""',
+  },)}\n"""`;
 }
 
-/** Shared root config replaces only build/test implementations, not orchestration. */
+/**
+ Shared root config replaces only build/test implementations, not orchestration.
+ */
 export const fixtureConfig: string = `experimental_monorepo_root = true
 [monorepo]
 config_roots = ["package/*/*"]
