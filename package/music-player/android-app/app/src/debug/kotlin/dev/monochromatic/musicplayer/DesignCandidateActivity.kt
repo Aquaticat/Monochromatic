@@ -1177,6 +1177,7 @@ private fun OneRowModeControl(
  * function TwoRowModeControl(props: { labels: readonly string[] }): UIElement;
  * ```
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TwoRowModeControl(
     labels: List<String>,
@@ -1184,48 +1185,47 @@ private fun TwoRowModeControl(
     contentPadding: PaddingValues,
     onOverflow: () -> Unit,
 ) {
-    Column(
+    FlowRow(
         modifier = Modifier
             .fillMaxWidth()
             .selectableGroup()
             .semantics {
                 collectionInfo = CollectionInfo(rowCount = 2, columnCount = 2)
             },
+        maxItemsInEachRow = 2,
+        horizontalArrangement = Arrangement.spacedBy((-1).dp),
         verticalArrangement = Arrangement.spacedBy((-1).dp),
     ) {
-        for (rowIndex in 0..1) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                for (columnIndex in 0..1) {
-                    val index = rowIndex * 2 + columnIndex
-                    // What:     Kotlin's `if` chain chooses the outside corner for one grid position.
-                    // Why:      Four segments share internal square corners and read as one connected group.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // const shape = index === 0 ? topLeft : index === 1 ? topRight : index === 2 ? bottomLeft : bottomRight;
-                    // ```
-                    val shape = if (index == 0) {
-                        RoundedCornerShape(topStart = 20.dp)
-                    } else if (index == 1) {
-                        RoundedCornerShape(topEnd = 20.dp)
-                    } else if (index == 2) {
-                        RoundedCornerShape(bottomStart = 20.dp)
-                    } else {
-                        RoundedCornerShape(bottomEnd = 20.dp)
-                    }
-                    VariableWidthModeSegment(
-                        index = index,
-                        labels = labels,
-                        accessibleLabels = accessibleLabels,
-                        shape = shape,
-                        modifier = Modifier.weight(1f),
-                        semanticRow = rowIndex,
-                        semanticColumn = columnIndex,
-                        contentPadding = contentPadding,
-                        onOverflow = onOverflow,
-                    )
-                }
+        for (index in labels.indices) {
+            val rowIndex = index / 2
+            val columnIndex = index % 2
+            // What:     Kotlin's `if` chain chooses the outside corner for one grid position.
+            // Why:      Four segments share internal square corners and read as one connected group.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const shape = index === 0 ? topLeft : index === 1 ? topRight : index === 2 ? bottomLeft : bottomRight;
+            // ```
+            val shape = if (index == 0) {
+                RoundedCornerShape(topStart = 20.dp)
+            } else if (index == 1) {
+                RoundedCornerShape(topEnd = 20.dp)
+            } else if (index == 2) {
+                RoundedCornerShape(bottomStart = 20.dp)
+            } else {
+                RoundedCornerShape(bottomEnd = 20.dp)
             }
+            VariableWidthModeSegment(
+                index = index,
+                labels = labels,
+                accessibleLabels = accessibleLabels,
+                shape = shape,
+                modifier = Modifier.weight(1f),
+                semanticRow = rowIndex,
+                semanticColumn = columnIndex,
+                contentPadding = contentPadding,
+                onOverflow = onOverflow,
+            )
         }
     }
 }
