@@ -6936,6 +6936,65 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Mio8 stops on a link lost by blanket assembly withdrawal, 2026-09-09, 23:46 UTC
+
+The eighth `Mio` on frozen `5b228736b` stopped INCOMPLETE at 23:32 UTC after 5,673,650 ms:
+`entry Mio would drop 1 source destination(s)`.
+No page or artifact was published.
+The daily-cost helper ran after the terminal state;
+its output is `~/temp/agent/Mio8-costs-after-20260909.out`.
+Summing actual `SPEND` lines by provider gives OpenRouter 0.615210094 USD over 550 logged calls,
+Bedrock 0.1817423025 USD over 362,
+and Synthetic 159 calls with no per-call price.
+Abandoned-stream estimates remain ceilings,
+not invoices.
+Meters moved from OpenRouter 270.03 to 269.41 USD and Bedrock 186.24 to 186.06 USD.
+Synthetic returned during the pass and ended at 0.3868101893939394 percent of its rolling week;
+Hyper stayed at zero.
+
+The missing destination is the Bilibili link in the closing poem,
+not a failed translation of that poem.
+The cache's slice 17 contains the chosen complete linked poem.
+Slice 16 contains a selected malformed `PhotoScroll` with `photos=[` instead of `photos={[`,
+retained after its author's unresolved repair.
+At 22:46:27 the translate assembly logged `assembly-structure-unattributable mdx-downgraded`,
+then `assembly-withdrew-every-replacement (15 slices)`.
+The valid poem went with the malformed component;
+repair had no archive text for the poem,
+so the final page could not carry its destination.
+This is class twenty-seven.
+The publisher refused the defective result as designed.
+
+The author-defense policy in `translate-repair-wire.ts` is deliberate,
+so it is not changed.
+The missing proof is at assembly:
+absence of a footnote identifier does not establish that no replacement can be identified by a concrete trial.
+Guard `3e1fec4be` reproduces the failure with a shared component and a valid source-only linked quotation:
+the prior build withdraws both indices `[0, 1]` where only the component must be withdrawn.
+
+Fix `ad6d506a6` tests each single withdrawal by splicing the whole document,
+requiring no introduced structural or footnote defect against the archive,
+and accepting the first successful trial in supplied replacement order.
+It runs only when ordinary footnote attribution found no culprit and a structural regression exists.
+No model call is added.
+When no single trial repairs the document,
+the existing blanket fallback remains;
+a lone replacement keeps that same diagnostic too.
+`dfc02d538` extracts the shared regression readers;
+`48ef99c42` formats the proof;
+`5cb66ffaa` covers the footnote condition.
+The tests also cover no single withdrawal succeeding and valid container halves spanning slices,
+so an isolated-slice parser cannot stand in for whole-page proof.
+
+Build and types pass.
+Oxlint reports zero warnings and errors.
+The full suite ends `unit exit 0` (`~/temp/agent/class27-unit-20260909.out`),
+including the guard that failed first.
+The next action is a fresh frozen-build `Mio` relaunch,
+not `hulicaijia`.
+Class twenty-five still needs a published page read;
+this interrupted pass cannot close it at the user boundary.
+
 ## The open threads are checked against code and recorded measurements, 2026-09-09, 22:00 UTC
 
 No source changed while `Mio` ran.

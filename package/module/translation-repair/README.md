@@ -1874,6 +1874,24 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `ad6d506a6` (2026-09-09,
+the twenty-seventh class) an assembly with an unattributed structural regression tries each single replacement
+withdrawal before withdrawing the whole lane.
+Each trial splices and parses the whole document,
+including slice joins,
+and must leave no introduced structural or footnote defect against the archive.
+The first successful trial preserves every other replacement;
+when none succeeds,
+the existing blanket fallback remains.
+The eighth `Mio` had selected malformed JSX at slice 16,
+then withdrawn all 15 translations,
+including a valid linked poem at slice 17,
+and stopped at the publisher for its missing destination.
+The author-defense policy is unchanged;
+the added proof is deterministic and buys no model calls.
+The reproduction failed first,
+then passed with guards for unrepaired multi-slice damage,
+container joins and a counterfactual that still breaks footnotes.
 Since `f6cd6e5e7` and `07a99e23a` (2026-09-09,
 the twenty-fifth class) archive block review sees corroborated transcriptions of pictures referenced by its
 aligned source section,

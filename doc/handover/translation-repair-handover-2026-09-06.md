@@ -28,8 +28,18 @@ Terminal update at 23:32 UTC on 2026-09-09:
 the eighth `Mio` stopped INCOMPLETE after 5,673,650 ms at the publication guard:
 `entry Mio would drop 1 source destination(s)`.
 No page or settled artifact was written.
-The missing destination is being diagnosed from the retained cache and ledger;
-do not launch `hulicaijia` yet.
+Diagnosed and fixed at 23:46 UTC as class twenty-seven:
+a malformed `PhotoScroll` selected at slice 16 caused the assembly guard to withdraw all 15 translations,
+including slice 17's valid poem with its Bilibili link.
+`ad6d506a6` proves a single withdrawal by reparsing the whole document before falling back to blanket withdrawal.
+The author-defense policy is unchanged.
+Guard `3e1fec4be` failed first with both fixture replacements withdrawn;
+the fixed full suite ends `unit exit 0` in `~/temp/agent/class27-unit-20260909.out`.
+Build,
+types and oxlint pass;
+code and branch-coverage tip `5cb66ffaa`.
+Relaunch `Mio` next,
+not `hulicaijia`.
 Final meters:
 OpenRouter 269.41 USD,
 Bedrock 186.06 USD,
@@ -277,7 +287,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `5b228736b` for code and guards;
+  `5cb66ffaa` for code and guards;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -308,6 +318,15 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+Class twenty-seven:
+`3e1fec4be` guards the linked insertion lost beside malformed JSX;
+`dfc02d538` extracts regression readers;
+`ad6d506a6` proves single-withdrawal repair of whole-document structure and footnotes;
+`ee57fed0f` covers blanket fallback and container joins;
+`5cb66ffaa` covers the remaining footnote condition.
+The full suite,
+types and oxlint pass.
+
 Class twenty-five:
 `f6cd6e5e7` supplies section-scoped corroborated picture support before archive review;
 `07a99e23a` shares completed readings through the entry;
@@ -1833,9 +1852,9 @@ each read off the pass log and the shipped page:
 1.  CLASS TWENTY-FIVE IS VERIFIED LOCALLY.
     Implementation and red/green evidence are in the takeover update under "Where the work stands".
     The eighth `Mio` stopped INCOMPLETE at the missing-destination publication guard.
-    Diagnose the retained evidence in `~/temp/agent/Mio8-20260909`,
-    fix any implementation defect with a failing guard,
-    then relaunch `Mio` before advancing the queue.
+    The retained evidence identifies class twenty-seven,
+    now fixed and verified at `5cb66ffaa`.
+    Relaunch `Mio` before advancing the queue.
     Only a real page can establish that both screenshot translations survive.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
