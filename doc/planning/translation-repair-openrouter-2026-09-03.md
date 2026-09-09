@@ -6103,6 +6103,71 @@ no `[^2]`,
 the artifact's `pageAssembly.trimmed` naming slice 14,
 no `INTERRUPTED` line.
 
+## The twenty-third hakureico page settles under the page assembly and closes the twenty-first class, 2026-09-09, 09:40 UTC
+
+`TALLY hakureico status=SETTLED slices=15 repairStatus=repaired repairIssues=73 repairAccepted=55 repairResolved=52
+repairFindings=192 repairChanged=11 translateStatus=complete translateChanged=15 documentsDiffer=15 pageChanged=13
+pageSilent=0 alignmentFindings=6 selection=contested ms=5384276`
+at 09:31 UTC on `3620004db`,
+89.7 minutes on Bedrock and OpenRouter (Synthetic dry this run,
+Kimi-K3 withheld),
+`~/temp/agent/hakureico23-20260909`.
+The log in order:
+the seal (`ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)`),
+slice 7 left out of the relabel reading as before,
+`assembly-footnote-trimmed orphan-definition gfm 2 (slice 14)` from the translate lane,
+`page assembly: assembly-footnote-trimmed orphan-definition gfm 2 (slice 14)` and
+`page assembly trimmed 1 slices and withdrew 0` from the page-level guard,
+and no `INTERRUPTED` line.
+The three checks passed:
+the front matter the archive's byte for byte,
+7 `json false start` reads kept with no `schema-mismatch` beside them,
+no error finish.
+`verify-published` matched 1 of 1 at length (`wordings=15 silent=0 chars=4721/expected 4718+separators`).
+The artifact is generation 13,
+carries the sealed span,
+`pageAssembly.trimmed` naming slice 14 with the one-note text,
+and its slice 14 translate row with `shippedText` one definition shorter than `acceptedText`.
+78 voices lost at the straggler window,
+10 `HTTP 429` retries,
+three passes sharing the two providers.
+
+THE TWENTY-FIRST CLASS IS CLOSED ON THE PAGE.
+`she used “Mayday”[^1] to signal that she was approaching her limit.` (line 77) stands above
+`[^1]: The internationally recognized radio distress signal. When used on an aircraft, it usually indicates an
+extreme emergency requiring immediate rescue.` (line 189),
+the last line of the page,
+after the sealed letter,
+where the source puts its notes;
+no `[^2]` anywhere,
+which is right,
+since the sealed letter carries no marker for it.
+The seal holds:
+the span is on the page byte for byte,
+the CJK count equals the archive's own (127,
+the three Chinese HTML-comment notes),
+no straight quote,
+`corroborated` readings and no `quorum-not-met`.
+
+TWO NITS,
+no class:
+`Though many of those journeys were ones she made alone...` (line 37) renders the source's `……` as three dots
+on an archive that carries no ellipsis of either convention,
+so the restoration had no convention to follow;
+and the semantic wrap breaks `her *osu!*` from `was still online.` (lines 48 to 49),
+reading the exclamation mark inside the emphasis as a sentence end.
+Both are wording the site renders as one paragraph.
+
+THE READING:
+four faces of one class in one day,
+each found by the page guard the first face added,
+and the fourth was the cause of the other three:
+the page was never one document to any guard.
+It is now,
+and the guard's outcome is in the artifact,
+so a lane's trim,
+a consolidation's rewrite and a contest's per-slice choice meet one reading before the tally.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

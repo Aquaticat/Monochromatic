@@ -1459,3 +1459,28 @@ the twenty-third `hakureico` page,
 the `gqt` and `Mio` pages,
 the owner's answer on the glossary,
 and the components no read page has met.
+
+## What the twenty-third hakureico launch showed (2026-09-09, 08:01 to 09:31 UTC)
+
+The page settled in 90 minutes on `3620004db`,
+passed the three checks,
+matched at length,
+and carries `“Mayday”[^1]` above its one note with no `[^2]` anywhere:
+the twenty-first class is closed on a read page in all four faces,
+the translate lane and the page-level guard each trimming the orphan,
+the ledger and the artifact saying what the page carries,
+and the seal holding beside it.
+Two nits (a three-dot ellipsis on an archive with no ellipsis convention;
+a wrap break after an emphasized exclamation mark),
+no class.
+
+THE READING:
+the belief holds,
+and for the first time since the letter question a `hakureico` page settled with nothing new found.
+Three pages of the seven-launch day are read clean (Arita,
+the seventh yuki,
+this one);
+what remains before an all-entries launch:
+the `gqt` and `Mio` pages (running since 08:01 UTC),
+the owner's answer on the glossary,
+and the components no read page has met.

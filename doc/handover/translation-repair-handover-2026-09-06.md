@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 08:10 UTC on 2026-09-09 the tree is `3620004db`:
+As of 09:45 UTC on 2026-09-09 the tree is `3620004db`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -85,9 +85,15 @@ after the twenty-first `hakureico` stopped INCOMPLETE at the page guard;
 the composed page runs through the assembly guard and the artifact records the outcome as `pageAssembly`,
 generation thirteen,
 after the twenty-second `hakureico` stopped at the page guard on the consolidation's orphan),
-and three passes running on `3620004db` since 08:01 UTC
-(the twenty-third `hakureico`,
-the fourth `gqt`,
+the twenty-third `hakureico` page settled on `3620004db` at 09:31 UTC and read
+(the three checks passed,
+`verify-published` matched at length,
+the twenty-first class closed on the page in all four faces,
+the seal holding,
+two nits and no class;
+see "The twenty-first class"),
+and two passes running on `3620004db` since 08:01 UTC
+(the fourth `gqt`,
 the fourth `Mio`);
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
@@ -1152,13 +1158,28 @@ which `wouldShipTextFor` applies ahead of the polish,
 the consolidation and the contest;
 an older artifact reads with an empty section.
 The would-ship case failed first.
-The twenty-third `hakureico` runs on `3620004db` since 08:01 UTC.
+The twenty-third `hakureico` (`3620004db`,
+08:01 to 09:31 UTC,
+89.7 minutes,
+`~/temp/agent/hakureico23-20260909`) settled:
+`“Mayday”[^1]` (line 77) above its one note (line 189,
+after the sealed letter),
+no `[^2]`,
+the translate lane and the page-level guard each logging the trim of slice 14,
+the artifact at generation 13 with `pageAssembly.trimmed` naming slice 14,
+`verify-published` matched at length,
+the three checks passed,
+the seal holding,
+two nits (a three-dot ellipsis where the archive has no convention;
+a wrap break after `*osu!*`) and no class.
+The twenty-first class is closed on a read page.
 Recorded in the planning log under
 "The nineteenth hakureico page is read and the twenty-first class takes the sibling note with the orphan",
 "The twenty-first class's second face where the ledger says what was decided and the document carries the trim"
 "The twenty-first class's third face where two notes one line apart are one block to the trim"
-and "The twenty-first class's fourth face where the consolidation puts the orphan back and the page is a document
-nobody guarded".
+"The twenty-first class's fourth face where the consolidation puts the orphan back and the page is a document
+nobody guarded"
+and "The twenty-third hakureico page settles under the page assembly and closes the twenty-first class".
 
 ## The glossary question
 
@@ -1234,15 +1255,10 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Three passes are running on `3620004db`,
+1.  Two passes are running on `3620004db`,
     each watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit:
-    the twenty-third `hakureico`,
-    launched 08:01 UTC on 2026-09-09 on Bedrock and OpenRouter,
-    runs dir `~/temp/agent/hakureico23-20260909`,
-    log beside it,
-    pid 650518;
     the fourth `gqt` (a level-3 heading,
     a bold-led unordered list,
     an italic paragraph;
@@ -1260,23 +1276,11 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     none at its tally.
     The census behind the two (scratch `unmet-shapes.mjs`) is in the planning log under
     "Two shapes-first entries launched beside it".
-    Read `hakureico` by the seven steps plus the three checks,
-    then the class-specific checks:
-    the letter byte for byte the archive's under the seal
-    (`ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)` in the log,
-    artifact `artifactSchemaVersion: 12` with `archiveOriginalSpans`,
-    the page carrying the span verbatim),
-    `“Mayday”[^1]` above a `[^1]` definition and no `[^2]` anywhere,
-    `assembly-footnote-trimmed orphan-definition gfm 2 (slice 14)` in the log from the translate lane and
-    `page assembly: …` lines from the page-level guard,
-    the artifact's `pageAssembly` section and its slice 14 translate row with `shippedText` one definition
-    shorter than `acceptedText`,
-    no `INTERRUPTED` line.
-    The nineteenth `hakureico`,
+    The twenty-third `hakureico`,
     the seventh `yuki418330012` and `Arita` are read
     (see "The twenty-first class",
     "The nineteenth class" and "The Arita page").
-    Read `gqt` and `Mio` by the same steps,
+    Read `gqt` and `Mio` by the seven steps plus the three checks,
     then the shapes each carries:
     `gqt`,
     the heading level,
