@@ -1,3 +1,8 @@
+import {
+  settleContestedTarget,
+  type VotedPair,
+} from './pair-contested-target.ts';
+
 //region Pair agreement
 // WHICH PAIRS THE ROSTER AGREED ON, counted over every usable voice.
 //
@@ -12,6 +17,12 @@
 // first-class correspondences in `pair-blocks-wire.ts`. A repeated-side set is
 // kept only when enough voices named its members together, so alternatives from
 // disjoint replies do not become invented many-to-many structure.
+//
+// A TARGET TWO SOURCES CLAIM WITHOUT CORROBORATION IS DECIDED BY VOTES, in
+// `pair-contested-target.ts`, the mirror of one source named against two
+// targets. Deciding it by source order paired the first `noname` original's
+// `## 简介` heading with the archive's opening paragraph and left the paragraph
+// pair on the floor as "non-monotone".
 
 /**
  * A correspondence between one source position and one target position.
@@ -24,14 +35,6 @@
 export type IndexPair = {
   readonly source: number;
   readonly target: number;
-};
-
-/**
- * One pair with the number of voices that named it.
- */
-type VotedPair<PairT extends IndexPair,> = {
-  readonly pair: PairT;
-  readonly votes: number;
 };
 
 /**
@@ -275,9 +278,9 @@ export function agreePairs<PairT extends IndexPair,>(
   const sources = [...new Set(named,),];
 
   /**
-   * Pairs kept so far, strictly increasing.
+   * Pairs kept so far with their votes, monotone on both sides.
    */
-  const kept: PairT[] = [];
+  const kept: VotedPair<PairT>[] = [];
 
   /**
    * Findings for agreed pairs that could not be kept.
@@ -313,50 +316,68 @@ export function agreePairs<PairT extends IndexPair,>(
        * Last pair kept, absent before first.
        */
       const last = kept.at(-1,);
-      /**
-       * Target of last pair, below every target before first.
-       */
-      const lastTarget = (last === undefined) ? (-1) : last.target;
+      if (last === undefined) {
+        kept.push(winner,);
+        continue;
+      }
       /**
        * Pair this winner names.
        */
       const { pair: chosen, } = winner;
       /**
-       * Whether repeated target is corroborated merge in many-to-many mode.
+       * Pair kept last.
        */
-      const repeatedTarget = (last !== undefined)
-        && (chosen.target === last.target)
-        && (pairingShape === 'many-to-many')
+      const { pair: previous, } = last;
+      if (chosen.target < previous.target) {
+        findings.push(
+          `non-monotone (${String(source,)},${String(chosen.target,)} runs back behind ${String(previous.target,)})`,
+        );
+        continue;
+      }
+      if (chosen.target > previous.target) {
+        kept.push(winner,);
+        continue;
+      }
+      /**
+       * Whether the repeated target is a merge enough voices named together,
+       * which the block wire represents and the section wire does not.
+       */
+      const corroboratedMerge = (pairingShape === 'many-to-many')
         && candidatesCoOccur({
           candidates: [
-            {
-              pair: last,
-              votes: needed,
-            },
+            last,
             winner,
           ],
           pairings,
           needed,
         },);
-      /**
-       * Whether this pair stays on previous target.
-       */
-      const repeatsTarget = chosen.target === lastTarget;
-      /**
-       * Equal target unsupported as merge.
-       */
-      const doesNotAdvance = repeatsTarget ? !repeatedTarget : false;
-      if ((chosen.target < lastTarget) || doesNotAdvance) {
-        findings.push(
-          `non-monotone (${String(source,)},${String(chosen.target,)} runs back behind ${String(lastTarget,)})`,
-        );
+      if (corroboratedMerge) {
+        kept.push(winner,);
         continue;
       }
-      kept.push(chosen,);
+      /**
+       * Which of the two uncorroborated claims on this target survives.
+       */
+      const outcome = settleContestedTarget({
+        earlier: last,
+        later: winner,
+      },);
+      findings.push(outcome.finding,);
+      if (outcome.keep === 'earlier')
+        continue;
+      kept.pop();
+      if (outcome.keep === 'later')
+        kept.push(winner,);
     }
   }
   return {
-    pairs: kept,
+    pairs: kept.map(function toPair(voted,): PairT {
+      /**
+       * Pair this vote names.
+       */
+      const { pair, } = voted;
+      return pair;
+    },),
     findings,
   };
 }

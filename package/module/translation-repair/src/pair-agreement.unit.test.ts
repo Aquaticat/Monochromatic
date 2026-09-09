@@ -335,6 +335,145 @@ await describe({
       },
     },),
     it({
+      name: 'DECIDES A CONTESTED TARGET BY VOTES: a later source that outvotes the earlier claim on'
+        + ' the same target takes it and the earlier source is left unpaired, the shape of the first'
+        + ' noname pass where the heading took the paragraph\'s partner by source order alone',
+      fn: async () => {
+        expect(agreePairs({
+          pairings: [
+            [
+              {
+                source: 1,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 1,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 1,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 0,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 0,
+                target: 0,
+              },
+            ],
+          ],
+          needed: NEEDED,
+          pairingShape: 'many-to-many',
+        },),).toEqual({
+          pairs: [
+            {
+              source: 1,
+              target: 0,
+            },
+          ],
+          findings: ['contested target (target 0: source 1 outvotes source 0, 3 to 2)'],
+        },);
+      },
+    },),
+    it({
+      name: 'KEEPS THE EARLIER CLAIM on a contested target when the later source has fewer votes,'
+        + ' and names the loss rather than calling it non-monotone',
+      fn: async () => {
+        expect(agreePairs({
+          pairings: [
+            [
+              {
+                source: 1,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 1,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 0,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 0,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 0,
+                target: 0,
+              },
+            ],
+          ],
+          needed: NEEDED,
+        },),).toEqual({
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+          ],
+          findings: ['contested target (target 0: source 1 loses to source 0, 2 to 3)'],
+        },);
+      },
+    },),
+    it({
+      name: 'DROPS BOTH CLAIMS on a contested target that ties, since a target the voices split on'
+        + ' evenly is nobody\'s agreement, as a contested source already is',
+      fn: async () => {
+        expect(agreePairs({
+          pairings: [
+            [
+              {
+                source: 0,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 0,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 1,
+                target: 0,
+              },
+            ],
+            [
+              {
+                source: 1,
+                target: 0,
+              },
+            ],
+          ],
+          needed: NEEDED,
+          pairingShape: 'many-to-many',
+        },),).toEqual({
+          pairs: [],
+          findings: ['contested target (target 0: sources 0 and 1 tie at 2 votes)'],
+        },);
+      },
+    },),
+    it({
       name: 'AGREES on nothing from a single voice, because a pairing one model invented is not'
         + ' agreement',
       fn: async () => {
