@@ -17,7 +17,8 @@ import {
   readLaneContestBallot,
 } from './lane-contest-wire.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
-import { runGatherRound, } from './stage-round.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
+import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Lane contest stage
@@ -283,6 +284,9 @@ function withoutArchiveAnswer(
  *
  * @param graceMs - optional straggler window seam for deterministic tests
  *
+ * @param fanOut - seats a round asks: the window of quorum plus one by
+ * default, or the whole bench a fixture scripting every seat asks for
+ *
  * @param l - logger to tag
  *
  * @returns What the roster settled on, with every usable ballot
@@ -301,6 +305,7 @@ export async function contestLaneSlice(
     exchangeTimeoutMs,
     graceMs,
     l,
+    fanOut,
   }: {
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -309,6 +314,7 @@ export async function contestLaneSlice(
     readonly exchangeTimeoutMs: number;
     readonly graceMs?: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   },
 ): Promise<LaneContestOutcome> {
   /**
@@ -331,7 +337,7 @@ export async function contestLaneSlice(
   /**
    * One reply per voice, heard or lost.
    */
-  const outcomes = await runGatherRound({
+  const outcomes = await runWindowedRounds({
     client,
     modelIds,
     messages: buildLaneContestMessages({ subject, },),
@@ -343,6 +349,8 @@ export async function contestLaneSlice(
     l: cl,
     heardNeeded,
     ...((graceMs === undefined) ? {} : { graceMs, }),
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
 
   /**

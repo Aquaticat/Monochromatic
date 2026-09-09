@@ -488,6 +488,9 @@ async function drive(
     perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
     overlap,
     l,
+    // Whole bench, one round: these cases count the calls a memo saves, over
+    // a bench every seat of which is scripted the same way.
+    fanOut: 'whole-bench',
   },);
   return {
     calls,

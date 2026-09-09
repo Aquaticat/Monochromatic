@@ -126,6 +126,8 @@ await describe({
       name: 'KEEPS a correspondence both voices named',
       fn: async () => {
         const outcome = await pairBlocksWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
@@ -147,6 +149,8 @@ await describe({
       name: 'KEEPS a split paragraph when enough voices name both target blocks together, rather than treating supported one-to-many correspondence as contested alternatives',
       fn: async () => {
         const outcome = await pairBlocksWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               '{"pairs":[{"source":0,"target":0},{"source":0,"target":1}]}',
@@ -170,6 +174,8 @@ await describe({
       name: 'KEEPS a merged paragraph when enough voices name both source blocks against one target',
       fn: async () => {
         const outcome = await pairBlocksWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               '{"pairs":[{"source":0,"target":0},{"source":1,"target":0}]}',
@@ -194,6 +200,8 @@ await describe({
         + 'agreement is per pair and not per reply (`#245`)',
       fn: async () => {
         const outcome = await pairBlocksWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               '{"pairs":[{"source":0,"target":0}]}',
@@ -217,6 +225,8 @@ await describe({
       name: 'DROPS a correspondence only one voice named',
       fn: async () => {
         const outcome = await pairBlocksWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
@@ -238,6 +248,8 @@ await describe({
       name: 'RETURNS no pairs and says so when every reply is unusable',
       fn: async () => {
         const outcome = await pairBlocksWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               '{"pairs":[{"source":9,"target":0}]}',

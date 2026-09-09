@@ -20,7 +20,8 @@ import {
   readConsolidationPolishBallot,
 } from './consolidation-polish-gate-wire.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
-import { runGatherRound, } from './stage-round.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
+import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Consolidation polish gate stage
@@ -156,6 +157,9 @@ export function settleConsolidationPolishBallots(
  *
  * @param l - parent logger
  *
+ * @param fanOut - seats a round asks: the window of quorum plus one by
+ * default, or the whole bench a fixture scripting every seat asks for
+ *
  * @returns Panel outcome with conservative shipping choice
  *
  * @example
@@ -171,6 +175,7 @@ export async function gateConsolidationPolish(
     signal,
     exchangeTimeoutMs,
     l,
+    fanOut,
   }: {
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -178,6 +183,7 @@ export async function gateConsolidationPolish(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   },
 ): Promise<ConsolidationPolishGateOutcome> {
   /**
@@ -190,7 +196,7 @@ export async function gateConsolidationPolish(
   /**
    * One outcome per requested voice.
    */
-  const outcomes = await runGatherRound({
+  const outcomes = await runWindowedRounds({
     client,
     modelIds,
     messages: buildConsolidationPolishGateMessages({ subject, },),
@@ -201,6 +207,8 @@ export async function gateConsolidationPolish(
     stage: 'consolidation-polish-gate',
     l: gl,
     heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
   /**
    * Ballots read from usable voices.

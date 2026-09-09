@@ -4,6 +4,7 @@ import {
   type AbsoluteNaturalnessReviewOutcome,
   reviewAbsoluteNaturalness,
 } from './absolute-naturalness-review-stage.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Absolute naturalness confirmation
 // Publication approval needs a second exact-half-quorum responsibility over
@@ -72,6 +73,19 @@ export async function confirmAbsoluteNaturalness(
   const confirmation = await reviewAbsoluteNaturalness({
     ...request,
     perspective: 'acceptance-challenge',
+    // THE SEATS THE DISCOVERY ASKED, at the discovery's quorum. Since the
+    // fan-out window of 2026-09-09 a review asks quorum plus one seat of its
+    // bench, rotated by the prompt, and the two perspectives are two prompts;
+    // the artifact reads one requested roster across both readings
+    // (`artifact-two-lane-read-naturalness-confirmation.ts`), and a challenge
+    // put to the reviewers who approved is what a confirmation is.
+    modelIds: initial.seats
+      .map(function seatOf(seat,): RosterModelId {
+        return seat.modelId;
+      },),
+    quorumOver: request.modelIds
+      .length,
+    fanOut: 'whole-bench',
   },);
   return {
     review: confirmation,

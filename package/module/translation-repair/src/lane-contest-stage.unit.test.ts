@@ -157,6 +157,8 @@ async function contest(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },
 ) {
   return await contestLaneSlice({
+    // Whole bench: this case scripts every seat and reads over the bench it wrote.
+    fanOut: 'whole-bench',
     client: cannedClient({ replyByModel, },),
     modelIds: ROSTER,
     subject: SUBJECT,
@@ -188,6 +190,8 @@ await describe({
       name: 'RECORDS RAW HALF-QUORUM BALLOTS without waiting for delayed seats excluded downstream',
       fn: async () => {
         const outcome = await contestLaneSlice({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               ballot({ choice: 'repair', },),
@@ -227,6 +231,8 @@ await describe({
       name: 'KEEPS DELAYED ELIGIBLE VOICES that arrive inside bounded grace',
       fn: async () => {
         const outcome = await contestLaneSlice({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               ballot({ choice: 'repair', },),
@@ -396,6 +402,8 @@ async function contestWithNoArchive(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },
 ) {
   return await contestLaneSlice({
+    // Whole bench: this case scripts every seat and reads over the bench it wrote.
+    fanOut: 'whole-bench',
     client: cannedClient({ replyByModel, },),
     modelIds: ROSTER,
     subject: {

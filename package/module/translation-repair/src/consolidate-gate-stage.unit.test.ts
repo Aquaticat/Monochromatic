@@ -140,6 +140,8 @@ async function gate(
   { replyByModel, }: { readonly replyByModel: readonly string[]; },
 ) {
   return await gateConsolidatedSlice({
+    // Whole bench: this case scripts every seat and reads over the bench it wrote.
+    fanOut: 'whole-bench',
     client: cannedClient({ replyByModel, },),
     modelIds: ROSTER,
     subject: SUBJECT,
@@ -156,6 +158,8 @@ await describe({
       name: 'SETTLES SYNTAX-BEARING METADATA through gate stage',
       fn: async () => {
         const outcome = await gateConsolidatedSlice({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               ballot({ choice: 'consolidated', },),

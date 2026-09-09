@@ -16,7 +16,8 @@ import {
 import type { SyntheticClient, } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
-import { runGatherRound, } from './stage-round.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
+import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Absolute naturalness review stage
@@ -146,6 +147,9 @@ function uniqueFindings(
  *
  * @param modelIds - every independent reviewer seat
  *
+ * @param quorumOver - bench size the quorum is taken over, when the seats
+ * asked are a window of a wider bench; defaults to the seats asked
+ *
  * @param subject - source context and exact candidate
  *
  * @param perspective - distinct defect-discovery or acceptance-challenge task
@@ -155,6 +159,9 @@ function uniqueFindings(
  * @param exchangeTimeoutMs - deadline accounting unavailable seat
  *
  * @param graceMs - optional test seam for post-quorum abandonment window
+ *
+ * @param fanOut - seats a round asks: the window of quorum plus one by
+ * default, or the whole bench a fixture scripting every seat asks for
  *
  * @param l - parent logger
  *
@@ -171,19 +178,23 @@ export async function reviewAbsoluteNaturalness(
     modelIds,
     subject,
     perspective = 'defect-discovery',
+    quorumOver = modelIds.length,
     signal,
     exchangeTimeoutMs,
     graceMs,
     l,
+    fanOut,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: AbsoluteNaturalnessReviewSubject;
     readonly perspective?: AbsoluteNaturalnessReviewPerspective;
+    readonly quorumOver?: number;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly graceMs?: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<AbsoluteNaturalnessReviewOutcome> {
   /**
@@ -196,7 +207,7 @@ export async function reviewAbsoluteNaturalness(
   /**
    * Exact-half usable voices required to approve and start straggler grace.
    */
-  const quorumNeeded = rosterQuorumSize({ rosterSize: modelIds.length, },);
+  const quorumNeeded = rosterQuorumSize({ rosterSize: quorumOver, },);
   /**
    * Structurally correctable paragraphs shown to every reviewer.
    */
@@ -212,7 +223,7 @@ export async function reviewAbsoluteNaturalness(
   /**
    * Every requested outcome after every seat has settled or reached deadline.
    */
-  const outcomes = await runGatherRound({
+  const outcomes = await runWindowedRounds({
     client,
     modelIds,
     messages: buildAbsoluteNaturalnessReviewMessages({
@@ -237,6 +248,8 @@ export async function reviewAbsoluteNaturalness(
     l: rl,
     heardNeeded: quorumNeeded,
     ...((graceMs === undefined) ? {} : { graceMs, }),
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
   /**
    * Stable seat records, including calls with no usable ballot.

@@ -199,6 +199,8 @@ async function runReview(
   },
 ): ReturnType<typeof reviewAbsoluteNaturalness> {
   return await reviewAbsoluteNaturalness({
+    // Whole bench: this case scripts every seat and reads over the bench it wrote.
+    fanOut: 'whole-bench',
     client,
     modelIds,
     subject: {

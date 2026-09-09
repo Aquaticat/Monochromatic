@@ -20,7 +20,8 @@ import {
 } from './pair-sections-wire.ts';
 import { agreePairs, } from './pair-agreement.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
-import { runGatherRound, } from './stage-round.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
+import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Section pairing stage
@@ -160,7 +161,7 @@ function readUsablePairings(
     findings,
     l,
   }: {
-    readonly outcomes: Awaited<ReturnType<typeof runGatherRound>>;
+    readonly outcomes: Awaited<ReturnType<typeof runWindowedRounds>>;
     readonly sourceCount: number;
     readonly targetCount: number;
     readonly findings: string[];
@@ -222,6 +223,9 @@ function readUsablePairings(
  *
  * @param l - driver logger
  *
+ * @param fanOut - seats a round asks: the window of quorum plus one by
+ * default, or the whole bench a fixture scripting every seat asks for
+ *
  * @returns What the roster agreed on, with what it lost
  *
  * @example
@@ -238,6 +242,7 @@ export async function pairSectionsWithRoster(
     signal,
     exchangeTimeoutMs,
     l,
+    fanOut,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -246,6 +251,7 @@ export async function pairSectionsWithRoster(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<SectionPairingOutcome> {
   /**
@@ -259,7 +265,7 @@ export async function pairSectionsWithRoster(
   /**
    * Every voice's reply, heard or lost.
    */
-  const outcomes = await runGatherRound({
+  const outcomes = await runWindowedRounds({
     client,
     modelIds,
     messages: buildSectionPairingMessages({
@@ -273,6 +279,8 @@ export async function pairSectionsWithRoster(
     stage: 'section-pairing',
     l: pl,
     heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
 
   /**

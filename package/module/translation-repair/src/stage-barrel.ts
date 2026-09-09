@@ -65,6 +65,7 @@ export {
   runGatherRound,
   STRAGGLER_GRACE_MS,
 } from './stage-round.ts';
+export { runWindowedRounds, } from './stage-windowed-rounds.ts';
 export { UnpreparedSliceError, } from './unprepared-slice.ts';
 export {
   mapOverlapped,

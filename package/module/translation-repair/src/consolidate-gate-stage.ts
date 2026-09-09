@@ -17,7 +17,8 @@ import {
   readConsolidateGateBallot,
 } from './consolidate-gate-wire.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
-import { runGatherRound, } from './stage-round.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
+import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Consolidate gate stage
@@ -182,6 +183,9 @@ export function settleGateBallots(
  *
  * @param l - logger to tag
  *
+ * @param fanOut - seats a round asks: the window of quorum plus one by
+ * default, or the whole bench a fixture scripting every seat asks for
+ *
  * @returns What the roster settled, what ships, and every usable ballot
  *
  * @example
@@ -197,6 +201,7 @@ export async function gateConsolidatedSlice(
     signal,
     exchangeTimeoutMs,
     l,
+    fanOut,
   }: {
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -204,6 +209,7 @@ export async function gateConsolidatedSlice(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   },
 ): Promise<ConsolidateGateOutcome> {
   /**
@@ -217,7 +223,7 @@ export async function gateConsolidatedSlice(
   /**
    * One reply per voice, heard or lost.
    */
-  const outcomes = await runGatherRound({
+  const outcomes = await runWindowedRounds({
     client,
     modelIds,
     messages: buildConsolidateGateMessages({ subject, },),
@@ -228,6 +234,8 @@ export async function gateConsolidatedSlice(
     stage: 'consolidate-gate',
     l: gl,
     heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
 
   /**

@@ -20,7 +20,8 @@ import {
 import { agreePairs, } from './pair-agreement.ts';
 import { countPairedBlocks, } from './pair-block-counts.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
-import { runGatherRound, } from './stage-round.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
+import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Block pairing stage
@@ -182,6 +183,9 @@ export type PairedSectionRecord = {
  *
  * @param l - stage logger
  *
+ * @param fanOut - seats a round asks: the window of quorum plus one by
+ * default, or the whole bench a fixture scripting every seat asks for
+ *
  * @returns What the roster agreed on, with what it lost
  *
  * @example
@@ -199,6 +203,7 @@ export async function pairBlocksWithRoster(
     signal,
     exchangeTimeoutMs,
     l,
+    fanOut,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -208,6 +213,7 @@ export async function pairBlocksWithRoster(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<BlockPairingOutcome> {
   /**
@@ -221,7 +227,7 @@ export async function pairBlocksWithRoster(
   /**
    * Every voice's reply, heard or lost.
    */
-  const outcomes = await runGatherRound({
+  const outcomes = await runWindowedRounds({
     client,
     modelIds,
     messages: buildBlockPairingMessages({
@@ -235,6 +241,8 @@ export async function pairBlocksWithRoster(
     stage: 'block-pairing',
     l: pl,
     heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
 
   /**

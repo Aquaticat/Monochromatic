@@ -149,6 +149,8 @@ function cannedClient(
  */
 async function roundOf(replyByModel: readonly string[],) {
   return await pairSectionsWithRoster({
+    // Whole bench: this case scripts every seat and reads over the bench it wrote.
+    fanOut: 'whole-bench',
     client: cannedClient({ replyByModel, },),
     modelIds: ROSTER,
     sourceSections: SOURCE,
@@ -180,6 +182,8 @@ await describe({
         + 'agreement is per pair and not per reply (`#245`)',
       fn: async () => {
         const outcome = await pairSectionsWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
           client: cannedClient({
             replyByModel: [
               '{"pairs":[{"source":0,"target":0}]}',

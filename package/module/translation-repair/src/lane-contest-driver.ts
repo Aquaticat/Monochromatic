@@ -23,6 +23,7 @@ import {
   LANE_CONTEST_QUORUM,
   type LaneContestOutcome,
 } from './lane-contest-stage.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
 import {
   laneContestRunShape,
   laneContestSliceKey,
@@ -213,6 +214,9 @@ export async function persistLaneContestOutcome(
  *
  * @param l - logger to tag
  *
+ * @param fanOut - seats a contest round asks: the window of quorum plus one
+ * by default, or the whole bench a fixture scripting every seat asks for
+ *
  * @returns One record per contested slice, in comparison-row order
  *
  * @example
@@ -233,6 +237,7 @@ export async function contestDocumentLanes(
     perCallTimeoutMs,
     overlap = 1,
     l,
+    fanOut,
   }: {
     readonly client: SyntheticClient;
     readonly projected: ProjectedLanes;
@@ -249,6 +254,7 @@ export async function contestDocumentLanes(
     readonly perCallTimeoutMs: number;
     readonly overlap?: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   },
 ): Promise<readonly ArtifactContestSlice[]> {
   /**
@@ -420,6 +426,8 @@ export async function contestDocumentLanes(
               signal,
               exchangeTimeoutMs: perCallTimeoutMs,
               l: dl,
+              // Conditional spread keeps the knob absent instead of undefined.
+              ...((fanOut === undefined) ? {} : { fanOut, }),
             },);
             /**
              * Effective result after inadmissible raw choices are excluded.
