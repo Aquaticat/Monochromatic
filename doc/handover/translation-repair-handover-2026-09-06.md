@@ -220,6 +220,18 @@ markdown lint clean on every line written today.
   `40aba2fdb` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
+- The scratch tools every reading and launch in this document uses are copied,
+  as of 2026-09-09,
+  to `~/temp/agent/handoff-scripts-20260909/`,
+  since a session scratchpad does not outlive its session:
+  `launch-pass.mjs <runs-dir> <entry> [frozen-dist]` launches one detached corpus pass,
+  `launch-cmd.mjs <runs-dir> <log> <script.mjs> [args]` launches any other detached job,
+  `costs-today.mjs <YYYYMMDD>` sums the day's `SPEND` lines per log with its meters,
+  `pass-spend.mjs <log...>` reads one pass's levers,
+  `read-standing.mjs <log> [focus]` reads a producer calibration against the pooled null,
+  `fidelity-tally.mjs <probe-run.json>` tallies a judge fidelity probe,
+  `model-endpoints.mjs <model> <log...>` reads which OpenRouter endpoint served a model and at what size,
+  and `run-suites.mjs <suite...>` runs named unit suites without a shell loop.
 - Meters at 20:29 UTC on 2026-09-09,
   off the `hulicaijia` tally:
   `synthetic=dry bedrock=wet hyper=dry openrouter=wet`;
