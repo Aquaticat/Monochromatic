@@ -77,4 +77,5 @@ Nothing to file: the problem is an overbroad proposed teaching statement, not an
 No issue/comment draft or external communication was produced.
 An upstream duplicate search is unnecessary for a filing that is not proposed.
 
-[source]: https://github.com/openai/openai-python/blob/2d4b97cc84d5c3ca051cc2ac2d8a6c9928b4d5f0/src/openai/_base_client.py
+[source]:
+  https://github.com/openai/openai-python/blob/2d4b97cc84d5c3ca051cc2ac2d8a6c9928b4d5f0/src/openai/_base_client.py
