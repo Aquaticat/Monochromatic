@@ -114,7 +114,7 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelI
  * writing seat: not the translate lane, not the consolidation. The judge
  * fidelity probe measures reading, and reading is what they were seated for.
  *
- * EMPTY SINCE 2026-09-08. `google.gemma-4-e2b` sat here from its judge seat
+ * EMPTY SINCE 2026-09-08, AND AGAIN SINCE 2026-09-09. `google.gemma-4-e2b` sat here from its judge seat
  * of 2026-09-07 until the 40-round producer calibration of 2026-09-08 measured
  * it beside the nine measured writers: 30 of 298 disinterested ballots
  * (10.1 percent, z -1.40 against a 12.8 percent pooled null, 39 of 40
@@ -125,15 +125,24 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelI
  * approves starts here again. Record: the 2026-09-08 addendum of
  * `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
  *
- * `inception/mercury-2.5` SINCE 2026-09-09, from its judge seat
- * ({@link SEATED_OPENROUTER_JUDGES}) until the 40-round producer calibration
- * launched at 17:06 UTC that day (`producer-calibrate 40 --candidates
- * inception/mercury-2.5`, log `~/temp/agent/producer-calibrate-mercury-20260909.log`)
- * is read against the pooled null.
+ * `inception/mercury-2.5` SAT HERE ON 2026-09-09 from its judge seat
+ * ({@link SEATED_OPENROUTER_JUDGES}) of 17:00 UTC until the 40-round producer
+ * calibration launched at 17:06 UTC that day (`producer-calibrate 40
+ * --candidates inception/mercury-2.5`, log
+ * `~/temp/agent/producer-calibrate-mercury-20260909.log`, read at 20:02 UTC)
+ * measured it beside the ten measured writers: 18 of 101 disinterested
+ * ballots (17.8 percent, adjusted 11.4 for the 23 of 40 candidates it wrote,
+ * z -0.43 against a 19.5 percent pooled null over 1,229 ballots, 49 of 49
+ * asks usable, completed streams p50 4.7 s and max 10.1 s), not separated
+ * from the null, so by the same rule it takes the translator seat and the
+ * consolidation seat. The bench that day sat without Hyper (its daily limit
+ * spent, so `glm-5.3` threw 48 of 48) and without Synthetic from 17:25 UTC
+ * (Qwen3.8-27B threw 35 of 56), and `deepseek-v4-pro-0813` judged and wrote
+ * from NextBit without its reasoning (`openrouter-catalog.ts`); every
+ * candidate was compared under the same judges, so the standing among them
+ * holds. Record: the second 2026-09-09 addendum of the seating decision.
  */
-export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'inception/mercury-2.5',
-],);
+export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>();
 
 /**
  * Every model this run may seat, across both providers.
@@ -162,8 +171,9 @@ export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModel
  *
  * ELEVEN SINCE 2026-09-09, when the owner approved Mercury 2.5 on OpenRouter
  * and the judge fidelity probe of 17:00 UTC read it at 14 of 14
- * ({@link SEATED_OPENROUTER_JUDGES}); it writes nothing until the producer
- * calibration is read ({@link WRITER_UNMEASURED}).
+ * ({@link SEATED_OPENROUTER_JUDGES}); it wrote nothing until the producer
+ * calibration read at 20:02 UTC the same day seated it as a writer
+ * ({@link WRITER_UNMEASURED}).
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function measured(modelId,): boolean {
@@ -177,7 +187,8 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
  * whole measured roster writes there, GLM-5.3-Flash included, which keeps its
  * writing seats and left every judge seat on 2026-09-02, and since 2026-09-08
  * `google.gemma-4-e2b`, the first Bedrock-only writer a producer calibration
- * measured. Filtered off {@link RUN_ROSTER} rather than off the catalog so a
+ * measured, and since 2026-09-09 `inception/mercury-2.5`, the first
+ * OpenRouter-only one. Filtered off {@link RUN_ROSTER} rather than off the catalog so a
  * Bedrock-only size the roster seats writes once measured and never before.
  */
 export const RUN_WRITERS: readonly RosterModelId[] = RUN_ROSTER
@@ -262,10 +273,12 @@ const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['
 
 /**
  * Translators for the translate lane: the roster less
- * {@link TRANSLATOR_DROPPED} and less {@link WRITER_UNMEASURED}. Eight since
- * 2026-09-08 (seven from 2026-09-01), when `google.gemma-4-e2b` was measured
- * in, so the stage quorum stays 4 and every slate keeps at least two
- * disinterested judges under `assertJudgeableProducerRoster`.
+ * {@link TRANSLATOR_DROPPED} and less {@link WRITER_UNMEASURED}. Nine since
+ * 2026-09-09 (eight from 2026-09-08, seven from 2026-09-01), when
+ * `inception/mercury-2.5` was measured in after `google.gemma-4-e2b`, so the
+ * stage quorum is 5 with every provider wet and 4 while Synthetic is dry and
+ * Qwen3.8-27B withheld, and every slate keeps at least two disinterested
+ * judges under `assertJudgeableProducerRoster`.
  */
 export const RUN_TRANSLATORS: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillWrites(modelId,): boolean {

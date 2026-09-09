@@ -126,8 +126,9 @@ await describe({
         + 'pictures (two readings no seated reader corroborated, 2026-09-08) and writes in both lanes (30 of '
         + '298 disinterested ballots in the producer calibration of 2026-09-08, not separated from the pooled '
         + 'null); google.gemma-4-31b reads pictures (8 of 8 corroborated), judges nothing and writes nothing; '
-        + 'inception/mercury-2.5 judges (14 of 14 on the fidelity probe of 2026-09-09) and writes nothing until '
-        + 'its calibration is read',
+        + 'inception/mercury-2.5 judges (14 of 14 on the fidelity probe of 2026-09-09) and writes in both lanes '
+        + '(18 of 101 disinterested ballots in the producer calibration of the same day, z -0.43, not separated '
+        + 'from the pooled null)',
       fn: async function seatsByMeasurement(): Promise<void> {
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
         for (const candidate of BEDROCK_ONLY_ROSTER_IDS) {
@@ -161,6 +162,10 @@ await describe({
           expect(wet.checkers.includes(seated,),).toBe(false,);
           expect(wet.readers.includes(seated,),).toBe(false,);
         }
+        // The calibration read at 20:02 UTC on 2026-09-09 seated the one
+        // OpenRouter-only model as a writer; the build before it fails here.
+        expect(wet.translators.includes('inception/mercury-2.5',),).toBe(true,);
+        expect(wet.writers.includes('inception/mercury-2.5',),).toBe(true,);
         for (const unmeasured of WRITER_UNMEASURED) {
           expect(wet.writers.includes(unmeasured,),).toBe(false,);
           expect(wet.translators.includes(unmeasured,),).toBe(false,);

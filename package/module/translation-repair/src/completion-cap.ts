@@ -35,18 +35,16 @@ import type { RosterModelId, } from './roster-id.ts';
 // that meets the cap ends `finish_reason=length`, which
 // `chat-json-outcome.ts` already reads as a truncated voice. Hyper keeps its
 // own per-model ceiling (`answerCeilingFor`) and takes the lower of the two.
+//
+// A MODEL THE MEASUREMENT HOLDS NO COMPLETED CALL FOR takes the pooled 99th
+// percentile (13,082) until its own calls are read, as Mercury 2.5 did
+// between its seating and 20:05 UTC on 2026-09-09.
 
 /**
  * Pooled 90th percentile of completion tokens over every completed call in
  * the measurement, the floor under a model's own cap.
  */
 const POOLED_P90 = 3_831;
-
-/**
- * Pooled 99th percentile over the same calls, the cap for a model the
- * measurement holds no completed call for.
- */
-const POOLED_P99 = 13_082;
 
 /**
  * Completion token ceiling per roster model, sent as `max_tokens` by every
@@ -85,9 +83,11 @@ export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = {
   'google.gemma-4-e2b': POOLED_P90,
   // Bedrock p99 over 125 calls, the thinnest measurement in the table.
   'google.gemma-4-31b': 8_194,
-  // No completed call in the measurement: seatable since 2026-09-09, the
-  // pooled 99th until its own calls are read.
-  'inception/mercury-2.5': POOLED_P99,
+  // Own p99 3,063 over 136 OpenRouter calls (Inception, its one endpoint)
+  // read 2026-09-09 20:05 UTC across the fidelity probes, the producer
+  // calibration and the seventh `Mio` pass, max 3,127, none abandoned, under
+  // the pooled 90th.
+  'inception/mercury-2.5': POOLED_P90,
 };
 
 /**
