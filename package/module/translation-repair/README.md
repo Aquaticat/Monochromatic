@@ -1874,6 +1874,14 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `11143f681` (2026-09-09,
+the twentieth class) the carried-insertion guard reads the page the way the evidence was anchored:
+`assertCarriedInsertionsRemain` folds soft line breaks and normalizes punctuation on both sides before it looks
+for a carried region,
+since the semantic wrap breaks a changed slice at its clauses and the fifth `yuki418330012` pass had stopped as
+`carried-evidence-lost` with every word of the credits line on the page
+(`Contributors for this entry:\nZhenli,\nSansan,\nSuona` against the anchored one-line quote),
+and its findings name each lost region.
 Since `1ba94c27a`,
 corrected by `ea07a1512`,
 completed by `e5ff6c4f8` and closed by `2da6e7f22` (2026-09-08,

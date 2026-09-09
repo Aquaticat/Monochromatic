@@ -1312,3 +1312,12 @@ two `[^1]` notes on the archive);
 completing the one pair elimination forces and standing otherwise.
 The seventeenth `hakureico`,
 the fifth `yuki418330012` and the second `Arita` run on it since 22:42 UTC.
+
+The fifth `yuki418330012` pass then relabelled and reordered as designed and stopped at a guard reading its
+evidence byte for byte against a page the semantic wrap had broken at its clauses (the twentieth class,
+fixed in `11143f681`);
+the `Arita` page settled on `2da6e7f22`,
+passed the three checks,
+matched at length,
+shipped its double-quoted component line verbatim and found no class.
+The eighteenth `hakureico` and the sixth `yuki418330012` run on `11143f681` since 00:22 UTC.

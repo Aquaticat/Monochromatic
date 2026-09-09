@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 22:45 UTC on 2026-09-08 the tree is `2da6e7f22`:
+As of 00:30 UTC on 2026-09-09 the tree is `11143f681`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -49,8 +49,16 @@ the map is read off the definitions the roster paired,
 and the archive's definitions move into the original's order;
 `2da6e7f22`,
 a relabel is closed over the archive's labels before it is applied),
-and the seventeenth `hakureico`,
-the fifth `yuki418330012` and the second `Arita` running on `2da6e7f22` since 22:42 UTC;
+the twentieth class found by the fifth `yuki418330012` pass and fixed (`11143f681`,
+the carried-insertion guard reads the page with soft breaks folded;
+see "The twentieth class"),
+the `Arita` page settled on `2da6e7f22` at 00:13 UTC and read
+(the three checks passed,
+`verify-published` matched at length,
+the double-quoted component line verbatim,
+no class found;
+see "The Arita page"),
+and the eighteenth `hakureico` and the sixth `yuki418330012` running on `11143f681` since 00:22 UTC;
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -962,6 +970,53 @@ the pass applies only a closed map and logs why the archive stands otherwise.
 Full suite 975 `PASS` and 0 `FAIL`.
 Recorded in the planning log under "The relabel must close over the archive's labels".
 
+## The twentieth class
+
+The fifth `yuki418330012` pass (`2da6e7f22`,
+22:42 UTC) relabelled and reordered as designed
+(`relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired`,
+the second pair by elimination;
+`definitions moved into the original's order: [^1], [^2]`;
+the re-preparation paired both definitions)
+and stopped at 00:06 UTC as `carried-evidence-lost`,
+83 minutes in.
+The credits line the roster left unpaired was admitted as an insertion the archive already carries,
+its evidence the anchored quote `Contributors for this entry: Zhenli, Sansan, Suona`;
+the consolidation's semantic wrap shipped the changed slice with that line broken at its clauses,
+`Contributors for this entry:\nZhenli,\nSansan,\nSuona`,
+and `assertCarriedInsertionsRemain` compared the quote byte for byte.
+A guard reading its evidence by a stricter reading than the one that produced it.
+Fixed in `11143f681`:
+the guard folds soft line breaks and normalizes punctuation on both sides,
+the reading `locateQuote` anchored with,
+and names each lost region in its findings.
+Suite failed first;
+full suite 975 `PASS` and 0 `FAIL`.
+Recorded in the planning log under
+"The twentieth class stops the fifth yuki pass at the carried-insertion guard and the Arita page is read".
+
+## The Arita page
+
+The second `Arita` pass (`2da6e7f22`,
+22:42 to 00:13 UTC on 2026-09-09,
+91.0 minutes,
+`~/temp/agent/arita2-20260908`) settled beside two other passes on Bedrock and OpenRouter.
+The three checks passed
+(front matter the archive's,
+8 `json false start` reads kept,
+no error finish),
+`verify-published` matched 1 of 1 at length (`wordings=12 silent=0`),
+and the double-quoted component line shipped verbatim
+(`<PhotoScroll photos={["${path}/photos/image0.webp"]} />`),
+the first read page to carry it.
+Quotes on the archive's conventions,
+one ellipsis the archive dropped restored in the archive's three-dot convention,
+`corroborated` 36 with `one-reader-only` 0.
+113 voices lost at the straggler window and 15 `HTTP 429` retries,
+three passes sharing the two providers.
+No class found.
+The full reading is in the planning log under the same heading as the twentieth class.
+
 ## The glossary question
 
 The same page rendered two community terms wrongly where the archive had them right:
@@ -1034,20 +1089,16 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Three passes are running on `2da6e7f22`,
-    launched 22:42 UTC on 2026-09-08 on Bedrock and OpenRouter:
-    the seventeenth `hakureico`,
-    runs dir `~/temp/agent/hakureico17-20260908`,
+1.  Two passes are running on `11143f681`,
+    launched 00:22 UTC on 2026-09-09 on Bedrock and OpenRouter:
+    the eighteenth `hakureico`,
+    runs dir `~/temp/agent/hakureico18-20260908`,
     log beside it,
-    pid 500384;
-    the fifth `yuki418330012`,
-    runs dir `~/temp/agent/yuki5-20260908`,
+    pid 528810;
+    and the sixth `yuki418330012`,
+    runs dir `~/temp/agent/yuki6-20260908`,
     log beside it,
-    pid 501073;
-    and the second `Arita`,
-    runs dir `~/temp/agent/arita2-20260908`,
-    log beside it,
-    pid 501893.
+    pid 528921.
     Each is watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit.
@@ -1063,19 +1114,16 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     slice 7 named as left out of the relabel reading,
     no definition moved;
     `yuki418330012`,
-    the second pairing round with every voice usable and
-    `block-pairing section 1: the footnote definitions cross` in the log,
-    `FOOTNOTES entry=yuki418330012 relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired`
-    (the second pair by elimination where the roster agrees on one),
-    `FOOTNOTES entry=yuki418330012 definitions moved into the original's order: [^1], [^2]`,
-    a re-preparation whose section pairs both definitions in order,
+    `relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired` and
+    `definitions moved into the original's order: [^1], [^2]` in the log,
+    the re-preparation pairing both definitions,
+    the carried credits line passing the guard
+    (no `carried-evidence-lost`),
     `Zhouzhou[^2]` above `[^2]: ... substitute parent` and `Zhenli[^1]` above `[^1]: ... sister` on the page,
     `pageSilent=0` or the silent block named,
-    and whether `自切` and `超天酱` regress again;
-    `Arita`,
-    the double-quoted-path component this entry exercises,
-    the first page to meet it.
-    If the tree moves past `2da6e7f22` while any runs,
+    and whether `自切` and `超天酱` regress again.
+    `Arita` is read (see "The Arita page").
+    If the tree moves past `11143f681` while either runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
@@ -1083,8 +1131,8 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     right for any corpus pass (pages stand beside the declines),
     wrong on a decline-only dir;
     a one-line change when it matters.
-4.  Then `Arita`,
-    then the seven components no read page has met.
+4.  Then the components no read page has met
+    (the double-quoted path is met by `Arita`).
 5.  Synthetic's weekly meter is a ROLLING WINDOW,
     not a calendar week (measured 2026-09-08:
     0 percent at 12:26 UTC after the ninth pass spent its 5.8 percent,

@@ -5602,6 +5602,116 @@ What `yuki418330012`'s log must show:
 `definitions moved into the original's order: [^1], [^2]`,
 and a re-preparation whose section pairs both definitions in order.
 
+## The twentieth class stops the fifth yuki pass at the carried-insertion guard and the Arita page is read, 2026-09-09, 00:25 UTC
+
+The fifth `yuki418330012` pass (`2da6e7f22`,
+22:42 UTC) did what the closure was built for:
+`FOOTNOTES entry=yuki418330012 relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired`
+(the roster agreed on one pair,
+`7 usable voices of 8 heard`,
+the one refusal a definition paired with a body block,
+and elimination gave the other),
+`FOOTNOTES entry=yuki418330012 definitions moved into the original's order: [^1], [^2]`,
+and the re-preparation paired `7 of 8 original and 11 of 12 translation blocks across 11 relations`,
+both definitions among them.
+It then stopped at 00:06 UTC,
+83 minutes in,
+`TALLY yuki418330012 status=INCOMPLETE ms=4998139 aborted=false error=translation repair interrupted:
+carried-evidence-lost`.
+The one unpaired original was the credits line (`条目贡献：真理 三三 娑娜`),
+admitted as an insertion the archive already carries
+(`slice 8: coverage=carried, missingDestinations=0`,
+the roster's quote `Contributors for this entry: Zhenli, Sansan, Suona` anchored on the archive's one line).
+The stage caches show what became of that line:
+the repair and translate lanes shipped it as the archive had it,
+and the consolidation's slate,
+incumbent and every fresh candidate alike,
+carried `Contributors for this entry:\nZhenli,\nSansan,\nSuona`.
+That is the semantic wrap (`consolidate-wrap.ts`,
+`wrapConsolidation`,
+the site's own line-break convention applied to a slice the lanes changed),
+and `assertCarriedInsertionsRemain` compared the anchored quote byte for byte against the wrapped page.
+Every word of the credits was on the page.
+THE TWENTIETH CLASS:
+a guard that reads its evidence by a stricter reading than the one that produced it.
+Fixed in `11143f681`:
+the guard folds soft line breaks and normalizes punctuation on both sides,
+the reading `locateQuote` anchored the quote with,
+and its findings name each lost region
+(`carried-insertion-evidence-lost slice N: "..."`) instead of a count alone.
+The suite failed first
+(the new case,
+a carried region broken across a soft break),
+then passed;
+full suite 975 `PASS` and 0 `FAIL`,
+oxlint and types clean.
+Under the rule the seventeenth `hakureico` was killed at 00:22 UTC,
+in consolidation since 23:46,
+and the eighteenth `hakureico` (`~/temp/agent/hakureico18-20260908`,
+pid 528810) and the sixth `yuki418330012` (`~/temp/agent/yuki6-20260908`,
+pid 528921) launched at 00:22 UTC on `11143f681`,
+each watched by the filtered poller.
+
+The second `Arita` pass (`2da6e7f22`,
+22:42 to 00:13 UTC,
+`~/temp/agent/arita2-20260908`) settled on the build before the guard fix and is read as evidence for it,
+since the fix touches only a guard the pass never tripped.
+`TALLY Arita status=SETTLED slices=12 repairStatus=repaired repairIssues=44 repairAccepted=25 repairResolved=24
+repairFindings=139 repairChanged=9 translateStatus=complete translateChanged=10 documentsDiffer=10 pageChanged=9
+pageSilent=0 alignmentFindings=1 selection=contested ms=5459151`:
+91.0 minutes on Bedrock and OpenRouter beside two other passes,
+Synthetic's week returning for the translate lane.
+The three checks passed:
+the front matter is the archive's byte for byte (`FRONT MATTER entry=Arita authority=archive`),
+8 `json false start` reads kept,
+one `schema-mismatch` that was no false start
+(deepseek-v4-flash-0731 returned an empty reply on `finish_reason=stop` in a consolidation round,
+a voice lost),
+and no error finish occurred;
+one `InStreamProviderError` rode the retry ladder.
+`verify-published` matched 1 of 1 at length (`wordings=12 silent=0 chars=6963=expected missing=0`).
+The component this entry was queued for,
+the double-quoted path,
+shipped verbatim:
+`<PhotoScroll photos={["${path}/photos/image0.webp"]} />` at line 156,
+the archive's line 37.
+Quotes on the archive's conventions (straight 2 and curly 14 on both),
+apostrophes curly (24 against the archive's 21,
+the three new ones inside rendered text),
+one three-dot ellipsis where the archive has one and a second where the source carries one the archive dropped
+(`不管从现在起命运的道路将会把我带向何方...只要我保持耐心`,
+rendered `No matter where the path of destiny leads me from now on... as long as I stay patient`),
+in the archive's three-dot convention.
+Rounds:
+editor 9,
+refiner 17,
+translate 12,
+naturalness review 10,
+lane contest 11,
+polish gate 9,
+`gate-kept-standing` 0,
+`one-reader-only` 0,
+`corroborated` 36.
+113 voices lost at the straggler window and 15 `HTTP 429` retries,
+three passes sharing the two providers.
+Meters at the tally:
+OpenRouter 147.83 USD,
+Bedrock 195.98 USD.
+The page is the first read page to carry the component.
+The prose read against the source:
+the archive's two errors are repaired
+(`人间失格` is *No Longer Human*,
+where the archive had *Indignation in the World*;
+the sentence about dying on her birthday in 2027 and being one day younger,
+which the archive dropped,
+is back),
+the roommate passage carries the direct question the archive softened,
+and two nits stand:
+`meet — won’t we?` spaces its dash where the archive writes them closed,
+and the Yeats line keeps the archive's comma in `breast, or his lips` where the source quotes the poem without
+one.
+No class.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
