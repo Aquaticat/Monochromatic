@@ -1874,6 +1874,21 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `f6cd6e5e7` and `07a99e23a` (2026-09-09,
+the twenty-fifth class) archive block review sees corroborated transcriptions of pictures referenced by its
+aligned source section,
+under `CORROBORATED PICTURE SOURCE SUPPORT` with each reader's wording labelled.
+The optional `preparePassEntry.readPictures` seam runs before a review can remove an archive translation of
+picture text;
+`pass-entry.ts` binds one entry-scoped reader for preparation and the final picture phase.
+Completed readings are retained in memory within that pinned entry,
+not merely persisted to the disk cache whose open `resumed` map is a snapshot.
+Changed slice boundaries or later reader reseating do not purchase completed pictures again;
+newly exposed references still get read.
+Target-only sections and unrelated,
+textless or unavailable readings add no source support.
+The preservation,
+section-scope and no-repurchase guards were shown failing on the pre-fix build before passing.
 Since `40aba2fdb` (2026-09-09) every stage gather sizes its quorum on the seats a wet provider serves,
 not on the seats the phase seated:
 `reachableQuorum` keeps the bench quorum while the reachable seats can meet it and otherwise needs half of
