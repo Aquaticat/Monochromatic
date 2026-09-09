@@ -207,6 +207,10 @@ export {
   OPENROUTER_COMPLETION_CAP,
 } from './openrouter-completion-cap.ts';
 export {
+  CACHED_UNREPORTED,
+  openRouterCachedTokensOf,
+} from './openrouter-cached-tokens.ts';
+export {
   type AbandonedSpendEstimate,
   type AbandonedSpendReport,
   deliveredCharsOf,

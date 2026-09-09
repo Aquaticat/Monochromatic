@@ -82,11 +82,13 @@ await describe({
 
     it({
       name: 'CARRIES zero data retention and require_parameters on every request, the owner\'s decision '
-        + 'of 2026-09-03',
+        + 'of 2026-09-03, and price-sorted routing since 2026-09-09, when the balancer had sent the anchor '
+        + 'judge to endpoints at twice the listing price',
       fn: async () => {
         expect(OPENROUTER_PROVIDER_PREFERENCES,).toEqual({
           zdr: true,
           require_parameters: true,
+          sort: 'price',
         },);
       },
     },),
@@ -176,6 +178,7 @@ await describe({
         expect(minimax,).toEqual({
           zdr: true,
           require_parameters: true,
+          sort: 'price',
           ignore: [
             'parasail',
             'modelrun',
@@ -185,6 +188,7 @@ await describe({
         expect(openRouterProviderPreferencesFor({ servedId: 'openai/gpt-oss-120b', },),).toEqual({
           zdr: true,
           require_parameters: true,
+          sort: 'price',
           ignore: [],
         },);
       },

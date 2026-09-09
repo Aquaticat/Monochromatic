@@ -23,6 +23,10 @@ import {
 } from './openrouter-catalog.ts';
 import { exchangeReportingAbandon, } from './openrouter-abandoned-spend.ts';
 import { completionCapFor, } from './openrouter-completion-cap.ts';
+import {
+  CACHED_UNREPORTED,
+  openRouterCachedTokensOf,
+} from './openrouter-cached-tokens.ts';
 import { openRouterEndpointOf, } from './openrouter-endpoint.ts';
 import {
   COST_UNREPORTED,
@@ -449,6 +453,11 @@ export function createOpenRouterClient(
       const endpoint = openRouterEndpointOf({ bodyText: reply.bodyText, },);
 
       /**
+       * Prompt tokens the upstream served from its cache, where it said.
+       */
+      const cachedTokens = openRouterCachedTokensOf({ bodyText: reply.bodyText, },);
+
+      /**
        * Content length for the completion log line.
        */
       const textLength = extracted
@@ -469,6 +478,9 @@ export function createOpenRouterClient(
         ...(endpoint.reported
           ? { endpoint: endpoint.name, }
           : {}),
+        ...((cachedTokens === CACHED_UNREPORTED)
+          ? {}
+          : { cachedTokens, }),
       },);
       return extracted;
     },);

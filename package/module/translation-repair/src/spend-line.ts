@@ -85,6 +85,10 @@ const UNREPORTED = 'unreported';
  * reported, on a call the wire never finished; the line carries it as a
  * trailing field so a reader can total such lines beside the others or apart
  *
+ * @param cachedTokens - prompt tokens the upstream served from its cache,
+ * where the wire reported the count, so the saving price-sorted routing and
+ * a stable sheet buy can be read off the line
+ *
  * @returns Line that was logged, so a test can assert what a reader will parse
  * rather than a paraphrase of it
  *
@@ -101,6 +105,7 @@ export function reportSpend(
     costUsd,
     endpoint,
     estimated,
+    cachedTokens,
   }: {
     readonly provider: ProviderName;
     readonly label: string;
@@ -108,6 +113,7 @@ export function reportSpend(
     readonly costUsd?: number;
     readonly endpoint?: string;
     readonly estimated?: 'abandoned';
+    readonly cachedTokens?: number;
   },
 ): string {
   /**
@@ -157,9 +163,16 @@ export function reportSpend(
     : ` estimated=${estimated}`;
 
   /**
+   * Cached prompt tokens, as a trailing field where the wire reported them.
+   */
+  const cached = (cachedTokens === undefined)
+    ? ''
+    : ` cached=${String(cachedTokens,)}`;
+
+  /**
    * Line assembled before the call so the logger chain stays one step per line.
    */
-  const line = `${SPEND_MARKER}provider=${provider} model=${label} ${counts}${cost}${servedBy}${reckoned}`;
+  const line = `${SPEND_MARKER}provider=${provider} model=${label} ${counts}${cost}${servedBy}${reckoned}${cached}`;
 
   /**
    * Logger tagged with this report.

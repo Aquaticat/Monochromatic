@@ -68,6 +68,18 @@ export const OPENROUTER_AUTH_HEADER = 'Authorization';
  * `response_format`; an endpoint that ignored it would answer prose to a
  * schema and cost a lost voice.
  *
+ * `sort: 'price'` SINCE 2026-09-09, on the owner's instruction to stop
+ * bleeding. Between the top-up of 2026-09-08 and the refusal of 2026-09-09
+ * the default load balancing sent 3,894 of `deepseek-v4-pro-0813`'s calls
+ * to Parasail and CoreWeave at 1.85 and 2.11 times the listing's price
+ * (55.14 USD paid against 29.56 at listing), and the endpoints listing of
+ * 2026-09-09 prices Baidu, Alibaba and DeepSeek at 0.58 to 0.66 USD per
+ * million in and 1.74 to 1.98 out against their 1.32 and 3.96. The routing
+ * page says sorting disables load balancing and picks the cheapest; the
+ * ignore list, zero data retention and `require_parameters` still apply,
+ * so the cheapest endpoint that keeps nothing and takes every parameter
+ * serves.
+ *
  * @example
  * ```ts
  * const body = { model, messages, provider: openRouterProviderPreferencesFor({ servedId, },), };
@@ -76,6 +88,7 @@ export const OPENROUTER_AUTH_HEADER = 'Authorization';
 export const OPENROUTER_PROVIDER_PREFERENCES = {
   zdr: true,
   require_parameters: true,
+  sort: 'price',
 } as const;
 
 /**

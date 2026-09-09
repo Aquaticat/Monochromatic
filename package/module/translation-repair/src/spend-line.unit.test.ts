@@ -261,3 +261,43 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: `${reportSpend.name} trailing marks`,
+  children: [
+    it({
+      name: 'APPENDS estimated=abandoned and cached=N as trailing fields only when given, after the cost '
+        + 'and the endpoint, so the 2026-09-09 reckoning of abandoned streams and the cache hits of '
+        + 'price-sorted routing both read off the same grammar',
+      fn: async () => {
+        expect(
+          reportSpend({
+            provider: 'openrouter',
+            label: 'deepseek/deepseek-v4-pro-0813',
+            extracted: reported({
+              promptTokens: 1_000,
+              completionTokens: 10,
+            },),
+            costUsd: 0.0006,
+            estimated: 'abandoned',
+          },),
+        )
+          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4-pro-0813 prompt=1000 completion=10 cost=0.0006 estimated=abandoned',);
+        expect(
+          reportSpend({
+            provider: 'openrouter',
+            label: 'deepseek/deepseek-v4-pro-0813',
+            extracted: reported({
+              promptTokens: 4_000,
+              completionTokens: 12,
+            },),
+            costUsd: 0.0004,
+            endpoint: 'Baidu',
+            cachedTokens: 3_072,
+          },),
+        )
+          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4-pro-0813 prompt=4000 completion=12 cost=0.0004 endpoint=Baidu cached=3072',);
+      },
+    },),
+  ],
+},);

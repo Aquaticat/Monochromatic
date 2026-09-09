@@ -191,6 +191,7 @@ await describe({
           provider: {
             zdr: true,
             require_parameters: true,
+            sort: 'price',
             ignore: [
               'open-inference',
               'parasail',
@@ -273,6 +274,7 @@ await describe({
           provider: {
             zdr: true,
             require_parameters: true,
+            sort: 'price',
             ignore: [
               'parasail',
               'modelrun',
