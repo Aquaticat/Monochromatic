@@ -291,12 +291,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.semantics.CollectionInfo
-import androidx.compose.ui.semantics.CollectionItemInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.collectionInfo
-import androidx.compose.ui.semantics.collectionItemInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.role
@@ -1054,8 +1050,6 @@ private fun VariableWidthModeSegment(
     accessibleLabels: List<String>,
     shape: Shape,
     modifier: Modifier,
-    semanticRow: Int,
-    semanticColumn: Int,
     contentPadding: PaddingValues,
     onOverflow: () -> Unit,
 ) {
@@ -1080,12 +1074,6 @@ private fun VariableWidthModeSegment(
                 role = Role.RadioButton
                 selected = isSelected
                 traversalIndex = index.toFloat()
-                collectionItemInfo = CollectionItemInfo(
-                    rowIndex = semanticRow,
-                    rowSpan = 1,
-                    columnIndex = semanticColumn,
-                    columnSpan = 1,
-                )
             },
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
@@ -1144,11 +1132,7 @@ private fun OneRowModeControl(
     onOverflow: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .selectableGroup()
-            .semantics {
-                collectionInfo = CollectionInfo(rowCount = 1, columnCount = labels.size)
-            },
+        modifier = Modifier.selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy((-1).dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -1159,8 +1143,6 @@ private fun OneRowModeControl(
                 accessibleLabels = accessibleLabels,
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
                 modifier = Modifier,
-                semanticRow = 0,
-                semanticColumn = index,
                 contentPadding = contentPadding,
                 onOverflow = onOverflow,
             )
@@ -1188,17 +1170,12 @@ private fun TwoRowModeControl(
     FlowRow(
         modifier = Modifier
             .fillMaxWidth()
-            .selectableGroup()
-            .semantics {
-                collectionInfo = CollectionInfo(rowCount = 2, columnCount = 2)
-            },
+            .selectableGroup(),
         maxItemsInEachRow = 2,
         horizontalArrangement = Arrangement.spacedBy((-1).dp),
         verticalArrangement = Arrangement.spacedBy((-1).dp),
     ) {
         for (index in labels.indices) {
-            val rowIndex = index / 2
-            val columnIndex = index % 2
             // What:     Kotlin's `if` chain chooses the outside corner for one grid position.
             // Why:      Four segments share internal square corners and read as one connected group.
             //
@@ -1221,8 +1198,6 @@ private fun TwoRowModeControl(
                 accessibleLabels = accessibleLabels,
                 shape = shape,
                 modifier = Modifier.weight(1f),
-                semanticRow = rowIndex,
-                semanticColumn = columnIndex,
                 contentPadding = contentPadding,
                 onOverflow = onOverflow,
             )
@@ -1248,10 +1223,7 @@ private fun FourRowModeControl(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .selectableGroup()
-            .semantics {
-                collectionInfo = CollectionInfo(rowCount = labels.size, columnCount = 1)
-            },
+            .selectableGroup(),
         verticalArrangement = Arrangement.spacedBy((-1).dp),
     ) {
         for (index in labels.indices) {
@@ -1276,8 +1248,6 @@ private fun FourRowModeControl(
                     accessibleLabels = accessibleLabels,
                     shape = shape,
                     modifier = Modifier.fillMaxWidth(),
-                    semanticRow = index,
-                    semanticColumn = 0,
                     contentPadding = contentPadding,
                     onOverflow = {},
                 )
