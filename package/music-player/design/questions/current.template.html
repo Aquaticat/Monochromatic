@@ -1,886 +1,744 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: accepted 3B text-scale review</title>
-<style>
-:root {
-  color-scheme: light;
-  --color-page: #f3edf7;
-  --color-paper: #fffaff;
-  --color-paper-strong: #ffffff;
-  --color-ink: #1d1b20;
-  --color-ink-muted: #49454f;
-  --color-line: #cac4d0;
-  --color-primary: #6750a4;
-  --color-primary-container: #eaddff;
-  --color-on-primary-container: #21005d;
-  --color-secondary-container: #e8def8;
-  --color-on-secondary-container: #4a4459;
-  --color-surface-high: #ece6f0;
-  --color-focus: #005fcc;
-  --color-shadow: rgba(29, 27, 32, 0.16);
-  --color-scrim: rgba(29, 27, 32, 0.72);
-  --color-device: #262624;
-  --color-device-rim: #8b8a84;
-  --color-bezel: #111111;
-  --color-lens: #263542;
-  --color-hinge: #5e5d58;
-  background-color: var(--color-page);
-  color: var(--color-ink);
-  font-family: Roboto, system-ui, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  min-block-size: 100vh;
-  margin-block: 0;
-  margin-inline: 0;
-  background-color: var(--color-page);
-}
-
-main {
-  inline-size: min(100%, 112rem);
-  margin-inline: auto;
-  padding-block: 2rem 5rem;
-  padding-inline: clamp(1rem, 3vw, 3rem);
-}
-
-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-block-end: 2rem;
-}
-
-h1,
-h2,
-h3,
-p {
-  margin-block-start: 0;
-}
-
-h1 {
-  max-inline-size: 22ch;
-  margin-block-end: 0.75rem;
-  font-size: clamp(2rem, 5vw, 4rem);
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-
-h2 {
-  margin-block-end: 0.75rem;
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
-  line-height: 1.1;
-}
-
-h3 {
-  margin-block-end: 0.5rem;
-  font-size: 1.15rem;
-}
-
-.lede,
-.supporting,
-.assessment,
-.status {
-  color: var(--color-ink-muted);
-  line-height: 1.55;
-}
-
-.lede {
-  max-inline-size: 74ch;
-  margin-block-end: 0;
-}
-
-.round-badge {
-  min-block-size: 3rem;
-  display: inline-flex;
-  align-items: center;
-  padding-inline: 1rem;
-  border-radius: 999rem;
-  background-color: var(--color-secondary-container);
-  color: var(--color-on-secondary-container);
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-
-.panel {
-  margin-block-end: 2rem;
-  padding-block: clamp(1.25rem, 3vw, 2rem);
-  padding-inline: clamp(1.25rem, 3vw, 2rem);
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-line);
-  border-radius: 1.75rem;
-  background-color: var(--color-paper);
-  box-shadow: 0 0.75rem 2rem var(--color-shadow);
-}
-
-.instructions {
-  max-inline-size: 82ch;
-  padding-inline-start: 1.5rem;
-  line-height: 1.55;
-}
-
-.evidence-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  gap: 1rem;
-  margin-block-start: 1.5rem;
-}
-
-.summary-card,
-.priority {
-  padding-block: 1rem;
-  padding-inline: 1rem;
-  border-radius: 1rem;
-  background-color: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-}
-
-.summary-card p,
-.priority p {
-  margin-block-end: 0;
-}
-
-.priority {
-  margin-block-start: 1.5rem;
-}
-
-.scale-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
-  gap: 1rem;
-}
-
-.stress-title {
-  margin-block-start: 2rem;
-}
-
-.stress-grid {
-  grid-template-columns: minmax(0, min(100%, 22rem));
-}
-
-.scale-card {
-  min-inline-size: 0;
-  overflow: hidden;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-line);
-  border-radius: 1.5rem;
-  background-color: var(--color-paper-strong);
-  box-shadow: 0 0.4rem 1rem var(--color-shadow);
-}
-
-.scale-heading {
-  min-block-size: 7.5rem;
-  padding-block: 1rem;
-  padding-inline: 1.25rem;
-  background-color: var(--color-secondary-container);
-  color: var(--color-on-secondary-container);
-}
-
-.scale-code {
-  display: block;
-  margin-block-end: 0.35rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.scale-heading p {
-  margin-block-end: 0;
-  line-height: 1.4;
-}
-
-.preview-open {
-  min-inline-size: 3rem;
-  min-block-size: 3rem;
-  inline-size: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.75rem;
-  padding-block: 0.75rem;
-  padding-inline: 0.75rem;
-  border-width: 0;
-  border-radius: 0;
-  background-color: var(--color-surface-high);
-  color: var(--color-primary);
-  font-family: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: zoom-in;
-}
-
-.preview-open:hover {
-  background-color: var(--color-secondary-container);
-}
-
-.preview-open:focus-visible,
-button:focus-visible,
-textarea:focus-visible,
-.review-choice:has(input:focus-visible),
-.zoom-stage:focus-visible {
-  outline-width: 0.1875rem;
-  outline-style: solid;
-  outline-color: var(--color-focus);
-  outline-offset: 0.125rem;
-}
-
-.device-frame {
-  position: relative;
-  display: block;
-  inline-size: 100%;
-  aspect-ratio: 907 / 937;
-  overflow: hidden;
-  border-radius: 7.94% / 7.68%;
-  background-color: var(--color-device);
-  box-shadow: inset 0 0 0 0.125rem var(--color-device-rim), 0 0.35rem 0.9rem var(--color-shadow);
-}
-
-.device-frame::before,
-.device-frame::after,
-.zoom-device::before,
-.zoom-device::after {
-  position: absolute;
-  z-index: 3;
-  inset-inline-start: 47.575%;
-  inline-size: 4.85%;
-  block-size: 0.75%;
-  content: "";
-  border-radius: 0.25rem;
-  background-color: var(--color-hinge);
-  box-shadow: inset 0 0 0 0.0625rem var(--color-device-rim);
-}
-
-.device-frame::before,
-.zoom-device::before {
-  inset-block-start: 0;
-}
-
-.device-frame::after,
-.zoom-device::after {
-  inset-block-end: 0;
-}
-
-.device-screen {
-  position: absolute;
-  z-index: 1;
-  inset-block: 2.8815%;
-  inset-inline-start: 2.9779%;
-  inset-inline-end: 3.0871%;
-  display: flex;
-  overflow: hidden;
-  border-radius: 4.93% / 4.76%;
-  background-color: var(--color-paper-strong);
-  box-shadow: 0 0 0 0.125rem var(--color-bezel);
-}
-
-.preview-open img,
-.zoom-image {
-  min-inline-size: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  display: block;
-}
-
-.device-camera {
-  position: absolute;
-  z-index: 2;
-  inset-block-start: 1.8817%;
-  inset-inline-end: 2.3956%;
-  inline-size: 3.804%;
-  aspect-ratio: 1;
-  border-width: 0.1875rem;
-  border-style: solid;
-  border-color: var(--color-bezel);
-  border-radius: 50%;
-  background-color: var(--color-lens);
-  box-shadow: inset 0 0 0 0.1875rem var(--color-device);
-}
-
-.preview-label {
-  min-block-size: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-inline: 0.5rem;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-primary);
-  border-radius: 999rem;
-  background-color: var(--color-paper-strong);
-}
-
-.assessment {
-  padding-block: 1rem 1.25rem;
-  padding-inline: 1.25rem;
-}
-
-.assessment strong {
-  color: var(--color-primary);
-}
-
-.assessment ul {
-  margin-block: 0 1rem;
-  padding-inline-start: 1.25rem;
-}
-
-fieldset {
-  min-inline-size: 0;
-  margin-block: 0;
-  margin-inline: 0;
-  padding-block: 0;
-  padding-inline: 0;
-  border-width: 0;
-}
-
-legend {
-  padding-inline: 0;
-}
-
-.review-choices {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
-  gap: 0.75rem;
-  margin-block: 1rem 1.5rem;
-}
-
-.review-choice {
-  min-block-size: 3rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-block: 0.75rem;
-  padding-inline: 0.75rem;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-line);
-  border-radius: 0.75rem;
-  background-color: var(--color-paper-strong);
-  cursor: pointer;
-}
-
-.review-choice input {
-  min-inline-size: 3rem;
-  min-block-size: 3rem;
-  margin-block: 0;
-  margin-inline: 0;
-  accent-color: var(--color-primary);
-}
-
-label[for="other-corrections"],
-label[for="answer-output"] {
-  display: block;
-  margin-block-end: 0.5rem;
-  font-weight: 700;
-}
-
-textarea {
-  inline-size: 100%;
-  min-block-size: 10rem;
-  resize: vertical;
-  padding-block: 0.875rem;
-  padding-inline: 0.875rem;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-line);
-  border-radius: 0.75rem;
-  background-color: var(--color-paper-strong);
-  color: var(--color-ink);
-  font-family: inherit;
-  font-size: inherit;
-  line-height: 1.5;
-}
-
-.actions,
-.output-actions,
-.zoom-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.actions {
-  margin-block-start: 1rem;
-}
-
-button {
-  min-inline-size: 3rem;
-  min-block-size: 3rem;
-  padding-block: 0.65rem;
-  padding-inline: 1rem;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-primary);
-  border-radius: 999rem;
-  background-color: var(--color-primary);
-  color: var(--color-paper-strong);
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-button[data-variant="secondary"] {
-  background-color: var(--color-paper-strong);
-  color: var(--color-primary);
-}
-
-.output {
-  margin-block-start: 1.5rem;
-  padding-block: 1rem;
-  padding-inline: 1rem;
-  border-radius: 1rem;
-  background-color: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-}
-
-.output[hidden] {
-  display: none;
-}
-
-.output textarea {
-  min-block-size: 7rem;
-  margin-block-end: 0.75rem;
-}
-
-.status {
-  min-block-size: 1.5rem;
-  margin-block: 0.75rem 0;
-}
-
-dialog {
-  inline-size: calc(100% - 2rem);
-  max-inline-size: 100rem;
-  block-size: calc(100% - 2rem);
-  max-block-size: 72rem;
-  padding-block: 0;
-  padding-inline: 0;
-  overflow: hidden;
-  border-width: 0;
-  border-radius: 1.5rem;
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  box-shadow: 0 1.5rem 4rem var(--color-shadow);
-}
-
-dialog::backdrop {
-  background-color: var(--color-scrim);
-}
-
-.dialog-layout {
-  block-size: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.dialog-heading {
-  padding-block: 1rem;
-  padding-inline: 1.25rem;
-  border-block-end-width: 0.0625rem;
-  border-block-end-style: solid;
-  border-block-end-color: var(--color-line);
-  background-color: var(--color-paper-strong);
-}
-
-.dialog-heading h2 {
-  margin-block-end: 0.25rem;
-  font-size: 1.5rem;
-}
-
-.dialog-heading p {
-  margin-block-end: 0.75rem;
-}
-
-.zoom-toolbar {
-  align-items: center;
-}
-
-.zoom-scale {
-  min-inline-size: 18rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.zoom-stage {
-  flex: 1 1 auto;
-  min-block-size: 0;
-  overflow: auto;
-  padding-block: 1rem;
-  padding-inline: 1rem;
-  background-color: var(--color-surface-high);
-}
-
-.zoom-device {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  border-radius: 7.94% / 7.68%;
-  background-color: var(--color-device);
-  box-shadow: inset 0 0 0 0.125rem var(--color-device-rim), 0 0.35rem 0.9rem var(--color-shadow);
-}
-
-.zoom-device .device-screen {
-  inset-block: 2.8815%;
-  inset-inline-start: 2.9779%;
-  inset-inline-end: 3.0871%;
-}
-
-.zoom-device .device-camera {
-  inset-block-start: 1.8817%;
-  inset-inline-end: 2.3956%;
-  inline-size: 3.804%;
-}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Music player design: unfolded TalkBack review</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --color-page: #f8f4fc;
+      --color-surface: #fffaff;
+      --color-surface-soft: #f0ebf5;
+      --color-surface-strong: #e5dded;
+      --color-ink: #241f29;
+      --color-ink-soft: #625b68;
+      --color-accent: #65558f;
+      --color-accent-soft: #e9ddff;
+      --color-focus: #49366f;
+      --color-line: #cbc3d2;
+      --color-shadow: rgb(36 31 41 / 18%);
+      --color-backdrop: rgb(20 16 24 / 72%);
+      --color-device: #242424;
+      --color-device-edge: #777177;
+      --color-screen: #ffffff;
+      font-family: system-ui, sans-serif;
+      background-color: var(--color-page);
+      color: var(--color-ink);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin-block: 0;
+      margin-inline: 0;
+      min-inline-size: 20rem;
+      background-color: var(--color-page);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    label {
+      min-block-size: 3rem;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline-color: var(--color-focus);
+      outline-offset: 0.1875rem;
+      outline-style: solid;
+      outline-width: 0.1875rem;
+    }
+
+    main {
+      inline-size: min(100% - 2rem, 92rem);
+      margin-inline: auto;
+      padding-block: 2rem 5rem;
+    }
+
+    header {
+      margin-block-end: 1.5rem;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-block-start: 0;
+    }
+
+    h1 {
+      max-inline-size: 18ch;
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      line-height: 0.98;
+      margin-block-end: 1rem;
+    }
+
+    h2 {
+      font-size: clamp(1.45rem, 3vw, 2.35rem);
+      margin-block-end: 0.75rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin-block-end: 0.5rem;
+    }
+
+    p,
+    li {
+      line-height: 1.55;
+    }
+
+    .lede {
+      max-inline-size: 72ch;
+      color: var(--color-ink-soft);
+      font-size: 1.1rem;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: 3rem;
+      margin-block-end: 1rem;
+      padding-inline: 1rem;
+      border-color: var(--color-accent);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 999rem;
+      background-color: var(--color-accent-soft);
+      font-weight: 700;
+    }
+
+    .panel {
+      margin-block: 1.25rem;
+      padding-block: clamp(1rem, 3vw, 2rem);
+      padding-inline: clamp(1rem, 3vw, 2rem);
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 1.25rem;
+      background-color: var(--color-surface);
+      box-shadow: 0 0.75rem 2rem var(--color-shadow);
+    }
+
+    .finding-grid,
+    .choice-grid,
+    .mode-grid,
+    .speech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+      gap: 1rem;
+    }
+
+    .finding,
+    .choice-card,
+    .mode-card,
+    .speech-card {
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 1rem;
+      background-color: var(--color-surface-soft);
+    }
+
+    .choice-card[data-recommended],
+    .speech-card[data-recommended] {
+      border-color: var(--color-accent);
+      border-width: 0.125rem;
+      background-color: var(--color-accent-soft);
+    }
+
+    .code {
+      display: inline-block;
+      margin-block-end: 0.5rem;
+      color: var(--color-accent);
+      font-family: ui-monospace, monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .sequence {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding-inline-start: 0;
+      list-style: none;
+    }
+
+    .sequence li {
+      padding-block: 0.45rem;
+      padding-inline: 0.75rem;
+      border-radius: 999rem;
+      background-color: var(--color-surface-strong);
+      font-weight: 650;
+    }
+
+    .sequence li + li::before {
+      content: "→";
+      margin-inline-end: 0.5rem;
+      color: var(--color-accent);
+    }
+
+    .evidence-button {
+      inline-size: 100%;
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 0.9rem;
+      background-color: var(--color-surface);
+      color: var(--color-ink);
+      cursor: pointer;
+    }
+
+    .evidence-button img {
+      display: block;
+      inline-size: 100%;
+      block-size: auto;
+      border-radius: 0.6rem;
+      background-color: var(--color-screen);
+    }
+
+    .evidence-label {
+      display: block;
+      margin-block-start: 0.65rem;
+      color: var(--color-accent);
+      font-weight: 750;
+    }
+
+    .assessment {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+      gap: 0.75rem;
+      margin-block-start: 0.75rem;
+    }
+
+    .assessment section {
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface);
+    }
+
+    .assessment ul {
+      margin-block: 0.35rem 0;
+      padding-inline-start: 1.25rem;
+    }
+
+    .ranking {
+      margin-block-start: 1rem;
+      padding-block: 0.9rem;
+      padding-inline: 1rem;
+      border-inline-start-color: var(--color-accent);
+      border-inline-start-style: solid;
+      border-inline-start-width: 0.35rem;
+      background-color: var(--color-surface-soft);
+    }
+
+    .fixed-note {
+      margin-block-start: 1rem;
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      border-radius: 0.9rem;
+      background-color: var(--color-accent-soft);
+    }
+
+    fieldset {
+      margin-block: 1.25rem;
+      margin-inline: 0;
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 1rem;
+    }
+
+    legend {
+      padding-inline: 0.5rem;
+      font-weight: 800;
+    }
+
+    .review-choice {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      gap: 0.75rem;
+      margin-block: 0.5rem;
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface-soft);
+      cursor: pointer;
+    }
+
+    .review-choice input {
+      inline-size: 1.35rem;
+      block-size: 1.35rem;
+      margin-block-start: 0.15rem;
+      accent-color: var(--color-accent);
+    }
+
+    textarea {
+      inline-size: 100%;
+      min-block-size: 8rem;
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface);
+      color: var(--color-ink);
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-block-start: 1rem;
+    }
+
+    .action-button {
+      min-inline-size: 8rem;
+      padding-inline: 1rem;
+      border-color: var(--color-accent);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 999rem;
+      background-color: var(--color-accent);
+      color: var(--color-surface);
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    .action-button[data-secondary] {
+      background-color: var(--color-surface);
+      color: var(--color-accent);
+    }
+
+    #output {
+      white-space: pre-wrap;
+      margin-block-start: 1rem;
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface-strong);
+    }
+
+    dialog {
+      inline-size: calc(100% - 2rem);
+      max-inline-size: none;
+      block-size: calc(100% - 2rem);
+      max-block-size: none;
+      padding-block: 0;
+      padding-inline: 0;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 1.25rem;
+      background-color: var(--color-surface);
+      color: var(--color-ink);
+    }
+
+    dialog::backdrop {
+      background-color: var(--color-backdrop);
+    }
+
+    .dialog-shell {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      block-size: 100%;
+    }
+
+    .dialog-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      padding-block: 0.75rem;
+      padding-inline: 1rem;
+      border-block-end-color: var(--color-line);
+      border-block-end-style: solid;
+      border-block-end-width: 0.0625rem;
+      background-color: var(--color-surface);
+    }
+
+    .dialog-toolbar h2 {
+      flex: 1 1 20rem;
+      margin-block-end: 0;
+      font-size: 1.25rem;
+    }
+
+    .toolbar-button {
+      min-inline-size: 3rem;
+      padding-inline: 0.85rem;
+      border-color: var(--color-accent);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 999rem;
+      background-color: var(--color-surface);
+      color: var(--color-accent);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .preview-stage {
+      overflow: auto;
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      background-color: var(--color-surface-soft);
+    }
+
+    .device-shell {
+      position: relative;
+      inline-size: 907px;
+      block-size: 937px;
+      margin-inline: auto;
+      border-color: var(--color-device-edge);
+      border-style: solid;
+      border-width: 0.125rem;
+      border-radius: 3rem;
+      background-color: var(--color-device);
+      transform: scale(var(--preview-scale));
+      transform-origin: top center;
+    }
+
+    .device-screen {
+      position: absolute;
+      inset-block-start: 27px;
+      inset-inline-start: 27px;
+      inline-size: 852px;
+      block-size: 883px;
+      overflow: hidden;
+      border-radius: 2rem;
+      background-color: var(--color-screen);
+    }
+
+    .device-screen img {
+      display: block;
+      inline-size: 852px;
+      block-size: 883px;
+    }
+
+    .preview-spacer {
+      block-size: calc(937px * var(--preview-scale));
+    }
+
+    @media (max-width: 42rem) {
+      main {
+        inline-size: min(100% - 1rem, 92rem);
+        padding-block-start: 1rem;
+      }
+
+      .panel {
+        padding-block: 1rem;
+        padding-inline: 0.75rem;
+      }
+
+      .dialog-toolbar h2 {
+        flex-basis: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-<main>
-  <header>
-    <div>
-      <h1>Review accepted 3B across text sizes</h1>
-      <p class="lede">
-        This is the accepted unfolded screen only: soft neutral current-track container, bold current title, tonal Open, and transport 1B. For Camellia in the measured 414dp pane, the mode selector uses the first fitting connected arrangement in the one-row, 2×2, four-row sequence.
-      </p>
-    </div>
-    <span class="round-badge">Every Android preset · 85% to 200%</span>
-  </header>
+  <main>
+    <header>
+      <span class="status">Design only · native TalkBack evidence</span>
+      <h1>Choose unfolded TalkBack behavior</h1>
+      <p class="lede">The accepted 3B screen remains visually unchanged. This review decides how TalkBack traverses its three major areas and how the current track is announced. It does not authorize production implementation.</p>
+    </header>
 
-  <section class="panel" aria-labelledby="evidence-title">
-    <h2 id="evidence-title">What changed and what stayed fixed</h2>
-    <ol class="instructions">
-      <li><strong>Direct target evidence:</strong> the installed <code>SettingsGoogle.apk</code> exposes exactly 85%, 100%, 115%, 130%, 150%, 180%, and 200%. The earlier 50% and 75% shell-injected states are excluded.</li>
-      <li><strong>Dynamic mode label:</strong> the third option names the active subdirectory. Its one-row content width is capped by <code>Shuffle Camellia</code>; longer names middle-ellipsize the subdirectory only while accessibility retains the full name.</li>
-      <li><strong>Adaptive row count:</strong> on this measured pane, complete labels try one connected row with variable-width content-sized cells, then a connected 2×2 block, then four connected vertical rows. No state scrolls horizontally.</li>
-      <li><strong>Accepted 3B:</strong> every capture retains the T3 current row, O2 tonal Open, centered transport, 24% seek position, outlined Previous and Next, and filled Pause.</li>
-      <li><strong>Native evidence:</strong> every image is an opaque 2076 × 2152px Compose capture of the 852 × 883dp unfolded Pixel 9 Pro Fold with Android system bars and live insets.</li>
-    </ol>
-    <div class="evidence-summary">
-      <article class="summary-card">
-        <h3>Observed wrapping</h3>
-        <p>85% uses one content-sized row. 100%, 115%, and 130% use 2×2. 150%, 180%, and 200% use four rows.</p>
-      </article>
-      <article class="summary-card">
-        <h3>Padding behavior</h3>
-        <p>Every segment keeps at least 12dp horizontal content padding. The control adds rows rather than reducing that floor. Targets remain at least 48dp.</p>
-      </article>
-      <article class="summary-card">
-        <h3>Assistive technology boundary</h3>
-        <p>Native semantics expose four radio options and the current-track description. Production assistive technology must still verify one mutually exclusive group announcement.</p>
-      </article>
-    </div>
-    <div class="priority">
-      <p><strong>Priority:</strong> one row &gt; two rows &gt; four rows. Content-sized cells let Camellia remain on one row at 85% without crossing the 12dp padding floor. Two rows ranks above four because it preserves deck space; four rows is the fallback that keeps every label complete. These are states of one adaptive design, not competing styles.</p>
-    </div>
-  </section>
-
-  <section class="panel" aria-labelledby="captures-title">
-    <h2 id="captures-title">Exact accepted screen at every Android text preset</h2>
-    <p class="supporting">Open any capture to inspect it at Fit, 1dp per CSS pixel, or native panel pixels.</p>
-    <div class="scale-grid">
-      <article class="scale-card">
-        <div class="scale-heading">
-          <span class="scale-code">85% · content-sized one row</span>
-          <h3>Smallest Android preset</h3>
-          <p>Variable-width cells fit every complete label with Material's 12dp content padding.</p>
-        </div>
-        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 85% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 0.85, prototype commit cedc2a668" src="@@IMAGE_FONT_085@@" width="852" height="883" alt="Accepted unfolded music player 3B at 85 percent text with one connected row of content-sized mode cells"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open 85% at measured size</span>
-        </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>One row preserves maximum deck height.</li><li>The complete Camellia label remains visible.</li></ul><strong>Cons</strong><ul><li>Cell widths differ because each follows its content.</li></ul></div>
-      </article>
-
-      <article class="scale-card">
-        <div class="scale-heading">
-          <span class="scale-code">100% · connected 2×2</span>
-          <h3>Default Android scale</h3>
-          <p>One content-sized row would cross the 12dp padding floor, so the group adds a row.</p>
-        </div>
-        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 100% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.0, prototype commit cedc2a668" src="@@IMAGE_FONT_100@@" width="852" height="883" alt="Accepted unfolded music player 3B at 100 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open 100% at measured size</span>
-        </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>Every cell retains at least 12dp horizontal content padding.</li><li>The complete current-subdirectory label remains visible.</li></ul><strong>Cons</strong><ul><li>The mode control occupies two rows at Android's default scale.</li></ul></div>
-      </article>
-
-      <article class="scale-card">
-        <div class="scale-heading">
-          <span class="scale-code">115% · connected 2×2</span>
-          <h3>Enlarged two-row preset</h3>
-          <p>The content-sized one-row attempts no longer fit, so every label moves to connected 2×2.</p>
-        </div>
-        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 115% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.15, prototype commit cedc2a668" src="@@IMAGE_FONT_115@@" width="852" height="883" alt="Accepted unfolded music player 3B at 115 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open 115% at measured size</span>
-        </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>All mode labels remain complete.</li><li>Track and folder text grows without changing row count.</li></ul><strong>Cons</strong><ul><li>Less list content fits than at 100%.</li></ul></div>
-      </article>
-
-      <article class="scale-card">
-        <div class="scale-heading">
-          <span class="scale-code">130% · connected 2×2</span>
-          <h3>Intermediate enlarged preset</h3>
-          <p>The connected block remains two rows with compact content padding.</p>
-        </div>
-        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 130% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.30, prototype commit cedc2a668" src="@@IMAGE_FONT_130@@" width="852" height="883" alt="Accepted unfolded music player 3B at 130 percent text with a connected two-by-two mode control"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open 130% at measured size</span>
-        </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>Two rows preserve more deck height than the vertical fallback.</li><li>Every target remains connected and fully labeled.</li></ul><strong>Cons</strong><ul><li>Visible list density continues to decrease.</li></ul></div>
-      </article>
-
-      <article class="scale-card">
-        <div class="scale-heading">
-          <span class="scale-code">150% · four rows</span>
-          <h3>First vertical preset</h3>
-          <p>Half-width segments cannot keep complete labels and the 12dp padding floor.</p>
-        </div>
-        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 150% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.50, prototype commit cedc2a668" src="@@IMAGE_FONT_150@@" width="852" height="883" alt="Accepted unfolded music player 3B at 150 percent text with four connected vertical mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open 150% at measured size</span>
-        </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>Every label and 12dp content inset remain complete.</li><li>The full control clears the navigation inset without initial deck scrolling.</li></ul><strong>Cons</strong><ul><li>Four rows use more deck height than 2×2.</li></ul></div>
-      </article>
-
-      <article class="scale-card">
-        <div class="scale-heading">
-          <span class="scale-code">180% · four rows</span>
-          <h3>Enlarged vertical preset</h3>
-          <p><code>Shuffle Camellia</code> no longer fits a half-width segment, so each mode gets one row.</p>
-        </div>
-        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 180% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 1.80, prototype commit cedc2a668" src="@@IMAGE_FONT_180@@" width="852" height="883" alt="Accepted unfolded music player 3B at 180 percent text with four connected vertical mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open 180% at measured size</span>
-        </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>Every visible label remains complete.</li><li>The connected stack clears the navigation inset after deck scrolling.</li></ul><strong>Cons</strong><ul><li>Four rows consume more deck height than 2×2.</li><li>The evidence is a scrolled state.</li></ul></div>
-      </article>
-
-      <article class="scale-card">
-        <div class="scale-heading">
-          <span class="scale-code">200% · four rows</span>
-          <h3>Largest Android preset</h3>
-          <p>The vertical fallback preserves all four labels at Android's maximum setting.</p>
-        </div>
-        <button class="preview-open" type="button" data-preview-title="Accepted 3B at 200% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose accepted 3B at font_scale 2.0, prototype commit cedc2a668" src="@@IMAGE_FONT_200@@" width="852" height="883" alt="Accepted unfolded music player 3B at 200 percent text with four connected vertical mode segments"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open 200% at measured size</span>
-        </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>Every mode label remains complete at the largest scale.</li><li>The full control clears the navigation inset after deck scrolling.</li></ul><strong>Cons</strong><ul><li>Four rows use the most deck height.</li><li>The evidence is a scrolled state.</li></ul></div>
-      </article>
-    </div>
-
-    <h3 class="stress-title">Long-name middle-ellipsis proof</h3>
-    <p class="supporting"><code>ExtraordinarilyLongDirectory</code> is a diagnostic value. The accepted Camellia screen remains unchanged.</p>
-    <div class="scale-grid stress-grid">
-      <article class="scale-card">
-        <div class="scale-heading">
-          <span class="scale-code">85% · capped Shuffle content</span>
-          <h3>Subdirectory longer than Camellia</h3>
-          <p>The prefix remains complete while only the name renders as <code>Extr…ory</code>.</p>
-        </div>
-        <button class="preview-open" type="button" data-preview-title="Long-name middle ellipsis at 85% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-          <span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose long-name diagnostic at font_scale 0.85, prototype commit dea1d968f" src="@@IMAGE_LONG_085@@" width="852" height="883" alt="Accepted unfolded music player 3B at 85 percent text with Shuffle ExtraordinarilyLongDirectory visibly middle-ellipsized to Shuffle Extr ellipsis ory"><span class="device-camera" aria-hidden="true"></span></span></span>
-          <span class="preview-label">Open long-name proof at measured size</span>
-        </button>
-        <div class="assessment"><strong>Pros</strong><ul><li>The cell remains exactly as wide as its Camellia counterpart.</li><li>Accessibility retains the full directory name.</li></ul><strong>Cons</strong><ul><li>The diagnostic folder name is intentionally not the accepted Camellia content.</li></ul></div>
-      </article>
-    </div>
-  </section>
-
-  <form id="design-form">
-    <section class="panel" aria-labelledby="response-title">
-      <h2 id="response-title">Review result</h2>
-      <fieldset>
-        <legend><strong>Does this adaptive 3B screen hold across every Android text preset?</strong></legend>
-        <div class="review-choices">
-          <label class="review-choice"><input type="radio" name="scaleVerdict" value="accept" required><span><strong>Accept adaptive 3B (Recommended).</strong> Pros: a content-sized one-row group at 85%, complete labels, and a strict 12dp padding floor at every preset. Cons: the group needs 2×2 from 100% and four rows from 150%.</span></label>
-          <label class="review-choice"><input type="radio" name="scaleVerdict" value="revise" required><span><strong>Revise it.</strong> Pros: records that a visible scale state still fails. Cons: requires a concrete correction before another variant can be evaluated.</span></label>
-        </div>
-      </fieldset>
-      <label for="other-corrections">What should change? Enter “None” if the scale behavior is accepted.</label>
-      <textarea id="other-corrections" name="otherCorrections" required></textarea>
-      <div class="actions">
-        <button type="submit">Prepare answer</button>
-        <button type="button" data-variant="secondary" id="clear-form">Clear</button>
+    <section class="panel" aria-labelledby="observed-title">
+      <h2 id="observed-title">What the installed screen reader found</h2>
+      <div class="finding-grid">
+        <article class="finding">
+          <span class="code">Traversal defect</span>
+          <h3>Default geometry interleaves panes</h3>
+          <p>TalkBack visits header actions, the letter rail, track rows, folder names, then the deck. The order does not preserve either pane or one complete task.</p>
+        </article>
+        <article class="finding">
+          <span class="code">Adaptive-group defect</span>
+          <h3>Only the one-row mode group is unified</h3>
+          <p>The accepted 2×2 state becomes two two-item lists. Four vertical rows lose one shared list announcement.</p>
+        </article>
+        <article class="finding">
+          <span class="code">Current-row defect</span>
+          <h3>The title is spoken twice</h3>
+          <p>The baseline says “Selected. Current track: Another Xronixle. Another Xronixle. 4:35 · −1.2 dBTP. Button.”</p>
+        </article>
       </div>
-      <div class="output" id="output" hidden>
-        <label for="answer-output">Answer to paste into Pi</label>
-        <textarea id="answer-output" readonly></textarea>
-        <div class="output-actions">
-          <button type="button" id="copy-answers">Copy answer</button>
-          <button type="button" data-variant="secondary" id="download-answers">Download answer</button>
-        </div>
-      </div>
-      <p class="status" id="status" role="status" aria-live="polite"></p>
     </section>
-  </form>
-</main>
 
-<dialog id="preview-dialog" aria-labelledby="zoom-title">
-  <div class="dialog-layout">
-    <div class="dialog-heading">
-      <h2 id="zoom-title">Accepted 3B preview</h2>
-      <p id="zoom-dimensions"></p>
-      <div class="zoom-toolbar" role="group" aria-label="Preview zoom controls">
-        <button type="button" data-variant="secondary" id="zoom-out">Zoom out</button>
-        <span class="zoom-scale" id="zoom-scale" aria-live="polite"></span>
-        <button type="button" data-variant="secondary" id="zoom-in">Zoom in</button>
-        <button type="button" data-variant="secondary" id="zoom-fit">Fit</button>
-        <button type="button" data-variant="secondary" id="zoom-native">Native pixels</button>
-        <button type="button" data-variant="secondary" id="zoom-reset">Reset 100%</button>
-        <button type="button" id="zoom-close">Close preview</button>
+    <section class="panel" aria-labelledby="fixed-title">
+      <h2 id="fixed-title">Fixed requirements, not choices</h2>
+      <p>Each adaptive arrangement now exposes one four-item radio list in accepted option order. TalkBack says “1 of 4” through “4 of 4” at one row, 2×2, and four rows. The visible screen keeps the accepted 12dp padding floor.</p>
+      <div class="mode-grid">
+        <article class="mode-card">
+          <span class="code">85% · one row</span>
+          <button class="evidence-button" type="button" data-preview-title="TalkBack mode group at 85%" data-preview-src="@@A11Y_MODE_085@@">
+            <img src="@@A11Y_MODE_085@@" width="852" height="883" alt="TalkBack focus on In order at 85 percent, announced as item two of four">
+            <span class="evidence-label">Open one-row TalkBack evidence</span>
+          </button>
+        </article>
+        <article class="mode-card">
+          <span class="code">100% · 2×2</span>
+          <button class="evidence-button" type="button" data-preview-title="TalkBack mode group at 100%" data-preview-src="@@A11Y_MODE_100@@">
+            <img src="@@A11Y_MODE_100@@" width="852" height="883" alt="TalkBack focus on In order at 100 percent, announced as item two of four">
+            <span class="evidence-label">Open 2×2 TalkBack evidence</span>
+          </button>
+        </article>
+        <article class="mode-card">
+          <span class="code">150% · four rows</span>
+          <button class="evidence-button" type="button" data-preview-title="TalkBack mode group at 150%" data-preview-src="@@A11Y_MODE_150@@">
+            <img src="@@A11Y_MODE_150@@" width="852" height="883" alt="TalkBack focus on In order at 150 percent, announced as item two of four">
+            <span class="evidence-label">Open four-row TalkBack evidence</span>
+          </button>
+        </article>
+      </div>
+      <div class="fixed-note"><strong>Reduced motion:</strong> the prototype contains no explicit animation, transition, crossfade, or programmatic scrolling API. The design contract forbids autonomous or decorative motion and requires platform-disabled animation settings to remain effective.</div>
+    </section>
+
+    <section class="panel" aria-labelledby="focus-title">
+      <h2 id="focus-title">Decision one: major-area traversal</h2>
+      <p>Every candidate keeps the same accepted pixels. Only accessibility grouping changes.</p>
+      <div class="choice-grid">
+        <article class="choice-card" data-recommended>
+          <span class="code">F1 · recommended</span>
+          <h3>Pane by pane</h3>
+          <ol class="sequence"><li>Folder area</li><li>Playback deck</li><li>Track pane</li></ol>
+          <button class="evidence-button" type="button" data-preview-title="Pane-by-pane TalkBack focus" data-preview-src="@@A11Y_FOCUS_PANE@@">
+            <img src="@@A11Y_FOCUS_PANE@@" width="852" height="883" alt="TalkBack evidence as pane traversal enters the playback deck after folder browsing">
+            <span class="evidence-label">Open pane-order evidence</span>
+          </button>
+          <div class="assessment">
+            <section><strong>Pros</strong><ul><li>Follows the left pane from top to bottom, then the right pane.</li><li>Keeps each visual region contiguous.</li></ul></section>
+            <section><strong>Cons</strong><ul><li>Track rows wait until every folder target and deck control.</li></ul></section>
+          </div>
+        </article>
+
+        <article class="choice-card">
+          <span class="code">F2</span>
+          <h3>Browse first</h3>
+          <ol class="sequence"><li>Folder area</li><li>Track pane</li><li>Playback deck</li></ol>
+          <button class="evidence-button" type="button" data-preview-title="Browse-first TalkBack focus" data-preview-src="@@A11Y_FOCUS_BROWSE@@">
+            <img src="@@A11Y_FOCUS_BROWSE@@" width="852" height="883" alt="TalkBack evidence as browse-first traversal enters the track pane after folder browsing">
+            <span class="evidence-label">Open browse-order evidence</span>
+          </button>
+          <div class="assessment">
+            <section><strong>Pros</strong><ul><li>Folder selection is followed immediately by its track results.</li><li>Supports the screen's browsing task.</li></ul></section>
+            <section><strong>Cons</strong><ul><li>Returns from the right pane to the lower-left deck at the end.</li></ul></section>
+          </div>
+        </article>
+
+        <article class="choice-card">
+          <span class="code">F3</span>
+          <h3>Playback first</h3>
+          <ol class="sequence"><li>Playback deck</li><li>Track pane</li><li>Folder area</li></ol>
+          <button class="evidence-button" type="button" data-preview-title="Playback-first TalkBack focus" data-preview-src="@@A11Y_FOCUS_PLAYBACK@@">
+            <img src="@@A11Y_FOCUS_PLAYBACK@@" width="852" height="883" alt="TalkBack evidence starting with playback deck metadata before browsing areas">
+            <span class="evidence-label">Open playback-order evidence</span>
+          </button>
+          <div class="assessment">
+            <section><strong>Pros</strong><ul><li>Seek, transport, and mode actions arrive first.</li><li>Fastest path for an already-playing session.</li></ul></section>
+            <section><strong>Cons</strong><ul><li>Starts at the visual bottom of the left pane.</li><li>Moves Open and all browsing targets to the end.</li></ul></section>
+          </div>
+        </article>
+      </div>
+      <p class="ranking"><strong>Ranking: F1 &gt; F2 &gt; F3.</strong> F1 beats F2 because spatial containment is more predictable than crossing panes and returning. F2 beats F3 because this screen's primary structure begins with choosing folders and tracks, not controls at the visual bottom.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="speech-title">
+      <h2 id="speech-title">Decision two: current-track speech</h2>
+      <p>Both options remove the baseline's repeated title. They differ in whether TalkBack receives structured state plus visible text or one hand-composed sentence.</p>
+      <div class="speech-grid">
+        <article class="speech-card" data-recommended>
+          <span class="code">S1 · recommended</span>
+          <h3>Structured state</h3>
+          <p><strong>TalkBack:</strong> “Current track. Another Xronixle. 4:35 · −1.2 dBTP. Button.”</p>
+          <button class="evidence-button" type="button" data-preview-title="Structured current-track speech" data-preview-src="@@A11Y_CURRENT_STATE@@">
+            <img src="@@A11Y_CURRENT_STATE@@" width="852" height="883" alt="TalkBack overlay showing structured current-track state followed by title and metadata">
+            <span class="evidence-label">Open structured-speech evidence</span>
+          </button>
+          <div class="assessment">
+            <section><strong>Pros</strong><ul><li>Keeps state, title, and metadata as separate semantics.</li><li>Visible text remains the source of spoken content.</li></ul></section>
+            <section><strong>Cons</strong><ul><li>Does not also say the generic word “Selected.”</li></ul></section>
+          </div>
+        </article>
+
+        <article class="speech-card">
+          <span class="code">S2</span>
+          <h3>Composed sentence</h3>
+          <p><strong>TalkBack:</strong> “Selected. Current track: Another Xronixle, 4:35, −1.2 dBTP. Button.”</p>
+          <button class="evidence-button" type="button" data-preview-title="Composed current-track speech" data-preview-src="@@A11Y_CURRENT_COMPOSED@@">
+            <img src="@@A11Y_CURRENT_COMPOSED@@" width="852" height="883" alt="TalkBack overlay showing one composed current-track sentence">
+            <span class="evidence-label">Open composed-speech evidence</span>
+          </button>
+          <div class="assessment">
+            <section><strong>Pros</strong><ul><li>Explicitly says “Selected.”</li><li>Controls the complete spoken order.</li></ul></section>
+            <section><strong>Cons</strong><ul><li>Duplicates visible strings in a second assembled label.</li><li>Metadata or translation changes can drift.</li></ul></section>
+          </div>
+        </article>
+      </div>
+      <p class="ranking"><strong>Ranking: S1 &gt; S2.</strong> S1 beats S2 because it removes repetition without creating a second manually synchronized rendering of the same title and metadata.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="answer-title">
+      <h2 id="answer-title">Your decisions</h2>
+      <form id="review-form">
+        <fieldset>
+          <legend>Choose major-area traversal</legend>
+          <label class="review-choice"><input type="radio" name="focusOrder" value="F1 Pane by pane" required><span><strong>F1 Pane by pane (Recommended).</strong> Pros: follows left pane then right pane and keeps regions contiguous. Cons: track rows arrive after folder and deck targets.</span></label>
+          <label class="review-choice"><input type="radio" name="focusOrder" value="F2 Browse first" required><span><strong>F2 Browse first.</strong> Pros: folders lead directly to tracks. Cons: the sequence returns to the lower-left deck last.</span></label>
+          <label class="review-choice"><input type="radio" name="focusOrder" value="F3 Playback first" required><span><strong>F3 Playback first.</strong> Pros: controls arrive immediately. Cons: traversal begins at the visual bottom and defers browsing.</span></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Choose current-track speech</legend>
+          <label class="review-choice"><input type="radio" name="currentSpeech" value="S1 Structured state" required><span><strong>S1 Structured state (Recommended).</strong> Pros: no repetition and visible content remains semantic source. Cons: omits generic “Selected.”</span></label>
+          <label class="review-choice"><input type="radio" name="currentSpeech" value="S2 Composed sentence" required><span><strong>S2 Composed sentence.</strong> Pros: explicit selected state and exact order. Cons: hand-composed text can drift from visible content.</span></label>
+        </fieldset>
+
+        <label for="other-corrections"><strong>What should change?</strong> Enter “None” if both selections are accepted.</label>
+        <textarea id="other-corrections" name="otherCorrections" required></textarea>
+        <div class="actions">
+          <button class="action-button" type="submit">Prepare answer</button>
+          <button class="action-button" data-secondary type="reset">Clear</button>
+        </div>
+      </form>
+      <div id="output" hidden aria-live="polite"></div>
+      <div class="actions" id="copy-actions" hidden>
+        <button class="action-button" id="copy-answer" type="button">Copy answer</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="preview-dialog" aria-labelledby="preview-title">
+    <div class="dialog-shell">
+      <div class="dialog-toolbar">
+        <h2 id="preview-title">Native TalkBack evidence</h2>
+        <span id="preview-details">Source 2076 × 2152 physical px · design 852 × 883dp</span>
+        <button class="toolbar-button" id="zoom-out" type="button">Zoom out</button>
+        <button class="toolbar-button" id="fit" type="button">Fit</button>
+        <button class="toolbar-button" id="native" type="button">Native pixels</button>
+        <button class="toolbar-button" id="reset" type="button">Reset 100%</button>
+        <button class="toolbar-button" id="preview-close" type="button">Close preview</button>
+      </div>
+      <div class="preview-stage" id="preview-stage">
+        <div class="device-shell" id="preview-device" style="--preview-scale: 1">
+          <div class="device-screen"><img id="preview-image" width="852" height="883" alt=""></div>
+        </div>
+        <div class="preview-spacer" id="preview-spacer" style="--preview-scale: 1" aria-hidden="true"></div>
       </div>
     </div>
-    <div class="zoom-stage" id="zoom-stage" role="region" tabindex="0" aria-label="Scrollable full-size device preview">
-      <div class="zoom-device" id="zoom-device">
-        <span class="device-screen"><img class="zoom-image" id="zoom-image" alt=""><span class="device-camera" aria-hidden="true"></span></span>
-      </div>
-    </div>
-  </div>
-</dialog>
+  </dialog>
 
-<script>
-const form = document.querySelector('#design-form');
-const dialog = document.querySelector('#preview-dialog');
-const zoomDevice = document.querySelector('#zoom-device');
-const zoomImage = document.querySelector('#zoom-image');
-const zoomTitle = document.querySelector('#zoom-title');
-const zoomDimensions = document.querySelector('#zoom-dimensions');
-const zoomScale = document.querySelector('#zoom-scale');
-const zoomStage = document.querySelector('#zoom-stage');
-const freeText = document.querySelector('#other-corrections');
-const output = document.querySelector('#output');
-const answerOutput = document.querySelector('#answer-output');
-const status = document.querySelector('#status');
-const frameWidth = 907;
-const frameHeight = 937;
-const logicalWidth = 852;
-let previewScale = 1;
-let previewTrigger = null;
+  <script>
+    const dialog = document.querySelector('#preview-dialog');
+    const stage = document.querySelector('#preview-stage');
+    const device = document.querySelector('#preview-device');
+    const spacer = document.querySelector('#preview-spacer');
+    const previewImage = document.querySelector('#preview-image');
+    const previewTitle = document.querySelector('#preview-title');
+    const previewDetails = document.querySelector('#preview-details');
+    const sourceWidth = 2076;
+    const designWidth = 852;
+    const frameWidth = 907;
+    const frameHeight = 937;
+    const nativeScale = sourceWidth / designWidth;
+    let scale = 1;
+    let returnTarget = null;
 
-const clampScale = (value) => Math.min(3, Math.max(0.02, value));
-const renderScale = () => {
-  zoomDevice.style.inlineSize = `${frameWidth * previewScale}px`;
-  zoomDevice.style.blockSize = `${frameHeight * previewScale}px`;
-  zoomScale.textContent = `${Math.round(previewScale * 100)}% · ${Math.round(frameWidth * previewScale)} × ${Math.round(frameHeight * previewScale)} CSS px frame`;
-};
-const fitPreview = () => {
-  const availableWidth = Math.max(1, zoomStage.clientWidth - 32);
-  const availableHeight = Math.max(1, zoomStage.clientHeight - 32);
-  previewScale = clampScale(Math.min(availableWidth / frameWidth, availableHeight / frameHeight));
-  renderScale();
-};
-const openPreview = (button) => {
-  const image = button.querySelector('img');
-  previewTrigger = button;
-  zoomTitle.textContent = button.dataset.previewTitle;
-  zoomDimensions.textContent = `Source ${button.dataset.sourceWidth} × ${button.dataset.sourceHeight} physical px · design ${button.dataset.previewWidth} × ${button.dataset.previewHeight}dp · reset maps 1dp to 1 CSS px.`;
-  zoomImage.src = image.src;
-  zoomImage.alt = image.alt;
-  zoomImage.dataset.candidateSource = image.dataset.candidateSource;
-  previewScale = 1;
-  renderScale();
-  dialog.showModal();
-  fitPreview();
-  requestAnimationFrame(fitPreview);
-};
+    function applyScale(nextScale) {
+      scale = Math.max(0.08, Math.min(nativeScale, nextScale));
+      device.style.setProperty('--preview-scale', String(scale));
+      spacer.style.setProperty('--preview-scale', String(scale));
+      previewDetails.textContent = `Source 2076 × 2152 physical px · design 852 × 883dp · ${Math.round(scale * 100)}% · ${Math.round(frameWidth * scale)} × ${Math.round(frameHeight * scale)} CSS px frame`;
+      stage.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
 
-document.querySelectorAll('.preview-open').forEach((button) => {
-  button.addEventListener('click', () => openPreview(button));
-});
-document.querySelector('#zoom-out').addEventListener('click', () => {
-  previewScale = clampScale(previewScale - 0.1);
-  renderScale();
-});
-document.querySelector('#zoom-in').addEventListener('click', () => {
-  previewScale = clampScale(previewScale + 0.1);
-  renderScale();
-});
-document.querySelector('#zoom-fit').addEventListener('click', fitPreview);
-document.querySelector('#zoom-native').addEventListener('click', () => {
-  previewScale = 2076 / logicalWidth;
-  renderScale();
-});
-document.querySelector('#zoom-reset').addEventListener('click', () => {
-  previewScale = 1;
-  renderScale();
-});
-document.querySelector('#zoom-close').addEventListener('click', () => dialog.close());
-dialog.addEventListener('close', () => {
-  if (previewTrigger) {
-    previewTrigger.focus();
-  }
-});
+    function fitPreview() {
+      const availableWidth = Math.max(1, stage.clientWidth - 32);
+      const availableHeight = Math.max(1, stage.clientHeight - 32);
+      applyScale(Math.min(1, availableWidth / frameWidth, availableHeight / frameHeight));
+    }
 
-const invalidatePreparedAnswer = () => {
-  if (output.hidden) {
-    return;
-  }
-  output.hidden = true;
-  answerOutput.value = '';
-  status.textContent = 'Answer changed. Prepare it again before copying or downloading.';
-};
-form.addEventListener('change', invalidatePreparedAnswer);
-form.addEventListener('input', () => {
-  freeText.setCustomValidity('');
-  invalidatePreparedAnswer();
-});
-form.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const corrections = freeText.value.trim();
-  if (!corrections) {
-    freeText.setCustomValidity('Enter a correction or “None”; spaces alone do not complete this field.');
-    freeText.reportValidity();
-    return;
-  }
-  freeText.setCustomValidity('');
-  const verdict = form.elements.scaleVerdict.value === 'accept'
-    ? 'Accept adaptive 3B'
-    : 'Revise adaptive 3B';
-  answerOutput.value = [
-    'Music-player accepted 3B scale review',
-    `Verdict: ${verdict}`,
-    `Corrections: ${corrections}`
-  ].join('\n');
-  output.hidden = false;
-  status.textContent = 'Answer prepared. Copy it into Pi.';
-  answerOutput.focus();
-});
-document.querySelector('#clear-form').addEventListener('click', () => {
-  form.reset();
-  freeText.setCustomValidity('');
-  output.hidden = true;
-  answerOutput.value = '';
-  status.textContent = 'Form cleared.';
-});
-document.querySelector('#copy-answers').addEventListener('click', () => {
-  answerOutput.focus();
-  answerOutput.select();
-  const copied = document.execCommand('copy');
-  if (!copied) {
-    status.textContent = 'Copy was blocked. Select the prepared answer and copy it manually.';
-    return;
-  }
-  status.textContent = 'Answer copied.';
-});
-document.querySelector('#download-answers').addEventListener('click', () => {
-  const blob = new Blob([answerOutput.value], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'music-player-accepted-3b-scale-review.txt';
-  link.click();
-  URL.revokeObjectURL(url);
-  status.textContent = 'Answer downloaded.';
-});
-</script>
+    document.querySelectorAll('.evidence-button').forEach((button) => {
+      button.addEventListener('click', () => {
+        returnTarget = button;
+        previewTitle.textContent = button.dataset.previewTitle;
+        previewImage.src = button.dataset.previewSrc;
+        previewImage.alt = button.querySelector('img').alt;
+        dialog.showModal();
+        requestAnimationFrame(fitPreview);
+      });
+    });
+
+    document.querySelector('#zoom-out').addEventListener('click', () => applyScale(scale - 0.1));
+    document.querySelector('#fit').addEventListener('click', fitPreview);
+    document.querySelector('#native').addEventListener('click', () => applyScale(nativeScale));
+    document.querySelector('#reset').addEventListener('click', () => applyScale(1));
+    document.querySelector('#preview-close').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {
+      if (returnTarget) {
+        returnTarget.focus();
+      }
+    });
+
+    const form = document.querySelector('#review-form');
+    const corrections = document.querySelector('#other-corrections');
+    const output = document.querySelector('#output');
+    const copyActions = document.querySelector('#copy-actions');
+    let preparedAnswer = '';
+
+    corrections.addEventListener('input', () => corrections.setCustomValidity(''));
+    form.addEventListener('reset', () => {
+      corrections.setCustomValidity('');
+      output.hidden = true;
+      copyActions.hidden = true;
+      preparedAnswer = '';
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (corrections.value.trim().length === 0) {
+        corrections.setCustomValidity('Enter a correction or “None”; spaces alone do not complete this field.');
+        corrections.reportValidity();
+        corrections.focus();
+        return;
+      }
+      corrections.setCustomValidity('');
+      const data = new FormData(form);
+      preparedAnswer = [
+        `Major-area traversal: ${data.get('focusOrder')}`,
+        `Current-track speech: ${data.get('currentSpeech')}`,
+        `Corrections: ${corrections.value.trim()}`,
+      ].join('\n');
+      output.textContent = preparedAnswer;
+      output.hidden = false;
+      copyActions.hidden = false;
+      output.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+    });
+
+    document.querySelector('#copy-answer').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(preparedAnswer);
+      document.querySelector('#copy-answer').textContent = 'Copied';
+    });
+  </script>
 </body>
 </html>

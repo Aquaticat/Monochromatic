@@ -1,362 +1,138 @@
 [vars]
 build_question = '''
-const { readFileSync, writeFileSync } = await import('node:fs');
-const { resolve } = await import('node:path');
-const renderPaths = {
-  IMAGE_FONT_085: 'questions/render/accepted-3b-font-085.png',
-  IMAGE_FONT_100: 'questions/render/accepted-3b-font-100.png',
-  IMAGE_FONT_115: 'questions/render/accepted-3b-font-115.png',
-  IMAGE_FONT_130: 'questions/render/accepted-3b-font-130.png',
-  IMAGE_FONT_150: 'questions/render/accepted-3b-font-150.png',
-  IMAGE_FONT_180: 'questions/render/accepted-3b-font-180.png',
-  IMAGE_FONT_200: 'questions/render/accepted-3b-font-200.png',
-  IMAGE_LONG_085: 'questions/render/accepted-3b-long-subdirectory-085.png',
-};
-let output = readFileSync(resolve('questions/current.template.html'), 'utf8');
-for (const [name, path] of Object.entries(renderPaths)) {
-  const marker = `@@${name}@@`;
-  const occurrences = output.split(marker).length - 1;
-  if (occurrences !== 1) {
-    throw new Error(`Expected one ${marker} marker, found ${occurrences}.`);
-  }
-  const dataUri = `data:image/png;base64,${readFileSync(resolve(path)).toString('base64')}`;
-  output = output.replace(marker, dataUri);
+const { readFileSync, writeFileSync } = await import("node:fs")
+const { join } = await import("node:path")
+const root = process.cwd()
+const templatePath = join(root, "questions", "current.template.html")
+const outputPath = join(root, "questions", "current.html")
+const images = [
+  ["@@A11Y_FOCUS_PANE@@", "questions/render/a11y-focus-pane.png"],
+  ["@@A11Y_FOCUS_BROWSE@@", "questions/render/a11y-focus-browse.png"],
+  ["@@A11Y_FOCUS_PLAYBACK@@", "questions/render/a11y-focus-playback.png"],
+  ["@@A11Y_CURRENT_STATE@@", "questions/render/a11y-current-state.png"],
+  ["@@A11Y_CURRENT_COMPOSED@@", "questions/render/a11y-current-composed.png"],
+  ["@@A11Y_MODE_085@@", "questions/render/a11y-mode-085.png"],
+  ["@@A11Y_MODE_100@@", "questions/render/a11y-mode-100.png"],
+  ["@@A11Y_MODE_150@@", "questions/render/a11y-mode-150.png"],
+]
+let html = readFileSync(templatePath, "utf8")
+for (const [placeholder, relativePath] of images) {
+  const encoded = readFileSync(join(root, relativePath)).toString("base64")
+  html = html.replaceAll(placeholder, `data:image/png;base64,${encoded}`)
 }
-writeFileSync(resolve('questions/current.html'), output);
-console.log('Built self-contained accepted-3B scale review.');
+if (html.includes("@@A11Y_")) {
+  throw new Error("Accessibility review still contains an unresolved image placeholder.")
+}
+writeFileSync(outputPath, html)
+console.log("Built self-contained unfolded TalkBack review.")
 '''
 
 validate_question = '''
-const { execFileSync } = await import('node:child_process');
-const { existsSync, readFileSync } = await import('node:fs');
-const { resolve } = await import('node:path');
-
-const scaleLabels = ['085', '100', '115', '130', '150', '180', '200'];
-const renderPaths = scaleLabels.map((label) => `questions/render/accepted-3b-font-${label}.png`);
-const semanticsPaths = scaleLabels.map((label) => `questions/evidence/accepted-3b-font-${label}.xml`);
-const longNameRenderPath = 'questions/render/accepted-3b-long-subdirectory-085.png';
-const longNameSemanticsPath = 'questions/evidence/accepted-3b-long-subdirectory-085.xml';
-const requiredPaths = [
-  'HANDOFF.md',
-  'decisions.md',
-  'open-questions.md',
-  'device-metrics.md',
-  'material-3-compliance.md',
-  'questions/current.template.html',
-  'questions/current.html',
-  'questions/render/cue-container-tonal.png',
-  ...renderPaths,
-  ...semanticsPaths,
-  longNameRenderPath,
-  longNameSemanticsPath,
-];
-const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
-if (missingPaths.length > 0) {
-  throw new Error(`Missing required accepted-3B scale files: ${missingPaths.join(', ')}`);
+const { readFileSync } = await import("node:fs")
+const { join } = await import("node:path")
+const root = process.cwd()
+const htmlPath = join(root, "questions", "current.html")
+const html = readFileSync(htmlPath, "utf8")
+if (html.includes("@@A11Y_")) {
+  throw new Error("Accessibility review contains unresolved image placeholders.")
 }
-
-const imageFingerprint = ({ path, crop }) => execFileSync(
-  'magick',
-  [resolve(path), '-crop', crop, '+repage', '-format', '%#', 'info:'],
-  { encoding: 'utf8' },
-);
-const pixelAt = ({ path, x, y }) => execFileSync(
-  'magick',
-  [resolve(path), '-format', `%[pixel:p{${x},${y}}]`, 'info:'],
-  { encoding: 'utf8' },
-);
-const countExactColor = ({ path, crop, color }) => Number(execFileSync(
-  'magick',
-  [
-    resolve(path), '-crop', crop, '+repage', '-alpha', 'off',
-    '-fill', 'black', '+opaque', color,
-    '-fill', 'white', '-opaque', color,
-    '-format', '%[fx:mean*w*h]', 'info:',
-  ],
-  { encoding: 'utf8' },
-));
-const countDarkPixels = ({ path, crop }) => {
-  const histogram = execFileSync(
-    'magick',
-    [resolve(path), '-crop', crop, '+repage', '-format', '%c', 'histogram:info:-'],
-    { encoding: 'utf8' },
-  );
-  return histogram.split('\n').reduce((count, line) => {
-    const tupleStart = line.indexOf('(');
-    const tupleEnd = line.indexOf(')', tupleStart);
-    const countEnd = line.indexOf(':');
-    if (tupleStart < 0 || tupleEnd < 0 || countEnd < 0) {
-      return count;
-    }
-    const channels = line.slice(tupleStart + 1, tupleEnd).split(',').slice(0, 3).map((channel) => Number(channel));
-    if (channels[0] >= 128 || channels[1] >= 128 || channels[2] >= 160) {
-      return count;
-    }
-    return count + Number(line.slice(0, countEnd).trim());
-  }, 0);
-};
-const attributeValue = ({ node, name }) => {
-  const marker = `${name}="`;
-  const start = node.indexOf(marker);
-  if (start < 0) {
-    return '';
+if (/<script\s+[^>]*src=|<link\s+[^>]*href=/i.test(html)) {
+  throw new Error("Accessibility review depends on an external script or stylesheet.")
+}
+const dataUrls = [...html.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)]
+if (dataUrls.length !== 16) {
+  throw new Error(`Accessibility review embeds ${dataUrls.length} image references; expected 16.`)
+}
+const uniqueImages = new Map(dataUrls.map((match) => [match[1], Buffer.from(match[1], "base64")]))
+if (uniqueImages.size !== 8) {
+  throw new Error(`Accessibility review embeds ${uniqueImages.size} distinct captures; expected 8.`)
+}
+const pngSignature = "89504e470d0a1a0a"
+for (const [encoded, image] of uniqueImages) {
+  if (image.subarray(0, 8).toString("hex") !== pngSignature) {
+    throw new Error(`Embedded evidence ${encoded.slice(0, 16)} is not a PNG.`)
   }
-  const valueStart = start + marker.length;
-  const end = node.indexOf('"', valueStart);
-  return node.slice(valueStart, end);
-};
-const hierarchyNodes = (hierarchy) => hierarchy
-  .split('<node ')
-  .slice(1)
-  .map((fragment) => fragment.slice(0, fragment.indexOf('/>')));
-const parseBounds = (bounds) => {
-  const values = bounds
-    .replaceAll('[', '')
-    .replaceAll(']', ',')
-    .split(',')
-    .filter((value) => value.length > 0)
-    .map((value) => Number(value));
-  if (values.length !== 4 || values.some((value) => !Number.isFinite(value))) {
-    throw new Error(`Invalid UI Automator bounds: ${bounds}`);
-  }
-  return { left: values[0], top: values[1], right: values[2], bottom: values[3] };
-};
-
-for (const path of [...renderPaths, longNameRenderPath]) {
-  const image = readFileSync(resolve(path));
-  if (image.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {
-    throw new Error(`${path} is not a PNG.`);
-  }
-  const width = image.readUInt32BE(16);
-  const height = image.readUInt32BE(20);
+  const width = image.readUInt32BE(16)
+  const height = image.readUInt32BE(20)
   if (width !== 2076 || height !== 2152) {
-    throw new Error(`${path} is ${width}×${height}; expected 2076×2152.`);
-  }
-  const opaque = execFileSync('magick', [resolve(path), '-format', '%[opaque]', 'info:'], { encoding: 'utf8' });
-  if (opaque !== 'True') {
-    throw new Error(`${path} must remain an opaque native emulator capture.`);
-  }
-  const statusPixels = countDarkPixels({ path, crop: '300x88+1700+0' });
-  const navigationPixels = countDarkPixels({ path, crop: '700x78+688+2074' });
-  if (statusPixels < 600 || navigationPixels < 5000) {
-    throw new Error(`${path} does not retain native Android system UI.`);
-  }
-  const foldColorCount = Number(execFileSync(
-    'magick',
-    [resolve(path), '-crop', '59x1700+1009+200', '+repage', '-format', '%k', 'info:'],
-    { encoding: 'utf8' },
-  ));
-  if (foldColorCount !== 1 || pixelAt({ path, x: 1038, y: 1000 }) !== 'srgba(255,255,255,1)') {
-    throw new Error(`${path} does not keep the protected center spacer uniformly white.`);
-  }
-  if (pixelAt({ path, x: 117, y: 1000 }) !== 'srgba(176,177,188,1)') {
-    throw new Error(`${path} does not preserve the accepted letter-rail boundary.`);
-  }
-  const currentContainerPixels = countExactColor({ path, crop: '1000x220+1050+270', color: '#F3F3FA' });
-  const tonalOpenPixels = countExactColor({ path, crop: '300x150+710+140', color: '#DCE2F9' });
-  if (currentContainerPixels < 150000 || tonalOpenPixels < 18000) {
-    throw new Error(`${path} does not retain exact accepted treatment 3B.`);
+    throw new Error(`Embedded TalkBack evidence is ${width} × ${height}; expected 2076 × 2152.`)
   }
 }
-
-const acceptedDefaultPath = 'questions/render/accepted-3b-font-100.png';
-const selectedBaselinePath = 'questions/render/cue-container-tonal.png';
-if (
-  imageFingerprint({ path: acceptedDefaultPath, crop: '1067x1850+1009+150' })
-  !== imageFingerprint({ path: selectedBaselinePath, crop: '1067x1850+1009+150' })
-) {
-  throw new Error('The 100% state changes selected T3 track treatment or alignment.');
-}
-if (
-  imageFingerprint({ path: acceptedDefaultPath, crop: '300x150+710+140' })
-  !== imageFingerprint({ path: selectedBaselinePath, crop: '300x150+710+140' })
-) {
-  throw new Error('The 100% state changes selected O2 tonal Open treatment.');
-}
-const defaultTransportFingerprint = imageFingerprint({
-  path: acceptedDefaultPath,
-  crop: '1009x674+0+1400',
-});
-if (defaultTransportFingerprint !== 'a6ebede2afec45fde01b3e2580579704eae774e51844c7cb61efa73dcc411a5a') {
-  throw new Error('The 100% state changes transport 1B, seek position, or adaptive mode geometry.');
-}
-
-const uniqueCaptures = new Set(renderPaths.map((path) => imageFingerprint({ path, crop: '2076x2152+0+0' })));
-if (uniqueCaptures.size !== renderPaths.length) {
-  throw new Error('Android font presets did not produce seven distinct native captures.');
-}
-
-const expectedRowCounts = {
-  '085': 1,
-  '100': 2,
-  '115': 2,
-  '130': 2,
-  '150': 4,
-  '180': 4,
-  '200': 4,
-};
-const expectedOneRowWidths = {
-  '085': [153, 224, 276, 190],
-};
-const expectedDescriptions = ['Repeat track', 'Play in order', 'Shuffle Camellia', 'Shuffle all folders'];
-const expectedVisibleLabels = ['Repeat', 'In order', 'Shuffle all'];
-for (const label of scaleLabels) {
-  const path = `questions/evidence/accepted-3b-font-${label}.xml`;
-  const hierarchy = readFileSync(resolve(path), 'utf8');
-  if (!hierarchy.includes('content-desc="Current track: Another Xronixle"')) {
-    throw new Error(`${path} does not expose current-track semantics.`);
-  }
-  if (hierarchy.includes('content-desc="Playing"')) {
-    throw new Error(`${path} restores the rejected play-icon accessibility node.`);
-  }
-  if (expectedVisibleLabels.some((text) => !hierarchy.includes(`text="${text}"`))) {
-    throw new Error(`${path} does not retain all four visible mode labels.`);
-  }
-  const shuffleLabelVisible = expectedRowCounts[label] === 1
-    ? hierarchy.includes('text="Shuffle "') && hierarchy.includes('text="Camellia"')
-    : hierarchy.includes('text="Shuffle Camellia"');
-  if (!shuffleLabelVisible) {
-    throw new Error(`${path} does not retain visible Shuffle Camellia content.`);
-  }
-  if (hierarchy.includes('text="Shuffle"') || hierarchy.includes('content-desc="Shuffle current folder"')) {
-    throw new Error(`${path} restores a context-free current-folder Shuffle label.`);
-  }
-  const nodes = hierarchyNodes(hierarchy);
-  if (nodes.some((node) => {
-    const text = attributeValue({ node, name: 'text' });
-    return text.length > 0 && [...text].every((character) => character >= '0' && character <= '9');
-  })) {
-    throw new Error(`${path} restores interface-generated track ordinals.`);
-  }
-  if (label === '100') {
-    const currentTitleAligned = nodes.some((node) =>
-      attributeValue({ node, name: 'text' }) === 'Another Xronixle'
-      && attributeValue({ node, name: 'bounds' }) === '[1107,331][1420,390]'
-    );
-    const ordinaryTitleAligned = nodes.some((node) =>
-      attributeValue({ node, name: 'text' }) === 'Burning Aquamarine'
-      && attributeValue({ node, name: 'bounds' }) === '[1107,507][1483,566]'
-    );
-    if (!currentTitleAligned || !ordinaryTitleAligned) {
-      throw new Error(`${path} restores a leading state column or misaligns track titles.`);
-    }
-  }
-  const modeNodes = nodes.filter((node) => expectedDescriptions.includes(attributeValue({ node, name: 'content-desc' })));
-  if (modeNodes.length !== expectedDescriptions.length) {
-    throw new Error(`${path} does not expose exactly four mode options.`);
-  }
-  const descriptions = new Set(modeNodes.map((node) => attributeValue({ node, name: 'content-desc' })));
-  if (descriptions.size !== expectedDescriptions.length) {
-    throw new Error(`${path} duplicates or omits a mode option.`);
-  }
-  const bounds = modeNodes.map((node) => parseBounds(attributeValue({ node, name: 'bounds' })));
-  const rowBounds = new Set(bounds.map((bound) => `${bound.top}:${bound.bottom}`));
-  if (rowBounds.size !== expectedRowCounts[label]) {
-    throw new Error(`${path} uses ${rowBounds.size} mode rows; expected ${expectedRowCounts[label]}.`);
-  }
-  const targetWidths = bounds.map((bound) => bound.right - bound.left);
-  if (bounds.some((bound) => bound.right - bound.left < 117 || bound.bottom - bound.top < 117)) {
-    throw new Error(`${path} reduces a mode target below 48dp.`);
-  }
-  if (
-    expectedOneRowWidths[label]
-    && targetWidths.some((width, index) => width !== expectedOneRowWidths[label][index])
-  ) {
-    throw new Error(`${path} does not preserve measured content-sized one-row cells.`);
-  }
-  const groupBottom = Math.max(...bounds.map((bound) => bound.bottom));
-  if (groupBottom > 2035) {
-    throw new Error(`${path} does not clear the Android navigation inset.`);
+const required = [
+  "Choose unfolded TalkBack behavior",
+  "It does not authorize production implementation.",
+  "Fixed requirements, not choices",
+  "TalkBack says “1 of 4” through “4 of 4”",
+  "F1 · recommended",
+  "F2",
+  "F3",
+  "Pane by pane",
+  "Browse first",
+  "Playback first",
+  "Ranking: F1 &gt; F2 &gt; F3.",
+  "S1 · recommended",
+  "S2",
+  "Structured state",
+  "Composed sentence",
+  "Ranking: S1 &gt; S2.",
+  "Current track. Another Xronixle. 4:35 · −1.2 dBTP. Button.",
+  "Selected. Current track: Another Xronixle, 4:35, −1.2 dBTP. Button.",
+  "Reduced motion:",
+  "name=\"focusOrder\"",
+  "name=\"currentSpeech\"",
+  "spaces alone do not complete this field",
+  "Native pixels",
+  "Reset 100%",
+  "Source 2076 × 2152 physical px · design 852 × 883dp",
+]
+for (const fragment of required) {
+  if (!html.includes(fragment)) {
+    throw new Error(`Accessibility review is missing required content: ${fragment}`)
   }
 }
-
-const longNameHierarchy = readFileSync(resolve(longNameSemanticsPath), 'utf8');
-const longNameNodes = hierarchyNodes(longNameHierarchy);
-const longNameModeNode = longNameNodes.find((node) =>
-  attributeValue({ node, name: 'content-desc' }) === 'Shuffle ExtraordinarilyLongDirectory'
-);
-if (!longNameModeNode) {
-  throw new Error(`${longNameSemanticsPath} does not retain the full long-name accessibility description.`);
+const radioCount = (html.match(/type="radio"/g) ?? []).length
+if (radioCount !== 5) {
+  throw new Error(`Accessibility review has ${radioCount} radio choices; expected 5.`)
 }
-const longNameBounds = parseBounds(attributeValue({ node: longNameModeNode, name: 'bounds' }));
-if (longNameBounds.right - longNameBounds.left !== 276) {
-  throw new Error(`${longNameSemanticsPath} widens Shuffle beyond the measured Camellia-sized cell.`);
-}
-if (
-  imageFingerprint({ path: longNameRenderPath, crop: '1009x300+0+1800' })
-  !== 'c262c2c3e48abc2bb6ee77ddfaeb729365a8044a13fefecd5f4025135bde8d79'
-) {
-  throw new Error(`${longNameRenderPath} does not preserve the verified middle-ellipsis rendering.`);
-}
-
-const template = readFileSync(resolve('questions/current.template.html'), 'utf8');
-const question = readFileSync(resolve('questions/current.html'), 'utf8');
-const requiredFragments = [
-  'Review accepted 3B across text sizes',
-  'the installed <code>SettingsGoogle.apk</code> exposes exactly 85%, 100%, 115%, 130%, 150%, 180%, and 200%',
-  'Shuffle Camellia',
-  '85% uses one content-sized row. 100%, 115%, and 130% use 2×2. 150%, 180%, and 200% use four rows.',
-  'longer names middle-ellipsize the subdirectory only while accessibility retains the full name',
-  'Long-name middle-ellipsis proof',
-  'prototype commit dea1d968f',
-  'one row &gt; two rows &gt; four rows',
-  'soft neutral current-track container, bold current title, tonal Open, and transport 1B',
-  'Every segment keeps at least 12dp horizontal content padding.',
-  'The control adds rows rather than reducing that floor.',
-  'Production assistive technology must still verify one mutually exclusive group announcement.',
-  'What should change? Enter “None” if the scale behavior is accepted.',
-  'Answer changed. Prepare it again before copying or downloading.',
-  'spaces alone do not complete this field.',
-  'Math.max(0.02, value)',
-  'prototype commit cedc2a668',
-];
-for (const fragment of requiredFragments) {
-  if (!question.includes(fragment)) {
-    throw new Error(`Questionnaire is missing required evidence: ${fragment}`);
+const evidence = (name) => JSON.parse(readFileSync(join(root, "questions", "evidence", name), "utf8"))
+const first = (sequence, fragment) => sequence.findIndex((entry) => entry.speech.includes(fragment))
+const baseline = evidence("a11y-baseline-focus-100.json")
+const pane = evidence("a11y-pane-focus-100.json")
+const browse = evidence("a11y-browse-focus-100.json")
+const playback = evidence("a11y-playback-focus-100.json")
+const assertOrder = (sequence, fragments, label) => {
+  const positions = fragments.map((fragment) => first(sequence, fragment))
+  if (positions.some((position) => position < 0)) {
+    throw new Error(`${label} transcript is missing one required focus landmark.`)
+  }
+  if (!positions.every((position, index) => index === 0 || positions[index - 1] < position)) {
+    throw new Error(`${label} transcript does not preserve required traversal order.`)
   }
 }
-const disallowedFragments = [
-  'Choose redundant cues',
-  '4 × 4 matrix',
-  'recommendation is 1A',
-  'Shuffle current folder',
-  'command-bar',
-  'volume control',
-  'then 6dp',
-  'Compact 6dp',
-  'padding falls from 12dp to 6dp',
-];
-for (const fragment of disallowedFragments) {
-  if (question.includes(fragment)) {
-    throw new Error(`Questionnaire contains stale or unauthorized content: ${fragment}`);
-  }
+assertOrder(baseline, ["Settings. Button", "Current track:", "Selected. Camellia", "1 of 16"], "Baseline")
+assertOrder(pane, ["Selected. Camellia", "1 of 16", "Current track."], "Pane candidate")
+assertOrder(browse, ["Selected. Camellia", "Current track.", "1 of 16"], "Browse candidate")
+assertOrder(playback, ["1 of 16", "Current track.", "Selected. Camellia"], "Playback candidate")
+if (!html.includes("dialog.showModal()") || !html.includes("returnTarget.focus()")) {
+  throw new Error("Accessibility preview does not retain native modal and focus restoration behavior.")
 }
-if (question.includes('http://') || question.includes('https://')) {
-  throw new Error('Questionnaire must remain offline and self-contained.');
-}
-if (question.includes('@@')) {
-  throw new Error('Built questionnaire still contains an unresolved image marker.');
-}
-const templateMarkers = template.split('@@IMAGE_').length - 1;
-const embeddedImages = question.split('data:image/png;base64,').length - 1;
-const radioCount = question.split('type="radio" name="scaleVerdict"').length - 1;
-if (templateMarkers !== 8 || embeddedImages !== 8 || radioCount !== 2) {
-  throw new Error(`Expected eight image markers, eight renders, and two verdict radios; found ${templateMarkers}, ${embeddedImages}, and ${radioCount}.`);
-}
-console.log('Accepted-3B scale review is valid.');
+console.log("Unfolded TalkBack review is valid.")
 '''
 
 [tasks.build]
-description = "Embed seven accepted-3B text-scale captures and one long-name diagnostic into the self-contained review"
+description = "Embed native TalkBack evidence into the self-contained unfolded accessibility review"
+dir = "{{config_root}}"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
 [tasks.lint]
-description = "Validate the active accepted-3B text-scale review"
+description = "Validate the active unfolded TalkBack design review"
+dir = "{{config_root}}"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
 
 [tasks."test:unit"]
-description = "Exercise the accepted-3B text-scale completion contract"
+description = "Exercise the unfolded TalkBack review completion contract"
+dir = "{{config_root}}"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
