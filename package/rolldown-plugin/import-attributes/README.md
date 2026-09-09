@@ -8,7 +8,7 @@ but does not use them to influence module loading ([rolldown#2758][issue]).
 This plugin bridges the gap.
 
 [mdn]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with
-[issue]: https://github.com/nicolo-ribaudo/tc39-proposal-import-attributes/issues/2758
+[issue]: https://github.com/rolldown/rolldown/issues/2758
 
 ## Usage
 

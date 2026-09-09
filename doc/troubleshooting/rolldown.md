@@ -75,7 +75,7 @@ Source citations (rolldown `main` commit `9704b5650`,
 - `crates/rolldown/src/ast_scanner/new_url.rs:69`:
    only
   assignment to `asserted_module_type` sets `ModuleType::Asset`.
-- `crates/rolldown_common/src/types/import_record.rs:31`:
+- `crates/rolldown_common/src/types/import_record.rs:32`:
   `asserted_module_type: Option<ModuleType>`.
 - `packages/rolldown/src/plugin/index.ts:223-246`:
   `ResolveIdExtraOptions` lacks `attributes`.
@@ -88,6 +88,13 @@ Version under test:
  Reproduce by
 importing any non-JS asset with `with { type: 'text' }` in a
 client-side bundle.
+
+The original upstream issue's dynamic JSON case now works in `rolldown@1.2.7`.
+A disposable 2026-09-09 check bundled
+`import('./file.json', { with: { type: 'json' } })`,
+rewrote it to the emitted JavaScript chunk,
+and loaded the expected JSON value.
+That does not test or fix this section's static `type: 'text'` failure.
 
 ### Verified workarounds
 
