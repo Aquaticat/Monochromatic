@@ -433,7 +433,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
                 sectionDivider = TrueBlack,
                 paneDivider = false,
                 railDivider = true,
-                railDividerColor = scheme.outlineVariant,
+                railDividerColor = scheme.outline,
                 rowDividers = false,
             )
         }
@@ -448,7 +448,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
                 sectionDivider = TrueBlack,
                 paneDivider = false,
                 railDivider = true,
-                railDividerColor = scheme.outlineVariant,
+                railDividerColor = scheme.outline,
                 rowDividers = false,
             )
         }
@@ -462,7 +462,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             sectionDivider = TrueBlack,
             paneDivider = false,
             railDivider = true,
-            railDividerColor = scheme.outlineVariant,
+            railDividerColor = scheme.outline,
             rowDividers = false,
         )
     }
