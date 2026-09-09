@@ -114,6 +114,13 @@ export function tallyCaughtEntry(
    * Tally and retry classification for caught state.
    */
   const classified = entryErrorOutcome({ error, },);
+  // THE FINDINGS REACH THE LOG, one line each, since the tally line carries the
+  // reason alone and the sixth yuki418330012 pass of 2026-09-09 stopped twice
+  // as carried-evidence-lost with nothing in the log saying which region.
+  if (error instanceof TranslationRepairInterruptedError) {
+    for (const finding of error.findings)
+      console.log(`INTERRUPTED ${entryId}: ${finding}`,);
+  }
   console.log(
     `TALLY ${entryId} status=${classified.status} ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,
   );

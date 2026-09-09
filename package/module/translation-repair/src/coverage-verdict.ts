@@ -495,7 +495,13 @@ export function judgeCoverage(
     },),
     heard: voices.length,
     asked,
-    evidence: weighed.filter(isAnchored,)
+    // ONLY THE FULL VOTES ARE EVIDENCE. A partial voter quotes what it found
+    // instead, which may sit anywhere on the page; the sixth yuki418330012 pass of
+    // 2026-09-09 carried a credits line on seven full votes and one partial vote
+    // quoting a sentence about suicide attempts, a lane rewrote that sentence,
+    // and the carried-insertion guard stopped the entry over a region no full
+    // vote ever named.
+    evidence: weighed.filter(isFull,)
       .map(claimMatched,),
     unanchoredQuotes: weighed.filter(isUnanchored,)
       .map(claimQuote,),

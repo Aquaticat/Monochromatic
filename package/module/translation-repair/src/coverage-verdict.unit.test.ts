@@ -116,8 +116,9 @@ await describe({
         expect(verdict.anchoredFull,).toBe(3,);
         expect(verdict.anchoredPartial,).toBe(1,);
         expect(verdict.absent,).toBe(0,);
+        // THE THREE FULL VOTES ARE THE EVIDENCE; the partial voter's quote is not.
         expect(verdict.evidence
-          .length,).toBe(4,);
+          .length,).toBe(3,);
       },
     },),
     it({
@@ -268,6 +269,46 @@ await describe({
           .at(0,),).toBe('naps on its\ncushion at noon',);
         expect(wrappedText.includes(verdict.evidence
           .at(0,) ?? '',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'records only the FULL votes\' regions as evidence: a partial voter quotes what it found instead, '
+        + 'which may sit anywhere on the page, and a lane rewriting that sentence must not stop the entry '
+        + '(the sixth yuki418330012 pass of 2026-09-09)',
+      fn: async () => {
+        /** Translation carrying the credits and an unrelated sentence. */
+        const pageText = 'She had tried many times before.\n\nContributors: Zhenli, Sansan.\n';
+        const verdict = judgeCoverage({
+          voices: [
+            voiceOf({
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
+              coverage: 'full',
+              quote: 'Contributors: Zhenli, Sansan.',
+            },),
+            voiceOf({
+              modelId: 'hf:cat/Cat-B' as RosterModelId,
+              coverage: 'full',
+              quote: 'Contributors: Zhenli, Sansan.',
+            },),
+            voiceOf({
+              modelId: 'hf:cat/Cat-C' as RosterModelId,
+              coverage: 'partial',
+              quote: 'She had tried many times before.',
+            },),
+          ],
+          document: {
+            text: pageText,
+            nodes: parseDocument({ text: pageText, },).nodes,
+          },
+          asked: 3,
+          quorumMet: true,
+        },);
+        expect(verdict.kind,).toBe('carried',);
+        expect(verdict.anchoredPartial,).toBe(1,);
+        expect(verdict.evidence,).toStrictEqual([
+          'Contributors: Zhenli, Sansan.',
+          'Contributors: Zhenli, Sansan.',
+        ],);
       },
     },),
     it({
