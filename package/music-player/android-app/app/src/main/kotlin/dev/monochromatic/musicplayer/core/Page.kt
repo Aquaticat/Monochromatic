@@ -198,3 +198,43 @@ data class Page(
     // ```
     val entries: List<PageEntry>,
 )
+
+// What:     `fun Page.isFolderPage(): Boolean` declares an extension function on `Page`.
+//           Callers write `page.isFolderPage()` even though `Page` remains a plain data class.
+//           `Boolean` is Kotlin's true-or-false type, equivalent to TS `boolean`.
+// Why:      The unfolded folder picker must distinguish a one-character folder such as `A`
+//           from the separate root-level `A` page without guessing from their identical labels.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function isFolderPage(page: Page): boolean { /* inspect its entries */ }
+// ```
+/** Returns whether this page represents one top-level folder rather than one root-name bucket. */
+fun Page.isFolderPage(): Boolean {
+    // What:     `val folderPrefix: String = "$label/"` creates immutable text by interpolating
+    //           this page's `label` before `/`. Kotlin `String` is immutable UTF-16 text;
+    //           sibling `CharSequence` is a broader read-only text interface. A concrete
+    //           `String` is required by `startsWith` and no broader input type is needed.
+    // Why:      Every entry in a folder page begins with exactly `<label>/`, while a root
+    //           letter page keeps unprefixed names even when its label is the same character.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const folderPrefix: string = `${page.label}/`;
+    // ```
+    val folderPrefix: String = "$label/"
+    // What:     `entries.firstOrNull()?.name?.startsWith(folderPrefix) == true` reads the first
+    //           entry when present, safely follows its name, and compares the prefix result to
+    //           `true`. Each `?.` yields `null` instead of calling through absent data, so an
+    //           empty page returns `false` without an exception.
+    // Why:      Pagination creates homogeneous non-empty pages. Inspecting one entry proves the
+    //           page kind while the null-safe path keeps manually constructed empty fixtures total.
+    // Gotcha:   Kotlin's `?.` is optional chaining like TS `?.`; `== true` converts the resulting
+    //           nullable `Boolean?` into a non-null `Boolean`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return page.entries[0]?.name?.startsWith(folderPrefix) === true;
+    // ```
+    return entries.firstOrNull()?.name?.startsWith(folderPrefix) == true
+}

@@ -767,6 +767,7 @@ class PlayerControllerTest {
             ),
         )
         controller.selectPage(1)
+        assertEquals(listOf(0), controller.uiState.folderPageIndices)
         assertEquals("Apple.mp3", controller.uiState.pageItems.single().name)
         controller.reconcileLibrary(
             listOf(
@@ -776,6 +777,7 @@ class PlayerControllerTest {
             ),
         )
         assertEquals(2, controller.uiState.selectedPage)
+        assertEquals(listOf(0, 1), controller.uiState.folderPageIndices)
         assertEquals("Apple.mp3", controller.uiState.pageItems.single().name)
     }
 

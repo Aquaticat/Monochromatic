@@ -84,6 +84,18 @@ import androidx.compose.runtime.setValue
 // ```
 import dev.monochromatic.musicplayer.core.Page
 
+// What:     `import dev.monochromatic.musicplayer.core.isFolderPage` imports the page-kind
+//           predicate as an extension. It lets callers write `page.isFolderPage()` while the
+//           implementation remains beside the `Page` model.
+// Why:      The UI snapshot must expose which page indices are actual folders so the unfolded
+//           picker never mistakes a one-character folder for an alphabetical root bucket.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { isFolderPage } from "./core/Page";
+// ```
+import dev.monochromatic.musicplayer.core.isFolderPage
+
 // What:     `import dev.monochromatic.musicplayer.core.Queue` imports the ported `Queue`
 //           type (the play queue: ordered tracks plus a cursor, with shuffle/repeat).
 // Why:      The controller owns a `Queue`.
@@ -1913,6 +1925,7 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // this.uiState = {
         //   pageLabels: this.pages.map((p) => p.label),
+        //   folderPageIndices: this.pages.flatMap((page, index) => page.isFolderPage() ? [index] : []),
         //   selectedPage: selected,
         //   pageItems: this.pages[selected]?.entries ?? [],
         //   currentIndex: current,
@@ -1934,6 +1947,19 @@ class PlayerController(private val engine: AudioEngine) {
             // pageLabels: this.pages.map((p) => p.label),
             // ```
             pageLabels = pages.map { it.label },
+            // What:     `folderPageIndices = pages.mapIndexedNotNull { index, page -> ... }`
+            //           maps pages with both index and value, returning each folder's index and
+            //           `null` for every root bucket; `mapIndexedNotNull` removes those nulls.
+            // Why:      Preserve page identity for the unfolded folder picker without inferring
+            //           kind from display text, so folder `A` stays distinct from root page `A`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // folderPageIndices: this.pages.flatMap((page, index) => page.isFolderPage() ? [index] : []),
+            // ```
+            folderPageIndices = pages.mapIndexedNotNull { index, page ->
+                if (page.isFolderPage()) index else null
+            },
             // What:     `selectedPage = selected` passes the chosen page index by name.
             // Why:      Which tab is active.
             //

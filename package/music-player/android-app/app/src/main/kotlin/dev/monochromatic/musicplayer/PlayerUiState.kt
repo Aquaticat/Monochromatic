@@ -36,8 +36,8 @@ import dev.monochromatic.musicplayer.core.PlaybackMode
 // In TS you'd write (pseudocode):
 // ```ts
 // type PlayerUiState = Readonly<{
-//   pageLabels: readonly string[]; selectedPage: number;
-//   pageItems: readonly PageEntry[]; currentIndex: number | null;
+//   pageLabels: readonly string[]; folderPageIndices: readonly number[];
+//   selectedPage: number; pageItems: readonly PageEntry[]; currentIndex: number | null;
 //   playing: boolean; playbackMode: PlaybackMode; volume: number;
 //   queueSize: number; loading: boolean;
 // }>;
@@ -46,6 +46,9 @@ import dev.monochromatic.musicplayer.core.PlaybackMode
 data class PlayerUiState(
     /** Displayed names of library pages in tab order. */
     val pageLabels: List<String> = emptyList(),
+
+    /** Page indices backed by top-level folders rather than root-name buckets. */
+    val folderPageIndices: List<Int> = emptyList(),
 
     /** Index of the page currently displayed by the UI. */
     val selectedPage: Int = 0,
