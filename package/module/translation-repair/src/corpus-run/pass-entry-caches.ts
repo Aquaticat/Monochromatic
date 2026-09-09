@@ -1,6 +1,8 @@
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
+import { tallyErrorText, } from './tally-error-text.ts';
 import {
+  discardSliceCache,
   openRefineSliceCache,
   openSliceCache,
   openTranslateSliceCache,
@@ -95,6 +97,39 @@ export async function openEntryCaches(
       generation: pipelineDigest,
     },),
   };
+}
+
+/**
+ * Retires a settled entry's caches without changing its already recorded outcome.
+ *
+ * @param entryId - settled entry named by cleanup diagnostics
+ *
+ * @param dir - entry-owned cache directory
+ *
+ * @example
+ * ```ts
+ * await retireSettledEntryCache({ entryId, dir, });
+ * ```
+ */
+export async function retireSettledEntryCache(
+  { entryId, dir, }: { readonly entryId: string; readonly dir: string; },
+): Promise<void> {
+  try {
+    // The entry settled, so its slice cache is spent; drop it to keep the cache
+    // directory bounded to in-flight large documents. AFTER the artifact write,
+    // never before: a discard that ran first would turn a failed write into a
+    // full re-buy of every slice.
+    await discardSliceCache({ dir, },);
+  }
+  catch (error) {
+    // A CLEANUP LINE, NEVER A SECOND TALLY. The artifact is already on disk, so
+    // this entry IS settled; the old shape ran the discard inside the same try
+    // as the pipeline, so a failed unlink logged `TALLY status=ERROR` after the
+    // success line and every reader counting statuses saw one entry as both.
+    // What is left behind is a stale cache directory, which costs disk and
+    // nothing else: the next run skips the entry on its artifact.
+    console.log(`CLEANUP ${entryId} cache=retained error=${tallyErrorText({ error, },)}`,);
+  }
 }
 
 //endregion Pass entry caches

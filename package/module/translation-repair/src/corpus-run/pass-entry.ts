@@ -28,11 +28,12 @@ import { persistSettledEntry, } from './pass-entry-persist.ts';
 import { unfilledPageFindings, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
-import { tallyErrorText, } from './tally-error-text.ts';
 import { createPassPictureReader, } from './pass-seated-pictures.ts';
 import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
-import { discardSliceCache, } from './slice-cache-store.ts';
-import { openEntryCaches, } from './pass-entry-caches.ts';
+import {
+  openEntryCaches,
+  retireSettledEntryCache,
+} from './pass-entry-caches.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import { readJudgeSeats, } from './run-seats-read.ts';
 import { readLanesSeats, } from './pass-reseat.ts';
@@ -581,22 +582,7 @@ export async function settleEntry(
     return outcome;
   }
 
-  try {
-    // The entry settled, so its slice cache is spent; drop it to keep the cache
-    // directory bounded to in-flight large documents. AFTER the artifact write,
-    // never before: a discard that ran first would turn a failed write into a
-    // full re-buy of every slice.
-    await discardSliceCache({ dir: entryCacheDir, },);
-  }
-  catch (error) {
-    // A CLEANUP LINE, NEVER A SECOND TALLY. The artifact is already on disk, so
-    // this entry IS settled; the old shape ran the discard inside the same try
-    // as the pipeline, so a failed unlink logged `TALLY status=ERROR` after the
-    // success line and every reader counting statuses saw one entry as both.
-    // What is left behind is a stale cache directory, which costs disk and
-    // nothing else: the next run skips the entry on its artifact.
-    console.log(`CLEANUP ${entry.id} cache=retained error=${tallyErrorText({ error, },)}`,);
-  }
+  await retireSettledEntryCache({ entryId: entry.id, dir: entryCacheDir, },);
   return outcome;
 }
 

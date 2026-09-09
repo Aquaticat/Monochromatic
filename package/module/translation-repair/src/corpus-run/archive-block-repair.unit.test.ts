@@ -204,8 +204,8 @@ await describe({
           },
           pictureReadings,
         },);
-        expect([...targetOnly.values(),].every(function empty(context,): boolean {
-          return context === '';
+        expect([...targetOnly.values(),].every(function empty(value,): boolean {
+          return value === '';
         },),).toBe(true,);
       },
     },),
