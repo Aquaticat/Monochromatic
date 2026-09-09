@@ -9,16 +9,16 @@ import {
   introducedFootnoteFindings,
   introducedStructuralRegressions,
 } from './assembly-regressions.ts';
-
-export {
-  introducedFootnoteFindings,
-  introducedStructuralRegressions,
-} from './assembly-regressions.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import {
   type SliceReplacement,
   spliceSlices,
 } from './splice-slices.ts';
+
+export {
+  introducedFootnoteFindings,
+  introducedStructuralRegressions,
+} from './assembly-regressions.ts';
 
 //region Assembly integrity
 // The check no per-slice decision can make: a footnote is a relation BETWEEN

@@ -20,6 +20,7 @@ export {
   assemblySentence,
   type ChangeSetName,
 } from './assembly-contract-fault.ts';
+export { singleStructuralWithdrawal, } from './assembly-structural-withdrawal.ts';
 export {
   guardFootnoteAssembly,
   type GuardedAssembly,

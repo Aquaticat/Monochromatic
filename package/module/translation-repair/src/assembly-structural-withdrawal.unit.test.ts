@@ -5,7 +5,7 @@
  * @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { type ChunkPair, guardFootnoteAssembly, prepareDocumentPair, } from '../dist/final/node/index.mjs';
+import { type ChunkPair, guardFootnoteAssembly, prepareDocumentPair, singleStructuralWithdrawal, } from '../dist/final/node/index.mjs';
 
 /** Source and archive component shared before translation. */
 const COMPONENT = `<PhotoScroll photos={['\${path}/photos/cat.webp']} />`;
@@ -17,6 +17,25 @@ const LINK = 'https://example.test/cat';
 await describe({
   name: 'structural assembly withdrawal',
   children: [
+    it({
+      name: 'REFUSES a counterfactual whose restored grammar exposes an unresolved footnote',
+      fn: async () => {
+        /** Source-only passage gives the second replacement an insertion anchor. */
+        const prepared = prepareDocumentPair({
+          sourceText: `${COMPONENT}\n\n> 猫咪的记录。`,
+          targetText: COMPONENT,
+          blockPairings: new Map([[0, [{ source: 0, target: 0, },],],]),
+        },);
+        /** Removing the malformed component alone would leave an unpaired note. */
+        const replacements = prepared.slices.map(function replacement(slice,) {
+          return {
+            sliceIndex: slice.target.sliceIndex,
+            replacementText: slice.source.text.includes('PhotoScroll',) ? BROKEN_COMPONENT : '> The cat rests.[^lost]',
+          };
+        },);
+        expect(singleStructuralWithdrawal({ targetText: COMPONENT, slices: prepared.slices, replacements, },),).toEqual([],);
+      },
+    },),
     it({
       name: 'FALLS BACK when two malformed replacements cannot be repaired by a single withdrawal',
       fn: async () => {
