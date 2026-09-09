@@ -3742,3 +3742,13 @@ strict 12dp adaptive mode behavior,
 the target first,
  then build native dynamic-color variants and present opaque 2076 ×
 2152px evidence in a self-contained Helium matrix.
+
+The user clarified that Android users are free and likely to change wallpapers.
+ Treat
+wallpaper palette as uncontrolled input,
+ not a preference question or a candidate to
+select.
+ Stress every meaningful role-application strategy with materially different
+wallpaper-derived palettes.
+ Recommend only a strategy whose hierarchy survives those
+changes without violating true black or the neutral current-row treatment.

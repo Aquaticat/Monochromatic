@@ -671,10 +671,19 @@ D39 and D40.
 
 Build a native Compose matrix that separates dynamic-role application strategy from
 representative Android wallpaper palettes.
- Every candidate must retain pure black for the
-base background under B1,
- use Android-generated dynamic roles rather than hand-picked
-accent hexes,
+ Wallpaper is uncontrolled user input,
+ not a
+choice to settle:
+ Android users can and likely will change it.
+ The selected strategy must
+remain legible,
+ preserve hierarchy,
+ and avoid accidental over-saturation across materially
+different wallpaper-derived palettes.
+ Every candidate must retain pure black for the base
+background under B1,
+ use Android-generated dynamic roles rather than hand-picked accent
+hexes,
  and keep the current row soft-neutral rather than saturated.
- Compare at
-opaque 2076 × 2152px on the unfolded target before asking for a choice.
+ Compare at opaque
+2076 × 2152px on the unfolded target before asking for a strategy choice.
