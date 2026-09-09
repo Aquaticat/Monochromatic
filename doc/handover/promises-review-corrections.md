@@ -68,14 +68,38 @@ A has overlapping sends; B continues independently.
 This is a scripted action order, not a manual clock or a longer click window.
 The example's fixed scenarios are disclosed separately from subsequent manually sent messages.
 
-`proc_bdb5` is checking starter/solution behavior, the deadline path, exported controls,
-a directly observed pending backoff timer at Stop, and existing reference ownership regressions.
-A reversed-notification-order mutant is planned as a negative control.
+`proc_bdb5` passed starter/solution behavior, the deadline path, exported controls,
+a directly observed pending backoff timer at Stop, and existing reference ownership regressions in 32 seconds.
+`proc_4997` rejected the reversed-notification-order mutant:
+Stop observed zero pending backoff timers instead of one.
+
+### Overlapping-send ownership bridge
+
+`ownership.html` teaches identity, named `filter` predicates, returned arrays, and `for…of` iteration.
+It also explains the reference's equivalent arrow-function spelling.
+`ownership-solution.mjs` supplies the worked controller-list implementation;
+the build derives an intentionally broken clear-the-whole-list starter from it.
+The isolated identity guard is now described as defensive where Send is disabled,
+not presented as proof of an interleaving that cannot occur through those controls.
+
+`ownership-fixture.mjs` supplies explicitly manual reply completion, rejection, and abort.
+Its held-reply list is distinguished from the learner's controller list and browser queues.
+Lesson controls can send a pair or request Stop and immediately send again in one callback.
+They and the helper are included in the practice download.
+
+`proc_027d` passed in 15 seconds:
+
+- Broken starter exposes loss after partial completion and after Stop followed by a fresh send.
+- Worked solution keeps the remaining controller and preserves drafts.
+- Newest-first completion, rejection, and blank input behave as documented.
+- Already-aborted calls return rejected Promises; the fixture's 20-call bound is enforced.
+- The print appendix includes the new task and source.
+- The actual downloaded exercise retains the interactive controls and ownership behavior.
+
+Full PDF and cross-feature validation remain separate final steps.
 
 ## Remaining work
 
-- Build and explain the missing overlapping-send ownership exercise.
-- Remove timed Stop opportunities rather than extending their timers.
 - Make the capstone comparison runnable with the promised controls and full dependencies.
 - Explain supplied source machinery and fixture-only outcome selection.
 - Integrate and run browser, export, print, neutral-surface, and negative-control checks.
