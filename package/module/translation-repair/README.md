@@ -1874,6 +1874,16 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `9abcbee50` (2026-09-09,
+the twenty-first class's second face) a delivery ledger's shipped row carries the text the document carries,
+which the assembly guard may have trimmed:
+`guardFootnoteAssembly` reports `trimmed`,
+both lane results carry `trimmedReplacements`,
+`buildSliceDelivery` reads a shipped row's text from them before the decision,
+and `assertDeliveryCoherent` accepts a shipped row whose text is its decision with definition blocks cut and
+nothing else (`isDefinitionTrim`);
+the twentieth `hakureico` pass had stopped at the reassembly invariant with the trim on the page and the judges'
+text in the row.
 Since `aedee7414` (2026-09-09,
 the twenty-first class) an orphan footnote definition takes only its own block,
 and the composed page's footnote graph is read before the tally:

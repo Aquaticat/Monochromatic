@@ -5936,6 +5936,59 @@ A decision about run order,
 not design,
 open to veto.
 
+## The twenty-first class's second face where the ledger says what was decided and the document carries the trim, 2026-09-09, 04:45 UTC
+
+`TALLY hakureico status=ERROR ms=4081159 aborted=false error=writing the ledger's 13 shipped rows over the archive
+produces a different document than the lane returned, so the rows do not say what the document carries`
+at 04:28 UTC on `aedee7414`,
+68 minutes,
+`~/temp/agent/hakureico20-20260909`.
+No `withdrew` warning in the log:
+the guard trimmed rather than withdrew,
+which is the first face working.
+What refused was the delivery invariant behind it (`assertDeliveryAgreesWithDocument`):
+the ledger's shipped row for slice 14 carried the judges' accepted text,
+two definitions,
+the document carried one,
+and splicing the rows over the archive no longer wrote the document.
+The record model keeps two facts apart on purpose,
+what the slice CHOSE (`outcome.acceptedText`) and what the document CARRIES (`shippedText`),
+and until now the two could differ only by a withdrawal,
+where the document carries the incumbent.
+A trim is a third relation,
+and nothing carried it from the guard to the ledger.
+
+THE FIX (`9abcbee50`).
+`guardFootnoteAssembly` reports `trimmed`,
+the surviving replacements whose text differs from what they arrived with;
+both lane results carry them as `trimmedReplacements`
+(`TranslateDocumentResult`,
+`RepairTranslationResult`);
+`laneDelivery` hands them to `buildSliceDelivery`,
+which reads a shipped row's `shippedText` from them before it reads the decision
+and refuses a trim naming a slice the document does not ship (`trim-names-unshipped`);
+`assertDeliveryCoherent` accepts a shipped row whose text is its decision with definition blocks cut and nothing
+else changed (`isDefinitionTrim`,
+which recomputes the cut and demands equality),
+so the artifact's row shows both texts and the relation between them is checked at write and at read.
+The comparison rows already read `shippedText`,
+so the contest and the page carry the trimmed text.
+Both ledger cases failed first on the old build;
+lint,
+types and the eight suites on the path clean.
+
+RELAUNCHED at 04:39 UTC on `9abcbee50`,
+three passes:
+the second `gqt` (`~/temp/agent/gqt2-20260909`,
+pid 593252),
+the second `Mio` (`~/temp/agent/mio2-20260909`,
+pid 593381)
+and the twenty-first `hakureico` (`~/temp/agent/hakureico21-20260909`,
+pid 595265),
+the first `gqt` and `Mio` killed under the kill-and-relaunch rule after 75 minutes on the superseded build.
+What the `hakureico` page must show is unchanged,
+plus the artifact's slice 14 row with `shippedText` one definition shorter than `acceptedText`.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

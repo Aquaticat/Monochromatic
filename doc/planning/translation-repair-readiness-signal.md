@@ -1382,3 +1382,29 @@ What remains before an all-entries launch:
 the twentieth `hakureico` page,
 the owner's answer on the glossary,
 and the components no read page has met.
+
+## What the twentieth hakureico launch showed (2026-09-09, 03:21 to 04:28 UTC)
+
+Stopped `status=ERROR` at the delivery reassembly invariant after 68 minutes:
+the guard's trim worked and the ledger did not know about it,
+so the shipped row for the definitions slice said the judges' two-definition text where the document carried one.
+The second face of the twenty-first class,
+fixed in `9abcbee50` by carrying the guard's trimmed text through both lane results into the ledger and
+teaching the coherence rule what a definition trim is.
+Three passes run on it since 04:39 UTC:
+the twenty-first `hakureico`,
+the second `gqt` and the second `Mio`.
+
+THE READING:
+the belief holds,
+and the shape of the day's classes is now the same three times over:
+a guard,
+an invariant or a ledger reading its evidence by a rule the change beside it did not know.
+The fix a class of this shape wants is the one taken each time,
+the new fact carried to every reader of the old one,
+with the relation between the two checked rather than trusted.
+What remains before an all-entries launch:
+the twenty-first `hakureico` page,
+the `gqt` and `Mio` pages,
+the owner's answer on the glossary,
+and the components no read page has met.
