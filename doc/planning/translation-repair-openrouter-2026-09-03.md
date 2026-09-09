@@ -5989,6 +5989,59 @@ the first `gqt` and `Mio` killed under the kill-and-relaunch rule after 75 minut
 What the `hakureico` page must show is unchanged,
 plus the artifact's slice 14 row with `shippedText` one definition shorter than `acceptedText`.
 
+## The twenty-first class's third face where two notes one line apart are one block to the trim, 2026-09-09, 06:25 UTC
+
+`TALLY hakureico status=INCOMPLETE ms=5593268 aborted=false error=translation repair interrupted:
+page-footnote-integrity` at 06:13 UTC on `9abcbee50`,
+93 minutes,
+`~/temp/agent/hakureico21-20260909`,
+with `INTERRUPTED hakureico: page-footnote-unresolved-reference gfm 1` above it
+and `withdrew 2 replacements at assembly; the findings say why` from the translate lane,
+the findings nowhere in the log.
+The page guard did what it is for:
+the page would have shipped `“Mayday”[^1]` with no note again,
+and the pass stopped instead.
+
+WHY THE TRIM DID NOT FIRE.
+The translate cache holds slice 14's rendering:
+`[^1]: The internationally recognized radio distress signal. … immediate rescue.\n[^2]: i.e., Google App Engine`,
+the two notes one line apart,
+no blank line.
+The trim split blocks at blank lines,
+saw one block labelled `1`,
+found no orphan block to cut,
+and left the replacement to the guard,
+which withdrew slice 14 for the orphan `[^2]` and then slice 7 for the reference it left unresolved.
+GFM ends a definition where the next `[^id]:` line begins,
+and the document parser reads it so (the guard's own finding named `[^2]` as a definition);
+the trim read a shape the parser does not.
+
+THE FIX (`379122379`).
+`assembly-orphan-trim.ts` reads blocks by lines:
+a block ends at a blank line or where a definition line begins,
+a definition's indented continuation stays in its block,
+and every gap between blocks is kept as written,
+a kept block after a cut run taking the gap that stood before the run;
+`cutDefinitionBlocks` and `isDefinitionTrim` share the reading,
+so the ledger's coherence rule reads the same shape the trim cuts.
+Both assemblers now log every guard finding after the withdraw warning,
+since an entry stopped before its artifact leaves the log as its only trace.
+The guard case with the notes one line apart failed first
+(`expected [ 1 ] to deeply equal []`);
+lint and types clean;
+the trim,
+guard and coherence suites clean.
+
+RELAUNCHED at 06:20 UTC on `379122379`:
+the twenty-second `hakureico` (`~/temp/agent/hakureico22-20260909`,
+pid 615099),
+the third `gqt` (`~/temp/agent/gqt3-20260909`,
+pid 615846),
+the third `Mio` (`~/temp/agent/mio3-20260909`,
+pid 616606);
+the second `gqt` and `Mio` killed under the rule after 100 minutes on `9abcbee50`,
+neither at its tally.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

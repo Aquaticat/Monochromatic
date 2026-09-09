@@ -1408,3 +1408,28 @@ the twenty-first `hakureico` page,
 the `gqt` and `Mio` pages,
 the owner's answer on the glossary,
 and the components no read page has met.
+
+## What the twenty-first hakureico launch showed (2026-09-09, 04:39 to 06:13 UTC)
+
+Stopped INCOMPLETE at the page footnote guard after 93 minutes,
+which is the guard working:
+the trim read blocks at blank lines,
+the bench wrote the two notes one line apart,
+the trim saw one block and the assembly guard withdrew both notes and the reference,
+and the page would have shipped the dangling `[^1]` a third time.
+The third face of the twenty-first class,
+fixed in `379122379`:
+a definition line opens a block whether or not a blank line precedes it.
+Three passes run on it since 06:20 UTC.
+
+THE READING:
+the belief holds,
+and the guard added for the first face has already paid for itself,
+refusing the page the second and third faces would have shipped.
+Three faces of one class in one day is the cost of a reading that did not start from the parser's,
+and the fix now shares the parser's rule.
+What remains before an all-entries launch:
+the twenty-second `hakureico` page,
+the `gqt` and `Mio` pages,
+the owner's answer on the glossary,
+and the components no read page has met.

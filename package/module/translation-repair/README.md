@@ -1874,6 +1874,16 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `379122379` (2026-09-09,
+the twenty-first class's third face) the orphan trim reads blocks the way GFM ends definitions:
+a definition line opens a block whether or not a blank line precedes it,
+a definition's indented continuation stays in its block,
+and the gaps between blocks survive a cut as written;
+the twenty-first `hakureico` pass had rendered its two notes one line apart,
+the trim saw one block,
+and the assembly guard withdrew both notes and the reference,
+which the page guard then refused to ship.
+Both assemblers log every assembly guard finding after the withdraw warning.
 Since `9abcbee50` (2026-09-09,
 the twenty-first class's second face) a delivery ledger's shipped row carries the text the document carries,
 which the assembly guard may have trimmed:

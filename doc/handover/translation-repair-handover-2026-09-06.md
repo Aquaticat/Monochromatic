@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 04:50 UTC on 2026-09-09 the tree is `9abcbee50`:
+As of 06:30 UTC on 2026-09-09 the tree is `379122379`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -73,15 +73,18 @@ the three checks passed,
 `verify-published` matched at length,
 a reference with no note found;
 see "The twenty-first class"),
-the twenty-first class fixed in two faces (`aedee7414`,
+the twenty-first class fixed in three faces (`aedee7414`,
 an orphan definition takes only its own block and the composed page's footnote graph is read before the tally;
 `9abcbee50`,
 the delivery ledger carries the guard's trimmed text on a shipped row,
-after the twentieth `hakureico` stopped ERROR at the reassembly invariant),
-and three passes running on `9abcbee50` since 04:39 UTC
-(the twenty-first `hakureico`,
-the second `gqt`,
-the second `Mio`);
+after the twentieth `hakureico` stopped ERROR at the reassembly invariant;
+`379122379`,
+a definition line opens a block to the trim whether or not a blank line precedes it,
+after the twenty-first `hakureico` stopped INCOMPLETE at the page guard),
+and three passes running on `379122379` since 06:20 UTC
+(the twenty-second `hakureico`,
+the third `gqt`,
+the third `Mio`);
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -1112,10 +1115,26 @@ unshipped slice;
 `assertDeliveryCoherent` accepts a shipped row whose text is its decision with definition blocks cut and nothing
 else (`isDefinitionTrim`).
 Both ledger cases failed first.
-The twenty-first `hakureico` runs on `9abcbee50` since 04:39 UTC.
+The twenty-first `hakureico` (`9abcbee50`,
+04:39 to 06:13 UTC,
+93 minutes,
+`~/temp/agent/hakureico21-20260909`) stopped INCOMPLETE at the page footnote guard,
+the guard refusing the dangling `[^1]` the page would have carried a third time:
+the bench wrote the two notes one line apart,
+the trim read blocks at blank lines and saw one block,
+and the assembly guard withdrew both notes and the reference.
+The third face,
+fixed in `379122379`:
+a definition line opens a block to the trim whether or not a blank line precedes it,
+gaps between blocks survive a cut as written,
+`cutDefinitionBlocks` and `isDefinitionTrim` share the reading,
+and both assemblers log every guard finding.
+The guard case failed first.
+The twenty-second `hakureico` runs on `379122379` since 06:20 UTC.
 Recorded in the planning log under
-"The nineteenth hakureico page is read and the twenty-first class takes the sibling note with the orphan" and
-"The twenty-first class's second face where the ledger says what was decided and the document carries the trim".
+"The nineteenth hakureico page is read and the twenty-first class takes the sibling note with the orphan",
+"The twenty-first class's second face where the ledger says what was decided and the document carries the trim"
+and "The twenty-first class's third face where two notes one line apart are one block to the trim".
 
 ## The glossary question
 
@@ -1191,29 +1210,30 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Three passes are running on `9abcbee50`,
+1.  Three passes are running on `379122379`,
     each watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit:
-    the twenty-first `hakureico`,
-    launched 04:39 UTC on 2026-09-09 on Bedrock and OpenRouter,
-    runs dir `~/temp/agent/hakureico21-20260909`,
+    the twenty-second `hakureico`,
+    launched 06:20 UTC on 2026-09-09 on Bedrock and OpenRouter,
+    runs dir `~/temp/agent/hakureico22-20260909`,
     log beside it,
-    pid 595265;
-    the second `gqt` (a level-3 heading,
+    pid 615099;
+    the third `gqt` (a level-3 heading,
     a bold-led unordered list,
     an italic paragraph;
     three shapes on no read page),
-    launched 04:39 UTC,
-    runs dir `~/temp/agent/gqt2-20260909`,
-    pid 593252;
-    the second `Mio` (a rule in the body and a bare URL;
+    launched 06:20 UTC,
+    runs dir `~/temp/agent/gqt3-20260909`,
+    pid 615846;
+    the third `Mio` (a rule in the body and a bare URL;
     two shapes on no read page),
-    launched 04:39 UTC,
-    runs dir `~/temp/agent/mio2-20260909`,
-    pid 593381.
-    The first `gqt` and `Mio` (`aedee7414`,
-    03:24 UTC) were killed at 04:39 UTC under the kill-and-relaunch rule when `9abcbee50` landed.
+    launched 06:20 UTC,
+    runs dir `~/temp/agent/mio3-20260909`,
+    pid 616606.
+    The first and second `gqt` and `Mio` were killed under the kill-and-relaunch rule when `9abcbee50` and
+    `379122379` landed,
+    none at its tally.
     The census behind the two (scratch `unmet-shapes.mjs`) is in the planning log under
     "Two shapes-first entries launched beside it".
     Read `hakureico` by the seven steps plus the three checks,
@@ -1238,7 +1258,7 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     the emphasis;
     `Mio`,
     the rule's position and the URL verbatim.
-    If the tree moves past `9abcbee50` while any runs,
+    If the tree moves past `379122379` while any runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
