@@ -29,11 +29,12 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  firstRoundWindow,
   type IncumbentKind,
   messageText,
+  type RosterModelId,
   runTranslateStage,
   type SyntheticClient,
-  type RosterModelId,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TranslateAbsenceError,
   TranslationRepairInterruptedError,
@@ -72,6 +73,12 @@ const JUDGES: readonly RosterModelId[] = [
   'deepseek-v4-pro-0813',
   'hf:openai/gpt-oss-120b',
 ];
+
+/**
+ * Judges one healthy select round asks: quorum plus one, not the bench
+ * (`stage-fanout-window.ts`), so a round on six judges is four calls.
+ */
+const JUDGE_WINDOW = firstRoundWindow({ benchSize: JUDGES.length, },);
 
 /**
  * What each model returns when asked to translate.
@@ -268,9 +275,9 @@ function laneClient(
       /**
        * Text this round votes for, which changes once the panel has been asked
        * again. `calls.select` counts individual judges, so a whole first round
-       * is one per judge.
+       * is one per judge the window asked.
        */
-      const roundNeedle = ((needleAfterRetry !== undefined) && (calls.select > JUDGES.length))
+      const roundNeedle = ((needleAfterRetry !== undefined) && (calls.select > JUDGE_WINDOW))
         ? needleAfterRetry
         : needle;
 
@@ -441,9 +448,9 @@ await describe({
         expect(result.decision,).toBe('judged',);
         expect(result.text,).toBe(INCUMBENT_TEXT,);
         expect(result.candidateCount,).toBe(4,);
-        // Six judges, three of them translators. Nobody wrote the incumbent, so
-        // every ballot for it carries full weight.
-        expect(result.voteWeight,).toBe(6,);
+        // The window's judges, translators among them. Nobody wrote the
+        // incumbent, so every ballot for it carries full weight.
+        expect(result.voteWeight,).toBe(JUDGE_WINDOW,);
       },
     },),
 
@@ -544,7 +551,7 @@ await describe({
         // The panel was asked twice about the same candidates, which is what
         // separates a settled decline from a momentary one.
         expect(result.findings,).toContain('translate-declined-retried',);
-        expect(calls.select,).toBe(JUDGES.length * 2,);
+        expect(calls.select,).toBe(JUDGE_WINDOW * 2,);
       },
     },),
 
@@ -568,7 +575,7 @@ await describe({
         expect(result.origin,).not
           .toBe('incumbent',);
         expect(result.findings,).toContain('translate-declined-retried',);
-        expect(calls.select,).toBe(JUDGES.length * 2,);
+        expect(calls.select,).toBe(JUDGE_WINDOW * 2,);
       },
     },),
 
@@ -589,7 +596,7 @@ await describe({
         expect(result.decision,).toBe('judged',);
         expect(result.findings,).not
           .toContain('translate-declined-retried',);
-        expect(calls.select,).toBe(JUDGES.length,);
+        expect(calls.select,).toBe(JUDGE_WINDOW,);
       },
     },),
 
@@ -743,7 +750,7 @@ await describe({
         expect(result.origin,).toBe('fresh',);
         expect(result.text,).toContain('repaired',);
         expect(calls.translate,).toBe(TRANSLATORS.length * 2,);
-        expect(calls.select,).toBe(JUDGES.length * 3,);
+        expect(calls.select,).toBe(JUDGE_WINDOW * 3,);
       },
     },),
 
@@ -837,7 +844,7 @@ await describe({
         // The first round's evidence survives the exception it left by, which is
         // the part a returning round gets for free and this one does not.
         expect(result.findings,).toContain('translate-declined-retried',);
-        expect(calls.select,).toBe(JUDGES.length * 2,);
+        expect(calls.select,).toBe(JUDGE_WINDOW * 2,);
       },
     },),
   ],

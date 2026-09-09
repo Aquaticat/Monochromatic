@@ -13,6 +13,7 @@ import {
   type CoverageReportWire,
   isCoverageReportWire,
 } from './coverage-wire.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
@@ -65,6 +66,9 @@ export type CoverageAnswer = {
  *
  * @param exchangeTimeoutMs - deadline per exchange
  *
+ * @param fanOut - seats a round asks: the window of quorum plus one by
+ * default, or the whole bench a fixture scripting every seat asks for
+ *
  * @param l - logger of the calling driver
  *
  * @returns Verdict plus any roster findings
@@ -84,6 +88,7 @@ export async function runCoverageStage(
     signal,
     exchangeTimeoutMs,
     l,
+    fanOut,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -93,6 +98,7 @@ export async function runCoverageStage(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<CoverageAnswer> {
   /**
@@ -117,12 +123,18 @@ export async function runCoverageStage(
     validate: isCoverageReportWire,
     stage: 'coverage',
     l,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
   return {
     verdict: judgeCoverage({
       voices: gather.voices,
       document: translation,
-      asked: modelIds.length,
+      // THE SEATS ASKED, NOT THE BENCH: since the fan-out window of 2026-09-09
+      // a round asks quorum plus one seat first, and a seat the window spared
+      // was never silent.
+      asked: gather.asked
+        .size,
       quorumMet: gather.quorumMet,
     },),
     findings: gather.findings,

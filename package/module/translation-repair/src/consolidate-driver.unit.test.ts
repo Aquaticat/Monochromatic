@@ -45,18 +45,19 @@ import {
   type ConsolidationTerminal,
   consolidationWorthResuming,
   createSyntheticClient,
+  firstRoundWindow,
   persistConsolidationSettlement,
   type ProjectedLanes,
   type RosterModelId,
-  type SliceCache,
-  type SliceNeighbourContext,
   SLICE_COST_MARKER,
   SLICE_START_MARKER,
+  type SliceCache,
+  type SliceNeighbourContext,
   type SyntheticClient,
   TRANSLATE_LINE_STRUCTURE_RULE,
   type TranslateDecision,
-  TranslationRepairInterruptedError,
   type TranslateStageResult,
+  TranslationRepairInterruptedError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -960,8 +961,9 @@ await describe({
         },);
 
         // Unsafe questions are never twin-memoized, so each twin buys its
-        // own single attempt and both ship the recorded outcome.
-        expect(producerPayloads,).toHaveLength(RECOVERY_ROSTER.length * 2);
+        // own single attempt, one window of producers, and both ship the
+        // recorded outcome.
+        expect(producerPayloads,).toHaveLength(firstRoundWindow({ benchSize: RECOVERY_ROSTER.length, },) * 2,);
         expect(slices,).toHaveLength(2);
         expect(slices.every(function keptWithRecord(slice,): boolean {
           return slice.terminal === 'gate-kept-standing';

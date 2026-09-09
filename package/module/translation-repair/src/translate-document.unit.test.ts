@@ -22,17 +22,18 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  firstRoundWindow,
   type InsertionAdmission,
   makeInsertionChunk,
   messageText,
   prepareDocumentPair,
   RosterConfigurationError,
-  type SyntheticClient,
   type RosterModelId,
+  type SyntheticClient,
   translateDocument,
   type TranslateModels,
-  TranslationRepairInterruptedError,
   type TranslateSliceRecord,
+  TranslationRepairInterruptedError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -1105,8 +1106,7 @@ await describe({
         // only judging this run may have paid for is the first slice's. A round
         // that returned its surviving voices instead of raising the abort would
         // have sent the whole judge roster out on a run already over.
-        expect(calls.selectAttempts,).toBe(MODELS.judgeModelIds
-          .length,);
+        expect(calls.selectAttempts,).toBe(firstRoundWindow({ benchSize: MODELS.judgeModelIds.length, },),);
       },
     },),
 

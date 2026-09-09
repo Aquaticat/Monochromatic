@@ -30,6 +30,7 @@ import {
   type DocumentSide,
   type IssueClaim,
 } from './issue-model.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { tallyVotes, } from './tally-votes.ts';
@@ -140,6 +141,7 @@ export async function runCriticStage(
     signal,
     perCallTimeoutMs,
     l,
+    fanOut,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly criticModelIds: readonly RosterModelId[];
@@ -152,6 +154,7 @@ export async function runCriticStage(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<CriticStageResult> {
   /**
@@ -182,6 +185,8 @@ export async function runCriticStage(
     validate: isCriticReportWire,
     stage: 'critic',
     l,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
 
   /**

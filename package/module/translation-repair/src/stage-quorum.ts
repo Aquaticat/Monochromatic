@@ -7,6 +7,11 @@ import type {
   SyntheticClient,
 } from './chat-contract.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
+import {
+  askingWindow,
+  type FanOutMode,
+  rotatedBench,
+} from './stage-fanout-window.ts';
 import { runGatherRound, } from './stage-round.ts';
 import { stageQuorumUnmetFinding, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -106,13 +111,39 @@ export type StageGather<ValueT,> = {
    * empty when quorum was met.
    */
   readonly findings: readonly string[];
+
+  /**
+   * Seats some round asked, so a caller taking its majority over "everyone
+   * asked" counts the window, not the bench: a seat the window spared was
+   * never silent.
+   */
+  readonly asked: ReadonlySet<RosterModelId>;
+};
+
+/**
+ * What the rounds produced: the voices heard, and which seats were asked at
+ * all, so the findings can tell a seat the window spared from one that was
+ * asked and stayed quiet.
+ */
+type RoundsOutcome<ValueT,> = {
+  /**
+   * Voices heard across every round.
+   */
+  readonly collected: readonly HeardVoice<ValueT>[];
+
+  /**
+   * Seats some round asked.
+   */
+  readonly asked: ReadonlySet<RosterModelId>;
 };
 
 /**
  * Fans one prompt out to a roster and retries lost voices to quorum.
- * Each round re-asks only the still-lost models on fresh deadlines;
- * the loop stops as soon as half the roster, rounded up, is heard, and
- * otherwise ends when the retry rounds are spent.
+ * Since 2026-09-09 the first round asks a window of quorum plus one spare
+ * from the bench rotated by the prompt (`stage-fanout-window.ts`), and
+ * each later round asks the seats not yet asked before the ones it lost,
+ * on fresh deadlines; the loop stops as soon as half the roster, rounded
+ * up, is heard, and otherwise ends when the retry rounds are spent.
  *
  * @param client - injected model client
  *
@@ -142,6 +173,9 @@ export type StageGather<ValueT,> = {
  * abandons it; defaults to `STRAGGLER_GRACE_MS` and exists so a test can bound
  * its own wall time
  *
+ * @param fanOut - whether a round asks the window of quorum plus one, the
+ * production default, or the whole bench a fixture scripting every seat asks for
+ *
  * @returns Heard voices plus quorum verdict and degradation findings
  *
  * @example
@@ -163,6 +197,7 @@ export async function gatherStageVoices<ValueT,>(
     l,
     maxRetryRounds = STAGE_RETRY_ROUNDS,
     graceMs,
+    fanOut = 'window',
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -176,6 +211,7 @@ export async function gatherStageVoices<ValueT,>(
     readonly l: Logger;
     readonly maxRetryRounds?: number;
     readonly graceMs?: number;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<StageGather<ValueT>> {
   /**
@@ -194,13 +230,17 @@ export async function gatherStageVoices<ValueT,>(
    * the round cursor lives inside the named IIFE so its mutation never
    * leaks into the surrounding scope.
    */
-  const voices: readonly HeardVoice<ValueT>[] = await (async function collectRounds(): Promise<
-    readonly HeardVoice<ValueT>[]
-  > {
+  const rounds: RoundsOutcome<ValueT> = await (async function collectRounds(): Promise<RoundsOutcome<ValueT>> {
     /**
      * Voices collected so far.
      */
     const collected: HeardVoice<ValueT>[] = [];
+
+    /**
+     * Seats some round asked, so a seat the window spared is never reported
+     * as lost.
+     */
+    const asked = new Set<RosterModelId>();
 
     /**
      * Everything a round needs except who to ask and how many to wait for.
@@ -209,7 +249,7 @@ export async function gatherStageVoices<ValueT,>(
      * above: they differ in exactly two fields, and writing the other ten twice
      * is how the two would eventually disagree about a deadline or a guard.
      */
-    const fanOut = {
+    const roundRequest = {
       client,
       messages,
       signal,
@@ -223,9 +263,13 @@ export async function gatherStageVoices<ValueT,>(
     };
 
     /**
-     * Models still owing a reply.
+     * Models still owing a reply: not yet asked first, then lost, so a fresh
+     * seat is tried before a seat that just failed.
      */
-    let pending: readonly RosterModelId[] = modelIds;
+    let pending: readonly RosterModelId[] = rotatedBench({
+      modelIds,
+      messages,
+    },);
 
     /**
      * Models whose last loss was an answer nothing could read, in roster order.
@@ -241,23 +285,37 @@ export async function gatherStageVoices<ValueT,>(
         break;
       if ((round > 0) && (collected.length >= quorumNeeded))
         break;
+      /**
+       * Seats this round asks: what quorum still needs plus the spare, from
+       * the front of the pending order.
+       */
+      const asking = (fanOut === 'whole-bench')
+        ? pending
+        : askingWindow({
+          pending,
+          needed: quorumNeeded - collected.length,
+        },);
       if (round > 0) {
         l.warn(
-          `${stage}: retry round ${String(round,)} for ${String(pending.length,)} lost voices`,
+          `${stage}: retry round ${String(round,)} asking ${String(asking.length,)} of ${
+            String(pending.length,)
+          } pending voices`,
         );
       }
 
-      /* oxlint-disable no-await-in-loop -- rounds are sequential by design: each round re-asks only the voices the previous round lost */
+      /* oxlint-disable no-await-in-loop -- rounds are sequential by design: each round asks the seats the previous round left unasked or lost */
       /**
-       * This round's outcomes, one per still-pending model, with anything still
-       * in flight a grace period after quorum abandoned rather than waited on.
+       * This round's outcomes, one per asked model, with anything still in
+       * flight a grace period after quorum abandoned rather than waited on.
        */
       const outcomes = await runGatherRound<ValueT>({
-        ...fanOut,
-        modelIds: pending,
+        ...roundRequest,
+        modelIds: asking,
         heardNeeded: quorumNeeded - collected.length,
       },);
       /* oxlint-enable no-await-in-loop */
+      for (const modelId of asking)
+        asked.add(modelId,);
 
       /**
        * Models this round still lost.
@@ -283,7 +341,10 @@ export async function gatherStageVoices<ValueT,>(
           .answered)
           answeredBadly.push(outcome.modelId,);
       }
-      pending = stillLost;
+      pending = [
+        ...pending.slice(asking.length,),
+        ...stillLost,
+      ];
       unreadable = answeredBadly;
     }
 
@@ -325,7 +386,7 @@ export async function gatherStageVoices<ValueT,>(
        * resolves as soon as every ask settles.
        */
       const recovered = await runGatherRound<ValueT>({
-        ...fanOut,
+        ...roundRequest,
         // A DIFFERENT PROMPT, OR THE ROUND BUYS NOTHING. `promptUniqueClient`
         // serves a second call for the same model and prompt from its cache,
         // schema mismatch included, so re-sending the same bytes came back with
@@ -366,8 +427,19 @@ export async function gatherStageVoices<ValueT,>(
           + `${String(unreadable.length,)} re-asked voices`,
       );
     }
-    return collected;
+    return {
+      collected,
+      asked,
+    };
   })();
+
+  /**
+   * Voices heard across every round.
+   */
+  const {
+    collected: voices,
+    asked,
+  } = rounds;
 
   /**
    * Whether at least half the roster, rounded up, ended up heard.
@@ -375,14 +447,17 @@ export async function gatherStageVoices<ValueT,>(
   const quorumMet = voices.length >= quorumNeeded;
 
   /**
-   * Roster shortfall wording shared by both degradation findings.
+   * Shortfall wording shared by both degradation findings: heard against
+   * asked, since a seat the window spared was never owed an answer.
    */
-  const shortfall = `${stage} ${String(voices.length,)}/${String(modelIds.length,)}`;
+  const shortfall = `${stage} ${String(voices.length,)}/${String(asked.size,)}`;
 
   /**
-   * Models that never answered, in roster order.
+   * Models that were asked and never answered, in roster order.
    */
-  const unheard = modelIds.filter(function neverHeard(modelId,): boolean {
+  const unheard = modelIds.filter(function askedAndNeverHeard(modelId,): boolean {
+    if (!asked.has(modelId,))
+      return false;
     return !voices.some(function isVoice(voice,): boolean {
       return voice.modelId === modelId;
     },);
@@ -422,13 +497,14 @@ export async function gatherStageVoices<ValueT,>(
         ...lostFindings,
         stageQuorumUnmetFinding({ shortfall, },),
       ],
+      asked,
     };
   }
   // Emitted whenever the roster ended short, not only when retries were still
   // chasing it. The ratio is the part per-model loss findings cannot carry, and
   // a stage that met quorum with a voice missing is exactly the case that reads
   // as healthy everywhere else.
-  if (voices.length < modelIds.length) {
+  if (voices.length < asked.size) {
     return {
       voices,
       quorumMet,
@@ -436,12 +512,14 @@ export async function gatherStageVoices<ValueT,>(
         ...lostFindings,
         `stage-roster-incomplete (${shortfall})`,
       ],
+      asked,
     };
   }
   return {
     voices,
     quorumMet,
     findings: lostFindings,
+    asked,
   };
 }
 

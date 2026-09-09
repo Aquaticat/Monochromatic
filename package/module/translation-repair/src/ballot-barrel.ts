@@ -39,6 +39,7 @@ export type {
   SelectionBallot,
 } from './candidate-select-model.ts';
 export { countCandidateWeights, } from './candidate-weights.ts';
+export { selectionFanOut, } from './candidate-select-fanout.ts';
 
 /**
  * Reading the recorded contests back.

@@ -37,6 +37,11 @@ import type { AnchorTarget, } from './validate-issue.ts';
 // then more dangerous than a fabricated quote, which is backwards. A verdict now
 // needs a majority of every model asked, and an unmet quorum is inconclusive
 // whatever the answers say.
+//
+// SINCE THE FAN-OUT WINDOW OF 2026-09-09 a round asks quorum plus one seat
+// first (`stage-fanout-window.ts`), so `asked` is what the gather sent the
+// question to, not the bench: a seat the window spared was never silent, and
+// the majority is taken over the seats that were actually asked.
 
 /**
  * Raised when a located quote carries no anchor to read a region from.
@@ -67,11 +72,11 @@ export class AnchorRegionError extends Error {
  */
 export type CoverageVerdict = {
   /**
-   * `carried` when a majority of the ROSTER anchored full coverage;
+   * `carried` when a majority of the seats ASKED anchored full coverage;
    * `partly-carried` when a majority anchored coverage but not all of it, which
    * still forbids inserting the passage whole;
    * `absent` when a majority found none;
-   * `split` when neither side reached a majority of the roster;
+   * `split` when neither side reached a majority of the seats asked;
    * `inconclusive` when too few models answered to decide anything.
    */
   readonly kind: 'carried' | 'partly-carried' | 'absent' | 'split' | 'inconclusive';

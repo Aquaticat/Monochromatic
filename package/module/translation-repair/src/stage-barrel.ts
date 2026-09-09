@@ -25,6 +25,14 @@ export {
   type StageGather,
 } from './stage-quorum.ts';
 export {
+  askingWindow,
+  benchRotation,
+  FANOUT_SPARE,
+  type FanOutMode,
+  firstRoundWindow,
+  rotatedBench,
+} from './stage-fanout-window.ts';
+export {
   everyStageHeard,
   silentStagesOf,
   STAGE_QUORUM_UNMET_PREFIX,

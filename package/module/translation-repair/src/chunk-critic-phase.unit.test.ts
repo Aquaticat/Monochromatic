@@ -187,6 +187,10 @@ async function runPhase(
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
     l,
+    // THE WHOLE BENCH, since these cases count votes over every scripted
+    // critic; production asks the window of quorum plus one, pinned in
+    // `stage-quorum.unit.test.ts`.
+    fanOut: 'whole-bench',
   },);
 }
 

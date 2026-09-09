@@ -29,6 +29,7 @@ import {
   selectChunkPatch,
   selectPerEnvelope,
   type SyntheticClient,
+  type FanOutMode,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
@@ -170,9 +171,11 @@ async function runSelection(
   {
     ballots,
     judgeModelIds = JUDGES,
+    fanOut = 'whole-bench',
   }: {
     readonly ballots: BallotScript;
     readonly judgeModelIds?: readonly RosterModelId[];
+    readonly fanOut?: FanOutMode;
   },
 ) {
   /**
@@ -190,6 +193,10 @@ async function runSelection(
     },),
     candidates: STRING_CANDIDATES,
     judgeModelIds,
+    // THE WHOLE BENCH BY DEFAULT HERE, since these cases script every seat's
+    // ballot and read the tally over the bench they wrote; production asks the
+    // window of quorum plus one (`stage-fanout-window.ts`), pinned below.
+    fanOut,
     task: 'Pick one.',
     criteria: ['Faithful.',],
     evidence: [
@@ -276,6 +283,7 @@ async function runCollapsedSelection(
       },),
       candidates,
       judgeModelIds: JUDGES,
+      fanOut: 'whole-bench',
       task: 'Pick one.',
       criteria: ['Faithful.',],
       evidence: [
@@ -375,6 +383,25 @@ await describe({
         },);
         expect(outcome.kind,).toBe('declined',);
         expect(outcome.tally.selfVotes,).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'ASKS a window of quorum plus one judges in production, so five healthy judges cost '
+        + 'four calls and the fifth is never asked while quorum stands',
+      fn: async () => {
+        const { outcome, calls, } = await runSelection({
+          ballots: {
+            'hf:moonshotai/Kimi-K3': 1,
+            'deepseek-v4-pro-0813': 1,
+            'hf:openai/gpt-oss-120b': 1,
+            'hf:zai-org/GLM-5.3-Flash': 1,
+            'hf:Qwen/Qwen3.8-27B': 1,
+          },
+          fanOut: 'window',
+        },);
+        expect(outcome.kind,).toBe('selected',);
+        expect(calls,).toBe(4,);
       },
     },),
 

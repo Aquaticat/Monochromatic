@@ -658,7 +658,9 @@ await describe({
     },),
 
     it({
-      name: 'retries lost voices to quorum and recovers a 1-of-6 round',
+      name: 'RETRIES lost voices to quorum on a 1-of-6 round from a window of quorum plus one, drawing the '
+        + 'unasked seats before re-asking the lost, and never spends the eleven calls the whole-bench '
+        + 'fan-out did',
       fn: async () => {
         /** Call log shared with the scripted client. */
         const calls: Record<string, number> = {};
@@ -690,10 +692,60 @@ await describe({
           stage: 'critic',
           l,
         },);
-        expect(gather.voices,).toHaveLength(6,);
         expect(gather.quorumMet,).toBe(true,);
+        expect(gather.voices.length,).toBeGreaterThanOrEqual(3,);
+        expect(gather.voices.length,).toBeLessThanOrEqual(6,);
+        // The healthy seat answers on its first ask wherever the rotation put it.
         expect(calls['hf:zai-org/GLM-5.3-Flash'],).toBe(1,);
-        expect(calls['hf:openai/gpt-oss-120b'],).toBe(2,);
+        /**
+         * Every call the gather made, whichever seats the rotation asked first.
+         */
+        const total = Object.values(calls,).reduce(function add(
+          sum,
+          count,
+        ): number {
+          return sum + count;
+        }, 0,);
+        // Six seats asked at once and five re-asked was eleven calls; a window
+        // of four with the two unasked seats drawn before the lost ones stops at
+        // quorum inside nine.
+        expect(total,).toBeLessThanOrEqual(9,);
+      },
+    },),
+
+    it({
+      name: 'ASKS quorum plus one seat on a healthy six-model roster and never the other two, so a round '
+        + 'that reaches quorum on its window spends four calls where the whole bench spent six',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Full six-model roster, everyone answering at once. */
+        const roster: readonly RosterModelId[] = [
+          'hf:zai-org/GLM-5.3-Flash',
+          'minimax-m3',
+          'hf:Qwen/Qwen3.8-27B',
+          'hf:moonshotai/Kimi-K3',
+          'deepseek-v4-pro-0813',
+          'hf:openai/gpt-oss-120b',
+        ];
+        /** Gather over the healthy roster. */
+        const gather = await gatherStageVoices({
+          client: flakyClient({ failuresByModel: {}, calls, },),
+          modelIds: roster,
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'critic',
+          l,
+        },);
+        expect(gather.quorumMet,).toBe(true,);
+        expect(gather.voices,).toHaveLength(4,);
+        expect(gather.findings,).toHaveLength(0,);
+        expect(Object.keys(calls,),).toHaveLength(4,);
+        for (const count of Object.values(calls,))
+          expect(count,).toBe(1,);
       },
     },),
 

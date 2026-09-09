@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { selectionFanOut, } from './candidate-select-fanout.ts';
 import {
   type Candidate,
   describeProducer,
@@ -26,6 +27,7 @@ import {
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { ProducerRosterError, } from './repair-contract.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -111,6 +113,7 @@ export async function decideBestCandidate<ValueT,>(
     signal,
     perCallTimeoutMs,
     l,
+    fanOut,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly candidates: readonly Candidate<ValueT>[];
@@ -122,6 +125,7 @@ export async function decideBestCandidate<ValueT,>(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<SelectionOutcome<ValueT>> {
   /**
@@ -240,6 +244,11 @@ export async function decideBestCandidate<ValueT,>(
     validate: isCandidateBallotAsSent,
     stage: 'select',
     l,
+    fanOut: selectionFanOut({
+      judgeCount: judges.length,
+      // Conditional spread keeps the request absent instead of undefined.
+      ...((fanOut === undefined) ? {} : { requested: fanOut, }),
+    },),
   },);
 
   /**

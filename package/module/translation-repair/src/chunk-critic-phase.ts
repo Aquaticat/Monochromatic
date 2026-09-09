@@ -1,3 +1,4 @@
+import type { FanOutMode, } from './stage-fanout-window.ts';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -129,6 +130,7 @@ export async function runChunkCriticPhase(
     signal,
     perCallTimeoutMs,
     l,
+    fanOut,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly criticModelIds: readonly RosterModelId[];
@@ -145,6 +147,7 @@ export async function runChunkCriticPhase(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<ChunkCriticPhase> {
   /**
@@ -162,6 +165,8 @@ export async function runChunkCriticPhase(
     signal,
     perCallTimeoutMs,
     l,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
 
   /**

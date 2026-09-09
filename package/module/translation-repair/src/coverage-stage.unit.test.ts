@@ -21,10 +21,11 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  firstRoundWindow,
   parseDocument,
+  type RosterModelId,
   runCoverageStage,
   type SyntheticClient,
-  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -145,6 +146,9 @@ await describe({
             },
           },),
           modelIds: ROSTER,
+          // THE WHOLE BENCH, since this case scripts every seat and reads its
+          // majority over the bench it wrote; production asks the window.
+          fanOut: 'whole-bench',
           sourcePassage: '小猫中午在垫子上打盹。',
           translation: TARGET,
           signal: AbortSignal.timeout(30_000,),
@@ -187,6 +191,9 @@ await describe({
             },
           },),
           modelIds: ROSTER,
+          // THE WHOLE BENCH, since this case scripts every seat and reads its
+          // majority over the bench it wrote; production asks the window.
+          fanOut: 'whole-bench',
           sourcePassage: '小猫中午在垫子上打盹。',
           translation: TARGET,
           signal: AbortSignal.timeout(30_000,),
@@ -197,6 +204,47 @@ await describe({
           .kind,).toBe('carried',);
         expect(answer.verdict
           .anchoredFull,).toBe(3,);
+      },
+    },),
+    it({
+      name: 'TAKES its majority over the seats the window asked, not the bench: four seats all anchoring '
+        + 'full coverage are asked quorum plus one, and the seat the window spared is neither silent nor lost',
+      fn: async () => {
+        const answer = await runCoverageStage({
+          client: scriptedClient({
+            script: {
+              'hf:cat/Cat-A': {
+                coverage: 'full',
+                quote: 'naps on its cushion at noon',
+              },
+              'hf:cat/Cat-B': {
+                coverage: 'full',
+                quote: 'naps on its cushion at noon',
+              },
+              'hf:cat/Cat-C': {
+                coverage: 'full',
+                quote: 'naps on its cushion at noon',
+              },
+              'hf:cat/Cat-D': {
+                coverage: 'full',
+                quote: 'naps on its cushion at noon',
+              },
+            },
+          },),
+          modelIds: ROSTER,
+          sourcePassage: '小猫中午在垫子上打盹。',
+          translation: TARGET,
+          signal: AbortSignal.timeout(30_000,),
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(answer.verdict
+          .asked,).toBe(firstRoundWindow({ benchSize: ROSTER.length, },),);
+        expect(answer.verdict
+          .heard,).toBe(answer.verdict.asked,);
+        expect(answer.verdict
+          .kind,).toBe('carried',);
+        expect(answer.findings,).toEqual([],);
       },
     },),
   ],

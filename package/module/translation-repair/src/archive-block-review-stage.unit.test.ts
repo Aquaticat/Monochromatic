@@ -233,6 +233,9 @@ await describe({
         const selectionPrompts = prompts.filter(function isSelection(prompt,): boolean {
           return prompt.includes('Choose a publishable correction',);
         },);
+        // One prompt per judge: four seats are a bench whose window could not
+        // carry a unanimous slate on self-votes, so the whole bench is asked
+        // (`candidate-select-fanout.ts`).
         expect(selectionPrompts,).toHaveLength(4);
         for (const prompt of selectionPrompts) {
           for (const modelId of ROSTER)
