@@ -107,6 +107,18 @@ await describe({
       },
     },),
     it({
+      name: 'ACCEPTS a page whose semantic wrap broke the carried region across lines, reading it as the '
+        + 'anchoring did (the fifth yuki418330012 launch of 2026-09-08 shipped the credits line as four lines)',
+      fn: async () => {
+        expect(() => assertCarriedInsertionsRemain({
+          artifact: artifactShipping({ text: 'The cat sleeps\nin warm sunlight.\n', }),
+          slices: SLICES,
+          targetText: TARGET,
+          carried: CARRIED,
+        },),).not.toThrow();
+      },
+    },),
+    it({
       name: 'PAUSES when final stage removes carried region instead of publishing omission',
       fn: async () => {
         expect(() => assertCarriedInsertionsRemain({
