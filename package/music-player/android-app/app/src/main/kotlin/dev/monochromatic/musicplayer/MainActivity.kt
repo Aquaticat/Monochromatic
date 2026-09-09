@@ -2160,6 +2160,40 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     //   <Column modifier={...}> ... </Column>
     // )}</Scaffold>
     // ```
+    playerScreenLayout(
+        state = state,
+        controller = controller,
+        pageControlStyle = pageControlStyle,
+        pageControlsExpanded = pageControlsExpanded,
+        showingSettings = showingSettings,
+        playbackProgress = playbackProgress,
+        onChooseFolder = onChooseFolder,
+        onPageControlsExpandedChange = { pageControlsExpanded = it },
+        onShowSettings = { showingSettings = true },
+        onPageControlStyleSelected = { style ->
+            pageControlStyle = style
+            SessionStore.savePageControlStyle(context, style)
+            Log.i(LOG_TAG, "page control style=${style.name}")
+        },
+        onHideSettings = { showingSettings = false },
+    )
+}
+
+/** Routes accepted unfolded geometry without changing compact or Settings behavior. */
+@Composable
+private fun playerScreenLayout(
+    state: PlayerUiState,
+    controller: PlayerController,
+    pageControlStyle: PageControlStyle,
+    pageControlsExpanded: Boolean,
+    showingSettings: Boolean,
+    playbackProgress: PlaybackProgress,
+    onChooseFolder: () -> Unit,
+    onPageControlsExpandedChange: (Boolean) -> Unit,
+    onShowSettings: () -> Unit,
+    onPageControlStyleSelected: (PageControlStyle) -> Unit,
+    onHideSettings: () -> Unit,
+) {
     Scaffold(containerColor = pageSceneColor(pageControlStyle)) { innerPadding ->
         BoxWithConstraints(
             modifier = Modifier
@@ -2172,7 +2206,7 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
                     progress = playbackProgress,
                     controller = controller,
                     onOpen = onChooseFolder,
-                    onSettings = { showingSettings = true },
+                    onSettings = onShowSettings,
                 )
                 return@BoxWithConstraints
             }
@@ -2214,7 +2248,7 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             // <SourceActionRow onSettings={() => setShowingSettings(true)} onOpen={onChooseFolder}/>
             // ```
             sourceActionRow(
-                onSettings = { showingSettings = true },
+                onSettings = onShowSettings,
                 onOpen = onChooseFolder,
             )
             // What:     The settings/library branch renders one page in the remaining space.
@@ -2227,12 +2261,8 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             if (showingSettings) {
                 settingsPage(
                     style = pageControlStyle,
-                    onSelectStyle = { style ->
-                        pageControlStyle = style
-                        SessionStore.savePageControlStyle(context, style)
-                        Log.i(LOG_TAG, "page control style=${style.name}")
-                    },
-                    onBack = { showingSettings = false },
+                    onSelectStyle = onPageControlStyleSelected,
+                    onBack = onHideSettings,
                 )
             } else {
                 // What:     `trackPager(state = state, controller = controller)` renders the page
@@ -2253,7 +2283,7 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
                         controller = controller,
                         pageControlStyle = pageControlStyle,
                         pageControlsExpanded = pageControlsExpanded,
-                        onPageControlsExpandedChange = { pageControlsExpanded = it },
+                        onPageControlsExpandedChange = onPageControlsExpandedChange,
                     ),
                 )
             }
