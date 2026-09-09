@@ -6972,7 +6972,7 @@ The review prompt explicitly permits exact source anchors from corroborated tran
 No authority or roster policy changed.
 
 The first full suite passed all three new guards and ended with `unit exit 0`
-(`~/temp/agent/class25-unit-20260909.log`).
+(`~/temp/agent/translation-repair-class25-20260909/class25-unit-20260909.log`).
 Type-checking exposed incomplete test fixtures,
 corrected in `009eacc3e`.
 Oxlint found formatting findings and the pass-entry module one code line over its limit;
@@ -6981,6 +6981,39 @@ not waived.
 An independent review requested a guard through `settleEntry` proving the shared callback wiring,
 which is being added before launch.
 No provider generation has been purchased during this work.
+
+Verification finished at 21:55 UTC:
+`865859305` extracts cache retirement into the cache module without changing its post-publication boundary;
+`76d27dc31` resolves formatting;
+`5b228736b` covers textless and unavailable prior readings.
+The first integration fixture did not reach archive review,
+so its failure was not accepted as evidence.
+`9e7df9b40` minimizes it to one shared component and one unclaimed archive block.
+That fixture fails against frozen `a5e0efc7f` because the review sees no transcription
+(`~/temp/agent/translation-repair-class25-20260909/class25-entry-red2-20260909.log`),
+and passes against the new build,
+checking ordering,
+the actual sheets,
+one reader invocation and both lane stages.
+The final full suite ends `unit exit 0`
+(`~/temp/agent/class25-final-unit-20260909.out`);
+additional prior-reading branch tests pass;
+types pass;
+oxlint reports zero warnings and errors.
+
+Prelaunch meters at 21:55 UTC:
+OpenRouter 270.03 USD,
+Bedrock 186.24 USD,
+Synthetic weekly zero and five-hour 2750/2750,
+Hyper zero.
+The live sampler log is `~/temp/agent/class25-prelaunch-meters-20260909.log`;
+the required daily-cost helper ran into `~/temp/agent/class25-prelaunch-costs-20260909.out`.
+Its `TOTAL logged OpenRouter cost` label is misleading:
+it includes Bedrock and unit-test fixtures from the preceding session,
+including `cat/whiskers` at 1.25 USD of simulated calls.
+No daily provider-spend conclusion is drawn from that total.
+New test logs are kept outside its top-level dated `.log` scan;
+pass costs will be read from each provider's rows in the actual pass log.
 
 ## The calibration is read, the anchor judge loses a seat, and two classes open, 2026-09-09, 21:00 UTC
 

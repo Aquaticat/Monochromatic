@@ -24,17 +24,24 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Takeover update at 21:46 UTC on 2026-09-09:
+Takeover update at 21:55 UTC on 2026-09-09:
 class twenty-five is implemented in `f6cd6e5e7` and `07a99e23a`,
-with verification still in progress and no pass launched.
+with verification complete and `Mio` next to launch.
 The preservation,
 section-scope and no-repurchase guards each failed on the pre-fix build,
-then passed in the full suite (`~/temp/agent/class25-unit-20260909.log`,
-last line `unit exit 0`).
-Type-checking found incomplete test fixtures,
-corrected in `009eacc3e`;
-oxlint found formatting findings and `pass-entry.ts` at 301 code lines,
-which still need correction and re-verification before launching `Mio`.
+then passed in the full suite.
+The real `settleEntry` wiring guard also failed against frozen `a5e0efc7f` because its review lacked picture text,
+then passed on the current build (`edcc72b6e`,
+fixture minimized in `9e7df9b40`).
+Final full-suite log:
+`~/temp/agent/class25-final-unit-20260909.out`,
+last line `unit exit 0`.
+Type checks pass;
+oxlint reports zero warnings and errors.
+`865859305` moved cache retirement into `pass-entry-caches.ts` to preserve the line budget;
+`76d27dc31` applied the formatting findings.
+The textless and unavailable prior-reading branches pass in `5b228736b`.
+Red logs and the first full suite live under `~/temp/agent/translation-repair-class25-20260909/`.
 The baseline markdown check passed on this handover,
 the planning log and package README.
 The proposed shared disk-cache object was not sufficient:
@@ -238,7 +245,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `40aba2fdb` for the code;
+  `5b228736b` for code and guards;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -269,6 +276,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+Class twenty-five:
+`f6cd6e5e7` supplies section-scoped corroborated picture support before archive review;
+`07a99e23a` shares completed readings through the entry;
+`865859305` extracts cache retirement;
+`76d27dc31` resolves formatting;
+`5b228736b` completes the prior-reading branch guards.
+The full suite,
+production-entry wiring guard,
+types and oxlint pass.
+
 The 2026-09-09 commits,
 each recorded at length in the planning log of the day and its decision docs:
 
@@ -1572,7 +1589,20 @@ and the seat line of the seventh `Mio` launch.
 A reckoned `estimated=abandoned` line is a ceiling (completion at the cap times the price),
 so a log's sum can read above what the balance moved.
 
-BALANCES NOW (20:29 UTC):
+Prelaunch meter at 21:55 UTC on 2026-09-09:
+OpenRouter 270.03 USD,
+Bedrock 186.24 USD,
+Synthetic zero of its rolling week with 2750/2750 in its five-hour window,
+Hyper zero.
+`~/temp/agent/class25-prelaunch-meters-20260909.log` is the live reading;
+`costs-today.mjs 20260909` output is `~/temp/agent/class25-prelaunch-costs-20260909.out`.
+Its `TOTAL logged OpenRouter cost=110.2945` is not an OpenRouter-only spend total:
+the helper sums every provider and includes old `unit-*.log` fixtures (`cat/whiskers` alone contributes 1.25).
+Use the named provider rows of actual pass logs and live balance movements,
+not that label.
+New test logs are `.out` or in a subdirectory so they do not enter the daily meter scan.
+
+Historical balances at 20:29 UTC:
 
 - OpenRouter 270.03 USD,
     the owner's final top-up ("I have topped up OpenRouter one final time";
@@ -1768,9 +1798,10 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  FINISH CLASS TWENTY-FIVE VERIFICATION FIRST.
-    Implementation and red/green evidence are in the takeover update under "Where the work stands";
-    finish lint and the production-entry wiring guard before any launch.
+1.  CLASS TWENTY-FIVE IS VERIFIED LOCALLY.
+    Implementation and red/green evidence are in the takeover update under "Where the work stands".
+    Launch and read `Mio` next;
+    only a real page can establish that both screenshot translations survive.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
     `preparePassEntry` (`corpus-run/pass-prepare.ts`) runs the archive block review inside preparation,
