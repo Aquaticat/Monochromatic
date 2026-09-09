@@ -1,10 +1,21 @@
-import { stat, } from 'node:fs/promises';
 import {
-  dirname,
-  join,
-  resolve,
-} from 'node:path';
-import { caughtErrorHasCode, } from './error.ts';
+  directoryNamed,
+  findRoot,
+  type RootFilesystem,
+  RootNotFoundError,
+} from '@monochromatic-dev/module-fs-path/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { resolve, } from 'node:path';
+
+import { l as parentLogger, } from '../logger.ts';
+
+/**
+ Tagged logger for dependency-root discovery.
+ */
+const l = tagged({
+  tag: 'stalenessRoot',
+  l: parentLogger,
+},);
 
 /**
  Directory name searched while locating the workspace dependency root.
@@ -12,95 +23,73 @@ import { caughtErrorHasCode, } from './error.ts';
 export const NODE_MODULES_DIRECTORY_NAME = 'node_modules';
 
 /**
- Returns whether a directory contains a `node_modules` directory.
- 
- @param directory - Directory to inspect.
- 
- @returns Whether `node_modules` exists as a directory under `directory`.
- 
- @example
- ```ts
- const hasNodeModules = await hasNodeModulesDirectory(process.cwd());
- ```
+ Marker for the nearest ancestor that owns a `node_modules` directory.
+ A `node_modules` that is a file, or a link to something other than a
+ directory, does not match; a broken or looping link makes the probe throw,
+ which the walk propagates.
  */
-async function hasNodeModulesDirectory(directory: string,): Promise<boolean> {
-  try {
-    /**
-     Candidate dependency directory.
-     */
-    const nodeModulesPath = join(
-      directory,
-      NODE_MODULES_DIRECTORY_NAME,
-    );
-    return (await stat(nodeModulesPath,))
-      .isDirectory();
-  }
-  catch (statError: unknown) {
-    if (caughtErrorHasCode({
-      error: statError,
-      code: 'ENOENT',
-    },))
-      return false;
-
-    throw statError;
-  }
-}
+const NODE_MODULES_MARKER = directoryNamed(NODE_MODULES_DIRECTORY_NAME,);
 
 /**
- Walks ancestors via {@link findNodeModulesRootFromDirectory} until it finds
- a directory that owns `node_modules`.
- 
- @param startDirectory - Directory where the upward walk starts.
- 
- @returns First ancestor containing `node_modules`, or the resolved start directory when none exists.
- 
- @example
- ```ts
- const root = await findNodeModulesRoot(process.cwd());
- ```
+ Options for {@link findNodeModulesRoot}.
  */
-export async function findNodeModulesRoot(startDirectory: string,): Promise<string> {
-  return await findNodeModulesRootFromDirectory({
-    directory: resolve(startDirectory,),
-    startDirectory,
-  },);
-}
-
-/**
- Walks parent directories, checking each with {@link hasNodeModulesDirectory},
- until a dependency root or filesystem root is reached.
- 
- @param directory - Directory currently being inspected.
- 
- @param startDirectory - Original directory used as fallback.
- 
- @returns First ancestor containing `node_modules`, or resolved original directory when none exists.
- 
- @example
- ```ts
- const root = await findNodeModulesRootFromDirectory({ directory: process.cwd(), startDirectory: process.cwd() });
- ```
- */
-async function findNodeModulesRootFromDirectory(
-  {
-    directory,
-    startDirectory,
-  }: {
-    readonly directory: string;
-    readonly startDirectory: string;
-  },
-): Promise<string> {
-  if (await hasNodeModulesDirectory(directory,))
-    return directory;
-
+export type FindNodeModulesRootOptions = {
   /**
-   Parent directory used to detect filesystem root.
+   Directory where the upward walk starts; a relative path resolves against
+   the process working directory.
    */
-  const parentDirectory = dirname(directory,);
-  if (parentDirectory === directory)
-    return resolve(startDirectory,);
-  return await findNodeModulesRootFromDirectory({
-    directory: parentDirectory,
-    startDirectory,
-  },);
+  readonly startDirectory: string;
+  /**
+   Filesystem the walk probes. Omitted, the runtime's real filesystem;
+   tests pass an in-memory adapter.
+   */
+  readonly fs?: RootFilesystem;
+};
+
+/**
+ Nearest ancestor of `startDirectory` (itself included) that owns a
+ `node_modules` directory, or the resolved start directory when no ancestor
+ does, so the caller can still place its cache under the start directory.
+ Filesystem errors other than a missing entry propagate, so a corrupt
+ `node_modules` surfaces instead of being walked past.
+
+ @param startDirectory - where the upward walk starts
+
+ @param fs - filesystem seam, an in-memory adapter in tests
+
+ @returns absolute directory that owns `node_modules`, else the resolved start directory
+
+ @example
+ ```ts
+ const root = await findNodeModulesRoot({ startDirectory: process.cwd() });
+ ```
+ */
+export async function findNodeModulesRoot({
+  startDirectory,
+  fs,
+}: FindNodeModulesRootOptions,): Promise<string> {
+  /**
+   Absolute start directory, also the fallback answer.
+   */
+  const start = resolve(startDirectory,);
+  try {
+    return await findRoot(
+      fs === undefined
+        ? {
+          cwd: start,
+          marker: NODE_MODULES_MARKER,
+        }
+        : {
+          cwd: start,
+          fs,
+          marker: NODE_MODULES_MARKER,
+        },
+    );
+  }
+  catch (error: unknown) {
+    if (!(error instanceof RootNotFoundError))
+      throw error;
+    l.debug(`no ${NODE_MODULES_DIRECTORY_NAME} at or above ${start}; using the start directory`,);
+    return start;
+  }
 }

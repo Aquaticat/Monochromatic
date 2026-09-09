@@ -171,7 +171,7 @@ export async function resolveManifestPath(
   /**
    Workspace root discovered by {@link findNodeModulesRoot} walking up until `node_modules` exists.
    */
-  const nodeModulesRoot = await findNodeModulesRoot(process.cwd(),);
+  const nodeModulesRoot = await findNodeModulesRoot({ startDirectory: process.cwd(), },);
   return join(
     nodeModulesRoot,
     NODE_MODULES_DIRECTORY_NAME,

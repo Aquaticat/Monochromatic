@@ -72,7 +72,7 @@ async function teardown(tempDir: string,): Promise<void> {
  */
 async function findNodeModulesRootError(startDirectory: string,): Promise<unknown> {
   try {
-    await findNodeModulesRoot(startDirectory,);
+    await findNodeModulesRoot({ startDirectory, },);
   }
   catch (error: unknown) {
     return error;
