@@ -231,6 +231,7 @@ markdown lint clean on every line written today.
   `read-standing.mjs <log> [focus]` reads a producer calibration against the pooled null,
   `fidelity-tally.mjs <probe-run.json>` tallies a judge fidelity probe,
   `model-endpoints.mjs <model> <log...>` reads which OpenRouter endpoint served a model and at what size,
+  `read-page.mjs` runs the deterministic half of the three checks over a shipped page,
   and `run-suites.mjs <suite...>` runs named unit suites without a shell loop.
 - Meters at 20:29 UTC on 2026-09-09,
   off the `hulicaijia` tally:
@@ -1718,6 +1719,31 @@ so building the next fix cannot change the pass under way.
 The kill-and-relaunch rule is about the build a pass carries,
 not the files on disk:
 a fix that matters to the running entry still kills and relaunches it.
+
+## The three checks
+
+Named in every reading above and defined here,
+since the readings cite them by count and a reader who has not met them cannot run them.
+They are the three additions the classes of 2026-09-08 made to the seven steps of the 2026-09-04 snapshot,
+each read off the pass log and the shipped page:
+
+1.  FRONT MATTER.
+    The page's front matter equals the archive's byte for byte
+    (the scratch `read-page.mjs` prints `frontMatterEqualsArchive`),
+    under the owner's rule of 2026-09-08:
+    the archive's front matter ships as it stands,
+    and the lanes render slice zero only where the archive never translated it.
+2.  FALSE START.
+    Every `json false start` line in the log is a voice the reply ladder kept
+    (the seventeenth class,
+    `json-false-start.ts`);
+    a `schema-mismatch` whose raw text opens `{` twice would mean the window or the shape has moved,
+    and is a finding to chase rather than to record.
+3.  ERROR FINISH.
+    A `schema-mismatch` line naming `finish_reason=error` would mean the shape has moved
+    (the eighteenth class);
+    an `InStreamProviderError` line with `code unnamed` is that class caught and retried,
+    which is the healthy reading.
 
 ## What to do next
 
