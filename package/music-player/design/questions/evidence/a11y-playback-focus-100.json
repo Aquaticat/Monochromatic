@@ -1,0 +1,286 @@
+[
+  {
+    "step": 0,
+    "speech": "Folders"
+  },
+  {
+    "step": 1,
+    "speech": "1 of 16--1.2 dBTP"
+  },
+  {
+    "step": 2,
+    "speech": "1:06"
+  },
+  {
+    "step": 3,
+    "speech": "0.24. Slider"
+  },
+  {
+    "step": 4,
+    "speech": "Track position"
+  },
+  {
+    "step": 5,
+    "speech": "4:35"
+  },
+  {
+    "step": 6,
+    "speech": "Previous track. Button"
+  },
+  {
+    "step": 7,
+    "speech": "Pause. Button"
+  },
+  {
+    "step": 8,
+    "speech": "Next track. Button"
+  },
+  {
+    "step": 9,
+    "speech": "Not selected. Repeat track. Radio button. 1 of 4. In list. 4 iter"
+  },
+  {
+    "step": 10,
+    "speech": "Selected. Play in order. Radio button. 2 of 4"
+  },
+  {
+    "step": 11,
+    "speech": "Not selected. Shuffle Camellia. Radio button. 3 of 4"
+  },
+  {
+    "step": 12,
+    "speech": "Not selected. Shuffle all folders. Radio button. 4 of 4"
+  },
+  {
+    "step": 13,
+    "speech": "Camellia. Out of list"
+  },
+  {
+    "step": 14,
+    "speech": "Settings. Button"
+  },
+  {
+    "step": 15,
+    "speech": "Current track. Another Xronixle. 4:35 - -1.2 dBTP. Button"
+  },
+  {
+    "step": 16,
+    "speech": "Not selected. Burning Aquamarine. 5:12 - -0.8 dBTP. Button"
+  },
+  {
+    "step": 17,
+    "speech": "Not selected. Dokuhebi. 4:01 - -1.4 dBTP. Button"
+  },
+  {
+    "step": 18,
+    "speech": "Not selected. ENUMAVELIS. 9:47 - -0.3 dBTP. Button"
+  },
+  {
+    "step": 19,
+    "speech": "Not selected. Ghost. 3:22 - -1.1 dBTP. Button"
+  },
+  {
+    "step": 20,
+    "speech": "Not selected. Hyperflux. 4:44 - -0.9 dBTP. Button"
+  },
+  {
+    "step": 21,
+    "speech": "Not selected. Idol Corruption. 5:31 - -0.6 dBTP. Button"
+  },
+  {
+    "step": 22,
+    "speech": "Not selected. KillerToy. 4:12 --1.0 dBTP. Button"
+  },
+  {
+    "step": 23,
+    "speech": "Not selected. Nacreous Snowmelt. 6:03 - -0.7 dBTP. Button"
+  },
+  {
+    "step": 24,
+    "speech": "Folders"
+  },
+  {
+    "step": 25,
+    "speech": "Open. Button"
+  },
+  {
+    "step": 26,
+    "speech": "Not selected. capital A. Radio button. 1 of 17. In list. 17 items"
+  },
+  {
+    "step": 27,
+    "speech": "Not selected. capital B. Radio button. 2 of 17"
+  },
+  {
+    "step": 28,
+    "speech": "Selected. capital C. Radio button. 3 of 17"
+  },
+  {
+    "step": 29,
+    "speech": "Not selected. capital D. Radio button. 4 of 17"
+  },
+  {
+    "step": 30,
+    "speech": "Not selected. capital E. Radio button. 5 of 17"
+  },
+  {
+    "step": 31,
+    "speech": "Not selected. capital F. Radio button. 6 of 17"
+  },
+  {
+    "step": 32,
+    "speech": "Not selected. capital G. Radio button. 7 of 17"
+  },
+  {
+    "step": 33,
+    "speech": "Not selected. capital H. Radio button. 8 of 17"
+  },
+  {
+    "step": 34,
+    "speech": "Not selected. capital H. Radio button. 8 of 17"
+  },
+  {
+    "step": 35,
+    "speech": "Not selected. capital |. Radio button. 9 of 17"
+  },
+  {
+    "step": 36,
+    "speech": "Not selected. capital K. Radio button. 11 of 17"
+  },
+  {
+    "step": 37,
+    "speech": "Not selected. capital L. Radio button. 12 of 17"
+  },
+  {
+    "step": 38,
+    "speech": "Not selected. capital M. Radio button. 13 of 17"
+  },
+  {
+    "step": 39,
+    "speech": "Not selected. capital N. Radio button. 14 of 17"
+  },
+  {
+    "step": 40,
+    "speech": "Not selected. capital O. Radio button. 15 of 17"
+  },
+  {
+    "step": 41,
+    "speech": "Not selected. capital P. Radio button. 16 of 17"
+  },
+  {
+    "step": 42,
+    "speech": "Not selected. capital Q. Radio button. 17 of 17"
+  },
+  {
+    "step": 43,
+    "speech": "capital C. Out of list"
+  },
+  {
+    "step": 44,
+    "speech": "Selected. Camellia. Radio button. 1 of 23. In list. 23 items"
+  },
+  {
+    "step": 45,
+    "speech": "Not selected. C418. Radio button. 2 of 23"
+  },
+  {
+    "step": 46,
+    "speech": "Not selected. Carpenter Brut. Radio button. 3 of 23"
+  },
+  {
+    "step": 47,
+    "speech": "Not selected. Casiopea. Radio button. 4 of 23"
+  },
+  {
+    "step": 48,
+    "speech": "Not selected. Celldweller. Radio button. 5 of 23"
+  },
+  {
+    "step": 49,
+    "speech": "Not selected. Chicane. Radio button. 6 of 23"
+  },
+  {
+    "step": 50,
+    "speech": "Not selected. CHON. Radio button. 7 of 23"
+  },
+  {
+    "step": 51,
+    "speech": "Not selected. Clark. Radio button. 8 of 23"
+  },
+  {
+    "step": 52,
+    "speech": "Not selected. Clown Core. Radio button. 9 of 23"
+  },
+  {
+    "step": 53,
+    "speech": "Not selected. Coaltar of the Deepers. Radio button. 10 of 23"
+  },
+  {
+    "step": 54,
+    "speech": "Not selected. Com Truise. Radio button. 11 of 23"
+  },
+  {
+    "step": 55,
+    "speech": "Not selected. Cornelius. Radio button. 12 of 23"
+  },
+  {
+    "step": 56,
+    "speech": "Not selected. Covet. Radio button. 13 of 23"
+  },
+  {
+    "step": 57,
+    "speech": "Not selected. Crumb. Radio button. 14 of 23"
+  },
+  {
+    "step": 58,
+    "speech": "Not selected. Crystal Castles. Radio button. 15 of 23"
+  },
+  {
+    "step": 59,
+    "speech": "Not selected. Cult of Luna. Radio button. 16 of 23"
+  },
+  {
+    "step": 60,
+    "speech": "Not selected. Current Value. Radio button. 17 of 23"
+  },
+  {
+    "step": 61,
+    "speech": "Not selected. Cynic. Radio button. 18 of 23"
+  },
+  {
+    "step": 62,
+    "speech": "Not selected. C6 shu Nie. Radio button. 19 of 23"
+  },
+  {
+    "step": 63,
+    "speech": "Not selected. capsule. Radio button. 20 of 23"
+  },
+  {
+    "step": 64,
+    "speech": "Not selected. Charisma.com. Radio button. 21 of 23"
+  },
+  {
+    "step": 65,
+    "speech": "Not selected. Cornelius Live. Radio button. 22 of 23"
+  },
+  {
+    "step": 66,
+    "speech": "Not selected. Cornelius Live. Radio button. 22 of 23"
+  },
+  {
+    "step": 67,
+    "speech": "Not selected. Cytus Sound Team. Radio button. 23 of 23"
+  },
+  {
+    "step": 68,
+    "speech": "Another Xronixle. Out of list"
+  },
+  {
+    "step": 69,
+    "speech": "1 of 16--1.2 dBTP"
+  },
+  {
+    "step": 70,
+    "speech": "1:06"
+  }
+]
