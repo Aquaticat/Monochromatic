@@ -21,7 +21,11 @@
         "lowContainerText": 14.81,
         "lowContainerSupporting": 8.04,
         "containerText": 13.99,
-        "highContainerText": 13.11
+        "containerSupporting": 7.59,
+        "highContainerText": 13.11,
+        "highContainerSupporting": 7.12,
+        "lowContainerOutline": 4.05,
+        "containerOutline": 3.82
       }
     },
     {
@@ -45,7 +49,11 @@
         "lowContainerText": 14.78,
         "lowContainerSupporting": 8.05,
         "containerText": 13.91,
-        "highContainerText": 13.01
+        "containerSupporting": 7.58,
+        "highContainerText": 13.01,
+        "highContainerSupporting": 7.09,
+        "lowContainerOutline": 4.04,
+        "containerOutline": 3.8
       }
     },
     {
@@ -69,7 +77,11 @@
         "lowContainerText": 14.76,
         "lowContainerSupporting": 8.02,
         "containerText": 13.95,
-        "highContainerText": 13.08
+        "containerSupporting": 7.58,
+        "highContainerText": 13.08,
+        "highContainerSupporting": 7.11,
+        "lowContainerOutline": 4.05,
+        "containerOutline": 3.82
       }
     },
     {
@@ -93,7 +105,11 @@
         "lowContainerText": 14.75,
         "lowContainerSupporting": 8.09,
         "containerText": 13.9,
-        "highContainerText": 13.01
+        "containerSupporting": 7.62,
+        "highContainerText": 13.01,
+        "highContainerSupporting": 7.13,
+        "lowContainerOutline": 4.03,
+        "containerOutline": 3.8
       }
     },
     {
@@ -117,7 +133,11 @@
         "lowContainerText": 18.52,
         "lowContainerSupporting": 9.38,
         "containerText": 17.45,
-        "highContainerText": 16.34
+        "containerSupporting": 8.84,
+        "highContainerText": 16.34,
+        "highContainerSupporting": 8.28,
+        "lowContainerOutline": 6.07,
+        "containerOutline": 5.71
       }
     },
     {
@@ -141,7 +161,11 @@
         "lowContainerText": 16.48,
         "lowContainerSupporting": 16.48,
         "containerText": 13.2,
-        "highContainerText": 11.2
+        "containerSupporting": 13.2,
+        "highContainerText": 11.2,
+        "highContainerSupporting": 11.2,
+        "lowContainerOutline": 14.46,
+        "containerOutline": 11.58
       }
     }
   ],
@@ -156,6 +180,10 @@
     "lowContainerText": 14.75,
     "lowContainerSupporting": 8.02,
     "containerText": 13.2,
-    "highContainerText": 11.2
+    "containerSupporting": 7.58,
+    "highContainerText": 11.2,
+    "highContainerSupporting": 7.09,
+    "lowContainerOutline": 4.03,
+    "containerOutline": 3.8
   }
 }

@@ -16,7 +16,7 @@
     "styleNumber": "1",
     "contrast": "0.0"
   },
-  "settledSetting": "{\"android.theme.customization.system_palette\":\"2E7D32\",\"android.theme.customization.accent_color\":\"2E7D32\",\"android.theme.customization.theme_style\":\"TONAL_SPOT\",\"_applied_timestamp\":1788994529775}",
+  "settledSetting": "{\"android.theme.customization.system_palette\":\"2E7D32\",\"android.theme.customization.accent_color\":\"2E7D32\",\"android.theme.customization.theme_style\":\"TONAL_SPOT\",\"_applied_timestamp\":1788996746462}",
   "resolvedDarkRoles": {
     "primary_container": "#3C5A39",
     "on_primary_container": "#CAEDC2",
@@ -113,21 +113,16 @@
     "tertiary_fixed": "#FCFEB9",
     "tertiary_fixed_dim": "#EDEFAC"
   },
-  "strategyMappings": {
+  "surfaceReachMappings": {
     "stable": {
       "canvas": "#000000",
       "picker": "#000000",
       "rail": "#000000",
       "deck": "#0A0A0D",
       "tracks": "#000000",
-      "currentRow": "#0A0A0D",
       "generated": [
-        "primary and onPrimary",
-        "secondaryContainer and onSecondaryContainer",
-        "onSurface",
-        "onSurfaceVariant",
-        "outline",
-        "outlineVariant"
+        "component accents and foregrounds",
+        "outline roles"
       ]
     },
     "zoned": {
@@ -136,11 +131,9 @@
       "rail": "surfaceContainerLow",
       "deck": "surfaceContainerLow",
       "tracks": "#000000",
-      "currentRow": "surfaceContainerLow",
       "generated": [
-        "all component accent and foreground roles",
-        "surfaceContainerLow",
-        "surfaceContainerHighest",
+        "component accents and foregrounds",
+        "bounded surface containers",
         "outline roles"
       ]
     },
@@ -150,12 +143,21 @@
       "rail": "surfaceContainer",
       "deck": "surfaceContainerHigh",
       "tracks": "#000000",
-      "currentRow": "surfaceContainerLow",
       "generated": [
-        "all component accent and foreground roles",
-        "surface container ladder",
+        "component accents and foregrounds",
+        "folder-pane surface containers",
         "outline roles"
       ]
+    }
+  },
+  "currentRowMappings": {
+    "fixed": {
+      "currentRow": "#0A0A0D",
+      "titleWeight": "bold"
+    },
+    "dynamic": {
+      "currentRow": "surfaceContainerLow",
+      "titleWeight": "bold"
     }
   }
 }

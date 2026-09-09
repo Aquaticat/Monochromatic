@@ -16,7 +16,7 @@
     "styleNumber": "2",
     "contrast": "0.0"
   },
-  "settledSetting": "{\"android.theme.customization.system_palette\":\"C49000\",\"android.theme.customization.accent_color\":\"C49000\",\"android.theme.customization.theme_style\":\"VIBRANT\",\"_applied_timestamp\":1788994541214}",
+  "settledSetting": "{\"android.theme.customization.system_palette\":\"C49000\",\"android.theme.customization.accent_color\":\"C49000\",\"android.theme.customization.theme_style\":\"VIBRANT\",\"_applied_timestamp\":1788996768557}",
   "resolvedDarkRoles": {
     "primary_container": "#FEBB00",
     "on_primary_container": "#543C00",
@@ -113,21 +113,16 @@
     "tertiary_fixed": "#FEF660",
     "tertiary_fixed_dim": "#F0E753"
   },
-  "strategyMappings": {
+  "surfaceReachMappings": {
     "stable": {
       "canvas": "#000000",
       "picker": "#000000",
       "rail": "#000000",
       "deck": "#0A0A0D",
       "tracks": "#000000",
-      "currentRow": "#0A0A0D",
       "generated": [
-        "primary and onPrimary",
-        "secondaryContainer and onSecondaryContainer",
-        "onSurface",
-        "onSurfaceVariant",
-        "outline",
-        "outlineVariant"
+        "component accents and foregrounds",
+        "outline roles"
       ]
     },
     "zoned": {
@@ -136,11 +131,9 @@
       "rail": "surfaceContainerLow",
       "deck": "surfaceContainerLow",
       "tracks": "#000000",
-      "currentRow": "surfaceContainerLow",
       "generated": [
-        "all component accent and foreground roles",
-        "surfaceContainerLow",
-        "surfaceContainerHighest",
+        "component accents and foregrounds",
+        "bounded surface containers",
         "outline roles"
       ]
     },
@@ -150,12 +143,21 @@
       "rail": "surfaceContainer",
       "deck": "surfaceContainerHigh",
       "tracks": "#000000",
-      "currentRow": "surfaceContainerLow",
       "generated": [
-        "all component accent and foreground roles",
-        "surface container ladder",
+        "component accents and foregrounds",
+        "folder-pane surface containers",
         "outline roles"
       ]
+    }
+  },
+  "currentRowMappings": {
+    "fixed": {
+      "currentRow": "#0A0A0D",
+      "titleWeight": "bold"
+    },
+    "dynamic": {
+      "currentRow": "surfaceContainerLow",
+      "titleWeight": "bold"
     }
   }
 }
