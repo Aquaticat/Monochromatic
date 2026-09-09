@@ -38,7 +38,7 @@ import dev.monochromatic.musicplayer.core.PlaybackMode
 // type PlayerUiState = Readonly<{
 //   pageLabels: readonly string[]; folderPageIndices: readonly number[];
 //   selectedPage: number; pageItems: readonly PageEntry[]; currentIndex: number | null;
-//   playing: boolean; playbackMode: PlaybackMode; volume: number;
+//   currentTrackName: string | null; playing: boolean; playbackMode: PlaybackMode; volume: number;
 //   queueSize: number; loading: boolean;
 // }>;
 // ```
@@ -58,6 +58,9 @@ data class PlayerUiState(
 
     /** Current track's load-order index, or null when nothing is selected. */
     val currentIndex: Int? = null,
+
+    /** Current track's queue-relative display path, independent of browsed page. */
+    val currentTrackName: String? = null,
 
     /** Whether audio is currently advancing. */
     val playing: Boolean = false,

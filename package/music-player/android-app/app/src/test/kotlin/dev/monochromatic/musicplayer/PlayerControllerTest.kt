@@ -799,6 +799,7 @@ class PlayerControllerTest {
         controller.setPlaybackMode(PlaybackMode.REPEAT)
         assertEquals(loadsBeforeModeChange, engine.loadCount)
         assertEquals("u-a", engine.loadedUri)
+        assertEquals("A/1.mp3", controller.uiState.currentTrackName)
         assertEquals(37.5, controller.positionSec(), 0.0)
         assertEquals(true, engine.playWhenReady())
         assertEquals(PlaybackMode.REPEAT, controller.uiState.playbackMode)

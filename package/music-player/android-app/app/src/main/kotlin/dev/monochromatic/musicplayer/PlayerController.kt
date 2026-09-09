@@ -1929,6 +1929,7 @@ class PlayerController(private val engine: AudioEngine) {
         //   selectedPage: selected,
         //   pageItems: this.pages[selected]?.entries ?? [],
         //   currentIndex: current,
+        //   currentTrackName: this.queue.currentPath(),
         //   playing: this.isPlaying,
         //   playbackMode: this.queue.playbackMode(),
         //   volume: this.uiState.volume,
@@ -1990,6 +1991,16 @@ class PlayerController(private val engine: AudioEngine) {
             // currentIndex: current,
             // ```
             currentIndex = current,
+            // What:     `currentTrackName = queue.currentPath()` passes the current track's
+            //           queue-relative display path, or null when the queue has no current item.
+            // Why:      The unfolded deck must keep naming the playing track even while the user
+            //           browses a different page whose `pageItems` do not contain it.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // currentTrackName: this.queue.currentPath(),
+            // ```
+            currentTrackName = queue.currentPath(),
             // What:     `playing = isPlaying` passes the play/pause flag by name.
             // Why:      The play vs pause icon.
             //
