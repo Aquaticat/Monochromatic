@@ -45,6 +45,57 @@ and still throws.
 
 ## Root cause
 
+### The cause in one sentence
+
+Inlining a package's source carries its imports but not its declarations.
+
+A build asks one question of its own `package.json`:
+what do you declare?
+Declared names stay as `import` statements in the output.
+Undeclared names are copied into it.
+
+`package/cli/markdown-lint/package.json` declares `satteri`,
+so every build of the linter emits an import rather than a copy.
+Calling `packageExternals` against that manifest directly shows it:
+
+```text
+markdown-lint externals: /^node:/u /^ignore(\/|$)/u /^satteri(\/|$)/u /^type-fest(\/|$)/u
+satteri external? true
+```
+
+That covers both of the linter's artifacts,
+the `bin` and the library entry,
+so the linter is not the problem and never was.
+
+The consumer inlines the linter's source,
+ not its manifest.
+The copied source still carries `import { markdownToMdast } from 'satteri'`,
+but the build now asks the consumer's manifest whether `satteri` is declared,
+gets no,
+ and copies Sätteri in as well.
+The declaration and the code that needs it have been separated.
+
+Two consequences worth stating,
+ because both were misread during this
+investigation.
+
+The linter being a CLI does not matter.
+General guidance splits bundling by artifact kind,
+ tools versus libraries
+("Prior art on bundling a native dependency"),
+and the linter is both,
+ having a `bin` and an `exports` map.
+That split decides nothing here,
+because the linter's own build externalizes `satteri` either way.
+The artifact-kind question applies to the consumer,
+which is a published library inlining another package's source.
+
+Sätteri being native is not the cause either.
+It is what makes the failure loud.
+Any inlined package is separated from its manifest the same way;
+a pure-JavaScript one is silently duplicated into the bundle instead of throwing,
+which is the de-duplication cost appearing as a quiet problem rather than a crash.
+
 ### The loader resolves relative to itself
 
 `node_modules/.pnpm/satteri@0.10.5/node_modules/satteri/index.js:6`:
