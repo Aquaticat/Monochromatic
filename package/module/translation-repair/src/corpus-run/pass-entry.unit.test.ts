@@ -661,6 +661,13 @@ function entryClient(
         },)
         .join('\n',);
 
+      if ((schema === 'block_pairing') && (archivePictureSupport !== undefined)) {
+        /** Pair only the shared component, leaving its archive translation for review. */
+        const value = { pairs: [{ source: 0, target: 0, },], };
+        if (!request.validate(value,))
+          throw new Error('scripted picture pairing failed validator',);
+        return { kind: 'ok', value, rawText: JSON.stringify(value,), };
+      }
       if ((schema === 'archive_block_review') && (archivePictureSupport !== undefined)) {
         archiveReviewSheets?.push(content,);
         /** Source-supported reply depends on evidence actually reaching the review. */
@@ -1036,7 +1043,11 @@ await describe({
         const reads: string[] = [];
         await settleEntry({
           client: entryClient({ served, coverageScript: 'absent', archivePictureSupport, archiveReviewSheets, },),
-          entry: { ...REVIEWED_VISUAL_ENTRY, targetText: `${REVIEWED_VISUAL_ENTRY.targetText}\n\n> Mittens: Call 555-0134.`, },
+          entry: {
+            id: 'CatEntryPictureReview',
+            sourceText: MISSING_VISUAL,
+            targetText: `${MISSING_VISUAL}\n\n> Mittens: Call 555-0134.`,
+          },
           artifactsDir: dirs.artifactsDir,
           publishDir: dirs.publishDir,
           declinedDir: dirs.declinedDir,
