@@ -166,7 +166,7 @@ export async function runAdvisorOperation(options: ForeignHostCapability<Advisor
       && active.size < 2 && next() !== NO_ADVISOR_CANDIDATE
       ? firstDispatch + options.hedgeDelayMs : boundary;
     await wait({
-      pending: [...active.values(),].map(entry => entry.promise).concat([wake.current.promise,],),
+      pending: [...[...active.values(),].map(entry => entry.promise), wake.current.promise,],
       untilMs: Math.min(boundary, hedgeAt,), signal, now,
     },);
   }

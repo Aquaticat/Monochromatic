@@ -43,6 +43,8 @@ export type AdvisorSelectionContext = {
    Serialized context using selected model budget.
    */
   readonly advisorContext: AdvisorContext;
+  /** Candidate evidence snapshots used by default fallback without re-reading the session. */
+  readonly candidates?: readonly AdvisorContextCandidate[];
 };
 
 /**
@@ -120,7 +122,7 @@ type BuildContextForScopedModelOptions = ForeignBorrowed<Readonly<{
 /**
  Context candidate for a scoped Advisor model.
  */
-type AdvisorContextCandidate = {
+export type AdvisorContextCandidate = {
   /**
    Scoped Advisor model.
    */
@@ -290,6 +292,9 @@ export function selectAdvisorRunContext(
       defaultSelection,
     },
     advisorContext: selectedCandidate.advisorContext,
+    candidates: defaultSelection.ranking.map(function rankedCandidate(score): AdvisorContextCandidate {
+      return selectedContextCandidate({ candidates, selectedSlug: score.slug, },);
+    },),
   };
 }
 

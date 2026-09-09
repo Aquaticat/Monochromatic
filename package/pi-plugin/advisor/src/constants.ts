@@ -30,6 +30,9 @@ export const CONFIG_FILE_NAME = 'pi-advisor.json';
  */
 export const DEFAULT_TIMEOUT_MS = 600_000;
 
+/** Default post-success collection grace, capped by the original operation deadline. */
+export const DEFAULT_COLLECTION_GRACE_MS = 30_000;
+
 /**
  Provider and message-framing reserve subtracted from model context windows.
  */

@@ -18,6 +18,7 @@ import {
 } from './config-schemas.ts';
 import {
   CONFIG_FILE_NAME,
+  DEFAULT_COLLECTION_GRACE_MS,
   DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS,
   DEFAULT_TIMEOUT_MS,
 } from './constants.ts';
@@ -37,6 +38,8 @@ const NO_CONFIG_FILE: unique symbol = Symbol('advisor/no-config-file',);
 export const DEFAULT_CONFIG: Omit<AdvisorConfig, 'source'> = {
   enabled: true,
   timeoutMs: DEFAULT_TIMEOUT_MS,
+  hedgingEnabled: false,
+  collectionGraceMs: DEFAULT_COLLECTION_GRACE_MS,
   maxAdvisorOutputTokens: DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS,
   includePriorAdvisorResults: true,
 };
@@ -103,6 +106,9 @@ export async function loadMergedConfig(
       project,
     ],
   },);
+
+  if (merged.hedgingEnabled && merged.hedgeDelayMs === undefined)
+    throw new Error('advisor: hedgingEnabled requires an explicit positive hedgeDelayMs; overlapping requests can both be billed',);
 
   return {
     ...merged,
@@ -193,7 +199,12 @@ function mergeConfigFiles(
     const maxContextChars = config.maxContextChars
       ?? merged
       .maxContextChars;
+    /** Delay inherits across config scopes; explicit disablement remains independent. */
+    const hedgeDelayMs = config.hedgeDelayMs ?? merged.hedgeDelayMs;
     merged = {
+      hedgingEnabled: config.hedgingEnabled ?? merged.hedgingEnabled,
+      collectionGraceMs: config.collectionGraceMs ?? merged.collectionGraceMs,
+      ...(hedgeDelayMs === undefined ? {} : { hedgeDelayMs, }),
       enabled: config.enabled
         ?? merged
         .enabled,
