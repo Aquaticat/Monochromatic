@@ -152,7 +152,14 @@ export function renderAdvisorResult(
       .text
     : '(advisor returned no text)';
   if (isPartial)
-    return new Text(theme.fg('dim', text,), 0, 0,);
+    return new Text(
+      theme.fg(
+        'dim',
+        text,
+      ),
+      0,
+      0,
+    );
   if (!isAdvisorDetails(result.details,)) {
     return new Text(
       theme.fg(

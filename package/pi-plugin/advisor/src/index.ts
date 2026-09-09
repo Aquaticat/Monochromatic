@@ -98,7 +98,9 @@ export default async function advisor(
 
   innerL.debug(`advisor extension loaded; enabled=${String(state.getEnabled(),)}`,);
 
-  /** Restore failed nested usage when Pi finalizes the thrown tool error. */
+  /**
+   Restore failed nested usage when Pi finalizes the thrown tool error.
+   */
   const onFailure = registerAdvisorFailureAccounting(pi,);
   pi.registerTool(createAdvisorTool({
     onFailure,
@@ -295,7 +297,10 @@ export { formatAdvisorProgress, } from './operation-progress.ts';
 export { registerAdvisorFailureAccounting, } from './operation-failure-accounting.ts';
 export { AdvisorOperationError, } from './operation-error.ts';
 export type { AdvisorOperationOptions, } from './operation.ts';
-export type { AdvisorDispatch, AdvisorOperationCandidate, } from './operation-attempt.ts';
+export type {
+  AdvisorDispatch,
+  AdvisorOperationCandidate,
+} from './operation-attempt.ts';
 export {
   NO_ADVISOR_CANDIDATE,
   nextAdvisorCandidate,

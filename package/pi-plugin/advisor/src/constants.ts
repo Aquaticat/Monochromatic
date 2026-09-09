@@ -16,7 +16,9 @@ export const ADVISOR_TOOL_NAME = 'advisor';
  */
 export const ADVISOR_MESSAGE_TYPE = 'pi-advisor.review';
 
-/** Durable failed-operation metadata, excluded from model context and duplicate usage totals. */
+/**
+ Durable failed-operation metadata, excluded from model context and duplicate usage totals.
+ */
 export const ADVISOR_OPERATION_TYPE = 'pi-advisor.operation';
 
 /**
@@ -33,7 +35,9 @@ export const CONFIG_FILE_NAME = 'pi-advisor.json';
  */
 export const DEFAULT_TIMEOUT_MS = 600_000;
 
-/** Default post-success collection grace, capped by the original operation deadline. */
+/**
+ Default post-success collection grace, capped by the original operation deadline.
+ */
 export const DEFAULT_COLLECTION_GRACE_MS = 30_000;
 
 /**

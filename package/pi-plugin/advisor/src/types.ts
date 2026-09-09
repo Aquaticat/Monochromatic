@@ -69,11 +69,17 @@ export type AdvisorConfig = {
    Total Advisor operation deadline in milliseconds.
    */
   readonly timeoutMs: number;
-  /** Explicit opt-in to overlapping default reviews. */
+  /**
+   Explicit opt-in to overlapping default reviews.
+   */
   readonly hedgingEnabled: boolean;
-  /** Required launch delay when overlapping reviews are enabled. */
+  /**
+   Required launch delay when overlapping reviews are enabled.
+   */
   readonly hedgeDelayMs?: number;
-  /** Post-success collection grace, still bounded by timeoutMs. */
+  /**
+   Post-success collection grace, still bounded by timeoutMs.
+   */
   readonly collectionGraceMs: number;
   /**
    Optional hard cap for serialized context characters sent to Advisor.
@@ -227,7 +233,9 @@ export type AdvisorToolParams = {
  Structured details stored with Advisor tool and command results.
  */
 export type AdvisorDetails = {
-  /** Full accounting for all attempts rather than only the first returned review. */
+  /**
+   Full accounting for all attempts rather than only the first returned review.
+   */
   readonly operation?: AdvisorOperationSnapshot;
   /**
    User-requested slug, if supplied.
@@ -329,7 +337,9 @@ export type AdvisorRunOptions = ForeignHostCapability<{
    Current advisor tool call id, used to omit placeholder context.
    */
   readonly toolCallId?: string;
-  /** Bounded ledger-derived progress callback. */
+  /**
+   Bounded ledger-derived progress callback.
+   */
   readonly onUpdate?: (operation: AdvisorOperationSnapshot) => void;
   /**
    Abort signal from tool or command execution.

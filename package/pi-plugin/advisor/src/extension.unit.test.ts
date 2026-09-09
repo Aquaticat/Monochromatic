@@ -265,6 +265,7 @@ function recordedPi(): RecordedPi {
       },
       setActiveTools() {},
       sendMessage() {},
+      appendEntry() {},
     } as unknown as ExtensionAPI,
   };
 }
@@ -308,6 +309,8 @@ await describe({
         expect(recorded.commands,).toEqual([ADVISOR_TOOL_NAME,],);
         expect(recorded.renderers,).toEqual([ADVISOR_MESSAGE_TYPE,],);
         expect(recorded.events,).toEqual([
+          'tool_result',
+          'session_shutdown',
           'session_start',
           'before_agent_start',
         ],);

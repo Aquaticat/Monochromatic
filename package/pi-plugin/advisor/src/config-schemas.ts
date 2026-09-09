@@ -20,11 +20,17 @@ export type AdvisorConfigFile = {
    Total Advisor operation deadline in milliseconds.
    */
   readonly timeoutMs?: number;
-  /** Explicit overlap opt-in, independent of serial failure fallback. */
+  /**
+   Explicit overlap opt-in, independent of serial failure fallback.
+   */
   readonly hedgingEnabled?: boolean;
-  /** Required launch delay when overlap is enabled. */
+  /**
+   Required launch delay when overlap is enabled.
+   */
   readonly hedgeDelayMs?: number;
-  /** Post-success collection allowance. */
+  /**
+   Post-success collection allowance.
+   */
   readonly collectionGraceMs?: number;
   /**
    Maximum serialized context characters.
@@ -71,11 +77,21 @@ const PositiveNumberSchema: v.GenericSchema<number> = v.pipe(
   v.minValue(1,),
 );
 
-/** Maximum delay accepted by Node timers without overflow to one millisecond. */
+/**
+ Maximum delay accepted by Node timers without overflow to one millisecond.
+ */
 const MAX_TIMER_MS = 2_147_483_647;
 
-/** Finite integral durations for new scheduling boundaries. */
-const SchedulingDurationSchema = v.pipe(v.number(), v.finite(), v.integer(), v.minValue(1,), v.maxValue(MAX_TIMER_MS,),);
+/**
+ Finite integral durations for new scheduling boundaries.
+ */
+const SchedulingDurationSchema = v.pipe(
+  v.number(),
+  v.finite(),
+  v.integer(),
+  v.minValue(1,),
+  v.maxValue(MAX_TIMER_MS,),
+);
 
 /**
  Advisor configuration file schema.

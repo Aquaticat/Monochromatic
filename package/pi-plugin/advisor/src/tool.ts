@@ -1,37 +1,76 @@
-/** Advisor tool registration and ledger-driven execution. @module */
-import type { AgentToolResult, ExtensionContext, Theme, ToolRenderResultOptions, } from '@earendil-works/pi-coding-agent';
+/**
+ Advisor tool registration and ledger-driven execution. @module
+ */
+import type {
+  AgentToolResult,
+  ExtensionContext,
+  Theme,
+  ToolRenderResultOptions,
+} from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import { AdvisorOperationError, } from './operation-error.ts';
 import { formatAdvisorProgress, } from './operation-progress.ts';
 import type { AdvisorOperationSnapshot, } from './operation-types.ts';
-import { renderAdvisorCall, renderAdvisorResult, } from './rendering.ts';
+import {
+  renderAdvisorCall,
+  renderAdvisorResult,
+} from './rendering.ts';
 import { runAdvisor, } from './run-advisor.ts';
-import { AdvisorToolParametersSchema, prepareAdvisorArguments, } from './tool-params.ts';
-import type { AdvisorConfig, AdvisorDetails, AdvisorToolDefinition, AdvisorToolResult, } from './types.ts';
+import {
+  AdvisorToolParametersSchema,
+  prepareAdvisorArguments,
+} from './tool-params.ts';
+import type {
+  AdvisorConfig,
+  AdvisorDetails,
+  AdvisorToolDefinition,
+  AdvisorToolResult,
+} from './types.ts';
 
 export { runAdvisor, } from './run-advisor.ts';
 
-/** Runtime state and persistence boundaries supplied by the extension. */
+/**
+ Runtime state and persistence boundaries supplied by the extension.
+ */
 export type CreateAdvisorToolOptions = {
-  /** Runtime config snapshot. */
+  /**
+   Runtime config snapshot.
+   */
   readonly getConfig: () => AdvisorConfig;
-  /** Session enablement. */
+  /**
+   Session enablement.
+   */
   readonly getSessionEnabled: () => boolean;
-  /** Current Pi-loaded project context. */
+  /**
+   Current Pi-loaded project context.
+   */
   readonly getProjectContext: () => string;
-  /** Preserve accounting before throwing through the host's error boundary. */
-  readonly onFailure?: (failure: { readonly toolCallId: string; readonly operation: AdvisorOperationSnapshot; }) => void;
+  /**
+   Preserve accounting before throwing through the host's error boundary.
+   */
+  readonly onFailure?: (failure: {
+    readonly toolCallId: string;
+    readonly operation: AdvisorOperationSnapshot
+  }) => void;
 };
 
-/** Host-defined positional progress callback, including absence outside streaming hosts. */
+/**
+ Host-defined positional progress callback, including absence outside streaming hosts.
+ */
 type AdvisorUpdateCallback = Parameters<AdvisorToolDefinition<typeof AdvisorToolParametersSchema>['execute']>[3];
+
+/** Host-defined positional caller signal, including optionality dictated by Pi. */
+type AdvisorCallerSignal = Parameters<AdvisorToolDefinition<typeof AdvisorToolParametersSchema>['execute']>[2];
 
 /**
  Register a default fallback tool while preserving exact explicit-model requests.
+ 
  @param toolOptions - session accessors and accounting persistence
+ 
  @returns Pi tool definition
+ 
  @example
  ```ts
  pi.registerTool(createAdvisorTool({ getConfig, getSessionEnabled, getProjectContext }));
@@ -63,41 +102,93 @@ export function createAdvisorTool(toolOptions: CreateAdvisorToolOptions,): Advis
      @mutates ctx - resolves scope and provider authentication through the host
      @mutates onUpdate - publishes progress to the host
      */
-    async execute(toolCallId: string, params: { readonly model?: string; readonly question?: string; },
-      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi dictates a positional optional signal before required host context.
-      signal: ForeignHostCapability<AbortSignal> | undefined,
-      onUpdate: AdvisorUpdateCallback, ctx: ForeignHostCapability<ExtensionContext>,): Promise<AdvisorToolResult> {
+    async execute(
+      toolCallId: string,
+      params: {
+        readonly model?: string;
+        readonly question?: string
+      },
+      signal: ForeignHostCapability<AdvisorCallerSignal>,
+      onUpdate: AdvisorUpdateCallback,
+      ctx: ForeignHostCapability<ExtensionContext>,
+    ): Promise<AdvisorToolResult> {
       if (!toolOptions.getSessionEnabled())
         throw new Error('advisor: disabled for this session. Run /advisor on to re-enable.',);
       try {
-        /** Final reviews and operation metadata. */
+        /**
+         Final reviews and operation metadata.
+         */
         const result = await runAdvisor({
-          ctx, config: toolOptions.getConfig(), projectContext: toolOptions.getProjectContext(), toolCallId,
+          ctx,
+          config: toolOptions.getConfig(),
+          projectContext: toolOptions.getProjectContext(),
+          toolCallId,
           ...(params.model === undefined ? {} : { requestedSlug: params.model, }),
           ...(params.question === undefined ? {} : { question: params.question, }),
           ...(signal === undefined ? {} : { signal, }),
           onUpdate(operation): void {
-            onUpdate?.({ content: [{ type: 'text', text: formatAdvisorProgress({ operation, now: Date.now(), },), },], details: operation, },);
+            onUpdate?.({
+              content: [{
+                type: 'text',
+                text: formatAdvisorProgress({
+                  operation,
+                  now: Date.now(),
+                },),
+              },],
+              details: operation,
+            },);
           },
         },);
         return {
-          content: [{ type: 'text', text: result.text, },], details: result.details,
-          ...(result.details.usage === undefined ? {} : { usage: result.details.usage, }),
+          content: [{
+            type: 'text',
+            text: result.text,
+          },],
+          details: result.details,
+          ...(result.details
+            .usage
+            === undefined ? {} : { usage: result.details
+              .usage, }),
         };
       }
       catch (error) {
         if (error instanceof AdvisorOperationError)
-          toolOptions.onFailure?.({ toolCallId, operation: error.operation, },);
+          toolOptions.onFailure?.({
+            toolCallId,
+            operation: error.operation,
+          },);
         throw error;
       }
     },
-    /** Render the initial requested identity through the host theme. */
-    renderCall(args: { readonly model?: string; readonly question?: string; }, theme: ForeignHostCapability<Theme>,) {
-      return renderAdvisorCall({ args, theme, },);
+    /**
+     Render the initial requested identity through the host theme.
+     */
+    renderCall(
+      args: {
+        readonly model?: string;
+        readonly question?: string
+      },
+      theme: ForeignHostCapability<Theme>,
+    ) {
+      return renderAdvisorCall({
+        args,
+        theme,
+      },);
     },
-    /** Render partial metadata independently from final successful or failed results. */
-    renderResult(result: ReadonlyDeep<AgentToolResult<AdvisorDetails | AdvisorOperationSnapshot>>, renderOptions: ReadonlyDeep<ToolRenderResultOptions>, theme: ForeignHostCapability<Theme>,) {
-      return renderAdvisorResult({ result, expanded: renderOptions.expanded, isPartial: renderOptions.isPartial, theme, },);
+    /**
+     Render partial metadata independently from final successful or failed results.
+     */
+    renderResult(
+      result: ReadonlyDeep<AgentToolResult<AdvisorDetails | AdvisorOperationSnapshot>>,
+      renderOptions: ReadonlyDeep<ToolRenderResultOptions>,
+      theme: ForeignHostCapability<Theme>,
+    ) {
+      return renderAdvisorResult({
+        result,
+        expanded: renderOptions.expanded,
+        isPartial: renderOptions.isPartial,
+        theme,
+      },);
     },
   };
 }

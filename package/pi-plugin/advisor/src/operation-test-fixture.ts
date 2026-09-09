@@ -3,19 +3,19 @@ import { setImmediate as nextTurn, } from 'node:timers/promises';
 import type { AssistantMessage, Usage, } from '@earendil-works/pi-ai';
 import { ADVISOR_CLOCK_BOUNDARY, runAdvisorOperation, type AdvisorDispatch, type AdvisorOperationOptions, type AdvisorOperationSnapshot, } from '../dist/final/node/index.mjs';
 
-/** Unsettled promises must not advance the local fixture clock until scheduler boundaries are known. */
+/** Unsettled promises must not advance the fixture clock before scheduling boundaries are known. */
 const NOT_READY: unique symbol = Symbol('fixture/no-ready-outcome');
 /** One planned provider attempt. */
 export type AttemptPlan = {
   /** Completion delay relative to preparation start. */
   readonly after: number;
-  /** Text, including whitespace-only empty-response cases. */
+  /** Text, including whitespace-only empty responses. */
   readonly text?: string;
   /** Terminal provider state. */
   readonly stopReason?: AssistantMessage['stopReason'];
   /** Failure diagnostic. */
   readonly error?: string;
-  /** Authentication/preparation delay before the actual dispatch callback. */
+  /** Authentication delay before actual dispatch. */
   readonly preparationMs?: number;
 };
 /** Shared synthetic usage makes double-counting observable. */
@@ -23,7 +23,33 @@ export const FIXTURE_USAGE: Usage = {
   input: 7, output: 5, reasoning: 3, cacheRead: 2, cacheWrite: 4, totalTokens: 18,
   cost: { input: 1, output: 2, cacheRead: 3, cacheWrite: 4, total: 10, },
 };
-/** Build terminal synthetic provider data. */
+/** Timeline event owned by one fixture. */
+type FixtureEvent = { readonly at: number; readonly run: () => void; };
+/** Captured real dispatch after preparation and the final provider gate. */
+type FixtureDispatch = { readonly model: string; readonly at: number; readonly signal: Parameters<AdvisorDispatch>[0]['signal']; };
+/** Optional scheduling overrides for a fixture run. */
+type FixtureRunOptions = Pick<AdvisorOperationOptions, 'hedgeDelayMs' | 'signal'> & { readonly deadlineAtMs?: number; };
+/** Test-local clock, provider scripts, and captured evidence. */
+type OperationFixture = {
+  /** Actual provider invocations. */
+  readonly dispatched: readonly FixtureDispatch[];
+  /** Selected candidates, including preparation failures. */
+  readonly prepared: readonly string[];
+  /** Detached operation progress. */
+  readonly progress: readonly AdvisorOperationSnapshot[];
+  /** Current fixture clock. */
+  readonly now: () => number;
+  /** Exercise production scheduling with the fixture timeline. */
+  readonly run: (options?: FixtureRunOptions) => Promise<AdvisorOperationSnapshot>;
+  /** Drain remaining simulated events after local cancellation. */
+  readonly flush: () => Promise<void>;
+};
+
+/**
+ Build terminal synthetic provider data.
+ @param plan - chosen attempt script
+ @returns complete provider message
+ */
 function response(plan: AttemptPlan,): AssistantMessage {
   return {
     role: 'assistant', api: 'faux', provider: 'fixture', model: 'fixture', timestamp: 0,
@@ -34,60 +60,91 @@ function response(plan: AttemptPlan,): AssistantMessage {
 }
 
 /**
- Create one local provider timeline; no actual provider request or global timer mutation occurs.
+ Sort fixed fixture events in chronological order.
+ @param left - first timeline event
+ @param right - second timeline event
+ @returns chronological comparison
+ */
+function eventOrder(left: FixtureEvent, right: FixtureEvent,): number {
+  return left.at - right.at;
+}
+
+/**
+ Create a local provider timeline without real requests or global timer mutation.
  @param plans - per-model attempt sequence
  @param events - optional caller actions on the local timeline
- @returns fixture operations and captured dispatch evidence
+ @returns operations and captured dispatch evidence
+ @example
+ ```ts
+ const fixture = operationFixture({ plans: { 'p/a': [{ after: 5, text: 'review' }] } });
+ ```
  */
 export function operationFixture({ plans, events = [], }: {
   readonly plans: Readonly<Record<string, readonly AttemptPlan[]>>;
-  readonly events?: readonly { readonly at: number; readonly run: () => void; }[];
-},) {
-  /** Mutable time is local to this fixture. */
+  readonly events?: readonly FixtureEvent[];
+},): OperationFixture {
+  /** Mutable time is private to this fixture. */
   const clock = { value: 0, };
-  /** Scheduled provider or caller events. */
+  /** Finite scheduled provider and caller actions. */
   const queue = [...events,];
-  /** Every selected model, including rejected preparation. */
+  /** Selected endpoints, including rejected preparation. */
   const prepared: string[] = [];
-  /** Actual dispatches after the operation's final gate. */
-  const dispatched: { model: string; at: number; signal: AbortSignal; }[] = [];
-  /** Immutable progress snapshots received by the fixture. */
+  /** Actual provider requests after the operation's final gate. */
+  const dispatched: FixtureDispatch[] = [];
+  /** Immutable ledger-derived updates. */
   const progress: AdvisorOperationSnapshot[] = [];
-  /** Injected provider boundary. */
-  const complete: AdvisorDispatch = async function complete(input): Promise<AssistantMessage> {
-    /** Attempt index before this preparation is recorded. */
-    const index = prepared.filter(model => model === input.candidate.model).length;
+
+  /** Current local time. @returns fixture clock reading */
+  function now(): number {
+    return clock.value;
+  }
+
+  /**
+   Supply a controlled asynchronous provider boundary.
+   @param input - scheduler-owned dispatch observers and cancellation
+   @returns scripted terminal response
+   */
+  async function complete(input: Parameters<AdvisorDispatch>[0],): Promise<AssistantMessage> {
+    /** Prior attempts establish this endpoint's script index. */
+    const index = prepared.filter(function sameModel(model: string,): boolean {
+      return model === input.candidate.model;
+    },).length;
     prepared.push(input.candidate.model,);
-    /** Script for this selected attempt. */
+    /** Script for the selected attempt. */
     const plan = plans[input.candidate.model]?.[index];
     if (plan === undefined)
       throw new Error(`fixture missing plan for ${input.candidate.model} attempt ${index + 1}`,);
-    /** Preparation start anchors this fixture's completion event. */
+    /** Local preparation start anchors the fixture's completion. */
     const started = clock.value;
     if (plan.preparationMs !== undefined) {
-      /** Locally controlled asynchronous authentication. */
+      /** Controlled asynchronous authentication. */
       const ready = Promise.withResolvers<void>();
-      queue.push({ at: started + plan.preparationMs, run: (): void => ready.resolve(), },);
+      queue.push({ at: started + plan.preparationMs, run: function preparedReady(): void { ready.resolve(); }, },);
       await ready.promise;
     }
     input.onDispatch({ reasoning: 'high', },);
     dispatched.push({ model: input.candidate.model, at: clock.value, signal: input.signal, },);
     input.onUsage(FIXTURE_USAGE,);
-    /** Provider may ignore cancellation; settlement is still observed after the operation closes. */
+    /** Deliberately noncooperative provider permits late-settlement verification. */
     const pending = Promise.withResolvers<AssistantMessage>();
-    queue.push({ at: started + plan.after, run: (): void => pending.resolve(response(plan,),), },);
+    queue.push({ at: started + plan.after, run: function deliverResponse(): void { pending.resolve(response(plan,),); }, },);
     return await pending.promise;
-  };
-  /** Deterministically select a provider event or the scheduler's own deadline. */
-  const wait: NonNullable<AdvisorOperationOptions['wait']> = async function wait(options) {
+  }
+
+  /**
+   Select a provider event or the scheduler's own boundary without sleeping for model latency.
+   @param options - pending outcomes and next scheduler cutoff
+   @returns next observed outcome or cutoff sentinel
+   */
+  async function wait(options: Parameters<NonNullable<AdvisorOperationOptions['wait']>>[0],): ReturnType<NonNullable<AdvisorOperationOptions['wait']>> {
     await nextTurn();
-    /** First process notifications already queued by synchronous or microtask work. */
+    /** Process notifications already queued by synchronous or microtask work first. */
     const settled = await Promise.race([...options.pending, Promise.resolve(NOT_READY,),],);
     if (settled !== NOT_READY)
       return settled;
-    queue.sort((left, right) => left.at - right.at,);
-    /** Next event may occur after the operation's wakeup boundary. */
-    const event = queue[0];
+    queue.sort(eventOrder,);
+    /** Next event may follow the operation's wakeup boundary. */
+    const [event,] = queue;
     if (event !== undefined && event.at <= options.untilMs) {
       queue.shift();
       clock.value = event.at;
@@ -97,26 +154,30 @@ export function operationFixture({ plans, events = [], }: {
     }
     clock.value = options.untilMs;
     return ADVISOR_CLOCK_BOUNDARY;
-  };
+  }
+
   return {
-    dispatched, prepared, progress,
-    now: (): number => clock.value,
-    async run(options: Partial<Pick<AdvisorOperationOptions, 'hedgeDelayMs' | 'signal' | 'deadlineAtMs'>> = {}): Promise<AdvisorOperationSnapshot> {
+    dispatched, prepared, progress, now,
+    async run(options: FixtureRunOptions = {}): Promise<AdvisorOperationSnapshot> {
       return await runAdvisorOperation({
-        candidates: Object.keys(plans,).map(model => ({ model, provider: model.split('/',)[0] ?? 'fixture', contextChars: 20, estimatedInputTokens: 5, truncated: false, })),
-        startedAtMs: 0, deadlineAtMs: 200, collectionGraceMs: 30, complete, wait, now: (): number => clock.value,
-        onUpdate: (value): void => { progress.push(value,); }, ...options,
+        candidates: Object.keys(plans,).map(function candidate(model: string,) {
+          return { model, provider: model.split('/',)[0] ?? 'fixture', contextChars: 20, estimatedInputTokens: 5, truncated: false, };
+        },),
+        startedAtMs: 0, deadlineAtMs: 200, collectionGraceMs: 30, complete, wait, now,
+        onUpdate: function recordProgress(value: AdvisorOperationSnapshot): void { progress.push(value,); },
+        ...options,
       },);
     },
     async flush(): Promise<void> {
       while (queue.length > 0) {
-        queue.sort((left, right) => left.at - right.at,);
+        queue.sort(eventOrder,);
         /** Finite remaining fixture event. */
         const event = queue.shift();
         if (event === undefined)
           throw new Error('fixture event disappeared',);
         clock.value = event.at;
         event.run();
+        // oxlint-disable-next-line no-await-in-loop -- Drain each event's microtasks before advancing its dependent fixture clock.
         await nextTurn();
       }
     },

@@ -59,6 +59,8 @@ const MAX_TOKENS = 512;
 
 /** Runtime Advisor config fixture. */
 const advisorConfig: AdvisorConfig = {
+  hedgingEnabled: false,
+  collectionGraceMs: 30_000,
   enabled: true,
   timeoutMs: 1_000,
   maxAdvisorOutputTokens: ADVISOR_OUTPUT_TOKENS,

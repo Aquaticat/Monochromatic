@@ -107,7 +107,7 @@ export async function loadMergedConfig(
     ],
   },);
 
-  if (merged.hedgingEnabled && merged.hedgeDelayMs === undefined)
+  if (merged.hedgingEnabled && (merged.hedgeDelayMs === undefined))
     throw new Error('advisor: hedgingEnabled requires an explicit positive hedgeDelayMs; overlapping requests can both be billed',);
 
   return {
@@ -199,7 +199,9 @@ function mergeConfigFiles(
     const maxContextChars = config.maxContextChars
       ?? merged
       .maxContextChars;
-    /** Delay inherits across config scopes; explicit disablement remains independent. */
+    /**
+     Delay inherits across config scopes; explicit disablement remains independent.
+     */
     const hedgeDelayMs = config.hedgeDelayMs ?? merged.hedgeDelayMs;
     merged = {
       hedgingEnabled: config.hedgingEnabled ?? merged.hedgingEnabled,
