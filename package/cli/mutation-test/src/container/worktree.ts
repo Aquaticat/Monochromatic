@@ -19,6 +19,7 @@ import {
   mkdir,
   readdir,
   symlink,
+  writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -275,11 +276,76 @@ async function symlinkWorkspacePackageNodeModules(): Promise<void> {
 }
 
 /**
- Prepares the full work tree: source rsync plus dependency farms.
+ Regular files of the smallest `.git` directory fs-path's git marker
+ validator accepts, relative path to content: a symbolic HEAD is the only
+ file it reads.
+ */
+export const GIT_MARKER_FILES: Readonly<Record<string, string>> = {
+  '.git/HEAD': 'ref: refs/heads/main\n',
+};
+
+/**
+ Directories of that smallest `.git`: the validator requires `objects`
+ and `refs` under the common directory, which is `.git` itself when no
+ `commondir` file redirects it.
+ */
+export const GIT_MARKER_DIRECTORIES: readonly string[] = [
+  '.git/objects',
+  '.git/refs',
+];
+
+/**
+ Writes the smallest `.git` directory that fs-path's `GIT_REPOSITORY`
+ marker accepts under `dir`. The work tree is a copy of a git repository
+ with `.git` excluded from the rsync, and package tests may legitimately
+ walk up to a repository root; an empty `.git` directory is rejected by
+ the validator (HEAD, objects, and refs are required), so those tests
+ would otherwise walk past the work tree.
  
- Also materialises an empty `.git` directory marker: the work tree is
- a copy of a git repository, and package tests may legitimately assume
- an upward repo marker exists (fs-path's GIT_REPOSITORY marker does).
+ @param dir - work tree root receiving the marker
+ 
+ @example
+ ```ts
+ await materialiseGitMarker({ dir: WORK_MOUNT });
+ ```
+ */
+export async function materialiseGitMarker({
+  dir,
+}: {
+  readonly dir: string;
+},): Promise<void> {
+  await Promise.all(GIT_MARKER_DIRECTORIES.map(async function makeMarkerDirectory(
+    relative: string,
+  ): Promise<void> {
+    await mkdir(
+      join(
+        dir,
+        relative,
+      ),
+      { recursive: true, },
+    );
+  },),);
+  await Promise.all(Object.entries(GIT_MARKER_FILES,)
+    .map(function writeMarkerFile(
+      [relative, content,]: readonly [
+        string,
+        string,
+      ],
+    ): Promise<void> {
+    return writeFile(
+      join(
+        dir,
+        relative,
+      ),
+      content,
+    );
+  },),);
+  l.debug(`materialised git marker under ${dir}`,);
+}
+
+/**
+ Prepares the full work tree: source rsync plus dependency farms, then the
+ `.git` marker from {@link materialiseGitMarker}.
  
  @example
  ```ts
@@ -290,11 +356,5 @@ export async function prepareWorkTree(): Promise<void> {
   await rsyncSourceToWorkTree();
   await recreateRootNodeModules();
   await symlinkWorkspacePackageNodeModules();
-  await mkdir(
-    join(
-      WORK_MOUNT,
-      '.git',
-    ),
-    { recursive: true, },
-  );
+  await materialiseGitMarker({ dir: WORK_MOUNT, },);
 }
