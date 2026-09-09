@@ -469,6 +469,35 @@ await describe({
         expect(expanded.get('letter.webp',)?.kind,).toBe('corroborated',);
       },
     },),
+    ...(['no-text', 'unavailable',] as const).map(function priorVerdict(kind,) {
+      return it({
+        name: `REUSES only completed entry evidence when the prior reading is ${kind}`,
+        fn: async () => {
+          /** Calls distinguish reuse from a fresh reading. */
+          const { client, asked, } = agreeingClient();
+          /** Empty disk snapshot cannot hide a repeated purchase. */
+          const { cache, } = recordingCache({ resumed: new Map(), },);
+          /** Textless evidence is complete; unavailable evidence is not. */
+          const prior: PairedReading = kind === 'no-text'
+            ? { kind, characters: 0, }
+            : { kind, reason: 'one-reader-only', transient: true, perReader: [], };
+          /** One asset presented again within the same entry. */
+          const result = await readDocumentPictures({
+            client, readOcr: sawText,
+            slices: [sliceOf({ text: showing({ assetName: 'chat.webp', },), sliceIndex: 0, },),],
+            assets: new Map([['chat.webp', bytesOf({ seed: 1, },),],]),
+            readerModelIds: READERS,
+            cache,
+            priorReadings: new Map([['chat.webp', prior,],]),
+            signal: new AbortController().signal,
+            perCallTimeoutMs: 5_000,
+            l,
+          },);
+          expect(asked,).toEqual(kind === 'no-text' ? [] : READERS,);
+          expect(result.get('chat.webp',)?.kind,).toBe(kind === 'no-text' ? 'no-text' : 'corroborated',);
+        },
+      },);
+    },),
     it({
       name: 'RESUMES A STORED READING AND SPENDS NO CALL, which is what keeps a resumed slice key '
         + 'equal to the key it resumes. A reading is not deterministic, so re-reading would change '
