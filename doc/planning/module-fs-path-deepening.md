@@ -270,4 +270,5 @@ Mapping:
 ## Next action
 
 None for this change.
-Follow-ups live in GitHub issues #500 to #506.
+Follow-ups live in GitHub issues #500 to #506;
+ #506 (mise-action release window) and #500 (the six `find-up` call sites) landed on 2026-09-08 and 2026-09-09.
