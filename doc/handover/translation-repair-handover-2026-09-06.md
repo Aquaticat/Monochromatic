@@ -1422,19 +1422,15 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     and the 2026-09-08 rule applies:
     no launch on Bedrock alone,
     and no launch at all until a meter besides Bedrock's moves.
-    One pass is still running on `efc9a4f3c`:
-    the third `hulicaijia` (an inline `<ruby>` annotation beside a footnote reference,
-    `<Sakura count="50" />` at the end),
-    launched 11:59 UTC,
-    runs dir `~/temp/agent/hulicaijia3-20260909`,
-    pid 712107,
-    watched by the quiet poller (monitor bcsv0w1ey).
-    Read it for the two shapes verbatim,
-    the footnote's reference above its definition and the `pageAssembly` section,
-    and not for its wording:
-    it finished on Bedrock alone (46 `winner short of the minimum vote weight` by 12:33 UTC).
-    The second `noname` settled with the heading unfilled and the sixth `Mio` stopped INCOMPLETE at slice 3
+    Nothing runs.
+    The third `hulicaijia` (`~/temp/agent/hulicaijia3-20260909`) ended ERROR at 13:04 UTC on the
+    heading-distinctness floor (`## 相遇` rendered as the neighbouring `## Soulmate` by the thin bench;
+    no page shipped) and its retries stopped under the fifteenth class,
+    the second `noname` settled with the heading unfilled,
+    and the sixth `Mio` stopped INCOMPLETE at slice 3
     (see "The twenty-third class" and "The thin-bench questions").
+    The ruby,
+    the Sakura line and `hulicaijia`'s footnote are read on a full-bench pass.
     When a meter moves,
     launch `noname` first (the `## 简介` heading above the first paragraph is the read),
     then `Mio` (the rule's position) and `hulicaijia`,

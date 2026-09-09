@@ -6534,6 +6534,27 @@ or be widened on Bedrock by measuring `gemma-4-31b` for the judge seats;
 and whether an ineligible standing over a valid incumbent should keep the incumbent for that slice instead of
 stopping the entry.
 
+THE THIRD HULICAIJIA ENDS ERROR AT THE HEADING FLOOR (13:04 UTC,
+65.7 minutes,
+`~/temp/agent/hulicaijia3-20260909`,
+51 payment refusals):
+`entry hulicaijia would render 13 distinct source heading(s) as 12 distinct page heading(s)`.
+The source and the archive each carry thirteen distinct headings.
+The translate lane's cached renderings are thirteen distinct too,
+but one of them is `## 相遇` as `## Soulmate`,
+the archive's rendering of the neighbouring `## 初识`
+(the archive has `## Meeting` for `## 相遇`),
+so the page composed per slice carried `## Soulmate` twice and `heading-distinctness.ts` refused it,
+as it was built to on 2026-09-06.
+A heading that is another section's name is what one Bedrock translator and three judges produced;
+no page shipped.
+The entry's two in-process retries stopped in 5.9 s and 0.4 s under the fifteenth class:
+`writing bench unreachable: editors 0 of 3 reachable, floor 2; refiners 0 of 3 reachable, floor 2`,
+since no editor or refiner has a Bedrock seat.
+Nothing runs now.
+The ruby,
+the Sakura line and the footnote are read on a full-bench pass.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
