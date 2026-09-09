@@ -192,7 +192,9 @@ async function runEntryPipeline(
       l: tagged({ tag: entry.id, },),
     },);
 
-    /** Entry-scoped evidence reader shared by archive review and final slices. */
+    /**
+     * Entry-scoped evidence reader shared by archive review and final slices.
+     */
     const readPictures = createPassPictureReader({
       client,
       entryId: entry.id,
@@ -582,7 +584,10 @@ export async function settleEntry(
     return outcome;
   }
 
-  await retireSettledEntryCache({ entryId: entry.id, dir: entryCacheDir, },);
+  await retireSettledEntryCache({
+    entryId: entry.id,
+    dir: entryCacheDir,
+  },);
   return outcome;
 }
 

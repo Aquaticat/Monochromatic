@@ -83,12 +83,18 @@ export async function readPassVisualEvidence(
     readonly priorReadings?: ReadonlyMap<string, PairedReading>;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
-  /** Whether earlier preparation already completed every reference now in scope. */
+  /**
+   * Whether earlier preparation already completed every reference now in scope.
+   */
   const alreadyRead = slices.every(function covered(slice,): boolean {
-    return photoReferences({ text: slice.source.text, },).every(function complete(reference,): boolean {
-      /** Evidence from this entry, never a failed reading carried forward as support. */
+    return photoReferences({ text: slice.source
+      .text, },)
+      .every(function complete(reference,): boolean {
+      /**
+       * Evidence from this entry, never a failed reading carried forward as support.
+       */
       const prior = priorReadings.get(reference.assetName,);
-      return prior !== undefined && prior.kind !== 'unavailable';
+      return (prior !== undefined) && (prior.kind !== 'unavailable');
     },);
   },);
   if (alreadyRead) {

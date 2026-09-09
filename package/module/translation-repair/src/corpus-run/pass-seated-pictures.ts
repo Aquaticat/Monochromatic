@@ -124,7 +124,9 @@ export async function readSeatedPictures(
 export function createPassPictureReader(
   input: Omit<Parameters<typeof readSeatedPictures>[0], 'slices' | 'priorReadings'>,
 ): PassVisualEvidenceReader {
-  /** Completed readings retained across this entry's preparation boundaries. */
+  /**
+   * Completed readings retained across this entry's preparation boundaries.
+   */
   const priorReadings = new Map<string, PairedReading>();
   /**
    * Reads missing entry pictures and retains the completed result.
@@ -136,10 +138,19 @@ export function createPassPictureReader(
   async function readPictures(
     { slices, }: Parameters<PassVisualEvidenceReader>[0],
   ): Promise<ReadonlyMap<string, PairedReading>> {
-    /** Complete evidence, checked before anything enters the retained map. */
-    const readings = await readSeatedPictures({ ...input, slices, priorReadings, },);
+    /**
+     * Complete evidence, checked before anything enters the retained map.
+     */
+    const readings = await readSeatedPictures({
+      ...input,
+      slices,
+      priorReadings,
+    },);
     for (const [name, reading,] of readings)
-      priorReadings.set(name, reading,);
+      priorReadings.set(
+        name,
+        reading,
+      );
     return priorReadings;
   }
   return readPictures;

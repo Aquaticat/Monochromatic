@@ -112,7 +112,13 @@ export async function openEntryCaches(
  * ```
  */
 export async function retireSettledEntryCache(
-  { entryId, dir, }: { readonly entryId: string; readonly dir: string; },
+  {
+    entryId,
+    dir,
+  }: {
+    readonly entryId: string;
+    readonly dir: string
+  },
 ): Promise<void> {
   try {
     // The entry settled, so its slice cache is spent; drop it to keep the cache

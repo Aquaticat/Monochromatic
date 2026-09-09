@@ -25,7 +25,10 @@ import { archiveBlockIdentity, } from './archive-block-repair.ts';
  * ```
  */
 export function archiveBlockSourceContexts(
-  { prepared, pictureReadings = new Map(), }: {
+  {
+    prepared,
+    pictureReadings = new Map(),
+  }: {
     readonly prepared: PreparedDocumentPair;
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
   },
@@ -58,21 +61,29 @@ export function archiveBlockSourceContexts(
         .text
         ?? '')
       : '';
-    /** Names this source section alone authorizes, each once. */
+    /**
+     * Names this source section alone authorizes, each once.
+     */
     const names = new Set(photoReferences({ text: sourceContext, },)
       .map(function asset(reference,): string {
         return reference.assetName;
       },),);
-    /** Every corroborating reader's text, never unrelated or unavailable evidence. */
+    /**
+     * Every corroborating reader's text, never unrelated or unavailable evidence.
+     */
     const support = [...names,].flatMap(function pictureSupport(assetName,): readonly string[] {
-      /** Completed reading for this section's reference. */
+      /**
+       * Completed reading for this section's reference.
+       */
       const reading = pictureReadings.get(assetName,);
       if (reading?.kind !== 'corroborated')
         return [];
       return [
-        `CORROBORATED PICTURE SOURCE SUPPORT ${assetName}\n${reading.readings.map(function transcript(one,): string {
+        `CORROBORATED PICTURE SOURCE SUPPORT ${assetName}\n${reading.readings
+          .map(function transcript(one,): string {
           return `${one.modelId}:\n${one.text}`;
-        },).join('\n\n',)}`,
+        },)
+          .join('\n\n',)}`,
       ];
     },);
     return [
@@ -80,7 +91,10 @@ export function archiveBlockSourceContexts(
         block,
         targetText: prepared.targetText,
       },),
-      [sourceContext, ...support,].join('\n\n',),
+      [
+        sourceContext,
+        ...support,
+      ].join('\n\n',),
     ] as const;
   },),);
 }

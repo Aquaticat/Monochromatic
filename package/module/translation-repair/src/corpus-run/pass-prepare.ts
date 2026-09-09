@@ -252,8 +252,11 @@ export async function preparePassEntry(
       findings: labelledFindings,
     };
   }
-  /** Picture evidence precedes any verdict that could remove its archive translation. */
-  const pictureReadings = await readPictures?.({ slices: labelled.prepared.slices, },);
+  /**
+   * Picture evidence precedes any verdict that could remove its archive translation.
+   */
+  const pictureReadings = await readPictures?.({ slices: labelled.prepared
+    .slices, },);
   /**
    * Selected corrections and retained licenses from the single review round.
    */

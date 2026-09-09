@@ -127,11 +127,16 @@ export async function readDocumentPictures(
   rl.info(`reading ${String(named.size,)} pictures for this document`,);
 
   for (const assetName of named) {
-    /** Evidence already completed in this entry, independent of changed slice boundaries. */
+    /**
+     * Evidence already completed in this entry, independent of changed slice boundaries.
+     */
     const prior = priorReadings.get(assetName,);
-    if (prior !== undefined && prior.kind !== 'unavailable') {
+    if ((prior !== undefined) && (prior.kind !== 'unavailable')) {
       rl.info(`${assetName}: retained entry evidence, ${prior.kind}`,);
-      readings.set(assetName, prior,);
+      readings.set(
+        assetName,
+        prior,
+      );
       continue;
     }
     /**

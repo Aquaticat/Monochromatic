@@ -81,7 +81,7 @@ function pairingClient(
       if (schema === 'archive_block_review')
         sheets?.push(sheet,);
       /** Picture text is support only when preparation supplied it to this review. */
-      const supported = pictureSupport !== undefined && sheet.includes(pictureSupport,);
+      const supported = (pictureSupport !== undefined) && sheet.includes(pictureSupport,);
       /** Pairing or archive-review value. */
       const value: unknown = schema === 'archive_block_review'
         ? {
