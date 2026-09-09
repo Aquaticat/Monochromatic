@@ -136,23 +136,6 @@ dir = "{{config_root}}"
 depends = ["build:native"]
 run = "./gradlew :app:assembleDebug --no-daemon --console=plain"
 
-[tasks."build:ui"]
-description = "Assemble the debug APK against existing JNI libraries for Compose-only iteration"
-dir = "{{config_root}}"
-run = "./gradlew :app:assembleDebug --no-daemon --console=plain"
-
-[tasks."install:ui"]
-description = "Install the Compose-only debug APK while retaining app data and grants"
-dir = "{{config_root}}"
-depends = ["build:ui"]
-run = "adb install -r app/build/outputs/apk/debug/app-debug.apk"
-
-[tasks."run:ui"]
-description = "Install and launch the Compose-only debug APK on the selected device"
-dir = "{{config_root}}"
-depends = ["install:ui"]
-run = "adb shell am start -n dev.monochromatic.musicplayer/.MainActivity"
-
 [tasks."build:release"]
 description = "Assemble the optimized (non-debuggable) release APK, debug-signed so it installs (rebuilds the native .so first)"
 dir = "{{config_root}}"

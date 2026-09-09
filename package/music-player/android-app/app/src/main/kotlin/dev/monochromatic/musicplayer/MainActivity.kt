@@ -2046,7 +2046,7 @@ private fun pageSceneColor(style: PageControlStyle): Color {
 }
 
 /** Holds live seek position and duration sampled from current controller. */
-internal data class PlaybackProgress(
+private data class PlaybackProgress(
     /** Stores elapsed playback seconds. */
     val position: Double,
     /** Stores current track duration seconds. */
@@ -2160,67 +2160,26 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     //   <Column modifier={...}> ... </Column>
     // )}</Scaffold>
     // ```
-    playerScreenLayout(
-        state = state,
-        controller = controller,
-        pageControlStyle = pageControlStyle,
-        pageControlsExpanded = pageControlsExpanded,
-        showingSettings = showingSettings,
-        playbackProgress = playbackProgress,
-        onChooseFolder = onChooseFolder,
-        onPageControlsExpandedChange = { pageControlsExpanded = it },
-        onShowSettings = { showingSettings = true },
-        onPageControlStyleSelected = { style ->
-            pageControlStyle = style
-            SessionStore.savePageControlStyle(context, style)
-            Log.i(LOG_TAG, "page control style=${style.name}")
-        },
-        onHideSettings = { showingSettings = false },
-    )
-}
-
-/** Routes accepted unfolded geometry without changing compact or Settings behavior. */
-@Composable
-private fun playerScreenLayout(
-    state: PlayerUiState,
-    controller: PlayerController,
-    pageControlStyle: PageControlStyle,
-    pageControlsExpanded: Boolean,
-    showingSettings: Boolean,
-    playbackProgress: PlaybackProgress,
-    onChooseFolder: () -> Unit,
-    onPageControlsExpandedChange: (Boolean) -> Unit,
-    onShowSettings: () -> Unit,
-    onPageControlStyleSelected: (PageControlStyle) -> Unit,
-    onHideSettings: () -> Unit,
-) {
     Scaffold(containerColor = pageSceneColor(pageControlStyle)) { innerPadding ->
-        BoxWithConstraints(
+        // What:     `Column( modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 12.dp),
+        //           verticalArrangement = Arrangement.spacedBy(8.dp), ) { ... }`
+        //           lays the screen out vertically. The modifier chain fills the screen, then
+        //           applies the scaffold `innerPadding`, then 12dp horizontal padding (named
+        //           `horizontal = 12.dp`). Children are spaced 8dp apart.
+        // Why:      Stack the player controls with consistent spacing inside the safe area.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <Column
+        //   modifier={Modifier.fillMaxSize().padding(innerPadding).padding({ horizontal: dp(12) })}
+        //   verticalArrangement={Arrangement.spacedBy(dp(8))}
+        // > ... </Column>
+        // ```
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            if (!showingSettings && maxWidth >= unfoldedPlayerMinimumWidth) {
-                unfoldedPlayerScreen(
-                    state = state,
-                    progress = playbackProgress,
-                    controller = controller,
-                    onOpen = onChooseFolder,
-                    onSettings = onShowSettings,
-                )
-                return@BoxWithConstraints
-            }
-            // What:     This `Column` retains the compact player without changing its controls.
-            // Why:      Widths below the accepted unfolded geometry and Settings keep existing behavior.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <Column modifier={Modifier.fillMaxSize().padding({ horizontal: dp(12) })}>...</Column>
-            // ```
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp),
+                .padding(innerPadding)
+                .padding(horizontal = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             // What:     `seekRow(playbackProgress, controller)` renders elapsed time, seek slider,
@@ -2248,7 +2207,7 @@ private fun playerScreenLayout(
             // <SourceActionRow onSettings={() => setShowingSettings(true)} onOpen={onChooseFolder}/>
             // ```
             sourceActionRow(
-                onSettings = onShowSettings,
+                onSettings = { showingSettings = true },
                 onOpen = onChooseFolder,
             )
             // What:     The settings/library branch renders one page in the remaining space.
@@ -2261,8 +2220,12 @@ private fun playerScreenLayout(
             if (showingSettings) {
                 settingsPage(
                     style = pageControlStyle,
-                    onSelectStyle = onPageControlStyleSelected,
-                    onBack = onHideSettings,
+                    onSelectStyle = { style ->
+                        pageControlStyle = style
+                        SessionStore.savePageControlStyle(context, style)
+                        Log.i(LOG_TAG, "page control style=${style.name}")
+                    },
+                    onBack = { showingSettings = false },
                 )
             } else {
                 // What:     `trackPager(state = state, controller = controller)` renders the page
@@ -2283,12 +2246,11 @@ private fun playerScreenLayout(
                         controller = controller,
                         pageControlStyle = pageControlStyle,
                         pageControlsExpanded = pageControlsExpanded,
-                        onPageControlsExpandedChange = onPageControlsExpandedChange,
+                        onPageControlsExpandedChange = { pageControlsExpanded = it },
                     ),
                 )
             }
         }
-    }
     }
 }
 
@@ -3740,7 +3702,7 @@ private fun loadingNotice() {
  * Defines format time behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-internal fun formatTime(seconds: Double): String {
+private fun formatTime(seconds: Double): String {
     // What:     `val total = seconds.toInt()` declares `total` (inferred `Int`) by converting
     //           the `Double` to an `Int` with `.toInt()`, which TRUNCATES toward zero (drops
     //           the fraction).

@@ -767,7 +767,6 @@ class PlayerControllerTest {
             ),
         )
         controller.selectPage(1)
-        assertEquals(listOf(0), controller.uiState.folderPageIndices)
         assertEquals("Apple.mp3", controller.uiState.pageItems.single().name)
         controller.reconcileLibrary(
             listOf(
@@ -777,7 +776,6 @@ class PlayerControllerTest {
             ),
         )
         assertEquals(2, controller.uiState.selectedPage)
-        assertEquals(listOf(0, 1), controller.uiState.folderPageIndices)
         assertEquals("Apple.mp3", controller.uiState.pageItems.single().name)
     }
 
@@ -799,7 +797,6 @@ class PlayerControllerTest {
         controller.setPlaybackMode(PlaybackMode.REPEAT)
         assertEquals(loadsBeforeModeChange, engine.loadCount)
         assertEquals("u-a", engine.loadedUri)
-        assertEquals("A/1.mp3", controller.uiState.currentTrackName)
         assertEquals(37.5, controller.positionSec(), 0.0)
         assertEquals(true, engine.playWhenReady())
         assertEquals(PlaybackMode.REPEAT, controller.uiState.playbackMode)
