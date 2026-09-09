@@ -106,8 +106,10 @@ Do not replace the withdrawn tier with another implicit quality guarantee.
 The agent next offered immediate first-result delivery or waiting for all started reviews until the deadline.
 The user rejected that binary:
 
-> None of them: kill straggler after a while (of already getting at least 1 usable result),
-> if not killed, return all reviews altogether.
+> None of them:
+> kill straggler after a while (of already getting at least 1 usable result),
+> if not killed,
+> return all reviews altogether.
 
 Adopt bounded collection rather than first-result winner selection:
 
