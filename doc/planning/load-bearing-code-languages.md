@@ -58,13 +58,23 @@ Do not duplicate the policy in a GitHub-only instructions file.
 
 ### Implementation language
 
-Repo-authored logic uses approved languages only, even inside CI YAML, hooks, task definitions, or generated snippets.
+Repo-authored logic uses approved languages only,
+even inside CI YAML,
+hooks,
+task definitions,
+or generated snippets.
 Unapproved languages may only provide direct invocation glue.
 
 ### Executable command boundary
 
 Command count grants no exemption.
-Parsing, transformations, branching, retries, safety checks, and command orchestration belong in approved code, not shell strings or interpreter arguments.
+Parsing,
+transformations,
+branching,
+retries,
+safety checks,
+and command orchestration belong in approved code,
+not shell strings or interpreter arguments.
 
 ### Declarative configuration boundary
 
