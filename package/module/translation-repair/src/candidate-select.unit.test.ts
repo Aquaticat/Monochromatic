@@ -24,7 +24,9 @@ import {
   type EditorCandidate,
   ProducerRosterError,
   hashContent,
+  NoProviderForModelError,
   type PatchOutcome,
+  rosterQuorumSize,
   selectBestCandidate,
   selectChunkPatch,
   selectPerEnvelope,
@@ -141,6 +143,54 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
     rendered: 'The cat loves chasing butterflies.',
   },
 ];
+
+/**
+ * Client whose listed seats are refused by the router for want of a wet
+ * provider, the way `judgeSeatsFor` leaves a dry provider's seats on the
+ * bench, and whose other seats vote from the script.
+ *
+ * @param ballots - one-based candidate index per judge, zero to decline
+ *
+ * @param unreachable - seats no provider serves
+ *
+ * @returns Client usable by the selection stage
+ *
+ * @example
+ * ```ts
+ * const client = dryBenchJudges({ ballots, unreachable: ['minimax-m3',], },);
+ * ```
+ */
+function dryBenchJudges(
+  {
+    ballots,
+    unreachable,
+  }: {
+    readonly ballots: BallotScript;
+    readonly unreachable: readonly RosterModelId[];
+  },
+): SyntheticClient {
+  /**
+   * Scripted client answering the reachable seats.
+   */
+  const scripted = scriptedJudges({
+    ballots,
+    counter: { calls: 0, },
+  },);
+  return {
+    ...scripted,
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      if (unreachable.includes(request.modelId,)) {
+        throw new NoProviderForModelError({
+          modelId: request.modelId,
+          reason: 'every provider serving this model is out of budget',
+        },);
+      }
+      return scripted.chatJson(request,);
+    },
+  };
+}
 
 /**
  * Whole roster selection draws judges from.
@@ -299,6 +349,162 @@ async function runCollapsedSelection(
     calls: counter.calls,
   };
 }
+
+/**
+ * Seated wide bench of eight, of which a dry day leaves three reachable:
+ * the shape of Bedrock alone on 2026-09-09.
+ */
+const WIDE_BENCH: readonly RosterModelId[] = [
+  ...JUDGES,
+  'minimax-m3',
+  'deepseek-v4-flash-0731',
+  'glm-5.3',
+];
+
+/**
+ * Seats of that bench no provider serves on the dry day.
+ */
+const DRY_SEATS: readonly RosterModelId[] = [
+  'hf:moonshotai/Kimi-K3',
+  'deepseek-v4-pro-0813',
+  'minimax-m3',
+  'deepseek-v4-flash-0731',
+  'glm-5.3',
+];
+
+/**
+ * Runs one selection round over the wide bench with the dry seats refused.
+ *
+ * @param ballots - one-based candidate index per reachable judge
+ *
+ * @param unreachable - seats no provider serves; defaults to the dry day
+ *
+ * @returns Outcome of that round
+ *
+ * @example
+ * ```ts
+ * const outcome = await runShortBench({ ballots, },);
+ * ```
+ */
+async function runShortBench(
+  {
+    ballots,
+    unreachable = DRY_SEATS,
+  }: {
+    readonly ballots: BallotScript;
+    readonly unreachable?: readonly RosterModelId[];
+  },
+) {
+  return selectBestCandidate({
+    client: dryBenchJudges({
+      ballots,
+      unreachable,
+    },),
+    candidates: STRING_CANDIDATES,
+    judgeModelIds: WIDE_BENCH,
+    fanOut: 'whole-bench',
+    task: 'Pick one.',
+    criteria: ['Faithful.',],
+    evidence: [
+      {
+        label: 'ORIGINAL',
+        text: SOURCE_TEXT,
+      },
+    ],
+    signal: new AbortController().signal,
+    perCallTimeoutMs: 1_000,
+    l,
+  },);
+}
+
+await describe({
+  name: 'selection on a bench short of quorum',
+  children: [
+    it({
+      name: 'SEATS A WINNER BY A SHARE OF THE REACHABLE WEIGHT where the router refused most '
+        + 'of the bench, the owner\'s decision of 2026-09-09: three of eight reachable against a '
+        + 'quorum of four puts the minimum at three halves, so a producer and one disinterested '
+        + 'judge agreeing ship what the absolute 2 kept unfilled, and the finding names the bench',
+      fn: async () => {
+        /** Quorum over the seated bench. */
+        const quorum = rosterQuorumSize({ rosterSize: WIDE_BENCH.length, },);
+        /** GLM-5.3-Flash backs its own text at half weight, Qwen backs it at full, gpt-oss declines. */
+        const outcome = await runShortBench({
+          ballots: {
+            'hf:zai-org/GLM-5.3-Flash': 1,
+            'hf:Qwen/Qwen3.8-27B': 1,
+            'hf:openai/gpt-oss-120b': 0,
+          },
+        },);
+        expect(outcome.kind,).toBe('selected',);
+        if (outcome.kind !== 'selected')
+          throw new Error('unreachable',);
+        expect(outcome.voteWeight,).toBe(1.5,);
+        expect(outcome.tally.judgesAvailable,).toBe(WIDE_BENCH.length,);
+        expect(outcome.tally.ballots,).toBe(3,);
+        expect(outcome.findings,).toContain(
+          `select-short-bench (reachable 3 of ${String(WIDE_BENCH.length,)}, minimum ${
+            ((2 * 3) / quorum).toFixed(2,)
+          })`,
+        );
+        // Every dry seat is reported lost, as before; the finding above is
+        // what says the losses were the bench and not the weather.
+        for (const seat of DRY_SEATS)
+          expect(outcome.findings,).toContain(`stage-voice-lost (select ${seat})`,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS TWO BALLOTS AS THE FLOOR whatever the scaled weight, so one judge never '
+        + 'decides: two of eight reachable puts the minimum at one full ballot, and a lone full '
+        + 'ballot is declined as one judge alone rather than seated',
+      fn: async () => {
+        /** Only Qwen and gpt-oss reachable; Qwen names candidate 1 at full weight, gpt-oss declines. */
+        const outcome = await runShortBench({
+          ballots: {
+            'hf:Qwen/Qwen3.8-27B': 1,
+            'hf:openai/gpt-oss-120b': 0,
+          },
+          unreachable: [
+            ...DRY_SEATS,
+            'hf:zai-org/GLM-5.3-Flash',
+          ],
+        },);
+        expect(outcome.kind,).toBe('declined',);
+        if (outcome.kind !== 'declined')
+          throw new Error('unreachable',);
+        expect(outcome.reason,).toBe('winner named by one judge alone',);
+        expect(outcome.disposition,).toBe('indecision',);
+        expect(outcome.findings,).toContain(
+          `select-short-bench (reachable 2 of ${String(WIDE_BENCH.length,)}, minimum 1.00)`,
+        );
+      },
+    },),
+
+    it({
+      name: 'LEAVES A BENCH AT QUORUM UNDER THE ABSOLUTE MINIMUM: with the dry seats served '
+        + 'again, the same producer-plus-one agreement at three halves is short of 2 and declines '
+        + 'exactly as it did before the decision',
+      fn: async () => {
+        /** The same ballots on a bench every provider serves. */
+        const outcome = await runShortBench({
+          ballots: {
+            'hf:zai-org/GLM-5.3-Flash': 1,
+            'hf:Qwen/Qwen3.8-27B': 1,
+          },
+          unreachable: [],
+        },);
+        expect(outcome.kind,).toBe('declined',);
+        if (outcome.kind !== 'declined')
+          throw new Error('unreachable',);
+        expect(outcome.reason,).toBe('winner short of the minimum vote weight',);
+        expect(outcome.findings.some(function isShortBench(finding,): boolean {
+          return finding.startsWith('select-short-bench',);
+        },),).toBe(false,);
+      },
+    },),
+  ],
+},);
 
 await describe({
   name: selectBestCandidate.name,

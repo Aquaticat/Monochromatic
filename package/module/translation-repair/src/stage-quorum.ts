@@ -118,12 +118,20 @@ export type StageGather<ValueT,> = {
    * never silent.
    */
   readonly asked: ReadonlySet<RosterModelId>;
+
+  /**
+   * Seats the router refused because no wet provider serves them, so a
+   * caller sizing its minimum by the reachable bench (the select stage since
+   * the owner's decision of 2026-09-09) counts the bench that could answer
+   * rather than the bench that was seated.
+   */
+  readonly unreachable: ReadonlySet<RosterModelId>;
 };
 
 /**
- * What the rounds produced: the voices heard, and which seats were asked at
+ * What the rounds produced: the voices heard, which seats were asked at
  * all, so the findings can tell a seat the window spared from one that was
- * asked and stayed quiet.
+ * asked and stayed quiet, and which seats no provider served.
  */
 type RoundsOutcome<ValueT,> = {
   /**
@@ -135,6 +143,11 @@ type RoundsOutcome<ValueT,> = {
    * Seats some round asked.
    */
   readonly asked: ReadonlySet<RosterModelId>;
+
+  /**
+   * Seats the router refused for want of a wet provider.
+   */
+  readonly unreachable: ReadonlySet<RosterModelId>;
 };
 
 /**
@@ -243,6 +256,11 @@ export async function gatherStageVoices<ValueT,>(
     const asked = new Set<RosterModelId>();
 
     /**
+     * Seats the router refused because no wet provider serves them.
+     */
+    const unreachableSeats = new Set<RosterModelId>();
+
+    /**
      * Everything a round needs except who to ask and how many to wait for.
      *
      * Hoisted so the recovery round below cannot drift from the quorum rounds
@@ -338,6 +356,9 @@ export async function gatherStageVoices<ValueT,>(
         }
         stillLost.push(outcome.modelId,);
         if (outcome.voice
+          .unreachable)
+          unreachableSeats.add(outcome.modelId,);
+        if (outcome.voice
           .answered)
           answeredBadly.push(outcome.modelId,);
       }
@@ -430,6 +451,7 @@ export async function gatherStageVoices<ValueT,>(
     return {
       collected,
       asked,
+      unreachable: unreachableSeats,
     };
   })();
 
@@ -439,6 +461,7 @@ export async function gatherStageVoices<ValueT,>(
   const {
     collected: voices,
     asked,
+    unreachable,
   } = rounds;
 
   /**
@@ -498,6 +521,7 @@ export async function gatherStageVoices<ValueT,>(
         stageQuorumUnmetFinding({ shortfall, },),
       ],
       asked,
+      unreachable,
     };
   }
   // Emitted whenever the roster ended short, not only when retries were still
@@ -513,6 +537,7 @@ export async function gatherStageVoices<ValueT,>(
         `stage-roster-incomplete (${shortfall})`,
       ],
       asked,
+      unreachable,
     };
   }
   return {
@@ -520,6 +545,7 @@ export async function gatherStageVoices<ValueT,>(
     quorumMet,
     findings: lostFindings,
     asked,
+    unreachable,
   };
 }
 

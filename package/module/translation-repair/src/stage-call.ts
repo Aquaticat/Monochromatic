@@ -8,6 +8,7 @@ import type {
   SyntheticClient,
 } from './chat-contract.ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
+import { NoProviderForModelError, } from './provider-router.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Stage call
@@ -57,6 +58,21 @@ export type StageVoice<ValueT,> =
      * the critical path to nobody.
      */
     readonly answered: boolean;
+
+    /**
+     * Whether no wet provider served the seat at all.
+     *
+     * THE ONE LOSS THAT SAYS SOMETHING ABOUT THE BENCH RATHER THAN THE MODEL.
+     * `judgeSeatsFor` keeps a seat on the bench when every provider serving
+     * it reads dry, and the router refuses the call in the same millisecond as
+     * `NoProviderForModelError`. The owner's decision of 2026-09-09
+     * (`translation-repair-short-bench-share.md`) sizes the selection
+     * minimum by the seats a provider could serve, so the stage has to tell
+     * this refusal from a transport that failed on a wet provider: the second
+     * is a lost voice on a bench that stands, the first a bench that is
+     * smaller than it looks.
+     */
+    readonly unreachable: boolean;
   };
 
 /**
@@ -240,6 +256,7 @@ export async function attemptStageCall<ValueT,>(
       return {
         heard: false,
         answered: true,
+        unreachable: false,
       };
     }
     return {
@@ -251,13 +268,19 @@ export async function attemptStageCall<ValueT,>(
     // Aborts must always win so user steering can stop a fan-out.
     if (signal.aborted)
       throw error;
-    l.warn(`${stage} ${modelId}: ${String(error,)}, voice lost`,);
+    /**
+     * Whether the router refused the call because no wet provider serves the
+     * seat, which is a fact about the bench rather than about this exchange.
+     */
+    const unreachable = error instanceof NoProviderForModelError;
+    l.warn(`${stage} ${modelId}: ${String(error,)}, ${unreachable ? 'seat unreachable' : 'voice lost'}`,);
 
     // NOT ANSWERED. A thrown failure is a transport that never delivered one,
     // and the client's own ladder has already spent its retries on it.
     return {
       heard: false,
       answered: false,
+      unreachable,
     };
   }
 }

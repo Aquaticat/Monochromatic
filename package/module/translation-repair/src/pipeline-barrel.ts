@@ -83,6 +83,12 @@ export {
   SELF_VOTE_WEIGHT,
 } from './candidate-select-model.ts';
 export { mergeIdenticalCandidates, } from './candidate-merge.ts';
+export {
+  MIN_SELECTION_BALLOTS,
+  type SelectionMinimum,
+  selectionMinimum,
+  shortBenchFinding,
+} from './candidate-select-minimum.ts';
 export { selectBestCandidate, } from './candidate-select-record.ts';
 export { decideBestCandidate, } from './candidate-select.ts';
 export {

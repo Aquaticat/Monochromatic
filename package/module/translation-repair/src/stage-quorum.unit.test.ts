@@ -26,6 +26,7 @@ import {
   type ChatJsonRequest,
   gatherStageVoices,
   type JsonSchemaResponseFormat,
+  NoProviderForModelError,
   type SyntheticClient,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
@@ -112,6 +113,67 @@ function silentClient(
       calls[request.modelId] = (calls[request.modelId] ?? 0) + 1;
 
       if (request.modelId === silentModel)
+        throw new Error('scripted transport failure',);
+
+      /**
+       * Scripted payload for the answering call.
+       */
+      const scripted: unknown = { meow: request.modelId, };
+
+      if (!request.validate(scripted,))
+        throw new Error('scripted payload failed the guard',);
+
+      return {
+        kind: 'ok',
+        value: scripted,
+        rawText: JSON.stringify(scripted,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused',);
+    },
+  };
+}
+
+/**
+ * Client whose named seat is refused by the router for want of a wet provider
+ * and whose other named seat fails in transport, so a gather can tell the two
+ * losses apart.
+ *
+ * @param drySeat - seat no provider serves
+ *
+ * @param failingSeat - seat whose transport fails on a wet provider
+ *
+ * @returns Client honouring that script
+ *
+ * @example
+ * ```ts
+ * const client = dryBenchClient({ drySeat: 'glm-5.3', failingSeat: 'hf:moonshotai/Kimi-K3', },);
+ * ```
+ */
+function dryBenchClient(
+  {
+    drySeat,
+    failingSeat,
+  }: {
+    readonly drySeat: string;
+    readonly failingSeat: string;
+  },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      if (request.modelId === drySeat) {
+        throw new NoProviderForModelError({
+          modelId: request.modelId,
+          reason: 'every provider serving this model is out of budget',
+        },);
+      }
+      if (request.modelId === failingSeat)
         throw new Error('scripted transport failure',);
 
       /**
@@ -403,6 +465,34 @@ await describe({
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.findings,).toHaveLength(0,);
         expect(calls['hf:zai-org/GLM-5.3-Flash'],).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE SEATS NO PROVIDER SERVED apart from the voices lost in transport, so a '
+        + 'stage sizing its minimum by the reachable bench (owner, 2026-09-09) counts the bench '
+        + 'that could answer',
+      fn: async () => {
+        /** Gather where one seat is refused by the router and one fails on a wet provider. */
+        const gather = await gatherStageVoices({
+          client: dryBenchClient({
+            drySeat: 'glm-5.3',
+            failingSeat: 'hf:moonshotai/Kimi-K3',
+          },),
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'glm-5.3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'select',
+          l,
+          fanOut: 'whole-bench',
+        },);
+        expect(gather.voices,).toHaveLength(2,);
+        expect([...gather.unreachable,],).toEqual(['glm-5.3',],);
+        expect(gather.findings,).toContain('stage-voice-lost (select glm-5.3)',);
+        expect(gather.findings,).toContain('stage-voice-lost (select hf:moonshotai/Kimi-K3)',);
       },
     },),
 

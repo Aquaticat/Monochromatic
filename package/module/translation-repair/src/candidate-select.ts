@@ -6,23 +6,23 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { selectionFanOut, } from './candidate-select-fanout.ts';
 import {
+  MIN_SELECTION_BALLOTS,
+  selectionMinimum,
+  shortBenchFinding,
+} from './candidate-select-minimum.ts';
+import { countBallots, } from './candidate-select-count.ts';
+import {
   type Candidate,
   describeProducer,
-  FULL_VOTE_WEIGHT,
-  MIN_SELECTION_WEIGHT,
   producerModelIds,
   SELF_VOTE_WEIGHT,
-  type SelectionBallot,
   type SelectionOutcome,
   type SelectionTally,
 } from './candidate-select-model.ts';
-import { countCandidateWeights, } from './candidate-weights.ts';
 import {
   buildCandidateSelectMessages,
-  CANDIDATE_NONE,
   CANDIDATE_SELECT_RESPONSE_FORMAT,
   isCandidateBallotAsSent,
-  readCandidateBallotWire,
   type SelectEvidence,
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -177,7 +177,7 @@ export async function decideBestCandidate<ValueT,>(
    * Judges keyed for repeat detection.
    *
    * A repeated id is one model given two exchanges and two ballots, which is
-   * enough to reach {@link MIN_SELECTION_WEIGHT} alone: exactly the single-model
+   * enough to reach the minimum weight alone: exactly the single-model
    * control the ensemble exists to prevent, arriving as a roster typo rather
    * than as a policy change.
    *
@@ -252,87 +252,21 @@ export async function decideBestCandidate<ValueT,>(
   },);
 
   /**
-   * Every ballot as cast, weighed, and carried out of this function rather
-   * than left in a log line.
-   *
-   * Self-votes are counted rather than prevented: the reason for seating
-   * producers is that their judgement carries value, and the reason for
-   * weighing and recording is that self-preference is a known failure of
-   * exactly this arrangement. A rate nobody can read is an assumption.
+   * Every ballot as cast and weighed, what each candidate drew, the ranking
+   * and the abstention and self-vote counts (`candidate-select-count.ts`).
    */
-  const ballots: readonly SelectionBallot[] = gather.voices
-    .map(function toBallot(voice,): SelectionBallot {
-      /**
-       * This judge's chosen index, read as a number whichever way it was sent.
-       */
-      const {
-        best,
-        reason,
-      } = readCandidateBallotWire({ sent: voice.value, },);
-
-      /**
-       * Whether this judge named text it has a stake in.
-       */
-      const ownWork = stakesByIndex.get(best,)
-        ?.has(voice.modelId,)
-        === true;
-      /**
-       * Whether this ballot names a candidate at all.
-       */
-      const usable = (best !== CANDIDATE_NONE) && (best <= candidates.length);
-      return {
-        modelId: voice.modelId,
-        best,
-        reason,
-        weight: usable
-          ? (ownWork ? SELF_VOTE_WEIGHT : FULL_VOTE_WEIGHT)
-          : 0,
-        selfVote: usable && ownWork,
-      };
-    },);
-
-  /**
-   * What each candidate drew, kept per index so a decline says by how much the
-   * leader fell short and against what.
-   */
-  const perCandidate = countCandidateWeights({
+  const {
     ballots,
+    perCandidate,
+    ranked,
+    abstained,
+    self,
+  } = countBallots({
+    voices: gather.voices,
+    stakesByIndex,
     candidateCount: candidates.length,
+    l: sl,
   },);
-
-  /**
-   * Ballot weight per one-based candidate index; out-of-range ballots and
-   * explicit declines are counted as abstentions rather than discarded
-   * silently.
-   */
-  const tally = new Map<number, number>();
-
-  /**
-   * Ballots that named no usable candidate, kept so a selection that failed
-   * for want of agreement is distinguishable from one nobody voted in, and
-   * ballots a judge cast for its own work.
-   */
-  const counters = {
-    abstained: 0,
-    self: 0,
-  };
-  for (const ballot of ballots) {
-    if (ballot.weight === 0) {
-      counters.abstained += 1;
-      continue;
-    }
-    if (ballot.weight === SELF_VOTE_WEIGHT)
-      counters.self += 1;
-    tally.set(
-      ballot.best,
-      (tally.get(ballot.best,) ?? 0) + ballot.weight,
-    );
-    sl.info(
-      `${ballot.modelId} chose candidate ${String(ballot.best,)} at weight ${
-        String(ballot.weight,)
-      }: ${ballot.reason}`,
-    );
-  }
 
   /**
    * Ballots a judge cast for its own work, named so the rate is readable from
@@ -343,10 +277,38 @@ export async function decideBestCandidate<ValueT,>(
   },);
 
   /**
+   * Minimum this round applies, sized to the seats a wet provider could
+   * serve (the owner's decision of 2026-09-09, `candidate-select-minimum.ts`).
+   */
+  const minimum = selectionMinimum({
+    benchSize: judges.length,
+    unreachable: gather.unreachable
+      .size,
+  },);
+  /**
+   * Minimum weight as the log prints it.
+   */
+  const minimumLabel = minimum.weight
+    .toFixed(2,);
+  if (minimum.short) {
+    sl.warn(
+      `bench short of quorum: ${String(minimum.reachable,)} of ${String(judges.length,)} seats reachable against a `
+        + `quorum of ${String(minimum.quorum,)}; the winner needs weight ${minimumLabel} from at least `
+        + `${String(MIN_SELECTION_BALLOTS,)} ballots`,
+    );
+  }
+
+  /**
    * Findings every exit past the fan-out carries.
    */
   const roundFindings: readonly string[] = [
     ...gather.findings,
+    ...(minimum.short
+      ? [shortBenchFinding({
+        minimum,
+        benchSize: judges.length,
+      },),]
+      : []),
     ...selfVotes.map(function toSelfVoteFinding(ballot,): string {
       return `select-self-vote (${ballot.modelId})`;
     },),
@@ -359,19 +321,9 @@ export async function decideBestCandidate<ValueT,>(
     judgesAvailable: judges.length,
     ballots: gather.voices
       .length,
-    abstentions: counters.abstained,
-    selfVotes: counters.self,
+    abstentions: abstained,
+    selfVotes: self,
   };
-
-  /**
-   * Candidate indexes ordered by drawn weight, most first.
-   */
-  const ranked = [...tally.entries(),].toSorted(function byWeight(
-    a,
-    b,
-  ): number {
-    return b[1] - a[1];
-  },);
 
   /**
    * Leading entry, absent when every judge abstained.
@@ -379,7 +331,7 @@ export async function decideBestCandidate<ValueT,>(
   const [leader,] = ranked;
   if (leader === undefined) {
     sl.info(
-      `every judge declined (${String(counters.abstained,)} abstentions); keeping the fallback`,
+      `every judge declined (${String(abstained,)} abstentions); keeping the fallback`,
     );
     return {
       kind: 'declined',
@@ -408,17 +360,49 @@ export async function decideBestCandidate<ValueT,>(
       perCandidate,
     };
   }
-  if (leader[1] < MIN_SELECTION_WEIGHT) {
+  if (leader[1] < minimum.weight) {
     // A plurality of one is not agreement. Lost voices and abstentions can
     // leave a single judge as the only one who named anything, and letting
     // that judge decide would put one model back in control of the stage.
     sl.info(
       `winner drew only weight ${String(leader[1],)} across ${String(counted.ballots,)} ballots `
-      + `(${String(counted.abstentions,)} abstentions); keeping the fallback`,
+      + `(${String(counted.abstentions,)} abstentions) against a minimum of ${minimumLabel}; keeping the fallback`,
     );
     return {
       kind: 'declined',
       reason: 'winner short of the minimum vote weight',
+      disposition: 'indecision',
+      tally: counted,
+      findings: roundFindings,
+      ballots,
+      perCandidate,
+    };
+  }
+
+  /**
+   * What the leader drew, absent only if the tally and the per-candidate
+   * count disagree.
+   */
+  const leaderDrawn = perCandidate.find(function isLeader(drawn,): boolean {
+    return drawn.index === leader[0];
+  },);
+
+  /**
+   * Ballots naming the leader, self-votes included.
+   */
+  const leaderBallots = leaderDrawn?.ballots ?? 0;
+  if (leaderBallots < MIN_SELECTION_BALLOTS) {
+    // THE FLOOR UNDER THE SCALED MINIMUM. On a bench short of quorum the
+    // weight can fall to what one full ballot carries; two ballots is what
+    // keeps one judge from deciding, which is what the absolute minimum was
+    // for (owner, 2026-09-09).
+    sl.info(
+      `winner was named by ${String(leaderBallots,)} ballot against a floor of ${String(MIN_SELECTION_BALLOTS,)}; `
+      + 'keeping the fallback',
+    );
+    return {
+      kind: 'declined',
+      reason: 'winner named by one judge alone',
       disposition: 'indecision',
       tally: counted,
       findings: roundFindings,

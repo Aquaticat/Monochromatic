@@ -334,6 +334,7 @@ export async function runGatherRound<ValueT,>(
         voice: {
           heard: false,
           answered: false,
+          unreachable: false,
         },
       };
       arrived.set(
@@ -404,6 +405,7 @@ export async function runGatherRound<ValueT,>(
       voice: {
         heard: false,
         answered: false,
+        unreachable: false,
       },
     };
   },);

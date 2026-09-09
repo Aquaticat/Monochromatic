@@ -62,5 +62,26 @@ handover,
 
 ## What landed
 
-Recorded here before the build;
-the build commit fills this section.
+- `stage-call.ts`:
+    a lost voice says whether the router refused the seat (`unreachable`,
+    true on `NoProviderForModelError`),
+    and `stage-quorum.ts` collects those seats on the gather as `unreachable`.
+- `candidate-select-minimum.ts`:
+    `selectionMinimum` (the weight,
+    reachable count,
+    quorum and whether the bench was short),
+    `MIN_SELECTION_BALLOTS` and `shortBenchFinding`.
+- `candidate-select.ts` applies it after the gather,
+    declines a leader named by one ballot as `winner named by one judge alone`,
+    and carries the finding;
+    its ballot weighing and tally moved to `candidate-select-count.ts` at the line cap.
+- `repair-contract.ts`'s capacity guard is unchanged:
+    it reads the seated bench at stage entry,
+    where every seat is still on it.
+- Guards shown to fail on the build before the change:
+    `candidate-select.unit.test.ts` ("selection on a bench short of quorum":
+    three of eight reachable seats a producer-plus-one agreement at three halves,
+    two of eight declines a lone full ballot,
+    a bench at quorum keeps the absolute 2),
+    `stage-quorum.unit.test.ts` (the gather names the refused seat apart from a transport loss),
+    `candidate-select-minimum.unit.test.ts`.
