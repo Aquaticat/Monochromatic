@@ -128,6 +128,7 @@ catalog:
   'satteri': '>=0.10.5'
   'serialize-error': '>=13.0.1'
   'sharp': '>=0.35.3'
+  'showify': '>=0.2.8'
   'sinon': '>=22.1.0'
   'sinon-chai': '>=4.0.1'
   'smol-toml': '>=1.6.0'
