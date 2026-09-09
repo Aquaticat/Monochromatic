@@ -85,3 +85,31 @@ handover,
     a bench at quorum keeps the absolute 2),
     `stage-quorum.unit.test.ts` (the gather names the refused seat apart from a transport loss),
     `candidate-select-minimum.unit.test.ts`.
+
+## Addendum 2026-09-09: the share reaches every stage gather, not only the select round
+
+The owner's answer was built into `candidate-select-minimum.ts` first,
+which sizes the WEIGHT a winner needs.
+The GATHER still sized its quorum on the seats the phase seated,
+and on 2026-09-09 at 20:23 UTC that cost an entry:
+the seat reader read Synthetic wet at 0.04 percent of its rolling week and seated Qwen3.8-27B and Kimi-K3,
+the provider refused at 20:25,
+the router named those two and the dark `glm-5.3` unreachable,
+and `hulicaijia`'s archive block review needed 6 voices of an 11-seat bench,
+heard 5,
+spent four retry rounds re-asking the three seats no provider served,
+and threw `provider-unavailable` at 382 seconds.
+The entry stopped INCOMPLETE on a bench that had four seats able to answer.
+
+Since `40aba2fdb` the same share sizes every gather (`stage-reachable-quorum.ts`):
+`reachableQuorum({ benchSize, unreachable, })` keeps the bench quorum while the reachable seats can meet it,
+and otherwise needs half the reachable seats rounded up,
+never fewer than `MIN_STAGE_VOICES` of 2.
+A seat the router refused is dropped from the pending list rather than re-asked,
+since nothing changes between rounds for a seat no wet provider serves.
+A short gather warns `<stage>: bench short of quorum, reachable r of n; closing on q voices` and carries
+`stage-short-bench (<stage> reachable r of n, quorum q)` into the artifact whatever the verdict.
+A bench with one reachable seat,
+or none,
+still reads as an outage,
+which is what the two-voice floor is for.

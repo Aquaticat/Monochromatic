@@ -456,3 +456,120 @@ The seated median lies between 4 of 10 and 5 of 9;
 the most damage-prone seated judge chose the damaged text twice.
 Mercury's 14 of 14 with no damaged pick clears both clauses by measurement,
 not only by the maximum argument.
+
+## Addendum 2026-09-09: `inception/mercury-2.5` takes the translator and the consolidation seat
+
+Taken on the delegation of 2026-09-01,
+by the rule of that day:
+a writer leaves the translator seat when its z crosses the Bonferroni threshold below the pooled null,
+and a candidate not separated from the null takes it.
+Instrument:
+`producer-calibrate 40 --candidates inception/mercury-2.5` on frozen `3224ff347`,
+launched detached at 17:06 UTC and printing `STANDING over 40 rounds` at 20:02,
+log `~/temp/agent/producer-calibrate-mercury-20260909.log`,
+read with the scratch `read-standing.mjs`.
+
+Standing as printed,
+240 disinterested wins over 1229 ballots,
+pooled null 19.5 percent,
+Bonferroni threshold for ten comparisons z 2.81:
+
+-   `gemma-4-26b-a4b-it`:
+    38.6 percent (68 of 176 disinterested ballots,
+    over 36 candidates),
+    z +6.39,
+    ABOVE the null.
+-   `hf:zai-org/GLM-5.3-Flash`:
+    23.1 (24 of 104,
+    over 23),
+    adjusted 14.7,
+    z +0.91.
+-   `deepseek-v4-flash-0731`:
+    21.6 (22 of 102),
+    adjusted 12.0,
+    z +0.52.
+-   `minimax-m3`:
+    21.0 (33 of 157),
+    adjusted 18.7,
+    z +0.47.
+-   `hf:Qwen/Qwen3.8-27B`:
+    18.6 (8 of 43),
+    adjusted 4.7,
+    z -0.15.
+-   `inception/mercury-2.5`:
+    17.8 (18 of 101,
+    over 23 candidates),
+    adjusted 11.4,
+    z -0.43.
+-   `google.gemma-4-e2b`:
+    17.3 (19 of 110),
+    adjusted 9.6,
+    z -0.60.
+-   `hf:openai/gpt-oss-120b`:
+    13.1 (19 of 145),
+    z -1.95.
+-   `hf:moonshotai/Kimi-K3`:
+    10.9 (16 of 147),
+    z -2.64.
+-   `deepseek-v4-pro-0813`:
+    9.0 (13 of 144),
+    adjusted 7.3,
+    z -3.18,
+    BELOW the null.
+
+The candidate is not separated from the null (z -0.43 against a threshold of 2.81),
+wrote 23 of 40 candidates,
+threw none of its 49 asks (`SEAT inception/mercury-2.5 asked=49 usable=49 unusable=0 threw=0`),
+and its 49 completed streams ran p50 4.7 s,
+p90 6.3 s,
+max 10.1 s.
+By the rule it takes the translator seat and,
+as a measured writer,
+the consolidation seat:
+`WRITER_UNMEASURED` is empty again since `028432713`,
+which also lowered its `COMPLETION_CAP` row from the pooled 99th to the pooled 90th,
+its own p99 over 136 calls being 3,063 tokens.
+
+WHAT THIS STANDING DOES NOT SAY.
+Mercury took 0.7 of 37 round wins and appears in no resample's top three,
+so it is a seat that does not lose,
+not a seat that wins.
+The bench that judged it sat without Hyper (its daily limit spent,
+so `glm-5.3` threw 48 of 48) and without Synthetic from 17:25 UTC
+(Qwen3.8-27B threw 35 of 56),
+and `deepseek-v4-pro-0813` wrote and judged from NextBit without its reasoning
+(the addendum below).
+Every candidate was compared under the same judges,
+so the standing among them holds.
+
+## Addendum 2026-09-09: `deepseek-v4-pro-0813` leaves the translator seat on its second reading below the null
+
+Taken on the owner's authorization of 2026-09-01
+("I authorize you to drop any model from any role,
+as long as you have evidence"),
+by the same rule.
+The anchor judge has now been read below the pooled null by two 40-round calibrations:
+
+-   2026-09-08,
+    on Parasail with its reasoning:
+    19 of 243 disinterested ballots over 39 candidates,
+    adjusted 7.6 percent,
+    z -2.31 against a 12.8 percent null,
+    short of the threshold.
+-   2026-09-09,
+    on NextBit without it:
+    13 of 144 over 29 candidates,
+    adjusted 7.3 percent,
+    z -3.18 against a 19.5 percent null,
+    across the threshold of 2.81.
+
+Landed as `a5e0efc7f`:
+`TRANSLATOR_DROPPED` names it beside `gpt-oss-120b` and `deepseek-v4-flash-0731`,
+exported so the seat test's count follows the set,
+translators eight with Mercury in and the anchor judge out,
+stage quorum 4.
+It keeps every judge seat,
+the critic and panel seats,
+the consolidation seat and its place as the price anchor:
+nothing here measures judging,
+and the fidelity probe of the same evening read it at 11 of 14.

@@ -1605,3 +1605,24 @@ about 0.7 USD a page.
 then `hulicaijia`,
 `shi_Yumiaoya`,
 `yingying` and `XingZ60`.
+
+## What the Mio and hulicaijia launches showed (2026-09-09, 18:20 to 20:30 UTC)
+
+`Mio` SETTLED in 116 minutes on the build carrying the owner's three answers and the reach fix,
+at 0.59 USD on OpenRouter with Synthetic dry for the first hour,
+and every one of those four mechanisms did on a real page what its guard says it does.
+The page is one defect short of publishable,
+and the defect is the pipeline's own ordering rather than a judgment:
+the archive's translation of two screenshots was reviewed against the source text one phase before the
+pictures were read,
+and removed as unsupported.
+
+`hulicaijia` stopped INCOMPLETE in 6 minutes on a bench whose seats the router refused mid-preparation,
+which the reachable-quorum fix of the same evening closes.
+
+THE READING:
+the belief holds and the cost curve is where the levers put it,
+about 0.6 to 0.8 USD a page with Synthetic dry.
+What is not yet demonstrated is a clean page on the current build:
+no entry has been read clean since `noname` on `33a023445`,
+and both entries in the queue must be relaunched once class twenty-five is built.

@@ -1874,6 +1874,27 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `40aba2fdb` (2026-09-09) every stage gather sizes its quorum on the seats a wet provider serves,
+not on the seats the phase seated:
+`reachableQuorum` keeps the bench quorum while the reachable seats can meet it and otherwise needs half of
+them rounded up,
+never fewer than two (`MIN_STAGE_VOICES`),
+a seat the router refused is dropped from the pending list rather than re-asked,
+and a short gather carries `stage-short-bench (<stage> reachable r of n, quorum q)` into the artifact
+(`stage-reachable-quorum.ts`;
+the 2026-09-09 addendum of `doc/decision/translation-repair-short-bench-share.md`).
+Since `a5e0efc7f` (2026-09-09) `deepseek-v4-pro-0813` writes no translate-lane candidate:
+two 40-round producer calibrations read it below the pooled null,
+the second across the Bonferroni threshold (z -2.31 on 2026-09-08,
+z -3.18 on 2026-09-09),
+so it joins `TRANSLATOR_DROPPED` and keeps every judge seat,
+the consolidation seat and its place as the price anchor.
+Since `028432713` (2026-09-09) `inception/mercury-2.5` writes in both lanes:
+the 40-round calibration of that day read it at 18 of 101 disinterested ballots,
+z -0.43 against a 19.5 percent pooled null,
+not separated from it,
+so `WRITER_UNMEASURED` is empty again and its completion cap is the pooled 90th percentile,
+measured off its own 136 calls.
 Since `19b6043a3` (2026-09-09) the owner's 2026-09-03 cost decision on Kimi-K3 is a fact of the reach,
 not only of the seat reader:
 `OPENROUTER_WITHHELD` lives in `openrouter-catalog.ts`,

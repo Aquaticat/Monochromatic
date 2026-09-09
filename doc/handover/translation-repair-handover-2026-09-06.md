@@ -24,7 +24,31 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 18:25 UTC on 2026-09-09 the tree is `236c812a5` (code tip `19b6043a3`):
+As of 21:00 UTC on 2026-09-09 the code tip is `40aba2fdb` and the documents move after it.
+The 40-round producer calibration launched at 17:06 UTC printed its standing at 20:02:
+`inception/mercury-2.5` is not separated from the pooled null (z -0.43) and takes the translator and
+consolidation seats (`028432713`),
+and `deepseek-v4-pro-0813` is below it across the Bonferroni threshold for the second calibration running
+(z -3.18 after z -2.31 on 2026-09-08) and leaves the translator seat (`a5e0efc7f`),
+keeping every judge seat.
+The seventh `Mio` SETTLED at 20:16 after 116 minutes for 0.59 USD on OpenRouter,
+with the three answers of 17:25 UTC and the reach fix all behaving on a real page,
+and its page is one defect short of publishable:
+CLASS TWENTY-FIVE,
+the archive block review running one phase before the pictures are read,
+which removed the archive's 1,900-character translation of two screenshots as unsupported by a source
+section whose pictures carry exactly that text.
+That fix is UNBUILT and is the next thing to do.
+`hulicaijia` then stopped INCOMPLETE in 6 minutes when Synthetic dried inside preparation:
+CLASS TWENTY-SIX,
+a gather sizing its quorum on seats the router had refused,
+fixed the same evening in `40aba2fdb`.
+The price sort's endpoints were measured rather than assumed (class twenty-four):
+NextBit serves `deepseek-v4-pro-0813` without reasoning and reads 11 of 14 on the fidelity probe against
+4 of 14 from CoreWeave with reasoning,
+so the cheap routing stands.
+Earlier the same day,
+as of 18:25 UTC the tree was `236c812a5` (code tip `19b6043a3`):
 the owner asked where 200 USD went in a day and six levers landed
 (`037d1f650`,
 `4f87555fc`,
@@ -193,19 +217,18 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `19b6043a3` for the code,
-  `236c812a5` with the documents;
+  `40aba2fdb` for the code;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
-- Meters at 18:20 UTC on 2026-09-09,
-  off the seventh `Mio` launch's seat line:
-  `synthetic=dry bedrock=wet hyper=dry openrouter=wet withheld=hf:moonshotai/Kimi-K3`;
-  Synthetic served the third `noname` from 2 percent of its rolling week until 17:25 and reads zero since,
+- Meters at 20:29 UTC on 2026-09-09,
+  off the `hulicaijia` tally:
+  `synthetic=dry bedrock=wet hyper=dry openrouter=wet`;
+  Synthetic reads zero of its rolling week and returned briefly twice this evening (19:24 to 20:25),
   Hyper at zero credits and never to be recharged,
-  Bedrock 186.49 USD (never topped up;
-  8.77 spent today),
-  OpenRouter 271.65 USD (the owner's final top-up,
-  273.99 at the 16:45 launch).
+  Bedrock 186.24 USD (never topped up),
+  OpenRouter 270.03 USD (the owner's final top-up,
+  273.99 at the 16:45 launch,
+  so 3.96 spent on everything since).
   The tally at the end of the pass prints the meters;
   the whole account is under "Costs".
 
@@ -215,6 +238,19 @@ Newest first.
 The 2026-09-09 commits,
 each recorded at length in the planning log of the day and its decision docs:
 
+-   `40aba2fdb` (20:45 UTC):
+    every stage gather sizes its quorum on the reachable bench with a two-voice floor and never re-asks a
+    seat the router refused (`stage-reachable-quorum.ts`,
+    the `stage-short-bench` finding);
+    class twenty-six.
+-   `a5e0efc7f` (20:30 UTC):
+    `deepseek-v4-pro-0813` leaves the translator seat on its second calibration below the pooled null,
+    keeping every judge seat (`TRANSLATOR_DROPPED`,
+    now exported so the seat test's count follows it).
+-   `028432713` (20:20 UTC):
+    `inception/mercury-2.5` takes the translator and consolidation seats on its calibration
+    (`WRITER_UNMEASURED` empty again),
+    and its completion cap drops to the pooled 90th from its own 136 calls.
 -   `19b6043a3` (18:15 UTC):
     the reach honours the Kimi-K3 OpenRouter withholding
     (`OPENROUTER_WITHHELD` in the catalog,
@@ -1502,17 +1538,27 @@ and the seat line of the seventh `Mio` launch.
 A reckoned `estimated=abandoned` line is a ceiling (completion at the cap times the price),
 so a log's sum can read above what the balance moved.
 
-BALANCES NOW:
+BALANCES NOW (20:29 UTC):
 
-- OpenRouter 271.65 USD,
+- OpenRouter 270.03 USD,
     the owner's final top-up ("I have topped up OpenRouter one final time";
     273.99 at the 16:45 launch).
-- Bedrock 186.49 USD of the 200 the owner will never top up;
+    The 3.96 spent since is the whole evening:
+    the third `noname` 1.87 (1.14 of it the Kimi leak),
+    the Mercury calibration 1.82 over 176 minutes,
+    the seventh `Mio` 0.59,
+    the three class-twenty-four probes 0.14,
+    `hulicaijia` 0.06 before it stopped.
+- Bedrock 186.24 USD of the 200 the owner will never top up;
     195.26 at 01:34 UTC today,
-    so 8.77 spent today over 36 logs (gpt-oss-120b 4.88,
-    gemma-4-26b-a4b 3.06,
-    gemma-4-e2b 0.83,
+    so 9.02 spent today (gpt-oss-120b 5.00,
+    gemma-4-26b-a4b 3.15,
+    gemma-4-e2b 0.85,
     gemma-4-31b 0.02).
+- A PASS NOW COSTS about 0.6 to 0.8 USD on OpenRouter and 0.2 on Bedrock with Synthetic dry,
+    against the 4 to 9 USD of the morning's passes.
+    At that rate the OpenRouter balance holds roughly 300 more passes,
+    and Bedrock's credit is the scarcer one.
 - Synthetic at zero of its rolling week since 17:25 UTC;
     it returns as the oldest usage ages out.
 - Hyper at zero since 12:45 UTC on 2026-09-08 and never to be recharged.
@@ -1663,67 +1709,74 @@ a fix that matters to the running entry still kills and relaunches it.
 
 ## What to do next
 
-1.  THE THIRD `noname` IS READ (SETTLED 18:08 UTC on frozen `33a023445`,
-    83 minutes,
-    1.87 USD on OpenRouter of which 1.14 was the Kimi-K3 leak closed in `19b6043a3`;
-    planning log "The third noname page is read and the Kimi-K3 leak closes",
-    readiness signal "What the third noname launch showed").
-    The queue continues on the build that carries the three answers of 17:25 UTC and the reach fix:
-    freeze the built `dist` under `node_modules/.frozen-dist-<commit>` and launch `Mio` (the rule's position)
-    with the scratch `launch-pass.mjs <runs-dir> Mio <frozen-dir>`,
+1.  BUILD CLASS TWENTY-FIVE FIRST,
+    since it is the only thing between the pipeline and a clean page.
+    THE DEFECT:
+    `preparePassEntry` (`corpus-run/pass-prepare.ts`) runs the archive block review inside preparation,
+    and `readSeatedPictures` (`corpus-run/pass-seated-pictures.ts`) runs in the phase after it,
+    so a reviewer judging an archive block that renders a picture's text sees only
+    `archiveBlockSourceContexts`'s aligned source section and calls the block unsupported.
+    On the seventh `Mio` that removed a 1,900-character `Translation:` blockquote rendering
+    `photo6.webp` and `photo7.webp`,
+    which four readers had transcribed at 18:30,
+    five minutes after the review had decided.
+    THE FIX,
+    designed and not yet written:
+    give `preparePassEntry` an optional `readPictures` seam of the existing
+    `PassVisualEvidenceReader` shape,
+    have `pass-entry.ts` pass `readSeatedPictures` bound to the same `readingCache`
+    (so the pictures phase that follows pays nothing twice),
+    and append the corroborated transcriptions of the pictures a section names to that section's entry in
+    `archiveBlockSourceContexts`,
+    under a heading naming them as source support;
+    say so in the review sheet's system prompt (`archive-block-review-wire.ts`),
+    which currently reads "The source fence contains only the aligned section where support is allowed".
+    The guard belongs in `corpus-run/pass-readiness-boundaries.unit.test.ts`,
+    beside "REVIEWS roster-unclaimed editorial archive before lane work":
+    script the client to record the sheets it is shown,
+    supply a reader returning a corroborated reading,
+    and assert the transcription reaches the sheet and the block survives.
+    Show it failing first.
+2.  THEN RELAUNCH THE QUEUE,
+    one entry at a time,
+    each read by the seven steps and the three checks before the next.
+    BOTH ENTRIES IN FLIGHT MUST BE RERUN:
+    `Mio` shipped without the chat translation (class twenty-five) and `hulicaijia` stopped INCOMPLETE
+    (class twenty-six,
+    fixed).
+    Freeze the built `dist` under `node_modules/.frozen-dist-<commit>` and launch with the scratch
+    `launch-pass.mjs <runs-dir> <entry> <frozen-dir>`:
+    `Mio` (the horizontal rule,
+    the bare URL,
+    the two screenshot translations),
     then `hulicaijia` (the ruby,
     the Sakura line,
     the footnote),
     then `shi_Yumiaoya` (the emphasis,
     the `Banner` and its bare-URL prop),
-    `yingying` (a bare URL as a footnote definition) and `XingZ60`,
-    one at a time,
-    each read by the seven steps and the three checks before the next.
-    A pass on a dry Synthetic now costs about 0.7 USD on OpenRouter;
-    `glm-5.3` is dark whenever Hyper's daily limit is spent and the select minimum counts it as unreachable.
-2.  MERCURY 2.5 JUDGES SINCE `fcc8ca197` (owner:
-    "Mercury 2.5 is out and approved";
-    `inception/mercury-2.5`,
-    the one seat only OpenRouter serves,
-    0.04 and 0.15 USD per million):
-    14 of 14 distinct questions on the fidelity probe of 17:00 UTC,
-    no damaged pick,
-    no decline;
-    the 2026-09-09 addendum of the seating decision records it.
-    Its writing seats wait on the 40-round producer calibration launched detached at 17:06 UTC
-    (pid 875801,
-    frozen `3224ff347`,
-    log `~/temp/agent/producer-calibrate-mercury-20260909.log`;
-    round 21 of 40 at 18:21 UTC,
-    0.98 USD logged so far,
-    every Mercury call billed `cost=0`).
-    When it prints `STANDING over 40 rounds`,
-    read it with the scratch `read-standing.mjs` (proven on the 2026-09-01 and 2026-09-08 logs):
-    not separated from the pooled null,
-    or above it,
-    seats the translator and consolidation seats by taking it out of `WRITER_UNMEASURED` in `run-config.ts`
-    (the seat test's `RUN_TRANSLATORS.length` formula follows the set);
-    below the null at the Bonferroni threshold keeps it a judge only.
-    Record the addendum either way.
-    The seated roster's reading of the same fourteen questions runs beside it
-    (pid 875777,
-    log `~/temp/agent/probe-seated-20260909.log`);
-    tally it with `fidelity-tally.mjs` over the record it writes under
-    `~/temp/agent/probe-seated-20260909/judge-fidelity-probe/` and add the numbers to the planning log's
-    "Mercury 2.5 judges 14 of 14" for the record.
-    A pass launched after `fcc8ca197` seats Mercury wherever the anchor judge sits;
-    the third `noname` runs on `33a023445` and does not.
-3.  THE THREE ANSWERS OF 17:25 UTC ARE BUILT (`db5927630` the short-bench share,
-    `1463cd359` the kept incumbent,
-    `b7a0b4f5f` the glossary;
-    each decision doc's "What landed" names the files and the guards).
-    The running third `noname` carries none of them;
-    every launch from here does.
-    The glossary is the owner's to curate:
-    `community-glossary.ts` beside `corpus-source.ts`,
+    `yingying` (a bare URL as a footnote definition) and `XingZ60`.
+    A pass on a dry Synthetic costs about 0.6 to 0.8 USD on OpenRouter and runs about two hours;
+    `glm-5.3` is dark whenever Hyper's daily limit is spent,
+    and every gather now counts it as unreachable rather than waiting for it.
+3.  THE ROSTER STANDS AS THE CALIBRATION LEFT IT (`028432713`,
+    `a5e0efc7f`;
+    both addenda in `doc/decision/translation-repair-roster-seating-2026-09-01.md`).
+    Eleven seats,
+    eight translators (Mercury in,
+    the anchor judge out),
+    eleven consolidation writers,
+    stage quorum 4.
+    Two things are still the owner's:
+    the community glossary is an EMPTY file the owner curates
+    (`community-glossary.ts` beside `corpus-source.ts`:
     a term,
-    its renderings (the archive's first) and one line of why;
-    a term the archive got wrong is not entered.
+    its renderings with the archive's first,
+    one line of why;
+    a term the archive got wrong is not entered),
+    which is why no `COMMUNITY TERMS` line appeared on the `Mio` pass;
+    and `gemma-4-26b-a4b-it` read z +6.39 ABOVE the pooled null on this calibration,
+    the first seat ever measured above it,
+    which no rule currently acts on.
 4.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
     right for any corpus pass (pages stand beside the declines),
     wrong on a decline-only dir;

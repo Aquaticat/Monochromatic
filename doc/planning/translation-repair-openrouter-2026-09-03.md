@@ -6936,6 +6936,116 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## The calibration is read, the anchor judge loses a seat, and two classes open, 2026-09-09, 21:00 UTC
+
+THE MERCURY CALIBRATION printed `STANDING over 40 rounds` at 20:02 UTC after 176 minutes
+(pid 875801,
+frozen `3224ff347`,
+1.82 USD on OpenRouter,
+every Mercury call itself billed `cost=0` by the Inception endpoint).
+`inception/mercury-2.5` read 18 of 101 disinterested ballots,
+z -0.43 against a 19.5 percent pooled null,
+not separated from it,
+so it takes the translator and consolidation seats (`028432713`);
+`deepseek-v4-pro-0813` read z -3.18,
+across the Bonferroni threshold below the null for the second calibration running,
+so it leaves the translator seat (`a5e0efc7f`).
+Both addenda are in `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
+Translators are eight either way,
+so the stage quorum stays 4.
+
+CLASS TWENTY-FOUR,
+measured rather than assumed:
+the price sort of `037d1f650` moved `deepseek-v4-pro-0813` from Parasail to NextBit and
+`deepseek-v4-flash-0731` from Wafer and Inceptron to Sail Research,
+and those endpoints serve the models WITHOUT their reasoning when no reasoning parameter is sent,
+which the owner's standing instruction forbids sending.
+Over the second `noname` pass Parasail reasoned on 57 of 57 deepseek-pro streams at a median of 1,397
+completion tokens;
+over the third `noname`,
+the seventh `Mio` and the calibration,
+NextBit reasoned on 0 of 342 at a median of 70 to 107,
+with a third of its replies under 50 tokens.
+Three fidelity probes over the same fourteen questions answered whether that costs fidelity:
+
+- `deepseek-v4-pro-0813` on NextBit,
+  no reasoning:
+  11 of 14,
+  no damaged pick,
+  3 declines,
+  0.017 USD.
+- `deepseek-v4-pro-0813` on CoreWeave,
+  reasoning on every stream:
+  4 of 14,
+  no damaged pick,
+  10 declines,
+  0.116 USD.
+- `deepseek-v4-flash-0731` on Sail Research,
+  no reasoning:
+  5 of 14,
+  no damaged pick,
+  9 declines.
+
+The cheap endpoint reads BETTER on this instrument,
+and the expensive one declines two and a half times as often,
+so the routing stands and no endpoint was ignored.
+The measurement build that would have ignored NextBit and DeepInfra was reverted.
+
+THE SEVENTH `Mio` SETTLED at 20:16 UTC after 116 minutes on frozen `19b6043a3`,
+15 slices,
+`pageChanged=12`,
+1,141 calls,
+0.59 USD on OpenRouter and 0.19 on Bedrock,
+33 abandoned streams reckoned at 0.08.
+The three answers of 17:25 UTC and the reach fix all behaved:
+zero Kimi-K3 calls on OpenRouter with `withheld=hf:moonshotai/Kimi-K3` on every dry-Synthetic seat line,
+183 seat losses recorded as unreachable rather than as lost voices,
+slice 3's ineligible standing replaced by its incumbent
+("the incumbent passes it and stands in as the wording the slate may keep,
+without contest endorsement"),
+slice 14's incumbent failing too and the slice withheld from the slate,
+no `select-short-bench` finding,
+and no `COMMUNITY TERMS` line,
+the glossary file being empty until the owner curates it.
+
+THE PAGE IS NOT CLEAN,
+and the defect is CLASS TWENTY-FIVE.
+The archive renders the two WeChat screenshots of section one as a 1,900-character `Translation:` blockquote;
+the page ships without it.
+The archive block review revised it away as
+"a translator-added factual insertion not present in the original Chinese text",
+which is true of the source TEXT and false of the section,
+whose pictures carry exactly that conversation:
+the review ran at 18:25 to 18:29 UTC inside preparation,
+and the readers transcribed `photo6.webp` and `photo7.webp` at 18:30,
+one phase later.
+The second such block (`photo3.webp`,
+"Quit my QQ groups") survived only because its section's source names the chat in prose.
+Everything else on the page reads faithful:
+`DESTINATIONS Mio source=4 page=4 dropped=0`,
+front matter as the archive has it,
+the horizontal rules in place (three,
+against the archive's three),
+the bare `space.bilibili.com` credit carried,
+the memorial poem rendered where the archive carried only its one-line farewell,
+straight quotes 0,
+ellipses 3 against the archive's 4,
+and ten spaced em dashes against the archive's two
+(14 of the 93 archive pages use the spaced form,
+68 occurrences in all).
+
+CLASS TWENTY-SIX closed the same evening.
+`hulicaijia` launched at 20:23 UTC on frozen `a5e0efc7f`,
+Synthetic read wet at 0.04 percent of its week and dried two minutes later,
+and the archive block review sized its quorum at 6 of an 11-seat bench,
+heard 5,
+re-asked the three refused seats over four rounds and threw `provider-unavailable` at 382 seconds:
+INCOMPLETE with four seats able to answer.
+Fixed in `40aba2fdb` (`stage-reachable-quorum.ts`),
+which sizes every gather's quorum on the reachable bench with a two-voice floor and never re-asks a
+refused seat;
+the addendum is in `doc/decision/translation-repair-short-bench-share.md`.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
