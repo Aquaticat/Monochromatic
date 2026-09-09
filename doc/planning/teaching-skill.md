@@ -6,10 +6,11 @@ The user requested a skill to curb failures in AI teaching and drafted teaching 
 They requested grilling to discover the failures from their experience.
 Repository material remains potentially relevant.
 Discovery is ongoing. The revised prototype has been operationally verified and visibly presented for critique.
-The user's latest quick scan found no major complaints, but they worry that they missed issues.
-They requested a prompt for an independent opinion from Claude Fable 5.1, which will have filesystem access
-but not this conversation.
-Its teaching effectiveness and the sufficiency of the proposed skill requirements remain unestablished.
+After a quick scan with no major complaints, the user obtained an independent review from Claude Fable 5.1.
+They supplied `promises-teaching-independent-review.md` and marked its
+`Concerns that require real learner observation` section as fine.
+That section does not create a blocker or a requirement for learner studies.
+The remaining source, exercise, and runtime findings have been assessed separately.
 Earlier critiques rejected a detached opening and forced chat turn-taking.
 The shop opening, reference chat, and reading backgrounds have since been corrected and operationally checked.
 The quick scan is not learner-performance evidence or approval of the final skill.
@@ -1079,9 +1080,31 @@ then challenge both the teaching and the existing test assertions.
 The requested opinion distinguishes observed behavior, source-backed concerns, and pedagogical judgment.
 The user has not requested implementation of future review findings or final skill confirmation.
 
+## Independent review received
+
+The review is recorded in [Fable's report](promises-teaching-independent-review.md).
+The user vetoed its `Concerns that require real learner observation` section as fine.
+That disposition is settled; do not reopen those concerns as learner-testing or approval gates.
+
+[The follow-up assessment](promises-teaching-review-assessment.md) retains the concrete findings,
+qualifies proposed repairs, and records independent probes.
+`proc_0927` reproduced the capstone duplicate declaration and the pre-aborted `wait` synchronous throw
+in a disposable artifact copy.
+It also showed that simply deleting the capstone's destructuring line leaves Send unwired
+and produces an undefined `ServiceFault` when its policy handles failure.
+
+The review's proposed statement that real requests carry no attempt counter is overbroad;
+[the retry-metadata source check](../troubleshooting/api-retry-count-metadata.md) records a counterexample.
+Longer deadlines also retain timed opportunities rather than removing the click-race requirement.
+The reference's instruction to Stop during retry backoff needs the same scrutiny as the isolated exercises.
+
+The lesson and authoring sources remain unchanged.
+These are assessed recommendations, not an authorization to implement them or finalize the teaching skill.
+
 ## Next action
 
-Provide the review prompt, then assess the independent findings against the current artifact when they are available.
+Present the assessment and its proposed repair direction, respecting the vetoed section.
+Implementation of the remaining findings awaits an action request.
 No final skill confirmation has been requested.
 Independent sending and neutral surfaces are implemented and operationally checked;
 those checks do not establish teaching acceptance, learner independence, or mastery.
