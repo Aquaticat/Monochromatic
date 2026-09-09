@@ -23,8 +23,8 @@ Implementation is pending shared-understanding confirmation.
 ### The provider adapter returns a failed message rather than the original HTTP error
 
 Installed `@charmland/pi-hyper-provider@0.3.2` registers Pi's OpenAI-compatible adapter.
-Its `src/index.ts:124` starts the provider registration,
- and `src/index.ts:150` selects:
+Its `src/index.ts:112` starts the provider registration,
+ and `src/index.ts:138` selects:
 
 ```typescript
 api: openAICompletionsApi(),
