@@ -44,6 +44,10 @@ const NO_EXPORT_MATCH: unique symbol = Symbol('package.json exports entry not ma
  Mimics Node's module resolution algorithm via tail recursion: each call
  checks one directory and recurses into the parent until either the package
  is found or the filesystem root is reached.
+ Stays synchronous and hand-rolled rather than using the async `findRoot`
+ walker of `@monochromatic-dev/module-fs-path`: it runs inside the
+ synchronous `transformStylesheet` visitor and probes through this
+ package's in-memory registry.
  
  @param startDir - Directory to inspect this iteration
  

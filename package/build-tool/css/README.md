@@ -177,7 +177,12 @@ Each file inlines once;
    `UnknownCssMixinError`,
    `CircularCssMixinError`
 - `package-resolver.ts`:
-   `node_modules` and `exports` resolution
+   `node_modules` and `exports` resolution.
+   Its upward walk stays hand-rolled and synchronous:
+   it runs inside the synchronous `transformStylesheet` visitor from `css-edit`,
+   which has no async form,
+   and it probes through this package's in-memory registry,
+   so the async `findRoot` walker of `@monochromatic-dev/module-fs-path` cannot replace it.
 - `specifier.ts`:
    specifier classification helpers
 - `fs.ts`:
