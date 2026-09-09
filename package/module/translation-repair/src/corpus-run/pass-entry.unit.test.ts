@@ -1046,7 +1046,7 @@ await describe({
 
     it({
       name:
-        'settles an entry into ONE artifact at schema version 10 carrying BOTH lanes and absolute-reviewed '
+        'settles an entry into ONE artifact at schema version 13 carrying BOTH lanes and absolute-reviewed '
         + 'final polish over one preparation',
       fn: async () => {
         await using dirs = await throwawayDirs();
@@ -1083,7 +1083,7 @@ await describe({
         // Read structurally rather than through the writer's own types, since
         // what is under test is the FILE: a reader holding only this has to
         // find both lanes nested and no lane at the top level.
-        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(12,);
+        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(13,);
         expect(Object.keys((artifact as { lanes: object; }).lanes,)
           .toSorted(),).toEqual([
           'repair',
@@ -1378,7 +1378,7 @@ await describe({
           entryId: FRONT_MATTER_ENTRY.id,
         },), 'utf8',);
 
-        expect(artifact.artifactSchemaVersion,).toBe(12,);
+        expect(artifact.artifactSchemaVersion,).toBe(13,);
         expect(artifact.preparation.sliceCount,).toBe(1,);
         if (artifact.laneSelection.kind !== 'contested')
           throw new Error('front matter pass did not record lane contest',);
