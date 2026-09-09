@@ -167,10 +167,25 @@ Accepted routing policy:
    permit a different model on the same provider.
 - Never dispatch on a provider blocked for exhausted credits in this operation.
 
-Implementation planning still needs exact recovery bounds,
- available-usage finalization,
- returned-review formatting,
- and integration of still-open prerequisite issues.
+Remaining product decision:
+ whether default calls receive serial failure fallback when speculative overlap is disabled.
+The current implementation terminates on provider error;
+ a call-local block alone does not create fallback outside the opt-in mode.
+
+Proposed engineering details for the confirmation summary:
+
+- Keep existing default cost ranking;
+   do not silently implement all of #409's preference and session-health policy.
+- Use one evidence snapshot with model-specific context budgets.
+- Require an explicit launch delay to opt into overlapping reviews.
+- Permit bounded existing no-text recovery only before any usable review arrives.
+- Accept non-whitespace text only from completed `stop` or `length` responses.
+  Label length-limited output;
+   do not promise semantic quality.
+- Return separate model-labelled reviews without a synthesis model call.
+- Record received usage and identify canceled-attempt usage as potentially incomplete.
+- Do not extend the deadline while waiting for cancellation acknowledgement.
+
 Recompute the frontier after the user's answers.
 
 ## Added requirement: exhausted provider credits
@@ -264,6 +279,14 @@ It confirmed that absence of a quality guarantee does not establish reviewer equ
  or settle first-completion behavior.
 It also confirmed that the withdrawn quality-tier recommendation must not remain active.
 
+An explicit `openai-codex/gpt-5.6-sol` review of the current implementation proposal
+ timed out after `600000` ms on attempt 1.
+It produced no review feedback.
+Do not treat that timeout as approval,
+ a billing failure,
+ or evidence about the proposed changes,
+ which remain unimplemented.
+
 ## Worktree boundaries
 
 Initial unrelated changes:
@@ -276,9 +299,10 @@ Leave those changes untouched.
 
 ## Next action
 
-Finish the scoped implementation contract and independently review it for unresolved product decisions.
-Do not repeat the settled collection,
+Ask whether serial failure fallback applies to default calls with speculative overlap disabled.
+Then present the complete scoped contract for shared-understanding confirmation.
+Do not repeat settled collection,
  replacement,
  provider-diversity,
  or exhausted-credit decisions.
-Obtain shared-understanding confirmation before implementation.
+No code implementation begins before that confirmation.
