@@ -1,4 +1,5 @@
 import { assertReplacementsChange, } from './assembly-invariant.ts';
+import { singleStructuralWithdrawal, } from './assembly-structural-withdrawal.ts';
 import {
   definitionBlockCount,
   trimOrphanDefinitions,
@@ -129,8 +130,8 @@ function suspectsFor(
  *
  * THREE OUTCOMES, and the name only says the first. A replacement that breaks
  * the footnote graph is withdrawn, blamed by the identifier it moved. A
- * STRUCTURAL parse regression is withdrawn too, and since it names no
- * identifier, an unattributable one takes every replacement with it. An
+ * STRUCTURAL parse regression first tests whether one withdrawal repairs the
+ * whole document; only when no such proof exists does it take every replacement. An
  * assembly that reassembles to the archive text is CANONICALIZED rather than
  * withdrawn for fault: nobody did anything wrong, and the document simply says
  * so. Any reader of `revertedChunkIndices` is reading all three.
@@ -329,6 +330,16 @@ export function guardFootnoteAssembly(
           incumbentBySlice,
         },);
       },),);
+      if ((culprits.size === 0) && (regressions.length > 0)) {
+        /** Whole-document counterfactual may prove a withdrawal without an identifier. */
+        const proven = singleStructuralWithdrawal({ targetText, slices, replacements: standing, },);
+        for (const sliceIndex of proven) {
+          culprits.add(sliceIndex,);
+          findings.push(
+            `assembly-structure-single-withdrawal slice ${String(sliceIndex,)}: reverting this replacement leaves no introduced structural or footnote defect`,
+          );
+        }
+      }
       if (culprits.size === 0) {
         // Nothing changed its mention of the identifier at fault, or the defect
         // names no identifier at all: it came from how the replacements MEET
@@ -337,8 +348,9 @@ export function guardFootnoteAssembly(
         // into the next block can stop an untouched definition line being read
         // as one.
         //
-        // Choosing a slice to withdraw here would be a guess, and shipping a
-        // document the lane knowingly broke is worse. So every replacement is
+        // No single withdrawal proved a structurally and footnote-valid page.
+        // Choosing a slice to withdraw here would still be a guess, and shipping
+        // a document the lane knowingly broke is worse. So every replacement is
         // withdrawn: the archive's own text is the one thing certain to parse
         // as it did before, and the per-slice records still hold every decision
         // the judges made.
