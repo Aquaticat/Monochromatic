@@ -2,7 +2,6 @@
 package dev.monochromatic.musicplayer
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -458,15 +457,12 @@ private fun unfoldedTrackRow(
     /** Holds title without page prefix or final filename extension. */
     val title = unfoldedTrackTitle(item.name)
     ListItem(
-        headlineContent = {
-            Text(
-                text = title,
-                style = if (isCurrent) {
-                    MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                } else {
-                    MaterialTheme.typography.bodyLarge
-                },
-            )
+        onClick = {
+            if (isCurrent) {
+                controller.togglePlay()
+            } else {
+                controller.playIndex(item.index)
+            }
         },
         supportingContent = if (isCurrent && progress.duration > 0.0) {
             {
@@ -485,26 +481,28 @@ private fun unfoldedTrackRow(
             } else {
                 Color.Transparent
             },
-            headlineColor = MaterialTheme.colorScheme.onSurface,
-            supportingColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            supportingContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 72.dp)
-            .clickable(role = Role.Button) {
-                if (isCurrent) {
-                    controller.togglePlay()
-                } else {
-                    controller.playIndex(item.index)
-                }
-            }
             .semantics {
                 selected = isCurrent
                 if (isCurrent) {
                     contentDescription = "Current track: $title"
                 }
             },
-    )
+    ) {
+        Text(
+            text = title,
+            style = if (isCurrent) {
+                MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+            } else {
+                MaterialTheme.typography.bodyLarge
+            },
+        )
+    }
 }
 
 /** Renders current page app bar, settings action, and independently scrolling track list. */
