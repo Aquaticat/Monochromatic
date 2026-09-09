@@ -6,8 +6,15 @@ import type { ReadonlyDeep, } from 'type-fest';
 import { assertAdvisorLiveScope, } from './dispatch-scope.ts';
 import type { AdvisorContextCandidate, } from './tool-context-selection.ts';
 import type { AdvisorCollectedReview, } from './operation-types.ts';
-import type { AdvisorOperationCandidate, } from './operation-attempt.ts';
-import type { EffectiveModelScope, } from './types.ts';
+import type {
+  AdvisorOperationCandidate,
+  AdvisorDispatch
+} from './operation-attempt.ts';
+import type {
+  EffectiveModelScope,
+  AdvisorRunOptions,
+  AdvisorRunResult
+} from './types.ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { requestAdvisor, } from './advisor-client.ts';
@@ -19,12 +26,7 @@ import {
 import { createAdvisorOperationLedger, } from './operation-ledger.ts';
 import { AdvisorOperationError, } from './operation-error.ts';
 import { runAdvisorOperation, } from './operation.ts';
-import type { AdvisorDispatch, } from './operation-attempt.ts';
 import { prepareAdvisorRun, } from './run-preparation.ts';
-import type {
-  AdvisorRunOptions,
-  AdvisorRunResult,
-} from './types.ts';
 
 /**
  Run Advisor through the Pi host while keeping preparation inside the original deadline.
@@ -113,11 +115,22 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
    Candidate lookup retains already-serialized evidence across later scope checks.
    */
   const bank = new Map(prepared.candidates
-    .map(function keyedCandidate(candidate: AdvisorContextCandidate,): readonly [string, AdvisorContextCandidate] {
-      return [candidate.scopedModel.canonicalSlug, candidate,];
+    .map(function keyedCandidate(candidate: AdvisorContextCandidate,): readonly [
+      string,
+      AdvisorContextCandidate
+    ] {
+      return [
+        candidate.scopedModel
+          .canonicalSlug,
+        candidate,
+      ];
     },),);
   /**
    Provider boundary refreshes scope but never reserializes later conversation messages.
+
+   @param input - scheduler-owned request observers and cancellation
+
+   @returns terminal provider response
    */
   async function complete(input: ForeignHostCapability<Parameters<AdvisorDispatch>[0]>,): Promise<AssistantMessage> {
     /**
@@ -137,7 +150,9 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
     },);
     if (!currentScope.entries
       .some(function scopedEndpoint(entry: EffectiveModelScope['entries'][number],): boolean {
-        return entry.canonicalSlug === input.candidate.model;
+        return entry.canonicalSlug
+          === input.candidate
+          .model;
       },))
       throw new Error(`advisor: ${input.candidate
         .model} left the effective scope before dispatch`,);
@@ -156,7 +171,12 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
         /**
          Live session scope can change during asynchronous authentication.
          */
-        assertAdvisorLiveScope({ scope: options.ctx.scopedModels, model: input.candidate.model, },);
+        assertAdvisorLiveScope({
+          scope: options.ctx
+            .scopedModels,
+          model: input.candidate
+            .model,
+        },);
         input.onDispatch(metadata,);
       },
     },);
@@ -175,9 +195,17 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
     candidates: prepared.candidates
       .map(function metrics(candidate: AdvisorContextCandidate,): AdvisorOperationCandidate {
         return {
-          model: candidate.scopedModel.canonicalSlug, provider: candidate.scopedModel.model.provider,
-          contextChars: candidate.advisorContext.finalChars, estimatedInputTokens: candidate.advisorContext.estimatedInputTokens,
-          truncated: candidate.advisorContext.truncated,
+          model: candidate.scopedModel
+            .canonicalSlug,
+          provider: candidate.scopedModel
+            .model
+            .provider,
+          contextChars: candidate.advisorContext
+            .finalChars,
+          estimatedInputTokens: candidate.advisorContext
+            .estimatedInputTokens,
+          truncated: candidate.advisorContext
+            .truncated,
         };
       },),
     startedAtMs,

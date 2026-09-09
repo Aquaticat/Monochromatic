@@ -61,7 +61,9 @@ export type CreateAdvisorToolOptions = {
  */
 type AdvisorUpdateCallback = Parameters<AdvisorToolDefinition<typeof AdvisorToolParametersSchema>['execute']>[3];
 
-/** Host-defined positional caller signal, including optionality dictated by Pi. */
+/**
+ Host-defined positional caller signal, including optionality dictated by Pi.
+ */
 type AdvisorCallerSignal = Parameters<AdvisorToolDefinition<typeof AdvisorToolParametersSchema>['execute']>[2];
 
 /**

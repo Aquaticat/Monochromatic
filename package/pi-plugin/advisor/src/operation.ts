@@ -77,17 +77,25 @@ export type AdvisorOperationOptions = {
   readonly wait?: typeof waitForAdvisorEvent<AdvisorAttemptCompletion | typeof ADVISOR_CLOCK_BOUNDARY>;
 };
 
-/** Active attempt retained until its ledger state settles. */
+/**
+ Active attempt retained until its ledger state settles.
+ */
 type ActiveAdvisorAttempt = {
-  /** Endpoint and evidence metrics. */
+  /**
+   Endpoint and evidence metrics.
+   */
   readonly candidate: AdvisorOperationCandidate;
-  /** Observed provider settlement. */
+  /**
+   Observed provider settlement.
+   */
   readonly promise: Promise<AdvisorAttemptCompletion>;
 };
 
 /**
  Test whether preparation crossed the provider boundary.
+ 
  @param record - current attempt metadata
+ 
  @returns whether dispatch time is available
  */
 function wasDispatched(record: AdvisorAttemptRecord,): boolean {
@@ -245,7 +253,8 @@ export async function runAdvisorOperation(options: ForeignHostCapability<Advisor
       attemptedModels: current.attempts
         .map(function modelIdentity(record: AdvisorAttemptRecord,): string { return record.model; },),
       blockedProviders: current.blockedProviders,
-      runningProviders: [...active.values(),].map(function providerIdentity(value: ActiveAdvisorAttempt,): string { return value.candidate.provider; },),
+      runningProviders: [...active.values(),].map(function providerIdentity(value: ActiveAdvisorAttempt,): string { return value.candidate
+        .provider; },),
     },);
   }
 
@@ -281,7 +290,9 @@ export async function runAdvisorOperation(options: ForeignHostCapability<Advisor
     if (current.reviews
       .length
       > 0) {
-      if (![...active.keys(),].some(function running(id: number,): boolean { return ledger.attempt(id,).state === 'running'; },))
+      if (![...active.keys(),].some(function running(id: number,): boolean {
+        return ledger.attempt(id,).state === 'running';
+      },))
         return finish('complete',);
     }
     else {

@@ -44,7 +44,10 @@ export function registerAdvisorFailureAccounting(pi: ForeignHostCapability<Exten
   const pending = new Map<string, AdvisorOperationSnapshot>();
   pi.on(
     'tool_result',
-    function restoreAccounting(event: { readonly toolName: string; readonly toolCallId: string; }) {
+    function restoreAccounting(event: {
+      readonly toolName: string;
+      readonly toolCallId: string
+    }) {
     if (event.toolName !== ADVISOR_TOOL_NAME)
       return undefined;
     /**

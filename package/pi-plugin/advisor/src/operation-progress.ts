@@ -1,7 +1,10 @@
 /**
  Bounded progress text derived only from operation metadata, never review or reasoning content. @module
  */
-import type { AdvisorAttemptRecord, AdvisorOperationSnapshot, } from './operation-types.ts';
+import type {
+  AdvisorAttemptRecord,
+  AdvisorOperationSnapshot,
+} from './operation-types.ts';
 
 /**
  Describe current attempt states without exposing serialized evidence or provider payloads.
