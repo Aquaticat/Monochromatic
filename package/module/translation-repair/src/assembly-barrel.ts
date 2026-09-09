@@ -27,7 +27,9 @@ export {
   introducedStructuralRegressions,
 } from './assembly-integrity.ts';
 export {
+  cutDefinitionBlocks,
   definitionBlockCount,
+  isDefinitionTrim,
   type TrimmedReplacements,
   trimOrphanDefinitions,
 } from './assembly-orphan-trim.ts';

@@ -225,6 +225,46 @@ await describe({
   name: buildSliceDelivery.name,
   children: [
     it({
+      name: 'CARRIES the assembly guard\'s trimmed text on a shipped row beside the untrimmed decision, since '
+        + 'the document carries the decision with an orphan definition cut and the row says what the document '
+        + 'carries (the twentieth hakureico pass of 2026-09-09 stopped at the reassembly invariant otherwise)',
+      fn: async () => {
+        /**
+         * What the judges chose, two notes behind the sentence.
+         */
+        const decided = 'The cat is asleep.\n\n[^1]: A cat note.\n\n[^2]: Nothing points here.';
+
+        /**
+         * What the document carries after the guard's trim.
+         */
+        const carried = 'The cat is asleep.\n\n[^1]: A cat note.';
+        const ledger = buildSliceDelivery({
+          slices: preparedSlices(),
+          wordings: laneWordings({ decided: new Map([[0, decided,],],), },),
+          changedSliceIndices: [0,],
+          withdrawnSliceIndices: [],
+          trimmedReplacements: [{ sliceIndex: 0, replacementText: carried, },],
+          blocked: false,
+        },);
+        expect(ledger[0]?.shippedText,).toBe(carried,);
+        expect(ledger[0]?.delivery,).toEqual({ kind: 'replacement-shipped', },);
+        expect(ledger[0]?.outcome,).toEqual({ kind: 'decided', acceptedText: decided, },);
+      },
+    },),
+    it({
+      name: 'REFUSES a trimmed replacement naming a slice the document does not ship',
+      fn: async () => {
+        expect(() => buildSliceDelivery({
+          slices: preparedSlices(),
+          wordings: laneWordings({ decided: new Map([[0, 'The cat is asleep.',],],), },),
+          changedSliceIndices: [0,],
+          withdrawnSliceIndices: [],
+          trimmedReplacements: [{ sliceIndex: 1, replacementText: 'The cat eats well.', },],
+          blocked: false,
+        },),).toThrow(SliceDeliveryError,);
+      },
+    },),
+    it({
       name: 'reads a slice the archive never translated as a GAP THAT REMAINS, whether the lane tried '
         + 'and could not fill it or had no work to do there at all. Both neighbours read falsely: one says '
         + 'the document carries the archive`s own wording, of which there is none, and the other says '

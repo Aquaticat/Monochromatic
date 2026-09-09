@@ -233,6 +233,9 @@ export function assembleRepair(
     // before either is reported.
     changedSliceIndices: ordered.shipped,
     withdrawnSliceIndices: ordered.withdrawn,
+    // What the guard cut, so the ledger's shipped rows carry the document's
+    // text rather than the decision's where the two differ.
+    trimmedReplacements: guarded.trimmed,
     // Every prepared slice, decided or left alone, paired with the archive's
     // own wording. Built from the outcomes rather than from the surviving
     // replacements, because this side of the record is what the lane CHOSE and

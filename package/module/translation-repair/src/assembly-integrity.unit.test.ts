@@ -347,6 +347,7 @@ await describe({
         expect(guarded.revertedChunkIndices,).toEqual([],);
         expect(guarded.assembledText,).toContain('naps on the windowsill[^1]',);
         expect(guarded.findings,).toEqual([],);
+        expect(guarded.trimmed,).toEqual([],);
       },
     },),
 
@@ -456,6 +457,10 @@ await describe({
         expect(guarded.findings,).toEqual([
           'assembly-footnote-trimmed orphan-definition gfm 2 (slice 1)',
         ],);
+        expect(guarded.trimmed,).toEqual([{
+          sliceIndex: 1,
+          replacementText: '[^1]: That is its favourite spot.\n',
+        },],);
       },
     },),
 

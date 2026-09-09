@@ -55,6 +55,13 @@ export type GuardedAssembly = {
    * What the guard did, in scorecard-stable wording.
    */
   readonly findings: readonly string[];
+
+  /**
+   * Surviving replacements whose text the guard trimmed, with the text the
+   * document carries, so a ledger can say what shipped rather than what was
+   * decided.
+   */
+  readonly trimmed: readonly SliceReplacement[];
 };
 
 /**
@@ -563,11 +570,24 @@ export function guardFootnoteAssembly(
     );
   })();
 
+  /**
+   * Text each replacement arrived with, by slice.
+   */
+  const givenBySlice = new Map(replacements.map(function toEntry(replacement,) {
+    return [
+      replacement.sliceIndex,
+      replacement.replacementText,
+    ] as const;
+  },),);
   return {
     assembledText: settled.assembledText,
     replacements: settled.surviving,
     revertedChunkIndices: withdrawn,
     findings,
+    trimmed: settled.surviving
+      .filter(function wasTrimmed(replacement,): boolean {
+        return givenBySlice.get(replacement.sliceIndex,) !== replacement.replacementText;
+      },),
   };
 }
 

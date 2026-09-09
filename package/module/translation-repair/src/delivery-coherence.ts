@@ -1,3 +1,4 @@
+import { isDefinitionTrim, } from './assembly-orphan-trim.ts';
 import type { LaneSliceOutcome, } from './lane-slice-text.ts';
 import type { SliceDeliveryRecord, } from './slice-delivery.ts';
 
@@ -212,6 +213,15 @@ function assertReplacementRow(
     ? record.outcome
       .acceptedText
     : record.incumbentText;
+  // A SHIPPED ROW MAY CARRY ITS DECISION TRIMMED: the assembly guard cuts an
+  // orphan definition block out of a definitions-only replacement and lets the
+  // rest stand, so the document carries the decision with that block gone and
+  // nothing else changed. Any other difference is still a mismatch.
+  if ((carries === 'accepted') && isDefinitionTrim({
+    decided: expected,
+    carried: record.shippedText,
+  },))
+    return;
   if (record.shippedText !== expected) {
     throw new DeliveryCoherenceError({
       sliceIndex,

@@ -775,6 +775,7 @@ await describe({
             // and the wording pair below is that slice as both sides saw it.
             changedSliceIndices: [0,],
             withdrawnSliceIndices: [],
+            trimmedReplacements: [],
             sliceTexts: [{
               sliceIndex: 0,
               incumbentKind: 'present',

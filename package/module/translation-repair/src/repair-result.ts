@@ -2,6 +2,7 @@ import type { SliceCriticRecord, } from './critic-attribution.ts';
 import type { LaneSliceText, } from './lane-slice-text.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import type { RepairIssueRecord, } from './repair-record.ts';
+import type { SliceReplacement, } from './splice-slices.ts';
 
 //region Repair result
 // What the repair driver RETURNS, kept beside neither the driver nor the
@@ -92,6 +93,16 @@ export type RepairTranslationResult = {
    * adjudicated issue of its own.
    */
   readonly withdrawnSliceIndices: readonly number[];
+
+  /**
+   * Shipped slices whose text the assembly guard trimmed, with the text the
+   * document carries: the decision with an orphan definition block cut.
+   *
+   * The delivery ledger reads a shipped row's text here before it reads the
+   * decision, so the rows say what the document carries. Empty when every
+   * shipped slice carries its decision whole.
+   */
+  readonly trimmedReplacements: readonly SliceReplacement[];
 
   /**
    * What this lane DECIDED for every prepared slice, beside the archive's own

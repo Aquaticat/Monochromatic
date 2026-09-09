@@ -7,6 +7,7 @@ import type {
 import type { SliceAlignmentAssessment, } from './translate-alignment.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 import type { SliceSelection, } from './slice-selection.ts';
+import type { SliceReplacement, } from './splice-slices.ts';
 
 //region Translate document contract
 // What the translate lane stores per slice, and what it returns per document.
@@ -314,6 +315,16 @@ export type TranslateDocumentResult = {
    * {@link TranslateDocumentResult.withdrawnSliceCount} counts.
    */
   readonly withdrawnSliceIndices: readonly number[];
+
+  /**
+   * Shipped slices whose text the assembly guard trimmed, with the text the
+   * document carries: the decision with an orphan definition block cut.
+   *
+   * The delivery ledger reads a shipped row's text here before it reads the
+   * decision, so the rows say what the document carries. Empty when every
+   * shipped slice carries its decision whole.
+   */
+  readonly trimmedReplacements: readonly SliceReplacement[];
 
   /**
    * Slices resumed from the cache rather than translated this run, so a cheap

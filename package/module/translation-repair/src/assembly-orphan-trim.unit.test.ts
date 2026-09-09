@@ -14,8 +14,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  cutDefinitionBlocks,
   definitionBlockCount,
   type FootnoteGraphFinding,
+  isDefinitionTrim,
   trimOrphanDefinitions,
 } from '../dist/final/node/index.mjs';
 
@@ -152,6 +154,55 @@ await describe({
           incumbentBySlice: NO_INCUMBENT,
         },);
         expect(trimmed.trimmed,).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: cutDefinitionBlocks.name,
+  children: [
+    it({
+      name: 'cuts every block carrying a named label and leaves prose and other definitions in place',
+      fn: async () => {
+        expect(cutDefinitionBlocks({
+          text: `The cat naps[^1].\n\n${TWO_NOTES}`,
+          labels: new Set(['2',],),
+        },),).toBe('The cat naps[^1].\n\n[^1]: That is its favourite spot.\n',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isDefinitionTrim.name,
+  children: [
+    it({
+      name: 'READS a carried text that is the decided text with a definition block cut as a trim',
+      fn: async () => {
+        expect(isDefinitionTrim({
+          decided: TWO_NOTES,
+          carried: '[^1]: That is its favourite spot.\n',
+        },),).toBe(true,);
+        expect(isDefinitionTrim({
+          decided: `The cat naps[^1].\n\n${TWO_NOTES}`,
+          carried: 'The cat naps[^1].\n\n[^1]: That is its favourite spot.\n',
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REFUSES an unchanged text, a rewrite, a cut of prose, and a text trimmed to nothing',
+      fn: async () => {
+        expect(isDefinitionTrim({ decided: TWO_NOTES, carried: TWO_NOTES, },),).toBe(false,);
+        expect(isDefinitionTrim({
+          decided: TWO_NOTES,
+          carried: '[^1]: That is its favourite place.\n',
+        },),).toBe(false,);
+        expect(isDefinitionTrim({
+          decided: `The cat naps[^1].\n\n${TWO_NOTES}`,
+          carried: TWO_NOTES,
+        },),).toBe(false,);
+        expect(isDefinitionTrim({ decided: TWO_NOTES, carried: '', },),).toBe(false,);
       },
     },),
   ],

@@ -250,6 +250,9 @@ export function assembleTranslation(
       changedSliceIndices: ordered.shipped,
     },),
     withdrawnSliceIndices: ordered.withdrawn,
+    // What the guard cut, so the ledger's shipped rows carry the document's
+    // text rather than the decision's where the two differ.
+    trimmedReplacements: guarded.trimmed,
     // Every prepared slice paired with the archive wording it was judged
     // against. Taken from the PREPARATION rather than from the settled records,
     // which are cache values a resumed run may have written under an earlier

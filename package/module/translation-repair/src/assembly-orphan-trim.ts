@@ -170,6 +170,110 @@ function blocksOf({ text, }: { readonly text: string; },): readonly string[] {
 }
 
 /**
+ * Cuts every definition block carrying one of the labels out of a text,
+ * rejoining what stays with one blank line and keeping the trailing line break
+ * the text had.
+ *
+ * @param text - replacement text
+ *
+ * @param labels - definition labels whose blocks go
+ *
+ * @returns Text without those blocks
+ *
+ * @example
+ * ```ts
+ * cutDefinitionBlocks({ text: '[^1]: one\n\n[^2]: two\n', labels: new Set(['2',],), },);
+ * // => '[^1]: one\n'
+ * ```
+ */
+export function cutDefinitionBlocks(
+  {
+    text,
+    labels,
+  }: {
+    readonly text: string;
+    readonly labels: ReadonlySet<string>;
+  },
+): string {
+  /**
+   * Blocks that stay, joined again.
+   */
+  const joined = labelledBlocksOf({ text, },)
+    .filter(function keeps(entry,): boolean {
+      if (entry.label === '')
+        return true;
+      return !labels.has(entry.label,);
+    },)
+    .map(function trimEnd(entry,): string {
+      return entry.block
+        .trimEnd();
+    },)
+    .join(BLOCK_GAP,);
+  return text.endsWith('\n',) ? `${joined}\n` : joined;
+}
+
+/**
+ * Whether a carried text is a decided text with definition blocks cut and
+ * nothing else changed, which is the one difference the assembly guard's trim
+ * makes between what a lane decided and what its document carries.
+ *
+ * @param decided - text the lane decided
+ *
+ * @param carried - text the document carries
+ *
+ * @returns Whether the carried text is the decided text under a definition trim
+ *
+ * @example
+ * ```ts
+ * isDefinitionTrim({ decided: 'a[^1].\n\n[^1]: one\n\n[^2]: two', carried: 'a[^1].\n\n[^1]: one', },);
+ * // => true
+ * ```
+ */
+export function isDefinitionTrim(
+  {
+    decided,
+    carried,
+  }: {
+    readonly decided: string;
+    readonly carried: string;
+  },
+): boolean {
+  /**
+   * Blocks the carried text holds, by their text without trailing space.
+   */
+  const carriedBlocks = new Set(
+    labelledBlocksOf({ text: carried, },)
+      .map(function toText(entry,): string {
+        return entry.block
+          .trimEnd();
+      },),
+  );
+  if (carriedBlocks.size === 0)
+    return false;
+  /**
+   * Labels of the decided text's definition blocks the carried text lacks.
+   */
+  const cut = new Set(
+    labelledBlocksOf({ text: decided, },)
+      .filter(function isGone(entry,): boolean {
+        if (entry.label === '')
+          return false;
+        return !carriedBlocks.has(entry.block
+          .trimEnd(),);
+      },)
+      .map(function toLabel(entry,): string {
+        return entry.label;
+      },),
+  );
+  if (cut.size === 0)
+    return false;
+  return cutDefinitionBlocks({
+    text: decided,
+    labels: cut,
+  },) === carried;
+}
+
+/**
  * Count of definition blocks across every replacement, the most trims the
  * assembly guard can make.
  *
@@ -285,23 +389,12 @@ export function trimOrphanDefinitions(
           })`,
         );
     }
-    /**
-     * Whether the text ended with a line break to keep.
-     */
-    const endsWithBreak = replacement.replacementText
-      .endsWith('\n',);
-    /**
-     * The kept blocks, the last one's trailing break dropped before the join.
-     */
-    const joined = kept
-      .map(function trimEnd(entry,): string {
-        return entry.block
-          .trimEnd();
-      },)
-      .join(BLOCK_GAP,);
     return {
       sliceIndex: replacement.sliceIndex,
-      replacementText: endsWithBreak ? `${joined}\n` : joined,
+      replacementText: cutDefinitionBlocks({
+        text: replacement.replacementText,
+        labels: orphans,
+      },),
     };
   },);
   /**

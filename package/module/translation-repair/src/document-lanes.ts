@@ -27,6 +27,7 @@ import {
   buildSliceDelivery,
   type SliceDeliveryRecord,
 } from './slice-delivery.ts';
+import type { SliceReplacement, } from './splice-slices.ts';
 import type {
   TranslateDocumentResult,
   TranslateModels,
@@ -128,6 +129,9 @@ export type DocumentLanesResult = {
  *
  * @param withdrawnSliceIndices - slices whose change assembly took back
  *
+ * @param trimmedReplacements - shipped slices whose text the assembly guard
+ * trimmed, with the text the document carries
+ *
  * @param blocked - whether this lane refused the whole document before assembly
  *
  * @returns One row per prepared slice, in document order
@@ -149,6 +153,7 @@ function laneDelivery(
     wordings,
     changedSliceIndices,
     withdrawnSliceIndices,
+    trimmedReplacements,
     blocked,
   }: {
     readonly slices: readonly ChunkPair[];
@@ -157,6 +162,7 @@ function laneDelivery(
     readonly wordings: readonly LaneSliceText[];
     readonly changedSliceIndices: readonly number[];
     readonly withdrawnSliceIndices: readonly number[];
+    readonly trimmedReplacements: readonly SliceReplacement[];
     readonly blocked: boolean;
   },
 ): readonly SliceDeliveryRecord[] {
@@ -168,6 +174,7 @@ function laneDelivery(
     wordings,
     changedSliceIndices,
     withdrawnSliceIndices,
+    trimmedReplacements,
     blocked,
   },);
   assertDeliveryAgreesWithDocument({
@@ -444,6 +451,7 @@ export async function runDocumentLanes(
         wordings: repair.sliceTexts,
         changedSliceIndices: repair.changedSliceIndices,
         withdrawnSliceIndices: repair.withdrawnSliceIndices,
+        trimmedReplacements: repair.trimmedReplacements,
         // The dominance refusal, which returns the archive untouched however
         // many slices had decided a repair by the time it fired. Without this
         // the rows for those slices would read as a contradiction rather than
@@ -461,6 +469,7 @@ export async function runDocumentLanes(
         wordings: translate.sliceTexts,
         changedSliceIndices: translate.changedSliceIndices,
         withdrawnSliceIndices: translate.withdrawnSliceIndices,
+        trimmedReplacements: translate.trimmedReplacements,
         // The translate lane has no whole-document refusal: it assembles what
         // its slices decided, and the only thing that takes a decision back is
         // the assembly guard, which the withdrawn set already names.

@@ -99,6 +99,16 @@ export type SliceDeliveryFault = {
   readonly sliceIndex: number;
 } | {
   /**
+   * A trimmed replacement names a slice the document does not ship.
+   */
+  readonly kind: 'trim-names-unshipped';
+
+  /**
+   * Slice named.
+   */
+  readonly sliceIndex: number;
+} | {
+  /**
    * A set counts a slice twice.
    */
   readonly kind: 'set-repeats';
@@ -258,6 +268,11 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
       + 'blocked, so what the document carries there is unstated';
   if (fault.kind === 'ships-without-decision')
     return `slice ${String(fault.sliceIndex,)} ships a replacement and reports no decision`;
+  if (fault.kind === 'trim-names-unshipped')
+    return `slice ${
+      String(fault.sliceIndex,)
+    } carries a trimmed replacement and is not named as shipped, so the trim describes text the document `
+      + 'does not carry';
   if (fault.kind === 'set-repeats')
     return `the ${fault.set} set names ${String(fault.named,)} slices and ${
       String(fault.distinct,)

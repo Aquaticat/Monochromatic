@@ -13,7 +13,13 @@ import {
   type DeliverySetName,
   SliceDeliveryError,
 } from './slice-delivery-fault.ts';
+import type { SliceReplacement, } from './splice-slices.ts';
 import { assertWordingCoherent, } from './wording-coherence.ts';
+
+/**
+ * No shipped slice trimmed, which is every lane whose guard cut nothing.
+ */
+const NO_TRIMS: readonly SliceReplacement[] = [];
 
 // DECLARED IN SIBLINGS and re-exported here, so every caller of the builder
 // keeps one import: the delivery shape and its decision live in
@@ -173,6 +179,10 @@ function assertNoRepeat(
  * @param withdrawnSliceIndices - slices whose change the assembly guard took
  * back
  *
+ * @param trimmedReplacements - shipped slices whose text the assembly guard
+ * trimmed, with the text the document carries; a shipped row reads its text
+ * here before it reads the decision
+ *
  * @param blocked - whether the run refused the whole document before assembly,
  * which makes an unshipped decision a withdrawal rather than a contradiction
  *
@@ -193,12 +203,14 @@ export function buildSliceDelivery(
     wordings,
     changedSliceIndices,
     withdrawnSliceIndices,
+    trimmedReplacements = NO_TRIMS,
     blocked,
   }: {
     readonly slices: readonly ChunkPair[];
     readonly wordings: readonly LaneSliceText[];
     readonly changedSliceIndices: readonly number[];
     readonly withdrawnSliceIndices: readonly number[];
+    readonly trimmedReplacements?: readonly SliceReplacement[];
     readonly blocked: boolean;
   },
 ): readonly SliceDeliveryRecord[] {
@@ -253,6 +265,29 @@ export function buildSliceDelivery(
       },);
     }
   }
+  /**
+   * Text the document carries at each trimmed slice, by slice.
+   */
+  const trimmedText = new Map(trimmedReplacements.map(function toEntry(replacement,) {
+    return [
+      replacement.sliceIndex,
+      replacement.replacementText,
+    ] as const;
+  },),);
+  for (const sliceIndex of trimmedText.keys()) {
+    // A TRIM IS A FACT ABOUT A SHIPPED SLICE, since the guard trims what it
+    // lets stand; a trim naming any other slice describes text the document
+    // does not carry.
+    if (!shipped.has(sliceIndex,)) {
+      throw new SliceDeliveryError({
+        fault: {
+          kind: 'trim-names-unshipped',
+          sliceIndex,
+        },
+      },);
+    }
+  }
+
   /**
    * Indices the preparation actually produced.
    *
@@ -365,7 +400,7 @@ export function buildSliceDelivery(
       incumbentText: wording.incumbentText,
       outcome: wording.outcome,
       shippedText: (delivery.kind === 'replacement-shipped')
-        ? nonNullishAccepted({ wording, },)
+        ? (trimmedText.get(sliceIndex,) ?? nonNullishAccepted({ wording, },))
         : wording.incumbentText,
       delivery,
     };

@@ -81,6 +81,32 @@ await describe({
   name: assertDeliveryCoherent.name,
   children: [
     it({
+      name: 'accepts a shipped row carrying its decision with an orphan definition block cut, which is the '
+        + 'assembly guard\'s trim, and still refuses any other difference',
+      fn: async () => {
+        assertDeliveryCoherent({
+          record: rowOf({
+            outcome: {
+              kind: 'decided',
+              acceptedText: `${REWRITE}\n\n[^1]: A cat note.\n\n[^2]: Nothing points here.`,
+            },
+            shippedText: `${REWRITE}\n\n[^1]: A cat note.`,
+            delivery: { kind: 'replacement-shipped', },
+          },),
+        },);
+        expect(() => assertDeliveryCoherent({
+          record: rowOf({
+            outcome: {
+              kind: 'decided',
+              acceptedText: `${REWRITE}\n\n[^1]: A cat note.\n\n[^2]: Nothing points here.`,
+            },
+            shippedText: `${REWRITE}\n\n[^1]: A cat note.\n\n[^2]: Something points here.`,
+            delivery: { kind: 'replacement-shipped', },
+          },),
+        },),).toThrow(DeliveryCoherenceError,);
+      },
+    },),
+    it({
       name:
         'accepts each of the four deliveries in the only shape it can take: a shipped replacement '
         + 'carrying what was decided, a withdrawn one carrying the archive, a retained incumbent, and a '
