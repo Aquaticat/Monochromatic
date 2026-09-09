@@ -1167,16 +1167,30 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  One pass is running on `aedee7414`:
+1.  Three passes are running on `aedee7414`,
+    each watched by the filtered poller that reports only the tally,
+    a stop,
+    a crash or the process exit:
     the twentieth `hakureico`,
     launched 03:21 UTC on 2026-09-09 on Bedrock and OpenRouter,
     runs dir `~/temp/agent/hakureico20-20260909`,
     log beside it,
-    pid 578547,
-    watched by the filtered poller that reports only the tally,
-    a stop,
-    a crash or the process exit.
-    Read it by the seven steps plus the three checks,
+    pid 578547;
+    the first `gqt` (a level-3 heading,
+    a bold-led unordered list,
+    an italic paragraph;
+    three shapes on no read page),
+    launched 03:40 UTC,
+    runs dir `~/temp/agent/gqt1-20260909`,
+    pid 581368;
+    the first `Mio` (a rule in the body and a bare URL;
+    two shapes on no read page),
+    launched 03:40 UTC,
+    runs dir `~/temp/agent/mio1-20260909`,
+    pid 581484.
+    The census behind the two (scratch `unmet-shapes.mjs`) is in the planning log under
+    "Two shapes-first entries launched beside it".
+    Read `hakureico` by the seven steps plus the three checks,
     then the class-specific checks:
     the letter byte for byte the archive's under the seal
     (`ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)` in the log,
@@ -1189,7 +1203,15 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     the seventh `yuki418330012` and `Arita` are read
     (see "The twenty-first class",
     "The nineteenth class" and "The Arita page").
-    If the tree moves past `aedee7414` while it runs,
+    Read `gqt` and `Mio` by the same steps,
+    then the shapes each carries:
+    `gqt`,
+    the heading level,
+    each list item's marker and bold lead,
+    the emphasis;
+    `Mio`,
+    the rule's position and the URL verbatim.
+    If the tree moves past `aedee7414` while any runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.

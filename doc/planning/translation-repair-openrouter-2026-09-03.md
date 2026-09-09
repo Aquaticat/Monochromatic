@@ -5900,6 +5900,42 @@ no `[^2]` anywhere,
 no `INTERRUPTED` line,
 and the seal as the nineteenth had it.
 
+## Two shapes-first entries launched beside it, 2026-09-09, 03:40 UTC
+
+The shape census re-run over the 92 sources against the shapes read pages have since carried
+(footnotes,
+bold,
+the container,
+the inline break,
+the math pair,
+the double-quoted path;
+scratch `unmet-shapes.mjs`)
+ranks the sources by shapes still on no read page:
+`XingZ60` seven (16,650 characters:
+a rule,
+a deep heading,
+a list and four of the seven components),
+`gqt` three (3,802 characters:
+`### 时间线`,
+a bold-led unordered list,
+an italic paragraph),
+`Mio` two (1,675 characters,
+with photos:
+a rule in the body and a bare URL),
+`noname` two,
+then one each.
+`gqt` launched at 03:40 UTC (`~/temp/agent/gqt1-20260909`,
+pid 581368) and `Mio` beside it (`~/temp/agent/mio1-20260909`,
+pid 581484),
+both on `aedee7414`,
+Bedrock and OpenRouter,
+three passes sharing the two providers as on the Arita night.
+`XingZ60` waits for a quieter bench,
+since a 16,650-character source beside two passes is the seven-hour shape the owner refused.
+A decision about run order,
+not design,
+open to veto.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
