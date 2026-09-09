@@ -1,0 +1,62 @@
+# Promise review corrections
+
+## Authorization and scope
+
+The user delegated implementation with “Address whatever you want to address.”
+The assessment is in [the review disposition](../planning/promises-teaching-review-assessment.md).
+The review's `Concerns that require real learner observation` section remains vetoed as fine.
+No learner-study gate or final teaching-skill approval is being added.
+
+Repair the controller-ownership teaching bridge, timed Stop interactions,
+capstone comparison workflow, supplied-source boundaries, fixture metadata explanation,
+and `wait`'s Promise-returning contract.
+Fold the isolated identity-guard observation into the overlapping-send exercise.
+Leave the optional observations alone.
+
+## Preservation and authoring
+
+The pre-change artifact is preserved as
+`doc/planning/promises-teaching-fable-reviewed.local.html`.
+Its SHA-256 is `aef8e02094efce04096989c4e102c7416edf342e2ff0affd81b8f72c2f478e3b`.
+It and the delivered artifact remain ignored local files; do not force-add them.
+The original preserved versions remain untouched.
+
+Authoring directory: `/var/home/user/temp/agent/promises-revision`.
+Build through its `mise run build` task.
+The output remains `doc/planning/promises-teaching.local.html`.
+Do not reload the user's existing presentation tabs or discard their drafts.
+Use disposable verification sessions, then open a new presentation tab.
+
+## Work log
+
+### Promise-returning wait
+
+`build.mjs` now changes the supplied `wait` declaration to `async`.
+Its early abort check therefore rejects its returned Promise rather than throwing out of the call.
+Timer startup and cooperating abort cleanup remain in the function body.
+
+`verify-reviewed-helpers.mjs` separates the call and await boundaries,
+checks identity of the supplied rejection reason,
+checks fulfillment listener removal, and checks that pending abort clears the actual timer handle.
+`review-browser.mjs` owns disposable sessions and closes them through a resource disposer.
+
+The preserved before-state failed in `proc_2c5c` with:
+
+```text
+AssertionError [ERR_ASSERTION]: Already-aborted wait must return a rejected Promise instead of throwing at call time
+actual: { phase: 'call', sameReason: true }
+expected: { phase: 'await', sameReason: true }
+```
+
+`proc_b4cd` rebuilt and passed the return-boundary checks.
+The additional timer-handle check and retained policy/workshop regression are running as `proc_ac07`.
+No full-lesson completion claim is made by this helper check.
+
+## Remaining work
+
+- Build and explain the missing overlapping-send ownership exercise.
+- Remove timed Stop opportunities rather than extending their timers.
+- Make the capstone comparison runnable with the promised controls and full dependencies.
+- Explain supplied source machinery and fixture-only outcome selection.
+- Integrate and run browser, export, print, neutral-surface, and negative-control checks.
+- Document independent review results, inspect changed visible states, and present a fresh tab.
