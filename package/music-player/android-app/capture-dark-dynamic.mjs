@@ -129,7 +129,7 @@ try {
       const png = execFileSync(adb, ['-s', serial, 'exec-out', 'screencap', '-d', displayId, '-p']);
       const basename = `dark-dynamic-${environment.key}-${strategy}`;
       writeFileSync(join(renderDirectory, `${basename}.png`), png);
-      writeFileSync(join(evidenceDirectory, `${basename}.xml`), hierarchy);
+      writeFileSync(join(evidenceDirectory, `${basename}.xml`), `${hierarchy}\n`);
       console.log(`${basename}.png ${png.length} bytes`);
     }
     const evidence = {
