@@ -3567,3 +3567,73 @@ accessibility pass:
 single-select group announcement at every adaptive mode layout.
  Do not modify production
 application source unless the user later gives an explicit implementation request.
+
+The design-only accessibility pass now runs against installed TalkBack on the unfolded
+emulator.
+ TalkBack's `Display speech output` overlay and emulator gRPC touch injection make
+the spoken output directly visible in opaque panel captures.
+ The accepted baseline's default
+spatial traversal is incoherent:
+ header actions,
+ letter rail,
+ track rows,
+ folder names,
+then deck controls are interleaved across panes.
+ At 100%,
+ the 2×2 mode control is
+announced as two separate two-item lists;
+ at 150%,
+ each vertical segment lacks one
+shared list announcement.
+ The baseline current row repeats its title:
+ `Selected. Current
+track: Another Xronixle. Another Xronixle. 4:35 · −1.2 dBTP. Button`.
+
+Prototype commits `56c724791` through `1511ebaf5` add three visually unchanged
+traversal candidates,
+ two current-row speech candidates,
+ and mandatory adaptive-group
+repairs.
+ The repaired mode control is one four-item radio list at 85%,
+ 100%,
+ and
+150%;
+ TalkBack follows accepted option order and says `1 of 4` through `4 of 4`.
+Visible label duplication is removed from those announcements.
+ Current-row candidate
+`state` says `Current track. Another Xronixle. 4:35 · −1.2 dBTP. Button` and
+preserves structured descendants.
+ Candidate `composed` says `Selected. Current track:
+Another Xronixle, 4:35, −1.2 dBTP. Button` through one hand-composed label.
+
+The three coherent traversal candidates are:
+
+- `pane`:
+   folder area,
+   playback deck,
+   then track pane;
+- `browse`:
+   folder area,
+   track pane,
+   then playback deck;
+- `playback`:
+   playback deck,
+   track pane,
+   then folder area.
+
+Prototype build and Android lint pass.
+ A broad source search finds no explicit animation,
+transition,
+ crossfade,
+ or programmatic scrolling API in the prototype;
+ the positive-control
+search finds 18 semantics occurrences.
+ Reduced motion therefore adds a contract forbidding
+autonomous or decorative motion rather than another visual variant.
+ Main commit `f30edc7db`
+preserves the TalkBack screenshots and traversal transcripts.
+ The next action is one
+self-contained Helium form with separate decisions for traversal order and current-track
+speech;
+ adaptive-group and reduced-motion repairs are fixed requirements,
+ not options.
