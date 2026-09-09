@@ -52,7 +52,10 @@ async function locateDotEnv(): Promise<string | typeof DOT_ENV_ABSENT> {
      Nearest ancestor directory holding a `.env` file.
      */
     const dir = await findRoot({ marker: fileNamed(DOT_ENV_NAME,), },);
-    return join(dir, DOT_ENV_NAME,);
+    return join(
+      dir,
+      DOT_ENV_NAME,
+    );
   }
   catch (error: unknown) {
     if (!(error instanceof RootNotFoundError))

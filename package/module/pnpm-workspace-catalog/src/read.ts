@@ -63,7 +63,10 @@ export async function readCatalogFile(
   /**
    Absolute path to the nearest workspace YAML file.
    */
-  const workspaceYamlPath = join(workspaceDir, WORKSPACE_FILE_NAME,);
+  const workspaceYamlPath = join(
+    workspaceDir,
+    WORKSPACE_FILE_NAME,
+  );
 
   /**
    Original workspace YAML text retained for callers that need surgical edits.
