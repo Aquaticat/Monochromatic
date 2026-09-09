@@ -87,11 +87,14 @@ there is still no open pull request whose title or body publicly identifies itse
 
 The issue page understates nearby implementation work because the merged pull requests did not close or consistently reference `#2758`.
 
-- [`#5794`](https://github.com/rolldown/rolldown/pull/5794), merged 2025-08-19,
+- [`#5794`](https://github.com/rolldown/rolldown/pull/5794),
+  merged 2025-08-19,
   added an `ImportAttribute` representation and stored attributes per import record.
-- [`#9796`](https://github.com/rolldown/rolldown/pull/9796), merged 2026-06-17,
+- [`#9796`](https://github.com/rolldown/rolldown/pull/9796),
+  merged 2026-06-17,
   preserved attributes when rendering an external `export *`.
-- [`#10479`](https://github.com/rolldown/rolldown/pull/10479), merged 2026-07-28,
+- [`#10479`](https://github.com/rolldown/rolldown/pull/10479),
+  merged 2026-07-28,
   fixed two-argument dynamic imports that pointed at nonexistent output chunks.
   Its description explicitly calls meaningful bundled-module attributes,
   loader selection,
