@@ -8,6 +8,7 @@ import type { PairedReading, } from '../image-reading-pair.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { CorpusPin, } from '../corpus-source.ts';
 import type { SliceCache, } from '../slice-cache.ts';
+import { photoReferences, } from '../photo-reference.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { assertVisualEvidenceComplete, } from './visual-evidence-completeness.ts';
 
@@ -43,6 +44,8 @@ export type PassVisualEvidenceReader = (args: {
  *
  * @param visualEvidenceReader - optional integration-test evidence seam
  *
+ * @param priorReadings - completed evidence retained within this pinned entry
+ *
  * @returns Corroborated or reviewed no-text evidence by asset
  *
  * @throws {@link import('./visual-evidence-completeness.ts').VisualEvidenceInterruptedError}
@@ -65,6 +68,7 @@ export async function readPassVisualEvidence(
     perCallTimeoutMs,
     l,
     visualEvidenceReader,
+    priorReadings = new Map(),
   }: {
     readonly client: SyntheticClient;
     readonly slices: readonly ChunkPair[];
@@ -76,8 +80,21 @@ export async function readPassVisualEvidence(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
+    readonly priorReadings?: ReadonlyMap<string, PairedReading>;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
+  /** Whether earlier preparation already completed every reference now in scope. */
+  const alreadyRead = slices.every(function covered(slice,): boolean {
+    return photoReferences({ text: slice.source.text, },).every(function complete(reference,): boolean {
+      /** Evidence from this entry, never a failed reading carried forward as support. */
+      const prior = priorReadings.get(reference.assetName,);
+      return prior !== undefined && prior.kind !== 'unavailable';
+    },);
+  },);
+  if (alreadyRead) {
+    l.debug(`${readPassVisualEvidence.name}: every picture already has entry evidence`,);
+    return priorReadings;
+  }
   /**
    * Assets read only on production path.
    */
@@ -100,6 +117,7 @@ export async function readPassVisualEvidence(
       assets,
       readerModelIds,
       cache,
+      priorReadings,
       signal,
       perCallTimeoutMs,
       l,

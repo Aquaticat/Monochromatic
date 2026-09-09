@@ -48,6 +48,8 @@ import { readJudgeSeats, } from './run-seats-read.ts';
  *
  * @param visualEvidenceReader - optional integration-test evidence seam
  *
+ * @param priorReadings - completed evidence retained within this pinned entry
+ *
  * @returns Corroborated or reviewed no-text evidence by asset
  *
  * @throws {@link import('./visual-evidence-completeness.ts').VisualEvidenceInterruptedError}
@@ -67,6 +69,7 @@ export async function readSeatedPictures(
     signal,
     l,
     visualEvidenceReader,
+    priorReadings,
   }: {
     readonly client: RunClient;
     readonly slices: readonly ChunkPair[];
@@ -75,6 +78,7 @@ export async function readSeatedPictures(
     readonly signal: AbortSignal;
     readonly l: Logger;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
+    readonly priorReadings?: ReadonlyMap<string, PairedReading>;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**
@@ -97,7 +101,48 @@ export async function readSeatedPictures(
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
+    ...((priorReadings === undefined) ? {} : { priorReadings, }),
   },);
+}
+
+/**
+ * Binds one entry's reader so preparation and lanes share completed evidence.
+ *
+ * Disk-cache persistence does not refresh its open snapshot. Retaining readings
+ * here also preserves the evidence already used by archive review if the reader
+ * roster changes before lanes start. Newly exposed references still get read.
+ *
+ * @param input - pinned entry, provider, cache and cancellation boundary
+ *
+ * @returns Reader whose evidence belongs to this entry alone
+ *
+ * @example
+ * ```ts
+ * const readPictures = createPassPictureReader({ client, entryId, cache, signal, l, });
+ * ```
+ */
+export function createPassPictureReader(
+  input: Omit<Parameters<typeof readSeatedPictures>[0], 'slices' | 'priorReadings'>,
+): PassVisualEvidenceReader {
+  /** Completed readings retained across this entry's preparation boundaries. */
+  const priorReadings = new Map<string, PairedReading>();
+  /**
+   * Reads missing entry pictures and retains the completed result.
+   *
+   * @param slices - current prepared source references
+   *
+   * @returns Evidence shared by archive review and later lanes
+   */
+  async function readPictures(
+    { slices, }: Parameters<PassVisualEvidenceReader>[0],
+  ): Promise<ReadonlyMap<string, PairedReading>> {
+    /** Complete evidence, checked before anything enters the retained map. */
+    const readings = await readSeatedPictures({ ...input, slices, priorReadings, },);
+    for (const [name, reading,] of readings)
+      priorReadings.set(name, reading,);
+    return priorReadings;
+  }
+  return readPictures;
 }
 
 //endregion Seated picture reading

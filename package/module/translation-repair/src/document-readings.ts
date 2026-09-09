@@ -50,6 +50,8 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * @param cache - cross-run store, so a resumed run re-reads no picture
  *
+ * @param priorReadings - completed evidence from this same pinned entry before re-preparation
+ *
  * @param signal - entry abort honoured by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -77,6 +79,7 @@ export async function readDocumentPictures(
     assets,
     readerModelIds,
     cache,
+    priorReadings = new Map(),
     signal,
     perCallTimeoutMs,
     l,
@@ -87,6 +90,7 @@ export async function readDocumentPictures(
     readonly assets: ReadonlyMap<string, Uint8Array>;
     readonly readerModelIds: readonly RosterModelId[];
     readonly cache: SliceCache<PairedReading>;
+    readonly priorReadings?: ReadonlyMap<string, PairedReading>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -123,6 +127,13 @@ export async function readDocumentPictures(
   rl.info(`reading ${String(named.size,)} pictures for this document`,);
 
   for (const assetName of named) {
+    /** Evidence already completed in this entry, independent of changed slice boundaries. */
+    const prior = priorReadings.get(assetName,);
+    if (prior !== undefined && prior.kind !== 'unavailable') {
+      rl.info(`${assetName}: retained entry evidence, ${prior.kind}`,);
+      readings.set(assetName, prior,);
+      continue;
+    }
     /**
      * Picture itself, absent when the caller gathered no bytes for it.
      */

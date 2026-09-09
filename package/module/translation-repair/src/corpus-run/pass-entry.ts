@@ -29,7 +29,7 @@ import { unfilledPageFindings, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
 import { tallyErrorText, } from './tally-error-text.ts';
-import { readSeatedPictures, } from './pass-seated-pictures.ts';
+import { createPassPictureReader, } from './pass-seated-pictures.ts';
 import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 import { discardSliceCache, } from './slice-cache-store.ts';
 import { openEntryCaches, } from './pass-entry-caches.ts';
@@ -191,6 +191,16 @@ async function runEntryPipeline(
       l: tagged({ tag: entry.id, },),
     },);
 
+    /** Entry-scoped evidence reader shared by archive review and final slices. */
+    const readPictures = createPassPictureReader({
+      client,
+      entryId: entry.id,
+      cache: readingCache,
+      signal: deadline.callSignal,
+      l: tagged({ tag: entry.id, },),
+      ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
+    },);
+
     /**
      * Slicing BOTH lanes run over, prepared once here rather than inside
      * either.
@@ -222,6 +232,7 @@ async function runEntryPipeline(
       entryCacheDir,
       pipelineDigest,
       modelIds: preparationSeats.roster,
+      readPictures,
       sourceText: entry.sourceText,
       // Normalized inside (`pass-prepare.ts`): the archive both deciders judge
       // is the archive as prepared, never these bytes.
@@ -240,15 +251,7 @@ async function runEntryPipeline(
      * read by the readers the meters seat (`pass-seated-pictures.ts`): a model
      * withheld on the provider that would serve it reads no picture either.
      */
-    const pictureReadings = await readSeatedPictures({
-      client,
-      slices: prepared.slices,
-      entryId: entry.id,
-      cache: readingCache,
-      signal: deadline.callSignal,
-      l: tagged({ tag: entry.id, },),
-      ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
-    },);
+    const pictureReadings = await readPictures({ slices: prepared.slices, },);
 
     /**
      * The lanes' judge benches, read off Synthetic's meter (`run-seats.ts`).
