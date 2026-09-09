@@ -1530,28 +1530,17 @@ a fix that matters to the running entry still kills and relaunches it.
     "Mercury 2.5 judges 14 of 14" for the record.
     A pass launched after `fcc8ca197` seats Mercury wherever the anchor judge sits;
     the third `noname` runs on `33a023445` and does not.
-3.  BUILD THE THREE ANSWERS OF 17:25 UTC,
-    in this order,
-    each guard shown to fail first,
-    the decision doc's "What landed" filled by the build commit:
-    the short-bench share
-    (`candidate-select.ts`,
-    the reachable count from the gather's no-provider losses,
-    `MIN_SELECTION_BALLOTS`,
-    the `select-short-bench` finding;
-    `repair-contract.ts`'s capacity guard reads the same minimum),
-    the kept incumbent
-    (`consolidate-standing-verdict.ts` reads the incumbent's verdict,
-    `consolidate-ineligible-standing.ts` offers it and keeps it,
-    `consolidate-settle.ts` and the gate thread it),
-    and the glossary
-    (`community-glossary.ts`,
-    the `COMMUNITY TERMS` lines in `document-preparation.ts`'s identity context,
-    the `COMMUNITY RENDERINGS` block on the select,
-    translate,
-    lane-contest and consolidation-gate sheets).
-    A pass launched after each lands carries it;
-    the running third `noname` does not.
+3.  THE THREE ANSWERS OF 17:25 UTC ARE BUILT (`db5927630` the short-bench share,
+    `1463cd359` the kept incumbent,
+    `b7a0b4f5f` the glossary;
+    each decision doc's "What landed" names the files and the guards).
+    The running third `noname` carries none of them;
+    every launch from here does.
+    The glossary is the owner's to curate:
+    `community-glossary.ts` beside `corpus-source.ts`,
+    a term,
+    its renderings (the archive's first) and one line of why;
+    a term the archive got wrong is not entered.
 4.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
     right for any corpus pass (pages stand beside the declines),
     wrong on a decline-only dir;

@@ -6810,7 +6810,19 @@ The answers:
   and a deterministic block on the judge sheets names each candidate lacking the community rendering.
 
 Built in that order,
-each shown to fail first.
+each guard shown to fail first:
+`db5927630` (the share;
+the gather names the seats the router refused,
+the select minimum scales,
+ballot counting moved to `candidate-select-count.ts`),
+`1463cd359` (the incumbent;
+the artifact's shipped kind `incumbent` was needed so the page writes the incumbent rather than the lane's
+refused wording,
+which a bare "unchanged" would have done),
+`b7a0b4f5f` (the glossary;
+the editor selections' task and criteria moved to `editor-selection-sheet.ts`).
+The running third `noname` carries none of them (frozen `33a023445`);
+the next launch carries all three.
 
 The seated roster's reading of the same fourteen landed at 17:18 UTC
 (pid 875777,

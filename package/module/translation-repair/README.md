@@ -1874,6 +1874,34 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `db5927630` (2026-09-09,
+the owner's answer to the thin-bench question) a select round whose bench is short of quorum,
+because the router refused seats for want of a wet provider,
+seats a winner by a share of the reachable weight:
+the minimum scales as `MIN_SELECTION_WEIGHT` times reachable over quorum,
+two ballots naming the winner is the floor (`MIN_SELECTION_BALLOTS`),
+a bench at or above quorum keeps the absolute 2,
+and the round's findings carry `select-short-bench (reachable r of n, minimum m)`
+(`candidate-select-minimum.ts`;
+`doc/decision/translation-repair-short-bench-share.md`).
+Since `1463cd359` (2026-09-09,
+the owner's answer to the incumbent question) a consolidation whose standing failed the deterministic gate runs
+against the incumbent where the incumbent passes it,
+with `ineligible-standing-replaced-by-incumbent` recorded and no contest endorsement,
+and the artifact's shipped kind `incumbent` has the page write the incumbent's text;
+the entry stops only where the incumbent fails too,
+or is the standing (the 2026-09-09 addendum of `doc/decision/translation-repair-ineligible-standing.md`).
+Since `b7a0b4f5f` (2026-09-09,
+the owner's answer to the glossary question) `community-glossary.ts` beside the corpus pin lists the community's
+terms (自切 as "self-surgery",
+超天酱 as "KAngel" of *Needy Streamer Overload*,
+the archive's renderings),
+the terms an entry's source carries ride in its identity context as `COMMUNITY TERMS`,
+and the select,
+lane-contest and consolidation-gate sheets name each candidate lacking every accepted rendering in a
+`COMMUNITY RENDERINGS` block,
+evidence to weigh rather than a bar;
+the owner curates the file (`doc/decision/translation-repair-community-glossary.md`).
 Since `3224ff347` and `fcc8ca197` (2026-09-09,
 the owner's "Mercury 2.5 is out and approved") `inception/mercury-2.5` is the twelfth roster model and the one
 only OpenRouter serves (`OPENROUTER_ONLY_ROSTER_IDS`;
