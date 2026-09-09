@@ -5819,6 +5819,87 @@ and `超天酱` ships as `Chōten-chan` (line 17) where the archive named *Needy
 The bench does not know the community's words;
 the glossary question stands with the owner.
 
+## The nineteenth hakureico page is read and the twenty-first class takes the sibling note with the orphan, 2026-09-09, 03:25 UTC
+
+`TALLY hakureico status=SETTLED` at 03:03 UTC on `d6db46519`,
+88 minutes on Bedrock and OpenRouter,
+`~/temp/agent/hakureico19-20260909`,
+pid 546904 exited.
+The seal held:
+`ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)` in the log,
+artifact `artifactSchemaVersion: 12` with `archiveOriginalSpans` carrying the one span and its note,
+the letter on the page byte for byte the archive's and ending the page,
+the CJK counts equal to the archive's own (three Chinese notes in HTML comments,
+none of them the pipeline's).
+The three checks passed:
+the front matter the archive's,
+1 `json false start` read kept with no `schema-mismatch` beside it,
+no error finish.
+`verify-published` matched 1 of 1 at length (`wordings=14 silent=1`),
+37 voices lost at the straggler window,
+no `HTTP 429`.
+Meters at the tally:
+Bedrock 194.64 USD,
+OpenRouter 113.39 USD.
+
+THE PAGE CARRIES A REFERENCE WITH NO NOTE.
+Line 80 reads `she used “Mayday”[^1]` and no `[^1]` definition stands anywhere on the page.
+The trace,
+in the artifact and the translate lane's cache:
+the source's two definitions
+(`[^1]: 国际通用的无线电遇难求救讯号…` and `[^2]: 即 Google App Engine`)
+sit behind the sealed letter as insertion slice 14 (`coverage=absent`);
+the translate lane rendered both as one insertion;
+the sealed letter is the archive's,
+which has `HOSTED__WITH__GAE____` with no `[^2]` marker,
+so on the lane's assembly `[^2]` was an orphan definition;
+`guardFootnoteAssembly` blamed slice 14 for it and withdrew the whole insertion,
+the `[^1]` note with the orphan
+(`replacement-withdrawn reason assembly-integrity`);
+the consolidation candidate for the body slice carried `[^1]` and shipped;
+and nothing read the composed page as one document,
+since the guard runs only inside `repair-assemble.ts` and `translate-assemble.ts`.
+The archive itself carries no footnote marker at all,
+so a page-level reading against the archive would have refused this page.
+The twenty-first class,
+in two faces:
+a guard that withdraws more than the defect,
+and a page nobody parses whole.
+
+THE FIX (`aedee7414`).
+`assembly-orphan-trim.ts`:
+before the guard blames a slice,
+`trimOrphanDefinitions` cuts an orphan definition's own block out of every replacement that is nothing but
+definition blocks (`assembly-footnote-trimmed orphan-definition gfm 2 (slice 14)`),
+leaves a replacement that carries prose beside its definitions for the whole withdrawal as before
+(cutting a block out of judged prose ships a text nobody judged),
+and withdraws only a trim that lands on the slice's own incumbent
+(`assembly-footnote-trimmed-to-incumbent`);
+the guard's round bound widens by the count of definition blocks,
+since a trim round withdraws nothing.
+`corpus-run/page-footnote-integrity.ts`:
+`assertPageFootnotesIntact` splices the shippable replacements the way `publish-fixed` will,
+reads `introducedFootnoteFindings` against the archive,
+and stops the entry as `TranslationRepairInterruptedError` with the new reason `page-footnote-integrity`,
+naming each defect (`page-footnote-unresolved-reference gfm 1`) on `INTERRUPTED` lines;
+`corpus-run/pass-page-guards.ts` runs it beside the carried guard from `pass-entry.ts`.
+The assembly suite's trim case failed first on the old build
+(`expected [ 1 ] to deeply equal []`,
+the whole insertion withdrawn);
+two new suites cover the trim and the page guard;
+full suite 979 `PASS` and 0 `FAIL`.
+
+THE TWENTIETH `hakureico` LAUNCHED at 03:21 UTC on `aedee7414`,
+`~/temp/agent/hakureico20-20260909`,
+pid 578547,
+Bedrock and OpenRouter.
+What its page must show:
+`[^1]` above its note,
+no `[^2]` anywhere,
+`assembly-footnote-trimmed` in the translate lane's findings,
+no `INTERRUPTED` line,
+and the seal as the nineteenth had it.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

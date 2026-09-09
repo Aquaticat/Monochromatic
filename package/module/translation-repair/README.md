@@ -1874,6 +1874,17 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `aedee7414` (2026-09-09,
+the twenty-first class) an orphan footnote definition takes only its own block,
+and the composed page's footnote graph is read before the tally:
+`guardFootnoteAssembly` had withdrawn a two-definition insertion whole for the one orphan among them
+(the nineteenth `hakureico` page shipped `“Mayday”[^1]` with no note,
+since the sealed letter carries no `[^2]`),
+so `trimOrphanDefinitions` now cuts the orphan's block out of a definitions-only replacement first
+(`assembly-footnote-trimmed`),
+and `assertPageFootnotesIntact` reads the would-ship page against the archive and stops the entry as
+`page-footnote-integrity`,
+run beside the carried guard by `assertPageGuards`.
 Since `d6db46519` (2026-09-09,
 the twentieth class's second face) a carried insertion's evidence is the full coverage votes' regions alone:
 `judgeCoverage` had recorded every anchored quote whatever its degree,

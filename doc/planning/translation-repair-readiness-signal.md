@@ -1351,3 +1351,34 @@ What remains before an all-entries launch:
 the nineteenth `hakureico` page (running since 01:35 UTC),
 the owner's answer on the glossary,
 and the components no read page has met.
+
+## What the nineteenth hakureico launch showed (2026-09-09, 01:35 to 03:03 UTC)
+
+The page settled in 88 minutes on `d6db46519` with the seal holding
+(the letter byte for byte the archive's,
+the artifact carrying the span),
+passed the three checks and matched at length,
+and carries a footnote reference with no note:
+`“Mayday”[^1]` with no `[^1]` definition on the page.
+The twenty-first class:
+the translate lane's assembly guard withdrew a two-definition insertion whole for the one orphan among them,
+and nothing read the composed page as one document.
+`aedee7414` trims an orphan definition's own block out of a definitions-only replacement and reads the would-ship
+page's footnote graph against the archive before the tally,
+stopping the entry INTERRUPTED rather than shipping the page.
+The twentieth `hakureico` runs on it since 03:21 UTC.
+
+THE READING:
+the belief holds,
+and the count of classes a read page can still find is not yet zero.
+Three pages read since the letter question found one class between them,
+and it was of the same shape as the two before it:
+a guard reading its evidence more coarsely than the thing it guards,
+this time withdrawing two notes for one defect,
+with no reading over the page the guards compose.
+The page-level footnote guard closes the second face for every future page,
+since a dangling reference now stops the pass instead of shipping.
+What remains before an all-entries launch:
+the twentieth `hakureico` page,
+the owner's answer on the glossary,
+and the components no read page has met.

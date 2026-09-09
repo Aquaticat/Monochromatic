@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 02:55 UTC on 2026-09-09 the tree is `d6db46519`:
+As of 03:30 UTC on 2026-09-09 the tree is `aedee7414`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -67,7 +67,15 @@ the nineteenth class fixed on the page,
 the credits carried through the guard,
 the two slang regressions standing;
 see "The nineteenth class" and "The glossary question"),
-and the nineteenth `hakureico` running on `d6db46519` since 01:35 UTC;
+the nineteenth `hakureico` page settled on `d6db46519` at 03:03 UTC and read
+(the seal held,
+the three checks passed,
+`verify-published` matched at length,
+a reference with no note found;
+see "The twenty-first class"),
+the twenty-first class fixed (`aedee7414`,
+an orphan definition takes only its own block and the composed page's footnote graph is read before the tally),
+and the twentieth `hakureico` running on `aedee7414` since 03:21 UTC;
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -1051,6 +1059,40 @@ three passes sharing the two providers.
 No class found.
 The full reading is in the planning log under the same heading as the twentieth class.
 
+## The twenty-first class
+
+The nineteenth `hakureico` pass (`d6db46519`,
+01:35 to 03:03 UTC on 2026-09-09,
+88 minutes,
+`~/temp/agent/hakureico19-20260909`) settled with the seal holding
+(`ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)`,
+`artifactSchemaVersion: 12` with `archiveOriginalSpans`,
+the letter byte for byte the archive's and ending the page),
+the three checks passed,
+`verify-published` matched at length (`wordings=14 silent=1`),
+37 voices lost and no `HTTP 429`.
+Its page carries `she used “Mayday”[^1]` (line 80) with no `[^1]` definition anywhere.
+The translate lane rendered the source's two definitions as one insertion behind the sealed letter;
+the letter is the archive's and has no `[^2]` marker;
+`guardFootnoteAssembly` withdrew the whole insertion for the orphan `[^2]`,
+the `[^1]` note with it;
+the consolidation shipped the body's `[^1]`;
+and no guard read the composed page,
+since the assembly guard runs only inside each lane's assembly.
+Fixed in `aedee7414`:
+`assembly-orphan-trim.ts` cuts an orphan definition's own block out of a replacement that is nothing but
+definition blocks (`assembly-footnote-trimmed`) before the guard blames a slice,
+leaves prose replacements for the whole withdrawal,
+and withdraws only a trim that lands on the incumbent;
+`corpus-run/page-footnote-integrity.ts` reads the would-ship page's footnote graph against the archive and stops
+the entry as `page-footnote-integrity` with each defect on an `INTERRUPTED` line;
+`corpus-run/pass-page-guards.ts` runs it beside the carried guard from `pass-entry.ts`.
+The trim case failed first;
+full suite 979 `PASS` and 0 `FAIL`.
+The twentieth `hakureico` runs on `aedee7414` since 03:21 UTC.
+Recorded in the planning log under
+"The nineteenth hakureico page is read and the twenty-first class takes the sibling note with the orphan".
+
 ## The glossary question
 
 The same page rendered two community terms wrongly where the archive had them right:
@@ -1125,30 +1167,29 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  One pass is running on `d6db46519`:
-    the nineteenth `hakureico`,
-    launched 01:35 UTC on 2026-09-09 on Bedrock and OpenRouter,
-    runs dir `~/temp/agent/hakureico19-20260909`,
+1.  One pass is running on `aedee7414`:
+    the twentieth `hakureico`,
+    launched 03:21 UTC on 2026-09-09 on Bedrock and OpenRouter,
+    runs dir `~/temp/agent/hakureico20-20260909`,
     log beside it,
-    pid 546904.
-    The seventh `yuki418330012` settled beside it at 02:51 UTC and is read
-    (see "The nineteenth class" and the planning log).
-    Each is watched by the filtered poller that reports only the tally,
+    pid 578547,
+    watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit.
-    Read each by the seven steps plus the three checks,
+    Read it by the seven steps plus the three checks,
     then the class-specific checks:
-    `hakureico`,
     the letter byte for byte the archive's under the seal
     (`ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)` in the log,
     artifact `artifactSchemaVersion: 12` with `archiveOriginalSpans`,
-    the page carrying the span verbatim,
-    the source's footnote definitions after the span),
-    `[^1]` agreeing on both sides,
-    slice 7 named as left out of the relabel reading,
-    no definition moved.
-    `Arita` is read (see "The Arita page").
-    If the tree moves past `d6db46519` while either runs,
+    the page carrying the span verbatim),
+    `“Mayday”[^1]` above a `[^1]` definition and no `[^2]` anywhere,
+    `assembly-footnote-trimmed orphan-definition gfm 2` in the translate lane's findings,
+    no `INTERRUPTED` line.
+    The nineteenth `hakureico`,
+    the seventh `yuki418330012` and `Arita` are read
+    (see "The twenty-first class",
+    "The nineteenth class" and "The Arita page").
+    If the tree moves past `aedee7414` while it runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
