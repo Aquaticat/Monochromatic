@@ -1,3 +1,4 @@
+import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
@@ -409,6 +410,12 @@ export type ParsedTwoLaneArtifact = {
    * this artifact was written before the field existed.
    */
   readonly consolidation: ParsedConsolidation;
+
+  /**
+   * What the page-level assembly guard did to the composed page, empty on
+   * every artifact written before the guard existed.
+   */
+  readonly pageAssembly: ArtifactPageAssembly;
 };
 
 //endregion Artifact version 2 read contract

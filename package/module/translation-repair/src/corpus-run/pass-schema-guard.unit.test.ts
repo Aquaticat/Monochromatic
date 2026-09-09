@@ -145,7 +145,7 @@ function emptyVersionTwoArtifact(
   },
 ): Record<string, unknown> {
   return {
-    artifactSchemaVersion: 12,
+    artifactSchemaVersion: 13,
     id: entryId,
     tip: FIXED_TIP,
     pipelineDigest: digest,
@@ -191,6 +191,7 @@ function emptyVersionTwoArtifact(
     comparison: [],
     laneSelection: { kind: 'pending-human-decision', },
     consolidation: { kind: 'not-run', },
+    pageAssembly: { trimmed: [], withdrawn: [], findings: [], },
   };
 }
 
@@ -332,7 +333,7 @@ await describe({
         const artifactsDir = await writeArtifacts({
           entries: {
             Mittens: {
-              version: 12,
+              version: 13,
               digest: DIGEST_A,
             },
           },
@@ -342,7 +343,7 @@ await describe({
          * What the guard said about it.
          */
         const said = await refusalOf({ artifactsDir, },);
-        expect(said,).toContain('Mittens declares schema version 12',);
+        expect(said,).toContain('Mittens declares schema version 13',);
         expect(said,).toContain('and is not one',);
       },
     },),
@@ -469,7 +470,7 @@ await describe({
         expect(said,).toContain('Restore the code those entries were settled under',);
         expect(said,).toContain('Move the incompatible artifacts to an archive directory',);
         expect(said,).toContain('Deleting them outright is the one thing to avoid',);
-        expect(said,).toContain('this pass writes schema version 12',);
+        expect(said,).toContain('this pass writes schema version 13',);
       },
     },),
   ],

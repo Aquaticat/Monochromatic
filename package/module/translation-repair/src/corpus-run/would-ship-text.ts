@@ -4,6 +4,11 @@ import type {
   ParsedArchiveText,
   ParsedTwoLaneArtifact,
 } from './artifact-two-lane-read-contract.ts';
+import {
+  type ArtifactPageAssembly,
+  NO_PAGE_ASSEMBLY,
+  pageAssemblyOverrideAt,
+} from './artifact-two-lane-page-assembly.ts';
 import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
 import { restoreTypography, } from '../restore-typography.ts';
 
@@ -35,6 +40,7 @@ import { restoreTypography, } from '../restore-typography.ts';
  * ```
  */
 export type WouldShipDecider =
+  | 'page-assembly'
   | 'polish'
   | 'consolidation'
   | 'contest'
@@ -57,6 +63,7 @@ export type WouldShipDecider =
  * ```
  */
 export type WouldShipSilence =
+  | 'page-assembly-withdrew-and-archive-silent'
   | 'contest-declined-and-archive-silent'
   | 'contest-unasked-and-archive-silent'
   | 'lanes-agreed-on-no-wording';
@@ -135,7 +142,25 @@ export type WouldShipReading =
 export type WouldShipSource = Pick<
   ParsedTwoLaneArtifact,
   'comparison' | 'consolidation' | 'laneSelection'
-> & ArchiveTextCarrier;
+> & ArchiveTextCarrier & PageAssemblyCarrier;
+
+/**
+ * What the page-level guard did, as either artifact shape carries it: the
+ * settled artifact and the parsed one both hold the section, and a source
+ * built from the three reading fields alone carries none, which reads as a
+ * guard that touched nothing.
+ *
+ * @example
+ * ```ts
+ * const carrier: PageAssemblyCarrier = { pageAssembly: NO_PAGE_ASSEMBLY, };
+ * ```
+ */
+type PageAssemblyCarrier = {
+  /**
+   * What the page-level guard trimmed, withdrew and found.
+   */
+  readonly pageAssembly?: ArtifactPageAssembly;
+};
 
 /**
  * Archive English as either artifact shape carries it: the settled artifact a
@@ -518,6 +543,26 @@ export function wouldShipTextFor(
     readonly row: ArtifactComparisonRow;
   },
 ): WouldShipReading {
+  /**
+   * What the page-level guard did here, read FIRST: it read the page the three
+   * stages below compose, and its record says what that page carries.
+   */
+  const override = pageAssemblyOverrideAt({
+    pageAssembly: artifact.pageAssembly ?? NO_PAGE_ASSEMBLY,
+    sliceIndex: row.sliceIndex,
+  },);
+  if (override.kind === 'trimmed')
+    return {
+      kind: 'wording',
+      text: override.text,
+      decidedBy: 'page-assembly',
+    };
+  if (override.kind === 'withdrawn')
+    return archiveStandsOr({
+      row,
+      silence: 'page-assembly-withdrew-and-archive-silent',
+    },);
+
   /**
    * Final naturalness polish, absent before generation six or when base stood.
    */

@@ -36,6 +36,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   buildSettledTwoLaneArtifact,
+  NO_PAGE_ASSEMBLY,
   type ChunkPair,
   collectTwoLaneShippedRegions,
   type DocumentLanesResult,
@@ -357,6 +358,7 @@ async function censusOverOneEntry(): Promise<
       `${ENTRY_ID}.json`,
     ),
     JSON.stringify(buildSettledTwoLaneArtifact({
+      pageAssembly: NO_PAGE_ASSEMBLY,
       entryId: ENTRY_ID,
       tip: 'a'.repeat(40,),
       pipelineDigest: DIGEST,

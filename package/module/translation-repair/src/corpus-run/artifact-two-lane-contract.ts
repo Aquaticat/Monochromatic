@@ -3,6 +3,7 @@ import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { RepairTranslationResult, } from '../repair-result.ts';
 import type { TranslateDocumentResult, } from '../translate-document-contract.ts';
 import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts';
+import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type {
   ArtifactComparisonRow,
@@ -45,6 +46,19 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  * rebuilding an older file seals nothing, since that slicing never did.
  */
 export const ARTIFACT_SCHEMA_VERSION_V12 = 12;
+
+/**
+ * Generation that records what the page-level assembly guard did to the
+ * composed page.
+ *
+ * WHAT MOVED FROM TWELVE: the page the polish, the consolidation and the
+ * contest compose is run through the same footnote assembly guard each lane
+ * runs, and the artifact carries `pageAssembly`, the slices the guard trimmed
+ * with the text the page carries, the slices it took back, and its findings.
+ * A reader composing the page applies that section first. An older file
+ * carries no section and its page is composed as before.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V13 = 13;
 
 /**
  * Generation before archive-original spans were sealed; the archive's front
@@ -151,6 +165,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V10,
   ARTIFACT_SCHEMA_VERSION_V11,
   ARTIFACT_SCHEMA_VERSION_V12,
+  ARTIFACT_SCHEMA_VERSION_V13,
 ];
 
 /**
@@ -172,7 +187,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V9
   | typeof ARTIFACT_SCHEMA_VERSION_V10
   | typeof ARTIFACT_SCHEMA_VERSION_V11
-  | typeof ARTIFACT_SCHEMA_VERSION_V12;
+  | typeof ARTIFACT_SCHEMA_VERSION_V12
+  | typeof ARTIFACT_SCHEMA_VERSION_V13;
 
 /**
  * Narrows numeric artifact version to known two-lane generation.
@@ -213,7 +229,8 @@ export function artifactGenerationRequiresPolish(
     || (generation === ARTIFACT_SCHEMA_VERSION_V9)
     || (generation === ARTIFACT_SCHEMA_VERSION_V10)
     || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V12);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V12)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V13);
 }
 
 /**
@@ -235,7 +252,8 @@ export function artifactGenerationRequiresNaturalnessReview(
     || (generation === ARTIFACT_SCHEMA_VERSION_V9)
     || (generation === ARTIFACT_SCHEMA_VERSION_V10)
     || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V12);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V12)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V13);
 }
 
 /**
@@ -256,7 +274,8 @@ export function artifactGenerationRequiresNaturalnessCorrectionChain(
   return (generation === ARTIFACT_SCHEMA_VERSION_V9)
     || (generation === ARTIFACT_SCHEMA_VERSION_V10)
     || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V12);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V12)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V13);
 }
 
 /**
@@ -278,7 +297,8 @@ export function artifactGenerationReviewsEveryBodyBlock(
 ): boolean {
   return (generation === ARTIFACT_SCHEMA_VERSION_V10)
     || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V12);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V12)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V13);
 }
 
 /**
@@ -588,7 +608,7 @@ export type SettledArtifact = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V12;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V13;
 
   /**
    * Corpus entry this covers.
@@ -675,6 +695,11 @@ export type SettledArtifact = {
    * already settled something.
    */
   readonly consolidation: ArtifactConsolidation;
+
+  /**
+   * What the page-level assembly guard did to the composed page.
+   */
+  readonly pageAssembly: ArtifactPageAssembly;
 };
 
 //endregion Artifact version 2 contract

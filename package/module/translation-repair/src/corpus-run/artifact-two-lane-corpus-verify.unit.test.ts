@@ -26,6 +26,7 @@ import {
 import {
   ArtifactParseError,
   buildSettledTwoLaneArtifact,
+  NO_PAGE_ASSEMBLY,
   type DocumentLanesResult,
   parseSettledTwoLaneArtifact,
   type PipelineDigest,
@@ -194,6 +195,7 @@ function writeAndRead(
    * What the writer assembled, still an object in memory.
    */
   const written = buildSettledTwoLaneArtifact({
+    pageAssembly: NO_PAGE_ASSEMBLY,
     entryId: 'CatEntry1',
     tip: 'a'.repeat(40,),
     pipelineDigest: DIGEST,

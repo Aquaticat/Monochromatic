@@ -15,6 +15,7 @@ import {
   type PreparationIdentity,
 } from '../preparation-identity.ts';
 import {
+  ARTIFACT_SCHEMA_VERSION_V13,
   artifactGenerationReadingRequirements,
   isTwoLaneArtifactGeneration,
   TWO_LANE_GENERATIONS,
@@ -36,6 +37,8 @@ import type {
 } from './artifact-two-lane-read-contract.ts';
 import { parseLanes, } from './artifact-two-lane-read-lanes.ts';
 import { parseConsolidation, } from './artifact-two-lane-read-consolidate.ts';
+import { parsePageAssembly, } from './artifact-two-lane-page-assembly.ts';
+import { SETTLED_ARTIFACT_KEYS, } from './artifact-two-lane-read-keys.ts';
 import { parseBlockPairing, } from './artifact-two-lane-read-pairing.ts';
 import { parseSectionPairing, } from './artifact-two-lane-read-section-pairing.ts';
 import { parseComparisonRow, } from './artifact-two-lane-read-rows.ts';
@@ -332,21 +335,7 @@ export function parseSettledTwoLaneArtifact(
   },);
   requireExactKeys({
     record: artifact,
-    allowed: [
-      'artifactSchemaVersion',
-      'id',
-      'tip',
-      'pipelineDigest',
-      'corpusSha',
-      'callConfig',
-      'durationMs',
-      'timestamp',
-      'preparation',
-      'lanes',
-      'comparison',
-      'laneSelection',
-      'consolidation',
-    ],
+    allowed: SETTLED_ARTIFACT_KEYS,
     path: id,
   },);
 
@@ -451,6 +440,15 @@ export function parseSettledTwoLaneArtifact(
       path: `${id}.consolidation`,
       keys,
       ...artifactGenerationReadingRequirements({ generation, }),
+    },),
+
+    // WHAT THE PAGE-LEVEL GUARD DID, written from generation thirteen on and
+    // empty before it, since no guard ran over those pages.
+    pageAssembly: parsePageAssembly({
+      value: artifact.pageAssembly,
+      path: `${id}.pageAssembly`,
+      required: generation
+        === ARTIFACT_SCHEMA_VERSION_V13,
     },),
   };
 }

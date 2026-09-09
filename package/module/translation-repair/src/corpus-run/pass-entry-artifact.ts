@@ -3,6 +3,7 @@ import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { buildSettledTwoLaneArtifact, } from './artifact-two-lane-build.ts';
 import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
+import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
@@ -62,6 +63,7 @@ export function settledEntryArtifact(
     lanes,
     contestSlices,
     consolidateSlices,
+    pageAssembly,
   }: {
     readonly entryId: string;
     readonly tip: string;
@@ -71,6 +73,7 @@ export function settledEntryArtifact(
     readonly lanes: DocumentLanesResult;
     readonly contestSlices: Extract<ArtifactLaneSelection, { readonly kind: 'contested'; }>['slices'];
     readonly consolidateSlices: Extract<ArtifactConsolidation, { readonly kind: 'settled'; }>['slices'];
+    readonly pageAssembly: ArtifactPageAssembly;
   },
 ): SettledArtifact {
   return buildSettledTwoLaneArtifact({
@@ -90,6 +93,7 @@ export function settledEntryArtifact(
       kind: 'settled',
       slices: consolidateSlices,
     },
+    pageAssembly,
   },);
 }
 

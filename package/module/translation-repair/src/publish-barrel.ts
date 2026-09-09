@@ -70,4 +70,12 @@ export {
   wouldShipTextPerSlice,
 } from './corpus-run/would-ship-text.ts';
 
+export {
+  type ArtifactPageAssembly,
+  NO_PAGE_ASSEMBLY,
+  type PageAssemblyOverride,
+  pageAssemblyOverrideAt,
+  parsePageAssembly,
+} from './corpus-run/artifact-two-lane-page-assembly.ts';
+
 //endregion Publish barrel

@@ -25,6 +25,7 @@ import {
 import {
   ArtifactPreparationMismatchError,
   buildSettledTwoLaneArtifact,
+  NO_PAGE_ASSEMBLY,
   type ChunkPair,
   type DocumentLanesResult,
   makeInsertionChunk,
@@ -251,6 +252,7 @@ function catLanes(): DocumentLanesResult {
  */
 function catArtifact(): ReturnType<typeof buildSettledTwoLaneArtifact> {
   return buildSettledTwoLaneArtifact({
+    pageAssembly: NO_PAGE_ASSEMBLY,
     entryId: 'CatEntry1',
     tip: 'a'.repeat(40,),
     pipelineDigest: DIGEST,
@@ -402,6 +404,7 @@ await describe({
 
         expect(function lanesDisagree() {
           buildSettledTwoLaneArtifact({
+            pageAssembly: NO_PAGE_ASSEMBLY,
             entryId: 'CatEntry1',
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
@@ -448,6 +451,7 @@ await describe({
          */
         const refusalOfBothLedgersAreShort = caught(function bothLedgersAreShort() {
           buildSettledTwoLaneArtifact({
+            pageAssembly: NO_PAGE_ASSEMBLY,
             entryId: 'CatEntry1',
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
@@ -496,6 +500,7 @@ await describe({
          */
         const refusalOfLedgersDescribeAnotherPreparation = caught(function ledgersDescribeAnotherPreparation() {
           buildSettledTwoLaneArtifact({
+            pageAssembly: NO_PAGE_ASSEMBLY,
             entryId: 'CatEntry1',
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
@@ -553,6 +558,7 @@ await describe({
          */
         const refusalOfRowsContradictTheName = caught(function rowsContradictTheName() {
           buildSettledTwoLaneArtifact({
+            pageAssembly: NO_PAGE_ASSEMBLY,
             entryId: 'CatEntry1',
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
@@ -585,6 +591,7 @@ await describe({
          */
         const refusalOfResultCountsAnotherRun = caught(function resultCountsAnotherRun() {
           buildSettledTwoLaneArtifact({
+            pageAssembly: NO_PAGE_ASSEMBLY,
             entryId: 'CatEntry1',
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
@@ -645,6 +652,7 @@ await describe({
          * Exactly what would be written to disk.
          */
         const written = JSON.stringify(buildSettledTwoLaneArtifact({
+          pageAssembly: NO_PAGE_ASSEMBLY,
           entryId: 'CatEntry1',
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
@@ -706,6 +714,7 @@ await describe({
           },],
         } as unknown as PreparedDocumentPair;
         expect(buildSettledTwoLaneArtifact({
+          pageAssembly: NO_PAGE_ASSEMBLY,
           entryId: 'CatEntry1',
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
@@ -765,6 +774,7 @@ await describe({
           ],
         };
         expect(buildSettledTwoLaneArtifact({
+          pageAssembly: NO_PAGE_ASSEMBLY,
           entryId: 'CatEntry1',
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,

@@ -11,7 +11,7 @@ import {
 import type { RunClient, } from './run-client-contract.ts';
 import { preparePassEntry, } from './pass-prepare.ts';
 import { frontMatterSliceIndexes, } from '../front-matter-slice.ts';
-import { settledEntryArtifact, } from './pass-entry-artifact.ts';
+import { settledPageArtifact, } from './pass-page-assembly.ts';
 import { assertPageGuards, } from './pass-page-guards.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
 import { runPassContest, } from './pass-contest.ts';
@@ -386,7 +386,7 @@ async function runEntryPipeline(
     /**
      * Rich artifact for later grading (`pass-entry-artifact.ts`).
      */
-    const artifact = settledEntryArtifact({
+    const artifact = settledPageArtifact({
       entryId: entry.id,
       tip,
       pipelineDigest,
@@ -395,6 +395,8 @@ async function runEntryPipeline(
       lanes,
       contestSlices,
       consolidateSlices,
+      targetText: settledArchiveText,
+      l: tagged({ tag: entry.id, },),
     },);
 
     /**

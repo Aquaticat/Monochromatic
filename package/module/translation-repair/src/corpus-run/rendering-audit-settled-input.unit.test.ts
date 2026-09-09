@@ -34,6 +34,7 @@ import {
 
 import {
   buildSettledTwoLaneArtifact,
+  NO_PAGE_ASSEMBLY,
   type PipelineDigest,
   preparationIdentity,
   prepareDocumentPair,
@@ -557,6 +558,7 @@ async function writeArtifact(
    * holds is the bytes a file carries, and a clone would keep things JSON drops.
    */
   const serialized = JSON.stringify(buildSettledTwoLaneArtifact({
+    pageAssembly: NO_PAGE_ASSEMBLY,
     entryId,
     tip: 'a'.repeat(40,),
     pipelineDigest: DIGEST,

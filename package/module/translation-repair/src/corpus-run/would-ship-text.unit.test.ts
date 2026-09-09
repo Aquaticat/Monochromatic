@@ -198,6 +198,42 @@ function firstReadingOf(
 await describe({
   name: wouldShipTextFor.name,
   children: [
+    it({
+      name: 'READS THE PAGE ASSEMBLY FIRST: a trimmed slice ships the guard\'s text and a withdrawn slice '
+        + 'stands as the archive, ahead of whatever the polish, the consolidation and the contest chose '
+        + '(the twenty-second hakureico pass of 2026-09-09)',
+      fn: async () => {
+        /**
+         * Source whose page assembly trimmed slice 0.
+         */
+        const trimmedSource = {
+          ...sourceWith(),
+          pageAssembly: {
+            trimmed: [{ sliceIndex: 0, replacementText: 'The cat naps[^1].', },],
+            withdrawn: [],
+            findings: ['assembly-footnote-trimmed orphan-definition gfm 2 (slice 0)',],
+          },
+        } as unknown as WouldShipSource;
+        const [trimmedRow,] = trimmedSource.comparison;
+        expect(wouldShipTextFor({ artifact: trimmedSource, row: nonNullishOrThrow(trimmedRow,), },),).toEqual({
+          kind: 'wording',
+          text: 'The cat naps[^1].',
+          decidedBy: 'page-assembly',
+        },);
+
+        /**
+         * Source whose page assembly withdrew slice 0.
+         */
+        const withdrawnSource = {
+          ...sourceWith(),
+          pageAssembly: { trimmed: [], withdrawn: [0,], findings: [], },
+        } as unknown as WouldShipSource;
+        const [withdrawnRow,] = withdrawnSource.comparison;
+        const reading = wouldShipTextFor({ artifact: withdrawnSource, row: nonNullishOrThrow(withdrawnRow,), },);
+        expect(['archive', 'page-assembly-withdrew-and-archive-silent',],)
+          .toContain((reading.kind === 'wording') ? reading.decidedBy : reading.reason,);
+      },
+    },),
   it({
     name: 'TAKES FINAL BODY POLISH before consolidation, contest, or archive wording',
     fn: async () => {

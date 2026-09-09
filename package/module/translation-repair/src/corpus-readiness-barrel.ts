@@ -5,6 +5,8 @@
 export { assertCarriedInsertionsRemain, } from './corpus-run/carried-insertion-completeness.ts';
 export { assertPageFootnotesIntact, } from './corpus-run/page-footnote-integrity.ts';
 export { assertPageGuards, } from './corpus-run/pass-page-guards.ts';
+export { guardPageAssembly, } from './corpus-run/page-assembly-guard.ts';
+export { settledPageArtifact, } from './corpus-run/pass-page-assembly.ts';
 export {
   assertDestinationsComplete,
   DroppedDestinationError,

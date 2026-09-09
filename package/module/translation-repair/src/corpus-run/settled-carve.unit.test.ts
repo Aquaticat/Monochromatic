@@ -34,6 +34,7 @@ import spawn from 'nano-spawn';
 
 import {
   buildSettledTwoLaneArtifact,
+  NO_PAGE_ASSEMBLY,
   carveSettled,
   type DocumentLanesResult,
   listSettledEntryIds,
@@ -440,6 +441,7 @@ async function writeArtifact(
    * Artifact as the builder writes it, in its serialized form.
    */
   const serialized = JSON.stringify(buildSettledTwoLaneArtifact({
+    pageAssembly: NO_PAGE_ASSEMBLY,
     entryId: ENTRY_ID,
     tip: 'a'.repeat(40,),
     pipelineDigest: DIGEST,

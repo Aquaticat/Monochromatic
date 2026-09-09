@@ -4,10 +4,11 @@ import { compareDocumentLanes, } from '../lane-comparison.ts';
 import { preparationIdentity, } from '../preparation-identity.ts';
 import { sourceBytesOf, } from '../sample-grading.ts';
 import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts';
+import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
 import {
-  ARTIFACT_SCHEMA_VERSION_V12,
+  ARTIFACT_SCHEMA_VERSION_V13,
   type ArtifactJsonValue,
   type ArtifactSectionAlignment,
   type ArtifactSectionCorrespondence,
@@ -103,6 +104,9 @@ function sectionAlignmentOf(
  *
  * @param consolidation - what the third rendering settled, or that it never ran
  *
+ * @param pageAssembly - what the page-level assembly guard did to the composed
+ * page
+ *
  * @returns Artifact ready to serialize
  *
  * @throws {@link LaneComparisonError} when the two ledgers cannot be compared,
@@ -129,6 +133,7 @@ export function buildSettledTwoLaneArtifact(
     lanes,
     laneSelection,
     consolidation,
+    pageAssembly,
   }: {
     readonly entryId: string;
     readonly tip: string;
@@ -153,6 +158,11 @@ export function buildSettledTwoLaneArtifact(
      * out loud rather than leaving an absence the reader has to interpret.
      */
     readonly consolidation: ArtifactConsolidation;
+
+    /**
+     * What the page-level guard did to the page these sections compose.
+     */
+    readonly pageAssembly: ArtifactPageAssembly;
   },
 ): SettledArtifact {
   /**
@@ -247,7 +257,7 @@ export function buildSettledTwoLaneArtifact(
       },),
   },);
   return {
-    artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V12,
+    artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V13,
     id: entryId,
     tip,
     pipelineDigest,
@@ -331,6 +341,10 @@ export function buildSettledTwoLaneArtifact(
     // records that it did not ask, so a census counting consolidated slices is
     // not counting a field's absence as a stage that found nothing.
     consolidation,
+
+    // WHAT THE PAGE-LEVEL GUARD DID to the page the three sections above
+    // compose, applied first by every reader composing that page.
+    pageAssembly,
   };
 }
 
