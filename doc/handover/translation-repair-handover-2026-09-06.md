@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 09:58 UTC on 2026-09-09 the tree is `7bcea2dc4`:
+As of 12:10 UTC on 2026-09-09 the tree is `efc9a4f3c`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -1224,6 +1224,37 @@ with a rule and three components) are next.
 Recorded in the planning log under
 "The fourth gqt page is read and the twenty-second class declines an English original".
 
+## The twenty-third class
+
+The first `noname` pass (`7bcea2dc4`,
+09:50 to 11:45 UTC,
+115.4 minutes,
+`~/temp/agent/noname1-20260909`) settled and read clean on the level-3 heading it was chosen for
+(three `###` headings at the source's positions,
+each a rendering of the source's heading where the archive's had added a date and a description),
+with the three links verbatim,
+the archive's broken `'${path} /photos/kuan4.webp'` repaired to the source's line,
+the fullwidth colon and the `知乎` label rendered,
+and the page guard silent.
+The page lacks the `## 简介` heading the source opens with;
+84 of 86 archives carry theirs.
+Section 0 paired the heading with the archive's paragraph:
+`agreePairs` kept source 0's `(0,0)` first and dropped source 1's agreed `(1,0)` as non-monotone,
+because a later source's claim on the same target could only be a corroborated merge or a run-back.
+Fixed in `efc9a4f3c`:
+`pair-contested-target.ts` decides such a claim by votes,
+as `bestVoted` decides one source named against two targets;
+the earlier pair is taken back when outvoted,
+a tie keeps neither,
+and the finding names both sources and the votes.
+Three cases failed first;
+full suite 984 `PASS` and 0 `FAIL`.
+The bare URL the census credited to `noname` was the inner URL of a `web.archive.org` link target
+(`Mio`'s the same);
+the corrected census names `shi_Yumiaoya` (a `Banner` prop) and `yingying` (a footnote definition).
+Recorded in the planning log under
+"The first noname page is read and the twenty-third class decides a contested target by votes".
+
 ## The glossary question
 
 The same page rendered two community terms wrongly where the archive had them right:
@@ -1298,49 +1329,56 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Three passes are running on `7bcea2dc4`,
+1.  Three passes are running on `efc9a4f3c`,
     each watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit:
-    the fifth `Mio` (a rule in the body and a bare URL;
-    two shapes on no read page),
-    launched 09:50 UTC on 2026-09-09 on Bedrock and OpenRouter,
-    runs dir `~/temp/agent/mio5-20260909`,
-    pid 676894;
-    the second `hulicaijia` (an inline `<ruby>` annotation beside a footnote reference,
+    the second `noname` (the level-3 heading,
+    now read;
+    the `## 简介` heading the twenty-third class should restore),
+    launched 11:59 UTC on 2026-09-09 on Bedrock and OpenRouter,
+    runs dir `~/temp/agent/noname2-20260909`,
+    pid 711861;
+    the sixth `Mio` (a rule in the body;
+    one shape on no read page),
+    launched 11:59 UTC,
+    runs dir `~/temp/agent/mio6-20260909`,
+    pid 711977;
+    the third `hulicaijia` (an inline `<ruby>` annotation beside a footnote reference,
     `<Sakura count="50" />` at the end;
     two shapes on no read page),
-    launched 09:50 UTC,
-    runs dir `~/temp/agent/hulicaijia2-20260909`,
-    pid 677559;
-    the first `noname` (a level-3 heading and bare URLs;
-    47 source lines),
-    launched 09:50 UTC,
-    runs dir `~/temp/agent/noname1-20260909`,
-    pid 678195.
+    launched 11:59 UTC,
+    runs dir `~/temp/agent/hulicaijia3-20260909`,
+    pid 712107.
     Every earlier `gqt`,
     `Mio` and `hulicaijia` launch was killed under the kill-and-relaunch rule as the tree moved,
     except the fourth `gqt`,
-    which settled and is read (see "The twenty-second class");
-    `gqt` now declines.
-    The census behind the two (scratch `unmet-shapes.mjs`) is in the planning log under
-    "Two shapes-first entries launched beside it".
-    The twenty-third `hakureico`,
-    the seventh `yuki418330012` and `Arita` are read
-    (see "The twenty-first class",
-    "The nineteenth class" and "The Arita page").
-    Read `Mio`,
-    `hulicaijia` and `noname` by the seven steps plus the three checks,
+    which settled and is read (see "The twenty-second class";
+    `gqt` now declines),
+    and the first `noname`,
+    which settled and is read (see "The twenty-third class").
+    The census behind the choices (scratch `unmet-shapes.mjs`,
+    corrected for the bare URL) is in the planning log under
+    "Two shapes-first entries launched beside it" and
+    "The first noname page is read and the twenty-third class decides a contested target by votes".
+    Read the three by the seven steps plus the three checks,
     then the shapes each carries:
     `noname`,
-    the heading level and each bare URL verbatim;
+    whether `## Introduction` (or the archive convention's `## Description`) stands above the first paragraph,
+    the artifact's `alignmentFindings` for section 0 (`contested target ...` naming the votes),
+    and the three level-3 headings again;
     `Mio`,
-    the rule's position and the URL verbatim;
+    the rule's position;
     `hulicaijia`,
     the ruby element and the Sakura line verbatim,
     the footnote's reference above its definition,
     the `pageAssembly` section empty or its findings explained.
-    If the tree moves past `7bcea2dc4` while any runs,
+    Then `shi_Yumiaoya` (the emphasis,
+    the `Banner` and its bare-URL prop),
+    `yingying` (a bare URL as a footnote definition) and,
+    on a quiet bench,
+    `XingZ60` (the unordered list with a rule and three components).
+    If the tree moves past `efc9a4f3c` while any runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.

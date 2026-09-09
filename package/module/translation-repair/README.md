@@ -1874,6 +1874,14 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `efc9a4f3c` (2026-09-09,
+the twenty-third class) pair agreement decides a target two sources claim without a corroborated merge by votes,
+the way it already decides one source named against two targets:
+the better-voted claim keeps the target and the other source is left unpaired,
+a tie keeps neither,
+and the finding reads `contested target (target N: source A outvotes source B, X to Y)`;
+the first `noname` pass had paired the original's `## 简介` heading with the archive's opening paragraph by
+source order and shipped the page without the heading.
 Since `7bcea2dc4` (2026-09-09,
 the twenty-second class) the archive-original recognizer reads a whole-page note written in English:
 `(Original Language: English)`,

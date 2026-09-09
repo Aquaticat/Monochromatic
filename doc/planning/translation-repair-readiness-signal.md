@@ -1517,3 +1517,30 @@ those three pages,
 the emphasis and list carriers after them,
 the owner's answer on the glossary,
 and the components no read page has met.
+
+## What the first noname launch showed (2026-09-09, 09:50 to 11:45 UTC)
+
+The page settled in 115 minutes,
+passed the three checks,
+matched at length,
+rendered the three level-3 headings at the source's positions and the three links verbatim,
+repaired the archive's broken photo path and its fullwidth colon,
+and lacks the `## 简介` heading the source opens with and 84 of 86 archives carry.
+The pairing had given the heading the paragraph's partner by source order,
+and every later stage did what it could with a heading set against a paragraph;
+the twenty-third class,
+fixed in `efc9a4f3c`.
+The bare URL the census credited to `noname` and `Mio` was the inner URL of an archive link target;
+`shi_Yumiaoya` carries one as a `Banner` prop and `yingying` one as a footnote definition.
+
+THE READING:
+the belief holds,
+with a correction to the census:
+a shape is on a read page only when the page carries it,
+and the regex that named `noname` a bare-URL carrier did not read link targets.
+What remains before an all-entries launch:
+the second `noname`,
+the sixth `Mio` and the third `hulicaijia` on `efc9a4f3c` since 11:59 UTC,
+the emphasis and list carriers after them,
+the owner's answer on the glossary,
+and the components no read page has met.

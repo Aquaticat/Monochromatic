@@ -6251,6 +6251,149 @@ the unordered list and the emphasis on no read page:
 `shi_Yumiaoya` the emphasis (with `Banner`),
 `XingZ60` the list (with a rule and three components).
 
+## The first noname page is read and the twenty-third class decides a contested target by votes, 2026-09-09, 12:10 UTC
+
+`TALLY noname status=SETTLED slices=13 repairStatus=repaired repairIssues=72 repairAccepted=56 repairResolved=56
+repairFindings=180 repairChanged=12 translateStatus=complete translateChanged=10 documentsDiffer=12 pageChanged=11
+pageSilent=1 alignmentFindings=9 selection=contested ms=6922176`
+at 11:45 UTC on `7bcea2dc4`,
+115.4 minutes beside two other passes,
+`~/temp/agent/noname1-20260909`,
+Bedrock and OpenRouter wet (0.36 USD over 535 calls and 4.68 USD over 820 calls).
+The three checks passed (front matter the archive's,
+6 `json false start` reads kept,
+no error finish),
+`verify-published` matched 1 of 1 at length (`wordings=12 silent=1 chars=4321`),
+the artifact is generation 13 with an empty `pageAssembly`,
+no `HTTP 429`,
+125 voices lost,
+most of them critics and panellists abandoned 120 s after quorum with millions of raw characters delivered
+and no reply closed,
+which the grace handles and which is noted here as a shape to watch.
+No forbidden mark:
+the archive carried one fullwidth colon and one CJK run (`知乎` as a link label),
+and the page carries neither,
+the colon `:` and the label `Zhihu`.
+THE SHAPES:
+three level-3 headings at the source's positions,
+`### Wuhan Jiangchen Paradise Walk Murder Incident`,
+`### The Transgender Deceased of Coolapk`,
+`### Transgender companions who departed between November 2023 and May 2024`,
+each a rendering of the source's heading where the archive's heading had added a date and a description the
+source heading does not carry
+("Feminine-presenting person stripped and murdered in men's bathroom":
+the source says stabbed and never stripped,
+and the page says stabbed);
+the three links verbatim,
+one per line after `**More information**:`,
+which CommonMark joins with soft breaks;
+the `PhotoScroll` line equal to the source's byte for byte,
+where the archive had `'${path} /photos/kuan4.webp'` with a space inside the path,
+a broken picture the page repairs;
+the archive's translator comment kept.
+Nits:
+"she was dressed in feminine clothing" where the source gives no pronoun (着女性装扮),
+and "the number of departed individuals we can see" for 单我们能看见的逝者之数量即已,
+which drops the "alone" the source stresses.
+
+THE BARE URL WAS NEVER THERE.
+The census regex read the `https://matters.news/...` inside a `web.archive.org` link target as bare,
+on `noname` and on `Mio` alike.
+A census that strips link targets and autolinks first finds a bare URL in a body on three entries:
+`yingying`'s `[^1]: https://leohearts.com/archives/farewell-yingying.html`,
+a footnote definition that is nothing but the URL,
+and the `icon: "https://one-among.us/favicon-large.png"` prop of the `Banner` on `shi_Yumiaoya` and `Aniloviraw`.
+The shape stays on no read page;
+`shi_Yumiaoya` carries it with the emphasis and the `Banner`,
+and `yingying` carries the prose form.
+Scratch `unmet-shapes.mjs` is corrected.
+
+THE HEADING THE PAGE LACKS.
+The source opens `## 简介` above its first paragraph;
+the archive has the paragraph and no heading,
+and so does the page.
+84 of the 86 sources with a level-2 heading have it in the archive
+(37 `## Description`,
+21 `## Introduction`,
+2 `## Profile`,
+1 `## Thoughts of Her`,
+two with a trailing space),
+and `noname` and `Hangmster` are the two without.
+Section 0 of the pairing:
+original blocks [heading,
+paragraph],
+translation block [paragraph];
+`paired 1 of 2 original and 1 of 1 translation blocks across 1 relations, from 8 usable voices of 9 heard`,
+the relation `{source: 0, target: 0}`,
+the heading to the paragraph,
+and the finding `block-pairing non-monotone (1,0 runs back behind 0)`.
+`agreePairs` walks the sources in order:
+source 0's agreed pair `(0,0)` was kept first,
+and source 1's agreed pair `(1,0)` named the same target with no voice naming the two together as a merge,
+so it was dropped as non-monotone whatever its votes
+(the pairing replies are not among the stored payloads,
+so the split is not on record;
+the finding proves both pairs reached two voices).
+Everything after followed from that:
+the source paragraph became slice 1,
+an insertion the admission found `coverage=carried` by the archive paragraph in slice 0;
+slice 0 set the heading alone against the paragraph,
+the repair lane's select could seat no winner (weight 1.5 across 6 ballots,
+4 abstentions),
+the contest split three ways and settled neither,
+the consolidation's nine candidates were all `invalid` under the block floor but one
+(two blocks against a one-block page,
+or a heading where the page has a paragraph),
+the gate kept standing 6 to 2,
+and `final-selection-unendorsed (slice 0)` went into the artifact as evidence.
+The twenty-third class:
+a target two sources claim without a corroborated merge is decided by source order,
+not by votes.
+
+THE FIX (`efc9a4f3c`).
+`pair-contested-target.ts` decides such a claim by votes,
+the mirror of `bestVoted` for one source named against two targets:
+the better-voted claim keeps the target and the earlier pair is taken back,
+so its source is left unpaired;
+a tie keeps neither;
+fewer votes lose.
+The finding reads `contested target (target 0: source 1 outvotes source 0, 3 to 2)`,
+`... loses to ...`,
+or `... sources 0 and 1 tie at 2 votes`.
+A run-back (a lower target) is still `non-monotone`,
+and a corroborated merge is still kept.
+Three cases failed first on `7bcea2dc4` (3 `FAIL` in the agreement suite);
+the block,
+section and steps suites pass;
+oxlint 0 and 0;
+types clean;
+full suite 984 `PASS` and 0 `FAIL`.
+What follows for `noname` if the votes favour the paragraph pair:
+the heading is a source-only slice,
+the shortfall admits it
+(the archive is 4522 code points against 5300 expected from 2000 source code points at 2.65,
+short by 778,
+and the heading wants 13),
+and the block floor accepts a heading over the page's paragraph where the page's one block is a kind the
+original has.
+If the votes tie,
+both blocks are unpaired and the section slices as [heading,
+paragraph] against [paragraph],
+which the floor also accepts.
+Measured by the second pass,
+not predicted.
+The fifth `Mio` and the second `hulicaijia` were killed at 11:58 UTC under the rule and relaunched at 11:59 UTC
+beside the second `noname`,
+all on `efc9a4f3c`:
+`~/temp/agent/noname2-20260909` (pid 711861),
+`~/temp/agent/mio6-20260909` (pid 711977),
+`~/temp/agent/hulicaijia3-20260909` (pid 712107),
+Bedrock and OpenRouter wet.
+The second `noname`'s section 0 round read
+`paired 1 of 2 original and 1 of 1 translation blocks across 1 relations, from 9 usable voices of 9 heard`
+at 11:59:36 UTC;
+which pair survived is read from the artifact's findings when it tallies.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
