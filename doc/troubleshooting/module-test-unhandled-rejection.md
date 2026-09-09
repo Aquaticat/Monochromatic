@@ -2,10 +2,145 @@
 
 Investigation for [issue #483](https://github.com/Aquaticat/Monochromatic/issues/483),
 2026-09-06.
-Implementation and subprocess verification completed in an isolated worktree.
+Implementation and neutral-artifact subprocess verification completed in an isolated worktree.
+The later read-only assessment below found that ordinary Node imports still selected a stale artifact.
+The earlier claim of complete user-boundary verification is retracted.
 The user rejected activation that depends on an optional launcher or preload flag.
 The accepted reporting contract preserves body verdicts and adds a detailed,
 separate async-failure warning that fails the file.
+
+## Current assessment: ordinary Node export still reproduces the failure
+
+At 2026-09-06 20:05 UTC,
+the same detached-rejection probe produced different results from the two existing artifacts:
+
+- Ordinary `@monochromatic-dev/module-test` import selected `dist/final/node/index.mjs`.
+  Node 26.8.1 printed `Error: boundary probe escaped rejection` and exited 1.
+  Neither `SIBLING_FINISHED` nor `ROOT_RESOLVED` appeared,
+  and no harness async-failure diagnostic appeared.
+- Explicit `dist/final/neutral/index.mjs` import printed the detailed warning and
+  `[boundary-probe] [leaking test] [async work] [FAIL]`,
+  printed both completion markers,
+  and exited 1.
+  This is the positive control for the accepted reporting contract.
+
+The Node artifact's modification time was `2026-09-06T19:19:52.581Z`;
+the neutral entry's was `2026-09-06T19:51:09.178Z`.
+The behavior comparison,
+not the timestamp alone,
+establishes the missed delivery boundary.
+This assessment made no implementation edits or builds.
+
+### Why the passing regression missed the ordinary import
+
+`package/module/test/package.json:12` selects a separate Node artifact:
+
+```json
+"node": "./dist/final/node/index.mjs",
+"default": "./dist/final/neutral/index.mjs"
+```
+
+The installed Node 26.8.1 source was read directly from its embedded modules.
+`lib/internal/modules/esm/utils.js:82` includes Node in the default condition set:
+
+```js
+defaultConditions = ObjectFreeze([
+  'node',
+  'import',
+```
+
+`lib/internal/modules/esm/resolve.js:533` chooses the matching conditional target:
+
+```js
+if (key === 'default' || conditions.has(key)) {
+  const conditionalTarget = target[key];
+```
+
+The probe's `import.meta.resolve('@monochromatic-dev/module-test')`
+confirmed the actual target before importing it in a disposable child process.
+However,
+`package/module/test/src/rejection-fixture-scenario.ts:18`
+bypasses that selection:
+
+```ts
+} = await import('../dist/final/neutral/index.mjs');
+```
+
+The earlier verification built only `build:js:browser`.
+Consequently,
+the new subprocess assertions could pass against the refreshed neutral artifact
+while ordinary Node consumers still executed the older Node build.
+The outer unit-test harness's bare package import does not remedy this:
+the deliberately rejected promises are created inside the child fixture.
+An entry-file-only search for the observer's registry string is also insufficient:
+the working neutral build loads its observation code lazily from another chunk.
+
+### Reproduce both current delivery paths without rebuilding
+
+From `package/module/test`,
+the following bounded probe uses separate disposable working directories under the user's scratch root.
+It preserves the repository artifacts and records both output streams and process statuses.
+
+```bash
+node --input-type=module --eval '
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { mkdtempDisposable } from "node:fs/promises";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { text } from "node:stream/consumers";
+const targets = [
+  { label: "ordinary-node-import", url: import.meta.resolve("@monochromatic-dev/module-test") },
+  { label: "explicit-neutral-artifact", url: new URL("./dist/final/neutral/index.mjs", import.meta.url).href },
+];
+const program = `
+import { setTimeout as wait } from "node:timers/promises";
+const { describe, it } = await import(process.env.PROBE_TARGET);
+await describe({
+  name: "boundary-probe",
+  concurrency: 1,
+  children: [
+    it({ name: "leaking test", fn: async function leakingTest() {
+      void Promise.reject(new Error("boundary probe escaped rejection"));
+      await wait(20);
+    } }),
+    it({ name: "unrelated sibling", fn: async function unrelatedSibling() {
+      console.log("SIBLING_FINISHED");
+    } }),
+  ],
+});
+console.log("ROOT_RESOLVED");
+`;
+const results = await Promise.all(targets.map(async function probe(target) {
+  await using directory = await mkdtempDisposable(join(homedir(), "temp/agent/module-test-boundary-"));
+  const child = spawn(process.execPath, ["--input-type=module", "--eval", program], {
+    cwd: directory.path,
+    env: { ...process.env, NODE_OPTIONS: "", MONOCHROMATIC_VERBOSE: "true", PROBE_TARGET: target.url },
+    stdio: ["ignore", "pipe", "pipe"],
+    timeout: 20000,
+  });
+  const [stdout, stderr, [code, signal]] = await Promise.all([
+    text(child.stdout), text(child.stderr), once(child, "close"),
+  ]);
+  return { ...target, code, signal, stdout, stderr };
+}));
+console.log(JSON.stringify(results, null, 2));
+'
+```
+
+### Proposed remediation, not implemented during assessment
+
+Rebuild both exported artifacts and repeat the ordinary-import probe.
+Change the rejection fixtures to cover the public Node package specifier,
+retaining explicit neutral-artifact coverage as a separate target.
+The rebuilt Node output must pass the same sibling-continuation,
+diagnostic,
+and exit-status assertions before calling the delivery complete.
+No further runtime-design change is established as necessary by this finding.
+
+The project-code-review checklist exposed the missing consumer-path coverage;
+the troubleshooting documentation requirement records the counterexample here.
+No implementation or GitHub mutation was performed during this assessment.
 
 ## Symptom
 
@@ -342,8 +477,10 @@ mise run //package/module/test:lint:types
 mise run //package/module/test:lint:oxlint
 ```
 
-The tests launch plain Node child processes against the built artifact,
+The tests launch plain Node child processes against the explicitly selected neutral artifact,
 with no preload or alternate runner.
+These commands and passing results did not verify the ordinary Node export;
+see the current assessment above.
 They override ambient `NODE_OPTIONS` and use disposable working directories.
 During the isolated verification,
 `TMPDIR` was set to the user's requested `~/temp/agent` scratch root.
@@ -447,6 +584,158 @@ Unsupported functionality gets an explanation,
 This is a proposal;
 `AGENTS.md` has not been edited.
 
+### Teaching verification: shared listener and context are different mechanisms
+
+On 2026-09-07,
+the local interactive explainer added six complete standalone Node programs.
+All ran under Node `v26.8.1` with `--unhandled-rejections=throw`,
+ambient `NODE_OPTIONS` cleared,
+and a separate process per program.
+The page replays captured output;
+it does not run Node inside the browser.
+
+| Program | Recorded behavior | Exit status |
+| --- | --- | --- |
+| Ordinary throw | Catch prints A failure; B runs | 1 |
+| Awaited save | Catch prints A failure; B runs | 1 |
+| Detached save without listener | A body passes; Node prints `Error: save failed`; B does not run | 1 |
+| Detached save with listener | A body passes; observer reports error; B runs | 1 |
+| Shared runtime | One listener added; two rejections reported; both body markers printed | 1 |
+| Shared context storage | B starts before the observer reports A; B body completes | 1 |
+
+The final example's downloaded bytes matched the source embedded in the HTML.
+Running that downloaded file reproduced the captured stdout,
+empty stderr,
+and exit status 1.
+This is teaching-mechanism verification,
+not a rebuild or re-verification of package exports.
+
+The following standalone module captures the attribution case:
+
+```js
+import process from 'node:process';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { setImmediate as nextTurn } from 'node:timers/promises';
+
+const runtimeKey = Symbol.for('module-test.explainer.context-demo');
+const baseline = process.listenerCount('unhandledRejection');
+
+function getRuntime() {
+  const existing = globalThis[runtimeKey];
+  if (existing !== undefined) return existing;
+
+  const runtime = { context: new AsyncLocalStorage() };
+  globalThis[runtimeKey] = runtime;
+
+  process.on('unhandledRejection', function reportFailure(reason) {
+    const owner = runtime.context.getStore() ?? 'unattributed';
+    console.log('Async FAIL from ' + owner + ':', reason.message);
+    process.exitCode = 1;
+  });
+  console.log('Installed observer');
+  return runtime;
+}
+
+async function runTest({ name, body }) {
+  const runtime = getRuntime();
+  await runtime.context.run(name, body);
+  console.log(name + ' body: PASS');
+}
+
+await runTest({
+  name: 'A',
+  body: async function saveSettings() {
+    console.log('A starts');
+    void Promise.reject(new Error('save failed'));
+  },
+});
+await runTest({
+  name: 'B',
+  body: async function readSettings() {
+    console.log('B starts');
+    await nextTurn();
+  },
+});
+console.log('New listeners:', process.listenerCount('unhandledRejection') - baseline);
+console.log('Outside named work:', getRuntime().context.getStore() ?? 'none');
+```
+
+Verification invocation:
+`node --unhandled-rejections=throw observer-demo-context.mjs`,
+with ambient `NODE_OPTIONS` cleared by the parent process.
+Captured stdout:
+
+```text
+Installed observer
+A starts
+A body: PASS
+B starts
+Async FAIL from A: save failed
+B body: PASS
+New listeners: 1
+Outside named work: none
+```
+
+The deliberately incorrect control added `let currentTest;`,
+assigned `currentTest = name` immediately before `runtime.context.run(name, body)`,
+and replaced only the callback's owner lookup:
+
+```diff
+-    const owner = runtime.context.getStore() ?? 'unattributed';
++    const owner = currentTest ?? 'unattributed';
+```
+
+That modified program was executed in a separate bounded Node child process.
+It printed `Async FAIL from B: save failed` at the same point in the output,
+with all other stdout lines unchanged,
+empty stderr,
+and exit 1.
+The positive control therefore demonstrates why a single last-assigned label
+does not identify the rejecting execution path.
+The earlier Node source trace at `lib/internal/process/promises.js:189` and `:402`
+explains why the context-based read recovers A for this path.
+It remains a rejecting-context observation,
+not a universal promise-creator ownership guarantee.
+
+These examples deliberately use only Error rejection values,
+plain JavaScript,
+and console output.
+They omit the production reporter's unknown-value handling,
+recursion guard,
+logger hierarchy,
+sticky failure flag,
+and exit-time diagnostic fallback.
+They also do not cancel or join detached work.
+No upstream defect is asserted;
+the upstream filing decision below is unchanged.
+
+### Teaching correction and proposed agent-guidance amendment
+
+The reader asked for an explanation of “shared observer” with code demonstrations,
+then corrected the assumption that no prerequisites should mean reduced depth.
+The previous version introduced a central implementation label without teaching its mechanism.
+The revised page defines callbacks,
+registration versus delivery,
+promise chains,
+shared object identity,
+and async context before relying on those concepts.
+The subsequent UI revision replaced independent output-reveal controls
+with a guided lesson sequence and coupled code/consequence comparisons.
+Readers can inspect the complete runnable programs and recorded streams separately.
+The measured layout diagnosis and current verification are recorded in
+[the explainer handover](../handover/module-test-explainer.md).
+
+Proposed addition alongside `AGENTS.md`'s existing `DGT` guidance:
+
+> No prerequisites means teach the prerequisites,
+> not reduce depth.
+> Define introduced mechanisms,
+> connect them to complete runnable examples,
+> and let the reader control the pace.
+
+This remains a proposal;
+no `AGENTS.md` rule was edited or assigned a new shortcode.
+
 ## Upstream filing decision
 
 No `.out-of-scope/` entry names this Node rejection behavior.
@@ -466,7 +755,7 @@ The defect tracked here belongs to the repository's test reporting.
 
 Upstream filing artifact: nothing to file.
 No upstream issue or comment was drafted or sent.
-The existing repository issue #483 remains open.
+Issue tracking is not evidence that every exported artifact was verified.
 
 [node-cli]: https://nodejs.org/docs/latest-v26.x/api/cli.html#--unhandled-rejectionsmode
 [node-monitor]: https://nodejs.org/docs/latest-v26.x/api/process.html#event-uncaughtexceptionmonitor
