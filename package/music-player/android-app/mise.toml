@@ -165,7 +165,7 @@ dir = "{{config_root}}"
 run = "./gradlew :app:dependencyInsight --dependency androidx.compose.material3:material3-android --configuration debugRuntimeClasspath --no-daemon --console=plain"
 
 [tasks."prototype:capture:dark"]
-description = "Capture the three dark dynamic-role strategies across measured Android palette stress cases"
+description = "Capture the two-by-three dark dynamic-role matrix across measured Android palette stress cases"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 run = "node capture-dark-dynamic.mjs"

@@ -22,7 +22,13 @@ if (!displayLine) {
   throw new Error('The emulator did not report its unfolded HWC display 0.');
 }
 const displayId = displayLine.split(' ')[1];
-const strategies = ['stable', 'zoned', 'tonal'];
+const surfaceReaches = ['stable', 'zoned', 'tonal'];
+const currentRowSources = ['fixed', 'dynamic'];
+const candidates = surfaceReaches.flatMap((surfaceReach) => currentRowSources.map((currentRowSource) => ({
+  surfaceReach,
+  currentRowSource,
+  key: `${surfaceReach}-${currentRowSource}`,
+})));
 const environments = [
   { key: 'wallpaper', label: 'Measured current wallpaper seed', seed: '45588C', style: 'TONAL_SPOT', styleNumber: '1', contrast: '0.0' },
   { key: 'coral', label: 'Warm coral', seed: 'D45D42', style: 'TONAL_SPOT', styleNumber: '1', contrast: '0.0' },
@@ -31,19 +37,23 @@ const environments = [
   { key: 'magenta-medium', label: 'Magenta expressive, medium contrast', seed: 'A43D96', style: 'EXPRESSIVE', styleNumber: '3', contrast: '0.5' },
   { key: 'monochrome-high', label: 'Monochrome, high contrast', seed: '808080', style: 'MONOCHROMATIC', styleNumber: '7', contrast: '1.0' },
 ];
-const strategyMappings = {
+const surfaceReachMappings = {
   stable: {
-    canvas: '#000000', picker: '#000000', rail: '#000000', deck: '#0A0A0D', tracks: '#000000', currentRow: '#0A0A0D',
-    generated: ['primary and onPrimary', 'secondaryContainer and onSecondaryContainer', 'onSurface', 'onSurfaceVariant', 'outline', 'outlineVariant'],
+    canvas: '#000000', picker: '#000000', rail: '#000000', deck: '#0A0A0D', tracks: '#000000',
+    generated: ['component accents and foregrounds', 'outline roles'],
   },
   zoned: {
-    canvas: '#000000', picker: '#000000', rail: 'surfaceContainerLow', deck: 'surfaceContainerLow', tracks: '#000000', currentRow: 'surfaceContainerLow',
-    generated: ['all component accent and foreground roles', 'surfaceContainerLow', 'surfaceContainerHighest', 'outline roles'],
+    canvas: '#000000', picker: '#000000', rail: 'surfaceContainerLow', deck: 'surfaceContainerLow', tracks: '#000000',
+    generated: ['component accents and foregrounds', 'bounded surface containers', 'outline roles'],
   },
   tonal: {
-    canvas: '#000000', picker: 'surfaceContainerLow', rail: 'surfaceContainer', deck: 'surfaceContainerHigh', tracks: '#000000', currentRow: 'surfaceContainerLow',
-    generated: ['all component accent and foreground roles', 'surface container ladder', 'outline roles'],
+    canvas: '#000000', picker: 'surfaceContainerLow', rail: 'surfaceContainer', deck: 'surfaceContainerHigh', tracks: '#000000',
+    generated: ['component accents and foregrounds', 'folder-pane surface containers', 'outline roles'],
   },
+};
+const currentRowMappings = {
+  fixed: { currentRow: '#0A0A0D', titleWeight: 'bold' },
+  dynamic: { currentRow: 'surfaceContainerLow', titleWeight: 'bold' },
 };
 const original = {
   customization: remote('settings get secure theme_customization_overlay_packages').trim(),
@@ -122,12 +132,12 @@ try {
   remote('cmd uimode night yes');
   for (const environment of environments) {
     const roles = applyEnvironment(environment);
-    for (const strategy of strategies) {
+    for (const candidate of candidates) {
       adbText(['shell', 'am', 'force-stop', packageName]);
-      adbText(['shell', 'am', 'start', '-W', '-n', activity, '--es', 'candidate', `dark-${strategy}`]);
+      adbText(['shell', 'am', 'start', '-W', '-n', activity, '--es', 'candidate', `dark-${candidate.key}`]);
       const hierarchy = waitForCompose();
       const png = execFileSync(adb, ['-s', serial, 'exec-out', 'screencap', '-d', displayId, '-p']);
-      const basename = `dark-dynamic-${environment.key}-${strategy}`;
+      const basename = `dark-dynamic-${environment.key}-${candidate.key}`;
       writeFileSync(join(renderDirectory, `${basename}.png`), png);
       writeFileSync(join(evidenceDirectory, `${basename}.xml`), `${hierarchy}\n`);
       console.log(`${basename}.png ${png.length} bytes`);
@@ -138,7 +148,8 @@ try {
       request: environment,
       settledSetting: remote('settings get secure theme_customization_overlay_packages').trim(),
       resolvedDarkRoles: roles,
-      strategyMappings,
+      surfaceReachMappings,
+      currentRowMappings,
     };
     writeFileSync(join(evidenceDirectory, `dark-dynamic-${environment.key}-roles.json`), `${JSON.stringify(evidence, null, 2)}\n`);
   }

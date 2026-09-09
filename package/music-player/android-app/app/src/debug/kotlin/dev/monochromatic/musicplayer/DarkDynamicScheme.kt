@@ -114,7 +114,7 @@ internal fun darkDynamicSchemeFor(context: Context, candidate: String): ColorSch
     } else {
         darkColorScheme()
     }
-    if (candidate == "dark-stable") {
+    if (candidate.startsWith("dark-stable-")) {
         // What:     Kotlin data-class `copy` duplicates a value while replacing named properties.
         // Why:      Stable strategy keeps dynamic accents but substitutes the accepted fixed surface ladder.
         //
@@ -127,7 +127,12 @@ internal fun darkDynamicSchemeFor(context: Context, candidate: String): ColorSch
             surface = TrueBlack,
             surfaceDim = TrueBlack,
             surfaceContainerLowest = TrueBlack,
-            surfaceContainerLow = StableDarkContainerLow,
+            // Later Kotlin if expression isolates current-row sourcing from structural-surface sourcing.
+            surfaceContainerLow = if (candidate.endsWith("-fixed")) {
+                StableDarkContainerLow
+            } else {
+                generatedScheme.surfaceContainerLow
+            },
             surfaceContainer = StableDarkContainer,
             surfaceContainerHigh = StableDarkContainerHigh,
             surfaceContainerHighest = StableDarkContainerHighest,

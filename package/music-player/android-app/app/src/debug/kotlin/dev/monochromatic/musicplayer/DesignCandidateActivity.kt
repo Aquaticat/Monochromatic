@@ -421,7 +421,7 @@ class DesignCandidateActivity : ComponentActivity() {
 /** Resolves only documented Material surface roles while keeping component geometry identical. */
 private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette {
     if (candidate.startsWith("dark-")) {
-        val strategy = candidate.substringAfter("dark-")
+        val strategy = candidate.substringAfter("dark-").substringBefore("-")
         if (strategy == "stable") {
             return CandidatePalette(
                 window = TrueBlack,
@@ -1554,7 +1554,14 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             null
         },
         colors = ListItemDefaults.colors(
-            containerColor = if (playing && currentTrackCue == "container") {
+            containerColor = if (
+                playing
+                && currentTrackCue == "container"
+                && candidate.startsWith("dark-")
+                && candidate.endsWith("-fixed")
+            ) {
+                StableDarkContainerLow
+            } else if (playing && currentTrackCue == "container") {
                 MaterialTheme.colorScheme.surfaceContainerLow
             } else {
                 Color.Transparent
