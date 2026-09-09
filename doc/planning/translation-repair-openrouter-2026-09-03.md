@@ -6029,8 +6029,8 @@ since an entry stopped before its artifact leaves the log as its only trace.
 The guard case with the notes one line apart failed first
 (`expected [ 1 ] to deeply equal []`);
 lint and types clean;
-the trim,
-guard and coherence suites clean.
+full suite 981 `PASS` and 0 `FAIL` on `e945b1b5f`,
+where one withdrawal case now expects the finding line after the count.
 
 RELAUNCHED at 06:20 UTC on `379122379`:
 the twenty-second `hakureico` (`~/temp/agent/hakureico22-20260909`,
