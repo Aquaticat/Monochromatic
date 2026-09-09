@@ -119,7 +119,7 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelI
  * it beside the nine measured writers: 30 of 298 disinterested ballots
  * (10.1 percent, z -1.40 against a 12.8 percent pooled null, 39 of 40
  * candidates, 94 of 94 asks usable), not separated from the null, where the
- * two writers {@link TRANSLATOR_DROPPED} names sat at z -4.5 on 2026-09-01.
+ * two writers {@link TRANSLATOR_DROPPED} named then sat at z -4.5 on 2026-09-01.
  * By the rule of that day it takes the translator seat and, as a measured
  * writer, the consolidation seat. The next single-provider candidate the owner
  * approves starts here again. Record: the 2026-09-08 addendum of
@@ -197,21 +197,35 @@ export const RUN_WRITERS: readonly RosterModelId[] = RUN_ROSTER
   },);
 
 /**
- * Writers the 40-round producer calibration of 2026-09-01 measured out of the
- * translator seat, dropped on the owner's authorization of the same day
- * ("drop any model from any role, as long as you have evidence").
+ * Writers a 40-round producer calibration measured out of the translator
+ * seat, dropped on the owner's authorization of 2026-09-01 ("drop any model
+ * from any role, as long as you have evidence").
  *
- * BOTH SAT UNDER THE POOLED NULL WITH FULL AVAILABILITY: `gpt-oss-120b` took
- * 5 of 207 disinterested ballots (z -4.53 against a 13.02 percent null) and
- * `deepseek-v4-flash-0731` 5 of 208 (z -4.55), each having written 40 of 40
- * candidates, so the finding is about the writing rather than about rounds
- * missed. Both keep every other seat: nothing here measures judging,
- * critique or checking. Record and method:
+ * TWO SAT UNDER THE POOLED NULL WITH FULL AVAILABILITY on 2026-09-01:
+ * `gpt-oss-120b` took 5 of 207 disinterested ballots (z -4.53 against a
+ * 13.02 percent null) and `deepseek-v4-flash-0731` 5 of 208 (z -4.55), each
+ * having written 40 of 40 candidates, so the finding is about the writing
+ * rather than about rounds missed. Record and method:
  * `doc/planning/translation-repair-roster-calibration-2026-09-01.md`.
+ *
+ * `deepseek-v4-pro-0813` SINCE 2026-09-09, ON ITS SECOND READING BELOW THE
+ * NULL: 19 of 243 disinterested ballots on 2026-09-08 (z -2.31, Parasail
+ * serving it with its reasoning) and 13 of 144 over 29 candidates on
+ * 2026-09-09 (adjusted 7.3 percent, z -3.18 against a 19.5 percent null,
+ * threshold 2.81, NextBit serving it without; 62 of 62 asks usable), the
+ * second crossing the threshold. The fidelity probe of 20:15 UTC that day
+ * read the no-reasoning endpoint at 11 of 14 against 4 of 14 with reasoning
+ * on the same fourteen questions, so the endpoint the run buys stays and the
+ * reading is of what the run buys. Record: the second 2026-09-09 addendum of
+ * `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
+ *
+ * ALL THREE KEEP EVERY OTHER SEAT: nothing here measures judging, critique,
+ * checking or the consolidation, and the anchor judge stays the anchor judge.
  */
-const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+export const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
   'hf:openai/gpt-oss-120b',
   'deepseek-v4-flash-0731',
+  'deepseek-v4-pro-0813',
 ],);
 
 /**
@@ -273,12 +287,12 @@ const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['
 
 /**
  * Translators for the translate lane: the roster less
- * {@link TRANSLATOR_DROPPED} and less {@link WRITER_UNMEASURED}. Nine since
- * 2026-09-09 (eight from 2026-09-08, seven from 2026-09-01), when
- * `inception/mercury-2.5` was measured in after `google.gemma-4-e2b`, so the
- * stage quorum is 5 with every provider wet and 4 while Synthetic is dry and
- * Qwen3.8-27B withheld, and every slate keeps at least two disinterested
- * judges under `assertJudgeableProducerRoster`.
+ * {@link TRANSLATOR_DROPPED} and less {@link WRITER_UNMEASURED}. Eight since
+ * 2026-09-08 (seven from 2026-09-01): `google.gemma-4-e2b` was measured in
+ * that day, and on 2026-09-09 `inception/mercury-2.5` was measured in and
+ * `deepseek-v4-pro-0813` out the same evening, so the stage quorum stays 4
+ * and every slate keeps at least two disinterested judges under
+ * `assertJudgeableProducerRoster`.
  */
 export const RUN_TRANSLATORS: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillWrites(modelId,): boolean {
