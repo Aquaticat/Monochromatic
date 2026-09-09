@@ -2046,7 +2046,7 @@ private fun pageSceneColor(style: PageControlStyle): Color {
 }
 
 /** Holds live seek position and duration sampled from current controller. */
-private data class PlaybackProgress(
+internal data class PlaybackProgress(
     /** Stores elapsed playback seconds. */
     val position: Double,
     /** Stores current track duration seconds. */
@@ -2161,25 +2161,32 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // )}</Scaffold>
     // ```
     Scaffold(containerColor = pageSceneColor(pageControlStyle)) { innerPadding ->
-        // What:     `Column( modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 12.dp),
-        //           verticalArrangement = Arrangement.spacedBy(8.dp), ) { ... }`
-        //           lays the screen out vertically. The modifier chain fills the screen, then
-        //           applies the scaffold `innerPadding`, then 12dp horizontal padding (named
-        //           `horizontal = 12.dp`). Children are spaced 8dp apart.
-        // Why:      Stack the player controls with consistent spacing inside the safe area.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Column
-        //   modifier={Modifier.fillMaxSize().padding(innerPadding).padding({ horizontal: dp(12) })}
-        //   verticalArrangement={Arrangement.spacedBy(dp(8))}
-        // > ... </Column>
-        // ```
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 12.dp),
+                .padding(innerPadding),
+        ) {
+            if (!showingSettings && maxWidth >= unfoldedPlayerMinimumWidth) {
+                unfoldedPlayerScreen(
+                    state = state,
+                    progress = playbackProgress,
+                    controller = controller,
+                    onOpen = onChooseFolder,
+                    onSettings = { showingSettings = true },
+                )
+                return@BoxWithConstraints
+            }
+            // What:     This `Column` retains the compact player without changing its controls.
+            // Why:      Widths below the accepted unfolded geometry and Settings keep existing behavior.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // <Column modifier={Modifier.fillMaxSize().padding({ horizontal: dp(12) })}>...</Column>
+            // ```
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             // What:     `seekRow(playbackProgress, controller)` renders elapsed time, seek slider,
@@ -2251,6 +2258,7 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
                 )
             }
         }
+    }
     }
 }
 
@@ -3702,7 +3710,7 @@ private fun loadingNotice() {
  * Defines format time behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun formatTime(seconds: Double): String {
+internal fun formatTime(seconds: Double): String {
     // What:     `val total = seconds.toInt()` declares `total` (inferred `Int`) by converting
     //           the `Double` to an `Int` with `.toInt()`, which TRUNCATES toward zero (drops
     //           the fraction).
