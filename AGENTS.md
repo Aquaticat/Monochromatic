@@ -440,9 +440,8 @@ ODM:
 
 HFM:
  Visual-design questions:
- render one self-contained HTML form,
- verify it,
- then open it in Helium.
+ render one self-contained HTML form
+ and verify it.
 Include built options,
  pros/cons,
  ranking,
@@ -489,7 +488,7 @@ VHI:
  Visual handoffs state purpose,
  changed details,
  what to inspect,
- and exact response path in the visible artifact.
+ and exact response path in the artifact.
 Never make unexplained internal labels the user's task.
 
 RVC:
