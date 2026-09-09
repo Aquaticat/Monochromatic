@@ -291,8 +291,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.CollectionInfo
+import androidx.compose.ui.semantics.CollectionItemInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.collectionInfo
+import androidx.compose.ui.semantics.collectionItemInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.role
@@ -1074,6 +1078,12 @@ private fun VariableWidthModeSegment(
                 role = Role.RadioButton
                 selected = isSelected
                 traversalIndex = index.toFloat()
+                collectionItemInfo = CollectionItemInfo(
+                    rowIndex = 0,
+                    rowSpan = 1,
+                    columnIndex = index,
+                    columnSpan = 1,
+                )
             },
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
@@ -1132,7 +1142,11 @@ private fun OneRowModeControl(
     onOverflow: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.selectableGroup(),
+        modifier = Modifier
+            .selectableGroup()
+            .semantics {
+                collectionInfo = CollectionInfo(rowCount = 1, columnCount = labels.size)
+            },
         horizontalArrangement = Arrangement.spacedBy((-1).dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -1169,7 +1183,10 @@ private fun TwoRowModeControl(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .selectableGroup(),
+            .selectableGroup()
+            .semantics {
+                collectionInfo = CollectionInfo(rowCount = 1, columnCount = labels.size)
+            },
         verticalArrangement = Arrangement.spacedBy((-1).dp),
     ) {
         for (rowIndex in 0..1) {
@@ -1225,7 +1242,10 @@ private fun FourRowModeControl(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .selectableGroup(),
+            .selectableGroup()
+            .semantics {
+                collectionInfo = CollectionInfo(rowCount = 1, columnCount = labels.size)
+            },
         verticalArrangement = Arrangement.spacedBy((-1).dp),
     ) {
         for (index in labels.indices) {
