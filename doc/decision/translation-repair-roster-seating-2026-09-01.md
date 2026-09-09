@@ -381,3 +381,47 @@ while still short of the quorum of 4 of 8;
 the editors and refiners benches stay at zero there,
 so a Bedrock-only pass still stops at the lanes on those two,
 and the fixtures in `run-seats-floor.unit.test.ts` and `run-seats-read.unit.test.ts` now say so.
+
+## Addendum 2026-09-09: `inception/mercury-2.5` joins the judge seats; its writing seats wait on the calibration
+
+Taken on the same delegation,
+under the rule pre-registered on 2026-09-07,
+after the owner's "Mercury 2.5 is out and approved" of 2026-09-09.
+Instrument:
+`judge-fidelity-probe --cap 48 --candidates inception/mercury-2.5 --candidates-alone`
+over a throwaway runs dir holding the three settled artifacts on disk
+(`gqt` from the fourth pass,
+`hakureico` from the twenty-third,
+`noname` from the first),
+build `3224ff347`,
+28 rows over fourteen distinct questions
+(six deletions,
+six insertions,
+two alterations),
+14 asks,
+14 usable,
+75 s,
+record `~/temp/agent/probe-mercury-20260909/judge-fidelity-probe/`.
+
+-   `inception/mercury-2.5`:
+    14 of 14 chose the complete text,
+    no damaged pick,
+    no decline,
+    position two on 7 of 14.
+    A candidate at the maximum meets both clauses whatever the seated median reads;
+    the seated roster's reading of the same fourteen is bought beside it and recorded in the planning log of
+    2026-09-09 ("The owner asks where 200 USD went,
+    and six levers land").
+    Seated in critic,
+    adjudication panel and judge in both lanes,
+    the late bench and the slate (`fcc8ca197`,
+    `SEATED_OPENROUTER_JUDGES` in `run-config.ts`).
+    No writing seat yet:
+    `WRITER_UNMEASURED` holds its translator and consolidation seats until
+    `producer-calibrate 40 --candidates inception/mercury-2.5` (launched 17:06 UTC the same day) is read against
+    the pooled null,
+    the way `google.gemma-4-e2b` was seated on 2026-09-08.
+
+OpenRouter alone serves it,
+so it is a judge that answers while Synthetic stands at the bottom of its week and Hyper at its daily limit,
+at 0.04 and 0.15 USD per million against the anchor judge's 0.58 and 1.74.

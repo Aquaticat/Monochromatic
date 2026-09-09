@@ -6723,6 +6723,58 @@ the `cached=` counts on DeepSeek calls,
 the endpoints the price sort picks,
 and whether any `estimated=abandoned` line appears at all now that every stream is capped and windowed.
 
+### Mercury 2.5 judges 14 of 14, 17:00 UTC
+
+`judge-fidelity-probe --cap 48 --candidates inception/mercury-2.5 --candidates-alone` on `3224ff347`
+over a throwaway runs dir holding the three settled artifacts on disk
+(gqt,
+hakureico,
+noname):
+three entries walked,
+28 rows,
+fourteen distinct questions
+(six deletions,
+six insertions,
+two alterations;
+`gqt/3` states no number the alteration fixture can move),
+14 asks,
+14 usable,
+75 s of wall clock.
+The roster verdict reads `declined` on every row,
+as it must for one judge under the minimum weight of 2;
+the per-judge tally (scratch `fidelity-tally.mjs`) is the reading:
+
+- `inception/mercury-2.5`:
+  14 of 14 chose the complete text.
+  Deletion 6 of 6,
+  insertion 6 of 6,
+  alteration 2 of 2;
+  no damaged pick,
+  no decline;
+  position two on 7 of 14.
+
+By the rule written on 2026-09-07,
+a candidate at the maximum meets both clauses whatever the seated median reads,
+so it joined the judge seats at once (`fcc8ca197`):
+critic,
+panel and judge in both lanes,
+the late bench and the slate.
+The seated roster's reading of the same fourteen is bought beside it
+(`judge-fidelity-probe --cap 48` over a second copy of the same artifacts,
+detached,
+pid 875777,
+log `~/temp/agent/probe-seated-20260909.log`)
+and recorded here when it lands,
+for the record's sake rather than the decision's.
+Its writing seats wait on
+`producer-calibrate 40 --candidates inception/mercury-2.5`
+(detached at 17:06 UTC,
+pid 875801,
+frozen build `3224ff347`,
+log `~/temp/agent/producer-calibrate-mercury-20260909.log`,
+about three hours by the 2026-09-08 precedent),
+read by the scratch `read-standing.mjs` against the pooled null.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

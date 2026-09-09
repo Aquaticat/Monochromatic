@@ -1874,6 +1874,22 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `3224ff347` and `fcc8ca197` (2026-09-09,
+the owner's "Mercury 2.5 is out and approved") `inception/mercury-2.5` is the twelfth roster model and the one
+only OpenRouter serves (`OPENROUTER_ONLY_ROSTER_IDS`;
+0.04 and 0.15 USD per million,
+text only,
+one endpoint),
+seated in critic,
+panel and judge in both lanes,
+the late bench and the slate on the fidelity probe of that day
+(14 of 14 distinct questions chose the complete text,
+no damaged pick,
+no decline;
+`SEATED_OPENROUTER_JUDGES`),
+and held out of every writing seat by `WRITER_UNMEASURED` until the 40-round producer calibration is read;
+a model one provider alone serves holds no seat until a measurement seats it,
+whichever provider it is.
 Since `78ea8c8c7` (2026-09-09,
 the owner's "do everything in our power to NOT bleed") every call on every provider carries `max_tokens`
 at a measured ceiling per roster model (`completion-cap.ts`:

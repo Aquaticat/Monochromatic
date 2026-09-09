@@ -1429,8 +1429,8 @@ and the naturalness confirmation challenges exactly the seats the discovery aske
 at the discovery's quorum.
 A fixture that scripts every seat says `fanOut: 'whole-bench'`;
 a fixture that counts calls counts `firstRoundWindow({ benchSize, })`.
-Mercury 2.5 is approved and not yet seated;
-it is the next thing to build (see "What to do next").
+Mercury 2.5 judges since `fcc8ca197` (14 of 14 on the fidelity probe of 17:00 UTC)
+and writes nothing until its producer calibration is read (see "What to do next").
 
 ## How a pass is launched now
 
@@ -1488,28 +1488,36 @@ a fix that matters to the running entry still kills and relaunches it.
     `Mio` and `hulicaijia` launch was killed under the kill-and-relaunch rule as the tree moved,
     except the fourth `gqt` (read;
     `gqt` now declines) and the first two `noname` (read).
-2.  SEAT MERCURY 2.5 (owner:
+2.  MERCURY 2.5 JUDGES SINCE `fcc8ca197` (owner:
     "Mercury 2.5 is out and approved";
-    `inception/mercury-2.5` on OpenRouter,
-    0.04 and 0.15 USD per million,
-    260k context,
-    65,536 max completion,
-    one endpoint,
-    takes `response_format` and `max_tokens`):
-    an `OPENROUTER_ONLY_ROSTER_IDS` list in `roster-id.ts`,
-    a catalog row (`readsImages: false`,
-    prices,
-    ceiling),
-    a `completion-cap.ts` row at the pooled 99th until measured,
-    the raw-chars ratio for the abandoned reckoning,
-    the measured filter in `run-config.ts`,
-    tests (`roster-reach` length 11 to 12,
-    the run-seats formula),
-    then `judge-fidelity-probe.mjs --candidates inception/mercury-2.5 --candidates-alone --cap 48`
-    over a throwaway runs dir holding generation-13 settled artifacts and `producer-calibrate.mjs`,
-    and seat by the 2026-09-07 rule.
-    Build it while the third `noname` runs from its frozen copy;
-    do not kill the pass for it.
+    `inception/mercury-2.5`,
+    the one seat only OpenRouter serves,
+    0.04 and 0.15 USD per million):
+    14 of 14 distinct questions on the fidelity probe of 17:00 UTC,
+    no damaged pick,
+    no decline;
+    the 2026-09-09 addendum of the seating decision records it.
+    Its writing seats wait on the 40-round producer calibration launched detached at 17:06 UTC
+    (pid 875801,
+    frozen `3224ff347`,
+    log `~/temp/agent/producer-calibrate-mercury-20260909.log`;
+    about three hours by the 2026-09-08 precedent).
+    When it prints `STANDING over 40 rounds`,
+    read it with the scratch `read-standing.mjs` (proven on the 2026-09-01 and 2026-09-08 logs):
+    not separated from the pooled null,
+    or above it,
+    seats the translator and consolidation seats by taking it out of `WRITER_UNMEASURED` in `run-config.ts`
+    (the seat test's `RUN_TRANSLATORS.length` formula follows the set);
+    below the null at the Bonferroni threshold keeps it a judge only.
+    Record the addendum either way.
+    The seated roster's reading of the same fourteen questions runs beside it
+    (pid 875777,
+    log `~/temp/agent/probe-seated-20260909.log`);
+    tally it with `fidelity-tally.mjs` over the record it writes under
+    `~/temp/agent/probe-seated-20260909/judge-fidelity-probe/` and add the numbers to the planning log's
+    "Mercury 2.5 judges 14 of 14" for the record.
+    A pass launched after `fcc8ca197` seats Mercury wherever the anchor judge sits;
+    the third `noname` runs on `33a023445` and does not.
 3.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
 4.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
