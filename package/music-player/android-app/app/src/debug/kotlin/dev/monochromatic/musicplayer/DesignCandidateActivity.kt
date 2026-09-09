@@ -249,9 +249,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
-import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -294,10 +292,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.traversalIndex
 
 // What:     `Offset` and `Size` store two-dimensional geometry, `Color` stores packed ARGB
 //           values, `RectangleShape` supplies a square outline, and `ImageVector` stores a
@@ -314,6 +316,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 
 // What:     `FontWeight`, `TextAlign`, and `TextOverflow` configure native text rendering.
@@ -508,10 +511,36 @@ private fun DesignCandidatePrototype(candidate: String) {
     }
 }
 
+/** Groups one major pane area under candidate-specific TalkBack traversal priority. */
+private fun Modifier.accessibilityTraversalGroup(candidate: String, area: String): Modifier {
+    if (!candidate.startsWith("a11y-")) {
+        return this
+    }
+    val index = if (candidate.contains("a11y-pane-")) {
+        if (area == "folder") 0f else if (area == "transport") 1f else 2f
+    } else if (candidate.contains("a11y-browse-")) {
+        if (area == "folder") 0f else if (area == "tracks") 1f else 2f
+    } else {
+        if (area == "transport") 0f else if (area == "tracks") 1f else 2f
+    }
+    return semantics {
+        isTraversalGroup = true
+        traversalIndex = index
+    }
+}
+
 /** Renders two equal 414dp panes around Material's centered 24dp expanded-layout spacer. */
 @Composable
 private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
-    Row(modifier = Modifier.fillMaxSize()) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .semantics {
+                if (candidate.startsWith("a11y-")) {
+                    isTraversalGroup = true
+                }
+            },
+    ) {
         Box(
             modifier = Modifier
                 .width(414.dp)
@@ -530,8 +559,14 @@ private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
                 .background(palette.spacer),
         )
         TrackPane(
-            modifier = Modifier.weight(1f),
-            candidate = if (candidate.startsWith("cue-")) candidate else "dbtp-a",
+            modifier = Modifier
+                .weight(1f)
+                .accessibilityTraversalGroup(candidate = candidate, area = "tracks"),
+            candidate = if (candidate.startsWith("cue-") || candidate.startsWith("a11y-")) {
+                candidate
+            } else {
+                "dbtp-a"
+            },
             palette = palette,
         )
     }
@@ -564,13 +599,17 @@ private fun FolderAndTransportPane(
     ) {
         Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
         FolderPicker(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .accessibilityTraversalGroup(candidate = candidate, area = "folder"),
             candidate = candidate,
             palette = palette,
         )
         Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
         TransportBlock(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .accessibilityTraversalGroup(candidate = candidate, area = "transport"),
             candidate = candidate,
             palette = palette,
         )
@@ -599,7 +638,7 @@ private fun OpenAction(candidate: String) {
         }
         return
     }
-    if (style == "tonal") {
+    if (style == "tonal" || candidate.startsWith("a11y-")) {
         FilledTonalButton(onClick = {}) {
             OpenActionContent()
         }
@@ -895,7 +934,7 @@ private fun SecondaryTransportButton(
 /** Draws three real Material icon buttons with color hierarchy for playback. */
 @Composable
 private fun TransportControls(candidate: String) {
-    val secondaryStyle = if (candidate.startsWith("cue-")) {
+    val secondaryStyle = if (candidate.startsWith("cue-") || candidate.startsWith("a11y-")) {
         "outlined"
     } else {
         candidate.substringAfterLast('-')
@@ -965,7 +1004,10 @@ private fun ShuffleModeLabel(
     val desiredSubdirectoryWidth = with(density) {
         desiredSubdirectoryWidthPixels.toDp()
     }
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.clearAndSetSemantics {},
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(
             text = "Shuffle ",
             maxLines = 1,
@@ -1006,6 +1048,8 @@ private fun VariableWidthModeSegment(
     index: Int,
     labels: List<String>,
     accessibleLabels: List<String>,
+    shape: Shape,
+    modifier: Modifier,
     contentPadding: PaddingValues,
     onOverflow: () -> Unit,
 ) {
@@ -1022,8 +1066,8 @@ private fun VariableWidthModeSegment(
     }
     OutlinedButton(
         onClick = {},
-        shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
-        modifier = Modifier
+        shape = shape,
+        modifier = modifier
             .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
             .semantics {
                 contentDescription = accessibleLabels[index]
@@ -1057,6 +1101,7 @@ private fun VariableWidthModeSegment(
         } else {
             Text(
                 text = labels[index],
+                modifier = Modifier.clearAndSetSemantics {},
                 maxLines = 1,
                 overflow = TextOverflow.Clip,
                 onTextLayout = { result ->
@@ -1095,6 +1140,8 @@ private fun OneRowModeControl(
                 index = index,
                 labels = labels,
                 accessibleLabels = accessibleLabels,
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
+                modifier = Modifier,
                 contentPadding = contentPadding,
                 onOverflow = onOverflow,
             )
@@ -1125,7 +1172,7 @@ private fun TwoRowModeControl(
         verticalArrangement = Arrangement.spacedBy((-1).dp),
     ) {
         for (rowIndex in 0..1) {
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.fillMaxWidth()) {
                 for (columnIndex in 0..1) {
                     val index = rowIndex * 2 + columnIndex
                     // What:     Kotlin's `if` chain chooses the outside corner for one grid position.
@@ -1144,29 +1191,15 @@ private fun TwoRowModeControl(
                     } else {
                         RoundedCornerShape(bottomEnd = 20.dp)
                     }
-                    SegmentedButton(
-                        selected = index == 1,
-                        onClick = {},
+                    VariableWidthModeSegment(
+                        index = index,
+                        labels = labels,
+                        accessibleLabels = accessibleLabels,
                         shape = shape,
-                        modifier = Modifier
-                            .weight(1f)
-                            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-                            .semantics {
-                                contentDescription = accessibleLabels[index]
-                            },
+                        modifier = Modifier.weight(1f),
                         contentPadding = contentPadding,
-                    ) {
-                        Text(
-                            text = labels[index],
-                            maxLines = 1,
-                            overflow = TextOverflow.Clip,
-                            onTextLayout = { result ->
-                                if (result.hasVisualOverflow) {
-                                    onOverflow()
-                                }
-                            },
-                        )
-                    }
+                        onOverflow = onOverflow,
+                    )
                 }
             }
         }
@@ -1183,7 +1216,11 @@ private fun TwoRowModeControl(
  * ```
  */
 @Composable
-private fun FourRowModeControl(labels: List<String>, accessibleLabels: List<String>) {
+private fun FourRowModeControl(
+    labels: List<String>,
+    accessibleLabels: List<String>,
+    contentPadding: PaddingValues,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1205,20 +1242,16 @@ private fun FourRowModeControl(labels: List<String>, accessibleLabels: List<Stri
             } else {
                 RectangleShape
             }
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                SegmentedButton(
-                    selected = index == 1,
-                    onClick = {},
+            Row(modifier = Modifier.fillMaxWidth()) {
+                VariableWidthModeSegment(
+                    index = index,
+                    labels = labels,
+                    accessibleLabels = accessibleLabels,
                     shape = shape,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-                        .semantics {
-                            contentDescription = accessibleLabels[index]
-                        },
-                ) {
-                    Text(text = labels[index], maxLines = 1)
-                }
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = contentPadding,
+                    onOverflow = {},
+                )
             }
         }
     }
@@ -1266,7 +1299,11 @@ private fun ModeControl() {
             )
             return@BoxWithConstraints
         }
-        FourRowModeControl(labels = labels, accessibleLabels = accessibleLabels)
+        FourRowModeControl(
+            labels = labels,
+            accessibleLabels = accessibleLabels,
+            contentPadding = SegmentedButtonDefaults.ContentPadding,
+        )
     }
 }
 
@@ -1342,7 +1379,9 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
     val playing = index == 0
-    val currentTrackCue = if (candidate.contains("cue-label-")) {
+    val currentTrackCue = if (candidate.startsWith("a11y-")) {
+        "container"
+    } else if (candidate.contains("cue-label-")) {
         "label"
     } else if (candidate.contains("cue-accent-")) {
         "accent"
@@ -1401,7 +1440,7 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
                 )
             }
         },
-        leadingContent = if (candidate.startsWith("cue-")) {
+        leadingContent = if (candidate.startsWith("cue-") || candidate.startsWith("a11y-")) {
             null
         } else {
             {
@@ -1446,7 +1485,11 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             .clickable(role = Role.Button, onClick = {})
             .semantics {
                 selected = playing
-                if (playing && candidate.startsWith("cue-")) {
+                if (playing && candidate.endsWith("-state")) {
+                    stateDescription = "Current track"
+                } else if (playing && candidate.endsWith("-composed")) {
+                    contentDescription = "Current track: ${track.title}, ${track.duration}, ${track.peak}"
+                } else if (playing && candidate.startsWith("cue-")) {
                     contentDescription = "Current track: ${track.title}"
                 }
             },
