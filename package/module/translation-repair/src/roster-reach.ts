@@ -14,6 +14,7 @@ import {
 import {
   BEDROCK_ONLY_ROSTER_IDS,
   HYPER_ONLY_ROSTER_IDS,
+  OPENROUTER_ONLY_ROSTER_IDS,
   type RosterModelId,
 } from './roster-id.ts';
 import {
@@ -145,6 +146,7 @@ export const ROSTER_MODEL_IDS: readonly RosterModelId[] = [
     },),
   ...HYPER_ONLY_ROSTER_IDS,
   ...BEDROCK_ONLY_ROSTER_IDS,
+  ...OPENROUTER_ONLY_ROSTER_IDS,
 ];
 
 /**

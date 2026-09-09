@@ -108,11 +108,13 @@ export {
 export type {
   BedrockOnlyRosterId,
   HyperOnlyRosterId,
+  OpenRouterOnlyRosterId,
   SyntheticServedId,
 } from './roster-id.ts';
 export {
   BEDROCK_ONLY_ROSTER_IDS,
   HYPER_ONLY_ROSTER_IDS,
+  OPENROUTER_ONLY_ROSTER_IDS,
 } from './roster-id.ts';
 export {
   bedrockIdFor,

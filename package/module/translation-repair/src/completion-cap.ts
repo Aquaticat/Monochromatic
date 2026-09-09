@@ -43,6 +43,12 @@ import type { RosterModelId, } from './roster-id.ts';
 const POOLED_P90 = 3_831;
 
 /**
+ * Pooled 99th percentile over the same calls, the cap for a model the
+ * measurement holds no completed call for.
+ */
+const POOLED_P99 = 13_082;
+
+/**
  * Completion token ceiling per roster model, sent as `max_tokens` by every
  * client.
  *
@@ -79,6 +85,9 @@ export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = {
   'google.gemma-4-e2b': POOLED_P90,
   // Bedrock p99 over 125 calls, the thinnest measurement in the table.
   'google.gemma-4-31b': 8_194,
+  // No completed call in the measurement: seatable since 2026-09-09, the
+  // pooled 99th until its own calls are read.
+  'inception/mercury-2.5': POOLED_P99,
 };
 
 /**

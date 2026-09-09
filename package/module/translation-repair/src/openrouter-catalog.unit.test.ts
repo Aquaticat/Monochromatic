@@ -29,8 +29,8 @@ await describe({
   children: [
     it({
       name: 'SERVES EVERY ROSTER SEAT BUT THE BEDROCK-ONLY SIZES AND THE TWO DROPPED ON 2026-09-09: '
-        + 'seven rows, each standing in for a distinct roster id, so the third provider widens reach '
-        + 'without widening the roster',
+        + 'eight rows, each standing in for a distinct roster id, seven widening reach and one, Mercury 2.5, '
+        + 'the seat only this provider serves',
       fn: async () => {
         /**
          * Roster seats the rows stand in for.

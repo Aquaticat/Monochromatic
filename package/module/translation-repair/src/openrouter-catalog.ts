@@ -125,7 +125,8 @@ export type OpenRouterServedId =
   | 'deepseek/deepseek-v4-pro-0813'
   | 'z-ai/glm-5.3-flash'
   | 'google/gemma-4-26b-a4b-it'
-  | 'openai/gpt-oss-120b';
+  | 'openai/gpt-oss-120b'
+  | 'inception/mercury-2.5';
 
 /**
  * Verified per-model facts the router and the request builder read.
@@ -187,7 +188,9 @@ export type OpenRouterModelInfo = {
  * CONFORMANCE MEASURED OVER 20 CHAT COMPLETIONS ATTEMPTS EACH on 2026-09-03
  * with `response_format` json_schema, the schema restated in the system
  * prompt, zero data retention and `require_parameters`; the per-model rates
- * and the endpoints that served them are in the planning record.
+ * and the endpoints that served them are in the planning record. Mercury 2.5
+ * joined on 2026-09-09 and its conformance is read off the fidelity probe's
+ * usable-ask count instead.
  *
  * @example
  * ```ts
@@ -331,6 +334,21 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     maxOutputLength: 117_964,
     promptUsdPerMillion: 0.037,
     completionUsdPerMillion: 0.17,
+    ignoredEndpoints: [],
+  },
+  // THE ONE SEAT ONLY THIS PROVIDER SERVES, approved by the owner on
+  // 2026-09-09. The listing of that day
+  // (`~/temp/agent/openrouter-models-20260909.json`, its endpoints in
+  // `endpoints-mercury-2.5-20260909.json`): text only, 260,000 context, one
+  // endpoint (Inception), takes `response_format`, `structured_outputs` and
+  // `max_tokens`; its reasoning parameters exist and stay off the wire.
+  'inception/mercury-2.5': {
+    id: 'inception/mercury-2.5',
+    sharedWith: 'inception/mercury-2.5',
+    readsImages: false,
+    maxOutputLength: 65_536,
+    promptUsdPerMillion: 0.04,
+    completionUsdPerMillion: 0.15,
     ignoredEndpoints: [],
   },
 };

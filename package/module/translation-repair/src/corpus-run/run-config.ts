@@ -27,7 +27,10 @@ import {
   STREAM_IDLE_MS,
 } from '../stream-idle-guard.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
-import { BEDROCK_ONLY_ROSTER_IDS, } from '../roster-id.ts';
+import {
+  BEDROCK_ONLY_ROSTER_IDS,
+  OPENROUTER_ONLY_ROSTER_IDS,
+} from '../roster-id.ts';
 import {
   readsImages,
   ROSTER_MODEL_IDS,
@@ -81,6 +84,23 @@ export const SEATED_BEDROCK_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterM
 ],);
 
 /**
+ * OpenRouter-only models seated on the judge fidelity probe under the same
+ * rule. Empty until Mercury 2.5's measurement of 2026-09-09 is read: the
+ * owner approved it that day and the roster names it as seatable, and a
+ * seat is decided on evidence.
+ */
+export const SEATED_OPENROUTER_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>();
+
+/**
+ * Models a single provider serves that hold no seat until a measurement
+ * seats them, whichever provider it is.
+ */
+const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  ...BEDROCK_ONLY_ROSTER_IDS,
+  ...OPENROUTER_ONLY_ROSTER_IDS,
+],);
+
+/**
  * Roster models no producer calibration has measured, so they hold no
  * writing seat: not the translate lane, not the consolidation. The judge
  * fidelity probe measures reading, and reading is what they were seated for.
@@ -122,13 +142,16 @@ const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>();
  * same twelve questions it chose the complete text on 6, declining the rest,
  * against a seated median of 9.5 (the planning log of 2026-09-07, "Measuring
  * the two Bedrock-only sizes").
+ *
+ * TWELVE SEATABLE SINCE 2026-09-09, when the owner approved Mercury 2.5 on
+ * OpenRouter; it holds no seat until its probe is read
+ * ({@link SEATED_OPENROUTER_JUDGES}).
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function measured(modelId,): boolean {
     return SEATED_BEDROCK_JUDGES.has(modelId,)
-      || (!BEDROCK_ONLY_ROSTER_IDS.some(function is(unmeasured,): boolean {
-        return unmeasured === modelId;
-      },));
+      || SEATED_OPENROUTER_JUDGES.has(modelId,)
+      || (!UNMEASURED_UNTIL_SEATED.has(modelId,));
   },);
 
 /**

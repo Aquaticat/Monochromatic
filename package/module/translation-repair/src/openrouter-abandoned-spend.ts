@@ -47,6 +47,8 @@ const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number
   'google/gemma-4-26b-a4b-it': 137,
   // Unmeasured on this provider; the median of the measured seats.
   'openai/gpt-oss-120b': 137,
+  // Unmeasured; the median of the measured seats.
+  'inception/mercury-2.5': 137,
 };
 
 /**

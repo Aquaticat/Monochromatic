@@ -20,12 +20,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  BEDROCK_ONLY_ROSTER_IDS,
   type BudgetView,
   HYPER_SLOW_JUDGES,
   HYPER_SLOW_SELECT_JUDGES,
   judgeSeatsFor,
   OPENROUTER_CHECKER_SUBSTITUTE,
+  OPENROUTER_ONLY_ROSTER_IDS,
   OPENROUTER_WITHHELD,
+  ROSTER_MODEL_IDS,
   RUN_LATE_JUDGES,
   RUN_MODELS,
   RUN_READER_MODELS,
@@ -34,8 +37,7 @@ import {
   RUN_WIDE_SEATS,
   RUN_WRITERS,
   SEATED_BEDROCK_JUDGES,
-  BEDROCK_ONLY_ROSTER_IDS,
-  ROSTER_MODEL_IDS,
+  SEATED_OPENROUTER_JUDGES,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -145,7 +147,13 @@ await describe({
         }
         expect(RUN_ROSTER.includes('google.gemma-4-31b',),).toBe(false,);
         expect(wet.wideSeats.includes('google.gemma-4-31b',),).toBe(false,);
-        expect(RUN_ROSTER.length,).toBe((ROSTER_MODEL_IDS.length - BEDROCK_ONLY_ROSTER_IDS.length) + SEATED_BEDROCK_JUDGES.size,);
+        // A model one provider alone serves holds no seat until measured in.
+        expect(RUN_ROSTER.includes('inception/mercury-2.5',),).toBe(SEATED_OPENROUTER_JUDGES.has('inception/mercury-2.5',),);
+        expect(RUN_ROSTER.length,).toBe(
+          (ROSTER_MODEL_IDS.length - BEDROCK_ONLY_ROSTER_IDS.length - OPENROUTER_ONLY_ROSTER_IDS.length)
+            + SEATED_BEDROCK_JUDGES.size
+            + SEATED_OPENROUTER_JUDGES.size,
+        );
         expect(wet.writers,).toEqual(RUN_WRITERS,);
         expect(RUN_WRITERS,).toEqual(RUN_ROSTER,);
         expect(RUN_TRANSLATORS.length,).toBe(RUN_ROSTER.length - 2,);

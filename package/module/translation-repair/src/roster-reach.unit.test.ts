@@ -19,14 +19,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  bedrockServesLabel,
   DEFAULT_JUDGE_MODEL_IDS,
   HYPER_ONLY_NAMES_ARE_SERVED,
   HYPER_ONLY_ROSTER_IDS,
   hyperIdFor,
-  bedrockServesLabel,
   hyperServesLabel,
-  readsImages,
+  openRouterServesLabel,
   reachOf,
+  readsImages,
   ROSTER_MODEL_IDS,
   syntheticEntryFor,
   syntheticServes,
@@ -55,7 +56,8 @@ await describe({
          * Roster ids no catalog has a row for under the roster's own spelling.
          */
         const unserved = ROSTER_MODEL_IDS.filter(function nobodyServes(modelId,): boolean {
-          return (!syntheticServes(modelId,)) && (!hyperServesLabel(modelId,)) && (!bedrockServesLabel(modelId,));
+          return (!syntheticServes(modelId,)) && (!hyperServesLabel(modelId,)) && (!bedrockServesLabel(modelId,))
+            && (!openRouterServesLabel(modelId,));
         },);
         expect(unserved,).toStrictEqual([],);
       },
@@ -86,16 +88,17 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'SEATS ELEVEN DISTINCT MODELS: four Synthetic serves, five only the second provider does and '
-        + 'two only the fourth does',
+      name: 'SEATS TWELVE DISTINCT MODELS: four Synthetic serves, five only the second provider does, '
+        + 'two only the fourth does and one only the third does',
       fn: async () => {
         // Eight until 2026-09-01, when the post-blocklist candidate refresh
         // admitted glm-5.3 and the same-day conformance probe culled the
         // refresh's two automatic-only Qwen3.8 routes before seating.
         // Eleven since 2026-09-07, when the owner's Bedrock account added the
-        // two Gemma 4 sizes no other provider serves.
-        expect(ROSTER_MODEL_IDS.length,).toBe(11,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(11,);
+        // two Gemma 4 sizes no other provider serves. Twelve since 2026-09-09,
+        // when the owner approved Mercury 2.5, which only OpenRouter serves.
+        expect(ROSTER_MODEL_IDS.length,).toBe(12,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(12,);
       },
     },),
 

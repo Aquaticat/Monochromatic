@@ -5,9 +5,10 @@
 // other's would be a cycle, so the identity lives on its own and the catalogs
 // describe it from their own side.
 //
-// THE ROSTER IS EIGHT DISTINCT MODELS across two providers: four Synthetic serves,
-// four only Charm Hyper serves, and three of the Synthetic four are served by
-// both. A model is one roster entry however many providers can reach it, which
+// THE ROSTER IS TWELVE DISTINCT MODELS across four providers: four Synthetic
+// serves, five only Charm Hyper serves, two only Amazon Bedrock serves and one
+// only OpenRouter serves (eight across two providers until 2026-09-01). A
+// model is one roster entry however many providers can reach it, which
 // is the property the adjudication tally depends on: `synthetic-catalog.ts`
 // explains at length why one model occupying two seats would silently overstate
 // agreement, and a second provider is exactly the new way for that to happen.
@@ -117,6 +118,36 @@ export const BEDROCK_ONLY_ROSTER_IDS = [
 export type BedrockOnlyRosterId = typeof BEDROCK_ONLY_ROSTER_IDS[number];
 
 /**
+ * Roster models only OpenRouter serves, spelled as that provider spells them
+ * for the reason the Hyper-only list gives: no other spelling exists.
+ * MERCURY 2.5, WHICH THE OWNER APPROVED ON 2026-09-09 ("Mercury 2.5 is out
+ * and approved") in the same breath as the final OpenRouter top-up: the
+ * cheapest seat on the per-token provider, 0.04 and 0.15 USD per million
+ * against the anchor judge's 0.58 and 1.74. Listed here is seatable, not
+ * seated: which roles it takes is decided on the judge fidelity probe and the
+ * producer calibration, as the roster calibration record has it.
+ *
+ * @example
+ * ```ts
+ * const everyone = OPENROUTER_ONLY_ROSTER_IDS;
+ * ```
+ */
+export const OPENROUTER_ONLY_ROSTER_IDS = [
+  'inception/mercury-2.5',
+] as const;
+
+/**
+ * Union of the models only OpenRouter serves, derived from
+ * {@link OPENROUTER_ONLY_ROSTER_IDS} for the reason the Hyper-only union gives.
+ *
+ * @example
+ * ```ts
+ * const modelId: OpenRouterOnlyRosterId = 'inception/mercury-2.5';
+ * ```
+ */
+export type OpenRouterOnlyRosterId = typeof OPENROUTER_ONLY_ROSTER_IDS[number];
+
+/**
  * Every model this pipeline may seat, whoever serves it.
  *
  * @example
@@ -124,6 +155,10 @@ export type BedrockOnlyRosterId = typeof BEDROCK_ONLY_ROSTER_IDS[number];
  * const modelId: RosterModelId = 'hf:moonshotai/Kimi-K3';
  * ```
  */
-export type RosterModelId = SyntheticServedId | HyperOnlyRosterId | BedrockOnlyRosterId;
+export type RosterModelId =
+  | SyntheticServedId
+  | HyperOnlyRosterId
+  | BedrockOnlyRosterId
+  | OpenRouterOnlyRosterId;
 
 //endregion Roster identity
