@@ -11,9 +11,9 @@ Implementation is not the only possible resolution:
 No implementation changes or verification runs have occurred in this interview.
 The first round corrected a quality premise.
 The second round established bounded collection after the first usable result.
-Launch policy,
- participation,
- and collection duration remain undecided.
+Collection duration and its interaction with the original deadline remain undecided.
+The user also explicitly requested just-in-time,
+ operation-local exclusion of providers reporting exhausted credits.
 
 ## Evidence
 
@@ -117,26 +117,67 @@ Adopt bounded collection rather than first-result winner selection:
 - Return all usable completed reviews together when every started reviewer settles.
 - If reviewers remain pending when the grace period expires,
    cancel them and return all usable reviews collected by that cutoff.
-- Start the collection clock at the first usable result;
-   do not reset it for later results.
-- Before any usable result exists,
-   the original operation deadline remains the outer bound.
+- Start the collection clock at the first usable result.
+  With the issue's initial reviewer and one fallback,
+   another usable result finishes collection immediately.
+- Preserve the original operation deadline before any usable result exists.
+  This is inherited behavior,
+   not a new decision established by the second answer.
 
 The first-result grace is distinct from the launch delay for speculative work.
 Do not silently treat the user's straggler grace as a value for the original hedge-launch delay.
 No implementation is authorized until the design interview receives shared-understanding confirmation.
 
-The current frontier is launch policy,
- participant count,
- and collection grace duration.
+The current frontier is collection grace duration
+ and whether the original deadline truncates that grace after partial success.
+Retain delayed launch and one fallback as the issue's working scope,
+ rather than expanding to simultaneous or wider review fan-out without need.
 Later decisions include scoped participant selection,
  provider-diversity requirements,
  recovery bounds,
- caller-cancellation and outer-deadline precedence after partial success,
  available-usage finalization,
  returned-review formatting,
  and integration of still-open prerequisite issues.
 Recompute the frontier after the user's answers.
+
+## Added requirement: exhausted provider credits
+
+The user reported this Advisor failure during the interview:
+
+```text
+advisor Consulting advisor hyper/deepseek-v4-flash-0731 with question
+advisor: provider call failed for hyper/deepseek-v4-flash-0731 on attempt 1:
+402: {"message":"You're out of credits. Add more at https://hyper.charm.land","type":"billing_error","code":null}
+```
+
+The user explicitly requested:
+
+> Also implement:
+> JIT,
+> If a provider is out of credits,
+> block the provider for this call.
+
+Accepted implementation requirement:
+
+- Detect exhausted credits from the actual request outcome,
+   not an eager credit-balance preflight.
+- Block further dispatches to every model on the affected provider
+   within the same Advisor operation,
+   including recovery and fallback dispatches.
+- Keep other providers eligible.
+- Do not persist this provider exclusion into later Advisor calls.
+- Preserve exact explicit-model semantics;
+   an explicit request does not switch to a different provider or model.
+- Keep completed usable reviews and failure diagnostics.
+- Add regression coverage using the reported `402` and `billing_error` response shape.
+
+This is user-reported evidence,
+ not a claim that this interview reproduced the provider failure.
+The current adapter's structured-error and string-error paths still need investigation.
+Do not generalize every HTTP 402 or every billing failure to exhausted credits without classification evidence.
+No top-up or other billing mutation is authorized or needed.
+
+Track this as an independently verifiable implementation task alongside collection behavior.
 
 ## Independent review
 
@@ -166,7 +207,7 @@ Leave those changes untouched.
 
 ## Next action
 
-Ask about launch timing,
- participant count,
- and the duration of post-success collection.
-Do not repeat the settled choice to return completed reviews together after bounded collection.
+Ask for the post-success grace duration
+ and whether it is truncated by the original operation deadline.
+Do not repeat the settled collection policy or ask permission for the newly authorized credit-exhaustion block.
+Investigate provider failure representation before implementing the JIT classifier.
