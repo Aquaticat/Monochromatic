@@ -9,8 +9,11 @@ Implementation is not the only possible resolution:
  reframing or declining hedging remains open.
 
 No implementation changes or verification runs have occurred in this interview.
-The first decision round received a correction to its quality premise.
-The winner policy remains undecided.
+The first round corrected a quality premise.
+The second round established bounded collection after the first usable result.
+Launch policy,
+ participation,
+ and collection duration remain undecided.
 
 ## Evidence
 
@@ -100,27 +103,38 @@ The agent withdrew its recommendation for an explicit interchangeable-quality ti
 That recommendation treated default status as an endorsement unsupported by the current cost selector.
 Do not replace the withdrawn tier with another implicit quality guarantee.
 
-The correction does not itself select concurrency,
- returned-result priority,
- or the disposition of late reviews.
-The next root question is what outcome the user wants from overlapping reviews,
- without a quality-based privilege for the initial reviewer.
+The agent next offered immediate first-result delivery or waiting for all started reviews until the deadline.
+The user rejected that binary:
 
-Keep these decisions separate:
- when a usable result is delivered,
- whether remaining work continues,
- and whether additional completed reviews are retained.
-After each answer,
- recompute the frontier rather than asking speculative configuration questions.
-Possible dependent decisions include:
- approved participants,
- whether all completed perspectives should be retained,
- what starts the delay clock,
+> None of them: kill straggler after a while (of already getting at least 1 usable result),
+> if not killed, return all reviews altogether.
+
+Adopt bounded collection rather than first-result winner selection:
+
+- Hold the first usable result while pending reviewers receive a grace period.
+- Return all usable completed reviews together when every started reviewer settles.
+- If reviewers remain pending when the grace period expires,
+   cancel them and return all usable reviews collected by that cutoff.
+- Start the collection clock at the first usable result;
+   do not reset it for later results.
+- Before any usable result exists,
+   the original operation deadline remains the outer bound.
+
+The first-result grace is distinct from the launch delay for speculative work.
+Do not silently treat the user's straggler grace as a value for the original hedge-launch delay.
+No implementation is authorized until the design interview receives shared-understanding confirmation.
+
+The current frontier is launch policy,
+ participant count,
+ and collection grace duration.
+Later decisions include scoped participant selection,
  provider-diversity requirements,
- retry/concurrency bounds,
- winner and cancellation precedence,
- accounting finalization,
- and the integration scope of still-open prerequisite issues.
+ recovery bounds,
+ caller-cancellation and outer-deadline precedence after partial success,
+ available-usage finalization,
+ returned-review formatting,
+ and integration of still-open prerequisite issues.
+Recompute the frontier after the user's answers.
 
 ## Independent review
 
@@ -150,6 +164,7 @@ Leave those changes untouched.
 
 ## Next action
 
-Ask the root delivery-policy question without assuming default quality.
-Do not bundle delivery time with cancellation or retention of another review.
-Wait for the user's answer before determining the next decision frontier.
+Ask about launch timing,
+ participant count,
+ and the duration of post-success collection.
+Do not repeat the settled choice to return completed reviews together after bounded collection.
