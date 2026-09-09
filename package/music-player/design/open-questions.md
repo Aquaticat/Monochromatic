@@ -632,3 +632,43 @@ assistive-technology grouping.
 `Current track: Another Xronixle`,
  but production assistive technology must also
 confirm that current-state announcement.
+
+## 13. Unfolded accessibility pass, active review
+
+Installed TalkBack confirms that the accepted visual layout needs explicit traversal
+groups.
+ Default geometric sorting interleaves the pane actions,
+ letter rail,
+ track rows,
+folder names,
+ and playback deck.
+ Three visually identical candidates remain:
+
+- Pane by pane:
+   folder area,
+   playback deck,
+   then track pane.
+- Browse first:
+   folder area,
+   track pane,
+   then playback deck.
+- Playback first:
+   playback deck,
+   track pane,
+   then folder area.
+
+The current-row content description repeats the visible title.
+ The active form separately
+compares a structured `Current track` state description with one hand-composed complete
+sentence.
+
+Adaptive mode grouping is not a choice.
+ The 2×2 baseline becomes two two-item lists and
+the four-row baseline loses one shared group.
+ The repaired prototype uses direct
+Material-style radio segments inside one selectable group at every arrangement;
+ TalkBack
+announces accepted option order as one four-item list.
+ Reduced motion is also fixed:
+ the
+screen adds no autonomous or decorative motion.

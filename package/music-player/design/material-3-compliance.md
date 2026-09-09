@@ -369,6 +369,20 @@ longer names without shortening accessibility semantics.
  No branch adds horizontal
 scrolling.
 
+The accessibility-review prototype replaces nested row-level segmented semantics with
+direct Material-style radio segments inside one selectable group.
+ Installed TalkBack then
+announces all four options in accepted order at one row,
+ 2×2,
+ and four rows.
+ This is a
+semantic correction;
+ visible geometry,
+ colors,
+ 12dp padding,
+ and target size do not
+change.
+
 ### State cues and contrast
 
 The user's 2026-09-04 correction forbids color-only state communication.

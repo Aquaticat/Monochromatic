@@ -26,40 +26,48 @@ Read these files in order:
 
 ## Design questionnaire
 
-The accepted scale review is a self-contained HTML file under `questions/`.
- It shows
-accepted option 3B at every font scale exposed by the target Android Settings UI:
-0.85,
+The active accessibility review is a self-contained HTML file under `questions/`.
+ It
+keeps accepted option 3B visually unchanged while asking two separate questions:
+major-area TalkBack traversal and current-track speech.
+ Installed TalkBack evidence is
+captured directly from the unfolded emulator through its visible speech-output overlay.
+The prototype repairs the adaptive mode control as one four-item radio list at one row,
+2×2,
+ and four rows;
+ reduced motion forbids autonomous or decorative motion.
+
+The preceding accepted scale review covers every font scale exposed by the target Android
+Settings UI:
+ 0.85,
  1.0,
  1.15,
  1.30,
  1.50,
  1.80,
  and 2.0.
- The mode group uses one content-sized row at 85%,
+ The mode
+group uses one content-sized row at 85%,
  2×2 from 100% through 130%,
-and four rows from 150% through 200%.
- Every segment retains at least 12dp horizontal
-content padding.
- The `Shuffle` cell caps longer
-subdirectory names at rendered `Camellia` width with a middle ellipsis while retaining
-the full accessibility name.
-The earlier matrix and its 1A recommendation are historical evidence;
- the user chose
-3B.
- Each round embeds its visual evidence,
-option assessments,
-recommendation,
-and answer controls in one file.
-The file is rendered and interaction-checked before it is opened in Helium.
-For Android screen comparisons,
- the embedded rasters come from a non-functional
-Jetpack Compose prototype installed on the target emulator,
+ and four
+rows from 150% through 200%.
+ Every segment retains at least 12dp horizontal content
+padding.
+ The `Shuffle` cell caps longer subdirectory names at rendered `Camellia`
+width with a middle ellipsis while retaining the full accessibility name.
+
+Each round embeds its visual evidence,
+ option assessments,
+ recommendation,
+ and answer
+controls in one file.
+ The file is rendered and interaction-checked before it is opened in
+Helium.
+ Android evidence comes from a non-functional Jetpack Compose prototype
+installed on the target emulator,
  not from CSS redraws.
-The accepted round's prototype is preserved on
-`prototype/music-player-theme-compose`;
- its capture task waits for Compose content,
-then records the unfolded panel at 2076 × 2152px with native system bars.
+ The active prototype is
+preserved on `prototype/music-player-theme-compose`.
 
 After each correction,
 answer,
