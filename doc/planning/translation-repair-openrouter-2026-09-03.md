@@ -5762,6 +5762,63 @@ the relabel and the reorder as before,
 no `carried-evidence-lost`,
 and a settled page.
 
+## The seventh yuki page settles under the closed relabel and the full-vote evidence, 2026-09-09, 02:55 UTC
+
+`TALLY yuki418330012 status=SETTLED slices=9 repairStatus=repaired repairIssues=33 repairAccepted=20
+repairResolved=18 repairFindings=128 repairChanged=5 translateStatus=complete translateChanged=7 documentsDiffer=7
+pageChanged=6 pageSilent=1 alignmentFindings=5 selection=contested ms=4563909`
+at 02:51 UTC on `d6db46519`,
+76.1 minutes on Bedrock and OpenRouter beside the nineteenth `hakureico`,
+`~/temp/agent/yuki7-20260909`.
+The log in order:
+the roster paired the definitions by content
+(`7 usable voices of 8 heard`,
+the one refusal a definition paired with a body block),
+`FOOTNOTES entry=yuki418330012 relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired`,
+`FOOTNOTES entry=yuki418330012 definitions moved into the original's order: [^1], [^2]`,
+the re-preparation paired `7 of 8 original and 11 of 12 translation blocks`,
+the credits line was admitted as carried (`slice 8: coverage=carried, missingDestinations=0`),
+and no `INTERRUPTED` line:
+the guard read the wrapped credits as the full votes' evidence and passed.
+The three checks passed:
+the front matter is the archive's byte for byte,
+1 `json false start` read kept with no `schema-mismatch` beside it,
+no error finish.
+`verify-published` matched 1 of 1 at length (`wordings=8 silent=1 chars=5225=expected missing=0`);
+the silent slice is slice 2,
+which both lanes left as the archive has it (`archive-stands`).
+Destinations 0,
+quorum held (`quorum-not-met` 0,
+`one-reader-only` 0,
+`corroborated` 22),
+73 voices lost at the straggler window and no `HTTP 429`.
+Meters at the tally:
+OpenRouter 114.14 USD,
+Bedrock 194.66 USD.
+
+THE NINETEENTH CLASS IS FIXED ON THE PAGE.
+`Zhouzhou[^2] took her in and they lived together;` (line 103) stands above
+`[^2]: Yuki’s godmother? They were like mother and daughter. Zhouzhou cared for Yuki for a long time and averted
+many of Yuki’s suicide crises.` (line 136),
+and `Yuki went to stay with Zhenli[^1] to take a breather.` (line 109) above
+`[^1]: She was younger than Yuki, but she treated Yuki like an older sister would. She liked Yuki a lot, bought
+her gifts, and cooked her meals.` (line 134):
+each marker at its own note,
+the original's labels,
+the original's definition order,
+four markers on each side.
+The credits ship as `Contributors for this entry:\nZhenli,\nSansan,\nSuona`,
+the semantic wrap's shape,
+which the twentieth class's two fixes let through.
+
+THE TWO SLANG REGRESSIONS STAND,
+now on a second page:
+`自切` ships as `After she began cutting herself, their attitude improved significantly` (line 52) where the archive
+had `After she attempted self-surgery`,
+and `超天酱` ships as `Chōten-chan` (line 17) where the archive named *Needy Streamer Overload*.
+The bench does not know the community's words;
+the glossary question stands with the owner.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

@@ -1326,3 +1326,28 @@ The sixth `yuki418330012` pass stopped at the same guard on the folded reading o
 unrelated sentence a lane had rewritten;
 `d6db46519` makes the full votes' regions the only evidence and puts an interrupted entry's findings in the log.
 The nineteenth `hakureico` and the seventh `yuki418330012` run on it since 01:35 UTC.
+
+## What the seventh yuki418330012 launch showed (2026-09-09, 01:35 to 02:51 UTC)
+
+The page settled in 76 minutes on `d6db46519`,
+passed the three checks,
+matched at length,
+and carries each footnote marker at its own note under the original's labels and order:
+the nineteenth class is closed on a read page,
+and the twentieth with it,
+since the carried credits line passed the guard under the semantic wrap on the full votes' evidence.
+The two community-slang regressions stand on a second page (`cutting herself` for `自切`,
+`Chōten-chan` for `超天酱`),
+which is the glossary question.
+
+THE READING:
+the belief holds.
+Two pages read since the letter question (Arita,
+the seventh yuki) found no new class;
+the seven launches between them found two,
+each a guard or a pairing rule reading its evidence more strictly than the thing that produced it,
+each fixed and closed on a page the same day.
+What remains before an all-entries launch:
+the nineteenth `hakureico` page (running since 01:35 UTC),
+the owner's answer on the glossary,
+and the components no read page has met.

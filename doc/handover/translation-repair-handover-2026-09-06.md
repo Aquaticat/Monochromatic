@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 01:40 UTC on 2026-09-09 the tree is `d6db46519`:
+As of 02:55 UTC on 2026-09-09 the tree is `d6db46519`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -60,7 +60,14 @@ the `Arita` page settled on `2da6e7f22` at 00:13 UTC and read
 the double-quoted component line verbatim,
 no class found;
 see "The Arita page"),
-and the nineteenth `hakureico` and the seventh `yuki418330012` running on `d6db46519` since 01:35 UTC;
+the seventh `yuki418330012` page settled on `d6db46519` at 02:51 UTC and read
+(the three checks passed,
+`verify-published` matched at length,
+the nineteenth class fixed on the page,
+the credits carried through the guard,
+the two slang regressions standing;
+see "The nineteenth class" and "The glossary question"),
+and the nineteenth `hakureico` running on `d6db46519` since 01:35 UTC;
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -1014,6 +1021,13 @@ which two stops had lacked.
 Verdict suite shown to fail first.
 Recorded in the planning log under
 "The twentieth class's second face where a partial vote's quote is not evidence".
+The seventh `yuki418330012` pass (`d6db46519`,
+01:35 to 02:51 UTC,
+76.1 minutes) settled through the guard with the credits carried,
+and its page carries `Zhouzhou[^2]` above the godmother note and `Zhenli[^1]` above the sister note:
+the nineteenth class and the twentieth are closed on a read page.
+Recorded in the planning log under
+"The seventh yuki page settles under the closed relabel and the full-vote evidence".
 
 ## The Arita page
 
@@ -1048,6 +1062,8 @@ the KAngel character of *Needy Streamer Overload*,
 shipped as `Choco-chan` where the archive named the game.
 Both are regressions of correct archive renderings by a bench that does not know the community's words,
 and nothing in the pipeline tells it.
+The seventh `yuki418330012` page (`d6db46519`) shipped both again,
+`After she began cutting herself` and `Chōten-chan`.
 This is a design question for the owner,
 put in the session's report with the options and a ranking:
 a corpus glossary of community terms fed to the identity context
@@ -1109,16 +1125,14 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Two passes are running on `d6db46519`,
-    launched 01:35 UTC on 2026-09-09 on Bedrock and OpenRouter:
+1.  One pass is running on `d6db46519`:
     the nineteenth `hakureico`,
+    launched 01:35 UTC on 2026-09-09 on Bedrock and OpenRouter,
     runs dir `~/temp/agent/hakureico19-20260909`,
     log beside it,
-    pid 546904;
-    and the seventh `yuki418330012`,
-    runs dir `~/temp/agent/yuki7-20260909`,
-    log beside it,
-    pid 547017.
+    pid 546904.
+    The seventh `yuki418330012` settled beside it at 02:51 UTC and is read
+    (see "The nineteenth class" and the planning log).
     Each is watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit.
@@ -1132,17 +1146,7 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     the source's footnote definitions after the span),
     `[^1]` agreeing on both sides,
     slice 7 named as left out of the relabel reading,
-    no definition moved;
-    `yuki418330012`,
-    `relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired` and
-    `definitions moved into the original's order: [^1], [^2]` in the log,
-    the re-preparation pairing both definitions,
-    the carried credits line passing the guard
-    (no `carried-evidence-lost`;
-    an `INTERRUPTED yuki418330012:` line names the region if it does not),
-    `Zhouzhou[^2]` above `[^2]: ... substitute parent` and `Zhenli[^1]` above `[^1]: ... sister` on the page,
-    `pageSilent=0` or the silent block named,
-    and whether `自切` and `超天酱` regress again.
+    no definition moved.
     `Arita` is read (see "The Arita page").
     If the tree moves past `d6db46519` while either runs,
     the kill-and-relaunch rule applies.
