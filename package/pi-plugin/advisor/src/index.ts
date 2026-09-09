@@ -282,10 +282,18 @@ async function buildMainModelGuidance(
 
 //endregion Prompt guidance
 
-/** Operation internals exported for built-artifact verification. @internal */
-export { AdvisorOperationLedger, } from './operation-ledger.ts';
-export { aggregateAdvisorUsage, copyAdvisorUsage, } from './operation-usage.ts';
-export type { AdvisorAttemptRecord, AdvisorOperationSnapshot, } from './operation-types.ts';
+/**
+ Operation internals exported for built-artifact verification. @internal
+ */
+export { createAdvisorOperationLedger, } from './operation-ledger.ts';
+export {
+  aggregateAdvisorUsage,
+  copyAdvisorUsage,
+} from './operation-usage.ts';
+export type {
+  AdvisorAttemptRecord,
+  AdvisorOperationSnapshot,
+} from './operation-types.ts';
 
 export { buildAdvisorStatus, } from './status.ts';
 export { buildMainModelGuidance, };
@@ -307,7 +315,6 @@ export {
  */
 export {
   buildAdvisorSystemPromptForProject,
-  completeAdvisor,
   type CompleteAdvisorModel,
 } from './advisor-client.ts';
 
@@ -317,6 +324,7 @@ export {
  @internal
  */
 export { buildAdvisorUserMessageText, } from './advisor-request.ts';
+export { completeAdvisor, } from './advisor-completion-client.ts';
 
 /**
  Internal config helpers exported for built-artifact verification.

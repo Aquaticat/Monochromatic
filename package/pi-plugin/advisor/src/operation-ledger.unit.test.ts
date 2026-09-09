@@ -1,6 +1,6 @@
 /** Built-artifact checks for ledger immutability and available usage. @module */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { AdvisorOperationLedger, aggregateAdvisorUsage, copyAdvisorUsage, type AdvisorAttemptRecord, } from '../dist/final/node/index.mjs';
+import { createAdvisorOperationLedger, aggregateAdvisorUsage, copyAdvisorUsage, type AdvisorAttemptRecord, } from '../dist/final/node/index.mjs';
 
 /** Usage contains subset counters so accidental double-counting is observable. */
 const usage = {
@@ -41,7 +41,7 @@ await describe({ name: '', children: [
   }, },),
   it({ name: 'replaces usage snapshots and seals late updates after local cancellation', fn: async (): Promise<void> => {
     /** Operation under test. */
-    const ledger = new AdvisorOperationLedger({ startedAtMs: 0, deadlineAtMs: 100, },);
+    const ledger = createAdvisorOperationLedger({ startedAtMs: 0, deadlineAtMs: 100, },);
     ledger.record(attempt,);
     /** Earlier progress remains unchanged after later observations. */
     const earlier = ledger.snapshot();
@@ -64,7 +64,7 @@ await describe({ name: '', children: [
   }, },),
   it({ name: 'retains all reviews in attempt order and caps collection at the original deadline', fn: async (): Promise<void> => {
     /** Operation under test. */
-    const ledger = new AdvisorOperationLedger({ startedAtMs: 0, deadlineAtMs: 100, },);
+    const ledger = createAdvisorOperationLedger({ startedAtMs: 0, deadlineAtMs: 100, },);
     ledger.record({ ...attempt, state: 'succeeded', usage, usageIncomplete: false, },);
     ledger.record({ ...attempt, id: 2, model: 'other/two', state: 'succeeded', usage, usageIncomplete: false, },);
     ledger.collect({ review: { attemptId: 2, model: 'other/two', text: 'second', lengthLimited: true, }, collectionEndsAtMs: 120, },);

@@ -9,72 +9,61 @@ const l = tagged({ tag: 'advisor/operation-ledger', },);
 //region Ledger
 
 /**
- Own immutable published records while retaining mutable operation-local indexing.
+ Own immutable published records behind a frozen operation-local capability.
+ @param timing - original absolute operation boundaries
+ @returns ledger accessors and locally owned update methods
  @example
  ```ts
- const ledger = new AdvisorOperationLedger({ startedAtMs: 0, deadlineAtMs: 1000 });
+ const ledger = createAdvisorOperationLedger({ startedAtMs: 0, deadlineAtMs: 1000 });
  ```
  */
-export class AdvisorOperationLedger {
+export function createAdvisorOperationLedger(timing: {
+  readonly startedAtMs: number;
+  readonly deadlineAtMs: number;
+},) {
   /** Attempts indexed by local identity. */
-  readonly #attempts = new Map<number, AdvisorAttemptRecord>();
-  /** Usable reviews indexed by the successful attempt. */
-  readonly #reviews = new Map<number, AdvisorCollectedReview>();
+  const attempts = new Map<number, AdvisorAttemptRecord>();
+  /** Usable reviews indexed by their successful attempt. */
+  const reviews = new Map<number, AdvisorCollectedReview>();
   /** Provider exclusions discovered by this operation only. */
-  readonly #blocked = new Set<string>();
-  /** Absolute operation timing. */
-  readonly #timing: { readonly startedAtMs: number; readonly deadlineAtMs: number; };
-  /** Single post-success collection boundary. */
-  #collectionEndsAtMs?: number;
-  /** Local terminal state, also sealing late provider callbacks. */
-  #end?: AdvisorOperationEnd;
+  const blocked = new Set<string>();
+  /** Optional boundaries owned by this operation, never shared between calls. */
+  const state: { collectionEndsAtMs?: number; end?: AdvisorOperationEnd; } = {};
 
   /**
-   Create an empty operation ledger.
-   @param timing - original operation boundaries
-   @example
-   ```ts
-   new AdvisorOperationLedger({ startedAtMs: 0, deadlineAtMs: 1000 });
-   ```
-   */
-  constructor(timing: { readonly startedAtMs: number; readonly deadlineAtMs: number; },) {
-    this.#timing = timing;
-  }
-
-  /**
-   Insert or replace an attempt snapshot while this operation remains open.
-   @param record - detached attempt metadata
+   Insert or replace an attempt snapshot while the operation is open.
+   @param value - detached attempt metadata
    @example
    ```ts
    ledger.record(attempt);
    ```
    */
-  record(record: AdvisorAttemptRecord,): void {
-    if (this.#end !== undefined)
+  function record(value: AdvisorAttemptRecord,): void {
+    if (state.end !== undefined)
       return;
-    this.#attempts.set(record.id, record,);
+    attempts.set(value.id, value,);
   }
 
   /**
-   Return the latest recorded attempt, rejecting inconsistent identities.
+   Find an existing attempt without inventing a placeholder for an inconsistent identity.
    @param id - operation-local attempt identity
    @returns current immutable record
    @throws when no such attempt was started
    @example
    ```ts
-   const attempt = ledger.attempt(1);
+   const current = ledger.attempt(1);
    ```
    */
-  attempt(id: number,): AdvisorAttemptRecord {
+  function attempt(id: number,): AdvisorAttemptRecord {
     /** Latest attempt snapshot. */
-    const record = this.#attempts.get(id,);
-    if (record === undefined)
+    const value = attempts.get(id,);
+    if (value === undefined)
       throw new Error(`advisor: unknown attempt ${String(id,)}`,);
-    return record;
+    return value;
   }
 
   /**
-   Retain a review and establish the collection boundary only once.
+   Retain original usable text and establish the collection boundary only once.
    @param review - original usable text and identity
    @param collectionEndsAtMs - proposed first-success cutoff
    @example
@@ -82,14 +71,14 @@ export class AdvisorOperationLedger {
    ledger.collect({ review, collectionEndsAtMs: 1000 });
    ```
    */
-  collect({ review, collectionEndsAtMs, }: {
+  function collect({ review, collectionEndsAtMs, }: {
     readonly review: AdvisorCollectedReview;
     readonly collectionEndsAtMs: number;
   },): void {
-    if (this.#end !== undefined)
+    if (state.end !== undefined)
       return;
-    this.#reviews.set(review.attemptId, review,);
-    this.#collectionEndsAtMs ??= Math.min(collectionEndsAtMs, this.#timing.deadlineAtMs,);
+    reviews.set(review.attemptId, review,);
+    state.collectionEndsAtMs ??= Math.min(collectionEndsAtMs, timing.deadlineAtMs,);
   }
 
   /**
@@ -100,62 +89,66 @@ export class AdvisorOperationLedger {
    ledger.blockProvider('fixture-provider');
    ```
    */
-  blockProvider(provider: string,): void {
-    if (this.#end !== undefined)
+  function blockProvider(provider: string,): void {
+    if (state.end !== undefined)
       return;
-    tagged({ tag: 'blockProvider', l, },).debug(`excluding provider for this operation: ${provider}`,);
-    this.#blocked.add(provider,);
+    tagged({ tag: blockProvider.name, l, },).debug(`excluding provider for this operation: ${provider}`,);
+    blocked.add(provider,);
   }
 
   /**
-   Seal records and finalize locally cancelled pending attempts.
-   @param end - local reason scheduling and collection ended
-   @param now - cutoff timestamp
+   Seal records and locally finalize cancelled pending attempts.
+   @param end - reason scheduling and collection ended
+   @param now - local cutoff timestamp
    @example
    ```ts
    ledger.finish({ end: 'collection', now: 1000 });
    ```
    */
-  finish({ end, now, }: { readonly end: AdvisorOperationEnd; readonly now: number; },): void {
-    if (this.#end !== undefined)
+  function finish({ end, now, }: { readonly end: AdvisorOperationEnd; readonly now: number; },): void {
+    if (state.end !== undefined)
       return;
-    for (const record of this.#attempts.values()) {
-      if (record.state === 'running' || record.state === 'preparing') {
-        this.#attempts.set(record.id, {
-          ...record, state: 'cancelled', endedAtMs: now,
+    for (const value of attempts.values()) {
+      if (value.state === 'running' || value.state === 'preparing') {
+        attempts.set(value.id, {
+          ...value, state: 'cancelled', endedAtMs: now,
           diagnostic: `${end}: cancellation requested; remote settlement not confirmed`, usageIncomplete: true,
         },);
       }
     }
-    this.#end = end;
+    state.end = end;
   }
 
   /**
-   Publish detached containers with latest usage counted exactly once per attempt.
-   @returns operation snapshot safe to retain across later callbacks
+   Publish detached containers counting each attempt's available usage once.
+   @returns snapshot safe to retain across later callbacks
    @example
    ```ts
    const progress = ledger.snapshot();
    ```
    */
-  snapshot(): AdvisorOperationSnapshot {
+  function snapshot(): AdvisorOperationSnapshot {
     /** Stable attempt order inherited from insertion. */
-    const attempts = [...this.#attempts.values(),];
+    const records = [...attempts.values(),];
     return {
-      ...this.#timing,
-      ...(this.#collectionEndsAtMs === undefined ? {} : { collectionEndsAtMs: this.#collectionEndsAtMs, }),
-      attempts,
-      reviews: [...this.#reviews.values(),].toSorted(function byAttempt(left, right,): number {
+      ...timing,
+      ...state,
+      attempts: records,
+      reviews: [...reviews.values(),].toSorted(function byAttempt(left: AdvisorCollectedReview, right: AdvisorCollectedReview,): number {
         return left.attemptId - right.attemptId;
       },),
-      blockedProviders: [...this.#blocked,],
-      usage: aggregateAdvisorUsage(attempts.flatMap(function available(record,): readonly NonNullable<AdvisorAttemptRecord['usage']>[] {
-        return record.usage === undefined ? [] : [record.usage,];
+      blockedProviders: [...blocked,],
+      usage: aggregateAdvisorUsage(records.flatMap(function available(value: AdvisorAttemptRecord,): readonly NonNullable<AdvisorAttemptRecord['usage']>[] {
+        return value.usage === undefined ? [] : [value.usage,];
       },),),
-      usageIncomplete: attempts.some(function incomplete(record,): boolean { return record.usageIncomplete; },),
-      ...(this.#end === undefined ? {} : { end: this.#end, }),
+      usageIncomplete: records.some(function incomplete(value: AdvisorAttemptRecord,): boolean { return value.usageIncomplete; },),
     };
   }
+
+  return Object.freeze({ record, attempt, collect, blockProvider, finish, snapshot, },);
 }
+
+/** Operation-local ledger capability. */
+export type AdvisorOperationLedger = ReturnType<typeof createAdvisorOperationLedger>;
 
 //endregion Ledger

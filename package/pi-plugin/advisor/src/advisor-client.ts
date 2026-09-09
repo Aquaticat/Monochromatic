@@ -22,7 +22,7 @@ import type {
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { copyAdvisorUsage, } from './operation-usage.ts';
-export { completeAdvisor, } from './advisor-completion-client.ts';
+
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
 import { assertAdvisorEndpointOutputCapacity, } from './output-eligibility.ts';
@@ -75,7 +75,9 @@ type CompleteAdvisorModelOptions = {
    Provider stream options consumed by provider runtime.
    */
   readonly providerOptions?: ForeignHostCapability<SimpleStreamOptions>;
-  /** Observe available streaming counters without publishing provider-owned objects. */
+  /**
+   Observe available streaming counters without publishing provider-owned objects.
+   */
   readonly onUsage?: (usage: ReadonlyDeep<Usage>) => void;
 };
 
@@ -127,11 +129,18 @@ async function defaultCompleteAdvisorModel(
       `No provider registered for advisor model "${model.provider}/${model.id}"`,
     );
   }
-  /** Provider stream consumed so cancellation can retain already-received usage. */
-  const stream = provider.streamSimple(model, context, providerOptions,);
+  /**
+   Provider stream consumed so cancellation can retain already-received usage.
+   */
+  const stream = provider.streamSimple(
+    model,
+    context,
+    providerOptions,
+  );
   for await (const event of stream) {
     if ('partial' in event)
-      onUsage?.(copyAdvisorUsage(event.partial.usage,),);
+      onUsage?.(copyAdvisorUsage(event.partial
+        .usage,),);
   }
   return await stream.result();
 }
@@ -181,9 +190,13 @@ export type CompleteAdvisorOptions = ForeignHostCapability<{
    Override model completion implementation for focused tests.
    */
   readonly completeModel?: CompleteAdvisorModel;
-  /** Observe actual dispatch after authentication and request preparation. */
-  readonly onDispatch?: (reasoning: string | undefined) => void;
-  /** Observe detached streaming usage snapshots for cancellation accounting. */
+  /**
+   Observe actual dispatch after authentication and request preparation.
+   */
+  readonly onDispatch?: (metadata: { readonly reasoning?: string; }) => void;
+  /**
+   Observe detached streaming usage snapshots for cancellation accounting.
+   */
   readonly onUsage?: (usage: ReadonlyDeep<Usage>) => void;
 }>;
 
@@ -326,12 +339,17 @@ export async function requestAdvisor(
       === undefined ? {} : { headers: providerHeaders, }),
   };
 
-  options.signal?.throwIfAborted();
-  /** Remaining time includes local authentication and prompt preparation. */
-  const remainingMs = options.config.timeoutMs - (Date.now() - (options.operationStartedAtMs ?? Date.now()));
+  options.signal
+    ?.throwIfAborted();
+  /**
+   Remaining time includes local authentication and prompt preparation.
+   */
+  const remainingMs = options.config
+    .timeoutMs
+    - (Date.now() - (options.operationStartedAtMs ?? Date.now()));
   if (remainingMs <= 0)
     throw new Error(`advisor: operation deadline elapsed before dispatch to ${modelSlug}`,);
-  options.onDispatch?.(advisorReasoningLevel,);
+  options.onDispatch?.(advisorReasoningLevel === undefined ? {} : { reasoning: advisorReasoningLevel, },);
   return await completeModel({
     ctx: options.ctx,
     model: mutableModel,

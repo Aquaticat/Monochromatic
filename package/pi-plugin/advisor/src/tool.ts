@@ -14,9 +14,9 @@ import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   buildAdvisorSystemPromptForProject,
-  completeAdvisor,
   extractAdvisorText,
 } from './advisor-client.ts';
+import { completeAdvisor, } from './advisor-completion-client.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import {
   renderAdvisorCall,
