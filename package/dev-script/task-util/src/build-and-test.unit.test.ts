@@ -9,8 +9,8 @@ import {
 import {
   canonicalConfig,
   generatedConfig,
-  runBuildAndTestFixture,
-} from './build-and-test-fixture.ts';
+} from './build-and-test-fixture-config.ts';
+import { runBuildAndTestFixture, } from './build-and-test-fixture.ts';
 
 /** Invocation shapes choose root builds, package builds, and usage-parser quoting. */
 const INVOCATIONS = [
@@ -36,75 +36,75 @@ await describe({
   children: [
     it({
       name: 'generated mise configuration contains the current canonical source',
-      fn: () => {
+      fn: async (): Promise<void> => {
         expect(generatedConfig.startsWith(
           `# Generated from mise.no-env.toml by file-enforcer.\n${canonicalConfig}\n`,
         ),).toBe(true,);
       },
     },),
-    ...INVOCATIONS.flatMap(function invocationTests(invocation,) {
-      return OUTCOMES.map(function outcomeTest(outcome,) {
+    ...INVOCATIONS.flatMap(function invocationTests(invocation,): ReturnType<typeof it>[] {
+      return OUTCOMES.map(function outcomeTest(outcome,): ReturnType<typeof it> {
         return it({
           name: `${invocation.name}: ${outcome.name}`,
-          fn: () => {
+          fn: async (): Promise<void> => {
             /** Fresh processes prevent prior task status or output from influencing this case. */
-            const result = runBuildAndTestFixture({ args: invocation.args, ...outcome, },);
-            expect(result.process.signal,).toBeNull();
-            expect(result.process.status,).toBe(outcome.buildFails || outcome.testFails ? 1 : 0,);
+            const result = await runBuildAndTestFixture({ args: invocation.args, ...outcome, },);
+            expect(result.exitCode,).toBe(outcome.buildFails || outcome.testFails ? 1 : 0,);
             expect(result.events,).toEqual([invocation.build, 'test',],);
             if (outcome.buildFails) {
               expect(result.output,).toContain(`fixture ${invocation.build} failed`,);
               expect(result.output,).toContain('build phase failed',);
+              expect(result.output,).toContain('[cause]: Error: Command failed: mise run ',);
             }
             if (outcome.testFails) {
               expect(result.output,).toContain('fixture test failed',);
               expect(result.output,).toContain('test phase failed',);
+              expect(result.output,).toContain(invocation.args.length === 0
+                ? '[cause]: Error: Command failed: mise run test'
+                : '[cause]: Error: test files failed:',);
             }
           },
         },);
       },);
     },),
-    ...[false, true,].map(function missingBuildTest(testFails,) {
+    ...[false, true,].map(function missingBuildTest(testFails,): ReturnType<typeof it> {
       return it({
         name: `missing package build still runs ${testFails ? 'failing' : 'passing'} tests`,
-        fn: () => {
+        fn: async (): Promise<void> => {
           /** Missing build tasks are not equivalent to attempted builds returning failure. */
-          const result = runBuildAndTestFixture({
+          const result = await runBuildAndTestFixture({
             args: ['package/fixture/demo/test.ts',],
             packageBuild: false,
             buildFails: true,
             testFails,
           },);
-          expect(result.process.signal,).toBeNull();
-          expect(result.process.status,).toBe(testFails ? 1 : 0,);
+          expect(result.exitCode,).toBe(testFails ? 1 : 0,);
           expect(result.events,).toEqual(['test',],);
         },
       },);
     },),
     it({
       name: 'explicit try task continues to tolerate build failure',
-      fn: () => {
+      fn: async (): Promise<void> => {
         /** The named tolerant boundary remains distinct from buildAndTest. */
-        const result = runBuildAndTestFixture({ task: 'try', args: ['build',], buildFails: true, testFails: false, },);
-        expect(result.process.signal,).toBeNull();
-        expect(result.process.status,).toBe(0,);
+        const result = await runBuildAndTestFixture({ task: 'try', args: ['build',], buildFails: true, testFails: false, },);
+        expect(result.exitCode,).toBe(0,);
         expect(result.events,).toEqual(['root-build',],);
         expect(result.output,).toContain('fixture root-build failed',);
       },
     },),
     it({
       name: 'explicit prepareAndBuild--allowFailure tolerates both phase failures',
-      fn: () => {
+      fn: async (): Promise<void> => {
         /** Preparation and build failures must both remain visible without failing this opt-in task. */
-        const result = runBuildAndTestFixture({
+        const result = await runBuildAndTestFixture({
           task: 'prepareAndBuild--allowFailure',
           args: [],
           prepareFails: true,
           buildFails: true,
           testFails: false,
         },);
-        expect(result.process.signal,).toBeNull();
-        expect(result.process.status,).toBe(0,);
+        expect(result.exitCode,).toBe(0,);
         expect(result.events,).toEqual(['prepare', 'root-build',],);
         expect(result.output,).toContain('fixture prepare failed',);
         expect(result.output,).toContain('fixture root-build failed',);
