@@ -6,6 +6,9 @@ This is a synthesis for shared-understanding review, not the finished skill or a
 The [discovery record](teaching-skill.md) retains the user's examples, corrections, and rejected questions.
 The local Promises page is a source of counterexamples, not an accepted teaching design.
 `AGENTS.md` remains outside this change.
+The user marked the independent review's `Concerns that require real learner observation` section as fine.
+Do not turn that section into a learner-study requirement or an approval gate.
+The [implemented review corrections](../handover/promises-review-corrections.md) supply additional concrete evidence.
 
 ## Learner framing and prerequisite sequencing
 
@@ -37,6 +40,10 @@ Passing behavior:
 - Place the object explanation before explanations that require understanding objects.
 - Keep necessary foundations in the teaching path.
   Optional background can be folded away without making the main explanation depend on hidden knowledge.
+- Bridge a changed state model before requiring a combined application:
+  a single-operation cancellation exercise does not itself teach ownership of overlapping sends.
+- State which supplied source is teaching machinery and which the learner must construct.
+  Extra implementation details are optional only when the independent task has a taught alternative.
 
 Counterexamples this must catch:
 
@@ -200,7 +207,9 @@ Promise acceptance example:
 
 The semantic basis was checked against MDN's
 [resolve function documentation][resolve-function].
-This is a proposed exercise; it has not been added to the local lesson or claimed as browser-tested.
+The local lesson now includes and exercises this adoption experiment.
+The correction handover records its retained browser verification;
+that evidence does not constitute approval of a general teaching-skill policy.
 
 ## HTML behavior and repository reuse
 
@@ -215,6 +224,10 @@ Passing behavior:
 - Provide syntax highlighting and legible code presentation using relevant existing capabilities.
 - Make controls behave as their presentation suggests.
   Distinguish read-only indicators from actions rather than adding arbitrary actions to every card.
+- Remove required timing races rather than merely making their windows longer.
+  Manual outcomes and prearranged action sequences are distinct ways to expose the actual mechanism.
+- Inspect the usable reading space around controls and results,
+  not only whether a programmatic click or horizontal-overflow assertion passes.
 
 Counterexamples this must catch:
 
@@ -232,9 +245,10 @@ Repository evidence:
 - `package/ssg/aquati.cat/src/style/highlight.ts` supplies the corresponding styles;
   `package/ssg/aquati.cat/src/style/base.ts` consumes them.
 
-This establishes a relevant existing implementation, not a verified standalone integration.
-A lesson implementation must exercise its chosen integration,
-including changed code, themes, and print output where applicable.
+The repository lookup alone established a relevant implementation, not a verified standalone integration.
+The lesson subsequently reused its grammars and tag mapping with a separate native-editor presentation.
+The correction handover records checks of changed code, themes, and print output.
+Any other lesson must still exercise its own chosen integration.
 The acceptance checks do not prescribe copying the whole site client into a lesson.
 
 ### Preserve both teaching substance and browser interactivity
@@ -264,6 +278,11 @@ The scope of print adaptation is interactive mechanics, not conceptual depth or 
 Passing behavior:
 
 - Verify controls, displayed outcomes, examples, exports, offline behavior, and print behavior as applicable.
+- Execute every worked comparison in its advertised editor or file context,
+  including the promised controls and failure paths.
+  Counting or printing an exercise is not execution coverage.
+- Test the proposed repair, not only the original defect:
+  deleting a duplicate declaration can leave missing dependencies and unwired controls.
 - Separately review prerequisites, definitions, causal models, examples, and learner actions.
 - Provide opportunities to build or perform independently and explain the result,
   progressively withdrawing supplied answers and scaffolding.
@@ -281,6 +300,12 @@ Counterexamples this must catch:
 - Browser tests pass, so the lesson is declared pedagogically adequate.
 - The reference chat application works, so the learner is declared capable of building one.
 - The learner is said to have understood or noticed something without supporting evidence.
+- A capstone appears in the dropdown and printout but is absent from the worked-comparison execution loop.
+- A helper is described as Promise-returning while a stated input condition throws before the call returns.
+- A label says backoff has started, but a Stop probe runs before the actual wait exists.
+
+These distinctions govern what a report can claim.
+They do not reopen the learner-observation concerns that the user accepted as fine.
 
 ### Scope proposed for confirmation
 
@@ -295,6 +320,7 @@ print support used to suppress browser interactivity,
 and clarification without an initial reasoned diagnosis.
 
 The final skill and any lesson reconstruction remain separate from this requirements proposal.
-This document does not claim user confirmation, a finished skill, or a repaired Promises lesson.
+The implemented lesson repair is evidence for these counterexamples,
+not confirmation of this proposal or completion of the teaching skill.
 
 [resolve-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise
