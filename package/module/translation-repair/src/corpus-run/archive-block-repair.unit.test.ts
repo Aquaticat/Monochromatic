@@ -181,7 +181,7 @@ await describe({
           ['chat.webp', supported,],
           ['elsewhere.webp', { ...supported, readings: [{ modelId: ROSTER[0], text: '无关内容', },], },],
           ['portrait.webp', { kind: 'no-text', characters: 0, },],
-          ['unread.webp', { kind: 'unavailable', reason: 'readers-disagree', },],
+          ['unread.webp', { kind: 'unavailable', reason: 'readers-disagree', transient: false, perReader: [], },],
         ],);
         /** Review contexts produced by the same mapper preparation uses. */
         const contexts = archiveBlockSourceContexts({ prepared, pictureReadings, },);
@@ -199,7 +199,7 @@ await describe({
           prepared: {
             ...prepared,
             unclaimedTargetBlocks: prepared.unclaimedTargetBlocks.map(function outside(block,) {
-              return { ...block, location: { kind: 'target-only', sectionIndex: 0, }, };
+              return { ...block, location: { kind: 'target-section', sectionIndex: 0, }, };
             },),
           },
           pictureReadings,
