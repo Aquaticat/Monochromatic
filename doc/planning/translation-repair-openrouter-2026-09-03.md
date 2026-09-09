@@ -6168,6 +6168,19 @@ and the guard's outcome is in the artifact,
 so a lane's trim,
 a consolidation's rewrite and a contest's per-slice choice meet one reading before the tally.
 
+THE NEXT ENTRY,
+by the census (scratch `unmet-shapes.mjs`):
+`hulicaijia` (6,651 characters,
+309 lines,
+photos;
+`<ruby>コネクト<rt>Connect</rt></ruby>` inline beside a `[^1]` reference,
+`<Sakura count="50" />` at the end),
+two shapes on no read page and a footnote,
+never run,
+launched at 09:34 UTC on `3620004db` beside the fourth `gqt` and `Mio`
+(`~/temp/agent/hulicaijia1-20260909`,
+pid 668600).
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

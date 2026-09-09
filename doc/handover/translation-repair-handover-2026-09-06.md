@@ -1255,7 +1255,7 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Two passes are running on `3620004db`,
+1.  Three passes are running on `3620004db`,
     each watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit:
@@ -1270,7 +1270,13 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     two shapes on no read page),
     launched 08:01 UTC,
     runs dir `~/temp/agent/mio4-20260909`,
-    pid 650761.
+    pid 650761;
+    the first `hulicaijia` (an inline `<ruby>` annotation beside a footnote reference,
+    `<Sakura count="50" />` at the end;
+    two shapes on no read page),
+    launched 09:34 UTC,
+    runs dir `~/temp/agent/hulicaijia1-20260909`,
+    pid 668600.
     The first three `gqt` and `Mio` launches were killed under the kill-and-relaunch rule as `9abcbee50`,
     `379122379` and `3620004db` landed,
     none at its tally.
@@ -1287,7 +1293,11 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     each list item's marker and bold lead,
     the emphasis;
     `Mio`,
-    the rule's position and the URL verbatim.
+    the rule's position and the URL verbatim;
+    `hulicaijia`,
+    the ruby element and the Sakura line verbatim,
+    the footnote's reference above its definition,
+    the `pageAssembly` section empty or its findings explained.
     If the tree moves past `3620004db` while any runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
