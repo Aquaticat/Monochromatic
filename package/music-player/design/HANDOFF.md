@@ -3531,14 +3531,39 @@ minimized.
 user's review.
 
 The user accepted the strict-12dp adaptive 3B review on 2026-09-08 and asked to
-continue with the next required work.
- The design frontier is closed:
- preserve the
-questionnaire as accepted evidence,
- close its Helium window,
- then integrate this exact
-screenshot-bounded treatment into the production Android application.
- Production
-verification must exercise the adaptive group and current-track announcements with
-assistive technology;
- prototype UI Automator evidence alone does not settle that boundary.
+continue with the next required design work.
+ Acceptance authorizes recording the design and
+advancing its design frontier only;
+ it does not authorize production implementation.
+ The
+questionnaire remains accepted evidence and its Helium window is closed.
+
+The earlier handover sentence directing production integration was wrong.
+ It caused an
+unauthorized production Android implementation attempt.
+ Main commit `6d2d06e41`
+reverts every app-source,
+ test,
+ dependency,
+ and task change from that attempt while
+preserving interleaved concurrent commits.
+ The emulator used for the mistaken probe is
+stopped;
+ because a production debug APK replaced the prototype before shutdown,
+ reinstall
+the accepted prototype before collecting more design evidence.
+ GitHub issue
+[#508](https://github.com/Aquaticat/Monochromatic/issues/508) proposes an agent rule
+preventing this scope error;
+ the user explicitly requested an issue instead of an immediate
+`AGENTS.md` edit.
+
+Continue in the design prototype only.
+ The next in-boundary design task is the unfolded
+accessibility pass:
+ validate focus order,
+ the current-track announcement,
+ and the
+single-select group announcement at every adaptive mode layout.
+ Do not modify production
+application source unless the user later gives an explicit implementation request.
