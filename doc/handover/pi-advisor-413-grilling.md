@@ -9,7 +9,8 @@ Implementation is not the only possible resolution:
  reframing or declining hedging remains open.
 
 No implementation changes or verification runs have occurred in this interview.
-The first decision round is pending.
+The first decision round received a correction to its quality premise.
+The winner policy remains undecided.
 
 ## Evidence
 
@@ -66,9 +67,11 @@ The historical provider failures in
 
 ## Acceptance criteria that need scrutiny
 
-- First completion turns model preference into a launch preference,
-   unless the racing models are explicitly approved as interchangeable reviewers.
-  Transport success and visible text do not establish equivalent review quality.
+- First completion turns model preference into a launch preference.
+  The user states that the default reviewer has no guarantee of good quality.
+  Do not infer a quality endorsement from default status or require an equivalence tier.
+  Transport success and visible text are operational properties,
+   not semantic quality guarantees.
 - The issue body asks for a different provider,
    while its checklist only prefers one.
   Distinct provider identifiers do not by themselves establish independent infrastructure.
@@ -89,21 +92,25 @@ The historical provider failures in
 
 ## Decision tree
 
-Root decision pending:
- what outcome should justify replacing an unfinished preferred review?
+User correction to Q1:
 
-Candidate policies to discuss:
+> We do not guarantee the default reviewer is of a good quality.
 
-- Permit first-completion replacement only among user-approved interchangeable reviewers.
-- Preserve the preferred reviewer until failure or the operation deadline.
-- Permit any eligible fallback to replace the preferred reviewer merely by finishing first.
+The agent withdrew its recommendation for an explicit interchangeable-quality tier.
+That recommendation treated default status as an endorsement unsupported by the current cost selector.
+Do not replace the withdrawn tier with another implicit quality guarantee.
 
-Recommendation for the first round:
- permit a race only among explicitly approved interchangeable reviewers,
- not every model that happens to be scoped and output-eligible.
-No automatic quality equivalence is proposed.
+The correction does not itself select concurrency,
+ returned-result priority,
+ or the disposition of late reviews.
+The next root question is what outcome the user wants from overlapping reviews,
+ without a quality-based privilege for the initial reviewer.
 
-After that answer,
+Keep these decisions separate:
+ when a usable result is delivered,
+ whether remaining work continues,
+ and whether additional completed reviews are retained.
+After each answer,
  recompute the frontier rather than asking speculative configuration questions.
 Possible dependent decisions include:
  approved participants,
@@ -126,6 +133,11 @@ Its issue-number mapping was inconsistent with the fetched issue bodies.
 Use the verified mapping in the Evidence section,
  not that part of the Advisor response.
 
+A second independent review checked the user's correction.
+It confirmed that absence of a quality guarantee does not establish reviewer equivalence
+ or settle first-completion behavior.
+It also confirmed that the withdrawn quality-tier recommendation must not remain active.
+
 ## Worktree boundaries
 
 Initial unrelated changes:
@@ -138,7 +150,6 @@ Leave those changes untouched.
 
 ## Next action
 
-Ask the root winner-policy question with concrete behavior,
- per-option tradeoffs,
- and a full recommendation ranking.
+Ask the root delivery-policy question without assuming default quality.
+Do not bundle delivery time with cancellation or retention of another review.
 Wait for the user's answer before determining the next decision frontier.
