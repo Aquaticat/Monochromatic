@@ -222,6 +222,7 @@ fun Page.isFolderPage(): Boolean {
     // ```ts
     // const folderPrefix: string = `${page.label}/`;
     // ```
+    /** Holds exact entry prefix that proves this page represents its named folder. */
     val folderPrefix: String = "$label/"
     // What:     `entries.firstOrNull()?.name?.startsWith(folderPrefix) == true` reads the first
     //           entry when present, safely follows its name, and compares the prefix result to

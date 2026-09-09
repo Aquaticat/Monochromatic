@@ -53,6 +53,7 @@ internal fun unfoldedFolderTargets(state: PlayerUiState): List<UnfoldedPageTarge
     // ```
     return state.folderPageIndices.mapNotNull { pageIndex ->
         // `getOrNull` returns null instead of throwing for a stale index.
+        /** Holds one valid folder label retained by this mapping callback. */
         val label: String = state.pageLabels.getOrNull(pageIndex) ?: return@mapNotNull null
         // Construct one immutable target retained by `mapNotNull`.
         UnfoldedPageTarget(pageIndex = pageIndex, label = label)
@@ -80,6 +81,7 @@ internal fun unfoldedLetterTargets(state: PlayerUiState): List<String> {
     // ```ts
     // const folderIndices = new Set(state.folderPageIndices);
     // ```
+    /** Holds folder membership for repeated page-kind checks. */
     val folderIndices: Set<Int> = state.folderPageIndices.toSet()
     // What:     `val labels: List<String> = state.pageLabels.mapIndexedNotNull { ... }` maps each
     //           page with its numeric index and removes null results. The result remains ordered.
@@ -93,6 +95,7 @@ internal fun unfoldedLetterTargets(state: PlayerUiState): List<String> {
     //   return value === undefined ? [] : [value.toUpperCase()];
     // });
     // ```
+    /** Holds one normalized rail label per classified page before deduplication. */
     val labels: List<String> = state.pageLabels.mapIndexedNotNull { index, label ->
         if (index in folderIndices) {
             label.firstOrNull()?.uppercaseChar()?.toString()
@@ -108,7 +111,8 @@ internal fun unfoldedLetterTargets(state: PlayerUiState): List<String> {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return [...new Set(labels)].sort((a, b) => (a === "#" ? 1 : 0) - (b === "#" ? 1 : 0) || a.localeCompare(b));
+    // return [...new Set(labels)].sort((a, b) =>
+    //   (a === "#" ? 1 : 0) - (b === "#" ? 1 : 0) || a.localeCompare(b));
     // ```
     return labels.distinct().sortedWith(compareBy<String> { it == "#" }.thenBy { it })
 }
@@ -134,6 +138,7 @@ internal fun unfoldedPageForLetter(state: PlayerUiState, letter: String): Int? {
     // ```ts
     // const normalizedLetter = letter.toUpperCase();
     // ```
+    /** Holds caller label in the same casing used by rendered rail targets. */
     val normalizedLetter: String = letter.uppercase()
     // What:     `val folderMatch: Int? = ...firstOrNull { ... }` searches recorded folder indices
     //           and returns the first matching index or null. Safe calls prevent stale indices or
@@ -142,10 +147,16 @@ internal fun unfoldedPageForLetter(state: PlayerUiState, letter: String): Int? {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const folderMatch = state.folderPageIndices.find((index) => state.pageLabels[index]?.[0]?.toUpperCase() === normalizedLetter);
+    // const folderMatch = state.folderPageIndices.find((index) =>
+    //   state.pageLabels[index]?.[0]?.toUpperCase() === normalizedLetter);
     // ```
+    /** Holds first matching folder page index, or null when no folder starts with this label. */
     val folderMatch: Int? = state.folderPageIndices.firstOrNull { pageIndex ->
-        state.pageLabels.getOrNull(pageIndex)?.firstOrNull()?.uppercaseChar()?.toString() == normalizedLetter
+        state.pageLabels
+            .getOrNull(pageIndex)
+            ?.firstOrNull()
+            ?.uppercaseChar()
+            ?.toString() == normalizedLetter
     }
     if (folderMatch != null) {
         return folderMatch
