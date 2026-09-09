@@ -1,4 +1,8 @@
 import { assertReplacementsChange, } from './assembly-invariant.ts';
+import {
+  definitionBlockCount,
+  trimOrphanDefinitions,
+} from './assembly-orphan-trim.ts';
 import { footnoteIdentifiers, } from './footnote-mentions.ts';
 import type { FootnoteGraphFinding, } from './footnote-model.ts';
 import { parseDocument, } from './parse-document.ts';
@@ -301,8 +305,14 @@ function suspectsFor(
  * can orphan an identifier a DIFFERENT replacement introduced alongside it:
  * one slice renumbers `[^1]` to `[^2]` while another supplies the `[^2]`
  * definition, so withdrawing the first leaves the second's definition with
- * nothing pointing at it. Each round withdraws at least one replacement, so the
- * loop is bounded by their count.
+ * nothing pointing at it. Each round withdraws at least one replacement or
+ * trims at least one definition block, so the loop is bounded by their count
+ * plus the count of definition blocks.
+ *
+ * AN ORPHAN DEFINITION IN A DEFINITIONS-ONLY REPLACEMENT is trimmed rather
+ * than withdrawn with its siblings (`assembly-orphan-trim.ts`): the nineteenth
+ * `hakureico` pass of 2026-09-09 lost the definition its body needed because
+ * the one beside it had no reference on the sealed page.
  *
  * The guard runs at ASSEMBLY, after per-slice records were settled and cached,
  * so a withdrawn slice's record still says it changed while the document ships
@@ -389,7 +399,12 @@ export function guardFootnoteAssembly(
      * Replacements still standing at the start of a round.
      */
     let surviving = replacements;
-    for (let round = 0; round <= replacements.length; round += 1) {
+    /**
+     * Rounds the loop may take: one withdrawal per replacement, one trim per
+     * definition block, and the round that settles.
+     */
+    const rounds = replacements.length + definitionBlockCount({ replacements, },);
+    for (let round = 0; round <= rounds; round += 1) {
       /**
        * This round's replacements under a name nothing reassigns, so every
        * closure below reads the round it was made in rather than the cursor.
@@ -452,6 +467,22 @@ export function guardFootnoteAssembly(
           assembledText,
           surviving: standing,
         };
+      }
+
+      /**
+       * Orphan definitions cut out of definitions-only replacements, so the
+       * notes the page needs stay beside the one it cannot carry.
+       */
+      const trimmed = trimOrphanDefinitions({
+        findings: introduced,
+        replacements: standing,
+        incumbentBySlice,
+      },);
+      if (trimmed.trimmed) {
+        findings.push(...trimmed.findings,);
+        withdrawn.push(...trimmed.withdrawn,);
+        surviving = trimmed.replacements;
+        continue;
       }
 
       /**
@@ -526,9 +557,9 @@ export function guardFootnoteAssembly(
       },);
     }
     throw new Error(
-      `footnote assembly guard ran ${String(replacements.length + 1,)} rounds `
+      `footnote assembly guard ran ${String(rounds + 1,)} rounds `
         + 'without settling, which its own bound makes impossible: every round '
-        + 'withdraws at least one replacement',
+        + 'withdraws at least one replacement or trims one definition block',
     );
   })();
 

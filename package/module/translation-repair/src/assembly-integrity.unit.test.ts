@@ -18,10 +18,12 @@ import {
 
 import {
   AssemblyContractError,
+  type ChunkPair,
   footnoteIdentifiers,
   guardFootnoteAssembly,
   introducedFootnoteFindings,
   introducedStructuralRegressions,
+  makeInsertionChunk,
   prepareDocumentPair,
 } from '../dist/final/node/index.mjs';
 
@@ -385,6 +387,108 @@ await describe({
           .some(function namesRevert(finding,): boolean {
             return finding.startsWith('assembly-footnote-reverted',);
           },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'TRIMS an orphan definition out of a definitions-only insertion '
+        + 'and keeps the sibling the page needs, instead of withdrawing the '
+        + 'whole insertion (the nineteenth hakureico pass of 2026-09-09 shipped '
+        + 'a reference with no note that way)',
+      fn: async () => {
+        /**
+         * Archive whose body refers to a note it never defines.
+         */
+        const referring = 'The cat naps on the windowsill[^1].\n';
+
+        /**
+         * One content slice plus the anchor where the notes belong.
+         */
+        const slices: readonly ChunkPair[] = [
+          {
+            source: {
+              kind: 'content',
+              sliceIndex: 0,
+              nodes: [],
+              startOffset: 0,
+              endOffset: 12,
+              text: '猫猫在窗台上打盹〔1〕。',
+            },
+            target: {
+              kind: 'content',
+              sliceIndex: 0,
+              nodes: [],
+              startOffset: 0,
+              endOffset: referring.length,
+              text: referring,
+            },
+          },
+          {
+            source: {
+              kind: 'content',
+              sliceIndex: 1,
+              nodes: [],
+              startOffset: 14,
+              endOffset: 40,
+              text: '〔1〕：那是它最喜欢的位置。\n\n〔2〕：一只麻雀。',
+            },
+            target: makeInsertionChunk({
+              sliceIndex: 1,
+              offset: referring.length,
+            },),
+          },
+        ];
+        const guarded = guardFootnoteAssembly({
+          targetText: referring,
+          slices,
+          replacements: [{
+            sliceIndex: 1,
+            replacementText: '[^1]: That is its favourite spot.\n\n[^2]: A sparrow.\n',
+          },],
+        },);
+        expect(guarded.revertedChunkIndices,).toEqual([],);
+        expect(guarded.assembledText,).toContain('[^1]: That is its favourite spot.',);
+        expect(guarded.assembledText,).not.toContain('[^2]',);
+        expect(guarded.replacements,).toEqual([{
+          sliceIndex: 1,
+          replacementText: '[^1]: That is its favourite spot.\n',
+        },],);
+        expect(guarded.findings,).toEqual([
+          'assembly-footnote-trimmed orphan-definition gfm 2 (slice 1)',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'WITHDRAWS a prose replacement that carries an orphan definition '
+        + 'among its paragraphs, since cutting a block out of judged prose '
+        + 'would ship a text nobody judged',
+      fn: async () => {
+        /**
+         * Slices of the fixture pair.
+         */
+        const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
+
+        /**
+         * Index of the slice carrying the reference.
+         */
+        const referring = sliceCarrying({
+          slices,
+          needle: 'doing the sleeping',
+        },);
+        const guarded = guardFootnoteAssembly({
+          targetText: TARGET_TEXT,
+          slices,
+          replacements: [{
+            sliceIndex: referring,
+            replacementText: '## The cat\n\nThe cat naps on the windowsill[^1].\n\n[^9]: A note nothing points at.',
+          },],
+        },);
+        expect(guarded.revertedChunkIndices,).toEqual([referring,],);
+        expect(guarded.assembledText,).toBe(TARGET_TEXT,);
+        expect(guarded.findings,).toEqual([
+          'assembly-footnote-reverted orphan-definition gfm 9 (round 1)',
+        ],);
       },
     },),
 

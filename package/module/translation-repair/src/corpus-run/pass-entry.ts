@@ -12,7 +12,7 @@ import type { RunClient, } from './run-client-contract.ts';
 import { preparePassEntry, } from './pass-prepare.ts';
 import { frontMatterSliceIndexes, } from '../front-matter-slice.ts';
 import { settledEntryArtifact, } from './pass-entry-artifact.ts';
-import { assertCarriedInsertionsRemain, } from './carried-insertion-completeness.ts';
+import { assertPageGuards, } from './pass-page-guards.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
 import { runPassContest, } from './pass-contest.ts';
 import type {
@@ -414,7 +414,7 @@ async function runEntryPipeline(
      * artifact should claim it did; the stage caches still hold every answer, so
      * a re-run reproduces the contradiction rather than losing it.
      */
-    assertCarriedInsertionsRemain({
+    assertPageGuards({
       artifact,
       slices: prepared.slices,
       targetText: settledArchiveText,

@@ -27,6 +27,11 @@ export {
   introducedStructuralRegressions,
 } from './assembly-integrity.ts';
 export {
+  definitionBlockCount,
+  type TrimmedReplacements,
+  trimOrphanDefinitions,
+} from './assembly-orphan-trim.ts';
+export {
   type ContentSurvival,
   contentSurvivalFindings,
   distinctiveWords,
