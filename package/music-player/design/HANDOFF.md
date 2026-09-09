@@ -3637,3 +3637,80 @@ self-contained Helium form with separate decisions for traversal order and curre
 speech;
  adaptive-group and reduced-motion repairs are fixed requirements,
  not options.
+
+Further TalkBack probing found that one selectable group still needs direct semantic
+children.
+ Intermediate row wrappers caused incorrect or split item positions.
+ Prototype
+commits `3a75bfed8`,
+ `2a1665d89`,
+ `eb1499fc7`,
+ and `9ffe23c9c`
+flatten the 2×2 and four-row branches while retaining the accepted pixels.
+ Final native
+speech evidence confirms `1 of 4` through `4 of 4` at 85%,
+ 100%,
+ and 150%.
+ At
+100%,
+ TalkBack follows row-major option order even though cells form a visual 2×2.
+
+The active self-contained form now asks two separable decisions:
+
+- F1 pane by pane,
+  F2 browse first,
+   or F3 playback first;
+- S1 structured current state or S2 one composed current-track sentence.
+
+The full rankings are F1 > F2 > F3 and S1 > S2.
+ Main commits `ec518d940` and
+`5cdb4602c` build the form and its local clipboard path;
+ `c833bb8d1` updates
+design documentation.
+ The form embeds eight distinct 2076 × 2152px TalkBack
+captures and depends on no external resources.
+ At 1920 × 1080 and 390 × 500 CSS px it
+has no horizontal page overflow;
+ every narrow review card is 348px wide.
+ Its short
+mobile preview fits as a 195 × 201px frame inside a 356 × 233px stage.
+ Fit,
+ native
+pixels,
+ reset,
+ zoom,
+ focus restoration,
+ whitespace rejection,
+ prepared output,
+ and
+trusted-click clipboard copy pass.
+ Desktop page and preview axe checks each report zero
+violations and zero incomplete checks.
+ Offline reload retains all eight images with no
+network resources.
+
+Disposable controls reject a removed ranking,
+ a duplicated evidence raster,
+ and a
+wrong traversal transcript;
+ every mutation restores and the validator passes.
+ The
+design lint and unit contract pass.
+ `doc/troubleshooting/android-emulator-37-talkback-speech-capture.md`
+records the TalkBack and emulator gRPC evidence bridge.
+`doc/troubleshooting/kotlin-2-2-10-parallel-gradle-cache.md` records why Gradle
+commands for one project must remain sequential.
+
+TalkBack is disabled,
+ Android font scale and all animation scales are restored to 1.0,
+temporary device evidence files are removed,
+ and the emulator is stopped.
+ Production app
+source is unchanged from accepted-review commit `57ccfcac9`;
+ the mistaken implementation
+remains fully reverted by `6d2d06e41`.
+ Open the cleared accessibility form in normal
+Helium,
+ verify its exact window is active and non-minimized,
+ then wait for the user's two
+design decisions.
