@@ -425,3 +425,34 @@ record `~/temp/agent/probe-mercury-20260909/judge-fidelity-probe/`.
 OpenRouter alone serves it,
 so it is a judge that answers while Synthetic stands at the bottom of its week and Hyper at its daily limit,
 at 0.04 and 0.15 USD per million against the anchor judge's 0.58 and 1.74.
+
+The seated roster's reading of the same fourteen landed at 17:18 UTC
+(pid 875777,
+`judge-fidelity-probe --cap 48` over a second copy of the same three artifacts,
+28 rows,
+roster verdict clean on 20 and declined on 8,
+record `~/temp/agent/probe-seated-20260909/judge-fidelity-probe/`),
+with Synthetic at the bottom of its week and Hyper dry,
+so `glm-5.3` was lost on every ask
+(`OPENROUTER_DROPPED_SEATS` holds it since `037d1f650` and no other provider served it)
+and the other seats declined often.
+Complete-text picks over the distinct questions each judge answered:
+
+- `hf:moonshotai/Kimi-K3` 8 of 8,
+  no damaged pick.
+- `google.gemma-4-e2b` 9 of 11,
+  2 damaged picks.
+- `deepseek-v4-pro-0813` 6 of 9.
+- `hf:zai-org/GLM-5.3-Flash` 5 of 9.
+- `hf:Qwen/Qwen3.8-27B` 4 of 10.
+- `deepseek-v4-flash-0731` 4 of 10.
+- `minimax-m3` 3 of 6,
+  1 damaged pick.
+- `hf:openai/gpt-oss-120b` 2 of 6.
+- `gemma-4-26b-a4b-it` 1 of 6.
+- `glm-5.3` no usable ask.
+
+The seated median lies between 4 of 10 and 5 of 9;
+the most damage-prone seated judge chose the damaged text twice.
+Mercury's 14 of 14 with no damaged pick clears both clauses by measurement,
+not only by the maximum argument.

@@ -6775,6 +6775,74 @@ log `~/temp/agent/producer-calibrate-mercury-20260909.log`,
 about three hours by the 2026-09-08 precedent),
 read by the scratch `read-standing.mjs` against the pooled null.
 
+## The owner answers the three recorded questions, 2026-09-09, 17:25 UTC
+
+Asked "What other things do you need to ask me?
+Ask me now or decide they're not necessarily design decisions",
+the three questions the handover recorded were put in one form
+("The thin-bench questions" and "The glossary question"),
+each with its options,
+pros and cons and the ranking.
+Everything else pending
+(Mercury's writing seats,
+its completion cap,
+the prompt-volume lever,
+the launch order)
+is decided by measurement or already answered,
+so nothing else was asked.
+The answers:
+
+- A deciding bench short of quorum:
+  a share of the reachable weight,
+  against the recommended stop INCOMPLETE.
+  Rule and rejected options in `doc/decision/translation-repair-short-bench-share.md`:
+  the minimum weight scales as `MIN_SELECTION_WEIGHT` times reachable over quorum,
+  two ballots the floor,
+  benches at quorum unchanged.
+- An ineligible standing over a valid incumbent:
+  keep the incumbent for the slice,
+  as recommended.
+  Addendum in `doc/decision/translation-repair-ineligible-standing.md`.
+- The glossary:
+  both the corpus glossary file and the archive's rendering as a candidate the judges must weigh.
+  Rule in `doc/decision/translation-repair-community-glossary.md`:
+  the glossary rides in the identity context,
+  and a deterministic block on the judge sheets names each candidate lacking the community rendering.
+
+Built in that order,
+each shown to fail first.
+
+The seated roster's reading of the same fourteen landed at 17:18 UTC
+(pid 875777,
+`judge-fidelity-probe --cap 48` over a second copy of the same three artifacts,
+28 rows,
+roster verdict clean on 20 and declined on 8,
+record `~/temp/agent/probe-seated-20260909/judge-fidelity-probe/`),
+with Synthetic at the bottom of its week and Hyper dry,
+so `glm-5.3` was lost on every ask
+(`OPENROUTER_DROPPED_SEATS` holds it since `037d1f650` and no other provider served it)
+and the other seats declined often.
+Complete-text picks over the distinct questions each judge answered:
+
+- `hf:moonshotai/Kimi-K3` 8 of 8,
+  no damaged pick.
+- `google.gemma-4-e2b` 9 of 11,
+  2 damaged picks.
+- `deepseek-v4-pro-0813` 6 of 9.
+- `hf:zai-org/GLM-5.3-Flash` 5 of 9.
+- `hf:Qwen/Qwen3.8-27B` 4 of 10.
+- `deepseek-v4-flash-0731` 4 of 10.
+- `minimax-m3` 3 of 6,
+  1 damaged pick.
+- `hf:openai/gpt-oss-120b` 2 of 6.
+- `gemma-4-26b-a4b-it` 1 of 6.
+- `glm-5.3` no usable ask.
+
+The seated median lies between 4 of 10 and 5 of 9;
+the most damage-prone seated judge chose the damaged text twice.
+Mercury's 14 of 14 with no damaged pick clears both clauses by measurement,
+not only by the maximum argument.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

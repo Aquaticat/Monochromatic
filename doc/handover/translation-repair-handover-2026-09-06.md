@@ -1270,12 +1270,18 @@ Recorded in the planning log under
 
 ## The thin-bench questions
 
+ANSWERED AT 17:25 UTC ON 2026-09-09:
+the first by a share of the reachable weight (`doc/decision/translation-repair-short-bench-share.md`),
+the second by keeping the incumbent
+(addendum of `doc/decision/translation-repair-ineligible-standing.md`);
+the build follows in "What to do next".
+The questions as they were asked:
+
 Two decisions for the owner,
 raised by the second `noname` and the sixth `Mio` on Bedrock alone (2026-09-09,
 12:22 to 12:33 UTC;
 planning log,
 the same section).
-Nothing is changed in code until answered.
 
 The first:
 what a deciding bench short of quorum but not empty should do.
@@ -1346,6 +1352,12 @@ Ranking A > B because the decision's reason ("an ineligible standing was never g
 an incumbent that can.
 
 ## The glossary question
+
+ANSWERED AT 17:25 UTC ON 2026-09-09:
+both the corpus glossary file and the archive's rendering as a candidate the judges must weigh
+(`doc/decision/translation-repair-community-glossary.md`);
+the build follows in "What to do next".
+The question as it was asked:
 
 The same page rendered two community terms wrongly where the archive had them right:
 `自切`,
@@ -1518,8 +1530,28 @@ a fix that matters to the running entry still kills and relaunches it.
     "Mercury 2.5 judges 14 of 14" for the record.
     A pass launched after `fcc8ca197` seats Mercury wherever the anchor judge sits;
     the third `noname` runs on `33a023445` and does not.
-3.  The glossary is the open design question (see "The glossary question");
-    nothing to build until the owner answers.
+3.  BUILD THE THREE ANSWERS OF 17:25 UTC,
+    in this order,
+    each guard shown to fail first,
+    the decision doc's "What landed" filled by the build commit:
+    the short-bench share
+    (`candidate-select.ts`,
+    the reachable count from the gather's no-provider losses,
+    `MIN_SELECTION_BALLOTS`,
+    the `select-short-bench` finding;
+    `repair-contract.ts`'s capacity guard reads the same minimum),
+    the kept incumbent
+    (`consolidate-standing-verdict.ts` reads the incumbent's verdict,
+    `consolidate-ineligible-standing.ts` offers it and keeps it,
+    `consolidate-settle.ts` and the gate thread it),
+    and the glossary
+    (`corpus-run/community-glossary.ts`,
+    the `COMMUNITY TERMS` lines in `document-preparation.ts`'s identity context,
+    the `COMMUNITY RENDERINGS` block on the select,
+    translate,
+    lane-contest and consolidation-gate sheets).
+    A pass launched after each lands carries it;
+    the running third `noname` does not.
 4.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
     right for any corpus pass (pages stand beside the declines),
     wrong on a decline-only dir;

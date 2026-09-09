@@ -54,3 +54,34 @@ asked with two options after the luxuanwen3 pass of that day.
 
 - Keep the late refusal at the page guard: no code, but every such entry pays a full run before failing,
     which is what luxuanwen3 did.
+
+## Addendum 2026-09-09: a valid incumbent is kept where the standing is ineligible
+
+Decided by the owner on 2026-09-09 ("Keep the incumbent"),
+asked with two options after the sixth `Mio` on Bedrock alone:
+at slice 3 the translate lane's standing failed the deterministic gate,
+the archive's paragraph and list for that slice were valid and were never offered,
+and the entry stopped under the rule above.
+
+- The consolidation reads the gate's verdict on the incumbent
+    (`row.incumbentText`,
+    the page text the slice replaces)
+    beside the standing's.
+- When the standing is ineligible and the incumbent is eligible,
+    the slate offers the incumbent in the standing's place (`incumbentKind: 'present'`),
+    the settlement records `ineligible-standing-replaced-by-incumbent`,
+    and every exit that kept the standing keeps the incumbent instead:
+    the empty floor,
+    the judges' decline and the gate's refusal.
+- When both are ineligible,
+    or the standing is the archive's own text (luxuanwen3,
+    where the two are one),
+    the rule of 2026-09-04 stands and the entry stops.
+- The reason of 2026-09-04,
+    that an ineligible standing was never going to ship,
+    does not reach an incumbent that can.
+    The option rejected,
+    stop as now,
+    costs the page over one slice whose safe text exists.
+- Recorded here before the build;
+    the build commit names what landed.
