@@ -6084,7 +6084,8 @@ The page footnote guard stays as the backstop after the section is applied.
 The would-ship case failed first on the old build;
 the parser,
 the guard and eleven suites on the path clean;
-the schema guard's fixtures and wording moved to thirteen.
+the schema guard's fixtures and wording moved to thirteen;
+full suite 984 `PASS` and 0 `FAIL` on `dc3946757`.
 
 RELAUNCHED at 08:01 UTC on `3620004db`:
 the twenty-third `hakureico` (`~/temp/agent/hakureico23-20260909`,
