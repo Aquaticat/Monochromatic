@@ -1058,9 +1058,9 @@ Traverse the folder area first,
  the playback deck second,
  and the track pane last.
  Keep
-each spatial region contiguous even though the deck and tracks share the right pane.
- This
-is accessibility treatment F1.
+the two left-pane regions contiguous before moving to the track pane.
+ This is
+accessibility treatment F1.
 **Why.**
  The user selected F1.
  It is predictable from spatial layout and avoids jumping
