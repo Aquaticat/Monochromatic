@@ -5974,8 +5974,8 @@ so the artifact's row shows both texts and the relation between them is checked 
 The comparison rows already read `shippedText`,
 so the contest and the page carry the trimmed text.
 Both ledger cases failed first on the old build;
-lint,
-types and the eight suites on the path clean.
+lint and types clean;
+full suite 981 `PASS` and 0 `FAIL`.
 
 RELAUNCHED at 04:39 UTC on `9abcbee50`,
 three passes:
