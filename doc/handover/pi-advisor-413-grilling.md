@@ -8,7 +8,8 @@ Do not implement until the user confirms shared understanding.
 Implementation is not the only possible resolution:
  reframing or declining hedging remains open.
 
-No implementation changes or verification runs have occurred in this interview.
+No implementation changes or package verification runs have occurred in this interview.
+A network-free installed-provider probe has verified diagnostic and available-usage behavior.
 The first round corrected a quality premise.
 The second round established bounded collection after the first usable result.
 The user accepted a configurable 30-second collection grace capped by the original operation deadline.
@@ -147,9 +148,26 @@ Accepted policy:
 
 Retain delayed launch and one fallback as the issue's working scope,
  rather than expanding to simultaneous or wider review fan-out without need.
-Later decisions include scoped participant selection,
- provider-diversity requirements,
- recovery bounds,
+Round 4 asked about replacement after failure and provider diversity.
+The user selected Q5 A and Q6 A.
+
+Accepted routing policy:
+
+- Before the first usable review,
+   replace failed reviewers using untried eligible scoped candidates.
+- Keep at most two reviewers running concurrently.
+- Bound attempts by the candidate list,
+   bounded recovery,
+   and the original deadline.
+- After the first usable review,
+   start no replacements;
+   collect only already-running reviewers within the accepted grace.
+- Prefer a different registered provider for the alternate.
+- When no different-provider candidate is available,
+   permit a different model on the same provider.
+- Never dispatch on a provider blocked for exhausted credits in this operation.
+
+Implementation planning still needs exact recovery bounds,
  available-usage finalization,
  returned-review formatting,
  and integration of still-open prerequisite issues.
@@ -188,11 +206,47 @@ Accepted implementation requirement:
 
 This is user-reported evidence,
  not a claim that this interview reproduced the provider failure.
-The current adapter's structured-error and string-error paths still need investigation.
+The installed adapter's terminal-error path was investigated using synthetic responses.
+See the verified probe document referenced in Verified integration evidence.
 Do not generalize every HTTP 402 or every billing failure to exhausted credits without classification evidence.
 No top-up or other billing mutation is authorized or needed.
 
 Track this as an independently verifiable implementation task alongside collection behavior.
+
+## Verified integration evidence
+
+`doc/troubleshooting/pi-advisor-provider-billing.md` records the installed Pi 0.85.1 adapter probe.
+The embedded harness was extracted and executed from the repository root.
+
+- The OpenAI-wrapped exhausted-credit response reproduced the reported diagnostic.
+- The adapter's `onResponse` callback did not observe HTTP 402.
+- An unrelated HTTP 402 remained distinguishable through its message and error type.
+- A bare body without the OpenAI error wrapper did not reproduce the user's diagnostic.
+- Synthetic successful and aborted responses retained usage already received.
+
+No live provider calls,
+ credit lookups,
+ or billing mutations occurred.
+The result does not establish completeness of usage after remote cancellation.
+Both the handover and troubleshooting document passed scoped Markdown lint.
+
+Read-only scratch clones:
+
+- Pi `v0.85.1` at `d981de1229ef899957bbe968bc8dcda02a21f477`,
+   `${HOME}/temp/agent/pi-advisor-413-2026-09-09`.
+- Hyper provider at `ac3ed634636b9e8eddad3e02e358943a5a829737`,
+   `${HOME}/temp/agent/hyper-advisor-413-2026-09-09`.
+  Its `src/index.ts` matched the installed 0.3.2 package.
+- Exploratory probe:
+   `${HOME}/temp/agent/advisor-413-provider-probe.ts`.
+  The troubleshooting document contains the durable runnable version.
+
+Pi documentation read completely:
+ `README.md`,
+ `docs/extensions.md`,
+ `docs/custom-provider.md`.
+The `examples/extensions/summarize.ts` example was read.
+Read relevant TUI and session persistence documentation before implementing rendering/accounting.
 
 ## Independent review
 
@@ -222,9 +276,9 @@ Leave those changes untouched.
 
 ## Next action
 
-Investigate current provider failure,
- cancellation,
- and accounting representations before the next design frontier.
-Read current Pi API documentation and source before prescribing integration behavior.
-Do not repeat settled collection decisions or ask permission for the authorized credit-exhaustion block.
+Finish the scoped implementation contract and independently review it for unresolved product decisions.
+Do not repeat the settled collection,
+ replacement,
+ provider-diversity,
+ or exhausted-credit decisions.
 Obtain shared-understanding confirmation before implementation.
