@@ -1180,12 +1180,12 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     a bold-led unordered list,
     an italic paragraph;
     three shapes on no read page),
-    launched 03:40 UTC,
+    launched 03:24 UTC,
     runs dir `~/temp/agent/gqt1-20260909`,
     pid 581368;
     the first `Mio` (a rule in the body and a bare URL;
     two shapes on no read page),
-    launched 03:40 UTC,
+    launched 03:24 UTC,
     runs dir `~/temp/agent/mio1-20260909`,
     pid 581484.
     The census behind the two (scratch `unmet-shapes.mjs`) is in the planning log under

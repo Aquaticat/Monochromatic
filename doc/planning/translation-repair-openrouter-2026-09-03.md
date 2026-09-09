@@ -5900,7 +5900,7 @@ no `[^2]` anywhere,
 no `INTERRUPTED` line,
 and the seal as the nineteenth had it.
 
-## Two shapes-first entries launched beside it, 2026-09-09, 03:40 UTC
+## Two shapes-first entries launched beside it, 2026-09-09, 03:24 UTC
 
 The shape census re-run over the 92 sources against the shapes read pages have since carried
 (footnotes,
@@ -5924,7 +5924,7 @@ with photos:
 a rule in the body and a bare URL),
 `noname` two,
 then one each.
-`gqt` launched at 03:40 UTC (`~/temp/agent/gqt1-20260909`,
+`gqt` launched at 03:24 UTC (`~/temp/agent/gqt1-20260909`,
 pid 581368) and `Mio` beside it (`~/temp/agent/mio1-20260909`,
 pid 581484),
 both on `aedee7414`,
