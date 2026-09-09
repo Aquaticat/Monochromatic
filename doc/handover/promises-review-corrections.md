@@ -239,6 +239,9 @@ The user clarified that the visible-window requirement had been added to `AGENTS
 and explicitly requested its removal.
 The canonical visible-window delivery rule was removed;
 its retired shortcode is reserved in the existing local appendix.
+The overlapping automatic-open clause in the HTML-form rule and its visible-artifact wording were also removed.
 `CLAUDE.md` is regenerated through file-enforcer rather than edited separately.
+The music-player handoff and its binding review notes now reflect the same correction;
+historical window observations remain, but their activation directives no longer act as completion gates.
 Browser verification remains distinct from a requirement to show an active window.
 The window observations in this handover are historical evidence, not a requirement for future HTML work.
