@@ -49,8 +49,28 @@ expected: { phase: 'await', sameReason: true }
 ```
 
 `proc_b4cd` rebuilt and passed the return-boundary checks.
-The additional timer-handle check and retained policy/workshop regression are running as `proc_ac07`.
+`proc_ac07` passed the additional timer-handle check and the retained policy/workshop regression in 74 seconds.
+This covers the existing advanced verifier, whose capstone execution omission is still being repaired separately.
 No full-lesson completion claim is made by this helper check.
+
+### Ordered Stop without changing clocks
+
+The isolated cancellation/deadline previews now have a labelled lesson control that activates Send then Stop
+within one callback, using the learner's actual listeners.
+An unwired Stop still does nothing; ordinary Send still reaches the real reply or native deadline.
+The control records the state after Send rather than requiring the learner to catch an intermediate paint.
+It is included in standalone practice downloads.
+
+The reference has `Reset and stop A during backoff`.
+Its policy creates the real backoff wait before notifying the UI.
+The prearranged example then activates A's ordinary Stop button from that notification.
+A has overlapping sends; B continues independently.
+This is a scripted action order, not a manual clock or a longer click window.
+The example's fixed scenarios are disclosed separately from subsequent manually sent messages.
+
+`proc_bdb5` is checking starter/solution behavior, the deadline path, exported controls,
+a directly observed pending backoff timer at Stop, and existing reference ownership regressions.
+A reversed-notification-order mutant is planned as a negative control.
 
 ## Remaining work
 

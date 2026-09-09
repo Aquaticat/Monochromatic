@@ -11,6 +11,9 @@ They supplied `promises-teaching-independent-review.md` and marked its
 `Concerns that require real learner observation` section as fine.
 That section does not create a blocker or a requirement for learner studies.
 The remaining source, exercise, and runtime findings have been assessed separately.
+The user then delegated repairs with “Address whatever you want to address.”
+Implementation and evidence are tracked in
+[the correction handover](../handover/promises-review-corrections.md).
 Earlier critiques rejected a detached opening and forced chat turn-taking.
 The shop opening, reference chat, and reading backgrounds have since been corrected and operationally checked.
 The quick scan is not learner-performance evidence or approval of the final skill.
@@ -1098,13 +1101,15 @@ The review's proposed statement that real requests carry no attempt counter is o
 Longer deadlines also retain timed opportunities rather than removing the click-race requirement.
 The reference's instruction to Stop during retry backoff needs the same scrutiny as the isolated exercises.
 
-The lesson and authoring sources remain unchanged.
-These are assessed recommendations, not an authorization to implement them or finalize the teaching skill.
+At the assessment boundary, the lesson and authoring sources were unchanged.
+The later action request authorizes the concrete lesson repairs, not finalization of the teaching skill.
+The pre-change artifact has been preserved separately.
 
 ## Next action
 
-Present the assessment and its proposed repair direction, respecting the vetoed section.
-Implementation of the remaining findings awaits an action request.
+Implement and verify the delegated repairs using the correction handover.
+Preserve the veto, independent sending, neutral reading surfaces, native editing, and complete print/export content.
+Present the corrected lesson in a fresh tab without replacing the user's drafts.
 No final skill confirmation has been requested.
 Independent sending and neutral surfaces are implemented and operationally checked;
 those checks do not establish teaching acceptance, learner independence, or mastery.
