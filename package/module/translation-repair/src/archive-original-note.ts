@@ -16,9 +16,9 @@ import {
 // it; where a note says the WHOLE PAGE is the original, the pipeline declines
 // the entry rather than repairing it.
 //
-// TWO WORDINGS IN THE PINNED CORPUS, measured 2026-09-08: 22 of 93 archive
-// pages carry a translator note, and 2 of them say the English is the
-// original. `hakureico` carries `这段话以下全部，包括结尾的两句祝愿，原文都是英文，
+// THREE WORDINGS IN THE PINNED CORPUS, measured 2026-09-08 and again on
+// 2026-09-09: 22 of 93 archive pages carry a translator note, and 3 of them
+// say the English is the original, two in Chinese and one in English. `hakureico` carries `这段话以下全部，包括结尾的两句祝愿，原文都是英文，
 // 中文是反向翻译的，请仅修可能造成误解或明显的非刻意语法错误，不大修` above the
 // letter (a SPAN: everything below the note), and `cheonwoomaeng` carries
 // `这篇文章的原文即英文，作者的第一语言为英语，请翻译时不要动本篇。` (the WHOLE PAGE:
@@ -31,6 +31,12 @@ import {
 // 引用部分请仅修语法和可能造成误解的错误`) says MOST quoted passages were English
 // and names no span, so it seals nothing; the lanes read it as the advisory it
 // is, and the two short quotes under it shipped verbatim on every read page.
+//
+// THE ENGLISH WORDING WAS MISSED. `gqt` carries `(Original Language: Engish)`
+// at the top of both its pages, the typo the pinned corpus's own, and the
+// fourth `gqt` pass of 2026-09-09 repaired Ara's English page from its Chinese
+// back-translation before that note was read as anything but advisory. The
+// twenty-second class. The English marks are matched on the lowercased note.
 
 /**
  * Mark a note carries when the whole page is the author's own English.
@@ -38,6 +44,15 @@ import {
 const WHOLE_PAGE_MARKS = [
   '原文即英文',
   '不要动本篇',
+] as const;
+
+/**
+ * Marks a note carries, in English, when the whole page is the author's own
+ * English; the misspelt one is the pinned corpus's spelling on `gqt`.
+ */
+const ENGLISH_WHOLE_PAGE_MARKS = [
+  'original language: english',
+  'original language: engish',
 ] as const;
 
 /**
@@ -173,6 +188,14 @@ export function readNote(
 ): NoteReading {
   if (WHOLE_PAGE_MARKS.some(function carried(mark,): boolean {
     return note.includes(mark,);
+  },))
+    return 'whole-page';
+  /**
+   * The note lowercased, since the English marks are spelled either way.
+   */
+  const lowered = note.toLowerCase();
+  if (ENGLISH_WHOLE_PAGE_MARKS.some(function carriedInEnglish(mark,): boolean {
+    return lowered.includes(mark,);
   },))
     return 'whole-page';
   if (SPAN_MARKS.every(function carried(mark,): boolean {

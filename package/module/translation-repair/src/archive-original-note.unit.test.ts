@@ -61,6 +61,11 @@ await describe({
       fn: async () => {
         expect(readNote({ note: WHOLE_PAGE_NOTE, },),).toBe('whole-page',);
         expect(readNote({ note: '请翻译时不要动本篇', },),).toBe('whole-page',);
+        // The English wording, with the pinned corpus's spelling on gqt and the
+        // spelling it meant (the fourth gqt pass of 2026-09-09 repaired an
+        // English original before this read as whole-page).
+        expect(readNote({ note: '(Original Language: Engish)', },),).toBe('whole-page',);
+        expect(readNote({ note: '(original language: English)', },),).toBe('whole-page',);
         expect(readNote({ note: SPAN_NOTE, },),).toBe('span',);
         expect(readNote({ note: QUOTES_NOTE, },),).toBe('advisory',);
         expect(readNote({ note: '起床战争：Bed Wars', },),).toBe('advisory',);
