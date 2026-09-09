@@ -521,9 +521,12 @@ a long chat prompt.
  "Ask me properly via a self-contained HTML rendering
 you then open in Helium."
 
-**The rule.**
- Every design-question round is one self-contained HTML form opened in
-Helium.
+**The current rule.**
+ Every design-question round is one self-contained HTML form.
+The user withdrew the general visible-window requirement on 2026-09-09 because it was added in error.
+Window activation and monitor placement are not completion gates;
+headless browser verification is valid.
+The quoted request records what was asked in that incident, not a continuing requirement to open every HTML artifact.
  Embed every visual candidate,
  option assessment,
  ranked recommendation and
@@ -533,7 +536,7 @@ answer control in the file.
 script,
  font or server.
  Render,
- inspect and exercise the form before opening it.
+ inspect and exercise the form before delivering it.
  Every
 device mock must use a raster captured at the cited physical panel resolution,
 display at the cited dp dimensions at 100%,
@@ -729,7 +732,7 @@ line,
     Every rule in this file and
    in decisions.md is to be read as binding,
     not advisory.
-9. **Every design-question round is one self-contained HTML form opened in Helium.**
+9. **Every design-question round is one self-contained HTML form.**
    Embed the built visual options,
     pros,
     cons,
@@ -740,7 +743,7 @@ line,
     script,
     font or server.
    Render,
-    inspect and exercise it before opening it.
+    inspect and exercise it before delivering it.
     Every device mock must use a
    raster captured at cited physical panel resolution,
     display at cited dp dimensions
