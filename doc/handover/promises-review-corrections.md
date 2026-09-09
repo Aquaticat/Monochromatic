@@ -98,9 +98,25 @@ They and the helper are included in the practice download.
 
 Full PDF and cross-feature validation remain separate final steps.
 
+### Complete capstone comparison
+
+The capstone comparison now combines the actual policy source and `capstone-ui.mjs`.
+Its duplicate fixture destructuring is removed, and the common workshop prefix explicitly supplies `ServiceFault`.
+`capstone-controls.mjs` supplies fixed markup only; the comparison wires the actual interface.
+The comparison has two independent conversations, per-send controllers, a shared runner,
+scenario selection, overlapping-send examples, and the prearranged backoff Stop path.
+Its histories preserve line breaks and unsent drafts.
+
+The lesson now states the supplied names and additional control IDs,
+and explains destructuring, `ServiceFault`, and the comparison's complete execution context.
+Printing takes the complete comparison from the same source definition.
+
+`proc_2fe3` is running the real editor/Run workflow across scenarios,
+Stop/new-send ownership, input limits, printed source, and the actual downloaded capstone.
+`proc_d8a4` checks that the same comparison-entry assertion rejects the preserved syntax defect.
+
 ## Remaining work
 
-- Make the capstone comparison runnable with the promised controls and full dependencies.
 - Explain supplied source machinery and fixture-only outcome selection.
 - Integrate and run browser, export, print, neutral-surface, and negative-control checks.
 - Document independent review results, inspect changed visible states, and present a fresh tab.
