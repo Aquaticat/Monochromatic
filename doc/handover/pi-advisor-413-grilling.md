@@ -4,11 +4,12 @@
 
 The user requested resolution of GitHub issue #413 with `/grill-me` and `/grilling`,
  explicitly requiring critical examination of its acceptance criteria.
-Do not implement until the user confirms shared understanding.
-Implementation is not the only possible resolution:
- reframing or declining hedging remains open.
+The user completed the interview and explicitly authorized implementation after Q7.
+Implement the confirmed policy,
+ not the original first-winner acceptance criterion.
 
-No implementation changes or package verification runs have occurred in this interview.
+Implementation is starting;
+ no package changes or package verification runs had occurred when the interview ended.
 A network-free installed-provider probe has verified diagnostic and available-usage behavior.
 The first round corrected a quality premise.
 The second round established bounded collection after the first usable result.
@@ -127,7 +128,7 @@ Adopt bounded collection rather than first-result winner selection:
 
 The first-result grace is distinct from the launch delay for speculative work.
 Do not silently treat the user's straggler grace as a value for the original hedge-launch delay.
-No implementation is authorized until the design interview receives shared-understanding confirmation.
+Shared-understanding confirmation was received after Q7.
 
 Round 3 asked for collection grace duration and deadline precedence.
 The user answered:
@@ -167,10 +168,13 @@ Accepted routing policy:
    permit a different model on the same provider.
 - Never dispatch on a provider blocked for exhausted credits in this operation.
 
-Remaining product decision:
- whether default calls receive serial failure fallback when speculative overlap is disabled.
-The current implementation terminates on provider error;
- a call-local block alone does not create fallback outside the opt-in mode.
+Q7 A was accepted:
+ default calls receive serial failure fallback even when speculative overlap is disabled.
+Opt-in controls concurrent speculative work only.
+Explicit-model calls remain exact.
+
+The user then ended the grilling session and authorized implementation unless another consequential design question arose.
+No further product decision was identified.
 
 Proposed engineering details for the confirmation summary:
 
@@ -299,10 +303,9 @@ Leave those changes untouched.
 
 ## Next action
 
-Ask whether serial failure fallback applies to default calls with speculative overlap disabled.
-Then present the complete scoped contract for shared-understanding confirmation.
-Do not repeat settled collection,
- replacement,
- provider-diversity,
- or exhausted-credit decisions.
-No code implementation begins before that confirmation.
+Implement operation accounting and provider outcomes,
+ then call-local exhausted-credit exclusion,
+ bounded collection and default fallback,
+ and host-level verification.
+Use the task list for independent completion criteria.
+Do not reopen settled decisions.
