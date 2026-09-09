@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 00:30 UTC on 2026-09-09 the tree is `11143f681`:
+As of 01:40 UTC on 2026-09-09 the tree is `d6db46519`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -49,8 +49,10 @@ the map is read off the definitions the roster paired,
 and the archive's definitions move into the original's order;
 `2da6e7f22`,
 a relabel is closed over the archive's labels before it is applied),
-the twentieth class found by the fifth `yuki418330012` pass and fixed (`11143f681`,
+the twentieth class found by the fifth `yuki418330012` pass and fixed in two faces (`11143f681`,
 the carried-insertion guard reads the page with soft breaks folded;
+`d6db46519`,
+only full coverage votes are evidence and an interrupted entry's findings reach the log;
 see "The twentieth class"),
 the `Arita` page settled on `2da6e7f22` at 00:13 UTC and read
 (the three checks passed,
@@ -58,7 +60,7 @@ the `Arita` page settled on `2da6e7f22` at 00:13 UTC and read
 the double-quoted component line verbatim,
 no class found;
 see "The Arita page"),
-and the eighteenth `hakureico` and the sixth `yuki418330012` running on `11143f681` since 00:22 UTC;
+and the nineteenth `hakureico` and the seventh `yuki418330012` running on `d6db46519` since 01:35 UTC;
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -995,6 +997,24 @@ full suite 975 `PASS` and 0 `FAIL`.
 Recorded in the planning log under
 "The twentieth class stops the fifth yuki pass at the carried-insertion guard and the Arita page is read".
 
+The sixth `yuki418330012` pass (`11143f681`,
+00:22 UTC) stopped at the same guard at 67 minutes,
+on the folded reading.
+The fold was right;
+the lost region was another:
+the coverage round had seven full votes quoting the credits line and one partial vote quoting an unrelated
+sentence about suicide attempts,
+`judgeCoverage` recorded every anchored quote as evidence whatever its degree,
+and a lane rewrote that sentence.
+Fixed in `d6db46519`:
+evidence is the full votes' regions alone (the contract already said so),
+and `tallyCaughtEntry` prints an interrupted entry's findings as `INTERRUPTED <id>: <finding>` lines
+before the tally,
+which two stops had lacked.
+Verdict suite shown to fail first.
+Recorded in the planning log under
+"The twentieth class's second face where a partial vote's quote is not evidence".
+
 ## The Arita page
 
 The second `Arita` pass (`2da6e7f22`,
@@ -1089,16 +1109,16 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Two passes are running on `11143f681`,
-    launched 00:22 UTC on 2026-09-09 on Bedrock and OpenRouter:
-    the eighteenth `hakureico`,
-    runs dir `~/temp/agent/hakureico18-20260908`,
+1.  Two passes are running on `d6db46519`,
+    launched 01:35 UTC on 2026-09-09 on Bedrock and OpenRouter:
+    the nineteenth `hakureico`,
+    runs dir `~/temp/agent/hakureico19-20260909`,
     log beside it,
-    pid 528810;
-    and the sixth `yuki418330012`,
-    runs dir `~/temp/agent/yuki6-20260908`,
+    pid 546904;
+    and the seventh `yuki418330012`,
+    runs dir `~/temp/agent/yuki7-20260909`,
     log beside it,
-    pid 528921.
+    pid 547017.
     Each is watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit.
@@ -1118,12 +1138,13 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     `definitions moved into the original's order: [^1], [^2]` in the log,
     the re-preparation pairing both definitions,
     the carried credits line passing the guard
-    (no `carried-evidence-lost`),
+    (no `carried-evidence-lost`;
+    an `INTERRUPTED yuki418330012:` line names the region if it does not),
     `Zhouzhou[^2]` above `[^2]: ... substitute parent` and `Zhenli[^1]` above `[^1]: ... sister` on the page,
     `pageSilent=0` or the silent block named,
     and whether `自切` and `超天酱` regress again.
     `Arita` is read (see "The Arita page").
-    If the tree moves past `11143f681` while either runs,
+    If the tree moves past `d6db46519` while either runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.

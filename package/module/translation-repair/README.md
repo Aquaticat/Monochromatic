@@ -1874,6 +1874,13 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `d6db46519` (2026-09-09,
+the twentieth class's second face) a carried insertion's evidence is the full coverage votes' regions alone:
+`judgeCoverage` had recorded every anchored quote whatever its degree,
+and a partial voter's quote of an unrelated sentence,
+rewritten by a lane,
+stopped the sixth `yuki418330012` pass at the guard;
+an interrupted entry's findings now reach the log as `INTERRUPTED <id>: <finding>` lines before its tally.
 Since `11143f681` (2026-09-09,
 the twentieth class) the carried-insertion guard reads the page the way the evidence was anchored:
 `assertCarriedInsertionsRemain` folds soft line breaks and normalizes punctuation on both sides before it looks

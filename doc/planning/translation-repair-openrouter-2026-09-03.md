@@ -5712,6 +5712,56 @@ and the Yeats line keeps the archive's comma in `breast, or his lips` where the 
 one.
 No class.
 
+## The twentieth class's second face where a partial vote's quote is not evidence, 2026-09-09, 01:35 UTC
+
+The sixth `yuki418330012` pass (`11143f681`,
+00:22 UTC) relabelled,
+reordered and re-prepared as the fifth had,
+and stopped at 01:30 UTC,
+67 minutes in,
+as `carried-evidence-lost` again,
+on the folded guard.
+The fold was measured right
+(the wrapped credits and the anchored one-line quote fold to the same string),
+so the region the guard lost was another one.
+The coverage round that admitted the credits line as carried had eight anchored voices:
+seven said `full` and quoted `Contributors for this entry: Zhenli, Sansan, Suona`,
+one said `partial` and quoted `She had attempted suicide many times before.`,
+a sentence from another part of the page.
+`judgeCoverage` recorded every anchored quote as evidence whatever its degree
+(`weighed.filter(isAnchored)`),
+against its own contract
+("Exact target regions supporting full-coverage votes"),
+and a lane rewrote that sentence
+(the consolidation ships `defused many of Yuki's suicide crises` where the archive had
+`rescued Yuki many times from suicide`),
+so the guard stopped the entry over a region no full vote ever named.
+The fifth pass had carried the same eighth vote;
+its stop had two causes and the fold removed one.
+Fixed in `d6db46519`:
+the verdict's evidence is the full votes' regions alone,
+the verdict suite's carried case now expects three regions of four voices and a new case pins the partial
+voter's quote out,
+shown to fail first;
+and `tallyCaughtEntry` prints each finding of a `TranslationRepairInterruptedError` as
+`INTERRUPTED <id>: <finding>` before the tally line,
+since the tally carried the reason alone and two passes stopped with nothing in the log naming the region.
+Full suite 975 `PASS` and 0 `FAIL`,
+oxlint and types clean.
+Under the rule the eighteenth `hakureico` was killed at 01:34 UTC,
+in consolidation since 01:19,
+and the nineteenth `hakureico` (`~/temp/agent/hakureico19-20260909`,
+pid 546904) and the seventh `yuki418330012` (`~/temp/agent/yuki7-20260909`,
+pid 547017) launched at 01:35 UTC on `d6db46519`,
+each watched by the filtered poller.
+The last reading before the kill:
+Bedrock 195.29 USD,
+OpenRouter 132.20 USD.
+What the seventh `yuki418330012` must show:
+the relabel and the reorder as before,
+no `carried-evidence-lost`,
+and a settled page.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

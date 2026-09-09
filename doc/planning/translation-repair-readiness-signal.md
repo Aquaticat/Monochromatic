@@ -1321,3 +1321,8 @@ passed the three checks,
 matched at length,
 shipped its double-quoted component line verbatim and found no class.
 The eighteenth `hakureico` and the sixth `yuki418330012` run on `11143f681` since 00:22 UTC.
+
+The sixth `yuki418330012` pass stopped at the same guard on the folded reading over a partial voter's quote of an
+unrelated sentence a lane had rewritten;
+`d6db46519` makes the full votes' regions the only evidence and puts an interrupted entry's findings in the log.
+The nineteenth `hakureico` and the seventh `yuki418330012` run on it since 01:35 UTC.
