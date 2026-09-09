@@ -790,7 +790,7 @@ alias = "tW"
 run = "docker build --progress=plain ."
 
 [tasks.buildAndTest]
-description = "Build then test; with args, builds only the containing package instead of the entire monorepo"
+description = "Build then test, retaining failures from either phase; with args, builds only the containing package"
 alias = "bt"
 usage = 'arg "[args]" var=#true help="Test file paths"'
 shell = "node --input-type=module-typescript -e"
@@ -799,28 +799,42 @@ run = """
 {{vars.run_test_files}}
 const { execFileSync } = await import('node:child_process')
 const args = parseUsageArgs(process.env.usage_args ?? '')
-if (args.length === 0) {
-  execFileSync('mise', ['run', 'try', '--', 'build'], { stdio: 'inherit' })
-  execFileSync('mise', ['run', 'test'], { stdio: 'inherit' })
-} else {
-  // Build only the package containing the first test file, not every package in the monorepo.
-  const first = args[0].startsWith('./') ? args[0].slice(2) : args[0]
-  const parts = first.split('/')
-  if (parts.length >= 3 && parts[0] === 'package') {
-    const buildTask = `//${parts.slice(0, 3).join('/')}:build`
-    // `mise tasks --all --json` is intentionally large in this monorepo;
-    // raise execFileSync's default 1 MiB stdout cap so package lookup keeps working
-    // as the task graph grows.
-    const MISE_TASKS_JSON_MAX_BUFFER = 16 * 1024 * 1024
-    const allTasks = JSON.parse(execFileSync('mise', ['tasks', 'ls', '--all', '--json'], { encoding: 'utf8', maxBuffer: MISE_TASKS_JSON_MAX_BUFFER }))
-    if (allTasks.some((task) => task.name === buildTask)) {
-      try { execFileSync('mise', ['run', buildTask], { stdio: 'inherit' }) } catch { /* tolerate build failure, still run tests */ }
-    }
+/** Retained phase errors preserve failure while allowing tests to finish. */
+const failures = []
+try {
+  if (args.length === 0) {
+    execFileSync('mise', ['run', 'build'], { stdio: 'inherit' })
   } else {
-    execFileSync('mise', ['run', 'try', '--', 'build'], { stdio: 'inherit' })
+    // Build only the package containing the first test file, not every package in the monorepo.
+    const first = args[0].startsWith('./') ? args[0].slice(2) : args[0]
+    const parts = first.split('/')
+    if (parts.length >= 3 && parts[0] === 'package') {
+      const buildTask = `//${parts.slice(0, 3).join('/')}:build`
+      // `mise tasks --all --json` is intentionally large in this monorepo;
+      // raise execFileSync's default 1 MiB stdout cap so package lookup keeps working
+      // as the task graph grows.
+      const MISE_TASKS_JSON_MAX_BUFFER = 16 * 1024 * 1024
+      const allTasks = JSON.parse(execFileSync('mise', ['tasks', 'ls', '--all', '--json'], { encoding: 'utf8', maxBuffer: MISE_TASKS_JSON_MAX_BUFFER }))
+      if (allTasks.some((task) => task.name === buildTask)) {
+        execFileSync('mise', ['run', buildTask], { stdio: 'inherit' })
+      }
+    } else {
+      execFileSync('mise', ['run', 'build'], { stdio: 'inherit' })
+    }
   }
-  await runTestFiles(args, [])
+} catch (error) {
+  failures.push(new Error('build phase failed', { cause: error }))
 }
+try {
+  if (args.length === 0) {
+    execFileSync('mise', ['run', 'test'], { stdio: 'inherit' })
+  } else {
+    await runTestFiles(args, [])
+  }
+} catch (error) {
+  failures.push(new Error('test phase failed', { cause: error }))
+}
+if (failures.length > 0) { throw new AggregateError(failures, 'buildAndTest failed') }
 """
 
 [tasks."watch:buildAndTest"]
