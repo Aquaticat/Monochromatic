@@ -6042,6 +6042,66 @@ pid 616606);
 the second `gqt` and `Mio` killed under the rule after 100 minutes on `9abcbee50`,
 neither at its tally.
 
+## The twenty-first class's fourth face where the consolidation puts the orphan back and the page is a document nobody guarded, 2026-09-09, 08:05 UTC
+
+`TALLY hakureico status=INCOMPLETE ms=5144300 aborted=false error=translation repair interrupted:
+page-footnote-integrity` at 07:46 UTC on `379122379`,
+86 minutes,
+`~/temp/agent/hakureico22-20260909`.
+The log now says what happened:
+`assembly-footnote-trimmed orphan-definition gfm 2 (slice 14)` from the translate lane,
+the third face working,
+and then `INTERRUPTED hakureico: page-footnote-orphan-definition gfm 2` from the page guard.
+The consolidation cache for slice 14 holds the consolidation's own rendering of the two notes from the source,
+`[^1]: The internationally used radio distress signal. …\n\n[^2]: That is, Google App Engine.`,
+the orphan back;
+the consolidation replaces what the contest left at a slice,
+and the page it composes with the polish and the per-slice contest is a document no guard assembled.
+The lanes guard their own assemblies;
+the page had only the refusal.
+
+THE FIX (`3620004db`,
+artifact generation thirteen).
+The pass composes the artifact,
+runs `guardFootnoteAssembly` over the page that artifact would ship
+(`page-assembly-guard.ts`,
+over `shippableReplacements` less any write that repeats the archive's own wording),
+and records what the guard trimmed,
+withdrew and found as the artifact's `pageAssembly` section
+(`artifact-two-lane-page-assembly.ts`;
+`pass-page-assembly.ts` composes twice,
+both compositions pure,
+and logs the findings).
+`wouldShipTextFor` applies that section FIRST,
+ahead of the polish,
+the consolidation and the contest,
+so every reader composes the page the guard settled:
+a trimmed slice ships the guard's text as `page-assembly`,
+a withdrawn slice stands as the archive
+(`page-assembly-withdrew-and-archive-silent` where the archive has nothing).
+A generation-twelve artifact reads with an empty section.
+The page footnote guard stays as the backstop after the section is applied.
+The would-ship case failed first on the old build;
+the parser,
+the guard and eleven suites on the path clean;
+the schema guard's fixtures and wording moved to thirteen.
+
+RELAUNCHED at 08:01 UTC on `3620004db`:
+the twenty-third `hakureico` (`~/temp/agent/hakureico23-20260909`,
+pid 650518),
+the fourth `gqt` (`~/temp/agent/gqt4-20260909`,
+pid 650645),
+the fourth `Mio` (`~/temp/agent/mio4-20260909`,
+pid 650761);
+the third `gqt` and `Mio` killed under the rule after 100 minutes on `379122379`,
+neither at its tally.
+What the `hakureico` page must show:
+`[^1]` above its note,
+no `[^2]`,
+`page assembly: assembly-footnote-trimmed orphan-definition gfm 2 (slice 14)` in the log,
+the artifact's `pageAssembly.trimmed` naming slice 14,
+no `INTERRUPTED` line.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

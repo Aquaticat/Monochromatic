@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 06:30 UTC on 2026-09-09 the tree is `379122379`:
+As of 08:10 UTC on 2026-09-09 the tree is `3620004db`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -73,18 +73,22 @@ the three checks passed,
 `verify-published` matched at length,
 a reference with no note found;
 see "The twenty-first class"),
-the twenty-first class fixed in three faces (`aedee7414`,
+the twenty-first class fixed in four faces (`aedee7414`,
 an orphan definition takes only its own block and the composed page's footnote graph is read before the tally;
 `9abcbee50`,
 the delivery ledger carries the guard's trimmed text on a shipped row,
 after the twentieth `hakureico` stopped ERROR at the reassembly invariant;
 `379122379`,
 a definition line opens a block to the trim whether or not a blank line precedes it,
-after the twenty-first `hakureico` stopped INCOMPLETE at the page guard),
-and three passes running on `379122379` since 06:20 UTC
-(the twenty-second `hakureico`,
-the third `gqt`,
-the third `Mio`);
+after the twenty-first `hakureico` stopped INCOMPLETE at the page guard;
+`3620004db`,
+the composed page runs through the assembly guard and the artifact records the outcome as `pageAssembly`,
+generation thirteen,
+after the twenty-second `hakureico` stopped at the page guard on the consolidation's orphan),
+and three passes running on `3620004db` since 08:01 UTC
+(the twenty-third `hakureico`,
+the fourth `gqt`,
+the fourth `Mio`);
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -1130,11 +1134,31 @@ gaps between blocks survive a cut as written,
 `cutDefinitionBlocks` and `isDefinitionTrim` share the reading,
 and both assemblers log every guard finding.
 The guard case failed first.
-The twenty-second `hakureico` runs on `379122379` since 06:20 UTC.
+The twenty-second `hakureico` (`379122379`,
+06:20 to 07:46 UTC,
+86 minutes,
+`~/temp/agent/hakureico22-20260909`) stopped INCOMPLETE at the page footnote guard again:
+the translate lane trimmed slice 14 (the log says so now),
+and the consolidation's own rendering of the two notes put the orphan back,
+since the page the polish,
+the consolidation and the per-slice contest compose was a document no guard assembled.
+The fourth face,
+fixed in `3620004db` (artifact generation thirteen):
+`pass-page-assembly.ts` composes the artifact,
+`page-assembly-guard.ts` runs the assembly guard over the page it would ship,
+and the outcome is written as the artifact's `pageAssembly` section
+(`artifact-two-lane-page-assembly.ts`),
+which `wouldShipTextFor` applies ahead of the polish,
+the consolidation and the contest;
+an older artifact reads with an empty section.
+The would-ship case failed first.
+The twenty-third `hakureico` runs on `3620004db` since 08:01 UTC.
 Recorded in the planning log under
 "The nineteenth hakureico page is read and the twenty-first class takes the sibling note with the orphan",
 "The twenty-first class's second face where the ledger says what was decided and the document carries the trim"
-and "The twenty-first class's third face where two notes one line apart are one block to the trim".
+"The twenty-first class's third face where two notes one line apart are one block to the trim"
+and "The twenty-first class's fourth face where the consolidation puts the orphan back and the page is a document
+nobody guarded".
 
 ## The glossary question
 
@@ -1210,29 +1234,29 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Three passes are running on `379122379`,
+1.  Three passes are running on `3620004db`,
     each watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit:
-    the twenty-second `hakureico`,
-    launched 06:20 UTC on 2026-09-09 on Bedrock and OpenRouter,
-    runs dir `~/temp/agent/hakureico22-20260909`,
+    the twenty-third `hakureico`,
+    launched 08:01 UTC on 2026-09-09 on Bedrock and OpenRouter,
+    runs dir `~/temp/agent/hakureico23-20260909`,
     log beside it,
-    pid 615099;
-    the third `gqt` (a level-3 heading,
+    pid 650518;
+    the fourth `gqt` (a level-3 heading,
     a bold-led unordered list,
     an italic paragraph;
     three shapes on no read page),
-    launched 06:20 UTC,
-    runs dir `~/temp/agent/gqt3-20260909`,
-    pid 615846;
-    the third `Mio` (a rule in the body and a bare URL;
+    launched 08:01 UTC,
+    runs dir `~/temp/agent/gqt4-20260909`,
+    pid 650645;
+    the fourth `Mio` (a rule in the body and a bare URL;
     two shapes on no read page),
-    launched 06:20 UTC,
-    runs dir `~/temp/agent/mio3-20260909`,
-    pid 616606.
-    The first and second `gqt` and `Mio` were killed under the kill-and-relaunch rule when `9abcbee50` and
-    `379122379` landed,
+    launched 08:01 UTC,
+    runs dir `~/temp/agent/mio4-20260909`,
+    pid 650761.
+    The first three `gqt` and `Mio` launches were killed under the kill-and-relaunch rule as `9abcbee50`,
+    `379122379` and `3620004db` landed,
     none at its tally.
     The census behind the two (scratch `unmet-shapes.mjs`) is in the planning log under
     "Two shapes-first entries launched beside it".
@@ -1243,8 +1267,10 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     artifact `artifactSchemaVersion: 12` with `archiveOriginalSpans`,
     the page carrying the span verbatim),
     `“Mayday”[^1]` above a `[^1]` definition and no `[^2]` anywhere,
-    `assembly-footnote-trimmed orphan-definition gfm 2` in the translate lane's findings,
-    the artifact's slice 14 translate row with `shippedText` one definition shorter than `acceptedText`,
+    `assembly-footnote-trimmed orphan-definition gfm 2 (slice 14)` in the log from the translate lane and
+    `page assembly: …` lines from the page-level guard,
+    the artifact's `pageAssembly` section and its slice 14 translate row with `shippedText` one definition
+    shorter than `acceptedText`,
     no `INTERRUPTED` line.
     The nineteenth `hakureico`,
     the seventh `yuki418330012` and `Arita` are read
@@ -1258,7 +1284,7 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     the emphasis;
     `Mio`,
     the rule's position and the URL verbatim.
-    If the tree moves past `379122379` while any runs,
+    If the tree moves past `3620004db` while any runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.

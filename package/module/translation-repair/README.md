@@ -1874,6 +1874,20 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `3620004db` (2026-09-09,
+the twenty-first class's fourth face) the composed page runs through the same footnote assembly guard each lane
+runs,
+and the artifact records the outcome as `pageAssembly` (generation thirteen):
+the slices the guard trimmed with the text the page carries,
+the slices it took back,
+and its findings;
+`wouldShipTextFor` applies the section ahead of the polish,
+the consolidation and the contest,
+so every reader composes the page the guard settled,
+and an older artifact reads with an empty section.
+The twenty-second `hakureico` pass had trimmed the orphan in the translate lane and shipped the consolidation's
+fresh rendering of both notes at the same slice,
+which the page guard refused.
 Since `379122379` (2026-09-09,
 the twenty-first class's third face) the orphan trim reads blocks the way GFM ends definitions:
 a definition line opens a block whether or not a blank line precedes it,
