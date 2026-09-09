@@ -272,5 +272,6 @@ Mapping:
 None for this change.
 Follow-ups live in GitHub issues #500 to #506;
  #506 (mise-action release window) and #500 (the six `find-up` call sites) landed on 2026-09-08 and 2026-09-09,
- #502 (the `node_modules` and `.lfsconfig` walks in file-enforcer and markdown-lint) on 2026-09-09;
+ #502 (the `node_modules` and `.lfsconfig` walks in file-enforcer and markdown-lint) on 2026-09-09,
+ #501 (the mutation-test work tree now carries a `.git` marker the validator accepts) on 2026-09-09;
  the css package-resolver walk stays synchronous for the reason recorded in `package/build-tool/css/README.md`.
