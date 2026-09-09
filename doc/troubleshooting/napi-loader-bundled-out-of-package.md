@@ -347,15 +347,18 @@ so rolldown keeps the `parse` re-export at
 `package/cli/markdown-lint/src/index.ts:15` and everything it reaches.
 
 **Carving `@monochromatic-dev/cli-markdown-lint` out of `NODE_ALWAYS_BUNDLE`,
-for a published consumer.**
+while the linter stays private.**
 Making the linter external emits `import ... from "@monochromatic-dev/cli-markdown-lint"`,
 which resolves to the linter's own directory,
 where `satteri` is declared and its bindings link correctly.
-That genuinely fixes the resolution.
-It is unavailable to a published consumer:
+That genuinely fixes the resolution,
+and it is what the prior art recommends.
+It is blocked only by publication status:
 `package/cli/markdown-lint/package.json:3` sets `"private": true`,
-so a package with `"private": false` cannot carry a runtime dependency on it.
-The consumer must inline it or not use it.
+so a package with `"private": false` cannot carry a runtime dependency on it,
+and the consumer must inline it or not use it.
+Once the linter publishes,
+ this stops being blocked and becomes the correct fix.
 
 **Injecting the parser as a function parameter.**
 Moving the `parse` call out of `runRules` (`package/cli/markdown-lint/src/lint.ts:2`)
@@ -366,6 +369,56 @@ it puts the choice of parser into every consumer's call site,
 so each consumer must know which parsers the linter supports
 in order to use a linter rule.
 Recorded here so it is not re-proposed as the obvious fix.
+
+## Prior art on bundling a native dependency
+
+Both the vendor of the native package and the general library guidance say the same
+thing,
+ and they say the opposite of what this repository's Node config currently does
+for library builds.
+
+napi-rs,
+ the toolchain that generates this loader,
+ states it directly in its
+troubleshooting guide (<https://napi.rs/docs/more/troubleshooting>):
+
+> Keep native packages external to server bundles.
+
+The same page explains why the message we saw is uninformative,
+and what to do instead:
+
+> The generated loader records native-candidate load failures in an error `cause` chain.
+> Print it instead of reporting only "Cannot find native binding".
+
+The e18e writeup on bundling dependencies
+(<https://e18e.dev/blog/bundling-dependencies>) draws the line by artifact kind:
+
+> If you're building a library,
+>  you generally should not be bundling your dependencies.
+
+> If you're building a developer tool (e.g. a CLI),
+>  it may make sense to bundle
+> long-term.
+
+It names three costs a bundled library imposes on its consumers:
+npm de-duplication stops working because the installer cannot see the bundled copies,
+the bundled dependencies freeze at their bundling-time versions so shipping their
+security updates becomes our burden,
+and the dependency tree is hidden rather than reduced.
+
+Measured against this repository:
+eight packages emit to `bundle/node`,
+all of them under `package/claude-code-plugin/`,
+and those are the developer-tool case where bundling is correct.
+The other seventy-eight `rolldown.node.config.ts` files build libraries to
+`dist/final/node`,
+where the guidance says workspace and native dependencies should stay external.
+`NODE_ALWAYS_BUNDLE` currently applies the tool rule to all of them.
+
+This only became visible now because most packages are private
+(124 of 159 manifests set `"private": true`),
+so the costs the guidance names have had no consumers to land on yet.
+
 
 ## Upstream filing decision
 
