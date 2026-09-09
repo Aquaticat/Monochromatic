@@ -28,6 +28,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type PipelineDigest,
+  type PairedReading,
   prepareDocumentPair,
   preparePassEntry,
   repairArchiveBlocks,
@@ -151,6 +152,61 @@ await describe({
           targetText: prepared.targetText,
         },)),
         ).toBe('Cats nap.');
+      },
+    },),
+    it({
+      name: 'LIMITS picture support to corroborated assets referenced by the aligned source section',
+      fn: async () => {
+        /** Aligned source section includes repeated, unavailable and textless references. */
+        const sourceText = `<PhotoScroll photos={['\${path}/photos/chat.webp', '\${path}/photos/chat.webp', '\${path}/photos/portrait.webp', '\${path}/photos/unread.webp']} />`;
+        /** Unclaimed block in the same aligned section. */
+        const blockText = '> Mittens greets her sister.';
+        /** Explicit pairing keeps the archive block available for review. */
+        const prepared = prepareDocumentPair({
+          sourceText,
+          targetText: `${sourceText}\n\n${blockText}`,
+          blockPairings: new Map([[0, [{ source: 0, target: 0, },],],]),
+        },);
+        /** Corroborated transcript with each reader's distinct wording preserved. */
+        const supported: PairedReading = {
+          kind: 'corroborated',
+          readings: [
+            { modelId: ROSTER[0], text: '手套猫：你好，姐姐。', },
+            { modelId: ROSTER[1], text: '你好，姐姐。我们一起回家。', },
+          ],
+          overlap: 1,
+        };
+        /** Unrelated and unusable evidence must not license this block. */
+        const pictureReadings = new Map<string, PairedReading>([
+          ['chat.webp', supported,],
+          ['elsewhere.webp', { ...supported, readings: [{ modelId: ROSTER[0], text: '无关内容', },], },],
+          ['portrait.webp', { kind: 'no-text', characters: 0, },],
+          ['unread.webp', { kind: 'unavailable', reason: 'readers-disagree', },],
+        ],);
+        /** Review contexts produced by the same mapper preparation uses. */
+        const contexts = archiveBlockSourceContexts({ prepared, pictureReadings, },);
+        /** The block's exact source support. */
+        const context = [...contexts.values(),].join('\n',);
+        expect(prepared.unclaimedTargetBlocks.length,).toBeGreaterThan(0,);
+        expect(context,).toContain('手套猫：你好，姐姐。',);
+        expect(context,).toContain('你好，姐姐。我们一起回家。',);
+        expect(context,).not.toContain('无关内容',);
+        expect(context,).not.toContain('elsewhere.webp',);
+        expect(context.split('CORROBORATED PICTURE SOURCE SUPPORT chat.webp',).slice(1,),).toHaveLength(1,);
+
+        /** A target-only location has no source authority even when readings exist. */
+        const targetOnly = archiveBlockSourceContexts({
+          prepared: {
+            ...prepared,
+            unclaimedTargetBlocks: prepared.unclaimedTargetBlocks.map(function outside(block,) {
+              return { ...block, location: { kind: 'target-only', sectionIndex: 0, }, };
+            },),
+          },
+          pictureReadings,
+        },);
+        expect([...targetOnly.values(),].every(function empty(context,): boolean {
+          return context === '';
+        },),).toBe(true,);
       },
     },),
     it({
