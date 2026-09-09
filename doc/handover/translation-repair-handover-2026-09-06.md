@@ -1380,6 +1380,13 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     `XingZ60` (the unordered list with a rule and three components).
     If the tree moves past `efc9a4f3c` while any runs,
     the kill-and-relaunch rule applies.
+    OpenRouter refused for payment at 12:22 UTC on 2026-09-09 (`HTTP 402`,
+    meter 1.51 USD,
+    172.94 fifteen hours earlier),
+    so the three run on Bedrock alone (187.91 USD) with the translate bench short of quorum
+    (2 of 8 translators reachable);
+    read their pages knowing that,
+    and read the meters before the next launch.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
 3.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;

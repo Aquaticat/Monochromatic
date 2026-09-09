@@ -6402,6 +6402,33 @@ the heading is a source-only slice the admission admitted,
 and the paragraph pair survived the contest.
 The page says whether the heading ships.
 
+OPENROUTER DRY AT 12:22 UTC.
+All three passes read `HTTP 402` from OpenRouter within two seconds of each other
+(`kimi-k3`,
+`glm-5.3`,
+`deepseek-v4-pro-0813`,
+`minimax-m3`),
+the meter reading `openrouterUsd=1.51`,
+and `markRefused` reads it dry until the meter moves,
+as the fourteenth class set it.
+The balance was 172.94 USD at 21:22 UTC on 2026-09-08 and 1.51 at 12:22 UTC on 2026-09-09:
+the hakureico,
+yuki,
+Arita,
+gqt,
+Mio,
+hulicaijia and noname launches of the night spent about 171 USD,
+the killed passes included.
+The three passes run on Bedrock alone (187.91 USD):
+the second `noname` warned
+`JUDGE SEATS phase=translate lane short of quorum: translators 2 of 8 reachable, quorum 4; select 3 of 8 reachable, quorum 4`
+and runs on what is reachable,
+which the owner named normal operation.
+The pages are read knowing which seats spoke;
+a two-translator translate lane is thinner evidence than the seven-translator one the first `noname` had.
+The owner is notified;
+whether OpenRouter is topped up is theirs.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
