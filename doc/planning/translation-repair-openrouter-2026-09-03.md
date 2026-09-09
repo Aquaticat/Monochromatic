@@ -6936,6 +6936,35 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## The ninth Mio launches on the structural-withdrawal proof, 2026-09-09, 23:49 UTC
+
+Frozen build `5cb66ffaa`,
+pass pid `1425902`,
+runs `~/temp/agent/Mio9-20260909`,
+log `~/temp/agent/Mio9-20260909.log`.
+The terminal-only managed supervisor is `proc_5d73`.
+Source is held still while the pass runs;
+any necessary source change requires kill and relaunch.
+
+Prelaunch and launch balances:
+OpenRouter 269.40 USD,
+Bedrock 186.06 USD,
+Synthetic weekly zero,
+Hyper zero.
+The meter sample is `~/temp/agent/Mio9-prelaunch-meters-20260909.log`;
+the required daily-cost helper output is `~/temp/agent/Mio9-costs-before-20260909.out`.
+The launch confirms overlap 4,
+built-in writer grace and Kimi withheld.
+
+Read both screenshot translations and the linked closing poem before advancing to `hulicaijia`.
+The guard's `assembly-structure-single-withdrawal` finding proves the selective branch was exercised;
+absence of that finding is not failure when no selected replacement broke the page.
+Either way,
+read the actual complete page and all ordinary verification checks.
+The new build has passed the full suite with last line `unit exit 0`,
+types,
+oxlint and edited markdown.
+
 ## Mio8 stops on a link lost by blanket assembly withdrawal, 2026-09-09, 23:46 UTC
 
 The eighth `Mio` on frozen `5b228736b` stopped INCOMPLETE at 23:32 UTC after 5,673,650 ms:

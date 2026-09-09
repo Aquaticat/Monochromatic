@@ -24,6 +24,30 @@ and the reason is recorded in
 
 ## Where the work stands
 
+Current launch at 23:49 UTC on 2026-09-09:
+the ninth `Mio` runs on frozen `5cb66ffaa`,
+carrying class twenty-five and class twenty-seven.
+Pass pid `1425902`,
+runs `~/temp/agent/Mio9-20260909`,
+log `~/temp/agent/Mio9-20260909.log`,
+managed terminal-only supervisor `proc_5d73` (`translation-repair-Mio9-20260909`).
+Prelaunch meters at 23:48 and launch meters at 23:49:
+OpenRouter 269.40 USD,
+Bedrock 186.06 USD,
+Synthetic weekly zero,
+Hyper zero.
+The required daily-cost output is `~/temp/agent/Mio9-costs-before-20260909.out`.
+Read this pass before `hulicaijia`:
+both screenshot translations,
+the linked poem,
+selective structural withdrawal if exercised,
+and the complete seven-step and three-check reading.
+The full suite ends `unit exit 0` in `~/temp/agent/class27-unit-20260909.out`;
+types,
+oxlint and edited markdown pass.
+No source change is planned while it runs;
+any necessary one requires killing pid `1425902` and relaunching.
+
 Terminal update at 23:32 UTC on 2026-09-09:
 the eighth `Mio` stopped INCOMPLETE after 5,673,650 ms at the publication guard:
 `entry Mio would drop 1 source destination(s)`.
@@ -1854,7 +1878,8 @@ each read off the pass log and the shipped page:
     The eighth `Mio` stopped INCOMPLETE at the missing-destination publication guard.
     The retained evidence identifies class twenty-seven,
     now fixed and verified at `5cb66ffaa`.
-    Relaunch `Mio` before advancing the queue.
+    The ninth `Mio` now runs at pid `1425902` on frozen `5cb66ffaa`;
+    wait for its terminal notification and read it before advancing the queue.
     Only a real page can establish that both screenshot translations survive.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
