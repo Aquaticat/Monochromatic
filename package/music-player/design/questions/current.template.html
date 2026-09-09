@@ -240,9 +240,20 @@
 
     .matrix-candidates {
       display: grid;
-      grid-template-columns: repeat(3, minmax(18rem, 1fr));
+      grid-template-columns: 9rem repeat(3, minmax(18rem, 1fr));
       gap: 0.75rem;
-      min-inline-size: 56rem;
+      min-inline-size: 66rem;
+    }
+
+    .matrix-row-label {
+      display: flex;
+      align-items: center;
+      min-block-size: 3rem;
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface-strong);
+      font-weight: 750;
     }
 
     .evidence-card {
@@ -428,45 +439,46 @@
     }
 
     .device-shell {
-      --preview-scale: 1;
+      --preview-scale-x: 1;
+      --preview-scale-y: 1;
       position: relative;
-      inline-size: calc(907px * var(--preview-scale));
-      block-size: calc(937px * var(--preview-scale));
+      inline-size: calc(907px * var(--preview-scale-x));
+      block-size: calc(937px * var(--preview-scale-y));
       margin-inline: auto;
       border-color: var(--color-device-edge);
       border-style: solid;
-      border-width: max(0.0625rem, calc(2px * var(--preview-scale)));
-      border-radius: calc(48px * var(--preview-scale));
+      border-width: max(0.0625rem, calc(2px * var(--preview-scale-x)));
+      border-radius: calc(48px * var(--preview-scale-x));
       background-color: var(--color-device);
     }
 
     .device-screen {
       position: absolute;
-      inset-block-start: calc(27px * var(--preview-scale));
-      inset-inline-start: calc(27px * var(--preview-scale));
-      inline-size: calc(852px * var(--preview-scale));
-      block-size: calc(883px * var(--preview-scale));
+      inset-block-start: calc(27px * var(--preview-scale-y));
+      inset-inline-start: calc(27px * var(--preview-scale-x));
+      inline-size: calc(852px * var(--preview-scale-x));
+      block-size: calc(883px * var(--preview-scale-y));
       overflow: hidden;
-      border-radius: calc(32px * var(--preview-scale));
+      border-radius: calc(32px * var(--preview-scale-x));
       background-color: var(--color-screen);
     }
 
     .device-screen img {
       display: block;
-      inline-size: calc(852px * var(--preview-scale));
-      block-size: calc(883px * var(--preview-scale));
+      inline-size: calc(852px * var(--preview-scale-x));
+      block-size: calc(883px * var(--preview-scale-y));
     }
 
     .device-camera {
       position: absolute;
       z-index: 2;
-      inset-block-start: calc(43.6px * var(--preview-scale));
-      inset-inline-start: calc(826.2px * var(--preview-scale));
-      inline-size: calc(32.4px * var(--preview-scale));
-      block-size: calc(32.4px * var(--preview-scale));
+      inset-block-start: calc(43.6px * var(--preview-scale-y));
+      inset-inline-start: calc(826.2px * var(--preview-scale-x));
+      inline-size: calc(32.4px * var(--preview-scale-x));
+      block-size: calc(32.4px * var(--preview-scale-y));
       border-color: var(--color-device-edge);
       border-style: solid;
-      border-width: max(0.0625rem, calc(1px * var(--preview-scale)));
+      border-width: max(0.0625rem, calc(1px * var(--preview-scale-x)));
       border-radius: 999rem;
       background-color: var(--color-camera);
     }
@@ -474,19 +486,19 @@
     .device-hinge {
       position: absolute;
       inset-inline-start: 50%;
-      inline-size: calc(28px * var(--preview-scale));
-      block-size: calc(4px * var(--preview-scale));
+      inline-size: calc(28px * var(--preview-scale-x));
+      block-size: calc(4px * var(--preview-scale-y));
       border-radius: 999rem;
       background-color: var(--color-device-edge);
       transform: translateX(-50%);
     }
 
     .device-hinge[data-edge="top"] {
-      inset-block-start: calc(7px * var(--preview-scale));
+      inset-block-start: calc(7px * var(--preview-scale-y));
     }
 
     .device-hinge[data-edge="bottom"] {
-      inset-block-end: calc(7px * var(--preview-scale));
+      inset-block-end: calc(7px * var(--preview-scale-y));
     }
 
     @media (max-width: 42rem) {
@@ -514,8 +526,8 @@
   <main>
     <header>
       <span class="status">Design only · native Android dynamic-color evidence</span>
-      <h1>Choose dark dynamic-color reach</h1>
-      <p class="lede">Dark mode and Android dynamic color are required. This matrix asks only how far wallpaper-derived roles should reach into the accepted unfolded screen. It does not authorize production implementation.</p>
+      <h1>Choose dark dynamic-color behavior</h1>
+      <p class="lede">Dark mode and Android dynamic color are required. This matrix asks separately how far wallpaper-derived roles reach into structural surfaces and whether the soft-neutral current row uses a fixed or generated neutral. It does not authorize production implementation.</p>
     </header>
 
     <section class="panel" aria-labelledby="fixed-title">
@@ -542,133 +554,106 @@
           <p>Compose Material 3 1.5.0-alpha27 reads Android 17 dark dynamic resources. Captures are opaque 2076 × 2152 physical px at 852 × 883dp.</p>
         </article>
       </div>
-      <div class="fixed-note"><strong>Measured contrast:</strong> across all environment rows, the minimum text pair is 4.63:1 and the minimum generated outline on black is 4.56:1. Role pairs stay matched. Reduced-motion and TalkBack requirements are unchanged.</div>
+      <div class="fixed-note"><strong>Measured contrast:</strong> selected rendered text combinations have a minimum of 4.63:1. Generated rail outlines have a minimum of 3.80:1 against every adjacent black or generated container sampled by these candidates. Reduced-motion and TalkBack requirements are unchanged.</div>
     </section>
 
-    <section class="panel" aria-labelledby="strategy-title">
-      <h2 id="strategy-title">Strategies</h2>
+    <section class="panel" aria-labelledby="surface-title">
+      <h2 id="surface-title">Decision one: structural surface reach</h2>
       <div class="strategy-grid">
         <article class="strategy-card" data-recommended>
-          <span class="code">A · recommended</span>
-          <h3>Stable black ladder</h3>
-          <p>Keep the accepted fixed black surface ladder. Use Android dynamic roles for Pause, Open, selected mode, folder indicator, text, and outlines.</p>
+          <span class="code">R1 · recommended</span>
+          <h3>Stable black structure</h3>
+          <p>Keep the folder canvas, rail, track canvas, and deck on the accepted fixed black ladder. Android still generates component accents, text, and outlines.</p>
           <ul class="role-list">
-            <li><strong>Pros:</strong> hierarchy and current-row neutrality stay invariant across wallpaper changes; preserves B2 literally.</li>
-            <li><strong>Cons:</strong> large structural surfaces do not inherit Android's generated neutral tint.</li>
+            <li><strong>Pros:</strong> structural surface colors remain fixed across wallpaper changes; preserves B2 literally.</li>
+            <li><strong>Cons:</strong> generated neutral tint stays out of large structural surfaces.</li>
           </ul>
         </article>
         <article class="strategy-card">
-          <span class="code">B</span>
-          <h3>Zoned dynamic containers</h3>
-          <p>Keep both content canvases black. Use generated <code>surfaceContainerLow</code> for the letter rail, deck, and current row.</p>
+          <span class="code">R2</span>
+          <h3>Zoned dynamic structure</h3>
+          <p>Keep both content canvases black. Use generated <code>surfaceContainerLow</code> for the letter rail and deck.</p>
           <ul class="role-list">
-            <li><strong>Pros:</strong> adds Material You expression without tinting either content canvas.</li>
-            <li><strong>Cons:</strong> wallpaper changes the visual weight of three structural or state regions.</li>
+            <li><strong>Pros:</strong> adds bounded Material You surface expression without tinting either content canvas.</li>
+            <li><strong>Cons:</strong> wallpaper changes the visual weight of the rail and deck.</li>
           </ul>
         </article>
         <article class="strategy-card">
-          <span class="code">C</span>
-          <h3>Tonal folder pane</h3>
-          <p>Keep the track canvas black. Apply generated low, standard, and high containers across the folder pane, rail, and deck.</p>
+          <span class="code">R3</span>
+          <h3>Tonal folder structure</h3>
+          <p>Keep the track canvas black. Apply generated low, standard, and high containers across the folder canvas, rail, and deck.</p>
           <ul class="role-list">
             <li><strong>Pros:</strong> gives the strongest system-personalized pane hierarchy.</li>
-            <li><strong>Cons:</strong> uncontrolled wallpaper color occupies a whole pane and competes with true black.</li>
+            <li><strong>Cons:</strong> uncontrolled palette color occupies the complete folder pane and competes with true black.</li>
           </ul>
         </article>
       </div>
-      <p class="ranking"><strong>Ranking: A &gt; B &gt; C.</strong> A beats B because wallpaper still changes every meaningful accent while the accepted neutral hierarchy remains stable. B beats C because it confines generated surfaces to bounded regions instead of letting an uncontrolled palette dominate the complete folder pane.</p>
+      <p class="ranking"><strong>Ranking: R1 &gt; R2 &gt; R3.</strong> R1 beats R2 because every meaningful component accent still follows Android while structural surface colors stay stable. R2 beats R3 because it confines generated surfaces to bounded regions instead of letting an uncontrolled palette dominate the folder pane.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="current-row-title">
+      <h2 id="current-row-title">Decision two: current-row neutral source</h2>
+      <div class="strategy-grid">
+        <article class="strategy-card" data-recommended>
+          <span class="code">C1 · recommended</span>
+          <h3>Fixed soft neutral</h3>
+          <p>Keep the accepted current row at fixed <code>#0A0A0D</code> plus bold title, independent of structural surface reach.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> preserves one calm current-state treatment under every wallpaper and contrast setting.</li>
+            <li><strong>Cons:</strong> the row container itself does not inherit Android's generated neutral hue.</li>
+          </ul>
+        </article>
+        <article class="strategy-card">
+          <span class="code">C2</span>
+          <h3>Dynamic soft neutral</h3>
+          <p>Use Android-generated <code>surfaceContainerLow</code> plus the same bold title, independent of structural surface reach.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> keeps the semantic Material role synchronized with the user's current palette and contrast.</li>
+            <li><strong>Cons:</strong> gold, magenta, and high-contrast environments visibly change the row's weight and hue.</li>
+          </ul>
+        </article>
+      </div>
+      <p class="ranking"><strong>Ranking: C1 &gt; C2.</strong> C1 beats C2 because D36 chose a calm neutral state rather than saturated current-row color; controls already provide dynamic personalization without making current-state weight wallpaper-dependent.</p>
     </section>
 
     <section class="panel" aria-labelledby="matrix-title">
       <h2 id="matrix-title">Native matrix</h2>
-      <p>Read across each environment row. All three screenshots use the same Android-generated role output, system bars, data, and accepted geometry. Open any candidate for Fit, native pixels, 100% reset, dimensions, and scrolling state.</p>
+      <p>Each environment contains a 2 × 3 matrix. Columns vary structural reach; rows vary only the current-row neutral source. All six candidates share one Android-generated role output, system bars, data, and accepted geometry. Open any candidate for Fit, native pixels, 100% reset, dimensions, and scrolling state.</p>
       <div class="matrix-key" role="group" aria-label="Matrix columns">
-        <strong>A · Stable black ladder</strong>
-        <strong>B · Zoned dynamic containers</strong>
-        <strong>C · Tonal folder pane</strong>
+        <strong>R1 · Stable structure</strong>
+        <strong>R2 · Zoned structure</strong>
+        <strong>R3 · Tonal structure</strong>
       </div>
 
-      <section class="matrix-row" aria-labelledby="environment-wallpaper">
-        <h3 id="environment-wallpaper">Current wallpaper seed</h3>
-        <p class="environment-meta">Measured seed 45588C · Tonal Spot · Default contrast</p>
-        <div class="matrix-scroll"><div class="matrix-candidates">
-          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Current wallpaper · stable black ladder" data-preview-src="@@DYNAMIC_WALLPAPER_STABLE@@"><img src="@@DYNAMIC_WALLPAPER_STABLE@@" width="852" height="883" alt="Blue dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Current wallpaper · zoned dynamic containers" data-preview-src="@@DYNAMIC_WALLPAPER_ZONED@@"><img src="@@DYNAMIC_WALLPAPER_ZONED@@" width="852" height="883" alt="Blue dynamic accents and bounded blue-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Current wallpaper · tonal folder pane" data-preview-src="@@DYNAMIC_WALLPAPER_TONAL@@"><img src="@@DYNAMIC_WALLPAPER_TONAL@@" width="852" height="883" alt="Blue dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
-        </div></div>
-      </section>
-
-      <section class="matrix-row" aria-labelledby="environment-coral">
-        <h3 id="environment-coral">Warm coral</h3>
-        <p class="environment-meta">Seed D45D42 · Tonal Spot · Default contrast</p>
-        <div class="matrix-scroll"><div class="matrix-candidates">
-          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Warm coral · stable black ladder" data-preview-src="@@DYNAMIC_CORAL_STABLE@@"><img src="@@DYNAMIC_CORAL_STABLE@@" width="852" height="883" alt="Coral dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Warm coral · zoned dynamic containers" data-preview-src="@@DYNAMIC_CORAL_ZONED@@"><img src="@@DYNAMIC_CORAL_ZONED@@" width="852" height="883" alt="Coral dynamic accents and bounded warm-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Warm coral · tonal folder pane" data-preview-src="@@DYNAMIC_CORAL_TONAL@@"><img src="@@DYNAMIC_CORAL_TONAL@@" width="852" height="883" alt="Coral dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
-        </div></div>
-      </section>
-
-      <section class="matrix-row" aria-labelledby="environment-green">
-        <h3 id="environment-green">Forest green</h3>
-        <p class="environment-meta">Seed 2E7D32 · Tonal Spot · Default contrast</p>
-        <div class="matrix-scroll"><div class="matrix-candidates">
-          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Forest green · stable black ladder" data-preview-src="@@DYNAMIC_GREEN_STABLE@@"><img src="@@DYNAMIC_GREEN_STABLE@@" width="852" height="883" alt="Green dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Forest green · zoned dynamic containers" data-preview-src="@@DYNAMIC_GREEN_ZONED@@"><img src="@@DYNAMIC_GREEN_ZONED@@" width="852" height="883" alt="Green dynamic accents and bounded green-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Forest green · tonal folder pane" data-preview-src="@@DYNAMIC_GREEN_TONAL@@"><img src="@@DYNAMIC_GREEN_TONAL@@" width="852" height="883" alt="Green dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
-        </div></div>
-      </section>
-
-      <section class="matrix-row" aria-labelledby="environment-gold">
-        <h3 id="environment-gold">Gold Vibrant</h3>
-        <p class="environment-meta">Seed C49000 · Vibrant style · Default contrast</p>
-        <div class="matrix-scroll"><div class="matrix-candidates">
-          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Gold Vibrant · stable black ladder" data-preview-src="@@DYNAMIC_GOLD_STABLE@@"><img src="@@DYNAMIC_GOLD_STABLE@@" width="852" height="883" alt="Gold dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Gold Vibrant · zoned dynamic containers" data-preview-src="@@DYNAMIC_GOLD_ZONED@@"><img src="@@DYNAMIC_GOLD_ZONED@@" width="852" height="883" alt="Gold dynamic accents and bounded gold-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Gold Vibrant · tonal folder pane" data-preview-src="@@DYNAMIC_GOLD_TONAL@@"><img src="@@DYNAMIC_GOLD_TONAL@@" width="852" height="883" alt="Gold dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
-        </div></div>
-      </section>
-
-      <section class="matrix-row" aria-labelledby="environment-magenta">
-        <h3 id="environment-magenta">Magenta Expressive</h3>
-        <p class="environment-meta">Seed A43D96 · Expressive style · Medium contrast</p>
-        <div class="matrix-scroll"><div class="matrix-candidates">
-          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Magenta Expressive · stable black ladder" data-preview-src="@@DYNAMIC_MAGENTA_STABLE@@"><img src="@@DYNAMIC_MAGENTA_STABLE@@" width="852" height="883" alt="Magenta and teal dynamic accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Magenta Expressive · zoned dynamic containers" data-preview-src="@@DYNAMIC_MAGENTA_ZONED@@"><img src="@@DYNAMIC_MAGENTA_ZONED@@" width="852" height="883" alt="Magenta and teal accents with bounded purple-neutral rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Magenta Expressive · tonal folder pane" data-preview-src="@@DYNAMIC_MAGENTA_TONAL@@"><img src="@@DYNAMIC_MAGENTA_TONAL@@" width="852" height="883" alt="Magenta dynamic tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
-        </div></div>
-      </section>
-
-      <section class="matrix-row" aria-labelledby="environment-monochrome">
-        <h3 id="environment-monochrome">Monochrome at High contrast</h3>
-        <p class="environment-meta">Seed 808080 · Monochromatic style · High contrast</p>
-        <div class="matrix-scroll"><div class="matrix-candidates">
-          <article class="evidence-card"><span class="code">A · stable</span><button class="evidence-button" type="button" data-preview-title="Monochrome High · stable black ladder" data-preview-src="@@DYNAMIC_MONOCHROME_STABLE@@"><img src="@@DYNAMIC_MONOCHROME_STABLE@@" width="852" height="883" alt="High-contrast monochrome accents on stable pure-black music-player surfaces"><span class="evidence-label">Open A at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">B · zoned</span><button class="evidence-button" type="button" data-preview-title="Monochrome High · zoned dynamic containers" data-preview-src="@@DYNAMIC_MONOCHROME_ZONED@@"><img src="@@DYNAMIC_MONOCHROME_ZONED@@" width="852" height="883" alt="High-contrast monochrome accents and bounded gray rail and deck on black canvases"><span class="evidence-label">Open B at panel scale</span></button></article>
-          <article class="evidence-card"><span class="code">C · tonal</span><button class="evidence-button" type="button" data-preview-title="Monochrome High · tonal folder pane" data-preview-src="@@DYNAMIC_MONOCHROME_TONAL@@"><img src="@@DYNAMIC_MONOCHROME_TONAL@@" width="852" height="883" alt="High-contrast gray tonal folder pane and deck beside black track canvas"><span class="evidence-label">Open C at panel scale</span></button></article>
-        </div></div>
-      </section>
+      @@MATRIX_ROWS@@
     </section>
 
     <section class="panel" aria-labelledby="analysis-title">
       <h2 id="analysis-title">Analysis and recommended additions</h2>
       <div class="requirement-grid">
-        <article class="requirement"><h3>Wallpaper robustness</h3><p>A changes controls and selected accents in every row without changing structural weight. B and C also tint surfaces, most visibly under Gold Vibrant and Magenta Expressive.</p></article>
-        <article class="requirement"><h3>True-black expression</h3><p>A keeps both panes and the rail black. B keeps both content canvases black. C keeps the track canvas black but makes the complete folder pane dynamic.</p></article>
-        <article class="requirement"><h3>Current state</h3><p>Every candidate retains a neutral current-row container plus bold title. A makes that neutral invariant; B and C accept the generated neutral hue.</p></article>
+        <article class="requirement"><h3>Wallpaper robustness</h3><p>Every candidate changes controls, selected accents, text, and outlines with Android. R1 alone fixes structural surfaces; R2 and R3 intentionally add generated neutral tint.</p></article>
+        <article class="requirement"><h3>True-black expression</h3><p>R1 keeps the folder canvas, rail, and track canvas black. R2 keeps both content canvases black. R3 keeps the track canvas black but makes the folder canvas dynamic.</p></article>
+        <article class="requirement"><h3>Current state</h3><p>Every candidate retains a neutral current-row container plus bold title. C1 fixes its color; C2 accepts Android's generated neutral hue and contrast response.</p></article>
+        <article class="requirement"><h3>Evidence boundary</h3><p>These captures establish palette-dependent appearance. They do not establish live wallpaper refresh because each debug candidate is relaunched after Android roles settle.</p></article>
         <article class="requirement"><h3>Implementation follow-through</h3><p>Later implementation should follow system theme changes live, retain a baseline dark fallback below Android 12, use generated <code>outline</code> for the dark rail boundary, and regression-test wallpaper changes without restarting the app.</p></article>
       </div>
     </section>
 
     <section class="panel" aria-labelledby="answer-title">
-      <h2 id="answer-title">Your decision</h2>
+      <h2 id="answer-title">Your decisions</h2>
       <form id="review-form">
         <fieldset>
-          <legend>Choose dynamic-color reach</legend>
-          <label class="review-choice" data-recommended><input type="radio" name="dynamicReach" value="A Stable black ladder" required><span><strong>A Stable black ladder (Recommended).</strong> Pros: dynamic actions with invariant black hierarchy and literal B2 preservation. Cons: generated neutral tint stays out of structural surfaces.</span></label>
-          <label class="review-choice"><input type="radio" name="dynamicReach" value="B Zoned dynamic containers" required><span><strong>B Zoned dynamic containers.</strong> Pros: more Material You expression while content canvases stay black. Cons: wallpaper changes the rail, deck, and current-row weight.</span></label>
-          <label class="review-choice"><input type="radio" name="dynamicReach" value="C Tonal folder pane" required><span><strong>C Tonal folder pane.</strong> Pros: strongest system-personalized hierarchy. Cons: uncontrolled palette color occupies the complete folder pane and weakens true black.</span></label>
+          <legend>Choose structural surface reach</legend>
+          <label class="review-choice" data-recommended><input type="radio" name="surfaceReach" value="R1 Stable black structure" required><span><strong>R1 Stable black structure (Recommended).</strong> Pros: dynamic components with fixed structural surfaces and literal B2 preservation. Cons: generated neutral tint stays out of large structural surfaces.</span></label>
+          <label class="review-choice"><input type="radio" name="surfaceReach" value="R2 Zoned dynamic structure" required><span><strong>R2 Zoned dynamic structure.</strong> Pros: bounded Material You surfaces while content canvases stay black. Cons: wallpaper changes the rail and deck weight.</span></label>
+          <label class="review-choice"><input type="radio" name="surfaceReach" value="R3 Tonal folder structure" required><span><strong>R3 Tonal folder structure.</strong> Pros: strongest system-personalized pane hierarchy. Cons: uncontrolled palette color occupies the folder pane and weakens true-black expression.</span></label>
         </fieldset>
-        <label for="other-corrections"><strong>What should change?</strong> Enter “None” if the selected strategy is accepted.</label>
+        <fieldset>
+          <legend>Choose current-row neutral source</legend>
+          <label class="review-choice" data-recommended><input type="radio" name="currentRowSource" value="C1 Fixed soft neutral" required><span><strong>C1 Fixed soft neutral (Recommended).</strong> Pros: current-state weight remains calm and stable. Cons: row container hue does not follow Android.</span></label>
+          <label class="review-choice"><input type="radio" name="currentRowSource" value="C2 Dynamic soft neutral" required><span><strong>C2 Dynamic soft neutral.</strong> Pros: current row follows Android's neutral role and contrast. Cons: wallpaper and style visibly change its hue and weight.</span></label>
+        </fieldset>
+        <label for="other-corrections"><strong>What should change?</strong> Enter “None” if both selections are accepted.</label>
         <textarea id="other-corrections" name="otherCorrections" required></textarea>
         <div class="actions">
           <button class="action-button" type="submit">Prepare answer</button>
@@ -713,29 +698,54 @@
     const previewTitle = document.querySelector('#preview-title');
     const previewDetails = document.querySelector('#preview-details');
     const sourceWidth = 2076;
+    const sourceHeight = 2152;
     const designWidth = 852;
+    const designHeight = 883;
     const frameWidth = 907;
     const frameHeight = 937;
-    const nativeScale = sourceWidth / designWidth;
-    let scale = 1;
+    const nativeScaleX = sourceWidth / designWidth;
+    const nativeScaleY = sourceHeight / designHeight;
+    const maximumUniformScale = Math.min(nativeScaleX, nativeScaleY);
+    let scaleX = 1;
+    let scaleY = 1;
+    let fitActive = false;
     let returnTarget = null;
 
-    function applyScale(nextScale) {
-      scale = Math.max(0.08, Math.min(nativeScale, nextScale));
-      device.style.setProperty('--preview-scale', String(scale));
-      const scaledWidth = Math.round(frameWidth * scale);
-      const scaledHeight = Math.round(frameHeight * scale);
-      const scrolling = scaledWidth > stage.clientWidth || scaledHeight > stage.clientHeight
+    function updatePreviewDetails() {
+      if (!dialog.open) {
+        return;
+      }
+      const frame = device.getBoundingClientRect();
+      const screen = device.querySelector('.device-screen').getBoundingClientRect();
+      const scrolling = stage.scrollWidth > stage.clientWidth || stage.scrollHeight > stage.clientHeight
         ? 'scrolling available'
         : 'no scrolling needed';
-      previewDetails.textContent = `Source 2076 × 2152 physical px · design 852 × 883dp · ${Math.round(scale * 100)}% · ${scaledWidth} × ${scaledHeight} CSS px frame · ${scrolling}`;
+      const percent = Math.round(scaleX * 100);
+      const nextText = `Source 2076 × 2152 physical px · design 852 × 883dp · ${percent}% · ${Math.round(screen.width)} × ${Math.round(screen.height)} CSS px screen · ${Math.round(frame.width)} × ${Math.round(frame.height)} CSS px frame · ${scrolling}`;
+      if (previewDetails.textContent !== nextText) {
+        previewDetails.textContent = nextText;
+      }
+    }
+
+    function applyScale(nextScaleX, nextScaleY = nextScaleX) {
+      scaleX = Math.max(0.08, Math.min(nativeScaleX, nextScaleX));
+      scaleY = Math.max(0.08, Math.min(nativeScaleY, nextScaleY));
+      device.style.setProperty('--preview-scale-x', String(scaleX));
+      device.style.setProperty('--preview-scale-y', String(scaleY));
       stage.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      requestAnimationFrame(() => requestAnimationFrame(updatePreviewDetails));
     }
 
     function fitPreview() {
+      fitActive = true;
       const availableWidth = Math.max(1, stage.clientWidth - 32);
       const availableHeight = Math.max(1, stage.clientHeight - 32);
-      applyScale(Math.min(1, availableWidth / frameWidth, availableHeight / frameHeight));
+      const nextScale = Math.min(1, availableWidth / frameWidth, availableHeight / frameHeight);
+      if (Math.abs(scaleX - nextScale) < 0.0001 && Math.abs(scaleY - nextScale) < 0.0001) {
+        requestAnimationFrame(updatePreviewDetails);
+        return;
+      }
+      applyScale(nextScale);
     }
 
     document.querySelectorAll('.evidence-button').forEach((button) => {
@@ -745,21 +755,45 @@
         previewImage.src = button.dataset.previewSrc;
         previewImage.alt = button.querySelector('img').alt;
         dialog.showModal();
-        requestAnimationFrame(fitPreview);
+        requestAnimationFrame(() => {
+          fitPreview();
+          requestAnimationFrame(fitPreview);
+        });
       });
     });
 
-    document.querySelector('#zoom-out').addEventListener('click', () => applyScale(scale - 0.1));
-    document.querySelector('#zoom-in').addEventListener('click', () => applyScale(scale + 0.1));
+    document.querySelector('#zoom-out').addEventListener('click', () => {
+      fitActive = false;
+      applyScale(Math.min(scaleX, scaleY) - 0.1);
+    });
+    document.querySelector('#zoom-in').addEventListener('click', () => {
+      fitActive = false;
+      applyScale(Math.min(maximumUniformScale, Math.max(scaleX, scaleY) + 0.1));
+    });
     document.querySelector('#fit').addEventListener('click', fitPreview);
-    document.querySelector('#native').addEventListener('click', () => applyScale(nativeScale));
-    document.querySelector('#reset').addEventListener('click', () => applyScale(1));
+    document.querySelector('#native').addEventListener('click', () => {
+      fitActive = false;
+      applyScale(nativeScaleX, nativeScaleY);
+    });
+    document.querySelector('#reset').addEventListener('click', () => {
+      fitActive = false;
+      applyScale(1);
+    });
     document.querySelector('#preview-close').addEventListener('click', () => dialog.close());
     dialog.addEventListener('close', () => {
+      fitActive = false;
       if (returnTarget) {
         returnTarget.focus();
       }
     });
+    const previewResizeObserver = new ResizeObserver(() => {
+      if (dialog.open && fitActive) {
+        fitPreview();
+      } else {
+        requestAnimationFrame(updatePreviewDetails);
+      }
+    });
+    previewResizeObserver.observe(stage);
 
     const form = document.querySelector('#review-form');
     const corrections = document.querySelector('#other-corrections');
@@ -787,7 +821,8 @@
       corrections.setCustomValidity('');
       const data = new FormData(form);
       preparedAnswer = [
-        `Dark dynamic-color reach: ${data.get('dynamicReach')}`,
+        `Structural surface reach: ${data.get('surfaceReach')}`,
+        `Current-row neutral source: ${data.get('currentRowSource')}`,
         `Corrections: ${corrections.value.trim()}`,
       ].join('\n');
       output.textContent = preparedAnswer;
