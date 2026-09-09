@@ -136,6 +136,11 @@ dir = "{{config_root}}"
 depends = ["build:native"]
 run = "./gradlew :app:assembleDebug --no-daemon --console=plain"
 
+[tasks."build:ui"]
+description = "Assemble the debug APK against existing JNI libraries for Compose-only iteration"
+dir = "{{config_root}}"
+run = "./gradlew :app:assembleDebug --no-daemon --console=plain"
+
 [tasks."build:release"]
 description = "Assemble the optimized (non-debuggable) release APK, debug-signed so it installs (rebuilds the native .so first)"
 dir = "{{config_root}}"
