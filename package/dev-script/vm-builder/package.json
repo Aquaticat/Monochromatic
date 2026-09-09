@@ -16,8 +16,7 @@
     "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
-    "@monochromatic-dev/module-hyperscript": "workspace:*",
-    "find-up": "catalog:"
+    "@monochromatic-dev/module-hyperscript": "workspace:*"
   },
   "version": "0.0.1",
   "repository": {

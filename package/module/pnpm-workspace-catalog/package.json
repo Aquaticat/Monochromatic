@@ -20,9 +20,9 @@
     "LICENSES"
   ],
   "dependencies": {
+    "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
-    "find-up": "catalog:",
     "yaml": "catalog:"
   },
   "devDependencies": {

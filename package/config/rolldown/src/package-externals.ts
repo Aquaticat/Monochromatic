@@ -11,7 +11,7 @@ import { join } from 'node:path';
  
  @example
  ```ts
- const patterns: readonly BundlePattern[] = ['\@monochromatic-dev/**', 'find-up'];
+ const patterns: readonly BundlePattern[] = ['\@monochromatic-dev/**', 'nano-spawn'];
  ```
  */
 export type BundlePattern = string;

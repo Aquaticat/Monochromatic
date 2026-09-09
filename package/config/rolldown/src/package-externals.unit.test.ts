@@ -70,8 +70,8 @@ await describe({
           pattern: 'lezer-**',
         },),).toBe(true,);
         expect(matchesBundlePattern({
-          name: 'find-up',
-          pattern: 'find-up',
+          name: 'nano-spawn',
+          pattern: 'nano-spawn',
         },),).toBe(true,);
       },
     },),
@@ -83,8 +83,8 @@ await describe({
           pattern: '@monochromatic-dev/**',
         },),).toBe(false,);
         expect(matchesBundlePattern({
-          name: 'find-up-simple',
-          pattern: 'find-up',
+          name: 'nano-spawn-extra',
+          pattern: 'nano-spawn',
         },),).toBe(false,);
       },
     },),

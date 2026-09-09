@@ -20,12 +20,11 @@ const target = await browserslistTargets({ runtime: 'node', },);
 
 /**
  Bundle-inclusion patterns for Node builds:
- workspace source plus the two ESM-only utilities historically inlined
+ workspace source plus the ESM-only utility historically inlined
  so committed plugin bundles stay dependency-free.
  */
 export const NODE_ALWAYS_BUNDLE: readonly string[] = [
   '@monochromatic-dev/**',
-  'find-up',
   'nano-spawn',
 ];
 

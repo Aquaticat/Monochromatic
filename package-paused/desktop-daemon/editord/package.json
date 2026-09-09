@@ -26,7 +26,7 @@
     "chokidar": "catalog:",
     "crossws": "catalog:",
     "h3": "catalog:",
-    "find-up": "catalog:",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
     "nano-spawn": "catalog:"
   },
   "devDependencies": {

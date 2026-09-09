@@ -83,7 +83,6 @@ catalog:
   'farmhashjs': '>=1.0.1'
   'feedsmith': '>=3.0.0-rc.3'
   'file-type': '>=21.3.0'
-  'find-up': '>=8.0.0'
   'h3': '>=2.0.1-rc.29'
   'happy-dom': '>=20.5.0'
   'happy-rusty': '>=1.9.1'
