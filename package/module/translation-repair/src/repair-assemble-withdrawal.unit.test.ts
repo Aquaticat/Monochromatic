@@ -275,14 +275,16 @@ await describe({
   name: assembleRepair.name,
   children: [
     it({
-      name: 'SAYS SO WHEN IT TAKES A REPAIR BACK, naming how many, since the one line it logs is where '
-        + 'an operator learns that work the run already paid for did not reach the reader',
+      name: 'SAYS SO WHEN IT TAKES A REPAIR BACK, naming how many and then each finding, since those '
+        + 'lines are where an operator learns that work the run already paid for did not reach the reader '
+        + 'and why (the twenty-first hakureico pass of 2026-09-09 left only the count)',
       fn: async () => {
         const { result, warnings, } = assembleWith({ repairedText: ORPHANING_REPAIR, },);
 
         expect(result.withdrawnSliceIndices,).toEqual([ 0, ],);
-        expect(warnings,).toHaveLength(1,);
+        expect(warnings,).toHaveLength(2,);
         expect(warnings[0],).toBe('withdrew 1 slice repairs at assembly; the findings say why',);
+        expect(warnings[1],).toContain('assembly-footnote-reverted',);
       },
     },),
     it({
