@@ -206,12 +206,29 @@ The previous `t1` and `t2` target IDs and URLs were preserved without reloading 
 The new document exposes the completed capstone source and the current layout protocol;
 its measured root background is `rgb(30, 30, 30)`.
 
-Window activation is still being checked after monitor/geometry changes;
-an immediate activation log is not sufficient after-state evidence.
-`proc_e124` is cleaning up explicitly named verification profiles and controllers.
-The public presentation session is excluded from cleanup.
+After monitor/geometry changes, focus was applied again after the move settled.
+KWin's `PI_PROMISES_REVIEW_PRESENTED` record showed the lesson active and non-minimized on `DP-3`,
+with `DP-3` also the current output.
+The heading was then realigned after the viewport resize:
+its top measured 0.078125 CSS pixels in a 1,812 CSS-pixel-high viewport.
+`review-corrections-visible.png` was recaptured and inspected in that state.
+The temporary KWin scripts were unloaded.
 
-## Remaining work
+The reviewed PDF pages were 2, 32, 33, 35, 36, 48, 49, 88, 89, 91, 92, 93, and 94.
+These include the new source guide, ownership explanation and exercise,
+Stop trace, capstone execution contract, and policy/interface comparison.
+Source continues across pages; the whole-source inventories separately check retention.
 
-- Finish current-window verification and record the completed resource cleanup.
-- Report the scoped lesson corrections without reopening the veto or seeking final teaching-skill approval.
+`proc_e124` completed cleanup in 8 seconds.
+It closed only `promises-print-ui` and `promises-revision-verify`,
+stopped processes identified by their owned profiles or fixture working directory,
+and removed the explicitly named print, export, and Firefox verification profiles.
+The public `promises-open-chat-present` session remained, including its preserved older tabs.
+Some older fixture process registrations were no longer available;
+OS process inspection established their surviving children before cleanup, rather than starting duplicates.
+
+## Completion boundary
+
+The delegated concrete lesson corrections are implemented, verified, and presented.
+The learner-observation veto remains settled.
+This is not final approval or implementation of the teaching skill.

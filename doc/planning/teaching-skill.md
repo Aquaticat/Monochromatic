@@ -12,7 +12,8 @@ They supplied `promises-teaching-independent-review.md` and marked its
 That section does not create a blocker or a requirement for learner studies.
 The remaining source, exercise, and runtime findings have been assessed separately.
 The user then delegated repairs with “Address whatever you want to address.”
-Implementation and evidence are tracked in
+The delegated corrections are implemented and presented in a fresh tab.
+Implementation, browser/print/export checks, preservation, and cleanup are recorded in
 [the correction handover](../handover/promises-review-corrections.md).
 Earlier critiques rejected a detached opening and forced chat turn-taking.
 The shop opening, reference chat, and reading backgrounds have since been corrected and operationally checked.
@@ -1107,9 +1108,9 @@ The pre-change artifact has been preserved separately.
 
 ## Next action
 
-Implement and verify the delegated repairs using the correction handover.
-Preserve the veto, independent sending, neutral reading surfaces, native editing, and complete print/export content.
-Present the corrected lesson in a fresh tab without replacing the user's drafts.
+The correction handover records the completed lesson repair and verification boundary.
+Resume teaching-skill discovery from these concrete failures when that discussion continues.
+Do not reopen the vetoed learner-observation concerns as approval gates.
 No final skill confirmation has been requested.
 Independent sending and neutral surfaces are implemented and operationally checked;
 those checks do not establish teaching acceptance, learner independence, or mastery.
