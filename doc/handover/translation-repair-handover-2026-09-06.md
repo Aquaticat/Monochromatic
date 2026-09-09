@@ -24,7 +24,22 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Takeover update at 21:58 UTC on 2026-09-09:
+Terminal update at 23:32 UTC on 2026-09-09:
+the eighth `Mio` stopped INCOMPLETE after 5,673,650 ms at the publication guard:
+`entry Mio would drop 1 source destination(s)`.
+No page or settled artifact was written.
+The missing destination is being diagnosed from the retained cache and ledger;
+do not launch `hulicaijia` yet.
+Final meters:
+OpenRouter 269.41 USD,
+Bedrock 186.06 USD,
+Synthetic weekly 0.3868101893939394 percent,
+Hyper zero.
+The required daily helper output is `~/temp/agent/Mio8-costs-after-20260909.out`;
+per-model spend and stage totals are in `~/temp/agent/Mio8-spend-20260909.out`.
+The supervisor has exited and pid `1178354` is no longer running.
+
+Launch record at 21:58 UTC on 2026-09-09:
 class twenty-five is implemented in `f6cd6e5e7` and `07a99e23a`,
 with verification complete and the eighth `Mio` running on frozen `5b228736b`.
 Pass pid `1178354`,
@@ -1817,8 +1832,10 @@ each read off the pass log and the shipped page:
 
 1.  CLASS TWENTY-FIVE IS VERIFIED LOCALLY.
     Implementation and red/green evidence are in the takeover update under "Where the work stands".
-    The eighth `Mio` is running at pid `1178354` on frozen `5b228736b`;
-    read it when the terminal notification arrives.
+    The eighth `Mio` stopped INCOMPLETE at the missing-destination publication guard.
+    Diagnose the retained evidence in `~/temp/agent/Mio8-20260909`,
+    fix any implementation defect with a failing guard,
+    then relaunch `Mio` before advancing the queue.
     Only a real page can establish that both screenshot translations survive.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
