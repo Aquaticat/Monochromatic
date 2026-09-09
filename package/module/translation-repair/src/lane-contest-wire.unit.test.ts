@@ -192,6 +192,25 @@ await describe({
       },
     },),
     it({
+      name: 'NAMES THE LANE LACKING THE COMMUNITY RENDERING after the passages, and leaves the archive '
+        + 'and the lane carrying it unnamed (owner, 2026-09-09)',
+      fn: async () => {
+        const messages = buildLaneContestMessages({
+          subject: {
+            sourceText: '她最喜欢的角色是超天酱。',
+            incumbentText: 'Her favourite character was KAngel.',
+            repairText: 'Her favourite character was KAngel.',
+            translateText: 'Her favourite character was Choco-chan.',
+          },
+        },);
+        const asked = messages.at(1,)?.content ?? '';
+        expect(asked,).toContain('COMMUNITY RENDERINGS, evidence to weigh, not a verdict:',);
+        expect(asked,).toContain('- CANDIDATE "translate" carries none of the community\'s renderings of 超天酱',);
+        expect(asked.includes('CANDIDATE "repair" carries none',),).toBe(false,);
+        expect(asked.includes('ARCHIVE RENDERING carries none',),).toBe(false,);
+      },
+    },),
+    it({
       name: 'JUDGES FRONT MATTER AS YAML and makes source visible name authoritative',
       fn: async () => {
         const system = buildLaneContestMessages({

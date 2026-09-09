@@ -409,6 +409,7 @@ export async function runRefineStage(
     client,
     candidates,
     judgeModelIds,
+    sourceText,
     ...selectionContext,
     signal,
     perCallTimeoutMs,

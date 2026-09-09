@@ -87,6 +87,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * @param perCallTimeoutMs - deadline per exchange
  *
+ * @param sourceText - original the candidates render, when the caller has
+ * it, so the sheet names a candidate lacking a community rendering
+ *
  * @param l - logger of the calling stage
  *
  * @returns Winner with the ballot weight it drew, or a decline carrying its
@@ -114,6 +117,7 @@ export async function decideBestCandidate<ValueT,>(
     perCallTimeoutMs,
     l,
     fanOut,
+    sourceText,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly candidates: readonly Candidate<ValueT>[];
@@ -126,6 +130,7 @@ export async function decideBestCandidate<ValueT,>(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly sourceText?: string;
   }>,
 ): Promise<SelectionOutcome<ValueT>> {
   /**
@@ -237,6 +242,8 @@ export async function decideBestCandidate<ValueT,>(
         return candidate.rendered;
       },),
       ...((declineConsequence === undefined) ? {} : { declineConsequence, }),
+      // Conditional spread keeps the original absent instead of undefined.
+      ...((sourceText === undefined) ? {} : { sourceText, }),
     },),
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,

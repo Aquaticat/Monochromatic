@@ -24,11 +24,49 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  buildCandidateSelectMessages,
   CANDIDATE_NONE,
   isCandidateBallotAsSent,
   isCandidateBallotWire,
   readCandidateBallotWire,
 } from '../dist/final/node/index.mjs';
+
+await describe({
+  name: buildCandidateSelectMessages.name,
+  children: [
+    it({
+      name: 'NAMES A CANDIDATE LACKING THE COMMUNITY RENDERING by its number after the candidates when '
+        + 'the caller passes the original, and adds nothing without it (owner, 2026-09-09)',
+      fn: async () => {
+        /** Shared request over one kept and one lost rendering of 自切. */
+        const request = {
+          task: 'Pick one.',
+          criteria: ['Faithful.',],
+          evidence: [{
+            label: 'ORIGINAL (Chinese)',
+            text: '在她自切后，家人的态度好转很多。',
+          },],
+          rendered: [
+            'After she attempted self-surgery, her family became more accepting.',
+            'After she began cutting herself, her family became more accepting.',
+          ],
+        };
+        /** What the judge is shown with the original passed. */
+        const shown = buildCandidateSelectMessages({
+          ...request,
+          sourceText: '在她自切后，家人的态度好转很多。',
+        },).at(1,)?.content ?? '';
+        expect(shown,).toContain('COMMUNITY RENDERINGS, evidence to weigh, not a verdict:',);
+        expect(shown,).toContain('- CANDIDATE 2 carries none of the community\'s renderings of 自切',);
+        expect(shown.includes('CANDIDATE 1 carries none',),).toBe(false,);
+        expect(shown.indexOf('COMMUNITY RENDERINGS',) > shown.indexOf('CANDIDATE 2\n',),).toBe(true,);
+        /** What the judge is shown without it. */
+        const bare = buildCandidateSelectMessages(request,).at(1,)?.content ?? '';
+        expect(bare.includes('COMMUNITY RENDERINGS',),).toBe(false,);
+      },
+    },),
+  ],
+},);
 
 await describe({
   name: isCandidateBallotWire.name,

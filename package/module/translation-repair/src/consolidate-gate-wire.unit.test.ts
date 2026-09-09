@@ -338,3 +338,28 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: 'community renderings on the gate sheet',
+  children: [
+    it({
+      name: 'NAMES THE RENDERING LACKING THE COMMUNITY WORD after the passages, and leaves the ones '
+        + 'carrying it unnamed (owner, 2026-09-09)',
+      fn: async () => {
+        /** What the judge is shown over a consolidation that lost 自切. */
+        const shown = exchangeFor({
+          subject: {
+            sourceText: '在她自切后，家人的态度好转很多。',
+            incumbentText: 'After she attempted self-surgery, her family became more accepting.',
+            consolidatedText: 'After she began cutting herself, her family grew more accepting.',
+            standingText: 'After her self-surgery, her family became more accepting.',
+          },
+        },);
+        expect(shown,).toContain('COMMUNITY RENDERINGS, evidence to weigh, not a verdict:',);
+        expect(shown,).toContain('- CANDIDATE "consolidated" carries none of the community\'s renderings of 自切',);
+        expect(shown.includes('CANDIDATE "standing" carries none',),).toBe(false,);
+        expect(shown.includes('ARCHIVE RENDERING carries none',),).toBe(false,);
+      },
+    },),
+  ],
+},);

@@ -1545,7 +1545,7 @@ a fix that matters to the running entry still kills and relaunches it.
     `consolidate-ineligible-standing.ts` offers it and keeps it,
     `consolidate-settle.ts` and the gate thread it),
     and the glossary
-    (`corpus-run/community-glossary.ts`,
+    (`community-glossary.ts`,
     the `COMMUNITY TERMS` lines in `document-preparation.ts`'s identity context,
     the `COMMUNITY RENDERINGS` block on the select,
     translate,

@@ -168,6 +168,24 @@ await describe({
     },),
 
     it({
+      name: 'carries the COMMUNITY TERMS the source holds into the identity context, with the '
+        + 'archive\'s rendering, and none for a source holding no term (owner, 2026-09-09)',
+      fn: async () => {
+        const { identityContext, } = prepareDocumentPair({
+          sourceText: `${SOURCE_TEXT}\n\n她最喜欢的角色是超天酱。\n`,
+          targetText: `${TARGET_TEXT}\n\nHer favourite character was KAngel.\n`,
+        },);
+        expect(identityContext,).toContain('COMMUNITY TERMS',);
+        expect(identityContext,).toContain('- 超天酱: "KAngel", "Needy Streamer Overload" (',);
+        const { identityContext: plain, } = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+        },);
+        expect((plain ?? '').includes('COMMUNITY TERMS',),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'PRESERVES TARGET CONTRIBUTOR HANDLES as declared identity forms',
       fn: async () => {
         const prepared = prepareDocumentPair({

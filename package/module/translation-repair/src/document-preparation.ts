@@ -5,6 +5,7 @@ import {
 } from './chunk-document.ts';
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
+import { communityTermLines, } from './community-glossary.ts';
 import { entryNoteLines, } from './entry-notes.ts';
 import {
   collectIdentityLines,
@@ -198,6 +199,10 @@ export function prepareDocumentPair(
       sourceDocument,
       targetDocument,
     },),
+    // THE COMMUNITY'S WORDS THIS ENTRY CARRIES (the owner's decision of
+    // 2026-09-09, `community-glossary.ts`), so every sheet that carries the
+    // declared names knows how the archive and the community render them.
+    ...communityTermLines({ text: sourceText, },),
     ...contextLines,
   ];
 

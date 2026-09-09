@@ -317,6 +317,7 @@ export async function runArchiveBlockReviewStage(
       blockText,
     },),
     judgeModelIds: modelIds,
+    sourceText,
     task: 'Choose a publishable correction for one unsupported archive-only block.',
     criteria: [
       'Remove every factual claim not supported by the original document.',

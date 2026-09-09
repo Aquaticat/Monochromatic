@@ -352,6 +352,7 @@ export async function judgeTranslateSlate(
     client,
     candidates: rotated,
     judgeModelIds,
+    sourceText,
     // WHAT A DECLINE ACTUALLY COSTS HERE, which is not what the shared sheet
     // says by default. Judges are told declining is safe because the caller
     // keeps text it already trusts; at an anchor there is no such text, so that

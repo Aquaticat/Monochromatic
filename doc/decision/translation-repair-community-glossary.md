@@ -10,8 +10,8 @@ where the archive has `KAngel` of *Needy Streamer Overload*.
 
 ## The rule
 
-- `corpus-run/community-glossary.ts`,
-    beside the corpus pin,
+- `community-glossary.ts`,
+    beside the corpus pin (`corpus-source.ts`),
     lists each term,
     the renderings the community accepts (the archive's first) and one line of why.
     Seeded with the two;
@@ -55,5 +55,24 @@ where the archive has `KAngel` of *Needy Streamer Overload*.
 
 ## What landed
 
-Recorded here before the build;
-the build commit fills this section.
+- `community-glossary.ts`:
+    `COMMUNITY_GLOSSARY` seeded with the two terms,
+    `communityTermsIn`,
+    `communityTermLines` for the identity context,
+    `communityRenderingDepartures` and `communityRenderingsBlock` for the sheets;
+    exported through `sheet-barrel.ts`.
+- `document-preparation.ts` appends the `COMMUNITY TERMS` lines to the identity context after the entry notes,
+    so the preparation identity re-keys the entries that carry a term and no other.
+- `candidate-select-wire.ts` takes `sourceText` and names departures by candidate number after the candidates;
+    `candidate-select.ts` threads it,
+    and the translate judge,
+    both editor selections,
+    the refiner selection and the archive-block review pass their original.
+    The editor selections' task and criteria moved to `editor-selection-sheet.ts` at the line cap.
+- `lane-contest-wire.ts` and `consolidate-gate-wire.ts` add the block after the passages,
+    over the archive rendering and the candidates.
+- Guards shown to fail on the build before the change:
+    `lane-contest-wire.unit.test.ts`,
+    `consolidate-gate-wire.unit.test.ts`,
+    `document-preparation.unit.test.ts`;
+    with them `candidate-select-wire.unit.test.ts` and `community-glossary.unit.test.ts`.

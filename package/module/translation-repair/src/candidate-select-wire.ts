@@ -1,5 +1,9 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import {
+  communityRenderingsBlock,
+  type RenderingCandidate,
+} from './community-glossary.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
@@ -270,6 +274,9 @@ export const LEAVES_PASSAGE_UNTRANSLATED: string =
  *
  * @param rendered - candidate texts in caller-fixed order
  *
+ * @param sourceText - original the candidates render, when the caller has
+ * it, so a candidate lacking a community rendering is named
+ *
  * @param declineConsequence - what the CALLER does when every judge declines,
  * stated to the judges; the default describes a round that has something to
  * fall back on, and a caller with nothing must say so
@@ -288,12 +295,14 @@ export function buildCandidateSelectMessages(
     evidence,
     rendered,
     declineConsequence = KEEPS_TRUSTED_TEXT,
+    sourceText,
   }: {
     readonly task: string;
     readonly criteria: readonly string[];
     readonly evidence: readonly SelectEvidence[];
     readonly rendered: readonly string[];
     readonly declineConsequence?: string;
+    readonly sourceText?: string;
   },
 ): readonly ChatMessage[] {
   /**
@@ -332,6 +341,26 @@ export function buildCandidateSelectMessages(
     .join('\n\n',);
 
   /**
+   * Community renderings a candidate lacks where the original carries the
+   * term (owner, 2026-09-09), named by the candidate's number after the
+   * candidates; nothing when the caller passed no original or none departs.
+   */
+  const communityBlock = (sourceText === undefined)
+    ? []
+    : communityRenderingsBlock({
+      sourceText,
+      candidates: rendered.map(function toCandidate(
+        text,
+        index,
+      ): RenderingCandidate {
+        return {
+          label: `CANDIDATE ${String(index + 1,)}`,
+          text,
+        };
+      },),
+    },);
+
+  /**
    * Decision rules as a numbered list.
    */
   const rules = criteria
@@ -362,7 +391,9 @@ export function buildCandidateSelectMessages(
     },
     {
       role: 'user',
-      content: `${evidenceBlock}\n\n${block}`,
+      content: (communityBlock.length === 0)
+        ? `${evidenceBlock}\n\n${block}`
+        : `${evidenceBlock}\n\n${block}\n\n${communityBlock.join('\n',)}`,
     },
   ];
 }

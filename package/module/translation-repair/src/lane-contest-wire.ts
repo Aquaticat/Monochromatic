@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { communityRenderingsBlock, } from './community-glossary.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
 import {
@@ -458,6 +459,28 @@ export function buildLaneContestMessages(
     ];
 
   /**
+   * Community renderings a candidate lacks where the original carries the
+   * term (owner, 2026-09-09), evidence to weigh after the passages.
+   */
+  const communityBlock = communityRenderingsBlock({
+    sourceText: subject.sourceText,
+    candidates: [
+      {
+        label: 'ARCHIVE RENDERING',
+        text: subject.incumbentText,
+      },
+      {
+        label: 'CANDIDATE "repair"',
+        text: subject.repairText,
+      },
+      {
+        label: 'CANDIDATE "translate"',
+        text: subject.translateText,
+      },
+    ],
+  },);
+
+  /**
    * Policy extended for syntax-bearing visible metadata.
    */
   const policy = (subject.syntax === 'front-matter')
@@ -487,6 +510,7 @@ export function buildLaneContestMessages(
         `${fence}\n${subject.translateText}\n${fence}`,
         '',
         ...damageBlock,
+        ...communityBlock,
         ...sizeBlock,
         'SEPARATELY from that choice, judge the ARCHIVE RENDERING shown above.',
         'It is the text already published. Ask of it the same two questions you',

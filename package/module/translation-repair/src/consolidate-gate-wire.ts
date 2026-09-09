@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { communityRenderingsBlock, } from './community-glossary.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import {
   CONTEST_POLICY,
@@ -320,6 +321,28 @@ export function buildConsolidateGateMessages(
     ];
 
   /**
+   * Community renderings a candidate lacks where the original carries the
+   * term (owner, 2026-09-09), evidence to weigh after the passages.
+   */
+  const communityBlock = communityRenderingsBlock({
+    sourceText: subject.sourceText,
+    candidates: [
+      {
+        label: 'ARCHIVE RENDERING',
+        text: subject.incumbentText,
+      },
+      {
+        label: 'CANDIDATE "consolidated"',
+        text: subject.consolidatedText,
+      },
+      {
+        label: 'CANDIDATE "standing"',
+        text: subject.standingText,
+      },
+    ],
+  },);
+
+  /**
    * Policy extended for syntax-bearing visible metadata.
    */
   const policy = (subject.syntax === 'front-matter')
@@ -347,6 +370,7 @@ export function buildConsolidateGateMessages(
         'CANDIDATE "standing":',
         `${fence}\n${subject.standingText}\n${fence}`,
         '',
+        ...communityBlock,
         ...sizeBlock,
         `Return JSON: choice one of "consolidated", "standing", "${CONTEST_REFUSAL}";`,
         'unsupported and dropped each a list naming any of "consolidated", "standing";',

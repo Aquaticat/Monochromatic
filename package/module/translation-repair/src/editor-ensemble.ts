@@ -18,6 +18,12 @@ import {
 import { selectBestCandidate, } from './candidate-select-record.ts';
 import { collectEnvelopeProposals, } from './editor-proposals.ts';
 import {
+  CHUNK_SELECTION_CRITERIA,
+  CHUNK_SELECTION_TASK,
+  ENVELOPE_SELECTION_CRITERIA,
+  ENVELOPE_SELECTION_TASK,
+} from './editor-selection-sheet.ts';
+import {
   type ChunkPatchSelection,
   type EditorCandidate,
   type EnvelopeSelection,
@@ -258,13 +264,9 @@ export async function selectPerEnvelope(
       client,
       candidates: proposals,
       judgeModelIds,
-      task:
-        'Each candidate replaces the SAME passage of an English translation of the Chinese ORIGINAL below.',
-      criteria: [
-        'Faithfulness to the ORIGINAL: no content added, dropped, or altered in meaning.',
-        'Natural, idiomatic English that carries the ORIGINAL\'s feeling.',
-        'Fits the surrounding text in register and tense.',
-      ],
+      sourceText,
+      task: ENVELOPE_SELECTION_TASK,
+      criteria: ENVELOPE_SELECTION_CRITERIA,
       evidence: [
         {
           label: 'ORIGINAL (Chinese)',
@@ -409,13 +411,9 @@ export async function selectChunkPatch(
     client,
     candidates,
     judgeModelIds,
-    task:
-      'Each candidate is a full English translation of the Chinese ORIGINAL below, after repairs were applied.',
-    criteria: [
-      'Faithfulness to the ORIGINAL: no content added, dropped, or altered in meaning.',
-      'Natural, idiomatic English reading as one coherent passage, not as stitched fragments.',
-      'Consistent voice, tense, and terminology across the whole passage.',
-    ],
+    sourceText,
+    task: CHUNK_SELECTION_TASK,
+    criteria: CHUNK_SELECTION_CRITERIA,
     evidence: [
       {
         label: 'ORIGINAL (Chinese)',
