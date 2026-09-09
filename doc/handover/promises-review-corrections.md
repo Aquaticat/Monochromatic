@@ -131,9 +131,9 @@ and do not claim real APIs forbid transmitting retry metadata.
 The workshop now accurately calls its encoded downloads runnable snapshots,
 not convenient plain-source editing layouts.
 
-`proc_5be0` is checking the guide's demonstrated operations,
+`proc_5be0` passed the guide's demonstrated operations,
 the declared-third-attempt-first and repeated-attempt-one fixture cases,
-and the retained shop behavior.
+and the retained shop behavior in 11 seconds.
 
 ### Secondary-review availability
 
@@ -142,7 +142,76 @@ The default Advisor attempt timed out after 600,000 ms;
 a second scoped provider returned a billing error.
 These attempts are not counted as review evidence.
 
+## Integrated verification and presentation
+
+`proc_0776` passed the combined suite and exports in 256 seconds.
+Visual inspection then exposed a separate layout problem:
+the new workshop controls still occupied the inherited fixed-height iframe.
+The pre-layout-correction artifact is preserved as
+`doc/planning/promises-teaching-review-clipped.local.html`,
+SHA-256 `a11ced0a8c0bb136928c84163b82cc85388f3378ac506751141de292a785082c`.
+
+`workshop-layout.mjs` now reports content height from the opaque child.
+The parent validates the source window, current run, finite height, bounds, and clipping flag.
+The iframe grows in document flow, up to a 3,000 CSS-pixel bound with an explicit overflow notice.
+History and event records have bounded, keyboard-focusable scrolling areas;
+print removes their height limits.
+The Stop walkthrough's prose record wraps rather than requiring horizontal scrolling.
+
+`proc_bad2` rejected the preserved layout with:
+
+```text
+Workshop content must participate in page flow rather than a clipped pocket: {"content":789,"viewport":238}
+```
+
+`proc_1b88` passed native opaque-frame pointer input, mobile/desktop fitting,
+positive resizing, wrong-source/stale-run/type/range rejection, and oversized-content recovery.
+An additional ownership probe resolves a reply then aborts before its continuation;
+removing the success guard in a disposable editor makes the stale-reply assertion fail.
+
+### Final combined run
+
+`proc_8c3a` passed the complete suite, exports, and PDF rendering in 298 seconds.
+This includes all workshop choices through their explicit execution drivers,
+opening and reference regressions, neutral surfaces and sampled contrast,
+native editing, complete PDF inventories, native Print/Cancel, and HTTP-denied standalone exports.
+
+Current artifact:
+
+- `doc/planning/promises-teaching.local.html`.
+- 463,920 bytes.
+- SHA-256 `319ffcb20481d468beb6353d6bbe94b682e55cb682c3542dffefc983f6e82eb7`.
+- The preserved Fable-reviewed artifact still has its original `aef8e020…` hash.
+
+Current PDF: 102 Letter pages, 2,138,735 bytes.
+Inventory checks cover 584 teaching entries and 66 appendix entries.
+They normalize whitespace; they are not a claim that every page was visually inspected.
+
+### Firefox verification
+
+The [Firefox BiDi route](../troubleshooting/firefox-bidi-opaque-previews.md) uses a fresh ESR 140.15.0 profile.
+`proc_a4b4` passed the semantic corrections in 26 seconds.
+After the layout change, `proc_7b59` read the first allocation too early:
+content height was 1,288 while the viewport still measured 1,007.
+`proc_241b` read the same unchanged frame later and measured 1,288 for both.
+The verifier now waits for actual content fit, not just receipt of the first height report.
+`proc_f316` passed two complete Firefox runs with that readiness condition and rendered the PDF pages in 51 seconds.
+This is not a Firefox implementation change or a relaxation of iframe isolation.
+
+### Visible handoff and resource cleanup
+
+`proc_7007` opened a new public tab at `#pending-ownership`.
+Its target is `117B0A085A92ED273577EB120AF200F3`, tab `t3`.
+The previous `t1` and `t2` target IDs and URLs were preserved without reloading their content.
+The new document exposes the completed capstone source and the current layout protocol;
+its measured root background is `rgb(30, 30, 30)`.
+
+Window activation is still being checked after monitor/geometry changes;
+an immediate activation log is not sufficient after-state evidence.
+`proc_e124` is cleaning up explicitly named verification profiles and controllers.
+The public presentation session is excluded from cleanup.
+
 ## Remaining work
 
-- Integrate and run browser, export, print, neutral-surface, and negative-control checks.
-- Document independent review results, inspect changed visible states, and present a fresh tab.
+- Finish current-window verification and record the completed resource cleanup.
+- Report the scoped lesson corrections without reopening the veto or seeking final teaching-skill approval.
