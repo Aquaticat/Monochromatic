@@ -1054,6 +1054,8 @@ private fun VariableWidthModeSegment(
     accessibleLabels: List<String>,
     shape: Shape,
     modifier: Modifier,
+    semanticRow: Int,
+    semanticColumn: Int,
     contentPadding: PaddingValues,
     onOverflow: () -> Unit,
 ) {
@@ -1079,9 +1081,9 @@ private fun VariableWidthModeSegment(
                 selected = isSelected
                 traversalIndex = index.toFloat()
                 collectionItemInfo = CollectionItemInfo(
-                    rowIndex = 0,
+                    rowIndex = semanticRow,
                     rowSpan = 1,
-                    columnIndex = index,
+                    columnIndex = semanticColumn,
                     columnSpan = 1,
                 )
             },
@@ -1157,6 +1159,8 @@ private fun OneRowModeControl(
                 accessibleLabels = accessibleLabels,
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
                 modifier = Modifier,
+                semanticRow = 0,
+                semanticColumn = index,
                 contentPadding = contentPadding,
                 onOverflow = onOverflow,
             )
@@ -1185,7 +1189,7 @@ private fun TwoRowModeControl(
             .fillMaxWidth()
             .selectableGroup()
             .semantics {
-                collectionInfo = CollectionInfo(rowCount = 1, columnCount = labels.size)
+                collectionInfo = CollectionInfo(rowCount = 2, columnCount = 2)
             },
         verticalArrangement = Arrangement.spacedBy((-1).dp),
     ) {
@@ -1215,6 +1219,8 @@ private fun TwoRowModeControl(
                         accessibleLabels = accessibleLabels,
                         shape = shape,
                         modifier = Modifier.weight(1f),
+                        semanticRow = rowIndex,
+                        semanticColumn = columnIndex,
                         contentPadding = contentPadding,
                         onOverflow = onOverflow,
                     )
@@ -1244,7 +1250,7 @@ private fun FourRowModeControl(
             .fillMaxWidth()
             .selectableGroup()
             .semantics {
-                collectionInfo = CollectionInfo(rowCount = 1, columnCount = labels.size)
+                collectionInfo = CollectionInfo(rowCount = labels.size, columnCount = 1)
             },
         verticalArrangement = Arrangement.spacedBy((-1).dp),
     ) {
@@ -1270,6 +1276,8 @@ private fun FourRowModeControl(
                     accessibleLabels = accessibleLabels,
                     shape = shape,
                     modifier = Modifier.fillMaxWidth(),
+                    semanticRow = index,
+                    semanticColumn = 0,
                     contentPadding = contentPadding,
                     onOverflow = {},
                 )
