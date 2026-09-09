@@ -323,6 +323,46 @@ await describe({
 
   it({
     name:
+      'TAKES THE INCUMBENT THAT STOOD IN under a kept-standing terminal, since the lane the contest '
+      + 'chose left a standing the gate refused and the archive\'s text is what the settlement kept '
+      + '(owner, 2026-09-09)',
+    fn: async () => {
+      const reading = firstReadingOf({
+        source: sourceWith({
+          consolidation: {
+            kind: 'settled',
+            slices: [
+              {
+                ...keptStanding({ terminal: 'gate-kept-standing', },),
+                shipped: {
+                  kind: 'incumbent',
+                  text: ARCHIVE_NAP,
+                },
+              },
+            ],
+          },
+          laneSelection: {
+            kind: 'contested',
+            slices: [
+              contestedWith({
+                verdict: {
+                  kind: 'lane-won',
+                  lane: 'translate',
+                },
+              },),
+            ],
+          },
+        },),
+      },);
+
+      expect(reading.kind,).toBe('wording',);
+      expect(reading.kind === 'wording' ? reading.text : '',).toBe(ARCHIVE_NAP,);
+      expect(reading.kind === 'wording' ? reading.decidedBy : '',).toBe('consolidation',);
+    },
+  },),
+
+  it({
+    name:
       'FALLS THROUGH EVERY TERMINAL THAT REPLACED NOTHING, tested by shape rather than by '
       + 'enumerating names, so a terminal added later cannot silently start yielding text. Covers '
       + 'the retired spelling 11 rows across four settled entries still carry',

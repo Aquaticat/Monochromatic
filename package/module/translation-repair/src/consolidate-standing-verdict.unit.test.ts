@@ -23,17 +23,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { readStandingVerdict, } from '../dist/final/node/index.mjs';
+import {
+  INELIGIBLE_STANDING_REPLACED_FINDING,
+  readStandingVerdict,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Original slice, linking one destination.
  */
 const SOURCE = '她的头像由[画师](https://twitter.com/cat)绘制。';
-
-/**
- * Page rendering that rewrote the destination.
- */
-const PAGE_REWRITTEN = 'Her avatar was drawn by [the artist](https://x.com/cat).';
 
 /**
  * Page rendering that kept the destination.
@@ -83,13 +81,14 @@ await describe({
   name: readStandingVerdict.name,
   children: [
     it({
-      name: 'WITHHOLDS AN INVALID STANDING and names the finding behind it',
+      name: 'WITHHOLDS AN INVALID STANDING and names the finding behind it, where the archive never '
+        + 'carried the passage and so offers nothing to stand in',
       fn: async () => {
         const { l, warnings, } = capturing();
         expect(readStandingVerdict({
           sourceText: SOURCE,
           standingText: LINK_DROPPED,
-          incumbentText: PAGE_REWRITTEN,
+          incumbentText: '',
           lineStructured: false,
           choice: 'translate',
           contestVerdict: {
@@ -101,10 +100,107 @@ await describe({
         },),).toEqual({
           standingValid: false,
           standingMayShip: false,
+          settlementText: LINK_DROPPED,
+          findings: [],
+          incumbentStandsIn: false,
         },);
         expect(warnings.length,).toBe(1,);
         expect(warnings[0],).toContain('slice 1: consolidation standing text fails the deterministic publication rule',);
-        expect(warnings[0],).toContain('must carry exactly 1 of these, taken from either side; it carries 0',);
+        expect(warnings[0],).toContain('The ORIGINAL carries link-url https://twitter.com/cat and your translation does not',);
+        expect(warnings[0]?.includes('the incumbent fails it too',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'STANDS THE INCUMBENT IN for an invalid standing where the incumbent passes the gate, '
+        + 'without endorsement and with the replacement recorded: the owner\'s addendum of 2026-09-09 '
+        + 'on the sixth Mio, whose slice 3 archive was valid and never offered',
+      fn: async () => {
+        const { l, warnings, } = capturing();
+        expect(readStandingVerdict({
+          sourceText: SOURCE,
+          standingText: LINK_DROPPED,
+          incumbentText: PAGE_KEPT,
+          lineStructured: false,
+          choice: 'translate',
+          contestVerdict: {
+            kind: 'lane-won',
+            lane: 'translate',
+          },
+          sliceIndex: 3,
+          l,
+        },),).toEqual({
+          standingValid: true,
+          standingMayShip: false,
+          settlementText: PAGE_KEPT,
+          findings: [INELIGIBLE_STANDING_REPLACED_FINDING,],
+          incumbentStandsIn: true,
+        },);
+        expect(warnings.length,).toBe(1,);
+        expect(warnings[0],).toContain('slice 3: consolidation standing text fails the deterministic publication rule',);
+        expect(warnings[0],).toContain('the incumbent passes it and stands in',);
+      },
+    },),
+
+    it({
+      name: 'WITHHOLDS BOTH where the incumbent fails the gate too, naming both refusals, so the '
+        + 'rule of 2026-09-04 still stops the entry',
+      fn: async () => {
+        const { l, warnings, } = capturing();
+        expect(readStandingVerdict({
+          sourceText: SOURCE,
+          standingText: LINK_DROPPED,
+          incumbentText: 'The artist drew it.',
+          lineStructured: false,
+          choice: 'translate',
+          contestVerdict: {
+            kind: 'lane-won',
+            lane: 'translate',
+          },
+          sliceIndex: 4,
+          l,
+        },),).toEqual({
+          standingValid: false,
+          standingMayShip: false,
+          settlementText: LINK_DROPPED,
+          findings: [],
+          incumbentStandsIn: false,
+        },);
+        expect(warnings.length,).toBe(1,);
+        expect(warnings[0],).toContain('withheld from the slate',);
+        expect(warnings[0],).toContain('the incumbent fails it too',);
+      },
+    },),
+
+    it({
+      name: 'READS NO INCUMBENT where the standing IS the incumbent, the luxuanwen3 shape, so one '
+        + 'refused text is not offered as its own replacement',
+      fn: async () => {
+        const { l, warnings, } = capturing();
+        expect(readStandingVerdict({
+          sourceText: SOURCE,
+          standingText: LINK_DROPPED,
+          incumbentText: LINK_DROPPED,
+          lineStructured: false,
+          choice: 'neither',
+          contestVerdict: {
+            kind: 'settled-neither',
+            archive: 'declined',
+          },
+          sliceIndex: 5,
+          l,
+        },),).toEqual({
+          standingValid: false,
+          standingMayShip: false,
+          settlementText: LINK_DROPPED,
+          findings: [],
+          incumbentStandsIn: false,
+        },);
+        expect(warnings.length,).toBe(1,);
+        expect(warnings[0],).toContain('withheld from the slate',);
+        expect(warnings.some(function namesIncumbent(warning,): boolean {
+          return warning.includes('the incumbent fails it too',);
+        },),).toBe(false,);
       },
     },),
 
@@ -127,6 +223,9 @@ await describe({
         },),).toEqual({
           standingValid: true,
           standingMayShip: false,
+          settlementText: PAGE_KEPT,
+          findings: [],
+          incumbentStandsIn: false,
         },);
         expect(warnings,).toEqual([
           'slice 2: consolidation standing text lacks contest endorsement and remains retryable',
@@ -153,6 +252,9 @@ await describe({
         },),).toEqual({
           standingValid: true,
           standingMayShip: true,
+          settlementText: PAGE_KEPT,
+          findings: [],
+          incumbentStandsIn: false,
         },);
         expect(warnings,).toEqual([],);
       },

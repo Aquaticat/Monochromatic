@@ -85,6 +85,7 @@ export {
 export {
   ConsolidationStandingIneligibleError,
   describeStandingVerdict,
+  INELIGIBLE_STANDING_REPLACED_FINDING,
   INELIGIBLE_STANDING_WITHHELD_FINDING,
   requireShippableTerminal,
   slateIncumbentFor,

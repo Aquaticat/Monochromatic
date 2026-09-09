@@ -84,10 +84,33 @@ export function parseShipped(
     }
     return { kind: 'unchanged', };
   }
+  if (record.kind === 'incumbent') {
+    requireExactKeys({
+      record,
+      allowed: [
+        'kind',
+        'text',
+      ],
+      path,
+    },);
+    if (replaces) {
+      throw new ArtifactParseError({
+        path,
+        reason: 'a slice whose terminal is consolidated ships its consolidation, not the incumbent',
+      },);
+    }
+    return {
+      kind: 'incumbent',
+      text: requireString({
+        value: record.text,
+        path: `${path}.text`,
+      },),
+    };
+  }
   if (record.kind !== 'consolidated') {
     throw new ArtifactParseError({
       path: `${path}.kind`,
-      reason: 'one of consolidated, unchanged',
+      reason: 'one of consolidated, incumbent, unchanged',
     },);
   }
   requireExactKeys({

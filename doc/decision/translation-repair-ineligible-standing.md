@@ -83,5 +83,20 @@ and the entry stopped under the rule above.
     The option rejected,
     stop as now,
     costs the page over one slice whose safe text exists.
-- Recorded here before the build;
-    the build commit names what landed.
+- What landed:
+    `consolidate-standing-verdict.ts` reads the incumbent's verdict and returns the wording the settlement runs
+    against (`settlementText`),
+    the replacement finding and `incumbentStandsIn`;
+    `consolidate-driver.ts` runs the settlement and its cache key against that wording and carries the finding
+    through `consolidate-slice-buy.ts` into the judged round;
+    the artifact's shipped kind `incumbent` (`artifact-two-lane-consolidate.ts`,
+    read by `artifact-two-lane-read-consolidate-parts.ts`) says a kept standing is the incumbent's text,
+    and `would-ship-text.ts` writes it,
+    since a bare "unchanged" would have the page assembled from the lane's wording the gate refused.
+- Guards shown to fail with the replacement neutralised:
+    `consolidate-standing-verdict.unit.test.ts` (stands in;
+    both fail;
+    the standing is the incumbent),
+    `consolidate-driver.unit.test.ts` ("KEEPS A VALID INCUMBENT",
+    beside the 2026-09-04 case whose incumbent fails too and still stops),
+    `artifact-two-lane-read-consolidate.unit.test.ts` and `would-ship-text.unit.test.ts` for the shipped kind.

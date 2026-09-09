@@ -30,6 +30,7 @@ type ConsolidationBuyInput = {
   readonly polishConfig?: ConsolidationPolishConfig;
   readonly standingMayShip?: boolean;
   readonly standingEligible?: boolean;
+  readonly standingFindings?: readonly string[];
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
@@ -60,6 +61,9 @@ type ConsolidationBuyInput = {
  * @param polishConfig - final body polish roles and guard facts
  *
  * @param standingMayShip - whether unchanged baseline has prior endorsement
+ *
+ * @param standingFindings - what reading the standing recorded, the
+ * incumbent's replacement of an ineligible standing among them
  *
  * @param standingEligible - whether the baseline passed the deterministic
  * publication gate; a baseline that did not is withheld from the slate
@@ -103,6 +107,7 @@ async function buyConsolidationAttempt(
     polishConfig,
     standingMayShip = true,
     standingEligible = true,
+    standingFindings = [],
     signal,
     perCallTimeoutMs,
     l,
@@ -121,7 +126,7 @@ async function buyConsolidationAttempt(
       subject,
       voices: [],
       validity: [],
-      producedFindings: [],
+      producedFindings: standingFindings,
       standingText,
       lineStructured,
       sliceIndex,
@@ -162,7 +167,12 @@ async function buyConsolidationAttempt(
     subject,
     voices: produced.voices,
     validity: produced.validity,
-    producedFindings: produced.findings,
+    // THE VERDICT'S FINDINGS RIDE WITH THE PRODUCERS', so the judges read
+    // them on the slate and the settlement carries them once.
+    producedFindings: [
+      ...standingFindings,
+      ...produced.findings,
+    ],
     standingText,
     lineStructured,
     sliceIndex,

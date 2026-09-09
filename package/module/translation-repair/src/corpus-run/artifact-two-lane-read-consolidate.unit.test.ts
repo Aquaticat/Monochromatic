@@ -81,6 +81,23 @@ const SHIPPED_SLICE = {
 };
 
 /**
+ * One slice as the driver records an incumbent that stood in for an
+ * ineligible lane standing and was kept by the gate (owner, 2026-09-09).
+ */
+const INCUMBENT_SLICE = {
+  sliceIndex: 2,
+  terminal: 'gate-kept-standing',
+  shipped: {
+    kind: 'incumbent',
+    text: 'The cat naps in the window.',
+  },
+  rewrapped: false,
+  demoted: false,
+  verdicts: [],
+  gate: { kind: 'not-asked', },
+};
+
+/**
  * One slice as the driver records a slate the floor refused.
  */
 const FLOORED_SLICE = {
@@ -240,6 +257,36 @@ await describe({
 
         expect(read.reason,).toBe('',);
         expect(read.kind,).toBe('settled',);
+      },
+    },),
+
+    it({
+      name: 'READS AN INCUMBENT THAT STOOD IN under a kept-standing terminal as text to ship, and '
+        + 'refuses it under a consolidated terminal, which ships its consolidation (owner, 2026-09-09)',
+      fn: async () => {
+        const read = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [INCUMBENT_SLICE,],
+          },
+          laneSelection: contestOf({ sliceIndexes: [2,], },),
+        },);
+        expect(read.reason,).toBe('',);
+        expect(read.kind,).toBe('settled',);
+
+        const refused = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...INCUMBENT_SLICE,
+                terminal: 'consolidated',
+              },
+            ],
+          },
+          laneSelection: contestOf({ sliceIndexes: [2,], },),
+        },);
+        expect(refused.reason,).toContain('ships its consolidation, not the incumbent',);
       },
     },),
 

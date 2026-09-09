@@ -933,6 +933,47 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS A VALID INCUMBENT where the repair-lane standing dropped a source destination and '
+        + 'the archive carried it: the incumbent stands in as the standing, the gate keeps it, and the '
+        + 'artifact says the incumbent ships instead of stopping the entry (owner, 2026-09-09, the '
+        + 'sixth Mio at slice 3)',
+      fn: async () => {
+        const destination = 'https://example.test/cat-record';
+        const sourceText = `[猫猫的记录](${destination})。`;
+        const incumbentText = `[The cat record](${destination}).`;
+        const initialText = `[The cat's record](${destination}).`;
+        const recoveryText = `[The cat's final record](${destination}).`;
+        const { client, } = recoveringClient({ initialText, recoveryText, });
+        const projected = {
+          comparison: [{
+            sliceIndex: 0,
+            incumbentKind: 'present',
+            incumbentText,
+            repairText: 'The repair lane mentions the cat record.',
+            translateText: initialText,
+          },],
+          delivery: {
+            repair: [{ sliceIndex: 0, sourceText, },],
+            translate: [],
+          },
+        } as unknown as ProjectedLanes;
+        const { slices, } = await driveWith({
+          client,
+          modelIds: RECOVERY_ROSTER,
+          projected,
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
+        },);
+        expect(slices[0]?.terminal,).toBe('gate-kept-standing',);
+        // THE ARTIFACT SAYS THE INCUMBENT SHIPS. A bare "unchanged" here would
+        // have the page assembled from the lane's wording, which is the text
+        // the gate refused.
+        expect(slices[0]?.shipped,).toEqual({
+          kind: 'incumbent',
+          text: incumbentText,
+        },);
+      },
+    },),
+    it({
       name: 'ASKS identical unsafe twins once and ships both with the recorded non-endorsement',
       fn: async () => {
         const {

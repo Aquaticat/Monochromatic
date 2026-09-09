@@ -323,9 +323,10 @@ export async function consolidateDocument(
      */
     const choice = laneChoiceOf({ verdict: contest.verdict, },);
     /**
-     * Wording that would ship without this stage.
+     * Wording the contest left standing, which ships without this stage
+     * where the gate passes it.
      */
-    const standingText = standingTextFor({
+    const laneStanding = standingTextFor({
       choice,
       repairText: row.repairText,
       translateText: row.translateText,
@@ -348,14 +349,20 @@ export async function consolidateDocument(
       : undefined;
 
     /**
-     * Deterministic eligibility and contest endorsement of the standing text.
+     * Deterministic eligibility and contest endorsement of the standing text,
+     * and the wording the settlement runs against: the lane's standing, or
+     * the incumbent where the standing failed the gate and the incumbent
+     * passes it (owner, 2026-09-09).
      */
     const {
       standingValid,
       standingMayShip,
+      settlementText: standingText,
+      findings: standingFindings,
+      incumbentStandsIn,
     } = readStandingVerdict({
       sourceText,
-      standingText,
+      standingText: laneStanding,
       incumbentText: row.incumbentText,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
@@ -474,6 +481,7 @@ export async function consolidateDocument(
             ...((polishConfig === undefined) ? {} : { polishConfig, }),
             standingMayShip,
             standingEligible: standingValid,
+            standingFindings,
             signal,
             perCallTimeoutMs,
             l: dl,
@@ -528,6 +536,7 @@ export async function consolidateDocument(
     return describeConsolidateSlice({
       sliceIndex: row.sliceIndex,
       settlement,
+      incumbentStandsIn,
     },);
     },
   },);

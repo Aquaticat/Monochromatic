@@ -23,6 +23,20 @@ import type { SliceValidation, } from './translate-validate.ts';
 // archive never carried), and with the standing withheld the judges choose
 // among the valid proposals or decline, and a decline is the "else".
 //
+// THE OWNER'S ADDENDUM OF 2026-09-09, on the sixth Mio pass on Bedrock alone:
+// at slice 3 the translate lane's standing failed the gate, the archive's
+// paragraph and list for that slice were valid and were never offered, and
+// the entry stopped. Asked whether to keep the incumbent for that slice or
+// stop, the owner chose to keep it: `readStandingVerdict` reads the gate's
+// verdict on the incumbent (`row.incumbentText`, the page text the slice
+// replaces) beside the standing's, and where the standing is ineligible and
+// the incumbent passes, the settlement runs against the incumbent as its
+// standing, with {@link INELIGIBLE_STANDING_REPLACED_FINDING} recorded and no
+// contest endorsement, so the single-attempt rule ships it with the
+// non-endorsement recorded if the judges keep it. The entry stops only where
+// the incumbent is ineligible too, or where the standing IS the incumbent
+// (luxuanwen3, where the two were one).
+//
 // THIS IS NOT THE NO-LOOP DECISION REOPENED. `consolidate-slice-buy.ts` keeps
 // its single attempt for a standing that merely lacks contest ENDORSEMENT;
 // that standing has passed the deterministic gate and quality machinery may
@@ -35,6 +49,14 @@ import type { SliceValidation, } from './translate-validate.ts';
  */
 export const INELIGIBLE_STANDING_WITHHELD_FINDING: string = 'ineligible-standing-withheld: the standing text failed the '
   + 'deterministic publication rule, so it was not offered to the slate judges; only valid proposals were';
+
+/**
+ * Finding recorded on a settlement whose ineligible standing was replaced
+ * by the slice's incumbent, which passed the gate (owner, 2026-09-09).
+ */
+export const INELIGIBLE_STANDING_REPLACED_FINDING: string = 'ineligible-standing-replaced-by-incumbent: the '
+  + 'standing text failed the deterministic publication rule and the incumbent passed it, so the incumbent stands '
+  + 'in as the wording the slate judges may keep';
 
 /**
  * Raised when a slice's standing text has failed the deterministic gate and

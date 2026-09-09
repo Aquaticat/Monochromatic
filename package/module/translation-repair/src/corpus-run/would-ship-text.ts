@@ -455,9 +455,13 @@ function consolidatedWordingAt(
 
   /**
    * Wording this slice contributes, or a named absence saying it contributes none.
+   *
+   * THE INCUMBENT THAT STOOD IN IS WORDING TOO (owner, 2026-09-09): the lane
+   * contest left a standing the gate refused, so what the contest chose is
+   * not what ships, and only this record says so.
    */
   const { shipped, } = slice;
-  if (shipped.kind !== 'consolidated')
+  if (shipped.kind === 'unchanged')
     return { kind: 'replaced-nothing', };
 
   return {

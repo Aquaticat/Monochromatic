@@ -1,6 +1,9 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { SliceSyntax, } from './chunk-document.ts';
-import { describeStandingVerdict, } from './consolidate-ineligible-standing.ts';
+import {
+  describeStandingVerdict,
+  INELIGIBLE_STANDING_REPLACED_FINDING,
+} from './consolidate-ineligible-standing.ts';
 import { contestStandingMayShip, } from './consolidate-standing.ts';
 import type { ArtifactContestVerdict, } from './corpus-run/artifact-two-lane-contest.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
@@ -15,20 +18,45 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 // has to name which one refused: on the luxuanwen3 pass of that day one
 // warning covered both, and learning that a link destination the archive had
 // rewritten was the cause took opening the slice records.
+//
+// THE INCUMBENT IS READ TOO, since the owner's addendum of 2026-09-09
+// (`consolidate-ineligible-standing.ts`): where the standing fails the gate
+// and the incumbent passes it, the incumbent becomes the wording the
+// settlement runs against, with the replacement recorded and no endorsement.
 
 /**
- * Both verdicts on a slice's standing text.
+ * Both verdicts on a slice's standing text, and the wording the settlement
+ * runs against once the incumbent has been read beside it.
  */
 export type StandingVerdict = {
   /**
-   * Whether the standing passes the deterministic publication rules.
+   * Whether the wording in {@link StandingVerdict.settlementText} passes the
+   * deterministic publication rules.
    */
   readonly standingValid: boolean;
 
   /**
-   * Whether the standing has prior approval and may ship unchanged.
+   * Whether that wording has prior approval and may ship unchanged.
    */
   readonly standingMayShip: boolean;
+
+  /**
+   * Wording the settlement runs against: the standing, or the incumbent
+   * where the standing failed the gate and the incumbent passes it.
+   */
+  readonly settlementText: string;
+
+  /**
+   * Findings this reading adds to the settlement: the replacement, when it
+   * happened.
+   */
+  readonly findings: readonly string[];
+
+  /**
+   * Whether the incumbent stood in, so the artifact can say a kept standing
+   * is text to write.
+   */
+  readonly incumbentStandsIn: boolean;
 };
 
 /**
@@ -52,11 +80,13 @@ export type StandingVerdict = {
  *
  * @param l - logger a refusal is written through
  *
- * @returns Deterministic eligibility and contest endorsement
+ * @returns Deterministic eligibility and contest endorsement of the wording
+ * the settlement runs against, that wording, and the replacement finding
+ * when the incumbent stands in
  *
  * @example
  * ```ts
- * const { standingValid, standingMayShip, } = readStandingVerdict({
+ * const { standingValid, standingMayShip, settlementText, } = readStandingVerdict({
  *   sourceText, standingText, incumbentText, lineStructured: false, choice, contestVerdict, sliceIndex: 1, l,
  * },);
  * ```
@@ -98,27 +128,76 @@ export function readStandingVerdict(
    * Whether standing text itself passes syntax-bearing publication rules.
    */
   const standingValid = validation.kind === 'valid';
-  /**
-   * Whether this baseline has prior approval and may ship unchanged.
-   */
-  const standingMayShip = contestStandingMayShip({
-    choice,
-    verdict: contestVerdict,
-    standingValid,
-  },);
-  if (!standingValid) {
-    l.warn(
-      `slice ${String(sliceIndex,)}: consolidation standing text fails the deterministic publication rule and is `
-        + `withheld from the slate: ${describeStandingVerdict({ validation, },)}`,
-    );
-  } else if (!standingMayShip) {
-    l.warn(
-      `slice ${String(sliceIndex,)}: consolidation standing text lacks contest endorsement and remains retryable`,
-    );
+  if (standingValid) {
+    /**
+     * Whether this baseline has prior approval and may ship unchanged.
+     */
+    const standingMayShip = contestStandingMayShip({
+      choice,
+      verdict: contestVerdict,
+      standingValid,
+    },);
+    if (!standingMayShip) {
+      l.warn(
+        `slice ${String(sliceIndex,)}: consolidation standing text lacks contest endorsement and remains retryable`,
+      );
+    }
+    return {
+      standingValid,
+      standingMayShip,
+      settlementText: standingText,
+      findings: [],
+      incumbentStandsIn: false,
+    };
   }
+
+  /**
+   * Why the gate refused the standing, for both lines below.
+   */
+  const refusal = describeStandingVerdict({ validation, },);
+
+  /**
+   * Gate's verdict on the incumbent, read only where it is a different text
+   * the slate could keep instead: an absent incumbent has nothing to offer,
+   * and a standing that IS the incumbent was refused as one text.
+   */
+  const incumbentValidation = ((incumbentText === '') || (incumbentText === standingText))
+    ? undefined
+    : validateTranslatedSlice({
+      sourceText,
+      candidateText: incumbentText,
+      pageText: incumbentText,
+      ...((syntax === undefined) ? {} : { syntax, }),
+      lineStructured,
+    },);
+  if (incumbentValidation?.kind === 'valid') {
+    l.warn(
+      `slice ${String(sliceIndex,)}: consolidation standing text fails the deterministic publication rule `
+        + `(${refusal}); the incumbent passes it and stands in as the wording the slate may keep, without contest `
+        + 'endorsement',
+    );
+    return {
+      standingValid: true,
+      standingMayShip: false,
+      settlementText: incumbentText,
+      findings: [INELIGIBLE_STANDING_REPLACED_FINDING,],
+      incumbentStandsIn: true,
+    };
+  }
+  l.warn(
+    `slice ${String(sliceIndex,)}: consolidation standing text fails the deterministic publication rule and is `
+      + `withheld from the slate: ${refusal}${
+        (incumbentValidation === undefined)
+          ? ''
+          : `; the incumbent fails it too: ${describeStandingVerdict({ validation: incumbentValidation, },)}`
+      }`,
+  );
   return {
     standingValid,
-    standingMayShip,
+    standingMayShip: false,
+    settlementText: standingText,
+    findings: [],
+    incumbentStandsIn: false,
   };
 }
 

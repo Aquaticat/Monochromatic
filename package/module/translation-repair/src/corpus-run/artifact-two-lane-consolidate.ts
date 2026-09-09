@@ -83,6 +83,23 @@ export type ArtifactConsolidateShipped =
   }
   | {
     /**
+     * The lane's standing failed the deterministic gate, the incumbent
+     * passed it and stood in as the standing (owner, 2026-09-09), and the
+     * settlement kept that standing. This text replaces what the lane
+     * contest left at this slice even though the terminal says the standing
+     * was kept: the standing it kept is the incumbent, not the lane's wording,
+     * and a page assembled from the lane's wording would carry the text the
+     * gate refused.
+     */
+    readonly kind: 'incumbent';
+
+    /**
+     * Incumbent wording, wrapped, exactly as it should reach the document.
+     */
+    readonly text: string;
+  }
+  | {
+    /**
      * Nothing here replaces what the lane contest left, whether because the
      * floor refused the slate, the judges kept the standing text, the gate
      * did, the wrap erased the difference, or the contest named neither lane.
@@ -471,6 +488,10 @@ function artifactPolishOf(
  *
  * @param settlement - what the stage settled
  *
+ * @param incumbentStandsIn - whether the standing the settlement ran against
+ * was the incumbent standing in for an ineligible lane standing, so a kept
+ * standing is text to write rather than nothing to change
+ *
  * @returns Record for one consolidated slice
  *
  * @example
@@ -482,9 +503,11 @@ export function describeConsolidateSlice(
   {
     sliceIndex,
     settlement,
+    incumbentStandsIn = false,
   }: {
     readonly sliceIndex: number;
     readonly settlement: ConsolidationSettlement;
+    readonly incumbentStandsIn?: boolean;
   },
 ): ArtifactConsolidateSlice {
   /**
@@ -501,15 +524,27 @@ export function describeConsolidateSlice(
    * named neither lane and left the settlement's text empty.
    */
   const consolidated = settlement.terminal === 'consolidated';
+
+  /**
+   * What this slice ships: the consolidation where one won, the incumbent
+   * where it stood in for an ineligible standing and was kept, else nothing
+   * beyond what the lane contest left.
+   */
+  const shipped: ArtifactConsolidateShipped = consolidated
+    ? {
+      kind: 'consolidated',
+      text: settlement.text,
+    }
+    : (incumbentStandsIn
+      ? {
+        kind: 'incumbent',
+        text: settlement.text,
+      }
+      : { kind: 'unchanged', });
   return {
     sliceIndex,
     terminal: settlement.terminal,
-    shipped: consolidated
-      ? {
-        kind: 'consolidated',
-        text: settlement.text,
-      }
-      : { kind: 'unchanged', },
+    shipped,
     rewrapped: settlement.rewrapped,
     demoted: settlement.demoted,
     verdicts: settlement.verdicts,
