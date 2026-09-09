@@ -6393,6 +6393,14 @@ The second `noname`'s section 0 round read
 `paired 1 of 2 original and 1 of 1 translation blocks across 1 relations, from 9 usable voices of 9 heard`
 at 11:59:36 UTC;
 which pair survived is read from the artifact's findings when it tallies.
+At 12:03:39 UTC its lanes answered:
+`slice 0: coverage=absent, missingDestinations=0`,
+`SLICE-START lane=repair chunk=0 sourceChars=5` and
+`chunk 0: no translation to repair; the translate lane owns this passage`,
+then `chunk=1 sourceChars=55` under repair:
+the heading is a source-only slice the admission admitted,
+and the paragraph pair survived the contest.
+The page says whether the heading ships.
 
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
