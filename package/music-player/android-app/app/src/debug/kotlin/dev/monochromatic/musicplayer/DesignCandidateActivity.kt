@@ -47,7 +47,7 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 
 // What:     `SystemBarStyle` selects light or dark Android status and navigation glyphs.
-// Why:      Every candidate uses a light surface and therefore needs dark system glyphs.
+// Why:      Light candidates need dark glyphs and dark candidates need light glyphs.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -376,19 +376,41 @@ private data class PrototypeTrack(
     val peak: String,
 )
 
+/**
+ * What:     `usesAcceptedUnfoldedTreatment` is a typed Kotlin extension function on strings.
+ * Why:      Theme candidates must inherit settled layout,
+ *           component,
+ *           and accessibility treatments without candidate-prefix drift.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function usesAcceptedUnfoldedTreatment(candidate: string): boolean;
+ * ```
+ */
+private fun String.usesAcceptedUnfoldedTreatment(): Boolean {
+    return startsWith("cue-") || startsWith("a11y-") || startsWith("dark-")
+}
+
 /** Debug-only Android window used to capture native candidate screenshots. */
 class DesignCandidateActivity : ComponentActivity() {
     /** Creates one transparent-system-bar Compose candidate selected by an intent extra. */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT),
-        )
         val requestedCandidate = intent.getStringExtra(DESIGN_CANDIDATE_EXTRA)
         var candidate = DEFAULT_DESIGN_CANDIDATE
         if (requestedCandidate != null) {
             candidate = requestedCandidate
+        }
+        if (candidate.startsWith("dark-")) {
+            enableEdgeToEdge(
+                statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
+                navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
+            )
+        } else {
+            enableEdgeToEdge(
+                statusBarStyle = SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT),
+                navigationBarStyle = SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT),
+            )
         }
         setContent {
             DesignCandidatePrototype(candidate = candidate)
@@ -398,6 +420,52 @@ class DesignCandidateActivity : ComponentActivity() {
 
 /** Resolves only documented Material surface roles while keeping component geometry identical. */
 private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette {
+    if (candidate.startsWith("dark-")) {
+        val strategy = candidate.substringAfter("dark-")
+        if (strategy == "stable") {
+            return CandidatePalette(
+                window = TrueBlack,
+                picker = TrueBlack,
+                rail = TrueBlack,
+                transport = StableDarkContainerLow,
+                tracks = TrueBlack,
+                spacer = TrueBlack,
+                sectionDivider = TrueBlack,
+                paneDivider = false,
+                railDivider = true,
+                railDividerColor = scheme.outlineVariant,
+                rowDividers = false,
+            )
+        }
+        if (strategy == "zoned") {
+            return CandidatePalette(
+                window = TrueBlack,
+                picker = TrueBlack,
+                rail = scheme.surfaceContainerLow,
+                transport = scheme.surfaceContainerLow,
+                tracks = TrueBlack,
+                spacer = TrueBlack,
+                sectionDivider = TrueBlack,
+                paneDivider = false,
+                railDivider = true,
+                railDividerColor = scheme.outlineVariant,
+                rowDividers = false,
+            )
+        }
+        return CandidatePalette(
+            window = TrueBlack,
+            picker = scheme.surfaceContainerLow,
+            rail = scheme.surfaceContainer,
+            transport = scheme.surfaceContainerHigh,
+            tracks = TrueBlack,
+            spacer = TrueBlack,
+            sectionDivider = TrueBlack,
+            paneDivider = false,
+            railDivider = true,
+            railDividerColor = scheme.outlineVariant,
+            rowDividers = false,
+        )
+    }
     if (candidate == "divider-a") {
         return CandidatePalette(
             window = scheme.surfaceDim,
@@ -492,7 +560,9 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
 @Composable
 private fun DesignCandidatePrototype(candidate: String) {
     val context = LocalContext.current
-    val scheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    val scheme = if (candidate.startsWith("dark-")) {
+        darkDynamicSchemeFor(context = context, candidate = candidate)
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         dynamicLightColorScheme(context)
     } else {
         lightColorScheme()
@@ -514,10 +584,10 @@ private fun DesignCandidatePrototype(candidate: String) {
 
 /** Groups one major pane area under candidate-specific TalkBack traversal priority. */
 private fun Modifier.accessibilityTraversalGroup(candidate: String, area: String): Modifier {
-    if (!candidate.startsWith("a11y-")) {
+    if (!candidate.startsWith("a11y-") && !candidate.startsWith("dark-")) {
         return this
     }
-    val index = if (candidate.contains("a11y-pane-")) {
+    val index = if (candidate.contains("a11y-pane-") || candidate.startsWith("dark-")) {
         if (area == "folder") 0f else if (area == "transport") 1f else 2f
     } else if (candidate.contains("a11y-browse-")) {
         if (area == "folder") 0f else if (area == "tracks") 1f else 2f
@@ -537,7 +607,7 @@ private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
         modifier = Modifier
             .fillMaxSize()
             .semantics {
-                if (candidate.startsWith("a11y-")) {
+                if (candidate.startsWith("a11y-") || candidate.startsWith("dark-")) {
                     isTraversalGroup = true
                 }
             },
@@ -563,7 +633,7 @@ private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
             modifier = Modifier
                 .weight(1f)
                 .accessibilityTraversalGroup(candidate = candidate, area = "tracks"),
-            candidate = if (candidate.startsWith("cue-") || candidate.startsWith("a11y-")) {
+            candidate = if (candidate.usesAcceptedUnfoldedTreatment()) {
                 candidate
             } else {
                 "dbtp-a"
@@ -639,7 +709,7 @@ private fun OpenAction(candidate: String) {
         }
         return
     }
-    if (style == "tonal" || candidate.startsWith("a11y-")) {
+    if (style == "tonal" || candidate.startsWith("a11y-") || candidate.startsWith("dark-")) {
         FilledTonalButton(onClick = {}) {
             OpenActionContent()
         }
@@ -836,7 +906,7 @@ private fun TransportBlock(
     //   ? 8
     //   : candidate.includes('refine-airy-') ? 16 : 12;
     // ```
-    val groupSpacing = if (candidate.contains("refine-tight-") || candidate.startsWith("cue-")) {
+    val groupSpacing = if (candidate.contains("refine-tight-") || candidate.usesAcceptedUnfoldedTreatment()) {
         8.dp
     } else if (candidate.contains("refine-airy-")) {
         16.dp
@@ -935,7 +1005,7 @@ private fun SecondaryTransportButton(
 /** Draws three real Material icon buttons with color hierarchy for playback. */
 @Composable
 private fun TransportControls(candidate: String) {
-    val secondaryStyle = if (candidate.startsWith("cue-") || candidate.startsWith("a11y-")) {
+    val secondaryStyle = if (candidate.usesAcceptedUnfoldedTreatment()) {
         "outlined"
     } else {
         candidate.substringAfterLast('-')
@@ -1377,7 +1447,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
     val playing = index == 0
-    val currentTrackCue = if (candidate.startsWith("a11y-")) {
+    val currentTrackCue = if (candidate.startsWith("a11y-") || candidate.startsWith("dark-")) {
         "container"
     } else if (candidate.contains("cue-label-")) {
         "label"
@@ -1419,7 +1489,7 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
     } else {
         Modifier.semantics {
             selected = playing
-            if (playing && candidate.endsWith("-state")) {
+            if (playing && (candidate.endsWith("-state") || candidate.startsWith("dark-"))) {
                 stateDescription = "Current track"
             } else if (playing && candidate.startsWith("cue-")) {
                 contentDescription = "Current track: ${track.title}"
@@ -1455,7 +1525,7 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
                 )
             }
         },
-        leadingContent = if (candidate.startsWith("cue-") || candidate.startsWith("a11y-")) {
+        leadingContent = if (candidate.usesAcceptedUnfoldedTreatment()) {
             null
         } else {
             {

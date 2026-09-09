@@ -159,6 +159,11 @@ dir = "{{config_root}}"
 depends = ["prototype:build"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
+[tasks."prototype:dependencies"]
+description = "Report the resolved Material 3 artifact used by the debug design prototype"
+dir = "{{config_root}}"
+run = "./gradlew :app:dependencyInsight --dependency androidx.compose.material3:material3-android --configuration debugRuntimeClasspath --no-daemon --console=plain"
+
 [tasks."prototype:capture"]
 description = "Install and capture accepted screen 3B at every user-facing Android text scale"
 dir = "{{config_root}}"
