@@ -13,6 +13,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  COMPLETION_CAP,
   createHyperClient,
   CreditsShapeError,
   HYPER_API_VERSION,
@@ -424,7 +425,7 @@ await describe({
     },),
 
     it({
-      name: 'holds the ask to the lower of the measured bound and the model ceiling',
+      name: 'holds the ask to the lowest of the measured cap, the measured bound and the model ceiling',
       fn: async () => {
         /** Transport replaying one recorded tool call. */
         const { transport, exchanges, } = recordedTransport({
@@ -443,8 +444,10 @@ await describe({
         },);
 
         // This model stops at 13107, well under the 32000 measured bound, and
-        // a request for more buys a truncation reported as a schema mismatch.
-        expect(sentBody({ exchanges, },).max_tokens,).toBe(13_107,);
+        // its measured cap (`completion-cap.ts`) sits under both since
+        // 2026-09-09; a request for more buys a truncation reported as a
+        // schema mismatch.
+        expect(sentBody({ exchanges, },).max_tokens,).toBe(COMPLETION_CAP['hf:openai/gpt-oss-120b'],);
       },
     },),
 

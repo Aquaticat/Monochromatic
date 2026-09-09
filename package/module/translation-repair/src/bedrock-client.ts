@@ -30,6 +30,7 @@ import type {
   ModelCaller,
 } from './chat-contract.ts';
 import { readJsonOutcome, } from './chat-json-outcome.ts';
+import { completionCapFor, } from './completion-cap.ts';
 import { isSuccessStatus, } from './http-success.ts';
 import { formatUsageNote, } from './model-content.ts';
 import { failureForReply, } from './request-size-refusal.ts';
@@ -55,7 +56,8 @@ import {
 // IT SPEAKS THE OPENAI-COMPATIBLE PROTOCOL THE OTHER CLIENTS SPEAK, by
 // measurement on 2026-09-07 (`bedrock-catalog.ts` records the probes): chat
 // completions with `stream` and `stream_options.include_usage`, a json_schema
-// `response_format`, `max_tokens` where a caller set one. What this file adds
+// `response_format`, `max_tokens` (on every call since 2026-09-09, at the
+// measured ceiling in `completion-cap.ts`). What this file adds
 // are the things that ARE different: the route each model answers on, the
 // terminator each route ends with, a cost computed here rather than read off
 // the wire, and a meter that is a file rather than an endpoint.
@@ -363,10 +365,17 @@ export function createBedrockClient(
         messages: asked,
         stream: true,
         stream_options: { include_usage: true, },
-        // Conditional spreads keep optional knobs absent instead of undefined.
-        ...(request.maxTokens === undefined
-          ? {}
-          : { max_tokens: request.maxTokens, }),
+        // THE MEASURED CEILING ON EVERY CALL since 2026-09-09
+        // (`completion-cap.ts`): the credit behind this provider is never
+        // topped up, and a runaway reply spends it.
+        max_tokens: completionCapFor({
+          modelId: request.modelId,
+          // Conditional spread keeps the knob absent instead of undefined.
+          ...(request.maxTokens === undefined
+            ? {}
+            : { requested: request.maxTokens, }),
+        },),
+        // Conditional spread keeps the optional knob absent instead of undefined.
         ...(request.responseFormat === undefined
           ? {}
           : { response_format: request.responseFormat, }),

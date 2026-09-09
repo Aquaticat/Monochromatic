@@ -23,7 +23,7 @@ import { StreamDegenerateError, } from './stream-runaway-watch.ts';
 // carries `estimated=abandoned` so a reader can total it beside the reported
 // lines or apart from them. The estimate over-reads a stream on an endpoint
 // that honoured the cancel and under-reads one that generated on past the cut,
-// which is why the ceiling in `openrouter-completion-cap.ts` is the bound and
+// which is why the ceiling in `completion-cap.ts` is the bound and
 // this is the record.
 
 /**

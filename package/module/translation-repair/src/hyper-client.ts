@@ -16,6 +16,7 @@ import type {
   ModelCaller,
 } from './chat-contract.ts';
 import { readJsonOutcome, } from './chat-json-outcome.ts';
+import { completionCapFor, } from './completion-cap.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
 import { isSuccessStatus, } from './http-success.ts';
 import {
@@ -406,9 +407,17 @@ export function createHyperClient(
         ...(request.responseFormat === undefined
           ? {}
           : { responseFormat: request.responseFormat, }),
-        ...(request.maxTokens === undefined
-          ? {}
-          : { maxTokens: request.maxTokens, }),
+        // THE MEASURED CEILING ON EVERY CALL since 2026-09-09
+        // (`completion-cap.ts`), under this provider's own per-model
+        // ceiling: a daily limit lasts longer when a runaway reply cannot
+        // spend it.
+        maxTokens: completionCapFor({
+          modelId: request.modelId,
+          // Conditional spread keeps the knob absent instead of undefined.
+          ...(request.maxTokens === undefined
+            ? {}
+            : { requested: request.maxTokens, }),
+        },),
       },),);
 
       /**

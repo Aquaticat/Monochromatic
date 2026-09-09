@@ -203,9 +203,9 @@ export {
   openRouterServesLabel,
 } from './openrouter-catalog.ts';
 export {
+  COMPLETION_CAP,
   completionCapFor,
-  OPENROUTER_COMPLETION_CAP,
-} from './openrouter-completion-cap.ts';
+} from './completion-cap.ts';
 export {
   CACHED_UNREPORTED,
   openRouterCachedTokensOf,

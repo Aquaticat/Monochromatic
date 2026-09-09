@@ -20,7 +20,7 @@ import {
   createOpenRouterClient,
   InStreamProviderError,
   OPENROUTER_CHAT_URL,
-  OPENROUTER_COMPLETION_CAP,
+  COMPLETION_CAP,
   OPENROUTER_CREDITS_URL,
   OpenRouterModelNotServedError,
   SyntheticHttpError,
@@ -216,7 +216,7 @@ await describe({
         // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
         // per-token provider bills an abandoned stream to its end on endpoints
         // that do not honour a cancel, and this is the bound that holds there.
-        expect(body,).toMatchObject({ max_tokens: OPENROUTER_COMPLETION_CAP['deepseek/deepseek-v4-flash-0731'], },);
+        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP['deepseek-v4-flash-0731'], },);
       },
     },),
 
@@ -243,7 +243,7 @@ await describe({
         const bodies = exchanges.map(function parse(exchange,): unknown {
           return JSON.parse(exchange.bodyJson ?? '{}',);
         },);
-        expect(bodies[0],).toMatchObject({ max_tokens: OPENROUTER_COMPLETION_CAP['deepseek/deepseek-v4-flash-0731'], },);
+        expect(bodies[0],).toMatchObject({ max_tokens: COMPLETION_CAP['deepseek-v4-flash-0731'], },);
         expect(bodies[1],).toMatchObject({ max_tokens: 50, },);
       },
     },),

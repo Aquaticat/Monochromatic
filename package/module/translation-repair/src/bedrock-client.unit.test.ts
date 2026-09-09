@@ -20,6 +20,7 @@ import {
   type BedrockLedger,
   type BedrockLedgerEntry,
   BedrockModelNotServedError,
+  COMPLETION_CAP,
   createBedrockClient,
   SyntheticHttpError,
   type TransportExchange,
@@ -261,7 +262,9 @@ await describe({
         expect(JSON.stringify(body,),).not.toContain('"provider"',);
         expect(JSON.stringify(body,),).not.toContain('"store"',);
         expect(JSON.stringify(body,),).not.toContain('reasoning_effort',);
-        expect(JSON.stringify(body,),).not.toContain('max_tokens',);
+        // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
+        // credit behind this provider is never topped up.
+        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP['gemma-4-26b-a4b-it'], },);
 
         /**
          * What the ledger was told.

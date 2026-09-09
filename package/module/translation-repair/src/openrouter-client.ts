@@ -11,6 +11,7 @@ import type {
   ModelCaller,
 } from './chat-contract.ts';
 import { readJsonOutcome, } from './chat-json-outcome.ts';
+import { completionCapFor, } from './completion-cap.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
 import { isSuccessStatus, } from './http-success.ts';
 import { formatUsageNote, } from './model-content.ts';
@@ -22,7 +23,6 @@ import {
   openRouterProviderPreferencesFor,
 } from './openrouter-catalog.ts';
 import { exchangeReportingAbandon, } from './openrouter-abandoned-spend.ts';
-import { completionCapFor, } from './openrouter-completion-cap.ts';
 import {
   CACHED_UNREPORTED,
   openRouterCachedTokensOf,
@@ -371,7 +371,7 @@ export function createOpenRouterClient(
        * NO THINKING PARAMETER AND NO REASONING BUDGET, EVER, the owner's
        * standing instruction of 2026-08-25, recorded in full at the Synthetic
        * body. `max_tokens` IS ALWAYS SENT since 2026-09-09, at the measured
-       * ceiling in `openrouter-completion-cap.ts` or a caller's lower one:
+       * ceiling in `completion-cap.ts` or a caller's lower one:
        * this is the per-token provider, and a stream a round abandoned kept
        * billing to its own end on the endpoints that do not honour a cancel.
        */
@@ -382,7 +382,7 @@ export function createOpenRouterClient(
         stream_options: { include_usage: true, },
         provider: openRouterProviderPreferencesFor({ servedId, },),
         max_tokens: completionCapFor({
-          servedId,
+          modelId: request.modelId,
           // Conditional spread keeps the knob absent instead of undefined.
           ...(request.maxTokens === undefined
             ? {}

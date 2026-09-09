@@ -14,15 +14,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
+  COMPLETION_CAP,
   createSyntheticClient,
   isJsonRecord,
   MalformedCompletionError,
   type ModelTransport,
+  type RosterModelId,
   stripCodeFence,
   stripThinkBlock,
+  SYNTHETIC_PER_MODEL_CONCURRENCY,
   SyntheticHttpError,
   SyntheticModelNotServedError,
-  SYNTHETIC_PER_MODEL_CONCURRENCY,
   SyntheticRequestTooLargeError,
   type TransportExchange,
   type TransportReply,
@@ -901,7 +903,13 @@ await describe({
         ): Promise<TransportReply> {
           /** Request body decoded to name the entering model. */
           const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
-          entered.push(String(isJsonRecord(body,) ? body.model : 'unknown',),);
+          /** Seat this call entered as, which names its cap. */
+          const enteredModel = String(isJsonRecord(body,) ? body.model : 'unknown',);
+          entered.push(enteredModel,);
+          // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09, with
+          // no caller asking for one: the weekly token allowance lasts longer
+          // when a runaway reply cannot spend it.
+          expect(isJsonRecord(body,) ? body.max_tokens : 0,).toBe(COMPLETION_CAP[enteredModel as RosterModelId],);
           await gate.promise;
           return { status: 200, bodyText: COMPLETION_BODY, };
         }
