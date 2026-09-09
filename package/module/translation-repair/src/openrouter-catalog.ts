@@ -144,6 +144,18 @@ export type OpenRouterModelInfo = {
   readonly maxOutputLength: number;
 
   /**
+   * USD per million prompt tokens, as the public listing priced the model on
+   * 2026-09-09 (`~/temp/agent/openrouter-models-20260909.json`); the
+   * estimate for an abandoned stream is priced off it.
+   */
+  readonly promptUsdPerMillion: number;
+
+  /**
+   * USD per million completion tokens, from the same listing.
+   */
+  readonly completionUsdPerMillion: number;
+
+  /**
    * Provider slugs measured as serving this model badly, sent as
    * `provider.ignore`; the owner warned on 2026-09-03 that "some providers
    * might serve some models in a horribly broken way", and this is where a
@@ -175,6 +187,8 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     sharedWith: 'hf:moonshotai/Kimi-K3',
     readsImages: true,
     maxOutputLength: 943_718,
+    promptUsdPerMillion: 3,
+    completionUsdPerMillion: 15,
     ignoredEndpoints: [],
   },
   // PARASAIL PUTS THE WHOLE JSON ANSWER IN THE REASONING CHANNEL and closes
@@ -206,6 +220,8 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     sharedWith: 'minimax-m3',
     readsImages: true,
     maxOutputLength: 512_000,
+    promptUsdPerMillion: 0.3,
+    completionUsdPerMillion: 1.2,
     ignoredEndpoints: [
       'parasail',
       'modelrun',
@@ -234,6 +250,8 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     sharedWith: 'deepseek-v4-flash-0731',
     readsImages: false,
     maxOutputLength: 943_718,
+    promptUsdPerMillion: 0.065,
+    completionUsdPerMillion: 0.18,
     ignoredEndpoints: [
       'open-inference',
       'parasail',
@@ -245,6 +263,8 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     sharedWith: 'deepseek-v4-pro-0813',
     readsImages: false,
     maxOutputLength: 384_000,
+    promptUsdPerMillion: 0.57948,
+    completionUsdPerMillion: 1.73844,
     ignoredEndpoints: [],
   },
   // TWO SEATS LEFT THIS CATALOG ON 2026-09-09, on the owner's standing
@@ -271,6 +291,8 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     sharedWith: 'hf:zai-org/GLM-5.3-Flash',
     readsImages: true,
     maxOutputLength: 131_072,
+    promptUsdPerMillion: 0.075,
+    completionUsdPerMillion: 0.25,
     ignoredEndpoints: [],
   },
   // THE LISTING REPORTS IMAGE INPUT HERE AND CHARM HYPER'S CATALOG DOES NOT,
@@ -285,6 +307,8 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     sharedWith: 'gemma-4-26b-a4b-it',
     readsImages: false,
     maxOutputLength: 16_384,
+    promptUsdPerMillion: 0.07,
+    completionUsdPerMillion: 0.34,
     ignoredEndpoints: [],
   },
   'openai/gpt-oss-120b': {
@@ -292,6 +316,8 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     sharedWith: 'hf:openai/gpt-oss-120b',
     readsImages: false,
     maxOutputLength: 117_964,
+    promptUsdPerMillion: 0.037,
+    completionUsdPerMillion: 0.17,
     ignoredEndpoints: [],
   },
 };

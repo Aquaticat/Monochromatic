@@ -81,6 +81,10 @@ const UNREPORTED = 'unreported';
  * provider that fronts many; percent-encoded on the line because a display
  * name may hold a space and this line's grammar splits on spaces
  *
+ * @param estimated - why the counts and cost are reckoned rather than
+ * reported, on a call the wire never finished; the line carries it as a
+ * trailing field so a reader can total such lines beside the others or apart
+ *
  * @returns Line that was logged, so a test can assert what a reader will parse
  * rather than a paraphrase of it
  *
@@ -96,12 +100,14 @@ export function reportSpend(
     extracted,
     costUsd,
     endpoint,
+    estimated,
   }: {
     readonly provider: ProviderName;
     readonly label: string;
     readonly extracted: ExtractedCompletion;
     readonly costUsd?: number;
     readonly endpoint?: string;
+    readonly estimated?: 'abandoned';
   },
 ): string {
   /**
@@ -144,9 +150,16 @@ export function reportSpend(
     : ` endpoint=${encodeURIComponent(endpoint,)}`;
 
   /**
+   * Mark for a reckoned line, absent on a reported one.
+   */
+  const reckoned = (estimated === undefined)
+    ? ''
+    : ` estimated=${estimated}`;
+
+  /**
    * Line assembled before the call so the logger chain stays one step per line.
    */
-  const line = `${SPEND_MARKER}provider=${provider} model=${label} ${counts}${cost}${servedBy}`;
+  const line = `${SPEND_MARKER}provider=${provider} model=${label} ${counts}${cost}${servedBy}${reckoned}`;
 
   /**
    * Logger tagged with this report.

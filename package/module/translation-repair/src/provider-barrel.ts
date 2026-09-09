@@ -207,6 +207,14 @@ export {
   OPENROUTER_COMPLETION_CAP,
 } from './openrouter-completion-cap.ts';
 export {
+  type AbandonedSpendEstimate,
+  type AbandonedSpendReport,
+  deliveredCharsOf,
+  estimateAbandonedSpend,
+  exchangeReportingAbandon,
+  reportAbandonedSpend,
+} from './openrouter-abandoned-spend.ts';
+export {
   createOpenRouterClient,
   OPENROUTER_PER_MODEL_CONCURRENCY,
   type OpenRouterClient,

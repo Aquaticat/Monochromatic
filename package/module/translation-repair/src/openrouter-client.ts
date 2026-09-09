@@ -21,6 +21,7 @@ import {
   type OpenRouterServedId,
   openRouterProviderPreferencesFor,
 } from './openrouter-catalog.ts';
+import { exchangeReportingAbandon, } from './openrouter-abandoned-spend.ts';
 import { completionCapFor, } from './openrouter-completion-cap.ts';
 import { openRouterEndpointOf, } from './openrouter-endpoint.ts';
 import {
@@ -390,26 +391,34 @@ export function createOpenRouterClient(
       },);
 
       /**
-       * Raw reply from the transport seam, retried on transient statuses.
+       * Raw reply from the transport seam, retried on transient statuses;
+       * a stream that ends before its usage block writes its reckoned spend
+       * line on the way out, since 2026-09-09.
        */
-      const reply = await exchangeWithRetry({
-        transport,
-        exchange: {
-          url: chatUrl,
-          label: servedId,
-          method: 'POST',
-          headers,
-          bodyJson,
-          signal: exchangeSignal,
-          // Conditional spread keeps the knob absent instead of undefined.
-          ...(request.maxAnswerChars === undefined
-            ? {}
-            : { maxAnswerChars: request.maxAnswerChars, }),
+      const reply = await exchangeReportingAbandon({
+        servedId,
+        requestBodyBytes: Buffer.byteLength(bodyJson,),
+        exchange: async function attempt() {
+          return await exchangeWithRetry({
+            transport,
+            exchange: {
+              url: chatUrl,
+              label: servedId,
+              method: 'POST',
+              headers,
+              bodyJson,
+              signal: exchangeSignal,
+              // Conditional spread keeps the knob absent instead of undefined.
+              ...(request.maxAnswerChars === undefined
+                ? {}
+                : { maxAnswerChars: request.maxAnswerChars, }),
+            },
+            policy: retryPolicy,
+            // A TRUNCATED BODY IS A TRANSPORT FAILURE WEARING A SUCCESS STATUS,
+            // so the ladder reads it inside its own try and retries the attempt.
+            verify: wholeMessage,
+          },);
         },
-        policy: retryPolicy,
-        // A TRUNCATED BODY IS A TRANSPORT FAILURE WEARING A SUCCESS STATUS,
-        // so the ladder reads it inside its own try and retries the attempt.
-        verify: wholeMessage,
       },);
 
       if (!isSuccessStatus({ status: reply.status, },)) {
