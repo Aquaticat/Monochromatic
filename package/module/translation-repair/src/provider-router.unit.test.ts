@@ -285,7 +285,8 @@ function isNapSpot(value: unknown,): value is { readonly spot: string; } {
 }
 
 /**
- * Routes one text call for Kimi-K3 and reports what happened.
+ * Routes one text call for GLM-5.3-Flash, which every provider but Bedrock
+ * serves and the run buys from each, and reports what happened.
  *
  * @param client - router under test
  *
@@ -301,7 +302,7 @@ function isNapSpot(value: unknown,): value is { readonly spot: string; } {
 async function ask(
   {
     client,
-    modelId = 'hf:moonshotai/Kimi-K3',
+    modelId = 'hf:zai-org/GLM-5.3-Flash',
   }: {
     readonly client: ReturnType<typeof createRoutingClient>;
     readonly modelId?: Parameters<ReturnType<typeof createRoutingClient>['chatText']>[0]['modelId'];
@@ -798,7 +799,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -825,7 +826,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -897,13 +898,13 @@ await describe({
         // fix that re-ask released a slot nothing had taken.
         await Promise.all([
           client.chatJson({
-            modelId: 'hf:moonshotai/Kimi-K3',
+            modelId: 'hf:zai-org/GLM-5.3-Flash',
             messages: MESSAGES,
             signal: SIGNAL,
             validate: isNapSpot,
           },),
           client.chatJson({
-            modelId: 'hf:moonshotai/Kimi-K3',
+            modelId: 'hf:zai-org/GLM-5.3-Flash',
             messages: MESSAGES,
             signal: SIGNAL,
             validate: isNapSpot,
@@ -961,7 +962,7 @@ await describe({
         },);
 
         const outcome = await client.chatJson({
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -988,7 +989,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -1011,7 +1012,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: 'hf:moonshotai/Kimi-K3',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,

@@ -9,6 +9,7 @@ import {
 } from './hyper-catalog.ts';
 import {
   OPENROUTER_MODELS,
+  OPENROUTER_WITHHELD,
   type OpenRouterServedId,
 } from './openrouter-catalog.ts';
 import {
@@ -352,7 +353,10 @@ export function reachOf(
     synthetic: synthetic.served,
     hyper: hyper.served,
     bedrock: bedrock.served,
-    openrouter: openrouter.served,
+    // SERVED AND BOUGHT. A seat the owner withheld from OpenRouter on cost
+    // (2026-09-03) is one this provider does not serve as far as the router
+    // is concerned, since 2026-09-09 (`OPENROUTER_WITHHELD`).
+    openrouter: openrouter.served && (!OPENROUTER_WITHHELD.has(modelId,)),
   };
 }
 
@@ -438,7 +442,7 @@ function openRouterShowsPictures(
    */
   const spelling = openRouterIdFor({ modelId, },);
 
-  if (!spelling.served)
+  if ((!spelling.served) || OPENROUTER_WITHHELD.has(modelId,))
     return false;
 
   /**

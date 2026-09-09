@@ -14,12 +14,14 @@ import {
 
 import {
   OPENROUTER_DROPPED_SEATS,
+  OPENROUTER_WITHHELD,
   OPENROUTER_MODELS,
   OPENROUTER_PROVIDER_PREFERENCES,
   openRouterIdFor,
   openRouterProviderPreferencesFor,
   openRouterServesLabel,
   reachOf,
+  visionReachOf,
   BEDROCK_ONLY_ROSTER_IDS,
   ROSTER_MODEL_IDS,
 } from '../dist/final/node/index.mjs';
@@ -67,8 +69,21 @@ await describe({
             return id === modelId;
           },))
             continue;
-          expect(reachOf({ modelId, },).openrouter,).toBe(!OPENROUTER_DROPPED_SEATS.has(modelId,),);
+          expect(reachOf({ modelId, },).openrouter,).toBe(
+            (!OPENROUTER_DROPPED_SEATS.has(modelId,)) && (!OPENROUTER_WITHHELD.has(modelId,)),
+          );
         }
+        // SERVED AND NOT BOUGHT: the catalog still lists Kimi-K3, so its
+        // spelling and its prices are known, and the reach says OpenRouter
+        // does not serve it, so the router never buys it there (the third
+        // noname pass of 2026-09-09: 22 calls, 1.14 USD, after Synthetic
+        // dried mid-phase).
+        expect(openRouterServesLabel('moonshotai/kimi-k3',),).toBe(true,);
+        expect(reachOf({ modelId: 'hf:moonshotai/Kimi-K3', },),).toMatchObject({
+          synthetic: true,
+          openrouter: false,
+        },);
+        expect(visionReachOf({ modelId: 'hf:moonshotai/Kimi-K3', },).openrouter,).toBe(false,);
         expect(reachOf({ modelId: 'hf:Qwen/Qwen3.8-27B', },),).toMatchObject({
           synthetic: true,
           openrouter: false,

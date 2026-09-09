@@ -1,9 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  type NO_PROVIDER,
+  NO_PROVIDER,
   providerServing,
 } from '../budget-routing.ts';
+import { OPENROUTER_WITHHELD, } from '../openrouter-catalog.ts';
 import type { BudgetView, } from '../provider-budget.ts';
 import {
   PROVIDER_ORDER,
@@ -91,14 +92,6 @@ export const HYPER_SLOW_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModel
  * authorisation to drop a model from a role.
  */
 export const HYPER_SLOW_SELECT_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'hf:moonshotai/Kimi-K3',
-],);
-
-/**
- * Models withheld from every seat while OpenRouter is the provider that would
- * serve them, by the owner's decision of 2026-09-03 on cost.
- */
-export const OPENROUTER_WITHHELD: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
   'hf:moonshotai/Kimi-K3',
 ],);
 
@@ -238,6 +231,12 @@ export function judgeSeatsFor(
    * Keeps a seat unless the provider that would serve it is one the seat is
    * withheld on.
    *
+   * A SEAT WITHHELD ON OPENROUTER READS AS UNSERVED THERE since 2026-09-09
+   * (`reachOf`), so the router can never re-route it there mid-phase; what
+   * this reader withholds is the seat whose only wet provider would have been
+   * OpenRouter, which is the same seat as before and keeps the substitute
+   * checker sitting where it did.
+   *
    * @param modelId - seat under question
    *
    * @returns Whether the seat is asked this phase
@@ -249,7 +248,13 @@ export function judgeSeatsFor(
     const provider = servedBy(modelId,);
     if ((provider === 'hyper') && HYPER_SLOW_JUDGES.has(modelId,))
       return false;
-    return !((provider === 'openrouter') && OPENROUTER_WITHHELD.has(modelId,));
+    /**
+     * Whether OpenRouter is the one wet provider that would have served it.
+     */
+    const onlyOpenRouterWould = (provider === NO_PROVIDER)
+      && OPENROUTER_WITHHELD.has(modelId,)
+      && (!dry.openrouter);
+    return !onlyOpenRouterWould;
   }
   /**
    * Keeps a select seat unless Hyper would serve it and serves its slate

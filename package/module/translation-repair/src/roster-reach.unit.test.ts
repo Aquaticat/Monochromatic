@@ -302,14 +302,14 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS every provider for a model that reads on all of them, so a picture is not needlessly '
-        + 'pinned to one of them',
+      name: 'KEEPS every provider that reads AND that the run buys from: Kimi-K3 reads on OpenRouter '
+        + 'too and is withheld there on cost (owner, 2026-09-03; the reach honours it since 2026-09-09)',
       fn: async () => {
         expect(visionReachOf({ modelId: 'hf:moonshotai/Kimi-K3', },),).toEqual({
           synthetic: true,
           hyper: true,
           bedrock: false,
-          openrouter: true,
+          openrouter: false,
         },);
       },
     },),

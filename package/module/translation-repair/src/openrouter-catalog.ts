@@ -420,4 +420,28 @@ export const OPENROUTER_DROPPED_SEATS: ReadonlySet<RosterModelId> = new Set<Rost
   'glm-5.3',
 ],);
 
+/**
+ * Roster seats this provider serves and the run does not buy from it, by the
+ * owner's decision of 2026-09-03 on cost (`moonshotai/kimi-k3` lists at 3 and
+ * 15 USD per million against the anchor judge's 0.58 and 1.74).
+ *
+ * HONOURED BY THE REACH SINCE 2026-09-09, not only by the seat reader. Until
+ * then the seat reader withheld such a model at phase start when OpenRouter
+ * would serve it, and the router still re-routed a seated model there when its
+ * provider dried mid-phase: the third `noname` pass of that day bought 22
+ * Kimi-K3 calls on OpenRouter for 1.14 USD, 61 percent of what it spent
+ * there, two of them abandoned streams at 0.28 and 0.08 USD. With
+ * `reachOf` saying OpenRouter does not serve a withheld model, the router
+ * refuses the call as `NoProviderForModelError` and the seat is an
+ * unreachable one, which the select minimum of the same day sizes for.
+ *
+ * @example
+ * ```ts
+ * const withheld = OPENROUTER_WITHHELD.has('hf:moonshotai/Kimi-K3',);
+ * ```
+ */
+export const OPENROUTER_WITHHELD: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'hf:moonshotai/Kimi-K3',
+],);
+
 //endregion OpenRouter catalog
