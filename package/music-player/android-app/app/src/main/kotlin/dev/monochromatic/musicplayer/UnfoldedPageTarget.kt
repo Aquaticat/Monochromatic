@@ -167,7 +167,8 @@ internal fun unfoldedPageForLetter(state: PlayerUiState, letter: String): Int? {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return state.pageLabels.findIndex((label, index) => !folderIndices.has(index) && label.toUpperCase() === normalizedLetter) ?? null;
+    // return state.pageLabels.findIndex((label, index) =>
+    //   !folderIndices.has(index) && label.toUpperCase() === normalizedLetter) ?? null;
     // ```
     return state.pageLabels.indices.firstOrNull { pageIndex ->
         pageIndex !in state.folderPageIndices && state.pageLabels[pageIndex].uppercase() == normalizedLetter
