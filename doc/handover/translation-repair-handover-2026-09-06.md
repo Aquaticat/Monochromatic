@@ -1393,7 +1393,10 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     monitors bwc3kbpnk,
     b6enivx9y,
     bnx0abda8),
-    since every phase of every pass repeated the one known condition.
+    since every phase of every pass repeated the one known condition,
+    and again at 12:31 UTC without `quorum-not-met`,
+    which the naturalness review prints per slice on Bedrock alone
+    (monitors b6enivx9y and its two siblings replaced).
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
 3.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
