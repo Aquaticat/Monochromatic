@@ -295,6 +295,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -1408,6 +1409,23 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
     } else {
         Modifier
     }
+    val trackSemanticsModifier = if (playing && candidate.endsWith("-composed")) {
+        Modifier.clearAndSetSemantics {
+            contentDescription = "Current track: ${track.title}, ${track.duration}, ${track.peak}"
+            selected = true
+            role = Role.Button
+            onClick(action = { true })
+        }
+    } else {
+        Modifier.semantics {
+            selected = playing
+            if (playing && candidate.endsWith("-state")) {
+                stateDescription = "Current track"
+            } else if (playing && candidate.startsWith("cue-")) {
+                contentDescription = "Current track: ${track.title}"
+            }
+        }
+    }
     ListItem(
         headlineContent = {
             Text(
@@ -1480,16 +1498,7 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             .heightIn(min = 72.dp)
             .then(currentRowOutline)
             .clickable(role = Role.Button, onClick = {})
-            .semantics {
-                selected = playing
-                if (playing && candidate.endsWith("-state")) {
-                    stateDescription = "Current track"
-                } else if (playing && candidate.endsWith("-composed")) {
-                    contentDescription = "Current track: ${track.title}, ${track.duration}, ${track.peak}"
-                } else if (playing && candidate.startsWith("cue-")) {
-                    contentDescription = "Current track: ${track.title}"
-                }
-            },
+            .then(trackSemanticsModifier),
     )
     if (palette.rowDividers) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
