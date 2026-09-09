@@ -1285,24 +1285,15 @@ Bedrock judge names it,
 so insertions stay unfilled and slices ship unchanged.
 
 - A,
-  widen Bedrock's judge benches by measuring `gemma-4-31b` for the select and wide seats,
-  the way the E2B and 26B seats were measured.
-  Pro:
-  no rule changes,
-  and four Bedrock seats reach the quorum of four.
-  Con:
-  a measurement to run,
-  and the slate's quorum of five and the translators' stay short.
-- B,
   widen the fifteenth class:
   a deciding bench short of quorum stops the entry INCOMPLETE for a pass that has one.
   Pro:
   no thin page ships,
-  deterministic.
+  deterministic,
+  and the shape the owner chose for the empty bench.
   Con:
-  on one provider nothing ships,
-  and the Bedrock credit the owner wants spent buys nothing.
-- C,
+  on one provider nothing ships.
+- B,
   ask a winner for a share of the reachable bench's weight rather than an absolute 2,
   keeping 2 as the floor against one judge deciding.
   Pro:
@@ -1310,10 +1301,23 @@ so insertions stay unfilled and slices ship unchanged.
   Con:
   three judges decide,
   and the share is a number to choose.
+- C,
+  as now:
+  the phase runs on what is reachable and the page ships with the findings saying so.
+  Pro:
+  no change.
+  Con:
+  a page one writer and three judges made goes to `fixed/` beside one a whole bench made.
+
+Widening Bedrock's judge benches with `gemma-4-31b` is not an option:
+it was measured for the judge seat on 2026-09-07 (6 of 12 complete-text picks against a seated median of 9.5,
+declining the rest) and stayed out;
+no other Bedrock model is approved.
 
 Ranking A > B > C:
-A over B because it buys pages from the credit the owner said to spend;
-B over C because a floor that stands beats a threshold that moves.
+A over B because a floor that stands beats a threshold that moves,
+and it is the answer the owner gave for the empty bench;
+B over C because a page the findings alone distinguish is not a production page.
 
 The second:
 what the consolidation should do when the standing text is ineligible and the incumbent is valid.
