@@ -1,4 +1,75 @@
-# mise 2026.7.0 reports success when buildAndTest catches build failures
+# mise 2026.7.0 buildAndTest failure masking and resolution
+
+## Resolution
+
+Repository commit `74740bbc1` fixes the orchestration;
+`5419f39d9` regenerates `mise.toml` through file-enforcer.
+The historical diagnosis and pre-fix observations remain in this document.
+
+The root task now builds without invoking `try`,
+retains errors from each phase,
+runs tests even after build failure,
+and fails after both phases if either failed.
+The retained errors preserve the original exceptions as causes.
+
+`mise.no-env.toml:825` retains the build error:
+
+```javascript
+// mise.no-env.toml:825
+failures.push(new Error('build phase failed', { cause: error }))
+```
+
+`mise.no-env.toml:834-836` retains the test error and rejects the aggregate:
+
+```javascript
+// mise.no-env.toml:834-836
+  failures.push(new Error('test phase failed', { cause: error }))
+}
+if (failures.length > 0) { throw new AggregateError(failures, 'buildAndTest failed') }
+```
+
+Package selection remains unchanged,
+including skipping a missing package build task.
+The explicitly named `try` and `prepareAndBuild--allowFailure` remain tolerant.
+
+### Resolution verification
+
+`package/dev-script/task-util/src/build-and-test.unit.test.ts`
+exercises the generated task through real mise subprocesses.
+Its helpers extract original task and variable definitions from `mise.toml`,
+replace only the build/test phase implementations,
+and provide disposable configuration and state directories.
+A file-backed execution trace proves that tests ran after build failure;
+printed commands cannot satisfy that assertion.
+
+The passing regression matrix covers root and package selection,
+`./` prefixes,
+paths containing spaces,
+all build/test success and failure combinations,
+missing package build tasks,
+retained exception causes,
+intentional tolerance,
+and canonical/generated configuration synchronization.
+
+Verified commands:
+
+```sh
+# Repository root: build the selected package and run its orchestration regression fixture.
+mise run buildAndTest -- package/dev-script/task-util/src/build-and-test.unit.test.ts
+```
+
+```sh
+# Repository root: package checks.
+mise run //package/dev-script/task-util:lint:types
+mise run //package/dev-script/task-util:lint:oxlint
+```
+
+Sensitivity control used copied test helpers and configuration in a disposable tree.
+The unmodified copied suite exited `0`.
+Removing only the final `AggregateError` check from both copied configuration files
+made the same suite exit `1`,
+including `expected +0 to equal 1` for failing-build/passing-test cases.
+The real repository configuration remained unchanged during this control.
 
 ## Symptom
 
@@ -144,6 +215,9 @@ This is a repository orchestration defect,
  not mise ignoring a failed task process.
 
 ## Verification
+
+These observations describe the pre-fix task definitions.
+Resolution verification records the corrected behavior.
 
 Installed binaries:
 
@@ -297,7 +371,8 @@ Tradeoff:
  tests may inspect stale or incomplete output after build failure,
 so their results do not establish that a fresh build works.
 
-No implementation was changed during this explanation-only investigation.
+The initial explanation-only investigation made no implementation changes.
+The implemented correction is recorded in the Resolution section.
 
 ## What does not work
 

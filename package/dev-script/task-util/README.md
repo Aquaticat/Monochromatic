@@ -7,6 +7,23 @@ a file append helper,
 a `tsc` wrapper that filters `node_modules` diagnostics,
 and an `oxlint` wrapper that augments diagnostics while preserving every finding and exit status.
 
+## Orchestration regression tests
+
+`src/build-and-test.unit.test.ts` verifies the generated root `buildAndTest` task
+through real mise subprocesses with disposable build and test fixtures.
+It checks that tests still run after build failure,
+that either phase failing makes the aggregate fail,
+and that explicitly tolerant tasks remain tolerant.
+
+This suite consumes generated `mise.toml` rather than a bundled TypeScript function:
+the configuration is the artifact under test.
+Relative imports supply test-only fixture helpers.
+
+```sh
+# Repository root
+mise run buildAndTest -- package/dev-script/task-util/src/build-and-test.unit.test.ts
+```
+
 ## Binaries
 
 ### task-command
