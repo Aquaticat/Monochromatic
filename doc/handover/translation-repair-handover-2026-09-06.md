@@ -1387,6 +1387,13 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
     (2 of 8 translators reachable);
     read their pages knowing that,
     and read the meters before the next launch.
+    The poller was restarted at 12:30 UTC with the per-phase quorum warnings filtered out
+    (scratch `watch-pass-quiet.mjs`,
+    copy `~/temp/agent/watch-pass-quiet-20260909.mjs`;
+    monitors bwc3kbpnk,
+    b6enivx9y,
+    bnx0abda8),
+    since every phase of every pass repeated the one known condition.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
 3.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
