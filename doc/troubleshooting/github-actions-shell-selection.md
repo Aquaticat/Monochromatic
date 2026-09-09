@@ -1,8 +1,8 @@
-# GitHub Actions runner 2.337.0: an implicit Bash step is not a Bash requirement
+# GitHub Actions: implicit Bash execution does not require Bash decision logic
 
 ## Symptom
 
-The scope step in [issue 308] runs before mise and project dependency installation.
+The scope step in [issue 308][] runs before mise and project dependency installation.
 That ordering can suggest that Bash is required for bootstrap logic.
 The workflow does not name a shell,
 and GitHub's `shell` field can misleadingly sound restricted to shell languages.
@@ -22,10 +22,14 @@ The field name does not require Bash.
 
 Source inspected on 2026-09-09:
 
-- Repository: <https://github.com/actions/runner>.
-- Revision: `0e345bcaa292fea27a2f218c0edab3d3b93e1060`.
-- Read-only clone: `~/temp/agent/actions-runner-bash-rationale-20260908`.
-- Observed hosted runner: `2.337.0`.
+- Repository:
+  <https://github.com/actions/runner>.
+- Revision:
+  `0e345bcaa292fea27a2f218c0edab3d3b93e1060`.
+- Read-only clone:
+  `~/temp/agent/actions-runner-bash-rationale-20260908`.
+- Observed hosted runner:
+  `2.337.0`.
   The source snapshot is a separately identified upstream revision,
   not a claim that the hosted binary was built from that exact commit.
 
@@ -69,7 +73,7 @@ if (shellStringParts.Length == 2)
 ```
 
 `ScriptHandler.cs:267` substitutes the temporary script path for `{0}`,
-and `ScriptHandler.cs:286` writes the workflow body to that file:
+and `ScriptHandler.cs:284` writes the workflow body to that file:
 
 ```csharp
 // src/Runner.Worker/Handlers/ScriptHandler.cs
@@ -108,7 +112,8 @@ not just a local syntax check:
 - [Workflow run 34060935175][run],
   job `101561212817`,
   `detect-version-bump`.
-- Source revision: `4c815fb13f5e31fc481d75dde215e5ef274e4ff1`.
+- Source revision:
+  `4c815fb13f5e31fc481d75dde215e5ef274e4ff1`.
 - Runner `2.337.0`,
   Ubuntu `24.04.4`,
   image `20260831.293.1`.
@@ -122,9 +127,9 @@ Read-only commands used:
 
 ```sh
 # From the repository root
- gh run view 34060935175 --repo Aquaticat/Monochromatic --json jobs,conclusion,headSha,url
- gh run view 34060935175 --repo Aquaticat/Monochromatic --job 101561212817 --log
- git show 4c815fb13f5e31fc481d75dde215e5ef274e4ff1:.github/workflows/cli-git-performance.yml
+gh run view 34060935175 --repo Aquaticat/Monochromatic --json jobs,conclusion,headSha,url
+gh run view 34060935175 --repo Aquaticat/Monochromatic --job 101561212817 --log
+git show 4c815fb13f5e31fc481d75dde215e5ef274e4ff1:.github/workflows/cli-git-performance.yml
 ```
 
 Relevant log output:
@@ -199,15 +204,21 @@ The `.out-of-scope/` Bash and shell search found only the unrelated Claude Code 
 No runner bug or missing feature was established,
 so there is no upstream contribution to draft or duplicate report to file.
 
-1.  **Upstream fault:** no;
+1.  **Upstream fault:**
+    no;
     the runner provides the documented custom-command mechanism.
-2.  **Upstream fixability:** no fix is required for this capability.
-3.  **Supported use:** yes;
+2.  **Upstream fixability:**
+    no fix is required for this capability.
+3.  **Supported use:**
+    yes;
     custom command templates are documented and observed in a hosted run.
-4.  **Contribution welcome:** not evaluated because no contribution is proposed.
-5.  **Likely upstream action:** not applicable;
+4.  **Contribution welcome:**
+    not evaluated because no contribution is proposed.
+5.  **Likely upstream action:**
+    not applicable;
     the required mechanism already exists.
-6.  **Fix prototype:** not applicable;
+6.  **Fix prototype:**
+    not applicable;
     no upstream source modification is needed.
 
 Nothing to add upstream.

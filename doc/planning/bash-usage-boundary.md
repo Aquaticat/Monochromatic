@@ -13,9 +13,9 @@ No replacement dependency selection was undertaken.
 ## Finding
 
 No project-specific requirement or accepted exception was found that justifies Bash
-for the scope decision in [issue 308].
-There are reasons for a shell to remain at command-launch and externally defined interfaces.
-Those reasons do not justify putting path classification and error policy in shell scripts.
+for the scope decision in [issue 308][].
+Observed command-launch and externally defined interfaces do not by themselves justify
+putting path classification and error policy in shell scripts.
 
 The issue correctly identifies a fail-open defect.
 Its acceptance criteria do not require a Bash implementation.
@@ -50,27 +50,20 @@ No fix or fresh execution of this scope step was performed during this investiga
 
 ## Evidence across the repository
 
-### Workflow volume and configuration
+### Workflow configuration
 
-A line-based inventory of every `.yml` in `.github/workflows` found:
-
-- 14 workflow files.
-- 95 `run:` entries.
-- 6 explicit `shell: bash` declarations,
-  all in `cargo-publish.yml`.
-- 6 explicit `shell: node {0}` declarations across
-  `cli-git-performance.yml`,
-  `cli-git-trust.yml`,
-  and `kotlin-linter-publish.yml`.
-- 23 block or folded `run:` entries.
-
-These are source counts,
-not execution frequencies or a claim that every implicit shell is Bash.
-The inventory trims each source line and counts `run:`,
-`run: |`,
-`run: >-`,
-and `shell:` prefixes.
+The workflow scan found explicit Bash selection in `cargo-publish.yml`,
+explicit Node selection in `cli-git-performance.yml`,
+`cli-git-trust.yml`,
+and `kotlin-linter-publish.yml`,
+and implicit interpreter selection in the toml-edit scope step.
 Runner operating system and job defaults determine implicit execution.
+
+This is an investigation of authored automation and issue 308,
+not an exhaustive Bash-removal audit.
+Personal shell configuration such as `.bashrc` and `.bash_profile`,
+agent Bash-parsing plugins,
+and third-party implementation languages would require separate consumer-level analysis.
 
 ### Parallel implementations and their contents
 
@@ -125,6 +118,8 @@ This does not prove that workflow scripting is tested or that external checks ar
 contains the same `git diff ... || true` expression.
 It is a separate affected workflow,
 not evidence that changing toml-edit fixes logger.
+Its remediation needs separate tracking;
+this investigation does not extend issue 308 to cover it.
 
 No `continue-on-error` entries were found in `.github`.
 The error conversion in issue 308 happens inside the script instead.
@@ -203,8 +198,10 @@ or transitive dependencies follows from these findings.
 
 ## Proposed issue framing
 
-Keep issue 308's correctness contract,
-while making the implementation boundary explicit:
+Retain issue 308 as the fail-open bug,
+and track the repository-wide language boundary separately.
+A scope-step implementation should explain how it satisfies the existing scripting policy.
+The implementation framing is:
 
 > Make toml-edit scope detection a tested repo-owned program,
 > not inline shell decision logic.
@@ -227,22 +224,29 @@ Preserve the current acceptance criteria:
   and an unavailable base.
 - A genuine no-op leaves the required merge-queue check successful.
 
-Before implementation,
-make base identity,
-relevant deletions,
-renames into and out of scope,
-unusual path bytes,
-and agreement with the workflow's declared path set explicit.
+Proposed additional acceptance criteria for a scope-step rewrite:
+
+- Document and verify the intended merge-group base identity.
+- Cover relevant deletions and renames into and out of scope.
+- Cover unusual path bytes and exact agreement with the workflow's declared path set.
+- Verify the entrypoint through the workflow boundary after local regression coverage.
+
+These are proposed additions,
+not claims that the current issue already specifies them.
 Do not assume a runtime change repairs these semantics.
-Test the entrypoint through the workflow boundary after local regression coverage.
 
 ## Proposed documentation clarification
 
-Clarify existing `SCR` in `AGENTS.md`,
-rather than adding a competing rule:
-its script prohibition includes inline YAML/TOML bodies and shell command strings that implement logic,
+The concurrently authored
+[load-bearing code language proposal](load-bearing-code-languages.md)
+already addresses embedded programs and direct invocation glue.
+Use that proposal as the policy discussion location rather than adopting competing wording here.
+
+`SCR` currently prohibits scripts without explicitly defining an invocation-glue exception.
+Making that boundary explicit requires accepted wording,
+not silently treating this investigation as authorization.
+Inline YAML/TOML bodies and shell command strings that implement logic must be addressed,
 not just files named `.sh`.
-Keep the command-launch distinction explicit in the rationale.
 
 Any requested exception should document its exact consumer,
 why the permitted program cannot meet that consumer's requirements,
