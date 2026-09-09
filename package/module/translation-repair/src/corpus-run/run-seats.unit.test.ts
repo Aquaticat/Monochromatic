@@ -38,6 +38,7 @@ import {
   RUN_WRITERS,
   SEATED_BEDROCK_JUDGES,
   SEATED_OPENROUTER_JUDGES,
+  WRITER_UNMEASURED,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -124,7 +125,9 @@ await describe({
         + 'names both: google.gemma-4-e2b judges (11 of 12 on the fidelity probe of 2026-09-07), reads no '
         + 'pictures (two readings no seated reader corroborated, 2026-09-08) and writes in both lanes (30 of '
         + '298 disinterested ballots in the producer calibration of 2026-09-08, not separated from the pooled '
-        + 'null); google.gemma-4-31b reads pictures (8 of 8 corroborated), judges nothing and writes nothing',
+        + 'null); google.gemma-4-31b reads pictures (8 of 8 corroborated), judges nothing and writes nothing; '
+        + 'inception/mercury-2.5 judges (14 of 14 on the fidelity probe of 2026-09-09) and writes nothing until '
+        + 'its calibration is read',
       fn: async function seatsByMeasurement(): Promise<void> {
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
         for (const candidate of BEDROCK_ONLY_ROSTER_IDS) {
@@ -148,15 +151,30 @@ await describe({
         expect(RUN_ROSTER.includes('google.gemma-4-31b',),).toBe(false,);
         expect(wet.wideSeats.includes('google.gemma-4-31b',),).toBe(false,);
         // A model one provider alone serves holds no seat until measured in.
-        expect(RUN_ROSTER.includes('inception/mercury-2.5',),).toBe(SEATED_OPENROUTER_JUDGES.has('inception/mercury-2.5',),);
+        for (const seated of SEATED_OPENROUTER_JUDGES) {
+          expect(RUN_ROSTER.includes(seated,),).toBe(true,);
+          expect(wet.roster.includes(seated,),).toBe(true,);
+          expect(wet.wideSeats.includes(seated,),).toBe(true,);
+          expect(wet.selectJudges.includes(seated,),).toBe(true,);
+          expect(wet.lateJudges.includes(seated,),).toBe(true,);
+          expect(wet.slateJudges.includes(seated,),).toBe(true,);
+          expect(wet.checkers.includes(seated,),).toBe(false,);
+          expect(wet.readers.includes(seated,),).toBe(false,);
+        }
+        for (const unmeasured of WRITER_UNMEASURED) {
+          expect(wet.writers.includes(unmeasured,),).toBe(false,);
+          expect(wet.translators.includes(unmeasured,),).toBe(false,);
+        }
         expect(RUN_ROSTER.length,).toBe(
           (ROSTER_MODEL_IDS.length - BEDROCK_ONLY_ROSTER_IDS.length - OPENROUTER_ONLY_ROSTER_IDS.length)
             + SEATED_BEDROCK_JUDGES.size
             + SEATED_OPENROUTER_JUDGES.size,
         );
         expect(wet.writers,).toEqual(RUN_WRITERS,);
-        expect(RUN_WRITERS,).toEqual(RUN_ROSTER,);
-        expect(RUN_TRANSLATORS.length,).toBe(RUN_ROSTER.length - 2,);
+        expect(RUN_WRITERS,).toEqual(RUN_ROSTER.filter(function measuredWriter(modelId,): boolean {
+          return !WRITER_UNMEASURED.has(modelId,);
+        },),);
+        expect(RUN_TRANSLATORS.length,).toBe(RUN_ROSTER.length - 2 - WRITER_UNMEASURED.size,);
       },
     },),
 

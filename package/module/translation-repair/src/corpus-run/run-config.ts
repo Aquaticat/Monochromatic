@@ -85,11 +85,20 @@ export const SEATED_BEDROCK_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterM
 
 /**
  * OpenRouter-only models seated on the judge fidelity probe under the same
- * rule. Empty until Mercury 2.5's measurement of 2026-09-09 is read: the
- * owner approved it that day and the roster names it as seatable, and a
- * seat is decided on evidence.
+ * rule. `inception/mercury-2.5`, measured 2026-09-09 17:00 UTC over the
+ * three settled artifacts on disk (gqt, hakureico, noname; fourteen distinct
+ * questions, twelve deletions and insertions and two alterations): 14 of 14
+ * chose the complete text, no damaged pick, no decline, position two on 7 of
+ * 14, every one of its 14 asks usable. The seated roster's reading of the
+ * same fourteen is in the planning log of 2026-09-09 ("The owner asks where
+ * 200 USD went"); a candidate at the maximum meets both clauses of the rule
+ * whatever the seated median reads. The cheapest seat on the per-token
+ * provider (0.04 and 0.15 USD per million) now sits wherever the anchor judge
+ * does.
  */
-export const SEATED_OPENROUTER_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>();
+export const SEATED_OPENROUTER_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'inception/mercury-2.5',
+],);
 
 /**
  * Models a single provider serves that hold no seat until a measurement
@@ -112,11 +121,19 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelI
  * candidates, 94 of 94 asks usable), not separated from the null, where the
  * two writers {@link TRANSLATOR_DROPPED} names sat at z -4.5 on 2026-09-01.
  * By the rule of that day it takes the translator seat and, as a measured
- * writer, the consolidation seat. The next Bedrock-only candidate the owner
+ * writer, the consolidation seat. The next single-provider candidate the owner
  * approves starts here again. Record: the 2026-09-08 addendum of
  * `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
+ *
+ * `inception/mercury-2.5` SINCE 2026-09-09, from its judge seat
+ * ({@link SEATED_OPENROUTER_JUDGES}) until the 40-round producer calibration
+ * launched at 17:06 UTC that day (`producer-calibrate 40 --candidates
+ * inception/mercury-2.5`, log `~/temp/agent/producer-calibrate-mercury-20260909.log`)
+ * is read against the pooled null.
  */
-const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>();
+export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'inception/mercury-2.5',
+],);
 
 /**
  * Every model this run may seat, across both providers.
@@ -143,9 +160,10 @@ const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>();
  * against a seated median of 9.5 (the planning log of 2026-09-07, "Measuring
  * the two Bedrock-only sizes").
  *
- * TWELVE SEATABLE SINCE 2026-09-09, when the owner approved Mercury 2.5 on
- * OpenRouter; it holds no seat until its probe is read
- * ({@link SEATED_OPENROUTER_JUDGES}).
+ * ELEVEN SINCE 2026-09-09, when the owner approved Mercury 2.5 on OpenRouter
+ * and the judge fidelity probe of 17:00 UTC read it at 14 of 14
+ * ({@link SEATED_OPENROUTER_JUDGES}); it writes nothing until the producer
+ * calibration is read ({@link WRITER_UNMEASURED}).
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function measured(modelId,): boolean {

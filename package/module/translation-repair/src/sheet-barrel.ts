@@ -98,6 +98,7 @@ export {
   RUN_WRITERS,
   SEATED_BEDROCK_JUDGES,
   SEATED_OPENROUTER_JUDGES,
+  WRITER_UNMEASURED,
   RunConfigError,
 } from './corpus-run/run-config.ts';
 export {

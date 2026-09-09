@@ -22,7 +22,9 @@ import {
   awaitBenchQuorum,
   type BudgetView,
   readJudgeSeats,
+  rosterQuorumSize,
   RUN_TRANSLATORS,
+  RUN_WIDE_SEATS,
   WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
 
@@ -295,12 +297,14 @@ await describe({
           pollMs: 5,
         },);
         expect(script.counter.reads,).toBe(1,);
-        expect(seats.wideSeats.length,).toBe(8,);
+        expect(seats.wideSeats.length,).toBe(RUN_WIDE_SEATS.length,);
         /**
          * The line that names the shortfall, if the reading said so.
          */
         const said = lines.find(function namesShortfall(line: string,): boolean {
-          return line.includes('JUDGE SEATS phase=preparation short of quorum: wide 3 of 8 reachable, quorum 4',);
+          return line.includes(`JUDGE SEATS phase=preparation short of quorum: wide 3 of ${
+            String(RUN_WIDE_SEATS.length,)
+          } reachable, quorum ${String(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),)}`,);
         },);
         expect(said === undefined,).toBe(false,);
         expect(said?.includes('no provider has named its return',),).toBe(true,);
