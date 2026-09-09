@@ -52,7 +52,7 @@ async evaluate(options = {}) {
   } = options;
 ```
 
-At lines 549 to 564, it resolves the requested context or realm and forwards the expression:
+From line 549, it resolves the requested context or realm and forwards the expression:
 
 ```js
 // remote/webdriver-bidi/modules/root/script.sys.mjs:549
@@ -77,7 +77,8 @@ const evaluationResult = await this._forwardToWindowGlobal(
 
 The consumer locates the lesson realm and each exact current preview title through `script.getRealms`.
 It evaluates with `target: { realm }` and `awaitPromise: true`.
-JSON serialization inside the evaluated expression avoids treating protocol remote values as ordinary JavaScript objects.
+JSON serialization inside the evaluated expression avoids treating protocol remote values
+as ordinary JavaScript objects.
 The iframe's browser security properties are unchanged.
 
 ## Reproduction and verification
@@ -109,6 +110,20 @@ Negative catalog:
 
 This is DOM/event and semantic coverage, not Firefox keyboard, native-print-dialog, or full visual coverage.
 Pointer-input and native-print verification were performed separately in Chromium/Helium.
+
+## Wait for content fit, not only the first height report
+
+After the workshop gained automatic height allocation,
+Node's assertion in the verifier's `load()` function failed in `proc_7b59` with
+`{"content":1288,"viewport":1007}`.
+The first accepted height report had arrived, but it was not evidence that all subsequent layout changes had finished.
+
+`proc_241b` read the same unchanged frame later and measured `{"content":1288,"viewport":1288}`.
+No Firefox or lesson implementation change was made for this discrepancy.
+The verifier now keeps its bounded wait until the actual child viewport fits the measured content,
+then asserts the geometry.
+`proc_f316` passed the complete Firefox check twice with that condition.
+The preserved fixed-height preview is a separate negative control and still fails its content-fit assertion.
 
 ## Boundaries and rejected approaches
 
