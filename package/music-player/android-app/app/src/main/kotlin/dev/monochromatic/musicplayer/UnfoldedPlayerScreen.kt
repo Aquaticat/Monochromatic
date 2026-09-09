@@ -332,6 +332,61 @@ private fun unfoldedTransportControls(
     }
 }
 
+/** Renders centered current-track title and queue ordinal. */
+@Composable
+private fun unfoldedDeckHeader(
+    currentTitle: String,
+    currentOrdinal: Int,
+    queueSize: Int,
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = currentTitle, style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = "$currentOrdinal of $queueSize",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+}
+
+/** Renders live elapsed time, seek slider, and duration in one left-to-right row. */
+@Composable
+private fun unfoldedSeekRow(
+    progress: PlaybackProgress,
+    controller: PlayerController,
+) {
+    /** Holds positive slider maximum while native duration is unavailable. */
+    val maximumPosition = if (progress.duration > 0.0) progress.duration.toFloat() else 1.0f
+    /** Holds Material numeric time style with tabular figures. */
+    val timeStyle = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum")
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = formatTime(progress.position),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = timeStyle,
+        )
+        Slider(
+            value = progress.position.toFloat().coerceIn(0.0f, maximumPosition),
+            onValueChange = { controller.seek(it.toDouble()) },
+            valueRange = 0.0f..maximumPosition,
+            modifier = Modifier
+                .weight(1f)
+                .semantics {
+                    contentDescription = "Track position"
+                },
+        )
+        Text(
+            text = formatTime(progress.duration),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = timeStyle,
+        )
+    }
+}
+
 /** Renders centered title, live seek, transport 1B, and adaptive playback modes. */
 @Composable
 private fun unfoldedTransportDeck(
@@ -344,10 +399,6 @@ private fun unfoldedTransportDeck(
     val currentTitle = state.currentTrackName?.let(::unfoldedTrackTitle) ?: "No track selected"
     /** Holds stable load-order ordinal for current track, or zero without a selection. */
     val currentOrdinal = state.currentIndex?.plus(1) ?: 0
-    /** Holds positive slider maximum while native duration is unavailable. */
-    val maximumPosition = if (progress.duration > 0.0) progress.duration.toFloat() else 1.0f
-    /** Holds Material numeric time style with tabular figures. */
-    val timeStyle = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum")
     /** Holds current page label shared by app bar and adaptive Shuffle segment. */
     val currentPage = unfoldedCurrentPage(state)
 
@@ -361,40 +412,12 @@ private fun unfoldedTransportDeck(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = currentTitle, style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "$currentOrdinal of ${state.queueSize}",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = formatTime(progress.position),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = timeStyle,
-            )
-            Slider(
-                value = progress.position.toFloat().coerceIn(0.0f, maximumPosition),
-                onValueChange = { controller.seek(it.toDouble()) },
-                valueRange = 0.0f..maximumPosition,
-                modifier = Modifier
-                    .weight(1f)
-                    .semantics {
-                        contentDescription = "Track position"
-                    },
-            )
-            Text(
-                text = formatTime(progress.duration),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = timeStyle,
-            )
-        }
+        unfoldedDeckHeader(
+            currentTitle = currentTitle,
+            currentOrdinal = currentOrdinal,
+            queueSize = state.queueSize,
+        )
+        unfoldedSeekRow(progress = progress, controller = controller)
         unfoldedTransportControls(
             playing = state.playing,
             onPrevious = { controller.prev() },
