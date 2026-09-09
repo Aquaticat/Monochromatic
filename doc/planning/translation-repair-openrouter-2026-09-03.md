@@ -6555,6 +6555,174 @@ Nothing runs now.
 The ruby,
 the Sakura line and the footnote are read on a full-bench pass.
 
+## The owner asks where 200 USD went, and six levers land, 2026-09-09, 16:50 UTC
+
+The owner,
+after the payment refusal of 12:22 UTC:
+"What the hell is going on,
+I just topped up 200USD to openrouter yesterday and today it's already dry?
+We're being token inefficient at an unsustainable level."
+Then,
+after a question that should not have been asked:
+"Of course we need to do everything in our power to NOT bleed.
+Of course we need to always fix and relaunch.
+I have topped up OpenRouter one final time.
+Mercury 2.5 is out and approved."
+Then "No,
+there are obviously more token efficiency fixes",
+and "Do not ignore the fact that if you make whatever sent to Hyper/Synthetic more efficient,
+Hyper/Synthetic would last longer and therefore fewer requests would need to fallback to openrouter in the first place."
+
+### Where the 200 USD went
+
+Between the top-up of 2026-09-08 11:27 UTC (200.01 on the meter) and the refusal of 2026-09-09 12:22 UTC (1.51),
+the meter moved 199.92 USD.
+The `SPEND` lines of every pass log in that window sum to 141.62.
+The rest,
+58.30,
+was never logged:
+streams the rounds abandoned 120 s after quorum,
+2,135 of them since the top-up,
+1,088 of them Qwen3.8-27B (3.0 GB of raw stream) in select,
+critic,
+panel and lane-contest seats,
+served by CoreWeave,
+Parasail and Phala,
+which OpenRouter's streaming page lists neither among the providers that stop billing on a cancelled stream nor among
+those that do not,
+while Alibaba and MiniMax are listed as billing the whole response.
+Reckoned at each model's raw characters per completion token (Qwen 377,
+deepseek-v4-pro 386,
+glm-5.3 103,
+the others near 135),
+the abandoned streams come to about 58 USD (Qwen about 24,
+glm-5.3 about 18,
+prompts about 5),
+which closes the gap.
+Two more findings from the same logs:
+69.70 USD of the logged spend went to 17 passes killed before their page was read,
+and `deepseek-v4-pro-0813` cost 1.87 times its listing price
+(Parasail 1.85 and CoreWeave 2.11 over 3,894 calls;
+55.14 USD paid against 29.56 at listing),
+`deepseek-v4-flash-0731` 1.43 and `glm-5.3-flash` 1.52,
+because the default load balancing spread calls over endpoints priced at twice the cheapest.
+
+### The six levers, in commit order
+
+1. `037d1f650`:
+   every OpenRouter call carries `max_tokens` at a measured ceiling
+   (the 99th percentile of `completion_tokens` over that model's completed OpenRouter calls since the top-up),
+   and Qwen3.8-27B and glm-5.3 leave the OpenRouter catalog
+   (24 percent of Qwen's calls there were abandoned and billed to the end;
+   glm-5.3 was the second bleeder and Hyper serves both).
+2. `4f87555fc`:
+   every abandoned OpenRouter stream writes a `SPEND ... estimated=abandoned` line reckoned from the characters
+   delivered before the cut,
+   so the meter and the log can be reconciled without a second reckoning.
+3. `1fe7ca2fe`:
+   `provider.sort: 'price'` on every OpenRouter request
+   (the routing page says sorting disables load balancing and picks the cheapest;
+   zero data retention,
+   `require_parameters` and the ignore list still apply),
+   and the `SPEND` line carries `cached=N` off `usage.prompt_tokens_details.cached_tokens`,
+   since DeepSeek's prompt caching is automatic and reads at a tenth of the input price.
+   The third `noname` pass shows the routing at work:
+   `deepseek-v4-pro-0813` on NextBit,
+   `deepseek-v4-flash-0731` on DeepInfra,
+   and `cached=512` on the second minimax call of the pass.
+4. `b71a55385`,
+   the fan-out window:
+   every `gatherStageVoices` round asks quorum plus one seat,
+   from a bench rotated deterministically by the prompt,
+   and the rest only when a voice is lost;
+   quorum is unchanged.
+   On the first `noname` pass 1,430 seats were asked across 229 rounds where quorum needed about 810,
+   and every surplus seat waited out a grace window and,
+   on the per-token provider,
+   was generated and billed to the end.
+   Three consequences were decided with it:
+   a fixture scripting every seat asks for the whole bench through a `fanOut` knob on the select,
+   critic,
+   chunk-critic and coverage stages;
+   the coverage verdict takes its majority over the seats the gather asked,
+   since a seat the window spared was never silent;
+   and a judge bench whose window could not carry a unanimous self-written slate on self-votes alone
+   (four seats:
+   three halves fall short of the minimum of 2) asks the whole bench,
+   which is one seat more (`candidate-select-fanout.ts`).
+5. `78ea8c8c7`,
+   the cap on every provider:
+   the table moves to `completion-cap.ts` keyed by roster id and every client sends it,
+   Synthetic (a weekly token allowance),
+   Bedrock (a credit never topped up),
+   Hyper (under its own per-model ceiling) and OpenRouter.
+   Measured over every `SPEND` line in the pass logs (142,437 completed calls across the four providers;
+   `~/temp/agent/cap-measure-20260909.txt` holds the table):
+   each cap is the highest 99th percentile any provider with at least 100 calls of the model recorded,
+   floored at the pooled 90th (3,831),
+   and every cap cuts under one percent of that model's completed calls
+   (`minimax-m3` the most,
+   274 of 34,018,
+   whose Hyper replies ran to the 32,000 ceiling that provider already enforced).
+   The caps:
+   GLM-5.3-Flash 18,316;
+   Qwen3.8-27B 20,894;
+   Kimi-K3 10,921;
+   gpt-oss-120b 3,831;
+   minimax-m3 10,822;
+   gemma-4-26b-a4b-it 3,831;
+   deepseek-v4-pro 9,128;
+   deepseek-v4-flash 16,543;
+   glm-5.3 22,067;
+   gemma-4-e2b 3,831;
+   gemma-4-31b 8,194.
+6. `33a023445`,
+   the window for the six stages that read their own round
+   (the lane contest,
+   section and block pairing,
+   the consolidation gate,
+   the naturalness review and the polish gate;
+   356 seats on the first `noname` pass for quorums of about half):
+   `runWindowedRounds` asks quorum plus one seat,
+   the rest only when a voice is lost,
+   up to the same three retry rounds the other stages have and these never had,
+   and returns one outcome per seat asked in roster order.
+   The naturalness confirmation now challenges exactly the seats the discovery asked,
+   at the discovery's quorum,
+   since the artifact reads one requested roster across both readings and a challenge put to the reviewers who
+   approved is what a confirmation is.
+   A provider down for every seat now costs such a stage up to four rounds of the client's five transient attempts,
+   as it already costs the other sixteen stages.
+
+Not done,
+and next:
+Mercury 2.5 (`inception/mercury-2.5`,
+0.04 and 0.15 USD per million,
+one endpoint,
+approved by the owner) as an OpenRouter-only roster id,
+seated for judge seats by the fidelity probe and for writer seats by the producer calibration,
+so the cheapest seat on the per-token provider carries the judging that today falls on deepseek-v4-pro at 9.128
+thousand tokens of ceiling and 1.74 USD per million out.
+
+### The third noname launch, 16:45 UTC
+
+The queue resumed on `33a023445` with the meters reading synthetic wet at 2 percent of the week,
+bedrock wet at 186.68 USD,
+hyper dry,
+openrouter wet at 273.99 USD remaining after the owner's final top-up.
+The pass runs from a frozen copy of the built `dist`
+(`package/module/translation-repair/node_modules/.frozen-dist-33a023445`,
+which the scratch launcher takes as its third argument),
+so a rebuild for the Mercury seating cannot change the pass under way;
+the kill-and-relaunch rule still applies to the build the pass carries,
+not to the files on disk.
+What the pass is read for,
+besides the `## 简介` heading above the first paragraph:
+the seats each round asks against its bench (`retry round N asking X of Y pending voices` where a voice was lost),
+the `cached=` counts on DeepSeek calls,
+the endpoints the price sort picks,
+and whether any `estimated=abandoned` line appears at all now that every stream is capped and windowed.
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,

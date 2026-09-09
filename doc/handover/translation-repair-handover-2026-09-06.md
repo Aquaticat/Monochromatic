@@ -1404,6 +1404,34 @@ the owner decides.
     The 19:53 launch was killed under it after 264 calls.
     The rule is deliberately not in the root `AGENTS.md`.
 
+## The bleed and the six levers
+
+The owner asked on 2026-09-09 where 200 USD went in a day and said to do everything to stop bleeding,
+to always fix and relaunch,
+and not to ignore that whatever reaches Hyper and Synthetic more efficiently makes those last longer.
+The reckoning and the six levers are in the planning log under
+"The owner asks where 200 USD went,
+and six levers land".
+In one breath:
+every call on every provider carries a measured `max_tokens` (`completion-cap.ts`);
+every round asks quorum plus one seat from a bench rotated by the prompt and the rest only when a voice is lost
+(`stage-fanout-window.ts` for the sixteen `gatherStageVoices` stages,
+`stage-windowed-rounds.ts` for the six that read their own round);
+OpenRouter calls are price-sorted,
+carry `cached=` on the `SPEND` line,
+write a reckoned `SPEND ... estimated=abandoned` line for every abandoned stream,
+and no longer serve Qwen3.8-27B or glm-5.3.
+Three rules came with the window:
+the coverage verdict's majority is over the seats asked;
+a judge bench of four asks the whole bench,
+since three halves cannot carry a unanimous self-written slate;
+and the naturalness confirmation challenges exactly the seats the discovery asked,
+at the discovery's quorum.
+A fixture that scripts every seat says `fanOut: 'whole-bench'`;
+a fixture that counts calls counts `firstRoundWindow({ benchSize, })`.
+Mercury 2.5 is approved and not yet seated;
+it is the next thing to build (see "What to do next").
+
 ## How a pass is launched now
 
 The plain invocation in
@@ -1416,52 +1444,81 @@ the owner's words).
 The log opens with `OVERLAP <entry> value=4 source=fallback` and `WRITER GRACE built in`.
 Every dial still works for a measured arm.
 The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
+Since 16:45 UTC on 2026-09-09 a pass runs from a frozen copy of the built `dist`
+(`cp -r package/module/translation-repair/dist/final/node package/module/translation-repair/node_modules/.frozen-dist-<commit>`,
+inside the package so the bundle's bare imports resolve;
+the scratch launcher `launch-pass.mjs <runs-dir> <entry> <frozen-dir>` takes it as its third argument),
+so building the next fix cannot change the pass under way.
+The kill-and-relaunch rule is about the build a pass carries,
+not the files on disk:
+a fix that matters to the running entry still kills and relaunches it.
 
 ## What to do next
 
-1.  THE QUEUE IS PAUSED.
-    OpenRouter refused for payment at 12:22 UTC on 2026-09-09 (`HTTP 402`,
-    meter 1.51 USD,
-    172.94 fifteen hours earlier),
-    and the 2026-09-08 rule applies:
-    no launch on Bedrock alone,
-    and no launch at all until a meter besides Bedrock's moves.
-    Nothing runs.
-    The third `hulicaijia` (`~/temp/agent/hulicaijia3-20260909`) ended ERROR at 13:04 UTC on the
-    heading-distinctness floor (`## 相遇` rendered as the neighbouring `## Soulmate` by the thin bench;
-    no page shipped) and its retries stopped under the fifteenth class,
-    the second `noname` settled with the heading unfilled,
-    and the sixth `Mio` stopped INCOMPLETE at slice 3
-    (see "The twenty-third class" and "The thin-bench questions").
-    The ruby,
-    the Sakura line and `hulicaijia`'s footnote are read on a full-bench pass.
-    When a meter moves,
-    launch `noname` first (the `## 简介` heading above the first paragraph is the read),
-    then `Mio` (the rule's position) and `hulicaijia`,
+1.  THE QUEUE RESUMED at 16:45 UTC on 2026-09-09 with the third `noname`
+    (`~/temp/agent/noname3-20260909`,
+    frozen `33a023445`) after the owner's final OpenRouter top-up
+    (273.99 USD remaining at launch;
+    Synthetic at 2 percent of its week,
+    Hyper dry,
+    Bedrock 186.68).
+    Read it for the `## 简介` heading above the first paragraph and for the levers
+    (the seats each round asked,
+    `cached=`,
+    the endpoints the price sort picked,
+    any `estimated=abandoned` line),
+    then launch `Mio` (the rule's position) and `hulicaijia` (the ruby,
+    the Sakura line,
+    the footnote),
     then `shi_Yumiaoya` (the emphasis,
     the `Banner` and its bare-URL prop),
     `yingying` (a bare URL as a footnote definition) and,
     on a quiet bench,
     `XingZ60` (the unordered list with a rule and three components).
+    One pass at a time;
+    a pass killed before its page is read is money spent for nothing
+    (69.70 USD of the 200 went that way),
+    so a fix that does not matter to the running entry waits for its tally.
+    The third `hulicaijia` ended ERROR at 13:04 UTC on the heading-distinctness floor on Bedrock alone,
+    the second `noname` settled with the heading unfilled and the sixth `Mio` stopped INCOMPLETE at slice 3
+    (see "The twenty-third class" and "The thin-bench questions");
+    the census (scratch `unmet-shapes.mjs`) is in the planning log under
+    "Two shapes-first entries launched beside it".
     Every earlier `gqt`,
     `Mio` and `hulicaijia` launch was killed under the kill-and-relaunch rule as the tree moved,
     except the fourth `gqt` (read;
-    `gqt` now declines) and the first `noname` (read).
-    The census (scratch `unmet-shapes.mjs`,
-    corrected for the bare URL) is in the planning log under
-    "Two shapes-first entries launched beside it" and
-    "The first noname page is read and the twenty-third class decides a contested target by votes".
-    If the tree moves past `efc9a4f3c` while any runs,
-    the kill-and-relaunch rule applies.
-2.  The glossary is the open design question (see "The glossary question");
+    `gqt` now declines) and the first two `noname` (read).
+2.  SEAT MERCURY 2.5 (owner:
+    "Mercury 2.5 is out and approved";
+    `inception/mercury-2.5` on OpenRouter,
+    0.04 and 0.15 USD per million,
+    260k context,
+    65,536 max completion,
+    one endpoint,
+    takes `response_format` and `max_tokens`):
+    an `OPENROUTER_ONLY_ROSTER_IDS` list in `roster-id.ts`,
+    a catalog row (`readsImages: false`,
+    prices,
+    ceiling),
+    a `completion-cap.ts` row at the pooled 99th until measured,
+    the raw-chars ratio for the abandoned reckoning,
+    the measured filter in `run-config.ts`,
+    tests (`roster-reach` length 11 to 12,
+    the run-seats formula),
+    then `judge-fidelity-probe.mjs --candidates inception/mercury-2.5 --candidates-alone --cap 48`
+    over a throwaway runs dir holding generation-13 settled artifacts and `producer-calibrate.mjs`,
+    and seat by the 2026-09-07 rule.
+    Build it while the third `noname` runs from its frozen copy;
+    do not kill the pass for it.
+3.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.
-3.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
+4.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
     right for any corpus pass (pages stand beside the declines),
     wrong on a decline-only dir;
     a one-line change when it matters.
-4.  Then the components no read page has met
+5.  Then the components no read page has met
     (the double-quoted path is met by `Arita`).
-5.  Synthetic's weekly meter is a ROLLING WINDOW,
+6.  Synthetic's weekly meter is a ROLLING WINDOW,
     not a calendar week (measured 2026-09-08:
     0 percent at 12:26 UTC after the ninth pass spent its 5.8 percent,
     2 percent at 13:07 with no top-up,

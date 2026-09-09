@@ -1874,6 +1874,45 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `78ea8c8c7` (2026-09-09,
+the owner's "do everything in our power to NOT bleed") every call on every provider carries `max_tokens`
+at a measured ceiling per roster model (`completion-cap.ts`:
+the highest 99th percentile of completion tokens any provider with at least 100 calls of the model recorded over
+142,437 completed calls,
+floored at the pooled 90th of 3,831;
+each cap cuts under one percent of that model's completed calls),
+a caller's own ceiling only ever lowers it,
+Hyper takes the lower of the cap and its own per-model ceiling,
+and a reply that meets the cap ends `finish_reason=length` and is read as a truncated voice;
+the reasoning controls stay off the wire as the owner's 2026-08-25 instruction requires.
+Since `b71a55385` and `33a023445` (2026-09-09) every round asks quorum plus one seat,
+from a bench rotated deterministically by the prompt (`stage-fanout-window.ts`),
+and the rest only when a voice is lost:
+the sixteen `gatherStageVoices` stages through their retry rounds,
+and the six stages that read their own round (`stage-windowed-rounds.ts`;
+the lane contest,
+section and block pairing,
+the consolidation gate,
+the naturalness review and the polish gate) through retry rounds they never had before,
+each returning one outcome per seat asked in roster order;
+quorum is unchanged and still computed over the whole bench.
+With it:
+the coverage verdict takes its majority over the seats the gather asked (`gather.asked`),
+a judge bench whose window could not carry a unanimous self-written slate on self-votes alone asks the whole bench
+(`candidate-select-fanout.ts`;
+four seats),
+the naturalness confirmation challenges exactly the seats the discovery asked at the discovery's quorum,
+a fixture scripting every seat passes `fanOut: 'whole-bench'`,
+and a fixture counting calls counts `firstRoundWindow({ benchSize, })`.
+Since `037d1f650`,
+`4f87555fc` and `1fe7ca2fe` (2026-09-09) the OpenRouter client sends `provider.sort: 'price'` with the
+zero-data-retention and `require_parameters` preferences,
+prints `cached=N` on the `SPEND` line off `usage.prompt_tokens_details.cached_tokens`,
+writes a `SPEND ... estimated=abandoned` line reckoned from the delivered characters for every stream a round
+abandoned,
+and no longer serves Qwen3.8-27B or glm-5.3 (`OPENROUTER_DROPPED_SEATS`),
+after the reckoning of 2026-09-09 found 58 USD of a 200 USD day in abandoned streams the endpoints billed to the end
+and the anchor judge routed to endpoints at twice the listing price.
 Since `efc9a4f3c` (2026-09-09,
 the twenty-third class) pair agreement decides a target two sources claim without a corroborated merge by votes,
 the way it already decides one source named against two targets:
