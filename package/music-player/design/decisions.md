@@ -305,8 +305,10 @@ subdirectory name and expand only where that adds meaning:
 
 **Why.**
  The user explicitly replaced the fixed one-row-to-four-row transition with
-one-to-two-to-four adaptive wrapping and required the current subdirectory in the
-Shuffle label.
+one-to-two-to-four adaptive wrapping,
+ required the current subdirectory in the Shuffle
+label,
+ and accepted the final strict-12dp scale review on 2026-09-08.
  The connected-group note below is history.
  The archive source is
 `components/segmented-buttons/` under the user-supplied `m3.material.io` archive;

@@ -546,7 +546,7 @@ validation,
  Do not
 invent those details or narrow the requirement without a dedicated design round.
 
-## 12. Existing-screen refinement, 3B settled
+## 12. Existing-screen refinement, 3B settled and accepted
 
 The active round stays within the accepted screenshot.
  Centering and seek-value
@@ -576,6 +576,10 @@ treatments and four consequential Open treatments.
  Matrix size was not capped to an
 example count.
  No consequential visual decision remains on this screen.
+
+The user accepted the final strict-12dp adaptive review on 2026-09-08.
+ No visual
+question remains in this round.
 
 No absent control or future feature is part of this round.
  The command bar,

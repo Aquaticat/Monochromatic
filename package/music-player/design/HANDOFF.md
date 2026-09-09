@@ -3529,3 +3529,16 @@ minimized.
  Activate and unminimize that window as the final operation,
  then wait for the
 user's review.
+
+The user accepted the strict-12dp adaptive 3B review on 2026-09-08 and asked to
+continue with the next required work.
+ The design frontier is closed:
+ preserve the
+questionnaire as accepted evidence,
+ close its Helium window,
+ then integrate this exact
+screenshot-bounded treatment into the production Android application.
+ Production
+verification must exercise the adaptive group and current-track announcements with
+assistive technology;
+ prototype UI Automator evidence alone does not settle that boundary.
