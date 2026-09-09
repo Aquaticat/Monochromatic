@@ -182,7 +182,7 @@ await describe({
         expect((refusalOfThirdKind as Error).message,)
           .toContain('consolidation.slices[0].shipped.kind',);
         expect((refusalOfThirdKind as Error).message,)
-          .toContain('one of consolidated, unchanged',);
+          .toContain('one of consolidated, incumbent, unchanged',);
       },
     },),
 
