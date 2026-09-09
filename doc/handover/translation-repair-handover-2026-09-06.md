@@ -1876,17 +1876,19 @@ each read off the pass log and the shipped page:
     the anchor judge out),
     eleven consolidation writers,
     stage quorum 4.
-    Two things are still the owner's:
-    the community glossary is an EMPTY file the owner curates
-    (`community-glossary.ts` beside `corpus-source.ts`:
-    a term,
-    its renderings with the archive's first,
-    one line of why;
-    a term the archive got wrong is not entered),
-    which is why no `COMMUNITY TERMS` line appeared on the `Mio` pass;
-    and `gemma-4-26b-a4b-it` read z +6.39 ABOVE the pooled null on this calibration,
-    the first seat ever measured above it,
-    which no rule currently acts on.
+    The owner curates additions to the community glossary,
+    but the handoff's claim that the file was empty was wrong.
+    `git show 2cfad6236:package/module/translation-repair/src/community-glossary.ts` already carries
+    自切 as `self-surgery` and 超天酱 as `KAngel` or `Needy Streamer Overload`.
+    A call through frozen `5b228736b` emits both terms for `yuki418330012` and none for `Mio`,
+    whose source contains neither.
+    No glossary seed is pending and no source change was needed.
+    `gemma-4-26b-a4b-it` read z +6.39 above the pooled null on the latest calibration.
+    This was not its first upward result:
+    the seating decision's 2026-09-08 addendum records z +4.14,
+    beside Qwen's +5.25.
+    Whether upward producer evidence should change weighting or seat breadth remains open;
+    no weighting change has been made.
 4.  `verify-published` on a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2;
     right for any corpus pass (pages stand beside the declines),
     wrong on a decline-only dir;

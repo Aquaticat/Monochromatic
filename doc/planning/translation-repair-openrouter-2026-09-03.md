@@ -6936,6 +6936,28 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## The open threads are checked against code and recorded measurements, 2026-09-09, 22:00 UTC
+
+No source changed while `Mio` ran.
+The glossary was not empty at handoff:
+`git show 2cfad6236:package/module/translation-repair/src/community-glossary.ts` contains both seed entries,
+and importing frozen `5b228736b` and calling `communityTermLines` against the pinned source pages returns
+both entries for `yuki418330012` and an empty list for `Mio`.
+The two named terms are absent from Mio's source,
+which explains its absent glossary heading without inventing a missing-curation blocker.
+The glossary decision and README had the right state;
+the handover and seventh-Mio reading are corrected.
+Further curation remains the owner's,
+but drafting those same seeds would duplicate existing code.
+
+The "first seat ever above the pooled null" claim also contradicts the seating record:
+its 2026-09-08 producer-calibration addendum records Gemma at z +4.14 and Qwen at +5.25,
+both above that calibration's 2.81 threshold.
+The latest Gemma result is z +6.39.
+No special weighting rule is adopted here;
+seat breadth or weighting based on upward producer evidence remains an owner design question,
+not a reason to alter the running pass.
+
 ## The eighth Mio launches with picture support before archive review, 2026-09-09, 21:58 UTC
 
 The class-twenty-five build is frozen at
@@ -7124,8 +7146,14 @@ slice 3's ineligible standing replaced by its incumbent
 without contest endorsement"),
 slice 14's incumbent failing too and the slice withheld from the slate,
 no `select-short-bench` finding,
-and no `COMMUNITY TERMS` line,
-the glossary file being empty until the owner curates it.
+and no `COMMUNITY TERMS` line.
+Correction during takeover:
+this was not an empty glossary.
+The committed file at `2cfad6236` already contains 自切 and 超天酱,
+and a call through frozen `5b228736b` emits both for `yuki418330012` but none for `Mio`,
+whose source contains neither term.
+The seed was already built as the glossary decision records;
+no source change or owner input is needed to make those entries available.
 
 THE PAGE IS NOT CLEAN,
 and the defect is CLASS TWENTY-FIVE.
