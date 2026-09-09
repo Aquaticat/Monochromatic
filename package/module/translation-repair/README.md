@@ -1874,6 +1874,13 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `7bcea2dc4` (2026-09-09,
+the twenty-second class) the archive-original recognizer reads a whole-page note written in English:
+`(Original Language: English)`,
+and the pinned corpus's own `(Original Language: Engish)` on `gqt`,
+matched on the lowercased note,
+decline the entry the way the Chinese wordings do;
+four `gqt` passes had repaired an English original from its Chinese back-translation.
 Since `3620004db` (2026-09-09,
 the twenty-first class's fourth face) the composed page runs through the same footnote assembly guard each lane
 runs,

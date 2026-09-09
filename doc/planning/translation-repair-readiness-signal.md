@@ -1484,3 +1484,36 @@ what remains before an all-entries launch:
 the `gqt` and `Mio` pages (running since 08:01 UTC),
 the owner's answer on the glossary,
 and the components no read page has met.
+
+## What the fourth gqt launch showed (2026-09-09, 08:01 to 09:46 UTC)
+
+The page settled in 105 minutes,
+passed the three checks,
+matched at length,
+and rendered the level-3 heading,
+the bold-led list and the italic paragraph as the archive has them,
+with the source's footnote the archive dropped restored and the page guard silent.
+And the page should not exist:
+the archive's first line under the front matter says `(Original Language: Engish)`,
+Ara wrote in English,
+and the owner's rule declines the entry.
+The recognizer read only the two Chinese wordings;
+the twenty-second class,
+fixed in `7bcea2dc4`,
+and the fifth `gqt` declined in 146 ms.
+
+THE READING:
+the belief holds,
+with a correction to its evidence:
+a page read clean is not evidence when the entry should have been declined,
+and the 2026-09-08 census that keyed the recognizer counted only Chinese notes.
+The census is now over both languages and finds no fourth wording.
+Three shapes go back to no read page (the level-3 heading,
+the unordered list,
+the emphasis);
+`noname` runs for the heading since 09:50 UTC beside the fifth `Mio` and the second `hulicaijia`.
+What remains before an all-entries launch:
+those three pages,
+the emphasis and list carriers after them,
+the owner's answer on the glossary,
+and the components no read page has met.

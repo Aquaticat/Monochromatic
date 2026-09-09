@@ -24,7 +24,7 @@ and the reason is recorded in
 
 ## Where the work stands
 
-As of 09:45 UTC on 2026-09-09 the tree is `3620004db`:
+As of 09:58 UTC on 2026-09-09 the tree is `7bcea2dc4`:
 the letter question answered by the owner (span authority;
 the whole-page note declines the entry) and landed
 (`439667ec3`,
@@ -92,9 +92,21 @@ the twenty-first class closed on the page in all four faces,
 the seal holding,
 two nits and no class;
 see "The twenty-first class"),
-and two passes running on `3620004db` since 08:01 UTC
-(the fourth `gqt`,
-the fourth `Mio`);
+the fourth `gqt` page settled on `3620004db` at 09:46 UTC and read
+(the three checks passed,
+`verify-published` matched at length,
+the level-3 heading,
+the list and the emphasis rendered,
+and the entry should have been declined:
+its note says the whole page is an English original;
+see "The twenty-second class"),
+the twenty-second class fixed (`7bcea2dc4`,
+the archive-original recognizer reads the English wording of a whole-page note)
+and the fifth `gqt` declined in 146 ms,
+and three passes running on `7bcea2dc4` since 09:50 UTC
+(the fifth `Mio`,
+the second `hulicaijia`,
+the first `noname`);
 see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
@@ -1181,6 +1193,37 @@ Recorded in the planning log under
 nobody guarded"
 and "The twenty-third hakureico page settles under the page assembly and closes the twenty-first class".
 
+## The twenty-second class
+
+The fourth `gqt` pass (`3620004db`,
+08:01 to 09:46 UTC,
+104.5 minutes,
+`~/temp/agent/gqt4-20260909`) settled and read clean on the three shapes it was chosen for
+(`### Timeline` at level 3,
+the bold-led list items one per line with two wrapped after the bold lead's colon,
+the italic paragraph as one emphasis across four wrapped lines),
+with the source's footnote restored and the page guard silent.
+Line 8 of the archive,
+the source and the page is `<!-- (Original Language: Engish) -->`:
+Ara wrote in English,
+the Chinese page is the translation,
+and the owner's rule of 2026-09-08 declines the entry.
+`readNote` knew only the two Chinese wordings,
+so the entry was repaired four times from its back-translation.
+Fixed in `7bcea2dc4`:
+`ENGLISH_WHOLE_PAGE_MARKS` matched on the lowercased note,
+in the corpus's own spelling and the one it meant.
+The recognizer case failed first;
+the fifth `gqt` declined in 146 ms.
+A census over both languages finds no other wording.
+The three shapes go back to no read page;
+`noname` (the level-3 heading) runs since 09:50 UTC,
+`shi_Yumiaoya` (the emphasis,
+with `Banner`) and `XingZ60` (the list,
+with a rule and three components) are next.
+Recorded in the planning log under
+"The fourth gqt page is read and the twenty-second class declines an English original".
+
 ## The glossary question
 
 The same page rendered two community terms wrongly where the archive had them right:
@@ -1255,50 +1298,49 @@ The seven reading steps are in the 2026-09-04 snapshot and are unchanged.
 
 ## What to do next
 
-1.  Three passes are running on `3620004db`,
+1.  Three passes are running on `7bcea2dc4`,
     each watched by the filtered poller that reports only the tally,
     a stop,
     a crash or the process exit:
-    the fourth `gqt` (a level-3 heading,
-    a bold-led unordered list,
-    an italic paragraph;
-    three shapes on no read page),
-    launched 08:01 UTC,
-    runs dir `~/temp/agent/gqt4-20260909`,
-    pid 650645;
-    the fourth `Mio` (a rule in the body and a bare URL;
+    the fifth `Mio` (a rule in the body and a bare URL;
     two shapes on no read page),
-    launched 08:01 UTC,
-    runs dir `~/temp/agent/mio4-20260909`,
-    pid 650761;
-    the first `hulicaijia` (an inline `<ruby>` annotation beside a footnote reference,
+    launched 09:50 UTC on 2026-09-09 on Bedrock and OpenRouter,
+    runs dir `~/temp/agent/mio5-20260909`,
+    pid 676894;
+    the second `hulicaijia` (an inline `<ruby>` annotation beside a footnote reference,
     `<Sakura count="50" />` at the end;
     two shapes on no read page),
-    launched 09:34 UTC,
-    runs dir `~/temp/agent/hulicaijia1-20260909`,
-    pid 668600.
-    The first three `gqt` and `Mio` launches were killed under the kill-and-relaunch rule as `9abcbee50`,
-    `379122379` and `3620004db` landed,
-    none at its tally.
+    launched 09:50 UTC,
+    runs dir `~/temp/agent/hulicaijia2-20260909`,
+    pid 677559;
+    the first `noname` (a level-3 heading and bare URLs;
+    47 source lines),
+    launched 09:50 UTC,
+    runs dir `~/temp/agent/noname1-20260909`,
+    pid 678195.
+    Every earlier `gqt`,
+    `Mio` and `hulicaijia` launch was killed under the kill-and-relaunch rule as the tree moved,
+    except the fourth `gqt`,
+    which settled and is read (see "The twenty-second class");
+    `gqt` now declines.
     The census behind the two (scratch `unmet-shapes.mjs`) is in the planning log under
     "Two shapes-first entries launched beside it".
     The twenty-third `hakureico`,
     the seventh `yuki418330012` and `Arita` are read
     (see "The twenty-first class",
     "The nineteenth class" and "The Arita page").
-    Read `gqt` and `Mio` by the seven steps plus the three checks,
+    Read `Mio`,
+    `hulicaijia` and `noname` by the seven steps plus the three checks,
     then the shapes each carries:
-    `gqt`,
-    the heading level,
-    each list item's marker and bold lead,
-    the emphasis;
+    `noname`,
+    the heading level and each bare URL verbatim;
     `Mio`,
     the rule's position and the URL verbatim;
     `hulicaijia`,
     the ruby element and the Sakura line verbatim,
     the footnote's reference above its definition,
     the `pageAssembly` section empty or its findings explained.
-    If the tree moves past `3620004db` while any runs,
+    If the tree moves past `7bcea2dc4` while any runs,
     the kill-and-relaunch rule applies.
 2.  The glossary is the open design question (see "The glossary question");
     nothing to build until the owner answers.

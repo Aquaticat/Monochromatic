@@ -6181,6 +6181,76 @@ launched at 09:34 UTC on `3620004db` beside the fourth `gqt` and `Mio`
 (`~/temp/agent/hulicaijia1-20260909`,
 pid 668600).
 
+## The fourth gqt page is read and the twenty-second class declines an English original, 2026-09-09, 09:55 UTC
+
+`TALLY gqt status=SETTLED slices=24 repairStatus=repaired repairIssues=73 repairAccepted=42 repairResolved=42
+repairFindings=199 repairChanged=16 translateStatus=complete translateChanged=17 documentsDiffer=18 pageChanged=17
+pageSilent=0 alignmentFindings=5 selection=contested ms=6270496`
+at 09:46 UTC on `3620004db`,
+104.5 minutes beside two other passes,
+`~/temp/agent/gqt4-20260909`.
+The three checks passed (front matter the archive's,
+7 `json false start` reads kept,
+no error finish),
+`verify-published` matched 1 of 1 at length (`wordings=24 silent=0`),
+the artifact is generation 13 with an empty `pageAssembly`,
+28 `HTTP 429` retries and 95 voices lost across three passes.
+THE THREE SHAPES RENDERED:
+`### Timeline` at level 3 where the archive has it;
+the bold-led list items one per line as the archive has them,
+the two the lanes rewrote (`20:05`,
+`21:10`) wrapped after the bold lead's colon onto an indented continuation line,
+one list item still,
+which is the semantic wrap reading the colon as a clause end (a nit,
+the same family as the `*osu!*` break);
+the italic paragraph after `16:06` carried across four wrapped lines inside one pair of asterisks,
+which CommonMark reads as one emphasis.
+The source's footnote,
+which the archive dropped,
+ships as `my ideal blunt rotation[^1]` in the quote and its definition at the end,
+with the page guard silent.
+
+THE PAGE SHOULD NOT EXIST.
+Line 8 of the page,
+of the archive and of the source alike is `<!-- (Original Language: Engish) -->`:
+Ara wrote in English,
+the Chinese page is the translation,
+and the owner's rule of 2026-09-08 declines such an entry.
+`readNote` knew the two Chinese wordings the 2026-09-08 census found
+(`原文即英文`,
+`不要动本篇`,
+and the span marks) and read this English one as advisory,
+so four `gqt` launches repaired Ara's page from its Chinese back-translation.
+The twenty-second class:
+the archive-original recognizer reads only Chinese.
+A census over the 92 sources finds this the only note of its wording.
+
+THE FIX (`7bcea2dc4`).
+`ENGLISH_WHOLE_PAGE_MARKS` (`original language: english`,
+and the corpus's own `original language: engish`) are matched on the lowercased note and read as whole-page;
+the recognizer's case failed first;
+lint,
+types and the recognizer and pass-entry suites clean.
+The fifth `gqt` on `7bcea2dc4` declined in 146 ms:
+`ARCHIVE ORIGINAL entry=gqt: the archive's note says the whole page is the author's own English
+((Original Language: Engish)), so the pipeline declines to repair it and the archive stands`,
+`TALLY gqt status=DECLINED reason=archive-original ms=146`.
+The fourth `Mio` and the first `hulicaijia` were killed under the rule and relaunched at 09:50 UTC
+(`~/temp/agent/mio5-20260909`,
+pid 676894;
+`~/temp/agent/hulicaijia2-20260909`,
+pid 677559),
+and `noname` launched beside them (`~/temp/agent/noname1-20260909`,
+pid 678195;
+47 lines,
+`### 武汉江宸天街杀人事件` and bare URLs,
+never run),
+since `gqt`'s decline leaves the level-3 heading,
+the unordered list and the emphasis on no read page:
+`noname` carries the heading,
+`shi_Yumiaoya` the emphasis (with `Banner`),
+`XingZ60` the list (with a rule and three components).
+
 ## Measuring the two Bedrock-only sizes, 2026-09-07, 21:19 UTC
 
 The probes ran the run roster and nothing else,
