@@ -13,10 +13,13 @@ A fake failing build prints Node's `Error: BUILD_FAILED`
 and mise's `[//:build] ERROR task failed`.
 A passing test subsequently prints `TEST_OK`,
 and the outer `mise run buildAndTest` exits `0`.
-The failure status is suppressed, not the inherited build diagnostics.
+The failure status is suppressed,
+ not the inherited build diagnostics.
 
 No stale artifact was needed to reproduce this.
-Stale, missing, or partially written build output is a possible consequence,
+Stale,
+ missing,
+ or partially written build output is a possible consequence,
 not evidence of a mise caching defect.
 A source test may pass without consuming any build output.
 
@@ -137,7 +140,8 @@ fn exit_if_failed(&self) {
 The inner mise process reports build failure correctly.
 Our wrapper consumes that failure and returns success to the outer mise process.
 The task name `buildAndTest` does not impose a build-success contract on its script.
-This is a repository orchestration defect, not mise ignoring a failed task process.
+This is a repository orchestration defect,
+ not mise ignoring a failed task process.
 
 ## Verification
 
@@ -146,32 +150,56 @@ Installed binaries:
 - mise `2026.7.0 linux-x64 (2026-07-02)`.
 - Node `v26.8.1`.
 
-The exact-task fixture copied `try`, `buildAndTest`, `parse_usage_args`,
+The exact-task fixture copied `try`,
+ `buildAndTest`,
+ `parse_usage_args`,
 and `run_test_files` from the frozen repository revision.
 It replaced builds and tests with controlled failing or passing tasks.
 All invocations ran outside the repository,
-with disposable configuration, home, cache, and state directories,
+with disposable configuration,
+ home,
+ cache,
+ and state directories,
 a restricted executable path,
 and no inherited credentials or repository task environment.
 
 Correct failure propagation:
 
-- Direct failing `build`: exit `1`.
-- Native sequential task references: exit `1`, tests not started.
-- `run = ["mise run build", "mise run test"]`: exit `1`, tests not started.
-- Node orchestration without the catch: exit `1`, tests not started.
+- Direct failing `build`:
+   exit `1`.
+- Native sequential task references:
+   exit `1`,
+   tests not started.
+- `run = ["mise run build", "mise run test"]`:
+   exit `1`,
+   tests not started.
+- Node orchestration without the catch:
+   exit `1`,
+   tests not started.
 - Node orchestration retaining exceptions until both phases finish:
-  exit `1`, passing test ran.
-- Direct failing build with `--continue-on-error`: exit `1`.
-- Failing tests through each `buildAndTest` invocation shape: exit `1`.
+  exit `1`,
+   passing test ran.
+- Direct failing build with `--continue-on-error`:
+   exit `1`.
+- Failing tests through each `buildAndTest` invocation shape:
+   exit `1`.
 
 Failure masking:
 
-- `mise run try -- build`: exit `0` despite `BUILD_FAILED`.
-- `buildAndTest` without arguments: exit `0`, passing test ran.
-- `buildAndTest -- package/demo/example/pass.mjs`: exit `0`, passing test ran.
-- `buildAndTest -- pass.mjs`: exit `0`, passing test ran.
-- `--continue-on-error buildAndTest`: exit `0`, passing test ran.
+- `mise run try -- build`:
+   exit `0` despite `BUILD_FAILED`.
+- `buildAndTest` without arguments:
+   exit `0`,
+   passing test ran.
+- `buildAndTest -- package/demo/example/pass.mjs`:
+   exit `0`,
+   passing test ran.
+- `buildAndTest -- pass.mjs`:
+   exit `0`,
+   passing test ran.
+- `--continue-on-error buildAndTest`:
+   exit `0`,
+   passing test ran.
 
 Initial harness attempts failed before reaching the fake build:
 one encountered unrelated user configuration,
@@ -234,7 +262,8 @@ mise run strict
 For fail-fast sequencing,
 use the reproduction's `strict` task body.
 It retains build failure through ordinary mise command sequencing.
-Tradeoff: tests do not run after a failed build.
+Tradeoff:
+ tests do not run after a failed build.
 This is a verified mechanism,
 not a complete replacement for the repository's argument-sensitive package selection.
 
@@ -244,7 +273,28 @@ then throw an aggregate error if either phase failed.
 The exact-task fixture's `retained` control verified this:
 the passing test ran after `BUILD_FAILED`,
 and the aggregate exited `1`.
-Tradeoff: tests may inspect stale or incomplete output after build failure,
+Its runnable task body was:
+
+```toml
+# Disposable fixture: additional mise.toml task
+[tasks.retained]
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { execFileSync } from 'node:child_process';
+const failures = ['build', 'test'].flatMap((name) => {
+  try {
+    execFileSync('mise', ['run', name], { stdio: 'inherit' });
+    return [];
+  } catch (error) {
+    return [error];
+  }
+});
+if (failures.length > 0) { throw new AggregateError(failures, 'Build/test failed'); }
+'''
+```
+
+Tradeoff:
+ tests may inspect stale or incomplete output after build failure,
 so their results do not establish that a fresh build works.
 
 No implementation was changed during this explanation-only investigation.
@@ -265,19 +315,26 @@ The existing repository issue identifies the responsible wrapper.
 
 ### Upstream filing decision
 
-1.  Upstream fault: no.
+1.  Upstream fault:
+     no.
     The task explicitly converts child failure into successful completion.
-2.  Upstream fixability: no upstream fix is required;
+2.  Upstream fixability:
+     no upstream fix is required;
     ordinary sequencing already preserves failure in the controls.
-3.  Supported use case: mise supports task interpreters and sequential `run` entries;
+3.  Supported use case:
+     mise supports task interpreters and sequential `run` entries;
     see its [task configuration documentation](https://mise.jdx.dev/tasks/task-configuration.html#run).
-4.  Contribution policy: not assessed for a proposed filing,
+4.  Contribution policy:
+     not assessed for a proposed filing,
     because no upstream defect or contribution is proposed.
-5.  Maintainer intent: no upstream change requested.
+5.  Maintainer intent:
+     no upstream change requested.
     Issue and PR searches for `"task" "exit code" "catch"`,
-    plus an issue search for `"continue-on-error"`, returned no matches.
+    plus an issue search for `"continue-on-error"`,
+     returned no matches.
     Those search results are not the basis for the diagnosis.
-6.  Upstream prototype: not applicable because the upstream-fault gate fails.
+6.  Upstream prototype:
+     not applicable because the upstream-fault gate fails.
     Consumer-side controls demonstrate the required semantics.
 
 `.out-of-scope/` was checked;
