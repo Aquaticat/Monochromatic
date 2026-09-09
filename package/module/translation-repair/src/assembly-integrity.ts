@@ -9,7 +9,11 @@ import {
   introducedFootnoteFindings,
   introducedStructuralRegressions,
 } from './assembly-regressions.ts';
-export { introducedFootnoteFindings, introducedStructuralRegressions, } from './assembly-regressions.ts';
+
+export {
+  introducedFootnoteFindings,
+  introducedStructuralRegressions,
+} from './assembly-regressions.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import {
   type SliceReplacement,
@@ -331,8 +335,14 @@ export function guardFootnoteAssembly(
         },);
       },),);
       if ((culprits.size === 0) && (regressions.length > 0)) {
-        /** Whole-document counterfactual may prove a withdrawal without an identifier. */
-        const proven = singleStructuralWithdrawal({ targetText, slices, replacements: standing, },);
+        /**
+         * Whole-document counterfactual may prove a withdrawal without an identifier.
+         */
+        const proven = singleStructuralWithdrawal({
+          targetText,
+          slices,
+          replacements: standing,
+        },);
         for (const sliceIndex of proven) {
           culprits.add(sliceIndex,);
           findings.push(

@@ -3,7 +3,10 @@ import {
   introducedFootnoteFindings,
   introducedStructuralRegressions,
 } from './assembly-regressions.ts';
-import { type SliceReplacement, spliceSlices, } from './splice-slices.ts';
+import {
+  type SliceReplacement,
+  spliceSlices,
+} from './splice-slices.ts';
 
 //region Structural withdrawal proof
 // Before blanket withdrawal, test whether reverting one replacement repairs the
@@ -31,7 +34,11 @@ import { type SliceReplacement, spliceSlices, } from './splice-slices.ts';
  * ```
  */
 export function singleStructuralWithdrawal(
-  { targetText, slices, replacements, }: {
+  {
+    targetText,
+    slices,
+    replacements,
+  }: {
     readonly targetText: string;
     readonly slices: readonly ChunkPair[];
     readonly replacements: readonly SliceReplacement[];
@@ -42,17 +49,35 @@ export function singleStructuralWithdrawal(
   if (replacements.length < 2)
     return [];
   for (const replacement of replacements) {
-    /** Counterfactual set retains every other accepted wording. */
+    /**
+     * Counterfactual set retains every other accepted wording.
+     */
     const remaining = replacements.filter(function other(candidate,): boolean {
       return candidate.sliceIndex !== replacement.sliceIndex;
     },);
-    /** Whole page produced by this one withdrawal, including all slice joins. */
-    const assembledText = spliceSlices({ targetText, slices, replacements: remaining, },);
-    if (introducedStructuralRegressions({ incumbentText: targetText, assembledText, },).length > 0)
+    /**
+     * Whole page produced by this one withdrawal, including all slice joins.
+     */
+    const assembledText = spliceSlices({
+      targetText,
+      slices,
+      replacements: remaining,
+    },);
+    if (introducedStructuralRegressions({
+      incumbentText: targetText,
+      assembledText,
+    },)
+      .length
+      > 0)
       continue;
     // Restoring grammar can expose a footnote hidden by the malformed component.
     // It is not a proven repair until that graph also matches the inherited one.
-    if (introducedFootnoteFindings({ incumbentText: targetText, assembledText, },).length > 0)
+    if (introducedFootnoteFindings({
+      incumbentText: targetText,
+      assembledText,
+    },)
+      .length
+      > 0)
       continue;
     return [replacement.sliceIndex,];
   }
