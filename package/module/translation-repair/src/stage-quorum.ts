@@ -6,12 +6,15 @@ import type {
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from './chat-contract.ts';
-import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import {
   askingWindow,
   type FanOutMode,
   rotatedBench,
 } from './stage-fanout-window.ts';
+import {
+  reachableQuorum,
+  shortBenchStageFinding,
+} from './stage-reachable-quorum.ts';
 import { runGatherRound, } from './stage-round.ts';
 import { stageQuorumUnmetFinding, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -102,7 +105,9 @@ export type StageGather<ValueT,> = {
   readonly voices: readonly HeardVoice<ValueT>[];
 
   /**
-   * Whether at least half the roster, rounded up, was heard.
+   * Whether at least half the roster, rounded up, was heard; on a bench
+   * short of that for want of wet providers, at least half the reachable
+   * seats and never fewer than two (`reachableQuorum`, 2026-09-09).
    */
   readonly quorumMet: boolean;
 
@@ -228,15 +233,34 @@ export async function gatherStageVoices<ValueT,>(
   }>,
 ): Promise<StageGather<ValueT>> {
   /**
-   * Voices a quorum needs: at least half the roster, rounded up.
+   * Voices a quorum needs: at least half the roster, rounded up, sized on
+   * the seats a wet provider serves once the router has named the rest.
    *
    * Was "strictly more than half", which differs only on EVEN rosters and was
    * costing a round there. At six models the old rule demanded 4 while this
    * demands 3; at seven both demand 4, so odd rosters are unaffected. User
    * decision 2026-08-05, taken when the roster shrank to six: exactly half of
    * an even panel is a quorum.
+   *
+   * SIZED ON THE REACHABLE BENCH SINCE 2026-09-09 (`reachableQuorum`): a
+   * seat the router refuses for want of a wet provider is not a voice the
+   * gather can wait for, and counting it cost `hulicaijia` its entry that
+   * evening.
+   *
+   * @param unreachable - seats the router has refused so far
+   *
+   * @returns Heard voices the gather needs to close
    */
-  const quorumNeeded = rosterQuorumSize({ rosterSize: modelIds.length, },);
+  function quorumNeededWith(unreachable: number,): number {
+    /**
+     * Quorum on the bench as read so far.
+     */
+    const quorumNow = reachableQuorum({
+      benchSize: modelIds.length,
+      unreachable,
+    },);
+    return quorumNow.needed;
+  }
 
   /**
    * Heard voices accumulated across rounds;
@@ -301,6 +325,11 @@ export async function gatherStageVoices<ValueT,>(
     for (let round = 0; round <= maxRetryRounds; round += 1) {
       if (pending.length === 0)
         break;
+      /**
+       * Voices this round still needs to close, on the bench as the router
+       * has read it so far.
+       */
+      const quorumNeeded = quorumNeededWith(unreachableSeats.size,);
       if ((round > 0) && (collected.length >= quorumNeeded))
         break;
       /**
@@ -362,9 +391,15 @@ export async function gatherStageVoices<ValueT,>(
           .answered)
           answeredBadly.push(outcome.modelId,);
       }
+      // A SEAT THE ROUTER REFUSED IS NOT RE-ASKED. Nothing changes between
+      // rounds for a seat no wet provider serves, and re-queuing it spent
+      // `hulicaijia`'s retry rounds on Qwen3.8-27B, Kimi-K3 and glm-5.3
+      // (2026-09-09) while the seats that could answer waited.
       pending = [
         ...pending.slice(asking.length,),
-        ...stillLost,
+        ...stillLost.filter(function stillReachable(modelId,): boolean {
+          return !unreachableSeats.has(modelId,);
+        },),
       ];
       unreadable = answeredBadly;
     }
@@ -465,9 +500,39 @@ export async function gatherStageVoices<ValueT,>(
   } = rounds;
 
   /**
-   * Whether at least half the roster, rounded up, ended up heard.
+   * Quorum the gather closes on, sized on the seats the router could serve.
    */
-  const quorumMet = voices.length >= quorumNeeded;
+  const quorum = reachableQuorum({
+    benchSize: modelIds.length,
+    unreachable: unreachable.size,
+  },);
+
+  /**
+   * Whether at least half the roster, rounded up, ended up heard, or half
+   * the reachable bench where that is fewer.
+   */
+  const quorumMet = voices.length >= quorum.needed;
+
+  /**
+   * Finding a short bench carries whatever the verdict, so a page decided on
+   * one is told apart in its artifact.
+   */
+  const shortFindings: readonly string[] = quorum.short
+    ? [
+      shortBenchStageFinding({
+        stage,
+        quorum,
+        benchSize: modelIds.length,
+      },),
+    ]
+    : [];
+  if (quorum.short) {
+    l.warn(
+      `${stage}: bench short of quorum, reachable ${String(quorum.reachable,)} of ${
+        String(modelIds.length,)
+      }; closing on ${String(quorum.needed,)} voices`,
+    );
+  }
 
   /**
    * Shortfall wording shared by both degradation findings: heard against
@@ -517,6 +582,7 @@ export async function gatherStageVoices<ValueT,>(
       voices,
       quorumMet,
       findings: [
+        ...shortFindings,
         ...lostFindings,
         stageQuorumUnmetFinding({ shortfall, },),
       ],
@@ -533,6 +599,7 @@ export async function gatherStageVoices<ValueT,>(
       voices,
       quorumMet,
       findings: [
+        ...shortFindings,
         ...lostFindings,
         `stage-roster-incomplete (${shortfall})`,
       ],
@@ -543,7 +610,10 @@ export async function gatherStageVoices<ValueT,>(
   return {
     voices,
     quorumMet,
-    findings: lostFindings,
+    findings: [
+      ...shortFindings,
+      ...lostFindings,
+    ],
     asked,
     unreachable,
   };

@@ -38,6 +38,12 @@ export {
   STAGE_QUORUM_UNMET_PREFIX,
   stageQuorumUnmetFinding,
 } from './stage-silence.ts';
+export {
+  MIN_STAGE_VOICES,
+  type ReachableQuorum,
+  reachableQuorum,
+  shortBenchStageFinding,
+} from './stage-reachable-quorum.ts';
 export { cacheRefusalsOf, } from './repair-cache-gate.ts';
 export {
   adoptCalibrationGrace,

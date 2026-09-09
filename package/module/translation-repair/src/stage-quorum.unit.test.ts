@@ -140,24 +140,28 @@ function silentClient(
  * and whose other named seat fails in transport, so a gather can tell the two
  * losses apart.
  *
- * @param drySeat - seat no provider serves
+ * @param drySeats - seats no provider serves
  *
  * @param failingSeat - seat whose transport fails on a wet provider
+ *
+ * @param calls - call count per model, written when given
  *
  * @returns Client honouring that script
  *
  * @example
  * ```ts
- * const client = dryBenchClient({ drySeat: 'glm-5.3', failingSeat: 'hf:moonshotai/Kimi-K3', },);
+ * const client = dryBenchClient({ drySeats: ['glm-5.3',], failingSeat: 'hf:moonshotai/Kimi-K3', },);
  * ```
  */
 function dryBenchClient(
   {
-    drySeat,
+    drySeats,
     failingSeat,
+    calls,
   }: {
-    readonly drySeat: string;
+    readonly drySeats: readonly string[];
     readonly failingSeat: string;
+    readonly calls?: Record<string, number>;
   },
 ): SyntheticClient {
   return {
@@ -167,7 +171,9 @@ function dryBenchClient(
     chatJson: async <ValueT,>(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
-      if (request.modelId === drySeat) {
+      if (calls !== undefined)
+        calls[request.modelId] = (calls[request.modelId] ?? 0) + 1;
+      if (drySeats.includes(request.modelId,)) {
         throw new NoProviderForModelError({
           modelId: request.modelId,
           reason: 'every provider serving this model is out of budget',
@@ -195,6 +201,36 @@ function dryBenchClient(
     },
   };
 }
+
+/**
+ * The eleven-seat roster of 2026-09-09, in roster order.
+ */
+const ELEVEN_SEATS: readonly RosterModelId[] = [
+  'hf:zai-org/GLM-5.3-Flash',
+  'hf:Qwen/Qwen3.8-27B',
+  'hf:moonshotai/Kimi-K3',
+  'hf:openai/gpt-oss-120b',
+  'minimax-m3',
+  'gemma-4-26b-a4b-it',
+  'deepseek-v4-pro-0813',
+  'deepseek-v4-flash-0731',
+  'glm-5.3',
+  'google.gemma-4-e2b',
+  'inception/mercury-2.5',
+];
+
+/**
+ * The seven of those seats a Bedrock-alone day cannot serve.
+ */
+const DRY_SEVEN: readonly RosterModelId[] = [
+  'hf:zai-org/GLM-5.3-Flash',
+  'hf:Qwen/Qwen3.8-27B',
+  'hf:moonshotai/Kimi-K3',
+  'minimax-m3',
+  'deepseek-v4-pro-0813',
+  'deepseek-v4-flash-0731',
+  'glm-5.3',
+];
 
 /**
  * Client whose named model writes one unusable answer and then hangs forever.
@@ -476,7 +512,7 @@ await describe({
         /** Gather where one seat is refused by the router and one fails on a wet provider. */
         const gather = await gatherStageVoices({
           client: dryBenchClient({
-            drySeat: 'glm-5.3',
+            drySeats: ['glm-5.3',],
             failingSeat: 'hf:moonshotai/Kimi-K3',
           },),
           modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'glm-5.3',],
@@ -493,6 +529,68 @@ await describe({
         expect([...gather.unreachable,],).toEqual(['glm-5.3',],);
         expect(gather.findings,).toContain('stage-voice-lost (select glm-5.3)',);
         expect(gather.findings,).toContain('stage-voice-lost (select hf:moonshotai/Kimi-K3)',);
+      },
+    },),
+
+    it({
+      name: 'SIZES THE QUORUM ON THE REACHABLE BENCH with a two-voice floor and never re-asks a seat the '
+        + 'router refused: with seven of eleven seats served by no wet provider the four that are get heard, '
+        + 'the gather closes short-bench, and each refused seat was asked exactly once (hulicaijia, '
+        + '2026-09-09: the archive block review heard 5 of 11 with three seats refused, spent four retry '
+        + 'rounds re-asking them and interrupted the entry provider-unavailable)',
+      fn: async () => {
+        /** Call count per model. */
+        const calls: Record<string, number> = {};
+        /** Gather on a Bedrock-alone bench: seven seats refused, four answering. */
+        const gather = await gatherStageVoices({
+          client: dryBenchClient({
+            drySeats: [...DRY_SEVEN,],
+            failingSeat: 'nobody',
+            calls,
+          },),
+          modelIds: [...ELEVEN_SEATS,],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'archive-block-review',
+          l,
+        },);
+        expect(gather.quorumMet,).toBe(true,);
+        expect(gather.voices,).toHaveLength(4,);
+        expect([...gather.unreachable,].toSorted(),).toEqual([...DRY_SEVEN,].toSorted(),);
+        expect(gather.findings,).toContain(
+          'stage-short-bench (archive-block-review reachable 4 of 11, quorum 2)',
+        );
+        for (const seat of DRY_SEVEN)
+          expect(calls[seat],).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'STILL READS A BENCH WITH NO REACHABLE SEAT AS AN OUTAGE, since the floor is two voices and none '
+        + 'can answer',
+      fn: async () => {
+        /** Gather where every seat is refused. */
+        const gather = await gatherStageVoices({
+          client: dryBenchClient({
+            drySeats: ['glm-5.3', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+            failingSeat: 'nobody',
+          },),
+          modelIds: ['glm-5.3', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'archive-block-review',
+          l,
+          fanOut: 'whole-bench',
+        },);
+        expect(gather.quorumMet,).toBe(false,);
+        expect(gather.voices,).toHaveLength(0,);
+        expect(gather.findings,).toContain('stage-quorum-unmet (archive-block-review 0/3)',);
       },
     },),
 
