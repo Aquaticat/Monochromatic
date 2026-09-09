@@ -6,7 +6,7 @@ await describe({ name: '', children: [
   it({ name: 'returns provider settlement before the local boundary', fn: async (): Promise<void> => {
     /** Settled provider fixture. */
     const pending = Promise.resolve('review',);
-    expect(await waitForAdvisorEvent({ pending: [pending,], untilMs: Date.now() + 1000, },),).toBe('review',);
+    expect(await waitForAdvisorEvent({ pending: [pending,], untilMs: Date.now() + 1_000, },),).toBe('review',);
   }, },),
   it({ name: 'returns the local boundary even when the provider never settles', fn: async (): Promise<void> => {
     /** Provider deliberately ignores cancellation. */
@@ -18,10 +18,10 @@ await describe({ name: '', children: [
     /** Caller-owned cancellation for this fixture. */
     const controller = new AbortController();
     /** Wait has no provider outcome and must be released by cancellation. */
-    const pending = waitForAdvisorEvent({ pending: [], untilMs: Date.now() + 1000, signal: controller.signal, },);
+    const pending = waitForAdvisorEvent({ pending: [], untilMs: Date.now() + 1_000, signal: controller.signal, },);
     controller.abort();
     expect(await pending,).toBe(ADVISOR_CLOCK_BOUNDARY,);
-    expect(await waitForAdvisorEvent({ pending: [], untilMs: Date.now() + 1000, signal: controller.signal, },),).toBe(ADVISOR_CLOCK_BOUNDARY,);
+    expect(await waitForAdvisorEvent({ pending: [], untilMs: Date.now() + 1_000, signal: controller.signal, },),).toBe(ADVISOR_CLOCK_BOUNDARY,);
   }, },),
   it({ name: 'requests provider cancellation when owned scope ends', fn: async (): Promise<void> => {
     /** Cancellation lifetime under test. */

@@ -233,17 +233,35 @@ export function createAdvisorOperationLedger(timing: {
  Operation-local ledger capability.
  */
 export type AdvisorOperationLedger = {
-  /** Replace an attempt's current snapshot. */
+  /**
+   Replace an attempt's current snapshot.
+   */
   readonly record: (value: AdvisorAttemptRecord) => void;
-  /** Resolve an existing attempt identity. */
+  /**
+   Resolve an existing attempt identity.
+   */
   readonly attempt: (id: number) => AdvisorAttemptRecord;
-  /** Retain one usable review and initialize collection timing. */
-  readonly collect: (options: { readonly review: AdvisorCollectedReview; readonly collectionEndsAtMs: number; }) => void;
-  /** Exclude one provider within this operation. */
+  /**
+   Retain one usable review and initialize collection timing.
+   */
+  readonly collect: (options: {
+    readonly review: AdvisorCollectedReview;
+    readonly collectionEndsAtMs: number
+  }) => void;
+  /**
+   Exclude one provider within this operation.
+   */
   readonly blockProvider: (provider: string) => void;
-  /** Seal the operation and locally cancel pending attempts. */
-  readonly finish: (options: { readonly end: AdvisorOperationEnd; readonly now: number; }) => void;
-  /** Publish current detached containers. */
+  /**
+   Seal the operation and locally cancel pending attempts.
+   */
+  readonly finish: (options: {
+    readonly end: AdvisorOperationEnd;
+    readonly now: number
+  }) => void;
+  /**
+   Publish current detached containers.
+   */
   readonly snapshot: () => AdvisorOperationSnapshot;
 };
 
