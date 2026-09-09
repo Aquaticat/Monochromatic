@@ -736,7 +736,18 @@
     });
 
     document.querySelector('#copy-answer').addEventListener('click', async () => {
-      await navigator.clipboard.writeText(preparedAnswer);
+      const transfer = document.createElement('textarea');
+      transfer.value = preparedAnswer;
+      transfer.setAttribute('readonly', '');
+      transfer.style.position = 'fixed';
+      transfer.style.insetInlineStart = '-100rem';
+      document.body.append(transfer);
+      transfer.select();
+      const copied = document.execCommand('copy');
+      transfer.remove();
+      if (!copied) {
+        await navigator.clipboard.writeText(preparedAnswer);
+      }
       document.querySelector('#copy-answer').textContent = 'Copied';
     });
   </script>
