@@ -20,6 +20,7 @@ import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
 import { passArchiveText, } from './pass-archive.ts';
 import { frontMatterAuthorityOf, } from './archive-front-matter.ts';
 import { relabelArchiveFootnotes, } from './pass-footnote-relabel.ts';
+import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 
 //region Pass preparation
 // Corpus-specific shell owns pairing cache namespaces and reviews inherited
@@ -69,6 +70,8 @@ function wallClock(): Date {
  *
  * @param l - entry logger
  *
+ * @param readPictures - shared entry reader supplying picture support before archive review
+ *
  * @returns Prepared slices and pairing findings
  *
  * @example
@@ -88,6 +91,7 @@ export async function preparePassEntry(
     signal,
     exchangeTimeoutMs,
     l,
+    readPictures,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entryId: string;
@@ -99,6 +103,7 @@ export async function preparePassEntry(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly readPictures?: PassVisualEvidenceReader;
   }>,
 ): Promise<PairedPreparation> {
   l.debug(`${preparePassEntry.name}: preparing entry ${entryId}`,);
@@ -247,6 +252,8 @@ export async function preparePassEntry(
       findings: labelledFindings,
     };
   }
+  /** Picture evidence precedes any verdict that could remove its archive translation. */
+  const pictureReadings = await readPictures?.({ slices: labelled.prepared.slices, },);
   /**
    * Selected corrections and retained licenses from the single review round.
    */
@@ -254,7 +261,10 @@ export async function preparePassEntry(
     client,
     modelIds,
     targetText: relabel.archiveText,
-    sourceContexts: archiveBlockSourceContexts({ prepared: labelled.prepared, }),
+    sourceContexts: archiveBlockSourceContexts({
+      prepared: labelled.prepared,
+      ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
+    },),
     blocks: pending,
     signal,
     exchangeTimeoutMs,

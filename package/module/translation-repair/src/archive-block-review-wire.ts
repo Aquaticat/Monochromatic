@@ -53,7 +53,7 @@ const DISPOSITIONS: readonly string[] = [
 /**
  * Builds distinct initial or continuation review messages.
  *
- * @param sourceText - expected aligned source section searched for support
+ * @param sourceText - aligned source section and corroborated readings of its pictures
  *
  * @param targetText - whole archive providing editorial context
  *
@@ -99,10 +99,10 @@ export function buildArchiveBlockReviewMessages(
   return [
     {
     role: 'system',
-    content: `Review English archive wording that block pairing did not connect to any Chinese source block. The source fence contains only the aligned section where support is allowed.
+    content: `Review English archive wording that block pairing did not connect to any Chinese source block. The source fence contains the aligned section and any CORROBORATED PICTURE SOURCE SUPPORT transcribed from pictures that section references. Both are source support. An archive block translating that picture text is not an unsupported insertion merely because the source prose does not repeat it.
 
 Classify it as exactly one:
-- "source-supported": it states source content. Copy one exact, character-for-character Chinese source span into sourceQuote.
+- "source-supported": it states source content. Copy one exact, character-for-character span from the section or a corroborated picture transcription into sourceQuote, not a heading or reader label.
 - "editorial-context": it is only verifiable translation-side apparatus such as contributor credit, source citation, navigation, or formatting. Biographical, historical, identity, event, quotation, or other factual prose is never editorial-context.
 - "revise": it contains unsupported, contradictory, misplaced, or defective prose. Supply the complete replacement block, or an empty string when removal is safest.
 
@@ -110,7 +110,7 @@ Do not retain a factual claim merely because it sounds plausible. Preserve Markd
 
 ${HOUSE_POLICY_BLOCK}
 
-Reply with JSON only: {"disposition":"source-supported"|"editorial-context"|"revise","sourceQuote":"exact Chinese support or empty","replacementText":"complete replacement or empty","finding":"one concise sentence"}`,
+Reply with JSON only: {"disposition":"source-supported"|"editorial-context"|"revise","sourceQuote":"exact source support or empty","replacementText":"complete replacement or empty","finding":"one concise sentence"}`,
   },
     {
     role: 'user',
