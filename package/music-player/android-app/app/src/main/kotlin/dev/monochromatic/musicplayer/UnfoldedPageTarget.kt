@@ -174,3 +174,15 @@ internal fun unfoldedPageForLetter(state: PlayerUiState, letter: String): Int? {
         pageIndex !in state.folderPageIndices && state.pageLabels[pageIndex].uppercase() == normalizedLetter
     }
 }
+
+/** Returns one queue-relative path as an accepted title without folder prefix or final extension. */
+internal fun unfoldedTrackTitle(displayPath: String): String {
+    /** Holds final slash-delimited path segment shown as the track title. */
+    val fileName: String = displayPath.substringAfterLast('/')
+    /** Holds final extension separator position, or -1 when no separator exists. */
+    val extensionStart: Int = fileName.lastIndexOf('.')
+    if (extensionStart <= 0) {
+        return fileName
+    }
+    return fileName.substring(startIndex = 0, endIndex = extensionStart)
+}

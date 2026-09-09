@@ -148,4 +148,18 @@ class UnfoldedLibraryModelTest {
         // The null assertion pins the no-match result rather than an index sentinel such as -1.
         assertNull(unfoldedPageForLetter(ambiguousState(), "Z"))
     }
+
+    /** Confirms accepted track titles drop folder prefixes and only the final extension. */
+    @Test
+    fun trackTitleUsesFinalPathStem() {
+        assertEquals("Another Xronixle", unfoldedTrackTitle("Camellia/Another Xronixle.opus"))
+        assertEquals("mix.final", unfoldedTrackTitle("folder/mix.final.flac"))
+    }
+
+    /** Confirms extension-free names and dotfiles remain complete. */
+    @Test
+    fun trackTitlePreservesNamesWithoutFinalExtension() {
+        assertEquals("README", unfoldedTrackTitle("folder/README"))
+        assertEquals(".hidden", unfoldedTrackTitle("folder/.hidden"))
+    }
 }
