@@ -239,6 +239,61 @@ What fails:
 
 ## Verified workarounds
 
+**Ship the binding beside the bundle,
+ which keeps the artifact self-contained.**
+Each platform arm of the loader tries a sibling file before it tries the binding package.
+`index.js:287`,
+ ahead of the `@bruits/*` require at `index.js:292`:
+
+```js
+return require('./satteri_napi.linux-x64-gnu.node')
+```
+
+So a bundle that inlines the loader works as long as the matching `.node` sits next to
+the emitted file.
+Verified in the same probe directory that produced the failure:
+dropping `satteri_napi.linux-x64-gnu.node` beside `copied-loader.mjs` turns the throw
+into working exports.
+
+```bash
+cp node_modules/.pnpm/@bruits+satteri-linux-x64-gnu@0.10.5/node_modules/@bruits/satteri-linux-x64-gnu/satteri_napi.linux-x64-gnu.node "${probe}/"
+node --input-type=module -e "const m = await import('${probe}/copied-loader.mjs'); console.log(typeof m.parseExpression, typeof m.walkMdastHandle);"
+```
+
+```text
+function function
+```
+
+This is the only workaround that needs nothing from the consumer:
+no manifest declaration,
+no external import,
+and no knowledge of which parser the linter uses.
+
+Tradeoff is artifact size,
+and it is set by how many architectures the artifact must run on.
+Measured at `0.10.5`,
+ the bindings run 3.4M to 4.2M each,
+and the six that `supportedArchitectures` installs
+(`x64`,
+ `arm64`,
+ `current` across `glibc`,
+ `musl`,
+ `current` on `darwin`,
+ `linux`,
+`current`) total 23M.
+Shipping only the build host's binding costs 4.2M and makes the artifact host specific,
+which is fine for a private consumer and wrong for a published one.
+
+Do not reach for base64 inlining to avoid the sibling file.
+The bytes can ride inside the JavaScript,
+but `process.dlopen` accepts only a filesystem path,
+so an inlined binding still has to be written to a real file before it loads.
+That adds an import-time write,
+ a cache directory to manage,
+ and a failure mode on
+`noexec` mounts,
+ to arrive where the sibling file already is.
+
 **Declare the transitive in the consuming manifest.**
 Adding `"satteri": "catalog:"` to the consumer moves it into `externalNames`,
 so the bundle emits a runtime `import` instead of a copy,
