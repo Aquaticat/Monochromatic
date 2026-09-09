@@ -428,6 +428,48 @@ await describe({
     },),
 
     it({
+      name: 'REUSES entry readings after preparation and reads only newly referenced pictures',
+      fn: async () => {
+        /** Reader calls expose every additional picture purchase. */
+        const { client, asked, } = agreeingClient();
+        /** Open cache deliberately does not update its resumed snapshot on persist. */
+        const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
+        /** Assets available to both preparations. */
+        const assets = new Map([
+          ['chat.webp', bytesOf({ seed: 1, },),],
+          ['letter.webp', bytesOf({ seed: 2, },),],
+        ],);
+        /** First preparation references only the chat. */
+        const firstSlices = [sliceOf({ text: showing({ assetName: 'chat.webp', },), sliceIndex: 0, },),];
+        /** Shared reader inputs independent of slice boundaries. */
+        const input = {
+          client, readOcr: sawText, assets, readerModelIds: READERS, cache,
+          signal: new AbortController().signal, perCallTimeoutMs: 5_000, l,
+        };
+        /** Completed evidence from the archive-review preparation. */
+        const priorReadings = await readDocumentPictures({ ...input, slices: firstSlices, },);
+        /** Calls and writes bought by the first reading, not a roster-size constant. */
+        const before = { calls: asked.length, writes: persisted.length, };
+        /** Same assets split differently after archive correction. */
+        const reused = await readDocumentPictures({ ...input, slices: firstSlices, priorReadings, },);
+        expect(asked.length,).toBe(before.calls,);
+        expect(persisted.length,).toBe(before.writes,);
+        expect(reused.get('chat.webp',),).toBe(priorReadings.get('chat.webp',),);
+        /** A newly exposed source reference shares a slice with one already read. */
+        const expanded = await readDocumentPictures({
+          ...input,
+          slices: [sliceOf({
+            text: `${showing({ assetName: 'chat.webp', },)}\n${showing({ assetName: 'letter.webp', },)}`,
+            sliceIndex: 0,
+          },),],
+          priorReadings,
+        },);
+        expect(asked.slice(before.calls,),).toEqual(asked.slice(0, before.calls,),);
+        expect(expanded.get('chat.webp',),).toBe(priorReadings.get('chat.webp',),);
+        expect(expanded.get('letter.webp',)?.kind,).toBe('corroborated',);
+      },
+    },),
+    it({
       name: 'RESUMES A STORED READING AND SPENDS NO CALL, which is what keeps a resumed slice key '
         + 'equal to the key it resumes. A reading is not deterministic, so re-reading would change '
         + 'the words in the key and re-buy every settled slice on this document',
