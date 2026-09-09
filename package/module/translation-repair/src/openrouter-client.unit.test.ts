@@ -20,6 +20,7 @@ import {
   createOpenRouterClient,
   InStreamProviderError,
   OPENROUTER_CHAT_URL,
+  OPENROUTER_COMPLETION_CAP,
   OPENROUTER_CREDITS_URL,
   OpenRouterModelNotServedError,
   SyntheticHttpError,
@@ -211,7 +212,38 @@ await describe({
         // The schema is restated in the system prompt as on the Synthetic
         // path, so a model that ignores `response_format` still reads it.
         expect(JSON.stringify(body,),).toContain('nap_spot',);
-        expect(JSON.stringify(body,),).not.toContain('max_tokens',);
+        // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
+        // per-token provider bills an abandoned stream to its end on endpoints
+        // that do not honour a cancel, and this is the bound that holds there.
+        expect(body,).toMatchObject({ max_tokens: OPENROUTER_COMPLETION_CAP['deepseek/deepseek-v4-flash-0731'], },);
+      },
+    },),
+
+    it({
+      name: 'LOWERS a caller\'s max_tokens to the measured ceiling and keeps a smaller one, so no call '
+        + 'asks the per-token provider for more output than a finished call has needed',
+      fn: async () => {
+        const { client, exchanges, } = recordedClient({},);
+        await client.chatText({
+          modelId: 'deepseek-v4-flash-0731',
+          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+          signal: SIGNAL,
+          maxTokens: 1_000_000,
+        },);
+        await client.chatText({
+          modelId: 'deepseek-v4-flash-0731',
+          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+          signal: SIGNAL,
+          maxTokens: 50,
+        },);
+        /**
+         * Both bodies as the gateway would parse them.
+         */
+        const bodies = exchanges.map(function parse(exchange,): unknown {
+          return JSON.parse(exchange.bodyJson ?? '{}',);
+        },);
+        expect(bodies[0],).toMatchObject({ max_tokens: OPENROUTER_COMPLETION_CAP['deepseek/deepseek-v4-flash-0731'], },);
+        expect(bodies[1],).toMatchObject({ max_tokens: 50, },);
       },
     },),
 

@@ -193,6 +193,7 @@ export {
   OPENROUTER_AUTH_HEADER,
   OPENROUTER_CHAT_URL,
   OPENROUTER_CREDITS_URL,
+  OPENROUTER_DROPPED_SEATS,
   OPENROUTER_MODELS,
   OPENROUTER_PROVIDER_PREFERENCES,
   type OpenRouterModelInfo,
@@ -201,6 +202,10 @@ export {
   openRouterProviderPreferencesFor,
   openRouterServesLabel,
 } from './openrouter-catalog.ts';
+export {
+  completionCapFor,
+  OPENROUTER_COMPLETION_CAP,
+} from './openrouter-completion-cap.ts';
 export {
   createOpenRouterClient,
   OPENROUTER_PER_MODEL_CONCURRENCY,

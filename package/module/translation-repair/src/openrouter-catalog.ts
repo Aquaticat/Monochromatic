@@ -110,8 +110,6 @@ export type OpenRouterServedId =
   | 'minimax/minimax-m3'
   | 'deepseek/deepseek-v4-flash-0731'
   | 'deepseek/deepseek-v4-pro-0813'
-  | 'qwen/qwen3.8-27b'
-  | 'z-ai/glm-5.3'
   | 'z-ai/glm-5.3-flash'
   | 'google/gemma-4-26b-a4b-it'
   | 'openai/gpt-oss-120b';
@@ -168,7 +166,7 @@ export type OpenRouterModelInfo = {
  *
  * @example
  * ```ts
- * const info = OPENROUTER_MODELS['qwen/qwen3.8-27b'];
+ * const info = OPENROUTER_MODELS['deepseek/deepseek-v4-flash-0731'];
  * ```
  */
 export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterModelInfo>> = {
@@ -249,29 +247,25 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     maxOutputLength: 384_000,
     ignoredEndpoints: [],
   },
-  // REKA AND IO NET CUT NEAR HALF OF THIS MODEL'S STREAMS on 2026-09-04: Reka
-  // 19 of 40, Io Net 62 of 153, against Phala 9 of 137 and Ionstream 30 of
-  // 173. The MTF_0615 pass that day lost 71 Qwen voices to those two alone.
-  'qwen/qwen3.8-27b': {
-    id: 'qwen/qwen3.8-27b',
-    sharedWith: 'hf:Qwen/Qwen3.8-27B',
-    readsImages: true,
-    maxOutputLength: 131_072,
-    ignoredEndpoints: [
-      'reka',
-      'io-net',
-    ],
-  },
-  // REKA CUT HALF OF THIS MODEL'S STREAMS TOO on 2026-09-04, 13 of 26, against
-  // Together 0 of 245. Modal's 21 of 144 and Inceptron's 3 of 3 sit under the
-  // rule's share or its count and stay.
-  'z-ai/glm-5.3': {
-    id: 'z-ai/glm-5.3',
-    sharedWith: 'glm-5.3',
-    readsImages: false,
-    maxOutputLength: 262_144,
-    ignoredEndpoints: ['reka',],
-  },
+  // TWO SEATS LEFT THIS CATALOG ON 2026-09-09, on the owner's standing
+  // authorization to drop a model from a role on evidence. Between the
+  // top-up of 2026-09-08 11:27 UTC and the payment refusal of 2026-09-09
+  // 12:22 UTC, `qwen/qwen3.8-27b` (`hf:Qwen/Qwen3.8-27B`) was abandoned
+  // 120 s after quorum on 1,088 of 4,484 calls (24.3 percent), 3.0 GB of raw
+  // stream at 377 raw characters per completion token, about 8.1 million
+  // tokens at 3 USD per million that no `SPEND` line ever recorded because
+  // the stream never completed; CoreWeave, Parasail and Phala served it, none
+  // of them on the gateway's list of providers that stop billing on a
+  // cancelled stream. `z-ai/glm-5.3` (`glm-5.3`) was abandoned on 291 of
+  // 2,208 calls (13.2 percent), 4.1 million tokens at 4.4 USD per million,
+  // largely on Modal, which the gateway lists as billing the whole response.
+  // Together the two took about 105 of the 200 USD; the anchor judge
+  // `deepseek/deepseek-v4-pro-0813` was abandoned on 3.5 percent. Qwen3.8-27B
+  // stays on the roster under its Synthetic seat, where the subscription
+  // bills nothing per token; `glm-5.3` had no other provider left and holds
+  // no seat until one serves it. Measurement in the planning log of
+  // 2026-09-09, "The owner asks where 200 USD went". The endpoint ignores
+  // both rows carried (Reka and Io Net; Reka) are recorded there too.
   'z-ai/glm-5.3-flash': {
     id: 'z-ai/glm-5.3-flash',
     sharedWith: 'hf:zai-org/GLM-5.3-Flash',
@@ -353,5 +347,20 @@ export function openRouterServesLabel(label: string,): label is OpenRouterServed
     label,
   );
 }
+
+/**
+ * Roster seats this provider stopped serving on 2026-09-09, named so the
+ * seat accounting and the tests can say which seats a dry Synthetic leaves
+ * unreachable rather than rediscovering it from an absent row.
+ *
+ * @example
+ * ```ts
+ * const dropped = OPENROUTER_DROPPED_SEATS.has('glm-5.3',);
+ * ```
+ */
+export const OPENROUTER_DROPPED_SEATS: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'hf:Qwen/Qwen3.8-27B',
+  'glm-5.3',
+],);
 
 //endregion OpenRouter catalog

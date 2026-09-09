@@ -13,6 +13,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  OPENROUTER_DROPPED_SEATS,
   OPENROUTER_MODELS,
   OPENROUTER_PROVIDER_PREFERENCES,
   openRouterIdFor,
@@ -27,8 +28,9 @@ await describe({
   name: 'OPENROUTER_MODELS',
   children: [
     it({
-      name: 'SERVES EVERY ROSTER SEAT AND NOTHING ELSE: nine rows, each standing in for a distinct '
-        + 'roster id, so the third provider widens reach without widening the roster',
+      name: 'SERVES EVERY ROSTER SEAT BUT THE BEDROCK-ONLY SIZES AND THE TWO DROPPED ON 2026-09-09: '
+        + 'seven rows, each standing in for a distinct roster id, so the third provider widens reach '
+        + 'without widening the roster',
       fn: async () => {
         /**
          * Roster seats the rows stand in for.
@@ -40,9 +42,11 @@ await describe({
           },);
         /**
          * Roster ids this provider can stand in for: everything but the two
-         * sizes only Bedrock serves.
+         * sizes only Bedrock serves and the two seats dropped on evidence.
          */
-        const reachable = ROSTER_MODEL_IDS.filter(function notBedrockOnly(modelId,): boolean {
+        const reachable = ROSTER_MODEL_IDS.filter(function stillServed(modelId,): boolean {
+          if (OPENROUTER_DROPPED_SEATS.has(modelId,))
+            return false;
           return !BEDROCK_ONLY_ROSTER_IDS.some(function isBedrockOnly(id,): boolean {
             return id === modelId;
           },);
@@ -53,8 +57,9 @@ await describe({
     },),
 
     it({
-      name: 'REACHES every roster model, so a day with Synthetic and Hyper both dry still seats the '
-        + 'whole roster',
+      name: 'REACHES every roster model but the two dropped on 2026-09-09: Qwen3.8-27B keeps its '
+        + 'Synthetic seat and GLM-5.3 keeps only its dry Hyper one, so a day with Synthetic and Hyper '
+        + 'both dry seats the roster less those two',
       fn: async () => {
         // The two Gemma 4 sizes only Bedrock serves are reached there alone.
         for (const modelId of ROSTER_MODEL_IDS) {
@@ -62,8 +67,16 @@ await describe({
             return id === modelId;
           },))
             continue;
-          expect(reachOf({ modelId, },).openrouter,).toBe(true,);
+          expect(reachOf({ modelId, },).openrouter,).toBe(!OPENROUTER_DROPPED_SEATS.has(modelId,),);
         }
+        expect(reachOf({ modelId: 'hf:Qwen/Qwen3.8-27B', },),).toMatchObject({
+          synthetic: true,
+          openrouter: false,
+        },);
+        expect(reachOf({ modelId: 'glm-5.3', },),).toMatchObject({
+          hyper: true,
+          openrouter: false,
+        },);
       },
     },),
 
@@ -80,9 +93,9 @@ await describe({
 
     it({
       name: 'IGNORES the measured endpoints and no others: Parasail and ModelRun for MiniMax M3, '
-        + 'OpenInference, Parasail and Reka for DeepSeek V4 Flash, Reka and Io Net for Qwen3.8-27B, Reka '
-        + 'for GLM-5.3 (2026-09-03 and 2026-09-04 measurements beside each row), while every other row '
-        + 'ignores no endpoint',
+        + 'OpenInference, Parasail and Reka for DeepSeek V4 Flash (2026-09-03 and 2026-09-04 measurements '
+        + 'beside each row), while every other row ignores no endpoint; Qwen3.8-27B and GLM-5.3 left the '
+        + 'catalog on 2026-09-09',
       fn: async () => {
         expect(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,).toEqual([
           'parasail',
@@ -93,19 +106,12 @@ await describe({
           'parasail',
           'reka',
         ],);
-        expect(OPENROUTER_MODELS['qwen/qwen3.8-27b'].ignoredEndpoints,).toEqual([
-          'reka',
-          'io-net',
-        ],);
-        expect(OPENROUTER_MODELS['z-ai/glm-5.3'].ignoredEndpoints,).toEqual(['reka',],);
         /**
          * Rows with a measured endpoint on them.
          */
         const measured: ReadonlySet<string> = new Set([
           'minimax/minimax-m3',
           'deepseek/deepseek-v4-flash-0731',
-          'qwen/qwen3.8-27b',
-          'z-ai/glm-5.3',
         ],);
         /**
          * Rows other than the two with a measured endpoint.
