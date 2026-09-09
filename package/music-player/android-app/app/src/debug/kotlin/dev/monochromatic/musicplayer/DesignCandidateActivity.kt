@@ -1241,17 +1241,15 @@ private fun FourRowModeControl(
             } else {
                 RectangleShape
             }
-            Row(modifier = Modifier.fillMaxWidth()) {
-                VariableWidthModeSegment(
-                    index = index,
-                    labels = labels,
-                    accessibleLabels = accessibleLabels,
-                    shape = shape,
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = contentPadding,
-                    onOverflow = {},
-                )
-            }
+            VariableWidthModeSegment(
+                index = index,
+                labels = labels,
+                accessibleLabels = accessibleLabels,
+                shape = shape,
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = contentPadding,
+                onOverflow = {},
+            )
         }
     }
 }
