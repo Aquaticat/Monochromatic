@@ -196,15 +196,31 @@ not fallback retention.
 Some historical rationales misstate the old spelling;
 only the actual diff and selected text support the conclusion.
 
-`proc_5c7c` now runs `translation-repair-temporal-revision-path-probe-20260910`
-on frozen `.frozen-dist-b9d3b2ea0`:
-actual full slice repair with the same fragment evidence on existing document sheets.
-The cap is one slice,
-120 requests and a twenty-minute global bound.
-This is still an evidence-injection prototype,
-not a production history feature.
-If successful,
-generic scoped acquisition and cache identity remain to be implemented and verified.
+`proc_5c7c` completed in 372 seconds on frozen `.frozen-dist-b9d3b2ea0`.
+All three editors retain the name,
+correct the administrator role and correct the disclosure direction.
+The selected GLM-flash chunk wins six votes without fallback.
+Provider-free replay matches all 58 calls with zero misses;
+strict slice validation and paragraph/list structure pass.
+This remains an evidence-injection prototype,
+not an implemented production feature.
+
+Task 21 waits on tasks 26 to 28.
+Task 26 is in progress:
+[scoped archive evidence design](../planning/translation-repair-archive-evidence-design-2026-09-10.md).
+A generic Git prototype finds the naming revision without selecting its commit,
+but also returns punctuation and partial-word edits.
+Generic history descriptions have failed either name preservation or a genuine mentioned-form control.
+
+A typed current-archive-use alternative is now being tested to avoid that dependency.
+`proc_a1a0` produces matching baseline/augmented block pairings
+and correctly corroborated occurrence kinds across the real name and control spans.
+The initial invalid `fanOut: 'all'` argument followed the window branch;
+a corrected provider-free replay with `fanOut: 'window'`
+verifies the same fourteen calls and classifications.
+It was not an exhaustive eleven-voice run.
+Next comes typed-use versus neutral-history admission and selector comparison.
+No production acquisition or classification feature is implemented.
 No production history feature or one-off name mapping is added.
 The provider-free trace also confirms the pure administrator issue's broad quote includes the group name;
 adjudication alone is not proof that an editor will preserve it.

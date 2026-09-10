@@ -761,10 +761,10 @@ six OpenRouter calls reported zero,
 with eleven Hyper and nine Synthetic calls unpriced.
 The daily helper ran afterward.
 
-## Active full repair with revision evidence
+## Completed full repair with revision evidence
 
-`proc_5c7c` runs `translation-repair-temporal-revision-path-probe-20260910`
-on frozen `.frozen-dist-b9d3b2ea0`.
+`proc_5c7c` completed `translation-repair-temporal-revision-path-probe-20260910`
+in 372 seconds on frozen `.frozen-dist-b9d3b2ea0`.
 
 - Script:
   `~/temp/agent/probe-temporal-revision-path-20260910.mjs`.
@@ -796,3 +796,31 @@ A successful result still requires generic,
 scoped provenance acquisition and cache identity before a fresh full Mio pass.
 That design must not label arbitrary historical edits as naming choices
 or turn them into a cross-entry glossary.
+
+All three editors retain `Harunome Hanbai`
+and propose correct administrator wording and disclosure direction.
+The GLM-flash chunk wins six votes without fallback.
+The selected list keeps both friendship items and says
+`She once served as an administrator of the QQ group *Harunome Hanbai*.`
+Regional ties leave a weaker composite,
+but the whole-chunk vote selects the complete editor draft.
+
+`~/temp/agent/temporal-revision-path-replay-20260910.json`
+replays all 58 calls with zero misses and identical selected text.
+`~/temp/agent/temporal-revision-boundary-20260910.out`
+records valid strict grammar and paragraph/list structure.
+Several reasons incorrectly call source-supported date and friend-name expansions unauthorized;
+they are not factual support for the result.
+The selected summary itself avoids the incorrect childhood-time attachment.
+
+Bedrock logged 0.00256947 USD;
+three OpenRouter calls reported zero,
+with eleven Hyper and twenty-five Synthetic calls unpriced.
+The daily helper ran afterward.
+
+Task 21 now waits on design and implementation tasks 26 to 28.
+[The archive evidence design](translation-repair-archive-evidence-design-2026-09-10.md)
+compares generic revision acquisition with corroborated current-archive occurrence use.
+The latter may avoid a Git dependency,
+but must be verified at the same admission,
+authoring and selection seams before selection as the production design.
