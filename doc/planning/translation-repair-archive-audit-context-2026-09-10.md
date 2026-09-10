@@ -141,13 +141,18 @@ The report is
 
 Actual results:
 
-- Baseline: none of fourteen usable replies accept the label.
-- Positional context only: two of twelve usable replies accept it;
+- Baseline:
+  none of fourteen usable replies accept the label.
+- Positional context only:
+  two of twelve usable replies accept it;
   two replies fail schema validation.
-- Context plus scope: eight of fourteen accept it.
+- Context plus scope:
+  eight of fourteen accept it.
   The remaining replies still report false missing content or the out-of-scope Chinese heading.
-- Dangling prose: all fourteen reject it and identify real grammar or sentence-completeness defects.
-- Orphan label: thirteen reject it and one accepts it,
+- Dangling prose:
+  all fourteen reject it and identify real grammar or sentence-completeness defects.
+- Orphan label:
+  thirteen reject it and one accepts it,
   but several rejection reasons still mistakenly demand the whole source passage.
   Numerical rejection alone is not a correct diagnosis.
 
