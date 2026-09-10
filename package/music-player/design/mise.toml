@@ -106,6 +106,8 @@ const required = [
   "Reset 100%",
   "Source 2076 × 2152 physical px · design 852 × 883dp",
   "These captures establish palette-dependent appearance.",
+  "Response path:",
+  "reply in chat with both codes",
 ]
 for (const fragment of required) {
   if (!html.includes(fragment)) {
@@ -115,6 +117,9 @@ for (const fragment of required) {
 const radioCount = (html.match(/type="radio"/g) ?? []).length
 if (radioCount !== 5) {
   throw new Error(`Dark dynamic-color matrix has ${radioCount} radio choices; expected 5.`)
+}
+if (html.includes('id="copy-answer"') || html.includes("navigator.clipboard") || html.includes("execCommand('copy')")) {
+  throw new Error("Dark dynamic-color matrix includes an unnecessary clipboard control or API.")
 }
 const environments = [
   { key: "wallpaper", seed: "45588C", style: "TONAL_SPOT", contrast: "0.0" },

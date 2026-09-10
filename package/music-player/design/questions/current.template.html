@@ -685,9 +685,7 @@
         </div>
       </form>
       <div id="output" hidden aria-live="polite"></div>
-      <div class="actions" id="copy-actions" hidden>
-        <button class="action-button" id="copy-answer" type="button">Copy answer</button>
-      </div>
+      <p class="fixed-note"><strong>Response path:</strong> reply in chat with both codes, for example <code>R1, C1</code>, plus any correction.</p>
     </section>
   </main>
 
@@ -828,16 +826,11 @@
     const form = document.querySelector('#review-form');
     const corrections = document.querySelector('#other-corrections');
     const output = document.querySelector('#output');
-    const copyActions = document.querySelector('#copy-actions');
-    let preparedAnswer = '';
 
     corrections.addEventListener('input', () => corrections.setCustomValidity(''));
     form.addEventListener('reset', () => {
       corrections.setCustomValidity('');
       output.hidden = true;
-      copyActions.hidden = true;
-      preparedAnswer = '';
-      document.querySelector('#copy-answer').textContent = 'Copy answer';
     });
 
     form.addEventListener('submit', (event) => {
@@ -850,31 +843,14 @@
       }
       corrections.setCustomValidity('');
       const data = new FormData(form);
-      preparedAnswer = [
+      const preparedAnswer = [
         `Structural surface reach: ${data.get('surfaceReach')}`,
         `Current-row neutral source: ${data.get('currentRowSource')}`,
         `Corrections: ${corrections.value.trim()}`,
       ].join('\n');
       output.textContent = preparedAnswer;
       output.hidden = false;
-      copyActions.hidden = false;
       output.scrollIntoView({ behavior: 'auto', block: 'nearest' });
-    });
-
-    document.querySelector('#copy-answer').addEventListener('click', async () => {
-      const transfer = document.createElement('textarea');
-      transfer.value = preparedAnswer;
-      transfer.setAttribute('readonly', '');
-      transfer.style.position = 'fixed';
-      transfer.style.insetInlineStart = '-100rem';
-      document.body.append(transfer);
-      transfer.select();
-      const copied = document.execCommand('copy');
-      transfer.remove();
-      if (!copied) {
-        await navigator.clipboard.writeText(preparedAnswer);
-      }
-      document.querySelector('#copy-answer').textContent = 'Copied';
     });
   </script>
 </body>
