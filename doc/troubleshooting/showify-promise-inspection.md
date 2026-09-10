@@ -1,4 +1,4 @@
-# Showify 0.2.8 preserves Promise identity as a type, not its internal state
+# Showify 0.2.8 identifies Promise objects without revealing their internal state
 
 ## Affected teaching surface
 
