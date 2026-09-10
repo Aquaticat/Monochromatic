@@ -88,7 +88,10 @@ export function neighbouringSource(
   const current = slices[slicePosition];
   if (current?.syntax === 'front-matter')
     return '';
-  return fidelityWindowPositions({ slices, slicePosition, },)
+  return fidelityWindowPositions({
+    slices,
+    slicePosition,
+  },)
     .map(function toText(neighbour,): string {
       /**
        * That slice, absent at either end of the document.
@@ -174,7 +177,10 @@ export function neighbouringIncumbent(
   const current = slices[slicePosition];
   if (current?.syntax === 'front-matter')
     return '';
-  return fidelityWindowPositions({ slices, slicePosition, },)
+  return fidelityWindowPositions({
+    slices,
+    slicePosition,
+  },)
     .map(function toText(neighbour,): string {
       /**
        * That slice, absent at either end of the document.
