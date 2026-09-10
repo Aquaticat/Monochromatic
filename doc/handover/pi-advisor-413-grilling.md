@@ -469,8 +469,12 @@ Implementation is complete.
 Related preference/session-health and broader recovery work remains separately tracked;
  this resolution does not claim those entire issues are finished.
 
-## Next action
+## Completion
 
-Confirm the closing commit reaches `origin/main`
- and GitHub reports #413 closed.
+Closing commit `db8b230fb` reached `origin/main`.
+Its ancestry in the observed remote head was verified with `git merge-base --is-ancestor`.
+`gh issue view 413 --json state,closedAt` reported `CLOSED`
+ with closure timestamp `2026-09-10T01:59:35Z`.
+
+No task remains for #413.
 Do not reopen settled decisions or revert unrelated concurrent work.
