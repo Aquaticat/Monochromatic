@@ -153,20 +153,38 @@ in both the stock and treatment arms.
 They compile but fail the existing archive block-shape check.
 No editor-responsibility treatment was integrated.
 
-`proc_ec6f` now runs `translation-repair-editor-accurate-claim-probe-20260910`.
+`proc_ec6f` completed the accurate-claim editor control:
+all three editors correct disclosure direction and keep the list,
+second friendship item,
+administrator item and established group name.
+Both GLMs explicitly date it by reconnection;
+DeepSeek's other prose repeats the administrator detail.
+All pass the existing structure check,
+but they also edit other allowed regions and are not automatically publication-ready.
+No production gold-label filter was added.
+
+`proc_02d2` then isolated a true and false claim for the eight panelists actually asked in the full-packet arm.
+The true participant correction is accepted at seven supports and one malformed-vote abstention.
+The false friendship-addition claim is rejected at six opposing and two supporting votes.
+Within the original six responding panelists,
+DeepSeek Pro and Mercury switch to opposition,
+reversing the matched tally from four-to-two support to four-to-two opposition.
+This is evidence for packet-content/size interference,
+not a universal claim about batching or renumbering.
+
+`proc_2d45` now runs `translation-repair-panel-clusters-probe-20260910`.
 Report:
-`~/temp/agent/editor-accurate-claim-probe-20260910/report.json`.
+`~/temp/agent/panel-clusters-probe-20260910/report.json`.
 Log:
-`~/temp/agent/editor-accurate-claim-probe-20260910.log`.
-This diagnostic keeps the stock editor prompt,
-source/target/neighbor bytes,
-four regions and original preservation licenses,
-but shows only the source-verified participant claim.
-It tests whether the conflicting issue packet prevents a correct edit;
-it is not a production claim filter.
-Three editor calls maximum,
-with the same exchange/global bounds and real assembler.
-Read actual region operations and final candidates.
+`~/temp/agent/panel-clusters-probe-20260910.log`.
+It reviews the existing five clusters separately,
+with all thirty-two claims preserved and each merge question retained.
+The mixed list cluster still contains fifteen claims.
+Stock panelists,
+source evidence,
+schemas and the nine-seat tally basis stay fixed.
+Forty calls maximum;
+no production batching or generation-round change has been made.
 
 The caller trace also found that per-envelope and whole-chunk repair selectors do not receive neighboring source.
 Any good editor candidate will need verification at those actual selection boundaries;

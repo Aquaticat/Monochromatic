@@ -526,9 +526,9 @@ whole-chunk selection sees only the current original as evidence.
 Thus a successful new editor candidate will still require verification at those selection boundaries.
 Do not claim the existing repair window already reaches every repair selector.
 
-## Active accurate-claim diagnostic control
+## Completed accurate-claim diagnostic control
 
-`proc_ec6f` is `translation-repair-editor-accurate-claim-probe-20260910`.
+`proc_ec6f` completed `translation-repair-editor-accurate-claim-probe-20260910` in 262 seconds.
 Script:
 `~/temp/agent/probe-editor-accurate-claim-20260910.mjs`.
 Plan:
@@ -554,4 +554,109 @@ with a 360000 ms exchange bound and 1200000 ms global bound.
 The real assembler and existing structure validator process each response.
 Compare raw operations and assembled candidates against the completed stock-editor arm,
 not just whether the process exits successfully.
+All three editors correct the disclosure direction and retain the list,
+second friendship item,
+administrator item and established `Harunome Hanbai` name.
+Both GLM outputs explicitly place disclosure at reconnection.
+DeepSeek's bullet says the friend came out to Mio without adding a childhood timing claim,
+but its other prose also repeats the administrator detail.
+All three assembled candidates pass the existing structure check.
+
+The editors also change other still-editable regions despite those regions having no visible issue in this control.
+Those changes do not make the complete candidates automatically publishable;
+the diagnostic establishes that the editors can produce the intended list correction with a non-conflicting packet.
+It does not justify a production gold-label filter or claim that every problem is solved.
+
+The run logged two unpriced Hyper and one unpriced Synthetic call.
+The spend and daily helpers ran afterward.
 No production prompt or admission-rule change is made.
+
+## Completed isolated-claim panel diagnostic
+
+`proc_02d2` completed `translation-repair-panel-isolated-claims-probe-20260910` in 42 seconds.
+Script:
+`~/temp/agent/probe-panel-isolated-claims-20260910.mjs`.
+Plan:
+`~/temp/agent/panel-isolated-claims-plan-20260910.out`.
+Log:
+`~/temp/agent/panel-isolated-claims-probe-20260910.log`.
+Report:
+`~/temp/agent/panel-isolated-claims-probe-20260910/report.json`.
+
+The next control isolates the accurate participant claim and the false second-friendship addition claim,
+using the same source,
+translation,
+full original evidence,
+system instructions and context-purpose rule as the completed document-evidence-only panel arm.
+The production builder renumbers each isolated packet;
+this is a packet-content/size diagnostic,
+not a claim that numeric position has been independently eliminated as a factor.
+
+The offline plan found eight distinct panelists had actually been asked in that full-packet arm,
+although only six were heard.
+The control includes all eight rather than selecting favorable or usable responses.
+Compare each model's matched verdict separately from newly usable responses.
+The real resolver and tally retain the original nine-seat configured basis.
+
+The limit is sixteen calls,
+six concurrent,
+360000 ms per exchange and 1200000 ms globally.
+No per-claim production calls or admission filter is introduced.
+The true participant claim is accepted with seven supporting votes and one abstention.
+DeepSeek-flash returned `supported, severity: major` in the vote field;
+the real resolver records that as an abstention,
+not a supported vote.
+
+The false second-friendship addition claim is rejected with six opposing and two supporting votes.
+Among the original six responding panelists,
+DeepSeek Pro and Mercury switch from supported in the full packet to unsupported in isolation.
+Gemma-e2b and Gemma-26b remain supportive;
+Kimi and Qwen remain opposed.
+Thus the matched responding set changes from four-to-two support to four-to-two opposition,
+independent of the newly usable MiniMax and DeepSeek-flash replies.
+
+This supports packet-content/size interference;
+it does not prove that renumbering or every other presentation factor is irrelevant.
+The run logged 0.00161704 USD on Bedrock,
+two OpenRouter calls reporting zero,
+and six unpriced Hyper plus four unpriced Synthetic calls.
+The daily helper ran afterward.
+
+## Active existing-cluster review diagnostic
+
+`proc_2d45` is `translation-repair-panel-clusters-probe-20260910`.
+Script:
+`~/temp/agent/probe-panel-clusters-20260910.mjs`.
+Plan:
+`~/temp/agent/panel-clusters-plan-20260910.out`.
+Log:
+`~/temp/agent/panel-clusters-probe-20260910.log`.
+Report:
+`~/temp/agent/panel-clusters-probe-20260910/report.json`.
+
+The original aggregation contains five clusters with three,
+six,
+three,
+five and fifteen claims.
+The last cluster contains the list's distinct participant,
+friendship,
+name and administrator claims;
+clustering proposes possible merges and does not already prove they are one defect.
+
+The experiment uses those existing clusters as separate review units,
+retaining every claim and the within-cluster merge question.
+It holds the original eight asked panelists,
+full source evidence,
+current source/target,
+context-purpose rule,
+system instructions,
+schemas and configured nine-seat tally basis fixed.
+The production builder,
+resolver and tally run independently for each cluster.
+
+Forty calls maximum,
+six concurrent,
+360000 ms per exchange and 1200000 ms globally.
+No production batching change or additional generation round has been implemented.
+Read whether the mixed list cluster rejects false deletion claims while retaining the actual participant correction;
+do not infer that single-claim success proves cluster-level success.

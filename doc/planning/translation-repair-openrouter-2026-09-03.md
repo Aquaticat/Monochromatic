@@ -6973,12 +6973,13 @@ but the newly derived panel still accepted blanket removal.
 `proc_9549` did not establish a remedy from full source evidence or claim extent.
 `proc_b599` produced no suitable candidate:
 all three stock and all three treated editors removed the list and changed its group name.
-`proc_ec6f` now uses a diagnostic accurate-claim-only packet
-with the same stock editor,
-regions,
-evidence and original preservation licenses.
-This does not filter production claims;
-it tests whether the conflicting packet blocks the intended correction.
+`proc_ec6f` produced the intended list correction with all three editors when only the accurate claim was visible.
+The subsequent isolated-claim panel diagnostic reversed the false addition claim's matched vote from support to opposition.
+No production filter was added.
+`proc_2d45` now checks the existing claim clusters as independent review units,
+retaining all claims,
+merge questions,
+panelists and tally rules.
 No production prompt change,
 name-policy change,
 quorum change or new production stage has been made.
