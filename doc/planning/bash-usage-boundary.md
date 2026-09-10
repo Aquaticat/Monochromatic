@@ -6,6 +6,12 @@ Investigated 2026-09-09 at `3a4fdb7601c9644368b1d9185b9482c7c26e193d`.
 This records findings and proposed issue framing,
 not an adopted Bash exception or authorization to rewrite workflows.
 
+Follow-up:
+the user subsequently authorized switching issue 308's scope gate to Node and fixing it.
+The adopted scope and implementation contract are recorded in
+[the Node CI scope decision](../decision/toml-edit-ci-scope.md).
+The broader language-policy proposal remains separate.
+
 The question is whether Bash earns its place in repository-owned automation,
 not which new shell or runtime to adopt.
 No replacement dependency selection was undertaken.

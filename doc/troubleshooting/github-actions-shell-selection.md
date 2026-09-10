@@ -12,6 +12,8 @@ The question is which execution boundary is required,
 not a newly diagnosed runner defect.
 The [Bash usage assessment](../planning/bash-usage-boundary.md) separates this capability finding
 from the repository policy decision.
+The subsequently authorized implementation is recorded in
+[the Node CI scope decision](../decision/toml-edit-ci-scope.md).
 
 ## Root cause of the assumption
 
@@ -157,7 +159,8 @@ the fact that checkout is a JavaScript action would not establish that by itself
 
 No failing hosted custom-shell run was generated during this read-only investigation.
 No claim is made that a rewritten toml-edit gate has passed regression tests.
-Issue 308 remains the separate repository-owned fail-open defect.
+Issue 308 was the separate repository-owned fail-open defect,
+not a limitation of the runner's custom-command support.
 
 The result does not establish Node availability on arbitrary self-hosted runners,
 container images,
