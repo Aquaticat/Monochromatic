@@ -17,8 +17,9 @@ Implementation, browser/print/export checks, preservation, and cleanup are recor
 [the correction handover](../handover/promises-review-corrections.md).
 The user then identified missed opportunities to show `JSON.stringify` representations,
 requested `util.inspect` where JSON is insufficient, and supplied `showify` through the workspace catalog.
-Contextual value snapshots are now implemented and undergoing final regression, print, and export checks;
-[the value-representation handover](../handover/promises-value-representations.md) records that work.
+Contextual value snapshots are implemented and verified in the updated lesson,
+including browser, Firefox ESR, print, and export checks.
+[The value-representation handover](../handover/promises-value-representations.md) records the boundaries and evidence.
 Earlier critiques rejected a detached opening and forced chat turn-taking.
 The shop opening, reference chat, and reading backgrounds have since been corrected and operationally checked.
 The quick scan is not learner-performance evidence or approval of the final skill.

@@ -9,7 +9,7 @@ and added `showify` to the workspace catalog.
 
 The pre-change lesson is preserved as `doc/planning/promises-teaching-before-value-views.local.html`,
 SHA-256 `319ffcb20481d468beb6353d6bbe94b682e55cb682c3542dffefc983f6e82eb7`.
-The current lesson now contains the value views and is undergoing integrated verification.
+The current lesson contains the value views and has completed integrated verification.
 The previous completed repairs are recorded in [the correction handover](promises-review-corrections.md).
 
 Preserve:
@@ -26,8 +26,8 @@ No final teaching-skill confirmation or implementation is authorized.
 ## Work in progress
 
 Task 29 completed the representation audit and bounded consumer probe of the user-supplied formatter.
-Task 30 implements contextual views.
-Task 31 verifies the integration and records the resulting teaching-discovery evidence.
+Task 30 implemented contextual views.
+Task 31 completed integration verification and recorded the resulting teaching-discovery evidence.
 
 Research workspace: `/var/home/user/temp/agent/promises-value-inspection`.
 Lesson authoring workspace: `/var/home/user/temp/agent/promises-revision`.
@@ -263,8 +263,40 @@ The driver additionally sends a forged workshop packet from another owned opaque
 so the existing exact source-window check is exercised across previews as well as against the parent page.
 Run, sequence, schema, and bounded text checks remain in place.
 
-`proc_dfa6` is running the final combined suite, reopened exports, and representative PDF rendering.
+`proc_dfa6` passed the complete combined suite, reopened exports, and representative PDF rendering in 324 seconds.
+The full stdout log was inspected.
+`proc_5be7` then passed the final artifact's value views and retained regression in Firefox ESR 140.15.0
+in 25 seconds.
 No visible-window completion gate applies.
+
+## Verified artifact and cleanup
+
+Current lesson: `doc/planning/promises-teaching.local.html`.
+
+- Size: 655,250 bytes.
+- SHA-256: `5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`.
+- The pre-value-view version remains preserved with its `319ffcb2…` hash.
+
+The generated PDF has 121 Letter pages and is 2,413,882 bytes.
+Whole-content checks cover 714 teaching entries and 66 appendix entries,
+including formatter labels, representations, sources, current work, and notices.
+Whitespace-normalized inventory success does not claim every page was visually reviewed.
+Pages 11, 12, 20, 21, 23, 24, 25, 30, 31, 113, and 114 were rendered and inspected.
+Desktop/light, mobile/dark, and formatting-error value-card screenshots were also inspected.
+
+The actual preferred-source download matched the preserved Showify TypeScript byte-for-byte.
+The standalone reference export explicitly excludes the teaching inspector runtime,
+and retained independent sending, cancellation, and offline checks passed.
+
+`proc_1bca` closed the owned print and general verification browser controllers.
+The managed print, proxy/canary, and Firefox fixtures were stopped.
+`proc_156e` removed only the recorded print/export/Firefox profiles;
+its final session list retained `promises-open-chat-present`.
+Existing user-facing tabs and drafts were not reloaded or altered for this change.
+The verified file is the delivery artifact, not a mandatory window activation.
+
+The teaching-discovery and proposed acceptance notes now record this representation gap.
+The learner-observation veto remains settled, and the final teaching skill is still unconfirmed.
 
 ## Integration direction to verify
 
