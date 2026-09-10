@@ -1,4 +1,5 @@
 import type { ChunkPair, } from './chunk-document.ts';
+import { fidelityWindowPositions, } from './fidelity-window-positions.ts';
 
 //region Fidelity window
 // How much of the ORIGINAL a judge is shown, which `#107` turned into a
@@ -28,12 +29,14 @@ import type { ChunkPair, } from './chunk-document.ts';
 // was shown too little".
 
 /**
- * Original of the sections either side of one slice.
+ * Original of adjacent slices, retaining the body governed by a forward heading.
  *
- * BOTH NEIGHBOURS AND NOTHING MORE. A whole document would drown the sheet, and
- * would also let a judge find any sentence somewhere, which is not the question:
- * `#107` is about material carried across ONE boundary, so one section each way
- * is the window that would fix it if a window is what is wrong.
+ * THE HEADING IS NOT ITS BODY. Block pairing can split a heading and narrative
+ * into separate slices. The Mio12 context probe showed that the heading-only
+ * neighbor omitted the dated narrative deciding who disclosed to whom. Include
+ * exactly the following non-heading body, stopping at another heading or
+ * metadata. Never extend backward through a heading into an earlier section.
+ * Ordinary neighbors remain unchanged; no arbitrary document scan is allowed.
  *
  * WHY AN OUT-OF-RANGE INDEX THROWS rather than returning nothing. Both indices
  * miss, so the natural answer is the empty string, which is exactly the value
@@ -85,10 +88,7 @@ export function neighbouringSource(
   const current = slices[slicePosition];
   if (current?.syntax === 'front-matter')
     return '';
-  return [
-    slicePosition - 1,
-    slicePosition + 1,
-  ]
+  return fidelityWindowPositions({ slices, slicePosition, },)
     .map(function toText(neighbour,): string {
       /**
        * That slice, absent at either end of the document.
@@ -106,7 +106,7 @@ export function neighbouringSource(
 }
 
 /**
- * Archive wording of the sections either side of one slice.
+ * Archive wording at the exact positions chosen for neighboring source context.
  *
  * THE OTHER HALF OF THE SAME WINDOW, and the half that carries the signal. A
  * relocation leaves a hole on one side of a boundary and a bulge on the other,
@@ -174,10 +174,7 @@ export function neighbouringIncumbent(
   const current = slices[slicePosition];
   if (current?.syntax === 'front-matter')
     return '';
-  return [
-    slicePosition - 1,
-    slicePosition + 1,
-  ]
+  return fidelityWindowPositions({ slices, slicePosition, },)
     .map(function toText(neighbour,): string {
       /**
        * That slice, absent at either end of the document.
