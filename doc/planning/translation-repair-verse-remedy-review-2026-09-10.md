@@ -3,7 +3,8 @@
 ## Correction
 
 The owner wrote:
-"No, the best way to fix that defect isn't red/green guards and a publication test."
+"No,
+the best way to fix that defect isn't red/green guards and a publication test."
 This does not select another mechanism.
 The claim that the class-twenty-nine guard was the right remedy is withdrawn.
 Tests demonstrate behavior;
@@ -111,7 +112,8 @@ The inherited production flag remains an evidence gap despite that review's init
 Replace `TC2` in the worktree's `AGENTS.md`,
 rather than add a duplicate testing rule:
 
-> TC2: Passing tests prove neither completeness nor remedy choice.
+> TC2:
+> Passing tests prove neither completeness nor remedy choice.
 > Prefer preventing the failure to rejecting its output;
 > compare test names with implementation branches.
 
