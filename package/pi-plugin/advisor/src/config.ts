@@ -203,6 +203,8 @@ function mergeConfigFiles(
      Delay inherits across config scopes; explicit disablement remains independent.
      */
     const hedgeDelayMs = config.hedgeDelayMs ?? merged.hedgeDelayMs;
+    /** Unrelated project overrides must not discard global reviewer instructions. */
+    const systemPrompt = config.systemPrompt ?? merged.systemPrompt;
     merged = {
       hedgingEnabled: config.hedgingEnabled ?? merged.hedgingEnabled,
       collectionGraceMs: config.collectionGraceMs ?? merged.collectionGraceMs,
@@ -220,10 +222,7 @@ function mergeConfigFiles(
         ?? merged
         .includePriorAdvisorResults,
       ...(maxContextChars === undefined ? {} : { maxContextChars, }),
-      ...(config.systemPrompt
-        === undefined
-        ? {}
-        : { systemPrompt: config.systemPrompt, }),
+      ...(systemPrompt === undefined ? {} : { systemPrompt, }),
     };
   }
   return merged;
