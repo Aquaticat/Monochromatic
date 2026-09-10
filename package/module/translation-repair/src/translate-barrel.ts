@@ -74,6 +74,7 @@ export {
   type SliceAttempt,
 } from './translate-slice-attempt.ts';
 export { runTranslateStage, } from './translate-stage.ts';
+export { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 export { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 export {
   type TranslateDecision,

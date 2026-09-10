@@ -12,6 +12,7 @@ import {
 import { contestSizeNote, } from './contest-size-note.ts';
 import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 
 //region Consolidate gate wire
 // Asks whether the rendering this run WROTE should replace the one that would
@@ -345,9 +346,22 @@ export function buildConsolidateGateMessages(
   /**
    * Policy extended for syntax-bearing visible metadata.
    */
-  const policy = (subject.syntax === 'front-matter')
-    ? `${CONTEST_POLICY}\n\n${FRONT_MATTER_DECISION_RULE}`
-    : CONTEST_POLICY;
+  const policy = [
+    (subject.syntax === 'front-matter')
+      ? `${CONTEST_POLICY}\n\n${FRONT_MATTER_DECISION_RULE}`
+      : CONTEST_POLICY,
+    renderedBreakPrompt({
+      sourceText: subject.sourceText,
+      archiveText: subject.incumbentText,
+      syntax: subject.syntax,
+      renderings: [
+        { label: 'CANDIDATE "consolidated"', text: subject.consolidatedText, },
+        { label: 'CANDIDATE "standing"', text: subject.standingText, },
+      ],
+    },),
+  ].filter(function hasPolicy(part,): boolean {
+    return part !== '';
+  },).join('\n\n',);
 
   return [
     {

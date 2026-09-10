@@ -5,6 +5,7 @@ import type { SliceSyntax, } from './chunk-document.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 import type { TranslateAbsenceReason, } from './translate-absence.ts';
 
 //region Translate wire
@@ -234,6 +235,7 @@ export function buildTranslateMessages(
       : `This is stage-local repair after prior ${followupEvidence.reason}. Produce a materially new rendering that resolves every listed finding and does not repeat any rejected candidate. Recheck complete source coverage, fidelity, Markdown structure, contributor identity, and natural English.`,
     syntax === 'front-matter' ? TRANSLATE_FRONT_MATTER_RULE : '',
     lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : '',
+    renderedBreakPrompt({ sourceText, archiveText: existingText, syntax, },),
     TRANSLATE_REPLY_RULE,
   ]
     .filter(function isPresent(part,): boolean {

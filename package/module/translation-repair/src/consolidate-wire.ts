@@ -9,6 +9,7 @@ import type { LaneContestBallot, } from './lane-contest-wire.ts';
 import type { TranslateOrigin, } from './translate-candidates.ts';
 import type { TranslateDecision, } from './translate-stage-result.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 import {
   TRANSLATE_FRONT_MATTER_RULE,
   TRANSLATE_LINE_STRUCTURE_RULE,
@@ -391,6 +392,11 @@ export function buildConsolidateMessages(
       : 'A prior consolidation strategy failed to replace unendorsed standing wording. Use its slate, ballots, gate ballots, terminal, and findings as failed-strategy evidence. Produce a materially different solution rather than repeating rejected wording.'),
     (subject.syntax === 'front-matter' ? TRANSLATE_FRONT_MATTER_RULE : ''),
     (subject.lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : ''),
+    renderedBreakPrompt({
+      sourceText: subject.sourceText,
+      archiveText: subject.incumbentText,
+      syntax: subject.syntax,
+    },),
     CONSOLIDATE_REPLY_RULE,
   ]
     .filter(function isPresent(part,): boolean {

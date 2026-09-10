@@ -11,6 +11,7 @@ import {
 } from './contest-ballot-wire.ts';
 import { contestSizeNote, } from './contest-size-note.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 
 //region Lane contest wire
 // ASKS THE QUESTION THAT ACTUALLY SEPARATES THE TWO LANES, rather than which
@@ -483,9 +484,22 @@ export function buildLaneContestMessages(
   /**
    * Policy extended for syntax-bearing visible metadata.
    */
-  const policy = (subject.syntax === 'front-matter')
-    ? `${CONTEST_POLICY}\n\n${FRONT_MATTER_DECISION_RULE}`
-    : CONTEST_POLICY;
+  const policy = [
+    (subject.syntax === 'front-matter')
+      ? `${CONTEST_POLICY}\n\n${FRONT_MATTER_DECISION_RULE}`
+      : CONTEST_POLICY,
+    renderedBreakPrompt({
+      sourceText: subject.sourceText,
+      archiveText: subject.incumbentText,
+      syntax: subject.syntax,
+      renderings: [
+        { label: 'CANDIDATE "repair"', text: subject.repairText, },
+        { label: 'CANDIDATE "translate"', text: subject.translateText, },
+      ],
+    },),
+  ].filter(function hasPolicy(part,): boolean {
+    return part !== '';
+  },).join('\n\n',);
 
   return [
     {

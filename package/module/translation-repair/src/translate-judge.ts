@@ -12,6 +12,7 @@ import {
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   blankAgainst,
@@ -362,9 +363,21 @@ export async function judgeTranslateSlate(
       ? LEAVES_PASSAGE_UNTRANSLATED
       : KEEPS_TRUSTED_TEXT,
     task,
-    criteria: translateSelectionCriteria({
-      lineStructured,
-      ...((syntax === undefined) ? {} : { syntax, }),
+    criteria: [
+      ...translateSelectionCriteria({
+        lineStructured,
+        ...((syntax === undefined) ? {} : { syntax, }),
+      },),
+      renderedBreakPrompt({
+        sourceText,
+        archiveText: incumbentText,
+        syntax,
+        renderings: slate.map(function displayed(entry,) {
+          return { label: `Candidate ${String(entry.index,)}`, text: entry.text, };
+        },),
+      },),
+    ].filter(function hasCriterion(criterion,): boolean {
+      return criterion !== '';
     },),
     evidence: [
       {
