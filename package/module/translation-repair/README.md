@@ -1874,6 +1874,14 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `dc51b02d9` (2026-09-10,
+the twenty-eighth class) archive revision proposals may carry a nonempty `sourceQuote` as supporting evidence,
+matching the declared JSON schema.
+The handwritten guard had rejected those otherwise readable MiniMax and Gemma revisions on the ninth `Mio`,
+leaving archive review below quorum and stopping the pass before lanes.
+A revision still faces independent selection;
+only `source-supported` retention requires a nonempty anchored quote.
+The real-stage guard failed `provider-unavailable` before the fix and passes after it.
 Since `ad6d506a6` (2026-09-09,
 the twenty-seventh class) an assembly with an unattributed structural regression tries each single replacement
 withdrawal before withdrawing the whole lane.

@@ -31,8 +31,14 @@ No page or artifact was written.
 The review heard four of ten seats;
 MiniMax and Gemma returned valid JSON revisions with nonempty `sourceQuote`,
 which the declared schema permits but `isArchiveBlockReviewWire` rejected.
-The mismatch is being guarded and fixed as class twenty-eight;
-quoted revision evidence must not become retention authority.
+Class twenty-eight is fixed in `dc51b02d9`:
+`revise` may carry quoted source evidence without gaining retention authority.
+Guard `1bc7623c3` failed `provider-unavailable` on the prior build,
+then passed;
+the full suite ends `unit exit 0` in `~/temp/agent/class28-unit-20260910.out`,
+and build,
+types and oxlint pass.
+Relaunch `Mio` next.
 Mercury's malformed JSON,
 DeepSeek-flash truncation and Synthetic's transient 503 episode are separate losses,
 not evidence for changing quorum or caps.
@@ -332,7 +338,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `5cb66ffaa` for code and guards;
+  `dc51b02d9` for code and guards;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -363,6 +369,12 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+Class twenty-eight:
+`1bc7623c3` guards quoted revision replies through the real review stage;
+`dc51b02d9` accepts the informative quote while preserving anchored-retention requirements.
+Full suite,
+types and oxlint pass.
+
 Class twenty-seven:
 `3e1fec4be` guards the linked insertion lost beside malformed JSX;
 `dfc02d538` extracts regression readers;
@@ -1900,8 +1912,8 @@ each read off the pass log and the shipped page:
     The retained evidence identifies class twenty-seven,
     now fixed and verified at `5cb66ffaa`.
     The ninth `Mio` stopped in archive review on the quoted-revision schema mismatch.
-    Finish class twenty-eight's guard and verification,
-    then relaunch `Mio` before advancing the queue.
+    Class twenty-eight is fixed and verified at `dc51b02d9`;
+    relaunch `Mio` before advancing the queue.
     Only a real page can establish that both screenshot translations survive.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:

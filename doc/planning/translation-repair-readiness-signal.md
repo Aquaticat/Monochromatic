@@ -1655,3 +1655,20 @@ Readiness remains unproven:
 local guards are not a published page,
 and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
 queue advances.
+
+## What the ninth Mio launch showed (2026-09-09, 23:49 to 2026-09-10, 00:07 UTC)
+
+The pass stopped before lanes,
+so it did not exercise class twenty-seven on a page.
+Archive reviewers recognized the screenshot translation as source-supported,
+but the stage lost MiniMax and Gemma revision proposals because they included source quotes:
+strings the JSON schema accepts and the handwritten guard rejected beside `revise`.
+That is class twenty-eight,
+fixed in `dc51b02d9` after a real-stage fixture failed `provider-unavailable` on the prior build.
+The full suite,
+types and lint pass;
+retention still requires anchored source support,
+and revision proposals still face selection.
+OpenRouter logged 0.046664869 USD and Bedrock 0.010438314 USD.
+No new page was produced,
+so readiness remains unproven and `Mio` must be relaunched before the queue advances.

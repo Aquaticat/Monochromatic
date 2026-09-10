@@ -6936,6 +6936,57 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Mio9 loses revision proposals to a stricter handwritten guard, 2026-09-10, 00:12 UTC
+
+`Mio9` stopped INCOMPLETE at 00:07 UTC after 1,075,657 ms,
+before either lane:
+archive review heard four of ten seats and raised `provider-unavailable`.
+The source-support fix reached the reviewers:
+the surviving replies explicitly recognized the `photo6.webp` and `photo7.webp` translation as supported
+by corroborated picture text.
+That is preparation evidence,
+not a published-page result.
+
+Class twenty-eight is a schema mismatch within this package.
+MiniMax and Gemma proposed `disposition: "revise"` with nonempty `sourceQuote` strings.
+The JSON schema permits those strings,
+and a revision can cite the portion of a block it preserves,
+but `isArchiveBlockReviewWire` required an empty quote for every disposition except `source-supported`.
+The guard discarded those voices before the review could select their proposals.
+The captured replies have strings in every required field;
+one MiniMax quote has 98 characters,
+and the Gemma revision quotes have 21.
+Only shapes and lengths were printed during diagnosis;
+raw provider replies remain in the private run directory.
+
+`1bc7623c3` guards the real review stage with a quoted revision.
+It failed `TranslationRepairInterruptedError: provider-unavailable` on the prior build.
+`dc51b02d9` accepts a string quote beside `revise` and explains that field in the sheet.
+The proposal still faces independent selection;
+only a `source-supported` retention claim gets anchor authority,
+and that claim still requires a nonempty quote which the stage checks against supplied source.
+The existing unanchored-retention guards still pass.
+No quorum,
+completion cap,
+provider order or roster changed.
+Mercury's malformed JSON,
+DeepSeek-flash truncation and Synthetic's 503 episode are separate losses.
+
+The fixed build,
+types and oxlint pass;
+the full suite ends `unit exit 0` in `~/temp/agent/class28-unit-20260910.out`.
+OpenRouter logged 0.046664869 USD over 31 calls,
+including one abandoned estimate of 0.00288322 USD;
+Bedrock logged 0.010438314 USD over 23 calls.
+Final pass meters:
+OpenRouter 269.36 USD,
+Bedrock 186.05 USD,
+Synthetic weekly zero,
+Hyper zero.
+The daily-cost helper ran for both filename dates because the pass crossed midnight.
+`~/temp/agent/pass-provider-spend-20260910.mjs` reads one actual pass log and keeps provider totals separate.
+Relaunch `Mio` on a fresh frozen build before advancing the queue.
+
 ## The ninth Mio launches on the structural-withdrawal proof, 2026-09-09, 23:49 UTC
 
 Frozen build `5cb66ffaa`,
