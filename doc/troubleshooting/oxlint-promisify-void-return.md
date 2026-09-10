@@ -52,7 +52,7 @@ export function promisify<TResult>(
 The lint source considers function signatures across overloads.
 `internal/rules/strict_void_return/strict_void_return.go:152-180`
 collects expected callback return types,
-then lines 191-193 can report the passed function:
+then lines 187-189 can report the passed function:
 
 ```go
 // internal/rules/strict_void_return/strict_void_return.go

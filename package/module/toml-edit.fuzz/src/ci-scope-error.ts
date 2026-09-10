@@ -1,6 +1,6 @@
 /**
  Bootstrap scope failures must stop verification rather than authorize skipping it.
- 
+
  @example
  ```ts
  throw new ScopeError('Merge-group comparison is unavailable');

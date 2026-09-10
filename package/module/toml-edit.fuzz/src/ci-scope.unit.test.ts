@@ -1,7 +1,7 @@
 /**
  Exercise the source artifact through the exact workflow launcher before dependencies exist.
  Source execution is intentional: CI deploys this entry directly, without a build.
- 
+
  @module
  */
 

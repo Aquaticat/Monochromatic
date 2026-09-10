@@ -28,13 +28,13 @@ const executeFile = promisifyExecFile(execFile,);
 
 /**
  Run Git without a shell and preserve every execution failure.
- 
+
  @param args - Argument vector whose values cannot become shell syntax.
- 
+
  @returns Complete stdout only after a successful Git invocation.
- 
+
  @throws {@link ScopeError} When Git fails, stalls, or exceeds the capture limit.
- 
+
  @example
  ```ts
  const head = await scopeGit(['rev-parse', '--verify', 'HEAD^{commit}']);

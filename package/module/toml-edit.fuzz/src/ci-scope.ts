@@ -2,7 +2,7 @@
 /**
  Pre-install toml-edit scope command. Only Node built-ins and local source are loaded.
  The checked-in TypeScript entry is the deployed artifact, not a bundled library.
- 
+
  @module
  */
 
@@ -39,13 +39,13 @@ const CONTRACT_PATHS = [
 
 /**
  Require an immutable event revision rather than accepting a moving branch name.
- 
+
  @param name - Environment key supplied from GitHub's merge-group payload.
- 
+
  @returns Validated commit identifier.
- 
+
  @throws {@link ScopeError} When the event revision is missing or malformed.
- 
+
  @example
  ```ts
  const base = eventRevision('SCOPE_BASE_SHA');
@@ -67,11 +67,11 @@ function eventRevision(name: string,): string {
 
 /**
  Match package boundaries and exact files without interpreting filename bytes as syntax.
- 
+
  @param path - One NUL-delimited Git path, including any embedded whitespace.
- 
+
  @returns Whether this changed path requires toml-edit verification.
- 
+
  @example
  ```ts
  relevantPath('package/module/toml-edit/src/index.ts'); // true
@@ -91,11 +91,11 @@ function relevantPath(path: string,): boolean {
 
 /**
  Compare the exact merge-group trees, preserving failures before any output is written.
- 
+
  @returns Whether verification must run for this workflow event.
- 
+
  @throws {@link ScopeError} When the event, checkout, ancestry, or comparison is unavailable.
- 
+
  @example
  ```ts
  const run = await shouldRun();
