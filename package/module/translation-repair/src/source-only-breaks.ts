@@ -1,4 +1,7 @@
-import type { Root, RootContent, } from 'mdast';
+import type {
+  Root,
+  RootContent,
+} from 'mdast';
 
 import type { DeepReadonlyData, } from './readonly-data.ts';
 
@@ -6,7 +9,9 @@ import type { DeepReadonlyData, } from './readonly-data.ts';
 // A single-block poem can miss the blank-block verse heuristic. Its explicit
 // breaks still belong to the source when no archive rendering exists to choose.
 
-/** Read-only syntax node borrowed from the shared document parser. */
+/**
+ * Read-only syntax node borrowed from the shared document parser.
+ */
 type ReadonlyNode = DeepReadonlyData<RootContent>;
 
 /**
@@ -24,10 +29,15 @@ type ReadonlyNode = DeepReadonlyData<RootContent>;
  * ```
  */
 export function explicitBreakCounts({ root, }: { readonly root: DeepReadonlyData<Root>; },): readonly number[] {
-  return root.children.map(function countBlock(block,): number {
-    /** Owned work list grows as descendant nodes are visited. */
+  return root.children
+    .map(function countBlock(block,): number {
+    /**
+     * Owned work list grows as descendant nodes are visited.
+     */
     const pending: ReadonlyNode[] = [block,];
-    /** Explicit breaks in this block, not in unrelated neighboring blocks. */
+    /**
+     * Explicit breaks in this block, not in unrelated neighboring blocks.
+     */
     let count = 0;
     for (const node of pending) {
       if (
@@ -61,7 +71,11 @@ export function explicitBreakCounts({ root, }: { readonly root: DeepReadonlyData
  * ```
  */
 export function sourceOnlyBreakFindings(
-  { pageText, source, candidate, }: {
+  {
+    pageText,
+    source,
+    candidate,
+  }: {
     readonly pageText: string;
     readonly source: readonly number[];
     readonly candidate: readonly number[];
@@ -69,8 +83,13 @@ export function sourceOnlyBreakFindings(
 ): readonly string[] {
   if (pageText !== '')
     return [];
-  return source.flatMap(function compareBlock(owed, index,): readonly string[] {
-    /** Missing blocks carry no breaks; the block floor diagnoses their shape. */
+  return source.flatMap(function compareBlock(
+    owed,
+    index,
+  ): readonly string[] {
+    /**
+     * Missing blocks carry no breaks; the block floor diagnoses their shape.
+     */
     const carried = candidate[index] ?? 0;
     if (carried >= owed)
       return [];

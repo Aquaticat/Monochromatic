@@ -119,7 +119,9 @@ export type SliceSkeleton = {
    */
   readonly atoms: readonly ProtectedAtom[];
 
-  /** Explicit rendered breaks within each corresponding top-level block. */
+  /**
+   * Explicit rendered breaks within each corresponding top-level block.
+   */
   readonly explicitBreaks: readonly number[];
 };
 
