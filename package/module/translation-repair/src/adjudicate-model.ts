@@ -190,7 +190,8 @@ export type VoteTally = {
  */
 export type AdjudicatedIssue = {
   /**
-   * Deterministic `adjudicated/<hash>` identity over sorted member claim ids.
+   * Initial deterministic `adjudicated/<hash>` identity over sorted member claim ids.
+   * Emission deduplication retains its first representative's identity and severity.
    */
   readonly issueId: string;
 
@@ -227,7 +228,9 @@ export type AdjudicatedIssue = {
    * re-tallied under a different weight table.
    *
    * OPTIONAL, AND ITS ABSENCE HAS ONE MEANING: this issue was not built by
-   * `tallyVotes`. That covers records written before this field existed, and
+   * `tallyVotes`. A deduplicated issue may have readings for only its known
+   * members when it combines current records with older records.
+   * That covers records written before this field existed, and
    * the readers and tools that rebuild an issue from a settled artifact rather
    * than adjudicating one. Requiring it would make those write an empty record,
    * which would say "no panel voted" where the truth is "I am not the panel".

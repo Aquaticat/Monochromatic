@@ -1,4 +1,8 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import {
+  type IssueEvidenceConflictError,
+  mergeDuplicateEvidence,
+} from './dedupe-evidence.ts';
 
 //region Dedupe issues
 // One defect reaching the editor as several accepted issues is waste, not
@@ -94,6 +98,8 @@ export type DedupeOutcome = {
  *
  * @returns Merged issues and a finding per merge
  *
+ * @throws {@link IssueEvidenceConflictError} when repeated claim evidence conflicts
+ *
  * @example
  * ```ts
  * const { issues, findings, } = dedupeAcceptedIssues({ issues, },);
@@ -160,8 +166,9 @@ export function dedupeAcceptedIssues(
       return member.claimId;
     },),);
 
-    kept[at] = {
-      ...survivor,
+    kept[at] = mergeDuplicateEvidence({
+      survivor,
+      incoming: issue,
       claims: [
         ...survivor.claims,
         ...issue.claims
@@ -169,7 +176,7 @@ export function dedupeAcceptedIssues(
           return !held.has(member.claimId,);
         },),
       ],
-    };
+    },);
     findings.push(`duplicate-issue-merged (${issue.issueId} into ${survivor.issueId})`,);
   }
 
