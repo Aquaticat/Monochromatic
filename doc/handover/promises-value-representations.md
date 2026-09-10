@@ -95,6 +95,33 @@ The cached Playwright container matches installed `@playwright/test` 1.63.0.
 Use 2 GiB memory, 2 CPUs, no network or ambient credentials,
 read-only dependency/source mounts, and a private output directory.
 
+### Consumer-probe execution manifest
+
+`build:showify-probe` uses the repository's existing Rolldown build API to parse the pinned TypeScript source
+and produce one IIFE with its MPL notice retained.
+It executes no upstream npm, build, test, prepare, or hook script.
+The source is one dependency-free production file and has been read completely.
+
+`probe:showify-browser` runs the authored `probe-showify-browser.mjs` in cached image
+`4b8805002ee369c81b7826b941afc52c0c9678a0d0e427a0fefd1684b78b5f94`.
+That image contains Node `v24.20.0` and the Playwright browsers;
+`playwright.Dockerfile` pins the base image and the installed test package is `1.63.0`.
+The script imports that existing Playwright package and launches Chromium and Firefox sequentially.
+It loads only the generated formatter and bounded authored values.
+No upstream lifecycle commands or benchmark suites are invoked.
+
+Bounds: 2 GiB RAM, 2 CPUs, 256 process/thread entries, read-only root filesystem,
+512 MiB `/tmp`, 256 MiB shared memory, no network, and a 60-second controller watchdog.
+Only the script/bundle and dependency directory are mounted read-only;
+the private results directory is the sole persistent write mount.
+No real home, repository source tree, or ambient credentials are mounted.
+SELinux label enforcement is disabled for those isolated mounts without altering their host labels.
+
+The probe checks Promise states as unknown, functions, sparse arrays, errors, circles, BigInt,
+JSON contrasts, ordinary getters and configured hooks, special-tag getter reads,
+CSP violations, and whether formatting changes unhandled-rejection behavior.
+Successful completion writes `results/showify-browser-probe.json` and closes both browsers.
+
 ## Other factual lookups
 
 No alternative package has been selected or installed.
