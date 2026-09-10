@@ -818,9 +818,12 @@ three OpenRouter calls reported zero,
 with eleven Hyper and twenty-five Synthetic calls unpriced.
 The daily helper ran afterward.
 
-Task 21 now waits on design and implementation tasks 26 to 28.
+Task 21 now waits on design and implementation tasks 26,
+27,
+29 and 28.
 [The archive evidence design](translation-repair-archive-evidence-design-2026-09-10.md)
 compares generic revision acquisition with corroborated current-archive occurrence use.
-The latter may avoid a Git dependency,
-but must be verified at the same admission,
-authoring and selection seams before selection as the production design.
+The typed-only alternative did not meet the combined full-repair goal.
+The selected design qualifies exact revision evidence with corroborated current reference use;
+see [the decision](../decision/translation-repair-qualified-archive-naming-revisions.md).
+It still requires production acquisition and pre-window integration verification.

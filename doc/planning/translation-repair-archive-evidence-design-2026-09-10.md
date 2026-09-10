@@ -2,7 +2,9 @@
 
 Task 26 designs the generic implementation after the successful
 [name-repair prototype](translation-repair-name-authority-2026-09-10.md).
-Tasks 27 and 28 cover acquisition implementation and repair-lifecycle integration.
+Tasks 27,
+29 and 28 cover qualified revision acquisition,
+initial-use corroboration and repair-lifecycle integration.
 Task 21 remains incomplete until that integration is verified.
 No production revision feature has been added.
 
@@ -493,10 +495,10 @@ six OpenRouter calls reported zero,
 with twenty-eight Hyper and twenty-one Synthetic calls unpriced.
 The daily helper ran afterward.
 
-## Active full typed-evidence repair
+## Completed full typed-evidence repair
 
-`proc_0e80` runs `translation-repair-temporal-typed-path-probe-20260910`
-on frozen `.frozen-dist-b9d3b2ea0`.
+`proc_0e80` completed `translation-repair-temporal-typed-path-probe-20260910`
+in 542 seconds on frozen `.frozen-dist-b9d3b2ea0`.
 
 - Script:
   `~/temp/agent/probe-temporal-typed-path-20260910.mjs`.
@@ -522,3 +524,51 @@ No production feature is added.
 Inspect name,
 administrator and disclosure wording together,
 including the actual candidate set and fallback decisions.
+
+The run makes seventy requests and compiles,
+but fails the combined goal:
+it keeps `Harunome Hanbai` and repairs the administrator wording,
+while retaining `She came out to her best friend in primary school.`
+The addition complaints are rejected;
+no participant-correction claim exists to create an editable region for that sentence.
+`~/temp/agent/temporal-typed-path-results-20260910.out`
+and `~/temp/agent/temporal-typed-actor-selection-20260910.out`
+record the actual result,
+claims and candidate set.
+
+This does not establish typed evidence as the cause.
+The critic cohorts and recovery differed,
+and all evidence-injection prototypes applied their context after the existing seat-window calculation.
+A future compiled prompt can select different seats.
+Nevertheless,
+this result does not validate typed-only evidence for the complete goal.
+
+Bedrock logged 0.00533967 USD;
+four OpenRouter calls reported zero,
+with nineteen Hyper and twenty-two Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Selected implementation
+
+The [qualified archive naming revision decision][qualified-decision]
+selects the conjunction of corroborated initial reference use
+and exact pinned revision provenance.
+An independent advisor reviewed this choice after the typed full-path result.
+The selected design has the stronger positive end-to-end evidence;
+causal attribution of the typed nomination gap is not required to prefer it.
+
+The automatic collector and corroborated use record already join on the same exact current occurrence.
+That join reconstructs the successful naming-specific history message byte-for-byte,
+without selecting a name or origin revision by literal lookup.
+The classification supplies the fact that this occurrence is a reference name;
+the revision supplies the recorded change.
+Neither alone is promoted into stronger authority.
+
+Task 27 implements structured qualification and pinned acquisition.
+Task 29 implements the auxiliary initial-use observations in existing pairing calls.
+Task 28 wires only the selected closed evidence type into final prompt builders before seat calculation,
+then verifies real acquisition and invoked-model windows through the compiled repair path.
+No further wording search or typed-versus-history comparison precedes implementation.
+The fresh full Mio pass remains blocked on that implementation and verification.
+
+[qualified-decision]: ../decision/translation-repair-qualified-archive-naming-revisions.md

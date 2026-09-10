@@ -206,7 +206,7 @@ This remains an evidence-injection prototype,
 not an implemented production feature.
 
 Task 21 waits on tasks 26 to 28.
-Task 26 is in progress:
+Task 26 has selected the implementation in
 [scoped archive evidence design](../planning/translation-repair-archive-evidence-design-2026-09-10.md).
 A generic Git prototype finds the naming revision without selecting its commit,
 but also returns punctuation and partial-word edits.
@@ -232,14 +232,27 @@ Fresh criticism retains administrator correction but has no participant-correcti
 this is an unresolved combined-path concern,
 not a proven causal effect of typed evidence.
 
-`proc_0e80` now runs `translation-repair-temporal-typed-path-probe-20260910`
-on frozen `.frozen-dist-b9d3b2ea0`,
-with generic typed-use evidence and no history evidence.
-The bound is one slice,
-120 requests and a twenty-minute global limit.
-Read actor,
-role and name wording together before choosing the implementation.
-No production acquisition or classification feature is implemented.
+`proc_0e80` completed in 542 seconds with seventy requests.
+It preserves the name and repairs administrator wording,
+but leaves the original wrong disclosure sentence untouched because no corresponding correction claim reaches editing.
+That fails the combined goal;
+different cohorts and post-window evidence injection prevent attributing the failure to typed text alone.
+
+The selected design is
+[qualified archive naming revisions](../decision/translation-repair-qualified-archive-naming-revisions.md):
+corroborated initial person/group/place reference use plus exact pinned same-path revision evidence,
+with the changed span equal to the complete reference occurrence.
+This generically reconstructs the successful naming-specific evidence
+without labeling arbitrary history edits as names or creating a cross-entry glossary.
+
+Implementation proceeds through task 27's qualifier/Git reader,
+task 29's initial-use corroboration in existing pairing calls,
+and task 28's structured pre-window prompt/cache/artifact integration.
+The final compiled path must use actual acquisition,
+not interception,
+and must correct actor,
+role and name together.
+No production acquisition or classification feature is implemented yet.
 No production history feature or one-off name mapping is added.
 The provider-free trace also confirms the pure administrator issue's broad quote includes the group name;
 adjudication alone is not proof that an editor will preserve it.
