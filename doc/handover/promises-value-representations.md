@@ -7,8 +7,9 @@ They then requested `util.inspect` where JSON is insufficient,
 and added `showify` to the workspace catalog.
 `pnpm-workspace.yaml:131` currently declares `showify: '>=0.2.8'`.
 
-The current lesson remains unchanged at SHA-256
-`319ffcb20481d468beb6353d6bbe94b682e55cb682c3542dffefc983f6e82eb7`.
+The pre-change lesson is preserved as `doc/planning/promises-teaching-before-value-views.local.html`,
+SHA-256 `319ffcb20481d468beb6353d6bbe94b682e55cb682c3542dffefc983f6e82eb7`.
+The current lesson now contains the value views and is undergoing integrated verification.
 The previous completed repairs are recorded in [the correction handover](promises-review-corrections.md).
 
 Preserve:
@@ -30,8 +31,11 @@ Task 31 verifies the integration and records the resulting teaching-discovery ev
 
 Research workspace: `/var/home/user/temp/agent/promises-value-inspection`.
 Lesson authoring workspace: `/var/home/user/temp/agent/promises-revision`.
-No new inspector dependency has been installed or bundled into the lesson yet.
-The next implementation step is to consume the catalog's published Showify package as lesson infrastructure.
+The root devDependencies now consume `showify: 'catalog:'`, resolved to 0.2.8.
+`proc_d778` installed it with lifecycle scripts disabled; the generated lockfile adds only Showify.
+Pnpm also sorted existing devDependency keys without changing their versions.
+The dependency change was committed separately.
+The formatter is now bundled into the lesson and learning exports.
 
 ## Existing omissions
 
@@ -131,6 +135,19 @@ JSON contrasts, ordinary getters and configured hooks, special-tag getter reads,
 CSP violations, and whether formatting changes unhandled-rejection behavior.
 Successful completion writes `results/showify-browser-probe.json` and closes both browsers.
 
+### Consumer-probe results
+
+The published archive is 117,323 bytes, unpacked size 247,842 bytes,
+with registry `gitHead` matching the inspected release commit.
+`index.js` SHA-256 is `a2e36462757588bfbdc6aae926dbc967bc91718fa2d8dbadb688c95faac2b745`.
+The generated probe IIFE measured 22,084 bytes.
+
+`proc_6e5e` passed Chromium but Firefox failed before executing the library with
+`Could not find profile folder.`
+Providing a private writable HOME/cache under the container's bounded `/tmp`
+resolved that environment failure without making the root filesystem writable.
+`proc_506a` passed both browser engines in 3 seconds.
+
 ## Other factual lookups
 
 No alternative package has been selected or installed.
@@ -161,6 +178,45 @@ add explicitly labelled inspection snapshots at the relevant boundaries.
 For opaque previews, formatted strings can cross the existing source/run-validated ownership boundary;
 parent-page cards avoid hiding the new content inside a fixed-height iframe.
 Standalone exercise exports must render those same snapshots locally.
+
+## Implemented value views
+
+New authoring modules:
+
+- `value-capture.mjs`: actual JSON and Showify calls, labelled failures and bounds, payload validation.
+- `value-render.mjs` and `value-view.css`: plain-text paired representations in document flow.
+- `value-view.mjs`: per-run recorders; opaque children post only serialized text snapshots.
+- `value-host.mjs`: source/run/sequence checks, stale-run clearing, and source download.
+- `bundle-values.mjs`: catalog package bundling and exact corresponding-source checks.
+- `value-assets.mjs`: MPL notice, source links, and embedded preferred TypeScript source.
+- `value-runtime-patches.mjs` and `value-workshop-patches.mjs`: targeted instrumentation, not replacement semantics.
+- `native-inspection-note.mjs`: clearly labelled, genuinely generated Node inspector comparison.
+
+`showify-0.2.8.source.txt` preserves the preferred source without modifying the upstream checkout.
+Its SHA-256 is `148de3a0c105b8c241a5b6a04b91a8275b9ba12437b1af6d3d026d9633465e51`.
+
+The data chapter introduces JSON, the supplied `inspectValue({ label, value })` helper,
+Showify's role, and the `typeof` label before relying on them.
+Snapshots now accompany objects, selected properties, callback values/lists,
+partial collections, returned Promises, resolver bundles, observed outcomes,
+adoption, async completion, errors, signals, and ownership collections.
+The shop's snapshots stay inside its optional source disclosure, after the meaningful activity.
+
+Embedded previews send snapshots to validated parent-owned panels,
+so value representations do not become another clipped iframe pocket.
+Standalone learning exports render locally and retain the formatter notice/license/source link.
+The separate reference chat's functional code and export remain independent of the viewer.
+All formatted characters are inserted through textContent.
+
+`proc_3dd6` passed the first contextual integration check in 21 seconds.
+`proc_f213` rebuilt, passed the expanded value-view test including the shop callback list,
+and passed the retained shop tests in 26 seconds.
+Further static print explanations, label wrapping, and the explicit display-limit legend were added afterward.
+
+Remaining verification includes a final rebuild, broader callback/workshop regression coverage,
+formatter/protocol edge cases, actual source download, print inventories and layout,
+and the Firefox ESR 140 consumer boundary.
+No visible-window completion gate applies.
 
 ## Integration direction to verify
 
