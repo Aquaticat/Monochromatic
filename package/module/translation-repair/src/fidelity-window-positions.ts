@@ -45,39 +45,43 @@ export function fidelityWindowPositions(
    */
   const body = slices[bodyPosition];
   /**
-   * Empty node arrays do not prove a heading-only slice.
+   * Existing physical window survives every uncertain or forbidden extension.
    */
-  const nextIsHeading = (next !== undefined)
-    && (next.syntax !== 'front-matter')
-    && (next.source
-      .nodes
-      .length > 0)
-    && next.source
-      .nodes
-      .every(function heading(node,): boolean {
-        return node.kind === 'heading';
-      },);
+  const immediate = [
+    slicePosition - 1,
+    nextPosition,
+  ];
+  if ((next === undefined) || (next.syntax === 'front-matter')
+    || (body === undefined) || (body.syntax === 'front-matter')) {
+    return immediate;
+  }
+  /**
+   * Source structure must positively establish a standalone heading.
+   */
+  const { nodes: headingNodes, } = next.source;
+  if (headingNodes.length === 0)
+    return immediate;
+  if (!headingNodes.every(function heading(node,): boolean {
+    return node.kind === 'heading';
+  },)) {
+    return immediate;
+  }
   /**
    * Nonempty unknown nodes remain content; mixed heading/body starts another boundary.
    */
-  const bodyIsAvailable = (body !== undefined)
-    && (body.syntax !== 'front-matter')
-    && (body.source
-      .text
-      .trim() !== '')
-    && !body.source
-      .nodes
-      .some(function heading(node,): boolean {
-        return node.kind === 'heading';
-      },);
-  return (nextIsHeading && bodyIsAvailable)
-    ? [
-      slicePosition - 1,
-      nextPosition,
-      bodyPosition,
-    ]
-    : [
-      slicePosition - 1,
-      nextPosition,
-    ];
+  const {
+    nodes: bodyNodes,
+    text: bodyText,
+  } = body.source;
+  if (bodyText.trim() === '')
+    return immediate;
+  if (bodyNodes.some(function heading(node,): boolean {
+    return node.kind === 'heading';
+  },)) {
+    return immediate;
+  }
+  return [
+    ...immediate,
+    bodyPosition,
+  ];
 }
