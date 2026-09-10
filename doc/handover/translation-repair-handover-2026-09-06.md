@@ -133,6 +133,13 @@ Task 21 is now in progress:
 all editor drafts still rename `Harunome Hanbai`,
 and the selected result says `Harunome Studio`.
 This remains the blocker before a fresh full Mio pass.
+`proc_43b4` runs `translation-repair-reference-name-scope-probe-20260910`,
+replacing only the shared name-policy paragraph in a bounded experiment.
+It first checks a genuine wrong-name control with an explicitly supplied official English name,
+then the fixed name packet and new anchored critic/panel output.
+The cap is 48 live requests and a twenty-minute global bound.
+No production name-policy change or one-off glossary entry has been made for task 21.
+See [reference-name authority](../planning/translation-repair-name-authority-2026-09-10.md).
 No full-entry run is active.
 Task 20 is deferred and non-blocking.
 

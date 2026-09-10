@@ -1237,5 +1237,7 @@ Tasks 23 and 19 are complete at the compiled repair boundary.
 All drafts still rename `Harunome Hanbai`,
 and the selected result says `Harunome Studio`.
 Task 21 is now in progress for that separate name-authority defect.
+Its bounded probe and completion criteria are in
+[reference-name authority](translation-repair-name-authority-2026-09-10.md).
 Whole-page readiness remains false;
 no full-entry run is active.
