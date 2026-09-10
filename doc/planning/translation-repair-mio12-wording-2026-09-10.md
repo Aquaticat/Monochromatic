@@ -649,8 +649,10 @@ The integration logged 0.00046112 USD on Bedrock,
 two OpenRouter calls reporting zero cost,
 three unpriced Hyper calls and seven unpriced Synthetic calls.
 The daily helper ran afterward.
-Completed cache payloads supplied the remaining calls;
-no existing cache was modified.
+The log records 26 disk-payload reuses;
+the spend records do not account for every forwarded request,
+so unreported failed or cancelled usage is not claimed free.
+No existing cache was modified.
 Task 18 is complete at this boundary.
 Task 20's retained-apparatus audit context and task 19's temporal context remain before the next full Mio pass.
 No full-entry pass is active.
