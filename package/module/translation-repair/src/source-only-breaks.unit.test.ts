@@ -86,7 +86,7 @@ await describe({
       '> The cat wakes.<Br/>The bird sings.',
       '> The cat wakes.<Cat.br/>The bird sings.',
       '> The cat wakes.`<br/>`The bird sings.',
-      '> The cat wakes.\\<br/>The bird sings.',
+      String.raw`> The cat wakes.\<br/>The bird sings.`,
       '',
     ].map(function cannotSupplyBreak(candidateText,) {
       return it({
