@@ -6958,11 +6958,15 @@ zero-warning lint and the complete unit suite pass.
 Compiled prompts match the measured treatments,
 and the public panel stage reproduces thirty cached calls with identical decisions and no cache misses.
 
-`proc_ccdb` now runs the compiled full repair path without prompt interception,
-on one Mio slice with a 120-request and 1200000 ms global bound.
+`proc_ccdb` completed the compiled full repair path without prompt interception,
+on one Mio slice after eighty-three requests and 971 seconds.
+It still removed the disclosure item;
+no correct regional candidate existed to select.
 Report:
 `~/temp/agent/temporal-implemented-path-probe-20260910/report.json`.
-Task 23 remains in progress until that result is read.
+Task 23 remains in progress after this failed wording check.
+`proc_88f8` isolates the two overlapping addition diagnoses in a diagnostic editor packet,
+without changing production admission rules or other issues.
 Task 21's name authority still blocks the next full Mio pass.
 No clean page or overall readiness is claimed.
 

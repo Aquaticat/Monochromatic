@@ -7,7 +7,8 @@ The verified production code is `8adb77fb9`.
 The forward-heading window,
 clustered panel packets,
 source-evidence/cache handoffs and repair-selector comparison evidence are implemented.
-Their compiled full repair-path verification is active.
+Their compiled full repair-path check did not meet the temporal wording goal.
+The remaining conflicting-diagnosis boundary is being isolated.
 No full-entry pass is active.
 Task 20's non-persisted audit accuracy is deferred,
 not a prerequisite to this work or the next Mio page reading.
@@ -875,9 +876,9 @@ The census is `~/temp/agent/original-evidence-size-20260910.json`.
 This is size evidence,
 not proof of model comprehension or a new truncation policy.
 
-## Active compiled full-path check
+## Completed compiled full-path check remains insufficient
 
-`proc_ccdb` is `translation-repair-temporal-implemented-path-probe-20260910`.
+`proc_ccdb` completed `translation-repair-temporal-implemented-path-probe-20260910` in 971 seconds.
 Script:
 `~/temp/agent/probe-temporal-implemented-path-20260910.mjs`.
 Plan:
@@ -895,5 +896,64 @@ conflicting records stop setup instead of silently overwriting a response.
 The bound remains one slice,
 120 JSON requests,
 360000 ms per exchange and 1200000 ms globally.
-Read selected text and the complete decision path before completing task 23 or resuming task 19's final verification.
+The run returned after eighty-three JSON calls.
+It retained the second friendship item but removed the disclosure item,
+and changed the group name to source script plus an explanatory gloss.
+This does not complete task 23 or task 19.
+
+The actual regional slate contained only deletion and a duplicate second-friendship item;
+no correct disclosure draft survived from the two usable editors.
+The regional selector declined that slate.
+The whole-chunk slate contained those flawed drafts and a composite retaining the old incorrect disclosure.
+It tied and used the existing indecision fallback.
+Thus this result is not a selector silently discarding an available correct candidate.
+Evidence:
+
+- `~/temp/agent/temporal-implemented-path-results-20260910.out`
+- `~/temp/agent/temporal-implemented-slates-20260910.out`
+- `~/temp/agent/temporal-implemented-decisions-20260910.out`
+
+The run logged 0.00506431 USD on Bedrock,
+nine OpenRouter calls reporting zero,
+and twenty-two unpriced Hyper plus thirty-three unpriced Synthetic calls.
+The daily helper ran afterward.
 Task 21 remains separate and no full Mio pass is active.
+
+## Active category-conflict diagnostic
+
+The admitted packet contains the correct `accuracy/mistranslation` claim about disclosure direction
+and two `accuracy/addition` claims scoped to that same item.
+This may steer authors toward removing a documented event rather than correcting its actor.
+The hypothesis is not yet a diagnosis or justification for production filtering.
+
+The MQM-derived taxonomy in `issue-taxonomy.ts` lists those categories but does not define the distinction for models.
+The [MQM Core typology](https://www.themqm.org/mqm-pillars/the-mqm-core-typology/)
+describes mistranslation as inaccurate representation of source content,
+and addition as content not present in source.
+Its polarity-distortion example is categorized as mistranslation;
+its addition example is unrelated material pasted from another translation.
+This informs a possible project-specific distinction,
+not a claim that MQM itself prescribes this pipeline's edit operations or forbids all category overlap.
+
+`proc_88f8` is `translation-repair-editor-category-conflict-probe-20260910`.
+Script:
+`~/temp/agent/probe-editor-category-conflict-20260910.mjs`.
+Plan:
+`~/temp/agent/editor-category-conflict-plan-20260910.out`.
+Log:
+`~/temp/agent/editor-category-conflict-probe-20260910.log`.
+Report:
+`~/temp/agent/editor-category-conflict-probe-20260910/report.json`.
+
+This diagnostic removes only the two overlapping addition diagnoses from the visible editor packet,
+retaining the accurate participant claim and every other admitted name,
+layout and wording issue.
+The source,
+target,
+nearby context,
+stock editor prompt,
+five original edit regions and original preservation licenses remain unchanged.
+It makes at most three calls with the existing 360000/1200000 ms bounds.
+The real assembler and structure check process its outputs.
+No production category filter,
+new guard or generation round is added.

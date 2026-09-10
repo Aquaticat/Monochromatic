@@ -2110,7 +2110,9 @@ uses bounded sequential packet execution and keeps every claim's configured elec
 Complete same-entry source evidence participates in repair cache/twin identity and reaches the panel and both selectors.
 Whole-chunk selection also receives the known existing English before repair,
 so an already-carried detail is not mistaken for a new addition.
-The compiled full-path check remains active and group-name authority is still unresolved;
+The compiled full-path check still removed the disclosure item,
+and group-name authority remains unresolved.
+Conflicting admitted diagnoses are under investigation;
 these implementation checks do not establish whole-page readiness.
 Initial translation writers remain unchanged because their separate context experiment did not correct the bullet.
 

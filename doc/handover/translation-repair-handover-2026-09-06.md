@@ -43,8 +43,8 @@ Whole-chunk selection now sees existing English before repair as comparison evid
 Compiled selector prompts match the successful measured treatments.
 Initial translation-writer and failed audit treatments remain unintegrated.
 
-`proc_ccdb` is active as `translation-repair-temporal-implemented-path-probe-20260910`,
-on frozen `.frozen-dist-8adb77fb9`.
+`proc_ccdb` completed `translation-repair-temporal-implemented-path-probe-20260910`
+in 971 seconds on frozen `.frozen-dist-8adb77fb9`.
 Report:
 `~/temp/agent/temporal-implemented-path-probe-20260910/report.json`.
 Log:
@@ -54,7 +54,27 @@ with one slice,
 120 requests maximum and a twenty-minute global bound.
 Conflicting merged cache payloads stop setup;
 old stores are not modified.
-Read actual selected wording and decisions before completing task 23.
+Its eighty-three calls did not meet the temporal wording goal:
+the disclosure item is removed,
+the second friendship item remains,
+and the group name is still changed.
+No correct disclosure candidate existed in the actual regional slate;
+regional selection declined,
+then whole-chunk selection tied and used its existing fallback.
+Do not mark task 23 complete on compilation or unit results.
+
+`proc_88f8` now runs `translation-repair-editor-category-conflict-probe-20260910`.
+Report:
+`~/temp/agent/editor-category-conflict-probe-20260910/report.json`.
+Log:
+`~/temp/agent/editor-category-conflict-probe-20260910.log`.
+It removes only the two addition diagnoses overlapping the accurate participant mistranslation claim
+from the diagnostic editor packet.
+All other issues,
+source/target/context,
+five regions and original preservation licenses remain fixed.
+Three calls maximum;
+this is not a production filter or new writing round.
 Task 19 waits on this implementation verification;
 task 21's group-name authority remains a separate blocker before any full Mio pass.
 Task 20 is deferred and non-blocking.
