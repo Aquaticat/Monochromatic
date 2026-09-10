@@ -3861,16 +3861,16 @@ Final form verification passes.
  At 1920 × 1080 CSS px the page has no horizontal
 overflow and all thirty-six native captures load at 2076 × 2152px.
  At 390 × 500,
-each environment has one 348px viewport over a 1056px 2 × 3 matrix;
- every candidate
-card is 292px wide,
- the row labels remain sticky at x=21,
- and the page itself does
-not overflow.
+each environment exposes two complete 348px matrix bands,
+ one per current-row source.
+Each band scrolls 896px of content by at most 548px;
+ its three candidate cards are
+290.66px wide and no label obscures them.
+ The page itself does not overflow.
 
-The preview now settles Fit synchronously after mobile toolbar reflow:
- its screen is 180
-× 187 CSS px inside a 192 × 198px device frame and needs no scrolling.
+The preview settles Fit synchronously after mobile toolbar reflow:
+ its screen is 180 ×
+187 CSS px inside a 192 × 198px device frame and needs no scrolling.
  Native pixels
 renders the screen at exactly 2076 × 2152 CSS px inside a 2210 × 2284px frame and
 discloses scrolling.
@@ -3884,8 +3884,9 @@ bezels,
  Escape,
  and focus
 restoration pass.
- Every one of the thirty-six preview paths loads the matching source,
-title,
+ Every one of the thirty-six preview paths loads the candidate-specific
+embedded source,
+ title,
  alternative text,
  and natural dimensions.
 
@@ -3896,40 +3897,57 @@ Both required radio groups,
 prepared output,
  reset,
  and the chat response path pass.
- There is no copy button or
-Clipboard API.
- Offline reload loads all thirty-six embedded rasters and requests no
-external resources.
- The form's light and automatic dark token schemes both render with no
-page overflow.
- Axe reports zero violations and zero incomplete checks:
- twenty-four
-page passes in each scheme and thirteen open-dialog passes in dark.
+ Changing either radio group or
+the correction text hides stale prepared output.
+ There is no copy button or Clipboard API.
+Offline reload loads all thirty-six embedded rasters and requests no external resources.
+The form's light and automatic dark token schemes both render with no page overflow.
+Axe reports zero violations and zero incomplete checks:
+ twenty-four page passes in each
+scheme and thirteen open-dialog passes in dark.
 
-The corrected mutation harness genuinely rejects seven faults:
+The validator binds each displayed data URL byte-for-byte to its named source raster,
+recomputes finite contrast from role evidence,
+ verifies exact current-row role output,
+ and
+samples disclosed folder,
+ rail,
+ deck,
+ spacer,
+ and track colors.
+ The corrected
+mutation harness genuinely rejects nine faults:
  removed ranking,
- duplicated
-capture,
+ duplicated capture,
+swapped embedded evidence,
  invalid role contrast,
  wrong Android environment metadata,
- shifted accepted
-geometry,
+shifted accepted geometry,
  removed true-black pixel,
- and a current-row color coupled back to structural
-reach.
+ wrong rail/deck mapping,
+ and a
+wrong current-row source.
  Design lint and unit contracts pass.
- Emulator settings were restored to no
-customization override,
+
+Emulator settings were restored to no customization override,
  no contrast override,
- light system mode,
+ light
+system mode,
  font scale 1.0,
- no
-accessibility service,
- and all animation scales 1.0 before the no-snapshot emulator stopped.
-The isolated verifier remains open only until final handoff.
+ no accessibility service,
+ and all animation scales 1.0.
+The emulator manager timed out while waiting for graceful termination,
+ then direct evidence
+showed PID 1209285 absent,
+ no process under the Android SDK emulator path,
+ and no ADB
+device.
+ Unrelated libvirt QEMU guests remain untouched.
+ The isolated verifier remains open
+only until final handoff.
  Close it,
- open the cleared
-form in normal Helium,
- verify that exact window is active and non-minimized in the current
-system color scheme,
- then wait for R1/R2/R3 and C1/C2.
+ open the cleared form in normal Helium,
+ verify that
+exact window is active and non-minimized in the current system color scheme,
+ then wait
+for R1/R2/R3 and C1/C2.
