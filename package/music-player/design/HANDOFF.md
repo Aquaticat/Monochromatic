@@ -3802,3 +3802,49 @@ whole folder pane and weakens the true-black identity.
  Build the self-contained Helium
 matrix with all three columns and all six evidence rows before asking for a strategy
 choice.
+
+Independent review found that those three strategies bundled structural surface reach
+with current-row neutral sourcing.
+ Prototype commit `27f72a606` separates them into a 2 ×
+3 cross-product:
+ R1 stable,
+ R2 zoned,
+ and R3 tonal structure by C1 fixed or C2
+dynamic current row.
+ The capture task now produces thirty-six opaque native candidates.
+Main commit `7b15d8dff` preserves the separated evidence;
+ `8d73e4dbe` rebuilds the
+form with two independent questions.
+ Coupled evidence is retired by `eb337c40f`.
+
+The review also found two verification defects.
+ The preview now uses independent native
+x/y scale so its source is exactly 2076 × 2152 CSS px,
+ and Fit settles after toolbar
+reflow before reporting actual scroll state.
+ The mutation harness previously caught its own
+unexpected-pass assertion,
+ allowing a false success.
+ Its control flow is corrected.
+ The
+current matrix rejects missing rankings,
+ duplicated rasters,
+ invalid role contrast,
+wrong environment metadata,
+ shifted geometry,
+ removed true-black pixels,
+ and coupled
+current-row color.
+ The corrected historical harness was also rerun against TalkBack
+commit `5cdb4602c`;
+ all three historical mutations genuinely fail.
+
+The user manually granted clipboard permission but clarified that this review does not
+need the Clipboard API or a copy button.
+ Remove both.
+ Keep prepared output visible and
+state the direct response path:
+ reply in chat with R1/R2/R3,
+ C1/C2,
+ and any
+correction.

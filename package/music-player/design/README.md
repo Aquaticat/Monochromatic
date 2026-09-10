@@ -34,8 +34,15 @@ Android dynamic color.
 mode behavior,
  and the completed accessibility decisions.
  The native Compose matrix
-compares meaningful dynamic-role strategies across representative wallpaper palettes at
-the target's opaque 2076 × 2152px panel resolution.
+separates three structural surface reaches from two current-row neutral sources across
+six representative Android palette environments at the target's opaque 2076 × 2152px
+panel resolution.
+ Wallpaper rows are uncontrolled stress inputs,
+ not choices.
+ The form
+prepares a visible answer and directs the user to reply in chat;
+ it intentionally has no
+clipboard API or copy button.
 
 The preceding accessibility review settled pane-by-pane TalkBack traversal (F1) and
 structured current-track speech (S1).

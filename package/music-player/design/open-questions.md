@@ -669,21 +669,37 @@ treatment T3,
  and accessibility decisions
 D39 and D40.
 
-Build a native Compose matrix that separates dynamic-role application strategy from
-representative Android wallpaper palettes.
- Wallpaper is uncontrolled user input,
- not a
-choice to settle:
- Android users can and likely will change it.
- The selected strategy must
-remain legible,
- preserve hierarchy,
- and avoid accidental over-saturation across materially
-different wallpaper-derived palettes.
- Every candidate must retain pure black for the base
-background under B1,
- use Android-generated dynamic roles rather than hand-picked accent
-hexes,
- and keep the current row soft-neutral rather than saturated.
- Compare at opaque
-2076 × 2152px on the unfolded target before asking for a strategy choice.
+The native 2 × 3 matrix is built across six Android palette environments.
+ Wallpaper is
+uncontrolled user input,
+ not a choice to settle:
+ Android users can and likely will
+change it.
+ Every candidate retains pure black for the center spacer and track canvas,
+uses Android-generated component roles,
+ and keeps the current row soft-neutral plus bold.
+
+Two separable decisions remain:
+
+- Structural surface reach:
+  R1 stable black structure,
+  R2 generated rail and deck,
+  or
+  R3 generated folder canvas,
+  rail,
+  and deck.
+- Current-row neutral source:
+  C1 fixed `#0A0A0D` or C2 generated
+  `surfaceContainerLow`.
+
+Personal rankings are R1 > R2 > R3 and C1 > C2.
+ The active form shows every
+cross-product under the measured wallpaper seed,
+ coral Tonal Spot,
+ green Tonal Spot,
+gold Vibrant,
+ magenta Expressive at medium contrast,
+ and Monochromatic at high
+contrast.
+ These environment rows are evidence,
+ not user options.

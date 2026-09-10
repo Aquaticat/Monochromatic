@@ -643,54 +643,71 @@ Its published source implements `dynamicDarkColorScheme(context)` by reading And
 function derives a dark scheme from system wallpaper and changes when wallpaper changes.
 The app must therefore consume semantic role pairs rather than remember palette hexes.
 
-The matrix fixes the Android environment long enough to compare three app-owned role
-policies.
+The matrix fixes the Android environment long enough to compare two independent
+app-owned decisions.
  It uses the measured current AVD wallpaper seed plus warm coral,
- forest green,
-gold Vibrant,
+forest green,
+ gold Vibrant,
  magenta Expressive at medium contrast,
- and Monochromatic at high
-contrast.
+ and Monochromatic
+at high contrast.
  These rows are stress inputs,
  never options for the user to choose.
- Each row
-records the resolved Android roles under `questions/evidence/dark-dynamic-*-roles.json`.
+Each row records the resolved Android roles under
+`questions/evidence/dark-dynamic-*-roles.json`.
 
-Every candidate preserves a visible `#000000` base and valid generated foreground pairs:
+Structural surface reach has three candidates:
 
-- Stable ladder keeps the B2 black surface ladder and applies Android-generated dynamic
-  roles to components,
-  state accents,
+- R1 stable keeps the B2 black surface ladder and applies Android-generated roles to
+  components,
+  selected accents,
   text,
   and outlines.
-- Zoned dynamic keeps both content canvases black but assigns generated
-  `surfaceContainerLow` to the letter rail,
-  deck,
-  and current row.
-- Tonal pane keeps the track canvas black but assigns generated low,
+- R2 zoned keeps both content canvases black but assigns generated
+  `surfaceContainerLow` to the letter rail and deck.
+- R3 tonal keeps the track canvas black but assigns generated low,
   standard,
-  and
-  high container roles across the folder pane,
+  and high
+  container roles across the folder canvas,
   rail,
   and deck.
 
-The last policy is deliberately the widest permissible use of dynamic surfaces;
- it does
-not silently replace the standing true-black base.
- Every policy retains D36's neutral
-current-row container plus bold title,
- D37's transport hierarchy,
- D38's tonal Open,
-D39 traversal,
- and D40 state speech.
+Current-row neutral source has two candidates:
 
-Measured minimum contrast across all recorded role outputs is 6.04:1 for
-`primary`/`onPrimary`,
- 4.63:1 for `secondaryContainer`/`onSecondaryContainer`,
-16.71:1 for `onSurface` on black,
+- C1 fixed keeps `#0A0A0D` plus the accepted bold title under every Android palette.
+- C2 dynamic uses generated `surfaceContainerLow` plus the same accepted bold title.
+
+The 2 × 3 cross-product prevents a structural-surface choice from silently deciding the
+current-row source.
+ Every combination retains D36's neutral container and bold title,
+D37's transport hierarchy,
+ D38's tonal Open,
+ D39 traversal,
+ and D40 state speech.
+R3 is the widest permissible use of dynamic surfaces;
+ it does not replace the standing
+true-black track canvas or center spacer.
+ Pixel probes verify both regions are exactly
+black in all thirty-six opaque captures.
+
+Contrast checks recompute selected rendered combinations from every role record instead
+of trusting stored minima.
+ Minimums are 6.04:1 for `primary`/`onPrimary`,
+ 4.63:1
+for `secondaryContainer`/`onSecondaryContainer`,
+ 16.71:1 for `onSurface` on
+black,
  9.10:1 for `onSurfaceVariant` on black,
-and 4.56:1 for generated `outline` on black.
- All text pairs clear 4.5:1 and the
-rail boundary clears 3:1.
- `questions/evidence/dark-dynamic-contrast.json` retains every
-per-environment value.
+ 7.09:1 for supporting text on
+the highest used generated container,
+ and 3.80:1 for generated `outline` against the
+darkest adjacent generated container.
+ All measured text combinations clear 4.5:1 and
+all measured rail-boundary combinations clear 3:1.
+`questions/evidence/dark-dynamic-contrast.json` retains every per-environment value.
+
+These captures establish palette-dependent appearance only.
+ The prototype is relaunched
+after Android roles settle,
+ so runtime wallpaper-change propagation remains later
+implementation verification rather than a claim of this design matrix.
