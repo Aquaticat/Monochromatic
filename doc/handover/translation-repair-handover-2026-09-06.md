@@ -155,17 +155,25 @@ Neither removing the proposed replacement nor requiring reasons stops the rename
 The reasons instead demand official-English-name evidence to retain the archive form;
 one applies the work-title fallback to this group name.
 
-`proc_fcb6` now runs `translation-repair-name-authority-ladders-resume-20260910`:
-a dedicated reference-convention policy,
-separate from creative-work titles and ordinary vocabulary,
-using plain production ballots without the failed role or rationale augmentations.
-The initial attempt stopped on an overly strict negative-control assertion:
-an official-title tie authorized no edit,
-as `deriveEditableEnvelopes` confirms.
-The resumed control tests that actual non-authorization boundary
-and reuses completed replies.
-The remaining preplanned controls and fresh critic/panel checks are unchanged.
-The cap is 96 requests and a twenty-minute global bound.
+`proc_fcb6` completed in 251 seconds with 66 calls,
+including eighteen reused calls from the stopped first attempt.
+The functional controls pass,
+but the fixed and fresh name packets still authorize renaming.
+No policy-ladder treatment is integrated.
+
+Read-only Git history now supplies a concrete archive replacement:
+ancestor commit `33a9d3d9995a985f0df67f877a61e0238c0769a3`
+replaces the English line's `春の芽工作室` with `Harunome Hanbai`.
+That documents a local naming choice,
+not official English-name proof.
+
+`proc_b062` runs `translation-repair-archive-name-revision-probe-20260910`:
+the actual before/after revision as fenced evidence,
+with production policies and schemas unchanged.
+Controls preserve explicit contrary English naming and factual corrections.
+The fixed name packet and fresh critics/panel follow.
+The cap is 64 requests and a twenty-minute global bound.
+No production history feature or one-off name mapping is added.
 The provider-free trace also confirms the pure administrator issue's broad quote includes the group name;
 adjudication alone is not proof that an editor will preserve it.
 No production name-policy change or one-off glossary entry has been made for task 21.

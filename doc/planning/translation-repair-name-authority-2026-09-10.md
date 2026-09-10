@@ -453,7 +453,9 @@ two OpenRouter calls reporting zero,
 and six Hyper plus six Synthetic calls unpriced.
 The daily helper ran afterward.
 
-`proc_fcb6` runs `translation-repair-name-authority-ladders-resume-20260910`.
+`proc_fcb6` completed `translation-repair-name-authority-ladders-resume-20260910`
+in 251 seconds with 66 calls,
+including the eighteen cached calls from the stopped attempt.
 
 - Script:
   `~/temp/agent/probe-name-authority-ladders-r2-20260910.mjs`.
@@ -471,3 +473,81 @@ The remaining controls,
 actual name packet,
 fresh critics and fresh name panel remain the same preplanned work.
 The maximum remains 96 requests and a twenty-minute global bound.
+
+The functional controls pass:
+explicit English naming and wrong-entity correction remain authorized;
+the official title is not authorized for renaming;
+archive-only work-title correction,
+mentioned-form correction,
+ordinary-word correction,
+participant correction and pure administrator correction remain actionable.
+Malformed votes remain abstentions.
+
+The name goal still fails.
+The fixed packet's pure rename claims receive five supports and one malformed abstention.
+Fresh critics again report false name and terminology defects,
+and their panel authorizes them,
+including name claims with six supports.
+It also accepts a compound role/name diagnosis and a broad addition allegation involving the group name.
+This is not sufficient evidence to integrate the policy separation.
+No corresponding production change is made.
+
+The resumed run logged 0.00509089 USD on Bedrock,
+five OpenRouter calls reporting zero,
+and seventeen Hyper plus fourteen Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## New archive-revision evidence
+
+Read-only corpus history provides a documented local naming replacement:
+commit `33a9d3d9995a985f0df67f877a61e0238c0769a3`
+changes the English QQ-group line from source-script `春の芽工作室`
+to `Harunome Hanbai`.
+The rest of that line is unchanged.
+The revision is an ancestor of pinned corpus commit
+`a41fc607ea5a70d8a7625cc67d5ed8c444f53379`,
+verified with `git merge-base --is-ancestor`.
+
+The source-script form was already present in the entry's initial
+`57b82adc57fb498883efe76f504eefb19750bb10` revision.
+The repository is not shallow.
+These facts document an archive naming choice;
+they do not establish an official English name,
+external naming correctness or the editor's private reasoning.
+
+This is different evidence from merely asking reviewers to treat the current archive as a convention.
+It shows the source-script and English forms being exchanged in the same reference.
+A diagnostic can test that evidence without adding a glossary entry.
+Any production use would need a generic,
+scoped provenance-acquisition design;
+a hand-inserted mapping for this one name is not a remedy.
+
+## Active archive-revision diagnostic
+
+`proc_b062` runs `translation-repair-archive-name-revision-probe-20260910`.
+
+- Script:
+  `~/temp/agent/probe-archive-name-revision-20260910.mjs`.
+- Plan:
+  `~/temp/agent/archive-name-revision-plan-20260910.out`.
+- Log:
+  `~/temp/agent/archive-name-revision-probe-20260910.log`.
+- Report:
+  `~/temp/agent/archive-name-revision-probe-20260910/report.json`.
+
+The script reads the actual ancestor diff,
+asserts exactly one removed and one added line,
+and verifies the added line still occurs in the current archive slice.
+It carries those lines as fenced revision evidence,
+not an official-name claim and not a proposed edit.
+Production system rules and response schemas remain unchanged.
+
+Controls require explicit contrary English-name evidence to override an invented archived revision,
+and require the actual participant and administrator corrections to remain actionable.
+Then the fixed name packet,
+fresh anchored critics and their name-touching panel are measured.
+The cap is 64 requests,
+360000 ms per exchange and 1200000 ms globally.
+No corpus edit,
+production history feature,
+name list or glossary entry is made.
