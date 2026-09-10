@@ -14,7 +14,9 @@ The compiled stage retains the useful `Translation:` label,
 then asks both existing naturalness responsibilities about that exact block.
 All fourteen usable replies in
 `~/temp/agent/archive-brief-integrated-20260910/report.json`
-call it missing or empty translation content.
+produce false findings:
+most call it missing or empty translation content,
+while one criticizes a Chinese heading outside the candidate.
 The artifact is not missing the following English transcript.
 
 `package/module/translation-repair/src/archive-block-naturalness.ts`
@@ -128,14 +130,34 @@ The plan and each live dispatch assert that the captured field actually has that
 Completed payloads from the first run remain reusable;
 only uncompleted requests may be purchased again.
 
-## Active corrected run
+## Completed corrected run
 
-`proc_724d` is `translation-repair-archive-audit-context-probe-20260910-r2`.
+`proc_724d` completed `translation-repair-archive-audit-context-probe-20260910-r2` in 463 seconds.
 The corrected offline plan passed and is saved at
 `~/temp/agent/archive-audit-context-plan-20260910-r2.out`.
 The log is `~/temp/agent/archive-audit-context-probe-20260910-r2.log`.
-The report will be
+The report is
 `~/temp/agent/archive-audit-context-probe-20260910-r2/report.json`.
+
+Actual results:
+
+- Baseline: none of fourteen usable replies accept the label.
+- Positional context only: two of twelve usable replies accept it;
+  two replies fail schema validation.
+- Context plus scope: eight of fourteen accept it.
+  The remaining replies still report false missing content or the out-of-scope Chinese heading.
+- Dangling prose: all fourteen reject it and identify real grammar or sentence-completeness defects.
+- Orphan label: thirteen reject it and one accepts it,
+  but several rejection reasons still mistakenly demand the whole source passage.
+  Numerical rejection alone is not a correct diagnosis.
+
+The context-plus-scope treatment improves the observed replies,
+but does not establish elimination of the false findings.
+No task 20 production change is yet justified as a complete remedy.
+The run logged 0.00070104 USD on Bedrock,
+four OpenRouter calls reporting zero,
+and twenty unpriced Hyper plus twenty-four unpriced Synthetic calls.
+The daily helper ran afterward.
 
 The probe permits at most seventy requests,
 seven concurrently,
@@ -144,9 +166,39 @@ Only new substantive prompts may reach providers;
 the baseline reuses completed payloads from a copied disposable cache.
 No provider SDK or reasoning-budget parameter is added.
 
+## Active in-place presentation probe
+
+The first presentation places both before/after context ahead of the candidate.
+`proc_dc0f` runs `translation-repair-archive-audit-in-place-probe-20260910`
+to test whether preserving reading order clarifies the block's function.
+It changes only field order:
+before-context,
+exact candidate and numbered paragraph,
+then after-context.
+It keeps the scope instruction,
+source and candidate bytes,
+original asked seats,
+response schema and completion caps.
+
+Script:
+`~/temp/agent/probe-archive-audit-in-place-20260910.mjs`.
+Plan:
+`~/temp/agent/archive-audit-in-place-plan-20260910.out`.
+Log:
+`~/temp/agent/archive-audit-in-place-probe-20260910.log`.
+Report:
+`~/temp/agent/archive-audit-in-place-probe-20260910/report.json`.
+
+It tests the actual label and both controls,
+with at most forty-two requests and seven concurrent calls.
+The exchange and global bounds remain 360000 and 1200000 ms.
+The prior scoped treatment remains the comparator;
+no completed identical request is deliberately repurchased.
+
 At the terminal notification:
 read every arm's actual findings,
 run the per-provider spend and daily helpers,
 choose the supported input remedy,
 and only then add its red/green integration guards and production change.
 Verify ordinary review prompts remain unchanged when no archive context applies.
+Do not make universal model compliance a new acceptance requirement.

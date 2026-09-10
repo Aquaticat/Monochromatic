@@ -67,16 +67,25 @@ not converted into blanket deletion rules.
 
 Task 18 is complete.
 Task 20 is in progress:
-all fourteen audit-only findings wrongly call the useful label an empty translation.
-`proc_724d` runs `translation-repair-archive-audit-context-probe-20260910-r2`.
+the fourteen baseline audit findings are false,
+mostly missing-content claims plus one out-of-scope Chinese-heading complaint.
+Corrected probe `proc_724d` completed:
+context alone yielded two accepts among twelve usable replies;
+context plus scope yielded eight among fourteen.
+All fourteen rejected dangling prose with real grammar/completeness findings;
+orphan-label judgments still included one acceptance and mis-scoped reasons.
+The first harness run inherited a one-second capture timeout and is not treatment evidence.
+
+`proc_dc0f` now runs `translation-repair-archive-audit-in-place-probe-20260910`.
 Report:
-`~/temp/agent/archive-audit-context-probe-20260910-r2/report.json`.
+`~/temp/agent/archive-audit-in-place-probe-20260910/report.json`.
 Log:
-`~/temp/agent/archive-audit-context-probe-20260910-r2.log`.
-The first harness run inherited a one-second capture timeout and is not treatment evidence;
-the corrected plan asserts the actual 360000 ms exchange field.
-The experiment compares positional context alone with context plus block scope,
-using both original responsibilities and dangling-prose/orphan-label controls.
+`~/temp/agent/archive-audit-in-place-probe-20260910.log`.
+It changes only presentation order so the exact block sits between its before/after English context,
+keeping the scope instruction and actual source/candidate bytes.
+Both original responsibilities and dangling-prose/orphan-label controls remain.
+The actual exchange bound is asserted as 360000 ms;
+at most forty-two requests run seven at a time.
 Repeated `Translation:` labels require known parser offsets,
 not a first text match.
 See [archive audit context measurement](../planning/translation-repair-archive-audit-context-2026-09-10.md).
