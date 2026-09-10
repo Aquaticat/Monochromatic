@@ -134,13 +134,10 @@ If reviewers choose retention,
 `recordArchiveBlockNaturalness` records defects but cannot change the text.
 That audit-only behavior is deliberate under the no-loop design.
 
-The proposed preventive treatment is within the existing first review:
-classify clear unintended English defects as a minimal revision even when facts are supported;
-reserve retention for wording needing no material correction;
-retain useful apparatus rather than treating its non-factual nature as grounds for deletion.
+That initial proposed explanation is superseded for Mio12 by the cache-only replay recorded in this document.
+The correct typo revision was already produced;
+stronger generation instructions or another copy-edit round are not the primary remedy.
 Do not add a rejection-triggered copy-edit loop or loosen source support.
-Probe the classification and actual selected text,
-not just prompt wording.
 
 ## Optional wording preferences
 
@@ -360,4 +357,239 @@ The post-probe daily helper ran.
 
 The name-policy work is verified locally and at the bounded live stage.
 The remaining material follow-ups are archive apparatus/copy-edit treatment and temporal source context.
-No probe or full-entry pass is active.
+## Cache-only archive replay corrects the remaining diagnosis
+
+`recover-Mio12-archive-context-20260910.mjs` reconstructs the actual two-picture support using twelve completed
+payloads and no provider client.
+Its first draft used receipt order for readers;
+the overlap mismatch exposed that mistake.
+The corrected replay derives the seated reader order from the frozen code and recorded dryness,
+and reproduces the logged overlap values for both pictures.
+It uses the real `archiveBlockSourceContexts` formatter and original archive block offsets.
+
+`replay-Mio12-archive-review-20260910.mjs` then replays the complete old stage from completed prompt payloads.
+The reconstructed selector messages match the recorded Mio12 messages byte for byte.
+There are 21 cached outcomes and two expected cache misses for unavailable calls;
+missing payloads throw locally rather than contacting a provider.
+
+The label path is exact:
+six reviewers classify `Translation:` as valid editorial context,
+while GPT-OSS proposes removal.
+All six deciding judges choose the sole removal candidate.
+Unlike the initial reviewers,
+those selectors do not receive the English archive showing the transcript that the label introduces.
+They see the label,
+source context and review findings,
+and describe it as having no rendered content or purpose.
+The missing archive context is therefore another decision-input gap,
+not merely an unhelpful task title.
+
+The retained-chat path is different from the initial hypothesis.
+Seven schema-valid reviews meet the eleven-seat participation quorum.
+Kimi already supplies a complete correction of `musculine` and `Wechat`;
+Gemma supplies a bad eighty-character partial rewrite.
+Three `source-supported` responses fail exact anchoring,
+leaving four eligible replies.
+The retention-anchor threshold returns the original before either actual revision reaches selection.
+The all-retention naturalness-audit branch is not the branch this block took.
+
+The revised remedy keeps the review and independent-selector quorums unchanged,
+continues excluding unanchored retention proof,
+and allows actual revision candidates to reach that independent selector.
+Retention-only resolution still uses the existing anchor threshold and unresolved fallback.
+The selector must be able to compare revisions with the unchanged block,
+under a neutral task and with the already-available English archive as context,
+not as factual source authority.
+A focused independent review supports those boundaries.
+
+Evidence:
+`~/temp/agent/Mio12-archive-context-20260910.json`,
+`~/temp/agent/Mio12-archive-context-replay-20260910.out`,
+`~/temp/agent/Mio12-archive-review-replay-20260910.json`
+and `~/temp/agent/Mio12-archive-decisions-20260910.out`.
+
+## Completed archive decision measurement
+
+`proc_5ae5` completed `translation-repair-archive-decisions-probe-20260910` in 44 seconds.
+Its script is `~/temp/agent/probe-archive-decisions-20260910.mjs`;
+log `~/temp/agent/archive-decisions-probe-20260910.log`;
+report `~/temp/agent/archive-decisions-probe-20260910/report.json`.
+
+The offline plan passed and the label baseline matches the actual cached selector messages exactly.
+The experiment compares that baseline with archive-context-only input,
+then the combined neutral task,
+archive context and unchanged-block option.
+It also sends the two already-produced chat revisions and original block to the independent judges.
+No reviewer or writer is re-asked to generate a correction.
+There are at most 24 model requests,
+six concurrent requests,
+a 360000 ms exchange bound and a 1200000 ms global bound.
+The baseline reuses completed payloads.
+
+The existing chat correction wins five of six judgments against the bad partial rewrite and unchanged original.
+The remaining judge chooses the original while mistakenly describing it as the corrected candidate;
+that reason is not treated as evidence of a correction.
+This supports exposing the already-produced revision to independent selection.
+
+The label results do not establish a remedy.
+All six baseline judges remove it,
+and all six still remove it with archive context added.
+The combined context,
+neutral task and original option retains it on only one of six judgments.
+Context restoration and an unchanged-block option are necessary decision information,
+but this measurement does not show them sufficient to fix the label outcome.
+
+The next evidence boundary is visible in the code:
+selection receives bare `finding` strings,
+not the review `disposition` that explains them.
+Six reasons for retaining editorial context therefore arrive under `LATEST REVIEW FINDINGS`
+as if they were defect reports supporting removal.
+Selectors repeatedly describe those findings as agreeing on removal,
+although their actual decisions were six retentions and one revision.
+The proposal-to-reason association is also absent for competing corrections.
+
+The experiment logged 0.00464245 USD on Bedrock,
+three OpenRouter calls reporting zero cost,
+and nine unpriced Hyper calls.
+The baseline was reused from completed payloads.
+The daily helper ran afterward.
+
+## Completed structured-assessment measurement
+
+`proc_0425` completed `translation-repair-archive-assessments-probe-20260910` in 127 seconds.
+The script is `~/temp/agent/probe-archive-assessments-20260910.mjs`;
+log `~/temp/agent/archive-assessments-probe-20260910.log`;
+report `~/temp/agent/archive-assessments-probe-20260910/report.json`.
+The offline plan passed.
+
+The same neutral comparison,
+source,
+archive context and candidate values now carry eligible review assessments as structured data:
+disposition,
+proposed retain/revise action,
+candidate number and finding.
+The evidence explicitly remains opinion to check against the documents,
+not authority or votes deciding the answer.
+Unanchored retention claims are not promoted into this evidence.
+The deciding criteria are unchanged.
+
+Actual label and chat cases are accompanied by invented orphan-label and contradicted-biography controls.
+Those controls deliberately carry a misleading retention majority:
+a selector must still inspect context and source instead of rubber-stamping earlier opinions.
+There are at most 24 requests,
+six concurrent requests,
+a 360000 ms exchange bound and a 1200000 ms global bound.
+No writer is asked to generate a replacement.
+
+All six judges now retain the actual useful label.
+Five of six choose the already-produced full typo correction;
+the remaining judge chooses the uncorrected original.
+All six remove the directly contradicted award claim despite the deliberately misleading retention majority.
+The orphan-label control is not a success:
+four retain it,
+and one of the two numerical removal votes has a reason arguing for retention.
+The result does not establish perfect placement reasoning or a blanket rule for orphan labels.
+No automatic keep decision or source-proof relaxation is inferred from it.
+
+The measured correction is to preserve the review decision's meaning in the handoff,
+not to add another writing round.
+`4170c5d2f` fails four boundary cases before implementation,
+while its retention-only fallback and initial-quorum controls pass.
+`bfcb5b568` routes admissible revision candidates to the existing independent selector after review quorum,
+retains the anchor gate for retention-only resolution,
+adds the unchanged block as an explicit option,
+and supplies archive context plus anonymous typed assessments linked to their candidate.
+Unanchored retention claims stay out of selector evidence but remain in audit findings.
+Both stage quorums remain unchanged.
+Selecting the exact original returns `retained`,
+not a fictitious revision.
+
+The implementation is verified through `6c24c82c1`:
+build,
+types,
+oxlint and the full suite pass.
+`~/temp/agent/archive-selection-final-unit-20260910.out` ends `unit exit 0`.
+Coverage includes seven heard reviews over an eleven-seat bench,
+insufficient retention anchors,
+sole-revision selector failure,
+original selection,
+original echo deduplication,
+prior findings,
+retention-only fallback and initial-review failure.
+Older fixture routing now identifies the actual archive evidence boundary rather than an outdated task sentence.
+
+The typed-assessment experiment logged 0.00427526 USD on Bedrock,
+four OpenRouter calls reporting zero cost,
+and twelve unpriced Hyper calls.
+The daily helper ran after the probe.
+
+## Current-build archive integration exposes a remaining generation gap
+
+`proc_3f3e` completed `translation-repair-archive-integration-20260910` on frozen `6c24c82c1` in 311 seconds.
+The offline plan passed.
+It invokes the real public archive-review stage for the actual label and chat,
+using the recovered corroborated source support and original eleven-seat roster.
+Both fresh review and independent selection are exercised,
+with at most 48 forwarded requests,
+a 360000 ms exchange bound and a 1200000 ms global bound.
+The report is `~/temp/agent/archive-integration-probe-20260910/report.json`
+and log `~/temp/agent/archive-integration-probe-20260910.log`.
+This was not a successful end-to-end correction.
+The label stayed through the unresolved-retention fallback:
+five editorial assessments survived,
+while two reviewers incorrectly treated the label as source-supported prose and failed anchoring.
+No label selector ran in that case.
+
+The chat reached independent selection,
+so the routing fix was exercised.
+But the fresh review produced only Gemma's broader revision,
+not Kimi's earlier minimal typo correction.
+That revision fixes the spellings while introducing two untranslated `唔` utterances and replacing readable
+English terms with bare `mtf` and `GD`.
+The selector split three to three and kept the original,
+including its misspellings.
+The program did not silently ship the flawed revision,
+but the desired corrected English was not produced.
+
+A cache-only replay confirms the actual proposer and values in
+`~/temp/agent/archive-integration-replay-20260910.json` and
+`~/temp/agent/archive-integration-review-evidence-20260910.out`.
+`photo6.webp` was inspected directly as well as `photo7.webp`;
+reader inferences about filler placement are not substituted for the image evidence.
+
+The remaining producer-brief issue is now directly observed:
+`source-supported` does not say no necessary English correction remains,
+and `revise` does not clearly require a minimal complete English replacement rather than source-language copying.
+This does not invalidate the earlier routing diagnosis:
+the old good correction was blocked,
+while this new cohort produced no equally good correction to select.
+
+The integration logged 0.00465705 USD on Bedrock,
+two OpenRouter calls reporting zero cost,
+thirteen unpriced Hyper calls and four unpriced Synthetic calls.
+
+## Active initial-review brief measurement
+
+`proc_4c65` runs `translation-repair-archive-review-brief-probe-20260910`
+on frozen `6c24c82c1`.
+The script is `~/temp/agent/probe-archive-review-brief-20260910.mjs`,
+log `~/temp/agent/archive-review-brief-probe-20260910.log`,
+and report `~/temp/agent/archive-review-brief-probe-20260910/report.json`.
+The offline plan passed through the public stage;
+the private message builder is not a barrel export and is not called as one.
+
+Only the existing first-review system brief changes.
+The treatment separates useful editorial apparatus,
+necessary revisions and already-adequate source-supported English;
+requires complete minimal English corrections;
+rejects mere literalness as a correction reason;
+and treats parallel image readings as witnesses rather than additional utterances.
+It does not alter source or archive data,
+selector instructions,
+quorums,
+rosters or the fixed-depth graph.
+It forwards at most 48 requests,
+with the same 360000 ms exchange and 1200000 ms global bounds.
+No new correction round or Chinese-character rejection rule is introduced.
+
+No full-entry pass is active.

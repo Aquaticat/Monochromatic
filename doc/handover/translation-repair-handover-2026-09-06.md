@@ -24,7 +24,52 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current state after the naming-policy integration on 2026-09-10:
+Current archive-boundary work on 2026-09-10:
+`6c24c82c1` is the verified code tip,
+with build,
+types,
+oxlint and the complete suite passing.
+`~/temp/agent/archive-selection-final-unit-20260910.out` ends `unit exit 0`.
+The implementation now routes actual revisions past the retention-only anchor gate,
+without lowering review or selector quorum;
+compares them with the unchanged block;
+and carries archive context plus anonymous review action/category-to-candidate evidence.
+Unanchored retention claims remain excluded from selector evidence and visible in audit findings.
+
+Cache-only replay proved that Mio12 had already produced a complete typo correction that never reached selection.
+Typed evidence made all six probe judges retain the useful label,
+and all six removed a directly contradicted factual claim despite a misleading retention majority.
+The orphan-label control was imperfect and is not claimed as a success.
+
+Fresh current-build integration did not finish the quality repair:
+the label stayed by unresolved fallback,
+and the fresh chat review produced only a broader revision with untranslated and duplicated filler.
+Selection tied and retained the original spelling errors.
+The routing fix was exercised,
+but a better first-review English revision brief remains under measurement.
+
+`proc_4c65` is active as `translation-repair-archive-review-brief-probe-20260910`.
+Script:
+`~/temp/agent/probe-archive-review-brief-20260910.mjs`.
+Log:
+`~/temp/agent/archive-review-brief-probe-20260910.log`.
+Report:
+`~/temp/agent/archive-review-brief-probe-20260910/report.json`.
+Only the first-review system brief changes in that experiment;
+source,
+archive,
+selector,
+quorums and graph remain fixed.
+It allows at most 48 forwarded requests with normal completion caps.
+Read actual outputs and costs at its terminal notification.
+
+Task 18 remains in progress;
+temporal-context task 19 remains pending.
+No full-entry pass is active.
+The complete archive and naming trace is
+[Mio12 wording follow-up](../planning/translation-repair-mio12-wording-2026-09-10.md).
+
+Historical state after the naming-policy integration:
 `85f7bac01` is the verified code tip.
 `514db9b1f` scopes declared-name rules so they do not erase a word or spelling being discussed.
 `8a59469f2` keeps established names outside the generic-term first-use gloss requirement.
