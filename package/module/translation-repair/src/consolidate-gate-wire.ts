@@ -353,15 +353,23 @@ export function buildConsolidateGateMessages(
     renderedBreakPrompt({
       sourceText: subject.sourceText,
       archiveText: subject.incumbentText,
-      syntax: subject.syntax,
+      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
       renderings: [
-        { label: 'CANDIDATE "consolidated"', text: subject.consolidatedText, },
-        { label: 'CANDIDATE "standing"', text: subject.standingText, },
+        {
+          label: 'CANDIDATE "consolidated"',
+          text: subject.consolidatedText,
+        },
+        {
+          label: 'CANDIDATE "standing"',
+          text: subject.standingText,
+        },
       ],
     },),
-  ].filter(function hasPolicy(part,): boolean {
-    return part !== '';
-  },).join('\n\n',);
+  ]
+    .filter(function hasPolicy(part,): boolean {
+      return part !== '';
+    },)
+    .join('\n\n',);
 
   return [
     {

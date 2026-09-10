@@ -491,15 +491,23 @@ export function buildLaneContestMessages(
     renderedBreakPrompt({
       sourceText: subject.sourceText,
       archiveText: subject.incumbentText,
-      syntax: subject.syntax,
+      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
       renderings: [
-        { label: 'CANDIDATE "repair"', text: subject.repairText, },
-        { label: 'CANDIDATE "translate"', text: subject.translateText, },
+        {
+          label: 'CANDIDATE "repair"',
+          text: subject.repairText,
+        },
+        {
+          label: 'CANDIDATE "translate"',
+          text: subject.translateText,
+        },
       ],
     },),
-  ].filter(function hasPolicy(part,): boolean {
-    return part !== '';
-  },).join('\n\n',);
+  ]
+    .filter(function hasPolicy(part,): boolean {
+      return part !== '';
+    },)
+    .join('\n\n',);
 
   return [
     {

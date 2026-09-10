@@ -12,7 +12,7 @@ import {
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
-import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
+import { translatedSlateCriteria, } from './translated-slate-criteria.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   blankAgainst,
@@ -22,10 +22,7 @@ import {
 } from './translate-absence.ts';
 import type { TranslateCandidateValue, } from './translate-candidates.ts';
 import type { ProducedSlate, } from './translate-produce.ts';
-import {
-  translateSelectionCriteria,
-  TRANSLATE_SELECTION_TASK,
-} from './translate-selection-sheet.ts';
+import { TRANSLATE_SELECTION_TASK, } from './translate-selection-sheet.ts';
 import {
   describeSlate,
   NOT_ON_SLATE,
@@ -363,21 +360,12 @@ export async function judgeTranslateSlate(
       ? LEAVES_PASSAGE_UNTRANSLATED
       : KEEPS_TRUSTED_TEXT,
     task,
-    criteria: [
-      ...translateSelectionCriteria({
-        lineStructured,
-        ...((syntax === undefined) ? {} : { syntax, }),
-      },),
-      renderedBreakPrompt({
-        sourceText,
-        archiveText: incumbentText,
-        syntax,
-        renderings: slate.map(function displayed(entry,) {
-          return { label: `Candidate ${String(entry.index,)}`, text: entry.text, };
-        },),
-      },),
-    ].filter(function hasCriterion(criterion,): boolean {
-      return criterion !== '';
+    criteria: translatedSlateCriteria({
+      sourceText,
+      archiveText: incumbentText,
+      lineStructured,
+      slate,
+      ...((syntax === undefined) ? {} : { syntax, }),
     },),
     evidence: [
       {

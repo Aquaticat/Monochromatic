@@ -56,7 +56,8 @@ function renderingBreakLine(rendering: BreakRendering,): string {
    * A failed parse is unknown evidence, never a manufactured zero count.
    */
   const counts = read.kind === 'read'
-    ? JSON.stringify(read.skeleton.explicitBreaks,)
+    ? JSON.stringify(read.skeleton
+      .explicitBreaks,)
     : 'unreadable under the Markdown grammar';
   return `${JSON.stringify(rendering.label,)} explicit breaks by top-level block: ${counts}`;
 }
@@ -93,7 +94,7 @@ export function renderedBreakPrompt(
     readonly sourceText: string;
     readonly archiveText: string;
     readonly renderings?: readonly BreakRendering[];
-    readonly syntax?: SliceSyntax | undefined;
+    readonly syntax?: SliceSyntax;
   },
 ): string {
   if ((archiveText !== '') || (syntax === 'front-matter'))
@@ -104,13 +105,17 @@ export function renderedBreakPrompt(
   const source = readSliceSkeleton({ text: sourceText, },);
   if (source.kind !== 'read')
     return '';
-  if (!source.skeleton.explicitBreaks.some(function hasBreak(count,): boolean {
+  /**
+   * One count per source block, reused without repeating the syntax traversal.
+   */
+  const { explicitBreaks, } = source.skeleton;
+  if (!explicitBreaks.some(function hasBreak(count,): boolean {
     return count > 0;
   },))
     return '';
   return [
     RENDERED_BREAK_CONTRACT,
-    `ORIGINAL explicit breaks by top-level block: ${JSON.stringify(source.skeleton.explicitBreaks,)}`,
+    `ORIGINAL explicit breaks by top-level block: ${JSON.stringify(explicitBreaks,)}`,
     ...renderings.map(renderingBreakLine,),
   ].join('\n',);
 }

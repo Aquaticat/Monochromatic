@@ -395,7 +395,7 @@ export function buildConsolidateMessages(
     renderedBreakPrompt({
       sourceText: subject.sourceText,
       archiveText: subject.incumbentText,
-      syntax: subject.syntax,
+      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
     },),
     CONSOLIDATE_REPLY_RULE,
   ]
