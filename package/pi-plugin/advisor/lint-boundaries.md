@@ -3,7 +3,7 @@
 ## Rule and configuration
 
 `package/config/oxlint/src/rule/correctness.ts:79` enables `eslint/no-await-in-loop` as a warning.
-The inspected [Oxlint rule source] defines a zero-field `NoAwaitInLoop` type
+The inspected [Oxlint rule source][] defines a zero-field `NoAwaitInLoop` type
  and implements `Rule::run` without a rule-specific configuration parser or allowlist.
 It reports an await nested in a loop and recommends parallelizing independent operations.
 
@@ -47,7 +47,7 @@ Parallelizing the scenario loop is unnecessary for the integration contract
 
 ## Timer input bounds
 
-The [Node timer contract] sets delays greater than `2147483647`,
+The [Node timer contract][] sets delays greater than `2147483647`,
  below `1`,
  or `NaN` to `1`.
 Advisor therefore validates configured operation timeout,

@@ -3,6 +3,7 @@
  */
 import assert from 'node:assert/strict';
 import { execFile, } from 'node:child_process';
+import { promisify, } from 'node:util';
 import { randomUUID, } from 'node:crypto';
 import {
   mkdir,
@@ -23,6 +24,11 @@ import {
   parseAdvisorHostJsonl,
   verifyAdvisorHostEvidence,
 } from './verify-host-results.ts';
+
+/** Preserve Node's ChildProcess-returning execFile signature when selecting its promisify overload. */
+const promisifyExecFile: (original: typeof execFile) => typeof execFile.__promisify__ = promisify;
+/** Native asynchronous adapter retains captured output, failures, and the child handle. */
+const executeFile = promisifyExecFile(execFile,);
 
 /**
  Fixed scenarios prevent a caller or model from supplying an unbounded task queue.
@@ -221,9 +227,7 @@ async function verifyScenario(mode: typeof SCENARIOS[number],): Promise<void> {
   /**
    Child inherits no ambient provider credentials or live-session metadata.
    */
-  const completion = Promise.withResolvers<{ readonly stdout: string; readonly stderr: string; }>();
-  /** Child handle remains available for explicit stdin closure. */
-  const child = execFile(
+  const execution = executeFile(
     process.execPath,
     args,
     {
@@ -247,21 +251,14 @@ async function verifyScenario(mode: typeof SCENARIOS[number],): Promise<void> {
         PI_ADVISOR_FIXTURE_MODE: mode,
       },
     },
-    function completed(error: unknown, stdout: string, stderr: string,): void {
-      if (error !== null) {
-        completion.reject(error,);
-        return;
-      }
-      completion.resolve({ stdout, stderr, },);
-    },
   );
   // Pi print mode reads piped stdin; close it rather than leaving the fixture waiting for input.
-  child.stdin
+  execution.child.stdin
     ?.end();
   /**
    Both output streams are retained, and nonzero exits reject instead of being ignored.
    */
-  const result = await completion.promise;
+  const result = await execution;
   assert.equal(
     result.stderr,
     '',
