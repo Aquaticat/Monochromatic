@@ -92,17 +92,6 @@ type ActiveAdvisorAttempt = {
 };
 
 /**
- Test whether preparation crossed the provider boundary.
- 
- @param record - current attempt metadata
- 
- @returns whether dispatch time is available
- */
-function wasDispatched(record: AdvisorAttemptRecord,): boolean {
-  return record.dispatchedAtMs !== undefined;
-}
-
-/**
  Run default recovery or an exact candidate under one operation-owned cancellation lifetime.
  
  @param options - ranked candidates, provider boundary, and timing policy
@@ -136,7 +125,7 @@ export async function runAdvisorOperation(options: ForeignHostCapability<Advisor
    */
   const active = new Map<number, ActiveAdvisorAttempt>();
   /**
-   Transition wakeups let actual dispatch time start the hedge clock after async preparation.
+   Transition wakeups keep scheduling responsive to asynchronous preparation and provider outcomes.
    */
   const wake = { current: Promise.withResolvers<typeof ADVISOR_CLOCK_BOUNDARY>(), };
   /**
@@ -304,14 +293,14 @@ export async function runAdvisorOperation(options: ForeignHostCapability<Advisor
         start(candidate,);
       }
       /**
-       Actual first provider invocation anchors the delay, not scope or auth preparation.
+       The first logical reviewer call anchors the delay, including authentication.
        */
-      const firstDispatch = ledger.snapshot()
+      const firstStartedAt = ledger.snapshot()
         .attempts
-        .find(wasDispatched,)
-        ?.dispatchedAtMs;
-      if ((options.hedgeDelayMs !== undefined) && (firstDispatch !== undefined)
-        && (now() >= (firstDispatch
+        .at(0,)
+        ?.startedAtMs;
+      if ((options.hedgeDelayMs !== undefined) && (firstStartedAt !== undefined)
+        && (now() >= (firstStartedAt
           + options.hedgeDelayMs))
         && (active.size < 2)) {
         /**
@@ -329,22 +318,22 @@ export async function runAdvisorOperation(options: ForeignHostCapability<Advisor
       .collectionEndsAtMs
       ?? options.deadlineAtMs;
     /**
-     First actual dispatch, when preparation has completed.
+     Logical call start is available even when authentication is stalled.
      */
-    const firstDispatch = ledger.snapshot()
+    const firstStartedAt = ledger.snapshot()
       .attempts
-      .find(wasDispatched,)
-      ?.dispatchedAtMs;
+      .at(0,)
+      ?.startedAtMs;
     /**
      Hedge wakeup exists only while unused candidates and a concurrency slot remain.
      */
     const hedgeAt = (current.reviews
       .length
       === 0) && (options.hedgeDelayMs !== undefined)
-      && (firstDispatch !== undefined)
+      && (firstStartedAt !== undefined)
       && (active.size < 2)
       && (selectNextCandidate() !== NO_ADVISOR_CANDIDATE)
-      ? firstDispatch + options.hedgeDelayMs : boundary;
+      ? firstStartedAt + options.hedgeDelayMs : boundary;
     // oxlint-disable-next-line no-await-in-loop -- Each provider outcome determines the next dispatch and cutoff; parallel waits would use stale operation state.
     await wait({
       pending: [

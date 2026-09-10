@@ -24,7 +24,7 @@ Build the package,
 ```
 
 ```bash
-pi --extension ./package/pi-plugin/advisor/src/index.ts
+pi --extension ./package/pi-plugin/advisor/dist/final/node/index.mjs
 ```
 
 ## Tool usage
@@ -197,7 +197,8 @@ Without overlap,
  candidates are exhausted,
  or the original deadline expires.
 With overlap enabled,
- the launch delay starts at the first actual provider dispatch.
+ the launch delay starts with the first logical reviewer call,
+ including authentication.
 If that review is unfinished when the delay expires,
  another candidate can start.
 At most two logical reviewer calls are active,
@@ -323,8 +324,8 @@ which maps it to each provider's request format.
 
 ## Privacy and cost
 
-Advisor sends the serialized conversation and Pi-loaded project context to the
-selected advisor model.
+Advisor sends the serialized conversation and Pi-loaded project context to every attempted reviewer,
+ including failure fallbacks and overlapping calls.
 That can include prompts,
  tool calls,
  tool results,
