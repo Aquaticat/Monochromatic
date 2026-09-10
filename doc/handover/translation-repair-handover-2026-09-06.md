@@ -142,26 +142,33 @@ It also condemns the second friendship bullet,
 whose source support lies beyond the window.
 No production prompt change was integrated.
 
-`proc_9549` now runs `translation-repair-claim-extent-probe-20260910`.
+`proc_9549` completed in 576 seconds.
+Neither full source evidence nor claim extent reliably removed blanket-deletion authority;
+the combined arm still accepted it.
+No treatment was integrated.
+
+`proc_b599` now runs `translation-repair-editor-responsibility-probe-20260910`.
 Report:
-`~/temp/agent/repair-claim-extent-probe-20260910/report.json`.
+`~/temp/agent/editor-responsibility-probe-20260910/report.json`.
 Log:
-`~/temp/agent/repair-claim-extent-probe-20260910.log`.
-Its corrected offline baseline reproduces seven cached derived-panel requests,
-including the unusable reply/recovery,
-without a swallowed client exception.
-The real thirty-two-claim packet is fixed.
-It separately tests full current-entry source as factual evidence,
-a generic claim-extent rule preventing one bad item from authorizing blanket removal,
-and their combination.
-The source is 1755 characters and hash-checked;
-this is not a global whole-document context decision.
-Name policy,
-stock panel roster,
-schemas and tally rules stay unchanged.
-The cap is fifty-four live calls and a twenty-minute global bound;
-no critic,
-editor or added production stage is part of this experiment.
+`~/temp/agent/editor-responsibility-probe-20260910.log`.
+Both arms use the same newly derived sixteen accepted issues and four production edit regions,
+not the old editor outputs with a different packet.
+The treatment gives the existing editor responsibility for checking fallible findings,
+separates current coverage from full-document factual evidence,
+and permits faithful corrections to already-asserted facts without importing neighboring passages.
+Name policy and the stock editor trio are unchanged.
+Six calls maximum;
+no panel,
+selector or added production round.
+The production assembler/preservation gate processes each raw reply.
+Read assembled wording,
+structure,
+list-item retention and outside-region bytes before claiming success.
+
+The caller trace also found that per-envelope and whole-chunk repair selectors do not receive neighboring source.
+Any good editor candidate will need verification at those actual selection boundaries;
+the existing window has not yet been threaded to them.
 See [temporal and participant source context](../planning/translation-repair-temporal-context-2026-09-10.md).
 Do not reinstate task 20 as its blocker because the audit experiment remains unresolved.
 No full-entry pass is active.

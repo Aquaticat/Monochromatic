@@ -393,9 +393,9 @@ two OpenRouter calls reporting zero,
 and eight unpriced Hyper plus six unpriced Synthetic calls.
 The daily helper ran afterward.
 
-## Active claim-extent and source-evidence experiment
+## Completed claim-extent and source-evidence experiment
 
-`proc_9549` is `translation-repair-claim-extent-probe-20260910`.
+`proc_9549` completed `translation-repair-claim-extent-probe-20260910` in 576 seconds.
 Script:
 `~/temp/agent/probe-repair-claim-extent-20260910.mjs`.
 Plan:
@@ -438,8 +438,85 @@ The limit is fifty-four live requests,
 No critics,
 editors or new production stages are added in this experiment.
 
+The run made twenty-one live calls.
+Claim extent alone still authorizes blanket removal.
+Document evidence alone changes one blanket claim to `needs-human`,
+but leaves false claims against the supported second-friendship bullet authorized.
+The combined treatment again authorizes blanket removal.
+The true participant correction remains accepted in all arms.
+These results do not justify integrating either treatment as the remedy.
+
+Per-claim participation differs from reported heard-panelist counts in two arms:
+one reply uses severity words as votes,
+and another omits verdicts for later claims.
+The real resolver records `unknown-vote` and `missing-verdict` findings;
+do not count these as valid support or opposition.
+The combined arm has no such findings but still fails the intended authorization result.
+
+The run logged 0.00470453 USD on Bedrock,
+three OpenRouter calls reporting zero,
+and ten unpriced Hyper plus two unpriced Synthetic calls.
+The daily helper ran afterward.
+
+## Active editor responsibility experiment
+
+Further voting-only prompt trials are not scheduled now.
+The independent advisor recommends testing the existing editor's responsibility boundary
+against actual assembled candidates.
+
+`proc_b599` is `translation-repair-editor-responsibility-probe-20260910`.
+Script:
+`~/temp/agent/probe-editor-responsibility-20260910.mjs`.
+Plan:
+`~/temp/agent/editor-responsibility-plan-20260910.out`.
+Log:
+`~/temp/agent/editor-responsibility-probe-20260910.log`.
+Report:
+`~/temp/agent/editor-responsibility-probe-20260910/report.json`.
+
+Both arms use the same newly derived accepted-issue packet,
+including the true participant correction and false blanket claims.
+This is not a comparison against old editor outputs that received different issues.
+The production deduplication and envelope builders yield sixteen accepted issues and four edit regions.
+The editor models are the unchanged stock trio.
+
+The treatment replaces "reviewers confirmed" with a responsibility to verify fallible findings,
+and rewrites the conflicting source-support rule rather than appending another exception.
+The current source slice defines coverage;
+the complete hash-checked original document supplies factual evidence;
+only the current English edit regions may change.
+It permits correcting an already-asserted fact's actor,
+direction,
+time or relationship without importing neighboring events or copying neighboring passages.
+Name policy is unchanged and remains task 21.
+
+The probe makes six calls maximum,
+three concurrently,
+with the existing response schema,
+360000 ms exchange bound and 1200000 ms global bound.
+It calls no panel or selector.
+Every raw edit is resolved and applied through production `buildEditorCandidates`,
+including the existing preservation gate.
+It records complete assembled candidates,
+rejected operations,
+MDX compilation and the existing structure validator's result.
+The validator is observed,
+not added as a new publication gate.
+
+The offline positive control applies a localized participant correction through the same assembler,
+preserves all bytes outside its region,
+and passes the existing structure check.
 At completion,
-inspect whether blanket removal loses authority,
-whether the supported second friendship bullet is defended,
-and whether the true participant correction remains authorized.
-Read actual per-claim tallies rather than claiming success from aggregate acceptance counts.
+read every candidate for correct disclosure direction and timing,
+retained supported list items,
+no reciprocal disclosure,
+no neighboring-passage copying and unchanged outside-region text.
+A changed group name must still be reported;
+a task 19-correct candidate is not automatically publishable while task 21 is unresolved.
+
+A further caller trace found that `editor-ensemble.ts` supplies no neighboring-source evidence
+to either `selectPerEnvelope` or `selectChunkPatch`.
+Per-envelope selection sees the current English region and a bounded English surroundings view;
+whole-chunk selection sees only the current original as evidence.
+Thus a successful new editor candidate will still require verification at those selection boundaries.
+Do not claim the existing repair window already reaches every repair selector.
