@@ -152,8 +152,8 @@ await describe({
         expect(system,).toContain('in that original wording, and put its meaning alongside it',);
         expect(system,).toContain('Never replace such a phrase with its meaning alone',);
         // The exception must not swallow the source language itself.
-        expect(system,).toContain('The ORIGINAL\'s own language is never such a phrase',);
-        expect(system,).toContain('Only the genuinely foreign phrase keeps its own wording',);
+        expect(system,).toContain('Render ordinary prose in the ORIGINAL\'s own language fully into the TRANSLATION\'s language',);
+        expect(system,).toContain('does not license leaving an entire source-language quotation untranslated',);
       },
     },),
 

@@ -62,7 +62,7 @@ await describe({
         expect(faithfulness,).not.toBe('',);
         // THE CARVE-OUT SITS INSIDE THAT CRITERION, not beside it, because the
         // rule being misapplied is the one that has to name the exception.
-        expect(faithfulness.includes('NEVER AN ADDITION',),).toBe(true,);
+        expect(faithfulness,).toContain('a declared name or handle is not an addition',);
       },
     },),
     it({
@@ -77,7 +77,8 @@ await describe({
           },) ?? '';
         // WITHOUT THE SCOPE the carve-out reads as a licence to put the
         // archive's identity block into any passage at all.
-        expect(faithfulness.includes('Where the passage refers to this person',),).toBe(true,);
+        expect(faithfulness,).toContain('When a name is used TO REFER TO a person',);
+        expect(faithfulness,).toContain('This does not authorize replacing a word, character, spelling, or sound',);
       },
     },),
     it({
