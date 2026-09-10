@@ -24,13 +24,14 @@ No final teaching-skill confirmation or implementation is authorized.
 
 ## Work in progress
 
-Task 29 audits representations and verifies the user-supplied formatter.
+Task 29 completed the representation audit and bounded consumer probe of the user-supplied formatter.
 Task 30 implements contextual views.
 Task 31 verifies the integration and records the resulting teaching-discovery evidence.
 
 Research workspace: `/var/home/user/temp/agent/promises-value-inspection`.
 Lesson authoring workspace: `/var/home/user/temp/agent/promises-revision`.
 No new inspector dependency has been installed or bundled into the lesson yet.
+The next implementation step is to consume the catalog's published Showify package as lesson infrastructure.
 
 ## Existing omissions
 
@@ -88,9 +89,10 @@ Relevant source:
 - The source has no runtime imports or network/filesystem entry points.
 - The upstream `prepare` script copies Git hooks. Do not execute it for this task.
 
-Next step: run a bounded consumer probe of the exact source in real browsers,
-including settled Promises, functions, sparse arrays, errors, circular values, getter/hook behavior,
-and the lesson's CSP boundary.
+The bounded consumer probe now passes for the published artifact.
+`proc_506a` verified Chromium 153.0.8010.12 and Firefox 155.0, with no CSP violations or page errors.
+The lesson's Firefox ESR 140 integration remains a later verification step.
+The complete findings are in [the inspection boundary note](../troubleshooting/showify-promise-inspection.md).
 The cached Playwright container matches installed `@playwright/test` 1.63.0.
 Use 2 GiB memory, 2 CPUs, no network or ambient credentials,
 read-only dependency/source mounts, and a private output directory.
@@ -139,6 +141,26 @@ These were capability checks, not completed technology recommendations:
 - `node-inspect-extracted`, commit `ebee2b2c2c19d1e8ba70a518e7dc5f918f4e8427`,
   has `src/util.js:52` return the pending marker for every Promise.
   Do not use that output as a truthful lifecycle display.
+
+## Audited teaching locations
+
+- Data: the reply object, its selected string property, and the growing array.
+- Callback delivery: the supplied function value, the initiating call's return, and the actual reply object.
+- Callback collection: partial arrays with empty slots, then the completed collection.
+- Constructor: the returned Promise versus its observer's received value.
+- Resolver bundle and manual settlement: Promise plus resolving functions, and observed outcomes.
+- Promise collection: the array of Promise inputs, the collection Promise, and the resulting values.
+- Adoption: distinct inner/outer Promise objects and the separately observed adopted result.
+- Await: the input Promise, async invocation's returned Promise, and resumed value.
+- Supplied API and rejection: request options, reply data, actual Error, and explicitly selected error fields.
+- Cancellation and ownership: controller/signal objects, public aborted/reason fields, and controller collections.
+
+Keep the final reference chat's functional code independent of the viewer.
+The existing narrative monitor need not become a formatting dump;
+add explicitly labelled inspection snapshots at the relevant boundaries.
+For opaque previews, formatted strings can cross the existing source/run-validated ownership boundary;
+parent-page cards avoid hiding the new content inside a fixed-height iframe.
+Standalone exercise exports must render those same snapshots locally.
 
 ## Integration direction to verify
 
