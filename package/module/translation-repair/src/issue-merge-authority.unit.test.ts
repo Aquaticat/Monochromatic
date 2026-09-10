@@ -56,13 +56,22 @@ await describe({
   name: 'member repair authority',
   children: [
     it({
+      name: 'LEAVES empty adjudication empty without creating partition findings',
+      fn: async () => {
+        expect(tallyVotes({ clusters: [], ballots: {}, configuredPanelists: 6 })).toEqual({ issues: [], findings: [] });
+      },
+    }),
+    it({
       name: 'PRESERVES the rejected 2:4 diagnosis separately from an accepted 6:0 diagnosis of the same event',
       fn: async () => {
-        const { issues } = adjudicate({ rows: [support, ['supported', 'supported', 'unsupported', 'unsupported', 'unsupported', 'unsupported']] });
+        const { issues, findings } = adjudicate({ rows: [support, ['supported', 'supported', 'unsupported', 'unsupported', 'unsupported', 'unsupported']] });
         expect(issues.map(issue => issue.status)).toEqual(['accepted', 'rejected']);
         expect(issues.map(issue => issue.claims.map(member => member.claimId))).toEqual([['issue/0'], ['issue/1']]);
         expect(issues[0]?.severity).toBe('minor');
         expect(issues[1]?.severity).toBe('critical');
+        expect(findings).toEqual([`issue-merge-partitioned (cluster/cat-direction: ${issues[0]?.issueId}=accepted, ${issues[1]?.issueId}=rejected)`]);
+        // Reporting now sees one accepted and one rejected issue, not one all-accepted record.
+        expect(issues.filter(issue => issue.status === 'accepted').length / issues.length).toBe(1 / 2);
         for (const issue of issues) {
           const ids = issue.claims.map(member => member.claimId);
           expect(Object.keys(issue.tallies)).toEqual(ids);

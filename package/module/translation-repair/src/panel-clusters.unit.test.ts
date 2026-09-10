@@ -34,7 +34,7 @@ type Capture = { readonly prompt: string; readonly modelId: string; readonly cla
  * const fixture = panelFixture({});
  * ```
  */
-function panelFixture(input: { readonly disjoint?: boolean; } = {}): { client: SyntheticClient; captures: Capture[]; } {
+function panelFixture(input: { readonly disjoint?: boolean; readonly rejectThird?: boolean; } = {}): { client: SyntheticClient; captures: Capture[]; } {
   const captures: Capture[] = [];
   const client: SyntheticClient = {
     chatText: async () => { throw new Error('Unexpected text request',); },
@@ -51,7 +51,7 @@ function panelFixture(input: { readonly disjoint?: boolean; } = {}): { client: S
       }
       const groups = CLUSTERS.filter(cluster => cluster.members.some(member => present.includes(member)));
       const value = {
-        verdicts: present.map((member, index) => ({ claim: index + 1, vote: member.claimId === 'claim-first' ? 'unsupported' : 'supported', })),
+        verdicts: present.map((member, index) => ({ claim: index + 1, vote: member.claimId === 'claim-first' || (input.rejectThird === true && member.claimId === 'claim-third') ? 'unsupported' : 'supported', })),
         groups: groups.map((cluster, index) => ({ group: index + 1, sameDefect: cluster.members.length > 1, })),
       };
       if (!request.validate(value))
@@ -110,6 +110,20 @@ await describe({
         expect(result.heardPanelists).toBe(MODELS.length);
         expect(result.issues[0]?.status).toBe('rejected');
         expect(result.issues[1]?.status).toBe('accepted');
+      },
+    }),
+    it({
+      name: 'PERSISTS the original merge relationship without promoting the rejected member',
+      fn: async () => {
+        const fixture = panelFixture({ rejectThird: true });
+        const result = await runPanelStage(panelInput(fixture.client));
+        expect(result.issues.map(issue => issue.status)).toEqual(['rejected', 'accepted', 'rejected']);
+        expect(result.issues[1]?.claims.map(member => member.claimId)).toEqual(['claim-second']);
+        expect(result.issues[2]?.claims.map(member => member.claimId)).toEqual(['claim-third']);
+        const finding = result.findings.find(value => value.includes('issue-merge-partitioned'));
+        expect(finding).toContain('panel-packet (second)');
+        expect(finding).toContain(`${result.issues[1]?.issueId}=accepted`);
+        expect(finding).toContain(`${result.issues[2]?.issueId}=rejected`);
       },
     }),
     it({
