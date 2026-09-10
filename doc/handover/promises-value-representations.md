@@ -213,9 +213,26 @@ All formatted characters are inserted through textContent.
 and passed the retained shop tests in 26 seconds.
 Further static print explanations, label wrapping, and the explicit display-limit legend were added afterward.
 
-Remaining verification includes a final rebuild, broader callback/workshop regression coverage,
-formatter/protocol edge cases, actual source download, print inventories and layout,
-and the Firefox ESR 140 consumer boundary.
+The expanded value-view driver now covers constructor/adoption rejection,
+retry metadata, cancellation/deadline signal projections, conversation destinations,
+serializer failures, label/text bounds, protocol rejection cases, and the actual preferred-source download.
+Print inventory collection now includes figcaption so formatter labels are checked alongside their values.
+The view's limits and the distinction between JSON absence and formatting failure are explicit.
+
+`proc_05f2` stopped at an added edited-shop diagnostic check after the representation assertions passed.
+The test timed out waiting for the parent snapshot to include the error message.
+`proc_3f0c` showed that the child monitor contained the correct error,
+but body.innerText and the parent snapshot omitted it.
+A missing-monitor hypothesis was wrong: `shop-preview.html` already supplied a monitor inside a hidden section.
+The unused fallback construction was removed.
+`report()` now reveals its existing monitor section when it actually has a report;
+the shop's section is labelled Preview diagnostics and stays hidden during its ordinary activity.
+This changes document-level diagnostic visibility, not the withdrawn OS-window requirement.
+
+`proc_64db` is rebuilding and checking that correction.
+Native print and offline fixtures are running as `proc_e039` and `proc_cb53`.
+A fresh Firefox ESR fixture is starting as `proc_0ee4`.
+Final regression, print/export inventory, and Firefox ESR value-view checks remain pending.
 No visible-window completion gate applies.
 
 ## Integration direction to verify
