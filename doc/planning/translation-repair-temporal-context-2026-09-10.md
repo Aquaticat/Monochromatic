@@ -332,9 +332,9 @@ new critic claims need their own newly built panel packet before any end-to-end 
 Task 19 remains in progress.
 No new production prompt change has been made.
 
-## Active evidence-scope experiment
+## Completed evidence-scope experiment
 
-`proc_12b5` is `translation-repair-evidence-scope-probe-20260910`.
+`proc_12b5` completed `translation-repair-evidence-scope-probe-20260910` in 476 seconds.
 Script:
 `~/temp/agent/probe-repair-evidence-scope-20260910.mjs`.
 Plan:
@@ -368,5 +368,78 @@ which must not be misreported as a matched per-seat comparison.
 The cap is fifty-four live JSON requests,
 with a 1200000 ms global bound and shared abort on request exhaustion.
 No editor calls or new production stages are bought by this experiment.
-Read precise surviving temporal/participant claims,
-old blanket-claim tallies and new derived-packet decisions before deciding whether this treatment is sufficient.
+The run made twenty live requests.
+On the fixed old packet,
+both blanket list-addition claims moved from accepted to `needs-human`,
+each with three supporting and three opposing votes.
+That removes their authorization but is not unanimous rejection.
+
+The new critic stage produced thirty-two anchored claims.
+Several correctly identify the friend as the discloser to Mio,
+and one explicitly places the reconnection disclosure in 2022.
+They omit `sourceQuote` and retain exact target anchors,
+so the suspected anchoring obstacle does not discard them.
+
+The freshly derived panel accepts those precise claims,
+but also accepts new blanket list-removal claims with five supporting votes.
+It also accepts claims against the second friendship bullet,
+whose supporting source section is outside the bounded window.
+Thus the advisor's compound-claim/scope falsifier remains live;
+the treatment alone is not sufficient.
+No production prompt change is integrated from this result.
+
+The run logged 0.00237755 USD on Bedrock,
+two OpenRouter calls reporting zero,
+and eight unpriced Hyper plus six unpriced Synthetic calls.
+The daily helper ran afterward.
+
+## Active claim-extent and source-evidence experiment
+
+`proc_9549` is `translation-repair-claim-extent-probe-20260910`.
+Script:
+`~/temp/agent/probe-repair-claim-extent-20260910.mjs`.
+Plan:
+`~/temp/agent/repair-claim-extent-plan-20260910.out`.
+Log:
+`~/temp/agent/repair-claim-extent-probe-20260910.log`.
+Report:
+`~/temp/agent/repair-claim-extent-probe-20260910/report.json`.
+
+It keeps the new thirty-two-claim packet fixed,
+reproducing the derived-panel baseline from seven cached requests with zero misses.
+The baseline includes the unreadable DeepSeek-flash reply and its recovery attempt;
+it is not filtered to usable responses.
+An offline assertion initially mishandled the additional recovery user message.
+The transformation now targets only the one original context-bearing user message,
+preserves recovery instructions,
+and separately asserts that no baseline client exception was swallowed.
+The corrected plan passes before live calls.
+
+The experiment factors two changes:
+
+- Full current-entry Chinese source as additional factual evidence only,
+  without expanding current editable or coverage scope.
+  This source is 1755 characters;
+  the experiment asserts its unchanged hash and an 8000-character input bound.
+  No global whole-document context policy is adopted.
+- A generic claim-extent rule:
+  an unsupported item cannot prove that every item in its list or span is unsupported;
+  narrow actual errors remain independently judgeable.
+
+It measures each change alone and the combination,
+with the completed scoped-window baseline retained as the comparator.
+Name policy,
+claim identities,
+stock panel roster,
+schemas,
+nearby archive and actual tally rules stay unchanged.
+The limit is fifty-four live requests,
+360000 ms per exchange and 1200000 ms globally.
+No critics,
+editors or new production stages are added in this experiment.
+
+At completion,
+inspect whether blanket removal loses authority,
+whether the supported second friendship bullet is defended,
+and whether the true participant correction remains authorized.
+Read actual per-claim tallies rather than claiming success from aggregate acceptance counts.

@@ -6967,10 +6967,13 @@ Report:
 `~/temp/agent/temporal-repair-path-probe-20260910/report.json`.
 The cache-only replay reproduces all calls with zero misses.
 
-Task 19's evidence-scope experiment `proc_12b5` is active over those exact critic/panel inputs,
-without changing source bytes,
-name policy,
-quorums or the production graph.
+Task 19's evidence-scope experiment `proc_12b5` produced anchored participant corrections
+and removed authorization from the old broad claims,
+but the newly derived panel still accepted blanket removal.
+`proc_9549` now factors full current-entry source evidence and claim extent over that fixed new packet.
+No production prompt change,
+name-policy change,
+quorum change or new production stage has been made.
 Task 21 separately tracks full-packet name authority.
 No full-entry pass is active and no clean page is claimed.
 See [temporal context measurement](translation-repair-temporal-context-2026-09-10.md)

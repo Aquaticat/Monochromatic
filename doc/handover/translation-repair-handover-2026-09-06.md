@@ -133,21 +133,35 @@ Keep the name-authority change separate;
 do not assume packet size or the window caused it without a matched comparison.
 Current production prompts remain unchanged beyond the verified heading window.
 
-`proc_12b5` now runs `translation-repair-evidence-scope-probe-20260910`.
+`proc_12b5` completed the evidence-scope experiment in 476 seconds.
+The fixed old blanket claims lose authorization at three-to-three votes.
+New critics now produce target-anchored participant corrections,
+including the 2022 reconnection,
+but the derived panel accepts both those corrections and new blanket removal claims.
+It also condemns the second friendship bullet,
+whose source support lies beyond the window.
+No production prompt change was integrated.
+
+`proc_9549` now runs `translation-repair-claim-extent-probe-20260910`.
 Report:
-`~/temp/agent/repair-evidence-scope-probe-20260910/report.json`.
+`~/temp/agent/repair-claim-extent-probe-20260910/report.json`.
 Log:
-`~/temp/agent/repair-evidence-scope-probe-20260910.log`.
-The offline baseline reproduces twelve critic/panel calls and exact messages without a provider client.
-The treatment changes only existing context-purpose rules,
-first for the unchanged old panel packet,
-then for a new critic round whose anchored claims feed a newly derived panel packet.
-It retains name policy,
-source/target bytes,
-schemas,
-stock roles and actual tally logic.
-Its limit is fifty-four live calls and a twenty-minute global bound;
-no editor or added production round is part of the experiment.
+`~/temp/agent/repair-claim-extent-probe-20260910.log`.
+Its corrected offline baseline reproduces seven cached derived-panel requests,
+including the unusable reply/recovery,
+without a swallowed client exception.
+The real thirty-two-claim packet is fixed.
+It separately tests full current-entry source as factual evidence,
+a generic claim-extent rule preventing one bad item from authorizing blanket removal,
+and their combination.
+The source is 1755 characters and hash-checked;
+this is not a global whole-document context decision.
+Name policy,
+stock panel roster,
+schemas and tally rules stay unchanged.
+The cap is fifty-four live calls and a twenty-minute global bound;
+no critic,
+editor or added production stage is part of this experiment.
 See [temporal and participant source context](../planning/translation-repair-temporal-context-2026-09-10.md).
 Do not reinstate task 20 as its blocker because the audit experiment remains unresolved.
 No full-entry pass is active.
