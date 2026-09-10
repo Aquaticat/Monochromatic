@@ -1656,6 +1656,21 @@ local guards are not a published page,
 and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
 queue advances.
 
+## Naming has current-stage evidence; archive and context work remains (2026-09-10)
+
+Verified `85f7bac01` now distinguishes a name used as a reference from a word or spelling being discussed.
+The real bounded translation stage produced a fresh opening retaining the character/name distinction,
+and all four responding judges selected it.
+The separate group-name measurement no longer authorizes the false first-use gloss correction under the
+existing strict-majority tally.
+The explicit-definition control remains enforceable.
+
+The belief remains not ready.
+The next unresolved boundaries are archive apparatus and copy-edit classification,
+and a physical-slice source window that omits the paragraph dating the reconnection.
+No full-entry pass is active,
+and no new page has yet verified this combined naming build.
+
 ## The stored-review mismatch is fixed; wording follow-up remains (2026-09-10)
 
 Class thirty is fixed through `b5da9866b`.

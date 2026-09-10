@@ -6936,6 +6936,58 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Naming scope reaches a bounded production stage, 2026-09-10
+
+The Mio12 wording trace is in
+[the naming and context follow-up](translation-repair-mio12-wording-2026-09-10.md).
+Its first name-form treatment improved writing but split the fixed-slate judges.
+Scoping the actual faithfulness and name criteria moved selection of the distinguishing wording from two of six
+judgments to four,
+without selecting the untranslated-copy negative control.
+`514db9b1f` integrates that scope;
+`b55a42a0a` explicitly names the declared-identity exemption instead of using an ambiguous pronoun.
+
+A separate actual group-name claim probe distinguishes established names from generic terms needing glosses.
+Its votes move from five supporting to three supporting and three opposing.
+The existing production `tallyVotes` changes that claim from `accepted` to `needs-human`,
+which no longer authorizes an edit.
+The explicit-source-definition control changes from five supporting votes to six.
+`8a59469f2` integrates the scoped vocabulary rule without changing the owner's first-use gloss requirement
+for generic terms or adding a glossary entry.
+
+The combined code is verified through `85f7bac01`:
+build,
+types,
+oxlint and the full unit suite pass with zero warnings.
+`~/temp/agent/naming-final-unit-20260910.out` ends `unit exit 0`.
+
+A real `runTranslateStage` probe then completed in 49 seconds on that frozen build.
+Qwen produced a fresh elliptical opening that retains the questioned character and the separate chosen name;
+Mercury reproduced the archive.
+All four responding judges selected Qwen's new wording at ordinary vote weights.
+The stage used six requests,
+with no structural repair,
+follow-up generation or outage fallback.
+The selected text compiles and the source hash is unchanged.
+This is current-code producing-and-selecting evidence,
+not merely a prompt-text assertion.
+
+Reports:
+`~/temp/agent/name-form-probe-20260910/report.json`,
+`~/temp/agent/inline-name-scope-probe-20260910/report.json`,
+`~/temp/agent/archive-name-gloss-probe-20260910/report.json`
+and `~/temp/agent/naming-integration-probe-20260910/report.json`.
+Their respective logged Bedrock costs are 0.00059064,
+0.00056812,
+0.00219198 and 0.00056918 USD.
+The corresponding OpenRouter calls report zero cost;
+Synthetic and Hyper calls have no per-call price.
+Each post-probe daily helper ran.
+
+No probe or full-entry pass is active.
+Archive apparatus/copy-edit treatment and temporal source context remain before the next Mio pass.
+The naming result does not advance the entry queue without that page reading.
+
 ## Class thirty retains naturalness quorum provenance, 2026-09-10
 
 The local reproduction uses Mio12's failure shape:

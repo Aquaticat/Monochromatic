@@ -227,4 +227,137 @@ without bundling it with a filler preference.
 Preserve the existing official-English-work-title and contributor precedence rules when sharing name authority.
 The group-name editor path and source-context treatment are still unmeasured.
 
+## Completed inline-criterion measurement
+
+`proc_75c1` completed `translation-repair-inline-name-scope-probe-20260910` on frozen `b5da9866b` in 40 seconds.
+The offline plan passed.
+The script is `~/temp/agent/probe-inline-name-scope-20260910.mjs`,
+log `~/temp/agent/inline-name-scope-probe-20260910.log`,
+and report `~/temp/agent/inline-name-scope-probe-20260910/report.json`.
+
+Only the existing faithfulness exemption and name-authority criterion change.
+The treatment distinguishes references to entities from mentions of language forms inside those rules,
+instead of leaving their unqualified versions next to an appended exception.
+It contains no new filler warning,
+new candidate,
+source annotation,
+producer identity or changed candidate order.
+Reversing the criterion replacements restores every original message byte.
+The experiment makes six direct judge requests,
+with a 360000 ms exchange deadline and a 720000 ms global deadline.
+It reuses the recorded baseline rather than purchasing it again.
+
+Read the choices and reasons before selecting an integration.
+The original slate's English candidates also differ in framing and filler treatment,
+so a split result does not alone prove inability to recognize a pure spelling contrast.
+No requirement that every model agree is being introduced.
+
+Four of six judgments now select the distinguishing archive wording,
+versus two on the recorded baseline and three with the appended rule.
+Mercury and DeepSeek-flash explicitly identify the erased contrast;
+Gemma-e2b changes to the distinguishing candidate as well.
+Qwen still prefers the normalized name.
+DeepSeek-pro also picks it,
+but its explanation incorrectly claims that this candidate contains `澪`.
+The candidate data and numbering were verified unchanged,
+so that explanation is not treated as evidence that it preserves the character.
+No judge selects the untranslated copy.
+
+The inline exception is the selected judging remedy,
+without a requirement for unanimous agreement.
+It changes the active criteria rather than leaving an unqualified name rule next to a competing appendix.
+The writer-side evidence from the first experiment supports carrying the same reference-versus-mention distinction
+into the existing name rule.
+Do not carry its filler warning or broaden archived-name authority over the official-English-title rule.
+
+Logged spend:
+two Bedrock calls totaling 0.00056812 USD,
+one OpenRouter call reporting zero cost,
+two unpriced Hyper calls and one unpriced Synthetic call.
+The daily helper ran after the measurement.
+`~/temp/agent/inline-name-scope-spend-20260910.out` records the provider totals.
+
+Guard `9e727def9` now specifies the shared scope in initial writing,
+repair editing,
+consolidation,
+criticism and lane selection,
+plus the actual translation criteria.
+The group-name policy and temporal-context measurements remain separate pending work.
+## Integration and group-name measurement
+
+`514db9b1f` integrates the measured quoted-form scope in initial translation,
+repair editing,
+consolidation,
+criticism,
+shared contest policy and the actual translation criteria.
+`9e727def9` failed six integration cases before that change.
+`fd293e6d3` updates older literal-wording assertions,
+and `b55a42a0a` explicitly names the declared-identity exemption so an `it` or `they` cannot be read as exempting
+mentioned word forms from coverage.
+Dedicated metadata criteria remain unchanged.
+No filler warning or output-rejection rule was added.
+
+The group-name measurement completed in 103 seconds.
+It isolates the actual Mio terminology claim rather than replaying the original multi-claim packet.
+Baseline judgments support that claim five to one;
+the proper-name scope produces three supporting and three opposing judgments.
+Replaying those actual votes through `tallyVotes` changes the claim from `accepted` to `needs-human`,
+so it no longer authorizes an editor correction under the existing strict-majority rule.
+This is not a claim that all judges now reject it.
+The explicit-definition control receives five supporting baseline votes and six under treatment.
+Ordinary definitions are not excused by the name exception.
+
+Evidence:
+`~/temp/agent/archive-name-gloss-probe-20260910/report.json`,
+`~/temp/agent/archive-name-gloss-replay-20260910.out`
+and `~/temp/agent/archive-name-gloss-spend-20260910.out`.
+The measured source scope is identical under the prior frozen and current adjudication builders.
+The probe logged 0.00219198 USD on Bedrock,
+zero reported OpenRouter cost,
+eight unpriced Hyper calls and four unpriced Synthetic calls.
+The daily helper ran afterward.
+
+`272db0e92` fails without the scoped first-use rule;
+`8a59469f2` integrates it in the existing vocabulary policy.
+It retains the owner's [inline-gloss rule](../decision/translation-repair-inline-gloss.md)
+and adds no curated glossary entry.
+The corpus writing principles and the owner's stronger translation rule were both read before editing the policy.
+`9578ad0bc` supplies the composed export's required type annotation.
+`85f7bac01` makes fidelity-fixture assertions identify judges instead of relying on prompt-rotated arrival order.
+
+Build,
+types,
+oxlint and the full suite pass through `85f7bac01`.
+The suite ends `unit exit 0` in `~/temp/agent/naming-final-unit-20260910.out`.
+
+The current-build integration probe completed as `proc_87ab`
+(`translation-repair-naming-integration-20260910`)
+on frozen `85f7bac01` in 49 seconds.
+It runs the real `runTranslateStage` over the opening with Qwen3.8 and Mercury writing and the six original
+responding judges seated.
+It allows at most 20 stage requests,
+a 360000 ms exchange bound and a 720000 ms global bound.
+Its report is `~/temp/agent/naming-integration-probe-20260910/report.json`
+and log `~/temp/agent/naming-integration-probe-20260910.log`.
+It used six stage requests:
+two writer calls and four judge calls.
+Qwen produced a fresh wording retaining the elliptical `澪?` and the separate name `Mio`,
+without the archive's added question-about-meaning framing.
+Mercury reproduced the archive.
+All four responding judges selected Qwen's fresh rendering,
+with the ordinary self-vote weight retained.
+There was no structural repair,
+follow-up generation or outage fallback.
+The text compiles and the canonical source hash is unchanged.
+This verifies the combined current-build instructions through the producing and selecting stage,
+not only their presence in a prompt.
+
+The integration logged two Bedrock calls costing 0.00056918 USD,
+two OpenRouter calls reporting zero cost,
+and two unpriced Synthetic calls.
+The post-probe daily helper ran.
+`~/temp/agent/naming-integration-spend-20260910.out` records the totals.
+
+The name-policy work is verified locally and at the bounded live stage.
+The remaining material follow-ups are archive apparatus/copy-edit treatment and temporal source context.
 No probe or full-entry pass is active.

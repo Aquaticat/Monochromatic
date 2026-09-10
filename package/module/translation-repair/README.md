@@ -2064,6 +2064,21 @@ and preserves the seat-count interpretation only for older generations.
 Runtime rejects invalid bases before asking reviewers.
 No missing reviewer identities are invented and the intended quorum is not reduced.
 
+Since `514db9b1f`,
+name authority distinguishes references to people from literal words,
+characters or spellings under discussion.
+Writers,
+critics and deciding criteria preserve that discussed form instead of normalizing it to the declared name.
+Ordinary surrounding prose still becomes English.
+`8a59469f2` also separates established translation-side names from generic terms needing a first-use gloss;
+ordinary terminology and explicit source definitions remain covered by the existing rule.
+The real bounded translation stage on verified `85f7bac01` produced and selected a fresh wording retaining
+Mio's character/name distinction,
+with all four responding judges choosing it.
+The measured group-name votes no longer authorize the false gloss correction under the existing tally rule.
+These are preventive instructions,
+not new output-rejection gates or a new glossary entry.
+
 Since `037d1f650`,
 `4f87555fc` and `1fe7ca2fe` (2026-09-09) the OpenRouter client sends `provider.sort: 'price'` with the
 zero-data-retention and `require_parameters` preferences,

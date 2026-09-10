@@ -24,8 +24,34 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current state after the class-thirty repair on 2026-09-10:
-`b5da9866b` is the verified code tip.
+Current state after the naming-policy integration on 2026-09-10:
+`85f7bac01` is the verified code tip.
+`514db9b1f` scopes declared-name rules so they do not erase a word or spelling being discussed.
+`8a59469f2` keeps established names outside the generic-term first-use gloss requirement.
+Build,
+types,
+oxlint and the full suite pass;
+`~/temp/agent/naming-final-unit-20260910.out` ends `unit exit 0`.
+
+The real bounded `runTranslateStage` probe completed on frozen `85f7bac01`:
+Qwen wrote a fresh elliptical opening retaining both `澪` and `Mio`,
+and all four responding judges selected it.
+There was no structural send-back or outage fallback.
+The group-name probe moved the false gloss claim from five supporting votes to a three-to-three split;
+`tallyVotes` therefore changes `accepted` to `needs-human`,
+so the claim no longer authorizes an edit.
+The explicit-definition positive control remains enforced.
+No glossary entry,
+output-rejection gate or correction loop was added.
+
+Reports and complete evidence are in
+[Mio12 wording follow-up](../planning/translation-repair-mio12-wording-2026-09-10.md).
+The remaining tasks are neutral archive-review/apparatus treatment and temporal source context.
+No probe or full-entry pass is active.
+The queue remains at Mio until those material follow-ups and a fresh page reading.
+
+Historical state after the class-thirty repair:
+`b5da9866b` was the verified code tip.
 Generation fourteen persists each naturalness round's effective `quorumOver`,
 uses it when recomputing the stored verdict,
 and binds confirmation to the same basis.
