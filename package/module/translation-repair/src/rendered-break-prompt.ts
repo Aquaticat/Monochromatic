@@ -93,7 +93,7 @@ export function renderedBreakPrompt(
     readonly sourceText: string;
     readonly archiveText: string;
     readonly renderings?: readonly BreakRendering[];
-    readonly syntax?: SliceSyntax;
+    readonly syntax?: SliceSyntax | undefined;
   },
 ): string {
   if ((archiveText !== '') || (syntax === 'front-matter'))
