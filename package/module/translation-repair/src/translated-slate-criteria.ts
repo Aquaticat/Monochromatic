@@ -60,5 +60,8 @@ export function translatedSlateCriteria(
       };
     },),
   },);
-  return rendered === '' ? criteria : [...criteria, rendered,];
+  return rendered === '' ? criteria : [
+    ...criteria,
+    rendered,
+  ];
 }
