@@ -90,6 +90,23 @@ costs,
 caller trace and independent review.
 
 Temporal-context task 19 is in progress and takes priority before the fresh Mio pass.
+Its fixed-slate probe passed the direct-source positive control with all six judges.
+Adding the source paragraph past the intervening heading moved correct choices from one of six to four of six;
+paired source/archive context also produced four correct choices,
+with only abstentions remaining.
+No global window change has been made yet.
+
+`proc_7375` runs `translation-repair-temporal-writer-context-probe-20260910`.
+Report:
+`~/temp/agent/temporal-writer-context-probe-20260910/report.json`.
+Log:
+`~/temp/agent/temporal-writer-context-probe-20260910.log`.
+Current first translation writers receive no neighbor fields,
+even though repair critics/editors and translation judges do.
+The bounded writer probe compares no context,
+physical context and context reaching the dated narrative,
+without extra generation rounds.
+See [temporal and participant source context](../planning/translation-repair-temporal-context-2026-09-10.md).
 Do not reinstate task 20 as its blocker because the audit experiment remains unresolved.
 No full-entry pass is active.
 The complete archive and naming trace is
