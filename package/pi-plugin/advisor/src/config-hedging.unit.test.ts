@@ -52,6 +52,12 @@ await describe({ name: '', children: [
     expect(config.hedgeDelayMs,).toBe(1_000,);
     expect(config.collectionGraceMs,).toBe(50,);
   }, },),
+  it({ name: 'project overlap settings retain unrelated global reviewer instructions', fn: async (): Promise<void> => {
+    const config = await configured({ systemPrompt: 'Retain global reviewer instructions.', hedgeDelayMs: 1000, }, { hedgingEnabled: true, },);
+    expect(config.systemPrompt,).toBe('Retain global reviewer instructions.',);
+    const cleared = await configured({ systemPrompt: 'Retain global reviewer instructions.', }, { systemPrompt: '', },);
+    expect(cleared.systemPrompt,).toBe('',);
+  }, },),
   it({ name: 'project delay and grace override global timing', fn: async (): Promise<void> => {
     const config = await configured({ hedgingEnabled: true, hedgeDelayMs: 1_000, }, { hedgeDelayMs: 2_000, collectionGraceMs: 100, },);
     expect(config.hedgingEnabled,).toBe(true,);
