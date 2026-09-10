@@ -2102,10 +2102,16 @@ not a search through distant sections;
 metadata,
 empty content or another heading stop it.
 Source and archive views use the same positions.
-The verified build `134a2e20c` reproduces the measured Mio context,
-but the actual repair-path trial removed the list and changed an established group name.
-That is not a successful wording repair;
-evidence scope and full-packet name authority remain under investigation.
+The `134a2e20c` trial reproduced the measured Mio context but still removed the list and changed a group name.
+Subsequent measurements led to clustered panel packets and source-evidence handoffs,
+verified locally through `8adb77fb9`.
+`runPanelStage` now preplans one packet per existing cluster,
+uses bounded sequential packet execution and keeps every claim's configured electorate separate.
+Complete same-entry source evidence participates in repair cache/twin identity and reaches the panel and both selectors.
+Whole-chunk selection also receives the known existing English before repair,
+so an already-carried detail is not mistaken for a new addition.
+The compiled full-path check remains active and group-name authority is still unresolved;
+these implementation checks do not establish whole-page readiness.
 Initial translation writers remain unchanged because their separate context experiment did not correct the bullet.
 
 Since `037d1f650`,

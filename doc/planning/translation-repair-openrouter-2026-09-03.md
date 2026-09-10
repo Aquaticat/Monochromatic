@@ -6936,6 +6936,36 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Clustered panels and complete repair evidence implemented, 2026-09-10
+
+The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,
+after the existing English before repair is supplied to whole-chunk selection.
+It uses actual generated candidates and is not a fallback result.
+The group-name mutation remains unresolved.
+
+The measured changes are implemented through `8adb77fb9`:
+preplanned cluster-local panel packets,
+independent per-cluster quorum accounting,
+source evidence in repair cache/twin identity,
+and nearby/full source plus existing-English comparison at repair selectors.
+No vote creates a new packet and no writing round is added.
+Initial-writer and non-persisted-audit treatments that failed their probes are not integrated.
+
+Build,
+types,
+zero-warning lint and the complete unit suite pass.
+`~/temp/agent/evidence-handoff-unit-20260910.out` ends `unit exit 0`.
+Compiled prompts match the measured treatments,
+and the public panel stage reproduces thirty cached calls with identical decisions and no cache misses.
+
+`proc_ccdb` now runs the compiled full repair path without prompt interception,
+on one Mio slice with a 120-request and 1200000 ms global bound.
+Report:
+`~/temp/agent/temporal-implemented-path-probe-20260910/report.json`.
+Task 23 remains in progress until that result is read.
+Task 21's name authority still blocks the next full Mio pass.
+No clean page or overall readiness is claimed.
+
 ## Heading-boundary context reaches the repair path, 2026-09-10
 
 The temporal fixed-slate probe passed its direct-source control with all six judges.

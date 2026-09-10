@@ -3,9 +3,11 @@
 ## Scope
 
 Task 19 is in progress.
-The verified production code is `134a2e20c`.
-The bounded forward-heading window is implemented;
-its existing repair-path output verification failed the wording goal and is being diagnosed.
+The verified production code is `8adb77fb9`.
+The forward-heading window,
+clustered panel packets,
+source-evidence/cache handoffs and repair-selector comparison evidence are implemented.
+Their compiled full repair-path verification is active.
 No full-entry pass is active.
 Task 20's non-persisted audit accuracy is deferred,
 not a prerequisite to this work or the next Mio page reading.
@@ -719,9 +721,9 @@ completed payloads supplied cached requests.
 The spend and daily helpers ran afterward.
 No production batching change is yet applied.
 
-## Active repair-selector evidence check
+## Completed repair-selector evidence check
 
-`proc_ae78` is `translation-repair-selection-context-probe-20260910`.
+`proc_ae78` completed `translation-repair-selection-context-probe-20260910` in 273 seconds.
 Script:
 `~/temp/agent/probe-repair-selection-context-20260910.mjs`.
 Plan:
@@ -748,5 +750,150 @@ and preserves any additional recovery user messages instead of mistaking them fo
 
 The cap is sixty-four requests,
 360000 ms per exchange and 1200000 ms globally.
-Read actual winning text and whether selection or fallback produced it.
-The unresolved group-name mutation remains task 21 even if the temporal candidate wins.
+The baseline regional selector declines and keeps the incorrect current bullet.
+With source evidence,
+it selects the correct friend-to-Mio replacement at weight four over six ballots.
+This is an actual selected regional operation,
+not a fallback or a vote-count-only claim.
+
+The whole-chunk baseline selects the deleting candidate.
+Added source evidence moves the whole-chunk vote to a three-to-three tie,
+which invokes the existing indecision fallback and still returns that deleting candidate.
+Do not describe the whole-chunk treatment as a successful selection.
+Several reasons still call the corrected first bullet newly added,
+but the chunk selector has never been shown the existing English that already carries the item.
+
+The run logged 0.00158577 USD on Bedrock,
+0.00105248 USD on OpenRouter,
+and six unpriced Hyper plus eight unpriced Synthetic calls.
+The daily helper ran afterward.
+The unresolved group-name mutation remains task 21.
+
+## Completed existing-English comparison check
+
+`proc_3b2b` completed `translation-repair-selection-baseline-probe-20260910` in 58 seconds.
+Script:
+`~/temp/agent/probe-repair-selection-baseline-20260910.mjs`.
+Plan:
+`~/temp/agent/repair-selection-baseline-plan-20260910.out`.
+Log:
+`~/temp/agent/repair-selection-baseline-probe-20260910.log`.
+Report:
+`~/temp/agent/repair-selection-baseline-probe-20260910/report.json`.
+
+This adds only the existing English before repair to the completed source-evidence whole-chunk treatment.
+Source evidence,
+candidate wording,
+authorship,
+fallbacks,
+system criteria and original judge window remain fixed.
+The existing English is comparison context for what was already carried,
+not independent factual authority.
+Every offered candidate is an actual changed text,
+not the unchanged baseline;
+no model identity is disclosed through this comparison block.
+
+The probe calls only the stock whole-chunk selector,
+with at most twenty-four requests and the same 360000/1200000 ms bounds.
+The offline plan checks both the candidate-sheet transformation and recovery-message preservation.
+No new writing or invented composite is introduced.
+The actual whole-chunk selector chooses GLM-5.3's correct-disclosure candidate at weight five over six ballots,
+not by fallback.
+Its group-name mutation remains the separate task 21 blocker.
+The run logged 0.00079041 USD on Bedrock,
+one OpenRouter call reporting zero,
+and two unpriced Hyper plus one unpriced Synthetic call.
+The daily helper ran afterward.
+
+## Implemented packet and evidence boundaries
+
+Task 22 implements the measured cluster review unit in `panel-stage.ts`,
+re-exported from `repair-stages.ts`.
+All packets and local claim/group maps are materialized before the first panel call.
+`mapOverlapped` with overlap one bounds packet execution;
+no vote creates another packet or generation round.
+Every packet uses the unchanged electorate and independent resolver/tally.
+The union of heard identities is reporting only,
+never a quorum basis.
+
+`repair-evidence-role.ts` supplies the measured current-coverage versus factual-evidence distinction
+in critic and panel context blocks.
+The panel accepts optional `documentSourceText`;
+local critic quote anchoring remains unchanged.
+The three red packet guards fail on the old implementation in `06d120f74`.
+Implementation `53a249bb1` and subsequent fixture/formatting commits are locally verified through `5c10ed0eb`.
+The full suite ends `unit exit 0` in `~/temp/agent/cluster-panel-final-unit-20260910.out`.
+The built public stage reproduces thirty cached stock-window requests with zero misses
+and exactly twenty-one measured issue decisions:
+`~/temp/agent/cluster-panel-runtime-replay-20260910.out`.
+Ordinary no-context critic/panel prompts remain byte-identical in
+`~/temp/agent/panel-prompt-parity-20260910.out`.
+
+Task 23 threads same-entry source evidence from `repair-slice-settle.ts`
+through the cache key,
+twin key,
+purchase,
+repair chunk,
+panel and existing repair selectors.
+An unchanged full source equal to the current slice is not redundantly supplied by the corpus caller.
+A changed document outside the local window changes the repair key.
+It does not change initial translation-writer prompts.
+
+`repair-selection-evidence.ts` supplies the measured nearby/document evidence to both selector granularities.
+Whole-chunk selection also receives the existing English before repair from its known untouched fallback.
+This is comparison context,
+not an extra candidate or independent factual authority.
+`editor-envelope-context.ts` extracts the existing bounded English-context helper to preserve the module line budget.
+
+The three red evidence/key guards in `6b8921898` fail before implementation `05c736e4e`.
+Additional guards exercise the actual prepared-document and editor-stage handoffs,
+not only helper strings.
+Build,
+types,
+zero-warning lint and the complete suite pass through `8adb77fb9`.
+`~/temp/agent/evidence-handoff-unit-20260910.out` ends `unit exit 0` at line 9125;
+post-format focused tests also pass.
+`~/temp/agent/repair-selection-parity-20260910.out`
+proves the compiled regional and whole-chunk prompts match the measured treatments.
+No-context regional prompts remain unchanged.
+
+One type-check was started before changed built declarations were ready and emitted TS2353.
+The after-build type-check passes;
+future public-API verification must rebuild before checking tests that import built declarations.
+Proposed instruction clarification:
+`CM6` should mention this ordering when public APIs change.
+No `AGENTS.md` amendment was made.
+
+The implementation-review advisor request timed out;
+no endorsement is attributed to that call.
+Verification rests on the named tests,
+parity checks and public-stage replay.
+
+A read-only census of the unchanged pinned corpus finds ninety-two source pages;
+`XingZ60` is largest at 16733 UTF-16 characters and 41720 bytes.
+The census is `~/temp/agent/original-evidence-size-20260910.json`.
+This is size evidence,
+not proof of model comprehension or a new truncation policy.
+
+## Active compiled full-path check
+
+`proc_ccdb` is `translation-repair-temporal-implemented-path-probe-20260910`.
+Script:
+`~/temp/agent/probe-temporal-implemented-path-20260910.mjs`.
+Plan:
+`~/temp/agent/temporal-implemented-path-plan-20260910.out`.
+Log:
+`~/temp/agent/temporal-implemented-path-probe-20260910.log`.
+Report:
+`~/temp/agent/temporal-implemented-path-probe-20260910/report.json`.
+
+It executes actual `repairChunk` on frozen `.frozen-dist-8adb77fb9`,
+without intercepting prompts.
+The same-entry original is supplied through the implemented argument.
+Completed prompt stores are merged into a new disposable store;
+conflicting records stop setup instead of silently overwriting a response.
+The bound remains one slice,
+120 JSON requests,
+360000 ms per exchange and 1200000 ms globally.
+Read selected text and the complete decision path before completing task 23 or resuming task 19's final verification.
+Task 21 remains separate and no full Mio pass is active.

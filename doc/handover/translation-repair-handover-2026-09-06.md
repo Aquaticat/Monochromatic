@@ -25,11 +25,44 @@ and the reason is recorded in
 ## Where the work stands
 
 Current archive-boundary work on 2026-09-10:
-`134a2e20c` is the verified code tip,
+`8adb77fb9` is the verified code tip,
 with build,
 types,
 zero-warning oxlint and the complete suite passing.
-`~/temp/agent/heading-window-check-unit-20260910.out` ends `unit exit 0`.
+`~/temp/agent/evidence-handoff-unit-20260910.out` ends `unit exit 0` at line 9125.
+
+Task 22 is complete:
+the panel materializes one packet per existing cluster before calls begin,
+executes them with bounded overlap one,
+and preserves per-cluster ballots and configured quorum basis.
+The built public panel replays thirty measured calls with zero misses and identical issue decisions.
+
+Task 23 has implemented same-entry source evidence through repair keys/twins,
+panels and both repair selectors.
+Whole-chunk selection now sees existing English before repair as comparison evidence.
+Compiled selector prompts match the successful measured treatments.
+Initial translation-writer and failed audit treatments remain unintegrated.
+
+`proc_ccdb` is active as `translation-repair-temporal-implemented-path-probe-20260910`,
+on frozen `.frozen-dist-8adb77fb9`.
+Report:
+`~/temp/agent/temporal-implemented-path-probe-20260910/report.json`.
+Log:
+`~/temp/agent/temporal-implemented-path-probe-20260910.log`.
+This is actual `repairChunk` without message interception,
+with one slice,
+120 requests maximum and a twenty-minute global bound.
+Conflicting merged cache payloads stop setup;
+old stores are not modified.
+Read actual selected wording and decisions before completing task 23.
+Task 19 waits on this implementation verification;
+task 21's group-name authority remains a separate blocker before any full Mio pass.
+Task 20 is deferred and non-blocking.
+
+The historical measurement record in this section predates this implementation;
+its previously active runs are complete.
+The canonical detailed record is
+[temporal and participant source context](../planning/translation-repair-temporal-context-2026-09-10.md).
 The implementation now routes actual revisions past the retention-only anchor gate,
 without lowering review or selector quorum;
 compares them with the unchanged block;
@@ -131,7 +164,7 @@ The next measurement must distinguish current coverage/edit scope from nearby so
 using the exact captured critics and panel packets.
 Keep the name-authority change separate;
 do not assume packet size or the window caused it without a matched comparison.
-Current production prompts remain unchanged beyond the verified heading window.
+During that measurement phase production prompts remained unchanged beyond the verified heading window.
 
 `proc_12b5` completed the evidence-scope experiment in 476 seconds.
 The fixed old blanket claims lose authorization at three-to-three votes.
@@ -189,7 +222,7 @@ The other drafts delete the first item or duplicate the second.
 All structurally validate,
 which is not semantic success.
 
-`proc_ae78` now runs `translation-repair-selection-context-probe-20260910`.
+`proc_ae78` completed `translation-repair-selection-context-probe-20260910`.
 Report:
 `~/temp/agent/repair-selection-context-probe-20260910/report.json`.
 Log:
@@ -201,7 +234,8 @@ comparing stock selection with added source evidence.
 The affected envelope and complete chunk are tested independently,
 with no invented composite or extra generation.
 Sixty-four calls maximum and a twenty-minute global bound.
-No production batching or prompt change has been implemented beyond the verified heading window.
+At that measurement point no batching change was integrated.
+The implemented packet and selector changes are recorded in the current status.
 
 The caller trace also found that per-envelope and whole-chunk repair selectors do not receive neighboring source.
 Any good editor candidate will need verification at those actual selection boundaries;

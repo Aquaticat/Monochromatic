@@ -1682,8 +1682,14 @@ The existing repair-path integration failed the wording goal:
 it removed the list and changed the established group name rather than correcting the disclosure bullet.
 Task 19 remains in progress with an evidence-scope experiment over exact critic/panel inputs.
 Task 21 separately tracks name authority in the full repair packet.
-Neither task is complete,
-and another whole-page pass must wait for their verification.
+The measured packet and evidence-handoff remedies are now implemented through `8adb77fb9`.
+Build,
+types,
+lint and the complete suite pass;
+compiled prompt parity and a thirty-call cached public-panel replay also pass.
+Task 23's compiled full repair-path check is active before task 19 resumes its final verification.
+Name-authority task 21 remains incomplete,
+and another whole-page pass must wait for that verification chain.
 No new full Mio page has yet verified the combined changes,
 and readiness remains false.
 
