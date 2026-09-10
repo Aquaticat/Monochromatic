@@ -132,6 +132,22 @@ using the exact captured critics and panel packets.
 Keep the name-authority change separate;
 do not assume packet size or the window caused it without a matched comparison.
 Current production prompts remain unchanged beyond the verified heading window.
+
+`proc_12b5` now runs `translation-repair-evidence-scope-probe-20260910`.
+Report:
+`~/temp/agent/repair-evidence-scope-probe-20260910/report.json`.
+Log:
+`~/temp/agent/repair-evidence-scope-probe-20260910.log`.
+The offline baseline reproduces twelve critic/panel calls and exact messages without a provider client.
+The treatment changes only existing context-purpose rules,
+first for the unchanged old panel packet,
+then for a new critic round whose anchored claims feed a newly derived panel packet.
+It retains name policy,
+source/target bytes,
+schemas,
+stock roles and actual tally logic.
+Its limit is fifty-four live calls and a twenty-minute global bound;
+no editor or added production round is part of the experiment.
 See [temporal and participant source context](../planning/translation-repair-temporal-context-2026-09-10.md).
 Do not reinstate task 20 as its blocker because the audit experiment remains unresolved.
 No full-entry pass is active.

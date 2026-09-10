@@ -6959,11 +6959,19 @@ types,
 zero-warning oxlint and the full suite;
 `~/temp/agent/heading-window-check-unit-20260910.out` ends `unit exit 0`.
 Its reconstructed Mio12 window matches the measured paired input byte-for-byte.
-The actual repair-path probe `proc_c166` is active on that frozen build,
-with one slice,
-120 requests maximum and a 1200000 ms global bound.
+The actual repair-path probe `proc_c166` completed on that frozen build in 748 seconds,
+using forty-six calls.
+Its compiling result removed the list and changed the established group name,
+so it failed the wording goal.
 Report:
 `~/temp/agent/temporal-repair-path-probe-20260910/report.json`.
+The cache-only replay reproduces all calls with zero misses.
+
+Task 19's evidence-scope experiment `proc_12b5` is active over those exact critic/panel inputs,
+without changing source bytes,
+name policy,
+quorums or the production graph.
+Task 21 separately tracks full-packet name authority.
 No full-entry pass is active and no clean page is claimed.
 See [temporal context measurement](translation-repair-temporal-context-2026-09-10.md)
 for experiments,

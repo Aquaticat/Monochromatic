@@ -2103,7 +2103,9 @@ metadata,
 empty content or another heading stop it.
 Source and archive views use the same positions.
 The verified build `134a2e20c` reproduces the measured Mio context,
-but actual repair-path wording remains under verification.
+but the actual repair-path trial removed the list and changed an established group name.
+That is not a successful wording repair;
+evidence scope and full-packet name authority remain under investigation.
 Initial translation writers remain unchanged because their separate context experiment did not correct the bullet.
 
 Since `037d1f650`,

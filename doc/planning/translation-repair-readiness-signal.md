@@ -1678,8 +1678,12 @@ Task 19's fixed-slate measurement moved correct date/participant choices from on
 when the next source body was included after the heading.
 The bounded forward-only window is implemented and locally verified through `134a2e20c`.
 Initial-writer context additions were not integrated because their measured drafts still contained the defect.
-The existing repair-path integration is active;
-its actual returned wording must be read before completing this task.
+The existing repair-path integration failed the wording goal:
+it removed the list and changed the established group name rather than correcting the disclosure bullet.
+Task 19 remains in progress with an evidence-scope experiment over exact critic/panel inputs.
+Task 21 separately tracks name authority in the full repair packet.
+Neither task is complete,
+and another whole-page pass must wait for their verification.
 No new full Mio page has yet verified the combined changes,
 and readiness remains false.
 

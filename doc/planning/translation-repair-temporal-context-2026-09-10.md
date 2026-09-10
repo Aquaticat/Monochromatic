@@ -331,3 +331,42 @@ A fixed original panel packet tests the old claims only;
 new critic claims need their own newly built panel packet before any end-to-end claim.
 Task 19 remains in progress.
 No new production prompt change has been made.
+
+## Active evidence-scope experiment
+
+`proc_12b5` is `translation-repair-evidence-scope-probe-20260910`.
+Script:
+`~/temp/agent/probe-repair-evidence-scope-20260910.mjs`.
+Plan:
+`~/temp/agent/repair-evidence-scope-plan-20260910.out`.
+Log:
+`~/temp/agent/repair-evidence-scope-probe-20260910.log`.
+Report:
+`~/temp/agent/repair-evidence-scope-probe-20260910/report.json`.
+
+The offline plan reconstructs real critic claims,
+clusters and panel outcomes from twelve cached calls,
+with zero misses and messages equal to the captured full-repair requests.
+It checks the actual exchange field is 360000 ms.
+
+The live experiment first applies the context-role treatment to the unchanged original panel packet.
+It then runs the real critic stage under the critic treatment,
+including exact quote anchoring,
+and builds a fresh panel packet from surviving new claims.
+The real panel stage and `tallyVotes` determine authorization in both panel runs.
+
+Only existing user-message context-purpose rules change.
+System instructions,
+name policy,
+source and target text,
+neighbor text,
+response schemas and stock role allocation remain fixed.
+The first fixed-packet panel uses the same prompt-dependent original cohort;
+the newly derived packet may select a different stock window,
+which must not be misreported as a matched per-seat comparison.
+
+The cap is fifty-four live JSON requests,
+with a 1200000 ms global bound and shared abort on request exhaustion.
+No editor calls or new production stages are bought by this experiment.
+Read precise surviving temporal/participant claims,
+old blanket-claim tallies and new derived-packet decisions before deciding whether this treatment is sufficient.
