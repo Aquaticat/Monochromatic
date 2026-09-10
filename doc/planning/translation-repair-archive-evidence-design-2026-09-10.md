@@ -309,3 +309,216 @@ Next compare typed current-use evidence with neutral history evidence
 at the same claim and selector seams,
 including all genuine-correction controls.
 Neither a runtime Git dependency nor a typed-use implementation is selected yet.
+The classification probe logged 0.0001324 USD on Bedrock
+and 0.00048586 USD on OpenRouter,
+with four Hyper and six Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Completed old-packet evidence comparison
+
+`proc_b67a` stopped after eighteen requests in 102 seconds.
+
+- Script:
+  `~/temp/agent/probe-typed-archive-evidence-20260910.mjs`.
+- Plan:
+  `~/temp/agent/typed-archive-evidence-plan-20260910.out`.
+- Log:
+  `~/temp/agent/typed-archive-evidence-probe-20260910.log`.
+- Report:
+  `~/temp/agent/typed-archive-evidence-probe-20260910/report.json`.
+
+The real record is selected by corroborated group-reference kind within the original archive range,
+not by matching a literal name.
+Contested claims join by target-span overlap.
+The neutral historical record joins to the same range through the automatic acquisition prototype.
+It is not described as a naming choice in the history arm.
+
+The typed arm supplies only the observed occurrence use and its exact archive text.
+It states no source-name equivalence,
+official name,
+canonical replacement or correctness of entity participation.
+Classifier provenance stays in the report,
+not as reputation evidence on the judge's sheet.
+
+The actual name packet is compared under typed current-use evidence and neutral history evidence.
+It retains its compound administrator/name allegation.
+Typed-use controls cover explicit English naming,
+ordinary factual role errors,
+work-title translation,
+mentioned forms,
+wrong named participants,
+place-reference conventions and official-title retention.
+The pure administrator issue also remains in the control set.
+
+If admission remains valid,
+the existing name-only role-repair discriminator is selected under both evidence arms
+and both candidate orders.
+It retains the real/composite contributor identities and adverse fallback controls.
+The cap is 108 requests,
+360000 ms per exchange and 1200000 ms globally.
+System policies,
+schemas,
+configured rosters and tally thresholds stay unchanged for these downstream calls.
+No production feature is added.
+
+Both typed-use and neutral-history evidence still authorize false renames in the old five-claim packet.
+The explicit-English-name control remains authorized.
+The run stops before later controls and selectors.
+This comparison is not matched to the successful isolated-history benchmark,
+so it does not yet decide between the evidence designs.
+Bedrock logged 0.00236314 USD;
+two OpenRouter calls reported zero,
+with nine Hyper and two Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Matched isolated-claim comparison
+
+An independent advisor required the exact successful history benchmark
+before interpreting another typed-use result.
+The same pure claim,
+source,
+archive,
+full-source context,
+schema,
+numbering and actual model identities are used for every arm.
+Evidence remains in the same message position,
+with outer labels identifying the data kind truthfully.
+
+`proc_deb7` first reproduced the semantic result from six cached calls with zero misses,
+but stopped because its assertion compared the provider's optional `total_tokens` field.
+`prompt-payload-store.ts` reconstructs `prompt_tokens` and `completion_tokens`,
+not `total_tokens`.
+The corrected assertion still requires identical kind,
+raw model text,
+parsed value and both stored token counts.
+This is cache-metadata normalization,
+not changed model evidence.
+
+`proc_15ab` completed the corrected comparison in 67 seconds with eighteen requests,
+including the six cached benchmark calls.
+
+- Exact history benchmark:
+  rejected four-to-two,
+  matching the stored result.
+- Generic typed-use evidence:
+  rejected four-to-two.
+- Kind-specific explanatory prose:
+  accepted with three supports,
+  two oppositions and one malformed abstention.
+
+Only the generic typed-use description proceeds.
+The more interpretive description is not integrated.
+Results:
+`~/temp/agent/matched-archive-evidence-probe-20260910-r2/report.json`.
+Bedrock logged 0.00172278 USD;
+two OpenRouter calls reported zero,
+with four Hyper and two Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Preparation seam and corroboration check
+
+`~/temp/agent/verify-archive-use-preparation-seam-20260910.mjs`
+reads the pinned blobs,
+applies the actual `passArchiveText` normalization
+and runs the actual section aligner.
+The group reference is in section zero,
+with six source blocks and seven target blocks.
+`prepare-with-pairing.ts` therefore reaches its existing block-pairing call for this section.
+No extra preparation model round is needed for this measured Mio occurrence.
+One-to-one or empty-side fast paths remain a separate coverage consideration.
+
+`~/temp/agent/archive-use-quorum-check-20260910.out`
+also checks the classified records against the configured preparation quorum:
+six of eleven.
+Every expected kind already has six or seven supporters,
+so these observed records meet that stronger basis as well as the prototype's two-agreement floor.
+No additional model call is made for this check.
+The final metadata quorum contract still belongs to the design decision;
+the existing pair-agreement threshold is not silently changed.
+
+## Completed typed-use follow-up
+
+`proc_9854` completed `translation-repair-typed-archive-evidence-followup-20260910`
+in 466 seconds with 85 requests.
+
+- Script:
+  `~/temp/agent/probe-typed-archive-evidence-r2-20260910.mjs`.
+- Plan:
+  `~/temp/agent/typed-archive-evidence-plan-20260910-r2.out`.
+- Log:
+  `~/temp/agent/typed-archive-evidence-probe-20260910-r2.log`.
+- Report:
+  `~/temp/agent/typed-archive-evidence-probe-20260910-r2/report.json`.
+
+The pure and compound claims are now tested separately,
+matching the successful benchmark's scope.
+The explicit-English,
+wrong-entity,
+mentioned-form,
+work-title,
+ordinary-term,
+place-reference and administrator controls remain.
+Fresh critics and their name-touching panel follow,
+then the typed-only selector discriminator in both orders.
+The cap remains 108 requests and a twenty-minute global bound.
+No production implementation is selected yet.
+
+The pure name and compound claims are each rejected four-to-two.
+The genuine English-name,
+role,
+work-title,
+mentioned-form and wrong-person corrections remain authorized.
+Place-name retention and official-title retention controls are rejected as false complaints.
+The pure administrator issue receives six supports.
+Malformed votes remain abstentions;
+one contains a long repeated-character sequence and is not counted as a valid support.
+
+The typed-only selector chooses the preserving repair at weight five,
+and at weight six with candidate order reversed.
+Neither result is fallback retention.
+Fresh criticism leaves no actionable rename claim and retains an accepted administrator diagnosis.
+
+However,
+no participant-correction claim survives in this fresh critic packet.
+The raw replies confirm that the discarded long target quotes concern other issues,
+not an otherwise-valid participant correction:
+`~/temp/agent/typed-archive-critic-raw-20260910-r2.out`.
+One critic is lost and the stage hears five of its initial six asks.
+Do not attribute the nomination gap to the typed evidence alone;
+participation and generation differ from the successful history run.
+The complete repair must still satisfy the earlier temporal goal.
+
+Bedrock logged 0.00660591 USD;
+six OpenRouter calls reported zero,
+with twenty-eight Hyper and twenty-one Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Active full typed-evidence repair
+
+`proc_0e80` runs `translation-repair-temporal-typed-path-probe-20260910`
+on frozen `.frozen-dist-b9d3b2ea0`.
+
+- Script:
+  `~/temp/agent/probe-temporal-typed-path-20260910.mjs`.
+- Plan:
+  `~/temp/agent/temporal-typed-path-plan-20260910.out`.
+- Log:
+  `~/temp/agent/temporal-typed-path-probe-20260910.log`.
+- Report:
+  `~/temp/agent/temporal-typed-path-probe-20260910/report.json`.
+
+This executes actual `repairChunk`
+with generic corroborated occurrence-use evidence on existing document sheets,
+not Git-history evidence.
+Policies,
+schemas,
+roles,
+source,
+archive,
+thresholds and production generation depth remain unchanged.
+The bound is one slice,
+120 requests and a twenty-minute global limit.
+No production feature is added.
+Inspect name,
+administrator and disclosure wording together,
+including the actual candidate set and fallback decisions.

@@ -213,13 +213,32 @@ but also returns punctuation and partial-word edits.
 Generic history descriptions have failed either name preservation or a genuine mentioned-form control.
 
 A typed current-archive-use alternative is now being tested to avoid that dependency.
-`proc_a1a0` produces matching baseline/augmented block pairings
+`proc_a1a0` produced matching baseline/augmented block pairings
 and correctly corroborated occurrence kinds across the real name and control spans.
 The initial invalid `fanOut: 'all'` argument followed the window branch;
 a corrected provider-free replay with `fanOut: 'window'`
 verifies the same fourteen calls and classifications.
 It was not an exhaustive eleven-voice run.
-Next comes typed-use versus neutral-history admission and selector comparison.
+The old five-claim comparison did not match the successful history benchmark.
+A corrected isolated-claim comparison reproduces the exact history result from cache
+and finds generic typed-use evidence also rejects the false name claim four-to-two.
+The kind-specific prose alternative fails and is excluded.
+
+`proc_9854` completed the typed follow-up:
+safety controls pass,
+the compound and pure rename claims are rejected,
+and the name-only selector preserves the name in both orders.
+Fresh criticism retains administrator correction but has no participant-correction claim;
+this is an unresolved combined-path concern,
+not a proven causal effect of typed evidence.
+
+`proc_0e80` now runs `translation-repair-temporal-typed-path-probe-20260910`
+on frozen `.frozen-dist-b9d3b2ea0`,
+with generic typed-use evidence and no history evidence.
+The bound is one slice,
+120 requests and a twenty-minute global limit.
+Read actor,
+role and name wording together before choosing the implementation.
 No production acquisition or classification feature is implemented.
 No production history feature or one-off name mapping is added.
 The provider-free trace also confirms the pure administrator issue's broad quote includes the group name;
