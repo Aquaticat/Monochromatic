@@ -6936,6 +6936,47 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## The delegated verse remedy reaches the live probe, 2026-09-10
+
+The owner delegated the best changes after the correction.
+The actual Mio10 preparation was rebuilt from its recorded pairing:
+18 matching slices,
+with the source-only poem's effective verse flag false.
+The recorded slate contains a five-break GLM-flash rendering,
+but judges selected Mercury's zero-break text for wording.
+This closes the evidence gap and locates the failure before publication.
+
+`1a6ebbf62` gives writers and judges a shared rendered-line contract,
+with parsed source facts before writing and counts tied to actual anonymous ballot positions before selection.
+Coverage and formatting end at `d2e102b12`.
+Source bytes,
+archive-backed layout authority and ordinary-passage prompt identity are preserved.
+Build,
+types,
+oxlint and full suite pass;
+the latter ends `unit exit 0` in `~/temp/agent/rendered-contract-verified-unit-20260910.out`.
+
+A bounded matched comparison is running,
+not a full-entry pass:
+`proc_f94d`,
+frozen `d2e102b12`,
+log `~/temp/agent/rendered-verse-probe-20260910-r1.log`,
+report `~/temp/agent/rendered-verse-probe-20260910-r1/report.json`.
+It asks Mercury and GLM-flash to write the same source under baseline and new instructions,
+asks the original four responding judges to choose from the same recorded slate under both contracts,
+and asks for new consolidation proposals.
+Both arms use the same source-only context window.
+Direct writer outputs are measured before any structural repair or rejection.
+The first scratch invocation failed before generation because a meter-call argument was omitted;
+that was corrected without changing pipeline source.
+
+The [verse-remedy review](translation-repair-verse-remedy-review-2026-09-10.md)
+records the scope,
+720000 ms deadline,
+nominal calls,
+interface reasoning and verification.
+Read the results before relaunching Mio.
+
 ## Mio11 is stopped for remedy reassessment, 2026-09-10, 02:18 UTC
 
 The owner rejected treating red/green guards and a publication test as the best fix.

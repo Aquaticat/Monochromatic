@@ -24,7 +24,42 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Owner correction at 02:18 UTC on 2026-09-10:
+Current work on 2026-09-10:
+the owner delegated the best changes after the guard-first correction.
+The shared upstream rendered-line contract is implemented at `1a6ebbf62`,
+with integration coverage and formatting through `d2e102b12`.
+Writers get parsed source-break facts before generation;
+judges get counts keyed to their actual anonymous slate;
+author repair,
+lane comparison and consolidation carry the same contract.
+Raw source and archive-backed layouts are untouched.
+Ordinary-passage prompt identity was checked against frozen `dc51b02d9`.
+
+The original evidence gap is closed:
+rebuilding Mio10 with its recorded pairing produces the same 18 slices,
+and its source-only poem really had effective `lineStructured: false`.
+The recorded GLM-flash candidate at index 3 preserved five breaks;
+Mercury's winning index 2 had zero.
+Its voters preferred wording without addressing rendered structure.
+
+Build,
+types and oxlint pass with zero warnings.
+Full-suite log `~/temp/agent/rendered-contract-verified-unit-20260910.out` ends `unit exit 0`.
+No full-entry pass is running.
+The bounded matched probe is active as `proc_f94d` (`translation-repair-rendered-verse-probe-r1`),
+on frozen `d2e102b12`,
+log `~/temp/agent/rendered-verse-probe-20260910-r1.log`,
+report `~/temp/agent/rendered-verse-probe-20260910-r1/report.json`.
+It compares old/new writer sheets and old/new judging on a fixed slate,
+then new consolidation writing;
+both arms use the same source-only window without pictures or neighboring text.
+The whole probe has a 720000 ms deadline.
+Read its actual outputs and costs before relaunching Mio.
+No source changes are planned while it runs.
+The first scratch attempt failed before generation on a missing meter-call argument;
+only that script was corrected before the fresh probe directory was used.
+
+Historical owner correction at 02:18 UTC on 2026-09-10:
 red/green guards and a publication test do not establish the best fix for the verse defect.
 The guard-first remedy claim is withdrawn.
 `Mio11` was stopped by SIGTERM to verified pid `1653981`;
@@ -469,7 +504,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `e0a0ae45c` for code and guards;
+  `d2e102b12` for code and guards;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -2058,9 +2093,11 @@ each read off the pass log and the shipped page:
     Its closing poem exposed class twenty-nine:
     five explicit hard breaks became soft newlines.
     That source-only guard is fixed and verified through `e0a0ae45c`.
-    The owner rejected treating the guard and tests as the best remedy.
+    The owner rejected treating the guard and tests as the best remedy,
+    then delegated the best changes.
     `Mio11` is stopped;
-    resolve the upstream rendered-structure contract before another source change or paid pass.
+    the upstream rendered-structure contract is now implemented and the bounded matched probe is active.
+    Read that probe before relaunching Mio.
     See the verse-remedy review linked under "Where the work stands".
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:

@@ -1874,10 +1874,19 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
-The twenty-ninth-class guard is provisional after the owner's correction on 2026-09-10:
-a rejection rule and passing tests do not establish the best remedy.
-Generation and judging must be reassessed before another paid pass;
-see [the verse-remedy review](../../../doc/planning/translation-repair-verse-remedy-review-2026-09-10.md).
+The owner delegated the verse remedy after rejecting the guard-first approach.
+Since `1a6ebbf62`,
+writers receive parsed explicit-break facts before generation,
+and selectors receive the same rendered-line contract with counts matched to their actual anonymous slate.
+Author repair inherits that contract;
+lane comparison and consolidation use it too.
+It distinguishes visible breaks from soft newlines and recommends unambiguous `<br/>` spelling.
+Raw source,
+archive-backed layouts and ordinary-passage prompts are unchanged.
+The deterministic floor remains a backstop,
+not proof that the model behavior is repaired.
+The bounded writer/selection comparison is recorded in
+[the verse-remedy review](../../../doc/planning/translation-repair-verse-remedy-review-2026-09-10.md).
 Since `7c0ce152f` (2026-09-10,
 the twenty-ninth class) a source-only passage must preserve a minimum count of explicit line breaks
 within each top-level block.

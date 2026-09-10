@@ -93,6 +93,61 @@ Structured translation units and source canonicalization are deferred:
 the measured slate already contains a faithful break-preserving representation,
 so generation and selection are the demonstrated seams to repair first.
 
+## Implementation and bounded verification
+
+`1a6ebbf62` implements the shared rendered-break prompt.
+`553d0bcab` adds fact-boundary and real anonymous-slate tests.
+`8699ffd61` centralizes the translated slate's criteria and preserves optional syntax correctly;
+`d2e102b12` applies the final formatting correction.
+The production-sheet guard `2f1c9a0e3` failed before the implementation.
+Author repair preserves the original system contract through its existing conversation,
+verified through its real builder rather than duplicating the rule.
+Final polish does not rewrite these render-bearing blocks:
+the built eligibility reader excludes blockquotes as `not-a-paragraph`,
+Markdown hard-break paragraphs as `hard-break`,
+and intrinsic-`br` paragraphs as `carries-markup`.
+All were invoked directly to confirm the seam.
+Its post-rewrite structural check uses the approved base,
+not the original archive;
+that check is not claimed as another source-only floor.
+
+The helper's archive input is the actual archival wording,
+never an eligibility-filtered fallback or generated standing.
+Its activation means no archival wording supplies a competing layout,
+not that an empty string decides the existing stage's fallback/absence policy.
+That separate `incumbentKind` policy is unchanged.
+Whitespace-only and other nonempty archive inputs are excluded explicitly.
+
+Build,
+types and oxlint pass with zero warnings.
+The full suite ends `unit exit 0` in `~/temp/agent/rendered-contract-verified-unit-20260910.out`.
+A comparison against frozen `dc51b02d9` proves byte-identical writer,
+consolidation,
+lane and gate messages for ordinary source-only prose,
+archive-backed explicit lines and metadata:
+`~/temp/agent/rendered-prompt-parity-20260910.out`.
+
+The live probe uses frozen `d2e102b12` and the reconstructed 132-character source slice.
+It compares baseline and new writer instructions on Mercury and GLM-flash,
+then baseline and new judging of the same recorded five-candidate slate on the original four responding judges.
+Both arms omit pictures and neighboring text to hold that window fixed;
+this is not a rerun of the full production context or a timing calibration.
+New consolidation instructions then receive the selected wording on the same writer seats.
+Nominal requests:
+four initial writer calls,
+eight judge calls and two consolidation calls,
+with a 720000 ms whole-probe deadline and existing model completion caps.
+No source floor repairs the direct writer replies before their break counts are measured.
+Outputs are compiled with the installed MDX compiler without executing generated code.
+
+The first scratch launch failed before generation because the meter method needed `{ signal }`.
+That script call was corrected,
+not pipeline source.
+The active probe is `proc_f94d` (`translation-repair-rendered-verse-probe-r1`),
+with log `~/temp/agent/rendered-verse-probe-20260910-r1.log`
+and report `~/temp/agent/rendered-verse-probe-20260910-r1/report.json`.
+No source changes or full-entry pass are planned until the terminal report is read.
+
 ## Recommended direction
 
 Repair the existing generation and judging contract around rendered structure.
@@ -176,6 +231,6 @@ not a post-cancellation balance reconciliation;
 in-flight usage may not have been reported.
 The daily helper ran into `~/temp/agent/Mio11-costs-stopped-20260910.out`.
 
-No pass is running.
-Resolve the upstream remedy before altering source again or relaunching Mio.
-The page-reading queue and readiness claim remain blocked.
+The full-entry queue remains paused.
+Read the active bounded probe's output and costs before deciding whether to relaunch Mio.
+The page-reading queue and readiness claim remain blocked until a current-build page is read.

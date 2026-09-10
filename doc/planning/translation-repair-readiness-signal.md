@@ -1656,6 +1656,24 @@ local guards are not a published page,
 and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
 queue advances.
 
+## The upstream verse remedy is being measured (2026-09-10)
+
+The owner delegated the best changes.
+The recorded preparation now proves the poem's effective verse flag was false,
+and the recorded slate proves judges had a break-preserving option but chose a flat one.
+`1a6ebbf62` repairs the writing and judging contract with shared rendered-break facts;
+coverage and formatting end at `d2e102b12`.
+The existing floor is a backstop rather than the remedy's justification.
+
+The full suite,
+types and lint pass.
+A bounded live comparison now measures first writer outputs before structural repair,
+selection on a fixed slate,
+and consolidation writing.
+Ordinary and archive-backed prompt identity has been checked against the prior build.
+These measurements precede another full-entry pass.
+No new clean page or readiness claim follows from the source change alone.
+
 ## The verse remedy is under review (2026-09-10, 02:18 UTC)
 
 The owner rejected the claim that red/green guards and a publication test are the best fix.
