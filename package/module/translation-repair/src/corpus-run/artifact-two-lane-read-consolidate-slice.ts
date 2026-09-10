@@ -161,6 +161,7 @@ export function parseConsolidateSlice(
     reviewRequired = false,
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
+    quorumBasisRequired = false,
   }: {
     readonly value: unknown;
     readonly path: string;
@@ -169,6 +170,7 @@ export function parseConsolidateSlice(
     readonly reviewRequired?: boolean;
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
+    readonly quorumBasisRequired?: boolean;
   },
 ): ArtifactConsolidateSlice {
   /**
@@ -255,6 +257,7 @@ export function parseConsolidateSlice(
           reviewRequired,
           correctionChainRequired,
           everyBodyBlockReviewed,
+          quorumBasisRequired,
         },),
       }
       : {}),

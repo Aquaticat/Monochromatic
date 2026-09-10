@@ -68,6 +68,8 @@ function parseStringList(
  * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
  * block rather than the refinable paragraphs alone
  *
+ * @param quorumBasisRequired - whether generation records its wider review quorum
+ *
  * @returns Parsed polish record
  *
  * @example
@@ -82,12 +84,14 @@ export function parseConsolidationPolish(
     reviewRequired = false,
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
+    quorumBasisRequired = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly reviewRequired?: boolean;
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
+    readonly quorumBasisRequired?: boolean;
   },
 ): ArtifactConsolidationPolish {
   /**
@@ -251,6 +255,7 @@ export function parseConsolidationPolish(
           finalText: text,
           correctionChainRequired,
           everyBodyBlockReviewed,
+          quorumBasisRequired,
         },),
       }
       : {}),

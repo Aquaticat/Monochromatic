@@ -448,7 +448,7 @@ export function parseSettledTwoLaneArtifact(
       value: artifact.pageAssembly,
       path: `${id}.pageAssembly`,
       required: generation
-        === ARTIFACT_SCHEMA_VERSION_V13,
+        >= ARTIFACT_SCHEMA_VERSION_V13,
     },),
   };
 }

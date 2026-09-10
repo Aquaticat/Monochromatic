@@ -27,12 +27,6 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
-  ARTIFACT_SCHEMA_VERSION_V8,
-  ARTIFACT_SCHEMA_VERSION_V9,
-  ARTIFACT_SCHEMA_VERSION_V10,
-  ARTIFACT_SCHEMA_VERSION_V11,
-  ARTIFACT_SCHEMA_VERSION_V12,
-  ARTIFACT_SCHEMA_VERSION_V13,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
 
@@ -100,13 +94,7 @@ function parseContestSlice(
       'verdict',
       'ballots',
       'usable',
-      ...(((generation === ARTIFACT_SCHEMA_VERSION_V7)
-        || (generation === ARTIFACT_SCHEMA_VERSION_V8)
-        || (generation === ARTIFACT_SCHEMA_VERSION_V9)
-        || (generation === ARTIFACT_SCHEMA_VERSION_V10)
-        || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-        || (generation === ARTIFACT_SCHEMA_VERSION_V12)
-        || (generation === ARTIFACT_SCHEMA_VERSION_V13)) ? ['eligibility',] : []),
+      ...((generation >= ARTIFACT_SCHEMA_VERSION_V7) ? ['eligibility',] : []),
     ],
     path,
   },);
@@ -143,13 +131,7 @@ function parseContestSlice(
   /**
    * Whether artifact generation requires syntax eligibility evidence.
    */
-  const eligibilityRequired = (generation === ARTIFACT_SCHEMA_VERSION_V7)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V8)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V9)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V10)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V12)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V13);
+  const eligibilityRequired = generation >= ARTIFACT_SCHEMA_VERSION_V7;
   if (eligibilityRequired
     && (eligibility === undefined)
     && contestEligibilityRequired({ row, })) {

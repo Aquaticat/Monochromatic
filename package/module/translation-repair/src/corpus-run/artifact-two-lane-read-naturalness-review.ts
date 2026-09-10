@@ -33,6 +33,8 @@ import { parseNaturalnessReviewRound, } from './artifact-two-lane-read-naturalne
  * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
  * block (generation ten) rather than the refinable paragraphs alone
  *
+ * @param quorumBasisRequired - whether generation stores the effective wider quorum
+ *
  * @returns Cross-validated review audit
  *
  * @example
@@ -47,12 +49,14 @@ export function parseNaturalnessReview(
     finalText,
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
+    quorumBasisRequired = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly finalText: string;
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
+    readonly quorumBasisRequired?: boolean;
   },
 ): ArtifactNaturalnessReview {
   /**
@@ -79,6 +83,7 @@ export function parseNaturalnessReview(
       path: round.path,
       paragraphDigestsRequired: true,
       everyBodyBlockReviewed,
+      quorumBasisRequired,
     },);
   }
   /**
@@ -131,6 +136,7 @@ export function parseNaturalnessReview(
         path: `${path}.rounds[${String(at,)}]`,
         paragraphDigestsRequired: correctionChainRequired,
         everyBodyBlockReviewed,
+        quorumBasisRequired,
       },);
     },);
   if (rounds.length !== (correctionCount + 1)) {

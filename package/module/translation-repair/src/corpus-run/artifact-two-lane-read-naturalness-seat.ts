@@ -282,6 +282,8 @@ export function uniqueNaturalnessFindings(
  *
  * @param seats - every requested reviewer seat
  *
+ * @param quorumOver - explicit wider basis, or legacy interpretation from recorded seats
+ *
  * @returns Verdict implied by quorum and rejection
  *
  * @example
@@ -290,7 +292,10 @@ export function uniqueNaturalnessFindings(
  * ```
  */
 export function naturalnessVerdictOf(
-  { seats, }: { readonly seats: readonly ArtifactNaturalnessReviewSeat[]; },
+  { seats, quorumOver = seats.length, }: {
+    readonly seats: readonly ArtifactNaturalnessReviewSeat[];
+    readonly quorumOver?: number;
+  },
 ): ArtifactNaturalnessReviewRound['verdict'] {
   /**
    * Seats carrying usable verdict.
@@ -301,7 +306,7 @@ export function naturalnessVerdictOf(
   /**
    * Same exact-half quorum runtime used for requested roster.
    */
-  const quorumNeeded = rosterQuorumSize({ rosterSize: seats.length, },);
+  const quorumNeeded = rosterQuorumSize({ rosterSize: quorumOver, },);
   if (usable.length < quorumNeeded)
     return 'quorum-not-met';
   if (usable.some(function rejects(seat,): boolean {

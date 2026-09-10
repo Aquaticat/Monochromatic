@@ -1,4 +1,5 @@
 import { requireExactKeys, } from '../artifact-exact-guard.ts';
+import { validNaturalnessQuorum, } from '../naturalness-quorum.ts';
 import {
   ArtifactParseError,
   requireArray,
@@ -37,6 +38,8 @@ import {
  * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
  * block (generation ten) rather than the refinable paragraphs alone
  *
+ * @param quorumBasisRequired - whether generation records its wider quorum basis
+ *
  * @returns Cross-validated review round
  *
  * @example
@@ -50,11 +53,13 @@ export function parseNaturalnessReviewRound(
     path,
     paragraphDigestsRequired,
     everyBodyBlockReviewed = false,
+    quorumBasisRequired = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly paragraphDigestsRequired: boolean;
     readonly everyBodyBlockReviewed?: boolean;
+    readonly quorumBasisRequired?: boolean;
   },
 ): ArtifactNaturalnessReviewRound {
   /**
@@ -67,6 +72,7 @@ export function parseNaturalnessReviewRound(
   requireExactKeys({
     record,
     allowed: [
+      ...(quorumBasisRequired ? ['quorumOver',] : []),
       'candidateDigest',
       ...(paragraphDigestsRequired ? ['candidateText',] : []),
       'paragraphCount',
@@ -186,7 +192,19 @@ export function parseNaturalnessReviewRound(
   /**
    * Verdict recomputed from seat statuses.
    */
-  const verdict = naturalnessVerdictOf({ seats, },);
+  const quorumOver = quorumBasisRequired
+    ? requireCount({ value: record.quorumOver, path: `${path}.quorumOver`, },)
+    : seats.length;
+  if (!validNaturalnessQuorum({ quorumOver, seatCount: seats.length, },)) {
+    throw new ArtifactParseError({
+      path: `${path}.quorumOver`,
+      reason: 'safe integer quorum basis covering every recorded seat',
+    },);
+  }
+  /**
+   * Verdict recomputed using the same wider basis as the producing stage.
+   */
+  const verdict = naturalnessVerdictOf({ seats, quorumOver, },);
   if (record.verdict !== verdict) {
     throw new ArtifactParseError({
       path: `${path}.verdict`,
@@ -220,6 +238,7 @@ export function parseNaturalnessReviewRound(
     },);
   }
   return {
+    ...(quorumBasisRequired ? { quorumOver, } : {}),
     candidateDigest,
     ...(paragraphDigestsRequired ? { candidateText, } : {}),
     paragraphCount,

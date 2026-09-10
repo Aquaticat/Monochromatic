@@ -194,6 +194,11 @@ export type ArtifactNaturalnessReviewSeat = {
  */
 export type ArtifactNaturalnessReviewRound = {
   /**
+   * Wider quorum basis, required from generation fourteen and absent in legacy records.
+   */
+  readonly quorumOver?: number;
+
+  /**
    * Digest binding review to exact candidate bytes.
    */
   readonly candidateDigest: string;

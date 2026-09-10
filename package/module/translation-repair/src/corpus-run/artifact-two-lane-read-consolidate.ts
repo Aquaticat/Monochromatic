@@ -163,6 +163,7 @@ export function parseConsolidation(
     reviewRequired = false,
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
+    quorumBasisRequired = false,
   }: {
     readonly value: unknown;
     readonly laneSelection: ArtifactLaneSelection;
@@ -172,6 +173,7 @@ export function parseConsolidation(
     readonly reviewRequired?: boolean;
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
+    readonly quorumBasisRequired?: boolean;
   },
 ): ParsedConsolidation {
   if (value === undefined) {
@@ -233,6 +235,7 @@ export function parseConsolidation(
         reviewRequired,
         correctionChainRequired,
         everyBodyBlockReviewed,
+        quorumBasisRequired,
       },);
     },);
 

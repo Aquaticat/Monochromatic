@@ -83,8 +83,7 @@ export async function confirmAbsoluteNaturalness(
       .map(function seatOf(seat,): RosterModelId {
         return seat.modelId;
       },),
-    quorumOver: request.modelIds
-      .length,
+    quorumOver: initial.quorumOver,
     fanOut: 'whole-bench',
   },);
   return {

@@ -15,6 +15,10 @@ import {
 } from './absolute-naturalness-review-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
+import {
+  NaturalnessQuorumError,
+  validNaturalnessQuorum,
+} from './naturalness-quorum.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
@@ -69,6 +73,11 @@ export type AbsoluteNaturalnessReviewVerdict =
  * ```
  */
 export type AbsoluteNaturalnessReviewOutcome = {
+  /**
+   * Effective wider bench size, retained independently of seats the window asked.
+   */
+  readonly quorumOver: number;
+
   /**
    * Digest binding review to exact candidate bytes.
    */
@@ -167,6 +176,8 @@ function uniqueFindings(
  *
  * @returns Candidate-bound absolute verdict and every seat status
  *
+ * @throws {@link NaturalnessQuorumError} when quorum basis cannot cover requested seats
+ *
  * @example
  * ```ts
  * const review = await reviewAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });
@@ -204,6 +215,8 @@ export async function reviewAbsoluteNaturalness(
     l,
     tag: reviewAbsoluteNaturalness.name,
   },);
+  if (!validNaturalnessQuorum({ quorumOver, seatCount: modelIds.length, },))
+    throw new NaturalnessQuorumError({ quorumOver, seatCount: modelIds.length, },);
   /**
    * Exact-half usable voices required to approve and start straggler grace.
    */
@@ -360,6 +373,7 @@ export async function reviewAbsoluteNaturalness(
       + `seats=${seatSummary}, uniqueFindings=${String(findings.length,)}`,
   );
   return {
+    quorumOver,
     candidateDigest: hashContent({ content: subject.candidateText, },),
     candidateText: subject.candidateText,
     paragraphCount,

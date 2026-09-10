@@ -61,6 +61,12 @@ export const ARTIFACT_SCHEMA_VERSION_V12 = 12;
 export const ARTIFACT_SCHEMA_VERSION_V13 = 13;
 
 /**
+ * Generation fourteen records the effective wider bench for every naturalness
+ * review, so windowed and confirmation rounds retain their runtime quorum.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V14 = 14;
+
+/**
  * Generation before archive-original spans were sealed; the archive's front
  * matter stood as published from here.
  *
@@ -166,6 +172,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V11,
   ARTIFACT_SCHEMA_VERSION_V12,
   ARTIFACT_SCHEMA_VERSION_V13,
+  ARTIFACT_SCHEMA_VERSION_V14,
 ];
 
 /**
@@ -188,7 +195,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V10
   | typeof ARTIFACT_SCHEMA_VERSION_V11
   | typeof ARTIFACT_SCHEMA_VERSION_V12
-  | typeof ARTIFACT_SCHEMA_VERSION_V13;
+  | typeof ARTIFACT_SCHEMA_VERSION_V13
+  | typeof ARTIFACT_SCHEMA_VERSION_V14;
 
 /**
  * Narrows numeric artifact version to known two-lane generation.
@@ -223,14 +231,7 @@ export function isTwoLaneArtifactGeneration(
 export function artifactGenerationRequiresPolish(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
-  return (generation === ARTIFACT_SCHEMA_VERSION_V6)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V7)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V8)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V9)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V10)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V12)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V13);
+  return generation >= ARTIFACT_SCHEMA_VERSION_V6;
 }
 
 /**
@@ -248,12 +249,7 @@ export function artifactGenerationRequiresPolish(
 export function artifactGenerationRequiresNaturalnessReview(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
-  return (generation === ARTIFACT_SCHEMA_VERSION_V8)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V9)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V10)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V12)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V13);
+  return generation >= ARTIFACT_SCHEMA_VERSION_V8;
 }
 
 /**
@@ -271,11 +267,7 @@ export function artifactGenerationRequiresNaturalnessReview(
 export function artifactGenerationRequiresNaturalnessCorrectionChain(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
-  return (generation === ARTIFACT_SCHEMA_VERSION_V9)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V10)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V12)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V13);
+  return generation >= ARTIFACT_SCHEMA_VERSION_V9;
 }
 
 /**
@@ -295,10 +287,7 @@ export function artifactGenerationRequiresNaturalnessCorrectionChain(
 export function artifactGenerationReviewsEveryBodyBlock(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
-  return (generation === ARTIFACT_SCHEMA_VERSION_V10)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V11)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V12)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V13);
+  return generation >= ARTIFACT_SCHEMA_VERSION_V10;
 }
 
 /**
@@ -320,12 +309,14 @@ export function artifactGenerationReadingRequirements(
   readonly reviewRequired: boolean;
   readonly correctionChainRequired: boolean;
   readonly everyBodyBlockReviewed: boolean;
+  readonly quorumBasisRequired: boolean;
 } {
   return {
     polishRequired: artifactGenerationRequiresPolish({ generation, }),
     reviewRequired: artifactGenerationRequiresNaturalnessReview({ generation, }),
     correctionChainRequired: artifactGenerationRequiresNaturalnessCorrectionChain({ generation, }),
     everyBodyBlockReviewed: artifactGenerationReviewsEveryBodyBlock({ generation, }),
+    quorumBasisRequired: generation >= ARTIFACT_SCHEMA_VERSION_V14,
   };
 }
 
@@ -608,7 +599,7 @@ export type SettledArtifact = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V13;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V14;
 
   /**
    * Corpus entry this covers.
