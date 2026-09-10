@@ -2095,6 +2095,17 @@ so this audit-quality issue is not a page-readiness blocker.
 The awaited calls still consume resources and can propagate operational failures.
 These stage results do not establish whole-page readiness.
 
+Since `e086402a6`,
+a following heading-only source slice brings its next body into the neighboring-context window.
+This is a single forward extension,
+not a search through distant sections;
+metadata,
+empty content or another heading stop it.
+Source and archive views use the same positions.
+The verified build `134a2e20c` reproduces the measured Mio context,
+but actual repair-path wording remains under verification.
+Initial translation writers remain unchanged because their separate context experiment did not correct the bullet.
+
 Since `037d1f650`,
 `4f87555fc` and `1fe7ca2fe` (2026-09-09) the OpenRouter client sends `provider.sort: 'price'` with the
 zero-data-retention and `require_parameters` preferences,

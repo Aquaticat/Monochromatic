@@ -1674,7 +1674,12 @@ Task 20 is deferred and not a page-readiness blocker:
 a controlled public-wrapper check confirms these detailed findings are discarded and cannot change its returned text.
 Its unresolved audit accuracy is not claimed fixed;
 awaited calls still consume resources and retain operational failure paths.
-Task 19 is in progress to measure the temporal/participant source context.
+Task 19's fixed-slate measurement moved correct date/participant choices from one of six to four of six
+when the next source body was included after the heading.
+The bounded forward-only window is implemented and locally verified through `134a2e20c`.
+Initial-writer context additions were not integrated because their measured drafts still contained the defect.
+The existing repair-path integration is active;
+its actual returned wording must be read before completing this task.
 No new full Mio page has yet verified the combined changes,
 and readiness remains false.
 

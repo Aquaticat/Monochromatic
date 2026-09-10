@@ -25,11 +25,11 @@ and the reason is recorded in
 ## Where the work stands
 
 Current archive-boundary work on 2026-09-10:
-`ba01babda` is the verified code tip,
+`134a2e20c` is the verified code tip,
 with build,
 types,
-oxlint and the complete suite passing.
-`~/temp/agent/archive-brief-unit-20260910.out` ends `unit exit 0`.
+zero-warning oxlint and the complete suite passing.
+`~/temp/agent/heading-window-check-unit-20260910.out` ends `unit exit 0`.
 The implementation now routes actual revisions past the retention-only anchor gate,
 without lowering review or selector quorum;
 compares them with the unchanged block;
@@ -94,18 +94,33 @@ Its fixed-slate probe passed the direct-source positive control with all six jud
 Adding the source paragraph past the intervening heading moved correct choices from one of six to four of six;
 paired source/archive context also produced four correct choices,
 with only abstentions remaining.
-No global window change has been made yet.
+The writer probe did not fix the bullet:
+Qwen and Kimi still reproduce it under wider context,
+and Mercury's wider response fails schema validation.
+No initial-writer context change was integrated.
 
-`proc_7375` runs `translation-repair-temporal-writer-context-probe-20260910`.
+`e086402a6` implements forward-only heading context,
+verified through `134a2e20c`.
+An immediate heading-only source neighbor brings exactly one following body slice into view;
+another heading,
+metadata or empty body stops extension.
+Media counts as body,
+unknown nonempty content counts as body,
+and there is no backward or arbitrary distant scan.
+Both languages use identical selected positions.
+The compiled Mio12 window byte-matches the measured treatment.
+
+`proc_c166` runs `translation-repair-temporal-repair-path-probe-20260910`
+on frozen `.frozen-dist-134a2e20c`.
 Report:
-`~/temp/agent/temporal-writer-context-probe-20260910/report.json`.
+`~/temp/agent/temporal-repair-path-probe-20260910/report.json`.
 Log:
-`~/temp/agent/temporal-writer-context-probe-20260910.log`.
-Current first translation writers receive no neighbor fields,
-even though repair critics/editors and translation judges do.
-The bounded writer probe compares no context,
-physical context and context reaching the dated narrative,
-without extra generation rounds.
+`~/temp/agent/temporal-repair-path-probe-20260910.log`.
+It exercises actual `repairChunk` for Mio12's affected slice,
+whose existing critics and editors already receive neighboring evidence,
+with stock roles and policies,
+120 requests maximum and a twenty-minute global bound.
+Read its actual returned wording and decisions before completing task 19 or launching Mio.
 See [temporal and participant source context](../planning/translation-repair-temporal-context-2026-09-10.md).
 Do not reinstate task 20 as its blocker because the audit experiment remains unresolved.
 No full-entry pass is active.

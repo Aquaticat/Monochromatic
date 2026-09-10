@@ -3,8 +3,10 @@
 ## Scope
 
 Task 19 is in progress.
-The verified production code remains `ba01babda`.
-No temporal-context production change has been made and no full-entry pass is active.
+The verified production code is `134a2e20c`.
+The bounded forward-heading window is implemented;
+its existing repair-path output verification is active.
+No full-entry pass is active.
 Task 20's non-persisted audit accuracy is deferred,
 not a prerequisite to this work or the next Mio page reading.
 
@@ -141,9 +143,9 @@ four OpenRouter calls reporting zero,
 and four unpriced Hyper plus twelve unpriced Synthetic calls.
 The daily helper ran afterward.
 
-## Active first-writer context probe
+## Completed first-writer context probe
 
-`proc_7375` is `translation-repair-temporal-writer-context-probe-20260910`.
+`proc_7375` completed `translation-repair-temporal-writer-context-probe-20260910` in 376 seconds.
 Script:
 `~/temp/agent/probe-temporal-writer-context-20260910.mjs`.
 Plan:
@@ -172,7 +174,93 @@ The run permits nine calls,
 three concurrently,
 with a 1200000 ms global bound.
 It buys no structural send-back or follow-up generation.
-Read actual prose,
-list structure,
-date and participant roles before deciding the producer remedy.
-Compile success alone is not output-quality evidence.
+The writer treatment did not fix the observed bullet.
+Qwen and Kimi both keep Mio as the discloser with the childhood attachment in the wider arm;
+Mercury's wider reply fails schema validation.
+Some baseline and physical-context drafts also omit the required list,
+duplicate the administrator detail or change the established group name.
+Those are not successful outputs merely because they compile.
+No initial-translation-writer context change is integrated from this experiment.
+
+The run logged three OpenRouter calls reporting zero cost
+and six unpriced Synthetic calls.
+The daily helper ran afterward.
+
+## Implemented heading boundary
+
+The fixed-slate source evidence supports a bounded context change for existing consumers.
+The independent advisor recommended forward-only extension:
+a heading governs the body after it,
+whereas looking backward past a heading can pull in the prior section's body.
+That correction to the proposed symmetric traversal was adopted.
+
+`1bdf5d17c` adds failing guards.
+The old implementation fails the dated-body,
+media-body and unknown-node body cases.
+`e086402a6` adds `fidelity-window-positions.ts`
+and makes both language views use its shared positions.
+
+The rule preserves immediate neighbors and adds at most one body slice
+when the immediate following source slice is positively heading-only.
+It does not traverse backward,
+skip media,
+walk past another heading,
+or cross metadata.
+Nonempty unknown-node content consumes the single body position;
+empty content and mixed heading/body slices stop extension.
+Stamped result indices remain distinct from array positions.
+
+The initial full suite exposed an older fixture that cast incomplete objects to `ChunkPair`
+without the required `nodes` fields.
+`f8fd0555d` supplies parsed structural nodes instead of weakening the production type contract.
+Formatting and early-return cleanup follow through `134a2e20c`.
+The final build,
+types,
+zero-warning oxlint and full unit suite pass.
+`~/temp/agent/heading-window-check-unit-20260910.out` ends `unit exit 0` at line 9065.
+
+The frozen build is
+`package/module/translation-repair/node_modules/.frozen-dist-134a2e20c`.
+The actual reconstructed Mio12 window now byte-matches the measured widened source and archive contexts.
+This is checked by the next probe's offline plan,
+not inferred from the before-state code.
+
+## Active existing repair-path verification
+
+`proc_c166` is `translation-repair-temporal-repair-path-probe-20260910`.
+Script:
+`~/temp/agent/probe-temporal-repair-path-20260910.mjs`.
+Plan:
+`~/temp/agent/temporal-repair-path-plan-20260910.out`.
+Log:
+`~/temp/agent/temporal-repair-path-probe-20260910.log`.
+Report:
+`~/temp/agent/temporal-repair-path-probe-20260910/report.json`.
+
+It runs the real `repairChunk` for the actual Mio12 slice,
+using the stock role allocation under the original availability snapshot,
+including critics,
+panels,
+editors,
+selectors and checkers.
+Those existing repair consumers already receive neighboring context.
+The client retains normal routing,
+completion caps,
+quorum and author-defense policies.
+
+The probe covers one slice,
+at most 120 JSON requests,
+360000 ms per exchange and 1200000 ms globally.
+Reaching the request bound aborts the shared signal;
+an incomplete run is not success evidence.
+It reuses completed payloads only in a copied disposable cache.
+No corpus edit or extra production generation round is introduced.
+
+At completion,
+read the actual final text,
+anchored claims,
+adjudications and selected edits.
+Verify date attachment and who disclosed to whom,
+not merely compilation or process success.
+Run the per-provider spend and daily helpers.
+Task 19 remains in progress until that verification supports the intended wording correction.

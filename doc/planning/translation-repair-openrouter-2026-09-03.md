@@ -6936,6 +6936,40 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Heading-boundary context reaches the repair path, 2026-09-10
+
+The temporal fixed-slate probe passed its direct-source control with all six judges.
+Adding the next body paragraph past the immediate heading moved correct choices from one of six to four of six;
+paired source/archive context also yielded four correct choices,
+with abstentions rather than incorrect alternatives among the remaining replies.
+This is per-seat experimental evidence,
+not a production tally.
+
+The first-writer context probe did not fix the bullet,
+so no initial-translation-writer change was integrated.
+`e086402a6` instead repairs the demonstrated window boundary for existing consumers:
+include one forward body after a heading-only neighbor,
+stop at metadata,
+empty content or another heading,
+and never scan backward through a heading.
+Both language views use the same positions.
+
+`134a2e20c` passes build,
+types,
+zero-warning oxlint and the full suite;
+`~/temp/agent/heading-window-check-unit-20260910.out` ends `unit exit 0`.
+Its reconstructed Mio12 window matches the measured paired input byte-for-byte.
+The actual repair-path probe `proc_c166` is active on that frozen build,
+with one slice,
+120 requests maximum and a 1200000 ms global bound.
+Report:
+`~/temp/agent/temporal-repair-path-probe-20260910/report.json`.
+No full-entry pass is active and no clean page is claimed.
+See [temporal context measurement](translation-repair-temporal-context-2026-09-10.md)
+for experiments,
+controls,
+costs and open verification.
+
 ## Archive decision boundaries and English correction verified, 2026-09-10
 
 `ba01babda` is locally verified by build,
