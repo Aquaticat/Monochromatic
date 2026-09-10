@@ -24,7 +24,28 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current launch at 23:49 UTC on 2026-09-09:
+Terminal update at 00:07 UTC on 2026-09-10:
+`Mio9` stopped INCOMPLETE inside archive review after 1,075,657 ms,
+before either lane.
+No page or artifact was written.
+The review heard four of ten seats;
+MiniMax and Gemma returned valid JSON revisions with nonempty `sourceQuote`,
+which the declared schema permits but `isArchiveBlockReviewWire` rejected.
+The mismatch is being guarded and fixed as class twenty-eight;
+quoted revision evidence must not become retention authority.
+Mercury's malformed JSON,
+DeepSeek-flash truncation and Synthetic's transient 503 episode are separate losses,
+not evidence for changing quorum or caps.
+Last pass meters:
+OpenRouter 269.36 USD,
+Bedrock 186.05 USD,
+Synthetic weekly zero,
+Hyper zero.
+The daily helper ran for both filename dates because this pass crossed midnight:
+`~/temp/agent/Mio9-costs-after-20260910.out` and `~/temp/agent/Mio9-after-crossday-20260910.out`.
+Do not advance to `hulicaijia` before a fresh `Mio` pass is read.
+
+Launch record at 23:49 UTC on 2026-09-09:
 the ninth `Mio` runs on frozen `5cb66ffaa`,
 carrying class twenty-five and class twenty-seven.
 Pass pid `1425902`,
@@ -1878,8 +1899,9 @@ each read off the pass log and the shipped page:
     The eighth `Mio` stopped INCOMPLETE at the missing-destination publication guard.
     The retained evidence identifies class twenty-seven,
     now fixed and verified at `5cb66ffaa`.
-    The ninth `Mio` now runs at pid `1425902` on frozen `5cb66ffaa`;
-    wait for its terminal notification and read it before advancing the queue.
+    The ninth `Mio` stopped in archive review on the quoted-revision schema mismatch.
+    Finish class twenty-eight's guard and verification,
+    then relaunch `Mio` before advancing the queue.
     Only a real page can establish that both screenshot translations survive.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
