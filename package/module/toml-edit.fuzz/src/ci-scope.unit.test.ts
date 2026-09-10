@@ -30,8 +30,16 @@ const FILTERS = [
 const workflow = readFileSync(new URL('../../../../.github/workflows/toml-edit-fuzz.yml', import.meta.url,), 'utf8',);
 /** Scope step starts before its shell, environment, and run fields. */
 const scopeStart = workflow.indexOf('      id: scope\n',);
-/** Source lines following the scope run field. */
-const runLines = workflow.slice(workflow.indexOf('      run: |\n', scopeStart,) + '      run: |\n'.length,).split('\n',);
+/** Scope step ends before another step can contribute a shell or environment binding. */
+const scopeEnd = workflow.indexOf('\n    - name:', scopeStart,);
+if ((scopeStart === -1) || (scopeEnd === -1)) throw new Error('Scope step boundaries changed',);
+/** Fixed workflow step whose formatting is deliberately part of this integration fixture. */
+const scopeStep = workflow.slice(scopeStart, scopeEnd,);
+/** Scope body must exist before any fixture executes extracted code. */
+const runStart = scopeStep.indexOf('      run: |\n',);
+if (runStart === -1) throw new Error('Scope run body is missing',);
+/** Source lines following the scope run field, terminated explicitly for the final body line. */
+const runLines = `${scopeStep.slice(runStart + '      run: |\n'.length,)}\n`.split('\n',);
 /** The first dedented line ends this fixed workflow body. */
 const bodyEnd = runLines.findIndex(line => !line.startsWith('        ',));
 /** Exact Node body written to an extensionless file as the Actions runner does. */
@@ -154,9 +162,9 @@ await describe({
     it({ name: 'keeps event path filters and the Node launcher contract explicit', fn: async () => {
       expect(scopeStart,).not.toBe(-1,);
       expect(launcher,).toContain("require('node:child_process').execFileSync",);
-      expect(workflow,).toContain('      shell: node {0}\n',);
-      expect(workflow,).toContain(`SCOPE_BASE_SHA: \${{ github.event.merge_group.base_sha }}`,);
-      expect(workflow,).toContain(`SCOPE_HEAD_SHA: \${{ github.event.merge_group.head_sha }}`,);
+      expect(scopeStep,).toContain('      shell: node {0}\n',);
+      expect(scopeStep,).toContain(`SCOPE_BASE_SHA: \${{ github.event.merge_group.base_sha }}`,);
+      expect(scopeStep,).toContain(`SCOPE_HEAD_SHA: \${{ github.event.merge_group.head_sha }}`,);
       /** Each current paths block must contain exactly the tested scope set. */
       const blocks = workflow.split('    paths:\n',).slice(1,);
       expect(blocks,).toHaveLength(2,);
@@ -195,6 +203,18 @@ await describe({
       state.put('package/module/toml-edit/\t雪\n"\'$(name).ts',);
       state.commit();
       expectDecision({ result: state.run(), run: true, },);
+    }, },),
+    it({ name: 'runs for a modified relevant file mixed with irrelevant changes', fn: async () => {
+      using state = fixture();
+      /** Tracked path exercises modification rather than only additions. */
+      const path = 'package/module/toml-edit/modified.ts';
+      state.put(path,);
+      /** Comparison starts after this file's introduction. */
+      const base = state.commit();
+      writeFileSync(join(state.root, path,), 'changed contents\n',);
+      state.put('unrelated.txt',);
+      state.commit();
+      expectDecision({ result: state.run({ SCOPE_BASE_SHA: base, },), run: true, },);
     }, },),
     it({ name: 'runs when a relevant file is deleted', fn: async () => {
       using state = fixture();
@@ -238,9 +258,11 @@ await describe({
       { SCOPE_HEAD_SHA: '2'.repeat(40,), },
       { GITHUB_EVENT_NAME: 'unexpected', },
       { GITHUB_EVENT_NAME: '', },
+      { GITHUB_EVENT_NAME: undefined, },
       { GITHUB_OUTPUT: '', },
+      { GITHUB_OUTPUT: undefined, },
       { PATH: '', },
-    ].map(overrides => it({ name: `fails closed for ${JSON.stringify(overrides,)}`, fn: async () => {
+    ].map(overrides => it({ name: `fails closed for ${Object.keys(overrides,).join(',',)}: ${JSON.stringify(overrides,)}`, fn: async () => {
       using state = fixture();
       expectFailure(state.run(overrides,),);
     }, },)),
@@ -270,6 +292,28 @@ await describe({
       const result = state.run();
       expectFailure(result,);
       expect(result.stderr,).toContain('git diff --name-only --no-renames -z',);
+    }, },),
+    it({ name: 'the failure oracle rejects a deliberately restored fail-open Git adapter', fn: async () => {
+      using state = fixture();
+      state.put('unrelated.txt',);
+      state.commit();
+      /** Break only the disposable repository's tree, leaving commit validation successful. */
+      const tree = state.git(['rev-parse', 'HEAD^{tree}',],);
+      rmSync(join(state.root, '.git/objects', tree.slice(0, 2,), tree.slice(2,),),);
+      /** Mutate only the deployed fixture copy; committed production sources remain untouched. */
+      const adapter = join(state.root, 'package/module/toml-edit.fuzz/src/ci-scope-git.ts',);
+      /** Source under test was committed before introducing this mutation control. */
+      const source = readFileSync(adapter, 'utf8',);
+      /** The adapter's sole failure throw is the guard being removed. */
+      const guard = source.indexOf('    throw new ScopeError(',);
+      if ((guard === -1) || (guard !== source.lastIndexOf('    throw new ScopeError(',)))
+        throw new Error('Scope Git guard changed; update the mutation control',);
+      writeFileSync(adapter, `${source.slice(0, guard,)}    console.error(error);\n    return '';\n  }\n}\n`,);
+      /** This faulty adapter reproduces the original error-to-empty-list conversion. */
+      const result = state.run();
+      expect(result.status,).toBe(0,);
+      expect(result.output,).toBe(`${OUTPUT_SENTINEL}run=false\n`,);
+      expect(() => expectFailure(result,),).toThrow();
     }, },),
     it({ name: 'fails when the output cannot be appended', fn: async () => {
       using state = fixture();
