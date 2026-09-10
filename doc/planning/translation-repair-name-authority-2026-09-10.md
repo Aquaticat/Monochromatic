@@ -56,9 +56,10 @@ continues to govern those,
 including its refusal to protect an archive title merely because it already exists.
 No one-off glossary entry is proposed.
 
-## Active bounded measurement
+## Completed shared-wording measurement
 
-`proc_43b4` runs `translation-repair-reference-name-scope-probe-20260910`.
+`proc_43b4` completed `translation-repair-reference-name-scope-probe-20260910`
+in 261 seconds with 25 live requests.
 
 - Script:
   `~/temp/agent/probe-reference-name-scope-20260910.mjs`.
@@ -111,3 +112,97 @@ and test actual editor proposals and selected wording through the compiled repai
 No prompt change,
 claim filter or name list has been added to production for task 21.
 The next full Mio pass remains blocked on this evidence.
+
+## Shared wording did not establish a remedy
+
+The explicit-English-name control passes six-to-zero.
+The fixed real packet still authorizes the false addition and name-mistranslation claims:
+five valid supports with one abstention.
+That abstention includes `unknown-vote (supported钉子户updated)`
+and missing verdicts,
+not a valid supporting ballot.
+The previously rejected untranslated-role claim also becomes accepted three-to-two among the valid votes.
+
+Fresh critics still produce false name-mistranslation and wrong-term diagnoses.
+Their panel accepts each five-to-one,
+while accepting the genuine administrator correction six-to-zero.
+This is not rejected-claim promotion:
+these individual name claims actually win their votes.
+The expanded shared paragraph is not integrated.
+
+`~/temp/agent/reference-name-scope-results-20260910.out`
+records the claims and tallies.
+Bedrock logged 0.00301138 USD;
+two OpenRouter calls reported zero,
+with ten Hyper and seven Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Evidence before another experiment
+
+An independent advisor identified the untested factorial cell:
+current production rule plus an explicit archive input role.
+The failed experiment changed the rule while leaving the target labeled only `TRANSLATION`.
+That does not show whether the models bind the existing-name convention to this input.
+
+Caller inspection finds production repair buying in `repair-slice-buy.ts`
+and the separate `editor-calibrate.ts` caller.
+A successful role treatment must be carried from the known archive boundary,
+not used to relabel every arbitrary `repairChunk` input globally.
+Its cache identity must also reflect any new role input.
+
+The provider-free `~/temp/agent/reference-name-license-trace-20260910.out`
+compares the mixed name/administrator issue with the genuine administrator-only issue.
+Both place the whole name inside their editable region and a licensed quote.
+The pure-role region spans offsets 354 to 407,
+including `Harunome Hanbai`.
+That permits a rename;
+it does not prove that quote breadth causes one.
+If name claims are rejected but fresh editors still rename under the pure role issue,
+inspect this authoring boundary rather than declaring adjudication sufficient.
+
+Web searches for `"Harunome Hanbai"` and `"春の芽" "工作室"`
+returned relevant corpus mirrors alongside unrelated results.
+Those mirror references do not establish independent official naming evidence.
+No external naming override was inferred or injected.
+
+## Active archive-role measurement
+
+`proc_7b51` runs `translation-repair-archive-input-role-probe-20260910`.
+
+- Script:
+  `~/temp/agent/probe-archive-input-role-20260910.mjs`.
+- Plan:
+  `~/temp/agent/archive-input-role-plan-20260910.out`.
+- Log:
+  `~/temp/agent/archive-input-role-probe-20260910.log`.
+- Report:
+  `~/temp/agent/archive-input-role-probe-20260910/report.json`.
+
+It uses the current production name paragraph,
+not the failed expanded paragraph.
+Only the first user document sheet gains an input-role statement:
+`ORIGINAL` is factual evidence;
+`TRANSLATION` is pre-repair archive English whose reference names supply naming conventions,
+while its factual statements remain reviewable.
+The system policy,
+source,
+claims,
+schemas,
+configured roster and tally thresholds stay unchanged.
+The scratch report's `panel cohort/window` shorthand means configuration,
+not a promise of identical respondents:
+malformed or missing replies can still change who participates.
+
+The preplanned controls cover explicit English-name precedence,
+wrong participant direction,
+and the genuine administrator role.
+Each must remain accepted before the fixed name packet is bought.
+That packet retains all its claims,
+including the compound administrator-plus-name allegation.
+The bound remains 48 live requests,
+360000 ms per exchange and 1200000 ms globally.
+There is no critic/editor generation in this experiment.
+
+Read per-claim decisions and malformed findings.
+Do not count a compound allegation as resolved merely because its genuine administrator component survives.
+Even a successful panel treatment needs fresh authoring and compiled-path verification.

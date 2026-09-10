@@ -133,11 +133,18 @@ Task 21 is now in progress:
 all editor drafts still rename `Harunome Hanbai`,
 and the selected result says `Harunome Studio`.
 This remains the blocker before a fresh full Mio pass.
-`proc_43b4` runs `translation-repair-reference-name-scope-probe-20260910`,
-replacing only the shared name-policy paragraph in a bounded experiment.
-It first checks a genuine wrong-name control with an explicitly supplied official English name,
-then the fixed name packet and new anchored critic/panel output.
+`proc_43b4` completed in 261 seconds with 25 live requests.
+The genuine wrong-name control passes,
+but both fixed and fresh packets still authorize false name changes.
+The expanded shared paragraph is not integrated.
+
+`proc_7b51` now runs `translation-repair-archive-input-role-probe-20260910`:
+current production rule plus explicit pre-repair archive input role,
+with controls for declared English naming,
+participant direction and administrator-role repair.
 The cap is 48 live requests and a twenty-minute global bound.
+The provider-free trace also confirms the pure administrator issue's broad quote includes the group name;
+adjudication alone is not proof that an editor will preserve it.
 No production name-policy change or one-off glossary entry has been made for task 21.
 See [reference-name authority](../planning/translation-repair-name-authority-2026-09-10.md).
 No full-entry run is active.
