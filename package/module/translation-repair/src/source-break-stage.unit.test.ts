@@ -57,7 +57,7 @@ await describe({
             return { kind: 'ok', value, rawText: JSON.stringify(value,), };
           },
         };
-        /** Both halves run with real source preparation, writer and judge builders. */
+        /** Both halves use canonical source and the real writer and judge builders. */
         const result = await runTranslateStage({
           client,
           translatorModelIds: ['inception/mercury-2.5', 'hf:zai-org/GLM-5.3-Flash',],

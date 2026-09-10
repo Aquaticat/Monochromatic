@@ -35,6 +35,12 @@ export function parseSliceBody({ text, }: { readonly text: string; },): {
   /**
    * A container half remains an atom without making the body unparseable.
    */
-  const { masked, tags, } = maskLoneContainerTags({ text: withoutComments, },);
-  return { root: parseMdxBody({ body: masked, },), tags, };
+  const {
+    masked,
+    tags,
+  } = maskLoneContainerTags({ text: withoutComments, },);
+  return {
+    root: parseMdxBody({ body: masked, },),
+    tags,
+  };
 }

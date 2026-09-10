@@ -17,7 +17,10 @@ const l = tagged({ tag: 'source-break-display', },);
 /**
  * Parser-proven Markdown break span in canonical source coordinates.
  */
-type BreakSpan = { readonly start: number; readonly end: number; };
+type BreakSpan = {
+  readonly start: number;
+  readonly end: number;
+};
 
 /**
  * Reads Markdown break spans in source order without interpreting code or attributes.
@@ -53,8 +56,12 @@ function sourceBreakSpans({ text, }: { readonly text: string; },): readonly Brea
     const node = nonNullishOrThrow(pending.pop(),);
     if (node.type === 'break') {
       spans.push({
-        start: nonNullishOrThrow(node.position?.start.offset,),
-        end: nonNullishOrThrow(node.position?.end.offset,),
+        start: nonNullishOrThrow(node.position
+          ?.start
+          .offset,),
+        end: nonNullishOrThrow(node.position
+          ?.end
+          .offset,),
       },);
     }
     if ('children' in node)
@@ -97,12 +104,19 @@ export function sourceBreakDisplay(
     readonly syntax?: SliceSyntax;
   },
 ): string {
-  if ((incumbentKind !== 'absent') || (archiveText !== '') || (syntax === 'front-matter'))
+  if (
+    (incumbentKind !== 'absent')
+    || (archiveText !== '')
+    || (syntax === 'front-matter')
+  )
     return sourceText;
   /**
    * This function's diagnostics distinguish a display change from a source edit.
    */
-  const dl = tagged({ tag: sourceBreakDisplay.name, l, },);
+  const dl = tagged({
+    tag: sourceBreakDisplay.name,
+    l,
+  },);
   try {
     /**
      * Source-order spans retain every character outside authored break syntax.
@@ -122,11 +136,20 @@ export function sourceBreakDisplay(
       /**
        * Parsed break positions include their LF, CRLF or CR line ending.
        */
-      const endingWidth = sourceText.slice(span.end - 2, span.end,) === '\r\n' ? 2 : 1;
+      const endingWidth = sourceText.slice(
+        span.end - 2,
+        span.end,
+      ) === '\r\n' ? 2 : 1;
       parts.push(
-        sourceText.slice(cursor, span.start,),
+        sourceText.slice(
+          cursor,
+          span.start,
+        ),
         '<br/>',
-        sourceText.slice(span.end - endingWidth, span.end,),
+        sourceText.slice(
+          span.end - endingWidth,
+          span.end,
+        ),
       );
       cursor = span.end;
     }

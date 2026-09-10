@@ -33,7 +33,7 @@ const RENDERED_BREAK_CONTRACT = `RENDERED LINE STRUCTURE (formatting evidence, n
 The ORIGINAL uses explicit visible line breaks inside its blocks, even if it is only one paragraph or blockquote. No archive wording supplies another layout here.
 Preserve the source's rendered line boundaries, the wording grouped on each line, line order, and attribution separation. English may expand; an extra break elsewhere does not repair a merged line.
 Markdown soft newlines render as spaces. A physical newline alone is not a visible line break. Write intended breaks visibly as <br/>, or use valid Markdown hard breaks (two trailing spaces or a backslash before a newline). Preserve ordinary soft wrapping elsewhere.
-When judging, a candidate that flattens these boundaries cannot beat a faithful candidate that preserves them merely for more lyrical wording. The per-block counts below reveal shortfalls; meeting a count alone does not prove correct placement or faithful wording. These explicit rendered boundaries, not physical newline counts, govern this passage.`;
+When judging, a candidate that flattens these boundaries cannot beat a faithful candidate that preserves them merely for more lyrical wording. The reported per-block counts reveal shortfalls; meeting a count alone does not prove correct placement or faithful wording. These explicit rendered boundaries, not physical newline counts, govern this passage.`;
 
 /**
  * Names each rendering's measured breaks without exposing its producer.

@@ -331,7 +331,10 @@ export function readSliceSkeleton(
     /**
      * Shared offset-preserving slice grammar also used by source presentation.
      */
-    const { root, tags, } = parseSliceBody({ text, },);
+    const {
+      root,
+      tags,
+    } = parseSliceBody({ text, },);
 
     return {
       kind: 'read',
