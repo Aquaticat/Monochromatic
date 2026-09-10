@@ -16,7 +16,8 @@ Do not preflight credit balances,
  or silently switch an explicitly requested model.
 The interview decisions are recorded in
  `doc/handover/pi-advisor-413-grilling.md`.
-Implementation is pending shared-understanding confirmation.
+The user confirmed the design and authorized implementation.
+The resolution and verification evidence are recorded in the Resolution section.
 
 ## Root cause and integration boundary
 
@@ -70,7 +71,7 @@ The fixture confirms that HTTP 402 does not reach this callback on this adapter.
 Classification based only on `onResponse` would miss the user-reported response.
 This observation does not describe every Pi adapter or transport.
 
-### Advisor currently throws before operation-wide routing can retain failure state
+### The retained exact-model helper throws terminal provider errors
 
 `package/pi-plugin/advisor/src/advisor-completion.ts:246` handles a provider error as follows:
 
@@ -82,10 +83,18 @@ if (response.stopReason === 'error') {
 }
 ```
 
-The required provider block belongs to the new operation coordinator,
- before another dispatch on that provider can start.
-It must retain provider identity and the exhausted-credit classification,
- not attempt to derive either from review text.
+Tool and slash-command operations now use the raw-response observer instead.
+`package/pi-plugin/advisor/src/operation-attempt.ts:196` applies the credit-specific classification:
+
+```typescript
+if ((response.stopReason === 'error') && isAdvisorCreditExhaustion(diagnostic,))
+  ledger.blockProvider(candidate.provider,);
+```
+
+The operation ledger retains the provider identity and exclusion.
+The final `onDispatch` gate rereads that exclusion after authentication,
+ before another provider request can start.
+Successful review text is never used to infer exhausted credits.
 
 ## Verification
 
@@ -179,7 +188,8 @@ Tradeoff:
  classification depends on supported diagnostic forms until the adapter exposes structured error identity.
 An unrecognized error stays an ordinary provider failure;
  do not claim it proves exhausted credits.
-The actual operation block and its routing tests have not yet been implemented.
+The operation block and routing tests are implemented.
+The resolution deliberately remains call-local and does not add persistent provider health or balance preflights.
 
 ## What does not work
 
@@ -191,6 +201,38 @@ The actual operation block and its routing tests have not yet been implemented.
   The abort fixture proves only that already-received usage can survive.
 - A global cooldown or eager balance query does not implement the user's call-local,
    just-in-time requirement.
+
+## Resolution
+
+The implementation adds call-local provider exclusion at candidate selection
+ and again immediately before provider dispatch.
+Default calls can recover serially through other eligible scoped models without enabling overlap.
+Explicit requests remain exact.
+Already-running calls can still contribute usable reviews;
+ one failed request does not retroactively discard their results.
+
+The full Advisor unit suite passed,
+ including getter-backed scope changes during authentication and the reported billing-error shape.
+The guarded `verify:host` task exercised the built extension in real Pi hosts with disposable homes
+ and only faux providers.
+Serial credit recovery,
+ explicit-model failure,
+ collected overlap,
+ straggler cancellation,
+ and successful and failed slash-command persistence passed.
+Host assertions checked top-level tool usage,
+ per-attempt accounting,
+ metadata-only progress,
+ and empty child stderr.
+
+Guard controls ran in a separate disposable worktree:
+ removing the final provider gate allowed an additional fixture `hyper` dispatch
+ and failed the regression;
+ removing candidate filtering selected a blocked model;
+ removing the live-scope gate failed scope-change regressions.
+Restoring the guards and rebuilding made the affected suites pass.
+The main-worktree credit suite remained green while the separate mutated artifact existed.
+No real provider was called by these controls.
 
 ## Upstream filing decision
 

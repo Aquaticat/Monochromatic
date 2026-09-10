@@ -306,8 +306,8 @@ Leave those changes untouched.
 
 Implementation is authorized and underway.
 Task #6 (accounting foundations) and task #5 (credit classification and exclusion gates) are complete.
-Task #3 (collection integration) remains in progress;
- task #4 covers final host verification and issue closure.
+Task #3 (collection integration) is complete.
+Task #4 covers final verification evidence and issue closure.
 
 Implemented source includes:
 
@@ -340,13 +340,13 @@ Configuration now uses `hedgingEnabled: false` by default,
  and `collectionGraceMs: 30000`.
 Project disablement is independent of inherited timing values.
 
-The package's full unit suite passed after the coordinator was first wired in.
-Subsequent additions still require another full build,
- tests,
- Oxlint,
- and TypeScript run.
-The shared model-selection package's full unit suite and TypeScript task passed
- after exporting its synchronous `readLiveScope` helper.
+The Advisor package's full unit suite and all guarded real-Pi host scenarios passed
+ after the final logical-call timing correction.
+The shared model-selection package's full unit suite,
+ zero-warning Oxlint,
+ and TypeScript task also passed.
+Existing shared-package tests were changed from source imports to built-artifact imports
+ to satisfy the active `test-import/require-eventual-artifact` rule.
 
 Independent Kimi code review identified the missed getter-backed final scope gate.
 That was addressed by reusing `readLiveScope`,
@@ -368,7 +368,7 @@ The regression now requires such preparation to finish and return its review ins
  while still forbidding dispatch after the collection cutoff.
 Commit `839490c06` records these changed expectations before the scheduler correction.
 
-Progress payloads are being tightened to carry only a progress discriminator plus rendered metadata.
+Progress payloads carry only a progress discriminator plus rendered metadata.
 The full ledger remains on final results and durable failure entries,
  not on partial tool updates where provider diagnostics could expose payload text.
 
@@ -387,15 +387,74 @@ Important commits include:
 - `05207ee4a`:
    shared getter-backed scope revalidation and configuration tests.
 
+## Final verification evidence
+
+`mise run //package/pi-plugin/advisor:verify:host` passed these real host scenarios:
+
+- Serial default recovery after exhausted credits.
+- Exact explicit-model failure with overlap enabled.
+- Returning collected reviews together.
+- Cancelling a straggler and retaining the other review.
+- Persisting a manual slash-command review.
+- Persisting a failed explicit slash-command operation.
+
+Each host used a disposable home,
+ no ambient credentials,
+ only scripted faux providers,
+ a fixed prompt,
+ bounded output,
+ and a parent watchdog.
+The verifier checks persisted top-level tool usage,
+ operation accounting,
+ bounded metadata-only updates,
+ and empty child stderr.
+The scripted primary agent continued after successful and failed Advisor tool results.
+
+Red/green controls exposed and corrected additional integration defects:
+
+- Started authentication initially received no collection grace.
+  The changed regression failed before `f1f3ba918`,
+   then passed after the scheduler retained preparing calls through the cutoff.
+- Authentication initially delayed the hedge clock.
+  The regression expected fixture time `50` but observed `150` before `02c9373c3`.
+  The hedge now starts from the first logical reviewer call,
+   after shared evidence preparation but including authentication.
+- Project overlap settings discarded an unrelated global `systemPrompt`.
+  The regression observed `undefined` before `6150be885`.
+  Global instructions now survive unrelated overrides,
+   while an explicit empty project prompt still clears them.
+
+Guard mutation verification used a separate private Git worktree with a passing baseline.
+No main-worktree guard was removed.
+
+- Removing the final credit dispatch gate made the direct exclusion assertion fail
+   and allowed the fixture's second `hyper` request after its provider was blocked.
+- Removing candidate-level provider filtering selected `hyper/first`
+   instead of the expected `other/third`.
+- Removing the final live-scope gate made the raw,
+   wrapped,
+   and empty getter-scope rejection regressions fail.
+- Restoring the guards,
+   rebuilding,
+   and rerunning the affected suites passed.
+- The main-worktree credit suite also passed while the separate mutation artifact existed,
+   checking isolation at the artifact-consumer boundary.
+- The mutation worktree had no remaining tracked diff before removal.
+  Root-sentinel `find`,
+   `git check-ignore`,
+   and `git clean --dry-run` checks preceded cleanup.
+  No root sentinels existed,
+   and the dry runs selected nothing.
+  The disposable worktree was removed.
+
+The `cli-git` auto-push for `c01ea5ae8` reported a concurrent ref update.
+`git ls-remote --heads origin main` confirmed that exact commit was already remote.
+No force push or history rewrite was used.
+
 ## Next action
 
-Finish current rendering and integration tests,
- add a guarded disposable Pi host verification task,
- update README and issue acceptance criteria to the confirmed policy,
- and verify guard tests fail when their guards are removed in a throwaway.
-Run package builds,
- full unit suites,
- zero-warning Oxlint,
- manual TypeScript tasks,
- and host verification before closing #413.
+Run the final lint/type/Markdown and registration checks,
+ synchronize GitHub #413's acceptance criteria with the confirmed policy,
+ commit the completion evidence with the closing reference,
+ and verify the issue closes after push.
 Do not reopen settled decisions or revert unrelated concurrent work.

@@ -382,3 +382,28 @@ It reserves tokens for the Advisor system prompt,
 When serialized context exceeds that effective budget,
  Advisor keeps the head and tail and inserts an omission marker.
 Set `maxContextChars` only when a project needs a lower hard cap than the selected model allows.
+
+## Verification
+
+Package checks:
+
+```bash
+# package/pi-plugin/advisor/README.md
+mise run //package/pi-plugin/advisor:build
+mise run //package/pi-plugin/advisor:test:unit
+mise run //package/pi-plugin/advisor:lint:types
+mise run //package/pi-plugin/advisor:lint:oxlint
+mise run //package/pi-plugin/advisor:verify:extension
+mise run //package/pi-plugin/advisor:verify:host
+```
+
+`verify:host` loads the built extension in disposable Pi homes with only faux providers.
+It verifies actual tool results,
+ top-level usage,
+ metadata-only progress,
+ straggler cancellation,
+ and successful and failed slash-command records.
+It supplies no ambient credentials or live conversation,
+ bounds captured output,
+ and rejects child stderr.
+The dedicated environment guard is set by the task itself.

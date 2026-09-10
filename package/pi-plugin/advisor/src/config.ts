@@ -203,7 +203,9 @@ function mergeConfigFiles(
      Delay inherits across config scopes; explicit disablement remains independent.
      */
     const hedgeDelayMs = config.hedgeDelayMs ?? merged.hedgeDelayMs;
-    /** Unrelated project overrides must not discard global reviewer instructions. */
+    /**
+     Unrelated project overrides must not discard global reviewer instructions.
+     */
     const systemPrompt = config.systemPrompt ?? merged.systemPrompt;
     merged = {
       hedgingEnabled: config.hedgingEnabled ?? merged.hedgingEnabled,

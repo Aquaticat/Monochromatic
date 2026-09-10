@@ -53,7 +53,7 @@ await describe({ name: '', children: [
     expect(config.collectionGraceMs,).toBe(50,);
   }, },),
   it({ name: 'project overlap settings retain unrelated global reviewer instructions', fn: async (): Promise<void> => {
-    const config = await configured({ systemPrompt: 'Retain global reviewer instructions.', hedgeDelayMs: 1000, }, { hedgingEnabled: true, },);
+    const config = await configured({ systemPrompt: 'Retain global reviewer instructions.', hedgeDelayMs: 1_000, }, { hedgingEnabled: true, },);
     expect(config.systemPrompt,).toBe('Retain global reviewer instructions.',);
     const cleared = await configured({ systemPrompt: 'Retain global reviewer instructions.', }, { systemPrompt: '', },);
     expect(cleared.systemPrompt,).toBe('',);
