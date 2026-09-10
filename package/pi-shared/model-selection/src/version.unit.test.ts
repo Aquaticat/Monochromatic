@@ -16,7 +16,7 @@ import {
   extractVersionNumbers,
   findCheapestInMajorVersions,
   NO_MAJOR_VERSION,
-} from './core.ts';
+} from '../dist/final/node/index.mjs';
 import { fixtureModel, } from './test-fixtures.ts';
 
 await describe({

@@ -63,11 +63,6 @@ export type CreateAdvisorToolOptions = {
 type AdvisorUpdateCallback = Parameters<AdvisorToolDefinition<typeof AdvisorToolParametersSchema>['execute']>[3];
 
 /**
- Host-defined positional caller signal, including optionality dictated by Pi.
- */
-type AdvisorCallerSignal = Parameters<AdvisorToolDefinition<typeof AdvisorToolParametersSchema>['execute']>[2];
-
-/**
  Register a default fallback tool while preserving exact explicit-model requests.
  
  @param toolOptions - session accessors and accounting persistence
@@ -111,7 +106,8 @@ export function createAdvisorTool(toolOptions: CreateAdvisorToolOptions,): Advis
         readonly model?: string;
         readonly question?: string
       },
-      signal: ForeignHostCapability<AdvisorCallerSignal>,
+      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Pi dictates this optional positional signal before required host context; intersecting the entire optional type with a marker would erase undefined.
+      signal: ForeignHostCapability<AbortSignal> | undefined,
       onUpdate: AdvisorUpdateCallback,
       ctx: ForeignHostCapability<ExtensionContext>,
     ): Promise<AdvisorToolResult> {

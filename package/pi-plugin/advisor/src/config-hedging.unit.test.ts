@@ -19,7 +19,7 @@ async function configured(global: Record<string, unknown> | string, project: Rec
   const projectDir = join(cwd, '.pi/extensions',);
   await Promise.all([mkdir(globalDir, { recursive: true, },), mkdir(projectDir, { recursive: true, },),],);
   await Promise.all([
-    writeFile(join(globalDir, 'pi-advisor.json',), typeof global === 'string' ? global : JSON.stringify(global,),),
+    writeFile(join(globalDir, 'pi-advisor.json',), (typeof global) === 'string' ? global : JSON.stringify(global,),),
     writeFile(join(projectDir, 'pi-advisor.json',), JSON.stringify(project,),),
   ],);
   return await loadMergedConfig({ home, cwd, },);

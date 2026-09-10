@@ -13,7 +13,7 @@ import {
 import {
   NO_ARGV_MODELS,
   parseArgvModelPatterns,
-} from './scope.ts';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: parseArgvModelPatterns.name,

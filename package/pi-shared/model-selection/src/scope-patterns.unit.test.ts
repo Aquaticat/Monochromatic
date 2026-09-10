@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { resolveModelPatterns, } from './scope.ts';
+import { resolveModelPatterns, } from '../dist/final/node/index.mjs';
 import { fixtureModel, } from './test-fixtures.ts';
 
 //region Fixtures

@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { loadSettingsScopePatterns, } from './scope.ts';
+import { loadSettingsScopePatterns, } from '../dist/final/node/index.mjs';
 import { captureAsyncError, } from './test-fixtures.ts';
 
 //region Fixtures

@@ -13,7 +13,7 @@ import {
 import {
   findExactModelReferenceMatch,
   NO_EXACT_MATCH,
-} from './core.ts';
+} from '../dist/final/node/index.mjs';
 import { fixtureModel, } from './test-fixtures.ts';
 
 //region Fixtures

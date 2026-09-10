@@ -18,7 +18,7 @@ import {
   parseProviderModelSlug,
   resolveRequestedModel,
   type EffectiveModelScope,
-} from './core.ts';
+} from '../dist/final/node/index.mjs';
 import {
   captureError,
   fixtureModel,

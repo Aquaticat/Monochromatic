@@ -301,6 +301,7 @@ export {
 export { createAdvisorTool, } from './tool.ts';
 export { registerAdvisorFailureAccounting, } from './operation-failure-accounting.ts';
 export { AdvisorOperationError, } from './operation-error.ts';
+export { AdvisorCompletionError, } from './advisor-completion-error.ts';
 export type { AdvisorOperationOptions, } from './operation.ts';
 export type {
   AdvisorDispatch,

@@ -17,7 +17,7 @@ import {
   parseModelPattern,
   patternHasGlob,
   splitThinkingSuffix,
-} from './core.ts';
+} from '../dist/final/node/index.mjs';
 import { fixtureModel, } from './test-fixtures.ts';
 
 //region Fixtures

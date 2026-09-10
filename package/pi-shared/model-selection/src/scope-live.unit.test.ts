@@ -4,7 +4,7 @@ import { NO_LIVE_SCOPE, readLiveScope, } from '../dist/final/node/index.mjs';
 
 /** Complete structural model fixture. */
 const model = {
-  id: 'one', name: 'One', provider: 'fixture', api: 'faux', contextWindow: 4096, maxTokens: 1024,
+  id: 'one', name: 'One', provider: 'fixture', api: 'faux', contextWindow: 4_096, maxTokens: 1_024,
   reasoning: false, baseUrl: 'https://example.invalid', input: ['text',] as const,
   cost: { input: 1, output: 1, cacheRead: 0, cacheWrite: 0, },
 };
@@ -34,8 +34,7 @@ await describe({ name: readLiveScope.name, children: [
   ...['id', 'name', 'provider', 'api', 'contextWindow', 'maxTokens', 'cost',].map(key => it({
     name: `filters structurally invalid models missing ${key}`,
     fn: async (): Promise<void> => {
-      const invalid: Record<string, unknown> = { ...model, };
-      delete invalid[key];
+      const invalid = Object.fromEntries(Object.entries(model,).filter(([property,]) => property !== key),);
       expect(readLiveScope({ scopedModels: [invalid,], },),).toEqual([],);
     },
   },)),

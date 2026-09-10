@@ -6,7 +6,7 @@
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { ReadonlyModel, } from './types.ts';
+import type { ReadonlyModel, } from '../dist/final/node/index.mjs';
 
 /**
  Cheap input token price.

@@ -10,14 +10,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { EffectiveModelScope, } from './core.ts';
+import type { EffectiveModelScope, } from '../dist/final/node/index.mjs';
 import {
   buildCostRanking,
   compareCostScores,
   scoreModel,
   selectDefaultModel,
   selectDefaultModelFromContextEstimates,
-} from './cost.ts';
+} from '../dist/final/node/index.mjs';
 import {
   CHEAP_INPUT,
   CHEAP_OUTPUT,

@@ -40,7 +40,9 @@ export const DEFAULT_TIMEOUT_MS = 600_000;
  */
 export const DEFAULT_COLLECTION_GRACE_MS = 30_000;
 
-/** Largest millisecond timer supported without overflow to a one-millisecond Node timer. */
+/**
+ Largest millisecond timer supported without overflow to a one-millisecond Node timer.
+ */
 export const MAX_ADVISOR_TIMER_MS = 2_147_483_647;
 
 /**

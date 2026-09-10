@@ -14,13 +14,13 @@ import {
   NO_AUTH,
   NoBudgetModelError,
   selectBudgetModel,
-} from './budget.ts';
+} from '../dist/final/node/index.mjs';
 import {
   captureAsyncError,
   fixtureModel,
   fixtureSlug,
 } from './test-fixtures.ts';
-import type { BudgetModelAuth, } from './types.ts';
+import type { BudgetModelAuth, } from '../dist/final/node/index.mjs';
 
 //region Fixtures
 

@@ -14,7 +14,7 @@ import {
   budgetModelSlug,
   NoBudgetModelError,
   toBudgetModelCandidate,
-} from './budget.ts';
+} from '../dist/final/node/index.mjs';
 import { fixtureModel, } from './test-fixtures.ts';
 
 //region Fixtures
