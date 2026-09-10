@@ -813,7 +813,7 @@
     dialog.addEventListener('close', () => {
       fitActive = false;
       if (returnTarget) {
-        setTimeout(() => returnTarget.focus(), 0);
+        setTimeout(() => returnTarget.focus(), 100);
       }
     });
     const previewResizeObserver = new ResizeObserver(() => {
