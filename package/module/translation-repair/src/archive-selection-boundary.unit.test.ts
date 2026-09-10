@@ -5,7 +5,11 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { runArchiveBlockReviewStage, } from '../dist/final/node/index.mjs';
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  runArchiveBlockReviewStage,
+} from '../dist/final/node/index.mjs';
 import {
   archiveSelectionFixture,
   ARCHIVE_TEST_BLOCK,
@@ -39,6 +43,28 @@ async function runFixture(fixture: ReturnType<typeof archiveSelectionFixture>,):
 await describe({
   name: 'archive review selection boundary',
   children: [
+    it({
+      name: 'REQUESTS complete minimal English revisions without confusing faithful content with no needed correction',
+      fn: async () => {
+        const fixture = archiveSelectionFixture({},);
+        const prompts: string[] = [];
+        const client = {
+          ...fixture.client,
+          chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
+            if (request.responseFormat?.json_schema.name === 'archive_block_review')
+              prompts.push(JSON.stringify(request.messages,),);
+            return await fixture.client.chatJson(request,);
+          },
+        };
+        await runFixture({ ...fixture, client, },);
+        const prompt = prompts[0] ?? '';
+        expect(prompt,).toContain('COMPLETE corrected ENGLISH block, not an excerpt',);
+        expect(prompt,).toContain('Faithful content with an obvious typo still needs this disposition',);
+        expect(prompt,).toContain('no necessary correction remains',);
+        expect(prompt,).toContain('alternative witnesses, not additional messages',);
+        expect(prompt,).toContain('A label may introduce content in the next archive block',);
+      },
+    },),
     it({
       name: 'ROUTES existing revisions to independent selection despite insufficient retention anchors',
       fn: async () => {
