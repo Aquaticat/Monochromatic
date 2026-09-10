@@ -519,8 +519,29 @@
         grid-template-columns: 1fr;
       }
 
+      .dialog-toolbar {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .dialog-toolbar h2,
+      #preview-details {
+        grid-column: 1 / -1;
+      }
+
       .dialog-toolbar h2 {
-        flex-basis: 100%;
+        font-size: 1rem;
+      }
+
+      .toolbar-button {
+        min-inline-size: 3rem;
+        padding-inline: 0.25rem;
+        font-size: 0.75rem;
+      }
+
+      #preview-details {
+        font-size: 0.75rem;
+        line-height: 1.3;
       }
     }
   </style>
