@@ -167,12 +167,22 @@ replaces the English line's `春の芽工作室` with `Harunome Hanbai`.
 That documents a local naming choice,
 not official English-name proof.
 
-`proc_b062` runs `translation-repair-archive-name-revision-probe-20260910`:
-the actual before/after revision as fenced evidence,
-with production policies and schemas unchanged.
-Controls preserve explicit contrary English naming and factual corrections.
-The fixed name packet and fresh critics/panel follow.
-The cap is 64 requests and a twenty-minute global bound.
+`proc_b062` completed in 304 seconds with 31 requests.
+Whole-line revision evidence stops all six raw fresh critics from raising name complaints,
+but the old name allegations still win in the panel.
+Fresh critics also omit the administrator-wording issue,
+so line overprotection versus recall variation remains unresolved.
+The genuine naming,
+participant and administrator controls remain actionable when presented.
+
+`proc_d09d` now runs `translation-repair-narrow-name-revision-plain-20260910`:
+only the exact changed name fragments,
+under unchanged production policy,
+with a stronger `owned` role-error control and the real archive checks.
+The fragment-plus-policy-ladder combination already failed its genuine English-name correction control
+and is not continued.
+The plain-policy arm remains unmeasured.
+The cap is 72 requests and a twenty-minute global bound.
 No production history feature or one-off name mapping is added.
 The provider-free trace also confirms the pure administrator issue's broad quote includes the group name;
 adjudication alone is not proof that an editor will preserve it.

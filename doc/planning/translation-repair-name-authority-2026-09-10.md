@@ -522,9 +522,10 @@ Any production use would need a generic,
 scoped provenance-acquisition design;
 a hand-inserted mapping for this one name is not a remedy.
 
-## Active archive-revision diagnostic
+## Completed archive-revision diagnostic
 
-`proc_b062` runs `translation-repair-archive-name-revision-probe-20260910`.
+`proc_b062` completed `translation-repair-archive-name-revision-probe-20260910`
+in 304 seconds with 31 requests.
 
 - Script:
   `~/temp/agent/probe-archive-name-revision-20260910.mjs`.
@@ -551,3 +552,109 @@ The cap is 64 requests,
 No corpus edit,
 production history feature,
 name list or glossary entry is made.
+
+The explicit English-name override and administrator controls receive six supports.
+The participant correction receives five supports and one malformed abstention;
+its competing addition diagnosis is rejected.
+The fixed name allegations still receive five supports and one opposition,
+and the compound administrator/name claim six supports.
+Thus the evidence does not yet repair adjudication of the old allegations.
+
+Fresh critics emit no group-name complaints.
+This is checked in the raw replies,
+not inferred from an empty post-validation panel:
+`~/temp/agent/archive-name-revision-critic-raw-20260910.out`.
+The rejected 516-character target quote concerns unrelated prose,
+not a hidden name claim.
+The correct participant reversal is still reported.
+
+No fresh critic reports the administrator-wording issue either.
+That could be recall variation or overprotection of the whole revised line;
+it is not yet assigned a cause.
+The empty fresh-name panel alone is not sufficient completion evidence.
+
+Bedrock logged 0.00382933 USD;
+two OpenRouter calls reported zero,
+with thirteen Hyper and eight Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Changed-fragment measurement
+
+An independent advisor reviewed the next boundary:
+retain exact revision provenance,
+limit it to the current descended archive occurrence,
+and do not turn historical substitutions into a global mined glossary.
+Common prefix/suffix extraction yields a minimal contiguous changed span,
+not a general semantic diff.
+
+`proc_36ac` stopped after six calls in 35 seconds.
+The combined fragment-plus-policy-ladder arm suppressed the genuine explicit-English-name correction:
+one support,
+four oppositions and one ambiguous vote.
+That combination is disqualified;
+the positive control still requires the correction to be authorized.
+
+- Script:
+  `~/temp/agent/probe-narrow-name-revision-20260910.mjs`.
+- Plan:
+  `~/temp/agent/narrow-name-revision-plan-20260910.out`.
+- Log:
+  `~/temp/agent/narrow-name-revision-probe-20260910.log`.
+- Report:
+  `~/temp/agent/narrow-name-revision-probe-20260910/report.json`.
+
+The script derives fragments from the actual ancestor diff
+and verifies reconstruction of both full lines from common prefix,
+changed fragment and common suffix.
+The current source contains the old fragment,
+and the current archive contains the revised line.
+The model receives only the changed name fragments,
+not the unchanged administrator wording.
+
+It retests the pure name allegation with current policy
+and with the previously measured separate-authority policy.
+It also retains the compound allegation,
+pure administrator correction and explicit-English-name override control.
+The ownership control changes only `started to manage` to `owned`
+in a disposable input;
+the source still says administrator and the history still contains only the name change.
+Fresh critics and the role-touching panel must expose whether that factual error remains discoverable.
+The real archive also receives fresh critic and name-panel checks with fragment-only evidence.
+
+The cap is 72 requests,
+360000 ms per exchange and 1200000 ms globally.
+No production feature is added.
+Before accepting a remedy,
+a false name allegation must not gain repair authority,
+and actual editors must repair a valid role issue without renaming inside its broad licensed span.
+Selection must be tested against a competing role-correcting rename,
+not only against candidates that all preserve the name.
+
+The stopped arm logged 0.00045774 USD on Bedrock,
+one OpenRouter call reporting zero,
+and one Hyper plus three Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Active fragment-only measurement
+
+The failed combined arm does not establish the result of fragment evidence alone.
+`proc_d09d` runs `translation-repair-narrow-name-revision-plain-20260910`
+with unchanged production policy.
+No failed policy-ladder treatment is applied.
+
+- Script:
+  `~/temp/agent/probe-narrow-name-revision-r2-20260910.mjs`.
+- Plan:
+  `~/temp/agent/narrow-name-revision-plan-20260910-r2.out`.
+- Log:
+  `~/temp/agent/narrow-name-revision-probe-20260910-r2.log`.
+- Report:
+  `~/temp/agent/narrow-name-revision-probe-20260910-r2/report.json`.
+
+The explicit-English-name control runs first and must remain accepted.
+The plain-policy pure name,
+compound and administrator cases follow,
+then the ownership-error and actual-archive critic/panel checks.
+The bound remains 72 requests and a twenty-minute global limit.
+No production code,
+name mapping or corpus content changes.
