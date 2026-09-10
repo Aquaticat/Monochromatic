@@ -229,10 +229,41 @@ The unused fallback construction was removed.
 the shop's section is labelled Preview diagnostics and stays hidden during its ordinary activity.
 This changes document-level diagnostic visibility, not the withdrawn OS-window requirement.
 
-`proc_64db` is rebuilding and checking that correction.
+`proc_64db` passed the rebuilt value-view driver and edited-shop diagnostic check in 36 seconds.
 Native print and offline fixtures are running as `proc_e039` and `proc_cb53`.
-A fresh Firefox ESR fixture is starting as `proc_0ee4`.
-Final regression, print/export inventory, and Firefox ESR value-view checks remain pending.
+The Firefox ESR fixture is `proc_0ee4`.
+`proc_a9d3` passed actual value-view messages, rejection fields, undefined async completion,
+and the retained Firefox ESR 140.15.0 regression in 26 seconds.
+
+`proc_df6a` passed value, ownership, capstone, shop, neutral-surface, and foundation checks,
+then stopped at the PDF whole-block inventory assertion.
+The supposedly missing settlement-record values remained in both the DOM and extracted PDF text.
+Their parallel columns interleaved in the layout-preserving text extraction,
+so the whole expected block was no longer a contiguous substring.
+Print now stacks the two representations at full width;
+browser HTML keeps its responsive side-by-side layout.
+`proc_d679` passed the final print inventory and native Print/Cancel checks in 12 seconds.
+
+`proc_422e` passed light/dark 1280/390 CSS-pixel value-card layouts,
+neutral code backgrounds, long-label/text bounds, retained-row limits, reset,
+and the visible formatting-error state in 5 seconds.
+The resulting desktop, mobile, and error-state screenshots were inspected.
+
+### Secondary review
+
+The focused Advisor review completed with `openai-codex/gpt-5.3-codex-spark`.
+Its purity concern is addressed explicitly: JSON runs first, then Showify,
+and custom hooks or special properties can change what the second call sees.
+The library configuration is not presented as a universal side-effect guarantee.
+The reference export now has a check that the teaching inspector runtime was not added to it.
+
+An origin-string check was not substituted for ownership validation:
+opaque preview origins are not unique identities.
+The driver additionally sends a forged workshop packet from another owned opaque preview,
+so the existing exact source-window check is exercised across previews as well as against the parent page.
+Run, sequence, schema, and bounded text checks remain in place.
+
+`proc_dfa6` is running the final combined suite, reopened exports, and representative PDF rendering.
 No visible-window completion gate applies.
 
 ## Integration direction to verify
