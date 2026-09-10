@@ -355,14 +355,16 @@ await describe({
         },);
         expect(outcome.verdict,).toBe('clean',);
         expect(outcome.correct,).toBe(true,);
-        expect(outcome.ballots
-          .map(function toPick(ballot,) {
-            return ballot.picked;
-          },),).toEqual([
-            'declined',
-            'clean',
-            'clean',
-          ],);
+        /** Prompt rotation changes order, not which judge abstained. */
+        const picks = Object.fromEntries(outcome.ballots.map(function byJudge(ballot,) {
+          return [ballot.modelId, ballot.picked,];
+        },),);
+        expect(outcome.ballots,).toHaveLength(3,);
+        expect(picks,).toEqual({
+          'hf:cat/Cat-A': 'declined',
+          'hf:cat/Cat-B': 'clean',
+          'hf:cat/Cat-C': 'clean',
+        },);
       },
     },),
     it({
@@ -409,14 +411,16 @@ await describe({
         expect(outcome.declineReason,).toBe('winner short of the minimum vote weight',);
         // The ballot still records what that judge chose, which is the reading
         // that separates a panel nobody voted in from one that could not agree.
-        expect(outcome.ballots
-          .map(function toPick(ballot,) {
-            return ballot.picked;
-          },),).toEqual([
-            'clean',
-            'declined',
-            'declined',
-          ],);
+        /** Preserve per-judge evidence independently of prompt-rotated order. */
+        const picks = Object.fromEntries(outcome.ballots.map(function byJudge(ballot,) {
+          return [ballot.modelId, ballot.picked,];
+        },),);
+        expect(outcome.ballots,).toHaveLength(3,);
+        expect(picks,).toEqual({
+          'hf:cat/Cat-A': 'clean',
+          'hf:cat/Cat-B': 'declined',
+          'hf:cat/Cat-C': 'declined',
+        },);
       },
     },),
   ],
