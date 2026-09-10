@@ -41,12 +41,19 @@ Current `verify-published` still accepts Mio12.
 The full diagnosis and guard history are in the OpenRouter planning log.
 
 No pass is running.
-Task 16 is the next work:
-trace the recorded wording defects through source,
-archive retention and the writing and judging stages before selecting a preventive change.
+The wording trace is recorded in
+[Mio12 wording follow-up](../planning/translation-repair-mio12-wording-2026-09-10.md).
+Next work separates shared name authority and quoted-form preservation,
+neutral archive-review framing and minimal copy-edit classification,
+and a source-context boundary that reaches the dated reconnection paragraph.
+For slice four,
+`neighbouringSource` returns the childhood SRS paragraph and a heading,
+but not slice six's April 2022 event.
+Measure those proposed treatments before another full-entry launch.
+Optional university phrasing and abbreviation preferences are not independent reasons for another paid full pass.
 The corpus remains untouched.
 Mio12 already provides published-page evidence for the verse remedy.
-The queue remains at Mio for the wording follow-up.
+The queue remains at Mio for the material wording follow-up.
 
 Historical terminal reading after 07:02 UTC on 2026-09-10:
 Mio12 settled after an initial artifact-validation error and automatic reattempt.

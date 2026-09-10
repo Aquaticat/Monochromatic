@@ -6987,10 +6987,16 @@ Boundary evidence:
 and `~/temp/agent/class30-boundaries-20260910.out`.
 The invalid-runtime-basis control asked two fixture reviewers on frozen `ff6d288bc`,
 but current code rejected it before any call.
-No paid model call was used to build or verify this repair.
+The repair fixtures and replays use local scripted clients rather than translation-provider calls.
 
 The next task is the separately recorded Mio wording follow-up,
 not another automatic entry launch.
+Its trace is in [Mio12 wording follow-up](translation-repair-mio12-wording-2026-09-10.md).
+The trace distinguishes quoted-form loss,
+missing repair-lane name authority,
+neutral archive-apparatus treatment,
+and a physical-slice context window that omits the dated reconnection paragraph.
+Optional university and abbreviation preferences do not independently justify another full pass.
 No pass is running.
 
 ## Mio12 publishes the preserved poem but exposes a stored-review mismatch, 2026-09-10
