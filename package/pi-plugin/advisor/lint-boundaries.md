@@ -37,7 +37,26 @@ Otherwise a response that completed before the cutoff could be observed only aft
 The drain therefore awaits each event's microtasks sequentially.
 Its queue comes only from finite test scripts and bounded provider attempts.
 
-Neither suppression changes the rule's severity or conceals unbounded provider waits.
+## Disposable host sequence
+
+`src/verify-host.ts` runs its fixed scenario list sequentially.
+Only one child Pi process is live at a time,
+ and each child has a separate disposable home and a parent watchdog.
+Parallelizing the scenario loop is unnecessary for the integration contract
+ and would change the chosen child-process resource bound.
+
+## Timer input bounds
+
+The [Node timer contract] sets delays greater than `2147483647`,
+ below `1`,
+ or `NaN` to `1`.
+Advisor therefore validates configured operation timeout,
+ hedge delay,
+ and collection grace as positive finite integers within that range.
+An invalid large timeout must not turn repeated scheduler waits into one-millisecond wakeups.
+
+No suppression changes the rule's severity or conceals unbounded provider waits.
 Operation waits still have independent local cancellation and deadline boundaries.
 
+[Node timer contract]: https://nodejs.org/api/timers.html#settimeoutcallback-delay-args
 [Oxlint rule source]: https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs

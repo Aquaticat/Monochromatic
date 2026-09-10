@@ -183,6 +183,7 @@ Proposed engineering details for the confirmation summary:
 - Use one evidence snapshot with model-specific context budgets.
 - Require an explicit launch delay to opt into overlapping reviews.
 - Permit bounded existing no-text recovery only before any usable review arrives.
+  An already-started logical call may finish authentication and dispatch within its collection grace.
 - Accept non-whitespace text only from completed `stop` or `length` responses.
   Label length-limited output;
    do not promise semantic quality.
@@ -353,16 +354,19 @@ That was addressed by reusing `readLiveScope`,
  rather than maintaining a duplicate parser.
 A new built-Advisor regression changes getter-backed scope during authentication.
 
-Other review suggestions were not adopted:
+Review interpretation and corrections:
 
 - Credit exclusion blocks new provider dispatches,
    not already-running calls that might still produce a usable review.
   Cancelling all same-provider work on one failure could discard such a result.
   A regression now preserves that in-flight review while forbidding further dispatches.
-- Local authentication/preparation is not an already-running provider request.
-  No actual provider request starts after first usable success;
-   pending preparation is cancelled when no provider remains in flight.
-  The existing deterministic regression retains this boundary.
+The initial rejection of the preparation-grace finding was withdrawn after re-reading the user's wording.
+A logical reviewer call already in authentication is a started call,
+ so it receives the same grace as a dispatched provider request.
+Only new replacements and retries are barred after first success.
+The regression now requires such preparation to finish and return its review inside the grace,
+ while still forbidding dispatch after the collection cutoff.
+Commit `839490c06` records these changed expectations before the scheduler correction.
 
 Progress payloads are being tightened to carry only a progress discriminator plus rendered metadata.
 The full ledger remains on final results and durable failure entries,

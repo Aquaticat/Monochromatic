@@ -224,8 +224,12 @@ export type CompleteAdvisorOptions = ForeignHostCapability<{
 export async function requestAdvisor(
   options: ForeignHostCapability<CompleteAdvisorOptions>,
 ): Promise<AssistantMessage> {
-  options.signal?.throwIfAborted();
-  if (options.operationStartedAtMs !== undefined && Date.now() >= options.operationStartedAtMs + options.config.timeoutMs)
+  options.signal
+    ?.throwIfAborted();
+  if ((options.operationStartedAtMs !== undefined) && (Date.now()
+    >= (options.operationStartedAtMs
+      + options.config
+      .timeoutMs)))
     throw new AdvisorCompletionError('advisor: operation deadline elapsed before authentication',);
   /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai accepts mutable Model while this boundary retains the selected model without changing it. */
   /**

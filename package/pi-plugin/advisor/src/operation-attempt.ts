@@ -17,8 +17,11 @@ import {
 } from './provider-credit.ts';
 import { copyAdvisorUsage, } from './operation-usage.ts';
 import { extractAdvisorText, } from './advisor-client.ts';
+import { AdvisorCompletionError, } from './advisor-completion-error.ts';
 
-/** Provider-attempt logger root. */
+/**
+ Provider-attempt logger root.
+ */
 const l = tagged({ tag: 'advisor/operation-attempt', },);
 
 /**
@@ -112,8 +115,13 @@ export async function observeAdvisorAttempt(options: ForeignHostCapability<{
     graceMs,
     notify,
   } = options;
-  /** Branch-local logger preserves lifecycle evidence without exposing review content. */
-  const innerL = tagged({ tag: observeAdvisorAttempt.name, l, },);
+  /**
+   Branch-local logger preserves lifecycle evidence without exposing review content.
+   */
+  const innerL = tagged({
+    tag: observeAdvisorAttempt.name,
+    l,
+  },);
   innerL.debug(`observing ${candidate.model}; attemptId=${String(id,)}`,);
   try {
     /**
@@ -128,10 +136,8 @@ export async function observeAdvisorAttempt(options: ForeignHostCapability<{
          */
         const current = ledger.snapshot();
         signal.throwIfAborted();
-        if ((now() >= current.deadlineAtMs) || (current.reviews
-          .length
-          > 0))
-          throw new Error('advisor: scheduling ended before provider dispatch',);
+        if (now() >= (current.collectionEndsAtMs ?? current.deadlineAtMs))
+          throw new AdvisorCompletionError('advisor: collection or operation deadline elapsed before provider dispatch',);
         assertAdvisorProviderAvailable({
           provider: candidate.provider,
           blockedProviders: current.blockedProviders,
@@ -212,16 +218,21 @@ export async function observeAdvisorAttempt(options: ForeignHostCapability<{
      */
     const diagnostic = caughtValueText(error,);
     innerL.debug(`provider or preparation failed for ${candidate.model}: ${diagnostic}`,);
-    /** Caller cancellation and cutoffs take precedence over a concurrently thrown provider error. */
+    /**
+     Caller cancellation and cutoffs take precedence over a concurrently thrown provider error.
+     */
     const current = ledger.snapshot();
-    if (current.end === undefined && !signal.aborted && now() < (current.collectionEndsAtMs ?? current.deadlineAtMs)) {
+    if ((current.end === undefined) && (!signal.aborted)
+      && (now() < (current.collectionEndsAtMs ?? current.deadlineAtMs))) {
       ledger.record({
         ...ledger.attempt(id,),
         state: 'failed',
         endedAtMs: now(),
         diagnostic,
       },);
-      if (ledger.attempt(id,).dispatchedAtMs !== undefined && isAdvisorCreditExhaustion(diagnostic,))
+      if ((ledger.attempt(id,)
+        .dispatchedAtMs
+        !== undefined) && isAdvisorCreditExhaustion(diagnostic,))
         ledger.blockProvider(candidate.provider,);
       notify();
     }

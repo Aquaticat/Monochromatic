@@ -347,7 +347,9 @@ export type AdvisorRunOptions = ForeignHostCapability<{
   readonly signal?: ForeignHostCapability<AbortSignal>;
 }>;
 
-/** Metadata-only progress discriminator; provider diagnostics and review text never cross this update boundary. */
+/**
+ Metadata-only progress discriminator; provider diagnostics and review text never cross this update boundary.
+ */
 export type AdvisorProgressDetails = { readonly kind: 'advisor-progress'; };
 
 /**

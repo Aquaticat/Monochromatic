@@ -34,3 +34,10 @@ extends = "test:unit"
 [tasks."verify:extension"]
 depends = ["build"]
 run = "node src/mise.verify-extension.ts"
+
+[tasks."verify:host"]
+description = "Exercise built Advisor in guarded credential-free disposable Pi hosts"
+run = ["mise run //package/pi-plugin/advisor:build", "node src/verify-host.ts"]
+
+[tasks."verify:host".env]
+PI_ADVISOR_VERIFY_HOST = "1"

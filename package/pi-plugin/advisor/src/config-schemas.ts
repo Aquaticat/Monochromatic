@@ -5,6 +5,7 @@
  */
 
 import * as v from 'valibot';
+import { MAX_ADVISOR_TIMER_MS, } from './constants.ts';
 
 //region Types
 
@@ -78,11 +79,6 @@ const PositiveNumberSchema: v.GenericSchema<number> = v.pipe(
 );
 
 /**
- Maximum delay accepted by Node timers without overflow to one millisecond.
- */
-const MAX_TIMER_MS = 2_147_483_647;
-
-/**
  Finite integral durations for new scheduling boundaries.
  */
 const SchedulingDurationSchema = v.pipe(
@@ -90,7 +86,7 @@ const SchedulingDurationSchema = v.pipe(
   v.finite(),
   v.integer(),
   v.minValue(1,),
-  v.maxValue(MAX_TIMER_MS,),
+  v.maxValue(MAX_ADVISOR_TIMER_MS,),
 );
 
 /**
@@ -98,7 +94,7 @@ const SchedulingDurationSchema = v.pipe(
  */
 export const AdvisorConfigFileSchema: v.GenericSchema<AdvisorConfigFile> = v.object({
   enabled: v.exactOptional(v.boolean(),),
-  timeoutMs: v.exactOptional(PositiveNumberSchema,),
+  timeoutMs: v.exactOptional(SchedulingDurationSchema,),
   hedgingEnabled: v.exactOptional(v.boolean(),),
   hedgeDelayMs: v.exactOptional(SchedulingDurationSchema,),
   collectionGraceMs: v.exactOptional(SchedulingDurationSchema,),

@@ -161,10 +161,21 @@ export function renderAdvisorResult(
       0,
       0,
     );
-  /** Operation metadata replaces partial progress with every attempt's terminal state. */
-  const operationSummary = renderAdvisorOperationSummary({ details: result.details, text, expanded, theme, },);
-  if (typeof operationSummary === 'string')
-    return new Text(operationSummary, 0, 0,);
+  /**
+   Operation metadata replaces partial progress with every attempt's terminal state.
+   */
+  const operationSummary = renderAdvisorOperationSummary({
+    details: result.details,
+    text,
+    expanded,
+    theme,
+  },);
+  if ((typeof operationSummary) === 'string')
+    return new Text(
+      operationSummary,
+      0,
+      0,
+    );
   if (!isAdvisorDetails(result.details,)) {
     return new Text(
       theme.fg(
@@ -225,10 +236,21 @@ export function renderAdvisorMessage(
   const text = (typeof message.content) === 'string'
     ? message.content
     : '(advisor returned no text)';
-  /** Manual reviews use the same operation summary as tool reviews. */
-  const operationSummary = renderAdvisorOperationSummary({ details: message.details, text, expanded, theme, },);
-  if (typeof operationSummary === 'string')
-    return new Text(operationSummary, 0, 0,);
+  /**
+   Manual reviews use the same operation summary as tool reviews.
+   */
+  const operationSummary = renderAdvisorOperationSummary({
+    details: message.details,
+    text,
+    expanded,
+    theme,
+  },);
+  if ((typeof operationSummary) === 'string')
+    return new Text(
+      operationSummary,
+      0,
+      0,
+    );
   /**
    Structured details when present.
    */

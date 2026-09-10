@@ -8,7 +8,11 @@ import { DEFAULT_CONFIG, loadMergedConfig, } from '../dist/final/node/index.mjs'
 /** Load disposable global and project JSON files through the actual config merger. */
 async function configured(global: Record<string, unknown>, project: Record<string, unknown> = {}) {
   const root = await mkdtemp(join(tmpdir(), 'advisor-hedge-config-',),);
-  await using cleanup = { async [Symbol.asyncDispose]() { await rm(root, { recursive: true, force: true, },); }, };
+  await using cleanup = {
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(root, { recursive: true, force: true, },);
+    },
+  };
   const home = join(root, 'home',);
   const cwd = join(root, 'project',);
   const globalDir = join(home, '.pi/agent/extensions',);
@@ -28,33 +32,41 @@ await describe({ name: '', children: [
     expect(DEFAULT_CONFIG.collectionGraceMs,).toBe(30_000,);
   }, },),
   it({ name: 'a configured delay alone does not enable duplicate work', fn: async (): Promise<void> => {
-    const config = await configured({ hedgeDelayMs: 1000, },);
+    const config = await configured({ hedgeDelayMs: 1_000, },);
     expect(config.hedgingEnabled,).toBe(false,);
   }, },),
   it({ name: 'enabled overlap requires an explicitly configured launch delay', fn: async (): Promise<void> => {
     let caught: unknown;
-    try { await configured({ hedgingEnabled: true, },); }
-    catch (error) { caught = error; }
+    try {
+      await configured({ hedgingEnabled: true, },);
+    }
+    catch (error) {
+      caught = error;
+    }
     expect(caught,).toBeInstanceOf(Error,);
     expect((caught as Error).message,).toContain('requires an explicit positive hedgeDelayMs',);
   }, },),
   it({ name: 'project disablement overrides global opt-in without erasing inherited timing', fn: async (): Promise<void> => {
-    const config = await configured({ hedgingEnabled: true, hedgeDelayMs: 1000, }, { hedgingEnabled: false, collectionGraceMs: 50, },);
+    const config = await configured({ hedgingEnabled: true, hedgeDelayMs: 1_000, }, { hedgingEnabled: false, collectionGraceMs: 50, },);
     expect(config.hedgingEnabled,).toBe(false,);
-    expect(config.hedgeDelayMs,).toBe(1000,);
+    expect(config.hedgeDelayMs,).toBe(1_000,);
     expect(config.collectionGraceMs,).toBe(50,);
   }, },),
   it({ name: 'project delay and grace override global timing', fn: async (): Promise<void> => {
-    const config = await configured({ hedgingEnabled: true, hedgeDelayMs: 1000, }, { hedgeDelayMs: 2000, collectionGraceMs: 100, },);
+    const config = await configured({ hedgingEnabled: true, hedgeDelayMs: 1_000, }, { hedgeDelayMs: 2_000, collectionGraceMs: 100, },);
     expect(config.hedgingEnabled,).toBe(true,);
-    expect(config.hedgeDelayMs,).toBe(2000,);
+    expect(config.hedgeDelayMs,).toBe(2_000,);
     expect(config.collectionGraceMs,).toBe(100,);
   }, },),
   ...['hedgeDelayMs', 'collectionGraceMs',].flatMap(field => [0, -1, 0.5, 2_147_483_648,].map(value =>
     it({ name: `rejects invalid scheduling value ${field}=${value}`, fn: async (): Promise<void> => {
       let caught: unknown;
-      try { await configured({ [field]: value, },); }
-      catch (error) { caught = error; }
+      try {
+        await configured({ [field]: value, },);
+      }
+      catch (error) {
+        caught = error;
+      }
       expect(caught,).toBeInstanceOf(Error,);
       expect((caught as Error).message,).toContain('invalid global config',);
     }, },),

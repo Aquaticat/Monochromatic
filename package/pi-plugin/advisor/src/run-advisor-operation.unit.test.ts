@@ -5,7 +5,7 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { AdvisorOperationError, DEFAULT_CONFIG, runAdvisor, } from '../dist/final/node/index.mjs';
 
 /** Runtime config does not read the user's real home. */
-const config = { ...DEFAULT_CONFIG, timeoutMs: 1000, maxAdvisorOutputTokens: 100,
+const config = { ...DEFAULT_CONFIG, timeoutMs: 1_000, maxAdvisorOutputTokens: 100,
   source: { globalPath: '/fixture/global', projectPath: '/fixture/project', globalLoaded: false, projectLoaded: false }, };
 
 /** Build provider and host fixtures with an authoritative getter-backed live scope. */
@@ -21,12 +21,14 @@ function hostFixture() {
   const state = { live: all as unknown, auth: (): void => {}, branchReads: 0, };
   const ctx = {
     cwd: '/fixture', getScopedModels: (): unknown => state.live,
-    sessionManager: { buildContextEntries: () => { state.branchReads += 1; return []; }, },
+    sessionManager: { buildContextEntries: () => { state.branchReads += 1;
+    return []; }, },
     modelRegistry: {
       getAvailable: () => all,
       getProvider: (id: string) => id === 'first' ? first.provider : id === 'other' ? other.provider : undefined,
-      getApiKeyAndHeaders: async () => { state.auth(); return { ok: true, apiKey: 'fixture', }; },
-      find: (provider: string, id: string) => all.find(model => model.provider === provider && model.id === id),
+      getApiKeyAndHeaders: async () => { state.auth();
+      return { ok: true, apiKey: 'fixture', }; },
+      find: (provider: string, id: string) => all.find(model => (model.provider === provider) && (model.id === id)),
     },
   } as unknown as ExtensionContext;
   return { first, other, state, ctx, };
@@ -65,8 +67,12 @@ await describe({ name: '', children: [
       fixture.state.live = shape === 'empty' ? [] : shape === 'raw' ? fixture.other.models : fixture.other.models.map(model => ({ model, thinkingLevel: 'high', }));
     };
     let caught: unknown;
-    try { await runAdvisor({ ctx: fixture.ctx, config, requestedSlug: 'first/a', },); }
-    catch (error) { caught = error; }
+    try {
+      await runAdvisor({ ctx: fixture.ctx, config, requestedSlug: 'first/a', },);
+    }
+    catch (error) {
+      caught = error;
+    }
     expect(caught,).toBeInstanceOf(AdvisorOperationError,);
     expect((caught as Error).message,).toContain('left the live scope before dispatch',);
     expect(fixture.first.state.callCount,).toBe(0,);
@@ -77,8 +83,12 @@ await describe({ name: '', children: [
     const controller = new AbortController();
     controller.abort();
     let caught: unknown;
-    try { await runAdvisor({ ctx: fixture.ctx, config, signal: controller.signal, },); }
-    catch (error) { caught = error; }
+    try {
+      await runAdvisor({ ctx: fixture.ctx, config, signal: controller.signal, },);
+    }
+    catch (error) {
+      caught = error;
+    }
     expect(caught,).toBeInstanceOf(AdvisorOperationError,);
     expect(fixture.state.branchReads,).toBe(0,);
     expect(fixture.first.state.callCount,).toBe(0,);
