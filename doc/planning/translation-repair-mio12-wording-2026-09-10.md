@@ -27,6 +27,14 @@ so the question and denial can read as denying her own name.
 The repair lane retains the character but adds a pronunciation gloss.
 That gloss is unnecessary to preserve the contrast.
 
+The initial translation slate already contained the archive's distinguishing wording:
+GLM-flash and Mercury both reproduced it.
+Qwen3.8 supplied the name-normalized version that won 3.5 weight against two.
+Its self-vote explicitly justified using declared `Mio` for `澪`.
+The remaining candidate copied the Chinese source after an author repair;
+judges recognized that it was untranslated.
+A quoted-form exception must not license copying the whole source-language quotation.
+
 The contest chose translation:
 three ballots for translation,
 one for repair and two for neither.
@@ -63,6 +71,12 @@ The repair replaces that with Chinese,
 a romanized name and an English gloss.
 The translation alternative drops the archive's list,
 and the repair wins.
+The accepted terminology issue explicitly demanded preserving and glossing the Chinese group name instead of
+using the archived English name;
+its adjudication had four supporting and two opposing ballots.
+The issue therefore enters before editing,
+not only in the final writer.
+`~/temp/agent/Mio12-name-origin-20260910.out` records the issue and initial translation slate.
 
 The initial translator has an explicit archived-name authority rule;
 the editor's rule list does not share it and instead emphasizes foreign-phrase preservation plus glossing.
@@ -149,4 +163,68 @@ No unsupported terminology assertion or new glossary entry has been implemented.
 
 A focused advisor call about prioritization timed out without feedback.
 It supplies no endorsement or objection.
-No paid translation probe or full-entry pass is active.
+## Completed name-form measurement
+
+`proc_b0ce` completed `translation-repair-name-form-probe-20260910` on frozen `b5da9866b` in 139 seconds.
+The script is `~/temp/agent/probe-name-form-20260910.mjs`;
+log `~/temp/agent/name-form-probe-20260910.log`;
+report `~/temp/agent/name-form-probe-20260910/report.json`.
+The offline plan was exercised successfully.
+
+The experiment keeps the recorded anonymous slate and all non-system messages fixed.
+It asks the six original responding judges directly in both arms,
+not through different prompt-rotated subsets,
+and then asks Qwen3.8 and Mercury to write under both arms.
+There are at most 16 model requests,
+six concurrent requests,
+a 360000 ms exchange bound and a 1200000 ms global bound.
+Normal production completion caps remain unchanged.
+Mio12's completed-prompt cache is copied into the disposable probe directory for reuse where identities match.
+The original cache and corpus are untouched.
+
+The treatment clarifies reference-name authority versus quoted spelling or character forms,
+and distinguishes conversational tone from literal filler transliteration.
+No production prompt has changed yet.
+Read the actual judgments and writing,
+including the untranslated-copy negative control,
+before deciding whether to integrate the wording.
+This experiment does not yet measure the group-name repair path or the separate source-context change.
+
+Both treatment writers preserve `澪` and `Mio`.
+Qwen's baseline conflated them;
+its treatment retains the character and uses `uhh` instead of `aba`.
+Mercury retains the archive wording in both arms.
+All writing outputs compile.
+Qwen's treatment changes quote typography,
+so this is not a claim that every output detail is publication-ready.
+
+Judging improved only partially:
+two of six baseline judgments select the distinguishing archive wording,
+versus three of six under the treatment.
+DeepSeek-flash changes to that candidate and explicitly recognizes the erased contrast.
+Gemma-e2b,
+Mercury and Qwen still prefer the normalized version.
+Qwen invokes the new filler warning to object to the archive's apology while still treating its character as
+unnecessary mixed-script text.
+No judge selects the untranslated-copy negative control.
+These are per-seat results on a fixed slate,
+not the production window's tally.
+
+The eight baseline requests reused completed Mio12 payloads.
+Eight new calls are logged:
+two Bedrock calls costing 0.00059064 USD,
+two OpenRouter calls reporting zero cost,
+and four Hyper calls without per-call prices.
+The daily helper ran after the probe.
+Evidence is `~/temp/agent/name-form-probe-spend-20260910.out` and
+`~/temp/agent/name-form-costs-after-20260910.out`.
+
+The treatment is not ready to be copied verbatim into production.
+Its appended guidance leaves the existing unqualified declared-name criterion in place,
+and its filler warning can distract from the core contrast.
+Next test the form exception inside the actual faithfulness and name-authority criteria,
+without bundling it with a filler preference.
+Preserve the existing official-English-work-title and contributor precedence rules when sharing name authority.
+The group-name editor path and source-context treatment are still unmeasured.
+
+No probe or full-entry pass is active.

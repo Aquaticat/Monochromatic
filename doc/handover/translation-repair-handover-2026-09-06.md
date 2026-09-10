@@ -40,7 +40,28 @@ with `unit exit 0` in `~/temp/agent/class30-final-unit-20260910.out`.
 Current `verify-published` still accepts Mio12.
 The full diagnosis and guard history are in the OpenRouter planning log.
 
-No pass is running.
+No full-entry pass is running.
+The first name-form measurement completed as `proc_b0ce`
+on frozen `b5da9866b` in 139 seconds.
+Its report is `~/temp/agent/name-form-probe-20260910/report.json`.
+Qwen's treatment now preserves both `澪` and `Mio`;
+Mercury does so in both arms.
+Both outputs compile.
+Judging only partly improves:
+three of six treatment judgments prefer the distinguishing wording,
+versus two baseline judgments.
+The remaining judges still prefer the normalized name,
+sometimes using the new filler warning to justify that choice.
+No judge chooses the untranslated-copy negative control.
+Eight baseline requests reused disk payloads;
+eight new calls logged 0.00059064 USD on Bedrock,
+zero reported cost on OpenRouter and four unpriced Hyper calls.
+The daily helper ran.
+No probe is active.
+Next test the form exception inside the actual faithfulness and name criteria,
+not as another appended rule bundled with filler advice.
+The group-name editor path and source-context change remain separate unmeasured work.
+
 The wording trace is recorded in
 [Mio12 wording follow-up](../planning/translation-repair-mio12-wording-2026-09-10.md).
 Next work separates shared name authority and quoted-form preservation,
