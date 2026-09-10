@@ -184,6 +184,7 @@ await describe({
           const rejectedFindings = findings[index] ?? [];
           const acceptable = index === (texts.length - 1);
           return {
+            quorumOver: 2,
             candidateDigest: hashContent({ content: text, },),
             candidateText: text,
             paragraphCount: 1,
@@ -283,6 +284,7 @@ await describe({
           path: 'consolidation.slices[0].polish',
           reviewRequired: true,
           correctionChainRequired: true,
+          quorumBasisRequired: true,
         },);
         expect(parsed,).toEqual(slice.polish,);
       },

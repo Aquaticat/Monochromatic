@@ -99,6 +99,7 @@ export function assertFinalNaturalnessComplete(
       finalText: polish.text,
       correctionChainRequired: true,
       everyBodyBlockReviewed: true,
+      quorumBasisRequired: true,
     },);
   }
 }

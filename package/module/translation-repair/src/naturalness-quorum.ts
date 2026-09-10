@@ -23,6 +23,9 @@ export function validNaturalnessQuorum(
 
 /** Invalid quorum configuration, rejected before any reviewer is asked. */
 export class NaturalnessQuorumError extends Error {
+  /** Only numeric configuration is exposed by this diagnostic. */
+  readonly messageNamesOnly: true = true;
+
   /**
    * Names only bench counts, never candidate wording.
    *
