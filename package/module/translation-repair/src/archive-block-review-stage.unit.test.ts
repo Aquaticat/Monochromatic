@@ -201,6 +201,42 @@ await describe({
       },
     },),
     it({
+      name: 'ACCEPTS quoted source evidence beside a revision instead of losing the reviewer to schema mismatch',
+      fn: async () => {
+        /** Prompts prove the reply reaches independent correction selection. */
+        const prompts: string[] = [];
+        /** Source-supported part remains while the unsupported award is removed. */
+        const corrected = 'The cat sleeps by the window.';
+        /** Actual review stage, including its custom guard and quorum accounting. */
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'revise',
+                sourceQuote: '猫在窗边睡觉',
+                replacementText: corrected,
+                finding: 'The quoted source supports sleeping, but not the award.',
+              }
+              : { best: 1, reason: 'Keep the supported detail and remove the unsupported claim.', },
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边睡觉。',
+          targetText: 'The cat sleeps by the window and won an award.',
+          blockText: 'The cat sleeps by the window and won an award.',
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(outcome.kind,).toBe('revised',);
+        expect(outcome.text,).toBe(corrected,);
+        expect(prompts.some(function selected(prompt,): boolean {
+          return prompt.includes('Choose a publishable correction',);
+        },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'SELECTS correction without exposing producer model ids to candidate judges',
       fn: async () => {
         const prompts: string[] = [];
