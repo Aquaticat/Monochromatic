@@ -24,7 +24,31 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current state after 07:02 UTC on 2026-09-10:
+Current state after the class-thirty repair on 2026-09-10:
+`b5da9866b` is the verified code tip.
+Generation fourteen persists each naturalness round's effective `quorumOver`,
+uses it when recomputing the stored verdict,
+and binds confirmation to the same basis.
+The runtime quorum is not lowered.
+The original four-of-six,
+nine-seat-basis failure round-trips locally;
+real Mio10 and Mio12 generation-thirteen artifacts remain readable.
+Build,
+types,
+oxlint and the complete suite pass,
+with `unit exit 0` in `~/temp/agent/class30-final-unit-20260910.out`.
+Current `verify-published` still accepts Mio12.
+The full diagnosis and guard history are in the OpenRouter planning log.
+
+No pass is running.
+Task 16 is the next work:
+trace the recorded wording defects through source,
+archive retention and the writing and judging stages before selecting a preventive change.
+The corpus remains untouched.
+Mio12 already provides published-page evidence for the verse remedy.
+The queue remains at Mio for the wording follow-up.
+
+Historical terminal reading after 07:02 UTC on 2026-09-10:
 Mio12 settled after an initial artifact-validation error and automatic reattempt.
 Its complete page has been read beside source and archive,
 with all seven reading steps and three checks recorded in the OpenRouter planning log.
@@ -2212,8 +2236,8 @@ each read off the pass log and the shipped page:
     Both bounded probes have been read.
     `Mio12` settled and its full page is read.
     The poem's five rendered breaks survive.
-    Class thirty is the stored-naturalness-quorum mismatch exposed by the initial failed attempt;
-    resolve it and the recorded wording follow-up before advancing the queue.
+    Class thirty is fixed through `b5da9866b` with passing package and consumer checks.
+    Trace and address the recorded wording follow-up before advancing the queue.
     See the verse-remedy review linked under "Where the work stands".
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:

@@ -1656,6 +1656,24 @@ local guards are not a published page,
 and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
 queue advances.
 
+## The stored-review mismatch is fixed; wording follow-up remains (2026-09-10)
+
+Class thirty is fixed through `b5da9866b`.
+A generation-fourteen naturalness round retains the wider quorum basis that its runtime used,
+and confirmation preserves the same basis.
+The original local reproduction now round-trips,
+new complete-entry fixtures publish and parse,
+and real generation-thirteen pages remain readable.
+Build,
+types,
+lint and the entire unit suite pass.
+No paid rerun was needed to verify the data contract.
+
+This does not erase the wording concerns in the Mio12 reading.
+Those have a separate tracing task before another launch.
+The verse remedy already has published-page evidence;
+readiness still requires resolving the remaining page-level findings.
+
 ## Mio12 preserves published verse but does not establish readiness (2026-09-10)
 
 The upstream verse remedy now has a complete-page result:

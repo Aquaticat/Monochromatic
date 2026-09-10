@@ -2052,6 +2052,18 @@ four seats),
 the naturalness confirmation challenges exactly the seats the discovery asked at the discovery's quorum,
 a fixture scripting every seat passes `fanOut: 'whole-bench'`,
 and a fixture counting calls counts `firstRoundWindow({ benchSize, })`.
+
+Generation fourteen (`725a31b12`,
+completed through `b5da9866b` on 2026-09-10) records each naturalness round's effective `quorumOver`.
+Mio12 exposed why the asked-seat list is not that basis:
+four acceptable voices among six asked seats failed the runtime's wider nine-seat quorum,
+but the artifact reader recomputed a three-voice threshold and refused the correct runtime verdict.
+The new reader derives from the stored wider basis,
+checks confirmation uses that same basis,
+and preserves the seat-count interpretation only for older generations.
+Runtime rejects invalid bases before asking reviewers.
+No missing reviewer identities are invented and the intended quorum is not reduced.
+
 Since `037d1f650`,
 `4f87555fc` and `1fe7ca2fe` (2026-09-09) the OpenRouter client sends `provider.sort: 'price'` with the
 zero-data-retention and `require_parameters` preferences,

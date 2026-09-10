@@ -6936,6 +6936,63 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Class thirty retains naturalness quorum provenance, 2026-09-10
+
+The local reproduction uses Mio12's failure shape:
+four acceptable voices and two unusable voices,
+with a nine-seat quorum basis requiring five usable replies.
+The runtime correctly returned `quorum-not-met`.
+Its stored round omitted the wider basis,
+so artifact reading derived a three-voice threshold from six recorded seats and expected `acceptable`.
+Changing only the basis to six made the control round-trip.
+The original reproduction now round-trips without lowering its nine-seat basis.
+
+`4f697b6df` failed both the stage-to-reader case and an explicit wider-basis confirmation case.
+`725a31b12` introduces artifact generation fourteen with required `quorumOver` on every review round.
+The default basis is materialized before storage,
+including when a window asks fewer seats.
+Confirmation retains the discovery's effective basis rather than replacing it with the reduced asked roster's size.
+The reader recomputes the verdict from that basis and the actual seats,
+then still compares against the stored verdict.
+Invalid or undersized bases are rejected before runtime calls and during artifact reading.
+
+`7181f5df8` threads the generation into the pre-persistence completeness check.
+`348ae2f10` covers defaults,
+malformed metadata,
+legacy interpretation,
+confirmation and cache retention.
+Its additional guard failed when confirmation metadata named a different quorum basis;
+`82fa7fdff` binds that basis alongside the existing same-roster check.
+`b5da9866b` exposes `quorumNeeded` and `quorumOver` in operational logs.
+No reviewer identities are fabricated.
+The confirmation still asks the discovery's actual seats rather than enlarging the cohort.
+
+Build,
+types and oxlint pass with zero warnings.
+The full suite ends `unit exit 0` in `~/temp/agent/class30-final-unit-20260910.out`.
+The composed `settleEntry` tests create,
+parse and publish generation-fourteen artifacts;
+the correction-chain and cache tests retain both decisive and confirmation bases.
+Real Mio10 and Mio12 generation-thirteen artifacts still parse,
+and current `verify-published` accepts Mio12's existing page.
+The executed-build digest changed from
+`sha256-tree-v1:89a4fe04c01b1669f035f6c9a7505c781c0648ed994a66cc0106d01f70026963`
+to `sha256-tree-v1:fb18ac482e336e5537c131dd6d9fa918cbd2144c2a2cb37ff4632df2de00c103`,
+keeping pre-change caches out of the new generation.
+
+Boundary evidence:
+`~/temp/agent/Mio12-naturalness-quorum-red-20260910.out`,
+`~/temp/agent/Mio12-naturalness-quorum-green-20260910.out`,
+`~/temp/agent/class30-confirmation-red-20260910.out`
+and `~/temp/agent/class30-boundaries-20260910.out`.
+The invalid-runtime-basis control asked two fixture reviewers on frozen `ff6d288bc`,
+but current code rejected it before any call.
+No paid model call was used to build or verify this repair.
+
+The next task is the separately recorded Mio wording follow-up,
+not another automatic entry launch.
+No pass is running.
+
 ## Mio12 publishes the preserved poem but exposes a stored-review mismatch, 2026-09-10
 
 Mio12 ended at 07:02 UTC on frozen `ff6d288bc`.
