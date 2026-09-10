@@ -23,3 +23,15 @@ export const DECLARED_NAME_REFERENCE_EXEMPTION =
  */
 export const NAME_FORM_SCOPE_RULE =
   'Use declared names, handles and established archive terminology when referring to their entities. Distinguish those references from mentioning a particular word, character, spelling, or sound: retain the form under discussion, even when its script differs from the declared name, and translate the surrounding prose normally. This form-preservation requirement governs such mentions instead of ordinary name normalization; it does not license leaving an entire source-language quotation untranslated.';
+
+/**
+ * Keeps established proper names distinct from generic terms needing explanation.
+ * The inline-gloss rule still covers ordinary terminology and explicit definitions.
+ *
+ * @example
+ * ```ts
+ * const vocabularyRule = `${ARCHIVE_NAME_GLOSS_SCOPE} A generic term with no English equivalent ...`;
+ * ```
+ */
+export const ARCHIVE_NAME_GLOSS_SCOPE =
+  'When referring to a person, group or place, an established translation-side name is not a generic community term. Preserve that name unless a declared authoritative name supplies another spelling. Do not require a source-script copy, fresh literal translation or explanation of the name’s component words merely because its spelling is unfamiliar. This does not exempt ordinary terminology or an explicit source definition from translation.';
