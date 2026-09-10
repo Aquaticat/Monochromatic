@@ -809,7 +809,7 @@
     dialog.addEventListener('close', () => {
       fitActive = false;
       if (returnTarget) {
-        returnTarget.focus();
+        setTimeout(() => returnTarget.focus(), 0);
       }
     });
     const previewResizeObserver = new ResizeObserver(() => {
