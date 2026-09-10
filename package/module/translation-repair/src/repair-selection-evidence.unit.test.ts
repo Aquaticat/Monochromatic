@@ -97,7 +97,7 @@ await describe({
         };
         let caught: unknown;
         try {
-          await repairPreparedDocument({ client, prepared, models: { criticModelIds: JUDGES, panelModelIds: JUDGES, editorModelIds: ['hf:zai-org/GLM-5.3-Flash',], judgeModelIds: JUDGES, checkerModelIds: ['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b',], }, signal: controller.signal, perCallTimeoutMs: 5000, });
+          await repairPreparedDocument({ client, prepared, models: { criticModelIds: JUDGES, panelModelIds: JUDGES, editorModelIds: ['hf:zai-org/GLM-5.3-Flash',], judgeModelIds: JUDGES, checkerModelIds: ['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b',], }, signal: controller.signal, perCallTimeoutMs: 5_000, });
         }
         catch (error) {
           caught = error;
@@ -117,7 +117,7 @@ await describe({
           if (!request.validate(value)) throw new Error('Invalid fixture editor reply');
           return { kind: 'ok', value, rawText: JSON.stringify(value), };
         }, };
-        const input = { client, editorModelIds: JUDGES.slice(0, 2), judgeModelIds: JUDGES, sourceText: '猫笑了。', targetText: TARGET, envelopes: [ENVELOPE,], issues: [], neighbouringSourceText: 'NEARBY SOURCE MARKER', documentSourceText: 'DOCUMENT SOURCE MARKER', signal: new AbortController().signal, perCallTimeoutMs: 5000, l: tagged({ tag: 'repair-evidence-test', }), };
+        const input = { client, editorModelIds: JUDGES.slice(0, 2), judgeModelIds: JUDGES, sourceText: '猫笑了。', targetText: TARGET, envelopes: [ENVELOPE,], issues: [], neighbouringSourceText: 'NEARBY SOURCE MARKER', documentSourceText: 'DOCUMENT SOURCE MARKER', signal: new AbortController().signal, perCallTimeoutMs: 5_000, l: tagged({ tag: 'repair-evidence-test', }), };
         const result = await runEditorStage(input);
         expect(result.patch.patchedText).toBe('Her friend greeted her.');
         expect(fixture.prompts.length).toBeGreaterThan(0);
