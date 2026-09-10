@@ -451,10 +451,26 @@ The `cli-git` auto-push for `c01ea5ae8` reported a concurrent ref update.
 `git ls-remote --heads origin main` confirmed that exact commit was already remote.
 No force push or history rewrite was used.
 
+## Delivery status
+
+The final Advisor lint,
+ TypeScript,
+ registration,
+ unit,
+ and real-Pi host checks passed.
+The affected shared package's lint,
+ TypeScript,
+ and unit checks passed.
+All task documentation passed scoped Markdown lint.
+GitHub #413's title and acceptance criteria now describe the confirmed bounded-collection policy
+ and the call-local credit exclusion.
+
+Implementation is complete.
+Related preference/session-health and broader recovery work remains separately tracked;
+ this resolution does not claim those entire issues are finished.
+
 ## Next action
 
-Run the final lint/type/Markdown and registration checks,
- synchronize GitHub #413's acceptance criteria with the confirmed policy,
- commit the completion evidence with the closing reference,
- and verify the issue closes after push.
+Confirm the closing commit reaches `origin/main`
+ and GitHub reports #413 closed.
 Do not reopen settled decisions or revert unrelated concurrent work.
