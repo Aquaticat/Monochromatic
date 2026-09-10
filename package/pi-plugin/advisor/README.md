@@ -1,7 +1,10 @@
 # Pi Advisor
 
 Pi Advisor adds an `advisor` tool and `/advisor` command to Pi.
-It sends serialized conversation context to a secondary reviewer model selected from the current effective Pi model scope.
+It sends a captured conversation snapshot to reviewers selected from the current effective Pi model scope.
+Default calls recover serially from failures;
+ explicitly enabled overlap collects completed reviews together within a bounded grace period.
+Default selection is not a guarantee of review quality.
 
 This differs from Claude Code Advisor.
 Claude Code uses an Anthropic server-side beta tool.
@@ -16,18 +19,19 @@ Build the package,
 
 ```json
 {
-  "packages": ["./packages/pi-plugin/advisor"]
+  "packages": ["./package/pi-plugin/advisor"]
 }
 ```
 
 ```bash
-pi -e ./packages/pi-plugin/advisor/src/index.ts
+pi --extension ./package/pi-plugin/advisor/src/index.ts
 ```
 
 ## Tool usage
 
-Use empty params to select the output-eligible scoped model with the highest expected Advisor call cost,
-excluding the current main model when another eligible scoped model is available:
+Use empty params to start with the output-eligible scoped model with the highest expected Advisor call cost,
+ excluding the current main model when another eligible scoped model is available.
+Failures can move the call to another eligible scoped model:
 
 ```json
 {}
@@ -83,7 +87,11 @@ The error lists allowed eligible scoped slugs.
    scoped slugs,
    output-eligible slugs,
    default model,
-   and config paths.
+   config paths,
+   serial recovery,
+   overlap enablement,
+   collection timing,
+   and billing uncertainty.
 - `/advisor off`:
    disable Advisor for the current session and remove the tool from active tools.
 - `/advisor on`:
@@ -112,6 +120,8 @@ Example:
 {
   "enabled": true,
   "timeoutMs": 600000,
+  "hedgingEnabled": false,
+  "collectionGraceMs": 30000,
   "maxAdvisorOutputTokens": 32000,
   "includePriorAdvisorResults": true,
   "systemPrompt": "Focus on test coverage gaps and incorrect assumptions."
@@ -119,11 +129,33 @@ Example:
 ```
 
 `timeoutMs` bounds one complete Advisor operation,
- including local preparation and at most one retry after a successful response with no text.
-Provider `error`,
- provider `aborted`,
- caller cancellation,
- and deadline expiry do not receive an identical retry.
+ including local preparation,
+ failure fallback,
+ bounded no-text recovery,
+ and collection.
+The original deadline is never reset.
+Caller cancellation ends the operation;
+ deadline expiry returns already-collected usable reviews or fails if none exists.
+
+`hedgingEnabled` defaults to `false`.
+Enabling it requires an explicitly configured `hedgeDelayMs`.
+`collectionGraceMs` defaults to `30000`.
+These scheduling durations and `timeoutMs` must be positive integers no greater than `2147483647`.
+Project configuration can disable overlap without erasing an inherited launch delay.
+
+For example,
+ this explicitly opts into overlap after a configured launch delay:
+
+```json
+{
+  "hedgingEnabled": true,
+  "hedgeDelayMs": 60000,
+  "collectionGraceMs": 30000
+}
+```
+
+The example launch delay is a configuration value,
+ not a measured latency optimum.
 
 `maxAdvisorOutputTokens` defaults to `32000`.
 Advisor requests that response budget and excludes every model endpoint whose advertised `maxTokens` is lower.
@@ -154,8 +186,91 @@ messages containing earlier file reads were compacted.
 The selected model's context budget includes this expanded system prompt.
 
 Project config overrides global scalar values.
-Model selection is not configurable here.
-The selected model always comes from empty params or the explicit `model` tool parameter.
+Preference ranking is not configurable here.
+The initial model comes from empty params or the explicit `model` tool parameter;
+ default failure recovery remains constrained by the operation's eligible scoped candidates.
+
+## Default recovery and bounded collection
+
+Without overlap,
+ default calls try candidates serially until a usable review arrives,
+ candidates are exhausted,
+ or the original deadline expires.
+With overlap enabled,
+ the launch delay starts at the first actual provider dispatch.
+If that review is unfinished when the delay expires,
+ another candidate can start.
+At most two logical reviewer calls are active,
+ including their authentication and preparation.
+Failures before any usable review can be replaced by untried candidates within the same deadline.
+Prefer a different provider for the alternate;
+ another model on the same provider is allowed when no different-provider candidate remains.
+
+After the first usable review arrives:
+
+- Stop starting replacements or retries.
+- Give every already-started reviewer,
+   including one still authenticating,
+   the configured collection grace.
+- Return all usable completed reviews together when those calls settle.
+- At the earlier of grace expiry and the original deadline,
+   request cancellation of remaining calls and return the usable reviews collected so far.
+- Do not extend the wait to obtain cancellation acknowledgement.
+
+A successful `stop` or `length` response with non-whitespace visible text is operationally usable.
+Length-limited output is labelled.
+This does not assess semantic review quality.
+A successful empty response can retry once on the same model,
+ but only before any usable review exists.
+Provider errors,
+ independent provider aborts,
+ deferred responses,
+ and unavailable tool-use outcomes are not usable reviews.
+Provider-internal retries are explicitly disabled through the supported `maxRetries` option;
+ recovery dispatches remain visible to the operation ledger.
+
+Explicit model requests remain exact:
+ no cross-model fallback and no overlap,
+ even when overlap is enabled globally.
+
+## Exhausted-credit providers
+
+Advisor detects supported credit-exhaustion diagnostics from failed requests just in time.
+It does not query balances before dispatch.
+After observing exhausted credits,
+ it excludes every model on that registered provider for the current operation.
+The dispatch gate checks again after authentication,
+ so a request still preparing cannot bypass a newly discovered exclusion.
+Other providers remain eligible.
+
+Already-running requests are not discarded merely because another request reported exhausted credits.
+Their usable results can still be collected.
+The provider exclusion is not persisted into the next Advisor call.
+A generic HTTP 402 or unrelated payment error is not sufficient evidence of exhausted credits.
+
+## Accounting and progress
+
+Tool progress contains model identities,
+ attempt states,
+ context sizes,
+ reasoning level names,
+ and remaining timing bounds.
+Partial updates exclude provider diagnostics,
+ serialized evidence,
+ and review text.
+Final results retain the operation ledger and display every attempted model.
+
+Each attempt contributes its latest available usage once.
+Reasoning tokens are a subset of output tokens,
+ not another contribution to total tokens.
+Successful and failed tool results expose aggregate nested usage through Pi's top-level tool usage field.
+Failed operations also persist a `pi-advisor.operation` entry.
+Slash-command successes retain the same ledger and aggregate in custom-message details;
+ failures retain them in a custom operation entry.
+
+Usage from a cancelled or failed call can be incomplete.
+Cancellation requests do not guarantee remote termination or prevent billing.
+The completed reviewer set is nondeterministic when overlap is enabled.
 
 ## Effective scoped model set
 

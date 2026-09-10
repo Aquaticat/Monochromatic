@@ -10,6 +10,34 @@ await describe({ name: '', children: [
     expect(fixture.dispatched.map(call => call.model),).toEqual(['p/a',],);
     expect(fixture.now(),).toBe(80,);
   }, },),
+  it({ name: 'enabled overlap tolerates an unavailable alternate without a polling loop', fn: async (): Promise<void> => {
+    const fixture = operationFixture({ plans: { 'p/a': [{ after: 80, text: 'only reviewer', },], }, },);
+    const result = await fixture.run({ hedgeDelayMs: 10, },);
+    expect(fixture.dispatched,).toHaveLength(1,);
+    expect(fixture.now(),).toBe(80,);
+    expect(result.reviews,).toHaveLength(1,);
+  }, },),
+  it({ name: 'an independent provider abort does not discard the other completed review', fn: async (): Promise<void> => {
+    const fixture = operationFixture({ plans: {
+      'p/a': [{ after: 20, stopReason: 'aborted', error: 'provider abort', },],
+      'q/b': [{ after: 2, text: 'usable', },],
+    }, },);
+    const result = await fixture.run({ hedgeDelayMs: 1, },);
+    expect(result.end,).toBe('complete',);
+    expect(result.reviews.map(review => review.text),).toEqual(['usable',],);
+  }, },),
+  it({ name: 'no-text retry inherits the original operation deadline', fn: async (): Promise<void> => {
+    const fixture = operationFixture({ plans: {
+      'p/a': [{ after: 150, text: '', }, { after: 100, text: 'too late', },],
+      'q/b': [{ after: 1, text: 'must not launch after deadline', },],
+    }, },);
+    const result = await fixture.run();
+    expect(result.end,).toBe('deadline',);
+    expect(fixture.now(),).toBe(200,);
+    expect(fixture.dispatched.map(call => call.model),).toEqual(['p/a', 'p/a',],);
+    expect(result.reviews,).toHaveLength(0,);
+    await fixture.flush();
+  }, },),
   it({ name: 'completion before the hedge delay does not launch another request', fn: async (): Promise<void> => {
     const fixture = operationFixture({ plans: { 'p/a': [{ after: 5, text: 'first', },], 'q/b': [{ after: 5, text: 'unused', },], }, },);
     await fixture.run({ hedgeDelayMs: 10, },);

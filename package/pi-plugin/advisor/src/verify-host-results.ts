@@ -6,6 +6,8 @@ import * as v from 'valibot';
 const RecordSchema = v.record(v.string(), v.unknown(),);
 /** JSON array of records used for ledger and result collections. */
 const RecordsSchema = v.array(RecordSchema,);
+/** Preparation, actual dispatch, and terminal observation are the per-attempt update boundaries. */
+const MAX_PROGRESS_EVENTS_PER_ATTEMPT = 3;
 
 /**
  Parse strict JSONL without dropping non-JSON diagnostics or truncating the evidence.
@@ -106,7 +108,7 @@ export function verifyAdvisorHostEvidence({ mode, events, entries, trace, }: {
   /** Partial updates must contain metadata only, including their structured details. */
   const updates = events.filter(function partial(event): boolean { return event.type === 'tool_execution_update'; },);
   assert.ok(updates.length > 0, 'missing real host tool updates',);
-  assert.ok(updates.length <= (dispatches.length * 3) + 1, 'progress must be transition-bounded, not token-driven',);
+  assert.ok(updates.length <= (dispatches.length * MAX_PROGRESS_EVENTS_PER_ATTEMPT) + 1, 'progress must be transition-bounded, not token-driven',);
   for (const update of updates) {
     assert.ok(!JSON.stringify(update.partialResult,).includes('PRIVATE_PROVIDER_PAYLOAD',),);
     assert.deepEqual(v.parse(RecordSchema, update.partialResult,).details, { kind: 'advisor-progress', },);

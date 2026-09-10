@@ -1,7 +1,7 @@
 /** Final operation rendering and metadata-only progress. @module */
 import type { Theme, } from '@earendil-works/pi-coding-agent';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { createAdvisorOperationLedger, formatAdvisorProgress, NO_ADVISOR_OPERATION_SUMMARY, renderAdvisorOperationSummary, } from '../dist/final/node/index.mjs';
+import { createAdvisorOperationLedger, formatAdvisorProgress, NO_ADVISOR_OPERATION_SUMMARY, renderAdvisorOperationSummary, renderAdvisorResult, } from '../dist/final/node/index.mjs';
 
 /** Theme boundary returns text verbatim so content assertions ignore ANSI styling. */
 const theme = { fg: (_color: string, text: string): string => text, } as unknown as Theme;
@@ -39,5 +39,7 @@ await describe({ name: '', children: [
     expect(result,).not.toContain('Review second line',);
     const expanded = renderAdvisorOperationSummary({ details, text: 'Review first line\nReview second line', expanded: true, theme, },);
     expect(expanded,).toContain('Review second line',);
+    const component = renderAdvisorResult({ result: { content: [{ type: 'text', text: 'Review first line', },], details, }, expanded: true, theme, },);
+    expect(component.render(80,).join('\n',),).toContain('2 attempts',);
   }, },),
 ], },);

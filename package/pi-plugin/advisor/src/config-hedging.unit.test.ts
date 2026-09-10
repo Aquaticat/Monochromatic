@@ -6,7 +6,7 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { DEFAULT_CONFIG, loadMergedConfig, } from '../dist/final/node/index.mjs';
 
 /** Load disposable global and project JSON files through the actual config merger. */
-async function configured(global: Record<string, unknown>, project: Record<string, unknown> = {}) {
+async function configured(global: Record<string, unknown> | string, project: Record<string, unknown> = {}) {
   const root = await mkdtemp(join(tmpdir(), 'advisor-hedge-config-',),);
   await using cleanup = {
     async [Symbol.asyncDispose](): Promise<void> {
@@ -19,7 +19,7 @@ async function configured(global: Record<string, unknown>, project: Record<strin
   const projectDir = join(cwd, '.pi/extensions',);
   await Promise.all([mkdir(globalDir, { recursive: true, },), mkdir(projectDir, { recursive: true, },),],);
   await Promise.all([
-    writeFile(join(globalDir, 'pi-advisor.json',), JSON.stringify(global,),),
+    writeFile(join(globalDir, 'pi-advisor.json',), typeof global === 'string' ? global : JSON.stringify(global,),),
     writeFile(join(projectDir, 'pi-advisor.json',), JSON.stringify(project,),),
   ],);
   return await loadMergedConfig({ home, cwd, },);
@@ -58,7 +58,17 @@ await describe({ name: '', children: [
     expect(config.hedgeDelayMs,).toBe(2_000,);
     expect(config.collectionGraceMs,).toBe(100,);
   }, },),
-  ...['hedgeDelayMs', 'collectionGraceMs',].flatMap(field => [0, -1, 0.5, 2_147_483_648,].map(value =>
+  it({ name: 'rejects an operation timeout overflowing JSON numeric range', fn: async (): Promise<void> => {
+    let caught: unknown;
+    try {
+      await configured('{"timeoutMs":1e400}',);
+    }
+    catch (error) {
+      caught = error;
+    }
+    expect(caught,).toBeInstanceOf(Error,);
+  }, },),
+  ...['timeoutMs', 'hedgeDelayMs', 'collectionGraceMs',].flatMap(field => [0, -1, 0.5, 2_147_483_648,].map(value =>
     it({ name: `rejects invalid scheduling value ${field}=${value}`, fn: async (): Promise<void> => {
       let caught: unknown;
       try {
