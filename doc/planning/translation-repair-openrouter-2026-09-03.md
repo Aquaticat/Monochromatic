@@ -6936,6 +6936,33 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Mio11 is stopped for remedy reassessment, 2026-09-10, 02:18 UTC
+
+The owner rejected treating red/green guards and a publication test as the best fix.
+The remedy claim is withdrawn;
+those checks establish a rejection behavior,
+not why the pipeline should produce and select correct rendered verse.
+Mio11 was stopped with SIGTERM to its verified pass pid `1653981`.
+The supervisor has exited and no page is claimed.
+No further source edit followed the correction.
+
+Logged spend before cancellation:
+OpenRouter 0.003006791 USD,
+Bedrock 0.00038817 USD,
+six Synthetic calls without a per-call price.
+In-flight usage may be absent from this tally.
+Daily-cost output:
+`~/temp/agent/Mio11-costs-stopped-20260910.out`.
+
+The committed guard remains provisional.
+The next work is the [verse-remedy review](translation-repair-verse-remedy-review-2026-09-10.md),
+not another full pass.
+That review also corrects an inference:
+the isolated poem fails `isLineStructured`,
+but the effective production flag inherits from the chunk and is not present in the settled artifact.
+The artifact's `rewrapped: false` and flat consolidation input establish that the final wrapper did not create
+this loss.
+
 ## Mio11 launches with the source-only break floor, 2026-09-10, 02:16 UTC
 
 Frozen `e0a0ae45c`,

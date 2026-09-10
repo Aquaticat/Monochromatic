@@ -24,7 +24,31 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current launch at 02:16 UTC on 2026-09-10:
+Owner correction at 02:18 UTC on 2026-09-10:
+red/green guards and a publication test do not establish the best fix for the verse defect.
+The guard-first remedy claim is withdrawn.
+`Mio11` was stopped by SIGTERM to verified pid `1653981`;
+its supervisor has exited.
+No corpus pass is running and no further source change followed the correction.
+`7c0ce152f` remains committed but provisional,
+not an accepted shipping remedy.
+The next action is to resolve how generation and judging should receive rendered source structure,
+not to launch another pass on the guard alone.
+Evidence,
+uncertainties and the proposed `TC2` instruction amendment are in
+[`translation-repair-verse-remedy-review-2026-09-10.md`](../planning/translation-repair-verse-remedy-review-2026-09-10.md).
+In particular,
+the isolated poem fails the verse heuristic,
+but its effective inherited production flag has not been recovered.
+The artifact does show flat text before the final wrapper,
+which reports `rewrapped: false`.
+Logged stopped-pass costs:
+OpenRouter 0.003006791 USD,
+Bedrock 0.00038817 USD;
+in-flight usage may not have been reported after cancellation.
+The queue remains blocked at `Mio`.
+
+Historical launch at 02:16 UTC on 2026-09-10:
 `Mio11` runs on frozen `e0a0ae45c`,
 with the source-only explicit-break guard.
 Pass pid `1653981`,
@@ -2034,8 +2058,10 @@ each read off the pass log and the shipped page:
     Its closing poem exposed class twenty-nine:
     five explicit hard breaks became soft newlines.
     That source-only guard is fixed and verified through `e0a0ae45c`.
-    `Mio11` runs on frozen `e0a0ae45c` at pid `1653981`.
-    Read the rendered verse and the complete page before advancing the queue.
+    The owner rejected treating the guard and tests as the best remedy.
+    `Mio11` is stopped;
+    resolve the upstream rendered-structure contract before another source change or paid pass.
+    See the verse-remedy review linked under "Where the work stands".
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
     `preparePassEntry` (`corpus-run/pass-prepare.ts`) runs the archive block review inside preparation,

@@ -1656,6 +1656,17 @@ local guards are not a published page,
 and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
 queue advances.
 
+## The verse remedy is under review (2026-09-10, 02:18 UTC)
+
+The owner rejected the claim that red/green guards and a publication test are the best fix.
+The claim is withdrawn:
+`7c0ce152f` adds a rejection rule,
+not a correction to the generation and judging contract.
+Mio11 was stopped and the guard is provisional.
+The [verse-remedy review](translation-repair-verse-remedy-review-2026-09-10.md)
+records the evidence and recommended upstream direction.
+Passing tests no longer stand here as acceptance of that remedy.
+
 ## What Mio10 showed (2026-09-10, 00:15 to 01:36 UTC)
 
 The page verifies against its artifact,
