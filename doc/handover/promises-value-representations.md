@@ -67,7 +67,8 @@ Observed examples:
 - A callback array stringifies as `[null]`; inspect identifies the stored function.
 - Top-level `undefined` produces no JSON text, not the JSON string `"undefined"`.
 - JSON of the fixture Error includes added enumerable metadata but omits its ordinary message.
-- Native inspection exposes controller/signal state; explicit public-property snapshots also expose `aborted` and `reason`.
+- Native inspection exposes controller/signal state;
+  explicit public-property snapshots also expose `aborted` and `reason`.
 - Circular objects and BigInt throw during JSON serialization but have inspector representations.
 
 Node source is pinned at tag `v26.8.1`, commit `7be6d3af31a65adea57c94c41e50c2b071ed0b3a`.
