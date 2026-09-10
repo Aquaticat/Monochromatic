@@ -2116,8 +2116,14 @@ and group-name authority remains unresolved.
 and asks adjudicators to check the claimed category as well as the existence of an error.
 Genuine addition and omission controls remain actionable.
 It does not change the category enum or automatically filter claims.
-The compiled category-path check remains active;
-these implementation checks do not establish whole-page readiness.
+`b9d3b2ea0` preserves each member's effective decision through issue merging:
+accepted issues no longer carry rejected diagnoses as confirmed editor instructions.
+Source-defect protection still blocks a whole panel-merged cluster.
+Emission deduplication preserves known claim evidence.
+The compiled repair path now generates and selects the correct friend-to-Mio disclosure,
+retaining the list and avoiding the childhood-time attachment.
+The group-name mutation remains open;
+these checks do not establish whole-page readiness.
 Initial translation writers remain unchanged because their separate context experiment did not correct the bullet.
 
 Since `037d1f650`,

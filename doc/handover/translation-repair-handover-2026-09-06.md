@@ -25,11 +25,11 @@ and the reason is recorded in
 ## Where the work stands
 
 Current archive-boundary work on 2026-09-10:
-`029c0a886` is the verified code tip,
+`b9d3b2ea0` is the verified code tip and frozen runtime,
 with build,
 types,
 zero-warning oxlint and the complete suite passing.
-`~/temp/agent/accuracy-category-unit-20260910.out` ends `unit exit 0` at line 9130.
+`~/temp/agent/issue-authority-complete-unit-20260910.out` ends `unit exit 0` at line 9135.
 
 Task 22 is complete:
 the panel materializes one packet per existing cluster before calls begin,
@@ -70,7 +70,7 @@ all other issues,
 five regions and original preservation licenses stayed fixed.
 No production filter was added.
 
-Task 24 is in progress and task 23 waits on it.
+Task 24 is complete at the classification/per-claim adjudication boundary.
 The category probe keeps the genuine-addition control actionable,
 and the panel on newly generated claims rejects conflicting addition diagnoses while accepting the participant correction.
 The old fixed packet still partly fails;
@@ -86,18 +86,54 @@ quorum,
 name policy or automatic filter changed.
 Compiled prompt parity is verified.
 
-`proc_948d` is active as `translation-repair-temporal-category-path-probe-20260910`.
+`proc_948d` completed in 631 seconds with 84 JSON calls.
+The panel correctly rejected the addition diagnosis four-to-two,
+but `tallyVotes` put it inside the accepted issue containing the six-to-zero participant correction.
+All three editors received both descriptions as confirmed instructions;
+both GLMs deleted the disclosure and DeepSeek duplicated the second friendship item.
+Provider-free replay reproduces all 84 calls and the final text with zero misses.
+
+Task 25 is complete:
+`a625c1441` partitions panel-approved merges by effective member status,
+while retaining the existing whole-cluster source-defect block.
+Rejected or unresolved diagnoses cannot acquire an accepted sibling's authority.
+Partition findings retain cluster/issue lineage.
+`b6c49c2dd` also preserves tallies/readings when accepted issues are deduplicated,
+without inventing legacy evidence or changing the representative identity/severity policy.
+Tests and inventory cleanup finish through `b9d3b2ea0`.
+
+`~/temp/agent/issue-authority-replay-20260910.json`
+verifies 45 identical cached critic/panel calls,
+zero misses,
+all eighteen claims and exact evidence retained,
+and the rejected diagnosis absent from the actual editor sheet.
+Same-generation cache resumption is the positive control;
+the changed build discards the old result and refuses the old artifact pool without drift opt-in.
+
+Tasks 23 and 19 are complete at the compiled repair boundary.
+`proc_0dc5` completed `translation-repair-temporal-authority-path-probe-20260910`
+in 204 seconds on frozen `.frozen-dist-b9d3b2ea0`.
 Report:
-`~/temp/agent/temporal-category-path-probe-20260910/report.json`.
+`~/temp/agent/temporal-authority-path-probe-20260910/report.json`.
 Log:
-`~/temp/agent/temporal-category-path-probe-20260910.log`.
-It uses frozen `.frozen-dist-029c0a886` and the real repair path,
-with no prompt interception or claim filtering.
-The cap is 120 JSON calls and a twenty-minute global bound.
-Read actual admitted diagnoses,
-editor candidates and selected text before completing task 24.
-Task 19 waits on this implementation verification;
-task 21's group-name authority remains a separate blocker before any full Mio pass.
+`~/temp/agent/temporal-authority-path-probe-20260910.log`.
+All three editors produce `Her best friend from primary school came out to her.`
+The sole distinct regional wording is adopted with all contributors retained;
+the whole-chunk composite wins four of six votes without fallback.
+The second friendship and administrator item remain.
+The summary identifies the friend's school connection without assigning disclosure to childhood;
+it does not repeat the narrative's April 2022 date.
+
+`~/temp/agent/temporal-authority-path-replay-20260910.json`
+reproduces all 78 calls with zero misses and identical selected text.
+The slice validator reports valid strict grammar,
+with paragraph/list structure preserved.
+
+Task 21 is now in progress:
+all editor drafts still rename `Harunome Hanbai`,
+and the selected result says `Harunome Studio`.
+This remains the blocker before a fresh full Mio pass.
+No full-entry run is active.
 Task 20 is deferred and non-blocking.
 
 The historical measurement record in this section predates this implementation;

@@ -1694,9 +1694,15 @@ The diagnostic category control supports distinguishing a distorted source event
 with passing genuine-addition and genuine-omission controls,
 package checks and prompt parity.
 No production filter is applied.
-The compiled category-path check is active;
-tasks 24,
-23 and 19 remain incomplete.
+The compiled category-path check exposed rejected diagnoses being promoted by issue merging.
+`b9d3b2ea0` preserves per-member authority and decision evidence,
+with source-defect protection unchanged.
+The subsequent full repair generates and selects the correct disclosure direction,
+retains the list and removes the childhood-time attachment.
+Tasks 24,
+25,
+23 and 19 are complete at their measured boundaries.
+Task 21's group-name mutation remains open before any fresh full Mio pass.
 Name-authority task 21 remains incomplete,
 and another whole-page pass must wait for that verification chain.
 No new full Mio page has yet verified the combined changes,

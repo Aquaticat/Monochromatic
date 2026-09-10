@@ -6970,7 +6970,14 @@ without changing other issues or preservation licenses.
 The category experiment and separate omission control preserve genuine addition/omission repair
 and reject conflicting addition diagnoses in the newly derived disclosure packet.
 `029c0a886` integrates the measured critic/panel guidance and passes all package checks plus prompt parity.
-`proc_948d` now exercises the real compiled category path without interception or claim filtering.
+`proc_948d` exposed an authority leak:
+a rejected addition diagnosis became part of an accepted merged issue.
+`b9d3b2ea0` partitions by effective member status and preserves deduplicated evidence,
+without weakening source-defect protection.
+`proc_0dc5` then completed the real repair in 204 seconds:
+all editors correct the disclosure direction,
+and the whole-chunk composite wins four of six votes without fallback.
+The group name still changes and remains task 21.
 No production category filter or new writing round is introduced.
 Task 21's name authority still blocks the next full Mio pass.
 No clean page or overall readiness is claimed.
