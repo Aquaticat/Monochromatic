@@ -44,7 +44,7 @@ const DECLARED_NAME_IS_NOT_AN_ADDITION = DECLARED_NAME_REFERENCE_EXEMPTION;
  * spelling authority and a defence, never content a passage owes.
  */
 const DECLARED_NAME_IS_NOT_OWED_CONTENT =
-  'It is not content a passage owes: a candidate that does not name this person has left nothing out, and a line attributing the passage to someone ELSE never takes this person\'s name.';
+  'A declared identity is not extra content a passage owes: a candidate that does not name this person has left nothing out, and a line attributing the passage to someone ELSE never takes this person\'s name.';
 
 /**
  * What the names rule says when every candidate spells a name the same wrong way.

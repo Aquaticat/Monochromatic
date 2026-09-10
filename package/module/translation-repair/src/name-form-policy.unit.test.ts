@@ -82,6 +82,7 @@ await describe({
         expect(criteria[1],).toContain('TO REFER TO a person',);
         expect(criteria[1],).toContain('forms being questioned, contrasted, or denied',);
         expect(criteria[2],).toContain(SCOPE,);
+        expect(criteria[2],).toContain('A declared identity is not extra content',);
       },
     },),
     it({

@@ -65,7 +65,7 @@ export const CONTEST_POLICY: string = [
   DECLARED_NAME_REFERENCE_EXEMPTION,
   'When referring to a person or place, declared names settle HOW to spell that reference and OUTRANK the archive rendering where it uses another spelling.',
   NAME_FORM_SCOPE_RULE,
-  'They are NOT content a passage owes: a candidate that does not name this person has dropped nothing, and a line attributing the passage to someone ELSE never takes this person\'s name.',
+  'Declared identities are NOT extra content a passage owes: a candidate that does not name this person has dropped nothing, and a line attributing the passage to someone ELSE never takes this person\'s name.',
   '',
   JUDGE_POLICY_BLOCK,
   '',
