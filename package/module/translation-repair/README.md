@@ -2079,6 +2079,18 @@ The measured group-name votes no longer authorize the false gloss correction und
 These are preventive instructions,
 not new output-rejection gates or a new glossary entry.
 
+Archive review since `bfcb5b568` separates retention-anchor sufficiency from revision selection.
+An actual revision may reach independent selection after the initial review quorum,
+without enough anchored retention opinions.
+The selector receives the unchanged original,
+archive context and anonymous typed opinions linked to the actual candidates;
+unanchored retention claims stay audit-only.
+Neither initial nor selector quorum is reduced.
+`ba01babda` clarifies the first review's complete minimal English correction responsibility.
+The compiled-stage Mio chat probe selected a corrected full block while preserving its useful `Translation:` label.
+Retained-label naturalness audits still lack surrounding context and remain tracked separately;
+these stage results do not establish whole-page readiness.
+
 Since `037d1f650`,
 `4f87555fc` and `1fe7ca2fe` (2026-09-09) the OpenRouter client sends `provider.sort: 'price'` with the
 zero-data-retention and `require_parameters` preferences,

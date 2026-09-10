@@ -6936,6 +6936,42 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Archive decision boundaries and English correction verified, 2026-09-10
+
+`ba01babda` is locally verified by build,
+types,
+oxlint and the full suite ending `unit exit 0` in `~/temp/agent/archive-brief-unit-20260910.out`.
+The archive selector now receives the actual retention/revision actions,
+linked anonymous candidates,
+archive context and the unchanged block;
+a retention-only anchor shortfall no longer prevents independent judgment of existing revisions.
+Both quorums remain intact.
+
+The initial `6c24c82c1` live run still retained spelling errors after generating a flawed literalized alternative.
+A measured clarification of the existing first-review brief produces complete minimal English corrections.
+Compiled-stage integration on `ba01babda` retains the useful label and selects the corrected full chat,
+without untranslated filler or the `musculine`/`Wechat` errors.
+Five revisions competed with the original;
+the chosen revision won weight 3.5 across seven ballots.
+No extra correction round was added.
+
+The integration report is `~/temp/agent/archive-brief-integrated-20260910/report.json`.
+It completed in 783 seconds with 41 forwarded requests,
+reusing completed prompt payloads in a disposable cache.
+Actual new spend was 0.00046112 USD on Bedrock,
+two OpenRouter calls reporting zero,
+and three Hyper plus seven Synthetic calls without dollar prices.
+The daily helper ran afterward.
+Full trace and preceding probe costs live in
+[the wording follow-up](translation-repair-mio12-wording-2026-09-10.md).
+
+Readiness remains false.
+Retained-label audits still mistake the isolated label for an empty translation;
+task 20 addresses their context and role without skipping review.
+Task 19's temporal/participant context still needs measurement.
+No full-entry pass is active,
+and the sequential entry queue has not advanced.
+
 ## Naming scope reaches a bounded production stage, 2026-09-10
 
 The Mio12 wording trace is in

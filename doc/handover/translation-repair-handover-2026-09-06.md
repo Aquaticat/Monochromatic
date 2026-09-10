@@ -25,11 +25,11 @@ and the reason is recorded in
 ## Where the work stands
 
 Current archive-boundary work on 2026-09-10:
-`6c24c82c1` is the verified code tip,
+`ba01babda` is the verified code tip,
 with build,
 types,
 oxlint and the complete suite passing.
-`~/temp/agent/archive-selection-final-unit-20260910.out` ends `unit exit 0`.
+`~/temp/agent/archive-brief-unit-20260910.out` ends `unit exit 0`.
 The implementation now routes actual revisions past the retention-only anchor gate,
 without lowering review or selector quorum;
 compares them with the unchanged block;
@@ -41,30 +41,35 @@ Typed evidence made all six probe judges retain the useful label,
 and all six removed a directly contradicted factual claim despite a misleading retention majority.
 The orphan-label control was imperfect and is not claimed as a success.
 
-Fresh current-build integration did not finish the quality repair:
-the label stayed by unresolved fallback,
-and the fresh chat review produced only a broader revision with untranslated and duplicated filler.
-Selection tied and retained the original spelling errors.
-The routing fix was exercised,
-but a better first-review English revision brief remains under measurement.
+The first `6c24c82c1` live integration still left spelling errors:
+it generated only a flawed literalized revision and selection tied.
+A measured change to the existing first-review brief now requires complete minimal English corrections,
+distinguishes already-adequate English from mere factual support,
+and treats parallel image readings as witnesses rather than additional messages.
+Red guard `ede699627` and implementation `ba01babda` follow that measurement.
 
-`proc_4c65` is active as `translation-repair-archive-review-brief-probe-20260910`.
-Script:
-`~/temp/agent/probe-archive-review-brief-20260910.mjs`.
-Log:
-`~/temp/agent/archive-review-brief-probe-20260910.log`.
+Compiled-stage integration `proc_4eec` completed in 783 seconds without the prototype's message interceptor.
+It retained the label through the normal branch,
+then selected a complete corrected chat at weight 3.5 over seven ballots.
+`musculine` and `Wechat` are corrected and no untranslated filler is introduced.
+The source-supported trait becomes "sensitive yet determined".
+Both outputs compile.
 Report:
-`~/temp/agent/archive-review-brief-probe-20260910/report.json`.
-Only the first-review system brief changes in that experiment;
-source,
-archive,
-selector,
-quorums and graph remain fixed.
-It allows at most 48 forwarded requests with normal completion caps.
-Read actual outputs and costs at its terminal notification.
+`~/temp/agent/archive-brief-integrated-20260910/report.json`.
+Log:
+`~/temp/agent/archive-brief-integrated-20260910.log`.
+Bedrock cost was 0.00046112 USD;
+two OpenRouter calls reported zero,
+with three unpriced Hyper and seven unpriced Synthetic calls.
+The daily helper ran afterward.
+Dialogue-interpretation disagreements remain recorded in the wording plan,
+not converted into blanket deletion rules.
 
-Task 18 remains in progress;
-temporal-context task 19 remains pending.
+Task 18 is complete.
+Task 20 must give retained-label audits their actual archive context:
+all fourteen audit-only findings wrongly call the useful label an empty translation.
+Do not skip required review or add a loop.
+Temporal-context task 19 remains pending.
 No full-entry pass is active.
 The complete archive and naming trace is
 [Mio12 wording follow-up](../planning/translation-repair-mio12-wording-2026-09-10.md).

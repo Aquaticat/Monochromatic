@@ -1656,6 +1656,25 @@ local guards are not a published page,
 and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
 queue advances.
 
+## Archive correction has current-stage evidence; audit and temporal context remain (2026-09-10)
+
+Verified `ba01babda` preserves the archive selector's original option,
+review actions and context without lowering either quorum.
+The existing first-review brief now asks for complete minimal English corrections,
+not merely factual classification or literalized source copying.
+The compiled stage retained the useful label and selected a full chat correcting `musculine` and `Wechat`,
+with no untranslated filler.
+Both outputs compile;
+`~/temp/agent/archive-brief-unit-20260910.out` ends `unit exit 0`.
+
+These are actual selected wordings,
+not a whole-page result or unanimous endorsement of every dialogue interpretation.
+The retained label's audit-only naturalness reviews still lack surrounding context and emit false missing-content findings.
+Task 20 addresses that boundary;
+task 19 still must measure the temporal/participant source context.
+No new full Mio page has yet verified the combined changes,
+and readiness remains false.
+
 ## Naming has current-stage evidence; archive and context work remains (2026-09-10)
 
 Verified `85f7bac01` now distinguishes a name used as a reference from a word or spelling being discussed.

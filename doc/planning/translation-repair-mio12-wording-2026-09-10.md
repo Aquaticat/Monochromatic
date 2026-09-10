@@ -568,10 +568,10 @@ The integration logged 0.00465705 USD on Bedrock,
 two OpenRouter calls reporting zero cost,
 thirteen unpriced Hyper calls and four unpriced Synthetic calls.
 
-## Active initial-review brief measurement
+## Completed initial-review brief measurement
 
-`proc_4c65` runs `translation-repair-archive-review-brief-probe-20260910`
-on frozen `6c24c82c1`.
+`proc_4c65` completed `translation-repair-archive-review-brief-probe-20260910`
+on frozen `6c24c82c1` in 547 seconds.
 The script is `~/temp/agent/probe-archive-review-brief-20260910.mjs`,
 log `~/temp/agent/archive-review-brief-probe-20260910.log`,
 and report `~/temp/agent/archive-review-brief-probe-20260910/report.json`.
@@ -592,4 +592,65 @@ It forwards at most 48 requests,
 with the same 360000 ms exchange and 1200000 ms global bounds.
 No new correction round or Chinese-character rejection rule is introduced.
 
+The treatment used 39 requests.
+It retained the label and selected a complete English chat correction,
+with `musculine` and `Wechat` corrected and no untranslated `唔` introduced.
+The selected rendering also uses a single dash and renders the source-supported trait as "sensitive yet determined".
+It preserves the archive's message structure and readable terminology.
+The selector chose that candidate at weight three over alternatives at weight two and one;
+this was a real selected revision,
+not a fallback.
+
+The result is not unanimous proof of every dialogue interpretation.
+Some judges prefer a more literal variant that removes disputed dialogue lines;
+others consider the archive's contextual renderings defensible.
+That disagreement is recorded rather than converted into an automatic deletion rule.
+
+The probe also exposes a separate audit input gap:
+both retained-label naturalness rounds evaluate `Translation:` without its neighboring archive content,
+and report it as an empty translation.
+Those fourteen findings are audit-only,
+not a reason the label was removed or a successful quality assessment.
+Task 20 tracks the actual context/role boundary for those audits,
+without skipping required review or adding a loop.
+
+`ede699627` fails before the brief change.
+`ba01babda` integrates the exact measured first-review wording.
+Build,
+types,
+oxlint and the full unit suite pass;
+`~/temp/agent/archive-brief-unit-20260910.out` ends `unit exit 0`.
+The probe logged 0.00518614 USD on Bedrock,
+two OpenRouter calls reporting zero cost,
+eighteen unpriced Hyper calls and eleven unpriced Synthetic calls.
+The daily helper ran afterward.
+
+## Completed compiled-brief integration
+
+`proc_4eec` completed `translation-repair-archive-brief-integrated-20260910` in 783 seconds on frozen `ba01babda`,
+without a message-intercepting treatment wrapper.
+It seeds its disposable cache from the completed brief probe,
+so identical requests reuse completed results.
+This also exercises the prompt-dependent review window with the wording now in the actual builder.
+Its report is `~/temp/agent/archive-brief-integrated-20260910/report.json`
+and log `~/temp/agent/archive-brief-integrated-20260910.log`.
+The public stage retains the same eleven-seat roster and request/deadline bounds.
+It made 41 forwarded requests,
+retained the label through the normal evidence-backed branch,
+and selected the same corrected English chat.
+Five revisions competed with the unchanged original;
+the chosen Kimi revision won weight 3.5 over seven ballots,
+with ordinary author self-vote weighting retained.
+Both outputs compile.
+This validates the actual compiled review/selection path,
+not only the message-intercepted experiment.
+
+The integration logged 0.00046112 USD on Bedrock,
+two OpenRouter calls reporting zero cost,
+three unpriced Hyper calls and seven unpriced Synthetic calls.
+The daily helper ran afterward.
+Completed cache payloads supplied the remaining calls;
+no existing cache was modified.
+Task 18 is complete at this boundary.
+Task 20's retained-apparatus audit context and task 19's temporal context remain before the next full Mio pass.
 No full-entry pass is active.
