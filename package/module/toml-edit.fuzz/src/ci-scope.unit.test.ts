@@ -34,12 +34,12 @@ const workflow = readFileSync(new URL('../../../../.github/workflows/toml-edit-f
 const scopeStart = workflow.indexOf('      id: scope\n',);
 /** Scope step ends before another step can contribute a shell or environment binding. */
 const scopeEnd = workflow.indexOf('\n    - name:', scopeStart,);
-if ((scopeStart < 0) || (scopeEnd < 0)) throw new Error('Scope step boundaries changed',);
+if ((scopeStart === (-1)) || (scopeEnd === (-1))) throw new Error('Scope step boundaries changed',);
 /** Fixed workflow step whose formatting is deliberately part of this integration fixture. */
 const scopeStep = workflow.slice(scopeStart, scopeEnd,);
 /** Scope body must exist before any fixture executes extracted code. */
 const runStart = scopeStep.indexOf('      run: |\n',);
-if (runStart < 0) throw new Error('Scope run body is missing',);
+if (runStart === (-1)) throw new Error('Scope run body is missing',);
 /** Source lines following the scope run field, terminated explicitly for the final body line. */
 const runLines = `${scopeStep.slice(runStart + '      run: |\n'.length,)}\n`.split('\n',);
 /** The first dedented line ends this fixed workflow body. */
@@ -308,7 +308,7 @@ await describe({
       const source = readFileSync(adapter, 'utf8',);
       /** The adapter's sole failure throw is the guard being removed. */
       const guard = source.indexOf('    throw new ScopeError(',);
-      if ((guard < 0) || (guard !== source.lastIndexOf('    throw new ScopeError(',)))
+      if ((guard === (-1)) || (guard !== source.lastIndexOf('    throw new ScopeError(',)))
         throw new Error('Scope Git guard changed; update the mutation control',);
       writeFileSync(adapter, `${source.slice(0, guard,)}    console.error(error);\n    return '';\n  }\n}\n`,);
       /** This faulty adapter reproduces the original error-to-empty-list conversion. */
