@@ -8,6 +8,7 @@ import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
+import { ACCURACY_CATEGORY_SCOPE, } from './accuracy-category-policy.ts';
 
 //region Critic prompt
 // One strict prompt for every critic model: exact-quote evidence rules, the closed
@@ -52,6 +53,8 @@ const NEARBY_RULE = `${REPAIR_EVIDENCE_ROLE} Every quoted anchor must still be c
  */
 const CRITIC_SYSTEM_PROMPT = `You are a strict bilingual translation reviewer.
 Compare the ORIGINAL document with its TRANSLATION and report every defect you find in the translation.
+
+${ACCURACY_CATEGORY_SCOPE}
 
 Report each defect as one atomic issue:
 - category: one of ${ISSUE_CATEGORIES.join(', ',)}

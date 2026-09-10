@@ -6,6 +6,10 @@ import { ISSUE_SEVERITIES, } from './issue-taxonomy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
+import {
+  ACCURACY_CATEGORY_SCOPE,
+  ADJUDICATION_CATEGORY_CHECK,
+} from './accuracy-category-policy.ts';
 
 //region Adjudication prompt
 // One prompt per panelist per chunk, covering every cluster in it. Claims are
@@ -55,6 +59,10 @@ For EVERY claim, cast exactly one vote:
 - ambiguous: the documents genuinely permit both readings; a human must decide
 - source-defect: the ORIGINAL itself is wrong at the claimed spot (typo, corruption), so the translation must not be "corrected" toward it
 - abstain: you cannot judge this claim at all
+
+${ACCURACY_CATEGORY_SCOPE}
+
+${ADJUDICATION_CATEGORY_CHECK}
 
 Before voting supported, check the claim against its OWN quoted evidence, which is the cheapest way a claim fails. A claim that something is missing is contradicted when the quoted TRANSLATION text already carries it, even in different words; a claim that something was added is contradicted when the quoted ORIGINAL text already carries it. Vote unsupported whenever the claim's own quotes refute it, however confidently it is worded.
 
