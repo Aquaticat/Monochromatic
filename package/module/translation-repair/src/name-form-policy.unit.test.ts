@@ -6,6 +6,7 @@
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
+  buildAdjudicationMessages,
   buildConsolidateMessages,
   buildCriticMessages,
   buildEditorMessages,
@@ -66,6 +67,19 @@ const sheets = [
 await describe({
   name: 'name reference and mentioned-form policy',
   children: [
+    it({
+      name: 'KEEPS established names outside the first-use generic-term gloss requirement',
+      fn: async () => {
+        const adjudication = systemText(buildAdjudicationMessages({
+          sourceText: '猫猫加入了猫友会。',
+          targetText: 'Cat joined Whisker Friends.',
+          clusters: [],
+        },).messages,);
+        expect(adjudication,).toContain('an established translation-side name is not a generic community term',);
+        expect(adjudication,).toContain('This does not exempt ordinary terminology or an explicit source definition',);
+        expect(adjudication,).toContain('A generic term with no English equivalent',);
+      },
+    },),
     ...sheets.map(function scopeReached(sheet,) {
       return it({
         name: `SCOPES name normalization in ${sheet.name}`,
