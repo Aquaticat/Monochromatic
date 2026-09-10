@@ -276,7 +276,7 @@ await describe({
     },),
 
     it({
-      name: 'merges a cluster on majority same-defect opinion with protective status priority',
+      name: 'keeps rejected diagnoses separate despite majority same-defect opinion',
       fn: async () => {
         /** Accepted member. */
         const strong = member({ suffix: 'aaa-strong', },);
@@ -317,9 +317,11 @@ await describe({
         };
         /** Merged adjudication. */
         const result = tallyVotes({ clusters: [cluster,], ballots, configuredPanelists: Object.keys(ballots,).length, },);
-        expect(result.issues,).toHaveLength(1,);
+        expect(result.issues,).toHaveLength(2,);
         expect(result.issues[0]?.status,).toBe('accepted',);
-        expect(result.issues[0]?.claims,).toHaveLength(2,);
+        expect(result.issues[0]?.claims,).toStrictEqual([strong,],);
+        expect(result.issues[1]?.status,).toBe('rejected',);
+        expect(result.issues[1]?.claims,).toStrictEqual([weak,],);
         expect(result.issues[0]?.issueId.startsWith('adjudicated/',),).toBe(true,);
       },
     },),
