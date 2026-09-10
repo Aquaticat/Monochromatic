@@ -138,11 +138,34 @@ The genuine wrong-name control passes,
 but both fixed and fresh packets still authorize false name changes.
 The expanded shared paragraph is not integrated.
 
-`proc_7b51` now runs `translation-repair-archive-input-role-probe-20260910`:
-current production rule plus explicit pre-repair archive input role,
-with controls for declared English naming,
-participant direction and administrator-role repair.
-The cap is 48 live requests and a twenty-minute global bound.
+`proc_7b51` completed in 187 seconds with 24 calls:
+explicit archive-role binding also fails to stop the rename claims,
+while genuine-error controls remain actionable.
+`proc_33c7` completed in 74 seconds:
+the isolated actual claim remains accepted five-to-one,
+and the counterfactual existing-name claim four-to-two.
+No corresponding treatment is integrated.
+
+An offline transport probe confirms the complete policy and role text survive all four local provider clients;
+negative controls detect removal of the name paragraph.
+It does not claim anything about remote-provider internals.
+
+`proc_41a7` completed in 98 seconds with thirty requests.
+Neither removing the proposed replacement nor requiring reasons stops the rename.
+The reasons instead demand official-English-name evidence to retain the archive form;
+one applies the work-title fallback to this group name.
+
+`proc_fcb6` now runs `translation-repair-name-authority-ladders-resume-20260910`:
+a dedicated reference-convention policy,
+separate from creative-work titles and ordinary vocabulary,
+using plain production ballots without the failed role or rationale augmentations.
+The initial attempt stopped on an overly strict negative-control assertion:
+an official-title tie authorized no edit,
+as `deriveEditableEnvelopes` confirms.
+The resumed control tests that actual non-authorization boundary
+and reuses completed replies.
+The remaining preplanned controls and fresh critic/panel checks are unchanged.
+The cap is 96 requests and a twenty-minute global bound.
 The provider-free trace also confirms the pure administrator issue's broad quote includes the group name;
 adjudication alone is not proof that an editor will preserve it.
 No production name-policy change or one-off glossary entry has been made for task 21.

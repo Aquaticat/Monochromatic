@@ -165,9 +165,10 @@ returned relevant corpus mirrors alongside unrelated results.
 Those mirror references do not establish independent official naming evidence.
 No external naming override was inferred or injected.
 
-## Active archive-role measurement
+## Completed archive-role measurement
 
-`proc_7b51` runs `translation-repair-archive-input-role-probe-20260910`.
+`proc_7b51` completed `translation-repair-archive-input-role-probe-20260910`
+in 187 seconds with 24 calls.
 
 - Script:
   `~/temp/agent/probe-archive-input-role-20260910.mjs`.
@@ -206,3 +207,267 @@ There is no critic/editor generation in this experiment.
 Read per-claim decisions and malformed findings.
 Do not count a compound allegation as resolved merely because its genuine administrator component survives.
 Even a successful panel treatment needs fresh authoring and compiled-path verification.
+
+The role treatment also fails to stop name changes.
+Every pure rename allegation and the compound role/name allegation receives six supports.
+The untranslated-role claim is tied three-to-three and remains needs-human.
+The controls remain actionable:
+explicit English name six supports,
+participant correction five supports with one malformed abstention,
+and administrator correction five-to-one.
+The competing disclosure-addition diagnosis is rejected five-to-one.
+The malformed participant vote is `supported, severity: major`,
+not a valid support.
+No role input or prompt treatment is integrated.
+
+Bedrock logged 0.00291262 USD;
+two OpenRouter calls reported zero,
+with nine Hyper and seven Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Transport exclusion and next hypotheses
+
+Ranked hypotheses for the next measurement:
+
+- Repetition of related allegations may bias the panel.
+  Isolating one pure name allegation should remove that effect if it matters.
+- The current wording may be treated as a literal translation attempt rather than a reference convention.
+  A different nonliteral existing-name fixture tests whether the failure is case-specific.
+- The policy might disappear before reaching the provider.
+  This can be checked without buying another model response,
+  so it is tested first despite its lower rank.
+
+`~/temp/agent/verify-name-policy-transport-20260910.mjs`
+passes the actual role-bound messages through each built provider client,
+with dummy keys and an injected transport that captures only the outgoing body
+and stops before any network request.
+Synthetic,
+Hyper,
+Bedrock and OpenRouter preserve the complete system and user text.
+The name policy and input-role statement both survive.
+A negative control removes the name paragraph before each call,
+and the body inspection detects its absence.
+This excludes loss in the local client request construction,
+not a claim about a remote provider's internal processing.
+Results:
+`~/temp/agent/name-policy-transport-20260910.json`.
+
+## Completed name-claim minimization
+
+`proc_33c7` completed `translation-repair-name-claim-isolation-probe-20260910`
+in 74 seconds with eighteen calls,
+including six reused control calls.
+
+- Script:
+  `~/temp/agent/probe-name-claim-isolation-20260910.mjs`.
+- Plan:
+  `~/temp/agent/name-claim-isolation-plan-20260910.out`.
+- Log:
+  `~/temp/agent/name-claim-isolation-probe-20260910.log`.
+- Report:
+  `~/temp/agent/name-claim-isolation-probe-20260910/report.json`.
+
+It retains current production rules and the measured archive-role binding.
+After the explicit-English-name positive control,
+it asks the actual pure name-mistranslation claim alone.
+A counterfactual arm changes the existing reference spelling to `Night Lantern Collective`,
+updates the same claim's summary and target anchor,
+and otherwise retains the same source and surrounding evidence.
+This is a diagnostic archive input,
+not a corpus edit or a proposed replacement name.
+
+The bound is 36 requests,
+360000 ms per exchange and 1200000 ms globally.
+Completed control replies may be reused.
+Removing other claims also renumbers the remaining claim;
+this experiment does not isolate those effects from each other.
+The isolated actual name claim remains accepted five-to-one.
+The counterfactual reference-name claim remains accepted four-to-two.
+The explicit-English-name control still has six supports.
+There are no malformed findings in these cases.
+Thus duplicate allegations are not necessary for the failure,
+and changing the existing English name does not by itself remove it.
+The cases can select different responding windows;
+do not attribute the difference between their vote counts to the changed name alone.
+
+Bedrock logged 0.00150546 USD;
+two OpenRouter calls reported zero,
+with three Hyper and four Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Completed verdict-basis diagnostic
+
+The remaining single claim still presents `Harunome Studio`
+as the reviewer's proposed replacement.
+That is not naming evidence from the source or an identity declaration.
+Whether reviewers are nevertheless treating it as such is now a testable hypothesis.
+
+`proc_41a7` completed `translation-repair-name-verdict-basis-probe-20260910`
+in 98 seconds with thirty requests.
+
+- Script:
+  `~/temp/agent/probe-name-verdict-basis-20260910.mjs`.
+- Plan:
+  `~/temp/agent/name-verdict-basis-plan-20260910.out`.
+- Log:
+  `~/temp/agent/name-verdict-basis-probe-20260910.log`.
+- Report:
+  `~/temp/agent/name-verdict-basis-probe-20260910/report.json`.
+
+It holds the actual isolated-case respondents fixed across the comparison cells.
+This is a fixed-cohort diagnostic,
+not a production-window tally.
+The original configured electorate and actual resolver/tally remain;
+a cell must also meet the original participation basis before it is treated as usable.
+
+The factors are independently preplanned:
+removing only the reviewer's proposed replacement from the summary,
+and asking for an evidence-and-policy reason within each existing verdict.
+The reasoned cells extend the diagnostic response schema with `reason`
+and distinguish an observed difference from a defect requiring a change.
+The existing name policy,
+source and archive-role binding stay unchanged.
+The explicit-English-name positive control runs first.
+
+The bound is thirty requests,
+with overlap two,
+360000 ms per exchange and 1200000 ms globally.
+No production schema,
+prompt,
+name list or generation round changes.
+Read the reasons as model assertions to check against the actual inputs,
+not as proof that the asserted naming evidence exists.
+
+Every cell remains accepted:
+five supports and one opposition,
+except the unreasoned no-suggestion cell whose sixth vote is malformed.
+The control still has six supports.
+Removing the suggested replacement does not establish a remedy,
+and requiring a reason does not establish one either.
+Malformed findings include a duplicate verdict,
+an out-of-range second claim,
+and `supported, severity: minor` used as a vote.
+Neither treatment is integrated.
+
+The reasons make the next hypothesis specific:
+
+- Mercury requires evidence that `Hanbai` is the official English name.
+- DeepSeek Flash requires a note,
+  editor comment or authoritative-name evidence before retaining it.
+- DeepSeek Pro invokes the lack of an established official English title
+  as a reason to translate or gloss the group name.
+- Qwen correctly treats the existing archive form as the reference convention
+  and requires contrary naming evidence before a rename.
+
+The source does not supply the demanded official-English attestation.
+That absence is not itself a defect under the existing reference-name convention.
+The reasons therefore suggest a reversed burden of proof
+and possible application of the creative-work-title fallback to a group name.
+This is evidence for testing that interpretation,
+not proof of model-internal causation.
+One Gemma rationale repeatedly restates the same literal comparison;
+its verbosity is not additional evidence.
+
+Bedrock logged 0.003891 USD;
+three OpenRouter calls reported zero,
+with eight Hyper and three Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Active authority-ladder separation
+
+An independent advisor checked the proposed scope against the existing reference-name rule
+and the owner's distinct work-title decision.
+The archive supplies a local reference convention,
+not proof of an official English name.
+Generated candidates must not establish that convention.
+Supplied evidence of a typo,
+stale preferred form,
+wrong entity or contrary authoritative name must remain usable.
+
+`proc_fe7a` stopped after eighteen requests in 39 seconds.
+Its first controls preserved the explicit English-name correction
+and wrong-entity correction.
+The official-title retention control tied three-to-three,
+which produced needs-human rather than an accepted rename.
+The harness incorrectly required the exact status `rejected`
+instead of testing whether a rename was authorized.
+
+- Script:
+  `~/temp/agent/probe-name-authority-ladders-20260910.mjs`.
+- Plan:
+  `~/temp/agent/name-authority-ladders-plan-20260910.out`.
+- Log:
+  `~/temp/agent/name-authority-ladders-probe-20260910.log`.
+- Report:
+  `~/temp/agent/name-authority-ladders-probe-20260910/report.json`.
+
+The treatment moves reference naming out of the generic-vocabulary paragraph into its own policy bullet.
+It makes archive usage sufficient to retain a local reference form,
+without requiring independent proof of an official name.
+A rename needs supplied contrary naming or identity evidence;
+literal non-correspondence alone is not that evidence.
+It explicitly limits the official-title/default-translation ladder to creative works,
+not people,
+groups or places.
+
+The experiment uses plain production schemas and stage APIs:
+no failed role-binding augmentation and no reasoned-verdict schema.
+Controls cover:
+
+- An explicitly supplied English group name that contradicts the archive.
+- A reference attributing a role to the wrong named person.
+- Retaining an explicitly official English work title.
+- Correcting an archive-only work title without official-title or note support.
+- A mentioned character form incorrectly normalized to the person's name.
+- An ordinary occurrence of `工作室`,
+  rather than a name component.
+- The actual participant correction and competing addition diagnosis.
+- The actual pure administrator-role correction.
+
+The real name packet still includes its compound administrator/name claim.
+Fresh anchored critics and their name-touching clusters follow the fixed packet.
+The maximum is 96 requests,
+360000 ms per exchange and 1200000 ms globally.
+No production change is made.
+If this provides evidence for integration,
+audit the immutable archive boundary and exercise actual editors and selectors,
+because the administrator-only edit region still contains the name.
+
+## Corrected control boundary and resumed measurement
+
+`~/temp/agent/title-control-authority-20260910.out`
+exercises `deriveEditableEnvelopes` on the actual tied control result:
+no editable envelope is created.
+The control therefore preserves the title at this boundary.
+This is not evidence that all panelists understood the rule;
+three still supported the false allegation.
+
+The resumed harness accepts a rejected,
+needs-human or source-defect result for this negative control,
+provided no accepted rename exists.
+Positive correction controls still require acceptance.
+No production threshold or quorum is changed.
+
+The stopped attempt logged 0.00116853 USD on Bedrock,
+two OpenRouter calls reporting zero,
+and six Hyper plus six Synthetic calls unpriced.
+The daily helper ran afterward.
+
+`proc_fcb6` runs `translation-repair-name-authority-ladders-resume-20260910`.
+
+- Script:
+  `~/temp/agent/probe-name-authority-ladders-r2-20260910.mjs`.
+- Plan:
+  `~/temp/agent/name-authority-ladders-plan-20260910-r2.out`.
+- Log:
+  `~/temp/agent/name-authority-ladders-probe-20260910-r2.log`.
+- Report:
+  `~/temp/agent/name-authority-ladders-probe-20260910-r2/report.json`.
+
+The questions and scope treatment are unchanged.
+The disposable cache includes the stopped attempt's completed replies,
+so those questions are not bought again.
+The remaining controls,
+actual name packet,
+fresh critics and fresh name panel remain the same preplanned work.
+The maximum remains 96 requests and a twenty-minute global bound.
