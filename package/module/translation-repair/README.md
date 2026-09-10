@@ -1874,6 +1874,18 @@ checked on the assembled page whether or not it equals the archive;
 since `6d85b619a` a handle that is the name in both languages,
 as for 8 of the pinned corpus's 92 entries,
 passes).
+Since `7c0ce152f` (2026-09-10,
+the twenty-ninth class) a source-only passage must preserve a minimum count of explicit line breaks
+within each top-level block.
+Mio10's missing-archive poem kept its words but lost all five Markdown hard breaks,
+which the blank-separated-block verse heuristic and physical-line count did not detect.
+The skeleton now counts parsed Markdown breaks and intrinsic lowercase `br` elements,
+not soft newlines,
+code or custom components.
+Nonempty archive text stays outside this check;
+expansion and archive-backed formatting choices are unchanged.
+The guard failed before the fix,
+and the publisher test preserves accepted breaks through wrapping and insertion into a disposable output tree.
 Since `dc51b02d9` (2026-09-10,
 the twenty-eighth class) archive revision proposals may carry a nonempty `sourceQuote` as supporting evidence,
 matching the declared JSON schema.

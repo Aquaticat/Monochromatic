@@ -1672,7 +1672,13 @@ This is class twenty-nine:
 the single-block poem escapes the blank-block verse heuristic,
 and the structural floor does not measure its explicit breaks.
 A parser-positive control and real-validator failing reproduction establish the gap.
-The proposed repair stays at the source-only boundary and does not alter archive-backed formatting choices.
+The repair in `7c0ce152f` stays at the source-only boundary and does not alter archive-backed formatting choices.
+Its guard failed on the prior build,
+then passed;
+full suite,
+types and lint pass,
+and a disposable publisher test preserves the accepted breaks.
+The old page remains defective and has not been edited.
 Inherited wording defects are also recorded in the full reading.
 
 The belief remains not ready.

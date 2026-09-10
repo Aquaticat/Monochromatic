@@ -7028,7 +7028,29 @@ and leave archive-backed layout choices,
 paragraph equivalence,
 expansion and author defense unchanged.
 This does not select the unchosen paragraph-equivalence option in the block-floor decision.
-No source fix has landed yet.
+The fix landed as `7c0ce152f`,
+after `d813da8d5` failed four real-validator cases on the prior build.
+`source-only-breaks.ts` reads the already parsed skeleton,
+so Markdown hard breaks and intrinsic lowercase `br` share one count per top-level block.
+The comparison applies only to empty incumbent text,
+not to an archive that parses to an empty skeleton.
+Existing source-versus-archive block choices are unchanged.
+`6359bb2aa` adds code,
+escape,
+custom-component,
+CRLF and missing-block cases,
+plus publication of an accepted wrapped insertion into a disposable tree.
+Formatting corrections end at `e0a0ae45c`.
+
+The full suite ends `unit exit 0` in `~/temp/agent/class29-final-unit-20260910.out`;
+build,
+types and oxlint pass with zero warnings.
+The original reproducer now rejects the flattened candidate,
+and applying the guard to Mio10's actual poem reports five explicit breaks owed versus zero carried.
+The same words with explicit breaks pass.
+The private reply-cache survey finds both break-preserving and already-flat poem proposals before page assembly,
+so assembly is not the only boundary to protect.
+No corpus text was edited.
 
 OpenRouter logged 0.618695602723 USD across 653 calls,
 including 0.05020922 USD of abandoned estimates;

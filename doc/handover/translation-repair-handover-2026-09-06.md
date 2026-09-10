@@ -24,6 +24,19 @@ and the reason is recorded in
 
 ## Where the work stands
 
+Class twenty-nine is fixed locally in `7c0ce152f`,
+with coverage and formatting through `e0a0ae45c`.
+Guard `d813da8d5` failed four cases on the prior build.
+The original reproducer now rejects the flattened quote,
+and the real Mio10 poem is rejected for five owed breaks versus zero;
+the same words with explicit breaks pass.
+A publisher integration test reads the inserted verse from a disposable output tree and preserves its breaks.
+The full suite ends `unit exit 0` in `~/temp/agent/class29-final-unit-20260910.out`;
+build,
+types and oxlint pass,
+including zero warnings.
+Relaunch `Mio` next on a fresh frozen build.
+
 Terminal and reading update on 2026-09-10:
 `Mio10` SETTLED at 01:36 UTC after 4,872,081 ms.
 `verify-published` matched all 18 wordings with no missing text;
@@ -410,7 +423,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `dc51b02d9` for code and guards;
+  `e0a0ae45c` for code and guards;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -441,6 +454,16 @@ markdown lint clean on every line written today.
 ## What landed today
 
 Newest first.
+Class twenty-nine:
+`d813da8d5` guards source-only explicit-break loss and fails before the fix;
+`7c0ce152f` counts parsed Markdown hard breaks and intrinsic `br` per top-level block,
+only when no archive text exists.
+`6359bb2aa` covers escaped/code/custom-component lookalikes and publication to a disposable tree;
+`f52ca232a` and `e0a0ae45c` fix formatting.
+Build,
+types,
+full suite and oxlint pass.
+
 Class twenty-eight:
 `1bc7623c3` guards quoted revision replies through the real review stage;
 `dc51b02d9` accepts the informative quote while preserving anchored-retention requirements.
@@ -1985,9 +2008,11 @@ each read off the pass log and the shipped page:
     now fixed and verified at `5cb66ffaa`.
     The ninth `Mio` stopped in archive review on the quoted-revision schema mismatch.
     Class twenty-eight is fixed and verified at `dc51b02d9`;
-    `Mio10` is running on it at pid `1455521`.
-    Read that pass at its terminal notification before advancing the queue.
-    Only a real page can establish that both screenshot translations survive.
+    `Mio10` settled and both screenshot translations survived in full.
+    Its closing poem exposed class twenty-nine:
+    five explicit hard breaks became soft newlines.
+    That source-only guard is fixed and verified through `e0a0ae45c`.
+    Relaunch `Mio` and read the rendered verse before advancing the queue.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
     `preparePassEntry` (`corpus-run/pass-prepare.ts`) runs the archive block review inside preparation,
