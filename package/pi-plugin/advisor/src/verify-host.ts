@@ -25,9 +25,13 @@ import {
   verifyAdvisorHostEvidence,
 } from './verify-host-results.ts';
 
-/** Preserve Node's ChildProcess-returning execFile signature when selecting its promisify overload. */
+/**
+ Preserve Node's ChildProcess-returning execFile signature when selecting its promisify overload.
+ */
 const promisifyExecFile: (original: typeof execFile) => typeof execFile.__promisify__ = promisify;
-/** Native asynchronous adapter retains captured output, failures, and the child handle. */
+/**
+ Native asynchronous adapter retains captured output, failures, and the child handle.
+ */
 const executeFile = promisifyExecFile(execFile,);
 
 /**
@@ -253,7 +257,8 @@ async function verifyScenario(mode: typeof SCENARIOS[number],): Promise<void> {
     },
   );
   // Pi print mode reads piped stdin; close it rather than leaving the fixture waiting for input.
-  execution.child.stdin
+  execution.child
+    .stdin
     ?.end();
   /**
    Both output streams are retained, and nonzero exits reject instead of being ignored.
