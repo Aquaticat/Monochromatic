@@ -95,6 +95,33 @@ await describe({
       },
     },),
     it({
+      name: 'DEDUPLICATES an echoed original and records the selected no-op as retained',
+      fn: async () => {
+        const fixture = archiveSelectionFixture({ review: 'echo', selection: 'original', },);
+        const result = await runFixture(fixture,);
+        expect(result.kind,).toBe('retained',);
+        expect(result.text,).toBe(ARCHIVE_TEST_BLOCK,);
+        expect((fixture.selections[0] ?? '').split('CANDIDATE ',),).toHaveLength(2,);
+      },
+    },),
+    it({
+      name: 'CARRIES earlier findings separately from current typed assessments',
+      fn: async () => {
+        const fixture = archiveSelectionFixture({},);
+        await runArchiveBlockReviewStage({
+          client: fixture.client, modelIds: ARCHIVE_TEST_ROSTER,
+          sourceText: ARCHIVE_TEST_SOURCE, targetText: ARCHIVE_TEST_PAGE, blockText: ARCHIVE_TEST_BLOCK,
+          priorFindings: ['Earlier independent concern.',],
+          signal: AbortSignal.timeout(5_000,), exchangeTimeoutMs: 5_000,
+          l: tagged({ tag: 'archive-prior-evidence-test', },),
+        },);
+        const message = fixture.selections[0] ?? '';
+        expect(message,).toContain('EARLIER REVIEW FINDINGS, prior opinions only',);
+        expect(message,).toContain('Earlier independent concern.',);
+        expect(message,).toContain('PRIOR REVIEW ASSESSMENTS',);
+      },
+    },),
+    it({
       name: 'KEEPS the unresolved fallback for retention-only reviews lacking anchored participation',
       fn: async () => {
         const fixture = archiveSelectionFixture({ review: 'retention-only', },);

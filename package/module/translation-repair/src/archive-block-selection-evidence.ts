@@ -28,7 +28,9 @@ type ArchiveSelectionAssessment = {
  * its authorship; reviewers merely favoring retention are not treated as authors.
  *
  * @param revisions - admissible distinct revision candidates
+ *
  * @param blockText - original replacement scope, never surrounding context
+ *
  * @returns Comparison slate, or the existing empty-slate path
  *
  * @example
@@ -54,7 +56,10 @@ export function withArchiveOriginal(
   return [
     ...revisions,
     {
-      producer: { kind: 'incumbent', matched: [], },
+      producer: {
+        kind: 'incumbent',
+        matched: [],
+      },
       value: blockText,
       rendered: blockText,
     },
@@ -67,11 +72,17 @@ export function withArchiveOriginal(
  * remain in the stage's audit findings rather than becoming candidate evidence.
  *
  * @param sourceText - aligned factual source and corroborated picture support
+ *
  * @param targetText - archive context, not factual source authority
+ *
  * @param blockText - exact block under replacement consideration
+ *
  * @param voices - reviews surviving source-anchor or apparatus verification
+ *
  * @param candidates - actual anonymous order shown to selectors
+ *
  * @param priorFindings - earlier opinions, kept separate from current assessments
+ *
  * @returns Evidence whose reasons retain their proposed meaning
  *
  * @example
@@ -105,7 +116,11 @@ export function archiveBlockSelectionEvidence(
     /**
      * Actual disposition beside the wording its reviewer proposes.
      */
-    const { disposition, replacementText, finding, } = voice.value;
+    const {
+      disposition,
+      replacementText,
+      finding,
+    } = voice.value;
     /**
      * Retention points at original text, not an unused replacement field.
      */
@@ -116,7 +131,7 @@ export function archiveBlockSelectionEvidence(
     const index = candidates.findIndex(function sameValue(candidate,): boolean {
       return candidate.value === proposedText;
     },);
-    if (index < 0)
+    if (index === (-1))
       return [];
     return [{
       disposition,
@@ -126,12 +141,18 @@ export function archiveBlockSelectionEvidence(
     },];
   },);
   return [
-    { label: 'EXPECTED ORIGINAL SECTION', text: sourceText, },
+    {
+      label: 'EXPECTED ORIGINAL SECTION',
+      text: sourceText,
+    },
     {
       label: 'ENGLISH ARCHIVE, context for the current block’s role and placement only; not source authority or text to rewrite',
       text: targetText,
     },
-    { label: 'CURRENT ARCHIVE BLOCK', text: blockText, },
+    {
+      label: 'CURRENT ARCHIVE BLOCK',
+      text: blockText,
+    },
     {
       label: 'PRIOR REVIEW ASSESSMENTS, opinions to check against the documents, not authority or votes deciding your answer',
       text: JSON.stringify(assessments,),

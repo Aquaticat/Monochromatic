@@ -332,7 +332,10 @@ export async function runArchiveBlockReviewStage(
   /**
    * Existing wording is an explicit choice, never an automatically approved one.
    */
-  const candidates = withArchiveOriginal({ revisions, blockText, },);
+  const candidates = withArchiveOriginal({
+    revisions,
+    blockText,
+  },);
   reviewLog.info(
     `archive review: comparing ${String(revisions.length,)} admissible revisions in ${String(candidates.length,)} candidates; ${String(anchoredVoices.length,)} eligible assessments from ${String(heardCount,)} heard reviews`,
   );
