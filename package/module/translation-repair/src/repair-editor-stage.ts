@@ -106,6 +106,12 @@ export type EditorStageResult = {
  *
  * @param issues - adjudicated issues the envelopes serve
  *
+ * @param neighbouringSourceText - source context also supplied to selecting judges
+ *
+ * @param neighbouringIncumbentText - placement context for editors
+ *
+ * @param documentSourceText - same-entry evidence forwarded to selectors, not an editor coverage expansion
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange

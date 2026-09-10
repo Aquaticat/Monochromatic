@@ -45,6 +45,8 @@ import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
  *
  * @param neighbouringSourceText - original of adjacent passages
  *
+ * @param documentSourceText - same-entry source evidence identical to the value used in the cache key
+ *
  * @param sliceCache - optional cross-run cache
  *
  * @param signal - entry deadline and caller abort

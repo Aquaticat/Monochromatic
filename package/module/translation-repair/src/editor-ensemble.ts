@@ -87,6 +87,10 @@ import { envelopeContext, } from './editor-envelope-context.ts';
  * @param targetText - translation chunk text, for the surrounding context each
  * replacement has to fit
  *
+ * @param neighbouringSourceText - local factual evidence for the replacement
+ *
+ * @param documentSourceText - same-entry original evidence beyond the local window
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -285,6 +289,10 @@ export async function selectPerEnvelope(
  * @param judgeModelIds - whole roster; producers are removed downstream
  *
  * @param sourceText - original chunk text, evidence for judges
+ *
+ * @param neighbouringSourceText - local factual evidence for repaired details
+ *
+ * @param documentSourceText - same-entry original evidence beyond the local window
  *
  * @param indecisionFallback - patch adopted when judges answered but failed to
  * converge; callers must pass a patch that actually repairs something

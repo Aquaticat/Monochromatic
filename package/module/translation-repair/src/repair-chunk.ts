@@ -79,6 +79,8 @@ import {
  * the original says each thing once in its own place while the archive says it
  * next door
  *
+ * @param documentSourceText - same-entry factual evidence for panels and repair selectors, not extra coverage
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange

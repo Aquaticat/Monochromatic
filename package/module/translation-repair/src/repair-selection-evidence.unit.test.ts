@@ -10,6 +10,9 @@ import {
   type EditorCandidate,
   hashContent,
   repairSliceKey,
+  prepareDocumentPair,
+  repairPreparedDocument,
+  runEditorStage,
   type RosterModelId,
   selectChunkPatch,
   selectPerEnvelope,
@@ -69,6 +72,59 @@ const CANDIDATES = [
 await describe({
   name: 'repair source evidence handoff',
   children: [
+    it({
+      name: 'CARRIES same-entry source through the actual prepared-document repair boundary',
+      fn: async () => {
+        const sourceText = '猫笑了。\n\n## Later\n\nDOCUMENT SOURCE MARKER';
+        const targetText = 'The cat cried.\n\n## Later\n\nAn unrelated passage.';
+        const prepared = prepareDocumentPair({ sourceText, targetText, });
+        const controller = new AbortController();
+        const reason = new Error('Stop after observing the panel boundary');
+        const prompts: string[] = [];
+        const client: SyntheticClient = {
+          chatText: async () => { throw new Error('Unexpected text call'); },
+          quotas: async () => { throw new Error('Unexpected quota call'); },
+          chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
+            if (request.responseFormat?.json_schema.name === 'panel_ballot') {
+              prompts.push(JSON.stringify(request.messages));
+              controller.abort(reason);
+              throw reason;
+            }
+            const value = { issues: [{ category: 'accuracy/mistranslation', severity: 'major', summary: 'The cat smiled rather than cried.', sourceQuote: '猫笑了。', targetQuote: 'The cat cried.', },], };
+            if (!request.validate(value)) throw new Error('Unexpected fixture protocol');
+            return { kind: 'ok', value, rawText: JSON.stringify(value), };
+          },
+        };
+        let caught: unknown;
+        try {
+          await repairPreparedDocument({ client, prepared, models: { criticModelIds: JUDGES, panelModelIds: JUDGES, editorModelIds: ['hf:zai-org/GLM-5.3-Flash',], judgeModelIds: JUDGES, checkerModelIds: ['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b',], }, signal: controller.signal, perCallTimeoutMs: 5000, });
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught).toBe(reason);
+        expect(prompts.length).toBeGreaterThan(0);
+        expect(prompts.every(prompt => prompt.includes('FULL ORIGINAL DOCUMENT') && prompt.includes('DOCUMENT SOURCE MARKER'))).toBe(true);
+      },
+    }),
+    it({
+      name: 'CARRIES document evidence through the editor stage to both selecting responsibilities',
+      fn: async () => {
+        const fixture = judges();
+        const client: SyntheticClient = { ...fixture.client, chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
+          if (request.responseFormat?.json_schema.name !== 'editor_report') return await fixture.client.chatJson(request);
+          const value = { edits: [{ region: 1, newText: request.modelId === 'hf:zai-org/GLM-5.3-Flash' ? 'She greeted her friend warmly.' : 'Her friend greeted her.', },], };
+          if (!request.validate(value)) throw new Error('Invalid fixture editor reply');
+          return { kind: 'ok', value, rawText: JSON.stringify(value), };
+        }, };
+        const input = { client, editorModelIds: JUDGES.slice(0, 2), judgeModelIds: JUDGES, sourceText: '猫笑了。', targetText: TARGET, envelopes: [ENVELOPE,], issues: [], neighbouringSourceText: 'NEARBY SOURCE MARKER', documentSourceText: 'DOCUMENT SOURCE MARKER', signal: new AbortController().signal, perCallTimeoutMs: 5000, l: tagged({ tag: 'repair-evidence-test', }), };
+        const result = await runEditorStage(input);
+        expect(result.patch.patchedText).toBe('Her friend greeted her.');
+        expect(fixture.prompts.length).toBeGreaterThan(0);
+        expect(fixture.prompts.every(prompt => prompt.includes('DOCUMENT SOURCE MARKER'))).toBe(true);
+        expect(fixture.prompts.some(prompt => prompt.includes('EXISTING ENGLISH BEFORE REPAIR'))).toBe(true);
+      },
+    }),
     it({
       name: 'CHANGES cache identity when full source evidence changes outside the neighboring window',
       fn: async () => {

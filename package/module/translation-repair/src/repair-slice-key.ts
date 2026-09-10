@@ -383,6 +383,8 @@ export function repairRunShape(
  * @param neighbouringIncumbentText - archive English of those same two, which is
  * the half that shows a relocation
  *
+ * @param documentSourceText - complete source evidence, whose changes must invalidate slice and twin reuse
+ *
  * @returns Hash keying this slice's outcome
  *
  * @example
