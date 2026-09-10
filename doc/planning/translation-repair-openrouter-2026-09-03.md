@@ -6964,9 +6964,12 @@ It still removed the disclosure item;
 no correct regional candidate existed to select.
 Report:
 `~/temp/agent/temporal-implemented-path-probe-20260910/report.json`.
-Task 23 remains in progress after this failed wording check.
-`proc_88f8` isolates the two overlapping addition diagnoses in a diagnostic editor packet,
-without changing production admission rules or other issues.
+Task 23 waits on category-scope task 24 after this failed wording check.
+The diagnostic removal of only the two overlapping addition diagnoses let both GLM editors correct the item,
+without changing other issues or preservation licenses.
+`proc_e0ee` now measures a shared category distinction in critic/panel review,
+with a genuine-addition positive control.
+No production category filter or new writing round is introduced.
 Task 21's name authority still blocks the next full Mio pass.
 No clean page or overall readiness is claimed.
 

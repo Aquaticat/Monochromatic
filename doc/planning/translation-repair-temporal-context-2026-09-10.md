@@ -919,7 +919,7 @@ and twenty-two unpriced Hyper plus thirty-three unpriced Synthetic calls.
 The daily helper ran afterward.
 Task 21 remains separate and no full Mio pass is active.
 
-## Active category-conflict diagnostic
+## Completed category-conflict diagnostic
 
 The admitted packet contains the correct `accuracy/mistranslation` claim about disclosure direction
 and two `accuracy/addition` claims scoped to that same item.
@@ -935,7 +935,7 @@ its addition example is unrelated material pasted from another translation.
 This informs a possible project-specific distinction,
 not a claim that MQM itself prescribes this pipeline's edit operations or forbids all category overlap.
 
-`proc_88f8` is `translation-repair-editor-category-conflict-probe-20260910`.
+`proc_88f8` completed `translation-repair-editor-category-conflict-probe-20260910` in 202 seconds.
 Script:
 `~/temp/agent/probe-editor-category-conflict-20260910.mjs`.
 Plan:
@@ -955,5 +955,59 @@ stock editor prompt,
 five original edit regions and original preservation licenses remain unchanged.
 It makes at most three calls with the existing 360000/1200000 ms bounds.
 The real assembler and structure check process its outputs.
+Both GLM editors now retain and correct the disclosure item,
+explicitly placing the event at reconnection.
+DeepSeek retains the old direction.
+All retain the second friendship item and pass the structure check,
+but group-name changes remain.
+The matched GLM-5.3 result changes from deletion in the compiled run to a corrected retained item,
+while the other admitted issues and adoption gate remain fixed.
+This supports testing the category distinction,
+not a hand-picked production filter.
+
+The run logged two unpriced Hyper and one unpriced Synthetic call.
+The spend and daily helpers ran afterward.
 No production category filter,
 new guard or generation round is added.
+
+## Active accuracy-category scope measurement
+
+Task 24 is in progress;
+task 23's final wording verification waits on it.
+`proc_e0ee` is `translation-repair-accuracy-category-scope-probe-20260910`.
+Script:
+`~/temp/agent/probe-accuracy-category-scope-20260910.mjs`.
+Plan:
+`~/temp/agent/accuracy-category-scope-plan-20260910.out`.
+Log:
+`~/temp/agent/accuracy-category-scope-probe-20260910.log`.
+Report:
+`~/temp/agent/accuracy-category-scope-probe-20260910/report.json`.
+
+The treatment defines a distorted rendering of a documented event as mistranslation,
+not independent added information merely because its wrong assertion is not stated verbatim in the source.
+Genuine independent extra information remains an addition.
+The panel must check the claimed category as well as whether some problem exists.
+The experiment changes only that explanatory criterion in critic and panel system messages.
+It preserves source data,
+name policy,
+response schemas,
+region/anchor rules,
+stock roles and quorum handling.
+
+A synthetic genuine-addition control runs first;
+if it is not accepted as an addition,
+the remaining arms are not purchased.
+The fixed current disclosure-touching cluster is then reviewed under the category rule.
+A new critic round uses actual anchoring,
+and its disclosure-touching clusters go through the real panel and tally.
+No editor or extra production generation round is part of the experiment.
+
+The offline baseline reconstructs the compiled run's critics and disclosure cluster from cache,
+asserting no cache misses or swallowed client errors.
+The bound is forty-eight live requests,
+360000 ms per exchange and 1200000 ms globally.
+Inspect whether mislabeled addition diagnoses lose authorization,
+the accurate actor correction remains actionable,
+and new critics stop producing contradictory diagnoses before adopting any rule.
+No category-scope production change has been made.

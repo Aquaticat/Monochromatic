@@ -63,18 +63,25 @@ regional selection declined,
 then whole-chunk selection tied and used its existing fallback.
 Do not mark task 23 complete on compilation or unit results.
 
-`proc_88f8` now runs `translation-repair-editor-category-conflict-probe-20260910`.
+`proc_88f8` completed the category-conflict diagnostic:
+removing only the two overlapping addition diagnoses lets both GLM editors retain and correct the event at reconnection.
+DeepSeek keeps the old direction;
+all other issues,
+five regions and original preservation licenses stayed fixed.
+No production filter was added.
+
+Task 24 is now in progress and task 23 waits on it.
+`proc_e0ee` runs `translation-repair-accuracy-category-scope-probe-20260910`.
 Report:
-`~/temp/agent/editor-category-conflict-probe-20260910/report.json`.
+`~/temp/agent/accuracy-category-scope-probe-20260910/report.json`.
 Log:
-`~/temp/agent/editor-category-conflict-probe-20260910.log`.
-It removes only the two addition diagnoses overlapping the accurate participant mistranslation claim
-from the diagnostic editor packet.
-All other issues,
-source/target/context,
-five regions and original preservation licenses remain fixed.
-Three calls maximum;
-this is not a production filter or new writing round.
+`~/temp/agent/accuracy-category-scope-probe-20260910.log`.
+It distinguishes a distorted rendering of a source-grounded event from independent extra content,
+and asks the panel to check category correctness rather than endorse any error at that location.
+A genuine independent-addition control runs first;
+then the fixed disclosure cluster and new anchored critic claims reach the real panel/tally.
+Forty-eight live requests maximum and a twenty-minute global bound.
+No production category rule or new writing round has been introduced.
 Task 19 waits on this implementation verification;
 task 21's group-name authority remains a separate blocker before any full Mio pass.
 Task 20 is deferred and non-blocking.
