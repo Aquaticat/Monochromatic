@@ -24,6 +24,33 @@ and the reason is recorded in
 
 ## Where the work stands
 
+Current launch at 00:15 UTC on 2026-09-10:
+`Mio10` runs on frozen `dc51b02d9`,
+with classes twenty-five,
+twenty-seven and twenty-eight.
+Pass pid `1455521`,
+runs `~/temp/agent/Mio10-20260910`,
+log `~/temp/agent/Mio10-20260910.log`,
+managed terminal-only supervisor `proc_abcf` (`translation-repair-Mio10-20260910`).
+Prelaunch and launch balances:
+OpenRouter 269.36 USD,
+Bedrock 186.05 USD,
+Synthetic weekly zero with five-hour 2750/2750,
+Hyper zero.
+Daily-cost output:
+`~/temp/agent/Mio10-costs-before-20260910.out`.
+No source change is planned while it runs;
+a necessary source change requires killing pid `1455521` and relaunching.
+The current full suite ends `unit exit 0` in `~/temp/agent/class28-unit-20260910.out`;
+build,
+types,
+oxlint and edited markdown pass.
+Read this page before `hulicaijia`,
+including both screenshot translations,
+the linked poem,
+front matter and all seven-step/three-check requirements.
+The remaining queue is unchanged.
+
 Terminal update at 00:07 UTC on 2026-09-10:
 `Mio9` stopped INCOMPLETE inside archive review after 1,075,657 ms,
 before either lane.
@@ -1913,7 +1940,8 @@ each read off the pass log and the shipped page:
     now fixed and verified at `5cb66ffaa`.
     The ninth `Mio` stopped in archive review on the quoted-revision schema mismatch.
     Class twenty-eight is fixed and verified at `dc51b02d9`;
-    relaunch `Mio` before advancing the queue.
+    `Mio10` is running on it at pid `1455521`.
+    Read that pass at its terminal notification before advancing the queue.
     Only a real page can establish that both screenshot translations survive.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
