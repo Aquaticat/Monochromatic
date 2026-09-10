@@ -1,4 +1,8 @@
 import type { SliceSyntax, } from './chunk-document.ts';
+import {
+  DECLARED_NAME_REFERENCE_EXEMPTION,
+  NAME_FORM_SCOPE_RULE,
+} from './name-form-policy.ts';
 
 //region Translate selection sheet
 // What the judges of the translate lane are asked, kept apart from the stage
@@ -27,8 +31,7 @@ export const TRANSLATE_SELECTION_TASK: string =
  * itself spells out", which reads as a licence to put the archive's identity
  * block anywhere at all.
  */
-const DECLARED_NAME_IS_NOT_AN_ADDITION =
-  'Where the passage refers to this person, A DECLARED NAME OR HANDLE IS NEVER AN ADDITION, even where the ORIGINAL only says "she".';
+const DECLARED_NAME_IS_NOT_AN_ADDITION = DECLARED_NAME_REFERENCE_EXEMPTION;
 
 /**
  * What the names rule says about a candidate that names nobody.
@@ -117,7 +120,7 @@ const SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE =
 export const TRANSLATE_SELECTION_CRITERIA: readonly string[] = [
   'Complete coverage: every proposition of the ORIGINAL is rendered, nothing left out.',
   `Faithfulness: nothing added, and no change to who acts, what is referred to, negation, certainty, time, number, or how things relate. ${DECLARED_NAME_IS_NOT_AN_ADDITION}`,
-  `Declared names, handles and archive terminology used exactly as given. ${DECLARED_NAME_IS_NOT_OWED_CONTENT} ${A_SHARED_SPELLING_CANNOT_SEPARATE_CANDIDATES}`,
+  `${NAME_FORM_SCOPE_RULE} ${DECLARED_NAME_IS_NOT_OWED_CONTENT} ${A_SHARED_SPELLING_CANNOT_SEPARATE_CANDIDATES}`,
   SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE,
   'Natural, idiomatic English reading as one coherent passage.',
 ];

@@ -3,6 +3,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
+import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Editor prompt
@@ -60,7 +61,7 @@ Rules, strictly enforced by a machine:
 - Write natural, idiomatic prose carrying the ORIGINAL's feeling: its voice, warmth, humor, grief, or irony. Emotional completeness and naturalness outrank word-for-word correspondence, so recast wording, sentence boundaries, and clause order freely when that serves the feeling. A stiff literal rendering that loses the feeling is not a fix.
 - Naturalness never licenses dropping content: every detail of the ORIGINAL must survive your rewrite, recast rather than removed.
 - Keep any phrase the ORIGINAL writes in a language other than its own in that original wording, and put its meaning alongside it, following whatever convention the document already uses for this, otherwise in parentheses immediately after. Never replace such a phrase with its meaning alone.
-- The ORIGINAL's own language is never such a phrase: render it fully into the TRANSLATION's language as usual, including inside quotations and stylized multilingual lines. Only the genuinely foreign phrase keeps its own wording.
+- Render ordinary prose in the ORIGINAL's own language fully into the TRANSLATION's language, including inside quotations and stylized multilingual lines. A word or character that is itself the subject of discussion is not ordinary prose to normalize. ${NAME_FORM_SCOPE_RULE}
 - Preserve footnote markers like [^1] character for character.
 - Never introduce content the ORIGINAL does not support.
 - When the CURRENT TEXT is line-structured, meaning short lines separated by blank lines rather than paragraphs, the line is the unit: keep one output line per input line, in the same order, and recast only within a line. Never merge, split, reorder or invent lines.

@@ -1,6 +1,10 @@
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { SIZE_NOTE_POLICY, } from './contest-size-note.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
+import {
+  DECLARED_NAME_REFERENCE_EXEMPTION,
+  NAME_FORM_SCOPE_RULE,
+} from './name-form-policy.ts';
 
 //region Contest ballot wire
 // The parts every two-way contest shares: the question, the reply schema, and
@@ -58,8 +62,9 @@ export const CONTEST_POLICY: string = [
   SIZE_NOTE_POLICY,
   '',
   'DECLARED NAMES ARE ATTESTED FACTS about this person, taken from the documents\' own front matter.',
-  'Where the passage refers to this person, a candidate carrying a declared name or handle is NOT unsupported, even where the Chinese only says "she".',
-  'They settle HOW to spell a name the passage already refers to, and they OUTRANK the archive rendering where the two spell the same person or place differently.',
+  DECLARED_NAME_REFERENCE_EXEMPTION,
+  'When referring to a person or place, declared names settle HOW to spell that reference and OUTRANK the archive rendering where it uses another spelling.',
+  NAME_FORM_SCOPE_RULE,
   'They are NOT content a passage owes: a candidate that does not name this person has dropped nothing, and a line attributing the passage to someone ELSE never takes this person\'s name.',
   '',
   JUDGE_POLICY_BLOCK,
