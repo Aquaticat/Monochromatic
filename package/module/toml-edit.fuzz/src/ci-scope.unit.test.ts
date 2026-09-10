@@ -1,0 +1,277 @@
+/**
+ * Exercise the source artifact through the exact workflow launcher before dependencies exist.
+ * Source execution is intentional: CI deploys this entry directly, without a build.
+ *
+ * @module
+ */
+
+import { execFileSync, spawnSync, } from 'node:child_process';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync, } from 'node:fs';
+import { tmpdir, } from 'node:os';
+import { dirname, join, } from 'node:path';
+
+import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
+
+//region Fixture ownership and workflow extraction
+
+/** Linux-hosted workflow uses system Git, not the developer's cli-git wrapper. */
+const GIT = '/usr/bin/git';
+/** Preexisting output proves failure did not append a false success result. */
+const OUTPUT_SENTINEL = 'previous=value\n';
+/** Paths declared in both workflow event filters. Each is also tested through the command. */
+const FILTERS = [
+  'package/module/toml-edit/**',
+  'package/module/toml-edit.fuzz/**',
+  'package/test-fixture/toml-edit/**',
+  'doc/decision/toml-edit-fuzzing.md',
+  '.github/workflows/toml-edit-fuzz.yml',
+] as const;
+/** Workflow source, not a second hand-maintained launcher. */
+const workflow = readFileSync(new URL('../../../../.github/workflows/toml-edit-fuzz.yml', import.meta.url,), 'utf8',);
+/** Scope step starts before its shell, environment, and run fields. */
+const scopeStart = workflow.indexOf('      id: scope\n',);
+/** Exact Node body written to an extensionless file as the Actions runner does. */
+const launcher = workflow.slice(workflow.indexOf('      run: |\n', scopeStart,) + '      run: |\n'.length,)
+  .split('\n',)
+  .reduce<string[]>(function collect(lines, line,) {
+    if (lines.includes('\0',)) return lines;
+    if (!line.startsWith('        ',)) return [...lines, '\0',];
+    return [...lines, line.slice(8,),];
+  }, [],)
+  .filter(function keep(line,) { return line !== '\0'; },)
+  .join('\n',);
+
+/** Captured consumer-boundary result without throwing away failed subprocess output. */
+type ScopeResult = { readonly status: number | null; readonly stdout: string; readonly stderr: string; readonly output: string; };
+/** Disposable fixture owns its repository, home, launcher, copied artifact, and output. */
+type Fixture = {
+  readonly root: string;
+  readonly base: string;
+  readonly git: (args: readonly string[]) => string;
+  readonly put: (path: string) => void;
+  readonly commit: () => string;
+  readonly run: (overrides?: Readonly<NodeJS.ProcessEnv>) => ScopeResult;
+  readonly [Symbol.dispose]: () => void;
+};
+
+/** Create a dependency-free consumer checkout with no inherited Git configuration or hooks. */
+function fixture(): Fixture {
+  /** Every mutable resource stays under this disposable parent. */
+  const temporary = mkdtempSync(join(tmpdir(), 'toml-edit-scope-',),);
+  /** Git checkout used by the production decision. */
+  const root = join(temporary, 'repository',);
+  mkdirSync(root,);
+  /** Minimal child environment excludes credentials, Git overrides, and developer wrappers. */
+  const environment = {
+    PATH: '/usr/bin:/bin',
+    HOME: temporary,
+    TMPDIR: temporary,
+    GIT_CONFIG_NOSYSTEM: '1',
+    GIT_CONFIG_GLOBAL: join(temporary, 'missing-global-config',),
+    GIT_AUTHOR_NAME: 'Scope fixture',
+    GIT_AUTHOR_EMAIL: 'scope@example.invalid',
+    GIT_COMMITTER_NAME: 'Scope fixture',
+    GIT_COMMITTER_EMAIL: 'scope@example.invalid',
+  };
+  /** Fixture Git is isolated from the user's wrapper and repository state. */
+  function git(args: readonly string[],): string {
+    return execFileSync(GIT, [...args,], { cwd: root, env: environment, encoding: 'utf8', },).trim();
+  }
+  git(['init', '--quiet', '--initial-branch=main',],);
+  git(['commit', '--quiet', '--allow-empty', '--message', 'initial fixture',],);
+  /** Empty base permits explicit relevant and irrelevant changes per case. */
+  const base = git(['rev-parse', 'HEAD',],);
+  /** Copied source verifies bootstrap without repository node_modules or build artifacts. */
+  const sourceDirectory = join(root, 'package/module/toml-edit.fuzz/src',);
+  mkdirSync(sourceDirectory, { recursive: true, },);
+  writeFileSync(join(root, 'package.json',), '{"type":"module"}\n',);
+  for (const name of ['ci-scope.ts', 'ci-scope-git.ts', 'ci-scope-error.ts',]) {
+    cpSync(new URL(name, import.meta.url,), join(sourceDirectory, name,),);
+  }
+  // Keep the deployed fixture program out of scenario commits and their changed-path sets.
+  writeFileSync(join(root, '.git/info/exclude',), '/package/module/toml-edit.fuzz/src/ci-scope*.ts\n/package.json\n',);
+  /** Runner temporary scripts live outside the repository's module scope. */
+  const launcherPath = join(temporary, 'scope-launcher',);
+  writeFileSync(launcherPath, launcher,);
+  /** Output belongs to the fixture, never the calling agent's GITHUB_OUTPUT. */
+  const output = join(temporary, 'github-output',);
+  /** Create arbitrary Git names without shell interpolation. */
+  function put(path: string,): void {
+    mkdirSync(dirname(join(root, path,),), { recursive: true, },);
+    writeFileSync(join(root, path,), `fixture ${path}\n`,);
+  }
+  /** Commit only disposable fixture changes. */
+  function commit(): string {
+    git(['add', '--all', '--', '.',],);
+    git(['commit', '--quiet', '--allow-empty', '--message', 'scenario fixture',],);
+    return git(['rev-parse', 'HEAD',],);
+  }
+  /** Exercise the exact Node launcher and inspect the output file as its consumer does. */
+  function run(overrides: Readonly<NodeJS.ProcessEnv> = {},): ScopeResult {
+    writeFileSync(output, OUTPUT_SENTINEL,);
+    /** Captured failure remains inspectable rather than escaping the assertion. */
+    const result = spawnSync(process.execPath, [launcherPath,], {
+      cwd: root,
+      env: {
+        ...environment,
+        GITHUB_EVENT_NAME: 'merge_group',
+        GITHUB_OUTPUT: output,
+        SCOPE_BASE_SHA: base,
+        SCOPE_HEAD_SHA: git(['rev-parse', 'HEAD',],),
+        ...overrides,
+      },
+      encoding: 'utf8',
+      timeout: 10_000,
+    },);
+    if (result.error !== undefined) throw result.error;
+    return { status: result.status, stdout: result.stdout, stderr: result.stderr, output: readFileSync(output, 'utf8',), };
+  }
+  return { root, base, git, put, commit, run, [Symbol.dispose](): void { rmSync(temporary, { recursive: true, force: true, },); }, };
+}
+
+/** Assert both the exit status and the workflow-consumed output, not logs alone. */
+function expectDecision({ result, run, }: { readonly result: ScopeResult; readonly run: boolean; },): void {
+  expect(result.stderr,).toBe('',);
+  expect(result.status,).toBe(0,);
+  expect(result.output,).toBe(`${OUTPUT_SENTINEL}run=${String(run,)}\n`,);
+}
+
+/** Every rejection must preserve output instead of authorizing a successful skip. */
+function expectFailure(result: ScopeResult,): void {
+  expect(result.status,).not.toBe(0,);
+  expect(result.stderr,).not.toBe('',);
+  expect(result.output,).toBe(OUTPUT_SENTINEL,);
+}
+
+//endregion Fixture ownership and workflow extraction
+
+await describe({
+  name: 'pre-install workflow scope',
+  concurrency: 1,
+  children: [
+    it({ name: 'keeps event path filters and the Node launcher contract explicit', fn: () => {
+      expect(scopeStart,).not.toBe(-1,);
+      expect(launcher,).toContain("require('node:child_process').execFileSync",);
+      expect(workflow,).toContain('      shell: node {0}\n',);
+      expect(workflow,).toContain('SCOPE_BASE_SHA: ${{ github.event.merge_group.base_sha }}',);
+      expect(workflow,).toContain('SCOPE_HEAD_SHA: ${{ github.event.merge_group.head_sha }}',);
+      /** Each current paths block must contain exactly the tested scope set. */
+      const blocks = workflow.split('    paths:\n',).slice(1,);
+      expect(blocks,).toHaveLength(2,);
+      for (const block of blocks) {
+        /** Consecutive list entries end at the next event or workflow field. */
+        const paths = block.split('\n',).filter(line => line.startsWith("    - '",),)
+          .map(line => line.slice("    - '".length, -1,),);
+        expect(paths,).toEqual([...FILTERS,],);
+      }
+    }, },),
+    ...FILTERS.map(path => it({ name: `runs for ${path}`, fn: () => {
+      using state = fixture();
+      state.put(path.endsWith('/**',) ? `${path.slice(0, -2,)}changed.ts` : path,);
+      state.commit();
+      expectDecision({ result: state.run(), run: true, },);
+    }, },)),
+    ...[
+      'unrelated.txt',
+      'package/module/toml-editor/file.ts',
+      'package/module/toml-edit.fuzzier/file.ts',
+      'doc/decision/toml-edit-fuzzing.md.bak',
+      '.github/workflows/toml-edit-fuzz.yml.bak',
+      'unrelated\npackage/module/toml-edit/fake.ts',
+    ].map(path => it({ name: `skips only a successful irrelevant comparison: ${JSON.stringify(path,)}`, fn: () => {
+      using state = fixture();
+      state.put(path,);
+      state.commit();
+      expectDecision({ result: state.run(), run: false, },);
+    }, },)),
+    it({ name: 'accepts a successful empty diff', fn: () => {
+      using state = fixture();
+      expectDecision({ result: state.run(), run: false, },);
+    }, },),
+    it({ name: 'preserves relevant tabs, quotes, non-ASCII, and embedded newlines', fn: () => {
+      using state = fixture();
+      state.put('package/module/toml-edit/\t雪\n"\'$(name).ts',);
+      state.commit();
+      expectDecision({ result: state.run(), run: true, },);
+    }, },),
+    it({ name: 'runs when a relevant file is deleted', fn: () => {
+      using state = fixture();
+      state.put('package/module/toml-edit/deleted.ts',);
+      const base = state.commit();
+      rmSync(join(state.root, 'package/module/toml-edit/deleted.ts',),);
+      state.commit();
+      expectDecision({ result: state.run({ SCOPE_BASE_SHA: base, },), run: true, },);
+    }, },),
+    ...[true, false,].map(into => it({ name: `runs when renaming ${into ? 'into' : 'out of'} scope`, fn: () => {
+      using state = fixture();
+      const relevant = 'package/module/toml-edit/moved.ts';
+      const other = 'outside/moved.ts';
+      const from = into ? other : relevant;
+      const to = into ? relevant : other;
+      state.put(from,);
+      const base = state.commit();
+      mkdirSync(dirname(join(state.root, to,),), { recursive: true, },);
+      renameSync(join(state.root, from,), join(state.root, to,),);
+      state.commit();
+      expectDecision({ result: state.run({ SCOPE_BASE_SHA: base, },), run: true, },);
+    }, },)),
+    it({ name: 'uses the event base even when origin/main already points at HEAD', fn: () => {
+      using state = fixture();
+      state.put('package/module/toml-edit/relevant.ts',);
+      const head = state.commit();
+      state.git(['update-ref', 'refs/remotes/origin/main', head,],);
+      expectDecision({ result: state.run(), run: true, },);
+    }, },),
+    ...['push', 'pull_request',].map(event => it({ name: `${event} runs without merge-group revisions`, fn: () => {
+      using state = fixture();
+      expectDecision({ result: state.run({ GITHUB_EVENT_NAME: event, SCOPE_BASE_SHA: '', SCOPE_HEAD_SHA: '', PATH: '', },), run: true, },);
+    }, },)),
+    ...[
+      { SCOPE_BASE_SHA: '', },
+      { SCOPE_BASE_SHA: 'origin/main', },
+      { SCOPE_BASE_SHA: '--help', },
+      { SCOPE_BASE_SHA: 'g'.repeat(40,), },
+      { SCOPE_BASE_SHA: '1'.repeat(40,), },
+      { SCOPE_HEAD_SHA: '', },
+      { SCOPE_HEAD_SHA: '2'.repeat(40,), },
+      { GITHUB_EVENT_NAME: 'unexpected', },
+      { GITHUB_EVENT_NAME: '', },
+      { GITHUB_OUTPUT: '', },
+      { PATH: '', },
+    ].map(overrides => it({ name: `fails closed for ${JSON.stringify(overrides,)}`, fn: () => {
+      using state = fixture();
+      expectFailure(state.run(overrides,),);
+    }, },)),
+    it({ name: 'fails when checkout does not match the event head', fn: () => {
+      using state = fixture();
+      state.put('unrelated.txt',);
+      state.commit();
+      const result = state.run({ SCOPE_HEAD_SHA: state.base, },);
+      expectFailure(result,);
+      expect(result.stderr,).toContain('does not match merge-group head',);
+    }, },),
+    it({ name: 'fails when the event base is not an ancestor of its head', fn: () => {
+      using state = fixture();
+      state.put('unrelated.txt',);
+      const future = state.commit();
+      state.git(['checkout', '--quiet', '--detach', state.base,],);
+      const result = state.run({ SCOPE_BASE_SHA: future, },);
+      expectFailure(result,);
+      expect(result.stderr,).toContain('merge-base --is-ancestor',);
+    }, },),
+    it({ name: 'propagates a git diff failure after commit and ancestry validation', fn: () => {
+      using state = fixture();
+      state.put('unrelated.txt',);
+      state.commit();
+      const tree = state.git(['rev-parse', 'HEAD^{tree}',],);
+      rmSync(join(state.root, '.git/objects', tree.slice(0, 2,), tree.slice(2,),),);
+      const result = state.run();
+      expectFailure(result,);
+      expect(result.stderr,).toContain('git diff --name-only --no-renames -z',);
+    }, },),
+    it({ name: 'fails when the output cannot be appended', fn: () => {
+      using state = fixture();
+      expectFailure(state.run({ GITHUB_OUTPUT: state.root, },),);
+    }, },),
+  ],
+},);

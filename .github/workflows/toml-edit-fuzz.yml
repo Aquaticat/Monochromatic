@@ -56,25 +56,24 @@ jobs:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
-        # Full history so the merge_group scope check can diff against origin/main.
+        # The scope command validates the event's exact base and head commits.
         fetch-depth: 0
 
     - name: Scope to toml-edit changes
       id: scope
-      # push and pull_request are already filtered to the toml-edit paths, so they
-      # always run. merge_group cannot be path-filtered, so detect whether the
-      # queued changes touch toml-edit and skip the heavy steps when they do not.
+      # Runner-provided Node executes this before mise or dependency installation.
+      # The launcher remains CommonJS because Actions writes an extensionless file.
+      # All decisions live in the dependency-free, subprocess-tested source entry.
+      shell: node {0}
+      env:
+        SCOPE_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+        SCOPE_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
       run: |
-        set -euo pipefail
-        run=true
-        if [ "${{ github.event_name }}" = 'merge_group' ]; then
-          changed=$(git diff --name-only --diff-filter=ACMRT origin/main...HEAD || true)
-          if ! printf '%s\n' "$changed" | grep -qE '^(package/module/toml-edit(\.fuzz)?/|package/test-fixture/toml-edit/|doc/decision/toml-edit-fuzzing\.md|\.github/workflows/toml-edit-fuzz\.yml)'; then
-            run=false
-            echo 'No toml-edit files in the merge group; skipping the fuzz steps.'
-          fi
-        fi
-        echo "run=$run" >> "$GITHUB_OUTPUT"
+        require('node:child_process').execFileSync(
+          process.execPath,
+          ['package/module/toml-edit.fuzz/src/ci-scope.ts'],
+          { stdio: 'inherit' },
+        )
 
     - name: Set up mise (skip auto-install of all tools)
       if: steps.scope.outputs.run == 'true'
