@@ -10,6 +10,18 @@ await describe({ name: '', children: [
     expect(fixture.dispatched.map(call => call.model),).toEqual(['p/a',],);
     expect(fixture.now(),).toBe(80,);
   }, },),
+  it({ name: 'authentication stalls do not postpone the configured hedge', fn: async (): Promise<void> => {
+    const fixture = operationFixture({ plans: {
+      'p/a': [{ preparationMs: 100, after: 150, text: 'late initial', },],
+      'q/b': [{ after: 10, text: 'usable alternate', },],
+    }, },);
+    const result = await fixture.run({ hedgeDelayMs: 10, },);
+    expect(fixture.now(),).toBe(50,);
+    expect(fixture.dispatched.map(call => call.model),).toEqual(['q/b',],);
+    expect(result.reviews.map(review => review.text),).toEqual(['usable alternate',],);
+    await fixture.flush();
+    expect(fixture.dispatched,).toHaveLength(1,);
+  }, },),
   it({ name: 'enabled overlap tolerates an unavailable alternate without a polling loop', fn: async (): Promise<void> => {
     const fixture = operationFixture({ plans: { 'p/a': [{ after: 80, text: 'only reviewer', },], }, },);
     const result = await fixture.run({ hedgeDelayMs: 10, },);
