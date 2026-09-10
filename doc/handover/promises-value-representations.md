@@ -117,6 +117,13 @@ the private results directory is the sole persistent write mount.
 No real home, repository source tree, or ambient credentials are mounted.
 SELinux label enforcement is disabled for those isolated mounts without altering their host labels.
 
+The initial source bundle failed in `proc_8dc2` before executing the formatter:
+Rolldown 1.2.7 reported `[PARSE_ERROR] Identifier show has already been declared`
+for the source's ambient function declaration and exported constant at lines 271 and 280.
+The upstream publishing script erases these TypeScript declarations first.
+The next probe uses the normal published JavaScript artifact rather than patching the third-party clone.
+`fetch:showify` retrieves version 0.2.8 as data and verifies its registry SHA-512 integrity before extraction.
+
 The probe checks Promise states as unknown, functions, sparse arrays, errors, circles, BigInt,
 JSON contrasts, ordinary getters and configured hooks, special-tag getter reads,
 CSP violations, and whether formatting changes unhandled-rejection behavior.
