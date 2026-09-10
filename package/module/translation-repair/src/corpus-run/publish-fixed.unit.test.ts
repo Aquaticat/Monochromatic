@@ -59,6 +59,8 @@ import {
   SliceSpliceError,
   spliceSlices,
   UnparseablePageError,
+  validateTranslatedSlice,
+  wrapReplacementText,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
 
@@ -656,6 +658,26 @@ await describe({
       },
     },),
 
+    it({
+      name: 'PRESERVES accepted source-only hard breaks through wrapping, insertion assembly and disk publication',
+      fn: async () => {
+        await using tree = await throwawayTree();
+        /** Cat verse stands in for a source-only closing poem. */
+        const sourceText = '> 猫醒了。  \n> 鸟唱了。';
+        /** Run the real wrapper before the structural and publication boundaries. */
+        const translated = wrapReplacementText({ text: '> The cat wakes.  \n> The bird sings.', },);
+        expect(validateTranslatedSlice({ sourceText, candidateText: translated, },).kind,).toBe('valid',);
+        /** The artifact and assembler must agree on every render-bearing byte. */
+        const { text, } = await publishAndRead({
+          artifact: artifactShipping({ translateText: translated, incumbentKind: 'absent', },),
+          publishDir: tree.publishDir,
+          slices: documentSlicesWithAGap(),
+          sourceText,
+        },);
+        expect(text,).toContain(translated,);
+        expect(text,).toContain('wakes.  \n> The bird sings.',);
+      },
+    },),
     it({
       name:
         'PUBLISHES AN ENTRY WHOSE DECIDERS LEFT AN ANCHOR UNFILLED, leaving the gap exactly as the '

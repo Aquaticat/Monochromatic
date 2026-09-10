@@ -9,6 +9,7 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 
 import {
   isLineStructured,
+  readSliceSkeleton,
   validateTranslatedSlice,
   wrapReplacementText,
 } from '../dist/final/node/index.mjs';
@@ -81,13 +82,56 @@ await describe({
         },).kind,).toBe('invalid',);
       },
     },),
+    ...[
+      '> The cat wakes.<Br/>The bird sings.',
+      '> The cat wakes.<Cat.br/>The bird sings.',
+      '> The cat wakes.`<br/>`The bird sings.',
+      '> The cat wakes.\\<br/>The bird sings.',
+      '',
+    ].map(function cannotSupplyBreak(candidateText,) {
+      return it({
+        name: `REFUSES non-break substitutes: ${JSON.stringify(candidateText,)}`,
+        fn: async () => {
+          /** An independent atom or block refusal must not mask the break check. */
+          const result = validateTranslatedSlice({ sourceText: SOURCE, candidateText, },);
+          expect(result.kind,).toBe('invalid',);
+          if (result.kind === 'invalid')
+            expect(result.findings.join('\n',),).toContain('explicit line break',);
+        },
+      },);
+    },),
     it({
-      name: 'DOES NOT treat a capitalized component as an intrinsic break',
+      name: 'COUNTS flow br nodes, but not br text in fenced code',
       fn: async () => {
+        /** Flow and text JSX use separate parser node kinds. */
+        const flow = readSliceSkeleton({ text: '<br/>', },);
+        /** Fenced contents must not be mistaken for rendered markup. */
+        const code = readSliceSkeleton({ text: '```html\n<br/>\n```', },);
+        expect(flow.kind,).toBe('read',);
+        expect(code.kind,).toBe('read',);
+        if ((flow.kind === 'read') && (code.kind === 'read')) {
+          expect(flow.skeleton.explicitBreaks,).toEqual([1,],);
+          expect(code.skeleton.explicitBreaks,).toEqual([0,],);
+        }
+      },
+    },),
+    it({
+      name: 'TREATS nonempty whitespace as a present caller input, not inferred absence',
+      fn: async () => {
+        expect(validateTranslatedSlice({ sourceText: SOURCE, pageText: ' ', candidateText: FLAT, },).kind,)
+          .toBe('valid',);
+      },
+    },),
+    it({
+      name: 'READS CRLF hard breaks without turning a soft wrap into a break',
+      fn: async () => {
+        /** Source line endings vary without changing the authored structure. */
+        const sourceText = SOURCE.replaceAll('\n', '\r\n',);
+        expect(validateTranslatedSlice({ sourceText, candidateText: FLAT, },).kind,).toBe('invalid',);
         expect(validateTranslatedSlice({
-          sourceText: SOURCE,
-          candidateText: '> The cat wakes.<Br/>The bird sings.',
-        },).kind,).toBe('invalid',);
+          sourceText,
+          candidateText: '> The cat wakes.  \r\n> The bird sings.',
+        },).kind,).toBe('valid',);
       },
     },),
     it({
