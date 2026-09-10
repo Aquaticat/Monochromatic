@@ -478,6 +478,11 @@ Include built options,
  ranking,
  and final free text.
 
+HDM:
+ HTML visual-review artifacts follow the viewer's system color scheme.
+Build and verify light and dark review chrome;
+open the artifact in current system mode.
+
 ZDV:
  Device mockups:
  capture at cited physical px;
