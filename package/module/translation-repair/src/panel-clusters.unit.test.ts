@@ -51,7 +51,7 @@ function panelFixture(input: { readonly disjoint?: boolean; readonly rejectThird
       }
       const groups = CLUSTERS.filter(cluster => cluster.members.some(member => present.includes(member)));
       const value = {
-        verdicts: present.map((member, index) => ({ claim: index + 1, vote: member.claimId === 'claim-first' || (input.rejectThird === true && member.claimId === 'claim-third') ? 'unsupported' : 'supported', })),
+        verdicts: present.map((member, index) => ({ claim: index + 1, vote: (member.claimId === 'claim-first') || ((input.rejectThird === true) && (member.claimId === 'claim-third')) ? 'unsupported' : 'supported', })),
         groups: groups.map((cluster, index) => ({ group: index + 1, sameDefect: cluster.members.length > 1, })),
       };
       if (!request.validate(value))

@@ -24,6 +24,11 @@ export class IssueEvidenceConflictError extends Error {
   override readonly name = 'IssueEvidenceConflictError';
 
   /**
+   * Reports only the claim identifier and evidence kind, never document or ballot content.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names the claim whose evidence cannot be merged without loss.
    *
    * @param claimId - shared identity with conflicting records
@@ -35,7 +40,7 @@ export class IssueEvidenceConflictError extends Error {
     kind,
   }: {
     readonly claimId: string;
-    readonly kind: string
+    readonly kind: 'tally' | 'reading'
   },) {
     super(`cannot deduplicate claim ${claimId}: conflicting ${kind} evidence`,);
   }
@@ -71,7 +76,7 @@ function mergeClaimEvidence<const EvidenceT extends VoteTally | ClaimPanelReadin
     readonly claimIds: readonly string[];
     readonly first: Readonly<Record<string, EvidenceT>>;
     readonly second: Readonly<Record<string, EvidenceT>>;
-    readonly kind: string;
+    readonly kind: 'tally' | 'reading';
   },
 ): Readonly<Record<string, EvidenceT>> {
   return Object.fromEntries(claimIds.flatMap(function evidenceFor(claimId,): readonly (readonly [
