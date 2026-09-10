@@ -171,6 +171,12 @@ export async function settleRepairSlice(
   },);
 
   /**
+   * Same-entry source used by the panel and selectors to verify current claims.
+   * One value feeds both cache identity and the eventual purchase.
+   */
+  const documentSourceText = prepared.sourceText === slice.source.text ? '' : prepared.sourceText;
+
+  /**
    * What this slice cost, reported however this function is left.
    */
   using cost = armSliceCost({
@@ -208,6 +214,7 @@ export async function settleRepairSlice(
       .has(sliceIndex,),
     neighbouringIncumbentText,
     neighbouringSourceText,
+    documentSourceText,
   },);
 
   /**
@@ -270,6 +277,7 @@ export async function settleRepairSlice(
         key,
         neighbouringIncumbentText,
         neighbouringSourceText,
+        documentSourceText,
         ...((sliceCache === undefined) ? {} : { sliceCache, }),
         signal,
         perCallTimeoutMs,

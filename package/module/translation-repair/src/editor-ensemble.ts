@@ -38,6 +38,7 @@ import {
   type RepairJudgedRound,
 } from './repair-round-record.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import { repairSelectionSourceEvidence, } from './repair-selection-evidence.ts';
 
 //region Editor ensemble
 // Several editors rewrite the same chunk, and judges that wrote none of the
@@ -163,6 +164,8 @@ export async function selectPerEnvelope(
     judgeModelIds,
     sourceText,
     targetText,
+    neighbouringSourceText,
+    documentSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -173,6 +176,8 @@ export async function selectPerEnvelope(
     readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;
+    readonly neighbouringSourceText?: string;
+    readonly documentSourceText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -283,6 +288,10 @@ export async function selectPerEnvelope(
             envelope,
           },),
         },
+        ...repairSelectionSourceEvidence({
+          ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+          ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
+        },),
       ],
       signal,
       perCallTimeoutMs,
@@ -359,6 +368,8 @@ export async function selectChunkPatch(
     candidates,
     judgeModelIds,
     sourceText,
+    neighbouringSourceText,
+    documentSourceText,
     indecisionFallback,
     rejectionFallback,
     signal,
@@ -369,6 +380,8 @@ export async function selectChunkPatch(
     readonly candidates: readonly Candidate<PatchOutcome>[];
     readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
+    readonly neighbouringSourceText?: string;
+    readonly documentSourceText?: string;
     readonly indecisionFallback: Candidate<PatchOutcome>;
     readonly rejectionFallback: PatchOutcome;
     readonly signal: AbortSignal;
@@ -418,6 +431,14 @@ export async function selectChunkPatch(
       {
         label: 'ORIGINAL (Chinese)',
         text: sourceText,
+      },
+      ...repairSelectionSourceEvidence({
+        ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+        ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
+      },),
+      {
+        label: 'EXISTING ENGLISH BEFORE REPAIR, comparison context for what was already carried and what each candidate changes; not independent factual authority',
+        text: rejectionFallback.patchedText,
       },
     ],
     signal,

@@ -134,6 +134,7 @@ export async function runEditorStage(
     issues,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    documentSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -144,6 +145,7 @@ export async function runEditorStage(
     readonly editorRuleAddendum?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly documentSourceText?: string;
     readonly sourceText: string;
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
@@ -275,6 +277,8 @@ export async function runEditorStage(
     judgeModelIds,
     sourceText,
     targetText,
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
     signal,
     perCallTimeoutMs,
     l,
@@ -304,6 +308,8 @@ export async function runEditorStage(
    * alongside the findings from judging it.
    */
   const chunkSelection = await selectChunkPatch({
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
     client,
     candidates: chunkSet.candidates,
     judgeModelIds,

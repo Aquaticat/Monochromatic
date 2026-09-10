@@ -398,6 +398,7 @@ export function repairSliceKey(
     lineStructured,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    documentSourceText,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -405,6 +406,7 @@ export function repairSliceKey(
     readonly lineStructured: boolean;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly documentSourceText?: string;
   },
 ): string {
   return hashContent({
@@ -448,6 +450,12 @@ export function repairSliceKey(
         : [
           'nearby-incumbent',
           neighbouringIncumbentText,
+        ]),
+      ...(((documentSourceText === undefined) || (documentSourceText === ''))
+        ? []
+        : [
+          'document-source',
+          documentSourceText,
         ]),
     ],),
   },);

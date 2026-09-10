@@ -105,6 +105,7 @@ export async function repairChunk(
     declaredNames,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    documentSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -120,6 +121,7 @@ export async function repairChunk(
     readonly declaredNames: readonly string[];
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly documentSourceText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -221,6 +223,7 @@ export async function repairChunk(
    * Panel decision over the clusters.
    */
   const panel = await runPanelStage({
+    ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
     client,
     panelModelIds: models.panelModelIds,
     sourceText,
@@ -301,6 +304,7 @@ export async function repairChunk(
    * Editor result through the apply gate.
    */
   const editor = await runEditorStage({
+    ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
     client,
     editorModelIds: models.editorModelIds,
     judgeModelIds: models.judgeModelIds,

@@ -73,6 +73,7 @@ export async function buyRepairSlice(
     key,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    documentSourceText,
     sliceCache,
     signal,
     perCallTimeoutMs,
@@ -86,6 +87,7 @@ export async function buyRepairSlice(
     readonly key: string;
     readonly neighbouringIncumbentText: string;
     readonly neighbouringSourceText: string;
+    readonly documentSourceText: string;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -128,6 +130,7 @@ export async function buyRepairSlice(
         declaredNames: prepared.declaredNames,
         neighbouringIncumbentText,
         neighbouringSourceText,
+        ...(documentSourceText === '' ? {} : { documentSourceText, }),
         models,
         ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
         ...((prepared.identityContext === undefined)
