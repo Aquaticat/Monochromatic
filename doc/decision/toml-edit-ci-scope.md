@@ -124,7 +124,15 @@ Runtime tests,
 fuzz smoke,
 toml-test conformance,
 and the coverage gate also passed.
-The subsequent source edit removes whitespace from blank comment lines only.
+The final source revision,
+`acff1b695ff98f11dfed08d1aadda03c8ce93b2c`,
+also passed [hosted run 34422039208][final-run],
+including the pre-install scope step and every verification step.
+Local tests on Node 22.18.0 and 26.8.1,
+scoped lint,
+type checking,
+documentation lint,
+and `git diff --check` passed.
 
 ## Boundaries and revisit conditions
 
@@ -142,3 +150,4 @@ Do not restore an error-to-empty-list fallback as a rollback strategy.
 
 [schema]: https://github.com/octokit/webhooks/blob/main/payload-schemas/api.github.com/merge_group/checks_requested.schema.json
 [hosted-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/34421626248
+[final-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/34422039208
