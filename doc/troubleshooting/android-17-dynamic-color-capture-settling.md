@@ -123,7 +123,8 @@ The task produced distinct blue,
  gold,
  magenta,
  and monochrome role
-records plus eighteen corresponding opaque panel captures.
+records plus thirty-six corresponding opaque panel captures for the separated 2 × 3
+candidate cross-product.
 
 ### Failing catalog
 
