@@ -139,8 +139,12 @@ await describe({
         const reason = new Error('Fixture cancellation');
         controller.abort(reason);
         let caught: unknown;
-        try { await runPanelStage({ ...panelInput(fixture.client), signal: controller.signal, }); }
-        catch (error) { caught = error; }
+        try {
+          await runPanelStage({ ...panelInput(fixture.client), signal: controller.signal, });
+        }
+        catch (error) {
+          caught = error;
+        }
         expect(caught).toBe(reason);
         expect(fixture.captures).toHaveLength(0);
       },
@@ -157,8 +161,12 @@ await describe({
           return outcome;
         }, };
         let caught: unknown;
-        try { await runPanelStage({ ...panelInput(client), signal: controller.signal, }); }
-        catch (error) { caught = error; }
+        try {
+          await runPanelStage({ ...panelInput(client), signal: controller.signal, });
+        }
+        catch (error) {
+          caught = error;
+        }
         expect(caught).toBe(reason);
         expect(fixture.captures.length).toBeGreaterThan(0);
         expect(fixture.captures.every(capture => capture.claims.includes('claim-first'))).toBe(true);
