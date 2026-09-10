@@ -44,7 +44,7 @@ const PRIOR_CORRECTION_DECLINE = 'archive correction slate declined';
  */
 export type ArchiveBlockReviewOutcome = {
   /**
-   * Whether original block is licensed or replaced.
+   * Whether exact archived text stands or a different replacement was selected.
    */
   readonly kind: 'retained' | 'revised';
   /**

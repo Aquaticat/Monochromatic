@@ -535,7 +535,7 @@ function replyFor(
   }
   if (schema === 'candidate_ballot') {
     return {
-      best: content.includes('archive-only block',) ? 1 : pickCandidate({ content, }),
+      best: content.includes('CURRENT ARCHIVE BLOCK',) ? 1 : pickCandidate({ content, }),
       reason: 'scripted',
     };
   }

@@ -232,7 +232,7 @@ await describe({
         expect(outcome.kind,).toBe('revised',);
         expect(outcome.text,).toBe(corrected,);
         expect(prompts.some(function selected(prompt,): boolean {
-          return prompt.includes('Choose a publishable correction',);
+          return prompt.includes('CURRENT ARCHIVE BLOCK',);
         },),).toBe(true,);
       },
     },),
@@ -267,7 +267,7 @@ await describe({
 
         expect(outcome.text,).toBe('The cat sleeps by the window.');
         const selectionPrompts = prompts.filter(function isSelection(prompt,): boolean {
-          return prompt.includes('Choose a publishable correction',);
+          return prompt.includes('CURRENT ARCHIVE BLOCK',);
         },);
         // One prompt per judge: four seats are a bench whose window could not
         // carry a unanimous slate on self-votes, so the whole bench is asked
