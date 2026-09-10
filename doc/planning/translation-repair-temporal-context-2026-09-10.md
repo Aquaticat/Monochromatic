@@ -5,7 +5,7 @@
 Task 19 is in progress.
 The verified production code is `134a2e20c`.
 The bounded forward-heading window is implemented;
-its existing repair-path output verification is active.
+its existing repair-path output verification failed the wording goal and is being diagnosed.
 No full-entry pass is active.
 Task 20's non-persisted audit accuracy is deferred,
 not a prerequisite to this work or the next Mio page reading.
@@ -225,9 +225,9 @@ The actual reconstructed Mio12 window now byte-matches the measured widened sour
 This is checked by the next probe's offline plan,
 not inferred from the before-state code.
 
-## Active existing repair-path verification
+## Completed existing repair-path verification exposes an unresolved contract boundary
 
-`proc_c166` is `translation-repair-temporal-repair-path-probe-20260910`.
+`proc_c166` completed `translation-repair-temporal-repair-path-probe-20260910` in 748 seconds.
 Script:
 `~/temp/agent/probe-temporal-repair-path-20260910.mjs`.
 Plan:
@@ -256,11 +256,78 @@ an incomplete run is not success evidence.
 It reuses completed payloads only in a copied disposable cache.
 No corpus edit or extra production generation round is introduced.
 
-At completion,
-read the actual final text,
-anchored claims,
-adjudications and selected edits.
-Verify date attachment and who disclosed to whom,
-not merely compilation or process success.
-Run the per-provider spend and daily helpers.
-Task 19 remains in progress until that verification supports the intended wording correction.
+The process returned after forty-six requests and its text compiles,
+but it did not produce a correct retained summary bullet.
+It removed the entire list and changed `Harunome Hanbai` to source script plus `Harunome Studio`.
+The paragraph ends with "and she also:".
+This is not a successful wording repair or grounds for launching the full Mio pass.
+
+The requests were six critics,
+six panel calls,
+three editors,
+twenty-five candidate selections,
+three resolution checks and three introduced-defect checks.
+No precise temporal/participant claim survived in the returned issue set.
+Two broad list-addition claims each drew four supporting votes,
+one opposing vote and one ambiguous vote.
+One wrongly describes even the administrator detail as absent,
+although that detail is present in the current original.
+All three editors remove the list.
+
+The group-name claims also received authorization in the full packet,
+with five supporting votes on several literal-name/gloss claims.
+This responding panel differs from the earlier isolated group-name experiment;
+do not attribute the difference to packet size or the heading-window change without a matched comparison.
+Task 21 separately tracks full-repair name authority and blocks the next Mio pass.
+No special glossary entry is authorized.
+
+The run logged 0.00205745 USD on Bedrock,
+three OpenRouter calls reporting zero,
+and thirteen unpriced Hyper plus twenty-four unpriced Synthetic calls.
+The daily helper ran afterward.
+
+`~/temp/agent/replay-temporal-repair-path-20260910.mjs`
+reproduces all forty-six completed calls with no provider client,
+zero cache misses,
+and identical repaired text.
+Its captured exact requests and responses are in
+`~/temp/agent/temporal-repair-path-replay-20260910.json`.
+Summaries and decisions:
+
+- `~/temp/agent/temporal-repair-path-summary-20260910.out`
+- `~/temp/agent/temporal-repair-adjudication-20260910.out`
+- `~/temp/agent/temporal-repair-editors-20260910.out`
+
+## Next measured boundary
+
+The critic's existing nearby-context rule permits only locating material carried across passages.
+The panel's rule also concentrates on relocation.
+A candidate's coverage obligations,
+its editable target,
+and the source evidence that can verify a current claim are different boundaries.
+Treating "not required to translate" as "cannot support any current wording" defeats the supplied context.
+
+The next hypothesis changes those existing context-purpose rules,
+not the documents,
+roster,
+quorums,
+response schema or production graph.
+Nearby source may verify references,
+time,
+participants and details already asserted in the current target.
+It adds no obligation to translate neighboring passages.
+Nearby archive shows placement,
+not factual authority.
+Critic quotes remain anchored to the current documents;
+when source evidence exists only nearby,
+`sourceQuote` can be omitted while a current `targetQuote` anchors the claim.
+
+The independent advisor supports this focused experiment and identifies a falsifier:
+a compound claim may bundle a supported item with an unsupported one,
+then continue authorizing deletion of the whole list.
+Inspect propositions and actual tally outcomes,
+not just whether one new temporal claim appears.
+A fixed original panel packet tests the old claims only;
+new critic claims need their own newly built panel packet before any end-to-end claim.
+Task 19 remains in progress.
+No new production prompt change has been made.

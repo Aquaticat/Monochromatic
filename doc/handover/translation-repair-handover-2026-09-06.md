@@ -110,17 +110,28 @@ and there is no backward or arbitrary distant scan.
 Both languages use identical selected positions.
 The compiled Mio12 window byte-matches the measured treatment.
 
-`proc_c166` runs `translation-repair-temporal-repair-path-probe-20260910`
-on frozen `.frozen-dist-134a2e20c`.
+`proc_c166` completed `translation-repair-temporal-repair-path-probe-20260910`
+in 748 seconds on frozen `.frozen-dist-134a2e20c`.
 Report:
 `~/temp/agent/temporal-repair-path-probe-20260910/report.json`.
 Log:
 `~/temp/agent/temporal-repair-path-probe-20260910.log`.
-It exercises actual `repairChunk` for Mio12's affected slice,
-whose existing critics and editors already receive neighboring evidence,
-with stock roles and policies,
-120 requests maximum and a twenty-minute global bound.
-Read its actual returned wording and decisions before completing task 19 or launching Mio.
+The actual `repairChunk` returned a compiling but unsuccessful result:
+it removed the list and changed the established group name to source script plus `Harunome Studio`.
+No precise temporal/participant claim survived;
+broad list-addition claims were accepted by four of six responding panelists,
+and all three editors removed the list.
+Several literal group-name/gloss claims drew five supporting votes.
+Task 21 separately tracks the name-authority failure and also blocks the next Mio pass.
+
+The provider-free replay reproduces all forty-six calls with zero misses and identical text:
+`~/temp/agent/temporal-repair-path-replay-20260910.json`.
+No whole-page run is authorized by this result.
+The next measurement must distinguish current coverage/edit scope from nearby source's role as factual evidence,
+using the exact captured critics and panel packets.
+Keep the name-authority change separate;
+do not assume packet size or the window caused it without a matched comparison.
+Current production prompts remain unchanged beyond the verified heading window.
 See [temporal and participant source context](../planning/translation-repair-temporal-context-2026-09-10.md).
 Do not reinstate task 20 as its blocker because the audit experiment remains unresolved.
 No full-entry pass is active.
