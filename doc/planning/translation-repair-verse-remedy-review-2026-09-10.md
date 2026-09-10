@@ -48,6 +48,51 @@ Raw provider payloads remain private.
 The settled run's `slice-cache/Mio` directory is absent;
 that is not evidence of an absent earlier stage or an absent inherited flag.
 
+## Delegated remedy
+
+The owner subsequently delegated the changes:
+"Do whatever changes you think would be the best."
+The selected remedy is a shared generation-and-selection contract for explicit rendered line structure,
+not a replacement for prose generation and not another standalone refusal rule.
+
+The production evidence gap is now closed.
+`trace-Mio10-structure-20260910.mjs` rebuilt preparation through frozen `dc51b02d9` using every recorded pairing.
+It reproduced 18 slices,
+with slice 17's exact source bytes,
+empty archive text and effective `lineStructured: false`.
+The writer sheet lacked the verse rule and any hard-break instruction.
+The recorded translate slate has a five-break GLM-flash candidate at index 3;
+the winning Mercury candidate at index 2 has zero.
+Its voters preferred wording and tone without addressing rendered structure.
+Both choices existed before the wrapper.
+Evidence:
+`~/temp/agent/Mio10-structure-trace-20260910.out`.
+
+Implementation direction:
+
+- Supply parsed per-block explicit-break facts before initial writing,
+  including single-block passages the existing verse heuristic does not govern.
+- Make the shared contract distinguish rendered breaks from physical newlines.
+  Recommend visible `<br/>` spelling while accepting real Markdown hard breaks.
+- Show judges counts for their actual anonymous candidate ordering.
+  A source-only shortfall cannot win merely for wording;
+  counts do not excuse misplaced breaks or semantic defects.
+- Carry the contract into author repair,
+  lane comparison,
+  consolidation production and final selection.
+- Preserve raw source fences,
+  source offsets,
+  archive-backed layout authority and ordinary-passage prompt identity.
+- Keep the existing source-only floor as a backstop,
+  not evidence that generation is repaired.
+- Run bounded writer and fixed-slate judge probes on this passage before another full-entry pass.
+
+The existing `isLineStructured` heuristic remains a distinct blank-separated verse-unit rule;
+its boolean will not acquire incompatible rendered-break semantics.
+Structured translation units and source canonicalization are deferred:
+the measured slate already contains a faithful break-preserving representation,
+so generation and selection are the demonstrated seams to repair first.
+
 ## Recommended direction
 
 Repair the existing generation and judging contract around rendered structure.
