@@ -2112,7 +2112,11 @@ Whole-chunk selection also receives the known existing English before repair,
 so an already-carried detail is not mistaken for a new addition.
 The compiled full-path check still removed the disclosure item,
 and group-name authority remains unresolved.
-Conflicting admitted diagnoses are under investigation;
+`029c0a886` adds measured guidance distinguishing a distorted source-grounded event from independent added content,
+and asks adjudicators to check the claimed category as well as the existence of an error.
+Genuine addition and omission controls remain actionable.
+It does not change the category enum or automatically filter claims.
+The compiled category-path check remains active;
 these implementation checks do not establish whole-page readiness.
 Initial translation writers remain unchanged because their separate context experiment did not correct the bullet.
 

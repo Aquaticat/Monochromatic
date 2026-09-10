@@ -25,11 +25,11 @@ and the reason is recorded in
 ## Where the work stands
 
 Current archive-boundary work on 2026-09-10:
-`8adb77fb9` is the verified code tip,
+`029c0a886` is the verified code tip,
 with build,
 types,
 zero-warning oxlint and the complete suite passing.
-`~/temp/agent/evidence-handoff-unit-20260910.out` ends `unit exit 0` at line 9125.
+`~/temp/agent/accuracy-category-unit-20260910.out` ends `unit exit 0` at line 9130.
 
 Task 22 is complete:
 the panel materializes one packet per existing cluster before calls begin,
@@ -70,18 +70,32 @@ all other issues,
 five regions and original preservation licenses stayed fixed.
 No production filter was added.
 
-Task 24 is now in progress and task 23 waits on it.
-`proc_e0ee` runs `translation-repair-accuracy-category-scope-probe-20260910`.
+Task 24 is in progress and task 23 waits on it.
+The category probe keeps the genuine-addition control actionable,
+and the panel on newly generated claims rejects conflicting addition diagnoses while accepting the participant correction.
+The old fixed packet still partly fails;
+do not claim a universal correction of stale diagnoses.
+The genuine-omission control also passes,
+with six panel supports.
+
+`029c0a886` integrates the exact measured category guidance into critic and panel prompts,
+after red `469946abf`.
+No enum,
+schema,
+quorum,
+name policy or automatic filter changed.
+Compiled prompt parity is verified.
+
+`proc_948d` is active as `translation-repair-temporal-category-path-probe-20260910`.
 Report:
-`~/temp/agent/accuracy-category-scope-probe-20260910/report.json`.
+`~/temp/agent/temporal-category-path-probe-20260910/report.json`.
 Log:
-`~/temp/agent/accuracy-category-scope-probe-20260910.log`.
-It distinguishes a distorted rendering of a source-grounded event from independent extra content,
-and asks the panel to check category correctness rather than endorse any error at that location.
-A genuine independent-addition control runs first;
-then the fixed disclosure cluster and new anchored critic claims reach the real panel/tally.
-Forty-eight live requests maximum and a twenty-minute global bound.
-No production category rule or new writing round has been introduced.
+`~/temp/agent/temporal-category-path-probe-20260910.log`.
+It uses frozen `.frozen-dist-029c0a886` and the real repair path,
+with no prompt interception or claim filtering.
+The cap is 120 JSON calls and a twenty-minute global bound.
+Read actual admitted diagnoses,
+editor candidates and selected text before completing task 24.
 Task 19 waits on this implementation verification;
 task 21's group-name authority remains a separate blocker before any full Mio pass.
 Task 20 is deferred and non-blocking.

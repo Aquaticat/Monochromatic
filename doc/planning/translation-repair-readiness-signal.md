@@ -1689,9 +1689,14 @@ lint and the complete suite pass;
 compiled prompt parity and a thirty-call cached public-panel replay also pass.
 Task 23's compiled full repair-path check failed the temporal wording goal:
 it removed the disclosure item and offered no correct regional candidate.
-A diagnostic control now isolates overlapping addition and mistranslation diagnoses;
-no production filter is applied.
-Task 23 and task 19 remain incomplete.
+The diagnostic category control supports distinguishing a distorted source event from independent added content.
+`029c0a886` integrates the measured critic/panel guidance,
+with passing genuine-addition and genuine-omission controls,
+package checks and prompt parity.
+No production filter is applied.
+The compiled category-path check is active;
+tasks 24,
+23 and 19 remain incomplete.
 Name-authority task 21 remains incomplete,
 and another whole-page pass must wait for that verification chain.
 No new full Mio page has yet verified the combined changes,

@@ -6967,8 +6967,10 @@ Report:
 Task 23 waits on category-scope task 24 after this failed wording check.
 The diagnostic removal of only the two overlapping addition diagnoses let both GLM editors correct the item,
 without changing other issues or preservation licenses.
-`proc_e0ee` now measures a shared category distinction in critic/panel review,
-with a genuine-addition positive control.
+The category experiment and separate omission control preserve genuine addition/omission repair
+and reject conflicting addition diagnoses in the newly derived disclosure packet.
+`029c0a886` integrates the measured critic/panel guidance and passes all package checks plus prompt parity.
+`proc_948d` now exercises the real compiled category path without interception or claim filtering.
 No production category filter or new writing round is introduced.
 Task 21's name authority still blocks the next full Mio pass.
 No clean page or overall readiness is claimed.

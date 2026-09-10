@@ -3,7 +3,7 @@
 ## Scope
 
 Task 19 is in progress.
-The verified production code is `8adb77fb9`.
+The verified production code is `029c0a886`.
 The forward-heading window,
 clustered panel packets,
 source-evidence/cache handoffs and repair-selector comparison evidence are implemented.
@@ -970,11 +970,11 @@ The spend and daily helpers ran afterward.
 No production category filter,
 new guard or generation round is added.
 
-## Active accuracy-category scope measurement
+## Completed accuracy-category scope measurement
 
 Task 24 is in progress;
 task 23's final wording verification waits on it.
-`proc_e0ee` is `translation-repair-accuracy-category-scope-probe-20260910`.
+`proc_e0ee` completed `translation-repair-accuracy-category-scope-probe-20260910` in 301 seconds.
 Script:
 `~/temp/agent/probe-accuracy-category-scope-20260910.mjs`.
 Plan:
@@ -1010,4 +1010,75 @@ The bound is forty-eight live requests,
 Inspect whether mislabeled addition diagnoses lose authorization,
 the accurate actor correction remains actionable,
 and new critics stop producing contradictory diagnoses before adopting any rule.
-No category-scope production change has been made.
+The genuine independent-addition control remains accepted at five-to-one.
+The old fixed packet still authorizes the two mislabeled addition claims at four-to-two;
+this is not a universal remedy for already-stored diagnoses.
+With new critic output,
+the disclosure-touching panel rejects the competing addition diagnoses
+while accepting the actual participant mistranslation six-to-zero.
+Some critics still emit addition diagnoses,
+so the result is the admitted packet,
+not a claim of unanimous classification.
+
+The run made twenty-seven live calls and logged 0.00201981 USD on Bedrock,
+four OpenRouter calls reporting zero,
+and nine unpriced Hyper plus ten unpriced Synthetic calls.
+The daily helper ran afterward.
+
+## Genuine omission control and integration
+
+`proc_545a` completed `translation-repair-accuracy-omission-control-20260910` in fifteen seconds.
+All six critics locate the genuinely missing friend-return event as an omission;
+one also raises an unrelated tense complaint.
+The panel accepts the known omission six-to-zero.
+This is not a claim that every incidental critic finding is correct.
+Report:
+`~/temp/agent/accuracy-omission-control-probe-20260910/report.json`.
+The run logged 0.00097313 USD on Bedrock,
+one OpenRouter call reporting zero,
+and three unpriced Hyper plus six unpriced Synthetic calls.
+The daily helper ran afterward.
+
+The red guards in `469946abf` fail on the old critic/panel builders.
+`029c0a886` adds `accuracy-category-policy.ts`
+and integrates the exact measured category distinction and adjudicator check.
+No response schema,
+category enum,
+quorum,
+name policy,
+claim filter or generation graph changes.
+New prompt identity invalidates old raw replies for these questions;
+old stored artifact interpretations are not rewritten.
+
+Build,
+types,
+zero-warning lint and the full suite pass.
+`~/temp/agent/accuracy-category-unit-20260910.out` ends `unit exit 0` at line 9130.
+`~/temp/agent/accuracy-category-parity-20260910.out`
+confirms both compiled system messages match the measured treatment
+and their user evidence is unchanged.
+
+## Active compiled category-path check
+
+`proc_948d` is `translation-repair-temporal-category-path-probe-20260910`.
+Script:
+`~/temp/agent/probe-temporal-category-path-20260910.mjs`.
+Plan:
+`~/temp/agent/temporal-category-path-plan-20260910.out`.
+Log:
+`~/temp/agent/temporal-category-path-probe-20260910.log`.
+Report:
+`~/temp/agent/temporal-category-path-probe-20260910/report.json`.
+
+It executes the actual repair path on frozen `.frozen-dist-029c0a886`,
+without prompt interception or claim filtering.
+Stock roles,
+source and current archive are unchanged;
+completed caches are merged into a disposable store with conflict checks.
+The limits remain one slice,
+120 JSON requests,
+360000 ms per exchange and 1200000 ms globally.
+Read the actual admitted categories,
+editor proposals,
+selected text and name changes before completing task 24.
+Task 21 remains separate and no full-entry run is active.
