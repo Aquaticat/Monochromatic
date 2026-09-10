@@ -116,7 +116,15 @@ mise run //package/module/toml-edit.fuzz:lint:types
 `SCOPE_TEST_NODE` selects a separate bootstrap executable for subprocess tests.
 The installed Node 22.18.0 passed the complete scope suite while the harness ran on Node 26.8.1.
 Scoped lint reported no warnings or errors.
-Hosted verification results are recorded after the final run completes.
+[Hosted run 34421626248][hosted-run] passed at
+`b5614800c278d7d3c68c2b51eb7ccd6f03a8fc9b`.
+The log records `shell: /usr/local/bin/node {0}` for the pre-install scope step,
+and the sidecar unit step records the complete scope regression suite passing.
+Runtime tests,
+fuzz smoke,
+toml-test conformance,
+and the coverage gate also passed.
+The subsequent source edit removes whitespace from blank comment lines only.
 
 ## Boundaries and revisit conditions
 
@@ -133,3 +141,4 @@ or measured inputs exceed the current bounds.
 Do not restore an error-to-empty-list fallback as a rollback strategy.
 
 [schema]: https://github.com/octokit/webhooks/blob/main/payload-schemas/api.github.com/merge_group/checks_requested.schema.json
+[hosted-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/34421626248

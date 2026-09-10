@@ -38,7 +38,7 @@ The same declaration's `execFile.__promisify__` namespace at line 1081
 contains Node's async adapter signatures,
 including stdout and stderr result fields.
 
-`node_modules/@types/node/util.d.ts:1144-1154`
+`node_modules/@types/node/util.d.ts:1143-1154`
 contains both a custom adapter overload and generic void-returning callback overloads:
 
 ```ts
