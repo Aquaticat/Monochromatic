@@ -271,6 +271,7 @@ export {
   validateIssueClaim,
 } from './validate-issue.ts';
 
+export * from './archive-naming-barrel.ts';
 export * from './artifact-read-barrel.ts';
 export * from './stream-barrel.ts';
 export * from './assembly-barrel.ts';
