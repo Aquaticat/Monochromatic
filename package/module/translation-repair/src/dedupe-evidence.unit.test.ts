@@ -33,7 +33,7 @@ await describe({
       name: 'RETAINS new member tallies and readings while preserving the existing representative identity',
       fn: async () => {
         const original = issues();
-        const merged = dedupeAcceptedIssues({ issues: original }).issues[0];
+        const { issues: [merged] } = dedupeAcceptedIssues({ issues: original });
         expect(merged?.issueId).toBe(original[0]?.issueId);
         expect(merged?.severity).toBe(original[0]?.severity);
         expect(merged?.claims.map(member => member.claimId)).toEqual(['claim/first', 'claim/second']);
@@ -45,8 +45,8 @@ await describe({
     it({
       name: 'KEEPS identical repeated claim evidence once',
       fn: async () => {
-        const original = issues()[0];
-        if (original === undefined) throw Error('missing fixture');
+        const [original] = issues();
+        if (original === undefined) throw new Error('missing fixture');
         const outcome = dedupeAcceptedIssues({ issues: [original, { ...original, issueId: 'another-id' }] });
         expect(outcome.issues[0]?.claims).toHaveLength(1);
         expect(outcome.issues[0]?.readings).toEqual(original.readings);
@@ -55,10 +55,10 @@ await describe({
     ...['tally', 'reading'].map(kind => it({
       name: `REJECTS a repeated claim with conflicting ${kind} evidence`,
       fn: async () => {
-        const original = issues()[0];
+        const [original] = issues();
         const tally = original?.tallies['claim/first'];
         const reading = original?.readings?.['claim/first'];
-        if (original === undefined || tally === undefined || reading === undefined) throw Error('missing fixture');
+        if ((original === undefined) || (tally === undefined) || (reading === undefined)) throw new Error('missing fixture');
         const conflicting = kind === 'tally'
           ? { ...original, tallies: { 'claim/first': { ...tally, supported: 4 } } }
           : { ...original, readings: { 'claim/first': { ...reading, configuredPanelists: 4 } } };
@@ -70,7 +70,7 @@ await describe({
       fn: async () => {
         const original = issues();
         const inputs = original.map((issue, index) => (index === 0 ? known === 'first' : known === 'second') ? issue : withoutReadings(issue));
-        const merged = dedupeAcceptedIssues({ issues: inputs }).issues[0];
+        const { issues: [merged] } = dedupeAcceptedIssues({ issues: inputs });
         if (known === 'neither') expect(merged?.readings).toBeUndefined();
         else expect(Object.keys(merged?.readings ?? {})).toEqual([`claim/${known}`]);
       },
@@ -78,9 +78,9 @@ await describe({
     it({
       name: 'RETAINS known evidence when a repeated legacy member has no reading',
       fn: async () => {
-        const original = issues()[0];
-        if (original === undefined) throw Error('missing fixture');
-        const merged = dedupeAcceptedIssues({ issues: [withoutReadings(original), original] }).issues[0];
+        const [original] = issues();
+        if (original === undefined) throw new Error('missing fixture');
+        const { issues: [merged] } = dedupeAcceptedIssues({ issues: [withoutReadings(original), original] });
         expect(merged?.readings).toEqual(original.readings);
       },
     }),

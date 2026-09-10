@@ -25,15 +25,25 @@ import type { ClaimPanelReading, } from './panel-reading.ts';
  * ```
  */
 export type GradedMember = {
-  /** Original atomic claim retained for attribution. */
+  /**
+   * Original atomic claim retained for attribution.
+   */
   readonly member: AggregatedClaim;
-  /** Weighted decisions belonging only to this claim. */
+  /**
+   * Weighted decisions belonging only to this claim.
+   */
   readonly tally: VoteTally;
-  /** Ballots and configured electorate behind the tally. */
+  /**
+   * Ballots and configured electorate behind the tally.
+   */
   readonly reading: ClaimPanelReading;
-  /** Effective decision, never re-derived under default thresholds. */
+  /**
+   * Effective decision, never re-derived under default thresholds.
+   */
   readonly status: AdjudicationStatus;
-  /** Effective severity after supported re-grades. */
+  /**
+   * Effective severity after supported re-grades.
+   */
   readonly severity: IssueSeverity;
 };
 
@@ -53,8 +63,13 @@ export type GradedMember = {
 export function severityUpperMedian(
   { severities, }: { readonly severities: readonly IssueSeverity[]; },
 ): IssueSeverity {
-  /** Opinions ordered for median selection. */
-  const sorted = [...severities,].toSorted(function bySeverityRank(left, right,): number {
+  /**
+   * Opinions ordered for median selection.
+   */
+  const sorted = [...severities,].toSorted(function bySeverityRank(
+    left,
+    right,
+  ): number {
     return ISSUE_SEVERITIES.indexOf(left,) - ISSUE_SEVERITIES.indexOf(right,);
   },);
   return nonNullishOrThrow(sorted[Math.floor(sorted.length / 2,)],);
@@ -81,7 +96,9 @@ export function partitionGradedMembers(
     return entry.status === 'source-defect';
   },))
     return [graded,];
-  /** Status order follows first occurrence rather than a new priority rule. */
+  /**
+   * Status order follows first occurrence rather than a new priority rule.
+   */
   const statuses = [...new Set(graded.map(function statusOf(entry,): AdjudicationStatus {
     return entry.status;
   },),),];
@@ -109,19 +126,26 @@ export function partitionGradedMembers(
 export function assembleGradedIssue(
   { graded, }: { readonly graded: readonly GradedMember[]; },
 ): AdjudicatedIssue {
-  /** Accepted members still carry severity in a source-defect-blocked group. */
+  /**
+   * Accepted members still carry severity in a source-defect-blocked group.
+   */
   const severityCarriers = graded.filter(function accepted(entry,): boolean {
     return entry.status === 'accepted';
   },);
-  /** Membership determines identity exactly as before partitioning existed. */
+  /**
+   * Membership determines identity exactly as before partitioning existed.
+   */
   const ids = graded.map(function claimId(entry,): string {
-    return entry.member.claimId;
-  },).toSorted();
+    return entry.member
+      .claimId;
+  },)
+    .toSorted();
   return {
     issueId: `adjudicated/${hashContent({ content: JSON.stringify(ids,), },)}`,
     status: graded.some(function blocked(entry,): boolean {
       return entry.status === 'source-defect';
-    },) ? 'source-defect' : nonNullishOrThrow(graded[0],).status,
+    },) ? 'source-defect' : nonNullishOrThrow(graded[0],)
+      .status,
     severity: severityUpperMedian({
       severities: (severityCarriers.length > 0 ? severityCarriers : graded)
         .map(function severityOf(entry,): IssueSeverity {
@@ -131,11 +155,25 @@ export function assembleGradedIssue(
     claims: graded.map(function claimOf(entry,): AggregatedClaim {
       return entry.member;
     },),
-    tallies: Object.fromEntries(graded.map(function tallyOf(entry,): readonly [string, VoteTally] {
-      return [entry.member.claimId, entry.tally,];
+    tallies: Object.fromEntries(graded.map(function tallyOf(entry,): readonly [
+      string,
+      VoteTally
+    ] {
+      return [
+        entry.member
+          .claimId,
+        entry.tally,
+      ];
     },),),
-    readings: Object.fromEntries(graded.map(function readingOf(entry,): readonly [string, ClaimPanelReading] {
-      return [entry.member.claimId, entry.reading,];
+    readings: Object.fromEntries(graded.map(function readingOf(entry,): readonly [
+      string,
+      ClaimPanelReading
+    ] {
+      return [
+        entry.member
+          .claimId,
+        entry.reading,
+      ];
     },),),
   };
 }

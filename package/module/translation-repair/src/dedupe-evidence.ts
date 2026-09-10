@@ -18,7 +18,9 @@ import type { ClaimPanelReading, } from './panel-reading.ts';
  * ```
  */
 export class IssueEvidenceConflictError extends Error {
-  /** Stable diagnostic identity for callers and lifecycle logs. */
+  /**
+   * Stable diagnostic identity for callers and lifecycle logs.
+   */
   override readonly name = 'IssueEvidenceConflictError';
 
   /**
@@ -28,7 +30,13 @@ export class IssueEvidenceConflictError extends Error {
    *
    * @param kind - decision evidence that disagrees
    */
-  constructor({ claimId, kind, }: { readonly claimId: string; readonly kind: string; },) {
+  constructor({
+    claimId,
+    kind,
+  }: {
+    readonly claimId: string;
+    readonly kind: string
+  },) {
     super(`cannot deduplicate claim ${claimId}: conflicting ${kind} evidence`,);
   }
 }
@@ -54,23 +62,47 @@ export class IssueEvidenceConflictError extends Error {
  * ```
  */
 function mergeClaimEvidence<const EvidenceT extends VoteTally | ClaimPanelReading,>(
-  { claimIds, first, second, kind, }: {
+  {
+    claimIds,
+    first,
+    second,
+    kind,
+  }: {
     readonly claimIds: readonly string[];
     readonly first: Readonly<Record<string, EvidenceT>>;
     readonly second: Readonly<Record<string, EvidenceT>>;
     readonly kind: string;
   },
 ): Readonly<Record<string, EvidenceT>> {
-  return Object.fromEntries(claimIds.flatMap(function evidenceFor(claimId,): readonly (readonly [string, EvidenceT])[] {
-    /** Evidence already retained for this identity, if known. */
+  return Object.fromEntries(claimIds.flatMap(function evidenceFor(claimId,): readonly (readonly [
+    string,
+    EvidenceT
+  ])[] {
+    /**
+     * Evidence already retained for this identity, if known.
+     */
     const retained = first[claimId];
-    /** Evidence arriving with the duplicate, if known. */
+    /**
+     * Evidence arriving with the duplicate, if known.
+     */
     const incoming = second[claimId];
-    if (retained !== undefined && incoming !== undefined && !isDeepStrictEqual(retained, incoming,))
-      throw new IssueEvidenceConflictError({ claimId, kind, },);
-    /** Missing records are not zero-vote records. */
+    if ((retained !== undefined) && (incoming !== undefined)
+      && (!isDeepStrictEqual(
+        retained,
+        incoming,
+      )))
+      throw new IssueEvidenceConflictError({
+        claimId,
+        kind,
+      },);
+    /**
+     * Missing records are not zero-vote records.
+     */
     const known = retained ?? incoming;
-    return known === undefined ? [] : [[claimId, known,],];
+    return known === undefined ? [] : [[
+      claimId,
+      known,
+    ],];
   },),);
 }
 
@@ -95,20 +127,38 @@ function mergeClaimEvidence<const EvidenceT extends VoteTally | ClaimPanelReadin
  * ```
  */
 export function mergeDuplicateEvidence(
-  { survivor, incoming, claims, }: {
+  {
+    survivor,
+    incoming,
+    claims,
+  }: {
     readonly survivor: AdjudicatedIssue;
     readonly incoming: AdjudicatedIssue;
     readonly claims: AdjudicatedIssue['claims'];
   },
 ): AdjudicatedIssue {
-  /** Evidence maps follow the same ordering as the final member list. */
-  const claimIds = claims.map(function identity(member,): string { return member.claimId; },);
+  /**
+   * Evidence maps follow the same ordering as the final member list.
+   */
+  const claimIds = claims.map(function identity(member,): string {
+    return member.claimId;
+  },);
   return {
     ...survivor,
     claims,
-    tallies: mergeClaimEvidence({ claimIds, first: survivor.tallies, second: incoming.tallies, kind: 'tally', },),
-    ...((survivor.readings === undefined && incoming.readings === undefined) ? {} : {
-      readings: mergeClaimEvidence({ claimIds, first: survivor.readings ?? {}, second: incoming.readings ?? {}, kind: 'reading', },),
+    tallies: mergeClaimEvidence({
+      claimIds,
+      first: survivor.tallies,
+      second: incoming.tallies,
+      kind: 'tally',
+    },),
+    ...(((survivor.readings === undefined) && (incoming.readings === undefined)) ? {} : {
+      readings: mergeClaimEvidence({
+        claimIds,
+        first: survivor.readings ?? {},
+        second: incoming.readings ?? {},
+        kind: 'reading',
+      },),
     }),
   };
 }

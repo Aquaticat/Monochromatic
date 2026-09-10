@@ -287,22 +287,33 @@ export function tallyVotes(
       };
     },);
 
-    /** Whether the panel relates these diagnoses as one defect. */
-    const merged = disposeMerge({ cluster, ballots, config, },);
-    /** Related diagnoses still keep their separately decided authority. */
+    /**
+     * Whether the panel relates these diagnoses as one defect.
+     */
+    const merged = disposeMerge({
+      cluster,
+      ballots,
+      config,
+    },);
+    /**
+     * Related diagnoses still keep their separately decided authority.
+     */
     const groups = merged
       ? partitionGradedMembers({ graded, },)
       : graded.map(function solo(entry,): readonly GradedMember[] { return [entry,]; },);
-    /** Each record carries only its own members and evidence. */
+    /**
+     * Each record carries only its own members and evidence.
+     */
     const issues = groups.map(function assemble(group,): AdjudicatedIssue {
       return assembleGradedIssue({ graded: group, },);
     },);
     return {
       issues,
-      findings: merged && groups.length > 1
+      findings: merged && (groups.length > 1)
         ? [`issue-merge-partitioned (${cluster.clusterId}: ${issues.map(function partition(issue,): string {
           return `${issue.issueId}=${issue.status}`;
-        },).join(', ',)})`,]
+        },)
+          .join(', ',)})`,]
         : [],
     };
   },);

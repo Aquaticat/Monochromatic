@@ -14,9 +14,9 @@ import {
 
 const targetText = 'The cat left. Her friend stayed.';
 const correctedSpan = 'The cat left.';
-const support = Array<PanelVoteState>(6).fill('supported');
-const oppose = Array<PanelVoteState>(6).fill('unsupported');
-const ambiguous = Array<PanelVoteState>(6).fill('ambiguous');
+const support = new Array<PanelVoteState>(6).fill('supported');
+const oppose = new Array<PanelVoteState>(6).fill('unsupported');
+const ambiguous = new Array<PanelVoteState>(6).fill('ambiguous');
 
 /** Each row contains the actual six panelists' votes on one member. */
 function adjudicate({ rows, merge = true, config, }: {
