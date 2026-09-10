@@ -104,11 +104,11 @@ export function sourceBreakDisplay(
     readonly syntax?: SliceSyntax;
   },
 ): string {
-  if (
-    (incumbentKind !== 'absent')
-    || (archiveText !== '')
-    || (syntax === 'front-matter')
-  )
+  if (incumbentKind !== 'absent')
+    return sourceText;
+  if (archiveText !== '')
+    return sourceText;
+  if (syntax === 'front-matter')
     return sourceText;
   /**
    * This function's diagnostics distinguish a display change from a source edit.
