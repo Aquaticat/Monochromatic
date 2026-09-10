@@ -1,4 +1,7 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
@@ -6,6 +9,10 @@ import {
   isVerifiableEditorialArchiveBlock,
 } from './archive-block-evidence.ts';
 import { recordArchiveBlockNaturalness, } from './archive-block-naturalness.ts';
+import {
+  archiveBlockSelectionEvidence,
+  withArchiveOriginal,
+} from './archive-block-selection-evidence.ts';
 import {
   type ArchiveBlockReviewWire,
   ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
@@ -191,6 +198,13 @@ export async function runArchiveBlockReviewStage(
   }>,
 ): Promise<ArchiveBlockReviewOutcome> {
   /**
+   * Stage boundary for review and independent-selection diagnostics.
+   */
+  const reviewLog = tagged({
+    l,
+    tag: runArchiveBlockReviewStage.name,
+  },);
+  /**
    * Quorum-bounded review voices.
    */
   const gather = await gatherStageVoices<ArchiveBlockReviewWire>({
@@ -207,7 +221,7 @@ export async function runArchiveBlockReviewStage(
     responseFormat: ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
     validate: isArchiveBlockReviewWire,
     stage: 'archive-block-review',
-    l,
+    l: reviewLog,
   },);
   /**
    * Replies whose claimed source support exists verbatim.
@@ -267,7 +281,15 @@ export async function runArchiveBlockReviewStage(
    */
   const heardCount = gather.voices
     .length;
-  if (anchoredVoices.length < requiredParticipation) {
+  /**
+   * Revisions earn publication through the independent selector, not through
+   * other reviewers' retention anchors. The initial review quorum still holds.
+   */
+  const revisions = replacementCandidates({
+    voices: anchoredVoices,
+    blockText,
+  },);
+  if ((anchoredVoices.length < requiredParticipation) && (revisions.length === 0)) {
     return {
       kind: 'retained',
       text: blockText,
@@ -275,7 +297,7 @@ export async function runArchiveBlockReviewStage(
         ...findings,
         `archive review left the block unresolved: ${String(anchoredVoices.length,)} of ${
           String(heardCount,)
-        } replies anchored their support in the original, below the ${
+        } replies supplied eligible review evidence, below the ${
           String(requiredParticipation,)
         } required; the block stands as the archive wrote it`,
       ],
@@ -296,7 +318,7 @@ export async function runArchiveBlockReviewStage(
       blockText,
       signal,
       exchangeTimeoutMs,
-      l,
+      l: reviewLog,
     },);
     return {
       kind: 'retained',
@@ -308,41 +330,39 @@ export async function runArchiveBlockReviewStage(
     };
   }
   /**
-   * Independently judged correction slate.
+   * Existing wording is an explicit choice, never an automatically approved one.
+   */
+  const candidates = withArchiveOriginal({ revisions, blockText, },);
+  reviewLog.info(
+    `archive review: comparing ${String(revisions.length,)} admissible revisions in ${String(candidates.length,)} candidates; ${String(anchoredVoices.length,)} eligible assessments from ${String(heardCount,)} heard reviews`,
+  );
+  /**
+   * Independently judged correction slate under the unchanged selector quorum.
    */
   const selection = await decideBestCandidate({
     client,
-    candidates: replacementCandidates({
-      voices: anchoredVoices,
-      blockText,
-    },),
+    candidates,
     judgeModelIds: modelIds,
     sourceText,
-    task: 'Choose a publishable correction for one unsupported archive-only block.',
+    task: 'Choose whether to retain or correct one unclaimed English archive block for publication.',
     criteria: [
       'Remove every factual claim not supported by the original document.',
       'Retain source-supported meaning and verifiable editorial apparatus.',
       'Preserve valid Markdown and contributor identities.',
       'Prefer clear natural English without adding information.',
     ],
-    evidence: [
-      {
-        label: 'EXPECTED ORIGINAL SECTION',
-        text: sourceText,
-      },
-      {
-        label: 'CURRENT ARCHIVE BLOCK',
-        text: blockText,
-      },
-      {
-        label: 'LATEST REVIEW FINDINGS',
-        text: JSON.stringify(findings,),
-      },
-    ],
+    evidence: archiveBlockSelectionEvidence({
+      sourceText,
+      targetText,
+      blockText,
+      voices: anchoredVoices,
+      candidates,
+      priorFindings,
+    },),
     declineConsequence: 'The original archive block ships unchanged, with this decline recorded as a finding.',
     signal,
     perCallTimeoutMs: exchangeTimeoutMs,
-    l,
+    l: reviewLog,
   },);
   /**
    * Review plus candidate-selection evidence.
@@ -353,7 +373,7 @@ export async function runArchiveBlockReviewStage(
   ],),];
   if (selection.kind === 'selected')
     return {
-      kind: 'revised',
+      kind: selection.value === blockText ? 'retained' : 'revised',
       text: selection.value,
       findings: settledFindings,
     };
