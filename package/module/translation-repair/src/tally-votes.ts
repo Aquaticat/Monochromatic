@@ -1,25 +1,23 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
 import {
   type AdjudicatedIssue,
   type AdjudicationConfig,
   type AdjudicationStatus,
   DEFAULT_ADJUDICATION_CONFIG,
   type PanelBallot,
-  type PanelVoteState,
   type VoteTally,
 } from './adjudicate-model.ts';
 import type {
   AggregatedClaim,
   ClaimCluster,
 } from './aggregate-claims.ts';
-import { hashContent, } from './document-node.ts';
-import type { ClaimPanelReading, } from './panel-reading.ts';
 import { panelReadingForClaim, } from './tally-claim.ts';
+import type { IssueSeverity, } from './issue-taxonomy.ts';
 import {
-  ISSUE_SEVERITIES,
-  type IssueSeverity,
-} from './issue-taxonomy.ts';
+  assembleGradedIssue,
+  type GradedMember,
+  partitionGradedMembers,
+  severityUpperMedian,
+} from './tally-issue.ts';
 
 //region Vote tally
 // Pure aggregation of panel ballots into adjudicated issues. Decision rules,
@@ -42,6 +40,12 @@ export type AdjudicationResult = {
    * unmerged clusters yield one issue per member claim.
    */
   readonly issues: readonly AdjudicatedIssue[];
+
+  /**
+   * Original cluster and resulting issue identities when a same-defect merge
+   * is partitioned by member verdict, retaining its audit relationship.
+   */
+  readonly findings: readonly string[];
 };
 
 /**
@@ -82,36 +86,6 @@ function decideStatus(
   if ((tally.unsupported / electorate) > config.decisionThreshold)
     return 'rejected';
   return 'needs-human';
-}
-
-/**
- * Upper median of severities under the taxonomy's least-to-most order,
- * so an even split rounds toward the more severe grade;
- * conservative repair prefers over-grading to under-grading.
- *
- * @param severities - non-empty severity opinions
- *
- * @returns Upper-median severity
- *
- * @example
- * ```ts
- * severityUpperMedian({ severities: ['minor', 'major',], },);
- * ```
- */
-function severityUpperMedian(
-  { severities, }: { readonly severities: readonly IssueSeverity[]; },
-): IssueSeverity {
-  /**
-   * Opinions sorted least to most severe.
-   */
-  const sorted = [...severities,].toSorted(function bySeverityRank(
-    left,
-    right,
-  ) {
-    return ISSUE_SEVERITIES.indexOf(left,) - ISSUE_SEVERITIES.indexOf(right,);
-  },);
-
-  return nonNullishOrThrow(sorted[Math.floor(sorted.length / 2,)],);
 }
 
 /**
@@ -243,59 +217,6 @@ function disposeMerge(
 }
 
 /**
- * Deterministic issue identity over member claim ids.
- *
- * @param members - claims forming the issue
- *
- * @returns `adjudicated/<hash>` identifier
- *
- * @example
- * ```ts
- * const issueId = computeIssueId({ members, },);
- * ```
- */
-function computeIssueId(
-  { members, }: { readonly members: readonly AggregatedClaim[]; },
-): string {
-  /**
-   * Member claim ids sorted for identity stability.
-   */
-  const ids = members
-    .map(function toId(member,) {
-      return member.claimId;
-    },)
-    .toSorted();
-
-  return `adjudicated/${hashContent({ content: JSON.stringify(ids,), },)}`;
-}
-
-/**
- * Status of a merged issue from its members' statuses, most protective
- * first: any source-defect blocks the whole issue, any acceptance carries
- * it, any needs-human keeps it open, and only all-rejected rejects.
- *
- * @param statuses - member statuses in member order
- *
- * @returns Merged issue status
- *
- * @example
- * ```ts
- * mergedStatus({ statuses: ['accepted', 'rejected',], },);
- * ```
- */
-function mergedStatus(
-  { statuses, }: { readonly statuses: readonly AdjudicationStatus[]; },
-): AdjudicationStatus {
-  if (statuses.includes('source-defect',))
-    return 'source-defect';
-  if (statuses.includes('accepted',))
-    return 'accepted';
-  if (statuses.includes('needs-human',))
-    return 'needs-human';
-  return 'rejected';
-}
-
-/**
  * Aggregates panel ballots over one chunk's clusters into adjudicated
  * issues. Pure: same clusters, ballots, and config always produce the same
  * issues, so checkpoints can replay adjudication without model calls.
@@ -333,20 +254,9 @@ export function tallyVotes(
   },
 ): AdjudicationResult {
   /**
-   * One member claim after grading, before issue assembly.
+   * Decisions and partition lineage accumulated in cluster document order.
    */
-  type GradedMember = {
-    readonly member: AggregatedClaim;
-    readonly tally: VoteTally;
-    readonly reading: ClaimPanelReading;
-    readonly status: AdjudicationStatus;
-    readonly severity: IssueSeverity;
-  };
-
-  /**
-   * Issues accumulated in cluster document order.
-   */
-  const issues = clusters.flatMap(function toIssues(cluster,): readonly AdjudicatedIssue[] {
+  const outcomes = clusters.map(function adjudicateCluster(cluster,): AdjudicationResult {
     /**
      * Per-member tallies, statuses, and severities in member order.
      */
@@ -377,65 +287,34 @@ export function tallyVotes(
       };
     },);
 
-    if (disposeMerge({
-      cluster,
-      ballots,
-      config,
-    },)) {
-      /**
-       * Members whose acceptance drives the merged issue's severity;
-       * when none is accepted every member weighs in.
-       */
-      const severityCarriers = graded.filter(function isAccepted(entry,) {
-        return entry.status === 'accepted';
-      },);
-
-      return [{
-        issueId: computeIssueId({ members: cluster.members, },),
-        status: mergedStatus({
-          statuses: graded.map(function toStatus(entry,) {
-            return entry.status;
-          },),
-        },),
-        severity: severityUpperMedian({
-          severities: (severityCarriers.length > 0 ? severityCarriers : graded)
-            .map(function toSeverity(entry,) {
-              return entry.severity;
-            },),
-        },),
-        claims: cluster.members,
-        tallies: Object.fromEntries(graded.map(function toEntry(entry,) {
-          return [
-            entry.member
-              .claimId,
-            entry.tally,
-          ];
-        },),),
-        readings: Object.fromEntries(graded.map(function toReading(entry,) {
-          return [
-            entry.member
-              .claimId,
-            entry.reading,
-          ];
-        },),),
-      },];
-    }
-
-    return graded.map(function toIssue(entry,): AdjudicatedIssue {
-      return {
-        issueId: computeIssueId({ members: [entry.member,], },),
-        status: entry.status,
-        severity: entry.severity,
-        claims: [entry.member,],
-        tallies: { [entry.member
-          .claimId]: entry.tally, },
-        readings: { [entry.member
-          .claimId]: entry.reading, },
-      };
+    /** Whether the panel relates these diagnoses as one defect. */
+    const merged = disposeMerge({ cluster, ballots, config, },);
+    /** Related diagnoses still keep their separately decided authority. */
+    const groups = merged
+      ? partitionGradedMembers({ graded, },)
+      : graded.map(function solo(entry,): readonly GradedMember[] { return [entry,]; },);
+    /** Each record carries only its own members and evidence. */
+    const issues = groups.map(function assemble(group,): AdjudicatedIssue {
+      return assembleGradedIssue({ graded: group, },);
     },);
+    return {
+      issues,
+      findings: merged && groups.length > 1
+        ? [`issue-merge-partitioned (${cluster.clusterId}: ${issues.map(function partition(issue,): string {
+          return `${issue.issueId}=${issue.status}`;
+        },).join(', ',)})`,]
+        : [],
+    };
   },);
 
-  return { issues, };
+  return {
+    issues: outcomes.flatMap(function issuesOf(outcome,): readonly AdjudicatedIssue[] {
+      return outcome.issues;
+    },),
+    findings: outcomes.flatMap(function findingsOf(outcome,): readonly string[] {
+      return outcome.findings;
+    },),
+  };
 }
 
 //endregion Vote tally

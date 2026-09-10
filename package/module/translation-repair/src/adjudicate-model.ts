@@ -172,8 +172,10 @@ export type VoteTally = {
 
 /**
  * One issue after the panel spoke.
- * Merged issues carry every member claim so the editor sees the best
- * evidence; per-claim tallies stay attached for calibration.
+ * Panel-merged diagnoses are partitioned by their effective member status,
+ * so accepted issues contain only accepted claims. A source-defect decision
+ * still blocks the entire merged cluster, whose members may have mixed statuses.
+ * Per-claim tallies stay attached for calibration.
  *
  * @example
  * ```ts
@@ -204,7 +206,8 @@ export type AdjudicatedIssue = {
   readonly severity: IssueSeverity;
 
   /**
-   * Member claims, atomic as proposed.
+   * Member claims, atomic as proposed. Fresh accepted issues contain only
+   * accepted members; rejected and unresolved diagnoses remain separate records.
    */
   readonly claims: readonly AggregatedClaim[];
 

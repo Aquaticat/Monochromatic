@@ -259,7 +259,7 @@ export async function runPanelStage(
       /**
        * Configured electorate remains unchanged even if another packet hears different seats.
        */
-      const { issues, } = tallyVotes({
+      const { issues, findings: tallyFindings, } = tallyVotes({
         clusters: [cluster,],
         ballots,
         configuredPanelists: panelModelIds.length,
@@ -272,6 +272,7 @@ export async function runPanelStage(
           return voice.modelId;
         },),
         findings: [
+          ...tallyFindings,
           ...gather.findings,
           ...Object.values(ballots,)
             .flatMap(function irregularities(ballot,): readonly string[] {
