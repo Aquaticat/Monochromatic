@@ -143,6 +143,12 @@ export type AdjudicationPromptPlan = {
  *
  * @param clusters - aggregation output for this chunk, in document order
  *
+ * @param neighbouringSourceText - nearby source evidence without extra coverage obligations
+ *
+ * @param neighbouringIncumbentText - existing placement context, not factual authority
+ *
+ * @param documentSourceText - optional same-entry original evidence for checking current claims
+ *
  * @returns Messages plus index maps for ballot resolution
  *
  * @example
