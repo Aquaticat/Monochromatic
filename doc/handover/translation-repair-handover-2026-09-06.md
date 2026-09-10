@@ -66,8 +66,20 @@ Dialogue-interpretation disagreements remain recorded in the wording plan,
 not converted into blanket deletion rules.
 
 Task 18 is complete.
-Task 20 must give retained-label audits their actual archive context:
+Task 20 is in progress:
 all fourteen audit-only findings wrongly call the useful label an empty translation.
+`proc_724d` runs `translation-repair-archive-audit-context-probe-20260910-r2`.
+Report:
+`~/temp/agent/archive-audit-context-probe-20260910-r2/report.json`.
+Log:
+`~/temp/agent/archive-audit-context-probe-20260910-r2.log`.
+The first harness run inherited a one-second capture timeout and is not treatment evidence;
+the corrected plan asserts the actual 360000 ms exchange field.
+The experiment compares positional context alone with context plus block scope,
+using both original responsibilities and dangling-prose/orphan-label controls.
+Repeated `Translation:` labels require known parser offsets,
+not a first text match.
+See [archive audit context measurement](../planning/translation-repair-archive-audit-context-2026-09-10.md).
 Do not skip required review or add a loop.
 Temporal-context task 19 remains pending.
 No full-entry pass is active.
