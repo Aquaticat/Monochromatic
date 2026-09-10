@@ -175,11 +175,12 @@ export function parseNaturalnessConfirmations(
       .map(function modelIdOf(seat,): string {
         return seat.modelId;
       },);
-    return JSON.stringify(confirmationRoster,) !== JSON.stringify(decisiveRoster,);
+    return (JSON.stringify(confirmationRoster,) !== JSON.stringify(decisiveRoster,))
+      || (confirmation.quorumOver !== decisive.quorumOver);
   },)) {
     throw new ArtifactParseError({
       path: `${path}.confirmations`,
-      reason: 'same requested reviewer roster as decisive review',
+      reason: 'same requested reviewer roster and quorum basis as decisive review',
     },);
   }
 

@@ -141,6 +141,10 @@ function assertConsolidationCoversContest(
  *
  * @param correctionChainRequired - whether review records digest-bound corrections
  *
+ * @param everyBodyBlockReviewed - whether reviewed paragraphs include all body blocks
+ *
+ * @param quorumBasisRequired - whether review rounds retain their wider quorum
+ *
  * @returns What the stage settled, that it did not run, or that this artifact
  * predates the field
  *

@@ -145,6 +145,8 @@ function parseGate(
  * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
  * block rather than the refinable paragraphs alone
  *
+ * @param quorumBasisRequired - whether review rounds retain their wider quorum
+ *
  * @returns Parsed consolidation slice
  *
  * @example
