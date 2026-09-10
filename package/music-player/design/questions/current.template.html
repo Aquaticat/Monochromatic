@@ -772,6 +772,11 @@
       applyScale(nextScale);
     }
 
+    function settleFitPreview() {
+      fitPreview();
+      fitPreview();
+    }
+
     document.querySelectorAll('.evidence-button').forEach((button) => {
       button.addEventListener('click', () => {
         returnTarget = button;
@@ -779,7 +784,7 @@
         previewImage.src = button.dataset.previewSrc;
         previewImage.alt = button.querySelector('img').alt;
         dialog.showModal();
-        fitPreview();
+        settleFitPreview();
       });
     });
 
@@ -791,7 +796,7 @@
       fitActive = false;
       applyScale(Math.min(maximumUniformScale, Math.max(scaleX, scaleY) + 0.1));
     });
-    document.querySelector('#fit').addEventListener('click', fitPreview);
+    document.querySelector('#fit').addEventListener('click', settleFitPreview);
     document.querySelector('#native').addEventListener('click', () => {
       fitActive = false;
       applyScale(nativeScaleX, nativeScaleY);
