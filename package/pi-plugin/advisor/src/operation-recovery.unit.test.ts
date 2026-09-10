@@ -62,11 +62,26 @@ await describe({ name: '', children: [
     expect(fixture.dispatched,).toHaveLength(2,);
     expect(result.reviews.map(review => review.text),).toEqual(['usable',],);
   }, },),
-  it({ name: 'a pending preparation is not dispatched after first success', fn: async (): Promise<void> => {
-    const fixture = operationFixture({ plans: { 'p/a': [{ after: 15, text: 'usable', },], 'q/b': [{ preparationMs: 20, after: 30, text: 'late', },], }, },);
+  it({ name: 'already-started preparation receives the collection grace without launching replacements', fn: async (): Promise<void> => {
+    const fixture = operationFixture({ plans: {
+      'p/a': [{ after: 15, text: 'usable', },],
+      'q/b': [{ preparationMs: 20, after: 30, text: 'second review', },],
+      'r/c': [{ after: 1, text: 'must not launch', },],
+    }, },);
+    const result = await fixture.run({ hedgeDelayMs: 10, },);
+    expect(result.reviews.map(review => review.text),).toEqual(['usable', 'second review',],);
+    expect(fixture.now(),).toBe(40,);
+    expect(fixture.dispatched.map(call => call.model),).toEqual(['p/a', 'q/b',],);
+  }, },),
+  it({ name: 'already-started preparation cannot dispatch after the collection cutoff', fn: async (): Promise<void> => {
+    const fixture = operationFixture({ plans: {
+      'p/a': [{ after: 15, text: 'usable', },],
+      'q/b': [{ preparationMs: 40, after: 50, text: 'too late', },],
+    }, },);
     const result = await fixture.run({ hedgeDelayMs: 10, },);
     expect(result.reviews,).toHaveLength(1,);
-    expect(fixture.now(),).toBe(15,);
+    expect(result.end,).toBe('collection',);
+    expect(fixture.now(),).toBe(45,);
     await fixture.flush();
     expect(fixture.dispatched,).toHaveLength(1,);
   }, },),
