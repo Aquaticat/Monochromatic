@@ -197,6 +197,25 @@ Passing behavior:
 - Pair a distinction with a concrete example in which the difference matters.
 - Let the learner relate the source operation, observed state, and resulting behavior.
 - Use actual language behavior for claims about execution rather than an animation that merely asserts it.
+- Show useful representations where structured values are introduced, returned, received, or changed.
+  An English label alone can hide the object, collection, function, or Promise the learner needs to understand.
+- Distinguish the original value, serialized or inspected text, and the program's observed outcome.
+  Explain the representation tool before relying on it and state what it omits.
+- Label snapshots and recorded examples as such;
+  neither is live inspection of a value that has since changed.
+
+Value-representation counterexamples:
+
+- A Promise is represented only by “Promise object”, missing the opportunity to inspect it beside its result.
+- JSON's empty object is treated as proof that a Promise has no outcome or accessible behavior.
+- Showify's unknown-state marker is confused with the pending state.
+- A formatted function name is taken to expose its closed-over variables.
+- Debugger text is presented as JSON or executable source.
+- A helper's formatting hooks are assumed to be universally side-effect-free.
+
+The Promise lesson uses literal JSON beside live Showify snapshots,
+with an explicitly recorded native Node inspector comparison.
+Those are tools used by this example, not a prescription that every subject needs these same formatters.
 
 Promise acceptance example:
 
