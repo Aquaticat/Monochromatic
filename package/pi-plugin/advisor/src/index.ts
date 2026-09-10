@@ -294,6 +294,8 @@ async function buildMainModelGuidance(
 export { createAdvisorOperationLedger, } from './operation-ledger.ts';
 export { runAdvisorOperation, } from './operation.ts';
 export { formatAdvisorProgress, } from './operation-progress.ts';
+export { renderAdvisorOperationSummary, NO_ADVISOR_OPERATION_SUMMARY, } from './rendering-operation.ts';
+export { createAdvisorTool, } from './tool.ts';
 export { registerAdvisorFailureAccounting, } from './operation-failure-accounting.ts';
 export { AdvisorOperationError, } from './operation-error.ts';
 export type { AdvisorOperationOptions, } from './operation.ts';

@@ -301,11 +301,97 @@ Initial unrelated changes:
 
 Leave those changes untouched.
 
+## Implementation progress
+
+Implementation is authorized and underway.
+Task #6 (accounting foundations) and task #5 (credit classification and exclusion gates) are complete.
+Task #3 (collection integration) remains in progress;
+ task #4 covers final host verification and issue closure.
+
+Implemented source includes:
+
+- `operation.ts` and `operation-attempt.ts`:
+   serial recovery,
+   delayed overlap,
+   bounded collection,
+   and final dispatch gates.
+- `operation-ledger.ts`,
+   `operation-types.ts`,
+   and `operation-usage.ts`:
+   detached records and aggregate available usage.
+- `operation-clock.ts`:
+   local timeout and caller-cancellation races independent of provider cooperation.
+- `provider-credit.ts` and `operation-candidates.ts`:
+   credit-specific diagnostics and whole-provider exclusion within one call.
+- `run-advisor.ts` and `run-preparation.ts`:
+   one evidence snapshot,
+   per-model budgets,
+   scope revalidation,
+   and collected results.
+- `operation-failure-accounting.ts`:
+   durable failed-operation entries and top-level usage restoration through `tool_result`.
+- `rendering-operation.ts`:
+   final attempt summaries,
+   currently being verified.
+
+Configuration now uses `hedgingEnabled: false` by default,
+ an explicitly supplied `hedgeDelayMs` when enabled,
+ and `collectionGraceMs: 30000`.
+Project disablement is independent of inherited timing values.
+
+The package's full unit suite passed after the coordinator was first wired in.
+Subsequent additions still require another full build,
+ tests,
+ Oxlint,
+ and TypeScript run.
+The shared model-selection package's full unit suite and TypeScript task passed
+ after exporting its synchronous `readLiveScope` helper.
+
+Independent Kimi code review identified the missed getter-backed final scope gate.
+That was addressed by reusing `readLiveScope`,
+ including getter precedence and raw/wrapped model normalization,
+ rather than maintaining a duplicate parser.
+A new built-Advisor regression changes getter-backed scope during authentication.
+
+Other review suggestions were not adopted:
+
+- Credit exclusion blocks new provider dispatches,
+   not already-running calls that might still produce a usable review.
+  Cancelling all same-provider work on one failure could discard such a result.
+  A regression now preserves that in-flight review while forbidding further dispatches.
+- Local authentication/preparation is not an already-running provider request.
+  No actual provider request starts after first usable success;
+   pending preparation is cancelled when no provider remains in flight.
+  The existing deterministic regression retains this boundary.
+
+Progress payloads are being tightened to carry only a progress discriminator plus rendered metadata.
+The full ledger remains on final results and durable failure entries,
+ not on partial tool updates where provider diagnostics could expose payload text.
+
+Important commits include:
+
+- `8af348685`:
+   coordinator and attempt observer.
+- `ce198df27`:
+   scoped operation preparation and explicit overlap configuration.
+- `d75c079d7`:
+   tool progress,
+   collected output,
+   and failed usage integration.
+- `9eaa516a0`:
+   deterministic collection/recovery timelines.
+- `05207ee4a`:
+   shared getter-backed scope revalidation and configuration tests.
+
 ## Next action
 
-Implement operation accounting and provider outcomes,
- then call-local exhausted-credit exclusion,
- bounded collection and default fallback,
- and host-level verification.
-Use the task list for independent completion criteria.
-Do not reopen settled decisions.
+Finish current rendering and integration tests,
+ add a guarded disposable Pi host verification task,
+ update README and issue acceptance criteria to the confirmed policy,
+ and verify guard tests fail when their guards are removed in a throwaway.
+Run package builds,
+ full unit suites,
+ zero-warning Oxlint,
+ manual TypeScript tasks,
+ and host verification before closing #413.
+Do not reopen settled decisions or revert unrelated concurrent work.

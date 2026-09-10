@@ -25,6 +25,7 @@ import {
 import type {
   AdvisorConfig,
   AdvisorDetails,
+  AdvisorProgressDetails,
   AdvisorToolDefinition,
   AdvisorToolResult,
 } from './types.ts';
@@ -137,7 +138,7 @@ export function createAdvisorTool(toolOptions: CreateAdvisorToolOptions,): Advis
                   now: Date.now(),
                 },),
               },],
-              details: operation,
+              details: { kind: 'advisor-progress', },
             },);
           },
         },);
@@ -181,7 +182,7 @@ export function createAdvisorTool(toolOptions: CreateAdvisorToolOptions,): Advis
      Render partial metadata independently from final successful or failed results.
      */
     renderResult(
-      result: ReadonlyDeep<AgentToolResult<AdvisorDetails | AdvisorOperationSnapshot>>,
+      result: ReadonlyDeep<AgentToolResult<AdvisorDetails | AdvisorProgressDetails>>,
       renderOptions: ReadonlyDeep<ToolRenderResultOptions>,
       theme: ForeignHostCapability<Theme>,
     ) {

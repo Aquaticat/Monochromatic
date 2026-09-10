@@ -7,6 +7,7 @@ import type {
 } from '@earendil-works/pi-ai';
 import type { ReadonlyDeep, } from 'type-fest';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { AdvisorOperationLedger, } from './operation-ledger.ts';
 import type { AdvisorCandidateIdentity, } from './operation-candidates.ts';
@@ -16,6 +17,9 @@ import {
 } from './provider-credit.ts';
 import { copyAdvisorUsage, } from './operation-usage.ts';
 import { extractAdvisorText, } from './advisor-client.ts';
+
+/** Provider-attempt logger root. */
+const l = tagged({ tag: 'advisor/operation-attempt', },);
 
 /**
  Model-specific evidence metrics retained for every attempt.
@@ -108,6 +112,9 @@ export async function observeAdvisorAttempt(options: ForeignHostCapability<{
     graceMs,
     notify,
   } = options;
+  /** Branch-local logger preserves lifecycle evidence without exposing review content. */
+  const innerL = tagged({ tag: observeAdvisorAttempt.name, l, },);
+  innerL.debug(`observing ${candidate.model}; attemptId=${String(id,)}`,);
   try {
     /**
      Terminal response; the scheduler races this work against local cutoffs.
@@ -204,16 +211,17 @@ export async function observeAdvisorAttempt(options: ForeignHostCapability<{
      Retain a readable failure while keeping thrown provider objects out of session state.
      */
     const diagnostic = caughtValueText(error,);
-    if (ledger.snapshot()
-      .end
-      === undefined) {
+    innerL.debug(`provider or preparation failed for ${candidate.model}: ${diagnostic}`,);
+    /** Caller cancellation and cutoffs take precedence over a concurrently thrown provider error. */
+    const current = ledger.snapshot();
+    if (current.end === undefined && !signal.aborted && now() < (current.collectionEndsAtMs ?? current.deadlineAtMs)) {
       ledger.record({
         ...ledger.attempt(id,),
         state: 'failed',
         endedAtMs: now(),
         diagnostic,
       },);
-      if (isAdvisorCreditExhaustion(diagnostic,))
+      if (ledger.attempt(id,).dispatchedAtMs !== undefined && isAdvisorCreditExhaustion(diagnostic,))
         ledger.blockProvider(candidate.provider,);
       notify();
     }

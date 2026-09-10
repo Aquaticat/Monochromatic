@@ -347,13 +347,16 @@ export type AdvisorRunOptions = ForeignHostCapability<{
   readonly signal?: ForeignHostCapability<AbortSignal>;
 }>;
 
+/** Metadata-only progress discriminator; provider diagnostics and review text never cross this update boundary. */
+export type AdvisorProgressDetails = { readonly kind: 'advisor-progress'; };
+
 /**
  Advisor tool definition type with concrete parameters and details.
  */
 export type AdvisorToolDefinition<TParameters extends TSchema = TSchema,> =
   ToolDefinition<
     TParameters,
-    AdvisorDetails | AdvisorOperationSnapshot
+    AdvisorDetails | AdvisorProgressDetails
   >;
 
 /**

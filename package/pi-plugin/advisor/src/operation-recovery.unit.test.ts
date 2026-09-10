@@ -29,6 +29,17 @@ await describe({ name: '', children: [
     expect(result.end,).toBe('exhausted',);
     expect(result.attempts[1]?.diagnostic,).toContain('blocked for this call',);
   }, },),
+  it({ name: 'credit exclusion preserves a usable result from an already-running same-provider request', fn: async (): Promise<void> => {
+    const fixture = operationFixture({ plans: {
+      'p/a': [{ after: 15, stopReason: 'error', error: creditError, },],
+      'p/b': [{ after: 10, text: 'already-running review', },],
+      'p/c': [{ after: 1, text: 'must not dispatch', },],
+    }, },);
+    const result = await fixture.run({ hedgeDelayMs: 10, },);
+    expect(fixture.dispatched.map(call => call.model),).toEqual(['p/a', 'p/b',],);
+    expect(result.blockedProviders,).toEqual(['p',],);
+    expect(result.reviews.map(review => review.text),).toEqual(['already-running review',],);
+  }, },),
   it({ name: 'successful review text mentioning credits does not block its provider', fn: async (): Promise<void> => {
     const fixture = operationFixture({ plans: { 'p/a': [{ after: 10, text: 'The message says out of credits.', },], }, },);
     const result = await fixture.run();

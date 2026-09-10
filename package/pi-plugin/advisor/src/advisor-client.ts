@@ -22,6 +22,7 @@ import type {
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { copyAdvisorUsage, } from './operation-usage.ts';
+import { AdvisorCompletionError, } from './advisor-completion-error.ts';
 
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
@@ -223,6 +224,9 @@ export type CompleteAdvisorOptions = ForeignHostCapability<{
 export async function requestAdvisor(
   options: ForeignHostCapability<CompleteAdvisorOptions>,
 ): Promise<AssistantMessage> {
+  options.signal?.throwIfAborted();
+  if (options.operationStartedAtMs !== undefined && Date.now() >= options.operationStartedAtMs + options.config.timeoutMs)
+    throw new AdvisorCompletionError('advisor: operation deadline elapsed before authentication',);
   /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai accepts mutable Model while this boundary retains the selected model without changing it. */
   /**
    Mutable view of the advisor model for external pi-ai API calls.
@@ -348,7 +352,7 @@ export async function requestAdvisor(
     .timeoutMs
     - (Date.now() - (options.operationStartedAtMs ?? Date.now()));
   if (remainingMs <= 0)
-    throw new Error(`advisor: operation deadline elapsed before dispatch to ${modelSlug}`,);
+    throw new AdvisorCompletionError(`advisor: operation deadline elapsed before dispatch to ${modelSlug}`,);
   options.onDispatch?.(advisorReasoningLevel === undefined ? {} : { reasoning: advisorReasoningLevel, },);
   return await completeModel({
     ctx: options.ctx,
