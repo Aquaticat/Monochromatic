@@ -238,20 +238,22 @@
       scrollbar-gutter: stable;
     }
 
+    .matrix-band + .matrix-band {
+      margin-block-start: 1rem;
+    }
+
     .matrix-candidates {
       display: grid;
-      grid-template-columns: 9rem repeat(3, minmax(18rem, 1fr));
+      grid-template-columns: repeat(3, minmax(18rem, 1fr));
       gap: 0.75rem;
-      min-inline-size: 66rem;
+      min-inline-size: 56rem;
     }
 
     .matrix-row-label {
-      position: sticky;
-      z-index: 1;
-      inset-inline-start: 0;
       display: flex;
       align-items: center;
       min-block-size: 3rem;
+      margin-block-end: 0.5rem;
       padding-block: 0.75rem;
       padding-inline: 0.75rem;
       border-radius: 0.75rem;
@@ -595,8 +597,8 @@
         </article>
         <article class="requirement">
           <span class="code">Native source</span>
-          <h3>Android resolves every role</h3>
-          <p>Compose Material 3 1.5.0-alpha27 reads Android 17 dark dynamic resources. Captures are opaque 2076 × 2152 physical px at 852 × 883dp.</p>
+          <h3>Android supplies dynamic roles</h3>
+          <p>Compose Material 3 1.5.0-alpha27 reads Android 17 dark dynamic resources; each candidate then applies its disclosed fixed-surface overrides. Captures are opaque 2076 × 2152 physical px at 852 × 883dp.</p>
         </article>
       </div>
       <div class="fixed-note"><strong>Measured contrast:</strong> selected rendered text combinations have a minimum of 4.63:1. Generated rail outlines have a minimum of 3.80:1 against every adjacent black or generated container sampled by these candidates. Reduced-motion and TalkBack requirements are unchanged.</div>
@@ -658,7 +660,7 @@
           </ul>
         </article>
       </div>
-      <p class="ranking"><strong>Ranking: C1 &gt; C2.</strong> C1 beats C2 because D36 chose a calm neutral state rather than saturated current-row color; controls already provide dynamic personalization without making current-state weight wallpaper-dependent.</p>
+      <p class="ranking"><strong>Ranking: C1 &gt; C2.</strong> C1 beats C2 because it keeps the accepted current-state weight stable while controls and foregrounds already follow Android. C2 remains neutral, but its generated hue and weight change with the system palette.</p>
     </section>
 
     <section class="panel" aria-labelledby="matrix-title">
@@ -848,7 +850,15 @@
     const corrections = document.querySelector('#other-corrections');
     const output = document.querySelector('#output');
 
-    corrections.addEventListener('input', () => corrections.setCustomValidity(''));
+    function invalidatePreparedAnswer() {
+      output.hidden = true;
+    }
+
+    corrections.addEventListener('input', () => {
+      corrections.setCustomValidity('');
+      invalidatePreparedAnswer();
+    });
+    form.addEventListener('change', invalidatePreparedAnswer);
     form.addEventListener('reset', () => {
       corrections.setCustomValidity('');
       output.hidden = true;

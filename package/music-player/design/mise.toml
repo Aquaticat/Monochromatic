@@ -23,9 +23,8 @@ const currentRows = [
   { key: "dynamic", code: "C2", label: "dynamic current row", alt: "Android-generated soft-neutral current row" },
 ]
 const matrixRows = environments.map((environment) => {
-  const candidates = currentRows.flatMap((currentRow) => [
-    `<div class="matrix-row-label">${currentRow.code}<br>${currentRow.label}</div>`,
-    ...reaches.map((reach) => {
+  const bands = currentRows.map((currentRow) => {
+    const candidates = reaches.map((reach) => {
       const basename = `dark-dynamic-${environment.key}-${reach.key}-${currentRow.key}`
       const relativePath = join("questions", "render", `${basename}.png`)
       const encoded = readFileSync(join(root, relativePath)).toString("base64")
@@ -33,9 +32,10 @@ const matrixRows = environments.map((environment) => {
       const title = `${environment.title} · ${reach.code} ${reach.label} · ${currentRow.code} ${currentRow.label}`
       const alt = `${environment.accent} dynamic accents with ${reach.alt} and ${currentRow.alt}`
       return `<article class="evidence-card"><span class="code">${reach.code}${currentRow.code}</span><button class="evidence-button" type="button" data-preview-title="${title}" data-preview-src="${source}"><img src="${source}" width="852" height="883" alt="${alt}"><span class="evidence-label">Open ${reach.code}${currentRow.code} at panel scale</span></button></article>`
-    }),
-  ]).join("\n")
-  return `<section class="matrix-row" aria-labelledby="environment-${environment.key}"><h3 id="environment-${environment.key}">${environment.title}</h3><p class="environment-meta">${environment.meta}</p><div class="matrix-scroll"><div class="matrix-candidates">${candidates}</div></div></section>`
+    }).join("\n")
+    return `<div class="matrix-band"><div class="matrix-row-label">${currentRow.code} · ${currentRow.label}</div><div class="matrix-scroll"><div class="matrix-candidates">${candidates}</div></div></div>`
+  }).join("\n")
+  return `<section class="matrix-row" aria-labelledby="environment-${environment.key}"><h3 id="environment-${environment.key}">${environment.title}</h3><p class="environment-meta">${environment.meta}</p>${bands}</section>`
 }).join("\n")
 let html = readFileSync(templatePath, "utf8")
 html = html.replace("@@MATRIX_ROWS@@", matrixRows)
@@ -134,6 +134,7 @@ const environments = [
 const reaches = ["stable", "zoned", "tonal"]
 const currentRows = ["fixed", "dynamic"]
 const hexToRgb = (hex) => [1, 3, 5].map((start) => Number.parseInt(hex.slice(start, start + 2), 16))
+const toPixel = (hex) => `srgba(${hexToRgb(hex).join(",")},1)`
 const luminance = (hex) => hexToRgb(hex)
   .map((value) => value / 255)
   .map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
@@ -150,6 +151,7 @@ const textPairNames = [
 ]
 const outlinePairNames = ["blackOutline", "lowContainerOutline", "containerOutline"]
 const computedRatios = []
+let embeddedIndex = 0
 for (const environment of environments) {
   const rolePath = join(root, "questions", "evidence", `dark-dynamic-${environment.key}-roles.json`)
   const roleEvidence = JSON.parse(readFileSync(rolePath, "utf8"))
@@ -194,8 +196,8 @@ for (const environment of environments) {
   }
   computedRatios.push(ratios)
   const dynamicCurrentSamples = []
-  for (const reach of reaches) {
-    for (const currentRow of currentRows) {
+  for (const currentRow of currentRows) {
+    for (const reach of reaches) {
       const basename = `dark-dynamic-${environment.key}-${reach}-${currentRow}`
       const hierarchyPath = join(root, "questions", "evidence", `${basename}.xml`)
       const hierarchy = readFileSync(hierarchyPath, "utf8")
@@ -215,9 +217,16 @@ for (const environment of environments) {
         throw new Error(`${environment.key}/${reach}/${currentRow} restored the rejected current-row play icon.`)
       }
       const imagePath = join(root, "questions", "render", `${basename}.png`)
+      const expectedEncoded = readFileSync(imagePath).toString("base64")
+      const firstEmbedded = dataUrls[embeddedIndex * 2]?.[1]
+      const secondEmbedded = dataUrls[embeddedIndex * 2 + 1]?.[1]
+      if (firstEmbedded !== expectedEncoded || secondEmbedded !== expectedEncoded) {
+        throw new Error(`${basename}.png does not match its two displayed embedded references.`)
+      }
+      embeddedIndex += 1
       const pixels = execFileSync("magick", [
         imagePath, "-format",
-        "%[fx:minima.a]|%[fx:maxima.a]|%[pixel:p{1038,1000}]|%[pixel:p{1800,1000}]|%[pixel:p{500,1000}]|%[pixel:p{1800,350}]",
+        "%[fx:minima.a]|%[fx:maxima.a]|%[pixel:p{1038,1000}]|%[pixel:p{1800,1000}]|%[pixel:p{500,1000}]|%[pixel:p{1800,350}]|%[pixel:p{30,1000}]|%[pixel:p{900,1450}]",
         "info:",
       ], { encoding: "utf8" }).trim().split("|")
       if (pixels[0] !== "1" || pixels[1] !== "1") {
@@ -226,19 +235,23 @@ for (const environment of environments) {
       if (pixels[2] !== "srgba(0,0,0,1)" || pixels[3] !== "srgba(0,0,0,1)") {
         throw new Error(`${basename}.png lost its visible true-black spacer or track canvas.`)
       }
-      if ((reach === "stable" || reach === "zoned") && pixels[4] !== "srgba(0,0,0,1)") {
-        throw new Error(`${basename}.png lost its fixed black folder canvas.`)
+      const expectedFolder = reach === "tonal" ? toPixel(roles.surface_container_low) : "srgba(0,0,0,1)"
+      const expectedRail = reach === "stable"
+        ? "srgba(0,0,0,1)"
+        : reach === "zoned" ? toPixel(roles.surface_container_low) : toPixel(roles.surface_container)
+      const expectedDeck = reach === "stable"
+        ? "srgba(10,10,13,1)"
+        : reach === "zoned" ? toPixel(roles.surface_container_low) : toPixel(roles.surface_container_high)
+      if (pixels[4] !== expectedFolder || pixels[6] !== expectedRail || pixels[7] !== expectedDeck) {
+        throw new Error(`${basename}.png does not match its disclosed folder, rail, and deck mapping.`)
       }
-      if (reach === "tonal" && pixels[4] === "srgba(0,0,0,1)") {
-        throw new Error(`${basename}.png did not render its generated tonal folder canvas.`)
-      }
-      if (currentRow === "fixed" && pixels[5] !== "srgba(10,10,13,1)") {
-        throw new Error(`${basename}.png did not render the fixed current-row neutral.`)
+      const expectedCurrent = currentRow === "fixed"
+        ? "srgba(10,10,13,1)"
+        : toPixel(roles.surface_container_low)
+      if (pixels[5] !== expectedCurrent) {
+        throw new Error(`${basename}.png does not match its disclosed current-row neutral source.`)
       }
       if (currentRow === "dynamic") {
-        if (pixels[5] === "srgba(10,10,13,1)") {
-          throw new Error(`${basename}.png did not render a generated current-row neutral.`)
-        }
         dynamicCurrentSamples.push(pixels[5])
       }
     }
@@ -246,6 +259,9 @@ for (const environment of environments) {
   if (new Set(dynamicCurrentSamples).size !== 1) {
     throw new Error(`${environment.key} couples current-row color to structural surface reach.`)
   }
+}
+if (embeddedIndex !== 36) {
+  throw new Error(`Validated ${embeddedIndex} embedded candidates; expected 36.`)
 }
 const recordedContrast = JSON.parse(readFileSync(join(root, "questions", "evidence", "dark-dynamic-contrast.json"), "utf8"))
 for (const name of [...textPairNames, ...outlinePairNames]) {
