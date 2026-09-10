@@ -10,8 +10,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { EffectiveModelScope, } from '../dist/final/node/index.mjs';
 import {
+  type EffectiveModelScope,
   buildCostRanking,
   compareCostScores,
   scoreModel,

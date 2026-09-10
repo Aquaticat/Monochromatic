@@ -14,12 +14,12 @@ import {
   NO_OVERRIDE_MODEL,
   NoBudgetModelError,
   resolveBudgetModelOverride,
+  type BudgetModelAuth,
 } from '../dist/final/node/index.mjs';
 import {
   captureAsyncError,
   fixtureModel,
 } from './test-fixtures.ts';
-import type { BudgetModelAuth, } from '../dist/final/node/index.mjs';
 
 //region Fixtures
 
