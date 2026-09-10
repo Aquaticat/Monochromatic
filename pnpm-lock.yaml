@@ -249,6 +249,9 @@ catalogs:
     sharp:
       specifier: '>=0.35.3'
       version: 0.35.4
+    showify:
+      specifier: '>=0.2.8'
+      version: 0.2.8
     sinon:
       specifier: '>=22.1.0'
       version: 22.1.0
@@ -469,6 +472,9 @@ importers:
       rolldown:
         specifier: 'catalog:'
         version: 1.2.7
+      showify:
+        specifier: 'catalog:'
+        version: 0.2.8
       stylelint:
         specifier: 'catalog:'
         version: 17.15.0(supports-color@10.2.2)(typescript@7.0.2)
@@ -7318,6 +7324,9 @@ packages:
     resolution: {integrity: sha512-w1aiOKwKuRgtwAReIIj89puqg+I7GvX4IbLrvmhXbzQsj1+Zwi4VO3+fa6ZF91TWSjIxoEkKnMeHcLEODK5ZXA==, tarball: https://registry.npmjs.org/shell-quote/-/shell-quote-1.10.0.tgz}
     engines: {node: '>= 0.4'}
 
+  showify@0.2.8:
+    resolution: {integrity: sha512-CDFzD6ORbdkPOF8at/mv57ZQb2wa9iaC48R97uF6k1yJE7sfbsvEmuIb94FZ5x4UlfGSqmVgii+RcUJh3bsXKw==, tarball: https://registry.npmjs.org/showify/-/showify-0.2.8.tgz}
+
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==, tarball: https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz}
     engines: {node: '>=14'}
@@ -10709,6 +10718,8 @@ snapshots:
   shebang-regex@3.0.0: {}
 
   shell-quote@1.10.0: {}
+
+  showify@0.2.8: {}
 
   signal-exit@4.1.0: {}
 
