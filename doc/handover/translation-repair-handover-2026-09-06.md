@@ -175,14 +175,36 @@ so line overprotection versus recall variation remains unresolved.
 The genuine naming,
 participant and administrator controls remain actionable when presented.
 
-`proc_d09d` now runs `translation-repair-narrow-name-revision-plain-20260910`:
-only the exact changed name fragments,
-under unchanged production policy,
-with a stronger `owned` role-error control and the real archive checks.
-The fragment-plus-policy-ladder combination already failed its genuine English-name correction control
-and is not continued.
-The plain-policy arm remains unmeasured.
-The cap is 72 requests and a twenty-minute global bound.
+`proc_d09d` completed in 548 seconds with 49 requests.
+Fragment evidence under unchanged policy rejects the pure rename claim four-to-two;
+the compound claim gains no authority,
+while explicit English naming and administrator corrections remain accepted.
+Fresh critics detect the stronger `owned` error and the panel accepts both anchored ownership claims six-to-zero.
+The actual-archive panel accepts administrator and participant corrections,
+while rejecting the false name complaint six-to-zero.
+The failed fragment-plus-policy-ladder combination remains excluded.
+
+`proc_103d` completed in 212 seconds with 34 requests.
+All editors retain the name;
+one adds a duplicate list marker.
+The whole-chunk selector chooses the clean administrator correction at weight five.
+In the name-only discriminator,
+baseline chooses the rename at weight 4.5,
+while revision evidence selects preservation at weight five and weight six in reversed order.
+These are selected repairs,
+not fallback retention.
+Some historical rationales misstate the old spelling;
+only the actual diff and selected text support the conclusion.
+
+`proc_5c7c` now runs `translation-repair-temporal-revision-path-probe-20260910`
+on frozen `.frozen-dist-b9d3b2ea0`:
+actual full slice repair with the same fragment evidence on existing document sheets.
+The cap is one slice,
+120 requests and a twenty-minute global bound.
+This is still an evidence-injection prototype,
+not a production history feature.
+If successful,
+generic scoped acquisition and cache identity remain to be implemented and verified.
 No production history feature or one-off name mapping is added.
 The provider-free trace also confirms the pure administrator issue's broad quote includes the group name;
 adjudication alone is not proof that an editor will preserve it.

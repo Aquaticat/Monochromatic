@@ -635,11 +635,12 @@ one OpenRouter call reporting zero,
 and one Hyper plus three Synthetic calls unpriced.
 The daily helper ran afterward.
 
-## Active fragment-only measurement
+## Completed fragment-only measurement
 
 The failed combined arm does not establish the result of fragment evidence alone.
-`proc_d09d` runs `translation-repair-narrow-name-revision-plain-20260910`
-with unchanged production policy.
+`proc_d09d` completed `translation-repair-narrow-name-revision-plain-20260910`
+in 548 seconds with 49 requests,
+under unchanged production policy.
 No failed policy-ladder treatment is applied.
 
 - Script:
@@ -658,3 +659,140 @@ then the ownership-error and actual-archive critic/panel checks.
 The bound remains 72 requests and a twenty-minute global limit.
 No production code,
 name mapping or corpus content changes.
+
+This arm passes the deciding admission checks:
+
+- Explicit English-name override remains accepted five-to-one.
+- The false pure name claim is rejected four-to-two.
+- The compound role/name allegation receives three supports,
+  two oppositions and one ambiguous vote,
+  so it gains no repair authority.
+- The genuine administrator correction remains accepted five-to-one.
+- Fresh critics diagnose the stronger `owned` role error;
+  two anchored ownership claims are each accepted six-to-zero.
+  Raw replies are inspected in
+  `~/temp/agent/narrow-name-revision-critic-raw-20260910-r2.out`.
+  Other malformed target quotes remain findings,
+  not accepted evidence.
+- Fresh review of the actual archive again raises administrator and participant corrections.
+  A false complaint that the archive failed to adopt the English name is rejected six-to-zero.
+  The accepted corrections survive member-status partitioning;
+  the broad list-addition allegation ties and gains no authority.
+
+This does not yet verify writer or selector behavior inside the broad administrator edit region.
+The treatment remains experimental.
+Bedrock logged 0.00516393 USD;
+four OpenRouter calls reported zero,
+with fifteen Hyper and nineteen Synthetic calls unpriced.
+The daily helper ran afterward.
+Unreported usage is not asserted free.
+
+## Completed editor and selector boundary check
+
+`proc_103d` completed `translation-repair-revision-editor-selection-probe-20260910`
+in 212 seconds with 34 requests.
+
+- Script:
+  `~/temp/agent/probe-revision-editor-selection-20260910.mjs`.
+- Plan:
+  `~/temp/agent/revision-editor-selection-plan-20260910.out`.
+- Log:
+  `~/temp/agent/revision-editor-selection-probe-20260910.log`.
+- Report:
+  `~/temp/agent/revision-editor-selection-probe-20260910/report.json`.
+
+The real editor stage receives the accepted administrator-only issue,
+its actual broad envelope and deletion licenses,
+plus the measured changed-fragment revision evidence.
+It runs the ordinary producer and selector APIs.
+Read all generated proposals and the selected patch;
+retaining the name without repairing the role is not a successful control.
+
+The diagnostic then constructs a name-only competing patch:
+a real editor's role wording combined with a different prior editor's actual `Harunome Studio` phrase.
+It is recorded as a constructed composite with both contributor identities,
+not claimed as a newly generated whole candidate.
+Both patches must pass the normal apply gate,
+strict slice validation and MDX compilation.
+Their text must differ only in the reference name.
+
+Whole-chunk selection is tested without revision evidence,
+with it,
+and with reversed candidate order.
+The indecision fallback is the renaming repair;
+the rejection fallback is unchanged English.
+Thus a no-op or fallback cannot count as choosing the preserving correction.
+The cap is 48 requests,
+360000 ms per exchange and 1200000 ms globally.
+No production code changes.
+
+All editors retain `Harunome Hanbai` while proposing administrator-role wording.
+GLM-flash and DeepSeek produce the same clean correction:
+`She served as an administrator of the QQ group *Harunome Hanbai*.`
+GLM-5.3 adds a list marker inside an envelope whose outside context already supplies one.
+The regional vote chooses that duplicate-marker proposal,
+but whole-chunk selection chooses the clean patch with weight five over six ballots.
+Thus the selected result is sound at this role/name boundary,
+not every intermediate proposal or vote.
+
+The name-only discriminator passes the normal gates and compilation.
+Without revision evidence,
+the selector chooses the renaming composite at weight 4.5.
+With evidence,
+it chooses the preserving correction at weight five;
+with candidate order reversed,
+at weight six.
+Both preserving outcomes are selected results,
+not fallback retention.
+The reversed ordering may select a different responding window;
+it is not described as a fixed-cohort comparison.
+
+Some reasons incorrectly call `Harunome Studio` the older archived form.
+The recorded earlier form is source-script `春の芽工作室`,
+so those rationales are not credited as accurate historical accounts.
+The selected wording and the exact diff provide the verification evidence.
+
+`~/temp/agent/revision-editor-selection-results-20260910.out`
+and `~/temp/agent/revision-selector-decisions-20260910.out`
+record the generated texts,
+constructed composite provenance and per-ballot reasons.
+Bedrock logged 0.00296591 USD;
+six OpenRouter calls reported zero,
+with eleven Hyper and nine Synthetic calls unpriced.
+The daily helper ran afterward.
+
+## Active full repair with revision evidence
+
+`proc_5c7c` runs `translation-repair-temporal-revision-path-probe-20260910`
+on frozen `.frozen-dist-b9d3b2ea0`.
+
+- Script:
+  `~/temp/agent/probe-temporal-revision-path-20260910.mjs`.
+- Plan:
+  `~/temp/agent/temporal-revision-path-plan-20260910.out`.
+- Log:
+  `~/temp/agent/temporal-revision-path-probe-20260910.log`.
+- Report:
+  `~/temp/agent/temporal-revision-path-probe-20260910/report.json`.
+
+It exercises actual `repairChunk`,
+prepending the measured fragment evidence to each existing user document sheet.
+System policies,
+schemas,
+roles,
+source,
+archive,
+thresholds and generation depth are unchanged.
+Completed raw replies are reused from the preceding probes.
+The bound is one slice,
+120 requests and 1200000 ms globally.
+
+This remains an evidence-injection prototype,
+not a production revision-history implementation.
+Read actual actor,
+administrator and group-name wording,
+all candidates and fallback decisions.
+A successful result still requires generic,
+scoped provenance acquisition and cache identity before a fresh full Mio pass.
+That design must not label arbitrary historical edits as naming choices
+or turn them into a cross-entry glossary.
