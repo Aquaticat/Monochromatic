@@ -310,5 +310,13 @@ Mio12 launched at 03:45 UTC on frozen `ff6d288bc`,
 pass pid `1713424`,
 terminal-only supervisor `proc_6a7b`.
 Its page and log live under `~/temp/agent/Mio12-20260910` and the corresponding `.log` file.
-Read its whole page at completion.
-The page-reading queue and readiness claim remain blocked until that current-build reading.
+The page was read in full after settlement at 07:02 UTC.
+Its poem carries five visible breaks,
+with soft continuation wraps within each original row and no trailing break after attribution.
+Translation and publication use the same poem;
+consolidation kept that standing text.
+This closes the original verse-flattening defect at the published-page boundary.
+
+The queue is still blocked by a separate initial-attempt artifact-validation error and recorded wording concerns,
+not by missing evidence for the break remedy.
+The full Mio12 reading is in the OpenRouter planning log.

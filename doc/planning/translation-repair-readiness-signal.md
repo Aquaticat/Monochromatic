@@ -1656,6 +1656,31 @@ local guards are not a published page,
 and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
 queue advances.
 
+## Mio12 preserves published verse but does not establish readiness (2026-09-10)
+
+The upstream verse remedy now has a complete-page result:
+Mio12 retains five visible breaks through translation,
+consolidation and publication,
+with no trailing break after attribution.
+All screenshot transcripts,
+destinations,
+components and archive front matter survive.
+The whole page and its source and archive have been read;
+`verify-published` passes.
+
+The belief remains not ready.
+An initial attempt failed artifact validation when its stored naturalness seats did not reproduce its runtime verdict.
+The automatic reattempt settled,
+but that recovery does not repair the failed data contract.
+Class thirty is tracked for a stage-to-artifact reproduction before another launch.
+The page also retains the opening-name distinction loss,
+ambiguous coming-out bullet,
+awkward university wording and archived transcript usage issues.
+These are not hidden by the now-correct poem structure.
+
+The full reading and evidence paths are in
+[the Mio12 reading](translation-repair-openrouter-2026-09-03.md#mio12-publishes-the-preserved-poem-but-exposes-a-stored-review-mismatch-2026-09-10).
+
 ## The verse remedy has passage-level evidence (2026-09-10)
 
 The matched probe showed the new judges choosing a break-preserving candidate,

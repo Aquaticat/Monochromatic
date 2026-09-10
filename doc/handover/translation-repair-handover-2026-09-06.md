@@ -24,7 +24,50 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current launch at 03:45 UTC on 2026-09-10:
+Current state after 07:02 UTC on 2026-09-10:
+Mio12 settled after an initial artifact-validation error and automatic reattempt.
+Its complete page has been read beside source and archive,
+with all seven reading steps and three checks recorded in the OpenRouter planning log.
+`verify-published` passes for 17 wordings,
+8726 characters,
+zero silent or missing deliveries.
+The published poem has five visible breaks and no trailing attribution break;
+all screenshot transcripts and source destinations survive.
+The once-only picture purchase check holds across the reattempt:
+42 model readings,
+no second purchase.
+
+Class thirty is the blocker before another paid launch:
+the first attempt's naturalness round recorded four acceptable voices from six asked seats as `quorum-not-met`,
+but artifact validation recomputed `acceptable`.
+The exact failure names `consolidation.slices[3].polish.review.rounds[0].verdict`.
+Reproduce the real stage-to-artifact boundary and preserve the intended wider-bench quorum.
+Do not fix this by lowering the runtime threshold.
+No pass is running.
+
+The full page still has wording concerns recorded separately:
+loss of the `澪` versus `Mio` distinction in the opening,
+the ambiguous primary-school coming-out bullet,
+the university expression,
+source `SRS` expansion,
+the first chat's missing `Translation:` label,
+and retained archive usage issues.
+The queue remains at Mio pending that follow-up and class thirty.
+
+Evidence:
+`~/temp/agent/Mio12-survey-20260910.out`,
+`~/temp/agent/Mio12-picture-reading-20260910.out`
+and `~/temp/agent/Mio12-spend-20260910.out`.
+Total logged OpenRouter spend is 0.970260010925 USD,
+Bedrock 0.2758867675 USD;
+Synthetic and Hyper calls have no per-call price.
+Final observed meters:
+OpenRouter 267.74 USD,
+Bedrock 185.50 USD,
+Synthetic weekly zero,
+Hyper 246.
+
+Historical launch at 03:45 UTC on 2026-09-10:
 `Mio12` runs on frozen `ff6d288bc`,
 carrying the measured source-break presentation and shared writer/judge contract.
 Pass pid `1713424`,
@@ -2167,8 +2210,10 @@ each read off the pass log and the shipped page:
     the upstream rendered-structure contract and visible source-only break presentation are verified through
     `ff6d288bc`.
     Both bounded probes have been read.
-    `Mio12` runs on that frozen build at pid `1713424`.
-    Inspect actual verse rendering and the complete page at its terminal notification before advancing the queue.
+    `Mio12` settled and its full page is read.
+    The poem's five rendered breaks survive.
+    Class thirty is the stored-naturalness-quorum mismatch exposed by the initial failed attempt;
+    resolve it and the recorded wording follow-up before advancing the queue.
     See the verse-remedy review linked under "Where the work stands".
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:

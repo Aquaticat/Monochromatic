@@ -6936,6 +6936,108 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Mio12 publishes the preserved poem but exposes a stored-review mismatch, 2026-09-10
+
+Mio12 ended at 07:02 UTC on frozen `ff6d288bc`.
+The log contains an initial ERROR after 7427272 ms,
+then `REATTEMPT` because 78 additional cache records were available,
+then SETTLED after another 4359097 ms.
+The first error was:
+`artifact parse failed at consolidation.slices[3].polish.review.rounds[0].verdict: expected acceptable, derived from seat statuses and quorum.`
+The entry must not be described as a clean first attempt.
+
+The published page was read in full beside the pinned source and archive.
+`verify-published` reports 17 wordings,
+zero silent deliveries,
+8726 characters against the 8723-character floor plus separators,
+and zero missing wordings.
+All four source destinations,
+six `PhotoScroll` components and archive front matter survived.
+Assembly has no withdrawals,
+trims or findings.
+
+The initial writer's source display logged five explicit breaks at 06:11:04.
+The final source-only poem is slice 16,
+with five parsed `<br/>` nodes and no trailing break after attribution.
+Its six visible rows are the title,
+four poem lines and attribution with dedication.
+Each line's continuation wraps softly within that row.
+The parser-based projection and MDX compilation both succeed,
+and the canonical source-file hash remains
+`e963638c509636fbe804d27e4e63be7a19d63b893a49ab24e0bbe8aba87d05b1`.
+Translation and publication carry the same poem;
+consolidation kept the standing wording and did not rewrap it.
+This is published-page evidence for the upstream verse remedy,
+not merely a passing guard.
+
+Both chat translations and the Twitter transcript survive as exact archive substrings:
+2054,
+479 and 1884 characters respectively.
+The first chat's `Translation:` label is still absent.
+The log contains one set of 42 successful model readings,
+six per text-bearing picture,
+with three deterministic no-text cases.
+The reattempt traversed the pictures again but did not purchase new model readings.
+
+Wording concerns remain separate from the break fix:
+the opening replaces the source's distinction between `澪` and `Mio` with `Mio?`,
+the first bullet still ambiguously places coming out in primary school,
+`a local 985 (a top-tier university)` is awkward,
+and `sexual reassignment surgery` is an unnecessary expansion of source `SRS`.
+The retained first chat still contains archive `musculine` and other English usage issues.
+The QQ-group name now has Chinese,
+romanized and explanatory forms together.
+The poem retains its lament,
+unfulfilled dreams,
+next-life farewell and dedication;
+its visible line grouping is now correct.
+
+The three checks pass:
+front matter is byte-identical to the archive,
+12 JSON false starts were recovered,
+and none of the 34 schema mismatches opens with a double object or reports `finish_reason=error`.
+No `InStreamProviderError` occurred.
+The refusal vocabulary has four occurrences each of deterministic-ineligibility,
+unendorsed-alternate and ineligible-contest-winner notices;
+no `StandingIneligible`,
+dropped-destination,
+untranslated-token,
+MDX-downgrade or invalid-page notice appears.
+All ten straight quotes after letters are component-path syntax;
+there are zero straight apostrophes inside words,
+29 curly apostrophes,
+four U+2026 ellipses,
+zero three-dot ellipses and two spaced-dot transcript strings,
+matching the archive's measured conventions.
+
+Logged spend across both attempts:
+OpenRouter 0.970260010925 USD over 850 calls,
+including 0.10770175 USD estimated for abandoned calls;
+Bedrock 0.2758867675 USD over 503 calls;
+467 Synthetic calls and five Hyper calls without per-call prices.
+Final meter at 06:59 UTC:
+OpenRouter 267.74 USD,
+Bedrock 185.50 USD,
+Synthetic weekly zero and Hyper balance 246.
+The Hyper meter changed during the run;
+no cause is inferred from that observation.
+The post-run daily helper was run.
+
+Evidence:
+`~/temp/agent/Mio12-survey-20260910.out`,
+`~/temp/agent/Mio12-mechanical-reading-20260910.out`,
+`~/temp/agent/Mio12-picture-reading-20260910.out`,
+`~/temp/agent/Mio12-spend-20260910.out`
+and `~/temp/agent/Mio12-costs-after-20260910.out`.
+
+Class thirty blocks another launch:
+the first attempt recorded four acceptable voices among six asked seats as `quorum-not-met`,
+while artifact validation expected `acceptable` from those stored seats.
+Reproduce that stage-to-artifact boundary and preserve the intended quorum,
+rather than lowering the runtime threshold or buying another whole-entry retry.
+No pass is running.
+The queue remains at Mio while this failure and the wording follow-up are addressed.
+
 ## Mio12 launches on the measured verse remedy, 2026-09-10, 03:45 UTC
 
 Frozen `ff6d288bc`,
