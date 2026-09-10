@@ -43,11 +43,11 @@ const CONTRACT_PATHS = [
 function eventRevision(name: string,): string {
   /** Event input, kept out of command construction until validated. */
   const value = process.env[name] ?? '';
-  if ((value.length !== SHA_LENGTH)
-    || ![...value,].every(function isHex(character: string,): boolean {
-      return SHA_DIGITS.includes(character,);
-    },)) {
+  if (value.length !== SHA_LENGTH)
     throw new ScopeError(`${name} must contain the merge-group's full lowercase commit SHA.`,);
+  for (let index = 0; index < value.length; index += 1) {
+    if (!SHA_DIGITS.includes(value.charAt(index,),))
+      throw new ScopeError(`${name} contains a non-hexadecimal commit character.`,);
   }
   return value;
 }

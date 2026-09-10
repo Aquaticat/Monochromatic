@@ -5,12 +5,26 @@ import { promisify, } from 'node:util';
 
 import { ScopeError, } from './ci-scope-error.ts';
 
-/** Promise adapter retains execFile's nonzero-status and signal rejection behavior. */
-const executeFile = promisify(execFile,);
 /** Bound captured paths without silently truncating a comparison. */
-const MAX_OUTPUT_BYTES = 16 * 1024 * 1024;
+const MAX_OUTPUT_BYTES = 16_777_216;
 /** A stalled Git invocation must fail the scope step rather than wait indefinitely. */
 const GIT_TIMEOUT_MILLISECONDS = 30_000;
+
+/**
+ * Promise adapter exposes only stdout; the ChildProcess handle is not part of this boundary.
+ * The callback position is dictated by Node's promisify API.
+ */
+const executeGit = promisify(function executeGitCallback(
+  args: readonly string[],
+  callback: (error: unknown, stdout: string) => void,
+): void {
+  execFile(
+    'git',
+    [...args,],
+    { encoding: 'utf8', maxBuffer: MAX_OUTPUT_BYTES, timeout: GIT_TIMEOUT_MILLISECONDS, },
+    callback,
+  );
+},);
 
 /**
  * Run Git without a shell and preserve every execution failure.
@@ -27,16 +41,8 @@ export async function scopeGit(args: readonly string[],): Promise<string> {
   console.log(`Scope Git: ${args.join(' ',)}`,);
   try {
     /** Successful command result; execFile rejects failed commands before this assignment. */
-    const result = await executeFile(
-      'git',
-      [...args,],
-      {
-        encoding: 'utf8',
-        maxBuffer: MAX_OUTPUT_BYTES,
-        timeout: GIT_TIMEOUT_MILLISECONDS,
-      },
-    );
-    return result.stdout;
+    const stdout = await executeGit(args,);
+    return stdout;
   }
   catch (error: unknown) {
     throw new ScopeError(

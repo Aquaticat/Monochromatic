@@ -30,19 +30,15 @@ const FILTERS = [
 const workflow = readFileSync(new URL('../../../../.github/workflows/toml-edit-fuzz.yml', import.meta.url,), 'utf8',);
 /** Scope step starts before its shell, environment, and run fields. */
 const scopeStart = workflow.indexOf('      id: scope\n',);
+/** Source lines following the scope run field. */
+const runLines = workflow.slice(workflow.indexOf('      run: |\n', scopeStart,) + '      run: |\n'.length,).split('\n',);
+/** The first dedented line ends this fixed workflow body. */
+const bodyEnd = runLines.findIndex(line => !line.startsWith('        ',));
 /** Exact Node body written to an extensionless file as the Actions runner does. */
-const launcher = workflow.slice(workflow.indexOf('      run: |\n', scopeStart,) + '      run: |\n'.length,)
-  .split('\n',)
-  .reduce<string[]>(function collect(lines, line,) {
-    if (lines.includes('\0',)) return lines;
-    if (!line.startsWith('        ',)) return [...lines, '\0',];
-    return [...lines, line.slice(8,),];
-  }, [],)
-  .filter(function keep(line,) { return line !== '\0'; },)
-  .join('\n',);
+const launcher = runLines.slice(0, bodyEnd,).map(line => line.slice(8,),).join('\n',);
 
 /** Captured consumer-boundary result without throwing away failed subprocess output. */
-type ScopeResult = { readonly status: number | null; readonly stdout: string; readonly stderr: string; readonly output: string; };
+type ScopeResult = { readonly status: number; readonly stdout: string; readonly stderr: string; readonly output: string; };
 /** Disposable fixture owns its repository, home, launcher, copied artifact, and output. */
 type Fixture = {
   readonly root: string;
@@ -124,6 +120,7 @@ function fixture(): Fixture {
       timeout: 10_000,
     },);
     if (result.error !== undefined) throw result.error;
+    if (result.status === null) throw new Error(`Scope fixture was terminated by ${String(result.signal,)}`,);
     return { status: result.status, stdout: result.stdout, stderr: result.stderr, output: readFileSync(output, 'utf8',), };
   }
   return { root, base, git, put, commit, run, [Symbol.dispose](): void { rmSync(temporary, { recursive: true, force: true, },); }, };
@@ -149,12 +146,12 @@ await describe({
   name: 'pre-install workflow scope',
   concurrency: 1,
   children: [
-    it({ name: 'keeps event path filters and the Node launcher contract explicit', fn: () => {
+    it({ name: 'keeps event path filters and the Node launcher contract explicit', fn: async () => {
       expect(scopeStart,).not.toBe(-1,);
       expect(launcher,).toContain("require('node:child_process').execFileSync",);
       expect(workflow,).toContain('      shell: node {0}\n',);
-      expect(workflow,).toContain('SCOPE_BASE_SHA: ${{ github.event.merge_group.base_sha }}',);
-      expect(workflow,).toContain('SCOPE_HEAD_SHA: ${{ github.event.merge_group.head_sha }}',);
+      expect(workflow,).toContain(`SCOPE_BASE_SHA: \${{ github.event.merge_group.base_sha }}`,);
+      expect(workflow,).toContain(`SCOPE_HEAD_SHA: \${{ github.event.merge_group.head_sha }}`,);
       /** Each current paths block must contain exactly the tested scope set. */
       const blocks = workflow.split('    paths:\n',).slice(1,);
       expect(blocks,).toHaveLength(2,);
@@ -165,7 +162,7 @@ await describe({
         expect(paths,).toEqual([...FILTERS,],);
       }
     }, },),
-    ...FILTERS.map(path => it({ name: `runs for ${path}`, fn: () => {
+    ...FILTERS.map(path => it({ name: `runs for ${path}`, fn: async () => {
       using state = fixture();
       state.put(path.endsWith('/**',) ? `${path.slice(0, -2,)}changed.ts` : path,);
       state.commit();
@@ -178,23 +175,23 @@ await describe({
       'doc/decision/toml-edit-fuzzing.md.bak',
       '.github/workflows/toml-edit-fuzz.yml.bak',
       'unrelated\npackage/module/toml-edit/fake.ts',
-    ].map(path => it({ name: `skips only a successful irrelevant comparison: ${JSON.stringify(path,)}`, fn: () => {
+    ].map(path => it({ name: `skips only a successful irrelevant comparison: ${JSON.stringify(path,)}`, fn: async () => {
       using state = fixture();
       state.put(path,);
       state.commit();
       expectDecision({ result: state.run(), run: false, },);
     }, },)),
-    it({ name: 'accepts a successful empty diff', fn: () => {
+    it({ name: 'accepts a successful empty diff', fn: async () => {
       using state = fixture();
       expectDecision({ result: state.run(), run: false, },);
     }, },),
-    it({ name: 'preserves relevant tabs, quotes, non-ASCII, and embedded newlines', fn: () => {
+    it({ name: 'preserves relevant tabs, quotes, non-ASCII, and embedded newlines', fn: async () => {
       using state = fixture();
       state.put('package/module/toml-edit/\t雪\n"\'$(name).ts',);
       state.commit();
       expectDecision({ result: state.run(), run: true, },);
     }, },),
-    it({ name: 'runs when a relevant file is deleted', fn: () => {
+    it({ name: 'runs when a relevant file is deleted', fn: async () => {
       using state = fixture();
       state.put('package/module/toml-edit/deleted.ts',);
       const base = state.commit();
@@ -202,7 +199,7 @@ await describe({
       state.commit();
       expectDecision({ result: state.run({ SCOPE_BASE_SHA: base, },), run: true, },);
     }, },),
-    ...[true, false,].map(into => it({ name: `runs when renaming ${into ? 'into' : 'out of'} scope`, fn: () => {
+    ...[true, false,].map(into => it({ name: `runs when renaming ${into ? 'into' : 'out of'} scope`, fn: async () => {
       using state = fixture();
       const relevant = 'package/module/toml-edit/moved.ts';
       const other = 'outside/moved.ts';
@@ -215,14 +212,14 @@ await describe({
       state.commit();
       expectDecision({ result: state.run({ SCOPE_BASE_SHA: base, },), run: true, },);
     }, },)),
-    it({ name: 'uses the event base even when origin/main already points at HEAD', fn: () => {
+    it({ name: 'uses the event base even when origin/main already points at HEAD', fn: async () => {
       using state = fixture();
       state.put('package/module/toml-edit/relevant.ts',);
       const head = state.commit();
       state.git(['update-ref', 'refs/remotes/origin/main', head,],);
       expectDecision({ result: state.run(), run: true, },);
     }, },),
-    ...['push', 'pull_request',].map(event => it({ name: `${event} runs without merge-group revisions`, fn: () => {
+    ...['push', 'pull_request',].map(event => it({ name: `${event} runs without merge-group revisions`, fn: async () => {
       using state = fixture();
       expectDecision({ result: state.run({ GITHUB_EVENT_NAME: event, SCOPE_BASE_SHA: '', SCOPE_HEAD_SHA: '', PATH: '', },), run: true, },);
     }, },)),
@@ -238,11 +235,11 @@ await describe({
       { GITHUB_EVENT_NAME: '', },
       { GITHUB_OUTPUT: '', },
       { PATH: '', },
-    ].map(overrides => it({ name: `fails closed for ${JSON.stringify(overrides,)}`, fn: () => {
+    ].map(overrides => it({ name: `fails closed for ${JSON.stringify(overrides,)}`, fn: async () => {
       using state = fixture();
       expectFailure(state.run(overrides,),);
     }, },)),
-    it({ name: 'fails when checkout does not match the event head', fn: () => {
+    it({ name: 'fails when checkout does not match the event head', fn: async () => {
       using state = fixture();
       state.put('unrelated.txt',);
       state.commit();
@@ -250,7 +247,7 @@ await describe({
       expectFailure(result,);
       expect(result.stderr,).toContain('does not match merge-group head',);
     }, },),
-    it({ name: 'fails when the event base is not an ancestor of its head', fn: () => {
+    it({ name: 'fails when the event base is not an ancestor of its head', fn: async () => {
       using state = fixture();
       state.put('unrelated.txt',);
       const future = state.commit();
@@ -259,7 +256,7 @@ await describe({
       expectFailure(result,);
       expect(result.stderr,).toContain('merge-base --is-ancestor',);
     }, },),
-    it({ name: 'propagates a git diff failure after commit and ancestry validation', fn: () => {
+    it({ name: 'propagates a git diff failure after commit and ancestry validation', fn: async () => {
       using state = fixture();
       state.put('unrelated.txt',);
       state.commit();
@@ -269,7 +266,7 @@ await describe({
       expectFailure(result,);
       expect(result.stderr,).toContain('git diff --name-only --no-renames -z',);
     }, },),
-    it({ name: 'fails when the output cannot be appended', fn: () => {
+    it({ name: 'fails when the output cannot be appended', fn: async () => {
       using state = fixture();
       expectFailure(state.run({ GITHUB_OUTPUT: state.root, },),);
     }, },),
