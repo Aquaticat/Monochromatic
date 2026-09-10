@@ -1881,8 +1881,16 @@ and selectors receive the same rendered-line contract with counts matched to the
 Author repair inherits that contract;
 lane comparison and consolidation use it too.
 It distinguishes visible breaks from soft newlines and recommends unambiguous `<br/>` spelling.
-Raw source,
+Canonical source,
 archive-backed layouts and ordinary-passage prompts are unchanged.
+Since `b3113164a`,
+initial source-only writers also see actual Markdown break syntax displayed as `<br/>`.
+Only parser-confirmed break spans change in that view;
+canonical text and offsets remain untouched.
+The caller must explicitly establish an absent incumbent,
+and metadata and nonempty archive wording are excluded.
+The measured source-spelling treatment gave both probed writers five breaks without a trailing break,
+where Mercury had still flattened its initial output under instructions alone.
 The deterministic floor remains a backstop,
 not proof that the model behavior is repaired.
 The bounded writer/selection comparison is recorded in

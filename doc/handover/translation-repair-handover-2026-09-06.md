@@ -24,7 +24,44 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current work on 2026-09-10:
+Current prelaunch state on 2026-09-10:
+the upstream verse remedy is implemented and verified through `ff6d288bc`.
+The first live probe found that instructions alone still left Mercury's initial output flat,
+although new judging selected the preserving candidate with three of four judges.
+A supporting source-spelling treatment changed only the five parser-confirmed breaks to `<br/>` in the existing
+model-facing source block.
+Both writers then returned five breaks,
+without a trailing break,
+and both outputs compiled.
+The canonical source-file hash was unchanged.
+
+`b3113164a` integrates that source-only display,
+requiring explicit absent-incumbent provenance while retaining raw source for validation and judges.
+Unknown presence,
+nonempty archive text and front matter keep the original presentation.
+Code,
+comments,
+JSX attributes and line-ending conventions are preserved by the shared parser.
+`79e82a368` proves the composed stage forwards the fact on its first writer calls;
+`89cac70f3` and `ff6d288bc` finish formatting and separate the authority checks.
+The full suite ends `unit exit 0` in `~/temp/agent/source-display-verified-unit-20260910.out`;
+build,
+types and oxlint pass with zero warnings.
+The production source view matches the measured treatment,
+with only the recorded reference-wording cleanup in the system message.
+No more prelaunch experiment is needed.
+Relaunch Mio on a fresh frozen build next.
+Read the complete page,
+including the poem's actual break placement and any trailing `<br/>` after attribution,
+before advancing the queue.
+
+The completed probes and their costs are in the
+[verse-remedy review](../planning/translation-repair-verse-remedy-review-2026-09-10.md).
+The contract probe logged 0.010003172 USD on OpenRouter and 0.00114931 USD on Bedrock;
+the source-spelling treatment logged 0.00049012 USD on OpenRouter.
+No full-entry pass is running yet.
+
+Historical contract implementation on 2026-09-10:
 the owner delegated the best changes after the guard-first correction.
 The shared upstream rendered-line contract is implemented at `1a6ebbf62`,
 with integration coverage and formatting through `d2e102b12`.
@@ -504,7 +541,7 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `d2e102b12` for code and guards;
+  `ff6d288bc` for code and guards;
   the documents move after it.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
@@ -2096,8 +2133,10 @@ each read off the pass log and the shipped page:
     The owner rejected treating the guard and tests as the best remedy,
     then delegated the best changes.
     `Mio11` is stopped;
-    the upstream rendered-structure contract is now implemented and the bounded matched probe is active.
-    Read that probe before relaunching Mio.
+    the upstream rendered-structure contract and visible source-only break presentation are verified through
+    `ff6d288bc`.
+    Both bounded probes have been read.
+    Relaunch Mio and inspect actual verse rendering before advancing the queue.
     See the verse-remedy review linked under "Where the work stands".
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:

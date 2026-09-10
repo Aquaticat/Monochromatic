@@ -1656,6 +1656,31 @@ local guards are not a published page,
 and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
 queue advances.
 
+## The verse remedy has passage-level evidence (2026-09-10)
+
+The matched probe showed the new judges choosing a break-preserving candidate,
+but Mercury still wrote a flat first translation under instructions alone.
+Making only the source's parsed break spellings visible as `<br/>` then gave both probed writers five breaks,
+with no trailing break,
+while canonical source remained byte-identical.
+Both outputs compiled.
+
+That source-only presentation is integrated through `ff6d288bc`,
+with explicit absent-incumbent provenance,
+unchanged archive-backed behavior,
+and a composed-stage test that observes the first writer and judge inputs.
+Build,
+types,
+lint and the full suite pass.
+The old guard is a backstop,
+not the basis for selecting the remedy.
+
+The belief is not yet ready:
+these are passage-level results.
+A fresh Mio page must still preserve its screenshots,
+poem wording and rendered line boundaries through the whole pipeline,
+including consolidation and its possible trailing extra break.
+
 ## The upstream verse remedy is being measured (2026-09-10)
 
 The owner delegated the best changes.

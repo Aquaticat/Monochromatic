@@ -6936,6 +6936,51 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## The verse probes select the upstream source-display remedy, 2026-09-10
+
+The matched contract probe completed in 378 seconds.
+Mercury's first writer output stayed at zero breaks under both contracts;
+GLM-flash kept five.
+The old fixed-slate judging split its votes and declined,
+while new judging chose the unique five-break rendering with three of four judges.
+New consolidation kept five breaks on GLM-flash and six on Mercury,
+whose trailing extra break remains something to inspect on the next page.
+
+A supporting source-presentation probe then changed only the five parser-confirmed break spellings in the
+existing model-facing source block to `<br/>`.
+The system message stayed identical,
+the source display moved from 132 to 147 characters,
+and the canonical source-file hash stayed unchanged.
+Both writers returned five breaks with no trailing break after attribution,
+and both outputs compiled.
+This supports the presentation change on the measured passage,
+not a universal model-compliance claim.
+
+`b3113164a` integrates that view for explicitly absent incumbents with no archive wording.
+The shared offset-preserving parser excludes code,
+comments and attribute text;
+line endings and canonical source offsets stay intact.
+Unknown presence,
+metadata and real archive wording retain the old presentation.
+`79e82a368` verifies the composed stage's first writer calls and its raw-source judge call.
+Final code and formatting tip:
+`ff6d288bc`.
+Build,
+types,
+oxlint and full unit suite pass;
+the suite ends `unit exit 0` in `~/temp/agent/source-display-verified-unit-20260910.out`.
+
+Probe reports:
+`~/temp/agent/rendered-verse-probe-20260910-r1/report.json`
+and `~/temp/agent/visible-source-break-probe-20260910/report.json`.
+The contract probe logged 0.010003172 USD on OpenRouter and 0.00114931 USD on Bedrock;
+the display treatment logged 0.00049012 USD on OpenRouter.
+Synthetic calls are counted without per-call prices.
+The daily helper ran after both probes.
+
+The next verification is a fresh frozen Mio pass and whole-page reading,
+not another prelaunch experiment.
+
 ## The delegated verse remedy reaches the live probe, 2026-09-10
 
 The owner delegated the best changes after the correction.

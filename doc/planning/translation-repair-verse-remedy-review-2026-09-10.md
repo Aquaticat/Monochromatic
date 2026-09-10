@@ -148,6 +148,79 @@ with log `~/temp/agent/rendered-verse-probe-20260910-r1.log`
 and report `~/temp/agent/rendered-verse-probe-20260910-r1/report.json`.
 No source changes or full-entry pass are planned until the terminal report is read.
 
+## Live results and selected source presentation
+
+The matched contract probe completed in 378 seconds.
+It did not establish that the initial writing problem was solved:
+Mercury produced zero breaks under both contracts,
+while GLM-flash produced five under both and adopted `<br/>` under the new contract.
+All direct writer outputs compiled.
+
+Selection did change on the fixed slate.
+The baseline split its votes and raised `TranslateAbsenceError`;
+the new contract selected the unique five-break rendering with three of four judges,
+including explicit rendered-structure reasoning.
+New consolidation outputs preserved the boundaries,
+but Mercury added a sixth trailing break while GLM kept five.
+That trailing break is not described as clean compliance.
+Probe spend:
+0.010003172 USD on OpenRouter,
+0.00114931 USD on Bedrock,
+and five Synthetic calls without a per-call price.
+
+The planned supporting source-presentation experiment was therefore run,
+without requiring every writer to become reliable on every instruction.
+Only parser-confirmed Markdown break syntax in the existing model-facing source block changed to `<br/>`.
+No second source view,
+source-file edit,
+structural repair,
+new judge call or changed cap entered that experiment.
+The control and treatment system messages were byte-identical;
+the user-message diff was exactly the five source-break spellings.
+Source display length changed from 132 to 147 characters.
+The canonical source-file SHA-256 was identical before and after.
+
+Both treatment writers produced exactly five breaks,
+with no trailing `<br/>` after attribution,
+and both outputs compiled.
+Mercury now preserved the visible boundaries;
+GLM continued to do so.
+This is a passage-specific positive result,
+not a general compliance-rate claim.
+The report is `~/temp/agent/visible-source-break-probe-20260910/report.json`.
+The treatment spent 0.00049012 USD on OpenRouter and one Synthetic call without a per-call price.
+The daily-cost helper ran after both probes.
+
+`b3113164a` implements that presentation in initial translation,
+with explicit absent-incumbent provenance forwarded by the composed stage and existing probe callers.
+Unknown presence defaults to retaining the original view;
+nonempty archive wording and front matter are never transformed.
+`parseSliceBody` shares offset-preserving comment and lone-container masking with structural admission.
+`sourceBreakDisplay` rewrites only actual Markdown break-node spans,
+keeps LF,
+CRLF and CR endings,
+and preserves code,
+comments,
+JSX attributes and all other characters.
+A strict parser refusal logs why and keeps the original view.
+Judges and canonical validation still receive the raw source.
+
+Guard `1d026b754` failed six cases before implementation.
+`79e82a368` verifies the actual composed stage:
+its first writer requests receive visible source breaks,
+its judge receives canonical raw source,
+and the rendering needs no structural send-back.
+Formatting and authority-check separation end at `ff6d288bc`.
+The final build,
+type check and oxlint pass with zero warnings.
+The full suite ends `unit exit 0` in `~/temp/agent/source-display-verified-unit-20260910.out`.
+The integrated production source view exactly matches the measured treatment;
+the system-message comparison differs only by replacing a relative-position phrase with "reported per-block counts".
+That comparison is `~/temp/agent/source-display-treatment-parity-20260910.out`.
+A separate reviewer supports proceeding to the required full page reading after those checks,
+not buying another prelaunch experiment.
+The next reading must still inspect consolidation's break placement and trailing-break behavior.
+
 ## Recommended direction
 
 Repair the existing generation and judging contract around rendered structure.
@@ -231,6 +304,7 @@ not a post-cancellation balance reconciliation;
 in-flight usage may not have been reported.
 The daily helper ran into `~/temp/agent/Mio11-costs-stopped-20260910.out`.
 
-The full-entry queue remains paused.
-Read the active bounded probe's output and costs before deciding whether to relaunch Mio.
-The page-reading queue and readiness claim remain blocked until a current-build page is read.
+Both bounded probes are complete and their outputs and costs have been read.
+The integrated source-display checks pass.
+Launch a fresh frozen Mio pass and read its whole page.
+The page-reading queue and readiness claim remain blocked until that current-build reading.
