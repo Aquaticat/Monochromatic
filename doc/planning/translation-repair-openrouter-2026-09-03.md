@@ -6966,9 +6966,13 @@ Full trace and preceding probe costs live in
 [the wording follow-up](translation-repair-mio12-wording-2026-09-10.md).
 
 Readiness remains false.
-Retained-label audits still mistake the isolated label for an empty translation;
-task 20 addresses their context and role without skipping review.
-Task 19's temporal/participant context still needs measurement.
+Retained-label audit accuracy remains unresolved after the context experiments.
+Task 20 is deferred without a production change:
+the caller trace and public-wrapper control show these detailed findings do not change the page
+or reach persisted entry findings.
+They are not a prerequisite to another page reading,
+though the awaited calls retain their operational cost and failure paths.
+Task 19's temporal/participant context is in progress and still needs measurement.
 No full-entry pass is active,
 and the sequential entry queue has not advanced.
 

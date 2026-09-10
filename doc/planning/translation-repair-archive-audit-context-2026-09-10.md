@@ -2,11 +2,12 @@
 
 ## Scope and status
 
-Task 20 is in progress.
+Task 20 is deferred and unresolved,
+not a readiness blocker.
 Task 18's archive retention/revision boundary is verified through `ba01babda`.
-No task 20 production change has been made.
-No full-entry pass is active;
-task 19's temporal/participant context and the full Mio reading remain pending.
+No task 20 production change has been made and no remedy is claimed successful.
+No full-entry pass is active.
+Task 19's temporal/participant context is now in progress before the full Mio reading.
 
 ## Observed boundary
 
@@ -171,10 +172,10 @@ Only new substantive prompts may reach providers;
 the baseline reuses completed payloads from a copied disposable cache.
 No provider SDK or reasoning-budget parameter is added.
 
-## Active in-place presentation probe
+## Completed in-place presentation probe
 
 The first presentation places both before/after context ahead of the candidate.
-`proc_dc0f` runs `translation-repair-archive-audit-in-place-probe-20260910`
+`proc_dc0f` completed `translation-repair-archive-audit-in-place-probe-20260910` in 326 seconds
 to test whether preserving reading order clarifies the block's function.
 It changes only field order:
 before-context,
@@ -200,10 +201,56 @@ The exchange and global bounds remain 360000 and 1200000 ms.
 The prior scoped treatment remains the comparator;
 no completed identical request is deliberately repurchased.
 
-At the terminal notification:
-read every arm's actual findings,
-run the per-provider spend and daily helpers,
-choose the supported input remedy,
-and only then add its red/green integration guards and production change.
-Verify ordinary review prompts remain unchanged when no archive context applies.
-Do not make universal model compliance a new acceptance requirement.
+The actual label received six acceptances among twelve usable replies,
+with two schema failures.
+Wrong missing-content findings persisted;
+Mercury instead attributed defects from the following chat to the label.
+All fourteen dangling-prose replies rejected real grammar/completeness defects.
+Thirteen orphan-label replies rejected it,
+one accepted it,
+and several reasons remained mis-scoped.
+Field reordering did not establish a remedy.
+
+The run logged 0.00302331 USD on Bedrock,
+three OpenRouter calls reporting zero,
+and fifteen unpriced Hyper plus eighteen unpriced Synthetic calls.
+The daily helper ran afterward.
+
+## Readiness-blocker correction
+
+The agent added task 20 as a prerequisite to the next page reading before tracing its output effect.
+That prioritization is retracted,
+not the underlying audit diagnosis.
+The independent advisor supports deferral after the caller trace and public-wrapper control.
+
+The repository search in `~/temp/agent/archive-audit-repo-callers-20260910.out`
+finds only `corpus-run/archive-block-repair.ts` as a production caller of the block-review stage.
+That caller passes `priorFindings: []`,
+does not pass one block's audit opinions to later blocks,
+and discards the stage's detailed `outcome.findings`.
+`pass-prepare.ts` receives only the wrapper's operation-level retained/revised findings.
+
+`~/temp/agent/verify-archive-audit-effect-20260910.mjs`
+exercises the built public `repairArchiveBlocks` wrapper without a provider client.
+Audit acceptance and rejection produce identical wrapper outputs,
+and the sentinel audit finding is absent.
+A selected-removal positive control changes the output,
+so the equality check is demonstrably capable of seeing a real text effect.
+Report:
+`~/temp/agent/archive-audit-effect-20260910.out`.
+The control uses the established four-seat fixture roster;
+a two-seat self-authored slate did not clear the existing selector thresholds and was not used as evidence.
+
+This establishes no page-text or persisted-finding effect from these audit verdicts.
+It does not make the calls operationally free:
+they remain awaited,
+consume provider resources,
+and can delay or abort work through cancellation,
+invalid quorum configuration or unexpected failures.
+Those operational paths are distinct from the context defect investigated here.
+
+No more task 20 prompt experiments are scheduled now.
+The task remains pending as non-persisted audit accuracy work,
+not completed or silently suppressed.
+Task 19 affects observed temporal and participant wording in the page and takes priority.
+Do not reintroduce task 20 as a Mio blocker merely because its experiments remain unresolved.

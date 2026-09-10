@@ -66,31 +66,31 @@ Dialogue-interpretation disagreements remain recorded in the wording plan,
 not converted into blanket deletion rules.
 
 Task 18 is complete.
-Task 20 is in progress:
-the fourteen baseline audit findings are false,
-mostly missing-content claims plus one out-of-scope Chinese-heading complaint.
-Corrected probe `proc_724d` completed:
-context alone yielded two accepts among twelve usable replies;
-context plus scope yielded eight among fourteen.
-All fourteen rejected dangling prose with real grammar/completeness findings;
-orphan-label judgments still included one acceptance and mis-scoped reasons.
-The first harness run inherited a one-second capture timeout and is not treatment evidence.
+Task 20 is deferred and unresolved,
+with no production change and no further prompt trial scheduled.
+The agent's designation of it as a Mio readiness blocker is retracted after tracing its output effect.
+Context and presentation trials improved some replies but left false audit findings:
+zero accepts among fourteen baseline replies,
+two among twelve with context,
+eight among fourteen with context and scope,
+and six among twelve with in-place presentation.
+These combine distinct responsibilities and are not runtime quorum or readiness measurements.
 
-`proc_dc0f` now runs `translation-repair-archive-audit-in-place-probe-20260910`.
-Report:
-`~/temp/agent/archive-audit-in-place-probe-20260910/report.json`.
-Log:
-`~/temp/agent/archive-audit-in-place-probe-20260910.log`.
-It changes only presentation order so the exact block sits between its before/after English context,
-keeping the scope instruction and actual source/candidate bytes.
-Both original responsibilities and dangling-prose/orphan-label controls remain.
-The actual exchange bound is asserted as 360000 ms;
-at most forty-two requests run seven at a time.
-Repeated `Translation:` labels require known parser offsets,
-not a first text match.
-See [archive audit context measurement](../planning/translation-repair-archive-audit-context-2026-09-10.md).
-Do not skip required review or add a loop.
-Temporal-context task 19 remains pending.
+The public-wrapper check in `~/temp/agent/archive-audit-effect-20260910.out`
+proves audit acceptance/rejection produce identical `repairArchiveBlocks` outputs,
+with the detailed finding discarded.
+A selected-removal positive control changes output.
+The production caller passes no prior audit findings to later blocks;
+`pass-prepare.ts` receives only operation-level retained/revised findings.
+Awaited audit calls still cost resources and can delay or abort through operational failures,
+but this context defect has no demonstrated page-text effect.
+See [archive audit context measurement](../planning/translation-repair-archive-audit-context-2026-09-10.md)
+for complete experiments,
+costs,
+caller trace and independent review.
+
+Temporal-context task 19 is in progress and takes priority before the fresh Mio pass.
+Do not reinstate task 20 as its blocker because the audit experiment remains unresolved.
 No full-entry pass is active.
 The complete archive and naming trace is
 [Mio12 wording follow-up](../planning/translation-repair-mio12-wording-2026-09-10.md).

@@ -654,5 +654,11 @@ the spend records do not account for every forwarded request,
 so unreported failed or cancelled usage is not claimed free.
 No existing cache was modified.
 Task 18 is complete at this boundary.
-Task 20's retained-apparatus audit context and task 19's temporal context remain before the next full Mio pass.
+Task 19's temporal context remains before the next full Mio pass.
+Task 20's audit accuracy is deferred and unresolved,
+not a readiness blocker:
+the caller trace and controlled public-wrapper check show detailed audit findings neither change text
+nor reach the entry's persisted findings.
+The calls remain an operational cost and cancellation/error path.
+See [archive audit context measurement](translation-repair-archive-audit-context-2026-09-10.md).
 No full-entry pass is active.

@@ -1670,8 +1670,11 @@ Both outputs compile;
 These are actual selected wordings,
 not a whole-page result or unanimous endorsement of every dialogue interpretation.
 The retained label's audit-only naturalness reviews still lack surrounding context and emit false missing-content findings.
-Task 20 addresses that boundary;
-task 19 still must measure the temporal/participant source context.
+Task 20 is deferred and not a page-readiness blocker:
+a controlled public-wrapper check confirms these detailed findings are discarded and cannot change its returned text.
+Its unresolved audit accuracy is not claimed fixed;
+awaited calls still consume resources and retain operational failure paths.
+Task 19 is in progress to measure the temporal/participant source context.
 No new full Mio page has yet verified the combined changes,
 and readiness remains false.
 
