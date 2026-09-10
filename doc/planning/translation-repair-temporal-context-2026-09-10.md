@@ -458,13 +458,13 @@ three OpenRouter calls reporting zero,
 and ten unpriced Hyper plus two unpriced Synthetic calls.
 The daily helper ran afterward.
 
-## Active editor responsibility experiment
+## Completed editor responsibility experiment
 
 Further voting-only prompt trials are not scheduled now.
 The independent advisor recommends testing the existing editor's responsibility boundary
 against actual assembled candidates.
 
-`proc_b599` is `translation-repair-editor-responsibility-probe-20260910`.
+`proc_b599` completed `translation-repair-editor-responsibility-probe-20260910` in 388 seconds.
 Script:
 `~/temp/agent/probe-editor-responsibility-20260910.mjs`.
 Plan:
@@ -506,13 +506,18 @@ not added as a new publication gate.
 The offline positive control applies a localized participant correction through the same assembler,
 preserves all bytes outside its region,
 and passes the existing structure check.
-At completion,
-read every candidate for correct disclosure direction and timing,
-retained supported list items,
-no reciprocal disclosure,
-no neighboring-passage copying and unchanged outside-region text.
-A changed group name must still be reported;
-a task 19-correct candidate is not automatically publishable while task 21 is unresolved.
+All three baseline editors remove the list and change the established group name.
+All three treatment editors do the same;
+one moves the administrator detail into the preceding region and deletes the list region entirely.
+Every assembled candidate compiles,
+but every candidate fails the existing archive block-shape check.
+No candidate supplies the intended retained participant correction.
+This falsifies the tested editor-responsibility treatment on this packet;
+it is not integrated.
+
+The run logged four unpriced Hyper and two unpriced Synthetic calls.
+The per-provider spend and daily helpers ran afterward.
+No reported dollar amount is treated as proof that unpriced service was free.
 
 A further caller trace found that `editor-ensemble.ts` supplies no neighboring-source evidence
 to either `selectPerEnvelope` or `selectChunkPatch`.
@@ -520,3 +525,33 @@ Per-envelope selection sees the current English region and a bounded English sur
 whole-chunk selection sees only the current original as evidence.
 Thus a successful new editor candidate will still require verification at those selection boundaries.
 Do not claim the existing repair window already reaches every repair selector.
+
+## Active accurate-claim diagnostic control
+
+`proc_ec6f` is `translation-repair-editor-accurate-claim-probe-20260910`.
+Script:
+`~/temp/agent/probe-editor-accurate-claim-20260910.mjs`.
+Plan:
+`~/temp/agent/editor-accurate-claim-plan-20260910.out`.
+Log:
+`~/temp/agent/editor-accurate-claim-probe-20260910.log`.
+Report:
+`~/temp/agent/editor-accurate-claim-probe-20260910/report.json`.
+
+This is a diagnostic positive control,
+not a proposal to silently filter production claims.
+The stock editor receives only the source-verified participant claim,
+while the current source,
+translation,
+neighboring context,
+stock editor models,
+four edit regions and original preservation licenses remain unchanged.
+Keeping the original licenses prevents a stricter gate from creating an apparent improvement.
+Only the visible issue packet changes.
+
+Three calls are allowed,
+with a 360000 ms exchange bound and 1200000 ms global bound.
+The real assembler and existing structure validator process each response.
+Compare raw operations and assembled candidates against the completed stock-editor arm,
+not just whether the process exits successfully.
+No production prompt or admission-rule change is made.

@@ -147,24 +147,26 @@ Neither full source evidence nor claim extent reliably removed blanket-deletion 
 the combined arm still accepted it.
 No treatment was integrated.
 
-`proc_b599` now runs `translation-repair-editor-responsibility-probe-20260910`.
+`proc_b599` completed in 388 seconds.
+All six assembled editor candidates remove the list and change the group name,
+in both the stock and treatment arms.
+They compile but fail the existing archive block-shape check.
+No editor-responsibility treatment was integrated.
+
+`proc_ec6f` now runs `translation-repair-editor-accurate-claim-probe-20260910`.
 Report:
-`~/temp/agent/editor-responsibility-probe-20260910/report.json`.
+`~/temp/agent/editor-accurate-claim-probe-20260910/report.json`.
 Log:
-`~/temp/agent/editor-responsibility-probe-20260910.log`.
-Both arms use the same newly derived sixteen accepted issues and four production edit regions,
-not the old editor outputs with a different packet.
-The treatment gives the existing editor responsibility for checking fallible findings,
-separates current coverage from full-document factual evidence,
-and permits faithful corrections to already-asserted facts without importing neighboring passages.
-Name policy and the stock editor trio are unchanged.
-Six calls maximum;
-no panel,
-selector or added production round.
-The production assembler/preservation gate processes each raw reply.
-Read assembled wording,
-structure,
-list-item retention and outside-region bytes before claiming success.
+`~/temp/agent/editor-accurate-claim-probe-20260910.log`.
+This diagnostic keeps the stock editor prompt,
+source/target/neighbor bytes,
+four regions and original preservation licenses,
+but shows only the source-verified participant claim.
+It tests whether the conflicting issue packet prevents a correct edit;
+it is not a production claim filter.
+Three editor calls maximum,
+with the same exchange/global bounds and real assembler.
+Read actual region operations and final candidates.
 
 The caller trace also found that per-envelope and whole-chunk repair selectors do not receive neighboring source.
 Any good editor candidate will need verification at those actual selection boundaries;

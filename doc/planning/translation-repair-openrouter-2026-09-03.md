@@ -6971,10 +6971,14 @@ Task 19's evidence-scope experiment `proc_12b5` produced anchored participant co
 and removed authorization from the old broad claims,
 but the newly derived panel still accepted blanket removal.
 `proc_9549` did not establish a remedy from full source evidence or claim extent.
-`proc_b599` now compares actual editor outputs on the same derived issue packet,
-with fallible-finding responsibility and full-document evidence in the treatment.
-The existing assembly/preservation path processes each candidate;
-no panel or selector is called in this producer experiment.
+`proc_b599` produced no suitable candidate:
+all three stock and all three treated editors removed the list and changed its group name.
+`proc_ec6f` now uses a diagnostic accurate-claim-only packet
+with the same stock editor,
+regions,
+evidence and original preservation licenses.
+This does not filter production claims;
+it tests whether the conflicting packet blocks the intended correction.
 No production prompt change,
 name-policy change,
 quorum change or new production stage has been made.
