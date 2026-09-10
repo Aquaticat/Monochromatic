@@ -1,6 +1,7 @@
 import type { Root, } from 'mdast';
 
 import type { DeepReadonlyData, } from './readonly-data.ts';
+import { explicitBreakCounts, } from './source-only-breaks.ts';
 
 import { parseMarkdownBody, } from './parse-mdx.ts';
 import {
@@ -94,6 +95,7 @@ function readRelaxed({ text, }: { readonly text: string; },): SkeletonRead {
     return {
       kind: 'read',
       skeleton: {
+        explicitBreaks: explicitBreakCounts({ root, },),
         blocks: root.children
           .map(function toShape(node,) {
             return {

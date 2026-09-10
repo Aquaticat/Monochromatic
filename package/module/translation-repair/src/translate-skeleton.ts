@@ -9,6 +9,7 @@ import {
 } from './mask-container-tags.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
+import { explicitBreakCounts, } from './source-only-breaks.ts';
 
 import {
   MdxParseError,
@@ -104,7 +105,7 @@ export type BlockShape = {
  *
  * @example
  * ```ts
- * const skeleton: SliceSkeleton = { blocks, atoms, };
+ * const skeleton: SliceSkeleton = { blocks, atoms, explicitBreaks, };
  * ```
  */
 export type SliceSkeleton = {
@@ -117,6 +118,9 @@ export type SliceSkeleton = {
    * References and code in document order.
    */
   readonly atoms: readonly ProtectedAtom[];
+
+  /** Explicit rendered breaks within each corresponding top-level block. */
+  readonly explicitBreaks: readonly number[];
 };
 
 /**
@@ -351,6 +355,7 @@ export function readSliceSkeleton(
     return {
       kind: 'read',
       skeleton: {
+        explicitBreaks: explicitBreakCounts({ root, },),
         blocks: root.children
           .map(function toShape(node,): BlockShape {
             return {

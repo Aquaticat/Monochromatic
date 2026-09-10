@@ -13,6 +13,7 @@ import type { SliceSkeleton, } from './translate-skeleton.ts';
 export const EMPTY_SLICE_SKELETON: SliceSkeleton = {
   blocks: [],
   atoms: [],
+  explicitBreaks: [],
 };
 
 //endregion Empty translated slice skeleton

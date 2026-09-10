@@ -4,6 +4,7 @@ import { EMPTY_SLICE_SKELETON, } from './empty-slice-skeleton.ts';
 import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
+import { sourceOnlyBreakFindings, } from './source-only-breaks.ts';
 import { atomFindings, } from './translate-atom-rendering.ts';
 import { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
 import {
@@ -523,6 +524,11 @@ export function validateTranslatedSlice(
       floorName,
       source: expected.blocks,
       candidate: actual.blocks,
+    },),
+    ...sourceOnlyBreakFindings({
+      pageText,
+      source: expected.explicitBreaks,
+      candidate: actual.explicitBreaks,
     },),
     ...compareLineCounts({
       lineStructured,
