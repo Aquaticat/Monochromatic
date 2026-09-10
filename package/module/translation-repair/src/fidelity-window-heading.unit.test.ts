@@ -107,6 +107,21 @@ await describe({
       },
     },),
     it({
+      name: 'DOES NOT infer a heading from unknown-node text or extend through immediate metadata',
+      fn: async () => {
+        const base = pairs(['Current.', '## Unproven heading', 'Following body.'],);
+        const unknown = base.map(function unstructured(slice, index): ChunkPair {
+          return index === 1 ? { ...slice, source: { ...slice.source, nodes: [], }, } : slice;
+        },);
+        expect(neighbouringSource({ slices: unknown, slicePosition: 0, },),).toBe('## Unproven heading',);
+        const metadata = base.map(function mark(slice, index): ChunkPair {
+          return index === 1 ? { ...slice, syntax: 'front-matter', } : slice;
+        },);
+        expect(neighbouringSource({ slices: metadata, slicePosition: 0, },),).toBe('',);
+        expect(neighbouringIncumbent({ slices: metadata, slicePosition: 0, },),).toBe('',);
+      },
+    },),
+    it({
       name: 'PRESERVES ordinary neighbors and a final heading without a following body',
       fn: async () => {
         const slices = pairs(['Before.', 'Current.', 'After.', 'Farther.'],);

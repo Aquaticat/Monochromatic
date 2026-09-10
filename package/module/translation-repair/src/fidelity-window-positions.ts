@@ -51,8 +51,10 @@ export function fidelityWindowPositions(
     slicePosition - 1,
     nextPosition,
   ];
-  if ((next === undefined) || (next.syntax === 'front-matter')
-    || (body === undefined) || (body.syntax === 'front-matter')) {
+  if ((next === undefined)
+    || (next.syntax === 'front-matter')
+    || (body === undefined)
+    || (body.syntax === 'front-matter')) {
     return immediate;
   }
   /**
