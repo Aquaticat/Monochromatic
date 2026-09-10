@@ -46,8 +46,8 @@ function clientFor({ loseOnChallenge = false, }: { readonly loseOnChallenge?: bo
       /** Earlier calls by this independently scripted seat. */
       const previous = calls.get(request.modelId,) ?? 0;
       calls.set(request.modelId, previous + 1,);
-      if ((!loseOnChallenge || previous > 0)
-        && (request.modelId === 'glm-5.3' || request.modelId === 'inception/mercury-2.5')) {
+      if ((!loseOnChallenge || (previous > 0))
+        && ((request.modelId === 'glm-5.3') || (request.modelId === 'inception/mercury-2.5'))) {
         return { kind: 'schema-mismatch', rawText: '{}', detail: 'Fixture unusable seat', };
       }
       /** Every usable seat independently accepts the candidate. */
@@ -87,12 +87,15 @@ await describe({
       name: 'ROUND TRIPS a live-shaped four-of-six review requiring five voices',
       fn: async () => {
         /** Real producing stage, not a hand-written verdict fixture. */
-        const round = await reviewAbsoluteNaturalness(requestFor(clientFor({},),),);
+        const round = await reviewAbsoluteNaturalness(
+          requestFor(clientFor({},),),
+        );
         expect(round.usable,).toBe(4,);
         expect(round.verdict,).toBe('quorum-not-met',);
-        /** JSON serialization must retain every fact the reader needs. */
+        /** Exact wire bytes must retain every fact the reader needs. */
+        const encoded = JSON.stringify({ correctionCount: 0, corrections: [], confirmations: [], rounds: [round,], },);
         const parsed = parseNaturalnessReview({
-          value: JSON.parse(JSON.stringify({ correctionCount: 0, corrections: [], confirmations: [], rounds: [round,], },),),
+          value: JSON.parse(encoded,),
           path: 'consolidation.slices[3].polish.review',
           finalText: TEXT,
           correctionChainRequired: true,
@@ -107,13 +110,16 @@ await describe({
       name: 'KEEPS the discovery quorum when confirmation asks its reduced roster',
       fn: async () => {
         /** Discovery accepts, but confirmation hears only four of the six seats. */
-        const confirmed = await confirmAbsoluteNaturalness(requestFor(clientFor({ loseOnChallenge: true, },),),);
+        const confirmed = await confirmAbsoluteNaturalness(
+          requestFor(clientFor({ loseOnChallenge: true, },),),
+        );
         expect(confirmed.confirmations,).toHaveLength(1,);
         expect(confirmed.review.usable,).toBe(4,);
         expect(confirmed.review.verdict,).toBe('quorum-not-met',);
-        /** Both distinct perspectives retain the same quorum basis. */
+        /** Both distinct perspectives retain the same quorum basis in wire bytes. */
+        const encoded = JSON.stringify({ correctionCount: 0, corrections: [], confirmations: confirmed.confirmations, rounds: [confirmed.review,], },);
         const parsed = parseNaturalnessReview({
-          value: JSON.parse(JSON.stringify({ correctionCount: 0, corrections: [], confirmations: confirmed.confirmations, rounds: [confirmed.review,], },),),
+          value: JSON.parse(encoded,),
           path: 'review',
           finalText: TEXT,
           correctionChainRequired: true,
@@ -122,6 +128,110 @@ await describe({
         },);
         expect(parsed.confirmations?.[0],).toHaveProperty('quorumOver', WIDE_BENCH,);
         expect(parsed.rounds[0],).toHaveProperty('quorumOver', WIDE_BENCH,);
+      },
+    },),
+    it({
+      name: 'REFUSES confirmation evidence computed under a different quorum basis',
+      fn: async () => {
+        const confirmed = await confirmAbsoluteNaturalness(
+          requestFor(clientFor({ loseOnChallenge: true, },),),
+        );
+        expect(function parseChangedConfirmationBasis() {
+          parseNaturalnessReview({
+            value: {
+              correctionCount: 0, corrections: [], rounds: [confirmed.review,],
+              confirmations: confirmed.confirmations.map(function alterBasis(round,) {
+                return { ...round, quorumOver: ROSTER.length, };
+              },),
+            },
+            path: 'review', finalText: TEXT,
+            correctionChainRequired: true, everyBodyBlockReviewed: true, quorumBasisRequired: true,
+          },);
+        },).toThrow('same requested reviewer roster and quorum basis',);
+      },
+    },),
+    it({
+      name: 'MATERIALIZES the default full bench even when the window asks fewer seats',
+      fn: async () => {
+        /** Remove the wider override to exercise runtime's actual default. */
+        const { quorumOver, ...request } = requestFor(clientFor({ loseOnChallenge: true, },),);
+        expect(quorumOver,).toBe(WIDE_BENCH,);
+        const round = await reviewAbsoluteNaturalness({ ...request, fanOut: 'window', },);
+        expect(round,).toHaveProperty('quorumOver', ROSTER.length,);
+        expect(round.seats.length,).toBeLessThan(ROSTER.length,);
+        const parsed = parseNaturalnessReview({
+          value: { correctionCount: 0, corrections: [], rounds: [round,], },
+          path: 'review', finalText: TEXT,
+          correctionChainRequired: true, everyBodyBlockReviewed: true, quorumBasisRequired: true,
+        },);
+        expect(parsed.rounds[0],).toHaveProperty('quorumOver', ROSTER.length,);
+      },
+    },),
+    ...[undefined, null, -1, 1.5, 2, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1,].map(function invalidBasis(quorumOver,) {
+      return it({
+        name: `REFUSES malformed or undersized stored quorum ${String(quorumOver,)}`,
+        fn: async () => {
+          const round = await reviewAbsoluteNaturalness(
+            requestFor(clientFor({},),),
+          );
+          expect(function parseInvalidBasis() {
+            parseNaturalnessReview({
+              value: { correctionCount: 0, corrections: [], rounds: [{ ...round, quorumOver, },], },
+              path: 'review', finalText: TEXT,
+              correctionChainRequired: true, everyBodyBlockReviewed: true, quorumBasisRequired: true,
+            },);
+          },).toThrow('quorumOver',);
+        },
+      },);
+    },),
+    ...[-1, 0, 1.5, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1,].map(function invalidRuntimeBasis(quorumOver,) {
+      return it({
+        name: `REFUSES invalid runtime quorum ${String(quorumOver,)} before asking any reviewer`,
+        fn: async ctx => {
+          const client = clientFor({},);
+          const calls = ctx.sinon.spy(client, 'chatJson',);
+          let caught: unknown;
+          try {
+            await reviewAbsoluteNaturalness({ ...requestFor(client,), quorumOver, },);
+          }
+          catch (error) {
+            caught = error;
+          }
+          expect(caught,).toHaveProperty('name', 'NaturalnessQuorumError',);
+          expect(calls,).not.toHaveBeenCalled();
+        },
+      },);
+    },),
+    it({
+      name: 'REJECTS a stored verdict contradicted by its wider quorum',
+      fn: async () => {
+        const round = await reviewAbsoluteNaturalness(
+          requestFor(clientFor({},),),
+        );
+        expect(function parseTamperedVerdict() {
+          parseNaturalnessReview({
+            value: { correctionCount: 0, corrections: [], rounds: [{ ...round, verdict: 'acceptable', },], },
+            path: 'review', finalText: TEXT,
+            correctionChainRequired: true, everyBodyBlockReviewed: true, quorumBasisRequired: true,
+          },);
+        },).toThrow('expected quorum-not-met',);
+      },
+    },),
+    it({
+      name: 'KEEPS legacy seat-count interpretation without inventing missing provenance',
+      fn: async () => {
+        const { quorumOver, ...request } = requestFor(clientFor({},),);
+        expect(quorumOver,).toBe(WIDE_BENCH,);
+        const round = await reviewAbsoluteNaturalness(request,);
+        const { quorumOver: basis, ...legacyRound } = round;
+        expect(basis,).toBe(ROSTER.length,);
+        const parsed = parseNaturalnessReview({
+          value: { correctionCount: 0, corrections: [], rounds: [legacyRound,], },
+          path: 'review', finalText: TEXT,
+          correctionChainRequired: true, everyBodyBlockReviewed: true,
+        },);
+        expect(parsed.rounds[0]?.verdict,).toBe('acceptable',);
+        expect(parsed.rounds[0],).not.toHaveProperty('quorumOver',);
       },
     },),
   ],

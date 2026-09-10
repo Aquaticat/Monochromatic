@@ -69,7 +69,7 @@ export type AbsoluteNaturalnessReviewVerdict =
  *
  * @example
  * ```ts
- * const review: AbsoluteNaturalnessReviewOutcome = { candidateDigest: 'sha256:abc', candidateText: '', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
+ * const review: AbsoluteNaturalnessReviewOutcome = { quorumOver: 0, candidateDigest: 'sha256:abc', candidateText: '', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
  * ```
  */
 export type AbsoluteNaturalnessReviewOutcome = {
@@ -215,8 +215,15 @@ export async function reviewAbsoluteNaturalness(
     l,
     tag: reviewAbsoluteNaturalness.name,
   },);
-  if (!validNaturalnessQuorum({ quorumOver, seatCount: modelIds.length, },))
-    throw new NaturalnessQuorumError({ quorumOver, seatCount: modelIds.length, },);
+  if (!validNaturalnessQuorum({
+    quorumOver,
+    seatCount: modelIds.length,
+  },)) {
+    throw new NaturalnessQuorumError({
+      quorumOver,
+      seatCount: modelIds.length,
+    },);
+  }
   /**
    * Exact-half usable voices required to approve and start straggler grace.
    */

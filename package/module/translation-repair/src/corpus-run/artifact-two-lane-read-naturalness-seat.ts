@@ -292,7 +292,10 @@ export function uniqueNaturalnessFindings(
  * ```
  */
 export function naturalnessVerdictOf(
-  { seats, quorumOver = seats.length, }: {
+  {
+    seats,
+    quorumOver = seats.length,
+  }: {
     readonly seats: readonly ArtifactNaturalnessReviewSeat[];
     readonly quorumOver?: number;
   },

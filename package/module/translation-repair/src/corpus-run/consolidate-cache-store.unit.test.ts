@@ -31,7 +31,7 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-import { openConsolidateCache, } from '../../dist/final/node/index.mjs';
+import { hashContent, openConsolidateCache, } from '../../dist/final/node/index.mjs';
 
 /**
  * Built pipeline the fixtures are filled under.
@@ -183,6 +183,36 @@ async function roundTrip(
 await describe({
   name: openConsolidateCache.name,
   children: [
+    it({
+      name: 'RETAINS wider quorum provenance in decisive and confirmation review records',
+      fn: async () => {
+        /** Valid candidate-bound round with a wider three-seat basis. */
+        const review = {
+          quorumOver: 3,
+          candidateText: CAT_SETTLEMENT.text,
+          candidateDigest: hashContent({ content: CAT_SETTLEMENT.text, },),
+          paragraphCount: 1,
+          paragraphDigests: [hashContent({ content: CAT_SETTLEMENT.text, },),],
+          seats: ['hf:cat/Cat-A', 'hf:cat/Cat-B',].map(function accepting(modelId,) {
+            return { modelId, status: 'acceptable', findings: [], reason: 'Natural cat sentence.', };
+          },),
+          usable: 2,
+          verdict: 'acceptable',
+          findings: [],
+        };
+        /** Exact settlement bytes carried through the cache, without schema projection. */
+        const settlement = {
+          ...CAT_SETTLEMENT,
+          polish: {
+            kind: 'settled', baseText: CAT_SETTLEMENT.text, proposedText: CAT_SETTLEMENT.text,
+            text: CAT_SETTLEMENT.text, changed: false, refinersHeard: [], contributors: [], rounds: [],
+            review: { correctionCount: 0, corrections: [], rounds: [review,], confirmations: [review,], },
+            findings: [],
+          },
+        };
+        expect(await roundTripValue({ settlement, },),).toEqual(settlement,);
+      },
+    },),
     it({
       name: 'ROUND-TRIPS a settled consolidation, which is the half that fails silently: persist and '
         + 'resume disagreeing about a file name costs a re-bought slate and gate per slice per run '

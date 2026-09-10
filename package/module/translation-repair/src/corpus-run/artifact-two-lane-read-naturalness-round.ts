@@ -190,12 +190,18 @@ export function parseNaturalnessReviewRound(
     },);
   }
   /**
-   * Verdict recomputed from seat statuses.
+   * Explicit wider basis in current records, seat-count convention in legacy records.
    */
   const quorumOver = quorumBasisRequired
-    ? requireCount({ value: record.quorumOver, path: `${path}.quorumOver`, },)
+    ? requireCount({
+      value: record.quorumOver,
+      path: `${path}.quorumOver`,
+    },)
     : seats.length;
-  if (!validNaturalnessQuorum({ quorumOver, seatCount: seats.length, },)) {
+  if (!validNaturalnessQuorum({
+    quorumOver,
+    seatCount: seats.length,
+  },)) {
     throw new ArtifactParseError({
       path: `${path}.quorumOver`,
       reason: 'safe integer quorum basis covering every recorded seat',
@@ -204,7 +210,10 @@ export function parseNaturalnessReviewRound(
   /**
    * Verdict recomputed using the same wider basis as the producing stage.
    */
-  const verdict = naturalnessVerdictOf({ seats, quorumOver, },);
+  const verdict = naturalnessVerdictOf({
+    seats,
+    quorumOver,
+  },);
   if (record.verdict !== verdict) {
     throw new ArtifactParseError({
       path: `${path}.verdict`,

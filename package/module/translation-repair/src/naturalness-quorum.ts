@@ -13,17 +13,24 @@
  * ```
  */
 export function validNaturalnessQuorum(
-  { quorumOver, seatCount, }: {
+  {
+    quorumOver,
+    seatCount,
+  }: {
     readonly quorumOver: number;
     readonly seatCount: number;
   },
 ): boolean {
-  return Number.isSafeInteger(quorumOver,) && quorumOver >= seatCount;
+  return Number.isSafeInteger(quorumOver,) && (quorumOver >= seatCount);
 }
 
-/** Invalid quorum configuration, rejected before any reviewer is asked. */
+/**
+ * Invalid quorum configuration, rejected before any reviewer is asked.
+ */
 export class NaturalnessQuorumError extends Error {
-  /** Only numeric configuration is exposed by this diagnostic. */
+  /**
+   * Only numeric configuration is exposed by this diagnostic.
+   */
   readonly messageNamesOnly: true = true;
 
   /**
@@ -38,7 +45,15 @@ export class NaturalnessQuorumError extends Error {
    * throw new NaturalnessQuorumError({ quorumOver: 2, seatCount: 3 });
    * ```
    */
-  constructor({ quorumOver, seatCount, }: { readonly quorumOver: number; readonly seatCount: number; },) {
+  constructor(
+    {
+      quorumOver,
+      seatCount,
+    }: {
+      readonly quorumOver: number;
+      readonly seatCount: number;
+    },
+  ) {
     super(`Naturalness quorum basis ${String(quorumOver,)} must be a safe integer covering ${String(seatCount,)} requested seats.`,);
     this.name = 'NaturalnessQuorumError';
   }
