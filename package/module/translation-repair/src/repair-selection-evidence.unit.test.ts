@@ -89,7 +89,7 @@ await describe({
         const input = {
           client: fixture.client, candidates: CANDIDATES, envelopes: [ENVELOPE,], judgeModelIds: JUDGES,
           sourceText: '猫笑了。', targetText: TARGET, neighbouringSourceText: 'NEARBY SOURCE MARKER', documentSourceText: 'DOCUMENT SOURCE MARKER',
-          signal: new AbortController().signal, perCallTimeoutMs: 5000, l: tagged({ tag: 'repair-evidence-test', }),
+          signal: new AbortController().signal, perCallTimeoutMs: 5_000, l: tagged({ tag: 'repair-evidence-test', }),
         };
         const selected = await selectPerEnvelope(input);
         expect(selected.operations[0]?.newText).toBe('Her friend greeted her.');
@@ -101,13 +101,13 @@ await describe({
       fn: async () => {
         const fixture = judges();
         const offered = CANDIDATES.map(candidate => chunkCandidateOf(candidate));
-        const fallback = offered[0];
+        const [fallback,] = offered;
         if (fallback === undefined) throw new Error('Missing fixture candidate');
         const input = {
           client: fixture.client, candidates: offered, judgeModelIds: JUDGES, sourceText: '猫笑了。',
           neighbouringSourceText: 'NEARBY SOURCE MARKER', documentSourceText: 'DOCUMENT SOURCE MARKER',
           indecisionFallback: fallback, rejectionFallback: { patchedText: TARGET, applied: [], rejected: [], },
-          signal: new AbortController().signal, perCallTimeoutMs: 5000, l: tagged({ tag: 'repair-evidence-test', }),
+          signal: new AbortController().signal, perCallTimeoutMs: 5_000, l: tagged({ tag: 'repair-evidence-test', }),
         };
         const selected = await selectChunkPatch(input);
         expect(selected.patch.patchedText).toBe('Her friend greeted her.');

@@ -174,7 +174,9 @@ export async function settleRepairSlice(
    * Same-entry source used by the panel and selectors to verify current claims.
    * One value feeds both cache identity and the eventual purchase.
    */
-  const documentSourceText = prepared.sourceText === slice.source.text ? '' : prepared.sourceText;
+  const documentSourceText = prepared.sourceText
+    === slice.source
+    .text ? '' : prepared.sourceText;
 
   /**
    * What this slice cost, reported however this function is left.
