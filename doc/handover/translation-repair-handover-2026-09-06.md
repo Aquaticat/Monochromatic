@@ -24,6 +24,28 @@ and the reason is recorded in
 
 ## Where the work stands
 
+Current launch at 02:16 UTC on 2026-09-10:
+`Mio11` runs on frozen `e0a0ae45c`,
+with the source-only explicit-break guard.
+Pass pid `1653981`,
+runs `~/temp/agent/Mio11-20260910`,
+log `~/temp/agent/Mio11-20260910.log`,
+terminal-only supervisor `proc_1081` (`translation-repair-Mio11-20260910`).
+Prelaunch and launch meters:
+OpenRouter 268.74 USD,
+Bedrock 185.78 USD,
+Synthetic weekly 2 percent with five-hour 2750/2750,
+Hyper zero.
+The launch confirms overlap 4,
+built-in writer grace and no withheld seat while Synthetic is wet.
+The daily-cost helper output is `~/temp/agent/Mio11-costs-before-20260910.out`.
+No source changes are planned while it runs;
+a necessary one requires killing pid `1653981` and relaunching.
+Read the complete page and all seven steps/three checks at its terminal notification,
+including explicit breaks in the closing poem,
+all screenshot translations and the recorded wording concerns.
+Do not advance the queue on `SETTLED` alone.
+
 Class twenty-nine is fixed locally in `7c0ce152f`,
 with coverage and formatting through `e0a0ae45c`.
 Guard `d813da8d5` failed four cases on the prior build.
@@ -2012,7 +2034,8 @@ each read off the pass log and the shipped page:
     Its closing poem exposed class twenty-nine:
     five explicit hard breaks became soft newlines.
     That source-only guard is fixed and verified through `e0a0ae45c`.
-    Relaunch `Mio` and read the rendered verse before advancing the queue.
+    `Mio11` runs on frozen `e0a0ae45c` at pid `1653981`.
+    Read the rendered verse and the complete page before advancing the queue.
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:
     `preparePassEntry` (`corpus-run/pass-prepare.ts`) runs the archive block review inside preparation,

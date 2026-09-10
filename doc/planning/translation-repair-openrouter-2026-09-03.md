@@ -6936,6 +6936,37 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Mio11 launches with the source-only break floor, 2026-09-10, 02:16 UTC
+
+Frozen `e0a0ae45c`,
+pass pid `1653981`,
+runs `~/temp/agent/Mio11-20260910`,
+log `~/temp/agent/Mio11-20260910.log`,
+terminal-only supervisor `proc_1081`.
+Full suite ends `unit exit 0` in `~/temp/agent/class29-final-unit-20260910.out`;
+build,
+types,
+oxlint,
+edited markdown and the final focused publisher/explicit-break tests pass.
+No source changes are planned while the pass runs.
+
+Prelaunch meter at 02:13 and launch meter at 02:16:
+OpenRouter 268.74 USD,
+Bedrock 185.78 USD,
+Synthetic weekly 2 percent with five-hour 2750/2750,
+Hyper zero.
+Synthetic has recovered availability in its rolling window without a top-up.
+The launch confirms overlap 4,
+built-in writer grace and no withheld seat.
+Daily-cost output:
+`~/temp/agent/Mio11-costs-before-20260910.out`.
+
+Read explicit rendered breaks in the closing poem,
+all screenshot translations,
+source destinations,
+front matter and the wording concerns from Mio10 before deciding whether the queue advances.
+A settled artifact alone still does not answer that question.
+
 ## Mio10 preserves the screenshots but flattens the closing poem, 2026-09-10
 
 Frozen `dc51b02d9`,
