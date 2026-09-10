@@ -3,18 +3,12 @@ import type {
   RootContent,
 } from 'mdast';
 
-import {
-  type LoneContainerTag,
-  maskLoneContainerTags,
-} from './mask-container-tags.ts';
-import { maskHtmlComments, } from './mask-html-comments.ts';
+import type { LoneContainerTag, } from './mask-container-tags.ts';
+import { parseSliceBody, } from './parse-slice-body.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
 import { explicitBreakCounts, } from './source-only-breaks.ts';
 
-import {
-  MdxParseError,
-  parseMdxBody,
-} from './parse-mdx.ts';
+import { MdxParseError, } from './parse-mdx.ts';
 import type {
   AtomKind,
   ProtectedAtom,
@@ -335,24 +329,9 @@ export function readSliceSkeleton(
 ): SkeletonRead {
   try {
     /**
-     * Slice with its HTML comments blanked to same-length whitespace, which is
-     * what the document reader hands the strict grammar.
+     * Shared offset-preserving slice grammar also used by source presentation.
      */
-    const { masked: withoutComments, } = maskHtmlComments({ text, },);
-
-    /**
-     * Slice with any container tag standing without its partner blanked too,
-     * and those tags reported so the skeleton can carry them.
-     */
-    const {
-      masked,
-      tags,
-    } = maskLoneContainerTags({ text: withoutComments, },);
-
-    /**
-     * Parsed slice under the strict grammar.
-     */
-    const root: ReadonlyMdastRoot = parseMdxBody({ body: masked, },);
+    const { root, tags, } = parseSliceBody({ text, },);
 
     return {
       kind: 'read',

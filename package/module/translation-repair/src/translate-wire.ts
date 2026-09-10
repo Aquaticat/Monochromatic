@@ -6,7 +6,11 @@ import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
-import type { TranslateAbsenceReason, } from './translate-absence.ts';
+import { sourceBreakDisplay, } from './source-break-display.ts';
+import type {
+  IncumbentKind,
+  TranslateAbsenceReason,
+} from './translate-absence.ts';
 
 //region Translate wire
 // The translator sheet and the guard on what comes back, both of which
@@ -172,6 +176,9 @@ export type TranslateFollowupEvidence = {
  *
  * @param existingText - translation as it stands, empty when there is none
  *
+ * @param incumbentKind - explicit source-only provenance for break presentation;
+ * callers that cannot establish it keep the original view
+ *
  * @param identityContext - declared names and handles, omitted when absent
  *
  * @param syntax - syntax role requiring dedicated preservation rules
@@ -194,6 +201,7 @@ export function buildTranslateMessages(
   {
     sourceText,
     existingText,
+    incumbentKind = 'present',
     identityContext = '',
     pictureContext = '',
     syntax,
@@ -202,6 +210,7 @@ export function buildTranslateMessages(
   }: {
     readonly sourceText: string;
     readonly existingText: string;
+    readonly incumbentKind?: IncumbentKind;
     readonly identityContext?: string;
     readonly pictureContext?: string;
     readonly syntax?: SliceSyntax;
@@ -210,12 +219,21 @@ export function buildTranslateMessages(
   },
 ): TranslatePromptPlan {
   /**
+   * Presentation-only break spelling, with canonical source still used for facts.
+   */
+  const sourceForModel = sourceBreakDisplay({
+    sourceText,
+    archiveText: existingText,
+    incumbentKind,
+    ...((syntax === undefined) ? {} : { syntax, }),
+  },);
+  /**
    * Fence no enclosed text can reproduce, chosen against every string this
    * sheet carries, since all of them are arbitrary prose.
    */
   const fence = selectFence({
     texts: [
-      sourceText,
+      sourceForModel,
       existingText,
       identityContext,
       pictureContext,
@@ -290,7 +308,7 @@ ${rejectedCandidates}`;
       {
         role: 'user',
         content: `${fence} ORIGINAL ${fence}
-${sourceText}${
+${sourceForModel}${
           pictureContext === ''
             ? ''
             : `

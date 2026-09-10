@@ -4,6 +4,7 @@ import {
   alignDocumentSections,
   type ChunkPair,
 } from '../chunk-document.ts';
+import { isInsertionChunk, } from '../chunk-placement.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { parseDocument, } from '../parse-document.ts';
 import {
@@ -259,6 +260,7 @@ async function main(): Promise<void> {
     const plan = buildTranslateMessages({
       sourceText: sliceSource,
       existingText: sliceTarget,
+      incumbentKind: isInsertionChunk(slice.target,) ? 'absent' : 'present',
     },);
 
     try {

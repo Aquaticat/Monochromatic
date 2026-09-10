@@ -204,6 +204,7 @@ export async function runSliceArms(
    * Slate every arm judges, bought once.
    */
   const produced = await produceTranslateSlate({
+    incumbentKind: isInsertionChunk(slice.target,) ? 'absent' : 'present',
     client,
     translatorModelIds: models.translatorModelIds,
     sourceText: slice.source

@@ -9,6 +9,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { IncumbentKind, } from './translate-absence.ts';
 import {
   buildTranslateCandidates,
   type TranslateCandidateValue,
@@ -82,6 +83,8 @@ export type ProducedSlate = {
  * @param incumbentText - translation as it stands, blank where this slice has
  * none
  *
+ * @param incumbentKind - caller-established absence allowing a visible source-break view
+ *
  * @param incumbentEligible - whether existing translation passes deterministic source floor
  *
  * @param identityContext - declared names from both sides' front matter,
@@ -113,6 +116,7 @@ export async function produceTranslateSlate(
     translatorModelIds,
     sourceText,
     incumbentText,
+    incumbentKind = 'present',
     incumbentEligible = true,
     identityContext,
     pictureContext,
@@ -127,6 +131,7 @@ export async function produceTranslateSlate(
     readonly translatorModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly incumbentText: string;
+    readonly incumbentKind?: IncumbentKind;
     readonly incumbentEligible?: boolean;
     readonly identityContext?: string;
     readonly pictureContext?: string;
@@ -153,6 +158,7 @@ export async function produceTranslateSlate(
   const plan = buildTranslateMessages({
     sourceText,
     existingText: incumbentText,
+    incumbentKind,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
     ...((syntax === undefined) ? {} : { syntax, }),

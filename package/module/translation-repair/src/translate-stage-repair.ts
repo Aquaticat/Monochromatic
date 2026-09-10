@@ -83,6 +83,7 @@ async function produceAndJudgeOnce(
     translatorModelIds: input.translatorModelIds,
     sourceText: input.sourceText,
     incumbentText: input.incumbentText,
+    incumbentKind: input.incumbentKind,
     incumbentEligible: input.incumbentEligible,
     ...((input.identityContext === undefined) ? {} : { identityContext: input.identityContext, }),
     ...((input.pictureContext === undefined) ? {} : { pictureContext: input.pictureContext, }),
