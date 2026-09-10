@@ -87,6 +87,24 @@ function candidateNumber({
 }
 
 /**
+ * Rejects text-only calls outside this fixture's protocol.
+ *
+ * @throws Error on any invocation
+ */
+function unexpectedText(): never {
+  throw new Error('Unexpected text call',);
+}
+
+/**
+ * Prevents accidental access to live quota resources.
+ *
+ * @throws Error on any invocation
+ */
+function unexpectedQuotas(): never {
+  throw new Error('Unexpected quota read',);
+}
+
+/**
  * Builds schema-valid review replies and captures the real selection message.
  *
  * @param review - anchor and revision mixture
@@ -201,6 +219,7 @@ export function archiveSelectionFixture(
    * Synchronous fixture logic, adapted to the provider's asynchronous interface.
    *
    * @param request - actual production role and schema
+   *
    * @returns Scripted schema-valid outcome or explicit unavailable voice
    */
   function respond<ValueT,>(request: ChatJsonRequest<ValueT>,): ChatJsonOutcome<ValueT> {
@@ -226,7 +245,10 @@ export function archiveSelectionFixture(
          * Echoes remain actual revision replies but do not change the block.
          */
         const value: unknown = review === 'unavailable' ? corrected : review === 'echo'
-          ? { ...corrected, replacementText: ARCHIVE_TEST_BLOCK, }
+          ? {
+            ...corrected,
+            replacementText: ARCHIVE_TEST_BLOCK,
+          }
           : replies[index];
         if (!request.validate(value,))
           throw new Error('Unexpected review call or invalid fixture reply',);
@@ -281,15 +303,11 @@ export function archiveSelectionFixture(
     /**
      * Text-only calls are outside this scripted protocol.
      */
-    chatText: function unexpectedText(): never {
-      throw new Error('Unexpected text call',);
-    },
+    chatText: unexpectedText,
     /**
      * Fixtures cannot query live provider resources.
      */
-    quotas: function unexpectedQuotas(): never {
-      throw new Error('Unexpected quota read',);
-    },
+    quotas: unexpectedQuotas,
     /**
      * Adapts deterministic reply construction to the provider interface.
      */
