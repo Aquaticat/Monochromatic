@@ -6936,6 +6936,114 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Mio10 preserves the screenshots but flattens the closing poem, 2026-09-10
+
+Frozen `dc51b02d9`,
+00:15 to 01:36 UTC,
+4,872,081 ms,
+18 slices,
+11 page changes,
+zero silent deliveries.
+`verify-published` matches all 18 wordings with no missing text.
+The page is `~/temp/agent/Mio10-20260910/fixed/people/Mio/page.en.md`;
+it was read completely beside both pinned corpus files.
+
+The front matter equals the archive byte for byte.
+All six `PhotoScroll` components parse;
+the source's four link destinations,
+the horizontal rule,
+closing poem and Bilibili attribution are present.
+The complete chat blocks and Twitter transcript are exact archive substrings,
+measured at 2,054,
+479 and 1,884 characters respectively.
+The opening `Translation:` label before the first chat was removed,
+but its transcript was not.
+Pictures were bought once:
+one ten-picture traversal,
+three deterministic no-text results,
+seven pictures corroborated by four readers,
+28 successful model image reads.
+This is live page evidence for class twenty-five.
+Archive review completed without the quoted-revision mismatch from class twenty-eight.
+`pageAssembly` has no withdrawals,
+trims or findings;
+class twenty-seven was not needed on this pass.
+
+The deterministic reading reports no Chinese punctuation,
+CJK run,
+refusal prose or code fence.
+No straight apostrophe appears inside a word;
+the ten straight quotes immediately after letters all close component asset strings.
+The page has 31 curly apostrophes versus the archive's 29,
+and four U+2026 ellipses versus four,
+with zero three-dot ellipses.
+Both spaced ellipses are inherited unchanged.
+No footnotes occur in either text.
+The front-matter check passes.
+One false start was recovered past an abandoned three-character opening;
+no error finish occurred.
+The full remaining mismatch replies were inspected privately by matching the flattened log previews
+back to payload-cache files;
+none opens with adjacent braces.
+Mercury's malformed suffixes and wrong array shape remain distinct from an abandoned opening.
+
+The refusal-vocabulary search finds one block-floor refusal at slice 4,
+followed by the valid incumbent taking over at consolidation.
+No missing-destination,
+MDX-downgrade,
+reattempt or ineligible-standing terminal event occurs.
+All phase benches are reachable on Bedrock and OpenRouter;
+there is no hold,
+payment refusal or naturalness quorum-not-met.
+Seat totals and sanitized diagnostics are in `~/temp/agent/Mio10-findings-20260910.out`.
+
+The prose improves the archive's unsupported claim about the older sister,
+restores the primary-school SRS interest,
+and repairs the accident account and dates.
+Wording defects remain:
+the archive's screenshot misspelling,
+a coming-out bullet that ambiguously places the event in primary school,
+two names for the QQ group,
+and awkward university wording.
+Those are recorded separately from the structural defect,
+not waved through as a clean page.
+
+Class twenty-nine is a loss of rendered verse structure.
+The source-only closing poem has five Markdown hard breaks;
+the translated and consolidated artifact texts already lack them,
+and the published poem has twelve physical lines but no hard break.
+`isLineStructured` misses this single-block verse because it requires five blank-separated blocks;
+`compareLineCounts` counts physical lines rather than rendered breaks.
+A cat fixture through the real built `validateTranslatedSlice` accepts the flattened rendering.
+The parser-positive control gives one `break` node for source and faithful candidate,
+zero for the flattened candidate.
+The reproducer fails in `~/temp/agent/reproduce-Mio10-hard-breaks-20260910.mjs`.
+The installed MDX compiler confirms that two-space Markdown and intrinsic `<br/>` each emit a break,
+while a soft newline does not.
+
+The independent review supports a source-only floor:
+protect a minimum count of explicit breaks per top-level block when the archive incumbent is absent,
+accept equivalent intrinsic lowercase `br`,
+and leave archive-backed layout choices,
+paragraph equivalence,
+expansion and author defense unchanged.
+This does not select the unchosen paragraph-equivalence option in the block-floor decision.
+No source fix has landed yet.
+
+OpenRouter logged 0.618695602723 USD across 653 calls,
+including 0.05020922 USD of abandoned estimates;
+Bedrock logged 0.2738563435 USD across 481 calls.
+Last meters:
+OpenRouter 268.75 USD,
+Bedrock 185.78 USD,
+Synthetic weekly zero,
+Hyper zero.
+The daily helper ran;
+its output is `~/temp/agent/Mio10-costs-after-20260910.out`.
+Per-provider totals are `~/temp/agent/Mio10-spend-20260910.out`.
+The queue remains at `Mio` until this finding is guarded,
+fixed and read on a new pass.
+
 ## The tenth Mio launches with quoted revision replies accepted, 2026-09-10, 00:15 UTC
 
 Frozen build `dc51b02d9`,

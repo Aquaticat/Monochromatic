@@ -24,7 +24,52 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current launch at 00:15 UTC on 2026-09-10:
+Terminal and reading update on 2026-09-10:
+`Mio10` SETTLED at 01:36 UTC after 4,872,081 ms.
+`verify-published` matched all 18 wordings with no missing text;
+all four source destinations and all six `PhotoScroll` components survive.
+Both chat translations and the Twitter transcript are exact archive substrings.
+The picture reader opened once for ten assets:
+three deterministic no-text results and seven pictures corroborated by four readers each,
+with no second model-reading set.
+Class twenty-five is therefore verified on a page;
+class twenty-eight passes archive review without its prior quoted-revision mismatch.
+Class twenty-seven was not exercised because no assembly withdrawal was needed.
+
+The page is not clean:
+class twenty-nine is the source-only closing poem losing all five explicit Markdown hard breaks.
+It has twelve physical lines but zero rendered breaks;
+slice 17 is `incumbentKind: "absent"`.
+A cat fixture through the real built validator accepts the same flattening,
+while the shared MDX grammar distinguishes one break in the source and positive control from zero in the candidate.
+Reproducer:
+`~/temp/agent/reproduce-Mio10-hard-breaks-20260910.mjs`,
+red result `~/temp/agent/Mio10-hard-break-red-20260910.out`.
+The independent review agrees that protecting a source-only passage follows the original-as-floor rule,
+without deciding between archive and source layouts.
+Fix only absent-incumbent passages,
+compare explicit breaks per top-level block,
+allow expansion and equivalent intrinsic lowercase `br`,
+and leave archive-backed passages,
+paragraph equivalence and author defense unchanged.
+The installed MDX compiler emitted a `br` element for both two-space Markdown and `<br/>`,
+and none for a soft newline.
+
+Recorded wording defects remain distinct:
+the inherited screenshot misspelling and coming-out bullet's timeline ambiguity,
+the duplicated QQ-group naming,
+and the new awkward university wording.
+No readiness claim or queue advance is justified.
+Detailed reading and diagnostic files are under `~/temp/agent/Mio10-*20260910.out`.
+OpenRouter logged 0.618695602723 USD,
+Bedrock 0.2738563435 USD;
+last meters 268.75 and 185.78 USD respectively,
+Synthetic weekly zero,
+Hyper zero.
+The daily-cost helper ran into `~/temp/agent/Mio10-costs-after-20260910.out`.
+No corpus pass is running.
+
+Launch record at 00:15 UTC on 2026-09-10:
 `Mio10` runs on frozen `dc51b02d9`,
 with classes twenty-five,
 twenty-seven and twenty-eight.

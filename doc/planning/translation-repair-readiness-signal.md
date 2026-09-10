@@ -1656,6 +1656,31 @@ local guards are not a published page,
 and the next pass must carry both the picture-support fix and the structural-withdrawal fix before the
 queue advances.
 
+## What Mio10 showed (2026-09-10, 00:15 to 01:36 UTC)
+
+The page verifies against its artifact,
+preserves every source destination,
+and retains both chat translations and the Twitter transcript byte for byte from the archive.
+The pictures were read once before archive review.
+That closes class twenty-five on a published page,
+and archive review passes the class-twenty-eight boundary.
+
+The page is not clean.
+The source-only closing poem keeps its words but loses all five explicit Markdown hard breaks,
+so twelve physical lines form one rendered paragraph.
+This is class twenty-nine:
+the single-block poem escapes the blank-block verse heuristic,
+and the structural floor does not measure its explicit breaks.
+A parser-positive control and real-validator failing reproduction establish the gap.
+The proposed repair stays at the source-only boundary and does not alter archive-backed formatting choices.
+Inherited wording defects are also recorded in the full reading.
+
+The belief remains not ready.
+The screenshot repair is now supported by real output,
+but the same page exposes another unguarded representation of authored structure.
+`Mio` must be rerun and read after the guard;
+the queue has not advanced.
+
 ## What the ninth Mio launch showed (2026-09-09, 23:49 to 2026-09-10, 00:07 UTC)
 
 The pass stopped before lanes,
