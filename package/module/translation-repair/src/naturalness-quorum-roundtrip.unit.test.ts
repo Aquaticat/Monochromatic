@@ -46,7 +46,7 @@ function clientFor({ loseOnChallenge = false, }: { readonly loseOnChallenge?: bo
       /** Earlier calls by this independently scripted seat. */
       const previous = calls.get(request.modelId,) ?? 0;
       calls.set(request.modelId, previous + 1,);
-      if ((!loseOnChallenge || (previous > 0))
+      if (((!loseOnChallenge) || (previous > 0))
         && ((request.modelId === 'glm-5.3') || (request.modelId === 'inception/mercury-2.5'))) {
         return { kind: 'schema-mismatch', rawText: '{}', detail: 'Fixture unusable seat', };
       }

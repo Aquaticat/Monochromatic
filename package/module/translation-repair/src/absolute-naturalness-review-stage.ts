@@ -377,6 +377,7 @@ export async function reviewAbsoluteNaturalness(
     .join(';',);
   rl.info(
     `absolute naturalness review: ${String(usableSeats.length,)}/${String(modelIds.length,)} usable, ${verdict}, `
+      + `quorumNeeded=${String(quorumNeeded,)} quorumOver=${String(quorumOver,)}, `
       + `seats=${seatSummary}, uniqueFindings=${String(findings.length,)}`,
   );
   return {
