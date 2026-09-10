@@ -6976,10 +6976,11 @@ all three stock and all three treated editors removed the list and changed its g
 `proc_ec6f` produced the intended list correction with all three editors when only the accurate claim was visible.
 The subsequent isolated-claim panel diagnostic reversed the false addition claim's matched vote from support to opposition.
 No production filter was added.
-`proc_2d45` now checks the existing claim clusters as independent review units,
-retaining all claims,
-merge questions,
-panelists and tally rules.
+`proc_2d45` removed blanket-deletion authorization and rejected false friendship claims at cluster scope,
+while retaining the participant correction.
+Name and placement claims remain problematic.
+`proc_ba3f` now checks actual stock-window cluster decisions followed by the existing editor/assembler path,
+not just fixed-panel votes.
 No production prompt change,
 name-policy change,
 quorum change or new production stage has been made.

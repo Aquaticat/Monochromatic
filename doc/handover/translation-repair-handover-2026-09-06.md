@@ -172,19 +172,26 @@ reversing the matched tally from four-to-two support to four-to-two opposition.
 This is evidence for packet-content/size interference,
 not a universal claim about batching or renumbering.
 
-`proc_2d45` now runs `translation-repair-panel-clusters-probe-20260910`.
+`proc_2d45` completed cluster-level review in 430 seconds.
+In the mixed list cluster,
+blanket deletion loses authorization at four-to-four,
+the two-item removal claim is rejected three-to-five,
+and the second friendship claims are rejected two-to-six.
+The actual participant correction remains accepted seven-to-one.
+Name-change and administrator-placement claims still pass.
+No production batching change was made.
+
+`proc_ba3f` now runs `translation-repair-cluster-repair-integration-20260910`.
 Report:
-`~/temp/agent/panel-clusters-probe-20260910/report.json`.
+`~/temp/agent/cluster-repair-integration-probe-20260910/report.json`.
 Log:
-`~/temp/agent/panel-clusters-probe-20260910.log`.
-It reviews the existing five clusters separately,
-with all thirty-two claims preserved and each merge question retained.
-The mixed list cluster still contains fifteen claims.
-Stock panelists,
-source evidence,
-schemas and the nine-seat tally basis stay fixed.
-Forty calls maximum;
-no production batching or generation-round change has been made.
+`~/temp/agent/cluster-repair-integration-probe-20260910.log`.
+It uses actual stock nine-seat prompt-dependent windows on the final per-cluster messages,
+then independently resolves/tallies each cluster without a union-based quorum change.
+The resulting issue packet feeds the stock editor and real assembler/preservation gate.
+It reuses completed payloads in a disposable cache,
+with eighty requests maximum and a twenty-minute global bound.
+Read actual authorization and assembled text before accepting the proposed granularity change.
 
 The caller trace also found that per-envelope and whole-chunk repair selectors do not receive neighboring source.
 Any good editor candidate will need verification at those actual selection boundaries;

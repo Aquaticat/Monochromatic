@@ -622,9 +622,9 @@ two OpenRouter calls reporting zero,
 and six unpriced Hyper plus four unpriced Synthetic calls.
 The daily helper ran afterward.
 
-## Active existing-cluster review diagnostic
+## Completed existing-cluster review diagnostic
 
-`proc_2d45` is `translation-repair-panel-clusters-probe-20260910`.
+`proc_2d45` completed `translation-repair-panel-clusters-probe-20260910` in 430 seconds.
 Script:
 `~/temp/agent/probe-panel-clusters-20260910.mjs`.
 Plan:
@@ -658,5 +658,50 @@ Forty calls maximum,
 six concurrent,
 360000 ms per exchange and 1200000 ms globally.
 No production batching change or additional generation round has been implemented.
-Read whether the mixed list cluster rejects false deletion claims while retaining the actual participant correction;
-do not infer that single-claim success proves cluster-level success.
+The mixed list cluster no longer authorizes blanket list deletion:
+the broadest claim ties four-to-four and the two-item removal claim is rejected three-to-five.
+Both false claims against the second friendship bullet are rejected two-to-six.
+The actual participant correction remains accepted seven-to-one.
+Name-change claims and administrator-placement claims remain accepted;
+this does not complete task 21 or establish a good final candidate.
+The existing resolver records malformed vote/group replies rather than silently counting them.
+
+The non-list clusters retain supported corrections and reject the spurious clinical/tense claims.
+The run logged 0.00473602 USD on Bedrock,
+five OpenRouter calls reporting zero,
+and fifteen unpriced Hyper plus ten unpriced Synthetic calls.
+The daily helper ran afterward.
+
+## Active stock-window cluster-to-editor verification
+
+`proc_ba3f` is `translation-repair-cluster-repair-integration-20260910`.
+Script:
+`~/temp/agent/probe-cluster-repair-integration-20260910.mjs`.
+Plan:
+`~/temp/agent/cluster-repair-integration-plan-20260910.out`.
+Log:
+`~/temp/agent/cluster-repair-integration-probe-20260910.log`.
+Report:
+`~/temp/agent/cluster-repair-integration-probe-20260910/report.json`.
+
+This moves from the fixed eight-panelist diagnostic to actual prompt-dependent stock windows.
+`gatherStageVoices` receives the final context-bearing messages before it selects seats from the nine-seat panel.
+The resolver and tally run independently per existing cluster,
+retaining each cluster's actual ballots and configured basis rather than reinterpreting a union of seats.
+Completed cluster-probe payloads seed a copied disposable cache.
+
+The resulting issues go through production deduplication,
+envelope derivation,
+the stock editor prompt and the existing patch/preservation gate.
+No editor responsibility treatment is used.
+The report retains raw editor operations,
+complete assembled candidates,
+compilation and the existing structure check.
+It does not yet call the repair selectors that lack neighboring source.
+
+The bound is eighty JSON requests,
+360000 ms per exchange and 1200000 ms globally.
+No production batching change has been made.
+At completion,
+read actual stock-window authorization and assembled wording;
+do not infer that the fixed-eight result transfers unchanged to the production window.
