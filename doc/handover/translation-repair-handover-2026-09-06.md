@@ -181,17 +181,27 @@ The actual participant correction remains accepted seven-to-one.
 Name-change and administrator-placement claims still pass.
 No production batching change was made.
 
-`proc_ba3f` now runs `translation-repair-cluster-repair-integration-20260910`.
+`proc_ba3f` completed stock-window cluster-to-editor verification in 155 seconds,
+with thirty panel and three editor calls.
+GLM-5.3 now produces the correct disclosure direction and keeps the second friendship item,
+but moves the administrator fact to prose and changes the group name.
+The other drafts delete the first item or duplicate the second.
+All structurally validate,
+which is not semantic success.
+
+`proc_ae78` now runs `translation-repair-selection-context-probe-20260910`.
 Report:
-`~/temp/agent/cluster-repair-integration-probe-20260910/report.json`.
+`~/temp/agent/repair-selection-context-probe-20260910/report.json`.
 Log:
-`~/temp/agent/cluster-repair-integration-probe-20260910.log`.
-It uses actual stock nine-seat prompt-dependent windows on the final per-cluster messages,
-then independently resolves/tallies each cluster without a union-based quorum change.
-The resulting issue packet feeds the stock editor and real assembler/preservation gate.
-It reuses completed payloads in a disposable cache,
-with eighty requests maximum and a twenty-minute global bound.
-Read actual authorization and assembled text before accepting the proposed granularity change.
+`~/temp/agent/repair-selection-context-probe-20260910.log`.
+It holds the actual generated candidates,
+authorship,
+system criteria and fallbacks fixed,
+comparing stock selection with added source evidence.
+The affected envelope and complete chunk are tested independently,
+with no invented composite or extra generation.
+Sixty-four calls maximum and a twenty-minute global bound.
+No production batching or prompt change has been implemented beyond the verified heading window.
 
 The caller trace also found that per-envelope and whole-chunk repair selectors do not receive neighboring source.
 Any good editor candidate will need verification at those actual selection boundaries;

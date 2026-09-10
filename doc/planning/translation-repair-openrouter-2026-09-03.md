@@ -6979,8 +6979,10 @@ No production filter was added.
 `proc_2d45` removed blanket-deletion authorization and rejected false friendship claims at cluster scope,
 while retaining the participant correction.
 Name and placement claims remain problematic.
-`proc_ba3f` now checks actual stock-window cluster decisions followed by the existing editor/assembler path,
-not just fixed-panel votes.
+`proc_ba3f` produced one assembled candidate with the correct disclosure direction under stock windows,
+while other drafts deleted or duplicated an item and all changed the group name.
+`proc_ae78` now tests the existing selectors on those actual candidates with and without additional source evidence.
+No new writing or invented composite is part of that comparison.
 No production prompt change,
 name-policy change,
 quorum change or new production stage has been made.

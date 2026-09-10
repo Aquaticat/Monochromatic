@@ -672,9 +672,9 @@ five OpenRouter calls reporting zero,
 and fifteen unpriced Hyper plus ten unpriced Synthetic calls.
 The daily helper ran afterward.
 
-## Active stock-window cluster-to-editor verification
+## Completed stock-window cluster-to-editor verification
 
-`proc_ba3f` is `translation-repair-cluster-repair-integration-20260910`.
+`proc_ba3f` completed `translation-repair-cluster-repair-integration-20260910` in 155 seconds.
 Script:
 `~/temp/agent/probe-cluster-repair-integration-20260910.mjs`.
 Plan:
@@ -702,6 +702,51 @@ It does not yet call the repair selectors that lack neighboring source.
 The bound is eighty JSON requests,
 360000 ms per exchange and 1200000 ms globally.
 No production batching change has been made.
-At completion,
-read actual stock-window authorization and assembled wording;
-do not infer that the fixed-eight result transfers unchanged to the production window.
+The actual windows made thirty panel calls followed by three editor calls.
+The resulting packet has more narrowly scoped edit regions and preserves the second friendship item outside the edits.
+One editor,
+GLM-5.3,
+produces the correct friend-to-Mio disclosure bullet and retains the second friendship bullet.
+It moves the administrator fact into prose and changes the group name,
+so it is not a complete publication-ready result.
+GLM-flash removes the first bullet;
+DeepSeek replaces it with another copy of the second friendship bullet.
+All three pass the structural check,
+which correctly does not establish semantic accuracy.
+
+The run logged six unpriced Synthetic and two unpriced Hyper calls;
+completed payloads supplied cached requests.
+The spend and daily helpers ran afterward.
+No production batching change is yet applied.
+
+## Active repair-selector evidence check
+
+`proc_ae78` is `translation-repair-selection-context-probe-20260910`.
+Script:
+`~/temp/agent/probe-repair-selection-context-20260910.mjs`.
+Plan:
+`~/temp/agent/repair-selection-context-plan-20260910.out`.
+Log:
+`~/temp/agent/repair-selection-context-probe-20260910.log`.
+Report:
+`~/temp/agent/repair-selection-context-probe-20260910/report.json`.
+
+It uses actual candidates from the completed cluster/editor run,
+with their actual authorship and unchanged fallbacks.
+The stock per-envelope selector judges only the affected disclosure region;
+the stock whole-chunk selector separately judges the three assembled candidates.
+No invented composite or new writing is introduced.
+
+The contrast adds nearby and whole-document source evidence,
+without changing system criteria,
+candidate wording or available judge roster.
+The interceptor preserves the original prompt-dependent windows for the paired comparison;
+a later compiled change still needs production-window verification.
+The offline plan exercises both selector APIs,
+checks the exchange field,
+and preserves any additional recovery user messages instead of mistaking them for the candidate sheet.
+
+The cap is sixty-four requests,
+360000 ms per exchange and 1200000 ms globally.
+Read actual winning text and whether selection or fallback produced it.
+The unresolved group-name mutation remains task 21 even if the temporal candidate wins.
