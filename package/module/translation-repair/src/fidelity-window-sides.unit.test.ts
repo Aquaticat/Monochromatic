@@ -16,8 +16,8 @@
  * half of the same contract: the map is keyed by the index each slice was
  * STAMPED with, while the window is read by POSITION in the list.
  *
- * FIXTURES ARE CAST, following `translate-lane-wordings.unit.test.ts`: this
- * function reads two text fields and one index off a large pair model.
+ * Fixtures carry parsed nodes because heading-boundary context uses source
+ * structure as well as text and stamped indices.
  *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
@@ -32,6 +32,7 @@ import {
 
 import {
   type ChunkPair,
+  parseDocument,
   sliceNeighbourContexts,
 } from '../dist/final/node/index.mjs';
 
@@ -65,12 +66,21 @@ function pairOf(
   },
 ): ChunkPair {
   return {
-    source: { text: source, },
+    source: {
+      sliceIndex,
+      startOffset: 0,
+      endOffset: source.length,
+      text: source,
+      nodes: parseDocument({ text: source, },).nodes,
+    },
     target: {
       sliceIndex,
+      startOffset: 0,
+      endOffset: target.length,
       text: target,
+      nodes: parseDocument({ text: target, },).nodes,
     },
-  } as unknown as ChunkPair;
+  };
 }
 
 /**
