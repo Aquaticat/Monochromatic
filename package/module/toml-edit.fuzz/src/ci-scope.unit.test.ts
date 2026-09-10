@@ -1,8 +1,8 @@
 /**
- * Exercise the source artifact through the exact workflow launcher before dependencies exist.
- * Source execution is intentional: CI deploys this entry directly, without a build.
- *
- * @module
+ Exercise the source artifact through the exact workflow launcher before dependencies exist.
+ Source execution is intentional: CI deploys this entry directly, without a build.
+ 
+ @module
  */
 
 import { execFileSync, spawnSync, } from 'node:child_process';
@@ -123,7 +123,12 @@ function fixture(): Fixture {
     if (result.status === null) throw new Error(`Scope fixture was terminated by ${String(result.signal,)}`,);
     return { status: result.status, stdout: result.stdout, stderr: result.stderr, output: readFileSync(output, 'utf8',), };
   }
-  return { root, base, git, put, commit, run, [Symbol.dispose](): void { rmSync(temporary, { recursive: true, force: true, },); }, };
+  return {
+    root, base, git, put, commit, run,
+    [Symbol.dispose](): void {
+      rmSync(temporary, { recursive: true, force: true, },);
+    },
+  };
 }
 
 /** Assert both the exit status and the workflow-consumed output, not logs alone. */
