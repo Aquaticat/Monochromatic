@@ -24,7 +24,38 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current prelaunch state on 2026-09-10:
+Current launch at 03:45 UTC on 2026-09-10:
+`Mio12` runs on frozen `ff6d288bc`,
+carrying the measured source-break presentation and shared writer/judge contract.
+Pass pid `1713424`,
+runs `~/temp/agent/Mio12-20260910`,
+log `~/temp/agent/Mio12-20260910.log`,
+terminal-only supervisor `proc_6a7b` (`translation-repair-Mio12-20260910`).
+Prelaunch and launch meters:
+OpenRouter 268.73 USD,
+Bedrock 185.78 USD,
+Synthetic weekly 1.9636833484848484 percent with five-hour 2750/2750,
+Hyper zero.
+The launch confirms overlap 4,
+built-in writer grace and no withheld seat.
+The daily helper output is `~/temp/agent/Mio12-costs-before-20260910.out`.
+No source changes are planned while it runs;
+a necessary one requires killing pid `1713424` and relaunching.
+
+Read the actual tally and full page at the terminal notification,
+not the supervisor's exit status.
+Verify `writer-source-break-display` activation,
+the poem's rendered line grouping,
+no unintended trailing `<br/>` after attribution,
+both chat translations,
+the Twitter transcript,
+links,
+front matter and the previously recorded wording concerns.
+Complete all seven reading steps and three checks before advancing to `hulicaijia`.
+The bounded probes are complete;
+no further prelaunch measurement is pending.
+
+Verified prelaunch state on 2026-09-10:
 the upstream verse remedy is implemented and verified through `ff6d288bc`.
 The first live probe found that instructions alone still left Mercury's initial output flat,
 although new judging selected the preserving candidate with three of four judges.
@@ -2136,7 +2167,8 @@ each read off the pass log and the shipped page:
     the upstream rendered-structure contract and visible source-only break presentation are verified through
     `ff6d288bc`.
     Both bounded probes have been read.
-    Relaunch Mio and inspect actual verse rendering before advancing the queue.
+    `Mio12` runs on that frozen build at pid `1713424`.
+    Inspect actual verse rendering and the complete page at its terminal notification before advancing the queue.
     See the verse-remedy review linked under "Where the work stands".
     The handoff's defect and proposed design are retained here as history.
     THE DEFECT:

@@ -6936,6 +6936,39 @@ consolidation:
 one slice consolidated (10),
 the rest kept their standing.
 
+## Mio12 launches on the measured verse remedy, 2026-09-10, 03:45 UTC
+
+Frozen `ff6d288bc`,
+pass pid `1713424`,
+runs `~/temp/agent/Mio12-20260910`,
+log `~/temp/agent/Mio12-20260910.log`,
+terminal-only supervisor `proc_6a7b`.
+No source change is planned while the pass runs.
+Build,
+types,
+oxlint,
+edited markdown and full suite pass;
+the suite ends `unit exit 0` in `~/temp/agent/source-display-verified-unit-20260910.out`.
+
+Prelaunch at 03:42 and launch meters at 03:45:
+OpenRouter 268.73 USD,
+Bedrock 185.78 USD,
+Synthetic weekly 1.9636833484848484 percent with five-hour 2750/2750,
+Hyper zero.
+The required daily helper output is `~/temp/agent/Mio12-costs-before-20260910.out`.
+Overlap 4,
+built-in writer grace and no withheld seat are confirmed in the launch log.
+
+The entry must be read in full before `hulicaijia`:
+source-display activation,
+poem line grouping and trailing-break behavior,
+both chat translations,
+the Twitter transcript,
+all destinations,
+archive front matter and the earlier wording concerns.
+The live probes support this launch,
+not a readiness declaration.
+
 ## The verse probes select the upstream source-display remedy, 2026-09-10
 
 The matched contract probe completed in 378 seconds.

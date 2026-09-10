@@ -306,5 +306,9 @@ The daily helper ran into `~/temp/agent/Mio11-costs-stopped-20260910.out`.
 
 Both bounded probes are complete and their outputs and costs have been read.
 The integrated source-display checks pass.
-Launch a fresh frozen Mio pass and read its whole page.
+Mio12 launched at 03:45 UTC on frozen `ff6d288bc`,
+pass pid `1713424`,
+terminal-only supervisor `proc_6a7b`.
+Its page and log live under `~/temp/agent/Mio12-20260910` and the corresponding `.log` file.
+Read its whole page at completion.
 The page-reading queue and readiness claim remain blocked until that current-build reading.
