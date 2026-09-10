@@ -60,10 +60,14 @@ No one-off glossary entry is proposed.
 
 `proc_43b4` runs `translation-repair-reference-name-scope-probe-20260910`.
 
-- Script: `~/temp/agent/probe-reference-name-scope-20260910.mjs`.
-- Plan: `~/temp/agent/reference-name-scope-plan-20260910.out`.
-- Log: `~/temp/agent/reference-name-scope-probe-20260910.log`.
-- Report: `~/temp/agent/reference-name-scope-probe-20260910/report.json`.
+- Script:
+  `~/temp/agent/probe-reference-name-scope-20260910.mjs`.
+- Plan:
+  `~/temp/agent/reference-name-scope-plan-20260910.out`.
+- Log:
+  `~/temp/agent/reference-name-scope-probe-20260910.log`.
+- Report:
+  `~/temp/agent/reference-name-scope-probe-20260910/report.json`.
 
 The baseline reconstructs the actual critic output and name-touching cluster
 through the compiled public APIs:
