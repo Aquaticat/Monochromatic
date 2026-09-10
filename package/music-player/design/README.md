@@ -77,6 +77,8 @@ Each round embeds its visual evidence,
  recommendation,
  and answer
 controls in one file.
+ Questionnaire HTML follows the viewer's light or dark system preference;
+never force a light review surface.
  The file is rendered and interaction-checked before it is opened in
 Helium.
  Android evidence comes from a non-functional Jetpack Compose prototype

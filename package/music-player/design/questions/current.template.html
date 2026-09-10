@@ -6,7 +6,7 @@
   <title>Music player design: dark dynamic-color matrix</title>
   <style>
     :root {
-      color-scheme: light;
+      color-scheme: light dark;
       --color-page: #f8f4fc;
       --color-surface: #fffaff;
       --color-surface-soft: #f0ebf5;
@@ -502,6 +502,27 @@
 
     .device-hinge[data-edge="bottom"] {
       inset-block-end: calc(7px * var(--preview-scale-y));
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-page: #121016;
+        --color-surface: #1d1a20;
+        --color-surface-soft: #28242c;
+        --color-surface-strong: #352f3b;
+        --color-ink: #f0e9f2;
+        --color-ink-soft: #d0c4d4;
+        --color-accent: #d0bcff;
+        --color-accent-soft: #3d3351;
+        --color-focus: #e3d5ff;
+        --color-line: #6f6574;
+        --color-shadow: rgb(0 0 0 / 45%);
+        --color-backdrop: rgb(0 0 0 / 78%);
+        --color-device: #080708;
+        --color-device-edge: #777177;
+        --color-camera: #000000;
+        --color-screen: #000000;
+      }
     }
 
     @media (max-width: 42rem) {

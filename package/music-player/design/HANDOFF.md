@@ -3848,3 +3848,11 @@ state the direct response path:
  C1/C2,
  and any
 correction.
+
+The user then asked that the HTML artifacts themselves follow automatic dark mode because
+the light questionnaire was uncomfortable to view.
+ The active form now declares
+`color-scheme: light dark` and replaces all questionnaire tokens under
+`prefers-color-scheme: dark`.
+ Verify both schemes and present the normal Helium window in
+the current system scheme.

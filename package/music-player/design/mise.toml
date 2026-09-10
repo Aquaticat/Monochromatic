@@ -108,6 +108,8 @@ const required = [
   "These captures establish palette-dependent appearance.",
   "Response path:",
   "reply in chat with both codes",
+  "@media (prefers-color-scheme: dark)",
+  "color-scheme: light dark",
 ]
 for (const fragment of required) {
   if (!html.includes(fragment)) {
