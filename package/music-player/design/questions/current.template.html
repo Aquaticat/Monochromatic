@@ -806,6 +806,10 @@
       applyScale(1);
     });
     document.querySelector('#preview-close').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('cancel', (event) => {
+      event.preventDefault();
+      dialog.close();
+    });
     dialog.addEventListener('close', () => {
       fitActive = false;
       if (returnTarget) {
