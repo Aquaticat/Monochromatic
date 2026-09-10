@@ -19,7 +19,12 @@ run = "node src/ci-scope.unit.test.ts"
 
 [tasks."lint:scope"]
 description = "Lint the dependency-free scope entry and its subprocess regression tests"
-run = "node ../../dev-script/task-util/src/oxlint-wrapper.ts src/ci-scope.ts src/ci-scope-git.ts src/ci-scope-error.ts src/ci-scope.unit.test.ts"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['src/ci-scope.ts', 'src/ci-scope-git.ts', 'src/ci-scope-error.ts', 'src/ci-scope.unit.test.ts'])
+"""
 
 [tasks.fuzz]
 description = "Build module-toml-edit, then run *.property.unit.test.ts as a time-budgeted fast-check campaign under node"
