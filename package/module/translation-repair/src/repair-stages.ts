@@ -1,18 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type {
-  AdjudicatedIssue,
-  AdjudicationConfig,
-  PanelBallot,
-} from './adjudicate-model.ts';
-import { buildAdjudicationMessages, } from './adjudicate-prompt.ts';
-import {
-  ADJUDICATION_RESPONSE_FORMAT,
-  isPanelBallotWire,
-  resolvePanelBallot,
-} from './adjudicate-wire.ts';
-import type { ClaimCluster, } from './aggregate-claims.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
   type ClaimAttribution,
@@ -33,7 +21,6 @@ import {
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
-import { tallyVotes, } from './tally-votes.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
 
 //region Critic and panel stages
@@ -281,167 +268,9 @@ export async function runCriticStage(
   };
 }
 
-/**
- * Everything the panel produced for one chunk.
- *
- * @example
- * ```ts
- * const { issues, } = await runPanelStage({ ... },);
- * ```
- */
-export type PanelStageResult = {
-  /**
-   * Adjudicated issues in cluster document order.
-   */
-  readonly issues: readonly AdjudicatedIssue[];
-
-  /**
-   * Panelists whose ballot arrived and validated.
-   */
-  readonly heardPanelists: number;
-
-  /**
-   * Ballot irregularities across panelists in scorecard-stable wording.
-   */
-  readonly findings: readonly string[];
-};
-
-/**
- * Runs the provenance-blind panel over one chunk's clusters.
- *
- * @param client - injected model client
- *
- * @param panelModelIds - fixed electorate
- *
- * @param sourceText - original chunk text
- *
- * @param targetText - translation chunk text critics reviewed
- *
- * @param clusters - aggregation output for the chunk
- *
- * @param adjudicationConfig - tally thresholds and weights
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Adjudicated issues plus ballot findings
- *
- * @example
- * ```ts
- * const panel = await runPanelStage({ ... },);
- * ```
- */
-export async function runPanelStage(
-  {
-    client,
-    panelModelIds,
-    sourceText,
-    targetText,
-    clusters,
-    adjudicationConfig,
-    neighbouringIncumbentText,
-    neighbouringSourceText,
-    signal,
-    perCallTimeoutMs,
-    l,
-  }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
-    readonly panelModelIds: readonly RosterModelId[];
-    readonly sourceText: string;
-    readonly targetText: string;
-    readonly clusters: readonly ClaimCluster[];
-    readonly adjudicationConfig?: AdjudicationConfig;
-    readonly neighbouringIncumbentText?: string;
-    readonly neighbouringSourceText?: string;
-    readonly signal: AbortSignal;
-    readonly perCallTimeoutMs: number;
-    readonly l: Logger;
-  }>,
-): Promise<PanelStageResult> {
-  /**
-   * Panel sheet plus the index maps ballots resolve through.
-   */
-  const plan = buildAdjudicationMessages({
-    sourceText,
-    targetText,
-    clusters,
-    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
-    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
-  },);
-
-  /**
-   * Heard panelists after retry-to-quorum.
-   */
-  const gather = await gatherStageVoices({
-    client,
-    modelIds: panelModelIds,
-    messages: plan.messages,
-    signal,
-    exchangeTimeoutMs: perCallTimeoutMs,
-    responseFormat: ADJUDICATION_RESPONSE_FORMAT,
-    validate: isPanelBallotWire,
-    stage: 'panel',
-    l,
-  },);
-
-  /**
-   * Resolved ballots keyed by panelist id.
-   */
-  const ballots: Record<string, PanelBallot> = Object.fromEntries(
-    gather.voices
-      .map(function toEntry(voice,): readonly [
-        string,
-        PanelBallot,
-      ] {
-      return [
-        voice.modelId,
-        resolvePanelBallot({
-          wire: voice.value,
-          claimIds: plan.claimIds,
-          clusterIds: plan.clusterIds,
-        },),
-      ];
-    },),
-  );
-
-  /**
-   * Quorum degradation plus ballot irregularities across heard panelists.
-   */
-  const findings = [
-    ...gather.findings,
-    ...Object
-      .values(ballots,)
-      .flatMap(function toFindings(ballot,) {
-        return ballot.findings;
-      },),
-  ];
-
-  /**
-   * Panel decision over the clusters.
-   */
-  const { issues, } = tallyVotes({
-    clusters,
-    ballots,
-    configuredPanelists: panelModelIds.length,
-    ...(adjudicationConfig === undefined ? {} : { config: adjudicationConfig, }),
-  },);
-
-  l.info(
-    `panel stage: ${String(Object.keys(ballots,)
-      .length,)}/${String(panelModelIds.length,)} heard, ${
-      String(issues.length,)
-    } issues`,
-  );
-
-  return {
-    issues,
-    heardPanelists: Object.keys(ballots,)
-      .length,
-    findings,
-  };
-}
+export {
+  type PanelStageResult,
+  runPanelStage,
+} from './panel-stage.ts';
 
 //endregion Critic and panel stages

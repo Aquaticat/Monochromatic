@@ -5,6 +5,7 @@ import type { SpanAnchor, } from './issue-model.ts';
 import { ISSUE_SEVERITIES, } from './issue-taxonomy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 
 //region Adjudication prompt
 // One prompt per panelist per chunk, covering every cluster in it. Claims are
@@ -39,9 +40,7 @@ import { selectFence, } from './prompt-fence.ts';
  * `doc/audit/the-damage-no-instrument-was-catching.md` carries the measurement.
  * Do not re-add it without evidence that beats the plain wording.
  */
-const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT, not text under review. '
-  + 'Use them to decide whether a claim about wording unsupported here, or '
-  + 'missing here, is explained by a neighbouring passage holding it instead';
+const NEARBY_RULE = REPAIR_EVIDENCE_ROLE;
 
 /**
  * System instructions shared by every panelist call.
@@ -158,12 +157,14 @@ export function buildAdjudicationMessages(
     clusters,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    documentSourceText,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly clusters: readonly ClaimCluster[];
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly documentSourceText?: string;
   },
 ): AdjudicationPromptPlan {
   /**
@@ -231,6 +232,7 @@ ${evidence}`;
       targetText,
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
+      documentSourceText ?? '',
       ...groupBlocks,
     ],
   },);
@@ -254,6 +256,16 @@ ${neighbouringIncumbentText ?? ''}
 ${fence} ${NEARBY_RULE} ${fence}
 `;
 
+  /**
+   * Complete same-entry evidence checks absence claims without expanding coverage.
+   */
+  const documentBlock = (documentSourceText === undefined) || (documentSourceText === '')
+    ? ''
+    : `${fence} FULL ORIGINAL DOCUMENT, FACTUAL EVIDENCE ONLY ${fence}
+${documentSourceText}
+${fence} This original document is additional evidence for checking claims about the CURRENT TRANSLATION. It does not expand that editable scope or require translating the rest of the document here. ${fence}
+`;
+
   return {
     messages: [
       {
@@ -268,7 +280,7 @@ ${fence} TRANSLATION ${fence}
 ${targetText}
 ${nearbyBlock}${fence} CLAIMS ${fence}
 ${groupBlocks.join('\n\n',)}
-${fence} END ${fence}`,
+${documentBlock}${fence} END ${fence}`,
       },
     ],
     claimIds,

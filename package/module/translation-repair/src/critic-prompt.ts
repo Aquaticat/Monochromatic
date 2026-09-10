@@ -7,6 +7,7 @@ import {
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 
 //region Critic prompt
 // One strict prompt for every critic model: exact-quote evidence rules, the closed
@@ -44,12 +45,7 @@ import { selectFence, } from './prompt-fence.ts';
  * doubling the unanchorable share is what took the lane from nine shipped
  * slices to three.
  */
-const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT. Do not raise any claim '
-  + 'about them. Use them only to tell whether wording that seems unsupported '
-  + 'here, or seems missing here, belongs to a neighbouring passage instead. '
-  + 'EVERY QUOTE YOU GIVE MUST BE COPIED FROM THE ORIGINAL OR TRANSLATION BLOCK '
-  + 'ABOVE, never from a nearby block: a quote taken from next door cannot be '
-  + 'located in the passage under review and the whole claim is discarded';
+const NEARBY_RULE = `${REPAIR_EVIDENCE_ROLE} Every quoted anchor must still be copied exactly from the current ORIGINAL or TRANSLATION. When the source basis exists only nearby, omit sourceQuote, describe the relevant contextual fact in the summary, and anchor the actual current defect with targetQuote; never place a nearby quote in a local anchor field.`;
 
 /**
  * System instructions shared by every critic call.
