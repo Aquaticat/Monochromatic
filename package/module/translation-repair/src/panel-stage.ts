@@ -1,12 +1,29 @@
-import { type Logger, tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { AdjudicatedIssue, AdjudicationConfig, PanelBallot, } from './adjudicate-model.ts';
-import { type AdjudicationPromptPlan, buildAdjudicationMessages, } from './adjudicate-prompt.ts';
-import { ADJUDICATION_RESPONSE_FORMAT, isPanelBallotWire, resolvePanelBallot, } from './adjudicate-wire.ts';
+import type {
+  AdjudicatedIssue,
+  AdjudicationConfig,
+  PanelBallot,
+} from './adjudicate-model.ts';
+import {
+  type AdjudicationPromptPlan,
+  buildAdjudicationMessages,
+} from './adjudicate-prompt.ts';
+import {
+  ADJUDICATION_RESPONSE_FORMAT,
+  isPanelBallotWire,
+  resolvePanelBallot,
+} from './adjudicate-wire.ts';
 import type { ClaimCluster, } from './aggregate-claims.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { mapOverlapped, type OverlappedRow, } from './overlapped-map.ts';
+import {
+  mapOverlapped,
+  type OverlappedRow,
+} from './overlapped-map.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { tallyVotes, } from './tally-votes.ts';
@@ -154,7 +171,10 @@ export async function runPanelStage(
   /**
    * Stage boundary for packet diagnostics.
    */
-  const pl = tagged({ l, tag: runPanelStage.name, });
+  const pl = tagged({
+    l,
+    tag: runPanelStage.name,
+  });
   /**
    * All work units exist before the first asynchronous review starts.
    */
@@ -184,15 +204,25 @@ export async function runPanelStage(
       /**
        * Function and cluster tags keep repeated panel diagnostics locatable.
        */
-      const functionLogger = tagged({ l: pl, tag: reviewPacket.name, });
+      const functionLogger = tagged({
+        l: pl,
+        tag: reviewPacket.name,
+      });
       /**
        * Stable cluster identity reveals no proposer identity.
        */
-      const packetLogger = tagged({ l: functionLogger, tag: packet.cluster.clusterId, });
+      const packetLogger = tagged({
+        l: functionLogger,
+        tag: packet.cluster
+          .clusterId,
+      });
       /**
        * Original packet and its local numeric wire mapping.
        */
-      const { cluster, plan, } = packet;
+      const {
+        cluster,
+        plan,
+      } = packet;
       /**
        * Existing window and recovery operate within this one preplanned packet.
        */
@@ -211,12 +241,19 @@ export async function runPanelStage(
        * Wire indices resolve only against this packet's actual members.
        */
       const ballots: Record<string, PanelBallot> = Object.fromEntries(
-        gather.voices.map(function ballot(voice,): readonly [string, PanelBallot] {
-          return [voice.modelId, resolvePanelBallot({
+        gather.voices
+          .map(function ballot(voice,): readonly [
+            string,
+            PanelBallot
+          ] {
+          return [
+            voice.modelId,
+            resolvePanelBallot({
             wire: voice.value,
             claimIds: plan.claimIds,
             clusterIds: plan.clusterIds,
-          },),];
+          },),
+          ];
         },),
       );
       /**
@@ -230,12 +267,14 @@ export async function runPanelStage(
       },);
       return {
         issues,
-        heardIds: gather.voices.map(function identity(voice,): RosterModelId {
+        heardIds: gather.voices
+          .map(function identity(voice,): RosterModelId {
           return voice.modelId;
         },),
         findings: [
           ...gather.findings,
-          ...Object.values(ballots,).flatMap(function irregularities(ballot,): readonly string[] {
+          ...Object.values(ballots,)
+            .flatMap(function irregularities(ballot,): readonly string[] {
             return ballot.findings;
           },),
         ].map(function locate(finding,): string {

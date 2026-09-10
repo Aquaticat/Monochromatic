@@ -6,11 +6,12 @@ import {
   type ChatJsonRequest,
   type ClaimCluster,
   runPanelStage,
+  type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /** Fixture electorate remains unchanged across packets. */
-const MODELS = ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b', 'minimax-m3', 'gemma-4-26b-a4b-it',] as const;
+const MODELS: readonly RosterModelId[] = ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b', 'minimax-m3', 'gemma-4-26b-a4b-it',];
 /** Distinct clusters include a merge proposal whose members must stay together. */
 const CLUSTERS: readonly ClaimCluster[] = [
   { clusterId: 'first', position: 0, members: [
@@ -38,13 +39,13 @@ function panelFixture(input: { readonly disjoint?: boolean; } = {}): { client: S
     chatText: async () => { throw new Error('Unexpected text request',); },
     quotas: async () => { throw new Error('Unexpected quota request',); },
     chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
-      const prompt = request.messages.filter(message => message.role === 'user').map(message => message.content).join('\n');
+      const prompt = JSON.stringify(request.messages.filter(message => message.role === 'user')); 
       const present = CLUSTERS.flatMap(cluster => cluster.members).filter(member => prompt.includes(member.claim.summary));
       captures.push({ prompt, modelId: request.modelId, claims: present.map(member => member.claimId), });
-      if (input.disjoint) {
-        const index = MODELS.findIndex(model => model === request.modelId);
+      if (input.disjoint === true) {
+        const index = MODELS.indexOf(request.modelId);
         const first = present.some(member => member.claimId === 'claim-first');
-        if ((first && index >= MODELS.length / 2) || (!first && index < MODELS.length / 2))
+        if ((first && (index >= (MODELS.length / 2))) || ((!first) && (index < (MODELS.length / 2))))
           return { kind: 'schema-mismatch', rawText: '{}', detail: 'Fixture seat unavailable for this packet', };
       }
       const groups = CLUSTERS.filter(cluster => cluster.members.some(member => present.includes(member)));
@@ -54,7 +55,7 @@ function panelFixture(input: { readonly disjoint?: boolean; } = {}): { client: S
       };
       if (!request.validate(value))
         throw new Error('Invalid fixture panel response',);
-      return { kind: 'ok', value, };
+      return { kind: 'ok', value, rawText: JSON.stringify(value), };
     },
   };
   return { client, captures, };
@@ -101,9 +102,10 @@ await describe({
       fn: async () => {
         const fixture = panelFixture({ disjoint: true, });
         const result = await runPanelStage(panelInput(fixture.client));
-        const readings = result.issues.flatMap(issue => Object.values(issue.readings));
+        const readings = result.issues.flatMap(issue => Object.values(issue.readings ?? {}));
+        expect(readings).toHaveLength(3);
         expect(readings.every(reading => reading.configuredPanelists === MODELS.length)).toBe(true);
-        expect(readings.every(reading => reading.ballots.length === MODELS.length / 2)).toBe(true);
+        expect(readings.every(reading => reading.ballots.length === (MODELS.length / 2))).toBe(true);
         expect(result.heardPanelists).toBe(MODELS.length);
         expect(result.issues[0]?.status).toBe('rejected');
         expect(result.issues[1]?.status).toBe('accepted');
