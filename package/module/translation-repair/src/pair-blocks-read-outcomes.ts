@@ -31,12 +31,19 @@ const AGREEMENT_NEEDED = 2;
  * This operation buys no calls and does not turn missing seats into ballots.
  *
  * @param outcomes - final outcomes of exactly the seats the stage asked
+ *
  * @param modelIds - configured electorate supplying the reported denominator
+ *
  * @param sourceCount - source block bound used by the original question
+ *
  * @param targetCount - target block bound used by the original question
+ *
  * @param freeOrder - definition indexes exempt from ordinary block ordering
+ *
  * @param l - caller logger retaining preparation identity
+ *
  * @returns Agreed relations, final seat evidence and unchanged usability findings
+ *
  * @throws Error when an unexpected reader failure occurs
  *
  * @example
@@ -61,19 +68,33 @@ export function readBlockPairingOutcomes(
     readonly l: Logger;
   }>,
 ): BlockPairingOutcome {
-  /** Logger distinguishing transport-free interpretation from the purchased stage. */
-  const pl = tagged({ tag: readBlockPairingOutcomes.name, l, },);
-  pl.debug(`reading ${String(outcomes.length,)} asked-seat outcomes over ${String(modelIds.length,)} configured seats`,);
-  /** Replies that arrived and validated in shape. */
-  const heardVoices = outcomes.filter(function wasHeard(outcome,): boolean {
-    return outcome.voice.heard;
+  /**
+   * Logger distinguishing transport-free interpretation from the purchased stage.
+   */
+  const pl = tagged({
+    tag: readBlockPairingOutcomes.name,
+    l,
   },);
-  /** Findings accumulated while reading replies. */
+  pl.debug(`reading ${String(outcomes.length,)} asked-seat outcomes over ${String(modelIds.length,)} configured seats`,);
+  /**
+   * Replies that arrived and validated in shape.
+   */
+  const heardVoices = outcomes.filter(function wasHeard(outcome,): boolean {
+    return outcome.voice
+      .heard;
+  },);
+  /**
+   * Findings accumulated while reading replies.
+   */
   const findings: string[] = [];
-  /** Pairings that survived the reader, one per usable voice. */
+  /**
+   * Pairings that survived the reader, one per usable voice.
+   */
   const pairings: (readonly BlockPair[])[] = [];
   for (const outcome of heardVoices) {
-    /** Reply narrowed independently from the filter's array element type. */
+    /**
+     * Reply narrowed independently from the filter's array element type.
+     */
     const { voice, } = outcome;
     if (!voice.heard)
       continue;
@@ -103,20 +124,28 @@ export function readBlockPairingOutcomes(
       outcomes,
     };
   }
-  /** Existing many-to-many agreement and monotone-order resolution. */
+  /**
+   * Existing many-to-many agreement and monotone-order resolution.
+   */
   const agreement = agreePairs({
     pairings,
     needed: AGREEMENT_NEEDED,
     pairingShape: 'many-to-many',
   },);
-  /** Relations the agreement rule withheld. */
+  /**
+   * Relations the agreement rule withheld.
+   */
   const { findings: dropped, } = agreement;
   findings.push(...dropped.map(function prefix(finding,): string {
     return `block-pairing ${finding}`;
   },),);
-  /** Relations preserved by endorsement and ordering. */
+  /**
+   * Relations preserved by endorsement and ordering.
+   */
   const agreed = agreement.pairs;
-  /** Unique block reach beside many-to-many relation count. */
+  /**
+   * Unique block reach beside many-to-many relation count.
+   */
   const counts = countPairedBlocks({ pairs: agreed, },);
   pl.info(
     `paired ${String(counts.source,)} of ${String(sourceCount,)} original and ${
