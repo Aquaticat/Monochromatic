@@ -201,13 +201,31 @@ The package formatter is `format:oxlint`,
 not `format`;
 `reviewed-reference-format-r3-20260911.out` passed before the latest changes.
 
+Task 35 is paused behind task 37 before any writer generation.
+The deterministic sampler launches corpus-entry reads concurrently,
+so preflight runs in a 2 GiB,
+2 CPU,
+512-PID container with no network and read-only corpus/source mounts.
+The available terminal image supplies Git 2.52.0 with working `--no-lazy-fetch`;
+Node 26.7.0 is bound read-only with its required `libatomic.so.1`.
+
+The first sample preflight exited 139 with a V8 heap-exhaustion diagnostic near 1 GiB.
+A separate logger file-sink EROFS warning named the read-only source output path.
+An import-only control succeeds with the same logger warning,
+so the warning alone does not establish the heap failure's cause.
+Entry-listing,
+one-file and full-sample minimization are next.
+Workspace is `~/temp/agent/v41-writer-20260911.sEDtepyo`;
+state is in [writer preflight](../planning/translation-repair-writer-preflight-2026-09-11.md).
+No host exhaustion probe or corpus edit was used.
+
 Next actions:
-run task 35's existing 40-round producer calibration on the new checked runtime,
-with a fresh owned runs directory and a fresh budget reading;
-inspect every draft/ballot and the pre-existing pooled-null writer rule before any writer admission.
+resolve task 37's bounded preparation failure;
+run task 35's existing 40-round producer calibration on the checked runtime;
+inspect drafts,
+ballots and the pooled-null writer rule before writer admission.
 Task 36 then verifies image reading.
 Both retain independent holds.
-No further judge measurement is needed to repeat the already passed admission criterion.
 Persist actual model-independent question identities and model/provider cell identities separately,
 and grade each actual question once.
 The native default cap of sixteen rows is not complete admission evidence for the full reviewed matrix.
