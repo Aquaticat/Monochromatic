@@ -147,6 +147,119 @@ No result is evidence that a historical edit was factually correct or officially
   [the archive evidence design](../planning/translation-repair-archive-evidence-design-2026-09-10.md)
   did not preserve both name retention and genuine-correction controls.
 
+## Intrinsic object and physical line-ending checks
+
+The production acquisition implementation is in progress.
+Its initial fixture tests exposed additional consumer errors,
+not Git defects.
+
+### Root causes
+
+`readCorpusFile` originally used ordinary `git show`,
+while the history prototype used `--no-replace-objects`.
+These can read different objects for the same supplied commit.
+A replacement-ref fixture kept every visible archive line the same
+but added its EOF newline;
+the old read returned the replacement bytes.
+
+Git's `Documentation/git.adoc:177` states:
+
+```text
+# Documentation/git.adoc
+--no-replace-objects::
+    Do not use replacement refs to replace Git objects.
+```
+
+Replacement refs are not the only graph override.
+`setup.c:1047` reads the graft-file environment override:
+
+```c
+/* setup.c */
+args.graft_file = getenv_safe(&to_free, GRAFT_ENVIRONMENT);
+```
+
+`commit.c:325` then loads the selected graft file:
+
+```c
+/* commit.c */
+graft_file = repo_get_graft_file(r);
+read_graft_file(r, graft_file);
+```
+
+`environment.c:101`,
+`local_repo_env`,
+identifies repository-local overrides including `GIT_DIR`,
+`GIT_COMMON_DIR`,
+`GIT_OBJECT_DIRECTORY` and `GIT_SHALLOW_FILE`.
+The consumer's shared environment removes those routing inputs
+and sets `GIT_GRAFT_FILE` to `node:os`'s `devNull` after inheritance.
+Each command therefore ignores graft overrides;
+no pre/post file check races with a graft modification.
+
+Line-porcelain's output newline is not evidence that a physical file had that newline.
+The original consumer also ignored diff's
+`\\ No newline at end of file` marker.
+It consequently qualified a name replacement that simultaneously changed EOF termination.
+The revised parser retains side-specific termination,
+validates marker placement,
+and normalizes document CRLF only after reconstructing proven physical termination.
+
+### Verification and limits
+
+`archive-provenance-red-r2-20260910.out` records four behavioral failures:
+replacement-object bytes,
+added EOF newline,
+removed EOF newline,
+and a graft that made an unrelated naming revision appear ancestral.
+The graft fixture first confirms ordinary native blame follows the fabricated graph.
+The preceding attempt's graft fixture failed only because `git commit-tree` rejects `--message`;
+that attempt is not graft-guard evidence.
+`Documentation/git-commit-tree.adoc:53` supplies the supported `-m` spelling,
+used by the corrected fixture.
+
+Commits `781291222` and `c34ab893e` apply shared intrinsic Git context
+and physical line-ending checks.
+The executed verification is:
+
+```text
+# Run from the translation-repair worktree after its package build and type check.
+mise run test -- \
+  package/module/translation-repair/src/archive-naming.unit.test.ts \
+  package/module/translation-repair/src/archive-naming-provenance.unit.test.ts \
+  package/module/translation-repair/src/corpus-source.unit.test.ts
+```
+
+`~/temp/agent/archive-provenance-green-20260910.out`
+records successful execution after rebuilding and type-checking.
+The new provenance fixtures and existing pinned corpus-read tests pass.
+This is not full package completion or proof of all pending history branches.
+
+All reads now use `corpus-git-context.ts`:
+physical objects,
+no inherited repository routing,
+and no lazy fetch.
+The installed Git 2.55.0 accepts `--no-lazy-fetch`;
+`Documentation/git.adoc:183` defines its effect:
+
+```text
+# Documentation/git.adoc
+--no-lazy-fetch::
+    Do not fetch missing objects from the promisor remote on demand.
+```
+
+The lazy-promisor fixture and routing-environment fixture remain pending.
+Missing local objects intentionally fail rather than fetching into the corpus clone.
+Intrinsic parent headers are parsed from `git cat-file commit` before the message separator,
+not from effective `%P` rendering.
+
+The semantic phrase “records a local English naming choice” is only a qualified renderer term.
+It means the recorded current reference form at this occurrence,
+not editor intent,
+officiality,
+source equivalence or a statement that the predecessor was a name.
+The [decision](../decision/translation-repair-qualified-archive-naming-revisions.md)
+defines that boundary explicitly.
+
 ## Upstream filing decision
 
 - Upstream fault:

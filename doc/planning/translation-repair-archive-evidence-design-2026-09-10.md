@@ -571,4 +571,82 @@ then verifies real acquisition and invoked-model windows through the compiled re
 No further wording search or typed-versus-history comparison precedes implementation.
 The fresh full Mio pass remains blocked on that implementation and verification.
 
+## Acquisition implementation checkpoint
+
+Task 27 is in progress,
+not complete.
+The new public API is `readQualifiedArchiveNamingRevisions`.
+It currently joins caller-supplied initial-use observations to pinned history;
+task 29 has not yet acquired those observations through production pairing calls.
+No renderer,
+repair handoff,
+cache or artifact integration exists yet.
+
+The initial acquisition fixtures pass after build and type checking:
+reference kinds,
+non-reference exclusions,
+six-of-eleven support rather than two-reader pairing agreement,
+duplicate readers,
+dissent,
+conflicting corroborated kinds,
+whole-span equality,
+role/partial/multi-line exclusions and surrogate boundaries.
+The initial new-API red was only a missing export,
+not proof of the individual guards.
+
+Independent implementation review found object-context and physical EOF gaps.
+`archive-provenance-red-r2-20260910.out` demonstrates replacement-object,
+EOF-addition,
+EOF-removal and grafted-ancestry failures.
+The graft test includes a working positive control using ordinary native blame.
+The first attempt used unsupported `git commit-tree --message` and is not credited;
+the corrected fixture uses documented `-m`.
+
+`781291222` supplies the shared intrinsic corpus Git context:
+no replacement refs,
+no lazy fetching,
+removed inherited repository routing,
+and a platform-null graft file assigned after inherited environment.
+Parents come from the raw commit object.
+`c34ab893e` preserves physical line termination and validates diff EOF marker placement.
+Build,
+types,
+initial naming tests,
+provenance tests and existing corpus-read tests pass in
+`~/temp/agent/archive-provenance-green-20260910.out`.
+
+Remaining work includes:
+
+- Complete lint remediation.
+  `archive-naming-format-20260910.out` is a failing intermediate checkpoint,
+  not a clean result.
+- Replace normalized-line text lookup with coordinate provenance through shared normalization.
+  Duplicate lines must retain their distinct origins;
+  current code conservatively withholds them.
+- Finish roots,
+  merges,
+  renames,
+  shallow,
+  reversion,
+  unusual-path,
+  CRLF/bare-CR,
+  normalization/stub,
+  duplicate-scope,
+  stale-anchor,
+  malformed-output,
+  cancellation,
+  routing and lazy-promisor fixtures.
+- Run guard mutations against committed code and show each relevant test fails.
+- Verify the real pinned Mio lookup without a name or origin-revision constant.
+- Update package documentation and run the complete package suite,
+  reading its final `unit exit 0`.
+
+The reviewer questioned the word “choice,”
+then explicitly reconciled it with the design review:
+neutral history stays beneath the qualification boundary;
+the renderer may use the successful phrase as an operational name for the recorded current form.
+It does not assert intent or that the predecessor was a name.
+The decision records this definition.
+No fallback to the already-failed generic wording treatment was adopted.
+
 [qualified-decision]: ../decision/translation-repair-qualified-archive-naming-revisions.md

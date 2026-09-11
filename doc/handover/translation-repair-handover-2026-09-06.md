@@ -252,7 +252,25 @@ The final compiled path must use actual acquisition,
 not interception,
 and must correct actor,
 role and name together.
-No production acquisition or classification feature is implemented yet.
+Task 27 has an in-progress public `readQualifiedArchiveNamingRevisions` implementation.
+Its initial naming tests and new physical-object/EOF/graft controls pass after build and types
+at `c34ab893e`;
+see `~/temp/agent/archive-provenance-green-20260910.out`.
+Shared `corpus-source.ts` reads now use the same intrinsic Git context as history.
+The behavioral red is `archive-provenance-red-r2-20260910.out`;
+the earlier missing-export failure was not guard proof.
+
+Task 27 remains incomplete:
+lint,
+coordinate mapping through normalization,
+remaining history/parser/environment fixtures,
+guard mutations,
+real Mio acquisition and the complete package suite are outstanding.
+Task 29 has not acquired use observations from production pairing calls.
+No renderer or repair/cache/artifact handoff is wired.
+The decision defines “local English naming choice” operationally,
+without editor intent or officiality.
+No model or full-entry process is active.
 No production history feature or one-off name mapping is added.
 The provider-free trace also confirms the pure administrator issue's broad quote includes the group name;
 adjudication alone is not proof that an editor will preserve it.

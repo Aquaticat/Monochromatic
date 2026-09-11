@@ -16,7 +16,23 @@ occurrence-scoped naming revision only when both facts are established:
 - Pinned same-path history records an unambiguous replacement whose changed current span
   exactly equals that complete reference-name occurrence.
 
-The conjunction permits describing this record as a local English naming choice.
+The conjunction permits the renderer's derived phrase
+“records a local English naming choice.”
+This is an operational term,
+not a statement about editor intent:
+
+- “Records” means verified intrinsic history contains the replacement.
+- “Local” means this exact initial-archive occurrence only.
+- “English” names the English archive channel,
+  not linguistic correctness or officiality.
+- “Naming” means corroborated current reference use.
+- “Choice” means the recorded current form,
+  not deliberation or preference.
+
+Raw history remains neutral fragments and provenance.
+The classifier corroborates current use;
+existing name policy supplies the defeasible retention consequence.
+The predecessor need not have been a name.
 Neither an arbitrary historical edit nor a model's use classification alone provides that evidence.
 No source-name alias table,
 canonical replacement registry or cross-entry glossary is created.
@@ -113,8 +129,22 @@ ambiguous revisions,
 root or merge origins,
 renamed paths,
 shallow history and acquisition uncertainty.
-Unexpected I/O or malformed-data failures remain errors,
+Unexpected I/O,
+invalid initial anchors and malformed Git output remain errors,
 not silent empty evidence.
+Malformed auxiliary classifier output instead abstains without invalidating primary pairing.
+
+Every corpus read and history command uses the same intrinsic object semantics:
+no replacement refs,
+no lazy promisor fetch,
+no inherited repository-routing variables,
+and `GIT_GRAFT_FILE` forced to the platform null device.
+Intrinsic parent headers come from `git cat-file commit`,
+not effective `%P` formatting.
+This ignores graft overrides per command rather than racing pre/post filesystem checks.
+
+Physical EOF state remains separate from Git's protocol newline.
+A qualifying hunk cannot also change line termination.
 
 The initial implementation is conservative.
 It does not claim complete history recovery through formatting-only commits,
