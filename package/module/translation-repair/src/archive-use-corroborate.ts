@@ -54,6 +54,20 @@ export type CorroboratedArchiveReference = {
 };
 
 /**
+ * Explicit distinction between withheld evidence and a corroborated reference.
+ */
+type ReferenceQualification = { readonly kind: 'withheld'; } | {
+  /**
+   * One naming-eligible use met the configured evidence quorum.
+   */
+  readonly kind: 'reference';
+  /**
+   * Corroborated current use, not naming correctness.
+   */
+  readonly useKind: ArchiveReferenceKind;
+};
+
+/**
  * Finds the sole quorum-backed kind while treating malformed readers as abstentions.
  *
  * @param use - one immutable occurrence's configured electorate and observations
@@ -73,7 +87,7 @@ function referenceKind({
 }: {
   readonly use: InitialArchiveUse;
   readonly findings: string[];
-},): ArchiveReferenceKind | undefined {
+},): ReferenceQualification {
   /**
    * Configured electorate, including voices that never returned metadata.
    */
@@ -84,7 +98,7 @@ function referenceKind({
     || configured.has('',)) {
     findings.push(`archive-use-withheld (${use.anchor
       .nodeId}: invalid electorate)`,);
-    return undefined;
+    return { kind: 'withheld', };
   }
   /**
    * Repeated reader identities abstain rather than manufacture independent support.
@@ -126,7 +140,7 @@ function referenceKind({
     findings.push(`archive-use-withheld (${use.anchor
       .nodeId}: ${corroborated.length === 0
       ? 'no quorum-backed kind' : 'conflicting quorum-backed kinds'})`,);
-    return undefined;
+    return { kind: 'withheld', };
   }
   /**
    * Reference-specific narrowing is the boundary to naming-revision evidence.
@@ -137,7 +151,9 @@ function referenceKind({
   if (reference === undefined)
     findings.push(`archive-use-withheld (${use.anchor
       .nodeId}: non-reference use ${corroborated[0] ?? 'unresolved'})`,);
-  return reference;
+  return reference === undefined
+    ? { kind: 'withheld', }
+    : { kind: 'reference', useKind: reference, };
 }
 
 /**
@@ -176,13 +192,13 @@ export function corroboratedArchiveReferences({ uses, }: {
     /**
      * Naming-eligible kind, absent when classification supplies no authority.
      */
-    const kind = referenceKind({
+    const qualification = referenceKind({
       use,
       findings,
     },);
-    return kind === undefined ? [] : [{
+    return qualification.kind === 'withheld' ? [] : [{
       use,
-      kind,
+      kind: qualification.useKind,
     }];
   },);
   rl.debug(`corroborated ${String(references.length,)} of ${String(uses.length,)} initial occurrences`,);

@@ -8,6 +8,7 @@ import { ArchiveNamingEvidenceError, } from './archive-naming-error.ts';
 import { archiveGitOutput, } from './archive-naming-git.ts';
 import type { ArchiveNamingScope, } from './archive-naming-scope.ts';
 import type { CorpusPin, } from './corpus-source.ts';
+import { mapOverlapped, } from './overlapped-map.ts';
 
 //region Origin revision reads
 // A single parent and ordinary same-path diff are prerequisites, not naming proof.
@@ -92,7 +93,10 @@ export async function readArchiveNamingHistories({
     return scope.origin
       .commit;
   },),);
-  for (const commit of commits) {
+  await mapOverlapped({
+    items: [...commits],
+    overlap: 1,
+    oneItem: async function readOrigin({ item: commit, },): Promise<void> {
     /**
      * Intrinsic commit object, not an effective grafted parent rendering.
      */
@@ -113,12 +117,12 @@ export async function readArchiveNamingHistories({
     if (parents.length !== 1) {
       findings.push(`archive-revision-withheld (${commit}: root or merge origin)`,);
       rl.debug(`withheld origin with ${String(parents.length,)} parents`,);
-      continue;
+      return;
     }
     /**
      * Sole predecessor after explicit cardinality validation.
      */
-    const parentCommit = parents[0];
+    const [parentCommit,] = parents;
     if (parentCommit === undefined)
       throw new ArchiveNamingEvidenceError({
         kind: 'history-shape',
@@ -173,7 +177,8 @@ export async function readArchiveNamingHistories({
         },),
       },
     );
-  }
+    },
+  },);
   rl.debug(`read ${String(histories.size,)} ordinary origins`,);
   return {
     histories,
