@@ -1,25 +1,21 @@
 //region Hyper price
 // WHAT A CHARM HYPER TOKEN COSTS, as of the date this table was read.
 //
-// PRICES ARE AN OBSERVATION, NOT A CONSTANT. The operator read these off the
-// provider's own model page and pasted them in on the date `HYPER_PRICE_READ_ON`
-// names. A provider changes them whenever it likes, and a stale table reports a
-// confident wrong number rather than refusing, so the date ships beside the
-// rates and every report prints it. Re-read the page and update both together.
+// PRICES ARE AN OBSERVATION, NOT A CONSTANT. The 2026-09-11 public model-list
+// read verified every previous row and added the newly listed models. Hyper's
+// models documentation and FAQ define one hypercredit as USD 0.05, so these
+// per-million-token credit quotes equal the API's USD rates multiplied by 20.
+// The dated snapshot prices usage; it is not a wire-reported debit.
 //
 // CREDITS PER MILLION TOKENS, which is how the provider quotes them. Output is
 // two to five times input across this roster and `completion_tokens` counts
 // thinking, which dominates output on these models, so the answer half is the
 // expensive half and it is not the visible half.
 //
-// THE TWO CACHE COLUMNS ARE UNREACHABLE FOR THIS PIPELINE, and are carried
-// anyway. Nothing in this package sends `cache_control`, which is checkable in
-// one grep over `package/module/translation-repair/src`, so on the Anthropic
-// protocol Hyper speaks there are no cache-creation and no cache-read tokens
-// and every input token bills at the plain input rate. That makes the input
-// half EXACT rather than an upper bound. The rates sit here so that whoever
-// turns caching on finds them already recorded rather than having to go back to
-// the page, and so that a reader can see what the saving would be worth.
+// CACHE RATES REMAIN RECORDED, but this estimator has only prompt and completion
+// totals. It applies ordinary input pricing rather than inventing a cache-token
+// breakdown. A server-side cache discount is not ruled out by the absence of
+// caller-supplied cache_control; computed credits are quoted-rate estimates.
 //
 // SYNTHETIC IS NOT PRICED HERE AND MUST NOT BE. It is a flat subscription whose
 // meter is a percentage of a weekly allowance, already carried on the `METERS`
@@ -27,12 +23,12 @@
 // bill in and would inflate any total that mixed the two.
 
 /**
- * Date the rates below were read off the provider's model page.
+ * Date every retained rate was verified against the public model-list API.
  *
  * SHIPPED WITH THE RATES rather than left to a comment, because every report
  * that prints a credit figure has to be able to say how old it is.
  */
-export const HYPER_PRICE_READ_ON = '2026-09-01';
+export const HYPER_PRICE_READ_ON = '2026-09-11';
 
 /**
  * What one model costs, in credits per million tokens.
@@ -55,15 +51,13 @@ export type CreditRates = {
 
   /**
    * Credits per million tokens written into the cache.
-   *
-   * UNREACHABLE WHILE THIS PACKAGE SENDS NO `cache_control`.
+   * Retained for usage records that explicitly distinguish cache tokens.
    */
   readonly cacheCreate: number;
 
   /**
    * Credits per million prompt tokens served from the cache.
-   *
-   * UNREACHABLE WHILE THIS PACKAGE SENDS NO `cache_control`.
+   * Retained for usage records that explicitly distinguish cache tokens.
    */
   readonly cacheHit: number;
 };
@@ -81,6 +75,25 @@ const RATE_UNIT_TOKENS = 1_000_000;
  * reader comparing seats can see what an unseated model would have cost.
  */
 const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
+  'deepseek-v4.1-flash': {
+    input: 6,
+    output: 24,
+    cacheCreate: 0,
+    cacheHit: 0.6,
+  },
+  // Pricing observations do not add unapproved models to the serving catalog.
+  'inkling': {
+    input: 21.776,
+    output: 88.1928,
+    cacheCreate: 0,
+    cacheHit: 3.70192,
+  },
+  'kimi-k2-thinking': {
+    input: 12,
+    output: 50,
+    cacheCreate: 0,
+    cacheHit: 6,
+  },
   'deepseek-v4-flash': {
     input: 4,
     output: 8,
@@ -106,22 +119,22 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheHit: 0.958144,
   },
   'gemma-4-26b-a4b-it': {
-    input: 2.4,
+    input: 2.44,
     output: 8.4,
-    cacheCreate: 1.2,
-    cacheHit: 0,
+    cacheCreate: 0,
+    cacheHit: 1.22,
   },
   'glm-5': {
-    input: 18.2,
-    output: 58.68,
-    cacheCreate: 9.1,
-    cacheHit: 0,
+    input: 17.2,
+    output: 55.68,
+    cacheCreate: 0,
+    cacheHit: 8.6,
   },
   'glm-5.1': {
-    input: 26.64,
-    output: 86.24,
-    cacheCreate: 13.32,
-    cacheHit: 0,
+    input: 26.52,
+    output: 84.4,
+    cacheCreate: 0,
+    cacheHit: 13.26,
   },
   'glm-5.2': {
     input: 30.4864,
@@ -142,16 +155,16 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheHit: 0.6315040000000001,
   },
   'gpt-oss-120b': {
-    input: 3.8,
-    output: 12.6,
-    cacheCreate: 1.9,
-    cacheHit: 0,
+    input: 3.56,
+    output: 13.6,
+    cacheCreate: 0,
+    cacheHit: 1.78,
   },
   'kimi-k2.5': {
-    input: 11.008,
-    output: 57.7,
-    cacheCreate: 5.504,
-    cacheHit: 0,
+    input: 11.168,
+    output: 58.7,
+    cacheCreate: 0,
+    cacheHit: 5.584,
   },
   'kimi-k2.6': {
     input: 20.6872,
@@ -174,20 +187,20 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
   'llama-3.3-70b-instruct': {
     input: 12.132,
     output: 20.772,
-    cacheCreate: 6.066,
-    cacheHit: 0,
+    cacheCreate: 0,
+    cacheHit: 6.066,
   },
   'llama-4-maverick-17b-128e-instruct-fp8': {
     input: 5.48,
     output: 17.984,
-    cacheCreate: 2.74,
-    cacheHit: 0,
+    cacheCreate: 0,
+    cacheHit: 2.74,
   },
   'minimax-m2.7': {
     input: 8.08,
     output: 29.92,
-    cacheCreate: 4.04,
-    cacheHit: 0,
+    cacheCreate: 0,
+    cacheHit: 4.04,
   },
   'minimax-m3': {
     input: 6.5328,
@@ -198,14 +211,14 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
   'qwen3-coder-480b-a35b-instruct-int4-mixed-ar': {
     input: 8.9,
     output: 42.9,
-    cacheCreate: 4.45,
-    cacheHit: 0,
+    cacheCreate: 0,
+    cacheHit: 4.45,
   },
   'qwen3-next-80b-a3b-instruct': {
     input: 2.35,
     output: 22.72,
-    cacheCreate: 1.175,
-    cacheHit: 0,
+    cacheCreate: 0,
+    cacheHit: 1.175,
   },
   'qwen3.6-flash': {
     input: 20,
