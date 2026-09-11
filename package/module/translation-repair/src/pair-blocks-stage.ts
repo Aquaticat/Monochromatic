@@ -10,16 +10,13 @@ import type {
 } from './chat-contract.ts';
 import {
   type BlockPair,
-  BlockPairingError,
   type BlockPairingWire,
   buildBlockPairingMessages,
   type FreeOrderBlocks,
   isBlockPairingWire,
   type NumberedBlock,
-  readBlockPairing,
 } from './pair-blocks-wire.ts';
-import { agreePairs, } from './pair-agreement.ts';
-import { countPairedBlocks, } from './pair-block-counts.ts';
+import { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
@@ -40,17 +37,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // correspondences and differ on the tenth, and discarding both replies over the
 // tenth throws away the nine. Each `source,target` pair is counted on its own
 // and kept when enough voices named it.
-
-/**
- * Voices that must name a correspondence before it is kept.
- *
- * TWO, not a majority of the roster. A pairing one model invented is the risk
- * here; a correspondence two models reached independently is not plausibly
- * coincidence, since each is choosing from every block on the other side.
- * Requiring more would discard correct pairings whenever the roster is thin,
- * which `#93` and `#112` both recorded as the more common failure.
- */
-const AGREEMENT_NEEDED = 2;
 
 /**
  * Schema the reply must satisfy before it reaches the reader.
@@ -255,111 +241,14 @@ export async function pairBlocksWithRoster(
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
 
-  /**
-   * Replies that arrived and validated in shape.
-   */
-  const heardVoices = outcomes
-    .filter(function wasHeard(outcome,) {
-      /**
-       * This voice's reply, heard or lost.
-       */
-      const { voice, } = outcome;
-      return voice.heard;
-    },);
-
-  /**
-   * Findings accumulated while reading replies.
-   */
-  const findings: string[] = [];
-
-  /**
-   * Pairings that survived the reader, one per usable voice.
-   */
-  const pairings: (readonly BlockPair[])[] = [];
-  for (const outcome of heardVoices) {
-    /**
-     * This voice's reply, still either heard or lost to the type system.
-     */
-    const { voice, } = outcome;
-    if (!voice.heard)
-      continue;
-    try {
-      pairings.push(readBlockPairing({
-        value: voice.value,
-        sourceCount: sourceBlocks.length,
-        targetCount: targetBlocks.length,
-        ...((freeOrder === undefined) ? {} : { freeOrder, }),
-      },),);
-    }
-    catch (error) {
-      if (!(error instanceof BlockPairingError))
-        throw error;
-      // A REPLY THAT CANNOT BE USED IS A LOST VOICE, not a stage failure: the
-      // rest of the roster may still agree on a pairing, and refusing the whole
-      // document because one model answered badly is the failure `#110`
-      // recorded.
-      findings.push(`block-pairing unusable (${outcome.modelId}: ${error.message})`,);
-      pl.warn(`${outcome.modelId} returned an unusable pairing: ${error.message}`,);
-    }
-  }
-
-  if (pairings.length === 0) {
-    findings.push(`block-pairing no-usable-voice (${String(heardVoices.length,)} heard of ${String(modelIds.length,)})`,);
-    return {
-      pairs: [],
-      heard: heardVoices.length,
-      usable: 0,
-      cacheEligible: false,
-      findings,
-      outcomes,
-    };
-  }
-
-  /**
-   * Pairs roster agreed on, counted over every usable voice's relations and
-   * kept monotone while allowing corroborated repeated indexes (`#245`).
-   */
-  const agreement = agreePairs({
-    pairings,
-    needed: AGREEMENT_NEEDED,
-    pairingShape: 'many-to-many',
-  },);
-  /**
-   * What agreement dropped, in its own words.
-   */
-  const { findings: dropped, } = agreement;
-
-  /**
-   * The same, in this stage's vocabulary.
-   */
-  const prefixed = dropped.map(function prefix(finding,): string {
-    return `block-pairing ${finding}`;
-  },);
-  findings.push(...prefixed,);
-
-  /**
-   * Pairs that survived agreement and ordering.
-   */
-  const agreed = agreement.pairs;
-  /**
-   * Unique block reach beside many-to-many relation count.
-   */
-  const counts = countPairedBlocks({ pairs: agreed, },);
-  pl.info(
-    `paired ${String(counts.source,)} of ${String(sourceBlocks.length,)} original and ${
-      String(counts.target,)
-    } of ${String(targetBlocks.length,)} translation blocks across ${String(counts.relations,)} relations, from ${
-      String(pairings.length,)
-    } usable voices of ${String(heardVoices.length,)} heard`,
-  );
-  return {
-    pairs: agreed,
-    heard: heardVoices.length,
-    usable: pairings.length,
-    cacheEligible: dropped.length === 0,
-    findings,
+  return readBlockPairingOutcomes({
     outcomes,
-  };
+    modelIds,
+    sourceCount: sourceBlocks.length,
+    targetCount: targetBlocks.length,
+    ...((freeOrder === undefined) ? {} : { freeOrder, }),
+    l: pl,
+  },);
 }
 
 //endregion Block pairing stage

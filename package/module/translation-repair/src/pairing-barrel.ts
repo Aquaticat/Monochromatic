@@ -32,6 +32,7 @@ export {
   pairBlocksWithRoster,
   type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
+export { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 export {
   agreePairs,
   type IndexPair,
