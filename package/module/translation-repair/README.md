@@ -1353,7 +1353,29 @@ or provenance file is forbidden.
 
 ### Deciding who fills a seat
 
-Two runners rank models on the job the seat actually does.
+`judge-fidelity-probe` uses the source-reviewed manifest in `fidelity-reference-manifest.ts`.
+It no longer calls the first long archive slice “clean” merely because it is unchanged.
+The loader verifies pinned source/archive/donor ranges,
+shared normalization,
+reviewed local corrections,
+reference length and every generated damage hash before any model call.
+No corpus passage is committed in the manifest,
+and local calibration corrections never edit the corpus or filter production translations.
+
+`--cap 0` is explicitly metadata-only preflight,
+not a quality result.
+Unknown `--only` entries and unreviewed `--context` requests are refused before corpus/provider access.
+Positive runs preserve the position/direction matrix and record individual ballots plus exact reference provenance.
+A singleton panel's merged verdict can be underweight even when its individual vote is correct;
+it is not the per-model admission score.
+
+The historical `hakureico/7` and `noname/4` reference set contained unsupported facts and changed certainty.
+Those scores are not source-grounded admission proof.
+The [reviewed fixture record](../../../doc/planning/translation-repair-reviewed-calibration-fixtures-2026-09-11.md)
+records the replacement references and each verified delta.
+No existing role is retroactively removed solely on the old fixture diagnosis.
+
+Two other runners rank models on the job the seat actually does.
 Both spend quota,
 both write nothing to a corpus,
 and both take a slice count after `--`.
