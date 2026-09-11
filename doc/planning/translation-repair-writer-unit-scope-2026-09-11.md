@@ -225,8 +225,13 @@ paired and fallback states.
 Only questioned states carry cached or queried acquisition evidence.
 `prepareDocumentPairWithRoster` now delegates each indexed parent to it,
 retaining the pure preparation map and existing aggregate result shape.
-The extraction is committed through `cd197fd20`,
-but compatibility and complete package verification remain pending.
+At `97599f638`,
+build,
+manual type checking,
+zero-warning lint and the full unit suite pass.
+`writer-parent-preparation-final-unit-20260911.out` ends at line 9237 with `unit exit 0`.
+The frozen runtime is `.frozen-dist-97599f638` under the package's `node_modules`,
+digest `sha256-tree-v1:4a9ba31bddbc9cbf190830cf17625212f10d12a9c9c40263cb95d14a165e620d`.
 `readBlockPairingOutcomes` is shared between live pairing and recipe replay.
 At `6f496fd0c`,
 its build,
@@ -250,9 +255,13 @@ Production also changes the actual writer surface after subdivision.
   including slate and ballots,
   beside publication disposition.
 
-The benchmark should consume this existing operation where possible,
-not reproduce only a subset of its stage inputs.
-Its post-stage guards do not replace input review or add translation-generation rounds.
+The benchmark needs the same pre-stage surface,
+not a manually reproduced subset.
+A later independent review correctly separated that requirement from changing the benchmark's operation:
+keep the native `runTranslateStage` call and existing scoring,
+and extract a shared pure pre-stage input projection from `settleTranslateSlice` instead.
+Do not add its publication-disposition guards to calibration.
+Those guards do not replace input review.
 Picture evidence and footnote relabeling must remain explicit in the preparation plan;
 a prepared range alone does not supply unseen image text or reconcile differing footnote labels.
 Do not substitute the entire `preparePassEntry` shell without further design:
@@ -379,11 +388,19 @@ that transport registration is not implemented yet.
 `prepare-block-pairing.ts`,
 `prepare-block-pairing-finish.ts` and `prepare-block-pairing-model.ts`
 live under `package/module/translation-repair/src/`.
-They preserve the old cache key,
+The before/after comparison verifies the old cache key,
 cold/warm media normalization,
 cache eligibility,
-definition separation and scorer fallback.
-These are implementation intentions until the pending before/after comparison verifies them.
+definition separation and scorer fallback across fourteen invented fixture cases.
+Frozen `06862482e` and `97599f638` match complete cold/warm results,
+including Sets,
+exact request bodies and serialized cache bytes.
+Positive controls detect changed wire bytes,
+cache bytes and a line-structure Set.
+`~/temp/agent/parent-preparation-parity-20260911.json` records the comparison.
+Only mocked transports ran;
+the abort case records transport callback invocations,
+not real provider traffic.
 New tests cover explicit acquisition,
 cache reuse without invented outcomes,
 empty and singleton fast paths,
@@ -392,9 +409,6 @@ unclaimed-target cache refusal,
 definition crossing,
 persistence failure and cancellation.
 
-The current managed verification is
-`translation-repair-parent-preparation-verification` (`proc_78b0`).
-Build and types passed.
 The first test run exposed two incorrect fixture expectations:
 `declinedTargetBlocks` in `package/module/translation-repair/src/declined-target-runs.ts`
 deliberately declines nothing while an original remains unplaced,
@@ -404,6 +418,73 @@ for the actual unclaimed-target cache control.
 This is why cache eligibility alone must never qualify a calibration parent.
 No model transport beyond test mocks is used.
 The native producer CLI and bounded preparation planner remain unchanged.
+
+## Normalized pool prototype and next qualification contract
+
+The provider-free pool prototype now uses `readCorpusFile` followed by `passArchiveText`.
+It contains 283 deterministic parent pairs,
+not the raw census's 275.
+The proposed forty-parent pool spans 32 entries,
+with 20591 source and 55002 incumbent characters.
+Its ordered population digest is
+`dd26c62568689c68c2320aaaa96dd43f8f49a138acd0079a010cfa50a95dea71`.
+The private `preparation-pool-prototype.json` and `preparation-pool-reading/` directory
+retain full entry context.
+They remain a prototype,
+not approval for paid calls.
+
+Parent scope reading has begun in `preparation-pool-scope-reading.json`.
+The selected `ArtsEpiphany` parent is identical empty layout markup.
+Such a task must be declared a preservation control,
+not claimed as positive writing-quality evidence.
+Do not drop it after seeing model outcomes.
+`writer-preservation-standing-20260911.json` verifies the conditional accounting:
+when every roster writer matches the incumbent,
+all twelve receive candidate exposure but zero disinterested ballots and votes.
+The sole-stake positive control receives eleven disinterested votes.
+This does not predict actual candidate provenance in the future run.
+The final prepared-unit draw still has to be constructed and reviewed.
+
+Planner qualification remains separate from production pairing behavior:
+
+- Use current queried seat evidence,
+  not historical cache records lacking ballots.
+- Require the configured quorum number of usable parsed voices for calibration input acceptance.
+  This is a planner gate;
+  the production stage still gathers according to its existing heard-voice policy.
+- Preserve the two-distinct-identity per-relation threshold.
+- Reject fallback instead of dropping its parent after the fact.
+- Trust target declines only under the existing all-originals-placed condition.
+  Preserve legitimate source insertions rather than globally forbidding unplaced originals.
+- Trace every target block entering a task to an endorsed relation or an identified deterministic media claim.
+- Derive parent nodes and target containers from the same normalized parse.
+- Reparse and rebuild after deterministic footnote relabeling changes target bytes.
+- Persist current outcomes in a separate evidence journal;
+  the old pairing cache does not bind the electorate or retain its ballots.
+
+Mixed-parent aggregate parity now passes,
+as do durable no-network acquisition-through-slicing,
+media-after and exact cache-byte controls.
+`translateSliceInput` is implemented and used by production settlement without changing the native benchmark operation.
+At `895843508`,
+build,
+types,
+zero-warning lint and the full suite pass at line 9244.
+Eight before/after settlement cases preserve exact stage inputs and complete results,
+with positive controls.
+The native benchmark still has no reviewed-plan gate.
+
+Task 38 is pending on active task 39's
+[archive footnote collision remedy](translation-repair-archive-footnote-collisions-2026-09-11.md).
+The Y1 source/target note correspondence cannot close while retaining an unmatched archive label.
+The current raw rewrite also crosses syntax boundaries that must remain untouched.
+Full-entry parent reading has reached eighteen of the thirty-two selected entries;
+its private journal remains incomplete and is not paid-plan approval.
+After task 39,
+finish input qualification,
+actual prompt/transport bounds and the distinct reviewed-plan execution gate.
+No paid preparation,
+writer or V4.1 image-reading call has occurred.
 
 ## Current artifacts
 

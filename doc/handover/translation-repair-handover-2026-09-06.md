@@ -299,10 +299,78 @@ its archive prose repair could let a benchmark peer author an incumbent without 
 Preparation here buys correspondence evidence,
 not uncredited baseline prose.
 The native producer CLI is not changed yet.
-The shared block-round extraction,
-bounded parent-pool construction,
+The shared indexed-parent operation `prepareBlockPairing` and its production-shell integration
+are implemented and verified at `97599f638`.
+Build,
+types,
+zero-warning lint and full unit pass at line 9237 of
+`writer-parent-preparation-final-unit-20260911.out`.
+Fourteen cold/warm before/after fixture cases match frozen `06862482e` in complete results,
+exact wire bodies and serialized cache bytes;
+positive controls cover wire bytes,
+cache bytes and line-structure Sets.
+Snapshot `.frozen-dist-97599f638` has digest
+`sha256-tree-v1:4a9ba31bddbc9cbf190830cf17625212f10d12a9c9c40263cb95d14a165e620d`.
+
+The normalized provider-free pool prototype contains 283 parents;
+a proposed forty-parent pool spans 32 entries.
+`preparation-pool-prototype.json` and `preparation-pool-reading/` in the owned writer workspace
+hold its exact inputs and full entry contexts.
+Parent scope reading has begun in `preparation-pool-scope-reading.json`:
+`AmbeR_the_anpa` and `ArtsEpiphany` have been read.
+The latter is a preservation-only control,
+not positive writing-quality evidence;
+shared-incumbent accounting was checked provider-free with a positive control.
+Full-entry parent scope reading has reached eighteen of the thirty-two selected entries.
+No paid pool approval exists yet.
+
+Task 38 is now pending on active task 39.
+The pinned `Y1Ran` source has footnotes `1` and `2`,
+while the archive has `1`,
+`2` and `3`.
+The reviewed definition map `2` to `1` and `3` to `2` cannot close because unmatched archive `1`
+already occupies the destination.
+The actual closure helper returns `open`;
+the two-label permutation positive control closes.
+Task 39 investigates deterministic fresh-label displacement for the unmatched archive label,
+without creating source correspondence or changing note prose.
+A syntax probe also shows the existing raw application rewrites code,
+front matter,
+escaped literals,
+comments,
+link destinations and JSX attributes,
+and mishandles case/escaped identifiers.
+No footnote implementation has changed yet.
+[Footnote collision work record](../planning/translation-repair-archive-footnote-collisions-2026-09-11.md)
+is the next-action document.
+
+The shared pure `translateSliceInput` projection is implemented and used by `settleTranslateSlice`.
+At `895843508`,
+build,
+types,
+zero-warning lint and the full suite pass at line 9244 of
+`writer-slice-input-final-unit-20260911.out`.
+Eight before/after settlement cases match frozen `97599f638` in exact stage inputs and complete results,
+with positive controls for request bytes and returned text.
+Snapshot `.frozen-dist-895843508` has digest
+`sha256-tree-v1:56d8d472b1a526faef861068d41e224c3640457b18ef0802a58b50992d18273c`.
+The acquired-pairing-through-slicing regression and durable media/cache-byte controls also pass.
+The mixed-parent parity extension covers implicit,
+cached,
+queried,
+fallback and definition-separated parents in one document.
+
+Keep the benchmark's native `runTranslateStage` operation and scoring unchanged;
+do not add publication-disposition guards to calibration.
+Remaining task 38 work is bounded pool qualification,
+the evidence journal,
 reviewed-plan execution gate,
-actual prompt/transport bounds and automatic acquisition controls are still to build.
+actual prompt/transport bounds and automatic acquisition controls.
+Qualification must use current queried outcomes and the configured quorum number of usable voices,
+keep the existing per-relation threshold,
+reject fallback,
+and separately account for source insertions and deterministic media claims.
+Cache eligibility alone is not semantic qualification.
 Pairing's `runWindowedRounds` has no separate post-loop recovery nudge;
 do not borrow the different writer/judge-stage bound without tracing its caller.
 
