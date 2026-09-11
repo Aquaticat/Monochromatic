@@ -61,6 +61,15 @@ await describe({
       },
     }),
     it({
+      name: 'allows an explicitly supported narrower family for a reviewed entry',
+      fn: async () => {
+        const result = await preflight(['--only', 'gqt', '--damage', 'deletion']);
+        expect(result.code).toBe(0);
+        expect(result.stdout).toContain('preflight only');
+        expect(result.stdout).not.toContain('SPEND ');
+      },
+    }),
+    it({
       name: 'keeps zero-call candidate preflight distinct from a successful quality measurement',
       fn: async () => {
         const result = await preflight([]);
