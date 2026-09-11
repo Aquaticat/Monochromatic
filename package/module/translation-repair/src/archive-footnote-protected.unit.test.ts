@@ -11,6 +11,28 @@ await describe({
   name: 'protected archive footnote operations',
   children: [
     it({
+      name: 'rolls back an allowed external rename when the required reorder touches an original',
+      fn: async () => {
+        const archiveText = `Outside[^9] and [^1] and [^2].\n\n[^9]: Outer note.\n\n${seal}\n\n[^2]: Second original.\n\n[^1]: First original.`;
+        const result = relabelArchiveFootnotes({ entryId: 'invented', slices: [],
+          definitionPairs: [{ sourceLabel: '1', targetLabel: '1' }, { sourceLabel: '2', targetLabel: '2' }, { sourceLabel: '3', targetLabel: '9' }],
+          sourceText: 'Source[^1][^2][^3].\n\n[^1]: First.\n\n[^2]: Second.\n\n[^3]: Outer.', archiveText, l });
+        expect(result.archiveText).toBe(archiveText);
+        expect(result.changed).toBe(false);
+        expect(result.withheld).toBe('protected-original');
+      },
+    }),
+    it({
+      name: 'rewrites active notes beside literal comments without withholding valid syntax',
+      fn: async () => {
+        const archiveText = '<!-- Literal [^1] -->\n\nOutside[^1].\n\n[^1]: Outer note.';
+        const result = relabelArchiveFootnotes({ entryId: 'invented', slices: [], definitionPairs: paired, sourceText, archiveText, l });
+        expect(result.archiveText).toBe('<!-- Literal [^1] -->\n\nOutside[^2].\n\n[^2]: Outer note.');
+        expect(result.changed).toBe(true);
+        expect(result.withheld).toBeUndefined();
+      },
+    }),
+    it({
       name: 'withholds the whole rename when a reference or definition belongs to an English original',
       fn: async () => {
         const archiveText = `Outside[^1].\n\n${seal}\nOriginal[^1].\n\n[^1]: Original note.`;
