@@ -150,13 +150,32 @@ export function isStubMarkerParagraph({ paragraph, }: { readonly paragraph: stri
 }
 
 /**
+ * One retained normalized line with its unchanged pinned-file position.
+ *
+ * @example
+ * ```ts
+ * const retained: ArchiveRetainedLine = { text: 'Cat.', lineNumber: 3 };
+ * ```
+ */
+export type ArchiveRetainedLine = {
+  /**
+   * Exact line after invisible-character normalization.
+   */
+  readonly text: string;
+  /**
+   * One-based pinned-file line before any marker or adjacent blank removal.
+   */
+  readonly lineNumber: number;
+};
+
+/**
  * Scan state carried line to line.
  */
 type StripState = {
   /**
    * Lines kept so far.
    */
-  readonly kept: readonly string[];
+  readonly kept: readonly ArchiveRetainedLine[];
 
   /**
    * Markers removed so far.
@@ -199,11 +218,12 @@ type StripState = {
  * const { text, stripped, } = stripStubMarkers({ text: archive, },);
  * ```
  */
-export function stripStubMarkers(
+export function stripStubMarkersWithOrigins(
   { text, }: { readonly text: string; },
 ): {
   readonly text: string;
   readonly stripped: readonly StrippedStubMarker[];
+  readonly lines: readonly ArchiveRetainedLine[];
 } {
   /**
    * Original lines.
@@ -231,6 +251,10 @@ export function stripStubMarkers(
       index: number,
     ): StripState {
       /**
+       * Text and original position stay in one record through every keep or removal branch.
+       */
+      const retainedLine: ArchiveRetainedLine = { text: line, lineNumber: index + 1, };
+      /**
        * This line as masked, unchanged when no comment touches it.
        */
       const maskedLine = maskedLines[index] ?? '';
@@ -239,7 +263,7 @@ export function stripStubMarkers(
           ...state,
           kept: [
             ...state.kept,
-            line,
+            retainedLine,
           ],
           inFrontMatter: !((index > 0) && (line === FRONT_MATTER_FENCE)),
         };
@@ -250,7 +274,7 @@ export function stripStubMarkers(
           ...state,
           kept: [
             ...state.kept,
-            line,
+            retainedLine,
           ],
           inFence: !state.inFence,
           skipBlank: false,
@@ -261,7 +285,7 @@ export function stripStubMarkers(
           ...state,
           kept: [
             ...state.kept,
-            line,
+            retainedLine,
           ],
         };
       }
@@ -280,6 +304,7 @@ export function stripStubMarkers(
        */
       const previous = state.kept
         .at(-1,)
+        ?.text
         ?? '';
       /**
        * Whether nothing kept stands directly above.
@@ -312,7 +337,7 @@ export function stripStubMarkers(
           ...state,
           kept: [
             ...state.kept,
-            line,
+            retainedLine,
           ],
           skipBlank: false,
         };
@@ -364,9 +389,27 @@ export function stripStubMarkers(
   );
   return {
     text: final.kept
+      .map(function lineText(line,): string {
+        return line.text;
+      },)
       .join('\n',),
     stripped: final.stripped,
+    lines: final.kept,
   };
+}
+
+/**
+ * {@inheritDoc stripStubMarkersWithOrigins}
+ */
+export function stripStubMarkers({ text, }: { readonly text: string; },): {
+  readonly text: string;
+  readonly stripped: readonly StrippedStubMarker[];
+} {
+  /**
+   * Existing callers retain their exact public result shape.
+   */
+  const result = stripStubMarkersWithOrigins({ text, },);
+  return { text: result.text, stripped: result.stripped, };
 }
 
 //endregion Archive stub markers

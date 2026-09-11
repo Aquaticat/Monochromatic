@@ -1,7 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { foldInvisibleVariants, } from '../invisible-variants.ts';
-import { stripStubMarkers, } from './archive-stub.ts';
+import {
+  type ArchiveRetainedLine,
+  stripStubMarkersWithOrigins,
+} from './archive-stub.ts';
 
 //region Pass archive
 // Archive English enters every pass stage through one transform: the
@@ -19,15 +22,14 @@ import { stripStubMarkers, } from './archive-stub.ts';
  * @param l - entry logger, which records every stub marker removed so a run's
  * log witnesses it
  *
- * @returns Text with invisible variants replaced by visible counterparts and
- * placeholder paragraphs removed
+ * @returns Normalized text and retained pinned-line coordinates
  *
  * @example
  * ```ts
  * const archive = passArchiveText({ text: 'non‑binary', l, });
  * ```
  */
-export function passArchiveText(
+export function passArchiveWithOrigins(
   {
     text,
     l,
@@ -35,7 +37,7 @@ export function passArchiveText(
     readonly text: string;
     readonly l: Logger;
   },
-): string {
+): { readonly text: string; readonly lines: readonly ArchiveRetainedLine[]; } {
   /**
    * Visible text from shared fold.
    */
@@ -46,7 +48,8 @@ export function passArchiveText(
   const {
     text: stripped,
     stripped: markers,
-  } = stripStubMarkers({ text: folded, },);
+    lines,
+  } = stripStubMarkersWithOrigins({ text: folded, },);
   for (const marker of markers) {
     l.warn(
       `archive: stripped stub marker ${JSON.stringify(marker.text,)} at line ${String(marker.lineNumber,)}: a `
@@ -54,7 +57,19 @@ export function passArchiveText(
         + '(doc/decision/translation-repair-good-result-over-bad-original.md)',
     );
   }
-  return stripped;
+  return { text: stripped, lines, };
+}
+
+/**
+ * {@inheritDoc passArchiveWithOrigins}
+ *
+ * @returns Normalized archive text without exposing provenance metadata to existing callers
+ */
+export function passArchiveText({ text, l, }: {
+  readonly text: string;
+  readonly l: Logger;
+},): string {
+  return passArchiveWithOrigins({ text, l, },).text;
 }
 
 //endregion Pass archive

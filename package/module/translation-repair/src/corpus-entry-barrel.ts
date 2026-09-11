@@ -10,7 +10,10 @@ export {
   type EntryErrorOutcome,
   entryErrorOutcome,
 } from './corpus-run/entry-error-outcome.ts';
-export { passArchiveText, } from './corpus-run/pass-archive.ts';
+export {
+  passArchiveText,
+  passArchiveWithOrigins,
+} from './corpus-run/pass-archive.ts';
 export type {
   CorpusPair,
   EntryOutcome,

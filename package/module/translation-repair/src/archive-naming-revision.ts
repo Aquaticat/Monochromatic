@@ -21,7 +21,7 @@ import {
   type CorpusPin,
   readCorpusFile,
 } from './corpus-source.ts';
-import { passArchiveText, } from './corpus-run/pass-archive.ts';
+import { passArchiveWithOrigins, } from './corpus-run/pass-archive.ts';
 
 //region Qualified archive naming revisions
 // Owns acquisition, parsing and qualification behind one pinned-input interface.
@@ -130,10 +130,14 @@ export async function readQualifiedArchiveNamingRevisions({
   /**
    * Exact initial normalization, not a later revised archive candidate.
    */
-  const archiveText = passArchiveText({
+  const normalized = passArchiveWithOrigins({
     text: rawArchive,
     l: rl,
   },);
+  /**
+   * Text and retained line coordinates come from the same normalization pass.
+   */
+  const { text: archiveText, lines, } = normalized;
   /**
    * Repository-wide shallow state is deliberately unsupported for naming authority.
    */
@@ -193,6 +197,7 @@ export async function readQualifiedArchiveNamingRevisions({
    */
   const scoped = archiveNamingScopes({
     archiveText,
+    lines,
     uses: initialUses,
     references: corroborated.references,
     origins,

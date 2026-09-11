@@ -1,5 +1,7 @@
 import type { ArchiveLineOrigin, } from './archive-blame.ts';
 import { sameGitPath, } from './archive-git-path.ts';
+import { archiveLineMap, } from './archive-line-map.ts';
+import type { ArchiveRetainedLine, } from './corpus-run/archive-stub.ts';
 import { ArchiveNamingEvidenceError, } from './archive-naming-error.ts';
 import type { InitialArchiveUse, } from './archive-naming-model.ts';
 import type { CorroboratedArchiveReference, } from './archive-use-corroborate.ts';
@@ -90,11 +92,15 @@ function uniqueInitialUse({
  *
  * @param archiveText - immutable normalized initial archive
  *
+ * @param lines - retained pinned positions from the same archive normalization
+ *
  * @param uses - all observations for duplicate-range detection
  *
  * @param references - independently corroborated reference uses
  *
  * @param origins - complete pinned line-porcelain records
+ *
+ * @param pinnedHasFinalNewline - physical EOF state from the pinned blob
  *
  * @param relPath - requested archive path, not an alias lookup
  *
@@ -109,6 +115,7 @@ function uniqueInitialUse({
  */
 export function archiveNamingScopes({
   archiveText,
+  lines,
   uses,
   references,
   origins,
@@ -116,6 +123,7 @@ export function archiveNamingScopes({
   relPath,
 }: {
   readonly archiveText: string;
+  readonly lines: readonly ArchiveRetainedLine[];
   readonly uses: readonly InitialArchiveUse[];
   readonly references: readonly CorroboratedArchiveReference[];
   readonly origins: readonly ArchiveLineOrigin[];
@@ -153,7 +161,17 @@ export function archiveNamingScopes({
   /**
    * Scope rows that satisfy both initial and pinned-line identity.
    */
-  const scopes = references.flatMap(function locate(reference,): readonly ArchiveNamingScope[] {
+  const lineMap = archiveLineMap({ lines, archiveText, relPath, },);
+  /**
+   * Public results follow initial archive order, independently of observation order.
+   */
+  const ordered = references.toSorted(function byPosition(left, right,): number {
+    return left.use.anchor.startOffset - right.use.anchor.startOffset;
+  },);
+  /**
+   * Exact occurrence coordinates select origins; text equality only verifies them.
+   */
+  const scopes = ordered.flatMap(function locate(reference,): readonly ArchiveNamingScope[] {
     /**
      * Initial occurrence whose provenance is being resolved.
      */
@@ -224,20 +242,18 @@ export function archiveNamingScopes({
       endOffset,
     );
     /**
-     * Strictly unique mapping handles removed stub paragraphs without guessed offsets.
+     * Shared normalization supplied this exact line's pinned position.
      */
-    const matching = origins.filter(function sameLine(origin,): boolean {
-      return foldInvisibleVariants({ text: origin.text, },)
-        .text
-        === text;
-    },);
+    const mapped = lineMap.get(startOffset,);
+    if (mapped === undefined || mapped.text !== text)
+      throw new ArchiveNamingEvidenceError({ kind: 'archive-mismatch', relPath, },);
     /**
-     * Sole pinned line carrying this complete normalized line.
+     * Blame is selected only by coordinates, even when several lines have identical text.
      */
-    const origin = matching.length === 1 ? matching[0] : undefined;
-    if (origin === undefined) {
-      findings.push(`archive-revision-withheld (${anchor.nodeId}: ambiguous or unavailable line mapping)`,);
-      return [];
+    const origin = origins[mapped.pinnedLine - 1];
+    if (origin === undefined || origin.finalLine !== mapped.pinnedLine
+      || foldInvisibleVariants({ text: origin.text, },).text !== text) {
+      throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
     }
     if (origin.boundary || origin.ignored
       || (!sameGitPath({
@@ -254,12 +270,7 @@ export function archiveNamingScopes({
       origin,
       pinnedHasFinalNewline,
       lineTerminated: origin.finalLine < origins.length || pinnedHasFinalNewline,
-      lineNumber: archiveText.slice(
-        0,
-        startOffset,
-      )
-        .split('\n',)
-        .length,
+      lineNumber: mapped.lineNumber,
     }];
   },);
   return {
