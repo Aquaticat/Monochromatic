@@ -22,6 +22,8 @@ export {
   type PairedPreparation,
   prepareDocumentPairWithRoster,
 } from './prepare-with-pairing.ts';
+export { prepareBlockPairing, } from './prepare-block-pairing.ts';
+export { type PreparedBlockEvidence, type PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
 export {
   admitInsertions,
   type CarriedInsertion,
