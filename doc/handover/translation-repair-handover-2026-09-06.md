@@ -29,10 +29,15 @@ and the reason is recorded in
 No paid judge,
 writer or image calibration has run.
 V4.1 Flash remains held out of production roles.
-Task 32 blocks task 31;
-full-entry readiness is still false.
-The latest complete package-suite checkpoint remains frozen `24b1cbdb7`,
-not the current source implementation.
+The reviewed-reference implementation and fixed plan in task 32 are verified.
+Task 34 now checks the paid driver's transport and evidence boundary before task 31 can spend.
+Full-entry readiness is still false.
+Current checked runtime is frozen at
+`package/module/translation-repair/node_modules/.frozen-dist-993583ad5`.
+Build/types pass;
+`reviewed-reference-final-lint-20260911.out` reports zero warnings/errors;
+`reviewed-reference-final-unit-20260911.out` ends `unit exit 0` at line 9165.
+Its digest is `sha256-tree-v1:424d595d18b7354988414a45d371a2e843948ad0944a26f475720136698192b6`.
 
 The source-reviewed replacement tuples are fixed in
 [the reviewed fixture plan](../planning/translation-repair-reviewed-calibration-fixtures-2026-09-11.md).
@@ -62,10 +67,11 @@ The clean detached guard target was recreated from main without ignored-state co
 Older stages and concurrent changes were preserved.
 The proposed `WCD` clarification is not applied.
 
-The guard target is still detached at `9f4034d15`:
+The first guard target was detached at `9f4034d15`:
 `~/temp/agent/translation-repair-guard-20260911`.
-It contains explicit dependency links and private proof files,
-not a copied secret file.
+It used explicit dependency links and private proof files,
+not a copied secret file,
+and has now been removed.
 Mise's process-scoped trust and native write/network sandbox were exercised:
 inside writes succeed;
 outside writes and writes through an outward symlink fail;
@@ -88,10 +94,14 @@ restored build and tests passed.
 Evidence is `~/temp/agent/fidelity-guard-r2-20260911/mutations.json` and `mutations.out`.
 A string-anchor preflight failure was corrected before any mutation and is retained separately,
 not counted as guard detection.
-Both disposable worktrees remain owned proof fixtures pending cleanup.
+Both owned worktrees were subsequently removed through normal main-context commands without force.
+Root-sentinel,
+ignore and dry-run checks were repeated;
+only the known helper symlink and proof files needed explicit removal.
+`reviewed-guard-cleanup-20260911.json` records verified absence.
 An attempted wrapped switch of the disposable target was refused as `config-untrusted`;
 HEAD did not advance and no persistent trust was granted.
-Create the next proof target from main at the required commit instead of assuming trust transfers.
+The second proof target was created from main at the required commit instead of granting persistent trust.
 
 Independent review found that a mixed damage request could silently omit its unavailable family.
 `deed1022d` produced the actual library,
@@ -113,16 +123,36 @@ The individual clean ballot remained separate from the underweight merged declin
 with zero real model calls.
 The verifier's first attempt overlooked the legitimate outer ledger directory;
 that assertion was corrected without changing the successful native behavior.
-Final package lint/full suite and corrected calibration-plan verification remain pending.
+Final package verification and corrected plan derivation now pass.
+The current registered plan is `~/temp/agent/v41-reviewed-plan-20260911-eiI5so/plan.json`:
+twenty-eight logical arrangements,
+fourteen message-plus-schema questions,
+and 140 model cells across the unchanged nine peers plus V4.1.
+All 280 synthetic planner calls checked actual model-specific prompt equality;
+none is model evidence.
+The frozen loader's complete tuples match the independently reviewed artifact,
+and the regenerated source/reference/damage set was fully read again.
+
+Driver simulation exposed an incorrect assumption:
+stage retries may repeat identical messages,
+and `STAGE_RETRY_ROUNDS = 3` permits four total stage calls per cell.
+The corrected finite stage bound is 560,
+not 280;
+no production rounds were added.
+The corrected simulation completed all 140 cells with 170 fake calls,
+including the existing retry depth,
+and is explicitly marked simulated.
+Task 34 still needs actual-client transport interception,
+route/physical-call bounds and stricter failure/simulation interpretation before any paid launch.
 The package formatter is `format:oxlint`,
 not `format`;
 `reviewed-reference-format-r3-20260911.out` passed before the latest changes.
 
 Next actions:
-finish owned-fixture cleanup;
-reconcile independent review findings against actual code and the calibration driver;
-run zero-warning lint and the full package suite;
-regenerate the corrected fixed plan without old ballots or planner responses.
+complete task 34's transport-level checks and scoring edge controls;
+preserve the fixed cohort and existing count criterion rather than dropping incomplete peers;
+regenerate the plan after any driver edit;
+refresh actual budgets before task 31.
 Persist actual model-independent question identities and model/provider cell identities separately,
 and grade each actual question once.
 The native default cap of sixteen rows is not complete admission evidence for the full reviewed matrix.
@@ -142,7 +172,7 @@ the nested repair model configuration and provider-aware seats across sixteen bu
 match frozen `b9d3b2ea0` exactly,
 with a positive control showing the catalog really gained the new version.
 
-Current checked build is frozen at
+The serving checkpoint was frozen at
 `package/module/translation-repair/node_modules/.frozen-dist-24b1cbdb7`.
 Build and types pass;
 `deepseek-v41-lint-r3-20260911.out` has zero warnings/errors;

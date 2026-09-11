@@ -1,6 +1,7 @@
 # Source-reviewed judge calibration fixtures
 
-Task 32 blocks task 31 before paid V4.1 Flash calibration.
+Task 32's reviewed references and fixed plan are verified.
+Task 34 checks the paid driver's transport and evidence boundary before task 31 can spend.
 The serving integration in task 30 is complete;
 production role holds remain unchanged.
 
@@ -183,7 +184,9 @@ not every family in every reference.
 `634cca76d` adds a metadata-only corpus-pin check before preflight can report success.
 Build,
 types and all reference/CLI suites pass after these fixes in `reviewed-matrix-green-*`.
-Final package-wide verification is still pending.
+Final build,
+types and zero-warning lint pass at frozen `993583ad5`.
+`reviewed-reference-final-unit-20260911.out` ends `unit exit 0` at line 9165.
 
 `869f1fe69` gives each positive native invocation a fresh payload namespace,
 a durable logical plan,
@@ -214,7 +217,30 @@ The revised admission driver must persist:
 
 The native default sixteen-row cap is a bounded exploratory prefix,
 not complete admission evidence for this reviewed matrix.
-The actual corrected request/question count must be regenerated and inspected before spending.
+The corrected plan at `~/temp/agent/v41-reviewed-plan-20260911-eiI5so/plan.json`
+contains twenty-eight logical rows,
+fourteen actual message-plus-schema questions and 140 cells.
+All peers' and the candidate's initial requests were captured and checked for equality.
+The frozen,
+manifest and driver digests are registered;
+any driver edit invalidates the plan.
+The complete source/reference/damage tuples were read again from this regenerated plan.
+
+A simulation found and corrected a mistaken retry assumption in the private driver:
+existing stage retries can repeat the same request,
+and `STAGE_RETRY_ROUNDS = 3` means four total stage calls per cell.
+The corrected 560-call stage bound preserves that existing depth.
+Simulation completed 140 cells with 170 fake calls,
+including the existing retries,
+and records no real model calls.
+It does not verify the actual transport wrapper.
+
+Task 34 must verify physical-call bounds and route attribution through compiled clients,
+retain sufficient private wire evidence without exposing secrets,
+and distinguish infrastructure failures,
+provider absence and simulated outcomes.
+Missing-candidate and all-declined edge cases need explicit interpretation;
+do not change the fixed peer cohort or discard incomplete peers merely to improve a score.
 Existing duplicate-reference-ID validation in `fidelity-reference-select.ts` already applies;
 review suggestions are checked against source rather than all being treated as new defects.
 The approved tuple review remains valid while instrument verification continues.
