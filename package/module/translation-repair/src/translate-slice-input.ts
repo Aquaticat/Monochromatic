@@ -19,7 +19,7 @@ import type { IncumbentKind, } from './translate-absence.ts';
 export type TranslateSliceStageInput = {
   /** Canonical source passage, not its presentation-only writer display. */
   readonly sourceText: string;
-  /** Only the incumbent surface the existing source can be judged against. */
+  /** Incumbent wording remaining after the existing structural protection. */
   readonly incumbentText: string;
   /** Target chunk variant, not a guess based on string length. */
   readonly incumbentKind: IncumbentKind;
@@ -57,7 +57,9 @@ export type TranslateSliceInput = {
 /**
  * Projects a prepared slice through the existing target-only protection and input-governance rules.
  * Performs no I/O, model call, publication decision or new context lookup.
- * Callers retain logging and separately decide whether a selected wording may publish.
+ * Protection excludes a known target-only run from both writing and judging;
+ * reattaching it only after selection would still put protected material into the comparison.
+ * Callers retain logging, restore protected text and decide separately whether wording may publish.
  *
  * @param slice - prepared source/target pair whose target index selects governance
  * @param prepared - owning preparation supplying identity context and child line flags

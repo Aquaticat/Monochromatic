@@ -3,24 +3,17 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { isInsertionChunk, } from './chunk-placement.ts';
 import {
   declaredNameRefusalFinding,
   findDroppedDeclaredNames,
 } from './declared-name-survival.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
-import {
-  BlankSelectionError,
-  type IncumbentKind,
-} from './translate-absence.ts';
+import { BlankSelectionError, } from './translate-absence.ts';
 import {
   dropsQuotedPassage,
   quoteLossRefusalFinding,
 } from './quote-preservation.ts';
-import {
-  restoreTargetOnlyRun,
-  splitTargetOnlyRun,
-} from './target-only-run.ts';
+import { restoreTargetOnlyRun, } from './target-only-run.ts';
 import { assessSliceAlignment, } from './translate-alignment.ts';
 import {
   type TranslateModels,
@@ -28,6 +21,7 @@ import {
   TRANSLATE_SLICE_CACHE_VERSION,
 } from './translate-document-contract.ts';
 import { runTranslateStage, } from './translate-stage.ts';
+import { translateSliceInput, } from './translate-slice-input.ts';
 
 //region Translate slice
 // One slice from prepared pair to settled record: translate it, judge it, and
@@ -118,40 +112,19 @@ export async function settleTranslateSlice(
   const { sliceIndex, } = slice.target;
 
   /**
-   * Translation already in the archive for this slice, whole.
+   * Shared pre-stage protection and governance, without publication-disposition decisions.
    */
-  const archiveText = slice.target
-    .text;
-
-  /**
-   * Original this slice renders.
-   */
-  const sourceText = slice.source
-    .text;
-
-  /**
-   * Archive wording split into the part this source can account for and the
-   * part it cannot.
-   *
-   * ENGLISH THE CHINESE NEVER SAID IS HELD OUT OF THE WHOLE STAGE, not merely
-   * spliced back at the end. A translator shown a transcript it has no source
-   * for is being asked to reproduce text it cannot check, and an incumbent
-   * carrying one enters the ballot several times longer than every fresh
-   * candidate, which is not a comparison. Both sides see the same passage, and
-   * the run is restored to whichever wording wins.
-   */
-  const {
-    judgedText,
-    protectedText,
-  } = splitTargetOnlyRun({
-    sourceText,
-    incumbentText: archiveText,
+  const { archiveText, protectedText, stageInput, } = translateSliceInput({
+    slice,
+    prepared,
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
+    ...((pictureContext === undefined) ? {} : { pictureContext, }),
   },);
-
   /**
-   * Archive wording the stage sees, judges and may replace.
+   * The exact staged surface is also what later publication guards compare.
    */
-  const incumbentText = judgedText;
+  const { sourceText, incumbentText, incumbentKind, } = stageInput;
 
   if (protectedText !== '')
     l.info(
@@ -162,43 +135,13 @@ export async function settleTranslateSlice(
     );
 
   /**
-   * Whether the archive holds a translation for this slice at all.
-   *
-   * DECIDED HERE AND ONCE, from what the target side IS rather than from what
-   * its text happens to be. An anchor names a boundary where a rendering
-   * belongs and none exists; a content span holding only whitespace is the
-   * archive's own wording, thin as it is. Both carry a blank `text`, and every
-   * fallback in the stage means something different for each.
-   */
-  const incumbentKind: IncumbentKind = isInsertionChunk(slice.target,)
-    ? 'absent'
-    : 'present';
-
-  /**
-   * What the translators wrote and the judges decided.
+   * What the translators wrote and the judges decided, through the unchanged stage operation.
    */
   const stageResult = await runTranslateStage({
     client,
     translatorModelIds: models.translatorModelIds,
     judgeModelIds: models.judgeModelIds,
-    sourceText,
-    incumbentText,
-    incumbentKind,
-    ...((prepared.identityContext === undefined)
-      ? {}
-      : { identityContext: prepared.identityContext, }),
-    ...((neighbouringSourceText === undefined)
-      ? {}
-      : { neighbouringSourceText, }),
-    ...((neighbouringIncumbentText === undefined)
-      ? {}
-      : { neighbouringIncumbentText, }),
-    ...((pictureContext === undefined)
-      ? {}
-      : { pictureContext, }),
-    ...((slice.syntax === undefined) ? {} : { syntax: slice.syntax, }),
-    lineStructured: prepared.lineStructuredSliceIndices
-      .has(sliceIndex,),
+    ...stageInput,
     signal,
     perCallTimeoutMs,
     l,

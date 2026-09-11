@@ -50,6 +50,11 @@ export {
 } from './translate-document-contract.ts';
 export { settleTranslateSlice, } from './translate-slice.ts';
 export {
+  translateSliceInput,
+  type TranslateSliceInput,
+  type TranslateSliceStageInput,
+} from './translate-slice-input.ts';
+export {
   absenceFinding,
   blankAgainst,
   BlankSelectionError,
