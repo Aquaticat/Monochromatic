@@ -86,6 +86,52 @@ no duplicate obligations,
 and a removal test proving the coalescing or paired-boundary guard matters.
 Freeze the revised plan and runtime before paid execution.
 
+## Paired-parent prototype
+
+The pinned census contains 275 nonempty deterministic section pairs across the corpus.
+The source code does not simply zip independent chunks:
+`subdivideChunkPair` uses a scorer-based monotone block alignment when no corroborated pairing is supplied.
+The observed mismatch comes from using that uncorroborated fine-grained result as a calibration task.
+
+A prototype that retains complete paired parents and applies the existing deterministic spread
+produces forty tasks with 20117 source characters and 51710 incumbent characters.
+The largest selected task has 1983 source characters and 5016 incumbent characters.
+The whole population's largest target parent is 17851 characters;
+the spread samples stratum midpoints rather than forcing that extreme into the draw.
+
+Design comparison:
+
+- Whole paired parents:
+  preserves complete paired extents without claiming unproved fine-grained correspondence;
+  increases the measured input distribution and still needs parent-alignment review.
+- Selective sibling merging:
+  could retain more of the old granularity;
+  block counts alone cannot establish all cross-language dependencies,
+  so missing proof would leave hidden mismatches.
+- Neighboring source context only:
+  adds evidence without changing the sample indexes;
+  it leaves output obligations assigned to the wrong task and is not a remedy for this defect.
+
+Ranking:
+whole paired parents > selective merging > context-only.
+Whole parents establish mechanical containment without the additional correspondence proof selective merging needs;
+selective merging could correct output assignment with proof,
+whereas context alone cannot.
+Whole-parent selection is therefore the implementation candidate for the next verified prototype.
+The larger input distribution and remaining deterministic parent-alignment assumptions must be disclosed,
+and the selected forty parents still require a complete source/target reading before calibration.
+No semantic correctness label is assigned to the incumbents.
+
+The windward parent covers source offsets 2069 to 2988 and target offsets 11101 to 13840.
+Its source includes the body missing from legacy `#14`.
+Its incumbent still has a genuine missing-footnote issue,
+which is distinct from task scope and must not be called a clean reference.
+The new draw does not happen to select that parent;
+the regression will exercise it directly rather than inserting it into the sample by hand.
+
+Private prototype records are `parent-census.json` and `parent-prototype.json`
+in the owned writer workspace.
+
 ## Current artifacts
 
 The old `writer-plan.json` and its exact-forty equality proof are superseded as writer-admission evidence.
