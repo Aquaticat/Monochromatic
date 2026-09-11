@@ -90,6 +90,7 @@ const MARKED_CLASSES: readonly string[] = [
   'EveryProviderDryError',
   'FidelityReferenceError',
   'FootnoteOverflowError',
+  'FootnoteRewriteError',
   'FrontMatterCompletenessError',
   'FrontMatterParseError',
   'GenerationDriftError',
