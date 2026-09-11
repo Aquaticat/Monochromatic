@@ -24,27 +24,38 @@ export type ArchiveNamingFailure =
  * ```
  */
 export class ArchiveNamingEvidenceError extends Error {
-  /** Closed boundary that failed, without exposing history or document content. */
+  /**
+   * Closed boundary that failed, without exposing history or document content.
+   */
   readonly kind: ArchiveNamingFailure;
 
   /**
    * Names the affected archive and failed operation.
    *
    * @param kind - closed boundary category
+   *
    * @param relPath - operator-supplied archive path
+   *
    * @param cause - original failure retained for local diagnosis
+   *
    * @example
    * ```ts
    * new ArchiveNamingEvidenceError({ kind: 'history-read', relPath, cause });
    * ```
    */
-  public constructor({ kind, relPath, cause, }: {
+  public constructor({
+    kind,
+    relPath,
+    cause,
+  }: {
     readonly kind: ArchiveNamingFailure;
     readonly relPath: string;
     readonly cause?: unknown;
   },) {
-    super(`archive naming evidence ${kind} for ${relPath}; check the pinned archive, initial anchors and Git read.`,
-      cause === undefined ? undefined : { cause, },);
+    super(
+      `archive naming evidence ${kind} for ${relPath}; check the pinned archive, initial anchors and Git read.`,
+      cause === undefined ? undefined : { cause, },
+    );
     this.name = 'ArchiveNamingEvidenceError';
     this.kind = kind;
   }

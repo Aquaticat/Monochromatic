@@ -39,15 +39,25 @@ export type ArchiveReferenceKind = Extract<ArchiveUseKind,
  * ```
  */
 export type InitialArchiveAnchor = {
-  /** Parsed initial-archive block containing the complete occurrence. */
+  /**
+   * Parsed initial-archive block containing the complete occurrence.
+   */
   readonly nodeId: string;
-  /** Hash of that block's exact text. */
+  /**
+   * Hash of that block's exact text.
+   */
   readonly nodeHash: string;
-  /** Inclusive initial-archive character offset. */
+  /**
+   * Inclusive initial-archive character offset.
+   */
   readonly startOffset: number;
-  /** Exclusive initial-archive character offset. */
+  /**
+   * Exclusive initial-archive character offset.
+   */
   readonly endOffset: number;
-  /** Exact substring at these coordinates, including its supplied markup. */
+  /**
+   * Exact substring at these coordinates, including its supplied markup.
+   */
   readonly quotedText: string;
 };
 
@@ -60,9 +70,13 @@ export type InitialArchiveAnchor = {
  * ```
  */
 export type ArchiveUseBallot = {
-  /** Shell-owned reader identity; repeated identities cannot add support. */
+  /**
+   * Shell-owned reader identity; repeated identities cannot add support.
+   */
   readonly modelId: string;
-  /** Observed function of this exact occurrence. */
+  /**
+   * Observed function of this exact occurrence.
+   */
   readonly kind: ArchiveUseKind;
 };
 
@@ -76,13 +90,21 @@ export type ArchiveUseBallot = {
  * ```
  */
 export type InitialArchiveUse = {
-  /** Hash of the complete immutable normalized archive carrying the anchor. */
+  /**
+   * Hash of the complete immutable normalized archive carrying the anchor.
+   */
   readonly archiveHash: string;
-  /** Literal occurrence that every reader classified. */
+  /**
+   * Literal occurrence that every reader classified.
+   */
   readonly anchor: InitialArchiveAnchor;
-  /** Original configured electorate, including readers who did not answer. */
+  /**
+   * Original configured electorate, including readers who did not answer.
+   */
   readonly configuredModelIds: readonly string[];
-  /** Actual independent classifications; absence is not an ordinary-prose vote. */
+  /**
+   * Actual independent classifications; absence is not an ordinary-prose vote.
+   */
   readonly ballots: readonly ArchiveUseBallot[];
 };
 
@@ -101,37 +123,69 @@ export type InitialArchiveUse = {
  * ```
  */
 export type QualifiedArchiveNamingRevision = {
-  /** Corpus commit whose archive was inspected. */
+  /**
+   * Corpus commit whose archive was inspected.
+   */
   readonly archiveCommit: string;
-  /** Repository-relative archive path, unchanged across the qualifying revision. */
+  /**
+   * Repository-relative archive path, unchanged across the qualifying revision.
+   */
   readonly archivePath: string;
-  /** Revision introducing the current line. */
+  /**
+   * Revision introducing the current line.
+   */
   readonly originCommit: string;
-  /** Its sole parent, supplying the removed line. */
+  /**
+   * Its sole parent, supplying the removed line.
+   */
   readonly parentCommit: string;
-  /** Hash of the immutable normalized initial archive. */
+  /**
+   * Hash of the immutable normalized initial archive.
+   */
   readonly archiveHash: string;
-  /** Complete occurrence, never a partial name or surrounding role words. */
+  /**
+   * Complete occurrence, never a partial name or surrounding role words.
+   */
   readonly anchor: InitialArchiveAnchor;
-  /** Corroborated reference use whose naming convention is relevant. */
+  /**
+   * Corroborated reference use whose naming convention is relevant.
+   */
   readonly useKind: ArchiveReferenceKind;
-  /** Original configured readers and their unmodified evidence. */
+  /**
+   * Original configured readers and their unmodified evidence.
+   */
   readonly reading: Pick<InitialArchiveUse, 'configuredModelIds' | 'ballots'>;
-  /** One-based normalized initial archive line carrying the occurrence. */
+  /**
+   * One-based normalized initial archive line carrying the occurrence.
+   */
   readonly currentLine: number;
-  /** One-based pinned file line before placeholder stripping. */
+  /**
+   * One-based pinned file line before placeholder stripping.
+   */
   readonly pinnedLine: number;
-  /** One-based line in the origin revision. */
+  /**
+   * One-based line in the origin revision.
+   */
   readonly originLine: number;
-  /** Initial normalized archive offset where the current line begins. */
+  /**
+   * Initial normalized archive offset where the current line begins.
+   */
   readonly currentLineStartOffset: number;
-  /** Current normalized line, retained for scope verification after preparation. */
+  /**
+   * Current normalized line, retained for scope verification after preparation.
+   */
   readonly currentLineText: string;
-  /** Predecessor line under the same normalization, retained for reconstruction. */
+  /**
+   * Predecessor line under the same normalization, retained for reconstruction.
+   */
   readonly previousLineText: string;
-  /** Removed fragment in the same one-line replacement. */
+  /**
+   * Removed fragment in the same one-line replacement.
+   */
   readonly previousFragment: string;
-  /** Added fragment, exactly equal to the complete current occurrence. */
+  /**
+   * Added fragment, exactly equal to the complete current occurrence.
+   */
   readonly currentFragment: string;
 };
 
@@ -145,9 +199,13 @@ export type QualifiedArchiveNamingRevision = {
  * ```
  */
 export type ArchiveNamingRevisionResult = {
-  /** Exact qualified occurrence revisions, in initial archive order. */
+  /**
+   * Exact qualified occurrence revisions, in initial archive order.
+   */
   readonly revisions: readonly QualifiedArchiveNamingRevision[];
-  /** Names-only explanations for withheld or unavailable provenance. */
+  /**
+   * Names-only explanations for withheld or unavailable provenance.
+   */
   readonly findings: readonly string[];
 };
 

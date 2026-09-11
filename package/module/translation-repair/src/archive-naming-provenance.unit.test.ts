@@ -27,7 +27,7 @@ await describe({
           before: BEFORE_ARCHIVE.trimEnd(),
           after: AFTER_ARCHIVE.trimEnd(),
         });
-        const cloneDir = fixture.pin.cloneDir;
+        const {cloneDir} = fixture.pin;
         const extraPath = 'people/extra-cat/page.en.md';
         await mkdir(join(cloneDir, 'people/extra-cat'), { recursive: true });
         await writeFile(join(cloneDir, extraPath), 'Another invented cat.\n');
@@ -36,7 +36,7 @@ await describe({
         await namingFixtureGit({ cloneDir, args: ['replace', fixture.pin.commitSha, replacement] });
         expect(await readCorpusFile({ pin: fixture.pin, relPath: fixture.relPath })).toBe(AFTER_ARCHIVE.trimEnd());
         const bytes = await readCorpusBytes({ pin: fixture.pin, relPath: fixture.relPath });
-        expect(bytes.toString('utf8')).toBe(AFTER_ARCHIVE.trimEnd());
+        expect(new TextDecoder().decode(bytes)).toBe(AFTER_ARCHIVE.trimEnd());
         expect(await listCorpusPeople({ pin: fixture.pin })).toEqual(['starlit-cat']);
         const result = await readQualifiedArchiveNamingRevisions({
           pin: fixture.pin,
@@ -66,7 +66,7 @@ await describe({
       fn: async () => {
         const suffix = '\nAnother invented fact.\n';
         await using fixture = await makeNamingArchive({ before: AFTER_ARCHIVE, after: AFTER_ARCHIVE + suffix });
-        const cloneDir = fixture.pin.cloneDir;
+        const {cloneDir} = fixture.pin;
         const beforeCommit = await commitNamingArchive({ cloneDir, relPath: fixture.relPath, text: BEFORE_ARCHIVE + suffix });
         const beforeTree = await namingFixtureGit({ cloneDir, args: ['rev-parse', `${beforeCommit}^{tree}`] });
         const afterTree = await namingFixtureGit({ cloneDir, args: ['rev-parse', `${fixture.pin.commitSha}^{tree}`] });
