@@ -36,6 +36,7 @@ await describe({
         expect(Object.keys(HYPER_MODELS,).toSorted(),).toEqual([
           'deepseek-v4-flash-0731',
           'deepseek-v4-pro-0813',
+          'deepseek-v4.1-flash',
           'gemma-4-26b-a4b-it',
           'glm-5.3',
           'glm-5.3-flash',
@@ -82,12 +83,12 @@ await describe({
     },),
 
     it({
-      name: 'NAMES the five models only this provider serves, which have no cross-provider re-ask '
-        + 'and fall back to the invalid-candidate path from `#88` instead',
+      name: 'names Hyper-origin identities without a Synthetic counterpart, independently of OpenRouter reach',
       fn: async () => {
         expect(modelsServedOnlyHere().toSorted(),).toEqual([
           'deepseek-v4-flash-0731',
           'deepseek-v4-pro-0813',
+          'deepseek-v4.1-flash',
           'gemma-4-26b-a4b-it',
           'glm-5.3',
           'minimax-m3',
@@ -120,7 +121,7 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS four image readers after the 2026-09-01 candidate refresh and its same-day cull',
+      name: 'reports image-capable serving paths including approved V4.1 Flash without deciding reader seating',
       fn: async () => {
         /**
          * Models this provider says can be sent an image.
@@ -135,6 +136,7 @@ await describe({
           },);
 
         expect(readers.toSorted(),).toEqual([
+          'deepseek-v4.1-flash',
           'glm-5.3-flash',
           'kimi-k3',
           'minimax-m3',

@@ -88,8 +88,7 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'SEATS TWELVE DISTINCT MODELS: four Synthetic serves, five only the second provider does, '
-        + 'two only the fourth does and one only the third does',
+      name: 'registers thirteen distinct approved models without duplicating identities across providers',
       fn: async () => {
         // Eight until 2026-09-01, when the post-blocklist candidate refresh
         // admitted glm-5.3 and the same-day conformance probe culled the
@@ -97,8 +96,9 @@ await describe({
         // Eleven since 2026-09-07, when the owner's Bedrock account added the
         // two Gemma 4 sizes no other provider serves. Twelve since 2026-09-09,
         // when the owner approved Mercury 2.5, which only OpenRouter serves.
-        expect(ROSTER_MODEL_IDS.length,).toBe(12,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(12,);
+        // V4.1 Flash adds one approved identity on 2026-09-11, not one per serving provider.
+        expect(ROSTER_MODEL_IDS.length,).toBe(13,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(13,);
       },
     },),
 
@@ -352,14 +352,14 @@ await describe({
   name: readsImages.name,
   children: [
     it({
-      name: 'READS WITH SIX: the four of the 2026-09-01 refresh and the two Gemma sizes measured through '
-        + 'Bedrock on 2026-09-08, so a Bedrock-only pass has two reachable readers',
+      name: 'reports image reach independently of measured reader admission',
       fn: async () => {
         expect(ROSTER_MODEL_IDS
           .filter(function reads(modelId,): boolean {
             return readsImages({ modelId, },);
           },)
           .toSorted(),).toEqual([
+          'deepseek-v4.1-flash',
           'gemma-4-26b-a4b-it',
           'google.gemma-4-31b',
           'hf:Qwen/Qwen3.8-27B',

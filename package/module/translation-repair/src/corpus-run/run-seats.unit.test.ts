@@ -171,18 +171,19 @@ await describe({
           expect(wet.writers.includes(unmeasured,),).toBe(false,);
           expect(wet.translators.includes(unmeasured,),).toBe(false,);
         }
-        expect(RUN_ROSTER.length,).toBe(
-          (ROSTER_MODEL_IDS.length - BEDROCK_ONLY_ROSTER_IDS.length - OPENROUTER_ONLY_ROSTER_IDS.length)
-            + SEATED_BEDROCK_JUDGES.size
-            + SEATED_OPENROUTER_JUDGES.size,
-        );
+        expect(ROSTER_MODEL_IDS.filter(function unseated(modelId,): boolean {
+          return !RUN_ROSTER.includes(modelId,);
+        },).toSorted(),).toEqual([
+          'deepseek-v4.1-flash',
+          'google.gemma-4-31b',
+        ],);
         expect(wet.writers,).toEqual(RUN_WRITERS,);
         expect(RUN_WRITERS,).toEqual(RUN_ROSTER.filter(function measuredWriter(modelId,): boolean {
           return !WRITER_UNMEASURED.has(modelId,);
         },),);
-        expect(RUN_TRANSLATORS.length,).toBe(
-          RUN_ROSTER.length - TRANSLATOR_DROPPED.size - WRITER_UNMEASURED.size,
-        );
+        expect(RUN_TRANSLATORS,).toEqual(RUN_ROSTER.filter(function eligibleTranslator(modelId,): boolean {
+          return !TRANSLATOR_DROPPED.has(modelId,) && !WRITER_UNMEASURED.has(modelId,);
+        },),);
       },
     },),
 
