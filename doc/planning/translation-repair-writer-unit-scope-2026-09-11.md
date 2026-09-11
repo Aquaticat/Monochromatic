@@ -203,7 +203,44 @@ in `package/module/test/src/expect-matchers-core.ts`.
 The tests now compare `outcome.outcomes` with `toEqual`.
 The original red failures were missing-property assertions;
 the attempted green failures are not evidence of changed pairing results.
-The corrected tests and full package verification remain required.
+At `06862482e`,
+build,
+manual type checking,
+zero-warning Oxlint and the full unit suite pass.
+`writer-pairing-evidence-final-unit-20260911.out` ends with the actual `unit exit 0`.
+The successful package formatter takes no appended file arguments;
+its attempted file-argument form failed before Oxlint ran.
+
+## Integration seams still to build
+
+`prepareDocumentPairWithRoster`
+in `package/module/translation-repair/src/prepare-with-pairing.ts` owns the block-round loop,
+media-adjacent target normalization,
+footnote-definition separation and pure `prepareDocumentPair` handoff.
+A bounded parent-pool consumer needs the same block-round machinery without buying unrelated section rounds.
+Prefer extracting that shared operation rather than copying its cold/warm policies into a new sampler.
+No such extraction is implemented yet.
+
+Production also changes the actual writer surface after subdivision.
+`settleTranslateSlice` in `package/module/translation-repair/src/translate-slice.ts`:
+
+- Uses `splitTargetOnlyRun` before the whole writing/judging stage.
+- Derives absent/present mode from the target chunk variant,
+  not its text length.
+- Forwards production identity context,
+  neighboring context,
+  picture context,
+  syntax and child-level line-structure governance.
+- Returns `stageResult`,
+  including slate and ballots,
+  beside publication disposition.
+
+The benchmark should consume this existing operation where possible,
+not reproduce only a subset of its stage inputs.
+Its post-stage guards do not replace input review or add translation-generation rounds.
+Picture evidence and footnote relabeling must remain explicit in the preparation plan;
+a prepared range alone does not supply unseen image text or reconcile differing footnote labels.
+Native `producer-calibrate.ts` is still unchanged and unsafe to launch on the old sample.
 
 ## Current artifacts
 

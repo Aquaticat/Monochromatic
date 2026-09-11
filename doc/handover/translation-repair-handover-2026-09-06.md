@@ -246,9 +246,34 @@ The earlier conditional advice to keep the old sample was withdrawn after this c
 The old launch script now refuses paid `run` mode.
 
 Next actions:
-complete task 38's closed paired-unit sampling/provenance fix without weakening the archive floor,
-changing the forty-round pooled-null rule or adding generation rounds;
+complete task 38 using frozen production-prepared groups,
+without weakening the archive floor,
+changing the forty-round pooled-null rule or adding writer rounds;
 freeze and read the revised forty-unit plan before any paid writer call.
+The whole-parent prototype is rejected:
+it changes task sizes and loses a child line-structure flag in `hulicaijia` section 7.
+Shape-filtering parents leaves a different coverage distribution and is also rejected.
+Use the existing configured block-pairing preparation on a preselected bounded pool,
+account for those calls separately and refuse an uncorroborated fallback rather than dropping a parent.
+Preparation and writer execution need separate plan/review gates.
+Neither paid preparation nor writer generation has run for this new plan.
+
+The first interface change retains final pairing seat outcomes in `BlockPairingOutcome`.
+At `06862482e`,
+build,
+types,
+zero-warning lint and the actual full-suite `unit exit 0` pass.
+The temporary whole-parent type scaffold was removed.
+The remaining implementation must reuse production subdivision,
+child line flags,
+footnote relabeling and the actual `settleTranslateSlice` surface,
+including target-only protection and supplied context.
+The native producer CLI is not changed yet.
+
+The formatter accepts package scope but not appended file paths in its current Node inline task.
+Use `format:oxlint` without extra paths;
+[the verified task-argument diagnosis](../troubleshooting/mise-inline-node-arguments.md)
+records the failed form and isolated controls.
 [Writer unit scope](../planning/translation-repair-writer-unit-scope-2026-09-11.md) is the current work record.
 Task 36 follows writer calibration.
 Both independent holds remain.
