@@ -1,4 +1,8 @@
-import { mkdir, mkdtemp, writeFile, } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { hashContent, } from '../document-node.ts';
@@ -87,11 +91,17 @@ async function main(): Promise<void> {
   /**
    * Fixed complete matrix, bounded in attempted rows before any calls begin.
    */
-  const matrix = reviewedFidelityTrials({ references, damageKinds, },);
+  const matrix = reviewedFidelityTrials({
+    references,
+    damageKinds,
+  },);
   /**
    * A bounded prefix remains exploratory, not a complete admission comparison.
    */
-  const planned = matrix.slice(0, cap,);
+  const planned = matrix.slice(
+    0,
+    cap,
+  );
   /**
    * Completeness describes the requested population, not automatic role eligibility.
    */
@@ -102,15 +112,27 @@ async function main(): Promise<void> {
    * Operator-selected output root; calibration callers use a disposable directory.
    */
   const runsDir = await resolveRunsDir();
-  await mkdir(runsDir, { recursive: true, mode: 0o700, },);
+  await mkdir(
+    runsDir,
+    {
+      recursive: true,
+      mode: 0o700,
+    },
+  );
   /**
    * Fresh per-invocation state cannot replay old ballots or synthetic planner responses.
    */
-  const runDir = await mkdtemp(join(runsDir, 'judge-fidelity-',),);
+  const runDir = await mkdtemp(join(
+    runsDir,
+    'judge-fidelity-',
+  ),);
   /**
    * Completed payloads remain available for explicit audit after interruption.
    */
-  const promptPayloadDir = join(runDir, 'payloads',);
+  const promptPayloadDir = join(
+    runDir,
+    'payloads',
+  );
   /**
    * Every exchange has the existing measured per-call deadline.
    */
@@ -135,14 +157,49 @@ async function main(): Promise<void> {
    * A durable plan cannot be mistaken for a completed result if execution is interrupted.
    * These are logical trial rows, not a claim that every configured judge was actually asked.
    */
-  const plan = { status: 'planned', startedAt, pipelineDigest, runnerClosure,
-    referenceManifestDigest, referenceManifest: specs, requestedRoster: judgeModelIds,
-    completeRequestedMatrix, fullMatrixRows: matrix.length, plannedRows: planned.length,
-    rows: planned.map(function identity(row, position,) {
-      return { position, trialId: row.trial.trialId, direction: row.trial.direction,
-        cleanFirst: row.trial.cleanFirst, damageKind: row.trial.damageKind, };
-    },), };
-  await writeFile(join(runDir, 'plan.json',), JSON.stringify(plan, undefined, 2,), { mode: 0o600, flag: 'wx', },);
+  const plan = {
+    status: 'planned',
+    startedAt,
+    pipelineDigest,
+    runnerClosure,
+    referenceManifestDigest,
+    referenceManifest: specs,
+    requestedRoster: judgeModelIds,
+    completeRequestedMatrix,
+    fullMatrixRows: matrix.length,
+    plannedRows: planned.length,
+    rows: planned.map(function identity(
+      row,
+      position,
+    ) {
+      return {
+        position,
+        trialId: row.trial
+          .trialId,
+        direction: row.trial
+          .direction,
+        cleanFirst: row.trial
+          .cleanFirst,
+        damageKind: row.trial
+          .damageKind,
+      };
+    },),
+  };
+  await writeFile(
+    join(
+      runDir,
+      'plan.json',
+    ),
+    JSON.stringify(
+      plan,
+      undefined,
+      2,
+    ),
+    {
+      mode: 0o600,
+      flag: 'wx',
+    },
+  );
   /**
    * Client construction follows all input verification and durable plan publication.
    */
@@ -153,7 +210,10 @@ async function main(): Promise<void> {
   const rows = await mapOverlapped({
     items: planned,
     overlap: 1,
-    oneItem: async function runReviewedTrial({ item: row, position, },) {
+    oneItem: async function runReviewedTrial({
+      item: row,
+      position,
+    },) {
       /**
        * Existing selector and unchanged criteria evaluate the reviewed comparison.
        */
@@ -183,8 +243,21 @@ async function main(): Promise<void> {
         damageDetail: row.damageDetail,
         ...outcome,
       };
-      await writeFile(join(runDir, `row-${String(position,)}.json`,), JSON.stringify(result, undefined, 2,),
-        { mode: 0o600, flag: 'wx', },);
+      await writeFile(
+        join(
+          runDir,
+          `row-${String(position,)}.json`,
+        ),
+        JSON.stringify(
+          result,
+          undefined,
+          2,
+        ),
+        {
+          mode: 0o600,
+          flag: 'wx',
+        },
+      );
       return result;
     },
   },);

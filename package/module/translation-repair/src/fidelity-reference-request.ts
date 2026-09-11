@@ -86,7 +86,8 @@ export function reviewedFidelityRequest({
    */
   const unavailable = damageKinds.filter(function missing(kind,): boolean {
     return !selected.some(function supportsRequestedDamage(spec,): boolean {
-      return spec.damages.some(function requested(damage,): boolean {
+      return spec.damages
+        .some(function requested(damage,): boolean {
         return damage.kind === kind;
       },);
     },);
@@ -99,7 +100,10 @@ export function reviewedFidelityRequest({
   }
   for (const spec of selected) {
     if (spec.corpusSha !== corpusSha)
-      throw new FidelityReferenceError({ referenceId: spec.id, operation: 'pin', },);
+      throw new FidelityReferenceError({
+        referenceId: spec.id,
+        operation: 'pin',
+      },);
     for (const edit of spec.edits) {
       if (judgeModelIds.some(function authoredCorrection(modelId,): boolean {
         return (modelId === edit.author) || modelId.endsWith(`/${edit.author}`,);

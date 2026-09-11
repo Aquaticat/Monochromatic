@@ -132,7 +132,9 @@ export function reviewedFidelityTrials({
    */
   const unavailable = damageKinds.filter(function missing(kind,): boolean {
     return !rows.some(function represents(row,): boolean {
-      return row.trial.damageKind === kind;
+      return row.trial
+        .damageKind
+        === kind;
     },);
   },);
   if (unavailable.length > 0)
