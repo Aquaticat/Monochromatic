@@ -147,8 +147,12 @@ export function scanFullwidthMarkers(
 export function scanGfmReferenceLiterals(
   { slice, }: { readonly slice: string; },
 ): readonly TextMarkerHit[] {
-  return gfmMarkerSpans({ text: slice, },).map(function hit(marker,): TextMarkerHit {
-    return { identifier: marker.rawLabel, localOffset: marker.startOffset, };
+  return gfmMarkerSpans({ text: slice, },)
+    .map(function hit(marker,): TextMarkerHit {
+    return {
+      identifier: marker.rawLabel,
+      localOffset: marker.startOffset,
+    };
   },);
 }
 

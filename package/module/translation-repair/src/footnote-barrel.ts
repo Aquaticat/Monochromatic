@@ -21,8 +21,14 @@ export {
   documentLabels,
   type RelabelClosure,
 } from './archive-footnote-closure.ts';
-export { type FootnoteLabelRewrite, type RetainedArchiveFootnoteLabel, } from './footnote-label-rewrite.ts';
-export { FootnoteRewriteError, type FootnoteRewriteFailure, } from './footnote-rewrite-error.ts';
+export {
+  type FootnoteLabelRewrite,
+  type RetainedArchiveFootnoteLabel,
+} from './footnote-label-rewrite.ts';
+export {
+  FootnoteRewriteError,
+  type FootnoteRewriteFailure,
+} from './footnote-rewrite-error.ts';
 export {
   crossingFinding,
   type DefinitionLabelPair,
@@ -32,6 +38,9 @@ export {
   splitDefinitionPairs,
 } from './pair-definition-order.ts';
 
-export { relabelArchiveFootnotes, type RelabelledArchive, } from './corpus-run/pass-footnote-relabel.ts';
+export {
+  relabelArchiveFootnotes,
+  type RelabelledArchive,
+} from './corpus-run/pass-footnote-relabel.ts';
 
 //endregion Footnote barrel

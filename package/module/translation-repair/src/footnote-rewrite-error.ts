@@ -11,7 +11,9 @@
  */
 export type FootnoteRewriteFailure = 'syntax' | 'position' | 'label' | 'mapping' | 'collision' | 'graph';
 
-/** Actionable diagnostics for each invariant boundary. */
+/**
+ * Actionable diagnostics for each invariant boundary.
+ */
 const MESSAGES: Readonly<Record<FootnoteRewriteFailure, string>> = {
   syntax: 'footnote rewrite: document syntax could not be verified; retain the archive or repair its syntax before retrying',
   position: 'footnote rewrite: parsed marker positions do not match raw syntax; retain the archive and investigate the parser boundary',
@@ -30,25 +32,42 @@ const MESSAGES: Readonly<Record<FootnoteRewriteFailure, string>> = {
  * ```
  */
 export class FootnoteRewriteError extends Error {
-  /** Stable diagnostic operation. */
+  /**
+   * Stable diagnostic operation.
+   */
   public override readonly name = 'FootnoteRewriteError';
-  /** Diagnostic text is restricted to the closed operation messages. */
+  /**
+   * Diagnostic text is restricted to the closed operation messages.
+   */
   readonly messageNamesOnly: true = true;
-  /** Structured refusal for callers that retain unchanged archive bytes. */
+  /**
+   * Structured refusal for callers that retain unchanged archive bytes.
+   */
   readonly kind: FootnoteRewriteFailure;
 
   /**
    * Retains the failing operation without interpolating supplied text.
    *
    * @param kind - invariant that could not be established
+   *
    * @param cause - original parser failure when available
+   *
    * @example
    * ```ts
    * const error = new FootnoteRewriteError({ kind: 'syntax', cause });
    * ```
    */
-  public constructor({ kind, cause, }: { readonly kind: FootnoteRewriteFailure; readonly cause?: unknown; },) {
-    super(MESSAGES[kind], { cause, },);
+  public constructor({
+    kind,
+    cause,
+  }: {
+    readonly kind: FootnoteRewriteFailure;
+    readonly cause?: unknown
+  },) {
+    super(
+      MESSAGES[kind],
+      { cause, },
+    );
     this.kind = kind;
   }
 }

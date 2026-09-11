@@ -1,8 +1,12 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import type { DefinitionLabelPair, } from './pair-definition-order.ts';
-import { activeFootnoteMarkers, footnoteMarkerLabels, } from './active-footnote-markers.ts';
+import {
+  activeFootnoteMarkers,
+  footnoteMarkerLabels,
+} from './active-footnote-markers.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+
 export { applyFootnoteRelabel, } from './apply-footnote-relabel.ts';
 
 //region Archive footnote relabel
@@ -126,7 +130,8 @@ export type FootnoteRelabelReading = {
 export function referenceLabels(
   { text, }: { readonly text: string; },
 ): readonly string[] {
-  return footnoteMarkerLabels({ markers: activeFootnoteMarkers({ text, },).filter(function reference(marker,): boolean {
+  return footnoteMarkerLabels({ markers: activeFootnoteMarkers({ text, },)
+    .filter(function reference(marker,): boolean {
     return marker.kind === 'reference';
   },), },);
 }
@@ -225,9 +230,18 @@ function mapLabels(
         }]`,
       };
     if (forwardSeen === undefined)
-      distinct.push({ from: claim.from, to: claim.to, },);
-    forward.set(from, to,);
-    backward.set(to, from,);
+      distinct.push({
+        from: claim.from,
+        to: claim.to,
+      },);
+    forward.set(
+      from,
+      to,
+    );
+    backward.set(
+      to,
+      from,
+    );
   }
   /**
    * Only changes of logical identity need rewriting; positive identity evidence remains separate.

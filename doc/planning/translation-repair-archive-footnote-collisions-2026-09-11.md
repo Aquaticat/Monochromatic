@@ -59,8 +59,8 @@ or the existing forced elimination.
 If source correspondence is incomplete,
 keep the map open.
 Identity correspondences must not be guessed from equal label spelling:
-`mapLabels` currently filters identity moves out,
-so complete correspondence evidence needs to remain distinguishable from the rewrite map.
+the old `mapLabels` filtered identity moves out.
+Complete correspondence evidence now remains distinguishable from the rewrite map.
 
 Independent review supports this ownership split:
 closure owns the validated composed map and typed provenance;
@@ -138,8 +138,46 @@ forced non-identity elimination and retained-label displacement separate,
 and refuses displacement while any original remains unaccounted for.
 The first eight retention regressions failed on the old implementation and pass on the new core.
 Existing no-op closures do not invent identity correspondence.
-Syntax-safe application and protected-byte integration are not implemented yet,
-so this is not a release-ready relabel path.
+Through `b3b6ee29c`,
+the readers retain complete correspondence evidence,
+and active marker inventories use strict MDX grammar with offset-preserving comment and invisible-line masks.
+The rewrite validates destination grammar and whole-namespace injectivity,
+copies non-marker bytes unchanged,
+and checks the reparsed marker-role and identifier sequence.
+The original-English guard anchors both sealed text and its declaring comment by position.
+A rename or reorder touching either withholds the entire operation.
+After an allowed rename,
+protected offsets are derived again from the changed text.
+
+Definition movement now preserves each distinct separator once,
+compares normalized label ranks,
+withholds changes across non-blank gaps or shared container delimiters,
+and checks actual reparsed definition-block text against every copied block.
+The public pass helper records supplied correspondence,
+forced elimination and archive-only retention separately,
+and records structured refusal instead of reporting withheld operations as applied.
+
+The additional movement regressions exposed the old first-gap duplication,
+comment relocation,
+case-sensitive ordering and split-container behavior.
+The malformed-JSX control also showed that `parseSliceBody`'s lone-tag mask was unsuitable for whole-document edits.
+The marker inventory now requires document grammar;
+the attempted `parseSliceBody.parsedText` API extension was removed.
+Strictly parsed structural-fragment compatibility remains part of the full-suite and consumer review.
+
+Build and type checks pass through `b3b6ee29c`.
+Scoped retention,
+correspondence,
+syntax,
+protection,
+definition-order and existing relabel tests pass.
+Logs are `footnote-{correspondence,syntax,protection}-{build,types,green}-20260911.out`
+in `~/temp/agent`.
+The broader package suite,
+zero-warning lint,
+actual pinned consumer composition and removal proof remain incomplete.
+An implementation-review Advisor call timed out without feedback.
+This is not a release-ready or calibration-approved checkpoint.
 
 The source trace currently covers:
 
@@ -150,12 +188,18 @@ The source trace currently covers:
 - `package/module/translation-repair/src/footnote-graph.ts`.
 - `package/module/translation-repair/src/footnote-identifier.ts`.
 
-The next step is retaining complete correspondence evidence in the readers,
-including explicit identity relations,
-then syntax-aware application and protected-byte integration.
-The new reader regression is running as `translation-repair-footnote-correspondence-red` (`proc_d8c5`).
+The next step is the actual pinned `Y1Ran` consumer control,
+then additional boundary coverage,
+full verification and guard-removal proof.
+The first formatter run (`proc_d6ff`) completed with `no-nullish-union`
+on the lexical no-marker return and `max-statements-per-line` on a lookup callback.
+The scanner now uses a domain-specific `NO_GFM_MARKER` sentinel,
+and the callback is split onto statement lines.
+The package diff contains only task-owned footnote paths;
+unrelated `mise.lock` drift remains untouched.
+A fresh lint check is still required.
 Only mocked or provider-free work has run.
-The current checked translation runtime is `.frozen-dist-895843508`,
+The latest fully checked translation runtime remains `.frozen-dist-895843508`,
 digest `sha256-tree-v1:56d8d472b1a526faef861068d41e224c3640457b18ef0802a58b50992d18273c`.
 
 [original]: ../decision/translation-repair-archive-original.md

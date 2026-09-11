@@ -2,7 +2,7 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { applyFootnoteRelabel, documentLabels, parseDocument, referenceLabels, } from '../dist/final/node/index.mjs';
 
 const syntaxLines = [
-  '---', 'name: "Literal [^1]"', '---', '', 'Real[^1].', '', '`[^1]`', '', '\\[^1]', '',
+  '---', 'name: "Literal [^1]"', '---', '', 'Real[^1].', '', '`[^1]`', '', String.raw`\[^1]`, '',
   '```md', '[^1]', '```', '', '<!-- [^1] -->', '', '[ordinary](https://example.test/x[^1])', '',
   '<span title="[^1]">Literal text</span>', '', '[^1]: Actual note.',
 ];
@@ -21,7 +21,7 @@ await describe({
     it({
       name: 'does not reserve inactive strings as footnote namespace members',
       fn: async () => {
-        const text = ['---', 'name: "[^meta]"', '---', '', 'Real[^1].', '', '`[^inline]`', '', '\\[^escaped]', '',
+        const text = ['---', 'name: "[^meta]"', '---', '', 'Real[^1].', '', '`[^inline]`', '', String.raw`\[^escaped]`, '',
           '```md', '[^fence]', '```', '', '<!-- [^comment] -->', '', '[ordinary](https://example.test/x[^url])', '',
           '<span title="[^attribute]">Literal text</span>', '', '[^1]: Actual note.'].join('\n');
         expect(documentLabels({ text })).toEqual(['1']);
@@ -40,7 +40,7 @@ await describe({
       name: 'uses exact raw label spans for escaped closing brackets',
       fn: async () => {
         const text = 'Real[^a\\]b].\n\n[^a\\]b]: Actual note.';
-        expect(documentLabels({ text })).toEqual(['a\\]b']);
+        expect(documentLabels({ text })).toEqual([String.raw`a\]b`]);
         expect(applyFootnoteRelabel({ text, map: [{ from: 'a\\]b', to: 'x\\]y' }] })).toBe('Real[^x\\]y].\n\n[^x\\]y]: Actual note.');
       },
     }),
@@ -56,7 +56,7 @@ await describe({
     it({
       name: 'keeps unresolved unescaped references visible while ignoring escaped lookalikes',
       fn: async () => {
-        const text = 'Missing[^9], literal \\[^8].';
+        const text = String.raw`Missing[^9], literal \[^8].`;
         expect(documentLabels({ text })).toEqual(['9']);
         expect(parseDocument({ text }).footnoteGraph.references.map(reference => reference.identifier)).toEqual(['9']);
       },

@@ -17,9 +17,13 @@ import { parseDocument, } from './parse-document.ts';
  * ```
  */
 export type FootnoteProtectedRange = {
-  /** First protected text offset in the current coordinate space. */
+  /**
+   * First protected text offset in the current coordinate space.
+   */
   readonly startOffset: number;
-  /** Exclusive protected end. */
+  /**
+   * Exclusive protected end.
+   */
   readonly endOffset: number;
 };
 
@@ -28,31 +32,48 @@ export type FootnoteProtectedRange = {
  * Whole-page originals protect the entire input, including apparatus.
  *
  * @param text - current archive bytes, reparsed after any allowed external rename
+ *
  * @returns Protected intervals in the same coordinate space as the input
+ *
  * @throws FootnoteRewriteError when a declared span cannot be tied to its comment occurrence
+ *
  * @example
  * ```ts
  * const protectedRanges = footnoteProtectedRanges({ text });
  * ```
  */
 export function footnoteProtectedRanges({ text, }: { readonly text: string; },): readonly FootnoteProtectedRange[] {
-  /** Parser findings retain exact masked-comment positions. */
+  /**
+   * Parser findings retain exact masked-comment positions.
+   */
   const document = parseDocument({ text, },);
-  /** Existing archive-original policy, not a new language classifier. */
+  /**
+   * Existing archive-original policy, not a new language classifier.
+   */
   const reading = archiveOriginalReadingOf({ document, },);
   if (reading.kind === 'none')
     return [];
   if (reading.kind === 'whole-page')
-    return [{ startOffset: 0, endOffset: text.length, },];
-  return reading.spans.map(function anchored(span,): FootnoteProtectedRange {
-    /** Position, not repeated wording, selects the owning declaration. */
-    const comment = document.parseFindings.find(function owns(finding,): boolean {
-      return (finding.kind === 'html-comment-skipped' || finding.kind === 'unterminated-html-comment')
-        && finding.endOffset === span.startOffset;
+    return [{
+      startOffset: 0,
+      endOffset: text.length,
+    },];
+  return reading.spans
+    .map(function anchored(span,): FootnoteProtectedRange {
+    /**
+     * Position, not repeated wording, selects the owning declaration.
+     */
+    const comment = document.parseFindings
+      .find(function owns(finding,): boolean {
+      return ((finding.kind === 'html-comment-skipped') || (finding.kind === 'unterminated-html-comment'))
+        && (finding.endOffset === span.startOffset);
     },);
     if (comment === undefined)
       throw new FootnoteRewriteError({ kind: 'position', },);
-    return { startOffset: comment.startOffset, endOffset: span.endOffset, };
+    return {
+      startOffset: comment.startOffset,
+      endOffset: span.endOffset,
+    };
   },);
 }
 
@@ -60,23 +81,31 @@ export function footnoteProtectedRanges({ text, }: { readonly text: string; },):
  * Tests whether a candidate edit region intersects protected archive bytes.
  *
  * @param startOffset - first potentially changed position
+ *
  * @param endOffset - exclusive edit-region end
+ *
  * @param protectedRanges - current-coordinate original-English intervals
+ *
  * @returns Whether this operation must be withheld
+ *
  * @example
  * ```ts
  * const blocked = overlapsFootnoteProtection({ startOffset, endOffset, protectedRanges });
  * ```
  */
 export function overlapsFootnoteProtection(
-  { startOffset, endOffset, protectedRanges, }: {
+  {
+    startOffset,
+    endOffset,
+    protectedRanges,
+  }: {
     readonly startOffset: number;
     readonly endOffset: number;
     readonly protectedRanges: readonly FootnoteProtectedRange[];
   },
 ): boolean {
   return protectedRanges.some(function intersects(range,): boolean {
-    return startOffset < range.endOffset && endOffset > range.startOffset;
+    return (startOffset < range.endOffset) && (endOffset > range.startOffset);
   },);
 }
 
@@ -84,29 +113,44 @@ export function overlapsFootnoteProtection(
  * Checks actual marker changes, not every supplied correspondence, against original-English authority.
  *
  * @param text - archive before any rename
+ *
  * @param map - closed simultaneous operational map
+ *
  * @param protectedRanges - original-coordinate protected intervals
+ *
  * @returns Whether even one rename would change protected bytes
+ *
  * @example
  * ```ts
  * const blocked = footnoteRenameTouchesOriginal({ text, map, protectedRanges });
  * ```
  */
 export function footnoteRenameTouchesOriginal(
-  { text, map, protectedRanges, }: {
+  {
+    text,
+    map,
+    protectedRanges,
+  }: {
     readonly text: string;
     readonly map: readonly FootnoteLabelRewrite[];
     readonly protectedRanges: readonly FootnoteProtectedRange[];
   },
 ): boolean {
-  if (protectedRanges.length === 0 || map.length === 0)
+  if ((protectedRanges.length === 0) || (map.length === 0))
     return false;
-  /** Logical identities whose raw markers will actually move. */
+  /**
+   * Logical identities whose raw markers will actually move.
+   */
   const changed = new Set(map.filter(function changes(move,): boolean {
     return normalizeFootnoteIdentifier({ identifier: move.from, },) !== normalizeFootnoteIdentifier({ identifier: move.to, },);
-  },).map(function key(move,): string { return normalizeFootnoteIdentifier({ identifier: move.from, },); },),);
-  return activeFootnoteMarkers({ text, },).some(function touches(marker,): boolean {
-    return changed.has(marker.identifier,) && overlapsFootnoteProtection({ ...marker, protectedRanges, },);
+  },)
+    .map(function key(move,): string { return normalizeFootnoteIdentifier({ identifier: move.from, },); },),);
+  return activeFootnoteMarkers({ text, },)
+    .some(function touches(marker,): boolean {
+    return changed.has(marker.identifier,) && overlapsFootnoteProtection({
+      ...marker,
+      protectedRanges,
+    },);
   },);
 }
 

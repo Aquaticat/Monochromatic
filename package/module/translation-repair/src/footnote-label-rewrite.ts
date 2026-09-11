@@ -10,9 +10,13 @@
  * ```
  */
 export type FootnoteLabelRewrite = {
-  /** Label before simultaneous rewriting. */
+  /**
+   * Label before simultaneous rewriting.
+   */
   readonly from: string;
-  /** Label after rewriting, not necessarily present in the original document. */
+  /**
+   * Label after rewriting, not necessarily present in the original document.
+   */
   readonly to: string;
 };
 
@@ -26,9 +30,13 @@ export type FootnoteLabelRewrite = {
  * ```
  */
 export type RetainedArchiveFootnoteLabel = {
-  /** Archive label displaced because a supported correspondence needs its identifier. */
+  /**
+   * Archive label displaced because a supported correspondence needs its identifier.
+   */
   readonly from: string;
-  /** Fresh identifier outside both input namespaces. */
+  /**
+   * Fresh identifier outside both input namespaces.
+   */
   readonly retainedAs: string;
 };
 
