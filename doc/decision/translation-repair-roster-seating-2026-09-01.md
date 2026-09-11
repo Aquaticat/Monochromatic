@@ -573,3 +573,97 @@ the critic and panel seats,
 the consolidation seat and its place as the price anchor:
 nothing here measures judging,
 and the fidelity probe of the same evening read it at 11 of 14.
+
+## Addendum 2026-09-11: DeepSeek V4.1 Flash joins judging, not writing or image reading
+
+Taken under the owner's delegated calibration-then-seat rule.
+Serving approval alone did not release a role hold,
+and no V4 Flash 0731 rating or exclusion was inherited.
+
+The verified instrument used frozen `993583ad5`,
+source-reviewed references for `gqt`,
+`MTF_0615` and locally corrected `Y1Ran`,
+and the same fourteen distinct message-plus-schema questions for the candidate and all nine peers.
+Twenty-eight logical position/direction arrangements were deduplicated before scoring.
+The source/reference and every deliberate damage were independently read before calls;
+all 140 actual ballot reasons were read afterward.
+No corpus file changed.
+
+The paid run completed from 14:13:40.708 to 14:19:10.310 UTC:
+140 stage calls,
+140 model POSTs,
+155 total transport operations including budget GETs,
+and 140 schema-valid responses.
+Every question heard all nine peers against the pre-registered quorum of five.
+No missing ballot,
+transport retry,
+schema warning or abandoned-call record occurred.
+
+Results on the fixed question set:
+
+- V4.1 Flash selected the reviewed reference fourteen times,
+  with no damaged pick or decline.
+- Peer median clean count was fourteen.
+- Maximum peer damaged count was one.
+- Qwen,
+  Kimi,
+  MiniMax,
+  V4 Pro 0813,
+  V4 Flash 0731 and Mercury each selected fourteen references.
+- GPT-OSS and Gemma 26B each selected thirteen references and declined once.
+- Gemma E2B selected thirteen references and one damaged candidate.
+
+V4.1 therefore meets both pre-registered clauses:
+its clean count equals the peer median,
+and its damaged count is below the peer maximum.
+It identified the actual omitted content,
+unsupported additions and changed year in both ballot positions.
+Ancillary rationale errors,
+such as calling one inserted sentence two sentences,
+were not promoted into factual evidence or a claim of perfect reasoning.
+An independent review confirmed judge admission under the existing rule.
+
+`83e632127` removes only `deepseek-v4.1-flash` from `UNMEASURED_UNTIL_SEATED`.
+It joins the general text/preparation roster,
+wide judge/critic/panel bench and late judging bench once under one identity.
+Hyper and OpenRouter remain routes for that identity,
+not separate votes.
+`WRITER_UNMEASURED` and `READER_UNMEASURED` remain unchanged.
+The 40-round writer calibration and image-reading verification are separate tasks.
+
+The post-change compiled boundary check compares every exported role array,
+nested repair configuration and all sixteen provider-budget states with frozen `993583ad5`.
+Existing seat order,
+writer/reader arrays,
+provider order,
+completion caps and quorum formulas are unchanged.
+The declared roster retains an unreachable identity under existing policy;
+the router has no route when both Hyper and OpenRouter are dry.
+The check is `~/temp/agent/v41-judge-seat-boundary-20260911.json`.
+Package-wide verification after the seating edit remains pending at this checkpoint.
+
+All fourteen V4.1 calls were served by Hyper and returned the V4.1 identifier.
+The dated predecessor returned its distinct 0731 identifier;
+this is response-identity evidence,
+not proof of an undisclosed backend implementation.
+
+Costs remain separate by evidence and unit:
+OpenRouter reported USD 0.00050599 across fourteen calls,
+thirteen of which explicitly reported zero.
+Bedrock's twenty-eight calls logged USD 0.00770297 from its pricing calculation.
+Hyper's fifty-six calls estimate 2.674203982384 credits at the dated 2026-09-11 rates,
+including 122213 explicitly reported cache-read tokens;
+that is not a wire-reported debit,
+and absent cache fields remain unreported.
+Synthetic's forty-two calls remain subscription usage without an assigned per-call dollar price.
+The spend and daily helpers were run after completion.
+
+Evidence:
+`~/temp/agent/v41-reviewed-run-20260911-vbOoMQ`,
+`v41-reviewed-judge-results-20260911.json`,
+`v41-reviewed-judge-ballots-20260911.out`,
+`v41-reviewed-hyper-usage-20260911.json`
+and the registered plan in
+`~/temp/agent/v41-reviewed-plan-20260911-9eo8in/plan.json`.
+The plan,
+fixture and driver verification records remain under `doc/planning/`.
