@@ -1,3 +1,4 @@
+import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
 import {
   type Logger,
   tagged,
@@ -115,7 +116,10 @@ export async function readQualifiedArchiveNamingRevisions({
   /**
    * Pin fields are also owned across async boundaries.
    */
-  const fixedPin = { ...pin, };
+  const fixedPin: CorpusPin = {
+    ...pin,
+    gitPath: pin.gitPath ?? await resolveGit(),
+  };
   /**
    * Canonical pinned read, preserving shared CRLF semantics.
    */

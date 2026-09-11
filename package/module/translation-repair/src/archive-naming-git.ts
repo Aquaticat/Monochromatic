@@ -3,6 +3,10 @@ import { promisify, } from 'node:util';
 import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { ArchiveNamingEvidenceError, } from './archive-naming-error.ts';
+import {
+  CORPUS_GIT_FLAGS,
+  corpusGitEnvironment,
+} from './corpus-git-context.ts';
 import type { CorpusPin, } from './corpus-source.ts';
 import { foldCarriageReturns, } from './line-endings.ts';
 
@@ -83,8 +87,7 @@ export async function archiveGitOutput({
     const result = await execFileAsync(
       gitPath,
       [
-        '--no-replace-objects',
-        '--literal-pathspecs',
+        ...CORPUS_GIT_FLAGS,
         '-C',
         pin.cloneDir,
         '-c',
@@ -96,6 +99,7 @@ export async function archiveGitOutput({
       {
       encoding: 'utf8',
       maxBuffer: MAX_METADATA_BYTES,
+      env: corpusGitEnvironment(),
       ...(signal === undefined ? {} : { signal, }),
     },
     );
@@ -105,6 +109,7 @@ export async function archiveGitOutput({
   }
   catch (cause) {
     rl.warn('history command did not complete; retaining its cause',);
+    signal?.throwIfAborted();
     throw new ArchiveNamingEvidenceError({
       kind: 'history-read',
       relPath,

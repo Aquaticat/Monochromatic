@@ -4,6 +4,10 @@ import { promisify, } from 'node:util';
 import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
 import spawn, { SubprocessError, } from 'nano-spawn';
 
+import {
+  CORPUS_GIT_FLAGS,
+  corpusGitEnvironment,
+} from './corpus-git-context.ts';
 import { foldCarriageReturns, } from './line-endings.ts';
 
 //region Corpus source
@@ -293,10 +297,12 @@ async function gitOutput(
     const { stdout, } = await spawn(
       gitPath,
       [
+        ...CORPUS_GIT_FLAGS,
         '-C',
         pin.cloneDir,
         ...args,
       ],
+      { env: corpusGitEnvironment(), },
     );
     return stdout;
   }
@@ -354,11 +360,12 @@ export async function readCorpusFile(
 
   try {
     /**
-     * Blob bytes captured without any newline normalization.
+     * Physical blob bytes captured without any newline normalization or lazy fetch.
      */
     const { stdout, } = await execFileAsync(
       gitPath,
       [
+        ...CORPUS_GIT_FLAGS,
         '-C',
         pin.cloneDir,
         'show',
@@ -367,6 +374,7 @@ export async function readCorpusFile(
       {
         encoding: 'buffer',
         maxBuffer: MAX_BLOB_BYTES,
+        env: corpusGitEnvironment(),
       },
     );
     /**
@@ -426,11 +434,12 @@ export async function readCorpusBytes(
 
   try {
     /**
-     * Blob bytes exactly as committed.
+     * Physical blob bytes exactly as committed, without replacement refs or lazy fetch.
      */
     const { stdout, } = await execFileAsync(
       gitPath,
       [
+        ...CORPUS_GIT_FLAGS,
         '-C',
         pin.cloneDir,
         'show',
@@ -439,6 +448,7 @@ export async function readCorpusBytes(
       {
         encoding: 'buffer',
         maxBuffer: MAX_BLOB_BYTES,
+        env: corpusGitEnvironment(),
       },
     );
     return stdout;

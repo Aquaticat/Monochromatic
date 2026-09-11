@@ -1,5 +1,5 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { isArchiveGitObjectId, } from './archive-blame.ts';
+import { archiveCommitParents, } from './archive-commit-parents.ts';
 import {
   type ArchiveDiffHunk,
   archiveDiffHunks,
@@ -94,29 +94,22 @@ export async function readArchiveNamingHistories({
   },),);
   for (const commit of commits) {
     /**
-     * Native Git's actual parent list, not a commit-message assertion.
+     * Intrinsic commit object, not an effective grafted parent rendering.
      */
     const parentText = await archiveGitOutput({
       pin,
       relPath,
       args: [
-        'show',
-        '--no-patch',
-        '--format=%P',
+        'cat-file',
+        'commit',
         commit
       ],
       ...(signal === undefined ? {} : { signal, }),
     },);
     /**
-     * Empty parent output denotes a root; more than one parent denotes a merge.
+     * Only intrinsic consecutive parent headers establish root or merge cardinality.
      */
-    const parents = parentText.trim() === '' ? [] : parentText.trim()
-      .split(' ',);
-    if (!parents.every(isArchiveGitObjectId,))
-      throw new ArchiveNamingEvidenceError({
-        kind: 'history-shape',
-        relPath,
-      },);
+    const parents = archiveCommitParents({ object: parentText, relPath, },);
     if (parents.length !== 1) {
       findings.push(`archive-revision-withheld (${commit}: root or merge origin)`,);
       rl.debug(`withheld origin with ${String(parents.length,)} parents`,);
