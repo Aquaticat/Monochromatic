@@ -12,6 +12,11 @@ import {
 // These strings are authored test data, never copied corpus passages.
 
 /**
+ * Width of the invented SHA-1 pin used by non-I/O fixture checks.
+ */
+const FIXTURE_COMMIT_WIDTH = 40;
+
+/**
  * Invented source carrying the deliberately shared year.
  */
 export const REVIEW_SOURCE: string = '2023年，灰白相间的小猫搬到旧书店楼上的安静公寓。她每天早上浇灌窗边的花，'
@@ -68,13 +73,23 @@ export function reviewedFixture(): {
   /**
    * Archive retains deliberate factual defects and one invisible character for the transform path.
    */
-  const original = REVIEW_REFERENCE.replace('grey-and-white', 'blue',)
-    .replace('2023', '2022',)
-    .replace('well-lit', 'well\u2011lit',);
+  const original = REVIEW_REFERENCE.replace(
+    'grey-and-white',
+    'blue',
+  )
+    .replace(
+      '2023',
+      '2022',
+    )
+    .replace(
+      'well-lit',
+      'well\u2011lit',
+    );
   /**
    * Local edit coordinates refer to this original folded slice.
    */
-  const folded = foldInvisibleVariants({ text: original, },).text;
+  const folded = foldInvisibleVariants({ text: original, },)
+    .text;
   /**
    * Source begins after a prefix so offset-zero assumptions cannot pass.
    */
@@ -108,8 +123,14 @@ export function reviewedFixture(): {
    */
   const damages = [
     fixtureDamage(deleteOneSentence({ cleanText: REVIEW_REFERENCE, },),),
-    fixtureDamage(insertBorrowedSentence({ cleanText: REVIEW_REFERENCE, donorTexts: [REVIEW_DONOR], },),),
-    fixtureDamage(alterSharedNumber({ cleanText: REVIEW_REFERENCE, sourceText: REVIEW_SOURCE, },),),
+    fixtureDamage(insertBorrowedSentence({
+      cleanText: REVIEW_REFERENCE,
+      donorTexts: [REVIEW_DONOR],
+    },),),
+    fixtureDamage(alterSharedNumber({
+      cleanText: REVIEW_REFERENCE,
+      sourceText: REVIEW_SOURCE,
+    },),),
   ];
   return {
     sourceFile,
@@ -117,26 +138,48 @@ export function reviewedFixture(): {
     spec: {
       id: 'invented-reference',
       entryId: 'starlit-cat',
-      corpusSha: 'a'.repeat(40,),
-      source: { startOffset: sourcePrefix.length, endOffset: sourcePrefix.length + REVIEW_SOURCE.length,
-        hash: hashContent({ content: REVIEW_SOURCE, },), },
-      archive: { startOffset: archivePrefix.length, endOffset: archivePrefix.length + original.length,
-        hash: hashContent({ content: original, },), },
+      corpusSha: 'a'.repeat(FIXTURE_COMMIT_WIDTH,),
+      source: {
+        startOffset: sourcePrefix.length,
+        endOffset: sourcePrefix.length + REVIEW_SOURCE.length,
+        hash: hashContent({ content: REVIEW_SOURCE, },),
+      },
+      archive: {
+        startOffset: archivePrefix.length,
+        endOffset: archivePrefix.length + original.length,
+        hash: hashContent({ content: original, },),
+      },
       referenceHash: hashContent({ content: REVIEW_REFERENCE, },),
       referenceChars: REVIEW_REFERENCE.length,
       edits: [
-        { startOffset: colorAt, endOffset: colorAt + 'blue'.length,
-          expectedHash: hashContent({ content: 'blue', },), replacement: 'grey-and-white',
-          author: 'fixture-author', rationale: 'Restore source color.', },
-        { startOffset: yearAt, endOffset: yearAt + '2022'.length,
-          expectedHash: hashContent({ content: '2022', },), replacement: '2023',
-          author: 'fixture-author', rationale: 'Restore source year.', },
+        {
+          startOffset: colorAt,
+          endOffset: colorAt + 'blue'.length,
+          expectedHash: hashContent({ content: 'blue', },),
+          replacement: 'grey-and-white',
+          author: 'fixture-author',
+          rationale: 'Restore source color.',
+        },
+        {
+          startOffset: yearAt,
+          endOffset: yearAt + '2022'.length,
+          expectedHash: hashContent({ content: '2022', },),
+          replacement: '2023',
+          author: 'fixture-author',
+          rationale: 'Restore source year.',
+        },
       ],
-      donor: { startOffset: donorAt, endOffset: donorAt + REVIEW_DONOR.length,
-        hash: hashContent({ content: REVIEW_DONOR, },), },
+      donor: {
+        startOffset: donorAt,
+        endOffset: donorAt + REVIEW_DONOR.length,
+        hash: hashContent({ content: REVIEW_DONOR, },),
+      },
       damages: damages.map(function expected(damage,) {
-        return { kind: damage.damageKind, hash: hashContent({ content: damage.damagedText, },),
-          changedChars: damage.changedChars, };
+        return {
+          kind: damage.damageKind,
+          hash: hashContent({ content: damage.damagedText, },),
+          changedChars: damage.changedChars,
+        };
       },),
       reviewedOn: '2026-09-11',
     },

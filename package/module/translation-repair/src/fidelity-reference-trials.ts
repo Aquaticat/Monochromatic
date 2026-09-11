@@ -25,10 +25,22 @@ const ARRANGEMENTS: readonly {
    */
   readonly cleanFirst: boolean;
 }[] = [
-  { direction: 'preserve', cleanFirst: true, },
-  { direction: 'preserve', cleanFirst: false, },
-  { direction: 'replace', cleanFirst: true, },
-  { direction: 'replace', cleanFirst: false, },
+  {
+    direction: 'preserve',
+    cleanFirst: true,
+  },
+  {
+    direction: 'preserve',
+    cleanFirst: false,
+  },
+  {
+    direction: 'replace',
+    cleanFirst: true,
+  },
+  {
+    direction: 'replace',
+    cleanFirst: false,
+  },
 ];
 
 /**
@@ -74,26 +86,35 @@ export type ReviewedFidelityTrial = {
  * const trials = reviewedFidelityTrials({ references, damageKinds: ['deletion', 'insertion'] });
  * ```
  */
-export function reviewedFidelityTrials({ references, damageKinds, }: {
+export function reviewedFidelityTrials({
+  references,
+  damageKinds,
+}: {
   readonly references: readonly ReviewedFidelityReference[];
   readonly damageKinds: readonly FidelityDamageKind[];
 },): readonly ReviewedFidelityTrial[] {
-  if (damageKinds.length === 0 || new Set(damageKinds,).size !== damageKinds.length)
-    throw new FidelityReferenceError({ referenceId: 'damage selection', operation: 'request', },);
+  if ((damageKinds.length === 0) || (new Set(damageKinds,).size !== damageKinds.length))
+    throw new FidelityReferenceError({
+      referenceId: 'damage selection',
+      operation: 'request',
+    },);
   /**
    * Every row exists before a model is asked.
    */
   const rows = references.flatMap(function referenceRows(reference,): readonly ReviewedFidelityTrial[] {
-    return reference.damages.filter(function requested(damage,): boolean {
+    return reference.damages
+      .filter(function requested(damage,): boolean {
       return damageKinds.includes(damage.damageKind,);
-    },).flatMap(function arrangements(damage,): readonly ReviewedFidelityTrial[] {
+    },)
+      .flatMap(function arrangements(damage,): readonly ReviewedFidelityTrial[] {
       return ARRANGEMENTS.map(function arranged(arrangement,): ReviewedFidelityTrial {
         return {
           spec: reference.spec,
           changedChars: damage.changedChars,
           damageDetail: damage.damageDetail,
           trial: {
-            trialId: `${reference.spec.id}/${damage.damageKind}`,
+            trialId: `${reference.spec
+              .id}/${damage.damageKind}`,
             direction: arrangement.direction,
             damageKind: damage.damageKind,
             sourceText: reference.sourceText,
@@ -107,7 +128,10 @@ export function reviewedFidelityTrials({ references, damageKinds, }: {
     },);
   },);
   if (rows.length === 0)
-    throw new FidelityReferenceError({ referenceId: 'damage selection', operation: 'request', },);
+    throw new FidelityReferenceError({
+      referenceId: 'damage selection',
+      operation: 'request',
+    },);
   return rows;
 }
 

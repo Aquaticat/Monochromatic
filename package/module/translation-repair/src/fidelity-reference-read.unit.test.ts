@@ -44,7 +44,7 @@ await describe({
         expect((caught as Error).message).toContain('pin verification');
       },
     }),
-    ...['../elsewhere', 'nested/entry', 'nested\\entry', '', '.', '..', 'null\0entry'].map(entryId => it({
+    ...['../elsewhere', 'nested/entry', String.raw`nested\entry`, '', '.', '..', 'null\0entry'].map(entryId => it({
       name: `rejects nonliteral entry identifier ${JSON.stringify(entryId)} before file access`,
       fn: async () => {
         const fixture = reviewedFixture();

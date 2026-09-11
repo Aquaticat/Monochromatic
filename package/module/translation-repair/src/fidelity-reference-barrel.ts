@@ -18,6 +18,7 @@ export type {
   ReviewedFidelityReference,
 } from './fidelity-reference-model.ts';
 export { readReviewedFidelityReferences, } from './fidelity-reference-read.ts';
+export { reviewedFidelityRequest, } from './fidelity-reference-request.ts';
 export { selectReviewedFidelitySpecs, } from './fidelity-reference-select.ts';
 export {
   type ReviewedFidelityTrial,

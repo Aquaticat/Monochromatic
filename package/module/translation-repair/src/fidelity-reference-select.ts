@@ -20,7 +20,10 @@ import type { FidelityReferenceSpec, } from './fidelity-reference-model.ts';
  * const selected = selectReviewedFidelitySpecs({ specs, onlyEntryIds });
  * ```
  */
-export function selectReviewedFidelitySpecs({ specs, onlyEntryIds, }: {
+export function selectReviewedFidelitySpecs({
+  specs,
+  onlyEntryIds,
+}: {
   readonly specs: readonly FidelityReferenceSpec[];
   readonly onlyEntryIds: readonly string[];
 },): readonly FidelityReferenceSpec[] {
@@ -34,8 +37,11 @@ export function selectReviewedFidelitySpecs({ specs, onlyEntryIds, }: {
   const identities = new Set(checked.map(function identity(spec,): string {
     return spec.id;
   },),);
-  if (checked.length === 0 || identities.size !== checked.length)
-    throw new FidelityReferenceError({ referenceId: 'manifest', operation: 'request', },);
+  if ((checked.length === 0) || (identities.size !== checked.length))
+    throw new FidelityReferenceError({
+      referenceId: 'manifest',
+      operation: 'request',
+    },);
   /**
    * Entry filters are restricted to the reviewed population.
    */
@@ -44,10 +50,13 @@ export function selectReviewedFidelitySpecs({ specs, onlyEntryIds, }: {
   },),);
   for (const entryId of onlyEntryIds) {
     if (!entries.has(entryId,))
-      throw new FidelityReferenceError({ referenceId: entryId, operation: 'request', },);
+      throw new FidelityReferenceError({
+        referenceId: entryId,
+        operation: 'request',
+      },);
   }
   return checked.filter(function selectedEntry(spec,): boolean {
-    return onlyEntryIds.length === 0 || onlyEntryIds.includes(spec.entryId,);
+    return (onlyEntryIds.length === 0) || onlyEntryIds.includes(spec.entryId,);
   },);
 }
 

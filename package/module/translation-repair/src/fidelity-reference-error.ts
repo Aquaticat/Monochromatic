@@ -45,7 +45,10 @@ export class FidelityReferenceError extends Error {
    * new FidelityReferenceError({ referenceId: 'portrait-reference', operation: 'source' });
    * ```
    */
-  public constructor({ referenceId, operation, }: {
+  public constructor({
+    referenceId,
+    operation,
+  }: {
     readonly referenceId: string;
     readonly operation: FidelityReferenceOperation;
   },) {

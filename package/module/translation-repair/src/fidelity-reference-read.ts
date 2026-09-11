@@ -1,5 +1,7 @@
-import type { CorpusPin, } from './corpus-source.ts';
-import { readCorpusFile, } from './corpus-source.ts';
+import {
+  type CorpusPin,
+  readCorpusFile,
+} from './corpus-source.ts';
 import { buildReviewedFidelityReference, } from './fidelity-reference-build.ts';
 import { FidelityReferenceError, } from './fidelity-reference-error.ts';
 import { REVIEWED_FIDELITY_REFERENCES, } from './fidelity-reference-manifest.ts';
@@ -37,8 +39,12 @@ import { mapOverlapped, } from './overlapped-map.ts';
  * const references = await readReviewedFidelityReferences({ pin });
  * ```
  */
-export async function readReviewedFidelityReferences({ pin, specs = REVIEWED_FIDELITY_REFERENCES,
-  onlyEntryIds = [], signal, }: {
+export async function readReviewedFidelityReferences({
+  pin,
+  specs = REVIEWED_FIDELITY_REFERENCES,
+  onlyEntryIds = [],
+  signal,
+}: {
   readonly pin: CorpusPin;
   readonly specs?: readonly FidelityReferenceSpec[];
   readonly onlyEntryIds?: readonly string[];
@@ -48,7 +54,10 @@ export async function readReviewedFidelityReferences({ pin, specs = REVIEWED_FID
   /**
    * Own and validate metadata selection before any pinned-file reads.
    */
-  const selected = selectReviewedFidelitySpecs({ specs, onlyEntryIds, },);
+  const selected = selectReviewedFidelitySpecs({
+    specs,
+    onlyEntryIds,
+  },);
   /**
    * Pin fields cannot be redirected while the reads are in flight.
    */
@@ -59,24 +68,47 @@ export async function readReviewedFidelityReferences({ pin, specs = REVIEWED_FID
     oneItem: async function readReference({ item: spec, },): Promise<ReviewedFidelityReference> {
       signal?.throwIfAborted();
       if (fixedPin.commitSha !== spec.corpusSha)
-        throw new FidelityReferenceError({ referenceId: spec.id, operation: 'pin', },);
-      if (spec.entryId === '' || spec.entryId === '.' || spec.entryId === '..'
-        || spec.entryId.includes('/',) || spec.entryId.includes('\\',) || spec.entryId.includes('\0',)) {
-        throw new FidelityReferenceError({ referenceId: spec.id, operation: 'request', },);
+        throw new FidelityReferenceError({
+          referenceId: spec.id,
+          operation: 'pin',
+        },);
+      if ((spec.entryId === '')
+        || (spec.entryId === '.')
+        || (spec.entryId === '..')
+        || spec.entryId
+        .includes('/',)
+        || spec.entryId
+        .includes('\\',)
+        || spec.entryId
+        .includes('\0',)) {
+        throw new FidelityReferenceError({
+          referenceId: spec.id,
+          operation: 'request',
+        },);
       }
       /**
        * Both files use the same intrinsic, no-fetch corpus read boundary.
        */
       const [sourceRead, archiveRead,] = await Promise.allSettled([
-        readCorpusFile({ pin: fixedPin, relPath: `people/${spec.entryId}/page.md`, },),
-        readCorpusFile({ pin: fixedPin, relPath: `people/${spec.entryId}/page.en.md`, },),
+        readCorpusFile({
+          pin: fixedPin,
+          relPath: `people/${spec.entryId}/page.md`,
+        },),
+        readCorpusFile({
+          pin: fixedPin,
+          relPath: `people/${spec.entryId}/page.en.md`,
+        },),
       ],);
       signal?.throwIfAborted();
       if (sourceRead.status === 'rejected')
         throw sourceRead.reason;
       if (archiveRead.status === 'rejected')
         throw archiveRead.reason;
-      return buildReviewedFidelityReference({ sourceFile: sourceRead.value, archiveFile: archiveRead.value, spec, },);
+      return buildReviewedFidelityReference({
+        sourceFile: sourceRead.value,
+        archiveFile: archiveRead.value,
+        spec,
+      },);
     },
   },);
 }

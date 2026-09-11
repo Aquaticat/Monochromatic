@@ -11,7 +11,9 @@ const CLI = fileURLToPath(new URL('../dist/final/node/judge-fidelity-probe.mjs',
 /** Runs only zero-call preflight in an owned empty runs directory. */
 async function preflight(extra: readonly string[]) {
   const directory = await mkdtemp(join(tmpdir(), 'reviewed-fidelity-cli-'));
-  await using owned = { [Symbol.asyncDispose]: async () => { await rm(directory, { recursive: true, force: true }); } };
+  await using owned = { [Symbol.asyncDispose]: async () => {
+    await rm(directory, { recursive: true, force: true });
+  } };
   const options = { cwd: directory, env: {
     TRANSLATION_REPAIR_RUNS_DIR: directory,
     TRANSLATION_REPAIR_CORPUS_CLONE_DIR: directory,

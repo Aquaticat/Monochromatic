@@ -65,7 +65,7 @@ await describe({
         const spec = { ...fixture.spec, edits: fixture.spec.edits.map(edit => ({ ...edit })) };
         const result = buildReviewedFidelityReference({ ...fixture, spec });
         spec.id = 'changed-after-verification';
-        const first = spec.edits[0];
+        const [first,] = spec.edits;
         if (first) first.replacement = 'changed';
         expect(result.spec.id).toBe('invented-reference');
         expect(result.spec.edits[0]?.replacement).toBe('grey-and-white');
@@ -130,7 +130,7 @@ await describe({
         expect(rows).toHaveLength(12);
         expect(rows.slice(0, 4).map(row => [row.trial.direction, row.trial.cleanFirst]))
           .toEqual([['preserve', true], ['preserve', false], ['replace', true], ['replace', false]]);
-        expect(rows.every(row => row.trial.cleanText === REVIEW_REFERENCE && row.trial.contextText === '')).toBe(true);
+        expect(rows.every(row => (row.trial.cleanText === REVIEW_REFERENCE) && (row.trial.contextText === ''))).toBe(true);
         expect(reviewedFidelityTrials({ references: [reference], damageKinds: ['alteration'] })).toHaveLength(4);
         expect(() => reviewedFidelityTrials({ references: [{ ...reference,
           damages: reference.damages.filter(damage => damage.damageKind === 'deletion') }], damageKinds: ['alteration'] }))

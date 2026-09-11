@@ -31,22 +31,38 @@ import type {
  * const sourceText = reviewedText({ text: sourceFile, span: spec.source, referenceId: spec.id, operation: 'source' });
  * ```
  */
-export function reviewedText({ text, span, referenceId, operation, }: {
+export function reviewedText({
+  text,
+  span,
+  referenceId,
+  operation,
+}: {
   readonly text: string;
   readonly span: FidelityReferenceSpan;
   readonly referenceId: string;
   readonly operation: FidelityReferenceOperation;
 },): string {
-  if (!Number.isSafeInteger(span.startOffset,) || !Number.isSafeInteger(span.endOffset,)
-    || span.startOffset < 0 || span.endOffset <= span.startOffset || span.endOffset > text.length) {
-    throw new FidelityReferenceError({ referenceId, operation, },);
+  if ((!Number.isSafeInteger(span.startOffset,)) || (!Number.isSafeInteger(span.endOffset,))
+    || (span.startOffset < 0)
+    || (span.endOffset <= span.startOffset)
+    || (span.endOffset > text.length)) {
+    throw new FidelityReferenceError({
+      referenceId,
+      operation,
+    },);
   }
   /**
    * One literal substring, never normalized to make an incorrect hash pass.
    */
-  const selected = text.slice(span.startOffset, span.endOffset,);
+  const selected = text.slice(
+    span.startOffset,
+    span.endOffset,
+  );
   if (hashContent({ content: selected, },) !== span.hash)
-    throw new FidelityReferenceError({ referenceId, operation, },);
+    throw new FidelityReferenceError({
+      referenceId,
+      operation,
+    },);
   return selected;
 }
 
@@ -69,7 +85,11 @@ export function reviewedText({ text, span, referenceId, operation, }: {
  * const corrected = applyReviewedEdits({ reference, edits: spec.edits, referenceId: spec.id });
  * ```
  */
-export function applyReviewedEdits({ reference, edits, referenceId, }: {
+export function applyReviewedEdits({
+  reference,
+  edits,
+  referenceId,
+}: {
   readonly reference: string;
   readonly edits: readonly FidelityReferenceEdit[];
   readonly referenceId: string;
@@ -79,7 +99,10 @@ export function applyReviewedEdits({ reference, edits, referenceId, }: {
   /**
    * Original-coordinate order allows one reconstruction without offset rebasing.
    */
-  const ordered = edits.toSorted(function byStart(left, right,): number {
+  const ordered = edits.toSorted(function byStart(
+    left,
+    right,
+  ): number {
     return left.startOffset - right.startOffset;
   },);
   /**
@@ -91,12 +114,33 @@ export function applyReviewedEdits({ reference, edits, referenceId, }: {
    */
   const cursor = { at: 0, };
   for (const edit of ordered) {
-    if (edit.startOffset < cursor.at || edit.author.trim() === '' || edit.rationale.trim() === '')
-      throw new FidelityReferenceError({ referenceId, operation: 'edit', },);
-    reviewedText({ text: reference,
-      span: { startOffset: edit.startOffset, endOffset: edit.endOffset, hash: edit.expectedHash, },
-      referenceId, operation: 'edit', },);
-    pieces.push(reference.slice(cursor.at, edit.startOffset,), edit.replacement,);
+    if ((edit.startOffset < cursor.at) || (edit.author
+      .trim()
+      === '')
+      || (edit.rationale
+        .trim()
+        === ''))
+      throw new FidelityReferenceError({
+        referenceId,
+        operation: 'edit',
+      },);
+    reviewedText({
+      text: reference,
+      span: {
+        startOffset: edit.startOffset,
+        endOffset: edit.endOffset,
+        hash: edit.expectedHash,
+      },
+      referenceId,
+      operation: 'edit',
+    },);
+    pieces.push(
+      reference.slice(
+        cursor.at,
+        edit.startOffset,
+      ),
+      edit.replacement,
+    );
     cursor.at = edit.endOffset;
   }
   pieces.push(reference.slice(cursor.at,),);

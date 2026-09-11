@@ -102,7 +102,7 @@ export const REVIEWED_FIDELITY_REFERENCES: readonly FidelityReferenceSpec[] = [
     },
     archive: {
       startOffset: 613,
-      endOffset: 1020,
+      endOffset: 1_020,
       hash: 'ce461b9f640ae6ee7f154f15fc2772304fe4df415a06ad3f794e540c6a334425',
     },
     referenceHash: '18a13efe9a1b5437f24342173f5a451d2e44ade76ad145eb9c6839b00dec4515',

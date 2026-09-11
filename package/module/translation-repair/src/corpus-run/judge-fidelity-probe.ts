@@ -1,9 +1,8 @@
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { FidelityReferenceError, } from '../fidelity-reference-error.ts';
-import { REVIEWED_FIDELITY_REFERENCES, } from '../fidelity-reference-manifest.ts';
+import type { FidelityReferenceError, } from '../fidelity-reference-error.ts';
 import { readReviewedFidelityReferences, } from '../fidelity-reference-read.ts';
-import { selectReviewedFidelitySpecs, } from '../fidelity-reference-select.ts';
+import { reviewedFidelityRequest, } from '../fidelity-reference-request.ts';
 import { reviewedFidelityTrials, } from '../fidelity-reference-trials.ts';
 import { runFidelityTrial, } from '../judge-fidelity.ts';
 import { mapOverlapped, } from '../overlapped-map.ts';
@@ -47,22 +46,12 @@ async function main(): Promise<void> {
   /**
    * Existing flags retain their names; unreviewed context cannot become new gold evidence.
    */
-  const { onlyIds, cap, damageKinds, withContext, } = readFidelityArguments();
-  if (withContext)
-    throw new FidelityReferenceError({ referenceId: 'unreviewed context', operation: 'request', },);
-  if (cap < 0)
-    throw new FidelityReferenceError({ referenceId: 'negative trial cap', operation: 'request', },);
-  /**
-   * Metadata filtering precedes all corpus and provider access.
-   */
-  const specs = selectReviewedFidelitySpecs({ specs: REVIEWED_FIDELITY_REFERENCES, onlyEntryIds: onlyIds, },);
-  if (!specs.some(function supportsRequestedDamage(spec,): boolean {
-    return spec.damages.some(function requested(damage,): boolean {
-      return damageKinds.includes(damage.kind,);
-    },);
-  },)) {
-    throw new FidelityReferenceError({ referenceId: 'damage selection', operation: 'request', },);
-  }
+  const {
+    onlyIds,
+    cap,
+    damageKinds,
+    withContext,
+  } = readFidelityArguments();
   /**
    * Approved candidates can be measured without acquiring a production seat.
    */
@@ -70,16 +59,10 @@ async function main(): Promise<void> {
     candidates: readCandidateIds({ argv: process.argv, },),
     alone: readCandidatesAlone({ argv: process.argv, },),
   },);
-  // Current reviewed corrections were authored outside this roster. Refuse an explicit overlap.
-  for (const spec of specs) {
-    for (const edit of spec.edits) {
-      if (judgeModelIds.some(function authoredCorrection(modelId,): boolean {
-        return modelId === edit.author || modelId.endsWith(`/${edit.author}`,);
-      },)) {
-        throw new FidelityReferenceError({ referenceId: spec.id, operation: 'request', },);
-      }
-    }
-  }
+  /**
+   * Request and authorship checks precede all corpus and provider activity.
+   */
+  const specs = reviewedFidelityRequest({ onlyEntryIds: onlyIds, damageKinds, judgeModelIds, cap, withContext, },);
   log.info(`judges: ${judgeModelIds.join(', ',)}`,);
   if (cap === 0) {
     log.info(`preflight only: ${String(specs.length,)} reviewed reference specifications selected; no corpus or model calls`,);
@@ -88,11 +71,21 @@ async function main(): Promise<void> {
   /**
    * Exact source and locally reviewed reference, never a newly discovered long archive block.
    */
-  const references = await readReviewedFidelityReferences({ pin: RUN_CORPUS_PIN, specs, },);
+  const references = await readReviewedFidelityReferences({
+    pin: RUN_CORPUS_PIN,
+    specs,
+  },);
   /**
    * Fixed complete matrix, bounded in attempted rows before any calls begin.
    */
-  const planned = reviewedFidelityTrials({ references, damageKinds, },).slice(0, cap,);
+  const planned = reviewedFidelityTrials({
+    references,
+    damageKinds,
+  },)
+    .slice(
+      0,
+      cap,
+    );
   /**
    * Operator-selected output root; calibration callers use a disposable directory.
    */
@@ -100,7 +93,10 @@ async function main(): Promise<void> {
   /**
    * Completed model payloads remain recoverable after interrupted calibration.
    */
-  const client = createRunClient({ promptPayloadDir: join(runsDir, 'judge-fidelity-payloads',), },);
+  const client = createRunClient({ promptPayloadDir: join(
+    runsDir,
+    'judge-fidelity-payloads',
+  ), },);
   /**
    * Every exchange has the existing measured per-call deadline.
    */
@@ -136,11 +132,16 @@ async function main(): Promise<void> {
         l: log,
       },);
       return {
-        referenceId: row.spec.id,
-        entryId: row.spec.entryId,
-        sourceRange: row.spec.source,
-        archiveRange: row.spec.archive,
-        referenceHash: row.spec.referenceHash,
+        referenceId: row.spec
+          .id,
+        entryId: row.spec
+          .entryId,
+        sourceRange: row.spec
+          .source,
+        archiveRange: row.spec
+          .archive,
+        referenceHash: row.spec
+          .referenceHash,
         changedChars: row.changedChars,
         damageDetail: row.damageDetail,
         ...outcome,
@@ -173,10 +174,18 @@ async function main(): Promise<void> {
   },);
   log.info(`kept ${String(rows.length,)} reviewed rows at ${keptAt}`,);
   // Model reasons can quote source material, so operational callers redirect this output privately.
-  process.stdout.write(`${JSON.stringify({ rows, }, undefined, 2,)}\n`,);
+  process.stdout
+    .write(`${JSON.stringify(
+      { rows, },
+      undefined,
+      2,
+    )}\n`,);
 }
 
 if (import.meta.main)
-  await reportingRefusals({ what: 'judge-fidelity-probe', run: main, },);
+  await reportingRefusals({
+    what: 'judge-fidelity-probe',
+    run: main,
+  },);
 
 //endregion Source-reviewed judge calibration
