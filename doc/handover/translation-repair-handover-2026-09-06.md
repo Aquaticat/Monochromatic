@@ -24,7 +24,58 @@ and the reason is recorded in
 
 ## Where the work stands
 
-Current archive-boundary work on 2026-09-10:
+### Latest checkpoint on 2026-09-11
+
+The owner approved DeepSeek V4.1 Flash on Hyper and OpenRouter.
+Task 30 has registered one distinct identity across both providers,
+verified both actual compiled clients and the production router,
+and retained separate judge,
+writer and reader calibration holds.
+No V4 Flash 0731 rating or exclusion transfers.
+All exported production role arrays,
+the nested repair model configuration and provider-aware seats across sixteen budget states
+match frozen `b9d3b2ea0` exactly,
+with a positive control showing the catalog really gained the new version.
+
+Current checked build is frozen at
+`package/module/translation-repair/node_modules/.frozen-dist-24b1cbdb7`.
+Build and types pass;
+`deepseek-v41-lint-r3-20260911.out` has zero warnings/errors;
+`deepseek-v41-full-unit-r3-20260911.out` ends `unit exit 0` at line 9164.
+All logs are under `~/temp/agent/`.
+A disposable native `judge-fidelity-probe --cap 0` invocation accepts the held-out model as a calibration candidate
+without model generation.
+Task 31 must measure role eligibility before any hold is released.
+
+The current Hyper price snapshot is 2026-09-11,
+verified against all 34 live rows and the provider's documented USD 0.05 per credit.
+V4.1 Flash is quoted at 6 input and 24 output credits per million,
+not unpriced or free.
+Those are dated estimates,
+not wire-reported debits.
+The [admission record](../planning/translation-repair-deepseek-v41-flash-2026-09-11.md)
+contains serving,
+pricing and calibration evidence.
+
+Task 27 is paused for this model work,
+not completed.
+Its acquisition API now retains coordinates through actual archive normalization (`8c29f4df7`),
+including duplicate-line origins and stub removal.
+The first normalization red also exposed a void result passed to `mapOverlapped`;
+`bd61f76ef` fixed that misuse,
+and the corrected red isolates only the missing coordinate mapping.
+Naming,
+provenance,
+normalization and existing stub tests pass.
+Remaining work is the history/parser/environment fixture catalog,
+guard mutation proofs,
+real Mio acquisition and package documentation.
+Task 29's production use classification and task 28's renderer/repair/cache/artifact handoff remain absent.
+The full-entry queue is still blocked and no full-entry pass is active.
+
+### Verified baseline before acquisition implementation
+
+Archive-boundary baseline on 2026-09-10:
 `b9d3b2ea0` is the verified code tip and frozen runtime,
 with build,
 types,

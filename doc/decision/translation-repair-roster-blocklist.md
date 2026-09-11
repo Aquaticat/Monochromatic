@@ -65,7 +65,7 @@ newest member.
 "Llama" blocks the whole family.
 `qwen3.8-max` was already culled from the whole roster on 2026-08-28
 at the owner's instruction
-(recorded at `HYPER_ONLY_ROSTER_IDS` in
+(recorded at `HYPER_ORIGIN_ROSTER_IDS` in
 `package/module/translation-repair/src/roster-id.ts`),
 so this blocklist entry confirms an existing cull rather than unseating
 a currently seated model;

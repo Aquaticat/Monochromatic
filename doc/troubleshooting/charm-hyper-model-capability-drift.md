@@ -35,7 +35,12 @@ Machine-readable row is operational authority because attachment request handlin
 while prose example is not versioned to one catalog snapshot.
 
 Repository adds another deliberately static layer.
-`package/module/translation-repair/src/hyper-catalog.ts:155-202` defines checked-in allowlist and capability facts:
+The 2026-08-30 source excerpt from
+`package/module/translation-repair/src/hyper-catalog.ts:155-202`
+records the then-current allowlist and capability facts.
+Its historical `HYPER_ONLY` identifier became `NO_SYNTHETIC_COUNTERPART` on 2026-09-11:
+it identifies absence of a Synthetic counterpart,
+not Hyper-exclusive serving.
 
 ```ts
 export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
@@ -174,10 +179,28 @@ false.
 
 ### Static inventory drift
 
-Checked-in `HYPER_MODELS` has 7 allowlisted rows.
-The 2026-08-30 live provider endpoint had 29 rows.
+The 2026-08-30 checked-in `HYPER_MODELS` snapshot had 7 allowlisted rows.
+That day's live provider endpoint had 29 rows.
 The difference is not itself a bug because the allowlist is deliberate;
 reading the allowlist as provider inventory is a bug.
+
+### V4.1 Flash admission snapshot
+
+The 2026-09-11 catalog reports `deepseek-v4.1-flash` with vision support
+and a 26214-token maximum output.
+The corresponding OpenRouter route also reports image input,
+with a different output ceiling.
+Both actual compiled text clients passed a streamed structured-response probe.
+This establishes serving compatibility,
+not image-reading quality.
+
+Reader admission remains separately held pending its live image check.
+A new model is not admitted to judge,
+writer or reader roles merely because both providers serve it.
+The existing reader-only Gemma 4 31B role is preserved.
+See the
+[admission record](../planning/translation-repair-deepseek-v41-flash-2026-09-11.md)
+for the live responses and role-boundary comparison.
 
 ## Verified workarounds
 

@@ -31,8 +31,8 @@ retains the metadata without credentials.
   Reported context 1048576 tokens,
   maximum output 26214 tokens,
   vision capability.
-  Its API pricing fields are not silently treated as the credits-per-million
-  units in the existing dated Hyper cost table.
+  Its API pricing fields were initially kept unpriced until the credit unit was verified.
+  The completed conversion is recorded in “Credit quote verification.”
 
 The raw-fetch protocol probe uses existing compiled builders and stream parsers,
 not provider SDKs.
@@ -87,10 +87,131 @@ not translation quality or image-reading performance.
 - Catalog approval is not measured role admission.
   New-model calibration holds must prevent accidental seating through catalog-derived arrays.
 
-## Next verification
+## Implemented serving boundary
 
-Implement catalog/routing/cap guards and verify actual compiled clients on both providers.
-Exercise image input before enabling a reader seat.
-Apply the existing judge-fidelity admission comparison and producer-calibration policy,
-recording actual serving context and participation.
+`dc1b1d943` registers the model and independent admission holds.
+Both actual clients from frozen `.frozen-dist-dc1b1d943` returned the exact object,
+without transport interception:
+
+- Hyper:
+  708 prompt and 56 completion tokens.
+- OpenRouter through DeepInfra:
+  348 prompt and 28 completion tokens,
+  0.0000864 USD reported cost.
+
+`deepseek-v41-clients-20260911.json`
+and `deepseek-v41-clients-20260911.log`
+retain the result and spend lines.
+The raw-protocol calls' ledger was reconstructed separately from their retained reported outcomes.
+The initial HTTP 429 remains an attempt with unreported usage,
+not an invented zero charge.
+Spend and daily helpers ran.
+
+`cc7ccfc00` renames the historical Hyper-only API vocabulary to its actual meaning:
+Hyper-origin identities and Synthetic-counterpart projections.
+Canonical model IDs are unchanged.
+The new API names cannot be read as a claim that OpenRouter lacks a route.
+
+The routing fixture uses actual compiled provider clients with disposable transports.
+It verifies Hyper preference,
+OpenRouter fallback spelling,
+unreachable versus all-dry refusals,
+one dispatch,
+the 13082-token body cap and absence of reasoning-control keys.
+
+`deepseek-v41-role-boundary-20260911.json`
+compares every exported production role array and its order,
+`RUN_MODELS`,
+and `judgeSeatsFor` across all 16 boolean budget states
+against frozen `b9d3b2ea0`.
+All are identical.
+Its positive control requires that only the newly approved catalog identity was added.
+Direct `ROSTER_MODEL_IDS` consumers were inspected:
+production admission is confined to the run-roster and reader projections;
+other consumers validate artifact identities or calibration candidate arguments.
+
+The cap basis is not inherited from the predecessor:
+`cap-measure-20260909.txt` records 142437 completed samples with pooled p99 13082.
+The abandoned-stream fallback 137 is the median of the recorded model medians
+132,
+137,
+137,
+297 and 386,
+not a pooled-stream percentile or a V4.1 measurement.
+`deepseek-v41-fallback-basis-20260911.out`
+records that distinction.
+
+## Credit quote verification
+
+Hyper's [model documentation][hyper-models]
+and [FAQ][hyper-faq]
+define one hypercredit as USD 0.05.
+Its [model-list API][hyper-list]
+defines per-million-token pricing.
+The live 0.3/1.2 USD quote therefore yields 6/24 credits per million,
+with cache-create 0 and cache-hit 0.6.
+These are quoted-rate estimates,
+not measured account debits.
+
+Every prior table row remained in the live catalog.
+`027f59dc3` refreshes the whole 34-model price snapshot to 2026-09-11,
+rather than assigning an old date to a newly introduced model.
+`hyper-price-snapshot-verification-20260911.json`
+checks every rate field against the retained API capture
+and proves that pricing rows for Inkling and Kimi K2 Thinking do not approve their serving identities.
+Unknown models still report `unpriced`.
+The [pricing troubleshooting record][pricing-record]
+contains the source trace and rejected interpretations.
+
+Completed OpenRouter calls retain their reported costs or explicit absence.
+Fixed catalog rates are used only for abandoned-call estimates.
+The difference between a serving endpoint's bill and the aggregate catalog quote
+is not attributed to scheduled discounts without endpoint evidence.
+
+## Checked implementation
+
+Frozen checked build:
+`package/module/translation-repair/node_modules/.frozen-dist-24b1cbdb7`.
+Build and type checking pass.
+`deepseek-v41-lint-r3-20260911.out`
+reports zero warnings/errors.
+`deepseek-v41-full-unit-r3-20260911.out`
+ends `unit exit 0` at line 9164.
+
+A native `judge-fidelity-probe --cap 0 --candidates deepseek-v4.1-flash --candidates-alone`
+invocation in disposable runs directory `v41-preflight.gJPEy1Ao`
+prints the candidate identity and persists zero rows without model generation.
+This proves selection reachability,
+not quality.
+The producer CLI uses the same candidate resolver;
+its count parser intentionally rejects zero,
+so it was not misrepresented as supporting that preflight mode.
+
+The budget reading at 2026-09-11T01:35:58Z reports all providers wet:
+Hyper balance 145,
+Bedrock 185.38 USD,
+OpenRouter 267.73 USD.
+Refresh before extended paid calibration.
+
+## Provider identity caveat
+
+DeepSeek's [release announcement][release]
+states that its own undated V4 Flash aliases now route to V4.1 Flash,
+and that its undated V4 Pro API name switches at 04:00 UTC on 2026-09-14.
+This does not establish a remap of our gateways' dated `0731` and `0813` IDs.
+No such gateway remap was verified,
+and no old identity was silently retired or merged.
+Provider identity must remain part of the calibration evidence.
+
+## Next role calibration
+
+Task 31 exercises image input before enabling a reader seat
+and applies existing judge-fidelity admission and producer-calibration rules.
+It must record actual serving context and participation.
 Keep the source corpus pinned and do not launch a whole-corpus development run.
+
+[hyper-models]: https://hyper.charm.land/docs/models.html
+[hyper-faq]: https://hyper.charm.land/faq
+[hyper-list]: https://hyper.charm.land/docs/api/list-models.html
+[pricing-record]: ../troubleshooting/charm-hyper-credit-price-snapshots.md
+[release]: https://api-docs.deepseek.com/news/news260910
