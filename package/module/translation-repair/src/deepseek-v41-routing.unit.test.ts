@@ -54,7 +54,7 @@ function routingFixture(dry: BudgetView) {
 
 /** Predicate used by the real router's structured-response reader. */
 function valid(value: unknown): value is { animal: 'cat'; count: 7 } {
-  return (typeof value === 'object') && (value !== null) && ('animal' in value) && (value.animal === 'cat')
+  return ((typeof value) === 'object') && (value !== null) && ('animal' in value) && (value.animal === 'cat')
     && ('count' in value) && (value.count === 7);
 }
 
