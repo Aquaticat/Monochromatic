@@ -73,12 +73,14 @@ an earlier revision of this document said "currently seated",
 which was stale when written.
 Hyper's live catalog on 2026-09-01 serves `qwen3.8-2.4t-a95b` at exactly
 the credit rate `qwen3.8-max` carried at its cull
-(input 40, output 120 credits per million tokens):
+(input 40,
+output 120 credits per million tokens):
 the owner's entry names the Max model,
 not a price rule,
 so the 2.4t model stayed an eligible candidate.
 The same-day conformance probe then culled it and `qwen3.8-flash` before
-seating on a separate, non-blocklist ground:
+seating on a separate,
+non-blocklist ground:
 both answer plain text and tools under automatic choice with HTTP 200
 but reject `tool_choice: {type: 'tool'}` with HTTP 400,
 the automatic-only constraint recorded for the culled `qwen3.8-max`,
@@ -105,9 +107,11 @@ Review pass performed 2026-09-01 over the calibration-facing sheets
 no edits required.
 Every precedence conflict is stated literally
 ("THIS RULE OUTRANKS ...",
-"WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS"),
+"WHERE A CRITERION AND A HOUSE RULE DISAGREE,
+THE HOUSE RULE WINS"),
 absent-input and empty-answer edges are named in place
-("(none: this passage has no translation yet)",
+("(none:
+this passage has no translation yet)",
 "Returning an empty list is a correct and common answer"),
 and the house policy instructs against character-literal readings outright
 ("rendered by its conventional community meaning is correct even when a
