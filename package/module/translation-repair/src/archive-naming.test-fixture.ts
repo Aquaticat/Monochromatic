@@ -272,6 +272,8 @@ export async function makeNamingArchive({
  *
  * @param kind - chosen use, including non-reference controls
  *
+ * @param startOffset - caller-known occurrence for repeated-line fixtures
+ *
  * @returns Observation supported by the configured preparation quorum
  *
  * @example
@@ -283,19 +285,17 @@ export function namingUse({
   archiveText,
   quotedText = NAME_QUOTE,
   kind = 'group-reference-name',
+  startOffset = archiveText.indexOf(quotedText,),
 }: {
   readonly archiveText: string;
   readonly quotedText?: string;
   readonly kind?: ArchiveUseKind;
+  readonly startOffset?: number;
 },): InitialArchiveUse {
   /**
    * Full parsed initial archive carrying absolute offsets.
    */
   const document = parseDocument({ text: archiveText, },);
-  /**
-   * Exact fixture occurrence, which every ballot will classify.
-   */
-  const startOffset = archiveText.indexOf(quotedText,);
   /**
    * Exclusive end of the complete occurrence.
    */
