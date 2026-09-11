@@ -59,6 +59,9 @@ await describe({
           ],
         },),).toStrictEqual({
           kind: 'closed',
+          correspondences: [{ from: '2', to: '1', },],
+          eliminated: [{ from: '1', to: '2', },],
+          retained: [],
           map: [
             {
               from: '2',
@@ -74,7 +77,7 @@ await describe({
     },),
 
     it({
-      name: 'keeps a closed map as it is, an empty map empty, and adds no identity pair',
+      name: 'keeps closed rewrites unchanged, an empty map empty, and invents no identity correspondence',
       fn: async () => {
         /**
          * The whole swap, read off both definitions.
@@ -101,6 +104,9 @@ await describe({
           ],
         },),).toStrictEqual({
           kind: 'closed',
+          correspondences: swap,
+          eliminated: [],
+          retained: [],
           map: swap,
         },);
         expect(closeFootnoteRelabel({
@@ -109,6 +115,9 @@ await describe({
           originalLabels: [ '1', ],
         },),).toStrictEqual({
           kind: 'closed',
+          correspondences: [],
+          eliminated: [],
+          retained: [],
           map: [],
         },);
         expect(closeFootnoteRelabel({
@@ -126,6 +135,9 @@ await describe({
           ],
         },),).toStrictEqual({
           kind: 'closed',
+          correspondences: [{ from: '3', to: '2', },],
+          eliminated: [],
+          retained: [],
           map: [ {
             from: '3',
             to: '2',

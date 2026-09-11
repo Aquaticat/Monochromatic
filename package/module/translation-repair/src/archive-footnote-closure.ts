@@ -76,9 +76,9 @@ export function closeFootnoteRelabel(
   const [archiveOnly,] = archiveLeft;
   /** The sole remaining original candidate, when one exists. */
   const [originalOnly,] = originalLeft;
-  /** Existing elimination, retained as evidence even when its relation is an identity. */
+  /** Existing forced move; equal unmapped spellings do not invent identity correspondence. */
   const eliminated: readonly FootnoteRelabel[] = (archiveLeft.length === 1 && originalLeft.length === 1
-      && archiveOnly !== undefined && originalOnly !== undefined)
+      && archiveOnly !== undefined && originalOnly !== undefined && archiveOnly[0] !== originalOnly[0])
     ? [{ from: archiveOnly[1], to: originalOnly[1], },]
     : [];
   /** Positive relations after the existing forced elimination, never after displacement. */
