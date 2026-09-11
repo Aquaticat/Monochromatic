@@ -176,7 +176,9 @@ git -C ~/temp/agent/pnpm-2026-09-11 tag --points-at HEAD
 Official documentation confirms:
 
 - `cargo.enabled` installs locked crate sources and writes Cargo source replacement;
-- `python.enabled` resolves `pyproject.toml`, writes `pylock.toml`, and manages `.venv`;
+- `python.enabled` resolves `pyproject.toml`,
+  writes `pylock.toml`,
+  and manages `.venv`;
 - `pnpm pipeline` runs a frozen install,
   affected-project selection,
   task graph execution,
