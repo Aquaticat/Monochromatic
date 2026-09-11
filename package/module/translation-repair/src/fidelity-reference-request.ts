@@ -12,6 +12,8 @@ import { selectReviewedFidelitySpecs, } from './fidelity-reference-select.ts';
  *
  * @param specs - reviewed manifest, defaulting to the checked-in set
  *
+ * @param corpusSha - configured corpus revision, checked without reading any files
+ *
  * @param onlyEntryIds - explicit reviewed population filter
  *
  * @param damageKinds - requested reviewed defect families
@@ -28,12 +30,13 @@ import { selectReviewedFidelitySpecs, } from './fidelity-reference-select.ts';
  *
  * @example
  * ```ts
- * const specs = reviewedFidelityRequest({ onlyEntryIds: [], damageKinds, judgeModelIds, cap: 0, withContext: false });
+ * const specs = reviewedFidelityRequest({ corpusSha, onlyEntryIds: [], damageKinds, judgeModelIds, cap: 0, withContext: false });
  * ```
  */
 export function reviewedFidelityRequest({
   specs = REVIEWED_FIDELITY_REFERENCES,
   onlyEntryIds,
+  corpusSha,
   damageKinds,
   judgeModelIds,
   cap,
@@ -41,6 +44,7 @@ export function reviewedFidelityRequest({
 }: {
   readonly specs?: readonly FidelityReferenceSpec[];
   readonly onlyEntryIds: readonly string[];
+  readonly corpusSha: string;
   readonly damageKinds: readonly FidelityDamageKind[];
   readonly judgeModelIds: readonly string[];
   readonly cap: number;
@@ -94,6 +98,8 @@ export function reviewedFidelityRequest({
     },);
   }
   for (const spec of selected) {
+    if (spec.corpusSha !== corpusSha)
+      throw new FidelityReferenceError({ referenceId: spec.id, operation: 'pin', },);
     for (const edit of spec.edits) {
       if (judgeModelIds.some(function authoredCorrection(modelId,): boolean {
         return (modelId === edit.author) || modelId.endsWith(`/${edit.author}`,);

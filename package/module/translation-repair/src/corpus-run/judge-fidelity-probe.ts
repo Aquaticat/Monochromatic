@@ -63,6 +63,7 @@ async function main(): Promise<void> {
    * Request and authorship checks precede all corpus and provider activity.
    */
   const specs = reviewedFidelityRequest({
+    corpusSha: RUN_CORPUS_PIN.commitSha,
     onlyEntryIds: onlyIds,
     damageKinds,
     judgeModelIds,
