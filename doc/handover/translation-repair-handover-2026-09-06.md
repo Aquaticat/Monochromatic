@@ -201,7 +201,8 @@ The package formatter is `format:oxlint`,
 not `format`;
 `reviewed-reference-format-r3-20260911.out` passed before the latest changes.
 
-Task 35 is paused behind task 37 before any writer generation.
+Task 37's preparation failure is fixed and verified;
+task 35 resumes without any writer generation having run yet.
 The deterministic sampler launches corpus-entry reads concurrently,
 so preflight runs in a 2 GiB,
 2 CPU,
@@ -209,18 +210,32 @@ so preflight runs in a 2 GiB,
 The available terminal image supplies Git 2.52.0 with working `--no-lazy-fetch`;
 Node 26.7.0 is bound read-only with its required `libatomic.so.1`.
 
-The first sample preflight exited 139 with a V8 heap-exhaustion diagnostic near 1 GiB.
-A separate logger file-sink EROFS warning named the read-only source output path.
-An import-only control succeeds with the same logger warning,
-so the warning alone does not establish the heap failure's cause.
-Entry-listing,
-one-file and full-sample minimization are next.
+The original sampler and a minimized 186-concurrent-read case exhausted V8's heap near 1 GiB.
+Each read re-resolved Git,
+whose shim check decoded the 4537488-byte executable.
+An explicit resolved pin made both cases pass.
+`d6be6e978` now resolves the executable once per sample batch without changing corpus data,
+reader protections or sample selection.
+The regression measures actual executable reads in a separate process:
+three before,
+one after,
+zero with an explicit path.
+All forty fixed sample rows exactly match the old resolved-pin control.
+The logger EROFS warning was separately removed by a writable private log overlay,
+not by changing the read-only corpus/source mounts.
 Workspace is `~/temp/agent/v41-writer-20260911.sEDtepyo`;
 state is in [writer preflight](../planning/translation-repair-writer-preflight-2026-09-11.md).
 No host exhaustion probe or corpus edit was used.
+Current writer-preparation runtime is frozen at
+`package/module/translation-repair/node_modules/.frozen-dist-67823bc55`.
+Build/types/Oxlint pass;
+`v41-bench-resolution-final-unit-20260911.out` ends `unit exit 0` at line 9169.
+The source trace is in
+[bench Git resolution](../troubleshooting/translation-repair-bench-git-resolution.md).
+A concurrent/unrelated `mise.lock` change remains unstaged.
 
 Next actions:
-resolve task 37's bounded preparation failure;
+verify the frozen writer sample/container output setup;
 run task 35's existing 40-round producer calibration on the checked runtime;
 inspect drafts,
 ballots and the pooled-null writer rule before writer admission.

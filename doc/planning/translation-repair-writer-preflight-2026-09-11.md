@@ -1,6 +1,7 @@
 # V4.1 writer calibration preflight
 
-Task 35 is paused behind task 37's preparation diagnosis.
+Task 37's preparation fix and bounded verification are complete.
+Task 35 can resume on the new checked runtime.
 No writer generation or image-reading calibration has run.
 Judge admission is verified independently and remains seated.
 
@@ -10,7 +11,8 @@ Use the existing `producer-calibrate 40 --candidates deepseek-v4.1-flash` instru
 and pooled-null writer rule,
 with the current measured roster,
 preserved self-vote/contributor handling and no extra generation rounds.
-The checked post-judge-admission runtime is frozen at `45e64e411`.
+The pre-fix post-judge runtime is frozen at `45e64e411`.
+The resolved-batch implementation is now checked and frozen at `67823bc55`.
 The source corpus stays at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` and is not edited.
 
 `bench-sample.ts` reads all pinned entries before selecting the deterministic source-size spread.
@@ -50,7 +52,7 @@ This is a tradeoff to document with the completed source trace,
 not a claim of full confidential isolation.
 No provider keys were supplied to the preflight.
 
-## Failure under investigation
+## Pre-fix failure
 
 `proc_248e` ran the original sample preflight and exited 139 after twelve seconds.
 `v41-writer-container-preflight-20260911.out` records:
@@ -67,9 +69,52 @@ These are separate symptoms until a probe establishes a relationship.
 An exit-code label alone is not the diagnosis;
 the observed fatal diagnostic is heap exhaustion.
 
-Task 37 is minimizing through import,
-entry listing,
-one pinned file read and full sampling checkpoints.
+Import,
+listing all 93 entries and reading the pinned `gqt` source file succeed under the same envelope.
+The logger EROFS warning occurs in those passing controls too.
+A second full-sampling attempt reproduces the same heap exhaustion after the listing checkpoint.
+
+Ranked hypotheses used to distinguish the failure:
+
+- Concurrent reads exceed the working set.
+  Serial reads of the same bounded input should remain within the limit.
+- A completed read retains memory.
+  Serial repetition should continue growing and fail too.
+- A particular entry or slicing operation causes the growth.
+  Repeated read-only controls should pass,
+  while an isolated parse/slice path reproduces it.
+
+The first distinguishing control reads the same pinned 3731-character file one hundred times sequentially,
+without retaining its texts,
+inside the same resource-limited container.
 `minimize.mts` and `run-minimize.mts` retain the same bounded container envelope.
 No larger host run or production source change has been used to evade this failure.
-A completed troubleshooting record is required once the cause or workaround is verified.
+## Verified cause and fix
+
+The 186-read minimized case reproduces heap exhaustion while reading one bounded file,
+without any parsing or slicing.
+Supplying its already resolved Git path makes the same case complete.
+The image's Git executable is 4537488 bytes and decodes to 4475298 UTF-16 units.
+Each default corpus read called `resolveGit`,
+whose self-shim check decodes the candidate executable.
+
+`d6be6e978` resolves the executable once before the bench batch and passes that owned pin to all reads.
+The existing protections and sample-selection policy remain unchanged.
+Regression `cf982b708` observed three executable reads before the fix and one after it;
+an explicit pin observes zero and returns identical output without mutating caller state.
+
+The actual fixed default sampler completes in the same 2 GiB container.
+All forty slices are field-for-field identical to the old sampler with a resolved pin.
+No cgroup OOM event occurred.
+The logger warning was separately removed by an owned writable output overlay,
+without making the corpus or source writable.
+
+Build,
+types and Oxlint pass;
+`v41-bench-resolution-final-unit-20260911.out` ends `unit exit 0` at line 9169.
+The complete source trace,
+controls and container tradeoffs are in
+[the troubleshooting record](../troubleshooting/translation-repair-bench-git-resolution.md).
+The initial red command also triggered automatic mise tool preparation after mise changed to 2026.9.5;
+subsequent checks explicitly used `--no-deps --skip-tools`.
+Unrelated `mise.lock` drift remains unstaged and is not part of this fix.
