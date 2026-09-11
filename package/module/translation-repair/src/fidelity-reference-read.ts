@@ -67,12 +67,16 @@ export async function readReviewedFidelityReferences({ pin, specs = REVIEWED_FID
       /**
        * Both files use the same intrinsic, no-fetch corpus read boundary.
        */
-      const [sourceFile, archiveFile,] = await Promise.all([
+      const [sourceRead, archiveRead,] = await Promise.allSettled([
         readCorpusFile({ pin: fixedPin, relPath: `people/${spec.entryId}/page.md`, },),
         readCorpusFile({ pin: fixedPin, relPath: `people/${spec.entryId}/page.en.md`, },),
       ],);
       signal?.throwIfAborted();
-      return buildReviewedFidelityReference({ sourceFile, archiveFile, spec, },);
+      if (sourceRead.status === 'rejected')
+        throw sourceRead.reason;
+      if (archiveRead.status === 'rejected')
+        throw archiveRead.reason;
+      return buildReviewedFidelityReference({ sourceFile: sourceRead.value, archiveFile: archiveRead.value, spec, },);
     },
   },);
 }
