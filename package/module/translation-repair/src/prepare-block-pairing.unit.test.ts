@@ -177,7 +177,8 @@ await describe({
     it({
       name: 'keeps after-media transcript ownership on cold and warm parent preparation',
       fn: async () => {
-        const marker = '<PhotoScroll photos={[\'${path}/photos/letter.webp\']} />';
+        const pathToken = ['$', '{path}'].join('');
+        const marker = `<PhotoScroll photos={['${pathToken}/photos/letter.webp']} />`;
         const sourceText = `About the cat.\n\n${marker}\n\nRemember the cat.`;
         const targetText = `About the cat.\n\n${marker}\n\n<details>\n<summary>Letter</summary>\n> Translated letter.\n</details>\n\nRemember the cat.`;
         const f = fixture({ sourceText, targetText, reply: '{"pairs":[{"source":0,"target":0},{"source":1,"target":1},{"source":2,"target":4}]}' });

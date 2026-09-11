@@ -1,4 +1,7 @@
-import type { ChunkPair, SliceSyntax, } from './chunk-document.ts';
+import type {
+  ChunkPair,
+  SliceSyntax,
+} from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { splitTargetOnlyRun, } from './target-only-run.ts';
@@ -17,23 +20,41 @@ import type { IncumbentKind, } from './translate-absence.ts';
  * ```
  */
 export type TranslateSliceStageInput = {
-  /** Canonical source passage, not its presentation-only writer display. */
+  /**
+   * Canonical source passage, not its presentation-only writer display.
+   */
   readonly sourceText: string;
-  /** Incumbent wording remaining after the existing structural protection. */
+  /**
+   * Incumbent wording remaining after the existing structural protection.
+   */
   readonly incumbentText: string;
-  /** Target chunk variant, not a guess based on string length. */
+  /**
+   * Target chunk variant, not a guess based on string length.
+   */
   readonly incumbentKind: IncumbentKind;
-  /** Existing document-level declarations and vocabulary context. */
+  /**
+   * Existing document-level declarations and vocabulary context.
+   */
   readonly identityContext?: string;
-  /** Supplied source neighbors retain their context-only role. */
+  /**
+   * Supplied source neighbors retain their context-only role.
+   */
   readonly neighbouringSourceText?: string;
-  /** Supplied archive neighbors retain their existing comparison role. */
+  /**
+   * Supplied archive neighbors retain their existing comparison role.
+   */
   readonly neighbouringIncumbentText?: string;
-  /** Previously acquired picture evidence, never bought by this projection. */
+  /**
+   * Previously acquired picture evidence, never bought by this projection.
+   */
   readonly pictureContext?: string;
-  /** Existing syntax role for metadata-aware stages. */
+  /**
+   * Existing syntax role for metadata-aware stages.
+   */
   readonly syntax?: SliceSyntax;
-  /** Production child-level governance, including inherited parent treatment. */
+  /**
+   * Production child-level governance, including inherited parent treatment.
+   */
   readonly lineStructured: boolean;
 };
 
@@ -46,11 +67,17 @@ export type TranslateSliceStageInput = {
  * ```
  */
 export type TranslateSliceInput = {
-  /** Complete original incumbent span retained for publication restoration. */
+  /**
+   * Complete original incumbent span retained for publication restoration.
+   */
   readonly archiveText: string;
-  /** Existing target-only run held outside writing and judging. */
+  /**
+   * Existing target-only run held outside writing and judging.
+   */
   readonly protectedText: string;
-  /** Exact data supplied to the unchanged translation-stage operation. */
+  /**
+   * Exact data supplied to the unchanged translation-stage operation.
+   */
   readonly stageInput: TranslateSliceStageInput;
 };
 
@@ -62,11 +89,17 @@ export type TranslateSliceInput = {
  * Callers retain logging, restore protected text and decide separately whether wording may publish.
  *
  * @param slice - prepared source/target pair whose target index selects governance
+ *
  * @param prepared - owning preparation supplying identity context and child line flags
+ *
  * @param neighbouringSourceText - already-built source context passed through unchanged
+ *
  * @param neighbouringIncumbentText - already-built incumbent context passed through unchanged
+ *
  * @param pictureContext - already-acquired corroborated picture context passed through unchanged
+ *
  * @returns Stage surface and protected archive material without changing the operation being measured
+ *
  * @example
  * ```ts
  * const surface = translateSliceInput({ slice, prepared, pictureContext });
@@ -87,12 +120,26 @@ export function translateSliceInput(
     readonly pictureContext?: string;
   },
 ): TranslateSliceInput {
-  /** Complete archive wording before target-only protection. */
-  const archiveText = slice.target.text;
-  /** Canonical original this slice renders. */
-  const sourceText = slice.source.text;
-  /** Existing transcript protection applied before either writing or judging. */
-  const { judgedText, protectedText, } = splitTargetOnlyRun({ sourceText, incumbentText: archiveText, },);
+  /**
+   * Complete archive wording before target-only protection.
+   */
+  const archiveText = slice.target
+    .text;
+  /**
+   * Canonical original this slice renders.
+   */
+  const sourceText = slice.source
+    .text;
+  /**
+   * Existing transcript protection applied before either writing or judging.
+   */
+  const {
+    judgedText,
+    protectedText,
+  } = splitTargetOnlyRun({
+    sourceText,
+    incumbentText: archiveText,
+  },);
   return {
     archiveText,
     protectedText,
@@ -100,7 +147,9 @@ export function translateSliceInput(
       sourceText,
       incumbentText: judgedText,
       incumbentKind: isInsertionChunk(slice.target,) ? 'absent' : 'present',
-      lineStructured: prepared.lineStructuredSliceIndices.has(slice.target.sliceIndex,),
+      lineStructured: prepared.lineStructuredSliceIndices
+        .has(slice.target
+          .sliceIndex,),
       ...((prepared.identityContext === undefined) ? {} : { identityContext: prepared.identityContext, }),
       ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),

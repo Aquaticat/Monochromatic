@@ -13,7 +13,8 @@ function first(prepared: PreparedDocumentPair,): ChunkPair {
   if (slice === undefined) throw new Error('fixture requires a prepared slice');
   return slice;
 }
-const marker = '<PhotoScroll photos={[\'${path}/photos/letter.webp\']} />';
+const pathToken = ['$', '{path}'].join('');
+const marker = `<PhotoScroll photos={['${pathToken}/photos/letter.webp']} />`;
 
 await describe({
   name: translateSliceInput.name,

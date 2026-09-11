@@ -114,7 +114,11 @@ export async function settleTranslateSlice(
   /**
    * Shared pre-stage protection and governance, without publication-disposition decisions.
    */
-  const { archiveText, protectedText, stageInput, } = translateSliceInput({
+  const {
+    archiveText,
+    protectedText,
+    stageInput,
+  } = translateSliceInput({
     slice,
     prepared,
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
@@ -124,7 +128,11 @@ export async function settleTranslateSlice(
   /**
    * The exact staged surface is also what later publication guards compare.
    */
-  const { sourceText, incumbentText, incumbentKind, } = stageInput;
+  const {
+    sourceText,
+    incumbentText,
+    incumbentKind,
+  } = stageInput;
 
   if (protectedText !== '')
     l.info(
