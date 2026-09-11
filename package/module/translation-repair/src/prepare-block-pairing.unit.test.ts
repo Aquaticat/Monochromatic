@@ -1,3 +1,4 @@
+import { createHash, } from 'node:crypto';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
@@ -63,6 +64,11 @@ await describe({
         if (cold.kind !== 'paired') throw new Error('expected explicit pairing');
         expect(cold.evidence.kind).toBe('queried');
         expect(cold.findings.join(' ')).toContain('section 7 paired 2 of 2');
+        const [storedRecord] = f.writes;
+        if (storedRecord === undefined) throw new Error('expected persisted parent record');
+        const expectedKey = createHash('sha256').update('2\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.', 'utf8').digest('hex');
+        expect(storedRecord.key).toBe(expectedKey);
+        expect(storedRecord.serialized).toBe(JSON.stringify({ pairs: [{ source: 0, target: 0 }, { source: 1, target: 1 }], findings: cold.findings }));
         const warm = await prepareBlockPairing(f.input);
         expect(f.calls).toHaveLength(2);
         expect(f.writes).toHaveLength(1);
@@ -166,6 +172,24 @@ await describe({
         expect(result.definitionPairs).toEqual([{ sourceLabel: '1', targetLabel: 'a' }, { sourceLabel: '2', targetLabel: 'b' }]);
         expect(result.findings.join(' ')).toContain('footnote definitions cross');
         expect(f.calls).toHaveLength(2);
+      },
+    },),
+    it({
+      name: 'keeps after-media transcript ownership on cold and warm parent preparation',
+      fn: async () => {
+        const marker = '<PhotoScroll photos={[\'${path}/photos/letter.webp\']} />';
+        const sourceText = `About the cat.\n\n${marker}\n\nRemember the cat.`;
+        const targetText = `About the cat.\n\n${marker}\n\n<details>\n<summary>Letter</summary>\n> Translated letter.\n</details>\n\nRemember the cat.`;
+        const f = fixture({ sourceText, targetText, reply: '{"pairs":[{"source":0,"target":0},{"source":1,"target":1},{"source":2,"target":4}]}' });
+        const cold = await prepareBlockPairing(f.input);
+        if (cold.kind !== 'paired') throw new Error('expected media-owned pairing');
+        expect(cold.pairs.filter(pair => pair.source === 1).map(pair => pair.target)).toEqual([1, 2, 3]);
+        const warm = await prepareBlockPairing(f.input);
+        if (warm.kind !== 'paired') throw new Error('expected resumed media-owned pairing');
+        expect(warm.pairs).toEqual(cold.pairs);
+        expect(warm.findings).toEqual(cold.findings);
+        expect(f.calls).toHaveLength(2);
+        expect(f.writes).toHaveLength(1);
       },
     },),
     it({
