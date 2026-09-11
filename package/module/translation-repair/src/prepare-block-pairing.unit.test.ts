@@ -175,8 +175,16 @@ await describe({
         const failure = new Error('fixture persistence failed');
         let caught: unknown;
         try {
-          await prepareBlockPairing({ ...f.input, pairingCache: { resumed: f.stored, persist: async () => { throw failure; } } });
-        } catch (error) { caught = error; }
+          await prepareBlockPairing({ ...f.input, pairingCache: {
+            resumed: f.stored,
+            persist: async () => {
+              throw failure;
+            },
+          } });
+        }
+        catch (error) {
+          caught = error;
+        }
         expect(caught).toBe(failure);
       },
     },),
@@ -186,8 +194,12 @@ await describe({
         const f = fixture();
         const failure = new Error('fixture canceled');
         let caught: unknown;
-        try { await prepareBlockPairing({ ...f.input, signal: AbortSignal.abort(failure) }); }
-        catch (error) { caught = error; }
+        try {
+          await prepareBlockPairing({ ...f.input, signal: AbortSignal.abort(failure) });
+        }
+        catch (error) {
+          caught = error;
+        }
         expect(caught).toBe(failure);
         expect(f.writes).toHaveLength(0);
       },

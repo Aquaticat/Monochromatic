@@ -140,7 +140,10 @@ export async function prepareDocumentPairWithRoster(
   /**
    * Logger tagged with this shell.
    */
-  const pl = tagged({ tag: prepareDocumentPairWithRoster.name, l, },);
+  const pl = tagged({
+    tag: prepareDocumentPairWithRoster.name,
+    l,
+  },);
   /**
    * Source parsed for section alignment and the block questions.
    * Pure preparation parses it again so its output depends only on its explicit inputs.
@@ -192,7 +195,8 @@ export async function prepareDocumentPairWithRoster(
    * Definition labels separated from each parent's ordinary slicer ordering.
    */
   const footnoteDefinitionPairs: DefinitionLabelPair[] = [];
-  for (const [pairIndex, pair,] of alignment.pairs.entries()) {
+  for (const [pairIndex, pair,] of alignment.pairs
+    .entries()) {
     /* oxlint-disable no-await-in-loop -- parent rounds remain sequential rather than multiplying the provider fanout */
     /**
      * The same parent operation a bounded calibration pool consumes independently.
@@ -212,7 +216,10 @@ export async function prepareDocumentPairWithRoster(
     findings.push(...round.findings,);
     footnoteDefinitionPairs.push(...round.definitionPairs,);
     if (round.kind === 'paired')
-      blockPairings.set(pairIndex, round.pairs,);
+      blockPairings.set(
+        pairIndex,
+        round.pairs,
+      );
   }
   /**
    * Preparation built on whatever the roster agreed, preserving every existing caller option.
@@ -231,7 +238,10 @@ export async function prepareDocumentPairWithRoster(
   return {
     prepared: {
       ...prepared,
-      alignmentFindings: [...prepared.alignmentFindings, ...findings,],
+      alignmentFindings: [
+        ...prepared.alignmentFindings,
+        ...findings,
+      ],
     },
     findings,
     footnoteDefinitionPairs,

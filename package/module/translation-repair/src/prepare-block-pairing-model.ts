@@ -19,19 +19,31 @@ import type { DefinitionLabelPair, } from './pair-definition-order.ts';
  */
 export type PreparedBlockEvidence =
   | {
-    /** Historical record reused without a new call. */
+    /**
+     * Historical record reused without a new call.
+     */
     readonly kind: 'cached';
-    /** Question identity under the existing pairing-cache version. */
+    /**
+     * Question identity under the existing pairing-cache version.
+     */
     readonly key: string;
-    /** Exactly the historical record, without invented ballots. */
+    /**
+     * Exactly the historical record, without invented ballots.
+     */
     readonly record: PairedSectionRecord;
   }
   | {
-    /** Existing stage supplied final asked-seat outcomes on this call. */
+    /**
+     * Existing stage supplied final asked-seat outcomes on this call.
+     */
     readonly kind: 'queried';
-    /** Question identity under the same pairing-cache version. */
+    /**
+     * Question identity under the same pairing-cache version.
+     */
     readonly key: string;
-    /** Raw final seat outcomes and their existing interpretation. */
+    /**
+     * Raw final seat outcomes and their existing interpretation.
+     */
     readonly outcome: BlockPairingOutcome;
   };
 
@@ -44,9 +56,13 @@ export type PreparedBlockEvidence =
  * ```
  */
 type PreparedBlockDetails = {
-  /** Original stage, cache and structural-normalization findings in order. */
+  /**
+   * Original stage, cache and structural-normalization findings in order.
+   */
   readonly findings: readonly string[];
-  /** Definition label relations kept apart from ordinary body ordering. */
+  /**
+   * Definition label relations kept apart from ordinary body ordering.
+   */
   readonly definitionPairs: readonly DefinitionLabelPair[];
 };
 
@@ -63,21 +79,33 @@ type PreparedBlockDetails = {
  */
 export type PreparedBlockPairing = PreparedBlockDetails & (
   | {
-    /** Relations survived the existing preparation normalization. */
+    /**
+     * Relations survived the existing preparation normalization.
+     */
     readonly kind: 'paired';
-    /** Exact map value supplied to the production slicer, even when empty after definition separation. */
+    /**
+     * Exact map value supplied to the production slicer, even when empty after definition separation.
+     */
     readonly pairs: readonly BlockPair[];
-    /** Acquisition state, not a semantic-correctness label. */
+    /**
+     * Acquisition state, not a semantic-correctness label.
+     */
     readonly evidence: PreparedBlockEvidence;
   }
   | {
-    /** A questioned parent contributed no explicit map entry. */
+    /**
+     * A questioned parent contributed no explicit map entry.
+     */
     readonly kind: 'fallback';
-    /** Question outcome or historical cache record that did not establish a pairing. */
+    /**
+     * Question outcome or historical cache record that did not establish a pairing.
+     */
     readonly evidence: PreparedBlockEvidence;
   }
   | {
-    /** A structural singleton or empty side needed no model question or cache lookup. */
+    /**
+     * A structural singleton or empty side needed no model question or cache lookup.
+     */
     readonly kind: 'implicit' | 'empty';
   }
 );
