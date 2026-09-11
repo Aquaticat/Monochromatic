@@ -5,6 +5,7 @@ await describe({
   name: 'footnote operational rewrite boundaries',
   children: [
     ...[
+      { name: 'invalid label syntax before the post-rewrite graph guard', text: 'Real[^1].\n\n[^1]: Note.', map: [{ from: '1', to: 'x]outside' }], kind: 'label' },
       { name: 'conflicting normalized source mappings', text: 'Real[^Note].\n\n[^Note]: Note.',
         map: [{ from: 'NOTE', to: 'x' }, { from: 'note', to: 'y' }], kind: 'mapping' },
       { name: 'an empty logical source identifier', text: 'Real[^1].\n\n[^1]: Note.', map: [{ from: '', to: '2' }], kind: 'mapping' },

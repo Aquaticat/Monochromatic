@@ -9,6 +9,15 @@ await describe({
   name: 'complete footnote correspondence evidence',
   children: [
     it({
+      name: 'refuses distinct archive labels claiming equivalent original destinations',
+      fn: async () => {
+        expect(footnoteRelabelOfDefinitions({ pairs: [
+          { sourceLabel: 'Note', targetLabel: 'a' },
+          { sourceLabel: 'note', targetLabel: 'b' },
+        ] }).kind).toBe('ambiguous');
+      },
+    }),
+    it({
       name: 'retains identity definition evidence without emitting an identity rewrite',
       fn: async () => {
         expect(footnoteRelabelOfDefinitions({ pairs: [

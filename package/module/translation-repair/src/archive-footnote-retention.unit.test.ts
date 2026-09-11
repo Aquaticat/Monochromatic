@@ -5,6 +5,36 @@ await describe({
   name: 'retained archive footnote labels',
   children: [
     it({
+      name: 'rejects empty normalized namespaces before inferring elimination',
+      fn: async () => {
+        expect(closeFootnoteRelabel({ map: [], archiveLabels: ['1'], originalLabels: [' '] }).kind).toBe('open');
+      },
+    }),
+    it({
+      name: 'rejects conflicting normalized archive sources rather than discarding a claim',
+      fn: async () => {
+        expect(closeFootnoteRelabel({ map: [{ from: 'A', to: 'x' }, { from: 'a', to: 'y' }],
+          archiveLabels: ['A', 'z'], originalLabels: ['x', 'y'] }).kind).toBe('open');
+      },
+    }),
+    it({
+      name: 'folds repeated equivalent claims without inventing extra correspondence',
+      fn: async () => {
+        expect(closeFootnoteRelabel({ map: [{ from: 'A', to: 'X' }, { from: 'a', to: 'x' }],
+          archiveLabels: ['A'], originalLabels: ['X'] })).toEqual({ kind: 'closed', map: [{ from: 'A', to: 'X' }],
+          correspondences: [{ from: 'A', to: 'X' }], eliminated: [], retained: [] });
+      },
+    }),
+    it({
+      name: 'reserves original-only labels when selecting an archive retention identifier',
+      fn: async () => {
+        const correspondences = [{ from: '2', to: '1' }, { from: '3', to: '2' }, { from: '5', to: '4' }];
+        expect(closeFootnoteRelabel({ map: correspondences, archiveLabels: ['1', '2', '3', '5'], originalLabels: ['1', '2', '4'] }))
+          .toEqual({ kind: 'closed', correspondences, eliminated: [], retained: [{ from: '1', retainedAs: '6' }],
+            map: [...correspondences, { from: '1', to: '6' }] });
+      },
+    }),
+    it({
       name: 'displaces a surplus colliding archive label without asserting source correspondence',
       fn: async () => {
         const correspondences = [{ from: '2', to: '1' }, { from: '3', to: '2' }];

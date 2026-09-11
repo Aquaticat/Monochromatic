@@ -34,9 +34,10 @@ await describe({
       name: 'does not separate widened container delimiters from their definition blocks',
       fn: async () => {
         const text = 'Body[^1][^2].\n\n<details>\n\n[^2]: Second.\n\n[^1]: First.\n\n</details>\n';
-        const result = reorderFootnoteDefinitions({ text, order: ['1', '2'] });
-        expect(result.text).toBe(text);
-        expect(result.changed).toBe(false);
+        let outcome: unknown;
+        try { outcome = reorderFootnoteDefinitions({ text, order: ['1', '2'] }); }
+        catch (error) { outcome = error; }
+        expect(outcome).toMatchObject({ text, changed: false });
       },
     }),
   ],
