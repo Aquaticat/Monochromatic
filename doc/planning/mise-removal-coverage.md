@@ -45,6 +45,57 @@ Measurements used tracked files plus `mise tasks --all --hidden --json` from the
 - Task metadata reports no `raw` or `interactive` task properties,
   but `mise run --raw secrets:edit` is a documented CLI override and remains an interactive contract.
 
+## Existing TypeScript configuration compiler
+
+`file-enforcer.config.ts` and `@monochromatic-dev/dev-script-file-enforcer` already provide the canonical TypeScript
+configuration layer proposed by this plan.
+The package executes direct async TypeScript,
+tracks source and destination files,
+skips byte-identical writes,
+persists staleness metadata,
+protects generated destinations in watch mode,
+and supports whole-file generation plus structured JSON,
+TOML,
+and XML edits.
+It already generates root `mise.toml`,
+keeps `CLAUDE.md` synchronized,
+manages Cargo manifest fields,
+patches JetBrains settings,
+and exposes platform-aware command dispatch and OS package installation.
+
+Replacement design should extend this boundary rather than introduce a second configuration generator.
+Domain-specific typed plans should live in sibling TypeScript modules imported by `file-enforcer.config.ts`,
+while required YAML,
+TOML,
+JSON,
+XML,
+and lockfiles remain generated or tool-owned adapters.
+Field ownership must be explicit when an external tool also mutates a native manifest.
+
+## pnpm 12.4+ candidate surface
+
+pnpm 12.4.0 adds experimental Cargo and Python dependency installation plus `pnpm pipeline`.
+It can now coordinate npm,
+Cargo,
+and Python dependency graphs in one install;
+manage Node,
+Deno,
+and Bun runtimes;
+execute project-aware shims;
+and schedule workspace scripts with dependencies,
+concurrency,
+affected selection,
+caching,
+and aggregate failure reporting.
+
+This repository still resolves pnpm 12.3.4,
+so none of the 12.4 additions is locally established.
+Cargo support installs and vendors dependencies but does not install Rust or compile crates.
+Python support requires an existing interpreter.
+Pipeline commands execute scripts selected from project manifests,
+not TypeScript declarations directly.
+`doc/troubleshooting/pnpm-12-4-polyglot-workspace.md` records the source trace and current limitations.
+
 ## Coverage ledger
 
 ### Tool acquisition, versions, and bootstrap prerequisite
@@ -70,13 +121,27 @@ JDK and Android tooling,
 and platform-specific binaries.
 
 Proposed owner:
- unselected focused tool manager or composition of focused installers.
-One manually installed bootstrap prerequisite must be able to provision the runtime needed by later layers.
+ pnpm 12.4+ is the primary surface candidate for Node,
+Deno,
+and Bun runtimes;
+package-manager pins;
+npm,
+Cargo,
+and Python dependencies;
+and npm-distributed CLIs.
+File-enforcer already owns platform package-manager dispatch for system packages.
+Rust toolchains and components,
+JDK,
+Android SDK and NDK,
+Zig,
+and remaining standalone binaries still require focused owners.
+One manually installed bootstrap prerequisite must provision the runtime needed by later layers.
 
 Selection status:
- blocked on a choosing-technology audit.
-Do not assume one manager must cover every backend,
-and do not assume ecosystem-native managers compose into a cross-platform solution.
+ pnpm's expanded surface is verified from 12.4.1 documentation and source but not adopted or runtime-validated here.
+Remaining providers are unselected and require a choosing-technology audit.
+Do not assume pnpm's experimental ecosystem support or several native installers already compose into the required
+cross-platform contract.
 
 Parity gate:
  a disposable clean home on every supported operating system installs the committed versions,
@@ -110,16 +175,18 @@ bounded fanout,
 and failure collection inside Node scripts that invoke Mise recursively.
 
 Proposed owner:
- unselected focused task runner.
-Executable task logic should expose ordinary argument-vector and exit-status contracts rather than depend on Mise templates,
-`MISE_TASK_NAME`,
-or `mise tasks` discovery.
+ pnpm 12.4+ workspace task orchestration and `pnpm pipeline` are the primary surface candidates.
+File-enforcer can compile canonical TypeScript task definitions into `pnpm-workspace.yaml` relationships and project manifest
+scripts.
+Executable logic should remain TypeScript entry points with ordinary argument-vector and exit-status contracts.
+Nadle or a focused repository task runner remains a fallback if pnpm cannot preserve required semantics.
 Thin Mise adapters may remain during migration.
 
 Selection status:
- blocked on candidate discovery,
+ blocked on a disposable pnpm 12.4+ pilot,
 source audit,
 and representative runtime validation.
+The pipeline feature is experimental and task execution still depends on project manifest scripts.
 
 Parity gate:
  preserve package namespaces,
@@ -360,10 +427,22 @@ and
 `package/dev-script/file-enforcer/src/package/mise.generate-index.ts`.
 
 Proposed owner:
- the provisioning inventory and generator for the selected tool-provider composition.
+ file-enforcer is the canonical TypeScript configuration compiler for the replacement architecture.
+It should generate the selected provisioning,
+workspace-task,
+manifest,
+CI,
+and editor adapters from typed domain modules without becoming their runtime executor.
 
 Selection status:
- blocked by tool-provider selection.
+ existing generation,
+structured editing,
+staleness,
+watch protection,
+Cargo enforcement,
+JetBrains integration,
+and platform package dispatch are implemented.
+New pnpm and replacement-tool plans remain undesigned and unverified.
 
 Parity gate:
  generated files remain deterministic,
@@ -429,27 +508,31 @@ Intentionally retired behavior:
 
 ## Safe migration sequence
 
-1. Select and validate task and environment boundaries while Mise remains installed.
-2. Move executable logic behind ordinary process interfaces that do not require Mise discovery,
+1. Validate file-enforcer as the canonical TypeScript compiler and pilot pnpm 12.4+ in a disposable workspace while Mise
+remains installed.
+2. Select the remaining task,
+tool,
+and environment boundaries from the pilot evidence.
+3. Move executable logic behind ordinary process interfaces that do not require Mise discovery,
 templates,
 or environment variables.
 Keep thin Mise adapters so existing callers continue working.
-3. Run representative TypeScript,
+4. Run representative TypeScript,
 Rust,
 Android,
 desktop,
 watch,
 deployment,
 and secret paths through both interfaces in disposable fixtures.
-4. Migrate CI,
+5. Migrate CI,
 editor paths,
 root discovery,
 file-enforcer policy,
 agent tooling,
 and documentation only after their new owners pass their parity gates.
-5. Select and validate tool provisioning early,
+6. Select and validate tool provisioning early,
 but cut it over after task and environment consumers no longer require Mise semantics.
-6. Remove Mise configuration and installation only after a clean-machine exercise passes without it.
+7. Remove Mise configuration and installation only after a clean-machine exercise passes without it.
 
 Every step is an independently useful checkpoint.
 Keeping Mise solely for tool acquisition,
@@ -482,7 +565,12 @@ and source-level consumers no longer depend on active Mise behavior.
 The following user choices can change the architecture and candidate set:
 
 - Keep or retire automatic directory-entry environment activation.
-- Prefer one focused cross-language tool manager or several ecosystem-native installers.
+- Accept pnpm's package,
+runtime,
+shim,
+and pipeline breadth as one workspace boundary,
+or treat it as the same scope-concentration problem motivating Mise removal.
+- Prefer one focused cross-language tool manager or several ecosystem-native installers for capabilities pnpm does not cover.
 - Accept generated TOML,
   YAML,
   JSON,
