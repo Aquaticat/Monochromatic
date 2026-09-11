@@ -81,7 +81,7 @@ function positionedFootnote(
     text,
     offset,
   },);
-  if ((typeof marker === 'symbol') || ((node.type === 'footnoteDefinition') && (text[marker.endOffset] !== ':'))
+  if (((typeof marker) === 'symbol') || ((node.type === 'footnoteDefinition') && (text[marker.endOffset] !== ':'))
     || ((node.type === 'footnoteReference') && (node.position
       ?.end
       .offset

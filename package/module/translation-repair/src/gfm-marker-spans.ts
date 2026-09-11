@@ -166,7 +166,7 @@ export function gfmMarkerSpans({ text, }: { readonly text: string; },): readonly
       text,
       offset: cursor,
     },);
-    if (typeof marker !== 'symbol') {
+    if ((typeof marker) !== 'symbol') {
       markers.push(marker,);
       cursor = marker.endOffset - 1;
     }

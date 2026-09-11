@@ -48,7 +48,7 @@ export function footnoteRewriteMap(
       text: syntax,
       offset: 0,
     },);
-    if ((typeof marker === 'symbol') || (marker.endOffset !== syntax.length)
+    if (((typeof marker) === 'symbol') || (marker.endOffset !== syntax.length)
       || (marker.rawLabel !== move.to))
       throw new FootnoteRewriteError({ kind: 'label', },);
     /**
