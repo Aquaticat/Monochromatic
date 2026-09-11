@@ -31,7 +31,7 @@ function gitPathCharacter(character: string,): string {
   if (escaped !== undefined)
     return escaped;
   /** ASCII unit; non-ASCII text is copied under core.quotePath=false. */
-  const unit = character.charCodeAt(0,);
+  const unit = character.codePointAt(0,) ?? FIRST_PRINTABLE;
   if (unit < FIRST_PRINTABLE || unit === DELETE_CHARACTER) {
     /** Octal byte spelling before width padding. */
     const octal = unit.toString(OCTAL_RADIX,);

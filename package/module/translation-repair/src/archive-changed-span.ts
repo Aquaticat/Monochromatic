@@ -2,13 +2,13 @@
 // A contiguous string difference is never itself a semantic naming diagnosis.
 
 /** First high-surrogate unit in UTF-16. */
-const HIGH_SURROGATE_START = 0xD800;
+const HIGH_SURROGATE_START = '\uD800';
 /** Last high-surrogate unit in UTF-16. */
-const HIGH_SURROGATE_END = 0xDBFF;
+const HIGH_SURROGATE_END = '\uDBFF';
 /** First low-surrogate unit in UTF-16. */
-const LOW_SURROGATE_START = 0xDC00;
+const LOW_SURROGATE_START = '\uDC00';
 /** Last low-surrogate unit in UTF-16. */
-const LOW_SURROGATE_END = 0xDFFF;
+const LOW_SURROGATE_END = '\uDFFF';
 
 /**
  * Detects a boundary bisecting one UTF-16 surrogate pair.
@@ -28,9 +28,9 @@ function betweenSurrogates({ text, offset, }: {
   if (offset <= 0 || offset >= text.length)
     return false;
   /** Unit immediately before the boundary. */
-  const previous = text.charCodeAt(offset - 1,);
+  const previous = text[offset - 1] ?? '';
   /** Unit immediately after the boundary. */
-  const current = text.charCodeAt(offset,);
+  const current = text[offset] ?? '';
   return previous >= HIGH_SURROGATE_START && previous <= HIGH_SURROGATE_END
     && current >= LOW_SURROGATE_START && current <= LOW_SURROGATE_END;
 }
