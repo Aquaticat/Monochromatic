@@ -173,7 +173,6 @@ await describe({
         expect(ROSTER_MODEL_IDS.filter(function unseated(modelId,): boolean {
           return !RUN_ROSTER.includes(modelId,);
         },).toSorted(),).toEqual([
-          'deepseek-v4.1-flash',
           'google.gemma-4-31b',
         ],);
         expect(wet.writers,).toEqual(RUN_WRITERS,);
