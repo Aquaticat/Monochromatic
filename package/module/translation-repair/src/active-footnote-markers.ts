@@ -4,8 +4,8 @@ import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import { FootnoteRewriteError, } from './footnote-rewrite-error.ts';
 import { gfmMarkerAt, gfmMarkerSpans, type GfmMarkerSpan, } from './gfm-marker-spans.ts';
 import { maskInvisibleLines, } from './mask-invisible-lines.ts';
-import { MdxParseError, } from './parse-mdx.ts';
-import { parseSliceBody, } from './parse-slice-body.ts';
+import { MdxParseError, parseMdxBody, } from './parse-mdx.ts';
+import { maskHtmlComments, } from './mask-html-comments.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
 
 //region Syntax-authorized footnote markers
@@ -64,7 +64,7 @@ function positionedFootnote(
 }
 
 /**
- * Inventories active markers using the same strict slice grammar as structural admission.
+ * Inventories active markers under strict document grammar without hiding unmatched container tags.
  * Literal-looking references are recovered only from text nodes in the masked parser input.
  *
  * @param text - whole document or structural slice with canonical offsets
@@ -83,8 +83,10 @@ export function activeFootnoteMarkers({ text, }: { readonly text: string; },): r
   /** Match document preparation's invisible-line boundaries without changing offsets. */
   const { masked, } = maskInvisibleLines({ text: body, },);
   try {
-    /** Reuse exact masked parser input rather than rescanning comments in canonical text. */
-    const { root, parsedText, } = parseSliceBody({ text: masked, },);
+    /** Exact parser input, without rescuing unmatched or malformed JSX as a slice atom. */
+    const { masked: parsedText, } = maskHtmlComments({ text: masked, },);
+    /** A whole-document syntax failure cannot authorize raw-text marker edits. */
+    const root = parseMdxBody({ body: parsedText, },);
     /** Owned structural work-stack, avoiding recursion through container spines. */
     const work: DeepReadonlyData<RootContent>[] = root.children.toReversed();
     /** Positioned markers collected in source-order preorder. */

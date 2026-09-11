@@ -15,7 +15,7 @@ import type { DeepReadonlyData, } from './readonly-data.ts';
  *
  * @param text - canonical slice bytes whose offsets the tree must retain
  *
- * @returns Positioned tree, exact masked parser input and container tags represented separately by atoms
+ * @returns Positioned tree and container tags represented separately by atoms
  *
  * @throws {@link import('./parse-mdx.ts').MdxParseError} when strict grammar cannot read the masked slice
  *
@@ -27,7 +27,6 @@ import type { DeepReadonlyData, } from './readonly-data.ts';
 export function parseSliceBody({ text, }: { readonly text: string; },): {
   readonly root: DeepReadonlyData<Root>;
   readonly tags: readonly LoneContainerTag[];
-  readonly parsedText: string;
 } {
   /**
    * Comments become same-length whitespace, so no position moves.
@@ -43,6 +42,5 @@ export function parseSliceBody({ text, }: { readonly text: string; },): {
   return {
     root: parseMdxBody({ body: masked, },),
     tags,
-    parsedText: masked,
   };
 }
