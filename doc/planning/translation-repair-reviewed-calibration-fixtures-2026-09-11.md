@@ -1,7 +1,8 @@
 # Source-reviewed judge calibration fixtures
 
 Task 32's reviewed references and fixed plan are verified.
-Task 34 checks the paid driver's transport and evidence boundary before task 31 can spend.
+Task 34's paid-driver transport and evidence checks also pass.
+Actual role calibration in task 31 remains separate from these instrument results.
 The serving integration in task 30 is complete;
 production role holds remain unchanged.
 

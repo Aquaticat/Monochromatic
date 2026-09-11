@@ -30,7 +30,9 @@ No paid judge,
 writer or image calibration has run.
 V4.1 Flash remains held out of production roles.
 The reviewed-reference implementation and fixed plan in task 32 are verified.
-Task 34 now checks the paid driver's transport and evidence boundary before task 31 can spend.
+Task 34's paid-driver transport and evidence checks now pass.
+Task 31 can begin after a fresh budget reading;
+no actual role measurement or hold release has occurred yet.
 Full-entry readiness is still false.
 Current checked runtime is frozen at
 `package/module/translation-repair/node_modules/.frozen-dist-993583ad5`.
@@ -148,17 +150,32 @@ The old plan is superseded by the driver changes.
 Task 34 now captures initial and recovery bodies through compiled provider clients without network,
 derives physical-call bounds from the existing routing and HTTP retry layers,
 and compares live bodies against registered routes.
-Actual-client transport simulation and negative boundary controls remain pending.
+Actual-client transport simulation passes:
+140 cells,
+144 stage calls and 146 fake model POSTs across all four gateways,
+with one final ballot per identity,
+HTTP retry,
+cached stage retry,
+final nudge and Hyper-to-OpenRouter budget failover exercised.
+The production prompt cache delegates through `chatText`,
+so the direct router's schema re-ask is not on this caller path;
+no production re-ask was added.
+Eleven positive/negative controls verify route/body checks,
+global and per-cell bounds,
+persistence refusal,
+post-call failure and provider absence.
+Simulated rows cannot become admission evidence.
 See [driver verification](../planning/translation-repair-calibration-driver-2026-09-11.md).
 The package formatter is `format:oxlint`,
 not `format`;
 `reviewed-reference-format-r3-20260911.out` passed before the latest changes.
 
 Next actions:
-complete task 34's transport-level checks and scoring edge controls;
+read the fresh budget sample and start task 31 on the registered plan
+`~/temp/agent/v41-reviewed-plan-20260911-9eo8in/plan.json`;
 preserve the fixed cohort and existing count criterion rather than dropping incomplete peers;
 regenerate the plan after any driver edit;
-refresh actual budgets before task 31.
+read actual individual ballots and route/cost evidence before deciding role admission.
 Persist actual model-independent question identities and model/provider cell identities separately,
 and grade each actual question once.
 The native default cap of sixteen rows is not complete admission evidence for the full reviewed matrix.

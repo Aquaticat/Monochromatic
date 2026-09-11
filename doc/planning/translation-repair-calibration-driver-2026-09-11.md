@@ -1,6 +1,7 @@
 # Reviewed calibration driver verification
 
-Task 34 gates paid task 31.
+Task 34's transport and evidence checks are complete.
+Task 31 still requires actual role calibration before any production hold is released.
 The reference package is verified at frozen `993583ad5`;
 no paid judge,
 writer or image calibration has run.
@@ -61,16 +62,23 @@ and the new simulation targets the previously missed recovery branch.
 
 ## Physical calls and actual provider bodies
 
-`provider-router.ts` bounds the initial budget-routing attempts by serving reach.
-`provider-router-reask.ts` may ask one other serving stack after a nonconforming reply.
+`provider-router.ts` bounds budget-routing attempts by serving reach.
+`provider-router-reask.ts` can add a schema re-ask on the direct router API,
+but it is not on this production caller path:
+`prompt-uniqueness-client.ts` implements `chatJson` by reading or buying raw replies through `inner.chatText`,
+then applying the caller's validator.
+`createRunClient` installs that wrapper.
+A compiled-client simulation with all providers wet confirmed that an initial schema mismatch
+was cached and retried without an OpenRouter schema re-ask.
+Do not add a production re-ask merely to make an incorrect test expectation pass.
+
 `transient-retry.ts` grants four retries after the initial HTTP attempt.
 Each client's `chatText` uses that exchange ladder once.
-
-The proposed physical bound preserves every existing layer:
-serving-provider attempts plus the optional schema re-ask,
-multiplied by HTTP attempts and stage calls.
+The current model POST dispatch bound is therefore five stage calls,
+times that model's serving-provider count,
+times five HTTP attempts.
 It is calculated per model and summed over registered cells.
-Budget GETs are recorded separately from model POSTs.
+Budget GETs and lower-level redirect transactions are not model POST dispatches in this counter.
 The existing global deadline remains another independent bound.
 
 The driver captures both initial and recovery bodies through the actual compiled provider clients,
@@ -121,9 +129,42 @@ clients,
 prompt cache and parsers,
 replacing only physical transport.
 It must exercise the existing HTTP retry ladder,
-cross-provider schema re-ask,
+Hyper payment refusal followed by OpenRouter budget failover,
 cached stage retries and final recovery nudge,
 then verify one ballot per model identity and no simulated admission score.
-Negative route,
-bound,
-persistence and interruption controls remain required before any paid launch.
+The first compiled-client run returned all 140 cells with 144 stage calls,
+including the nudge,
+but its expected schema re-ask assertion was wrong.
+That invocation is not the completed transport verification.
+
+The corrected simulation and negative controls pass against
+`~/temp/agent/v41-reviewed-plan-20260911-9eo8in/plan.json`.
+Its plan digest is `2df23dc9469dc2a65a21654ac782fe26e2af3f547359723f4f6fcc886b12cf1e`;
+its driver digest is `c8498a4d4ca35374cce8121aee0e70e69d5c9b63938c6fd6f920efe71b818daa`.
+The compiled-client simulation returned 140 cells,
+144 stage calls and 146 simulated model POST dispatches across all four gateways.
+It verified the unchanged HTTP retry ladder,
+cached stage retries,
+final nudge,
+Hyper-to-OpenRouter budget failover and one ballot per identity.
+It emitted no admission score.
+Evidence:
+`~/temp/agent/v41-reviewed-simulation-20260911-LZgjFd/wire-simulation-verification.json`.
+The controls separately exercise wrong route,
+wrong body,
+zero global and per-cell model-POST allowances,
+a bound-of-one positive control,
+per-cell and global bound overflow after one dispatch,
+preexisting request-record refusal,
+an uncaught post-call error and genuine provider absence.
+They require preserved sentinel bytes,
+expected delegated-call counts,
+nonzero child exit for failed operations,
+no score on simulated reports and incomplete rather than completed evidence on failure.
+`~/temp/agent/v41-reviewed-boundary-verification-r2-20260911.json`
+records all eleven passing positive and negative cases.
+Failed operations exit nonzero and persist incomplete reports;
+the provider-absence control returns an empty ballot without falsely becoming an infrastructure failure.
+Every record is simulated and no score is attached.
+These results were read before closing task 34.
+No real model call occurred in either verification.
