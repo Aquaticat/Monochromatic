@@ -76,14 +76,20 @@ export function reviewedFidelityRequest({
     specs,
     onlyEntryIds,
   },);
-  if (!selected.some(function supportsRequestedDamage(spec,): boolean {
-    return spec.damages
-      .some(function requested(damage,): boolean {
-      return damageKinds.includes(damage.kind,);
+  /**
+   * Every requested family needs reviewed evidence somewhere in the selected population.
+   * An available deletion does not authorize silently omitting a requested alteration.
+   */
+  const unavailable = damageKinds.filter(function missing(kind,): boolean {
+    return !selected.some(function supportsRequestedDamage(spec,): boolean {
+      return spec.damages.some(function requested(damage,): boolean {
+        return damage.kind === kind;
+      },);
     },);
-  },)) {
+  },);
+  if (unavailable.length > 0) {
     throw new FidelityReferenceError({
-      referenceId: 'damage selection',
+      referenceId: `damage selection (${unavailable.join(', ',)})`,
       operation: 'request',
     },);
   }

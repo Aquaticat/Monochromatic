@@ -127,9 +127,17 @@ export function reviewedFidelityTrials({
       },);
     },);
   },);
-  if (rows.length === 0)
+  /**
+   * A nonempty prefix is not evidence that every requested defect family was materialized.
+   */
+  const unavailable = damageKinds.filter(function missing(kind,): boolean {
+    return !rows.some(function represents(row,): boolean {
+      return row.trial.damageKind === kind;
+    },);
+  },);
+  if (unavailable.length > 0)
     throw new FidelityReferenceError({
-      referenceId: 'damage selection',
+      referenceId: `damage selection (${unavailable.join(', ',)})`,
       operation: 'request',
     },);
   return rows;
