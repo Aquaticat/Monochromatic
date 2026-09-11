@@ -152,7 +152,8 @@ This is not evidence that such filtering preserves representative coverage.
 The unrestricted and shape-filtered whole-parent proposals are rejected.
 Only a provenance type scaffold was committed at `53b7c7f1e`;
 no runtime sampler or writer was changed to use either proposal.
-That scaffold must be reshaped before use.
+The unreferenced whole-parent scaffold was removed after this correction.
+Prepared-group interfaces should reuse existing preparation shapes rather than retain that abandoned type.
 
 The chosen implementation direction is frozen production-prepared groups:
 
@@ -183,6 +184,26 @@ Independent review supported this direction after examining the new measurements
 It does not add writer rounds or change the writer standing rule.
 The old launcher remains blocked.
 A fresh budget reading is required before paid preparation and again before writer generation.
+
+## Pairing evidence interface
+
+The production pairing stage returned counts and agreed relations,
+but not the final per-seat outcomes needed to replay those relations independently.
+`85f331192` adds regressions covering usable replies,
+heard but out-of-range replies and missing voices.
+`919e517e4` returns the existing `runWindowedRounds` outcomes unchanged on both result paths.
+Prompts,
+seat selection,
+retry policy and the two-voice pair-agreement threshold are unchanged.
+Preparation roster quorum remains a distinct condition from pair agreement.
+
+The first green attempt exposed a test assertion mistake:
+`toHaveProperty(path, value)` delegates to Chai's non-deep property comparison
+in `package/module/test/src/expect-matchers-core.ts`.
+The tests now compare `outcome.outcomes` with `toEqual`.
+The original red failures were missing-property assertions;
+the attempted green failures are not evidence of changed pairing results.
+The corrected tests and full package verification remain required.
 
 ## Current artifacts
 

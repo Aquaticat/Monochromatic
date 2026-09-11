@@ -143,7 +143,7 @@ await describe({
         },);
         expect(outcome.pairs.length,).toBe(2,);
         expect(outcome.usable,).toBe(2,);
-        expect(outcome,).toHaveProperty('outcomes', ROSTER.map(modelId => ({
+        expect(outcome.outcomes,).toEqual(ROSTER.map(modelId => ({
           modelId,
           voice: { heard: true, value: { pairs: [{ source: 0, target: 0, }, { source: 1, target: 1, },], }, },
         })),);
@@ -270,7 +270,7 @@ await describe({
         expect(outcome.pairs.length,).toBe(0,);
         expect(outcome.usable,).toBe(0,);
         expect(outcome.findings.join(' ',),).toContain('no-usable-voice',);
-        expect(outcome,).toHaveProperty('outcomes', ROSTER.map(modelId => ({
+        expect(outcome.outcomes,).toEqual(ROSTER.map(modelId => ({
           modelId,
           voice: { heard: true, value: { pairs: [{ source: 9, target: 0, },], }, },
         })),);
@@ -291,7 +291,7 @@ await describe({
         },);
         expect(outcome.pairs,).toEqual([],);
         expect(outcome.heard,).toBe(0,);
-        expect(outcome,).toHaveProperty('outcomes', ROSTER.map(modelId => ({
+        expect(outcome.outcomes,).toEqual(ROSTER.map(modelId => ({
           modelId,
           voice: { heard: false, answered: true, unreachable: false, },
         })),);
