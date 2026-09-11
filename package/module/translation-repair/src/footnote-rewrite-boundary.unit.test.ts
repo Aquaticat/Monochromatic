@@ -5,6 +5,9 @@ await describe({
   name: 'footnote operational rewrite boundaries',
   children: [
     ...[
+      { name: 'a missing changing identifier', text: 'Real[^1].\n\n[^1]: Note.', map: [{ from: 'missing', to: 'x' }], kind: 'missing-source' },
+      { name: 'a stale map with both present and missing domains', text: 'Real[^1].\n\n[^1]: Note.',
+        map: [{ from: '1', to: 'x' }, { from: 'missing', to: 'y' }], kind: 'missing-source' },
       { name: 'invalid label syntax before the post-rewrite graph guard', text: 'Real[^1].\n\n[^1]: Note.', map: [{ from: '1', to: 'x]outside' }], kind: 'label' },
       { name: 'conflicting normalized source mappings', text: 'Real[^Note].\n\n[^Note]: Note.',
         map: [{ from: 'NOTE', to: 'x' }, { from: 'note', to: 'y' }], kind: 'mapping' },
@@ -30,7 +33,6 @@ await describe({
         const text = 'Real[^Note].\n\n[^NOTE]: Note.';
         expect(applyFootnoteRelabel({ text, map: [{ from: 'note', to: 'NOTE' }] })).toBe(text);
         expect(applyFootnoteRelabel({ text, map: [{ from: 'note', to: 'X' }, { from: 'NOTE', to: 'x' }] })).toBe('Real[^X].\n\n[^X]: Note.');
-        expect(applyFootnoteRelabel({ text, map: [{ from: 'unmentioned', to: 'x' }] })).toBe(text);
         expect(applyFootnoteRelabel({ text: '<unclosed', map: [] })).toBe('<unclosed');
       },
     }),
