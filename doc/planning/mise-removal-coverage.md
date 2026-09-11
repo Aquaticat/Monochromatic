@@ -72,6 +72,24 @@ XML,
 and lockfiles remain generated or tool-owned adapters.
 Field ownership must be explicit when an external tool also mutates a native manifest.
 
+File-enforcer can also own toolchain convergence as the TypeScript policy and orchestration boundary.
+Its current `ensurePackage` only checks whether a binary responds,
+then installs an unversioned OS package;
+its package records contain no version,
+checksum,
+provenance,
+component,
+or platform-artifact contract.
+A toolchain extension should delegate resolution,
+download verification,
+and installation mechanics to focused providers such as pnpm,
+rustup,
+Android `sdkmanager`,
+and a verified standalone-binary installer.
+File-enforcer should compare desired and observed state,
+order providers,
+and report drift rather than reimplement every provider backend.
+
 ## pnpm 12.4+ candidate surface
 
 pnpm 12.4.0 adds experimental Cargo and Python dependency installation plus `pnpm pipeline`.
@@ -121,7 +139,11 @@ JDK and Android tooling,
 and platform-specific binaries.
 
 Proposed owner:
- pnpm 12.4+ is the primary surface candidate for Node,
+ file-enforcer owns canonical TypeScript toolchain policy,
+provider selection,
+convergence order,
+and drift reporting.
+pnpm 12.4+ is the primary surface provider candidate for Node,
 Deno,
 and Bun runtimes;
 package-manager pins;
@@ -129,13 +151,14 @@ npm,
 Cargo,
 and Python dependencies;
 and npm-distributed CLIs.
-File-enforcer already owns platform package-manager dispatch for system packages.
+File-enforcer's existing OS package dispatch remains the provider for system packages.
 Rust toolchains and components,
 JDK,
 Android SDK and NDK,
 Zig,
-and remaining standalone binaries still require focused owners.
-One manually installed bootstrap prerequisite must provision the runtime needed by later layers.
+and remaining standalone binaries still require focused providers.
+One manually installed bootstrap prerequisite must provision Node before file-enforcer can execute;
+a committed generated manifest must carry that bootstrap state on a fresh clone.
 
 Selection status:
  pnpm's expanded surface is verified from 12.4.1 documentation and source but not adopted or runtime-validated here.
@@ -427,12 +450,15 @@ and
 `package/dev-script/file-enforcer/src/package/mise.generate-index.ts`.
 
 Proposed owner:
- file-enforcer is the canonical TypeScript configuration compiler for the replacement architecture.
+ file-enforcer is the canonical TypeScript configuration compiler and toolchain-convergence orchestrator for the replacement
+architecture.
 It should generate the selected provisioning,
 workspace-task,
 manifest,
 CI,
-and editor adapters from typed domain modules without becoming their runtime executor.
+and editor adapters from typed domain modules.
+Focused providers retain artifact resolution and installation mechanics;
+file-enforcer should not become the task or secret runtime.
 
 Selection status:
  existing generation,
