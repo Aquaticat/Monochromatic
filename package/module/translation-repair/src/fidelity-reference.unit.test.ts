@@ -74,8 +74,15 @@ await describe({
     ...([
       { name: 'source hash drift', change: (spec: FidelityReferenceSpec) => ({ ...spec, source: { ...spec.source, hash: 'wrong' } }) },
       { name: 'negative source offset', change: (spec: FidelityReferenceSpec) => ({ ...spec, source: { ...spec.source, startOffset: -1 } }) },
-      { name: 'fractional source offset', change: (spec: FidelityReferenceSpec) => ({ ...spec, source: { ...spec.source, startOffset: 0.5 } }) },
-      { name: 'empty source span', change: (spec: FidelityReferenceSpec) => ({ ...spec, source: { ...spec.source, endOffset: spec.source.startOffset } }) },
+      { name: 'fractional source offset with otherwise matching bytes', change: (spec: FidelityReferenceSpec) => ({ ...spec,
+        source: { ...spec.source, startOffset: spec.source.startOffset + 0.5 } }) },
+      { name: 'fractional source end with otherwise matching bytes', change: (spec: FidelityReferenceSpec) => ({ ...spec,
+        source: { ...spec.source, endOffset: spec.source.endOffset + 0.5 } }) },
+      { name: 'empty source span with matching hash', change: (spec: FidelityReferenceSpec) => ({ ...spec,
+        source: { ...spec.source, endOffset: spec.source.startOffset, hash: hashContent({ content: '' }) },
+        damages: spec.damages.filter(damage => damage.kind !== 'alteration') }) },
+      { name: 'out-of-range donor end whose clamp would match the hash', change: (spec: FidelityReferenceSpec) => ({ ...spec,
+        donor: { ...spec.donor, endOffset: spec.donor.endOffset + 1 } }) },
       { name: 'out-of-range archive span', change: (spec: FidelityReferenceSpec) => ({ ...spec, archive: { ...spec.archive, endOffset: 100_000 } }) },
       { name: 'archive hash drift', change: (spec: FidelityReferenceSpec) => ({ ...spec, archive: { ...spec.archive, hash: 'wrong' } }) },
       { name: 'reference hash drift', change: (spec: FidelityReferenceSpec) => ({ ...spec, referenceHash: 'wrong' }) },
@@ -101,6 +108,47 @@ await describe({
         expect(() => buildReviewedFidelityReference({ ...fixture, spec: row.change(fixture.spec) })).toThrow(FidelityReferenceError);
       },
     })),
+    it({
+      name: 'rejects a negative coordinate even when slice would recover the reviewed bytes',
+      fn: async () => {
+        const fixture = reviewedFixture();
+        const source = { ...fixture.spec.source,
+          startOffset: fixture.spec.source.startOffset - fixture.sourceFile.length };
+        expect(fixture.sourceFile.slice(source.startOffset, source.endOffset))
+          .toBe(fixture.sourceFile.slice(fixture.spec.source.startOffset, fixture.spec.source.endOffset));
+        expect(() => buildReviewedFidelityReference({ ...fixture, spec: { ...fixture.spec, source } }))
+          .toThrow(FidelityReferenceError);
+      },
+    }),
+    it({
+      name: 'rejects overlapping removals even when reconstruction and all damage hashes would still match',
+      fn: async () => {
+        const removed = 'very ';
+        const original = REVIEW_REFERENCE.replace('quiet flat', `${removed}quiet flat`);
+        const fixture = unedited(original);
+        const reviewed = unedited(REVIEW_REFERENCE);
+        const startOffset = original.indexOf(removed);
+        expect(startOffset).toBeGreaterThanOrEqual(0);
+        const edit = { startOffset, endOffset: startOffset + removed.length,
+          expectedHash: hashContent({ content: removed }), replacement: '',
+          author: 'fixture-author', rationale: 'Remove unsupported intensifier.' };
+        const spec = { ...fixture.spec, referenceHash: reviewed.spec.referenceHash,
+          referenceChars: reviewed.spec.referenceChars, damages: reviewed.spec.damages, edits: [edit] };
+        expect(buildReviewedFidelityReference({ ...fixture, spec }).referenceText).toBe(REVIEW_REFERENCE);
+        expect(() => buildReviewedFidelityReference({ ...fixture, spec: { ...spec, edits: [edit, edit] } }))
+          .toThrow(FidelityReferenceError);
+      },
+    }),
+    it({
+      name: 'rejects an overlapping donor independently of insertion-damage hashing',
+      fn: async () => {
+        const fixture = reviewedFixture();
+        const spec = { ...fixture.spec, damages: fixture.spec.damages.filter(damage => damage.kind !== 'insertion') };
+        expect(buildReviewedFidelityReference({ ...fixture, spec }).damages).toHaveLength(2);
+        expect(() => buildReviewedFidelityReference({ ...fixture, spec: { ...spec, donor: spec.archive } }))
+          .toThrow(FidelityReferenceError);
+      },
+    }),
     it({
       name: 'enforces the natural length floor even with matching hashes and valid damage variants',
       fn: async () => {
