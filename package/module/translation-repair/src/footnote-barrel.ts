@@ -21,6 +21,7 @@ export {
   documentLabels,
   type RelabelClosure,
 } from './archive-footnote-closure.ts';
+export { type FootnoteLabelRewrite, type RetainedArchiveFootnoteLabel, } from './footnote-label-rewrite.ts';
 export {
   crossingFinding,
   type DefinitionLabelPair,

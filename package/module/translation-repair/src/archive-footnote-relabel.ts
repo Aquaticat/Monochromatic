@@ -1,5 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import type { DefinitionLabelPair, } from './pair-definition-order.ts';
+import type { FootnoteLabelRewrite, } from './footnote-label-rewrite.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import {
   scanGfmReferenceLiterals,
@@ -483,7 +484,7 @@ export function applyFootnoteRelabel(
     map,
   }: {
     readonly text: string;
-    readonly map: readonly FootnoteRelabel[];
+    readonly map: readonly FootnoteLabelRewrite[];
   },
 ): string {
   /**
@@ -510,7 +511,7 @@ export function applyFootnoteRelabel(
         hit: TextMarkerHit,
       ): RelabelWalk {
         /**
-         * Label the original gives this note, absent when it stays.
+         * Validated destination label, absent when this occurrence stays.
          */
         const to = lookup.get(hit.identifier,);
         if (to === undefined)
