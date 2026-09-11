@@ -1,7 +1,8 @@
 # V4.1 writer calibration preflight
 
-Task 37's preparation fix and bounded verification are complete.
-Task 35 can resume on the new checked runtime.
+Task 37's heap fix and bounded verification are complete.
+Task 35 is now blocked by task 38's independently discovered benchmark unit-scope defect.
+The heap fix's unchanged-output proof is not writer-admission evidence.
 No writer generation or image-reading calibration has run.
 Judge admission is verified independently and remains seated.
 
@@ -125,3 +126,19 @@ controls and container tradeoffs are in
 The initial red command also triggered automatic mise tool preparation after mise changed to 2026.9.5;
 subsequent checks explicitly used `--no-deps --skip-tools`.
 Unrelated `mise.lock` drift remains unstaged and is not part of this fix.
+
+## Separate benchmark scope blocker
+
+Full sample reading and a compiled validator probe found a concrete cross-row obligation:
+`windward0032#14` supplies only a source heading,
+but its incumbent floor requires the body paragraphs whose source is in sibling `#15`.
+A heading-only output is rejected while the full incumbent passes;
+the `lintong#0` heading-only positive control succeeds.
+The old launch plan is superseded for calibration,
+and its launcher now refuses paid `run` mode.
+No writer generation occurred.
+
+[Writer unit scope](translation-repair-writer-unit-scope-2026-09-11.md)
+records the evidence,
+withdrawn conditional advice and constraints for task 38.
+The production archive floor and existing forty-round pooled-null policy are not weakened.

@@ -259,8 +259,8 @@ Proposed clarification,
 not applied:
 
 ```text
-QIV: Validate scope, caches, harness, and gold references before trusting results.
-Stale caches, contract-silenced fixtures, and unverified goldens answer different questions than asked.
+QIV: Validate scope, caches, harness, gold and consumer contracts. Confirm output obligations fit their input unit;
+equal inputs or preserved results alone do not prove benchmark validity.
 ```
 
 The expected action is being performed:

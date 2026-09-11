@@ -201,8 +201,9 @@ The package formatter is `format:oxlint`,
 not `format`;
 `reviewed-reference-format-r3-20260911.out` passed before the latest changes.
 
-Task 37's preparation failure is fixed and verified;
-task 35 resumes without any writer generation having run yet.
+Task 37's preparation failure is fixed and verified.
+Task 35 is now paused for task 38's separate benchmark unit-scope defect;
+no writer generation has run.
 The deterministic sampler launches corpus-entry reads concurrently,
 so preflight runs in a 2 GiB,
 2 CPU,
@@ -234,13 +235,23 @@ The source trace is in
 [bench Git resolution](../troubleshooting/translation-repair-bench-git-resolution.md).
 A concurrent/unrelated `mise.lock` change remains unstaged.
 
+The exact frozen container sample and budget setup passed,
+but full sample reading exposed a different issue.
+`windward0032#14` has source heading only and incumbent heading plus three body paragraphs;
+its body source is in sibling `#15`.
+The compiled archive-floor validator rejects a heading-only candidate,
+while retaining the incumbent passes.
+A valid `lintong#0` heading-to-heading control passes.
+The earlier conditional advice to keep the old sample was withdrawn after this counterexample.
+The old launch script now refuses paid `run` mode.
+
 Next actions:
-verify the frozen writer sample/container output setup;
-run task 35's existing 40-round producer calibration on the checked runtime;
-inspect drafts,
-ballots and the pooled-null writer rule before writer admission.
-Task 36 then verifies image reading.
-Both retain independent holds.
+complete task 38's closed paired-unit sampling/provenance fix without weakening the archive floor,
+changing the forty-round pooled-null rule or adding generation rounds;
+freeze and read the revised forty-unit plan before any paid writer call.
+[Writer unit scope](../planning/translation-repair-writer-unit-scope-2026-09-11.md) is the current work record.
+Task 36 follows writer calibration.
+Both independent holds remain.
 Persist actual model-independent question identities and model/provider cell identities separately,
 and grade each actual question once.
 The native default cap of sixteen rows is not complete admission evidence for the full reviewed matrix.
