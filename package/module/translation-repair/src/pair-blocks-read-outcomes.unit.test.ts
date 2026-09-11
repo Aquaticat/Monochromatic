@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
+  type BlockPair,
   type BlockPairingWire,
   readBlockPairingOutcomes,
   type RoundOutcome,
@@ -70,7 +71,45 @@ await describe({
           freeOrder: { source: new Set([0, 1,],), target: new Set([0, 1,],), }, l, },);
         expect(ordinary.usable,).toBe(0,);
         expect(definitions.usable,).toBe(3,);
+        expect(definitions.cacheEligible,).toBe(false,);
         expect(definitions.outcomes,).toEqual(outcomes,);
+      },
+    },),
+    it({
+      name: 'keeps the two-voice relation threshold distinct from a larger electorate quorum',
+      fn: async () => {
+        const largerRoster = [...roster, 'hf:openai/gpt-oss-120b', 'inception/mercury-2.5',] as const;
+        const outcomes: readonly RoundOutcome<BlockPairingWire>[] = largerRoster.map((modelId, index) => ({
+          modelId,
+          voice: { heard: true, value: { pairs: index < 2 ? [{ source: 0, target: 0, },] : [], }, },
+        }));
+        const result = readBlockPairingOutcomes({ outcomes, modelIds: largerRoster, sourceCount: 2, targetCount: 2, l, },);
+        expect(result.pairs,).toEqual([{ source: 0, target: 0, },],);
+        expect(result.usable,).toBe(5,);
+      },
+    },),
+    it({
+      name: 'records an empty asked-seat list without inventing silent model outcomes',
+      fn: async () => {
+        const result = readBlockPairingOutcomes({ outcomes: [], modelIds: roster, sourceCount: 2, targetCount: 2, l, },);
+        expect(result.outcomes,).toEqual([],);
+        expect(result.cacheEligible,).toBe(false,);
+        expect(result.findings,).toEqual(['block-pairing no-usable-voice (0 heard of 3)',],);
+      },
+    },),
+    it({
+      name: 'propagates unexpected reader errors instead of treating infrastructure failures as unusable votes',
+      fn: async () => {
+        const failure = new Error('fixture wire access failed',);
+        const value: BlockPairingWire = {
+          get pairs(): readonly BlockPair[] {
+            throw failure;
+          },
+        };
+        expect(() => readBlockPairingOutcomes({
+          outcomes: [{ modelId: roster[0], voice: { heard: true, value, }, },],
+          modelIds: roster, sourceCount: 2, targetCount: 2, l,
+        },),).toThrow(failure,);
       },
     },),
   ],

@@ -63,6 +63,7 @@ export function readBlockPairingOutcomes(
 ): BlockPairingOutcome {
   /** Logger distinguishing transport-free interpretation from the purchased stage. */
   const pl = tagged({ tag: readBlockPairingOutcomes.name, l, },);
+  pl.debug(`reading ${String(outcomes.length,)} asked-seat outcomes over ${String(modelIds.length,)} configured seats`,);
   /** Replies that arrived and validated in shape. */
   const heardVoices = outcomes.filter(function wasHeard(outcome,): boolean {
     return outcome.voice.heard;

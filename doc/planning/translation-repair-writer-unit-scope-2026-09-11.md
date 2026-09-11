@@ -220,6 +220,8 @@ footnote-definition separation and pure `prepareDocumentPair` handoff.
 A bounded parent-pool consumer needs the same block-round machinery without buying unrelated section rounds.
 Prefer extracting that shared operation rather than copying its cold/warm policies into a new sampler.
 No such extraction is implemented yet.
+The transport-free interpretation helper is now being shared between live pairing and recipe replay;
+its latest changes still need verification.
 
 Production also changes the actual writer surface after subdivision.
 `settleTranslateSlice` in `package/module/translation-repair/src/translate-slice.ts`:
@@ -240,7 +242,41 @@ not reproduce only a subset of its stage inputs.
 Its post-stage guards do not replace input review or add translation-generation rounds.
 Picture evidence and footnote relabeling must remain explicit in the preparation plan;
 a prepared range alone does not supply unseen image text or reconcile differing footnote labels.
+Do not substitute the entire `preparePassEntry` shell without further design:
+it also invokes archive prose repair.
+Allowing a benchmark peer to rewrite the incumbent during preparation would hide authorship
+behind the incumbent producer label and undermine self-vote exclusions.
+Preparation here buys correspondence evidence and may apply the existing pure footnote relabel;
+it must not buy uncredited benchmark-baseline prose.
 Native `producer-calibrate.ts` is still unchanged and unsafe to launch on the old sample.
+
+## Pinned prepared-scope control
+
+The provider-free control on frozen `06862482e` supplies a manually source-reviewed pairing recipe
+for the known windward parent,
+then invokes actual `prepareDocumentPair` and `validateTranslatedSlice`.
+This is an isolated mechanism control,
+not automatic acquisition or admission gold.
+
+- Heading source 2069 to 2079 pairs with target 11101 to 11126 and passes the unchanged validator.
+- Body source 2081 to 2419 pairs with target 11128 to 12232,
+  including all of its incumbent body paragraphs,
+  and passes the unchanged validator.
+- Every source and target parent node appears exactly once across the prepared outputs.
+- The old heading task still rejects the heading-only candidate.
+- The independent `lintong#0` heading-only control passes.
+
+The retained incumbent body is only a structural-contract witness,
+not a claim of grammatical or factual perfection.
+`prepared-scope-control.json` contains the exact outcome and membership arrays.
+The bounded container used no network and made no model calls.
+Its log is `writer-prepared-scope-control-20260911.out`.
+
+Frozen runtime:
+`node_modules/.frozen-dist-06862482e` under the translation package,
+digest `sha256-tree-v1:a31c12b618bb4fd76a6f9c00af0ccab720364648a39907b6de62e0f32653c1e7`.
+This snapshot adds pairing-seat evidence only;
+it does not contain a safe new writer sampler.
 
 ## Current artifacts
 
