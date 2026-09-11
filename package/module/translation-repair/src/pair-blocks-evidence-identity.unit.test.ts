@@ -4,6 +4,7 @@ import {
   type BlockPairingWire,
   createSyntheticClient,
   pairBlocksWithRoster,
+  PairingEvidenceError,
   readBlockPairingOutcomes,
   type RosterModelId,
   type RoundOutcome,
@@ -33,7 +34,7 @@ await describe({
     ...invalid.map(test => it({
       name: test.name,
       fn: async () => {
-        expect(() => readBlockPairingOutcomes({ ...test, sourceCount: 2, targetCount: 2, l, },),).toThrow('pairing evidence',);
+        expect(() => readBlockPairingOutcomes({ ...test, sourceCount: 2, targetCount: 2, l, },),).toThrow(PairingEvidenceError,);
       },
     },)),
     it({
@@ -57,7 +58,7 @@ await describe({
       { name: 'duplicated', modelIds: [roster[0], roster[0],], },
       { name: 'empty', modelIds: [], },
     ].map(test => it({
-      name: `refuses a ${test.name} live electorate before any model transport`,
+      name: `refuses ${test.name} live electorate before any model transport`,
       fn: async () => {
         let calls = 0;
         const client = createSyntheticClient({
@@ -76,7 +77,7 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(caught,).toBeInstanceOf(Error,);
+        expect(caught,).toBeInstanceOf(PairingEvidenceError,);
         expect(calls,).toBe(0,);
       },
     },)),

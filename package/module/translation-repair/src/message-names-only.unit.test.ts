@@ -200,6 +200,7 @@ const NAMED_PARTS: Record<string, string> = {
   'String(holder.pid,)': 'process id',
   'String(idleMs,)': 'duration',
   'String(index,)': 'index within a parsed tree',
+  'String(failure.index,)': 'numeric position within recorded pairing seat identities',
   'String(sampled,)': 'count',
   'String(status,)': 'HTTP status code',
   'String(unrecorded,)': 'count',

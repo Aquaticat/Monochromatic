@@ -31,10 +31,6 @@ export type PairingEvidenceFailure =
      * Position in the recorded outcome sequence, not the configured roster.
      */
     readonly index: number;
-    /**
-     * Configured-domain model identifier, never a model's prose response.
-     */
-    readonly modelId: RosterModelId;
   };
 
 /**
@@ -52,7 +48,7 @@ export class PairingEvidenceError extends Error {
    */
   public override readonly name = 'PairingEvidenceError';
   /**
-   * Only a closed failure kind, numeric index and model identifier enter the message.
+   * Only a closed failure kind and numeric input index enter the message.
    */
   readonly messageNamesOnly: true = true;
 
@@ -68,7 +64,7 @@ export class PairingEvidenceError extends Error {
    */
   public constructor(failure: PairingEvidenceFailure,) {
     super(failure.kind === 'outcome-order'
-      ? `pairing evidence: askedModelIds[${String(failure.index,)}] (${failure.modelId}) is not a unique ordered member of configured modelIds; retain only actual final seat outcomes in configured order`
+      ? `pairing evidence: askedModelIds[${String(failure.index,)}] is not a unique ordered member of configured modelIds; retain only actual final seat outcomes in configured order`
       : failure.kind === 'empty-electorate'
       ? 'pairing evidence: configured modelIds is empty; retain the electorate used by the pairing stage'
       : 'pairing evidence: configured modelIds repeats an identity; each model must hold exactly one configured seat',);
@@ -141,7 +137,6 @@ export function assertPairingSeats(
       throw new PairingEvidenceError({
         kind: 'outcome-order',
         index,
-        modelId,
       },);
     return position;
   }, -1,);
