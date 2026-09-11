@@ -218,8 +218,15 @@ in `package/module/translation-repair/src/prepare-with-pairing.ts` owns the bloc
 media-adjacent target normalization,
 footnote-definition separation and pure `prepareDocumentPair` handoff.
 A bounded parent-pool consumer needs the same block-round machinery without buying unrelated section rounds.
-Prefer extracting that shared operation rather than copying its cold/warm policies into a new sampler.
-No such extraction is implemented yet.
+That operation is now extracted as `prepareBlockPairing`,
+with `PreparedBlockPairing` distinguishing implicit,
+empty,
+paired and fallback states.
+Only questioned states carry cached or queried acquisition evidence.
+`prepareDocumentPairWithRoster` now delegates each indexed parent to it,
+retaining the pure preparation map and existing aggregate result shape.
+The extraction is committed through `cd197fd20`,
+but compatibility and complete package verification remain pending.
 `readBlockPairingOutcomes` is shared between live pairing and recipe replay.
 At `6f496fd0c`,
 its build,
@@ -366,6 +373,37 @@ The registered preparation plan must derive its bounds from its actual selected 
 configured roster and these specific call sites.
 The provider POST bound also includes route fallback and HTTP attempts;
 that transport registration is not implemented yet.
+
+## Current implementation checkpoint
+
+`prepare-block-pairing.ts`,
+`prepare-block-pairing-finish.ts` and `prepare-block-pairing-model.ts`
+live under `package/module/translation-repair/src/`.
+They preserve the old cache key,
+cold/warm media normalization,
+cache eligibility,
+definition separation and scorer fallback.
+These are implementation intentions until the pending before/after comparison verifies them.
+New tests cover explicit acquisition,
+cache reuse without invented outcomes,
+empty and singleton fast paths,
+queried and cached fallback,
+unclaimed-target cache refusal,
+definition crossing,
+persistence failure and cancellation.
+
+The current managed verification is
+`translation-repair-parent-preparation-verification` (`proc_78b0`).
+Build and types passed.
+The first test run exposed two incorrect fixture expectations:
+`declinedTargetBlocks` in `package/module/translation-repair/src/declined-target-runs.ts`
+deliberately declines nothing while an original remains unplaced,
+and a usable empty agreement can be cached even though its execution state is fallback.
+The tests now preserve those existing policies and use a fully placed source plus an extra target block
+for the actual unclaimed-target cache control.
+This is why cache eligibility alone must never qualify a calibration parent.
+No model transport beyond test mocks is used.
+The native producer CLI and bounded preparation planner remain unchanged.
 
 ## Current artifacts
 

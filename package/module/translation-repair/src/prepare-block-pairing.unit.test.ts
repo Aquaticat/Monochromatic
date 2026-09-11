@@ -98,8 +98,8 @@ await describe({
       },
     },),
     ...[
-      { name: 'no agreed relations', reply: '{"pairs":[]}', },
-      { name: 'no usable voice', reply: '{"noPairs":true}', },
+      { name: 'no agreed relations', reply: '{"pairs":[]}', writes: 1, },
+      { name: 'no usable voice', reply: '{"noPairs":true}', writes: 0, },
     ].map(test => it({
       name: `names ${test.name} as queried fallback rather than implicit correspondence`,
       fn: async () => {
@@ -107,7 +107,7 @@ await describe({
         const result = await prepareBlockPairing(f.input);
         expect(result.kind).toBe('fallback');
         expect(result.findings.join(' ')).toContain('fell back to scoring');
-        expect(f.writes).toHaveLength(0);
+        expect(f.writes).toHaveLength(test.writes);
         if (result.kind !== 'fallback') throw new Error('expected unresolved question');
         expect(result.evidence.kind).toBe('queried');
       },
@@ -115,11 +115,21 @@ await describe({
     it({
       name: 'does not cache a paired parent whose archive still has unclaimed blocks',
       fn: async () => {
-        const f = fixture({ reply: '{"pairs":[{"source":0,"target":0}]}' });
+        const f = fixture({ targetText: 'The cat slept.\n\nShe loves boxes.\n\nAn additional note about quilts.', reply: complete });
         const result = await prepareBlockPairing(f.input);
         expect(result.kind).toBe('paired');
         expect(result.findings.join(' ')).toContain('unresolved, not cached');
         expect(f.writes).toHaveLength(0);
+      },
+    },),
+    it({
+      name: 'preserves the conservative non-decline when a source block remains unplaced',
+      fn: async () => {
+        const f = fixture({ reply: '{"pairs":[{"source":0,"target":0}]}' });
+        const result = await prepareBlockPairing(f.input);
+        expect(result.kind).toBe('paired');
+        expect(result.findings.join(' ')).not.toContain('unresolved, not cached');
+        expect(f.writes).toHaveLength(1);
       },
     },),
     it({
