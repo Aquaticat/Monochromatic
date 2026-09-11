@@ -259,16 +259,52 @@ Preparation and writer execution need separate plan/review gates.
 Neither paid preparation nor writer generation has run for this new plan.
 
 The first interface change retains final pairing seat outcomes in `BlockPairingOutcome`.
-At `06862482e`,
+The outcomes-only `06862482e` snapshot passed build,
+types,
+zero-warning lint and the actual full-suite `unit exit 0`.
+The temporary whole-parent type scaffold was removed.
+
+The subsequent `readBlockPairingOutcomes` helper reuses the live reader and two-voice relation rule
+for provider-free recipe interpretation.
+`assertPairingSeats` rejects duplicated/empty electorates before live calls,
+and unconfigured,
+duplicated or reordered recorded identities before endorsements are counted.
+Sparse ordered subsets and empty outcomes remain valid.
+`PairingEvidenceError` has closed diagnostics naming only failure kind and numeric input position.
+At `edb40e09d`,
 build,
 types,
-zero-warning lint and the actual full-suite `unit exit 0` pass.
-The temporary whole-parent type scaffold was removed.
+zero-warning lint and the full suite pass;
+`writer-pairing-identities-final-unit-r2-20260911.out` ends with `unit exit 0` at line 9189.
+Five individual guard removals rebuilt and failed at the intended assertions in the bounded container;
+restored source rebuilt and passed.
+Proof is retained at `~/temp/agent/pairing-guard-proof-20260911`.
+The owned guard worktree was removed and its absence verified.
+
+A provider-free,
+manually source-reviewed control recipe through actual production preparation
+pairs the windward heading source 2069 to 2079 with target 11101 to 11126,
+and its body source 2081 to 2419 with target 11128 to 12232.
+Both unchanged-validator controls pass and all parent node memberships remain exactly once.
+The legacy heading still fails,
+while `lintong#0` passes.
+This proves the mechanism,
+not automatic acquisition or clean incumbent wording.
 The remaining implementation must reuse production subdivision,
 child line flags,
 footnote relabeling and the actual `settleTranslateSlice` surface,
 including target-only protection and supplied context.
+Do not call the entire `preparePassEntry` as a shortcut:
+its archive prose repair could let a benchmark peer author an incumbent without contributor attribution.
+Preparation here buys correspondence evidence,
+not uncredited baseline prose.
 The native producer CLI is not changed yet.
+The shared block-round extraction,
+bounded parent-pool construction,
+reviewed-plan execution gate,
+actual prompt/transport bounds and automatic acquisition controls are still to build.
+Pairing's `runWindowedRounds` has no separate post-loop recovery nudge;
+do not borrow the different writer/judge-stage bound without tracing its caller.
 
 The formatter accepts package scope but not appended file paths in its current Node inline task.
 Use `format:oxlint` without extra paths;

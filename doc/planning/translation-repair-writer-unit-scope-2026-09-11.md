@@ -220,8 +220,14 @@ footnote-definition separation and pure `prepareDocumentPair` handoff.
 A bounded parent-pool consumer needs the same block-round machinery without buying unrelated section rounds.
 Prefer extracting that shared operation rather than copying its cold/warm policies into a new sampler.
 No such extraction is implemented yet.
-The transport-free interpretation helper is now being shared between live pairing and recipe replay;
-its latest changes still need verification.
+`readBlockPairingOutcomes` is shared between live pairing and recipe replay.
+At `6f496fd0c`,
+its build,
+types,
+zero-warning lint and full unit suite pass;
+`writer-pairing-reader-final-unit-20260911.out` ends at line 9187 with `unit exit 0`.
+Independent review then identified the separate identity preconditions recorded in
+`Pairing identity verification`.
 
 Production also changes the actual writer surface after subdivision.
 `settleTranslateSlice` in `package/module/translation-repair/src/translate-slice.ts`:
@@ -277,6 +283,89 @@ Frozen runtime:
 digest `sha256-tree-v1:a31c12b618bb4fd76a6f9c00af0ccab720364648a39907b6de62e0f32653c1e7`.
 This snapshot adds pairing-seat evidence only;
 it does not contain a safe new writer sampler.
+
+## Pairing identity verification
+
+Typed seat records alone do not prove independent endorsements.
+The new replay operation initially accepted a duplicated identity as two votes.
+`e19bb8158` records the behavioral red:
+eight invalid-identity/live-dispatch tests fail,
+while sparse ordered and single-identity controls pass.
+The duplicate live configuration makes two mock model calls before the fix.
+
+The shared `assertPairingSeats` guard now requires a nonempty unique electorate
+and an ordered subsequence of recorded seat identities.
+One strict-position check rejects unconfigured,
+duplicated and reordered outcomes,
+including duplicated unheard records.
+Empty outcomes and sparse ordered subsets remain valid.
+A single configured identity remains unable to meet the separate two-voice endorsement rule.
+The live stage checks configuration before calls;
+replay checks identities before counting endorsements.
+
+`PairingEvidenceError` is separate from a model's unusable `BlockPairingError`.
+Its closed failure kinds and numeric input positions cannot forward model prose.
+The safe-message inventory was updated for the numeric position.
+Early verification exposed incomplete inventory registration,
+not failed identity controls.
+After the inventory correction and statement-scope formatting,
+`edb40e09d` passes build,
+manual type checking,
+zero-warning lint and the full suite.
+`writer-pairing-identities-final-unit-r2-20260911.out` ends at line 9189 with `unit exit 0`.
+
+A disposable worktree was created from the main worktree at `4df75028b`,
+without copying ignored state.
+Its exact package source was then overlaid from committed `0deca4036`,
+with the changed-file list and every copied blob checked.
+No corpus or credential file was copied.
+The build/test container has 2 GiB RAM,
+2 CPUs,
+512 PIDs,
+no network,
+read-only shared dependencies and explicitly owned writable outputs.
+Its worker runs Node 26.8.2;
+the mutant test failure traces report Node 26.7.0 under Mise.
+These are distinct executable layers,
+not a claim that every command changed Node version.
+
+The strict guard-removal proof succeeded:
+
+- Each empty-electorate,
+  duplicate-electorate,
+  ordered-subsequence,
+  live-preflight and replay-preflight removal rebuilt successfully.
+- Each failed through the intended named `AssertionError`,
+  not a signal or build failure.
+- Removing the live preflight exposed two mock calls where zero were required.
+- Restored source rebuilt and passed the identity suite.
+- The container reported no OOM or PID-limit events;
+  recorded memory peak was 718979072 bytes.
+
+Proof log:
+`~/temp/agent/pairing-guard-mutations-20260911.out`.
+Detailed records were retained in `~/temp/agent/pairing-guard-proof-20260911`.
+The owned worktree was removed normally from the main worktree after verifying the restored source,
+retaining evidence and removing only owned untracked fixtures.
+Its filesystem absence and removal from `git worktree list --porcelain` were verified.
+Ignored root sentinels were absent;
+ignore rules and targeted dry-run cleanup were checked in both roots.
+The fixture's wrapped read-only check refused its untrusted `cli-git` configuration,
+so native Git performed those read-only checks without granting persistent trust.
+No paid preparation or writer calls have occurred.
+
+## Preparation call-bound distinction
+
+The selected direction must preserve the actual pairing call graph,
+not reuse a different stage's bound.
+`pairBlocksWithRoster` calls `runWindowedRounds`,
+which has the initial gather and `STAGE_RETRY_ROUNDS` retries,
+with no separate recovery nudge after that loop.
+The writer/judge paths that do have a separate recovery nudge remain unchanged.
+The registered preparation plan must derive its bounds from its actual selected parent pool,
+configured roster and these specific call sites.
+The provider POST bound also includes route fallback and HTTP attempts;
+that transport registration is not implemented yet.
 
 ## Current artifacts
 
