@@ -297,7 +297,9 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitReads, explicitRe
         const marker = 'BENCH_RESOLVER_PROOF ';
         const line = done.stdout.split('\n').find(value => value.startsWith(marker));
         if (line === undefined) throw new Error(`Missing resolver observation: ${done.stderr}`);
-        expect(JSON.parse(line.slice(marker.length))).toEqual({ implicitReads: 1, explicitReads: 0, count: 1 });
+        expect(
+          JSON.parse(line.slice(marker.length)),
+        ).toEqual({ implicitReads: 1, explicitReads: 0, count: 1 });
       },
     }),
     it({

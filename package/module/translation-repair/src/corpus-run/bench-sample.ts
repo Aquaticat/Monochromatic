@@ -181,7 +181,10 @@ export async function sampleBenchSlices(
    * Own the batch's revision and resolve its native executable before concurrent reads.
    * Self-shim detection decodes candidate files; repeating it per page can exhaust the heap.
    */
-  const resolvedPin: CorpusPin = { ...pin, gitPath: pin.gitPath ?? await resolveGit(), };
+  const resolvedPin: CorpusPin = {
+    ...pin,
+    gitPath: pin.gitPath ?? await resolveGit(),
+  };
   /**
    * Entries at the pin, in the order the corpus lists them.
    */
