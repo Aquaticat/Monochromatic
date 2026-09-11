@@ -24,7 +24,89 @@ and the reason is recorded in
 
 ## Where the work stands
 
-### Latest checkpoint on 2026-09-11
+### Latest checkpoint: reviewed calibration infrastructure on 2026-09-11
+
+No paid judge,
+writer or image calibration has run.
+V4.1 Flash remains held out of production roles.
+Task 32 blocks task 31;
+full-entry readiness is still false.
+The latest complete package-suite checkpoint remains frozen `24b1cbdb7`,
+not the current source implementation.
+
+The source-reviewed replacement tuples are fixed in
+[the reviewed fixture plan](../planning/translation-repair-reviewed-calibration-fixtures-2026-09-11.md).
+They cover `gqt`,
+`MTF_0615` and locally corrected `Y1Ran`,
+with all seven deliberate variants independently read.
+The corpus remains unchanged.
+`fidelity-reference-*` now owns ranges,
+hashes,
+local-edit provenance,
+donors and deterministic damage verification.
+The compiled loader matched the reviewed tuple artifact in
+`~/temp/agent/reviewed-fidelity-loader-verification-20260911.json`.
+Targeted build,
+types and reference/CLI tests passed before the subsequent matrix hardening.
+
+Task 33 is complete.
+An agent-created worktree from the linked source triggered the intended ignored-state copier,
+which retained the global settlement lease after checkout.
+The owned copier was stopped,
+the active stale lease recovered through the wrapper,
+and only the owned staging tree and abandoned pending claim were removed.
+Commits recovered at `9f4034d15`.
+The clean detached guard target was recreated from main without ignored-state copying.
+`076a0cf0d` records the incident in
+[the copy recovery record](../troubleshooting/cli-git-worktree-copy-settlement-timeout.md).
+Older stages and concurrent changes were preserved.
+The proposed `WCD` clarification is not applied.
+
+The guard target is still detached at `9f4034d15`:
+`~/temp/agent/translation-repair-guard-20260911`.
+It contains explicit dependency links and private proof files,
+not a copied secret file.
+Mise's process-scoped trust and native write/network sandbox were exercised:
+inside writes succeed;
+outside writes and writes through an outward symlink fail;
+INET socket creation is denied;
+provider credentials are absent from the child environment.
+This is not a CPU/memory sandbox or a confidentiality claim about every readable file.
+
+The first guard-removal run rebuilt every mutation successfully.
+Nine categories produced the expected assertion failures;
+coordinate validation,
+edit overlap and donor overlap survived because downstream hashes masked the old tests.
+`a0ec042a5` commits otherwise-valid controls isolating those guards.
+They still require a fresh mutation run with no surviving guard categories.
+All first-run source mutations were restored and its final build/tests passed.
+An attempted wrapped switch of the disposable target was refused as `config-untrusted`;
+HEAD did not advance and no persistent trust was granted.
+Create the next proof target from main at the required commit instead of assuming trust transfers.
+
+Independent review found that a mixed damage request could silently omit its unavailable family.
+`deed1022d` produced the actual library,
+trial-builder and native CLI failures in `reviewed-matrix-red-unit-20260911.out`.
+`3b03c5d01` requires every requested family somewhere in the selected population.
+`634cca76d` also binds metadata-only preflight to the configured corpus revision.
+These latest changes await green build/types/tests and final package verification.
+The package formatter is `format:oxlint`,
+not `format`;
+`reviewed-reference-format-r3-20260911.out` passed before the latest changes.
+
+Next actions:
+verify the matrix/pin changes;
+finish guard proofs on the current committed source;
+reconcile independent review findings against actual code and the calibration driver;
+run zero-warning lint and the full package suite;
+regenerate the corrected fixed plan without old ballots or planner responses.
+Persist actual model-independent question identities and model/provider cell identities separately,
+and grade each actual question once.
+The native default cap of sixteen rows is not complete admission evidence for the full reviewed matrix.
+Task 27 and the initial-use/pre-window naming integration remain paused,
+so the fresh Mio pass remains blocked.
+
+### Verified serving checkpoint on 2026-09-11
 
 The owner approved DeepSeek V4.1 Flash on Hyper and OpenRouter.
 Task 30 has registered one distinct identity across both providers,

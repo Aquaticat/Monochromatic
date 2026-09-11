@@ -191,6 +191,83 @@ so only verified build and test commands that do not install or mutate dependenc
 It tests source mutations and built behavior,
 not dependency reproducibility.
 
+## Enforcing the shared-dependency write boundary on 2026-09-11
+
+The reviewed-fidelity guard proof used the same installed mise version and source revision.
+It created a tracked-only worktree from the main worktree,
+verified both empty NUL-delimited inventories,
+and added explicit dependency links.
+The fixture's `node_modules` parents were real directories,
+so newly created caches did not automatically redirect into the source worktree.
+No dependency installation was requested.
+
+Current `mise exec --help` and `mise run --help` expose `--allow-write`,
+`--allow-env`,
+`--deny-net` and `--no-deps`.
+The deciding source is `src/sandbox/landlock.rs`:
+
+```rust
+// mise v2026.7.0, src/sandbox/landlock.rs
+} else if deny_write {
+    ruleset = add_read_rule(ruleset, "/", read_access)?;
+    ruleset = add_read_rule(ruleset, "/tmp", full_access)?;
+    ruleset = add_read_rule(ruleset, "/dev", full_access)?;
+    for path in &config.allow_write {
+        ruleset = add_path_rule(ruleset, path, full_access)?;
+    }
+}
+```
+
+`src/sandbox/mod.rs` makes `allow_write` imply denied writes elsewhere,
+canonicalizes configured paths,
+and applies Linux restrictions before child execution.
+`src/sandbox/seccomp.rs` blocks creation of `AF_INET` and `AF_INET6` sockets,
+while allowing Unix sockets.
+Only `--deny-net` was used;
+no per-host allow-list behavior is inferred from this proof.
+
+The source-backed launch also set process-local `MISE_AUTO_INSTALL=false`
+and `MISE_TASK_RUN_AUTO_INSTALL=false`.
+`settings.toml` binds those settings to the installation gates.
+`src/cli/run.rs:400` and `src/cli/exec.rs:172` show that `--no-deps` skips automatic dependency preparation.
+The allow-env list retained task plumbing,
+`usage_*` arguments and the owned `TMPDIR`,
+not provider credentials or the encrypted-environment cache key.
+
+The actual probe verified:
+
+- An unsandboxed owned control file was writable,
+  and an unsandboxed loopback listener could bind.
+- A file inside the allowed fixture remained writable under sandboxing.
+- A write to the owned control outside the fixture was refused.
+- The same outward write through a symlink inside the fixture was refused.
+- The control file's contents remained unchanged.
+- An INET listener failed with `EPERM` under sandboxing.
+- Credential variables were absent from the filtered child environment.
+- The real package build and targeted compiled-artifact tests completed under those same restrictions.
+
+Evidence is in `~/temp/agent/fidelity-guard-sandbox-20260911.out`,
+`fidelity-guard-sandbox-control-20260911.json`
+and `fidelity-guard-baseline-20260911.out`.
+Guard-removal builds and tests subsequently ran through this boundary too.
+These were finite source-guard experiments,
+not resource stress tests.
+
+Tradeoffs:
+`/tmp` and `/dev` remain writable,
+reads are not restricted by this write-only policy,
+Unix sockets remain available,
+and there are no CPU or memory limits.
+This is a verified shared-dependency write boundary and INET-creation restriction,
+not a general confidential or resource-limited sandbox.
+Use the repository's bounded container machinery for hazardous or resource-heavy mutations.
+
+A separate caller error used package task `format`,
+which does not exist in `package/module/translation-repair/mise.toml`.
+Mise emitted `no task //package/module/translation-repair:format found` before any formatter ran.
+The declared task `format:oxlint` was then invoked successfully.
+That task-name error was not a trust or sandbox failure.
+
 ## What does not work
 
 - Assuming trust follows equal `mise.toml` content to another canonical path.

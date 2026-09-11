@@ -110,7 +110,7 @@ The MTF portrait's broad description of distinctiveness is not rejected merely f
 
 ## Instrument changes
 
-The native admission harness must load reviewed references,
+The native judge probe and the admission driver must load reviewed references,
 not rediscover the first long archive slice and call it clean.
 A fixed manifest must bind:
 
@@ -136,6 +136,72 @@ The admission criterion is unchanged:
 candidate clean count at least the median peer clean count,
 and damaged count no greater than the maximum peer damaged count.
 Peer response quorum per question is required for an interpretable comparison.
+
+## Implementation and verification checkpoint
+
+The checked-in `fidelity-reference-*` modules now materialize the reviewed manifest,
+verify exact ranges and hashes,
+apply only original-coordinate local edits,
+verify donor separation and damage outputs,
+and select only reviewed entries.
+`reviewed-fidelity-loader-verification-20260911.json` matched the compiled loader's full tuples
+against the independently reviewed private artifact.
+The native CLI uses this manifest rather than rediscovering a long archive slice.
+No production role has changed.
+
+The first sandboxed guard-removal run used committed source `9f4034d15`.
+Every mutant rebuilt successfully;
+nine categories caused their expected assertions to fail.
+Coordinate validation,
+edit overlap and donor overlap survived:
+the old negative fixtures were rejected by downstream hashes after those guards were removed.
+This is a verification gap,
+not evidence that the guards are unnecessary.
+The ledger is `~/temp/agent/fidelity-guard-mutations-20260911.json`.
+Restored source rebuilt and passed its targeted suite.
+
+`a0ec042a5` supplies otherwise-valid counterexamples:
+JavaScript slicing that would return the same reviewed bytes despite invalid coordinates,
+duplicate empty-replacement edits that would reconstruct the approved reference,
+and an overlapping donor with insertion excluded so insertion hashing cannot mask its guard.
+An independent advisor accepted these as isolated controls.
+They remain unproven until the updated mutation run fails for each intended assertion.
+
+Independent review also found a genuine request defect:
+`some()` admitted a mixed request when only one requested family existed.
+The library,
+trial builder and native `--only gqt` preflight all demonstrated that failure in
+`reviewed-matrix-red-unit-20260911.out`.
+`3b03c5d01` now requires each requested family somewhere in the selected population,
+not every family in every reference.
+`634cca76d` adds a metadata-only corpus-pin check before preflight can report success.
+Latest build,
+types,
+full-suite and guard verification are still pending.
+
+The revised admission driver must persist:
+
+- The exact default reviewed manifest and its digest,
+  rather than treating arbitrary caller-provided manifests as admitted gold.
+- Final model-independent question identity including actual messages and schema.
+  `modelPromptDigest` is a model-specific payload-cache identity,
+  not proof that peers saw an identical question.
+- Separate model/provider cell identities,
+  planned and attempted cells,
+  individual heard or unusable outcomes and terminal completeness.
+- The requested full matrix,
+  with scoring deduplicated by actual question rather than historical direction bookkeeping.
+- A fresh payload namespace that cannot contain old ballots or synthetic planner abstentions.
+- Current cohort provenance checks against known fixture-edit authorship.
+  The explicit spelling check in `reviewedFidelityRequest` is not a global model-alias resolver
+  or a certification of all historical archive authorship.
+
+The native default sixteen-row cap is a bounded exploratory prefix,
+not complete admission evidence for this reviewed matrix.
+The actual corrected request/question count must be regenerated and inspected before spending.
+Existing duplicate-reference-ID validation in `fidelity-reference-select.ts` already applies;
+review suggestions are checked against source rather than all being treated as new defects.
+The approved tuple review remains valid while instrument verification continues.
 
 ## Instruction proposal
 
