@@ -16,6 +16,7 @@ import {
 } from '../archive-footnote-relabel.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { DefinitionLabelPair, } from '../pair-definition-order.ts';
+import { normalizeFootnoteIdentifier, } from '../footnote-identifier.ts';
 
 //region Pass footnote relabel
 // How the pass makes the archive's footnotes the original's
@@ -166,7 +167,7 @@ export function relabelArchiveFootnotes(
    * that is forced; an empty map where the labels already agree.
    */
   const closure = closeFootnoteRelabel({
-    map: (reading.kind === 'relabel') ? reading.map : [],
+    map: reading.correspondences,
     archiveLabels: documentLabels({ text: archiveText, },),
     originalLabels: documentLabels({ text: sourceText, },),
   },);
@@ -184,7 +185,7 @@ export function relabelArchiveFootnotes(
   /**
    * The closed map, empty where the labels already agree.
    */
-  const { map: closed, } = closure;
+  const { map: closed, correspondences, eliminated, retained, } = closure;
   /**
    * The archive under the original's labels.
    */
@@ -194,19 +195,42 @@ export function relabelArchiveFootnotes(
       map: closed,
     },)
     : archiveText;
-  if (closed.length > 0) {
+  /**
+   * Supplied correspondence rewrites, distinct from identity evidence and operational displacement.
+   */
+  const correspondenceRewrites = correspondences.filter(function changes(relation,): boolean {
+    return normalizeFootnoteIdentifier({ identifier: relation.from, },)
+      !== normalizeFootnoteIdentifier({ identifier: relation.to, },);
+  },);
+  if (correspondenceRewrites.length > 0) {
     /**
-     * The map, spelled for the log and the finding.
+     * Only supplied source correspondences receive the original evidence attribution.
      */
-    const spelled = closed
-      .map(function spell(relabel,): string {
-        return `[^${relabel.from}]->[^${relabel.to}]`;
-      },)
-      .join(', ',);
-    l.info(
-      `FOOTNOTES entry=${entryId} relabelled ${spelled} off ${basis}: the archive's footnote labels follow the original's`,
-    );
+    const spelled = correspondenceRewrites.map(function spell(relabel,): string {
+      return `[^${relabel.from}]->[^${relabel.to}]`;
+    },).join(', ',);
+    l.info(`FOOTNOTES entry=${entryId} relabelled ${spelled} off ${basis}: the archive's footnote labels follow the original's`,);
     findings.push(`footnotes: archive relabelled ${spelled} off ${basis} to follow the original's labels`,);
+  }
+  if (eliminated.length > 0) {
+    /**
+     * Existing one-pair elimination is not attributed to an unrecorded model vote.
+     */
+    const spelled = eliminated.map(function spell(relabel,): string {
+      return `[^${relabel.from}]->[^${relabel.to}]`;
+    },).join(', ',);
+    l.info(`FOOTNOTES entry=${entryId} completed ${spelled} by forced elimination`,);
+    findings.push(`footnotes: archive relabelled ${spelled} by forced elimination`,);
+  }
+  if (retained.length > 0) {
+    /**
+     * Fresh labels preserve unmatched archive notes without claiming source correspondence.
+     */
+    const spelled = retained.map(function spell(move,): string {
+      return `[^${move.from}]->[^${move.retainedAs}]`;
+    },).join(', ',);
+    l.info(`FOOTNOTES entry=${entryId} retained unmatched archive labels ${spelled}; these moves are not source correspondences`,);
+    findings.push(`footnotes: unmatched archive labels retained as ${spelled}, without source correspondence`,);
   }
   /**
    * The original's definition order.

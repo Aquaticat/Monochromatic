@@ -131,7 +131,16 @@ not an upstream parser defect.
 
 ## Current state
 
-No footnote implementation has changed yet.
+The mathematical closure layer is implemented through `81da9c055`.
+It validates normalized membership and injectivity,
+keeps supplied relations,
+forced non-identity elimination and retained-label displacement separate,
+and refuses displacement while any original remains unaccounted for.
+The first eight retention regressions failed on the old implementation and pass on the new core.
+Existing no-op closures do not invent identity correspondence.
+Syntax-safe application and protected-byte integration are not implemented yet,
+so this is not a release-ready relabel path.
+
 The source trace currently covers:
 
 - `package/module/translation-repair/src/archive-footnote-closure.ts`.
@@ -141,8 +150,11 @@ The source trace currently covers:
 - `package/module/translation-repair/src/footnote-graph.ts`.
 - `package/module/translation-repair/src/footnote-identifier.ts`.
 
-The next step is a regression for collision closure with retained-note provenance,
+The next step is retaining complete correspondence evidence in the readers,
+including explicit identity relations,
 then syntax-aware application and protected-byte integration.
+The new reader regression is running as `translation-repair-footnote-correspondence-red` (`proc_d8c5`).
+Only mocked or provider-free work has run.
 The current checked translation runtime is `.frozen-dist-895843508`,
 digest `sha256-tree-v1:56d8d472b1a526faef861068d41e224c3640457b18ef0802a58b50992d18273c`.
 

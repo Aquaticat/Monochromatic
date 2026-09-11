@@ -1,6 +1,7 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import type { DefinitionLabelPair, } from './pair-definition-order.ts';
 import type { FootnoteLabelRewrite, } from './footnote-label-rewrite.ts';
+import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import {
   scanGfmReferenceLiterals,
@@ -61,7 +62,7 @@ export type FootnoteRelabel = {
  *
  * @example
  * ```ts
- * const reading: FootnoteRelabelReading = { kind: 'unchanged', };
+ * const reading: FootnoteRelabelReading = { kind: 'unchanged', correspondences: [], skipped: [], };
  * ```
  */
 export type FootnoteRelabelReading = {
@@ -69,6 +70,11 @@ export type FootnoteRelabelReading = {
    * The archive's labels differ from the original's and every one maps.
    */
   readonly kind: 'relabel';
+
+  /**
+   * Complete supplied relations, including identities that establish original-label coverage.
+   */
+  readonly correspondences: readonly FootnoteRelabel[];
 
   /**
    * Labels to rewrite, only the ones that change.
@@ -84,6 +90,11 @@ export type FootnoteRelabelReading = {
    * The labels already agree, or no slice carries a marker on both sides.
    */
   readonly kind: 'unchanged';
+
+  /**
+   * Positive relations, distinct from the absence of any correspondence evidence.
+   */
+  readonly correspondences: readonly FootnoteRelabel[];
 
   /**
    * Slices left out of the reading, each with why.
@@ -285,18 +296,30 @@ function mapLabels(
    * Original label to the archive's, so two archive labels cannot claim one.
    */
   const backward = new Map<string, string>();
+  /**
+   * First supplied spelling of each distinct logical relation, including identities.
+   */
+  const distinct: FootnoteRelabel[] = [];
   for (const claim of correspondences) {
+    /**
+     * Parser-equivalent archive identifier.
+     */
+    const from = normalizeFootnoteIdentifier({ identifier: claim.from, },);
+    /**
+     * Parser-equivalent original identifier.
+     */
+    const to = normalizeFootnoteIdentifier({ identifier: claim.to, },);
     /**
      * Where an earlier claim mapped this archive label, when one did.
      */
-    const forwardSeen = forward.get(claim.from,);
+    const forwardSeen = forward.get(from,);
     /**
      * Which archive label an earlier claim mapped onto this original label,
      * when one did.
      */
-    const backwardSeen = backward.get(claim.to,);
-    if (((forwardSeen !== undefined) && (forwardSeen !== claim.to))
-      || ((backwardSeen !== undefined) && (backwardSeen !== claim.from)))
+    const backwardSeen = backward.get(to,);
+    if (((forwardSeen !== undefined) && (forwardSeen !== to))
+      || ((backwardSeen !== undefined) && (backwardSeen !== from)))
       return {
         kind: 'ambiguous',
         detail: `${claim.where} maps archive [^${claim.from}] to original [^${claim.to}] where an earlier ${
@@ -307,42 +330,28 @@ function mapLabels(
             ?? ''
         }]`,
       };
-    forward.set(
-      claim.from,
-      claim.to,
-    );
-    backward.set(
-      claim.to,
-      claim.from,
-    );
+    if (forwardSeen === undefined)
+      distinct.push({ from: claim.from, to: claim.to, },);
+    forward.set(from, to,);
+    backward.set(to, from,);
   }
   /**
-   * The labels that change.
+   * Only changes of logical identity need rewriting; positive identity evidence remains separate.
    */
-  const map = [ ...forward.entries(), ]
-    .filter(function changes([
-      from,
-      to,
-    ],): boolean {
-      return from !== to;
-    },)
-    .map(function toRelabel([
-      from,
-      to,
-    ],): FootnoteRelabel {
-      return {
-        from,
-        to,
-      };
-    },);
+  const map = distinct.filter(function changes(relation,): boolean {
+    return normalizeFootnoteIdentifier({ identifier: relation.from, },)
+      !== normalizeFootnoteIdentifier({ identifier: relation.to, },);
+  },);
   if (map.length === 0)
     return {
       kind: 'unchanged',
+      correspondences: distinct,
       skipped,
     };
   return {
     kind: 'relabel',
     map,
+    correspondences: distinct,
     skipped,
   };
 }
