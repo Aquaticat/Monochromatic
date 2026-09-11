@@ -66,10 +66,11 @@ export function corpusGitEnvironment({ environment = process.env, }: {
    * Preserve unrelated process settings without exposing their values in logs.
    */
   const inherited = Object.fromEntries(
-    Object.entries(environment,).filter(function outsideRepository([name,],): boolean {
-      return !REPOSITORY_ENVIRONMENT.has(name,)
-        && !name.startsWith('GIT_CONFIG_KEY_',)
-        && !name.startsWith('GIT_CONFIG_VALUE_',);
+    Object.entries(environment,)
+      .filter(function outsideRepository([name,],): boolean {
+      return (!REPOSITORY_ENVIRONMENT.has(name,))
+        && (!name.startsWith('GIT_CONFIG_KEY_',))
+        && (!name.startsWith('GIT_CONFIG_VALUE_',));
     },),
   );
   return {

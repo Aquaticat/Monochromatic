@@ -68,22 +68,34 @@ function betweenSurrogates({
  * const prefix = sharedPrefix({ previous, current });
  * ```
  */
-function sharedPrefix({ previous, current, }: {
+function sharedPrefix({
+  previous,
+  current,
+}: {
   readonly previous: string;
   readonly current: string;
 },): number {
   /**
    * Longest possible shared prefix.
    */
-  const limit = Math.min(previous.length, current.length,);
+  const limit = Math.min(
+    previous.length,
+    current.length,
+  );
   /**
    * Advancing code-unit boundary, returned after surrogate adjustment.
    */
   let prefix = 0;
-  while (prefix < limit && previous[prefix] === current[prefix])
+  while ((prefix < limit) && (previous[prefix] === current[prefix]))
     prefix += 1;
-  if (betweenSurrogates({ text: previous, offset: prefix, },)
-    || betweenSurrogates({ text: current, offset: prefix, },)) {
+  if (betweenSurrogates({
+    text: previous,
+    offset: prefix,
+  },)
+    || betweenSurrogates({
+      text: current,
+      offset: prefix,
+    },)) {
     prefix -= 1;
   }
   return prefix;
@@ -105,7 +117,11 @@ function sharedPrefix({ previous, current, }: {
  * const suffix = sharedSuffix({ previous, current, prefix });
  * ```
  */
-function sharedSuffix({ previous, current, prefix, }: {
+function sharedSuffix({
+  previous,
+  current,
+  prefix,
+}: {
   readonly previous: string;
   readonly current: string;
   readonly prefix: number;
@@ -113,17 +129,28 @@ function sharedSuffix({ previous, current, prefix, }: {
   /**
    * Maximum remaining shared suffix.
    */
-  const limit = Math.min(previous.length, current.length,) - prefix;
+  const limit = Math.min(
+    previous.length,
+    current.length,
+  ) - prefix;
   /**
    * Advancing suffix boundary, returned after surrogate adjustment.
    */
   let suffix = 0;
-  while (suffix < limit
-    && previous[previous.length - suffix - 1] === current[current.length - suffix - 1]) {
+  while ((suffix < limit)
+    && (previous[previous.length - suffix
+      - 1] === current[current.length - suffix
+        - 1])) {
     suffix += 1;
   }
-  if (betweenSurrogates({ text: previous, offset: previous.length - suffix, },)
-    || betweenSurrogates({ text: current, offset: current.length - suffix, },)) {
+  if (betweenSurrogates({
+    text: previous,
+    offset: previous.length - suffix,
+  },)
+    || betweenSurrogates({
+      text: current,
+      offset: current.length - suffix,
+    },)) {
     suffix -= 1;
   }
   return suffix;
@@ -159,11 +186,18 @@ export function archiveChangedSpan({
   /**
    * Proven shared prefix, no longer mutable during suffix construction.
    */
-  const prefix = sharedPrefix({ previous, current, },);
+  const prefix = sharedPrefix({
+    previous,
+    current,
+  },);
   /**
    * Shared suffix cannot overlap that prefix.
    */
-  const suffix = sharedSuffix({ previous, current, prefix, },);
+  const suffix = sharedSuffix({
+    previous,
+    current,
+    prefix,
+  },);
   return {
     start: prefix,
     removed: previous.slice(

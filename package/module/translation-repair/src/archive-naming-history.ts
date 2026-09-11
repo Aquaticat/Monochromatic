@@ -116,7 +116,10 @@ export async function readArchiveNamingHistories({
     /**
      * Only intrinsic consecutive parent headers establish root or merge cardinality.
      */
-    const parents = archiveCommitParents({ object: parentText, relPath, },);
+    const parents = archiveCommitParents({
+      object: parentText,
+      relPath,
+    },);
     if (parents.length !== 1) {
       findings.push(`archive-revision-withheld (${commit}: root or merge origin)`,);
       rl.debug(`withheld origin with ${String(parents.length,)} parents`,);
@@ -185,7 +188,8 @@ export async function readArchiveNamingHistories({
   },);
   rl.debug(`read ${String(histories.size,)} ordinary origins; withheld ${String(statuses.filter(function withheld(status,): boolean {
     return status === 'withheld';
-  },).length,)} origins`,);
+  },)
+    .length,)} origins`,);
   return {
     histories,
     findings,

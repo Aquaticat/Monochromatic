@@ -161,12 +161,24 @@ export function archiveNamingScopes({
   /**
    * Scope rows that satisfy both initial and pinned-line identity.
    */
-  const lineMap = archiveLineMap({ lines, archiveText, relPath, },);
+  const lineMap = archiveLineMap({
+    lines,
+    archiveText,
+    relPath,
+  },);
   /**
    * Public results follow initial archive order, independently of observation order.
    */
-  const ordered = references.toSorted(function byPosition(left, right,): number {
-    return left.use.anchor.startOffset - right.use.anchor.startOffset;
+  const ordered = references.toSorted(function byPosition(
+    left,
+    right,
+  ): number {
+    return left.use
+      .anchor
+      .startOffset
+      - right.use
+      .anchor
+      .startOffset;
   },);
   /**
    * Exact occurrence coordinates select origins; text equality only verifies them.
@@ -245,15 +257,23 @@ export function archiveNamingScopes({
      * Shared normalization supplied this exact line's pinned position.
      */
     const mapped = lineMap.get(startOffset,);
-    if (mapped === undefined || mapped.text !== text)
-      throw new ArchiveNamingEvidenceError({ kind: 'archive-mismatch', relPath, },);
+    if ((mapped === undefined) || (mapped.text !== text))
+      throw new ArchiveNamingEvidenceError({
+        kind: 'archive-mismatch',
+        relPath,
+      },);
     /**
      * Blame is selected only by coordinates, even when several lines have identical text.
      */
     const origin = origins[mapped.pinnedLine - 1];
-    if (origin === undefined || origin.finalLine !== mapped.pinnedLine
-      || foldInvisibleVariants({ text: origin.text, },).text !== text) {
-      throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+    if ((origin === undefined) || (origin.finalLine !== mapped.pinnedLine)
+      || (foldInvisibleVariants({ text: origin.text, },)
+        .text
+        !== text)) {
+      throw new ArchiveNamingEvidenceError({
+        kind: 'history-shape',
+        relPath,
+      },);
     }
     if (origin.boundary || origin.ignored
       || (!sameGitPath({
@@ -269,7 +289,7 @@ export function archiveNamingScopes({
       startOffset,
       origin,
       pinnedHasFinalNewline,
-      lineTerminated: origin.finalLine < origins.length || pinnedHasFinalNewline,
+      lineTerminated: (origin.finalLine < origins.length) || pinnedHasFinalNewline,
       lineNumber: mapped.lineNumber,
     }];
   },);

@@ -181,7 +181,7 @@ await describe({
           return !WRITER_UNMEASURED.has(modelId,);
         },),);
         expect(RUN_TRANSLATORS,).toEqual(RUN_ROSTER.filter(function eligibleTranslator(modelId,): boolean {
-          return !TRANSLATOR_DROPPED.has(modelId,) && !WRITER_UNMEASURED.has(modelId,);
+          return (!TRANSLATOR_DROPPED.has(modelId,)) && (!WRITER_UNMEASURED.has(modelId,));
         },),);
       },
     },),

@@ -21,7 +21,10 @@ import { ArchiveNamingEvidenceError, } from './archive-naming-error.ts';
  * const parents = archiveCommitParents({ object, relPath });
  * ```
  */
-export function archiveCommitParents({ object, relPath, }: {
+export function archiveCommitParents({
+  object,
+  relPath,
+}: {
   readonly object: string;
   readonly relPath: string;
 },): readonly string[] {
@@ -32,14 +35,21 @@ export function archiveCommitParents({ object, relPath, }: {
   /**
    * Header lines before any commit message.
    */
-  const headers = object.slice(0, headerEnd,).split('\n',);
+  const headers = object.slice(
+    0,
+    headerEnd,
+  )
+    .split('\n',);
   /**
    * Required tree identity preceding parent headers.
    */
   const tree = headers[0] ?? '';
-  if (headerEnd === -1 || !tree.startsWith('tree ',)
-    || !isArchiveGitObjectId(tree.slice('tree '.length,),)) {
-    throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+  if ((headerEnd === (-1)) || (!tree.startsWith('tree ',))
+    || (!isArchiveGitObjectId(tree.slice('tree '.length,),))) {
+    throw new ArchiveNamingEvidenceError({
+      kind: 'history-shape',
+      relPath,
+    },);
   }
   /**
    * Owned parent list follows Git's consecutive-header grammar.
@@ -53,7 +63,10 @@ export function archiveCommitParents({ object, relPath, }: {
      */
     const parent = line.slice('parent '.length,);
     if (!isArchiveGitObjectId(parent,))
-      throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+      throw new ArchiveNamingEvidenceError({
+        kind: 'history-shape',
+        relPath,
+      },);
     parents.push(parent,);
   }
   return parents;

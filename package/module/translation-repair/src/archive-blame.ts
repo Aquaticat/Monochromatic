@@ -120,8 +120,8 @@ type OriginState = { readonly kind: 'header'; } | {
  * ```
  */
 export function isArchiveGitObjectId(value: string,): boolean {
-  if ((value.length !== SHA1_WIDTH && value.length !== SHA256_WIDTH)
-    || value === '0'.repeat(value.length,)) {
+  if (((value.length !== SHA1_WIDTH) && (value.length !== SHA256_WIDTH))
+    || (value === '0'.repeat(value.length,))) {
     return false;
   }
   for (let index = 0; index < value.length; index += 1) {
@@ -147,7 +147,10 @@ export function isArchiveGitObjectId(value: string,): boolean {
  * const pending = originHeader({ line, relPath });
  * ```
  */
-function originHeader({ line, relPath, }: {
+function originHeader({
+  line,
+  relPath,
+}: {
   readonly line: string;
   readonly relPath: string;
 },): PendingOrigin {
@@ -162,20 +165,42 @@ function originHeader({ line, relPath, }: {
   /**
    * Origin's one-based line.
    */
-  const originalLine = archiveGitInteger({ text: original, relPath, },);
+  const originalLine = archiveGitInteger({
+    text: original,
+    relPath,
+  },);
   /**
    * Pin's one-based line.
    */
-  const finalLine = archiveGitInteger({ text: final, relPath, },);
+  const finalLine = archiveGitInteger({
+    text: final,
+    relPath,
+  },);
   /**
    * Optional group count remains validated.
    */
-  const count = archiveGitInteger({ text: group, relPath, },);
-  if (!isArchiveGitObjectId(commit,) || originalLine === 0 || finalLine === 0 || count === 0
-    || fields.length < MINIMUM_HEADER_FIELDS || fields.length > MAXIMUM_HEADER_FIELDS) {
-    throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+  const count = archiveGitInteger({
+    text: group,
+    relPath,
+  },);
+  if ((!isArchiveGitObjectId(commit,)) || (originalLine === 0)
+    || (finalLine === 0)
+    || (count === 0)
+    || (fields.length < MINIMUM_HEADER_FIELDS)
+    || (fields.length > MAXIMUM_HEADER_FIELDS)) {
+    throw new ArchiveNamingEvidenceError({
+      kind: 'history-shape',
+      relPath,
+    },);
   }
-  return { commit, originalLine, finalLine, filename: { kind: 'missing', }, boundary: false, ignored: false, };
+  return {
+    commit,
+    originalLine,
+    finalLine,
+    filename: { kind: 'missing', },
+    boundary: false,
+    ignored: false,
+  };
 }
 
 /**
@@ -196,7 +221,11 @@ function originHeader({ line, relPath, }: {
  * const origins = archiveBlameOrigins({ porcelain, archiveText, relPath });
  * ```
  */
-export function archiveBlameOrigins({ porcelain, archiveText, relPath, }: {
+export function archiveBlameOrigins({
+  porcelain,
+  archiveText,
+  relPath,
+}: {
   readonly porcelain: string;
   readonly archiveText: string;
   readonly relPath: string;
@@ -226,7 +255,13 @@ export function archiveBlameOrigins({ porcelain, archiveText, relPath, }: {
     const { state, } = cursor;
     if (state.kind === 'header') {
       if (line !== '')
-        cursor.state = { kind: 'metadata', record: originHeader({ line, relPath, },), };
+        cursor.state = {
+          kind: 'metadata',
+          record: originHeader({
+            line,
+            relPath,
+          },),
+        };
       continue;
     }
     /**
@@ -237,30 +272,58 @@ export function archiveBlameOrigins({ porcelain, archiveText, relPath, }: {
       /**
        * Restore only the physical separator proven by the pinned blob.
        */
-      const text = foldGitDocumentLine({ text: line.slice(1,),
-        terminated: pending.finalLine < lines.length || terminated, },);
-      if (pending.filename.kind !== 'known' || pending.finalLine !== origins.length + 1
-        || text !== lines[pending.finalLine - 1]) {
-        throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+      const text = foldGitDocumentLine({
+        text: line.slice(1,),
+        terminated: (pending.finalLine < lines.length) || terminated,
+      },);
+      if ((pending.filename
+        .kind
+        !== 'known') || (pending.finalLine !== (origins.length
+          + 1))
+        || (text !== lines[pending.finalLine - 1])) {
+        throw new ArchiveNamingEvidenceError({
+          kind: 'history-shape',
+          relPath,
+        },);
       }
-      origins.push({ commit: pending.commit, originalLine: pending.originalLine,
-        finalLine: pending.finalLine, boundary: pending.boundary, ignored: pending.ignored,
-        filename: pending.filename.value, text, },);
+      origins.push({
+        commit: pending.commit,
+        originalLine: pending.originalLine,
+        finalLine: pending.finalLine,
+        boundary: pending.boundary,
+        ignored: pending.ignored,
+        filename: pending.filename
+          .value,
+        text,
+      },);
       cursor.state = { kind: 'header', };
       continue;
     }
     if (line.startsWith('filename ',)) {
-      if (pending.filename.kind === 'known')
-        throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
-      pending.filename = { kind: 'known', value: line.slice('filename '.length,), };
+      if (pending.filename
+        .kind
+        === 'known')
+        throw new ArchiveNamingEvidenceError({
+          kind: 'history-shape',
+          relPath,
+        },);
+      pending.filename = {
+        kind: 'known',
+        value: line.slice('filename '.length,),
+      };
     }
     if (line === 'boundary')
       pending.boundary = true;
-    if (line === 'ignored' || line === 'unblamable')
+    if ((line === 'ignored') || (line === 'unblamable'))
       pending.ignored = true;
   }
-  if (cursor.state.kind !== 'header' || origins.length !== lines.length)
-    throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+  if ((cursor.state
+    .kind
+    !== 'header') || (origins.length !== lines.length))
+    throw new ArchiveNamingEvidenceError({
+      kind: 'history-shape',
+      relPath,
+    },);
   return origins;
 }
 

@@ -137,7 +137,10 @@ export async function readQualifiedArchiveNamingRevisions({
   /**
    * Text and retained line coordinates come from the same normalization pass.
    */
-  const { text: archiveText, lines, } = normalized;
+  const {
+    text: archiveText,
+    lines,
+  } = normalized;
   /**
    * Repository-wide shallow state is deliberately unsupported for naming authority.
    */

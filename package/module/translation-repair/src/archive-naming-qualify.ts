@@ -87,19 +87,22 @@ export function qualifyArchiveNamingScopes({
         .nodeId}: no unique single-line replacement)`,);
       return [];
     }
-    if (hunk.oldTerminated !== hunk.newTerminated
-      || hunk.newTerminated !== scope.lineTerminated) {
-      findings.push(`archive-revision-withheld (${scope.reference.use.anchor.nodeId}: physical line ending changed)`,);
+    if ((hunk.oldTerminated !== hunk.newTerminated)
+      || (hunk.newTerminated !== scope.lineTerminated)) {
+      findings.push(`archive-revision-withheld (${scope.reference
+        .use
+        .anchor
+        .nodeId}: physical line ending changed)`,);
       return [];
     }
     /**
      * Raw predecessor line, already subject to the shared CRLF fold.
      */
-    const previousRaw = hunk.removed[0];
+    const [previousRaw,] = hunk.removed;
     /**
      * Raw origin line must exactly match line-porcelain evidence.
      */
-    const currentRaw = hunk.added[0];
+    const [currentRaw,] = hunk.added;
     if ((previousRaw === undefined) || (currentRaw === undefined)
       || (currentRaw
         !== scope.origin

@@ -693,7 +693,7 @@ const READER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
  */
 export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function reads(modelId,): boolean {
-    return readsImages({ modelId, },) && !READER_UNMEASURED.has(modelId,);
+    return readsImages({ modelId, },) && (!READER_UNMEASURED.has(modelId,));
   },);
 
 /**

@@ -253,7 +253,10 @@ export function stripStubMarkersWithOrigins(
       /**
        * Text and original position stay in one record through every keep or removal branch.
        */
-      const retainedLine: ArchiveRetainedLine = { text: line, lineNumber: index + 1, };
+      const retainedLine: ArchiveRetainedLine = {
+        text: line,
+        lineNumber: index + 1,
+      };
       /**
        * This line as masked, unchanged when no comment touches it.
        */
@@ -400,6 +403,8 @@ export function stripStubMarkersWithOrigins(
 
 /**
  * {@inheritDoc stripStubMarkersWithOrigins}
+ *
+ * @returns Normalized text and removed markers with the existing public result shape
  */
 export function stripStubMarkers({ text, }: { readonly text: string; },): {
   readonly text: string;
@@ -409,7 +414,10 @@ export function stripStubMarkers({ text, }: { readonly text: string; },): {
    * Existing callers retain their exact public result shape.
    */
   const result = stripStubMarkersWithOrigins({ text, },);
-  return { text: result.text, stripped: result.stripped, };
+  return {
+    text: result.text,
+    stripped: result.stripped,
+  };
 }
 
 //endregion Archive stub markers

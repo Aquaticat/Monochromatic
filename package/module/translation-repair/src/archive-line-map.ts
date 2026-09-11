@@ -45,7 +45,11 @@ export type ArchiveMappedLine = {
  * const lineMap = archiveLineMap({ lines, archiveText, relPath });
  * ```
  */
-export function archiveLineMap({ lines, archiveText, relPath, }: {
+export function archiveLineMap({
+  lines,
+  archiveText,
+  relPath,
+}: {
   readonly lines: readonly ArchiveRetainedLine[];
   readonly archiveText: string;
   readonly relPath: string;
@@ -55,9 +59,13 @@ export function archiveLineMap({ lines, archiveText, relPath, }: {
    */
   const reconstructed = lines.map(function lineText(line,): string {
     return line.text;
-  },).join('\n',);
+  },)
+    .join('\n',);
   if (reconstructed !== archiveText)
-    throw new ArchiveNamingEvidenceError({ kind: 'archive-mismatch', relPath, },);
+    throw new ArchiveNamingEvidenceError({
+      kind: 'archive-mismatch',
+      relPath,
+    },);
   /**
    * Owned coordinate index.
    */
@@ -65,17 +73,29 @@ export function archiveLineMap({ lines, archiveText, relPath, }: {
   /**
    * Monotone physical and normalized positions advanced once per retained line.
    */
-  const cursor = { offset: 0, pinnedLine: 0, normalizedLine: 0, };
+  const cursor = {
+    offset: 0,
+    pinnedLine: 0,
+    normalizedLine: 0,
+  };
   for (const line of lines) {
-    if (!Number.isSafeInteger(line.lineNumber,) || line.lineNumber <= cursor.pinnedLine)
-      throw new ArchiveNamingEvidenceError({ kind: 'archive-mismatch', relPath, },);
+    if ((!Number.isSafeInteger(line.lineNumber,)) || (line.lineNumber <= cursor.pinnedLine))
+      throw new ArchiveNamingEvidenceError({
+        kind: 'archive-mismatch',
+        relPath,
+      },);
     cursor.normalizedLine += 1;
-    mapped.set(cursor.offset, {
+    mapped.set(
+      cursor.offset,
+      {
       lineNumber: cursor.normalizedLine,
       pinnedLine: line.lineNumber,
       text: line.text,
-    },);
-    cursor.offset += line.text.length + 1;
+    },
+    );
+    cursor.offset += line.text
+      .length
+      + 1;
     cursor.pinnedLine = line.lineNumber;
   }
   return mapped;

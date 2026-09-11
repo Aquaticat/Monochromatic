@@ -153,7 +153,10 @@ function referenceKind({
       .nodeId}: non-reference use ${corroborated[0] ?? 'unresolved'})`,);
   return reference === undefined
     ? { kind: 'withheld', }
-    : { kind: 'reference', useKind: reference, };
+    : {
+      kind: 'reference',
+      useKind: reference,
+    };
 }
 
 /**

@@ -37,7 +37,10 @@ export function passArchiveWithOrigins(
     readonly text: string;
     readonly l: Logger;
   },
-): { readonly text: string; readonly lines: readonly ArchiveRetainedLine[]; } {
+): {
+  readonly text: string;
+  readonly lines: readonly ArchiveRetainedLine[]
+} {
   /**
    * Visible text from shared fold.
    */
@@ -57,7 +60,10 @@ export function passArchiveWithOrigins(
         + '(doc/decision/translation-repair-good-result-over-bad-original.md)',
     );
   }
-  return { text: stripped, lines, };
+  return {
+    text: stripped,
+    lines,
+  };
 }
 
 /**
@@ -65,11 +71,18 @@ export function passArchiveWithOrigins(
  *
  * @returns Normalized archive text without exposing provenance metadata to existing callers
  */
-export function passArchiveText({ text, l, }: {
+export function passArchiveText({
+  text,
+  l,
+}: {
   readonly text: string;
   readonly l: Logger;
 },): string {
-  return passArchiveWithOrigins({ text, l, },).text;
+  return passArchiveWithOrigins({
+    text,
+    l,
+  },)
+    .text;
 }
 
 //endregion Pass archive

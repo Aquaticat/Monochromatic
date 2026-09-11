@@ -17,15 +17,22 @@ import { foldCarriageReturns, } from './line-endings.ts';
  * foldGitDocumentLine({ text: 'cat\r', terminated: false }); // retains bare CR
  * ```
  */
-export function foldGitDocumentLine({ text, terminated, }: {
+export function foldGitDocumentLine({
+  text,
+  terminated,
+}: {
   readonly text: string;
   readonly terminated: boolean;
 },): string {
   /**
    * Restore only a proven physical separator before using shared normalization.
    */
-  const normalized = foldCarriageReturns({ text: terminated ? `${text}\n` : text, },).text;
-  return terminated ? normalized.slice(0, -1,) : normalized;
+  const normalized = foldCarriageReturns({ text: terminated ? `${text}\n` : text, },)
+    .text;
+  return terminated ? normalized.slice(
+    0,
+    -1,
+  ) : normalized;
 }
 
 //endregion Git document lines
