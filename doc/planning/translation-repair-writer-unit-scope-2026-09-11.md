@@ -117,7 +117,8 @@ whole paired parents > selective merging > context-only.
 Whole parents establish mechanical containment without the additional correspondence proof selective merging needs;
 selective merging could correct output assignment with proof,
 whereas context alone cannot.
-Whole-parent selection is therefore the implementation candidate for the next verified prototype.
+Whole-parent selection was the implementation candidate at this checkpoint,
+but the production-envelope experiment subsequently rejected it.
 The larger input distribution and remaining deterministic parent-alignment assumptions must be disclosed,
 and the selected forty parents still require a complete source/target reading before calibration.
 No semantic correctness label is assigned to the incumbents.
@@ -131,6 +132,57 @@ the regression will exercise it directly rather than inserting it into the sampl
 
 Private prototype records are `parent-census.json` and `parent-prototype.json`
 in the owned writer workspace.
+
+## Production-envelope correction
+
+`scope-envelope.json` records the next measured boundary.
+The whole-parent sample contains `hulicaijia` source section 7,
+whose parent predicate is false while a legacy child is line-structured.
+The parent Boolean therefore cannot replace every child Boolean.
+The forty parent tasks have median source length 393 and maximum 1983;
+Mio12's actual recorded preparation has median 87 and maximum 390 across its seventeen slices.
+This comparison is descriptive,
+not a universal production maximum.
+
+Keeping only parents that fit both existing node-group budgets leaves 43 candidates.
+Its forty-task draw has median source length 89 and target length 171,
+mostly single-node parents.
+Allowing either atomic side adds only three candidates.
+This is not evidence that such filtering preserves representative coverage.
+The unrestricted and shape-filtered whole-parent proposals are rejected.
+Only a provenance type scaffold was committed at `53b7c7f1e`;
+no runtime sampler or writer was changed to use either proposal.
+That scaffold must be reshaped before use.
+
+The chosen implementation direction is frozen production-prepared groups:
+
+- Freeze a deterministic bounded parent pool before any pairing calls.
+- Use existing configured block-pairing electorate,
+  quorum and stage policy without translation-generation calls.
+- Account for preparation calls separately.
+  Abort the plan on an uncorroborated fallback instead of dropping its parent afterward.
+- Consume complete production pairing groups and existing subdivision,
+  including insertion,
+  unclaimed-target and child-level line-structure semantics.
+- Draw forty prepared units deterministically,
+  then persist and exit before writing.
+- Review those exact units with their surrounding source and target parents.
+  Incumbents remain fallible baselines,
+  not gold labels.
+- Require a distinct reviewed-plan digest before generation.
+  Rebuild from the frozen recipe provider-free and refuse any mismatch before provider creation.
+- Record corpus,
+  build,
+  configuration and population identities,
+  ballots,
+  recipes,
+  exact ranges/hashes/node membership,
+  line flags and actual serialized prompt sizes.
+
+Independent review supported this direction after examining the new measurements.
+It does not add writer rounds or change the writer standing rule.
+The old launcher remains blocked.
+A fresh budget reading is required before paid preparation and again before writer generation.
 
 ## Current artifacts
 

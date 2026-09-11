@@ -143,6 +143,10 @@ await describe({
         },);
         expect(outcome.pairs.length,).toBe(2,);
         expect(outcome.usable,).toBe(2,);
+        expect(outcome,).toHaveProperty('outcomes', ROSTER.map(modelId => ({
+          modelId,
+          voice: { heard: true, value: { pairs: [{ source: 0, target: 0, }, { source: 1, target: 1, },], }, },
+        })),);
       },
     },),
     it({
@@ -266,6 +270,31 @@ await describe({
         expect(outcome.pairs.length,).toBe(0,);
         expect(outcome.usable,).toBe(0,);
         expect(outcome.findings.join(' ',),).toContain('no-usable-voice',);
+        expect(outcome,).toHaveProperty('outcomes', ROSTER.map(modelId => ({
+          modelId,
+          voice: { heard: true, value: { pairs: [{ source: 9, target: 0, },], }, },
+        })),);
+      },
+    },),
+    it({
+      name: 'retains asked missing voices without inventing pair ballots',
+      fn: async () => {
+        const outcome = await pairBlocksWithRoster({
+          fanOut: 'whole-bench',
+          client: cannedClient({ replyByModel: ['{"noPairs":true}',], },),
+          modelIds: ROSTER,
+          sourceBlocks: SOURCE,
+          targetBlocks: TARGET,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.pairs,).toEqual([],);
+        expect(outcome.heard,).toBe(0,);
+        expect(outcome,).toHaveProperty('outcomes', ROSTER.map(modelId => ({
+          modelId,
+          voice: { heard: false, answered: true, unreachable: false, },
+        })),);
       },
     },),
   ],
