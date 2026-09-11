@@ -86,8 +86,8 @@ export function activeFootnoteMarkers({ text, }: { readonly text: string; },): r
     /** Reuse exact masked parser input rather than rescanning comments in canonical text. */
     const { root, parsedText, } = parseSliceBody({ text: masked, },);
     /** Owned structural work-stack, avoiding recursion through container spines. */
-    const work: DeepReadonlyData<RootContent>[] = [...root.children,];
-    /** Positioned markers collected independently of traversal order. */
+    const work: DeepReadonlyData<RootContent>[] = root.children.toReversed();
+    /** Positioned markers collected in source-order preorder. */
     const markers: ActiveFootnoteMarker[] = [];
     while (work.length > 0) {
       /** Next syntax node. */
@@ -108,11 +108,11 @@ export function activeFootnoteMarkers({ text, }: { readonly text: string; },): r
             startOffset: bodyOffset + start + marker.startOffset, endOffset: bodyOffset + start + marker.endOffset, },);
       }
       if ('children' in node) {
-        for (const child of node.children)
+        for (const child of node.children.toReversed())
           work.push(child,);
       }
     }
-    return markers.toSorted(function sourceOrder(left, right,): number { return left.startOffset - right.startOffset; },);
+    return markers;
   }
   catch (error) {
     if (error instanceof MdxParseError)

@@ -1,7 +1,7 @@
 import type { FootnoteRelabel, } from './archive-footnote-relabel.ts';
 import { readFootnoteClosureInput, } from './footnote-closure-input.ts';
 import type { RelabelClosure, } from './footnote-closure-model.ts';
-import { scanGfmReferenceLiterals, } from './footnote-graph.ts';
+import { activeFootnoteMarkers, footnoteMarkerLabels, } from './active-footnote-markers.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import type { FootnoteLabelRewrite, } from './footnote-label-rewrite.ts';
 import { retainedFootnoteLabels, } from './footnote-retained-labels.ts';
@@ -24,9 +24,7 @@ export type { RelabelClosure, } from './footnote-closure-model.ts';
  * ```
  */
 export function documentLabels({ text, }: { readonly text: string; },): readonly string[] {
-  return [...new Set(scanGfmReferenceLiterals({ slice: text, },).map(function identifier(hit,): string {
-    return hit.identifier;
-  },),),];
+  return footnoteMarkerLabels({ markers: activeFootnoteMarkers({ text, },), },);
 }
 
 /**

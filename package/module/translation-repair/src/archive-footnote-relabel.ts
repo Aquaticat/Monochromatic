@@ -1,12 +1,9 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import type { DefinitionLabelPair, } from './pair-definition-order.ts';
-import type { FootnoteLabelRewrite, } from './footnote-label-rewrite.ts';
+import { activeFootnoteMarkers, footnoteMarkerLabels, } from './active-footnote-markers.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
-import {
-  scanGfmReferenceLiterals,
-  type TextMarkerHit,
-} from './footnote-graph.ts';
+export { applyFootnoteRelabel, } from './apply-footnote-relabel.ts';
 
 //region Archive footnote relabel
 // THE ARCHIVE'S FOOTNOTE LABELS FOLLOW THE ORIGINAL'S, decided after the
@@ -113,97 +110,6 @@ export type FootnoteRelabelReading = {
 };
 
 /**
- * Output pieces so far and where the last one ended, in the forward pass the
- * rewrite makes over the text.
- */
-type RelabelWalk = {
-  /**
-   * Text emitted so far, in order.
-   */
-  readonly pieces: readonly string[];
-
-  /**
-   * Offset in the input just past what the pieces cover.
-   */
-  readonly cursor: number;
-};
-
-/**
- * Opening literal of a GFM marker.
- */
-const GFM_OPEN = '[^';
-
-/**
- * Closing literal of a GFM marker.
- */
-const GFM_CLOSE = ']';
-
-/**
- * What follows a marker that opens a definition.
- */
-const DEFINITION_SEPARATOR = ':';
-
-/**
- * Length of one marker literal, opening and closing brackets included.
- *
- * @param identifier - the marker's label
- *
- * @returns Characters the literal spans
- *
- * @example
- * ```ts
- * markerLength({ identifier: '12', },);
- * // => 5
- * ```
- */
-function markerLength({ identifier, }: { readonly identifier: string; },): number {
-  return GFM_OPEN.length
-    + identifier.length
-    + GFM_CLOSE.length;
-}
-
-/**
- * Whether a marker at one offset opens a definition rather than referencing a
- * note: it sits at the start of its line and a colon follows it.
- *
- * @param text - text the marker sits in
- *
- * @param offset - where the marker's `[^` starts
- *
- * @param identifier - the marker's label
- *
- * @returns Whether it is a definition opener
- *
- * @example
- * ```ts
- * opensDefinition({ text: '[^1]: note', offset: 0, identifier: '1', },);
- * // => true
- * ```
- */
-function opensDefinition(
-  {
-    text,
-    offset,
-    identifier,
-  }: {
-    readonly text: string;
-    readonly offset: number;
-    readonly identifier: string;
-  },
-): boolean {
-  /**
-   * Offset just past the closing bracket.
-   */
-  const after = offset + markerLength({ identifier, },);
-  if (text.slice(
-    after,
-    after + DEFINITION_SEPARATOR.length,
-  ) !== DEFINITION_SEPARATOR)
-    return false;
-  return (offset === 0) || (text[offset - 1] === '\n');
-}
-
-/**
  * Distinct labels one text references, in order of first appearance,
  * definition openers left out.
  *
@@ -220,21 +126,9 @@ function opensDefinition(
 export function referenceLabels(
   { text, }: { readonly text: string; },
 ): readonly string[] {
-  /**
-   * Labels seen so far, in order.
-   */
-  const seen: string[] = [];
-  for (const hit of scanGfmReferenceLiterals({ slice: text, },)) {
-    if (opensDefinition({
-      text,
-      offset: hit.localOffset,
-      identifier: hit.identifier,
-    },))
-      continue;
-    if (!seen.includes(hit.identifier,))
-      seen.push(hit.identifier,);
-  }
-  return seen;
+  return footnoteMarkerLabels({ markers: activeFootnoteMarkers({ text, },).filter(function reference(marker,): boolean {
+    return marker.kind === 'reference';
+  },), },);
 }
 
 /**
@@ -469,84 +363,6 @@ export function footnoteRelabelOfDefinitions(
     },),
     skipped: [],
   },);
-}
-
-/**
- * Rewrites every GFM marker of the mapped labels, references and definition
- * openers alike, in one pass over the text so swapped labels cannot collide.
- *
- * @param text - archive text as it stands
- *
- * @param map - labels to rewrite
- *
- * @returns Archive text under the original's labels
- *
- * @example
- * ```ts
- * applyFootnoteRelabel({ text: 'A[^1].\n\n[^1]: note\n', map: [ { from: '1', to: '2', }, ], },);
- * // => 'A[^2].\n\n[^2]: note\n'
- * ```
- */
-export function applyFootnoteRelabel(
-  {
-    text,
-    map,
-  }: {
-    readonly text: string;
-    readonly map: readonly FootnoteLabelRewrite[];
-  },
-): string {
-  /**
-   * Map as a lookup.
-   */
-  const lookup = new Map(map.map(function toEntry(relabel,): readonly [
-    string,
-    string,
-  ] {
-    return [
-      relabel.from,
-      relabel.to,
-    ];
-  },),);
-
-  /**
-   * The walk over every marker, mapped ones rewritten, the rest passed
-   * through inside the pieces around them.
-   */
-  const walked = scanGfmReferenceLiterals({ slice: text, },)
-    .reduce(
-      function step(
-        state: RelabelWalk,
-        hit: TextMarkerHit,
-      ): RelabelWalk {
-        /**
-         * Validated destination label, absent when this occurrence stays.
-         */
-        const to = lookup.get(hit.identifier,);
-        if (to === undefined)
-          return state;
-        return {
-          pieces: [
-            ...state.pieces,
-            text.slice(
-              state.cursor,
-              hit.localOffset,
-            ),
-            `${GFM_OPEN}${to}${GFM_CLOSE}`,
-          ],
-          cursor: hit.localOffset + markerLength({ identifier: hit.identifier, },),
-        };
-      },
-      {
-        pieces: [],
-        cursor: 0,
-      },
-    );
-  return [
-    ...walked.pieces,
-    text.slice(walked.cursor,),
-  ]
-    .join('',);
 }
 
 //endregion Archive footnote relabel

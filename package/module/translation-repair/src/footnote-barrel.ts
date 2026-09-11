@@ -22,6 +22,7 @@ export {
   type RelabelClosure,
 } from './archive-footnote-closure.ts';
 export { type FootnoteLabelRewrite, type RetainedArchiveFootnoteLabel, } from './footnote-label-rewrite.ts';
+export { FootnoteRewriteError, type FootnoteRewriteFailure, } from './footnote-rewrite-error.ts';
 export {
   crossingFinding,
   type DefinitionLabelPair,
