@@ -16,7 +16,7 @@ import { gfmMarkerAt, } from './gfm-marker-spans.ts';
  *
  * @returns Normalized source keys and raw destination spellings
  *
- * @throws FootnoteRewriteError when destinations cross syntax boundaries or identifiers would merge
+ * @throws FootnoteRewriteError when map domains are stale, destinations cross syntax boundaries or identifiers would merge
  *
  * @example
  * ```ts
@@ -74,6 +74,10 @@ export function footnoteRewriteMap(
   const before = new Set(markers.map(function identity(marker,): string {
     return marker.identifier;
   },),);
+  for (const [identifier, destination,] of lookup) {
+    if (normalizeFootnoteIdentifier({ identifier: destination, },) !== identifier && !before.has(identifier,))
+      throw new FootnoteRewriteError({ kind: 'missing-source', },);
+  }
   /**
    * Distinct output identities must have the same cardinality.
    */

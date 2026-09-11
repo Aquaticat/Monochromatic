@@ -9,12 +9,15 @@
  * const kind: FootnoteRewriteFailure = 'collision';
  * ```
  */
-export type FootnoteRewriteFailure = 'syntax' | 'position' | 'label' | 'mapping' | 'collision' | 'graph';
+export type FootnoteRewriteFailure = 'syntax' | 'position' | 'label' | 'mapping' | 'collision' | 'graph'
+  | 'missing-source' | 'slice-scope';
 
 /**
  * Actionable diagnostics for each invariant boundary.
  */
 const MESSAGES: Readonly<Record<FootnoteRewriteFailure, string>> = {
+  'missing-source': 'footnote rewrite: a changing map identifier is absent from the current active document; rebuild correspondence before retrying',
+  'slice-scope': 'footnote rewrite: prepared slice ranges or text do not match the current source or archive; prepare the documents again before reading correspondence',
   syntax: 'footnote rewrite: document syntax could not be verified; retain the archive or repair its syntax before retrying',
   position: 'footnote rewrite: parsed marker positions do not match raw syntax; retain the archive and investigate the parser boundary',
   label: 'footnote rewrite: a supplied label does not encode exactly one GFM identifier; supply a valid label before retrying',
