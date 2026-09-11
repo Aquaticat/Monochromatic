@@ -29,6 +29,8 @@
  */
 
 import { spawnSync, } from 'node:child_process';
+import { fileURLToPath, } from 'node:url';
+import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
 import {
   mkdir,
   mkdtemp,
@@ -251,6 +253,53 @@ async function refusalOf(act: () => Promise<unknown>,): Promise<unknown> {
 await describe({
   name: sampleBenchSlices.name,
   children: [
+    it({
+      name: 'resolves native Git once for a complete sample and honors an already resolved pin',
+      fn: async () => {
+        const pin = await clonedCorpusHolding({ files: {
+          [`people/${ENTRY_ID}/page.md`]: SOURCE_PAGE,
+          [`people/${ENTRY_ID}/page.en.md`]: TARGET_PAGE,
+        } });
+        await using owned = { [Symbol.asyncDispose]: async () => {
+          await rm(pin.cloneDir, { recursive: true, force: true });
+        } };
+        const gitPath = await resolveGit();
+        const apiPath = fileURLToPath(new URL('../../dist/final/node/index.mjs', import.meta.url));
+        // The separate process observes actual executable reads without replacing Git or the sampler.
+        const program = `
+import assert from 'node:assert/strict';
+import files from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
+import { pathToFileURL } from 'node:url';
+const gitPath = ${JSON.stringify(gitPath)};
+const pin = ${JSON.stringify(pin)};
+const counts = { reads: 0 };
+const original = files.readFile;
+files.readFile = async function counted(path, options) {
+  if (path === gitPath) counts.reads += 1;
+  return await original(path, options);
+};
+syncBuiltinESMExports();
+const api = await import(pathToFileURL(${JSON.stringify(apiPath)}).href);
+counts.reads = 0;
+const implicit = await api.sampleBenchSlices({ count: 1, pin });
+const implicitReads = counts.reads;
+counts.reads = 0;
+const explicit = await api.sampleBenchSlices({ count: 1, pin: { ...pin, gitPath } });
+assert.deepEqual(explicit, implicit);
+assert.equal(pin.gitPath, undefined);
+console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitReads, explicitReads: counts.reads, count: implicit.length }));
+`;
+        const done = spawnSync(process.execPath, ['--input-type=module', '--eval', program], {
+          cwd: pin.cloneDir, encoding: 'utf8', env: { PATH: process.env.PATH, HOME: pin.cloneDir },
+        });
+        expect(done.status).toBe(0);
+        const marker = 'BENCH_RESOLVER_PROOF ';
+        const line = done.stdout.split('\n').find(value => value.startsWith(marker));
+        if (line === undefined) throw new Error(`Missing resolver observation: ${done.stderr}`);
+        expect(JSON.parse(line.slice(marker.length))).toEqual({ implicitReads: 1, explicitReads: 0, count: 1 });
+      },
+    }),
     it({
       name: 'REFUSES a pinned corpus holding no entry at all, since a bench drawn over nothing would '
         + 'find every width indistinguishable and print that as a result',
