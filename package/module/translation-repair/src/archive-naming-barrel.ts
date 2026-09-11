@@ -11,4 +11,7 @@ export type {
   QualifiedArchiveNamingRevision,
 } from './archive-naming-model.ts';
 
+export { ArchiveNamingEvidenceError, } from './archive-naming-error.ts';
+export { readQualifiedArchiveNamingRevisions, } from './archive-naming-revision.ts';
+
 //endregion Scoped archive naming evidence
