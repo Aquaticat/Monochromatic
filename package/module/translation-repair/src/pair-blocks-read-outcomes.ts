@@ -5,6 +5,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { agreePairs, } from './pair-agreement.ts';
 import { countPairedBlocks, } from './pair-block-counts.ts';
+import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
 import type { BlockPairingOutcome, } from './pair-blocks-stage.ts';
 import {
   type BlockPair,
@@ -44,6 +45,8 @@ const AGREEMENT_NEEDED = 2;
  *
  * @returns Agreed relations, final seat evidence and unchanged usability findings
  *
+ * @throws {@link import('./pair-blocks-evidence-identity.ts').PairingEvidenceError} when seat identities cannot represent the configured electorate
+ *
  * @throws Error when an unexpected reader failure occurs
  *
  * @example
@@ -76,6 +79,13 @@ export function readBlockPairingOutcomes(
     l,
   },);
   pl.debug(`reading ${String(outcomes.length,)} asked-seat outcomes over ${String(modelIds.length,)} configured seats`,);
+  assertPairingSeats({
+    modelIds,
+    askedModelIds: outcomes.map(function modelOf(outcome,): RosterModelId {
+      return outcome.modelId;
+    },),
+    l: pl,
+  },);
   /**
    * Replies that arrived and validated in shape.
    */

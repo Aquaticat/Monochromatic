@@ -115,6 +115,7 @@ const MARKED_CLASSES: readonly string[] = [
   'OpenRouterCreditsShapeError',
   'OpenRouterModelNotServedError',
   'OverlapRefusedError',
+  'PairingEvidenceError',
   'PipelineDigestError',
   'PlacementLayoutError',
   'ProducerRosterError',

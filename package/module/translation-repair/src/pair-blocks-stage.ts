@@ -17,6 +17,7 @@ import {
   type NumberedBlock,
 } from './pair-blocks-wire.ts';
 import { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
+import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
@@ -184,6 +185,8 @@ export type PairedSectionRecord = {
  *
  * @returns What the roster agreed on, with what it lost
  *
+ * @throws {@link import('./pair-blocks-evidence-identity.ts').PairingEvidenceError} before calls when the configured electorate is empty or duplicated
+ *
  * @example
  * ```ts
  * const outcome = await pairBlocksWithRoster({ client, modelIds, sourceBlocks, targetBlocks, signal, exchangeTimeoutMs, l, },);
@@ -219,6 +222,7 @@ export async function pairBlocksWithRoster(
     tag: pairBlocksWithRoster.name,
     l,
   },);
+  assertPairingSeats({ modelIds, l: pl, },);
 
   /**
    * Every voice's reply, heard or lost.

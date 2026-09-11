@@ -33,6 +33,7 @@ export {
   type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
 export { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
+export { PairingEvidenceError, } from './pair-blocks-evidence-identity.ts';
 export {
   agreePairs,
   type IndexPair,
