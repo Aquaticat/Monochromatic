@@ -122,6 +122,7 @@ export type OpenRouterServedId =
   | 'moonshotai/kimi-k3'
   | 'minimax/minimax-m3'
   | 'deepseek/deepseek-v4-flash-0731'
+  | 'deepseek/deepseek-v4.1-flash'
   | 'deepseek/deepseek-v4-pro-0813'
   | 'z-ai/glm-5.3-flash'
   | 'google/gemma-4-26b-a4b-it'
@@ -273,6 +274,19 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
       'parasail',
       'reka',
     ],
+  },
+  // Owner-approved 2026-09-11; live strict JSON stream verified through
+  // DeepInfra after one HTTP 429. No endpoint is excluded on that single refusal.
+  // Base catalog rates are fallback estimates; reported costs include serving
+  // and scheduled-price effects. No predecessor's calibration is inherited.
+  'deepseek/deepseek-v4.1-flash': {
+    id: 'deepseek/deepseek-v4.1-flash',
+    sharedWith: 'deepseek-v4.1-flash',
+    readsImages: true,
+    maxOutputLength: 384_000,
+    promptUsdPerMillion: 0.3,
+    completionUsdPerMillion: 1.2,
+    ignoredEndpoints: [],
   },
   'deepseek/deepseek-v4-pro-0813': {
     id: 'deepseek/deepseek-v4-pro-0813',

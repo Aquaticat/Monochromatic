@@ -101,12 +101,14 @@ export const SEATED_OPENROUTER_JUDGES: ReadonlySet<RosterModelId> = new Set<Rost
 ],);
 
 /**
- * Models a single provider serves that hold no seat until a measurement
- * seats them, whichever provider it is.
+ * New candidates that hold no judge or preparation seat until measured.
+ * Provider multiplicity does not establish eligibility: V4.1 Flash has two
+ * serving routes but no inherited V4 Flash 0731 calibration.
  */
 const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
   ...BEDROCK_ONLY_ROSTER_IDS,
   ...OPENROUTER_ONLY_ROSTER_IDS,
+  'deepseek-v4.1-flash',
 ],);
 
 /**
@@ -142,7 +144,10 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelI
  * candidate was compared under the same judges, so the standing among them
  * holds. Record: the second 2026-09-09 addendum of the seating decision.
  */
-export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>();
+export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  // Approved 2026-09-11; neither a serving probe nor a predecessor's rating measures its writing.
+  'deepseek-v4.1-flash',
+],);
 
 /**
  * Every model this run may seat, across both providers.
@@ -652,6 +657,14 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
 };
 
 /**
+ * Reported image capability is not yet a verified reader seat for a new model.
+ * Keep this separate from judge admission: Gemma 4 31B already reads without judging.
+ */
+const READER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'deepseek-v4.1-flash',
+],);
+
+/**
  * Models that read this run's pictures.
  *
  * DERIVED FROM THE CATALOG rather than listed by hand, so the roster is
@@ -680,7 +693,7 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
  */
 export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function reads(modelId,): boolean {
-    return readsImages({ modelId, },);
+    return readsImages({ modelId, },) && !READER_UNMEASURED.has(modelId,);
   },);
 
 /**

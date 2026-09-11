@@ -85,6 +85,7 @@ export type HyperServedId =
   | 'gemma-4-26b-a4b-it'
   | 'deepseek-v4-pro-0813'
   | 'deepseek-v4-flash-0731'
+  | 'deepseek-v4.1-flash'
   | 'glm-5.3-flash'
   | 'glm-5.3';
 
@@ -228,6 +229,14 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
     sharedWith: HYPER_ONLY,
     readsImages: false,
     maxOutputLength: 262_144,
+  },
+  // Live catalog and forced-tool stream verified 2026-09-11. Vision is
+  // reported by this serving stack; reader seating still requires its own check.
+  'deepseek-v4.1-flash': {
+    id: 'deepseek-v4.1-flash',
+    sharedWith: HYPER_ONLY,
+    readsImages: true,
+    maxOutputLength: 26_214,
   },
 };
 

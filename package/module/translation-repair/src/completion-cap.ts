@@ -47,6 +47,11 @@ import type { RosterModelId, } from './roster-id.ts';
 const POOLED_P90 = 3_831;
 
 /**
+ * Existing pooled 99th percentile for a new model without its own completed-call distribution.
+ */
+const POOLED_P99 = 13_082;
+
+/**
  * Completion token ceiling per roster model, sent as `max_tokens` by every
  * client.
  *
@@ -77,6 +82,9 @@ export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = {
   'deepseek-v4-pro-0813': 9_128,
   // OpenRouter p99 over 4,915 calls; Hyper 661 over 7,700.
   'deepseek-v4-flash-0731': 16_543,
+  // New version, approved 2026-09-11. Use the existing unmeasured-model policy,
+  // not V4 Flash 0731's distribution or a provider's advertised maximum.
+  'deepseek-v4.1-flash': POOLED_P99,
   // OpenRouter p99 over 2,673 calls; Hyper 17,118 over 3,343.
   'glm-5.3': 22_067,
   // Own p99 483 over 5,506 Bedrock calls, under the pooled 90th.

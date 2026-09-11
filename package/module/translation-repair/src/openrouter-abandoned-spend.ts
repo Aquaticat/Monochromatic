@@ -39,6 +39,8 @@ const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number
   'minimax/minimax-m3': 137,
   // 3,017 streams.
   'deepseek/deepseek-v4-flash-0731': 132,
+  // New version unmeasured; retain the pooled median fallback, not its predecessor's ratio.
+  'deepseek/deepseek-v4.1-flash': 137,
   // 4,064 streams.
   'deepseek/deepseek-v4-pro-0813': 386,
   // 1,253 streams.

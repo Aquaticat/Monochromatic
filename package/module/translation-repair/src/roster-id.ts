@@ -5,9 +5,9 @@
 // other's would be a cycle, so the identity lives on its own and the catalogs
 // describe it from their own side.
 //
-// THE ROSTER IS TWELVE DISTINCT MODELS across four providers: four Synthetic
-// serves, five only Charm Hyper serves, two only Amazon Bedrock serves and one
-// only OpenRouter serves (eight across two providers until 2026-09-01). A
+// Roster identities are independent of provider routes. Hyper-origin identities
+// can also be served by OpenRouter; their historical bucket is not an exclusive
+// serving claim. New versions retain independent calibration and history. A
 // model is one roster entry however many providers can reach it, which
 // is the property the adjudication tally depends on: `synthetic-catalog.ts`
 // explains at length why one model occupying two seats would silently overstate
@@ -70,6 +70,9 @@ export const HYPER_ONLY_ROSTER_IDS = [
   // 400 (automatic-only, the culled qwen3.8-max's constraint), which the
   // hyper-catalog entry comment records with the probe.
   'glm-5.3',
+  // Owner-approved on Hyper and OpenRouter 2026-09-11. One new identity,
+  // not an alias for V4 Flash 0731; role admission requires fresh calibration.
+  'deepseek-v4.1-flash',
 ] as const;
 
 /**
