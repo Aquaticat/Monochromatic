@@ -70,8 +70,8 @@ await describe({
         const beforeCommit = await commitNamingArchive({ cloneDir, relPath: fixture.relPath, text: BEFORE_ARCHIVE + suffix });
         const beforeTree = await namingFixtureGit({ cloneDir, args: ['rev-parse', `${beforeCommit}^{tree}`] });
         const afterTree = await namingFixtureGit({ cloneDir, args: ['rev-parse', `${fixture.pin.commitSha}^{tree}`] });
-        const unrelatedParent = await namingFixtureGit({ cloneDir, args: ['commit-tree', beforeTree, '--message', 'unrelated predecessor'] });
-        const unrelatedNaming = await namingFixtureGit({ cloneDir, args: ['commit-tree', afterTree, '-p', unrelatedParent, '--message', 'unrelated naming'] });
+        const unrelatedParent = await namingFixtureGit({ cloneDir, args: ['commit-tree', beforeTree, '-m', 'unrelated predecessor'] });
+        const unrelatedNaming = await namingFixtureGit({ cloneDir, args: ['commit-tree', afterTree, '-p', unrelatedParent, '-m', 'unrelated naming'] });
         await writeFile(join(cloneDir, '.git/info/grafts'), `${fixture.pin.commitSha} ${unrelatedNaming}\n`);
         // Positive control: ordinary native blame really follows the fabricated graph.
         const ordinary = await namingFixtureGit({ cloneDir,
