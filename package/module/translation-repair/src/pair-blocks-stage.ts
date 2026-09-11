@@ -11,6 +11,7 @@ import type {
 import {
   type BlockPair,
   BlockPairingError,
+  type BlockPairingWire,
   buildBlockPairingMessages,
   type FreeOrderBlocks,
   isBlockPairingWire,
@@ -22,6 +23,7 @@ import { countPairedBlocks, } from './pair-block-counts.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
+import type { RoundOutcome, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Block pairing stage
@@ -85,10 +87,18 @@ const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
  *
  * @example
  * ```ts
- * const outcome: BlockPairingOutcome = { pairs: [], heard: 0, usable: 0, cacheEligible: false, findings: [], };
+ * const outcome: BlockPairingOutcome = { pairs: [], heard: 0, usable: 0, cacheEligible: false, findings: [], outcomes: [], };
  * ```
  */
 export type BlockPairingOutcome = {
+  /**
+   * Final outcome of every asked seat, in roster order, including unreadable replies.
+   * Counts cannot identify which model supplied which relation; frozen preparation
+   * recipes retain these outcomes to reproduce the existing reader and agreement.
+   * A heard wire still needs semantic range/order validation before it is usable.
+   */
+  readonly outcomes: readonly RoundOutcome<BlockPairingWire>[];
+
   /**
    * Correspondences enough voices named, in document order.
    */
@@ -301,6 +311,7 @@ export async function pairBlocksWithRoster(
       usable: 0,
       cacheEligible: false,
       findings,
+      outcomes,
     };
   }
 
@@ -347,6 +358,7 @@ export async function pairBlocksWithRoster(
     usable: pairings.length,
     cacheEligible: dropped.length === 0,
     findings,
+    outcomes,
   };
 }
 
