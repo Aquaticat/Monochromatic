@@ -25,6 +25,11 @@ export type ArchiveNamingFailure =
  */
 export class ArchiveNamingEvidenceError extends Error {
   /**
+   * Message contains only a closed failure kind and the operator-supplied archive path.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Closed boundary that failed, without exposing history or document content.
    */
   readonly kind: ArchiveNamingFailure;

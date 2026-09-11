@@ -63,6 +63,7 @@ const BYTE_OFFSET_OR_NOTHING = "(at === OFFSET_UNSTATED) ? '' : ` at byte $"
  * name is written down, which is the moment to ask what its message carries.
  */
 const MARKED_CLASSES: readonly string[] = [
+  'ArchiveNamingEvidenceError',
   'ArchiveOriginalCompletenessError',
   'ArtifactParseError',
   'AssemblyContractError',
@@ -247,7 +248,8 @@ const NAMED_PARTS: Record<string, string> = {
   'from': 'file path',
   'holder.startedAt': 'timestamp',
   'judgeModelIds.join(\', \',)': 'model ids from the catalog',
-  'kind': 'mdast node type name or closed tally/reading evidence-kind literal',
+  'kind': 'mdast node type name or closed tally/reading/archive-evidence failure-kind literal',
+  'relPath': 'operator-supplied repository-relative archive path, never document text',
   'claimId': 'computed claim identifier, not its quoted text or diagnostic summary',
   'label': 'model id the transport was calling',
   'leftId': 'envelope id',

@@ -56,10 +56,13 @@ await describe({
       },
     }),
     it({
-      name: 'reports unverified Hyper credit pricing as unpriced rather than free',
+      name: 'uses the verified Hyper credit conversion while keeping unknown models unpriced',
       fn: async () => {
-        expect(ratesFor({ model: MODEL })).toBe('unpriced');
-        expect(creditsFor({ model: MODEL, promptTokens: 708, completionTokens: 59 })).toBe('unpriced');
+        // Current Hyper docs define one credit as USD 0.05; the live model quote is 0.3/1.2 USD per million.
+        expect(ratesFor({ model: MODEL })).toEqual({ input: 6, output: 24, cacheCreate: 0, cacheHit: 0.6 });
+        expect(creditsFor({ model: MODEL, promptTokens: 708, completionTokens: 59 }))
+          .toEqual({ inputCredits: 0.004248, outputCredits: 0.001416 });
+        expect(ratesFor({ model: 'unlisted-fixture-model' })).toBe('unpriced');
       },
     }),
     it({
