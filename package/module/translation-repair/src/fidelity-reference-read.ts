@@ -7,6 +7,7 @@ import type {
   FidelityReferenceSpec,
   ReviewedFidelityReference,
 } from './fidelity-reference-model.ts';
+import { selectReviewedFidelitySpecs, } from './fidelity-reference-select.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 
 //region Pinned reviewed-reference acquisition
@@ -45,33 +46,9 @@ export async function readReviewedFidelityReferences({ pin, specs = REVIEWED_FID
 },): Promise<readonly ReviewedFidelityReference[]> {
   signal?.throwIfAborted();
   /**
-   * Own all selectors before asynchronous file reads.
+   * Own and validate metadata selection before any pinned-file reads.
    */
-  const checked = structuredClone(specs,);
-  /**
-   * Duplicate reference identities would make rows and summaries ambiguous.
-   */
-  const identities = new Set(checked.map(function identity(spec,): string {
-    return spec.id;
-  },),);
-  if (checked.length === 0 || identities.size !== checked.length)
-    throw new FidelityReferenceError({ referenceId: 'manifest', operation: 'request', },);
-  /**
-   * Entry filters cannot silently turn a requested calibration into zero work.
-   */
-  const entries = new Set(checked.map(function entry(spec,): string {
-    return spec.entryId;
-  },),);
-  for (const entryId of onlyEntryIds) {
-    if (!entries.has(entryId,))
-      throw new FidelityReferenceError({ referenceId: entryId, operation: 'request', },);
-  }
-  /**
-   * Only explicit reviewed entries are selected, with no corpus-content search.
-   */
-  const selected = checked.filter(function selectedEntry(spec,): boolean {
-    return onlyEntryIds.length === 0 || onlyEntryIds.includes(spec.entryId,);
-  },);
+  const selected = selectReviewedFidelitySpecs({ specs, onlyEntryIds, },);
   /**
    * Pin fields cannot be redirected while the reads are in flight.
    */

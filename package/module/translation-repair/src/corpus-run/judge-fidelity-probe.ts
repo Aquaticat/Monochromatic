@@ -1,19 +1,12 @@
+import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-
-import {
-  alterSharedNumber,
-  type DamageAttempt,
-  deleteOneSentence,
-  donorTextsFor,
-  type FidelityDamageKind,
-  insertBorrowedSentence,
-} from '../fidelity-damage.ts';
-import { neighbouringSource, } from '../fidelity-window.ts';
-import {
-  type FidelityDirection,
-  type FidelityTrial,
-  runFidelityTrial,
-} from '../judge-fidelity.ts';
+import { FidelityReferenceError, } from '../fidelity-reference-error.ts';
+import { REVIEWED_FIDELITY_REFERENCES, } from '../fidelity-reference-manifest.ts';
+import { readReviewedFidelityReferences, } from '../fidelity-reference-read.ts';
+import { selectReviewedFidelitySpecs, } from '../fidelity-reference-select.ts';
+import { reviewedFidelityTrials, } from '../fidelity-reference-trials.ts';
+import { runFidelityTrial, } from '../judge-fidelity.ts';
+import { mapOverlapped, } from '../overlapped-map.ts';
 import {
   createRunClient,
   resolveRunsDir,
@@ -25,159 +18,21 @@ import {
   readCandidateIds,
   readCandidatesAlone,
 } from './probe-candidates.ts';
-import {
-  carveSettled,
-  listSettledEntryIds,
-  recipeLabel,
-} from './settled-carve.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { persistProbeRun, } from './probe-store.ts';
 import { readRunnerClosure, } from './runner-closure.ts';
-import {
-  DAMAGE_KINDS,
-  readFidelityArguments,
-} from './judge-fidelity-args.ts';
+import { readFidelityArguments, } from './judge-fidelity-args.ts';
 
-//region Judge fidelity probe
-// `#84`: before the translate-and-select shape decides a corpus, can its judges
-// tell a faithful rendering from one that says less.
-//
-// THE ANSWER IS CONSTRUCTED RATHER THAN OBSERVED. Each trial takes a real slice
-// of the archive, deletes one whole sentence from its English with
-// `applySeededErrors`, and puts the two texts on the ballot the production stage
-// uses, with the production task and criteria. One candidate states everything
-// the other does minus a sentence, so coverage is the only ground it can lose
-// on, and coverage is the first criterion the sheet names.
-//
-// EVERY PAIR IS RUN FOUR WAYS: the clean text as the incumbent and as the
-// proposal, each with the clean text listed first and second. A judge that
-// prefers the incumbent scores half, a judge that prefers position one scores
-// half, and only a judge that reads scores all four.
-//
-// IT DECIDES NOTHING. No lane, cache or artifact reads its output; it prints
-// rows as JSON on standard output for a caller to keep.
+//region Source-reviewed judge calibration
+// An unchanged archive is not automatically correct. Review locks the reference and every intentional delta.
 
 /**
- * Shortest English slice worth damaging.
+ * Runs only source-reviewed, hash-locked comparisons through the production selector.
+ * Individual ballots are retained; a singleton judge's underweight merged verdict
+ * is not a quality score. This command never changes role admission itself.
  *
- * Below this a deleted sentence is most of the passage, which asks a far easier
- * question than the one production faces.
- */
-const MIN_SLICE_CHARS = 400;
-
-/**
- * Damaged pairs taken from any one entry.
- *
- * ONE, so a cap spreads across entries instead of exhausting the first. Walking
- * an entry's slices in order until the cap is reached samples one document's
- * prose, one translator's habits and one subject, and reports it as a rate over
- * the archive. The same bias was recorded against the coverage probe and is
- * cheaper to avoid here than to caveat later.
- */
-const PAIRS_PER_ENTRY = 1;
-
-/**
- * Ballot arrangements every pair is run through.
- */
-const ARRANGEMENTS: readonly {
-  readonly direction: FidelityDirection;
-  readonly cleanFirst: boolean;
-}[] = [
-  {
-    direction: 'preserve',
-    cleanFirst: true,
-  },
-  {
-    direction: 'preserve',
-    cleanFirst: false,
-  },
-  {
-    direction: 'replace',
-    cleanFirst: true,
-  },
-  {
-    direction: 'replace',
-    cleanFirst: false,
-  },
-];
-
-/**
- * One trial and what came back.
- */
-type FidelityRow = {
-  /**
-   * Corpus entry the slice belongs to.
-   */
-  readonly entryId: string;
-
-  /**
-   * Slice within that entry's preparation.
-   */
-  readonly slicePosition: number;
-
-  /**
-   * Which side held the clean text.
-   */
-  readonly direction: FidelityDirection;
-
-  /**
-   * Which constructed defect the damaged candidate carried.
-   */
-  readonly damageKind: FidelityDamageKind;
-
-  /**
-   * Whether the clean text was listed first.
-   */
-  readonly cleanFirst: boolean;
-
-  /**
-   * What the roster chose, or that it declined.
-   */
-  readonly verdict: string;
-
-  /**
-   * Whether that is the right answer.
-   */
-  readonly correct: boolean;
-
-  /**
-   * Judges that picked the clean text.
-   */
-  readonly forClean: number;
-
-  /**
-   * Judges that picked the damaged text.
-   */
-  readonly forDamaged: number;
-
-  /**
-   * Characters the edit removed or added.
-   */
-  readonly changedChars: number;
-
-  /**
-   * What the edit did, so two runs can be compared on the SAME damage without
-   * recovering it from whatever the judges happened to quote.
-   */
-  readonly damageDetail: string;
-
-  /**
-   * Reasons in roster order, kept because a judge that names coverage and still
-   * picks the damaged text is a different failure from one that never mentions
-   * it.
-   */
-  readonly reasons: readonly string[];
-};
-
-/**
- * Runs constructed comparisons past the production judges, up to the cap.
- *
- * OVER SETTLED ENTRIES ONLY, carved through the recipe each artifact records.
- * The trials ask how the judges read a slice as the lanes see it, and the lanes
- * see slices the roster shell carved; an entry the pass never settled has no
- * such slicing, and the bare deterministic carve this used to run is a
- * different instrument, not a cheaper approximation.
+ * @throws {@link FidelityReferenceError} for unreviewed requests or reference drift
  *
  * @example
  * ```ts
@@ -186,263 +41,115 @@ type FidelityRow = {
  */
 async function main(): Promise<void> {
   /**
-   * Logger tagged for this probe.
+   * CLI-scoped progress and diagnostic logger.
    */
   const log = tagged({ tag: 'judge-fidelity-probe', },);
-
   /**
-   * Entry filter and trial cap.
+   * Existing flags retain their names; unreviewed context cannot become new gold evidence.
    */
-  const {
-    onlyIds,
-    cap,
-    damageKinds,
-    withContext,
-  } = readFidelityArguments();
-
+  const { onlyIds, cap, damageKinds, withContext, } = readFidelityArguments();
+  if (withContext)
+    throw new FidelityReferenceError({ referenceId: 'unreviewed context', operation: 'request', },);
+  if (cap < 0)
+    throw new FidelityReferenceError({ referenceId: 'negative trial cap', operation: 'request', },);
   /**
-   * Judges asked: the seated roster and any seatable candidate named after
-   * `--candidates`, measured beside it for this run only, or the candidates
-   * alone under `--candidates-alone`.
+   * Metadata filtering precedes all corpus and provider access.
+   */
+  const specs = selectReviewedFidelitySpecs({ specs: REVIEWED_FIDELITY_REFERENCES, onlyEntryIds: onlyIds, },);
+  if (!specs.some(function supportsRequestedDamage(spec,): boolean {
+    return spec.damages.some(function requested(damage,): boolean {
+      return damageKinds.includes(damage.kind,);
+    },);
+  },)) {
+    throw new FidelityReferenceError({ referenceId: 'damage selection', operation: 'request', },);
+  }
+  /**
+   * Approved candidates can be measured without acquiring a production seat.
    */
   const judgeModelIds = probeRosterWith({
     candidates: readCandidateIds({ argv: process.argv, },),
     alone: readCandidatesAlone({ argv: process.argv, },),
   },);
-  log.info(`judges: ${judgeModelIds.join(', ',)}`,);
-
-  /**
-   * Client for every exchange.
-   */
-  const client = createRunClient();
-
-  /**
-   * Abort shared by every call, never fired: each exchange has its own deadline.
-   */
-  const controller = new AbortController();
-
-  /**
-   * Rows accumulated across trials, one per attempt.
-   */
-  const rows: FidelityRow[] = [];
-
-  /**
-   * When this run started, for the kept record.
-   */
-  const startedAt = new Date().toISOString();
-
-  /**
-   * Digest of the pipeline these trials ran under.
-   */
-  const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
-
-  /**
-   * Chunks this entry imports, read at run start.
-   */
-  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
-
-  /**
-   * Runs directory whose settled artifacts name the population.
-   */
-  const runsDir = await resolveRunsDir();
-
-  /**
-   * Settled entries to walk, filtered when the caller named some.
-   */
-  const entryIds = (await listSettledEntryIds({ runsDir, },))
-    .filter(function isWanted(entryId,): boolean {
-      return (onlyIds.length === 0) || onlyIds.includes(entryId,);
-    },);
-  log.info(`settled entries to walk: ${String(entryIds.length,)}`,);
-  /* oxlint-disable no-await-in-loop -- Sequential on purpose: this probe exists
-     to be read while it runs, and a fan-out would interleave several entries
-     into one stream. */
-  for (const entryId of entryIds) {
-    if (rows.length >= cap)
-      break;
-
-    /**
-     * Slices as the lanes saw them, rebuilt through the artifact's recipe.
-     */
-    const carve = await carveSettled({
-      entryId,
-      runsDir,
-      cloneDir: RUN_CORPUS_PIN.cloneDir,
-    },);
-    if (carve.kind !== 'settled') {
-      log.info(`${entryId}: skipped, ${carve.kind} artifact records no recipe`,);
-      continue;
-    }
-    log.info(`${entryId}: carved from its settled artifact (${recipeLabel({ recipe: carve.recipe, },)})`,);
-
-    /**
-     * Slicing to draw trials from.
-     */
-    const { prepared, } = carve;
-    /**
-     * Damaged pairs taken from this entry so far.
-     */
-    let pairsHere = 0;
-    for (const [
-      slicePosition,
-      slice,
-    ] of prepared.slices
-      .entries()) {
-      if ((rows.length >= cap) || (pairsHere >= PAIRS_PER_ENTRY))
-        break;
-
-      /**
-       * English this slice carries, EMPTY on an insertion anchor, which the
-       * length floor excludes along with every slice too short to damage.
-       */
-      const cleanText = slice.target
-        .text;
-      if (cleanText.length < MIN_SLICE_CHARS)
-        continue;
-
-      /**
-       * Every defect this slice admits, in the order the caller asked for.
-       *
-       * A slice that admits neither is skipped without counting against the
-       * per-entry pair budget, so an entry whose first long slice cannot be
-       * damaged is still sampled further down.
-       */
-      const attempts = damageKinds
-        .map(function toAttempt(damageKind,): DamageAttempt {
-          if (damageKind === 'deletion')
-            return deleteOneSentence({ cleanText, },);
-          if (damageKind === 'alteration') {
-            return alterSharedNumber({
-              cleanText,
-              sourceText: slice.source
-                .text,
-            },);
-          }
-          return insertBorrowedSentence({
-            cleanText,
-            donorTexts: donorTextsFor({
-              slices: prepared.slices,
-              slicePosition,
-            },),
-          },);
-        },)
-        .filter(function wasBuilt(attempt,): attempt is Extract<DamageAttempt, { kind: 'damaged'; }> {
-          if (attempt.kind === 'damaged')
-            return true;
-          log.info(`${entryId}/${String(slicePosition,)}: ${attempt.reason}`,);
-          return false;
-        },);
-      if (attempts.length === 0)
-        continue;
-      pairsHere += 1;
-
-      for (const damaged of attempts) {
-        for (const arrangement of ARRANGEMENTS) {
-          if (rows.length >= cap)
-            break;
-
-          /**
-           * Comparison with a known right answer.
-           */
-          const trial: FidelityTrial = {
-            trialId: `${entryId}/${String(slicePosition,)}/${damaged.damageKind}`,
-            direction: arrangement.direction,
-            damageKind: damaged.damageKind,
-            sourceText: slice.source
-              .text,
-            contextText: withContext
-              ? neighbouringSource({
-                slices: prepared.slices,
-                slicePosition,
-              },)
-              : '',
-            cleanText,
-            damagedText: damaged.damagedText,
-            cleanFirst: arrangement.cleanFirst,
-          };
-          try {
-            /**
-             * What the judges made of it.
-             */
-            const outcome = await runFidelityTrial({
-              client,
-              trial,
-              judgeModelIds,
-              signal: controller.signal,
-              perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-              l: log,
-            },);
-            rows.push({
-              entryId,
-              slicePosition,
-              direction: outcome.direction,
-              damageKind: outcome.damageKind,
-              cleanFirst: outcome.cleanFirst,
-              verdict: outcome.verdict,
-              correct: outcome.correct,
-              forClean: outcome.ballots
-                .filter(function pickedClean(ballot,) {
-                  return ballot.picked === 'clean';
-                },)
-                .length,
-              forDamaged: outcome.ballots
-                .filter(function pickedDamaged(ballot,) {
-                  return ballot.picked === 'damaged';
-                },)
-                .length,
-              changedChars: damaged.changedChars,
-              damageDetail: damaged.damageDetail,
-              reasons: outcome.ballots
-                .map(function toReason(ballot,) {
-                  return `${ballot.modelId}: ${ballot.picked} ${ballot.reason}`;
-                },),
-            },);
-          }
-          catch (error) {
-            log.info(`${trial.trialId} (${arrangement.direction}): failed, ${String(error,)}`,);
-          }
-        }
+  // Current reviewed corrections were authored outside this roster. Refuse an explicit overlap.
+  for (const spec of specs) {
+    for (const edit of spec.edits) {
+      if (judgeModelIds.some(function authoredCorrection(modelId,): boolean {
+        return modelId === edit.author || modelId.endsWith(`/${edit.author}`,);
+      },)) {
+        throw new FidelityReferenceError({ referenceId: spec.id, operation: 'request', },);
       }
     }
   }
-  /* oxlint-enable no-await-in-loop */
-
-  /**
-   * Trials the roster got right.
-   */
-  const correct = rows.filter(function wasRight(row,) {
-    return row.correct;
-  },);
-  log.info(
-    `fidelity: ${String(correct.length,)} of ${String(rows.length,)} trials chose the complete text`,
-  );
-  // PER DEFECT AS WELL AS OVERALL, because the two answer different questions
-  // and a combined figure hides the one that matters: a roster reading length
-  // scores every deletion trial and no insertion trial.
-  for (const damageKind of DAMAGE_KINDS) {
-    /**
-     * Trials built with this defect.
-     */
-    const ofKind = rows.filter(function isKind(row,) {
-      return row.damageKind === damageKind;
-    },);
-    if (ofKind.length === 0)
-      continue;
-    /**
-     * Trials of this defect the roster got right.
-     */
-    const rightOfKind = ofKind.filter(function wasRight(row,) {
-      return row.correct;
-    },);
-    log.info(
-      `fidelity ${damageKind}: ${String(rightOfKind.length,)} of ${
-        String(ofKind.length,)
-      } chose the complete text`,
-    );
+  log.info(`judges: ${judgeModelIds.join(', ',)}`,);
+  if (cap === 0) {
+    log.info(`preflight only: ${String(specs.length,)} reviewed reference specifications selected; no corpus or model calls`,);
+    return;
   }
   /**
-   * Where the rows were kept, so the standard output below is a convenience
-   * and not the record: these rows carry judge prose quoting candidates.
+   * Exact source and locally reviewed reference, never a newly discovered long archive block.
+   */
+  const references = await readReviewedFidelityReferences({ pin: RUN_CORPUS_PIN, specs, },);
+  /**
+   * Fixed complete matrix, bounded in attempted rows before any calls begin.
+   */
+  const planned = reviewedFidelityTrials({ references, damageKinds, },).slice(0, cap,);
+  /**
+   * Operator-selected output root; calibration callers use a disposable directory.
+   */
+  const runsDir = await resolveRunsDir();
+  /**
+   * Completed model payloads remain recoverable after interrupted calibration.
+   */
+  const client = createRunClient({ promptPayloadDir: join(runsDir, 'judge-fidelity-payloads',), },);
+  /**
+   * Every exchange has the existing measured per-call deadline.
+   */
+  const controller = new AbortController();
+  /**
+   * Run identity, kept beside the fixed reference identities.
+   */
+  const startedAt = new Date().toISOString();
+  /**
+   * Executed build provenance, not the working tree's predicted behavior.
+   */
+  const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
+  /**
+   * Exact entry closure used by this invocation.
+   */
+  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+  /**
+   * Sequential native driver retains every outcome and its actual ballots.
+   */
+  const rows = await mapOverlapped({
+    items: planned,
+    overlap: 1,
+    oneItem: async function runReviewedTrial({ item: row, },) {
+      /**
+       * Existing selector and unchanged criteria evaluate the reviewed comparison.
+       */
+      const outcome = await runFidelityTrial({
+        client,
+        trial: row.trial,
+        judgeModelIds,
+        signal: controller.signal,
+        perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+        l: log,
+      },);
+      return {
+        referenceId: row.spec.id,
+        entryId: row.spec.entryId,
+        sourceRange: row.spec.source,
+        archiveRange: row.spec.archive,
+        referenceHash: row.spec.referenceHash,
+        changedChars: row.changedChars,
+        damageDetail: row.damageDetail,
+        ...outcome,
+      };
+    },
+  },);
+  log.info(`fidelity: ${String(rows.length,)} reviewed trial rows; use individual ballots for per-model calibration`,);
+  /**
+   * Full reviewed provenance accompanies model outcomes without corpus passages in stdout metadata.
    */
   const keptAt = await persistProbeRun({
     runsDir,
@@ -455,33 +162,21 @@ async function main(): Promise<void> {
       roster: judgeModelIds,
       subject: {
         corpusPin: RUN_CORPUS_PIN.commitSha,
-        entriesWalked: entryIds,
+        referenceManifest: specs,
         entriesRequested: onlyIds,
         trialCap: cap,
         damageKinds,
-        withContext,
+        withContext: false,
       },
       rows,
     },
   },);
-  log.info(`kept ${String(rows.length,)} rows at ${keptAt}`,);
-
-  // STANDARD OUTPUT STAYS, as an artifact: it quotes model prose about
-  // candidates, so it is redirected to a file and never pasted (README).
-  process.stdout
-    .write(`${
-      JSON.stringify(
-        { rows, },
-        undefined,
-        2,
-      )
-    }\n`,);
+  log.info(`kept ${String(rows.length,)} reviewed rows at ${keptAt}`,);
+  // Model reasons can quote source material, so operational callers redirect this output privately.
+  process.stdout.write(`${JSON.stringify({ rows, }, undefined, 2,)}\n`,);
 }
 
 if (import.meta.main)
-  await reportingRefusals({
-    what: 'judge-fidelity-probe',
-    run: main,
-  },);
+  await reportingRefusals({ what: 'judge-fidelity-probe', run: main, },);
 
-//endregion Judge fidelity probe
+//endregion Source-reviewed judge calibration

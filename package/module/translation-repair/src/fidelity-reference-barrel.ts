@@ -18,5 +18,10 @@ export type {
   ReviewedFidelityReference,
 } from './fidelity-reference-model.ts';
 export { readReviewedFidelityReferences, } from './fidelity-reference-read.ts';
+export { selectReviewedFidelitySpecs, } from './fidelity-reference-select.ts';
+export {
+  type ReviewedFidelityTrial,
+  reviewedFidelityTrials,
+} from './fidelity-reference-trials.ts';
 
 //endregion Reviewed fidelity-reference API

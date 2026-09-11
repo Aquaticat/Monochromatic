@@ -103,8 +103,9 @@ export type FidelityTrial = {
   readonly contextText: string;
 
   /**
-   * Archive English as it stands, which states everything the original does and
-   * nothing it does not.
+   * Source-reviewed reference text, including any explicitly reviewed local correction.
+   * Being unchanged archive English does not establish source faithfulness;
+   * the native calibration harness verifies reviewed reference provenance first.
    */
   readonly cleanText: string;
 
