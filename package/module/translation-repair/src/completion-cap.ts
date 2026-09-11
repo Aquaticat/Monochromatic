@@ -48,6 +48,7 @@ const POOLED_P90 = 3_831;
 
 /**
  * Existing pooled 99th percentile for a new model without its own completed-call distribution.
+ * `~/temp/agent/cap-measure-20260909.txt` records 142437 completed samples and p99 13082.
  */
 const POOLED_P99 = 13_082;
 

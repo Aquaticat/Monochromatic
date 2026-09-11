@@ -3,11 +3,13 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   answerCeilingFor,
   COMPLETION_CAP,
+  creditsFor,
   HYPER_MODELS,
   hyperIdFor,
   OPENROUTER_MODELS,
   openRouterIdFor,
   reachOf,
+  ratesFor,
   ROSTER_MODEL_IDS,
   RUN_READER_MODELS,
   RUN_ROSTER,
@@ -51,6 +53,13 @@ await describe({
         expect(COMPLETION_CAP[modelId]).toBe(13_082);
         expect(answerCeilingFor({ modelId: hyper.id })).toBe(26_214);
         expect(COMPLETION_CAP['deepseek-v4-flash-0731']).toBe(16_543);
+      },
+    }),
+    it({
+      name: 'reports unverified Hyper credit pricing as unpriced rather than free',
+      fn: async () => {
+        expect(ratesFor({ model: MODEL })).toBe('unpriced');
+        expect(creditsFor({ model: MODEL, promptTokens: 708, completionTokens: 59 })).toBe('unpriced');
       },
     }),
     it({

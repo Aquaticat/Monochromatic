@@ -928,6 +928,34 @@ Do not read a run with a dark seat as a comparison of the roster.
 
 #### Current roster changes
 
+DeepSeek V4.1 Flash was approved on Hyper and OpenRouter on 2026-09-11.
+It has one distinct catalog identity,
+`deepseek-v4.1-flash`,
+served as that ID on Hyper and `deepseek/deepseek-v4.1-flash` on OpenRouter.
+Both actual compiled clients passed the streamed structured-output probe.
+V4 Flash 0731 remains a separate version;
+its ratings,
+writer exclusion and endpoint exclusions do not transfer.
+
+The new version uses the existing unmeasured completion cap of 13082.
+Its reported image capability does not itself enable a reader seat.
+Judge/preparation,
+writer and reader admission are held separately pending calibration,
+so existing production roles and the reader-only Gemma 4 31B seat remain intact.
+The [admission record](../../../doc/planning/translation-repair-deepseek-v41-flash-2026-09-11.md)
+contains availability,
+prices,
+verification and remaining work.
+
+Hyper-origin identity names and Synthetic-counterpart projections are now explicit:
+`HYPER_ORIGIN_ROSTER_IDS`,
+`HyperOriginRosterId`,
+`NO_SYNTHETIC_COUNTERPART`,
+`hyperModelsWithSyntheticCounterparts`
+and `hyperModelsWithoutSyntheticCounterparts`.
+These do not claim Hyper-exclusive serving;
+`reachOf` owns actual provider reach.
+
 `qwen3.8-max` was removed from roster and Charm Hyper allowlist on 2026-08-28 at owner's instruction.
 Its metered cost was disproportionate and exceptionally expensive.
 No replacement was selected,

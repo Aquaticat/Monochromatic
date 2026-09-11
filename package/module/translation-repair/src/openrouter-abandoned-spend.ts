@@ -27,6 +27,13 @@ import { StreamDegenerateError, } from './stream-runaway-watch.ts';
 // this is the record.
 
 /**
+ * Median of recorded model medians for an unmeasured version, not a pooled-stream percentile.
+ * The measured rows retain 132, 137, 137, 297 and 386; their middle value is 137.
+ * This remains an explicitly abandoned-call estimate, never reported usage.
+ */
+const UNMEASURED_RAW_CHARS_PER_TOKEN = 137;
+
+/**
  * Raw stream characters per completion token, the 50th percentile over every
  * completed OpenRouter stream of 2026-09-09 whose progress line sat beside
  * its spend line (pass logs under `~/temp/agent`). Framing differs by
@@ -39,8 +46,8 @@ const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number
   'minimax/minimax-m3': 137,
   // 3,017 streams.
   'deepseek/deepseek-v4-flash-0731': 132,
-  // New version unmeasured; retain the pooled median fallback, not its predecessor's ratio.
-  'deepseek/deepseek-v4.1-flash': 137,
+  // New version unmeasured; use the median-of-model-medians fallback, not its predecessor's ratio.
+  'deepseek/deepseek-v4.1-flash': UNMEASURED_RAW_CHARS_PER_TOKEN,
   // 4,064 streams.
   'deepseek/deepseek-v4-pro-0813': 386,
   // 1,253 streams.

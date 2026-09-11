@@ -277,8 +277,9 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
   },
   // Owner-approved 2026-09-11; live strict JSON stream verified through
   // DeepInfra after one HTTP 429. No endpoint is excluded on that single refusal.
-  // Base catalog rates are fallback estimates; reported costs include serving
-  // and scheduled-price effects. No predecessor's calibration is inherited.
+  // Base catalog rates price abandoned-call estimates only. Completed calls
+  // retain wire-reported cost or report it missing, including scheduled-price effects.
+  // No predecessor's calibration is inherited.
   'deepseek/deepseek-v4.1-flash': {
     id: 'deepseek/deepseek-v4.1-flash',
     sharedWith: 'deepseek-v4.1-flash',
