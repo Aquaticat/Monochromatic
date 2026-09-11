@@ -48,6 +48,16 @@ await describe({
       },
     }),
     it({
+      name: 'refuses a mixed request when only one requested damage family is reviewed',
+      fn: async () => {
+        const { spec } = reviewedFixture();
+        expect(() => reviewedFidelityRequest({ specs: [{ ...spec,
+          damages: spec.damages.filter(damage => damage.kind === 'deletion') }], onlyEntryIds: [],
+          damageKinds: ['deletion', 'alteration'], judgeModelIds: ['judge'], cap: 0, withContext: false }))
+          .toThrow(FidelityReferenceError);
+      },
+    }),
+    it({
       name: 'requires requested context and damage selection to be reviewed',
       fn: async () => {
         const { spec } = reviewedFixture();

@@ -52,6 +52,15 @@ await describe({
       },
     }),
     it({
+      name: 'does not silently omit the alteration family when a filtered entry has no reviewed alteration',
+      fn: async () => {
+        const result = await preflight(['--only', 'gqt']);
+        expect(result.code).not.toBe(0);
+        expect(result.stderr).toContain('reviewed fidelity reference');
+        expect(result.stderr).toContain('damage selection');
+      },
+    }),
+    it({
       name: 'keeps zero-call candidate preflight distinct from a successful quality measurement',
       fn: async () => {
         const result = await preflight([]);

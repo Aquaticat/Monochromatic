@@ -183,6 +183,9 @@ await describe({
         expect(() => reviewedFidelityTrials({ references: [{ ...reference,
           damages: reference.damages.filter(damage => damage.damageKind === 'deletion') }], damageKinds: ['alteration'] }))
           .toThrow(FidelityReferenceError);
+        expect(() => reviewedFidelityTrials({ references: [{ ...reference,
+          damages: reference.damages.filter(damage => damage.damageKind === 'deletion') }],
+          damageKinds: ['deletion', 'alteration'] })).toThrow(FidelityReferenceError);
         expect(() => reviewedFidelityTrials({ references: [], damageKinds: ['deletion'] })).toThrow(FidelityReferenceError);
         expect(() => reviewedFidelityTrials({ references: [reference], damageKinds: [] })).toThrow(FidelityReferenceError);
         expect(() => reviewedFidelityTrials({ references: [reference], damageKinds: ['deletion', 'deletion'] })).toThrow(FidelityReferenceError);
