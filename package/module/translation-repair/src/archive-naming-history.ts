@@ -93,10 +93,13 @@ export async function readArchiveNamingHistories({
     return scope.origin
       .commit;
   },),);
-  await mapOverlapped({
+  /**
+   * Non-null operation dispositions satisfy the bounded map's result contract.
+   */
+  const statuses = await mapOverlapped({
     items: [...commits],
     overlap: 1,
-    oneItem: async function readOrigin({ item: commit, },): Promise<void> {
+    oneItem: async function readOrigin({ item: commit, },): Promise<'read' | 'withheld'> {
     /**
      * Intrinsic commit object, not an effective grafted parent rendering.
      */
@@ -117,7 +120,7 @@ export async function readArchiveNamingHistories({
     if (parents.length !== 1) {
       findings.push(`archive-revision-withheld (${commit}: root or merge origin)`,);
       rl.debug(`withheld origin with ${String(parents.length,)} parents`,);
-      return;
+      return 'withheld';
     }
     /**
      * Sole predecessor after explicit cardinality validation.
@@ -177,9 +180,12 @@ export async function readArchiveNamingHistories({
         },),
       },
     );
+    return 'read';
     },
   },);
-  rl.debug(`read ${String(histories.size,)} ordinary origins`,);
+  rl.debug(`read ${String(histories.size,)} ordinary origins; withheld ${String(statuses.filter(function withheld(status,): boolean {
+    return status === 'withheld';
+  },).length,)} origins`,);
   return {
     histories,
     findings,
