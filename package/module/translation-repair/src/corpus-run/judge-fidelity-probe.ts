@@ -1,5 +1,7 @@
+import { mkdir, mkdtemp, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { hashContent, } from '../document-node.ts';
 import type { FidelityReferenceError, } from '../fidelity-reference-error.ts';
 import { readReviewedFidelityReferences, } from '../fidelity-reference-read.ts';
 import { reviewedFidelityRequest, } from '../fidelity-reference-request.ts';
@@ -85,25 +87,30 @@ async function main(): Promise<void> {
   /**
    * Fixed complete matrix, bounded in attempted rows before any calls begin.
    */
-  const planned = reviewedFidelityTrials({
-    references,
-    damageKinds,
-  },)
-    .slice(
-      0,
-      cap,
-    );
+  const matrix = reviewedFidelityTrials({ references, damageKinds, },);
+  /**
+   * A bounded prefix remains exploratory, not a complete admission comparison.
+   */
+  const planned = matrix.slice(0, cap,);
+  /**
+   * Completeness describes the requested population, not automatic role eligibility.
+   */
+  const completeRequestedMatrix = planned.length === matrix.length;
+  if (!completeRequestedMatrix)
+    log.warn(`partial reviewed matrix: ${String(planned.length,)} of ${String(matrix.length,)} rows; not complete admission evidence`,);
   /**
    * Operator-selected output root; calibration callers use a disposable directory.
    */
   const runsDir = await resolveRunsDir();
+  await mkdir(runsDir, { recursive: true, mode: 0o700, },);
   /**
-   * Completed model payloads remain recoverable after interrupted calibration.
+   * Fresh per-invocation state cannot replay old ballots or synthetic planner responses.
    */
-  const client = createRunClient({ promptPayloadDir: join(
-    runsDir,
-    'judge-fidelity-payloads',
-  ), },);
+  const runDir = await mkdtemp(join(runsDir, 'judge-fidelity-',),);
+  /**
+   * Completed payloads remain available for explicit audit after interruption.
+   */
+  const promptPayloadDir = join(runDir, 'payloads',);
   /**
    * Every exchange has the existing measured per-call deadline.
    */
@@ -121,12 +128,32 @@ async function main(): Promise<void> {
    */
   const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
   /**
+   * Byte identity of the exact reviewed manifest used by this invocation.
+   */
+  const referenceManifestDigest = hashContent({ content: JSON.stringify(specs,), },);
+  /**
+   * A durable plan cannot be mistaken for a completed result if execution is interrupted.
+   * These are logical trial rows, not a claim that every configured judge was actually asked.
+   */
+  const plan = { status: 'planned', startedAt, pipelineDigest, runnerClosure,
+    referenceManifestDigest, referenceManifest: specs, requestedRoster: judgeModelIds,
+    completeRequestedMatrix, fullMatrixRows: matrix.length, plannedRows: planned.length,
+    rows: planned.map(function identity(row, position,) {
+      return { position, trialId: row.trial.trialId, direction: row.trial.direction,
+        cleanFirst: row.trial.cleanFirst, damageKind: row.trial.damageKind, };
+    },), };
+  await writeFile(join(runDir, 'plan.json',), JSON.stringify(plan, undefined, 2,), { mode: 0o600, flag: 'wx', },);
+  /**
+   * Client construction follows all input verification and durable plan publication.
+   */
+  const client = createRunClient({ promptPayloadDir, },);
+  /**
    * Sequential native driver retains every outcome and its actual ballots.
    */
   const rows = await mapOverlapped({
     items: planned,
     overlap: 1,
-    oneItem: async function runReviewedTrial({ item: row, },) {
+    oneItem: async function runReviewedTrial({ item: row, position, },) {
       /**
        * Existing selector and unchanged criteria evaluate the reviewed comparison.
        */
@@ -138,7 +165,10 @@ async function main(): Promise<void> {
         perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
         l: log,
       },);
-      return {
+      /**
+       * A completed row remains readable even if a later row interrupts the invocation.
+       */
+      const result = {
         referenceId: row.spec
           .id,
         entryId: row.spec
@@ -153,6 +183,9 @@ async function main(): Promise<void> {
         damageDetail: row.damageDetail,
         ...outcome,
       };
+      await writeFile(join(runDir, `row-${String(position,)}.json`,), JSON.stringify(result, undefined, 2,),
+        { mode: 0o600, flag: 'wx', },);
+      return result;
     },
   },);
   log.info(`fidelity: ${String(rows.length,)} reviewed trial rows; use individual ballots for per-model calibration`,);
@@ -160,7 +193,7 @@ async function main(): Promise<void> {
    * Full reviewed provenance accompanies model outcomes without corpus passages in stdout metadata.
    */
   const keptAt = await persistProbeRun({
-    runsDir,
+    runsDir: runDir,
     probeName: 'judge-fidelity-probe',
     run: {
       startedAt,
@@ -169,6 +202,13 @@ async function main(): Promise<void> {
       runnerClosure,
       roster: judgeModelIds,
       subject: {
+        status: 'completed',
+        completeRequestedMatrix,
+        fullMatrixRows: matrix.length,
+        plannedRows: planned.length,
+        completedRows: rows.length,
+        referenceManifestDigest,
+        promptPayloadDir,
         corpusPin: RUN_CORPUS_PIN.commitSha,
         referenceManifest: specs,
         entriesRequested: onlyIds,
