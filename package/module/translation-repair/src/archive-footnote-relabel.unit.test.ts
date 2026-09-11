@@ -264,10 +264,7 @@ await describe({
         },),).toBe('A[^2] B[^3] C[^2].\n\n[^2]: one\n\n[^3]: three\n',);
         expect(applyFootnoteRelabel({
           text: 'No markers.\n',
-          map: [ {
-            from: '1',
-            to: '2',
-          }, ],
+          map: [],
         },),).toBe('No markers.\n',);
       },
     },),

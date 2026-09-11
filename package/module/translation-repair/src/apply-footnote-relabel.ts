@@ -14,11 +14,11 @@ import { footnoteRewriteMap, } from './footnote-rewrite-map.ts';
  *
  * @param text - canonical archive or slice bytes
  *
- * @param map - operational rewrites with valid raw destination labels
+ * @param map - operational rewrites whose changing source keys occur in the current document
  *
  * @returns Rewritten text with every unrelated byte retained
  *
- * @throws FootnoteRewriteError when syntax, labels, injectivity or the resulting graph cannot be verified
+ * @throws FootnoteRewriteError when syntax, map domains, labels, injectivity or the resulting graph cannot be verified
  *
  * @example
  * ```ts

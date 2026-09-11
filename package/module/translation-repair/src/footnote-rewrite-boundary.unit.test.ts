@@ -5,6 +5,7 @@ await describe({
   name: 'footnote operational rewrite boundaries',
   children: [
     ...[
+      { name: 'a changing map on a marker-free document', text: 'No markers.', map: [{ from: '1', to: '2' }], kind: 'missing-source' },
       { name: 'a missing changing identifier', text: 'Real[^1].\n\n[^1]: Note.', map: [{ from: 'missing', to: 'x' }], kind: 'missing-source' },
       { name: 'a stale map with both present and missing domains', text: 'Real[^1].\n\n[^1]: Note.',
         map: [{ from: '1', to: 'x' }, { from: 'missing', to: 'y' }], kind: 'missing-source' },
