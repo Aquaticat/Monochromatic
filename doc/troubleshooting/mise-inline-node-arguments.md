@@ -77,8 +77,10 @@ run = 'console.log(process.env.usage_args)'
 
 Working catalog:
 
-- `mise run --no-deps --skip-tools probe`: exit zero and `entered`.
-- `mise run --no-deps --skip-tools parsed -- input.ts`: exit zero and `input.ts`.
+- `mise run --no-deps --skip-tools probe`:
+  exit zero and `entered`.
+- `mise run --no-deps --skip-tools parsed -- input.ts`:
+  exit zero and `input.ts`.
 - Actual package-scoped `format:oxlint` without appended paths:
   zero warnings and errors across 1388 files.
 
