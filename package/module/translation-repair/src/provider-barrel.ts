@@ -107,13 +107,13 @@ export {
 } from './stream-wire-format.ts';
 export type {
   BedrockOnlyRosterId,
-  HyperOnlyRosterId,
+  HyperOriginRosterId,
   OpenRouterOnlyRosterId,
   SyntheticServedId,
 } from './roster-id.ts';
 export {
   BEDROCK_ONLY_ROSTER_IDS,
-  HYPER_ONLY_ROSTER_IDS,
+  HYPER_ORIGIN_ROSTER_IDS,
   OPENROUTER_ONLY_ROSTER_IDS,
 } from './roster-id.ts';
 export {
@@ -268,13 +268,13 @@ export {
   HYPER_CREDITS_URL,
   HYPER_MESSAGES_URL,
   HYPER_MODELS,
-  HYPER_ONLY,
-  HYPER_ONLY_NAMES_ARE_SERVED,
+  NO_SYNTHETIC_COUNTERPART,
+  HYPER_ORIGIN_NAMES_ARE_SERVED,
   type HyperModelInfo,
   type HyperServedId,
   hyperServesLabel,
-  modelsServedByBoth,
-  modelsServedOnlyHere,
+  hyperModelsWithSyntheticCounterparts,
+  hyperModelsWithoutSyntheticCounterparts,
 } from './hyper-catalog.ts';
 export {
   createHyperClient,

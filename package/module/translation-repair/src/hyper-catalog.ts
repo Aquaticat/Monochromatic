@@ -1,5 +1,5 @@
 import type {
-  HyperOnlyRosterId,
+  HyperOriginRosterId,
   SyntheticServedId,
 } from './roster-id.ts';
 
@@ -31,7 +31,7 @@ import type {
  * A NAMED READING rather than a nullish union, matching how the rest of this
  * package models absence.
  */
-export const HYPER_ONLY = 'hyper-only';
+export const NO_SYNTHETIC_COUNTERPART = 'no-synthetic-counterpart';
 
 /**
  * Endpoint one call is POSTed to, measured live on 2026-08-24.
@@ -113,7 +113,7 @@ export type HyperModelInfo = {
    * once however it was reached. Which provider actually served a call is
    * recorded per call, for diagnosis, and nowhere else.
    */
-  readonly sharedWith: SyntheticServedId | typeof HYPER_ONLY;
+  readonly sharedWith: SyntheticServedId | typeof NO_SYNTHETIC_COUNTERPART;
 
   /**
    * Whether this model can be sent an image alongside its text.
@@ -172,7 +172,7 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
   },
   'minimax-m3': {
     id: 'minimax-m3',
-    sharedWith: HYPER_ONLY,
+    sharedWith: NO_SYNTHETIC_COUNTERPART,
     readsImages: true,
     maxOutputLength: 512_000,
   },
@@ -190,19 +190,19 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
   },
   'gemma-4-26b-a4b-it': {
     id: 'gemma-4-26b-a4b-it',
-    sharedWith: HYPER_ONLY,
+    sharedWith: NO_SYNTHETIC_COUNTERPART,
     readsImages: false,
     maxOutputLength: 25_600,
   },
   'deepseek-v4-pro-0813': {
     id: 'deepseek-v4-pro-0813',
-    sharedWith: HYPER_ONLY,
+    sharedWith: NO_SYNTHETIC_COUNTERPART,
     readsImages: false,
     maxOutputLength: 262_144,
   },
   'deepseek-v4-flash-0731': {
     id: 'deepseek-v4-flash-0731',
-    sharedWith: HYPER_ONLY,
+    sharedWith: NO_SYNTHETIC_COUNTERPART,
     readsImages: false,
     maxOutputLength: 384_000,
   },
@@ -227,7 +227,7 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
   },
   'glm-5.3': {
     id: 'glm-5.3',
-    sharedWith: HYPER_ONLY,
+    sharedWith: NO_SYNTHETIC_COUNTERPART,
     readsImages: false,
     maxOutputLength: 262_144,
   },
@@ -235,7 +235,7 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
   // reported by this serving stack; reader seating still requires its own check.
   'deepseek-v4.1-flash': {
     id: 'deepseek-v4.1-flash',
-    sharedWith: HYPER_ONLY,
+    sharedWith: NO_SYNTHETIC_COUNTERPART,
     readsImages: true,
     maxOutputLength: 26_214,
   },
@@ -287,14 +287,14 @@ export function answerCeilingFor(
  *
  * @example
  * ```ts
- * const shared = modelsServedByBoth();
+ * const shared = hyperModelsWithSyntheticCounterparts();
  * ```
  */
-export function modelsServedByBoth(): readonly HyperServedId[] {
+export function hyperModelsWithSyntheticCounterparts(): readonly HyperServedId[] {
   return Object
     .values(HYPER_MODELS,)
     .filter(function shared(info,): boolean {
-      return info.sharedWith !== HYPER_ONLY;
+      return info.sharedWith !== NO_SYNTHETIC_COUNTERPART;
     },)
     .map(function toId(info,): HyperServedId {
       return info.id;
@@ -310,14 +310,14 @@ export function modelsServedByBoth(): readonly HyperServedId[] {
  *
  * @example
  * ```ts
- * const alone = modelsServedOnlyHere();
+ * const withoutSynthetic = hyperModelsWithoutSyntheticCounterparts();
  * ```
  */
-export function modelsServedOnlyHere(): readonly HyperServedId[] {
+export function hyperModelsWithoutSyntheticCounterparts(): readonly HyperServedId[] {
   return Object
     .values(HYPER_MODELS,)
     .filter(function alone(info,): boolean {
-      return info.sharedWith === HYPER_ONLY;
+      return info.sharedWith === NO_SYNTHETIC_COUNTERPART;
     },)
     .map(function toId(info,): HyperServedId {
       return info.id;
@@ -335,7 +335,7 @@ export function modelsServedOnlyHere(): readonly HyperServedId[] {
  *
  * @internal
  */
-export type HyperOnlyNamesAreServed = HyperOnlyRosterId extends HyperServedId ? true : never;
+export type HyperOriginNamesAreServed = HyperOriginRosterId extends HyperServedId ? true : never;
 
 /**
  * The proof above, instantiated, so a roster label with no catalog row stops
@@ -345,10 +345,10 @@ export type HyperOnlyNamesAreServed = HyperOnlyRosterId extends HyperServedId ? 
  *
  * @example
  * ```ts
- * expect(HYPER_ONLY_NAMES_ARE_SERVED,).toBe(true,);
+ * expect(HYPER_ORIGIN_NAMES_ARE_SERVED,).toBe(true,);
  * ```
  */
-export const HYPER_ONLY_NAMES_ARE_SERVED: HyperOnlyNamesAreServed = true;
+export const HYPER_ORIGIN_NAMES_ARE_SERVED: HyperOriginNamesAreServed = true;
 
 /**
  * Whether Charm Hyper's catalog carries a label under that exact spelling.

@@ -21,8 +21,8 @@ import {
 import {
   bedrockServesLabel,
   DEFAULT_JUDGE_MODEL_IDS,
-  HYPER_ONLY_NAMES_ARE_SERVED,
-  HYPER_ONLY_ROSTER_IDS,
+  HYPER_ORIGIN_NAMES_ARE_SERVED,
+  HYPER_ORIGIN_ROSTER_IDS,
   hyperIdFor,
   hyperServesLabel,
   openRouterServesLabel,
@@ -69,7 +69,7 @@ await describe({
         /**
          * Hyper-only labels the Hyper catalog does not carry.
          */
-        const missing = HYPER_ONLY_ROSTER_IDS.filter(function noRow(modelId,): boolean {
+        const missing = HYPER_ORIGIN_ROSTER_IDS.filter(function noRow(modelId,): boolean {
           return !hyperServesLabel(modelId,);
         },);
         expect(missing,).toStrictEqual([],);
@@ -78,7 +78,7 @@ await describe({
     it({
       name: 'CARRIES the type-level proof as a value, so the same drift also stops the type check',
       fn: async () => {
-        expect(HYPER_ONLY_NAMES_ARE_SERVED,).toBe(true,);
+        expect(HYPER_ORIGIN_NAMES_ARE_SERVED,).toBe(true,);
       },
     },),
   ],

@@ -51,10 +51,10 @@ export type SyntheticServedId =
  *
  * @example
  * ```ts
- * const everyone = HYPER_ONLY_ROSTER_IDS;
+ * const everyone = HYPER_ORIGIN_ROSTER_IDS;
  * ```
  */
-export const HYPER_ONLY_ROSTER_IDS = [
+export const HYPER_ORIGIN_ROSTER_IDS = [
   // qwen3.8-max WAS CULLED 2026-08-28 at owner's instruction because its
   // metered cost was disproportionate and exceptionally expensive.
   'minimax-m3',
@@ -75,7 +75,7 @@ export const HYPER_ONLY_ROSTER_IDS = [
 
 /**
  * Union of Hyper-origin roster identities, derived from
- * {@link HYPER_ONLY_ROSTER_IDS} so a new one is added in exactly one place.
+ * {@link HYPER_ORIGIN_ROSTER_IDS} so a new one is added in exactly one place.
  *
  * DERIVED FROM THE RUNTIME LIST rather than declared beside it, matching
  * `CHAT_ROLES` in `@monochromatic-dev/module-llm-type`. A separately declared
@@ -84,10 +84,10 @@ export const HYPER_ONLY_ROSTER_IDS = [
  *
  * @example
  * ```ts
- * const modelId: HyperOnlyRosterId = 'minimax-m3';
+ * const modelId: HyperOriginRosterId = 'minimax-m3';
  * ```
  */
-export type HyperOnlyRosterId = typeof HYPER_ONLY_ROSTER_IDS[number];
+export type HyperOriginRosterId = typeof HYPER_ORIGIN_ROSTER_IDS[number];
 
 /**
  * Roster models only Amazon Bedrock serves, spelled as that provider spells
@@ -158,7 +158,7 @@ export type OpenRouterOnlyRosterId = typeof OPENROUTER_ONLY_ROSTER_IDS[number];
  */
 export type RosterModelId =
   | SyntheticServedId
-  | HyperOnlyRosterId
+  | HyperOriginRosterId
   | BedrockOnlyRosterId
   | OpenRouterOnlyRosterId;
 

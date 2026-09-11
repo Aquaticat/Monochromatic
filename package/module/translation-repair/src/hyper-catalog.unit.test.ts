@@ -21,9 +21,9 @@ import {
 import {
   answerCeilingFor,
   HYPER_MODELS,
-  HYPER_ONLY,
-  modelsServedByBoth,
-  modelsServedOnlyHere,
+  NO_SYNTHETIC_COUNTERPART,
+  hyperModelsWithSyntheticCounterparts,
+  hyperModelsWithoutSyntheticCounterparts,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -73,7 +73,7 @@ await describe({
       fn: async () => {
         // glm-5.3-flash joined 2026-09-01 as the Hyper route for Synthetic's
         // GLM-5.3-Flash seat.
-        expect(modelsServedByBoth().toSorted(),).toEqual([
+        expect(hyperModelsWithSyntheticCounterparts().toSorted(),).toEqual([
           'glm-5.3-flash',
           'gpt-oss-120b',
           'kimi-k3',
@@ -85,7 +85,7 @@ await describe({
     it({
       name: 'names Hyper-origin identities without a Synthetic counterpart, independently of OpenRouter reach',
       fn: async () => {
-        expect(modelsServedOnlyHere().toSorted(),).toEqual([
+        expect(hyperModelsWithoutSyntheticCounterparts().toSorted(),).toEqual([
           'deepseek-v4-flash-0731',
           'deepseek-v4-pro-0813',
           'deepseek-v4.1-flash',
@@ -100,11 +100,11 @@ await describe({
       name: 'SPLITS the roster into shared and provider-only with no model in both and none left '
         + 'out, since a model missing from the split would silently lose its recovery path',
       fn: async () => {
-        expect(modelsServedByBoth().length + modelsServedOnlyHere().length,)
+        expect(hyperModelsWithSyntheticCounterparts().length + hyperModelsWithoutSyntheticCounterparts().length,)
           .toBe(Object.keys(HYPER_MODELS,).length,);
 
-        for (const id of modelsServedByBoth())
-          expect(modelsServedOnlyHere().includes(id,),).toBe(false,);
+        for (const id of hyperModelsWithSyntheticCounterparts())
+          expect(hyperModelsWithoutSyntheticCounterparts().includes(id,),).toBe(false,);
       },
     },),
 
@@ -116,7 +116,7 @@ await describe({
         expect(HYPER_MODELS['kimi-k3'].sharedWith,).toBe('hf:moonshotai/Kimi-K3',);
         expect(HYPER_MODELS['gpt-oss-120b'].sharedWith,).toBe('hf:openai/gpt-oss-120b',);
         expect(HYPER_MODELS['qwen3.8-27b'].sharedWith,).toBe('hf:Qwen/Qwen3.8-27B',);
-        expect(HYPER_MODELS['minimax-m3'].sharedWith,).toBe(HYPER_ONLY,);
+        expect(HYPER_MODELS['minimax-m3'].sharedWith,).toBe(NO_SYNTHETIC_COUNTERPART,);
       },
     },),
 

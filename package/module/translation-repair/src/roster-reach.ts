@@ -14,7 +14,7 @@ import {
 } from './openrouter-catalog.ts';
 import {
   BEDROCK_ONLY_ROSTER_IDS,
-  HYPER_ONLY_ROSTER_IDS,
+  HYPER_ORIGIN_ROSTER_IDS,
   OPENROUTER_ONLY_ROSTER_IDS,
   type RosterModelId,
 } from './roster-id.ts';
@@ -128,11 +128,11 @@ export type BedrockSpelling =
   };
 
 /**
- * Every model the roster seats, both catalogs' contributions unioned.
+ * Every approved roster identity, with provider routes unioned under one name.
  *
- * ORDERED SYNTHETIC FIRST, then the models only the second provider serves, so
- * a roster printed in this order reads the way the pipeline grew. OpenRouter
- * adds no name: every seat it serves is one of these.
+ * Ordered by introduction: Synthetic identities, Hyper-origin identities,
+ * then Bedrock-only and OpenRouter-only arrivals. Catalog presence does not
+ * determine measured production role admission.
  *
  * @example
  * ```ts
@@ -145,7 +145,7 @@ export const ROSTER_MODEL_IDS: readonly RosterModelId[] = [
     .map(function toId(info,): RosterModelId {
       return info.id;
     },),
-  ...HYPER_ONLY_ROSTER_IDS,
+  ...HYPER_ORIGIN_ROSTER_IDS,
   ...BEDROCK_ONLY_ROSTER_IDS,
   ...OPENROUTER_ONLY_ROSTER_IDS,
 ];
