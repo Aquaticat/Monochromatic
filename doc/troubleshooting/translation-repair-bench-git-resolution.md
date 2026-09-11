@@ -148,6 +148,12 @@ The missing `tdor` page was skipped in both cases under the existing sample poli
 Package build,
 types and Oxlint pass.
 `v41-bench-resolution-final-unit-20260911.out` ends `unit exit 0` at line 9169.
+The exact frozen `67823bc55` artifact was then sampled in the same bounded container,
+with the private log overlay.
+It returned the same forty rows,
+reported the configured memory/CPU/PID limits,
+and recorded no OOM or PID-limit event.
+`v41-writer-frozen-preflight-20260911.out` and the owned workspace's `writer-plan.json` retain that consumer check.
 
 ## Verified workarounds and container setup
 

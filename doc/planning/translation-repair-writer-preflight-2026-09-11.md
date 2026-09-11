@@ -108,6 +108,13 @@ All forty slices are field-for-field identical to the old sampler with a resolve
 No cgroup OOM event occurred.
 The logger warning was separately removed by an owned writable output overlay,
 without making the corpus or source writable.
+The exact frozen `67823bc55` consumer check then returned the identical forty-row sample.
+Its digest is `sha256-tree-v1:d0f505681c37619bf92114d706d93d74bac4b2a1d7e5bd023dd6dc01895188c3`.
+The cgroup reported 2147483648-byte memory,
+2 CPU quota,
+512 PIDs,
+and no OOM or PID-limit event.
+`writer-plan.json` in the owned workspace is the preflight sample/provenance record.
 
 Build,
 types and Oxlint pass;
