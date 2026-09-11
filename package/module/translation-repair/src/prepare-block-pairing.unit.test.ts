@@ -100,6 +100,7 @@ await describe({
     ...[
       { name: 'no agreed relations', reply: '{"pairs":[]}', writes: 1, },
       { name: 'no usable voice', reply: '{"noPairs":true}', writes: 0, },
+      { name: 'heard but invalid block indexes', reply: '{"pairs":[{"source":9,"target":0}]}', writes: 0, },
     ].map(test => it({
       name: `names ${test.name} as queried fallback rather than implicit correspondence`,
       fn: async () => {
