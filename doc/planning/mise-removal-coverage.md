@@ -2,8 +2,10 @@
 
 Status:
  draft.
-Full removal is not recommended because replacement owners remain unselected and unverified.
-A valid stopping point is keeping Mise only for tool provisioning and locking.
+Full removal is the intended endpoint,
+but is not yet recommended because replacement owners remain unselected and unverified.
+Keeping Mise only for tool provisioning and locking is a transitional checkpoint,
+not the target state.
 
 ## Trigger and correction
 
@@ -447,10 +449,10 @@ and documentation only after their new owners pass their parity gates.
 but cut it over after task and environment consumers no longer require Mise semantics.
 6. Remove Mise configuration and installation only after a clean-machine exercise passes without it.
 
-Every step is an independently useful stopping point.
+Every step is an independently useful checkpoint.
 Keeping Mise solely for tool acquisition,
 version selection,
-and locking is an acceptable terminal state.
+and locking is an acceptable transition state while the final provisioning replacement is validated.
 
 ## Removal gates
 
@@ -479,5 +481,6 @@ The following user choices can change the architecture and candidate set:
 
 - Keep or retire automatic directory-entry environment activation.
 - Prefer one focused cross-language tool manager or several ecosystem-native installers.
-- Treat tool-manager-only Mise as an acceptable final boundary or require removal of the binary itself.
 - Preserve floating tool requests or replace them with reviewed update automation and exact locks.
+
+Full removal of the Mise binary is the accepted endpoint assumption for candidate discovery.
