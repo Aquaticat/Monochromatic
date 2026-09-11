@@ -14,14 +14,14 @@ import {
 /**
  * Invented source carrying the deliberately shared year.
  */
-export const REVIEW_SOURCE = '2023年，灰白相间的小猫搬到旧书店楼上的安静公寓。她每天早上浇灌窗边的花，'
+export const REVIEW_SOURCE: string = '2023年，灰白相间的小猫搬到旧书店楼上的安静公寓。她每天早上浇灌窗边的花，'
   + '晚上在图书馆读书。她喜欢与邻居分享故事，也喜欢给来访的朋友准备茶点。书店里的角落明亮而温暖，'
   + '朋友们常在那里讨论书籍和花园。她认真保管明信片，记得每位朋友喜欢的图案。';
 
 /**
  * Source-faithful invented reference naturally exceeding the calibration floor.
  */
-export const REVIEW_REFERENCE = 'The grey-and-white cat arrived in 2023 and moved into a quiet flat above the old bookshop. '
+export const REVIEW_REFERENCE: string = 'The grey-and-white cat arrived in 2023 and moved into a quiet flat above the old bookshop. '
   + 'Every morning she watered the flowers beside the window, and every evening she read at the library. '
   + 'She enjoyed sharing stories with her neighbours and preparing tea and snacks for visiting friends. '
   + 'The well-lit corner of the bookshop was warm, and her friends often discussed books and gardens there. '
@@ -30,7 +30,7 @@ export const REVIEW_REFERENCE = 'The grey-and-white cat arrived in 2023 and move
 /**
  * Independent invented donor supplying one unsupported but fluent statement.
  */
-export const REVIEW_DONOR = 'On a winter holiday she travelled to a distant village and spent the afternoon learning how its bakers made bread.';
+export const REVIEW_DONOR: string = 'On a winter holiday she travelled to a distant village and spent the afternoon learning how its bakers made bread.';
 
 /**
  * Narrows a fixture builder result without pretending an undamageable case is usable.
