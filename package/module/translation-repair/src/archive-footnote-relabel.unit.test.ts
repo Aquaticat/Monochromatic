@@ -106,6 +106,7 @@ await describe({
           },).slices,
         },),).toStrictEqual({
           kind: 'unchanged',
+          correspondences: [{ from: '2', to: '2', }, { from: '1', to: '1', },],
           skipped: [],
         },);
       },
@@ -121,6 +122,7 @@ await describe({
           },).slices,
         },),).toStrictEqual({
           kind: 'unchanged',
+          correspondences: [{ from: '1', to: '1', },],
           skipped: [],
         },);
         expect(footnoteRelabelOf({
@@ -130,6 +132,7 @@ await describe({
           },).slices,
         },),).toStrictEqual({
           kind: 'unchanged',
+          correspondences: [],
           skipped: [],
         },);
       },
@@ -209,6 +212,7 @@ await describe({
           ],
         },),).toStrictEqual({
           kind: 'relabel',
+          correspondences: [{ from: '2', to: '1', }, { from: '1', to: '2', },],
           map: [
             {
               from: '2',
@@ -223,6 +227,7 @@ await describe({
         },);
         expect(footnoteRelabelOfDefinitions({ pairs: [], },),).toStrictEqual({
           kind: 'unchanged',
+          correspondences: [],
           skipped: [],
         },);
       },
