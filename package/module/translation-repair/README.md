@@ -937,11 +937,15 @@ V4 Flash 0731 remains a separate version;
 its ratings,
 writer exclusion and endpoint exclusions do not transfer.
 
-The new version uses the existing unmeasured completion cap of 13082.
+The new version retains the pooled completion cap of 13082.
 Its reported image capability does not itself enable a reader seat.
-Judge/preparation,
-writer and reader admission are held separately pending calibration,
-so existing production roles and the reader-only Gemma 4 31B seat remain intact.
+The source-reviewed judge comparison on 2026-09-11 selected the reference on all fourteen distinct questions,
+with no damaged pick or decline,
+against a peer median of fourteen and maximum damaged count of one.
+It now joins judge and general text/preparation seats once under its shared identity.
+Writer and image-reader holds remain until their separate measurements.
+Existing peer order,
+writer/reader arrays and the reader-only Gemma 4 31B seat are unchanged.
 The [admission record](../../../doc/planning/translation-repair-deepseek-v41-flash-2026-09-11.md)
 contains availability,
 prices,

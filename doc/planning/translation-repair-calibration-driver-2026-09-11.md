@@ -1,9 +1,10 @@
 # Reviewed calibration driver verification
 
 Task 34's transport and evidence checks are complete.
-Task 31 still requires actual role calibration before any production hold is released.
+Task 31's actual judge calibration has also passed;
+writer and image-reader holds remain for their separate measurements.
 The reference package is verified at frozen `993583ad5`;
-the paid judge run has now started,
+the paid judge run has completed,
 while writer and image calibration remain pending.
 The driver lives in private `~/temp/agent/v41-reviewed-*.mts` files,
 with `calibrate-v41-judges-20260911.mts` as its explicit-mode entry point.
@@ -176,6 +177,10 @@ Task 31 started at 2026-09-11 14:13:40 UTC using the verified registered plan.
 State is `~/temp/agent/v41-reviewed-run-20260911-vbOoMQ`;
 output is redirected to `~/temp/agent/v41-reviewed-judge-calibration-20260911.log`.
 The live provider-budget snapshot marks all providers wet.
-No production role is changed by launch or by a returned score.
-Read the terminal report,
-all individual ballots and cost/provenance records before admission assessment.
+Launch and a returned score alone changed no production role.
+The terminal report,
+all individual ballots and cost/provenance records were subsequently read.
+V4.1's fourteen clean picks and no damaged pick satisfy the pre-registered comparison
+against a peer median of fourteen and maximum damaged count of one.
+Judge-only admission and post-change verification are recorded in
+[the seating decision](../decision/translation-repair-roster-seating-2026-09-01.md).

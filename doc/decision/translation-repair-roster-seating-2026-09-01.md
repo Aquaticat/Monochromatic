@@ -639,8 +639,11 @@ provider order,
 completion caps and quorum formulas are unchanged.
 The declared roster retains an unreachable identity under existing policy;
 the router has no route when both Hyper and OpenRouter are dry.
-The check is `~/temp/agent/v41-judge-seat-boundary-20260911.json`.
-Package-wide verification after the seating edit remains pending at this checkpoint.
+The final check is `~/temp/agent/v41-judge-seat-final-boundary-20260911.json`,
+using frozen post-admission `45e64e411`.
+Build,
+types and zero-warning lint pass;
+`v41-judge-seat-final-unit-20260911.out` ends `unit exit 0` at line 9164.
 
 All fourteen V4.1 calls were served by Hyper and returned the V4.1 identifier.
 The dated predecessor returned its distinct 0731 identifier;

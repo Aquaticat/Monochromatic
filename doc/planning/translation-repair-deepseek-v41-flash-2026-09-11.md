@@ -6,7 +6,8 @@ Do with this information whatever is appropriate.”
 
 Task 30 verifies and integrates serving,
 identity and catalog data.
-Task 31 applies existing role-calibration rules.
+Task 31 has verified judge admission under the existing rule.
+Tasks 35 and 36 separately measure writing and image reading.
 Task 27's archive-evidence implementation is paused,
 not complete.
 No full-entry pass is running.
@@ -168,9 +169,9 @@ Fixed catalog rates are used only for abandoned-call estimates.
 The difference between a serving endpoint's bill and the aggregate catalog quote
 is not attributed to scheduled discounts without endpoint evidence.
 
-## Checked implementation
+## Serving implementation checkpoint
 
-Frozen checked build:
+The serving checkpoint used frozen build:
 `package/module/translation-repair/node_modules/.frozen-dist-24b1cbdb7`.
 Build and type checking pass.
 `deepseek-v41-lint-r3-20260911.out`
@@ -203,11 +204,48 @@ No such gateway remap was verified,
 and no old identity was silently retired or merged.
 Provider identity must remain part of the calibration evidence.
 
-## Next role calibration
+## Verified judge admission
 
-Task 31 exercises image input before enabling a reader seat
-and applies existing judge-fidelity admission and producer-calibration rules.
-It must record actual serving context and participation.
+The paid source-reviewed comparison on frozen `993583ad5` returned all 140 model/question cells.
+All fourteen distinct questions heard every one of the nine peers.
+V4.1 selected the reviewed reference fourteen times,
+with no damaged pick,
+decline or missing ballot.
+Peer median clean count was fourteen;
+maximum peer damaged count was one.
+All actual ballot reasons were read,
+and an independent review confirmed admission under the unchanged criterion.
+
+`83e632127` removes only the judge/general text-roster hold.
+The writer and reader holds remain.
+Hyper served all fourteen V4.1 calls and returned that version's identity.
+The predecessor's responses retained its distinct 0731 identity.
+No gateway remap is inferred.
+
+Post-change build,
+types,
+zero-warning lint and the full unit suite pass.
+`v41-judge-seat-final-unit-20260911.out` ends `unit exit 0` at line 9164.
+Checked runtime is frozen at `node_modules/.frozen-dist-45e64e411` inside the package.
+`v41-judge-seat-final-boundary-20260911.json`
+compares every exported role array,
+the nested repair configuration and all sixteen budget states with frozen `993583ad5`.
+It proves one added judge identity,
+unchanged existing order,
+unchanged writer/reader arrays,
+and unchanged provider order,
+completion caps and quorum formulas.
+
+Full reading and cost provenance are in
+[the seating decision](../decision/translation-repair-roster-seating-2026-09-01.md).
+The run is `~/temp/agent/v41-reviewed-run-20260911-vbOoMQ`.
+No full-entry readiness follows from this result.
+
+## Remaining role calibration
+
+Task 35 runs the existing 40-round writer calibration before releasing its writing hold.
+Task 36 exercises image input and corroboration before releasing its reader hold.
+Both must record actual serving context and participation.
 Keep the source corpus pinned and do not launch a whole-corpus development run.
 
 [hyper-models]: https://hyper.charm.land/docs/models.html

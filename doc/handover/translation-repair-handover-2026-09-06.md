@@ -24,21 +24,31 @@ and the reason is recorded in
 
 ## Where the work stands
 
-### Latest checkpoint: reviewed calibration infrastructure on 2026-09-11
+### Latest checkpoint: V4.1 judge admission on 2026-09-11
 
-The paid judge calibration is running.
-No writer or image calibration has run,
-and V4.1 Flash remains held out of production roles.
-The reviewed-reference implementation and fixed plan in task 32 are verified.
-Task 34's paid-driver transport and evidence checks pass.
-No role hold has been released.
+Task 31's paid judge calibration and post-admission verification are complete.
+V4.1 Flash is seated for judging and general text/preparation.
+No writer or image calibration has run;
+those independent holds remain for tasks 35 and 36.
+Tasks 32 and 34's reference and driver checks remain verified.
 
 Task 31 launched at 2026-09-11 14:13:40 UTC through `proc_02bc`.
-The wrapper PID is 2149953;
-the actual Node PID is 2150064.
+It completed at 14:19:10.310 UTC;
+wrapper PID 2149953 and Node PID 2150064 are historical,
+not active work.
 Run state is `~/temp/agent/v41-reviewed-run-20260911-vbOoMQ`;
 the private log is `~/temp/agent/v41-reviewed-judge-calibration-20260911.log`.
-Do not edit the private driver or executed frozen runtime while this paid process is active.
+All 140 cells returned schema-valid replies from one model POST each,
+with all nine peers heard on every question and no warnings or abandoned-call record.
+All 140 actual ballot reasons were fully read.
+V4.1 chose the reference fourteen times with no damaged pick or decline,
+matching the peer median of fourteen and beating the maximum damaged count of one.
+An independent review confirmed admission under the unchanged rule.
+`83e632127` removed only its judge/general-roster hold.
+Writer/reader arrays,
+existing peer order,
+provider order,
+caps and quorum formulas are unchanged across the compiled sixteen-state boundary comparison.
 The registered plan is `~/temp/agent/v41-reviewed-plan-20260911-9eo8in/plan.json`.
 Its live budget read reports every provider wet.
 The 14:07:49 UTC sample recorded Synthetic 13.350341871212121 percent weekly remaining,
@@ -46,12 +56,21 @@ The 14:07:49 UTC sample recorded Synthetic 13.350341871212121 percent weekly rem
 Hyper 250 credits,
 Bedrock USD 185.38 and OpenRouter USD 267.73.
 Full-entry readiness is still false.
-Current checked runtime is frozen at
-`package/module/translation-repair/node_modules/.frozen-dist-993583ad5`.
+Current post-admission runtime is frozen at
+`package/module/translation-repair/node_modules/.frozen-dist-45e64e411`.
 Build/types pass;
-`reviewed-reference-final-lint-20260911.out` reports zero warnings/errors;
-`reviewed-reference-final-unit-20260911.out` ends `unit exit 0` at line 9165.
-Its digest is `sha256-tree-v1:424d595d18b7354988414a45d371a2e843948ad0944a26f475720136698192b6`.
+`v41-judge-seat-final-lint-20260911.out` reports zero warnings/errors;
+`v41-judge-seat-final-unit-20260911.out` ends `unit exit 0` at line 9164.
+Its digest is `sha256-tree-v1:3a48d50c5b1e329f6b642af6ba2b3e3fae5d7b37ed05bf04607b9d7c843ce3f9`.
+`v41-judge-seat-final-boundary-20260911.json` compares this frozen artifact with pre-admission `993583ad5`.
+The detailed reading is `v41-reviewed-judge-results-20260911.json` and `v41-reviewed-judge-ballots-20260911.out`.
+Spend helpers ran:
+OpenRouter reported USD 0.00050599 across fourteen calls,
+including thirteen explicit zero costs;
+Bedrock logged USD 0.00770297 from its pricing calculation across twenty-eight calls;
+Hyper's fifty-six calls estimate 2.674203982384 credits including reported cache reads,
+not a reported debit;
+Synthetic's forty-two calls remain subscription usage without a per-call dollar price.
 
 The source-reviewed replacement tuples are fixed in
 [the reviewed fixture plan](../planning/translation-repair-reviewed-calibration-fixtures-2026-09-11.md).
@@ -183,15 +202,12 @@ not `format`;
 `reviewed-reference-format-r3-20260911.out` passed before the latest changes.
 
 Next actions:
-await the paid run's terminal notification without polling;
-read its complete report,
-individual ballots,
-malformed/missing outcomes and private route/cost evidence;
-run the spend and daily helpers;
-then assess judge admission without changing the fixed peer cohort or count criterion.
-Writer calibration is task 35;
-image/reader verification is task 36.
-They are distinct from judging and retain their own holds.
+run task 35's existing 40-round producer calibration on the new checked runtime,
+with a fresh owned runs directory and a fresh budget reading;
+inspect every draft/ballot and the pre-existing pooled-null writer rule before any writer admission.
+Task 36 then verifies image reading.
+Both retain independent holds.
+No further judge measurement is needed to repeat the already passed admission criterion.
 Persist actual model-independent question identities and model/provider cell identities separately,
 and grade each actual question once.
 The native default cap of sixteen rows is not complete admission evidence for the full reviewed matrix.
