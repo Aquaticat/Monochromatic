@@ -117,8 +117,10 @@ export type QualifiedArchiveNamingRevision = {
   readonly useKind: ArchiveReferenceKind;
   /** Original configured readers and their unmodified evidence. */
   readonly reading: Pick<InitialArchiveUse, 'configuredModelIds' | 'ballots'>;
-  /** One-based current archive line carrying the occurrence. */
+  /** One-based normalized initial archive line carrying the occurrence. */
   readonly currentLine: number;
+  /** One-based pinned file line before placeholder stripping. */
+  readonly pinnedLine: number;
   /** One-based line in the origin revision. */
   readonly originLine: number;
   /** Initial normalized archive offset where the current line begins. */
@@ -135,7 +137,7 @@ export type QualifiedArchiveNamingRevision = {
 
 /**
  * Qualified revisions plus reasons other occurrences supplied no usable evidence.
- * Withholding is data; unexpected Git or malformed-input failures still throw.
+ * Withholding is data; failed Git reads, invalid anchors and malformed Git output throw.
  *
  * @example
  * ```ts

@@ -8,6 +8,7 @@ import spawn from 'nano-spawn';
 import {
   type ArchiveUseKind,
   type CorpusPin,
+  foldCarriageReturns,
   hashContent,
   type InitialArchiveUse,
   parseDocument,
@@ -122,7 +123,7 @@ export async function makeNamingArchive({
     pin: { cloneDir, commitSha, gitPath: REAL_GIT, },
     parentCommit,
     relPath,
-    archiveText: passArchiveText({ text: after, l, },),
+    archiveText: passArchiveText({ text: foldCarriageReturns({ text: after, },).text, l, },),
     async [Symbol.asyncDispose](): Promise<void> {
       await rm(cloneDir, { recursive: true, force: true, },);
     },

@@ -36,6 +36,7 @@ await describe({
               useKind: 'group-reference-name',
               reading: { configuredModelIds: use.configuredModelIds, ballots: use.ballots },
               currentLine: 1,
+              pinnedLine: 1,
               originLine: 1,
               currentLineStartOffset: 0,
               currentLineText: AFTER_ARCHIVE.slice(0, -1),
