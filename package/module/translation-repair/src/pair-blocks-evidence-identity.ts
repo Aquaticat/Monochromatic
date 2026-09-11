@@ -5,29 +5,57 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // An ordered subsequence proves that every recorded outcome belongs to one distinct configured seat.
 
 /**
+ * Closed identity failures whose diagnostics cannot carry model prose.
+ *
+ * @example
+ * ```ts
+ * const failure: PairingEvidenceFailure = { kind: 'empty-electorate' };
+ * ```
+ */
+export type PairingEvidenceFailure =
+  | {
+    /** Configured roster cannot identify independent seats. */
+    readonly kind: 'empty-electorate' | 'duplicate-electorate';
+  }
+  | {
+    /** Recorded identity is missing, repeated or out of configured order. */
+    readonly kind: 'outcome-order';
+    /** Position in the recorded outcome sequence, not the configured roster. */
+    readonly index: number;
+    /** Configured-domain model identifier, never a model's prose response. */
+    readonly modelId: RosterModelId;
+  };
+
+/**
  * Configuration or recorded-seat identity cannot represent independent pairing evidence.
  * Unlike a model's unusable block indexes, this failure aborts interpretation or dispatch.
  *
  * @example
  * ```ts
- * throw new PairingEvidenceError({ detail: 'configured electorate is empty' });
+ * throw new PairingEvidenceError({ kind: 'empty-electorate' });
  * ```
  */
 export class PairingEvidenceError extends Error {
   /** Stable operation name for safe diagnostics. */
   public override readonly name = 'PairingEvidenceError';
+  /** Only a closed failure kind, numeric index and model identifier enter the message. */
+  readonly messageNamesOnly: true = true;
 
   /**
    * Names the input that cannot establish independent seats.
    *
-   * @param detail - failed configuration or recorded-seat invariant
+   * @param failure - closed failure details containing no response wording
    * @example
    * ```ts
-   * const error = new PairingEvidenceError({ detail: 'configured electorate repeats a model' });
+   * const error = new PairingEvidenceError({ kind: 'duplicate-electorate' });
    * ```
    */
-  public constructor({ detail, }: { readonly detail: string; },) {
-    super(`pairing evidence: ${detail}`,);
+  public constructor(failure: PairingEvidenceFailure,) {
+    super(failure.kind === 'outcome-order'
+      ? `pairing evidence: askedModelIds[${String(failure.index,)}] (${failure.modelId}) is not a unique ordered member of configured modelIds; retain only actual final seat outcomes in configured order`
+      : failure.kind === 'empty-electorate'
+      ? 'pairing evidence: configured modelIds is empty; retain the electorate used by the pairing stage'
+      : 'pairing evidence: configured modelIds repeats an identity; each model must hold exactly one configured seat',);
   }
 }
 
@@ -60,13 +88,13 @@ export function assertPairingSeats(
   const pl = tagged({ tag: assertPairingSeats.name, l, },);
   pl.debug(`validating ${String(modelIds.length,)} configured and ${String(askedModelIds.length,)} recorded pairing identities`,);
   if (modelIds.length === 0)
-    throw new PairingEvidenceError({ detail: 'configured modelIds is empty; retain the electorate used by the pairing stage', },);
+    throw new PairingEvidenceError({ kind: 'empty-electorate', },);
   /** Configured positions also expose duplicated electorate identities through cardinality. */
   const positions = new Map(modelIds.map(function indexed(modelId, index): readonly [RosterModelId, number] {
     return [modelId, index,];
   },),);
   if (positions.size !== modelIds.length)
-    throw new PairingEvidenceError({ detail: 'configured modelIds repeats an identity; each model must hold exactly one configured seat', },);
+    throw new PairingEvidenceError({ kind: 'duplicate-electorate', },);
   /** Position preceding the first configured seat. */
   let previous = -1;
   for (const [index, modelId,] of askedModelIds.entries()) {
@@ -74,7 +102,9 @@ export function assertPairingSeats(
     const position = positions.get(modelId,) ?? -1;
     if (position <= previous)
       throw new PairingEvidenceError({
-        detail: `askedModelIds[${String(index,)}] (${modelId}) is not a unique ordered member of configured modelIds; retain only actual final seat outcomes in configured order`,
+        kind: 'outcome-order',
+        index,
+        modelId,
       },);
     previous = position;
   }
