@@ -13,6 +13,7 @@ import {
   ROSTER_MODEL_IDS,
   RUN_READER_MODELS,
   RUN_ROSTER,
+  RUN_LATE_JUDGES,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
@@ -46,7 +47,7 @@ await describe({
       },
     }),
     it({
-      name: 'uses the pooled unmeasured cap rather than copying Flash0731 completion distribution',
+      name: 'retains the pooled cap rather than copying Flash0731 completion distribution',
       fn: async () => {
         const modelId = nonNullishOrThrow(ROSTER_MODEL_IDS.find(id => id === MODEL));
         const hyper = nonNullishOrThrow(Object.values(HYPER_MODELS).find(info => info.id === MODEL));
@@ -66,10 +67,12 @@ await describe({
       },
     }),
     it({
-      name: 'does not seat an approved but uncalibrated model through catalog-derived arrays',
+      name: 'seats independently measured judging while retaining writer and reader holds',
       fn: async () => {
-        // Role-specific measurements, not provider count or predecessor ratings, release these holds.
-        for (const ids of [RUN_ROSTER, RUN_WIDE_SEATS, RUN_TRANSLATORS, RUN_WRITERS, RUN_READER_MODELS])
+        // The source-reviewed 2026-09-11 comparison measured judging, not writing or image reading.
+        for (const ids of [RUN_ROSTER, RUN_WIDE_SEATS, RUN_LATE_JUDGES])
+          expect(ids.filter(id => id === MODEL)).toHaveLength(1);
+        for (const ids of [RUN_TRANSLATORS, RUN_WRITERS, RUN_READER_MODELS])
           expect(ids.some(id => id === MODEL)).toBe(false);
         // An existing measured reader must not disappear merely because it lacks a judge seat.
         expect(RUN_READER_MODELS.includes('google.gemma-4-31b')).toBe(true);
