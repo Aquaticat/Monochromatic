@@ -1364,10 +1364,27 @@ and local calibration corrections never edit the corpus or filter production tra
 
 `--cap 0` is explicitly metadata-only preflight,
 not a quality result.
-Unknown `--only` entries and unreviewed `--context` requests are refused before corpus/provider access.
-Positive runs preserve the position/direction matrix and record individual ballots plus exact reference provenance.
+Unknown `--only` entries,
+unreviewed `--context`,
+a different configured corpus revision
+and any requested damage family absent from the selected population are refused before corpus/provider access.
+For example,
+`--only gqt` cannot provide the default alteration arm;
+`--only gqt --damage deletion` requests a supported narrower comparison.
+
+Positive runs materialize the position/direction matrix before applying the row cap.
+A capped prefix is explicitly marked incomplete,
+not complete admission evidence.
+Each invocation creates a fresh payload namespace and persists its logical plan,
+completed rows and terminal result separately.
+Interrupted execution can therefore retain rows without claiming completion.
+The result includes exact reference provenance and its manifest digest.
+
 A singleton panel's merged verdict can be underweight even when its individual vote is correct;
 it is not the per-model admission score.
+Admission additionally requires the registered complete question set,
+peer participation and one score per actual question,
+not duplicate scores for equivalent direction bookkeeping.
 
 The historical `hakureico/7` and `noname/4` reference set contained unsupported facts and changed certainty.
 Those scores are not source-grounded admission proof.

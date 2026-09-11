@@ -78,8 +78,17 @@ Nine categories produced the expected assertion failures;
 coordinate validation,
 edit overlap and donor overlap survived because downstream hashes masked the old tests.
 `a0ec042a5` commits otherwise-valid controls isolating those guards.
-They still require a fresh mutation run with no surviving guard categories.
-All first-run source mutations were restored and its final build/tests passed.
+A fresh main-created target at `82168f031` now verifies those controls:
+`~/temp/agent/translation-repair-reference-guard-r2-20260911`.
+The strict run checked thirty-three individual guard mutations,
+including every coordinate predicate,
+and required the intended named assertion for each ordinary nonzero test exit.
+All thirty-three were detected;
+restored build and tests passed.
+Evidence is `~/temp/agent/fidelity-guard-r2-20260911/mutations.json` and `mutations.out`.
+A string-anchor preflight failure was corrected before any mutation and is retained separately,
+not counted as guard detection.
+Both disposable worktrees remain owned proof fixtures pending cleanup.
 An attempted wrapped switch of the disposable target was refused as `config-untrusted`;
 HEAD did not advance and no persistent trust was granted.
 Create the next proof target from main at the required commit instead of assuming trust transfers.
@@ -89,14 +98,28 @@ Independent review found that a mixed damage request could silently omit its una
 trial-builder and native CLI failures in `reviewed-matrix-red-unit-20260911.out`.
 `3b03c5d01` requires every requested family somewhere in the selected population.
 `634cca76d` also binds metadata-only preflight to the configured corpus revision.
-These latest changes await green build/types/tests and final package verification.
+`reviewed-matrix-green-*` records passing build,
+types and all reference/CLI suites after those changes.
+`869f1fe69` isolates each positive native probe's payload namespace,
+persists its logical plan and completed rows,
+and labels capped prefixes as incomplete requested matrices.
+Its build/types pass.
+The native CLI consumed the actual pinned references through a wholly simulated transport:
+identical questions in repeated invocations caused fresh exchanges in separate namespaces;
+old state remained unchanged;
+and SIGTERM before the second ballot left the plan and first row without a completed artifact.
+The individual clean ballot remained separate from the underweight merged decline.
+`fidelity-native-artifact-verification-20260911.json` records this boundary check,
+with zero real model calls.
+The verifier's first attempt overlooked the legitimate outer ledger directory;
+that assertion was corrected without changing the successful native behavior.
+Final package lint/full suite and corrected calibration-plan verification remain pending.
 The package formatter is `format:oxlint`,
 not `format`;
 `reviewed-reference-format-r3-20260911.out` passed before the latest changes.
 
 Next actions:
-verify the matrix/pin changes;
-finish guard proofs on the current committed source;
+finish owned-fixture cleanup;
 reconcile independent review findings against actual code and the calibration driver;
 run zero-warning lint and the full package suite;
 regenerate the corrected fixed plan without old ballots or planner responses.

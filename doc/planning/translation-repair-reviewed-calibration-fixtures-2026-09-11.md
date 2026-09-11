@@ -165,7 +165,13 @@ JavaScript slicing that would return the same reviewed bytes despite invalid coo
 duplicate empty-replacement edits that would reconstruct the approved reference,
 and an overlapping donor with insertion excluded so insertion hashing cannot mask its guard.
 An independent advisor accepted these as isolated controls.
-They remain unproven until the updated mutation run fails for each intended assertion.
+The fresh proof at `82168f031` now detects all thirty-three registered individual guard removals,
+including every coordinate predicate.
+Every rebuild succeeds,
+every test failure matches its intended named assertion,
+and restored build/tests pass.
+The strict ledger is `~/temp/agent/fidelity-guard-r2-20260911/mutations.json`.
+A static source-anchor mismatch was corrected before mutation and is not credited as detection.
 
 Independent review also found a genuine request defect:
 `some()` admitted a mixed request when only one requested family existed.
@@ -175,9 +181,19 @@ trial builder and native `--only gqt` preflight all demonstrated that failure in
 `3b03c5d01` now requires each requested family somewhere in the selected population,
 not every family in every reference.
 `634cca76d` adds a metadata-only corpus-pin check before preflight can report success.
-Latest build,
-types,
-full-suite and guard verification are still pending.
+Build,
+types and all reference/CLI suites pass after these fixes in `reviewed-matrix-green-*`.
+Final package-wide verification is still pending.
+
+`869f1fe69` gives each positive native invocation a fresh payload namespace,
+a durable logical plan,
+per-row checkpoints and a completed result with explicit requested-matrix completeness.
+A wholly simulated transport verified the compiled CLI against the actual pinned corpus:
+repeat identical questions cause fresh exchanges,
+existing state survives,
+and an interrupted run retains its first row without a completed artifact.
+The individual clean ballot is not confused with its underweight merged decline.
+`fidelity-native-artifact-verification-20260911.json` records zero real model calls.
 
 The revised admission driver must persist:
 
