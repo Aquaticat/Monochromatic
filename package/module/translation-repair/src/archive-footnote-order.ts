@@ -1,4 +1,9 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { DocumentNode, } from './document-node.ts';
+import { activeFootnoteMarkers, } from './active-footnote-markers.ts';
+import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
+import { type FootnoteProtectedRange, overlapsFootnoteProtection, } from './footnote-protected-ranges.ts';
+import { FootnoteRewriteError, } from './footnote-rewrite-error.ts';
 import { definitionLabelsOf, } from './pair-definition-order.ts';
 import { parseDocument, } from './parse-document.ts';
 
@@ -33,6 +38,9 @@ export type ReorderedDefinitions = {
    * Why the text stands when it does and the order asked for differs.
    */
   readonly note?: string;
+
+  /** Caller must withhold the entire composed operation, including any preceding rename. */
+  readonly blockedByProtection?: true;
 };
 
 /**
@@ -57,11 +65,6 @@ type RankedDefinition = {
 const DEFINITION_ZONE = 'footnote-definition';
 
 /**
- * Separator written between definitions when the text carries none to copy.
- */
-const DEFAULT_GAP = '\n\n';
-
-/**
  * Labels of a text's definitions, in the order the text carries them.
  *
  * @param text - document to read
@@ -77,11 +80,9 @@ const DEFAULT_GAP = '\n\n';
 export function definitionLabelOrder(
   { text, }: { readonly text: string; },
 ): readonly string[] {
-  return parseDocument({ text, },)
-    .nodes
-    .flatMap(function toLabels(node,): readonly string[] {
-      return definitionLabelsOf({ node, },);
-    },);
+  return activeFootnoteMarkers({ text, },).filter(function definition(marker,): boolean {
+    return marker.kind === 'definition';
+  },).map(function label(marker,): string { return marker.rawLabel; },);
 }
 
 /**
@@ -93,7 +94,11 @@ export function definitionLabelOrder(
  *
  * @param order - labels in the order wanted
  *
+ * @param protectedRanges - original-English intervals in current text coordinates
+ *
  * @returns The text, moved or standing, and why it stands
+ *
+ * @throws FootnoteRewriteError when movement changes parsed definition contents or syntax
  *
  * @example
  * ```ts
@@ -105,15 +110,17 @@ export function reorderFootnoteDefinitions(
   {
     text,
     order,
+    protectedRanges = [],
   }: {
     readonly text: string;
     readonly order: readonly string[];
+    readonly protectedRanges?: readonly FootnoteProtectedRange[];
   },
 ): ReorderedDefinitions {
   /**
    * Every block of the text.
    */
-  const { nodes, } = parseDocument({ text, },);
+  const { nodes, containers, } = parseDocument({ text, },);
   /**
    * The definition blocks, in document order.
    */
@@ -149,6 +156,19 @@ export function reorderFootnoteDefinitions(
       changed: false,
       note: 'the footnote definitions are interleaved with other blocks, so they keep their order',
     };
+  /** Containers crossing definition boundaries cannot move as independent block fragments. */
+  const splitContainer = containers.some(function crosses(container,): boolean {
+    return container.openerStartOffset < last.endOffset && container.closerEndOffset > first.startOffset
+      && !definitions.some(function contains(node,): boolean {
+        return node.startOffset <= container.openerStartOffset && node.endOffset >= container.closerEndOffset;
+      },);
+  },);
+  if (splitContainer)
+    return { text, changed: false, note: 'footnote definitions share container delimiters, so they keep their order', };
+  /** Original label ranks use the same normalization as correspondence and rewriting. */
+  const normalizedOrder = order.map(function key(label,): string {
+    return normalizeFootnoteIdentifier({ identifier: label, },);
+  },);
   /**
    * Each definition with its rank.
    */
@@ -163,7 +183,7 @@ export function reorderFootnoteDefinitions(
     /**
      * Its place in the order asked for, absent as -1.
      */
-    const place = order.indexOf(label,);
+    const place = normalizedOrder.indexOf(normalizeFootnoteIdentifier({ identifier: label, },),);
     return {
       node,
       rank: (place === (-1)) ? (order.length + index) : place,
@@ -188,39 +208,37 @@ export function reorderFootnoteDefinitions(
       text,
       changed: false,
     };
-  /**
-   * What the text writes between its first two definitions, copied between
-   * every pair after the move.
-   */
-  const gap = text.slice(
-    first.endOffset,
-    second.startOffset,
-  ) || DEFAULT_GAP;
-  /**
-   * The moved region.
-   */
-  const region = sorted
-    .map(function toText(entry,): string {
-      return text.slice(
-        entry.node
-          .startOffset,
-        entry.node
-          .endOffset,
-      );
-    },)
-    .join(gap,);
-  return {
-    text: [
-      text.slice(
-        0,
-        first.startOffset,
-      ),
-      region,
-      text.slice(last.endOffset,),
-    ]
-      .join('',),
-    changed: true,
-  };
+  if (overlapsFootnoteProtection({ startOffset: first.startOffset, endOffset: last.endOffset, protectedRanges, },))
+    return { text, changed: false, blockedByProtection: true,
+      note: 'definition movement would touch protected English-original bytes or their declaration', };
+  /** Every original gap is preserved once, in its existing separator position. */
+  const gaps = definitions.slice(1,).map(function gap(node, index,): string {
+    return text.slice(nonNullishOrThrow(definitions[index],).endOffset, node.startOffset,);
+  },);
+  if (gaps.some(function containsContent(gap,): boolean {
+    for (const character of gap) {
+      if (!' \t\r\n'.includes(character,))
+        return true;
+    }
+    return false;
+  },))
+    return { text, changed: false, note: 'footnote definition gaps contain non-blank content, so they keep their order', };
+  /** Changed definitions, with unrelated separator bytes neither dropped nor repeated. */
+  const region = sorted.map(function placed(entry, index,): string {
+    return `${index === 0 ? '' : nonNullishOrThrow(gaps[index - 1],)}${text.slice(entry.node.startOffset, entry.node.endOffset,)}`;
+  },).join('',);
+  /** Candidate stays local until syntax and every complete definition block are rechecked. */
+  const rewritten = `${text.slice(0, first.startOffset,)}${region}${text.slice(last.endOffset,)}`;
+  activeFootnoteMarkers({ text: rewritten, },);
+  /** Actual output definition boundaries must still match the complete copied blocks. */
+  const reparsed = parseDocument({ text: rewritten, },).nodes.filter(function definition(node,): boolean {
+    return node.zone === DEFINITION_ZONE;
+  },);
+  if (reparsed.length !== sorted.length || reparsed.some(function differs(node, index,): boolean {
+    return node.text !== sorted[index]?.node.text;
+  },))
+    throw new FootnoteRewriteError({ kind: 'graph', },);
+  return { text: rewritten, changed: true, };
 }
 
 //endregion Archive footnote definition order
