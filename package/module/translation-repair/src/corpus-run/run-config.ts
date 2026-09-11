@@ -102,13 +102,11 @@ export const SEATED_OPENROUTER_JUDGES: ReadonlySet<RosterModelId> = new Set<Rost
 
 /**
  * New candidates that hold no judge or preparation seat until measured.
- * Provider multiplicity does not establish eligibility: V4.1 Flash has two
- * serving routes but no inherited V4 Flash 0731 calibration.
+ * Multiple serving routes do not establish eligibility or transfer a predecessor's calibration.
  */
 const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
   ...BEDROCK_ONLY_ROSTER_IDS,
   ...OPENROUTER_ONLY_ROSTER_IDS,
-  'deepseek-v4.1-flash',
 ],);
 
 /**
@@ -179,6 +177,13 @@ export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = new Set<RosterModel
  * ({@link SEATED_OPENROUTER_JUDGES}); it wrote nothing until the producer
  * calibration read at 20:02 UTC the same day seated it as a writer
  * ({@link WRITER_UNMEASURED}).
+ *
+ * DeepSeek V4.1 Flash joins on 2026-09-11 after choosing the source-reviewed
+ * reference on all fourteen distinct comparisons, with no damaged pick or abstention.
+ * All nine peers answered every question; their median clean count was fourteen
+ * and maximum damaged count one. Its writing and image-reading holds remain separate.
+ * Record: the 2026-09-11 addendum in
+ * `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function measured(modelId,): boolean {
