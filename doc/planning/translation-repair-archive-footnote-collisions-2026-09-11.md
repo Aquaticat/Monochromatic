@@ -173,9 +173,12 @@ protection,
 definition-order and existing relabel tests pass.
 Logs are `footnote-{correspondence,syntax,protection}-{build,types,green}-20260911.out`
 in `~/temp/agent`.
-The broader package suite,
-zero-warning lint,
-actual pinned consumer composition and removal proof remain incomplete.
+The source tree recorded as `75b769026` also passed the full unit process,
+with `footnote-full-unit-20260911.out` ending at line 9253.
+That direct invocation did not append a separate `unit exit 0` marker;
+final wrapper-based verification remains required.
+The second formatter run reported zero warnings and errors before the latest boundary test additions.
+Final lint and individual guard-removal proof remain incomplete.
 An implementation-review Advisor call timed out without feedback.
 This is not a release-ready or calibration-approved checkpoint.
 
@@ -188,16 +191,37 @@ The source trace currently covers:
 - `package/module/translation-repair/src/footnote-graph.ts`.
 - `package/module/translation-repair/src/footnote-identifier.ts`.
 
-The next step is the actual pinned `Y1Ran` consumer control,
-then additional boundary coverage,
-full verification and guard-removal proof.
+The actual pinned `Y1Ran` consumer control passed on frozen `.frozen-dist-b3b6ee29c`,
+digest `sha256-tree-v1:7612f144d20cc33ccd9a0263801a50725401bca1ebb2e493785d9edc52cfa96f`.
+It retained all three references and definitions,
+with final definition labels `1`,
+`2` and `4`,
+and no footnote findings before or after.
+Front matter remained identical;
+all 45 target nodes appeared once across 23 fresh prepared slices with current ranges.
+It exercised `translateSliceInput`,
+compiled the masked MDX body without execution,
+and proved a repeat operation is a no-op.
+The configured no-network container used 2 GiB RAM,
+2 CPUs and 512 PIDs.
+The driver recorded zero fetch calls and 194 ms elapsed.
+Evidence is `footnote-consumer-control.json` in the owned workspace
+and `~/temp/agent/footnote-Y1-consumer-r3-20260911.out`.
+Earlier harness attempts had a compiler import-resolution error and an incorrect assumption about
+`PreparedDocumentPair` fields;
+`targetText` and parsed nodes replaced the nonexistent `target` property.
+No corpus bytes were modified.
+
+The next step is guard-specific coverage and individual removal proof,
+independent review and final verification.
 The first formatter run (`proc_d6ff`) completed with `no-nullish-union`
 on the lexical no-marker return and `max-statements-per-line` on a lookup callback.
 The scanner now uses a domain-specific `NO_GFM_MARKER` sentinel,
 and the callback is split onto statement lines.
 The package diff contains only task-owned footnote paths;
 unrelated `mise.lock` drift remains untouched.
-A fresh lint check is still required.
+The second formatter run passed.
+A final lint check remains required after the latest boundary tests.
 Only mocked or provider-free work has run.
 The latest fully checked translation runtime remains `.frozen-dist-895843508`,
 digest `sha256-tree-v1:56d8d472b1a526faef861068d41e224c3640457b18ef0802a58b50992d18273c`.

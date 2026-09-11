@@ -42,6 +42,32 @@ the instrument forces preservation of body content whose source is outside the s
 The independent reviewer withdrew that recommendation after seeing this probe.
 Equal inputs do not establish validity of the task being ranked.
 
+## Declared-original eligibility before pool freezing
+
+The unapproved normalized pool also needs the existing source-authority admission boundary.
+A provider-free review of its frozen input texts identified
+`gqt/source-section/6/target-section/6` as part of a whole-page English original.
+Both raw and normalized archive readings return `whole-page`.
+`package/module/translation-repair/src/corpus-run/pass-entry.ts:155`
+declines such an entry before any purchase.
+The selected `hakureico` parent also requires the existing sealed-span treatment.
+
+Apply those production rules before freezing the acquisition population and deterministic draw.
+Do not buy correspondence for a production-declined entry,
+use protected original-English text as a writing task,
+or drop a parent only after acquisition outcomes arrive.
+Recompute the eligible population and revalidate the reading journal against its identities and hashes.
+This is source-authority eligibility,
+not the rejected size/shape filtering.
+The eligible empty-layout `ArtsEpiphany` preservation control remains a separate case.
+
+Evidence is `prototype-original-eligibility.json` in the owned writer workspace
+and `~/temp/agent/writer-prototype-original-eligibility-20260911.out`.
+The probe ran without network in the configured 2 GiB,
+2 CPU,
+512 PID container.
+No paid preparation or writing preceded this finding.
+
 ## Constraints
 
 - Preserve the production archive floor and legitimate English expansion policy.
@@ -56,7 +82,8 @@ Equal inputs do not establish validity of the task being ranked.
   incumbent,
   ranges,
   parent identity and any coalesced membership auditable before model calls.
-- Distinguish mechanical containment in an aligned parent from an unproven semantic guarantee about every archive sentence.
+- Distinguish mechanical containment in an aligned parent
+  from an unproven semantic guarantee about every archive sentence.
 
 The proposed `AGENTS.md` `QIV` clarification in
 [the reviewed fixture record](translation-repair-reviewed-calibration-fixtures-2026-09-11.md)

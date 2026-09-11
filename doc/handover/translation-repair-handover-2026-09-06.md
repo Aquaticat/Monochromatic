@@ -324,25 +324,68 @@ shared-incumbent accounting was checked provider-free with a positive control.
 Full-entry parent scope reading has reached eighteen of the thirty-two selected entries.
 No paid pool approval exists yet.
 
-Task 38 is now pending on active task 39.
-The pinned `Y1Ran` source has footnotes `1` and `2`,
-while the archive has `1`,
-`2` and `3`.
-The reviewed definition map `2` to `1` and `3` to `2` cannot close because unmatched archive `1`
-already occupies the destination.
-The actual closure helper returns `open`;
-the two-label permutation positive control closes.
-Task 39 investigates deterministic fresh-label displacement for the unmatched archive label,
-without creating source correspondence or changing note prose.
-A syntax probe also shows the existing raw application rewrites code,
-front matter,
-escaped literals,
+Task 38 remains pending on active task 39's final verification.
+The old `Y1Ran` definition map `2` to `1` and `3` to `2` could not close
+because unmatched archive `1` occupied the destination.
+The implemented closure retains that unmatched note under fresh label `4`,
+separate from supplied correspondence and existing forced elimination.
+Identity evidence is retained rather than inferred from equal spelling.
+
+The syntax rewrite now uses strict document grammar,
+exact raw marker spans,
+normalized identifiers,
+injective destinations and a reparsed occurrence-graph check.
+Code,
+metadata,
 comments,
-link destinations and JSX attributes,
-and mishandles case/escaped identifiers.
-No footnote implementation has changed yet.
-[Footnote collision work record](../planning/translation-repair-archive-footnote-collisions-2026-09-11.md)
-is the next-action document.
+escaped literals,
+URLs and attributes remain unchanged.
+Declared English-original spans and their note anchors block the entire operation when touched.
+Definition movement preserves distinct gaps and withholds changes across annotations or shared container delimiters.
+The whole-document parser must not use the slice parser's lone-tag rescue:
+the malformed-JSX regression exposed that false syntax proof.
+
+Source through `75b769026` passed build,
+types and the full unit process with exit zero.
+`footnote-full-unit-20260911.out` has 9253 lines and ends with the completed lane-contest suite;
+this direct invocation did not append the verification helper's separate `unit exit 0` marker.
+The final wrapper-based verification is still required after the remaining work.
+The second formatter run reported zero warnings and errors;
+the new boundary tests were added afterward and still need the final lint check.
+
+Frozen `.frozen-dist-b3b6ee29c` passed the actual pinned `Y1Ran` consumer control.
+All three definitions and references remain,
+with final labels `1`,
+`2` and `4`.
+Front matter is unchanged;
+all 45 target nodes appear once across 23 rebuilt slices with current ranges.
+The shared `translateSliceInput` projection was exercised,
+masked MDX compiled without execution,
+and a repeat operation was a no-op.
+`footnote-Y1-consumer-r3-20260911.out` records zero fetches and 194 ms inside the configured
+2 GiB/2 CPU/512 PID no-network container.
+This is a manually reviewed relation mechanism control,
+not acquired correspondence or calibration approval.
+The earlier attempts failed in the private harness's compiler resolution and assumed preparation-object shape,
+not the relabel algorithm.
+
+Remaining task 39 work includes additional guard-specific controls,
+individual removal proof,
+independent implementation review and final verification.
+An Advisor call timed out without feedback.
+The [footnote work record](../planning/translation-repair-archive-footnote-collisions-2026-09-11.md)
+is canonical.
+No corpus edits or paid preparation,
+writer or image calls occurred.
+
+The unapproved preparation prototype also includes a production-declined entry:
+`gqt/source-section/6/target-section/6` reads as a whole-page English original.
+The selected `hakureico` parent carries a declared-original span.
+Task 38 must apply the existing pre-purchase decline and sealed-span rules before freezing its population,
+then redraw deterministically and revalidate reading anchors.
+This is not post-outcome deletion or the rejected shape filter.
+The provider-free record is `prototype-original-eligibility.json` and
+`writer-prototype-original-eligibility-20260911.out`.
 
 The shared pure `translateSliceInput` projection is implemented and used by `settleTranslateSlice`.
 At `895843508`,
