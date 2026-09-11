@@ -128,18 +128,25 @@ export function assertPairingSeats(
   if (positions.size !== modelIds.length)
     throw new PairingEvidenceError({ kind: 'duplicate-electorate', },);
   // Carry the preceding configured position only through this ordered-subsequence check.
-  askedModelIds.reduce(function advanceSeat(previous, modelId, index,): number {
-    /**
-     * Missing members cannot advance from the initial or any later configured position.
-     */
-    const position = positions.get(modelId,) ?? (-1);
-    if (position <= previous)
-      throw new PairingEvidenceError({
-        kind: 'outcome-order',
-        index,
-      },);
-    return position;
-  }, -1,);
+  askedModelIds.reduce(
+    function advanceSeat(
+      previous,
+      modelId,
+      index,
+    ): number {
+      /**
+       * Missing members cannot advance from the initial or any later configured position.
+       */
+      const position = positions.get(modelId,) ?? (-1);
+      if (position <= previous)
+        throw new PairingEvidenceError({
+          kind: 'outcome-order',
+          index,
+        },);
+      return position;
+    },
+    -1,
+  );
 }
 
 //endregion Pairing electorate integrity
