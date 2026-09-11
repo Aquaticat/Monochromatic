@@ -1,3 +1,4 @@
+import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
 import { alignDocumentSections, } from '../chunk-document.ts';
 import {
   type CorpusPin,
@@ -177,9 +178,14 @@ export async function sampleBenchSlices(
   },
 ): Promise<readonly BenchSlice[]> {
   /**
+   * Own the batch's revision and resolve its native executable before concurrent reads.
+   * Self-shim detection decodes candidate files; repeating it per page can exhaust the heap.
+   */
+  const resolvedPin: CorpusPin = { ...pin, gitPath: pin.gitPath ?? await resolveGit(), };
+  /**
    * Entries at the pin, in the order the corpus lists them.
    */
-  const entryIds = await listCorpusPeople({ pin, },);
+  const entryIds = await listCorpusPeople({ pin: resolvedPin, },);
 
   /**
    * Every entry sliced, or reported as unreadable.
@@ -193,7 +199,7 @@ export async function sampleBenchSlices(
       try {
         return await sliceEntry({
           entryId,
-          pin,
+          pin: resolvedPin,
         },);
       }
       catch (error) {

@@ -285,8 +285,8 @@ async function gitOutput(
   },
 ): Promise<string> {
   /**
-   * Real git binary, resolved per call when the pin does not name one;
-   * resolution is a handful of PATH probes, negligible next to the spawn.
+   * Real Git binary, resolved per call when the pin does not name one.
+   * Batch callers supply one resolved path because self-shim detection reads candidate files.
    */
   const gitPath = pin.gitPath ?? await resolveGit();
 
