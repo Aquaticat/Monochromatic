@@ -1371,6 +1371,11 @@ RCO:
  and retired behavior.
 Recommend removal only after every entry has a viable owner.
 
+RCI:
+ Replacement design:
+ inspect existing repo-owned generators and managers before proposing a new owner.
+Extend a present boundary when it already owns the responsibility.
+
 ### Adding new packages
 
 AP1:
