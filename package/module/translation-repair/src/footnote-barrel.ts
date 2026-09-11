@@ -32,4 +32,6 @@ export {
   splitDefinitionPairs,
 } from './pair-definition-order.ts';
 
+export { relabelArchiveFootnotes, type RelabelledArchive, } from './corpus-run/pass-footnote-relabel.ts';
+
 //endregion Footnote barrel
