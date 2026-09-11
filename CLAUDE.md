@@ -1393,6 +1393,15 @@ LFW:
  inspect generated diffs,
  report unrelated drift separately.
 
+RCO:
+ Incumbent removal:
+ build coverage ledger of every consumed responsibility,
+ owner,
+ selection status,
+ parity test,
+ and retired behavior.
+Recommend removal only after every entry has a viable owner.
+
 ### Adding new packages
 
 AP1:
