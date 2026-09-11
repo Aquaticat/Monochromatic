@@ -222,7 +222,10 @@ export async function pairBlocksWithRoster(
     tag: pairBlocksWithRoster.name,
     l,
   },);
-  assertPairingSeats({ modelIds, l: pl, },);
+  assertPairingSeats({
+    modelIds,
+    l: pl,
+  },);
 
   /**
    * Every voice's reply, heard or lost.

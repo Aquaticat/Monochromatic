@@ -71,7 +71,7 @@ await describe({
         try {
           await pairBlocksWithRoster({ client, modelIds: test.modelIds, sourceBlocks: [{ index: 0, text: '猫睡了。', },],
             targetBlocks: [{ index: 0, text: 'The cat slept.', },], signal: new AbortController().signal,
-            exchangeTimeoutMs: 5000, l, fanOut: 'whole-bench', },);
+            exchangeTimeoutMs: 5_000, l, fanOut: 'whole-bench', },);
         }
         catch (error) {
           caught = error;
