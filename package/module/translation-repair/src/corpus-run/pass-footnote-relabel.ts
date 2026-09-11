@@ -1,4 +1,6 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import { type Logger, tagged, } from '@monochromatic-dev/module-logger/ts';
+import { footnoteProtectedRanges, footnoteRenameTouchesOriginal, } from '../footnote-protected-ranges.ts';
+import { FootnoteRewriteError, } from '../footnote-rewrite-error.ts';
 
 import {
   closeFootnoteRelabel,
@@ -53,6 +55,9 @@ export type RelabelledArchive = {
    * Preparation findings naming what moved or why nothing did.
    */
   readonly findings: readonly string[];
+
+  /** A refused operation is distinct from a verified no-op. */
+  readonly withheld?: 'correspondence' | 'protected-original' | 'rewrite-validation';
 };
 
 /**
@@ -117,7 +122,7 @@ function readRelabel(
  * const relabel = relabelArchiveFootnotes({ entryId, slices, definitionPairs, sourceText, archiveText, l, },);
  * ```
  */
-export function relabelArchiveFootnotes(
+function attemptArchiveFootnoteRelabel(
   {
     entryId,
     slices,
@@ -152,6 +157,7 @@ export function relabelArchiveFootnotes(
       archiveText,
       changed: false,
       findings: [ `footnotes: archive labels stand, since ${basis} disagree: ${reading.detail}`, ],
+      withheld: 'correspondence',
     };
   }
   /**
@@ -180,12 +186,20 @@ export function relabelArchiveFootnotes(
         ...findings,
         `footnotes: archive labels stand, since the map read off ${basis} does not close: ${closure.detail}`,
       ],
+      withheld: 'correspondence',
     };
   }
   /**
    * The closed map, empty where the labels already agree.
    */
   const { map: closed, correspondences, eliminated, retained, } = closure;
+  /** Exact sealed text and its declaration in the original coordinate space. */
+  const protectedRanges = footnoteProtectedRanges({ text: archiveText, },);
+  if (footnoteRenameTouchesOriginal({ text: archiveText, map: closed, protectedRanges, },)) {
+    l.warn(`FOOTNOTES entry=${entryId} whole operation withheld to preserve protected English-original bytes`,);
+    return { archiveText, changed: false, withheld: 'protected-original',
+      findings: [...findings, 'footnotes: whole operation withheld because a rename would change protected English-original bytes',], };
+  }
   /**
    * The archive under the original's labels.
    */
@@ -195,6 +209,16 @@ export function relabelArchiveFootnotes(
       map: closed,
     },)
     : archiveText;
+  /** Original definition order, read from active syntax rather than raw literals. */
+  const order = definitionLabelOrder({ text: sourceText, },);
+  /** Protection is reparsed after allowed renames, so changed label widths cannot stale its offsets. */
+  const reordered = reorderFootnoteDefinitions({ text: relabelled, order,
+    protectedRanges: footnoteProtectedRanges({ text: relabelled, },), },);
+  if (reordered.blockedByProtection === true) {
+    l.warn(`FOOTNOTES entry=${entryId} whole operation withheld because definition movement would touch protected English-original bytes`,);
+    return { archiveText, changed: false, withheld: 'protected-original',
+      findings: [...findings, 'footnotes: whole operation withheld because definition movement would touch protected English-original bytes',], };
+  }
   /**
    * Supplied correspondence rewrites, distinct from identity evidence and operational displacement.
    */
@@ -232,17 +256,6 @@ export function relabelArchiveFootnotes(
     l.info(`FOOTNOTES entry=${entryId} retained unmatched archive labels ${spelled}; these moves are not source correspondences`,);
     findings.push(`footnotes: unmatched archive labels retained as ${spelled}, without source correspondence`,);
   }
-  /**
-   * The original's definition order.
-   */
-  const order = definitionLabelOrder({ text: sourceText, },);
-  /**
-   * The archive moved into it.
-   */
-  const reordered = reorderFootnoteDefinitions({
-    text: relabelled,
-    order,
-  },);
   if (reordered.changed) {
     /**
      * The order, spelled.
@@ -266,6 +279,32 @@ export function relabelArchiveFootnotes(
     changed: reordered.text !== archiveText,
     findings,
   };
+}
+
+/**
+ * Applies the complete archive-footnote operation or retains the original bytes with a structured refusal.
+ * Unexpected failures propagate; only named rewrite-validation failures become withheld operations.
+ *
+ * @param input - canonical pages, initial pairing evidence and entry logger
+ * @returns Complete candidate or unchanged archive, with actual applied provenance only
+ * @example
+ * ```ts
+ * const result = relabelArchiveFootnotes({ entryId, slices, definitionPairs, sourceText, archiveText, l });
+ * ```
+ */
+export function relabelArchiveFootnotes(input: Parameters<typeof attemptArchiveFootnoteRelabel>[0],): RelabelledArchive {
+  /** Operation-owned logger, retaining the caller's tags. */
+  const l = tagged({ l: input.l, tag: relabelArchiveFootnotes.name, },);
+  try {
+    return attemptArchiveFootnoteRelabel({ ...input, l, },);
+  }
+  catch (error) {
+    if (!(error instanceof FootnoteRewriteError))
+      throw error;
+    l.warn(error.message,);
+    return { archiveText: input.archiveText, changed: false, withheld: 'rewrite-validation',
+      findings: [`footnotes: archive kept unchanged: ${error.message}`,], };
+  }
 }
 
 //endregion Pass footnote relabel
