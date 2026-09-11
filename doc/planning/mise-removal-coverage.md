@@ -6,6 +6,8 @@ Full removal is the intended endpoint,
 but is not yet recommended because replacement owners remain unselected and unverified.
 Keeping Mise only for tool provisioning and locking is a transitional checkpoint,
 not the target state.
+Replacement configuration should use TypeScript as its canonical authored format.
+Whether generated tool-native adapter files are acceptable remains unresolved.
 
 ## Trigger and correction
 
@@ -481,6 +483,11 @@ The following user choices can change the architecture and candidate set:
 
 - Keep or retire automatic directory-entry environment activation.
 - Prefer one focused cross-language tool manager or several ecosystem-native installers.
+- Accept generated TOML,
+  YAML,
+  JSON,
+  or other tool-native adapters from canonical TypeScript,
+  or require every replacement tool to consume TypeScript directly.
 - Preserve floating tool requests or replace them with reviewed update automation and exact locks.
 
 Full removal of the Mise binary is the accepted endpoint assumption for candidate discovery.
