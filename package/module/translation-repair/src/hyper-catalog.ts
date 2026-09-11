@@ -25,7 +25,8 @@ import type {
 // invented keys. Nothing in this file supports that endpoint.
 
 /**
- * Marker for a model this provider serves and the other one does not.
+ * Marker for a Hyper-origin identity without a Synthetic counterpart.
+ * It does not exclude an OpenRouter route for the same roster identity.
  *
  * A NAMED READING rather than a nullish union, matching how the rest of this
  * package models absence.
@@ -301,11 +302,9 @@ export function modelsServedByBoth(): readonly HyperServedId[] {
 }
 
 /**
- * Models only this provider serves, which have no cross-provider re-ask.
- *
- * A NON-CONFORMANT ANSWER FROM ONE OF THESE cannot be re-asked elsewhere, so it
- * falls back to `#88`'s invalid-candidate path instead, which sends an unusable
- * slice back to its own author.
+ * Historical Hyper/Synthetic projection: models without a Synthetic counterpart.
+ * Other provider reach is determined by `reachOf`, not by this bucket;
+ * an OpenRouter route may still exist for the same model.
  *
  * @returns Their identifiers, in catalog order
  *

@@ -45,11 +45,9 @@ export type SyntheticServedId =
   | 'hf:openai/gpt-oss-120b';
 
 /**
- * Roster models only Charm Hyper serves.
- *
- * SPELLED AS THAT PROVIDER SPELLS THEM, because there is no other spelling to
- * choose: no Synthetic id exists for any of these, so the wire name and the
- * roster name are the same string and no translation is possible to get wrong.
+ * Roster identities introduced through Charm Hyper without a Synthetic spelling.
+ * The historical bucket name is not exclusive reach: OpenRouter serves several too.
+ * Keeping the original roster spelling preserves one identity across providers.
  *
  * @example
  * ```ts
@@ -76,7 +74,7 @@ export const HYPER_ONLY_ROSTER_IDS = [
 ] as const;
 
 /**
- * Union of the models only Charm Hyper serves, derived from
+ * Union of Hyper-origin roster identities, derived from
  * {@link HYPER_ONLY_ROSTER_IDS} so a new one is added in exactly one place.
  *
  * DERIVED FROM THE RUNTIME LIST rather than declared beside it, matching
