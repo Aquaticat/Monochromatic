@@ -31,8 +31,14 @@ import { selectReviewedFidelitySpecs, } from './fidelity-reference-select.ts';
  * const specs = reviewedFidelityRequest({ onlyEntryIds: [], damageKinds, judgeModelIds, cap: 0, withContext: false });
  * ```
  */
-export function reviewedFidelityRequest({ specs = REVIEWED_FIDELITY_REFERENCES,
-  onlyEntryIds, damageKinds, judgeModelIds, cap, withContext, }: {
+export function reviewedFidelityRequest({
+  specs = REVIEWED_FIDELITY_REFERENCES,
+  onlyEntryIds,
+  damageKinds,
+  judgeModelIds,
+  cap,
+  withContext,
+}: {
   readonly specs?: readonly FidelityReferenceSpec[];
   readonly onlyEntryIds: readonly string[];
   readonly damageKinds: readonly FidelityDamageKind[];
@@ -41,33 +47,55 @@ export function reviewedFidelityRequest({ specs = REVIEWED_FIDELITY_REFERENCES,
   readonly withContext: boolean;
 },): readonly FidelityReferenceSpec[] {
   if (withContext)
-    throw new FidelityReferenceError({ referenceId: 'unreviewed context', operation: 'request', },);
-  if (!Number.isSafeInteger(cap,) || cap < 0)
-    throw new FidelityReferenceError({ referenceId: 'trial cap', operation: 'request', },);
-  if (judgeModelIds.length === 0 || new Set(judgeModelIds,).size !== judgeModelIds.length
+    throw new FidelityReferenceError({
+      referenceId: 'unreviewed context',
+      operation: 'request',
+    },);
+  if ((!Number.isSafeInteger(cap,)) || (cap < 0))
+    throw new FidelityReferenceError({
+      referenceId: 'trial cap',
+      operation: 'request',
+    },);
+  if ((judgeModelIds.length === 0) || (new Set(judgeModelIds,).size !== judgeModelIds.length)
     || judgeModelIds.some(function blankIdentity(modelId,): boolean {
       return modelId.trim() === '';
     },))
-    throw new FidelityReferenceError({ referenceId: 'judge roster', operation: 'request', },);
-  if (damageKinds.length === 0 || new Set(damageKinds,).size !== damageKinds.length)
-    throw new FidelityReferenceError({ referenceId: 'damage selection', operation: 'request', },);
+    throw new FidelityReferenceError({
+      referenceId: 'judge roster',
+      operation: 'request',
+    },);
+  if ((damageKinds.length === 0) || (new Set(damageKinds,).size !== damageKinds.length))
+    throw new FidelityReferenceError({
+      referenceId: 'damage selection',
+      operation: 'request',
+    },);
   /**
    * Only reviewed entries may be requested, even during zero-call preflight.
    */
-  const selected = selectReviewedFidelitySpecs({ specs, onlyEntryIds, },);
+  const selected = selectReviewedFidelitySpecs({
+    specs,
+    onlyEntryIds,
+  },);
   if (!selected.some(function supportsRequestedDamage(spec,): boolean {
-    return spec.damages.some(function requested(damage,): boolean {
+    return spec.damages
+      .some(function requested(damage,): boolean {
       return damageKinds.includes(damage.kind,);
     },);
   },)) {
-    throw new FidelityReferenceError({ referenceId: 'damage selection', operation: 'request', },);
+    throw new FidelityReferenceError({
+      referenceId: 'damage selection',
+      operation: 'request',
+    },);
   }
   for (const spec of selected) {
     for (const edit of spec.edits) {
       if (judgeModelIds.some(function authoredCorrection(modelId,): boolean {
-        return modelId === edit.author || modelId.endsWith(`/${edit.author}`,);
+        return (modelId === edit.author) || modelId.endsWith(`/${edit.author}`,);
       },)) {
-        throw new FidelityReferenceError({ referenceId: spec.id, operation: 'request', },);
+        throw new FidelityReferenceError({
+          referenceId: spec.id,
+          operation: 'request',
+        },);
       }
     }
   }

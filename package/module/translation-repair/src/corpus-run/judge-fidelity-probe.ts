@@ -62,7 +62,13 @@ async function main(): Promise<void> {
   /**
    * Request and authorship checks precede all corpus and provider activity.
    */
-  const specs = reviewedFidelityRequest({ onlyEntryIds: onlyIds, damageKinds, judgeModelIds, cap, withContext, },);
+  const specs = reviewedFidelityRequest({
+    onlyEntryIds: onlyIds,
+    damageKinds,
+    judgeModelIds,
+    cap,
+    withContext,
+  },);
   log.info(`judges: ${judgeModelIds.join(', ',)}`,);
   if (cap === 0) {
     log.info(`preflight only: ${String(specs.length,)} reviewed reference specifications selected; no corpus or model calls`,);
