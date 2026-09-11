@@ -1,10 +1,11 @@
+import { foldGitDocumentLine, } from './archive-git-line.ts';
 import { ArchiveNamingEvidenceError, } from './archive-naming-error.ts';
 
 //region Ordinary zero-context hunks
-// Ranges describe Git's textual replacement, not its semantic purpose.
+// Ranges describe textual replacement; physical line termination remains part of the proof.
 
 /**
- * One ordinary hunk with exact removed and added lines.
+ * One ordinary hunk with exact normalized lines and physical final-line endings.
  *
  * @example
  * ```ts
@@ -29,35 +30,69 @@ export type ArchiveDiffHunk = {
    */
   readonly newCount: number;
   /**
-   * Removed lines without diff prefixes.
+   * Removed lines without diff prefixes or physical separators.
    */
   readonly removed: readonly string[];
   /**
-   * Added lines without diff prefixes.
+   * Added lines without diff prefixes or physical separators.
    */
   readonly added: readonly string[];
+  /**
+   * Whether the last removed line had a physical separator.
+   */
+  readonly oldTerminated: boolean;
+  /**
+   * Whether the last added line had a physical separator.
+   */
+  readonly newTerminated: boolean;
 };
 
 /**
- * Owned mutable arrays while one hunk is being decoded.
+ * Owned hunk storage while protocol lines are arriving.
  */
-type PendingHunk = Omit<ArchiveDiffHunk, 'removed' | 'added'> & {
+type PendingHunk = Omit<ArchiveDiffHunk, 'removed' | 'added' | 'oldTerminated' | 'newTerminated'> & {
   /**
-   * Removed lines collected in source order.
+   * Raw removed lines before termination-aware normalization.
    */
   readonly removed: string[];
   /**
-   * Added lines collected in source order.
+   * Raw added lines before termination-aware normalization.
    */
   readonly added: string[];
+  /**
+   * Updated only by a valid old-side EOF marker.
+   */
+  oldTerminated: boolean;
+  /**
+   * Updated only by a valid new-side EOF marker.
+   */
+  newTerminated: boolean;
 };
 
 /**
- * Reads a decimal protocol field without accepting exponent or whitespace syntax.
+ * Protocol state explicitly distinguishes headers from hunk content.
+ */
+type HunkState = { readonly kind: 'header'; } | {
+  /**
+   * An ordinary hunk is open.
+   */
+  readonly kind: 'hunk';
+  /**
+   * Hunk receiving document lines.
+   */
+  readonly hunk: PendingHunk;
+  /**
+   * Only an immediately preceding document line may receive an EOF marker.
+   */
+  lastSide: 'none' | 'old' | 'new';
+};
+
+/**
+ * Reads a decimal protocol field without exponent or whitespace syntax.
  *
- * @param text - one Git numeric field
+ * @param text - Git numeric field
  *
- * @param relPath - archive named when the protocol is malformed
+ * @param relPath - archive named for malformed output
  *
  * @returns Nonnegative safe integer
  *
@@ -68,40 +103,33 @@ type PendingHunk = Omit<ArchiveDiffHunk, 'removed' | 'added'> & {
  * const line = archiveGitInteger({ text: '12', relPath });
  * ```
  */
-export function archiveGitInteger({
-  text,
-  relPath,
-}: {
+export function archiveGitInteger({ text, relPath, }: {
   readonly text: string;
   readonly relPath: string;
 },): number {
   /**
-   * Parsed count after restricting its lexical form.
+   * Parsed value, still subject to lexical and safe-integer validation.
    */
   const value = Number(text,);
-  if ((text.length === 0) || (![...text].every(function decimal(character,): boolean {
-    return '0123456789'.includes(character,);
-  },))
-    || (!Number.isSafeInteger(value,))
-    || (value < 0)) {
-    throw new ArchiveNamingEvidenceError({
-      kind: 'history-shape',
-      relPath,
-    },);
+  if (text.length === 0 || !Number.isSafeInteger(value,) || value < 0)
+    throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+  for (let index = 0; index < text.length; index += 1) {
+    if (!'0123456789'.includes(text.charAt(index,),))
+      throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
   }
   return value;
 }
 
 /**
- * Parses one explicitly signed ordinary hunk range.
+ * Parses one explicitly signed ordinary range.
  *
- * @param token - minus or plus range field
+ * @param token - minus or plus range
  *
  * @param sign - expected side marker
  *
- * @param relPath - archive named for malformed input
+ * @param relPath - archive named for malformed output
  *
- * @returns First line and count
+ * @returns First line and declared count
  *
  * @throws {@link ArchiveNamingEvidenceError} for malformed ranges
  *
@@ -110,48 +138,31 @@ export function archiveGitInteger({
  * const range = hunkRange({ token: '-1,2', sign: '-', relPath });
  * ```
  */
-function hunkRange({
-  token,
-  sign,
-  relPath,
-}: {
+function hunkRange({ token, sign, relPath, }: {
   readonly token: string;
   readonly sign: '-' | '+';
   readonly relPath: string;
-},): {
-  readonly start: number;
-  readonly count: number
-} {
+},): { readonly start: number; readonly count: number; } {
   /**
-   * Decimal range parts after its required marker.
+   * Decimal range parts after the required marker.
    */
-  const fields = token.slice(1,)
-    .split(',',);
-  if ((!token.startsWith(sign,)) || (fields.length > 2))
-    throw new ArchiveNamingEvidenceError({
-      kind: 'history-shape',
-      relPath,
-    },);
+  const fields = token.slice(1,).split(',',);
+  if (!token.startsWith(sign,) || fields.length > 2)
+    throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
   return {
-    start: archiveGitInteger({
-      text: fields[0] ?? '',
-      relPath,
-    },),
-    count: archiveGitInteger({
-      text: fields[1] ?? '1',
-      relPath,
-    },),
+    start: archiveGitInteger({ text: fields[0] ?? '', relPath, },),
+    count: archiveGitInteger({ text: fields[1] ?? '1', relPath, },),
   };
 }
 
 /**
- * Decodes ordinary zero-context patches with exact declared-count checks.
+ * Parses zero-context output and validates counts and EOF marker placement.
  *
- * @param patch - complete uncolored, unconverted diff output
+ * @param patch - complete uncolored, unconverted output with raw protocol newlines
  *
  * @param relPath - requested archive path
  *
- * @returns Hunks in emitted order
+ * @returns Ordinary hunks preserving physical EOF state
  *
  * @throws {@link ArchiveNamingEvidenceError} for malformed or combined hunks
  *
@@ -160,89 +171,93 @@ function hunkRange({
  * const hunks = archiveDiffHunks({ patch, relPath });
  * ```
  */
-export function archiveDiffHunks({
-  patch,
-  relPath,
-}: {
+export function archiveDiffHunks({ patch, relPath, }: {
   readonly patch: string;
   readonly relPath: string;
 },): readonly ArchiveDiffHunk[] {
   /**
-   * Owned hunk builders; only finalized readonly views leave this function.
+   * Owned hunk builders; normalization occurs only after EOF markers arrive.
    */
   const hunks: PendingHunk[] = [];
   /**
-   * Current hunk, absent while reading file headers.
+   * Cursor mutation stays owned inside this parser.
    */
-  let pending: PendingHunk | undefined;
+  const cursor: { state: HunkState; } = { state: { kind: 'header', }, };
   for (const line of patch.split('\n',)) {
     if (line.startsWith('diff --git ',)) {
-      pending = undefined;
+      cursor.state = { kind: 'header', };
       continue;
     }
     if (line.startsWith('@@',)) {
       /**
-       * Ordinary header fields; function-context suffixes are not range data.
+       * Named fields avoid interpreting function-context text as a range.
        */
-      const fields = line.split(' ',);
-      if ((fields[0] !== '@@') || (fields[3] !== '@@'))
-        throw new ArchiveNamingEvidenceError({
-          kind: 'history-shape',
-          relPath,
-        },);
+      const [opening, oldToken, newToken, closing,] = line.split(' ',);
+      if (opening !== '@@' || closing !== '@@')
+        throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
       /**
        * Predecessor range.
        */
-      const old = hunkRange({
-        token: fields[1] ?? '',
-        sign: '-',
-        relPath,
-      },);
+      const old = hunkRange({ token: oldToken ?? '', sign: '-', relPath, },);
       /**
        * Current range.
        */
-      const current = hunkRange({
-        token: fields[2] ?? '',
-        sign: '+',
-        relPath,
-      },);
-      pending = {
-        oldStart: old.start,
-        oldCount: old.count,
-        newStart: current.start,
-        newCount: current.count,
-        removed: [],
-        added: [],
-      };
-      hunks.push(pending,);
+      const current = hunkRange({ token: newToken ?? '', sign: '+', relPath, },);
+      /**
+       * Owned raw line arrays and default physical termination.
+       */
+      const hunk: PendingHunk = { oldStart: old.start, oldCount: old.count,
+        newStart: current.start, newCount: current.count, removed: [], added: [],
+        oldTerminated: true, newTerminated: true, };
+      hunks.push(hunk,);
+      cursor.state = { kind: 'hunk', hunk, lastSide: 'none', };
       continue;
     }
-    if (pending === undefined)
+    /**
+     * Stable state for this protocol line.
+     */
+    const { state, } = cursor;
+    if (state.kind === 'header')
       continue;
-    if (line.startsWith('-',))
-      pending.removed
-        .push(line.slice(1,),);
-    else if (line.startsWith('+',))
-      pending.added
-        .push(line.slice(1,),);
-    else if ((line !== '') && (line !== String.raw`\ No newline at end of file`))
-      throw new ArchiveNamingEvidenceError({
-        kind: 'history-shape',
-        relPath,
-      },);
+    if (line.startsWith('-',)) {
+      if (!state.hunk.oldTerminated)
+        throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+      state.hunk.removed.push(line.slice(1,),);
+      state.lastSide = 'old';
+    }
+    else if (line.startsWith('+',)) {
+      if (!state.hunk.newTerminated)
+        throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+      state.hunk.added.push(line.slice(1,),);
+      state.lastSide = 'new';
+    }
+    else if (line === String.raw`\ No newline at end of file`) {
+      if (state.lastSide === 'old' && state.hunk.removed.length === state.hunk.oldCount)
+        state.hunk.oldTerminated = false;
+      else if (state.lastSide === 'new' && state.hunk.added.length === state.hunk.newCount)
+        state.hunk.newTerminated = false;
+      else
+        throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+      state.lastSide = 'none';
+    }
+    else if (line === '')
+      state.lastSide = 'none';
+    else
+      throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
   }
-  for (const hunk of hunks) {
-    if ((hunk.removed
-      .length
-      !== hunk.oldCount) || (hunk.added
-        .length
-        !== hunk.newCount))
-      throw new ArchiveNamingEvidenceError({
-        kind: 'history-shape',
-        relPath,
-      },);
-  }
-  return hunks;
+  return hunks.map(function finalize(hunk,): ArchiveDiffHunk {
+    if (hunk.removed.length !== hunk.oldCount || hunk.added.length !== hunk.newCount)
+      throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+    return {
+      ...hunk,
+      removed: hunk.removed.map(function previousLine(text, index,): string {
+        return foldGitDocumentLine({ text, terminated: index < hunk.removed.length - 1 || hunk.oldTerminated, },);
+      },),
+      added: hunk.added.map(function currentLine(text, index,): string {
+        return foldGitDocumentLine({ text, terminated: index < hunk.added.length - 1 || hunk.newTerminated, },);
+      },),
+    };
+  },);
 }
 
 //endregion Ordinary zero-context hunks

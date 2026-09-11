@@ -39,6 +39,14 @@ export type ArchiveNamingScope = {
    * Unique pinned origin whose normalized current line matches.
    */
   readonly origin: ArchiveLineOrigin;
+  /**
+   * Physical termination of the pinned file, before archive normalization.
+   */
+  readonly pinnedHasFinalNewline: boolean;
+  /**
+   * Physical termination of this pinned line, independent of porcelain output.
+   */
+  readonly lineTerminated: boolean;
 };
 
 /**
@@ -104,12 +112,14 @@ export function archiveNamingScopes({
   uses,
   references,
   origins,
+  pinnedHasFinalNewline,
   relPath,
 }: {
   readonly archiveText: string;
   readonly uses: readonly InitialArchiveUse[];
   readonly references: readonly CorroboratedArchiveReference[];
   readonly origins: readonly ArchiveLineOrigin[];
+  readonly pinnedHasFinalNewline: boolean;
   readonly relPath: string;
 },): {
   readonly scopes: readonly ArchiveNamingScope[];
@@ -242,6 +252,8 @@ export function archiveNamingScopes({
       text,
       startOffset,
       origin,
+      pinnedHasFinalNewline,
+      lineTerminated: origin.finalLine < origins.length || pinnedHasFinalNewline,
       lineNumber: archiveText.slice(
         0,
         startOffset,

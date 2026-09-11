@@ -176,6 +176,14 @@ export type QualifiedArchiveNamingRevision = {
    */
   readonly currentLineText: string;
   /**
+   * Physical pinned EOF state, never inferred from Git protocol output.
+   */
+  readonly pinnedHasFinalNewline: boolean;
+  /**
+   * Unchanged physical separator state for the complete qualifying line.
+   */
+  readonly lineTerminated: boolean;
+  /**
    * Predecessor line under the same normalization, retained for reconstruction.
    */
   readonly previousLineText: string;

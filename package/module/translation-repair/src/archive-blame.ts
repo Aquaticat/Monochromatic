@@ -1,20 +1,29 @@
 import { archiveGitInteger, } from './archive-diff-hunks.ts';
+import { foldGitDocumentLine, } from './archive-git-line.ts';
 import { ArchiveNamingEvidenceError, } from './archive-naming-error.ts';
 
 //region Pinned line origins
-// Keep path, line and revision facts; discard author, email and commit-message data.
+// Keep literal path, line and revision facts; never retain author or commit-message data.
 
 /**
- * Width of SHA-1 Git object names.
+ * Complete SHA-1 object-name width.
  */
 const SHA1_WIDTH = 40;
 /**
- * Width of SHA-256 Git object names.
+ * Complete SHA-256 object-name width.
  */
 const SHA256_WIDTH = 64;
+/**
+ * Ordinary porcelain header without an explicit group count.
+ */
+const MINIMUM_HEADER_FIELDS = 3;
+/**
+ * Ordinary porcelain header with its optional group count.
+ */
+const MAXIMUM_HEADER_FIELDS = 4;
 
 /**
- * One line-porcelain origin for a line in the pinned archive.
+ * Exact line-porcelain origin for a pinned archive line.
  *
  * @example
  * ```ts
@@ -23,11 +32,11 @@ const SHA256_WIDTH = 64;
  */
 export type ArchiveLineOrigin = {
   /**
-   * Commit responsible for the current line.
+   * Intrinsic commit responsible for the current line.
    */
   readonly commit: string;
   /**
-   * One-based line in the origin commit.
+   * One-based line in that origin commit.
    */
   readonly originalLine: number;
   /**
@@ -35,7 +44,7 @@ export type ArchiveLineOrigin = {
    */
   readonly finalLine: number;
   /**
-   * Filename metadata, still in Git's canonical quoted spelling.
+   * Filename in Git's canonical quoted spelling.
    */
   readonly filename: string;
   /**
@@ -43,35 +52,37 @@ export type ArchiveLineOrigin = {
    */
   readonly boundary: boolean;
   /**
-   * Ignored or unassignable origins are not qualification evidence.
+   * Ignored or unassignable origin.
    */
   readonly ignored: boolean;
   /**
-   * Exact current line, excluding its output prefix and newline.
+   * Exact current line after shared corpus CRLF normalization.
    */
   readonly text: string;
 };
 
 /**
- * Owned metadata while a single porcelain record is assembled.
+ * Required filename is explicitly missing until metadata supplies it.
  */
-type PendingOrigin = {
+type OriginFilename = { readonly kind: 'missing'; } | {
   /**
-   * Commit from the header.
+   * Filename was supplied exactly once.
    */
-  readonly commit: string;
+  readonly kind: 'known';
   /**
-   * Origin line from the header.
+   * Exact wire spelling, not a decoded alias.
    */
-  readonly originalLine: number;
+  readonly value: string;
+};
+
+/**
+ * Owned origin metadata awaiting its document line.
+ */
+type PendingOrigin = Omit<ArchiveLineOrigin, 'filename' | 'text' | 'boundary' | 'ignored'> & {
   /**
-   * Pinned line from the header.
+   * Required metadata state.
    */
-  readonly finalLine: number;
-  /**
-   * Required filename, initially absent.
-   */
-  filename: string | undefined;
+  filename: OriginFilename;
   /**
    * Whether Git marked a traversal boundary.
    */
@@ -83,11 +94,25 @@ type PendingOrigin = {
 };
 
 /**
- * Checks complete object IDs without accepting revision-expression syntax.
+ * Parser state distinguishes a header from an in-progress metadata record.
+ */
+type OriginState = { readonly kind: 'header'; } | {
+  /**
+   * One line's metadata is being collected.
+   */
+  readonly kind: 'metadata';
+  /**
+   * Owned record completed by its following tab-prefixed document line.
+   */
+  readonly record: PendingOrigin;
+};
+
+/**
+ * Checks complete intrinsic IDs, excluding synthetic all-zero uncommitted origins.
  *
  * @param value - proposed object ID
  *
- * @returns Whether it is a complete lowercase SHA-1 or SHA-256 object name
+ * @returns Whether it is a complete nonzero lowercase Git object name
  *
  * @example
  * ```ts
@@ -95,21 +120,25 @@ type PendingOrigin = {
  * ```
  */
 export function isArchiveGitObjectId(value: string,): boolean {
-  return ((value.length === SHA1_WIDTH) || (value.length === SHA256_WIDTH))
-    && [...value]
-    .every(function hexadecimal(character,): boolean {
-      return '0123456789abcdef'.includes(character,);
-    },);
+  if ((value.length !== SHA1_WIDTH && value.length !== SHA256_WIDTH)
+    || value === '0'.repeat(value.length,)) {
+    return false;
+  }
+  for (let index = 0; index < value.length; index += 1) {
+    if (!'0123456789abcdef'.includes(value.charAt(index,),))
+      return false;
+  }
+  return true;
 }
 
 /**
- * Reads one strict porcelain header.
+ * Reads a strict ordinary header without accepting revision expressions.
  *
- * @param line - metadata header, not document text
+ * @param line - metadata header, not document prose
  *
- * @param relPath - archive named by malformed-output errors
+ * @param relPath - archive named for malformed output
  *
- * @returns Owned record awaiting its filename and text
+ * @returns Owned pending origin
  *
  * @throws {@link ArchiveNamingEvidenceError} for invalid headers
  *
@@ -118,80 +147,47 @@ export function isArchiveGitObjectId(value: string,): boolean {
  * const pending = originHeader({ line, relPath });
  * ```
  */
-function originHeader({
-  line,
-  relPath,
-}: {
+function originHeader({ line, relPath, }: {
   readonly line: string;
   readonly relPath: string;
 },): PendingOrigin {
   /**
-   * Optional group count appears only at a group's first line.
+   * Named fields avoid accidentally accepting extra metadata as a group count.
    */
   const fields = line.split(' ',);
   /**
-   * Complete commit ID.
+   * Header's object and numeric tokens.
    */
-  const commit = fields[0] ?? '';
+  const [commit = '', original = '', final = '', group = '1',] = fields;
   /**
    * Origin's one-based line.
    */
-  const originalLine = archiveGitInteger({
-    text: fields[1] ?? '',
-    relPath,
-  },);
+  const originalLine = archiveGitInteger({ text: original, relPath, },);
   /**
    * Pin's one-based line.
    */
-  const finalLine = archiveGitInteger({
-    text: fields[2] ?? '',
-    relPath,
-  },);
+  const finalLine = archiveGitInteger({ text: final, relPath, },);
   /**
-   * Optional count is still validated even though each line is emitted separately.
+   * Optional group count remains validated.
    */
-  const count = archiveGitInteger({
-    text: fields[3] ?? '1',
-    relPath,
-  },);
-  /**
-   * Permitted ordinary porcelain header widths.
-   */
-  const minimumFields = 3;
-  /**
-   * Header width when Git supplies a group count.
-   */
-  const maximumFields = 4;
-  if ((!isArchiveGitObjectId(commit,)) || (originalLine === 0)
-    || (finalLine === 0)
-    || (count === 0)
-    || (fields.length < minimumFields)
-    || (fields.length > maximumFields)) {
-    throw new ArchiveNamingEvidenceError({
-      kind: 'history-shape',
-      relPath,
-    },);
+  const count = archiveGitInteger({ text: group, relPath, },);
+  if (!isArchiveGitObjectId(commit,) || originalLine === 0 || finalLine === 0 || count === 0
+    || fields.length < MINIMUM_HEADER_FIELDS || fields.length > MAXIMUM_HEADER_FIELDS) {
+    throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
   }
-  return {
-    commit,
-    originalLine,
-    finalLine,
-    filename: undefined,
-    boundary: false,
-    ignored: false,
-  };
+  return { commit, originalLine, finalLine, filename: { kind: 'missing', }, boundary: false, ignored: false, };
 }
 
 /**
- * Reads full-file line porcelain and verifies every current line against the pinned read.
+ * Reads full-file porcelain and verifies every current line and its physical termination.
  *
- * @param porcelain - complete line-porcelain output
+ * @param porcelain - complete raw protocol output
  *
- * @param archiveText - pinned archive after shared CRLF normalization
+ * @param archiveText - pinned archive after shared corpus CRLF normalization
  *
- * @param relPath - literal requested archive path
+ * @param relPath - literal requested path
  *
- * @returns Ordered line origins without author metadata
+ * @returns Ordered origins without author metadata
  *
  * @throws {@link ArchiveNamingEvidenceError} for incomplete or inconsistent output
  *
@@ -200,77 +196,71 @@ function originHeader({
  * const origins = archiveBlameOrigins({ porcelain, archiveText, relPath });
  * ```
  */
-export function archiveBlameOrigins({
-  porcelain,
-  archiveText,
-  relPath,
-}: {
+export function archiveBlameOrigins({ porcelain, archiveText, relPath, }: {
   readonly porcelain: string;
   readonly archiveText: string;
   readonly relPath: string;
 },): readonly ArchiveLineOrigin[] {
   /**
-   * Git omits the phantom line after a terminating newline.
+   * Physical EOF state cannot be inferred from porcelain's output newline.
+   */
+  const terminated = archiveText.endsWith('\n',);
+  /**
+   * Git omits the phantom line after a terminating separator.
    */
   const lines = archiveText === '' ? [] : archiveText.split('\n',);
-  if (archiveText.endsWith('\n',))
+  if (terminated)
     lines.pop();
   /**
    * Completed origins in pinned line order.
    */
   const origins: ArchiveLineOrigin[] = [];
   /**
-   * Pending header and metadata, cleared exactly when its text arrives.
+   * Explicit owned parse state, never a nullish pending-record sentinel.
    */
-  let pending: PendingOrigin | undefined;
+  const cursor: { state: OriginState; } = { state: { kind: 'header', }, };
   for (const line of porcelain.split('\n',)) {
-    if (pending === undefined) {
+    /**
+     * State before consuming this protocol line.
+     */
+    const { state, } = cursor;
+    if (state.kind === 'header') {
       if (line !== '')
-        pending = originHeader({
-          line,
-          relPath,
-        },);
+        cursor.state = { kind: 'metadata', record: originHeader({ line, relPath, },), };
       continue;
     }
+    /**
+     * Metadata belongs to exactly one forthcoming document line.
+     */
+    const pending = state.record;
     if (line.startsWith('\t',)) {
       /**
-       * Document line, distinct from metadata that may share its words.
+       * Restore only the physical separator proven by the pinned blob.
        */
-      const text = line.slice(1,);
-      if ((pending.filename === undefined) || (pending.finalLine !== (origins.length
-        + 1))
-        || (text !== lines[pending.finalLine - 1])) {
-        throw new ArchiveNamingEvidenceError({
-          kind: 'history-shape',
-          relPath,
-        },);
+      const text = foldGitDocumentLine({ text: line.slice(1,),
+        terminated: pending.finalLine < lines.length || terminated, },);
+      if (pending.filename.kind !== 'known' || pending.finalLine !== origins.length + 1
+        || text !== lines[pending.finalLine - 1]) {
+        throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
       }
-      origins.push({
-        ...pending,
-        filename: pending.filename,
-        text,
-      },);
-      pending = undefined;
+      origins.push({ commit: pending.commit, originalLine: pending.originalLine,
+        finalLine: pending.finalLine, boundary: pending.boundary, ignored: pending.ignored,
+        filename: pending.filename.value, text, },);
+      cursor.state = { kind: 'header', };
       continue;
     }
     if (line.startsWith('filename ',)) {
-      if (pending.filename !== undefined)
-        throw new ArchiveNamingEvidenceError({
-          kind: 'history-shape',
-          relPath,
-        },);
-      pending.filename = line.slice('filename '.length,);
+      if (pending.filename.kind === 'known')
+        throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
+      pending.filename = { kind: 'known', value: line.slice('filename '.length,), };
     }
     if (line === 'boundary')
       pending.boundary = true;
-    if ((line === 'ignored') || (line === 'unblamable'))
+    if (line === 'ignored' || line === 'unblamable')
       pending.ignored = true;
   }
-  if ((pending !== undefined) || (origins.length !== lines.length))
-    throw new ArchiveNamingEvidenceError({
-      kind: 'history-shape',
-      relPath,
-    },);
+  if (cursor.state.kind !== 'header' || origins.length !== lines.length)
+    throw new ArchiveNamingEvidenceError({ kind: 'history-shape', relPath, },);
   return origins;
 }
 

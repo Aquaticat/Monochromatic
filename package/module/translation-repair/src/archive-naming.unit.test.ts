@@ -40,6 +40,8 @@ await describe({
               originLine: 1,
               currentLineStartOffset: 0,
               currentLineText: AFTER_ARCHIVE.slice(0, -1),
+              pinnedHasFinalNewline: true,
+              lineTerminated: true,
               previousLineText: BEFORE_ARCHIVE.slice(0, -1),
               previousFragment: '星猫亭',
               currentFragment: NAME_QUOTE,

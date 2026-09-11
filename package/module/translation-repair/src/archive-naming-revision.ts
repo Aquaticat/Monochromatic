@@ -196,6 +196,7 @@ export async function readQualifiedArchiveNamingRevisions({
     uses: initialUses,
     references: corroborated.references,
     origins,
+    pinnedHasFinalNewline: rawArchive.endsWith('\n',),
     relPath,
   },);
   /**

@@ -87,6 +87,11 @@ export function qualifyArchiveNamingScopes({
         .nodeId}: no unique single-line replacement)`,);
       return [];
     }
+    if (hunk.oldTerminated !== hunk.newTerminated
+      || hunk.newTerminated !== scope.lineTerminated) {
+      findings.push(`archive-revision-withheld (${scope.reference.use.anchor.nodeId}: physical line ending changed)`,);
+      return [];
+    }
     /**
      * Raw predecessor line, already subject to the shared CRLF fold.
      */
@@ -183,6 +188,8 @@ export function qualifyArchiveNamingScopes({
         .originalLine,
       currentLineStartOffset: scope.startOffset,
       currentLineText: current,
+      pinnedHasFinalNewline: scope.pinnedHasFinalNewline,
+      lineTerminated: scope.lineTerminated,
       previousLineText: previous,
       previousFragment: change.removed,
       currentFragment: change.added,

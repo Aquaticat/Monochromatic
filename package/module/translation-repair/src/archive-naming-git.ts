@@ -8,7 +8,6 @@ import {
   corpusGitEnvironment,
 } from './corpus-git-context.ts';
 import type { CorpusPin, } from './corpus-source.ts';
-import { foldCarriageReturns, } from './line-endings.ts';
 
 //region Literal pinned Git reads
 // No shell, replacement objects, text conversion, external diff or author-data logs.
@@ -47,7 +46,7 @@ const MAX_METADATA_BYTES = MAX_METADATA_MEBIBYTES * KIBI
  *
  * @param signal - cancellation shared with entry preparation
  *
- * @returns Complete stdout with the same CRLF fold as corpus reads
+ * @returns Complete raw stdout; parsers normalize document lines using physical EOF evidence
  *
  * @throws {@link ArchiveNamingEvidenceError} when capture fails or exceeds its bound
  *
@@ -104,8 +103,7 @@ export async function archiveGitOutput({
     },
     );
     rl.debug(`received ${String(Buffer.byteLength(result.stdout,),)} metadata bytes`,);
-    return foldCarriageReturns({ text: result.stdout, },)
-      .text;
+    return result.stdout;
   }
   catch (cause) {
     rl.warn('history command did not complete; retaining its cause',);
