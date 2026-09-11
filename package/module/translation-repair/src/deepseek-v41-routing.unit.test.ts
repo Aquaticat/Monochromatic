@@ -14,14 +14,14 @@ import {
 /** Both serving protocols carry the same invented answer. */
 const ANSWER = '{"animal":"cat","count":7}';
 /** Complete Hyper tool stream, consumed by the actual compiled adapter. */
-const HYPER_BODY = [
+const HYPER_BODY = `${[
   { type: 'message_start', message: { usage: { input_tokens: 20, output_tokens: 1 } } },
   { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', name: 'model_route', input: {} } },
   { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: ANSWER } },
   { type: 'content_block_stop', index: 0 },
   { type: 'message_delta', delta: { stop_reason: 'tool_use' }, usage: { output_tokens: 12 } },
   { type: 'message_stop' },
-].map(event => `data: ${JSON.stringify(event)}`).join('\n\n') + '\n\n';
+].map(event => `data: ${JSON.stringify(event)}`).join('\n\n')}\n\n`;
 /** Complete OpenRouter stream includes reported cost to distinguish it from an estimate. */
 const OPENROUTER_BODY = `data: ${JSON.stringify({ choices: [{ delta: { content: ANSWER }, finish_reason: 'stop' }],
   usage: { prompt_tokens: 20, completion_tokens: 12, cost: 0.00001 } })}\n\ndata: [DONE]\n\n`;
@@ -33,10 +33,18 @@ const FORMAT = { type: 'json_schema' as const, json_schema: { name: 'model_route
 function routingFixture(dry: BudgetView) {
   const exchanges: TransportExchange[] = [];
   const hyper = createHyperClient({ apiKey: 'fixture-only', retryPolicy: { limit: 0, baseMs: 1 },
-    transport: async exchange => { exchanges.push(exchange); return { status: 200, bodyText: HYPER_BODY }; } });
+    transport: async exchange => {
+      exchanges.push(exchange);
+      return { status: 200, bodyText: HYPER_BODY };
+    } });
   const openrouter = createOpenRouterClient({ apiKey: 'fixture-only', retryPolicy: { limit: 0, baseMs: 1 },
-    transport: async exchange => { exchanges.push(exchange); return { status: 200, bodyText: OPENROUTER_BODY }; } });
-  const unsupported = { chatText: async () => { throw new Error('Unserved provider must not receive this model'); } };
+    transport: async exchange => {
+      exchanges.push(exchange);
+      return { status: 200, bodyText: OPENROUTER_BODY };
+    } });
+  const unsupported = { chatText: async () => {
+    throw new Error('Unserved provider must not receive this model');
+  } };
   const client = createRoutingClient({ callers: { synthetic: unsupported, bedrock: unsupported, hyper, openrouter },
     budgets: { read: async () => dry,
       markRefused: async () => { throw new Error('No transport refusal is scripted'); },
@@ -46,8 +54,8 @@ function routingFixture(dry: BudgetView) {
 
 /** Predicate used by the real router's structured-response reader. */
 function valid(value: unknown): value is { animal: 'cat'; count: 7 } {
-  return typeof value === 'object' && value !== null && 'animal' in value && value.animal === 'cat'
-    && 'count' in value && value.count === 7;
+  return (typeof value === 'object') && (value !== null) && ('animal' in value) && (value.animal === 'cat')
+    && ('count' in value) && (value.count === 7);
 }
 
 await describe({
@@ -69,7 +77,7 @@ await describe({
         expect(result.kind).toBe('ok');
         expect(exchanges).toHaveLength(1);
         expect(exchanges[0]?.url).toBe(row.url);
-        const body = JSON.parse(exchanges[0]?.bodyJson ?? '{}');
+        const body: unknown = JSON.parse(exchanges[0]?.bodyJson ?? '{}');
         expect(body).toMatchObject({ model: row.model, max_tokens: 13_082, stream: true });
         for (const forbidden of ['thinking', 'budget_tokens', 'reasoning_effort'])
           expect(body).not.toHaveProperty(forbidden);
