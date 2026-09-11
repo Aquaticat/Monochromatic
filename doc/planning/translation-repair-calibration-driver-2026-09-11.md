@@ -3,8 +3,8 @@
 Task 34's transport and evidence checks are complete.
 Task 31 still requires actual role calibration before any production hold is released.
 The reference package is verified at frozen `993583ad5`;
-no paid judge,
-writer or image calibration has run.
+the paid judge run has now started,
+while writer and image calibration remain pending.
 The driver lives in private `~/temp/agent/v41-reviewed-*.mts` files,
 with `calibrate-v41-judges-20260911.mts` as its explicit-mode entry point.
 
@@ -168,3 +168,14 @@ the provider-absence control returns an empty ballot without falsely becoming an
 Every record is simulated and no score is attached.
 These results were read before closing task 34.
 No real model call occurred in either verification.
+
+## Paid launch
+
+Task 31 started at 2026-09-11 14:13:40 UTC using the verified registered plan.
+`proc_02bc` owns wrapper PID 2149953 and Node PID 2150064.
+State is `~/temp/agent/v41-reviewed-run-20260911-vbOoMQ`;
+output is redirected to `~/temp/agent/v41-reviewed-judge-calibration-20260911.log`.
+The live provider-budget snapshot marks all providers wet.
+No production role is changed by launch or by a returned score.
+Read the terminal report,
+all individual ballots and cost/provenance records before admission assessment.

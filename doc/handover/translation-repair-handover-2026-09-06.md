@@ -26,13 +26,25 @@ and the reason is recorded in
 
 ### Latest checkpoint: reviewed calibration infrastructure on 2026-09-11
 
-No paid judge,
-writer or image calibration has run.
-V4.1 Flash remains held out of production roles.
+The paid judge calibration is running.
+No writer or image calibration has run,
+and V4.1 Flash remains held out of production roles.
 The reviewed-reference implementation and fixed plan in task 32 are verified.
-Task 34's paid-driver transport and evidence checks now pass.
-Task 31 can begin after a fresh budget reading;
-no actual role measurement or hold release has occurred yet.
+Task 34's paid-driver transport and evidence checks pass.
+No role hold has been released.
+
+Task 31 launched at 2026-09-11 14:13:40 UTC through `proc_02bc`.
+The wrapper PID is 2149953;
+the actual Node PID is 2150064.
+Run state is `~/temp/agent/v41-reviewed-run-20260911-vbOoMQ`;
+the private log is `~/temp/agent/v41-reviewed-judge-calibration-20260911.log`.
+Do not edit the private driver or executed frozen runtime while this paid process is active.
+The registered plan is `~/temp/agent/v41-reviewed-plan-20260911-9eo8in/plan.json`.
+Its live budget read reports every provider wet.
+The 14:07:49 UTC sample recorded Synthetic 13.350341871212121 percent weekly remaining,
+2750 of 2750 five-hour units,
+Hyper 250 credits,
+Bedrock USD 185.38 and OpenRouter USD 267.73.
 Full-entry readiness is still false.
 Current checked runtime is frozen at
 `package/module/translation-repair/node_modules/.frozen-dist-993583ad5`.
@@ -171,11 +183,15 @@ not `format`;
 `reviewed-reference-format-r3-20260911.out` passed before the latest changes.
 
 Next actions:
-read the fresh budget sample and start task 31 on the registered plan
-`~/temp/agent/v41-reviewed-plan-20260911-9eo8in/plan.json`;
-preserve the fixed cohort and existing count criterion rather than dropping incomplete peers;
-regenerate the plan after any driver edit;
-read actual individual ballots and route/cost evidence before deciding role admission.
+await the paid run's terminal notification without polling;
+read its complete report,
+individual ballots,
+malformed/missing outcomes and private route/cost evidence;
+run the spend and daily helpers;
+then assess judge admission without changing the fixed peer cohort or count criterion.
+Writer calibration is task 35;
+image/reader verification is task 36.
+They are distinct from judging and retain their own holds.
 Persist actual model-independent question identities and model/provider cell identities separately,
 and grade each actual question once.
 The native default cap of sixteen rows is not complete admission evidence for the full reviewed matrix.
