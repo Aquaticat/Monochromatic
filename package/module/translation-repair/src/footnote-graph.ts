@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { RootContent, } from 'mdast';
 
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
+import { gfmMarkerSpans, } from './gfm-marker-spans.ts';
 import type {
   FootnoteConvention,
   FootnoteDefinitionHit,
@@ -127,22 +128,6 @@ export function scanFullwidthMarkers(
 }
 
 /**
- * Opening sequence of GFM footnote reference literals.
- */
-const GFM_REF_OPEN = '[^';
-
-/**
- * Closing bracket of GFM footnote reference literals.
- */
-const GFM_REF_CLOSE = ']';
-
-/**
- * Characters ending identifier collection early;
- * literals containing them are ordinary prose brackets, not references.
- */
-const GFM_IDENTIFIER_STOPPERS = ' \t\n[^';
-
-/**
  * Scans one source slice for literal `[^identifier]` sequences.
  *
  * micromark consumes every `[^identifier]` whose definition exists into a
@@ -162,58 +147,9 @@ const GFM_IDENTIFIER_STOPPERS = ' \t\n[^';
 export function scanGfmReferenceLiterals(
   { slice, }: { readonly slice: string; },
 ): readonly TextMarkerHit[] {
-  /**
-   * Accumulated hits in source order.
-   */
-  const hits: TextMarkerHit[] = [];
-
-  /**
-   * Scan cursor advanced past each examined opening sequence.
-   */
-  let cursor = slice.indexOf(GFM_REF_OPEN,);
-
-  while (cursor !== (-1)) {
-    /**
-     * Where the identifier starts, just after the opening sequence.
-     */
-    const identifierStart = cursor + GFM_REF_OPEN.length;
-
-    /**
-     * Cursor walking characters after opening sequence.
-     */
-    let probe = identifierStart;
-
-    while (probe < slice.length) {
-      /**
-       * Character under examination, proven present by loop bound.
-       */
-      const character = nonNullishOrThrow(slice[probe],);
-      if ((character === GFM_REF_CLOSE) || GFM_IDENTIFIER_STOPPERS.includes(character,))
-        break;
-
-      probe += 1;
-    }
-
-    /**
-     * Identifier characters collected before the closing bracket, sliced once.
-     */
-    const identifier = slice.slice(
-      identifierStart,
-      probe,
-    );
-    if ((identifier !== '') && (slice[probe] === GFM_REF_CLOSE))
-      hits.push({
-        identifier,
-        localOffset: cursor,
-      },);
-
-    cursor = slice.indexOf(
-      GFM_REF_OPEN,
-      cursor + 1,
-    );
-  }
-
-  return hits;
+  return gfmMarkerSpans({ text: slice, },).map(function hit(marker,): TextMarkerHit {
+    return { identifier: marker.rawLabel, localOffset: marker.startOffset, };
+  },);
 }
 
 //endregion Text marker scanning
