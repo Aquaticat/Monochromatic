@@ -136,14 +136,20 @@ and the regenerated source/reference/damage set was fully read again.
 Driver simulation exposed an incorrect assumption:
 stage retries may repeat identical messages,
 and `STAGE_RETRY_ROUNDS = 3` permits four total stage calls per cell.
-The corrected finite stage bound is 560,
-not 280;
-no production rounds were added.
-The corrected simulation completed all 140 cells with 170 fake calls,
-including the existing retry depth,
-and is explicitly marked simulated.
-Task 34 still needs actual-client transport interception,
-route/physical-call bounds and stricter failure/simulation interpretation before any paid launch.
+That correction covered only the quorum loop.
+Task 34's full source read found the separate existing unreadable-answer recovery round,
+which appends `RECOVERY_NUDGE` after the loop.
+The actual maximum is five stage calls per cell and 700 for the fixed matrix.
+No production round is added or removed.
+The 170-call logical simulation remains explicitly simulated evidence of the loop path,
+not proof of the post-loop recovery or transport.
+The old plan is superseded by the driver changes.
+
+Task 34 now captures initial and recovery bodies through compiled provider clients without network,
+derives physical-call bounds from the existing routing and HTTP retry layers,
+and compares live bodies against registered routes.
+Actual-client transport simulation and negative boundary controls remain pending.
+See [driver verification](../planning/translation-repair-calibration-driver-2026-09-11.md).
 The package formatter is `format:oxlint`,
 not `format`;
 `reviewed-reference-format-r3-20260911.out` passed before the latest changes.

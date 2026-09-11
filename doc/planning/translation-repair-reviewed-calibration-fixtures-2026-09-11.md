@@ -229,11 +229,16 @@ The complete source/reference/damage tuples were read again from this regenerate
 A simulation found and corrected a mistaken retry assumption in the private driver:
 existing stage retries can repeat the same request,
 and `STAGE_RETRY_ROUNDS = 3` means four total stage calls per cell.
-The corrected 560-call stage bound preserves that existing depth.
-Simulation completed 140 cells with 170 fake calls,
-including the existing retries,
-and records no real model calls.
-It does not verify the actual transport wrapper.
+That 560-call bound covered only the quorum loop.
+Task 34's complete source read found the separate existing unreadable-answer recovery round.
+The corrected maximum is five stage calls per cell,
+or 700 for this matrix,
+without changing production depth.
+The 170-call simulation remains evidence of the loop path only,
+with no real model calls.
+It does not verify the post-loop recovery or actual transport wrapper.
+Current launch constraints are tracked in
+[driver verification](translation-repair-calibration-driver-2026-09-11.md).
 
 Task 34 must verify physical-call bounds and route attribution through compiled clients,
 retain sufficient private wire evidence without exposing secrets,
