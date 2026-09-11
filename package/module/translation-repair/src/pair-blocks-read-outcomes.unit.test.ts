@@ -106,10 +106,17 @@ await describe({
             throw failure;
           },
         };
-        expect(() => readBlockPairingOutcomes({
-          outcomes: [{ modelId: roster[0], voice: { heard: true, value, }, },],
-          modelIds: roster, sourceCount: 2, targetCount: 2, l,
-        },),).toThrow(failure,);
+        let caught: unknown;
+        try {
+          readBlockPairingOutcomes({
+            outcomes: [{ modelId: roster[0], voice: { heard: true, value, }, },],
+            modelIds: roster, sourceCount: 2, targetCount: 2, l,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBe(failure,);
       },
     },),
   ],
