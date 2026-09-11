@@ -6,6 +6,7 @@ import {
 } from './active-footnote-markers.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import { sliceFootnoteLabels, } from './footnote-slice-labels.ts';
 
 export { applyFootnoteRelabel, } from './apply-footnote-relabel.ts';
 
@@ -117,7 +118,7 @@ export type FootnoteRelabelReading = {
  * Distinct labels one text references, in order of first appearance,
  * definition openers left out.
  *
- * @param text - one side of a slice
+ * @param text - complete document or independently parseable fragment
  *
  * @returns Labels, each once
  *
@@ -268,19 +269,36 @@ function mapLabels(
  * Reads, off the paired slices, how the archive's labels map to the
  * original's.
  *
- * @param slices - preparation's slices, both sides' texts included
+ * @param slices - preparation's slices, both sides' canonical texts included
+ *
+ * @param sourceText - complete original backing the prepared ranges
+ *
+ * @param targetText - complete archive backing the prepared ranges
  *
  * @returns The map, that nothing changes, or why the archive must stand
  *
+ * @throws {@link import('./footnote-rewrite-error.ts').FootnoteRewriteError} when document syntax or slice scope cannot establish current evidence
+ *
  * @example
  * ```ts
- * const reading = footnoteRelabelOf({ slices: prepared.slices, },);
- * if (reading.kind === 'relabel') archiveText = applyFootnoteRelabel({ text: archiveText, map: reading.map, },);
+ * const reading = footnoteRelabelOf(prepared);
  * ```
  */
 export function footnoteRelabelOf(
-  { slices, }: { readonly slices: readonly ChunkPair[]; },
+  { slices, sourceText, targetText, }: {
+    readonly slices: readonly ChunkPair[];
+    readonly sourceText: string;
+    readonly targetText: string;
+  },
 ): FootnoteRelabelReading {
+  /** Complete-document source syntax, never an unmatched prepared container half. */
+  const sourceReferences = activeFootnoteMarkers({ text: sourceText, },).filter(function reference(marker,): boolean {
+    return marker.kind === 'reference';
+  },);
+  /** Archive syntax uses the same actual document boundary. */
+  const targetReferences = activeFootnoteMarkers({ text: targetText, },).filter(function reference(marker,): boolean {
+    return marker.kind === 'reference';
+  },);
   /**
    * Correspondences the slices give, positionally.
    */
@@ -291,22 +309,12 @@ export function footnoteRelabelOf(
    */
   const skipped: string[] = [];
   for (const slice of slices) {
+    /** Current original references projected into an exact prepared range. */
+    const original = sliceFootnoteLabels({ chunk: slice.source, documentText: sourceText, markers: sourceReferences, },);
+    /** Current archive references, with stale or truncated ranges refused before counting. */
+    const archive = sliceFootnoteLabels({ chunk: slice.target, documentText: targetText, markers: targetReferences, },);
     if (isInsertionChunk(slice.target,))
       continue;
-    /**
-     * Labels the original references in this slice.
-     */
-    const original = referenceLabels({
-      text: slice.source
-        .text,
-    },);
-    /**
-     * Labels the archive references in this slice.
-     */
-    const archive = referenceLabels({
-      text: slice.target
-        .text,
-    },);
     /**
      * Which slice, for the detail.
      */
@@ -357,7 +365,7 @@ export function footnoteRelabelOf(
  * @example
  * ```ts
  * footnoteRelabelOfDefinitions({ pairs: [ { sourceLabel: '2', targetLabel: '1', }, { sourceLabel: '1', targetLabel: '2', }, ], },);
- * // => { kind: 'relabel', map: [ { from: '1', to: '2', }, { from: '2', to: '1', }, ], skipped: [], }
+ * // Positive relations remain in `correspondences`, including identities omitted from `map`.
  * ```
  */
 export function footnoteRelabelOfDefinitions(

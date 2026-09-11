@@ -73,7 +73,7 @@ await describe({
         /**
          * The reading.
          */
-        const reading = footnoteRelabelOf({ slices: prepared.slices, },);
+        const reading = footnoteRelabelOf(prepared,);
         if (reading.kind !== 'relabel')
           throw new Error(`expected a relabel, read ${reading.kind}`,);
         expect(reading.map,).toStrictEqual([
@@ -99,12 +99,10 @@ await describe({
             + '[^2]: A substitute parent? Like mother and daughter.\n\n[^1]: Younger than her, like a sister.\n',
         );
         // A SECOND READING OF THE RELABELLED ARCHIVE CHANGES NOTHING.
-        expect(footnoteRelabelOf({
-          slices: prepareDocumentPair({
-            sourceText: SOURCE_TEXT,
-            targetText: relabelled,
-          },).slices,
-        },),).toStrictEqual({
+        expect(footnoteRelabelOf(prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: relabelled,
+        },),),).toStrictEqual({
           kind: 'unchanged',
           correspondences: [{ from: '2', to: '2', }, { from: '1', to: '1', },],
           skipped: [],
@@ -115,22 +113,18 @@ await describe({
     it({
       name: 'reads nothing to change where the labels already agree or no slice carries a marker on both sides',
       fn: async () => {
-        expect(footnoteRelabelOf({
-          slices: prepareDocumentPair({
-            sourceText: '她[^1]。\n\n[^1]: 注。\n',
-            targetText: 'She[^1].\n\n[^1]: Note.\n',
-          },).slices,
-        },),).toStrictEqual({
+        expect(footnoteRelabelOf(prepareDocumentPair({
+          sourceText: '她[^1]。\n\n[^1]: 注。\n',
+          targetText: 'She[^1].\n\n[^1]: Note.\n',
+        },),),).toStrictEqual({
           kind: 'unchanged',
           correspondences: [{ from: '1', to: '1', },],
           skipped: [],
         },);
-        expect(footnoteRelabelOf({
-          slices: prepareDocumentPair({
-            sourceText: '她。\n',
-            targetText: 'She.\n',
-          },).slices,
-        },),).toStrictEqual({
+        expect(footnoteRelabelOf(prepareDocumentPair({
+          sourceText: '她。\n',
+          targetText: 'She.\n',
+        },),),).toStrictEqual({
           kind: 'unchanged',
           correspondences: [],
           skipped: [],
@@ -146,14 +140,12 @@ await describe({
          * The reading over a slice with one marker against two and a slice
          * with a swap.
          */
-        const reading = footnoteRelabelOf({
-          slices: prepareDocumentPair({
-            sourceText: '## 甲\n\n她[^1]和他[^2]。\n\n## 乙\n\n洲洲[^4]，真理[^3]。\n\n'
-              + '[^1]: 一。\n\n[^2]: 二。\n\n[^3]: 三。\n\n[^4]: 四。\n',
-            targetText: '## A\n\nShe[^1] and he.\n\n## B\n\nZhouzhou[^3], Zhenli[^4].\n\n'
-              + '[^1]: One.\n\n[^3]: Three.\n\n[^4]: Four.\n',
-          },).slices,
-        },);
+        const reading = footnoteRelabelOf(prepareDocumentPair({
+          sourceText: '## 甲\n\n她[^1]和他[^2]。\n\n## 乙\n\n洲洲[^4]，真理[^3]。\n\n'
+            + '[^1]: 一。\n\n[^2]: 二。\n\n[^3]: 三。\n\n[^4]: 四。\n',
+          targetText: '## A\n\nShe[^1] and he.\n\n## B\n\nZhouzhou[^3], Zhenli[^4].\n\n'
+            + '[^1]: One.\n\n[^3]: Three.\n\n[^4]: Four.\n',
+        },),);
         if (reading.kind !== 'relabel')
           throw new Error(`expected a relabel, read ${reading.kind}`,);
         expect(reading.map,).toStrictEqual([
@@ -179,12 +171,10 @@ await describe({
         /**
          * The reading where [^1] is [^2] in one slice and [^3] in the next.
          */
-        const reading = footnoteRelabelOf({
-          slices: prepareDocumentPair({
-            sourceText: '## 甲\n\n她[^2]。\n\n## 乙\n\n他[^3]。\n\n[^2]: 二。\n\n[^3]: 三。\n',
-            targetText: '## A\n\nShe[^1].\n\n## B\n\nHe[^1].\n\n[^1]: One.\n',
-          },).slices,
-        },);
+        const reading = footnoteRelabelOf(prepareDocumentPair({
+          sourceText: '## 甲\n\n她[^2]。\n\n## 乙\n\n他[^3]。\n\n[^2]: 二。\n\n[^3]: 三。\n',
+          targetText: '## A\n\nShe[^1].\n\n## B\n\nHe[^1].\n\n[^1]: One.\n',
+        },),);
         expect(reading.kind,).toBe('ambiguous',);
         if (reading.kind === 'ambiguous')
           expect(reading.detail,).toContain('maps archive [^1] to original [^3] where an earlier slice mapped [^2]',);

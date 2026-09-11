@@ -41,9 +41,9 @@ await describe({
       name: 'keeps an unchanged positional reading distinct from having no correspondence',
       fn: async () => {
         const prepared = prepareDocumentPair({ sourceText: '猫[^Note]。', targetText: 'Cat[^note].' });
-        expect(footnoteRelabelOf({ slices: prepared.slices })).toEqual({ kind: 'unchanged',
+        expect(footnoteRelabelOf(prepared)).toEqual({ kind: 'unchanged',
           correspondences: [{ from: 'note', to: 'Note' }], skipped: [] });
-        expect(footnoteRelabelOf({ slices: [] })).toEqual({ kind: 'unchanged', correspondences: [], skipped: [] });
+        expect(footnoteRelabelOf({ slices: [], sourceText: '', targetText: '' })).toEqual({ kind: 'unchanged', correspondences: [], skipped: [] });
       },
     }),
     it({

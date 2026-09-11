@@ -76,20 +76,28 @@ export type RelabelledArchive = {
  *
  * @param slices - first preparation's slices
  *
+ * @param sourceText - complete source backing the slices
+ *
+ * @param archiveText - complete archive backing the slices
+ *
  * @returns The reading and what it was read off
  *
  * @example
  * ```ts
- * const { reading, basis, } = readRelabel({ definitionPairs, slices, },);
+ * const { reading, basis, } = readRelabel({ definitionPairs, slices, sourceText, archiveText, },);
  * ```
  */
 function readRelabel(
   {
     definitionPairs,
     slices,
+    sourceText,
+    archiveText,
   }: {
     readonly definitionPairs: readonly DefinitionLabelPair[];
     readonly slices: readonly ChunkPair[];
+    readonly sourceText: string;
+    readonly archiveText: string;
   },
 ): {
   readonly reading: FootnoteRelabelReading;
@@ -101,7 +109,7 @@ function readRelabel(
       basis: 'the definitions the roster paired',
     };
   return {
-    reading: footnoteRelabelOf({ slices, },),
+    reading: footnoteRelabelOf({ slices, sourceText, targetText: archiveText, },),
     basis: 'the paired slices',
   };
 }
@@ -156,6 +164,8 @@ function attemptArchiveFootnoteRelabel(
   } = readRelabel({
     definitionPairs,
     slices,
+    sourceText,
+    archiveText,
   },);
   if (reading.kind === 'ambiguous') {
     l.warn(
