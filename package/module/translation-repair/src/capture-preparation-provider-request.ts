@@ -136,7 +136,7 @@ export async function capturePreparationProviderRequest({
      * Native JSON is inspected for top-level knobs, never by matching private text strings.
      */
     const body = captureRequestJson(exchange.bodyJson,);
-    if (!isJsonRecord(body,))
+    if (Array.isArray(body,) || (!isJsonRecord(body,)))
       throw new PreparationRequestCaptureError({ kind: 'request', },);
     /**
      * Explicit record type keeps callback inspection independent of closure narrowing.
