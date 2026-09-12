@@ -191,7 +191,9 @@ export function readPreparationReceipt({
     binding.requestConfigurationDigest
   ];
   if (labels.some(function missing(label,): boolean {
-    return ((typeof label) !== 'string') || (label.trim().length === 0);
+    return ((typeof label) !== 'string') || (label.trim()
+      .length
+      === 0);
   },))
     throw new PreparationReceiptError({ kind: 'binding', },);
   if ((!isJsonRecord(value,))

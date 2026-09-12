@@ -441,8 +441,20 @@ Its formatter stops on destructuring,
 shadowing,
 statement-layout and fixture `Object.setPrototypeOf` return-type findings.
 Those findings are corrected without changing receipt acceptance policy.
-`preparation-receipt-verification-r3-20260912.out` is the next full verification;
-no completed-suite claim applies to these files yet.
+`preparation-receipt-verification-r3-20260912.out` passes build,
+types,
+focused tests,
+formatter,
+rebuild,
+types,
+zero-warning lint,
+full unit and Markdown lint.
+The full-suite terminal was inspected at line 9619 of `preparation-receipt-unit-r3-20260912.out`: `unit exit 0`.
+Independent re-review found no concrete remaining defect within this declared data/reconstruction scope.
+Valid-wrong-document removal witnesses,
+non-prefix sparse outcomes,
+changed alignment interpretation,
+later mapped parents and ownership of alignment metadata still need additional controls before isolated guard proof.
 This data reader does not independently establish an exclusive attempt directory,
 provider transmission,
 actual configuration derivation,
