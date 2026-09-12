@@ -1,9 +1,9 @@
-import { createHash, } from 'node:crypto';
 import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { blockPairingQuestion, } from './block-pairing-question.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
@@ -12,10 +12,7 @@ import {
   pairBlocksWithRoster,
   type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
-import type { NumberedBlock, } from './pair-blocks-wire.ts';
-import { definitionIndexes, } from './pair-definition-order.ts';
 import { claimMediaAdjacentTargets, } from './pair-media-adjacency.ts';
-import { PAIRING_CACHE_VERSION, } from './pairing-cache-version.ts';
 import { finishPreparedBlockPairing, } from './prepare-block-pairing-finish.ts';
 import type { PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
 import type { SliceCache, } from './slice-cache.ts';
@@ -114,50 +111,9 @@ export async function prepareBlockPairing(
     };
   }
   /**
-   * Original blocks as the production question numbers them.
+   * Shared current numbering, definition exemptions and unchanged cache identity.
    */
-  const sourceBlocks = sourceNodes.map(function sourceBlock(
-    node,
-    index,
-  ): NumberedBlock {
-    return {
-      index,
-      text: node.text,
-    };
-  },);
-  /**
-   * Incumbent blocks as the same question numbers them.
-   */
-  const targetBlocks = targetNodes.map(function targetBlock(
-    node,
-    index,
-  ): NumberedBlock {
-    return {
-      index,
-      text: node.text,
-    };
-  },);
-  /**
-   * Definition indexes retain the existing reader exemption from ordinary order.
-   */
-  const freeOrder = {
-    source: definitionIndexes({ nodes: sourceNodes, },),
-    target: definitionIndexes({ nodes: targetNodes, },),
-  };
-  /**
-   * Existing cache identity, unchanged by extracting this operation.
-   */
-  const key = createHash('sha256',)
-    .update(
-      [
-      String(PAIRING_CACHE_VERSION,),
-      ...sourceBlocks.map(function sourceContent(block,): string { return block.text; },),
-      '\u0000',
-      ...targetBlocks.map(function targetContent(block,): string { return block.text; },),
-    ].join('\u0000',),
-      'utf8',
-    )
-    .digest('hex',);
+  const { sourceBlocks, targetBlocks, freeOrder, key, } = blockPairingQuestion({ pair, },);
   /**
    * Historical round, which carries no invented new electorate evidence.
    */

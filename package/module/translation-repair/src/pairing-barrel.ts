@@ -24,6 +24,10 @@ export {
 } from './prepare-with-pairing.ts';
 export { prepareBlockPairing, } from './prepare-block-pairing.ts';
 export {
+  blockPairingQuestion,
+  type BlockPairingQuestion,
+} from './block-pairing-question.ts';
+export {
   type PreparedBlockEvidence,
   type PreparedBlockPairing,
 } from './prepare-block-pairing-model.ts';
