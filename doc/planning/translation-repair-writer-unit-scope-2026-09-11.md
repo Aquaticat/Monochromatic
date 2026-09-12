@@ -44,13 +44,13 @@ Equal inputs do not establish validity of the task being ranked.
 
 ## Declared-original eligibility before pool freezing
 
-The unapproved normalized pool also needs the existing source-authority admission boundary.
+The initial unapproved normalized pool also needed the existing source-authority admission boundary.
 A provider-free review of its frozen input texts identified
 `gqt/source-section/6/target-section/6` as part of a whole-page English original.
 Both raw and normalized archive readings return `whole-page`.
 `package/module/translation-repair/src/corpus-run/pass-entry.ts:155`
 declines such an entry before any purchase.
-The selected `hakureico` parent also requires the existing sealed-span treatment.
+The initial prototype's selected `hakureico` parent also requires the existing sealed-span treatment.
 
 Apply those production rules before freezing the acquisition population and deterministic draw.
 Do not buy correspondence for a production-declined entry,
@@ -67,6 +67,64 @@ The probe ran without network in the configured 2 GiB,
 2 CPU,
 512 PID container.
 No paid preparation or writing preceded this finding.
+
+## Policy-eligible population on 2026-09-12
+
+Task 38 is split into independently verifiable work:
+task 40 freezes and reads the policy-eligible pool,
+task 41 implements current-evidence qualification and journals,
+task 42 gates native writer execution on a separately reviewed plan,
+and task 43 acquires and reviews the final prepared tasks.
+Task 40 is active.
+No acquisition or writer launch is approved by the population draft.
+
+The provider-free rebuild on frozen `086fd9f6e` reads 93 entry ids.
+It excludes the whole-page originals `cheonwoomaeng` and `gqt`
+and records `tdor` as missing a corpus side.
+The remaining 90 entries yield 272 deterministic parent pairs.
+The existing spread draw selects forty parents across thirty entries.
+They contain 20467 source and 71446 incumbent characters before production subdivision.
+The population digest is
+`17bef29954c1db3e0242b28fbdfe77c3c57e6f53e56e7a29003ed7d2cfdfaaab`;
+the pool digest is
+`235e18fe08d07b39c056e12f134479cdd803756cd4b601c533a289f2fd4404a2`.
+
+Only seven primary parents coincide with the original prototype draw.
+The change comes from applying eligibility before the deterministic draw,
+not model outcomes.
+`ArtsEpiphany` remains eligible in the population but is not selected by this draw;
+it was not manually deleted or forced back in.
+The population retains its protected-span parent with explicit annotations,
+but no selected parent intersects that span.
+No shape/size filter was added.
+
+The original eighteen full-entry readings were revalidated against their original hashes and parent membership.
+Twelve match entries in the new pool,
+and six parent-scope readings carry forward by exact parent and entry hashes.
+Fresh complete readings of `Dethelly`,
+`Futajuhuacha`,
+`GLaDOSister` and `MTF_0615` bring current coverage to sixteen entries and eleven parents.
+The remaining entries and changed parent scopes must still be read.
+The notes are scope/context observations,
+not gold references or automatic correspondence evidence.
+
+Artifacts in the owned writer workspace:
+
+- `preparation-pool-policy-20260912.json` retains population metadata,
+  selected parents,
+  exact entry texts and declaration exclusions.
+- `preparation-pool-policy-reading-20260912/` holds the full source/target reading files.
+- `preparation-policy-reading-journal-20260912.json` binds carried and fresh readings to hashes.
+- `reading-Dethelly-20260912.json`,
+  `reading-Futajuhuacha-20260912.json`,
+  `reading-GLaDOSister-20260912.json` and `reading-MTF_0615-20260912.json` record fresh observations.
+
+`Dethelly` requires out-of-parent footnote context and distinguishes source note 1 from the archive's location note.
+`Futajuhuacha` has no selected-parent footnote reference despite differing apparatus elsewhere.
+`GLaDOSister` needs work-title/conlang naming evidence without declaring archive spellings official.
+`MTF_0615` explicitly discusses name pronunciation in ruby markup and separately supplies an attributed caring quotation.
+These dependencies must be represented in the preparation and final-input plan,
+not repaired with uncredited archive prose.
 
 ## Constraints
 

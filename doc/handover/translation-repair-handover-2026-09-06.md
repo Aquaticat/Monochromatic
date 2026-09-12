@@ -441,6 +441,39 @@ This is not post-outcome deletion or the rejected shape filter.
 The provider-free record is `prototype-original-eligibility.json` and
 `writer-prototype-original-eligibility-20260911.out`.
 
+Task 38 now has explicit children:
+40 for the eligible pool and source reading,
+41 for qualified current-evidence journals,
+42 for the native reviewed-input execution gate,
+and 43 for bounded acquisition and final prepared-task review.
+Task 40 is active;
+35 remains blocked by 38.
+
+The new provider-free policy population on frozen `086fd9f6e` contains 272 parents from 90 eligible entries.
+It excludes whole-page originals `cheonwoomaeng` and `gqt` before selection and records missing-side `tdor`.
+The unchanged spread rule draws forty parents across thirty entries,
+with 20467 source and 71446 incumbent characters.
+Population digest:
+`17bef29954c1db3e0242b28fbdfe77c3c57e6f53e56e7a29003ed7d2cfdfaaab`.
+Pool digest:
+`235e18fe08d07b39c056e12f134479cdd803756cd4b601c533a289f2fd4404a2`.
+Seven primary parents carry over from the original prototype selection.
+`ArtsEpiphany` is still in the eligible population but is not selected by the new deterministic draw.
+No selected parent intersects a declared-original span;
+the population keeps that annotated parent rather than applying a shape filter.
+
+All eighteen original reading records were revalidated.
+Twelve complete-entry readings and six parent-scope readings carry to the new pool by exact hashes.
+Fresh full readings of `Dethelly`,
+`Futajuhuacha`,
+`GLaDOSister` and `MTF_0615` yield sixteen complete entries and eleven reviewed parent scopes.
+Current artifacts are `preparation-pool-policy-20260912.json`,
+`preparation-pool-policy-reading-20260912/` and `preparation-policy-reading-journal-20260912.json`
+in the owned writer workspace.
+Continue the pending entry and parent readings before claiming a frozen acquisition plan.
+No paid preparation,
+writer generation or image calibration has run.
+
 The shared pure `translateSliceInput` projection is implemented and used by `settleTranslateSlice`.
 At `895843508`,
 build,
