@@ -1,7 +1,7 @@
 import { appendFileSync, fstatSync, renameSync, truncateSync, writeFileSync, } from 'node:fs';
 import { type FileHandle, chmod, copyFile, mkdir, mkdtemp, open, readFile, rm, stat, writeFile, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import { isAbsolute, join, relative, } from 'node:path';
+import { isAbsolute, join, relative, resolve, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { createPreparationAttempt, PreparationAttemptError, verifyPreparationAttempt, } from '../dist/final/node/index.mjs';
@@ -104,19 +104,40 @@ await describe({ name: 'observed namespace stability controls', concurrency: 1, 
   it({ name: 'pins relative namespace paths before an asynchronous cwd change', fn: async () => {
     await using parent = await temporaryParent();
     const originalCwd = process.cwd();
-    const attempt = await createPreparationAttempt({ parentDir: relative(originalCwd, parent.dir), rootPlanText, l });
-    expect(isAbsolute(attempt.dir)).toBe(true);
-    const relativeDir = relative(originalCwd, attempt.dir);
-    const pending = verifyPreparationAttempt({ expected: { ...attempt, dir: relativeDir }, l });
+    const origin = join(parent.dir, 'origin');
+    const changed = join(parent.dir, 'elsewhere', 'nested');
+    await mkdir(origin, { mode: 0o700 });
+    await mkdir(changed, { recursive: true, mode: 0o700 });
     using _restore = {
       [Symbol.dispose](): void {
         process.chdir(originalCwd);
       },
     };
-    process.chdir(parent.dir);
+    process.chdir(origin);
+    const attempt = await createPreparationAttempt({ parentDir: relative(origin, parent.dir), rootPlanText, l });
+    expect(isAbsolute(attempt.dir)).toBe(true);
+    const relativeDir = relative(origin, attempt.dir);
+    expect(resolve(origin, relativeDir)).toBe(attempt.dir);
+    expect(resolve(changed, relativeDir)).not.toBe(attempt.dir);
+    const pending = verifyPreparationAttempt({ expected: { ...attempt, dir: relativeDir }, l });
+    process.chdir(changed);
     const [verification] = await Promise.allSettled([pending]);
     expect(verification?.status).toBe('fulfilled');
-    expect(process.cwd()).not.toBe(originalCwd);
+    expect(process.cwd()).toBe(changed);
+  } }),
+  it({ name: 'refuses a self-consistent marker and expectation with a noncanonical attempt identity', fn: async () => {
+    await using parent = await temporaryParent();
+    const attempt = await createPreparationAttempt({ parentDir: parent.dir, rootPlanText, l });
+    const expected = { ...attempt, attemptId: 'x'.repeat(36) };
+    await writeFile(join(attempt.dir, 'attempt.json'), JSON.stringify({ version: 1, kind: 'preparation-attempt',
+      attemptId: expected.attemptId, rootPlanDigest: expected.rootPlanDigest, rootPlanBytes: expected.rootPlanBytes }));
+    let caught: unknown;
+    try {
+      await verifyPreparationAttempt({ expected, l });
+    }
+    catch (error) { caught = error; }
+    expect(caught).toBeInstanceOf(PreparationAttemptError);
+    expect((caught as PreparationAttemptError).operation).toBe('identity');
   } }),
   ...[
     { attemptId: 'x'.repeat(36) },
