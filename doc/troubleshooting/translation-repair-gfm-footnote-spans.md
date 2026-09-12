@@ -204,6 +204,21 @@ Tradeoffs:
   The active inventory now requires document grammar.
 - Copying the first definition gap between every reordered block duplicates comments and loses distinct separators.
 - Reusing pre-rename offsets after label widths change misidentifies protected ranges.
+- Treating four-space indentation as code under the MDX grammar gives the wrong expected output.
+  The compound fixture initially expected an indented marker to remain literal,
+  but the actual mutator read it as a reference and renamed it.
+  `micromark-extension-mdx-md` version `2.0.0`,
+  commit `5c0cc53dd724b8c4e8331e3e2759ad6fcbe533ed`,
+  explicitly disables CommonMark indented code at `index.js:15`:
+
+  ```js
+  // micromark-extension-mdx-md/index.js:15 at tag 2.0.0
+  disable: {null: ['autolink', 'codeIndented', 'htmlFlow', 'htmlText']}
+  ```
+
+  The read-only clone is `~/temp/agent/mdx-md-2.0.0-20260912`.
+  The corrected fixture compares MDX paragraph parsing with plain-Markdown code parsing;
+  it does not weaken the mutator's syntax boundary.
 
 ## Upstream filing decision
 

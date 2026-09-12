@@ -251,13 +251,47 @@ The pass caller and existing tests now pass complete document context.
 Build,
 types and the review regressions pass in `footnote-review-{build,types,green}-20260911.out`.
 
-The next step is the actual `preparePassEntry` cold/warm cache and re-preparation test,
-additional syntax/compound-operation controls,
+The actual `preparePassEntry` lifecycle tests now cover complete relabeling,
+protected withholding and crossed-definition elimination with disposable on-disk caches.
+The three cases passed in `footnote-lifecycle-unit-r3-20260912.out`.
+They verify changed target text,
+node text/hash/range metadata,
+line flags,
+final definition relations,
+distinct persisted question keys and cold/warm transport counts.
+The fully claimed fixture reaches no archive prose repair,
+and the title-free source returns before lookup I/O.
+
+The first lifecycle harness attempted to import the private `openPairingCache` helper;
+it now reads actual cache envelopes and generation files directly.
+A shared global-fetch stub collided across concurrent attempts;
+it was removed in favor of the injected model transport plus the actual empty-title early-return check.
+No harness or pairing policy was changed.
+
+The crossed fixture exposed an important existing distinction:
+`readBlockPairing` accepts definition-order exemptions,
+but `agreePairs` still applies its existing monotone agreement.
+The initial crossing slate retains two of three relations,
+uses the existing forced elimination for the remaining label,
+and is not cache-eligible.
+Replay therefore reacquires its initial two voices but reuses the relabelled question.
+The fully claimed monotone and protected cases reuse their complete cached questions without new calls.
+The test now checks those actual branches rather than asserting all crossings are cacheable.
+
+The companion compound suite passed bare-CR,
+multiline-body,
+separate-run and multiple-surplus operation cases.
+Its initial indented-code expectation was wrong for MDX:
+`micromark-extension-mdx-md@2.0.0` disables CommonMark indented code.
+The fixture now contrasts MDX paragraph parsing with plain-Markdown code parsing.
+It still needs its corrected verification run.
+
+The next step is final formatting/lint and corrected suite verification,
 updated removal proof,
 current-runtime consumer verification,
 independent re-review and final wrapper-based verification.
-The initial `Y1Ran` control manually called deterministic preparation after the operation;
-it did not prove the actual pass caller's cache lifecycle.
+The initial pinned `Y1Ran` control remains a manual deterministic re-preparation control;
+the new invented fixtures exercise the real pass/cache lifecycle.
 The first formatter run (`proc_d6ff`) completed with `no-nullish-union`
 on the lexical no-marker return and `max-statements-per-line` on a lookup callback.
 The scanner now uses a domain-specific `NO_GFM_MARKER` sentinel,

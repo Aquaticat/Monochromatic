@@ -2303,6 +2303,26 @@ the `hakureico` archive carries no `[^2]` at all),
 and the pass prepares again over the rewritten archive,
 logging `FOOTNOTES entry=<id> relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired` and
 `FOOTNOTES entry=<id> definitions moved into the original's order: [^1], [^2]`.
+The footnote extension of 2026-09-11 keeps supplied correspondence,
+existing forced elimination and collision-avoidance displacement separate.
+An unmatched archive note may receive a fresh positive-decimal label only after every source label is accounted for;
+that move establishes no source correspondence.
+Identity relations remain evidence even when they change no bytes.
+`footnoteRelabelOf` now takes the complete preparation's source text,
+archive text and slices,
+projecting positioned document references into checked ranges rather than reparsing container halves.
+`applyFootnoteRelabel` matches normalized identities but replaces exact raw spans,
+refuses missing changing map domains and merging destinations,
+and reparses the resulting marker graph.
+Definition movement preserves each separator once and withholds changes across non-blank gaps or split containers.
+Any rename or reorder touching declared English-original text or its owning note withholds the entire operation.
+The pass records a structured `withheld` reason,
+keeps the original preparation when withheld,
+and prepares changed text again through its existing caches.
+Cache eligibility is unchanged:
+an incomplete crossed agreement can require fresh acquisition on replay,
+while independently cached original and relabelled questions are reused under their distinct keys.
+See `doc/planning/translation-repair-archive-footnote-collisions-2026-09-11.md` for verification status.
 Since `439667ec3` (2026-09-08,
 the owner's decision in `doc/decision/translation-repair-archive-original.md`) an archive note saying the English
 is the original is authority:
