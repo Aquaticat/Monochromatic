@@ -119,6 +119,7 @@ const MARKED_CLASSES: readonly string[] = [
   'PairingEvidenceError',
   'PipelineDigestError',
   'PlacementLayoutError',
+  'PreparationAttemptError',
   'PreparationQualificationError',
   'PreparationReceiptError',
   'PreparationRequestCaptureError',
