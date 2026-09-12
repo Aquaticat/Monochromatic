@@ -231,7 +231,19 @@ The focused test log ends with `unit-focused exit 0` at line 229.
 This includes the otherwise-qualifiable uncacheable outcome,
 complete media findings,
 all supplied empty-side accounting and unchanged cold/warm production preparation.
-A fresh full-suite run and guard-removal proof remain required.
+The fresh full run `qualified-pairing-verification-r4-20260912.out` passes every phase on `dcb478f1c` source:
+build,
+types,
+formatter,
+rebuild,
+types,
+zero-warning lint,
+full unit and Markdown lint.
+`qualified-pairing-unit-r4-20260912.out` ends with the inspected `unit exit 0` at line 9478.
+Independent re-review found no concrete remaining pairing-only defect,
+but requested one composed relabel/reprepare qualification test before guard-removal proof.
+That test and removal proof remain outstanding;
+the owning journal is not complete.
 These harness and lint failures are not semantic guard-detection evidence.
 
 The owning journal must bind the exact acquired roster,
