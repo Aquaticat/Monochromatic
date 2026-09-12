@@ -96,7 +96,9 @@ await describe({ name: createPreparationAttempt.name, children: [
     await using parent = await temporaryParent();
     const canary = 'canary';
     let nativeError: unknown;
-    try { JSON.parse(canary); }
+    try {
+      JSON.parse(canary);
+    }
     catch (error) { nativeError = error; }
     expect(nativeError).toBeInstanceOf(SyntaxError);
     expect(inspect(nativeError, { depth: null })).toContain(canary);
