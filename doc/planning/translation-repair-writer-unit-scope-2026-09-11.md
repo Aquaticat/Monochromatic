@@ -486,7 +486,36 @@ Occurrence ownership tests likewise assert the input expectation is unchanged be
 The caption-gap parity case did not exercise deterministic media ownership:
 `claimMediaAdjacentTargets` requires a complete `details` run.
 Its label is corrected and an actual transcript-container control now requires the added relations and findings.
-R6 will verify these strengthened witnesses before isolation.
+R6 passes all verification phases under Node 26.8.2.
+The actual full-suite `unit exit 0` was inspected at line 9661 of `preparation-receipt-unit-r6-20260912.out`.
+The verified source boundary is `eb4223366`.
+`cd2ac051a` adds a direct successful-call assertion before the explicit section-correspondence replay,
+so removing that forwarding produces an ordinary assertion failure instead of an uncaught domain exception.
+Its manual type check passes.
+
+The owned guard worktree is `translation-repair-receipt-guard-20260912`,
+created from the main worktree at `eb4223366`.
+It carries only the committed `cd2ac051a` test overlay,
+with base and overlay hashes recorded in `.guard-sandbox/test-overlay.json`.
+The attempted detached switch was refused because the temporary repository's CLI configuration was untrusted;
+no trust override or native write bypass was used.
+The existing base plus explicit committed test overlay remains the recorded experiment.
+
+`prepare-receipt-guard-20260912.mts` creates owned dependency links and outputs.
+The launcher fixes no network,
+2 GiB memory,
+2 CPUs and 512 PIDs,
+with read-only source mounts and owned writable worktree/log paths.
+Known source-root `.env.local.json` files are masked with an owned empty JSON file;
+the worker verifies those masks and absence of injected API credentials before running tools or tests.
+The first tools probe selected retained Node 26.7.0;
+`receipt-guard-tools-r2-20260912.out` verifies the explicit Node 26.8.2 launcher,
+Mise 2026.9.5,
+Git 2.52.0 and ripgrep 15.2.0 inside the bounded container.
+`receipt-guard-mutations-20260912.out` is the active baseline/mutation/restoration run.
+The guard proof is not complete until every registered mutant rebuilds,
+the designated ordinary assertion fails,
+restored sources pass and retained records plus owned-worktree cleanup are verified.
 This data reader does not independently establish an exclusive attempt directory,
 provider transmission,
 actual configuration derivation,
