@@ -1,6 +1,7 @@
 import type { PreparationReceiptQuestion, } from './preparation-receipt-model.ts';
 import type { ProviderName, } from './provider-name.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { StreamWireFormat, } from './stream-wire-format.ts';
 
 //region Registered preparation request data
 
@@ -22,6 +23,12 @@ export type PreparationProviderRequest = {
   readonly url: string;
   /** Exact native serialized body, including emitted completion cap and schema handling. */
   readonly bodyJson: string;
+  /** Native exchange label retained separately from the independent roster identity. */
+  readonly label: string;
+  /** Explicit stream grammar when the provider selects one. */
+  readonly wireFormat?: StreamWireFormat;
+  /** Native response-drain character limit when present, not an invented completion control. */
+  readonly maxAnswerChars?: number;
 };
 
 /**

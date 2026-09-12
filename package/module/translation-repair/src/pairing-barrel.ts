@@ -47,6 +47,16 @@ export {
 } from './block-pairing-protocol.ts';
 export { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 export { readPreparationReceipt, } from './read-preparation-receipt.ts';
+export { captureBlockPairingRequests, } from './capture-block-pairing-requests.ts';
+export {
+  type PreparationModelRequestBounds,
+  type PreparationProviderRequest,
+  type PreparationRequestManifest,
+} from './preparation-request-model.ts';
+export {
+  PreparationRequestCaptureError,
+  type PreparationRequestCaptureFailure,
+} from './preparation-request-capture-error.ts';
 export { readPreparationOccurrence, } from './read-preparation-occurrence.ts';
 export {
   type PreparationReceiptBinding,
