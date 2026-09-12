@@ -736,6 +736,33 @@ It must distinguish unchanged parent selection from newly reconstructed final ch
 task 40 did not freeze final writer units,
 and an authorized label rewrite must not be required to preserve stale child hashes or coordinates.
 
+`frozen-parent-consumer-control-20260912.out` completes that mechanical control under the same bounded runtime.
+`frozen-parent-consumer-c8Htkl/report.json` records:
+
+- Xing parents 6,
+  1 and 9 retain their registered source/target scopes without a section override.
+- No source-to-target definition relation is invented from the nine source definitions and absent target definitions.
+  The definition-only empty relation input produces no label rewrite.
+- Native default grouping and `translateSliceInput` stay inside the selected parent node sets,
+  with current indexes and hashes.
+  These default groups are mechanism evidence,
+  not qualified writer units or their future frozen identities.
+- The independently valid partial section relation `source 12 → target 12` changes all three selected parent scopes.
+  The scope checker requires abort/reopening,
+  never substitution.
+- Fetch and provider request counts are zero.
+  Peak memory is 128495616 bytes.
+
+The journal will retain the approved per-parent seam rather than purchase the broader whole-entry section operation.
+Its initial closure is the measured 45 parents,
+with 42 queried inputs and 3 structural records.
+Xing's unmatched source definitions receive explicit source/namespace accounting only;
+that record is neither correspondence nor automatic prompt context.
+Future reference-based relabeling still requires qualified current group evidence and freshly materialized conditional inputs.
+The namespace initializer is the next implementation step;
+semantic plan validation,
+reviewed phase execution and complete call/transport lineage remain distinct unfinished responsibilities.
+
 ## Source availability is not incumbent accuracy
 
 The selected `XingZ60` third-contributor parent raised a source-content question:
