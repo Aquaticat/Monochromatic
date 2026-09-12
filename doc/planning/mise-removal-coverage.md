@@ -129,7 +129,7 @@ MPM's TOML dump records installed versions,
 but stable default adapters can ignore those versions during restore.
 The pnpm and pipx adapters explicitly warn and let the manager choose;
 the Cargo and stew definitions also omit a version from their install commands.
-Custom TOML manager definitions cannot add a `{version}` placeholder.
+Custom TOML manager definitions cannot forward a restore entry's version through a `{version}` placeholder.
 Direct pnpm,
 uv,
 Cargo,

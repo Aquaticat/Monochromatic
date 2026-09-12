@@ -387,7 +387,8 @@ For relevant stable 7.6.1 adapters:
 - the stew bundled definition runs `stew install <package>` without a tag or version.
 
 The decorator logs a warning and allows the underlying manager to choose a version.
-Custom TOML manager definitions cannot repair this because `{version}` is intentionally unsupported there too.
+Custom TOML manager definitions cannot forward a restore entry's version through a `{version}` placeholder because
+that placeholder is intentionally unsupported.
 
 This is a hard failure only if MPM restore is assigned ownership of one of those pinned paths.
 The proposed architecture can instead assign npm tools to pnpm,
