@@ -606,7 +606,15 @@ but requested stronger verification:
 compare production capture against independently constructed native clients,
 exercise every provider's HTTP retry ceiling,
 and separate timeout-only from roster-order-only digest changes.
-The request-materialization proof remains open while those controls and removal checks are completed.
+`preparation-native-clients.test-fixture.ts` now constructs every provider through its corresponding
+native factory,
+not the production capture factory being checked.
+The native lost-round/HTTP test is parameterized across Synthetic,
+Hyper,
+Bedrock and OpenRouter.
+Timeout-only and roster-order-only digest controls are separate.
+`preparation-request-capture-verification-r7-20260912.out` is the full verification of these additions.
+The request-materialization proof remains open while these controls and removal checks are completed.
 
 The request-capture test's fetch probe needs explicit isolation.
 This worktree resolves `@monochromatic-dev/module-test/ts` to its own `package/module/test/src/index.ts`;
