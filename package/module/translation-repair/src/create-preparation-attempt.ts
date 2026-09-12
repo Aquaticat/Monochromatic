@@ -1,4 +1,5 @@
 import { randomUUID, } from 'node:crypto';
+import { resolve, } from 'node:path';
 import {
   type Logger,
   tagged,
@@ -39,6 +40,8 @@ export type PreparationAttemptLocation = {
    * Hash of exact serialized root-plan bytes, without canonicalizing or dropping fields.
    */
   readonly rootPlanDigest: string;
+  /** Measured UTF-8 extent; later verification rejects a different file size before reading plan bytes. */
+  readonly rootPlanBytes: number;
 };
 
 /**
@@ -99,23 +102,27 @@ async function writeAttemptFile({
  *
  * @param rootPlanDigest - exact complete root-plan digest
  *
+ * @param rootPlanBytes - exact encoded root-plan extent
+ *
  * @returns Persisted independent attempt identity
  *
  * @throws PreparationAttemptError when identity generation or persistence fails
  *
  * @example
  * ```ts
- * const attemptId = await writeAttemptIdentity({ storage, dir, rootPlanDigest });
+ * const attemptId = await writeAttemptIdentity({ storage, dir, rootPlanDigest, rootPlanBytes });
  * ```
  */
 async function writeAttemptIdentity({
   storage,
   dir,
   rootPlanDigest,
+  rootPlanBytes,
 }: {
   readonly storage: PreparationAttemptStorage;
   readonly dir: string;
   readonly rootPlanDigest: string;
+  readonly rootPlanBytes: number;
 },): Promise<string> {
   try {
     /**
@@ -132,6 +139,7 @@ async function writeAttemptIdentity({
         kind: 'preparation-attempt',
         attemptId,
         rootPlanDigest,
+        rootPlanBytes,
       },),
     },);
     return attemptId;
@@ -208,7 +216,7 @@ async function allocateAttemptDirectory({
  * ```
  */
 export async function createPreparationAttempt({
-  parentDir,
+  parentDir: requestedParentDir,
   rootPlanText,
   l,
   storage = preparationAttemptStorage,
@@ -218,6 +226,10 @@ export async function createPreparationAttempt({
   readonly l: Logger;
   readonly storage?: PreparationAttemptStorage;
 },): Promise<PreparationAttemptLocation> {
+  if (((typeof requestedParentDir) !== 'string') || (requestedParentDir.trim().length === 0))
+    throw new PreparationAttemptError({ operation: 'create-directory', dir: requestedParentDir, },);
+  /** Pin relative input before asynchronous I/O can observe a process-wide cwd change. */
+  const parentDir = resolve(requestedParentDir,);
   /**
    * Lifecycle messages never include root-plan content.
    */
@@ -254,6 +266,8 @@ export async function createPreparationAttempt({
    * Bind original bytes before allocation so a digest failure cannot leave an unreported directory.
    */
   const rootPlanDigest = hashContent({ content: rootPlanText, },);
+  /** Exact independently returned extent avoids arbitrary verifier-wide size ceilings. */
+  const rootPlanBytes = Buffer.byteLength(rootPlanText, 'utf8',);
   /**
    * Allocation is never an idempotent resume of an existing attempt.
    */
@@ -275,12 +289,14 @@ export async function createPreparationAttempt({
     storage,
     dir,
     rootPlanDigest,
+    rootPlanBytes,
   },);
   pl.info(`created preparation namespace ${attemptId} with synced file contents`,);
   return {
     dir,
     attemptId,
     rootPlanDigest,
+    rootPlanBytes,
   };
 }
 

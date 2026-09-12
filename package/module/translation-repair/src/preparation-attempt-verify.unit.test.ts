@@ -1,5 +1,6 @@
 import { chmod, copyFile, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
+import { randomUUID, } from 'node:crypto';
 import { join, } from 'node:path';
 import { inspect, } from 'node:util';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -28,7 +29,9 @@ await describe({ name: verifyPreparationAttempt.name, children: [
     if (verification?.status !== 'fulfilled') throw new Error('expected valid namespace verification');
     expect(verification.value).toBeUndefined();
     expect(await readFile(join(attempt.dir, 'root-plan.json'), 'utf8')).toBe(rootPlanText);
-    expect(await readFile(join(attempt.dir, 'attempt.json'))).toEqual(marker);
+    expect(
+      await readFile(join(attempt.dir, 'attempt.json')),
+    ).toEqual(marker);
     expect((await readdir(attempt.dir)).toSorted()).toEqual(['attempt.json', 'root-plan.json']);
   } }),
   ...(['attemptId', 'rootPlanDigest'] as const).map(field => it({ name: `uses independent expected ${field}, not the marker's assertion`, fn: async () => {
@@ -36,7 +39,7 @@ await describe({ name: verifyPreparationAttempt.name, children: [
     const attempt = await createPreparationAttempt({ parentDir: parent.dir, rootPlanText, l });
     let caught: unknown;
     try {
-      await verifyPreparationAttempt({ expected: { ...attempt, [field]: '0'.repeat(attempt[field].length) }, l });
+      await verifyPreparationAttempt({ expected: { ...attempt, [field]: field === 'attemptId' ? randomUUID() : '0'.repeat(attempt[field].length) }, l });
     }
     catch (error) { caught = error; }
     expect(caught).toBeInstanceOf(PreparationAttemptError);

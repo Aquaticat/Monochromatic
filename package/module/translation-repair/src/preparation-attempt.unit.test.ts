@@ -45,13 +45,14 @@ await describe({ name: createPreparationAttempt.name, children: [
     expect(await readFile(join(result.dir, 'root-plan.json'), 'utf8')).toBe(rootPlanText);
     const storedBytes = await readFile(join(result.dir, 'root-plan.json'));
     expect(result.rootPlanDigest).toBe(createHash('sha256').update(storedBytes).digest('hex'));
+    expect(result.rootPlanBytes).toBe(storedBytes.length);
     expect(
       JSON.parse(await readFile(join(result.dir, 'attempt.json'), 'utf8')),
-    ).toEqual({ version: 1, kind: 'preparation-attempt', attemptId: result.attemptId, rootPlanDigest: result.rootPlanDigest });
+    ).toEqual({ version: 1, kind: 'preparation-attempt', attemptId: result.attemptId, rootPlanDigest: result.rootPlanDigest, rootPlanBytes: result.rootPlanBytes });
     expect((await stat(result.dir)).mode & 0o077).toBe(0);
     expect((await stat(join(result.dir, 'root-plan.json'))).mode & 0o077).toBe(0);
     expect((await stat(join(result.dir, 'attempt.json'))).mode & 0o077).toBe(0);
-    expect(Object.keys(result).toSorted()).toEqual(['attemptId', 'dir', 'rootPlanDigest']);
+    expect(Object.keys(result).toSorted()).toEqual(['attemptId', 'dir', 'rootPlanBytes', 'rootPlanDigest']);
   } }),
   it({ name: 'allocates independent namespaces concurrently and never resumes an incomplete prior directory', fn: async () => {
     await using parent = await temporaryParent();

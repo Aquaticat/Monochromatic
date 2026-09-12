@@ -1,79 +1,80 @@
 import { createHash, } from 'node:crypto';
-import { constants, type Stats, } from 'node:fs';
+import { constants, type BigIntStats, } from 'node:fs';
 import { lstat, open, } from 'node:fs/promises';
-import { join, } from 'node:path';
+import { join, resolve, } from 'node:path';
 import { PreparationAttemptError, } from './preparation-attempt-error.ts';
 import type { PreparationAttemptFile, } from './preparation-attempt-storage.ts';
 
-//region Bounded-memory verification of fixed namespace files
+//region Bounded verification of fixed namespace files
 
-/** Group and other permission bits are outside the private namespace contract. */
-const SHARED_ACCESS_BITS = 0o077;
-
-/** Stream chunks stay bounded independently of serialized root-plan size. */
+/** Group and other mode bits are outside the private namespace contract. */
+const SHARED_ACCESS_BITS = 0o077n;
+/** Stream memory stays bounded independently of serialized root-plan size. */
 const NAMESPACE_HASH_CHUNK_BYTES = 65_536;
 
 /**
- * Requires the same private regular file throughout one verification.
+ * Requires exact observed file identity and nanosecond metadata throughout one verification.
+ * This is observed stability, not a lease against an adversarial concurrent writer.
  * @param first - pathname observation before opening
  * @param current - descriptor or later pathname observation
- * @returns Whether file identity, metadata and private modes still match
+ * @returns Whether the same regular file and private mode bits were observed
  * @example
  * ```ts
  * const unchanged = sameNamespaceFile({ first, current });
  * ```
  */
-function sameNamespaceFile({ first, current, }: { readonly first: Stats; readonly current: Stats; },): boolean {
+function sameNamespaceFile({ first, current, }: { readonly first: BigIntStats; readonly current: BigIntStats; },): boolean {
   return first.isFile() && current.isFile()
-    && ((first.mode & SHARED_ACCESS_BITS) === 0) && ((current.mode & SHARED_ACCESS_BITS) === 0)
+    && ((first.mode & SHARED_ACCESS_BITS) === 0n) && ((current.mode & SHARED_ACCESS_BITS) === 0n)
     && (first.dev === current.dev) && (first.ino === current.ino)
-    && (first.size === current.size) && (first.mtimeMs === current.mtimeMs) && (first.ctimeMs === current.ctimeMs);
+    && (first.size === current.size) && (first.mtimeNs === current.mtimeNs) && (first.ctimeNs === current.ctimeNs);
 }
 
 /**
- * Hashes a fixed private namespace file without loading the plan or following a file symlink.
- * Descriptor and pathname observations must still agree after bounded stream reading.
+ * Hashes only an independently expected extent of a fixed namespace file, with bounded stream memory.
+ * Symbolic file indirection and changed descriptor/path observations are refused.
  * @param dir - independently selected attempt directory
  * @param file - fixed namespace filename
- * @param expectedBytes - known marker length, checked before reading its contents
- * @returns Raw-byte digest and length for comparison with independent expectations
- * @throws PreparationAttemptError when the file is missing, indirect, public, changing or unreadable
+ * @param expectedBytes - independently measured extent, checked before any content read
+ * @returns Raw-byte digest and length for independent comparison
+ * @throws PreparationAttemptError when extent, mode bits, identity or reading disagrees
  * @example
  * ```ts
- * const observed = await hashPreparationAttemptFile({ dir, file: 'root-plan.json' });
+ * const observed = await hashPreparationAttemptFile({ dir, file: 'root-plan.json', expectedBytes });
  * ```
  */
 export async function hashPreparationAttemptFile({ dir, file, expectedBytes, }: {
   readonly dir: string;
   readonly file: PreparationAttemptFile;
-  readonly expectedBytes?: number;
+  readonly expectedBytes: number;
 },): Promise<{ readonly digest: string; readonly bytes: number; }> {
-  /** Fixed filename chooses only a diagnostic family, never arbitrary record access. */
+  /** Fixed filename selects a diagnostic family without arbitrary record access. */
   const operation = file === 'root-plan.json' ? 'read-plan' : 'read-identity';
   if ((file !== 'root-plan.json') && (file !== 'attempt.json'))
     throw new PreparationAttemptError({ operation: 'file-name', dir, },);
+  if ((!Number.isSafeInteger(expectedBytes,)) || (expectedBytes < 0))
+    throw new PreparationAttemptError({ operation, dir, },);
   try {
-    /** Path remains scoped to one fixed namespace file. */
-    const path = join(dir, file,);
-    /** lstat rejects indirection before any content read, including platforms without O_NOFOLLOW. */
-    const before = await lstat(path,);
-    if ((!before.isFile()) || ((before.mode & SHARED_ACCESS_BITS) !== 0)
-      || (!Number.isSafeInteger(before.size,)) || (before.size < 0)
-      || ((expectedBytes !== undefined) && (before.size !== expectedBytes)))
+    /** Absolute path is pinned before the first await. */
+    const path = join(resolve(dir,), file,);
+    /** Exact inode and nanosecond values avoid lossy numeric metadata comparisons. */
+    const before = await lstat(path, { bigint: true, },);
+    if ((!before.isFile()) || ((before.mode & SHARED_ACCESS_BITS) !== 0n)
+      || (before.size !== BigInt(expectedBytes,)))
       throw new PreparationAttemptError({ operation, dir, },);
-    /** Native no-follow support augments pre/post descriptor identity checks where available. */
+    /** Native no-follow support augments descriptor/path checks where the flag exists. */
     const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
-    /** The descriptor remains owned until stream completion and final identity checks. */
+    /** The descriptor remains owned through stream completion and final checks. */
     await using handle = await open(path, flags,);
-    if (!sameNamespaceFile({ first: before, current: await handle.stat(), },))
+    if (!sameNamespaceFile({ first: before, current: await handle.stat({ bigint: true, },), },))
       throw new PreparationAttemptError({ operation, dir, },);
-    /** Hashes actual bytes rather than a possibly lossy decoded string. */
+    /** Hash actual bytes without lossy text decoding or whole-plan allocation. */
     const digest = createHash('sha256',);
-    /** Measured stream length must equal the initial finite file extent. */
+    /** Stream consumption must equal the independently expected extent. */
     let bytes = 0;
-    if (before.size > 0) {
-      /** The end bound prevents a concurrently growing file from extending this read indefinitely. */
-      const stream = handle.createReadStream({ autoClose: false, start: 0, end: before.size - 1, highWaterMark: NAMESPACE_HASH_CHUNK_BYTES, },);
+    if (expectedBytes > 0) {
+      /** Appending cannot extend this stream beyond its registered extent. */
+      const stream = handle.createReadStream({ autoClose: false, start: 0, end: expectedBytes - 1, highWaterMark: NAMESPACE_HASH_CHUNK_BYTES, },);
       for await (const chunk of stream as AsyncIterable<unknown>) {
         if (!Buffer.isBuffer(chunk,))
           throw new PreparationAttemptError({ operation, dir, },);
@@ -81,9 +82,9 @@ export async function hashPreparationAttemptFile({ dir, file, expectedBytes, }: 
         digest.update(chunk,);
       }
     }
-    if ((bytes !== before.size)
-      || (!sameNamespaceFile({ first: before, current: await handle.stat(), },))
-      || (!sameNamespaceFile({ first: before, current: await lstat(path,), },)))
+    if ((bytes !== expectedBytes)
+      || (!sameNamespaceFile({ first: before, current: await handle.stat({ bigint: true, },), },))
+      || (!sameNamespaceFile({ first: before, current: await lstat(path, { bigint: true, },), },)))
       throw new PreparationAttemptError({ operation, dir, },);
     return { digest: digest.digest('hex',), bytes, };
   }
@@ -94,4 +95,4 @@ export async function hashPreparationAttemptFile({ dir, file, expectedBytes, }: 
   }
 }
 
-//endregion Bounded-memory verification of fixed namespace files
+//endregion Bounded verification of fixed namespace files
