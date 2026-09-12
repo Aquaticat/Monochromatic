@@ -181,12 +181,36 @@ Scoped Markdown lint also passes.
 These checks verify shared question construction,
 not current-evidence qualification or writer admission.
 
-This helper does not qualify evidence.
-The remaining journal must retally actual queried outcomes,
-require the configured usable quorum,
-recompute existing media claims and definition separation,
-and reject historical cache or unresolved fallback as current qualification.
-It must distinguish source insertions from target declines under the existing all-originals-placed condition.
+Question construction alone does not qualify evidence.
+`647f713d2` adds the separate `qualifyPreparedBlockPairing` replay check;
+`14083dfd7` adds transport-backed tests.
+It retallies actual queried outcomes,
+requires the configured usable quorum,
+recomputes existing media claims and definition separation,
+and rejects historical cache or unresolved fallback as current qualification.
+Source insertions and target declines retain the existing all-originals-placed condition.
+Unendorsed archive gaps retained inside a split rendering also remain unqualified.
+
+Independent review found unchecked preparation-level findings and incomplete fast-path accounting.
+`790b26946` shares complete queried handoff findings with production,
+rebuilds the final handoff through `finishPreparedBlockPairing`,
+and records zero-question structural relations,
+source insertions and archive blocks without a source.
+`7998ce3db` adds complete-finding,
+index,
+extra-key and ownership controls.
+All returned variants explicitly say `pairing-only`.
+This implementation is awaiting fresh build,
+types,
+lint and tests;
+it is not verified by the earlier question-construction suite.
+
+The owning journal must bind the exact acquired roster,
+full documents,
+parser data,
+containers and attempt identity before accepting this replay check.
+Initial crossed-footnote evidence can remain recorded but unqualified while relabeling and repreparation occur;
+only a final recipe must pass complete target accounting.
 Source-channel manifests,
 current full-document/range binding,
 persisted recipes and native reviewed-input execution remain unimplemented.
