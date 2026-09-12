@@ -253,8 +253,27 @@ Both direct relabel and initially unqualified crossed-definition cases pass,
 alongside the actual pass/cache lifecycle test.
 `qualified-pairing-unit-footnote-footnote-20260912.out` records `unit-footnote exit 0` at line 75;
 its build and types also pass.
-Removal proof remains outstanding;
-the owning journal is not complete.
+The subsequent full run `qualified-pairing-verification-r5-20260912.out` passes all phases,
+including the inspected full-suite `unit exit 0` at line 9508.
+`c95318ebe` additionally guards ownership of the zero-question result.
+The owning journal is not complete.
+
+Removal proof is being prepared in the owned disposable worktree
+`~/temp/agent/translation-repair-qualified-guard-20260912`,
+created from the main worktree at `519e87092` to avoid copying ignored state.
+Its only source overlay is the committed `c95318ebe` boundary test,
+bound in `.guard-sandbox/test-overlay.json`.
+The dependency preparation records thirty-two links and an absent credential file.
+`worker.mts` and `mutations.mts` live under that worktree's `.guard-sandbox/`;
+the launcher is `~/temp/agent/run-qualified-guard-container-20260912.mts`.
+The tool probe and mutation run must verify the no-network,
+2 GiB,
+2 CPU,
+512 PID limits,
+successful mutant builds,
+intended normal assertion failures,
+restored source hashes and passing restored tests.
+No proof result or cleanup has been claimed.
 These harness and lint failures are not semantic guard-detection evidence.
 
 The owning journal must bind the exact acquired roster,
