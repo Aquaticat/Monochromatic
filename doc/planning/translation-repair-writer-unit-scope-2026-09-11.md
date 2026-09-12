@@ -209,7 +209,29 @@ formatter findings concerned the test transport's function expression/asynchrono
 and an insufficient symbol description.
 `86997ec10` uses a declared transport returning its already available reply through `Promise.resolve`
 and retains the reviewed formatter output.
-`qualified-pairing-verification-r3-20260912.out` is the current build/types/format/rebuild/lint/full-unit run.
+`qualified-pairing-verification-r3-20260912.out` records passing builds,
+types,
+formatter and zero-warning lint,
+but the full suite failed on fixture assumptions:
+
+- The rotated window asks four of five configured identities;
+  `SyntheticModelNotServedError` loses `glm-5.3` before transport,
+  leaving three heard replies but only two usable replies.
+- One uncorroborated suggestion is removed before agreement findings are generated,
+  so it does not make `cacheEligible` false.
+  A separate crossed-definition control must exercise an actually dropped endorsed relation.
+- An entirely empty document has no aligned parent.
+  The empty-side helper contract needs an explicitly supplied empty side,
+  not a claim that section alignment produced one.
+
+`dcb478f1c` corrects these fixtures without changing production behavior or thresholds.
+`qualified-pairing-verification-focused-20260912.out` records passing rebuild and type checks,
+then the qualifier and existing parent-preparation tests through the package's file-filtered `test:unit` task.
+The focused test log ends with `unit-focused exit 0` at line 229.
+This includes the otherwise-qualifiable uncacheable outcome,
+complete media findings,
+all supplied empty-side accounting and unchanged cold/warm production preparation.
+A fresh full-suite run and guard-removal proof remain required.
 These harness and lint failures are not semantic guard-detection evidence.
 
 The owning journal must bind the exact acquired roster,
