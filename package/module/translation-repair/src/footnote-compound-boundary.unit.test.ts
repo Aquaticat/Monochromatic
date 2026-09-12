@@ -1,14 +1,23 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { applyFootnoteRelabel, parseDocument, relabelArchiveFootnotes, reorderFootnoteDefinitions, } from '../dist/final/node/index.mjs';
+import { applyFootnoteRelabel, parseDocument, parseMarkdownBody, parseMdxBody, relabelArchiveFootnotes, reorderFootnoteDefinitions, } from '../dist/final/node/index.mjs';
 
 await describe({
   name: 'compound footnote syntax preservation',
   children: [
     it({
-      name: 'distinguishes ESM, expressions, indented code and JSX attributes from JSX children and definition references',
+      name: 'treats indentation as prose under actual MDX grammar while plain Markdown recognizes code',
       fn: async () => {
-        const literalPrefix = 'export const sample = "[^1]";\n\n{"[^1]"}\n\n    [^1]\n\n';
+        const body = '    Indented[^1].\n\n[^1]: Note.';
+        expect(parseMdxBody({ body }).children[0]?.type).toBe('paragraph');
+        expect(parseMarkdownBody({ body }).children[0]?.type).toBe('code');
+        expect(applyFootnoteRelabel({ text: body, map: [{ from: '1', to: '2' }] })).toBe('    Indented[^2].\n\n[^2]: Note.');
+      },
+    }),
+    it({
+      name: 'distinguishes ESM, expressions and JSX attributes from JSX children and definition references',
+      fn: async () => {
+        const literalPrefix = 'export const sample = "[^1]";\n\n{"[^1]"}\n\n';
         const text = `${literalPrefix}<span title={"[^1]"}>Child[^1]</span>\n\nReal[^2].\n\n[^1]: First note.\n\n[^2]: See[^1] and \`[^1]\`.`;
         const expected = `${literalPrefix}<span title={"[^1]"}>Child[^11]</span>\n\nReal[^22].\n\n[^11]: First note.\n\n[^22]: See[^11] and \`[^1]\`.`;
         expect(applyFootnoteRelabel({ text, map: [{ from: '1', to: '11' }, { from: '2', to: '22' }] })).toBe(expected);
