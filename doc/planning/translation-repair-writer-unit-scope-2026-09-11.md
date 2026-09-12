@@ -759,9 +759,35 @@ with 42 queried inputs and 3 structural records.
 Xing's unmatched source definitions receive explicit source/namespace accounting only;
 that record is neither correspondence nor automatic prompt context.
 Future reference-based relabeling still requires qualified current group evidence and freshly materialized conditional inputs.
-The namespace initializer is the next implementation step;
-semantic plan validation,
-reviewed phase execution and complete call/transport lineage remain distinct unfinished responsibilities.
+The namespace initializer is now implemented in `create-preparation-attempt.ts`,
+with fixed-file native I/O in `preparation-attempt-storage.ts` and
+`PreparationAttemptError` diagnostics.
+It creates a fresh private directory,
+writes and file-content-syncs exact `root-plan.json` bytes,
+then generates and writes the matching `attempt.json` identity marker.
+It never opens or resumes a prior attempt and retains incomplete files on failure.
+The storage adapter accepts only the two fixed filenames;
+it is not a generic journal record-store interface.
+
+Initial build,
+types and focused tests pass.
+Formatter findings are named permission constants and a missing handle comment.
+Independent review identified input-bearing `SyntaxError` causes,
+uncontextualized UUID failure,
+circular digest checking and missing completion/failure controls.
+The syntax diagnostic now retains only the parser class name,
+identity generation is inside the contextualized post-plan operation,
+and tests independently hash stored bytes,
+retain partial marker failures,
+hold write-completion gates and observe native file sync.
+The initializer promises file-content sync only,
+not containing-directory power-loss durability.
+`preparation-attempt-verification-r2-20260912.out` is the current full verification.
+
+Semantic root-plan validation,
+reviewed phase execution,
+phase leases and acquisition claims,
+complete raw-call/transport lineage and final source-channel authority remain distinct unfinished responsibilities.
 
 ## Source availability is not incumbent accuracy
 
