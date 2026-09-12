@@ -8,6 +8,7 @@ import {
   type ModelCaller,
   preparationCaptureClient,
   PreparationRequestCaptureError,
+  type ProviderName,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
 
@@ -103,14 +104,30 @@ await describe({ name: capturePreparationProviderRequest.name, children: [
     let caught: unknown;
     try {
       await capturePreparationProviderRequest({ provider: 'synthetic', request, l,
-        createClient: (): ModelCaller => ({ chatText: (): never => { throw reason; }, chatJson: (): never => { throw reason; } }),
+        createClient: (): ModelCaller => ({
+          chatText: (): never => { throw reason; },
+          chatJson: (): never => { throw reason; },
+        }),
       });
     }
     catch (error) { caught = error; }
     expect(caught).toBe(reason);
   } }),
+  it({ name: 'refuses unknown runtime provider identities without choosing a fallback factory', fn: async () => {
+    let caught: unknown;
+    try {
+      preparationCaptureClient({ provider: 'unregistered-fixture-provider' as ProviderName,
+        transport: (): never => { throw new Error('unknown provider must not reach transport'); } });
+    }
+    catch (error) { caught = error; }
+    expect(caught).toBeInstanceOf(PreparationRequestCaptureError);
+    expect((caught as PreparationRequestCaptureError).kind).toBe('no-route');
+  } }),
   it({ name: 'refuses native Bedrock credit reads instead of inspecting account state', fn: async () => {
-    const client = preparationCaptureClient({ provider: 'bedrock', transport: (): never => { throw new Error('credit read must not reach transport'); } }) as BedrockClient;
+    function forbidTransport(): never {
+      throw new Error('credit read must not reach transport');
+    }
+    const client = preparationCaptureClient({ provider: 'bedrock', transport: forbidTransport }) as BedrockClient;
     let caught: unknown;
     try {
       await client.credits({ signal: request.signal });
