@@ -42,6 +42,15 @@ export {
   type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
 export { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
+export { qualifyPreparedBlockPairing, } from './qualify-prepared-block-pairing.ts';
+export {
+  type QualifiedBlockPairing,
+  type QualifiedBlockRelation,
+} from './qualified-block-pairing-model.ts';
+export {
+  PreparationQualificationError,
+  type PreparationQualificationFailure,
+} from './preparation-qualification-error.ts';
 export {
   PairingEvidenceError,
   type PairingEvidenceFailure,
