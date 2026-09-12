@@ -200,10 +200,17 @@ source insertions and archive blocks without a source.
 index,
 extra-key and ownership controls.
 All returned variants explicitly say `pairing-only`.
-This implementation is awaiting fresh build,
-types,
-lint and tests;
+This implementation is awaiting complete verification;
 it is not verified by the earlier question-construction suite.
+The first build passed but TypeScript `TS2322` required an explicit positive questioned-variant branch,
+fixed with an unknown-disposition control in `8af49c645`.
+The next build and types passed;
+formatter findings concerned the test transport's function expression/asynchronous signature
+and an insufficient symbol description.
+`86997ec10` uses a declared transport returning its already available reply through `Promise.resolve`
+and retains the reviewed formatter output.
+`qualified-pairing-verification-r3-20260912.out` is the current build/types/format/rebuild/lint/full-unit run.
+These harness and lint failures are not semantic guard-detection evidence.
 
 The owning journal must bind the exact acquired roster,
 full documents,
