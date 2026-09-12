@@ -1,5 +1,5 @@
 import { createHash, } from 'node:crypto';
-import { mkdtemp, rm, } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -8,7 +8,7 @@ import {
   assertPipelineDigest,
   createSyntheticClient,
   hashContent,
-  openPairingCache,
+  type PairedSectionRecord,
   parseDocument,
   prepareDocumentPair,
   preparePassEntry,
@@ -93,14 +93,20 @@ await describe({
             expect(projected.stageInput.lineStructured).toBe(cold.prepared.lineStructuredSliceIndices.has(slice.target.sliceIndex));
           }
         }
-        const cached = await openPairingCache({ dir: entryCacheDir, generation });
+        const cacheFiles = (await readdir(entryCacheDir)).filter(file => file.startsWith('pairing.') && file.endsWith('.json'));
+        const cached = new Map(await Promise.all(cacheFiles.map(async file => {
+          const envelope = JSON.parse(await readFile(join(entryCacheDir, file), 'utf8')) as { readonly cacheKey: string; readonly record: PairedSectionRecord; };
+          expect(file).toBe(`pairing.${envelope.cacheKey}.json`);
+          return [envelope.cacheKey, envelope.record] as const;
+        })));
+        expect((await readFile(join(entryCacheDir, 'pairing-generation.txt'), 'utf8')).trim()).toBe(generation);
         const initialKey = cacheKey(archiveText);
         const changedKey = cacheKey(finalText);
         expect(initialKey).not.toBe(changedKey);
-        expect([...cached.resumed.keys()].sort()).toEqual(protectedOriginal ? [initialKey] : [initialKey, changedKey].sort());
-        expect(cached.resumed.get(initialKey)?.pairs).toEqual(crossedPairs);
+        expect([...cached.keys()].sort()).toEqual(protectedOriginal ? [initialKey] : [initialKey, changedKey].sort());
+        expect(cached.get(initialKey)?.pairs).toEqual(crossedPairs);
         if (!protectedOriginal)
-          expect(cached.resumed.get(changedKey)?.pairs).toEqual(directPairs);
+          expect(cached.get(changedKey)?.pairs).toEqual(directPairs);
         const beforeWarm = calls.length;
         const warm = await preparePassEntry(input);
         expect(calls).toHaveLength(beforeWarm);
