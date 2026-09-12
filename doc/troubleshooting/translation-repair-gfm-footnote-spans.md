@@ -234,16 +234,22 @@ Tradeoffs:
 Nothing to add upstream:
 the deciding defects were in the consumer's scanner and transformation boundaries.
 
-1.  Upstream fault: no observed parser defect.
+1.  Upstream fault:
+    no observed parser defect.
     The parser's positioned nodes and documented tokenizer states exposed the consumer mismatch.
-2.  Upstream fix: no upstream change is needed for this remedy.
-3.  Supported use: the extension implements GFM footnote definitions and calls.
+2.  Upstream fix:
+    no upstream change is needed for this remedy.
+3.  Supported use:
+    the extension implements GFM footnote definitions and calls.
     A whole-document raw-text replacement is our operation,
     not its API.
-4.  Contribution policy: not assessed for a filing because no upstream change is proposed.
+4.  Contribution policy:
+    not assessed for a filing because no upstream change is proposed.
     No claim is made about acceptance of an AI-assisted contribution.
-5.  Maintainer position: no stance is inferred from tracker silence.
-6.  Prototype: the consumer implementation and its regressions were exercised.
+5.  Maintainer position:
+    no stance is inferred from tracker silence.
+6.  Prototype:
+    the consumer implementation and its regressions were exercised.
     There is no upstream patch or fileable issue draft.
 
 The `.out-of-scope/` filenames were checked;
