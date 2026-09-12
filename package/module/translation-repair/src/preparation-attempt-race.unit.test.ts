@@ -114,7 +114,8 @@ await describe({ name: 'observed namespace stability controls', concurrency: 1, 
       },
     };
     process.chdir(parent.dir);
-    await pending;
+    const [verification] = await Promise.allSettled([pending]);
+    expect(verification?.status).toBe('fulfilled');
     expect(process.cwd()).not.toBe(originalCwd);
   } }),
   ...[
