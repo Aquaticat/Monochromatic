@@ -631,7 +631,26 @@ The worker requires Node 26.8.2,
 input ownership,
 projection,
 error identity and native-bound controls.
-The mandatory-transport mutation is permitted only inside that no-network container with dummy client keys.
+The mandatory-transport mutation runs only inside that no-network container with dummy client keys.
+All 22 registered request-capture mutations rebuild successfully and fail their designated ordinary assertion.
+Restored source hashes,
+build and tests pass.
+Peak memory is 851001344 bytes;
+no OOM or PID-limit event occurred.
+Every assertion was read in `request-guard-proof-20260912/assertion-reading.jsonl`.
+The mandatory-transport case is counted by its ordinary assertion,
+not the subsequent no-network `getaddrinfo EAI_AGAIN` failures in other cases.
+No outside transmission or paid model response occurred.
+
+`request-guard-proof-20260912` retains 69 hash-checked records/scripts/logs,
+plus assertion-reading,
+audit and removal records.
+The cleanup audit finds no tracked changes,
+only owned generated paths and no root Git sentinels.
+Git removes only that owned worktree.
+`removal.json` verifies directory and registration absence at `2026-09-12T19:28:05.972Z`.
+This completes the non-serving request-materialization proof;
+it does not complete the exclusive acquisition journal or authorize paid preparation.
 
 The request-capture test's fetch probe needs explicit isolation.
 This worktree resolves `@monochromatic-dev/module-test/ts` to its own `package/module/test/src/index.ts`;

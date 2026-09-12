@@ -1444,6 +1444,15 @@ repreparation and newly bound evidence.
 A registered same-attempt receipt can supply an unchanged exact question after an unrelated rewrite,
 but no old coordinates or handoff survive that reuse.
 Changed questions cannot reuse the old receipt.
+
+`captureBlockPairingRequests` materializes the shared protocol through individual native provider clients
+with a mandatory non-serving transport and refused accounting.
+It records exact header-free projections and conservative stage/route/HTTP bounds,
+not current budgets or admission evidence.
+Its digest covers the emitted materialization data;
+the owning journal must independently verify the selected runtime and request configuration.
+Native retry and route-fallback tests compare against separately constructed provider clients.
+
 This check does not replace the separately reviewed native execution gate,
 which remains unimplemented.
 
