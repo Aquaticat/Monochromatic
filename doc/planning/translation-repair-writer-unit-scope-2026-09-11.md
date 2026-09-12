@@ -160,6 +160,32 @@ Any later source-channel finding that changes eligibility invalidates the select
 abort or explicitly reopen task 40 rather than replacing a failed parent.
 Baseline coordinates must not survive a later target rewrite without reparsing and repreparing.
 
+## Current-evidence implementation checkpoint
+
+Task 41 is active.
+`b3ad51467` extracts `blockPairingQuestion` and routes `prepareBlockPairing` through it,
+so numbering,
+definition exemptions and the existing versioned cache key have one implementation.
+`0af39bd18` adds exact-key,
+changed-text/order,
+definition and empty-side controls;
+`16f9b6732` corrects their harness-required asynchronous callbacks and retains formatter output.
+The first type-aware formatter invocation saw stale built exports and synchronous test callbacks,
+not a pairing guard failure.
+Fresh build,
+types,
+lint and full-unit verification are next.
+
+This helper does not qualify evidence.
+The remaining journal must retally actual queried outcomes,
+require the configured usable quorum,
+recompute existing media claims and definition separation,
+and reject historical cache or unresolved fallback as current qualification.
+It must distinguish source insertions from target declines under the existing all-originals-placed condition.
+Source-channel manifests,
+current full-document/range binding,
+persisted recipes and native reviewed-input execution remain unimplemented.
+
 ## Source availability is not incumbent accuracy
 
 The selected `XingZ60` third-contributor parent raised a source-content question:
