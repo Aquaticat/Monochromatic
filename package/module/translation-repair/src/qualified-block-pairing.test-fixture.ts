@@ -8,7 +8,11 @@ import {
   type QualifiedBlockPairing,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
-import { COMPLETE_PAIRING_REPLY, qualificationTransport, } from './qualification-transport.test-fixture.ts';
+import {
+  COMPLETE_PAIRING_REPLY,
+  qualificationTransport,
+} from './qualification-transport.test-fixture.ts';
+
 export { COMPLETE_PAIRING_REPLY, } from './qualification-transport.test-fixture.ts';
 
 //region Transport-backed qualification fixtures
@@ -94,7 +98,10 @@ export function qualificationFixture({
   /**
    * Owned no-network adapter independent of parent alignment.
    */
-  const { client, calls, } = qualificationTransport({ replies, },);
+  const {
+    client,
+    calls,
+  } = qualificationTransport({ replies, },);
   return {
     calls,
     input: {

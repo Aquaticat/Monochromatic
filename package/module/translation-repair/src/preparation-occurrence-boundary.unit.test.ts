@@ -19,7 +19,9 @@ await describe({ name: 'receipt occurrence boundary witnesses', children: [
     const changedSource = sourceText.replaceAll('[^100]', '[^2000]');
     const changedExpected = { ...f.expected, sourceHash: hashContent({ content: changedSource }) };
     const allowed = readPreparationOccurrence({ ...f, sourceText: changedSource, expected: changedExpected, l: f.input.l });
-    expect(blockPairingProtocol(blockPairingQuestion({ pair: allowed.pair }))).toEqual(f.receipt.question.protocol);
+    expect(
+      blockPairingProtocol(blockPairingQuestion({ pair: allowed.pair })),
+    ).toEqual(f.receipt.question.protocol);
     expect(allowed.pair.source).not.toEqual(f.input.pair.source);
     expect(receiptFailure(() => readPreparationOccurrence({ ...f, sourceText: changedSource, l: f.input.l }))).toBe('documents');
   } }),
@@ -27,7 +29,9 @@ await describe({ name: 'receipt occurrence boundary witnesses', children: [
     const changedTarget = targetText.replaceAll('[^2]', '[^2000]');
     const changedExpected = { ...f.expected, targetHash: hashContent({ content: changedTarget }) };
     const allowed = readPreparationOccurrence({ ...f, targetText: changedTarget, expected: changedExpected, l: f.input.l });
-    expect(blockPairingProtocol(blockPairingQuestion({ pair: allowed.pair }))).toEqual(f.receipt.question.protocol);
+    expect(
+      blockPairingProtocol(blockPairingQuestion({ pair: allowed.pair })),
+    ).toEqual(f.receipt.question.protocol);
     expect(allowed.pair.target).not.toEqual(f.input.pair.target);
     expect(receiptFailure(() => readPreparationOccurrence({ ...f, targetText: changedTarget, l: f.input.l }))).toBe('documents');
   } }),
@@ -48,12 +52,14 @@ await describe({ name: 'receipt occurrence boundary witnesses', children: [
     expect(result.alignmentFindings).not.toEqual(original.alignmentFindings);
     expect(f.calls).toHaveLength(2);
 
+    const originalExpected = structuredClone(expected);
     const baseline = readPreparationOccurrence({ ...f, expected, l: f.input.l });
     const [finding] = result.alignmentFindings;
     const [mapping] = result.expected.sectionPairing ?? [];
     if ((finding === undefined) || (mapping === undefined)) throw new Error('expected owned current alignment observations and registered correspondence');
     Object.defineProperty(finding, 'detail', { value: 'mutated returned observation' });
     Object.defineProperty(mapping, 'target', { value: 0 });
+    expect(expected).toEqual(originalExpected);
     expect(readPreparationOccurrence({ ...f, expected, l: f.input.l })).toEqual(baseline);
   } }),
   it({ name: 'binds later explicitly mapped parents with distinct current target indexes', fn: async () => {

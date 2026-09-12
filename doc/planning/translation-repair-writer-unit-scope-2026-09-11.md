@@ -449,7 +449,8 @@ rebuild,
 types,
 zero-warning lint,
 full unit and Markdown lint.
-The full-suite terminal was inspected at line 9619 of `preparation-receipt-unit-r3-20260912.out`: `unit exit 0`.
+The full-suite terminal was inspected at line 9619 of `preparation-receipt-unit-r3-20260912.out`:
+`unit exit 0`.
 Independent re-review found no concrete remaining defect within this declared data/reconstruction scope.
 Valid-wrong-document removal witnesses,
 non-prefix sparse outcomes,
@@ -467,8 +468,25 @@ not evidence of a production receipt defect.
 After the owner ran `mise upgrade` in the worktree and restarted the terminal/session,
 the agent's own Bash probe resolves `/home/user/.local/share/mise/installs/node/26.8.2/bin/node`
 and returns `v26.8.2`.
-R5 will use that resolved runtime;
+The R5 runner's `/proc` executable link confirms Node 26.8.2.
+R5 passes build,
+types,
+focused tests,
+formatter,
+rebuild,
+types,
+lint and full unit tests,
+then stops on Markdown semantic wrapping.
 R3 remains recorded under Node 26.7.0.
+
+Guard-proof preparation identified test-evidence gaps rather than new production defects.
+The receipt ownership test compared against the same potentially mutated receipt;
+it now captures an independent pre-mutation snapshot in a local fixture.
+Occurrence ownership tests likewise assert the input expectation is unchanged before attempting another read.
+The caption-gap parity case did not exercise deterministic media ownership:
+`claimMediaAdjacentTargets` requires a complete `details` run.
+Its label is corrected and an actual transcript-container control now requires the added relations and findings.
+R6 will verify these strengthened witnesses before isolation.
 This data reader does not independently establish an exclusive attempt directory,
 provider transmission,
 actual configuration derivation,

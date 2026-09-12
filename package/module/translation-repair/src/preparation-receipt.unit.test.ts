@@ -67,7 +67,8 @@ await describe({ name: readPreparationReceipt.name, children: [
   } }),
   it({ name: 'rejects duplicate configured identities and duplicate or reordered asked seats', fn: async () => {
     const [first, second] = f.receipt.outcomes;
-    expect(() => readPreparationReceipt({ ...input, binding: { ...input.binding, modelIds: [...input.binding.modelIds, ...input.binding.modelIds] } })).toThrow(PairingEvidenceError);
+    const binding = { ...input.binding, modelIds: [...input.binding.modelIds, ...input.binding.modelIds] };
+    expect(() => readPreparationReceipt({ ...input, binding, value: { ...f.receipt, binding } })).toThrow(PairingEvidenceError);
     for (const outcomes of [[first, first], [second, first]])
       expect(() => readPreparationReceipt({ ...input, value: { ...f.receipt, outcomes } })).toThrow(PairingEvidenceError);
   } }),
@@ -88,11 +89,15 @@ await describe({ name: readPreparationReceipt.name, children: [
       expect(receiptFailure(() => readPreparationReceipt({ ...input, value: { ...f.receipt, outcomes } }))).toBe('outcomes');
   } }),
   it({ name: 'owns nested heard wire without changing later reads', fn: async () => {
-    const result = readPreparationReceipt(input);
+    const local = await receiptFixture();
+    const localInput = { value: local.receipt, binding: local.expected.binding, question: local.receipt.question, l: local.input.l };
+    const before = structuredClone(local.receipt);
+    const result = readPreparationReceipt(localInput);
     for (const outcome of result) {
       if (outcome.voice.heard)
         Object.defineProperty(outcome.voice.value, 'pairs', { value: [] });
     }
-    expect(readPreparationReceipt(input)).toEqual(f.receipt.outcomes);
+    expect(local.receipt).toEqual(before);
+    expect(readPreparationReceipt(localInput)).toEqual(before.outcomes);
   } }),
 ] });

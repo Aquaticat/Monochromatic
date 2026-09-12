@@ -107,12 +107,20 @@ Do not infer the original context's resolution from either successful managed pr
 
 ## Upstream filing decision
 
-- Upstream fault: not established; the evidence concerns a local command environment.
-- Upstream fix: no source defect was identified to patch.
-- Supported use case: no failing upstream API or unsupported combination was established.
-- Contribution policy: not assessed because there is no candidate upstream report.
-- Maintainer disposition: not assessed for the same reason.
-- Prototype: the command-local consumer workaround was exercised; no upstream patch is warranted by this evidence.
+- Upstream fault:
+  not established;
+  the evidence concerns a local command environment.
+- Upstream fix:
+  no source defect was identified to patch.
+- Supported use case:
+  no failing upstream API or unsupported combination was established.
+- Contribution policy:
+  not assessed because there is no candidate upstream report.
+- Maintainer disposition:
+  not assessed for the same reason.
+- Prototype:
+  the command-local consumer workaround was exercised;
+  no upstream patch is warranted by this evidence.
 
 Nothing to file or add upstream.
 No issue draft or external communication was created.

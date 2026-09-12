@@ -121,7 +121,10 @@ export async function receiptFixture({
   /**
    * Existing injected HTTP adapter, not a hand-authored preparation summary.
    */
-  const { client, calls, } = qualificationTransport((replies === undefined) ? {} : { replies, },);
+  const {
+    client,
+    calls,
+  } = qualificationTransport((replies === undefined) ? {} : { replies, },);
   /**
    * Complete current source parse.
    */
