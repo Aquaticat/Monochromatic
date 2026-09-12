@@ -114,6 +114,30 @@ Pipeline commands execute scripts selected from project manifests,
 not TypeScript declarations directly.
 `doc/troubleshooting/pnpm-12-4-polyglot-workspace.md` records the source trace and current limitations.
 
+## Meta Package Manager candidate surface
+
+Meta Package Manager 7.6.1 is not a complete second half of a two-tool `mpm + pnpm` replacement.
+It inventories and drives package managers already present on the machine;
+it does not own project tasks,
+local file watching,
+environment activation,
+secret injection or redaction,
+or bootstrap installation of those managers.
+
+Its TOML dump records installed versions,
+but stable adapters can ignore those versions during restore.
+The pnpm and pipx adapters explicitly warn and let the manager choose;
+the Cargo and stew definitions also omit a version from their install commands.
+The stable release lacks the rustup and bin adapters currently documented as unreleased 8.0 additions.
+These gaps prevent it from replacing `mise.lock` and the root tool declarations without additional providers.
+
+`doc/audit/tech-mpm-and-pnpm-as-a-mise-replacement-vet-2026-09-12.md` records the official documentation,
+stable source audit,
+candidate ledger,
+and hard-gate result.
+Meta Package Manager remains optional machine-inventory convenience after focused providers are selected;
+it is not a selected project provisioning owner.
+
 ## Coverage ledger
 
 ### Tool acquisition, versions, and bootstrap prerequisite
@@ -162,6 +186,8 @@ a committed generated manifest must carry that bootstrap state on a fresh clone.
 
 Selection status:
  pnpm's expanded surface is verified from 12.4.1 documentation and source but not adopted or runtime-validated here.
+Meta Package Manager 7.6.1 was screened and rejected as the project provisioning owner because it cannot bootstrap its
+backends and does not preserve recorded versions for several relevant install paths.
 Remaining providers are unselected and require a choosing-technology audit.
 Do not assume pnpm's experimental ecosystem support or several native installers already compose into the required
 cross-platform contract.
