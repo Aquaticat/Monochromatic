@@ -613,8 +613,13 @@ The native lost-round/HTTP test is parameterized across Synthetic,
 Hyper,
 Bedrock and OpenRouter.
 Timeout-only and roster-order-only digest controls are separate.
-`preparation-request-capture-verification-r7-20260912.out` is the full verification of these additions.
-The request-materialization proof remains open while these controls and removal checks are completed.
+R7 passes all verification phases under Node 26.8.2.
+The actual full-suite `unit exit 0` was inspected at line 9833 of
+`preparation-request-capture-unit-r7-20260912.out`.
+The independent native-constructor,
+per-provider retry,
+route-fallback and separate digest-sensitivity controls pass.
+Isolated removal checks remain before closing the request-materialization proof.
 
 The request-capture test's fetch probe needs explicit isolation.
 This worktree resolves `@monochromatic-dev/module-test/ts` to its own `package/module/test/src/index.ts`;
