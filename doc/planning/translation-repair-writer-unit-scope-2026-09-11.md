@@ -258,7 +258,7 @@ including the inspected full-suite `unit exit 0` at line 9508.
 `c95318ebe` additionally guards ownership of the zero-question result.
 The owning journal is not complete.
 
-Removal proof is being prepared in the owned disposable worktree
+Removal proof completed in the owned disposable worktree
 `~/temp/agent/translation-repair-qualified-guard-20260912`,
 created from the main worktree at `519e87092` to avoid copying ignored state.
 Its only source overlay is the committed `c95318ebe` boundary test,
@@ -266,14 +266,27 @@ bound in `.guard-sandbox/test-overlay.json`.
 The dependency preparation records thirty-two links and an absent credential file.
 `worker.mts` and `mutations.mts` live under that worktree's `.guard-sandbox/`;
 the launcher is `~/temp/agent/run-qualified-guard-container-20260912.mts`.
-The tool probe and mutation run must verify the no-network,
-2 GiB,
+The no-network mutation run verified the 2 GiB,
 2 CPU,
-512 PID limits,
-successful mutant builds,
-intended normal assertion failures,
-restored source hashes and passing restored tests.
-No proof result or cleanup has been claimed.
+512 PID limits.
+All twenty-two registered changes built successfully and failed their designated normal `AssertionError`.
+Source hashes were restored and the rebuilt restored tests passed.
+Peak memory was 667873280 bytes,
+with no OOM or PID-limit events.
+The target-key case changes refusal from `question` to `result`;
+complete handoff validation still refuses stale evidence.
+That case proves diagnostic binding,
+not that stale evidence would otherwise be accepted.
+
+Proof is retained in `~/temp/agent/qualified-guard-proof-20260912`,
+with sixty-six copied records,
+script files and logs,
+plus the cleanup audit and test-overlay patch.
+The audit rechecks source hashes,
+permits only the committed test overlay and owned generated paths,
+and finds no root Git sentinels.
+Removing the owned worktree and verifying absence remain pending.
+No paid preparation or writing was involved.
 These harness and lint failures are not semantic guard-detection evidence.
 
 The owning journal must bind the exact acquired roster,

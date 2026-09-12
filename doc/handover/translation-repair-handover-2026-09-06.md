@@ -447,7 +447,7 @@ Task 38 now has explicit children:
 42 for the native reviewed-input execution gate,
 and 43 for bounded acquisition and final prepared-task review.
 Task 40 has complete reading coverage and a verified frozen parent selection.
-Task 41 is next;
+Task 41 is active;
 35 remains blocked by 38.
 
 The new provider-free policy population on frozen `086fd9f6e` contains 272 parents from 90 eligible entries.
@@ -484,7 +484,51 @@ The check ran without network in the 2 GiB,
 512 PID container.
 This freezes parent identities and baseline coordinates,
 not acquisition approval or final writer units.
-Implement task 41's current-evidence journals and source-channel manifests next.
+Continue task 41's owning current-evidence journal and source-channel manifests.
+The pairing-only replay seam is implemented:
+`blockPairingQuestion` shares numbering/key construction,
+`queriedBlockPairingDetails` preserves full production findings,
+and `qualifyPreparedBlockPairing` verifies current outcomes,
+usable quorum,
+complete handoff,
+media authority and source/target accounting.
+All results explicitly remain `pairing-only`.
+Historical cache and unresolved fallback cannot qualify.
+
+The full `qualified-pairing-verification-r5-20260912.out` run passes build,
+types,
+formatting,
+zero-warning lint,
+full tests and Markdown lint;
+its inspected full-unit terminal is line 9508.
+`c62c6b37c` also composes actual relabel/reprepare with stale-question refusal and fresh qualification.
+`c95318ebe` adds zero-question snapshot ownership coverage.
+The final owning journal still needs exact documents,
+ranges,
+containers,
+acquisition rosters/attempts,
+source channels and persisted recipes.
+The native reviewed CLI gate remains task 42,
+not implemented by this helper.
+
+Guard proof completed in the disposable
+`~/temp/agent/translation-repair-qualified-guard-20260912`,
+base `519e87092` plus the recorded `c95318ebe` test overlay.
+The tool probe verified no credentials and the configured 2 GiB,
+2 CPU,
+512 PID environment.
+The launcher uses no network.
+`~/temp/agent/qualified-guard-mutations-20260912.out` records twenty-two successful mutant builds,
+each designated normal assertion failure,
+and passing rebuilt restored tests.
+Peak memory was 667873280 bytes with no OOM/PID-limit events.
+The target-key change altered refusal classification rather than admitting stale evidence;
+the retained report distinguishes diagnostic bindings from acceptance constraints.
+Proof is retained under `~/temp/agent/qualified-guard-proof-20260912`.
+The cleanup audit verifies restored source,
+the committed test overlay and owned generated paths,
+with no root Git sentinels.
+Only worktree removal and absence verification remain for this experiment.
 Any eligibility-changing finding invalidates this freeze;
 abort or reopen task 40 rather than replacing a parent.
 Later target rewrites require fresh parse,
