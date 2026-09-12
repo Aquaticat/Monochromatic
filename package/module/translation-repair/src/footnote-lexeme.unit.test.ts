@@ -7,7 +7,7 @@ await describe({
     it({
       name: 'keeps escaped brackets inside labels while excluding escaped marker openings',
       fn: async () => {
-        const text = 'Literal \\[^1], active \\\\[^2], escaped-label [^a\\]b].';
+        const text = String.raw`Literal \[^1], active \\[^2], escaped-label [^a\]b].`;
         expect(scanGfmReferenceLiterals({ slice: text })).toEqual([
           { identifier: '2', localOffset: text.indexOf('[^2]') },
           { identifier: 'a\\]b', localOffset: text.indexOf('[^a') },

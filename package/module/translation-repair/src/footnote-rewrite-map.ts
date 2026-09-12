@@ -75,7 +75,7 @@ export function footnoteRewriteMap(
     return marker.identifier;
   },),);
   for (const [identifier, destination,] of lookup) {
-    if (normalizeFootnoteIdentifier({ identifier: destination, },) !== identifier && !before.has(identifier,))
+    if ((normalizeFootnoteIdentifier({ identifier: destination, },) !== identifier) && (!before.has(identifier,)))
       throw new FootnoteRewriteError({ kind: 'missing-source', },);
   }
   /**

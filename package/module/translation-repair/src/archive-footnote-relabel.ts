@@ -285,18 +285,28 @@ function mapLabels(
  * ```
  */
 export function footnoteRelabelOf(
-  { slices, sourceText, targetText, }: {
+  {
+    slices,
+    sourceText,
+    targetText,
+  }: {
     readonly slices: readonly ChunkPair[];
     readonly sourceText: string;
     readonly targetText: string;
   },
 ): FootnoteRelabelReading {
-  /** Complete-document source syntax, never an unmatched prepared container half. */
-  const sourceReferences = activeFootnoteMarkers({ text: sourceText, },).filter(function reference(marker,): boolean {
+  /**
+   * Complete-document source syntax, never an unmatched prepared container half.
+   */
+  const sourceReferences = activeFootnoteMarkers({ text: sourceText, },)
+    .filter(function reference(marker,): boolean {
     return marker.kind === 'reference';
   },);
-  /** Archive syntax uses the same actual document boundary. */
-  const targetReferences = activeFootnoteMarkers({ text: targetText, },).filter(function reference(marker,): boolean {
+  /**
+   * Archive syntax uses the same actual document boundary.
+   */
+  const targetReferences = activeFootnoteMarkers({ text: targetText, },)
+    .filter(function reference(marker,): boolean {
     return marker.kind === 'reference';
   },);
   /**
@@ -309,10 +319,22 @@ export function footnoteRelabelOf(
    */
   const skipped: string[] = [];
   for (const slice of slices) {
-    /** Current original references projected into an exact prepared range. */
-    const original = sliceFootnoteLabels({ chunk: slice.source, documentText: sourceText, markers: sourceReferences, },);
-    /** Current archive references, with stale or truncated ranges refused before counting. */
-    const archive = sliceFootnoteLabels({ chunk: slice.target, documentText: targetText, markers: targetReferences, },);
+    /**
+     * Current original references projected into an exact prepared range.
+     */
+    const original = sliceFootnoteLabels({
+      chunk: slice.source,
+      documentText: sourceText,
+      markers: sourceReferences,
+    },);
+    /**
+     * Current archive references, with stale or truncated ranges refused before counting.
+     */
+    const archive = sliceFootnoteLabels({
+      chunk: slice.target,
+      documentText: targetText,
+      markers: targetReferences,
+    },);
     if (isInsertionChunk(slice.target,))
       continue;
     /**

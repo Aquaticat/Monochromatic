@@ -1,10 +1,17 @@
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { footnoteRelabelOf, FootnoteRewriteError, prepareDocumentPair, } from '../dist/final/node/index.mjs';
 
+function readFootnoteOutcome(input: Parameters<typeof footnoteRelabelOf>[0]): unknown {
+  try {
+    return footnoteRelabelOf(input);
+  }
+  catch (error) {
+    return error;
+  }
+}
+
 function expectScopeRefusal(input: Parameters<typeof footnoteRelabelOf>[0]): void {
-  let caught: unknown;
-  try { footnoteRelabelOf(input); }
-  catch (error) { caught = error; }
+  const caught = readFootnoteOutcome(input);
   expect(caught).toBeInstanceOf(FootnoteRewriteError);
   if (!(caught instanceof FootnoteRewriteError)) throw new Error('expected footnote scope refusal');
   expect(caught.kind).toBe('slice-scope');
@@ -48,9 +55,7 @@ await describe({
         expect(prepared.slices.length).toBeGreaterThan(1);
         expect(markerSlice?.source.text.includes('<details>')).toBe(true);
         expect(markerSlice?.source.text.includes('</details>')).toBe(false);
-        let reading: unknown;
-        try { reading = footnoteRelabelOf(prepared); }
-        catch (error) { reading = error; }
+        const reading = readFootnoteOutcome(prepared);
         expect(reading).toEqual({ kind: 'relabel', map: [{ from: '2', to: '1' }],
           correspondences: [{ from: '2', to: '1' }], skipped: [] });
       },
@@ -60,12 +65,7 @@ await describe({
       fn: async () => {
         const prepared = prepareDocumentPair({ sourceText: 'Source[^1].\n\n[^1]: Note.', targetText: 'Target[^2].\n\n[^2]: Note.' });
         const stale = { ...prepared, [side]: `Changed prefix.\n\n${prepared[side as 'sourceText' | 'targetText']}` };
-        let caught: unknown;
-        try { footnoteRelabelOf(stale); }
-        catch (error) { caught = error; }
-        expect(caught).toBeInstanceOf(FootnoteRewriteError);
-        if (!(caught instanceof FootnoteRewriteError)) throw new Error('expected footnote scope refusal');
-        expect(caught.kind).toBe('slice-scope');
+        expectScopeRefusal(stale);
       },
     })),
   ],

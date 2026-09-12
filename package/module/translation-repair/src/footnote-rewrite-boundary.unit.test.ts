@@ -21,8 +21,12 @@ await describe({
       name: `refuses ${fixture.name}`,
       fn: async () => {
         let caught: unknown;
-        try { applyFootnoteRelabel({ text: fixture.text, map: fixture.map }); }
-        catch (error) { caught = error; }
+        try {
+          applyFootnoteRelabel({ text: fixture.text, map: fixture.map });
+        }
+        catch (error) {
+          caught = error;
+        }
         expect(caught).toBeInstanceOf(FootnoteRewriteError);
         if (!(caught instanceof FootnoteRewriteError)) throw new Error('expected named footnote failure');
         expect(caught.kind).toBe(fixture.kind);

@@ -109,7 +109,11 @@ function readRelabel(
       basis: 'the definitions the roster paired',
     };
   return {
-    reading: footnoteRelabelOf({ slices, sourceText, targetText: archiveText, },),
+    reading: footnoteRelabelOf({
+      slices,
+      sourceText,
+      targetText: archiveText,
+    },),
     basis: 'the paired slices',
   };
 }

@@ -34,15 +34,16 @@ function cacheKey(targetText: string): string {
 
 await describe({
   name: 'actual pass footnote preparation lifecycle',
-  children: [
-    ...[{ protectedOriginal: false, crossed: false }, { protectedOriginal: true, crossed: false }, { protectedOriginal: false, crossed: true }]
+  children: [{ protectedOriginal: false, crossed: false }, { protectedOriginal: true, crossed: false }, { protectedOriginal: false, crossed: true }]
       .map(({ protectedOriginal, crossed }) => it({
       name: protectedOriginal ? 'retains the original preparation and cache identity when relabeling is withheld'
         : crossed ? 'reorders after forced elimination while refusing to cache the incomplete initial agreement'
         : 'reprepares changed target text with fresh cache keys and current node metadata, then reuses both warm recipes',
       fn: async () => {
         const entryCacheDir = await mkdtemp(join(tmpdir(), 'footnote-pass-lifecycle-'));
-        await using owned = { [Symbol.asyncDispose]: async () => { await rm(entryCacheDir, { recursive: true, force: true }); } };
+        await using owned = { [Symbol.asyncDispose]: async (): Promise<void> => {
+          await rm(entryCacheDir, { recursive: true, force: true });
+        } };
         // This call returns before lookup I/O. Model I/O uses only the injected transport.
         expect(workTitlesOf({ text: sourceText })).toEqual([]);
         const calls: { readonly phase: string; readonly body: string; }[] = [];
@@ -99,16 +100,18 @@ await describe({
           }
         }
         const cacheFiles = (await readdir(entryCacheDir)).filter(file => file.startsWith('pairing.') && file.endsWith('.json'));
-        const cached = new Map(await Promise.all(cacheFiles.map(async file => {
+        const cached = new Map(
+          await Promise.all(cacheFiles.map(async file => {
           const envelope = JSON.parse(await readFile(join(entryCacheDir, file), 'utf8')) as { readonly cacheKey: string; readonly record: PairedSectionRecord; };
           expect(file).toBe(`pairing.${envelope.cacheKey}.json`);
           return [envelope.cacheKey, envelope.record] as const;
-        })));
+        })),
+        );
         expect((await readFile(join(entryCacheDir, 'pairing-generation.txt'), 'utf8')).trim()).toBe(generation);
         const initialKey = cacheKey(archiveText);
         const changedKey = cacheKey(finalText);
         expect(initialKey).not.toBe(changedKey);
-        expect([...cached.keys()].sort()).toEqual(protectedOriginal ? [initialKey] : crossed ? [changedKey] : [initialKey, changedKey].sort());
+        expect([...cached.keys()].toSorted()).toEqual(protectedOriginal ? [initialKey] : crossed ? [changedKey] : [initialKey, changedKey].toSorted());
         expect(cached.get(initialKey)?.pairs).toEqual(crossed ? undefined : directPairs);
         if (!protectedOriginal)
           expect(cached.get(changedKey)?.pairs).toEqual(directPairs);
@@ -122,5 +125,4 @@ await describe({
       },
       timeout: 30_000,
     })),
-  ],
 });

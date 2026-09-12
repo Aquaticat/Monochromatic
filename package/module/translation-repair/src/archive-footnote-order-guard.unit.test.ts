@@ -35,8 +35,12 @@ await describe({
       fn: async () => {
         const text = 'Body[^1][^2].\n\n<details>\n\n[^2]: Second.\n\n[^1]: First.\n\n</details>\n';
         let outcome: unknown;
-        try { outcome = reorderFootnoteDefinitions({ text, order: ['1', '2'] }); }
-        catch (error) { outcome = error; }
+        try {
+          outcome = reorderFootnoteDefinitions({ text, order: ['1', '2'] });
+        }
+        catch (error) {
+          outcome = error;
+        }
         expect(outcome).toMatchObject({ text, changed: false });
       },
     }),

@@ -9,7 +9,7 @@ await describe({
       { name: '499 astral scalars and ASCII at 999 code units', label: `${'🐱'.repeat(499)}a`, valid: true },
       { name: '500 astral scalars at 1000 code units', label: '🐱'.repeat(500), valid: false },
       { name: '999 astral scalars', label: '🐱'.repeat(999), valid: false },
-      { name: '1000 astral scalars', label: '🐱'.repeat(1000), valid: false },
+      { name: '1000 astral scalars', label: '🐱'.repeat(1_000), valid: false },
       { name: 'astral scalars and escaped bracket at 999 code units', label: `${'🐱'.repeat(498)}\\]a`, valid: true },
     ].map(fixture => it({
       name: `agrees with the actual parser for ${fixture.name}`,

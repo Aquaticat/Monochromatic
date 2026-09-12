@@ -99,10 +99,12 @@ await describe({
             + '[^2]: A substitute parent? Like mother and daughter.\n\n[^1]: Younger than her, like a sister.\n',
         );
         // A SECOND READING OF THE RELABELLED ARCHIVE CHANGES NOTHING.
-        expect(footnoteRelabelOf(prepareDocumentPair({
+        expect(
+          footnoteRelabelOf(prepareDocumentPair({
           sourceText: SOURCE_TEXT,
           targetText: relabelled,
-        },),),).toStrictEqual({
+        },),),
+        ).toStrictEqual({
           kind: 'unchanged',
           correspondences: [{ from: '2', to: '2', }, { from: '1', to: '1', },],
           skipped: [],
@@ -113,18 +115,22 @@ await describe({
     it({
       name: 'reads nothing to change where the labels already agree or no slice carries a marker on both sides',
       fn: async () => {
-        expect(footnoteRelabelOf(prepareDocumentPair({
+        expect(
+          footnoteRelabelOf(prepareDocumentPair({
           sourceText: '她[^1]。\n\n[^1]: 注。\n',
           targetText: 'She[^1].\n\n[^1]: Note.\n',
-        },),),).toStrictEqual({
+        },),),
+        ).toStrictEqual({
           kind: 'unchanged',
           correspondences: [{ from: '1', to: '1', },],
           skipped: [],
         },);
-        expect(footnoteRelabelOf(prepareDocumentPair({
+        expect(
+          footnoteRelabelOf(prepareDocumentPair({
           sourceText: '她。\n',
           targetText: 'She.\n',
-        },),),).toStrictEqual({
+        },),),
+        ).toStrictEqual({
           kind: 'unchanged',
           correspondences: [],
           skipped: [],
