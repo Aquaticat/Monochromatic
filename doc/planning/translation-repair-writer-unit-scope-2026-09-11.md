@@ -585,8 +585,14 @@ without adding a nudge or treating routes as independent votes.
 R3 rebuilds successfully,
 then TypeScript reports that `ChatMessage` is not exported by the built entry point.
 The routing fixture now uses the exported `ChatTextRequest['messages']` type.
-`preparation-request-capture-verification-r4-20260912.out` is the next full verification,
-including the native caller/interception tests.
+R4 passes build and types.
+The native transient-round/HTTP control and the other fallback cases pass,
+but Qwen's final route selects Anthropic stream grammar while the fixture emits OpenAI frames.
+The client correctly reports `MalformedCompletionError` with `anthropic stream ended without message_stop`;
+the fixture then observes retry calls instead of its expected completed stage.
+The fixture now emits the grammar declared by the actual native exchange,
+and compares complete header-free projections including stream metadata.
+`preparation-request-capture-verification-r5-20260912.out` is the next full verification.
 The new request-materialization scope is not yet declared verified.
 
 The request-capture test's fetch probe needs explicit isolation.

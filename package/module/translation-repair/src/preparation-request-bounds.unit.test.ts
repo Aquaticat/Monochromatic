@@ -8,12 +8,12 @@ import {
   preparationCaptureClient,
   prepareBlockPairing,
   PROVIDER_ORDER,
-  type ProviderName,
+  type PreparationProviderRequest,
   type ProviderRecord,
   reachOf,
 } from '../dist/final/node/index.mjs';
 import { qualificationFixture, } from './qualified-block-pairing.test-fixture.ts';
-import { routedPreparationFixture, } from './preparation-request-routing.test-fixture.ts';
+import { preparationFixtureStream, routedPreparationFixture, } from './preparation-request-routing.test-fixture.ts';
 
 await describe({ name: 'captured preparation bounds against native callers', children: [
   it({ name: 'contains actual lost-stage rounds and native HTTP retries without an unregistered nudge', fn: async () => {
@@ -58,13 +58,16 @@ await describe({ name: 'captured preparation bounds against native callers', chi
       const providers = PROVIDER_ORDER.filter(provider => reach[provider]);
       const last = providers.at(-1);
       if (last === undefined) throw new Error('fixture requires a text-serving route');
-      const observed: { provider: ProviderName; bodyJson: string; url: string; label: string; }[] = [];
+      const observed: PreparationProviderRequest[] = [];
       const callers = Object.fromEntries(PROVIDER_ORDER.map(provider => [provider, preparationCaptureClient({ provider,
         transport: exchange => {
           if ((exchange.method !== 'POST') || (exchange.bodyJson === undefined)) throw new Error('expected fixture model POST');
-          observed.push({ provider, bodyJson: exchange.bodyJson, url: exchange.url, label: exchange.label });
+          observed.push({ modelId, provider, method: 'POST', bodyJson: exchange.bodyJson, url: exchange.url, label: exchange.label,
+            ...((exchange.wireFormat === undefined) ? {} : { wireFormat: exchange.wireFormat }),
+            ...((exchange.maxAnswerChars === undefined) ? {} : { maxAnswerChars: exchange.maxAnswerChars }) });
           if (provider !== last) return Promise.resolve({ status: 402, bodyText: 'fixture payment refusal' });
-          return Promise.resolve({ status: 200, bodyText: `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}' } }] })}\n\ndata: [DONE]\n\n` });
+          const bodyText = preparationFixtureStream((exchange.wireFormat === undefined) ? {} : { wireFormat: exchange.wireFormat });
+          return Promise.resolve({ status: 200, bodyText });
         },
       })])) as ProviderRecord<ModelCaller>;
       const routed = routedPreparationFixture({ callers, initialDry: { synthetic: false, hyper: false, bedrock: false, openrouter: false } });
@@ -72,7 +75,7 @@ await describe({ name: 'captured preparation bounds against native callers', chi
       expect(observed.map(request => request.provider)).toEqual(providers);
       expect(routed.refused).toEqual(providers.slice(0, -1));
       expect(routed.calls).toHaveLength(1);
-      expect(observed).toEqual(manifest.requests.map(({ provider, bodyJson, url, label }) => ({ provider, bodyJson, url, label })));
+      expect(observed).toEqual(manifest.requests);
       const [bounds] = manifest.bounds;
       if (bounds === undefined) throw new Error('expected registered bounds');
       expect(observed.length).toBeLessThanOrEqual(bounds.maxModelPosts);

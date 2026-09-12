@@ -85,4 +85,27 @@ export function routedPreparationFixture({ callers, initialDry, }: {
   return { client: { ...unique, chatJson: observe, }, calls, refused, };
 }
 
+/**
+ * Emits complete fixture output in the stream grammar the actual native request selects.
+ * @param wireFormat - native provider's declared response grammar
+ * @returns Fixture JSON completion with the matching terminal event and no usage/accounting claim
+ * @example
+ * ```ts
+ * const bodyText = preparationFixtureStream({ wireFormat: 'anthropic', });
+ * ```
+ */
+export function preparationFixtureStream({ wireFormat, }: { readonly wireFormat?: 'openai' | 'anthropic'; },): string {
+  /** Same fixture pairing regardless of provider transport syntax. */
+  const content = '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}';
+  if (wireFormat === 'anthropic') {
+    return [
+      { type: 'message_start', message: { id: 'fixture-message', role: 'assistant', }, },
+      { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: content, }, },
+      { type: 'message_delta', delta: { stop_reason: 'end_turn', }, },
+      { type: 'message_stop', },
+    ].map(function frame(body,): string { return `data: ${JSON.stringify(body,)}\n\n`; },).join('',);
+  }
+  return `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content, }, },], },)}\n\ndata: [DONE]\n\n`;
+}
+
 //endregion Native routed preparation fixture
