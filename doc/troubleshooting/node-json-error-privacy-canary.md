@@ -41,7 +41,7 @@ MessageTemplate message =
 ```
 
 The default token path calls `GetErrorMessageWithEllipses` at
-`deps/v8/src/json/json-parser.cc:474`:
+`deps/v8/src/json/json-parser.cc:472`:
 
 ```cpp
 // deps/v8/src/json/json-parser.cc
@@ -110,11 +110,15 @@ The provider-free probe is retained with its output at
 `/var/home/user/temp/agent/node-json-canary-probe-r2-20260912.json`.
 It parses these control catalogs:
 
-- Valid JSON: `{}` and `{"fixture":"q7z9k2"}` both parse.
-- Short invalid input: `q7z9k2` appears completely in the native diagnostic and in a raw cause.
-- Long invalid input: `private-fixture-invalid-plan` is not present completely,
+- Valid JSON:
+  `{}` and `{"fixture":"q7z9k2"}` both parse.
+- Short invalid input:
+  `q7z9k2` appears completely in the native diagnostic and in a raw cause.
+- Long invalid input:
+  `private-fixture-invalid-plan` is not present completely,
   even though the native diagnostic exposes its `private-fi` prefix.
-- Sanitized cause: retaining only `{name: error.name}` does not expose the short input in the rendered wrapper.
+- Sanitized cause:
+  retaining only `{name: error.name}` does not expose the short input in the rendered wrapper.
 
 The production test in
 `package/module/translation-repair/src/preparation-attempt.unit.test.ts`
@@ -124,7 +128,10 @@ R8 build,
 types and focused tests pass;
 its remaining formatter finding was the new `try` statement layout,
 corrected in `b0824a634`.
-The revised isolated removal proof is not yet complete.
+R9 passes all source verification,
+including the full suite's `unit exit 0` at line 9886.
+The revised isolated run detects removal of the parser-cause sanitizer with the designated ordinary assertion.
+The combined namespace proof remains incomplete because it separately exposed an insufficient sync-await observer.
 
 ## Verified workarounds
 
@@ -161,19 +168,25 @@ This tests input disclosure rather than incidental stack text.
 
 ## Upstream filing decision
 
-- Fault: no upstream defect established.
+- Fault:
+  no upstream defect established.
   V8's source explicitly chooses contextual or complete diagnostic text;
   our privacy test incorrectly assumed complete-input exposure.
-- Fixability: no upstream change is required for the consumer sanitizer or corrected witness.
-- Supported use: invalid JSON produces a syntax error in the measured runtime.
+- Fixability:
+  no upstream change is required for the consumer sanitizer or corrected witness.
+- Supported use:
+  invalid JSON produces a syntax error in the measured runtime.
   No guarantee of complete-input diagnostic rendering was established.
-- Contribution policy: not evaluated for a patch because no upstream defect or contribution is proposed.
-- Maintainer direction: not inferred.
+- Contribution policy:
+  not evaluated for a patch because no upstream defect or contribution is proposed.
+- Maintainer direction:
+  not inferred.
   Node issue searches for `JSON.parse truncate error` and `JSON.parse "error message"`,
   plus a pull-request search for `JSON.parse truncate`,
   returned no rows in this investigation.
   That is not evidence that no related discussion exists.
-- Prototype: the consumer-side positive control and sanitized-cause probe were executed.
+- Prototype:
+  the consumer-side positive control and sanitized-cause probe were executed.
   No upstream prototype is justified when the diagnosed defect is in our test.
 
 The `.out-of-scope/` inventory was checked;

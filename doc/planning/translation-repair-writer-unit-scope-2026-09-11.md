@@ -849,9 +849,39 @@ R7 passes all phases on Node `26.8.2`;
 The source checkpoint is `926bb930d`.
 Follow-up `33d3b20ab` makes the successful cwd control assert the settled result explicitly,
 so a removed path boundary produces an ordinary assertion rather than an uncaught filesystem error.
-The combined namespace removal proof is next;
-no semantic phase plan,
+No semantic phase plan,
 lease or paid acquisition authority is introduced by this checkpoint.
+
+The combined removal proof exposed test gaps rather than production changes.
+Its first raw-parser-cause mutation survived:
+Node `26.8.2` rendered only `private-fi` from the long canary,
+so absence of the complete input was not a privacy witness.
+`b0824a634` adds a native short-input exposure control and a sanitized-boundary assertion.
+The isolated second run detects that removal.
+Source trace,
+probe catalogs and the discarded filename-collision probe are recorded in
+[Node JSON diagnostic privacy canaries](../troubleshooting/node-json-error-privacy-canary.md).
+
+The second proof run also shows that the existing sync-await test can pass with the explicit await removed.
+A `returned` flag sampled after one `setImmediate` does not establish that disposal has not already started.
+The revised test observes the actual handle's asynchronous disposal boundary,
+first proves the observer detects a disposable handle,
+and requires no disposal before releasing the controlled sync promise.
+R9 passes build,
+types,
+focused tests,
+formatter,
+lint and the full suite;
+`unit exit 0` was inspected at line 9886 of `preparation-attempt-unit-r9-20260912.out`.
+Only Markdown wrapping required correction.
+The third isolated run uses base `33d3b20ab` plus the explicitly hashed committed test overlays from `a7dcdc526`;
+its terminal result is still pending.
+
+The first namespace container launch selected Node `26.7.0` and correctly failed its runtime assertion.
+An explicit Node `26.8.2` launcher passed the same tool/cgroup/credential-mask checks.
+This is a launch-context observation,
+not a diagnosis of why that context selected the older runtime;
+no runtime mismatch counts as guard detection.
 
 Semantic root-plan validation,
 reviewed phase execution,
