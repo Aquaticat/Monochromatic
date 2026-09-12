@@ -40,7 +40,9 @@ export type ObservedPreparationCall = {
 
 /**
  * Refuses quota reads outside the fixture's explicit budget view.
+ *
  * @throws Error always
+ *
  * @example
  * ```ts
  * unexpectedQuotaRead();
@@ -52,14 +54,21 @@ function unexpectedQuotaRead(): never {
 
 /**
  * Supplies an owned zero-hold record without coupling it to any one fixture instance.
+ *
  * @returns No delayed provider hold in these scripted routing scenarios
+ *
  * @example
  * ```ts
  * const holds = fixtureProviderHolds();
  * ```
  */
 function fixtureProviderHolds(): ProviderRecord<number> {
-  return { synthetic: 0, hyper: 0, bedrock: 0, openrouter: 0, };
+  return {
+    synthetic: 0,
+    hyper: 0,
+    bedrock: 0,
+    openrouter: 0,
+  };
 }
 
 /**

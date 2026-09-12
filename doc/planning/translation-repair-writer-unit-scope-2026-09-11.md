@@ -598,8 +598,15 @@ Its formatter findings are fixture function placement and the private stop class
 Those are corrected without changing native payloads or the capture contract.
 The non-serving positive control now asserts successful materialization through `Promise.allSettled`,
 so a removed transport binding can produce a designated assertion rather than an uncaught network/capture exception.
-`preparation-request-capture-verification-r6-20260912.out` is the next full verification.
-The new request-materialization scope is not yet declared verified.
+R6 passes all verification phases under Node 26.8.2.
+The actual full-suite `unit exit 0` was inspected at line 9735 of
+`preparation-request-capture-unit-r6-20260912.out`.
+Independent review found no remaining capture-adapter defect,
+but requested stronger verification:
+compare production capture against independently constructed native clients,
+exercise every provider's HTTP retry ceiling,
+and separate timeout-only from roster-order-only digest changes.
+The request-materialization proof remains open while those controls and removal checks are completed.
 
 The request-capture test's fetch probe needs explicit isolation.
 This worktree resolves `@monochromatic-dev/module-test/ts` to its own `package/module/test/src/index.ts`;
