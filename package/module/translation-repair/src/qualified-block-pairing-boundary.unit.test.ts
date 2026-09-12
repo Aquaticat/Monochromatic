@@ -60,6 +60,12 @@ await describe({ name: 'qualified current pairing boundaries', children: [
       expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared, pairIndex }))).toBe('parent-index');
     }
   })),
+  it({ name: 'rejects an unknown preparation disposition instead of guessing its path', fn: async () => {
+    const f = qualificationFixture({ sourceText: '猫。', targetText: 'Cat.' });
+    const prepared = await prepareBlockPairing(f.input);
+    Object.defineProperty(prepared, 'kind', { value: 'unknown-disposition' });
+    expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared }))).toBe('fast-path');
+  } }),
   it({ name: 'refuses acquired evidence when current blocks require a zero-question path', fn: async () => {
     const f = qualificationFixture();
     const prepared = await prepareBlockPairing(f.input);

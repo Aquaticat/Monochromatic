@@ -84,9 +84,12 @@ export function qualifyPreparedBlockPairing({ pair, pairIndex, prepared, modelId
       targetsWithoutSource: empty ? pair.target.nodes.map(function nodeId(node,): string { return node.id; },) : [],
     },);
   }
-  if (empty || singleton)
-    throw new PreparationQualificationError({ kind: 'fast-path', },);
-  return qualifyQueriedBlockPairing({ pair, pairIndex, prepared, modelIds, targetContainers, l: pl, },);
+  if ((prepared.kind === 'paired') || (prepared.kind === 'fallback')) {
+    if (empty || singleton)
+      throw new PreparationQualificationError({ kind: 'fast-path', },);
+    return qualifyQueriedBlockPairing({ pair, pairIndex, prepared, modelIds, targetContainers, l: pl, },);
+  }
+  throw new PreparationQualificationError({ kind: 'fast-path', },);
 }
 
 //endregion Calibration preparation qualification
