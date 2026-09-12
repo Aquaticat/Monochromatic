@@ -446,7 +446,8 @@ Task 38 now has explicit children:
 41 for qualified current-evidence journals,
 42 for the native reviewed-input execution gate,
 and 43 for bounded acquisition and final prepared-task review.
-Task 40 is active;
+Task 40 has complete reading coverage and a verified frozen parent selection.
+Task 41 is next;
 35 remains blocked by 38.
 
 The new provider-free policy population on frozen `086fd9f6e` contains 272 parents from 90 eligible entries.
@@ -464,11 +465,33 @@ the population keeps that annotated parent rather than applying a shape filter.
 
 All eighteen original reading records were revalidated.
 Twelve complete-entry readings and six parent-scope readings carry to the new pool by exact hashes.
-Fresh full readings through `hulicaijia` yield twenty-four complete entries and twenty-three reviewed parent scopes.
+The journal now covers all thirty selected entries and forty parent scopes,
+including reread changed scopes in carried entries and a bounded reread of the formerly truncated `shihai4h` file.
 Current artifacts are `preparation-pool-policy-20260912.json`,
 `preparation-pool-policy-reading-20260912/` and `preparation-policy-reading-journal-20260912.json`
 in the owned writer workspace.
-Continue the pending entry and parent readings before claiming a frozen acquisition plan.
+The independent truncation concern was withdrawn after its reviewer distinguished
+its serialized context from the original visible tool response.
+
+`frozen-parent-selection-20260912.json` binds sixty-three files with digest
+`853fd30daef7464865356ac1ffa901de4ba5cb35b4ef80d28cf6a043c36be3be`.
+The complete provider-free population rebuild matches the recorded pool,
+with order,
+coordinate and protection positive controls;
+`writer-policy-selection-freeze-20260912.out` records exit zero.
+The check ran without network in the 2 GiB,
+2 CPU,
+512 PID container.
+This freezes parent identities and baseline coordinates,
+not acquisition approval or final writer units.
+Implement task 41's current-evidence journals and source-channel manifests next.
+Any eligibility-changing finding invalidates this freeze;
+abort or reopen task 40 rather than replacing a parent.
+Later target rewrites require fresh parse,
+ranges,
+nodes,
+protection,
+pairing and cache identity.
 The `Mio` introduction keeps an explicit final-unit coverage/context question for its forward lead-in and English summary.
 `hulicaijia` needs complete definition correspondence before preserving its extra brand footnote under a fresh label.
 
