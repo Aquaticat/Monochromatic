@@ -566,9 +566,28 @@ formatter findings concern statement layout and sequential awaits in tests.
 Independent review identified the need to honor provider-derived exchange cancellation,
 keep the internal capture stop out of public failures,
 wrap invalid native JSON and narrow the request/provenance descriptions.
-Those changes and injected-adapter tests are being verified next.
-Native worst-case stage/HTTP and fallback accounting still needs an actual caller-stack test,
-not just agreement with the same arithmetic formula.
+Those changes include injected-adapter tests for request shape,
+provider-derived aborts,
+no-capture/multiple-capture flows,
+unexpected errors and native Bedrock accounting refusal.
+R2 passes build and types,
+then its array-root request fixture demonstrates a validation gap:
+`json-guard.ts` deliberately admits arrays for property probing.
+The capture operation now rejects arrays explicitly before inspecting object controls.
+This does not alter the already verified receipt reader's separate exact-key/prototype checks.
+
+`preparation-request-bounds.unit.test.ts` and its routing fixture now drive native providers through
+`promptUniqueClient` and `createRoutingClient` into the real `prepareBlockPairing` caller.
+Separate controls exercise lost-stage rounds with native HTTP retries,
+and payment-refusal fallback across each configured route.
+They compare observed bodies with captured projections and check the recorded envelopes,
+without adding a nudge or treating routes as independent votes.
+R3 rebuilds successfully,
+then TypeScript reports that `ChatMessage` is not exported by the built entry point.
+The routing fixture now uses the exported `ChatTextRequest['messages']` type.
+`preparation-request-capture-verification-r4-20260912.out` is the next full verification,
+including the native caller/interception tests.
+The new request-materialization scope is not yet declared verified.
 
 The request-capture test's fetch probe needs explicit isolation.
 This worktree resolves `@monochromatic-dev/module-test/ts` to its own `package/module/test/src/index.ts`;

@@ -11,7 +11,7 @@ import type { StreamWireFormat, } from './stream-wire-format.ts';
  *
  * @example
  * ```ts
- * const request: PreparationProviderRequest = { modelId, provider, method: 'POST', url, bodyJson };
+ * const request: PreparationProviderRequest = { modelId, provider, method: 'POST', url, bodyJson, label };
  * ```
  */
 export type PreparationProviderRequest = {

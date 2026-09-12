@@ -2,7 +2,7 @@ import {
   type BudgetView,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  type ChatMessage,
+  type ChatTextRequest,
   createRoutingClient,
   type JsonSchemaResponseFormat,
   type ModelCaller,
@@ -26,7 +26,7 @@ export type ObservedPreparationCall = {
   /** Configured identity, not a provider alias. */
   readonly modelId: RosterModelId;
   /** Exact pre-window materialized substantive messages. */
-  readonly messages: readonly ChatMessage[];
+  readonly messages: ChatTextRequest['messages'];
   /** Native schema when the stage supplies it. */
   readonly responseFormat?: JsonSchemaResponseFormat;
 };
