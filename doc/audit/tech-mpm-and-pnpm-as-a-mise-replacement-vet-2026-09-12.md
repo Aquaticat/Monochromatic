@@ -55,12 +55,13 @@ The important distinction is ownership:
 MPM can orchestrate package providers,
 but it does not replace their installation mechanics or provide one universal artifact lock.
 Its restore format does not enforce recorded versions for several relevant default adapters.
-Direct rustup,
+Provider-native rustup,
 Cargo,
 SDKMAN,
 Android `sdkmanager`,
-and verified standalone-binary invocations therefore remain part of the architecture,
-even when MPM coordinates some of them.
+and verified standalone-binary operations therefore remain part of the architecture.
+MPM can invoke several of them through adapters;
+an outer owner needs direct commands only where the stable adapter is absent or cannot express required options.
 
 The proposal still needs defined and validated owners for:
 
@@ -370,6 +371,40 @@ not that staged bootstrapping is impossible.
 Evidence:
 [concurrency documentation][mpm-concurrency] and
 `meta_package_manager/cli_snapshots.py:400-476` at stable tag `v7.6.1`.
+
+### MPM can invoke many native providers
+
+Stable MPM 7.6.1 has built-in adapters that invoke Cargo,
+uv,
+SDKMAN,
+pnpm,
+stew,
+and platform package managers.
+The wrapper does not eliminate those provider CLIs;
+it standardizes operations over them.
+
+The distinction in this assessment is therefore not `MPM` versus `direct` for every operation.
+It is:
+
+- MPM invocation where a stable adapter preserves required package identity,
+  version,
+  feature,
+  and platform semantics;
+- an outer direct invocation where no stable adapter exists or its operation model loses required data.
+
+For this repository,
+stable MPM has no rustup adapter.
+The current development branch's rustup adapter manages toolchains but deliberately excludes components,
+while the repository also needs `clippy`,
+`rust-src`,
+`llvm-tools-preview`,
+and Android compilation targets.
+MPM has no built-in Android `sdkmanager` adapter,
+and the existing setup also owns license-input handling.
+The stable Cargo adapter invokes `cargo install`,
+but does not forward restore versions or Cargo feature options.
+SDKMAN and uv are positive cases:
+their built-in adapters can pass requested versions.
 
 ### Restore is machine-scoped and version support is uneven
 

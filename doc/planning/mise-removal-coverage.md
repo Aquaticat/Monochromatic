@@ -130,13 +130,22 @@ but stable default adapters can ignore those versions during restore.
 The pnpm and pipx adapters explicitly warn and let the manager choose;
 the Cargo and stew definitions also omit a version from their install commands.
 Custom TOML manager definitions cannot forward a restore entry's version through a `{version}` placeholder.
-Direct pnpm,
+MPM can invoke its stable Cargo,
 uv,
+SDKMAN,
+pnpm,
+stew,
+and platform-manager adapters.
+Provider-native commands still exist underneath that interface.
+The outer workflow needs direct pnpm,
 Cargo,
 rustup,
-SDKMAN,
 Android `sdkmanager`,
-and standalone-binary commands must retain provider-specific pins and options where MPM cannot express them.
+or standalone-binary calls only where MPM lacks a stable adapter or cannot express a required pin,
+component,
+feature,
+license-input,
+or platform option.
 
 The stable release also lacks the rustup and bin adapters currently documented as unreleased 8.0 additions.
 These constraints do not make staged composition impossible,
