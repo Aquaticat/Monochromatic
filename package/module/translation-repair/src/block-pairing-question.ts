@@ -57,14 +57,30 @@ export function blockPairingQuestion(
   /**
    * Original blocks under the production question's local numbering.
    */
-  const sourceBlocks = pair.source.nodes.map(function sourceBlock(node, index,): NumberedBlock {
-    return { index, text: node.text, };
+  const sourceBlocks = pair.source
+    .nodes
+    .map(function sourceBlock(
+      node,
+      index,
+    ): NumberedBlock {
+    return {
+      index,
+      text: node.text,
+    };
   },);
   /**
    * Incumbent blocks under the same numbering rule.
    */
-  const targetBlocks = pair.target.nodes.map(function targetBlock(node, index,): NumberedBlock {
-    return { index, text: node.text, };
+  const targetBlocks = pair.target
+    .nodes
+    .map(function targetBlock(
+      node,
+      index,
+    ): NumberedBlock {
+    return {
+      index,
+      text: node.text,
+    };
   },);
   /**
    * Existing key encoding, including its explicit side separator.
@@ -84,8 +100,10 @@ export function blockPairingQuestion(
     sourceBlocks,
     targetBlocks,
     freeOrder: {
-      source: definitionIndexes({ nodes: pair.source.nodes, },),
-      target: definitionIndexes({ nodes: pair.target.nodes, },),
+      source: definitionIndexes({ nodes: pair.source
+        .nodes, },),
+      target: definitionIndexes({ nodes: pair.target
+        .nodes, },),
     },
     key,
   };

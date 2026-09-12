@@ -113,7 +113,12 @@ export async function prepareBlockPairing(
   /**
    * Shared current numbering, definition exemptions and unchanged cache identity.
    */
-  const { sourceBlocks, targetBlocks, freeOrder, key, } = blockPairingQuestion({ pair, },);
+  const {
+    sourceBlocks,
+    targetBlocks,
+    freeOrder,
+    key,
+  } = blockPairingQuestion({ pair, },);
   /**
    * Historical round, which carries no invented new electorate evidence.
    */

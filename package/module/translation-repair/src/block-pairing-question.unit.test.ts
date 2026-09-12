@@ -36,7 +36,7 @@ function parent({ sourceText, targetText, }: {
 }
 
 await describe({ name: blockPairingQuestion.name, children: [
-  it({ name: 'preserves the established numbered texts and version-two cache key', fn: () => {
+  it({ name: 'preserves the established numbered texts and version-two cache key', fn: async (): Promise<void> => {
     /** Complete source and archive paragraphs. */
     const pair = parent({ sourceText: '猫睡了。\n\n它喜欢盒子。', targetText: 'The cat slept.\n\nShe loves boxes.', },);
     /** Actual shared question. */
@@ -48,7 +48,7 @@ await describe({ name: blockPairingQuestion.name, children: [
       .update('2\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.', 'utf8',)
       .digest('hex',));
   }, },),
-  it({ name: 'numbers definition exemptions within the current parent on each side', fn: () => {
+  it({ name: 'numbers definition exemptions within the current parent on each side', fn: async (): Promise<void> => {
     /** Definitions have different local indexes on the two sides. */
     const pair = parent({ sourceText: '猫[^a]。\n\n[^a]: 盒子。\n\n[^b]: 枕头。', targetText: '[^z]: Pillow.\n\n[^y]: Box.', },);
     /** Definition sets must follow parsed positions, not label spelling. */
@@ -58,7 +58,7 @@ await describe({ name: blockPairingQuestion.name, children: [
     expect(question.sourceBlocks.map(block => block.index,),).toEqual([0, 1, 2,]);
     expect(question.targetBlocks.map(block => block.index,),).toEqual([0, 1,]);
   }, },),
-  ...(['source', 'target',] as const).map(side => it({ name: `binds changed ${side} text and order`, fn: () => {
+  ...(['source', 'target',] as const).map(side => it({ name: `binds changed ${side} text and order`, fn: async (): Promise<void> => {
     /** Initial parent and derived current question. */
     const pair = parent({ sourceText: '猫。\n\n盒子。', targetText: 'Cat.\n\nBox.', },);
     /** Existing identity to compare with positive changes. */
@@ -70,7 +70,7 @@ await describe({ name: blockPairingQuestion.name, children: [
     const changed = { ...pair, [side]: { ...pair[side], nodes: pair[side].nodes.map(node => ({ ...node, text: `${node.text}！`, })), }, };
     expect(blockPairingQuestion({ pair: changed, },).key,).not.toBe(original.key,);
   }, },)),
-  it({ name: 'does not normalize embedded quotes, escapes or line endings', fn: () => {
+  it({ name: 'does not normalize embedded quotes, escapes or line endings', fn: async (): Promise<void> => {
     /** Parser-authorized bytes, not prompt or JSON interpolation. */
     const pair = parent({ sourceText: '“猫” \\[note]。\r\n第二行。', targetText: '“Cat” \\[note].\r\nSecond line.', },);
     /** Question copies each exact parsed node without interpreting its syntax. */
@@ -78,7 +78,7 @@ await describe({ name: blockPairingQuestion.name, children: [
     expect(question.sourceBlocks,).toEqual(pair.source.nodes.map((node, index,) => ({ index, text: node.text, })),);
     expect(question.targetBlocks,).toEqual(pair.target.nodes.map((node, index,) => ({ index, text: node.text, })),);
   }, },),
-  it({ name: 'represents an empty side without inventing a numbered block or correspondence', fn: () => {
+  it({ name: 'represents an empty side without inventing a numbered block or correspondence', fn: async (): Promise<void> => {
     /** Complete original singleton used only to derive a structural empty fixture. */
     const pair = parent({ sourceText: '猫。', targetText: 'Cat.', },);
     /** Empty source is representable without buying a question. */
