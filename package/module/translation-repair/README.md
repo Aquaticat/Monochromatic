@@ -1407,6 +1407,10 @@ The frozen parent selection is not acquisition approval or a final forty-round w
 
 `blockPairingQuestion` shares current local block numbering,
 definition-order exemptions and the unchanged historical cache key.
+`blockPairingProtocol` shares the stage's actual messages and an owned copy of its response schema.
+It does not include provider bodies,
+model caps or attempt identity,
+so it is not itself a complete question receipt.
 `prepareBlockPairing` retains production singleton,
 empty,
 queried,

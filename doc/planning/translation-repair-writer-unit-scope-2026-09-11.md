@@ -390,7 +390,12 @@ definition-only authority and final child-index/projection rebuilding.
 `33e183a51` adds exact-contract,
 fence/numbering,
 schema-ownership and actual-client/HTTP controls.
-`pairing-protocol-verification-20260912.out` is running its fresh verification.
+`pairing-protocol-verification-20260912.out` records passing build,
+types and focused consumer tests.
+Its formatter stopped on the test observer's `no-nullish-union` finding.
+The observer now records optional schema presence with an optional property and conditional spread,
+without changing the production protocol.
+`pairing-protocol-verification-r2-20260912.out` is the fresh full verification.
 This is only a protocol-construction seam,
 not a receipt,
 attempt journal or final occurrence binding.
