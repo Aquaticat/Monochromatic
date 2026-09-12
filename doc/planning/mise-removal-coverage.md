@@ -148,6 +148,15 @@ license-input,
 or platform option.
 
 The stable release also lacks the rustup and bin adapters currently documented as unreleased 8.0 additions.
+Missing built-ins are not automatically permanent gaps:
+MPM 7.6.1 can register first-class managers from trusted local TOML definitions,
+and full-power Python manager classes can implement version pinning,
+stateful parsing,
+and arbitrary provider logic when contributed to or carried with MPM.
+The TOML path is intentionally bounded,
+and stable MPM has no separately installed Python entry-point plugin loader.
+`doc/troubleshooting/mpm-manager-extensibility.md` records the source path and disposable runtime fixture.
+
 These constraints do not make staged composition impossible,
 but they keep the architecture unselected until a declaration-level mapping and disposable pilot pass.
 `doc/audit/tech-mpm-and-pnpm-as-a-mise-replacement-vet-2026-09-12.md` records the official documentation,

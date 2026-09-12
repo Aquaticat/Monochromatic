@@ -406,6 +406,32 @@ but does not forward restore versions or Cargo feature options.
 SDKMAN and uv are positive cases:
 their built-in adapters can pass requested versions.
 
+### MPM is already extensible at two levels
+
+Stable MPM 7.6.1 can synthesize a new first-class manager from a trusted local
+`[mpm.managers.<id>]` configuration block.
+The definition can select binaries,
+set fixed arguments and environment,
+declare platform and privilege policy,
+and parse one-line or flat JSON package listings.
+A resource-bounded disposable fixture confirmed that a custom manager receives its own selector and participates in
+`installed`.
+
+For adapters needing dynamic version forwarding,
+stateful or multi-line parsing,
+multiple subprocesses,
+or arbitrary logic,
+MPM's documented full-power extension is a Python manager class contributed to or carried with MPM.
+Stable 7.6.1 has no separately installed Python entry-point plugin loader,
+and its TOML definition DSL rejects `{version}` as an operation placeholder.
+
+This strengthens the proposal:
+missing built-in adapters are not automatically permanent gaps.
+The design choice is whether each gap fits a local definition,
+justifies a full MPM class,
+or stays clearer as a provider-specific command at the repository boundary.
+[`mpm-manager-extensibility.md`](../troubleshooting/mpm-manager-extensibility.md) contains the source trace and runtime fixture.
+
 ### Restore is machine-scoped and version support is uneven
 
 `mpm dump` writes installed package versions into a TOML manifest.
