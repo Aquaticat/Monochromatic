@@ -542,6 +542,41 @@ allowed target lineage,
 source channels or dependency authority.
 Those owning-journal obligations remain open.
 
+### Native request materialization in progress
+
+`301aec38a` and `4dca79bbb` introduce non-serving native request capture.
+`captureBlockPairingRequests` constructs the shared block protocol,
+then invokes the existing provider clients individually with capture-only credentials,
+a mandatory stopping transport and a Bedrock accounting adapter that refuses every operation.
+It records header-free body/endpoint/label/stream projections in configured model and provider order.
+It does not execute the production router or seating operation.
+The emitted self-digest is not independent configuration or provenance evidence.
+The conservative POST envelope is initial gather plus `STAGE_RETRY_ROUNDS`,
+permitted text routes and existing HTTP retries,
+without a recovery nudge.
+
+`188e052c5` tests native bodies,
+current measured caps,
+source escaping,
+input ownership,
+timeout/roster identity and refusal of structural dispatch.
+Initial build,
+types and focused tests pass;
+formatter findings concern statement layout and sequential awaits in tests.
+Independent review identified the need to honor provider-derived exchange cancellation,
+keep the internal capture stop out of public failures,
+wrap invalid native JSON and narrow the request/provenance descriptions.
+Those changes and injected-adapter tests are being verified next.
+Native worst-case stage/HTTP and fallback accounting still needs an actual caller-stack test,
+not just agreement with the same arithmetic formula.
+
+The request-capture test's fetch probe needs explicit isolation.
+This worktree resolves `@monochromatic-dev/module-test/ts` to its own `package/module/test/src/index.ts`;
+`package/module/test/src/sinon.ts` uses ordinary process-global Sinon.
+`mise.toml`'s `runTestFiles` launches each test file in a separate Node process.
+The capture file now sets `concurrency: 1` around the process-global positive-control stub and its readers.
+The newer main-worktree skill's per-attempt method isolation does not describe this older resolved implementation.
+
 ## Source availability is not incumbent accuracy
 
 The selected `XingZ60` third-contributor parent raised a source-content question:

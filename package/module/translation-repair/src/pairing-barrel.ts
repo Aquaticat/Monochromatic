@@ -48,6 +48,8 @@ export {
 export { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 export { readPreparationReceipt, } from './read-preparation-receipt.ts';
 export { captureBlockPairingRequests, } from './capture-block-pairing-requests.ts';
+export { capturePreparationProviderRequest, } from './capture-preparation-provider-request.ts';
+export { preparationCaptureClient, } from './preparation-capture-client.ts';
 export {
   type PreparationModelRequestBounds,
   type PreparationProviderRequest,

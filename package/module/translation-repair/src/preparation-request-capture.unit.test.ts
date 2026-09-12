@@ -22,12 +22,18 @@ const question = { sourceBlocks: [{ index: 0, text: '猫睡了。' }, { index: 1
 const modelIds = ['hf:Qwen/Qwen3.8-27B', 'google.gemma-4-e2b', 'deepseek-v4.1-flash'] as const;
 const exchangeTimeoutMs = 5_000;
 
-await describe({ name: captureBlockPairingRequests.name, children: [
+// mise's runTestFiles gives each file its own Node process.
+// This worktree's Sinon remains process-global, so serialize the positive-control fetch stub with its readers.
+await describe({ name: captureBlockPairingRequests.name, concurrency: 1, children: [
   it({ name: 'captures every permitted native gateway without fetch, credentials or ledger operations', fn: async ctx => {
     const sentinel = new Error('unexpected fetch during request-only capture');
-    const fetch = ctx.sinon.stub(globalThis, 'fetch').callsFake(() => { throw sentinel; });
+    const fetch = ctx.sinon.stub(globalThis, 'fetch').callsFake(() => {
+      throw sentinel;
+    });
     let caught: unknown;
-    try { await globalThis.fetch('data:text/plain,capture-observation-control'); }
+    try {
+      await globalThis.fetch('data:text/plain,capture-observation-control');
+    }
     catch (error) { caught = error; }
     expect(caught).toBe(sentinel);
     expect(fetch).toHaveBeenCalledExactlyOnceWith('data:text/plain,capture-observation-control');
@@ -35,7 +41,14 @@ await describe({ name: captureBlockPairingRequests.name, children: [
 
     const manifest = await captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs, signal: new AbortController().signal, l });
     expect(fetch).not.toHaveBeenCalled();
-    expect(new Set(manifest.requests.map(request => request.provider))).toEqual(new Set(PROVIDER_ORDER));
+    expect(
+      new Set(manifest.requests.map(request => request.provider)),
+    ).toEqual(new Set(PROVIDER_ORDER));
+    const expectedOrder = modelIds.flatMap(modelId => {
+      const reach = reachOf({ modelId });
+      return PROVIDER_ORDER.filter(provider => reach[provider]).map(provider => ({ modelId, provider }));
+    });
+    expect(manifest.requests.map(({ modelId, provider }) => ({ modelId, provider }))).toEqual(expectedOrder);
     expect(manifest.modelIds).toEqual(modelIds);
     expect(manifest.question.sourceBlocks).toEqual(question.sourceBlocks);
     expect(manifest.question.targetBlocks).toEqual(question.targetBlocks);
@@ -46,7 +59,7 @@ await describe({ name: captureBlockPairingRequests.name, children: [
     for (const request of manifest.requests) {
       expect(request.method).toBe('POST');
       const body = JSON.parse(request.bodyJson) as Record<string, unknown>;
-      expect(body['max_tokens'] ?? body['max_completion_tokens']).toBe(COMPLETION_CAP[request.modelId]);
+      expect(body.max_tokens ?? body.max_completion_tokens).toBe(COMPLETION_CAP[request.modelId]);
       for (const key of ['temperature', 'thinking', 'budget_tokens', 'reasoning_effort', 'reasoning', 'effort'])
         expect(Object.hasOwn(body, key)).toBe(false);
       expect(Object.hasOwn(request, 'headers')).toBe(false);
@@ -99,6 +112,8 @@ await describe({ name: captureBlockPairingRequests.name, children: [
   } }),
   it({ name: 'binds native timeout and electorate order without adding prompt nonces or new payload variants', fn: async () => {
     const first = await captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs, signal: new AbortController().signal, l });
+    const repeated = await captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs, signal: new AbortController().signal, l });
+    expect(repeated).toEqual(first);
     const changed = await captureBlockPairingRequests({ question, modelIds: modelIds.toReversed(), exchangeTimeoutMs: exchangeTimeoutMs + 1, signal: new AbortController().signal, l });
     expect(changed.requestConfigurationDigest).not.toBe(first.requestConfigurationDigest);
     expect(changed.question).toEqual(first.question);
@@ -106,7 +121,9 @@ await describe({ name: captureBlockPairingRequests.name, children: [
   } }),
   ...[0, -1, Number.NaN, Number.POSITIVE_INFINITY].map(timeout => it({ name: `refuses invalid native timeout ${String(timeout)}`, fn: async () => {
     let caught: unknown;
-    try { await captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs: timeout, signal: new AbortController().signal, l }); }
+    try {
+      await captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs: timeout, signal: new AbortController().signal, l });
+    }
     catch (error) { caught = error; }
     expect(caught).toBeInstanceOf(PreparationRequestCaptureError);
     expect((caught as PreparationRequestCaptureError).kind).toBe('timeout');
@@ -115,31 +132,49 @@ await describe({ name: captureBlockPairingRequests.name, children: [
     { sourceBlocks: question.sourceBlocks.slice(0, 1), targetBlocks: question.targetBlocks.slice(0, 1) }].map((structural, index) => it({
       name: `does not register a model call for structural dispatch ${index}`, fn: async () => {
         let caught: unknown;
-        try { await captureBlockPairingRequests({ question: structural, modelIds, exchangeTimeoutMs, signal: new AbortController().signal, l }); }
+        try {
+          await captureBlockPairingRequests({ question: structural, modelIds, exchangeTimeoutMs, signal: new AbortController().signal, l });
+        }
         catch (error) { caught = error; }
         expect(caught).toBeInstanceOf(PreparationRequestCaptureError);
         expect((caught as PreparationRequestCaptureError).kind).toBe('question');
       },
     })),
-  it({ name: 'rejects duplicate and empty configured electorates before capture', fn: async () => {
-    for (const roster of [[], [...modelIds, ...modelIds]]) {
-      let caught: unknown;
-      try { await captureBlockPairingRequests({ question, modelIds: roster, exchangeTimeoutMs, signal: new AbortController().signal, l }); }
-      catch (error) { caught = error; }
-      expect(caught).toBeInstanceOf(PairingEvidenceError);
+  ...[[], [...modelIds, ...modelIds]].map((roster, index) => it({ name: `rejects invalid configured electorate ${index} before capture`, fn: async () => {
+    let caught: unknown;
+    try {
+      await captureBlockPairingRequests({ question, modelIds: roster, exchangeTimeoutMs, signal: new AbortController().signal, l });
     }
-  } }),
-  it({ name: 'preserves caller cancellation before or during local request materialization', fn: async () => {
-    for (const before of [true, false]) {
-      const controller = new AbortController();
-      const reason = new Error('caller canceled capture fixture');
-      if (before) controller.abort(reason);
-      const pending = captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs, signal: controller.signal, l });
-      if (!before) controller.abort(reason);
-      let caught: unknown;
-      try { await pending; }
-      catch (error) { caught = error; }
-      expect(caught).toBe(reason);
+    catch (error) { caught = error; }
+    expect(caught).toBeInstanceOf(PairingEvidenceError);
+  } })),
+  ...[true, false].map(before => it({ name: `preserves caller cancellation ${before ? 'before entry' : 'after materialization begins'}`, fn: async () => {
+    const controller = new AbortController();
+    const reason = new Error('caller canceled capture fixture');
+    if (before) controller.abort(reason);
+    const pending = captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs, signal: controller.signal, l });
+    if (!before) controller.abort(reason);
+    let caught: unknown;
+    try {
+      await pending;
     }
+    catch (error) { caught = error; }
+    expect(caught).toBe(reason);
+  } })),
+  ...[{ sourceBlocks: question.sourceBlocks.slice(0, 1), targetBlocks: question.targetBlocks },
+    { sourceBlocks: question.sourceBlocks, targetBlocks: question.targetBlocks.slice(0, 1) }].map((queried, index) => it({
+      name: `materializes unequal nonempty queried shape ${index}`, fn: async () => {
+        const result = await captureBlockPairingRequests({ question: queried, modelIds: [modelIds[0]], exchangeTimeoutMs, signal: new AbortController().signal, l });
+        expect(result.requests.length).toBeGreaterThan(0);
+        expect(result.question.sourceBlocks).toEqual(queried.sourceBlocks);
+        expect(result.question.targetBlocks).toEqual(queried.targetBlocks);
+      },
+    })),
+  it({ name: 'does not put definition exemptions into payload equivalence', fn: async () => {
+    const first = { ...question, freeOrder: { source: new Set([0]), target: new Set([0]) } };
+    const second = { ...question, freeOrder: { source: new Set([1]), target: new Set([1]) } };
+    const initial = await captureBlockPairingRequests({ question: first, modelIds: [modelIds[0]], exchangeTimeoutMs, signal: new AbortController().signal, l });
+    const changed = await captureBlockPairingRequests({ question: second, modelIds: [modelIds[0]], exchangeTimeoutMs, signal: new AbortController().signal, l });
+    expect(changed).toEqual(initial);
   } }),
 ] });
