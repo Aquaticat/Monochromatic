@@ -40,7 +40,9 @@ await describe({ name: 'receipt reuse after an unrelated actual footnote transit
     expect(replayed.target.containers.map(container => container.openerStartOffset)).toEqual(body.input.targetContainers.map(container => container.openerStartOffset + offsetDelta));
     expect(replayed.pair.target).not.toEqual(body.input.pair.target);
     expect(replayed.pair.source).toEqual(body.input.pair.source);
-    expect(blockPairingProtocol(blockPairingQuestion({ pair: replayed.pair }))).toEqual(body.receipt.question.protocol);
+    expect(
+      blockPairingProtocol(blockPairingQuestion({ pair: replayed.pair })),
+    ).toEqual(body.receipt.question.protocol);
     expect(replayed.prepared).toEqual(body.prepared);
     expect(body.calls).toHaveLength(2);
     expect(definitions.calls).toHaveLength(2);

@@ -408,6 +408,48 @@ This is only a protocol-construction seam,
 not a receipt,
 attempt journal or final occurrence binding.
 
+### Receipt data and fresh occurrence implementation
+
+`345d7f7d4` defines a versioned terminal receipt data envelope and fixed receipt diagnostics.
+`52fdd006b` adds `readPreparationReceipt` and `readPreparationOccurrence`.
+These compare unknown receipt data against independently supplied plan/configuration and current document expectations.
+They retain only raw final seat outcomes,
+reparse complete documents,
+select the registered parent and replay current definition exemptions,
+media ownership,
+ordered findings and native preparation handoffs.
+Returned `scope: 'receipt-bound-occurrence'` is not pairing qualification or writer admission.
+
+Independent review identified missing explicit section correspondence and discarded alignment findings.
+The native pre-block constructor is already `alignDocumentSections`;
+`d786cd757` forwards its optional `sectionPairing` from the independent occurrence expectation
+and retains its findings separately from block-round findings.
+Sealing and final slicing options do not enter the native pre-block constructor;
+final child construction remains separate.
+That commit adds actual-stage/injected-HTTP parity,
+receipt refusal,
+source/target/parent binding,
+ownership and actual footnote-transition reuse tests.
+
+The first verification rebuilt successfully,
+then TypeScript reported missing logger arguments at `assertPairingSeats` calls.
+The receipt reader now requires and forwards the caller logger.
+`preparation-receipt-verification-r2-20260912.out` passes build,
+types and focused tests,
+including the actual footnote transition and registered section-alignment controls.
+Its formatter stops on destructuring,
+shadowing,
+statement-layout and fixture `Object.setPrototypeOf` return-type findings.
+Those findings are corrected without changing receipt acceptance policy.
+`preparation-receipt-verification-r3-20260912.out` is the next full verification;
+no completed-suite claim applies to these files yet.
+This data reader does not independently establish an exclusive attempt directory,
+provider transmission,
+actual configuration derivation,
+allowed target lineage,
+source channels or dependency authority.
+Those owning-journal obligations remain open.
+
 ## Source availability is not incumbent accuracy
 
 The selected `XingZ60` third-contributor parent raised a source-content question:

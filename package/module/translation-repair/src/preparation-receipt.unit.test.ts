@@ -36,7 +36,8 @@ await describe({ name: readPreparationReceipt.name, children: [
       },
     })),
   it({ name: 'refuses prototype and hidden root state that serialization would discard', fn: async () => {
-    const prototype = Object.setPrototypeOf(structuredClone(f.receipt), null);
+    const prototype = structuredClone(f.receipt);
+    Object.setPrototypeOf(prototype, null);
     const hidden = Object.defineProperty(structuredClone(f.receipt), 'oldAggregate', { value: {} });
     const symbol = { ...f.receipt, [Symbol('unexpected hidden receipt metadata for test')]: true };
     for (const value of [prototype, hidden, symbol])
@@ -71,7 +72,7 @@ await describe({ name: readPreparationReceipt.name, children: [
       expect(() => readPreparationReceipt({ ...input, value: { ...f.receipt, outcomes } })).toThrow(PairingEvidenceError);
   } }),
   it({ name: 'rejects malformed final seat fields and foreign identities rather than coercing them', fn: async () => {
-    const modelId = f.expected.binding.modelIds[0];
+    const [modelId] = f.expected.binding.modelIds;
     const values = [undefined, null, [], {}, { modelId }, { modelId: 'foreign-fixture-model', voice: { heard: false, answered: false, unreachable: true } },
       { modelId, voice: {} }, { modelId, voice: null }, { modelId, voice: { heard: 'true' } },
       { modelId, voice: { heard: true, value: { pairs: 'not an array' } } },

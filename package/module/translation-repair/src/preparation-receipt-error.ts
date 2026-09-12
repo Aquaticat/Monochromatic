@@ -10,7 +10,9 @@
  */
 export type PreparationReceiptFailure = 'state' | 'binding' | 'question' | 'outcomes' | 'documents' | 'parent';
 
-/** Fixed messages never quote receipt values, document text or model responses. */
+/**
+ * Fixed messages never quote receipt values, document text or model responses.
+ */
 const RECEIPT_MESSAGES: Readonly<Record<PreparationReceiptFailure, string>> = {
   state: 'Preparation receipt is not a complete supported question record. Retain incomplete evidence for audit, but do not reuse it or promote a historical cache record.',
   binding: 'Preparation receipt does not match the independently supplied acquisition plan, attempt, receipt reference or configuration. Reopen the intended journal and verify its registered binding before any provider call.',
@@ -29,9 +31,13 @@ const RECEIPT_MESSAGES: Readonly<Record<PreparationReceiptFailure, string>> = {
  * ```
  */
 export class PreparationReceiptError extends Error {
-  /** Messages consist only of authored operation and recovery guidance. */
+  /**
+   * Messages consist only of authored operation and recovery guidance.
+   */
   public readonly messageNamesOnly: true = true;
-  /** Failed binding family, without private document or reply content. */
+  /**
+   * Failed binding family, without private document or reply content.
+   */
   public readonly kind: PreparationReceiptFailure;
 
   /**

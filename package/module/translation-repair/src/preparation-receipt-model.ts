@@ -1,5 +1,8 @@
 import type { BlockPairingProtocol, } from './block-pairing-protocol.ts';
-import type { BlockPairingWire, NumberedBlock, } from './pair-blocks-wire.ts';
+import type {
+  BlockPairingWire,
+  NumberedBlock,
+} from './pair-blocks-wire.ts';
 import type { PipelineDigest, } from './corpus-run/pipeline-digest.ts';
 import type { RoundOutcome, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -18,17 +21,29 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * ```
  */
 export type PreparationReceiptBinding = {
-  /** Digest of the immutable acquisition plan, not an artifact-selected replacement. */
+  /**
+   * Digest of the immutable acquisition plan, not an artifact-selected replacement.
+   */
   readonly acquisitionPlanDigest: string;
-  /** Current exclusive acquisition attempt; historical attempts cannot supply this receipt. */
+  /**
+   * Current exclusive acquisition attempt; historical attempts cannot supply this receipt.
+   */
   readonly attemptId: string;
-  /** Preregistered receipt or alias target, separate from its current occurrence. */
+  /**
+   * Preregistered receipt or alias target, separate from its current occurrence.
+   */
   readonly receiptId: string;
-  /** Executed first-party implementation identity. */
+  /**
+   * Executed first-party implementation identity.
+   */
   readonly pipelineDigest: PipelineDigest;
-  /** Independently derived configuration and registered provider-body identity. */
+  /**
+   * Independently derived configuration and registered provider-body identity.
+   */
   readonly requestConfigurationDigest: string;
-  /** Complete ordered configured electorate, never its heard subset. */
+  /**
+   * Complete ordered configured electorate, never its heard subset.
+   */
   readonly modelIds: readonly RosterModelId[];
 };
 
@@ -41,11 +56,17 @@ export type PreparationReceiptBinding = {
  * ```
  */
 export type PreparationReceiptQuestion = {
-  /** Exact original numbering and bytes emitted by the question. */
+  /**
+   * Exact original numbering and bytes emitted by the question.
+   */
   readonly sourceBlocks: readonly NumberedBlock[];
-  /** Exact archive numbering and bytes emitted by the question. */
+  /**
+   * Exact archive numbering and bytes emitted by the question.
+   */
   readonly targetBlocks: readonly NumberedBlock[];
-  /** Shared messages and schema, not a second handwritten protocol. */
+  /**
+   * Shared messages and schema, not a second handwritten protocol.
+   */
   readonly protocol: BlockPairingProtocol;
 };
 
@@ -60,15 +81,25 @@ export type PreparationReceiptQuestion = {
  * ```
  */
 export type PreparationReceiptData = {
-  /** Versioned data shape, separate from historical pairing cache records. */
+  /**
+   * Versioned data shape, separate from historical pairing cache records.
+   */
   readonly version: 1;
-  /** Partial checkpoints cannot stand in for a completed question. */
+  /**
+   * Partial checkpoints cannot stand in for a completed question.
+   */
   readonly state: 'complete';
-  /** Namespace and configuration asserted by this receipt and checked against the owning plan. */
+  /**
+   * Namespace and configuration asserted by this receipt and checked against the owning plan.
+   */
   readonly binding: PreparationReceiptBinding;
-  /** Exact question compared against freshly reconstructed current question bytes. */
+  /**
+   * Exact question compared against freshly reconstructed current question bytes.
+   */
   readonly question: PreparationReceiptQuestion;
-  /** Final asked-seat outcomes only; aggregate fields are intentionally absent. */
+  /**
+   * Final asked-seat outcomes only; aggregate fields are intentionally absent.
+   */
   readonly outcomes: readonly RoundOutcome<BlockPairingWire>[];
 };
 
