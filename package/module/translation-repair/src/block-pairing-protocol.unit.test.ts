@@ -43,7 +43,7 @@ await describe({ name: blockPairingProtocol.name, children: [
     const input = { sourceBlocks: [{ index: 0, text: '猫。' }], targetBlocks: [{ index: 0, text: 'Cat.' }] };
     const first = blockPairingProtocol(input);
     Object.defineProperty(first.responseFormat.json_schema, 'name', { value: 'altered-fixture-schema' });
-    first.responseFormat.json_schema.schema['extraFixtureProperty'] = true;
+    first.responseFormat.json_schema.schema.extraFixtureProperty = true;
     const later = blockPairingProtocol(input);
     expect(later.responseFormat).toEqual(expectedFormat);
     expect(later.responseFormat).not.toBe(first.responseFormat);
@@ -53,9 +53,10 @@ await describe({ name: blockPairingProtocol.name, children: [
     const f = qualificationFixture();
     const question = blockPairingQuestion({ pair: f.input.pair });
     const protocol = blockPairingProtocol(question);
-    const observed: { readonly messages: ChatTextRequest['messages']; readonly responseFormat: JsonSchemaResponseFormat | undefined; }[] = [];
+    const observed: { readonly messages: ChatTextRequest['messages']; readonly responseFormat?: JsonSchemaResponseFormat; }[] = [];
     async function observe<ValueT>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> {
-      observed.push(structuredClone({ messages: request.messages, responseFormat: request.responseFormat }));
+      observed.push(structuredClone({ messages: request.messages,
+        ...((request.responseFormat === undefined) ? {} : { responseFormat: request.responseFormat }) }));
       return await f.input.client.chatJson(request);
     }
     const result = await prepareBlockPairing({ ...f.input, client: { ...f.input.client, chatJson: observe } });
@@ -68,7 +69,7 @@ await describe({ name: blockPairingProtocol.name, children: [
     expect(f.calls).toHaveLength(2);
     for (const body of f.calls) {
       const wire = JSON.parse(body) as Record<string, unknown>;
-      expect(wire['response_format']).toEqual(protocol.responseFormat);
+      expect(wire.response_format).toEqual(protocol.responseFormat);
     }
   } }),
 ] });

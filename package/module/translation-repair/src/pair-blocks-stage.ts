@@ -197,7 +197,13 @@ export async function pairBlocksWithRoster(
   /**
    * Exact protocol also exposed to current-attempt receipt planning.
    */
-  const { messages, responseFormat, } = blockPairingProtocol({ sourceBlocks, targetBlocks, },);
+  const {
+    messages,
+    responseFormat,
+  } = blockPairingProtocol({
+    sourceBlocks,
+    targetBlocks,
+  },);
   /**
    * Every voice's reply, heard or lost.
    */

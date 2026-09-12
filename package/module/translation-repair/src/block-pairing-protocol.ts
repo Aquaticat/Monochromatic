@@ -27,7 +27,10 @@ const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
               source: { type: 'integer', },
               target: { type: 'integer', },
             },
-            required: ['source', 'target',],
+            required: [
+              'source',
+              'target',
+            ],
           },
         },
       },
@@ -71,12 +74,18 @@ export type BlockPairingProtocol = {
  * const { messages, responseFormat, } = blockPairingProtocol({ sourceBlocks, targetBlocks, });
  * ```
  */
-export function blockPairingProtocol({ sourceBlocks, targetBlocks, }: {
+export function blockPairingProtocol({
+  sourceBlocks,
+  targetBlocks,
+}: {
   readonly sourceBlocks: readonly NumberedBlock[];
   readonly targetBlocks: readonly NumberedBlock[];
 },): BlockPairingProtocol {
   return {
-    messages: buildBlockPairingMessages({ sourceBlocks, targetBlocks, },),
+    messages: buildBlockPairingMessages({
+      sourceBlocks,
+      targetBlocks,
+    },),
     responseFormat: structuredClone(PAIRING_RESPONSE_FORMAT,),
   };
 }
