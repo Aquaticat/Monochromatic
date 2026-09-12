@@ -13,13 +13,15 @@ import {
   prepareDocumentPair,
   preparePassEntry,
   translateSliceInput,
+  workTitlesOf,
 } from '../../dist/final/node/index.mjs';
 
 const roster = ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B'] as const;
 const l = tagged({ tag: 'pass-footnote-lifecycle-test' });
 const sourceText = 'Alpha[^10]  \nBeta[^200]  \nGamma.\n\n[^10]: First source note.\n\n[^200]: Second source note.';
 const archiveBody = 'Alpha archive[^2]  \nBeta archive[^1]  \nGamma archive.';
-const archiveDefinitions = '[^1]: Second archive note.\n\n[^2]: First archive note.';
+const archiveDefinitions = '[^2]: First archive note.\n\n[^1]: Second archive note.';
+const crossedDefinitions = '[^1]: Second archive note.\n\n[^2]: First archive note.';
 const finalText = 'Alpha archive[^10]  \nBeta archive[^200]  \nGamma archive.\n\n[^10]: First archive note.\n\n[^200]: Second archive note.';
 const directPairs = [{ source: 0, target: 0 }, { source: 1, target: 1 }, { source: 2, target: 2 }];
 const crossedPairs = [{ source: 0, target: 0 }, { source: 1, target: 2 }, { source: 2, target: 1 }];
@@ -33,15 +35,18 @@ function cacheKey(targetText: string): string {
 await describe({
   name: 'actual pass footnote preparation lifecycle',
   children: [
-    ...[false, true].map(protectedOriginal => it({
+    ...[{ protectedOriginal: false, crossed: false }, { protectedOriginal: true, crossed: false }, { protectedOriginal: false, crossed: true }]
+      .map(({ protectedOriginal, crossed }) => it({
       name: protectedOriginal ? 'retains the original preparation and cache identity when relabeling is withheld'
+        : crossed ? 'reorders after forced elimination while refusing to cache the incomplete initial agreement'
         : 'reprepares changed target text with fresh cache keys and current node metadata, then reuses both warm recipes',
-      fn: async ctx => {
+      fn: async () => {
         const entryCacheDir = await mkdtemp(join(tmpdir(), 'footnote-pass-lifecycle-'));
         await using owned = { [Symbol.asyncDispose]: async () => { await rm(entryCacheDir, { recursive: true, force: true }); } };
-        const fetchSpy = ctx.sinon.stub(globalThis, 'fetch').callsFake(async () => { throw new Error('unexpected real fetch in footnote lifecycle fixture'); });
+        // This call returns before lookup I/O. Model I/O uses only the injected transport.
+        expect(workTitlesOf({ text: sourceText })).toEqual([]);
         const calls: { readonly phase: string; readonly body: string; }[] = [];
-        const archiveText = `${archiveBody}\n\n${protectedOriginal ? '<!-- 以下内容原文为英文 -->\n\n' : ''}${archiveDefinitions}`;
+        const archiveText = `${archiveBody}\n\n${protectedOriginal ? '<!-- 以下内容原文为英文 -->\n\n' : ''}${crossed ? crossedDefinitions : archiveDefinitions}`;
         const expectedText = protectedOriginal ? archiveText : finalText;
         const client = createSyntheticClient({ apiKey: 'fixture-key', transport: async exchange => {
           const body = exchange.bodyJson ?? '';
@@ -52,7 +57,7 @@ await describe({
           expect(initial || changed).toBe(true);
           expect(initial && changed).toBe(false);
           calls.push({ phase: initial ? 'initial' : 'changed', body });
-          const content = JSON.stringify({ pairs: initial ? crossedPairs : directPairs });
+          const content = JSON.stringify({ pairs: initial && crossed ? crossedPairs : directPairs });
           return { status: 200, bodyText: `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content } }] })}\n\ndata: [DONE]\n\n` };
         } });
         const generation = `sha256-tree-v1:${'f'.repeat(64)}`;
@@ -83,7 +88,7 @@ await describe({
         } else {
           expect(targetNodes.map(node => node.id)).toEqual(currentDocument.nodes.map(node => node.id));
           expect(currentDocument.documentHash).not.toBe(oldDocument.documentHash);
-          const oracle = prepareDocumentPair({ sourceText, targetText: expectedText, frontMatterAuthority: 'archive',
+          const oracle = prepareDocumentPair({ sourceText, targetText: expectedText, frontMatterAuthority: cold.prepared.frontMatterAuthority ?? 'rendered',
             blockPairings: new Map([[0, directPairs]]), sealArchiveOriginal: true });
           expect(cold.prepared.slices).toEqual(oracle.slices);
           expect([...cold.prepared.lineStructuredSliceIndices]).toEqual([...oracle.lineStructuredSliceIndices]);
@@ -103,16 +108,17 @@ await describe({
         const initialKey = cacheKey(archiveText);
         const changedKey = cacheKey(finalText);
         expect(initialKey).not.toBe(changedKey);
-        expect([...cached.keys()].sort()).toEqual(protectedOriginal ? [initialKey] : [initialKey, changedKey].sort());
-        expect(cached.get(initialKey)?.pairs).toEqual(crossedPairs);
+        expect([...cached.keys()].sort()).toEqual(protectedOriginal ? [initialKey] : crossed ? [changedKey] : [initialKey, changedKey].sort());
+        expect(cached.get(initialKey)?.pairs).toEqual(crossed ? undefined : directPairs);
         if (!protectedOriginal)
           expect(cached.get(changedKey)?.pairs).toEqual(directPairs);
         const beforeWarm = calls.length;
         const warm = await preparePassEntry(input);
-        expect(calls).toHaveLength(beforeWarm);
+        expect(calls).toHaveLength(beforeWarm + (crossed ? 2 : 0));
+        if (crossed)
+          expect(calls.slice(beforeWarm).map(call => call.phase)).toEqual(['initial', 'initial']);
         expect(warm.prepared).toEqual(cold.prepared);
         expect(warm.footnoteDefinitionPairs).toEqual(cold.footnoteDefinitionPairs);
-        expect(fetchSpy).not.toHaveBeenCalled();
       },
       timeout: 30_000,
     })),
