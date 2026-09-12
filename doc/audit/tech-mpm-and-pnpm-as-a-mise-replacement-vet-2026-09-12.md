@@ -1,19 +1,19 @@
 # MPM and pnpm as a Mise replacement vet report
 
 Status:
-complete fit screening;
-terminal result is no validated finalist for a complete two-tool replacement.
+complete fit assessment;
+Meta Package Manager plus pnpm is plausible but the composition remains incomplete and unvalidated.
 
 Lifecycle phase:
-screening complete;
-no candidate reached finalist validation for the full replacement scope.
+serious alternative;
+hard-gate confirmation and finalist validation remain pending.
 
 Subject:
 MPM and pnpm as a Mise replacement.
 
 Decision scope:
 assess whether Meta Package Manager 7.6.1 plus pnpm 12.4.1 can replace Mise for repository tasks and
- developer-tool provisioning in Monochromatic.
+developer-tool provisioning in Monochromatic.
 
 Start date:
 2026-09-12.
@@ -28,7 +28,7 @@ Governing skill SHA-256:
 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
 
 Compatibility fingerprint:
-`cd0814dde67b79cb91f892b048e36ae6414f925facfb72fdfa7994cc8a945b71`.
+`5ddc05149175ef46eadbdc5171969e02c48cf1dd1d25570419fa8e7cfb0c5ab3`.
 
 Active audit owner:
 Pi session `01a097c8-535a-72ce-9dbf-26985664148b`.
@@ -41,19 +41,30 @@ not a technology vet report.
 ## Result
 
 A migration away from Mise is realistic,
-but **Meta Package Manager plus pnpm is not a complete two-tool replacement**.
+and **Meta Package Manager plus pnpm is a plausible organizing architecture** when ecosystem-native installers and
+repository-owned adapters are part of the design.
+The evidence does not support treating the names as a self-contained pair of executables.
 
 pnpm 12.4.1 is a plausible owner for workspace dependency installation and task orchestration.
-Meta Package Manager 7.6.1 is a machine-level inventory and command wrapper for already-present package managers.
-It does not replace project tasks,
-local file watching,
-environment activation,
-secret injection and output redaction,
-or the underlying installers it invokes.
-Its restore format also does not enforce recorded versions for several relevant backends.
+Meta Package Manager 7.6.1 can own machine-package inventory and coordinate package managers already present at the
+start of an invocation.
+Existing watcher commands can run as pnpm scripts.
+Focused repository code can supply child environments and SOPS handling.
 
-The proposed pair therefore needs additional owners for at least these boundaries:
+The important distinction is ownership:
+MPM can orchestrate package providers,
+but it does not replace their installation mechanics or provide one universal artifact lock.
+Its restore format does not enforce recorded versions for several relevant default adapters.
+Direct rustup,
+Cargo,
+SDKMAN,
+Android `sdkmanager`,
+and verified standalone-binary invocations therefore remain part of the architecture,
+even when MPM coordinates some of them.
 
+The proposal still needs defined and validated owners for:
+
+- initial pnpm and package-manager bootstrap;
 - Rust toolchains,
   components,
   and targets;
@@ -68,17 +79,14 @@ The proposed pair therefore needs additional owners for at least these boundarie
   child-only secret injection,
   redaction,
   and interactive editing;
-- local source-file watch and restart behavior;
 - CI setup,
   editor paths,
   repository-root discovery,
   agent command policy,
   and generated configuration migration.
 
-The evidence supports a **pnpm-centered migration with focused native providers**.
-It does not support adopting Meta Package Manager as a required project boundary yet.
-That is a fit conclusion,
-not an adoption recommendation.
+The evidence supports continuing with an **MPM plus pnpm pilot backed by focused native providers**.
+It does not yet support adoption or clean-machine cutover.
 
 ## Context and hard constraints
 
@@ -110,7 +118,9 @@ and a fresh `mise tasks --all --hidden --json` count on 2026-09-12.
   filtering,
   working-directory,
   and argument behavior.
-- Preserve exact or reviewable tool versions and artifact provenance.
+- Preserve explicit pins where the current configuration has them,
+  preserve intentional floating requests until separately changed,
+  and retain reviewable artifact provenance.
 - Work on repository-supported local and CI platforms.
 
 ### Components and overlays
@@ -127,7 +137,7 @@ Applicable overlays:
 
 ### Frozen soft criteria
 
-No candidate reached scoring.
+No candidate reached scoring because the candidate composition is not complete.
 If a later pilot produces validated finalists,
 use these criteria without changing them in response to candidate results:
 
@@ -229,9 +239,11 @@ Overlays:
 all report overlays.
 
 Screening result:
-**fail as a complete two-tool Mise replacement**.
-The pair does not own every current responsibility,
-and stable Meta Package Manager cannot reproduce several required version pins.
+**serious alternative with unresolved composition**.
+pnpm and MPM have credible boundaries,
+but native providers and repository-owned adapters must be named before hard-gate confirmation.
+Stable Meta Package Manager cannot reproduce several current pins through its default restore adapters,
+so those entries need direct provider commands or a different owner.
 
 ### pnpm 12.4.1 plus repository-owned orchestration and focused native providers
 
@@ -251,8 +263,9 @@ Screening result:
 not a validated candidate stack**.
 Providers for non-pnpm toolchains,
 environments,
-secrets,
-and watches remain unselected.
+and secrets remain unselected.
+Existing direct watcher commands are plausible owners,
+but their process-lifecycle parity remains unverified under pnpm.
 No adoption recommendation is possible.
 
 ### Mise 2026.9.5 plus pnpm 12.3.4
@@ -285,14 +298,12 @@ high-trust execution,
 and multi-platform claims.
 
 Screening result:
-**fail as a complete replacement**.
-Its own README describes a declarative wrapper over underlying package managers,
-not a project task,
-environment,
-watch,
-or secret runtime.
+**not promoted for this proposal**.
+Its own README describes a declarative wrapper over underlying package managers.
 It is closer than Meta Package Manager to desired-state package declarations,
-but it does not dissolve the missing-owner problem.
+but substituting it would not answer the task,
+environment,
+or secret boundaries and would depart from the user's named stack.
 
 ### pacdef
 
@@ -333,31 +344,32 @@ and 24 bundled TOML manager definitions.
 
 This breadth is coherent for machine package inventory,
 but it does not address the project's task and environment surfaces.
-It also means adopting MPM does not remove a broad abstraction.
-It replaces a multi-domain abstraction with a package-manager-only abstraction that still spans many backends.
+It replaces a multi-domain abstraction with a package-manager-only abstraction that spans many backends.
+That separation may satisfy the user's concern even though MPM itself has a substantial package-manager surface.
 
 Evidence:
 [official homepage][mpm-home],
 [manager catalogue][mpm-managers],
 and stable source measurements.
 
-### MPM delegates to already-installed managers
+### MPM delegates to managers available at invocation start
 
 Before an operation,
 MPM detects selected managers by invoking each manager's version probe.
 It then fans operations out across available managers.
-It does not install those package managers as prerequisites.
+A single restore invocation has no dependency level that installs a manager and then begins using that newly available
+manager later in the same invocation.
 
-That leaves a bootstrap graph outside MPM:
-pnpm,
-Cargo or rustup,
-SDKMAN or another JDK provider,
-platform package managers,
-and any standalone-binary installer must already exist before MPM can drive them.
+This leaves initial bootstrap and cross-manager ordering outside one MPM restore.
+A staged workflow can still use an available platform manager to install another manager,
+then invoke MPM again after detection changes.
+That composition needs an outer owner such as file-enforcer and a disposable clean-machine proof.
+The source audit establishes the single-invocation limitation,
+not that staged bootstrapping is impossible.
 
 Evidence:
 [concurrency documentation][mpm-concurrency] and
-`meta_package_manager/manager.py` plus `meta_package_manager/pool.py` at stable tag `v7.6.1`.
+`meta_package_manager/cli_snapshots.py:400-476` at stable tag `v7.6.1`.
 
 ### Restore is machine-scoped and version support is uneven
 
@@ -375,16 +387,27 @@ For relevant stable 7.6.1 adapters:
 - the stew bundled definition runs `stew install <package>` without a tag or version.
 
 The decorator logs a warning and allows the underlying manager to choose a version.
-This fails the exact or reviewable tool-version hard constraint for those paths.
+Custom TOML manager definitions cannot repair this because `{version}` is intentionally unsupported there too.
+
+This is a hard failure only if MPM restore is assigned ownership of one of those pinned paths.
+The proposed architecture can instead assign npm tools to pnpm,
+Python tools to MPM's version-aware uv adapter,
+and pinned Cargo tools to direct Cargo or cargo-binstall commands.
+SDKMAN's built-in adapter also passes an explicit version to `sdk install`.
+Those alternatives require a declaration-level mapping and runtime proof.
 
 Evidence:
 
 - `meta_package_manager/cli_snapshots.py:400-476`;
 - `meta_package_manager/capabilities.py:268-286`;
+- `meta_package_manager/definitions.py:402-404` and `1034-1052`;
+- `docs/overrides.md:140-144`;
 - `meta_package_manager/managers/pnpm.py:215-225`;
 - `meta_package_manager/managers/pipx.py:269-280`;
 - `meta_package_manager/managers/cargo.toml:41-43`;
-- `meta_package_manager/managers/stew.toml:29-31`.
+- `meta_package_manager/managers/stew.toml:29-31`;
+- `meta_package_manager/managers/uv.py:356-367`;
+- `meta_package_manager/managers/sdkman.py:179-187`.
 
 ### Stable release differs from current documentation
 
@@ -427,13 +450,18 @@ and local stable-source measurements.
 
 ### Security model
 
-MPM executes manager commands as argument vectors rather than through a shell.
-Its normal configuration is per-user and is not automatically discovered from the current repository.
+MPM's normal execution path passes manager commands as argument vectors rather than setting subprocess `shell=True`.
+Backend-specific adapters can still invoke a shell explicitly.
+The stable SDKMAN adapter uses `bash -c` because `sdk` is a shell function,
+and its source quotes the init path before interpolation.
+A selected-adapter audit must therefore inspect exceptions rather than inherit the general no-shell claim.
+
+MPM's normal configuration is per-user and is not automatically discovered from the current repository.
 An explicitly supplied configuration can redirect binaries and run arbitrary commands,
 so project use would need the same trusted-configuration treatment as task files.
 
 Evidence:
-[security model][mpm-security].
+[security model][mpm-security] and `meta_package_manager/managers/sdkman.py:41-54,112-120`.
 
 ### Maintenance and validation boundary
 
@@ -441,8 +469,8 @@ The project is actively releasing and its latest stable release includes Linux,
 macOS,
 and Windows artifacts.
 The repository is not archived.
-A full maintenance sample and upstream CI execution were not used to promote it,
-because the candidate exited on responsibility coverage and version-reproduction hard gates.
+A full maintenance sample and upstream CI execution were not completed because the proposed stack does not yet assign
+every declaration and runtime boundary to an owner.
 
 No MPM binary was downloaded or executed.
 There is no consumer-boundary validation result.
@@ -516,6 +544,77 @@ while the assessed feature release is 12.4.1 at commit
 No pnpm 12.4 executable was run against this repository.
 The existing source audit records the relevant 12.4.1 implementation paths.
 
+## Current tool declaration mapping
+
+Every one of the 37 current root tool declarations has a plausible provider family.
+That makes full removal realistic in principle,
+but the mapping also shows why `mpm + pnpm` is an architecture rather than two self-sufficient executables.
+
+### pnpm-centered entries
+
+Seven declarations can move to pnpm itself or the pnpm workspace:
+
+- `pnpm` through a pinned standalone pnpm bootstrap;
+- `node` and `bun` through `pnpm runtime`;
+- `npm:typescript-language-server`,
+  `npm:socket`,
+  `npm:wrangler`,
+  and `npm:pagefind` through workspace dependencies and scripts.
+
+### Cargo-installed CLI entries
+
+Eleven declarations are Cargo-installed CLI tools:
+
+- `cargo:fd-find`;
+- `cargo:fastmod`;
+- `cargo:cargo-fuzz`;
+- `cargo-binstall`;
+- `cargo:timeout-cli`;
+- `cargo:cargo-nextest`;
+- `cargo:apple-codesign`;
+- `cargo:coreutils`;
+- `cargo:slint-lsp`;
+- `cargo:slint-viewer`;
+- `cargo:cargo-ndk`.
+
+MPM 7.6.1 can front Cargo installation,
+but its default adapter does not pass restore versions or feature options.
+Direct Cargo or cargo-binstall commands generated from the typed tool plan are the stronger current owner for pinned or
+option-bearing entries.
+
+### Other native provider entries
+
+- `pipx:slopo` can move to a version-aware uv tool install,
+  which MPM can front after uv exists.
+- `rust` needs direct rustup ownership for the nightly channel,
+  components,
+  and Android targets.
+- `java` needs a JDK provider;
+  stable MPM can front SDKMAN on its supported platforms and pass a requested version.
+- `android-sdk` needs a Google SDK bootstrap plus the existing direct `sdkmanager` component installation.
+- 15 tools remain platform-package or standalone-binary entries:
+  `ripgrep`,
+  `harper-cli`,
+  `dprint`,
+  `uv`,
+  `hyperfine`,
+  `caddy`,
+  `watchexec`,
+  `sops`,
+  `age`,
+  `cmake`,
+  `zig`,
+  `llama.cpp`,
+  `opentofu`,
+  `hcloud`,
+  and `betterleaks`.
+
+MPM can normalize operations for available platform managers and some standalone installers.
+The typed plan still needs per-platform package IDs,
+version semantics,
+artifact checksums,
+and manager bootstrap order.
+
 ## Responsibility coverage ledger
 
 ### Workspace dependencies
@@ -560,15 +659,19 @@ Zig,
 and standalone binaries.
 
 MPM contribution:
-unified invocation and inventory after those managers exist.
+unified invocation and inventory for managers available at invocation start.
+A staged outer workflow may change that available set between invocations.
 
 Gap:
-stable MPM does not enforce several recorded versions and cannot bootstrap the managers it wraps.
+stable MPM does not enforce several recorded versions,
+does not order manager bootstrap inside one restore,
+and does not carry provider-specific component and feature options in its snapshot format.
 
 ### Environment and PATH
 
 Proposed owner:
-unselected task environment launcher plus pnpm's workspace-bin PATH behavior.
+repository-owned task environment setup plus pnpm's workspace-bin PATH behavior.
+Whether a separate launcher is necessary depends on the environment inventory and shell-activation decision.
 
 Coverage:
 partial.
@@ -590,11 +693,23 @@ and child-only secret injection.
 ### Watching
 
 Proposed owner:
-direct package watcher processes or a focused local watch owner.
+direct package watcher processes launched as pnpm scripts.
 
 Coverage:
-pnpm can launch watcher scripts.
-`pnpm pipeline --watch` polls repository revisions and is not a replacement for local source-file watches.
+plausible.
+The repository already invokes rolldown,
+TypeScript,
+Node,
+watch-restart,
+and file-enforcer watch modes directly.
+`pnpm pipeline --watch` polls repository revisions and is not the relevant local source-file mechanism.
+
+Gate:
+verify restart behavior,
+argument forwarding,
+signal propagation,
+child cleanup,
+and aggregate watcher failure under pnpm.
 
 ### CI,
 editors,
@@ -611,26 +726,34 @@ migration work remains.
 MPM does not supply a GitHub Action equivalent to the current `jdx/mise-action` setup or
 stable project-local tool paths.
 
-## Hard-gate outcomes
+## Fit and hard-gate outcomes
 
-### MPM plus pnpm as exactly two tools
-
-Outcome:
-fail.
-
-Reasons:
-missing owners for required responsibilities and non-reproducible MPM restore paths for relevant managers.
-Soft scoring cannot offset either hard failure.
-
-### pnpm plus native providers and repository-owned generation
+### MPM plus pnpm with native providers and repository-owned generation
 
 Outcome:
-pending,
-not validated.
+serious alternative,
+not yet hard-gate confirmed or validated.
 
 Reason:
-the architecture can cover every ledger entry in principle,
-but several providers and runtime contracts are still unselected.
+the declaration mapping has a plausible provider family for every current tool,
+pnpm has a credible task boundary,
+and MPM can provide cross-manager inventory and orchestration.
+The exact composition,
+bootstrap order,
+environment and secret owners,
+and platform parity remain unverified.
+
+### MPM plus pnpm without underlying providers or repository adapters
+
+Outcome:
+category mismatch.
+
+Reason:
+neither tool claims to replace every underlying installer,
+secret runtime,
+or project-specific environment policy.
+This is a warning against an overly literal interpretation,
+not a rejection of the user's architecture.
 
 ### Keep Mise
 
@@ -640,13 +763,13 @@ valid rollback baseline but excluded from the requested endpoint.
 ### metapac
 
 Outcome:
-fail as a complete replacement.
+not promoted.
 
 Reason:
-package desired-state management does not cover task,
+package desired-state management does not answer task,
 environment,
-watch,
-and secret responsibilities.
+and secret responsibilities,
+and switching to it is outside the user's named direction.
 
 ### pacdef
 
@@ -660,9 +783,9 @@ category mismatch.
 
 ## Scoring and sensitivity
 
-No candidate was validated across the full replacement boundary,
+No candidate composition was validated across the full replacement boundary,
 so scores and sensitivity calculations are not applicable.
-Publishing provisional numbers would allow soft evidence to hide missing responsibility owners.
+Publishing provisional numbers would allow soft evidence to hide unresolved ownership and parity questions.
 
 ## Pros and cons of the proposed pair
 
@@ -680,8 +803,9 @@ and update interface over many machine package managers.
 
 ### Cons
 
-- MPM is not a tool-version manager or project environment manager.
-- MPM needs its underlying package managers to exist first.
+- MPM is not a project environment manager or one universal artifact-lock owner.
+- One MPM restore detects its usable managers before restoring packages,
+  so bootstrap ordering requires staged invocations.
 - MPM's stable restore path ignores recorded versions for pnpm,
 pipx,
 Cargo,
@@ -691,19 +815,26 @@ and stew installations.
 - pnpm pipeline,
 Cargo installation,
 and Python installation are new 12.4 experimental surfaces.
-- Adding MPM retains a broad cross-manager abstraction,
-which weakens the stated separation-of-responsibility goal unless its role is restricted to optional machine inventory.
+- MPM has a substantial cross-manager surface,
+  though it stays within the package-management responsibility.
 
 ## Migration implication
 
-The smallest evidence-backed next experiment is not an MPM rollout.
-It is a disposable pnpm 12.4.1 task pilot that translates representative TypeScript,
-Rust,
-watch,
-and failure-preserving task paths while Mise remains available as the adapter and rollback path.
+The smallest evidence-backed next experiment is a disposable two-part pilot while Mise remains the adapter and rollback
+path:
 
-In parallel,
-build a tool coverage manifest that assigns every one of the 37 current declarations to:
+- translate representative TypeScript,
+  Rust,
+  watch,
+  and failure-preserving task paths to pnpm 12.4.1;
+- exercise an MPM manifest over representative platform,
+  Cargo,
+  uv,
+  and JDK packages,
+  including a staged manager bootstrap and explicit pin checks.
+
+Build the canonical tool coverage manifest at the same time,
+assigning every one of the 37 current declarations to:
 
 - pnpm runtime;
 - pnpm workspace dependency;
@@ -713,9 +844,11 @@ build a tool coverage manifest that assigns every one of the 37 current declarat
 - verified standalone-binary provider;
 - intentional retirement.
 
-Evaluate MPM only after that assignment exists.
-If MPM merely runs those already-selected providers,
-it is optional convenience rather than a prerequisite for Mise removal.
+Use that assignment to decide which providers MPM should coordinate and which need direct commands.
+MPM earns a required architecture role only if the pilot shows that its shared inventory,
+preview,
+failure aggregation,
+and cross-platform manifest reduce more complexity than its adapter exceptions add.
 
 ## Recommendation boundary
 
@@ -723,10 +856,16 @@ No complete stack is recommended for adoption from this report.
 
 The realism answer is conditional:
 
-- **realistic** as a staged migration centered on pnpm plus focused additional providers;
-- **not realistic** as a literal `mise -> mpm + pnpm` substitution with no other owners;
+- **realistic in principle** as MPM plus pnpm,
+  with ecosystem-native providers and repository-owned adapters understood as parts of those boundaries;
+- **not a direct configuration translation** because Mise's environment,
+  secret,
+  component,
+  and activation semantics need separate implementations or retirement decisions;
 - **not yet evidenced** for a clean-machine cutover,
-  because pnpm 12.4 and every remaining provider still need disposable consumer-boundary validation.
+  because MPM orchestration,
+  pnpm 12.4,
+  and every remaining provider still need disposable consumer-boundary validation.
 
 ## Evidence limits
 
@@ -782,7 +921,7 @@ Clone:
 `https://github.com/kdeldycke/meta-package-manager` using `gh repo clone --depth 1 --branch v7.6.1`.
 
 Claim:
-restore and relevant manager adapters do not form an exact-version project toolchain contract.
+restore and relevant default manager adapters do not by themselves form an exact-version project toolchain contract.
 
 Files:
 `meta_package_manager/cli_snapshots.py`,
@@ -793,7 +932,7 @@ Files:
 and `meta_package_manager/managers/stew.toml`.
 
 Status:
-hard-gate failure for the proposed role.
+serious alternative with declaration mapping and runtime validation pending.
 No third-party candidate command was executed.
 
 ### pnpm source audit

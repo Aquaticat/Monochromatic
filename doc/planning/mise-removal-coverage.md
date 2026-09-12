@@ -116,27 +116,35 @@ not TypeScript declarations directly.
 
 ## Meta Package Manager candidate surface
 
-Meta Package Manager 7.6.1 is not a complete second half of a two-tool `mpm + pnpm` replacement.
-It inventories and drives package managers already present on the machine;
-it does not own project tasks,
-local file watching,
-environment activation,
-secret injection or redaction,
-or bootstrap installation of those managers.
+Meta Package Manager 7.6.1 plus pnpm 12.4.1 is a plausible replacement architecture when focused native providers and
+repository-owned adapters are understood as parts of the design.
+pnpm can own workspace tasks and dependencies.
+Meta Package Manager can own machine-package inventory and coordinate package managers available at invocation start.
+Existing direct watcher commands can run as pnpm scripts.
 
-Its TOML dump records installed versions,
-but stable adapters can ignore those versions during restore.
+This is not a two-executable substitution.
+One MPM restore does not install a package manager and then begin using it later in the same invocation,
+so file-enforcer or another outer owner must stage bootstrap operations.
+MPM's TOML dump records installed versions,
+but stable default adapters can ignore those versions during restore.
 The pnpm and pipx adapters explicitly warn and let the manager choose;
 the Cargo and stew definitions also omit a version from their install commands.
-The stable release lacks the rustup and bin adapters currently documented as unreleased 8.0 additions.
-These gaps prevent it from replacing `mise.lock` and the root tool declarations without additional providers.
+Custom TOML manager definitions cannot add a `{version}` placeholder.
+Direct pnpm,
+uv,
+Cargo,
+rustup,
+SDKMAN,
+Android `sdkmanager`,
+and standalone-binary commands must retain provider-specific pins and options where MPM cannot express them.
 
+The stable release also lacks the rustup and bin adapters currently documented as unreleased 8.0 additions.
+These constraints do not make staged composition impossible,
+but they keep the architecture unselected until a declaration-level mapping and disposable pilot pass.
 `doc/audit/tech-mpm-and-pnpm-as-a-mise-replacement-vet-2026-09-12.md` records the official documentation,
 stable source audit,
 candidate ledger,
-and hard-gate result.
-Meta Package Manager remains optional machine-inventory convenience after focused providers are selected;
-it is not a selected project provisioning owner.
+and conditional fit result.
 
 ## Coverage ledger
 
@@ -186,8 +194,12 @@ a committed generated manifest must carry that bootstrap state on a fresh clone.
 
 Selection status:
  pnpm's expanded surface is verified from 12.4.1 documentation and source but not adopted or runtime-validated here.
-Meta Package Manager 7.6.1 was screened and rejected as the project provisioning owner because it cannot bootstrap its
-backends and does not preserve recorded versions for several relevant install paths.
+Meta Package Manager 7.6.1 is a serious orchestration candidate,
+not a selected provisioning owner.
+One restore detects backends before package operations,
+and several relevant default adapters do not preserve recorded versions.
+A staged outer workflow and direct provider commands may cover both constraints,
+but that composition remains unverified.
 Remaining providers are unselected and require a choosing-technology audit.
 Do not assume pnpm's experimental ecosystem support or several native installers already compose into the required
 cross-platform contract.
