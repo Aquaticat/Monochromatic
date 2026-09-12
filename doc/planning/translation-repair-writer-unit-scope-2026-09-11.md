@@ -285,7 +285,13 @@ plus the cleanup audit and test-overlay patch.
 The audit rechecks source hashes,
 permits only the committed test overlay and owned generated paths,
 and finds no root Git sentinels.
-Removing the owned worktree and verifying absence remain pending.
+The owned worktree was removed through `git worktree remove --force` from the main worktree.
+`removal.json` verifies both filesystem and worktree-registration absence.
+The retained proof and unrelated worktrees remain untouched.
+Continue the owning journal's exact document,
+roster,
+attempt and source-channel bindings;
+this pairing-only milestone does not complete task 41.
 No paid preparation or writing was involved.
 These harness and lint failures are not semantic guard-detection evidence.
 

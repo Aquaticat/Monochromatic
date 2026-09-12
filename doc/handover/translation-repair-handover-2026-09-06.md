@@ -528,7 +528,13 @@ Proof is retained under `~/temp/agent/qualified-guard-proof-20260912`.
 The cleanup audit verifies restored source,
 the committed test overlay and owned generated paths,
 with no root Git sentinels.
-Only worktree removal and absence verification remain for this experiment.
+Only that owned worktree was removed through Git from the main worktree.
+`removal.json` verifies filesystem and registration absence;
+retained proof and unrelated worktrees remain intact.
+The next implementation is the owning journal's exact document,
+roster,
+attempt and source-channel bindings,
+not paid acquisition or writer execution.
 Any eligibility-changing finding invalidates this freeze;
 abort or reopen task 40 rather than replacing a parent.
 Later target rewrites require fresh parse,
