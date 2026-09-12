@@ -41,6 +41,10 @@ export {
   pairBlocksWithRoster,
   type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
+export {
+  blockPairingProtocol,
+  type BlockPairingProtocol,
+} from './block-pairing-protocol.ts';
 export { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 export { qualifyPreparedBlockPairing, } from './qualify-prepared-block-pairing.ts';
 export {

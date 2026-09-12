@@ -4,14 +4,11 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type {
-  JsonSchemaResponseFormat,
-  SyntheticClient,
-} from './chat-contract.ts';
+import type { SyntheticClient, } from './chat-contract.ts';
+import { blockPairingProtocol, } from './block-pairing-protocol.ts';
 import {
   type BlockPair,
   type BlockPairingWire,
-  buildBlockPairingMessages,
   type FreeOrderBlocks,
   isBlockPairingWire,
   type NumberedBlock,
@@ -38,36 +35,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // correspondences and differ on the tenth, and discarding both replies over the
 // tenth throws away the nine. Each `source,target` pair is counted on its own
 // and kept when enough voices named it.
-
-/**
- * Schema the reply must satisfy before it reaches the reader.
- */
-const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'block_pairing',
-    schema: {
-      type: 'object',
-      properties: {
-        pairs: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              source: { type: 'integer', },
-              target: { type: 'integer', },
-            },
-            required: [
-              'source',
-              'target',
-            ],
-          },
-        },
-      },
-      required: [ 'pairs', ],
-    },
-  },
-};
 
 /**
  * What the roster settled on for one document pair.
@@ -228,18 +195,19 @@ export async function pairBlocksWithRoster(
   },);
 
   /**
+   * Exact protocol also exposed to current-attempt receipt planning.
+   */
+  const { messages, responseFormat, } = blockPairingProtocol({ sourceBlocks, targetBlocks, },);
+  /**
    * Every voice's reply, heard or lost.
    */
   const outcomes = await runWindowedRounds({
     client,
     modelIds,
-    messages: buildBlockPairingMessages({
-      sourceBlocks,
-      targetBlocks,
-    },),
+    messages,
     signal,
     exchangeTimeoutMs,
-    responseFormat: PAIRING_RESPONSE_FORMAT,
+    responseFormat,
     validate: isBlockPairingWire,
     stage: 'block-pairing',
     l: pl,
