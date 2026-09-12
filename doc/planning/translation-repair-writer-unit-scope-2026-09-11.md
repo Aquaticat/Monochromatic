@@ -512,10 +512,29 @@ The first tools probe selected retained Node 26.7.0;
 `receipt-guard-tools-r2-20260912.out` verifies the explicit Node 26.8.2 launcher,
 Mise 2026.9.5,
 Git 2.52.0 and ripgrep 15.2.0 inside the bounded container.
-`receipt-guard-mutations-20260912.out` is the active baseline/mutation/restoration run.
-The guard proof is not complete until every registered mutant rebuilds,
-the designated ordinary assertion fails,
-restored sources pass and retained records plus owned-worktree cleanup are verified.
+`receipt-guard-mutations-20260912.out` records the completed baseline/mutation/restoration run.
+All 22 registered mutations rebuild successfully,
+fail their designated ordinary `AssertionError` and leave source hashes restored.
+The restored build and receipt suite pass.
+Peak container memory is 723116032 bytes;
+no OOM or PID-limit event occurred.
+Source and target hash removals each accept a valid wrong document with the unchanged local question,
+so those failures demonstrate the full-document boundary rather than a later diagnostic difference.
+Removing section correspondence instead wrongly refuses a valid input;
+that case demonstrates required forwarding,
+not unsafe acceptance.
+
+`receipt-guard-proof-20260912` retains 72 hash-checked records/scripts/logs,
+plus the subsequent cleanup audit,
+test overlay patch and removal records.
+The audit found only the committed test overlay and owned generated paths,
+with no root Git sentinels.
+Git removed the owned worktree from the main worktree.
+`removal.json` verifies its directory and registration are absent at `2026-09-12T17:42:22.550Z`.
+This completes the receipt-data/current-occurrence boundary proof,
+not task 41's exclusive journal,
+transport/configuration provenance,
+source-channel/dependency closure or later native execution gate.
 This data reader does not independently establish an exclusive attempt directory,
 provider transmission,
 actual configuration derivation,

@@ -1426,13 +1426,24 @@ Every returned value says `qualification: 'pairing-only'`.
 Zero-question results report structural relations,
 source insertions and archive blocks without source,
 not invented model votes or automatic writing eligibility.
-The owning journal must still bind exact documents,
-current parser coordinates and containers,
-acquisition roster and attempt identity,
-source channels and dependencies.
+`readPreparationReceipt` compares terminal data with independently supplied namespace,
+configuration,
+question and electorate expectations,
+then returns only owned raw final seat outcomes.
+`readPreparationOccurrence` checks complete current document hashes and registered parent indexes,
+reparses the documents and rebuilds current definition interpretation,
+container ownership,
+alignment findings and preparation handoff.
+Its `scope: 'receipt-bound-occurrence'` result is not qualification.
+
+The owning journal must still establish exclusive attempt provenance,
+derive actual configuration and provider-body identities,
+verify allowed target transitions and bind source channels and dependencies.
 A target rewrite requires reparse,
 repreparation and newly bound evidence.
-The relabel lifecycle tests reject the old question and qualify newly acquired normalized preparation.
+A registered same-attempt receipt can supply an unchanged exact question after an unrelated rewrite,
+but no old coordinates or handoff survive that reuse.
+Changed questions cannot reuse the old receipt.
 This check does not replace the separately reviewed native execution gate,
 which remains unimplemented.
 
