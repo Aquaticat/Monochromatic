@@ -8,10 +8,14 @@ import { PreparationAttemptError, } from './preparation-attempt-error.ts';
 
 //region Fixed preparation namespace storage
 
-/** Owner-only directory access for private plan contents and future acquisition records. */
+/**
+ * Owner-only directory access for private plan contents and future acquisition records.
+ */
 const PRIVATE_ATTEMPT_DIRECTORY_MODE = 0o700;
 
-/** Owner-only namespace file access; no plan bytes are shared with other users. */
+/**
+ * Owner-only namespace file access; no plan bytes are shared with other users.
+ */
 const PRIVATE_ATTEMPT_FILE_MODE = 0o600;
 
 /**
@@ -135,7 +139,9 @@ async function write({
       operation: 'file-name',
       dir,
     },);
-  /** Exclusive fixed-name handle is closed only after its content sync completes. */
+  /**
+   * Exclusive fixed-name handle is closed only after its content sync completes.
+   */
   await using handle = await open(
     join(
       dir,

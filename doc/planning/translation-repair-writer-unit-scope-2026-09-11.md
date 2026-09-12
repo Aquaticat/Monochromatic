@@ -782,7 +782,18 @@ retain partial marker failures,
 hold write-completion gates and observe native file sync.
 The initializer promises file-content sync only,
 not containing-directory power-loss durability.
-`preparation-attempt-verification-r2-20260912.out` is the current full verification.
+R2 passes every verification phase under Node 26.8.2.
+The actual full-suite `unit exit 0` was inspected at line 9840 of
+`preparation-attempt-unit-r2-20260912.out`.
+The tests include separately held root/identity writes,
+native file-sync invocation and completion,
+independent SHA-256 of stored bytes,
+private rendered syntax failures and retained partial identity bytes.
+The native `chmod` is additional permission enforcement;
+these tests establish final private modes,
+not that removing a redundant chmod alone would change them.
+Namespace guard proof remains pending;
+no reviewed-phase or crash-durability authority follows from this initializer.
 
 Semantic root-plan validation,
 reviewed phase execution,

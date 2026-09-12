@@ -1,5 +1,6 @@
 import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile, } from 'node:fs/promises';
 import { createHash, } from 'node:crypto';
+import { existsSync, } from 'node:fs';
 import { inspect, } from 'node:util';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
@@ -57,7 +58,12 @@ await describe({ name: createPreparationAttempt.name, children: [
     const abandoned = join(parent.dir, 'preparation-abandoned');
     await mkdir(abandoned);
     await writeFile(join(abandoned, 'partial-plan'), 'retained incomplete fixture');
-    const attempts = await Promise.all([0, 1, 2].map(async () => await createPreparationAttempt({ parentDir: parent.dir, rootPlanText, l })));
+    const results = await Promise.allSettled([0, 1, 2].map(async () => await createPreparationAttempt({ parentDir: parent.dir, rootPlanText, l })));
+    expect(results.every(result => result.status === 'fulfilled')).toBe(true);
+    const attempts = results.map(result => {
+      if (result.status !== 'fulfilled') throw result.reason;
+      return result.value;
+    });
     expect(new Set(attempts.map(attempt => attempt.dir)).size).toBe(3);
     expect(new Set(attempts.map(attempt => attempt.attemptId)).size).toBe(3);
     expect(new Set(attempts.map(attempt => attempt.rootPlanDigest)).size).toBe(1);
@@ -130,6 +136,7 @@ await describe({ name: createPreparationAttempt.name, children: [
     const failure = caught as PreparationAttemptError;
     expect(failure.operation).toBe('write-plan');
     expect(failure.cause).toBe(reason);
+    expect(existsSync(failure.dir)).toBe(true);
     expect(await readdir(failure.dir)).toEqual(['root-plan.json']);
     expect(await readFile(join(failure.dir, 'root-plan.json'), 'utf8')).toBe('{"partial":');
   } }),

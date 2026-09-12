@@ -92,32 +92,58 @@ async function writeAttemptFile({
 
 /**
  * Generates and persists identity only after the root-plan write has completed.
+ *
  * @param storage - trusted namespace-only adapter
+ *
  * @param dir - owned directory retained on any failure
+ *
  * @param rootPlanDigest - exact complete root-plan digest
+ *
  * @returns Persisted independent attempt identity
+ *
  * @throws PreparationAttemptError when identity generation or persistence fails
+ *
  * @example
  * ```ts
  * const attemptId = await writeAttemptIdentity({ storage, dir, rootPlanDigest });
  * ```
  */
-async function writeAttemptIdentity({ storage, dir, rootPlanDigest, }: {
+async function writeAttemptIdentity({
+  storage,
+  dir,
+  rootPlanDigest,
+}: {
   readonly storage: PreparationAttemptStorage;
   readonly dir: string;
   readonly rootPlanDigest: string;
 },): Promise<string> {
   try {
-    /** Namespace identity never enters a model message. */
+    /**
+     * Namespace identity never enters a model message.
+     */
     const attemptId = randomUUID();
-    await writeAttemptFile({ storage, dir, file: 'attempt.json', operation: 'write-identity',
-      text: JSON.stringify({ version: 1, kind: 'preparation-attempt', attemptId, rootPlanDigest, },), },);
+    await writeAttemptFile({
+      storage,
+      dir,
+      file: 'attempt.json',
+      operation: 'write-identity',
+      text: JSON.stringify({
+        version: 1,
+        kind: 'preparation-attempt',
+        attemptId,
+        rootPlanDigest,
+      },),
+    },);
     return attemptId;
   }
   catch (error) {
     if (error instanceof PreparationAttemptError)
       throw error;
-    throw new PreparationAttemptError({ operation: 'write-identity', dir, cause: error, },);
+    throw new PreparationAttemptError({
+      operation: 'write-identity',
+      dir,
+      cause: error,
+    },);
   }
 }
 
@@ -225,16 +251,16 @@ export async function createPreparationAttempt({
     },);
   }
   /**
+   * Bind original bytes before allocation so a digest failure cannot leave an unreported directory.
+   */
+  const rootPlanDigest = hashContent({ content: rootPlanText, },);
+  /**
    * Allocation is never an idempotent resume of an existing attempt.
    */
   const dir = await allocateAttemptDirectory({
     storage,
     parentDir,
   },);
-  /**
-   * Original bytes are bound before a later phase may construct a live client.
-   */
-  const rootPlanDigest = hashContent({ content: rootPlanText, },);
   await writeAttemptFile({
     storage,
     dir,
@@ -242,8 +268,14 @@ export async function createPreparationAttempt({
     text: rootPlanText,
     operation: 'write-plan',
   },);
-  /** Identity generation and marker persistence now share failure context for the already written plan. */
-  const attemptId = await writeAttemptIdentity({ storage, dir, rootPlanDigest, },);
+  /**
+   * Identity generation and marker persistence now share failure context for the already written plan.
+   */
+  const attemptId = await writeAttemptIdentity({
+    storage,
+    dir,
+    rootPlanDigest,
+  },);
   pl.info(`created preparation namespace ${attemptId} with synced file contents`,);
   return {
     dir,
