@@ -1,3 +1,4 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   alignDocumentSections,
   assertPipelineDigest,
@@ -15,10 +16,8 @@ import {
   type RosterModelId,
   type SectionPair,
 } from '../dist/final/node/index.mjs';
-import {
-  qualificationFixture,
-  type QualificationFixture,
-} from './qualified-block-pairing.test-fixture.ts';
+import { QUALIFICATION_ROSTER, } from './qualified-block-pairing.test-fixture.ts';
+import { qualificationTransport, } from './qualification-transport.test-fixture.ts';
 
 //region Native acquisition receipt fixtures
 
@@ -77,7 +76,7 @@ export type PreparationReceiptFixture = {
   /**
    * Body-only HTTP observations for zero-call replay checks.
    */
-  readonly calls: QualificationFixture['calls'];
+  readonly calls: string[];
 };
 
 /**
@@ -110,7 +109,7 @@ export async function receiptFixture({
   sectionPairing,
   pairIndex = 0,
   replies,
-  modelIds,
+  modelIds = QUALIFICATION_ROSTER,
 }: {
   readonly sourceText?: string;
   readonly targetText?: string;
@@ -122,12 +121,7 @@ export async function receiptFixture({
   /**
    * Existing injected HTTP adapter, not a hand-authored preparation summary.
    */
-  const base = qualificationFixture({
-    sourceText,
-    targetText,
-    ...((replies === undefined) ? {} : { replies, }),
-    ...((modelIds === undefined) ? {} : { modelIds, }),
-  },);
+  const { client, calls, } = qualificationTransport((replies === undefined) ? {} : { replies, },);
   /**
    * Complete current source parse.
    */
@@ -151,10 +145,14 @@ export async function receiptFixture({
    * Actual parent invocation, retaining all default client and stage controls.
    */
   const input = {
-    ...base.input,
+    client,
+    modelIds,
     pair,
     pairIndex,
     targetContainers: target.containers,
+    signal: new AbortController().signal,
+    exchangeTimeoutMs: 5_000,
+    l: tagged({ tag: 'receipt-fixture', },),
   };
   /**
    * Native terminal stage result, including fallback when responses establish no relations.
@@ -180,7 +178,7 @@ export async function receiptFixture({
       requestConfigurationDigest: hashContent({ content: JSON.stringify({
         modelIds: input.modelIds,
         exchangeTimeoutMs: input.exchangeTimeoutMs,
-        bodies: base.calls,
+        bodies: calls,
       },), },),
       modelIds: input.modelIds,
     },
@@ -199,7 +197,7 @@ export async function receiptFixture({
     expected,
     prepared,
     input,
-    calls: base.calls,
+    calls,
     receipt: structuredClone({
       version: 1,
       state: 'complete',

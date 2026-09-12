@@ -2,15 +2,14 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   type prepareBlockPairing,
   alignDocumentSections,
-  createSyntheticClient,
-  type ModelTransport,
   parseDocument,
   PreparationQualificationError,
   type PreparationQualificationFailure,
   type QualifiedBlockPairing,
   type RosterModelId,
-  type TransportReply
 } from '../dist/final/node/index.mjs';
+import { COMPLETE_PAIRING_REPLY, qualificationTransport, } from './qualification-transport.test-fixture.ts';
+export { COMPLETE_PAIRING_REPLY, } from './qualification-transport.test-fixture.ts';
 
 //region Transport-backed qualification fixtures
 // Tests acquire real preparation results while every HTTP exchange stays within an owned adapter.
@@ -22,11 +21,6 @@ export const QUALIFICATION_ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
 ] as const;
-
-/**
- * Matching relations for the default two-paragraph parent.
- */
-export const COMPLETE_PAIRING_REPLY = '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}';
 
 /**
  * Actual production inputs beside an owned request counter.
@@ -98,53 +92,13 @@ export function qualificationFixture({
   if ((pair === undefined) || (replies.length === 0))
     throw new Error('qualification fixture requires one parent and at least one reply',);
   /**
-   * Request bodies remain local to this fixture.
+   * Owned no-network adapter independent of parent alignment.
    */
-  const calls: string[] = [];
-  /**
-   * Adapter exercises the actual structured client without network access.
-   *
-   * @param exchange - body-only request fields to record locally
-   *
-   * @returns Registered event-stream reply
-   *
-   * @throws Error when fixture reply indexing is inconsistent
-   *
-   * @example
-   * ```ts
-   * const response = await recordedReply(exchange);
-   * ```
-   */
-  function recordedReply(exchange: Parameters<ModelTransport>[0],): Promise<TransportReply> {
-    calls.push(exchange.bodyJson ?? '',);
-    /**
-     * Last registered reply repeats if production legitimately asks again.
-     */
-    const index = Math.min(
-      calls.length - 1,
-      replies.length - 1,
-    );
-    /**
-     * Indexed reply remains bounded by the nonempty fixture declaration.
-     */
-    const content = replies[index];
-    if (content === undefined)
-      throw new Error('qualification fixture reply index is unavailable',);
-    return Promise.resolve({
-      status: 200,
-      bodyText: `data: ${JSON.stringify({ choices: [{
-        index: 0,
-        delta: { content, },
-      },], },)}\n\ndata: [DONE]\n\n`,
-    },);
-  }
+  const { client, calls, } = qualificationTransport({ replies, },);
   return {
     calls,
     input: {
-      client: createSyntheticClient({
-        apiKey: 'fixture-key',
-        transport: recordedReply,
-      },),
+      client,
       modelIds,
       pair,
       pairIndex: 0,

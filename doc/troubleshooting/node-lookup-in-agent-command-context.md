@@ -64,6 +64,22 @@ A follow-up replacing only its Node-installation path component still resolved N
 Those scripts' expected-failure assertions were incorrect harness assumptions,
 not additional tool failures or evidence that the Bash-tool context recovered.
 
+## Observed recovery
+
+The owner reported running `mise upgrade` in the translation-repair worktree,
+then restarted the terminal and session.
+The agent's subsequent Bash-tool probe returned:
+
+```text
+/home/user/.local/share/mise/installs/node/26.8.2/bin/node
+v26.8.2
+```
+
+An agent probe between the upgrade report and the restart still returned exit 1 for `command -v node`.
+This sequence records the observed recovery boundary;
+it does not isolate the upgrade and restart as independent causes.
+The command-local override is no longer needed in the recovered context.
+
 ## Verified workaround
 
 The agent used a command-local override,

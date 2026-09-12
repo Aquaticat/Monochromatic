@@ -455,6 +455,20 @@ Valid-wrong-document removal witnesses,
 non-prefix sparse outcomes,
 changed alignment interpretation,
 later mapped parents and ownership of alignment metadata still need additional controls before isolated guard proof.
+`5ae0f9a65` adds those boundary controls.
+R4 passes build and types,
+but the later-parent fixture fails before acquisition:
+its reused fixture tries default section alignment before applying the explicit registered correspondence.
+`qualification-transport.test-fixture.ts` now owns the shared mock client independently of parent selection;
+the receipt fixture applies the intended native alignment directly.
+This is a fixture correction,
+not evidence of a production receipt defect.
+
+After the owner ran `mise upgrade` in the worktree and restarted the terminal/session,
+the agent's own Bash probe resolves `/home/user/.local/share/mise/installs/node/26.8.2/bin/node`
+and returns `v26.8.2`.
+R5 will use that resolved runtime;
+R3 remains recorded under Node 26.7.0.
 This data reader does not independently establish an exclusive attempt directory,
 provider transmission,
 actual configuration derivation,
