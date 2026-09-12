@@ -8,7 +8,8 @@
  * const operation: PreparationAttemptOperation = 'write-plan';
  * ```
  */
-export type PreparationAttemptOperation = 'plan-syntax' | 'file-name' | 'create-directory' | 'write-plan' | 'write-identity';
+export type PreparationAttemptOperation = 'plan-syntax' | 'file-name' | 'create-directory' | 'write-plan' | 'write-identity'
+  | 'read-directory' | 'read-plan' | 'read-identity' | 'identity';
 
 /**
  * Privacy-safe failure retaining any incomplete owned directory for inspection rather than silently retrying it.

@@ -51,6 +51,7 @@ export {
   createPreparationAttempt,
   type PreparationAttemptLocation,
 } from './create-preparation-attempt.ts';
+export { verifyPreparationAttempt, } from './verify-preparation-attempt.ts';
 export {
   preparationAttemptStorage,
   type PreparationAttemptStorage,
