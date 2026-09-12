@@ -1,4 +1,5 @@
 import { isDeepStrictEqual, } from 'node:util';
+import { type Logger, tagged, } from '@monochromatic-dev/module-logger/ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
 import { type BlockPairingWire, isBlockPairingWire, } from './pair-blocks-wire.ts';
@@ -72,20 +73,25 @@ function receiptOutcome({ value, modelIds, }: { readonly value: unknown; readonl
  * @param value - parsed journal receipt, never a historical pairing cache record
  * @param binding - authorized receipt reference and actual configuration supplied by the owning plan
  * @param question - exact question reconstructed from current parser-owned parent blocks
+ * @param l - caller logger retaining the registered occurrence scope
  * @returns Owned final outcomes in the actual recorded asked order
  * @throws PreparationReceiptError when record state, binding, question or seat shapes disagree
  * @throws PairingEvidenceError when configured or asked identities do not form an independent ordered electorate
  * @example
  * ```ts
- * const outcomes = readPreparationReceipt({ value, binding, question, });
+ * const outcomes = readPreparationReceipt({ value, binding, question, l, });
  * ```
  */
-export function readPreparationReceipt({ value, binding, question, }: {
+export function readPreparationReceipt({ value, binding, question, l, }: {
   readonly value: unknown;
   readonly binding: PreparationReceiptBinding;
   readonly question: PreparationReceiptQuestion;
+  readonly l: Logger;
 },): readonly RoundOutcome<BlockPairingWire>[] {
-  assertPairingSeats({ modelIds: binding.modelIds, },);
+  /** Retained occurrence scope around metadata and electorate verification. */
+  const pl = tagged({ tag: readPreparationReceipt.name, l, },);
+  pl.debug('checking terminal receipt namespace, question and final seat records',);
+  assertPairingSeats({ modelIds: binding.modelIds, l: pl, },);
   /** Empty namespace labels cannot authenticate one another by equality. */
   const labels = [binding.acquisitionPlanDigest, binding.attemptId, binding.receiptId, binding.pipelineDigest, binding.requestConfigurationDigest];
   if (labels.some(function missing(label,): boolean { return ((typeof label) !== 'string') || (label.trim().length === 0); },))
@@ -105,7 +111,8 @@ export function readPreparationReceipt({ value, binding, question, }: {
   const outcomes = value.outcomes.map(function read(value: unknown,): RoundOutcome<BlockPairingWire> {
     return receiptOutcome({ value, modelIds: binding.modelIds, },);
   },);
-  assertPairingSeats({ modelIds: binding.modelIds, askedModelIds: outcomes.map(function asked(outcome,): RosterModelId { return outcome.modelId; },), },);
+  assertPairingSeats({ modelIds: binding.modelIds, askedModelIds: outcomes.map(function asked(outcome,): RosterModelId { return outcome.modelId; },), l: pl, },);
+  pl.debug(`read ${String(outcomes.length,)} final seat records without inferring qualification`,);
   return outcomes;
 }
 

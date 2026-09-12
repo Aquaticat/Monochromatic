@@ -3,7 +3,7 @@ import { PairingEvidenceError, readPreparationReceipt, } from '../dist/final/nod
 import { receiptFailure, receiptFixture, } from './preparation-receipt.test-fixture.ts';
 
 const f = await receiptFixture();
-const input = { value: f.receipt, binding: f.expected.binding, question: f.receipt.question };
+const input = { value: f.receipt, binding: f.expected.binding, question: f.receipt.question, l: f.input.l };
 
 await describe({ name: readPreparationReceipt.name, children: [
   it({ name: 'reads actual native final outcomes without trusting an aggregate', fn: async () => {

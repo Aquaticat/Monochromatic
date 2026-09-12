@@ -71,6 +71,7 @@ export function readPreparationOccurrence({ expected, receipt, sourceText, targe
   const outcomes = readPreparationReceipt({
     value: receipt,
     binding: expected.binding,
+    l: pl,
     question: { sourceBlocks: question.sourceBlocks, targetBlocks: question.targetBlocks, protocol: blockPairingProtocol(question,), },
   },);
   /** Existing reader rechecks usable wires and independent relations under current definition roles. */
