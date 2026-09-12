@@ -840,7 +840,18 @@ Its formatter findings concern explicit UUID constants,
 ASCII iteration and a test disposer statement layout.
 The identity scanner now uses a bounded code-unit cursor rather than string spreading,
 with named UUID segment dimensions.
-`preparation-attempt-verification-r6-20260912.out` is the next full verification.
+R6 passes build,
+types and focused tests;
+its formatter rejected the scanner's function-root cursor.
+The cursor now belongs to the counted loop only.
+R7 passes all phases on Node `26.8.2`;
+`unit exit 0` was inspected at line 9880 of `preparation-attempt-unit-r7-20260912.out`.
+The source checkpoint is `926bb930d`.
+Follow-up `33d3b20ab` makes the successful cwd control assert the settled result explicitly,
+so a removed path boundary produces an ordinary assertion rather than an uncaught filesystem error.
+The combined namespace removal proof is next;
+no semantic phase plan,
+lease or paid acquisition authority is introduced by this checkpoint.
 
 Semantic root-plan validation,
 reviewed phase execution,
