@@ -2,7 +2,9 @@
 
 ## Task and boundary
 
-Task 39 blocks task 38's prepared writer inputs.
+Task 39's implementation and verification boundary is complete at `086fd9f6e`.
+Task 38's prepared writer inputs still require their separate population,
+acquisition and reviewed-plan gates.
 The corpus remains pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` and read-only.
 No paid preparation or writer generation has run for the new plan.
 No corpus passages or edits belong in this repository.
@@ -130,7 +132,7 @@ not an upstream parser defect.
   protected references/definitions,
   and guard removal.
 
-## Current state
+## Implementation and intermediate verification
 
 The mathematical closure layer is implemented through `81da9c055`.
 It validates normalized membership and injectivity,
@@ -179,12 +181,12 @@ with `footnote-full-unit-20260911.out` ending at line 9253.
 That direct invocation did not append a separate `unit exit 0` marker;
 final wrapper-based verification remains required.
 The second formatter run reported zero warnings and errors before the latest boundary test additions.
-Final lint and individual guard-removal proof remain incomplete.
+Final lint and individual guard-removal proof were still pending at `75b769026`.
 The first implementation-review Advisor call timed out.
 A later review identified prepared-fragment parsing,
 stale rewrite domains and real pass/cache integration as remaining boundaries.
 These findings supersede any inference that the initial guard catalog covered the complete operation.
-This is not a release-ready or calibration-approved checkpoint.
+The `75b769026` checkpoint did not complete task 39 or approve calibration.
 
 The source trace currently covers:
 
@@ -222,9 +224,9 @@ Restored source rebuilt and all registered tests passed.
 The measured memory peak was 726011904 bytes,
 with no OOM or PID-limit events.
 The complete intermediate proof is retained in `~/temp/agent/footnote-guard-proof-20260911`.
-The owned worktree `~/temp/agent/translation-repair-footnote-guard-20260911` still exists,
-restored to its source baseline;
-it was created from main at `f78921f15` with the single committed `2ce03f9a1` test overlay.
+The intermediate proof used owned worktree `~/temp/agent/translation-repair-footnote-guard-20260911`,
+created from main at `f78921f15` with the single committed `2ce03f9a1` test overlay.
+The updated proof and removal are recorded in `Verified boundary on 2026-09-12`.
 No source from the development worktree was mutated by the experiment.
 
 The independent review correctly identified another real input boundary:
@@ -286,12 +288,57 @@ Its initial indented-code expectation was wrong for MDX:
 The fixture now contrasts MDX paragraph parsing with plain-Markdown code parsing.
 It still needs its corrected verification run.
 
-The next step is final formatting/lint and corrected suite verification,
-updated removal proof,
-current-runtime consumer verification,
-independent re-review and final wrapper-based verification.
-The initial pinned `Y1Ran` control remains a manual deterministic re-preparation control;
-the new invented fixtures exercise the real pass/cache lifecycle.
+## Verified boundary on 2026-09-12
+
+At `086fd9f6e`,
+with source code recorded by `2cc8cfec1`,
+build,
+types,
+zero-warning lint and the complete unit suite pass.
+The actual final unit log ends with `unit exit 0` at line 9308 of
+`~/temp/agent/footnote-final-unit-20260912.out`.
+The corrected MDX/Markdown indentation contrast and all real pass/cache lifecycle cases pass in that run.
+
+The current frozen `Y1Ran` rerun passes on `.frozen-dist-086fd9f6e`,
+not merely the intermediate build.
+It reproduces the expected three-note graph,
+front matter,
+45-node coverage,
+23 current prepared slices,
+shared projection,
+MDX compilation and repeat no-op.
+The output hash remains `4ad32024f12499157b11fcc06e099020deb34c8f1d0c87ecb16157e679942664`.
+It records zero fetch calls and 307 ms elapsed,
+without treating that duration as a performance comparison.
+Evidence is `footnote-Y1-current-consumer-20260912.out` and `footnote-consumer-current.json`.
+
+The updated proof detects 30 registered guard removals and binding mutations.
+Every mutant rebuild succeeds,
+every designated test fails with its intended normal `AssertionError`,
+all source hashes are restored,
+and restored build/tests pass.
+The configured limits remain 2 GiB RAM,
+2 CPUs,
+512 PIDs and no network.
+Measured peak memory is 775876608 bytes;
+OOM and PID-limit counters remain zero.
+Proof is retained at `~/temp/agent/footnote-guard-proof-r2-20260912`.
+The original proof remains separately retained.
+
+Independent re-review found no remaining concrete footnote correctness blocker.
+Its remaining evidence gates were fulfilled by the current consumer run,
+the updated mutation proof and normal owned-worktree cleanup.
+The guard worktree was removed through `git worktree remove --force` from main
+only after source-restoration and ignored-root audits.
+No root sentinel artifacts existed;
+the ignore rules themselves still matched their names.
+Filesystem absence and absence from `git worktree list` are recorded in the retained proof's `removal.json`.
+
+The next action is task 38's source-authority-qualified preparation population and review gate.
+Neither a footnote mechanism control nor warm production cache reuse is current model correspondence evidence.
+No paid preparation,
+writer generation,
+image calibration or newer full-entry pass occurred.
 The first formatter run (`proc_d6ff`) completed with `no-nullish-union`
 on the lexical no-marker return and `max-statements-per-line` on a lookup callback.
 The scanner now uses a domain-specific `NO_GFM_MARKER` sentinel,
@@ -299,9 +346,9 @@ and the callback is split onto statement lines.
 The package diff contains only task-owned footnote paths;
 unrelated `mise.lock` drift remains untouched.
 The second formatter run passed.
-A final lint check remains required after the latest boundary tests.
+The final zero-warning lint result is recorded in `Verified boundary on 2026-09-12`.
 Only mocked or provider-free work has run.
-The latest fully checked translation runtime remains `.frozen-dist-895843508`,
-digest `sha256-tree-v1:56d8d472b1a526faef861068d41e224c3640457b18ef0802a58b50992d18273c`.
+The latest fully checked translation runtime is `.frozen-dist-086fd9f6e`,
+digest `sha256-tree-v1:6ec56fc725bc08c481d040f16a9d358d4826384c1a820879e2c73611472b83be`.
 
 [original]: ../decision/translation-repair-archive-original.md

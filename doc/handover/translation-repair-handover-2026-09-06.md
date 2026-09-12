@@ -324,7 +324,8 @@ shared-incumbent accounting was checked provider-free with a positive control.
 Full-entry parent scope reading has reached eighteen of the thirty-two selected entries.
 No paid pool approval exists yet.
 
-Task 38 remains pending on active task 39's final verification.
+Task 39's footnote boundary is verified at `086fd9f6e`.
+Task 38's preparation population and reviewed-plan gates remain unapproved.
 The old `Y1Ran` definition map `2` to `1` and `3` to `2` could not close
 because unmatched archive `1` occupied the destination.
 The implemented closure retains that unmatched note under fresh label `4`,
@@ -349,9 +350,9 @@ Source through `75b769026` passed build,
 types and the full unit process with exit zero.
 `footnote-full-unit-20260911.out` has 9253 lines and ends with the completed lane-contest suite;
 this direct invocation did not append the verification helper's separate `unit exit 0` marker.
-The final wrapper-based verification is still required after the remaining work.
+The final wrapper-based verification supersedes that intermediate run.
 The second formatter run reported zero warnings and errors;
-the new boundary tests were added afterward and still need the final lint check.
+`footnote-final-lint-20260912.out` also checks the subsequent boundary tests with zero warnings and errors.
 
 Frozen `.frozen-dist-b3b6ee29c` passed the actual pinned `Y1Ran` consumer control.
 All three definitions and references remain,
@@ -374,9 +375,8 @@ each after a successful rebuild and at an intended normal assertion.
 Restored build and registered tests passed;
 peak memory was 726011904 bytes with no OOM/PID events.
 Proof is retained at `~/temp/agent/footnote-guard-proof-20260911`.
-The owned `translation-repair-footnote-guard-20260911` worktree remains,
-source restored,
-for possible updated verification.
+The owned `translation-repair-footnote-guard-20260911` worktree was retained for the updated proof,
+then removed normally after source restoration and artifact retention.
 
 Independent review then identified further boundaries.
 Actual default-budget preparation produced a marker-bearing container half at offsets 0 to 450;
@@ -392,13 +392,41 @@ The proposed astral-length defect was disproved by actual parser-positive contro
 the installed parser and lexer agree at 999 UTF-16 units and reject 1000.
 NFC/NFD identifiers stay distinct.
 
-Remaining task 39 work is actual `preparePassEntry` cold/warm cache integration,
-additional compound/syntax controls,
-updated removal proof,
-current-runtime consumer verification,
-re-review and final wrapper verification.
-The initial `Y1Ran` mechanism control manually rebuilt deterministic preparation,
-not the actual pass cache lifecycle.
+Final footnote verification is complete at `086fd9f6e`,
+with source code at `2cc8cfec1`.
+Build,
+types,
+zero-warning lint and the full suite pass;
+`footnote-final-unit-20260912.out` ends with actual `unit exit 0` at line 9308.
+Real `preparePassEntry` fixtures cover cold/warm persisted caches,
+current node/range/hash/line metadata,
+protected withholding and forced elimination.
+The existing monotone agreement leaves one crossing relation unaccepted,
+so that incomplete original question is correctly not cached and is reacquired on replay.
+Fully claimed cached questions add no replay calls.
+The tests do not invoke archive prose repair or title lookup I/O.
+
+Current `.frozen-dist-086fd9f6e` has digest
+`sha256-tree-v1:6ec56fc725bc08c481d040f16a9d358d4826384c1a820879e2c73611472b83be`.
+Its pinned `Y1Ran` rerun passes the complete mechanism control,
+with unchanged expected output hash,
+zero fetch calls and 307 ms measured in that run.
+No timing comparison is inferred.
+`footnote-Y1-current-consumer-20260912.out` is the current artifact-consumer evidence.
+
+The updated proof detects 30 registered guard removals and binding mutations:
+all mutant builds succeed,
+the designated normal assertions fail,
+restored source hashes match,
+and restored build/tests pass.
+Peak memory is 775876608 bytes with no OOM/PID-limit event.
+Proof is retained at `~/temp/agent/footnote-guard-proof-r2-20260912`.
+The owned guard worktree's root sentinels were absent,
+its ignore rules were recorded,
+and normal removal plus filesystem/worktree-list absence is verified.
+Independent re-review found no concrete remaining footnote defect.
+No additional speculative cases were added after that review.
+The next action is task 38's policy-eligible population and reviewed preparation plan.
 The [footnote work record](../planning/translation-repair-archive-footnote-collisions-2026-09-11.md)
 is canonical.
 No corpus edits or paid preparation,

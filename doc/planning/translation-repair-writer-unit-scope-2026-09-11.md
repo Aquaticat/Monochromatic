@@ -501,15 +501,24 @@ Eight before/after settlement cases preserve exact stage inputs and complete res
 with positive controls.
 The native benchmark still has no reviewed-plan gate.
 
-Task 38 is pending on active task 39's
-[archive footnote collision remedy](translation-repair-archive-footnote-collisions-2026-09-11.md).
-The Y1 source/target note correspondence cannot close while retaining an unmatched archive label.
-The current raw rewrite also crosses syntax boundaries that must remain untouched.
-Full-entry parent reading has reached eighteen of the thirty-two selected entries;
-its private journal remains incomplete and is not paid-plan approval.
-After task 39,
-finish input qualification,
-actual prompt/transport bounds and the distinct reviewed-plan execution gate.
+Task 39's [archive footnote remedy](translation-repair-archive-footnote-collisions-2026-09-11.md)
+is verified at `086fd9f6e`.
+The current pinned Y1 consumer retains the unmatched note under a fresh label,
+keeps all references/definitions and front matter,
+and rebuilds current slice metadata.
+Strict syntax,
+stale-map and range checks,
+protected-original vetoes,
+real pass/cache lifecycle tests,
+full unit/lint and the updated mutation proof all pass.
+This does not qualify any model correspondence or approve the writer plan.
+
+The reading journal covers eighteen of the initial prototype's thirty-two entries.
+Task 38 must first rebuild the policy-eligible population,
+applying whole-page original decline and sealed-span rules,
+then revalidate those reading anchors and finish the required readings.
+Finish current-outcome qualification,
+actual prompt/transport bounds and the distinct reviewed-plan execution gate before any paid launch.
 No paid preparation,
 writer or V4.1 image-reading call has occurred.
 

@@ -132,8 +132,10 @@ MISE_AUTO_INSTALL=false MISE_TASK_RUN_AUTO_INSTALL=false \
   mise run --no-deps --skip-tools //package/module/translation-repair:test:unit
 ```
 
-The full run through `75b769026` exited with code zero.
-Its log is `~/temp/agent/footnote-full-unit-20260911.out`.
+The final full run at `086fd9f6e` passed build,
+types and zero-warning lint,
+and ended with `unit exit 0` at line 9308 of
+`~/temp/agent/footnote-final-unit-20260912.out`.
 Tests import `dist/final/node/index.mjs`,
 not sibling implementation source.
 
@@ -155,7 +157,9 @@ Refusal catalog:
 - Empty,
   whitespace-containing,
   injected-delimiter and overlength destinations.
-- Conflicting normalized source mappings.
+- Conflicting normalized source mappings or changing identifiers absent from the current document.
+- Prepared ranges whose bounds,
+  text or marker containment disagree with their complete current document.
 - A destination occupied by an unmoved archive identity.
 - Malformed whole-document JSX.
 - Raw identifier bytes disagreeing with the parser's normalized association.
@@ -185,7 +189,12 @@ and compiled the masked MDX body without executing it.
 It used a no-network container configured for 2 GiB RAM,
 2 CPUs and 512 PIDs.
 The driver recorded zero fetch calls.
-See `~/temp/agent/footnote-Y1-consumer-r3-20260911.out`.
+See the current-runtime `~/temp/agent/footnote-Y1-current-consumer-20260912.out`.
+Real `preparePassEntry` fixtures separately verify the cold/warm cache lifecycle.
+The updated 30-case guard/binding mutation proof is retained in
+`~/temp/agent/footnote-guard-proof-r2-20260912`;
+every mutant builds and fails at the intended normal assertion,
+and restored source hashes and tests pass.
 
 Tradeoffs:
 
