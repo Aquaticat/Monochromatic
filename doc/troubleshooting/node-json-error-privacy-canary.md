@@ -131,7 +131,11 @@ corrected in `b0824a634`.
 R9 passes all source verification,
 including the full suite's `unit exit 0` at line 9886.
 The revised isolated run detects removal of the parser-cause sanitizer with the designated ordinary assertion.
-The combined namespace proof remains incomplete because it separately exposed an insufficient sync-await observer.
+The complete R5 namespace proof subsequently passes all 26 removals,
+including the parser-cause case,
+on independently recorded Node `26.8.2` test processes.
+Its restored build and tests pass;
+records are retained under `/var/home/user/temp/agent/namespace-guard-proof-20260912`.
 
 ## Verified workarounds
 

@@ -512,6 +512,10 @@ The first tools probe selected retained Node 26.7.0;
 `receipt-guard-tools-r2-20260912.out` verifies the explicit Node 26.8.2 launcher,
 Mise 2026.9.5,
 Git 2.52.0 and ripgrep 15.2.0 inside the bounded container.
+That probe covers the launcher,
+not the Node processes selected inside Mise tasks.
+The retained receipt failure traces report Node `26.7.0`;
+the successful guard detections must be attributed to that runtime rather than `26.8.2`.
 `receipt-guard-mutations-20260912.out` records the completed baseline/mutation/restoration run.
 All 22 registered mutations rebuild successfully,
 fail their designated ordinary `AssertionError` and leave source hashes restored.
@@ -627,6 +631,10 @@ no-network launcher and masks known source-root credential files.
 The worker requires Node 26.8.2,
 2 GiB memory,
 2 CPUs and 512 PIDs before running any check.
+This did not constrain Node selected by nested Mise tasks:
+the retained request failure traces report Node `26.7.0`.
+The completed mutation detections are evidence on that runtime,
+not proof that every command used the worker's `26.8.2`.
 `request-guard-mutations-20260912.mts` registers request/ledger/transport,
 input ownership,
 projection,
@@ -875,13 +883,75 @@ lint and the full suite;
 `unit exit 0` was inspected at line 9886 of `preparation-attempt-unit-r9-20260912.out`.
 Only Markdown wrapping required correction.
 The third isolated run uses base `33d3b20ab` plus the explicitly hashed committed test overlays from `a7dcdc526`;
-its terminal result is still pending.
+it stops on the symbol-spy diagnostic formatting failure,
+not a counted guard detection.
 
 The first namespace container launch selected Node `26.7.0` and correctly failed its runtime assertion.
 An explicit Node `26.8.2` launcher passed the same tool/cgroup/credential-mask checks.
-This is a launch-context observation,
-not a diagnosis of why that context selected the older runtime;
-no runtime mismatch counts as guard detection.
+R3 nevertheless shows Node `26.7.0` in the actual failing Mise task children.
+This distinction was already recorded for the pairing identity proof;
+newer harnesses incorrectly relied on the worker-only check.
+The qualification,
+receipt and request proof logs also show `26.7.0`.
+Those old records remain unchanged as evidence of their actual runtime.
+
+R4 pins `MISE_NODE_VERSION=26.8.2` for the experiment and supplies a `NODE_OPTIONS` preload to inherited Node environments.
+The preload records version,
+executable,
+entry file and phase,
+and refuses another version.
+The worker requires a matching observation for every designated test file.
+A native Mise control succeeds on `26.8.2` and refuses `26.7.0` with the expected runtime diagnostic.
+The source trace and verified override are recorded in
+[Node command contexts](../troubleshooting/node-lookup-in-agent-command-context.md).
+No lockfile or installed runtime was modified.
+
+R3 also exposed Sinon diagnostic formatting rather than an ordinary failed assertion:
+`Cannot convert a Symbol value to a string` arose when the symbol-named disposal spy's matcher failed.
+`b197a67f9` compares its primitive `callCount` instead.
+R10 passes every source and Markdown phase;
+`unit exit 0` was inspected at line 9885 of `preparation-attempt-unit-r10-20260912.out`.
+Its per-child runtime ledger is `preparation-attempt-runtime-r10-20260912.jsonl`.
+R4 reached the intended ordinary assertions for 25 removals,
+but its relative-path witness still passed after removing the pin.
+The former relative path resolved to the same namespace from both working directories.
+`2d62d0c61` constructs independently owned cwd locations at different depths
+and explicitly proves that resolving the supplied relative path from the changed cwd gives a different location.
+It also tests a self-consistent malformed UUID marker and matching expectation,
+not only the early diagnostic for malformed input.
+
+Independent review prompted fresh exclusive runtime ledgers and a per-invocation identity,
+with each designated file's runtime observations retained in the final report.
+The successful and deliberately older Mise runtime controls are themselves checked against their ledger rows.
+Coverage is the observed task shells and every designated test-entry process,
+not hypothetical descendants that clear the preload environment.
+
+R11 passes all verification phases;
+`unit exit 0` was inspected at line 9884 of `preparation-attempt-unit-r11-20260912.out`.
+Its runtime ledger is `preparation-attempt-runtime-r11-20260912.jsonl`,
+run identity `6d7c04be-110f-43fd-a078-9b2a6657fa14`.
+R5's complete isolated proof passes all 26 registered successful mutant builds
+and designated ordinary assertions,
+then restores source hashes,
+rebuilds and passes the namespace suite.
+Every designated test entry and observed task shell is verified on Node `26.8.2`.
+Peak memory is 794329088 bytes,
+with no OOM or PID-limit event.
+
+`namespace-guard-proof-20260912` retains 261 hash-checked files,
+including failed revisions,
+committed test overlays,
+per-invocation runtime records and the final assertions,
+plus cleanup audit and removal evidence.
+The audit found only owned generated paths and the committed test overlays,
+with no root Git sentinels.
+Directory and registration absence are verified at `2026-09-12T23:39:16.154Z`.
+The fixed namespace reader/initializer boundary is verified;
+task 41's semantic phase plans,
+leases,
+source authority and acquisition journal remain unfinished.
+Combined file-indirection and post-read metadata removals prove their joint boundaries,
+not necessity of every redundant mechanism separately.
 
 Semantic root-plan validation,
 reviewed phase execution,
