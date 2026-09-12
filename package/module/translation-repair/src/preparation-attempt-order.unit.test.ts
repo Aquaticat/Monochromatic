@@ -95,7 +95,15 @@ await describe({ name: 'preparation namespace write completion boundaries', conc
   it({ name: 'awaits native handle sync completion rather than merely invoking it', fn: async ctx => {
     await using parent = await temporaryParent();
     await using probe = await open(join(parent.dir, 'sync-probe'), 'wx');
-    const prototype = Object.getPrototypeOf(probe) as Pick<FileHandle, 'sync'>;
+    const prototype = Object.getPrototypeOf(probe) as Pick<FileHandle, 'sync' | typeof Symbol.asyncDispose>;
+    const disposal = ctx.sinon.spy(prototype, Symbol.asyncDispose);
+    async function disposeWitness(): Promise<void> {
+      await using witness = await open(join(parent.dir, 'disposal-witness'), 'wx');
+      expect(witness.fd).toBeGreaterThan(-1);
+    }
+    await disposeWitness();
+    expect(disposal).toHaveBeenCalledTimes(1);
+    disposal.resetHistory();
     const entered = Promise.withResolvers<void>();
     const released = Promise.withResolvers<void>();
     const finished = Promise.withResolvers<void>();
@@ -128,9 +136,11 @@ await describe({ name: 'preparation namespace write completion boundaries', conc
     };
     expect(await Promise.race([observeEntry(), observed])).toBe('entered');
     await setImmediate();
+    expect(disposal).toHaveBeenCalledTimes(0);
     expect(returned).toBe(false);
     released.resolve();
     await observed;
     expect(returned).toBe(true);
+    expect(disposal).toHaveBeenCalledTimes(1);
   } }),
 ] });
