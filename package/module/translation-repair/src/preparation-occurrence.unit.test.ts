@@ -65,6 +65,7 @@ await describe({ name: readPreparationOccurrence.name, children: [
   it({ name: 'uses registered section correspondence and retains its current alignment findings', fn: async () => {
     const f = await receiptFixture({ sourceText: '## 猫\n\n猫睡了。\n\n## 盒子\n\n盒子开了。',
       targetText: '## Box\n\nThe box opened.\n\n## Cat\n\nThe cat slept.', sectionPairing: [{ source: 0, target: 1 }] });
+    expect(receiptFailure(() => readPreparationOccurrence({ ...f, l: f.input.l }))).toBe('no-refusal');
     const result = readPreparationOccurrence({ ...f, l: f.input.l });
     const alignment = alignDocumentSections({ source: result.source, target: result.target,
       ...((f.expected.sectionPairing === undefined) ? {} : { sectionPairing: f.expected.sectionPairing }) });
