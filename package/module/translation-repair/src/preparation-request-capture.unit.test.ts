@@ -117,10 +117,15 @@ await describe({ name: captureBlockPairingRequests.name, concurrency: 1, childre
     const first = await captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs, signal: new AbortController().signal, l });
     const repeated = await captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs, signal: new AbortController().signal, l });
     expect(repeated).toEqual(first);
-    const changed = await captureBlockPairingRequests({ question, modelIds: modelIds.toReversed(), exchangeTimeoutMs: exchangeTimeoutMs + 1, signal: new AbortController().signal, l });
-    expect(changed.requestConfigurationDigest).not.toBe(first.requestConfigurationDigest);
-    expect(changed.question).toEqual(first.question);
-    expect(changed.requests.map(request => request.bodyJson).toSorted()).toEqual(first.requests.map(request => request.bodyJson).toSorted());
+    const [reordered, retimed] = await Promise.all([
+      captureBlockPairingRequests({ question, modelIds: modelIds.toReversed(), exchangeTimeoutMs, signal: new AbortController().signal, l }),
+      captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs: exchangeTimeoutMs + 1, signal: new AbortController().signal, l }),
+    ]);
+    for (const changed of [reordered, retimed]) {
+      expect(changed.requestConfigurationDigest).not.toBe(first.requestConfigurationDigest);
+      expect(changed.question).toEqual(first.question);
+      expect(changed.requests.map(request => request.bodyJson).toSorted()).toEqual(first.requests.map(request => request.bodyJson).toSorted());
+    }
   } }),
   ...[0, -1, Number.NaN, Number.POSITIVE_INFINITY].map(timeout => it({ name: `refuses invalid native timeout ${String(timeout)}`, fn: async () => {
     let caught: unknown;
