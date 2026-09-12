@@ -102,7 +102,7 @@ await describe({ name: 'preparation namespace write completion boundaries', conc
       expect(witness.fd).toBeGreaterThan(-1);
     }
     await disposeWitness();
-    expect(disposal).toHaveBeenCalledTimes(1);
+    expect(disposal.callCount).toBe(1);
     disposal.resetHistory();
     const entered = Promise.withResolvers<void>();
     const released = Promise.withResolvers<void>();
@@ -136,11 +136,11 @@ await describe({ name: 'preparation namespace write completion boundaries', conc
     };
     expect(await Promise.race([observeEntry(), observed])).toBe('entered');
     await setImmediate();
-    expect(disposal).toHaveBeenCalledTimes(0);
+    expect(disposal.callCount).toBe(0);
     expect(returned).toBe(false);
     released.resolve();
     await observed;
     expect(returned).toBe(true);
-    expect(disposal).toHaveBeenCalledTimes(1);
+    expect(disposal.callCount).toBe(1);
   } }),
 ] });
