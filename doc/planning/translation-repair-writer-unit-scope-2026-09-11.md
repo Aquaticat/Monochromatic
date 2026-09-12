@@ -101,9 +101,7 @@ No shape/size filter was added.
 The original eighteen full-entry readings were revalidated against their original hashes and parent membership.
 Twelve match entries in the new pool,
 and six parent-scope readings carry forward by exact parent and entry hashes.
-Fresh complete readings of `Dethelly`,
-`Futajuhuacha`,
-`GLaDOSister` and `MTF_0615` bring current coverage to sixteen entries and eleven parents.
+Fresh complete readings through `hulicaijia` bring current coverage to twenty-four entries and twenty-three parents.
 The remaining entries and changed parent scopes must still be read.
 The notes are scope/context observations,
 not gold references or automatic correspondence evidence.
@@ -125,6 +123,47 @@ Artifacts in the owned writer workspace:
 `MTF_0615` explicitly discusses name pronunciation in ruby markup and separately supplies an attributed caring quotation.
 These dependencies must be represented in the preparation and final-input plan,
 not repaired with uncredited archive prose.
+
+## Source availability is not incumbent accuracy
+
+The selected `XingZ60` third-contributor parent raised a source-content question:
+the source contains `补` with author/date metadata,
+while the archive contains an English epitaph.
+Pinned history shows an archive-only change from `Supplement` to the epitaph at
+`66d280e75a8bf5b639f033615430c3117fd2c852`.
+The source blame at `388360c8e23a76dc7b1a59c47c2cd06fcd52b0b6`
+only wraps the existing word in a blockquote.
+Neither fact establishes authorial intent or original-English authority.
+
+An independent review initially recommended excluding unsupported positive archive content.
+That rule was withdrawn before implementation:
+it would also remove normal correctable defects from an intentionally imperfect writer incumbent,
+such as a name-gloss addition or a reversed disclosure actor.
+No population was invalidated,
+no parent removed and no redraw performed on that basis.
+
+The narrower qualification is source availability and modality compatibility.
+Unknown nonempty source text remains text.
+A typed editorial-placeholder classification requires an existing generic policy or parser role;
+the archive-stub rule does not establish that role for source `补`.
+Metadata,
+media and preservation channels remain distinct,
+and this is not permission to assign the epitaph special source authority.
+
+The exact prepared-unit consumer probe resolves the floor question.
+It passes `translateSliceInput` into the actual `validateTranslatedSlice` options:
+both the incumbent and a same-shape `Supplement` wording witness pass strict grammar,
+while a heading-only positive control fails for removing the required blockquote.
+The witness is not gold and is not supplied to writers.
+The archive floor does not force the epitaph's words,
+so this remains an imperfect incumbent task rather than a proven scope mismatch.
+Evidence is `source-floor-probe-20260912.json` and `writer-source-floor-control-20260912.out`.
+The population and pool digests remain unchanged.
+
+Apply an auditable source-channel/availability manifest before acquisition and to final prepared children.
+Do not turn that manifest into factual-quality curation of incumbents,
+infer placeholder intent from short text,
+or make a calibration-only no-writing exception.
 
 ## Constraints
 

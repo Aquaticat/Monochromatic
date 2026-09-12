@@ -464,13 +464,30 @@ the population keeps that annotated parent rather than applying a shape filter.
 
 All eighteen original reading records were revalidated.
 Twelve complete-entry readings and six parent-scope readings carry to the new pool by exact hashes.
-Fresh full readings of `Dethelly`,
-`Futajuhuacha`,
-`GLaDOSister` and `MTF_0615` yield sixteen complete entries and eleven reviewed parent scopes.
+Fresh full readings through `hulicaijia` yield twenty-four complete entries and twenty-three reviewed parent scopes.
 Current artifacts are `preparation-pool-policy-20260912.json`,
 `preparation-pool-policy-reading-20260912/` and `preparation-policy-reading-journal-20260912.json`
 in the owned writer workspace.
 Continue the pending entry and parent readings before claiming a frozen acquisition plan.
+The `Mio` introduction keeps an explicit final-unit coverage/context question for its forward lead-in and English summary.
+`hulicaijia` needs complete definition correspondence before preserving its extra brand footnote under a fresh label.
+
+`XingZ60` parent 6 prompted a source-content review:
+source `补` plus attribution faces an archive epitaph introduced by an archive-only revision.
+An initial suggestion to exclude unsupported incumbent prose was withdrawn before any code or redraw:
+it would wrongly exclude ordinary correctable writer incumbents.
+Unknown nonempty source remains text unless a generic existing policy supplies another role.
+The exact prepared-unit probe accepts a same-shape historical `Supplement` wording witness,
+while a heading-only control fails the archive block floor.
+The witness is not gold;
+the epitaph is not protected as source-authoritative prose.
+The parent remains in the unchanged draft,
+with revised notes in `reading-XingZ60-floor-reviewed-20260912.json`.
+Evidence is `source-floor-probe-20260912.json` and `writer-source-floor-control-20260912.out`.
+Apply source-channel availability and modality qualification,
+not incumbent-accuracy filtering,
+before acquisition and final task admission.
+
 No paid preparation,
 writer generation or image calibration has run.
 
