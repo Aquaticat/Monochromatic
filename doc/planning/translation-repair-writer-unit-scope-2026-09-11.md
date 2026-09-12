@@ -174,7 +174,12 @@ The first type-aware formatter invocation saw stale built exports and synchronou
 not a pairing guard failure.
 Fresh build,
 types,
-lint and full-unit verification are next.
+zero-warning lint and full-unit verification pass on `16f9b6732` source.
+`pairing-question-unit-20260912.out` contains the new question controls at line 362
+and the inspected `unit exit 0` at line 9310.
+Scoped Markdown lint also passes.
+These checks verify shared question construction,
+not current-evidence qualification or writer admission.
 
 This helper does not qualify evidence.
 The remaining journal must retally actual queried outcomes,
