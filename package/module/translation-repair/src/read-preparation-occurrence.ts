@@ -53,8 +53,11 @@ export function readPreparationOccurrence({ expected, receipt, sourceText, targe
   const source = parseDocument({ text: sourceText, },);
   /** Full target parse supplies current containers, namespaces and absolute coordinates. */
   const target = parseDocument({ text: targetText, },);
+  /** Same native pre-block alignment, including explicitly registered section correspondence. */
+  const alignment = alignDocumentSections({ source, target,
+    ...((expected.sectionPairing === undefined) ? {} : { sectionPairing: expected.sectionPairing, }), },);
   /** Current combined alignment must retain both independently registered side identities. */
-  const pair = alignDocumentSections({ source, target, },).pairs[expected.pairIndex];
+  const pair = alignment.pairs[expected.pairIndex];
   if ((pair === undefined)
     || (pair.source.sliceIndex !== expected.sourceIndex)
     || (pair.target.sliceIndex !== expected.targetIndex)
@@ -91,7 +94,8 @@ export function readPreparationOccurrence({ expected, receipt, sourceText, targe
     l: pl,
   },);
   pl.info(`reconstructed registered parent ${String(expected.pairIndex,)} from ${String(outcomes.length,)} final seat records without calls`,);
-  return structuredClone({ scope: 'receipt-bound-occurrence', expected, source, target, pair, prepared, },);
+  return structuredClone({ scope: 'receipt-bound-occurrence', expected, source, target, pair,
+    alignmentFindings: alignment.findings, prepared, },);
 }
 
 //endregion Fresh occurrence reconstruction

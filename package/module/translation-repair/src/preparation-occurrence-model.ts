@@ -1,4 +1,5 @@
-import type { ChunkPair, } from './chunk-document.ts';
+import type { ChunkPair, SectionAlignment, } from './chunk-document.ts';
+import type { SectionPair, } from './pair-sections-wire.ts';
 import type { RepairDocument, } from './parse-document.ts';
 import type { PreparationReceiptBinding, } from './preparation-receipt-model.ts';
 import type { PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
@@ -28,6 +29,8 @@ export type PreparationOccurrenceExpectation = {
   readonly sourceIndex: number;
   /** Registered target chunk or insertion-anchor identity. */
   readonly targetIndex: number;
+  /** Explicit current section correspondence, when the owner registered a non-default alignment. */
+  readonly sectionPairing?: readonly SectionPair[];
 };
 
 /**
@@ -51,6 +54,8 @@ export type BoundPreparationOccurrence = {
   readonly target: RepairDocument;
   /** Parent selected from current full-document alignment, never from stored offsets. */
   readonly pair: ChunkPair;
+  /** Current full alignment observations, separate from block-round findings. */
+  readonly alignmentFindings: SectionAlignment['findings'];
   /** Replayed production handoff before any independent scope qualification. */
   readonly prepared: PreparedBlockPairing;
 };
