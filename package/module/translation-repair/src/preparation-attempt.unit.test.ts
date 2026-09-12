@@ -92,6 +92,24 @@ await describe({ name: createPreparationAttempt.name, children: [
     expect(calls).toEqual([]);
     expect(await readdir(parent.dir)).toEqual([]);
   } })),
+  it({ name: 'omits parser details proven to expose the short canary', fn: async () => {
+    await using parent = await temporaryParent();
+    const canary = 'canary';
+    let nativeError: unknown;
+    try { JSON.parse(canary); }
+    catch (error) { nativeError = error; }
+    expect(nativeError).toBeInstanceOf(SyntaxError);
+    expect(inspect(nativeError, { depth: null })).toContain(canary);
+    let caught: unknown;
+    try {
+      await createPreparationAttempt({ parentDir: parent.dir, rootPlanText: canary, l });
+    }
+    catch (error) { caught = error; }
+    expect(caught).toBeInstanceOf(PreparationAttemptError);
+    expect((caught as PreparationAttemptError).operation).toBe('plan-syntax');
+    expect(inspect(caught, { depth: null })).not.toContain(canary);
+    expect(await readdir(parent.dir)).toEqual([]);
+  } }),
   it({ name: 'reports native directory allocation failure without inventing a created attempt', fn: async () => {
     await using parent = await temporaryParent();
     const file = join(parent.dir, 'not-a-directory');
