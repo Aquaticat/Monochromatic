@@ -3,16 +3,15 @@ import { PairingEvidenceError, prepareBlockPairing, qualifyPreparedBlockPairing,
 import { QUALIFICATION_ROSTER, qualificationFailure, qualificationFixture, } from './qualified-block-pairing.test-fixture.ts';
 
 await describe({ name: 'qualified current pairing boundaries', children: [
-  ...[
-    { name: 'source', sourceText: '', targetText: 'Cat.\n\nBox.', },
-    { name: 'target', sourceText: '猫。\n\n盒子。', targetText: '', },
-  ].map(test => it({ name: `retains actual empty ${test.name} dispatch without inventing votes`, fn: async () => {
-    const f = qualificationFixture(test);
-    const prepared = await prepareBlockPairing(f.input);
-    expect(qualifyPreparedBlockPairing({ ...f.input, prepared })).toEqual({
+  ...(['source', 'target'] as const).map(side => it({ name: `retains supplied empty ${side} dispatch without inventing votes`, fn: async () => {
+    const f = qualificationFixture();
+    // An entirely empty document has no aligned parent. Exercise the helper's empty-side contract explicitly.
+    const pair = { ...f.input.pair, [side]: { ...f.input.pair[side], nodes: [], text: '', startOffset: 0, endOffset: 0 } };
+    const prepared = await prepareBlockPairing({ ...f.input, pair });
+    expect(qualifyPreparedBlockPairing({ ...f.input, pair, prepared })).toEqual({
       qualification: 'pairing-only', kind: 'empty', prepared, structuralRelations: [],
-      sourceInsertions: f.input.pair.source.nodes.map(node => node.id),
-      targetsWithoutSource: f.input.pair.target.nodes.map(node => node.id),
+      sourceInsertions: pair.source.nodes.map(node => node.id),
+      targetsWithoutSource: pair.target.nodes.map(node => node.id),
     });
     expect(f.calls).toHaveLength(0);
   } })),

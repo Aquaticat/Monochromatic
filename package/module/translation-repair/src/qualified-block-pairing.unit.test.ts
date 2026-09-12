@@ -43,7 +43,11 @@ await describe({ name: qualifyPreparedBlockPairing.name, children: [
       replies: [COMPLETE_PAIRING_REPLY, COMPLETE_PAIRING_REPLY, '{"pairs":[{"source":99,"target":0}]}'] });
     const prepared = await prepareBlockPairing(f.input,);
     if ((prepared.kind !== 'paired') || (prepared.evidence.kind !== 'queried')) throw new Error('expected current partial usability');
-    expect(prepared.evidence.outcome.heard,).toBe(5);
+    // The native rotated window asks four seats; Synthetic cannot serve its GLM-5.3 seat.
+    expect(prepared.evidence.outcome.outcomes,).toHaveLength(4);
+    expect(prepared.evidence.outcome.heard,).toBe(3);
+    expect(prepared.evidence.outcome.outcomes.filter(outcome => !outcome.voice.heard).map(outcome => outcome.modelId),).toEqual(['glm-5.3']);
+    expect(f.calls,).toHaveLength(3);
     expect(prepared.evidence.outcome.usable,).toBe(2);
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared })),).toBe('usable-quorum');
   }, },),
@@ -77,17 +81,30 @@ await describe({ name: qualifyPreparedBlockPairing.name, children: [
     expect(prepared.evidence.outcome.cacheEligible,).toBe(true);
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared })),).toBe('unclaimed-target');
   }, },),
-  it({ name: 'retains policy-backed target declines despite an unendorsed relation making the result uncacheable', fn: async () => {
+  it({ name: 'does not confuse a lone uncorroborated suggestion with a dropped endorsed relation', fn: async () => {
     const f = qualificationFixture({ targetText: 'The cat slept.\n\nShe loves boxes.\n\nA spare archive note.', replies: [
-      '{"pairs":[{"source":0,"target":0},{"source":1,"target":1},{"source":1,"target":2}]}',
-      COMPLETE_PAIRING_REPLY,
+      '{"pairs":[{"source":0,"target":0},{"source":1,"target":1},{"source":1,"target":2}]}', COMPLETE_PAIRING_REPLY,
     ] });
+    const prepared = await prepareBlockPairing(f.input,);
+    const result = qualifyPreparedBlockPairing({ ...f.input, prepared });
+    expect(result.kind,).toBe('queried');
+    if (result.kind !== 'queried') throw new Error('expected ordinary target decline');
+    expect(result.outcome.cacheEligible,).toBe(true);
+    expect(result.targetDeclines,).toEqual([f.input.pair.target.nodes[2]?.id]);
+    expect(result.relations,).toHaveLength(2);
+  }, },),
+  it({ name: 'retains policy-backed target declines despite a dropped non-monotone relation making the result uncacheable', fn: async () => {
+    // Definition wires allow crossed order; existing agreement drops the backward edge, not the later valid edge.
+    const f = qualificationFixture({ sourceText: '[^1]: 猫。\n\n[^2]: 盒子。',
+      targetText: '[^a]: Spare note.\n\n[^b]: Cat.\n\n[^c]: Box.',
+      replies: ['{"pairs":[{"source":0,"target":1},{"source":1,"target":0},{"source":1,"target":2}]}'] });
     const prepared = await prepareBlockPairing(f.input,);
     const result = qualifyPreparedBlockPairing({ ...f.input, prepared });
     expect(result.kind,).toBe('queried');
     if (result.kind !== 'queried') throw new Error('expected policy-backed decline');
     expect(result.outcome.cacheEligible,).toBe(false);
-    expect(result.targetDeclines,).toEqual([f.input.pair.target.nodes[2]?.id]);
+    expect(result.outcome.findings.join(' '),).toContain('non-monotone');
+    expect(result.targetDeclines,).toEqual([f.input.pair.target.nodes[0]?.id]);
     expect(result.sourceInsertions,).toEqual([]);
     expect(result.relations,).toHaveLength(2);
   }, },),
