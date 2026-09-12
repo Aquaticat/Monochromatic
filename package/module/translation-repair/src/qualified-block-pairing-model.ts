@@ -29,7 +29,7 @@ export type QualifiedBlockRelation = BlockPair & {
  *
  * @example
  * ```ts
- * const qualified = qualifyPreparedBlockPairing({ pair, prepared, modelIds, targetContainers, l });
+ * const qualified = qualifyPreparedBlockPairing({ pair, pairIndex, prepared, modelIds, targetContainers, l });
  * ```
  */
 export type QualifiedBlockPairing = {

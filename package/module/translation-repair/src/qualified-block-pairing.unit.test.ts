@@ -12,6 +12,7 @@ await describe({ name: qualifyPreparedBlockPairing.name, children: [
     expect(result.kind,).toBe('queried');
     if (result.kind !== 'queried') throw new Error('expected queried evidence');
     expect(f.calls,).toHaveLength(2);
+    expect(result.qualification,).toBe('pairing-only');
     expect(result.prepared,).toEqual(prepared);
     expect(result.modelIds,).toEqual(QUALIFICATION_ROSTER);
     expect(result.requiredUsable,).toBe(1);
@@ -125,5 +126,10 @@ await describe({ name: qualifyPreparedBlockPairing.name, children: [
     ]);
     expect(result.targetDeclines,).toEqual([]);
     expect(f.calls,).toHaveLength(2);
+    const withoutMedia = prepared.findings.filter(finding => !finding.startsWith('block-pairing media-adjacent'));
+    expect(withoutMedia.length,).toBeLessThan(prepared.findings.length);
+    for (const findings of [withoutMedia, prepared.findings.toReversed(), [...prepared.findings, 'invented crossing finding']]) {
+      expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared: { ...prepared, findings } })),).toBe('result');
+    }
   }, },),
 ], },);

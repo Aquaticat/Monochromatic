@@ -9,14 +9,19 @@ await describe({ name: 'qualified current pairing boundaries', children: [
   ].map(test => it({ name: `retains actual empty ${test.name} dispatch without inventing votes`, fn: async () => {
     const f = qualificationFixture(test);
     const prepared = await prepareBlockPairing(f.input);
-    expect(qualifyPreparedBlockPairing({ ...f.input, prepared })).toEqual({ kind: 'empty', prepared });
+    expect(qualifyPreparedBlockPairing({ ...f.input, prepared })).toEqual({
+      qualification: 'pairing-only', kind: 'empty', prepared, structuralRelations: [],
+      sourceInsertions: f.input.pair.source.nodes.map(node => node.id),
+      targetsWithoutSource: f.input.pair.target.nodes.map(node => node.id),
+    });
     expect(f.calls).toHaveLength(0);
   } })),
   it({ name: 'retains actual singleton dispatch without declaring semantic endorsement', fn: async () => {
     const f = qualificationFixture({ sourceText: '## 猫', targetText: '## Cat' });
     const prepared = await prepareBlockPairing(f.input);
     const result = qualifyPreparedBlockPairing({ ...f.input, prepared });
-    expect(result).toEqual({ kind: 'implicit', prepared });
+    expect(result).toEqual({ qualification: 'pairing-only', kind: 'implicit', prepared,
+      structuralRelations: [{ source: 0, target: 0 }], sourceInsertions: [], targetsWithoutSource: [] });
     expect('outcome' in result).toBe(false);
     expect(f.calls).toHaveLength(0);
   } }),
@@ -30,11 +35,31 @@ await describe({ name: 'qualified current pairing boundaries', children: [
     { name: 'findings', fields: { findings: ['not a zero-question result'] } },
     { name: 'definition relations', fields: { definitionPairs: [{ sourceLabel: '1', targetLabel: 'a' }] } },
     { name: 'hidden acquisition evidence', fields: { evidence: { kind: 'cached' } } },
+    { name: 'extra pairs', fields: { pairs: [] } },
+    { name: 'extra outcome', fields: { outcome: {} } },
+    { name: 'extra key', fields: { key: 'not a zero-call question' } },
   ].map(test => it({ name: `rejects ${test.name} smuggled into singleton dispatch`, fn: async () => {
     const f = qualificationFixture({ sourceText: '猫。', targetText: 'Cat.' });
     const prepared = { kind: 'implicit' as const, findings: [], definitionPairs: [], ...test.fields };
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared }))).toBe('fast-path');
   } })),
+  ...(['nonenumerable', 'symbol', 'prototype', 'missing-own-key'] as const).map(kind => it({ name: `rejects ${kind} fast-path shape drift`, fn: async () => {
+    const f = qualificationFixture({ sourceText: '猫。', targetText: 'Cat.' });
+    const prepared = await prepareBlockPairing(f.input);
+    // Deliberately alter owned fixture descriptors to test exact result shape rather than JSON serialization.
+    if (kind === 'nonenumerable') Object.defineProperty(prepared, 'hidden', { value: true, enumerable: false });
+    else if (kind === 'symbol') Object.defineProperty(prepared, Symbol('hidden'), { value: true });
+    else if (kind === 'prototype') Object.setPrototypeOf(prepared, { hidden: true });
+    else Reflect.deleteProperty(prepared, 'findings');
+    expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared }))).toBe('fast-path');
+  } })),
+  ...([-1, 0.5, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1]).map(pairIndex => it({
+    name: `rejects invalid parent index ${String(pairIndex)}`, fn: async () => {
+      const f = qualificationFixture({ sourceText: '猫。', targetText: 'Cat.' });
+      const prepared = await prepareBlockPairing(f.input);
+      expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared, pairIndex }))).toBe('parent-index');
+    }
+  })),
   it({ name: 'refuses acquired evidence when current blocks require a zero-question path', fn: async () => {
     const f = qualificationFixture();
     const prepared = await prepareBlockPairing(f.input);
@@ -61,6 +86,8 @@ await describe({ name: 'qualified current pairing boundaries', children: [
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared: changed }))).toBe('result');
   } })),
   ...[
+    { name: 'removed preparation findings', fields: { findings: [] } },
+    { name: 'replaced preparation findings', fields: { findings: ['invented preparation finding'] } },
     { name: 'slicing relations', fields: { pairs: [] } },
     { name: 'definition handoff', fields: { definitionPairs: [{ sourceLabel: '1', targetLabel: 'x' }] } },
     { name: 'fallback disposition', fields: { kind: 'fallback' as const } },
@@ -70,6 +97,17 @@ await describe({ name: 'qualified current pairing boundaries', children: [
     if (prepared.kind !== 'paired') throw new Error('expected explicit pairing');
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared: { ...prepared, ...test.fields } }))).toBe('result');
   } })),
+  it({ name: 'rejects a hidden extra queried-handoff field rather than dropping it during cloning', fn: async () => {
+    const f = qualificationFixture();
+    const prepared = await prepareBlockPairing(f.input);
+    Object.defineProperty(prepared, 'hidden', { value: true, enumerable: false });
+    expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared }))).toBe('result');
+  } }),
+  it({ name: 'binds the complete handoff to its alignment index', fn: async () => {
+    const f = qualificationFixture();
+    const prepared = await prepareBlockPairing(f.input);
+    expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared, pairIndex: 1 }))).toBe('result');
+  } }),
   it({ name: 'keeps definition provenance alongside the actual production slicing map', fn: async () => {
     const f = qualificationFixture({ sourceText: '[^1]: 猫。\n\n[^2]: 盒子。', targetText: '[^a]: Cat.\n\n[^b]: Box.' });
     const prepared = await prepareBlockPairing(f.input);

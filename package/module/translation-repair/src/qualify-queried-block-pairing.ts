@@ -84,7 +84,13 @@ export function qualifyQueriedBlockPairing({ pair, pairIndex, prepared, modelIds
     pairIndex,
     l: pl,
   },);
-  if (!isDeepStrictEqual(prepared, expected,))
+  /** Complete handoff shape also includes keys that ordinary JSON serialization would discard. */
+  const expectedKeys = new Set(Reflect.ownKeys(expected,),);
+  /** Supplied fields cannot hide additional state outside the reconstructed handoff. */
+  const preparedKeys = Reflect.ownKeys(prepared,);
+  if ((preparedKeys.length !== expectedKeys.size)
+    || preparedKeys.some(function unexpected(key,): boolean { return !expectedKeys.has(key,); },)
+    || !isDeepStrictEqual(prepared, expected,))
     throw new PreparationQualificationError({ kind: 'result', },);
   if (expected.kind !== 'paired')
     throw new PreparationQualificationError({ kind: 'fallback', },);
