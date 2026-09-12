@@ -395,7 +395,15 @@ types and focused consumer tests.
 Its formatter stopped on the test observer's `no-nullish-union` finding.
 The observer now records optional schema presence with an optional property and conditional spread,
 without changing the production protocol.
-`pairing-protocol-verification-r2-20260912.out` is the fresh full verification.
+`pairing-protocol-verification-r2-20260912.out` passes build,
+types,
+focused tests,
+formatter,
+rebuild,
+types,
+zero-warning lint,
+full unit and Markdown lint.
+The inspected full-suite terminal is `unit exit 0` at line 9512 of `pairing-protocol-unit-r2-20260912.out`.
 This is only a protocol-construction seam,
 not a receipt,
 attempt journal or final occurrence binding.
