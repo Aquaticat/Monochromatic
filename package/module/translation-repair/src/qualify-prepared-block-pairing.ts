@@ -9,7 +9,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { ContainerSpan, } from './unwrap-container.ts';
 
 //region Calibration preparation qualification
-// Production keeps its existing fallback and cache rules; only a reviewed calibration recipe needs this certificate.
+// Production keeps its existing fallback and cache rules; a calibration recipe additionally needs this replay check.
 
 /**
  * Verifies one current production preparation result without buying or replacing any question.

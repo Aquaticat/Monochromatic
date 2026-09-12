@@ -27,7 +27,7 @@ const QUALIFICATION_MESSAGES: Readonly<Record<PreparationQualificationFailure, s
   fallback: 'Preparation has no endorsed relation and would use the scoring fallback. Stop the frozen plan rather than qualifying fallback scope or replacing the parent.',
   question: 'Preparation evidence names a different current block question. Rebuild the parent and its evidence from the frozen source and archive bytes.',
   result: 'Preparation results do not match replay of their current seat outcomes. Rebuild the recipe from the exact recorded question and outcomes; do not trust supplied summary fields.',
-  'unclaimed-target': 'Preparation leaves archive blocks unclaimed while original blocks remain unplaced. Existing decline policy cannot remove these archive blocks; stop the plan rather than inventing correspondence.',
+  'unclaimed-target': 'Preparation includes archive blocks without an endorsed relation or deterministic media claim. Existing decline policy does not remove these blocks; stop the plan rather than inventing correspondence.',
   'fast-path': 'Preparation claims a singleton or empty-side path that its current blocks do not support. Rebuild current parent preparation without bypassing its required question.',
 };
 
