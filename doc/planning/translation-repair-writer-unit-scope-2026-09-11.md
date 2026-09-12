@@ -242,7 +242,18 @@ full unit and Markdown lint.
 `qualified-pairing-unit-r4-20260912.out` ends with the inspected `unit exit 0` at line 9478.
 Independent re-review found no concrete remaining pairing-only defect,
 but requested one composed relabel/reprepare qualification test before guard-removal proof.
-That test and removal proof remain outstanding;
+`c62c6b37c` adds the composed lifecycle test:
+actual acquired definition relations drive relabeling and repreparation,
+old evidence fails against changed current text,
+and newly acquired evidence qualifies with current labels,
+nodes,
+ranges,
+line flags and stage inputs.
+Both direct relabel and initially unqualified crossed-definition cases pass,
+alongside the actual pass/cache lifecycle test.
+`qualified-pairing-unit-footnote-footnote-20260912.out` records `unit-footnote exit 0` at line 75;
+its build and types also pass.
+Removal proof remains outstanding;
 the owning journal is not complete.
 These harness and lint failures are not semantic guard-detection evidence.
 

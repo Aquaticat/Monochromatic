@@ -1396,6 +1396,44 @@ The [reviewed fixture record](../../../doc/planning/translation-repair-reviewed-
 records the replacement references and each verified delta.
 No existing role is retroactively removed solely on the old fixture diagnosis.
 
+#### Prepared writer inputs
+
+The legacy writer sampler is not approved for further admission measurements.
+It can attach archive body obligations to a source heading.
+Its native CLI is not yet gated on a reviewed preparation plan;
+the private paid launcher remains blocked.
+See the [writer-input work record](../../../doc/planning/translation-repair-writer-unit-scope-2026-09-11.md).
+The frozen parent selection is not acquisition approval or a final forty-round writer plan.
+
+`blockPairingQuestion` shares current local block numbering,
+definition-order exemptions and the unchanged historical cache key.
+`prepareBlockPairing` retains production singleton,
+empty,
+queried,
+cached and fallback behavior.
+`qualifyPreparedBlockPairing` separately replays current outcomes against the supplied configured electorate,
+requires its usable quorum,
+and verifies the complete preparation handoff and findings.
+It distinguishes independent relation endorsement from deterministic media ownership,
+source insertions and policy-backed target declines.
+Historical caches and unresolved fallback do not qualify.
+
+Every returned value says `qualification: 'pairing-only'`.
+Zero-question results report structural relations,
+source insertions and archive blocks without source,
+not invented model votes or automatic writing eligibility.
+The owning journal must still bind exact documents,
+current parser coordinates and containers,
+acquisition roster and attempt identity,
+source channels and dependencies.
+A target rewrite requires reparse,
+repreparation and newly bound evidence.
+The relabel lifecycle tests reject the old question and qualify newly acquired normalized preparation.
+This check does not replace the separately reviewed native execution gate,
+which remains unimplemented.
+
+#### Historical writer and editor runners
+
 Two other runners rank models on the job the seat actually does.
 Both spend quota,
 both write nothing to a corpus,
