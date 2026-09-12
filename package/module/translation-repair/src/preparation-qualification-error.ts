@@ -16,7 +16,8 @@ export type PreparationQualificationFailure =
   | 'question'
   | 'result'
   | 'unclaimed-target'
-  | 'fast-path';
+  | 'fast-path'
+  | 'parent-index';
 
 /**
  * Fixed diagnostics name inputs and valid recovery without reproducing archive content.
@@ -28,7 +29,8 @@ const QUALIFICATION_MESSAGES: Readonly<Record<PreparationQualificationFailure, s
   question: 'Preparation evidence names a different current block question. Rebuild the parent and its evidence from the frozen source and archive bytes.',
   result: 'Preparation results do not match replay of their current seat outcomes. Rebuild the recipe from the exact recorded question and outcomes; do not trust supplied summary fields.',
   'unclaimed-target': 'Preparation includes archive blocks without an endorsed relation or deterministic media claim. Existing decline policy does not remove these blocks; stop the plan rather than inventing correspondence.',
-  'fast-path': 'Preparation claims a singleton or empty-side path that its current blocks do not support. Rebuild current parent preparation without bypassing its required question.',
+  'fast-path': 'Preparation claims a singleton or empty-side result whose fields or current blocks do not match production dispatch. Rebuild current parent preparation without bypassing its required question.',
+  'parent-index': 'Preparation parent index must be a nonnegative safe integer from the current alignment. Rebuild the recipe from its frozen document inputs.',
 };
 
 /**

@@ -6,8 +6,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { blockPairingQuestion, } from './block-pairing-question.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
-import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
-import { countPairedBlocks, } from './pair-block-counts.ts';
 import {
   pairBlocksWithRoster,
   type PairedSectionRecord,
@@ -15,6 +13,7 @@ import {
 import { claimMediaAdjacentTargets, } from './pair-media-adjacency.ts';
 import { finishPreparedBlockPairing, } from './prepare-block-pairing-finish.ts';
 import type { PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
+import { queriedBlockPairingDetails, } from './queried-block-pairing-details.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { ContainerSpan, } from './unwrap-container.ts';
@@ -168,55 +167,9 @@ export async function prepareBlockPairing(
     l: pl,
   },);
   /**
-   * Media ownership joined to the relations the roster actually supplied.
+   * Shared normalization retains the exact findings and cache gate before persistence.
    */
-  const media = claimMediaAdjacentTargets({
-    pairs: outcome.pairs,
-    sourceBlocks: sourceNodes,
-    targetBlocks: targetNodes,
-    targetContainers,
-  },);
-  /**
-   * Normalized relations the cache retains before definition-order separation.
-   */
-  const { pairs, } = media;
-  /**
-   * Archive blocks still outside a source claim prevent terminal caching.
-   */
-  const unclaimed = declinedTargetIdsOfPairing({
-    pairs,
-    sourceNodes,
-    targetNodes,
-  },);
-  /**
-   * Findings retain exactly the cold path's stage-then-media order.
-   */
-  const findings: string[] = [
-    ...outcome.findings,
-    ...media.findings
-      .map(function prefix(finding,): string { return `block-pairing ${finding}`; },),
-  ];
-  if (outcome.usable > 0) {
-    /**
-     * Counts describe roster relations, not additional structural media claims.
-     */
-    const counts = countPairedBlocks({ pairs: outcome.pairs, },);
-    findings.push(
-      `block-pairing section ${String(pairIndex,)} paired ${String(counts.source,)} of ${
-        String(sourceBlocks.length,)
-      } original and ${String(counts.target,)} of ${String(targetBlocks.length,)} translation blocks across ${
-        String(counts.relations,)
-      } relations, from ${String(outcome.usable,)} usable voices of ${String(outcome.heard,)} heard`,
-    );
-  }
-  /**
-   * Existing cache gate excludes unresolved agreement and unclaimed archive blocks.
-   */
-  const canPersistPairing = outcome.cacheEligible ? unclaimed.size === 0 : false;
-  if ((!canPersistPairing) && (outcome.usable > 0))
-    findings.push(`block-pairing section ${String(pairIndex,)} unresolved, not cached`,);
-  if (pairs.length === 0)
-    findings.push(`block-pairing section ${String(pairIndex,)} fell back to scoring`,);
+  const { pairs, findings, canPersistPairing, } = queriedBlockPairingDetails({ outcome, pair, pairIndex, targetContainers, },);
   // Persistence precedes definition separation, preserving the historical cache's relabel evidence.
   if ((outcome.usable > 0) && canPersistPairing)
     await pairingCache?.persist({

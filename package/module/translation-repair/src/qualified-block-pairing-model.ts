@@ -32,7 +32,12 @@ export type QualifiedBlockRelation = BlockPair & {
  * const qualified = qualifyPreparedBlockPairing({ pair, prepared, modelIds, targetContainers, l });
  * ```
  */
-export type QualifiedBlockPairing =
+export type QualifiedBlockPairing = {
+  /**
+   * Source-channel, document and acquisition provenance checks remain required for final task admission.
+   */
+  readonly qualification: 'pairing-only';
+} & (
   | {
     /**
      * Actual production zero-question path, with no invented model votes.
@@ -42,6 +47,18 @@ export type QualifiedBlockPairing =
      * Structural dispatch result, not a semantic correspondence claim.
      */
     readonly prepared: Extract<PreparedBlockPairing, { readonly kind: 'implicit' | 'empty'; }>;
+    /**
+     * Singleton placement from production dispatch, never independent semantic endorsement.
+     */
+    readonly structuralRelations: readonly BlockPair[];
+    /**
+     * Nonempty source blocks facing an empty archive remain source insertions.
+     */
+    readonly sourceInsertions: readonly string[];
+    /**
+     * Archive blocks facing an empty source are not implicitly declined or certified as writing tasks.
+     */
+    readonly targetsWithoutSource: readonly string[];
   }
   | {
     /**
@@ -76,6 +93,7 @@ export type QualifiedBlockPairing =
      * Unclaimed archive blocks declined only under existing complete-original coverage policy.
      */
     readonly targetDeclines: readonly string[];
-  };
+  }
+);
 
 //endregion Current qualification journal values
