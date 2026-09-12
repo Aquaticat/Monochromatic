@@ -178,13 +178,18 @@ but 7.6.1 still has no full-power external class-plugin mechanism.
 
 ### Version and artifact
 
-- Meta Package Manager version: 7.6.1.
-- Source tag: `v7.6.1`.
-- Source commit: `d0404ee2f93f95dac9329e41e47511ef6da4132b`.
+- Meta Package Manager version:
+  `7.6.1`.
+- Source tag:
+  `v7.6.1`.
+- Source commit:
+  `d0404ee2f93f95dac9329e41e47511ef6da4132b`.
 - Linux x64 binary SHA-256:
   `de58308be281c46cd515ce01af4932ea3b4b5fcbec13d211d987cf463e4014be`.
-- Source clone: `~/temp/agent/meta-package-manager-2026-09-12`.
-- Fixture root: `~/temp/agent/mpm-extensibility.ii6hE2wS`.
+- Source clone:
+  `~/temp/agent/meta-package-manager-2026-09-12`.
+- Fixture root:
+  `~/temp/agent/mpm-extensibility.ii6hE2wS`.
 
 The downloaded binary's SHA-256 matched GitHub's release metadata.
 Candidate execution used `debian:bookworm-slim` with 2 GiB memory,
