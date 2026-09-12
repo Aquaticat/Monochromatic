@@ -384,8 +384,16 @@ changed interpretation,
 foreign/partial receipts,
 roster/schema/cap/body drift,
 definition-only authority and final child-index/projection rebuilding.
-The next implementation step is sharing the actual block-pairing protocol payload,
-so receipt construction cannot reproduce its messages and schema beside production.
+`4db2bcade` begins implementation by sharing the actual block-pairing protocol payload.
+`blockPairingProtocol` now constructs the messages and an owned copy of the unchanged response schema;
+`pairBlocksWithRoster` consumes that same operation.
+`33e183a51` adds exact-contract,
+fence/numbering,
+schema-ownership and actual-client/HTTP controls.
+`pairing-protocol-verification-20260912.out` is running its fresh verification.
+This is only a protocol-construction seam,
+not a receipt,
+attempt journal or final occurrence binding.
 
 ## Source availability is not incumbent accuracy
 
