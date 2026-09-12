@@ -1,11 +1,12 @@
 import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile, } from 'node:fs/promises';
+import { createHash, } from 'node:crypto';
+import { inspect, } from 'node:util';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   createPreparationAttempt,
-  hashContent,
   PreparationAttemptError,
   type PreparationAttemptFile,
   type PreparationAttemptStorage,
@@ -13,7 +14,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 const l = tagged({ tag: 'preparation-attempt-namespace-test' });
-const rootPlanText = JSON.stringify({ version: 1, fixture: '猫 "quoted" \\ path', slots: [] }, undefined, 2).replaceAll('\n', '\r\n') + '\r\n';
+const rootPlanText = `${JSON.stringify({ version: 1, fixture: '猫 "quoted" \\ path', slots: [] }, undefined, 2).replaceAll('\n', '\r\n')  }\r\n`;
 
 async function temporaryParent(): Promise<AsyncDisposable & { readonly dir: string; }> {
   const dir = await mkdtemp(join(tmpdir(), 'preparation-attempt-test-'));
@@ -41,8 +42,11 @@ await describe({ name: createPreparationAttempt.name, children: [
     const result = await createPreparationAttempt({ parentDir: parent.dir, rootPlanText, storage, l });
     expect(order).toEqual(['root-plan.json', 'attempt.json']);
     expect(await readFile(join(result.dir, 'root-plan.json'), 'utf8')).toBe(rootPlanText);
-    expect(result.rootPlanDigest).toBe(hashContent({ content: rootPlanText }));
-    expect(JSON.parse(await readFile(join(result.dir, 'attempt.json'), 'utf8'))).toEqual({ version: 1, kind: 'preparation-attempt', attemptId: result.attemptId, rootPlanDigest: result.rootPlanDigest });
+    const storedBytes = await readFile(join(result.dir, 'root-plan.json'));
+    expect(result.rootPlanDigest).toBe(createHash('sha256').update(storedBytes).digest('hex'));
+    expect(
+      JSON.parse(await readFile(join(result.dir, 'attempt.json'), 'utf8')),
+    ).toEqual({ version: 1, kind: 'preparation-attempt', attemptId: result.attemptId, rootPlanDigest: result.rootPlanDigest });
     expect((await stat(result.dir)).mode & 0o077).toBe(0);
     expect((await stat(join(result.dir, 'root-plan.json'))).mode & 0o077).toBe(0);
     expect((await stat(join(result.dir, 'attempt.json'))).mode & 0o077).toBe(0);
@@ -77,6 +81,7 @@ await describe({ name: createPreparationAttempt.name, children: [
     expect(caught).toBeInstanceOf(PreparationAttemptError);
     expect((caught as PreparationAttemptError).operation).toBe('plan-syntax');
     expect((caught as Error).message).not.toContain('private-fixture-invalid-plan');
+    expect(inspect(caught, { depth: null })).not.toContain('private-fixture-invalid-plan');
     expect(calls).toEqual([]);
     expect(await readdir(parent.dir)).toEqual([]);
   } })),
@@ -148,6 +153,30 @@ await describe({ name: createPreparationAttempt.name, children: [
     expect(failure.cause).toBe(reason);
     expect(await readdir(failure.dir)).toEqual(['root-plan.json']);
     expect(await readFile(join(failure.dir, 'root-plan.json'), 'utf8')).toBe(rootPlanText);
+  } }),
+  it({ name: 'retains partial identity bytes and the complete root plan after a marker write fails', fn: async () => {
+    await using parent = await temporaryParent();
+    const reason = new Error('partial identity write fixture');
+    let caught: unknown;
+    try {
+      await createPreparationAttempt({ parentDir: parent.dir, rootPlanText, l, storage: {
+        allocate: preparationAttemptStorage.allocate,
+        write: async args => {
+          if (args.file === 'attempt.json') {
+            await writeFile(join(args.dir, args.file), '{"version":', { flag: 'wx' });
+            throw reason;
+          }
+          await preparationAttemptStorage.write(args);
+        },
+      } });
+    }
+    catch (error) { caught = error; }
+    expect(caught).toBeInstanceOf(PreparationAttemptError);
+    const failure = caught as PreparationAttemptError;
+    expect(failure.operation).toBe('write-identity');
+    expect(failure.cause).toBe(reason);
+    expect(await readFile(join(failure.dir, 'root-plan.json'), 'utf8')).toBe(rootPlanText);
+    expect(await readFile(join(failure.dir, 'attempt.json'), 'utf8')).toBe('{"version":');
   } }),
   it({ name: 'never replaces an existing namespace file and allows only one competing exclusive write', fn: async () => {
     await using parent = await temporaryParent();
