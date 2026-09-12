@@ -48,7 +48,7 @@ await describe({ name: 'qualified current pairing boundaries', children: [
     const prepared = await prepareBlockPairing(f.input);
     // Deliberately alter owned fixture descriptors to test exact result shape rather than JSON serialization.
     if (kind === 'nonenumerable') Object.defineProperty(prepared, 'hidden', { value: true, enumerable: false });
-    else if (kind === 'symbol') Object.defineProperty(prepared, Symbol('hidden'), { value: true });
+    else if (kind === 'symbol') Object.defineProperty(prepared, Symbol('unexpected preparation field in test fixture'), { value: true });
     else if (kind === 'prototype') Object.setPrototypeOf(prepared, { hidden: true });
     else Reflect.deleteProperty(prepared, 'findings');
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared }))).toBe('fast-path');
@@ -87,7 +87,7 @@ await describe({ name: 'qualified current pairing boundaries', children: [
   ].map(test => it({ name: `rejects forged ${test.name} instead of trusting supplied aggregates`, fn: async () => {
     const f = qualificationFixture();
     const prepared = await prepareBlockPairing(f.input);
-    if (prepared.kind !== 'paired' || prepared.evidence.kind !== 'queried') throw new Error('expected current acquisition');
+    if ((prepared.kind !== 'paired') || (prepared.evidence.kind !== 'queried')) throw new Error('expected current acquisition');
     const changed = { ...prepared, evidence: { ...prepared.evidence, outcome: { ...prepared.evidence.outcome, ...test.fields } } };
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared: changed }))).toBe('result');
   } })),
@@ -135,7 +135,7 @@ await describe({ name: 'qualified current pairing boundaries', children: [
     const prepared = await prepareBlockPairing(f.input);
     const result = qualifyPreparedBlockPairing({ ...f.input, prepared });
     expect(result.kind).toBe('queried');
-    if (result.kind !== 'queried' || prepared.kind !== 'paired' || prepared.evidence.kind !== 'queried') throw new Error('expected current evidence');
+    if ((result.kind !== 'queried') || (prepared.kind !== 'paired') || (prepared.evidence.kind !== 'queried')) throw new Error('expected current evidence');
     const originalFindings = [...prepared.findings];
     // Deliberately violate the caller's readonly type to verify the retained journal owns its data.
     const mutableFindings = prepared.findings as string[];

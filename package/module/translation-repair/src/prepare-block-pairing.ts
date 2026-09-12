@@ -169,7 +169,16 @@ export async function prepareBlockPairing(
   /**
    * Shared normalization retains the exact findings and cache gate before persistence.
    */
-  const { pairs, findings, canPersistPairing, } = queriedBlockPairingDetails({ outcome, pair, pairIndex, targetContainers, },);
+  const {
+    pairs,
+    findings,
+    canPersistPairing,
+  } = queriedBlockPairingDetails({
+    outcome,
+    pair,
+    pairIndex,
+    targetContainers,
+  },);
   // Persistence precedes definition separation, preserving the historical cache's relabel evidence.
   if ((outcome.usable > 0) && canPersistPairing)
     await pairingCache?.persist({

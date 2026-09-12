@@ -42,7 +42,7 @@ await describe({ name: qualifyPreparedBlockPairing.name, children: [
     const f = qualificationFixture({ modelIds: widerRoster,
       replies: [COMPLETE_PAIRING_REPLY, COMPLETE_PAIRING_REPLY, '{"pairs":[{"source":99,"target":0}]}'] });
     const prepared = await prepareBlockPairing(f.input,);
-    if (prepared.kind !== 'paired' || prepared.evidence.kind !== 'queried') throw new Error('expected current partial usability');
+    if ((prepared.kind !== 'paired') || (prepared.evidence.kind !== 'queried')) throw new Error('expected current partial usability');
     expect(prepared.evidence.outcome.heard,).toBe(5);
     expect(prepared.evidence.outcome.usable,).toBe(2);
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared })),).toBe('usable-quorum');
@@ -50,7 +50,7 @@ await describe({ name: qualifyPreparedBlockPairing.name, children: [
   it({ name: 'does not qualify a cache-eligible empty agreement as correspondence', fn: async () => {
     const f = qualificationFixture({ replies: ['{"pairs":[]}'] });
     const prepared = await prepareBlockPairing(f.input,);
-    if (prepared.kind !== 'fallback' || prepared.evidence.kind !== 'queried') throw new Error('expected current fallback');
+    if ((prepared.kind !== 'fallback') || (prepared.evidence.kind !== 'queried')) throw new Error('expected current fallback');
     expect(prepared.evidence.outcome.cacheEligible,).toBe(true);
     expect(prepared.evidence.outcome.usable,).toBe(2);
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared })),).toBe('fallback');
@@ -73,7 +73,7 @@ await describe({ name: qualifyPreparedBlockPairing.name, children: [
   it({ name: 'refuses unclaimed archive scope while any original remains unplaced', fn: async () => {
     const f = qualificationFixture({ replies: ['{"pairs":[{"source":0,"target":0}]}'] });
     const prepared = await prepareBlockPairing(f.input,);
-    if (prepared.kind !== 'paired' || prepared.evidence.kind !== 'queried') throw new Error('expected partial current pairing');
+    if ((prepared.kind !== 'paired') || (prepared.evidence.kind !== 'queried')) throw new Error('expected partial current pairing');
     expect(prepared.evidence.outcome.cacheEligible,).toBe(true);
     expect(qualificationFailure(() => qualifyPreparedBlockPairing({ ...f.input, prepared })),).toBe('unclaimed-target');
   }, },),

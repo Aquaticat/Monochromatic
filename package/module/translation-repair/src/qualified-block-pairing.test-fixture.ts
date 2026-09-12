@@ -1,15 +1,15 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  type prepareBlockPairing,
   alignDocumentSections,
   createSyntheticClient,
   type ModelTransport,
   parseDocument,
   PreparationQualificationError,
   type PreparationQualificationFailure,
-  prepareBlockPairing,
   type QualifiedBlockPairing,
   type RosterModelId,
-  type TransportReply,
+  type TransportReply
 } from '../dist/final/node/index.mjs';
 
 //region Transport-backed qualification fixtures
@@ -18,7 +18,10 @@ import {
 /**
  * Independent default voters, not multiple routes for one identity.
  */
-export const QUALIFICATION_ROSTER = ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B',] as const;
+export const QUALIFICATION_ROSTER = [
+  'hf:zai-org/GLM-5.3-Flash',
+  'hf:Qwen/Qwen3.8-27B',
+] as const;
 
 /**
  * Matching relations for the default two-paragraph parent.
@@ -76,34 +79,72 @@ export function qualificationFixture({
   readonly replies?: readonly string[];
   readonly modelIds?: readonly RosterModelId[];
 } = {},): QualificationFixture {
-  /** Current source parser output. */
+  /**
+   * Current source parser output.
+   */
   const source = parseDocument({ text: sourceText, },);
-  /** Complete target containers are retained for media ownership. */
+  /**
+   * Complete target containers are retained for media ownership.
+   */
   const target = parseDocument({ text: targetText, },);
-  /** First parent under production section alignment. */
-  const [pair,] = alignDocumentSections({ source, target, },).pairs;
+  /**
+   * First parent under production section alignment.
+   */
+  const [pair,] = alignDocumentSections({
+    source,
+    target,
+  },)
+    .pairs;
   if ((pair === undefined) || (replies.length === 0))
     throw new Error('qualification fixture requires one parent and at least one reply',);
-  /** Request bodies remain local to this fixture. */
+  /**
+   * Request bodies remain local to this fixture.
+   */
   const calls: string[] = [];
-  /** Adapter exercises the actual structured client without network access. */
-  const transport: ModelTransport = async function recordedReply(exchange,): Promise<TransportReply> {
+  /**
+   * Adapter exercises the actual structured client without network access.
+   *
+   * @param exchange - body-only request fields to record locally
+   *
+   * @returns Registered event-stream reply
+   *
+   * @throws Error when fixture reply indexing is inconsistent
+   *
+   * @example
+   * ```ts
+   * const response = await recordedReply(exchange);
+   * ```
+   */
+  function recordedReply(exchange: Parameters<ModelTransport>[0],): Promise<TransportReply> {
     calls.push(exchange.bodyJson ?? '',);
-    /** Last registered reply repeats if production legitimately asks again. */
-    const index = Math.min(calls.length - 1, replies.length - 1,);
-    /** Indexed reply remains bounded by the nonempty fixture declaration. */
+    /**
+     * Last registered reply repeats if production legitimately asks again.
+     */
+    const index = Math.min(
+      calls.length - 1,
+      replies.length - 1,
+    );
+    /**
+     * Indexed reply remains bounded by the nonempty fixture declaration.
+     */
     const content = replies[index];
     if (content === undefined)
       throw new Error('qualification fixture reply index is unavailable',);
-    return {
+    return Promise.resolve({
       status: 200,
-      bodyText: `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content, }, },], },)}\n\ndata: [DONE]\n\n`,
-    };
-  };
+      bodyText: `data: ${JSON.stringify({ choices: [{
+        index: 0,
+        delta: { content, },
+      },], },)}\n\ndata: [DONE]\n\n`,
+    },);
+  }
   return {
     calls,
     input: {
-      client: createSyntheticClient({ apiKey: 'fixture-key', transport, },),
+      client: createSyntheticClient({
+        apiKey: 'fixture-key',
+        transport: recordedReply,
+      },),
       modelIds,
       pair,
       pairIndex: 0,
