@@ -144,6 +144,18 @@ await describe({ name: 'qualified current pairing boundaries', children: [
     expect(result.outcome.outcomes).not.toBe(prepared.evidence.outcome.outcomes);
     expect(result.modelIds).not.toBe(QUALIFICATION_ROSTER);
   } }),
+  it({ name: 'owns singleton evidence after the caller mutates its zero-question result', fn: async () => {
+    const f = qualificationFixture({ sourceText: '猫。', targetText: 'Cat.' });
+    const prepared = await prepareBlockPairing(f.input);
+    const result = qualifyPreparedBlockPairing({ ...f.input, prepared });
+    const snapshot = structuredClone(result);
+    // Deliberately mutate the owned fixture after qualification to prove zero-question cloning too.
+    const findings = prepared.findings as string[];
+    findings.push('later caller mutation');
+    expect(prepared.findings).toEqual(['later caller mutation']);
+    expect(result).toEqual(snapshot);
+    expect(result.prepared).not.toBe(prepared);
+  } }),
   it({ name: 'keeps the independent-seat guard on both zero-question and queried inputs', fn: async () => {
     const f = qualificationFixture({ sourceText: '猫。', targetText: 'Cat.' });
     const prepared = await prepareBlockPairing(f.input);
