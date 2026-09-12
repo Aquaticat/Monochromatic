@@ -3,7 +3,10 @@ import {
   mkdtemp,
   open,
 } from 'node:fs/promises';
-import { join, resolve, } from 'node:path';
+import {
+  join,
+  resolve,
+} from 'node:path';
 import { PreparationAttemptError, } from './preparation-attempt-error.ts';
 
 //region Fixed preparation namespace storage
@@ -62,7 +65,9 @@ export type PreparationAttemptStorage = {
  * ```
  */
 async function allocate({ parentDir: requestedParentDir, }: { readonly parentDir: string; },): Promise<string> {
-  /** Native asynchronous operations receive an absolute path fixed at entry. */
+  /**
+   * Native asynchronous operations receive an absolute path fixed at entry.
+   */
   const parentDir = resolve(requestedParentDir,);
   /**
    * Allocates before permission handling so a failed chmod can still name the created directory.

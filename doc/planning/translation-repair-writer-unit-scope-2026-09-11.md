@@ -794,6 +794,53 @@ these tests establish final private modes,
 not that removing a redundant chmod alone would change them.
 Namespace guard proof remains pending;
 no reviewed-phase or crash-durability authority follows from this initializer.
+A follow-up moves plan hashing before directory allocation,
+and makes concurrent-allocation and retained-directory witnesses fail through ordinary assertions.
+R3 passes every phase;
+`unit exit 0` was inspected at line 9841 of `preparation-attempt-unit-r3-20260912.out`.
+The next namespace operation will verify independently supplied attempt identity and exact root-plan bytes
+without treating a marker's own values as expectations.
+`verifyPreparationAttempt` now performs that identity/integrity check,
+with streaming raw-byte hashing in `preparation-attempt-read-file.ts`.
+It checks private directory/file identities,
+rejects symlink files and final-directory indirection,
+limits each stream to its observed file extent and verifies descriptor/path metadata afterward.
+The identity marker's expected size is checked before content reading.
+No stored marker values are adopted as expectations,
+and no plan JSON is parsed or emitted by the verifier.
+It grants neither semantic plan approval nor acquisition authority.
+Tests cover real namespaces,
+same-length wrong expectations,
+missing/changed/partial files,
+identical-content symlinks,
+private modes,
+non-files,
+whole-plan multi-chunk hashing and caller expectation snapshots.
+R4 passes all verification phases;
+`unit exit 0` was inspected at line 9869 of `preparation-attempt-unit-r4-20260912.out`.
+Independent review identified unchecked metadata extents,
+lossy numeric filesystem identities and relative-path drift across awaits.
+Creation now records exact UTF-8 `rootPlanBytes` and returns an absolute namespace path.
+Verification validates canonical UUID/digest metadata,
+checks the independently supplied byte extent before reading the plan,
+and uses BigInt inode/device/size and nanosecond timestamp observations.
+This binds total work to the measured plan rather than an unmeasured global size ceiling.
+It is observed stability,
+not a lease against an adversarial concurrent writer or proof of original creation.
+
+Deterministic stream observers now exercise append,
+truncate,
+same-size mutation and identical-byte pathname replacement during reading.
+Controls also cover marker-first refusal,
+one-byte-over-extent rejection before a plan stream,
+canonical metadata and cwd changes.
+R5 passes build,
+types and focused tests including the controlled filesystem changes.
+Its formatter findings concern explicit UUID constants,
+ASCII iteration and a test disposer statement layout.
+The identity scanner now uses a bounded code-unit cursor rather than string spreading,
+with named UUID segment dimensions.
+`preparation-attempt-verification-r6-20260912.out` is the next full verification.
 
 Semantic root-plan validation,
 reviewed phase execution,

@@ -40,7 +40,9 @@ export type PreparationAttemptLocation = {
    * Hash of exact serialized root-plan bytes, without canonicalizing or dropping fields.
    */
   readonly rootPlanDigest: string;
-  /** Measured UTF-8 extent; later verification rejects a different file size before reading plan bytes. */
+  /**
+   * Measured UTF-8 extent; later verification rejects a different file size before reading plan bytes.
+   */
   readonly rootPlanBytes: number;
 };
 
@@ -226,9 +228,16 @@ export async function createPreparationAttempt({
   readonly l: Logger;
   readonly storage?: PreparationAttemptStorage;
 },): Promise<PreparationAttemptLocation> {
-  if (((typeof requestedParentDir) !== 'string') || (requestedParentDir.trim().length === 0))
-    throw new PreparationAttemptError({ operation: 'create-directory', dir: requestedParentDir, },);
-  /** Pin relative input before asynchronous I/O can observe a process-wide cwd change. */
+  if (((typeof requestedParentDir) !== 'string') || (requestedParentDir.trim()
+    .length
+    === 0))
+    throw new PreparationAttemptError({
+      operation: 'create-directory',
+      dir: requestedParentDir,
+    },);
+  /**
+   * Pin relative input before asynchronous I/O can observe a process-wide cwd change.
+   */
   const parentDir = resolve(requestedParentDir,);
   /**
    * Lifecycle messages never include root-plan content.
@@ -266,8 +275,13 @@ export async function createPreparationAttempt({
    * Bind original bytes before allocation so a digest failure cannot leave an unreported directory.
    */
   const rootPlanDigest = hashContent({ content: rootPlanText, },);
-  /** Exact independently returned extent avoids arbitrary verifier-wide size ceilings. */
-  const rootPlanBytes = Buffer.byteLength(rootPlanText, 'utf8',);
+  /**
+   * Exact independently returned extent avoids arbitrary verifier-wide size ceilings.
+   */
+  const rootPlanBytes = Buffer.byteLength(
+    rootPlanText,
+    'utf8',
+  );
   /**
    * Allocation is never an idempotent resume of an existing attempt.
    */

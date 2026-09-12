@@ -108,7 +108,11 @@ await describe({ name: 'observed namespace stability controls', concurrency: 1, 
     expect(isAbsolute(attempt.dir)).toBe(true);
     const relativeDir = relative(originalCwd, attempt.dir);
     const pending = verifyPreparationAttempt({ expected: { ...attempt, dir: relativeDir }, l });
-    using _restore = { [Symbol.dispose](): void { process.chdir(originalCwd); } };
+    using _restore = {
+      [Symbol.dispose](): void {
+        process.chdir(originalCwd);
+      },
+    };
     process.chdir(parent.dir);
     await pending;
     expect(process.cwd()).not.toBe(originalCwd);

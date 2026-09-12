@@ -6,8 +6,36 @@ const LOWER_HEX = '0123456789abcdef';
 const DIGEST_CHARACTERS = 64;
 /** Generated UUID's bounded text extent. */
 const UUID_CHARACTERS = 36;
+/** Leading UUID group extent. */
+const UUID_FIRST_SEGMENT = 8;
+/** Repeated middle UUID group extent. */
+const UUID_MIDDLE_SEGMENT = 4;
+/** Trailing UUID group extent. */
+const UUID_LAST_SEGMENT = 12;
+/** UUID group carrying the variant nibble. */
+const UUID_VARIANT_SEGMENT_INDEX = 3;
 /** UUID segment lengths in the generated namespace representation. */
-const UUID_SEGMENT_LENGTHS = [8, 4, 4, 4, 12,] as const;
+const UUID_SEGMENT_LENGTHS = [UUID_FIRST_SEGMENT, UUID_MIDDLE_SEGMENT, UUID_MIDDLE_SEGMENT, UUID_MIDDLE_SEGMENT, UUID_LAST_SEGMENT,] as const;
+
+/**
+ * Checks bounded ASCII hex without treating Unicode graphemes as interchangeable identity characters.
+ * @param text - component whose length has already been bounded
+ * @returns Whether every code unit belongs to canonical lowercase hex
+ * @example
+ * ```ts
+ * const valid = lowerHex('1a2b');
+ * ```
+ */
+function lowerHex(text: string,): boolean {
+  /** Linear cursor over the bounded component. */
+  let offset = 0;
+  while (offset < text.length) {
+    if (!LOWER_HEX.includes(text.charAt(offset,),))
+      return false;
+    offset += 1;
+  }
+  return true;
+}
 
 /**
  * Recognizes canonical UUID-v4/SHA-256 identity and independently measured plan extent before filesystem work.
@@ -34,15 +62,15 @@ export function validPreparationAttemptIdentity({ attemptId, rootPlanDigest, roo
   const parts = attemptId.split('-',);
   if ((parts.length !== UUID_SEGMENT_LENGTHS.length)
     || parts.some(function invalid(part, index,): boolean {
-      return (part.length !== UUID_SEGMENT_LENGTHS[index]) || [...part,].some(function nonHex(character,): boolean { return !LOWER_HEX.includes(character,); },);
+      return (part.length !== UUID_SEGMENT_LENGTHS[index]) || (!lowerHex(part,));
     },)
     || (parts[2]?.[0] !== '4'))
     return false;
   /** Variant presence follows the checked shape and is still narrowed explicitly for typed access. */
-  const variant = parts[3]?.[0];
+  const variant = parts[UUID_VARIANT_SEGMENT_INDEX]?.[0];
   if ((variant === undefined) || (!'89ab'.includes(variant,)))
     return false;
-  return [...rootPlanDigest,].every(function hex(character,): boolean { return LOWER_HEX.includes(character,); },);
+  return lowerHex(rootPlanDigest,);
 }
 
 //endregion Canonical independently supplied namespace identity
