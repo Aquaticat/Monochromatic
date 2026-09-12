@@ -369,10 +369,36 @@ not acquired correspondence or calibration approval.
 The earlier attempts failed in the private harness's compiler resolution and assumed preparation-object shape,
 not the relabel algorithm.
 
-Remaining task 39 work includes additional guard-specific controls,
-individual removal proof,
-independent implementation review and final verification.
-An Advisor call timed out without feedback.
+The intermediate guard proof at `2ce03f9a1` detected 22 individual removals,
+each after a successful rebuild and at an intended normal assertion.
+Restored build and registered tests passed;
+peak memory was 726011904 bytes with no OOM/PID events.
+Proof is retained at `~/temp/agent/footnote-guard-proof-20260911`.
+The owned `translation-repair-footnote-guard-20260911` worktree remains,
+source restored,
+for possible updated verification.
+
+Independent review then identified further boundaries.
+Actual default-budget preparation produced a marker-bearing container half at offsets 0 to 450;
+reparsing that slice as a whole document failed.
+Missing map domains could also silently no-op or partially apply.
+Through `9196cb780`,
+map domains are checked before edits,
+and `footnoteRelabelOf` now takes complete source/target text plus slices,
+projecting full-document markers through checked range/text boundaries.
+Build,
+types and review regressions pass.
+The proposed astral-length defect was disproved by actual parser-positive controls:
+the installed parser and lexer agree at 999 UTF-16 units and reject 1000.
+NFC/NFD identifiers stay distinct.
+
+Remaining task 39 work is actual `preparePassEntry` cold/warm cache integration,
+additional compound/syntax controls,
+updated removal proof,
+current-runtime consumer verification,
+re-review and final wrapper verification.
+The initial `Y1Ran` mechanism control manually rebuilt deterministic preparation,
+not the actual pass cache lifecycle.
 The [footnote work record](../planning/translation-repair-archive-footnote-collisions-2026-09-11.md)
 is canonical.
 No corpus edits or paid preparation,

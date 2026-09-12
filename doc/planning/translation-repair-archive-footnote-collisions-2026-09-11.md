@@ -57,7 +57,8 @@ extra writer round or per-entry exception is authorized by this operation.
 Displacement is allowed only after all source labels have correspondence evidence
 or the existing forced elimination.
 If source correspondence is incomplete,
-keep the map open.
+keep a colliding map open rather than closing it with displacement.
+Existing collision-free partial rewrites remain operationally valid without claiming complete correspondence.
 Identity correspondences must not be guessed from equal label spelling:
 the old `mapLabels` filtered identity moves out.
 Complete correspondence evidence now remains distinguishable from the rewrite map.
@@ -179,7 +180,10 @@ That direct invocation did not append a separate `unit exit 0` marker;
 final wrapper-based verification remains required.
 The second formatter run reported zero warnings and errors before the latest boundary test additions.
 Final lint and individual guard-removal proof remain incomplete.
-An implementation-review Advisor call timed out without feedback.
+The first implementation-review Advisor call timed out.
+A later review identified prepared-fragment parsing,
+stale rewrite domains and real pass/cache integration as remaining boundaries.
+These findings supersede any inference that the initial guard catalog covered the complete operation.
 This is not a release-ready or calibration-approved checkpoint.
 
 The source trace currently covers:
@@ -212,8 +216,48 @@ Earlier harness attempts had a compiler import-resolution error and an incorrect
 `targetText` and parsed nodes replaced the nonexistent `target` property.
 No corpus bytes were modified.
 
-The next step is guard-specific coverage and individual removal proof,
-independent review and final verification.
+At `2ce03f9a1`,
+individual removal of 22 registered guards rebuilt successfully and failed at the intended normal assertion.
+Restored source rebuilt and all registered tests passed.
+The measured memory peak was 726011904 bytes,
+with no OOM or PID-limit events.
+The complete intermediate proof is retained in `~/temp/agent/footnote-guard-proof-20260911`.
+The owned worktree `~/temp/agent/translation-repair-footnote-guard-20260911` still exists,
+restored to its source baseline;
+it was created from main at `f78921f15` with the single committed `2ce03f9a1` test overlay.
+No source from the development worktree was mutated by the experiment.
+
+The independent review correctly identified another real input boundary:
+a default-budget prepared container can yield a marker-bearing fragment with an unmatched container half.
+The actual forty-paragraph fixture produced a marker slice at offsets 0 to 450 and the old reader threw `syntax`.
+The hypothesis that the lexical length bound diverged on astral characters was not supported.
+Actual parser controls accept 999 UTF-16 units,
+including mixed astral/ASCII and escaped-bracket cases,
+and reject 1000;
+NFC and NFD identifiers remain distinct.
+Evidence is `footnote-review-probe-r2-20260911.out` and the committed Unicode tests.
+
+Red tests in `e305de648` demonstrated the prepared-fragment failure,
+stale source/target slice inputs and missing map domains.
+Through `9196cb780`,
+changing map keys must occur in the current active namespace,
+and `footnoteRelabelOf` takes complete `sourceText`,
+`targetText` and slices.
+It projects whole-document reference markers into checked current ranges instead of reparsing fragments.
+`sliceFootnoteLabels` checks integer bounds,
+exact text and whole-marker containment;
+it uses a binary search followed by the intersecting marker run.
+The pass caller and existing tests now pass complete document context.
+Build,
+types and the review regressions pass in `footnote-review-{build,types,green}-20260911.out`.
+
+The next step is the actual `preparePassEntry` cold/warm cache and re-preparation test,
+additional syntax/compound-operation controls,
+updated removal proof,
+current-runtime consumer verification,
+independent re-review and final wrapper-based verification.
+The initial `Y1Ran` control manually called deterministic preparation after the operation;
+it did not prove the actual pass caller's cache lifecycle.
 The first formatter run (`proc_d6ff`) completed with `no-nullish-union`
 on the lexical no-marker return and `max-statements-per-line` on a lookup callback.
 The scanner now uses a domain-specific `NO_GFM_MARKER` sentinel,
