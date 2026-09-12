@@ -39,7 +39,10 @@ await describe({ name: captureBlockPairingRequests.name, concurrency: 1, childre
     expect(fetch).toHaveBeenCalledExactlyOnceWith('data:text/plain,capture-observation-control');
     fetch.resetHistory();
 
-    const manifest = await captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs, signal: new AbortController().signal, l });
+    const [capture] = await Promise.allSettled([captureBlockPairingRequests({ question, modelIds, exchangeTimeoutMs, signal: new AbortController().signal, l })]);
+    expect(capture?.status).toBe('fulfilled');
+    if (capture?.status !== 'fulfilled') throw new Error('expected successful non-serving capture');
+    const manifest = capture.value;
     expect(fetch).not.toHaveBeenCalled();
     expect(
       new Set(manifest.requests.map(request => request.provider)),

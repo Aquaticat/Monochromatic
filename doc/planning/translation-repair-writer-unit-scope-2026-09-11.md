@@ -592,7 +592,13 @@ The client correctly reports `MalformedCompletionError` with `anthropic stream e
 the fixture then observes retry calls instead of its expected completed stage.
 The fixture now emits the grammar declared by the actual native exchange,
 and compares complete header-free projections including stream metadata.
-`preparation-request-capture-verification-r5-20260912.out` is the next full verification.
+R5 passes build,
+types and all focused interception/caller controls.
+Its formatter findings are fixture function placement and the private stop class's required `Error` suffix.
+Those are corrected without changing native payloads or the capture contract.
+The non-serving positive control now asserts successful materialization through `Promise.allSettled`,
+so a removed transport binding can produce a designated assertion rather than an uncaught network/capture exception.
+`preparation-request-capture-verification-r6-20260912.out` is the next full verification.
 The new request-materialization scope is not yet declared verified.
 
 The request-capture test's fetch probe needs explicit isolation.

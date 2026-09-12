@@ -52,8 +52,17 @@ export class PreparationRequestCaptureError extends Error {
    * new PreparationRequestCaptureError({ kind: 'ledger', });
    * ```
    */
-  public constructor({ kind, cause, }: { readonly kind: PreparationRequestCaptureFailure; readonly cause?: unknown; },) {
-    super(CAPTURE_MESSAGES[kind], ...(cause === undefined ? [] : [{ cause, },]),);
+  public constructor({
+    kind,
+    cause,
+  }: {
+    readonly kind: PreparationRequestCaptureFailure;
+    readonly cause?: unknown
+  },) {
+    super(
+      CAPTURE_MESSAGES[kind],
+      ...(cause === undefined ? [] : [{ cause, },]),
+    );
     this.name = 'PreparationRequestCaptureError';
     this.kind = kind;
   }

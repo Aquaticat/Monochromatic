@@ -14,32 +14,40 @@ import type { ModelTransport, } from './synthetic-transport.ts';
 
 /**
  * Private identity-compared stop after the capture adapter observes a request.
+ *
  * @example
  * ```ts
- * const stop = new PreparationRequestCaptured();
+ * const stop = new PreparationRequestCapturedError();
  * ```
  */
-class PreparationRequestCaptured extends Error {
-  /** Fixed internal control message never contains request data. */
+class PreparationRequestCapturedError extends Error {
+  /**
+   * Fixed internal control message never contains request data.
+   */
   public readonly messageNamesOnly: true = true;
   /**
    * Creates the transport stop; caller-visible failures use PreparationRequestCaptureError instead.
+   *
    * @example
    * ```ts
-   * new PreparationRequestCaptured();
+   * new PreparationRequestCapturedError();
    * ```
    */
   public constructor() {
     super('Preparation provider request captured before transmission.',);
-    this.name = 'PreparationRequestCaptured';
+    this.name = 'PreparationRequestCapturedError';
   }
 }
 
 /**
  * Parses native request bytes without exposing a source-bearing parser diagnostic as the public message.
+ *
  * @param text - native serialized JSON body
+ *
  * @returns Parsed value for destination-specific validation
+ *
  * @throws PreparationRequestCaptureError when native body is not JSON
+ *
  * @example
  * ```ts
  * const body = captureRequestJson(text);
@@ -50,7 +58,10 @@ function captureRequestJson(text: string,): unknown {
     return JSON.parse(text,) as unknown;
   }
   catch (error) {
-    throw new PreparationRequestCaptureError({ kind: 'request', cause: error, },);
+    throw new PreparationRequestCaptureError({
+      kind: 'request',
+      cause: error,
+    },);
   }
 }
 
@@ -109,7 +120,7 @@ export async function capturePreparationProviderRequest({
   /**
    * Instance identity separates the intentional transport stop from every real client failure.
    */
-  const stop = new PreparationRequestCaptured();
+  const stop = new PreparationRequestCapturedError();
   /**
    * The adapter must be reached once, not inferred from a caught exception's class.
    */
@@ -129,7 +140,8 @@ export async function capturePreparationProviderRequest({
   function stopBeforeTransmission(exchange: Parameters<ModelTransport>[0],): never {
     request.signal
       .throwIfAborted();
-    exchange.signal.throwIfAborted();
+    exchange.signal
+      .throwIfAborted();
     if ((exchange.method !== 'POST') || (exchange.bodyJson === undefined))
       throw new PreparationRequestCaptureError({ kind: 'request', },);
     /**
