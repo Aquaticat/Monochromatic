@@ -620,6 +620,18 @@ The independent native-constructor,
 per-provider retry,
 route-fallback and separate digest-sensitivity controls pass.
 Isolated removal checks remain before closing the request-materialization proof.
+The owned request-capture guard worktree is `translation-repair-request-guard-20260912`,
+created from the main worktree at `b19e50a16` with no test overlay.
+`prepare-request-guard-20260912.mts` reuses the bounded,
+no-network launcher and masks known source-root credential files.
+The worker requires Node 26.8.2,
+2 GiB memory,
+2 CPUs and 512 PIDs before running any check.
+`request-guard-mutations-20260912.mts` registers request/ledger/transport,
+input ownership,
+projection,
+error identity and native-bound controls.
+The mandatory-transport mutation is permitted only inside that no-network container with dummy client keys.
 
 The request-capture test's fetch probe needs explicit isolation.
 This worktree resolves `@monochromatic-dev/module-test/ts` to its own `package/module/test/src/index.ts`;
