@@ -1416,6 +1416,9 @@ The independently expected whole-artifact digest binds sampler metadata that is 
 returns owned raw snapshots and extents in frozen order,
 and does not open paths or assign semantic roles or approval.
 The I/O owner must size-bound inputs before loading them.
+Byte inputs must be genuine branded `Uint8Array` views,
+including `Buffer`;
+byte-view proxies are refused.
 Matching is point-in-time evidence;
 a downstream owner must rehash bytes rather than trusting a mutable returned record.
 Its byte-binding integration is still under verification.

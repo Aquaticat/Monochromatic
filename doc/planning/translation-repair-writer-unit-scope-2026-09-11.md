@@ -1283,7 +1283,23 @@ The fixture now uses a real aborted signal's caller-supplied primitive reason,
 first proving the native operation throws that exact value.
 That fixture correction changes neither production exception handling nor lint policy.
 The managed retry committed successfully as `cb1dc3bb4`.
-`preparation-supporting-bytes-verification-r5-20260913.out` is the next full verification.
+R5 passes every phase at `25ab749b6`,
+with `unit exit 0` inspected at line 10374 of `preparation-supporting-bytes-unit-r5-20260913.out`.
+Its run identity is `41329548-f3df-4a4b-b2fb-de2f0be47c5e`.
+Only the owner's `mise.lock` remained dirty after that checkpoint.
+
+Guard preparation exposed a further observation gap,
+confirmed by independent review and red regressions at `e359a7d53`.
+Byte-view proxies can throw input-bearing errors during prototype or iterator observations;
+revoked inventories and descriptors can throw during `Array.isArray`.
+R6 rebuild,
+consumer and types pass,
+then the designated ordinary assertions fail for those cases.
+The fix uses a measured native byte-view brand check and narrowly sanitized array-shape observations.
+The [Node byte-view observation record](../troubleshooting/node-typed-array-proxy-observations.md)
+retains source evidence,
+probe catalogs and exact failures.
+R7 will repeat full verification before the combined selection/supporting-byte guard proof.
 This supporting-byte reader is not yet declared finally verified.
 
 The bounded phase design follows the permitted caller:

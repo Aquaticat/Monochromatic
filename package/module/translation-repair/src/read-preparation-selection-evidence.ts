@@ -1,4 +1,5 @@
 import { createHash, } from 'node:crypto';
+import { isUint8Array, } from 'node:util/types';
 import {
   type Logger,
   tagged,
@@ -7,7 +8,10 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { readFrozenPreparationSelection, } from './read-frozen-preparation-selection.ts';
 import { PreparationRootError, } from './preparation-root-error.ts';
 import { isJsonRecord, } from './json-guard.ts';
-import { preparationArtifactProperty, } from './preparation-artifact-property.ts';
+import {
+  preparationArtifactIsArray,
+  preparationArtifactProperty,
+} from './preparation-artifact-property.ts';
 import type {
   MatchedPreparationArtifact,
   PreparationArtifactInput,
@@ -19,7 +23,7 @@ import type {
 /**
  * Copies raw bytes before hashing so later caller mutation cannot change the matched content.
  *
- * @param content - caller-loaded bytes, never text decoded before hashing
+ * @param content - genuine branded byte view, never a proxy or text decoded before hashing
  *
  * @returns Owned byte snapshot
  *
@@ -31,7 +35,7 @@ import type {
  * ```
  */
 function artifactBytes(content: unknown,): Uint8Array<ArrayBuffer> {
-  if (!(content instanceof Uint8Array))
+  if (!isUint8Array(content,))
     throw new PreparationRootError({ kind: 'reference-content', },);
   try {
     return new Uint8Array(content,);
@@ -92,7 +96,7 @@ export function readPreparationSelectionEvidence({
     expectedDigest,
     l: pl,
   },);
-  if (!Array.isArray(artifacts,))
+  if (!preparationArtifactIsArray({ value: artifacts, l: pl, },))
     throw new PreparationRootError({ kind: 'reference-inventory', },);
   /**
    * The frozen reference count bounds indexed traversal, independent of a custom array iterator.
@@ -127,7 +131,7 @@ export function readPreparationSelectionEvidence({
       kind: 'reference-inventory',
       l: pl,
     },);
-    if (Array.isArray(input,) || (!isJsonRecord(input,)))
+    if (preparationArtifactIsArray({ value: input, l: pl, },) || (!isJsonRecord(input,)))
       throw new PreparationRootError({ kind: 'reference-inventory', },);
     /**
      * Snapshot locator once so callback-backed descriptors cannot select different keys during this pass.

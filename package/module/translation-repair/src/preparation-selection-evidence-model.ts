@@ -16,7 +16,7 @@ export type PreparationArtifactInput = {
    */
   readonly path: string;
   /**
-   * Raw bytes before any decoding or normalization.
+   * Genuine branded Uint8Array bytes before decoding or normalization; byte-view proxies are refused.
    */
   readonly content: Readonly<Uint8Array>;
 };
