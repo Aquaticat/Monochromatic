@@ -1,4 +1,7 @@
-import { ACCOUNT_MOUNTS, PLATFORM_MOUNT_GROUPS, } from './producer-input-platform-mounts.ts';
+import {
+  ACCOUNT_MOUNTS,
+  PLATFORM_MOUNT_GROUPS,
+} from './producer-input-platform-mounts.ts';
 import {
   readFile,
   realpath,

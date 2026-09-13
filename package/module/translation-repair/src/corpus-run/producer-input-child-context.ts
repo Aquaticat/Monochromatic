@@ -221,17 +221,31 @@ export async function verifyProducerInputChildContext(identity: ProducerInputChi
    * Network-none is checked through actual interface state, not inferred from the launch request.
    */
   const interfaces = networkInterfaces();
-  if (!isDeepStrictEqual(Object.keys(interfaces), ['lo']))
-    throw new ProducerInputRunError({ operation: 'verify-runtime', locator: 'child network namespace', });
+  if (!isDeepStrictEqual(
+    Object.keys(interfaces),
+    ['lo']
+  ))
+    throw new ProducerInputRunError({
+      operation: 'verify-runtime',
+      locator: 'child network namespace',
+    });
   for (const addresses of Object.values(interfaces)) {
     if (addresses === undefined)
-      throw new ProducerInputRunError({ operation: 'verify-runtime', locator: 'child network namespace', });
-    /** Presence is established before this deeply readonly host view crosses a callback boundary. */
+      throw new ProducerInputRunError({
+        operation: 'verify-runtime',
+        locator: 'child network namespace',
+      });
+    /**
+     * Presence is established before this deeply readonly host view crosses a callback boundary.
+     */
     const observed: readonly Readonly<NetworkInterfaceInfo>[] = addresses;
     if (observed.some(function routed(address): boolean {
       return !address.internal;
     }))
-      throw new ProducerInputRunError({ operation: 'verify-runtime', locator: 'child network namespace', });
+      throw new ProducerInputRunError({
+        operation: 'verify-runtime',
+        locator: 'child network namespace',
+      });
   }
   try {
     await verifyProducerInputChildMounts();
