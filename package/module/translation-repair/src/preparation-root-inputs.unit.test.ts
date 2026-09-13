@@ -578,7 +578,9 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
       const content = new TextEncoder().encode(kind === 'utf8' ? JSON.stringify({ ...f.values.pool, decodingProbe: 'x' }) : kind === 'array' ? '[]' : 'q7z9k2');
       if (kind === 'utf8') {
         content[content.length - 3] = 255;
-        expect(JSON.parse(new TextDecoder().decode(content))).toHaveProperty('decodingProbe', '\uFFFD');
+        expect(
+          JSON.parse(new TextDecoder().decode(content)),
+        ).toHaveProperty('decodingProbe', '\uFFFD');
       }
       artifacts[0] = { path: first.path, content };
       poolReference.hash = createHash('sha256').update(content).digest('hex');
