@@ -996,8 +996,40 @@ Its mixed-endpoint fixture wrongly expected partial projection:
 The corrected test requires unusable evidence and quorum refusal;
 production wire policy is unchanged.
 The configured-denominator control deliberately includes a model unreachable by its Synthetic-only adapter.
-`preparation-definition-verification-r2-20260912.out` is the next verification;
-this projection is not yet declared verified.
+R2 passes build,
+types and focused tests;
+its formatter rejected array deletion and an untyped reflective return in a synthetic mutation fixture.
+Independent review then identified the more consequential boundary:
+a public reader accepting a naked parent and ID-only domain could be misbound,
+and a caller-supplied accessor could change that parent between replay and endpoint lookup.
+The arbitrary-node-table interface and its mutation fixture are superseded.
+
+The public reader now snapshots `PreparationDefinitionRegistration`,
+then calls `readPreparationOccurrence` with the registered full-document,
+parent,
+receipt and request-configuration expectations before any projection.
+`projectPreparationDefinitionRelations` is internal and receives only that owned reconstruction.
+Returned evidence retains the checked occurrence binding;
+no matching local question or node-ID list selects its own parent.
+The finisher and occurrence types now express their existing queried paired/fallback result,
+rather than also claiming impossible singleton/empty variants.
+A body-only empty definition domain is refused;
+one-sided inventories can contribute no invented counterpart.
+
+Tests now use actual terminal receipt fixtures,
+complete-document alias controls,
+receipt-bound relabel/reprepare,
+partial/crossing/one-sided definitions,
+foreign or partial receipts,
+and a receipt accessor that mutates caller registration after the reader snapshots it.
+The first independent-review attempt timed out without a review;
+its subsequent completed review supplied these ownership concerns.
+R3 builds,
+but TypeScript reports `TS2339` where the fixture returned a broad prepared union and tests accessed `evidence.outcome`.
+The fixture now returns its already narrowed queried evidence explicitly;
+no production policy changes for that diagnostic.
+`preparation-definition-verification-r4-20260912.out` is the next verification;
+this redesigned projection is not yet declared verified.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,

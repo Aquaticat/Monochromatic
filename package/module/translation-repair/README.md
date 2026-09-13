@@ -1443,8 +1443,11 @@ Neither operation grants semantic plan approval,
 leases,
 original-creation authentication or containing-directory power-loss durability.
 
-`readPreparationDefinitionRelations` projects usable current question evidence to a separately registered definition domain.
-Its `qualification: 'pairing-only'` and `scope: 'footnote-definitions'` result contains only endorsed definition endpoints.
+`readPreparationDefinitionRelations` snapshots a registration,
+reconstructs its terminal receipt against complete current documents,
+and only then projects usable evidence to the registered definition domain.
+Its `qualification: 'pairing-only'` and `scope: 'footnote-definitions'` result retains the checked occurrence binding
+and endorsed definition endpoints.
 An empty projection invents no correspondence,
 and no body pairing,
 media claim,

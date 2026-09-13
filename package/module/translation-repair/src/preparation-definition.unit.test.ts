@@ -38,7 +38,7 @@ async function acquire({ replies = [reply], modelIds = QUALIFICATION_ROSTER, sou
   if ((prepared.kind !== 'paired' && prepared.kind !== 'fallback') || prepared.evidence.kind !== 'queried') throw new Error('expected native queried fixture');
   const input = { registration: { occurrence: structuredClone(fixture.expected), domain: structuredClone(registeredDomain) },
     receipt: fixture.receipt, sourceText: original, targetText: archive, l: fixture.input.l };
-  return { fixture, prepared, input };
+  return { fixture, prepared, input, evidence: prepared.evidence };
 }
 
 await describe({ name: '', children: [describe({ name: readPreparationDefinitionRelations.name, children: [
@@ -84,22 +84,22 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
     expect(result.domain).toEqual(domain);
   } }),
   it({ name: 'retains native crossing-definition agreement without restoring a dropped edge', fn: async () => {
-    const { input, prepared } = await acquire({ replies: ['{"pairs":[{"source":1,"target":2},{"source":2,"target":1}]}'] });
-    expect(prepared.evidence.outcome.usable).toBe(2);
+    const { input, evidence } = await acquire({ replies: ['{"pairs":[{"source":1,"target":2},{"source":2,"target":1}]}'] });
+    expect(evidence.outcome.usable).toBe(2);
     const result = readPreparationDefinitionRelations(input);
     expect(result.definitionRelations).toHaveLength(1);
     expect(result.definitionRelations.every(item => (item.source.blockIndex === 1 && item.target.blockIndex === 2) || (item.source.blockIndex === 2 && item.target.blockIndex === 1))).toBe(true);
   } }),
   it({ name: 'rejects mixed definition-body wires rather than promoting their remaining relations', fn: async () => {
-    const { input, prepared } = await acquire({ replies: ['{"pairs":[{"source":0,"target":0},{"source":1,"target":0},{"source":2,"target":2}]}'] });
-    expect(prepared.evidence.outcome.usable).toBe(0);
+    const { input, evidence } = await acquire({ replies: ['{"pairs":[{"source":0,"target":0},{"source":1,"target":0},{"source":2,"target":2}]}'] });
+    expect(evidence.outcome.usable).toBe(0);
     expect(refusal(() => readPreparationDefinitionRelations(input))).toBe('qualification:usable-quorum');
   } }),
   it({ name: 'requires configured usable quorum despite heard-invalid and unreachable voices', fn: async () => {
     // The Synthetic-only adapter cannot serve MiniMax; its configured seat still belongs to the denominator.
-    const { input, prepared } = await acquire({ modelIds: [...QUALIFICATION_ROSTER, 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b', 'minimax-m3'],
+    const { input, evidence } = await acquire({ modelIds: [...QUALIFICATION_ROSTER, 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b', 'minimax-m3'],
       replies: [reply, '{"pairs":[{"source":99,"target":99}]}'] });
-    expect(prepared.evidence.outcome.usable).toBeLessThan(3);
+    expect(evidence.outcome.usable).toBeLessThan(3);
     expect(refusal(() => readPreparationDefinitionRelations(input))).toBe('qualification:usable-quorum');
   } }),
   it({ name: 'requires two endorsing models rather than merely the one-usable-reply quorum', fn: async () => {
