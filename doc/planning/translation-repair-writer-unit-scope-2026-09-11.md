@@ -1688,7 +1688,30 @@ The config package now has an explicit link to the existing read-only dependency
 No ignored tree is copied,
 no timestamps are fabricated to skip rebuilding,
 and no policy trust is granted.
-R9 repeats the complete sequence including native config rebuild and the full package suite.
+R9's native config rebuild succeeds,
+but its lint process receives `SIGKILL` before the full package suite starts.
+Task 45's cgroup and kernel evidence identifies a memory-cgroup OOM,
+not a semantic-owner refusal.
+One native worker alone still fails.
+The unchanged full lint passes with `OXLINT_THREADS=1 GOMEMLIMIT=512MiB`,
+and deliberate type-aware/JavaScript-plugin diagnostics plus exact restoration validate that success.
+Removing the Go target afterward reproduces an OOM.
+The source trace,
+measured memory and rejected explanations are in
+[the bounded lint diagnosis](../troubleshooting/oxlint-type-aware-cgroup-memory.md).
+The environment applies only to the isolated lint phase,
+not production tasks or model requests.
+R10 at documentation checkpoint `84b4279a4`,
+with unchanged code from `21b09216f`,
+passes the complete sequence.
+The linter reports zero findings on 1501 files with 484 rules.
+`.guard-sandbox/r10/full-unit.out:10690` records `test:unit exit 0`,
+and the nonce/phase ledger includes every one of 630 designated unit entries on Node `26.8.2`.
+Whole-sequence memory peak is 1958432768 bytes,
+with zero OOM and PID-limit events.
+The complete fixture additionally mounts the existing Mise plugin directory read-only,
+so this full-run success is not described as an environment-only delta from R9.
+Semantic-owner mutation proofs and audited cleanup remain unfinished.
 
 A proposed target-only parent fixture is not adopted:
 `ChunkPair.source` is existing content,
@@ -1703,7 +1726,8 @@ The repeated-question positive does not distinguish byte grouping from digest gr
 no collision-resistance or digest-collision mutation proof is claimed.
 Decoder negatives exercise shared decoding,
 not every role-specific schema branch.
-No fresh full-suite or final semantic-owner completion is claimed yet.
+The fresh full suite passes at the recorded R10 checkpoint.
+Final semantic-owner completion still awaits consequential mutation proofs and audited cleanup.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,

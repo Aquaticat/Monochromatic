@@ -1421,7 +1421,22 @@ including `Buffer`;
 byte-view proxies are refused.
 Matching is point-in-time evidence;
 a downstream owner must rehash bytes rather than trusting a mutable returned record.
-Its byte-binding boundary is verified independently of the still-unfinished semantic root and acquisition owner.
+Its byte-binding boundary is verified independently of the still-unfinished reviewed root and acquisition owner.
+`buildPreparationRootInputs` owns fresh byte matching,
+independent corpus configuration,
+current native population reconstruction and exact frozen-parent lookup without resampling.
+It checks the consumed frame/note/carry relationships,
+preserves source obligations,
+and derives writer-parent and definition-only registrations from the complete selected entries.
+Unaligned definitions remain namespace data;
+unused support remains `opaque-selection-support` rather than gaining authority from its filename.
+The result says `scope: 'unqualified-preparation-root-inputs'`.
+It creates no providers,
+section override,
+reviewed phase or writer approval.
+Its native corpus and full-suite regression checks
+do not establish independent correctness of the shared parser/aligner.
+The writer-input work record tracks remaining guard-proof and acquisition integration work.
 The separate `runtime:seal` task builds a Linux x64 GNU application-runtime candidate under
 `node_modules/.sealed-runtime-candidate`,
 with the native parser asset and a relative-path `sealed-runtime.json` inventory.

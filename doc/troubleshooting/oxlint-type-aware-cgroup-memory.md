@@ -49,7 +49,11 @@ The kernel's `oom_memcg` names the libpod scope for container
 `c2239323ee8c0d191bdd23bb908e82fbe5503d94a707aec606f39631d44da843`.
 Retained Podman events bind that ID to
 `translation-repair-root-inputs-baseline-lint-default-r2-20260913`.
-The R9 kernel events also name the TypeScript `tsc` child and `node-MainThread` as victims.
+The separate R9 events name the TypeScript `tsc` child and `node-MainThread` as victims.
+`root-lint-r9-container-events-20260913.jsonl` binds their scope ID
+`00bd1beb826a54161fce11722991116e88d9488ae7c7e44ef5b36abf58df1646`
+to `translation-repair-root-inputs-baseline-r9-20260913`.
+These remain separately recorded runs.
 A signal alone did not establish this cause;
 the cgroup counters,
 kernel records and container identity do.
@@ -58,7 +62,7 @@ No particular leaking allocation site has been identified.
 The demonstrated defect is an unbudgeted combination of processes inside this verification envelope,
 not a proven general Oxlint memory leak.
 
-### Both semantic engines retain process state
+### The JavaScript semantic child remains resident when tsgolint starts
 
 Oxc source tag `apps_v1.78.0`,
 commit `c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd`,
@@ -97,7 +101,18 @@ configureNativeApiChildShutdown(child,);
 bridgeState.api = api;
 ```
 
-The same adapter's `:179-184` registers `closeSemanticBridge` on `beforeExit`.
+The same adapter's `:181-186` registers cleanup on Node's `beforeExit` event:
+
+```ts
+if (!bridgeState.beforeExitHookRegistered) {
+  process.once(
+    'beforeExit',
+    closeSemanticBridge,
+  );
+  bridgeState.beforeExitHookRegistered = true;
+}
+```
+
 Installed TypeScript `7.0.2` starts the native child in
 `node_modules/typescript/dist/api/syncChannel.js:124-128`:
 
@@ -133,7 +148,7 @@ const threadOverride = process.env
   .OXLINT_THREADS;
 ```
 
-Its `:73-84` inserts `--threads` and the supplied value into the normal Oxlint arguments.
+Its `:72-84` inserts `--threads` and the supplied value into the normal Oxlint arguments.
 Oxc's `apps/oxlint/src/command/lint.rs:122-136` chooses that count or
 `std::thread::available_parallelism()` and passes it explicitly to Rayon.
 It does not assign a Go memory budget.
@@ -248,7 +263,29 @@ The measured value belongs to this workload and envelope;
 it is not a universal package default or a guarantee against OOM on other inputs.
 The container's hard limits remain unchanged.
 
-The original complete verification sequence still needs its final rerun with this lint-phase environment.
+R10 repeats the original complete verification sequence successfully:
+build,
+pinned-corpus consumer,
+types,
+focused tests,
+package lint and full unit tests.
+`r10/lint.out` reports zero findings on 1501 files with 484 rules;
+`r10/full-unit.out:10690` records `test:unit exit 0`.
+Every one of the 630 designated unit entries is present in the nonce- and phase-filtered Node `26.8.2` ledger.
+Whole-sequence memory peak is 1958432768 bytes,
+with no OOM or PID-limit event.
+
+The complete-run fixture also has explicitly provisioned dependencies:
+the config package's read-only `node_modules` link and an additional read-only mount of the existing Mise plugin directory.
+The latter avoids a missing CMake plugin lookup in the disposable home.
+These are disclosed harness inputs,
+not an environment-only comparison with R9.
+The diagnostic A/B/A controls themselves use the same dependency arrangement and vary the Go target.
+Only R10's lint phase receives the Go target and Oxlint thread cap.
+
+One thread has not been shown necessary in combination with the Go target,
+and 512 MiB has not been shown optimal.
+The tested combined configuration is sufficient for this recorded workload.
 No production package task or installed dependency is patched.
 
 ## What does not work
