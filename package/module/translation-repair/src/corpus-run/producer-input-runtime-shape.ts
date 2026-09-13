@@ -81,9 +81,9 @@ function runtimeIdentity(value: unknown): value is ProducerInputFileIdentity {
  * ```
  */
 function runtimeFile(value: unknown): value is ProducerRuntimeFile {
-  return runtimeRecord(value) && runtimeIdentity(value) && typeof value.path === 'string'
+  return runtimeRecord(value) && typeof value.path === 'string'
     && value.path.length > 0 && !value.path.includes('/') && !value.path.includes('\\') && !value.path.includes('\0')
-    && (value.path.endsWith('.mjs') || value.path.endsWith('.node'));
+    && (value.path.endsWith('.mjs') || value.path.endsWith('.node')) && runtimeIdentity(value);
 }
 
 /**
@@ -113,9 +113,8 @@ export function isProducerRuntimeManifest(value: unknown): value is ProducerRunt
     || !runtimeIdentity(node.executable) || node.executable.bytes === 0)
     return false;
   if (!runtimeRecord(native) || !runtimeKeys({ value: native, expected: ['package', 'version', 'path', 'bytes', 'sha256'], })
-    || !runtimeFile(native) || native.package !== '@bruits/satteri-linux-x64-gnu'
-    || native.path !== 'satteri_napi.linux-x64-gnu.node' || native.bytes === 0
-    || typeof native.version !== 'string' || native.version.length === 0)
+    || native.package !== '@bruits/satteri-linux-x64-gnu' || typeof native.version !== 'string' || native.version.length === 0
+    || !runtimeFile(native) || native.path !== 'satteri_napi.linux-x64-gnu.node' || native.bytes === 0)
     return false;
   if (!runtimeRecord(loaderEnvironment) || !runtimeKeys({ value: loaderEnvironment, expected: ['policy', 'names'], })
     || loaderEnvironment.policy !== 'must-be-absent-before-import'
