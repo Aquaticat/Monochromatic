@@ -1436,6 +1436,21 @@ container ownership,
 alignment findings and preparation handoff.
 Its `scope: 'receipt-bound-occurrence'` result is not qualification.
 
+`createPreparationAttempt` creates a fresh private namespace with exclusive fixed-name files,
+content sync and an independently returned exact plan digest and byte extent.
+`verifyPreparationAttempt` checks those expected bytes and observed file identities within the registered extent.
+Neither operation grants semantic plan approval,
+leases,
+original-creation authentication or containing-directory power-loss durability.
+
+`readPreparationDefinitionRelations` projects usable current question evidence to a separately registered definition domain.
+Its `qualification: 'pairing-only'` and `scope: 'footnote-definitions'` result contains only endorsed definition endpoints.
+An empty projection invents no correspondence,
+and no body pairing,
+media claim,
+target decline or full-parent writing qualification follows from it.
+The definition-only consumer is still undergoing integration verification.
+
 The owning journal must still establish exclusive attempt provenance,
 derive actual configuration and provider-body identities,
 verify allowed target transitions and bind source channels and dependencies.

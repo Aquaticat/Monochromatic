@@ -54,12 +54,13 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
     expect(result.definitionRelations).toHaveLength(2);
     expect(result.definitionRelations.map(item => item.source.blockIndex)).toEqual([1, 2]);
   } }),
-  it({ name: 'does not promote relations with only one definition endpoint', fn: async () => {
+  it({ name: 'rejects definition-to-body wires rather than promoting their remaining relations', fn: async () => {
     const { input } = await acquire({ replies: ['{"pairs":[{"source":0,"target":0},{"source":1,"target":0},{"source":2,"target":2}]}'] });
-    const result = readPreparationDefinitionRelations(input);
-    expect(result.definitionRelations.map(item => [item.source.blockIndex, item.target.blockIndex])).toEqual([[2, 2]]);
+    expect(input.evidence.outcome.usable).toBe(0);
+    expect(refusal(() => readPreparationDefinitionRelations(input))).toBe('usable-quorum');
   } }),
-  it({ name: 'refuses fewer usable replies than the configured electorate requires', fn: async () => {
+  it({ name: 'requires configured usable quorum despite heard-invalid and unreachable voices', fn: async () => {
+    // The Synthetic-only fixture cannot serve the MiniMax endpoint; the configured denominator still includes it.
     const { input } = await acquire({ modelIds: [...QUALIFICATION_ROSTER, 'hf:moonshotai/Kimi-K3', 'hf:openai/gpt-oss-120b', 'minimax-m3'],
       replies: [reply, '{"pairs":[{"source":99,"target":99}]}'] });
     expect(input.evidence.outcome.usable).toBeLessThan(3);

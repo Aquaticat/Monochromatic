@@ -968,7 +968,9 @@ aggregate comparison and configured usable quorum are shared,
 while full-parent placement and coverage checks remain in their existing consumer.
 The helper returns a transient replay view;
 the final qualifier still owns its returned data.
-`preparation-evidence-replay-verification-20260912.out` is the active verification.
+`preparation-evidence-replay-verification-20260912.out` passes every phase.
+The inspected full-suite terminal is `unit exit 0` at line 9886 of `preparation-evidence-replay-unit-20260912.out`.
+The driver records Node `26.8.2` task shells and designated test entries in a fresh nonce-bound runtime ledger.
 
 The definition-only consumer must require the independently registered current definition domain,
 project only independently endorsed definition endpoints,
@@ -977,7 +979,25 @@ media widening,
 target-decline or archive-prose authority.
 Zero-question dispatch remains structural accounting rather than manufactured votes.
 A parent selected for writing still requires the existing full qualification separately.
-This consumer is not implemented yet.
+`readPreparationDefinitionRelations` now implements that projection with an exact current domain,
+shared native replay and owned definition endpoints.
+Its result says `qualification: 'pairing-only'` and `scope: 'footnote-definitions'`.
+An empty relation list means no endorsed definition correspondence,
+not an inferred equal-spelling identity or a qualified whole parent.
+It does not itself establish receipt/attempt provenance or complete-document transition authority.
+The new consumer tests compare it with a full-parent refusal for the same body-unclaimed evidence,
+exercise domain changes,
+quorum/endorsement differences,
+current labels,
+structural refusal and output ownership.
+The first definition verification passes build and types.
+Its mixed-endpoint fixture wrongly expected partial projection:
+`pair-blocks-wire.ts:425` already rejects an entire reply containing a definition/body relation.
+The corrected test requires unusable evidence and quorum refusal;
+production wire policy is unchanged.
+The configured-denominator control deliberately includes a model unreachable by its Synthetic-only adapter.
+`preparation-definition-verification-r2-20260912.out` is the next verification;
+this projection is not yet declared verified.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,
