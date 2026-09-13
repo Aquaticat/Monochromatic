@@ -578,17 +578,18 @@ console.log('ROOT_GIT_READS ' + JSON.stringify({ implicitReads, explicitReads: c
       JSON.parse(line.slice(marker.length)),
     ).toEqual({ implicitReads: 1, explicitReads: 0 });
   } }),
-  ...['revision', 'blank-clone', 'relative-executable', 'throwing-getter'].map(kind => it({ name: `refuses unsupported independent corpus pin ${kind}`, fn: async () => {
+  ...['revision', 'blank-clone', 'relative-executable', 'throwing-getter', 'throwing-outer-getter'].map(kind => it({ name: `refuses unsupported independent corpus pin ${kind}`, fn: async () => {
     await using f = await fixture();
     const request = f.request();
     const pin = { ...request.pin };
+    const input = { ...request, pin };
     if (kind === 'revision') pin.commitSha = 'different';
     else if (kind === 'blank-clone') pin.cloneDir = ' ';
     else if (kind === 'relative-executable') pin.gitPath = 'relative-git';
-    else Object.defineProperty(pin, 'cloneDir', { get() {
+    else Object.defineProperty(kind === 'throwing-outer-getter' ? input : pin, kind === 'throwing-outer-getter' ? 'pin' : 'cloneDir', { get() {
       throw new Error('q7z9k2');
     } });
-    const error = await refusal(async () => await buildPreparationRootInputs({ ...request, pin }));
+    const error = await refusal(async () => await buildPreparationRootInputs(input));
     expect(error.kind).toBe('corpus-identity');
     expect(inspect(error, { depth: null })).not.toContain('q7z9k2');
   } })),

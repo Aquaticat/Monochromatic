@@ -1589,9 +1589,9 @@ callback views/arity and fixture statement layout;
 none is suppressed or reported as a guard detection.
 
 Independent review prompted these changes,
-still requiring fresh verification:
+verified through the native consumer and focused tests at `307d2574c`:
 
-- Capture native Git lookup context before descriptor or logger callbacks,
+- Capture native Git lookup context before nested pin descriptors or logger callbacks,
   including absolute PATH components anchored to the initial working directory.
 - Deep-copy population snapshots so selected-parent mutation cannot alter population evidence.
 - Group aliases by exact serialized question bytes,
@@ -1613,12 +1613,69 @@ actual current entry rows for `Chinatsu_Suzuki`,
 Consumed branch/status relationships must be checked,
 while unused historical data must not silently gain authority.
 
-Verification still needs targeted carried-reading negatives,
-empty dispatch and alias positives,
+`root-inputs-branch-verification-20260913.out` records R5 build,
+actual pinned-corpus consumer,
+types and focused tests at `307d2574c`.
+The focused terminal is `test:unit exit 0` at line 318 of `.guard-sandbox/r5/test-unit.out`.
+Its cases cover carried and contradictory reading provenance,
+implicit and empty-target structural dispatch,
+exact repeated questions,
 target-side unaligned definitions,
-malformed role JSON/UTF-8 and ambiguous frames,
-Git lookup/cwd mutation witnesses,
-and the ownership directions.
+malformed role JSON/UTF-8,
+ambiguous frames,
+raw and normalized whole-page exclusions,
+missing unselected target,
+logger cwd/PATH changes and invalid independent pins.
+The subprocess witness counts parent-process `readFile` inspections of the selected executable:
+one with omitted `gitPath`,
+zero with explicit `gitPath`.
+It does not count native Git subprocesses or corpus object reads.
+
+R4 failed only an insertion fixture's native alignment assertion:
+numbered generic headings yielded one pair rather than the asserted 42.
+Distinct alphabetic heading labels produce 42 native pairs and one empty target in a direct control;
+the corrected owner fixture passes R5.
+No production aligner was changed,
+and this fixture failure is not a guard detection.
+R5 formatting then found consecutive ignored destructuring;
+the fixture now finds the registered frame locator instead.
+That edit still needs a fresh formatter run.
+
+Follow-up review adds current-plus-prior precedence,
+missing-side directions,
+relative PATH anchoring and cross-section object ownership controls.
+Outer argument destructuring before the context snapshot is now reproduced.
+R6 exposes the artifact getter changing the pin before ownership,
+while its mixed-reading assertions incorrectly compare the raw dependency schema with the narrower obligation DTO.
+The first outer-pin cwd witness is insufficient:
+its relative path resolves to the same location from both working directories.
+The repaired witness enters a fixture-owned initial directory,
+uses its parent-relative clone path,
+and proves that a deeper alternate directory resolves that path elsewhere.
+The mixed-reading expectation now explicitly projects the public obligation fields.
+
+R7 at `e01883428` passes build,
+actual corpus consumption and types,
+then fails only the designated ordinary assertions for outer `pin` and `artifacts` getters.
+`buildPreparationRootInputs` now captures process context before reading public argument properties,
+and its private pin reader owns the configuration before other argument getters.
+Pin-property getter failures are caught inside the fixed corpus-identity diagnostic boundary.
+This fix still needs the green verification run.
+The existing serial `concurrency: 1` remains explicit for process-global fixtures.
+
+A proposed target-only parent fixture is not adopted:
+`ChunkPair.source` is existing content,
+`chunkByHeadings` constructs nonempty source groups,
+and `alignDocumentSections` emits no pair for a target-only step.
+An entirely empty source also yields no pairs.
+The native owner must preserve that absence rather than fabricate another dispatch record.
+Target-only block preparation is a different consumer boundary.
+
+Exact-byte alias grouping is source-reviewed in `preparation-root-registration.ts`.
+The repeated-question positive does not distinguish byte grouping from digest grouping under a hypothetical collision;
+no collision-resistance or digest-collision mutation proof is claimed.
+Decoder negatives exercise shared decoding,
+not every role-specific schema branch.
 No fresh full-suite or final semantic-owner completion is claimed yet.
 
 The bounded phase design follows the permitted caller:
