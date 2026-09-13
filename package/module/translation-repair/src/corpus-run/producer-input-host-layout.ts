@@ -55,13 +55,20 @@ const NON_PRIVATE_BITS = 0o077;
  * ```
  */
 async function observeDirectory({ role, path, }: { readonly role: DirectoryRole; readonly path: string; },): Promise<ObservedDirectory> {
-  /** Canonicalization is metadata preflight, never permission to read content. */
-  const canonical = await realpath(path);
-  /** Descriptor-independent identity is rechecked after exclusive output creation. */
-  const state = await lstat(path, { bigint: true });
-  if (canonical !== path || !state.isDirectory())
+  try {
+    /** Canonicalization is metadata preflight, never permission to read content. */
+    const canonical = await realpath(path);
+    /** Descriptor-independent identity is rechecked after exclusive output creation. */
+    const state = await lstat(path, { bigint: true });
+    if (canonical !== path || !state.isDirectory())
+      throw new ProducerInputRunError({ operation: 'verify-host-layout', locator: path, });
+    return { role, path, device: String(state.dev), inode: String(state.ino), uid: Number(state.uid), gid: Number(state.gid), mode: Number(state.mode), };
+  }
+  catch (error) {
+    if (error instanceof ProducerInputRunError)
+      throw error;
     throw new ProducerInputRunError({ operation: 'verify-host-layout', locator: path, });
-  return { role, path, device: String(state.dev), inode: String(state.ino), uid: Number(state.uid), gid: Number(state.gid), mode: Number(state.mode), };
+  }
 }
 
 /**
