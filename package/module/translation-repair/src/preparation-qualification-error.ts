@@ -17,7 +17,10 @@ export type PreparationQualificationFailure =
   | 'result'
   | 'unclaimed-target'
   | 'fast-path'
-  | 'parent-index';
+  | 'parent-index'
+  | 'definition-question'
+  | 'definition-domain'
+  | 'definition-label';
 
 /**
  * Fixed diagnostics name inputs and valid recovery without reproducing archive content.
@@ -31,6 +34,9 @@ const QUALIFICATION_MESSAGES: Readonly<Record<PreparationQualificationFailure, s
   'unclaimed-target': 'Preparation includes archive blocks without an endorsed relation or deterministic media claim. Existing decline policy does not remove these blocks; stop the plan rather than inventing correspondence.',
   'fast-path': 'Preparation claims a singleton or empty-side result whose fields or current blocks do not match production dispatch. Rebuild current parent preparation without bypassing its required question.',
   'parent-index': 'Preparation parent index must be a nonnegative safe integer from the current alignment. Rebuild the recipe from its frozen document inputs.',
+  'definition-question': 'Definition evidence was supplied for a parent whose native dispatch asks no model question. Record structural accounting without inventing ballots or definition correspondence.',
+  'definition-domain': 'Current definition-node inventory does not match its registered domain. Rebuild the occurrence and domain from the frozen scope and allowed target transition; do not widen the dependency after reading outcomes.',
+  'definition-label': 'An endorsed definition endpoint has no unique parser-readable label. Reparse the bound complete documents and inspect the retained evidence; do not infer a label or correspondence from position.',
 };
 
 /**

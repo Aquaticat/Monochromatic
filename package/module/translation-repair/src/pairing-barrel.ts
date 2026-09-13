@@ -88,6 +88,13 @@ export {
   type PreparationReceiptFailure,
 } from './preparation-receipt-error.ts';
 export { qualifyPreparedBlockPairing, } from './qualify-prepared-block-pairing.ts';
+export { readPreparationDefinitionRelations, } from './read-preparation-definition-relations.ts';
+export {
+  type PreparationDefinitionDomain,
+  type PreparationDefinitionEndpoint,
+  type PreparationDefinitionEvidence,
+  type PreparationDefinitionRelation,
+} from './preparation-definition-model.ts';
 export {
   type QualifiedBlockPairing,
   type QualifiedBlockRelation,
