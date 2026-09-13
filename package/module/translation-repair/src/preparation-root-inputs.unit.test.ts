@@ -344,18 +344,18 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
   ...['entry', 'parent'].flatMap(scope => [
     it({ name: `accepts isolated carried provenance owner ${scope}`, fn: async () => {
       await using f = await fixture();
-      if (scope !== 'entry' && scope !== 'parent') throw new Error('unexpected carried scope');
+      if ((scope !== 'entry') && (scope !== 'parent')) throw new Error('unexpected carried scope');
       carryOnly({ f, scope });
       const inputs = await accepted(f.request());
       expect(inputs.obligations[0]?.requiredContext).toEqual(scope === 'entry' ? [' Context 40. '] : [' Retained prior context. ']);
     } }),
     ...['missing', 'duplicate', 'claim', 'source-hash', 'target-hash'].map(change => it({ name: `binds isolated carried ${scope} provenance ${change}`, fn: async () => {
       await using f = await fixture();
-      if (scope !== 'entry' && scope !== 'parent') throw new Error('unexpected carried scope');
+      if ((scope !== 'entry') && (scope !== 'parent')) throw new Error('unexpected carried scope');
       carryOnly({ f, scope });
       const [prior] = f.values.prior.entries;
       const [entry] = f.values.journal.entries;
-      if (prior === undefined || entry === undefined) throw new Error('expected isolated prior witnesses');
+      if ((prior === undefined) || (entry === undefined)) throw new Error('expected isolated prior witnesses');
       if (change === 'missing') f.values.prior.entries = [];
       else if (change === 'duplicate') f.values.prior.entries.push(structuredClone(prior));
       else if (change === 'claim') Object.assign(entry, { priorReading: { ...prior, selectedParentIndexes: entry.selectedParentIndexes.toReversed() } });
@@ -379,7 +379,7 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     carryOnly({ f, scope: 'parent' });
     const [prior] = f.values.prior.entries;
     const [entry] = f.values.journal.entries;
-    if (prior === undefined || entry === undefined) throw new Error('expected parent membership witnesses');
+    if ((prior === undefined) || (entry === undefined)) throw new Error('expected parent membership witnesses');
     Object.assign(prior, { selectedParentIndexes: [] });
     Object.assign(entry, { priorReading: structuredClone(prior) });
     priorLinks(f);
