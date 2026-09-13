@@ -168,7 +168,7 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
   it({ name: 'does not alias outputs when two registered artifacts share an input view', fn: async () => {
     const f = fixture();
     const shared = new Uint8Array([4, 5, 6]);
-    const artifacts = f.artifacts.map((item, index) => index === 0 || index === 2 ? { ...item, content: shared } : item);
+    const artifacts = f.artifacts.map((item, index) => (index === 0) || (index === 2) ? { ...item, content: shared } : item);
     f.record.references = artifacts.map(item => ({ path: item.path, hash: createHash('sha256').update(item.content).digest('hex') }));
     const text = JSON.stringify(f.record);
     const result = readPreparationSelectionEvidence({ ...f, text, expectedDigest: hashContent({ content: text }), artifacts });
@@ -207,6 +207,13 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
   ...(['path', 'content'] as const).flatMap(property => ['error', 'primitive'].map(kind => it({ name: `sanitizes throwing ${property} accessors carrying ${kind} private data`, fn: async () => {
     const f = fixture();
     const canary = 'q7z9k2';
+    const abort = AbortSignal.abort(canary);
+    let nativeReason: unknown;
+    try {
+      abort.throwIfAborted();
+    }
+    catch (error) { nativeReason = error; }
+    expect(nativeReason).toBe(canary);
     const [original] = f.artifacts;
     if (original === undefined) throw new Error('expected accessor witness');
     const bad = { ...original };
@@ -214,7 +221,8 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     Object.defineProperty(bad, property, { get() {
       reads += 1;
       if (kind === 'error') throw new Error(canary);
-      throw canary;
+      // Native cancellation can throw a caller-supplied non-Error reason.
+      abort.throwIfAborted();
     } });
     let caught: unknown;
     try {

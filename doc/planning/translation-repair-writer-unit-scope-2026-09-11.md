@@ -1250,8 +1250,41 @@ Inventory entries are now treated as `unknown`,
 checked as non-array records,
 and held as unknown-valued descriptors until byte validation;
 no type assertion supplies missing content proof.
-`preparation-supporting-bytes-verification-r3-20260913.out` is the next verification.
-This supporting-byte reader is not yet declared verified.
+R3 passes every phase,
+with `unit exit 0` inspected at line 10352 of `preparation-supporting-bytes-unit-r3-20260913.out`.
+Independent review identified remaining descriptor and evidence-lifetime concerns.
+Path,
+content,
+length and indexed-entry access now pass through a fixed-error boundary that omits input-bearing accessor failures.
+Indexed traversal ignores custom array iterators and checks final inventory cardinality.
+
+Matched content is explicitly point-in-time owned data,
+not an immutable certificate.
+The downstream owner must rehash supplied bytes through the owning boundary;
+a mutated-result control demonstrates refusal on revalidation.
+Additional controls cover nonzero-offset views,
+shared-input/distinct-output buffers,
+throwing descriptor/array accessors and custom iteration.
+The API requires caller-side size bounds before loading data.
+The actual consumer now checks regular-file extents and a 64 MiB probe input envelope before body reads,
+reads only those extents,
+and checks them again before byte matching.
+This is a probe bound,
+not a new repository-wide runtime pin or acquisition authority.
+
+A synchronous scoped `git add` timed out while its wrapper logger reported a sink-verification timeout.
+Read-only index and process checks found no staged result or surviving add;
+retry uses the managed process tool rather than a native write bypass.
+R4 passes build,
+actual bounded-input consumer,
+types and focused tests.
+Its formatter rejects a hand-authored primitive throw in the accessor fixture.
+The fixture now uses a real aborted signal's caller-supplied primitive reason,
+first proving the native operation throws that exact value.
+That fixture correction changes neither production exception handling nor lint policy.
+The managed retry committed successfully as `cb1dc3bb4`.
+`preparation-supporting-bytes-verification-r5-20260913.out` is the next full verification.
+This supporting-byte reader is not yet declared finally verified.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,

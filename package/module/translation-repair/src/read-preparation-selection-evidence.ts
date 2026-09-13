@@ -94,9 +94,17 @@ export function readPreparationSelectionEvidence({
   },);
   if (!Array.isArray(artifacts,))
     throw new PreparationRootError({ kind: 'reference-inventory', },);
-  /** The frozen reference count bounds indexed traversal, independent of a custom array iterator. */
-  const required = selection.references.length;
-  if (preparationArtifactProperty({ record: artifacts, key: 'length', kind: 'reference-inventory', l: pl, },) !== required)
+  /**
+   * The frozen reference count bounds indexed traversal, independent of a custom array iterator.
+   */
+  const required = selection.references
+    .length;
+  if (preparationArtifactProperty({
+    record: artifacts,
+    key: 'length',
+    kind: 'reference-inventory',
+    l: pl,
+  },) !== required)
     throw new PreparationRootError({ kind: 'reference-inventory', },);
   /**
    * Exact frozen locators, not input order or caller-declared hashes, select the records to read.
@@ -110,14 +118,26 @@ export function readPreparationSelectionEvidence({
    */
   const inputs = new Map<string, Record<string, unknown>>();
   for (let index = 0; index < required; index += 1) {
-    /** Indexed descriptor access cannot delegate inventory selection to a caller's iterator. */
-    const input = preparationArtifactProperty({ record: artifacts, key: index, kind: 'reference-inventory', l: pl, },);
+    /**
+     * Indexed descriptor access cannot delegate inventory selection to a caller's iterator.
+     */
+    const input = preparationArtifactProperty({
+      record: artifacts,
+      key: index,
+      kind: 'reference-inventory',
+      l: pl,
+    },);
     if (Array.isArray(input,) || (!isJsonRecord(input,)))
       throw new PreparationRootError({ kind: 'reference-inventory', },);
     /**
      * Snapshot locator once so callback-backed descriptors cannot select different keys during this pass.
      */
-    const path = preparationArtifactProperty({ record: input, key: 'path', kind: 'reference-inventory', l: pl, },);
+    const path = preparationArtifactProperty({
+      record: input,
+      key: 'path',
+      kind: 'reference-inventory',
+      l: pl,
+    },);
     if (((typeof path) !== 'string') || (!expectedPaths.has(path,))
       || inputs.has(path,))
       throw new PreparationRootError({ kind: 'reference-inventory', },);
@@ -140,7 +160,12 @@ export function readPreparationSelectionEvidence({
     /**
      * Copy precedes the digest and the recorded byte extent.
      */
-    const content = artifactBytes(preparationArtifactProperty({ record: input, key: 'content', kind: 'reference-content', l: pl, },),);
+    const content = artifactBytes(preparationArtifactProperty({
+      record: input,
+      key: 'content',
+      kind: 'reference-content',
+      l: pl,
+    },),);
     /**
      * Raw SHA-256 preserves CRLF, invalid UTF-8 and all other byte distinctions.
      */
