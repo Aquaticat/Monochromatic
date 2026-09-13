@@ -262,6 +262,8 @@ const NAMED_PARTS: Record<string, string> = {
   'relPath': 'operator-supplied repository-relative archive path, never document text',
   'referenceId': 'caller-supplied reviewed fixture identifier, never reference prose',
   'ROOT_MESSAGES[kind]': 'authored root-planning diagnostic selected by a closed failure kind',
+  'INPUT_RUN_MESSAGES[operation]': 'authored preparation input-runner diagnostic selected by a closed operation kind',
+  'JSON.stringify(locator)': 'preparation runner input path, supporting root/reference locator or fixed output path; current throw sites never pass file contents',
   'JSON.stringify(affectedInput,)': 'root artifact locator, corpus-relative path, entry/parent identifier or fixed registry label; audited throw sites never pass compared content',
   'claimId': 'computed claim identifier, not its quoted text or diagnostic summary',
   'label': 'model id the transport was calling',
