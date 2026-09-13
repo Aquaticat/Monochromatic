@@ -1454,7 +1454,10 @@ An empty projection invents no correspondence,
 and no body pairing,
 media claim,
 target decline or full-parent writing qualification follows from it.
-The definition-only consumer is still undergoing integration verification.
+The definition-only consumer is verified against the native footnote operation,
+full-handoff failure and media-claim controls,
+with isolated guard proofs.
+It does not supply the owning journal's conditional review or acquisition gate.
 
 The owning journal must still establish exclusive attempt provenance,
 derive actual configuration and provider-body identities,

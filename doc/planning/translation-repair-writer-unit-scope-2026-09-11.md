@@ -1090,7 +1090,30 @@ masked known root credential files and owned writable outputs.
 receipt/current-document binding,
 quorum,
 endpoint metadata and no-full-handoff-veto controls.
-The proof has not reached a verified terminal result yet.
+The complete proof passes all 22 registered successful mutant builds and designated ordinary assertions.
+Restored source hashes,
+build and definition/occurrence tests pass.
+Each designated test entry and observed task shell has a matching Node `26.8.2` record under its invocation identity.
+All assertion lines were read,
+including the restored out-of-scope handoff's explicit invocation counter,
+not merely a thrown exception.
+Snapshot and definition-filter removals demonstrate wrongful refusal of valid input;
+those are not described as unsafe-acceptance results.
+
+`definition-guard-proof-20260913` retains 72 hash-checked files,
+plus assertion reading,
+cleanup audit and removal evidence.
+Peak container memory is 695382016 bytes,
+with no OOM or PID-limit event.
+The cleanup audit finds no tracked modifications,
+only owned generated paths,
+and no ignored root Git sentinels.
+Directory and registration absence are verified at `2026-09-13T02:17:04.409Z`.
+This completes the definition-only receipt/current-occurrence boundary,
+not task 41's finite root/phase manifests,
+conditional review gates,
+acquisition leases,
+request lineage or final source-channel/writer admission.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,
