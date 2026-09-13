@@ -75,7 +75,8 @@ function parseSelection(text: string,): Record<string, unknown> {
 }
 
 /**
- * Reads the exact frozen parent-selection identity without verifying referenced files or approving acquisition.
+ * Reads a checked partial projection of exact frozen-selection bytes, not a complete nested-schema or population audit.
+ * Referenced files, unprojected metadata and acquisition approval remain later owning boundaries.
  * The expected digest must come from task40's independently recorded authority, never from these same supplied bytes.
  * No sampler, reference path, reading note or model client is executed.
  *
@@ -203,7 +204,6 @@ export function readFrozenPreparationSelection({
     selectionRuntimeDigest,
     samplerNodeVersion: selectionString(sampler.nodeVersion,),
     samplerIcuVersion: selectionString(sampler.icuVersion,),
-    samplerDigest: hashContent({ content: JSON.stringify(sampler,), },),
   };
 }
 

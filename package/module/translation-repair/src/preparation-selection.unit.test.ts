@@ -53,7 +53,7 @@ await describe({ name: '', children: [describe({ name: readFrozenPreparationSele
     expect(result.selectionRuntimeDigest).toBe(value.runtimeDigest);
     expect(result.samplerNodeVersion).toBe('v26.7.0');
     expect(result.samplerIcuVersion).toBe('fixture-icu');
-    expect(result.samplerDigest).toBe(hashContent({ content: JSON.stringify(value.sampler) }));
+    expect('samplerDigest' in result).toBe(false);
     expect('approved' in result).toBe(false);
     expect('client' in result).toBe(false);
   } }),
@@ -113,7 +113,8 @@ await describe({ name: '', children: [describe({ name: readFrozenPreparationSele
       expect(outcome(value)).toBe('selection-parents');
     },
   })),
-  ...['../source-section/0/target-section/0', String.raw`folder\escape/source-section/0/target-section/0`, 'fixture/source-section/01/target-section/0',
+  ...['../source-section/0/target-section/0', ' fixture/source-section/0/target-section/0', 'fixture /source-section/0/target-section/0',
+    'fi\nxture/source-section/0/target-section/0', 'fi\u007fxture/source-section/0/target-section/0', 'fi\u009fxture/source-section/0/target-section/0', String.raw`folder\escape/source-section/0/target-section/0`, 'fixture/source-section/01/target-section/0',
     'fixture/source-section/-1/target-section/0', 'fixture/source-section/0/target-section/1e1', 'fixture/other/0/target-section/0', 'fixture/source-section/0/other/0', 'fixture/source-section/0'].map((id, index) => it({
     name: `refuses noncanonical frozen parent identity ${index}`, fn: async () => {
       const value = artifact();

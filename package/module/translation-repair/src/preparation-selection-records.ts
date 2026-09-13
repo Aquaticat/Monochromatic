@@ -30,6 +30,34 @@ const TARGET_LABEL_INDEX = 3;
  */
 const TARGET_COORDINATE_INDEX = 4;
 
+/** First printable ASCII code unit. */
+const PRINTABLE_ASCII_START = 32;
+/** Beginning of DEL and the C1 control block. */
+const CONTROL_BLOCK_START = 127;
+/** End of the C1 control block. */
+const CONTROL_BLOCK_END = 159;
+
+/**
+ * Checks an entry path component without changing its frozen spelling.
+ * @param entryId - one bounded component of the independently matched artifact
+ * @returns Whether whitespace edges, traversal and control characters are absent
+ * @example
+ * ```ts
+ * const valid = validParentEntry('fixture');
+ * ```
+ */
+function validParentEntry(entryId: string,): boolean {
+  if ((entryId.length === 0) || (entryId !== entryId.trim()) || (entryId === '.') || (entryId === '..') || entryId.includes('\\',))
+    return false;
+  for (let index = 0; index < entryId.length; index += 1) {
+    /** Control code units are invalid even when embedded inside an otherwise printable entry name. */
+    const code = entryId.charCodeAt(index,);
+    if ((code < PRINTABLE_ASCII_START) || ((code >= CONTROL_BLOCK_START) && (code <= CONTROL_BLOCK_END)))
+      return false;
+  }
+  return true;
+}
+
 /**
  * Reads one canonical section coordinate rather than accepting alternate numeric spellings.
  *
@@ -91,14 +119,7 @@ export function selectionParents(value: unknown,): readonly FrozenPreparationPar
      * Entry component cannot escape a later corpus-relative path.
      */
     const [entryId,] = parts;
-    if ((parts.length !== PARENT_ID_SEGMENTS) || (entryId === undefined)
-      || (entryId.trim()
-        .length
-        === 0)
-      || (entryId === '.')
-      || (entryId === '..')
-      || entryId.includes('\\',)
-      || entryId.includes('\0',)
+    if ((parts.length !== PARENT_ID_SEGMENTS) || (entryId === undefined) || (!validParentEntry(entryId,))
       || (parts[1] !== 'source-section')
       || (parts[TARGET_LABEL_INDEX] !== 'target-section'))
       throw new PreparationRootError({ kind: 'selection-parents', },);

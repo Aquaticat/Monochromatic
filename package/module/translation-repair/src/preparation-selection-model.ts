@@ -75,7 +75,8 @@ export type FrozenPreparationObligation = {
 
 /**
  * Parsed identity of the frozen parent selection, without reference verification or root/phase approval.
- * The raw selection digest binds fields not interpreted here, including exclusion and policy evidence.
+ * This is a partial identity projection. The whole-artifact digest binds unprojected nested fields,
+ * full population/exclusion evidence and the sampler recipe; this reader does not validate them as a root plan.
  *
  * @example
  * ```ts
@@ -131,10 +132,7 @@ export type FrozenPreparationSelection = {
    * Recorded ICU version relevant to historical locale ordering.
    */
   readonly samplerIcuVersion: string;
-  /**
-   * Digest of complete sampler configuration, retained without executing its prose recipe.
-   */
-  readonly samplerDigest: string;
+  // Remaining sampler configuration stays bound solely by the independently expected whole-artifact digest.
 };
 
 //endregion Frozen selection identity, not acquisition approval
