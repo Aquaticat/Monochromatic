@@ -2103,10 +2103,68 @@ The suite verifies profile refusals,
 not isolated guard-removal sensitivity for every contributing condition.
 Every owned test container is removed and checked absent.
 
-The remaining verification must cover native host lifecycle and interruption,
-OCI-hook controls,
-file-observer races and remaining output consistency branches,
-then rerun the complete package suite from fresh exact artifacts.
+Native lifecycle verification then exposes stop-warning and error-before-close ordering defects.
+Both are corrected without filtering native diagnostics.
+The rebuilt bootstrap is frozen at `.frozen-producer-bootstrap-NqHXDI`:
+69073 bytes,
+SHA-256 `7903446442925e7d91a0be0d04053f1d02a63c9bd4c588f9ca1fa2057ebb59b8`.
+Its AST audit records only Node builtin static imports and the fixed application import.
+
+`input-native-host-lifecycle-xeXdpS` passes 13 controls:
+normal completion,
+extra output/home files,
+artifact identity/mode mismatch,
+wrong run identity,
+missing completion,
+application throw,
+SIGINT/SIGTERM,
+late SIGINT with retained complete output,
+metadata-command deadline escalation and actual close after native spawn error.
+The interrupted fixtures explicitly ignore child SIGTERM;
+stop diagnostics remain recorded while independent exited-state inspection permits cleanup.
+
+`input-native-retention-v8X3OA` passes 10 controls for removal authority:
+successful/refused stop followed by running observations,
+malformed/refused inspection,
+remove/terminal/stop-record collisions,
+refused absence evidence and ambiguous/mismatched creation.
+Unconfirmed state withholds removal;
+a removed container with refused absence evidence still has no cleanup-complete record.
+The verification owner independently inspects and removes remaining fixture containers.
+An initial harness failure read a CID file after Podman had removed it;
+the corrected post-removal identity comes from synchronized terminal evidence.
+
+`input-native-hook-isolation-gSqIgO` first proves an ambient override's owned OCI hook executes,
+then proves the specialized CLI excludes it.
+These suites use authorized fixture applications,
+not corpus reconstruction or approval.
+They are not exhaustive isolated guard-removal proofs.
+
+Current package verification is blocked on task49.
+`devformat-TYkzp1` reaches its 600-second deadline after six observed Oxlint process lifetimes,
+leaving 21 source files changed and no final convergence result.
+Its final sample has no OOM event.
+A separate read-only `devlint-ONOp7h` is memcg-killed instead,
+with the kernel naming its tsgolint process.
+These remain separate incidents.
+No rules,
+source files or type-aware checks are disabled.
+The source checkpoint is committed as `7c106717c`;
+it includes native `Error.isError` replacements and still needs semantic auto-fix review and fresh builds.
+The Node `192MiB` control aborts;
+its instrumented repeat identifies an Oxlint JavaScript heap OOM,
+not a cgroup OOM.
+Report PID `36` is matched to the actual Oxlint entry and heap/process ledgers.
+A Node `224MiB` read-only control is now running with unchanged Go settings,
+rules and the 2 GiB container bound.
+The passing lifecycle artifacts predate this formatter checkpoint and do not verify its exact source.
+
+Remaining task47 work includes repeated interruption,
+filesystem races/collisions,
+final current-artifact and complete-suite verification,
+then proof retention,
+independent review and owned diagnostic-container cleanup.
+The owner `mise.lock` and all corpus files remain outside the edit/staging scope.
 
 Task 48 addresses a separate formatter-resource verification blocker.
 The first new type check reports `TS2339` after guards narrow away additional runtime-file fields;

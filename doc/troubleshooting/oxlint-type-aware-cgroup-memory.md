@@ -197,6 +197,100 @@ not a universal memory margin or a proved optimal configuration.
 Later host-lifecycle code and tests still require fresh checks.
 All checks and the 2 GiB container bound remain enabled.
 
+### Current lifecycle checkpoint opens task49
+
+`devformat-TYkzp1` uses the recorded Go `128MiB`,
+`GOGC=20` and Node `256MiB` controls,
+but reaches its 600-second container deadline before convergence is reported.
+Process samples identify six successive Oxlint Node processes:
+container PIDs `36`,
+`94`,
+`151`,
+`208`,
+`265` and `323`.
+The first five terminate before the next begins;
+the sixth remains at the final sample.
+This is not evidence that one analyzer was stuck for the whole interval.
+`package/dev-script/task-util/src/oxlint-fix-loop.ts:325,338`
+runs a fix invocation and a plain-lint oracle in each pass:
+
+```ts
+// package/dev-script/task-util/src/oxlint-fix-loop.ts, separate excerpts
+const fixResult = await runFix();
+const oracle = await runLint();
+```
+
+The task log contains only the Mise task header before forced termination.
+The run changes 21 scoped source files.
+No final convergence or lint result is inferred from those edits.
+
+The final sample records memory peak `2147483648`,
+`max 63`,
+no OOM events and no PID-limit events.
+Native inspection reports `OOMKilled: false` and exit `-1`;
+events record death at the configured deadline.
+The final sample precedes forced exit,
+so it is not a post-exit counter reading.
+`timeout-reading.json` retains the process-lifetime and resource reconciliation.
+
+A separate read-only run,
+`devlint-ONOp7h`,
+does suffer memcg OOM.
+Container `ba4a33f9f9af507d670ffec0b6a4a2c928ecdf3aa0921b2c3bbce16548f43945`
+records `oom_kill 1` at the 2 GiB bound.
+The kernel names host PID `3321998`,
+`tsgolint`,
+and `CONSTRAINT_MEMCG` for that container.
+Its Node launcher reports `SIGKILL`;
+no package lint findings were delivered.
+The timeout and OOM remain separate incidents.
+
+The Node-only `192MiB` control,
+`devlint192-Av7MZz`,
+terminates Oxlint with `SIGABRT`,
+not a cgroup OOM event.
+Peak is `1357684736` bytes,
+source hashes are unchanged,
+and the wrapper reports only the execution failure.
+That result does not yet establish a V8 heap failure or a native panic.
+A repeat enables private fatal reports while retaining every rule and the same container bounds.
+The report-exclusion positive control `node-report-privacy-LoxEwL`
+verifies that the environment canary and network-interface section are absent.
+The first manual control supplied an explicit path and produced no report at that requested path;
+the verified control uses Node's generated report filename in the owned directory.
+No report contents or credentials are printed.
+
+The instrumented repeat,
+`devlint192-ho7loH`,
+produces one fatal report for Oxlint container PID `36`:
+
+```text
+Allocation failed - JavaScript heap out of memory
+```
+
+Its trigger is `OOMError`.
+The report's executable entry matches the heap ledger and process sample after canonical path resolution;
+the literal sample contains `.bin/../`,
+while Node's `process.argv` normalizes that spelling.
+The report records Node `v26.8.2`,
+heap limit `251658240`,
+used JavaScript heap `197464056` and process RSS `674902016` bytes.
+The worker's container peak is `1370390528` with no OOM/PID events.
+Report `externalMemory` is not treated as resident memory or summed with RSS.
+There is no JavaScript allocation stack in this report,
+so it does not identify a retaining rule or allocation site.
+`fatal-reading.json` records the identity and privacy checks.
+
+The next read-only control selects Node old-space `224MiB`,
+leaving the Go settings,
+worker count,
+source,
+rules and container bounds unchanged.
+It also records available swap-current/peak counters.
+No Go-concurrency change is combined with this control.
+Task49 remains open.
+Neither increasing the container memory bound nor disabling a check is an accepted workaround.
+
 ## Root cause
 
 ### The kernel confirms a job-local memory constraint

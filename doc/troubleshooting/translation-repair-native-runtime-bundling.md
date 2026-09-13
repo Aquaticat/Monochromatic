@@ -592,7 +592,13 @@ and synchronizes both outcomes in `stop-observation.json`.
 Only validated nonrunning state can permit removal.
 A failed or running inspection still withholds removal;
 stop refusal and interruption cannot become successful execution.
-Rebuilding and rerunning this change remains outstanding.
+Rebuilt frozen bootstrap `7903446442925e7d91a0be0d04053f1d02a63c9bd4c588f9ca1fa2057ebb59b8`
+passes `input-native-host-lifecycle-xeXdpS`.
+SIGINT and SIGTERM fixtures explicitly ignore child SIGTERM;
+the native warning remains recorded,
+fresh exited state permits removal,
+and cleanup plus checked absence coexist with statuses `130` and `143`.
+Late SIGINT also retains complete artifact files while returning `130`.
 No warning filtering or Podman patch is proposed.
 
 ### Node close observation must survive an earlier error
@@ -628,9 +634,78 @@ not a Node bug.
 The local observer now records only fixed error categories and resolves on actual close.
 The command owner then synchronizes stdout,
 stderr and exit evidence before throwing a native-error refusal.
-That change still needs rebuilt-artifact verification.
+The same delayed-close test passes against rebuilt frozen bootstrap
+`7903446442925e7d91a0be0d04053f1d02a63c9bd4c588f9ca1fa2057ebb59b8`:
+the exit record is absent immediately before close is delivered,
+then native-error refusal exits `6`.
+A separate timed native-client fixture verifies deadline escalation to SIGKILL without creating a container.
 The event delay is test instrumentation;
 no claim is made that every real spawn failure exhibits that delay.
+
+### OCI-hook isolation has a positive control
+
+`input-native-hook-isolation-gSqIgO` registers an owned `precreate` hook through
+`CONTAINERS_CONF_OVERRIDE`.
+A direct bounded Podman invocation executes it and writes its marker.
+After that marker is removed,
+the specialized frozen CLI reconstructs a fixture artifact with the same ambient override,
+without executing the hook.
+Both invocations exit `0`;
+both containers are removed and independently checked absent.
+This is hook/configuration isolation with a fixture application,
+not corpus reconstruction or a claim that the host cannot be modified.
+
+The pinned vendored hook matcher at `pkg/hooks/1.0.0/when.go:29-37`
+counts an enabled `always` condition as matching.
+The owned fixture uses no pattern-dependent selection:
+
+```json
+{
+  "version": "1.0.0",
+  "when": { "always": true },
+  "stages": ["precreate"]
+}
+```
+
+This excerpt omits the separately recorded hook executable and argv,
+not required fields from the actual fixture.
+Podman's `docs/source/markdown/podman.1.md:75` describes the extension contract:
+
+> precreate hooks receive the proposed runtime configuration on their standard input.
+
+The fixture passes that JSON through unchanged and only writes its private marker.
+The full schema was read from `common/v0.67.1` in
+`podman-container-tools/container-libs/common/pkg/hooks/docs/oci-hooks.5.md`,
+matching the common version in Podman's `go.mod:69`.
+The initial `containers/common` and `podman/common` URLs returned `404`;
+the `go.podman.io/common?go-get=1` repository mapping identified the owning repository.
+
+### Container removal also removes its CID file
+
+The first retention-control harness incorrectly read `container.id` after native removal.
+It fails with `ENOENT` in the absence-diagnostics fixture,
+not a production cleanup assertion.
+The corrected harness reads the already synchronized terminal record's container ID after removal.
+Before removal it continues to use the fixture-owned creation ID.
+
+Podman `libpod/runtime_ctr.go:1020-1025` explicitly removes its annotated CID file:
+
+```go
+// libpod/runtime_ctr.go
+if cidFile, ok := c.config.Spec.Annotations[define.InspectAnnotationCIDFile]; ok {
+    if err := os.Remove(cidFile); err != nil && !errors.Is(err, os.ErrNotExist) {
+        reportErrorf("cleaning up CID file: %w", err)
+    }
+}
+```
+
+The corrected retention suite completes in `input-native-retention-controls-r2-20260913.out`.
+Its controls retain containers after unsuccessful independent inspection,
+stop/terminal-record collisions,
+removal-command collision and ambiguous creation.
+Successful removal followed by refused absence evidence still withholds `cleanup-complete.json`.
+All remaining fixture containers are independently inspected and removed by the verification owner.
+No production CID-file workaround or upstream change is needed.
 
 ## What does not work
 
