@@ -1821,6 +1821,64 @@ phase or acquisition owner.
 No paid preparation,
 writer or image-reader work occurs.
 
+#### Native input runner under task 47
+
+The next implemented operation is a specialized provider-free `producer-prepare` runner,
+not a general command runner or live acquisition mode.
+No existing named entry owns it.
+`corpus-pass` includes excluded section,
+title,
+image and archive-repair operations;
+`producer-calibrate` owns the later writer measurement.
+The existing mutation-test Podman module owns shard reports and an arbitrary argv execution interface,
+so its policy cannot substitute for this preparation launch contract.
+
+The bootstrap will be separately packaged from application code.
+Its host path owns an independently identified Podman invocation,
+immutable image identity,
+Node/bootstrap/application/library mounts,
+clean loader environment and private output directory.
+Its fixed private child path checks the recorded target,
+resource and file identities before importing a dedicated inert preparation application entry.
+It will not import the package's broad `index.mjs` barrel or expose an ungated application CLI.
+The dedicated application calls the already verified `buildPreparationRootInputs` interface.
+
+The trusted caller and host launcher are the authority for selecting the bootstrap and image.
+Node and the dynamic linker necessarily run before child JavaScript can hash them;
+child checks are cross-checks before application import,
+not proof that libraries were validated before their first use.
+Bootstrap self-hashes do not authenticate their creator.
+Future live acquisition requires its own reviewed launch contract,
+not a new mode silently added to this no-network operation.
+
+The run directory must be created exclusively before corpus or support-file I/O.
+It retains fixed launch,
+unqualified-input and terminal digest/extent records,
+with content synchronization and no automatic resume.
+It cannot reuse `createPreparationAttempt`'s `root-plan.json` marker,
+because this result is not a reviewed correspondence root.
+Host ownership of files and empty mount directories is checked explicitly.
+
+A fresh measurement confirms that all 63 reference locators remain inside the task40 support root,
+using only its root and `preparation-pool-policy-reading-20260912` directory.
+Their aggregate extent is 3290843 bytes;
+the selection is 50399 bytes and still hashes to
+`853fd30daef7464865356ac1ffa901de4ba5cb35b4ef80d28cf6a043c36be3be`.
+The loader maps validated relative paths to fixed read-only mounts while preserving original locator strings.
+Its aggregate byte allowance must come from the independently supplied launch contract.
+The earlier 64 MiB probe envelope is not adopted as production policy.
+
+A new sealed artifact is required:
+the old `c6375af734890a5f224e472c5e5e25bb2bd5ed73ee1635cd58a380f3ed742273` manifest
+predates the semantic owner.
+The execution copy contains only the declared runtime inventory and manifest,
+not unneeded declarations or arbitrary extra files.
+Verification must use the real CLI and corpus,
+plus import-marker controls for every pre-import refusal,
+image-loader environment controls,
+output collisions/interruption and caller ownership.
+No new paid operation is authorized by this work.
+
 #### Remaining owning phases
 
 The bounded phase design follows the permitted caller:
