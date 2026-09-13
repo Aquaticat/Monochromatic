@@ -82,7 +82,10 @@ export {
   type FrozenPreparationReference,
   type FrozenPreparationObligation,
 } from './preparation-selection-model.ts';
-export { PreparationRootError, type PreparationRootFailure, } from './preparation-root-error.ts';
+export {
+  PreparationRootError,
+  type PreparationRootFailure,
+} from './preparation-root-error.ts';
 export {
   type PreparationReceiptBinding,
   type PreparationReceiptData,

@@ -113,7 +113,7 @@ await describe({ name: '', children: [describe({ name: readFrozenPreparationSele
       expect(outcome(value)).toBe('selection-parents');
     },
   })),
-  ...['../source-section/0/target-section/0', 'folder\\escape/source-section/0/target-section/0', 'fixture/source-section/01/target-section/0',
+  ...['../source-section/0/target-section/0', String.raw`folder\escape/source-section/0/target-section/0`, 'fixture/source-section/01/target-section/0',
     'fixture/source-section/-1/target-section/0', 'fixture/source-section/0/target-section/1e1', 'fixture/other/0/target-section/0', 'fixture/source-section/0/other/0', 'fixture/source-section/0'].map((id, index) => it({
     name: `refuses noncanonical frozen parent identity ${index}`, fn: async () => {
       const value = artifact();
@@ -133,7 +133,7 @@ await describe({ name: '', children: [describe({ name: readFrozenPreparationSele
     if (kind === 'missing') value.dependencies.pop();
     else if (kind === 'reordered') value.dependencies.reverse();
     else {
-      const first = value.dependencies[0];
+      const [first] = value.dependencies;
       if (first === undefined) throw new Error('expected fixture obligation');
       if (kind === 'approved') first.disposition = 'approved';
       else if (kind === 'no-context') first.requiredContext = [];

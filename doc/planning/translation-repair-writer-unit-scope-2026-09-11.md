@@ -1174,8 +1174,18 @@ without reading or executing them,
 and separates historical sampler/runtime provenance from the future acquisition runtime.
 No typed selection result grants root,
 phase or writer approval.
-`preparation-selection-verification-20260913.out` is active,
-with a consumer probe against the actual task40 artifact immediately after the required build.
+The first selection verification passes build,
+the actual task40 consumer probe,
+types and focused tests.
+The consumer confirms the 50399-byte artifact,
+40 ordered parents,
+63 still-unverified supporting references,
+and the retained `Mio#0` open scope obligation.
+Its formatter findings concern imported callback arity,
+statement layout and destructuring.
+Validation-only policy scans now use explicit loops;
+remaining transformations use named callbacks and explicit destructuring.
+`preparation-selection-verification-r2-20260913.out` is the next full verification.
 The new selection reader is not yet declared verified.
 
 The bounded phase design follows the permitted caller:
