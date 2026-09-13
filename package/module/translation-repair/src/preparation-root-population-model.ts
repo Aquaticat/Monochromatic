@@ -162,4 +162,14 @@ export type PreparationRootParent = {
   readonly originalProtection: PreparationRootProtection;
 };
 
+/**
+ * Population accounting carries coordinates and protections without unrelated full-parent prose.
+ *
+ * @example
+ * ```ts
+ * const population: readonly PreparationRootPopulationParent[] = currentPopulation;
+ * ```
+ */
+export type PreparationRootPopulationParent = Omit<PreparationRootParent, 'index' | 'sourceText' | 'incumbentText'>;
+
 //endregion Current corpus identities compared with frozen population evidence
