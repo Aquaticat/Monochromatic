@@ -122,7 +122,10 @@ export function readFrozenPreparationSelection({
    */
   const keys = Object.keys(record,);
   if ((keys.length !== SELECTION_KEYS.length) || SELECTION_KEYS.some(function missing(key,): boolean {
-    return !Object.hasOwn(record, key,);
+    return !Object.hasOwn(
+      record,
+      key,
+    );
   },)
     || (record.status !== 'parent identities frozen; reading complete; no acquisition or writer approval')
     || (record.baselineCoordinatesOnly !== true))

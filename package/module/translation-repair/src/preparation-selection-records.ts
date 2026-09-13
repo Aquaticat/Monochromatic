@@ -143,7 +143,9 @@ export function selectionReferences(value: unknown,): readonly FrozenPreparation
       },),
     };
   },);
-  /** Path identity, not hash equality, determines duplicate supporting references. */
+  /**
+   * Path identity, not hash equality, determines duplicate supporting references.
+   */
   const paths = references.map(function path(reference,): string {
     return reference.path;
   },);
@@ -199,8 +201,8 @@ export function selectionObligations({
      * Each required context string is preserved rather than interpreted or rewritten.
      */
     const requiredContext = selectionArray(record.requiredContext,)
-      .map(function context(value,): string {
-        return selectionString(value,);
+      .map(function context(contextText,): string {
+        return selectionString(contextText,);
       },);
     if (requiredContext.length === 0)
       throw new PreparationRootError({ kind: 'selection-obligations', },);
