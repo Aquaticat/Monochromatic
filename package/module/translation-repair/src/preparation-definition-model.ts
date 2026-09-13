@@ -1,4 +1,5 @@
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import type { PreparationOccurrenceExpectation, } from './preparation-occurrence-model.ts';
 
 //region Definition-only evidence without placement authority
 
@@ -12,10 +13,29 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * ```
  */
 export type PreparationDefinitionDomain = {
-  /** Complete current source definition inventory within the registered parent. */
+  /**
+   * Complete current source definition inventory within the registered parent.
+   */
   readonly sourceIds: readonly string[];
-  /** Complete current target definition inventory, not newly chosen after reading ballots. */
+  /**
+   * Complete current target definition inventory, not newly chosen after reading ballots.
+   */
   readonly targetIds: readonly string[];
+};
+
+/**
+ * Independently registered occurrence and its complete definition inventory, never inferred from a receipt.
+ *
+ * @example
+ * ```ts
+ * const registration: PreparationDefinitionRegistration = { occurrence: expected, domain };
+ * ```
+ */
+export type PreparationDefinitionRegistration = {
+  /** Full document, parent, attempt, receipt and request-configuration expectations. */
+  readonly occurrence: PreparationOccurrenceExpectation;
+  /** Current definition-node inventory derived from the frozen scope and permitted target transition. */
+  readonly domain: PreparationDefinitionDomain;
 };
 
 /**
@@ -27,11 +47,17 @@ export type PreparationDefinitionDomain = {
  * ```
  */
 export type PreparationDefinitionEndpoint = {
-  /** Current parser identity, not an initial coordinate reused after a rewrite. */
+  /**
+   * Current parser identity, not an initial coordinate reused after a rewrite.
+   */
   readonly nodeId: string;
-  /** Index local to the exact retained block question. */
+  /**
+   * Index local to the exact retained block question.
+   */
   readonly blockIndex: number;
-  /** Existing parser-readable footnote label, without alias or factual-authority inference. */
+  /**
+   * Existing parser-readable footnote label, without alias or factual-authority inference.
+   */
   readonly label: string;
 };
 
@@ -44,11 +70,17 @@ export type PreparationDefinitionEndpoint = {
  * ```
  */
 export type PreparationDefinitionRelation = {
-  /** Current source definition. */
+  /**
+   * Current source definition.
+   */
   readonly source: PreparationDefinitionEndpoint;
-  /** Current target definition paired by independent model identities. */
+  /**
+   * Current target definition paired by independent model identities.
+   */
   readonly target: PreparationDefinitionEndpoint;
-  /** This projection never widens a relation through deterministic media placement. */
+  /**
+   * This projection never widens a relation through deterministic media placement.
+   */
   readonly authority: 'independent-endorsement';
 };
 
@@ -62,21 +94,39 @@ export type PreparationDefinitionRelation = {
  * ```
  */
 export type PreparationDefinitionEvidence = {
-  /** Pairing evidence is not factual correctness, officiality or final writer admission. */
+  /**
+   * Pairing evidence is not factual correctness, officiality or final writer admission.
+   */
   readonly qualification: 'pairing-only';
-  /** No body pairing, media claim, target decline or archive-prose authority is returned. */
+  /**
+   * No body pairing, media claim, target decline or archive-prose authority is returned.
+   */
   readonly scope: 'footnote-definitions';
-  /** Historical question key checked against current bytes, not complete receipt identity. */
+  /** Exact owned occurrence binding, not merely a matching local question or node-ID array. */
+  readonly occurrence: PreparationOccurrenceExpectation;
+  /**
+   * Historical question key checked against current bytes, not complete receipt identity.
+   */
   readonly questionKey: string;
-  /** Owned ordered electorate used for replay. */
+  /**
+   * Owned ordered electorate used for replay.
+   */
   readonly modelIds: readonly RosterModelId[];
-  /** Quorum derived from the configured electorate. */
+  /**
+   * Quorum derived from the configured electorate.
+   */
   readonly requiredUsable: number;
-  /** Replayed usable replies, not merely heard voices. */
+  /**
+   * Replayed usable replies, not merely heard voices.
+   */
   readonly usable: number;
-  /** Owned exact current definition inventory independently supplied by the journal. */
+  /**
+   * Owned exact current definition inventory independently supplied by the journal.
+   */
   readonly domain: PreparationDefinitionDomain;
-  /** Only relations retained by native independent agreement with both endpoints in the definition domain. */
+  /**
+   * Only relations retained by native independent agreement with both endpoints in the definition domain.
+   */
   readonly definitionRelations: readonly PreparationDefinitionRelation[];
 };
 

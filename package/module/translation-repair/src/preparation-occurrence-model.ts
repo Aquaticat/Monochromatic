@@ -88,7 +88,7 @@ export type BoundPreparationOccurrence = {
   /**
    * Replayed production handoff before any independent scope qualification.
    */
-  readonly prepared: PreparedBlockPairing;
+  readonly prepared: Extract<PreparedBlockPairing, { readonly kind: 'paired' | 'fallback'; }>;
 };
 
 //endregion Current occurrence metadata

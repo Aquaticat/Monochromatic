@@ -94,6 +94,7 @@ export {
   type PreparationDefinitionEndpoint,
   type PreparationDefinitionEvidence,
   type PreparationDefinitionRelation,
+  type PreparationDefinitionRegistration,
 } from './preparation-definition-model.ts';
 export {
   type QualifiedBlockPairing,

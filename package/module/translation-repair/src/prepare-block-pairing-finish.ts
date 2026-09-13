@@ -55,7 +55,7 @@ export function finishPreparedBlockPairing(
     readonly pairIndex: number;
     readonly l: Logger;
   },
-): PreparedBlockPairing {
+): Extract<PreparedBlockPairing, { readonly kind: 'paired' | 'fallback'; }> {
   /**
    * Logger distinguishing the final map handoff from acquisition.
    */
