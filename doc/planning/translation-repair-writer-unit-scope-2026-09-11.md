@@ -1660,8 +1660,35 @@ then fails only the designated ordinary assertions for outer `pin` and `artifact
 `buildPreparationRootInputs` now captures process context before reading public argument properties,
 and its private pin reader owns the configuration before other argument getters.
 Pin-property getter failures are caught inside the fixed corpus-identity diagnostic boundary.
-This fix still needs the green verification run.
+The fix is `f60ecf2dd`.
+R8 at `21b09216f` passes build,
+actual corpus consumption,
+types and the expanded focused tests;
+its terminal is `test:unit exit 0` at line 386 of `.guard-sandbox/r8/focused.out`.
+The added controls cover current notes with retained prior metadata,
+explicit mixed parent carry,
+missing source/target/both sides,
+selected-side disappearance,
+relative PATH plus cwd changes,
+outer getter privacy and cross-section object ownership.
+The object-ownership probe first detects a deliberately shared selection/obligation graph,
+then checks that returned evidence sections share no mutable objects.
 The existing serial `concurrency: 1` remains explicit for process-global fixtures.
+
+Development build/types/format and explicit planning-document Markdown checks pass;
+`root-inputs-format-r7-20260913.out` records zero warnings and errors.
+R8 stops before the full suite because native `lint:oxlint` tries to build its missing config artifact,
+and the disposable config package lacks `@monochromatic-dev/config-rolldown` resolution.
+`mise.toml`'s `ensureOxlintConfig` invokes that native build when sidecar outputs are missing or older than sources.
+This is verification-worktree dependency provisioning,
+not a semantic-owner failure or guard detection.
+The config package now has an explicit link to the existing read-only dependency directory;
+451 tracked config/plugin inputs are byte-compared with development and hash-recorded in
+`.guard-sandbox/lint-dependency-inputs.json`.
+No ignored tree is copied,
+no timestamps are fabricated to skip rebuilding,
+and no policy trust is granted.
+R9 repeats the complete sequence including native config rebuild and the full package suite.
 
 A proposed target-only parent fixture is not adopted:
 `ChunkPair.source` is existing content,
