@@ -4,7 +4,10 @@ import {
   readdir,
   statfs,
 } from 'node:fs/promises';
-import { networkInterfaces, type NetworkInterfaceInfo, } from 'node:os';
+import {
+  networkInterfaces,
+  type NetworkInterfaceInfo,
+} from 'node:os';
 import { isDeepStrictEqual, } from 'node:util';
 import { verifyProducerInputChildMounts, } from './producer-input-child-mounts.ts';
 import {
@@ -217,21 +220,19 @@ export async function verifyProducerInputChildContext(identity: ProducerInputChi
   /**
    * Network-none is checked through actual interface state, not inferred from the launch request.
    */
-  const interfaces: Readonly<Record<string, readonly Readonly<NetworkInterfaceInfo>[] | undefined>> = networkInterfaces();
-  if ((!isDeepStrictEqual(
-    Object.keys(interfaces),
-    ['lo']
-  ))
-    || Object.values(interfaces)
-    .some(function external(addresses): boolean {
-    return (addresses === undefined) || addresses.some(function routed(address): boolean {
+  const interfaces = networkInterfaces();
+  if (!isDeepStrictEqual(Object.keys(interfaces), ['lo']))
+    throw new ProducerInputRunError({ operation: 'verify-runtime', locator: 'child network namespace', });
+  for (const addresses of Object.values(interfaces)) {
+    if (addresses === undefined)
+      throw new ProducerInputRunError({ operation: 'verify-runtime', locator: 'child network namespace', });
+    /** Presence is established before this deeply readonly host view crosses a callback boundary. */
+    const observed: readonly Readonly<NetworkInterfaceInfo>[] = addresses;
+    if (observed.some(function routed(address): boolean {
       return !address.internal;
-    });
-  }))
-    throw new ProducerInputRunError({
-      operation: 'verify-runtime',
-      locator: 'child network namespace',
-    });
+    }))
+      throw new ProducerInputRunError({ operation: 'verify-runtime', locator: 'child network namespace', });
+  }
   try {
     await verifyProducerInputChildMounts();
     await verifyChildResources();

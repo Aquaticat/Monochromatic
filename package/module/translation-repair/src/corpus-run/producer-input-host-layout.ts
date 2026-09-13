@@ -203,7 +203,9 @@ function directoryMount({
    * Stacked alternatives are not ordered by mount ID or guessed from record position.
    */
   const closest = covering.filter(function atBoundary(mount): boolean {
-    return mount.point.length === length;
+    return mount.point
+      .length
+      === length;
   });
   /**
    * An absent or ambiguous match grants no layout authority.
@@ -289,7 +291,10 @@ async function observeHostLayout({
    * One visible mount avoids asserting that kernel device fields describe arbitrary filesystem aliases.
    */
   const ids = observed.map(function mount(directory): string {
-    return directoryMount({ directory, mounts });
+    return directoryMount({
+      directory,
+      mounts
+    });
   });
   /**
    * The current profile does not silently broaden to cross-mount execution.

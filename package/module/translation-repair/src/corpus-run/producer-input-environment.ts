@@ -33,11 +33,17 @@ export type ProducerInputChildIdentity = {
    */
   readonly callerGid: number;
 };
-/** Leading UUID group width. */
+/**
+ * Leading UUID group width.
+ */
 const UUID_LEADING_WIDTH = 8;
-/** Interior UUID group width, including version and variant groups. */
+/**
+ * Interior UUID group width, including version and variant groups.
+ */
 const UUID_INTERIOR_WIDTH = 4;
-/** Trailing UUID group width. */
+/**
+ * Trailing UUID group width.
+ */
 const UUID_TRAILING_WIDTH = 12;
 /**
  * Fixed grammars keep identity checks independent from supplied contents.
@@ -142,7 +148,7 @@ function childRunId(value: unknown): string {
   /**
    * Version and RFC variant are checked independently after the complete group spelling.
    */
-  const [, , version, variant] = parts;
+  const [version, variant] = parts.slice(2);
   if ((parts.length
     !== IDENTITY_WIDTHS.uuid
     .length) || (!IDENTITY_WIDTHS.uuid

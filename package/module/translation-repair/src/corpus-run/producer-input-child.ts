@@ -19,7 +19,9 @@ import {
  * Compile-time application contract does not import its runtime or logger before the gate.
  */
 type ProducerInputApplication = {
-  /** Fixed application operation; the type-only import executes no application code. */
+  /**
+   * Fixed application operation; the type-only import executes no application code.
+   */
   readonly prepareProducerInputs: typeof prepareProducerInputs;
 };
 
