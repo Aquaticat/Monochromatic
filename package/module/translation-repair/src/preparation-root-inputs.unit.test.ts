@@ -135,6 +135,31 @@ function carryReadings(f: Awaited<ReturnType<typeof fixture>>) {
     Object.assign(obligation, { requiredContext: [...prior.requiredContext], pictureEvidenceNeeded: false, scopeQualificationOpen: true });
   });
 }
+async function accepted(request: Parameters<typeof buildPreparationRootInputs>[0]) {
+  const [outcome] = await Promise.allSettled([buildPreparationRootInputs(request)]);
+  expect(outcome?.status).toBe('fulfilled');
+  if (outcome?.status !== 'fulfilled') throw new Error('expected successful native root construction');
+  return outcome.value;
+}
+function sharedSections(sections: Readonly<Record<string, unknown>>): string[] {
+  const owners = new Map<object, string>();
+  const overlaps: string[] = [];
+  for (const [name, root] of Object.entries(sections)) {
+    const pending: unknown[] = [root];
+    for (let index = 0; index < pending.length; index += 1) {
+      const value = pending[index];
+      if (typeof value !== 'object' || value === null) continue;
+      const prior = owners.get(value);
+      if (prior !== undefined) {
+        if (prior !== name) overlaps.push(`${prior}:${name}`);
+        continue;
+      }
+      owners.set(value, name);
+      pending.push(...Object.values(value));
+    }
+  }
+  return overlaps;
+}
 async function refusal(body: () => Promise<unknown>) {
   let caught: unknown;
   try {
@@ -309,17 +334,53 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     expect(inputs.unalignedDefinitions[0]?.target[0]?.zone).toBe('footnote-definition');
     expect(inputs.registry).toHaveLength(41);
   } }),
-  it({ name: 'retains a missing unselected corpus side as an explicit exclusion with successful-side provenance', fn: async () => {
+  ...['source', 'target', 'both'].map(missing => it({ name: `retains missing unselected corpus sides with successful-side provenance ${missing}`, fn: async () => {
     await using f = await fixture();
     const excluded = [{ entryId: 'gap', kind: 'missing-corpus-side' }];
     Object.assign(f.selection, { exclusions: excluded });
     Object.assign(f.values.pool, { excluded: structuredClone(excluded) });
     f.selection.census.listed = 2;
-    await writeFile(f.storePath, JSON.stringify({ files: { ...f.files, 'people/gap/page.md': 'Only original.' }, fail: '', listed: ['fixture', 'gap'] }));
-    const inputs = await buildPreparationRootInputs(f.request());
+    const extra = missing === 'source' ? { 'people/gap/page.en.md': 'Only target.' }
+      : missing === 'target' ? { 'people/gap/page.md': 'Only original.' } : {};
+    await writeFile(f.storePath, JSON.stringify({ files: { ...f.files, ...extra }, fail: '', listed: ['fixture', 'gap'] }));
+    const inputs = await accepted(f.request());
     expect(inputs.excluded).toEqual(excluded);
-    expect(inputs.rawDocuments).toHaveLength(3);
-    expect(inputs.rawDocuments[2]?.relPath).toBe('people/gap/page.md');
+    expect(inputs.rawDocuments.map(row => row.relPath)).toEqual([...Object.keys(f.files), ...Object.keys(extra)]);
+  } })),
+  ...['people/fixture/page.md', 'people/fixture/page.en.md'].map(missing => it({ name: `refuses missing selected corpus side without substituting a parent ${missing}`, fn: async () => {
+    await using f = await fixture();
+    const files = { ...f.files };
+    Reflect.deleteProperty(files, missing);
+    await writeFile(f.storePath, JSON.stringify({ files, fail: '' }));
+    const error = await refusal(async () => await buildPreparationRootInputs(f.request()));
+    expect(error.kind).toBe('population');
+    expect(error.input).toBe(f.selection.orderedParentIds[0]);
+  } })),
+  ...[false, true].map(mixed => it({ name: `uses current note authority while retaining explicit prior metadata mixed-parent-carry=${mixed}`, fn: async () => {
+    await using f = await fixture();
+    const [currentEntry] = structuredClone(f.values.journal.entries);
+    if (currentEntry === undefined) throw new Error('expected current entry witness');
+    const currentParents = structuredClone(f.values.journal.parents);
+    const currentObligations = structuredClone(f.selection.dependencies);
+    carryReadings(f);
+    const [entry] = f.values.journal.entries;
+    const [carriedParent] = f.values.journal.parents;
+    const [carriedObligation] = f.selection.dependencies;
+    if (entry === undefined || carriedParent === undefined || carriedObligation === undefined) throw new Error('expected carried witnesses');
+    Object.assign(entry, currentEntry);
+    f.values.journal.parents = mixed ? [carriedParent, ...currentParents.slice(1)] : currentParents;
+    f.selection.dependencies = mixed ? [carriedObligation, ...currentObligations.slice(1)] : currentObligations;
+    const inputs = await accepted(f.request());
+    expect(inputs.obligations).toEqual(f.selection.dependencies);
+    expect(inputs.obligations[0]?.requiredContext).toEqual(mixed ? [' Retained prior context. '] : [' Context 40. ']);
+    expect(inputs.obligations[1]?.requiredContext).toEqual([' Context 39. ']);
+    expect('priorReading' in entry).toBe(true);
+  } })),
+  it({ name: 'owns mutable object graphs separately for every returned evidence section', fn: async () => {
+    await using f = await fixture();
+    const inputs = await accepted(f.request());
+    expect(sharedSections({ selection: inputs.selection, obligations: inputs.selection.obligations })).toContain('selection:obligations');
+    expect(sharedSections(inputs)).toEqual([]);
   } }),
   ...[false, true].map(normalize => it({ name: `applies whole-page original eligibility before selected-parent lookup normalized=${normalize}`, fn: async () => {
     await using f = await fixture();
@@ -366,7 +427,7 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     if (first === undefined) throw new Error('expected role witness');
     if (kind === 'order') record.references = [journalReference, poolReference, ...record.references.slice(2)];
     else if (kind === 'ambiguous-frame') {
-      const [, , , source] = artifacts;
+      const source = artifacts.find(item => item.path === '/never-open/frame.md');
       if (source === undefined) throw new Error('expected frame witness');
       artifacts.push({ path: '/another/frame.md', content: new Uint8Array(source.content) });
       record.references.push({ path: '/another/frame.md', hash: createHash('sha256').update(source.content).digest('hex') });
@@ -406,23 +467,31 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     if (outcome?.status !== 'fulfilled') throw new Error('expected stable cloned corpus pin');
     expect(outcome.value.parents.map(parent => parent.id)).toEqual(f.selection.orderedParentIds);
   } }),
-  it({ name: 'pins omitted native Git lookup before logger callbacks alter PATH', fn: async () => {
+  ...[false, true].map(relativePath => it({ name: `pins omitted native Git lookup before logger PATH and cwd changes relative=${relativePath}`, fn: async () => {
     await using f = await fixture();
     const request = f.request();
     const executable = request.pin.gitPath;
     const script = await readFile(executable, 'utf8');
     await writeFile(executable, `#!${process.execPath}\n${script.slice(script.indexOf('\n') + 1)}`);
-    await symlink(executable, join(f.dir, 'git'));
+    const bin = join(f.dir, 'bin');
+    const elsewhere = join(f.dir, 'elsewhere');
+    await mkdir(bin);
+    await mkdir(elsewhere);
+    await symlink(executable, join(bin, 'git'));
     const previousPath = process.env.PATH;
+    const origin = process.cwd();
     using reset = { [Symbol.dispose]: () => {
+      process.chdir(origin);
       if (previousPath === undefined) delete process.env.PATH;
       else process.env.PATH = previousPath;
     } };
-    process.env.PATH = f.dir;
+    process.chdir(f.dir);
+    process.env.PATH = relativePath ? 'bin' : bin;
     let changed = false;
     const logger = { ...l, debug(message: string) {
       l.debug(message);
       changed = true;
+      process.chdir(elsewhere);
       process.env.PATH = join(f.dir, 'unavailable');
     } };
     const pin = { cloneDir: f.dir, commitSha: CORPUS_COMMIT_SHA };
@@ -431,7 +500,33 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     expect(outcome?.status).toBe('fulfilled');
     if (outcome?.status !== 'fulfilled') throw new Error('expected snapshotted executable lookup');
     expect(outcome.value.parents).toHaveLength(40);
-  } }),
+  } })),
+  ...['pin', 'artifacts'].map(field => it({ name: `snapshots independent location and pin before outer argument getters ${field}`, fn: async () => {
+    await using f = await fixture();
+    const origin = process.cwd();
+    const elsewhere = join(f.dir, 'elsewhere');
+    await mkdir(elsewhere);
+    using reset = { [Symbol.dispose]: () => {
+      process.chdir(origin);
+    } };
+    const request = f.request();
+    const pin = { ...request.pin, cloneDir: relative(origin, f.dir) };
+    const input = { ...request, pin };
+    let observed = false;
+    Object.defineProperty(input, field, { get() {
+      observed = true;
+      if (field === 'pin') {
+        process.chdir(elsewhere);
+        return pin;
+      }
+      pin.cloneDir = '/changed-before-artifact-read';
+      pin.commitSha = 'invalid';
+      return request.artifacts;
+    } });
+    const inputs = await accepted(input);
+    expect(observed).toBe(true);
+    expect(inputs.parents.map(parent => parent.id)).toEqual(f.selection.orderedParentIds);
+  } })),
   it({ name: 'reads the selected Git executable once per omitted-path population and never for an explicit path', fn: async () => {
     await using f = await fixture();
     const request = f.request();
@@ -473,7 +568,9 @@ console.log('ROOT_GIT_READS ' + JSON.stringify({ implicitReads, explicitReads: c
     const marker = 'ROOT_GIT_READS ';
     const line = done.stdout.split('\n').find(value => value.startsWith(marker));
     if (line === undefined) throw new Error('expected native executable read observations');
-    expect(JSON.parse(line.slice(marker.length))).toEqual({ implicitReads: 1, explicitReads: 0 });
+    expect(
+      JSON.parse(line.slice(marker.length)),
+    ).toEqual({ implicitReads: 1, explicitReads: 0 });
   } }),
   ...['revision', 'blank-clone', 'relative-executable', 'throwing-getter'].map(kind => it({ name: `refuses unsupported independent corpus pin ${kind}`, fn: async () => {
     await using f = await fixture();
