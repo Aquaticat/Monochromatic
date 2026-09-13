@@ -1,4 +1,5 @@
 import { createHash, } from 'node:crypto';
+import { inspect, } from 'node:util';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { CORPUS_COMMIT_SHA, hashContent, readPreparationSelectionEvidence, PreparationRootError, type PreparationArtifactInput, } from '../dist/final/node/index.mjs';
@@ -156,6 +157,90 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     (content as Uint8Array).fill(19);
     expect(f.artifacts.map(item => [...item.content])).toEqual(callerAfterMutation);
   } }),
+  it({ name: 'copies only the input view rather than its larger backing buffer', fn: async () => {
+    const f = fixture();
+    const backing = new Uint8Array([99, 99, 255, 0, 1, 13, 10, 99]);
+    f.artifacts[0] = { path: '/unread/pool.bin', content: backing.subarray(2, 7) };
+    const result = readPreparationSelectionEvidence(f);
+    expect([...result.artifacts[0]?.content ?? []]).toEqual([255, 0, 1, 13, 10]);
+    expect(result.artifacts[0]?.bytes).toBe(5);
+  } }),
+  it({ name: 'does not alias outputs when two registered artifacts share an input view', fn: async () => {
+    const f = fixture();
+    const shared = new Uint8Array([4, 5, 6]);
+    const artifacts = f.artifacts.map((item, index) => index === 0 || index === 2 ? { ...item, content: shared } : item);
+    f.record.references = artifacts.map(item => ({ path: item.path, hash: createHash('sha256').update(item.content).digest('hex') }));
+    const text = JSON.stringify(f.record);
+    const result = readPreparationSelectionEvidence({ ...f, text, expectedDigest: hashContent({ content: text }), artifacts });
+    const first = result.artifacts[0]?.content;
+    expect(first).toBeDefined();
+    if (first === undefined) throw new Error('expected first matched view');
+    (first as Uint8Array).fill(31);
+    expect([...result.artifacts[2]?.content ?? []]).toEqual([4, 5, 6]);
+    expect([...shared]).toEqual([4, 5, 6]);
+  } }),
+  it({ name: 'requires downstream revalidation after a consumer changes its owned matched bytes', fn: async () => {
+    const f = fixture();
+    const result = readPreparationSelectionEvidence(f);
+    const first = result.artifacts[0]?.content;
+    expect(first).toBeDefined();
+    if (first === undefined) throw new Error('expected matched content');
+    (first as Uint8Array).fill(41);
+    expect(failure(() => readPreparationSelectionEvidence({ ...f, artifacts: result.artifacts }))).toBe('reference-content');
+  } }),
+  it({ name: 'ignores a custom array iterator rather than delegating the frozen inventory to it', fn: async () => {
+    const f = fixture();
+    const artifacts = [...f.artifacts];
+    const [first] = artifacts;
+    if (first === undefined) throw new Error('expected iterator witness');
+    let iterations = 0;
+    Object.defineProperty(artifacts, Symbol.iterator, { value: function incompleteIterator() {
+      iterations += 1;
+      return [first].values();
+    } });
+    expect([...artifacts]).toHaveLength(1);
+    expect(iterations).toBe(1);
+    iterations = 0;
+    expect(readPreparationSelectionEvidence({ ...f, artifacts }).artifacts).toHaveLength(3);
+    expect(iterations).toBe(0);
+  } }),
+  ...(['path', 'content'] as const).flatMap(property => ['error', 'primitive'].map(kind => it({ name: `sanitizes throwing ${property} accessors carrying ${kind} private data`, fn: async () => {
+    const f = fixture();
+    const canary = 'q7z9k2';
+    const [original] = f.artifacts;
+    if (original === undefined) throw new Error('expected accessor witness');
+    const bad = { ...original };
+    let reads = 0;
+    Object.defineProperty(bad, property, { get() {
+      reads += 1;
+      if (kind === 'error') throw new Error(canary);
+      throw canary;
+    } });
+    let caught: unknown;
+    try {
+      readPreparationSelectionEvidence({ ...f, artifacts: [bad, ...f.artifacts.slice(1)] });
+    }
+    catch (error) { caught = error; }
+    expect(reads).toBe(1);
+    expect(caught).toBeInstanceOf(PreparationRootError);
+    expect((caught as PreparationRootError).kind).toBe(property === 'path' ? 'reference-inventory' : 'reference-content');
+    expect(inspect(caught, { depth: null })).not.toContain(canary);
+  } }))),
+  ...['length', '0'].map(property => it({ name: `sanitizes a throwing inventory ${property} read`, fn: async () => {
+    const f = fixture();
+    const artifacts = new Proxy(f.artifacts, { get(target, key, receiver) {
+      if (key === property) throw new Error('q7z9k2');
+      return Reflect.get(target, key, receiver) as unknown;
+    } });
+    let caught: unknown;
+    try {
+      readPreparationSelectionEvidence({ ...f, artifacts });
+    }
+    catch (error) { caught = error; }
+    expect(caught).toBeInstanceOf(PreparationRootError);
+    expect((caught as PreparationRootError).kind).toBe('reference-inventory');
+    expect(inspect(caught, { depth: null })).not.toContain('q7z9k2');
+  } })),
   it({ name: 'snapshots each locator once before matching its content', fn: async () => {
     const f = fixture();
     const [original] = f.artifacts;

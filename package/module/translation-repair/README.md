@@ -1415,6 +1415,9 @@ The independently expected whole-artifact digest binds sampler metadata that is 
 `readPreparationSelectionEvidence` additionally matches an exact caller-loaded supporting-byte inventory,
 returns owned raw snapshots and extents in frozen order,
 and does not open paths or assign semantic roles or approval.
+The I/O owner must size-bound inputs before loading them.
+Matching is point-in-time evidence;
+a downstream owner must rehash bytes rather than trusting a mutable returned record.
 Its byte-binding integration is still under verification.
 `readRegisteredPreparationParent` shares complete-document and parent-coordinate preflight with receipt reconstruction,
 while allowing structural planning without inventing model evidence.

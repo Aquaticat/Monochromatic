@@ -22,7 +22,8 @@ export type PreparationArtifactInput = {
 };
 
 /**
- * Owned byte snapshot matched to one frozen reference, without semantic role or approval authority.
+ * Owned byte snapshot matched at read time, without semantic role, immutability or approval authority.
+ * Downstream root construction must rehash content through the owning reader if the value crosses a mutable boundary.
  *
  * @example
  * ```ts
@@ -43,7 +44,7 @@ export type MatchedPreparationArtifact = {
    */
   readonly bytes: number;
   /**
-   * Owned non-shared snapshot; later caller changes to source buffers cannot change the matched bytes.
+   * Owned non-shared snapshot; source mutations cannot affect it, but consumers can mutate their own copy.
    */
   readonly content: Readonly<Uint8Array<ArrayBuffer>>;
 };
