@@ -9,10 +9,14 @@ export type ProducerInputHostMount = {
   readonly id: string;
   /** Canonical decoded kernel mountpoint. */
   readonly point: string;
+  /** Per-mount options are separate from superblock options. */
+  readonly options: readonly string[];
+  /** Kernel filesystem type supports the fixed child platform-mount checks. */
+  readonly filesystem: string;
 };
 
 /** Fixed mountinfo field positions follow the Linux record grammar. */
-const MOUNTINFO = { minimumFields: 10, point: 4, separatorMinimum: 6, trailingFields: 4, escapeWidth: 4, } as const;
+const MOUNTINFO = { minimumFields: 10, point: 4, options: 5, separatorMinimum: 6, trailingFields: 4, escapeWidth: 4, } as const;
 /** Kernel pathname escapes are decoded once, never recursively. */
 const MOUNT_ESCAPES: Readonly<Record<string, string>> = {
   '\\040': ' ',
@@ -105,11 +109,15 @@ export function readProducerInputHostMounts(text: string): readonly ProducerInpu
     const id = fields[0];
     /** Missing mountpoints never become an empty fallback path. */
     const point = fields[MOUNTINFO.point];
-    if (fields.length < MOUNTINFO.minimumFields || separator < MOUNTINFO.separatorMinimum
+    /** Per-mount access flags are never inferred from filesystem-wide options. */
+    const options = fields[MOUNTINFO.options];
+    /** Filesystem type follows the extensible optional-field separator. */
+    const filesystem = fields[separator + 1];
+    if (options === undefined || options.length === 0 || filesystem === undefined || filesystem.length === 0 || fields.length < MOUNTINFO.minimumFields || separator < MOUNTINFO.separatorMinimum
       || fields.length !== separator + MOUNTINFO.trailingFields
       || id === undefined || point === undefined || !Number.isSafeInteger(Number(id)) || Number(id) <= 0 || String(Number(id)) !== id)
       throw new ProducerInputRunError({ operation: 'verify-host-layout', locator: 'host mount topology', });
-    return { id, point: mountPoint(point), };
+    return { id, point: mountPoint(point), options: options.split(','), filesystem, };
   });
   if (new Set(rows.map(function identity(row): string { return row.id; })).size !== rows.length)
     throw new ProducerInputRunError({ operation: 'verify-host-layout', locator: 'host mount topology', });

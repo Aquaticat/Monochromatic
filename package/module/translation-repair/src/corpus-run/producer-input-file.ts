@@ -124,17 +124,23 @@ async function observeProducerInputFile({
     });
   try {
     /**
-     * The no-follow descriptor rejects a symlink even when its referent has matching bytes.
+     * Known nonregular inputs are rejected without opening a device or waiting for a FIFO peer.
+     */
+    const initial = await lstat(path, { bigint: true, });
+    if (!initial.isFile() || initial.size !== BigInt(expectedBytes))
+      throw new ProducerInputRunError({ operation, locator: path, });
+    /**
+     * No-follow rejects leaf symlinks; nonblocking open lets fstat reject a replacement FIFO before body reads.
      */
     await using handle = await open(
       path,
-      constants.O_RDONLY | constants.O_NOFOLLOW,
+      constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
     );
     /**
      * No body read occurs before the exact regular-file extent matches.
      */
     const before = await handle.stat({ bigint: true, },);
-    if ((!before.isFile()) || (before.size !== BigInt(expectedBytes)))
+    if ((!before.isFile()) || (before.size !== BigInt(expectedBytes)) || !sameProducerInputFile({ before: initial, after: before }))
       throw new ProducerInputRunError({
         operation,
         locator: path,
