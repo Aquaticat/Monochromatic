@@ -1,5 +1,5 @@
 import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile, } from 'node:fs/promises';
-import { join, relative, } from 'node:path';
+import { join, relative, resolve, } from 'node:path';
 import { tmpdir, } from 'node:os';
 import { inspect, } from 'node:util';
 import { spawnSync, } from 'node:child_process';
@@ -134,6 +134,20 @@ function carryReadings(f: Awaited<ReturnType<typeof fixture>>) {
   f.selection.dependencies.forEach(obligation => {
     Object.assign(obligation, { requiredContext: [...prior.requiredContext], pictureEvidenceNeeded: false, scopeQualificationOpen: true });
   });
+}
+async function divergentOrigins(dir: string) {
+  const origin = process.cwd();
+  const initial = join(dir, 'initial');
+  const elsewhere = join(dir, 'elsewhere', 'nested');
+  await mkdir(initial);
+  await mkdir(elsewhere, { recursive: true });
+  const cloneDir = relative(initial, dir);
+  expect(resolve(initial, cloneDir)).toBe(dir);
+  expect(resolve(elsewhere, cloneDir)).not.toBe(dir);
+  process.chdir(initial);
+  return { cloneDir, elsewhere, [Symbol.dispose]() {
+    process.chdir(origin);
+  } };
 }
 async function accepted(request: Parameters<typeof buildPreparationRootInputs>[0]) {
   const [outcome] = await Promise.allSettled([buildPreparationRootInputs(request)]);
@@ -371,7 +385,9 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     f.values.journal.parents = mixed ? [carriedParent, ...currentParents.slice(1)] : currentParents;
     f.selection.dependencies = mixed ? [carriedObligation, ...currentObligations.slice(1)] : currentObligations;
     const inputs = await accepted(f.request());
-    expect(inputs.obligations).toEqual(f.selection.dependencies);
+    expect(inputs.obligations).toEqual(f.selection.dependencies.map(({ parentId, requiredContext, pictureEvidenceNeeded, scopeQualificationOpen }) => ({
+      parentId, requiredContext, pictureEvidenceNeeded, scopeQualificationOpen,
+    })));
     expect(inputs.obligations[0]?.requiredContext).toEqual(mixed ? [' Retained prior context. '] : [' Context 40. ']);
     expect(inputs.obligations[1]?.requiredContext).toEqual([' Context 39. ']);
     expect('priorReading' in entry).toBe(true);
@@ -443,20 +459,15 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
   } })),
   it({ name: 'snapshots relative clone location before logger callbacks change cwd and caller pin fields', fn: async () => {
     await using f = await fixture();
-    const origin = process.cwd();
-    const elsewhere = join(f.dir, 'elsewhere');
-    await mkdir(elsewhere);
-    using reset = { [Symbol.dispose]: () => {
-      process.chdir(origin);
-    } };
+    using origins = await divergentOrigins(f.dir);
     const request = f.request();
-    const pin = { ...request.pin, cloneDir: relative(origin, f.dir) };
+    const pin = { ...request.pin, cloneDir: origins.cloneDir };
     let changed = false;
     const logger = { ...l, debug(message: string) {
       l.debug(message);
       if (!changed) {
         changed = true;
-        process.chdir(elsewhere);
+        process.chdir(origins.elsewhere);
         pin.cloneDir = '/changed-after-snapshot';
         pin.commitSha = 'invalid';
       }
@@ -503,20 +514,15 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
   } })),
   ...['pin', 'artifacts'].map(field => it({ name: `snapshots independent location and pin before outer argument getters ${field}`, fn: async () => {
     await using f = await fixture();
-    const origin = process.cwd();
-    const elsewhere = join(f.dir, 'elsewhere');
-    await mkdir(elsewhere);
-    using reset = { [Symbol.dispose]: () => {
-      process.chdir(origin);
-    } };
+    using origins = await divergentOrigins(f.dir);
     const request = f.request();
-    const pin = { ...request.pin, cloneDir: relative(origin, f.dir) };
+    const pin = { ...request.pin, cloneDir: origins.cloneDir };
     const input = { ...request, pin };
     let observed = false;
     Object.defineProperty(input, field, { get() {
       observed = true;
       if (field === 'pin') {
-        process.chdir(elsewhere);
+        process.chdir(origins.elsewhere);
         return pin;
       }
       pin.cloneDir = '/changed-before-artifact-read';
