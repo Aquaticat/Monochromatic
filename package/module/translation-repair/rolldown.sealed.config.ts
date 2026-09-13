@@ -13,7 +13,11 @@ import {
   nodeExternal,
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { OutputAsset, OutputChunk, Plugin, } from 'rolldown';
+import type {
+  OutputAsset,
+  OutputChunk,
+  Plugin,
+} from 'rolldown';
 import { nodeEntries, } from './rolldown.node.config.ts';
 
 //region Target-specific application runtime packaging
@@ -369,11 +373,12 @@ const sealedRuntimeAssets: Plugin = {
 };
 
 /**
- * Dedicated output keeps the ordinary package build and external-resolution behavior unchanged.
+ * Candidate output stays outside published dist/final and must be copied into a fresh frozen directory before use.
+ * The ordinary package build and external-resolution behavior remain unchanged.
  */
 const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: nodeEntries,
-  outputDir: 'dist/final/sealed-node',
+  outputDir: 'node_modules/.sealed-runtime-candidate',
   external: await nodeExternal({ alwaysBundle: ['**',], },),
 },);
 /**
