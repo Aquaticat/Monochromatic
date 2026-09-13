@@ -1,7 +1,16 @@
 import { createHash, } from 'node:crypto';
-import { constants, type BigIntStats, } from 'node:fs';
-import { lstat, open, } from 'node:fs/promises';
-import { ProducerInputRunError, type ProducerInputOperation, } from './producer-input-error.ts';
+import {
+  constants,
+  type BigIntStats,
+} from 'node:fs';
+import {
+  lstat,
+  open,
+} from 'node:fs/promises';
+import {
+  ProducerInputRunError,
+  type ProducerInputOperation,
+} from './producer-input-error.ts';
 
 //region Bounded file observation shared by the specialized host and child
 
@@ -14,9 +23,13 @@ import { ProducerInputRunError, type ProducerInputOperation, } from './producer-
  * ```
  */
 export type ProducerInputFileIdentity = {
-  /** Exact raw byte extent, not decoded character length. */
+  /**
+   * Exact raw byte extent, not decoded character length.
+   */
   readonly bytes: number;
-  /** Independently recorded lowercase SHA-256. */
+  /**
+   * Independently recorded lowercase SHA-256.
+   */
   readonly sha256: string;
 };
 
@@ -29,13 +42,19 @@ export type ProducerInputFileIdentity = {
  * ```
  */
 type ProducerInputFileObservation = {
-  /** Observed count and hash describe the same descriptor-backed stream. */
+  /**
+   * Observed count and hash describe the same descriptor-backed stream.
+   */
   readonly identity: ProducerInputFileIdentity;
-  /** Empty for hash-only observations, not a claim that the file was empty. */
+  /**
+   * Empty for hash-only observations, not a claim that the file was empty.
+   */
   readonly chunks: readonly Uint8Array[];
 };
 
-/** Stream working storage stays independent of the caller-authorized total extent. */
+/**
+ * Stream working storage stays independent of the caller-authorized total extent.
+ */
 const FILE_CHUNK_BYTES = 65_536;
 
 /**
@@ -52,12 +71,18 @@ const FILE_CHUNK_BYTES = 65_536;
  * const stable = sameProducerInputFile({ before, after });
  * ```
  */
-function sameProducerInputFile({ before, after, }: {
+function sameProducerInputFile({
+  before,
+  after,
+}: {
   readonly before: BigIntStats;
   readonly after: BigIntStats;
 },): boolean {
-  return after.isFile() && before.dev === after.dev && before.ino === after.ino
-    && before.size === after.size && before.mtimeNs === after.mtimeNs && before.ctimeNs === after.ctimeNs;
+  return after.isFile() && (before.dev === after.dev)
+    && (before.ino === after.ino)
+    && (before.size === after.size)
+    && (before.mtimeNs === after.mtimeNs)
+    && (before.ctimeNs === after.ctimeNs);
 }
 
 /**
@@ -81,26 +106,50 @@ function sameProducerInputFile({ before, after, }: {
  * const observed = await observeProducerInputFile({ path, expectedBytes, operation: 'verify-runtime', retainChunks: false });
  * ```
  */
-async function observeProducerInputFile({ path, expectedBytes, operation, retainChunks, }: {
+async function observeProducerInputFile({
+  path,
+  expectedBytes,
+  operation,
+  retainChunks,
+}: {
   readonly path: string;
   readonly expectedBytes: number;
   readonly operation: ProducerInputOperation;
   readonly retainChunks: boolean;
 },): Promise<ProducerInputFileObservation> {
-  if (!Number.isSafeInteger(expectedBytes) || expectedBytes < 0)
-    throw new ProducerInputRunError({ operation, locator: path, });
+  if ((!Number.isSafeInteger(expectedBytes)) || (expectedBytes < 0))
+    throw new ProducerInputRunError({
+      operation,
+      locator: path,
+    });
   try {
-    /** The no-follow descriptor rejects a symlink even when its referent has matching bytes. */
-    await using handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW,);
-    /** No body read occurs before the exact regular-file extent matches. */
+    /**
+     * The no-follow descriptor rejects a symlink even when its referent has matching bytes.
+     */
+    await using handle = await open(
+      path,
+      constants.O_RDONLY | constants.O_NOFOLLOW,
+    );
+    /**
+     * No body read occurs before the exact regular-file extent matches.
+     */
     const before = await handle.stat({ bigint: true, },);
-    if (!before.isFile() || before.size !== BigInt(expectedBytes))
-      throw new ProducerInputRunError({ operation, locator: path, });
-    /** Hashing and counting observe the same chunks. */
+    if ((!before.isFile()) || (before.size !== BigInt(expectedBytes)))
+      throw new ProducerInputRunError({
+        operation,
+        locator: path,
+      });
+    /**
+     * Hashing and counting observe the same chunks.
+     */
     const hash = createHash('sha256',);
-    /** This counter belongs solely to the bounded stream operation. */
+    /**
+     * This counter belongs solely to the bounded stream operation.
+     */
     const observed = { bytes: 0, };
-    /** Hash-only callers do not retain executable or native-library bodies. */
+    /**
+     * Hash-only callers do not retain executable or native-library bodies.
+     */
     const chunks: Uint8Array[] = [];
     if (expectedBytes > 0) {
       for await (const chunk of handle.createReadStream({
@@ -110,29 +159,60 @@ async function observeProducerInputFile({ path, expectedBytes, operation, retain
         autoClose: false,
       },)) {
         if (!Buffer.isBuffer(chunk))
-          throw new ProducerInputRunError({ operation, locator: path, });
+          throw new ProducerInputRunError({
+            operation,
+            locator: path,
+          });
         observed.bytes += chunk.length;
         if (observed.bytes > expectedBytes)
-          throw new ProducerInputRunError({ operation, locator: path, });
+          throw new ProducerInputRunError({
+            operation,
+            locator: path,
+          });
         hash.update(chunk);
         if (retainChunks)
           chunks.push(new Uint8Array(chunk));
       }
     }
-    /** Descriptor state is checked before observing the final pathname. */
+    /**
+     * Descriptor state is checked before observing the final pathname.
+     */
     const after = await handle.stat({ bigint: true, },);
-    /** The final pathname must still identify the observed file, not a replacement or symlink. */
-    const current = await lstat(path, { bigint: true, },);
-    if (observed.bytes !== expectedBytes || !sameProducerInputFile({ before, after, })
-      || !sameProducerInputFile({ before, after: current, }))
-      throw new ProducerInputRunError({ operation, locator: path, });
-    return { identity: { bytes: observed.bytes, sha256: hash.digest('hex'), }, chunks, };
+    /**
+     * The final pathname must still identify the observed file, not a replacement or symlink.
+     */
+    const current = await lstat(
+      path,
+      { bigint: true, },
+    );
+    if ((observed.bytes !== expectedBytes) || (!sameProducerInputFile({
+      before,
+      after,
+    }))
+      || (!sameProducerInputFile({
+        before,
+        after: current,
+      })))
+      throw new ProducerInputRunError({
+        operation,
+        locator: path,
+      });
+    return {
+      identity: {
+        bytes: observed.bytes,
+        sha256: hash.digest('hex'),
+      },
+      chunks,
+    };
   }
   catch (error) {
     if (error instanceof ProducerInputRunError)
       throw error;
     // Native filesystem messages may contain more paths than the authorized locator.
-    throw new ProducerInputRunError({ operation, locator: path, });
+    throw new ProducerInputRunError({
+      operation,
+      locator: path,
+    });
   }
 }
 
@@ -154,17 +234,38 @@ async function observeProducerInputFile({ path, expectedBytes, operation, retain
  * await verifyProducerInputFile({ path, expected, operation: 'verify-runtime' });
  * ```
  */
-export async function verifyProducerInputFile({ path, expected, operation, }: {
+export async function verifyProducerInputFile({
+  path,
+  expected,
+  operation,
+}: {
   readonly path: string;
   readonly expected: ProducerInputFileIdentity;
   readonly operation: ProducerInputOperation;
 },): Promise<ProducerInputFileIdentity> {
-  /** Primitive authority is fixed before descriptor I/O can yield. */
-  const { bytes, sha256, } = expected;
-  /** The observation owns no caller-modifiable byte buffer. */
-  const observation = await observeProducerInputFile({ path, expectedBytes: bytes, operation, retainChunks: false, });
-  if (observation.identity.sha256 !== sha256)
-    throw new ProducerInputRunError({ operation, locator: path, });
+  /**
+   * Primitive authority is fixed before descriptor I/O can yield.
+   */
+  const {
+    bytes,
+    sha256,
+  } = expected;
+  /**
+   * The observation owns no caller-modifiable byte buffer.
+   */
+  const observation = await observeProducerInputFile({
+    path,
+    expectedBytes: bytes,
+    operation,
+    retainChunks: false,
+  });
+  if (observation.identity
+    .sha256
+    !== sha256)
+    throw new ProducerInputRunError({
+      operation,
+      locator: path,
+    });
   return observation.identity;
 }
 
@@ -186,18 +287,42 @@ export async function verifyProducerInputFile({ path, expected, operation, }: {
  * const bytes = await readProducerInputFile({ path, expected, operation: 'read-selection' });
  * ```
  */
-export async function readProducerInputFile({ path, expected, operation, }: {
+export async function readProducerInputFile({
+  path,
+  expected,
+  operation,
+}: {
   readonly path: string;
   readonly expected: ProducerInputFileIdentity;
   readonly operation: ProducerInputOperation;
 },): Promise<Uint8Array> {
-  /** Primitive authority is fixed before descriptor I/O can yield. */
-  const { bytes, sha256, } = expected;
-  /** Only size-authorized body readers retain chunks. */
-  const observation = await observeProducerInputFile({ path, expectedBytes: bytes, operation, retainChunks: true, });
-  if (observation.identity.sha256 !== sha256)
-    throw new ProducerInputRunError({ operation, locator: path, });
-  return Buffer.concat(observation.chunks, bytes);
+  /**
+   * Primitive authority is fixed before descriptor I/O can yield.
+   */
+  const {
+    bytes,
+    sha256,
+  } = expected;
+  /**
+   * Only size-authorized body readers retain chunks.
+   */
+  const observation = await observeProducerInputFile({
+    path,
+    expectedBytes: bytes,
+    operation,
+    retainChunks: true,
+  });
+  if (observation.identity
+    .sha256
+    !== sha256)
+    throw new ProducerInputRunError({
+      operation,
+      locator: path,
+    });
+  return Buffer.concat(
+    observation.chunks,
+    bytes
+  );
 }
 
 //endregion Bounded file observation shared by the specialized host and child

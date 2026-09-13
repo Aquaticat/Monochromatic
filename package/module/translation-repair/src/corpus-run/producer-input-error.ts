@@ -58,7 +58,10 @@ export class ProducerInputRunError extends Error {
    * const error = new ProducerInputRunError({ operation: 'read-selection', locator: selectionPath });
    * ```
    */
-  constructor({ operation, locator }: {
+  constructor({
+    operation,
+    locator
+  }: {
     readonly operation: ProducerInputOperation;
     readonly locator?: string;
   }) {
