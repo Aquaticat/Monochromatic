@@ -134,6 +134,35 @@ optimal value,
 repository default or proof of a deterministic memory remedy.
 No checks or rules are disabled and the 2 GiB/2 CPU/512 PID/no-network envelope remains unchanged.
 
+### Later input-owner formatting remains a separate run
+
+`devformat-9XRrS1` formats the later host/child owner source with one Oxlint worker and `GOMEMLIMIT=256MiB`.
+It reaches 2147483648 bytes and records `oom_kill=2`.
+Kernel `CONSTRAINT_MEMCG` records match container
+`82eef0b9be1ad305773192d8c3fa36ecd5e237994d4125317ea01e1218f1cbb9`
+and name `tsgolint` victims `3260053` and `3261155`.
+This does not invalidate task 48's recorded successes;
+it demonstrates why its per-run target was not declared a universal remedy.
+The formatter's edits are inspected separately and checkpointed before another run.
+
+The same log contains an independent logger failure:
+
+```text
+logger internal error: file sink verification failed: EROFS: read-only file system
+```
+
+The affected directory is
+`package/module/translation-repair/node_modules/.monochromatic`.
+The harness supplied root-level logger mounts but omitted this package-local sink.
+A new owned writable mount addresses that exact path without opening the rest of dependency storage.
+It is not attributed as the cause of the memory failure.
+
+The next formatter experiment adds a per-run Node old-space limit of 384 MiB,
+retaining the Go target,
+all checks and the 2 GiB container bound.
+That experiment is pending;
+no resource remedy or global setting is claimed from its configuration alone.
+
 ## Root cause
 
 ### The kernel confirms a job-local memory constraint
