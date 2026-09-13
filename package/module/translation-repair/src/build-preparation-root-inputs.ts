@@ -197,7 +197,12 @@ export async function buildPreparationRootInputs(input: {
   /**
    * Evidence or logger accessors cannot retroactively alter the independently owned corpus configuration.
    */
-  const { text, expectedDigest, artifacts, l, } = input;
+  const {
+    text,
+    expectedDigest,
+    artifacts,
+    l,
+  } = input;
   /**
    * The public owner never accepts a pre-decoded selection or previously mutable byte-match certificate.
    */

@@ -160,16 +160,15 @@ function sharedSections(sections: Readonly<Record<string, unknown>>): string[] {
   const overlaps: string[] = [];
   for (const [name, root] of Object.entries(sections)) {
     const pending: unknown[] = [root];
-    for (let index = 0; index < pending.length; index += 1) {
-      const value = pending[index];
-      if (typeof value !== 'object' || value === null) continue;
+    for (const value of pending) {
+      if (((typeof value) !== 'object') || (value === null)) continue;
       const prior = owners.get(value);
       if (prior !== undefined) {
         if (prior !== name) overlaps.push(`${prior}:${name}`);
         continue;
       }
       owners.set(value, name);
-      pending.push(...Object.values(value));
+      pending.push(...Object.values(value as Readonly<Record<string, unknown>>));
     }
   }
   return overlaps;
@@ -380,7 +379,7 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     const [entry] = f.values.journal.entries;
     const [carriedParent] = f.values.journal.parents;
     const [carriedObligation] = f.selection.dependencies;
-    if (entry === undefined || carriedParent === undefined || carriedObligation === undefined) throw new Error('expected carried witnesses');
+    if ((entry === undefined) || (carriedParent === undefined) || (carriedObligation === undefined)) throw new Error('expected carried witnesses');
     Object.assign(entry, currentEntry);
     f.values.journal.parents = mixed ? [carriedParent, ...currentParents.slice(1)] : currentParents;
     f.selection.dependencies = mixed ? [carriedObligation, ...currentObligations.slice(1)] : currentObligations;
