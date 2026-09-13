@@ -34,8 +34,8 @@ async function acquire({ replies = [reply], modelIds = QUALIFICATION_ROSTER, sou
   readonly registeredDomain?: PreparationDefinitionDomain;
 } = {}) {
   const fixture = await receiptFixture({ sourceText: original, targetText: archive, replies, modelIds: [...modelIds], pairIndex });
-  const prepared = fixture.prepared;
-  if ((prepared.kind !== 'paired' && prepared.kind !== 'fallback') || prepared.evidence.kind !== 'queried') throw new Error('expected native queried fixture');
+  const {prepared} = fixture;
+  if (((prepared.kind !== 'paired') && (prepared.kind !== 'fallback')) || (prepared.evidence.kind !== 'queried')) throw new Error('expected native queried fixture');
   const input = { registration: { occurrence: structuredClone(fixture.expected), domain: structuredClone(registeredDomain) },
     receipt: fixture.receipt, sourceText: original, targetText: archive, l: fixture.input.l };
   return { fixture, prepared, input, evidence: prepared.evidence };
@@ -88,7 +88,7 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
     expect(evidence.outcome.usable).toBe(2);
     const result = readPreparationDefinitionRelations(input);
     expect(result.definitionRelations).toHaveLength(1);
-    expect(result.definitionRelations.every(item => (item.source.blockIndex === 1 && item.target.blockIndex === 2) || (item.source.blockIndex === 2 && item.target.blockIndex === 1))).toBe(true);
+    expect(result.definitionRelations.every(item => ((item.source.blockIndex === 1) && (item.target.blockIndex === 2)) || ((item.source.blockIndex === 2) && (item.target.blockIndex === 1)))).toBe(true);
   } }),
   it({ name: 'rejects mixed definition-body wires rather than promoting their remaining relations', fn: async () => {
     const { input, evidence } = await acquire({ replies: ['{"pairs":[{"source":0,"target":0},{"source":1,"target":0},{"source":2,"target":2}]}'] });
@@ -159,7 +159,7 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
   it({ name: 'snapshots registration before a receipt accessor can alter caller-owned expectations', fn: async () => {
     const { input } = await acquire();
     const before = structuredClone(input.registration);
-    const question = input.receipt.question;
+    const {question} = input.receipt;
     let reads = 0;
     const receipt = { ...input.receipt, get question() {
       reads += 1;

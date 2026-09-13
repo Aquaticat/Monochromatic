@@ -32,9 +32,13 @@ export type PreparationDefinitionDomain = {
  * ```
  */
 export type PreparationDefinitionRegistration = {
-  /** Full document, parent, attempt, receipt and request-configuration expectations. */
+  /**
+   * Full document, parent, attempt, receipt and request-configuration expectations.
+   */
   readonly occurrence: PreparationOccurrenceExpectation;
-  /** Current definition-node inventory derived from the frozen scope and permitted target transition. */
+  /**
+   * Current definition-node inventory derived from the frozen scope and permitted target transition.
+   */
   readonly domain: PreparationDefinitionDomain;
 };
 
@@ -102,7 +106,9 @@ export type PreparationDefinitionEvidence = {
    * No body pairing, media claim, target decline or archive-prose authority is returned.
    */
   readonly scope: 'footnote-definitions';
-  /** Exact owned occurrence binding, not merely a matching local question or node-ID array. */
+  /**
+   * Exact owned occurrence binding, not merely a matching local question or node-ID array.
+   */
   readonly occurrence: PreparationOccurrenceExpectation;
   /**
    * Historical question key checked against current bytes, not complete receipt identity.
