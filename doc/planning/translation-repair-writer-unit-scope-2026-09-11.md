@@ -1857,13 +1857,44 @@ Bootstrap self-hashes do not authenticate their creator.
 Future live acquisition requires its own reviewed launch contract,
 not a new mode silently added to this no-network operation.
 
-The run directory must be created exclusively before corpus or support-file I/O.
-It retains fixed launch,
+After independently authenticating the launch roles,
+the host may perform metadata-only topology preflight before creating output.
+This is an explicit refinement of the initial no-I/O wording:
+otherwise an output-parent alias could cause the first directory creation to write inside an input tree.
+Preflight may inspect canonical directory paths,
+directory device/inode identities and kernel-reported mount topology.
+It may only reject,
+not approve content or authorize an unregistered input.
+It must not enumerate supporting files,
+read or hash bodies,
+invoke corpus Git operations or import the application.
+Canonical paths alone do not identify bind-mount aliases;
+those require topology evidence or refusal of ambiguity.
+This remains trusted-host,
+point-in-time observation,
+not a hostile-host filesystem lease.
+
+The run directory must be created exclusively and its marker synchronized before corpus or support-file body I/O.
+Pinned directory identities are revalidated before those content operations.
+The run retains fixed launch,
 unqualified-input and terminal digest/extent records,
 with content synchronization and no automatic resume.
 It cannot reuse `createPreparationAttempt`'s `root-plan.json` marker,
 because this result is not a reviewed correspondence root.
 Host ownership of files and empty mount directories is checked explicitly.
+
+The direct metadata probe `input-host-topology-probe-20260913.json` sees 41 host mount records.
+The current runtime,
+corpus,
+supporting root and output parent all lie beneath mount ID `61` at `/var/home`.
+The initial host-layout helper deliberately admits one shared unambiguous enclosing mount,
+with no stacked ancestor or nested mount inside any participating directory tree.
+Cross-mount or ambiguous layouts are refused rather than assigned guessed filesystem equivalence.
+This restriction is explicit in `verify-host-layout` diagnostics;
+it is not a claim that every refused layout is unsafe.
+The helper compares canonical component boundaries and directory identities,
+not a presumed equivalence between encoded mount devices and directory `st_dev` values.
+The new mount parser and metadata revalidator are not yet wired to the production bootstrap or covered by its tests.
 
 A fresh measurement confirms that all 63 reference locators remain inside the task40 support root,
 using only its root and `preparation-pool-policy-reading-20260912` directory.

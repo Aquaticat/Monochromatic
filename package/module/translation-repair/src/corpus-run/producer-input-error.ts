@@ -11,6 +11,7 @@
 export type ProducerInputOperation =
   | 'read-launch'
   | 'verify-runtime'
+  | 'verify-host-layout'
   | 'launch-container'
   | 'read-selection'
   | 'read-support'
@@ -22,6 +23,7 @@ export type ProducerInputOperation =
 const INPUT_RUN_MESSAGES: Readonly<Record<ProducerInputOperation, string>> = {
   'read-launch': 'Preparation input launch does not match its independently recorded contract. Restore the intended launch bytes and identity, or review a newly materialized launch before retrying.',
   'verify-runtime': 'Preparation runtime does not match the recorded execution inputs. Restore the frozen bootstrap, Node, image, library and application files, or review a new launch. Application import was not approved.',
+  'verify-host-layout': 'Preparation host directory layout is outside the verified profile. Use canonical authorized directories on one unambiguous visible mount without nested mounts in their trees, or independently review and verify another topology. No content was approved.',
   'launch-container': 'Preparation input container did not complete through its fixed launch contract. Inspect the retained run records and restore its declared tooling and resources. Do not resume or overwrite the partial run.',
   'read-selection': 'Frozen preparation selection cannot be read under its recorded byte identity and extent. Restore the original task40 artifact, or explicitly reopen that selection rather than substituting parents.',
   'read-support': 'A preparation supporting file is absent, changed, outside its declared root or beyond the authorized byte allowance. Restore the exact referenced files or review a new input contract before retrying.',
