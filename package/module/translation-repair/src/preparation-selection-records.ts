@@ -56,7 +56,7 @@ const CONTROL_BLOCK_END = 159;
  * const valid = validParentEntry('fixture');
  * ```
  */
-function validParentEntry(entryId: string,): boolean {
+export function validParentEntry(entryId: string,): boolean {
   if ((entryId.length === 0) || (entryId !== entryId.trim())
     || (entryId === '.')
     || (entryId === '..')
