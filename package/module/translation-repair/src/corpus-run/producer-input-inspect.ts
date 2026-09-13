@@ -193,8 +193,18 @@ export function verifyCreatedProducerInputContainer({ host, id, text, }: { reado
   verifyCreatedBindings({ host, value: inspection.Mounts });
 }
 
+/** Current native state is not represented by fabricated optional exit fields. */
+export type ProducerInputContainerState = { readonly state: 'created'; } | { readonly state: 'running'; } | {
+  /** Native process lifecycle has ended. */
+  readonly state: 'exited';
+  /** Native exit status, including the runtime's negative termination sentinel. */
+  readonly exitCode: number;
+  /** Runtime-reported OOM status supplements, not replaces, retained resource evidence. */
+  readonly oomKilled: boolean;
+};
+
 /**
- * Reads terminal state only for the container returned by this run's create operation.
+ * Reads current state only for the container returned by this run's create operation.
  *
  * @param host - owning launch and run
  *
@@ -211,17 +221,23 @@ export function verifyCreatedProducerInputContainer({ host, id, text, }: { reado
  * const terminal = readProducerInputContainerTerminal({ host, id, text });
  * ```
  */
-export function readProducerInputContainerTerminal({ host, id, text, }: { readonly host: ProducerInputHost; readonly id: string; readonly text: string; },): { readonly exitCode: number; readonly oomKilled: boolean; } {
+export function readProducerInputContainerTerminal({ host, id, text, }: { readonly host: ProducerInputHost; readonly id: string; readonly text: string; },): ProducerInputContainerState {
   /** Terminal inspection cannot select a different container by name alone. */
   const inspection = inspectionRecord(text);
   fieldMatches({ fields: inspection, name: 'Id', expected: id });
   fieldMatches({ fields: inspection, name: 'Image', expected: host.launch.imageId });
   fieldMatches({ fields: inspection, name: 'Name', expected: `producer-input-${host.run.runId}` });
-  /** Running containers are retained rather than reported as terminal. */
+  /** The host stops running containers before recording their terminal state or removing them. */
   const state = inspection.State;
-  if (!record(state) || state.Running !== false || state.Status !== 'exited' || typeof state.ExitCode !== 'number' || !Number.isSafeInteger(state.ExitCode) || typeof state.OOMKilled !== 'boolean')
+  if (!record(state))
+    throw new ProducerInputRunError({ operation: 'launch-container', locator: 'container state', });
+  if (state.Running === true && state.Status === 'running')
+    return { state: 'running' };
+  if (state.Running === false && state.Status === 'created')
+    return { state: 'created' };
+  if (state.Running !== false || state.Status !== 'exited' || typeof state.ExitCode !== 'number' || !Number.isSafeInteger(state.ExitCode) || typeof state.OOMKilled !== 'boolean')
     throw new ProducerInputRunError({ operation: 'launch-container', locator: 'container terminal state', });
-  return { exitCode: state.ExitCode, oomKilled: state.OOMKilled };
+  return { state: 'exited', exitCode: state.ExitCode, oomKilled: state.OOMKilled };
 }
 
 //endregion Native created-container evidence before Node startup

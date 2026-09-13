@@ -9,7 +9,7 @@ import type { ProducerInputHost, } from './producer-input-host-init.ts';
 //region Finite native Podman stages owned by one input reconstruction
 
 /** Each fixed command stage has one exclusive record and cannot be retried in place. */
-export type ProducerInputCommandStage = 'image' | 'create' | 'inspect-created' | 'start' | 'stop' | 'inspect-terminal' | 'remove';
+export type ProducerInputCommandStage = 'image' | 'create' | 'inspect-created' | 'start' | 'stop' | 'inspect-terminal' | 'inspect-stopped' | 'remove' | 'verify-removed';
 /** Native metadata must not allocate an unbounded response on the host. */
 const MAX_METADATA_BYTES = 1_048_576;
 /** Native command records carry no corpus bodies and remain private. */
@@ -62,7 +62,7 @@ export async function runProducerInputCommand({ host, stage, arguments_, signal,
   readonly signal: AbortSignal;
 },): Promise<void> {
   /** Stage names are closed in both runtime and declaration space. */
-  const stages: readonly ProducerInputCommandStage[] = ['image', 'create', 'inspect-created', 'start', 'stop', 'inspect-terminal', 'remove'];
+  const stages: readonly ProducerInputCommandStage[] = ['image', 'create', 'inspect-created', 'start', 'stop', 'inspect-terminal', 'inspect-stopped', 'remove', 'verify-removed'];
   if (!stages.includes(stage))
     throw new ProducerInputRunError({ operation: 'launch-container', locator: 'native stage', });
   /** Record paths cannot be selected through an argv value. */
@@ -104,7 +104,9 @@ export async function runProducerInputCommand({ host, stage, arguments_, signal,
     await stdout.sync();
     await stderr.sync();
     await commandRecord({ path: `${prefix}.exit.json`, text: JSON.stringify({ stage, state: 'closed', code: child.exitCode, signal: child.signalCode, cancelled: signal.aborted }) });
-    if (child.exitCode !== 0 || child.signalCode !== null || signal.aborted)
+    /** Podman's fixed absence query succeeds with its documented nonexistence code. */
+    const expectedExitCode = stage === 'verify-removed' ? 1 : 0;
+    if (child.exitCode !== expectedExitCode || child.signalCode !== null || signal.aborted)
       throw new ProducerInputRunError({ operation: 'launch-container', locator: stage, });
   }
   catch (error) {
@@ -133,7 +135,7 @@ export async function runProducerInputCommand({ host, stage, arguments_, signal,
  */
 export async function readProducerInputCommand({ host, stage, }: {
   readonly host: ProducerInputHost;
-  readonly stage: 'image' | 'create' | 'inspect-created' | 'inspect-terminal';
+  readonly stage: 'image' | 'create' | 'inspect-created' | 'inspect-terminal' | 'inspect-stopped';
 },): Promise<string> {
   /** The fixed native role determines its output path. */
   const path = join(host.run.dir, `${stage}.stdout`);
