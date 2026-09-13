@@ -3,10 +3,8 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
-import { blockPairingQuestion, } from './block-pairing-question.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
-import { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 import { finishPreparedBlockPairing, } from './prepare-block-pairing-finish.ts';
 import type { PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
 import { PreparationQualificationError, } from './preparation-qualification-error.ts';
@@ -15,7 +13,7 @@ import type {
   QualifiedBlockRelation,
 } from './qualified-block-pairing-model.ts';
 import { queriedBlockPairingDetails, } from './queried-block-pairing-details.ts';
-import { rosterQuorumSize, } from './roster-quorum-size.ts';
+import { replayPreparedBlockEvidence, } from './replay-prepared-block-evidence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { ContainerSpan, } from './unwrap-container.ts';
 
@@ -69,46 +67,16 @@ export function qualifyQueriedBlockPairing({
     tag: qualifyQueriedBlockPairing.name,
     l,
   },);
-  if (prepared.evidence
-    .kind
-    === 'cached')
-    throw new PreparationQualificationError({ kind: 'historical-cache', },);
   /**
-   * Exact current block numbering and unchanged question key.
+   * Shared current-question replay checks acquisition origin, independent outcomes and configured usable quorum.
+   * Placement and full-parent coverage remain this consumer's responsibility.
    */
-  const question = blockPairingQuestion({ pair, },);
-  if (prepared.evidence
-    .key
-    !== question.key)
-    throw new PreparationQualificationError({ kind: 'question', },);
-  /**
-   * Replayed agreement validates independent identities and every usable wire.
-   */
-  const outcome = readBlockPairingOutcomes({
-    outcomes: prepared.evidence
-      .outcome
-      .outcomes,
+  const { question, outcome, requiredUsable, } = replayPreparedBlockEvidence({
+    pair,
+    evidence: prepared.evidence,
     modelIds,
-    sourceCount: question.sourceBlocks
-      .length,
-    targetCount: question.targetBlocks
-      .length,
-    freeOrder: question.freeOrder,
     l: pl,
   },);
-  if (!isDeepStrictEqual(
-    outcome,
-    prepared.evidence
-      .outcome,
-  ))
-    throw new PreparationQualificationError({ kind: 'result', },);
-  /**
-   * Configured usable denominator, never the heard subset or cache flag.
-   */
-  const requiredUsable = rosterQuorumSize({ rosterSize: modelIds.length, },);
-  pl.debug(`qualifying ${String(outcome.usable,)} usable replies against ${String(requiredUsable,)} required`,);
-  if (outcome.usable < requiredUsable)
-    throw new PreparationQualificationError({ kind: 'usable-quorum', },);
   /**
    * Every current media, coverage, cache and fallback finding is reconstructed, not trusted.
    */
