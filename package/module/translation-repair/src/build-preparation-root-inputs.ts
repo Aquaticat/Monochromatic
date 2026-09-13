@@ -37,7 +37,9 @@ import { readPreparationSelectionEvidence, } from './read-preparation-selection-
 /**
  * Snapshots independent corpus authority and pins path resolution before asynchronous work or logger callbacks.
  *
- * @param pin - caller-owned location, pinned commit and optional absolute native executable
+ * @param input - public arguments viewed only through their independent corpus configuration
+ *
+ * @param origin - process location captured before any public argument getter
  *
  * @returns Owned corpus configuration with stable absolute paths
  *
@@ -45,19 +47,21 @@ import { readPreparationSelectionEvidence, } from './read-preparation-selection-
  *
  * @example
  * ```ts
- * const fixed = preparationRootPin(pin);
+ * const fixed = preparationRootPin({ input, origin });
  * ```
  */
-function preparationRootPin(pin: CorpusPin,): CorpusPin {
-  /**
-   * Even a descriptor-backed configuration cannot change the origin used for a relative clone path.
-   */
-  const origin = process.cwd();
+function preparationRootPin({
+  input,
+  origin,
+}: {
+  readonly input: { readonly pin: CorpusPin };
+  readonly origin: string;
+},): CorpusPin {
   try {
     /**
      * Corpus paths are configuration data, not instructions read from the frozen selection document.
      */
-    const fixed = structuredClone(pin,);
+    const fixed = structuredClone(input.pin,);
     if ((fixed.commitSha !== CORPUS_COMMIT_SHA) || ((typeof fixed.cloneDir) !== 'string')
       || (fixed.cloneDir
         .trim()
@@ -140,15 +144,11 @@ async function currentRootPopulation({
  * The result is unqualified input evidence, not a reviewed phase, writer plan or permission to create providers.
  * Historical support without a consumed relationship remains byte-bound opaque data and is never executed.
  *
- * @param text - complete original selection bytes as UTF-8 text
+ * Selection text and complete caller-loaded supporting bytes are bound to an independently recorded task40 digest.
+ * The independent pin supplies corpus location; selection paths are never executed.
+ * Process context and pin ownership are fixed before reading other argument properties or calling the logger.
  *
- * @param expectedDigest - independently recorded task40 identity, never a digest derived from supplied bytes
- *
- * @param artifacts - complete caller-loaded raw supporting inventory
- *
- * @param pin - independently authorized corpus location; recorded selection paths are not executed
- *
- * @param l - caller logger retaining root construction scope
+ * @param input - original selection, independent digest and pin, bounded supporting bytes and caller logger
  *
  * @returns Current raw/effective identities, complete reading provenance and finite initial parent scope
  *
@@ -159,13 +159,7 @@ async function currentRootPopulation({
  * const inputs = await buildPreparationRootInputs({ text, expectedDigest, artifacts, pin, l });
  * ```
  */
-export async function buildPreparationRootInputs({
-  text,
-  expectedDigest,
-  artifacts,
-  pin,
-  l,
-}: {
+export async function buildPreparationRootInputs(input: {
   readonly text: string;
   readonly expectedDigest: string;
   readonly artifacts: readonly PreparationArtifactInput[];
@@ -196,7 +190,14 @@ export async function buildPreparationRootInputs({
   /**
    * Independent pin fields are copied only after lookup context is fixed.
    */
-  const fixed = preparationRootPin(pin,);
+  const fixed = preparationRootPin({
+    input,
+    origin,
+  },);
+  /**
+   * Evidence or logger accessors cannot retroactively alter the independently owned corpus configuration.
+   */
+  const { text, expectedDigest, artifacts, l, } = input;
   /**
    * The public owner never accepts a pre-decoded selection or previously mutable byte-match certificate.
    */
