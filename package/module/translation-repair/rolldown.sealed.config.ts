@@ -17,6 +17,8 @@ const NATIVE_PACKAGE = '@bruits/satteri-linux-x64-gnu';
 const NATIVE_FILE = 'satteri_napi.linux-x64-gnu.node';
 /** Stream chunk extent bounds temporary hashing storage. */
 const HASH_CHUNK_BYTES = 65_536;
+/** Declaration chunks do not execute and must not change runtime identity when only documentation changes. */
+const DECLARATION_SUFFIXES = ['.d.mts', '.d.ts', '.d.cts',] as const;
 /** Loader overrides must be rejected or independently bound before importing this artifact. */
 const LOADER_ENVIRONMENT = [
   'NAPI_RS_NATIVE_LIBRARY_PATH',
@@ -154,7 +156,9 @@ const sealedRuntimeAssets: Plugin = {
     handler(_options, bundle,): void {
       /** The bundle's final code strings provide identities without source-location paths. */
       const files = Object.values(bundle,).filter(function executableChunk(item,): boolean {
-        return item.type === 'chunk';
+        return (item.type === 'chunk') && !DECLARATION_SUFFIXES.some(function declaration(suffix,): boolean {
+          return item.fileName.endsWith(suffix,);
+        },);
       },).map(function chunkIdentity(item,): { readonly path: string; readonly bytes: number; readonly sha256: string; } {
         if (item.type !== 'chunk')
           throw new SealedRuntimeBuildError('Expected a generated executable chunk in sealed runtime inventory.',);
