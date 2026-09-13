@@ -71,7 +71,11 @@ export function qualifyQueriedBlockPairing({
    * Shared current-question replay checks acquisition origin, independent outcomes and configured usable quorum.
    * Placement and full-parent coverage remain this consumer's responsibility.
    */
-  const { question, outcome, requiredUsable, } = replayPreparedBlockEvidence({
+  const {
+    question,
+    outcome,
+    requiredUsable,
+  } = replayPreparedBlockEvidence({
     pair,
     evidence: prepared.evidence,
     modelIds,

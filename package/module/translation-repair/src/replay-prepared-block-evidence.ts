@@ -1,6 +1,12 @@
 import { isDeepStrictEqual, } from 'node:util';
-import { type Logger, tagged, } from '@monochromatic-dev/module-logger/ts';
-import { blockPairingQuestion, type BlockPairingQuestion, } from './block-pairing-question.ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+import {
+  blockPairingQuestion,
+  type BlockPairingQuestion,
+} from './block-pairing-question.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 import type { BlockPairingOutcome, } from './pair-blocks-stage.ts';
@@ -16,17 +22,28 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * Full-parent coverage and definition-only domains are separate consumers of this boundary.
  *
  * @param pair - current parser-owned parent establishing local numbering and definition exemptions
+ *
  * @param evidence - retained acquisition evidence, never a historical-cache qualification shortcut
+ *
  * @param modelIds - independently configured electorate
+ *
  * @param l - caller logger retaining preparation scope
+ *
  * @returns Current replay view for immediate scope checks; the final qualifier owns its returned data
+ *
  * @throws PreparationQualificationError when cache origin, question, aggregate or usable quorum disagrees
+ *
  * @example
  * ```ts
  * const replay = replayPreparedBlockEvidence({ pair, evidence, modelIds, l });
  * ```
  */
-export function replayPreparedBlockEvidence({ pair, evidence, modelIds, l, }: {
+export function replayPreparedBlockEvidence({
+  pair,
+  evidence,
+  modelIds,
+  l,
+}: {
   readonly pair: ChunkPair;
   readonly evidence: PreparedBlockEvidence;
   readonly modelIds: readonly RosterModelId[];
@@ -36,31 +53,52 @@ export function replayPreparedBlockEvidence({ pair, evidence, modelIds, l, }: {
   readonly outcome: BlockPairingOutcome;
   readonly requiredUsable: number;
 } {
-  /** Replay is distinct from either acquisition or downstream scope qualification. */
-  const pl = tagged({ tag: replayPreparedBlockEvidence.name, l, },);
+  /**
+   * Replay is distinct from either acquisition or downstream scope qualification.
+   */
+  const pl = tagged({
+    tag: replayPreparedBlockEvidence.name,
+    l,
+  },);
   if (evidence.kind === 'cached')
     throw new PreparationQualificationError({ kind: 'historical-cache', },);
-  /** Local numbering and interpretation always come from the current parent. */
+  /**
+   * Local numbering and interpretation always come from the current parent.
+   */
   const question = blockPairingQuestion({ pair, },);
   if (evidence.key !== question.key)
     throw new PreparationQualificationError({ kind: 'question', },);
-  /** Native replay validates independent seats and every usable wire before agreement. */
+  /**
+   * Native replay validates independent seats and every usable wire before agreement.
+   */
   const outcome = readBlockPairingOutcomes({
-    outcomes: evidence.outcome.outcomes,
+    outcomes: evidence.outcome
+      .outcomes,
     modelIds,
-    sourceCount: question.sourceBlocks.length,
-    targetCount: question.targetBlocks.length,
+    sourceCount: question.sourceBlocks
+      .length,
+    targetCount: question.targetBlocks
+      .length,
     freeOrder: question.freeOrder,
     l: pl,
   },);
-  if (!isDeepStrictEqual(outcome, evidence.outcome,))
+  if (!isDeepStrictEqual(
+    outcome,
+    evidence.outcome,
+  ))
     throw new PreparationQualificationError({ kind: 'result', },);
-  /** Configured electorate, not the heard subset or a historical cache flag, sets this requirement. */
+  /**
+   * Configured electorate, not the heard subset or a historical cache flag, sets this requirement.
+   */
   const requiredUsable = rosterQuorumSize({ rosterSize: modelIds.length, },);
   pl.debug(`replaying ${String(outcome.usable,)} usable replies against ${String(requiredUsable,)} required`,);
   if (outcome.usable < requiredUsable)
     throw new PreparationQualificationError({ kind: 'usable-quorum', },);
-  return { question, outcome, requiredUsable, };
+  return {
+    question,
+    outcome,
+    requiredUsable,
+  };
 }
 
 //endregion Current questioned-evidence replay before scope-specific qualification
