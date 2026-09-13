@@ -1,5 +1,5 @@
-import { chmod, mkdtemp, readFile, rm, writeFile, } from 'node:fs/promises';
-import { join, } from 'node:path';
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile, } from 'node:fs/promises';
+import { join, relative, } from 'node:path';
 import { tmpdir, } from 'node:os';
 import { inspect, } from 'node:util';
 import { createHash, } from 'node:crypto';
@@ -9,16 +9,17 @@ import { alignDocumentSections, archiveOriginalReadingOf, buildPreparationRootIn
 
 const l = tagged({ tag: 'root-input-owner-test' });
 const digest = (content: string) => hashContent({ content });
+const uniqueHeading = (index: number) => `## Unique${String.fromCharCode(65 + Math.floor(index / 26), 65 + index % 26)}section`;
 async function fixture({ repeatedQuestions = false, implicitFirst = false, targetNamespace = false, emptyTarget = false }: { readonly repeatedQuestions?: boolean; readonly implicitFirst?: boolean; readonly targetNamespace?: boolean; readonly emptyTarget?: boolean } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'root-input-fixture-'));
   const sourceText = `${Array.from({ length: 41 }, (_, index) => {
-    const heading = targetNamespace || emptyTarget ? `## Section ${index}` : repeatedQuestions ? '## 猫' : `## 猫 ${index}`;
+    const heading = targetNamespace || emptyTarget ? uniqueHeading(index) : repeatedQuestions ? '## 猫' : `## 猫 ${index}`;
     return implicitFirst && index === 40 ? heading : `${heading}\n\n${repeatedQuestions ? '猫猫。' : `猫猫 ${index}。`}`;
   }).join('\n\n')}\n\n## Notes\n\n[^1]: 猫注。\n`; 
   const sourceRaw = sourceText.replaceAll('\n', '\r\n');
   const archiveText = `(To-Do)\n\n${Array.from({ length: 41 }, (_, index) => {
     if (emptyTarget && index === 39) return '';
-    const heading = targetNamespace || emptyTarget ? `## Section ${index}` : repeatedQuestions ? '## Cat' : `## Cat ${index}`;
+    const heading = targetNamespace || emptyTarget ? uniqueHeading(index) : repeatedQuestions ? '## Cat' : `## Cat ${index}`;
     return implicitFirst && index === 40 ? heading : `${heading}\n\n${repeatedQuestions ? 'Cat is non‑binary.' : `Cat ${index} is non‑binary.`}`;
   }).join('\n\n')}\n\n## Notes\n\n[^1]: Cat note.\n${targetNamespace ? '\n## Extra namespace\n\n[^outside]: Unpaired target note.\n' : ''}`;
   const targetText = passArchiveText({ text: archiveText, l });
@@ -78,6 +79,7 @@ async function fixture({ repeatedQuestions = false, implicitFirst = false, targe
   await writeFile(gitPath, `#!/usr/bin/env node
 import { readFile, appendFile } from 'node:fs/promises';
 const args = process.argv.slice(2);
+if (args[args.indexOf('-C') + 1] !== ${JSON.stringify(dir)}) throw new Error('Unexpected fixture clone origin');
 const data = JSON.parse(await readFile(${JSON.stringify(storePath)}, 'utf8'));
 await appendFile(${JSON.stringify(tracePath)}, JSON.stringify(args) + '\\n');
 if (args.includes('ls-tree')) {
@@ -370,6 +372,68 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     const text = JSON.stringify(record);
     const error = await refusal(async () => await buildPreparationRootInputs({ ...request, text, expectedDigest: digest(text), artifacts }));
     expect(error.kind).toBe(kind === 'ambiguous-frame' ? 'reading-provenance' : 'reference-role');
+    expect(inspect(error, { depth: null })).not.toContain('q7z9k2');
+  } })),
+  it({ name: 'snapshots relative clone location before logger callbacks change cwd and caller pin fields', fn: async () => {
+    await using f = await fixture();
+    const origin = process.cwd();
+    const elsewhere = join(f.dir, 'elsewhere');
+    await mkdir(elsewhere);
+    using reset = { [Symbol.dispose]: () => { process.chdir(origin); } };
+    const request = f.request();
+    const pin = { ...request.pin, cloneDir: relative(origin, f.dir) };
+    let changed = false;
+    const logger = { ...l, debug(message: string) {
+      l.debug(message);
+      if (!changed) {
+        changed = true;
+        process.chdir(elsewhere);
+        pin.cloneDir = '/changed-after-snapshot';
+        pin.commitSha = 'invalid';
+      }
+    } };
+    const [outcome] = await Promise.allSettled([buildPreparationRootInputs({ ...request, pin, l: logger })]);
+    expect(changed).toBe(true);
+    expect(outcome?.status).toBe('fulfilled');
+    if (outcome?.status !== 'fulfilled') throw new Error('expected stable cloned corpus pin');
+    expect(outcome.value.parents.map(parent => parent.id)).toEqual(f.selection.orderedParentIds);
+  } }),
+  it({ name: 'pins omitted native Git lookup before logger callbacks alter PATH', fn: async () => {
+    await using f = await fixture();
+    const request = f.request();
+    const executable = request.pin.gitPath;
+    const script = await readFile(executable, 'utf8');
+    await writeFile(executable, `#!${process.execPath}\n${script.slice(script.indexOf('\n') + 1)}`);
+    await symlink(executable, join(f.dir, 'git'));
+    const previousPath = process.env.PATH;
+    using reset = { [Symbol.dispose]: () => {
+      if (previousPath === undefined) delete process.env.PATH;
+      else process.env.PATH = previousPath;
+    } };
+    process.env.PATH = f.dir;
+    let changed = false;
+    const logger = { ...l, debug(message: string) {
+      l.debug(message);
+      changed = true;
+      process.env.PATH = join(f.dir, 'unavailable');
+    } };
+    const pin = { cloneDir: f.dir, commitSha: CORPUS_COMMIT_SHA };
+    const [outcome] = await Promise.allSettled([buildPreparationRootInputs({ ...request, pin, l: logger })]);
+    expect(changed).toBe(true);
+    expect(outcome?.status).toBe('fulfilled');
+    if (outcome?.status !== 'fulfilled') throw new Error('expected snapshotted executable lookup');
+    expect(outcome.value.parents).toHaveLength(40);
+  } }),
+  ...['revision', 'blank-clone', 'relative-executable', 'throwing-getter'].map(kind => it({ name: `refuses unsupported independent corpus pin ${kind}`, fn: async () => {
+    await using f = await fixture();
+    const request = f.request();
+    const pin = { ...request.pin };
+    if (kind === 'revision') pin.commitSha = 'different';
+    else if (kind === 'blank-clone') pin.cloneDir = ' ';
+    else if (kind === 'relative-executable') pin.gitPath = 'relative-git';
+    else Object.defineProperty(pin, 'cloneDir', { get() { throw new Error('q7z9k2'); } });
+    const error = await refusal(async () => await buildPreparationRootInputs({ ...request, pin }));
+    expect(error.kind).toBe('corpus-identity');
     expect(inspect(error, { depth: null })).not.toContain('q7z9k2');
   } })),
   it({ name: 'checks independent selection bytes before invoking the configured corpus executable', fn: async () => {
