@@ -38,7 +38,7 @@ export type ProducerInputFileIdentity = {
  *
  * @example
  * ```ts
- * const observation: ProducerInputFileObservation = { identity, chunks: [] };
+ * const observation: ProducerInputFileObservation = { identity, chunks: [], uid, mode };
  * ```
  */
 type ProducerInputFileObservation = {
@@ -50,12 +50,18 @@ type ProducerInputFileObservation = {
    * Empty for hash-only observations, not a claim that the file was empty.
    */
   readonly chunks: readonly Uint8Array[];
+  /** Owner observed on the descriptor whose bytes were hashed. */
+  readonly uid: bigint;
+  /** Permissions belong to that same stable descriptor observation. */
+  readonly mode: bigint;
 };
 
 /**
  * Stream working storage stays independent of the caller-authorized total extent.
  */
 const FILE_CHUNK_BYTES = 65_536;
+/** Host-owned output metadata must not expose group or other permissions. */
+const NON_PRIVATE_FILE_BITS = 0o077n;
 
 /**
  * Compares identity and mutation timestamps without millisecond rounding.
@@ -81,6 +87,9 @@ function sameProducerInputFile({
   return after.isFile() && (before.dev === after.dev)
     && (before.ino === after.ino)
     && (before.size === after.size)
+    && (before.uid === after.uid)
+    && (before.gid === after.gid)
+    && (before.mode === after.mode)
     && (before.mtimeNs === after.mtimeNs)
     && (before.ctimeNs === after.ctimeNs);
 }
@@ -220,6 +229,8 @@ async function observeProducerInputFile({
         sha256: hash.digest('hex'),
       },
       chunks,
+      uid: before.uid,
+      mode: before.mode,
     };
   }
   catch (error) {
@@ -340,6 +351,82 @@ export async function readProducerInputFile({
     observation.chunks,
     bytes
   );
+}
+
+/**
+ * Reads bounded private metadata produced by this host operation, without inventing independent approval.
+ *
+ * @param path - fixed native-stage or completion file inside the exclusive run
+ *
+ * @param maximumBytes - internal metadata allocation ceiling
+ *
+ * @param ownerUid - independently captured host owner
+ *
+ * @param operation - owning fixed diagnostic vocabulary
+ *
+ * @returns Strictly decoded text after extent, ownership and stable descriptor checks
+ *
+ * @throws ProducerInputRunError when metadata cannot be observed within its private bound
+ *
+ * @example
+ * ```ts
+ * const text = await readProducerInputMetadata({ path, maximumBytes, ownerUid, operation: 'read-output' });
+ * ```
+ */
+export async function readProducerInputMetadata({ path, maximumBytes, ownerUid, operation, }: {
+  readonly path: string;
+  readonly maximumBytes: number;
+  readonly ownerUid: number;
+  readonly operation: 'launch-container' | 'read-output';
+},): Promise<string> {
+  try {
+    /** Extent is observed before any body allocation; the descriptor reader rechecks it. */
+    const state = await lstat(path, { bigint: true });
+    if (!Number.isSafeInteger(maximumBytes) || maximumBytes < 0 || !state.isFile() || state.size > BigInt(maximumBytes))
+      throw new ProducerInputRunError({ operation, locator: path, });
+    /** Metadata is bounded by the observed extent, not read until filesystem EOF. */
+    const observation = await observeProducerInputFile({ path, expectedBytes: Number(state.size), operation, retainChunks: true });
+    if (observation.uid !== BigInt(ownerUid) || (observation.mode & NON_PRIVATE_FILE_BITS) !== 0n)
+      throw new ProducerInputRunError({ operation, locator: path, });
+    return new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(observation.chunks, observation.identity.bytes));
+  }
+  catch (error) {
+    if (error instanceof ProducerInputRunError)
+      throw error;
+    throw new ProducerInputRunError({ operation, locator: path, });
+  }
+}
+
+/**
+ * Streams the fixed private artifact while checking ownership on the same descriptor as its byte identity.
+ *
+ * @param path - fixed artifact file, never a completion-supplied locator
+ *
+ * @param expected - application-reported identity to check for internal consistency
+ *
+ * @param ownerUid - independently captured host owner
+ *
+ * @returns Observed artifact identity, not semantic or execution approval
+ *
+ * @throws ProducerInputRunError when private ownership or byte identity differs
+ *
+ * @example
+ * ```ts
+ * await verifyProducerInputOutputFile({ path, expected, ownerUid });
+ * ```
+ */
+export async function verifyProducerInputOutputFile({ path, expected, ownerUid, }: {
+  readonly path: string;
+  readonly expected: ProducerInputFileIdentity;
+  readonly ownerUid: number;
+},): Promise<ProducerInputFileIdentity> {
+  /** Snapshot primitive extent and digest before descriptor I/O. */
+  const { bytes, sha256 } = expected;
+  /** Artifact content is hashed without retaining corpus-derived bytes on the host. */
+  const observation = await observeProducerInputFile({ path, expectedBytes: bytes, operation: 'read-output', retainChunks: false });
+  if (observation.identity.sha256 !== sha256 || observation.uid !== BigInt(ownerUid) || (observation.mode & NON_PRIVATE_FILE_BITS) !== 0n)
+    throw new ProducerInputRunError({ operation: 'read-output', locator: path, });
+  return observation.identity;
 }
 
 //endregion Bounded file observation shared by the specialized host and child

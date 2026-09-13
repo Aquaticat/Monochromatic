@@ -16,6 +16,7 @@ export type ProducerInputOperation =
   | 'invoke-application'
   | 'read-selection'
   | 'read-support'
+  | 'read-output'
   | 'write-output';
 
 /**
@@ -29,6 +30,7 @@ const INPUT_RUN_MESSAGES: Readonly<Record<ProducerInputOperation, string>> = {
   'invoke-application': 'Preparation input application did not complete its fixed operation. Inspect retained run records and restore the independently reviewed application, or review a new launch. Keep partial output and do not resume it automatically.',
   'read-selection': 'Frozen preparation selection cannot be read under its recorded byte identity and extent. Restore the original task40 artifact, or explicitly reopen that selection rather than substituting parents.',
   'read-support': 'A preparation supporting file is absent, changed, outside its declared root or beyond the authorized byte allowance. Restore the exact referenced files or review a new input contract before retrying.',
+  'read-output': 'Preparation input completion is missing, incomplete, changed or inconsistent with this run. Keep all output and inspect the retained terminal evidence. Review usable retained data independently; never resume or overwrite the partial run automatically.',
   'write-output': 'Preparation input output could not be written exclusively and synchronized. Keep the partial run for diagnosis and use a new private run directory; never overwrite or resume it automatically.',
 };
 
