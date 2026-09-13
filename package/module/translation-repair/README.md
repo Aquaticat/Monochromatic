@@ -1404,6 +1404,13 @@ Its native CLI is not yet gated on a reviewed preparation plan;
 the private paid launcher remains blocked.
 See the [writer-input work record](../../../doc/planning/translation-repair-writer-unit-scope-2026-09-11.md).
 The frozen parent selection is not acquisition approval or a final forty-round writer plan.
+`readFrozenPreparationSelection` checks its independently expected bytes and preserves ordered parent identities,
+reference inventory,
+historical sampler provenance and unresolved source obligations.
+It does not verify referenced files,
+re-run selection or approve a correspondence root.
+`readRegisteredPreparationParent` shares complete-document and parent-coordinate preflight with receipt reconstruction,
+while allowing structural planning without inventing model evidence.
 
 `blockPairingQuestion` shares current local block numbering,
 definition-order exemptions and the unchanged historical cache key.

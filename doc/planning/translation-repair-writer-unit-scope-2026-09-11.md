@@ -1143,8 +1143,40 @@ structural parents,
 full-document drift,
 registered side indexes,
 section correspondence and ownership.
-`preparation-parent-verification-20260913.out` is active;
-this extraction is not yet declared verified.
+`preparation-parent-verification-20260913.out` passes every phase.
+The inspected full-suite terminal is `unit exit 0` at line 10314 of `preparation-parent-unit-20260913.out`.
+Its fresh runtime ledger records the requested Node `26.8.2` task shells and designated test entries.
+Formatter-only changes were reviewed separately.
+
+The correspondence-only root is the next owning boundary.
+It must derive the frozen ordered selection and definition closure from independently verified task40 artifact bytes
+and complete pinned documents,
+not accept caller-supplied nodes as registration proof.
+It excludes section,
+image,
+title and writer calls;
+those unresolved source-channel obligations remain visible without call authority.
+The root predeclares initial and bounded post-relabel slots.
+Exact roster,
+timeout,
+caps,
+routes and retry/no-nudge configuration belong to each independently reviewed phase identity.
+Root/phase reconstruction and self-digests remain distinct from review approval.
+Unregistered duplicate substantive prompts abort rather than creating another payload.
+The first data boundary is verification and typed reading of the frozen selection artifact;
+all referenced bytes and semantic roles must subsequently be bound before a root can authorize materialization.
+`readFrozenPreparationSelection` now checks the independently expected digest before JSON parsing,
+refuses unsupported/promoted formats,
+retains the ordered forty-parent identity grammar,
+checks reading counts and preserves each unresolved source-context obligation.
+It retains all supporting references as unverified locators,
+without reading or executing them,
+and separates historical sampler/runtime provenance from the future acquisition runtime.
+No typed selection result grants root,
+phase or writer approval.
+`preparation-selection-verification-20260913.out` is active,
+with a consumer probe against the actual task40 artifact immediately after the required build.
+The new selection reader is not yet declared verified.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,
