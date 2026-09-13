@@ -111,9 +111,12 @@ Refused catalog:
 
 Retained standalone evidence:
 
-- `/var/home/user/temp/agent/runtime-closure-standalone-YOM2iV`: original dependency-absence control.
-- `/var/home/user/temp/agent/runtime-closure-standalone-2Oy55F`: copied native-asset consumer.
-- `/var/home/user/temp/agent/runtime-closure-standalone-ImrE1u`: native-asset removal control.
+- `/var/home/user/temp/agent/runtime-closure-standalone-YOM2iV`:
+  original dependency-absence control.
+- `/var/home/user/temp/agent/runtime-closure-standalone-2Oy55F`:
+  copied native-asset consumer.
+- `/var/home/user/temp/agent/runtime-closure-standalone-ImrE1u`:
+  native-asset removal control.
 
 Each launch records copied file hashes,
 mounts,
