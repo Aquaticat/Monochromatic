@@ -1729,6 +1729,67 @@ not every role-specific schema branch.
 The fresh full suite passes at the recorded R10 checkpoint.
 Final semantic-owner completion still awaits consequential mutation proofs and audited cleanup.
 
+#### Listed semantic boundary proof
+
+Task 46 adds independently capable witnesses before removing boundaries.
+Entry-only and parent-only carried readings isolate their repeated provenance checks.
+An unaligned target definition occurs mid-document,
+with its node ID deliberately present in source coverage but absent from target coverage.
+A selected definition parent retains both explicit roles.
+Invalid UTF-8 is placed inside otherwise valid JSON;
+a permissive native decoder demonstrates why ordinary JSON rejection would not prove strict decoding.
+
+The unit file supports an exact private `PREPARATION_ROOT_GUARD_TEST` selector for this proof.
+Default runs still dispatch the entire suite.
+An explicit selector must identify exactly one registered test;
+other descriptors are skipped only during that named proof case.
+The worker checks both a valid selector and an unknown-selector refusal before mutation.
+This is not a new production API or a public alternative to native input construction.
+
+R14 at `55627e4cf` passes build,
+actual corpus consumption,
+types,
+focused tests,
+zero-warning lint and the full suite.
+`.guard-sandbox/r14/full-unit.out:10911` records `test:unit exit 0`.
+Its nonce/phase ledger includes all 630 designated unit entries on Node `26.8.2`;
+whole-sequence peak memory is 2062721024 bytes,
+with no OOM or PID-limit event.
+
+The frozen proof plan registers 58 listed boundary and invariant mutations.
+It is not a claim about every private branch,
+serial collector implementation detail,
+digest collision or independent parser correctness.
+Its identity is
+`135d63d5defef464f0a7786aa49542dcdd788b54ce04b47b61e7d0c256102d38`.
+The independently recorded baseline report identity is
+`67f01888e2f1b3a0d13b2ddd143ed96c856f6f79987a0270169bddfeec86b194`.
+Both identities and the literal baseline commit are fixed in the copied worker before execution.
+
+Independent review adds prerequisite full-baseline checks,
+exact named-case dispatch,
+rejection of any other leaf failure or non-assertion exception,
+post-suite source rehashing and exclusive result-directory creation.
+The worker reports network isolation and masked credentials,
+not an unmeasured count of attempted provider calls.
+Each accepted mutation needs its successful rebuild,
+designated ordinary assertion,
+actual Node test-entry observation and no resource-limit event.
+Source restoration uses asynchronous disposal.
+The final sequence rebuilds and rechecks types,
+lint and the full unit suite,
+then rehashes every baseline source again.
+
+The managed proof is running from
+`/var/home/user/temp/agent/translation-repair-root-inputs-20260913/.guard-sandbox/semantic-guard`.
+Its output log is `/var/home/user/temp/agent/semantic-root-guards-20260913.out`.
+No mutation result or final semantic-owner completion is claimed until the terminal evidence is read,
+retained and followed by audited cleanup.
+No paid preparation,
+writer or image-reader work occurs.
+
+#### Remaining owning phases
+
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,
 then `:206` calls the deterministic relabel once,
