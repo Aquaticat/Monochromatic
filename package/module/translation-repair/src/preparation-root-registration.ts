@@ -187,13 +187,17 @@ export function preparationRootUnalignedDefinitions({
    * Source and target coverage are separate domains even when node IDs have the same spelling.
    */
   const sourceCovered = new Set(pairs.flatMap(function sourceIds(pair,): string[] {
-    return pair.source.nodes.map(function identity(node,): string { return node.id; },);
+    return pair.source
+      .nodes
+      .map(function identity(node,): string { return node.id; },);
   },),);
   /**
    * No target coverage is inferred from the source side's membership.
    */
   const targetCovered = new Set(pairs.flatMap(function targetIds(pair,): string[] {
-    return pair.target.nodes.map(function identity(node,): string { return node.id; },);
+    return pair.target
+      .nodes
+      .map(function identity(node,): string { return node.id; },);
   },),);
   return {
     scope: 'unaligned-definition-namespace',
