@@ -80,15 +80,18 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
   it({ name: 'retains a partial definition endorsement without inventing its unmatched counterpart', fn: async () => {
     const { input } = await acquire({ replies: ['{"pairs":[{"source":1,"target":1}]}'] });
     const result = readPreparationDefinitionRelations(input);
-    expect(result.definitionRelations.map(item => [item.source.label, item.target.label])).toEqual([['1', '7']]);
+    expect(result.definitionRelations).toEqual([
+      { source: { nodeId: 'block/1', blockIndex: 1, label: '1' }, target: { nodeId: 'block/1', blockIndex: 1, label: '7' }, authority: 'independent-endorsement' },
+    ]);
     expect(result.domain).toEqual(domain);
   } }),
   it({ name: 'retains native crossing-definition agreement without restoring a dropped edge', fn: async () => {
     const { input, evidence } = await acquire({ replies: ['{"pairs":[{"source":1,"target":2},{"source":2,"target":1}]}'] });
     expect(evidence.outcome.usable).toBe(2);
     const result = readPreparationDefinitionRelations(input);
-    expect(result.definitionRelations).toHaveLength(1);
-    expect(result.definitionRelations.every(item => ((item.source.blockIndex === 1) && (item.target.blockIndex === 2)) || ((item.source.blockIndex === 2) && (item.target.blockIndex === 1)))).toBe(true);
+    expect(result.definitionRelations).toEqual([
+      { source: { nodeId: 'block/1', blockIndex: 1, label: '1' }, target: { nodeId: 'block/2', blockIndex: 2, label: '8' }, authority: 'independent-endorsement' },
+    ]);
   } }),
   it({ name: 'rejects mixed definition-body wires rather than promoting their remaining relations', fn: async () => {
     const { input, evidence } = await acquire({ replies: ['{"pairs":[{"source":0,"target":0},{"source":1,"target":0},{"source":2,"target":2}]}'] });
@@ -118,7 +121,7 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
       replies: ['{"pairs":[{"source":0,"target":0}]}'], registeredDomain: { sourceIds: side === 'source' ? domain.sourceIds : [], targetIds: side === 'target' ? domain.targetIds : [] } });
     const result = readPreparationDefinitionRelations(input);
     expect(result.definitionRelations).toEqual([]);
-    expect(result.domain).toEqual(input.registration.domain);
+    expect(result.domain).toEqual({ sourceIds: side === 'source' ? ['block/1', 'block/2'] : [], targetIds: side === 'target' ? ['block/1', 'block/2'] : [] });
   } })),
   it({ name: 'refuses a body-only question instead of returning meaningless definition qualification', fn: async () => {
     const { input } = await acquire({ sourceText: 'First body.\n\nSecond body.', targetText: 'First archive.\n\nSecond archive.',
@@ -173,15 +176,27 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
     expect(result.domain).toEqual(before.domain);
   } }),
   it({ name: 'owns endpoint, occurrence, domain and electorate data after caller mutation', fn: async () => {
-    const { input, fixture } = await acquire();
+    const { input } = await acquire();
+    const registeredModels = [...input.registration.occurrence.binding.modelIds];
     const result = readPreparationDefinitionRelations(input);
     const snapshot = structuredClone(result);
     (input.registration.domain.sourceIds as string[]).push('later-source');
-    (fixture.input.modelIds as RosterModelId[]).pop();
+    (input.registration.occurrence.binding.modelIds as RosterModelId[]).pop();
     (input.receipt.outcomes as unknown[]).splice(0);
     expect(result).toEqual(snapshot);
+    expect(result.modelIds).toEqual(registeredModels);
+    expect(result.occurrence.binding.modelIds).toEqual(registeredModels);
+    const callerAfterMutation = structuredClone(input.registration);
+    const receiptAfterMutation = structuredClone(input.receipt);
     (result.domain.targetIds as string[]).push('later-target');
-    expect(input.registration.domain.targetIds).toEqual(domain.targetIds);
+    (result.modelIds as RosterModelId[]).pop();
+    (result.occurrence.binding.modelIds as RosterModelId[]).pop();
+    const sourceEndpoint = result.definitionRelations[0]?.source;
+    expect(sourceEndpoint).toBeDefined();
+    if (sourceEndpoint === undefined) throw new Error('expected owned endpoint witness');
+    Object.assign(sourceEndpoint, { label: 'changed-output-label' });
+    expect(input.registration).toEqual(callerAfterMutation);
+    expect(input.receipt).toEqual(receiptAfterMutation);
   } }),
   ...(['singleton', 'empty-source', 'empty-target'] as const).map(kind => it({ name: `refuses ${kind} occurrence receipt manufacture`, fn: async () => {
     const { input, fixture } = await acquire();
