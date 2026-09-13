@@ -142,6 +142,11 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
     const { input } = await acquire();
     expect(refusal(() => readPreparationDefinitionRelations({ ...input, registration: { ...input.registration, domain: changed } }))).toBe('qualification:definition-domain');
   } })),
+  ...(['sourceIndex', 'targetIndex'] as const).map(field => it({ name: `refuses a different registered parent ${field}`, fn: async () => {
+    const { input } = await acquire();
+    const occurrence = { ...input.registration.occurrence, [field]: input.registration.occurrence[field] + 1 };
+    expect(refusal(() => readPreparationDefinitionRelations({ ...input, registration: { ...input.registration, occurrence } }))).toBe('receipt:parent');
+  } })),
   ...(['attemptId', 'receiptId', 'requestConfigurationDigest'] as const).map(field => it({ name: `refuses a foreign receipt ${field} instead of adopting its identity`, fn: async () => {
     const { input } = await acquire();
     const receipt = { ...input.receipt, binding: { ...input.receipt.binding, [field]: 'foreign' } };

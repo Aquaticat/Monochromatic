@@ -1446,6 +1446,8 @@ original-creation authentication or containing-directory power-loss durability.
 `readPreparationDefinitionRelations` snapshots a registration,
 reconstructs its terminal receipt against complete current documents,
 and only then projects usable evidence to the registered definition domain.
+Its internal evidence core does not run body/media normalization or fallback handoff;
+those remain in the full `readPreparationOccurrence` consumer.
 Its `qualification: 'pairing-only'` and `scope: 'footnote-definitions'` result retains the checked occurrence binding
 and endorsed definition endpoints.
 An empty projection invents no correspondence,
