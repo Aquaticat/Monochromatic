@@ -469,6 +469,83 @@ including the version-bound hidden flag and the measured non-FIPS profile.
 The input runner must retain its generated control files and verify the actual launch;
 these disposable controls alone are not the production pre-import gate.
 
+### Native child resource and file-open follow-up
+
+`input-child-context-FN03Xs/output/report.json` records a native Node `26.8.2` context probe,
+not execution of the production bootstrap or built file-observation helper.
+The probe uses the same pinned image and independently controlled host configuration.
+It requests 2147483648 memory bytes and 4294967296 combined memory-plus-swap bytes.
+Podman's `docs/source/markdown/options/memory-swap.md` defines the argument as:
+
+```text
+A limit value equal to memory plus swap.
+```
+
+The observed cgroup values are `memory.max=2147483648`,
+`memory.swap.max=2147483648`,
+`cpu.max=200000 100000` and `pids.max=512`.
+The temporary filesystem reports 67108864 bytes.
+`NoNewPrivs` is `1`,
+and the inherited,
+permitted,
+effective,
+bounding and ambient capability words are all zero.
+Only `lo` is present.
+These measurements establish this native invocation,
+not that the new argument constructor or child owner has been exercised end to end.
+
+The mount report also exposes a relevant image alias:
+the requested `/lib64/libatomic.so.1` appears at `/usr/lib64/libatomic.so.1`.
+Generated `/etc/passwd` and `/etc/group` mounts are separate platform inputs,
+not immutable image files.
+The report contains repeated `/sys/devices/virtual/powercap` masks.
+Application role mounts remain unique;
+a child checker must not silently resolve stacked application roles by record position.
+
+The native file-open control writes a disposable no-writer FIFO and starts Node with
+`O_RDONLY | O_NOFOLLOW`.
+The child reaches `ENTER_OPEN` but does not reach the descriptor check before the test's 1000 ms deadline;
+Node's synchronous child-process call reports `ETIMEDOUT` and `SIGTERM`.
+This is an intentional blocking probe,
+not a mutation-test assertion or an application crash.
+Adding `O_NONBLOCK` lets `open` return and `fstat` report `regular:false` without a body read.
+A regular-file positive control still reads its exact fixture text.
+The FIFO is removed after the control.
+
+Linux man-pages `6.19`,
+[`open(2)`](https://man7.org/linux/man-pages/man2/open.2.html) and
+[`fifo(7)`](https://man7.org/linux/man-pages/man7/fifo.7.html),
+describe the deciding behavior:
+
+```text
+Opening the read or write end of a FIFO blocks until the other end
+is also opened (by another process or thread).
+```
+
+```text
+A process can open a FIFO in nonblocking mode.  In this case,
+opening for read-only succeeds even if no one has opened on the
+write side yet
+```
+
+The consumer correction in
+`package/module/translation-repair/src/corpus-run/producer-input-file.ts:129-142`
+adds an initial `lstat` refusal for known nonregular inputs,
+then uses the descriptor flags and a fresh descriptor check:
+
+```ts
+// package/module/translation-repair/src/corpus-run/producer-input-file.ts
+constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK
+```
+
+The initial pathname observation does not replace `fstat` or the pathname/descriptor identity comparison.
+`O_NONBLOCK` addresses a FIFO introduced between metadata inspection and open.
+It does not promise that regular-file or device I/O never waits;
+`open(2)` explicitly notes that the flag currently has no effect on those I/O operations.
+Built-helper race tests and actual bootstrap import-marker controls remain required.
+No Node,
+kernel or Podman patch or upstream filing is proposed for this consumer-side flag choice.
+
 ## What does not work
 
 - JavaScript bundling alone does not carry this native resource.

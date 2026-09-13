@@ -1916,8 +1916,9 @@ image-loader environment controls,
 output collisions/interruption and caller ownership.
 No new paid operation is authorized by this work.
 
-The dedicated application and launch helpers now exist,
-but the production bootstrap still does not.
+The dedicated application,
+launch helpers and fixed child orchestration function now exist,
+but the owning host CLI and separate bootstrap bundle still do not.
 `producer-input-application-RzZOcY` executes a frozen `producer-prepare-app.mjs` against the pinned corpus.
 Its 162-file runtime manifest hashes to
 `1cf95aa2a09d61b75ffdc4d901ebb18f9e3b8cba437e129b29a233161636e850`.
@@ -1974,8 +1975,32 @@ The constructor now requests 4 GiB combined memory-plus-swap while retaining the
 This replaces the unverified equal-memory/swap argument,
 using Podman's documented combined-limit meaning rather than claiming the older swap allowance was preserved.
 Actual resulting child limits still require native CLI verification.
-The shared child-environment helper now includes an explicit hostname and separate caller UID/GID bindings;
-its exact comparison must run before application import.
+The shared child-environment helper now includes an explicit hostname and separate caller UID/GID bindings.
+`runProducerInputChild` implements that comparison,
+fixed executable/argv/cwd checks,
+actual cgroup/network/capability/output-directory and mount checks,
+then launch,
+bootstrap,
+Node,
+library and full runtime-inventory byte checks before the dedicated application import.
+Commit `2be081dc6` passes the exact development type check.
+This child owner has not yet been executed through a bundled production CLI;
+its gate tests,
+formatter check and full suite remain open.
+
+The native `input-child-context-FN03Xs` prototype independently observes the requested
+2 GiB memory plus 2 GiB swap,
+2 CPU and 512 PID bounds,
+a 67108864-byte temporary filesystem,
+zero capability words and `NoNewPrivs=1`.
+It records the image's `/lib64` to `/usr/lib64` library mount alias and exact platform mount inventory.
+These are native flag observations,
+not invocation of the new child owner.
+A no-writer FIFO blocks the old read-only open until the probe deadline;
+`O_NONBLOCK` permits a descriptor-shape refusal and preserves the regular-file positive control.
+The file observer now adds an initial nonregular-path rejection,
+nonblocking/no-follow open and descriptor identity comparison.
+Built file-helper race tests remain required.
 The argument constructor no longer requests automatic container removal.
 The pending host lifecycle owner must inspect and retain terminal evidence before removing its stopped container.
 
