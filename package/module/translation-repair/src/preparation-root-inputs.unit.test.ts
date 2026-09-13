@@ -2,6 +2,8 @@ import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile, } from 'node:f
 import { join, relative, } from 'node:path';
 import { tmpdir, } from 'node:os';
 import { inspect, } from 'node:util';
+import { spawnSync, } from 'node:child_process';
+import { fileURLToPath, } from 'node:url';
 import { createHash, } from 'node:crypto';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -9,18 +11,18 @@ import { alignDocumentSections, archiveOriginalReadingOf, buildPreparationRootIn
 
 const l = tagged({ tag: 'root-input-owner-test' });
 const digest = (content: string) => hashContent({ content });
-const uniqueHeading = (index: number) => `## Unique${String.fromCharCode(65 + Math.floor(index / 26), 65 + index % 26)}section`;
+const uniqueHeading = (index: number) => `## Unique${String.fromCodePoint(65 + Math.floor(index / 26), 65 + (index % 26))}section`;
 async function fixture({ repeatedQuestions = false, implicitFirst = false, targetNamespace = false, emptyTarget = false }: { readonly repeatedQuestions?: boolean; readonly implicitFirst?: boolean; readonly targetNamespace?: boolean; readonly emptyTarget?: boolean } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'root-input-fixture-'));
   const sourceText = `${Array.from({ length: 41 }, (_, index) => {
     const heading = targetNamespace || emptyTarget ? uniqueHeading(index) : repeatedQuestions ? '## 猫' : `## 猫 ${index}`;
-    return implicitFirst && index === 40 ? heading : `${heading}\n\n${repeatedQuestions ? '猫猫。' : `猫猫 ${index}。`}`;
+    return implicitFirst && (index === 40) ? heading : `${heading}\n\n${repeatedQuestions ? '猫猫。' : `猫猫 ${index}。`}`;
   }).join('\n\n')}\n\n## Notes\n\n[^1]: 猫注。\n`; 
   const sourceRaw = sourceText.replaceAll('\n', '\r\n');
   const archiveText = `(To-Do)\n\n${Array.from({ length: 41 }, (_, index) => {
-    if (emptyTarget && index === 39) return '';
+    if (emptyTarget && (index === 39)) return '';
     const heading = targetNamespace || emptyTarget ? uniqueHeading(index) : repeatedQuestions ? '## Cat' : `## Cat ${index}`;
-    return implicitFirst && index === 40 ? heading : `${heading}\n\n${repeatedQuestions ? 'Cat is non‑binary.' : `Cat ${index} is non‑binary.`}`;
+    return implicitFirst && (index === 40) ? heading : `${heading}\n\n${repeatedQuestions ? 'Cat is non‑binary.' : `Cat ${index} is non‑binary.`}`;
   }).join('\n\n')}\n\n## Notes\n\n[^1]: Cat note.\n${targetNamespace ? '\n## Extra namespace\n\n[^outside]: Unpaired target note.\n' : ''}`;
   const targetText = passArchiveText({ text: archiveText, l });
   const source = parseDocument({ text: sourceText });
@@ -129,7 +131,9 @@ function carryReadings(f: Awaited<ReturnType<typeof fixture>>) {
     Reflect.deleteProperty(parent, 'noteHash');
     Object.assign(parent, { scopeReading: 'carried-by-exact-parent-and-entry-hashes', priorJournalHash, priorEntryId: 'fixture' });
   });
-  f.selection.dependencies.forEach(obligation => Object.assign(obligation, { requiredContext: [...prior.requiredContext], pictureEvidenceNeeded: false, scopeQualificationOpen: true }));
+  f.selection.dependencies.forEach(obligation => {
+    Object.assign(obligation, { requiredContext: [...prior.requiredContext], pictureEvidenceNeeded: false, scopeQualificationOpen: true });
+  });
 }
 async function refusal(body: () => Promise<unknown>) {
   let caught: unknown;
@@ -235,7 +239,7 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     await using f = await fixture();
     carryReadings(f);
     const inputs = await buildPreparationRootInputs(f.request());
-    expect(inputs.obligations.every(item => item.scopeQualificationOpen && !item.pictureEvidenceNeeded)).toBe(true);
+    expect(inputs.obligations.every(item => item.scopeQualificationOpen && (!item.pictureEvidenceNeeded))).toBe(true);
     expect(inputs.obligations.map(item => item.requiredContext)).toEqual(f.selection.dependencies.map(item => item.requiredContext));
     expect(inputs.references[4]?.bindings).toEqual([{ role: 'opaque-selection-support', consumer: 'selection' }]);
   } }),
@@ -243,7 +247,7 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     await using f = await fixture();
     const [entry] = f.values.journal.entries;
     const [parent] = f.values.journal.parents;
-    if (entry === undefined || parent === undefined) throw new Error('expected reading witnesses');
+    if ((entry === undefined) || (parent === undefined)) throw new Error('expected reading witnesses');
     if (kind.startsWith('contradictory')) {
       if (kind === 'contradictory-entry-status') Object.assign(entry, { completeEntryReading: 'carried-by-exact-entry-hashes' });
       else Object.assign(parent, { scopeReading: 'carried-by-exact-parent-and-entry-hashes' });
@@ -261,9 +265,11 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
         f.values.journal.priorJournalHash = digest(JSON.stringify(f.values.prior));
       } else Object.assign(parent, { priorJournalHash: digest('other') });
       if (kind !== 'parent-carry-hash') {
-        const priorJournalHash = f.values.journal.priorJournalHash;
+        const {priorJournalHash} = f.values.journal;
         Object.assign(entry, { priorJournalHash });
-        f.values.journal.parents.forEach(row => Object.assign(row, { priorJournalHash }));
+        f.values.journal.parents.forEach(row => {
+          Object.assign(row, { priorJournalHash });
+        });
       }
     }
     expect((await refusal(async () => await buildPreparationRootInputs(f.request()))).kind).toBe('reading-provenance');
@@ -317,7 +323,7 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
   } }),
   ...[false, true].map(normalize => it({ name: `applies whole-page original eligibility before selected-parent lookup normalized=${normalize}`, fn: async () => {
     await using f = await fixture();
-    const archive = normalize ? '<!-- (Origina\u200bl Language: English) -->\n\nCat.' : '<!-- (Original Language: English) -->\n\nCat.';
+    const archive = normalize ? '<!-- (Origina\u200Bl Language: English) -->\n\nCat.' : '<!-- (Original Language: English) -->\n\nCat.';
     const before = archiveOriginalReadingOf({ document: parseDocument({ text: archive }) });
     const target = passArchiveText({ text: archive, l });
     const after = archiveOriginalReadingOf({ document: parseDocument({ text: target }) });
@@ -354,13 +360,13 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     const request = f.request();
     const record = structuredClone(f.selection);
     const [poolReference, journalReference] = record.references;
-    if (poolReference === undefined || journalReference === undefined) throw new Error('expected frozen role references');
+    if ((poolReference === undefined) || (journalReference === undefined)) throw new Error('expected frozen role references');
     const artifacts = [...request.artifacts];
     const [first] = artifacts;
     if (first === undefined) throw new Error('expected role witness');
     if (kind === 'order') record.references = [journalReference, poolReference, ...record.references.slice(2)];
     else if (kind === 'ambiguous-frame') {
-      const source = artifacts[3];
+      const [, , , source] = artifacts;
       if (source === undefined) throw new Error('expected frame witness');
       artifacts.push({ path: '/another/frame.md', content: new Uint8Array(source.content) });
       record.references.push({ path: '/another/frame.md', hash: createHash('sha256').update(source.content).digest('hex') });
@@ -379,7 +385,9 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     const origin = process.cwd();
     const elsewhere = join(f.dir, 'elsewhere');
     await mkdir(elsewhere);
-    using reset = { [Symbol.dispose]: () => { process.chdir(origin); } };
+    using reset = { [Symbol.dispose]: () => {
+      process.chdir(origin);
+    } };
     const request = f.request();
     const pin = { ...request.pin, cloneDir: relative(origin, f.dir) };
     let changed = false;
@@ -424,6 +432,49 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     if (outcome?.status !== 'fulfilled') throw new Error('expected snapshotted executable lookup');
     expect(outcome.value.parents).toHaveLength(40);
   } }),
+  it({ name: 'reads the selected Git executable once per omitted-path population and never for an explicit path', fn: async () => {
+    await using f = await fixture();
+    const request = f.request();
+    const script = await readFile(request.pin.gitPath, 'utf8');
+    await writeFile(request.pin.gitPath, `#!${process.execPath}\n${script.slice(script.indexOf('\n') + 1)}`);
+    const candidate = join(f.dir, 'git');
+    await symlink(request.pin.gitPath, candidate);
+    const dataPath = join(f.dir, 'input.json');
+    await writeFile(dataPath, JSON.stringify({ text: request.text, expectedDigest: request.expectedDigest,
+      artifacts: request.artifacts.map(item => ({ path: item.path, bytes: [...item.content] })), pin: { cloneDir: f.dir, commitSha: CORPUS_COMMIT_SHA } }));
+    const apiPath = fileURLToPath(new URL('../dist/final/node/index.mjs', import.meta.url));
+    const program = `
+import assert from 'node:assert/strict';
+import files from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
+import { pathToFileURL } from 'node:url';
+const input = JSON.parse(await files.readFile(${JSON.stringify(dataPath)}, 'utf8'));
+const api = await import(pathToFileURL(${JSON.stringify(apiPath)}).href);
+const candidate = ${JSON.stringify(candidate)};
+const counts = { reads: 0 };
+const original = files.readFile;
+files.readFile = async function counted(path, options) {
+  if (path === candidate) counts.reads += 1;
+  return await original(path, options);
+};
+syncBuiltinESMExports();
+const l = { debug() {}, info() {}, warn() {}, error() {}, fatal() {}, trace() {}, async flush() {} };
+const artifacts = input.artifacts.map(item => ({ path: item.path, content: new Uint8Array(item.bytes) }));
+const implicit = await api.buildPreparationRootInputs({ ...input, artifacts, l });
+const implicitReads = counts.reads;
+counts.reads = 0;
+const explicit = await api.buildPreparationRootInputs({ ...input, artifacts, pin: { ...input.pin, gitPath: candidate }, l });
+assert.deepEqual(implicit, explicit);
+console.log('ROOT_GIT_READS ' + JSON.stringify({ implicitReads, explicitReads: counts.reads }));
+`;
+    const done = spawnSync(process.execPath, ['--input-type=module', '--eval', program], { cwd: f.dir, encoding: 'utf8', env: { ...process.env, PATH: f.dir } });
+    if (done.status !== 0) console.error(done.stderr);
+    expect(done.status).toBe(0);
+    const marker = 'ROOT_GIT_READS ';
+    const line = done.stdout.split('\n').find(value => value.startsWith(marker));
+    if (line === undefined) throw new Error('expected native executable read observations');
+    expect(JSON.parse(line.slice(marker.length))).toEqual({ implicitReads: 1, explicitReads: 0 });
+  } }),
   ...['revision', 'blank-clone', 'relative-executable', 'throwing-getter'].map(kind => it({ name: `refuses unsupported independent corpus pin ${kind}`, fn: async () => {
     await using f = await fixture();
     const request = f.request();
@@ -431,7 +482,9 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     if (kind === 'revision') pin.commitSha = 'different';
     else if (kind === 'blank-clone') pin.cloneDir = ' ';
     else if (kind === 'relative-executable') pin.gitPath = 'relative-git';
-    else Object.defineProperty(pin, 'cloneDir', { get() { throw new Error('q7z9k2'); } });
+    else Object.defineProperty(pin, 'cloneDir', { get() {
+      throw new Error('q7z9k2');
+    } });
     const error = await refusal(async () => await buildPreparationRootInputs({ ...request, pin }));
     expect(error.kind).toBe('corpus-identity');
     expect(inspect(error, { depth: null })).not.toContain('q7z9k2');
