@@ -50,7 +50,7 @@ export function preparationRootEntryReadings({
    * Native entry order must not be replaced with a subset or a lookup that hides duplicates.
    */
   const readings = preparationRootArray(journal.entries,)
-    .map(preparationRootRecord,);
+    .map(function record(value,): Readonly<Record<string, unknown>> { return preparationRootRecord(value,); },);
   assertPreparationRootEqual({
     actual: readings.map(function identity(row,): unknown { return row.entryId; },),
     expected: current.entries
@@ -61,7 +61,7 @@ export function preparationRootEntryReadings({
    * Prior rows stay byte-bound; only exact carried relationships are interpreted.
    */
   const priorEntries = preparationRootArray(priorJournal.entries,)
-    .map(preparationRootRecord,);
+    .map(function record(value,): Readonly<Record<string, unknown>> { return preparationRootRecord(value,); },);
   /**
    * Result ownership remains local to the root operation.
    */
@@ -156,7 +156,9 @@ export function preparationRootEntryReadings({
       /**
        * Exact prior membership must be unique before it can carry reading provenance.
        */
-      const priorMatches = priorEntries.filter(function sameEntry(row,): boolean { return row.entryId === entry.entryId; },);
+      const priorMatches = priorEntries.filter(function sameEntry(row,): boolean {
+        return row.entryId === entry.entryId;
+      },);
       if (priorMatches.length !== 1)
         throw new PreparationRootError({
           kind: 'reading-provenance',

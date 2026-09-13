@@ -180,8 +180,13 @@ export async function readPreparationRootPopulation({
    * Definition namespaces outside aligned parents are explicit but non-serving.
    */
   const unalignedDefinitions: PreparationRootUnalignedDefinitions[] = [];
-  /** Explicit single-entry resource envelope retains serial native reads without an unbounded promise fan-out. */
-  const processedEntryIds = await mapOverlapped({ items: listedEntryIds, overlap: 1, oneItem: async function collect({ item: entryId, },): Promise<string> {
+  /**
+   * Explicit single-entry resource envelope retains serial native reads without an unbounded promise fan-out.
+   */
+  const processedEntryIds = await mapOverlapped({
+    items: listedEntryIds,
+    overlap: 1,
+    oneItem: async function collect({ item: entryId, },): Promise<string> {
     /**
      * This entry's parsed documents do not escape into unrelated population records.
      */
@@ -250,7 +255,8 @@ export async function readPreparationRootPopulation({
         > 0))
       unalignedDefinitions.push(namespace,);
     return entryId;
-  }, },);
+  },
+  },);
   /**
    * Missing selected parents are refusals, never a reason to substitute another population member.
    */
@@ -271,10 +277,15 @@ export async function readPreparationRootPopulation({
    * Current registration identities must not merge distinct native parent occurrences.
    */
   const byParent = new Map<string, PreparationRootRegistration>();
-  /** Definition-only records retain native order while the same pass indexes selected identities. */
+  /**
+   * Definition-only records retain native order while the same pass indexes selected identities.
+   */
   const dependencies: PreparationRootRegistration[] = [];
   for (const registration of registrations) {
-    byParent.set(registration.parentId, registration,);
+    byParent.set(
+      registration.parentId,
+      registration,
+    );
     if (!selectedParentIds.has(registration.parentId,))
       dependencies.push(registration,);
   }

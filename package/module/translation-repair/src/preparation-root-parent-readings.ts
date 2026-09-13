@@ -77,7 +77,7 @@ function parentReadingDetail({
      * Duplicate parent details cannot be hidden by a first-match lookup.
      */
     const matches = preparationRootArray(note.parentReadings,)
-      .map(preparationRootRecord,)
+      .map(function record(value,): Readonly<Record<string, unknown>> { return preparationRootRecord(value,); },)
       .filter(function sameParent(item,): boolean { return item.pairIndex === parent.pairIndex; },);
     if (matches.length !== 1)
       throw new PreparationRootError({
@@ -125,7 +125,7 @@ function parentReadingDetail({
    */
   const matches = preparationRootArray(artifacts.priorJournal
     .entries,)
-    .map(preparationRootRecord,)
+    .map(function record(value,): Readonly<Record<string, unknown>> { return preparationRootRecord(value,); },)
     .filter(function sameEntry(item,): boolean { return item.entryId === parent.entryId; },);
   if (matches.length !== 1)
     throw new PreparationRootError({
@@ -191,7 +191,7 @@ export function preparationRootParentReadings({
    */
   const readings = preparationRootArray(artifacts.journal
     .parents,)
-    .map(preparationRootRecord,);
+    .map(function record(value,): Readonly<Record<string, unknown>> { return preparationRootRecord(value,); },);
   assertPreparationRootEqual({
     actual: readings.map(function identity(row,): unknown { return row.id; },),
     expected: parents.map(function identity(parent,): string { return parent.id; },),
@@ -279,7 +279,7 @@ export function preparationRootParentReadings({
      * Original context strings remain unchanged, not executable instructions or a glossary.
      */
     const requiredContext = preparationRootArray(detail.requiredContext,)
-      .map(preparationRootString,);
+      .map(function context(value,): string { return preparationRootString(value,); },);
     if (requiredContext.length === 0)
       throw new PreparationRootError({
         kind: 'reading-provenance',

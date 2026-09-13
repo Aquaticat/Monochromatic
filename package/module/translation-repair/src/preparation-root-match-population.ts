@@ -168,12 +168,22 @@ export function matchPreparationRootPopulation({
     expected: pool.population,
     kind: 'population',
   },);
-  /** Frozen parent and exclusion records must identity-bind every listed entry, including unselected entries. */
+  /**
+   * Frozen parent and exclusion records must identity-bind every listed entry, including unselected entries.
+   */
   const coveredEntries = new Set([
-    ...current.population.map(function entry(parent,): string { return parent.entryId; },),
-    ...current.excluded.map(function entry(exclusion,): string { return exclusion.entryId; },),
+    ...current.population
+      .map(function entry(parent,): string { return parent.entryId; },),
+    ...current.excluded
+      .map(function entry(exclusion,): string { return exclusion.entryId; },),
   ],);
-  assertPreparationRootEqual({ actual: [...coveredEntries,].toSorted(), expected: current.listedEntryIds.toSorted(), kind: 'population', input: 'frozen entry identity coverage', },);
+  assertPreparationRootEqual({
+    actual: [...coveredEntries,].toSorted(),
+    expected: current.listedEntryIds
+      .toSorted(),
+    kind: 'population',
+    input: 'frozen entry identity coverage',
+  },);
   /**
    * This is the original task40 population digest representation, not a new ambiguous sampler digest.
    */

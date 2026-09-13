@@ -1531,9 +1531,95 @@ the [cleanup observation](../troubleshooting/cli-git-temporary-worktree-policy-i
 retains the details and proposed `GCL` clarification.
 Both worktree directories and registrations are absent at `2026-09-13T08:34:22.034Z`.
 
-A pre-import gate and native correspondence-root owner remain unfinished.
+A pre-import gate and native correspondence-root/phase owner remain unfinished.
 Place the gate in the actual owning runner before loading the sealed application;
 do not introduce a generic execution framework or treat build metadata as approval.
+
+### Native semantic input owner
+
+`buildPreparationRootInputs` now owns fresh selection/supporting-byte matching,
+independent corpus configuration,
+full native policy reconstruction,
+exact frozen-parent lookup,
+entry/frame/note provenance,
+source obligations and initial definition scope.
+Its return scope is `unqualified-preparation-root-inputs`,
+not a reviewed root,
+phase or writer plan.
+Unselected population records contain node/position/protection metadata,
+not unrelated complete-parent prose.
+Unconsumed historical support remains `opaque-selection-support`;
+its filename does not establish execution or interpretive authority.
+
+The first committed owner is `5e02bc978`.
+The disposable verification worktree is
+`/var/home/user/temp/agent/translation-repair-root-inputs-20260913`.
+`root-inputs-native-verification-20260913.out` records successful build,
+actual corpus/artifact consumption and types on Node `26.8.2`.
+The native consumer verifies thirty selected entries,
+272 population parents,
+forty unchanged frozen identities,
+184 raw corpus documents,
+45 initial scope records,
+42 queried and three structural paths,
+and Xing's unaligned source definitions `block/236` through `block/244`.
+Raw/effective and archive-origin records match the retained prototype after ordering raw identities by locator.
+That parity is regression evidence against the shared native semantics,
+not an independent proof that those semantics are correct.
+`Mio#0` remains open and no provider or fetch request occurs.
+Peak container memory is 656478208 bytes.
+
+The initial synthetic owner cases pass,
+but the focused suite fails its existing names-only message inventory for the new root diagnostic expressions.
+Throw-site review confirms only locators,
+entry/parent identities and fixed registry labels are supplied.
+The interpolation is named `affectedInput`,
+not the narrower `inputLocator`,
+and its inventory records those exact uses.
+
+The first development formatter also read stale development `dist` declarations,
+although the separate verification worktree had a fresh build.
+Its `TS2305` and dependent unknown-type findings are not implementation evidence.
+The exact development worktree is now rebuilt in a 2 GiB,
+2 CPU,
+512 PID container with source read-only and only package `dist` writable,
+before repeating type-aware checks.
+Other formatter findings concern explicit serial mapping,
+callback views/arity and fixture statement layout;
+none is suppressed or reported as a guard detection.
+
+Independent review prompted these changes,
+still requiring fresh verification:
+
+- Capture native Git lookup context before descriptor or logger callbacks,
+  including absolute PATH components anchored to the initial working directory.
+- Deep-copy population snapshots so selected-parent mutation cannot alter population evidence.
+- Group aliases by exact serialized question bytes,
+  not digest equality alone.
+- Check frozen entry identity coverage through parent and exclusion records.
+  The actual frozen population names all ninety eligible entries,
+  including `ArtsEpiphany`.
+  An unnamed eligible entry is not excluded or substituted;
+  the old frozen representation cannot establish its historical membership and the root refuses.
+- Make the synthetic forty-parent selection non-prefix and non-native-order,
+  with a separately retained definition-only dependency.
+
+A blanket ban on current readings carrying prior metadata is not adopted:
+actual current entry rows for `Chinatsu_Suzuki`,
+`CutOceanHeyFis1`,
+`Everythings99`,
+`MocaKawai`,
+`TianqiChen666` and `Xu_Yushu` legitimately retain `priorReading`.
+Consumed branch/status relationships must be checked,
+while unused historical data must not silently gain authority.
+
+Verification still needs targeted carried-reading negatives,
+empty dispatch and alias positives,
+target-side unaligned definitions,
+malformed role JSON/UTF-8 and ambiguous frames,
+Git lookup/cwd mutation witnesses,
+and the ownership directions.
+No fresh full-suite or final semantic-owner completion is claimed yet.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,

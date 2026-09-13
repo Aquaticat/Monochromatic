@@ -176,13 +176,26 @@ export async function buildPreparationRootInputs({
    * Pin location cannot drift when subsequent callbacks or awaits change process context.
    */
   const origin = process.cwd();
-  /** Native executable lookup context cannot be changed by later logger or descriptor callbacks. */
+  /**
+   * Native executable lookup context cannot be changed by later logger or descriptor callbacks.
+   */
   const lookup = {
-    pathEnv: (process.env.PATH ?? '').split(delimiter,).map(function absoluteDirectory(path,): string { return resolve(origin, path,); },).join(delimiter,),
+    pathEnv: (process.env
+      .PATH
+      ?? '').split(delimiter,)
+      .map(function absoluteDirectory(path,): string { return resolve(
+        origin,
+        path,
+      ); },)
+      .join(delimiter,),
     platform: process.platform,
-    pathExtensions: process.env.PATHEXT ?? '.COM;.EXE;.BAT;.CMD',
+    pathExtensions: process.env
+      .PATHEXT
+      ?? '.COM;.EXE;.BAT;.CMD',
   };
-  /** Independent pin fields are copied only after lookup context is fixed. */
+  /**
+   * Independent pin fields are copied only after lookup context is fixed.
+   */
   const fixed = preparationRootPin(pin,);
   /**
    * The public owner never accepts a pre-decoded selection or previously mutable byte-match certificate.

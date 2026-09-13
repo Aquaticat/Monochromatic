@@ -29,7 +29,7 @@ async function fixture() {
     originalProtection: { intersections: [], sealedTargetNodeIds: [], straddlingNodeIds: [], allTargetNodesSealed: false },
   }));
   // This frozen order is neither a prefix nor native section order; resampling cannot stand in for lookup.
-  const selected = parents.filter(parent => parent.pairIndex !== 17 && parent.pairIndex !== 41).toReversed();
+  const selected = parents.filter(parent => (parent.pairIndex !== 17) && (parent.pairIndex !== 41)).toReversed();
   const population = parents.map(parent => ({ id: parent.id, entryId: parent.entryId, pairIndex: parent.pairIndex,
     sourceSectionIndex: parent.sourceSectionIndex, targetSectionIndex: parent.targetSectionIndex, source: parent.source, target: parent.target, originalProtection: parent.originalProtection }));
   const populationDigest = digest(

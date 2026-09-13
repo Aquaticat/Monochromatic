@@ -145,7 +145,9 @@ export function preparationRootArtifacts({
      * Repeated access does not fabricate additional provenance relationships.
      */
     const existing = bindings.get(artifact.path,) ?? [];
-    if (existing.some(function duplicate(binding,): boolean { return (binding.role === role) && (binding.consumer === consumer); },))
+    if (existing.some(function duplicate(binding,): boolean {
+      return (binding.role === role) && (binding.consumer === consumer);
+    },))
       return;
     bindings.set(
       artifact.path,

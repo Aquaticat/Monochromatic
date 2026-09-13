@@ -186,24 +186,24 @@ export function preparationRootUnalignedDefinitions({
   /**
    * Source and target coverage are separate domains even when node IDs have the same spelling.
    */
-  const sourceCovered = new Set(pairs.flatMap(function sourceIds(pair,): string[] { return pair.source
-    .nodes
-    .map(function identity(node,): string { return node.id; },); },),);
+  const sourceCovered = new Set(pairs.flatMap(function sourceIds(pair,): string[] {
+    return pair.source.nodes.map(function identity(node,): string { return node.id; },);
+  },),);
   /**
    * No target coverage is inferred from the source side's membership.
    */
-  const targetCovered = new Set(pairs.flatMap(function targetIds(pair,): string[] { return pair.target
-    .nodes
-    .map(function identity(node,): string { return node.id; },); },),);
+  const targetCovered = new Set(pairs.flatMap(function targetIds(pair,): string[] {
+    return pair.target.nodes.map(function identity(node,): string { return node.id; },);
+  },),);
   return {
     scope: 'unaligned-definition-namespace',
     entryId,
     source: source.nodes
       .filter(function unaligned(node,): boolean { return (node.zone === 'footnote-definition') && (!sourceCovered.has(node.id,)); },)
-      .map(preparationRootNode,),
+      .map(function identity(node,): ReturnType<typeof preparationRootNode> { return preparationRootNode(node,); },),
     target: target.nodes
       .filter(function unaligned(node,): boolean { return (node.zone === 'footnote-definition') && (!targetCovered.has(node.id,)); },)
-      .map(preparationRootNode,),
+      .map(function identity(node,): ReturnType<typeof preparationRootNode> { return preparationRootNode(node,); },),
   };
 }
 
@@ -220,22 +220,37 @@ export function preparationRootUnalignedDefinitions({
  * ```
  */
 export function preparationRootQuestionAliases(registry: readonly PreparationRootRegistration[],): readonly PreparationRootQuestionAliases[] {
-  /** Exact serialized questions, not digest equality alone, own initial alias membership. */
+  /**
+   * Exact serialized questions, not digest equality alone, own initial alias membership.
+   */
   const groups = new Map<string, string[]>();
   for (const record of registry) {
     if (record.dispatch !== 'queried')
       continue;
-    /** The canonical native question contains both numbered sides and the exact protocol. */
+    /**
+     * The canonical native question contains both numbered sides and the exact protocol.
+     */
     const bytes = JSON.stringify(record.question,);
-    /** Parent order remains the already registered order within each exact question. */
+    /**
+     * Parent order remains the already registered order within each exact question.
+     */
     const existing = groups.get(bytes,);
     if (existing === undefined)
-      groups.set(bytes, [record.parentId,],);
+      groups.set(
+        bytes,
+        [record.parentId,],
+      );
     else
       existing.push(record.parentId,);
   }
-  return [...groups,].filter(function shared([, parentIds,],): boolean { return parentIds.length > 1; },).map(function group([bytes, parentIds,],): PreparationRootQuestionAliases {
-    return { questionDigest: hashContent({ content: bytes, },), parentIds: [...parentIds,], };
+  return [...groups,].filter(function shared([, parentIds,],): boolean {
+    return parentIds.length > 1;
+  },)
+    .map(function group([bytes, parentIds,],): PreparationRootQuestionAliases {
+    return {
+      questionDigest: hashContent({ content: bytes, },),
+      parentIds: [...parentIds,],
+    };
   },);
 }
 
