@@ -1336,12 +1336,29 @@ Its container has no network,
 source and dependencies are read-only and known root credential files are masked.
 Native Mise controls accept Node `26.8.2` and refuse `26.7.0`,
 with a fresh nonce-bound runtime ledger.
-The active mutation run is recorded in `selection-guard-mutations-20260913.out`.
-Mutant builds must succeed and the designated test must fail with an ordinary `AssertionError`.
+The mutation run is recorded in `selection-guard-mutations-20260913.out`.
+All 37 registered mutations build successfully and fail their designated ordinary `AssertionError` checks.
+All assertion lines were read;
+restored source hashes,
+rebuild and the selection/supporting-byte suite pass.
+Peak container memory is 681996288 bytes,
+with no OOM or PID-limit event.
 Wrongful-refusal and metadata checks are not reported as unsafe acceptance.
-Retention,
-restored-suite verification and audited worktree removal remain pending.
-This supporting-byte boundary is not yet declared finally verified.
+
+The retained proof at `/var/home/user/temp/agent/selection-guard-proof-20260913`
+contains 108 hash-checked files,
+including source and test copies,
+run/phase-bound runtime observations,
+plans,
+launches and exact failure lines.
+Cleanup verifies no tracked changes,
+no root Git sentinels and only owned ignored/untracked outputs.
+Both directory and registration absence were verified at `2026-09-13T05:41:59.174Z`.
+This completes verification of the partial selection-identity and supporting-byte boundaries,
+not semantic reference roles,
+population eligibility,
+correspondence root/phase review,
+acquisition leases or writer admission.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,

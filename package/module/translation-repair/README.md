@@ -1421,7 +1421,7 @@ including `Buffer`;
 byte-view proxies are refused.
 Matching is point-in-time evidence;
 a downstream owner must rehash bytes rather than trusting a mutable returned record.
-Its byte-binding integration is still under verification.
+Its byte-binding boundary is verified independently of the still-unfinished semantic root and acquisition owner.
 `readRegisteredPreparationParent` shares complete-document and parent-coordinate preflight with receipt reconstruction,
 while allowing structural planning without inventing model evidence.
 
