@@ -110,6 +110,57 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     const artifacts = f.artifacts.map((item, index) => index === 0 ? { ...item, content: content as unknown as Uint8Array } : item);
     expect(failure(() => readPreparationSelectionEvidence({ ...f, artifacts }))).toBe('reference-content');
   } })),
+  ...['prototype', 'iterator'].map(trap => it({ name: `refuses byte proxies without invoking their ${trap} trap`, fn: async () => {
+    const f = fixture();
+    const canary = new Error('q7z9k2');
+    let calls = 0;
+    const content = new Proxy(new Uint8Array([255, 0, 1, 13, 10]), {
+      getPrototypeOf(target) {
+        if (trap === 'prototype') { calls += 1; throw canary; }
+        return Reflect.getPrototypeOf(target);
+      },
+      get(target, key, receiver) {
+        if (key === Symbol.iterator) { calls += 1; throw canary; }
+        return Reflect.get(target, key, receiver) as unknown;
+      },
+    });
+    let exposed: unknown;
+    try {
+      if (trap === 'prototype') Reflect.getPrototypeOf(content);
+      else Reflect.get(content, Symbol.iterator);
+    }
+    catch (error) { exposed = error; }
+    expect(exposed).toBe(canary);
+    expect(calls).toBe(1);
+    calls = 0;
+    f.artifacts[0] = { path: '/unread/pool.bin', content };
+    let caught: unknown;
+    try { readPreparationSelectionEvidence(f); }
+    catch (error) { caught = error; }
+    expect(caught).toBeInstanceOf(PreparationRootError);
+    expect((caught as PreparationRootError).kind).toBe('reference-content');
+    expect(calls).toBe(0);
+    expect(inspect(caught, { depth: null })).not.toContain('q7z9k2');
+  } })),
+  ...['inventory', 'entry', 'bytes'].map(boundary => it({ name: `classifies revoked ${boundary} proxies without retaining native causes`, fn: async () => {
+    const f = fixture();
+    const first = f.artifacts[0];
+    if (first === undefined) throw new Error('expected revocation witness');
+    const target = boundary === 'inventory' ? f.artifacts : boundary === 'entry' ? first : first.content;
+    const revoked = Proxy.revocable(target, {});
+    revoked.revoke();
+    let exposed: unknown;
+    try { Reflect.getPrototypeOf(revoked.proxy); }
+    catch (error) { exposed = error; }
+    expect(exposed).toBeInstanceOf(TypeError);
+    const artifacts = boundary === 'inventory' ? revoked.proxy : [boundary === 'entry' ? revoked.proxy : { ...first, content: revoked.proxy }, ...f.artifacts.slice(1)];
+    let caught: unknown;
+    try { readPreparationSelectionEvidence({ ...f, artifacts: artifacts as readonly PreparationArtifactInput[] }); }
+    catch (error) { caught = error; }
+    expect(caught).toBeInstanceOf(PreparationRootError);
+    expect((caught as PreparationRootError).kind).toBe(boundary === 'bytes' ? 'reference-content' : 'reference-inventory');
+    expect((caught as Error).cause).toBeUndefined();
+  } })),
   it({ name: 'names unreadable detached supporting bytes without leaking them', fn: async () => {
     const f = fixture();
     const detached = new Uint8Array([255, 0, 1, 13, 10]);
