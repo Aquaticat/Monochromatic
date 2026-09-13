@@ -120,12 +120,82 @@ This is a configuration path,
 not a claim that the existing formatter forwards file arguments.
 Its template and wrapper would need their own implementation and verification.
 
+## Task dependencies differ from automatic dependency preparation
+
+The input-CLI test harness incorrectly treated `--no-deps` as task-dependency skipping.
+After `test:unit` gained a `bootstrap:seal` dependency,
+Mise still ran that build in a container where the bootstrap candidate was read-only.
+Rolldown reported `UNHANDLEABLE_ERROR` while writing `producer-prepare.d.mts`,
+with `Read-only file system (os error 30)`.
+No unit test ran in that failed attempt.
+This was an invocation/mount-contract error,
+not a demonstrated Rolldown defect.
+
+The same inspected Mise release separates these flags at `src/cli/run.rs:247-259`:
+
+```rust
+// src/cli/run.rs, separate excerpts
+/// Skip automatic dependency preparation
+pub no_deps: bool,
+/// Run only the specified tasks skipping all dependencies
+pub skip_deps: bool,
+```
+
+`src/cli/run.rs:731-734` uses `no_deps` for the preparation engine:
+
+```rust
+// src/cli/run.rs
+let deps_engine = if self.no_deps {
+    None
+} else if subdir_configs.is_empty() {
+    Some(DepsEngine::new(&config)?)
+```
+
+`src/task/task_executor.rs:1033-1037` instead clears task graph edges for `skip_deps`:
+
+```rust
+// src/task/task_executor.rs
+if self.skip_deps {
+    t.depends.clear();
+    t.depends_post.clear();
+    t.wait_for.clear();
+}
+```
+
+The native failed catalog is `devtest-imcxOL/task.out`:
+`--no-deps --skip-tools` runs `bootstrap:seal` and fails before testing.
+The corrected catalog is `devtest-ZtulTu/task.out`:
+adding `--skip-deps` reaches the requested test files without rebuilding the candidate.
+That run still fails its names-only inventory assertions;
+it verifies dependency selection,
+not successful tests.
+The candidate had already been built in the same verification sequence.
+
+For intentionally prebuilt test artifacts,
+use the distinct flag:
+
+```sh
+# From the development repository root, after normal and bootstrap builds.
+mise run --no-deps --skip-deps --skip-tools //package/module/translation-repair:test:unit -- \
+  src/corpus-run/producer-prepare.unit.test.ts
+```
+
+Tradeoff:
+`--skip-deps` removes task prerequisites,
+so the caller owns artifact freshness.
+`--no-deps` may still be appropriate to suppress automatic dependency preparation,
+but it does not replace that responsibility or suppress declared task dependencies.
+No upstream patch or filing is proposed for this documented flag distinction.
+
 ## What does not work
 
 Adding `--` before paths does not repair this invocation:
 the failing fixture and package command both used it.
 The separator passes the paths to the task;
 it does not teach the task how to consume them.
+
+`--no-deps` does not suppress a declared task dependency;
+`--skip-deps` is the separately verified control for that task-graph behavior.
 
 Changing the edited TypeScript cannot fix a syntax error in the generated task program.
 No source-code correction was attempted as a workaround.

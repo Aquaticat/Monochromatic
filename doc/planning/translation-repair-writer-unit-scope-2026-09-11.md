@@ -1917,8 +1917,10 @@ output collisions/interruption and caller ownership.
 No new paid operation is authorized by this work.
 
 The dedicated application,
-launch helpers and fixed child orchestration function now exist,
-but the owning host CLI and separate bootstrap bundle still do not.
+host lifecycle,
+fixed child owner and separate bootstrap CLI are now implemented and built.
+The first real bundled CLI run succeeds at the unqualified input boundary.
+Negative gate/lifecycle coverage and the final package verification remain unfinished.
 `producer-input-application-RzZOcY` executes a frozen `producer-prepare-app.mjs` against the pinned corpus.
 Its 162-file runtime manifest hashes to
 `1cf95aa2a09d61b75ffdc4d901ebb18f9e3b8cba437e129b29a233161636e850`.
@@ -1934,7 +1936,8 @@ The private comparison imports `index.mjs` only after the dedicated application 
 then verifies exact serialized equality with a direct `buildPreparationRootInputs` call.
 This is same-implementation output parity,
 not independent parser correctness or a dedicated-entry-only claim for the entire comparison process.
-A separate-process oracle is still needed for final dedicated-runner verification.
+The later bundled CLI runs in a separate process and is compared byte-for-byte with this retained native result.
+That comparison is still not an independent implementation of parser or aligner semantics.
 The recorded dedicated peak is 182272000 bytes;
 the combined comparison process reaches 204419072 bytes with no recorded OOM events.
 Its report explicitly says `privateGateOnly:true` and `productionBootstrapImplemented:false`.
@@ -1953,28 +1956,38 @@ Committed helper responsibilities include:
 
 The native Podman probes independently demonstrate config and subscription-mount injection,
 then remove the respective fixture markers with controlled inputs.
-They do not yet exercise the committed helpers together,
+Those initial probes did not exercise the committed helpers together,
 prove an exact mount inventory or provide an OCI-hook positive control.
+The real CLI now exercises the host and child owners together;
+the adversarial OCI-hook control remains open.
 `--default-mounts-file` is marked testing-only upstream;
 its intended use depends on verified exact Podman bytes and fail-closed native invocation,
 not a general compatibility promise.
 The current host profile checks FIPS is not enabled without changing that setting.
 See `doc/troubleshooting/translation-repair-native-runtime-bundling.md` for source excerpts and controls.
 
-An independent review leaves these production obligations open:
-canonical and disjoint host paths,
-all cross-bindings between launch fields and actual arguments,
-metadata-preflight versus output-creation ordering,
-bootstrap packaging and host/child wiring,
-pre-import mount/environment/cgroup/network checks,
-hook controls,
-and retained terminal outcomes for every lifecycle failure.
+Independent review identified host binding,
+interruption,
+allocation and output-verification gaps.
+The implementation now has fixed native-command deadlines with termination escalation,
+late-signal refusal and signal-specific exit codes,
+pre-start Node/library rechecks,
+created-container timeout/healthcheck/rootless-map checks,
+exact private output inventory and UID/GID/mode checks,
+and a synchronized cleanup-complete record after native absence verification.
+Launch and runtime manifests have a 1048576-byte host metadata ceiling;
+the supporting-byte allowance remains independently supplied.
+Podman receives only the measured local home,
+fixed system PATH,
+owned config and optional runtime-bus variables,
+not a copied host environment.
+These implementations still require their negative controls and final lint/test coverage.
 The helper now writes `created.json` with `producer-preparation-input-created`,
 so namespace creation is not labelled container startup.
 The constructor now requests 4 GiB combined memory-plus-swap while retaining the 2 GiB memory cap.
 This replaces the unverified equal-memory/swap argument,
 using Podman's documented combined-limit meaning rather than claiming the older swap allowance was preserved.
-Actual resulting child limits still require native CLI verification.
+The real CLI's child context checks the resulting limits before importing the application.
 The shared child-environment helper now includes an explicit hostname and separate caller UID/GID bindings.
 `runProducerInputChild` implements that comparison,
 fixed executable/argv/cwd checks,
@@ -1984,19 +1997,26 @@ bootstrap,
 Node,
 library and full runtime-inventory byte checks before the dedicated application import.
 Commit `2be081dc6` passes the exact development type check.
-This child owner has not yet been executed through a bundled production CLI;
-its gate tests,
-formatter check and full suite remain open.
+The first bundled CLI executes this child owner successfully.
+Its negative gate tests and final full-suite verification remain open.
 `initializeProducerInputHost` at `be4aaa681` now owns raw launch matching,
 metadata topology preflight,
 exclusive namespace creation,
 runtime-file bindings and generated Podman configuration together.
 Initialization failures after namespace creation retain a names-only pre-container terminal record.
-The host's actual create/inspect/start/terminal/removal lifecycle,
-interruption handling,
-completion validation and CLI/bootstrap packaging are still absent.
-A bounded formatting edit is running against already committed development source;
-its generated changes must be inspected and type-checked before the next execution artifact is frozen.
+`784c03642` wires the host lifecycle and separately packaged CLI;
+`b2ab755fb` implements the independently reviewed hardening changes.
+Its exact type check,
+bootstrap build and current application seal all succeed in the bounded harness.
+The new `bootstrap:seal` task does not change ordinary application output or approve a launch.
+Package unit tests depend on that separate build.
+A first read-only-artifact test attempt still ran that dependency because `--no-deps`
+skips automatic dependency preparation,
+not task dependencies.
+The verified task-graph flag is `--skip-deps`;
+callers using it must explicitly build both artifacts first.
+The corrected invocation reaches the tests and exposes the names-only inventory updates,
+which remain normal test work rather than infrastructure success.
 
 The native `input-child-context-FN03Xs` prototype independently observes the requested
 2 GiB memory plus 2 GiB swap,
@@ -2012,7 +2032,46 @@ The file observer now adds an initial nonregular-path rejection,
 nonblocking/no-follow open and descriptor identity comparison.
 Built file-helper race tests remain required.
 The argument constructor no longer requests automatic container removal.
-The pending host lifecycle owner must inspect and retain terminal evidence before removing its stopped container.
+The host now records the stopped container and operation outcome before removal,
+then writes `cleanup-complete.json` after its native absence check.
+A failed or ambiguous create retains evidence without removing a container merely by name.
+
+The frozen bootstrap in `input-bootstrap-audit-Wkrw97` has 67773 bytes and SHA-256
+`9860eb668e5e446df6dfae51f53bf8fb1d9e6041bfabbe58be88b6fa27852180`.
+The AST audit's positive control covers named static,
+dynamic,
+require and code-construction forms.
+The built bootstrap has 10 Node-builtin static imports,
+one dynamic import of `pathToFileURL(PRODUCER_INPUT_PATHS.application).href`,
+and no detected require/eval/Function calls.
+The complete compiled child-import function is read separately.
+Built help exits `0`;
+an out-of-context private child invocation exits `6` before application import.
+This is an audit of those loader forms,
+not authentication of the bootstrap's creator.
+
+The separately read launch in `input-bootstrap-consumer-bs9muS` is 1443 bytes with SHA-256
+`0332157771bc4f1050283140a0503991ded14c903e9bd5734d9de41e92bd0e79`.
+It binds the current 162-file application runtime manifest
+`b0495c956322e7b32c424f78f5d641c7377ba5acc535741f40aa10a669c0bcdb`,
+unchanged selection,
+corpus pin and 3290843-byte supporting allowance.
+The actual CLI run `69b20af2-1dbe-4121-b1ae-8abbd819f51a` exits `0`.
+Its artifact retains 40 parents,
+30 entries,
+63 references and 45 registrations;
+2821409 bytes and SHA-256
+`12c4f304dad2a7039c5452ae7f3de5a84160f759e27968e05e47494c0f3eb75a`.
+A one-byte comparator control first proves that changed bytes are detectable,
+then a separate host probe verifies exact equality with the retained native serialization.
+Output directories are `0700`,
+files `0600`,
+UID/GID `1000`,
+and home is empty.
+The CLI and independent probe both verify that its container is absent after cleanup.
+No reconstruction receipt is root,
+phase,
+writer or publication approval.
 
 Task 48 addresses a separate formatter-resource verification blocker.
 The first new type check reports `TS2339` after guards narrow away additional runtime-file fields;
@@ -2062,7 +2121,8 @@ Native temporary Git configuration and descendant trust are reviewed,
 disclosed and revoked before cleanup.
 The worktree directory and Git registration are both absent at `2026-09-13T17:56:04.692Z`.
 Task 48's verification is complete.
-Task 47 resumes with the production host/child bootstrap and actual CLI still absent.
+Task 48 finished before the production host/child bootstrap was implemented;
+the later task 47 CLI evidence is recorded in this section.
 No runner tests,
 full suite,
 actual CLI launch or paid preparation follows from the formatter proof.
