@@ -1242,7 +1242,15 @@ Type checking reports `TS2322` because the fixture callback declared a generic `
 where its constructed data has an `ArrayBuffer` backing.
 The fixture callback and owned-copy result now name that actual backing type;
 a shared-input positive control verifies the returned snapshot is non-shared.
-`preparation-supporting-bytes-verification-r2-20260913.out` is the next verification.
+R2 passes build,
+actual consumer,
+types and focused tests.
+Its formatter reports array destructuring and unsafe values introduced by `Array.isArray`'s broad narrowing.
+Inventory entries are now treated as `unknown`,
+checked as non-array records,
+and held as unknown-valued descriptors until byte validation;
+no type assertion supplies missing content proof.
+`preparation-supporting-bytes-verification-r3-20260913.out` is the next verification.
 This supporting-byte reader is not yet declared verified.
 
 The bounded phase design follows the permitted caller:

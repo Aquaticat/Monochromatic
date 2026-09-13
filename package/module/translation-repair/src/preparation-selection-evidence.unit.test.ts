@@ -36,11 +36,11 @@ function failure(run: () => unknown): string {
 await describe({ name: '', children: [describe({ name: readPreparationSelectionEvidence.name, children: [
   it({ name: 'matches all raw bytes and extents in frozen order without interpreting their paths or contents', fn: async () => {
     const f = fixture();
-    const expectedBytes = f.artifacts.map(item => Array.from(item.content));
+    const expectedBytes = f.artifacts.map(item => [...item.content]);
     const result = readPreparationSelectionEvidence({ ...f, artifacts: f.artifacts.toReversed() });
     expect(result.scope).toBe('matched-selection-artifacts');
     expect(result.artifacts.map(item => ({ path: item.path, hash: item.hash }))).toEqual(f.record.references);
-    expect(result.artifacts.map(item => Array.from(item.content))).toEqual(expectedBytes);
+    expect(result.artifacts.map(item => [...item.content])).toEqual(expectedBytes);
     expect(result.artifacts.map(item => item.bytes)).toEqual(f.artifacts.map(item => item.content.byteLength));
     expect(result.artifacts[1]?.bytes).toBe(0);
     expect(Object.keys(result).toSorted()).toEqual(['artifacts', 'scope', 'selection']);
@@ -88,7 +88,7 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     const f = fixture();
     expect(failure(() => readPreparationSelectionEvidence({ ...f, artifacts: value as unknown as readonly PreparationArtifactInput[] }))).toBe('reference-inventory');
   } })),
-  ...[null, 1, 'not-a-record'].map((item, index) => it({ name: `refuses invalid entries inside a complete-sized inventory ${index}`, fn: async () => {
+  ...[null, 1, 'not-a-record', [], {}, { path: 1 }].map((item, index) => it({ name: `refuses invalid entries inside a complete-sized inventory ${index}`, fn: async () => {
     const f = fixture();
     const artifacts = [item, ...f.artifacts.slice(1)] as unknown as readonly PreparationArtifactInput[];
     expect(failure(() => readPreparationSelectionEvidence({ ...f, artifacts }))).toBe('reference-inventory');
@@ -126,7 +126,7 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     const f = fixture();
     const artifacts = f.artifacts.map(item => ({ path: item.path, content: Buffer.from(item.content) }));
     const result = readPreparationSelectionEvidence({ ...f, artifacts });
-    expect(result.artifacts.map(item => Array.from(item.content))).toEqual(f.artifacts.map(item => Array.from(item.content)));
+    expect(result.artifacts.map(item => [...item.content])).toEqual(f.artifacts.map(item => [...item.content]));
     expect(result.artifacts.every(item => !Buffer.isBuffer(item.content))).toBe(true);
   } }),
   it({ name: 'copies shared input views into non-shared matched snapshots', fn: async () => {
@@ -136,7 +136,7 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     const artifacts = f.artifacts.map((item, index) => index === 0 ? { ...item, content: shared } : item);
     const result = readPreparationSelectionEvidence({ ...f, artifacts });
     shared.fill(23);
-    expect(Array.from(result.artifacts[0]?.content ?? [])).toEqual([255, 0, 1, 13, 10]);
+    expect([...result.artifacts[0]?.content ?? []]).toEqual([255, 0, 1, 13, 10]);
     expect(result.artifacts[0]?.content.buffer).toBeInstanceOf(ArrayBuffer);
   } }),
   it({ name: 'owns matched bytes independently in both mutation directions', fn: async () => {
@@ -147,18 +147,18 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     expect(callerBytes).toBeDefined();
     if (callerBytes === undefined) throw new Error('expected caller byte witness');
     callerBytes.fill(17);
-    expect(Array.from(callerBytes)).toEqual([17, 17, 17, 17, 17]);
+    expect([...callerBytes]).toEqual([17, 17, 17, 17, 17]);
     expect(result).toEqual(before);
-    const callerAfterMutation = f.artifacts.map(item => Array.from(item.content));
+    const callerAfterMutation = f.artifacts.map(item => [...item.content]);
     const content = result.artifacts[0]?.content;
     expect(content).toBeDefined();
     if (content === undefined) throw new Error('expected owned byte witness');
     (content as Uint8Array).fill(19);
-    expect(f.artifacts.map(item => Array.from(item.content))).toEqual(callerAfterMutation);
+    expect(f.artifacts.map(item => [...item.content])).toEqual(callerAfterMutation);
   } }),
   it({ name: 'snapshots each locator once before matching its content', fn: async () => {
     const f = fixture();
-    const original = f.artifacts[0];
+    const [original] = f.artifacts;
     if (original === undefined) throw new Error('expected locator witness');
     let reads = 0;
     const first = { get path() {
