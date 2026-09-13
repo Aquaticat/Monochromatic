@@ -97,7 +97,10 @@ export async function createProducerInputPodmanContext(run: ProducerInputRun): P
        * JSON quoting supplies basic escapes; TOML additionally requires escaping ASCII DEL.
        */
       const encodedHooks = JSON.stringify(hooks)
-        .replaceAll('\u007f', '\\u007F');
+        .replaceAll(
+          '\u007F',
+          String.raw`\u007F`
+        );
       /**
        * No user-controlled text crosses the TOML string boundary without final encoding.
        */
@@ -145,7 +148,11 @@ export async function createProducerInputPodmanContext(run: ProducerInputRun): P
     delete environment.CONTAINER_HOST;
     delete environment.CONTAINER_CONNECTION;
     return {
-      prefix: ['--remote=false', '--default-mounts-file', mountsPath],
+      prefix: [
+        '--remote=false',
+        '--default-mounts-file',
+        mountsPath
+      ],
       environment,
       configPath,
       mountsPath,

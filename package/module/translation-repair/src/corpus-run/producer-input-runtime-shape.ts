@@ -87,8 +87,13 @@ function runtimeKeys({
  * ```
  */
 function runtimeIdentity(value: unknown): value is ProducerInputFileIdentity {
-  if ((!runtimeRecord(value)) || (typeof value.bytes) !== 'number' || (!Number.isSafeInteger(value.bytes))
-    || (value.bytes < 0) || (typeof value.sha256) !== 'string' || (value.sha256.length !== SHA256_WIDTH))
+  if ((!runtimeRecord(value)) || ((typeof value.bytes) !== 'number')
+    || (!Number.isSafeInteger(value.bytes))
+    || (value.bytes < 0)
+    || ((typeof value.sha256) !== 'string')
+    || (value.sha256
+      .length
+      !== SHA256_WIDTH))
     return false;
   for (let index = 0; index
     < value.sha256
