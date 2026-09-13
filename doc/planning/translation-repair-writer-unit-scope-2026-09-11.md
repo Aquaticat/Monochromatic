@@ -1313,7 +1313,14 @@ Parent-count,
 duplicate and grammar fixtures now keep their other reading/obligation counts consistent;
 removing the intended guard cannot hide behind a later incidental mismatch.
 An unsafe-integer coordinate is included separately from noncanonical numeric spelling.
-R8 repeats complete verification of these controls.
+R8 passes rebuild,
+consumer,
+types and focused controls.
+Its formatter rejects a test helper's nullish result slot and a direct array-element declaration.
+The helper now returns directly from its `try` and asserts unexpected failures in `catch`,
+without an absence encoding;
+the element declaration uses destructuring.
+R9 repeats complete verification of these controls.
 This supporting-byte reader is not yet declared finally verified.
 
 The bounded phase design follows the permitted caller:

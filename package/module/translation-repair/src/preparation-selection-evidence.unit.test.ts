@@ -24,16 +24,13 @@ function fixture() {
   return { text, expectedDigest: hashContent({ content: text }), artifacts, l, record };
 }
 function successfulMatch(input: Parameters<typeof readPreparationSelectionEvidence>[0]): ReturnType<typeof readPreparationSelectionEvidence> {
-  let result: ReturnType<typeof readPreparationSelectionEvidence> | undefined;
-  let caught: unknown;
   try {
-    result = readPreparationSelectionEvidence(input);
+    return readPreparationSelectionEvidence(input);
   }
-  catch (error) { caught = error; }
-  expect(caught).toBeUndefined();
-  expect(result).toBeDefined();
-  if (result === undefined) throw new Error('expected matched supporting artifacts');
-  return result;
+  catch (error) {
+    expect(error).toBeUndefined();
+    throw error;
+  }
 }
 function failure(run: () => unknown): string {
   try {

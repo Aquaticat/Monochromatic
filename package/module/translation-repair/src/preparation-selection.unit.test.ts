@@ -122,7 +122,7 @@ await describe({ name: '', children: [describe({ name: readFrozenPreparationSele
       else if (kind === 'duplicate-parent') {
         const repeated = 'fixture/source-section/0/target-section/0';
         value.orderedParentIds[1] = repeated;
-        const second = value.dependencies[1];
+        const [, second] = value.dependencies;
         if (second === undefined) throw new Error('expected duplicate-parent witness');
         second.parentId = repeated;
       }
