@@ -1360,6 +1360,54 @@ population eligibility,
 correspondence root/phase review,
 acquisition leases or writer admission.
 
+The next prototype reconstructs semantic input ownership before implementing the complete root owner.
+It uses the verified byte matcher,
+then checks pool/journal/prior-reading bindings,
+full reading frames,
+notes and opaque historical-source references against the frozen producer's actual construction.
+Historical source files are bound but never executed.
+It rebuilds the eligible population from pinned raw corpus bytes,
+checks native raw-to-effective text parity,
+and retains archive normalization origins.
+The forty parents are looked up by their frozen identities;
+`pickSpreadSample` is not invoked and no parent is redrawn.
+The prototype does not yet establish complete execution-dependency provenance or produce a reviewable acquisition root.
+
+Its frozen runtime is `.frozen-dist-preparation-root-semantic-20260913`,
+digest `sha256-tree-v1:58ad2c4de75b90c8ddb2a341f8e633d2928ec95a94eb860c0c37db18d7a29b94`.
+The private launcher and worker are `run-preparation-root-semantic-20260913.mts`
+and `preparation-root-semantic-20260913.mts` in the agent scratch directory.
+The run uses the same no-network 2 GiB,
+2 CPU,
+512 PID isolation with read-only source/corpus/dependencies and masked root credentials.
+`preparation-root-semantic-20260913.out` records the successful run.
+The report is `/var/home/user/temp/agent/preparation-root-semantic-3JTXjn/report.json`.
+All sixty-three artifacts receive checked roles:
+policy pool,
+current and prior reading journals,
+thirty complete-entry frames,
+twenty-four note files,
+five opaque historical source files and one source-floor probe.
+The prototype reproduces the frozen 93/90/272 population and forty-parent/thirty-entry membership,
+retains raw identities for 184 corpus documents and normalization origins for ninety eligible entries,
+with zero fetch/provider requests.
+Peak container memory is 1652715520 bytes;
+this is a measured prototype footprint,
+not a claim about the future native owner.
+No prototype output is acquisition or writer approval.
+
+Execution dependency closure still needs evidence.
+`corpus-run/pipeline-digest.ts` excludes external runtime dependencies.
+Its historical comment says closing that requires repo-wide build configuration,
+but the current repository-owned `nodeConfig` accepts a per-package `external` override,
+and `nodeExternal` accepts bundle-inclusion patterns.
+The deciding source is `package/config/rolldown/src/index.node.ts:145`
+and `package/config/rolldown/src/package-externals.ts:185`.
+A package-only bundled-runtime experiment can test whether this dissolves the dependency-snapshot problem.
+Do not infer dependency closure from a build alone:
+inspect emitted imports and exercise a copied artifact without workspace or `node_modules` access.
+No build-policy change has been adopted by this observation.
+
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,
 then `:206` calls the deterministic relabel once,
