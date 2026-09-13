@@ -148,7 +148,10 @@ async function observeProducerInputFile({
      */
     const before = await handle.stat({ bigint: true, },);
     if ((!before.isFile()) || (before.size !== BigInt(expectedBytes))
-      || !sameProducerInputFile({ before: initial, after: before }))
+      || (!sameProducerInputFile({
+        before: initial,
+        after: before
+      })))
       throw new ProducerInputRunError({
         operation,
         locator: path,

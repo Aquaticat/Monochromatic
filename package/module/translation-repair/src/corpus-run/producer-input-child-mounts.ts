@@ -41,13 +41,28 @@ const PLATFORM_MOUNT_GROUPS: readonly PlatformMountGroup[] = [
     filesystem: 'proc',
     mode: 'rw',
     points: ['/proc'],
-    flags: ['nosuid', 'nodev', 'noexec']
+    flags: [
+      'nosuid',
+      'nodev',
+      'noexec'
+    ]
   },
   {
     filesystem: 'proc',
     mode: 'ro',
-    points: ['/proc/asound', '/proc/bus', '/proc/fs', '/proc/irq', '/proc/sys', '/proc/sysrq-trigger'],
-    flags: ['nosuid', 'nodev', 'noexec']
+    points: [
+      '/proc/asound',
+      '/proc/bus',
+      '/proc/fs',
+      '/proc/irq',
+      '/proc/sys',
+      '/proc/sysrq-trigger'
+    ],
+    flags: [
+      'nosuid',
+      'nodev',
+      'noexec'
+    ]
   },
   {
     filesystem: 'tmpfs',
@@ -58,49 +73,98 @@ const PLATFORM_MOUNT_GROUPS: readonly PlatformMountGroup[] = [
   {
     filesystem: 'tmpfs',
     mode: 'ro',
-    points: ['/dev/shm', '/etc/hosts', '/etc/hostname', '/run/.containerenv'],
-    flags: ['nosuid', 'nodev', 'noexec']
+    points: [
+      '/dev/shm',
+      '/etc/hosts',
+      '/etc/hostname',
+      '/run/.containerenv'
+    ],
+    flags: [
+      'nosuid',
+      'nodev',
+      'noexec'
+    ]
   },
   {
     filesystem: 'tmpfs',
     mode: 'ro',
-    points: ['/proc/acpi', '/proc/scsi', '/sys/devices/virtual/powercap', '/sys/firmware', '/sys/fs/selinux'],
-    flags: ['nosuid', 'nodev']
+    points: [
+      '/proc/acpi',
+      '/proc/scsi',
+      '/sys/devices/virtual/powercap',
+      '/sys/firmware',
+      '/sys/fs/selinux'
+    ],
+    flags: [
+      'nosuid',
+      'nodev'
+    ]
   },
   {
     filesystem: 'sysfs',
     mode: 'ro',
     points: ['/sys'],
-    flags: ['nosuid', 'nodev', 'noexec']
+    flags: [
+      'nosuid',
+      'nodev',
+      'noexec'
+    ]
   },
   {
     filesystem: 'cgroup2',
     mode: 'ro',
     points: ['/sys/fs/cgroup'],
-    flags: ['nosuid', 'nodev', 'noexec']
+    flags: [
+      'nosuid',
+      'nodev',
+      'noexec'
+    ]
   },
   {
     filesystem: 'devpts',
     mode: 'rw',
     points: ['/dev/pts'],
-    flags: ['nosuid', 'noexec']
+    flags: [
+      'nosuid',
+      'noexec'
+    ]
   },
   {
     filesystem: 'mqueue',
     mode: 'rw',
     points: ['/dev/mqueue'],
-    flags: ['nosuid', 'nodev', 'noexec']
+    flags: [
+      'nosuid',
+      'nodev',
+      'noexec'
+    ]
   },
   {
     filesystem: 'devtmpfs',
     mode: 'rw',
-    points: ['/dev/null', '/dev/zero', '/dev/full', '/dev/tty', '/dev/random', '/dev/urandom'],
-    flags: ['nosuid', 'noexec']
+    points: [
+      '/dev/null',
+      '/dev/zero',
+      '/dev/full',
+      '/dev/tty',
+      '/dev/random',
+      '/dev/urandom'
+    ],
+    flags: [
+      'nosuid',
+      'noexec'
+    ]
   },
   {
     filesystem: 'devtmpfs',
     mode: 'ro',
-    points: ['/proc/kcore', '/proc/keys', '/proc/latency_stats', '/proc/timer_list', '/proc/interrupts'],
+    points: [
+      '/proc/kcore',
+      '/proc/keys',
+      '/proc/latency_stats',
+      '/proc/timer_list',
+      '/proc/interrupts'
+    ],
     flags: ['nosuid']
   },
 ];
@@ -152,7 +216,8 @@ function mountMode({
 },): boolean {
   return mount.options
     .includes(mode)
-    && !mount.options.includes(mode === 'ro' ? 'rw' : 'ro');
+    && (!mount.options
+      .includes(mode === 'ro' ? 'rw' : 'ro'));
 }
 
 /**
@@ -182,11 +247,15 @@ function platformMount(mount: ProducerInputHostMount): boolean {
     });
   }
   return PLATFORM_MOUNT_GROUPS.some(function allowed(group): boolean {
-    return (group.filesystem === mount.filesystem) && group.points.includes(mount.point)
+    return (group.filesystem === mount.filesystem)
+      && group.points
+      .includes(mount.point)
       && mountMode({
         mount,
         mode: group.mode
-      }) && group.flags.every(function restricted(flag): boolean {
+      })
+      && group.flags
+      .every(function restricted(flag): boolean {
         return mount.options
           .includes(flag);
       });
@@ -234,13 +303,23 @@ export async function verifyProducerInputChildMounts(): Promise<void> {
       items: paths,
       overlap: 1,
       oneItem: async function role({ item }): Promise<RoleMount> {
-      /** The actual mountpoint is distinct from a declared logical image path. */
+      /**
+       * The actual mountpoint is distinct from a declared logical image path.
+       */
       const point = await realpath(item);
-      /** Other role aliases could merge writable output with read-only inputs. */
+      /**
+       * Other role aliases could merge writable output with read-only inputs.
+       */
       const expected = item === PRODUCER_INPUT_PATHS.atomicLibrary ? ATOMIC_CANONICAL_PATH : item;
       if (point !== expected)
-        throw new ProducerInputRunError({ operation: 'verify-runtime', locator: item, });
-      return { point, mode: item === PRODUCER_INPUT_PATHS.output ? 'rw' : 'ro' };
+        throw new ProducerInputRunError({
+          operation: 'verify-runtime',
+          locator: item,
+        });
+      return {
+        point,
+        mode: item === PRODUCER_INPUT_PATHS.output ? 'rw' : 'ro'
+      };
     }
     });
     /**
@@ -248,27 +327,47 @@ export async function verifyProducerInputChildMounts(): Promise<void> {
      */
     const required: readonly RoleMount[] = [
       ...roles,
-      { point: '/', mode: 'ro' },
-      { point: '/tmp', mode: 'rw' }
+      {
+        point: '/',
+        mode: 'ro'
+      },
+      {
+        point: '/tmp',
+        mode: 'rw'
+      }
     ];
     if (required.some(function missing(role): boolean {
       /**
        * Exactly one observed role mount must carry the fixed access mode.
        */
-      const matches = mounts.filter(function atPoint(mount): boolean { return mount.point === role.point; });
+      const matches = mounts.filter(function atPoint(mount): boolean {
+        return mount.point === role.point;
+      });
       /**
        * Missing and stacked roles both withhold the import gate.
        */
       const [match] = matches;
-      return (matches.length !== 1) || (match === undefined) || (!mountMode({ mount: match, mode: role.mode }));
+      return (matches.length !== 1) || (match === undefined)
+        || (!mountMode({
+          mount: match,
+          mode: role.mode
+        }));
     }))
       throw new ProducerInputRunError({
         operation: 'verify-runtime',
         locator: 'child role mounts',
       });
     if (mounts.some(function unexpected(mount): boolean {
-      if (required.some(function role(value): boolean { return value.point === mount.point; }))
-        return (mount.point === '/tmp') && ((mount.filesystem !== 'tmpfs') || (!['nosuid', 'nodev', 'noexec'].every(function restricted(flag): boolean { return mount.options.includes(flag); })));
+      if (required.some(function role(value): boolean {
+        return value.point === mount.point;
+      }))
+        return (mount.point === '/tmp') && ((mount.filesystem !== 'tmpfs') || (![
+          'nosuid',
+          'nodev',
+          'noexec'
+        ].every(function restricted(flag): boolean {
+          return mount.options.includes(flag);
+        })));
       return !platformMount(mount);
     }))
       throw new ProducerInputRunError({
@@ -280,9 +379,15 @@ export async function verifyProducerInputChildMounts(): Promise<void> {
      */
     const platformPoints = [
       ...ACCOUNT_MOUNTS,
-      ...PLATFORM_MOUNT_GROUPS.flatMap(function points(group): readonly string[] { return group.points; })
+      ...PLATFORM_MOUNT_GROUPS.flatMap(function points(group): readonly string[] {
+        return group.points;
+      })
     ];
-    if (platformPoints.some(function missing(point): boolean { return !mounts.some(function present(mount): boolean { return mount.point === point; }); }))
+    if (platformPoints.some(function missing(point): boolean {
+      return !mounts.some(function present(mount): boolean {
+        return mount.point === point;
+      });
+    }))
       throw new ProducerInputRunError({
         operation: 'verify-runtime',
         locator: 'child platform mount coverage',

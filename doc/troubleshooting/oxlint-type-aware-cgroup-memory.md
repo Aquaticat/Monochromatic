@@ -157,11 +157,28 @@ The harness supplied root-level logger mounts but omitted this package-local sin
 A new owned writable mount addresses that exact path without opening the rest of dependency storage.
 It is not attributed as the cause of the memory failure.
 
-The next formatter experiment adds a per-run Node old-space limit of 384 MiB,
-retaining the Go target,
-all checks and the 2 GiB container bound.
-That experiment is pending;
-no resource remedy or global setting is claimed from its configuration alone.
+`devformat-Cfklmx` adds a per-run Node old-space limit of 384 MiB while retaining the Go target.
+It still reaches 2147483648 bytes and records `oom_kill=2`.
+That setting is not a demonstrated remedy.
+
+`devformat-rpKEkF` instead uses `GOMEMLIMIT=128MiB`,
+`GOGC=20` and Node `--max-old-space-size=256`.
+A named nonsecret preload records Node `26.8.2`,
+`heap_size_limit=318767104` and the intended Go settings in the Node task,
+wrapper,
+Oxlint and tsgolint-launcher processes.
+The complete formatter does not finish before its configured 600-second container deadline.
+Podman records exit `-1` for the container and the attached command exits `255`.
+The last resource sample records peak 2137989120 bytes and zero OOM/PID events;
+terminal inspection says `OOMKilled:false`,
+and the interval's kernel capture has no matching OOM record.
+These are bounded observations before and at termination,
+not a successful formatter result or an unlimited-run guarantee.
+
+The following operation is read-only full-package lint on the resulting source,
+using the same per-run settings,
+to identify remaining diagnostics without blindly restarting the complete fix loop.
+All checks and the 2 GiB container bound remain enabled.
 
 ## Root cause
 

@@ -78,7 +78,8 @@ export function producerInputPathWithin({
     parent,
     child
   );
-  return (path === '') || ((path !== '..') && (!path.startsWith('../')) && (!isAbsolute(path)));
+  return (path === '') || ((path !== '..') && (!path.startsWith('../'))
+    && (!isAbsolute(path)));
 }
 
 /**
@@ -124,7 +125,8 @@ function mountPoint(value: string): string {
    * A mountpoint cannot authorize a relative host path.
    */
   const point = pieces.join('');
-  if ((!isAbsolute(point)) || (normalize(point) !== point) || point.includes('\0'))
+  if ((!isAbsolute(point)) || (normalize(point) !== point)
+    || point.includes('\0'))
     throw new ProducerInputRunError({
       operation: 'verify-host-layout',
       locator: 'host mount topology',
@@ -156,28 +158,62 @@ export function readProducerInputHostMounts(text: string): readonly ProducerInpu
   /**
    * Empty records are not silently removed from a supposedly complete namespace observation.
    */
-  const rows = text.slice(0, -1)
+  const rows = text.slice(
+    0,
+    -1
+  )
     .split('\n')
     .map(function parse(line): ProducerInputHostMount {
-    /** Space-delimited fields contain escaped, not literal, pathname whitespace. */
+    /**
+     * Space-delimited fields contain escaped, not literal, pathname whitespace.
+     */
     const fields = line.split(' ');
-    /** Optional fields end at one literal separator. */
+    /**
+     * Optional fields end at one literal separator.
+     */
     const separator = fields.indexOf('-');
-    /** Numeric identity is kept as its canonical kernel spelling. */
-    const id = fields[0];
-    /** Missing mountpoints never become an empty fallback path. */
+    /**
+     * Numeric identity is kept as its canonical kernel spelling.
+     */
+    const [id] = fields;
+    /**
+     * Missing mountpoints never become an empty fallback path.
+     */
     const point = fields[MOUNTINFO.point];
-    /** Per-mount access flags are never inferred from filesystem-wide options. */
+    /**
+     * Per-mount access flags are never inferred from filesystem-wide options.
+     */
     const options = fields[MOUNTINFO.options];
-    /** Filesystem type follows the extensible optional-field separator. */
+    /**
+     * Filesystem type follows the extensible optional-field separator.
+     */
     const filesystem = fields[separator + 1];
-    if (options === undefined || options.length === 0 || filesystem === undefined || filesystem.length === 0 || fields.length < MOUNTINFO.minimumFields || separator < MOUNTINFO.separatorMinimum
-      || fields.length !== separator + MOUNTINFO.trailingFields
-      || id === undefined || point === undefined || !Number.isSafeInteger(Number(id)) || Number(id) <= 0 || String(Number(id)) !== id)
-      throw new ProducerInputRunError({ operation: 'verify-host-layout', locator: 'host mount topology', });
-    return { id, point: mountPoint(point), options: options.split(','), filesystem, };
+    if ((options === undefined) || (options.length === 0)
+      || (filesystem === undefined)
+      || (filesystem.length === 0)
+      || (fields.length < MOUNTINFO.minimumFields)
+      || (separator < MOUNTINFO.separatorMinimum)
+      || (fields.length !== (separator
+        + MOUNTINFO.trailingFields))
+      || (id === undefined)
+      || (point === undefined)
+      || (!Number.isSafeInteger(Number(id)))
+      || (Number(id) <= 0)
+      || (String(Number(id)) !== id))
+      throw new ProducerInputRunError({
+        operation: 'verify-host-layout',
+        locator: 'host mount topology',
+      });
+    return {
+      id,
+      point: mountPoint(point),
+      options: options.split(','),
+      filesystem,
+    };
   });
-  if (new Set(rows.map(function identity(row): string { return row.id; })).size !== rows.length)
+  if (new Set(rows.map(function identity(row): string {
+    return row.id;
+  })).size !== rows.length)
     throw new ProducerInputRunError({
       operation: 'verify-host-layout',
       locator: 'host mount topology',

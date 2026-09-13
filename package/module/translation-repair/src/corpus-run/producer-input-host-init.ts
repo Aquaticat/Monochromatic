@@ -207,15 +207,18 @@ export async function initializeProducerInputHost({
       operation: 'verify-runtime'
     });
     await canonicalHostFile({
-      path: launch.podman.path,
+      path: launch.podman
+        .path,
       operation: 'verify-runtime'
     });
     await canonicalHostFile({
-      path: launch.atomicLibrary.path,
+      path: launch.atomicLibrary
+        .path,
       operation: 'verify-runtime'
     });
     await canonicalHostFile({
-      path: launch.selection.path,
+      path: launch.selection
+        .path,
       operation: 'read-selection'
     });
     await verifyProducerInputFile({
@@ -224,17 +227,20 @@ export async function initializeProducerInputHost({
       operation: 'verify-runtime'
     });
     await verifyProducerInputFile({
-      path: launch.podman.path,
+      path: launch.podman
+        .path,
       expected: launch.podman,
       operation: 'verify-runtime'
     });
     await verifyProducerInputFile({
-      path: launch.atomicLibrary.path,
+      path: launch.atomicLibrary
+        .path,
       expected: launch.atomicLibrary,
       operation: 'verify-runtime'
     });
     await verifyProducerInputFile({
-      path: launch.selection.path,
+      path: launch.selection
+        .path,
       expected: launch.selection,
       operation: 'read-selection'
     });
@@ -242,12 +248,15 @@ export async function initializeProducerInputHost({
      * Exact manifest identity precedes filename and Node interpretation.
      */
     const manifest = await readProducerRuntimeManifest({
-      dir: launch.runtime.dir,
-      expected: launch.runtime.manifest
+      dir: launch.runtime
+        .dir,
+      expected: launch.runtime
+        .manifest
     });
     await verifyProducerNodeRuntime(manifest);
     await verifyProducerRuntimeInventory({
-      dir: launch.runtime.dir,
+      dir: launch.runtime
+        .dir,
       manifest
     });
     /**

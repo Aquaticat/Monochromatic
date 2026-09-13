@@ -4,7 +4,7 @@ import {
   readdir,
   statfs,
 } from 'node:fs/promises';
-import { networkInterfaces, } from 'node:os';
+import { networkInterfaces, type NetworkInterfaceInfo, } from 'node:os';
 import { isDeepStrictEqual, } from 'node:util';
 import { verifyProducerInputChildMounts, } from './producer-input-child-mounts.ts';
 import {
@@ -61,7 +61,10 @@ async function verifyChildResources(): Promise<void> {
    */
   const observed = await Promise.all(Object.entries(expected)
     .map(async function resource([name, value]): Promise<boolean> {
-    return (await readFile(`/sys/fs/cgroup/${name}`, 'utf8')).trim() === value;
+    return (await readFile(
+      `/sys/fs/cgroup/${name}`,
+      'utf8'
+    )).trim() === value;
   }));
   /**
    * Temporary-space size is observed through its mounted filesystem, not an environment hint.
@@ -70,8 +73,10 @@ async function verifyChildResources(): Promise<void> {
     '/tmp',
     { bigint: true }
   );
-  if (observed.some(function differs(value): boolean { return !value; })
-    || (temporary.bsize * temporary.blocks) !== BigInt(PRODUCER_INPUT_LIMITS.temporaryBytes))
+  if (observed.some(function differs(value): boolean {
+    return !value;
+  })
+    || ((temporary.bsize * temporary.blocks) !== BigInt(PRODUCER_INPUT_LIMITS.temporaryBytes)))
     throw new ProducerInputRunError({
       operation: 'verify-runtime',
       locator: 'child resource limits',
@@ -114,14 +119,18 @@ async function verifyChildPrivileges(): Promise<void> {
       0,
       separator
     );
-    if ((separator < 0) || (name !== 'NoNewPrivs') && (!CAPABILITY_FIELDS.includes(name)))
+    if ((separator === (-1)) || ((name !== 'NoNewPrivs')
+      && (!CAPABILITY_FIELDS.includes(name))))
       return [];
     return [[
       name,
-      line.slice(separator + 1).trim()
+      line.slice(separator + 1)
+        .trim()
     ]];
   }));
-  if ((fields.NoNewPrivs !== '1') || CAPABILITY_FIELDS.some(function enabled(name): boolean { return fields[name] !== EMPTY_CAPABILITIES; }))
+  if ((fields.NoNewPrivs !== '1') || CAPABILITY_FIELDS.some(function enabled(name): boolean {
+    return fields[name] !== EMPTY_CAPABILITIES;
+  }))
     throw new ProducerInputRunError({
       operation: 'verify-runtime',
       locator: 'child privilege state',
@@ -152,12 +161,17 @@ async function verifyChildOutput(identity: ProducerInputChildIdentity): Promise<
      * Symlink leaves cannot substitute for host-created directories.
      */
     const state = await lstat(path);
-    return state.isDirectory() && state.uid === identity.callerUid
-      && (state.mode & NON_PRIVATE_BITS) === 0;
+    return state.isDirectory() && (state.uid === identity.callerUid)
+      && ((state.mode & NON_PRIVATE_BITS) === 0);
   }));
-  if (states.some(function differs(value): boolean { return !value; })
-    || (!isDeepStrictEqual(await readdir(PRODUCER_INPUT_PATHS.output), ['home']))
-    || (await readdir(PRODUCER_INPUT_PATHS.home)).length > 0)
+  if (states.some(function differs(value): boolean {
+    return !value;
+  })
+    || (!isDeepStrictEqual(
+      await readdir(PRODUCER_INPUT_PATHS.output),
+      ['home']
+    ))
+    || ((await readdir(PRODUCER_INPUT_PATHS.home)).length > 0))
     throw new ProducerInputRunError({
       operation: 'verify-runtime',
       locator: 'child output namespace',
@@ -178,11 +192,24 @@ async function verifyChildOutput(identity: ProducerInputChildIdentity): Promise<
  * ```
  */
 export async function verifyProducerInputChildContext(identity: ProducerInputChildIdentity): Promise<void> {
-  if ((process.platform !== 'linux') || (process.arch !== 'x64') || (process.execPath !== PRODUCER_INPUT_PATHS.node)
-    || (process.execArgv.length !== 0) || (process.cwd() !== PRODUCER_INPUT_PATHS.output)
-    || (!isDeepStrictEqual(process.argv.slice(1), [PRODUCER_INPUT_PATHS.bootstrap, PRODUCER_INPUT_CHILD_SENTINEL]))
-    || (typeof process.getuid) !== 'function' || (process.getuid() !== identity.callerUid)
-    || (typeof process.getgid) !== 'function' || (process.getgid() !== identity.callerGid))
+  if ((process.platform !== 'linux') || (process.arch !== 'x64')
+    || (process.execPath !== PRODUCER_INPUT_PATHS.node)
+    || (process.execArgv
+      .length
+      > 0)
+    || (process.cwd() !== PRODUCER_INPUT_PATHS.output)
+    || (!isDeepStrictEqual(
+      process.argv
+        .slice(1),
+      [
+        PRODUCER_INPUT_PATHS.bootstrap,
+        PRODUCER_INPUT_CHILD_SENTINEL
+      ]
+    ))
+    || ((typeof process.getuid) !== 'function')
+    || (process.getuid() !== identity.callerUid)
+    || ((typeof process.getgid) !== 'function')
+    || (process.getgid() !== identity.callerGid))
     throw new ProducerInputRunError({
       operation: 'verify-runtime',
       locator: 'child execution context',
@@ -190,9 +217,16 @@ export async function verifyProducerInputChildContext(identity: ProducerInputChi
   /**
    * Network-none is checked through actual interface state, not inferred from the launch request.
    */
-  const interfaces = networkInterfaces();
-  if ((!isDeepStrictEqual(Object.keys(interfaces), ['lo'])) || Object.values(interfaces).some(function external(addresses): boolean {
-    return (addresses === undefined) || addresses.some(function routed(address): boolean { return !address.internal; });
+  const interfaces: Readonly<Record<string, readonly Readonly<NetworkInterfaceInfo>[] | undefined>> = networkInterfaces();
+  if ((!isDeepStrictEqual(
+    Object.keys(interfaces),
+    ['lo']
+  ))
+    || Object.values(interfaces)
+    .some(function external(addresses): boolean {
+    return (addresses === undefined) || addresses.some(function routed(address): boolean {
+      return !address.internal;
+    });
   }))
     throw new ProducerInputRunError({
       operation: 'verify-runtime',

@@ -1,4 +1,5 @@
 import { pathToFileURL, } from 'node:url';
+import type { prepareProducerInputs, } from './producer-prepare-app.ts';
 import { verifyProducerInputChildContext, } from './producer-input-child-context.ts';
 import { readProducerInputChildEnvironment, } from './producer-input-environment.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
@@ -17,7 +18,10 @@ import {
 /**
  * Compile-time application contract does not import its runtime or logger before the gate.
  */
-type ProducerInputApplication = Pick<typeof import('./producer-prepare-app.ts'), 'prepareProducerInputs'>;
+type ProducerInputApplication = {
+  /** Fixed application operation; the type-only import executes no application code. */
+  readonly prepareProducerInputs: typeof prepareProducerInputs;
+};
 
 /**
  * Checks export availability only after independent runtime-file verification has allowed the fixed import.
@@ -33,7 +37,11 @@ type ProducerInputApplication = Pick<typeof import('./producer-prepare-app.ts'),
  * ```
  */
 function inputApplication(value: unknown): value is ProducerInputApplication {
-  return (typeof value) === 'object' && (value !== null) && (typeof Reflect.get(value, 'prepareProducerInputs')) === 'function';
+  return ((typeof value) === 'object') && (value !== null)
+    && ((typeof Reflect.get(
+      value,
+      'prepareProducerInputs'
+    )) === 'function');
 }
 
 /**
@@ -83,7 +91,8 @@ export async function runProducerInputChild(): Promise<ProducerInputCompletion> 
    */
   const manifest = await readProducerRuntimeManifest({
     dir: PRODUCER_INPUT_PATHS.runtime,
-    expected: launch.runtime.manifest
+    expected: launch.runtime
+      .manifest
   });
   await verifyProducerNodeRuntime(manifest);
   await verifyProducerInputFile({

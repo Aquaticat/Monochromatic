@@ -33,12 +33,24 @@ export type ProducerInputChildIdentity = {
    */
   readonly callerGid: number;
 };
+/** Leading UUID group width. */
+const UUID_LEADING_WIDTH = 8;
+/** Interior UUID group width, including version and variant groups. */
+const UUID_INTERIOR_WIDTH = 4;
+/** Trailing UUID group width. */
+const UUID_TRAILING_WIDTH = 12;
 /**
  * Fixed grammars keep identity checks independent from supplied contents.
  */
 const IDENTITY_WIDTHS = {
   sha256: 64,
-  uuid: [8, 4, 4, 4, 12],
+  uuid: [
+    UUID_LEADING_WIDTH,
+    UUID_INTERIOR_WIDTH,
+    UUID_INTERIOR_WIDTH,
+    UUID_INTERIOR_WIDTH,
+    UUID_TRAILING_WIDTH
+  ],
 } as const;
 
 /**
@@ -94,7 +106,7 @@ function lowerHex({
   readonly value: unknown;
   readonly length: number
 },): boolean {
-  if ((typeof value) !== 'string' || (value.length !== length))
+  if (((typeof value) !== 'string') || (value.length !== length))
     return false;
   for (let index = 0; index < value.length; index += 1) {
     if (!'0123456789abcdef'.includes(value.charAt(index)))
@@ -128,16 +140,25 @@ function childRunId(value: unknown): string {
    */
   const parts = value.split('-');
   /**
-   * Version and variant are checked independently after the whole spelling.
+   * Version and RFC variant are checked independently after the complete group spelling.
    */
-  const version = parts[2];
-  /**
-   * RFC variant is not inferred from a UUID-shaped string.
-   */
-  const variant = parts[3];
-  if ((parts.length !== IDENTITY_WIDTHS.uuid.length) || (!IDENTITY_WIDTHS.uuid.every(function group(length, index): boolean {
-    return lowerHex({ value: parts[index], length });
-  })) || (version === undefined) || (!version.startsWith('4')) || (variant === undefined) || (!'89ab'.includes(variant.charAt(0))))
+  const [, , version, variant] = parts;
+  if ((parts.length
+    !== IDENTITY_WIDTHS.uuid
+    .length) || (!IDENTITY_WIDTHS.uuid
+      .every(function group(
+        length,
+        index
+      ): boolean {
+    return lowerHex({
+      value: parts[index],
+      length
+    });
+  }))
+    || (version === undefined)
+    || (!version.startsWith('4'))
+    || (variant === undefined)
+    || (!'89ab'.includes(variant.charAt(0))))
     throw new ProducerInputRunError({
       operation: 'verify-runtime',
       locator: 'child run identity',
@@ -181,7 +202,9 @@ function childInteger({
    * Number conversion alone would admit blanks, exponent notation and rounded extents.
    */
   const result = Number(value);
-  if ((!Number.isSafeInteger(result)) || (result < 0) || (positive && result === 0) || (String(result) !== value))
+  if ((!Number.isSafeInteger(result)) || (result < 0)
+    || (positive && (result === 0))
+    || (String(result) !== value))
     throw new ProducerInputRunError({
       operation: 'verify-runtime',
       locator,
@@ -211,7 +234,10 @@ export function readProducerInputChildEnvironment(): ProducerInputChildIdentity 
    * Raw launch identity must be canonical before it receives file-read authority.
    */
   const launchSha256 = observed.PREPARATION_LAUNCH_SHA;
-  if ((typeof launchSha256) !== 'string' || (!lowerHex({ value: launchSha256, length: IDENTITY_WIDTHS.sha256 })))
+  if (((typeof launchSha256) !== 'string') || (!lowerHex({
+    value: launchSha256,
+    length: IDENTITY_WIDTHS.sha256
+  })))
     throw new ProducerInputRunError({
       operation: 'verify-runtime',
       locator: 'child launch identity',

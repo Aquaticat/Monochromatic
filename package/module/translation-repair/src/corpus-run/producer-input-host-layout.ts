@@ -176,7 +176,9 @@ function directoryMount({
       child: directory.path
     });
   });
-  if (new Set(covering.map(function point(mount): string { return mount.point; })).size !== covering.length)
+  if (new Set(covering.map(function point(mount): string {
+    return mount.point;
+  })).size !== covering.length)
     throw new ProducerInputRunError({
       operation: 'verify-host-layout',
       locator: directory.path,
@@ -185,17 +187,24 @@ function directoryMount({
    * No array spread or recursive walk depends on the namespace's record count.
    */
   const length = covering.reduce(
-    function longest(current, mount): number {
-    return Math.max(current, mount.point.length);
+    function longest(
+      current,
+      mount
+    ): number {
+    return Math.max(
+      current,
+      mount.point
+        .length
+    );
   },
     0
   );
   /**
    * Stacked alternatives are not ordered by mount ID or guessed from record position.
    */
-  const closest = covering.filter(function atBoundary(mount): boolean { return mount.point
-    .length
-    === length; });
+  const closest = covering.filter(function atBoundary(mount): boolean {
+    return mount.point.length === length;
+  });
   /**
    * An absent or ambiguous match grants no layout authority.
    */
@@ -255,16 +264,22 @@ async function observeHostLayout({
   /**
    * Output parent must be privately owned, not merely writable.
    */
-  const parent = observed.find(function output(directory): boolean { return directory.role === 'output-parent'; });
-  if ((parent === undefined) || (parent.uid !== callerUid) || ((parent.mode & NON_PRIVATE_BITS) !== 0))
+  const parent = observed.find(function output(directory): boolean {
+    return directory.role === 'output-parent';
+  });
+  if ((parent === undefined) || (parent.uid !== callerUid)
+    || ((parent.mode & NON_PRIVATE_BITS) !== 0))
     throw new ProducerInputRunError({
       operation: 'verify-host-layout',
       locator: 'output parent',
     });
   if (observed.some(function overlaps(directory): boolean {
-    return (directory.role !== 'output-parent') && (producerInputPathWithin({ parent: directory.path, child: parent.path })
-      || directory.device === parent.device
-      && directory.inode === parent.inode);
+    return (directory.role !== 'output-parent') && (producerInputPathWithin({
+      parent: directory.path,
+      child: parent.path
+    })
+      || ((directory.device === parent.device)
+      && (directory.inode === parent.inode)));
   }))
     throw new ProducerInputRunError({
       operation: 'verify-host-layout',
@@ -273,15 +288,16 @@ async function observeHostLayout({
   /**
    * One visible mount avoids asserting that kernel device fields describe arbitrary filesystem aliases.
    */
-  const ids = observed.map(function mount(directory): string { return directoryMount({
-    directory,
-    mounts
-  }); });
+  const ids = observed.map(function mount(directory): string {
+    return directoryMount({ directory, mounts });
+  });
   /**
    * The current profile does not silently broaden to cross-mount execution.
    */
   const [mountId] = ids;
-  if ((mountId === undefined) || ids.some(function different(id): boolean { return id !== mountId; }))
+  if ((mountId === undefined) || ids.some(function different(id): boolean {
+    return id !== mountId;
+  }))
     throw new ProducerInputRunError({
       operation: 'verify-host-layout',
       locator: 'host mount topology',
@@ -309,7 +325,7 @@ async function observeHostLayout({
  * ```
  */
 export async function inspectProducerInputHostLayout(launch: ProducerInputLaunch): Promise<ProducerInputHostLayout> {
-  if ((process.platform !== 'linux') || (typeof process.getuid) !== 'function')
+  if ((process.platform !== 'linux') || ((typeof process.getuid) !== 'function'))
     throw new ProducerInputRunError({
       operation: 'verify-host-layout',
       locator: 'host platform',
@@ -327,15 +343,18 @@ export async function inspectProducerInputHostLayout(launch: ProducerInputLaunch
   }[] = [
     {
       role: 'runtime',
-      path: launch.runtime.dir
+      path: launch.runtime
+        .dir
     },
     {
       role: 'supporting',
-      path: launch.supporting.dir
+      path: launch.supporting
+        .dir
     },
     {
       role: 'corpus',
-      path: launch.corpus.dir
+      path: launch.corpus
+        .dir
     },
     {
       role: 'output-parent',
