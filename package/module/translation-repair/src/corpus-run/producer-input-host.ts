@@ -3,7 +3,7 @@ import { createProducerInputContainer, } from './producer-input-host-create.ts';
 import { initializeProducerInputHost, } from './producer-input-host-init.ts';
 import { useProducerInputContainer, } from './producer-input-host-use.ts';
 import type { ProducerInputCompletion, } from './producer-input-model.ts';
-import { producerInputSignals, } from './producer-input-signals.ts';
+import { assertProducerInputNotInterrupted, producerInputSignals, } from './producer-input-signals.ts';
 
 /** Host result identifies existing unqualified output, never a reviewed root or writer plan. */
 export type ProducerInputHostResult = {
@@ -39,11 +39,18 @@ export async function runProducerInputHost({ launchPath, expected, bootstrapPath
 },): Promise<ProducerInputHostResult> {
   /** Parent signals remain owned until native cleanup and terminal recording have finished. */
   using signals = producerInputSignals();
-  /** Independent launch and filesystem bindings are composed by one owner, not caller-provided certificates. */
-  const host = await initializeProducerInputHost({ launchPath, expected, bootstrapPath });
-  /** No Node process starts before its exact native creation contract can be inspected. */
-  const id = await createProducerInputContainer({ host, signal: signals.signal });
-  /** A failure retains all run files and never resumes or substitutes inputs. */
-  const completion = await useProducerInputContainer({ host, id, signal: signals.signal });
-  return { directory: host.run.dir, completion, };
+  try {
+    /** Independent launch and filesystem bindings are composed by one owner, not caller-provided certificates. */
+    const host = await initializeProducerInputHost({ launchPath, expected, bootstrapPath });
+    /** No Node process starts before its exact native creation contract can be inspected. */
+    const id = await createProducerInputContainer({ host, signal: signals.signal });
+    /** A failure retains all run files and never resumes or substitutes inputs. */
+    const completion = await useProducerInputContainer({ host, id, signal: signals.signal });
+    assertProducerInputNotInterrupted(signals.signal);
+    return { directory: host.run.dir, completion, };
+  }
+  catch (error) {
+    assertProducerInputNotInterrupted(signals.signal);
+    throw error;
+  }
 }

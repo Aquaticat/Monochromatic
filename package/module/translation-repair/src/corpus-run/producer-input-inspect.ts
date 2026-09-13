@@ -8,6 +8,8 @@ import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 
 //region Native created-container evidence before Node startup
 
+/** Native user-namespace mapping rows contain origin, destination and extent. */
+const MAPPING_FIELDS = 3;
 /** Default capabilities removed by the pinned Podman implementation's ALL request. */
 const REMOVED_CAPABILITIES = ['CAP_CHOWN', 'CAP_DAC_OVERRIDE', 'CAP_FOWNER', 'CAP_FSETID', 'CAP_KILL', 'CAP_NET_BIND_SERVICE', 'CAP_SETFCAP', 'CAP_SETGID', 'CAP_SETPCAP', 'CAP_SETUID', 'CAP_SYS_CHROOT'] as const;
 
@@ -112,6 +114,48 @@ function strings({ value, name, }: { readonly value: unknown; readonly name: str
 }
 
 /**
+ * Checks the pinned rootless mapping's caller row without treating its intermediate namespace IDs as host UIDs.
+ *
+ * @param value - native UID or GID mapping rows
+ *
+ * @param caller - independently captured caller ID
+ *
+ * @param name - fixed mapping field label
+ *
+ * @throws ProducerInputRunError when the caller is not mapped uniquely to the rootless namespace owner
+ *
+ * @example
+ * ```ts
+ * callerMapping({ value, caller: host.run.uid, name: 'UidMap' });
+ * ```
+ */
+function callerMapping({ value, caller, name, }: { readonly value: unknown; readonly caller: number; readonly name: string; },): void {
+  /** Native metadata uses container:intermediate-namespace:extent rows in this measured profile. */
+  const rows = strings({ value, name });
+  /** The rootless owner maps only this caller coordinate, not a whole user range, to namespace zero. */
+  const wanted = `${caller}:0:1`;
+  if (rows.filter(function owner(row): boolean { return row === wanted; }).length !== 1)
+    throw new ProducerInputRunError({ operation: 'launch-container', locator: `container mapping ${name}`, });
+  for (const row of rows) {
+    /** Every other range must exclude both the caller coordinate and namespace owner zero. */
+    const parts = row.split(':');
+    /** Native range fields are kept separate from filesystem or caller authorization. */
+    const [containerText, namespaceText, extentText] = parts;
+    /** Exact numeric conversion refuses rounding and alternate spellings. */
+    const container = Number(containerText);
+    /** This coordinate is not asserted to be a host-account UID. */
+    const namespace = Number(namespaceText);
+    /** Extent is validated before it is used for membership. */
+    const extent = Number(extentText);
+    if (parts.length !== MAPPING_FIELDS || !Number.isSafeInteger(container) || container < 0 || String(container) !== containerText
+      || !Number.isSafeInteger(namespace) || namespace < 0 || String(namespace) !== namespaceText
+      || !Number.isSafeInteger(extent) || extent <= 0 || String(extent) !== extentText || !Number.isSafeInteger(container + extent)
+      || row !== wanted && (namespace === 0 || container <= caller && caller < container + extent))
+      throw new ProducerInputRunError({ operation: 'launch-container', locator: `container mapping ${name}`, });
+  }
+}
+
+/**
  * Verifies every requested bind and rejects all unregistered mounts in the native creation metadata.
  *
  * @param host - initialized host binding owner
@@ -178,6 +222,14 @@ export function verifyCreatedProducerInputContainer({ host, id, text, }: { reado
   fieldMatches({ fields: state, name: 'Running', expected: false });
   for (const [name, expected] of Object.entries({ User: `${host.run.uid}:${host.run.gid}`, WorkingDir: PRODUCER_INPUT_PATHS.output, Hostname: PRODUCER_INPUT_HOSTNAME, Entrypoint: [PRODUCER_INPUT_PATHS.node], Cmd: [PRODUCER_INPUT_PATHS.bootstrap, PRODUCER_INPUT_CHILD_SENTINEL] }))
     fieldMatches({ fields: config, name, expected });
+  fieldMatches({ fields: config, name: 'Timeout', expected: PRODUCER_INPUT_LIMITS.seconds });
+  fieldMatches({ fields: config, name: 'Healthcheck', expected: { Test: ['NONE'] } });
+  fieldMatches({ fields: config, name: 'HealthcheckOnFailureAction', expected: 'none' });
+  fieldMatches({ fields: limits, name: 'UsernsMode', expected: 'private' });
+  if (!record(limits.IDMappings))
+    throw new ProducerInputRunError({ operation: 'launch-container', locator: 'created user namespace mappings', });
+  callerMapping({ value: limits.IDMappings.UidMap, caller: host.run.uid, name: 'UidMap' });
+  callerMapping({ value: limits.IDMappings.GidMap, caller: host.run.gid, name: 'GidMap' });
   /** Environment values are independently reconstructed, not accepted merely because names are familiar. */
   const environment = producerInputChildEnvironment({ runId: host.run.runId, launchSha256: host.launchIdentity.sha256, launchBytes: host.launchIdentity.bytes, callerUid: host.run.uid, callerGid: host.run.gid });
   if (!isDeepStrictEqual(strings({ value: config.Env, name: 'Env' }), Object.entries(environment).map(function entry([name, value]): string { return `${name}=${value}`; }).toSorted()))

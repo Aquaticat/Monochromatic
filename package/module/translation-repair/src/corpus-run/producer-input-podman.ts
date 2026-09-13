@@ -4,6 +4,7 @@ import {
   readFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { homedir, } from 'node:os';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import type { ProducerInputRun, } from './producer-input-run.ts';
 
@@ -137,16 +138,18 @@ export async function createProducerInputPodmanContext(run: ProducerInputRun): P
       );
       await file.sync();
     }
-    /**
-     * Storage and account context remain host-owned; launch-changing overrides are explicitly removed.
-     */
+    /** Only the measured local account and runtime-bus context reach the native Podman process. */
     const environment: NodeJS.ProcessEnv = {
-      ...process.env,
+      HOME: homedir(),
+      PATH: '/usr/bin:/bin',
       CONTAINERS_CONF: configPath,
     };
-    delete environment.CONTAINERS_CONF_OVERRIDE;
-    delete environment.CONTAINER_HOST;
-    delete environment.CONTAINER_CONNECTION;
+    for (const name of ['XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS']) {
+      /** Inherited loader, remote-endpoint and extra Containers configuration variables are not copied. */
+      const value = process.env[name];
+      if (value !== undefined)
+        environment[name] = value;
+    }
     return {
       prefix: [
         '--remote=false',

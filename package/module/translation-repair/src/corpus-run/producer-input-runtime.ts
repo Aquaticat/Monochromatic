@@ -5,6 +5,7 @@ import {
 } from 'node:path';
 import { isDeepStrictEqual, } from 'node:util';
 import { mapOverlapped, } from '../overlapped-map.ts';
+import { PRODUCER_INPUT_METADATA_BYTES, } from './producer-input-bounds.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import {
   readProducerInputFile,
@@ -40,6 +41,10 @@ export async function readProducerRuntimeManifest({
   readonly dir: string;
   readonly expected: ProducerInputFileIdentity;
 },): Promise<ProducerRuntimeManifest> {
+  /** Application inventories remain bounded metadata, not an unlimited host allocation request. */
+  const identity = { bytes: expected.bytes, sha256: expected.sha256, };
+  if (identity.bytes > PRODUCER_INPUT_METADATA_BYTES)
+    throw new ProducerInputRunError({ operation: 'verify-runtime', locator: 'runtime manifest extent', });
   /**
    * The filename is fixed by the build contract rather than selected from JSON.
    */
@@ -52,7 +57,7 @@ export async function readProducerRuntimeManifest({
    */
   const bytes = await readProducerInputFile({
     path,
-    expected,
+    expected: identity,
     operation: 'verify-runtime',
   });
   try {

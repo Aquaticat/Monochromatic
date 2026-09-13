@@ -1,6 +1,7 @@
 import { isAbsolute, normalize, } from 'node:path';
 import { parseArgs, } from 'node:util';
 import { PRODUCER_INPUT_CHILD_SENTINEL, } from './producer-input-container.ts';
+import { PRODUCER_INPUT_METADATA_BYTES, } from './producer-input-bounds.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
 
@@ -62,7 +63,7 @@ export function readProducerInputArguments(arguments_: readonly string[]): Produ
     /** Canonical spelling avoids CWD and path-normalization ambiguity at the public boundary. */
     const launchPath = values.launch;
     if (launchPath === undefined || !isAbsolute(launchPath) || normalize(launchPath) !== launchPath || launchPath.includes('\0')
-      || !Number.isSafeInteger(bytes) || bytes <= 0 || String(bytes) !== values['launch-bytes']
+      || !Number.isSafeInteger(bytes) || bytes <= 0 || bytes > PRODUCER_INPUT_METADATA_BYTES || String(bytes) !== values['launch-bytes']
       || sha256 === undefined || sha256.length !== SHA256_WIDTH)
       throw new ProducerInputRunError({ operation: 'read-launch', locator: 'CLI launch identity', });
     for (let index = 0; index < sha256.length; index += 1) {

@@ -6,11 +6,14 @@ import { readProducerInputArguments, } from './producer-input-args.ts';
 import { runProducerInputChild, } from './producer-input-child.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import { runProducerInputHost, } from './producer-input-host.ts';
+import { ProducerInputInterruptedError, } from './producer-input-signals.ts';
 
 /** Stated refusals remain distinct from an unexpected bootstrap fault. */
 const REFUSAL_EXIT = 6;
 /** Unexpected faults are rendered without unmarked parser or subprocess bodies. */
 const FAULT_EXIT = 5;
+/** Parent interruption retains the conventional signal-specific process status. */
+const INTERRUPTED_EXIT = { SIGINT: 130, SIGTERM: 143, } as const;
 
 /**
  * Runs only the specialized provider-free input reconstruction or its fixed private child branch.
@@ -50,5 +53,6 @@ try {
 }
 catch (error) {
   console.error(`producer-prepare: ${refusalText({ error })}`);
-  process.exitCode = namesWithoutQuoting(error) ? REFUSAL_EXIT : FAULT_EXIT;
+  process.exitCode = error instanceof ProducerInputInterruptedError ? INTERRUPTED_EXIT[error.signal]
+    : namesWithoutQuoting(error) ? REFUSAL_EXIT : FAULT_EXIT;
 }

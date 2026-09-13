@@ -1,4 +1,6 @@
 import { join, } from 'node:path';
+import { lstat, readdir, } from 'node:fs/promises';
+import { isDeepStrictEqual, } from 'node:util';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import { readProducerInputMetadata, verifyProducerInputOutputFile, } from './producer-input-file.ts';
 import type { ProducerInputHost, } from './producer-input-host-init.ts';
@@ -8,6 +10,10 @@ import type { ProducerInputCompletion, } from './producer-input-model.ts';
 const MAX_COMPLETION_BYTES = 1_048_576;
 /** Raw SHA-256 identity width does not come from supplied completion content. */
 const SHA256_WIDTH = 64;
+/** Completed output retains the exact private directory mode, without special permission bits. */
+const OUTPUT_DIRECTORY_MODE = 0o700;
+/** Permission comparison includes special bits rather than only group/other access. */
+const PERMISSION_MASK = 0o7777;
 
 /**
  * Checks a closed native JSON record before its fields receive authority.
@@ -97,14 +103,44 @@ function parseProducerInputCompletion({ text, host, }: { readonly text: string; 
 }
 
 /**
- * Checks the completed private output at the host boundary without loading corpus-derived artifact bodies.
+ * Checks only the exact allowed output inventory and caller-owned private directories.
+ *
+ * @param host - owning run identity
+ *
+ * @throws ProducerInputRunError when extra files, home contents, ownership or modes differ
+ *
+ * @example
+ * ```ts
+ * await completionDirectories(host);
+ * ```
+ */
+async function completionDirectories(host: ProducerInputHost): Promise<void> {
+  try {
+    for (const path of [host.run.outputDir, join(host.run.outputDir, 'home')]) {
+      /** Directory checks do not follow a symlink leaf or accept a different group. */
+      const state = await lstat(path);
+      if (!state.isDirectory() || state.uid !== host.run.uid || state.gid !== host.run.gid || (state.mode & PERMISSION_MASK) !== OUTPUT_DIRECTORY_MODE)
+        throw new ProducerInputRunError({ operation: 'read-output', locator: path, });
+    }
+    if (!isDeepStrictEqual((await readdir(host.run.outputDir)).toSorted(), ['complete.json', 'home', 'unqualified-inputs.json']) || (await readdir(join(host.run.outputDir, 'home'))).length !== 0)
+      throw new ProducerInputRunError({ operation: 'read-output', locator: 'output inventory', });
+  }
+  catch (error) {
+    if (error instanceof ProducerInputRunError)
+      throw error;
+    throw new ProducerInputRunError({ operation: 'read-output', locator: 'output directories', });
+  }
+}
+
+/**
+ * Checks the private output and its internal completion identity without loading corpus-derived bodies.
  * Complete producer output is retained even when this consistency check fails.
  *
- * @param host - owning launch and exclusive output directory
+ * @param host - owning launch and exclusive output
  *
- * @returns Verified internal completion metadata, not approval or publication readiness
+ * @returns Internally consistent unqualified metadata, never review or execution authority
  *
- * @throws ProducerInputRunError when completion or artifact bytes differ
+ * @throws ProducerInputRunError when inventory, identity, ownership or modes differ
  *
  * @example
  * ```ts
@@ -112,10 +148,12 @@ function parseProducerInputCompletion({ text, host, }: { readonly text: string; 
  * ```
  */
 export async function verifyProducerInputCompletion(host: ProducerInputHost): Promise<ProducerInputCompletion> {
+  await completionDirectories(host);
   /** Completion has its own metadata ceiling; artifact hashing remains streamed. */
-  const text = await readProducerInputMetadata({ path: join(host.run.outputDir, 'complete.json'), maximumBytes: MAX_COMPLETION_BYTES, ownerUid: host.run.uid, operation: 'read-output' });
+  const text = await readProducerInputMetadata({ path: join(host.run.outputDir, 'complete.json'), maximumBytes: MAX_COMPLETION_BYTES, ownerUid: host.run.uid, ownerGid: host.run.gid, operation: 'read-output' });
   /** Run identity is reconstructed from host-owned state rather than accepted from a completion certificate. */
   const completion = parseProducerInputCompletion({ text, host });
-  await verifyProducerInputOutputFile({ path: join(host.run.outputDir, completion.artifact.file), expected: completion.artifact, ownerUid: host.run.uid });
+  await verifyProducerInputOutputFile({ path: join(host.run.outputDir, completion.artifact.file), expected: completion.artifact, ownerUid: host.run.uid, ownerGid: host.run.gid });
+  await completionDirectories(host);
   return completion;
 }

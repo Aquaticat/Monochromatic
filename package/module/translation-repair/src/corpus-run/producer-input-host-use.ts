@@ -8,6 +8,7 @@ import { revalidateProducerInputHostLayout, } from './producer-input-host-layout
 import { readProducerInputContainerTerminal, verifyCreatedProducerInputContainer, type ProducerInputContainerState, } from './producer-input-inspect.ts';
 import type { ProducerInputCompletion, } from './producer-input-model.ts';
 import { writeProducerInputControl, } from './producer-input-run.ts';
+import { assertProducerInputNotInterrupted, } from './producer-input-signals.ts';
 
 /** Forced cleanup is bounded independently from the input operation's container deadline. */
 const STOP_GRACE_SECONDS = 5;
@@ -38,9 +39,12 @@ async function executeCreatedInput({ host, id, signal, }: { readonly host: Produ
   await revalidateProducerInputHostLayout(host.layout);
   await verifyProducerInputFile({ path: host.bootstrapPath, expected: host.launch.bootstrap, operation: 'verify-runtime' });
   await verifyProducerInputFile({ path: host.launch.podman.path, expected: host.launch.podman, operation: 'verify-runtime' });
+  await verifyProducerInputFile({ path: host.nodePath, expected: host.nodeIdentity, operation: 'verify-runtime' });
+  await verifyProducerInputFile({ path: host.launch.atomicLibrary.path, expected: host.launch.atomicLibrary, operation: 'verify-runtime' });
   await runProducerInputCommand({ host, stage: 'start', arguments_: ['start', '--attach', '--sig-proxy=true', id], signal });
   /** A native zero exit does not establish valid artifact or completion files. */
   const completion = await verifyProducerInputCompletion(host);
+  assertProducerInputNotInterrupted(signal);
   await writeProducerInputControl({ dir: host.run.dir, file: 'verified-completion.json', bytes: new TextEncoder().encode(JSON.stringify(completion)) });
   return completion;
 }
@@ -121,6 +125,7 @@ export async function useProducerInputContainer({ host, id, signal, }: { readonl
     operation: operationEvidence,
     container: containerEvidence,
     removal: 'not-yet-performed',
+    interrupted: signal.aborted,
   })) });
   if (settlement.status === 'rejected')
     throw settlement.reason;
@@ -128,6 +133,11 @@ export async function useProducerInputContainer({ host, id, signal, }: { readonl
   const cleanup = new AbortController();
   await runProducerInputCommand({ host, stage: 'remove', arguments_: ['rm', id], signal: cleanup.signal });
   await runProducerInputCommand({ host, stage: 'verify-removed', arguments_: ['container', 'exists', id], signal: cleanup.signal });
+  await writeProducerInputControl({ dir: host.run.dir, file: 'cleanup-complete.json', bytes: new TextEncoder().encode(JSON.stringify({
+    version: 1, kind: 'producer-preparation-input-cleanup-complete', runId: host.run.runId, containerId: id,
+    removed: true, absenceChecked: true, interrupted: signal.aborted,
+  })) });
+  assertProducerInputNotInterrupted(signal);
   if (operation.status === 'rejected')
     throw operation.reason;
   if (settlement.value.state !== 'exited' || settlement.value.exitCode !== 0 || settlement.value.oomKilled)

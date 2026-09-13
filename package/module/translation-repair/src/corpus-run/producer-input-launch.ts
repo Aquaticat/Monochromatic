@@ -2,6 +2,7 @@ import {
   isAbsolute,
   resolve,
 } from 'node:path';
+import { PRODUCER_INPUT_METADATA_BYTES, } from './producer-input-bounds.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import {
   readProducerInputFile,
@@ -324,12 +325,16 @@ export async function readProducerInputLaunch({
   readonly path: string;
   readonly expected: ProducerInputFileIdentity;
 },): Promise<ProducerInputLaunch> {
+  /** Metadata extent is owned and capped independently from caller-supplied contents. */
+  const identity = { bytes: expected.bytes, sha256: expected.sha256, };
+  if (identity.bytes > PRODUCER_INPUT_METADATA_BYTES)
+    throw new ProducerInputRunError({ operation: 'read-launch', locator: 'launch metadata extent', });
   /**
    * File extent and raw hash are checked before JSON decoding.
    */
   const bytes = await readProducerInputFile({
     path,
-    expected,
+    expected: identity,
     operation: 'read-launch',
   });
   try {
