@@ -271,6 +271,7 @@ const NAMED_PARTS: Record<string, string> = {
   'mdxRefusalSite({ cause, },)': 'position, built to state a place and quote nothing',
   'modelId': 'model id from the catalog',
   'operation': 'member of a closed operation union',
+  'signal': 'SIGINT or SIGTERM in the audited preparation interruption error constructor',
   'promptDigest': 'SHA-256 prompt identity',
   'modelIds.join(\', \',)': 'model ids from the catalog',
   'missing': 'document side, original or translation',
