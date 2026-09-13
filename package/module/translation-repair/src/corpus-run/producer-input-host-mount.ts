@@ -1,23 +1,48 @@
-import { isAbsolute, normalize, relative, } from 'node:path';
+import {
+  isAbsolute,
+  normalize,
+  relative,
+} from 'node:path';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 
 //region Metadata-only mount topology, never body or approval authority
 
-/** Kernel mount records are observations in the executing host's namespace. */
+/**
+ * Kernel mount records are observations in the executing host's namespace.
+ */
 export type ProducerInputHostMount = {
-  /** Unique reported mount ID, not a filesystem or creation certificate. */
+  /**
+   * Unique reported mount ID, not a filesystem or creation certificate.
+   */
   readonly id: string;
-  /** Canonical decoded kernel mountpoint. */
+  /**
+   * Canonical decoded kernel mountpoint.
+   */
   readonly point: string;
-  /** Per-mount options are separate from superblock options. */
+  /**
+   * Per-mount options are separate from superblock options.
+   */
   readonly options: readonly string[];
-  /** Kernel filesystem type supports the fixed child platform-mount checks. */
+  /**
+   * Kernel filesystem type supports the fixed child platform-mount checks.
+   */
   readonly filesystem: string;
 };
 
-/** Fixed mountinfo field positions follow the Linux record grammar. */
-const MOUNTINFO = { minimumFields: 10, point: 4, options: 5, separatorMinimum: 6, trailingFields: 4, escapeWidth: 4, } as const;
-/** Kernel pathname escapes are decoded once, never recursively. */
+/**
+ * Fixed mountinfo field positions follow the Linux record grammar.
+ */
+const MOUNTINFO = {
+  minimumFields: 10,
+  point: 4,
+  options: 5,
+  separatorMinimum: 6,
+  trailingFields: 4,
+  escapeWidth: 4,
+} as const;
+/**
+ * Kernel pathname escapes are decoded once, never recursively.
+ */
 const MOUNT_ESCAPES: Readonly<Record<string, string>> = {
   '\\040': ' ',
   '\\011': '\t',
@@ -39,10 +64,21 @@ const MOUNT_ESCAPES: Readonly<Record<string, string>> = {
  * const contained = producerInputPathWithin({ parent: '/input', child: '/input-more' });
  * ```
  */
-export function producerInputPathWithin({ parent, child, }: { readonly parent: string; readonly child: string; },): boolean {
-  /** Relative path exposes directory boundaries without filesystem reads. */
-  const path = relative(parent, child);
-  return path === '' || (path !== '..' && !path.startsWith('../') && !isAbsolute(path));
+export function producerInputPathWithin({
+  parent,
+  child,
+}: {
+  readonly parent: string;
+  readonly child: string
+},): boolean {
+  /**
+   * Relative path exposes directory boundaries without filesystem reads.
+   */
+  const path = relative(
+    parent,
+    child
+  );
+  return (path === '') || ((path !== '..') && (!path.startsWith('../')) && (!isAbsolute(path)));
 }
 
 /**
@@ -60,24 +96,39 @@ export function producerInputPathWithin({ parent, child, }: { readonly parent: s
  * ```
  */
 function mountPoint(value: string): string {
-  /** Single-pass pieces preserve literal backslashes produced by an escape. */
+  /**
+   * Single-pass pieces preserve literal backslashes produced by an escape.
+   */
   const pieces: string[] = [];
   for (let index = 0; index < value.length; index += 1) {
     if (value.charAt(index) !== '\\') {
       pieces.push(value.charAt(index));
       continue;
     }
-    /** Only a complete recognized escape can advance over encoded bytes. */
-    const escape = MOUNT_ESCAPES[value.slice(index, index + MOUNTINFO.escapeWidth)];
+    /**
+     * Only a complete recognized escape can advance over encoded bytes.
+     */
+    const escape = MOUNT_ESCAPES[value.slice(
+      index,
+      index + MOUNTINFO.escapeWidth
+    )];
     if (escape === undefined)
-      throw new ProducerInputRunError({ operation: 'verify-host-layout', locator: 'host mount topology', });
+      throw new ProducerInputRunError({
+        operation: 'verify-host-layout',
+        locator: 'host mount topology',
+      });
     pieces.push(escape);
     index += MOUNTINFO.escapeWidth - 1;
   }
-  /** A mountpoint cannot authorize a relative host path. */
+  /**
+   * A mountpoint cannot authorize a relative host path.
+   */
   const point = pieces.join('');
-  if (!isAbsolute(point) || normalize(point) !== point || point.includes('\0'))
-    throw new ProducerInputRunError({ operation: 'verify-host-layout', locator: 'host mount topology', });
+  if ((!isAbsolute(point)) || (normalize(point) !== point) || point.includes('\0'))
+    throw new ProducerInputRunError({
+      operation: 'verify-host-layout',
+      locator: 'host mount topology',
+    });
   return point;
 }
 
@@ -97,10 +148,17 @@ function mountPoint(value: string): string {
  * ```
  */
 export function readProducerInputHostMounts(text: string): readonly ProducerInputHostMount[] {
-  if (text.length === 0 || !text.endsWith('\n'))
-    throw new ProducerInputRunError({ operation: 'verify-host-layout', locator: 'host mount topology', });
-  /** Empty records are not silently removed from a supposedly complete namespace observation. */
-  const rows = text.slice(0, -1).split('\n').map(function parse(line): ProducerInputHostMount {
+  if ((text.length === 0) || (!text.endsWith('\n')))
+    throw new ProducerInputRunError({
+      operation: 'verify-host-layout',
+      locator: 'host mount topology',
+    });
+  /**
+   * Empty records are not silently removed from a supposedly complete namespace observation.
+   */
+  const rows = text.slice(0, -1)
+    .split('\n')
+    .map(function parse(line): ProducerInputHostMount {
     /** Space-delimited fields contain escaped, not literal, pathname whitespace. */
     const fields = line.split(' ');
     /** Optional fields end at one literal separator. */
@@ -120,7 +178,10 @@ export function readProducerInputHostMounts(text: string): readonly ProducerInpu
     return { id, point: mountPoint(point), options: options.split(','), filesystem, };
   });
   if (new Set(rows.map(function identity(row): string { return row.id; })).size !== rows.length)
-    throw new ProducerInputRunError({ operation: 'verify-host-layout', locator: 'host mount topology', });
+    throw new ProducerInputRunError({
+      operation: 'verify-host-layout',
+      locator: 'host mount topology',
+    });
   return rows;
 }
 

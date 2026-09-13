@@ -1,4 +1,7 @@
-import { producerInputChildEnvironment, PRODUCER_INPUT_HOSTNAME, } from './producer-input-environment.ts';
+import {
+  producerInputChildEnvironment,
+  PRODUCER_INPUT_HOSTNAME,
+} from './producer-input-environment.ts';
 import type { ProducerInputLaunch, } from './producer-input-model.ts';
 import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 
@@ -160,7 +163,13 @@ export function producerInputContainerArgs({
   /**
    * No image or host loader variables survive into child startup.
    */
-  const environment = producerInputChildEnvironment({ runId, launchSha256, launchBytes, callerUid, callerGid, });
+  const environment = producerInputChildEnvironment({
+    runId,
+    launchSha256,
+    launchBytes,
+    callerUid,
+    callerGid,
+  });
   /**
    * Fixed requested role mappings must also be checked against the actual created container and child mounts.
    */
