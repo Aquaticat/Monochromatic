@@ -575,7 +575,11 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
       artifacts.push({ path: '/another/frame.md', content: new Uint8Array(source.content) });
       record.references.push({ path: '/another/frame.md', hash: createHash('sha256').update(source.content).digest('hex') });
     } else {
-      const content = kind === 'utf8' ? new Uint8Array([255]) : new TextEncoder().encode(kind === 'array' ? '[]' : 'q7z9k2');
+      const content = new TextEncoder().encode(kind === 'utf8' ? JSON.stringify({ ...f.values.pool, decodingProbe: 'x' }) : kind === 'array' ? '[]' : 'q7z9k2');
+      if (kind === 'utf8') {
+        content[content.length - 3] = 255;
+        expect(JSON.parse(new TextDecoder().decode(content))).toHaveProperty('decodingProbe', '\uFFFD');
+      }
       artifacts[0] = { path: first.path, content };
       poolReference.hash = createHash('sha256').update(content).digest('hex');
     }
