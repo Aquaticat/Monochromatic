@@ -1065,8 +1065,32 @@ No unrelated source or lint policy is changed on that evidence;
 the next run must establish whether the findings remain after the annotation correction.
 Successful-call controls now produce ordinary assertions on removed boundaries,
 and a full-occurrence receipt-accessor control verifies the core's own expectation snapshot.
-`preparation-definition-verification-r6-20260912.out` is the next verification;
-this isolation refinement is not yet declared verified.
+R6 passes every phase,
+including zero-warning lint and the full suite's `unit exit 0` at line 10231 of `preparation-definition-unit-r6-20260912.out`.
+The consolidation callback and missing-summary diagnostics do not recur;
+no consolidation or lint-policy edit was made.
+This records the measured after-state,
+not an isolated diagnosis of the semantic-index warning's cause.
+The native full-handoff fault,
+media contrast,
+parser-label catalog and actual registered-electorate ownership controls pass.
+`a2d8cc470` adds independent current source/target parent-index controls after that source verification.
+
+The owned definition guard worktree is `translation-repair-definition-guard-20260913`,
+created from the main worktree at `a2d8cc470` without an overlay.
+It uses the namespace proof's fresh run-bound runtime ledgers,
+per-test entry checks,
+Mise version override and deliberate older-runtime refusal control.
+The container has no network,
+2 GiB memory,
+2 CPUs and 512 PIDs,
+read-only source/dependency mounts,
+masked known root credential files and owned writable outputs.
+`definition-guard-mutations-20260913.mts` registers definition authority,
+receipt/current-document binding,
+quorum,
+endpoint metadata and no-full-handoff-veto controls.
+The proof has not reached a verified terminal result yet.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,
