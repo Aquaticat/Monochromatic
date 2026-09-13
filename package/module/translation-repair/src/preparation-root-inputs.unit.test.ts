@@ -5,15 +5,22 @@ import { inspect, } from 'node:util';
 import { createHash, } from 'node:crypto';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { alignDocumentSections, buildPreparationRootInputs, CORPUS_COMMIT_SHA, hashContent, parseDocument, passArchiveText, PreparationRootError, } from '../dist/final/node/index.mjs';
+import { alignDocumentSections, archiveOriginalReadingOf, buildPreparationRootInputs, CORPUS_COMMIT_SHA, hashContent, parseDocument, passArchiveText, PreparationRootError, } from '../dist/final/node/index.mjs';
 
 const l = tagged({ tag: 'root-input-owner-test' });
 const digest = (content: string) => hashContent({ content });
-async function fixture() {
+async function fixture({ repeatedQuestions = false, implicitFirst = false, targetNamespace = false, emptyTarget = false }: { readonly repeatedQuestions?: boolean; readonly implicitFirst?: boolean; readonly targetNamespace?: boolean; readonly emptyTarget?: boolean } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'root-input-fixture-'));
-  const sourceText = `${Array.from({ length: 41 }, (_, index) => `## 猫 ${index}\n\n猫猫 ${index}。`).join('\n\n')  }\n\n## Notes\n\n[^1]: 猫注。\n`;
+  const sourceText = `${Array.from({ length: 41 }, (_, index) => {
+    const heading = targetNamespace || emptyTarget ? `## Section ${index}` : repeatedQuestions ? '## 猫' : `## 猫 ${index}`;
+    return implicitFirst && index === 40 ? heading : `${heading}\n\n${repeatedQuestions ? '猫猫。' : `猫猫 ${index}。`}`;
+  }).join('\n\n')}\n\n## Notes\n\n[^1]: 猫注。\n`; 
   const sourceRaw = sourceText.replaceAll('\n', '\r\n');
-  const archiveText = `(To-Do)\n\n${  Array.from({ length: 41 }, (_, index) => `## Cat ${index}\n\nCat ${index} is non‑binary.`).join('\n\n')  }\n\n## Notes\n\n[^1]: Cat note.\n`;
+  const archiveText = `(To-Do)\n\n${Array.from({ length: 41 }, (_, index) => {
+    if (emptyTarget && index === 39) return '';
+    const heading = targetNamespace || emptyTarget ? `## Section ${index}` : repeatedQuestions ? '## Cat' : `## Cat ${index}`;
+    return implicitFirst && index === 40 ? heading : `${heading}\n\n${repeatedQuestions ? 'Cat is non‑binary.' : `Cat ${index} is non‑binary.`}`;
+  }).join('\n\n')}\n\n## Notes\n\n[^1]: Cat note.\n${targetNamespace ? '\n## Extra namespace\n\n[^outside]: Unpaired target note.\n' : ''}`;
   const targetText = passArchiveText({ text: archiveText, l });
   const source = parseDocument({ text: sourceText });
   const target = parseDocument({ text: targetText });
@@ -44,7 +51,7 @@ async function fixture() {
   const details = selected.map((parent, index) => ({ pairIndex: parent.pairIndex, requiredContext: [` Context ${parent.pairIndex}. `], pictureEvidenceNeeded: index === 0,
     scopeQualificationOpen: index === 1, automaticPairingVerified: false }));
   const note = { entryId: 'fixture', readExtent: 'complete source and normalized target entry', parentReadings: structuredClone(details) };
-  const prior = { entries: [] };
+  const prior: { entries: Record<string, unknown>[] } = { entries: [] };
   const frame = `# fixture\n\nSelected parent indexes: ${selected.map(parent => parent.pairIndex).join(', ')}\n\nDeclared-original policy: none\n\n## Full original\n\n${sourceText}\n\n## Full normalized incumbent\n\n${targetText}\n`;
   const notePath = '/never-open/root-note.json';
   const framePath = '/never-open/frame.md';
@@ -73,7 +80,10 @@ import { readFile, appendFile } from 'node:fs/promises';
 const args = process.argv.slice(2);
 const data = JSON.parse(await readFile(${JSON.stringify(storePath)}, 'utf8'));
 await appendFile(${JSON.stringify(tracePath)}, JSON.stringify(args) + '\\n');
-if (args.includes('ls-tree')) process.stdout.write('people/fixture\\n');
+if (args.includes('ls-tree')) {
+  if (data.failListing) { process.stderr.write('fixture listing refused q7z9k2'); process.exitCode = 128; }
+  else process.stdout.write((data.listed ?? ['fixture']).map(id => 'people/' + id).join('\\n') + '\\n');
+}
 else if (args.includes('show')) {
   const spec = args[args.length - 1];
   const key = spec.slice(spec.indexOf(':') + 1);
@@ -99,6 +109,25 @@ else if (args.includes('show')) {
   }
   return { dir, storePath, tracePath, files, values, selection, request, sourceRaw, sourceText, targetText,
     [Symbol.asyncDispose]: async () => { await rm(dir, { recursive: true, force: true }); } };
+}
+function carryReadings(f: Awaited<ReturnType<typeof fixture>>) {
+  const [entry] = f.values.journal.entries;
+  if (entry === undefined) throw new Error('expected carried entry');
+  const prior = { entryId: 'fixture', sourceHash: entry.sourceHash, targetHash: entry.targetHash, selectedParentIndexes: [...entry.selectedParentIndexes],
+    requiredContext: [' Retained prior context. '], pictureEvidenceNeeded: false, scopeQualificationOpen: true, automaticPairingVerified: false };
+  f.values.prior.entries = [structuredClone(prior)];
+  const priorJournalHash = digest(JSON.stringify(f.values.prior));
+  f.values.journal.priorJournalHash = priorJournalHash;
+  Reflect.deleteProperty(entry, 'currentNoteFile');
+  Reflect.deleteProperty(entry, 'currentNoteHash');
+  Object.assign(entry, { completeEntryReading: 'carried-by-exact-entry-hashes', priorReading: structuredClone(prior), priorJournalHash });
+  f.values.journal.parents.forEach(parent => {
+    Reflect.deleteProperty(parent, 'reading');
+    Reflect.deleteProperty(parent, 'noteFile');
+    Reflect.deleteProperty(parent, 'noteHash');
+    Object.assign(parent, { scopeReading: 'carried-by-exact-parent-and-entry-hashes', priorJournalHash, priorEntryId: 'fixture' });
+  });
+  f.selection.dependencies.forEach(obligation => Object.assign(obligation, { requiredContext: [...prior.requiredContext], pictureEvidenceNeeded: false, scopeQualificationOpen: true }));
 }
 async function refusal(body: () => Promise<unknown>) {
   let caught: unknown;
@@ -200,6 +229,149 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     expect(error.input).toBe('people/fixture/page.md');
     expect(inspect(error, { depth: null })).not.toContain('q7z9k2');
   } }),
+  it({ name: 'retains exact carried entry and parent evidence without promoting correspondence qualification', fn: async () => {
+    await using f = await fixture();
+    carryReadings(f);
+    const inputs = await buildPreparationRootInputs(f.request());
+    expect(inputs.obligations.every(item => item.scopeQualificationOpen && !item.pictureEvidenceNeeded)).toBe(true);
+    expect(inputs.obligations.map(item => item.requiredContext)).toEqual(f.selection.dependencies.map(item => item.requiredContext));
+    expect(inputs.references[4]?.bindings).toEqual([{ role: 'opaque-selection-support', consumer: 'selection' }]);
+  } }),
+  ...['duplicate-prior', 'changed-prior', 'parent-carry-hash', 'contradictory-entry-status', 'contradictory-parent-status'].map(kind => it({ name: `refuses invalid carried reading provenance ${kind}`, fn: async () => {
+    await using f = await fixture();
+    const [entry] = f.values.journal.entries;
+    const [parent] = f.values.journal.parents;
+    if (entry === undefined || parent === undefined) throw new Error('expected reading witnesses');
+    if (kind.startsWith('contradictory')) {
+      if (kind === 'contradictory-entry-status') Object.assign(entry, { completeEntryReading: 'carried-by-exact-entry-hashes' });
+      else Object.assign(parent, { scopeReading: 'carried-by-exact-parent-and-entry-hashes' });
+    } else {
+      carryReadings(f);
+      if (kind === 'duplicate-prior') {
+        const [prior] = f.values.prior.entries;
+        if (prior === undefined) throw new Error('expected prior entry');
+        f.values.prior.entries.push(structuredClone(prior));
+        f.values.journal.priorJournalHash = digest(JSON.stringify(f.values.prior));
+      } else if (kind === 'changed-prior') {
+        const [prior] = f.values.prior.entries;
+        if (prior === undefined) throw new Error('expected prior witness');
+        Object.assign(prior, { sourceHash: digest('other') });
+        f.values.journal.priorJournalHash = digest(JSON.stringify(f.values.prior));
+      } else Object.assign(parent, { priorJournalHash: digest('other') });
+      if (kind !== 'parent-carry-hash') {
+        const priorJournalHash = f.values.journal.priorJournalHash;
+        Object.assign(entry, { priorJournalHash });
+        f.values.journal.parents.forEach(row => Object.assign(row, { priorJournalHash }));
+      }
+    }
+    expect((await refusal(async () => await buildPreparationRootInputs(f.request()))).kind).toBe('reading-provenance');
+  } })),
+  it({ name: 'keeps native singleton dispatch structural instead of manufacturing a question', fn: async () => {
+    await using f = await fixture({ implicitFirst: true });
+    const inputs = await buildPreparationRootInputs(f.request());
+    const [first] = inputs.registry;
+    if (first === undefined) throw new Error('expected structural registration');
+    expect(first.dispatch).toBe('implicit');
+    expect('question' in first).toBe(false);
+    expect('questionDigest' in first).toBe(false);
+  } }),
+  it({ name: 'keeps empty-target insertion dispatch structural without inventing a receipt question', fn: async () => {
+    await using f = await fixture({ emptyTarget: true });
+    const inputs = await buildPreparationRootInputs(f.request());
+    const empty = inputs.registry.find(record => record.dispatch === 'empty');
+    expect(empty).toBeDefined();
+    if (empty === undefined) throw new Error('expected empty-target registration');
+    expect(empty.roles).toContain('writer-parent');
+    expect('question' in empty).toBe(false);
+    expect('questionDigest' in empty).toBe(false);
+  } }),
+  it({ name: 'groups exact repeated native questions without merging occurrence identities', fn: async () => {
+    await using f = await fixture({ repeatedQuestions: true });
+    const inputs = await buildPreparationRootInputs(f.request());
+    expect(inputs.questionAliases).toHaveLength(1);
+    expect(inputs.questionAliases[0]?.parentIds).toEqual(f.selection.orderedParentIds);
+    expect(new Set(inputs.registry.map(item => item.parentId)).size).toBe(41);
+  } }),
+  it({ name: 'retains unaligned target definitions as namespace data rather than buying another parent', fn: async () => {
+    await using f = await fixture({ targetNamespace: true });
+    const inputs = await buildPreparationRootInputs(f.request());
+    expect(inputs.unalignedDefinitions).toHaveLength(1);
+    expect(inputs.unalignedDefinitions[0]?.source).toEqual([]);
+    expect(inputs.unalignedDefinitions[0]?.target).toHaveLength(1);
+    expect(inputs.unalignedDefinitions[0]?.target[0]?.zone).toBe('footnote-definition');
+    expect(inputs.registry).toHaveLength(41);
+  } }),
+  it({ name: 'retains a missing unselected corpus side as an explicit exclusion with successful-side provenance', fn: async () => {
+    await using f = await fixture();
+    const excluded = [{ entryId: 'gap', kind: 'missing-corpus-side' }];
+    Object.assign(f.selection, { exclusions: excluded });
+    Object.assign(f.values.pool, { excluded: structuredClone(excluded) });
+    f.selection.census.listed = 2;
+    await writeFile(f.storePath, JSON.stringify({ files: { ...f.files, 'people/gap/page.md': 'Only original.' }, fail: '', listed: ['fixture', 'gap'] }));
+    const inputs = await buildPreparationRootInputs(f.request());
+    expect(inputs.excluded).toEqual(excluded);
+    expect(inputs.rawDocuments).toHaveLength(3);
+    expect(inputs.rawDocuments[2]?.relPath).toBe('people/gap/page.md');
+  } }),
+  ...[false, true].map(normalize => it({ name: `applies whole-page original eligibility before selected-parent lookup normalized=${normalize}`, fn: async () => {
+    await using f = await fixture();
+    const archive = normalize ? '<!-- (Origina\u200bl Language: English) -->\n\nCat.' : '<!-- (Original Language: English) -->\n\nCat.';
+    const before = archiveOriginalReadingOf({ document: parseDocument({ text: archive }) });
+    const target = passArchiveText({ text: archive, l });
+    const after = archiveOriginalReadingOf({ document: parseDocument({ text: target }) });
+    expect(before.kind).toBe(normalize ? 'none' : 'whole-page');
+    expect(after.kind).toBe('whole-page');
+    if (after.kind !== 'whole-page') throw new Error('expected whole-page control');
+    const excluded = [{ entryId: 'original', kind: normalize ? 'normalized-whole-page-original' : 'production-whole-page-original', archiveHash: digest(archive),
+      ...(normalize ? { targetHash: digest(target) } : {}), noteHash: digest(after.note) }];
+    Object.assign(f.selection, { exclusions: excluded });
+    Object.assign(f.values.pool, { excluded: structuredClone(excluded) });
+    f.selection.census.listed = 2;
+    await writeFile(f.storePath, JSON.stringify({ files: { ...f.files, 'people/original/page.md': 'Cat source.', 'people/original/page.en.md': archive }, fail: '', listed: ['fixture', 'original'] }));
+    expect((await buildPreparationRootInputs(f.request())).excluded).toEqual(excluded);
+  } })),
+  it({ name: 'refuses native corpus listing failures without retaining private subprocess details', fn: async () => {
+    await using f = await fixture();
+    await writeFile(f.storePath, JSON.stringify({ files: f.files, fail: '', failListing: true }));
+    const error = await refusal(async () => await buildPreparationRootInputs(f.request()));
+    expect(error.kind).toBe('corpus-read');
+    expect(error.input).toBe('people/');
+    expect(inspect(error, { depth: null })).not.toContain('q7z9k2');
+  } }),
+  it({ name: 'refuses an eligible entry that the old frozen representation cannot identity-bind', fn: async () => {
+    await using f = await fixture();
+    f.selection.census.listed = 2;
+    f.selection.census.eligibleEntries = 2;
+    await writeFile(f.storePath, JSON.stringify({ files: { ...f.files, 'people/blank/page.md': '', 'people/blank/page.en.md': '' }, listed: ['fixture', 'blank'], fail: '' }));
+    const error = await refusal(async () => await buildPreparationRootInputs(f.request()));
+    expect(error.kind).toBe('population');
+    expect(error.input).toBe('frozen entry identity coverage');
+  } }),
+  ...['json', 'utf8', 'array', 'order', 'ambiguous-frame'].map(kind => it({ name: `refuses invalid semantic role document ${kind}`, fn: async () => {
+    await using f = await fixture();
+    const request = f.request();
+    const record = structuredClone(f.selection);
+    const [poolReference, journalReference] = record.references;
+    if (poolReference === undefined || journalReference === undefined) throw new Error('expected frozen role references');
+    const artifacts = [...request.artifacts];
+    const [first] = artifacts;
+    if (first === undefined) throw new Error('expected role witness');
+    if (kind === 'order') record.references = [journalReference, poolReference, ...record.references.slice(2)];
+    else if (kind === 'ambiguous-frame') {
+      const source = artifacts[3];
+      if (source === undefined) throw new Error('expected frame witness');
+      artifacts.push({ path: '/another/frame.md', content: new Uint8Array(source.content) });
+      record.references.push({ path: '/another/frame.md', hash: createHash('sha256').update(source.content).digest('hex') });
+    } else {
+      const content = kind === 'utf8' ? new Uint8Array([255]) : new TextEncoder().encode(kind === 'array' ? '[]' : 'q7z9k2');
+      artifacts[0] = { path: first.path, content };
+      poolReference.hash = createHash('sha256').update(content).digest('hex');
+    }
+    const text = JSON.stringify(record);
+    const error = await refusal(async () => await buildPreparationRootInputs({ ...request, text, expectedDigest: digest(text), artifacts }));
+    expect(error.kind).toBe(kind === 'ambiguous-frame' ? 'reading-provenance' : 'reference-role');
+    expect(inspect(error, { depth: null })).not.toContain('q7z9k2');
+  } })),
   it({ name: 'checks independent selection bytes before invoking the configured corpus executable', fn: async () => {
     await using f = await fixture();
     const request = f.request();
