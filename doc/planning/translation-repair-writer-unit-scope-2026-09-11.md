@@ -1115,6 +1115,37 @@ conditional review gates,
 acquisition leases,
 request lineage or final source-channel/writer admission.
 
+Initial root scope was then rebuilt provider-free against
+`node_modules/.frozen-dist-preparation-root-scope-20260913`,
+digest `sha256-tree-v1:43e3f6d7d282cd92e1845d969c4beb466625d028fa051a6342653891173e262a`.
+`preparation-root-scope-VrOExG/report.json` verifies all 63 frozen file references,
+all 40 selected parents across 30 entries,
+and the unchanged union of 45 parents with 42 queried and three implicit dispatches.
+The nine definition parents still add exactly five dependencies.
+The scope registry now carries each current combined/source/target index,
+document hashes,
+question hash,
+roles and definition-node inventory.
+The no-network container records zero provider requests and zero fetches;
+peak memory is 186380288 bytes with no OOM or PID-limit event.
+This is a current scope registry,
+not a reviewed phase or acquisition authority.
+
+The next planner boundary is `readRegisteredPreparationParent`.
+It shares registered complete-document/hash/parent selection with receipt reconstruction,
+but does not require or invent a receipt for initial phase materialization.
+`PreparationParentExpectation` excludes receipt binding,
+and `RegisteredPreparationParent` explicitly marks mechanical selection only.
+Singleton and native insertion-anchor parents can be planned structurally;
+`readPreparationEvidenceOccurrence` still refuses to manufacture model receipts for zero-question dispatch.
+The new tests cover native selection,
+structural parents,
+full-document drift,
+registered side indexes,
+section correspondence and ownership.
+`preparation-parent-verification-20260913.out` is active;
+this extraction is not yet declared verified.
+
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,
 then `:206` calls the deterministic relabel once,
