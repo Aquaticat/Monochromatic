@@ -158,7 +158,8 @@ The native-asset build exposes test-environment failures distinct from missing p
   inheriting its unmounted trust configuration.
   Moving container `TMPDIR` to an independently mounted `/tmp` makes the ordinary fixture draws pass.
 - A benchmark child deliberately keeps only `PATH` and `HOME`.
-  Its Node process loses `LD_LIBRARY_PATH` and exits `127` because `libatomic.so.1` is unavailable on default search paths.
+  Its Node process loses `LD_LIBRARY_PATH` and exits `127`
+  because `libatomic.so.1` is unavailable on default search paths.
   A direct inherited-versus-minimal child probe reproduces `0` versus `127`.
 - The missing-visual fixture expects an absent path inside a valid pinned corpus.
   With the corpus itself unavailable it reports `CorpusReadError` kind `other`
@@ -326,10 +327,9 @@ records, err := csvReader.ReadAll()
 if err != nil {
     return "", nil, err
 }
-if len(records) != 1 {
-    return "", nil, errors.New("incorrect mount format: should be --mount type=<bind|glob|tmpfs|volume>,[src=<host-dir|volume-name>,]target=<ctr-dir>[,options]")
-}
 ```
+
+The rejection branch at `pkg/specgenutilexternal/mount.go:20` begins with `if len(records) != 1 {`.
 
 `pkg/specgenutil/volumes.go:322` then separates each option only at its first equals sign:
 
@@ -427,11 +427,12 @@ host hook discovery is not accepted as an unrecorded application input.
 ### Verified host-default catalog
 
 The first disposable config control incorrectly uses volume-style syntax in `containers.conf.mounts`.
-Podman exits `125` with:
-
-```text
-Error: parsing containers.conf mounts: /var/home/user/temp/agent/preparation-defaults-probe-Q4Dcmt/payload:/ambient-config:ro: invalid mount option
-```
+Podman exits `125`.
+Its diagnostic starts with `Error: parsing containers.conf mounts:` and ends with `invalid mount option`.
+The affected host file is
+`/var/home/user/temp/agent/preparation-defaults-probe-Q4Dcmt/payload`,
+encoded as a colon-joined volume string rather than a CSV mount record.
+The complete diagnostic remains in `preparation-podman-defaults-probe-20260913.out`.
 
 Changing that fixture to native mount syntax,
 `type=bind,src=<owned-file>,target=/ambient-config,ro`,
@@ -457,8 +458,10 @@ The retained scripts are runnable with the measured Node executable:
 
 ```sh
 # Private reproduction harnesses; each creates fresh owned fixtures.
-/var/home/user/.local/share/mise/installs/node/26.8.2/bin/node /var/home/user/temp/agent/probe-preparation-mount-encoding-20260913.mts
-/var/home/user/.local/share/mise/installs/node/26.8.2/bin/node /var/home/user/temp/agent/probe-preparation-podman-defaults-20260913.mts
+NODE=/var/home/user/.local/share/mise/installs/node/26.8.2/bin/node
+ROOT=/var/home/user/temp/agent
+"$NODE" "$ROOT/probe-preparation-mount-encoding-20260913.mts"
+"$NODE" "$ROOT/probe-preparation-podman-defaults-20260913.mts"
 ```
 
 The tradeoff is explicit ownership of these configuration inputs,

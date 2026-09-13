@@ -139,7 +139,8 @@ Artifacts in the owned writer workspace:
 `Dethelly` requires out-of-parent footnote context and distinguishes source note 1 from the archive's location note.
 `Futajuhuacha` has no selected-parent footnote reference despite differing apparatus elsewhere.
 `GLaDOSister` needs work-title/conlang naming evidence without declaring archive spellings official.
-`MTF_0615` explicitly discusses name pronunciation in ruby markup and separately supplies an attributed caring quotation.
+`MTF_0615` explicitly discusses name pronunciation in ruby markup
+and separately supplies an attributed caring quotation.
 These dependencies must be represented in the preparation and final-input plan,
 not repaired with uncredited archive prose.
 The completed readings also identify:
@@ -766,7 +767,8 @@ Its initial closure is the measured 45 parents,
 with 42 queried inputs and 3 structural records.
 Xing's unmatched source definitions receive explicit source/namespace accounting only;
 that record is neither correspondence nor automatic prompt context.
-Future reference-based relabeling still requires qualified current group evidence and freshly materialized conditional inputs.
+Future reference-based relabeling still requires qualified current group evidence
+and freshly materialized conditional inputs.
 The namespace initializer is now implemented in `create-preparation-attempt.ts`,
 with fixed-file native I/O in `preparation-attempt-storage.ts` and
 `PreparationAttemptError` diagnostics.
@@ -895,7 +897,8 @@ The qualification,
 receipt and request proof logs also show `26.7.0`.
 Those old records remain unchanged as evidence of their actual runtime.
 
-R4 pins `MISE_NODE_VERSION=26.8.2` for the experiment and supplies a `NODE_OPTIONS` preload to inherited Node environments.
+R4 pins `MISE_NODE_VERSION=26.8.2` for the experiment
+and supplies a `NODE_OPTIONS` preload to inherited Node environments.
 The preload records version,
 executable,
 entry file and phase,
@@ -1044,7 +1047,8 @@ The model distinguishes `receipt-bound-evidence` from the full `receipt-bound-oc
 Controls now exercise a deliberately failing real fallback-handoff logger boundary,
 with a successful full-reader invocation of the fault proving the instrument works.
 The definition reader must not reach that handoff.
-An actual transcript/media-claim contrast checks unchanged definition relations alongside changed full-body normalization.
+An actual transcript/media-claim contrast checks unchanged definition relations
+alongside changed full-body normalization.
 Parser-backed label controls cover indentation,
 escaped closing delimiters/backslashes,
 Unicode,
@@ -1066,7 +1070,8 @@ the next run must establish whether the findings remain after the annotation cor
 Successful-call controls now produce ordinary assertions on removed boundaries,
 and a full-occurrence receipt-accessor control verifies the core's own expectation snapshot.
 R6 passes every phase,
-including zero-warning lint and the full suite's `unit exit 0` at line 10231 of `preparation-definition-unit-r6-20260912.out`.
+including zero-warning lint and the full suite's `unit exit 0`
+at line 10231 of `preparation-definition-unit-r6-20260912.out`.
 The consolidation callback and missing-summary diagnostics do not recur;
 no consolidation or lint-policy edit was made.
 This records the measured after-state,
@@ -1221,7 +1226,8 @@ This verifies the limited selection-identity ingestion boundary,
 not referenced bytes or the semantic root.
 
 `readPreparationSelectionEvidence` is the next byte-ownership boundary.
-It re-reads raw selection text against the independent digest rather than accepting a caller-fabricated typed certificate,
+It re-reads raw selection text against the independent digest
+rather than accepting a caller-fabricated typed certificate,
 requires exactly the frozen supporting inventory,
 checks inventory before content access,
 copies raw byte arrays before hashing,
@@ -1527,7 +1533,7 @@ The durable proof is `/var/home/user/temp/agent/sealed-runtime-proof-20260913`:
 Native policy trust and its recursive authority were revoked before cleanup.
 Empty container bind-target directories required checked,
 nonrecursive user-namespace ownership repair after Git's partial removal;
-the [cleanup observation](../troubleshooting/cli-git-temporary-worktree-policy-inputs.md#container-backed-cleanup-observation)
+the [cleanup observation][input-cleanup-observation]
 retains the details and proposed `GCL` clarification.
 Both worktree directories and registrations are absent at `2026-09-13T08:34:22.034Z`.
 
@@ -1976,6 +1982,9 @@ Semantic root-plan validation,
 reviewed phase execution,
 phase leases and acquisition claims,
 complete raw-call/transport lineage and final source-channel authority remain distinct unfinished responsibilities.
+
+[input-cleanup-observation]:
+  ../troubleshooting/cli-git-temporary-worktree-policy-inputs.md#container-backed-cleanup-observation
 
 ## Source availability is not incumbent accuracy
 

@@ -30,6 +30,54 @@ These are not successful lint runs or semantic guard detections.
 The diagnostic launcher itself exits successfully after saving a failed child's status;
 its `report.json` field `lintStatus` remains authoritative.
 
+## Separate input-runner follow-up
+
+Task 48 investigates a later source state,
+not a retroactive change to the successful lint-only measurements in this report.
+`producer-input-gate-check-1PX5aV` runs `format:oxlint --fix` with one worker and `GOMEMLIMIT=512MiB`.
+It fails after recording `memory.peak=2147483648` and `oom_kill=2`.
+That first follow-up lacks a retained container identity and also lacks the read-only Mise plugin mount.
+Its attempted `vfox-cmake` discovery and the memory failure are separate observations.
+No exact victim or cause is assigned from that first run alone.
+
+The partial formatter diff is retained in
+`/var/home/user/temp/agent/producer-input-format-incident-20260913`.
+The owning source checkpoint is `7a3fb97ef`.
+Further experiments run in the disposable
+`/var/home/user/temp/agent/translation-repair-input-format-20260913` worktree,
+with explicit dependency links,
+451 byte-matched config/plugin files,
+a freshly built owned lint configuration,
+a fresh package build and read-only Mise installs plus plugins.
+Only that disposable tree is writable by the formatter.
+The owner’s `mise.lock` is neither copied as an overlay nor reverted.
+
+The unchanged-source `lint512-4aR4cn` control also fails without `--fix`.
+Its before/after source hashes are identical,
+and its output contains no attempted plugin clone.
+Therefore the later failure is not established as a formatter-only effect or as a consequence of missing plugins.
+The one-worker/512 MiB recipe was sufficient for its recorded earlier source and harness,
+not a universal budget guarantee.
+
+This control retains container ID
+`45c30a054052de0032b413a4c7535e2138587ee0abcf85389826c65d7fcf2e35`,
+Podman inspection/events,
+process samples and kernel messages.
+The kernel matches that ID in `oom_memcg` and records:
+
+```text
+# lint512-4aR4cn/kernel.json, message excerpts
+constraint=CONSTRAINT_MEMCG
+Memory cgroup out of memory: Killed process 3237892 (node-MainThread)
+```
+
+The host PID map associates `3237892` with container PID `36`.
+The control reaches `memory.peak=2147483648` and records `oom_kill=1`.
+This establishes the named control's container-memory constraint,
+not which allocation is unnecessary or a general upstream leak.
+Per-run memory-target experiments remain unfinished;
+no checks or rules have been disabled and the 2 GiB/2 CPU/512 PID/no-network envelope remains unchanged.
+
 ## Root cause
 
 ### The kernel confirms a job-local memory constraint
