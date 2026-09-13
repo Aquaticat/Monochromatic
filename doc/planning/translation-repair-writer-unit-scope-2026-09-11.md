@@ -1552,8 +1552,10 @@ Unconsumed historical support remains `opaque-selection-support`;
 its filename does not establish execution or interpretive authority.
 
 The first committed owner is `5e02bc978`.
-The disposable verification worktree is
+The disposable verification worktree was
 `/var/home/user/temp/agent/translation-repair-root-inputs-20260913`.
+It is now removed;
+retained evidence is under `/var/home/user/temp/agent/semantic-root-guard-proof-20260913`.
 `root-inputs-native-verification-20260913.out` records successful build,
 actual corpus/artifact consumption and types on Node `26.8.2`.
 The native consumer verifies thirty selected entries,
@@ -1687,7 +1689,7 @@ The config package now has an explicit link to the existing read-only dependency
 `.guard-sandbox/lint-dependency-inputs.json`.
 No ignored tree is copied,
 no timestamps are fabricated to skip rebuilding,
-and no policy trust is granted.
+and no Git-policy CLI trust grant is made.
 R9's native config rebuild succeeds,
 but its lint process receives `SIGKILL` before the full package suite starts.
 Task 45's cgroup and kernel evidence identifies a memory-cgroup OOM,
@@ -1711,7 +1713,7 @@ Whole-sequence memory peak is 1958432768 bytes,
 with zero OOM and PID-limit events.
 The complete fixture additionally mounts the existing Mise plugin directory read-only,
 so this full-run success is not described as an environment-only delta from R9.
-Semantic-owner mutation proofs and audited cleanup remain unfinished.
+The listed semantic-owner mutation proof and audited cleanup are now complete at their stated scope.
 
 A proposed target-only parent fixture is not adopted:
 `ChunkPair.source` is existing content,
@@ -1727,7 +1729,7 @@ no collision-resistance or digest-collision mutation proof is claimed.
 Decoder negatives exercise shared decoding,
 not every role-specific schema branch.
 The fresh full suite passes at the recorded R10 checkpoint.
-Final semantic-owner completion still awaits consequential mutation proofs and audited cleanup.
+The listed semantic-owner proof and cleanup results are recorded in the named proof section.
 
 #### Listed semantic boundary proof
 
@@ -1780,11 +1782,42 @@ The final sequence rebuilds and rechecks types,
 lint and the full unit suite,
 then rehashes every baseline source again.
 
-The managed proof is running from
-`/var/home/user/temp/agent/translation-repair-root-inputs-20260913/.guard-sandbox/semantic-guard`.
-Its output log is `/var/home/user/temp/agent/semantic-root-guards-20260913.out`.
-No mutation result or final semantic-owner completion is claimed until the terminal evidence is read,
-retained and followed by audited cleanup.
+The managed proof completes with all 58 successful mutant rebuilds
+and one designated ordinary assertion per mutation.
+The restored sequence passes build,
+types,
+zero-warning lint and all 630 unit entries;
+`restored-test-unit.out:10908` records `test:unit exit 0`.
+The final source hashes match the committed baseline after the full suite.
+Peak container memory is 2035376128 bytes,
+with no OOM or PID-limit event.
+
+All designated assertion lines are read and classified.
+Metadata omissions accept inconsistent evidence;
+context,
+policy-order and materialization changes instead produce wrongful refusal.
+The target namespace mutation changes membership while retaining cardinality one,
+which the source-ID collision witness detects.
+The parser mutation exposes the native diagnostic canary.
+Removing batch resolution produces three executable `readFile` inspections instead of one,
+while the explicit-path control remains zero.
+These observations do not imply model acquisition or publication.
+
+`/var/home/user/temp/agent/semantic-root-guard-proof-20260913`
+retains 776 hash-checked copies totaling 30122944 bytes,
+plus separately hashed assertion-review and cleanup supplements.
+The audit accounts for 7586 owned untracked or ignored paths,
+21197 filesystem entries,
+416 empty directories and the 16 committed-overlay paths differing from worktree HEAD.
+It finds no root Git sentinels or foreign-owned entries.
+No Git-policy CLI trust grant was made during the recorded proof.
+The separate Mise trusted-config allowlist is recorded in the launch metadata.
+Directory and Git registration absence are verified at `2026-09-13T14:10:58.932Z`.
+The old launchers must not be rerun against the removed directory.
+
+This completes task 46's listed boundary proof,
+not task 41's reviewed root,
+phase or acquisition owner.
 No paid preparation,
 writer or image-reader work occurs.
 

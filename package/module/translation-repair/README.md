@@ -1436,7 +1436,9 @@ section override,
 reviewed phase or writer approval.
 Its native corpus and full-suite regression checks
 do not establish independent correctness of the shared parser/aligner.
-The writer-input work record tracks remaining guard-proof and acquisition integration work.
+The writer-input work record reports the listed boundary mutation proof
+and remaining reviewed-root,
+phase and acquisition integration work.
 The separate `runtime:seal` task builds a Linux x64 GNU application-runtime candidate under
 `node_modules/.sealed-runtime-candidate`,
 with the native parser asset and a relative-path `sealed-runtime.json` inventory.
