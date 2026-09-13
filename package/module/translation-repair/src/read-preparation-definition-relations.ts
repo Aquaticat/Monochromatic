@@ -7,7 +7,7 @@ import type {
   PreparationDefinitionRegistration,
 } from './preparation-definition-model.ts';
 import { projectPreparationDefinitionRelations, } from './project-preparation-definition-relations.ts';
-import { readPreparationOccurrence, } from './read-preparation-occurrence.ts';
+import { readPreparationEvidenceOccurrence, } from './read-preparation-evidence-occurrence.ts';
 
 //region Public receipt-bound definition reader
 
@@ -66,9 +66,9 @@ export function readPreparationDefinitionRelations({
   },);
   pl.debug('reconstructing registered receipt occurrence before definition-only projection',);
   /**
-   * Full documents and raw receipt produce owned current nodes, interpretation and native outcomes.
+   * Full documents and raw receipt produce owned evidence without body/media or fallback handoff.
    */
-  const occurrence = readPreparationOccurrence({
+  const occurrence = readPreparationEvidenceOccurrence({
     expected: fixed.occurrence,
     receipt,
     sourceText,

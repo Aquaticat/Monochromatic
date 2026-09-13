@@ -5,7 +5,7 @@ import type {
 import type { SectionPair, } from './pair-sections-wire.ts';
 import type { RepairDocument, } from './parse-document.ts';
 import type { PreparationReceiptBinding, } from './preparation-receipt-model.ts';
-import type { PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
+import type { PreparedBlockEvidence, PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
 
 //region Current occurrence metadata
 
@@ -89,6 +89,22 @@ export type BoundPreparationOccurrence = {
    * Replayed production handoff before any independent scope qualification.
    */
   readonly prepared: Extract<PreparedBlockPairing, { readonly kind: 'paired' | 'fallback'; }>;
+};
+
+/**
+ * Owned current receipt evidence before body/media normalization or slicer/fallback handoff.
+ * Internal consumers apply only their declared dependency role to this transient replay.
+ *
+ * @example
+ * ```ts
+ * const evidence = readPreparationEvidenceOccurrence({ expected, receipt, sourceText, targetText, l });
+ * ```
+ */
+export type PreparationEvidenceOccurrence = Omit<BoundPreparationOccurrence, 'scope' | 'prepared'> & {
+  /** This scope has not executed full-parent handoff reconstruction. */
+  readonly scope: 'receipt-bound-evidence';
+  /** Queried evidence rebuilt from raw terminal outcomes, not a stored aggregate or cache record. */
+  readonly evidence: Extract<PreparedBlockEvidence, { readonly kind: 'queried'; }>;
 };
 
 //endregion Current occurrence metadata

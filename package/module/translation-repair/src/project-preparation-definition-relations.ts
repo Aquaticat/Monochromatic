@@ -15,7 +15,7 @@ import type {
   PreparationDefinitionEvidence,
   PreparationDefinitionRelation,
 } from './preparation-definition-model.ts';
-import type { BoundPreparationOccurrence, } from './preparation-occurrence-model.ts';
+import type { PreparationEvidenceOccurrence, } from './preparation-occurrence-model.ts';
 import { PreparationQualificationError, } from './preparation-qualification-error.ts';
 import { replayPreparedBlockEvidence, } from './replay-prepared-block-evidence.ts';
 
@@ -77,7 +77,7 @@ export function projectPreparationDefinitionRelations({
   domain,
   l,
 }: {
-  readonly occurrence: BoundPreparationOccurrence;
+  readonly occurrence: PreparationEvidenceOccurrence;
   readonly domain: PreparationDefinitionDomain;
   readonly l: Logger;
 },): PreparationDefinitionEvidence {
@@ -93,7 +93,7 @@ export function projectPreparationDefinitionRelations({
    */
   const {
     pair,
-    prepared,
+    evidence,
     expected,
   } = occurrence;
   /**
@@ -145,7 +145,7 @@ export function projectPreparationDefinitionRelations({
     requiredUsable,
   } = replayPreparedBlockEvidence({
     pair,
-    evidence: prepared.evidence,
+    evidence,
     modelIds: expected.binding
       .modelIds,
     l: pl,
