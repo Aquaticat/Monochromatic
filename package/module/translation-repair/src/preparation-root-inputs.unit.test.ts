@@ -6,9 +6,19 @@ import { spawnSync, } from 'node:child_process';
 import { fileURLToPath, } from 'node:url';
 import { createHash, } from 'node:crypto';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
+import { describe, expect, it as createTest, } from '@monochromatic-dev/module-test/ts';
 import { alignDocumentSections, archiveOriginalReadingOf, buildPreparationRootInputs, CORPUS_COMMIT_SHA, hashContent, parseDocument, passArchiveText, PreparationRootError, } from '../dist/final/node/index.mjs';
 
+const requestedGuardTest = process.env.PREPARATION_ROOT_GUARD_TEST;
+const selectedGuardTests: string[] = [];
+function it(options: Parameters<typeof createTest>[0]): ReturnType<typeof createTest> {
+  if (requestedGuardTest === undefined) return createTest(options);
+  if (options.name === requestedGuardTest) {
+    selectedGuardTests.push(options.name);
+    return createTest(options);
+  }
+  return createTest({ ...options, skip: 'outside the explicitly selected guard-proof case' });
+}
 const l = tagged({ tag: 'root-input-owner-test' });
 const digest = (content: string) => hashContent({ content });
 const uniqueHeading = (index: number) => `## Unique${String.fromCodePoint(65 + Math.floor(index / 26), 65 + (index % 26))}section`;
@@ -247,7 +257,7 @@ const claimChanges: readonly { readonly name: string; readonly kind: Preparation
   } },
 ];
 
-await describe({ name: '', concurrency: 1, children: [describe({ name: buildPreparationRootInputs.name, children: [
+const children = [
   ...claimChanges.map(({ name, kind, change }) => it({ name: `binds independent native root claim ${name}`, fn: async () => {
     await using f = await fixture();
     change(f);
@@ -426,7 +436,7 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
   } })),
   it({ name: 'keeps native singleton dispatch structural instead of manufacturing a question', fn: async () => {
     await using f = await fixture({ implicitFirst: true });
-    const inputs = await buildPreparationRootInputs(f.request());
+    const inputs = await accepted(f.request());
     const [first] = inputs.registry;
     if (first === undefined) throw new Error('expected structural registration');
     expect(first.dispatch).toBe('implicit');
@@ -435,7 +445,7 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
   } }),
   it({ name: 'keeps empty-target insertion dispatch structural without inventing a receipt question', fn: async () => {
     await using f = await fixture({ emptyTarget: true });
-    const inputs = await buildPreparationRootInputs(f.request());
+    const inputs = await accepted(f.request());
     const empty = inputs.registry.find(record => record.dispatch === 'empty');
     expect(empty).toBeDefined();
     if (empty === undefined) throw new Error('expected empty-target registration');
@@ -540,7 +550,7 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     Object.assign(f.values.pool, { excluded: structuredClone(excluded) });
     f.selection.census.listed = 2;
     await writeFile(f.storePath, JSON.stringify({ files: { ...f.files, 'people/original/page.md': 'Cat source.', 'people/original/page.en.md': archive }, fail: '', listed: ['fixture', 'original'] }));
-    expect((await buildPreparationRootInputs(f.request())).excluded).toEqual(excluded);
+    expect((await accepted(f.request())).excluded).toEqual(excluded);
   } })),
   it({ name: 'refuses native corpus listing failures without retaining private subprocess details', fn: async () => {
     await using f = await fixture();
@@ -741,4 +751,6 @@ console.log('ROOT_GIT_READS ' + JSON.stringify({ implicitReads, explicitReads: c
     }
     expect(absent).toBe(true);
   } }),
-] })] });
+];
+if ((requestedGuardTest !== undefined) && (selectedGuardTests.length !== 1)) throw new Error('Guard selector must identify exactly one registered test');
+await describe({ name: '', concurrency: 1, children: [describe({ name: buildPreparationRootInputs.name, children })] });
