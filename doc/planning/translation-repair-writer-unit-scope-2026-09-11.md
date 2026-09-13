@@ -1987,6 +1987,16 @@ Commit `2be081dc6` passes the exact development type check.
 This child owner has not yet been executed through a bundled production CLI;
 its gate tests,
 formatter check and full suite remain open.
+`initializeProducerInputHost` at `be4aaa681` now owns raw launch matching,
+metadata topology preflight,
+exclusive namespace creation,
+runtime-file bindings and generated Podman configuration together.
+Initialization failures after namespace creation retain a names-only pre-container terminal record.
+The host's actual create/inspect/start/terminal/removal lifecycle,
+interruption handling,
+completion validation and CLI/bootstrap packaging are still absent.
+A bounded formatting edit is running against already committed development source;
+its generated changes must be inspected and type-checked before the next execution artifact is frozen.
 
 The native `input-child-context-FN03Xs` prototype independently observes the requested
 2 GiB memory plus 2 GiB swap,
