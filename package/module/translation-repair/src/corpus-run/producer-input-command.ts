@@ -1,9 +1,9 @@
 import { spawn, } from 'node:child_process';
-import { once, } from 'node:events';
 import { open, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { setTimeout, clearTimeout, } from 'node:timers';
 import { PRODUCER_INPUT_COMMAND_TIMES, PRODUCER_INPUT_METADATA_BYTES, } from './producer-input-bounds.ts';
+import { producerInputCommandClose, } from './producer-input-command-close.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import { readProducerInputMetadata, } from './producer-input-file.ts';
 import type { ProducerInputHost, } from './producer-input-host-init.ts';
@@ -85,8 +85,8 @@ export async function runProducerInputCommand({ host, stage, arguments_, signal,
     }
     /** The independently checked binary is invoked directly without PATH or a shell. */
     const child = spawn(host.launch.podman.path, argv, { cwd: host.run.dir, env: host.podman.environment, stdio: ['ignore', stdout.fd, stderr.fd] });
-    /** Register close immediately so an error or signal cannot masquerade as a successful result. */
-    const closed = once(child, 'close');
+    /** An earlier native error cannot detach the actual close observation. */
+    const closed = producerInputCommandClose(child);
     /** At most one escalation timer belongs to this stage's abort event. */
     const timers = new Set<ReturnType<typeof setTimeout>>();
     /** A native client ignoring the first termination request does not keep cleanup waiting indefinitely. */
@@ -110,16 +110,13 @@ export async function runProducerInputCommand({ host, stage, arguments_, signal,
     };
     if (effective.aborted)
       interrupt();
-    try {
-      await closed;
-    }
-    catch (error) {
-      await commandRecord({ path: `${prefix}.exit.json`, text: JSON.stringify({ stage, state: 'spawn-error', nativeError: error instanceof Error ? error.name : 'non-error throw' }) });
-      throw new ProducerInputRunError({ operation: 'launch-container', locator: stage, });
-    }
+    /** Native output descriptors and error evidence remain owned until actual close. */
+    const nativeErrors = await closed;
     await stdout.sync();
     await stderr.sync();
-    await commandRecord({ path: `${prefix}.exit.json`, text: JSON.stringify({ stage, state: 'closed', code: child.exitCode, signal: child.signalCode, interrupted: signal.aborted, deadlineExpired: deadline.aborted }) });
+    await commandRecord({ path: `${prefix}.exit.json`, text: JSON.stringify({ stage, state: 'closed', code: child.exitCode, signal: child.signalCode, interrupted: signal.aborted, deadlineExpired: deadline.aborted, nativeErrors }) });
+    if (nativeErrors.length !== 0)
+      throw new ProducerInputRunError({ operation: 'launch-container', locator: stage, });
     /** Podman's fixed absence query succeeds with its documented nonexistence code. */
     const expectedExitCode = stage === 'verify-removed' ? 1 : 0;
     if (child.exitCode !== expectedExitCode || child.signalCode !== null || effective.aborted)

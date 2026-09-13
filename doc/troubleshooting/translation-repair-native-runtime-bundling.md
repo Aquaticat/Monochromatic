@@ -595,6 +595,43 @@ stop refusal and interruption cannot become successful execution.
 Rebuilding and rerunning this change remains outstanding.
 No warning filtering or Podman patch is proposed.
 
+### Node close observation must survive an earlier error
+
+Node `v26.8.2`,
+commit `f2f2c2f246c36bd74f082cb43ecfe830657d81c9`,
+implements `events.once` at `lib/events.js:1001`.
+Its error listener removes the requested event listener before rejecting:
+
+```js
+// lib/events.js:1008-1013
+const errorListener = (err) => {
+  emitter.removeListener(name, resolver);
+  if (signal != null) {
+    eventTargetAgnosticRemoveListener(signal, 'abort', abortListener);
+  }
+  reject(err);
+};
+```
+
+For EventEmitters,
+`lib/events.js:1028-1031` installs this listener for every requested event except `error`.
+Thus `once(child, 'close')` does not guarantee observing close after a native spawn error.
+
+`input-native-host-lifecycle-g790sq` exercises actual `ENOENT` spawning,
+with a trusted fixture delaying delivery of its close event.
+The frozen bootstrap writes `image.exit.json` before that close is delivered.
+The ordinary ordering assertion fails with `true !== false`.
+The fixture's nonexistent executable path stays absent from the CLI's names-only diagnostic.
+This is a consumer ordering defect,
+not a Node bug.
+
+The local observer now records only fixed error categories and resolves on actual close.
+The command owner then synchronizes stdout,
+stderr and exit evidence before throwing a native-error refusal.
+That change still needs rebuilt-artifact verification.
+The event delay is test instrumentation;
+no claim is made that every real spawn failure exhibits that delay.
+
 ## What does not work
 
 - JavaScript bundling alone does not carry this native resource.
