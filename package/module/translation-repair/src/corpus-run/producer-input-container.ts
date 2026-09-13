@@ -228,7 +228,6 @@ export function producerInputContainerArgs({
   ];
   return [
     'run',
-    '--rm',
     '--pull=never',
     '--name',
     `producer-input-${runId}`,

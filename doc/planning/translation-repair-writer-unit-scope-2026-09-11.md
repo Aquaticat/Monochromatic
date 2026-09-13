@@ -1937,10 +1937,12 @@ bootstrap packaging and host/child wiring,
 pre-import mount/environment/cgroup/network checks,
 hook controls,
 and retained terminal outcomes for every lifecycle failure.
-The current `start.json` name precedes container startup and should identify namespace creation instead.
+The helper now writes `created.json` with `producer-preparation-input-created`,
+so namespace creation is not labelled container startup.
 The constructor's `--memory-swap` value equals its memory value;
 its resulting swap limit has not been measured and must not be represented as the older 2 GiB swap allowance.
-Automatic container removal currently prevents later inspection and must not discard required failure evidence.
+The argument constructor no longer requests automatic container removal.
+The pending host lifecycle owner must inspect and retain terminal evidence before removing its stopped container.
 
 Task 48 addresses a separate formatter-resource verification blocker.
 The first new type check reports `TS2339` after guards narrow away additional runtime-file fields;
