@@ -1,3 +1,4 @@
+import { producerInputChildEnvironment, PRODUCER_INPUT_HOSTNAME, } from './producer-input-environment.ts';
 import type { ProducerInputLaunch, } from './producer-input-model.ts';
 import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 
@@ -15,6 +16,10 @@ export const PRODUCER_INPUT_LIMITS = {
    * Hard resident-memory allowance, unchanged from provider-free semantic verification.
    */
   memoryBytes: 2_147_483_648,
+  /**
+   * Combined memory-plus-swap value requests the previously measured 2 GiB swap allowance.
+   */
+  memoryAndSwapBytes: 4_294_967_296,
   /**
    * CPU quota uses Podman's standard period.
    */
@@ -36,11 +41,6 @@ export const PRODUCER_INPUT_LIMITS = {
    */
   temporaryBytes: 67_108_864,
 } as const;
-/**
- * Predictable hostname is separate from the caller's host identity.
- */
-export const PRODUCER_INPUT_HOSTNAME = 'producer-preparation-input';
-
 /**
  * Fixed bind-mount role values remain deeply readonly through argument construction.
  *
@@ -123,11 +123,13 @@ function producerInputMount({
  *
  * @param callerUid - host owner to verify after namespace mapping
  *
+ * @param callerGid - host group identity checked independently from UID
+ *
  * @returns Native Podman argument vector without shell interpolation
  *
  * @example
  * ```ts
- * const args = producerInputContainerArgs({ launch, nodePath, bootstrapPath, launchSnapshotPath, outputPath, containerIdPath, runId, launchSha256, launchBytes, callerUid });
+ * const args = producerInputContainerArgs({ launch, nodePath, bootstrapPath, launchSnapshotPath, outputPath, containerIdPath, runId, launchSha256, launchBytes, callerUid, callerGid });
  * ```
  */
 export function producerInputContainerArgs({
@@ -141,6 +143,7 @@ export function producerInputContainerArgs({
   launchSha256,
   launchBytes,
   callerUid,
+  callerGid,
 }: {
   readonly launch: ProducerInputLaunch;
   readonly nodePath: string;
@@ -152,25 +155,12 @@ export function producerInputContainerArgs({
   readonly launchSha256: string;
   readonly launchBytes: number;
   readonly callerUid: number;
+  readonly callerGid: number;
 },): readonly string[] {
   /**
    * No image or host loader variables survive into child startup.
    */
-  const environment: Readonly<Record<string, string>> = {
-    PATH: '/usr/bin:/bin',
-    HOME: PRODUCER_INPUT_PATHS.home,
-    TMPDIR: '/tmp',
-    XDG_CONFIG_HOME: `${PRODUCER_INPUT_PATHS.home}/.config`,
-    XDG_CACHE_HOME: `${PRODUCER_INPUT_PATHS.home}/.cache`,
-    XDG_DATA_HOME: `${PRODUCER_INPUT_PATHS.home}/.local/share`,
-    GIT_CONFIG_NOSYSTEM: '1',
-    GIT_CONFIG_GLOBAL: '/dev/null',
-    GIT_TERMINAL_PROMPT: '0',
-    PREPARATION_INPUT_RUN_ID: runId,
-    PREPARATION_LAUNCH_SHA: launchSha256,
-    PREPARATION_LAUNCH_BYTES: String(launchBytes),
-    PREPARATION_CALLER_UID: String(callerUid),
-  };
+  const environment = producerInputChildEnvironment({ runId, launchSha256, launchBytes, callerUid, callerGid, });
   /**
    * Fixed requested role mappings must also be checked against the actual created container and child mounts.
    */
@@ -237,7 +227,7 @@ export function producerInputContainerArgs({
     '--memory',
     String(PRODUCER_INPUT_LIMITS.memoryBytes),
     '--memory-swap',
-    String(PRODUCER_INPUT_LIMITS.memoryBytes),
+    String(PRODUCER_INPUT_LIMITS.memoryAndSwapBytes),
     '--cpu-period',
     String(PRODUCER_INPUT_LIMITS.cpuPeriod),
     '--cpu-quota',

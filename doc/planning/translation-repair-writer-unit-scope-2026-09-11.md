@@ -1970,8 +1970,12 @@ hook controls,
 and retained terminal outcomes for every lifecycle failure.
 The helper now writes `created.json` with `producer-preparation-input-created`,
 so namespace creation is not labelled container startup.
-The constructor's `--memory-swap` value equals its memory value;
-its resulting swap limit has not been measured and must not be represented as the older 2 GiB swap allowance.
+The constructor now requests 4 GiB combined memory-plus-swap while retaining the 2 GiB memory cap.
+This replaces the unverified equal-memory/swap argument,
+using Podman's documented combined-limit meaning rather than claiming the older swap allowance was preserved.
+Actual resulting child limits still require native CLI verification.
+The shared child-environment helper now includes an explicit hostname and separate caller UID/GID bindings;
+its exact comparison must run before application import.
 The argument constructor no longer requests automatic container removal.
 The pending host lifecycle owner must inspect and retain terminal evidence before removing its stopped container.
 
