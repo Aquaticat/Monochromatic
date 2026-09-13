@@ -1422,6 +1422,12 @@ byte-view proxies are refused.
 Matching is point-in-time evidence;
 a downstream owner must rehash bytes rather than trusting a mutable returned record.
 Its byte-binding boundary is verified independently of the still-unfinished semantic root and acquisition owner.
+The separate `runtime:seal` task builds a Linux x64 GNU application-runtime candidate under
+`node_modules/.sealed-runtime-candidate`,
+with the native parser asset and a relative-path `sealed-runtime.json` inventory.
+The normal build retains its existing dependency policy.
+A candidate must be copied into a fresh frozen directory before reviewed use;
+the build neither approves execution nor implements the required pre-import target/environment gate.
 `readRegisteredPreparationParent` shares complete-document and parent-coordinate preflight with receipt reconstruction,
 while allowing structural planning without inventing model evidence.
 

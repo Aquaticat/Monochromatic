@@ -1493,12 +1493,47 @@ Those are excluded in `5a483507c` rather than counting type-only output as execu
 The formatter's readonly-host-callback finding is resolved with an explicit deeply readonly view of consumed fields;
 the repeated package formatter reports zero findings.
 
-`sealed-runtime-dedicated-verification-r2-20260913.out` records the current bounded verification.
-It checks manifest bytes against emitted files,
-keeps the normal artifact for comparison,
-and runs the full suite against a copy of the actual sealed artifact in the disposable worktree.
-A pre-import gate,
-second-path comparison and native correspondence-root owner remain unfinished.
+`sealed-runtime-dedicated-verification-r2-20260913.out` records successful bounded verification.
+It confirms the 150 normal runtime files remain unchanged,
+checks the manifest against all 151 executable/native files,
+and runs all 629 test-entry processes against a copy of the actual sealed artifact.
+`test:unit exit 0` was read at line 10378 of `.guard-sandbox/dedicated-r2/test-unit.out`.
+The manifest digest is `c6375af734890a5f224e472c5e5e25bb2bd5ed73ee1635cd58a380f3ed742273`.
+The normal artifact is restored by asynchronous disposal after the sealed test run.
+
+A second main-created worktree at
+`/var/home/user/temp/agent/translation-repair-sealed-location-20260913`
+uses source `382dfe702` and the same bounded build environment.
+`sealed-location-comparison-20260913.out` confirms identical names and bytes for all 192 emitted files,
+including the manifest and declarations.
+No policy trust was granted to this build-only worktree.
+
+The final copied consumer checks the independently recorded manifest hash,
+Node binary identity,
+target,
+loader environment and every runtime file before importing the application.
+It then reproduces all semantic-input checks with no workspace or `node_modules` mount
+and default-path libatomic rather than an `LD_LIBRARY_PATH` override.
+Its report is `/var/home/user/temp/agent/runtime-closure-standalone-e3Yxki/report.json`.
+This remains a probe of the owning gate contract,
+not a production pre-import gate.
+Final package lint reports zero warnings and errors across 1485 files.
+
+The durable proof is `/var/home/user/temp/agent/sealed-runtime-proof-20260913`:
+744 hash-checked retained copies,
+66926586 copied bytes,
+151 executable/native files,
+629 verified test entries and the independent build-location comparison.
+Native policy trust and its recursive authority were revoked before cleanup.
+Empty container bind-target directories required checked,
+nonrecursive user-namespace ownership repair after Git's partial removal;
+the [cleanup observation](../troubleshooting/cli-git-temporary-worktree-policy-inputs.md#container-backed-cleanup-observation)
+retains the details and proposed `GCL` clarification.
+Both worktree directories and registrations are absent at `2026-09-13T08:34:22.034Z`.
+
+A pre-import gate and native correspondence-root owner remain unfinished.
+Place the gate in the actual owning runner before loading the sealed application;
+do not introduce a generic execution framework or treat build metadata as approval.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,

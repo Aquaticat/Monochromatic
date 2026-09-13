@@ -140,6 +140,62 @@ The owned links must be included in the later cleanup inventory.
 No ignored-state tree was copied,
 no rules were weakened and no native Git write bypass was used.
 
+## Container-backed cleanup observation
+
+Native `git worktree remove --force` later reports:
+
+```text
+error: failed to delete '.../translation-repair-runtime-closure-20260913': Permission denied
+```
+
+In this attempt the Git registration was already absent afterward,
+while the ignored directory remainder was still present.
+Inspection finds empty bind-mount target directories,
+plus their one-child parents,
+owned by host UID/GID `524288` with mode `1755`.
+The caller owns their surrounding temporary workspace.
+Git file inventories had not described these empty directories.
+
+The measured `podman unshare` identity is UID `0` for the caller,
+and UID/GID `1:1` for those placeholders.
+The inspected Podman source documentation,
+`docs/source/markdown/podman-unshare.1.md:10`
+in `/var/home/user/temp/agent/podman-v5.8.4-20260903`,
+explains that mapping:
+
+```text
+namespace is configured so that the invoking user's UID and primary GID appear
+to be UID 0 and GID 0, respectively.
+```
+
+The repair checks each exact path as a real directory,
+verifies its owner,
+and requires empty contents or the sole expected `data` child.
+It records device/inode identity before changing ownership.
+`podman unshare chown --no-dereference 0:0 <exact checked paths>`
+then restores caller ownership without recursive traversal.
+After-state checks confirm unchanged device/inode identities and the caller's UID/GID.
+Neither the real corpus nor linked dependency ownership is changed.
+
+The partial-deletion recheck also accounts for Git representing nested fixture repositories by directory entries:
+the recorded `artifact-generation-shallow-.../` entry covers its `.git/shallow` file.
+Remaining files are checked against the original audit,
+with only such recorded directory entries allowing descendants.
+Empty `.local/state/cli-git/trust/v1/transactions` scaffolding carries no additional file content.
+The owned unregistered remainder is removed,
+and native Git removes the still-registered second worktree.
+
+`sealed-runtime-proof-20260913` retains ownership-before/after records,
+the partial-removal recheck and final removal evidence.
+Both directories and registrations are absent at `2026-09-13T08:34:22.034Z`.
+Trust was revoked and independently reported untrusted before removal.
+
+Proposed `AGENTS.md` clarification,
+not applied:
+retain `GCL`'s existing cleanup-review scope and require inspection of all directory owners,
+including empty container mount targets,
+in addition to ignored root artifacts.
+
 ## What does not work
 
 - Trusting the original path does not automatically trust every detached worktree copy.
@@ -166,5 +222,5 @@ no rules were weakened and no native Git write bypass was used.
     the scoped staging/commit invocation succeeded without changing either tool or its policies.
 
 Nothing to file upstream.
-The follow-up is local trust revocation and audited temporary-worktree cleanup,
-not weakening the checks.
+Local trust revocation and audited temporary-worktree cleanup are complete.
+The repair did not weaken the checks.
