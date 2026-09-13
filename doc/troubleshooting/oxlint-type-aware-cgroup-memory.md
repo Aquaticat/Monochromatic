@@ -75,8 +75,64 @@ The host PID map associates `3237892` with container PID `36`.
 The control reaches `memory.peak=2147483648` and records `oom_kill=1`.
 This establishes the named control's container-memory constraint,
 not which allocation is unnecessary or a general upstream leak.
-Per-run memory-target experiments remain unfinished;
-no checks or rules have been disabled and the 2 GiB/2 CPU/512 PID/no-network envelope remains unchanged.
+`lint256-J14Ich` completes analysis of 1515 files and 484 rules with 10 stylistic warnings,
+no errors,
+`memory.peak=1908318208` and no OOM events.
+It still exits `1` because warnings are not accepted as a successful package lint.
+The subsequent unchanged-source `lint512-QeoyZc` reversal also completes analysis,
+with the same warnings,
+`memory.peak=1972633600` and no OOM events.
+This reversal does not reproduce the memory failure.
+The measurements therefore do not establish that the lower Go target alone caused recovery,
+or that 512 MiB must fail on the later source.
+
+The disposable `format256-lcie4M` run then succeeds with
+`OXLINT_THREADS=1 GOMEMLIMIT=256MiB`,
+1515 files,
+484 rules,
+zero warnings/errors,
+`memory.peak=1927979008` and no OOM/PID events.
+Its exact formatter diff changes only the launch reader,
+Podman context helper and runtime-shape reader.
+Those reviewed bytes are transferred to development and committed as `522f7dc62`.
+The exact development `lint:types` task succeeds in `devtypes-duhx8i`,
+with peak 984588288 bytes and no OOM events.
+
+A disposable positive control removes the `run` parameter tag and one `await file.sync()`
+from the Podman helper without executing that modified helper.
+`lint256-24YGKJ` emits exactly `tsdoc(require-param)` and `typescript(no-floating-promises)`.
+It records one warning,
+one error,
+peak 1893535744 bytes and no OOM events.
+The saved helper is restored by matching both mutant and original SHA-256 before replacement.
+The fresh `format256-60YMRl` fixpoint check succeeds with no changed source hashes,
+zero findings,
+peak 1893507072 bytes and no OOM/PID events.
+`input-formatter-proof-20260913` retains 171 hash-checked files totaling 9417678 bytes,
+plus 21 separately indexed supplemental records.
+Committed blobs in `522f7dc62` independently match the three transferred formatter-result hashes.
+The final pre-removal audit covers 12979 filesystem entries and 49 empty directories,
+with no root Git sentinels,
+foreign owners or special entries.
+All nine owned stopped containers are removed and their absence checked.
+
+Git policy initially refuses the cleanup checks with `config-untrusted`.
+The temporary configuration is reviewed and matches development's SHA-256
+`11fdd22292aeeb35e4a36ddc7e7cdcee66d34e3060fe6f09873af90ded9915ea`.
+It is not replaced with the independently changed main-worktree configuration.
+Native temporary trust,
+including the disclosed descendant authority,
+is revoked before removal;
+`untrust-summary` records the recursive cascade and `trust-status` reports `trusted:false`.
+Directory and Git registration absence are both verified at `2026-09-13T17:56:04.692Z`.
+This closes task 48's bounded formatter verification,
+not task 47's absent production bootstrap or its pending tests and full suite.
+
+The 256 MiB setting is a measured per-run configuration,
+not a hard aggregate limit,
+optimal value,
+repository default or proof of a deterministic memory remedy.
+No checks or rules are disabled and the 2 GiB/2 CPU/512 PID/no-network envelope remains unchanged.
 
 ## Root cause
 

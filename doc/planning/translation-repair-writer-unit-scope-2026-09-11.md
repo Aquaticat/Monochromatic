@@ -1942,7 +1942,7 @@ The constructor's `--memory-swap` value equals its memory value;
 its resulting swap limit has not been measured and must not be represented as the older 2 GiB swap allowance.
 Automatic container removal currently prevents later inspection and must not discard required failure evidence.
 
-Task 48 temporarily blocks task 47 verification.
+Task 48 addresses a separate formatter-resource verification blocker.
 The first new type check reports `TS2339` after guards narrow away additional runtime-file fields;
 reordering the checks repairs those errors and the next type check passes.
 The subsequent formatter reports ASCII-string spreading,
@@ -1959,13 +1959,41 @@ No exact kernel/container victim correlation has yet been recorded for this inci
 The process stops before its type-check and build phases.
 Its partial source diff contains formatter edits and is reviewed separately;
 `mise.lock` remains the owner's unrelated change.
-Next verification uses a disposable writable worktree,
-the known plugin mounts,
-an unchanged lint-only control,
-and retained container/cgroup/process evidence before adjusting a per-run memory target.
+The disposable follow-up adds the known plugin mounts,
+fresh owned config and package builds,
+source hashes,
+retained container inspection/events,
+host PID maps and kernel evidence.
+Its first unchanged-source 512 MiB lint control hits the named container memory limit.
+The 256 MiB lint run and subsequent 512 MiB reversal both complete with style warnings and no OOM.
+The reversal therefore does not prove that lowering the Go target alone remedies the failure.
+
+With one Oxlint worker and `GOMEMLIMIT=256MiB`,
+`format256-lcie4M` completes all 1515 files and 484 rules with zero findings,
+peak 1927979008 bytes and no OOM/PID events.
+The three formatter-modified files are committed as `522f7dc62`;
+committed blob hashes independently match the transferred results.
+The exact development type check passes at peak 984588288 bytes.
+Deliberate missing parameter documentation and an unawaited sync operation produce
+`tsdoc(require-param)` and `typescript(no-floating-promises)`.
+Exact restoration precedes `format256-60YMRl`,
+which succeeds with unchanged source hashes,
+zero findings and peak 1893507072 bytes.
+This is a measured per-run profile,
+not a new repository default or proof of an optimal or deterministic memory remedy.
+
+`input-formatter-proof-20260913` retains 171 verified copies and 21 separately indexed supplemental records.
+The pre-removal audit checks 12979 filesystem entries,
+49 empty directories and no root Git sentinels or foreign ownership.
+Nine stopped owned containers are removed and checked absent.
+Native temporary Git configuration and descendant trust are reviewed,
+disclosed and revoked before cleanup.
+The worktree directory and Git registration are both absent at `2026-09-13T17:56:04.692Z`.
+Task 48's verification is complete.
+Task 47 resumes with the production host/child bootstrap and actual CLI still absent.
 No runner tests,
 full suite,
-actual CLI launch or paid preparation follows from these incomplete checks.
+actual CLI launch or paid preparation follows from the formatter proof.
 
 #### Remaining owning phases
 
