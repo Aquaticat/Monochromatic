@@ -1,4 +1,7 @@
-import type { ArchiveOriginalReading, ArchiveOriginalSpan, } from './archive-original-note.ts';
+import type {
+  ArchiveOriginalReading,
+  ArchiveOriginalSpan,
+} from './archive-original-note.ts';
 import type { AlignmentFinding, } from './chunk-document.ts';
 import type { ArchiveRetainedLine, } from './corpus-run/archive-stub.ts';
 import type { DocumentNode, } from './document-node.ts';
@@ -15,17 +18,29 @@ import type { ParseFinding, } from './parse-document.ts';
  * ```
  */
 export type PreparationRootRawDocument = {
-  /** Commit-relative locator, never a generated replacement path. */
+  /**
+   * Commit-relative locator, never a generated replacement path.
+   */
   readonly relPath: string;
-  /** Exact committed byte extent. */
+  /**
+   * Exact committed byte extent.
+   */
   readonly bytes: number;
-  /** SHA-256 before UTF-8 decoding or line-ending folding. */
+  /**
+   * SHA-256 before UTF-8 decoding or line-ending folding.
+   */
   readonly rawHash: string;
-  /** Hash after native UTF-8 decoding but before CRLF folding. */
+  /**
+   * Hash after native UTF-8 decoding but before CRLF folding.
+   */
   readonly decodedHash: string;
-  /** Hash under the existing corpus text reader's line-ending semantics. */
+  /**
+   * Hash under the existing corpus text reader's line-ending semantics.
+   */
   readonly effectiveHash: string;
-  /** Native count of CRLF sequences folded without changing line numbering. */
+  /**
+   * Native count of CRLF sequences folded without changing line numbering.
+   */
   readonly foldedCrLf: number;
 };
 
@@ -38,11 +53,17 @@ export type PreparationRootRawDocument = {
  * ```
  */
 export type PreparationRootOriginalPolicy = {
-  /** Raw archive declaration classification. */
+  /**
+   * Raw archive declaration classification.
+   */
   readonly inherited: ArchiveOriginalReading['kind'];
-  /** Normalized archive declaration classification. */
+  /**
+   * Normalized archive declaration classification.
+   */
   readonly normalized: ArchiveOriginalReading['kind'];
-  /** Current protected ranges; declarations do not become model votes. */
+  /**
+   * Current protected ranges; declarations do not become model votes.
+   */
   readonly spans: readonly ArchiveOriginalSpan[];
 };
 
@@ -55,29 +76,53 @@ export type PreparationRootOriginalPolicy = {
  * ```
  */
 export type PreparationRootEntry = {
-  /** Frozen corpus directory component. */
+  /**
+   * Frozen corpus directory component.
+   */
   readonly entryId: string;
-  /** Effective original under shared corpus reading semantics. */
+  /**
+   * Effective original under shared corpus reading semantics.
+   */
   readonly sourceText: string;
-  /** Effective archive before invisible/stub normalization. */
+  /**
+   * Effective archive before invisible/stub normalization.
+   */
   readonly archiveText: string;
-  /** Shared normalized incumbent, not repaired prose. */
+  /**
+   * Shared normalized incumbent, not repaired prose.
+   */
   readonly targetText: string;
-  /** Complete original identity. */
+  /**
+   * Complete original identity.
+   */
   readonly sourceHash: string;
-  /** Complete archive identity before pass normalization. */
+  /**
+   * Complete archive identity before pass normalization.
+   */
   readonly archiveHash: string;
-  /** Complete incumbent identity after pass normalization. */
+  /**
+   * Complete incumbent identity after pass normalization.
+   */
   readonly targetHash: string;
-  /** Current source-authority classification. */
+  /**
+   * Current source-authority classification.
+   */
   readonly originalPolicy: PreparationRootOriginalPolicy;
-  /** Exact retained normalized lines and pinned-file line numbers. */
+  /**
+   * Exact retained normalized lines and pinned-file line numbers.
+   */
   readonly archiveLines: readonly ArchiveRetainedLine[];
-  /** Parser observations are retained rather than reinterpreted as permission. */
+  /**
+   * Parser observations are retained rather than reinterpreted as permission.
+   */
   readonly sourceFindings: readonly ParseFinding[];
-  /** Incumbent parser observations remain visible to subsequent review. */
+  /**
+   * Incumbent parser observations remain visible to subsequent review.
+   */
   readonly targetFindings: readonly ParseFinding[];
-  /** Deterministic section observations do not authorize a section-pairing phase. */
+  /**
+   * Deterministic section observations do not authorize a section-pairing phase.
+   */
   readonly alignmentFindings: readonly AlignmentFinding[];
 };
 
@@ -100,13 +145,21 @@ export type PreparationRootNode = Pick<DocumentNode, 'id' | 'kind' | 'zone' | 's
  * ```
  */
 export type PreparationRootParentSide = {
-  /** First current document offset owned by the parent. */
+  /**
+   * First current document offset owned by the parent.
+   */
   readonly startOffset: number;
-  /** Exclusive current parent boundary. */
+  /**
+   * Exclusive current parent boundary.
+   */
   readonly endOffset: number;
-  /** Exact parent text hash, not a complete-document identity. */
+  /**
+   * Exact parent text hash, not a complete-document identity.
+   */
   readonly hash: string;
-  /** Ordered native node membership. */
+  /**
+   * Ordered native node membership.
+   */
   readonly nodes: readonly PreparationRootNode[];
 };
 
@@ -119,13 +172,25 @@ export type PreparationRootParentSide = {
  * ```
  */
 export type PreparationRootProtection = {
-  /** Current intersections keep the declaration identity without exporting its text here. */
-  readonly intersections: readonly { readonly startOffset: number; readonly endOffset: number; readonly noteHash: string; }[];
-  /** Native sealed-node identities. */
+  /**
+   * Current intersections keep the declaration identity without exporting its text here.
+   */
+  readonly intersections: readonly {
+    readonly startOffset: number;
+    readonly endOffset: number;
+    readonly noteHash: string
+  }[];
+  /**
+   * Native sealed-node identities.
+   */
   readonly sealedTargetNodeIds: readonly string[];
-  /** Nodes crossing a protected boundary remain separately observable. */
+  /**
+   * Nodes crossing a protected boundary remain separately observable.
+   */
   readonly straddlingNodeIds: readonly string[];
-  /** Empty targets are not fabricated all-sealed controls. */
+  /**
+   * Empty targets are not fabricated all-sealed controls.
+   */
   readonly allTargetNodesSealed: boolean;
 };
 
@@ -138,27 +203,49 @@ export type PreparationRootProtection = {
  * ```
  */
 export type PreparationRootParent = {
-  /** Canonical entry/source-section/target-section identity. */
+  /**
+   * Canonical entry/source-section/target-section identity.
+   */
   readonly id: string;
-  /** Corpus entry retaining its contributor and authority context. */
+  /**
+   * Corpus entry retaining its contributor and authority context.
+   */
   readonly entryId: string;
-  /** Historical sampler's source-side index alias. */
+  /**
+   * Historical sampler's source-side index alias.
+   */
   readonly index: number;
-  /** Position in the current combined aligned-parent list. */
+  /**
+   * Position in the current combined aligned-parent list.
+   */
   readonly pairIndex: number;
-  /** Original-side section identity. */
+  /**
+   * Original-side section identity.
+   */
   readonly sourceSectionIndex: number;
-  /** Incumbent-side section or insertion-anchor identity. */
+  /**
+   * Incumbent-side section or insertion-anchor identity.
+   */
   readonly targetSectionIndex: number;
-  /** Complete parent original, not a selected output fragment. */
+  /**
+   * Complete parent original, not a selected output fragment.
+   */
   readonly sourceText: string;
-  /** Complete parent incumbent remains a fallible baseline. */
+  /**
+   * Complete parent incumbent remains a fallible baseline.
+   */
   readonly incumbentText: string;
-  /** Current original-side coordinates and node membership. */
+  /**
+   * Current original-side coordinates and node membership.
+   */
   readonly source: PreparationRootParentSide;
-  /** Current incumbent-side coordinates and node membership. */
+  /**
+   * Current incumbent-side coordinates and node membership.
+   */
   readonly target: PreparationRootParentSide;
-  /** Original-English ownership remains independent of correspondence. */
+  /**
+   * Original-English ownership remains independent of correspondence.
+   */
   readonly originalProtection: PreparationRootProtection;
 };
 

@@ -24,23 +24,41 @@ export type PreparationRootParentRole = 'writer-parent' | 'footnote-definitions'
  * ```
  */
 export type PreparationRootParentIdentity = {
-  /** Initial canonical parent identity; later eligibility changes must not redraw it. */
+  /**
+   * Initial canonical parent identity; later eligibility changes must not redraw it.
+   */
   readonly parentId: string;
-  /** Complete entry owning source/context authority. */
+  /**
+   * Complete entry owning source/context authority.
+   */
   readonly entryId: string;
-  /** Definition closure does not grant writer authority to an added dependency. */
+  /**
+   * Definition closure does not grant writer authority to an added dependency.
+   */
   readonly roles: readonly PreparationRootParentRole[];
-  /** Complete current original identity. */
+  /**
+   * Complete current original identity.
+   */
   readonly sourceHash: string;
-  /** Complete current normalized incumbent identity. */
+  /**
+   * Complete current normalized incumbent identity.
+   */
   readonly targetHash: string;
-  /** Combined deterministic parent position. */
+  /**
+   * Combined deterministic parent position.
+   */
   readonly pairIndex: number;
-  /** Source-side section identity. */
+  /**
+   * Source-side section identity.
+   */
   readonly sourceIndex: number;
-  /** Target-side section or insertion-anchor identity. */
+  /**
+   * Target-side section or insertion-anchor identity.
+   */
   readonly targetIndex: number;
-  /** Ordered definition-node identities are not relation endorsements. */
+  /**
+   * Ordered definition-node identities are not relation endorsements.
+   */
   readonly definitionDomain: PreparationDefinitionDomain;
 };
 
@@ -53,18 +71,30 @@ export type PreparationRootParentIdentity = {
  * ```
  */
 export type PreparationRootRegistration = PreparationRootParentIdentity & ({
-  /** Native preparation requires a block correspondence question. */
+  /**
+   * Native preparation requires a block correspondence question.
+   */
   readonly dispatch: 'queried';
-  /** Actual shared native block numbering, messages and schema. */
+  /**
+   * Actual shared native block numbering, messages and schema.
+   */
   readonly question: PreparationReceiptQuestion;
-  /** Historical native key remains separate from current plan/receipt authority. */
+  /**
+   * Historical native key remains separate from current plan/receipt authority.
+   */
   readonly questionKey: string;
-  /** Exact protocol/question digest for initial same-payload alias accounting. */
+  /**
+   * Exact protocol/question digest for initial same-payload alias accounting.
+   */
   readonly questionDigest: string;
-  /** Current interpretation metadata does not alter substantive messages. */
+  /**
+   * Current interpretation metadata does not alter substantive messages.
+   */
   readonly freeOrder: BlockPairingQuestion['freeOrder'];
 } | {
-  /** Existing empty-side and singleton paths are structural records, not acquired evidence. */
+  /**
+   * Existing empty-side and singleton paths are structural records, not acquired evidence.
+   */
   readonly dispatch: 'empty' | 'implicit';
 });
 
@@ -77,13 +107,21 @@ export type PreparationRootRegistration = PreparationRootParentIdentity & ({
  * ```
  */
 export type PreparationRootUnalignedDefinitions = {
-  /** Neither pairing authority nor automatic prompt context follows from these nodes. */
+  /**
+   * Neither pairing authority nor automatic prompt context follows from these nodes.
+   */
   readonly scope: 'unaligned-definition-namespace';
-  /** Complete document pair owning the unaligned inventory. */
+  /**
+   * Complete document pair owning the unaligned inventory.
+   */
   readonly entryId: string;
-  /** Source-only namespace evidence can remain outside all registered parent questions. */
+  /**
+   * Source-only namespace evidence can remain outside all registered parent questions.
+   */
   readonly source: readonly PreparationRootNode[];
-  /** Target namespace evidence is retained independently, including absence. */
+  /**
+   * Target namespace evidence is retained independently, including absence.
+   */
   readonly target: readonly PreparationRootNode[];
 };
 
@@ -96,9 +134,13 @@ export type PreparationRootUnalignedDefinitions = {
  * ```
  */
 export type PreparationRootQuestionAliases = {
-  /** Identical native question/protocol bytes, not shared occurrence qualification. */
+  /**
+   * Identical native question/protocol bytes, not shared occurrence qualification.
+   */
   readonly questionDigest: string;
-  /** Ordered current occurrences still require their own receipt interpretation. */
+  /**
+   * Ordered current occurrences still require their own receipt interpretation.
+   */
   readonly parentIds: readonly string[];
 };
 

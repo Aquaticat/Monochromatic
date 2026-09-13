@@ -1,7 +1,19 @@
-import type { FrozenPreparationObligation, FrozenPreparationSelection, } from './preparation-selection-model.ts';
-import type { PreparationRootEntry, PreparationRootParent, PreparationRootPopulationParent, PreparationRootRawDocument, } from './preparation-root-population-model.ts';
+import type {
+  FrozenPreparationObligation,
+  FrozenPreparationSelection,
+} from './preparation-selection-model.ts';
+import type {
+  PreparationRootEntry,
+  PreparationRootParent,
+  PreparationRootPopulationParent,
+  PreparationRootRawDocument,
+} from './preparation-root-population-model.ts';
 
-import type { PreparationRootQuestionAliases, PreparationRootRegistration, PreparationRootUnalignedDefinitions, } from './preparation-root-registration-model.ts';
+import type {
+  PreparationRootQuestionAliases,
+  PreparationRootRegistration,
+  PreparationRootUnalignedDefinitions,
+} from './preparation-root-registration-model.ts';
 
 //region Semantic ownership of frozen supporting evidence
 
@@ -25,9 +37,13 @@ export type PreparationRootReferenceRole = 'policy-pool' | 'reading-journal' | '
  * ```
  */
 export type PreparationRootReferenceBinding = {
-  /** Checked semantic use or explicit absence of interpretive authority. */
+  /**
+   * Checked semantic use or explicit absence of interpretive authority.
+   */
   readonly role: PreparationRootReferenceRole;
-  /** Entry, parent or selection owning that use. */
+  /**
+   * Entry, parent or selection owning that use.
+   */
   readonly consumer: string;
 };
 
@@ -40,13 +56,21 @@ export type PreparationRootReferenceBinding = {
  * ```
  */
 export type PreparationRootReference = {
-  /** Original locator remains data and is never opened by role validation. */
+  /**
+   * Original locator remains data and is never opened by role validation.
+   */
   readonly path: string;
-  /** Exact frozen supporting-byte identity. */
+  /**
+   * Exact frozen supporting-byte identity.
+   */
   readonly hash: string;
-  /** Raw extent measured by the owning byte matcher. */
+  /**
+   * Raw extent measured by the owning byte matcher.
+   */
   readonly bytes: number;
-  /** Every interpreted relationship remains explicitly attributed. */
+  /**
+   * Every interpreted relationship remains explicitly attributed.
+   */
   readonly bindings: readonly PreparationRootReferenceBinding[];
 };
 
@@ -59,29 +83,51 @@ export type PreparationRootReference = {
  * ```
  */
 export type PreparationRootExclusion = {
-  /** Listed corpus entry whose eligibility is reconstructed. */
+  /**
+   * Listed corpus entry whose eligibility is reconstructed.
+   */
   readonly entryId: string;
-  /** At least one pinned source path is absent. */
+  /**
+   * At least one pinned source path is absent.
+   */
   readonly kind: 'missing-corpus-side';
 } | {
-  /** Entry declined by an inherited whole-page declaration. */
+  /**
+   * Entry declined by an inherited whole-page declaration.
+   */
   readonly entryId: string;
-  /** Original-English authority before pass normalization. */
+  /**
+   * Original-English authority before pass normalization.
+   */
   readonly kind: 'production-whole-page-original';
-  /** Exact effective archive before normalization. */
+  /**
+   * Exact effective archive before normalization.
+   */
   readonly archiveHash: string;
-  /** Declaration identity without placing its prose in this record. */
+  /**
+   * Declaration identity without placing its prose in this record.
+   */
   readonly noteHash: string;
 } | {
-  /** Entry declined by the normalized whole-page declaration. */
+  /**
+   * Entry declined by the normalized whole-page declaration.
+   */
   readonly entryId: string;
-  /** Original-English authority after pass normalization. */
+  /**
+   * Original-English authority after pass normalization.
+   */
   readonly kind: 'normalized-whole-page-original';
-  /** Exact effective archive before normalization. */
+  /**
+   * Exact effective archive before normalization.
+   */
   readonly archiveHash: string;
-  /** Exact normalized archive identity. */
+  /**
+   * Exact normalized archive identity.
+   */
   readonly targetHash: string;
-  /** Declaration identity under the native classification. */
+  /**
+   * Declaration identity under the native classification.
+   */
   readonly noteHash: string;
 };
 
@@ -94,33 +140,61 @@ export type PreparationRootExclusion = {
  * ```
  */
 export type PreparationRootInputs = {
-  /** Qualification, phase review and call permission remain subsequent owners. */
+  /**
+   * Qualification, phase review and call permission remain subsequent owners.
+   */
   readonly scope: 'unqualified-preparation-root-inputs';
-  /** Independently bound frozen selection, not a caller-fabricated typed assertion. */
+  /**
+   * Independently bound frozen selection, not a caller-fabricated typed assertion.
+   */
   readonly selection: FrozenPreparationSelection;
-  /** Complete checked artifact inventory in original frozen order. */
+  /**
+   * Complete checked artifact inventory in original frozen order.
+   */
   readonly references: readonly PreparationRootReference[];
-  /** Raw/effective identities for every successfully read pinned corpus document. */
+  /**
+   * Raw/effective identities for every successfully read pinned corpus document.
+   */
   readonly rawDocuments: readonly PreparationRootRawDocument[];
-  /** Listed entries in native Git order, including exclusions. */
+  /**
+   * Listed entries in native Git order, including exclusions.
+   */
   readonly listedEntryIds: readonly string[];
-  /** Current eligible population metadata in native order, without unrelated full-parent prose. */
+  /**
+   * Current eligible population metadata in native order, without unrelated full-parent prose.
+   */
   readonly population: readonly PreparationRootPopulationParent[];
-  /** Existing policy exclusions must match frozen evidence exactly. */
+  /**
+   * Existing policy exclusions must match frozen evidence exactly.
+   */
   readonly excluded: readonly PreparationRootExclusion[];
-  /** Selected complete entries retain their source and normalization provenance. */
+  /**
+   * Selected complete entries retain their source and normalization provenance.
+   */
   readonly entries: readonly PreparationRootEntry[];
-  /** Exactly the original ordered parent identities, never a replacement draw. */
+  /**
+   * Exactly the original ordered parent identities, never a replacement draw.
+   */
   readonly parents: readonly PreparationRootParent[];
-  /** Source obligations retain open qualifications and cannot silently authorize extra calls. */
+  /**
+   * Source obligations retain open qualifications and cannot silently authorize extra calls.
+   */
   readonly obligations: readonly FrozenPreparationObligation[];
-  /** Exact selected-parent and definition-only closure, without section, image or writer call permission. */
+  /**
+   * Exact selected-parent and definition-only closure, without section, image or writer call permission.
+   */
   readonly registry: readonly PreparationRootRegistration[];
-  /** Definition nodes outside native aligned parents remain namespace data only. */
+  /**
+   * Definition nodes outside native aligned parents remain namespace data only.
+   */
   readonly unalignedDefinitions: readonly PreparationRootUnalignedDefinitions[];
-  /** Exact initial question aliases are explicit without granting cross-occurrence qualification. */
+  /**
+   * Exact initial question aliases are explicit without granting cross-occurrence qualification.
+   */
   readonly questionAliases: readonly PreparationRootQuestionAliases[];
-  /** The root does not silently acquire or adopt a whole-entry section override. */
+  /**
+   * The root does not silently acquire or adopt a whole-entry section override.
+   */
   readonly sectionPairing: 'not-registered';
 };
 

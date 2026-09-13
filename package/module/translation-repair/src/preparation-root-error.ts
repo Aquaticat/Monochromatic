@@ -46,7 +46,9 @@ export class PreparationRootError extends Error {
    * Failed input boundary without private data.
    */
   public readonly kind: PreparationRootFailure;
-  /** Input locator or entry identity, never private artifact or corpus content. */
+  /**
+   * Input locator or entry identity, never private artifact or corpus content.
+   */
   public readonly input?: string;
   /**
    * Constructs an input-specific refusal and its allowed recovery.
@@ -60,12 +62,18 @@ export class PreparationRootError extends Error {
    * new PreparationRootError({ kind: 'selection-parents' });
    * ```
    */
-  public constructor({ kind, input, }: { readonly kind: PreparationRootFailure; readonly input?: string; },) {
-    super(input === undefined ? ROOT_MESSAGES[kind] : `${ROOT_MESSAGES[kind]} Input: ${JSON.stringify(input,)}.`,);
+  public constructor({
+    kind,
+    input: affectedInput,
+  }: {
+    readonly kind: PreparationRootFailure;
+    readonly input?: string
+  },) {
+    super(affectedInput === undefined ? ROOT_MESSAGES[kind] : `${ROOT_MESSAGES[kind]} Input: ${JSON.stringify(affectedInput,)}.`,);
     this.name = 'PreparationRootError';
     this.kind = kind;
-    if (input !== undefined)
-      this.input = input;
+    if (affectedInput !== undefined)
+      this.input = affectedInput;
   }
 }
 

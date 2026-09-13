@@ -1,6 +1,9 @@
 import { isDeepStrictEqual, } from 'node:util';
 import { isJsonRecord, } from './json-guard.ts';
-import { PreparationRootError, type PreparationRootFailure, } from './preparation-root-error.ts';
+import {
+  PreparationRootError,
+  type PreparationRootFailure,
+} from './preparation-root-error.ts';
 
 //region Private semantic values from already byte-bound JSON
 
@@ -19,7 +22,7 @@ import { PreparationRootError, type PreparationRootFailure, } from './preparatio
  * ```
  */
 export function preparationRootRecord(value: unknown,): Readonly<Record<string, unknown>> {
-  if (Array.isArray(value,) || !isJsonRecord(value,))
+  if (Array.isArray(value,) || (!isJsonRecord(value,)))
     throw new PreparationRootError({ kind: 'reference-role', },);
   return value;
 }
@@ -59,7 +62,9 @@ export function preparationRootArray(value: unknown,): readonly unknown[] {
  * ```
  */
 export function preparationRootString(value: unknown,): string {
-  if ((typeof value !== 'string') || (value.trim().length === 0))
+  if (((typeof value) !== 'string') || (value.trim()
+    .length
+    === 0))
     throw new PreparationRootError({ kind: 'reference-role', },);
   return value;
 }
@@ -82,14 +87,25 @@ export function preparationRootString(value: unknown,): string {
  * assertPreparationRootEqual({ actual: current.population, expected: pool.population, kind: 'population' });
  * ```
  */
-export function assertPreparationRootEqual({ actual, expected, kind, input, }: {
+export function assertPreparationRootEqual({
+  actual,
+  expected,
+  kind,
+  input,
+}: {
   readonly actual: unknown;
   readonly expected: unknown;
   readonly kind: PreparationRootFailure;
   readonly input?: string;
 },): void {
-  if (!isDeepStrictEqual(actual, expected,))
-    throw new PreparationRootError({ kind, ...input === undefined ? {} : { input, }, },);
+  if (!isDeepStrictEqual(
+    actual,
+    expected,
+  ))
+    throw new PreparationRootError({
+      kind,
+      ...input === undefined ? {} : { input, },
+    },);
 }
 
 //endregion Private semantic values from already byte-bound JSON

@@ -261,6 +261,8 @@ const NAMED_PARTS: Record<string, string> = {
   'kind': 'mdast node type name or closed tally/reading/archive-evidence failure-kind literal',
   'relPath': 'operator-supplied repository-relative archive path, never document text',
   'referenceId': 'caller-supplied reviewed fixture identifier, never reference prose',
+  'ROOT_MESSAGES[kind]': 'authored root-planning diagnostic selected by a closed failure kind',
+  'JSON.stringify(affectedInput,)': 'root artifact locator, corpus-relative path, entry/parent identifier or fixed registry label; audited throw sites never pass compared content',
   'claimId': 'computed claim identifier, not its quoted text or diagnostic summary',
   'label': 'model id the transport was calling',
   'leftId': 'envelope id',
