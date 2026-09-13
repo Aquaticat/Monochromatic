@@ -168,6 +168,25 @@ An intermediate global clone-directory override changed the expected CLI default
 so it was removed rather than changing that assertion.
 These harness corrections pass the full suite without changing provider behavior or relaxing assertions.
 
+## Dedicated build follow-up
+
+The separate `runtime:seal` task keeps normal build policy intact and writes candidates under package `node_modules`,
+not published `dist/final` or `src`.
+Its initial emitted-file verifier caught the declaration plugin reporting `.d.mts` files as chunks;
+those are now excluded from executable identity.
+The target/native/Node manifest is build evidence only.
+Pre-import enforcement and location-independent repeated builds remain under verification.
+
+The AST audit reconciles 790 static JavaScript edges and two literal Node dynamic imports
+with 794 emitted edges:
+the additional edges are declaration-only imports from `index.d.mts` and `roster-bench.d.mts`.
+It retains every indirect loader observation for target/environment classification.
+`readelf --dynamic` on the resolved native file names `libgcc_s.so.1`,
+`libpthread.so.0`,
+`libc.so.6` and `ld-linux-x86-64.so.2`.
+This enumerates native dependencies;
+it does not establish general operating-system compatibility.
+
 ## What does not work
 
 - JavaScript bundling alone does not carry this native resource.

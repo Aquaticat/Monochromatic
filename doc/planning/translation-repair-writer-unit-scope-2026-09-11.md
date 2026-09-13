@@ -1466,7 +1466,39 @@ Remaining requirements are GNU-libc/Node/native-asset identity,
 pre-import rejection or binding of loader overrides,
 final lint,
 matched-environment standalone verification and a second-worktree byte comparison.
-No sealed build or pre-import gate has yet landed in the development worktree.
+The development worktree now has a separate `runtime:seal` package task and `rolldown.sealed.config.ts`,
+introduced in `67e5468c4` and refined through `382dfe702`.
+Named runner entries are shared with the ordinary config without changing its externalization policy.
+The candidate output is `package/module/translation-repair/node_modules/.sealed-runtime-candidate`,
+outside published `dist/final` and `src`.
+It is not an execution directory:
+copy it into a fresh frozen location before any reviewed use.
+
+The build checks Linux x64 GNU libc,
+compares actual Satteri JavaScript/native package versions,
+and records the native asset plus executed Node binary byte identities.
+Its relative-path `sealed-runtime.json` excludes source-location paths and timestamps.
+Loader-environment absence requirements and system-library responsibility are declarations,
+not an implemented pre-import gate.
+The native asset's `readelf --dynamic` entries name `libgcc_s.so.1`,
+`libpthread.so.0`,
+`libc.so.6` and `ld-linux-x86-64.so.2`;
+these remain runner/image inputs rather than JavaScript dependencies.
+
+The first independent dedicated-build check passes the ordinary build,
+confirms all 150 ordinary runtime files are byte-identical to the frozen baseline,
+then passes sealed build and types.
+Its physical-file comparison detects declaration chunks incorrectly included in the runtime manifest.
+Those are excluded in `5a483507c` rather than counting type-only output as executable identity.
+The formatter's readonly-host-callback finding is resolved with an explicit deeply readonly view of consumed fields;
+the repeated package formatter reports zero findings.
+
+`sealed-runtime-dedicated-verification-r2-20260913.out` records the current bounded verification.
+It checks manifest bytes against emitted files,
+keeps the normal artifact for comparison,
+and runs the full suite against a copy of the actual sealed artifact in the disposable worktree.
+A pre-import gate,
+second-path comparison and native correspondence-root owner remain unfinished.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,
