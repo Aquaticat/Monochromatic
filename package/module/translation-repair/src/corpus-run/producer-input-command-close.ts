@@ -2,7 +2,9 @@ import type { ChildProcess, } from 'node:child_process';
 
 //region Native process errors do not end close observation
 
-/** Fixed event categories avoid retaining native error messages or input paths. */
+/**
+ * Fixed event categories avoid retaining native error messages or input paths.
+ */
 type NativeInputError = 'error-object' | 'other-error-event';
 
 /**
@@ -19,21 +21,41 @@ type NativeInputError = 'error-object' | 'other-error-event';
  * ```
  */
 export function producerInputCommandClose(child: Readonly<Pick<ChildProcess, 'on' | 'off' | 'once'>>): Promise<readonly NativeInputError[]> {
-  /** One process owns its event categories until close, without storing native messages. */
+  /**
+   * One process owns its event categories until close, without storing native messages.
+   */
   const errors = new Set<NativeInputError>();
-  /** Close, not the earlier error event, is the sole resolution boundary. */
-  const { promise, resolve, } = Promise.withResolvers<readonly NativeInputError[]>();
-  /** Native errors remain failure evidence while close observation stays installed. */
+  /**
+   * Close, not the earlier error event, is the sole resolution boundary.
+   */
+  const {
+    promise,
+    resolve,
+  } = Promise.withResolvers<readonly NativeInputError[]>();
+  /**
+   * Native errors remain failure evidence while close observation stays installed.
+   */
   function failed(error: unknown): void {
-    errors.add(error instanceof Error ? 'error-object' : 'other-error-event');
+    errors.add(Error.isError(error,) ? 'error-object' : 'other-error-event');
   }
-  /** No native listener or mutable observation escapes the terminated process. */
+  /**
+   * No native listener or mutable observation escapes the terminated process.
+   */
   function closed(): void {
-    child.off('error', failed);
+    child.off(
+      'error',
+      failed
+    );
     resolve([...errors]);
   }
-  child.on('error', failed);
-  child.once('close', closed);
+  child.on(
+    'error',
+    failed
+  );
+  child.once(
+    'close',
+    closed
+  );
   return promise;
 }
 

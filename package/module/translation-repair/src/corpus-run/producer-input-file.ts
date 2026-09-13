@@ -50,11 +50,17 @@ type ProducerInputFileObservation = {
    * Empty for hash-only observations, not a claim that the file was empty.
    */
   readonly chunks: readonly Uint8Array[];
-  /** Owner observed on the descriptor whose bytes were hashed. */
+  /**
+   * Owner observed on the descriptor whose bytes were hashed.
+   */
   readonly uid: bigint;
-  /** Group belongs to the same descriptor observation, not a caller assumption. */
+  /**
+   * Group belongs to the same descriptor observation, not a caller assumption.
+   */
   readonly gid: bigint;
-  /** Permissions belong to that same stable descriptor observation. */
+  /**
+   * Permissions belong to that same stable descriptor observation.
+   */
   readonly mode: bigint;
 };
 
@@ -62,9 +68,13 @@ type ProducerInputFileObservation = {
  * Stream working storage stays independent of the caller-authorized total extent.
  */
 const FILE_CHUNK_BYTES = 65_536;
-/** Host-owned output metadata must not expose group or other permissions. */
+/**
+ * Host-owned output metadata must not expose group or other permissions.
+ */
 const FILE_PERMISSION_MASK = 0o7777n;
-/** Exact private output-file permissions declared by this runner. */
+/**
+ * Exact private output-file permissions declared by this runner.
+ */
 const PRIVATE_OUTPUT_PERMISSIONS = 0o600n;
 
 /**
@@ -380,7 +390,13 @@ export async function readProducerInputFile({
  * const text = await readProducerInputMetadata({ path, maximumBytes, ownerUid, ownerGid, operation: 'read-output' });
  * ```
  */
-export async function readProducerInputMetadata({ path, maximumBytes, ownerUid, ownerGid, operation, }: {
+export async function readProducerInputMetadata({
+  path,
+  maximumBytes,
+  ownerUid,
+  ownerGid,
+  operation,
+}: {
   readonly path: string;
   readonly maximumBytes: number;
   readonly ownerUid: number;
@@ -388,20 +404,51 @@ export async function readProducerInputMetadata({ path, maximumBytes, ownerUid, 
   readonly operation: 'launch-container' | 'read-output';
 },): Promise<string> {
   try {
-    /** Extent is observed before any body allocation; the descriptor reader rechecks it. */
-    const state = await lstat(path, { bigint: true });
-    if (!Number.isSafeInteger(maximumBytes) || maximumBytes < 0 || !state.isFile() || state.size > BigInt(maximumBytes))
-      throw new ProducerInputRunError({ operation, locator: path, });
-    /** Metadata is bounded by the observed extent, not read until filesystem EOF. */
-    const observation = await observeProducerInputFile({ path, expectedBytes: Number(state.size), operation, retainChunks: true });
-    if (observation.uid !== BigInt(ownerUid) || observation.gid !== BigInt(ownerGid) || (observation.mode & FILE_PERMISSION_MASK) !== PRIVATE_OUTPUT_PERMISSIONS)
-      throw new ProducerInputRunError({ operation, locator: path, });
-    return new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(observation.chunks, observation.identity.bytes));
+    /**
+     * Extent is observed before any body allocation; the descriptor reader rechecks it.
+     */
+    const state = await lstat(
+      path,
+      { bigint: true }
+    );
+    if ((!Number.isSafeInteger(maximumBytes)) || (maximumBytes < 0)
+      || (!state.isFile())
+      || (state.size > BigInt(maximumBytes)))
+      throw new ProducerInputRunError({
+        operation,
+        locator: path,
+      });
+    /**
+     * Metadata is bounded by the observed extent, not read until filesystem EOF.
+     */
+    const observation = await observeProducerInputFile({
+      path,
+      expectedBytes: Number(state.size),
+      operation,
+      retainChunks: true
+    });
+    if ((observation.uid !== BigInt(ownerUid)) || (observation.gid !== BigInt(ownerGid))
+      || ((observation.mode & FILE_PERMISSION_MASK) !== PRIVATE_OUTPUT_PERMISSIONS))
+      throw new ProducerInputRunError({
+        operation,
+        locator: path,
+      });
+    return new TextDecoder(
+      'utf-8',
+      { fatal: true }
+    ).decode(Buffer.concat(
+      observation.chunks,
+      observation.identity
+        .bytes
+    ));
   }
   catch (error) {
     if (error instanceof ProducerInputRunError)
       throw error;
-    throw new ProducerInputRunError({ operation, locator: path, });
+    throw new ProducerInputRunError({
+      operation,
+      locator: path,
+    });
   }
 }
 
@@ -425,18 +472,42 @@ export async function readProducerInputMetadata({ path, maximumBytes, ownerUid, 
  * await verifyProducerInputOutputFile({ path, expected, ownerUid, ownerGid });
  * ```
  */
-export async function verifyProducerInputOutputFile({ path, expected, ownerUid, ownerGid, }: {
+export async function verifyProducerInputOutputFile({
+  path,
+  expected,
+  ownerUid,
+  ownerGid,
+}: {
   readonly path: string;
   readonly expected: ProducerInputFileIdentity;
   readonly ownerUid: number;
   readonly ownerGid: number;
 },): Promise<ProducerInputFileIdentity> {
-  /** Snapshot primitive extent and digest before descriptor I/O. */
-  const { bytes, sha256 } = expected;
-  /** Artifact content is hashed without retaining corpus-derived bytes on the host. */
-  const observation = await observeProducerInputFile({ path, expectedBytes: bytes, operation: 'read-output', retainChunks: false });
-  if (observation.identity.sha256 !== sha256 || observation.uid !== BigInt(ownerUid) || observation.gid !== BigInt(ownerGid) || (observation.mode & FILE_PERMISSION_MASK) !== PRIVATE_OUTPUT_PERMISSIONS)
-    throw new ProducerInputRunError({ operation: 'read-output', locator: path, });
+  /**
+   * Snapshot primitive extent and digest before descriptor I/O.
+   */
+  const {
+    bytes,
+    sha256
+  } = expected;
+  /**
+   * Artifact content is hashed without retaining corpus-derived bytes on the host.
+   */
+  const observation = await observeProducerInputFile({
+    path,
+    expectedBytes: bytes,
+    operation: 'read-output',
+    retainChunks: false
+  });
+  if ((observation.identity
+    .sha256
+    !== sha256) || (observation.uid !== BigInt(ownerUid))
+    || (observation.gid !== BigInt(ownerGid))
+    || ((observation.mode & FILE_PERMISSION_MASK) !== PRIVATE_OUTPUT_PERMISSIONS))
+    throw new ProducerInputRunError({
+      operation: 'read-output',
+      locator: path,
+    });
   return observation.identity;
 }
 

@@ -54,7 +54,9 @@ export type ProducerInputHost = {
    * Exact executing Node location, not selected through PATH or launch JSON.
    */
   readonly nodePath: string;
-  /** Independently manifest-bound Node bytes are rechecked immediately before child startup. */
+  /**
+   * Independently manifest-bound Node bytes are rechecked immediately before child startup.
+   */
   readonly nodeIdentity: ProducerInputFileIdentity;
   /**
    * Exact separately packaged bootstrap location supplied by its own entry.
@@ -275,7 +277,14 @@ export async function initializeProducerInputHost({
       run,
       layout,
       nodePath,
-      nodeIdentity: { bytes: manifest.node.executable.bytes, sha256: manifest.node.executable.sha256 },
+      nodeIdentity: {
+        bytes: manifest.node
+          .executable
+          .bytes,
+        sha256: manifest.node
+          .executable
+          .sha256
+      },
       bootstrapPath,
       podman,
     };

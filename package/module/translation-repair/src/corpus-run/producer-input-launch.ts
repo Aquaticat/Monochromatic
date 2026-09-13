@@ -325,10 +325,18 @@ export async function readProducerInputLaunch({
   readonly path: string;
   readonly expected: ProducerInputFileIdentity;
 },): Promise<ProducerInputLaunch> {
-  /** Metadata extent is owned and capped independently from caller-supplied contents. */
-  const identity = { bytes: expected.bytes, sha256: expected.sha256, };
+  /**
+   * Metadata extent is owned and capped independently from caller-supplied contents.
+   */
+  const identity = {
+    bytes: expected.bytes,
+    sha256: expected.sha256,
+  };
   if (identity.bytes > PRODUCER_INPUT_METADATA_BYTES)
-    throw new ProducerInputRunError({ operation: 'read-launch', locator: 'launch metadata extent', });
+    throw new ProducerInputRunError({
+      operation: 'read-launch',
+      locator: 'launch metadata extent',
+    });
   /**
    * File extent and raw hash are checked before JSON decoding.
    */

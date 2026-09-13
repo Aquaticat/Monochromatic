@@ -41,10 +41,18 @@ export async function readProducerRuntimeManifest({
   readonly dir: string;
   readonly expected: ProducerInputFileIdentity;
 },): Promise<ProducerRuntimeManifest> {
-  /** Application inventories remain bounded metadata, not an unlimited host allocation request. */
-  const identity = { bytes: expected.bytes, sha256: expected.sha256, };
+  /**
+   * Application inventories remain bounded metadata, not an unlimited host allocation request.
+   */
+  const identity = {
+    bytes: expected.bytes,
+    sha256: expected.sha256,
+  };
   if (identity.bytes > PRODUCER_INPUT_METADATA_BYTES)
-    throw new ProducerInputRunError({ operation: 'verify-runtime', locator: 'runtime manifest extent', });
+    throw new ProducerInputRunError({
+      operation: 'verify-runtime',
+      locator: 'runtime manifest extent',
+    });
   /**
    * The filename is fixed by the build contract rather than selected from JSON.
    */

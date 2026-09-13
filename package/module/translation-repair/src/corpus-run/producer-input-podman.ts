@@ -138,14 +138,21 @@ export async function createProducerInputPodmanContext(run: ProducerInputRun): P
       );
       await file.sync();
     }
-    /** Only the measured local account and runtime-bus context reach the native Podman process. */
+    /**
+     * Only the measured local account and runtime-bus context reach the native Podman process.
+     */
     const environment: NodeJS.ProcessEnv = {
       HOME: homedir(),
       PATH: '/usr/bin:/bin',
       CONTAINERS_CONF: configPath,
     };
-    for (const name of ['XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS']) {
-      /** Inherited loader, remote-endpoint and extra Containers configuration variables are not copied. */
+    for (const name of [
+      'XDG_RUNTIME_DIR',
+      'DBUS_SESSION_BUS_ADDRESS'
+    ]) {
+      /**
+       * Inherited loader, remote-endpoint and extra Containers configuration variables are not copied.
+       */
       const value = process.env[name];
       if (value !== undefined)
         environment[name] = value;

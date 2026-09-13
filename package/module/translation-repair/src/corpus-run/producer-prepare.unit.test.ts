@@ -11,7 +11,7 @@ const REFUSED = 6;
 /** Fixed metadata ceiling is exercised at its first excluded extent. */
 const METADATA_LIMIT = 1_048_576;
 /** Byte that cannot begin a valid UTF-8 sequence. */
-const INVALID_UTF8 = 0xff;
+const INVALID_UTF8 = 0xFF;
 /** Fixed digest width is independent from candidate CLI data. */
 const SHA256_WIDTH = 64;
 /** Canonical digest-shaped value for syntax tests that must not reach file reading. */

@@ -24,7 +24,9 @@ import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
  * Permission inspection includes special bits as well as ordinary access bits.
  */
 const DIRECTORY_PERMISSION_MASK = 0o7777;
-/** Exact writable-directory mode declared by the host creation path. */
+/**
+ * Exact writable-directory mode declared by the host creation path.
+ */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 /**
  * Linux capability fields independently constrain effective and recoverable privilege.
@@ -166,7 +168,8 @@ async function verifyChildOutput(identity: ProducerInputChildIdentity): Promise<
      * Symlink leaves cannot substitute for host-created directories.
      */
     const state = await lstat(path);
-    return state.isDirectory() && (state.uid === identity.callerUid) && (state.gid === identity.callerGid)
+    return state.isDirectory() && (state.uid === identity.callerUid)
+      && (state.gid === identity.callerGid)
       && ((state.mode & DIRECTORY_PERMISSION_MASK) === PRIVATE_DIRECTORY_MODE);
   }));
   if (states.some(function differs(value): boolean {
