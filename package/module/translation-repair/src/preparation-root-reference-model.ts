@@ -1,6 +1,8 @@
 import type { FrozenPreparationObligation, FrozenPreparationSelection, } from './preparation-selection-model.ts';
 import type { PreparationRootEntry, PreparationRootParent, PreparationRootPopulationParent, PreparationRootRawDocument, } from './preparation-root-population-model.ts';
 
+import type { PreparationRootQuestionAliases, PreparationRootRegistration, PreparationRootUnalignedDefinitions, } from './preparation-root-registration-model.ts';
+
 //region Semantic ownership of frozen supporting evidence
 
 /**
@@ -112,6 +114,14 @@ export type PreparationRootInputs = {
   readonly parents: readonly PreparationRootParent[];
   /** Source obligations retain open qualifications and cannot silently authorize extra calls. */
   readonly obligations: readonly FrozenPreparationObligation[];
+  /** Exact selected-parent and definition-only closure, without section, image or writer call permission. */
+  readonly registry: readonly PreparationRootRegistration[];
+  /** Definition nodes outside native aligned parents remain namespace data only. */
+  readonly unalignedDefinitions: readonly PreparationRootUnalignedDefinitions[];
+  /** Exact initial question aliases are explicit without granting cross-occurrence qualification. */
+  readonly questionAliases: readonly PreparationRootQuestionAliases[];
+  /** The root does not silently acquire or adopt a whole-entry section override. */
+  readonly sectionPairing: 'not-registered';
 };
 
 //endregion Semantic ownership of frozen supporting evidence
