@@ -2083,9 +2083,29 @@ noncanonical extents/digests,
 private-child context refusal,
 malformed launch JSON and UTF-8,
 changed raw bytes and a symlink launch leaf.
+`input-native-child-gates-tInhCD` then executes the frozen bootstrap's private child branch
+under real bounded Podman containers with explicitly authorized fixture applications.
+Its positive control imports the marker application and exits `0`.
+All 19 refusal variants exit `6` without importing it:
+extra environment,
+wrong UID/cwd,
+reduced memory/PID limits,
+missing privilege restriction,
+nonempty output/home,
+writable runtime,
+wrong launch/bootstrap/manifest/Node/library identities,
+missing native file,
+changed application bytes,
+extra runtime file,
+malformed manifest and unsupported target.
+The fixture applications do not reconstruct corpus inputs or confer review authority.
+The suite verifies profile refusals,
+not isolated guard-removal sensitivity for every contributing condition.
+Every owned test container is removed and checked absent.
+
 The remaining verification must cover native host lifecycle and interruption,
-pre-import context/byte rejection controls,
-file-observer races and all output consistency branches,
+OCI-hook controls,
+file-observer races and remaining output consistency branches,
 then rerun the complete package suite from fresh exact artifacts.
 
 Task 48 addresses a separate formatter-resource verification blocker.

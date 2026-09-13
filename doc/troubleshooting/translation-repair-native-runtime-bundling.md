@@ -546,6 +546,55 @@ Built-helper race tests and actual bootstrap import-marker controls remain requi
 No Node,
 kernel or Podman patch or upstream filing is proposed for this consumer-side flag choice.
 
+### Stop diagnostics and terminal state are independent
+
+The native host lifecycle fixture `input-native-host-lifecycle-uj1yIB`
+reaches SIGINT during an active application.
+Podman exits `0` from the stop command but writes:
+
+```text
+StopSignal SIGTERM failed to stop container producer-input-f3cc837a-5009-4904-aaa8-8ef219be09b1 in 5 seconds, resorting to SIGKILL
+```
+
+The frozen bootstrap `9860eb668e5e446df6dfae51f53bf8fb1d9e6041bfabbe58be88b6fa27852180`
+refuses that nonempty native stderr,
+then skips `inspect-stopped`.
+Its terminal record therefore says `unconfirmed`,
+and `cleanup-complete.json` is absent.
+The CLI still preserves SIGINT status `130`.
+The preceding normal-output and output-rejection fixtures passed;
+the lifecycle suite stops at this cancellation case and is not a passing suite.
+
+Podman `v5.8.4`,
+commit `5431df23c742e5edea35bef34eed696f4db0106b`,
+emits the warning at `libpod/oci_conmon_common.go:402`,
+then independently sends SIGKILL and waits for stopping at lines `409` to `423`:
+
+```go
+// libpod/oci_conmon_common.go, excerpt after the warning
+stopped, err := killCtr(uint(unix.SIGKILL))
+if err != nil {
+    return fmt.Errorf("sending SIGKILL to container %s: %w", ctr.ID(), err)
+}
+if stopped {
+    return nil
+}
+```
+
+The warning is not a claim that the container remains running.
+The consumer's defect is using command refusal to suppress independent state observation.
+No cause for the fixture's failure to exit on SIGTERM is inferred from this warning alone.
+The child CLI does not install the host's `producerInputSignals` listeners.
+
+The local change retains strict command diagnostics,
+settles the stop attempt before a fresh exact-ID inspection,
+and synchronizes both outcomes in `stop-observation.json`.
+Only validated nonrunning state can permit removal.
+A failed or running inspection still withholds removal;
+stop refusal and interruption cannot become successful execution.
+Rebuilding and rerunning this change remains outstanding.
+No warning filtering or Podman patch is proposed.
+
 ## What does not work
 
 - JavaScript bundling alone does not carry this native resource.

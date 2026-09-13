@@ -14,6 +14,13 @@ import { assertProducerInputNotInterrupted, } from './producer-input-signals.ts'
 const STOP_GRACE_SECONDS = 5;
 /** A nonrunning observation is the only container state eligible for removal. */
 type StoppedInputContainer = Exclude<ProducerInputContainerState, { readonly state: 'running'; }>;
+/** Stop-command failure and independently observed removal eligibility remain separate. */
+type InputSettlement = {
+  /** Only a fresh validated nonrunning observation permits removal. */
+  readonly container: StoppedInputContainer;
+  /** An unnecessary stop is not represented as an executed successful command. */
+  readonly stop: 'not-required' | PromiseSettledResult<void>;
+};
 
 /**
  * Checks the actual created contract, revalidates host bindings, then starts the child and checks its output.
@@ -50,6 +57,37 @@ async function executeCreatedInput({ host, id, signal, }: { readonly host: Produ
 }
 
 /**
+ * Inspects the exact owned identity after a stop attempt, regardless of that attempt's command outcome.
+ *
+ * @param host - owning run and native invocation context
+ *
+ * @param id - confirmed native creation identity
+ *
+ * @param signal - cleanup-owned cancellation, independent from operation interruption
+ *
+ * @returns Fresh nonrunning observation, never inferred from stop output
+ *
+ * @throws ProducerInputRunError when inspection fails or still reports running
+ *
+ * @example
+ * ```ts
+ * const stopped = await inspectStoppedInput({ host, id, signal });
+ * ```
+ */
+async function inspectStoppedInput({ host, id, signal, }: {
+  readonly host: ProducerInputHost;
+  readonly id: string;
+  readonly signal: AbortSignal;
+},): Promise<StoppedInputContainer> {
+  await runProducerInputCommand({ host, stage: 'inspect-stopped', arguments_: ['inspect', id], signal });
+  /** Stop-command status and diagnostics establish neither current state nor removal eligibility. */
+  const stopped = readProducerInputContainerTerminal({ host, id, text: await readProducerInputCommand({ host, stage: 'inspect-stopped' }) });
+  if (stopped.state === 'running')
+    throw new ProducerInputRunError({ operation: 'launch-container', locator: 'container after stop', });
+  return stopped;
+}
+
+/**
  * Observes the owned container after execution and stops it when an interrupted client left it running.
  *
  * @param host - owning run and native invocation context
@@ -65,21 +103,28 @@ async function executeCreatedInput({ host, id, signal, }: { readonly host: Produ
  * const terminal = await stopAndObserveInput({ host, id });
  * ```
  */
-async function stopAndObserveInput({ host, id, }: { readonly host: ProducerInputHost; readonly id: string; },): Promise<StoppedInputContainer> {
+async function stopAndObserveInput({ host, id, }: { readonly host: ProducerInputHost; readonly id: string; },): Promise<InputSettlement> {
   /** Cleanup is not abandoned merely because the operation's signal was aborted. */
   const cleanup = new AbortController();
   await runProducerInputCommand({ host, stage: 'inspect-terminal', arguments_: ['inspect', id], signal: cleanup.signal });
   /** Created-but-unstarted containers remain distinct from exited child processes. */
   const observed = readProducerInputContainerTerminal({ host, id, text: await readProducerInputCommand({ host, stage: 'inspect-terminal' }) });
   if (observed.state !== 'running')
-    return observed;
-  await runProducerInputCommand({ host, stage: 'stop', arguments_: ['stop', '--time', String(STOP_GRACE_SECONDS), id], signal: cleanup.signal });
-  await runProducerInputCommand({ host, stage: 'inspect-stopped', arguments_: ['inspect', id], signal: cleanup.signal });
-  /** Stop-command success alone does not prove the container stopped. */
-  const stopped = readProducerInputContainerTerminal({ host, id, text: await readProducerInputCommand({ host, stage: 'inspect-stopped' }) });
-  if (stopped.state === 'running')
-    throw new ProducerInputRunError({ operation: 'launch-container', locator: 'container after stop', });
-  return stopped;
+    return { container: observed, stop: 'not-required' };
+  /** Native diagnostics remain a refused command, but cannot prevent independent state observation. */
+  const [stop] = await Promise.allSettled([runProducerInputCommand({ host, stage: 'stop', arguments_: ['stop', '--time', String(STOP_GRACE_SECONDS), id], signal: cleanup.signal })]);
+  /** Inspection starts only after the stop attempt settles, not concurrently with it. */
+  const [inspection] = await Promise.allSettled([inspectStoppedInput({ host, id, signal: cleanup.signal })]);
+  if (stop === undefined || inspection === undefined)
+    throw new ProducerInputRunError({ operation: 'launch-container', locator: 'stop observation outcomes', });
+  await writeProducerInputControl({ dir: host.run.dir, file: 'stop-observation.json', bytes: new TextEncoder().encode(JSON.stringify({
+    version: 1, kind: 'producer-preparation-input-stop-observation', runId: host.run.runId, containerId: id,
+    stop: stop.status === 'fulfilled' ? { state: 'complete' } : { state: 'refused', refusal: refusalText({ error: stop.reason as unknown }) },
+    inspection: inspection.status === 'fulfilled' ? { state: 'observed', observation: inspection.value } : { state: 'unconfirmed', refusal: refusalText({ error: inspection.reason as unknown }) },
+  })) });
+  if (inspection.status === 'rejected')
+    throw inspection.reason;
+  return { container: inspection.value, stop }; 
 }
 
 /**
@@ -114,7 +159,7 @@ export async function useProducerInputContainer({ host, id, signal, }: { readonl
     : { state: 'operation-refused', refusal: refusalText({ error: operation.reason as unknown }) };
   /** Failure to inspect a container withholds automated removal, not the retained application files. */
   const containerEvidence = settlement.status === 'fulfilled'
-    ? { state: 'observed', observation: settlement.value }
+    ? { state: 'observed', observation: settlement.value.container }
     : { state: 'unconfirmed', refusal: refusalText({ error: settlement.reason as unknown }) };
   await writeProducerInputControl({ dir: host.run.dir, file: 'container-terminal.json', bytes: new TextEncoder().encode(JSON.stringify({
     version: 1,
@@ -140,7 +185,9 @@ export async function useProducerInputContainer({ host, id, signal, }: { readonl
   assertProducerInputNotInterrupted(signal);
   if (operation.status === 'rejected')
     throw operation.reason;
-  if (settlement.value.state !== 'exited' || settlement.value.exitCode !== 0 || settlement.value.oomKilled)
+  if (settlement.value.stop !== 'not-required' && settlement.value.stop.status === 'rejected')
+    throw settlement.value.stop.reason;
+  if (settlement.value.container.state !== 'exited' || settlement.value.container.exitCode !== 0 || settlement.value.container.oomKilled)
     throw new ProducerInputRunError({ operation: 'launch-container', locator: 'completed container terminal state', });
   return operation.value;
 }

@@ -88,7 +88,7 @@ export async function writeProducerInputControl({
   bytes,
 }: {
   readonly dir: string;
-  readonly file: 'launch.json' | 'created.json' | 'container-terminal.json' | 'verified-completion.json' | 'cleanup-complete.json';
+  readonly file: 'launch.json' | 'created.json' | 'container-terminal.json' | 'verified-completion.json' | 'cleanup-complete.json' | 'stop-observation.json';
   readonly bytes: Uint8Array;
 },): Promise<void> {
   if (![
@@ -96,7 +96,8 @@ export async function writeProducerInputControl({
     'created.json',
     'container-terminal.json',
     'verified-completion.json',
-    'cleanup-complete.json'
+    'cleanup-complete.json',
+    'stop-observation.json'
   ].includes(file))
     throw new ProducerInputRunError({
       operation: 'write-output',
