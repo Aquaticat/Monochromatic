@@ -953,6 +953,41 @@ source authority and acquisition journal remain unfinished.
 Combined file-indirection and post-read metadata removals prove their joint boundaries,
 not necessity of every redundant mechanism separately.
 
+The harness-diagnostic follow-up is complete:
+[called symbol-spy diagnostics](../troubleshooting/sinon-called-symbol-spy-diagnostics.md)
+records the source path,
+consumer workaround,
+bounded disposable prototype and local additive-comment draft.
+No upstream communication or installed dependency edit occurred.
+
+The next owning-journal seam is definition-only evidence qualification.
+`cac56abfb` extracts `replayPreparedBlockEvidence` from `qualifyQueriedBlockPairing`:
+current question identity,
+native raw-outcome replay,
+aggregate comparison and configured usable quorum are shared,
+while full-parent placement and coverage checks remain in their existing consumer.
+The helper returns a transient replay view;
+the final qualifier still owns its returned data.
+`preparation-evidence-replay-verification-20260912.out` is the active verification.
+
+The definition-only consumer must require the independently registered current definition domain,
+project only independently endorsed definition endpoints,
+and return no body placement,
+media widening,
+target-decline or archive-prose authority.
+Zero-question dispatch remains structural accounting rather than manufactured votes.
+A parent selected for writing still requires the existing full qualification separately.
+This consumer is not implemented yet.
+
+The bounded phase design follows the permitted caller:
+`corpus-run/pass-prepare.ts:201` performs initial preparation,
+then `:206` calls the deterministic relabel once,
+and `:219` conditionally prepares over its result.
+The archive-prose correction and its later preparation are excluded from calibration.
+The root plan therefore needs initial slots and bounded conditional post-relabel slots,
+not a finding-driven retry or repeated relabel loop.
+Exact post-relabel payloads still require their separate materialization and review.
+
 Semantic root-plan validation,
 reviewed phase execution,
 phase leases and acquisition claims,
