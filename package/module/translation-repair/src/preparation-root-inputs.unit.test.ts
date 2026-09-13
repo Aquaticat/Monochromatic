@@ -12,7 +12,7 @@ import { alignDocumentSections, archiveOriginalReadingOf, buildPreparationRootIn
 const l = tagged({ tag: 'root-input-owner-test' });
 const digest = (content: string) => hashContent({ content });
 const uniqueHeading = (index: number) => `## Unique${String.fromCodePoint(65 + Math.floor(index / 26), 65 + (index % 26))}section`;
-async function fixture({ repeatedQuestions = false, implicitFirst = false, targetNamespace = false, emptyTarget = false }: { readonly repeatedQuestions?: boolean; readonly implicitFirst?: boolean; readonly targetNamespace?: boolean; readonly emptyTarget?: boolean } = {}) {
+async function fixture({ repeatedQuestions = false, implicitFirst = false, targetNamespace = false, emptyTarget = false, selectedDefinitions = false }: { readonly repeatedQuestions?: boolean; readonly implicitFirst?: boolean; readonly targetNamespace?: boolean; readonly emptyTarget?: boolean; readonly selectedDefinitions?: boolean } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'root-input-fixture-'));
   const sourceText = `${Array.from({ length: 41 }, (_, index) => {
     const heading = targetNamespace || emptyTarget ? uniqueHeading(index) : repeatedQuestions ? '## 猫' : `## 猫 ${index}`;
@@ -22,8 +22,9 @@ async function fixture({ repeatedQuestions = false, implicitFirst = false, targe
   const archiveText = `(To-Do)\n\n${Array.from({ length: 41 }, (_, index) => {
     if (emptyTarget && (index === 39)) return '';
     const heading = targetNamespace || emptyTarget ? uniqueHeading(index) : repeatedQuestions ? '## Cat' : `## Cat ${index}`;
-    return implicitFirst && (index === 40) ? heading : `${heading}\n\n${repeatedQuestions ? 'Cat is non‑binary.' : `Cat ${index} is non‑binary.`}`;
-  }).join('\n\n')}\n\n## Notes\n\n[^1]: Cat note.\n${targetNamespace ? '\n## Extra namespace\n\n[^outside]: Unpaired target note.\n' : ''}`;
+    const body = implicitFirst && (index === 40) ? heading : `${heading}\n\n${repeatedQuestions ? 'Cat is non‑binary.' : `Cat ${index} is non‑binary.`}`;
+    return targetNamespace && (index === 20) ? `${body}\n\n## Extra namespace\n\n[^outside]: Unpaired target note.` : body;
+  }).join('\n\n')}\n\n## Notes\n\n[^1]: Cat note.\n`; 
   const targetText = passArchiveText({ text: archiveText, l });
   const source = parseDocument({ text: sourceText });
   const target = parseDocument({ text: targetText });
@@ -39,7 +40,7 @@ async function fixture({ repeatedQuestions = false, implicitFirst = false, targe
     originalProtection: { intersections: [], sealedTargetNodeIds: [], straddlingNodeIds: [], allTargetNodesSealed: false },
   }));
   // This frozen order is neither a prefix nor native section order; resampling cannot stand in for lookup.
-  const selected = parents.filter(parent => (parent.pairIndex !== 17) && (parent.pairIndex !== 41)).toReversed();
+  const selected = parents.filter(parent => (parent.pairIndex !== 17) && (parent.pairIndex !== (selectedDefinitions ? 40 : 41))).toReversed();
   const population = parents.map(parent => ({ id: parent.id, entryId: parent.entryId, pairIndex: parent.pairIndex,
     sourceSectionIndex: parent.sourceSectionIndex, targetSectionIndex: parent.targetSectionIndex, source: parent.source, target: parent.target, originalProtection: parent.originalProtection }));
   const populationDigest = digest(
@@ -187,7 +188,7 @@ async function refusal(body: () => Promise<unknown>) {
 await describe({ name: '', concurrency: 1, children: [describe({ name: buildPreparationRootInputs.name, children: [
   it({ name: 'reconstructs frozen parents, raw identities, reading ownership and definition-only additions without redrawing', fn: async () => {
     await using f = await fixture();
-    const inputs = await buildPreparationRootInputs(f.request());
+    const inputs = await accepted(f.request());
     expect(inputs.scope).toBe('unqualified-preparation-root-inputs');
     expect(inputs.parents.map(parent => parent.id)).toEqual(f.selection.orderedParentIds);
     expect(inputs.population).toHaveLength(42);
@@ -340,12 +341,28 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
   } }),
   it({ name: 'retains unaligned target definitions as namespace data rather than buying another parent', fn: async () => {
     await using f = await fixture({ targetNamespace: true });
-    const inputs = await buildPreparationRootInputs(f.request());
+    const inputs = await accepted(f.request());
     expect(inputs.unalignedDefinitions).toHaveLength(1);
     expect(inputs.unalignedDefinitions[0]?.source).toEqual([]);
     expect(inputs.unalignedDefinitions[0]?.target).toHaveLength(1);
     expect(inputs.unalignedDefinitions[0]?.target[0]?.zone).toBe('footnote-definition');
+    const [namespace] = inputs.unalignedDefinitions;
+    if (namespace === undefined) throw new Error('expected target namespace');
+    const [definition] = namespace.target;
+    if (definition === undefined) throw new Error('expected unaligned target definition');
+    expect(inputs.population.some(parent => parent.source.nodes.some(node => node.id === definition.id))).toBe(true);
+    expect(inputs.population.some(parent => parent.target.nodes.some(node => node.id === definition.id))).toBe(false);
     expect(inputs.registry).toHaveLength(41);
+  } }),
+  it({ name: 'retains both explicit roles when a frozen writer parent also owns definitions', fn: async () => {
+    await using f = await fixture({ selectedDefinitions: true });
+    const inputs = await accepted(f.request());
+    const [first] = inputs.registry;
+    if (first === undefined) throw new Error('expected selected definition parent');
+    expect(first.roles).toEqual(['writer-parent', 'footnote-definitions']);
+    expect(first.definitionDomain.sourceIds).toHaveLength(1);
+    expect(first.definitionDomain.targetIds).toHaveLength(1);
+    expect(inputs.registry).toHaveLength(40);
   } }),
   ...['source', 'target', 'both'].map(missing => it({ name: `retains missing unselected corpus sides with successful-side provenance ${missing}`, fn: async () => {
     await using f = await fixture();
