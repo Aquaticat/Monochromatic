@@ -75,6 +75,14 @@ export {
 } from './preparation-request-capture-error.ts';
 export { readPreparationOccurrence, } from './read-preparation-occurrence.ts';
 export { readRegisteredPreparationParent, } from './read-registered-preparation-parent.ts';
+export { readFrozenPreparationSelection, } from './read-frozen-preparation-selection.ts';
+export {
+  type FrozenPreparationSelection,
+  type FrozenPreparationParent,
+  type FrozenPreparationReference,
+  type FrozenPreparationObligation,
+} from './preparation-selection-model.ts';
+export { PreparationRootError, type PreparationRootFailure, } from './preparation-root-error.ts';
 export {
   type PreparationReceiptBinding,
   type PreparationReceiptData,

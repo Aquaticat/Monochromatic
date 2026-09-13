@@ -124,6 +124,7 @@ const MARKED_CLASSES: readonly string[] = [
   'PreparationReceiptError',
   'PreparationRequestCaptureError',
   'PreparationRequestCapturedError',
+  'PreparationRootError',
   'ProducerRosterError',
   'PromptPayloadStoreError',
   'PublishedPageDisagreesError',
