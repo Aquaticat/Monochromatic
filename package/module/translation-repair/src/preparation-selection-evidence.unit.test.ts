@@ -67,7 +67,7 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
       reads += 1;
       return item.content;
     } }));
-    function unexpectedContent(): Uint8Array {
+    function unexpectedContent(): Uint8Array<ArrayBuffer> {
       reads += 1;
       return new Uint8Array();
     }
@@ -128,6 +128,16 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     const result = readPreparationSelectionEvidence({ ...f, artifacts });
     expect(result.artifacts.map(item => Array.from(item.content))).toEqual(f.artifacts.map(item => Array.from(item.content)));
     expect(result.artifacts.every(item => !Buffer.isBuffer(item.content))).toBe(true);
+  } }),
+  it({ name: 'copies shared input views into non-shared matched snapshots', fn: async () => {
+    const f = fixture();
+    const shared = new Uint8Array(new SharedArrayBuffer(5));
+    shared.set([255, 0, 1, 13, 10]);
+    const artifacts = f.artifacts.map((item, index) => index === 0 ? { ...item, content: shared } : item);
+    const result = readPreparationSelectionEvidence({ ...f, artifacts });
+    shared.fill(23);
+    expect(Array.from(result.artifacts[0]?.content ?? [])).toEqual([255, 0, 1, 13, 10]);
+    expect(result.artifacts[0]?.content.buffer).toBeInstanceOf(ArrayBuffer);
   } }),
   it({ name: 'owns matched bytes independently in both mutation directions', fn: async () => {
     const f = fixture();

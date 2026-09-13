@@ -1214,8 +1214,36 @@ types and focused tests.
 Its formatter requires `codePointAt` instead of `charCodeAt`.
 The control-character scan now uses the preferred API with an in-range non-nullish assertion,
 and a printable Unicode/astral entry-name control preserves original spelling.
-`preparation-selection-verification-r5-20260913.out` is the next full verification.
-The final ingestion checkpoint is not yet declared verified.
+R5 passes every phase,
+with `unit exit 0` inspected at line 10327 of `preparation-selection-unit-r5-20260913.out`.
+The real artifact projection comparison and printable Unicode control pass.
+This verifies the limited selection-identity ingestion boundary,
+not referenced bytes or the semantic root.
+
+`readPreparationSelectionEvidence` is the next byte-ownership boundary.
+It re-reads raw selection text against the independent digest rather than accepting a caller-fabricated typed certificate,
+requires exactly the frozen supporting inventory,
+checks inventory before content access,
+copies raw byte arrays before hashing,
+and returns matched content and extents in original reference order.
+It opens or executes no path and assigns no semantic roles or approval.
+Tests cover missing/extra/duplicate/foreign inventory,
+invalid UTF-8 bytes,
+CRLF changes,
+genuine empty artifacts,
+Buffer inputs,
+detached arrays,
+locator snapshots and both ownership directions.
+The first supporting-byte build and actual consumer probe pass.
+All 63 references match in original order,
+covering 3290843 raw bytes,
+with `Mio#0` still open and no semantic-role or acquisition approval.
+Type checking reports `TS2322` because the fixture callback declared a generic `ArrayBufferLike` view
+where its constructed data has an `ArrayBuffer` backing.
+The fixture callback and owned-copy result now name that actual backing type;
+a shared-input positive control verifies the returned snapshot is non-shared.
+`preparation-supporting-bytes-verification-r2-20260913.out` is the next verification.
+This supporting-byte reader is not yet declared verified.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,

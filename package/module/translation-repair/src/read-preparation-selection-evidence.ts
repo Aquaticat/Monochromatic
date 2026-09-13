@@ -17,7 +17,7 @@ import type { MatchedPreparationArtifact, PreparationArtifactInput, PreparationS
  * const owned = artifactBytes(content);
  * ```
  */
-function artifactBytes(content: Readonly<Uint8Array>,): Uint8Array {
+function artifactBytes(content: Readonly<Uint8Array>,): Uint8Array<ArrayBuffer> {
   if (!(content instanceof Uint8Array))
     throw new PreparationRootError({ kind: 'reference-content', },);
   try {
@@ -54,6 +54,7 @@ export function readPreparationSelectionEvidence({ text, expectedDigest, artifac
 },): PreparationSelectionEvidence {
   /** The entry point itself checks independent selection bytes rather than trusting a caller-fabricated typed result. */
   const pl = tagged({ tag: readPreparationSelectionEvidence.name, l, },);
+  /** The raw artifact is checked here even when another caller already decoded it. */
   const selection = readFrozenPreparationSelection({ text, expectedDigest, l: pl, },);
   if ((!Array.isArray(artifacts,)) || (artifacts.length !== selection.references.length))
     throw new PreparationRootError({ kind: 'reference-inventory', },);

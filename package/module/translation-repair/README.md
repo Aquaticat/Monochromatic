@@ -1412,6 +1412,10 @@ not a complete nested-schema or population audit.
 It does not verify referenced files,
 re-run selection or approve a correspondence root.
 The independently expected whole-artifact digest binds sampler metadata that is not projected.
+`readPreparationSelectionEvidence` additionally matches an exact caller-loaded supporting-byte inventory,
+returns owned raw snapshots and extents in frozen order,
+and does not open paths or assign semantic roles or approval.
+Its byte-binding integration is still under verification.
 `readRegisteredPreparationParent` shares complete-document and parent-coordinate preflight with receipt reconstruction,
 while allowing structural planning without inventing model evidence.
 

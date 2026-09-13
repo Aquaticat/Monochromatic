@@ -30,8 +30,8 @@ export type MatchedPreparationArtifact = {
   readonly hash: string;
   /** Exact raw-byte extent, including zero for a genuinely empty supporting artifact. */
   readonly bytes: number;
-  /** Owned snapshot; later caller changes to source buffers cannot change the matched bytes. */
-  readonly content: Readonly<Uint8Array>;
+  /** Owned non-shared snapshot; later caller changes to source buffers cannot change the matched bytes. */
+  readonly content: Readonly<Uint8Array<ArrayBuffer>>;
 };
 
 /**
