@@ -185,7 +185,40 @@ async function refusal(body: () => Promise<unknown>) {
   return caught;
 }
 
+type RootFixture = Awaited<ReturnType<typeof fixture>>;
+const claimChanges: readonly { readonly name: string; readonly kind: PreparationRootError['kind']; readonly change: (f: RootFixture) => void }[] = [
+  { name: 'pool-status', kind: 'reference-role', change: f => { f.values.pool.status = 'different'; } },
+  { name: 'pool-corpus', kind: 'corpus-identity', change: f => { f.values.pool.corpusSha = digest('different'); } },
+  { name: 'journal-corpus', kind: 'corpus-identity', change: f => { f.values.journal.corpusSha = digest('different'); } },
+  { name: 'historical-runtime', kind: 'reference-role', change: f => { f.values.pool.runtimeDigest = `sha256-tree-v1:${digest('different')}`; } },
+  { name: 'policy-rules', kind: 'reference-role', change: f => { f.values.pool.rules = ['Different policy.']; } },
+  { name: 'sampler-order', kind: 'reference-role', change: f => { f.selection.sampler.order = ['Different order.']; } },
+  { name: 'sampler-position', kind: 'reference-role', change: f => { f.selection.sampler.position = 'different'; } },
+  { name: 'population-count', kind: 'population', change: f => { f.values.pool.populationCount += 1; } },
+  { name: 'parent-count', kind: 'population', change: f => { f.values.pool.parentCount += 1; } },
+  { name: 'pool-exclusions', kind: 'population', change: f => { Object.assign(f.values.pool, { excluded: [{ entryId: 'different', kind: 'missing-corpus-side' }] }); } },
+  { name: 'alignment-observations', kind: 'population', change: f => {
+    f.values.pool.observations = [{ entryId: 'fixture', kind: 'section-alignment', finding: { kind: 'structure-mismatch', attachedTo: { kind: 'whole-document' }, detail: 'Different observation.' } }];
+  } },
+  { name: 'selection-population-digest', kind: 'population', change: f => { f.selection.populationDigest = digest('different'); } },
+  { name: 'pool-population-digest', kind: 'population', change: f => { f.values.pool.populationDigest = digest('different'); } },
+  { name: 'journal-population-digest', kind: 'population', change: f => { f.values.journal.populationDigest = digest('different'); } },
+  { name: 'selection-pool-digest', kind: 'population', change: f => { f.selection.poolDigest = digest('different'); } },
+  { name: 'pool-pool-digest', kind: 'population', change: f => { f.values.pool.poolDigest = digest('different'); } },
+  { name: 'journal-pool-digest', kind: 'population', change: f => { f.values.journal.poolDigest = digest('different'); } },
+  { name: 'complete-entry-projection', kind: 'population', change: f => {
+    const [entry] = f.values.pool.entries;
+    if (entry === undefined) throw new Error('expected historical entry');
+    entry.archiveText += '\nDifferent whole-entry context.';
+  } },
+];
+
 await describe({ name: '', concurrency: 1, children: [describe({ name: buildPreparationRootInputs.name, children: [
+  ...claimChanges.map(({ name, kind, change }) => it({ name: `binds independent native root claim ${name}`, fn: async () => {
+    await using f = await fixture();
+    change(f);
+    expect((await refusal(async () => await buildPreparationRootInputs(f.request()))).kind).toBe(kind);
+  } })),
   it({ name: 'reconstructs frozen parents, raw identities, reading ownership and definition-only additions without redrawing', fn: async () => {
     await using f = await fixture();
     const inputs = await accepted(f.request());
