@@ -175,9 +175,26 @@ and the interval's kernel capture has no matching OOM record.
 These are bounded observations before and at termination,
 not a successful formatter result or an unlimited-run guarantee.
 
-The following operation is read-only full-package lint on the resulting source,
-using the same per-run settings,
-to identify remaining diagnostics without blindly restarting the complete fix loop.
+The next read-only full-package lint,
+`devlint-sU4Yps`,
+completes analysis with 23 warnings and 3 errors,
+peak 2121007104 bytes and no OOM events.
+The remaining findings concern type-only import syntax,
+readonly native-network views,
+UUID grammar constants and callback layout.
+Subsequent formatting exposes a nullish-union annotation,
+consecutive ignored destructuring fields and the child-mount module's line budget.
+They are corrected structurally:
+presence is established before a readonly callback view,
+UUID groups use a named slice,
+and platform mount data moves into its own module with comments retained.
+
+`devformat-Glcy9d` then completes formatting of 1523 files and 484 rules with zero findings,
+peak 2145931264 bytes and no recorded OOM/PID events.
+Its matching type check also succeeds.
+This is a measured successful invocation at that source state,
+not a universal memory margin or a proved optimal configuration.
+Later host-lifecycle code and tests still require fresh checks.
 All checks and the 2 GiB container bound remain enabled.
 
 ## Root cause

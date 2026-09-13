@@ -1445,6 +1445,25 @@ with the native parser asset and a relative-path `sealed-runtime.json` inventory
 The normal build retains its existing dependency policy.
 A candidate must be copied into a fresh frozen directory before reviewed use;
 the build neither approves execution nor implements the required pre-import target/environment gate.
+The separate `bootstrap:seal` task builds `producer-prepare.mjs` and `producer-bootstrap.json`
+under `node_modules/.producer-bootstrap-candidate`.
+Its CLI accepts `--launch`,
+`--launch-sha256` and `--launch-bytes` from independently recorded launch authority.
+The trusted caller authenticates the frozen bootstrap and host before invoking Node.
+The host owns private output creation,
+native creation inspection,
+bounded start/cleanup and output verification;
+the child checks context and runtime bytes before importing `producer-prepare-app.mjs`.
+A real pinned-corpus CLI run reconstructs the unchanged 40-parent input artifact and verifies container removal.
+This is unqualified input reconstruction,
+not a reviewed root,
+phase,
+writer plan or publication result.
+Negative gate/lifecycle coverage and final package verification remain open.
+Package `test:unit` depends on the separate bootstrap build.
+For explicitly prebuilt artifacts,
+`--skip-deps` skips task dependencies;
+`--no-deps` only skips automatic dependency preparation.
 `readRegisteredPreparationParent` shares complete-document and parent-coordinate preflight with receipt reconstruction,
 while allowing structural planning without inventing model evidence.
 

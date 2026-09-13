@@ -2015,8 +2015,10 @@ skips automatic dependency preparation,
 not task dependencies.
 The verified task-graph flag is `--skip-deps`;
 callers using it must explicitly build both artifacts first.
-The corrected invocation reaches the tests and exposes the names-only inventory updates,
-which remain normal test work rather than infrastructure success.
+The corrected invocation reaches the tests and exposes missing names-only inventory entries.
+After the audited class and optional-locator expression entries are added,
+`devtest-u73CI3` passes the built CLI grammar/privacy tests and complete names-only inventory.
+This focused result does not cover native lifecycle or every pre-import refusal.
 
 The native `input-child-context-FN03Xs` prototype independently observes the requested
 2 GiB memory plus 2 GiB swap,
@@ -2072,6 +2074,19 @@ The CLI and independent probe both verify that its container is absent after cle
 No reconstruction receipt is root,
 phase,
 writer or publication approval.
+
+The current focused unit tests invoke a copied compiled bootstrap rather than sibling implementation source.
+They cover help,
+unknown and positional options,
+duplicate identity flags,
+noncanonical extents/digests,
+private-child context refusal,
+malformed launch JSON and UTF-8,
+changed raw bytes and a symlink launch leaf.
+The remaining verification must cover native host lifecycle and interruption,
+pre-import context/byte rejection controls,
+file-observer races and all output consistency branches,
+then rerun the complete package suite from fresh exact artifacts.
 
 Task 48 addresses a separate formatter-resource verification blocker.
 The first new type check reports `TS2339` after guards narrow away additional runtime-file fields;
