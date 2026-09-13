@@ -7,6 +7,10 @@ extends = "build:js"
 [tasks."build:js:node"]
 extends = "build:js:node"
 
+[tasks."runtime:seal"]
+description = "Build a separate Linux x64 GNU application runtime with its native parser asset and build manifest; does not approve execution"
+run = "rolldown --configLoader native --config rolldown.sealed.config.ts"
+
 [tasks."watch:build"]
 extends = "watch:build"
 

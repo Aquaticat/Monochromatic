@@ -12,15 +12,14 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
 // reproducibility all become questions about `dist/final/node` rather than
 // about an import graph.
 /**
- * Node build: the library index plus every corpus-run runner.
+ * Named entries shared by the normal build and the separate sealed-runtime build.
  *
  * @example
  * ```ts
  * // consumed by rolldown as this file default export
  * ```
  */
-const config: ReturnType<typeof nodeConfig> = nodeConfig({
-  input: {
+export const nodeEntries: Readonly<Record<string, string>> = {
     index: './src/index.ts',
     "budget-sample": "./src/corpus-run/budget-sample.ts",
     "checker-sensitivity": "./src/corpus-run/checker-sensitivity.ts",
@@ -60,7 +59,16 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "translate-probe": "./src/corpus-run/translate-probe.ts",
     "verify-published": "./src/corpus-run/verify-published.ts",
     "window-trial-probe": "./src/corpus-run/window-trial-probe.ts",
-  },
-},);
+};
+
+/**
+ * Normal Node build retains the repository's existing external-dependency policy.
+ *
+ * @example
+ * ```ts
+ * // Consumed by the ordinary package build task.
+ * ```
+ */
+const config: ReturnType<typeof nodeConfig> = nodeConfig({ input: nodeEntries, },);
 
 export default config;
