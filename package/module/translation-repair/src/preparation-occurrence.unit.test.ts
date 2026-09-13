@@ -77,6 +77,22 @@ await describe({ name: readPreparationOccurrence.name, children: [
     expect(receiptFailure(() => readPreparationOccurrence({ ...f, expected: without, l: f.input.l }))).toBe('parent');
     expect(receiptFailure(() => readPreparationOccurrence({ ...f, expected: { ...f.expected, sectionPairing: [] }, l: f.input.l }))).toBe('parent');
   } }),
+  it({ name: 'snapshots full occurrence expectations before receipt accessors run', fn: async () => {
+    const f = await receiptFixture();
+    const expected = structuredClone(f.expected);
+    const before = structuredClone(expected);
+    const { question } = f.receipt;
+    let accesses = 0;
+    const receipt = { ...f.receipt, get question() {
+      accesses += 1;
+      Object.assign(expected, { sourceHash: 'later-source', pairIndex: 99 });
+      return question;
+    } };
+    const result = readPreparationOccurrence({ ...f, expected, receipt, l: f.input.l });
+    expect(accesses > 0).toBe(true);
+    expect(result.expected).toEqual(before);
+    expect(result.pair).toEqual(f.input.pair);
+  } }),
   it({ name: 'refuses either current document mismatch before parsing or receipt inspection', fn: async () => {
     const f = await receiptFixture();
     expect(receiptFailure(() => readPreparationOccurrence({ ...f, sourceText: '<invalid', receipt: null, l: f.input.l }))).toBe('documents');

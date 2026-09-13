@@ -1,4 +1,4 @@
-import { type Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { readPreparationDefinitionRelations, readPreparationOccurrence, PreparationQualificationError, } from '../dist/final/node/index.mjs';
 import { receiptFixture, } from './preparation-receipt.test-fixture.ts';
@@ -28,6 +28,7 @@ await describe({ name: '', children: [describe({ name: 'definition evidence isol
       registration: { occurrence: f.expected, domain: { sourceIds: ['block/1'], targetIds: ['block/1'] } },
       receipt: f.receipt, sourceText: f.sourceText, targetText: f.targetText, l,
     }))()]);
+    expect(handoffs).toBe(0);
     expect(result?.status).toBe('fulfilled');
     if (result?.status !== 'fulfilled') throw new Error('expected independent definition evidence');
     expect(result.value.definitionRelations).toEqual([]);
@@ -43,8 +44,7 @@ await describe({ name: '', children: [describe({ name: 'definition evidence isol
       { targetText: `About the cat.\n\n${marker}\n\nRemember the cat.\n\n[^7]: Archive note.`, targetDefinition: 3, bodyEnd: 2, media: false },
       { targetText: `About the cat.\n\n${marker}\n\n<details>\n<summary>Letter</summary>\n> Translated letter.\n</details>\n\nRemember the cat.\n\n[^7]: Archive note.`, targetDefinition: 5, bodyEnd: 4, media: true },
     ];
-    const projections = [];
-    for (const variant of variants) {
+    const projections = await Promise.all(variants.map(async variant => {
       const f = await receiptFixture({ sourceText, targetText: variant.targetText, replies: [JSON.stringify({ pairs: [
         { source: 0, target: 0 }, { source: 1, target: 1 }, { source: 2, target: variant.bodyEnd }, { source: 3, target: variant.targetDefinition },
       ] })] });
@@ -58,9 +58,9 @@ await describe({ name: '', children: [describe({ name: 'definition evidence isol
         target: { nodeId: `block/${variant.targetDefinition}`, blockIndex: variant.targetDefinition, label: '7' },
         authority: 'independent-endorsement',
       }]);
-      projections.push(definition.definitionRelations.map(item => [item.source.label, item.target.label, item.authority]));
       expect(f.calls).toHaveLength(2);
-    }
+      return definition.definitionRelations.map(item => [item.source.label, item.target.label, item.authority]);
+    }));
     expect(projections).toEqual([[['1', '7', 'independent-endorsement']], [['1', '7', 'independent-endorsement']]]);
   } }),
   ...[
@@ -81,7 +81,7 @@ await describe({ name: '', children: [describe({ name: 'definition evidence isol
       target: { nodeId: 'block/1', blockIndex: 1, label: example.label }, authority: 'independent-endorsement',
     }]);
   } })),
-  ...['[^]: Invalid.', '[^a  b]: Invalid whitespace.', `[^${'a'.repeat(1000)}]: Oversized label.`].map((text, index) => it({
+  ...['[^]: Invalid.', '[^a  b]: Invalid whitespace.', `[^${'a'.repeat(1_000)}]: Oversized label.`].map((text, index) => it({
     name: `does not fabricate an endpoint from parser-classified non-definition syntax ${index}`, fn: async () => {
       const document = `Body.\n\n${text}`;
       const f = await receiptFixture({ sourceText: document, targetText: document, replies: ['{"pairs":[{"source":1,"target":1}]}'] });

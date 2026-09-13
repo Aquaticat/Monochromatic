@@ -5,7 +5,10 @@ import type {
 import type { SectionPair, } from './pair-sections-wire.ts';
 import type { RepairDocument, } from './parse-document.ts';
 import type { PreparationReceiptBinding, } from './preparation-receipt-model.ts';
-import type { PreparedBlockEvidence, PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
+import type {
+  PreparedBlockEvidence,
+  PreparedBlockPairing,
+} from './prepare-block-pairing-model.ts';
 
 //region Current occurrence metadata
 
@@ -101,9 +104,13 @@ export type BoundPreparationOccurrence = {
  * ```
  */
 export type PreparationEvidenceOccurrence = Omit<BoundPreparationOccurrence, 'scope' | 'prepared'> & {
-  /** This scope has not executed full-parent handoff reconstruction. */
+  /**
+   * This scope has not executed full-parent handoff reconstruction.
+   */
   readonly scope: 'receipt-bound-evidence';
-  /** Queried evidence rebuilt from raw terminal outcomes, not a stored aggregate or cache record. */
+  /**
+   * Queried evidence rebuilt from raw terminal outcomes, not a stored aggregate or cache record.
+   */
   readonly evidence: Extract<PreparedBlockEvidence, { readonly kind: 'queried'; }>;
 };
 

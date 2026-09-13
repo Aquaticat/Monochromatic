@@ -105,7 +105,7 @@ export function definitionIndexes(
  *
  * @param node - block to read
  *
- * @returns One opening label or an empty tuple; this reader never returns multiple labels
+ * @returns One opening label or an empty collection; this reader never returns multiple labels
  *
  * @example
  * ```ts
@@ -115,7 +115,7 @@ export function definitionIndexes(
  */
 export function definitionLabelsOf(
   { node, }: { readonly node: DocumentNode; },
-): readonly [] | readonly [string] {
+): readonly string[] {
   if (node.zone !== DEFINITION_ZONE)
     return [];
   /**

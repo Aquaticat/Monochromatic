@@ -75,7 +75,10 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
   } }),
   it({ name: 'projects only definitions even when native body relations are endorsed', fn: async () => {
     const { input } = await acquire({ replies: ['{"pairs":[{"source":0,"target":0},{"source":1,"target":1},{"source":2,"target":2}]}'] });
-    expect(readPreparationDefinitionRelations(input).definitionRelations.map(item => item.source.blockIndex)).toEqual([1, 2]);
+    const [outcome] = await Promise.allSettled([(async () => readPreparationDefinitionRelations(input))()]);
+    expect(outcome?.status).toBe('fulfilled');
+    if (outcome?.status !== 'fulfilled') throw new Error('expected definition-only projection');
+    expect(outcome.value.definitionRelations.map(item => item.source.blockIndex)).toEqual([1, 2]);
   } }),
   it({ name: 'retains a partial definition endorsement without inventing its unmatched counterpart', fn: async () => {
     const { input } = await acquire({ replies: ['{"pairs":[{"source":1,"target":1}]}'] });
@@ -149,16 +152,16 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
     expect(refusal(() => readPreparationDefinitionRelations({ ...input, receipt: { ...input.receipt, state: 'partial' } }))).toBe('receipt:state');
     expect(refusal(() => readPreparationDefinitionRelations({ ...input, receipt: { cacheKey: 'old', record: { pairs: [], findings: [] } } }))).toBe('receipt:state');
   } }),
-  it({ name: 'binds identical local questions and node IDs to their registered complete documents', fn: async () => {
+  ...(['sourceText', 'targetText'] as const).map(side => it({ name: `binds identical local questions to registered complete ${side}`, fn: async () => {
     const preface = '# Context\n\nFirst preface.\n\n# Work\n\n';
     const { fixture, input } = await acquire({ sourceText: preface + sourceText, targetText: preface + targetText, pairIndex: 1,
       replies: ['{"pairs":[{"source":2,"target":2},{"source":3,"target":3}]}'], registeredDomain: { sourceIds: ['block/4', 'block/5'], targetIds: ['block/4', 'block/5'] } });
     const before = readPreparationDefinitionRelations(input);
     expect(before.occurrence.pairIndex).toBe(1);
-    const foreign = input.sourceText.replace('First preface.', 'Other preface.');
-    expect(refusal(() => readPreparationDefinitionRelations({ ...input, sourceText: foreign }))).toBe('receipt:documents');
+    const foreign = input[side].replace('First preface.', 'Other preface.');
+    expect(refusal(() => readPreparationDefinitionRelations({ ...input, [side]: foreign }))).toBe('receipt:documents');
     expect(fixture.calls).toHaveLength(2);
-  } }),
+  } })),
   it({ name: 'snapshots registration before a receipt accessor can alter caller-owned expectations', fn: async () => {
     const { input } = await acquire();
     const before = structuredClone(input.registration);
@@ -170,10 +173,12 @@ await describe({ name: '', children: [describe({ name: readPreparationDefinition
       Object.assign(input.registration.occurrence, { pairIndex: 99 });
       return question;
     } };
-    const result = readPreparationDefinitionRelations({ ...input, receipt });
+    const [outcome] = await Promise.allSettled([(async () => readPreparationDefinitionRelations({ ...input, receipt }))()]);
+    expect(outcome?.status).toBe('fulfilled');
+    if (outcome?.status !== 'fulfilled') throw new Error('expected snapshotted registration');
     expect(reads > 0).toBe(true);
-    expect(result.occurrence).toEqual(before.occurrence);
-    expect(result.domain).toEqual(before.domain);
+    expect(outcome.value.occurrence).toEqual(before.occurrence);
+    expect(outcome.value.domain).toEqual(before.domain);
   } }),
   it({ name: 'owns endpoint, occurrence, domain and electorate data after caller mutation', fn: async () => {
     const { input } = await acquire();

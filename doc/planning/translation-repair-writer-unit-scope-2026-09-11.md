@@ -1028,8 +1028,45 @@ R3 builds,
 but TypeScript reports `TS2339` where the fixture returned a broad prepared union and tests accessed `evidence.outcome`.
 The fixture now returns its already narrowed queried evidence explicitly;
 no production policy changes for that diagnostic.
-`preparation-definition-verification-r4-20260912.out` is the next verification;
-this redesigned projection is not yet declared verified.
+R4 passes all phases,
+with `unit exit 0` inspected at line 10099 of `preparation-definition-unit-r4-20260912.out`.
+Final review nevertheless identified an authority-path problem:
+calling the full occurrence reader also executed unrelated body/media and fallback handoff work.
+Definition-only output fields did not remove that work's control-flow veto.
+
+`readPreparationEvidenceOccurrence` now owns current document/parent/receipt checks and native raw replay
+without media normalization or prepared handoff.
+`readPreparationOccurrence` layers its existing full handoff on that internal core.
+The public definition reader consumes the core directly.
+Expected occurrence data is snapshotted before receipt access.
+The model distinguishes `receipt-bound-evidence` from the full `receipt-bound-occurrence` result.
+
+Controls now exercise a deliberately failing real fallback-handoff logger boundary,
+with a successful full-reader invocation of the fault proving the instrument works.
+The definition reader must not reach that handoff.
+An actual transcript/media-claim contrast checks unchanged definition relations alongside changed full-body normalization.
+Parser-backed label controls cover indentation,
+escaped closing delimiters/backslashes,
+Unicode,
+multiline definition bodies and the active label-length boundary.
+`definitionLabelsOf` has only empty-array and single-label return branches;
+the parser-backed catalog checks actual current endpoint extraction.
+An attempted empty-or-singleton tuple annotation was rejected by `no-optional-escape`,
+so the existing readonly-array interface is retained rather than suppressing that rule.
+Crossing agreement now asserts the exact native retained edge,
+and ownership controls mutate the registered electorate actually consumed by the reader.
+R5 passes build,
+types and focused consumer tests.
+Its formatter rejects the empty tuple annotation and sequential independent media fixtures;
+those are replaced by the existing array return type and concurrent fixture acquisition.
+It also reports `prefer-readonly-parameter-types` for the untouched consolidation callback
+and repeated `SemanticBridgeError: Owned effect edge lacks callee summary` messages for `definitionLabelsOf`.
+No unrelated source or lint policy is changed on that evidence;
+the next run must establish whether the findings remain after the annotation correction.
+Successful-call controls now produce ordinary assertions on removed boundaries,
+and a full-occurrence receipt-accessor control verifies the core's own expectation snapshot.
+`preparation-definition-verification-r6-20260912.out` is the next verification;
+this isolation refinement is not yet declared verified.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,
