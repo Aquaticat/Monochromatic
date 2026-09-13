@@ -22,13 +22,22 @@ import { PreparationRootError, } from './preparation-root-error.ts';
  * preparationArtifactObservationFailure({ error, kind: 'reference-inventory', l });
  * ```
  */
-function preparationArtifactObservationFailure({ error, kind, l, }: {
+function preparationArtifactObservationFailure({
+  error,
+  kind,
+  l,
+}: {
   readonly error: unknown;
   readonly kind: 'reference-inventory' | 'reference-content';
   readonly l: Logger;
 },): never {
-  /** Controlled diagnostics never inspect caller-supplied error properties. */
-  const pl = tagged({ tag: preparationArtifactObservationFailure.name, l, },);
+  /**
+   * Controlled diagnostics never inspect caller-supplied error properties.
+   */
+  const pl = tagged({
+    tag: preparationArtifactObservationFailure.name,
+    l,
+  },);
   if (Error.isError(error,))
     pl.warn('supporting artifact observation threw an Error; input-bearing details were not retained',);
   else
@@ -52,17 +61,29 @@ function preparationArtifactObservationFailure({ error, kind, l, }: {
  * const array = preparationArtifactIsArray({ value, l });
  * ```
  */
-export function preparationArtifactIsArray({ value, l, }: {
+export function preparationArtifactIsArray({
+  value,
+  l,
+}: {
   readonly value: unknown;
   readonly l: Logger;
 },): boolean {
-  /** Shape observation does not claim descriptor ownership. */
-  const pl = tagged({ tag: preparationArtifactIsArray.name, l, },);
+  /**
+   * Shape observation does not claim descriptor ownership.
+   */
+  const pl = tagged({
+    tag: preparationArtifactIsArray.name,
+    l,
+  },);
   try {
     return Array.isArray(value,);
   }
   catch (error) {
-    return preparationArtifactObservationFailure({ error, kind: 'reference-inventory', l: pl, },);
+    return preparationArtifactObservationFailure({
+      error,
+      kind: 'reference-inventory',
+      l: pl,
+    },);
   }
 }
 
@@ -111,7 +132,11 @@ export function preparationArtifactProperty({
     ) as unknown;
   }
   catch (error) {
-    return preparationArtifactObservationFailure({ error, kind, l: pl, },);
+    return preparationArtifactObservationFailure({
+      error,
+      kind,
+      l: pl,
+    },);
   }
 }
 

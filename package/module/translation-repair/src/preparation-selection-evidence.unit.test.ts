@@ -23,6 +23,18 @@ function fixture() {
   const text = JSON.stringify(record);
   return { text, expectedDigest: hashContent({ content: text }), artifacts, l, record };
 }
+function successfulMatch(input: Parameters<typeof readPreparationSelectionEvidence>[0]): ReturnType<typeof readPreparationSelectionEvidence> {
+  let result: ReturnType<typeof readPreparationSelectionEvidence> | undefined;
+  let caught: unknown;
+  try {
+    result = readPreparationSelectionEvidence(input);
+  }
+  catch (error) { caught = error; }
+  expect(caught).toBeUndefined();
+  expect(result).toBeDefined();
+  if (result === undefined) throw new Error('expected matched supporting artifacts');
+  return result;
+}
 function failure(run: () => unknown): string {
   try {
     run();
@@ -116,11 +128,17 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     let calls = 0;
     const content = new Proxy(new Uint8Array([255, 0, 1, 13, 10]), {
       getPrototypeOf(target) {
-        if (trap === 'prototype') { calls += 1; throw canary; }
+        if (trap === 'prototype') {
+          calls += 1;
+          throw canary;
+        }
         return Reflect.getPrototypeOf(target);
       },
       get(target, key, receiver) {
-        if (key === Symbol.iterator) { calls += 1; throw canary; }
+        if (key === Symbol.iterator) {
+          calls += 1;
+          throw canary;
+        }
         return Reflect.get(target, key, receiver) as unknown;
       },
     });
@@ -135,7 +153,9 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     calls = 0;
     f.artifacts[0] = { path: '/unread/pool.bin', content };
     let caught: unknown;
-    try { readPreparationSelectionEvidence(f); }
+    try {
+      readPreparationSelectionEvidence(f);
+    }
     catch (error) { caught = error; }
     expect(caught).toBeInstanceOf(PreparationRootError);
     expect((caught as PreparationRootError).kind).toBe('reference-content');
@@ -144,18 +164,22 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
   } })),
   ...['inventory', 'entry', 'bytes'].map(boundary => it({ name: `classifies revoked ${boundary} proxies without retaining native causes`, fn: async () => {
     const f = fixture();
-    const first = f.artifacts[0];
+    const [first] = f.artifacts;
     if (first === undefined) throw new Error('expected revocation witness');
     const target = boundary === 'inventory' ? f.artifacts : boundary === 'entry' ? first : first.content;
     const revoked = Proxy.revocable(target, {});
     revoked.revoke();
     let exposed: unknown;
-    try { Reflect.getPrototypeOf(revoked.proxy); }
+    try {
+      Reflect.getPrototypeOf(revoked.proxy);
+    }
     catch (error) { exposed = error; }
     expect(exposed).toBeInstanceOf(TypeError);
     const artifacts = boundary === 'inventory' ? revoked.proxy : [boundary === 'entry' ? revoked.proxy : { ...first, content: revoked.proxy }, ...f.artifacts.slice(1)];
     let caught: unknown;
-    try { readPreparationSelectionEvidence({ ...f, artifacts: artifacts as readonly PreparationArtifactInput[] }); }
+    try {
+      readPreparationSelectionEvidence({ ...f, artifacts: artifacts as readonly PreparationArtifactInput[] });
+    }
     catch (error) { caught = error; }
     expect(caught).toBeInstanceOf(PreparationRootError);
     expect((caught as PreparationRootError).kind).toBe(boundary === 'bytes' ? 'reference-content' : 'reference-inventory');
@@ -212,7 +236,7 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     const f = fixture();
     const backing = new Uint8Array([99, 99, 255, 0, 1, 13, 10, 99]);
     f.artifacts[0] = { path: '/unread/pool.bin', content: backing.subarray(2, 7) };
-    const result = readPreparationSelectionEvidence(f);
+    const result = successfulMatch(f);
     expect([...result.artifacts[0]?.content ?? []]).toEqual([255, 0, 1, 13, 10]);
     expect(result.artifacts[0]?.bytes).toBe(5);
   } }),
@@ -252,7 +276,7 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
     expect([...artifacts]).toHaveLength(1);
     expect(iterations).toBe(1);
     iterations = 0;
-    expect(readPreparationSelectionEvidence({ ...f, artifacts }).artifacts).toHaveLength(3);
+    expect(successfulMatch({ ...f, artifacts }).artifacts).toHaveLength(3);
     expect(iterations).toBe(0);
   } }),
   ...(['path', 'content'] as const).flatMap(property => ['error', 'primitive'].map(kind => it({ name: `sanitizes throwing ${property} accessors carrying ${kind} private data`, fn: async () => {
@@ -309,7 +333,7 @@ await describe({ name: '', children: [describe({ name: readPreparationSelectionE
       reads += 1;
       return reads === 1 ? original.path : '/changed-after-snapshot';
     }, content: original.content };
-    const result = readPreparationSelectionEvidence({ ...f, artifacts: [first, ...f.artifacts.slice(1)] });
+    const result = successfulMatch({ ...f, artifacts: [first, ...f.artifacts.slice(1)] });
     expect(reads).toBe(1);
     expect(result.artifacts[0]?.path).toBe('/unread/pool.bin');
   } }),

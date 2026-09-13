@@ -96,7 +96,10 @@ export function readPreparationSelectionEvidence({
     expectedDigest,
     l: pl,
   },);
-  if (!preparationArtifactIsArray({ value: artifacts, l: pl, },))
+  if (!preparationArtifactIsArray({
+    value: artifacts,
+    l: pl,
+  },))
     throw new PreparationRootError({ kind: 'reference-inventory', },);
   /**
    * The frozen reference count bounds indexed traversal, independent of a custom array iterator.
@@ -131,7 +134,10 @@ export function readPreparationSelectionEvidence({
       kind: 'reference-inventory',
       l: pl,
     },);
-    if (preparationArtifactIsArray({ value: input, l: pl, },) || (!isJsonRecord(input,)))
+    if (preparationArtifactIsArray({
+      value: input,
+      l: pl,
+    },) || (!isJsonRecord(input,)))
       throw new PreparationRootError({ kind: 'reference-inventory', },);
     /**
      * Snapshot locator once so callback-backed descriptors cannot select different keys during this pass.

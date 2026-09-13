@@ -113,8 +113,19 @@ await describe({ name: '', children: [describe({ name: readFrozenPreparationSele
       if (kind === 'sampler-count') value.sampler.count = 39;
       else if (kind === 'sampler-name') value.sampler.name = 'different';
       else if (kind === 'sampler-seed') value.sampler.seed = 'redraw';
-      else if (kind === 'parent-count') value.orderedParentIds.pop();
-      else if (kind === 'duplicate-parent') value.orderedParentIds[1] = 'fixture/source-section/0/target-section/0';
+      else if (kind === 'parent-count') {
+        value.orderedParentIds.pop();
+        value.dependencies.pop();
+        value.census.selectedParents = 39;
+        value.completeParentReadings = 39;
+      }
+      else if (kind === 'duplicate-parent') {
+        const repeated = 'fixture/source-section/0/target-section/0';
+        value.orderedParentIds[1] = repeated;
+        const second = value.dependencies[1];
+        if (second === undefined) throw new Error('expected duplicate-parent witness');
+        second.parentId = repeated;
+      }
       else if (kind === 'census-parents') value.census.selectedParents = 39;
       else if (kind === 'census-entries') value.census.selectedEntries = 2;
       else if (kind === 'parent-readings') value.completeParentReadings = 39;
@@ -124,10 +135,17 @@ await describe({ name: '', children: [describe({ name: readFrozenPreparationSele
   })),
   ...['../source-section/0/target-section/0', ' fixture/source-section/0/target-section/0', 'fixture /source-section/0/target-section/0',
     'fi\nxture/source-section/0/target-section/0', 'fi\u007Fxture/source-section/0/target-section/0', 'fi\u009Fxture/source-section/0/target-section/0', String.raw`folder\escape/source-section/0/target-section/0`, 'fixture/source-section/01/target-section/0',
-    'fixture/source-section/-1/target-section/0', 'fixture/source-section/0/target-section/1e1', 'fixture/other/0/target-section/0', 'fixture/source-section/0/other/0', 'fixture/source-section/0'].map((id, index) => it({
+    'fixture/source-section/-1/target-section/0', 'fixture/source-section/0/target-section/1e1', 'fixture/other/0/target-section/0', 'fixture/source-section/0/other/0', 'fixture/source-section/0',
+    'fixture/source-section/9007199254740992/target-section/0'].map((id, index) => it({
     name: `refuses noncanonical frozen parent identity ${index}`, fn: async () => {
       const value = artifact();
       value.orderedParentIds[0] = id;
+      const [first] = value.dependencies;
+      if (first === undefined) throw new Error('expected parent grammar witness');
+      first.parentId = id;
+      const entries = new Set(value.orderedParentIds.map(parentId => parentId.split('/')[0]));
+      value.census.selectedEntries = entries.size;
+      value.completeEntryReadings = entries.size;
       expect(outcome(value)).toBe('selection-parents');
     },
   })),

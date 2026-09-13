@@ -1299,7 +1299,21 @@ The fix uses a measured native byte-view brand check and narrowly sanitized arra
 The [Node byte-view observation record](../troubleshooting/node-typed-array-proxy-observations.md)
 retains source evidence,
 probe catalogs and exact failures.
-R7 will repeat full verification before the combined selection/supporting-byte guard proof.
+R7 passes rebuild,
+actual bounded consumer,
+types and focused tests including every proxy regression.
+Its formatter findings concern fixture statement layout and array destructuring;
+those are corrected without changing production behavior.
+
+Before the combined guard proof,
+positive iterator,
+subarray and locator-snapshot controls assert successful return explicitly,
+so a wrongful refusal produces a designated ordinary assertion instead of an unrelated uncaught error.
+Parent-count,
+duplicate and grammar fixtures now keep their other reading/obligation counts consistent;
+removing the intended guard cannot hide behind a later incidental mismatch.
+An unsafe-integer coordinate is included separately from noncanonical numeric spelling.
+R8 repeats complete verification of these controls.
 This supporting-byte reader is not yet declared finally verified.
 
 The bounded phase design follows the permitted caller:
