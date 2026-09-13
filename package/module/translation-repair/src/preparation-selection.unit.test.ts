@@ -57,6 +57,15 @@ await describe({ name: '', children: [describe({ name: readFrozenPreparationSele
     expect('approved' in result).toBe(false);
     expect('client' in result).toBe(false);
   } }),
+  it({ name: 'preserves printable Unicode entry identity without normalization', fn: async () => {
+    const value = artifact();
+    value.orderedParentIds = value.orderedParentIds.map(id => id.replace('fixture/', '猫😺/'));
+    value.dependencies = value.dependencies.map(item => ({ ...item, parentId: item.parentId.replace('fixture/', '猫😺/') }));
+    const text = JSON.stringify(value);
+    const result = readFrozenPreparationSelection({ text, expectedDigest: hashContent({ content: text }), l });
+    expect(result.parents.every(parent => parent.entryId === '猫😺')).toBe(true);
+    expect(result.parents.map(parent => parent.parentId)).toEqual(value.orderedParentIds);
+  } }),
   it({ name: 'checks independent digest before parsing and does not promote changed order', fn: async () => {
     const value = artifact();
     const original = JSON.stringify(value);
@@ -114,7 +123,7 @@ await describe({ name: '', children: [describe({ name: readFrozenPreparationSele
     },
   })),
   ...['../source-section/0/target-section/0', ' fixture/source-section/0/target-section/0', 'fixture /source-section/0/target-section/0',
-    'fi\nxture/source-section/0/target-section/0', 'fi\u007fxture/source-section/0/target-section/0', 'fi\u009fxture/source-section/0/target-section/0', String.raw`folder\escape/source-section/0/target-section/0`, 'fixture/source-section/01/target-section/0',
+    'fi\nxture/source-section/0/target-section/0', 'fi\u007Fxture/source-section/0/target-section/0', 'fi\u009Fxture/source-section/0/target-section/0', String.raw`folder\escape/source-section/0/target-section/0`, 'fixture/source-section/01/target-section/0',
     'fixture/source-section/-1/target-section/0', 'fixture/source-section/0/target-section/1e1', 'fixture/other/0/target-section/0', 'fixture/source-section/0/other/0', 'fixture/source-section/0'].map((id, index) => it({
     name: `refuses noncanonical frozen parent identity ${index}`, fn: async () => {
       const value = artifact();

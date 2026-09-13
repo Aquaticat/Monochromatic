@@ -1185,8 +1185,37 @@ Its formatter findings concern imported callback arity,
 statement layout and destructuring.
 Validation-only policy scans now use explicit loops;
 remaining transformations use named callbacks and explicit destructuring.
-`preparation-selection-verification-r2-20260913.out` is the next full verification.
-The new selection reader is not yet declared verified.
+R2 repeats the passing build,
+actual consumer,
+types and focused tests,
+then flags a shadowed context callback parameter.
+After its rename,
+R3 passes every phase;
+`unit exit 0` was inspected at line 10315 of `preparation-selection-unit-r3-20260913.out`.
+
+Independent review clarifies this boundary as a checked partial projection,
+not a complete nested-schema,
+population or eligibility audit.
+Unprojected fields stay bound by the whole-artifact digest and must be interpreted by the later root builder.
+The ambiguous reserialized `samplerDigest` is removed;
+only the independently expected whole-artifact digest binds the remaining sampler recipe.
+A type brand would not establish external approval:
+the expected digest remains trusted owner input,
+and the native root entrypoint must obtain it from the separately recorded task40 authority.
+No ingestion result acts as approval.
+
+Entry IDs now reject whitespace edges and control code units without rewriting frozen spelling.
+The real-artifact consumer compares every returned reference locator/hash pair and source-obligation record,
+not just their counts.
+It still does not read or verify the referenced file bytes.
+R4 passes build,
+actual-artifact projection comparison,
+types and focused tests.
+Its formatter requires `codePointAt` instead of `charCodeAt`.
+The control-character scan now uses the preferred API with an in-range non-nullish assertion,
+and a printable Unicode/astral entry-name control preserves original spelling.
+`preparation-selection-verification-r5-20260913.out` is the next full verification.
+The final ingestion checkpoint is not yet declared verified.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,

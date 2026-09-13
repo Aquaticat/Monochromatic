@@ -1407,8 +1407,11 @@ The frozen parent selection is not acquisition approval or a final forty-round w
 `readFrozenPreparationSelection` checks its independently expected bytes and preserves ordered parent identities,
 reference inventory,
 historical sampler provenance and unresolved source obligations.
+This is a partial identity projection,
+not a complete nested-schema or population audit.
 It does not verify referenced files,
 re-run selection or approve a correspondence root.
+The independently expected whole-artifact digest binds sampler metadata that is not projected.
 `readRegisteredPreparationParent` shares complete-document and parent-coordinate preflight with receipt reconstruction,
 while allowing structural planning without inventing model evidence.
 
