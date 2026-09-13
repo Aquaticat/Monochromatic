@@ -76,6 +76,12 @@ export {
 export { readPreparationOccurrence, } from './read-preparation-occurrence.ts';
 export { readRegisteredPreparationParent, } from './read-registered-preparation-parent.ts';
 export { readFrozenPreparationSelection, } from './read-frozen-preparation-selection.ts';
+export { readPreparationSelectionEvidence, } from './read-preparation-selection-evidence.ts';
+export {
+  type PreparationArtifactInput,
+  type MatchedPreparationArtifact,
+  type PreparationSelectionEvidence,
+} from './preparation-selection-evidence-model.ts';
 export {
   type FrozenPreparationSelection,
   type FrozenPreparationParent,

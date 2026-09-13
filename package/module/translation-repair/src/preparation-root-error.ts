@@ -8,7 +8,7 @@
  * const kind: PreparationRootFailure = 'selection-digest';
  * ```
  */
-export type PreparationRootFailure = 'selection-digest' | 'selection-syntax' | 'selection-shape' | 'selection-parents' | 'selection-references' | 'selection-obligations';
+export type PreparationRootFailure = 'selection-digest' | 'selection-syntax' | 'selection-shape' | 'selection-parents' | 'selection-references' | 'selection-obligations' | 'reference-inventory' | 'reference-content';
 
 /**
  * Fixed diagnostics keep private selection and corpus text out of error rendering.
@@ -20,6 +20,8 @@ const ROOT_MESSAGES: Readonly<Record<PreparationRootFailure, string>> = {
   'selection-parents': 'Frozen parent identities, order or reading counts do not describe the required forty-parent selection. Abort or explicitly reopen selection; do not redraw, substitute or pad parents.',
   'selection-references': 'Frozen selection references are missing, duplicated or malformed. Restore the original reference inventory; every referenced artifact still needs independent byte verification before root planning.',
   'selection-obligations': 'Frozen selection does not retain one source-context obligation record for each ordered parent. Restore its complete reading evidence; unresolved source channels cannot become implicit call authority.',
+  'reference-inventory': 'Supplied supporting artifacts do not match the complete frozen reference inventory exactly once. Load only the original registered references; do not add, omit or substitute supporting inputs.',
+  'reference-content': 'Supporting artifact bytes cannot be read or do not match their frozen SHA-256. Restore the original exact bytes before semantic root construction; decoded, partial or altered content does not verify the reference.',
 };
 
 /**
