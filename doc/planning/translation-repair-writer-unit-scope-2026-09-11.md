@@ -1320,8 +1320,28 @@ Its formatter rejects a test helper's nullish result slot and a direct array-ele
 The helper now returns directly from its `try` and asserts unexpected failures in `catch`,
 without an absence encoding;
 the element declaration uses destructuring.
-R9 repeats complete verification of these controls.
-This supporting-byte reader is not yet declared finally verified.
+R9 passes every verification phase at `0d8460433`,
+including zero-warning lint over 1484 files and the actual bounded supporting-artifact consumer.
+`unit exit 0` was read at line 10383 of `preparation-supporting-bytes-unit-r9-20260913.out`.
+The runtime ledger's run identity is `422d0eb0-7fb4-42d5-acb7-fe29b3351054`.
+Only the owner's `mise.lock` remains modified outside the documentation update.
+
+The combined identity/supporting-byte guard proof uses a main-created disposable worktree at
+`/var/home/user/temp/agent/translation-repair-selection-guard-20260913`,
+checkpoint `0d8460433`,
+without overlays or copied ignored state.
+Its container has no network,
+2 GiB RAM,
+2 CPUs and 512 PIDs;
+source and dependencies are read-only and known root credential files are masked.
+Native Mise controls accept Node `26.8.2` and refuse `26.7.0`,
+with a fresh nonce-bound runtime ledger.
+The active mutation run is recorded in `selection-guard-mutations-20260913.out`.
+Mutant builds must succeed and the designated test must fail with an ordinary `AssertionError`.
+Wrongful-refusal and metadata checks are not reported as unsafe acceptance.
+Retention,
+restored-suite verification and audited worktree removal remain pending.
+This supporting-byte boundary is not yet declared finally verified.
 
 The bounded phase design follows the permitted caller:
 `corpus-run/pass-prepare.ts:201` performs initial preparation,

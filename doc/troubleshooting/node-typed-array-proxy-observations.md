@@ -120,9 +120,19 @@ It imports the built artifact and includes successful `Buffer`,
 shared-view,
 subarray and ordinary-byte ownership controls.
 R6 rebuild and type checking pass before its designated regression failures.
-The consumer-side fix is under full verification;
-R6 is red evidence,
-not its final success record.
+R9 passes build,
+the real supporting-artifact consumer,
+types,
+focused controls,
+formatter,
+rebuild,
+lint,
+the full unit suite and Markdown checks at `0d8460433`.
+`unit exit 0` was read at line 10383 of
+`/var/home/user/temp/agent/preparation-supporting-bytes-unit-r9-20260913.out`.
+Its runtime run identity is `422d0eb0-7fb4-42d5-acb7-fe29b3351054`.
+R6 remains red evidence,
+not a final success record.
 
 ## Verified mechanism and consumer remedy
 
