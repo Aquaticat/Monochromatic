@@ -136,6 +136,40 @@ function carryReadings(f: Awaited<ReturnType<typeof fixture>>) {
     Object.assign(obligation, { requiredContext: [...prior.requiredContext], pictureEvidenceNeeded: false, scopeQualificationOpen: true });
   });
 }
+function carryOnly({ f, scope }: { readonly f: Awaited<ReturnType<typeof fixture>>; readonly scope: 'entry' | 'parent' }) {
+  const [currentEntry] = structuredClone(f.values.journal.entries);
+  if (currentEntry === undefined) throw new Error('expected current entry');
+  const currentParents = structuredClone(f.values.journal.parents);
+  const currentObligations = structuredClone(f.selection.dependencies);
+  carryReadings(f);
+  if (scope === 'entry') {
+    f.values.journal.parents = currentParents;
+    f.selection.dependencies = currentObligations;
+    return;
+  }
+  const [entry] = f.values.journal.entries;
+  if (entry === undefined) throw new Error('expected carried entry');
+  Object.assign(entry, currentEntry);
+}
+function priorLinks(f: Awaited<ReturnType<typeof fixture>>) {
+  const hash = digest(JSON.stringify(f.values.prior));
+  f.values.journal.priorJournalHash = hash;
+  f.values.journal.entries.forEach(entry => {
+    Object.assign(entry, { priorJournalHash: hash });
+  });
+  f.values.journal.parents.forEach(parent => {
+    if (Object.hasOwn(parent, 'priorEntryId')) Object.assign(parent, { priorJournalHash: hash });
+  });
+}
+function noteLinks(f: Awaited<ReturnType<typeof fixture>>) {
+  const hash = digest(JSON.stringify(f.values.note));
+  f.values.journal.entries.forEach(entry => {
+    if (Object.hasOwn(entry, 'currentNoteFile')) entry.currentNoteHash = hash;
+  });
+  f.values.journal.parents.forEach(parent => {
+    if (Object.hasOwn(parent, 'noteFile')) parent.noteHash = hash;
+  });
+}
 async function divergentOrigins(dir: string) {
   const origin = process.cwd();
   const initial = join(dir, 'initial');
@@ -306,6 +340,50 @@ await describe({ name: '', concurrency: 1, children: [describe({ name: buildPrep
     expect(error.kind).toBe('corpus-read');
     expect(error.input).toBe('people/fixture/page.md');
     expect(inspect(error, { depth: null })).not.toContain('q7z9k2');
+  } }),
+  ...['entry', 'parent'].flatMap(scope => [
+    it({ name: `accepts isolated carried provenance owner ${scope}`, fn: async () => {
+      await using f = await fixture();
+      if (scope !== 'entry' && scope !== 'parent') throw new Error('unexpected carried scope');
+      carryOnly({ f, scope });
+      const inputs = await accepted(f.request());
+      expect(inputs.obligations[0]?.requiredContext).toEqual(scope === 'entry' ? [' Context 40. '] : [' Retained prior context. ']);
+    } }),
+    ...['missing', 'duplicate', 'claim', 'source-hash', 'target-hash'].map(change => it({ name: `binds isolated carried ${scope} provenance ${change}`, fn: async () => {
+      await using f = await fixture();
+      if (scope !== 'entry' && scope !== 'parent') throw new Error('unexpected carried scope');
+      carryOnly({ f, scope });
+      const [prior] = f.values.prior.entries;
+      const [entry] = f.values.journal.entries;
+      if (prior === undefined || entry === undefined) throw new Error('expected isolated prior witnesses');
+      if (change === 'missing') f.values.prior.entries = [];
+      else if (change === 'duplicate') f.values.prior.entries.push(structuredClone(prior));
+      else if (change === 'claim') Object.assign(entry, { priorReading: { ...prior, selectedParentIndexes: entry.selectedParentIndexes.toReversed() } });
+      else {
+        Object.assign(prior, change === 'source-hash' ? { sourceHash: digest('different') } : { targetHash: digest('different') });
+        Object.assign(entry, { priorReading: structuredClone(prior) });
+      }
+      priorLinks(f);
+      expect((await refusal(async () => await buildPreparationRootInputs(f.request()))).kind).toBe('reading-provenance');
+    } })),
+  ]),
+  ...['entryId', 'readExtent'].flatMap(field => ['entry', 'parent'].map(owner => it({ name: `binds current ${owner} note field ${field} without a second current-note consumer`, fn: async () => {
+    await using f = await fixture();
+    carryOnly({ f, scope: owner === 'entry' ? 'parent' : 'entry' });
+    Object.assign(f.values.note, { [field]: 'different' });
+    noteLinks(f);
+    expect((await refusal(async () => await buildPreparationRootInputs(f.request()))).kind).toBe('reading-provenance');
+  } }))),
+  it({ name: 'requires explicit prior membership for a carried parent beneath a current entry note', fn: async () => {
+    await using f = await fixture();
+    carryOnly({ f, scope: 'parent' });
+    const [prior] = f.values.prior.entries;
+    const [entry] = f.values.journal.entries;
+    if (prior === undefined || entry === undefined) throw new Error('expected parent membership witnesses');
+    Object.assign(prior, { selectedParentIndexes: [] });
+    Object.assign(entry, { priorReading: structuredClone(prior) });
+    priorLinks(f);
+    expect((await refusal(async () => await buildPreparationRootInputs(f.request()))).kind).toBe('reading-provenance');
   } }),
   it({ name: 'retains exact carried entry and parent evidence without promoting correspondence qualification', fn: async () => {
     await using f = await fixture();
