@@ -114,7 +114,9 @@ export type PreparationParentExpectation = Omit<PreparationOccurrenceExpectation
  * ```
  */
 export type RegisteredPreparationParent = Pick<BoundPreparationOccurrence, 'source' | 'target' | 'pair' | 'alignmentFindings'> & {
-  /** Only document and parent identities have been checked. */
+  /**
+   * Only document and parent identities have been checked.
+   */
   readonly scope: 'registered-preparation-parent';
 };
 
