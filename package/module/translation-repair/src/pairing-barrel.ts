@@ -74,6 +74,7 @@ export {
   type PreparationRequestCaptureFailure,
 } from './preparation-request-capture-error.ts';
 export { readPreparationOccurrence, } from './read-preparation-occurrence.ts';
+export { readRegisteredPreparationParent, } from './read-registered-preparation-parent.ts';
 export {
   type PreparationReceiptBinding,
   type PreparationReceiptData,
@@ -82,6 +83,8 @@ export {
 export {
   type BoundPreparationOccurrence,
   type PreparationOccurrenceExpectation,
+  type PreparationParentExpectation,
+  type RegisteredPreparationParent,
 } from './preparation-occurrence-model.ts';
 export {
   PreparationReceiptError,

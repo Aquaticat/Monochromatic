@@ -95,6 +95,30 @@ export type BoundPreparationOccurrence = {
 };
 
 /**
+ * Registered current document and parent coordinates before any question receipt exists.
+ *
+ * @example
+ * ```ts
+ * const expected: PreparationParentExpectation = { sourceHash, targetHash, pairIndex, sourceIndex, targetIndex };
+ * ```
+ */
+export type PreparationParentExpectation = Omit<PreparationOccurrenceExpectation, 'binding'>;
+
+/**
+ * Owned mechanical parent selection for finite phase planning, not pairing qualification.
+ * Structural singleton and empty-side dispatch remain available without manufacturing a receipt.
+ *
+ * @example
+ * ```ts
+ * const selected = readRegisteredPreparationParent({ expected, sourceText, targetText, l });
+ * ```
+ */
+export type RegisteredPreparationParent = Pick<BoundPreparationOccurrence, 'source' | 'target' | 'pair' | 'alignmentFindings'> & {
+  /** Only document and parent identities have been checked. */
+  readonly scope: 'registered-preparation-parent';
+};
+
+/**
  * Owned current receipt evidence before body/media normalization or slicer/fallback handoff.
  * Internal consumers apply only their declared dependency role to this transient replay.
  *
