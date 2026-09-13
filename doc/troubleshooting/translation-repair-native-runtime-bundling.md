@@ -315,6 +315,157 @@ the dynamic linker or its libraries execute;
 the trusted host launch establishes their pre-start binding.
 No upstream fault or installed-source change is established by these documented flag controls.
 
+### Bind-mount encoding is CSV, not shell quoting
+
+`pkg/specgenutilexternal/mount.go:15-21` admits exactly one CSV record:
+
+```go
+// Podman pkg/specgenutilexternal/mount.go
+csvReader := csv.NewReader(strings.NewReader(input))
+records, err := csvReader.ReadAll()
+if err != nil {
+    return "", nil, err
+}
+if len(records) != 1 {
+    return "", nil, errors.New("incorrect mount format: should be --mount type=<bind|glob|tmpfs|volume>,[src=<host-dir|volume-name>,]target=<ctr-dir>[,options]")
+}
+```
+
+`pkg/specgenutil/volumes.go:322` then separates each option only at its first equals sign:
+
+```go
+// Podman pkg/specgenutil/volumes.go
+name, value, hasValue := strings.Cut(arg, "=")
+```
+
+The native probe mounts an owned file whose filename contains a comma,
+colon,
+quote,
+equals sign and newline.
+CSV quoting each whole field and doubling embedded quotes preserves the file identity.
+The child reads its exact expected contents and prints `MOUNT_ENCODING_OK`.
+`/home/user/temp/agent/preparation-mount-probe-gfyjLA/report.json` retains arguments and results.
+This verifies that native `--mount` argument construction,
+not a colon-joined `--volume` string or shell escaping,
+covers the tested filename.
+
+### Ambient host mounts remain separate inputs
+
+Explicit bind flags alone do not prove that no ambient mount is added.
+`pkg/specgenutil/volumes.go:298-307` parses configured mounts after command-line mounts,
+ignoring duplicate destinations rather than discarding the configured inventory:
+
+```go
+// Podman pkg/specgenutil/volumes.go, separate excerpts
+if err := parseMounts(mountFlag, false); err != nil {
+    return nil, err
+}
+if err := parseMounts(configMounts, true); err != nil {
+    return nil, fmt.Errorf("parsing containers.conf mounts: %w", err)
+}
+```
+
+`vendor/go.podman.io/common/pkg/config/new.go:173-180` lets an explicit `CONTAINERS_CONF`
+replace system and account configuration discovery:
+
+```go
+// Podman vendor/go.podman.io/common/pkg/config/new.go
+if path := os.Getenv(containersConfEnv); path != "" {
+    if err := fileutils.Exists(path); err != nil {
+        return nil, fmt.Errorf("%s file: %w", containersConfEnv, err)
+    }
+    return append(configs, path), nil
+}
+```
+
+The same file at `145-153` still applies `CONTAINERS_CONF_OVERRIDE` last:
+
+```go
+// Podman vendor/go.podman.io/common/pkg/config/new.go, excerpt
+if path := os.Getenv(containersConfOverrideEnv); path != "" {
+    if err := readConfigFromFile(path, config, true); err != nil {
+        return nil, fmt.Errorf("reading %s config %q: %w", containersConfOverrideEnv, path, err)
+    }
+}
+```
+
+Subscription mounts have a separate source.
+`vendor/go.podman.io/common/pkg/subscriptions/subscriptions.go:193-201` chooses ambient mount files
+unless the explicit mount-file override is present:
+
+```go
+// Podman vendor/go.podman.io/common/pkg/subscriptions/subscriptions.go
+if mountFile == "" {
+    mountFiles = append(mountFiles, []string{OverrideMountsFile, DefaultMountsFile}...)
+    if rootless {
+        mountFiles = append([]string{UserOverrideMountsFile}, mountFiles...)
+    }
+} else {
+    mountFiles = append(mountFiles, mountFile)
+}
+```
+
+`cmd/podman/root.go:596` exposes `--default-mounts-file`.
+The subscriptions implementation at `191-192` explicitly marks this hidden flag as testing-only.
+Using it in a specialized runner is therefore a pinned implementation contract,
+not a general upstream compatibility promise.
+
+The subscriptions function at `216-220` also permits host FIPS mounts independently of that file:
+
+```go
+// Podman vendor/go.podman.io/common/pkg/subscriptions/subscriptions.go
+if disableFips || !shouldAddFIPSMounts() {
+    return subscriptionMounts
+}
+```
+
+The probe checks host `/proc/sys/crypto/fips_enabled` is `0` before running.
+It does not disable FIPS or establish a contract for FIPS-enabled hosts.
+The generated configuration selects an owned empty hooks directory;
+host hook discovery is not accepted as an unrecorded application input.
+
+### Verified host-default catalog
+
+The first disposable config control incorrectly uses volume-style syntax in `containers.conf.mounts`.
+Podman exits `125` with:
+
+```text
+Error: parsing containers.conf mounts: /var/home/user/temp/agent/preparation-defaults-probe-Q4Dcmt/payload:/ambient-config:ro: invalid mount option
+```
+
+Changing that fixture to native mount syntax,
+`type=bind,src=<owned-file>,target=/ambient-config,ro`,
+allows the controls to execute.
+This is a fixture syntax error,
+not evidence that ambient mounts are absent or that Podman's parser is faulty.
+
+`/var/home/user/temp/agent/preparation-defaults-probe-kR0hyS/report.json` records:
+
+- A disposable `CONTAINERS_CONF_OVERRIDE` injects `/ambient-config` despite the explicit application mount flags.
+- A disposable default mount file independently injects `/ambient-subscription`.
+- Owned `CONTAINERS_CONF`,
+  removal of `CONTAINERS_CONF_OVERRIDE`,
+  an owned empty hooks directory and an explicit empty default mount file leave both markers absent.
+
+The fixed mode also requests local Podman operation with `--remote=false`.
+All probes use no network,
+a read-only root,
+2 GiB memory,
+2 CPUs and 512 PIDs.
+They do not import the preparation application or mutate installed configuration.
+The retained scripts are runnable with the measured Node executable:
+
+```sh
+# Private reproduction harnesses; each creates fresh owned fixtures.
+/var/home/user/.local/share/mise/installs/node/26.8.2/bin/node /var/home/user/temp/agent/probe-preparation-mount-encoding-20260913.mts
+/var/home/user/.local/share/mise/installs/node/26.8.2/bin/node /var/home/user/temp/agent/probe-preparation-podman-defaults-20260913.mts
+```
+
+The tradeoff is explicit ownership of these configuration inputs,
+including the version-bound hidden flag and the measured non-FIPS profile.
+The input runner must retain its generated control files and verify the actual launch;
+these disposable controls alone are not the production pre-import gate.
+
 ## What does not work
 
 - JavaScript bundling alone does not carry this native resource.
@@ -322,6 +473,9 @@ No upstream fault or installed-source change is established by these documented 
 - Checking `NODE_OPTIONS` only after Node starts does not prevent the measured image preload from executing.
 - `--unsetenv-all` alone does not suppress subsequent host-proxy forwarding.
 - Environment clearing does not replace the image entrypoint.
+- Explicit bind flags do not remove nonconflicting `containers.conf` mounts or subscription mounts.
+- `CONTAINERS_CONF` alone does not defeat a subsequently applied `CONTAINERS_CONF_OVERRIDE`.
+- Colon-joined volume syntax is not the syntax of `containers.conf.mounts`.
 - A generated loader's version literal does not prove a dependency-version change.
 - Keeping libraries available only through inherited environment variables does not cover minimal-environment children.
 - A missing corpus and a missing path inside a valid corpus are different inputs.
@@ -333,11 +487,15 @@ No upstream fault or installed-source change is established by these documented 
 1.  Upstream fault:
     not established.
     The application prototype moved a file-relative loader without its asset.
+    The Podman controls exercise configuration precedence and native mount grammars,
+    not an established upstream defect.
 2.  Fixability:
     the measured consumer-side asset emission succeeds.
 3.  Supported use:
     Rolldown supports emitted binary assets;
     this report does not claim Satteri promises resource-free JavaScript bundling.
+    Podman's hidden default-mount-file override is explicitly marked testing-only;
+    the measured invocation does not create a general compatibility promise.
 4.  Contribution policy:
     not reached because no upstream patch or filing is proposed.
 5.  Maintainer intent:

@@ -27,7 +27,7 @@ import type {
  * ```
  */
 function isLaunchRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return (typeof value) === 'object' && (value !== null) && (!Array.isArray(value));
 }
 
 /**
@@ -104,10 +104,16 @@ function launchHex({
   readonly locator: string;
 },): string {
   if (((typeof value) !== 'string') || (value.length !== length))
-    throw new ProducerInputRunError({ operation: 'read-launch', locator, });
+    throw new ProducerInputRunError({
+      operation: 'read-launch',
+      locator,
+    });
   for (let index = 0; index < value.length; index += 1) {
     if (!'0123456789abcdef'.includes(value.charAt(index)))
-      throw new ProducerInputRunError({ operation: 'read-launch', locator, });
+      throw new ProducerInputRunError({
+        operation: 'read-launch',
+        locator,
+      });
   }
   return value;
 }

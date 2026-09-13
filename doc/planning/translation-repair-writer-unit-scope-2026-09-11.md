@@ -1879,6 +1879,88 @@ image-loader environment controls,
 output collisions/interruption and caller ownership.
 No new paid operation is authorized by this work.
 
+The dedicated application and launch helpers now exist,
+but the production bootstrap still does not.
+`producer-input-application-RzZOcY` executes a frozen `producer-prepare-app.mjs` against the pinned corpus.
+Its 162-file runtime manifest hashes to
+`1cf95aa2a09d61b75ffdc4d901ebb18f9e3b8cba437e129b29a233161636e850`.
+It writes 2821409 artifact bytes with SHA-256
+`12c4f304dad2a7039c5452ae7f3de5a84160f759e27968e05e47494c0f3eb75a`.
+The result preserves 40 parents,
+30 entries,
+63 references and 45 registrations.
+A deliberate refused fetch first moves the counter;
+reconstruction then records zero fetch calls.
+
+The private comparison imports `index.mjs` only after the dedicated application completes,
+then verifies exact serialized equality with a direct `buildPreparationRootInputs` call.
+This is same-implementation output parity,
+not independent parser correctness or a dedicated-entry-only claim for the entire comparison process.
+A separate-process oracle is still needed for final dedicated-runner verification.
+The recorded dedicated peak is 182272000 bytes;
+the combined comparison process reaches 204419072 bytes with no recorded OOM events.
+Its report explicitly says `privateGateOnly:true` and `productionBootstrapImplemented:false`.
+
+Committed helper responsibilities include:
+
+- Closed launch and sealed-runtime decoding,
+  raw extent/hash checks,
+  exact runtime inventory and running Node identity checks.
+- Fixed container arguments with CSV-encoded bind fields.
+- Exclusive private input-run control and output directories,
+  synchronized launch records and no automatic reuse.
+- Owned Podman configuration,
+  removal of `CONTAINERS_CONF_OVERRIDE`,
+  a private empty hooks directory and an explicit empty default mounts file.
+
+The native Podman probes independently demonstrate config and subscription-mount injection,
+then remove the respective fixture markers with controlled inputs.
+They do not yet exercise the committed helpers together,
+prove an exact mount inventory or provide an OCI-hook positive control.
+`--default-mounts-file` is marked testing-only upstream;
+its intended use depends on verified exact Podman bytes and fail-closed native invocation,
+not a general compatibility promise.
+The current host profile checks FIPS is not enabled without changing that setting.
+See `doc/troubleshooting/translation-repair-native-runtime-bundling.md` for source excerpts and controls.
+
+An independent review leaves these production obligations open:
+canonical and disjoint host paths,
+all cross-bindings between launch fields and actual arguments,
+metadata-preflight versus output-creation ordering,
+bootstrap packaging and host/child wiring,
+pre-import mount/environment/cgroup/network checks,
+hook controls,
+and retained terminal outcomes for every lifecycle failure.
+The current `start.json` name precedes container startup and should identify namespace creation instead.
+The constructor's `--memory-swap` value equals its memory value;
+its resulting swap limit has not been measured and must not be represented as the older 2 GiB swap allowance.
+Automatic container removal currently prevents later inspection and must not discard required failure evidence.
+
+Task 48 temporarily blocks task 47 verification.
+The first new type check reports `TS2339` after guards narrow away additional runtime-file fields;
+reordering the checks repairs those errors and the next type check passes.
+The subsequent formatter reports ASCII-string spreading,
+a mutable mount callback view,
+a record assertion and single-line callback findings.
+Structural fixes are committed at `c00525e056fe39d2a8b995ccd6260507fcd1c136`.
+
+The bounded `producer-input-gate-check-1PX5aV` run then fails in `format:oxlint --fix`,
+not the previously measured lint-only operation.
+It records `memory.peak=2147483648`,
+`oom_kill=2` and the Oxlint wrapper's `SIGKILL` diagnostic.
+It also lacks the read-only Mise plugin mount and logs attempted `vfox-cmake` discovery.
+No exact kernel/container victim correlation has yet been recorded for this incident.
+The process stops before its type-check and build phases.
+Its partial source diff contains formatter edits and is reviewed separately;
+`mise.lock` remains the owner's unrelated change.
+Next verification uses a disposable writable worktree,
+the known plugin mounts,
+an unchanged lint-only control,
+and retained container/cgroup/process evidence before adjusting a per-run memory target.
+No runner tests,
+full suite,
+actual CLI launch or paid preparation follows from these incomplete checks.
+
 #### Remaining owning phases
 
 The bounded phase design follows the permitted caller:

@@ -50,11 +50,17 @@ export const PRODUCER_INPUT_HOSTNAME = 'producer-preparation-input';
  * ```
  */
 type ProducerInputBindMount = {
-  /** Independently authorized host locator. */
+  /**
+   * Independently authorized host locator.
+   */
   readonly source: string;
-  /** Fixed container role location. */
+  /**
+   * Fixed container role location.
+   */
   readonly target: string;
-  /** Only the private output role permits writes. */
+  /**
+   * Only the private output role permits writes.
+   */
   readonly writable: boolean;
 };
 
