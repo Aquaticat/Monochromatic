@@ -1,9 +1,16 @@
 import { readdir, } from 'node:fs/promises';
-import { basename, join, } from 'node:path';
+import {
+  basename,
+  join,
+} from 'node:path';
 import { isDeepStrictEqual, } from 'node:util';
 import { mapOverlapped, } from '../overlapped-map.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
-import { readProducerInputFile, verifyProducerInputFile, type ProducerInputFileIdentity, } from './producer-input-file.ts';
+import {
+  readProducerInputFile,
+  verifyProducerInputFile,
+  type ProducerInputFileIdentity,
+} from './producer-input-file.ts';
 import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 import type { ProducerRuntimeManifest, } from './producer-input-runtime-model.ts';
 import { isProducerRuntimeManifest, } from './producer-input-runtime-shape.ts';
@@ -26,25 +33,53 @@ import { isProducerRuntimeManifest, } from './producer-input-runtime-shape.ts';
  * const manifest = await readProducerRuntimeManifest({ dir, expected });
  * ```
  */
-export async function readProducerRuntimeManifest({ dir, expected, }: {
+export async function readProducerRuntimeManifest({
+  dir,
+  expected,
+}: {
   readonly dir: string;
   readonly expected: ProducerInputFileIdentity;
 },): Promise<ProducerRuntimeManifest> {
-  /** The filename is fixed by the build contract rather than selected from JSON. */
-  const path = join(dir, 'sealed-runtime.json');
-  /** No JSON field is interpreted before exact raw bytes are verified. */
-  const bytes = await readProducerInputFile({ path, expected, operation: 'verify-runtime', });
+  /**
+   * The filename is fixed by the build contract rather than selected from JSON.
+   */
+  const path = join(
+    dir,
+    'sealed-runtime.json'
+  );
+  /**
+   * No JSON field is interpreted before exact raw bytes are verified.
+   */
+  const bytes = await readProducerInputFile({
+    path,
+    expected,
+    operation: 'verify-runtime',
+  });
   try {
-    /** The manifest is data, and decoder/parser errors must not carry its contents outward. */
-    const value: unknown = JSON.parse(new TextDecoder('utf-8', { fatal: true, ignoreBOM: true, }).decode(bytes));
+    /**
+     * The manifest is data, and decoder/parser errors must not carry its contents outward.
+     */
+    const value: unknown = JSON.parse(new TextDecoder(
+      'utf-8',
+      {
+        fatal: true,
+        ignoreBOM: true,
+      }
+    ).decode(bytes));
     if (!isProducerRuntimeManifest(value))
-      throw new ProducerInputRunError({ operation: 'verify-runtime', locator: path, });
+      throw new ProducerInputRunError({
+        operation: 'verify-runtime',
+        locator: path,
+      });
     return value;
   }
   catch (error) {
     if (error instanceof ProducerInputRunError)
       throw error;
-    throw new ProducerInputRunError({ operation: 'verify-runtime', locator: path, });
+    throw new ProducerInputRunError({
+      operation: 'verify-runtime',
+      locator: path,
+    });
   }
 }
 
@@ -64,46 +99,116 @@ export async function readProducerRuntimeManifest({ dir, expected, }: {
  * const files = await verifyProducerRuntimeInventory({ dir, manifest });
  * ```
  */
-export async function verifyProducerRuntimeInventory({ dir, manifest, }: {
+export async function verifyProducerRuntimeInventory({
+  dir,
+  manifest,
+}: {
   readonly dir: string;
   readonly manifest: ProducerRuntimeManifest;
 },): Promise<readonly string[]> {
   try {
-    /** The inventory cannot change through a caller-owned reference while hashing yields. */
+    /**
+     * The inventory cannot change through a caller-owned reference while hashing yields.
+     */
     const fixed = structuredClone(manifest);
-    /** Duplicate names cannot hide a missing executable. */
-    const names = fixed.files.map(function name(file): string { return file.path; });
-    if (new Set(names).size !== names.length || !names.includes(basename(PRODUCER_INPUT_PATHS.application)))
-      throw new ProducerInputRunError({ operation: 'verify-runtime', locator: dir, });
-    /** Native metadata and generic inventory must describe the same exact asset. */
-    const nativeFile = fixed.files.find(function native(file): boolean { return file.path === fixed.native.path; });
-    if (nativeFile === undefined || nativeFile.bytes !== fixed.native.bytes || nativeFile.sha256 !== fixed.native.sha256)
-      throw new ProducerInputRunError({ operation: 'verify-runtime', locator: dir, });
-    /** A read-only runtime directory is not a license to load unlisted or symlinked files. */
-    const entries = await readdir(dir, { withFileTypes: true, });
-    if (entries.some(function nonfile(entry): boolean { return !entry.isFile(); })
-      || !isDeepStrictEqual(entries.map(function name(entry): string { return entry.name; }).toSorted(), [...names, 'sealed-runtime.json'].toSorted()))
-      throw new ProducerInputRunError({ operation: 'verify-runtime', locator: dir, });
-    /** Serial hashing bounds descriptor use and retains exact inventory order. */
+    /**
+     * Duplicate names cannot hide a missing executable.
+     */
+    const names = fixed.files
+      .map(function name(file): string { return file.path; });
+    if ((new Set(names).size !== names.length) || (!names.includes(basename(PRODUCER_INPUT_PATHS.application))))
+      throw new ProducerInputRunError({
+        operation: 'verify-runtime',
+        locator: dir,
+      });
+    /**
+     * Native metadata and generic inventory must describe the same exact asset.
+     */
+    const nativeFile = fixed.files
+      .find(function native(file): boolean { return file.path
+        === fixed.native
+        .path; });
+    if ((nativeFile === undefined) || (nativeFile.bytes
+      !== fixed.native
+      .bytes)
+      || (nativeFile.sha256
+        !== fixed.native
+        .sha256))
+      throw new ProducerInputRunError({
+        operation: 'verify-runtime',
+        locator: dir,
+      });
+    /**
+     * A read-only runtime directory is not a license to load unlisted or symlinked files.
+     */
+    const entries = await readdir(
+      dir,
+      { withFileTypes: true, }
+    );
+    if (entries.some(function nonfile(entry): boolean {
+      return !entry.isFile();
+    })
+      || (!isDeepStrictEqual(
+        entries.map(function name(entry): string { return entry.name; })
+          .toSorted(),
+        [
+          ...names,
+          'sealed-runtime.json'
+        ].toSorted()
+      )))
+      throw new ProducerInputRunError({
+        operation: 'verify-runtime',
+        locator: dir,
+      });
+    /**
+     * Serial hashing bounds descriptor use and retains exact inventory order.
+     */
     const verifiedFiles = await mapOverlapped({
       items: fixed.files,
       overlap: 1,
       oneItem: async function verified({ item, }): Promise<string> {
-        await verifyProducerInputFile({ path: join(dir, item.path), expected: item, operation: 'verify-runtime', });
+        await verifyProducerInputFile({
+          path: join(
+            dir,
+            item.path
+          ),
+          expected: item,
+          operation: 'verify-runtime',
+        });
         return item.path;
       },
     });
-    /** Final directory observation catches additions or replacements visible before import. */
-    const finalEntries = await readdir(dir, { withFileTypes: true, });
-    if (finalEntries.some(function nonfile(entry): boolean { return !entry.isFile(); })
-      || !isDeepStrictEqual(finalEntries.map(function name(entry): string { return entry.name; }).toSorted(), [...names, 'sealed-runtime.json'].toSorted()))
-      throw new ProducerInputRunError({ operation: 'verify-runtime', locator: dir, });
+    /**
+     * Final directory observation catches additions or replacements visible before import.
+     */
+    const finalEntries = await readdir(
+      dir,
+      { withFileTypes: true, }
+    );
+    if (finalEntries.some(function nonfile(entry): boolean {
+      return !entry.isFile();
+    })
+      || (!isDeepStrictEqual(
+        finalEntries.map(function name(entry): string { return entry.name; })
+          .toSorted(),
+        [
+          ...names,
+          'sealed-runtime.json'
+        ].toSorted()
+      )))
+      throw new ProducerInputRunError({
+        operation: 'verify-runtime',
+        locator: dir,
+      });
     return verifiedFiles;
   }
   catch (error) {
     if (error instanceof ProducerInputRunError)
       throw error;
-    throw new ProducerInputRunError({ operation: 'verify-runtime', locator: dir, });
+    throw new ProducerInputRunError({
+      operation: 'verify-runtime',
+      locator: dir,
+    });
   }
 }
 
@@ -123,15 +228,38 @@ export async function verifyProducerRuntimeInventory({ dir, manifest, }: {
  * ```
  */
 export async function verifyProducerNodeRuntime(manifest: ProducerRuntimeManifest): Promise<ProducerInputFileIdentity> {
-  /** Node's report is inspected without serializing its environment or process data. */
-  const report: unknown = process.report.getReport();
-  if (process.platform !== 'linux' || process.arch !== 'x64' || process.version !== manifest.node.version
-    || !isDeepStrictEqual(process.versions, manifest.node.versions)
-    || typeof report !== 'object' || report === null || !('header' in report)
-    || typeof report.header !== 'object' || report.header === null || !('glibcVersionRuntime' in report.header)
-    || typeof report.header.glibcVersionRuntime !== 'string')
-    throw new ProducerInputRunError({ operation: 'verify-runtime', locator: 'executing Node target', });
-  return await verifyProducerInputFile({ path: process.execPath, expected: manifest.node.executable, operation: 'verify-runtime', });
+  /**
+   * Node's report is inspected without serializing its environment or process data.
+   */
+  const report: unknown = process.report
+    .getReport();
+  if ((process.platform !== 'linux') || (process.arch !== 'x64')
+    || (process.version
+      !== manifest.node
+      .version)
+    || (!isDeepStrictEqual(
+      process.versions,
+      manifest.node
+        .versions
+    ))
+    || ((typeof report) !== 'object')
+    || (report === null)
+    || (!('header' in report))
+    || ((typeof report.header) !== 'object')
+    || (report.header === null)
+    || (!('glibcVersionRuntime' in report.header))
+    || ((typeof report.header
+      .glibcVersionRuntime) !== 'string'))
+    throw new ProducerInputRunError({
+      operation: 'verify-runtime',
+      locator: 'executing Node target',
+    });
+  return await verifyProducerInputFile({
+    path: process.execPath,
+    expected: manifest.node
+      .executable,
+    operation: 'verify-runtime',
+  });
 }
 
 //endregion Actual frozen runtime observation before application import

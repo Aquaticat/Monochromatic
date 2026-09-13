@@ -3,25 +3,60 @@ import { PRODUCER_INPUT_PATHS, } from './producer-input-paths.ts';
 
 //region Fixed no-network input container contract
 
-/** Only the owning host path inserts this private child-mode sentinel. */
+/**
+ * Only the owning host path inserts this private child-mode sentinel.
+ */
 export const PRODUCER_INPUT_CHILD_SENTINEL = '--sealed-preparation-child';
-/** Host and child agree on one bounded reconstruction envelope. */
+/**
+ * Host and child agree on one bounded reconstruction envelope.
+ */
 export const PRODUCER_INPUT_LIMITS = {
-  /** Hard resident-memory allowance, unchanged from provider-free semantic verification. */
+  /**
+   * Hard resident-memory allowance, unchanged from provider-free semantic verification.
+   */
   memoryBytes: 2_147_483_648,
-  /** CPU quota uses Podman's standard period. */
+  /**
+   * CPU quota uses Podman's standard period.
+   */
   cpuQuota: 200_000,
-  /** Explicit period makes the child observation unambiguous. */
+  /**
+   * Explicit period makes the child observation unambiguous.
+   */
   cpuPeriod: 100_000,
-  /** Process count remains independent of input cardinality. */
+  /**
+   * Process count remains independent of input cardinality.
+   */
   pids: 512,
-  /** A stopped host cannot leave an unbounded reconstruction container. */
+  /**
+   * A stopped host cannot leave an unbounded reconstruction container.
+   */
   seconds: 300,
-  /** Temporary storage is not another input or runtime mount. */
+  /**
+   * Temporary storage is not another input or runtime mount.
+   */
   temporaryBytes: 67_108_864,
 } as const;
-/** Predictable hostname is separate from the caller's host identity. */
+/**
+ * Predictable hostname is separate from the caller's host identity.
+ */
 export const PRODUCER_INPUT_HOSTNAME = 'producer-preparation-input';
+
+/**
+ * Fixed bind-mount role values remain deeply readonly through argument construction.
+ *
+ * @example
+ * ```ts
+ * const mount: ProducerInputBindMount = { source, target: '/runtime', writable: false };
+ * ```
+ */
+type ProducerInputBindMount = {
+  /** Independently authorized host locator. */
+  readonly source: string;
+  /** Fixed container role location. */
+  readonly target: string;
+  /** Only the private output role permits writes. */
+  readonly writable: boolean;
+};
 
 /**
  * Encodes Podman's CSV mount grammar at the final syntax boundary.
@@ -40,13 +75,22 @@ export const PRODUCER_INPUT_HOSTNAME = 'producer-preparation-input';
  * const mount = producerInputMount({ source, target: '/runtime', writable: false });
  * ```
  */
-function producerInputMount({ source, target, writable, }: {
-  readonly source: string;
-  readonly target: string;
-  readonly writable: boolean;
-},): string {
-  return ['type=bind', `source=${source}`, `target=${target}`, writable ? 'rw' : 'ro']
-    .map(function quoted(field): string { return `"${field.replaceAll('"', '""')}"`; }).join(',');
+function producerInputMount({
+  source,
+  target,
+  writable,
+}: ProducerInputBindMount,): string {
+  return [
+    'type=bind',
+    `source=${source}`,
+    `target=${target}`,
+    writable ? 'rw' : 'ro'
+  ]
+    .map(function quoted(field): string { return `"${field.replaceAll(
+      '"',
+      '""'
+    )}"`; })
+    .join(',');
 }
 
 /**
@@ -80,7 +124,18 @@ function producerInputMount({ source, target, writable, }: {
  * const args = producerInputContainerArgs({ launch, nodePath, bootstrapPath, launchSnapshotPath, outputPath, containerIdPath, runId, launchSha256, launchBytes, callerUid });
  * ```
  */
-export function producerInputContainerArgs({ launch, nodePath, bootstrapPath, launchSnapshotPath, outputPath, containerIdPath, runId, launchSha256, launchBytes, callerUid, }: {
+export function producerInputContainerArgs({
+  launch,
+  nodePath,
+  bootstrapPath,
+  launchSnapshotPath,
+  outputPath,
+  containerIdPath,
+  runId,
+  launchSha256,
+  launchBytes,
+  callerUid,
+}: {
   readonly launch: ProducerInputLaunch;
   readonly nodePath: string;
   readonly bootstrapPath: string;
@@ -92,7 +147,9 @@ export function producerInputContainerArgs({ launch, nodePath, bootstrapPath, la
   readonly launchBytes: number;
   readonly callerUid: number;
 },): readonly string[] {
-  /** No image or host loader variables survive into child startup. */
+  /**
+   * No image or host loader variables survive into child startup.
+   */
   const environment: Readonly<Record<string, string>> = {
     PATH: '/usr/bin:/bin',
     HOME: PRODUCER_INPUT_PATHS.home,
@@ -108,31 +165,113 @@ export function producerInputContainerArgs({ launch, nodePath, bootstrapPath, la
     PREPARATION_LAUNCH_BYTES: String(launchBytes),
     PREPARATION_CALLER_UID: String(callerUid),
   };
-  /** Fixed requested role mappings must also be checked against the actual created container and child mounts. */
-  const mounts = [
-    { source: nodePath, target: PRODUCER_INPUT_PATHS.node, writable: false },
-    { source: bootstrapPath, target: PRODUCER_INPUT_PATHS.bootstrap, writable: false },
-    { source: launchSnapshotPath, target: PRODUCER_INPUT_PATHS.launch, writable: false },
-    { source: launch.runtime.dir, target: PRODUCER_INPUT_PATHS.runtime, writable: false },
-    { source: launch.atomicLibrary.path, target: PRODUCER_INPUT_PATHS.atomicLibrary, writable: false },
-    { source: launch.selection.path, target: PRODUCER_INPUT_PATHS.selection, writable: false },
-    { source: launch.supporting.dir, target: PRODUCER_INPUT_PATHS.supporting, writable: false },
-    { source: launch.corpus.dir, target: PRODUCER_INPUT_PATHS.corpus, writable: false },
-    { source: outputPath, target: PRODUCER_INPUT_PATHS.output, writable: true },
+  /**
+   * Fixed requested role mappings must also be checked against the actual created container and child mounts.
+   */
+  const mounts: readonly ProducerInputBindMount[] = [
+    {
+      source: nodePath,
+      target: PRODUCER_INPUT_PATHS.node,
+      writable: false
+    },
+    {
+      source: bootstrapPath,
+      target: PRODUCER_INPUT_PATHS.bootstrap,
+      writable: false
+    },
+    {
+      source: launchSnapshotPath,
+      target: PRODUCER_INPUT_PATHS.launch,
+      writable: false
+    },
+    {
+      source: launch.runtime
+        .dir,
+      target: PRODUCER_INPUT_PATHS.runtime,
+      writable: false
+    },
+    {
+      source: launch.atomicLibrary
+        .path,
+      target: PRODUCER_INPUT_PATHS.atomicLibrary,
+      writable: false
+    },
+    {
+      source: launch.selection
+        .path,
+      target: PRODUCER_INPUT_PATHS.selection,
+      writable: false
+    },
+    {
+      source: launch.supporting
+        .dir,
+      target: PRODUCER_INPUT_PATHS.supporting,
+      writable: false
+    },
+    {
+      source: launch.corpus
+        .dir,
+      target: PRODUCER_INPUT_PATHS.corpus,
+      writable: false
+    },
+    {
+      source: outputPath,
+      target: PRODUCER_INPUT_PATHS.output,
+      writable: true
+    },
   ];
   return [
-    'run', '--rm', '--pull=never', '--name', `producer-input-${runId}`, '--cidfile', containerIdPath,
-    '--network=none', '--memory', String(PRODUCER_INPUT_LIMITS.memoryBytes), '--memory-swap', String(PRODUCER_INPUT_LIMITS.memoryBytes),
-    '--cpu-period', String(PRODUCER_INPUT_LIMITS.cpuPeriod), '--cpu-quota', String(PRODUCER_INPUT_LIMITS.cpuQuota),
-    '--pids-limit', String(PRODUCER_INPUT_LIMITS.pids), '--timeout', String(PRODUCER_INPUT_LIMITS.seconds),
-    '--read-only', '--read-only-tmpfs=false', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--security-opt=label=disable',
-    '--userns=keep-id', '--no-healthcheck', '--image-volume=ignore', '--systemd=false', '--unsetenv-all', '--http-proxy=false',
-    '--hostname', PRODUCER_INPUT_HOSTNAME,
-    '--tmpfs', `/tmp:rw,noexec,nosuid,nodev,size=${String(PRODUCER_INPUT_LIMITS.temporaryBytes)}`,
-    '--workdir', PRODUCER_INPUT_PATHS.output, '--entrypoint', PRODUCER_INPUT_PATHS.node,
-    ...Object.entries(environment).flatMap(function env([name, value]): readonly string[] { return ['--env', `${name}=${value}`]; }),
-    ...mounts.flatMap(function mount(value): readonly string[] { return ['--mount', producerInputMount(value)]; }),
-    launch.imageId, PRODUCER_INPUT_PATHS.bootstrap, PRODUCER_INPUT_CHILD_SENTINEL,
+    'run',
+    '--rm',
+    '--pull=never',
+    '--name',
+    `producer-input-${runId}`,
+    '--cidfile',
+    containerIdPath,
+    '--network=none',
+    '--memory',
+    String(PRODUCER_INPUT_LIMITS.memoryBytes),
+    '--memory-swap',
+    String(PRODUCER_INPUT_LIMITS.memoryBytes),
+    '--cpu-period',
+    String(PRODUCER_INPUT_LIMITS.cpuPeriod),
+    '--cpu-quota',
+    String(PRODUCER_INPUT_LIMITS.cpuQuota),
+    '--pids-limit',
+    String(PRODUCER_INPUT_LIMITS.pids),
+    '--timeout',
+    String(PRODUCER_INPUT_LIMITS.seconds),
+    '--read-only',
+    '--read-only-tmpfs=false',
+    '--cap-drop=ALL',
+    '--security-opt=no-new-privileges',
+    '--security-opt=label=disable',
+    '--userns=keep-id',
+    '--no-healthcheck',
+    '--image-volume=ignore',
+    '--systemd=false',
+    '--unsetenv-all',
+    '--http-proxy=false',
+    '--hostname',
+    PRODUCER_INPUT_HOSTNAME,
+    '--tmpfs',
+    `/tmp:rw,noexec,nosuid,nodev,size=${String(PRODUCER_INPUT_LIMITS.temporaryBytes)}`,
+    '--workdir',
+    PRODUCER_INPUT_PATHS.output,
+    '--entrypoint',
+    PRODUCER_INPUT_PATHS.node,
+    ...Object.entries(environment)
+      .flatMap(function env([name, value]): readonly string[] { return [
+        '--env',
+        `${name}=${value}`
+      ]; }),
+    ...mounts.flatMap(function mount(value): readonly string[] { return [
+      '--mount',
+      producerInputMount(value)
+    ]; }),
+    launch.imageId,
+    PRODUCER_INPUT_PATHS.bootstrap,
+    PRODUCER_INPUT_CHILD_SENTINEL,
   ];
 }
 

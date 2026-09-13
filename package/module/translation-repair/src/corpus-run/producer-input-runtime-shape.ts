@@ -1,17 +1,30 @@
 import { isDeepStrictEqual, } from 'node:util';
 import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
-import type { ProducerRuntimeFile, ProducerRuntimeManifest, } from './producer-input-runtime-model.ts';
+import type {
+  ProducerRuntimeFile,
+  ProducerRuntimeManifest,
+} from './producer-input-runtime-model.ts';
 
 //region Recognized sealed-build metadata, not execution approval
 
-/** Exact loader declarations emitted by the existing dedicated build. */
+/**
+ * Exact loader declarations emitted by the existing dedicated build.
+ */
 export const PRODUCER_BUILD_LOADER_NAMES = [
-  'NAPI_RS_NATIVE_LIBRARY_PATH', 'NAPI_RS_FORCE_WASI', 'NAPI_RS_ENFORCE_VERSION_CHECK',
-  'NODE_OPTIONS', 'NODE_PATH', 'NODE_ICU_DATA',
+  'NAPI_RS_NATIVE_LIBRARY_PATH',
+  'NAPI_RS_FORCE_WASI',
+  'NAPI_RS_ENFORCE_VERSION_CHECK',
+  'NODE_OPTIONS',
+  'NODE_PATH',
+  'NODE_ICU_DATA',
 ] as const;
-/** The application build explicitly leaves operating-system identity to the owning runner. */
+/**
+ * The application build explicitly leaves operating-system identity to the owning runner.
+ */
 const SYSTEM_LIBRARY_RESPONSIBILITY = 'Runner must separately bind its operating-system image and native shared-library inputs.';
-/** SHA-256's canonical lowercase hexadecimal width. */
+/**
+ * SHA-256's canonical lowercase hexadecimal width.
+ */
 const SHA256_WIDTH = 64;
 
 /**
@@ -27,7 +40,8 @@ const SHA256_WIDTH = 64;
  * ```
  */
 function runtimeRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return ((typeof value) === 'object') && (value !== null)
+    && (!Array.isArray(value));
 }
 
 /**
@@ -44,10 +58,20 @@ function runtimeRecord(value: unknown): value is Readonly<Record<string, unknown
  * const valid = runtimeKeys({ value, expected: ['version', 'files'] });
  * ```
  */
-function runtimeKeys({ value, expected, }: { readonly value: Readonly<Record<string, unknown>>; readonly expected: readonly string[]; }): boolean {
-  /** Key order does not create a different schema, though raw manifest identity remains exact. */
+function runtimeKeys({
+  value,
+  expected,
+}: {
+  readonly value: Readonly<Record<string, unknown>>;
+  readonly expected: readonly string[]
+}): boolean {
+  /**
+   * Key order does not create a different schema, though raw manifest identity remains exact.
+   */
   const keys = Object.keys(value);
-  return keys.length === expected.length && keys.every(function known(key): boolean { return expected.includes(key); });
+  return (keys.length === expected.length) && keys.every(function known(key): boolean {
+    return expected.includes(key);
+  });
 }
 
 /**
@@ -63,9 +87,14 @@ function runtimeKeys({ value, expected, }: { readonly value: Readonly<Record<str
  * ```
  */
 function runtimeIdentity(value: unknown): value is ProducerInputFileIdentity {
-  return runtimeRecord(value) && typeof value.bytes === 'number' && Number.isSafeInteger(value.bytes) && value.bytes >= 0
-    && typeof value.sha256 === 'string' && value.sha256.length === SHA256_WIDTH
-    && [...value.sha256].every(function hex(character): boolean { return '0123456789abcdef'.includes(character); });
+  if (!runtimeRecord(value) || typeof value.bytes !== 'number' || !Number.isSafeInteger(value.bytes)
+    || value.bytes < 0 || typeof value.sha256 !== 'string' || value.sha256.length !== SHA256_WIDTH)
+    return false;
+  for (let index = 0; index < value.sha256.length; index += 1) {
+    if (!'0123456789abcdef'.includes(value.sha256.charAt(index)))
+      return false;
+  }
+  return true;
 }
 
 /**
@@ -81,9 +110,21 @@ function runtimeIdentity(value: unknown): value is ProducerInputFileIdentity {
  * ```
  */
 function runtimeFile(value: unknown): value is ProducerRuntimeFile {
-  return runtimeRecord(value) && typeof value.path === 'string'
-    && value.path.length > 0 && !value.path.includes('/') && !value.path.includes('\\') && !value.path.includes('\0')
-    && (value.path.endsWith('.mjs') || value.path.endsWith('.node')) && runtimeIdentity(value);
+  return runtimeRecord(value) && ((typeof value.path) === 'string')
+    && (value.path
+      .length
+      > 0)
+    && (!value.path
+      .includes('/'))
+    && (!value.path
+      .includes('\\'))
+    && (!value.path
+      .includes('\0'))
+    && (value.path
+      .endsWith('.mjs')
+      || value.path
+      .endsWith('.node'))
+    && runtimeIdentity(value);
 }
 
 /**
@@ -100,31 +141,118 @@ function runtimeFile(value: unknown): value is ProducerRuntimeFile {
  * ```
  */
 export function isProducerRuntimeManifest(value: unknown): value is ProducerRuntimeManifest {
-  if (!runtimeRecord(value) || !runtimeKeys({ value, expected: ['version', 'kind', 'scope', 'target', 'node', 'native', 'loaderEnvironment', 'systemLibraries', 'files'], })
-    || value.version !== 1 || value.kind !== 'sealed-node-runtime-build' || value.scope !== 'application-dependencies-only'
-    || !isDeepStrictEqual(value.target, { platform: 'linux', arch: 'x64', libc: 'glibc' }))
+  if ((!runtimeRecord(value)) || (!runtimeKeys({
+    value,
+    expected: [
+      'version',
+      'kind',
+      'scope',
+      'target',
+      'node',
+      'native',
+      'loaderEnvironment',
+      'systemLibraries',
+      'files'
+    ],
+  }))
+    || (value.version !== 1)
+    || (value.kind !== 'sealed-node-runtime-build')
+    || (value.scope !== 'application-dependencies-only')
+    || (!isDeepStrictEqual(
+      value.target,
+      {
+        platform: 'linux',
+        arch: 'x64',
+        libc: 'glibc'
+      }
+    )))
     return false;
-  /** Each nested record has a fixed schema rather than inheriting unknown launch capabilities. */
-  const { node, native, loaderEnvironment, files, } = value;
-  if (!runtimeRecord(node) || !runtimeKeys({ value: node, expected: ['version', 'versions', 'executable'], })
-    || typeof node.version !== 'string' || node.version.length === 0 || !runtimeRecord(node.versions)
-    || !Object.values(node.versions).every(function stringVersion(version): boolean { return typeof version === 'string'; })
-    || !runtimeRecord(node.executable) || !runtimeKeys({ value: node.executable, expected: ['bytes', 'sha256'], })
-    || !runtimeIdentity(node.executable) || node.executable.bytes === 0)
+  /**
+   * Each nested record has a fixed schema rather than inheriting unknown launch capabilities.
+   */
+  const {
+    node,
+    native,
+    loaderEnvironment,
+    files,
+  } = value;
+  if ((!runtimeRecord(node)) || (!runtimeKeys({
+    value: node,
+    expected: [
+      'version',
+      'versions',
+      'executable'
+    ],
+  }))
+    || ((typeof node.version) !== 'string')
+    || (node.version
+      .length
+      === 0)
+    || (!runtimeRecord(node.versions))
+    || (!Object.values(node.versions)
+      .every(function stringVersion(version): boolean { return (typeof version) === 'string'; }))
+    || (!runtimeRecord(node.executable))
+    || (!runtimeKeys({
+      value: node.executable,
+      expected: [
+        'bytes',
+        'sha256'
+      ],
+    }))
+    || (!runtimeIdentity(node.executable))
+    || (node.executable
+      .bytes
+      === 0))
     return false;
-  if (!runtimeRecord(native) || !runtimeKeys({ value: native, expected: ['package', 'version', 'path', 'bytes', 'sha256'], })
-    || native.package !== '@bruits/satteri-linux-x64-gnu' || typeof native.version !== 'string' || native.version.length === 0
-    || !runtimeFile(native) || native.path !== 'satteri_napi.linux-x64-gnu.node' || native.bytes === 0)
+  if ((!runtimeRecord(native)) || (!runtimeKeys({
+    value: native,
+    expected: [
+      'package',
+      'version',
+      'path',
+      'bytes',
+      'sha256'
+    ],
+  }))
+    || (native.package !== '@bruits/satteri-linux-x64-gnu')
+    || ((typeof native.version) !== 'string')
+    || (native.version
+      .length
+      === 0)
+    || (!runtimeFile(native))
+    || (native.path !== 'satteri_napi.linux-x64-gnu.node')
+    || (native.bytes === 0))
     return false;
-  if (!runtimeRecord(loaderEnvironment) || !runtimeKeys({ value: loaderEnvironment, expected: ['policy', 'names'], })
-    || loaderEnvironment.policy !== 'must-be-absent-before-import'
-    || !isDeepStrictEqual(loaderEnvironment.names, PRODUCER_BUILD_LOADER_NAMES)
-    || value.systemLibraries !== SYSTEM_LIBRARY_RESPONSIBILITY || !Array.isArray(files) || files.length === 0)
+  if ((!runtimeRecord(loaderEnvironment)) || (!runtimeKeys({
+    value: loaderEnvironment,
+    expected: [
+      'policy',
+      'names'
+    ],
+  }))
+    || (loaderEnvironment.policy !== 'must-be-absent-before-import')
+    || (!isDeepStrictEqual(
+      loaderEnvironment.names,
+      PRODUCER_BUILD_LOADER_NAMES
+    ))
+    || (value.systemLibraries !== SYSTEM_LIBRARY_RESPONSIBILITY)
+    || (!Array.isArray(files))
+    || (files.length === 0))
     return false;
-  /** Array narrowing does not turn untrusted entries into an any-typed validation shortcut. */
+  /**
+   * Array narrowing does not turn untrusted entries into an any-typed validation shortcut.
+   */
   const entries: readonly unknown[] = files;
   return entries.every(function file(entry): boolean {
-    return runtimeRecord(entry) && runtimeKeys({ value: entry, expected: ['path', 'bytes', 'sha256'], }) && runtimeFile(entry);
+    return runtimeRecord(entry) && runtimeKeys({
+      value: entry,
+      expected: [
+        'path',
+        'bytes',
+        'sha256'
+      ],
+    })
+      && runtimeFile(entry);
   });
 }
 
