@@ -8,6 +8,8 @@ do not duplicate it or add arbitrary execution modes.
 Task41 now owns finite correspondence plans and the acquisition journal.
 Its implementation is split into task51 for persisted-input comparison verification,
 task52 for finite root/phase materializers and task53 for current-attempt acquisition journals.
+Task54's callback-retention remediation and task55's shared logger utility are verified in their listed scopes.
+Task51 still owns the comparison's remaining non-logger branch qualification.
 Task52 waits for task51;
 task53 waits for task52.
 Task41 remains incomplete until those owners satisfy their own acceptance boundaries.
@@ -453,7 +455,7 @@ These results complete task55's utility acceptance,
 not comparison integration.
 The utility remains explicitly unreviewed in issue #509.
 
-## Comparison callback integration checkpoint
+## Verified comparison callback integration
 
 Task54 starts with `b5c2ded7e` and the regression update `f513737a0`.
 The request reader captures data and the borrowed logger without invoking callbacks.
@@ -545,9 +547,33 @@ The earlier `comparison-observation-guards-UauosZ` run stops at the proof reader
 its designated test correctly reports `result.reason.kind`,
 but the reader expects the source fragment `error.kind`.
 It is retained separately and is not the completed proof.
-The final full-suite,
-positive/restored lint,
-import/relocated-consumer and Markdown sequence is running.
+The final default suite `devfull-Q4Ju0I` passes with 632 expected and observed Node `26.8.2` test entries,
+no source change and no OOM event.
+The positive lint copy `devlint256go1control-8Dinld` detects the intended missing-parameter warning
+and unawaited-promise error.
+Restored `devlint256go1-e0SEP8` reports zero warnings/errors across 1561 files and 485 rules.
+`comparison-final-audits-BO66iE` verifies five dependency-closure files and 16 static edges,
+with positive parser controls and no recognized indirect loader edge.
+This is an AST-recognized-edge audit,
+not proof against every computed loader idiom.
+The relocated consumer mounts neither the repository nor its dependencies;
+it imports the frozen runtime and exercises the public early-refusal boundary.
+The API README,
+verification-ownership document and this work record pass Markdown lint.
+
+`callback-retention-3yaU0L` retains 10530 files totaling 187868349 bytes,
+569 empty directories and 1234 symlinks,
+with zero special entries or foreign ownership.
+It copies mutable source/build artifacts and CID bytes before cleanup.
+At `2026-09-14T22:32:29.930Z`,
+exact-ID cleanup removes 55 listed stopped diagnostic containers plus the stopped retention worker.
+All 40 unselected container IDs remain present.
+The corpus,
+Task47 frozen proofs and original owner-lock backup remain untouched.
+Owner `mise.lock` stays unstaged at SHA-256
+`6a3dcb5cbacd22f38feb141320f707ca41aa504b01df9197567ea4bf65ba4b12`.
+Task54 is complete within this callback-observation/retention scope;
+task51's other comparison branches remain separate.
 The implementation has not been reviewed as a whole.
 No new root/phase or paid acquisition authority is established.
 
@@ -577,10 +603,11 @@ No plan or journal implementation is complete.
 
 ## Next action
 
-Finish task54's integrated callback-observation proof,
-including the new ingress/terminal cases and current native comparison.
+Resume task51's remaining non-logger comparison verification.
+Reuse task54's current callback,
+full-suite and native evidence without widening their scope.
 Do not replace the shared facade with another logging executor.
-Then resume task51's current comparison verification:
+Complete the remaining comparison verification:
 zero full-scope lint,
 complete default unit-entry evidence,
 branch accounting and designated guard-removal assertions,
