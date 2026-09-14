@@ -20,11 +20,13 @@ Only `mise.lock` is stashed.
 Restoration is performed after the merge commit,
 so the local changes do not enter that commit.
 
-## Current merge blocker
+## Verified merge scope
 
-Task56 is pending on task60's final verification;
-task61 is reconciling the post-merge repair lint findings.
-The shared Git resolver migration is implemented and its scoped controls pass.
+The shared Git resolver reconciliation and post-merge repair lint work are complete
+within the recorded checks.
+The merge retains the explicit dependency-overlay and inherited Git CLI lint limitations;
+it does not qualify the complete repository,
+comparison logging integration or publication.
 The final real subpath lookup fails because main commit `2aef2d409`
 removed `package/git-policy/cli/src/resolve-git.ts`,
 while automatic merging retained its barrel export and repair imports.
@@ -112,8 +114,8 @@ and `CLAUDE.md` is regenerated through the canonical owner.
 Historical 2 GiB evidence is not relabeled as a 6 GiB run.
 
 Task61's bounded lint and style verification is complete.
-Final merge Markdown verification and diagnostic retention/cleanup remain open.
-No diagnostic container is removed by this continuation.
+Final merge Markdown verification passes for the modified guidance and troubleshooting documents.
+The retained cleanup record removes only the exact owned stopped IDs described in `Evidence retention and cleanup`.
 
 Proposed instruction for merge verification:
 check export targets and compile their affected consumers,
@@ -348,10 +350,45 @@ plus the repair branch's diagnostic text.
 The initial Git CLI merge retains main's authoring entry
 and the repair `resolveGit` export/subpath.
 The subsequent target lookup proves the latter is invalid after main's resolver move;
-`Current merge blocker` records its reconciliation.
+`Verified merge scope` records its reconciliation.
 The remaining jointly changed documents,
 configuration and moved TOML fuzz helper are classified separately,
 not inferred from the AST-name result.
+
+## Evidence retention and cleanup
+
+`merge-retention-1vDapK` retains the merge,
+resolver and style evidence in private agent scratch.
+The manifest records 10291 files,
+`537852297` bytes,
+3148 directories,
+916 empty directories and 977 symlinks.
+There are no special entries or foreign-owned entries.
+Mutable build outputs from the selected packages are copied;
+the copied regular files are hash-checked against their sources.
+Bind-mounted diagnostic files remain retained in place.
+CID bytes are copied before Podman can remove their original paths.
+
+At `2026-09-14T20:07:39.019Z`,
+cleanup removes 51 exact owned nonrunning container IDs,
+including the retention workers.
+Every ID is inspected before removal and checked absent afterward.
+No force or prune operation is used.
+All unselected container IDs remain present;
+40 containers remain outside this cleanup scope,
+including older comparison diagnostics and unrelated workloads.
+The worktree,
+corpus,
+owner lock backup and frozen preparation runtimes are not removed.
+
+The first retention attempt stops at a creation-record filename mismatch;
+its retained output is preserved.
+The successful retainer supports both recorded `launch.json` and `invocation.json` forms
+while requiring the exact CID path and container name from creation arguments.
+Final root sentinel checks find no ignored `HEAD`,
+`config`,
+`hooks`,
+`objects` or `refs` artifact to clean.
 
 ## Paused repair work
 
@@ -442,8 +479,10 @@ The owned temporary stash is removed after restoration verification;
 
 ## Remaining merge work
 
-Finish the final repository/document checks and exact-ID diagnostic cleanup.
+Resume task55's logger documentation and utility acceptance,
+then task54's comparison integration.
 Keep the reconciled owner lockfile unstaged.
+The comparison's known logging regressions remain outside the completed merge scope.
 Check both merge parents,
 no unmerged entries or accidental duplicate exports,
 generated-file equality and local-change preservation.
