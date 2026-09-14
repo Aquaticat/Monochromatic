@@ -202,13 +202,15 @@ Scope widened by the owner on 2026-09-14:
    Consequence:
     the deployment installs `@pnpm/pnpr@next` itself,
     and each rebuild picks up whatever `next` points to.
-- Upstream (supersedes the scope-routing proxy requirement):
-   pnpr has no npmjs upstream;
-   its hosted registry claims `@monochromatic-dev/*` outright.
-   Through the scope route,
-    `mcp-nvim` and npmjs-only historical versions become uninstallable,
-    which the owner accepted
-   (owner chose it over keeping an npmjs upstream for unclaimed names).
+- Upstream (corrected by the owner after the confirmation summary):
+   pnpr proxies npmjs for every package it does not host itself.
+   The hosted registry claims the exact names it publishes
+   (the same generated list the OIDC trust needs),
+   and a router falls through to a public npmjs upstream claiming `**`.
+   Hosted names stay authoritative,
+    so npmjs-only historical versions of `module-logger` and `module-fs-path` are not merged in,
+    which the accepted history loss covers.
+   An earlier answer that dropped the upstream entirely is superseded.
 - Publish authentication:
    pnpr OIDC workload credential from the GitHub Actions publish workflow,
    no stored token
@@ -260,9 +262,10 @@ Scope widened by the owner on 2026-09-14:
 
 ## Adopted without asking (veto welcome)
 
-- Hostname `npm.c.aquati.cat`,
-   following the host's `<service>.c.aquati.cat` convention (`garage.c.aquati.cat`);
-   product-neutral so consumer config survives a product swap.
+- Hostname `pnpr.c.aquati.cat`
+   (owner instruction at confirmation,
+    replacing the adopted product-neutral `npm.c.aquati.cat`),
+   following the host's `<service>.c.aquati.cat` convention (`garage.c.aquati.cat`).
 - pnpr storage is a Coolify volume on local disk,
    not the Garage S3 store on the same host,
    which would add a dependency without adding durability.
@@ -279,7 +282,7 @@ Scope widened by the owner on 2026-09-14:
    because under manual bumps only a manifest change can create a missing version;
    `workflow_dispatch` stays for manual retries.
 - The pnpr hosted registry is named `monochromatic-dev`,
-   so consumers route `@monochromatic-dev:registry=https://npm.c.aquati.cat/~monochromatic-dev/`.
+   and the consumer-facing URL depends on the open consumer-routing question.
 - Packing reuses the `npm-release.yml` install override `--config.dedupe-direct-deps=false`
    (`doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md`).
 - The dependent-bump policy reads the staged `version` of every publishable manifest,
@@ -500,7 +503,18 @@ Script `build-shape.ts` in the session scratchpad,
 
 ## Open questions
 
-None;
- awaiting owner confirmation of shared understanding before implementation.
-After confirmation,
+Reopened by the upstream correction:
+
+- Consumer routing:
+   pnpr as the default registry for all installs,
+   or only for the `@monochromatic-dev` scope.
+   Measured context:
+    the Coolify host is about 116 ms RTT from the owner's clients (`doc/handover/garage-file-sync.md`),
+    and pnpr docs describe only a packument TTL (`--packument-ttl-secs`),
+    with no npm upstream cache eviction found in `pnpr/crates/pnpr/README.md` or `pnpr/npm/pnpr/README.md`.
+- Access to proxied npmjs packages:
+   anonymous (an open public npm mirror) or restricted.
+
+The owner otherwise confirmed shared understanding on 2026-09-14;
+after these close,
  the accepted design moves to `doc/decision/private-npm-registry.md`.
