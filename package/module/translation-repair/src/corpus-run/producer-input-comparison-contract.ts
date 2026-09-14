@@ -39,9 +39,9 @@ function comparisonIdentity(value: ProducerInputFileIdentity): ProducerInputFile
     bytes,
     sha256,
   } = value;
-  if ((typeof bytes !== 'number') || !Number.isSafeInteger(bytes)
+  if (((typeof bytes) !== 'number') || (!Number.isSafeInteger(bytes))
     || (bytes <= 0)
-    || (typeof sha256 !== 'string')
+    || ((typeof sha256) !== 'string')
     || (sha256.length !== SHA256_WIDTH))
     throw new ProducerInputComparisonError({ kind: 'contract', });
   for (const character of sha256) {
@@ -69,8 +69,8 @@ function comparisonIdentity(value: ProducerInputFileIdentity): ProducerInputFile
  * ```
  */
 function comparisonPath(value: string): string {
-  if ((typeof value !== 'string') || value.includes('\0')
-    || !isAbsolute(value)
+  if (((typeof value) !== 'string') || value.includes('\0')
+    || (!isAbsolute(value))
     || (resolve(value) !== value))
     throw new ProducerInputComparisonError({ kind: 'contract', });
   return value;

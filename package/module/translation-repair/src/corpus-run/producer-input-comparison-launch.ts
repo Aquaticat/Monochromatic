@@ -94,7 +94,9 @@ async function writeComparisonLaunch({
      */
     const expected = {
       bytes: owned.byteLength,
-      sha256: createHash('sha256').update(owned).digest('hex')
+      sha256: createHash('sha256')
+        .update(owned)
+        .digest('hex')
     };
     /**
      * Path construction uses a fixed role inside the created private namespace.
@@ -130,7 +132,13 @@ async function writeComparisonLaunch({
       ownerUid: run.uid,
       ownerGid: run.gid
     });
-    await verifyProducerInputComparisonFile({ path, expected: descriptor, run, failure: 'storage', l: pl });
+    await verifyProducerInputComparisonFile({
+      path,
+      expected: descriptor,
+      run,
+      failure: 'storage',
+      l: pl
+    });
     await verifyProducerInputComparisonRun({
       run,
       l: pl
@@ -215,36 +223,55 @@ export async function deriveProducerInputComparisonLaunch({
       version: base.version,
       kind: base.kind,
       bootstrap: {
-        bytes: base.bootstrap.bytes,
-        sha256: base.bootstrap.sha256
+        bytes: base.bootstrap
+          .bytes,
+        sha256: base.bootstrap
+          .sha256
       },
       podman: {
-        path: base.podman.path,
-        bytes: base.podman.bytes,
-        sha256: base.podman.sha256
+        path: base.podman
+          .path,
+        bytes: base.podman
+          .bytes,
+        sha256: base.podman
+          .sha256
       },
       imageId: base.imageId,
       runtime: {
-        dir: base.runtime.dir,
-        manifest: { bytes: base.runtime.manifest.bytes, sha256: base.runtime.manifest.sha256 }
+        dir: base.runtime
+          .dir,
+        manifest: {
+          bytes: base.runtime.manifest.bytes,
+          sha256: base.runtime.manifest.sha256
+        }
       },
       atomicLibrary: {
-        path: base.atomicLibrary.path,
-        bytes: base.atomicLibrary.bytes,
-        sha256: base.atomicLibrary.sha256
+        path: base.atomicLibrary
+          .path,
+        bytes: base.atomicLibrary
+          .bytes,
+        sha256: base.atomicLibrary
+          .sha256
       },
       selection: {
-        path: base.selection.path,
-        bytes: base.selection.bytes,
-        sha256: base.selection.sha256
+        path: base.selection
+          .path,
+        bytes: base.selection
+          .bytes,
+        sha256: base.selection
+          .sha256
       },
       supporting: {
-        dir: base.supporting.dir,
-        maximumBytes: base.supporting.maximumBytes
+        dir: base.supporting
+          .dir,
+        maximumBytes: base.supporting
+          .maximumBytes
       },
       corpus: {
-        dir: base.corpus.dir,
-        commitSha: base.corpus.commitSha
+        dir: base.corpus
+          .dir,
+        commitSha: base.corpus
+          .commitSha
       },
       outputParent: run.inputParent,
     };

@@ -146,8 +146,10 @@ export async function verifyProducerInputComparisonRun({
         directory.path,
         { bigint: true }
       );
-      if ((!state.isDirectory()) || (state.dev !== run.device) || (state.ino !== directory.inode)
-        || (state.uid !== BigInt(run.uid)) || (state.gid !== BigInt(run.gid))
+      if ((!state.isDirectory()) || (state.dev !== run.device)
+        || (state.ino !== directory.inode)
+        || (state.uid !== BigInt(run.uid))
+        || (state.gid !== BigInt(run.gid))
         || ((state.mode & BigInt(MODE_MASK)) !== BigInt(DIRECTORY_MODE))
         || (await realpath(directory.path) !== directory.path))
         throw new ProducerInputComparisonError({
@@ -229,13 +231,21 @@ export async function writeProducerInputComparisonRecord({
      * Persisted byte identity is computed from the exact UTF-8 serialization before creation.
      */
     const expected = {
-      bytes: Buffer.byteLength(text, 'utf8'),
-      sha256: createHash('sha256').update(text, 'utf8').digest('hex'),
+      bytes: Buffer.byteLength(
+        text,
+        'utf8'
+      ),
+      sha256: createHash('sha256')
+        .update(text, 'utf8')
+        .digest('hex'),
     };
     /**
      * Fixed record role cannot select a different output location.
      */
-    const path = join(run.directory, file);
+    const path = join(
+      run.directory,
+      file
+    );
     pl.debug(`writing exclusive comparison record ${JSON.stringify(file)}`);
     /**
      * Exclusive record descriptor preserves existing and partial metadata on every failure path.
@@ -254,8 +264,19 @@ export async function writeProducerInputComparisonRecord({
      * Descriptor identity remains independent of any replacement at its pathname.
      */
     const descriptor = await handle.stat({ bigint: true });
-    await verifyProducerInputOutputFile({ path, expected, ownerUid: run.uid, ownerGid: run.gid });
-    await verifyProducerInputComparisonFile({ path, expected: descriptor, run, failure: 'storage', l: pl });
+    await verifyProducerInputOutputFile({
+      path,
+      expected,
+      ownerUid: run.uid,
+      ownerGid: run.gid
+    });
+    await verifyProducerInputComparisonFile({
+      path,
+      expected: descriptor,
+      run,
+      failure: 'storage',
+      l: pl
+    });
     await verifyProducerInputComparisonRun({
       run,
       l: pl

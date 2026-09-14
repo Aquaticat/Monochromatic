@@ -155,7 +155,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(comparison.matches).toBe(false);
     expect(comparison.observed).toEqual(artifactIdentity);
     expect(
-      identity(await readFile(join(text(comparison.inputRunDirectory), 'output/unqualified-inputs.json'))),
+      identity(
+        await readFile(join(text(comparison.inputRunDirectory), 'output/unqualified-inputs.json')),
+      ),
     ).toEqual(artifactIdentity);
     expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('mismatch');
   } })),
@@ -170,7 +172,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       const [child] = await readdir(join(error.directory, 'producer-runs'));
       if (child === undefined) throw new Error('Expected retained input run');
       expect(
-        identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json'))),
+        identity(
+          await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')),
+        ),
       ).toEqual(artifactIdentity);
     }
     expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
@@ -261,7 +265,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     using cleanup = { [Symbol.dispose]() { watcher.close();
     process.off('uncaughtException', escaped); } };
     const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, warn(message) {
-      if (throwAfterClose && message.includes('bootstrap interruption observed after native close') && logged.size === 0) {
+      if (throwAfterClose && message.includes('bootstrap interruption observed after native close') && (logged.size === 0)) {
         logged.add(message);
         throw new Error('awaiting logging q7z9k2');
       }
@@ -276,7 +280,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const [child] = await readdir(join(error.directory, 'producer-runs'));
     if (child === undefined) throw new Error('Expected completed fixture output');
     expect(
-      identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json'))),
+      identity(
+        await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')),
+      ),
     ).toEqual(artifactIdentity);
     expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('single');
     expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
@@ -311,12 +317,13 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       const child = nativeSpawn(join(f.directory, 'missing-node'), args, options);
       const nativeEmit = child.emit.bind(child);
       const directory = options?.cwd;
-      if (typeof directory !== 'string') throw new Error('Expected comparison cwd');
+      if ((typeof directory) !== 'string') throw new Error('Expected comparison cwd');
       const exitPath = join(directory, 'bootstrap.exit.json');
       ctx.sinon.stub(child, 'emit').callsFake(function delayedClose(event, first, second) {
         if (arguments.length > 3) throw new Error('Unexpected native event interception arity');
         if (event === 'close') {
-          setTimeout(function closeLater() { beforeClose(existsSync(exitPath)); nativeEmit(event, first, second); }, 50);
+          setTimeout(function closeLater() { beforeClose(existsSync(exitPath));
+          nativeEmit(event, first, second); }, 50);
           return true;
         }
         return nativeEmit(event, first, second);
@@ -324,7 +331,8 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       return child;
     });
     syncBuiltinESMExports();
-    using restore = { [Symbol.dispose]() { ctx.sinon.restore(); syncBuiltinESMExports(); } };
+    using restore = { [Symbol.dispose]() { ctx.sinon.restore();
+    syncBuiltinESMExports(); } };
     const error = await rejected(f.request());
     expect(forcedSpawn.callCount).toBe(1);
     expect(beforeClose.callCount).toBe(1);
@@ -336,23 +344,26 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(exit.errors).toEqual(['error-object']);
     expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('absent');
   } }),
-  it({ name: 'observes actual close after deadline escalation without changing production timeout parameters', timeout: 30000, fn: async ctx => {
+  it({ name: 'observes actual close after deadline escalation without changing production timeout parameters', timeout: 30_000, fn: async ctx => {
     await using f = await fixture('ignore-term-after-output');
     const deadline = new AbortController();
     const actualTimeout = AbortSignal.timeout.bind(AbortSignal);
     const actualTimer = timers.setTimeout;
     const shortened = ctx.sinon.spy(function shortenedGrace() {});
     const ready = ctx.sinon.spy(function triggerDeadline() { deadline.abort(new Error('fixture deadline')); });
-    ctx.sinon.stub(AbortSignal, 'timeout').callsFake(function fixtureDeadline(milliseconds) { return milliseconds === 600000 ? deadline.signal : actualTimeout(milliseconds); });
+    ctx.sinon.stub(AbortSignal, 'timeout').callsFake(function fixtureDeadline(milliseconds) { return milliseconds === 600_000 ? deadline.signal : actualTimeout(milliseconds); });
     ctx.sinon.stub(timers, 'setTimeout').callsFake(function fixtureGrace(callback, milliseconds) {
       if (arguments.length > 2) throw new Error('Unexpected timer interception arity');
-      if (milliseconds === 180000) { shortened(); return actualTimer(callback, 30); }
+      if (milliseconds === 180_000) { shortened();
+      return actualTimer(callback, 30); }
       return actualTimer(callback, milliseconds);
     });
     syncBuiltinESMExports();
-    const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) { if ((typeof filename === 'string') && filename.endsWith('ready.txt')) ready(); });
+    const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) { if (((typeof filename) === 'string') && filename.endsWith('ready.txt')) ready(); });
     watcher.on('error', function watchFailed(error) { deadline.abort(error); });
-    using restore = { [Symbol.dispose]() { watcher.close(); ctx.sinon.restore(); syncBuiltinESMExports(); } };
+    using restore = { [Symbol.dispose]() { watcher.close();
+    ctx.sinon.restore();
+    syncBuiltinESMExports(); } };
     const error = await rejected(f.request());
     expect(ready.callCount).toBeGreaterThan(0);
     expect(shortened.callCount).toBe(1);
@@ -367,7 +378,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
     const [child] = await readdir(join(error.directory, 'producer-runs'));
     if (child === undefined) throw new Error('Expected retained completed fixture output');
-    expect(identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')))).toEqual(artifactIdentity);
+    expect(
+      identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json'))),
+    ).toEqual(artifactIdentity);
   } }),
   ...(['comparison-collision', 'failure-collision'] as const).map(mode => it({ name: `preserves existing metadata on ${mode}`, fn: async () => {
     await using f = await fixture(mode);
@@ -379,7 +392,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(await readFile(join(error.directory, file), 'utf8')).toBe(original);
     const [child] = await readdir(join(error.directory, 'producer-runs'));
     if (child === undefined) throw new Error('Expected retained complete output');
-    expect(identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')))).toEqual(artifactIdentity);
+    expect(
+      identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json'))),
+    ).toEqual(artifactIdentity);
   } })),
   it({ name: 'refuses equal-byte metadata pathname replacement after the created descriptor syncs', fn: async ctx => {
     await using f = await fixture();
@@ -387,7 +402,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const replaced = ctx.sinon.spy(function replacedPath() {});
     ctx.sinon.stub(fsPromises, 'open').callsFake(async function observedOpen(path, flags, mode) {
       const handle = await nativeOpen(path, flags, mode);
-      if ((typeof path === 'string') && path.endsWith('/comparison.json')) {
+      if (((typeof path) === 'string') && path.endsWith('/comparison.json')) {
         const targetPath: string = path;
         const nativeSync = handle.sync.bind(handle);
         ctx.sinon.stub(handle, 'sync').callsFake(async function replaceAfterSync() {
@@ -401,12 +416,17 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       return handle;
     });
     syncBuiltinESMExports();
-    using restore = { [Symbol.dispose]() { ctx.sinon.restore(); syncBuiltinESMExports(); } };
+    using restore = { [Symbol.dispose]() { ctx.sinon.restore();
+    syncBuiltinESMExports(); } };
     const error = await rejected(f.request());
     expect(replaced.callCount).toBe(1);
     expect(error.kind).toBe('storage');
     if (error.directory === undefined) throw new Error('Expected retained replaced metadata');
-    expect(await readFile(join(error.directory, 'comparison.json'))).toEqual(await readFile(join(error.directory, 'comparison.json.opened')));
+    expect(
+      await readFile(join(error.directory, 'comparison.json')),
+    ).toEqual(
+      await readFile(join(error.directory, 'comparison.json.opened')),
+    );
   } }),
   it({ name: 'refuses a self-consistent launch with wrong Node identity before executing the correct bootstrap', fn: async () => {
     await using f = await fixture();

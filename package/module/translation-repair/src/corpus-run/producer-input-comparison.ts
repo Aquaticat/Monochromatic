@@ -182,15 +182,18 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
         execution: execution.status === 'fulfilled' ? { status: 'fulfilled' }
           : {
             status: 'rejected',
-            failure: Error.isError(execution.reason) && execution.reason instanceof ProducerInputComparisonError ? execution.reason.kind : 'unexpected'
+            failure: Error.isError(execution.reason) && (execution.reason instanceof ProducerInputComparisonError) ? execution.reason
+              .kind : 'unexpected'
           },
         observation: observed.status === 'fulfilled' ? {
           status: 'fulfilled',
-          state: observed.value.state
+          state: observed.value
+            .state
         }
           : {
             status: 'rejected',
-            failure: Error.isError(observed.reason) && observed.reason instanceof ProducerInputComparisonError ? observed.reason.kind : 'unexpected'
+            failure: Error.isError(observed.reason) && (observed.reason instanceof ProducerInputComparisonError) ? observed.reason
+              .kind : 'unexpected'
           },
       },
       l: pl,
@@ -222,9 +225,9 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       .bytes
       === request.reference
       .bytes) && (files.identity
-      .sha256
-      === request.reference
-      .sha256);
+        .sha256
+        === request.reference
+        .sha256);
     await writeProducerInputComparisonRecord({
       run,
       file: 'comparison.json',
@@ -293,7 +296,8 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
         version: 1,
         kind: 'producer-preparation-input-comparison-failure',
         failure: failure.kind,
-        callerAborted: request.signal.aborted
+        callerAborted: request.signal
+          .aborted
       },
       l: pl,
     })]);

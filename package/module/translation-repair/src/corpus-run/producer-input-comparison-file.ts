@@ -65,16 +65,25 @@ export async function verifyProducerInputComparisonFile({
     /**
      * A pathname replacement cannot substitute even identical bytes for the created descriptor.
      */
-    const actual = await lstat(path, { bigint: true });
-    if (!expected.isFile() || !sameProducerInputFile({ before: expected, after: actual })
+    const actual = await lstat(
+      path,
+      { bigint: true }
+    );
+    if ((!expected.isFile()) || (!sameProducerInputFile({ before: expected, after: actual }))
       || (actual.uid !== BigInt(run.uid)) || (actual.gid !== BigInt(run.gid))
       || ((actual.mode & MODE_MASK) !== FILE_MODE))
-      throw new ProducerInputComparisonError({ kind: failure, directory: run.directory });
+      throw new ProducerInputComparisonError({
+        kind: failure,
+        directory: run.directory
+      });
     pl.debug('verified created comparison descriptor against final private pathname');
   }
   catch (error) {
     pl.warn(`comparison file observation failed with ${Error.isError(error) ? 'an Error object' : 'a non-Error value'}`);
-    throw new ProducerInputComparisonError({ kind: failure, directory: run.directory });
+    throw new ProducerInputComparisonError({
+      kind: failure,
+      directory: run.directory
+    });
   }
 }
 

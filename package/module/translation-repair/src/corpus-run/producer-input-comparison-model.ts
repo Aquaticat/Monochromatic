@@ -88,13 +88,21 @@ export type ProducerInputComparisonInvocation = {
  * ```
  */
 export type ProducerInputBootstrapStreams = {
-  /** Fixed metadata output pathname. */
+  /**
+   * Fixed metadata output pathname.
+   */
   readonly stdoutPath: string;
-  /** Fixed private diagnostic pathname. */
+  /**
+   * Fixed private diagnostic pathname.
+   */
   readonly stderrPath: string;
-  /** Actual stdout descriptor state after native close and synchronization. */
+  /**
+   * Actual stdout descriptor state after native close and synchronization.
+   */
   readonly stdoutState: BigIntStats;
-  /** Actual stderr descriptor state after native close and synchronization. */
+  /**
+   * Actual stderr descriptor state after native close and synchronization.
+   */
   readonly stderrState: BigIntStats;
 };
 

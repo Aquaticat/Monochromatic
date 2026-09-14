@@ -125,9 +125,11 @@ export async function invokeProducerInputBootstrap({
     '--launch',
     invocation.derivedLaunchPath,
     '--launch-sha256',
-    invocation.derivedLaunchIdentity.sha256,
+    invocation.derivedLaunchIdentity
+      .sha256,
     '--launch-bytes',
-    String(invocation.derivedLaunchIdentity.bytes),
+    String(invocation.derivedLaunchIdentity
+      .bytes),
   ];
   /**
    * Stream filenames are fixed independently of bootstrap output.
@@ -152,7 +154,8 @@ export async function invokeProducerInputBootstrap({
       args,
       deadlineMilliseconds: BOOTSTRAP_DEADLINE_MS,
       terminationGraceMilliseconds: BOOTSTRAP_TERMINATION_GRACE_MS,
-      environmentKeys: Object.keys(environment).toSorted()
+      environmentKeys: Object.keys(environment)
+        .toSorted()
     },
     l: pl,
   });
@@ -163,14 +166,19 @@ export async function invokeProducerInputBootstrap({
   /**
    * The caller and this bootstrap stage retain independent interruption evidence.
    */
-  const signal = AbortSignal.any([invocation.signal, deadline]);
+  const signal = AbortSignal.any([
+    invocation.signal,
+    deadline
+  ]);
   try {
     /**
      * The base-to-derived owner cannot change executable bindings through an output-parent derivation.
      */
     const manifest = await readProducerRuntimeManifest({
-      dir: invocation.runtime.dir,
-      expected: invocation.runtime.manifest
+      dir: invocation.runtime
+        .dir,
+      expected: invocation.runtime
+        .manifest
     });
     if ((await realpath(nodePath) !== nodePath) || (await realpath(invocation.bootstrapPath) !== invocation.bootstrapPath))
       throw new ProducerInputComparisonError({
@@ -180,7 +188,8 @@ export async function invokeProducerInputBootstrap({
     await verifyProducerNodeRuntime(manifest);
     await verifyProducerInputFile({
       path: nodePath,
-      expected: manifest.node.executable,
+      expected: manifest.node
+        .executable,
       operation: 'verify-runtime'
     });
     await verifyProducerInputFile({
@@ -228,7 +237,11 @@ export async function invokeProducerInputBootstrap({
       {
       cwd: run.directory,
       env: environment,
-      stdio: ['ignore', stdout.fd, stderr.fd],
+      stdio: [
+        'ignore',
+        stdout.fd,
+        stderr.fd
+      ],
     }
     );
     /**
@@ -264,7 +277,8 @@ export async function invokeProducerInputBootstrap({
         code: child.exitCode,
         signal: child.signalCode,
         errors,
-        callerAborted: invocation.signal.aborted,
+        callerAborted: invocation.signal
+          .aborted,
         deadlineReached: deadline.aborted
       },
       l: pl,
@@ -282,8 +296,20 @@ export async function invokeProducerInputBootstrap({
         kind: 'bootstrap',
         directory: run.directory
       });
-    await verifyProducerInputComparisonFile({ path: stdoutPath, expected: stdoutState, run, failure: 'output', l: pl });
-    await verifyProducerInputComparisonFile({ path: stderrPath, expected: stderrState, run, failure: 'output', l: pl });
+    await verifyProducerInputComparisonFile({
+      path: stdoutPath,
+      expected: stdoutState,
+      run,
+      failure: 'output',
+      l: pl
+    });
+    await verifyProducerInputComparisonFile({
+      path: stderrPath,
+      expected: stderrState,
+      run,
+      failure: 'output',
+      l: pl
+    });
     pl.info('input bootstrap closed successfully; persisted output still requires independent verification');
     return {
       stdoutPath,
@@ -294,7 +320,10 @@ export async function invokeProducerInputBootstrap({
   }
   catch (error) {
     if (signal.aborted)
-      throw new ProducerInputComparisonError({ kind: 'interruption', directory: run.directory });
+      throw new ProducerInputComparisonError({
+        kind: 'interruption',
+        directory: run.directory
+      });
     if (Error.isError(error) && (error instanceof ProducerInputComparisonError))
       throw error;
     pl.warn(`bootstrap invocation failed with ${Error.isError(error) ? 'an Error object' : 'a non-Error value'}; native details remain in private records`);

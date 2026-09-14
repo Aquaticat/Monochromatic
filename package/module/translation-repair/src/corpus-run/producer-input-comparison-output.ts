@@ -108,8 +108,10 @@ async function comparisonOutputDirectory({
     path,
     { bigint: true }
   );
-  if ((!state.isDirectory()) || (state.uid !== BigInt(run.uid)) || (state.gid !== BigInt(run.gid))
-    || ((state.mode & MODE_MASK) !== DIRECTORY_MODE) || (await realpath(path) !== path))
+  if ((!state.isDirectory()) || (state.uid !== BigInt(run.uid))
+    || (state.gid !== BigInt(run.gid))
+    || ((state.mode & MODE_MASK) !== DIRECTORY_MODE)
+    || (await realpath(path) !== path))
     throw new ProducerInputComparisonError({
       kind: 'output',
       directory: run.directory
@@ -163,8 +165,14 @@ async function comparisonOutputLayout({
     path,
     run
   }); }));
-  if ((!isDeepStrictEqual(await readdir(run.inputParent), [`${RUN_PREFIX}${inputRunId}`]))
-    || (!isDeepStrictEqual((await readdir(output)).toSorted(), ['complete.json', 'home', 'unqualified-inputs.json']))
+  if ((!isDeepStrictEqual(
+    await readdir(run.inputParent),
+    [`${RUN_PREFIX}${inputRunId}`]
+  ))
+    || (!isDeepStrictEqual(
+      (await readdir(output)).toSorted(),
+      ['complete.json', 'home', 'unqualified-inputs.json']
+    ))
     || ((await readdir(home)).length > 0))
     throw new ProducerInputComparisonError({
       kind: 'output',
@@ -281,16 +289,35 @@ export async function readProducerInputComparisonOutput({
         kind: 'output',
         directory: run.directory
       });
-    await verifyProducerInputComparisonFile({ path: stdoutPath, expected: stdoutState, run, failure: 'output', l: pl });
-    await verifyProducerInputComparisonFile({ path: stderrPath, expected: stderrState, run, failure: 'output', l: pl });
+    await verifyProducerInputComparisonFile({
+      path: stdoutPath,
+      expected: stdoutState,
+      run,
+      failure: 'output',
+      l: pl
+    });
+    await verifyProducerInputComparisonFile({
+      path: stderrPath,
+      expected: stderrState,
+      run,
+      failure: 'output',
+      l: pl
+    });
     if (await metadata(stderrPath) !== '')
-      throw new ProducerInputComparisonError({ kind: 'output', directory: run.directory });
+      throw new ProducerInputComparisonError({
+        kind: 'output',
+        directory: run.directory
+      });
     /**
      * Strict stdout framing does not allow selection of another retained directory.
      */
     const frame = comparisonMetadata({
       text: await metadata(stdoutPath),
-      keys: ['kind', 'directory', 'completion'],
+      keys: [
+        'kind',
+        'directory',
+        'completion'
+      ],
       directory: run.directory
     });
     if ((frame.kind !== 'producer-preparation-input-host-complete') || (frame.directory !== inputRunDirectory))
@@ -304,31 +331,49 @@ export async function readProducerInputComparisonOutput({
     const fromStdout = parseProducerInputCompletion({
       text: JSON.stringify(frame.completion),
       runId: inputRunId,
-      launchSha256: invocation.derivedLaunchIdentity.sha256
+      launchSha256: invocation.derivedLaunchIdentity
+        .sha256
     });
     /**
      * The fixed disk completion must agree independently with the observed native frame.
      */
     const completion = parseProducerInputCompletion({
-      text: await metadata(join(output, 'complete.json')),
+      text: await metadata(join(
+        output,
+        'complete.json'
+      )),
       runId: inputRunId,
-      launchSha256: invocation.derivedLaunchIdentity.sha256
+      launchSha256: invocation.derivedLaunchIdentity
+        .sha256
     });
     /**
      * The native host's retained verification copy is checked through the same shared closed reader.
      */
     const verified = parseProducerInputCompletion({
-      text: await metadata(join(inputRunDirectory, 'verified-completion.json')),
+      text: await metadata(join(
+        inputRunDirectory,
+        'verified-completion.json'
+      )),
       runId: inputRunId,
-      launchSha256: invocation.derivedLaunchIdentity.sha256
+      launchSha256: invocation.derivedLaunchIdentity
+        .sha256
     });
-    if ((!isDeepStrictEqual(fromStdout, completion)) || (!isDeepStrictEqual(verified, completion)))
+    if ((!isDeepStrictEqual(
+      fromStdout,
+      completion
+    )) || (!isDeepStrictEqual(
+      verified,
+      completion
+    )))
       throw new ProducerInputComparisonError({
         kind: 'output',
         directory: run.directory
       });
     await verifyProducerInputFile({
-      path: join(inputRunDirectory, 'launch.json'),
+      path: join(
+        inputRunDirectory,
+        'launch.json'
+      ),
       expected: invocation.derivedLaunchIdentity,
       operation: 'read-launch'
     });
@@ -336,14 +381,29 @@ export async function readProducerInputComparisonOutput({
      * Creation-marker consistency does not authenticate its creator.
      */
     const created = comparisonMetadata({
-      text: await metadata(join(inputRunDirectory, 'created.json')),
-      keys: ['version', 'kind', 'runId', 'launchSha256', 'launchBytes', 'uid', 'gid'],
+      text: await metadata(join(
+        inputRunDirectory,
+        'created.json'
+      )),
+      keys: [
+        'version',
+        'kind',
+        'runId',
+        'launchSha256',
+        'launchBytes',
+        'uid',
+        'gid'
+      ],
       directory: run.directory
     });
     if ((created.version !== 1) || (created.kind !== 'producer-preparation-input-created')
       || (created.runId !== inputRunId)
-      || (created.launchSha256 !== invocation.derivedLaunchIdentity.sha256)
-      || (created.launchBytes !== invocation.derivedLaunchIdentity.bytes)
+      || (created.launchSha256
+        !== invocation.derivedLaunchIdentity
+        .sha256)
+      || (created.launchBytes
+        !== invocation.derivedLaunchIdentity
+        .bytes)
       || (created.uid !== run.uid)
       || (created.gid !== run.gid))
       throw new ProducerInputComparisonError({
@@ -354,8 +414,19 @@ export async function readProducerInputComparisonOutput({
      * Native success must retain its non-interrupted cleanup record; this is not a new stopped-state probe.
      */
     const cleanup = comparisonMetadata({
-      text: await metadata(join(inputRunDirectory, 'cleanup-complete.json')),
-      keys: ['version', 'kind', 'runId', 'containerId', 'removed', 'absenceChecked', 'interrupted'],
+      text: await metadata(join(
+        inputRunDirectory,
+        'cleanup-complete.json'
+      )),
+      keys: [
+        'version',
+        'kind',
+        'runId',
+        'containerId',
+        'removed',
+        'absenceChecked',
+        'interrupted'
+      ],
       directory: run.directory
     });
     if ((cleanup.version !== 1) || (cleanup.kind !== 'producer-preparation-input-cleanup-complete')
@@ -363,7 +434,7 @@ export async function readProducerInputComparisonOutput({
       || (cleanup.removed !== true)
       || (cleanup.absenceChecked !== true)
       || (cleanup.interrupted !== false)
-      || !comparisonHex({ value: cleanup.containerId, length: CONTAINER_ID_WIDTH }))
+      || (!comparisonHex({ value: cleanup.containerId, length: CONTAINER_ID_WIDTH })))
       throw new ProducerInputComparisonError({
         kind: 'output',
         directory: run.directory
@@ -393,8 +464,20 @@ export async function readProducerInputComparisonOutput({
       run,
       l: pl
     });
-    await verifyProducerInputComparisonFile({ path: stdoutPath, expected: stdoutState, run, failure: 'output', l: pl });
-    await verifyProducerInputComparisonFile({ path: stderrPath, expected: stderrState, run, failure: 'output', l: pl });
+    await verifyProducerInputComparisonFile({
+      path: stdoutPath,
+      expected: stdoutState,
+      run,
+      failure: 'output',
+      l: pl
+    });
+    await verifyProducerInputComparisonFile({
+      path: stderrPath,
+      expected: stderrState,
+      run,
+      failure: 'output',
+      l: pl
+    });
     pl.info('independently verified retained unqualified input files and derived-launch binding');
     return {
       inputRunDirectory,

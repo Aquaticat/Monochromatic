@@ -49,7 +49,7 @@ export function comparisonMetadata({
      * Native JSON parsing does not expose caller getters or prototype methods.
      */
     const value: unknown = JSON.parse(text);
-    if ((typeof value !== 'object') || (value === null)
+    if (((typeof value) !== 'object') || (value === null)
       || Array.isArray(value))
       throw new ProducerInputComparisonError({
         kind: 'output',
@@ -61,7 +61,10 @@ export function comparisonMetadata({
     const fields: Readonly<Record<string, unknown>> = Object.fromEntries(Object.entries(value));
     if ((Object.keys(fields)
       .length
-      !== keys.length) || (!keys.every(function present(key): boolean { return Object.hasOwn(fields, key); })))
+      !== keys.length) || (!keys.every(function present(key): boolean { return Object.hasOwn(
+        fields,
+        key
+      ); })))
       throw new ProducerInputComparisonError({
         kind: 'output',
         directory
@@ -135,11 +138,13 @@ export function comparisonInputRunId({
    * The single-child branch must still prove that its entry is a directory.
    */
   const child = observation.children[0];
-  if ((observation.state !== 'single') || !observation.completeEnumeration
-    || (observation.children.length !== 1)
+  if ((observation.state !== 'single') || (!observation.completeEnumeration)
+    || (observation.children
+      .length
+      !== 1)
     || (child === undefined)
     || (child.kind !== 'directory')
-    || !child.name.startsWith(RUN_PREFIX))
+    || (!child.name.startsWith(RUN_PREFIX)))
     throw new ProducerInputComparisonError({
       kind: 'output',
       directory
@@ -158,13 +163,13 @@ export function comparisonInputRunId({
    */
   const [version, variant] = groups.slice(2);
   if ((groups.length !== UUID_GROUP_WIDTHS.length)
-    || !UUID_GROUP_WIDTHS.every(function validGroup(width, index): boolean {
+    || (!UUID_GROUP_WIDTHS.every(function validGroup(width, index): boolean {
       return comparisonHex({ value: groups[index], length: width });
-    })
+    }))
     || (version === undefined)
-    || !version.startsWith('4')
+    || (!version.startsWith('4'))
     || (variant === undefined)
-    || !'89ab'.includes(variant.charAt(0)))
+    || (!'89ab'.includes(variant.charAt(0))))
     throw new ProducerInputComparisonError({
       kind: 'output',
       directory
