@@ -332,6 +332,19 @@ Fresh normal/bootstrap builds,
 types and focused `devtest-40QnXP` pass after these changes.
 Final formatter verification continues in `input-format-node224-r2-20260913.out`.
 These passes still do not establish complete package verification.
+The following `devformat224-3ssI7u` run completes with 1 warning and 2 errors,
+again without OOM/PID events.
+The findings concern callback declaration syntax,
+nullish-union spelling and the deprecated `ExecFileException` alias,
+not memory pressure.
+The callback is moved to the API-supplied function-expression position
+and its error enters as unknown before runtime narrowing.
+A fixed fixture error handles unexpected non-Error values;
+new native spawn/signal tests check that execution failures are rejected rather than returned as ordinary exits.
+Fresh builds,
+types and `devtest-WY17PT` pass,
+including actual native `ENOENT` and `SIGTERM` controls.
+The current full-package read-only lint result is still pending.
 Task49 stays open until the complete current result is read and remaining findings are resolved.
 Neither increasing the container memory bound nor disabling a check is an accepted workaround.
 

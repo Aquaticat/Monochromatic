@@ -2174,11 +2174,22 @@ Commit `f57cf9c6e` extracts bind validation,
 formats the callback and gives native CLI completion explicit ownership of exit/stdio results.
 Fresh normal/bootstrap builds,
 types and `devtest-40QnXP` pass.
-The next full formatter run is pending:
-`input-format-node224-r2-20260913.out`,
-managed process `proc_758f`.
-It retains the finite 3000-second verification deadline and original memory/CPU/PID bounds.
-Do not edit its source/configuration while it is active.
+The next full formatter run,
+`devformat224-3ssI7u`,
+also finishes without a memory failure.
+It reports a named callback declaration outside the permitted callback-expression syntax,
+an explicit nullish error type and a deprecated Node type alias.
+The correction passes the callback expression directly to `execFile`,
+accepts its error value as unknown and narrows it before use.
+Unexpected non-Error values become a fixed names-only fixture error.
+Native spawn-failure and signal-termination rejection controls are added beside the existing exit-zero/exit-six cases.
+Fresh normal/bootstrap builds,
+types and focused `devtest-WY17PT` pass,
+including actual `ENOENT` and `SIGTERM` rejection controls.
+Current full-package read-only lint is running as managed process `proc_4776`;
+its log is `input-callback-controls-full-lint-20260913.out`.
+Read its actual diagnostic result before declaring lint or formatter convergence.
+The original memory/CPU/PID bounds remain unchanged.
 The passing native lifecycle artifacts predate these source changes and do not verify their exact bytes.
 
 Remaining task47 work includes repeated interruption,
