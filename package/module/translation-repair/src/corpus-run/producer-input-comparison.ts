@@ -49,16 +49,34 @@ async function preflightInputComparison({
 }: {
   readonly request: ProducerInputComparisonRequest;
   readonly l: Logger;
-},): Promise<{ readonly base: ProducerInputLaunch; readonly layout: ProducerInputHostLayout; }> {
-  /** A preflight refusal cannot be logged as completed input reconstruction. */
-  const pl = tagged({ tag: preflightInputComparison.name, l });
+},): Promise<{
+  readonly base: ProducerInputLaunch;
+  readonly layout: ProducerInputHostLayout
+}> {
+  /**
+   * A preflight refusal cannot be logged as completed input reconstruction.
+   */
+  const pl = tagged({
+    tag: preflightInputComparison.name,
+    l
+  });
   try {
-    /** The base is decoded by the existing independently bound closed-schema reader. */
-    const base = await readProducerInputLaunch({ path: request.baseLaunchPath, expected: request.baseLaunchIdentity });
-    /** Existing metadata-only topology policy remains unchanged. */
+    /**
+     * The base is decoded by the existing independently bound closed-schema reader.
+     */
+    const base = await readProducerInputLaunch({
+      path: request.baseLaunchPath,
+      expected: request.baseLaunchIdentity
+    });
+    /**
+     * Existing metadata-only topology policy remains unchanged.
+     */
     const layout = await inspectProducerInputHostLayout(base);
     pl.debug('matched base input launch and metadata-only host topology');
-    return { base, layout };
+    return {
+      base,
+      layout
+    };
   }
   catch (error) {
     pl.warn(`comparison preflight failed with ${Error.isError(error) ? 'an Error object' : 'a non-Error value'}`);
@@ -84,36 +102,77 @@ async function preflightInputComparison({
  * ```
  */
 export async function runProducerInputComparison(input: ProducerInputComparisonRequest): Promise<ProducerInputComparisonResult> {
-  /** Data authority is owned before logger callbacks or asynchronous work. */
+  /**
+   * Data authority is owned before logger callbacks or asynchronous work.
+   */
   const request = ownProducerInputComparisonRequest(input);
-  /** Every helper receives the full invoking operation's tag chain. */
-  const pl = tagged({ tag: runProducerInputComparison.name, l: request.l });
-  if (request.signal.aborted)
+  /**
+   * Every helper receives the full invoking operation's tag chain.
+   */
+  const pl = tagged({
+    tag: runProducerInputComparison.name,
+    l: request.l
+  });
+  if (request.signal
+    .aborted)
     throw new ProducerInputComparisonError({ kind: 'interruption' });
-  /** No comparison namespace exists while launch or topology is still unverified. */
-  const preflight = await preflightInputComparison({ request, l: pl });
-  if (request.signal.aborted)
+  /**
+   * No comparison namespace exists while launch or topology is still unverified.
+   */
+  const preflight = await preflightInputComparison({
+    request,
+    l: pl
+  });
+  if (request.signal
+    .aborted)
     throw new ProducerInputComparisonError({ kind: 'interruption' });
-  /** This is a comparison namespace, not a preparation acquisition attempt. */
+  /**
+   * This is a comparison namespace, not a preparation acquisition attempt.
+   */
   const run = await createProducerInputComparisonRun({
-    parent: preflight.base.outputParent,
+    parent: preflight.base
+      .outputParent,
     baseLaunchIdentity: request.baseLaunchIdentity,
     reference: request.reference,
     l: pl,
   });
   try {
     await revalidateProducerInputHostLayout(preflight.layout);
-    if (request.signal.aborted)
-      throw new ProducerInputComparisonError({ kind: 'interruption', directory: run.directory });
-    /** Only the owned producer-runs descendant differs from the original matched launch. */
-    const invocation = await deriveProducerInputComparisonLaunch({ request, run, l: pl });
+    if (request.signal
+      .aborted)
+      throw new ProducerInputComparisonError({
+        kind: 'interruption',
+        directory: run.directory
+      });
+    /**
+     * Only the owned producer-runs descendant differs from the original matched launch.
+     */
+    const invocation = await deriveProducerInputComparisonLaunch({
+      request,
+      run,
+      l: pl
+    });
     await revalidateProducerInputHostLayout(preflight.layout);
-    /** Native close is observed even on failure; no automatic retry can create a second input run. */
-    const [execution] = await Promise.allSettled([invokeProducerInputBootstrap({ run, invocation, l: pl })]);
-    /** Failure-time association uses the exclusive descendant, never an arbitrary stdout directory. */
-    const [observed] = await Promise.allSettled([observeProducerInputComparisonChildren({ run, l: pl })]);
+    /**
+     * Native close is observed even on failure; no automatic retry can create a second input run.
+     */
+    const [execution] = await Promise.allSettled([invokeProducerInputBootstrap({
+      run,
+      invocation,
+      l: pl
+    })]);
+    /**
+     * Failure-time association uses the exclusive descendant, never an arbitrary stdout directory.
+     */
+    const [observed] = await Promise.allSettled([observeProducerInputComparisonChildren({
+      run,
+      l: pl
+    })]);
     if ((execution === undefined) || (observed === undefined))
-      throw new ProducerInputComparisonError({ kind: 'output', directory: run.directory });
+      throw new ProducerInputComparisonError({
+        kind: 'output',
+        directory: run.directory
+      });
     await writeProducerInputComparisonRecord({
       run,
       file: 'bootstrap-observation.json',
@@ -121,9 +180,18 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
         version: 1,
         kind: 'producer-preparation-input-bootstrap-observation',
         execution: execution.status === 'fulfilled' ? { status: 'fulfilled' }
-          : { status: 'rejected', failure: Error.isError(execution.reason) && execution.reason instanceof ProducerInputComparisonError ? execution.reason.kind : 'unexpected' },
-        observation: observed.status === 'fulfilled' ? { status: 'fulfilled', state: observed.value.state }
-          : { status: 'rejected', failure: Error.isError(observed.reason) && observed.reason instanceof ProducerInputComparisonError ? observed.reason.kind : 'unexpected' },
+          : {
+            status: 'rejected',
+            failure: Error.isError(execution.reason) && execution.reason instanceof ProducerInputComparisonError ? execution.reason.kind : 'unexpected'
+          },
+        observation: observed.status === 'fulfilled' ? {
+          status: 'fulfilled',
+          state: observed.value.state
+        }
+          : {
+            status: 'rejected',
+            failure: Error.isError(observed.reason) && observed.reason instanceof ProducerInputComparisonError ? observed.reason.kind : 'unexpected'
+          },
       },
       l: pl,
     });
@@ -131,25 +199,67 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       throw execution.reason;
     if (observed.status === 'rejected')
       throw observed.reason;
-    if (request.signal.aborted)
-      throw new ProducerInputComparisonError({ kind: 'interruption', directory: run.directory });
-    /** Successful process status and metadata cannot replace independent file hashing. */
-    const files = await readProducerInputComparisonOutput({ run, invocation, observation: observed.value, ...execution.value, l: pl });
-    /** Comparison uses raw observed file identity, never reserialized input DTOs. */
-    const matches = (files.identity.bytes === request.reference.bytes) && (files.identity.sha256 === request.reference.sha256);
+    if (request.signal
+      .aborted)
+      throw new ProducerInputComparisonError({
+        kind: 'interruption',
+        directory: run.directory
+      });
+    /**
+     * Successful process status and metadata cannot replace independent file hashing.
+     */
+    const files = await readProducerInputComparisonOutput({
+      run,
+      invocation,
+      observation: observed.value,
+      ...execution.value,
+      l: pl
+    });
+    /**
+     * Comparison uses raw observed file identity, never reserialized input DTOs.
+     */
+    const matches = (files.identity
+      .bytes
+      === request.reference
+      .bytes) && (files.identity
+      .sha256
+      === request.reference
+      .sha256);
     await writeProducerInputComparisonRecord({
       run,
       file: 'comparison.json',
-      value: { version: 1, kind: 'producer-preparation-input-comparison', scope: 'unqualified-byte-comparison-only', baseLaunchIdentity: request.baseLaunchIdentity, derivedLaunchIdentity: invocation.derivedLaunchIdentity, reference: request.reference, observed: files.identity, inputRunId: files.inputRunId, inputRunDirectory: files.inputRunDirectory, matches },
+      value: {
+        version: 1,
+        kind: 'producer-preparation-input-comparison',
+        scope: 'unqualified-byte-comparison-only',
+        baseLaunchIdentity: request.baseLaunchIdentity,
+        derivedLaunchIdentity: invocation.derivedLaunchIdentity,
+        reference: request.reference,
+        observed: files.identity,
+        inputRunId: files.inputRunId,
+        inputRunDirectory: files.inputRunDirectory,
+        matches
+      },
       l: pl,
     });
-    if (request.signal.aborted)
-      throw new ProducerInputComparisonError({ kind: 'interruption', directory: run.directory });
+    if (request.signal
+      .aborted)
+      throw new ProducerInputComparisonError({
+        kind: 'interruption',
+        directory: run.directory
+      });
     if (!matches)
-      throw new ProducerInputComparisonError({ kind: 'mismatch', directory: run.directory });
+      throw new ProducerInputComparisonError({
+        kind: 'mismatch',
+        directory: run.directory
+      });
     pl.info('matched retained unqualified input bytes; no root or phase review authority granted');
-    if (request.signal.aborted)
-      throw new ProducerInputComparisonError({ kind: 'interruption', directory: run.directory });
+    if (request.signal
+      .aborted)
+      throw new ProducerInputComparisonError({
+        kind: 'interruption',
+        directory: run.directory
+      });
     return {
       scope: 'matched-unqualified-input-files',
       directory: run.directory,
@@ -157,23 +267,41 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       inputRunId: files.inputRunId,
       baseLaunchIdentity: request.baseLaunchIdentity,
       derivedLaunchIdentity: invocation.derivedLaunchIdentity,
-      artifact: { path: files.artifactPath, ...files.identity },
+      artifact: {
+        path: files.artifactPath,
+        ...files.identity
+      },
     };
   }
   catch (error) {
-    /** Only fixed failure kinds, never caught native bodies, enter persisted failure metadata. */
-    const failure = Error.isError(error) && error instanceof ProducerInputComparisonError ? error
-      : new ProducerInputComparisonError({ kind: 'output', directory: run.directory });
+    /**
+     * Only fixed failure kinds, never caught native bodies, enter persisted failure metadata.
+     */
+    const failure = Error.isError(error) && (error instanceof ProducerInputComparisonError) ? error
+      : new ProducerInputComparisonError({
+        kind: 'output',
+        directory: run.directory
+      });
     pl.warn(`input comparison refused at ${failure.kind}; created evidence remains retained`);
-    /** A failed failure-record write is independently refused rather than claiming an unrecorded mismatch. */
+    /**
+     * A failed failure-record write is independently refused rather than claiming an unrecorded mismatch.
+     */
     const [record] = await Promise.allSettled([writeProducerInputComparisonRecord({
       run,
       file: 'failure.json',
-      value: { version: 1, kind: 'producer-preparation-input-comparison-failure', failure: failure.kind, callerAborted: request.signal.aborted },
+      value: {
+        version: 1,
+        kind: 'producer-preparation-input-comparison-failure',
+        failure: failure.kind,
+        callerAborted: request.signal.aborted
+      },
       l: pl,
     })]);
     if ((record === undefined) || (record.status === 'rejected'))
-      throw new ProducerInputComparisonError({ kind: 'storage', directory: run.directory });
+      throw new ProducerInputComparisonError({
+        kind: 'storage',
+        directory: run.directory
+      });
     throw failure;
   }
 }

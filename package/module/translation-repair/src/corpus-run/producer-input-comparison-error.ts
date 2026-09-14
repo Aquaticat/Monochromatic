@@ -31,11 +31,17 @@ const COMPARISON_MESSAGES: Readonly<Record<ProducerInputComparisonFailure, strin
  * ```
  */
 export class ProducerInputComparisonError extends Error {
-  /** Only authored operation text and the owned directory locator may be rendered. */
+  /**
+   * Only authored operation text and the owned directory locator may be rendered.
+   */
   public readonly messageNamesOnly: true = true;
-  /** Fixed failed boundary, not caller-supplied error prose. */
+  /**
+   * Fixed failed boundary, not caller-supplied error prose.
+   */
   public readonly kind: ProducerInputComparisonFailure;
-  /** Created or attempted evidence namespace, never proof of current ownership. */
+  /**
+   * Created or attempted evidence namespace, never proof of current ownership.
+   */
   public readonly directory?: string;
 
   /**

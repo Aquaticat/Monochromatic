@@ -15,11 +15,11 @@ const artifactIdentity = identity(Buffer.from(artifactText));
 
 async function readRecord(path: string): Promise<Readonly<Record<string, unknown>>> {
   const value: unknown = JSON.parse(await readFile(path, 'utf8'));
-  if ((typeof value !== 'object') || (value === null) || Array.isArray(value)) throw new Error('Expected fixture record');
+  if (((typeof value) !== 'object') || (value === null) || Array.isArray(value)) throw new Error('Expected fixture record');
   return Object.fromEntries(Object.entries(value));
 }
 function text(value: unknown): string {
-  if (typeof value !== 'string') throw new Error('Expected fixture text');
+  if ((typeof value) !== 'string') throw new Error('Expected fixture text');
   return value;
 }
 
@@ -113,8 +113,12 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     await using f = await fixture();
     const result = await runProducerInputComparison(f.request());
     expect(result.scope).toBe('matched-unqualified-input-files');
-    expect(identity(await readFile(result.artifact.path))).toEqual(artifactIdentity);
-    expect(await readFile(join(result.directory, 'base-launch.json'))).toEqual(f.baseBytes);
+    expect(
+      identity(await readFile(result.artifact.path)),
+    ).toEqual(artifactIdentity);
+    expect(
+      await readFile(join(result.directory, 'base-launch.json')),
+    ).toEqual(f.baseBytes);
     const derived = await readRecord(join(result.directory, 'derived-launch.json'));
     expect({ ...derived, outputParent: f.base.outputParent }).toEqual(f.base);
     expect(derived.outputParent).toBe(join(result.directory, 'producer-runs'));
@@ -136,7 +140,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const comparison = await readRecord(join(error.directory, 'comparison.json'));
     expect(comparison.matches).toBe(false);
     expect(comparison.observed).toEqual(artifactIdentity);
-    expect(identity(await readFile(join(text(comparison.inputRunDirectory), 'output/unqualified-inputs.json')))).toEqual(artifactIdentity);
+    expect(
+      identity(await readFile(join(text(comparison.inputRunDirectory), 'output/unqualified-inputs.json'))),
+    ).toEqual(artifactIdentity);
     expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('mismatch');
   } })),
   ...(['exit-before-output', 'exit-after-output'] as const).map(mode => it({ name: `records child observation after bootstrap ${mode}`, fn: async () => {
@@ -149,7 +155,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     if (mode === 'exit-after-output') {
       const [child] = await readdir(join(error.directory, 'producer-runs'));
       if (child === undefined) throw new Error('Expected retained input run');
-      expect(identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')))).toEqual(artifactIdentity);
+      expect(
+        identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json'))),
+      ).toEqual(artifactIdentity);
     }
     expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
   } })),
@@ -187,13 +195,16 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       const observation = await readRecord(join(failure.directory, 'child-observation.json'));
       expect(observation.state).toBe('single');
       expect(observation.children).toHaveLength(1);
-      expect(await readdir(join(failure.directory, 'producer-runs'))).toHaveLength(1);
+      expect(
+        await readdir(join(failure.directory, 'producer-runs')),
+      ).toHaveLength(1);
     }
   } }),
   it({ name: 'owns reference primitives before logger callbacks mutate caller data', fn: async () => {
     await using f = await fixture();
     const reference = { ...artifactIdentity };
-    const result = await runProducerInputComparison({ ...f.request(), reference, l: { ...l, debug(message) { reference.sha256 = '0'.repeat(64); l.debug(message); } } });
+    const result = await runProducerInputComparison({ ...f.request(), reference, l: { ...l, debug(message) { reference.sha256 = '0'.repeat(64);
+    l.debug(message); } } });
     expect(reference.sha256).toBe('0'.repeat(64));
     expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
   } }),
@@ -207,16 +218,18 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(error.kind).toBe('contract');
     expect(await readdir(f.output)).toEqual([]);
   } }),
-  it({ name: 'retains completed output on cancellation without invoking a throwing logger from an abort callback', timeout: 30000, fn: async ctx => {
+  it({ name: 'retains completed output on cancellation without invoking a throwing logger from an abort callback', timeout: 30_000, fn: async ctx => {
     await using f = await fixture('wait-after-output');
     const controller = new AbortController();
     const ready = ctx.sinon.spy(function readyForCancellation() { controller.abort(new Error('private abort q7z9k2')); });
     const escaped = ctx.sinon.spy(function escapedCallback() {});
     process.on('uncaughtException', escaped);
-    const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) { if ((typeof filename === 'string') && filename.endsWith('ready.txt')) ready(); });
+    const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) { if (((typeof filename) === 'string') && filename.endsWith('ready.txt')) ready(); });
     watcher.on('error', function watchFailed(error) { controller.abort(error); });
-    using cleanup = { [Symbol.dispose]() { watcher.close(); process.off('uncaughtException', escaped); } };
-    const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, warn(message) { if (message.includes('requested bootstrap termination') || message.includes('forced bootstrap termination')) throw new Error('callback logging q7z9k2'); l.warn(message); } } });
+    using cleanup = { [Symbol.dispose]() { watcher.close();
+    process.off('uncaughtException', escaped); } };
+    const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, warn(message) { if (message.includes('requested bootstrap termination') || message.includes('forced bootstrap termination')) throw new Error('callback logging q7z9k2');
+    l.warn(message); } } });
     expect(ready.callCount).toBeGreaterThan(0);
     expect(escaped.callCount).toBe(0);
     expect(error.kind).toBe('interruption');
@@ -224,7 +237,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     if (error.directory === undefined) throw new Error('Expected retained cancelled namespace');
     const [child] = await readdir(join(error.directory, 'producer-runs'));
     if (child === undefined) throw new Error('Expected completed fixture output');
-    expect(identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')))).toEqual(artifactIdentity);
+    expect(
+      identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json'))),
+    ).toEqual(artifactIdentity);
     expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('single');
     expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
   } }),

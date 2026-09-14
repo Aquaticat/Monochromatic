@@ -12,7 +12,9 @@ import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
 
 //region Own independent launch and reference primitives before asynchronous work
 
-/** Canonical SHA-256 width is fixed independently of caller data. */
+/**
+ * Canonical SHA-256 width is fixed independently of caller data.
+ */
 const SHA256_WIDTH = 64;
 
 /**
@@ -30,16 +32,26 @@ const SHA256_WIDTH = 64;
  * ```
  */
 function comparisonIdentity(value: ProducerInputFileIdentity): ProducerInputFileIdentity {
-  /** Each authority primitive is read once before any logger callback or await. */
-  const { bytes, sha256, } = value;
-  if ((typeof bytes !== 'number') || !Number.isSafeInteger(bytes) || (bytes <= 0)
-    || (typeof sha256 !== 'string') || (sha256.length !== SHA256_WIDTH))
+  /**
+   * Each authority primitive is read once before any logger callback or await.
+   */
+  const {
+    bytes,
+    sha256,
+  } = value;
+  if ((typeof bytes !== 'number') || !Number.isSafeInteger(bytes)
+    || (bytes <= 0)
+    || (typeof sha256 !== 'string')
+    || (sha256.length !== SHA256_WIDTH))
     throw new ProducerInputComparisonError({ kind: 'contract', });
   for (const character of sha256) {
     if (!'0123456789abcdef'.includes(character))
       throw new ProducerInputComparisonError({ kind: 'contract', });
   }
-  return { bytes, sha256, };
+  return {
+    bytes,
+    sha256,
+  };
 }
 
 /**
@@ -57,7 +69,8 @@ function comparisonIdentity(value: ProducerInputFileIdentity): ProducerInputFile
  * ```
  */
 function comparisonPath(value: string): string {
-  if ((typeof value !== 'string') || value.includes('\0') || !isAbsolute(value)
+  if ((typeof value !== 'string') || value.includes('\0')
+    || !isAbsolute(value)
     || (resolve(value) !== value))
     throw new ProducerInputComparisonError({ kind: 'contract', });
   return value;
@@ -80,29 +93,53 @@ function comparisonPath(value: string): string {
  */
 export function ownProducerInputComparisonRequest(input: ProducerInputComparisonRequest): ProducerInputComparisonRequest {
   try {
-    /** Neither file locator may depend on a later current-directory change. */
+    /**
+     * Neither file locator may depend on a later current-directory change.
+     */
     const baseLaunchPath = comparisonPath(input.baseLaunchPath);
-    /** Only the existing standalone bootstrap filename is supported. */
+    /**
+     * Only the existing standalone bootstrap filename is supported.
+     */
     const bootstrapPath = comparisonPath(input.bootstrapPath);
     if (basename(bootstrapPath) !== 'producer-prepare.mjs')
       throw new ProducerInputComparisonError({ kind: 'contract', });
-    /** Caller mutation cannot change either checked launch primitive after this capture. */
+    /**
+     * Caller mutation cannot change either checked launch primitive after this capture.
+     */
     const baseLaunchIdentity = comparisonIdentity(input.baseLaunchIdentity);
-    /** The expected artifact is captured independently of any newly reconstructed output. */
+    /**
+     * The expected artifact is captured independently of any newly reconstructed output.
+     */
     const reference = comparisonIdentity(input.reference);
-    /** Cancellation remains live rather than being copied into a stale boolean. */
-    const signal = input.signal;
-    /** Logging is borrowed only after every data authority primitive is owned. */
-    const l = input.l;
+    /**
+     * Cancellation remains live rather than being copied into a stale boolean.
+     */
+    const {signal} = input;
+    /**
+     * Logging is borrowed only after every data authority primitive is owned.
+     */
+    const {l} = input;
     if (!(signal instanceof AbortSignal))
       throw new ProducerInputComparisonError({ kind: 'contract', });
-    /** Names-only contract telemetry cannot alter the already captured file identities. */
-    const pl = tagged({ tag: ownProducerInputComparisonRequest.name, l, });
+    /**
+     * Names-only contract telemetry cannot alter the already captured file identities.
+     */
+    const pl = tagged({
+      tag: ownProducerInputComparisonRequest.name,
+      l,
+    });
     pl.debug('owned fixed input-bootstrap launch and independent artifact reference');
-    return { baseLaunchPath, baseLaunchIdentity, bootstrapPath, reference, signal, l, };
+    return {
+      baseLaunchPath,
+      baseLaunchIdentity,
+      bootstrapPath,
+      reference,
+      signal,
+      l,
+    };
   }
   catch (error) {
-    if (Error.isError(error) && error instanceof ProducerInputComparisonError)
+    if (Error.isError(error) && (error instanceof ProducerInputComparisonError))
       throw error;
     // Accessor and logger failures do not expose native messages or caller-supplied cause chains.
     throw new ProducerInputComparisonError({ kind: 'contract', });

@@ -21,9 +21,13 @@ import {
  * ```
  */
 export type ProducerInputComparisonChild = {
-  /** Direct child name is retained only as private metadata. */
+  /**
+   * Direct child name is retained only as private metadata.
+   */
   readonly name: string;
-  /** Filesystem entry kind, not a semantic result or completed run. */
+  /**
+   * Filesystem entry kind, not a semantic result or completed run.
+   */
   readonly kind: 'directory' | 'file' | 'symlink' | 'other';
 };
 
@@ -37,11 +41,17 @@ export type ProducerInputComparisonChild = {
  * ```
  */
 export type ProducerInputComparisonChildObservation = {
-  /** Empty, exactly one observed entry, or at least two observed entries. */
+  /**
+   * Empty, exactly one observed entry, or at least two observed entries.
+   */
   readonly state: 'absent' | 'single' | 'ambiguous';
-  /** At most the first two native entries, with no inferred total beyond them. */
+  /**
+   * At most the first two native entries, with no inferred total beyond them.
+   */
   readonly children: readonly ProducerInputComparisonChild[];
-  /** False explicitly records that ambiguity stopped further enumeration. */
+  /**
+   * False explicitly records that ambiguity stopped further enumeration.
+   */
   readonly completeEnumeration: boolean;
 };
 
@@ -69,23 +79,47 @@ export async function observeProducerInputComparisonChildren({
   readonly run: ProducerInputComparisonRun;
   readonly l: Logger;
 },): Promise<ProducerInputComparisonChildObservation> {
-  /** No untrusted entry name is copied into public telemetry. */
-  const pl = tagged({ tag: observeProducerInputComparisonChildren.name, l });
+  /**
+   * No untrusted entry name is copied into public telemetry.
+   */
+  const pl = tagged({
+    tag: observeProducerInputComparisonChildren.name,
+    l
+  });
   try {
-    await verifyProducerInputComparisonRun({ run, l: pl });
-    /** Explicit disposal closes direct-read directory handles on every exit path. */
+    await verifyProducerInputComparisonRun({
+      run,
+      l: pl
+    });
+    /**
+     * Explicit disposal closes direct-read directory handles on every exit path.
+     */
     await using directory = await opendir(run.inputParent);
-    /** Absence is observed, never inferred from missing success stdout. */
+    /**
+     * Absence is observed, never inferred from missing success stdout.
+     */
     const first = await directory.read();
-    /** A second entry proves ambiguity; no further entry needs to be read to refuse association. */
+    /**
+     * A second entry proves ambiguity; no further entry needs to be read to refuse association.
+     */
     const second = first === null ? null : await directory.read();
-    /** Only actual metadata observations enter the retained child inventory. */
-    const children: readonly ProducerInputComparisonChild[] = [first, second]
+    /**
+     * Only actual metadata observations enter the retained child inventory.
+     */
+    const children: readonly ProducerInputComparisonChild[] = [
+      first,
+      second
+    ]
       .filter(function present(entry): entry is NonNullable<typeof entry> { return entry !== null; })
       .map(function describeEntry(entry): ProducerInputComparisonChild {
-        return { name: entry.name, kind: entry.isDirectory() ? 'directory' : entry.isFile() ? 'file' : entry.isSymbolicLink() ? 'symlink' : 'other' };
+        return {
+          name: entry.name,
+          kind: entry.isDirectory() ? 'directory' : entry.isFile() ? 'file' : entry.isSymbolicLink() ? 'symlink' : 'other'
+        };
       });
-    /** This status is an observation, not an authorization to consume an entry. */
+    /**
+     * This status is an observation, not an authorization to consume an entry.
+     */
     const observation: ProducerInputComparisonChildObservation = {
       state: first === null ? 'absent' : second === null ? 'single' : 'ambiguous',
       children,
@@ -94,17 +128,24 @@ export async function observeProducerInputComparisonChildren({
     await writeProducerInputComparisonRecord({
       run,
       file: 'child-observation.json',
-      value: { version: 1, kind: 'producer-preparation-input-child-observation', ...observation },
+      value: {
+        version: 1,
+        kind: 'producer-preparation-input-child-observation',
+        ...observation
+      },
       l: pl,
     });
     pl.info(`retained native child observation ${observation.state}; no completion inferred`);
     return observation;
   }
   catch (error) {
-    if (Error.isError(error) && error instanceof ProducerInputComparisonError)
+    if (Error.isError(error) && (error instanceof ProducerInputComparisonError))
       throw error;
     pl.warn(`native child observation failed with ${Error.isError(error) ? 'an Error object' : 'a non-Error value'}`);
-    throw new ProducerInputComparisonError({ kind: 'output', directory: run.directory });
+    throw new ProducerInputComparisonError({
+      kind: 'output',
+      directory: run.directory
+    });
   }
 }
 
