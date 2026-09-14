@@ -1,7 +1,12 @@
-import { describe, expect, it, type TestContext, } from '@monochromatic-dev/module-test/ts';
+import { caught, describe, expect, it, type TestContext, } from '@monochromatic-dev/module-test/ts';
 import { observeLoggerCallbacks, type Logger, } from '../dist/final/node/index.mjs';
 
 const levels = ['debug', 'error', 'fatal', 'info', 'trace', 'warn'] as const;
+
+// A suspended-start generator forwards arbitrary thrown values without Sinon's undefined exception sentinel.
+function* faultCarrier(): Generator<undefined> {
+  yield;
+}
 
 function fixture(ctx: TestContext) {
   const spies = {
@@ -61,12 +66,21 @@ await describe({ name: observeLoggerCallbacks.name, children: [
     revoked.revoke();
     const fault: unknown = kind === 'string' ? 'private q7z9k2' : kind === 'symbol' ? Symbol('private q7z9k2')
       : kind === 'undefined' ? undefined : kind === 'null' ? null : kind === 'false' ? false : revoked.proxy;
-    // Sinon invokes this factory and throws its returned value without coercing a string into an Error name.
-    f.spies.warn.throws(function foreignFailure() { return fault; });
+    expect(caught(function nativeFaultControl() {
+      return faultCarrier().throw(fault);
+    })).toBe(fault);
+    const entered = ctx.sinon.spy(function enteredCallback() {});
+    Object.defineProperty(f.logger, 'warn', {
+      value: function foreignFailure(): void {
+        entered();
+        const carrier = faultCarrier();
+        carrier.throw(fault);
+      },
+    });
     const observed = observeLoggerCallbacks(f.logger);
     expect(() => observed.logger.warn('first')).not.toThrow();
     expect(observed.snapshot()).toEqual(['warn']);
-    expect(f.spies.warn.callCount).toBe(1);
+    expect(entered.callCount).toBe(1);
   } })),
   it({ name: 'does not read unused callback getters and contains a getter when its callback is requested', fn: async ctx => {
     const f = fixture(ctx);
